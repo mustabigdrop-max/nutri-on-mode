@@ -75,7 +75,6 @@ const DashboardPage = () => {
 
   const levelNames = ["Iniciante", "Iniciante", "Consistente", "Consistente", "Máquina", "Máquina", "Lenda", "Lenda", "Modo ON", "Modo ON"];
 
-  const [activeTab, setActiveTab] = useState("home");
 
   return (
     <div className="min-h-screen bg-background pb-20">
