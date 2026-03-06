@@ -130,6 +130,14 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/family"
+              element={
+                <ProtectedRoute>
+                  <FamilyPage />
+                </ProtectedRoute>
+              }
+            />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
