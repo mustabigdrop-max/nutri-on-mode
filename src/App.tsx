@@ -70,6 +70,14 @@ const App = () => (
               }
             />
             <Route
+              path="/micronutrients"
+              element={
+                <ProtectedRoute>
+                  <MicronutrientsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/profile"
               element={
                 <ProtectedRoute>
