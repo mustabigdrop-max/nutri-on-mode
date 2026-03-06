@@ -68,6 +68,60 @@ export type Database = {
         }
         Relationships: []
       }
+      meal_plan_items: {
+        Row: {
+          carbs_g: number | null
+          confirmed: boolean | null
+          created_at: string
+          day_index: number
+          fat_g: number | null
+          food_name: string
+          id: string
+          kcal: number | null
+          meal_type: string
+          original_food_name: string | null
+          portion: string | null
+          protein_g: number | null
+          swapped: boolean | null
+          user_id: string
+          week_start: string
+        }
+        Insert: {
+          carbs_g?: number | null
+          confirmed?: boolean | null
+          created_at?: string
+          day_index: number
+          fat_g?: number | null
+          food_name: string
+          id?: string
+          kcal?: number | null
+          meal_type: string
+          original_food_name?: string | null
+          portion?: string | null
+          protein_g?: number | null
+          swapped?: boolean | null
+          user_id: string
+          week_start: string
+        }
+        Update: {
+          carbs_g?: number | null
+          confirmed?: boolean | null
+          created_at?: string
+          day_index?: number
+          fat_g?: number | null
+          food_name?: string
+          id?: string
+          kcal?: number | null
+          meal_type?: string
+          original_food_name?: string | null
+          portion?: string | null
+          protein_g?: number | null
+          swapped?: boolean | null
+          user_id?: string
+          week_start?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           active_protocol: string | null

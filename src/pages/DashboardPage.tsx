@@ -235,7 +235,10 @@ const DashboardPage = () => {
           ].map(item => (
             <button
               key={item.id}
-              onClick={() => setActiveTab(item.id)}
+              onClick={() => {
+                if (item.id === "plan") navigate("/meal-plan");
+                else setActiveTab(item.id);
+              }}
               className="flex flex-col items-center gap-0.5 py-1"
             >
               {item.id === "add" ? (
