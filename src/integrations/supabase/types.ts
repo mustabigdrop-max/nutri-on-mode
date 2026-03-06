@@ -92,6 +92,54 @@ export type Database = {
         }
         Relationships: []
       }
+      blood_tests: {
+        Row: {
+          ai_analysis: Json | null
+          applied_at: string | null
+          created_at: string
+          id: string
+          notes: string | null
+          pdf_url: string
+          status: string
+          suggested_changes: Json | null
+          test_date: string
+          updated_at: string
+          user_id: string
+          validated_at: string | null
+          validated_by: string | null
+        }
+        Insert: {
+          ai_analysis?: Json | null
+          applied_at?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          pdf_url: string
+          status?: string
+          suggested_changes?: Json | null
+          test_date?: string
+          updated_at?: string
+          user_id: string
+          validated_at?: string | null
+          validated_by?: string | null
+        }
+        Update: {
+          ai_analysis?: Json | null
+          applied_at?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          pdf_url?: string
+          status?: string
+          suggested_changes?: Json | null
+          test_date?: string
+          updated_at?: string
+          user_id?: string
+          validated_at?: string | null
+          validated_by?: string | null
+        }
+        Relationships: []
+      }
       chat_messages: {
         Row: {
           content: string

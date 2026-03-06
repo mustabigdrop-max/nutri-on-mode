@@ -9,7 +9,7 @@ import DashboardGamificationCards from "@/components/dashboard/DashboardGamifica
 import {
   Flame, TrendingUp, Droplets, Apple, BarChart3, MessageSquare,
   User, Plus, Utensils, LogOut, Zap, Brain, ChevronRight, Award,
-  Camera, Users, Heart, Settings, HelpCircle, Leaf, Trophy, ShoppingCart, History, Dumbbell
+  Camera, Users, Heart, Settings, HelpCircle, Leaf, Trophy, ShoppingCart, History, Dumbbell, FileText
 } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
 
@@ -540,6 +540,7 @@ const DashboardPage = () => {
               { icon: Trophy, label: "Conquistas", path: "/gamification", color: "text-primary", bg: "bg-primary/10" },
               { icon: Users, label: "Família", path: "/family", color: "text-accent", bg: "bg-accent/10" },
               { icon: Dumbbell, label: "Wearables", path: "/wearables", color: "text-primary", bg: "bg-primary/10" },
+              { icon: FileText, label: "Exames", path: "/blood-test", color: "text-destructive", bg: "bg-destructive/10" },
               { icon: User, label: "Perfil", path: "/profile", color: "text-muted-foreground", bg: "bg-muted/50" },
               { icon: Settings, label: "Config", path: "/settings", color: "text-muted-foreground", bg: "bg-muted/50" },
               { icon: HelpCircle, label: "Suporte", path: "/support", color: "text-muted-foreground", bg: "bg-muted/50" },

@@ -25,6 +25,7 @@ import HydrationPage from "./pages/HydrationPage";
 import MealHistoryPage from "./pages/MealHistoryPage";
 import ProgressPage from "./pages/ProgressPage";
 import SettingsPage from "./pages/SettingsPage";
+import BloodTestPage from "./pages/BloodTestPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -180,6 +181,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <SettingsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/blood-test"
+              element={
+                <ProtectedRoute>
+                  <BloodTestPage />
                 </ProtectedRoute>
               }
             />
