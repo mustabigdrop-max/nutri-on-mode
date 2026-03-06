@@ -20,6 +20,7 @@ import ProfessionalDashboard from "./pages/ProfessionalDashboard";
 import ShoppingListPage from "./pages/ShoppingListPage";
 import WearablesPage from "./pages/WearablesPage";
 import FamilyPage from "./pages/FamilyPage";
+import SupportPage from "./pages/SupportPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -135,6 +136,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <FamilyPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/support"
+              element={
+                <ProtectedRoute>
+                  <SupportPage />
                 </ProtectedRoute>
               }
             />
