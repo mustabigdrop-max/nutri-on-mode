@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import BottomNav from "@/components/BottomNav";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
@@ -296,6 +297,7 @@ const SettingsPage = () => {
           <LogOut className="w-4 h-4" /> Sair da conta
         </button>
       </div>
+      <BottomNav />
     </div>
   );
 };

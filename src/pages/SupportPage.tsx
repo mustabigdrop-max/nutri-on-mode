@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import BottomNav from "@/components/BottomNav";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCommunity } from "@/hooks/useCommunity";
@@ -523,6 +524,7 @@ const SupportPage = () => {
           </TabsContent>
         </Tabs>
       </div>
+      <BottomNav />
     </div>
   );
 };

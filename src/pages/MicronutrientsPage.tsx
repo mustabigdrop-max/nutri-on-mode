@@ -1,4 +1,5 @@
 import { useState } from "react";
+import BottomNav from "@/components/BottomNav";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, AlertTriangle, Apple, TrendingUp, Award, Leaf } from "lucide-react";
@@ -80,6 +81,7 @@ const MicronutrientsPage = () => {
           </div>
         )}
       </div>
+      <BottomNav />
     </div>
   );
 };

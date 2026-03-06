@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import BottomNav from "@/components/BottomNav";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Camera, Upload, Loader2, Share2, Sparkles, SlidersHorizontal } from "lucide-react";
@@ -296,6 +297,7 @@ const TransformationPage = () => {
           />
         )}
       </AnimatePresence>
+      <BottomNav />
     </div>
   );
 };

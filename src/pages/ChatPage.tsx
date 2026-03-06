@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import BottomNav from "@/components/BottomNav";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
@@ -199,6 +200,7 @@ const ChatPage = () => {
           </button>
         </div>
       </div>
+      <BottomNav />
     </div>
   );
 };

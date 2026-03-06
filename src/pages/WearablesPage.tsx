@@ -1,4 +1,5 @@
 import { useState } from "react";
+import BottomNav from "@/components/BottomNav";
 import { useActivityLogs } from "@/hooks/useActivityLogs";
 import { useProfile } from "@/hooks/useProfile";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -315,6 +316,7 @@ const WearablesPage = () => {
           </Card>
         )}
       </div>
+      <BottomNav />
     </div>
   );
 };

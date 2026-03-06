@@ -11,6 +11,7 @@ import {
   User, Plus, Utensils, LogOut, Zap, Brain, ChevronRight, Award,
   Camera, Users, Heart, Settings, HelpCircle, Leaf, Trophy, ShoppingCart, History, Dumbbell
 } from "lucide-react";
+import BottomNav from "@/components/BottomNav";
 
 // SVG animated ring component
 const CalorieRing = ({ percent, kcal, target }: { percent: number; kcal: number; target: number }) => {
@@ -578,40 +579,7 @@ const DashboardPage = () => {
         </motion.div>
       </div>
 
-      {/* Bottom navigation */}
-      <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-md border-t border-border z-50">
-        <div className="max-w-lg mx-auto flex items-center justify-around py-2 px-2">
-          {[
-            { id: "home", icon: BarChart3, label: "Home", path: null },
-            { id: "hydration", icon: Droplets, label: "Água", path: "/hydration" },
-            { id: "add", icon: Plus, label: "", path: "/meal-log" },
-            { id: "chat", icon: MessageSquare, label: "Coach", path: "/chat" },
-            { id: "profile", icon: User, label: "Perfil", path: "/profile" },
-          ].map(item => (
-            <button
-              key={item.id}
-              onClick={() => item.path ? navigate(item.path) : undefined}
-              className="flex flex-col items-center gap-0.5 py-1 min-w-[48px]"
-            >
-              {item.id === "add" ? (
-                <motion.div
-                  whileTap={{ scale: 0.9 }}
-                  className="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-primary-foreground -mt-5 glow-gold"
-                >
-                  <Plus className="w-6 h-6" />
-                </motion.div>
-              ) : (
-                <>
-                  <item.icon className={`w-5 h-5 ${item.id === "home" ? "text-primary" : "text-muted-foreground"}`} />
-                  <span className={`text-[10px] font-mono ${item.id === "home" ? "text-primary" : "text-muted-foreground"}`}>
-                    {item.label}
-                  </span>
-                </>
-              )}
-            </button>
-          ))}
-        </div>
-      </div>
+      <BottomNav />
     </div>
   );
 };
