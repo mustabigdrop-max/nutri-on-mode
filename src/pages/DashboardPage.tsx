@@ -237,6 +237,9 @@ const DashboardPage = () => {
               key={item.id}
               onClick={() => {
                 if (item.id === "plan") navigate("/meal-plan");
+                else if (item.id === "add") navigate("/meal-log");
+                else if (item.id === "chat") navigate("/chat");
+                else if (item.id === "profile") navigate("/profile");
                 else setActiveTab(item.id);
               }}
               className="flex flex-col items-center gap-0.5 py-1"
