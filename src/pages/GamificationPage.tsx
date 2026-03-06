@@ -1,4 +1,5 @@
 import { useState } from "react";
+import BottomNav from "@/components/BottomNav";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Sparkles, Loader2, Share2 } from "lucide-react";
