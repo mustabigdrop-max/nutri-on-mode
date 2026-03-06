@@ -1,7 +1,9 @@
 import { motion } from "framer-motion";
 import { Zap, ChevronDown } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const HeroSection = () => {
+  const navigate = useNavigate();
   return (
     <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden px-4">
       {/* Grid background */}
@@ -64,7 +66,7 @@ const HeroSection = () => {
           transition={{ delay: 0.7, duration: 0.6 }}
           className="flex flex-col sm:flex-row gap-4 justify-center items-center"
         >
-          <button className="group relative px-8 py-4 rounded-lg bg-primary text-primary-foreground font-bold text-lg transition-all hover:scale-105 glow-gold">
+          <button onClick={() => navigate("/auth")} className="group relative px-8 py-4 rounded-lg bg-primary text-primary-foreground font-bold text-lg transition-all hover:scale-105 glow-gold">
             <span className="flex items-center gap-2">
               <Zap className="w-5 h-5" />
               Começar 7 dias grátis
