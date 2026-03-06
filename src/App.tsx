@@ -13,6 +13,7 @@ import MealPlanPage from "./pages/MealPlanPage";
 import MealLogPage from "./pages/MealLogPage";
 import ChatPage from "./pages/ChatPage";
 import MicronutrientsPage from "./pages/MicronutrientsPage";
+import GamificationPage from "./pages/GamificationPage";
 import ProfilePage from "./pages/ProfilePage";
 import ProfessionalDashboard from "./pages/ProfessionalDashboard";
 import NotFound from "./pages/NotFound";
