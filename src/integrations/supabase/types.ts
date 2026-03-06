@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      badges: {
+        Row: {
+          category: string
+          condition_type: string
+          condition_value: number
+          created_at: string
+          description: string
+          icon: string
+          id: string
+          key: string
+          name: string
+          xp_reward: number
+        }
+        Insert: {
+          category?: string
+          condition_type: string
+          condition_value?: number
+          created_at?: string
+          description: string
+          icon?: string
+          id?: string
+          key: string
+          name: string
+          xp_reward?: number
+        }
+        Update: {
+          category?: string
+          condition_type?: string
+          condition_value?: number
+          created_at?: string
+          description?: string
+          icon?: string
+          id?: string
+          key?: string
+          name?: string
+          xp_reward?: number
+        }
+        Relationships: []
+      }
       chat_messages: {
         Row: {
           content: string
@@ -70,6 +109,42 @@ export type Database = {
           title?: string | null
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      daily_missions: {
+        Row: {
+          completed: boolean
+          created_at: string
+          description: string
+          id: string
+          mission_date: string
+          mission_type: string
+          title: string
+          user_id: string
+          xp_reward: number
+        }
+        Insert: {
+          completed?: boolean
+          created_at?: string
+          description: string
+          id?: string
+          mission_date?: string
+          mission_type?: string
+          title: string
+          user_id: string
+          xp_reward?: number
+        }
+        Update: {
+          completed?: boolean
+          created_at?: string
+          description?: string
+          id?: string
+          mission_date?: string
+          mission_type?: string
+          title?: string
+          user_id?: string
+          xp_reward?: number
         }
         Relationships: []
       }
@@ -354,6 +429,35 @@ export type Database = {
         }
         Relationships: []
       }
+      user_badges: {
+        Row: {
+          badge_id: string
+          earned_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          badge_id: string
+          earned_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          badge_id?: string
+          earned_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_badges_badge_id_fkey"
+            columns: ["badge_id"]
+            isOneToOne: false
+            referencedRelation: "badges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           id: string
@@ -369,6 +473,48 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
+        }
+        Relationships: []
+      }
+      weekly_challenges: {
+        Row: {
+          challenge_type: string
+          completed: boolean
+          created_at: string
+          current_value: number
+          description: string
+          id: string
+          target_value: number
+          title: string
+          user_id: string
+          week_start: string
+          xp_reward: number
+        }
+        Insert: {
+          challenge_type?: string
+          completed?: boolean
+          created_at?: string
+          current_value?: number
+          description: string
+          id?: string
+          target_value?: number
+          title: string
+          user_id: string
+          week_start: string
+          xp_reward?: number
+        }
+        Update: {
+          challenge_type?: string
+          completed?: boolean
+          created_at?: string
+          current_value?: number
+          description?: string
+          id?: string
+          target_value?: number
+          title?: string
+          user_id?: string
+          week_start?: string
+          xp_reward?: number
         }
         Relationships: []
       }
