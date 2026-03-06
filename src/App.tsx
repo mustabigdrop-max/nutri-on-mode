@@ -13,6 +13,7 @@ import MealPlanPage from "./pages/MealPlanPage";
 import MealLogPage from "./pages/MealLogPage";
 import ChatPage from "./pages/ChatPage";
 import ProfilePage from "./pages/ProfilePage";
+import ProfessionalDashboard from "./pages/ProfessionalDashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -72,6 +73,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <ProfilePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/professional"
+              element={
+                <ProtectedRoute>
+                  <ProfessionalDashboard />
                 </ProtectedRoute>
               }
             />
