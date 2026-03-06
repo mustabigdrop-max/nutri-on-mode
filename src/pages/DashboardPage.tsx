@@ -15,6 +15,7 @@ const DashboardPage = () => {
   const navigate = useNavigate();
   const [todayMeals, setTodayMeals] = useState<any[]>([]);
   const [todayTotals, setTodayTotals] = useState({ kcal: 0, protein: 0, carbs: 0, fat: 0 });
+  const [activeTab, setActiveTab] = useState("home");
 
   useEffect(() => {
     if (!profile?.onboarding_completed && !loading) {
