@@ -1,1 +1,7 @@
 project_id = "hibohvntewqtthyuotye"
+
+[functions.nutri-coach]
+verify_jwt = false
+
+[functions.analyze-meal]
+verify_jwt = false
