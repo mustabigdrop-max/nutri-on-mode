@@ -121,6 +121,14 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/wearables"
+              element={
+                <ProtectedRoute>
+                  <WearablesPage />
+                </ProtectedRoute>
+              }
+            />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
