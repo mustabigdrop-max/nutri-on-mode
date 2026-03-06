@@ -52,12 +52,14 @@ Regras:
 Formato obrigatório:
 {"foods":[{"name":"string","portion":"string","kcal":number,"protein":number,"carbs":number,"fat":number}],"comment":"string"}
 
+${profileContext ? `Contexto do usuário: ${profileContext}` : ""}
+
 Regras:
 - Interprete descrições em português brasileiro coloquial
 - Use valores da tabela TACO/IBGE
 - Porções em medidas caseiras (colher de sopa, xícara, fatia, unidade, concha, etc.)
 - Se mencionou "prato de arroz com feijão", separe em itens individuais com porções típicas
-- O "comment" deve ser uma dica rápida sobre a refeição
+- O "comment" deve avaliar a qualidade da refeição, sugerir o que falta no dia e dar uma dica para a próxima refeição. Tom motivacional e encorajador.
 - Responda APENAS com o JSON, sem texto extra`
         },
         {
