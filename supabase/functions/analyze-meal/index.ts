@@ -13,58 +13,70 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
+    const micronutrientInstruction = `
+Além dos macros, estime os seguintes micronutrientes para CADA alimento:
+- vitamina_a_mcg, vitamina_c_mg, vitamina_d_mcg, vitamina_e_mg, vitamina_k_mcg, vitamina_b12_mcg
+- ferro_mg, calcio_mg, zinco_mg, magnesio_mg, potassio_mg, sodio_mg
+- omega3_mg, fibras_g, folato_mcg, selenio_mcg
+
+Formato expandido para cada food:
+{"name":"string","portion":"string","kcal":number,"protein":number,"carbs":number,"fat":number,"micronutrients":{"vitamina_a_mcg":number,"vitamina_c_mg":number,"vitamina_d_mcg":number,"vitamina_e_mg":number,"vitamina_k_mcg":number,"vitamina_b12_mcg":number,"ferro_mg":number,"calcio_mg":number,"zinco_mg":number,"magnesio_mg":number,"potassio_mg":number,"sodio_mg":number,"omega3_mg":number,"fibras_g":number,"folato_mcg":number,"selenio_mcg":number}}
+
+Também inclua um "quality_score" (0-100) baseado em:
+- Variedade de alimentos (mais alimentos diferentes = melhor)
+- Presença de vegetais, frutas, proteínas de qualidade
+- Equilíbrio de micronutrientes
+- Presença de ultraprocessados (penaliza)
+
+Formato final: {"foods":[...],"comment":"string","quality_score":number}`;
+
     let messages: any[];
 
     if (mode === "photo") {
-      // Photo analysis with vision
       messages = [
         {
           role: "system",
           content: `Você é um nutricionista especialista em análise visual de alimentos. Analise a foto da refeição e retorne APENAS um JSON válido sem markdown, sem backticks.
 
-Formato obrigatório:
-{"foods":[{"name":"string","portion":"string","kcal":number,"protein":number,"carbs":number,"fat":number}],"comment":"string"}
+${micronutrientInstruction}
 
 ${profileContext ? `Contexto do usuário: ${profileContext}` : ""}
 
 Regras:
 - Identifique TODOS os alimentos visíveis no prato
-- Estime porções em medidas caseiras brasileiras (colher de sopa, xícara, fatia, unidade, gramas)
+- Estime porções em medidas caseiras brasileiras
 - Use valores nutricionais da tabela TACO/IBGE
-- O "comment" deve avaliar a qualidade da refeição, o que falta no dia e sugerir a próxima refeição. Tom motivacional.
+- O "comment" deve avaliar a qualidade da refeição incluindo micronutrientes. Tom motivacional.
 - Responda APENAS com o JSON, sem texto extra`
         },
         {
           role: "user",
           content: [
-            { type: "text", text: "Analise esta foto de refeição e identifique os alimentos com macros:" },
+            { type: "text", text: "Analise esta foto de refeição com macros e micronutrientes:" },
             { type: "image_url", image_url: { url: `data:image/jpeg;base64,${imageBase64}` } }
           ]
         }
       ];
     } else {
-      // Text-based AI food search
       messages = [
         {
           role: "system",
           content: `Você é um nutricionista especialista em alimentos brasileiros. O usuário descreve o que comeu em linguagem natural. Retorne APENAS um JSON válido sem markdown, sem backticks.
 
-Formato obrigatório:
-{"foods":[{"name":"string","portion":"string","kcal":number,"protein":number,"carbs":number,"fat":number}],"comment":"string"}
+${micronutrientInstruction}
 
 ${profileContext ? `Contexto do usuário: ${profileContext}` : ""}
 
 Regras:
 - Interprete descrições em português brasileiro coloquial
 - Use valores da tabela TACO/IBGE
-- Porções em medidas caseiras (colher de sopa, xícara, fatia, unidade, concha, etc.)
-- Se mencionou "prato de arroz com feijão", separe em itens individuais com porções típicas
-- O "comment" deve avaliar a qualidade da refeição, sugerir o que falta no dia e dar uma dica para a próxima refeição. Tom motivacional e encorajador.
+- Porções em medidas caseiras
+- O "comment" deve avaliar qualidade nutricional incluindo micronutrientes, sugerir o que falta. Tom motivacional.
 - Responda APENAS com o JSON, sem texto extra`
         },
         {
           role: "user",
-          content: `Analise esta descrição de refeição e retorne os alimentos com macros: "${query}"`
+          content: `Analise esta descrição de refeição com macros e micronutrientes: "${query}"`
         }
       ];
     }
@@ -103,7 +115,6 @@ Regras:
     const data = await response.json();
     const content = data.choices?.[0]?.message?.content || "";
 
-    // Parse JSON from response (handle potential markdown wrapping)
     let parsed;
     try {
       const jsonStr = content.replace(/```json?\n?/g, "").replace(/```/g, "").trim();
