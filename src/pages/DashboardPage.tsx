@@ -8,7 +8,8 @@ import { useWaterLogs } from "@/hooks/useWaterLogs";
 import DashboardGamificationCards from "@/components/dashboard/DashboardGamificationCards";
 import {
   Flame, TrendingUp, Droplets, Apple, BarChart3, MessageSquare,
-  User, Plus, Utensils, LogOut, Zap, Brain, ChevronRight, Award
+  User, Plus, Utensils, LogOut, Zap, Brain, ChevronRight, Award,
+  Camera, Users, Heart, Settings, HelpCircle, Leaf, Trophy, ShoppingCart, History, Dumbbell
 } from "lucide-react";
 
 // SVG animated ring component
@@ -516,11 +517,55 @@ const DashboardPage = () => {
           )}
         </motion.div>
 
-        {/* Protocol info */}
+        {/* All Functions Grid */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1.1 }}
+          className="mb-4"
+        >
+          <h3 className="text-sm font-bold text-foreground font-display mb-3">Todas as funções</h3>
+          <div className="grid grid-cols-4 gap-2">
+            {[
+              { icon: Utensils, label: "Registrar", path: "/meal-log", color: "text-primary", bg: "bg-primary/10" },
+              { icon: History, label: "Histórico", path: "/meal-history", color: "text-accent", bg: "bg-accent/10" },
+              { icon: Apple, label: "Plano", path: "/meal-plan", color: "text-primary", bg: "bg-primary/10" },
+              { icon: ShoppingCart, label: "Compras", path: "/shopping-list", color: "text-accent", bg: "bg-accent/10" },
+              { icon: MessageSquare, label: "Coach IA", path: "/chat", color: "text-primary", bg: "bg-primary/10" },
+              { icon: Droplets, label: "Água", path: "/hydration", color: "text-cyan", bg: "bg-cyan/10" },
+              { icon: TrendingUp, label: "Progresso", path: "/progress", color: "text-accent", bg: "bg-accent/10" },
+              { icon: Camera, label: "Fotos", path: "/transformation", color: "text-primary", bg: "bg-primary/10" },
+              { icon: Leaf, label: "Micros", path: "/micronutrients", color: "text-accent", bg: "bg-accent/10" },
+              { icon: Trophy, label: "Conquistas", path: "/gamification", color: "text-primary", bg: "bg-primary/10" },
+              { icon: Users, label: "Família", path: "/family", color: "text-accent", bg: "bg-accent/10" },
+              { icon: Dumbbell, label: "Wearables", path: "/wearables", color: "text-primary", bg: "bg-primary/10" },
+              { icon: User, label: "Perfil", path: "/profile", color: "text-muted-foreground", bg: "bg-muted/50" },
+              { icon: Settings, label: "Config", path: "/settings", color: "text-muted-foreground", bg: "bg-muted/50" },
+              { icon: HelpCircle, label: "Suporte", path: "/support", color: "text-muted-foreground", bg: "bg-muted/50" },
+              { icon: Heart, label: "Pro", path: "/professional", color: "text-destructive", bg: "bg-destructive/10" },
+            ].map((item, i) => (
+              <motion.button
+                key={item.path}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 1.15 + i * 0.02 }}
+                onClick={() => navigate(item.path)}
+                className="flex flex-col items-center gap-1.5 p-3 rounded-xl border border-border bg-card hover:border-primary/30 transition-all"
+              >
+                <div className={`w-9 h-9 rounded-lg ${item.bg} flex items-center justify-center`}>
+                  <item.icon className={`w-4.5 h-4.5 ${item.color}`} />
+                </div>
+                <span className="text-[10px] font-mono text-foreground">{item.label}</span>
+              </motion.button>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Protocol info */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.4 }}
           className="rounded-xl border border-border bg-card/50 p-3 mb-4"
         >
           <div className="flex items-center gap-2 mb-1">
