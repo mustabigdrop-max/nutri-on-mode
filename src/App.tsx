@@ -76,6 +76,14 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/professional"
+              element={
+                <ProtectedRoute>
+                  <ProfessionalDashboard />
+                </ProtectedRoute>
+              }
+            />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
