@@ -22,6 +22,9 @@ import WearablesPage from "./pages/WearablesPage";
 import FamilyPage from "./pages/FamilyPage";
 import SupportPage from "./pages/SupportPage";
 import HydrationPage from "./pages/HydrationPage";
+import MealHistoryPage from "./pages/MealHistoryPage";
+import ProgressPage from "./pages/ProgressPage";
+import SettingsPage from "./pages/SettingsPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -153,6 +156,30 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <HydrationPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/meal-history"
+              element={
+                <ProtectedRoute>
+                  <MealHistoryPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/progress"
+              element={
+                <ProtectedRoute>
+                  <ProgressPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/settings"
+              element={
+                <ProtectedRoute>
+                  <SettingsPage />
                 </ProtectedRoute>
               }
             />
