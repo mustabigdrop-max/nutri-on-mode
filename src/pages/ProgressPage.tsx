@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import BottomNav from "@/components/BottomNav";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
