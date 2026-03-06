@@ -14,16 +14,216 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      meal_logs: {
+        Row: {
+          confirmed: boolean | null
+          created_at: string
+          emotion: string | null
+          hunger_level: number | null
+          id: string
+          meal_date: string
+          meal_type: string
+          notes: string | null
+          photo_url: string | null
+          satiety_level: number | null
+          total_carbs: number | null
+          total_fat: number | null
+          total_kcal: number | null
+          total_protein: number | null
+          user_id: string
+        }
+        Insert: {
+          confirmed?: boolean | null
+          created_at?: string
+          emotion?: string | null
+          hunger_level?: number | null
+          id?: string
+          meal_date?: string
+          meal_type: string
+          notes?: string | null
+          photo_url?: string | null
+          satiety_level?: number | null
+          total_carbs?: number | null
+          total_fat?: number | null
+          total_kcal?: number | null
+          total_protein?: number | null
+          user_id: string
+        }
+        Update: {
+          confirmed?: boolean | null
+          created_at?: string
+          emotion?: string | null
+          hunger_level?: number | null
+          id?: string
+          meal_date?: string
+          meal_type?: string
+          notes?: string | null
+          photo_url?: string | null
+          satiety_level?: number | null
+          total_carbs?: number | null
+          total_fat?: number | null
+          total_kcal?: number | null
+          total_protein?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          active_protocol: string | null
+          activity_level: string | null
+          avatar_url: string | null
+          carbs_g: number | null
+          created_at: string
+          date_of_birth: string | null
+          dietary_restrictions: string[] | null
+          fat_g: number | null
+          full_name: string | null
+          geb_kcal: number | null
+          get_kcal: number | null
+          goal: string | null
+          health_conditions: string[] | null
+          height_cm: number | null
+          id: string
+          last_streak_date: string | null
+          level: number | null
+          onboarding_completed: boolean | null
+          protein_g: number | null
+          sex: string | null
+          sport: string | null
+          streak_days: number | null
+          training_frequency: number | null
+          updated_at: string
+          user_id: string
+          uses_glp1: boolean | null
+          vet_kcal: number | null
+          weight_kg: number | null
+          xp: number | null
+        }
+        Insert: {
+          active_protocol?: string | null
+          activity_level?: string | null
+          avatar_url?: string | null
+          carbs_g?: number | null
+          created_at?: string
+          date_of_birth?: string | null
+          dietary_restrictions?: string[] | null
+          fat_g?: number | null
+          full_name?: string | null
+          geb_kcal?: number | null
+          get_kcal?: number | null
+          goal?: string | null
+          health_conditions?: string[] | null
+          height_cm?: number | null
+          id?: string
+          last_streak_date?: string | null
+          level?: number | null
+          onboarding_completed?: boolean | null
+          protein_g?: number | null
+          sex?: string | null
+          sport?: string | null
+          streak_days?: number | null
+          training_frequency?: number | null
+          updated_at?: string
+          user_id: string
+          uses_glp1?: boolean | null
+          vet_kcal?: number | null
+          weight_kg?: number | null
+          xp?: number | null
+        }
+        Update: {
+          active_protocol?: string | null
+          activity_level?: string | null
+          avatar_url?: string | null
+          carbs_g?: number | null
+          created_at?: string
+          date_of_birth?: string | null
+          dietary_restrictions?: string[] | null
+          fat_g?: number | null
+          full_name?: string | null
+          geb_kcal?: number | null
+          get_kcal?: number | null
+          goal?: string | null
+          health_conditions?: string[] | null
+          height_cm?: number | null
+          id?: string
+          last_streak_date?: string | null
+          level?: number | null
+          onboarding_completed?: boolean | null
+          protein_g?: number | null
+          sex?: string | null
+          sport?: string | null
+          streak_days?: number | null
+          training_frequency?: number | null
+          updated_at?: string
+          user_id?: string
+          uses_glp1?: boolean | null
+          vet_kcal?: number | null
+          weight_kg?: number | null
+          xp?: number | null
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      weight_logs: {
+        Row: {
+          body_fat_pct: number | null
+          id: string
+          logged_at: string
+          muscle_mass_kg: number | null
+          user_id: string
+          weight_kg: number
+        }
+        Insert: {
+          body_fat_pct?: number | null
+          id?: string
+          logged_at?: string
+          muscle_mass_kg?: number | null
+          user_id: string
+          weight_kg: number
+        }
+        Update: {
+          body_fat_pct?: number | null
+          id?: string
+          logged_at?: string
+          muscle_mass_kg?: number | null
+          user_id?: string
+          weight_kg?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "moderator" | "user" | "professional"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +350,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "moderator", "user", "professional"],
+    },
   },
 } as const
