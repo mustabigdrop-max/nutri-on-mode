@@ -79,6 +79,14 @@ const App = () => (
               }
             />
             <Route
+              path="/gamification"
+              element={
+                <ProtectedRoute>
+                  <GamificationPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/profile"
               element={
                 <ProtectedRoute>
