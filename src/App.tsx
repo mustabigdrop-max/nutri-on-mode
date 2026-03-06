@@ -148,6 +148,14 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/hydration"
+              element={
+                <ProtectedRoute>
+                  <HydrationPage />
+                </ProtectedRoute>
+              }
+            />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
