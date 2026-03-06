@@ -125,7 +125,7 @@ const GamificationPage = () => {
                 onGenerate={gamification.generateMissions}
                 generating={gamification.generatingMissions}
               />
-              <ChallengeList challenges={gamification.challenges} />
+              <ChallengeList challenges={gamification.challenges} onGenerate={gamification.generateChallenges} />
             </motion.div>
           )}
         </AnimatePresence>

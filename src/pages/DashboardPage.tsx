@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
+import DashboardGamificationCards from "@/components/dashboard/DashboardGamificationCards";
 import {
   Flame, TrendingUp, Droplets, Apple, BarChart3, MessageSquare,
   User, Plus, Utensils, LogOut, Zap, Brain, ChevronRight, Award
@@ -382,6 +383,16 @@ const DashboardPage = () => {
           className="mb-4"
         >
           <XPBar xp={profile.xp || 0} level={profile.level || 1} />
+        </motion.div>
+
+        {/* Gamification, Missions & Micronutrients */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.82 }}
+          className="mb-4"
+        >
+          <DashboardGamificationCards />
         </motion.div>
 
         {/* Add water quick action */}
