@@ -51,6 +51,30 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/meal-log"
+              element={
+                <ProtectedRoute>
+                  <MealLogPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/chat"
+              element={
+                <ProtectedRoute>
+                  <ChatPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute>
+                  <ProfilePage />
+                </ProtectedRoute>
+              }
+            />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
