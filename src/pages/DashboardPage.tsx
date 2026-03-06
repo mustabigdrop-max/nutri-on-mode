@@ -398,22 +398,35 @@ const DashboardPage = () => {
           <DashboardGamificationCards />
         </motion.div>
 
-        {/* Add water quick action */}
+        {/* Hydration quick actions */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.85 }}
-          className="mb-4"
+          className="mb-4 space-y-2"
         >
           <button
             onClick={() => addWater(250)}
             className="w-full flex items-center gap-3 p-3 rounded-xl border border-border bg-card hover:border-accent/30 transition-all group"
           >
             <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center group-hover:bg-accent/20 transition-colors">
-              <Droplets className="w-4 h-4 text-accent" />
+              <Plus className="w-4 h-4 text-accent" />
             </div>
             <span className="text-sm font-mono text-foreground">+ 1 copo de água (250ml)</span>
             <span className="ml-auto text-xs font-mono text-muted-foreground">{waterMl}ml</span>
+          </button>
+          <button
+            onClick={() => navigate("/hydration")}
+            className="w-full flex items-center gap-3 p-3 rounded-xl border border-border bg-card hover:border-primary/30 transition-all group"
+          >
+            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+              <Droplets className="w-4 h-4 text-primary" />
+            </div>
+            <div className="flex-1 text-left">
+              <p className="text-sm font-mono text-foreground">Controle de Hidratação</p>
+              <p className="text-[9px] font-mono text-muted-foreground">Acompanhe sua meta diária de água</p>
+            </div>
+            <ChevronRight className="w-4 h-4 text-muted-foreground" />
           </button>
         </motion.div>
 
