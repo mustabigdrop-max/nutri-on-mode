@@ -88,6 +88,14 @@ const App = () => (
               }
             />
             <Route
+              path="/transformation"
+              element={
+                <ProtectedRoute>
+                  <TransformationPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/profile"
               element={
                 <ProtectedRoute>
