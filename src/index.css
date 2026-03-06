@@ -97,6 +97,14 @@
     font-family: var(--font-display);
   }
 
+  .font-heading {
+    font-family: var(--font-heading);
+  }
+
+  .font-landing {
+    font-family: var(--font-landing);
+  }
+
   .font-mono {
     font-family: var(--font-mono);
   }
