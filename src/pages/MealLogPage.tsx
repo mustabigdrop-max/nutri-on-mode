@@ -432,7 +432,22 @@ const MealLogPage = () => {
       food_names: foodNames,
     }).select("id").single();
 
-    if (!error) {
+    if (!error && insertedMeal) {
+      // Save micronutrients if available
+      if (aiMicronutrients.length > 0) {
+        const nutrientRows = aiMicronutrients.flatMap(micros =>
+          Object.entries(micros).filter(([, v]) => v > 0).map(([nutrient, amount]) => ({
+            meal_log_id: insertedMeal.id,
+            user_id: user.id,
+            nutrient,
+            amount,
+            unit: nutrient.endsWith("_mcg") ? "mcg" : nutrient.endsWith("_mg") ? "mg" : "g",
+          }))
+        );
+        if (nutrientRows.length > 0) {
+          await supabase.from("meal_nutrients").insert(nutrientRows);
+        }
+      }
       const currentXp = profile?.xp || 0;
       const currentLevel = profile?.level || 1;
       const newXp = currentXp + 15;
