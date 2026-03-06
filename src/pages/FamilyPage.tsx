@@ -1,4 +1,5 @@
 import { useState } from "react";
+import BottomNav from "@/components/BottomNav";
 import { useFamily, FamilyMember } from "@/hooks/useFamily";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
