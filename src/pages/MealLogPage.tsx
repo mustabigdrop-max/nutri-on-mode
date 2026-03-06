@@ -104,6 +104,8 @@ const MealLogPage = () => {
   const [aiQuery, setAiQuery] = useState("");
   const [aiLoading, setAiLoading] = useState(false);
   const [aiComment, setAiComment] = useState("");
+  const [aiMicronutrients, setAiMicronutrients] = useState<Record<string, number>[]>([]);
+  const [aiQualityScore, setAiQualityScore] = useState<number | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
 
   // Voice states
@@ -198,7 +200,7 @@ const MealLogPage = () => {
     setSelectedFoods(prev => prev.filter(sf => sf.food.id !== foodId));
   };
 
-  const addAiFoods = (foods: Array<{ name: string; portion: string; kcal: number; protein: number; carbs: number; fat: number }>) => {
+  const addAiFoods = (foods: Array<{ name: string; portion: string; kcal: number; protein: number; carbs: number; fat: number; micronutrients?: Record<string, number> }>, qualityScore?: number) => {
     const newFoods: SelectedFood[] = foods.map((f, i) => ({
       food: {
         id: `ai-${Date.now()}-${i}`,
@@ -214,6 +216,10 @@ const MealLogPage = () => {
       quantity: 1,
     }));
     setSelectedFoods(prev => [...prev, ...newFoods]);
+    // Store micronutrients for saving later
+    const micros = foods.map(f => f.micronutrients || {});
+    setAiMicronutrients(prev => [...prev, ...micros]);
+    if (qualityScore != null) setAiQualityScore(qualityScore);
   };
 
   // AI text/voice analysis
@@ -233,7 +239,7 @@ const MealLogPage = () => {
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
       if (data?.foods?.length) {
-        addAiFoods(data.foods);
+        addAiFoods(data.foods, data.quality_score);
         setAiComment(data.comment || "");
         setAiQuery("");
         setVoiceTranscript("");
@@ -270,7 +276,7 @@ const MealLogPage = () => {
         if (error) throw error;
         if (data?.error) throw new Error(data.error);
         if (data?.foods?.length) {
-          addAiFoods(data.foods);
+          addAiFoods(data.foods, data.quality_score);
           setAiComment(data.comment || "");
           toast.success(`${data.foods.length} alimento(s) detectado(s) na foto! 📸✨`);
         } else {
@@ -408,7 +414,8 @@ const MealLogPage = () => {
       } catch { /* ignore */ }
     }
 
-    const { error } = await supabase.from("meal_logs").insert({
+    const foodNames = selectedFoods.map(sf => sf.food.name);
+    const { data: insertedMeal, error } = await supabase.from("meal_logs").insert({
       user_id: user.id,
       meal_type: selectedMealType,
       total_kcal: Math.round(totals.kcal),
@@ -421,9 +428,26 @@ const MealLogPage = () => {
       notes: notes || null,
       photo_url: photoUrl,
       confirmed: true,
-    });
+      quality_score: aiQualityScore,
+      food_names: foodNames,
+    }).select("id").single();
 
-    if (!error) {
+    if (!error && insertedMeal) {
+      // Save micronutrients if available
+      if (aiMicronutrients.length > 0) {
+        const nutrientRows = aiMicronutrients.flatMap(micros =>
+          Object.entries(micros).filter(([, v]) => v > 0).map(([nutrient, amount]) => ({
+            meal_log_id: insertedMeal.id,
+            user_id: user.id,
+            nutrient,
+            amount,
+            unit: nutrient.endsWith("_mcg") ? "mcg" : nutrient.endsWith("_mg") ? "mg" : "g",
+          }))
+        );
+        if (nutrientRows.length > 0) {
+          await supabase.from("meal_nutrients").insert(nutrientRows);
+        }
+      }
       const currentXp = profile?.xp || 0;
       const currentLevel = profile?.level || 1;
       const newXp = currentXp + 15;
