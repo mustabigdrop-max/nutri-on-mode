@@ -11,6 +11,7 @@ import {
   User, Plus, Utensils, LogOut, Zap, Brain, ChevronRight, Award,
   Camera, Users, Heart, Settings, HelpCircle, Leaf, Trophy, ShoppingCart, History, Dumbbell
 } from "lucide-react";
+import BottomNav from "@/components/BottomNav";
 
 // SVG animated ring component
 const CalorieRing = ({ percent, kcal, target }: { percent: number; kcal: number; target: number }) => {
