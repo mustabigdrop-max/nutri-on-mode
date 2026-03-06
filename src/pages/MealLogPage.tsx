@@ -1,11 +1,12 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  ArrowLeft, Search, Plus, Minus, Check, X, Apple, ChevronDown
+  ArrowLeft, Search, Plus, Minus, Check, X, ChevronDown,
+  Camera, Sparkles, Loader2
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -30,9 +31,8 @@ interface FoodItem {
   category: string;
 }
 
-// Food database (TACO-inspired)
+// Local food database (TACO-inspired)
 const FOOD_DB: FoodItem[] = [
-  // Proteínas
   { id: "f1", name: "Frango grelhado", portion: "100g", portionGrams: 100, kcal: 159, protein: 32, carbs: 0, fat: 3, category: "Proteínas" },
   { id: "f2", name: "Ovos (unidade)", portion: "1 un (50g)", portionGrams: 50, kcal: 72, protein: 6, carbs: 0.5, fat: 5, category: "Proteínas" },
   { id: "f3", name: "Carne bovina magra", portion: "100g", portionGrams: 100, kcal: 170, protein: 26, carbs: 0, fat: 7, category: "Proteínas" },
@@ -42,7 +42,6 @@ const FOOD_DB: FoodItem[] = [
   { id: "f7", name: "Whey Protein", portion: "1 scoop (30g)", portionGrams: 30, kcal: 120, protein: 24, carbs: 3, fat: 1.5, category: "Proteínas" },
   { id: "f8", name: "Queijo cottage", portion: "100g", portionGrams: 100, kcal: 98, protein: 12, carbs: 3, fat: 4, category: "Proteínas" },
   { id: "f9", name: "Iogurte grego", portion: "170g", portionGrams: 170, kcal: 100, protein: 17, carbs: 6, fat: 1, category: "Proteínas" },
-  // Carboidratos
   { id: "c1", name: "Arroz branco", portion: "100g cozido", portionGrams: 100, kcal: 130, protein: 2.5, carbs: 28, fat: 0.3, category: "Carboidratos" },
   { id: "c2", name: "Arroz integral", portion: "100g cozido", portionGrams: 100, kcal: 124, protein: 2.6, carbs: 26, fat: 1, category: "Carboidratos" },
   { id: "c3", name: "Batata doce", portion: "100g cozida", portionGrams: 100, kcal: 77, protein: 0.6, carbs: 18, fat: 0.1, category: "Carboidratos" },
@@ -51,23 +50,19 @@ const FOOD_DB: FoodItem[] = [
   { id: "c6", name: "Macarrão integral", portion: "100g cozido", portionGrams: 100, kcal: 124, protein: 5, carbs: 25, fat: 1, category: "Carboidratos" },
   { id: "c7", name: "Tapioca", portion: "30g seco", portionGrams: 30, kcal: 108, protein: 0, carbs: 26, fat: 0, category: "Carboidratos" },
   { id: "c8", name: "Feijão preto", portion: "100g cozido", portionGrams: 100, kcal: 77, protein: 4.5, carbs: 14, fat: 0.5, category: "Carboidratos" },
-  // Gorduras
   { id: "g1", name: "Azeite de oliva", portion: "1 colher (13ml)", portionGrams: 13, kcal: 117, protein: 0, carbs: 0, fat: 13, category: "Gorduras" },
   { id: "g2", name: "Pasta de amendoim", portion: "1 colher (15g)", portionGrams: 15, kcal: 94, protein: 4, carbs: 3, fat: 8, category: "Gorduras" },
   { id: "g3", name: "Castanha do pará", portion: "3 un (12g)", portionGrams: 12, kcal: 79, protein: 2, carbs: 1, fat: 8, category: "Gorduras" },
   { id: "g4", name: "Abacate", portion: "100g", portionGrams: 100, kcal: 160, protein: 2, carbs: 9, fat: 15, category: "Gorduras" },
   { id: "g5", name: "Manteiga", portion: "10g", portionGrams: 10, kcal: 72, protein: 0, carbs: 0, fat: 8, category: "Gorduras" },
-  // Frutas
   { id: "fr1", name: "Banana", portion: "1 média (100g)", portionGrams: 100, kcal: 89, protein: 1, carbs: 23, fat: 0.3, category: "Frutas" },
   { id: "fr2", name: "Maçã", portion: "1 média (130g)", portionGrams: 130, kcal: 68, protein: 0.4, carbs: 18, fat: 0.2, category: "Frutas" },
   { id: "fr3", name: "Morango", portion: "100g", portionGrams: 100, kcal: 33, protein: 0.7, carbs: 8, fat: 0.3, category: "Frutas" },
   { id: "fr4", name: "Laranja", portion: "1 média (140g)", portionGrams: 140, kcal: 62, protein: 1, carbs: 15, fat: 0.2, category: "Frutas" },
-  // Verduras e legumes
   { id: "v1", name: "Brócolis", portion: "100g cozido", portionGrams: 100, kcal: 35, protein: 3.7, carbs: 4, fat: 0.4, category: "Vegetais" },
   { id: "v2", name: "Espinafre", portion: "100g", portionGrams: 100, kcal: 23, protein: 3, carbs: 4, fat: 0.4, category: "Vegetais" },
   { id: "v3", name: "Tomate", portion: "1 médio (120g)", portionGrams: 120, kcal: 22, protein: 1, carbs: 5, fat: 0.2, category: "Vegetais" },
   { id: "v4", name: "Cenoura", portion: "1 média (80g)", portionGrams: 80, kcal: 33, protein: 0.7, carbs: 8, fat: 0.2, category: "Vegetais" },
-  // Laticínios
   { id: "l1", name: "Leite desnatado", portion: "200ml", portionGrams: 200, kcal: 68, protein: 7, carbs: 10, fat: 0.4, category: "Laticínios" },
   { id: "l2", name: "Queijo mussarela", portion: "30g", portionGrams: 30, kcal: 90, protein: 7, carbs: 0.7, fat: 7, category: "Laticínios" },
   { id: "l3", name: "Requeijão light", portion: "30g", portionGrams: 30, kcal: 45, protein: 2, carbs: 2, fat: 3, category: "Laticínios" },
@@ -75,13 +70,17 @@ const FOOD_DB: FoodItem[] = [
 
 interface SelectedFood {
   food: FoodItem;
-  quantity: number; // number of portions
+  quantity: number;
 }
+
+type InputMode = "manual" | "ai-text" | "ai-photo";
 
 const MealLogPage = () => {
   const { user } = useAuth();
   const { profile, updateProfile } = useProfile();
   const navigate = useNavigate();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const [selectedMealType, setSelectedMealType] = useState(MEAL_TYPES[0].key);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedFoods, setSelectedFoods] = useState<SelectedFood[]>([]);
@@ -91,6 +90,13 @@ const MealLogPage = () => {
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
   const [showMealPicker, setShowMealPicker] = useState(false);
+
+  // AI states
+  const [inputMode, setInputMode] = useState<InputMode>("manual");
+  const [aiQuery, setAiQuery] = useState("");
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiComment, setAiComment] = useState("");
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
 
   const filteredFoods = useMemo(() => {
     if (!searchQuery.trim()) return FOOD_DB;
@@ -135,9 +141,112 @@ const MealLogPage = () => {
     setSelectedFoods(prev => prev.filter(sf => sf.food.id !== foodId));
   };
 
+  // Convert AI results to FoodItems and add them
+  const addAiFoods = (foods: Array<{ name: string; portion: string; kcal: number; protein: number; carbs: number; fat: number }>) => {
+    const newFoods: SelectedFood[] = foods.map((f, i) => ({
+      food: {
+        id: `ai-${Date.now()}-${i}`,
+        name: f.name,
+        portion: f.portion,
+        portionGrams: 100,
+        kcal: f.kcal,
+        protein: f.protein,
+        carbs: f.carbs,
+        fat: f.fat,
+        category: "🤖 IA",
+      },
+      quantity: 1,
+    }));
+    setSelectedFoods(prev => [...prev, ...newFoods]);
+  };
+
+  // AI text analysis
+  const analyzeByText = async () => {
+    if (!aiQuery.trim()) return;
+    setAiLoading(true);
+    setAiComment("");
+    try {
+      const { data, error } = await supabase.functions.invoke("analyze-meal", {
+        body: { mode: "text", query: aiQuery },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      if (data?.foods?.length) {
+        addAiFoods(data.foods);
+        setAiComment(data.comment || "");
+        setAiQuery("");
+        toast.success(`${data.foods.length} alimento(s) identificado(s) pela IA! ✨`);
+      } else {
+        toast.error("A IA não conseguiu identificar alimentos. Tente descrever melhor.");
+      }
+    } catch (e: any) {
+      console.error(e);
+      toast.error(e.message || "Erro na análise por IA");
+    }
+    setAiLoading(false);
+  };
+
+  // Photo analysis
+  const handlePhotoSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Show preview
+    const reader = new FileReader();
+    reader.onload = async (ev) => {
+      const base64Full = ev.target?.result as string;
+      setPhotoPreview(base64Full);
+
+      // Extract base64 data (remove data:image/xxx;base64, prefix)
+      const base64Data = base64Full.split(",")[1];
+      if (!base64Data) return;
+
+      setAiLoading(true);
+      setAiComment("");
+      try {
+        const { data, error } = await supabase.functions.invoke("analyze-meal", {
+          body: { mode: "photo", imageBase64: base64Data },
+        });
+        if (error) throw error;
+        if (data?.error) throw new Error(data.error);
+        if (data?.foods?.length) {
+          addAiFoods(data.foods);
+          setAiComment(data.comment || "");
+          toast.success(`${data.foods.length} alimento(s) detectado(s) na foto! 📸✨`);
+        } else {
+          toast.error("Não foi possível identificar alimentos na foto. Tente outra imagem.");
+        }
+      } catch (err: any) {
+        console.error(err);
+        toast.error(err.message || "Erro ao analisar foto");
+      }
+      setAiLoading(false);
+    };
+    reader.readAsDataURL(file);
+
+    // Reset file input
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
   const saveMeal = async () => {
     if (!user || selectedFoods.length === 0) return;
     setSaving(true);
+
+    // Upload photo if exists
+    let photoUrl: string | null = null;
+    if (photoPreview) {
+      try {
+        const blob = await fetch(photoPreview).then(r => r.blob());
+        const fileName = `${user.id}/${Date.now()}.jpg`;
+        const { error: uploadError } = await supabase.storage
+          .from("meal-photos")
+          .upload(fileName, blob, { contentType: "image/jpeg" });
+        if (!uploadError) {
+          const { data: urlData } = supabase.storage.from("meal-photos").getPublicUrl(fileName);
+          photoUrl = urlData.publicUrl;
+        }
+      } catch { /* ignore upload errors */ }
+    }
 
     const { error } = await supabase.from("meal_logs").insert({
       user_id: user.id,
@@ -150,17 +259,15 @@ const MealLogPage = () => {
       satiety_level: satietyLevel,
       emotion: emotion || null,
       notes: notes || null,
+      photo_url: photoUrl,
       confirmed: true,
     });
 
     if (!error) {
-      // Award XP for logging
       const currentXp = profile?.xp || 0;
       const currentLevel = profile?.level || 1;
       const newXp = currentXp + 15;
       const newLevel = Math.floor(newXp / 100) + 1;
-
-      // Update streak
       const today = new Date().toISOString().split("T")[0];
       const lastDate = profile?.last_streak_date;
       const yesterday = new Date(Date.now() - 86400000).toISOString().split("T")[0];
@@ -168,14 +275,12 @@ const MealLogPage = () => {
       if (lastDate !== today) {
         newStreak = lastDate === yesterday ? newStreak + 1 : 1;
       }
-
       await updateProfile({
         xp: newXp,
         level: newLevel > currentLevel ? newLevel : currentLevel,
         streak_days: newStreak,
         last_streak_date: today,
       });
-
       toast.success(`Refeição registrada! +15 XP 🎉${newLevel > currentLevel ? ` Level UP! → Lv.${newLevel}` : ""}`);
       navigate("/dashboard");
     } else {
@@ -189,7 +294,6 @@ const MealLogPage = () => {
   return (
     <div className="min-h-screen bg-background pb-6">
       <div className="absolute inset-0 bg-grid opacity-10" />
-
       <div className="relative z-10 max-w-lg mx-auto px-4 pt-4">
         {/* Header */}
         <div className="flex items-center gap-3 mb-4">
@@ -238,6 +342,77 @@ const MealLogPage = () => {
           )}
         </AnimatePresence>
 
+        {/* Input mode selector */}
+        <div className="flex gap-2 mb-4">
+          {[
+            { mode: "manual" as InputMode, icon: Search, label: "Busca" },
+            { mode: "ai-text" as InputMode, icon: Sparkles, label: "IA Texto" },
+            { mode: "ai-photo" as InputMode, icon: Camera, label: "IA Foto" },
+          ].map(m => (
+            <button
+              key={m.mode}
+              onClick={() => setInputMode(m.mode)}
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
+                inputMode === m.mode
+                  ? "bg-primary text-primary-foreground shadow-lg"
+                  : "bg-card border border-border text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <m.icon className="w-3.5 h-3.5" />
+              {m.label}
+            </button>
+          ))}
+        </div>
+
+        {/* AI Comment */}
+        <AnimatePresence>
+          {aiComment && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="mb-4 rounded-xl border border-primary/20 bg-primary/5 p-3"
+            >
+              <div className="flex items-start gap-2">
+                <Sparkles className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                <p className="text-xs text-foreground">{aiComment}</p>
+                <button onClick={() => setAiComment("")} className="text-muted-foreground hover:text-foreground">
+                  <X className="w-3 h-3" />
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* AI Loading */}
+        <AnimatePresence>
+          {aiLoading && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="mb-4 rounded-xl border border-primary/30 bg-card p-6 text-center"
+            >
+              <Loader2 className="w-8 h-8 text-primary animate-spin mx-auto mb-2" />
+              <p className="text-sm font-semibold text-foreground">Analisando com IA...</p>
+              <p className="text-xs text-muted-foreground mt-1">Identificando alimentos e calculando macros</p>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Photo preview */}
+        {photoPreview && (
+          <div className="mb-4 relative">
+            <img src={photoPreview} alt="Foto da refeição" className="w-full h-48 object-cover rounded-xl border border-border" />
+            <button
+              onClick={() => setPhotoPreview(null)}
+              className="absolute top-2 right-2 w-7 h-7 rounded-full bg-background/80 backdrop-blur flex items-center justify-center text-muted-foreground hover:text-foreground"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        )}
+
         {/* Real-time totals */}
         {selectedFoods.length > 0 && (
           <motion.div
@@ -276,7 +451,10 @@ const MealLogPage = () => {
               >
                 <div className="flex items-center gap-2">
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-foreground truncate">{sf.food.name}</p>
+                    <p className="text-sm font-semibold text-foreground truncate">
+                      {sf.food.category === "🤖 IA" && <span className="text-primary mr-1">✨</span>}
+                      {sf.food.name}
+                    </p>
                     <p className="text-xs text-muted-foreground font-mono">
                       {sf.food.portion} · {Math.round(sf.food.kcal * sf.quantity)}kcal · {Math.round(sf.food.protein * sf.quantity)}g prot
                     </p>
@@ -289,7 +467,7 @@ const MealLogPage = () => {
                     <button onClick={() => updateQuantity(sf.food.id, 0.5)} className="w-7 h-7 rounded-lg border border-border flex items-center justify-center text-muted-foreground hover:text-foreground">
                       <Plus className="w-3 h-3" />
                     </button>
-                    <button onClick={() => removeFood(sf.food.id)} className="w-7 h-7 rounded-lg flex items-center justify-center text-danger hover:bg-danger/10 ml-1">
+                    <button onClick={() => removeFood(sf.food.id)} className="w-7 h-7 rounded-lg flex items-center justify-center text-destructive hover:bg-destructive/10 ml-1">
                       <X className="w-3 h-3" />
                     </button>
                   </div>
@@ -299,56 +477,108 @@ const MealLogPage = () => {
           </div>
         )}
 
-        {/* Search */}
-        <div className="relative mb-4">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            placeholder="Buscar alimento..."
-            className="w-full pl-10 pr-4 py-3 rounded-xl border border-border bg-card text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-          />
-        </div>
-
-        {/* Food list */}
-        <div className="space-y-4 mb-6">
-          {Object.entries(groupedFoods).map(([category, foods]) => (
-            <div key={category}>
-              <h3 className="text-xs font-mono text-primary uppercase tracking-wider mb-2">{category}</h3>
-              <div className="space-y-1">
-                {foods.map(food => {
-                  const isSelected = selectedFoods.some(sf => sf.food.id === food.id);
-                  return (
-                    <button
-                      key={food.id}
-                      onClick={() => addFood(food)}
-                      className={`w-full text-left rounded-xl border p-3 transition-all ${
-                        isSelected
-                          ? "border-primary/30 bg-primary/5"
-                          : "border-border bg-card hover:border-primary/20"
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm font-semibold text-foreground">{food.name}</p>
-                          <p className="text-xs text-muted-foreground font-mono">
-                            {food.portion} · {food.kcal}kcal · P:{food.protein}g C:{food.carbs}g G:{food.fat}g
-                          </p>
-                        </div>
-                        {isSelected ? (
-                          <Check className="w-4 h-4 text-primary flex-shrink-0" />
-                        ) : (
-                          <Plus className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                        )}
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
+        {/* AI Text mode */}
+        {inputMode === "ai-text" && !aiLoading && (
+          <div className="mb-4">
+            <div className="relative">
+              <Sparkles className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-primary" />
+              <input
+                type="text"
+                value={aiQuery}
+                onChange={e => setAiQuery(e.target.value)}
+                onKeyDown={e => e.key === "Enter" && analyzeByText()}
+                placeholder="Ex: prato de arroz com feijão e frango..."
+                className="w-full pl-10 pr-20 py-3 rounded-xl border border-primary/30 bg-card text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+              />
+              <button
+                onClick={analyzeByText}
+                disabled={!aiQuery.trim()}
+                className="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-bold disabled:opacity-40"
+              >
+                Analisar
+              </button>
             </div>
-          ))}
-        </div>
+            <p className="text-[10px] text-muted-foreground mt-1.5 px-1">
+              💡 Descreva sua refeição em linguagem natural. A IA identifica os alimentos e calcula macros.
+            </p>
+          </div>
+        )}
+
+        {/* AI Photo mode */}
+        {inputMode === "ai-photo" && !aiLoading && (
+          <div className="mb-4">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              onChange={handlePhotoSelect}
+              className="hidden"
+            />
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="w-full py-6 rounded-xl border-2 border-dashed border-primary/30 bg-card hover:bg-primary/5 transition-all flex flex-col items-center gap-2"
+            >
+              <Camera className="w-8 h-8 text-primary" />
+              <span className="text-sm font-semibold text-foreground">Tirar foto ou escolher da galeria</span>
+              <span className="text-[10px] text-muted-foreground">A IA identifica os alimentos automaticamente</span>
+            </button>
+          </div>
+        )}
+
+        {/* Manual search */}
+        {inputMode === "manual" && (
+          <>
+            <div className="relative mb-4">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                placeholder="Buscar alimento..."
+                className="w-full pl-10 pr-4 py-3 rounded-xl border border-border bg-card text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+              />
+            </div>
+
+            <div className="space-y-4 mb-6">
+              {Object.entries(groupedFoods).map(([category, foods]) => (
+                <div key={category}>
+                  <h3 className="text-xs font-mono text-primary uppercase tracking-wider mb-2">{category}</h3>
+                  <div className="space-y-1">
+                    {foods.map(food => {
+                      const isSelected = selectedFoods.some(sf => sf.food.id === food.id);
+                      return (
+                        <button
+                          key={food.id}
+                          onClick={() => addFood(food)}
+                          className={`w-full text-left rounded-xl border p-3 transition-all ${
+                            isSelected
+                              ? "border-primary/30 bg-primary/5"
+                              : "border-border bg-card hover:border-primary/20"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-sm font-semibold text-foreground">{food.name}</p>
+                              <p className="text-xs text-muted-foreground font-mono">
+                                {food.portion} · {food.kcal}kcal · P:{food.protein}g C:{food.carbs}g G:{food.fat}g
+                              </p>
+                            </div>
+                            {isSelected ? (
+                              <Check className="w-4 h-4 text-primary flex-shrink-0" />
+                            ) : (
+                              <Plus className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                            )}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
 
         {/* Hunger & Satiety */}
         {selectedFoods.length > 0 && (
@@ -364,7 +594,6 @@ const MealLogPage = () => {
                 className="w-full accent-primary" />
             </div>
 
-            {/* Emotion */}
             <div>
               <label className="text-xs font-mono text-muted-foreground uppercase tracking-wider block mb-2">Como se sentiu?</label>
               <div className="flex gap-2 flex-wrap">
@@ -384,7 +613,6 @@ const MealLogPage = () => {
               </div>
             </div>
 
-            {/* Notes */}
             <div>
               <label className="text-xs font-mono text-muted-foreground uppercase tracking-wider block mb-2">Observações</label>
               <textarea
