@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
+import { useWaterLogs } from "@/hooks/useWaterLogs";
 import DashboardGamificationCards from "@/components/dashboard/DashboardGamificationCards";
 import {
   Flame, TrendingUp, Droplets, Apple, BarChart3, MessageSquare,
