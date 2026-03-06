@@ -185,6 +185,36 @@ const ProfilePage = () => {
           </div>
         </div>
 
+        {/* Quick links */}
+        <div className="space-y-2 mb-6">
+          <button
+            onClick={() => navigate("/settings")}
+            className="w-full rounded-xl border border-border bg-card p-3 flex items-center gap-3 hover:border-primary/30 transition-all"
+          >
+            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+              <Target className="w-4 h-4 text-primary" />
+            </div>
+            <div className="flex-1 text-left">
+              <p className="text-sm font-semibold text-foreground">Configurações</p>
+              <p className="text-[10px] text-muted-foreground">Editar perfil, metas e macros</p>
+            </div>
+            <ChevronRight className="w-4 h-4 text-muted-foreground" />
+          </button>
+          <button
+            onClick={() => navigate("/progress")}
+            className="w-full rounded-xl border border-border bg-card p-3 flex items-center gap-3 hover:border-primary/30 transition-all"
+          >
+            <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center">
+              <TrendingUp className="w-4 h-4 text-accent" />
+            </div>
+            <div className="flex-1 text-left">
+              <p className="text-sm font-semibold text-foreground">Progresso</p>
+              <p className="text-[10px] text-muted-foreground">Gráficos de peso, macros e score</p>
+            </div>
+            <ChevronRight className="w-4 h-4 text-muted-foreground" />
+          </button>
+        </div>
+
         {/* Protocol info */}
         <div className="rounded-xl border border-border bg-card p-4 mb-4">
           <h3 className="text-sm font-semibold text-foreground mb-2">Seu Protocolo</h3>

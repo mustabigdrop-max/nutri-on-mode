@@ -459,9 +459,14 @@ const DashboardPage = () => {
         >
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-sm font-bold text-foreground font-display">Refeições de hoje</h3>
-            <button onClick={() => navigate("/meal-log")} className="text-xs font-mono text-primary flex items-center gap-1">
-              Registrar <ChevronRight className="w-3 h-3" />
-            </button>
+            <div className="flex items-center gap-3">
+              <button onClick={() => navigate("/meal-history")} className="text-xs font-mono text-muted-foreground flex items-center gap-1 hover:text-foreground">
+                Histórico
+              </button>
+              <button onClick={() => navigate("/meal-log")} className="text-xs font-mono text-primary flex items-center gap-1">
+                Registrar <ChevronRight className="w-3 h-3" />
+              </button>
+            </div>
           </div>
           {todayMeals.length === 0 ? (
             <button
