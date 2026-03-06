@@ -1,23 +1,41 @@
 import { motion } from "framer-motion";
+import { Sparkles, Loader2 } from "lucide-react";
 import type { Challenge } from "@/hooks/useGamification";
 
 interface ChallengeListProps {
   challenges: Challenge[];
+  onGenerate?: () => void;
+  generating?: boolean;
 }
 
 const challengeTypeIcons: Record<string, string> = {
   protein: "💪",
   hydration: "💧",
   sugar_detox: "🚫",
+  diversity: "🌈",
+  mindful: "🧘",
+  fiber: "🥦",
+  sodium: "🧂",
   general: "🎯",
 };
 
-const ChallengeList = ({ challenges }: ChallengeListProps) => {
+const ChallengeList = ({ challenges, onGenerate, generating }: ChallengeListProps) => {
   if (challenges.length === 0) {
     return (
       <div className="bg-card border border-border rounded-2xl p-6 text-center">
+        <span className="text-3xl block mb-2">🎯</span>
         <p className="text-sm font-bold text-foreground mb-1">Desafios Semanais</p>
-        <p className="text-xs text-muted-foreground">Em breve! Desafios temáticos toda semana 🎯</p>
+        <p className="text-xs text-muted-foreground mb-4">A IA gera desafios temáticos toda semana!</p>
+        {onGenerate && (
+          <button
+            onClick={onGenerate}
+            disabled={generating}
+            className="px-4 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-bold disabled:opacity-50 flex items-center gap-2 mx-auto"
+          >
+            {generating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
+            {generating ? "Gerando..." : "Gerar Desafios"}
+          </button>
+        )}
       </div>
     );
   }
