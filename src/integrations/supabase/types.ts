@@ -122,6 +122,33 @@ export type Database = {
         }
         Relationships: []
       }
+      professional_patients: {
+        Row: {
+          created_at: string
+          id: string
+          notes: string | null
+          patient_id: string
+          professional_id: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          patient_id: string
+          professional_id: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          patient_id?: string
+          professional_id?: string
+          status?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           active_protocol: string | null
