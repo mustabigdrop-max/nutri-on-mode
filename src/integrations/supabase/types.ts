@@ -187,6 +187,116 @@ export type Database = {
         }
         Relationships: []
       }
+      family_meal_logs: {
+        Row: {
+          created_at: string
+          description: string | null
+          fruits_eaten: number | null
+          hydration_ml: number | null
+          id: string
+          meal_date: string
+          meal_type: string
+          member_id: string
+          owner_id: string
+          quality_score: number | null
+          veggies_eaten: number | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          fruits_eaten?: number | null
+          hydration_ml?: number | null
+          id?: string
+          meal_date?: string
+          meal_type: string
+          member_id: string
+          owner_id: string
+          quality_score?: number | null
+          veggies_eaten?: number | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          fruits_eaten?: number | null
+          hydration_ml?: number | null
+          id?: string
+          meal_date?: string
+          meal_type?: string
+          member_id?: string
+          owner_id?: string
+          quality_score?: number | null
+          veggies_eaten?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "family_meal_logs_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "family_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      family_members: {
+        Row: {
+          age: number | null
+          avatar_emoji: string | null
+          created_at: string
+          dietary_restrictions: string[] | null
+          health_notes: string | null
+          height_cm: number | null
+          hydration_goal_ml: number | null
+          id: string
+          medications: string[] | null
+          name: string
+          owner_id: string
+          parental_lock: boolean | null
+          profile_type: string
+          stars: number | null
+          updated_at: string
+          weight_kg: number | null
+          xp: number | null
+        }
+        Insert: {
+          age?: number | null
+          avatar_emoji?: string | null
+          created_at?: string
+          dietary_restrictions?: string[] | null
+          health_notes?: string | null
+          height_cm?: number | null
+          hydration_goal_ml?: number | null
+          id?: string
+          medications?: string[] | null
+          name: string
+          owner_id: string
+          parental_lock?: boolean | null
+          profile_type?: string
+          stars?: number | null
+          updated_at?: string
+          weight_kg?: number | null
+          xp?: number | null
+        }
+        Update: {
+          age?: number | null
+          avatar_emoji?: string | null
+          created_at?: string
+          dietary_restrictions?: string[] | null
+          health_notes?: string | null
+          height_cm?: number | null
+          hydration_goal_ml?: number | null
+          id?: string
+          medications?: string[] | null
+          name?: string
+          owner_id?: string
+          parental_lock?: boolean | null
+          profile_type?: string
+          stars?: number | null
+          updated_at?: string
+          weight_kg?: number | null
+          xp?: number | null
+        }
+        Relationships: []
+      }
       meal_logs: {
         Row: {
           confirmed: boolean | null
