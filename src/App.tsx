@@ -26,6 +26,7 @@ import MealHistoryPage from "./pages/MealHistoryPage";
 import ProgressPage from "./pages/ProgressPage";
 import SettingsPage from "./pages/SettingsPage";
 import BloodTestPage from "./pages/BloodTestPage";
+import DietBuilderPage from "./pages/DietBuilderPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -189,6 +190,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <BloodTestPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/diet-builder"
+              element={
+                <ProtectedRoute>
+                  <DietBuilderPage />
                 </ProtectedRoute>
               }
             />
