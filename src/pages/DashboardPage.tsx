@@ -520,7 +520,7 @@ const DashboardPage = () => {
         <div className="max-w-lg mx-auto flex items-center justify-around py-2 px-2">
           {[
             { id: "home", icon: BarChart3, label: "Home", path: null },
-            { id: "plan", icon: Utensils, label: "Plano", path: "/meal-plan" },
+            { id: "hydration", icon: Droplets, label: "Água", path: "/hydration" },
             { id: "add", icon: Plus, label: "", path: "/meal-log" },
             { id: "chat", icon: MessageSquare, label: "Coach", path: "/chat" },
             { id: "profile", icon: User, label: "Perfil", path: "/profile" },
