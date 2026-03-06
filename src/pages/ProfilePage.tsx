@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   ArrowLeft, Award, Flame, TrendingUp, Star, Trophy,
   Target, Zap, Shield, Heart, Crown, LogOut,
-  BarChart3, Utensils, Plus, MessageSquare, User
+  BarChart3, Utensils, Plus, MessageSquare, User, ChevronRight
 } from "lucide-react";
 
 interface Badge {
