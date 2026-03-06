@@ -429,6 +429,48 @@ export type Database = {
         }
         Relationships: []
       }
+      progress_photos: {
+        Row: {
+          body_fat_pct: number | null
+          created_at: string
+          id: string
+          kcal_target: number | null
+          notes: string | null
+          photo_date: string
+          photo_url: string
+          streak_days: number | null
+          tags: string[] | null
+          user_id: string
+          weight_kg: number | null
+        }
+        Insert: {
+          body_fat_pct?: number | null
+          created_at?: string
+          id?: string
+          kcal_target?: number | null
+          notes?: string | null
+          photo_date?: string
+          photo_url: string
+          streak_days?: number | null
+          tags?: string[] | null
+          user_id: string
+          weight_kg?: number | null
+        }
+        Update: {
+          body_fat_pct?: number | null
+          created_at?: string
+          id?: string
+          kcal_target?: number | null
+          notes?: string | null
+          photo_date?: string
+          photo_url?: string
+          streak_days?: number | null
+          tags?: string[] | null
+          user_id?: string
+          weight_kg?: number | null
+        }
+        Relationships: []
+      }
       user_badges: {
         Row: {
           badge_id: string
