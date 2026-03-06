@@ -25,11 +25,13 @@ serve(async (req) => {
 Formato obrigatório:
 {"foods":[{"name":"string","portion":"string","kcal":number,"protein":number,"carbs":number,"fat":number}],"comment":"string"}
 
+${profileContext ? `Contexto do usuário: ${profileContext}` : ""}
+
 Regras:
 - Identifique TODOS os alimentos visíveis no prato
 - Estime porções em medidas caseiras brasileiras (colher de sopa, xícara, fatia, unidade, gramas)
 - Use valores nutricionais da tabela TACO/IBGE
-- O "comment" deve ser uma dica rápida sobre a refeição (qualidade, equilíbrio, sugestão)
+- O "comment" deve avaliar a qualidade da refeição, o que falta no dia e sugerir a próxima refeição. Tom motivacional.
 - Responda APENAS com o JSON, sem texto extra`
         },
         {
