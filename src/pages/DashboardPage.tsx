@@ -8,7 +8,8 @@ import { useWaterLogs } from "@/hooks/useWaterLogs";
 import DashboardGamificationCards from "@/components/dashboard/DashboardGamificationCards";
 import {
   Flame, TrendingUp, Droplets, Apple, BarChart3, MessageSquare,
-  User, Plus, Utensils, LogOut, Zap, Brain, ChevronRight, Award
+  User, Plus, Utensils, LogOut, Zap, Brain, ChevronRight, Award,
+  Camera, Users, Heart, Settings, HelpCircle, Leaf, Trophy, ShoppingCart, History, Dumbbell
 } from "lucide-react";
 
 // SVG animated ring component
