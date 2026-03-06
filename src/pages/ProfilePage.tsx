@@ -239,37 +239,7 @@ const ProfilePage = () => {
         </div>
       </div>
 
-      {/* Bottom navigation */}
-      <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur border-t border-border z-50">
-        <div className="max-w-lg mx-auto flex items-center justify-around py-2">
-          {[
-            { id: "home", icon: BarChart3, label: "Home", route: "/dashboard" },
-            { id: "plan", icon: Utensils, label: "Plano", route: "/meal-plan" },
-            { id: "add", icon: Plus, label: "", route: "/meal-log" },
-            { id: "chat", icon: MessageSquare, label: "Chat", route: "/chat" },
-            { id: "profile", icon: User, label: "Perfil", route: "/profile" },
-          ].map(item => (
-            <button
-              key={item.id}
-              onClick={() => navigate(item.route)}
-              className="flex flex-col items-center gap-0.5 py-1"
-            >
-              {item.id === "add" ? (
-                <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-primary-foreground -mt-5 glow-gold">
-                  <Plus className="w-6 h-6" />
-                </div>
-              ) : (
-                <>
-                  <item.icon className={`w-5 h-5 ${item.id === "profile" ? "text-primary" : "text-muted-foreground"}`} />
-                  <span className={`text-[10px] font-mono ${item.id === "profile" ? "text-primary" : "text-muted-foreground"}`}>
-                    {item.label}
-                  </span>
-                </>
-              )}
-            </button>
-          ))}
-        </div>
-      </div>
+      <BottomNav />
     </div>
   );
 };
