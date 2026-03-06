@@ -832,6 +832,7 @@ const MealLogPage = () => {
           </motion.button>
         )}
       </div>
+      <BottomNav />
     </div>
   );
 };
