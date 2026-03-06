@@ -184,6 +184,14 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/blood-test"
+              element={
+                <ProtectedRoute>
+                  <BloodTestPage />
+                </ProtectedRoute>
+              }
+            />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
