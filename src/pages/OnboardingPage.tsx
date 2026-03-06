@@ -1,439 +1,372 @@
-import { useState } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useProfile } from "@/hooks/useProfile";
-import { ChevronRight, ChevronLeft, Zap, User, Target, Dumbbell, Salad } from "lucide-react";
+import { Send, Zap, Bot, User, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import ReactMarkdown from "react-markdown";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
-const GOALS = [
-  { value: "lose_weight", label: "Emagrecer", emoji: "🔥" },
-  { value: "gain_muscle", label: "Ganhar massa", emoji: "💪" },
-  { value: "definition", label: "Definição", emoji: "✂️" },
-  { value: "health", label: "Saúde geral", emoji: "💚" },
-  { value: "maintenance", label: "Manutenção", emoji: "⚖️" },
-  { value: "performance", label: "Performance", emoji: "🏆" },
-  { value: "glp1", label: "Protocolo GLP-1", emoji: "💉" },
+const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/onboarding-chat`;
+
+const BLOCK_LABELS = [
+  "Identidade & Objetivo",
+  "Histórico Alimentar",
+  "Nutrição Comportamental",
+  "Estilo de Vida & Treino",
+  "Suporte & Contexto",
 ];
 
-const ACTIVITY_LEVELS = [
-  { value: "sedentary", label: "Sedentário", desc: "Pouco ou nenhum exercício", factor: 1.2 },
-  { value: "light", label: "Levemente ativo", desc: "1-3 dias/semana", factor: 1.375 },
-  { value: "moderate", label: "Moderadamente ativo", desc: "3-5 dias/semana", factor: 1.55 },
-  { value: "very_active", label: "Muito ativo", desc: "6-7 dias/semana", factor: 1.725 },
-  { value: "athlete", label: "Atleta", desc: "2x ao dia ou trabalho físico", factor: 1.9 },
-];
+const ACTIVITY_FACTORS: Record<string, number> = {
+  sedentary: 1.2, light: 1.375, moderate: 1.55, very_active: 1.725, athlete: 1.9,
+};
 
-const RESTRICTIONS = [
-  "Sem glúten", "Sem lactose", "Vegano", "Vegetariano",
-  "Sem frutos do mar", "Sem oleaginosas", "Kosher", "Halal",
-];
-
-const HEALTH_CONDITIONS = [
-  "Diabetes tipo 2", "Hipertensão", "Dislipidemia", "SOP",
-  "Hipotireoidismo", "Doença celíaca", "Nenhuma",
-];
-
-// Calculation functions
 const calcGEB = (weight: number, height: number, age: number, sex: string) => {
-  // Mifflin-St Jeor (most accurate for general population)
   if (sex === "male") return 10 * weight + 6.25 * height - 5 * age + 5;
   return 10 * weight + 6.25 * height - 5 * age - 161;
 };
 
-const getActivityFactor = (level: string) => {
-  return ACTIVITY_LEVELS.find(a => a.value === level)?.factor || 1.55;
-};
-
-const calcVET = (get: number, goal: string, weight: number, usesGlp1: boolean) => {
+const calcMacros = (get: number, goal: string, weight: number, usesGlp1: boolean) => {
   let vet = get;
   let proteinPerKg = 1.6;
-
   switch (goal) {
-    case "lose_weight":
-      vet = get - 500;
-      proteinPerKg = 2.0;
-      break;
-    case "gain_muscle":
-      vet = get + 350;
-      proteinPerKg = 2.2;
-      break;
-    case "definition":
-      vet = get - 500;
-      proteinPerKg = 2.2;
-      break;
-    case "maintenance":
-    case "health":
-      vet = get;
-      proteinPerKg = 1.6;
-      break;
-    case "performance":
-      vet = get + 250;
-      proteinPerKg = 2.0;
-      break;
-    case "glp1":
-      vet = get - 400;
-      proteinPerKg = 2.2;
-      break;
+    case "lose_weight": vet = get - 500; proteinPerKg = 2.0; break;
+    case "gain_muscle": vet = get + 350; proteinPerKg = 2.2; break;
+    case "definition": vet = get - 500; proteinPerKg = 2.2; break;
+    case "performance": vet = get + 250; proteinPerKg = 2.0; break;
+    case "glp1": vet = get - 400; proteinPerKg = 2.2; break;
   }
-
   if (usesGlp1) proteinPerKg = Math.max(proteinPerKg, 2.0);
-
   const protein = weight * proteinPerKg;
   const fatKcal = vet * 0.25;
   const fat = fatKcal / 9;
-  const proteinKcal = protein * 4;
-  const carbs = (vet - proteinKcal - fatKcal) / 4;
-
+  const carbs = (vet - protein * 4 - fatKcal) / 4;
   return { vet: Math.round(vet), protein: Math.round(protein), carbs: Math.round(Math.max(carbs, 50)), fat: Math.round(fat) };
 };
 
+interface ChatMessage {
+  role: "user" | "assistant";
+  content: string;
+}
+
 const OnboardingPage = () => {
-  const [step, setStep] = useState(0);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [input, setInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [currentBlock, setCurrentBlock] = useState(1);
+  const [collectedData, setCollectedData] = useState<Record<string, any>>({});
+  const [isFinished, setIsFinished] = useState(false);
   const { updateProfile } = useProfile();
   const navigate = useNavigate();
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const hasStarted = useRef(false);
 
-  const [data, setData] = useState({
-    full_name: "",
-    date_of_birth: "",
-    sex: "" as string,
-    weight_kg: "" as string,
-    height_cm: "" as string,
-    goal: "",
-    activity_level: "",
-    training_frequency: "" as string,
-    sport: "",
-    dietary_restrictions: [] as string[],
-    health_conditions: [] as string[],
-    uses_glp1: false,
-  });
+  const scrollToBottom = useCallback(() => {
+    setTimeout(() => {
+      scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+    }, 50);
+  }, []);
 
-  const update = (field: string, value: any) => setData(prev => ({ ...prev, [field]: value }));
+  // Start conversation automatically
+  useEffect(() => {
+    if (!hasStarted.current) {
+      hasStarted.current = true;
+      sendToAI([{ role: "user", content: "Olá! Quero começar meu perfil nutricional." }], true);
+    }
+  }, []);
 
-  const toggleArray = (field: "dietary_restrictions" | "health_conditions", value: string) => {
-    setData(prev => ({
-      ...prev,
-      [field]: prev[field].includes(value)
-        ? prev[field].filter(v => v !== value)
-        : [...prev[field], value],
-    }));
-  };
+  const sendToAI = async (chatMessages: ChatMessage[], isInit = false) => {
+    setIsLoading(true);
+    let assistantContent = "";
 
-  const canNext = () => {
-    switch (step) {
-      case 0: return data.full_name && data.sex && data.weight_kg && data.height_cm && data.date_of_birth;
-      case 1: return data.goal;
-      case 2: return data.activity_level;
-      case 3: return true;
-      default: return false;
+    try {
+      const resp = await fetch(CHAT_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({
+          messages: chatMessages.map(m => ({ role: m.role, content: m.content })),
+          currentBlock,
+        }),
+      });
+
+      if (!resp.ok) {
+        if (resp.status === 429) { toast.error("Muitas requisições. Aguarde um momento."); return; }
+        if (resp.status === 402) { toast.error("Créditos esgotados."); return; }
+        toast.error("Erro ao conectar com a IA.");
+        return;
+      }
+
+      const reader = resp.body?.getReader();
+      if (!reader) return;
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let toolCalls: any[] = [];
+      let currentToolCall: any = null;
+
+      const updateAssistant = (text: string) => {
+        setMessages(prev => {
+          const last = prev[prev.length - 1];
+          if (last?.role === "assistant") {
+            return prev.map((m, i) => i === prev.length - 1 ? { ...m, content: text } : m);
+          }
+          return [...prev, { role: "assistant", content: text }];
+        });
+        scrollToBottom();
+      };
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+
+        let newlineIndex: number;
+        while ((newlineIndex = buffer.indexOf("\n")) !== -1) {
+          let line = buffer.slice(0, newlineIndex);
+          buffer = buffer.slice(newlineIndex + 1);
+          if (line.endsWith("\r")) line = line.slice(0, -1);
+          if (!line.startsWith("data: ")) continue;
+          const jsonStr = line.slice(6).trim();
+          if (jsonStr === "[DONE]") break;
+
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const delta = parsed.choices?.[0]?.delta;
+            if (!delta) continue;
+
+            // Handle text content
+            if (delta.content) {
+              assistantContent += delta.content;
+              updateAssistant(assistantContent);
+            }
+
+            // Handle tool calls
+            if (delta.tool_calls) {
+              for (const tc of delta.tool_calls) {
+                if (tc.id) {
+                  currentToolCall = { id: tc.id, name: tc.function?.name || "", arguments: tc.function?.arguments || "" };
+                  toolCalls.push(currentToolCall);
+                } else if (currentToolCall) {
+                  if (tc.function?.arguments) currentToolCall.arguments += tc.function.arguments;
+                  if (tc.function?.name) currentToolCall.name += tc.function.name;
+                }
+              }
+            }
+          } catch { /* partial JSON */ }
+        }
+      }
+
+      // Process tool calls
+      for (const tc of toolCalls) {
+        try {
+          const args = JSON.parse(tc.arguments);
+          if (tc.name === "extract_block_data") {
+            const newData = { ...collectedData, ...args.data };
+            setCollectedData(newData);
+            if (args.block < 5) {
+              setCurrentBlock(args.block + 1);
+            }
+          } else if (tc.name === "finalize_onboarding") {
+            setIsFinished(true);
+            // Show strategies in chat
+            const strategiesText = args.strategies?.map((s: string, i: number) => `${i + 1}. ${s}`).join("\n") || "";
+            const finalMsg = `${args.summary}\n\n**Suas 3 estratégias priorizadas:**\n${strategiesText}\n\n✨ Clique no botão abaixo para ativar seu modo ON!`;
+            assistantContent += (assistantContent ? "\n\n" : "") + finalMsg;
+            updateAssistant(assistantContent);
+          }
+        } catch (e) {
+          console.error("Tool call parse error:", e);
+        }
+      }
+    } catch (e) {
+      console.error("Stream error:", e);
+      toast.error("Erro na conexão. Tente novamente.");
+    } finally {
+      setIsLoading(false);
+      inputRef.current?.focus();
     }
   };
 
-  const handleFinish = async () => {
-    const weight = parseFloat(data.weight_kg);
-    const height = parseFloat(data.height_cm);
-    const birthDate = new Date(data.date_of_birth);
-    const age = Math.floor((Date.now() - birthDate.getTime()) / (365.25 * 24 * 60 * 60 * 1000));
+  const handleSend = () => {
+    if (!input.trim() || isLoading) return;
+    const userMsg: ChatMessage = { role: "user", content: input.trim() };
+    const newMessages = [...messages, userMsg];
+    setMessages(newMessages);
+    setInput("");
+    scrollToBottom();
+    sendToAI(newMessages);
+  };
 
-    const geb = calcGEB(weight, height, age, data.sex);
-    const factor = getActivityFactor(data.activity_level);
+  const handleFinalize = async () => {
+    const d = collectedData;
+    const weight = d.weight_kg || 70;
+    const height = d.height_cm || 170;
+    const birthDate = d.date_of_birth ? new Date(d.date_of_birth) : new Date(1990, 0, 1);
+    const age = Math.floor((Date.now() - birthDate.getTime()) / (365.25 * 24 * 60 * 60 * 1000));
+    const sex = d.sex || "male";
+    const goal = d.goal || "health";
+    const activityLevel = d.activity_level || "moderate";
+    const usesGlp1 = d.uses_glp1 || goal === "glp1";
+
+    const geb = calcGEB(weight, height, age, sex);
+    const factor = ACTIVITY_FACTORS[activityLevel] || 1.55;
     const get = geb * factor;
-    const { vet, protein, carbs, fat } = calcVET(get, data.goal, weight, data.uses_glp1);
+    const { vet, protein, carbs, fat } = calcMacros(get, goal, weight, usesGlp1);
 
     const error = await updateProfile({
-      full_name: data.full_name,
-      date_of_birth: data.date_of_birth,
-      sex: data.sex,
+      full_name: d.full_name || null,
+      date_of_birth: d.date_of_birth || null,
+      sex,
       weight_kg: weight,
       height_cm: height,
-      goal: data.goal,
-      activity_level: data.activity_level,
-      training_frequency: data.training_frequency ? parseInt(data.training_frequency) : null,
-      sport: data.sport || null,
-      dietary_restrictions: data.dietary_restrictions.length ? data.dietary_restrictions : null,
-      health_conditions: data.health_conditions.length ? data.health_conditions : null,
-      uses_glp1: data.uses_glp1,
+      goal,
+      activity_level: activityLevel,
+      training_frequency: d.training_frequency || null,
+      sport: d.sport || null,
+      dietary_restrictions: d.dietary_restrictions?.length ? d.dietary_restrictions : null,
+      health_conditions: d.health_conditions?.length ? d.health_conditions : null,
+      uses_glp1: usesGlp1,
       geb_kcal: Math.round(geb),
       get_kcal: Math.round(get),
       vet_kcal: vet,
       protein_g: protein,
       carbs_g: carbs,
       fat_g: fat,
+      active_protocol: d.behavioral_profile || null,
       onboarding_completed: true,
     });
 
     if (error) {
-      toast.error("Erro ao salvar. Tente novamente.");
+      toast.error("Erro ao salvar perfil. Tente novamente.");
     } else {
       toast.success("Perfil configurado! Bem-vindo ao modo ON 🔥");
       navigate("/dashboard");
     }
   };
 
-  const steps = [
-    { icon: User, label: "Dados" },
-    { icon: Target, label: "Objetivo" },
-    { icon: Dumbbell, label: "Atividade" },
-    { icon: Salad, label: "Restrições" },
-  ];
-
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <div className="absolute inset-0 bg-grid opacity-15" />
 
-      {/* Progress */}
-      <div className="relative z-10 px-4 pt-6">
-        <div className="max-w-lg mx-auto">
-          <div className="flex items-center justify-between mb-2">
-            {steps.map((s, i) => (
-              <div key={i} className="flex items-center gap-1">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm transition-all ${
-                  i <= step ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"
-                }`}>
-                  <s.icon className="w-4 h-4" />
-                </div>
-                {i < 3 && <div className={`w-8 sm:w-16 h-0.5 ${i < step ? "bg-primary" : "bg-border"}`} />}
+      {/* Header with block progress */}
+      <div className="relative z-10 border-b border-border bg-card/80 backdrop-blur-sm">
+        <div className="max-w-2xl mx-auto px-4 py-3">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
+              <Bot className="w-4 h-4 text-primary" />
+            </div>
+            <div>
+              <h1 className="text-sm font-bold text-foreground font-[family-name:var(--font-display)]">nutriON Coach</h1>
+              <p className="text-xs text-muted-foreground font-mono">Onboarding inteligente</p>
+            </div>
+          </div>
+          {/* Block progress */}
+          <div className="flex gap-1">
+            {BLOCK_LABELS.map((label, i) => (
+              <div key={i} className="flex-1">
+                <div className={`h-1 rounded-full transition-all duration-500 ${
+                  i + 1 < currentBlock ? "bg-primary" :
+                  i + 1 === currentBlock ? "bg-primary/60" :
+                  "bg-border"
+                }`} />
+                <p className={`text-[9px] mt-1 font-mono truncate ${
+                  i + 1 <= currentBlock ? "text-primary" : "text-muted-foreground"
+                }`}>{label}</p>
               </div>
             ))}
           </div>
-          <p className="text-xs text-muted-foreground font-mono text-center">
-            Etapa {step + 1} de 4 — {steps[step].label}
-          </p>
         </div>
       </div>
 
-      {/* Content */}
-      <div className="relative z-10 flex-1 flex items-center justify-center px-4 py-8">
-        <div className="w-full max-w-lg">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={step}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.3 }}
-            >
-              {step === 0 && (
-                <div className="space-y-4">
-                  <h2 className="text-2xl font-bold text-foreground">Vamos te conhecer</h2>
-                  <p className="text-muted-foreground text-sm">Precisamos de alguns dados para calcular seu plano.</p>
-                  <input
-                    placeholder="Seu nome completo"
-                    value={data.full_name}
-                    onChange={e => update("full_name", e.target.value)}
-                    className="w-full px-4 py-3 rounded-lg bg-card border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
-                  />
-                  <input
-                    type="date"
-                    value={data.date_of_birth}
-                    onChange={e => update("date_of_birth", e.target.value)}
-                    className="w-full px-4 py-3 rounded-lg bg-card border border-border text-foreground focus:outline-none focus:border-primary/50"
-                  />
-                  <div className="flex gap-3">
-                    {[{ v: "male", l: "Masculino" }, { v: "female", l: "Feminino" }].map(s => (
-                      <button
-                        key={s.v}
-                        type="button"
-                        onClick={() => update("sex", s.v)}
-                        className={`flex-1 py-3 rounded-lg border text-sm font-semibold transition-all ${
-                          data.sex === s.v
-                            ? "border-primary bg-primary/10 text-primary"
-                            : "border-border text-muted-foreground hover:border-border/80"
-                        }`}
-                      >
-                        {s.l}
-                      </button>
-                    ))}
+      {/* Chat messages */}
+      <div ref={scrollRef} className="relative z-10 flex-1 overflow-y-auto px-4 py-4">
+        <div className="max-w-2xl mx-auto space-y-4">
+          <AnimatePresence>
+            {messages.map((msg, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2 }}
+                className={`flex gap-2 ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+              >
+                {msg.role === "assistant" && (
+                  <div className="w-7 h-7 rounded-lg bg-primary/20 flex-shrink-0 flex items-center justify-center mt-1">
+                    <Bot className="w-3.5 h-3.5 text-primary" />
                   </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="text-xs text-muted-foreground font-mono mb-1 block">Peso (kg)</label>
-                      <input
-                        type="number"
-                        placeholder="75"
-                        value={data.weight_kg}
-                        onChange={e => update("weight_kg", e.target.value)}
-                        className="w-full px-4 py-3 rounded-lg bg-card border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
-                      />
+                )}
+                <div className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
+                  msg.role === "user"
+                    ? "bg-primary text-primary-foreground rounded-br-sm"
+                    : "bg-card border border-border text-foreground rounded-bl-sm"
+                }`}>
+                  {msg.role === "assistant" ? (
+                    <div className="prose prose-sm prose-invert max-w-none [&_p]:mb-2 [&_p:last-child]:mb-0 [&_li]:mb-0.5 [&_ul]:mb-2 [&_strong]:text-primary">
+                      <ReactMarkdown>{msg.content}</ReactMarkdown>
                     </div>
-                    <div>
-                      <label className="text-xs text-muted-foreground font-mono mb-1 block">Altura (cm)</label>
-                      <input
-                        type="number"
-                        placeholder="175"
-                        value={data.height_cm}
-                        onChange={e => update("height_cm", e.target.value)}
-                        className="w-full px-4 py-3 rounded-lg bg-card border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
-                      />
-                    </div>
-                  </div>
+                  ) : (
+                    <p>{msg.content}</p>
+                  )}
                 </div>
-              )}
-
-              {step === 1 && (
-                <div className="space-y-4">
-                  <h2 className="text-2xl font-bold text-foreground">Qual seu objetivo?</h2>
-                  <p className="text-muted-foreground text-sm">A IA vai calibrar tudo com base nessa escolha.</p>
-                  <div className="grid grid-cols-1 gap-2">
-                    {GOALS.map(g => (
-                      <button
-                        key={g.value}
-                        type="button"
-                        onClick={() => update("goal", g.value)}
-                        className={`flex items-center gap-3 p-4 rounded-xl border text-left transition-all ${
-                          data.goal === g.value
-                            ? "border-primary bg-primary/10"
-                            : "border-border hover:border-border/80"
-                        }`}
-                      >
-                        <span className="text-2xl">{g.emoji}</span>
-                        <span className={`font-semibold ${data.goal === g.value ? "text-primary" : "text-foreground"}`}>
-                          {g.label}
-                        </span>
-                      </button>
-                    ))}
+                {msg.role === "user" && (
+                  <div className="w-7 h-7 rounded-lg bg-secondary flex-shrink-0 flex items-center justify-center mt-1">
+                    <User className="w-3.5 h-3.5 text-foreground" />
                   </div>
-                </div>
-              )}
-
-              {step === 2 && (
-                <div className="space-y-4">
-                  <h2 className="text-2xl font-bold text-foreground">Nível de atividade</h2>
-                  <p className="text-muted-foreground text-sm">Isso define seu gasto energético total (GET).</p>
-                  <div className="space-y-2">
-                    {ACTIVITY_LEVELS.map(a => (
-                      <button
-                        key={a.value}
-                        type="button"
-                        onClick={() => update("activity_level", a.value)}
-                        className={`w-full flex items-center justify-between p-4 rounded-xl border text-left transition-all ${
-                          data.activity_level === a.value
-                            ? "border-primary bg-primary/10"
-                            : "border-border hover:border-border/80"
-                        }`}
-                      >
-                        <div>
-                          <p className={`font-semibold ${data.activity_level === a.value ? "text-primary" : "text-foreground"}`}>
-                            {a.label}
-                          </p>
-                          <p className="text-xs text-muted-foreground">{a.desc}</p>
-                        </div>
-                        <span className="text-xs font-mono text-muted-foreground">×{a.factor}</span>
-                      </button>
-                    ))}
-                  </div>
-                  <div className="grid grid-cols-2 gap-3 mt-4">
-                    <div>
-                      <label className="text-xs text-muted-foreground font-mono mb-1 block">Treinos/semana</label>
-                      <input
-                        type="number"
-                        placeholder="3"
-                        value={data.training_frequency}
-                        onChange={e => update("training_frequency", e.target.value)}
-                        className="w-full px-4 py-3 rounded-lg bg-card border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs text-muted-foreground font-mono mb-1 block">Esporte principal</label>
-                      <input
-                        placeholder="Musculação"
-                        value={data.sport}
-                        onChange={e => update("sport", e.target.value)}
-                        className="w-full px-4 py-3 rounded-lg bg-card border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {step === 3 && (
-                <div className="space-y-6">
-                  <div>
-                    <h2 className="text-2xl font-bold text-foreground">Restrições alimentares</h2>
-                    <p className="text-muted-foreground text-sm mb-3">Selecione todas que se aplicam (opcional).</p>
-                    <div className="flex flex-wrap gap-2">
-                      {RESTRICTIONS.map(r => (
-                        <button
-                          key={r}
-                          type="button"
-                          onClick={() => toggleArray("dietary_restrictions", r)}
-                          className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
-                            data.dietary_restrictions.includes(r)
-                              ? "border-primary bg-primary/10 text-primary"
-                              : "border-border text-muted-foreground hover:border-border/80"
-                          }`}
-                        >
-                          {r}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div>
-                    <p className="text-sm font-semibold text-foreground mb-2">Condições de saúde</p>
-                    <div className="flex flex-wrap gap-2">
-                      {HEALTH_CONDITIONS.map(h => (
-                        <button
-                          key={h}
-                          type="button"
-                          onClick={() => toggleArray("health_conditions", h)}
-                          className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
-                            data.health_conditions.includes(h)
-                              ? "border-accent bg-accent/10 text-accent"
-                              : "border-border text-muted-foreground hover:border-border/80"
-                          }`}
-                        >
-                          {h}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-3 p-4 rounded-xl border border-border">
-                    <button
-                      type="button"
-                      onClick={() => update("uses_glp1", !data.uses_glp1)}
-                      className={`w-12 h-7 rounded-full transition-all relative ${
-                        data.uses_glp1 ? "bg-primary" : "bg-secondary"
-                      }`}
-                    >
-                      <span className={`absolute top-0.5 w-6 h-6 rounded-full bg-foreground transition-all ${
-                        data.uses_glp1 ? "left-5" : "left-0.5"
-                      }`} />
-                    </button>
-                    <div>
-                      <p className="text-sm font-semibold text-foreground">Uso caneta emagrecedora (GLP-1)</p>
-                      <p className="text-xs text-muted-foreground">Ozempic, Wegovy, Mounjaro, etc.</p>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </motion.div>
+                )}
+              </motion.div>
+            ))}
           </AnimatePresence>
+
+          {isLoading && messages[messages.length - 1]?.role !== "assistant" && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex gap-2">
+              <div className="w-7 h-7 rounded-lg bg-primary/20 flex-shrink-0 flex items-center justify-center">
+                <Bot className="w-3.5 h-3.5 text-primary" />
+              </div>
+              <div className="bg-card border border-border rounded-2xl rounded-bl-sm px-4 py-3">
+                <div className="flex gap-1">
+                  <span className="w-2 h-2 rounded-full bg-muted-foreground animate-bounce" style={{ animationDelay: "0ms" }} />
+                  <span className="w-2 h-2 rounded-full bg-muted-foreground animate-bounce" style={{ animationDelay: "150ms" }} />
+                  <span className="w-2 h-2 rounded-full bg-muted-foreground animate-bounce" style={{ animationDelay: "300ms" }} />
+                </div>
+              </div>
+            </motion.div>
+          )}
         </div>
       </div>
 
-      {/* Navigation */}
-      <div className="relative z-10 px-4 pb-8">
-        <div className="max-w-lg mx-auto flex gap-3">
-          {step > 0 && (
+      {/* Input area */}
+      <div className="relative z-10 border-t border-border bg-card/80 backdrop-blur-sm px-4 py-3">
+        <div className="max-w-2xl mx-auto">
+          {isFinished ? (
             <button
-              onClick={() => setStep(step - 1)}
-              className="px-6 py-3 rounded-lg border border-border text-foreground font-semibold transition-all hover:bg-secondary"
+              onClick={handleFinalize}
+              className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-bold transition-all hover:scale-[1.02] glow-gold flex items-center justify-center gap-2"
             >
-              <ChevronLeft className="w-5 h-5" />
+              <Zap className="w-4 h-4" /> Ativar modo ON
             </button>
+          ) : (
+            <div className="flex gap-2">
+              <input
+                ref={inputRef}
+                value={input}
+                onChange={e => setInput(e.target.value)}
+                onKeyDown={e => e.key === "Enter" && handleSend()}
+                placeholder="Digite sua resposta..."
+                disabled={isLoading}
+                className="flex-1 px-4 py-3 rounded-xl bg-secondary border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 text-sm disabled:opacity-50"
+              />
+              <button
+                onClick={handleSend}
+                disabled={!input.trim() || isLoading}
+                className="px-4 py-3 rounded-xl bg-primary text-primary-foreground transition-all hover:scale-105 disabled:opacity-40 disabled:hover:scale-100"
+              >
+                {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+              </button>
+            </div>
           )}
-          <button
-            onClick={() => step < 3 ? setStep(step + 1) : handleFinish()}
-            disabled={!canNext()}
-            className="flex-1 py-3 rounded-lg bg-primary text-primary-foreground font-bold transition-all hover:scale-[1.02] glow-gold disabled:opacity-40 disabled:hover:scale-100 flex items-center justify-center gap-2"
-          >
-            {step < 3 ? (
-              <>Próximo <ChevronRight className="w-4 h-4" /></>
-            ) : (
-              <><Zap className="w-4 h-4" /> Ativar modo ON</>
-            )}
-          </button>
         </div>
       </div>
     </div>
