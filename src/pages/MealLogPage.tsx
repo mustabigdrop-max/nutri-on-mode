@@ -200,7 +200,7 @@ const MealLogPage = () => {
     setSelectedFoods(prev => prev.filter(sf => sf.food.id !== foodId));
   };
 
-  const addAiFoods = (foods: Array<{ name: string; portion: string; kcal: number; protein: number; carbs: number; fat: number }>) => {
+  const addAiFoods = (foods: Array<{ name: string; portion: string; kcal: number; protein: number; carbs: number; fat: number; micronutrients?: Record<string, number> }>, qualityScore?: number) => {
     const newFoods: SelectedFood[] = foods.map((f, i) => ({
       food: {
         id: `ai-${Date.now()}-${i}`,
@@ -216,6 +216,10 @@ const MealLogPage = () => {
       quantity: 1,
     }));
     setSelectedFoods(prev => [...prev, ...newFoods]);
+    // Store micronutrients for saving later
+    const micros = foods.map(f => f.micronutrients || {});
+    setAiMicronutrients(prev => [...prev, ...micros]);
+    if (qualityScore != null) setAiQualityScore(qualityScore);
   };
 
   // AI text/voice analysis
