@@ -385,6 +385,16 @@ const DashboardPage = () => {
           <XPBar xp={profile.xp || 0} level={profile.level || 1} />
         </motion.div>
 
+        {/* Gamification, Missions & Micronutrients */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.82 }}
+          className="mb-4"
+        >
+          <DashboardGamificationCards />
+        </motion.div>
+
         {/* Add water quick action */}
         <motion.div
           initial={{ opacity: 0 }}
