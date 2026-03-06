@@ -406,14 +406,14 @@ const DashboardPage = () => {
           className="mb-4"
         >
           <button
-            onClick={() => setWaterGlasses(prev => prev + 1)}
+            onClick={() => addWater(250)}
             className="w-full flex items-center gap-3 p-3 rounded-xl border border-border bg-card hover:border-accent/30 transition-all group"
           >
             <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center group-hover:bg-accent/20 transition-colors">
               <Droplets className="w-4 h-4 text-accent" />
             </div>
             <span className="text-sm font-mono text-foreground">+ 1 copo de água (250ml)</span>
-            <span className="ml-auto text-xs font-mono text-muted-foreground">{waterGlasses * 250}ml</span>
+            <span className="ml-auto text-xs font-mono text-muted-foreground">{waterMl}ml</span>
           </button>
         </motion.div>
 
