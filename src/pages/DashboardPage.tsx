@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
@@ -6,8 +6,180 @@ import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Flame, TrendingUp, Droplets, Apple, BarChart3, MessageSquare,
-  User, Plus, Utensils, LogOut, Dumbbell
+  User, Plus, Utensils, LogOut, Zap, Brain, ChevronRight, Award
 } from "lucide-react";
+
+// SVG animated ring component
+const CalorieRing = ({ percent, kcal, target }: { percent: number; kcal: number; target: number }) => {
+  const radius = 90;
+  const stroke = 10;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference - (Math.min(percent, 100) / 100) * circumference;
+  const remaining = Math.max(target - kcal, 0);
+
+  return (
+    <div className="relative w-56 h-56 mx-auto">
+      <svg viewBox="0 0 200 200" className="w-full h-full -rotate-90">
+        {/* Track */}
+        <circle cx="100" cy="100" r={radius} fill="none" stroke="hsl(var(--border))" strokeWidth={stroke} />
+        {/* Glow filter */}
+        <defs>
+          <filter id="ringGlow">
+            <feGaussianBlur stdDeviation="4" result="blur" />
+            <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+          </filter>
+        </defs>
+        {/* Progress */}
+        <motion.circle
+          cx="100" cy="100" r={radius} fill="none"
+          stroke="hsl(var(--primary))"
+          strokeWidth={stroke}
+          strokeLinecap="round"
+          strokeDasharray={circumference}
+          initial={{ strokeDashoffset: circumference }}
+          animate={{ strokeDashoffset: offset }}
+          transition={{ duration: 1.5, ease: "easeOut", delay: 0.3 }}
+          filter="url(#ringGlow)"
+        />
+        {/* Accent arc (protein indicator) */}
+        <motion.circle
+          cx="100" cy="100" r={radius - 14} fill="none"
+          stroke="hsl(var(--accent))"
+          strokeWidth={3}
+          strokeLinecap="round"
+          strokeDasharray={circumference * 0.7}
+          initial={{ strokeDashoffset: circumference * 0.7 }}
+          animate={{ strokeDashoffset: circumference * 0.7 * (1 - Math.min(percent, 100) / 100) }}
+          transition={{ duration: 1.8, ease: "easeOut", delay: 0.5 }}
+          opacity={0.4}
+        />
+      </svg>
+      {/* Center text */}
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <motion.span
+          initial={{ opacity: 0, scale: 0.5 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.5, type: "spring" }}
+          className="text-4xl font-bold font-mono text-foreground leading-none"
+        >
+          {Math.round(kcal).toLocaleString()}
+        </motion.span>
+        <span className="text-xs font-mono text-muted-foreground mt-1">de {target.toLocaleString()} kcal</span>
+        <span className="text-[10px] font-mono text-primary mt-0.5">
+          {remaining > 0 ? `${Math.round(remaining)} restantes` : "Meta atingida ✓"}
+        </span>
+      </div>
+    </div>
+  );
+};
+
+// Hydration waves component
+const HydrationWidget = ({ glasses, target }: { glasses: number; target: number }) => {
+  const percent = Math.min((glasses / target) * 100, 100);
+  return (
+    <div className="relative overflow-hidden rounded-xl border border-border bg-card p-3 h-24">
+      {/* Animated wave background */}
+      <div className="absolute inset-0 overflow-hidden">
+        <motion.div
+          className="absolute bottom-0 left-0 right-0"
+          style={{ height: `${percent}%`, background: "linear-gradient(180deg, hsl(200 80% 50% / 0.15), hsl(200 80% 50% / 0.25))" }}
+          initial={{ height: 0 }}
+          animate={{ height: `${percent}%` }}
+          transition={{ duration: 1.2, ease: "easeOut", delay: 0.6 }}
+        >
+          <svg viewBox="0 0 120 20" preserveAspectRatio="none" className="absolute top-0 left-0 w-[200%] h-5 -translate-y-full">
+            <motion.path
+              d="M0 10 Q15 0 30 10 Q45 20 60 10 Q75 0 90 10 Q105 20 120 10 V20 H0Z"
+              fill="hsl(200 80% 50% / 0.2)"
+              animate={{ x: [0, -60] }}
+              transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+            />
+          </svg>
+        </motion.div>
+      </div>
+      <div className="relative z-10 flex items-center justify-between h-full">
+        <div>
+          <Droplets className="w-5 h-5 text-cyan mb-1" />
+          <p className="text-[10px] font-mono text-muted-foreground">Hidratação</p>
+        </div>
+        <div className="text-right">
+          <span className="text-2xl font-bold font-mono text-foreground">{glasses}</span>
+          <span className="text-xs font-mono text-muted-foreground">/{target}</span>
+          <p className="text-[10px] font-mono text-cyan">{Math.round(glasses * 250)}ml</p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Score gauge
+const ScoreGauge = ({ score }: { score: number }) => {
+  const color = score >= 80 ? "text-primary" : score >= 50 ? "text-accent" : "text-danger";
+  const label = score >= 80 ? "Excelente" : score >= 60 ? "Bom" : score >= 40 ? "Regular" : "Melhore";
+  return (
+    <div className="rounded-xl border border-border bg-card p-3 h-24 flex flex-col items-center justify-center">
+      <Brain className="w-4 h-4 text-accent mb-1" />
+      <motion.span
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.8 }}
+        className={`text-2xl font-bold font-mono ${color}`}
+      >
+        {score}
+      </motion.span>
+      <p className="text-[10px] font-mono text-muted-foreground">Score IA</p>
+      <p className={`text-[9px] font-mono ${color}`}>{label}</p>
+    </div>
+  );
+};
+
+// Streak fire
+const StreakFire = ({ days }: { days: number }) => (
+  <div className="rounded-xl border border-border bg-card p-3 h-24 flex flex-col items-center justify-center relative overflow-hidden">
+    {days > 0 && (
+      <div className="absolute inset-0 bg-gradient-to-t from-primary/10 to-transparent" />
+    )}
+    <div className="relative z-10 flex flex-col items-center">
+      <motion.div
+        animate={days > 0 ? { scale: [1, 1.15, 1], rotate: [0, -3, 3, 0] } : {}}
+        transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+      >
+        <Flame className={`w-6 h-6 ${days > 0 ? "text-primary" : "text-muted-foreground"}`} />
+      </motion.div>
+      <span className="text-2xl font-bold font-mono text-foreground">{days}</span>
+      <p className="text-[10px] font-mono text-muted-foreground">Streak</p>
+    </div>
+  </div>
+);
+
+// XP bar
+const XPBar = ({ xp, level }: { xp: number; level: number }) => {
+  const LEVEL_NAMES = ["", "Iniciante", "Consistente", "Focado", "Disciplinado", "Forte", "Máquina", "Lenda", "Imortal"];
+  const xpPerLevel = 500;
+  const currentLevelXP = xp % xpPerLevel;
+  const percent = (currentLevelXP / xpPerLevel) * 100;
+
+  return (
+    <div className="rounded-xl border border-border bg-card p-3">
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-2">
+          <Award className="w-4 h-4 text-primary" />
+          <span className="text-xs font-mono text-foreground font-bold">Lv.{level}</span>
+          <span className="text-[10px] font-mono text-primary">{LEVEL_NAMES[Math.min(level, 8)]}</span>
+        </div>
+        <span className="text-[10px] font-mono text-muted-foreground">{currentLevelXP}/{xpPerLevel} XP</span>
+      </div>
+      <div className="h-2 rounded-full bg-secondary overflow-hidden">
+        <motion.div
+          className="h-full rounded-full bg-gradient-to-r from-primary to-gold-glow"
+          initial={{ width: 0 }}
+          animate={{ width: `${percent}%` }}
+          transition={{ duration: 1, ease: "easeOut", delay: 0.4 }}
+        />
+      </div>
+    </div>
+  );
+};
 
 const DashboardPage = () => {
   const { user, signOut } = useAuth();
@@ -15,7 +187,7 @@ const DashboardPage = () => {
   const navigate = useNavigate();
   const [todayMeals, setTodayMeals] = useState<any[]>([]);
   const [todayTotals, setTodayTotals] = useState({ kcal: 0, protein: 0, carbs: 0, fat: 0 });
-  const [activeTab, setActiveTab] = useState("home");
+  const [waterGlasses, setWaterGlasses] = useState(0);
 
   useEffect(() => {
     if (!profile?.onboarding_completed && !loading) {
@@ -23,27 +195,78 @@ const DashboardPage = () => {
     }
   }, [profile, loading]);
 
-  useEffect(() => {
+  const fetchMeals = async () => {
     if (!user) return;
-    const fetchMeals = async () => {
-      const today = new Date().toISOString().split("T")[0];
-      const { data } = await supabase
-        .from("meal_logs")
-        .select("*")
-        .eq("user_id", user.id)
-        .eq("meal_date", today);
-      if (data) {
-        setTodayMeals(data);
-        setTodayTotals({
-          kcal: data.reduce((s, m) => s + (m.total_kcal || 0), 0),
-          protein: data.reduce((s, m) => s + (m.total_protein || 0), 0),
-          carbs: data.reduce((s, m) => s + (m.total_carbs || 0), 0),
-          fat: data.reduce((s, m) => s + (m.total_fat || 0), 0),
-        });
-      }
-    };
+    const today = new Date().toISOString().split("T")[0];
+    const { data } = await supabase
+      .from("meal_logs")
+      .select("*")
+      .eq("user_id", user.id)
+      .eq("meal_date", today)
+      .order("created_at", { ascending: true });
+    if (data) {
+      setTodayMeals(data);
+      setTodayTotals({
+        kcal: data.reduce((s, m) => s + (Number(m.total_kcal) || 0), 0),
+        protein: data.reduce((s, m) => s + (Number(m.total_protein) || 0), 0),
+        carbs: data.reduce((s, m) => s + (Number(m.total_carbs) || 0), 0),
+        fat: data.reduce((s, m) => s + (Number(m.total_fat) || 0), 0),
+      });
+    }
+  };
+
+  useEffect(() => {
     fetchMeals();
   }, [user]);
+
+  // Realtime subscription
+  useEffect(() => {
+    if (!user) return;
+    const channel = supabase
+      .channel("dashboard-meals")
+      .on("postgres_changes", {
+        event: "*",
+        schema: "public",
+        table: "meal_logs",
+        filter: `user_id=eq.${user.id}`,
+      }, () => { fetchMeals(); })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [user]);
+
+  const kcalTarget = profile?.vet_kcal || 2000;
+  const proteinTarget = profile?.protein_g || 150;
+  const carbsTarget = profile?.carbs_g || 250;
+  const fatTarget = profile?.fat_g || 65;
+
+  const kcalPercent = (todayTotals.kcal / kcalTarget) * 100;
+  const protPercent = Math.min((todayTotals.protein / proteinTarget) * 100, 100);
+  const carbPercent = Math.min((todayTotals.carbs / carbsTarget) * 100, 100);
+  const fatPercent = Math.min((todayTotals.fat / fatTarget) * 100, 100);
+
+  // AI Score calculation
+  const aiScore = useMemo(() => {
+    if (todayMeals.length === 0) return 0;
+    let score = 0;
+    const calDiff = Math.abs(kcalPercent - 100);
+    score += Math.max(0, 40 - calDiff * 0.8);
+    score += Math.min(protPercent, 100) * 0.25;
+    const mealTypes = new Set(todayMeals.map(m => m.meal_type));
+    score += Math.min(mealTypes.size, 4) * 5;
+    const macroBalance = (Math.min(protPercent, 100) + Math.min(carbPercent, 100) + Math.min(fatPercent, 100)) / 3;
+    score += macroBalance * 0.15;
+    return Math.round(Math.min(score, 100));
+  }, [todayTotals, todayMeals, kcalPercent, protPercent, carbPercent, fatPercent]);
+
+  const hour = new Date().getHours();
+  const predictiveAlert = useMemo(() => {
+    if (todayMeals.length === 0 && hour >= 10) return "Ainda sem refeições registradas hoje. Bora começar? 🍳";
+    if (hour >= 20 && todayTotals.protein < proteinTarget * 0.6) return `Faltam ${Math.round(proteinTarget - todayTotals.protein)}g de proteína. Que tal um lanche proteico antes de dormir?`;
+    if (hour >= 15 && hour < 18 && todayTotals.kcal < kcalTarget * 0.4) return "Consumo baixo até agora. Planeje um lanche nutritivo para manter a energia!";
+    if (kcalPercent > 90 && kcalPercent < 105) return "Quase na meta! Você está no controle hoje 🎯";
+    if (kcalPercent >= 105) return "Acima da meta calórica. Sem culpa — amanhã é um novo dia! 💚";
+    return null;
+  }, [todayMeals, todayTotals, hour, proteinTarget, kcalTarget, kcalPercent]);
 
   if (loading || !profile) {
     return (
@@ -53,205 +276,244 @@ const DashboardPage = () => {
     );
   }
 
-  const kcalTarget = profile.vet_kcal || 2000;
-  const proteinTarget = profile.protein_g || 150;
-  const carbsTarget = profile.carbs_g || 250;
-  const fatTarget = profile.fat_g || 65;
-
-  const kcalPercent = Math.min((todayTotals.kcal / kcalTarget) * 100, 100);
-  const protPercent = Math.min((todayTotals.protein / proteinTarget) * 100, 100);
-  const carbPercent = Math.min((todayTotals.carbs / carbsTarget) * 100, 100);
-  const fatPercent = Math.min((todayTotals.fat / fatTarget) * 100, 100);
-
-  // Day status
   const isON = kcalPercent >= 70 && protPercent >= 60;
-  const isAlmost = kcalPercent >= 40 || protPercent >= 40;
 
   const macros = [
-    { label: "Proteína", value: todayTotals.protein, target: proteinTarget, unit: "g", percent: protPercent, colorClass: "bg-primary" },
-    { label: "Carboidrato", value: todayTotals.carbs, target: carbsTarget, unit: "g", percent: carbPercent, colorClass: "bg-accent" },
-    { label: "Gordura", value: todayTotals.fat, target: fatTarget, unit: "g", percent: fatPercent, colorClass: "bg-danger" },
+    { label: "Proteína", value: todayTotals.protein, target: proteinTarget, unit: "g", percent: protPercent, colorFrom: "from-primary", colorTo: "to-gold-glow", icon: "💪" },
+    { label: "Carboidrato", value: todayTotals.carbs, target: carbsTarget, unit: "g", percent: carbPercent, colorFrom: "from-accent", colorTo: "to-cyan-glow", icon: "⚡" },
+    { label: "Gordura", value: todayTotals.fat, target: fatTarget, unit: "g", percent: fatPercent, colorFrom: "from-danger", colorTo: "to-destructive", icon: "🔥" },
   ];
 
-  const levelNames = ["Iniciante", "Iniciante", "Consistente", "Consistente", "Máquina", "Máquina", "Lenda", "Lenda", "Modo ON", "Modo ON"];
-
+  const mealTypeIcons: Record<string, string> = {
+    cafe_da_manha: "☕", almoco: "🍽️", jantar: "🌙", lanche: "🥤", ceia: "🫖",
+    breakfast: "☕", lunch: "🍽️", dinner: "🌙", snack: "🥤",
+  };
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className="min-h-screen bg-background pb-24">
       <div className="absolute inset-0 bg-grid opacity-10" />
 
       <div className="relative z-10 max-w-lg mx-auto px-4 pt-4">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-center justify-between mb-4"
+        >
           <div>
-            <p className="text-xs text-muted-foreground font-mono">Olá,</p>
-            <h1 className="text-lg font-bold text-foreground">{profile.full_name || "Usuário"}</h1>
+            <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest">Cockpit</p>
+            <h1 className="text-lg font-bold text-foreground">{profile.full_name || "Piloto"}</h1>
           </div>
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1 px-2 py-1 rounded-full border border-gold-subtle bg-primary/5">
-              <div className={`w-2 h-2 rounded-full ${isON ? "bg-primary animate-pulse-gold" : isAlmost ? "bg-primary/50" : "bg-danger"}`} />
-              <span className="text-xs font-mono text-primary">{isON ? "ON" : isAlmost ? "QUASE" : "OFF"}</span>
-            </div>
+            <motion.div
+              animate={isON ? { boxShadow: ["0 0 0px hsl(43 100% 50% / 0)", "0 0 12px hsl(43 100% 50% / 0.4)", "0 0 0px hsl(43 100% 50% / 0)"] } : {}}
+              transition={{ duration: 2, repeat: Infinity }}
+              className={`flex items-center gap-1.5 px-3 py-1 rounded-full border ${isON ? "border-primary/40 bg-primary/10" : "border-border bg-card"}`}
+            >
+              <div className={`w-2 h-2 rounded-full ${isON ? "bg-primary animate-pulse-gold" : "bg-muted-foreground"}`} />
+              <span className={`text-xs font-mono font-bold ${isON ? "text-primary" : "text-muted-foreground"}`}>
+                {isON ? "ON" : "OFF"}
+              </span>
+            </motion.div>
             <button onClick={signOut} className="p-2 rounded-lg text-muted-foreground hover:text-foreground transition-colors">
               <LogOut className="w-4 h-4" />
             </button>
           </div>
-        </div>
+        </motion.div>
 
-        {/* Calories center */}
+        {/* Calorie ring */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
+          initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="text-center mb-6"
+          transition={{ delay: 0.1 }}
+          className="mb-4"
         >
-          <p className="text-xs text-muted-foreground font-mono uppercase tracking-wider mb-1">Consumidas hoje</p>
-          <div className="flex items-baseline justify-center gap-1">
-            <span className="text-5xl sm:text-6xl font-bold font-mono text-foreground">
-              {Math.round(todayTotals.kcal).toLocaleString()}
-            </span>
-            <span className="text-lg text-muted-foreground font-mono">/ {Math.round(kcalTarget).toLocaleString()}</span>
-          </div>
-          <span className="text-xs text-primary font-mono">kcal</span>
+          <CalorieRing percent={kcalPercent} kcal={todayTotals.kcal} target={kcalTarget} />
         </motion.div>
 
         {/* Macro bars */}
-        <div className="space-y-3 mb-6">
+        <div className="space-y-2.5 mb-4">
           {macros.map((macro, i) => (
             <motion.div
               key={macro.label}
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: i * 0.1 }}
+              transition={{ delay: 0.4 + i * 0.1 }}
             >
               <div className="flex items-center justify-between mb-1">
-                <span className="text-xs font-mono text-muted-foreground">{macro.label}</span>
-                <span className="text-xs font-mono text-foreground">
-                  {Math.round(macro.value)}<span className="text-muted-foreground">/{macro.target}{macro.unit}</span>
+                <span className="text-xs font-mono text-muted-foreground flex items-center gap-1">
+                  <span className="text-sm">{macro.icon}</span> {macro.label}
+                </span>
+                <span className="text-xs font-mono text-foreground font-bold">
+                  {Math.round(macro.value)}<span className="text-muted-foreground font-normal">/{macro.target}{macro.unit}</span>
                 </span>
               </div>
-              <div className="h-2.5 rounded-full bg-secondary overflow-hidden">
+              <div className="h-3 rounded-full bg-secondary overflow-hidden relative">
                 <motion.div
                   initial={{ width: 0 }}
-                  animate={{ width: `${macro.percent}%` }}
-                  transition={{ delay: 0.3 + i * 0.1, duration: 0.8, ease: "easeOut" }}
-                  className={`h-full rounded-full ${macro.colorClass}`}
+                  animate={{ width: `${Math.min(macro.percent, 100)}%` }}
+                  transition={{ delay: 0.6 + i * 0.1, duration: 1, ease: "easeOut" }}
+                  className={`h-full rounded-full bg-gradient-to-r ${macro.colorFrom} ${macro.colorTo}`}
                 />
+                {/* Target line */}
+                <div className="absolute right-0 top-0 bottom-0 w-px bg-foreground/20" />
               </div>
             </motion.div>
           ))}
         </div>
 
-        {/* Stats row */}
-        <div className="grid grid-cols-3 gap-3 mb-6">
-          <div className="rounded-xl bg-card border border-border p-3 text-center">
-            <Flame className="w-5 h-5 text-primary mx-auto mb-1" />
-            <span className="text-lg font-bold font-mono text-foreground">{profile.streak_days || 0}</span>
-            <p className="text-[10px] text-muted-foreground font-mono">Streak 🔥</p>
-          </div>
-          <div className="rounded-xl bg-card border border-border p-3 text-center">
-            <TrendingUp className="w-5 h-5 text-accent mx-auto mb-1" />
-            <span className="text-lg font-bold font-mono text-foreground">Lv.{profile.level || 1}</span>
-            <p className="text-[10px] text-muted-foreground font-mono">{levelNames[profile.level || 1]}</p>
-          </div>
-          <div className="rounded-xl bg-card border border-border p-3 text-center">
-            <BarChart3 className="w-5 h-5 text-accent mx-auto mb-1" />
-            <span className="text-lg font-bold font-mono text-foreground">{profile.xp || 0}</span>
-            <p className="text-[10px] text-muted-foreground font-mono">XP</p>
-          </div>
-        </div>
+        {/* Stats row: Score, Streak, Hydration */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.7 }}
+          className="grid grid-cols-3 gap-2 mb-4"
+        >
+          <ScoreGauge score={aiScore} />
+          <StreakFire days={profile.streak_days || 0} />
+          <HydrationWidget glasses={waterGlasses} target={8} />
+        </motion.div>
 
-        {/* Status indicator */}
-        <div className={`rounded-xl border p-3 mb-4 ${
-          isON ? "bg-primary/10 border-primary/20" : isAlmost ? "bg-primary/5 border-primary/10" : "bg-danger/10 border-danger/20"
-        }`}>
-          <div className="flex items-center gap-2">
-            <div className={`w-3 h-3 rounded-full ${isON ? "bg-primary animate-pulse-gold" : isAlmost ? "bg-primary/60" : "bg-danger"}`} />
-            <span className={`text-sm font-mono font-semibold ${isON ? "text-primary" : isAlmost ? "text-primary/80" : "text-danger"}`}>
-              {isON ? "MODO ON" : isAlmost ? "QUASE LÁ" : "MODO OFF"}
-            </span>
-            <span className="text-xs text-muted-foreground ml-auto">
-              {isON ? "Dia no controle ✓" : isAlmost ? "Continue registrando" : "Registre suas refeições"}
-            </span>
-          </div>
-        </div>
+        {/* XP Bar */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.8 }}
+          className="mb-4"
+        >
+          <XPBar xp={profile.xp || 0} level={profile.level || 1} />
+        </motion.div>
+
+        {/* Add water quick action */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.85 }}
+          className="mb-4"
+        >
+          <button
+            onClick={() => setWaterGlasses(prev => prev + 1)}
+            className="w-full flex items-center gap-3 p-3 rounded-xl border border-border bg-card hover:border-accent/30 transition-all group"
+          >
+            <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center group-hover:bg-accent/20 transition-colors">
+              <Droplets className="w-4 h-4 text-accent" />
+            </div>
+            <span className="text-sm font-mono text-foreground">+ 1 copo de água (250ml)</span>
+            <span className="ml-auto text-xs font-mono text-muted-foreground">{waterGlasses * 250}ml</span>
+          </button>
+        </motion.div>
+
+        {/* Predictive AI Alert */}
+        {predictiveAlert && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.9 }}
+            className="rounded-xl border border-primary/20 bg-primary/5 p-4 mb-4"
+          >
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <Brain className="w-4 h-4 text-primary" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[10px] font-mono text-primary uppercase tracking-wider mb-1">Alerta IA</p>
+                <p className="text-sm text-foreground leading-relaxed">{predictiveAlert}</p>
+              </div>
+            </div>
+          </motion.div>
+        )}
 
         {/* Today's meals */}
-        <div className="mb-6">
-          <h3 className="text-sm font-semibold text-foreground mb-3">Refeições de hoje</h3>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1 }}
+          className="mb-4"
+        >
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-bold text-foreground font-display">Refeições de hoje</h3>
+            <button onClick={() => navigate("/meal-log")} className="text-xs font-mono text-primary flex items-center gap-1">
+              Registrar <ChevronRight className="w-3 h-3" />
+            </button>
+          </div>
           {todayMeals.length === 0 ? (
-            <div className="rounded-xl border border-border bg-card/50 p-6 text-center">
-              <Utensils className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+            <button
+              onClick={() => navigate("/meal-log")}
+              className="w-full rounded-xl border border-dashed border-border bg-card/30 p-8 text-center hover:border-primary/30 transition-colors group"
+            >
+              <Utensils className="w-8 h-8 text-muted-foreground mx-auto mb-2 group-hover:text-primary transition-colors" />
               <p className="text-sm text-muted-foreground">Nenhuma refeição registrada</p>
-              <p className="text-xs text-muted-foreground mt-1">Toque no + para registrar</p>
-            </div>
+              <p className="text-xs text-primary font-mono mt-1">Toque para registrar</p>
+            </button>
           ) : (
             <div className="space-y-2">
-              {todayMeals.map(meal => (
-                <div key={meal.id} className="rounded-xl border border-border bg-card p-3 flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <Apple className="w-5 h-5 text-primary" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-semibold text-foreground capitalize">
+              {todayMeals.map((meal, i) => (
+                <motion.div
+                  key={meal.id}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 1.1 + i * 0.05 }}
+                  className="rounded-xl border border-border bg-card p-3 flex items-center gap-3"
+                >
+                  <span className="text-xl">{mealTypeIcons[meal.meal_type] || "🍽️"}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-foreground capitalize truncate">
                       {meal.meal_type.replace(/_/g, " ")}
                     </p>
-                    <p className="text-xs text-muted-foreground">
-                      {meal.total_kcal} kcal · {meal.total_protein}g prot
+                    <p className="text-[11px] text-muted-foreground font-mono">
+                      {Math.round(meal.total_kcal || 0)} kcal · {Math.round(meal.total_protein || 0)}g P · {Math.round(meal.total_carbs || 0)}g C · {Math.round(meal.total_fat || 0)}g G
                     </p>
                   </div>
-                  {meal.confirmed && (
-                    <span className="text-xs text-primary font-mono">✓</span>
-                  )}
-                </div>
+                  {meal.confirmed && <span className="text-primary text-xs font-mono">✓</span>}
+                </motion.div>
               ))}
             </div>
           )}
-        </div>
+        </motion.div>
 
-        {/* Quick info */}
-        <div className="rounded-xl border border-border bg-card/50 p-4 mb-4">
-          <p className="text-xs text-muted-foreground font-mono mb-1">Seu protocolo</p>
-          <p className="text-sm font-semibold text-foreground">{profile.vet_kcal} kcal/dia · {profile.protein_g}g prot · {profile.carbs_g}g carb · {profile.fat_g}g fat</p>
-          <p className="text-xs text-primary font-mono mt-1">
-            {profile.goal === "lose_weight" ? "Emagrecimento" :
-             profile.goal === "gain_muscle" ? "Hipertrofia" :
-             profile.goal === "definition" ? "Definição" :
-             profile.goal === "glp1" ? "Protocolo GLP-1" :
-             profile.goal === "performance" ? "Performance" :
-             profile.goal === "health" ? "Saúde" : "Manutenção"}
+        {/* Protocol info */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.1 }}
+          className="rounded-xl border border-border bg-card/50 p-3 mb-4"
+        >
+          <div className="flex items-center gap-2 mb-1">
+            <Zap className="w-3.5 h-3.5 text-primary" />
+            <span className="text-[10px] font-mono text-primary uppercase tracking-wider">Protocolo ativo</span>
+          </div>
+          <p className="text-xs font-mono text-foreground">
+            {profile.vet_kcal} kcal · {profile.protein_g}g P · {profile.carbs_g}g C · {profile.fat_g}g G
           </p>
-        </div>
+        </motion.div>
       </div>
 
       {/* Bottom navigation */}
-      <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur border-t border-border z-50">
-        <div className="max-w-lg mx-auto flex items-center justify-around py-2">
+      <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-md border-t border-border z-50">
+        <div className="max-w-lg mx-auto flex items-center justify-around py-2 px-2">
           {[
-            { id: "home", icon: BarChart3, label: "Home" },
-            { id: "plan", icon: Utensils, label: "Plano" },
-            { id: "add", icon: Plus, label: "" },
-            { id: "chat", icon: MessageSquare, label: "Chat" },
-            { id: "profile", icon: User, label: "Perfil" },
+            { id: "home", icon: BarChart3, label: "Home", path: null },
+            { id: "plan", icon: Utensils, label: "Plano", path: "/meal-plan" },
+            { id: "add", icon: Plus, label: "", path: "/meal-log" },
+            { id: "chat", icon: MessageSquare, label: "Coach", path: "/chat" },
+            { id: "profile", icon: User, label: "Perfil", path: "/profile" },
           ].map(item => (
             <button
               key={item.id}
-              onClick={() => {
-                if (item.id === "plan") navigate("/meal-plan");
-                else if (item.id === "add") navigate("/meal-log");
-                else if (item.id === "chat") navigate("/chat");
-                else if (item.id === "profile") navigate("/profile");
-                else setActiveTab(item.id);
-              }}
-              className="flex flex-col items-center gap-0.5 py-1"
+              onClick={() => item.path ? navigate(item.path) : undefined}
+              className="flex flex-col items-center gap-0.5 py-1 min-w-[48px]"
             >
               {item.id === "add" ? (
-                <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-primary-foreground -mt-5 glow-gold">
+                <motion.div
+                  whileTap={{ scale: 0.9 }}
+                  className="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-primary-foreground -mt-5 glow-gold"
+                >
                   <Plus className="w-6 h-6" />
-                </div>
+                </motion.div>
               ) : (
                 <>
-                  <item.icon className={`w-5 h-5 ${activeTab === item.id ? "text-primary" : "text-muted-foreground"}`} />
-                  <span className={`text-[10px] font-mono ${activeTab === item.id ? "text-primary" : "text-muted-foreground"}`}>
+                  <item.icon className={`w-5 h-5 ${item.id === "home" ? "text-primary" : "text-muted-foreground"}`} />
+                  <span className={`text-[10px] font-mono ${item.id === "home" ? "text-primary" : "text-muted-foreground"}`}>
                     {item.label}
                   </span>
                 </>
