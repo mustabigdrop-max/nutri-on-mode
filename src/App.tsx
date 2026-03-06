@@ -159,6 +159,30 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/meal-history"
+              element={
+                <ProtectedRoute>
+                  <MealHistoryPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/progress"
+              element={
+                <ProtectedRoute>
+                  <ProgressPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/settings"
+              element={
+                <ProtectedRoute>
+                  <SettingsPage />
+                </ProtectedRoute>
+              }
+            />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
