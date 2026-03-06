@@ -14,6 +14,7 @@ import MealLogPage from "./pages/MealLogPage";
 import ChatPage from "./pages/ChatPage";
 import MicronutrientsPage from "./pages/MicronutrientsPage";
 import GamificationPage from "./pages/GamificationPage";
+import TransformationPage from "./pages/TransformationPage";
 import ProfilePage from "./pages/ProfilePage";
 import ProfessionalDashboard from "./pages/ProfessionalDashboard";
 import NotFound from "./pages/NotFound";
