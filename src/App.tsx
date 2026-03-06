@@ -18,6 +18,7 @@ import TransformationPage from "./pages/TransformationPage";
 import ProfilePage from "./pages/ProfilePage";
 import ProfessionalDashboard from "./pages/ProfessionalDashboard";
 import ShoppingListPage from "./pages/ShoppingListPage";
+import WearablesPage from "./pages/WearablesPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
