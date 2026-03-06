@@ -78,12 +78,14 @@ export type Database = {
           confirmed: boolean | null
           created_at: string
           emotion: string | null
+          food_names: string[] | null
           hunger_level: number | null
           id: string
           meal_date: string
           meal_type: string
           notes: string | null
           photo_url: string | null
+          quality_score: number | null
           satiety_level: number | null
           total_carbs: number | null
           total_fat: number | null
@@ -95,12 +97,14 @@ export type Database = {
           confirmed?: boolean | null
           created_at?: string
           emotion?: string | null
+          food_names?: string[] | null
           hunger_level?: number | null
           id?: string
           meal_date?: string
           meal_type: string
           notes?: string | null
           photo_url?: string | null
+          quality_score?: number | null
           satiety_level?: number | null
           total_carbs?: number | null
           total_fat?: number | null
@@ -112,12 +116,14 @@ export type Database = {
           confirmed?: boolean | null
           created_at?: string
           emotion?: string | null
+          food_names?: string[] | null
           hunger_level?: number | null
           id?: string
           meal_date?: string
           meal_type?: string
           notes?: string | null
           photo_url?: string | null
+          quality_score?: number | null
           satiety_level?: number | null
           total_carbs?: number | null
           total_fat?: number | null
@@ -126,6 +132,50 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      meal_nutrients: {
+        Row: {
+          amount: number
+          created_at: string
+          daily_pct: number | null
+          daily_recommended: number | null
+          id: string
+          meal_log_id: string
+          nutrient: string
+          unit: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          daily_pct?: number | null
+          daily_recommended?: number | null
+          id?: string
+          meal_log_id: string
+          nutrient: string
+          unit?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          daily_pct?: number | null
+          daily_recommended?: number | null
+          id?: string
+          meal_log_id?: string
+          nutrient?: string
+          unit?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meal_nutrients_meal_log_id_fkey"
+            columns: ["meal_log_id"]
+            isOneToOne: false
+            referencedRelation: "meal_logs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       meal_plan_items: {
         Row: {
