@@ -414,7 +414,8 @@ const MealLogPage = () => {
       } catch { /* ignore */ }
     }
 
-    const { error } = await supabase.from("meal_logs").insert({
+    const foodNames = selectedFoods.map(sf => sf.food.name);
+    const { data: insertedMeal, error } = await supabase.from("meal_logs").insert({
       user_id: user.id,
       meal_type: selectedMealType,
       total_kcal: Math.round(totals.kcal),
@@ -427,7 +428,9 @@ const MealLogPage = () => {
       notes: notes || null,
       photo_url: photoUrl,
       confirmed: true,
-    });
+      quality_score: aiQualityScore,
+      food_names: foodNames,
+    }).select("id").single();
 
     if (!error) {
       const currentXp = profile?.xp || 0;
