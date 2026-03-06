@@ -426,6 +426,19 @@ const DashboardPage = () => {
               <p className="text-sm font-mono text-foreground">Controle de Hidratação</p>
               <p className="text-[9px] font-mono text-muted-foreground">Acompanhe sua meta diária de água</p>
             </div>
+           <ChevronRight className="w-4 h-4 text-muted-foreground" />
+          </button>
+          <button
+            onClick={() => navigate("/meal-plan")}
+            className="w-full flex items-center gap-3 p-3 rounded-xl border border-border bg-card hover:border-primary/30 transition-all group"
+          >
+            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+              <Apple className="w-4 h-4 text-primary" />
+            </div>
+            <div className="flex-1 text-left">
+              <p className="text-sm font-mono text-foreground">Plano Alimentar</p>
+              <p className="text-[9px] font-mono text-muted-foreground">Cardápio semanal e lista de compras</p>
+            </div>
             <ChevronRight className="w-4 h-4 text-muted-foreground" />
           </button>
         </motion.div>
