@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      activity_logs: {
+        Row: {
+          calories_burned: number | null
+          created_at: string
+          heart_rate_avg: number | null
+          heart_rate_max: number | null
+          id: string
+          log_date: string
+          notes: string | null
+          sleep_hours: number | null
+          steps: number | null
+          user_id: string
+        }
+        Insert: {
+          calories_burned?: number | null
+          created_at?: string
+          heart_rate_avg?: number | null
+          heart_rate_max?: number | null
+          id?: string
+          log_date?: string
+          notes?: string | null
+          sleep_hours?: number | null
+          steps?: number | null
+          user_id: string
+        }
+        Update: {
+          calories_burned?: number | null
+          created_at?: string
+          heart_rate_avg?: number | null
+          heart_rate_max?: number | null
+          id?: string
+          log_date?: string
+          notes?: string | null
+          sleep_hours?: number | null
+          steps?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       badges: {
         Row: {
           category: string
