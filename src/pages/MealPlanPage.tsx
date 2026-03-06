@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
@@ -6,7 +6,8 @@ import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
 import {
   ChevronLeft, ChevronRight, Check, RefreshCw, Utensils,
-  BarChart3, Plus, MessageSquare, User, ArrowLeft
+  BarChart3, Plus, MessageSquare, User, ArrowLeft, ShoppingCart,
+  Sparkles, Wallet, GripVertical
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -21,7 +22,6 @@ const MEAL_TYPES = [
 
 const DAY_LABELS = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
 
-// Default foods per meal type for generating a plan
 const DEFAULT_FOODS: Record<string, { name: string; portion: string; kcal: number; protein: number; carbs: number; fat: number }[]> = {
   cafe_manha: [
     { name: "Ovos mexidos", portion: "3 unidades", kcal: 210, protein: 18, carbs: 2, fat: 15 },
@@ -126,11 +126,12 @@ const MealPlanPage = () => {
   const [items, setItems] = useState<PlanItem[]>([]);
   const [selectedDay, setSelectedDay] = useState(() => {
     const today = new Date().getDay();
-    return today === 0 ? 6 : today - 1; // Mon=0
+    return today === 0 ? 6 : today - 1;
   });
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
-  const [swapModalItem, setSwapModalItem] = useState<PlanItem | null>(null);
+  const [budgetMode, setBudgetMode] = useState(false);
+  const [dragItem, setDragItem] = useState<PlanItem | null>(null);
 
   const fetchPlan = async () => {
     if (!user) return;
@@ -146,10 +147,58 @@ const MealPlanPage = () => {
 
   useEffect(() => { fetchPlan(); }, [user, weekStart]);
 
-  const generatePlan = async () => {
-    if (!user) return;
+  const generateWithAI = async () => {
+    if (!user || !profile) return;
     setGenerating(true);
-    // Delete existing for this week
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-meal-plan", {
+        body: { profile, weekStart, budgetMode },
+      });
+
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      // Delete existing plan
+      await supabase
+        .from("meal_plan_items")
+        .delete()
+        .eq("user_id", user.id)
+        .eq("week_start", weekStart);
+
+      // Insert AI-generated plan
+      const newItems: any[] = [];
+      for (const day of data.days) {
+        for (const meal of day.meals) {
+          newItems.push({
+            user_id: user.id,
+            week_start: weekStart,
+            day_index: day.day_index,
+            meal_type: meal.meal_type,
+            food_name: meal.food_name,
+            portion: meal.portion,
+            kcal: meal.kcal,
+            protein_g: meal.protein_g,
+            carbs_g: meal.carbs_g,
+            fat_g: meal.fat_g,
+            confirmed: false,
+            swapped: false,
+          });
+        }
+      }
+
+      await supabase.from("meal_plan_items").insert(newItems);
+      toast.success(budgetMode ? "Plano econômico gerado! 💰" : "Plano IA gerado! 🤖✨");
+      await fetchPlan();
+    } catch (e: any) {
+      console.error(e);
+      toast.error("Erro ao gerar plano. Gerando local...");
+      await generateLocalPlan();
+    }
+    setGenerating(false);
+  };
+
+  const generateLocalPlan = async () => {
+    if (!user) return;
     await supabase
       .from("meal_plan_items")
       .delete()
@@ -177,11 +226,9 @@ const MealPlanPage = () => {
         });
       });
     }
-
     await supabase.from("meal_plan_items").insert(newItems);
     toast.success("Plano semanal gerado! 🎉");
     await fetchPlan();
-    setGenerating(false);
   };
 
   const confirmItem = async (item: PlanItem) => {
@@ -226,6 +273,46 @@ const MealPlanPage = () => {
     toast("Substituição feita 🔄");
   };
 
+  // Drag-to-swap between meals
+  const handleDragStart = (item: PlanItem) => setDragItem(item);
+
+  const handleDrop = async (targetItem: PlanItem) => {
+    if (!dragItem || dragItem.id === targetItem.id) { setDragItem(null); return; }
+
+    // Swap food data between two items
+    const updates = [
+      supabase.from("meal_plan_items").update({
+        food_name: targetItem.food_name,
+        portion: targetItem.portion,
+        kcal: targetItem.kcal,
+        protein_g: targetItem.protein_g,
+        carbs_g: targetItem.carbs_g,
+        fat_g: targetItem.fat_g,
+        swapped: true,
+        original_food_name: dragItem.original_food_name || dragItem.food_name,
+      }).eq("id", dragItem.id),
+      supabase.from("meal_plan_items").update({
+        food_name: dragItem.food_name,
+        portion: dragItem.portion,
+        kcal: dragItem.kcal,
+        protein_g: dragItem.protein_g,
+        carbs_g: dragItem.carbs_g,
+        fat_g: dragItem.fat_g,
+        swapped: true,
+        original_food_name: targetItem.original_food_name || targetItem.food_name,
+      }).eq("id", targetItem.id),
+    ];
+    await Promise.all(updates);
+
+    setItems(prev => prev.map(i => {
+      if (i.id === dragItem.id) return { ...i, food_name: targetItem.food_name, portion: targetItem.portion, kcal: targetItem.kcal, protein_g: targetItem.protein_g, carbs_g: targetItem.carbs_g, fat_g: targetItem.fat_g, swapped: true };
+      if (i.id === targetItem.id) return { ...i, food_name: dragItem.food_name, portion: dragItem.portion, kcal: dragItem.kcal, protein_g: dragItem.protein_g, carbs_g: dragItem.carbs_g, fat_g: dragItem.fat_g, swapped: true };
+      return i;
+    }));
+    setDragItem(null);
+    toast("Refeições trocadas! 🔄");
+  };
+
   const dayItems = useMemo(() =>
     items.filter(i => i.day_index === selectedDay)
       .sort((a, b) => MEAL_TYPES.findIndex(m => m.key === a.meal_type) - MEAL_TYPES.findIndex(m => m.key === b.meal_type)),
@@ -241,12 +328,9 @@ const MealPlanPage = () => {
     total: dayItems.length,
   }), [dayItems]);
 
-  const activeTab = "plan";
-
   return (
     <div className="min-h-screen bg-background pb-20">
       <div className="absolute inset-0 bg-grid opacity-10" />
-
       <div className="relative z-10 max-w-lg mx-auto px-4 pt-4">
         {/* Header */}
         <div className="flex items-center gap-3 mb-4">
@@ -255,8 +339,30 @@ const MealPlanPage = () => {
           </button>
           <div className="flex-1">
             <h1 className="text-lg font-bold text-foreground">Plano Semanal</h1>
-            <p className="text-xs text-muted-foreground font-mono">7 dias × 6 refeições</p>
+            <p className="text-xs text-muted-foreground font-mono">IA + arraste para trocar</p>
           </div>
+          <button
+            onClick={() => navigate("/shopping-list")}
+            className="p-2 rounded-lg text-muted-foreground hover:text-primary transition-colors"
+            title="Lista de Compras"
+          >
+            <ShoppingCart className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Budget mode toggle */}
+        <div className="flex items-center gap-2 mb-4">
+          <button
+            onClick={() => setBudgetMode(!budgetMode)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono transition-all ${
+              budgetMode
+                ? "bg-accent text-accent-foreground"
+                : "border border-border text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Wallet className="w-3.5 h-3.5" />
+            {budgetMode ? "Orçamento ON" : "Modo Orçamento"}
+          </button>
         </div>
 
         {/* Week selector */}
@@ -327,28 +433,36 @@ const MealPlanPage = () => {
             <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
           </div>
         ) : dayItems.length === 0 ? (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="text-center py-12"
-          >
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-12">
             <Utensils className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
             <p className="text-sm text-muted-foreground mb-1">Nenhum plano para esta semana</p>
-            <p className="text-xs text-muted-foreground mb-6">Gere um plano automático baseado no seu perfil</p>
-            <button
-              onClick={generatePlan}
-              disabled={generating}
-              className="px-6 py-3 rounded-xl bg-primary text-primary-foreground font-semibold text-sm glow-gold disabled:opacity-50 transition-all"
-            >
-              {generating ? (
-                <span className="flex items-center gap-2">
-                  <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
-                  Gerando...
-                </span>
-              ) : (
-                "Gerar Plano Semanal ✨"
-              )}
-            </button>
+            <p className="text-xs text-muted-foreground mb-6">Gere um plano personalizado com IA</p>
+            <div className="flex flex-col gap-2">
+              <button
+                onClick={generateWithAI}
+                disabled={generating}
+                className="px-6 py-3 rounded-xl bg-primary text-primary-foreground font-semibold text-sm glow-gold disabled:opacity-50 transition-all flex items-center justify-center gap-2 mx-auto"
+              >
+                {generating ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
+                    Gerando com IA...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-4 h-4" />
+                    Gerar Plano com IA ✨
+                  </>
+                )}
+              </button>
+              <button
+                onClick={async () => { setGenerating(true); await generateLocalPlan(); setGenerating(false); }}
+                disabled={generating}
+                className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Gerar plano rápido (offline)
+              </button>
+            </div>
           </motion.div>
         ) : (
           <div className="space-y-2">
@@ -362,13 +476,24 @@ const MealPlanPage = () => {
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: 20 }}
                     transition={{ delay: i * 0.05 }}
-                    className={`rounded-xl border p-3 transition-all ${
+                    draggable
+                    onDragStart={() => handleDragStart(item)}
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={() => handleDrop(item)}
+                    className={`rounded-xl border p-3 transition-all cursor-grab active:cursor-grabbing ${
                       item.confirmed
                         ? "bg-primary/10 border-primary/20"
+                        : dragItem?.id === item.id
+                        ? "bg-accent/10 border-accent/30 scale-[0.98]"
                         : "bg-card border-border"
                     }`}
                   >
-                    <div className="flex items-start gap-3">
+                    <div className="flex items-start gap-2">
+                      {/* Drag handle */}
+                      <div className="mt-1.5 text-muted-foreground/40">
+                        <GripVertical className="w-3.5 h-3.5" />
+                      </div>
+
                       {/* Confirm button */}
                       <button
                         onClick={() => confirmItem(item)}
@@ -414,9 +539,7 @@ const MealPlanPage = () => {
             {/* Day progress */}
             <div className="rounded-xl border border-border bg-card/50 p-3 mt-4">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-mono text-muted-foreground">
-                  Progresso do dia
-                </span>
+                <span className="text-xs font-mono text-muted-foreground">Progresso do dia</span>
                 <span className="text-xs font-mono text-primary font-semibold">
                   {dayTotals.confirmed}/{dayTotals.total} confirmadas
                 </span>
@@ -431,14 +554,24 @@ const MealPlanPage = () => {
               </div>
             </div>
 
-            {/* Regenerate button */}
-            <button
-              onClick={generatePlan}
-              disabled={generating}
-              className="w-full mt-2 py-2.5 rounded-xl border border-border text-sm font-mono text-muted-foreground hover:text-foreground hover:border-primary/30 transition-all disabled:opacity-50"
-            >
-              {generating ? "Gerando..." : "Regenerar plano da semana"}
-            </button>
+            {/* Action buttons */}
+            <div className="flex gap-2 mt-2">
+              <button
+                onClick={generateWithAI}
+                disabled={generating}
+                className="flex-1 py-2.5 rounded-xl bg-primary/10 border border-primary/20 text-sm font-mono text-primary hover:bg-primary/20 transition-all disabled:opacity-50 flex items-center justify-center gap-1.5"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                {generating ? "Gerando..." : "Regenerar IA"}
+              </button>
+              <button
+                onClick={() => navigate("/shopping-list")}
+                className="flex-1 py-2.5 rounded-xl border border-border text-sm font-mono text-muted-foreground hover:text-foreground hover:border-primary/30 transition-all flex items-center justify-center gap-1.5"
+              >
+                <ShoppingCart className="w-3.5 h-3.5" />
+                Lista de Compras
+              </button>
+            </div>
           </div>
         )}
       </div>
@@ -449,9 +582,9 @@ const MealPlanPage = () => {
           {[
             { id: "home", icon: BarChart3, label: "Home", path: "/dashboard" },
             { id: "plan", icon: Utensils, label: "Plano", path: "/meal-plan" },
-            { id: "add", icon: Plus, label: "", path: "/dashboard" },
-            { id: "chat", icon: MessageSquare, label: "Chat", path: "/dashboard" },
-            { id: "profile", icon: User, label: "Perfil", path: "/dashboard" },
+            { id: "add", icon: Plus, label: "", path: "/meal-log" },
+            { id: "chat", icon: MessageSquare, label: "Chat", path: "/chat" },
+            { id: "profile", icon: User, label: "Perfil", path: "/profile" },
           ].map(item => (
             <button
               key={item.id}
@@ -464,8 +597,8 @@ const MealPlanPage = () => {
                 </div>
               ) : (
                 <>
-                  <item.icon className={`w-5 h-5 ${item.id === activeTab ? "text-primary" : "text-muted-foreground"}`} />
-                  <span className={`text-[10px] font-mono ${item.id === activeTab ? "text-primary" : "text-muted-foreground"}`}>
+                  <item.icon className={`w-5 h-5 ${item.id === "plan" ? "text-primary" : "text-muted-foreground"}`} />
+                  <span className={`text-[10px] font-mono ${item.id === "plan" ? "text-primary" : "text-muted-foreground"}`}>
                     {item.label}
                   </span>
                 </>
