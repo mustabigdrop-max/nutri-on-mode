@@ -193,6 +193,14 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/diet-builder"
+              element={
+                <ProtectedRoute>
+                  <DietBuilderPage />
+                </ProtectedRoute>
+              }
+            />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
