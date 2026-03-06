@@ -234,18 +234,10 @@ const DashboardPage = () => {
     return () => { supabase.removeChannel(channel); };
   }, [user]);
 
-  if (loading || !profile) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
-
-  const kcalTarget = profile.vet_kcal || 2000;
-  const proteinTarget = profile.protein_g || 150;
-  const carbsTarget = profile.carbs_g || 250;
-  const fatTarget = profile.fat_g || 65;
+  const kcalTarget = profile?.vet_kcal || 2000;
+  const proteinTarget = profile?.protein_g || 150;
+  const carbsTarget = profile?.carbs_g || 250;
+  const fatTarget = profile?.fat_g || 65;
 
   const kcalPercent = (todayTotals.kcal / kcalTarget) * 100;
   const protPercent = Math.min((todayTotals.protein / proteinTarget) * 100, 100);
@@ -256,29 +248,16 @@ const DashboardPage = () => {
   const aiScore = useMemo(() => {
     if (todayMeals.length === 0) return 0;
     let score = 0;
-    // Calorie adherence (40 pts)
     const calDiff = Math.abs(kcalPercent - 100);
     score += Math.max(0, 40 - calDiff * 0.8);
-    // Protein target (25 pts)
     score += Math.min(protPercent, 100) * 0.25;
-    // Meal frequency (20 pts)
     const mealTypes = new Set(todayMeals.map(m => m.meal_type));
     score += Math.min(mealTypes.size, 4) * 5;
-    // Macro balance (15 pts)
     const macroBalance = (Math.min(protPercent, 100) + Math.min(carbPercent, 100) + Math.min(fatPercent, 100)) / 3;
     score += macroBalance * 0.15;
     return Math.round(Math.min(score, 100));
   }, [todayTotals, todayMeals, kcalPercent, protPercent, carbPercent, fatPercent]);
 
-  const isON = kcalPercent >= 70 && protPercent >= 60;
-
-  const macros = [
-    { label: "Proteína", value: todayTotals.protein, target: proteinTarget, unit: "g", percent: protPercent, colorFrom: "from-primary", colorTo: "to-gold-glow", icon: "💪" },
-    { label: "Carboidrato", value: todayTotals.carbs, target: carbsTarget, unit: "g", percent: carbPercent, colorFrom: "from-accent", colorTo: "to-cyan-glow", icon: "⚡" },
-    { label: "Gordura", value: todayTotals.fat, target: fatTarget, unit: "g", percent: fatPercent, colorFrom: "from-danger", colorTo: "to-destructive", icon: "🔥" },
-  ];
-
-  // Predictive alert based on time of day
   const hour = new Date().getHours();
   const predictiveAlert = useMemo(() => {
     if (todayMeals.length === 0 && hour >= 10) return "Ainda sem refeições registradas hoje. Bora começar? 🍳";
@@ -288,6 +267,22 @@ const DashboardPage = () => {
     if (kcalPercent >= 105) return "Acima da meta calórica. Sem culpa — amanhã é um novo dia! 💚";
     return null;
   }, [todayMeals, todayTotals, hour, proteinTarget, kcalTarget, kcalPercent]);
+
+  if (loading || !profile) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  const isON = kcalPercent >= 70 && protPercent >= 60;
+
+  const macros = [
+    { label: "Proteína", value: todayTotals.protein, target: proteinTarget, unit: "g", percent: protPercent, colorFrom: "from-primary", colorTo: "to-gold-glow", icon: "💪" },
+    { label: "Carboidrato", value: todayTotals.carbs, target: carbsTarget, unit: "g", percent: carbPercent, colorFrom: "from-accent", colorTo: "to-cyan-glow", icon: "⚡" },
+    { label: "Gordura", value: todayTotals.fat, target: fatTarget, unit: "g", percent: fatPercent, colorFrom: "from-danger", colorTo: "to-destructive", icon: "🔥" },
+  ];
 
   const mealTypeIcons: Record<string, string> = {
     cafe_da_manha: "☕", almoco: "🍽️", jantar: "🌙", lanche: "🥤", ceia: "🫖",
