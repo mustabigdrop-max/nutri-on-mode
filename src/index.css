@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Syne:wght@400;700;800&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -54,8 +54,17 @@
     --shadow-cyan: 0 0 30px hsl(168 100% 50% / 0.2);
 
     --font-display: 'Space Grotesk', sans-serif;
+    --font-heading: 'Bebas Neue', sans-serif;
+    --font-landing: 'Syne', sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
     --font-body: 'Space Grotesk', sans-serif;
+
+    --landing-bg: 240 60% 2%;
+    --landing-s1: 240 40% 4%;
+    --landing-s2: 240 40% 6%;
+    --landing-border: 240 40% 8%;
+    --landing-dim: 240 25% 23%;
+    --landing-muted: 240 20% 40%;
 
     --sidebar-background: 240 40% 5%;
     --sidebar-foreground: 260 30% 96%;
@@ -86,6 +95,14 @@
 @layer utilities {
   .font-display {
     font-family: var(--font-display);
+  }
+
+  .font-heading {
+    font-family: var(--font-heading);
+  }
+
+  .font-landing {
+    font-family: var(--font-landing);
   }
 
   .font-mono {
