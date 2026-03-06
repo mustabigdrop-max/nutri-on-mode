@@ -9,7 +9,7 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { mode, query, imageBase64 } = await req.json();
+    const { mode, query, imageBase64, profileContext } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
@@ -25,11 +25,13 @@ serve(async (req) => {
 Formato obrigatório:
 {"foods":[{"name":"string","portion":"string","kcal":number,"protein":number,"carbs":number,"fat":number}],"comment":"string"}
 
+${profileContext ? `Contexto do usuário: ${profileContext}` : ""}
+
 Regras:
 - Identifique TODOS os alimentos visíveis no prato
 - Estime porções em medidas caseiras brasileiras (colher de sopa, xícara, fatia, unidade, gramas)
 - Use valores nutricionais da tabela TACO/IBGE
-- O "comment" deve ser uma dica rápida sobre a refeição (qualidade, equilíbrio, sugestão)
+- O "comment" deve avaliar a qualidade da refeição, o que falta no dia e sugerir a próxima refeição. Tom motivacional.
 - Responda APENAS com o JSON, sem texto extra`
         },
         {
@@ -50,12 +52,14 @@ Regras:
 Formato obrigatório:
 {"foods":[{"name":"string","portion":"string","kcal":number,"protein":number,"carbs":number,"fat":number}],"comment":"string"}
 
+${profileContext ? `Contexto do usuário: ${profileContext}` : ""}
+
 Regras:
 - Interprete descrições em português brasileiro coloquial
 - Use valores da tabela TACO/IBGE
 - Porções em medidas caseiras (colher de sopa, xícara, fatia, unidade, concha, etc.)
 - Se mencionou "prato de arroz com feijão", separe em itens individuais com porções típicas
-- O "comment" deve ser uma dica rápida sobre a refeição
+- O "comment" deve avaliar a qualidade da refeição, sugerir o que falta no dia e dar uma dica para a próxima refeição. Tom motivacional e encorajador.
 - Responda APENAS com o JSON, sem texto extra`
         },
         {
