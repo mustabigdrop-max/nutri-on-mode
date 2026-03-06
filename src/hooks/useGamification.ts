@@ -131,10 +131,37 @@ export const useGamification = () => {
     await updateProfile({ xp: newXp, level: newLevel });
   }, [user, missions, profile, updateProfile]);
 
+  const generateChallenges = useCallback(async () => {
+    if (!user) return;
+    try {
+      const profileCtx = profile ? `Objetivo: ${profile.goal}, Nível: ${currentLevel.name}, XP: ${currentXp}` : "";
+      const { data, error } = await supabase.functions.invoke("generate-challenges", {
+        body: { profileContext: profileCtx },
+      });
+      if (error) throw error;
+      if (data?.challenges) {
+        const weekStart = getWeekStart();
+        const rows = data.challenges.map((c: any) => ({
+          user_id: user.id,
+          week_start: weekStart,
+          title: c.title,
+          description: c.description,
+          target_value: c.target_value || 7,
+          xp_reward: c.xp_reward || 100,
+          challenge_type: c.challenge_type || "general",
+        }));
+        const { data: inserted } = await supabase.from("weekly_challenges").upsert(rows, { onConflict: "user_id,week_start,title" }).select("*");
+        if (inserted) setChallenges(inserted as Challenge[]);
+      }
+    } catch (e) {
+      console.error("Failed to generate challenges:", e);
+    }
+  }, [user, profile, currentLevel, currentXp]);
+
   return {
     badges, missions, challenges, loading, generatingMissions,
     currentLevel, nextLevel, levelProgress, currentXp,
-    generateMissions, completeMission,
+    generateMissions, completeMission, generateChallenges,
   };
 };
 
