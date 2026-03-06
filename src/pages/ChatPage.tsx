@@ -1,13 +1,13 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
-import ReactMarkdown from "react-markdown";
-import { ArrowLeft, Send, Sparkles, Bot, User as UserIcon } from "lucide-react";
+import { useChatHistory, Msg } from "@/hooks/useChatHistory";
+import { useMealHistory } from "@/hooks/useMealHistory";
+import ChatMessage from "@/components/chat/ChatMessage";
+import ChatEmptyState from "@/components/chat/ChatEmptyState";
+import { ArrowLeft, Send, Sparkles, Bot, Plus, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-
-type Msg = { role: "user" | "assistant"; content: string };
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/nutri-coach`;
 
@@ -15,7 +15,8 @@ const ChatPage = () => {
   const { user } = useAuth();
   const { profile } = useProfile();
   const navigate = useNavigate();
-  const [messages, setMessages] = useState<Msg[]>([]);
+  const { messages, setMessages, saveMessage, startNewConversation, loadingHistory } = useChatHistory();
+  const mealHistoryContext = useMealHistory();
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -24,7 +25,6 @@ const ChatPage = () => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages]);
 
-  // Build context about user profile
   const profileContext = profile ? [
     `Nome: ${profile.full_name || "Usuário"}`,
     `Sexo: ${profile.sex || "N/I"}`,
@@ -33,6 +33,7 @@ const ChatPage = () => {
     `Atividade: ${profile.activity_level || "N/I"}, Treino: ${profile.training_frequency || 0}x/sem`,
     `Metas: ${profile.vet_kcal}kcal, ${profile.protein_g}g prot, ${profile.carbs_g}g carb, ${profile.fat_g}g fat`,
     `GLP-1: ${profile.uses_glp1 ? "Sim" : "Não"}`,
+    `Protocolo: ${profile.active_protocol || "Padrão"}`,
     `Restrições: ${profile.dietary_restrictions?.join(", ") || "Nenhuma"}`,
     `Condições: ${profile.health_conditions?.join(", ") || "Nenhuma"}`,
     `Streak: ${profile.streak_days || 0} dias, Level: ${profile.level || 1}, XP: ${profile.xp || 0}`,
@@ -46,6 +47,9 @@ const ChatPage = () => {
     setMessages(prev => [...prev, userMsg]);
     setInput("");
     setIsLoading(true);
+
+    // Save user message
+    await saveMessage(userMsg);
 
     let assistantSoFar = "";
     const upsertAssistant = (chunk: string) => {
@@ -69,19 +73,12 @@ const ChatPage = () => {
         body: JSON.stringify({
           messages: [...messages, userMsg],
           profileContext,
+          mealHistoryContext,
         }),
       });
 
-      if (resp.status === 429) {
-        toast.error("Muitas mensagens. Aguarde um momento.");
-        setIsLoading(false);
-        return;
-      }
-      if (resp.status === 402) {
-        toast.error("Créditos insuficientes.");
-        setIsLoading(false);
-        return;
-      }
+      if (resp.status === 429) { toast.error("Muitas mensagens. Aguarde um momento."); setIsLoading(false); return; }
+      if (resp.status === 402) { toast.error("Créditos insuficientes."); setIsLoading(false); return; }
       if (!resp.ok || !resp.body) throw new Error("Erro na conexão");
 
       const reader = resp.body.getReader();
@@ -112,6 +109,11 @@ const ChatPage = () => {
           }
         }
       }
+
+      // Save complete assistant message
+      if (assistantSoFar) {
+        await saveMessage({ role: "assistant", content: assistantSoFar });
+      }
     } catch (e) {
       console.error(e);
       toast.error("Erro ao conectar com o coach");
@@ -128,74 +130,38 @@ const ChatPage = () => {
         <button onClick={() => navigate("/dashboard")} className="p-2 rounded-lg text-muted-foreground hover:text-foreground transition-colors">
           <ArrowLeft className="w-5 h-5" />
         </button>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-1">
           <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
             <Sparkles className="w-4 h-4 text-primary" />
           </div>
           <div>
             <h1 className="text-sm font-bold text-foreground">NutriCoach IA</h1>
-            <p className="text-[10px] text-muted-foreground font-mono">Seu coach nutricional inteligente</p>
+            <p className="text-[10px] text-muted-foreground font-mono">Coach comportamental inteligente</p>
           </div>
         </div>
+        <button
+          onClick={startNewConversation}
+          className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-card transition-all"
+          title="Nova conversa"
+        >
+          <Plus className="w-5 h-5" />
+        </button>
       </div>
 
       {/* Messages */}
       <div ref={scrollRef} className="relative z-10 flex-1 overflow-y-auto px-4 py-4 space-y-4">
-        {messages.length === 0 && (
-          <div className="text-center py-12">
-            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-              <Bot className="w-8 h-8 text-primary" />
-            </div>
-            <h2 className="text-lg font-bold text-foreground mb-2">Olá, {profile?.full_name?.split(" ")[0] || ""}! 👋</h2>
-            <p className="text-sm text-muted-foreground max-w-xs mx-auto">
-              Sou seu NutriCoach. Pergunte sobre alimentação, receitas, dúvidas sobre sua dieta ou peça motivação!
-            </p>
-            <div className="flex flex-wrap gap-2 justify-center mt-6">
-              {["O que comer antes do treino?", "Receita rápida e proteica", "Análise do meu progresso", "Dicas para mais saciedade"].map(q => (
-                <button
-                  key={q}
-                  onClick={() => { setInput(q); }}
-                  className="px-3 py-2 rounded-xl text-xs bg-card border border-border text-muted-foreground hover:text-foreground hover:border-primary/30 transition-all"
-                >
-                  {q}
-                </button>
-              ))}
-            </div>
+        {loadingHistory ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="w-6 h-6 text-primary animate-spin" />
           </div>
+        ) : messages.length === 0 ? (
+          <ChatEmptyState
+            userName={profile?.full_name?.split(" ")[0] || ""}
+            onSuggestionClick={setInput}
+          />
+        ) : (
+          messages.map((msg, i) => <ChatMessage key={i} msg={msg} />)
         )}
-
-        {messages.map((msg, i) => (
-          <motion.div
-            key={i}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className={`flex gap-2 ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-          >
-            {msg.role === "assistant" && (
-              <div className="w-7 h-7 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-1">
-                <Bot className="w-3.5 h-3.5 text-primary" />
-              </div>
-            )}
-            <div className={`max-w-[80%] rounded-2xl px-4 py-3 ${
-              msg.role === "user"
-                ? "bg-primary text-primary-foreground rounded-br-md"
-                : "bg-card border border-border text-foreground rounded-bl-md"
-            }`}>
-              {msg.role === "assistant" ? (
-                <div className="prose prose-sm prose-invert max-w-none text-sm [&_p]:mb-2 [&_ul]:mb-2 [&_li]:text-foreground [&_strong]:text-primary [&_h3]:text-primary [&_h3]:text-sm">
-                  <ReactMarkdown>{msg.content}</ReactMarkdown>
-                </div>
-              ) : (
-                <p className="text-sm">{msg.content}</p>
-              )}
-            </div>
-            {msg.role === "user" && (
-              <div className="w-7 h-7 rounded-full bg-secondary flex items-center justify-center flex-shrink-0 mt-1">
-                <UserIcon className="w-3.5 h-3.5 text-muted-foreground" />
-              </div>
-            )}
-          </motion.div>
-        ))}
 
         {isLoading && messages[messages.length - 1]?.role !== "assistant" && (
           <div className="flex gap-2">
