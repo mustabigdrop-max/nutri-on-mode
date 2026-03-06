@@ -81,6 +81,7 @@ const MicronutrientsPage = () => {
           </div>
         )}
       </div>
+      <BottomNav />
     </div>
   );
 };

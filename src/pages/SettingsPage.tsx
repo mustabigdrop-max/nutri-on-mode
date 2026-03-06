@@ -297,6 +297,7 @@ const SettingsPage = () => {
           <LogOut className="w-4 h-4" /> Sair da conta
         </button>
       </div>
+      <BottomNav />
     </div>
   );
 };

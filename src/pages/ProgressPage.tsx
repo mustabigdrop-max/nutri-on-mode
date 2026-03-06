@@ -376,6 +376,7 @@ const ProgressPage = () => {
           </>
         )}
       </div>
+      <BottomNav />
     </div>
   );
 };

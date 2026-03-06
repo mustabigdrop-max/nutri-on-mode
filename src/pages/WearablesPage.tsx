@@ -315,6 +315,7 @@ const WearablesPage = () => {
           </Card>
         )}
       </div>
+      <BottomNav />
     </div>
   );
 };

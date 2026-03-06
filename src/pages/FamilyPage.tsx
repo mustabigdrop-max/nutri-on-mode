@@ -370,6 +370,7 @@ const FamilyPage = () => {
         {/* Weekly family report */}
         {members.length > 0 && <FamilyWeeklyReport report={report} />}
       </div>
+      <BottomNav />
     </div>
   );
 };

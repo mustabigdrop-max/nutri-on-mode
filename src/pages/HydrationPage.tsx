@@ -126,6 +126,7 @@ const HydrationPage = () => {
           </CardContent>
         </Card>
       </div>
+      <BottomNav />
     </div>
   );
 };

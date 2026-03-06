@@ -253,6 +253,7 @@ const ShoppingListPage = () => {
           </div>
         )}
       </div>
+      <BottomNav />
     </div>
   );
 };

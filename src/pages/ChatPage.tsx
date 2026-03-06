@@ -200,6 +200,7 @@ const ChatPage = () => {
           </button>
         </div>
       </div>
+      <BottomNav />
     </div>
   );
 };

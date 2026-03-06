@@ -523,6 +523,7 @@ const SupportPage = () => {
           </TabsContent>
         </Tabs>
       </div>
+      <BottomNav />
     </div>
   );
 };

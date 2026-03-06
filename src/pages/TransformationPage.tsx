@@ -297,6 +297,7 @@ const TransformationPage = () => {
           />
         )}
       </AnimatePresence>
+      <BottomNav />
     </div>
   );
 };

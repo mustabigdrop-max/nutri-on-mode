@@ -283,6 +283,7 @@ const MealHistoryPage = () => {
           </div>
         )}
       </div>
+      <BottomNav />
     </div>
   );
 };

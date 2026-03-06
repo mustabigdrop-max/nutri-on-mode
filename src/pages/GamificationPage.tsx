@@ -145,6 +145,7 @@ const GamificationPage = () => {
           />
         )}
       </AnimatePresence>
+      <BottomNav />
     </div>
   );
 };
