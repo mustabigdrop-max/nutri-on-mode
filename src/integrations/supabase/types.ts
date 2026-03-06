@@ -418,6 +418,48 @@ export type Database = {
         }
         Relationships: []
       }
+      foods: {
+        Row: {
+          calorias_100g: number
+          carbo_100g: number
+          created_at: string
+          fibra: number | null
+          fonte: string
+          gordura_100g: number
+          id: string
+          nome: string
+          proteina_100g: number
+          sodio: number | null
+          vitaminas: Json | null
+        }
+        Insert: {
+          calorias_100g?: number
+          carbo_100g?: number
+          created_at?: string
+          fibra?: number | null
+          fonte?: string
+          gordura_100g?: number
+          id?: string
+          nome: string
+          proteina_100g?: number
+          sodio?: number | null
+          vitaminas?: Json | null
+        }
+        Update: {
+          calorias_100g?: number
+          carbo_100g?: number
+          created_at?: string
+          fibra?: number | null
+          fonte?: string
+          gordura_100g?: number
+          id?: string
+          nome?: string
+          proteina_100g?: number
+          sodio?: number | null
+          vitaminas?: Json | null
+        }
+        Relationships: []
+      }
       meal_logs: {
         Row: {
           confirmed: boolean | null
@@ -573,6 +615,33 @@ export type Database = {
           swapped?: boolean | null
           user_id?: string
           week_start?: string
+        }
+        Relationships: []
+      }
+      meals_saved: {
+        Row: {
+          alimentos: Json
+          created_at: string
+          id: string
+          nome: string
+          total_macros: Json
+          user_id: string
+        }
+        Insert: {
+          alimentos?: Json
+          created_at?: string
+          id?: string
+          nome: string
+          total_macros?: Json
+          user_id: string
+        }
+        Update: {
+          alimentos?: Json
+          created_at?: string
+          id?: string
+          nome?: string
+          total_macros?: Json
+          user_id?: string
         }
         Relationships: []
       }
@@ -846,6 +915,30 @@ export type Database = {
         Update: {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      water_logs: {
+        Row: {
+          created_at: string
+          id: string
+          log_date: string
+          ml_total: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          log_date?: string
+          ml_total?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          log_date?: string
+          ml_total?: number
           user_id?: string
         }
         Relationships: []
