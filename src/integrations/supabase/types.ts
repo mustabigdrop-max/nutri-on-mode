@@ -127,6 +127,97 @@ export type Database = {
           },
         ]
       }
+      community_groups: {
+        Row: {
+          created_at: string
+          description: string | null
+          emoji: string | null
+          goal_type: string
+          id: string
+          member_count: number | null
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          emoji?: string | null
+          goal_type?: string
+          id?: string
+          member_count?: number | null
+          name: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          emoji?: string | null
+          goal_type?: string
+          id?: string
+          member_count?: number | null
+          name?: string
+        }
+        Relationships: []
+      }
+      community_memberships: {
+        Row: {
+          group_id: string
+          id: string
+          joined_at: string
+          user_id: string
+        }
+        Insert: {
+          group_id: string
+          id?: string
+          joined_at?: string
+          user_id: string
+        }
+        Update: {
+          group_id?: string
+          id?: string
+          joined_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_memberships_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "community_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      community_messages: {
+        Row: {
+          content: string
+          created_at: string
+          group_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          group_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          group_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_messages_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "community_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       conversations: {
         Row: {
           created_at: string
@@ -294,6 +385,36 @@ export type Database = {
           updated_at?: string
           weight_kg?: number | null
           xp?: number | null
+        }
+        Relationships: []
+      }
+      faq_articles: {
+        Row: {
+          answer: string
+          category: string
+          created_at: string
+          id: string
+          question: string
+          sort_order: number | null
+          tags: string[] | null
+        }
+        Insert: {
+          answer: string
+          category?: string
+          created_at?: string
+          id?: string
+          question: string
+          sort_order?: number | null
+          tags?: string[] | null
+        }
+        Update: {
+          answer?: string
+          category?: string
+          created_at?: string
+          id?: string
+          question?: string
+          sort_order?: number | null
+          tags?: string[] | null
         }
         Relationships: []
       }
@@ -617,6 +738,68 @@ export type Database = {
           tags?: string[] | null
           user_id?: string
           weight_kg?: number | null
+        }
+        Relationships: []
+      }
+      support_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          sender_type: string
+          ticket_id: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          sender_type?: string
+          ticket_id: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          sender_type?: string
+          ticket_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_messages_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "support_tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      support_tickets: {
+        Row: {
+          created_at: string
+          id: string
+          status: string
+          subject: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          status?: string
+          subject: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          status?: string
+          subject?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
