@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
+import { useWaterLogs } from "@/hooks/useWaterLogs";
 import DashboardGamificationCards from "@/components/dashboard/DashboardGamificationCards";
 import {
   Flame, TrendingUp, Droplets, Apple, BarChart3, MessageSquare,
@@ -188,7 +189,9 @@ const DashboardPage = () => {
   const navigate = useNavigate();
   const [todayMeals, setTodayMeals] = useState<any[]>([]);
   const [todayTotals, setTodayTotals] = useState({ kcal: 0, protein: 0, carbs: 0, fat: 0 });
-  const [waterGlasses, setWaterGlasses] = useState(0);
+  const { todayLog: waterLog, addWater } = useWaterLogs();
+  const waterMl = waterLog?.ml_total ?? 0;
+  const waterGlasses = Math.round(waterMl / 250);
 
   useEffect(() => {
     if (!profile?.onboarding_completed && !loading) {
@@ -403,14 +406,14 @@ const DashboardPage = () => {
           className="mb-4"
         >
           <button
-            onClick={() => setWaterGlasses(prev => prev + 1)}
+            onClick={() => addWater(250)}
             className="w-full flex items-center gap-3 p-3 rounded-xl border border-border bg-card hover:border-accent/30 transition-all group"
           >
             <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center group-hover:bg-accent/20 transition-colors">
               <Droplets className="w-4 h-4 text-accent" />
             </div>
             <span className="text-sm font-mono text-foreground">+ 1 copo de água (250ml)</span>
-            <span className="ml-auto text-xs font-mono text-muted-foreground">{waterGlasses * 250}ml</span>
+            <span className="ml-auto text-xs font-mono text-muted-foreground">{waterMl}ml</span>
           </button>
         </motion.div>
 
