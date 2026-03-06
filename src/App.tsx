@@ -21,6 +21,7 @@ import ShoppingListPage from "./pages/ShoppingListPage";
 import WearablesPage from "./pages/WearablesPage";
 import FamilyPage from "./pages/FamilyPage";
 import SupportPage from "./pages/SupportPage";
+import HydrationPage from "./pages/HydrationPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -144,6 +145,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <SupportPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/hydration"
+              element={
+                <ProtectedRoute>
+                  <HydrationPage />
                 </ProtectedRoute>
               }
             />
