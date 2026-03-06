@@ -112,6 +112,14 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/shopping-list"
+              element={
+                <ProtectedRoute>
+                  <ShoppingListPage />
+                </ProtectedRoute>
+              }
+            />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
