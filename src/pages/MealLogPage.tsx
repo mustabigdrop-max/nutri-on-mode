@@ -276,7 +276,7 @@ const MealLogPage = () => {
         if (error) throw error;
         if (data?.error) throw new Error(data.error);
         if (data?.foods?.length) {
-          addAiFoods(data.foods);
+          addAiFoods(data.foods, data.quality_score);
           setAiComment(data.comment || "");
           toast.success(`${data.foods.length} alimento(s) detectado(s) na foto! 📸✨`);
         } else {
