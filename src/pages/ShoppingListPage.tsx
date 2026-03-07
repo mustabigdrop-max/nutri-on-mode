@@ -72,12 +72,32 @@ function classifyItem(foodName: string): string {
   return "outros";
 }
 
+// Average prices per item (R$ per portion) — Brazilian regional estimates
+const ITEM_PRICES: Record<string, number> = {
+  "frango": 3.50, "carne": 5.00, "peixe": 6.00, "salmão": 12.00, "tilápia": 5.50,
+  "atum": 4.00, "ovo": 0.80, "whey": 3.00, "queijo": 2.50, "iogurte": 2.00,
+  "leite": 1.50, "arroz": 0.60, "feijão": 0.80, "batata doce": 0.70, "aveia": 0.50,
+  "pão": 0.40, "macarrão": 0.70, "banana": 0.50, "maçã": 1.00, "morango": 2.00,
+  "tomate": 0.60, "alface": 1.00, "brócolis": 1.50, "cenoura": 0.40, "cebola": 0.30,
+  "alho": 0.20, "azeite": 1.50, "pasta de amendoim": 1.00, "castanha": 2.00,
+  "default": 2.00,
+};
+
+function estimatePrice(foodName: string): number {
+  const lower = foodName.toLowerCase();
+  for (const [key, price] of Object.entries(ITEM_PRICES)) {
+    if (key !== "default" && lower.includes(key)) return price;
+  }
+  return ITEM_PRICES.default;
+}
+
 interface ShoppingItem {
   name: string;
   portion: string;
   count: number;
   section: string;
   checked: boolean;
+  estimatedPrice: number;
 }
 
 const ShoppingListPage = () => {
