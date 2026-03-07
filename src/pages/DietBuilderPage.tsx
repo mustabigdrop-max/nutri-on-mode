@@ -194,11 +194,17 @@ interface MealItem {
   id: string;
   name: string;
   portion: string;
+  measure: string;
+  measureQty: number;
   grams: number;
   kcal: number;
   protein: number;
   carbs: number;
   fat: number;
+  kcalPer100g?: number;
+  proteinPer100g?: number;
+  carbsPer100g?: number;
+  fatPer100g?: number;
   editing?: boolean;
 }
 
