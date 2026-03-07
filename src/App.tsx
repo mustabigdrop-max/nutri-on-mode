@@ -31,6 +31,7 @@ import ChronobiologyPage from "./pages/ChronobiologyPage";
 import BehavioralNutritionPage from "./pages/BehavioralNutritionPage";
 import SupplementationPage from "./pages/SupplementationPage";
 import MicrobiomePage from "./pages/MicrobiomePage";
+import ProtocolEnginePage from "./pages/ProtocolEnginePage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
