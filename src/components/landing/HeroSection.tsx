@@ -69,7 +69,7 @@ const HeroSection = () => {
           <button onClick={() => navigate("/auth")} className="group relative px-8 py-4 rounded-lg bg-primary text-primary-foreground font-bold text-lg transition-all hover:scale-105 glow-gold">
             <span className="flex items-center gap-2">
               <Zap className="w-5 h-5" />
-              Começar 7 dias grátis
+              Começar agora
             </span>
           </button>
           <button className="px-8 py-4 rounded-lg border border-border text-foreground font-semibold text-lg transition-all hover:border-primary/40 hover:bg-secondary/50">
