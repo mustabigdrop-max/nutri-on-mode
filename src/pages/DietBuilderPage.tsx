@@ -825,7 +825,7 @@ const DietBuilderPage = () => {
               <div className="max-w-lg mx-auto px-4 pt-4 pb-8">
                 <div className="flex items-center gap-2 mb-4">
                   <button
-                    onClick={() => { setSearchSlot(null); setPendingFood(null); setSearchQuery(""); setSearchResults([]); }}
+                    onClick={() => { setSearchSlot(null); setPendingFood(null); setSearchQuery(""); setSearchResults([]); setCategoryFilter(null); }}
                     className="p-2 rounded-lg border border-border bg-card"
                   >
                     <X className="w-4 h-4 text-foreground" />
