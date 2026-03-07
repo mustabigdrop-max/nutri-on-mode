@@ -190,21 +190,39 @@ const ShoppingListPage = () => {
           </button>
         </div>
 
-        {/* Progress */}
+        {/* Progress + Cost */}
         {totalItems > 0 && (
-          <div className="rounded-xl border border-border bg-card p-3 mb-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-mono text-muted-foreground">Progresso</span>
-              <span className="text-xs font-mono text-primary font-semibold">{checkedCount}/{totalItems}</span>
+          <>
+            <div className="rounded-xl border border-border bg-card p-3 mb-2">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-mono text-muted-foreground">Progresso</span>
+                <span className="text-xs font-mono text-primary font-semibold">{checkedCount}/{totalItems}</span>
+              </div>
+              <div className="h-2 rounded-full bg-secondary overflow-hidden">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${totalItems > 0 ? (checkedCount / totalItems) * 100 : 0}%` }}
+                  className="h-full rounded-full bg-primary"
+                />
+              </div>
             </div>
-            <div className="h-2 rounded-full bg-secondary overflow-hidden">
-              <motion.div
-                initial={{ width: 0 }}
-                animate={{ width: `${totalItems > 0 ? (checkedCount / totalItems) * 100 : 0}%` }}
-                className="h-full rounded-full bg-primary"
-              />
+            <div className="rounded-xl border border-primary/20 bg-primary/5 p-3 mb-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider">Custo estimado semanal</p>
+                  <p className="text-xl font-bold font-mono text-primary">
+                    R$ {shoppingList.reduce((s, i) => s + i.estimatedPrice * i.count, 0).toFixed(2)}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-[10px] font-mono text-muted-foreground">Por refeição</p>
+                  <p className="text-sm font-bold font-mono text-foreground">
+                    ~R$ {(shoppingList.reduce((s, i) => s + i.estimatedPrice * i.count, 0) / Math.max(shoppingList.reduce((s, i) => s + i.count, 0), 1)).toFixed(2)}
+                  </p>
+                </div>
+              </div>
             </div>
-          </div>
+          </>
         )}
 
         {loading ? (
