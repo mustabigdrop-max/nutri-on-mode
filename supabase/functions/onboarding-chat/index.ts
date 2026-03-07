@@ -5,60 +5,117 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+const SYSTEM_PROMPTS: Record<string, string> = {
+  emagrecimento: `Você é o assistente de onboarding do nutriON, especialista em emagrecimento comportamental.
+Sua tarefa é guiar o usuário em uma conversa natural, calorosa e empática para coletar informações do perfil nutricional.
+Use técnicas de Entrevista Motivacional. Nunca julgue recaídas. Quando detectar gatilho emocional, aborde com empatia ANTES de soluções técnicas.
+Tom: motivador e acolhedor.`,
+
+  hipertrofia: `Você é o assistente de onboarding do nutriON, especialista em nutrição esportiva para hipertrofia.
+Sua tarefa é guiar o usuário em uma conversa natural e técnica para coletar informações do perfil nutricional.
+Foque em timing de proteína, janela anabólica, progressão de carbo.
+Tom: técnico, direto, focado em performance.`,
+
+  saude_geral: `Você é o assistente de onboarding do nutriON, especialista em nutrição preventiva e qualidade alimentar.
+Sua tarefa é guiar o usuário em uma conversa natural, educativa e sem pressão para coletar informações do perfil nutricional.
+Foque em diversidade alimentar, micronutrientes, educação nutricional.
+Tom: acolhedor, educativo, sem pressão.`,
+
+  infantil: `Você é o assistente de onboarding do nutriON, especialista em nutrição infantil.
+Você fala COM OS PAIS, não com a criança. Foque em recomendações OMS, introdução de novos alimentos, recusa alimentar, variedade.
+Tom: empático com os pais, prático, sem alarmismo.`,
+};
+
+const BLOCK_INSTRUCTIONS: Record<string, Record<number, string>> = {
+  emagrecimento: {
+    1: `BLOCO ATUAL: Dados Pessoais
+Cumprimente com entusiasmo. Pergunte nome, idade/data de nascimento, sexo, altura, peso atual.
+Pergunte o peso meta e prazo desejado. Como se sente em relação a isso.`,
+    2: `BLOCO ATUAL: Histórico e Relação com Comida
+Pergunte se já tentou emagrecer antes. O que funcionou e não funcionou.
+Pergunte se come mais por fome física ou emocional.
+Quais horários são mais difíceis. Tem alimento que sente compulsão?
+Restrições: alergias, intolerâncias, preferência (vegano/vegetariano).`,
+    3: `BLOCO ATUAL: Perfil Comportamental
+Identifique o perfil entre 8 tipos: Comedor Emocional, Veloz, Noturno, Social, Restritivo, Ansioso, Intuitivo, Caótico.
+Mapeie gatilhos emocionais (estresse, tédio, tristeza, celebração, ansiedade).
+Use escala de fome e saciedade. Faça perguntas de Mindful Eating.`,
+    4: `BLOCO ATUAL: Estilo de Vida
+Pergunte nível de atividade física (sedentário/leve/moderado/intenso/atleta).
+Acesso à cozinha e habilidade culinária.
+Prefere refeições simples ou elaboradas? Orçamento semanal aproximado.
+Após coletar, chame extract_block_data e depois finalize_onboarding.`,
+  },
+  hipertrofia: {
+    1: `BLOCO ATUAL: Dados Pessoais
+Cumprimente. Pergunte nome, idade/data de nascimento, sexo, altura, peso atual.
+Pergunte percentual de gordura estimado. Há quanto tempo treina.`,
+    2: `BLOCO ATUAL: Histórico e Treino
+Quantas vezes por semana treina? Qual tipo (musculação/crossfit/calistenia/outro)?
+Já segue algum protocolo de nutrição? Maior dificuldade: comer o suficiente ou manter consistência?
+Restrições alimentares.`,
+    3: `BLOCO ATUAL: Estilo de Vida
+Pergunte nível de atividade física (sedentário/leve/moderado/intenso/atleta).
+Acesso à cozinha. Prefere refeições simples ou elaboradas? Orçamento semanal.
+Qualidade do sono (horas).
+Após coletar, chame extract_block_data e depois finalize_onboarding.`,
+  },
+  saude_geral: {
+    1: `BLOCO ATUAL: Dados Pessoais
+Cumprimente com acolhimento. Pergunte nome, idade/data de nascimento, sexo, altura, peso.
+O que mais incomoda na alimentação hoje.`,
+    2: `BLOCO ATUAL: Histórico Alimentar
+Como descreveria a alimentação hoje em 1 frase?
+Restrições: alergia, intolerância, preferência (vegano/vegetariano)?
+Nível de estresse crônico (1-10). Dorme bem? Quantas horas?`,
+    3: `BLOCO ATUAL: Perfil Comportamental
+Identifique o perfil entre 8 tipos: Comedor Emocional, Veloz, Noturno, Social, Restritivo, Ansioso, Intuitivo, Caótico.
+Mapeie gatilhos e hábitos. Use perguntas de Mindful Eating.`,
+    4: `BLOCO ATUAL: Estilo de Vida
+Nível de atividade física. Acesso à cozinha. Preferência de refeições.
+Orçamento semanal. Após coletar, chame extract_block_data e depois finalize_onboarding.`,
+  },
+  infantil: {
+    1: `BLOCO ATUAL: Dados da Criança
+Cumprimente os pais. Pergunte nome do filho/filha, idade.
+Fase: introdução alimentar / pré-escolar / escolar.
+Alguma alergia ou restrição alimentar?`,
+    2: `BLOCO ATUAL: Histórico Alimentar da Criança
+Quais alimentos come bem? Quais recusa?
+Alguma preocupação específica com a alimentação?
+Como são as refeições em família?`,
+    3: `BLOCO ATUAL: Estilo de Vida da Família
+Quem prepara as refeições? Acesso à cozinha? Orçamento semanal.
+Prefere receitas simples ou elaboradas?
+Após coletar, chame extract_block_data e depois finalize_onboarding.`,
+  },
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { messages, currentBlock } = await req.json();
+    const { messages, currentBlock, objetivo } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
-    const systemPrompt = `Você é o assistente de onboarding do nutriON, um app de nutrição inteligente brasileiro.
-Sua tarefa é guiar o usuário em uma conversa natural, calorosa e empática para coletar informações do perfil nutricional.
+    const obj = objetivo || "saude_geral";
+    const basePrompt = SYSTEM_PROMPTS[obj] || SYSTEM_PROMPTS.saude_geral;
+    const blockInstructions = BLOCK_INSTRUCTIONS[obj]?.[currentBlock] || "";
 
-BLOCO ATUAL: ${currentBlock}/5
+    const systemPrompt = `${basePrompt}
 
-## BLOCOS E DADOS A COLETAR:
-
-### Bloco 1 — Identidade e objetivo:
-Cumprimente o usuário com entusiasmo. Pergunte nome, idade/data de nascimento, sexo, altura, peso atual e peso meta.
-Pergunte o objetivo principal (emagrecer, hipertrofia, manutenção, saúde geral, definição, performance, protocolo GLP-1).
-Pergunte o prazo desejado e como se sente em relação a isso.
-
-### Bloco 2 — Histórico alimentar e relação com comida:
-Pergunte se come mais por fome física ou emocional.
-Pergunte alimentos que ama e que evita.
-Histórico de dietas tentadas e por que abandonou.
-Restrições: alergias, intolerâncias, religião, preferência (vegano/vegetariano).
-Horários de refeição e rotina diária.
-
-### Bloco 3 — Nutrição comportamental:
-Identifique o perfil comportamental alimentar entre 8 perfis: Comedor Emocional, Comedor Veloz, Comedor Noturno, Comedor Social, Comedor Restritivo, Comedor Ansioso, Comedor Intuitivo, Comedor Caótico.
-Mapeie gatilhos emocionais (estresse, tédio, tristeza, celebração, ansiedade).
-Use escala de fome e saciedade para calibrar o radar interno do usuário.
-Faça perguntas de Mindful Eating.
-
-### Bloco 4 — Estilo de vida e treino:
-Pergunte nível de atividade física (sedentário/leve/moderado/intenso/atleta).
-Tipo de treino preferido e frequência semanal.
-Qualidade do sono (horas e qualidade). Nível de estresse crônico (1-10).
-Acesso à cozinha e habilidade culinária.
-
-### Bloco 5 — Suporte e contexto:
-Pergunte quem mais vai usar o app (modo família: adulto/criança/idoso).
-Se tem acompanhamento profissional (nutricionista/coach).
-Preferência de notificações e horários.
+${blockInstructions}
 
 ## REGRAS:
 - Fale em português brasileiro, de forma natural, calorosa e motivacional
 - Use emojis com moderação (1-2 por mensagem)
 - Faça 2-3 perguntas por vez, NUNCA todas de uma vez
 - Quando tiver informações suficientes do bloco atual, chame a tool "extract_block_data" com os dados coletados
-- Após extrair os dados de um bloco, faça uma transição suave para o próximo bloco
 - Se o usuário responder de forma vaga, faça perguntas de follow-up
-- Quando for o bloco 5 e já tiver os dados, chame "extract_block_data" e depois "finalize_onboarding"
 - Máximo 150 palavras por resposta
-- NUNCA invente dados que o usuário não forneceu`;
+- NUNCA invente dados que o usuário não forneceu
+- Quando for o último bloco e já tiver os dados, chame "extract_block_data" e depois "finalize_onboarding"`;
 
     const tools = [
       {
@@ -69,42 +126,35 @@ Preferência de notificações e horários.
           parameters: {
             type: "object",
             properties: {
-              block: { type: "number", description: "Block number (1-5)" },
+              block: { type: "number", description: "Block number" },
               data: {
                 type: "object",
                 properties: {
-                  // Block 1
                   full_name: { type: "string" },
                   date_of_birth: { type: "string", description: "YYYY-MM-DD format" },
                   sex: { type: "string", enum: ["male", "female"] },
                   weight_kg: { type: "number" },
                   height_cm: { type: "number" },
-                  goal: { type: "string", enum: ["lose_weight", "gain_muscle", "definition", "health", "maintenance", "performance", "glp1"] },
                   target_weight_kg: { type: "number" },
-                  // Block 2
-                  eating_motivation: { type: "string", description: "physical or emotional" },
+                  eating_motivation: { type: "string" },
                   loved_foods: { type: "array", items: { type: "string" } },
                   avoided_foods: { type: "array", items: { type: "string" } },
-                  diet_history: { type: "string" },
                   dietary_restrictions: { type: "array", items: { type: "string" } },
-                  meal_schedule: { type: "string" },
-                  // Block 3
                   behavioral_profile: { type: "string", enum: ["emocional", "veloz", "noturno", "social", "restritivo", "ansioso", "intuitivo", "caotico"] },
                   emotional_triggers: { type: "array", items: { type: "string" } },
-                  hunger_awareness: { type: "string", description: "low, medium, high" },
-                  // Block 4
                   activity_level: { type: "string", enum: ["sedentary", "light", "moderate", "very_active", "athlete"] },
                   training_frequency: { type: "number" },
                   sport: { type: "string" },
                   sleep_hours: { type: "number" },
                   stress_level: { type: "number" },
                   cooking_skill: { type: "string" },
-                  // Block 5
-                  family_mode: { type: "string" },
-                  has_professional: { type: "boolean" },
-                  notification_preference: { type: "string" },
+                  budget_weekly: { type: "number" },
+                  meal_preference: { type: "string", enum: ["simples", "elaboradas"] },
                   uses_glp1: { type: "boolean" },
                   health_conditions: { type: "array", items: { type: "string" } },
+                  child_name: { type: "string" },
+                  child_age: { type: "number" },
+                  child_phase: { type: "string", enum: ["introducao", "pre_escolar", "escolar"] },
                 },
                 additionalProperties: true,
               },
@@ -118,19 +168,19 @@ Preferência de notificações e horários.
         type: "function",
         function: {
           name: "finalize_onboarding",
-          description: "Call this after all 5 blocks are complete to signal the onboarding is finished.",
+          description: "Call this after all blocks are complete to signal the onboarding is finished.",
           parameters: {
             type: "object",
             properties: {
               summary: { type: "string", description: "A brief motivational summary for the user about their profile" },
-              behavioral_profile: { type: "string", description: "The identified behavioral eating profile" },
+              behavioral_profile: { type: "string", description: "The identified behavioral eating profile (if applicable)" },
               strategies: {
                 type: "array",
                 items: { type: "string" },
-                description: "3 prioritized behavioral change strategies",
+                description: "3 prioritized actionable strategies for the user",
               },
             },
-            required: ["summary", "behavioral_profile", "strategies"],
+            required: ["summary", "strategies"],
             additionalProperties: false,
           },
         },
