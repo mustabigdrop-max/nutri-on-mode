@@ -238,6 +238,14 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/protocols"
+              element={
+                <ProtectedRoute>
+                  <ProtocolEnginePage />
+                </ProtectedRoute>
+              }
+            />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
