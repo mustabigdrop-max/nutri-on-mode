@@ -393,14 +393,18 @@ const DietBuilderPage = () => {
   };
 
   // Search
-  const handleSearch = useCallback(async (q: string) => {
+  const handleSearch = useCallback(async (q: string, cat?: string | null) => {
     setSearchQuery(q);
-    if (q.trim().length < 2) { setSearchResults([]); return; }
+    const activeCat = cat !== undefined ? cat : categoryFilter;
+    if (q.trim().length < 2 && !activeCat) { setSearchResults([]); return; }
     setSearching(true);
-    const results = await searchFoods(q);
-    setSearchResults(results);
+    let query = supabase.from("foods").select("*").order("nome").limit(30);
+    if (q.trim().length >= 2) query = query.ilike("nome", `%${q}%`);
+    if (activeCat) query = query.eq("categoria", activeCat);
+    const { data } = await query;
+    setSearchResults((data as Food[]) ?? []);
     setSearching(false);
-  }, [searchFoods]);
+  }, [categoryFilter]);
 
   // Duplicate item
   const duplicateItem = (slotKey: string, item: MealItem) => {
