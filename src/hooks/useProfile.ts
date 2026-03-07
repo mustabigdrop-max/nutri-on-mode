@@ -29,6 +29,12 @@ export interface Profile {
   level: number | null;
   streak_days: number | null;
   last_streak_date: string | null;
+  objetivo_principal: string | null;
+  perfil_comportamental: string | null;
+  meta_peso: number | null;
+  nivel_treino: string | null;
+  orcamento_semanal: number | null;
+  prefere_refeicoes: string | null;
 }
 
 export const useProfile = () => {
