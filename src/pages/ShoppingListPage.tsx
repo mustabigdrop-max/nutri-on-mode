@@ -136,6 +136,7 @@ const ShoppingListPage = () => {
           count: 1,
           section: classifyItem(item.food_name),
           checked: false,
+          estimatedPrice: estimatePrice(item.food_name),
         });
       }
     }
