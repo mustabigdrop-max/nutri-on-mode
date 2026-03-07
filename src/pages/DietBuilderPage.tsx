@@ -249,18 +249,24 @@ const DietBuilderPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { profile } = useProfile();
-  const { searchFoods } = useFoods();
+  const { searchFoods, calcMacros } = useFoods();
 
   const [mealSlots, setMealSlots] = useState<MealSlotData[]>(emptySlots());
   const [planName, setPlanName] = useState("Meu Plano Alimentar");
   const [showTemplates, setShowTemplates] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [measureMode, setMeasureMode] = useState<"caseira" | "gramas">("caseira");
 
   // Search state
   const [searchSlot, setSearchSlot] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<Food[]>([]);
   const [searching, setSearching] = useState(false);
+  
+  // Food being configured (measure picker step)
+  const [pendingFood, setPendingFood] = useState<{ food: Food; slotKey: string } | null>(null);
+  const [pendingMeasure, setPendingMeasure] = useState("Porção (100g)");
+  const [pendingQty, setPendingQty] = useState(1);
 
   // Inline editing
   const [editingItem, setEditingItem] = useState<string | null>(null);
