@@ -332,24 +332,63 @@ const DietBuilderPage = () => {
     ));
   };
 
-  // Add food from search
-  const addFoodToSlot = (food: Food, slotKey: string) => {
+  // Select food → open measure picker
+  const selectFoodForMeasure = (food: Food, slotKey: string) => {
+    setPendingFood({ food, slotKey });
+    setPendingMeasure("Porção (100g)");
+    setPendingQty(1);
+  };
+
+  // Confirm food with measure
+  const confirmAddFood = () => {
+    if (!pendingFood) return;
+    const { food, slotKey } = pendingFood;
+    const measure = MEASURES.find(m => m.label === pendingMeasure) || MEASURES[8];
+    const totalGrams = measure.grams * pendingQty;
+    const factor = totalGrams / 100;
+
     const item: MealItem = {
       id: uid(),
       name: food.nome,
-      portion: "Porção (100g)",
-      grams: 100,
-      kcal: Math.round(food.calorias_100g),
-      protein: Math.round(food.proteina_100g * 10) / 10,
-      carbs: Math.round(food.carbo_100g * 10) / 10,
-      fat: Math.round(food.gordura_100g * 10) / 10,
+      portion: `${pendingQty} ${measure.label} (${Math.round(totalGrams)}g)`,
+      measure: measure.label,
+      measureQty: pendingQty,
+      grams: Math.round(totalGrams),
+      kcal: Math.round(food.calorias_100g * factor),
+      protein: Math.round(food.proteina_100g * factor * 10) / 10,
+      carbs: Math.round(food.carbo_100g * factor * 10) / 10,
+      fat: Math.round(food.gordura_100g * factor * 10) / 10,
+      kcalPer100g: food.calorias_100g,
+      proteinPer100g: food.proteina_100g,
+      carbsPer100g: food.carbo_100g,
+      fatPer100g: food.gordura_100g,
     };
     setMealSlots(prev => prev.map(s =>
       s.key === slotKey ? { ...s, items: [...s.items, item] } : s
     ));
+    setPendingFood(null);
     setSearchSlot(null);
     setSearchQuery("");
     setSearchResults([]);
+  };
+
+  // Recalc item when measure changes inline
+  const changeMeasureInline = (slotKey: string, itemId: string, measureLabel: string, qty: number) => {
+    const item = mealSlots.find(s => s.key === slotKey)?.items.find(i => i.id === itemId);
+    if (!item || !item.kcalPer100g) return;
+    const measure = MEASURES.find(m => m.label === measureLabel) || MEASURES[8];
+    const totalGrams = measure.grams * qty;
+    const factor = totalGrams / 100;
+    updateItem(slotKey, itemId, {
+      measure: measureLabel,
+      measureQty: qty,
+      grams: Math.round(totalGrams),
+      portion: `${qty} ${measure.label} (${Math.round(totalGrams)}g)`,
+      kcal: Math.round(item.kcalPer100g! * factor),
+      protein: Math.round(item.proteinPer100g! * factor * 10) / 10,
+      carbs: Math.round(item.carbsPer100g! * factor * 10) / 10,
+      fat: Math.round(item.fatPer100g! * factor * 10) / 10,
+    });
   };
 
   // Search
