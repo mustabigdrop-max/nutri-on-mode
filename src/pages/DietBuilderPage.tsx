@@ -713,7 +713,19 @@ const DietBuilderPage = () => {
                                       className="text-left w-full"
                                     >
                                       <p className="text-xs font-semibold text-foreground truncate">{item.name}</p>
-                                      <p className="text-[10px] font-mono text-muted-foreground truncate">{item.portion}</p>
+                                      {measureMode === "caseira" ? (
+                                        <p className="text-[10px] font-mono text-muted-foreground truncate">
+                                          {item.measureQty || 1} {item.measure || "Porção"}{" "}
+                                          <span className="text-muted-foreground/50">({item.grams}g)</span>
+                                        </p>
+                                      ) : (
+                                        <p className="text-[10px] font-mono text-muted-foreground truncate">
+                                          {item.grams}g{" "}
+                                          {item.measure && item.measure !== "Gramas" && (
+                                            <span className="text-muted-foreground/50">≈ {item.measureQty || 1} {item.measure}</span>
+                                          )}
+                                        </p>
+                                      )}
                                     </button>
                                   )}
                                 </div>
