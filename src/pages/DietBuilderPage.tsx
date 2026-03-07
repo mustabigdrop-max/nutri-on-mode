@@ -778,7 +778,7 @@ const DietBuilderPage = () => {
 
                           {/* Add food button */}
                           <button
-                            onClick={() => { setSearchSlot(slot.key); setSearchQuery(""); setSearchResults([]); }}
+                            onClick={() => { setSearchSlot(slot.key); setSearchQuery(""); setSearchResults([]); setCategoryFilter(null); }}
                             className="w-full flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-mono text-primary/70 hover:text-primary hover:bg-primary/5 transition-colors border-t border-border/50"
                           >
                             <Plus className="w-3.5 h-3.5" />
