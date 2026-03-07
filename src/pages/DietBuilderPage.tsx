@@ -194,11 +194,17 @@ interface MealItem {
   id: string;
   name: string;
   portion: string;
+  measure: string;
+  measureQty: number;
   grams: number;
   kcal: number;
   protein: number;
   carbs: number;
   fat: number;
+  kcalPer100g?: number;
+  proteinPer100g?: number;
+  carbsPer100g?: number;
+  fatPer100g?: number;
   editing?: boolean;
 }
 
@@ -218,11 +224,17 @@ const templateToSlots = (template: DietTemplate): MealSlotData[] =>
       id: uid(),
       name: f.name,
       portion: f.portion,
+      measure: "Porção",
+      measureQty: 1,
       grams: f.grams,
       kcal: f.kcal,
       protein: f.protein,
       carbs: f.carbs,
       fat: f.fat,
+      kcalPer100g: Math.round(f.kcal / f.grams * 100),
+      proteinPer100g: Math.round(f.protein / f.grams * 1000) / 10,
+      carbsPer100g: Math.round(f.carbs / f.grams * 1000) / 10,
+      fatPer100g: Math.round(f.fat / f.grams * 1000) / 10,
     })),
     collapsed: false,
   }));
@@ -237,18 +249,24 @@ const DietBuilderPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { profile } = useProfile();
-  const { searchFoods } = useFoods();
+  const { searchFoods, calcMacros } = useFoods();
 
   const [mealSlots, setMealSlots] = useState<MealSlotData[]>(emptySlots());
   const [planName, setPlanName] = useState("Meu Plano Alimentar");
   const [showTemplates, setShowTemplates] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [measureMode, setMeasureMode] = useState<"caseira" | "gramas">("caseira");
 
   // Search state
   const [searchSlot, setSearchSlot] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<Food[]>([]);
   const [searching, setSearching] = useState(false);
+  
+  // Food being configured (measure picker step)
+  const [pendingFood, setPendingFood] = useState<{ food: Food; slotKey: string } | null>(null);
+  const [pendingMeasure, setPendingMeasure] = useState("Porção (100g)");
+  const [pendingQty, setPendingQty] = useState(1);
 
   // Inline editing
   const [editingItem, setEditingItem] = useState<string | null>(null);
@@ -314,24 +332,63 @@ const DietBuilderPage = () => {
     ));
   };
 
-  // Add food from search
-  const addFoodToSlot = (food: Food, slotKey: string) => {
+  // Select food → open measure picker
+  const selectFoodForMeasure = (food: Food, slotKey: string) => {
+    setPendingFood({ food, slotKey });
+    setPendingMeasure("Porção (100g)");
+    setPendingQty(1);
+  };
+
+  // Confirm food with measure
+  const confirmAddFood = () => {
+    if (!pendingFood) return;
+    const { food, slotKey } = pendingFood;
+    const measure = MEASURES.find(m => m.label === pendingMeasure) || MEASURES[8];
+    const totalGrams = measure.grams * pendingQty;
+    const factor = totalGrams / 100;
+
     const item: MealItem = {
       id: uid(),
       name: food.nome,
-      portion: "Porção (100g)",
-      grams: 100,
-      kcal: Math.round(food.calorias_100g),
-      protein: Math.round(food.proteina_100g * 10) / 10,
-      carbs: Math.round(food.carbo_100g * 10) / 10,
-      fat: Math.round(food.gordura_100g * 10) / 10,
+      portion: `${pendingQty} ${measure.label} (${Math.round(totalGrams)}g)`,
+      measure: measure.label,
+      measureQty: pendingQty,
+      grams: Math.round(totalGrams),
+      kcal: Math.round(food.calorias_100g * factor),
+      protein: Math.round(food.proteina_100g * factor * 10) / 10,
+      carbs: Math.round(food.carbo_100g * factor * 10) / 10,
+      fat: Math.round(food.gordura_100g * factor * 10) / 10,
+      kcalPer100g: food.calorias_100g,
+      proteinPer100g: food.proteina_100g,
+      carbsPer100g: food.carbo_100g,
+      fatPer100g: food.gordura_100g,
     };
     setMealSlots(prev => prev.map(s =>
       s.key === slotKey ? { ...s, items: [...s.items, item] } : s
     ));
+    setPendingFood(null);
     setSearchSlot(null);
     setSearchQuery("");
     setSearchResults([]);
+  };
+
+  // Recalc item when measure changes inline
+  const changeMeasureInline = (slotKey: string, itemId: string, measureLabel: string, qty: number) => {
+    const item = mealSlots.find(s => s.key === slotKey)?.items.find(i => i.id === itemId);
+    if (!item || !item.kcalPer100g) return;
+    const measure = MEASURES.find(m => m.label === measureLabel) || MEASURES[8];
+    const totalGrams = measure.grams * qty;
+    const factor = totalGrams / 100;
+    updateItem(slotKey, itemId, {
+      measure: measureLabel,
+      measureQty: qty,
+      grams: Math.round(totalGrams),
+      portion: `${qty} ${measure.label} (${Math.round(totalGrams)}g)`,
+      kcal: Math.round(item.kcalPer100g! * factor),
+      protein: Math.round(item.proteinPer100g! * factor * 10) / 10,
+      carbs: Math.round(item.carbsPer100g! * factor * 10) / 10,
+      fat: Math.round(item.fatPer100g! * factor * 10) / 10,
+    });
   };
 
   // Search
@@ -475,13 +532,31 @@ const DietBuilderPage = () => {
 
         {/* ── Plan name ─────────────────────────────────── */}
         {!showTemplates && (
-          <div className="mb-4">
+          <div className="flex gap-2 mb-4">
             <Input
               value={planName}
               onChange={(e) => setPlanName(e.target.value)}
-              className="h-9 font-mono text-sm border-border bg-card"
+              className="h-9 font-mono text-sm border-border bg-card flex-1"
               placeholder="Nome do plano..."
             />
+            <div className="flex rounded-lg border border-border overflow-hidden">
+              <button
+                onClick={() => setMeasureMode("caseira")}
+                className={`px-3 py-1.5 text-[10px] font-mono transition-all ${
+                  measureMode === "caseira" ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                🥄 Caseira
+              </button>
+              <button
+                onClick={() => setMeasureMode("gramas")}
+                className={`px-3 py-1.5 text-[10px] font-mono transition-all ${
+                  measureMode === "gramas" ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                ⚖️ Gramas
+              </button>
+            </div>
           </div>
         )}
 
@@ -638,7 +713,19 @@ const DietBuilderPage = () => {
                                       className="text-left w-full"
                                     >
                                       <p className="text-xs font-semibold text-foreground truncate">{item.name}</p>
-                                      <p className="text-[10px] font-mono text-muted-foreground truncate">{item.portion}</p>
+                                      {measureMode === "caseira" ? (
+                                        <p className="text-[10px] font-mono text-muted-foreground truncate">
+                                          {item.measureQty || 1} {item.measure || "Porção"}{" "}
+                                          <span className="text-muted-foreground/50">({item.grams}g)</span>
+                                        </p>
+                                      ) : (
+                                        <p className="text-[10px] font-mono text-muted-foreground truncate">
+                                          {item.grams}g{" "}
+                                          {item.measure && item.measure !== "Gramas" && (
+                                            <span className="text-muted-foreground/50">≈ {item.measureQty || 1} {item.measure}</span>
+                                          )}
+                                        </p>
+                                      )}
                                     </button>
                                   )}
                                 </div>
@@ -728,65 +815,180 @@ const DietBuilderPage = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 20 }}
-              className="fixed inset-0 z-40 bg-background/95 backdrop-blur-sm"
+              className="fixed inset-0 z-40 bg-background/95 backdrop-blur-sm overflow-y-auto"
             >
-              <div className="max-w-lg mx-auto px-4 pt-4">
+              <div className="max-w-lg mx-auto px-4 pt-4 pb-8">
                 <div className="flex items-center gap-2 mb-4">
                   <button
-                    onClick={() => { setSearchSlot(null); setSearchQuery(""); setSearchResults([]); }}
+                    onClick={() => { setSearchSlot(null); setPendingFood(null); setSearchQuery(""); setSearchResults([]); }}
                     className="p-2 rounded-lg border border-border bg-card"
                   >
                     <X className="w-4 h-4 text-foreground" />
                   </button>
                   <div className="flex-1">
                     <span className="text-[10px] font-mono text-primary block mb-1">
-                      Adicionando em: {MEAL_SLOTS.find(s => s.key === searchSlot)?.label}
+                      {pendingFood ? `Selecione a medida para: ${pendingFood.food.nome}` : `Adicionando em: ${MEAL_SLOTS.find(s => s.key === searchSlot)?.label}`}
                     </span>
-                    <div className="relative">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                      <Input
-                        value={searchQuery}
-                        onChange={(e) => handleSearch(e.target.value)}
-                        placeholder="Buscar no banco TACO/IBGE..."
-                        className="pl-9 h-10 font-mono text-sm"
-                        autoFocus
-                      />
-                    </div>
+                    {!pendingFood && (
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                        <Input
+                          value={searchQuery}
+                          onChange={(e) => handleSearch(e.target.value)}
+                          placeholder="Buscar no banco TACO/IBGE..."
+                          className="pl-9 h-10 font-mono text-sm"
+                          autoFocus
+                        />
+                      </div>
+                    )}
                   </div>
                 </div>
 
-                {searching && (
-                  <div className="flex justify-center py-8">
-                    <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                  </div>
+                {/* ── Measure picker step ──────────────────── */}
+                {pendingFood && (
+                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
+                    {/* Food info */}
+                    <div className="rounded-xl border border-primary/20 bg-primary/5 p-3">
+                      <p className="text-sm font-bold text-foreground">{pendingFood.food.nome}</p>
+                      <p className="text-[10px] font-mono text-muted-foreground">
+                        {pendingFood.food.calorias_100g} kcal · {pendingFood.food.proteina_100g}g P · {pendingFood.food.carbo_100g}g C · {pendingFood.food.gordura_100g}g G
+                        <span className="text-muted-foreground/60"> (por 100g)</span>
+                      </p>
+                    </div>
+
+                    {/* Measure grid */}
+                    <div>
+                      <label className="text-[10px] font-mono text-muted-foreground uppercase mb-2 block">Medida caseira</label>
+                      <div className="grid grid-cols-3 gap-1.5">
+                        {MEASURES.map(m => (
+                          <button
+                            key={m.label}
+                            onClick={() => setPendingMeasure(m.label)}
+                            className={`text-[10px] font-mono px-2 py-2 rounded-lg border transition-all text-left ${
+                              pendingMeasure === m.label
+                                ? "border-primary bg-primary/10 text-primary"
+                                : "border-border bg-card text-muted-foreground hover:border-primary/30"
+                            }`}
+                          >
+                            {m.label}
+                            <span className="block text-[8px] text-muted-foreground">{m.grams}g</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Quantity */}
+                    <div>
+                      <label className="text-[10px] font-mono text-muted-foreground uppercase mb-2 block">Quantidade</label>
+                      <div className="flex items-center gap-3">
+                        <button
+                          onClick={() => setPendingQty(Math.max(0.5, pendingQty - 0.5))}
+                          className="w-10 h-10 rounded-lg border border-border bg-card flex items-center justify-center text-foreground font-bold text-lg hover:border-primary/30"
+                        >−</button>
+                        <span className="text-xl font-bold font-mono text-foreground w-16 text-center">{pendingQty}</span>
+                        <button
+                          onClick={() => setPendingQty(pendingQty + 0.5)}
+                          className="w-10 h-10 rounded-lg border border-border bg-card flex items-center justify-center text-foreground font-bold text-lg hover:border-primary/30"
+                        >+</button>
+                      </div>
+                    </div>
+
+                    {/* Preview */}
+                    {(() => {
+                      const measure = MEASURES.find(m => m.label === pendingMeasure) || MEASURES[8];
+                      const totalGrams = measure.grams * pendingQty;
+                      const factor = totalGrams / 100;
+                      const preview = {
+                        kcal: Math.round(pendingFood.food.calorias_100g * factor),
+                        protein: Math.round(pendingFood.food.proteina_100g * factor * 10) / 10,
+                        carbs: Math.round(pendingFood.food.carbo_100g * factor * 10) / 10,
+                        fat: Math.round(pendingFood.food.gordura_100g * factor * 10) / 10,
+                      };
+                      return (
+                        <div className="rounded-xl border border-border bg-card p-3">
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-xs text-muted-foreground font-mono">
+                              {pendingQty} {measure.label}
+                            </span>
+                            <span className="text-xs font-mono text-muted-foreground">
+                              = <span className="font-bold text-foreground">{Math.round(totalGrams)}g</span>
+                            </span>
+                          </div>
+                          <div className="grid grid-cols-4 gap-2 text-center">
+                            <div>
+                              <span className="text-[9px] font-mono text-muted-foreground">Kcal</span>
+                              <p className="text-sm font-bold text-primary font-mono">{preview.kcal}</p>
+                            </div>
+                            <div>
+                              <span className="text-[9px] font-mono text-muted-foreground">Prot</span>
+                              <p className="text-sm font-bold font-mono text-foreground">{preview.protein}g</p>
+                            </div>
+                            <div>
+                              <span className="text-[9px] font-mono text-muted-foreground">Carb</span>
+                              <p className="text-sm font-bold font-mono text-foreground">{preview.carbs}g</p>
+                            </div>
+                            <div>
+                              <span className="text-[9px] font-mono text-muted-foreground">Gord</span>
+                              <p className="text-sm font-bold font-mono text-foreground">{preview.fat}g</p>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })()}
+
+                    {/* Actions */}
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setPendingFood(null)}
+                        className="flex-1 py-2.5 rounded-xl border border-border text-sm font-mono text-muted-foreground hover:text-foreground"
+                      >
+                        Voltar
+                      </button>
+                      <Button onClick={confirmAddFood} className="flex-1 gap-1.5">
+                        <Check className="w-4 h-4" />
+                        Adicionar
+                      </Button>
+                    </div>
+                  </motion.div>
                 )}
 
-                <div className="space-y-1 max-h-[70vh] overflow-y-auto">
-                  {searchResults.map(food => (
-                    <button
-                      key={food.id}
-                      onClick={() => addFoodToSlot(food, searchSlot)}
-                      className="w-full text-left rounded-xl border border-border bg-card p-3 hover:border-primary/30 transition-all"
-                    >
-                      <p className="text-sm font-semibold text-foreground">{food.nome}</p>
-                      <p className="text-[10px] font-mono text-muted-foreground">
-                        {food.calorias_100g} kcal · {food.proteina_100g}g P · {food.carbo_100g}g C · {food.gordura_100g}g G
-                        <span className="text-muted-foreground/60"> (por 100g) · {food.fonte}</span>
-                      </p>
-                    </button>
-                  ))}
-                  {!searching && searchQuery.length >= 2 && searchResults.length === 0 && (
-                    <div className="text-center py-8">
-                      <p className="text-sm text-muted-foreground">Nenhum alimento encontrado</p>
+                {/* ── Search results ───────────────────────── */}
+                {!pendingFood && (
+                  <>
+                    {searching && (
+                      <div className="flex justify-center py-8">
+                        <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                      </div>
+                    )}
+
+                    <div className="space-y-1 max-h-[70vh] overflow-y-auto">
+                      {searchResults.map(food => (
+                        <button
+                          key={food.id}
+                          onClick={() => selectFoodForMeasure(food, searchSlot!)}
+                          className="w-full text-left rounded-xl border border-border bg-card p-3 hover:border-primary/30 transition-all"
+                        >
+                          <p className="text-sm font-semibold text-foreground">{food.nome}</p>
+                          <p className="text-[10px] font-mono text-muted-foreground">
+                            {food.calorias_100g} kcal · {food.proteina_100g}g P · {food.carbo_100g}g C · {food.gordura_100g}g G
+                            <span className="text-muted-foreground/60"> (por 100g) · {food.fonte}</span>
+                          </p>
+                        </button>
+                      ))}
+                      {!searching && searchQuery.length >= 2 && searchResults.length === 0 && (
+                        <div className="text-center py-8">
+                          <p className="text-sm text-muted-foreground">Nenhum alimento encontrado</p>
+                        </div>
+                      )}
+                      {searchQuery.length < 2 && (
+                        <div className="text-center py-8">
+                          <Search className="w-8 h-8 text-muted-foreground/30 mx-auto mb-2" />
+                          <p className="text-xs text-muted-foreground">Digite pelo menos 2 caracteres</p>
+                        </div>
+                      )}
                     </div>
-                  )}
-                  {searchQuery.length < 2 && (
-                    <div className="text-center py-8">
-                      <Search className="w-8 h-8 text-muted-foreground/30 mx-auto mb-2" />
-                      <p className="text-xs text-muted-foreground">Digite pelo menos 2 caracteres</p>
-                    </div>
-                  )}
-                </div>
+                  </>
+                )}
               </div>
             </motion.div>
           )}
