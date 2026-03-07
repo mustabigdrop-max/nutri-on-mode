@@ -262,6 +262,7 @@ const DietBuilderPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<Food[]>([]);
   const [searching, setSearching] = useState(false);
+  const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
   
   // Food being configured (measure picker step)
   const [pendingFood, setPendingFood] = useState<{ food: Food; slotKey: string } | null>(null);
