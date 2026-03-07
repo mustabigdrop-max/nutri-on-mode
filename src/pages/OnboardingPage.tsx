@@ -2,19 +2,61 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useProfile } from "@/hooks/useProfile";
-import { Send, Zap, Bot, User, Loader2 } from "lucide-react";
+import { Send, Zap, Bot, User, Loader2, Flame, Dumbbell, Leaf, Baby, ChevronRight, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { Progress } from "@/components/ui/progress";
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/onboarding-chat`;
 
-const BLOCK_LABELS = [
-  "Identidade & Objetivo",
-  "Histórico Alimentar",
-  "Nutrição Comportamental",
-  "Estilo de Vida & Treino",
-  "Suporte & Contexto",
+type Objetivo = "emagrecimento" | "hipertrofia" | "saude_geral" | "infantil";
+
+const GOALS = [
+  {
+    id: "emagrecimento" as Objetivo,
+    icon: Flame,
+    label: "EMAGRECER",
+    desc: "Perder gordura com inteligência e sem sofrimento",
+    color: "from-orange-500 to-red-500",
+    bg: "bg-orange-500/10 border-orange-500/30",
+    iconColor: "text-orange-400",
+  },
+  {
+    id: "hipertrofia" as Objetivo,
+    icon: Dumbbell,
+    label: "HIPERTROFIAR",
+    desc: "Ganhar massa muscular com nutrição de precisão",
+    color: "from-blue-500 to-cyan-500",
+    bg: "bg-blue-500/10 border-blue-500/30",
+    iconColor: "text-blue-400",
+  },
+  {
+    id: "saude_geral" as Objetivo,
+    icon: Leaf,
+    label: "SAÚDE GERAL",
+    desc: "Comer melhor, ter mais energia e viver com equilíbrio",
+    color: "from-emerald-500 to-green-500",
+    bg: "bg-emerald-500/10 border-emerald-500/30",
+    iconColor: "text-emerald-400",
+  },
+  {
+    id: "infantil" as Objetivo,
+    icon: Baby,
+    label: "MEU FILHO",
+    desc: "Nutrição infantil saudável e gostosa para cada fase",
+    color: "from-violet-500 to-pink-500",
+    bg: "bg-violet-500/10 border-violet-500/30",
+    iconColor: "text-violet-400",
+  },
+];
+
+const STEP_LABELS = [
+  "Objetivo",
+  "Dados Pessoais",
+  "Histórico",
+  "Comportamental",
+  "Estilo de Vida",
+  "Resultado",
 ];
 
 const ACTIVITY_FACTORS: Record<string, number> = {
@@ -26,17 +68,15 @@ const calcGEB = (weight: number, height: number, age: number, sex: string) => {
   return 10 * weight + 6.25 * height - 5 * age - 161;
 };
 
-const calcMacros = (get: number, goal: string, weight: number, usesGlp1: boolean) => {
+const calcMacros = (get: number, objetivo: Objetivo, weight: number) => {
   let vet = get;
   let proteinPerKg = 1.6;
-  switch (goal) {
-    case "lose_weight": vet = get - 500; proteinPerKg = 2.0; break;
-    case "gain_muscle": vet = get + 350; proteinPerKg = 2.2; break;
-    case "definition": vet = get - 500; proteinPerKg = 2.2; break;
-    case "performance": vet = get + 250; proteinPerKg = 2.0; break;
-    case "glp1": vet = get - 400; proteinPerKg = 2.2; break;
+  switch (objetivo) {
+    case "emagrecimento": vet = get - 500; proteinPerKg = 2.0; break;
+    case "hipertrofia": vet = get + 350; proteinPerKg = 2.2; break;
+    case "saude_geral": vet = get; proteinPerKg = 1.6; break;
+    case "infantil": vet = get; proteinPerKg = 1.2; break;
   }
-  if (usesGlp1) proteinPerKg = Math.max(proteinPerKg, 2.0);
   const protein = weight * proteinPerKg;
   const fatKcal = vet * 0.25;
   const fat = fatKcal / 9;
@@ -50,17 +90,22 @@ interface ChatMessage {
 }
 
 const OnboardingPage = () => {
+  const [step, setStep] = useState(1);
+  const [objetivo, setObjetivo] = useState<Objetivo | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [currentBlock, setCurrentBlock] = useState(1);
   const [collectedData, setCollectedData] = useState<Record<string, any>>({});
-  const [isFinished, setIsFinished] = useState(false);
+  const [resultData, setResultData] = useState<{
+    summary: string;
+    behavioral_profile?: string;
+    strategies?: string[];
+  } | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
   const { updateProfile } = useProfile();
   const navigate = useNavigate();
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const hasStarted = useRef(false);
 
   const scrollToBottom = useCallback(() => {
     setTimeout(() => {
@@ -68,13 +113,34 @@ const OnboardingPage = () => {
     }, 50);
   }, []);
 
-  // Start conversation automatically
+  // Map step to AI chat block
+  const getChatBlock = () => {
+    // Steps 2-5 map to chat blocks 1-4
+    return step - 1;
+  };
+
+  // When objetivo is selected, move to step 2 and start chat
+  const handleGoalSelect = (goal: Objetivo) => {
+    setObjetivo(goal);
+    setStep(2);
+  };
+
+  // Auto-start chat when entering step 2
   useEffect(() => {
-    if (!hasStarted.current) {
-      hasStarted.current = true;
-      sendToAI([{ role: "user", content: "Olá! Quero começar meu perfil nutricional." }], true);
+    if (step === 2 && objetivo && messages.length === 0) {
+      const initMsg = objetivo === "infantil"
+        ? "Olá! Quero configurar a nutrição do meu filho."
+        : "Olá! Quero começar meu perfil nutricional.";
+      sendToAI([{ role: "user", content: initMsg }], true);
     }
-  }, []);
+  }, [step, objetivo]);
+
+  // Focus input when step changes
+  useEffect(() => {
+    if (step >= 2 && step <= 5) {
+      inputRef.current?.focus();
+    }
+  }, [step, isLoading]);
 
   const sendToAI = async (chatMessages: ChatMessage[], isInit = false) => {
     setIsLoading(true);
@@ -89,7 +155,8 @@ const OnboardingPage = () => {
         },
         body: JSON.stringify({
           messages: chatMessages.map(m => ({ role: m.role, content: m.content })),
-          currentBlock,
+          currentBlock: getChatBlock(),
+          objetivo,
         }),
       });
 
@@ -137,13 +204,11 @@ const OnboardingPage = () => {
             const delta = parsed.choices?.[0]?.delta;
             if (!delta) continue;
 
-            // Handle text content
             if (delta.content) {
               assistantContent += delta.content;
               updateAssistant(assistantContent);
             }
 
-            // Handle tool calls
             if (delta.tool_calls) {
               for (const tc of delta.tool_calls) {
                 if (tc.id) {
@@ -166,16 +231,21 @@ const OnboardingPage = () => {
           if (tc.name === "extract_block_data") {
             const newData = { ...collectedData, ...args.data };
             setCollectedData(newData);
-            if (args.block < 5) {
-              setCurrentBlock(args.block + 1);
+            // Advance to next step
+            const nextStep = Math.min(step + 1, 6);
+            // Skip behavioral step for hipertrofia and infantil
+            if (nextStep === 4 && (objetivo === "hipertrofia" || objetivo === "infantil")) {
+              setStep(5);
+            } else {
+              setStep(nextStep);
             }
           } else if (tc.name === "finalize_onboarding") {
-            setIsFinished(true);
-            // Show strategies in chat
-            const strategiesText = args.strategies?.map((s: string, i: number) => `${i + 1}. ${s}`).join("\n") || "";
-            const finalMsg = `${args.summary}\n\n**Suas 3 estratégias priorizadas:**\n${strategiesText}\n\n✨ Clique no botão abaixo para ativar seu modo ON!`;
-            assistantContent += (assistantContent ? "\n\n" : "") + finalMsg;
-            updateAssistant(assistantContent);
+            setResultData({
+              summary: args.summary,
+              behavioral_profile: args.behavioral_profile,
+              strategies: args.strategies,
+            });
+            setStep(6);
           }
         } catch (e) {
           console.error("Tool call parse error:", e);
@@ -201,20 +271,26 @@ const OnboardingPage = () => {
   };
 
   const handleFinalize = async () => {
+    setIsSaving(true);
     const d = collectedData;
     const weight = d.weight_kg || 70;
     const height = d.height_cm || 170;
     const birthDate = d.date_of_birth ? new Date(d.date_of_birth) : new Date(1990, 0, 1);
     const age = Math.floor((Date.now() - birthDate.getTime()) / (365.25 * 24 * 60 * 60 * 1000));
     const sex = d.sex || "male";
-    const goal = d.goal || "health";
     const activityLevel = d.activity_level || "moderate";
-    const usesGlp1 = d.uses_glp1 || goal === "glp1";
+
+    const goalMap: Record<Objetivo, string> = {
+      emagrecimento: "lose_weight",
+      hipertrofia: "gain_muscle",
+      saude_geral: "health",
+      infantil: "health",
+    };
 
     const geb = calcGEB(weight, height, age, sex);
     const factor = ACTIVITY_FACTORS[activityLevel] || 1.55;
     const get = geb * factor;
-    const { vet, protein, carbs, fat } = calcMacros(get, goal, weight, usesGlp1);
+    const { vet, protein, carbs, fat } = calcMacros(get, objetivo!, weight);
 
     const error = await updateProfile({
       full_name: d.full_name || null,
@@ -222,13 +298,13 @@ const OnboardingPage = () => {
       sex,
       weight_kg: weight,
       height_cm: height,
-      goal,
+      goal: goalMap[objetivo!],
       activity_level: activityLevel,
       training_frequency: d.training_frequency || null,
       sport: d.sport || null,
       dietary_restrictions: d.dietary_restrictions?.length ? d.dietary_restrictions : null,
       health_conditions: d.health_conditions?.length ? d.health_conditions : null,
-      uses_glp1: usesGlp1,
+      uses_glp1: d.uses_glp1 || false,
       geb_kcal: Math.round(geb),
       get_kcal: Math.round(get),
       vet_kcal: vet,
@@ -241,47 +317,234 @@ const OnboardingPage = () => {
 
     if (error) {
       toast.error("Erro ao salvar perfil. Tente novamente.");
+      setIsSaving(false);
     } else {
       toast.success("Perfil configurado! Bem-vindo ao modo ON 🔥");
       navigate("/dashboard");
     }
   };
 
+  const progressPct = (step / 6) * 100;
+
+  // ─── STEP 1: Goal Selection ───
+  if (step === 1) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4 py-8">
+        <div className="absolute inset-0 bg-grid opacity-10" />
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="relative z-10 w-full max-w-lg"
+        >
+          <div className="text-center mb-8">
+            <div className="w-12 h-12 rounded-2xl bg-primary/20 flex items-center justify-center mx-auto mb-4">
+              <Sparkles className="w-6 h-6 text-primary" />
+            </div>
+            <h1 className="text-2xl font-bold text-foreground font-[family-name:var(--font-display)] mb-2">
+              Qual é o seu objetivo?
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              Toda a sua experiência será personalizada com base nessa escolha.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-3">
+            {GOALS.map((g, i) => (
+              <motion.button
+                key={g.id}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: i * 0.1 }}
+                onClick={() => handleGoalSelect(g.id)}
+                className={`relative flex items-center gap-4 p-5 rounded-2xl border ${g.bg} backdrop-blur-sm transition-all hover:scale-[1.02] active:scale-[0.98] text-left group`}
+              >
+                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${g.color} flex items-center justify-center flex-shrink-0`}>
+                  <g.icon className="w-6 h-6 text-white" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-bold text-foreground text-sm tracking-wide">{g.label}</h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">{g.desc}</p>
+                </div>
+                <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors flex-shrink-0" />
+              </motion.button>
+            ))}
+          </div>
+
+          <div className="mt-6">
+            <Progress value={progressPct} className="h-1.5" />
+            <p className="text-xs text-muted-foreground text-center mt-2 font-mono">Passo 1 de 6</p>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
+
+  // ─── STEP 6: Result Screen ───
+  if (step === 6) {
+    const d = collectedData;
+    const weight = d.weight_kg || 70;
+    const height = d.height_cm || 170;
+    const birthDate = d.date_of_birth ? new Date(d.date_of_birth) : new Date(1990, 0, 1);
+    const age = Math.floor((Date.now() - birthDate.getTime()) / (365.25 * 24 * 60 * 60 * 1000));
+    const sex = d.sex || "male";
+    const activityLevel = d.activity_level || "moderate";
+    const geb = calcGEB(weight, height, age, sex);
+    const factor = ACTIVITY_FACTORS[activityLevel] || 1.55;
+    const get = geb * factor;
+    const { vet, protein, carbs, fat } = calcMacros(get, objetivo!, weight);
+    const goalInfo = GOALS.find(g => g.id === objetivo)!;
+
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4 py-8">
+        <div className="absolute inset-0 bg-grid opacity-10" />
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5 }}
+          className="relative z-10 w-full max-w-lg space-y-5"
+        >
+          {/* Header */}
+          <div className="text-center">
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.2, type: "spring" }}
+              className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${goalInfo.color} flex items-center justify-center mx-auto mb-4`}
+            >
+              <goalInfo.icon className="w-8 h-8 text-white" />
+            </motion.div>
+            <h1 className="text-xl font-bold text-foreground font-[family-name:var(--font-display)]">
+              {d.full_name ? `${d.full_name}, seu plano está pronto!` : "Seu plano está pronto!"}
+            </h1>
+            <p className="text-sm text-muted-foreground mt-1">{goalInfo.label}</p>
+          </div>
+
+          {/* Macros card */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="bg-card border border-border rounded-2xl p-5"
+          >
+            <h3 className="text-xs font-mono text-muted-foreground uppercase tracking-wider mb-3">Suas Metas Diárias</h3>
+            <div className="text-center mb-4">
+              <span className="text-3xl font-bold text-primary font-mono">{vet}</span>
+              <span className="text-sm text-muted-foreground ml-1">kcal/dia</span>
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              {[
+                { label: "Proteína", value: `${protein}g`, pct: Math.round((protein * 4 / vet) * 100) },
+                { label: "Carboidrato", value: `${carbs}g`, pct: Math.round((carbs * 4 / vet) * 100) },
+                { label: "Gordura", value: `${fat}g`, pct: Math.round((fat * 9 / vet) * 100) },
+              ].map((m, i) => (
+                <div key={i} className="text-center">
+                  <p className="text-lg font-bold text-foreground font-mono">{m.value}</p>
+                  <p className="text-[10px] text-muted-foreground font-mono">{m.label} · {m.pct}%</p>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+
+          {/* Behavioral profile (if applicable) */}
+          {resultData?.behavioral_profile && (objetivo === "emagrecimento" || objetivo === "saude_geral") && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="bg-card border border-border rounded-2xl p-5"
+            >
+              <h3 className="text-xs font-mono text-muted-foreground uppercase tracking-wider mb-2">Perfil Comportamental</h3>
+              <p className="text-sm font-bold text-foreground capitalize">{resultData.behavioral_profile.replace("_", " ")}</p>
+            </motion.div>
+          )}
+
+          {/* Strategies */}
+          {resultData?.strategies && resultData.strategies.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              className="bg-card border border-border rounded-2xl p-5"
+            >
+              <h3 className="text-xs font-mono text-muted-foreground uppercase tracking-wider mb-3">Suas Primeiras Ações</h3>
+              <div className="space-y-2">
+                {resultData.strategies.map((s, i) => (
+                  <div key={i} className="flex items-start gap-2">
+                    <span className="w-5 h-5 rounded-full bg-primary/20 text-primary text-[10px] font-bold flex items-center justify-center flex-shrink-0 mt-0.5">{i + 1}</span>
+                    <p className="text-sm text-foreground">{s}</p>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+
+          {/* Summary */}
+          {resultData?.summary && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6 }}
+              className="bg-primary/5 border border-primary/20 rounded-2xl p-4"
+            >
+              <p className="text-sm text-foreground leading-relaxed">{resultData.summary}</p>
+            </motion.div>
+          )}
+
+          {/* CTA */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.7 }}
+          >
+            <button
+              onClick={handleFinalize}
+              disabled={isSaving}
+              className="w-full py-4 rounded-xl bg-primary text-primary-foreground font-bold transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-60"
+            >
+              {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
+              {isSaving ? "Salvando..." : "Ativar modo ON"}
+            </button>
+          </motion.div>
+
+          <div>
+            <Progress value={100} className="h-1.5" />
+            <p className="text-xs text-muted-foreground text-center mt-2 font-mono">Passo 6 de 6 — Completo!</p>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
+
+  // ─── STEPS 2-5: Chat Interface ───
+  const currentStepLabel = STEP_LABELS[step - 1];
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <div className="absolute inset-0 bg-grid opacity-15" />
 
-      {/* Header with block progress */}
+      {/* Header */}
       <div className="relative z-10 border-b border-border bg-card/80 backdrop-blur-sm">
         <div className="max-w-2xl mx-auto px-4 py-3">
           <div className="flex items-center gap-3 mb-2">
             <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
               <Bot className="w-4 h-4 text-primary" />
             </div>
-            <div>
+            <div className="flex-1">
               <h1 className="text-sm font-bold text-foreground font-[family-name:var(--font-display)]">nutriON Coach</h1>
-              <p className="text-xs text-muted-foreground font-mono">Onboarding inteligente</p>
+              <p className="text-xs text-muted-foreground font-mono">{currentStepLabel}</p>
             </div>
-          </div>
-          {/* Block progress */}
-          <div className="flex gap-1">
-            {BLOCK_LABELS.map((label, i) => (
-              <div key={i} className="flex-1">
-                <div className={`h-1 rounded-full transition-all duration-500 ${
-                  i + 1 < currentBlock ? "bg-primary" :
-                  i + 1 === currentBlock ? "bg-primary/60" :
-                  "bg-border"
-                }`} />
-                <p className={`text-[9px] mt-1 font-mono truncate ${
-                  i + 1 <= currentBlock ? "text-primary" : "text-muted-foreground"
-                }`}>{label}</p>
+            {objetivo && (
+              <div className={`px-2.5 py-1 rounded-lg text-[10px] font-mono font-bold ${GOALS.find(g => g.id === objetivo)?.bg}`}>
+                {GOALS.find(g => g.id === objetivo)?.label}
               </div>
-            ))}
+            )}
           </div>
+          <Progress value={progressPct} className="h-1.5" />
+          <p className="text-[10px] text-muted-foreground font-mono mt-1">Passo {step} de 6</p>
         </div>
       </div>
 
-      {/* Chat messages */}
+      {/* Chat */}
       <div ref={scrollRef} className="relative z-10 flex-1 overflow-y-auto px-4 py-4">
         <div className="max-w-2xl mx-auto space-y-4">
           <AnimatePresence>
@@ -337,36 +600,25 @@ const OnboardingPage = () => {
         </div>
       </div>
 
-      {/* Input area */}
+      {/* Input */}
       <div className="relative z-10 border-t border-border bg-card/80 backdrop-blur-sm px-4 py-3">
-        <div className="max-w-2xl mx-auto">
-          {isFinished ? (
-            <button
-              onClick={handleFinalize}
-              className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-bold transition-all hover:scale-[1.02] glow-gold flex items-center justify-center gap-2"
-            >
-              <Zap className="w-4 h-4" /> Ativar modo ON
-            </button>
-          ) : (
-            <div className="flex gap-2">
-              <input
-                ref={inputRef}
-                value={input}
-                onChange={e => setInput(e.target.value)}
-                onKeyDown={e => e.key === "Enter" && handleSend()}
-                placeholder="Digite sua resposta..."
-                disabled={isLoading}
-                className="flex-1 px-4 py-3 rounded-xl bg-secondary border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 text-sm disabled:opacity-50"
-              />
-              <button
-                onClick={handleSend}
-                disabled={!input.trim() || isLoading}
-                className="px-4 py-3 rounded-xl bg-primary text-primary-foreground transition-all hover:scale-105 disabled:opacity-40 disabled:hover:scale-100"
-              >
-                {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-              </button>
-            </div>
-          )}
+        <div className="max-w-2xl mx-auto flex gap-2">
+          <input
+            ref={inputRef}
+            value={input}
+            onChange={e => setInput(e.target.value)}
+            onKeyDown={e => e.key === "Enter" && handleSend()}
+            placeholder="Digite sua resposta..."
+            disabled={isLoading}
+            className="flex-1 px-4 py-3 rounded-xl bg-secondary border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 text-sm disabled:opacity-50"
+          />
+          <button
+            onClick={handleSend}
+            disabled={!input.trim() || isLoading}
+            className="px-4 py-3 rounded-xl bg-primary text-primary-foreground transition-all hover:scale-105 disabled:opacity-40 disabled:hover:scale-100"
+          >
+            {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+          </button>
         </div>
       </div>
     </div>
