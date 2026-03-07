@@ -30,7 +30,7 @@ const plans = [
       "Lista de compras + custo da dieta",
       { text: "Chat IA <strong>ilimitado</strong>" },
     ],
-    cta: "Começar grátis 7 dias →",
+    cta: "Começar agora →",
   },
   {
     name: "Profissional", price: "R$197", featured: false,

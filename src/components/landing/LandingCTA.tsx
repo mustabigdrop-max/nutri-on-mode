@@ -21,7 +21,7 @@ const LandingCTA = () => {
         Resultado não acontece quando você quer. Acontece quando você estrutura. Entra no modo ON agora.
       </p>
       <p className="font-mono text-[.7rem] text-black/40 mb-9 relative">
-        7 dias grátis · sem cartão · cancela quando quiser
+        Sem cartão · cancela quando quiser
       </p>
       <button
         onClick={() => navigate("/auth")}

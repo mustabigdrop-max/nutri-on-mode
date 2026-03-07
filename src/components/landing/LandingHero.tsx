@@ -78,7 +78,7 @@ const LandingHero = () => {
           onClick={() => navigate("/auth")}
           className="bg-primary text-black font-heading text-[1.1rem] tracking-[.1em] px-9 py-4 rounded-[2px] inline-flex items-center gap-2.5 hover:bg-black hover:text-primary hover:outline-2 hover:outline hover:outline-primary transition-all"
         >
-          Começar grátis 7 dias →
+          Começar agora →
         </button>
         <a
           href="#protocols"

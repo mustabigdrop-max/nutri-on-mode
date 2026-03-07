@@ -29,7 +29,7 @@ const CTASection = () => {
           </span>
         </button>
         <p className="mt-6 text-sm text-muted-foreground">
-          7 dias grátis · Sem cartão · Cancele quando quiser
+          Sem cartão · Cancele quando quiser
         </p>
       </motion.div>
 

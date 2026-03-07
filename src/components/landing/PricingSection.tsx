@@ -136,7 +136,7 @@ const PricingSection = () => {
                     : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
                 }`}
               >
-                Começar 7 dias grátis
+                Começar agora
               </button>
             </motion.div>
           ))}
