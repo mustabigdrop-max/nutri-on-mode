@@ -72,12 +72,32 @@ function classifyItem(foodName: string): string {
   return "outros";
 }
 
+// Average prices per item (R$ per portion) — Brazilian regional estimates
+const ITEM_PRICES: Record<string, number> = {
+  "frango": 3.50, "carne": 5.00, "peixe": 6.00, "salmão": 12.00, "tilápia": 5.50,
+  "atum": 4.00, "ovo": 0.80, "whey": 3.00, "queijo": 2.50, "iogurte": 2.00,
+  "leite": 1.50, "arroz": 0.60, "feijão": 0.80, "batata doce": 0.70, "aveia": 0.50,
+  "pão": 0.40, "macarrão": 0.70, "banana": 0.50, "maçã": 1.00, "morango": 2.00,
+  "tomate": 0.60, "alface": 1.00, "brócolis": 1.50, "cenoura": 0.40, "cebola": 0.30,
+  "alho": 0.20, "azeite": 1.50, "pasta de amendoim": 1.00, "castanha": 2.00,
+  "default": 2.00,
+};
+
+function estimatePrice(foodName: string): number {
+  const lower = foodName.toLowerCase();
+  for (const [key, price] of Object.entries(ITEM_PRICES)) {
+    if (key !== "default" && lower.includes(key)) return price;
+  }
+  return ITEM_PRICES.default;
+}
+
 interface ShoppingItem {
   name: string;
   portion: string;
   count: number;
   section: string;
   checked: boolean;
+  estimatedPrice: number;
 }
 
 const ShoppingListPage = () => {
@@ -116,6 +136,7 @@ const ShoppingListPage = () => {
           count: 1,
           section: classifyItem(item.food_name),
           checked: false,
+          estimatedPrice: estimatePrice(item.food_name),
         });
       }
     }
@@ -169,21 +190,39 @@ const ShoppingListPage = () => {
           </button>
         </div>
 
-        {/* Progress */}
+        {/* Progress + Cost */}
         {totalItems > 0 && (
-          <div className="rounded-xl border border-border bg-card p-3 mb-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-mono text-muted-foreground">Progresso</span>
-              <span className="text-xs font-mono text-primary font-semibold">{checkedCount}/{totalItems}</span>
+          <>
+            <div className="rounded-xl border border-border bg-card p-3 mb-2">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-mono text-muted-foreground">Progresso</span>
+                <span className="text-xs font-mono text-primary font-semibold">{checkedCount}/{totalItems}</span>
+              </div>
+              <div className="h-2 rounded-full bg-secondary overflow-hidden">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${totalItems > 0 ? (checkedCount / totalItems) * 100 : 0}%` }}
+                  className="h-full rounded-full bg-primary"
+                />
+              </div>
             </div>
-            <div className="h-2 rounded-full bg-secondary overflow-hidden">
-              <motion.div
-                initial={{ width: 0 }}
-                animate={{ width: `${totalItems > 0 ? (checkedCount / totalItems) * 100 : 0}%` }}
-                className="h-full rounded-full bg-primary"
-              />
+            <div className="rounded-xl border border-primary/20 bg-primary/5 p-3 mb-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider">Custo estimado semanal</p>
+                  <p className="text-xl font-bold font-mono text-primary">
+                    R$ {shoppingList.reduce((s, i) => s + i.estimatedPrice * i.count, 0).toFixed(2)}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-[10px] font-mono text-muted-foreground">Por refeição</p>
+                  <p className="text-sm font-bold font-mono text-foreground">
+                    ~R$ {(shoppingList.reduce((s, i) => s + i.estimatedPrice * i.count, 0) / Math.max(shoppingList.reduce((s, i) => s + i.count, 0), 1)).toFixed(2)}
+                  </p>
+                </div>
+              </div>
             </div>
-          </div>
+          </>
         )}
 
         {loading ? (
@@ -240,9 +279,10 @@ const ShoppingListPage = () => {
                                 {item.name}
                               </p>
                             </div>
-                            <span className="text-[10px] font-mono text-muted-foreground flex-shrink-0">
-                              ×{item.count}
-                            </span>
+                            <div className="text-right flex-shrink-0">
+                              <span className="text-[10px] font-mono text-muted-foreground">×{item.count}</span>
+                              <p className="text-[9px] font-mono text-primary">R$ {(item.estimatedPrice * item.count).toFixed(2)}</p>
+                            </div>
                           </button>
                         );
                       })}

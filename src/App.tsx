@@ -27,6 +27,10 @@ import ProgressPage from "./pages/ProgressPage";
 import SettingsPage from "./pages/SettingsPage";
 import BloodTestPage from "./pages/BloodTestPage";
 import DietBuilderPage from "./pages/DietBuilderPage";
+import ChronobiologyPage from "./pages/ChronobiologyPage";
+import BehavioralNutritionPage from "./pages/BehavioralNutritionPage";
+import SupplementationPage from "./pages/SupplementationPage";
+import MicrobiomePage from "./pages/MicrobiomePage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -198,6 +202,38 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <DietBuilderPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/chronobiology"
+              element={
+                <ProtectedRoute>
+                  <ChronobiologyPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/behavioral-nutrition"
+              element={
+                <ProtectedRoute>
+                  <BehavioralNutritionPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/supplementation"
+              element={
+                <ProtectedRoute>
+                  <SupplementationPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/microbiome"
+              element={
+                <ProtectedRoute>
+                  <MicrobiomePage />
                 </ProtectedRoute>
               }
             />

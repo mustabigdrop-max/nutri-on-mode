@@ -9,7 +9,8 @@ import DashboardGamificationCards from "@/components/dashboard/DashboardGamifica
 import {
   Flame, TrendingUp, Droplets, Apple, BarChart3, MessageSquare,
   User, Plus, Utensils, LogOut, Zap, Brain, ChevronRight, Award,
-  Camera, Users, Heart, Settings, HelpCircle, Leaf, Trophy, ShoppingCart, History, Dumbbell, FileText, Hammer
+  Camera, Users, Heart, Settings, HelpCircle, Leaf, Trophy, ShoppingCart, History, Dumbbell, FileText, Hammer,
+  Clock, Pill, Bug, Smile
 } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
 
@@ -542,6 +543,10 @@ const DashboardPage = () => {
               { icon: Dumbbell, label: "Wearables", path: "/wearables", color: "text-primary", bg: "bg-primary/10" },
               { icon: FileText, label: "Exames", path: "/blood-test", color: "text-destructive", bg: "bg-destructive/10" },
               { icon: Hammer, label: "Montar Dieta", path: "/diet-builder", color: "text-primary", bg: "bg-primary/10" },
+              { icon: Clock, label: "Cronobiologia", path: "/chronobiology", color: "text-accent", bg: "bg-accent/10" },
+              { icon: Smile, label: "Comportamental", path: "/behavioral-nutrition", color: "text-primary", bg: "bg-primary/10" },
+              { icon: Pill, label: "Suplementos", path: "/supplementation", color: "text-cyan", bg: "bg-cyan/10" },
+              { icon: Bug, label: "Microbioma", path: "/microbiome", color: "text-accent", bg: "bg-accent/10" },
               { icon: User, label: "Perfil", path: "/profile", color: "text-muted-foreground", bg: "bg-muted/50" },
               { icon: Settings, label: "Config", path: "/settings", color: "text-muted-foreground", bg: "bg-muted/50" },
               { icon: HelpCircle, label: "Suporte", path: "/support", color: "text-muted-foreground", bg: "bg-muted/50" },
