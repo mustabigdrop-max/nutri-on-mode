@@ -9,7 +9,8 @@ import DashboardGamificationCards from "@/components/dashboard/DashboardGamifica
 import {
   Flame, TrendingUp, Droplets, Apple, BarChart3, MessageSquare,
   User, Plus, Utensils, LogOut, Zap, Brain, ChevronRight, Award,
-  Camera, Users, Heart, Settings, HelpCircle, Leaf, Trophy, ShoppingCart, History, Dumbbell, FileText, Hammer
+  Camera, Users, Heart, Settings, HelpCircle, Leaf, Trophy, ShoppingCart, History, Dumbbell, FileText, Hammer,
+  Clock, Pill, Bug, Smile
 } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
 
