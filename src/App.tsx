@@ -205,6 +205,38 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/chronobiology"
+              element={
+                <ProtectedRoute>
+                  <ChronobiologyPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/behavioral-nutrition"
+              element={
+                <ProtectedRoute>
+                  <BehavioralNutritionPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/supplementation"
+              element={
+                <ProtectedRoute>
+                  <SupplementationPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/microbiome"
+              element={
+                <ProtectedRoute>
+                  <MicrobiomePage />
+                </ProtectedRoute>
+              }
+            />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

@@ -279,9 +279,10 @@ const ShoppingListPage = () => {
                                 {item.name}
                               </p>
                             </div>
-                            <span className="text-[10px] font-mono text-muted-foreground flex-shrink-0">
-                              ×{item.count}
-                            </span>
+                            <div className="text-right flex-shrink-0">
+                              <span className="text-[10px] font-mono text-muted-foreground">×{item.count}</span>
+                              <p className="text-[9px] font-mono text-primary">R$ {(item.estimatedPrice * item.count).toFixed(2)}</p>
+                            </div>
                           </button>
                         );
                       })}
