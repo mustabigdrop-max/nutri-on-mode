@@ -27,6 +27,10 @@ import ProgressPage from "./pages/ProgressPage";
 import SettingsPage from "./pages/SettingsPage";
 import BloodTestPage from "./pages/BloodTestPage";
 import DietBuilderPage from "./pages/DietBuilderPage";
+import ChronobiologyPage from "./pages/ChronobiologyPage";
+import BehavioralNutritionPage from "./pages/BehavioralNutritionPage";
+import SupplementationPage from "./pages/SupplementationPage";
+import MicrobiomePage from "./pages/MicrobiomePage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
