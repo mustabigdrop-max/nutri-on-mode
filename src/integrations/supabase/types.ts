@@ -53,6 +53,33 @@ export type Database = {
         }
         Relationships: []
       }
+      alertas_preditivos: {
+        Row: {
+          enviado_em: string
+          id: string
+          lido: boolean
+          mensagem: string
+          tipo_alerta: string
+          user_id: string
+        }
+        Insert: {
+          enviado_em?: string
+          id?: string
+          lido?: boolean
+          mensagem: string
+          tipo_alerta: string
+          user_id: string
+        }
+        Update: {
+          enviado_em?: string
+          id?: string
+          lido?: boolean
+          mensagem?: string
+          tipo_alerta?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       badges: {
         Row: {
           category: string
@@ -742,7 +769,13 @@ export type Database = {
           id: string
           last_streak_date: string | null
           level: number | null
+          meta_peso: number | null
+          nivel_treino: string | null
+          objetivo_principal: string | null
           onboarding_completed: boolean | null
+          orcamento_semanal: number | null
+          perfil_comportamental: string | null
+          prefere_refeicoes: string | null
           protein_g: number | null
           sex: string | null
           sport: string | null
@@ -773,7 +806,13 @@ export type Database = {
           id?: string
           last_streak_date?: string | null
           level?: number | null
+          meta_peso?: number | null
+          nivel_treino?: string | null
+          objetivo_principal?: string | null
           onboarding_completed?: boolean | null
+          orcamento_semanal?: number | null
+          perfil_comportamental?: string | null
+          prefere_refeicoes?: string | null
           protein_g?: number | null
           sex?: string | null
           sport?: string | null
@@ -804,7 +843,13 @@ export type Database = {
           id?: string
           last_streak_date?: string | null
           level?: number | null
+          meta_peso?: number | null
+          nivel_treino?: string | null
+          objetivo_principal?: string | null
           onboarding_completed?: boolean | null
+          orcamento_semanal?: number | null
+          perfil_comportamental?: string | null
+          prefere_refeicoes?: string | null
           protein_g?: number | null
           sex?: string | null
           sport?: string | null
