@@ -532,13 +532,31 @@ const DietBuilderPage = () => {
 
         {/* ── Plan name ─────────────────────────────────── */}
         {!showTemplates && (
-          <div className="mb-4">
+          <div className="flex gap-2 mb-4">
             <Input
               value={planName}
               onChange={(e) => setPlanName(e.target.value)}
-              className="h-9 font-mono text-sm border-border bg-card"
+              className="h-9 font-mono text-sm border-border bg-card flex-1"
               placeholder="Nome do plano..."
             />
+            <div className="flex rounded-lg border border-border overflow-hidden">
+              <button
+                onClick={() => setMeasureMode("caseira")}
+                className={`px-3 py-1.5 text-[10px] font-mono transition-all ${
+                  measureMode === "caseira" ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                🥄 Caseira
+              </button>
+              <button
+                onClick={() => setMeasureMode("gramas")}
+                className={`px-3 py-1.5 text-[10px] font-mono transition-all ${
+                  measureMode === "gramas" ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                ⚖️ Gramas
+              </button>
+            </div>
           </div>
         )}
 
