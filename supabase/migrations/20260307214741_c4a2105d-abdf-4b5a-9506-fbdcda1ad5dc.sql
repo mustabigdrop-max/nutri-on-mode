@@ -1,0 +1,1 @@
+ALTER TABLE public.foods ADD COLUMN categoria text NOT NULL DEFAULT 'outros';

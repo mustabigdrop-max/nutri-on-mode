@@ -12,6 +12,7 @@ export interface Food {
   sodio: number | null;
   vitaminas: Record<string, unknown>;
   fonte: string;
+  categoria: string;
   created_at: string;
 }
 

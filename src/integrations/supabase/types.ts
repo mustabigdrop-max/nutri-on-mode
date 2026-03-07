@@ -470,6 +470,7 @@ export type Database = {
         Row: {
           calorias_100g: number
           carbo_100g: number
+          categoria: string
           created_at: string
           fibra: number | null
           fonte: string
@@ -483,6 +484,7 @@ export type Database = {
         Insert: {
           calorias_100g?: number
           carbo_100g?: number
+          categoria?: string
           created_at?: string
           fibra?: number | null
           fonte?: string
@@ -496,6 +498,7 @@ export type Database = {
         Update: {
           calorias_100g?: number
           carbo_100g?: number
+          categoria?: string
           created_at?: string
           fibra?: number | null
           fonte?: string

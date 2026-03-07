@@ -262,6 +262,7 @@ const DietBuilderPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<Food[]>([]);
   const [searching, setSearching] = useState(false);
+  const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
   
   // Food being configured (measure picker step)
   const [pendingFood, setPendingFood] = useState<{ food: Food; slotKey: string } | null>(null);
@@ -392,14 +393,18 @@ const DietBuilderPage = () => {
   };
 
   // Search
-  const handleSearch = useCallback(async (q: string) => {
+  const handleSearch = useCallback(async (q: string, cat?: string | null) => {
     setSearchQuery(q);
-    if (q.trim().length < 2) { setSearchResults([]); return; }
+    const activeCat = cat !== undefined ? cat : categoryFilter;
+    if (q.trim().length < 2 && !activeCat) { setSearchResults([]); return; }
     setSearching(true);
-    const results = await searchFoods(q);
-    setSearchResults(results);
+    let query = supabase.from("foods").select("*").order("nome").limit(30);
+    if (q.trim().length >= 2) query = query.ilike("nome", `%${q}%`);
+    if (activeCat) query = query.eq("categoria", activeCat);
+    const { data } = await query;
+    setSearchResults((data as Food[]) ?? []);
     setSearching(false);
-  }, [searchFoods]);
+  }, [categoryFilter]);
 
   // Duplicate item
   const duplicateItem = (slotKey: string, item: MealItem) => {
@@ -773,7 +778,7 @@ const DietBuilderPage = () => {
 
                           {/* Add food button */}
                           <button
-                            onClick={() => { setSearchSlot(slot.key); setSearchQuery(""); setSearchResults([]); }}
+                            onClick={() => { setSearchSlot(slot.key); setSearchQuery(""); setSearchResults([]); setCategoryFilter(null); }}
                             className="w-full flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-mono text-primary/70 hover:text-primary hover:bg-primary/5 transition-colors border-t border-border/50"
                           >
                             <Plus className="w-3.5 h-3.5" />
@@ -820,7 +825,7 @@ const DietBuilderPage = () => {
               <div className="max-w-lg mx-auto px-4 pt-4 pb-8">
                 <div className="flex items-center gap-2 mb-4">
                   <button
-                    onClick={() => { setSearchSlot(null); setPendingFood(null); setSearchQuery(""); setSearchResults([]); }}
+                    onClick={() => { setSearchSlot(null); setPendingFood(null); setSearchQuery(""); setSearchResults([]); setCategoryFilter(null); }}
                     className="p-2 rounded-lg border border-border bg-card"
                   >
                     <X className="w-4 h-4 text-foreground" />
@@ -955,35 +960,74 @@ const DietBuilderPage = () => {
                 {/* ── Search results ───────────────────────── */}
                 {!pendingFood && (
                   <>
+                    {/* Category filter chips */}
+                    <div className="flex flex-wrap gap-1.5 mb-3">
+                      {[
+                        { key: null, label: "Todos", emoji: "📋" },
+                        { key: "proteina", label: "Proteínas", emoji: "🥩" },
+                        { key: "carboidrato", label: "Carboidratos", emoji: "🍚" },
+                        { key: "fruta", label: "Frutas", emoji: "🍎" },
+                        { key: "vegetal", label: "Vegetais", emoji: "🥦" },
+                        { key: "laticinio", label: "Laticínios", emoji: "🧀" },
+                        { key: "gordura", label: "Gorduras", emoji: "🥑" },
+                        { key: "prato_pronto", label: "Pratos prontos", emoji: "🍲" },
+                        { key: "suplemento", label: "Suplementos", emoji: "💊" },
+                        { key: "tempero", label: "Temperos", emoji: "🧂" },
+                        { key: "outros", label: "Outros", emoji: "📦" },
+                      ].map(cat => (
+                        <button
+                          key={cat.key ?? "all"}
+                          onClick={() => { setCategoryFilter(cat.key); handleSearch(searchQuery, cat.key); }}
+                          className={`px-2.5 py-1 rounded-full text-[10px] font-mono border transition-all ${
+                            categoryFilter === cat.key
+                              ? "border-primary bg-primary/10 text-primary"
+                              : "border-border bg-card text-muted-foreground hover:border-primary/30"
+                          }`}
+                        >
+                          {cat.emoji} {cat.label}
+                        </button>
+                      ))}
+                    </div>
+
                     {searching && (
                       <div className="flex justify-center py-8">
                         <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                       </div>
                     )}
 
-                    <div className="space-y-1 max-h-[70vh] overflow-y-auto">
+                    <div className="space-y-1 max-h-[60vh] overflow-y-auto">
                       {searchResults.map(food => (
                         <button
                           key={food.id}
                           onClick={() => selectFoodForMeasure(food, searchSlot!)}
                           className="w-full text-left rounded-xl border border-border bg-card p-3 hover:border-primary/30 transition-all"
                         >
-                          <p className="text-sm font-semibold text-foreground">{food.nome}</p>
+                          <div className="flex items-center gap-2">
+                            <p className="text-sm font-semibold text-foreground flex-1">{food.nome}</p>
+                            <span className="text-[9px] font-mono px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground">
+                              {food.categoria === "proteina" ? "🥩" : food.categoria === "carboidrato" ? "🍚" : food.categoria === "fruta" ? "🍎" : food.categoria === "vegetal" ? "🥦" : food.categoria === "laticinio" ? "🧀" : food.categoria === "gordura" ? "🥑" : food.categoria === "prato_pronto" ? "🍲" : food.categoria === "suplemento" ? "💊" : food.categoria === "tempero" ? "🧂" : "📦"}
+                            </span>
+                          </div>
                           <p className="text-[10px] font-mono text-muted-foreground">
                             {food.calorias_100g} kcal · {food.proteina_100g}g P · {food.carbo_100g}g C · {food.gordura_100g}g G
                             <span className="text-muted-foreground/60"> (por 100g) · {food.fonte}</span>
                           </p>
                         </button>
                       ))}
-                      {!searching && searchQuery.length >= 2 && searchResults.length === 0 && (
+                      {!searching && searchQuery.length >= 2 && searchResults.length === 0 && !categoryFilter && (
                         <div className="text-center py-8">
                           <p className="text-sm text-muted-foreground">Nenhum alimento encontrado</p>
                         </div>
                       )}
-                      {searchQuery.length < 2 && (
+                      {!searching && categoryFilter && searchResults.length === 0 && (
+                        <div className="text-center py-8">
+                          <p className="text-sm text-muted-foreground">Nenhum alimento nessa categoria</p>
+                        </div>
+                      )}
+                      {searchQuery.length < 2 && !categoryFilter && (
                         <div className="text-center py-8">
                           <Search className="w-8 h-8 text-muted-foreground/30 mx-auto mb-2" />
-                          <p className="text-xs text-muted-foreground">Digite pelo menos 2 caracteres</p>
+                          <p className="text-xs text-muted-foreground">Digite pelo menos 2 caracteres ou filtre por categoria</p>
                         </div>
                       )}
                     </div>
