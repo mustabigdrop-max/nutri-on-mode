@@ -76,7 +76,7 @@ const PricingSection = () => {
             <span className="text-gradient-gold">modo ON</span>
           </h2>
           <p className="text-muted-foreground text-lg">
-            7 dias grátis em todos os planos. Sem cartão de crédito.
+            Sem cartão de crédito. Cancele quando quiser.
           </p>
         </motion.div>
 
