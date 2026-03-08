@@ -62,6 +62,7 @@ const LandingPlans = () => {
   const inView = useInView(ref, { once: true, margin: "-10%" });
   const navigate = useNavigate();
   const { getRemaining } = usePlanSlots();
+  const [modal, setModal] = useState<{ open: boolean; plan: string; feature: string }>({ open: false, plan: "", feature: "" });
 
   const slotBadge = (planKey: string | undefined) => {
     if (!planKey) return null;
