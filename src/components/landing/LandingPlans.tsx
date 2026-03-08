@@ -58,6 +58,16 @@ const LandingPlans = () => {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: "-10%" });
   const navigate = useNavigate();
+  const { getRemaining } = usePlanSlots();
+
+  const slotBadge = (planKey: string | undefined) => {
+    if (!planKey) return null;
+    const remaining = getRemaining(planKey);
+    if (remaining === null) return null;
+    return remaining <= 0
+      ? "ESGOTADO"
+      : `🔥 ${remaining} VAGAS RESTANTES`;
+  };
 
   return (
     <section id="plans" className="bg-[#080814] px-6 md:px-12 py-[120px]">
