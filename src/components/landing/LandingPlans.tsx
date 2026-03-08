@@ -20,7 +20,8 @@ const plans = [
   },
   {
     name: "ON +", price: "R$117", featured: true,
-    badge: "PREÇO DE FUNDADOR · 50 VAGAS",
+    slotKey: "on_plus",
+    badge: "PREÇO DE FUNDADOR",
     features: [
       { text: "<strong>Tudo do ON</strong> +" },
       "Chat IA nutriON ilimitado (adaptado por objetivo)",
