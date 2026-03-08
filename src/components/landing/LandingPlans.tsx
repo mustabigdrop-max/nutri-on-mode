@@ -77,8 +77,8 @@ const LandingPlans = () => {
               plan.featured ? "border-primary/30 bg-primary/[.02]" : "border-[#14142a] hover:border-[#2a2a4a]"
             }`}
           >
-            {plan.featured && (
-              <span className="absolute top-4 right-4 font-mono text-[.55rem] text-black bg-primary px-2 py-1 rounded-[2px] tracking-[.1em]">MAIS POPULAR</span>
+            {(plan as any).badge && (
+              <span className="absolute top-4 right-4 font-mono text-[.55rem] text-black bg-primary px-2 py-1 rounded-[2px] tracking-[.1em]">{(plan as any).badge}</span>
             )}
             <div className="font-heading text-[1.5rem] tracking-[.08em] mb-1.5 text-[#f0edf8]">{plan.name}</div>
             <div className="my-5">
