@@ -9,7 +9,7 @@ const corsHeaders = {
 // ── Mapeamento produto Kiwify → plano interno ───────────────
 // Preencha com os IDs reais dos produtos na Kiwify
 const PRODUCT_MAP: Record<string, string> = {
-  // "kiwify_product_id_ON":      "on",
+  "2U4q4d9": "on",
   // "kiwify_product_id_ON_PLUS": "full",
   // "kiwify_product_id_ON_PRO":  "max",
 };
