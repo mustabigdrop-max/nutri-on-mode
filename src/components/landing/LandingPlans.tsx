@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, useInView } from "framer-motion";
 import { usePlanSlots } from "@/hooks/usePlanSlots";
+import UpgradeModal from "@/components/landing/UpgradeModal";
 
 const plans = [
   {
