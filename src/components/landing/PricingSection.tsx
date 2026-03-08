@@ -8,6 +8,7 @@ const plans = [
     icon: Zap,
     description: "Porta de entrada. Sem IA, sem Coach.",
     popular: false,
+    checkoutUrl: "https://pay.kiwify.com.br/2U4q4d9",
     features: [
       "Dietas prontas segmentadas por objetivo",
       "Receitas práticas em português (medidas caseiras BR)",
@@ -23,6 +24,7 @@ const plans = [
     icon: Crown,
     description: "IA completa 24h. Preço de fundador — 50 vagas.",
     popular: true,
+    checkoutUrl: "https://pay.kiwify.com.br/6pXyygp",
     features: [
       "Tudo do ON +",
       "Chat IA nutriON ilimitado",
@@ -44,6 +46,7 @@ const plans = [
     icon: Briefcase,
     description: "IA + Coach real. Vagas limitadas: máx. 20 alunos.",
     popular: false,
+    checkoutUrl: "https://pay.kiwify.com.br/zbtOulj",
     features: [
       "Tudo do ON+ +",
       "2 check-ins mensais (vídeo/áudio)",
