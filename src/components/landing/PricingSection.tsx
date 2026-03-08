@@ -8,6 +8,7 @@ const plans = [
     icon: Zap,
     description: "Porta de entrada. Sem IA, sem Coach.",
     popular: false,
+    checkoutUrl: "https://pay.kiwify.com.br/2U4q4d9",
     features: [
       "Dietas prontas segmentadas por objetivo",
       "Receitas práticas em português (medidas caseiras BR)",
@@ -23,6 +24,7 @@ const plans = [
     icon: Crown,
     description: "IA completa 24h. Preço de fundador — 50 vagas.",
     popular: true,
+    checkoutUrl: "https://pay.kiwify.com.br/6pXyygp",
     features: [
       "Tudo do ON +",
       "Chat IA nutriON ilimitado",
@@ -44,6 +46,7 @@ const plans = [
     icon: Briefcase,
     description: "IA + Coach real. Vagas limitadas: máx. 20 alunos.",
     popular: false,
+    checkoutUrl: "https://pay.kiwify.com.br/zbtOulj",
     features: [
       "Tudo do ON+ +",
       "2 check-ins mensais (vídeo/áudio)",
@@ -136,15 +139,18 @@ const PricingSection = () => {
                 ))}
               </ul>
 
-              <button
-                className={`w-full py-3 rounded-lg font-bold text-sm transition-all ${
+              <a
+                href={plan.checkoutUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`block w-full py-3 rounded-lg font-bold text-sm text-center transition-all ${
                   plan.popular
                     ? "bg-primary text-primary-foreground hover:scale-[1.02] glow-gold"
                     : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
                 }`}
               >
                 Começar agora
-              </button>
+              </a>
             </motion.div>
           ))}
         </div>
