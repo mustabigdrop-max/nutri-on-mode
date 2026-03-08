@@ -7,6 +7,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { useWaterLogs } from "@/hooks/useWaterLogs";
 import DashboardGamificationCards from "@/components/dashboard/DashboardGamificationCards";
 import {
+  ObjectiveBadge, getRingLabel, getScoreLabel,
+  getPredictiveAlert, getHeaderSubtitle, getChildDashboardGreeting,
+} from "@/components/dashboard/DashboardObjectiveAdapters";
+import {
   Flame, TrendingUp, Droplets, Apple, BarChart3, MessageSquare,
   User, Plus, Utensils, LogOut, Zap, Brain, ChevronRight, Award,
   Camera, Users, Heart, Settings, HelpCircle, Leaf, Trophy, ShoppingCart, History, Dumbbell, FileText, Hammer,
@@ -15,7 +19,7 @@ import {
 import BottomNav from "@/components/BottomNav";
 
 // SVG animated ring component
-const CalorieRing = ({ percent, kcal, target }: { percent: number; kcal: number; target: number }) => {
+const CalorieRing = ({ percent, kcal, target, objetivo }: { percent: number; kcal: number; target: number; objetivo?: string }) => {
   const radius = 90;
   const stroke = 10;
   const circumference = 2 * Math.PI * radius;
@@ -25,16 +29,13 @@ const CalorieRing = ({ percent, kcal, target }: { percent: number; kcal: number;
   return (
     <div className="relative w-56 h-56 mx-auto">
       <svg viewBox="0 0 200 200" className="w-full h-full -rotate-90">
-        {/* Track */}
         <circle cx="100" cy="100" r={radius} fill="none" stroke="hsl(var(--border))" strokeWidth={stroke} />
-        {/* Glow filter */}
         <defs>
           <filter id="ringGlow">
             <feGaussianBlur stdDeviation="4" result="blur" />
             <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
           </filter>
         </defs>
-        {/* Progress */}
         <motion.circle
           cx="100" cy="100" r={radius} fill="none"
           stroke="hsl(var(--primary))"
@@ -46,7 +47,6 @@ const CalorieRing = ({ percent, kcal, target }: { percent: number; kcal: number;
           transition={{ duration: 1.5, ease: "easeOut", delay: 0.3 }}
           filter="url(#ringGlow)"
         />
-        {/* Accent arc (protein indicator) */}
         <motion.circle
           cx="100" cy="100" r={radius - 14} fill="none"
           stroke="hsl(var(--accent))"
@@ -59,7 +59,6 @@ const CalorieRing = ({ percent, kcal, target }: { percent: number; kcal: number;
           opacity={0.4}
         />
       </svg>
-      {/* Center text */}
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <motion.span
           initial={{ opacity: 0, scale: 0.5 }}
@@ -71,7 +70,7 @@ const CalorieRing = ({ percent, kcal, target }: { percent: number; kcal: number;
         </motion.span>
         <span className="text-xs font-mono text-muted-foreground mt-1">de {target.toLocaleString()} kcal</span>
         <span className="text-[10px] font-mono text-primary mt-0.5">
-          {remaining > 0 ? `${Math.round(remaining)} restantes` : "Meta atingida ✓"}
+          {getRingLabel(objetivo || "saude_geral", remaining, percent)}
         </span>
       </div>
     </div>
@@ -132,7 +131,7 @@ const ScoreGauge = ({ score }: { score: number }) => {
       >
         {score}
       </motion.span>
-      <p className="text-[10px] font-mono text-muted-foreground">Score IA</p>
+      <p className="text-[10px] font-mono text-muted-foreground">Score</p>
       <p className={`text-[9px] font-mono ${color}`}>{label}</p>
     </div>
   );
@@ -241,6 +240,7 @@ const DashboardPage = () => {
     return () => { supabase.removeChannel(channel); };
   }, [user]);
 
+  const objetivo = profile?.objetivo_principal || "saude_geral";
   const kcalTarget = profile?.vet_kcal || 2000;
   const proteinTarget = profile?.protein_g || 150;
   const carbsTarget = profile?.carbs_g || 250;
@@ -267,13 +267,8 @@ const DashboardPage = () => {
 
   const hour = new Date().getHours();
   const predictiveAlert = useMemo(() => {
-    if (todayMeals.length === 0 && hour >= 10) return "Ainda sem refeições registradas hoje. Bora começar? 🍳";
-    if (hour >= 20 && todayTotals.protein < proteinTarget * 0.6) return `Faltam ${Math.round(proteinTarget - todayTotals.protein)}g de proteína. Que tal um lanche proteico antes de dormir?`;
-    if (hour >= 15 && hour < 18 && todayTotals.kcal < kcalTarget * 0.4) return "Consumo baixo até agora. Planeje um lanche nutritivo para manter a energia!";
-    if (kcalPercent > 90 && kcalPercent < 105) return "Quase na meta! Você está no controle hoje 🎯";
-    if (kcalPercent >= 105) return "Acima da meta calórica. Sem culpa — amanhã é um novo dia! 💚";
-    return null;
-  }, [todayMeals, todayTotals, hour, proteinTarget, kcalTarget, kcalPercent]);
+    return getPredictiveAlert(objetivo, todayMeals, todayTotals, proteinTarget, kcalTarget, kcalPercent, hour);
+  }, [todayMeals, todayTotals, hour, proteinTarget, kcalTarget, kcalPercent, objetivo]);
 
   if (loading || !profile) {
     return (
@@ -308,8 +303,9 @@ const DashboardPage = () => {
           className="flex items-center justify-between mb-4"
         >
           <div>
-            <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest">Cockpit</p>
+            <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest">{getHeaderSubtitle(objetivo)}</p>
             <h1 className="text-lg font-bold text-foreground">{profile.full_name || "Piloto"}</h1>
+            <ObjectiveBadge objetivo={objetivo} />
           </div>
           <div className="flex items-center gap-2">
             <motion.div
@@ -328,6 +324,17 @@ const DashboardPage = () => {
           </div>
         </motion.div>
 
+        {/* Infantil greeting */}
+        {objetivo === "infantil" && (
+          <motion.div
+            initial={{ opacity: 0, y: -5 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="rounded-xl border border-pink-400/20 bg-pink-400/5 p-3 mb-4 text-center"
+          >
+            <p className="text-sm text-foreground">{getChildDashboardGreeting(profile.full_name?.split(" ")[0])}</p>
+          </motion.div>
+        )}
+
         {/* Calorie ring */}
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
@@ -335,7 +342,7 @@ const DashboardPage = () => {
           transition={{ delay: 0.1 }}
           className="mb-4"
         >
-          <CalorieRing percent={kcalPercent} kcal={todayTotals.kcal} target={kcalTarget} />
+          <CalorieRing percent={kcalPercent} kcal={todayTotals.kcal} target={kcalTarget} objetivo={objetivo} />
         </motion.div>
 
         {/* Macro bars */}
