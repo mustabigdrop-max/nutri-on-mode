@@ -331,7 +331,7 @@ const DashboardPage = () => {
           transition={{ delay: 0.1 }}
           className="mb-4"
         >
-          <CalorieRing percent={kcalPercent} kcal={todayTotals.kcal} target={kcalTarget} />
+          <CalorieRing percent={kcalPercent} kcal={todayTotals.kcal} target={kcalTarget} objetivo={objetivo} />
         </motion.div>
 
         {/* Macro bars */}
