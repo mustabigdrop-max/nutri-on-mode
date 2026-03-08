@@ -723,6 +723,30 @@ export type Database = {
         }
         Relationships: []
       }
+      plan_slots: {
+        Row: {
+          id: string
+          max_slots: number
+          plan_key: string
+          updated_at: string
+          used_slots: number
+        }
+        Insert: {
+          id?: string
+          max_slots?: number
+          plan_key: string
+          updated_at?: string
+          used_slots?: number
+        }
+        Update: {
+          id?: string
+          max_slots?: number
+          plan_key?: string
+          updated_at?: string
+          used_slots?: number
+        }
+        Relationships: []
+      }
       professional_patients: {
         Row: {
           created_at: string
