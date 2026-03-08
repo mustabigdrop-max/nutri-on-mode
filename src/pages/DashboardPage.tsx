@@ -74,9 +74,6 @@ const CalorieRing = ({ percent, kcal, target }: { percent: number; kcal: number;
           {Math.round(kcal).toLocaleString()}
         </motion.span>
         <span className="text-xs font-mono text-muted-foreground mt-1">de {target.toLocaleString()} kcal</span>
-        <span className="text-[10px] font-mono text-primary mt-0.5">
-          {remaining > 0 ? `${Math.round(remaining)} restantes` : "Meta atingida ✓"}
-        </span>
       </div>
     </div>
   );
