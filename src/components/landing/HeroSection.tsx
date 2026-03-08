@@ -84,7 +84,7 @@ const HeroSection = () => {
           transition={{ delay: 1, duration: 0.6 }}
           className="mt-8 text-sm text-muted-foreground"
         >
-          Sem cartão de crédito · Cancele quando quiser
+          Cancele quando quiser
         </motion.p>
       </motion.div>
 

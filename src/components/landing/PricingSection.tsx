@@ -77,7 +77,7 @@ const PricingSection = () => {
             <span className="text-gradient-gold">modo ON</span>
           </h2>
           <p className="text-muted-foreground text-lg">
-            Sem cartão de crédito. Cancele quando quiser.
+            Cancele quando quiser.
           </p>
         </motion.div>
 

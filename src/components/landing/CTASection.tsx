@@ -29,7 +29,7 @@ const CTASection = () => {
           </span>
         </button>
         <p className="mt-6 text-sm text-muted-foreground">
-          Sem cartão · Cancele quando quiser
+          Cancele quando quiser
         </p>
       </motion.div>
 

@@ -110,7 +110,7 @@ const UpgradeModal = ({ open, onClose, fromPlan, lockedFeature }: UpgradeModalPr
               FAZER UPGRADE PARA {path.target.toUpperCase()} →
             </button>
             <p className="text-center text-[.65rem] text-[#50507a] mt-3 font-mono">
-              Sem cartão · Cancele quando quiser
+              Cancele quando quiser
             </p>
           </motion.div>
         </motion.div>
