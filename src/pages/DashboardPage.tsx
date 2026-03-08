@@ -19,7 +19,7 @@ import {
 import BottomNav from "@/components/BottomNav";
 
 // SVG animated ring component
-const CalorieRing = ({ percent, kcal, target }: { percent: number; kcal: number; target: number }) => {
+const CalorieRing = ({ percent, kcal, target, objetivo }: { percent: number; kcal: number; target: number; objetivo?: string }) => {
   const radius = 90;
   const stroke = 10;
   const circumference = 2 * Math.PI * radius;
@@ -29,16 +29,13 @@ const CalorieRing = ({ percent, kcal, target }: { percent: number; kcal: number;
   return (
     <div className="relative w-56 h-56 mx-auto">
       <svg viewBox="0 0 200 200" className="w-full h-full -rotate-90">
-        {/* Track */}
         <circle cx="100" cy="100" r={radius} fill="none" stroke="hsl(var(--border))" strokeWidth={stroke} />
-        {/* Glow filter */}
         <defs>
           <filter id="ringGlow">
             <feGaussianBlur stdDeviation="4" result="blur" />
             <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
           </filter>
         </defs>
-        {/* Progress */}
         <motion.circle
           cx="100" cy="100" r={radius} fill="none"
           stroke="hsl(var(--primary))"
@@ -50,7 +47,6 @@ const CalorieRing = ({ percent, kcal, target }: { percent: number; kcal: number;
           transition={{ duration: 1.5, ease: "easeOut", delay: 0.3 }}
           filter="url(#ringGlow)"
         />
-        {/* Accent arc (protein indicator) */}
         <motion.circle
           cx="100" cy="100" r={radius - 14} fill="none"
           stroke="hsl(var(--accent))"
@@ -63,7 +59,6 @@ const CalorieRing = ({ percent, kcal, target }: { percent: number; kcal: number;
           opacity={0.4}
         />
       </svg>
-      {/* Center text */}
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <motion.span
           initial={{ opacity: 0, scale: 0.5 }}
@@ -74,6 +69,9 @@ const CalorieRing = ({ percent, kcal, target }: { percent: number; kcal: number;
           {Math.round(kcal).toLocaleString()}
         </motion.span>
         <span className="text-xs font-mono text-muted-foreground mt-1">de {target.toLocaleString()} kcal</span>
+        <span className="text-[10px] font-mono text-primary mt-0.5">
+          {getRingLabel(objetivo || "saude_geral", remaining, percent)}
+        </span>
       </div>
     </div>
   );
