@@ -1,6 +1,7 @@
 import { useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, useInView } from "framer-motion";
+import { usePlanSlots } from "@/hooks/usePlanSlots";
 
 const plans = [
   {
