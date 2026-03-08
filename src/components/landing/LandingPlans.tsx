@@ -89,8 +89,8 @@ const LandingPlans = () => {
               {plan.features.map((f, i) => {
                 const text = typeof f === "string" ? f : f.text;
                 return (
-                  <li key={i} className="text-[.82rem] text-[#7070a0] flex items-start gap-2 font-landing">
-                    <span className="text-primary text-[.7rem] mt-0.5 shrink-0">→</span>
+                  <li key={i} className={`text-[.82rem] flex items-start gap-2 font-landing ${(f as any).locked ? "text-[#40405a]" : "text-[#7070a0]"}`}>
+                    <span className={`text-[.7rem] mt-0.5 shrink-0 ${(f as any).locked ? "text-[#40405a]" : "text-primary"}`}>{(f as any).locked ? "✗" : "→"}</span>
                     <span className="[&_strong]:text-[#f0edf8]" dangerouslySetInnerHTML={{ __html: text }} />
                   </li>
                 );

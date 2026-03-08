@@ -128,6 +128,12 @@ const PricingSection = () => {
                     <span className="text-muted-foreground">{feature}</span>
                   </li>
                 ))}
+                {plan.locked?.map((item) => (
+                  <li key={item} className="flex items-start gap-2 text-sm opacity-40">
+                    <span className="w-4 h-4 mt-0.5 shrink-0 text-center text-xs">🔒</span>
+                    <span className="text-muted-foreground">{item}</span>
+                  </li>
+                ))}
               </ul>
 
               <button
