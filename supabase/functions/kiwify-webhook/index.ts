@@ -11,7 +11,7 @@ const corsHeaders = {
 const PRODUCT_MAP: Record<string, string> = {
   "2U4q4d9": "on",
   "6pXyygp": "full",
-  // "kiwify_product_id_ON_PRO":  "max",
+  "zbtOulj": "max",
 };
 
 function mapProduct(productId: string): string {
