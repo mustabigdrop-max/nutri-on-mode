@@ -324,6 +324,17 @@ const DashboardPage = () => {
           </div>
         </motion.div>
 
+        {/* Infantil greeting */}
+        {objetivo === "infantil" && (
+          <motion.div
+            initial={{ opacity: 0, y: -5 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="rounded-xl border border-pink-400/20 bg-pink-400/5 p-3 mb-4 text-center"
+          >
+            <p className="text-sm text-foreground">{getChildDashboardGreeting(profile.full_name?.split(" ")[0])}</p>
+          </motion.div>
+        )}
+
         {/* Calorie ring */}
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
