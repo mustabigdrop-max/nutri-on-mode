@@ -20,7 +20,7 @@ const plans = [
     cta: "Começar agora →",
   },
   {
-    name: "ON +", price: "R$117", featured: true,
+    name: "ON +", price: "R$97", featured: true,
     slotKey: "on_plus",
     badge: "PREÇO DE FUNDADOR",
     features: [
