@@ -40,7 +40,8 @@ const plans = [
   },
   {
     name: "ON PRO", price: "R$197", featured: false,
-    badge: "VAGAS LIMITADAS · MÁX 20 ALUNOS",
+    slotKey: "on_pro",
+    badge: "VAGAS LIMITADAS",
     features: [
       { text: "<strong>Tudo do ON+</strong> +" },
       "2 check-ins mensais por vídeo/áudio com o Coach",
