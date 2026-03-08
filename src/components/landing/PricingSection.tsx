@@ -139,15 +139,18 @@ const PricingSection = () => {
                 ))}
               </ul>
 
-              <button
-                className={`w-full py-3 rounded-lg font-bold text-sm transition-all ${
+              <a
+                href={plan.checkoutUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`block w-full py-3 rounded-lg font-bold text-sm text-center transition-all ${
                   plan.popular
                     ? "bg-primary text-primary-foreground hover:scale-[1.02] glow-gold"
                     : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
                 }`}
               >
                 Começar agora
-              </button>
+              </a>
             </motion.div>
           ))}
         </div>

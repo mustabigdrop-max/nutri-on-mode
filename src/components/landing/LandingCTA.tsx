@@ -23,12 +23,14 @@ const LandingCTA = () => {
       <p className="font-mono text-[.7rem] text-black/40 mb-9 relative">
         Cancele quando quiser
       </p>
-      <button
-        onClick={() => navigate("/auth")}
-        className="bg-black text-primary font-heading text-[1.3rem] tracking-[.1em] px-[52px] py-5 rounded-[2px] hover:bg-[#f0edf8] hover:text-black transition-all relative"
+      <a
+        href="https://pay.kiwify.com.br/6pXyygp"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-block bg-black text-primary font-heading text-[1.3rem] tracking-[.1em] px-[52px] py-5 rounded-[2px] hover:bg-[#f0edf8] hover:text-black transition-all relative"
       >
         Entrar no modo ON →
-      </button>
+      </a>
     </div>
   );
 };

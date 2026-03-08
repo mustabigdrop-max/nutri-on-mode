@@ -133,8 +133,10 @@ const LandingPlans = () => {
                 );
               })}
             </ul>
-            <button
-              onClick={() => navigate("/auth")}
+            <a
+              href={plan.checkoutUrl}
+              target="_blank"
+              rel="noopener noreferrer"
               className={`block w-full text-center py-3.5 rounded font-mono text-[.72rem] tracking-[.08em] transition-all ${
                 plan.featured
                   ? "bg-primary text-black font-medium hover:bg-black hover:text-primary hover:outline hover:outline-1 hover:outline-primary"
@@ -142,7 +144,7 @@ const LandingPlans = () => {
               }`}
             >
               {plan.cta}
-            </button>
+            </a>
           </div>
         ))}
       </div>
