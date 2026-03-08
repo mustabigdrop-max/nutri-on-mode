@@ -116,9 +116,15 @@ const LandingPlans = () => {
             <ul className="flex flex-col gap-2.5 mb-8">
               {plan.features.map((f, i) => {
                 const text = typeof f === "string" ? f : f.text;
+                const isLocked = !!(f as any).locked;
+                const plainText = text.replace(/<[^>]*>/g, "").replace("🔒", "").trim();
                 return (
-                  <li key={i} className={`text-[.82rem] flex items-start gap-2 font-landing ${(f as any).locked ? "text-[#40405a]" : "text-[#7070a0]"}`}>
-                    <span className={`text-[.7rem] mt-0.5 shrink-0 ${(f as any).locked ? "text-[#40405a]" : "text-primary"}`}>{(f as any).locked ? "✗" : "→"}</span>
+                  <li
+                    key={i}
+                    className={`text-[.82rem] flex items-start gap-2 font-landing ${isLocked ? "text-[#40405a] cursor-pointer hover:text-[#6060a0] transition-colors" : "text-[#7070a0]"}`}
+                    onClick={isLocked ? () => setModal({ open: true, plan: plan.name, feature: plainText }) : undefined}
+                  >
+                    <span className={`text-[.7rem] mt-0.5 shrink-0 ${isLocked ? "text-[#40405a]" : "text-primary"}`}>{isLocked ? "✗" : "→"}</span>
                     <span className="[&_strong]:text-[#f0edf8]" dangerouslySetInnerHTML={{ __html: text }} />
                   </li>
                 );
