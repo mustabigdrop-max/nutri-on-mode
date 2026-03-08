@@ -242,6 +242,7 @@ const DashboardPage = () => {
     return () => { supabase.removeChannel(channel); };
   }, [user]);
 
+  const objetivo = profile?.objetivo_principal || "saude_geral";
   const kcalTarget = profile?.vet_kcal || 2000;
   const proteinTarget = profile?.protein_g || 150;
   const carbsTarget = profile?.carbs_g || 250;
