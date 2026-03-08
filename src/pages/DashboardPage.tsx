@@ -133,7 +133,7 @@ const ScoreGauge = ({ score }: { score: number }) => {
       >
         {score}
       </motion.span>
-      <p className="text-[10px] font-mono text-muted-foreground">Score IA</p>
+      <p className="text-[10px] font-mono text-muted-foreground">Score</p>
       <p className={`text-[9px] font-mono ${color}`}>{label}</p>
     </div>
   );
