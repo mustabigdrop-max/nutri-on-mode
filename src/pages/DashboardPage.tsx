@@ -269,13 +269,8 @@ const DashboardPage = () => {
 
   const hour = new Date().getHours();
   const predictiveAlert = useMemo(() => {
-    if (todayMeals.length === 0 && hour >= 10) return "Ainda sem refeições registradas hoje. Bora começar? 🍳";
-    if (hour >= 20 && todayTotals.protein < proteinTarget * 0.6) return `Faltam ${Math.round(proteinTarget - todayTotals.protein)}g de proteína. Que tal um lanche proteico antes de dormir?`;
-    if (hour >= 15 && hour < 18 && todayTotals.kcal < kcalTarget * 0.4) return "Consumo baixo até agora. Planeje um lanche nutritivo para manter a energia!";
-    if (kcalPercent > 90 && kcalPercent < 105) return "Quase na meta! Você está no controle hoje 🎯";
-    if (kcalPercent >= 105) return "Acima da meta calórica. Sem culpa — amanhã é um novo dia! 💚";
-    return null;
-  }, [todayMeals, todayTotals, hour, proteinTarget, kcalTarget, kcalPercent]);
+    return getPredictiveAlert(objetivo, todayMeals, todayTotals, proteinTarget, kcalTarget, kcalPercent, hour);
+  }, [todayMeals, todayTotals, hour, proteinTarget, kcalTarget, kcalPercent, objetivo]);
 
   if (loading || !profile) {
     return (
