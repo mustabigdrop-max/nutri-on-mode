@@ -52,7 +52,7 @@ const plans = [
       "Ajuste de plano pelo Coach",
       "Canal prioritário (resposta 24h)",
       "Grupo exclusivo alunos PRO",
-      "Badge dinâmico "X vagas restantes"",
+      "Badge dinâmico 'X vagas restantes'",
     ],
     locked: [],
   },

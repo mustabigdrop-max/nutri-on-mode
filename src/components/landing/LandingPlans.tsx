@@ -47,7 +47,7 @@ const plans = [
       "Ajuste de plano pelo Coach quando necessário",
       "Canal prioritário com o Coach (resposta em até 24h)",
       "Grupo exclusivo alunos PRO",
-      { text: "Badge dinâmico: <strong>"X vagas restantes"</strong>" },
+      { text: "Badge dinâmico: <strong>'X vagas restantes'</strong>" },
     ],
     cta: "Quero acompanhamento real →",
   },
