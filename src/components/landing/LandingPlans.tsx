@@ -1,7 +1,8 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, useInView } from "framer-motion";
 import { usePlanSlots } from "@/hooks/usePlanSlots";
+import UpgradeModal from "@/components/landing/UpgradeModal";
 
 const plans = [
   {
@@ -61,6 +62,7 @@ const LandingPlans = () => {
   const inView = useInView(ref, { once: true, margin: "-10%" });
   const navigate = useNavigate();
   const { getRemaining } = usePlanSlots();
+  const [modal, setModal] = useState<{ open: boolean; plan: string; feature: string }>({ open: false, plan: "", feature: "" });
 
   const slotBadge = (planKey: string | undefined) => {
     if (!planKey) return null;
@@ -114,9 +116,15 @@ const LandingPlans = () => {
             <ul className="flex flex-col gap-2.5 mb-8">
               {plan.features.map((f, i) => {
                 const text = typeof f === "string" ? f : f.text;
+                const isLocked = !!(f as any).locked;
+                const plainText = text.replace(/<[^>]*>/g, "").replace("🔒", "").trim();
                 return (
-                  <li key={i} className={`text-[.82rem] flex items-start gap-2 font-landing ${(f as any).locked ? "text-[#40405a]" : "text-[#7070a0]"}`}>
-                    <span className={`text-[.7rem] mt-0.5 shrink-0 ${(f as any).locked ? "text-[#40405a]" : "text-primary"}`}>{(f as any).locked ? "✗" : "→"}</span>
+                  <li
+                    key={i}
+                    className={`text-[.82rem] flex items-start gap-2 font-landing ${isLocked ? "text-[#40405a] cursor-pointer hover:text-[#6060a0] transition-colors" : "text-[#7070a0]"}`}
+                    onClick={isLocked ? () => setModal({ open: true, plan: plan.name, feature: plainText }) : undefined}
+                  >
+                    <span className={`text-[.7rem] mt-0.5 shrink-0 ${isLocked ? "text-[#40405a]" : "text-primary"}`}>{isLocked ? "✗" : "→"}</span>
                     <span className="[&_strong]:text-[#f0edf8]" dangerouslySetInnerHTML={{ __html: text }} />
                   </li>
                 );
@@ -135,6 +143,13 @@ const LandingPlans = () => {
           </div>
         ))}
       </div>
+
+      <UpgradeModal
+        open={modal.open}
+        onClose={() => setModal({ open: false, plan: "", feature: "" })}
+        fromPlan={modal.plan}
+        lockedFeature={modal.feature}
+      />
     </section>
   );
 };
