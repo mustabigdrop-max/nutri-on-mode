@@ -33,7 +33,7 @@ const plans = [
       "Score nutricional diário (0-100)",
       "Diário fotográfico antes/depois",
       "Alertas preditivos por IA",
-      "Modo "Comi fora"",
+      "Modo 'Comi fora'",
       "Foto do prato → IA registra",
     ],
     locked: ["Acesso ao Coach"],
