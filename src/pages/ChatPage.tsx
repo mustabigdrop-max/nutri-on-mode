@@ -75,6 +75,8 @@ const ChatPage = () => {
           messages: [...messages, userMsg],
           profileContext,
           mealHistoryContext,
+          objetivo: profile?.objetivo_principal || "saude_geral",
+          perfilComportamental: profile?.perfil_comportamental || "",
         }),
       });
 
