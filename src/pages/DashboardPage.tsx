@@ -305,8 +305,9 @@ const DashboardPage = () => {
           className="flex items-center justify-between mb-4"
         >
           <div>
-            <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest">Cockpit</p>
+            <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest">{getHeaderSubtitle(objetivo)}</p>
             <h1 className="text-lg font-bold text-foreground">{profile.full_name || "Piloto"}</h1>
+            <ObjectiveBadge objetivo={objetivo} />
           </div>
           <div className="flex items-center gap-2">
             <motion.div
