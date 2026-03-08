@@ -30,7 +30,7 @@ const plans = [
       "Score de qualidade nutricional diário (0-100)",
       "Diário fotográfico antes/depois com slider",
       "Alertas preditivos — IA avisa antes do erro",
-      "Modo "Comi fora" — estima macros por restaurante",
+      "Modo 'Comi fora' — estima macros por restaurante",
       "Foto do prato — IA identifica alimentos e registra",
       { text: "Acesso ao Coach <strong>🔒</strong>", locked: true },
     ],
