@@ -202,6 +202,24 @@ export type Database = {
           },
         ]
       }
+      coach_slots: {
+        Row: {
+          id: number
+          vagas_ocupadas: number | null
+          vagas_totais: number | null
+        }
+        Insert: {
+          id?: number
+          vagas_ocupadas?: number | null
+          vagas_totais?: number | null
+        }
+        Update: {
+          id?: number
+          vagas_ocupadas?: number | null
+          vagas_totais?: number | null
+        }
+        Relationships: []
+      }
       community_groups: {
         Row: {
           created_at: string
@@ -783,6 +801,7 @@ export type Database = {
           created_at: string
           date_of_birth: string | null
           dietary_restrictions: string[] | null
+          email: string | null
           fat_g: number | null
           full_name: string | null
           geb_kcal: number | null
@@ -799,6 +818,7 @@ export type Database = {
           onboarding_completed: boolean | null
           orcamento_semanal: number | null
           perfil_comportamental: string | null
+          plano_atual: string | null
           prefere_refeicoes: string | null
           protein_g: number | null
           sex: string | null
@@ -820,6 +840,7 @@ export type Database = {
           created_at?: string
           date_of_birth?: string | null
           dietary_restrictions?: string[] | null
+          email?: string | null
           fat_g?: number | null
           full_name?: string | null
           geb_kcal?: number | null
@@ -836,6 +857,7 @@ export type Database = {
           onboarding_completed?: boolean | null
           orcamento_semanal?: number | null
           perfil_comportamental?: string | null
+          plano_atual?: string | null
           prefere_refeicoes?: string | null
           protein_g?: number | null
           sex?: string | null
@@ -857,6 +879,7 @@ export type Database = {
           created_at?: string
           date_of_birth?: string | null
           dietary_restrictions?: string[] | null
+          email?: string | null
           fat_g?: number | null
           full_name?: string | null
           geb_kcal?: number | null
@@ -873,6 +896,7 @@ export type Database = {
           onboarding_completed?: boolean | null
           orcamento_semanal?: number | null
           perfil_comportamental?: string | null
+          plano_atual?: string | null
           prefere_refeicoes?: string | null
           protein_g?: number | null
           sex?: string | null
@@ -927,6 +951,84 @@ export type Database = {
           tags?: string[] | null
           user_id?: string
           weight_kg?: number | null
+        }
+        Relationships: []
+      }
+      subscriptions: {
+        Row: {
+          activated_at: string | null
+          canceled_at: string | null
+          created_at: string | null
+          email: string
+          expires_at: string | null
+          id: string
+          kiwify_order_id: string | null
+          kiwify_product_id: string | null
+          periodo: string | null
+          plano: string
+          status: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          activated_at?: string | null
+          canceled_at?: string | null
+          created_at?: string | null
+          email: string
+          expires_at?: string | null
+          id?: string
+          kiwify_order_id?: string | null
+          kiwify_product_id?: string | null
+          periodo?: string | null
+          plano?: string
+          status?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          activated_at?: string | null
+          canceled_at?: string | null
+          created_at?: string | null
+          email?: string
+          expires_at?: string | null
+          id?: string
+          kiwify_order_id?: string | null
+          kiwify_product_id?: string | null
+          periodo?: string | null
+          plano?: string
+          status?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      subscriptions_pending: {
+        Row: {
+          created_at: string | null
+          email: string
+          expires_at: string | null
+          id: string
+          kiwify_order_id: string | null
+          periodo: string | null
+          plano: string
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          expires_at?: string | null
+          id?: string
+          kiwify_order_id?: string | null
+          periodo?: string | null
+          plano: string
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          expires_at?: string | null
+          id?: string
+          kiwify_order_id?: string | null
+          periodo?: string | null
+          plano?: string
         }
         Relationships: []
       }
@@ -1134,9 +1236,33 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      my_subscription: {
+        Row: {
+          activated_at: string | null
+          expires_at: string | null
+          periodo: string | null
+          plano: string | null
+          status: string | null
+        }
+        Insert: {
+          activated_at?: string | null
+          expires_at?: string | null
+          periodo?: string | null
+          plano?: string | null
+          status?: string | null
+        }
+        Update: {
+          activated_at?: string | null
+          expires_at?: string | null
+          periodo?: string | null
+          plano?: string | null
+          status?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
+      decrement_coach_slots: { Args: never; Returns: undefined }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -1144,6 +1270,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      increment_coach_slots: { Args: never; Returns: undefined }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user" | "professional"
