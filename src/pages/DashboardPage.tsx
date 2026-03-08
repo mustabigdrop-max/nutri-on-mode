@@ -7,6 +7,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { useWaterLogs } from "@/hooks/useWaterLogs";
 import DashboardGamificationCards from "@/components/dashboard/DashboardGamificationCards";
 import {
+  ObjectiveBadge, getRingLabel, getScoreLabel,
+  getPredictiveAlert, getHeaderSubtitle, getChildDashboardGreeting,
+} from "@/components/dashboard/DashboardObjectiveAdapters";
+import {
   Flame, TrendingUp, Droplets, Apple, BarChart3, MessageSquare,
   User, Plus, Utensils, LogOut, Zap, Brain, ChevronRight, Award,
   Camera, Users, Heart, Settings, HelpCircle, Leaf, Trophy, ShoppingCart, History, Dumbbell, FileText, Hammer,
