@@ -143,6 +143,13 @@ const LandingPlans = () => {
           </div>
         ))}
       </div>
+
+      <UpgradeModal
+        open={modal.open}
+        onClose={() => setModal({ open: false, plan: "", feature: "" })}
+        fromPlan={modal.plan}
+        lockedFeature={modal.feature}
+      />
     </section>
   );
 };
