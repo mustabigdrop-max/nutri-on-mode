@@ -90,8 +90,21 @@ const LandingPlans = () => {
               plan.featured ? "border-primary/30 bg-primary/[.02]" : "border-[#14142a] hover:border-[#2a2a4a]"
             }`}
           >
-            {(plan as any).badge && (
-              <span className="absolute top-4 right-4 font-mono text-[.55rem] text-black bg-primary px-2 py-1 rounded-[2px] tracking-[.1em]">{(plan as any).badge}</span>
+            {(plan.badge || plan.slotKey) && (
+              <div className="absolute top-4 right-4 flex flex-col items-end gap-1">
+                {plan.badge && (
+                  <span className="font-mono text-[.55rem] text-black bg-primary px-2 py-1 rounded-[2px] tracking-[.1em]">{plan.badge}</span>
+                )}
+                {plan.slotKey && slotBadge(plan.slotKey) && (
+                  <span className={`font-mono text-[.55rem] px-2 py-1 rounded-[2px] tracking-[.1em] animate-pulse ${
+                    getRemaining(plan.slotKey) === 0
+                      ? "bg-red-500 text-white"
+                      : "bg-[#1a1a2e] text-primary border border-primary/30"
+                  }`}>
+                    {slotBadge(plan.slotKey)}
+                  </span>
+                )}
+              </div>
             )}
             <div className="font-heading text-[1.5rem] tracking-[.08em] mb-1.5 text-[#f0edf8]">{plan.name}</div>
             <div className="my-5">
