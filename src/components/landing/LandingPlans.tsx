@@ -7,6 +7,7 @@ import UpgradeModal from "@/components/landing/UpgradeModal";
 const plans = [
   {
     name: "ON", price: "R$47", featured: false,
+    checkoutUrl: "https://pay.kiwify.com.br/2U4q4d9",
     features: [
       "Dietas prontas segmentadas por objetivo",
       "Receitas práticas em português (medidas caseiras BR)",
@@ -22,6 +23,7 @@ const plans = [
   {
     name: "ON +", price: "R$97", featured: true,
     slotKey: "on_plus",
+    checkoutUrl: "https://pay.kiwify.com.br/6pXyygp",
     badge: "PREÇO DE FUNDADOR",
     features: [
       { text: "<strong>Tudo do ON</strong> +" },
@@ -42,6 +44,7 @@ const plans = [
   {
     name: "ON PRO", price: "R$197", featured: false,
     slotKey: "on_pro",
+    checkoutUrl: "https://pay.kiwify.com.br/zbtOulj",
     badge: "VAGAS LIMITADAS",
     features: [
       { text: "<strong>Tudo do ON+</strong> +" },
