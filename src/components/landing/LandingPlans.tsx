@@ -4,49 +4,52 @@ import { motion, useInView } from "framer-motion";
 
 const plans = [
   {
-    name: "Básico", price: "R$37", featured: false,
+    name: "ON", price: "R$47", featured: false,
     features: [
-      "Dashboard HUD + macros em tempo real",
-      "Log de refeições + banco TACO/IBGE",
-      "Evolução de peso com gráfico",
-      "Anamnese inteligente (IA)",
-      { text: "Chat IA <strong>50 msgs/mês</strong>" },
-      "Receitas e plano semanal básico",
-    ],
-    cta: "Começar grátis →",
-  },
-  {
-    name: "Pro", price: "R$97", featured: true,
-    features: [
-      { text: "<strong>Tudo do Básico</strong> +" },
-      "10 protocolos de dieta + motor kcal",
-      "Coach humano integrado",
-      "Wearables · Sono · Cronobiologia",
-      "IA lê exames de sangue",
-      "Gamificação completa + ranking",
-      "Modo família (3 perfis)",
-      "Diário fotográfico + slider",
-      "Stack de suplementação IA",
-      "Lista de compras + custo da dieta",
-      { text: "Chat IA <strong>ilimitado</strong>" },
+      "Dietas prontas segmentadas por objetivo",
+      "Receitas práticas em português (medidas caseiras BR)",
+      "Tracking macros + calorias (TACO/IBGE + OpenFoodFacts)",
+      "Scanner código de barras",
+      "Gamificação: XP, streaks, badges, níveis",
+      { text: "Chat IA <strong>🔒</strong>", locked: true },
+      { text: "Plano semanal por IA <strong>🔒</strong>", locked: true },
+      { text: "Acesso ao Coach <strong>🔒</strong>", locked: true },
     ],
     cta: "Começar agora →",
   },
   {
-    name: "Profissional", price: "R$197", featured: false,
+    name: "ON +", price: "R$117", featured: true,
+    badge: "PREÇO DE FUNDADOR · 50 VAGAS",
     features: [
-      { text: "<strong>Tudo do Pro</strong> +" },
-      { text: "Para <strong>Coaches, Nutricionistas e Personais</strong>" },
-      { text: "Painel com até <strong>30 pacientes/alunos</strong>" },
-      "Alertas automáticos de risco por perfil",
-      "IA gera prescrição e sugere feedback",
-      { text: "Plano com <strong>assinatura do profissional</strong>" },
-      "Relatórios PDF prontos para consulta",
-      "White label — sua marca no app",
-      "Exportação de dados do paciente",
-      "Suporte prioritário 24h",
+      { text: "<strong>Tudo do ON</strong> +" },
+      "Chat IA nutriON ilimitado (adaptado por objetivo)",
+      "Plano semanal completo por IA (café/almoço/jantar/lanches)",
+      "Receitas personalizadas por perfil comportamental",
+      "Lista de compras automática por seção do mercado",
+      "Rastreamento 30+ micronutrientes",
+      "Score de qualidade nutricional diário (0-100)",
+      "Diário fotográfico antes/depois com slider",
+      "Alertas preditivos — IA avisa antes do erro",
+      "Modo 'Comi fora' — estima macros por restaurante",
+      "Foto do prato — IA identifica alimentos e registra",
+      { text: "Acesso ao Coach <strong>🔒</strong>", locked: true },
     ],
-    cta: "Criar conta profissional →",
+    cta: "Garantir vaga de fundador →",
+  },
+  {
+    name: "ON PRO", price: "R$197", featured: false,
+    badge: "VAGAS LIMITADAS · MÁX 20 ALUNOS",
+    features: [
+      { text: "<strong>Tudo do ON+</strong> +" },
+      "2 check-ins mensais por vídeo/áudio com o Coach",
+      "Coach acessa painel com dados em tempo real",
+      "Feedback semanal personalizado (texto ou áudio)",
+      "Ajuste de plano pelo Coach quando necessário",
+      "Canal prioritário com o Coach (resposta em até 24h)",
+      "Grupo exclusivo alunos PRO",
+      { text: "Badge dinâmico: <strong>'X vagas restantes'</strong>" },
+    ],
+    cta: "Quero acompanhamento real →",
   },
 ];
 
@@ -74,8 +77,8 @@ const LandingPlans = () => {
               plan.featured ? "border-primary/30 bg-primary/[.02]" : "border-[#14142a] hover:border-[#2a2a4a]"
             }`}
           >
-            {plan.featured && (
-              <span className="absolute top-4 right-4 font-mono text-[.55rem] text-black bg-primary px-2 py-1 rounded-[2px] tracking-[.1em]">MAIS POPULAR</span>
+            {(plan as any).badge && (
+              <span className="absolute top-4 right-4 font-mono text-[.55rem] text-black bg-primary px-2 py-1 rounded-[2px] tracking-[.1em]">{(plan as any).badge}</span>
             )}
             <div className="font-heading text-[1.5rem] tracking-[.08em] mb-1.5 text-[#f0edf8]">{plan.name}</div>
             <div className="my-5">
@@ -86,8 +89,8 @@ const LandingPlans = () => {
               {plan.features.map((f, i) => {
                 const text = typeof f === "string" ? f : f.text;
                 return (
-                  <li key={i} className="text-[.82rem] text-[#7070a0] flex items-start gap-2 font-landing">
-                    <span className="text-primary text-[.7rem] mt-0.5 shrink-0">→</span>
+                  <li key={i} className={`text-[.82rem] flex items-start gap-2 font-landing ${(f as any).locked ? "text-[#40405a]" : "text-[#7070a0]"}`}>
+                    <span className={`text-[.7rem] mt-0.5 shrink-0 ${(f as any).locked ? "text-[#40405a]" : "text-primary"}`}>{(f as any).locked ? "✗" : "→"}</span>
                     <span className="[&_strong]:text-[#f0edf8]" dangerouslySetInnerHTML={{ __html: text }} />
                   </li>
                 );

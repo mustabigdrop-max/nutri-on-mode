@@ -3,57 +3,58 @@ import { Check, Zap, Crown, Briefcase } from "lucide-react";
 
 const plans = [
   {
-    name: "Básico",
-    price: "37",
+    name: "ON",
+    price: "47",
     icon: Zap,
-    description: "Para quem está começando a transformação",
+    description: "Porta de entrada. Sem IA, sem Coach.",
     popular: false,
     features: [
-      "Dashboard HUD com macros em tempo real",
-      "Log de refeições + banco TACO/IBGE",
-      "Evolução de peso com gráfico",
-      "Anamnese inteligente com IA",
-      "Chat IA — 50 mensagens/mês",
-      "Receitas e plano semanal básico",
+      "Dietas prontas segmentadas por objetivo",
+      "Receitas práticas em português (medidas caseiras BR)",
+      "Tracking macros + calorias (TACO/IBGE + OpenFoodFacts)",
+      "Scanner código de barras",
+      "Gamificação: XP, streaks, badges, níveis",
     ],
+    locked: ["Chat IA", "Plano semanal por IA", "Acesso ao Coach"],
   },
   {
-    name: "Pro",
-    price: "97",
+    name: "ON +",
+    price: "117",
     icon: Crown,
-    description: "Para quem quer resultado completo",
+    description: "IA completa 24h. Preço de fundador — 50 vagas.",
     popular: true,
     features: [
-      "Tudo do Básico +",
-      "10 protocolos de dieta + motor kcal",
-      "Coach humano integrado",
-      "Wearables + Sono + Cronobiologia",
-      "IA lê exames de sangue",
-      "Gamificação completa + ranking",
-      "Modo família (3 perfis)",
-      "Protocolo GLP-1 / caneta",
-      "Composição corporal",
-      "Chat IA ilimitado",
-      "Comunidade + NutriAulas",
+      "Tudo do ON +",
+      "Chat IA nutriON ilimitado",
+      "Plano semanal completo por IA",
+      "Receitas personalizadas por perfil",
+      "Lista de compras automática",
+      "30+ micronutrientes rastreados",
+      "Score nutricional diário (0-100)",
+      "Diário fotográfico antes/depois",
+      "Alertas preditivos por IA",
+      "Modo 'Comi fora'",
+      "Foto do prato → IA registra",
     ],
+    locked: ["Acesso ao Coach"],
   },
   {
-    name: "Profissional",
+    name: "ON PRO",
     price: "197",
     icon: Briefcase,
-    description: "Para Coaches, Nutris e Personal Trainers",
+    description: "IA + Coach real. Vagas limitadas: máx. 20 alunos.",
     popular: false,
     features: [
-      "Tudo do Pro +",
-      "Painel com até 30 pacientes",
-      "Alertas automáticos por aluno",
-      "IA gera prescrição e feedback",
-      "Plano com assinatura digital",
-      "Relatórios PDF clínicos",
-      "White label — sua marca",
-      "Exportação CSV",
-      "Suporte prioritário 24h",
+      "Tudo do ON+ +",
+      "2 check-ins mensais (vídeo/áudio)",
+      "Coach com painel em tempo real",
+      "Feedback semanal personalizado",
+      "Ajuste de plano pelo Coach",
+      "Canal prioritário (resposta 24h)",
+      "Grupo exclusivo alunos PRO",
+      "Badge dinâmico 'X vagas restantes'",
     ],
+    locked: [],
   },
 ];
 
@@ -125,6 +126,12 @@ const PricingSection = () => {
                       }`}
                     />
                     <span className="text-muted-foreground">{feature}</span>
+                  </li>
+                ))}
+                {plan.locked?.map((item) => (
+                  <li key={item} className="flex items-start gap-2 text-sm opacity-40">
+                    <span className="w-4 h-4 mt-0.5 shrink-0 text-center text-xs">🔒</span>
+                    <span className="text-muted-foreground">{item}</span>
                   </li>
                 ))}
               </ul>
