@@ -610,6 +610,25 @@ const MealPlanPage = () => {
         )}
       </div>
 
+      {/* Substitution Modal */}
+      <AnimatePresence>
+        {subModalItem && (
+          <SubstitutionModal
+            foodName={subModalItem.food_name}
+            currentKcal={subModalItem.kcal}
+            currentProtein={subModalItem.protein_g}
+            currentCarbs={subModalItem.carbs_g}
+            currentFat={subModalItem.fat_g}
+            goal={profile?.goal || profile?.objetivo_principal}
+            restrictions={profile?.dietary_restrictions}
+            dailyKcalTarget={profile?.vet_kcal}
+            dailyKcalConsumed={dayTotals.kcal}
+            onSelect={(sub) => handleSmartSubstitution(subModalItem, sub)}
+            onClose={() => setSubModalItem(null)}
+          />
+        )}
+      </AnimatePresence>
+
       <BottomNav />
     </div>
   );
