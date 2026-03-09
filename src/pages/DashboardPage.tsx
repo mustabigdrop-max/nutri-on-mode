@@ -9,6 +9,7 @@ import DashboardGamificationCards from "@/components/dashboard/DashboardGamifica
 import SmartAlerts from "@/components/dashboard/SmartAlerts";
 import ProactiveRecipeSuggestion from "@/components/dashboard/ProactiveRecipeSuggestion";
 import WeeklySabotageCard from "@/components/dashboard/WeeklySabotageCard";
+import MoodCheckinModal, { type MoodType, MOODS } from "@/components/dashboard/MoodCheckinModal";
 import {
   ObjectiveBadge, getRingLabel, getScoreLabel,
   getPredictiveAlert, getHeaderSubtitle, getChildDashboardGreeting,
@@ -194,6 +195,7 @@ const DashboardPage = () => {
   const navigate = useNavigate();
   const [todayMeals, setTodayMeals] = useState<any[]>([]);
   const [todayTotals, setTodayTotals] = useState({ kcal: 0, protein: 0, carbs: 0, fat: 0 });
+  const [todayMood, setTodayMood] = useState<MoodType | null>(null);
   const { todayLog: waterLog, addWater } = useWaterLogs();
   const waterMl = waterLog?.ml_total ?? 0;
   const waterGlasses = Math.round(waterMl / 250);
@@ -294,9 +296,19 @@ const DashboardPage = () => {
     breakfast: "☕", lunch: "🍽️", dinner: "🌙", snack: "🥤",
   };
 
+  const moodData = MOODS.find(m => m.key === todayMood);
+  const isChallengeMode = todayMood === "animado";
+  const isSimplifiedMode = todayMood === "cansado";
+
   return (
     <div className="min-h-screen bg-background pb-24">
       <div className="absolute inset-0 bg-grid opacity-10" />
+
+      {/* Mood Check-in Modal */}
+      <MoodCheckinModal
+        userName={profile.full_name?.split(" ")[0] || "Piloto"}
+        onMoodSelected={setTodayMood}
+      />
 
       <div className="relative z-10 max-w-lg mx-auto px-4 pt-4">
         {/* Header */}
@@ -335,6 +347,25 @@ const DashboardPage = () => {
             className="rounded-xl border border-pink-400/20 bg-pink-400/5 p-3 mb-4 text-center"
           >
             <p className="text-sm text-foreground">{getChildDashboardGreeting(profile.full_name?.split(" ")[0])}</p>
+          </motion.div>
+        )}
+
+        {/* Mood-adaptive banner */}
+        {todayMood && todayMood !== "normal" && moodData && (
+          <motion.div
+            initial={{ opacity: 0, y: -5 }}
+            animate={{ opacity: 1, y: 0 }}
+            className={`rounded-xl border p-3 mb-4 flex items-center gap-3 ${moodData.color}`}
+          >
+            <span className="text-2xl">{moodData.emoji}</span>
+            <div className="flex-1 min-w-0">
+              <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider">
+                {isChallengeMode ? "🔥 Modo Desafio Ativado" : isSimplifiedMode ? "💤 Modo Simplificado" : "🧘 Modo Cuidado"}
+              </p>
+              <p className="text-xs text-foreground font-mono leading-relaxed truncate">
+                {isSimplifiedMode ? "Só 3 refeições hoje. Sem pressão." : isChallengeMode ? "Bata todas as metas hoje!" : "Priorize alimentos anti-estresse."}
+              </p>
+            </div>
           </motion.div>
         )}
 
