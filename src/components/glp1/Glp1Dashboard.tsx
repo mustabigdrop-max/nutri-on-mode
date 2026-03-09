@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Shield, TrendingDown, TrendingUp, Droplets, Zap, AlertTriangle, CheckCircle2, Pill, Target, Activity } from "lucide-react";
+import { Shield, TrendingDown, TrendingUp, Droplets, Zap, AlertTriangle, CheckCircle2, Pill, Target, Activity, Brain, Info, Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
 import type { Glp1Profile, Glp1DailyLog, Glp1WeeklyScore } from "@/hooks/useGlp1";
 
 interface Glp1DashboardProps {
@@ -15,10 +16,23 @@ interface Glp1DashboardProps {
   onSaveDailyLog: (data: Partial<Glp1DailyLog>) => void;
 }
 
+interface AiAnalysis {
+  alerts: { type: "warning" | "success" | "info"; text: string }[];
+  weekly_analysis: string;
+  recommendations: string[];
+  protocol_adjustments?: string;
+}
+
 const PROFILE_LABELS: Record<string, { label: string; color: string; emoji: string; desc: string }> = {
   iniciante: { label: "Iniciante GLP-1", color: "text-yellow-400", emoji: "🟡", desc: "Começou recentemente, apetite ainda presente" },
   supressao: { label: "Supressão Intensa", color: "text-red-400", emoji: "🔴", desc: "Come muito pouco, risco de sarcopenia" },
   saida: { label: "Fase de Saída", color: "text-green-400", emoji: "🟢", desc: "Reduzindo dose, risco de reganho" },
+};
+
+const ALERT_ICONS: Record<string, any> = {
+  warning: AlertTriangle,
+  success: CheckCircle2,
+  info: Info,
 };
 
 const Glp1Dashboard = ({ profile, dailyLogs, weeklyScores, weightKg, onSaveDailyLog }: Glp1DashboardProps) => {
@@ -36,21 +50,60 @@ const Glp1Dashboard = ({ profile, dailyLogs, weeklyScores, weightKg, onSaveDaily
   const kcalPct = todayLog ? Math.min(100, (todayLog.total_kcal / kcalGoal) * 100) : 0;
   const hydrationPct = todayLog ? Math.min(100, (todayLog.hydration_ml / hydrationGoal) * 100) : 0;
 
-  // Alerts logic
-  const alerts: { type: "warning" | "success" | "info"; icon: any; text: string }[] = [];
-  const last3 = dailyLogs.slice(0, 3);
+  // AI Analysis state
+  const [aiAnalysis, setAiAnalysis] = useState<AiAnalysis | null>(null);
+  const [aiLoading, setAiLoading] = useState(false);
 
-  if (todayLog && todayLog.protein_g < proteinGoal * 0.7) {
-    alerts.push({ type: "warning", icon: AlertTriangle, text: `Você comeu menos de ${Math.round(proteinGoal * 0.7)}g de proteína hoje — risco de perda muscular` });
-  }
-  if (last3.length === 3 && last3.every((l) => l.total_kcal < 1000)) {
-    alerts.push({ type: "warning", icon: AlertTriangle, text: "Sua ingestão calórica está muito baixa há 3 dias seguidos" });
-  }
-  const last5 = dailyLogs.slice(0, 5);
-  if (last5.length === 5 && last5.every((l) => l.protein_g >= proteinGoal * 0.9)) {
-    alerts.push({ type: "success", icon: CheckCircle2, text: "Ótimo — você manteve sua meta de proteína por 5 dias consecutivos!" });
-  }
-  alerts.push({ type: "info", icon: Droplets, text: "Lembrete: hidratação é essencial com GLP-1 — beba pelo menos 2,5L hoje" });
+  const fetchAiAnalysis = async () => {
+    setAiLoading(true);
+    try {
+      const resp = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/glp1-ai-analysis`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({}),
+        }
+      );
+      if (resp.status === 429) { toast.error("Muitas requisições. Aguarde um momento."); return; }
+      if (resp.status === 402) { toast.error("Créditos esgotados."); return; }
+      if (!resp.ok) throw new Error("AI error");
+      const data = await resp.json();
+      setAiAnalysis(data);
+    } catch (e) {
+      console.error("AI analysis error:", e);
+      toast.error("Erro ao gerar análise IA");
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (dailyLogs.length > 0) {
+      fetchAiAnalysis();
+    }
+  }, []);
+
+  // Fallback alerts when AI not loaded
+  const displayAlerts = aiAnalysis?.alerts || (() => {
+    const alerts: { type: "warning" | "success" | "info"; text: string }[] = [];
+    const last3 = dailyLogs.slice(0, 3);
+    if (todayLog && todayLog.protein_g < proteinGoal * 0.7) {
+      alerts.push({ type: "warning", text: `Você comeu menos de ${Math.round(proteinGoal * 0.7)}g de proteína hoje — risco de perda muscular` });
+    }
+    if (last3.length === 3 && last3.every((l) => l.total_kcal < 1000)) {
+      alerts.push({ type: "warning", text: "Sua ingestão calórica está muito baixa há 3 dias seguidos" });
+    }
+    const last5 = dailyLogs.slice(0, 5);
+    if (last5.length === 5 && last5.every((l) => l.protein_g >= proteinGoal * 0.9)) {
+      alerts.push({ type: "success", text: "Ótimo — você manteve sua meta de proteína por 5 dias consecutivos!" });
+    }
+    alerts.push({ type: "info", text: "Lembrete: hidratação é essencial com GLP-1 — beba pelo menos 2,5L hoje" });
+    return alerts;
+  })();
 
   const latestScore = weeklyScores[0];
 
@@ -63,7 +116,6 @@ const Glp1Dashboard = ({ profile, dailyLogs, weeklyScores, weightKg, onSaveDaily
     });
   };
 
-  // Supplements
   const supplements = [
     { name: "Whey Protein", dose: "30-40g/dia", reason: "Preservar massa muscular" },
     { name: "Creatina", dose: "5g/dia", reason: "Manutenção de força" },
@@ -92,29 +144,77 @@ const Glp1Dashboard = ({ profile, dailyLogs, weeklyScores, weightKg, onSaveDaily
         </Card>
       </motion.div>
 
-      {/* Alerts */}
-      {alerts.length > 0 && (
+      {/* AI Alerts */}
+      {displayAlerts.length > 0 && (
         <div className="space-y-2">
-          {alerts.map((a, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: i * 0.1 }}
-              className={`flex items-start gap-3 p-3 rounded-xl border ${
-                a.type === "warning" ? "bg-destructive/10 border-destructive/30" :
-                a.type === "success" ? "bg-accent/10 border-accent/30" :
-                "bg-primary/10 border-primary/30"
-              }`}
-            >
-              <a.icon className={`w-4 h-4 mt-0.5 flex-shrink-0 ${
-                a.type === "warning" ? "text-destructive" :
-                a.type === "success" ? "text-accent" : "text-primary"
-              }`} />
-              <p className="text-xs text-foreground/90">{a.text}</p>
-            </motion.div>
-          ))}
+          {aiLoading && (
+            <div className="flex items-center gap-2 p-3 rounded-xl border border-primary/20 bg-primary/5">
+              <Loader2 className="w-4 h-4 text-primary animate-spin" />
+              <span className="text-xs text-muted-foreground">Analisando seus dados com IA...</span>
+            </div>
+          )}
+          {displayAlerts.map((a, i) => {
+            const Icon = ALERT_ICONS[a.type] || Info;
+            return (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: i * 0.1 }}
+                className={`flex items-start gap-3 p-3 rounded-xl border ${
+                  a.type === "warning" ? "bg-destructive/10 border-destructive/30" :
+                  a.type === "success" ? "bg-accent/10 border-accent/30" :
+                  "bg-primary/10 border-primary/30"
+                }`}
+              >
+                <Icon className={`w-4 h-4 mt-0.5 flex-shrink-0 ${
+                  a.type === "warning" ? "text-destructive" :
+                  a.type === "success" ? "text-accent" : "text-primary"
+                }`} />
+                <p className="text-xs text-foreground/90">{a.text}</p>
+              </motion.div>
+            );
+          })}
         </div>
+      )}
+
+      {/* AI Weekly Analysis */}
+      {aiAnalysis?.weekly_analysis && (
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+          <Card className="border-[#00C896]/20 bg-[#00C896]/5">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Brain className="w-4 h-4 text-[#00C896]" /> Análise Semanal IA
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <p className="text-sm text-foreground/90 leading-relaxed whitespace-pre-line">
+                {aiAnalysis.weekly_analysis}
+              </p>
+              {aiAnalysis.recommendations && aiAnalysis.recommendations.length > 0 && (
+                <div>
+                  <p className="text-xs font-mono text-[#00C896] uppercase tracking-wider mb-2">Ações para a próxima semana</p>
+                  <div className="space-y-1.5">
+                    {aiAnalysis.recommendations.map((r, i) => (
+                      <div key={i} className="flex items-start gap-2">
+                        <span className="w-5 h-5 rounded-full bg-[#00C896]/20 text-[#00C896] text-[10px] font-bold flex items-center justify-center flex-shrink-0 mt-0.5">
+                          {i + 1}
+                        </span>
+                        <p className="text-xs text-foreground/80">{r}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {aiAnalysis.protocol_adjustments && (
+                <div className="p-2.5 rounded-lg bg-primary/10 border border-primary/20">
+                  <p className="text-[10px] font-mono text-primary uppercase tracking-wider mb-1">Ajuste sugerido</p>
+                  <p className="text-xs text-foreground/80">{aiAnalysis.protocol_adjustments}</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </motion.div>
       )}
 
       {/* Protocol Targets */}
@@ -270,6 +370,17 @@ const Glp1Dashboard = ({ profile, dailyLogs, weeklyScores, weightKg, onSaveDaily
           </div>
         </CardContent>
       </Card>
+
+      {/* Refresh AI button */}
+      <Button
+        variant="outline"
+        onClick={fetchAiAnalysis}
+        disabled={aiLoading}
+        className="w-full text-xs"
+      >
+        {aiLoading ? <Loader2 className="w-3 h-3 animate-spin mr-2" /> : <Brain className="w-3 h-3 mr-2" />}
+        {aiLoading ? "Analisando..." : "Atualizar análise IA"}
+      </Button>
     </div>
   );
 };
