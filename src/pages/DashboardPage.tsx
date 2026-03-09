@@ -422,6 +422,14 @@ const DashboardPage = () => {
           );
         })()}
 
+        {/* Workout time alerts (pre/post) */}
+        {todayWorkout && todayWorkout.workout_type !== "rest" && (
+          <WorkoutAlerts
+            workoutType={todayWorkout.workout_type as WorkoutType}
+            workoutTime={todayWorkout.workout_time}
+          />
+        )}
+
         {/* NutriSync Comparison Card */}
         <NutriSyncComparisonCard
           baseKcal={baseKcal}
