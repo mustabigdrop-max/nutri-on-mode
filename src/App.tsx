@@ -40,6 +40,7 @@ import EventModePage from "./pages/EventModePage";
 import FoodSimulatorPage from "./pages/FoodSimulatorPage";
 import MonthlyReportPage from "./pages/MonthlyReportPage";
 import Glp1Page from "./pages/Glp1Page";
+import NutriSyncPage from "./pages/NutriSyncPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -95,6 +96,7 @@ const App = () => (
               element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON +" featureName="Relatório Mensal"><MonthlyReportPage /></PlanGateWrapper></ProtectedRoute>}
             />
             <Route path="/glp1" element={<ProtectedRoute><Glp1Page /></ProtectedRoute>} />
+            <Route path="/nutrisync" element={<ProtectedRoute><NutriSyncPage /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
