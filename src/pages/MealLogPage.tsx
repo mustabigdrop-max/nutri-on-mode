@@ -735,13 +735,27 @@ const MealLogPage = () => {
 
         {/* 3. AI Photo */}
         {inputMode === "ai-photo" && !aiLoading && (
-          <div className="mb-4">
+          <div className="mb-4 space-y-3">
             <input ref={fileInputRef} type="file" accept="image/*" capture="environment" onChange={handlePhotoSelect} className="hidden" />
+            <div className="relative">
+              <input
+                type="text"
+                value={photoObservation}
+                onChange={e => setPhotoObservation(e.target.value)}
+                placeholder="Observação: ex. 'é polenta, não purê de batata'"
+                className="w-full pl-3 pr-3 py-2.5 rounded-xl border border-border bg-card text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
+              />
+            </div>
             <button onClick={() => fileInputRef.current?.click()} className="w-full py-6 rounded-xl border-2 border-dashed border-primary/30 bg-card hover:bg-primary/5 transition-all flex flex-col items-center gap-2">
               <Camera className="w-8 h-8 text-primary" />
               <span className="text-sm font-semibold text-foreground">Tirar foto ou escolher da galeria</span>
               <span className="text-[10px] text-muted-foreground">A IA identifica os alimentos automaticamente</span>
             </button>
+            {photoObservation && (
+              <p className="text-[10px] text-muted-foreground text-center">
+                📝 Observação será enviada junto com a foto para corrigir a IA
+              </p>
+            )}
           </div>
         )}
 
