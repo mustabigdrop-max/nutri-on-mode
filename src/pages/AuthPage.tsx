@@ -1,12 +1,14 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
-import { Zap, Mail, Lock, User, ArrowLeft } from "lucide-react";
+import { Zap, Mail, Lock, User, ArrowLeft, Gift } from "lucide-react";
 import { toast } from "sonner";
 
 const AuthPage = () => {
-  const [isLogin, setIsLogin] = useState(true);
+  const [searchParams] = useSearchParams();
+  const isTrial = searchParams.get("trial") === "true";
+  const [isLogin, setIsLogin] = useState(!isTrial);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
