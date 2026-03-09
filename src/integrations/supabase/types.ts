@@ -1185,6 +1185,39 @@ export type Database = {
         }
         Relationships: []
       }
+      peak_week_plans: {
+        Row: {
+          created_at: string | null
+          daily_protocol: Json | null
+          event_date: string
+          event_name: string
+          id: string
+          start_date: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          daily_protocol?: Json | null
+          event_date: string
+          event_name?: string
+          id?: string
+          start_date: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          daily_protocol?: Json | null
+          event_date?: string
+          event_name?: string
+          id?: string
+          start_date?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       plan_revisions: {
         Row: {
           analysis_period_end: string | null
@@ -1890,6 +1923,81 @@ export type Database = {
           muscle_mass_kg?: number | null
           user_id?: string
           weight_kg?: number
+        }
+        Relationships: []
+      }
+      workout_daily_logs: {
+        Row: {
+          calories_adjusted: number | null
+          carbs_adjusted: number | null
+          completed: boolean | null
+          created_at: string | null
+          fat_adjusted: number | null
+          hydration_adjusted: number | null
+          id: string
+          log_date: string | null
+          notes: string | null
+          protein_adjusted: number | null
+          user_id: string
+          workout_type: string
+        }
+        Insert: {
+          calories_adjusted?: number | null
+          carbs_adjusted?: number | null
+          completed?: boolean | null
+          created_at?: string | null
+          fat_adjusted?: number | null
+          hydration_adjusted?: number | null
+          id?: string
+          log_date?: string | null
+          notes?: string | null
+          protein_adjusted?: number | null
+          user_id: string
+          workout_type?: string
+        }
+        Update: {
+          calories_adjusted?: number | null
+          carbs_adjusted?: number | null
+          completed?: boolean | null
+          created_at?: string | null
+          fat_adjusted?: number | null
+          hydration_adjusted?: number | null
+          id?: string
+          log_date?: string | null
+          notes?: string | null
+          protein_adjusted?: number | null
+          user_id?: string
+          workout_type?: string
+        }
+        Relationships: []
+      }
+      workout_schedule: {
+        Row: {
+          created_at: string | null
+          day_of_week: number
+          duration_minutes: number
+          id: string
+          user_id: string
+          workout_time: string
+          workout_type: string
+        }
+        Insert: {
+          created_at?: string | null
+          day_of_week: number
+          duration_minutes?: number
+          id?: string
+          user_id: string
+          workout_time?: string
+          workout_type?: string
+        }
+        Update: {
+          created_at?: string | null
+          day_of_week?: number
+          duration_minutes?: number
+          id?: string
+          user_id?: string
+          workout_time?: string
+          workout_type?: string
         }
         Relationships: []
       }
