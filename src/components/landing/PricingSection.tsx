@@ -3,20 +3,24 @@ import { Check, Zap, Crown, Briefcase } from "lucide-react";
 
 const plans = [
   {
-    name: "ON",
+    name: "Essencial",
     price: "47",
     icon: Zap,
-    description: "Porta de entrada. Sem IA, sem Coach.",
+    description: "A IA que te conhece, não só te conta.",
     popular: false,
     checkoutUrl: "https://pay.kiwify.com.br/2U4q4d9",
     features: [
-      "Dietas prontas segmentadas por objetivo",
-      "Receitas práticas em português (medidas caseiras BR)",
-      "Tracking macros + calorias (TACO/IBGE + OpenFoodFacts)",
-      "Scanner código de barras",
+      "Onboarding inteligente por conversa (sem formulário)",
+      "Modo 'Sem Balança' — medidas visuais brasileiras",
+      "Diagnóstico de Sabotagem Semanal por IA",
+      "Plano Adaptativo por Humor (diário)",
+      "Alerta de Janela de Oportunidade (preditivo)",
+      "Banco de alimentos 100% brasileiro (regionais)",
+      "Tracking macros + calorias (TACO/IBGE)",
       "Gamificação: XP, streaks, badges, níveis",
+      "Máx. 3 notificações/dia personalizadas",
     ],
-    locked: ["Chat IA", "Plano semanal por IA", "Acesso ao Coach"],
+    locked: ["Plano semanal por IA", "Acesso ao Coach"],
   },
   {
     name: "ON +",

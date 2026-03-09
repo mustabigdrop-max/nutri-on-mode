@@ -6,15 +6,18 @@ import UpgradeModal from "@/components/landing/UpgradeModal";
 
 const plans = [
   {
-    name: "ON", price: "R$47", featured: false,
+    name: "Essencial", price: "R$47", featured: false,
     checkoutUrl: "https://pay.kiwify.com.br/2U4q4d9",
     features: [
-      "Dietas prontas segmentadas por objetivo",
-      "Receitas práticas em português (medidas caseiras BR)",
-      "Tracking macros + calorias (TACO/IBGE + OpenFoodFacts)",
-      "Scanner código de barras",
+      "Onboarding inteligente por conversa (sem formulário)",
+      "Modo 'Sem Balança' — medidas visuais brasileiras",
+      "Diagnóstico de Sabotagem Semanal por IA",
+      "Plano Adaptativo por Humor (diário)",
+      "Alerta de Janela de Oportunidade (preditivo)",
+      "Banco de alimentos 100% brasileiro (regionais)",
+      "Tracking macros + calorias (TACO/IBGE)",
       "Gamificação: XP, streaks, badges, níveis",
-      { text: "Chat IA <strong>🔒</strong>", locked: true },
+      "Máx. 3 notificações/dia personalizadas",
       { text: "Plano semanal por IA <strong>🔒</strong>", locked: true },
       { text: "Acesso ao Coach <strong>🔒</strong>", locked: true },
     ],
