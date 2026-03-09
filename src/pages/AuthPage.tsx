@@ -62,13 +62,20 @@ const AuthPage = () => {
           <span className="text-sm">Voltar</span>
         </button>
 
+        {isTrial && (
+          <div className="flex items-center gap-2 justify-center mb-4 px-4 py-2.5 rounded-lg bg-primary/10 border border-primary/20">
+            <Gift className="w-4 h-4 text-primary" />
+            <span className="text-sm text-primary font-semibold">7 dias grátis — sem compromisso</span>
+          </div>
+        )}
+
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold mb-2">
             <span className="text-foreground">NUTRI</span>
             <span className="text-gradient-gold">ON</span>
           </h1>
           <p className="text-muted-foreground">
-            {isLogin ? "Entre na sua conta" : "Crie sua conta e entre no modo ON"}
+            {isTrial ? "Crie sua conta e comece seu teste grátis" : isLogin ? "Entre na sua conta" : "Crie sua conta e entre no modo ON"}
           </p>
         </div>
 
