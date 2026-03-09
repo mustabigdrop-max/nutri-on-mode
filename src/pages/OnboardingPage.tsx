@@ -2,10 +2,11 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useProfile } from "@/hooks/useProfile";
-import { Send, Zap, Bot, User, Loader2, Flame, Dumbbell, Leaf, Baby, ChevronRight, Sparkles } from "lucide-react";
+import { Send, Zap, Bot, User, Loader2, Flame, Dumbbell, Leaf, Baby, ChevronRight, Sparkles, Syringe } from "lucide-react";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
 import { Progress } from "@/components/ui/progress";
+import Glp1UpsellModal from "@/components/glp1/Glp1UpsellModal";
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/onboarding-chat`;
 
@@ -102,6 +103,7 @@ const OnboardingPage = () => {
     strategies?: string[];
   } | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [showGlp1Upsell, setShowGlp1Upsell] = useState(false);
   const { updateProfile } = useProfile();
   const navigate = useNavigate();
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -496,6 +498,34 @@ const OnboardingPage = () => {
             </motion.div>
           )}
 
+          {/* GLP-1 Upsell trigger */}
+          {d.uses_glp1 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.65 }}
+              className="rounded-2xl border border-[#00C896]/30 bg-[#00C896]/5 p-5"
+            >
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[#00C896]/20 flex items-center justify-center flex-shrink-0">
+                  <Syringe className="w-5 h-5 text-[#00C896]" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-sm font-bold text-foreground mb-1">Você usa GLP-1. Seu protocolo precisa ser diferente.</h3>
+                  <p className="text-xs text-muted-foreground leading-relaxed mb-3">
+                    Proteja sua massa muscular e evite reganho com o Protocolo GLP-1 Pro — feito para quem usa Ozempic, Wegovy, Mounjaro e similares.
+                  </p>
+                  <button
+                    onClick={() => setShowGlp1Upsell(true)}
+                    className="px-4 py-2 rounded-lg bg-[#00C896] text-white text-xs font-bold transition-all hover:scale-[1.02] active:scale-[0.98]"
+                  >
+                    Conhecer Protocolo GLP-1 Pro →
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
           {/* CTA */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -511,6 +541,8 @@ const OnboardingPage = () => {
               {isSaving ? "Salvando..." : "Ativar modo ON"}
             </button>
           </motion.div>
+
+          <Glp1UpsellModal open={showGlp1Upsell} onClose={() => setShowGlp1Upsell(false)} onActivate={() => { setShowGlp1Upsell(false); navigate("/glp1"); }} />
 
           <div>
             <Progress value={100} className="h-1.5" />
