@@ -102,6 +102,10 @@ const App = () => (
             <Route path="/nutrisync" element={<ProtectedRoute><NutriSyncPage /></ProtectedRoute>} />
             <Route path="/workout-history" element={<ProtectedRoute><WorkoutHistoryPage /></ProtectedRoute>} />
             <Route path="/circadian" element={<ProtectedRoute><CircadianPage /></ProtectedRoute>} />
+            <Route
+              path="/performance-pro"
+              element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON PRO" featureName="Performance Pro"><PerformanceProPage /></PlanGateWrapper></ProtectedRoute>}
+            />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
