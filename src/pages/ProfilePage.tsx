@@ -11,6 +11,7 @@ import {
   BarChart3, Utensils, Plus, MessageSquare, User, ChevronRight, Syringe
 } from "lucide-react";
 import { useGlp1 } from "@/hooks/useGlp1";
+import { useWorkoutSchedule } from "@/hooks/useWorkoutSchedule";
 
 interface Badge {
   id: string;
