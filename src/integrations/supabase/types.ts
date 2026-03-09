@@ -1299,6 +1299,159 @@ export type Database = {
         }
         Relationships: []
       }
+      performance_pro_consent: {
+        Row: {
+          accepted_at: string | null
+          id: string
+          ip_address: string | null
+          user_id: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          id?: string
+          ip_address?: string | null
+          user_id: string
+        }
+        Update: {
+          accepted_at?: string | null
+          id?: string
+          ip_address?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      performance_pro_exams: {
+        Row: {
+          ai_analysis: Json | null
+          blood_pressure_diastolic: number | null
+          blood_pressure_systolic: number | null
+          created_at: string | null
+          creatinine: number | null
+          estradiol: number | null
+          exam_date: string | null
+          fsh: number | null
+          ggt: number | null
+          hdl: number | null
+          hematocrit: number | null
+          hemoglobin: number | null
+          id: string
+          ldl: number | null
+          lh: number | null
+          notes: string | null
+          prolactin: number | null
+          psa: number | null
+          testosterone_free: number | null
+          testosterone_total: number | null
+          tgo: number | null
+          tgp: number | null
+          triglycerides: number | null
+          urea: number | null
+          user_id: string
+        }
+        Insert: {
+          ai_analysis?: Json | null
+          blood_pressure_diastolic?: number | null
+          blood_pressure_systolic?: number | null
+          created_at?: string | null
+          creatinine?: number | null
+          estradiol?: number | null
+          exam_date?: string | null
+          fsh?: number | null
+          ggt?: number | null
+          hdl?: number | null
+          hematocrit?: number | null
+          hemoglobin?: number | null
+          id?: string
+          ldl?: number | null
+          lh?: number | null
+          notes?: string | null
+          prolactin?: number | null
+          psa?: number | null
+          testosterone_free?: number | null
+          testosterone_total?: number | null
+          tgo?: number | null
+          tgp?: number | null
+          triglycerides?: number | null
+          urea?: number | null
+          user_id: string
+        }
+        Update: {
+          ai_analysis?: Json | null
+          blood_pressure_diastolic?: number | null
+          blood_pressure_systolic?: number | null
+          created_at?: string | null
+          creatinine?: number | null
+          estradiol?: number | null
+          exam_date?: string | null
+          fsh?: number | null
+          ggt?: number | null
+          hdl?: number | null
+          hematocrit?: number | null
+          hemoglobin?: number | null
+          id?: string
+          ldl?: number | null
+          lh?: number | null
+          notes?: string | null
+          prolactin?: number | null
+          psa?: number | null
+          testosterone_free?: number | null
+          testosterone_total?: number | null
+          tgo?: number | null
+          tgp?: number | null
+          triglycerides?: number | null
+          urea?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      performance_pro_protocols: {
+        Row: {
+          ai_message: string | null
+          created_at: string | null
+          current_phase: string | null
+          experience_level: string | null
+          id: string
+          nutrition_plan: Json | null
+          objective: string | null
+          safety_alerts: Json | null
+          started_at: string | null
+          substances: string[] | null
+          support_stack: Json | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          ai_message?: string | null
+          created_at?: string | null
+          current_phase?: string | null
+          experience_level?: string | null
+          id?: string
+          nutrition_plan?: Json | null
+          objective?: string | null
+          safety_alerts?: Json | null
+          started_at?: string | null
+          substances?: string[] | null
+          support_stack?: Json | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          ai_message?: string | null
+          created_at?: string | null
+          current_phase?: string | null
+          experience_level?: string | null
+          id?: string
+          nutrition_plan?: Json | null
+          objective?: string | null
+          safety_alerts?: Json | null
+          started_at?: string | null
+          substances?: string[] | null
+          support_stack?: Json | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       plan_revisions: {
         Row: {
           analysis_period_end: string | null
