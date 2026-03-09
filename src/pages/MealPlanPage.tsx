@@ -135,6 +135,7 @@ const MealPlanPage = () => {
   const [generating, setGenerating] = useState(false);
   const [budgetMode, setBudgetMode] = useState(false);
   const [dragItem, setDragItem] = useState<PlanItem | null>(null);
+  const [subModalItem, setSubModalItem] = useState<PlanItem | null>(null);
 
   const fetchPlan = async () => {
     if (!user) return;
