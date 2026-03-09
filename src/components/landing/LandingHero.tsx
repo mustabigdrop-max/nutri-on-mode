@@ -26,18 +26,23 @@ const LandingHero = () => {
         className="font-heading leading-[.88] mb-0"
         style={{ fontSize: "clamp(3.2rem, 10vw, 9rem)", letterSpacing: "-.01em" }}
       >
-        <span className="text-[#f0edf8]">PLANEJAMENTO SEM</span>
-        <br />
-        <span className="text-[#f0edf8]">EXECUÇÃO É SÓ </span>
-        <span style={{ WebkitTextStroke: "1px rgba(255,255,255,.12)", color: "transparent" }}>OPINIÃO.</span>
-        <br />
         <span className="text-[#f0edf8]">NUTRI</span>
         <span className="text-primary relative inline-block" style={{ textShadow: "0 0 60px rgba(232,160,32,.35)" }}>
           ON
           <span className="absolute bottom-[-4px] left-0 right-0 h-[3px] bg-primary" style={{ boxShadow: "0 0 16px hsl(38 80% 52%)" }} />
         </span>
-        <span className="text-[#f0edf8]"> É AÇÃO.</span>
       </motion.h1>
+
+      {/* Subheadline phrase */}
+      <motion.p
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, delay: 0.7 }}
+        className="font-heading text-[#f0edf8]/70 mt-4"
+        style={{ fontSize: "clamp(1.2rem, 3vw, 2.4rem)", letterSpacing: "-.01em" }}
+      >
+        Planejamento sem execução é só opinião.
+      </motion.p>
 
       {/* Sub content */}
       <motion.div
