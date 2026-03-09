@@ -11,6 +11,7 @@ import TrialBanner from "@/components/dashboard/TrialBanner";
 import ReengagementPopup from "@/components/dashboard/ReengagementPopup";
 import UpgradeModal from "@/components/landing/UpgradeModal";
 import DashboardGamificationCards from "@/components/dashboard/DashboardGamificationCards";
+import NutriSyncComparisonCard from "@/components/dashboard/NutriSyncComparisonCard";
 import SmartAlerts from "@/components/dashboard/SmartAlerts";
 import ProactiveRecipeSuggestion from "@/components/dashboard/ProactiveRecipeSuggestion";
 import WeeklySabotageCard from "@/components/dashboard/WeeklySabotageCard";
@@ -419,6 +420,14 @@ const DashboardPage = () => {
             </motion.button>
           );
         })()}
+
+        {/* NutriSync Comparison Card */}
+        <NutriSyncComparisonCard
+          baseKcal={baseKcal}
+          baseCarbs={baseCarbs}
+          baseFat={baseFat}
+          weightKg={weightKg}
+        />
 
         {/* Calorie ring */}
         <motion.div
