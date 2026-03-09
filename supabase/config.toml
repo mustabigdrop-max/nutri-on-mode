@@ -56,3 +56,6 @@ verify_jwt = false
 
 [functions.process-voice-checkin]
 verify_jwt = false
+
+[functions.send-recovery-notifications]
+verify_jwt = false
