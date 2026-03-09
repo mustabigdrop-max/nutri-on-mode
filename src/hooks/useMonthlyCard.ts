@@ -68,7 +68,7 @@ export const useMonthlyCard = () => {
       // Get consistency scores for this month
       const { data: scores } = await supabase
         .from("consistency_scores")
-        .select("total_score, protein_days_hit")
+        .select("total_score")
         .eq("user_id", user.id)
         .gte("week_start", monthStart)
         .lte("week_end", monthEnd);
@@ -77,9 +77,15 @@ export const useMonthlyCard = () => {
         ? Math.round(scores.reduce((sum, s) => sum + (s.total_score || 0), 0) / scores.length)
         : profile?.streak_days ? Math.min(profile.streak_days * 10, 100) : 0;
 
-      const proteinDays = scores
-        ? scores.reduce((sum, s) => sum + (s.protein_days_hit || 0), 0)
-        : 0;
+      // Get protein days from monthly_reports if available
+      const { data: monthlyReport } = await supabase
+        .from("monthly_reports")
+        .select("protein_days_hit")
+        .eq("user_id", user.id)
+        .eq("report_month", monthStart)
+        .single();
+
+      const proteinDays = monthlyReport?.protein_days_hit || 0;
 
       // Get badges earned this month
       const { count: badgesCount } = await supabase
