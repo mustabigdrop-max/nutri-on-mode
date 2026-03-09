@@ -39,6 +39,7 @@ import RecipesPage from "./pages/RecipesPage";
 import EventModePage from "./pages/EventModePage";
 import FoodSimulatorPage from "./pages/FoodSimulatorPage";
 import MonthlyReportPage from "./pages/MonthlyReportPage";
+import Glp1Page from "./pages/Glp1Page";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
