@@ -202,7 +202,7 @@ const DashboardPage = () => {
   const [todayTotals, setTodayTotals] = useState({ kcal: 0, protein: 0, carbs: 0, fat: 0 });
   const [todayMood, setTodayMood] = useState<MoodType | null>(null);
   const { todayLog: waterLog, addWater } = useWaterLogs();
-  const { hasAccess, plan } = usePlanGate();
+  const { hasAccess, plan, isTrialActive, trialEndsAt } = usePlanGate();
   const [upgradeModal, setUpgradeModal] = useState<{ open: boolean; feature: string }>({ open: false, feature: "" });
   const waterMl = waterLog?.ml_total ?? 0;
   const waterGlasses = Math.round(waterMl / 250);
