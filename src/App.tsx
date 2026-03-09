@@ -32,6 +32,7 @@ import BehavioralNutritionPage from "./pages/BehavioralNutritionPage";
 import SupplementationPage from "./pages/SupplementationPage";
 import MicrobiomePage from "./pages/MicrobiomePage";
 import ProtocolEnginePage from "./pages/ProtocolEnginePage";
+import RecipesPage from "./pages/RecipesPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -243,6 +244,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <ProtocolEnginePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/recipes"
+              element={
+                <ProtectedRoute>
+                  <RecipesPage />
                 </ProtectedRoute>
               }
             />
