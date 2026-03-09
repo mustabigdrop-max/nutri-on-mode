@@ -454,6 +454,15 @@ const DashboardPage = () => {
           </button>
         </motion.div>
 
+        {/* Smart Proactive Alerts */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.88 }}
+        >
+          <SmartAlerts />
+        </motion.div>
+
         {/* Predictive AI Alert */}
         {predictiveAlert && (
           <motion.div
