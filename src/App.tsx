@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import PlanGateWrapper from "@/components/PlanGateWrapper";
 import Index from "./pages/Index";
 import AuthPage from "./pages/AuthPage";
 import OnboardingPage from "./pages/OnboardingPage";
@@ -262,7 +263,9 @@ const App = () => (
               path="/event-mode"
               element={
                 <ProtectedRoute>
-                  <EventModePage />
+                  <PlanGateWrapper requiredPlan="ON +" featureName="Modo Evento">
+                    <EventModePage />
+                  </PlanGateWrapper>
                 </ProtectedRoute>
               }
             />
@@ -270,7 +273,9 @@ const App = () => (
               path="/food-simulator"
               element={
                 <ProtectedRoute>
-                  <FoodSimulatorPage />
+                  <PlanGateWrapper requiredPlan="ON +" featureName="Simulador 'E se eu comer?'">
+                    <FoodSimulatorPage />
+                  </PlanGateWrapper>
                 </ProtectedRoute>
               }
             />
@@ -278,7 +283,9 @@ const App = () => (
               path="/monthly-report"
               element={
                 <ProtectedRoute>
-                  <MonthlyReportPage />
+                  <PlanGateWrapper requiredPlan="ON +" featureName="Relatório Mensal">
+                    <MonthlyReportPage />
+                  </PlanGateWrapper>
                 </ProtectedRoute>
               }
             />
