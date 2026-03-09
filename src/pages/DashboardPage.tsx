@@ -6,6 +6,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
 import { useWaterLogs } from "@/hooks/useWaterLogs";
 import DashboardGamificationCards from "@/components/dashboard/DashboardGamificationCards";
+import SmartAlerts from "@/components/dashboard/SmartAlerts";
 import {
   ObjectiveBadge, getRingLabel, getScoreLabel,
   getPredictiveAlert, getHeaderSubtitle, getChildDashboardGreeting,
@@ -451,6 +452,15 @@ const DashboardPage = () => {
             </div>
             <ChevronRight className="w-4 h-4 text-muted-foreground" />
           </button>
+        </motion.div>
+
+        {/* Smart Proactive Alerts */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.88 }}
+        >
+          <SmartAlerts />
         </motion.div>
 
         {/* Predictive AI Alert */}
