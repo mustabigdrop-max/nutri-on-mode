@@ -102,8 +102,15 @@ const NutriSyncPage = () => {
               <Zap className="w-5 h-5 text-primary" />
               <h1 className="text-lg font-bold text-foreground">NutriSync</h1>
             </div>
-            <p className="text-[10px] font-mono text-muted-foreground tracking-widest uppercase">Nutrição que acompanha seu treino</p>
+             <p className="text-[10px] font-mono text-muted-foreground tracking-widest uppercase">Nutrição que acompanha seu treino</p>
           </div>
+          <button
+            onClick={() => navigate("/workout-history")}
+            className="p-2 rounded-lg border border-border bg-card hover:border-primary/30 transition-colors"
+            title="Histórico"
+          >
+            <History className="w-4 h-4 text-muted-foreground" />
+          </button>
         </div>
 
         {/* Tabs */}
