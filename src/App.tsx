@@ -9,6 +9,8 @@ import PlanGateWrapper from "@/components/PlanGateWrapper";
 import Index from "./pages/Index";
 import AuthPage from "./pages/AuthPage";
 import OnboardingPage from "./pages/OnboardingPage";
+import FirstMealScreen from "./pages/FirstMealScreen";
+import ActivationTourPage from "./pages/ActivationTourPage";
 import DashboardPage from "./pages/DashboardPage";
 import MealPlanPage from "./pages/MealPlanPage";
 import MealLogPage from "./pages/MealLogPage";
@@ -51,243 +53,45 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<AuthPage />} />
-            <Route
-              path="/onboarding"
-              element={
-                <ProtectedRoute>
-                  <OnboardingPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/dashboard"
-              element={
-                <ProtectedRoute>
-                  <DashboardPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/meal-plan"
-              element={
-                <ProtectedRoute>
-                  <MealPlanPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/meal-log"
-              element={
-                <ProtectedRoute>
-                  <MealLogPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/chat"
-              element={
-                <ProtectedRoute>
-                  <ChatPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/micronutrients"
-              element={
-                <ProtectedRoute>
-                  <MicronutrientsPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/gamification"
-              element={
-                <ProtectedRoute>
-                  <GamificationPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/transformation"
-              element={
-                <ProtectedRoute>
-                  <TransformationPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/profile"
-              element={
-                <ProtectedRoute>
-                  <ProfilePage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/professional"
-              element={
-                <ProtectedRoute>
-                  <ProfessionalDashboard />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/shopping-list"
-              element={
-                <ProtectedRoute>
-                  <ShoppingListPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/wearables"
-              element={
-                <ProtectedRoute>
-                  <WearablesPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/family"
-              element={
-                <ProtectedRoute>
-                  <FamilyPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/support"
-              element={
-                <ProtectedRoute>
-                  <SupportPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/hydration"
-              element={
-                <ProtectedRoute>
-                  <HydrationPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/meal-history"
-              element={
-                <ProtectedRoute>
-                  <MealHistoryPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/progress"
-              element={
-                <ProtectedRoute>
-                  <ProgressPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/settings"
-              element={
-                <ProtectedRoute>
-                  <SettingsPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/blood-test"
-              element={
-                <ProtectedRoute>
-                  <BloodTestPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/diet-builder"
-              element={
-                <ProtectedRoute>
-                  <DietBuilderPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/chronobiology"
-              element={
-                <ProtectedRoute>
-                  <ChronobiologyPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/behavioral-nutrition"
-              element={
-                <ProtectedRoute>
-                  <BehavioralNutritionPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/supplementation"
-              element={
-                <ProtectedRoute>
-                  <SupplementationPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/microbiome"
-              element={
-                <ProtectedRoute>
-                  <MicrobiomePage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/protocols"
-              element={
-                <ProtectedRoute>
-                  <ProtocolEnginePage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/recipes"
-              element={
-                <ProtectedRoute>
-                  <RecipesPage />
-                </ProtectedRoute>
-              }
-            />
+            <Route path="/onboarding" element={<ProtectedRoute><OnboardingPage /></ProtectedRoute>} />
+            <Route path="/first-meal" element={<ProtectedRoute><FirstMealScreen /></ProtectedRoute>} />
+            <Route path="/activation-tour" element={<ProtectedRoute><ActivationTourPage /></ProtectedRoute>} />
+            <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+            <Route path="/meal-plan" element={<ProtectedRoute><MealPlanPage /></ProtectedRoute>} />
+            <Route path="/meal-log" element={<ProtectedRoute><MealLogPage /></ProtectedRoute>} />
+            <Route path="/chat" element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />
+            <Route path="/micronutrients" element={<ProtectedRoute><MicronutrientsPage /></ProtectedRoute>} />
+            <Route path="/gamification" element={<ProtectedRoute><GamificationPage /></ProtectedRoute>} />
+            <Route path="/transformation" element={<ProtectedRoute><TransformationPage /></ProtectedRoute>} />
+            <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+            <Route path="/professional" element={<ProtectedRoute><ProfessionalDashboard /></ProtectedRoute>} />
+            <Route path="/shopping-list" element={<ProtectedRoute><ShoppingListPage /></ProtectedRoute>} />
+            <Route path="/wearables" element={<ProtectedRoute><WearablesPage /></ProtectedRoute>} />
+            <Route path="/family" element={<ProtectedRoute><FamilyPage /></ProtectedRoute>} />
+            <Route path="/support" element={<ProtectedRoute><SupportPage /></ProtectedRoute>} />
+            <Route path="/hydration" element={<ProtectedRoute><HydrationPage /></ProtectedRoute>} />
+            <Route path="/meal-history" element={<ProtectedRoute><MealHistoryPage /></ProtectedRoute>} />
+            <Route path="/progress" element={<ProtectedRoute><ProgressPage /></ProtectedRoute>} />
+            <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+            <Route path="/blood-test" element={<ProtectedRoute><BloodTestPage /></ProtectedRoute>} />
+            <Route path="/diet-builder" element={<ProtectedRoute><DietBuilderPage /></ProtectedRoute>} />
+            <Route path="/chronobiology" element={<ProtectedRoute><ChronobiologyPage /></ProtectedRoute>} />
+            <Route path="/behavioral-nutrition" element={<ProtectedRoute><BehavioralNutritionPage /></ProtectedRoute>} />
+            <Route path="/supplementation" element={<ProtectedRoute><SupplementationPage /></ProtectedRoute>} />
+            <Route path="/microbiome" element={<ProtectedRoute><MicrobiomePage /></ProtectedRoute>} />
+            <Route path="/protocols" element={<ProtectedRoute><ProtocolEnginePage /></ProtectedRoute>} />
+            <Route path="/recipes" element={<ProtectedRoute><RecipesPage /></ProtectedRoute>} />
             <Route
               path="/event-mode"
-              element={
-                <ProtectedRoute>
-                  <PlanGateWrapper requiredPlan="ON +" featureName="Modo Evento">
-                    <EventModePage />
-                  </PlanGateWrapper>
-                </ProtectedRoute>
-              }
+              element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON +" featureName="Modo Evento"><EventModePage /></PlanGateWrapper></ProtectedRoute>}
             />
             <Route
               path="/food-simulator"
-              element={
-                <ProtectedRoute>
-                  <PlanGateWrapper requiredPlan="ON +" featureName="Simulador 'E se eu comer?'">
-                    <FoodSimulatorPage />
-                  </PlanGateWrapper>
-                </ProtectedRoute>
-              }
+              element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON +" featureName="Simulador 'E se eu comer?'"><FoodSimulatorPage /></PlanGateWrapper></ProtectedRoute>}
             />
             <Route
               path="/monthly-report"
-              element={
-                <ProtectedRoute>
-                  <PlanGateWrapper requiredPlan="ON +" featureName="Relatório Mensal">
-                    <MonthlyReportPage />
-                  </PlanGateWrapper>
-                </ProtectedRoute>
-              }
+              element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON +" featureName="Relatório Mensal"><MonthlyReportPage /></PlanGateWrapper></ProtectedRoute>}
             />
             <Route path="*" element={<NotFound />} />
           </Routes>
