@@ -12,6 +12,7 @@ import ReengagementPopup from "@/components/dashboard/ReengagementPopup";
 import UpgradeModal from "@/components/landing/UpgradeModal";
 import DashboardGamificationCards from "@/components/dashboard/DashboardGamificationCards";
 import NutriSyncComparisonCard from "@/components/dashboard/NutriSyncComparisonCard";
+import WorkoutAlerts from "@/components/dashboard/WorkoutAlerts";
 import SmartAlerts from "@/components/dashboard/SmartAlerts";
 import ProactiveRecipeSuggestion from "@/components/dashboard/ProactiveRecipeSuggestion";
 import WeeklySabotageCard from "@/components/dashboard/WeeklySabotageCard";
@@ -420,6 +421,14 @@ const DashboardPage = () => {
             </motion.button>
           );
         })()}
+
+        {/* Workout time alerts (pre/post) */}
+        {todayWorkout && todayWorkout.workout_type !== "rest" && (
+          <WorkoutAlerts
+            workoutType={todayWorkout.workout_type as WorkoutType}
+            workoutTime={todayWorkout.workout_time}
+          />
+        )}
 
         {/* NutriSync Comparison Card */}
         <NutriSyncComparisonCard
