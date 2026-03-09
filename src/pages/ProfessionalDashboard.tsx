@@ -189,7 +189,11 @@ const ProfessionalDashboard = () => {
     });
 
     setPatients(merged);
-    setPendingRevisions(revisionsRes.data || []);
+    setPendingRevisions((revisionsRes.data || []).map(r => ({
+      ...r,
+      proposed_changes: Array.isArray(r.proposed_changes) ? r.proposed_changes : [],
+      impact_summary: r.impact_summary || {},
+    })));
     setLoading(false);
 
     // Generate alerts for all patients
