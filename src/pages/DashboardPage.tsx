@@ -9,6 +9,7 @@ import DashboardGamificationCards from "@/components/dashboard/DashboardGamifica
 import SmartAlerts from "@/components/dashboard/SmartAlerts";
 import ProactiveRecipeSuggestion from "@/components/dashboard/ProactiveRecipeSuggestion";
 import WeeklySabotageCard from "@/components/dashboard/WeeklySabotageCard";
+import MoodCheckinModal, { type MoodType, MOODS } from "@/components/dashboard/MoodCheckinModal";
 import {
   ObjectiveBadge, getRingLabel, getScoreLabel,
   getPredictiveAlert, getHeaderSubtitle, getChildDashboardGreeting,
