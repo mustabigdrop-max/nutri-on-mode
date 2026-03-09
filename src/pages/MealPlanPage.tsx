@@ -11,6 +11,8 @@ import {
   Sparkles, Wallet, GripVertical
 } from "lucide-react";
 import { toast } from "sonner";
+import SubstitutionModal from "@/components/meal/SubstitutionModal";
+import type { SubOption } from "@/components/meal/substitutionDb";
 
 const MEAL_TYPES = [
   { key: "cafe_manha", label: "Café" },
