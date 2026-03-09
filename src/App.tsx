@@ -263,7 +263,9 @@ const App = () => (
               path="/event-mode"
               element={
                 <ProtectedRoute>
-                  <EventModePage />
+                  <PlanGateWrapper requiredPlan="ON +" featureName="Modo Evento">
+                    <EventModePage />
+                  </PlanGateWrapper>
                 </ProtectedRoute>
               }
             />
@@ -271,7 +273,9 @@ const App = () => (
               path="/food-simulator"
               element={
                 <ProtectedRoute>
-                  <FoodSimulatorPage />
+                  <PlanGateWrapper requiredPlan="ON +" featureName="Simulador 'E se eu comer?'">
+                    <FoodSimulatorPage />
+                  </PlanGateWrapper>
                 </ProtectedRoute>
               }
             />
@@ -279,7 +283,9 @@ const App = () => (
               path="/monthly-report"
               element={
                 <ProtectedRoute>
-                  <MonthlyReportPage />
+                  <PlanGateWrapper requiredPlan="ON +" featureName="Relatório Mensal">
+                    <MonthlyReportPage />
+                  </PlanGateWrapper>
                 </ProtectedRoute>
               }
             />
