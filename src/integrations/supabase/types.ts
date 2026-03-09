@@ -748,6 +748,159 @@ export type Database = {
         }
         Relationships: []
       }
+      glp1_daily_logs: {
+        Row: {
+          created_at: string | null
+          energy_level: number | null
+          hydration_ml: number | null
+          id: string
+          log_date: string
+          nausea_level: number | null
+          notes: string | null
+          protein_g: number | null
+          total_kcal: number | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          energy_level?: number | null
+          hydration_ml?: number | null
+          id?: string
+          log_date?: string
+          nausea_level?: number | null
+          notes?: string | null
+          protein_g?: number | null
+          total_kcal?: number | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          energy_level?: number | null
+          hydration_ml?: number | null
+          id?: string
+          log_date?: string
+          nausea_level?: number | null
+          notes?: string | null
+          protein_g?: number | null
+          total_kcal?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      glp1_profiles: {
+        Row: {
+          created_at: string | null
+          current_dose: string | null
+          duration_months: number | null
+          exit_week: number | null
+          id: string
+          medication: string
+          objective: string
+          profile_class: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          current_dose?: string | null
+          duration_months?: number | null
+          exit_week?: number | null
+          id?: string
+          medication?: string
+          objective?: string
+          profile_class?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          current_dose?: string | null
+          duration_months?: number | null
+          exit_week?: number | null
+          id?: string
+          medication?: string
+          objective?: string
+          profile_class?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      glp1_subscriptions: {
+        Row: {
+          activated_at: string | null
+          canceled_at: string | null
+          id: string
+          price: number | null
+          status: string | null
+          trigger_source: string | null
+          user_id: string
+        }
+        Insert: {
+          activated_at?: string | null
+          canceled_at?: string | null
+          id?: string
+          price?: number | null
+          status?: string | null
+          trigger_source?: string | null
+          user_id: string
+        }
+        Update: {
+          activated_at?: string | null
+          canceled_at?: string | null
+          id?: string
+          price?: number | null
+          status?: string | null
+          trigger_source?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      glp1_weekly_scores: {
+        Row: {
+          alerts_triggered: number | null
+          avg_hydration_ml: number | null
+          avg_kcal: number | null
+          avg_protein_g: number | null
+          created_at: string | null
+          id: string
+          lean_mass_pct: number | null
+          protocol_score: number | null
+          user_id: string
+          week_end: string
+          week_start: string
+          weight_kg: number | null
+        }
+        Insert: {
+          alerts_triggered?: number | null
+          avg_hydration_ml?: number | null
+          avg_kcal?: number | null
+          avg_protein_g?: number | null
+          created_at?: string | null
+          id?: string
+          lean_mass_pct?: number | null
+          protocol_score?: number | null
+          user_id: string
+          week_end: string
+          week_start: string
+          weight_kg?: number | null
+        }
+        Update: {
+          alerts_triggered?: number | null
+          avg_hydration_ml?: number | null
+          avg_kcal?: number | null
+          avg_protein_g?: number | null
+          created_at?: string | null
+          id?: string
+          lean_mass_pct?: number | null
+          protocol_score?: number | null
+          user_id?: string
+          week_end?: string
+          week_start?: string
+          weight_kg?: number | null
+        }
+        Relationships: []
+      }
       meal_logs: {
         Row: {
           confirmed: boolean | null
