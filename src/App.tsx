@@ -96,6 +96,7 @@ const App = () => (
               element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON +" featureName="Relatório Mensal"><MonthlyReportPage /></PlanGateWrapper></ProtectedRoute>}
             />
             <Route path="/glp1" element={<ProtectedRoute><Glp1Page /></ProtectedRoute>} />
+            <Route path="/nutrisync" element={<ProtectedRoute><NutriSyncPage /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
