@@ -314,6 +314,16 @@ const TransformationPage = () => {
           />
         )}
       </AnimatePresence>
+
+      {/* Monthly transformation card */}
+      <AnimatePresence>
+        {showMonthlyCard && cardData && (
+          <MonthlyTransformationCard
+            data={cardData}
+            onClose={() => { setShowMonthlyCard(false); setCardData(null); }}
+          />
+        )}
+      </AnimatePresence>
       <BottomNav />
     </div>
   );
