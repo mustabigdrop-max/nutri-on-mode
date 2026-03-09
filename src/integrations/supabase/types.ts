@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      abandonment_risk_scores: {
+        Row: {
+          active_signals: Json | null
+          ai_action_taken: boolean | null
+          ai_message_sent: string | null
+          coach_notified: boolean | null
+          created_at: string | null
+          id: string
+          risk_level: string | null
+          risk_score: number | null
+          score_date: string | null
+          signal_details: Json | null
+          user_id: string
+        }
+        Insert: {
+          active_signals?: Json | null
+          ai_action_taken?: boolean | null
+          ai_message_sent?: string | null
+          coach_notified?: boolean | null
+          created_at?: string | null
+          id?: string
+          risk_level?: string | null
+          risk_score?: number | null
+          score_date?: string | null
+          signal_details?: Json | null
+          user_id: string
+        }
+        Update: {
+          active_signals?: Json | null
+          ai_action_taken?: boolean | null
+          ai_message_sent?: string | null
+          coach_notified?: boolean | null
+          created_at?: string | null
+          id?: string
+          risk_level?: string | null
+          risk_score?: number | null
+          score_date?: string | null
+          signal_details?: Json | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       activity_logs: {
         Row: {
           calories_burned: number | null
@@ -201,6 +243,57 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      coach_briefings: {
+        Row: {
+          ai_analysis: string | null
+          briefing_data: Json | null
+          coach_id: string
+          created_at: string | null
+          id: string
+          patient_id: string
+          positive_highlights: Json | null
+          recommended_tone: string | null
+          reviewed_at: string | null
+          risk_level: string | null
+          status: string | null
+          suggested_adjustments: Json | null
+          suggested_questions: Json | null
+          week_start: string
+        }
+        Insert: {
+          ai_analysis?: string | null
+          briefing_data?: Json | null
+          coach_id: string
+          created_at?: string | null
+          id?: string
+          patient_id: string
+          positive_highlights?: Json | null
+          recommended_tone?: string | null
+          reviewed_at?: string | null
+          risk_level?: string | null
+          status?: string | null
+          suggested_adjustments?: Json | null
+          suggested_questions?: Json | null
+          week_start: string
+        }
+        Update: {
+          ai_analysis?: string | null
+          briefing_data?: Json | null
+          coach_id?: string
+          created_at?: string | null
+          id?: string
+          patient_id?: string
+          positive_highlights?: Json | null
+          recommended_tone?: string | null
+          reviewed_at?: string | null
+          risk_level?: string | null
+          status?: string | null
+          suggested_adjustments?: Json | null
+          suggested_questions?: Json | null
+          week_start?: string
+        }
+        Relationships: []
       }
       coach_slots: {
         Row: {
@@ -799,12 +892,15 @@ export type Database = {
           focus_next_month: Json | null
           id: string
           macro_averages: Json | null
+          motivational_quote: string | null
           pattern_analysis: Json | null
           previous_comparison: Json | null
           projection: Json | null
           protein_days_hit: number | null
           read: boolean
           report_month: string
+          share_card_data: Json | null
+          share_card_generated: boolean | null
           top_foods: Json | null
           total_meals_logged: number | null
           user_id: string
@@ -820,12 +916,15 @@ export type Database = {
           focus_next_month?: Json | null
           id?: string
           macro_averages?: Json | null
+          motivational_quote?: string | null
           pattern_analysis?: Json | null
           previous_comparison?: Json | null
           projection?: Json | null
           protein_days_hit?: number | null
           read?: boolean
           report_month: string
+          share_card_data?: Json | null
+          share_card_generated?: boolean | null
           top_foods?: Json | null
           total_meals_logged?: number | null
           user_id: string
@@ -841,12 +940,15 @@ export type Database = {
           focus_next_month?: Json | null
           id?: string
           macro_averages?: Json | null
+          motivational_quote?: string | null
           pattern_analysis?: Json | null
           previous_comparison?: Json | null
           projection?: Json | null
           protein_days_hit?: number | null
           read?: boolean
           report_month?: string
+          share_card_data?: Json | null
+          share_card_generated?: boolean | null
           top_foods?: Json | null
           total_meals_logged?: number | null
           user_id?: string
@@ -875,6 +977,54 @@ export type Database = {
           created_at?: string
           id?: string
           mood?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      plan_revisions: {
+        Row: {
+          analysis_period_end: string | null
+          analysis_period_start: string | null
+          analysis_summary: string | null
+          approved_at: string | null
+          coach_id: string | null
+          created_at: string | null
+          id: string
+          impact_summary: Json | null
+          proposed_changes: Json | null
+          rejection_reason: string | null
+          revision_date: string | null
+          status: string | null
+          user_id: string
+        }
+        Insert: {
+          analysis_period_end?: string | null
+          analysis_period_start?: string | null
+          analysis_summary?: string | null
+          approved_at?: string | null
+          coach_id?: string | null
+          created_at?: string | null
+          id?: string
+          impact_summary?: Json | null
+          proposed_changes?: Json | null
+          rejection_reason?: string | null
+          revision_date?: string | null
+          status?: string | null
+          user_id: string
+        }
+        Update: {
+          analysis_period_end?: string | null
+          analysis_period_start?: string | null
+          analysis_summary?: string | null
+          approved_at?: string | null
+          coach_id?: string | null
+          created_at?: string | null
+          id?: string
+          impact_summary?: Json | null
+          proposed_changes?: Json | null
+          rejection_reason?: string | null
+          revision_date?: string | null
+          status?: string | null
           user_id?: string
         }
         Relationships: []
@@ -1317,6 +1467,56 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      voice_checkins: {
+        Row: {
+          audio_duration: number | null
+          audio_url: string | null
+          confirmed: boolean | null
+          created_at: string | null
+          extracted_context: string | null
+          extracted_foods: Json | null
+          extracted_mood: string | null
+          id: string
+          meal_log_id: string | null
+          transcription: string | null
+          user_id: string
+        }
+        Insert: {
+          audio_duration?: number | null
+          audio_url?: string | null
+          confirmed?: boolean | null
+          created_at?: string | null
+          extracted_context?: string | null
+          extracted_foods?: Json | null
+          extracted_mood?: string | null
+          id?: string
+          meal_log_id?: string | null
+          transcription?: string | null
+          user_id: string
+        }
+        Update: {
+          audio_duration?: number | null
+          audio_url?: string | null
+          confirmed?: boolean | null
+          created_at?: string | null
+          extracted_context?: string | null
+          extracted_foods?: Json | null
+          extracted_mood?: string | null
+          id?: string
+          meal_log_id?: string | null
+          transcription?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "voice_checkins_meal_log_id_fkey"
+            columns: ["meal_log_id"]
+            isOneToOne: false
+            referencedRelation: "meal_logs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       water_logs: {
         Row: {
