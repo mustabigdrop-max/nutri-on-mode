@@ -103,7 +103,11 @@ const UpgradeModal = ({ open, onClose, fromPlan, lockedFeature }: UpgradeModalPr
             <button
               onClick={() => {
                 onClose();
-                window.location.href = "/auth";
+                const links: Record<string, string> = {
+                  "ON +": "https://pay.kiwify.com.br/6pXyygp",
+                  "ON PRO": "https://pay.kiwify.com.br/zbtOulj",
+                };
+                window.open(links[path.target] || "/auth", "_blank");
               }}
               className="w-full py-3.5 rounded-lg bg-primary text-black font-mono text-[.75rem] font-medium tracking-[.08em] hover:bg-black hover:text-primary hover:outline hover:outline-1 hover:outline-primary transition-all"
             >
