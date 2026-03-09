@@ -6,7 +6,8 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   Users, Search, TrendingUp, ArrowLeft, Plus, BarChart3,
   Flame, Target, ChevronRight, UserPlus, X, Mail,
-  Calendar, Activity, FileText, AlertCircle, AlertTriangle, ShieldAlert, Zap
+  Calendar, Activity, FileText, AlertCircle, AlertTriangle, ShieldAlert, Zap,
+  FileBarChart, RefreshCw, Mic, Check, XCircle, Clock, MessageSquare
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -17,7 +18,7 @@ import {
 interface PatientAlert {
   patientId: string;
   patientName: string;
-  type: "plateau" | "deficit_agressivo" | "proteina_baixa" | "adesao_baixa" | "culpa_recorrente";
+  type: "plateau" | "deficit_agressivo" | "proteina_baixa" | "adesao_baixa" | "culpa_recorrente" | "abandonment_risk";
   message: string;
   priority: number;
   icon: string;
@@ -34,6 +35,7 @@ interface PatientProfile {
   level: number | null;
   xp: number | null;
   onboarding_completed: boolean | null;
+  plano_atual: string | null;
 }
 
 interface PatientLink {
@@ -41,6 +43,37 @@ interface PatientLink {
   patient_id: string;
   status: string;
   notes: string | null;
+  created_at: string;
+}
+
+interface RiskScore {
+  user_id: string;
+  risk_score: number;
+  risk_level: string;
+  active_signals: string[];
+}
+
+interface Briefing {
+  id: string;
+  patient_id: string;
+  week_start: string;
+  briefing_data: any;
+  ai_analysis: string;
+  suggested_questions: string[];
+  suggested_adjustments: any[];
+  recommended_tone: string;
+  risk_level: string;
+  positive_highlights: string[];
+  status: string;
+}
+
+interface PlanRevision {
+  id: string;
+  user_id: string;
+  analysis_summary: string;
+  proposed_changes: any[];
+  impact_summary: any;
+  status: string;
   created_at: string;
 }
 
@@ -52,12 +85,27 @@ const goalLabels: Record<string, string> = {
   performance: "Performance",
   health: "Saúde",
   maintenance: "Manutenção",
+  emagrecimento: "Emagrecimento",
+  hipertrofia: "Hipertrofia",
+  saude_geral: "Saúde Geral",
+};
+
+const RISK_COLORS: Record<string, string> = {
+  low: "text-green-400",
+  medium: "text-yellow-400",
+  high: "text-red-400",
+};
+
+const RISK_BG: Record<string, string> = {
+  low: "bg-green-500/10 border-green-500/20",
+  medium: "bg-yellow-500/10 border-yellow-500/20",
+  high: "bg-red-500/10 border-red-500/20",
 };
 
 const ProfessionalDashboard = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
-  const [patients, setPatients] = useState<(PatientLink & { profile?: PatientProfile })[]>([]);
+  const [patients, setPatients] = useState<(PatientLink & { profile?: PatientProfile; riskScore?: RiskScore })[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [selectedPatient, setSelectedPatient] = useState<string | null>(null);
@@ -72,6 +120,16 @@ const ProfessionalDashboard = () => {
 
   // Patient alerts
   const [patientAlerts, setPatientAlerts] = useState<PatientAlert[]>([]);
+
+  // Briefing state
+  const [currentBriefing, setCurrentBriefing] = useState<Briefing | null>(null);
+  const [briefingLoading, setBriefingLoading] = useState(false);
+  const [showBriefingModal, setShowBriefingModal] = useState(false);
+
+  // Plan revision state
+  const [pendingRevisions, setPendingRevisions] = useState<PlanRevision[]>([]);
+  const [selectedRevision, setSelectedRevision] = useState<PlanRevision | null>(null);
+  const [revisionLoading, setRevisionLoading] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -93,21 +151,49 @@ const ProfessionalDashboard = () => {
     }
 
     const patientIds = links.map(l => l.patient_id);
-    const { data: profiles } = await supabase
-      .from("profiles")
-      .select("user_id, full_name, goal, weight_kg, vet_kcal, protein_g, streak_days, level, xp, onboarding_completed")
-      .in("user_id", patientIds);
+    
+    // Fetch profiles and risk scores in parallel
+    const [profilesRes, riskRes, revisionsRes] = await Promise.all([
+      supabase
+        .from("profiles")
+        .select("user_id, full_name, goal, weight_kg, vet_kcal, protein_g, streak_days, level, xp, onboarding_completed, plano_atual")
+        .in("user_id", patientIds),
+      supabase
+        .from("abandonment_risk_scores")
+        .select("user_id, risk_score, risk_level, active_signals")
+        .in("user_id", patientIds)
+        .eq("score_date", new Date().toISOString().split("T")[0]),
+      supabase
+        .from("plan_revisions")
+        .select("*")
+        .in("user_id", patientIds)
+        .eq("status", "pending")
+        .order("created_at", { ascending: false }),
+    ]);
+
+    const profiles = profilesRes.data || [];
+    const riskScores = riskRes.data || [];
 
     const merged = links.map(link => ({
       ...link,
-      profile: profiles?.find(p => p.user_id === link.patient_id) as PatientProfile | undefined,
+      profile: profiles.find(p => p.user_id === link.patient_id) as PatientProfile | undefined,
+      riskScore: riskScores.find(r => r.user_id === link.patient_id) as RiskScore | undefined,
     }));
 
+    // Sort by risk level (high first, then medium, then low/none)
+    merged.sort((a, b) => {
+      const riskOrder: Record<string, number> = { high: 0, medium: 1, low: 2 };
+      const aRisk = riskOrder[a.riskScore?.risk_level || "low"] ?? 3;
+      const bRisk = riskOrder[b.riskScore?.risk_level || "low"] ?? 3;
+      return aRisk - bRisk;
+    });
+
     setPatients(merged);
+    setPendingRevisions(revisionsRes.data || []);
     setLoading(false);
 
     // Generate alerts for all patients
-    generatePatientAlerts(merged, profiles || []);
+    generatePatientAlerts(merged, profiles);
   };
 
   const generatePatientAlerts = async (
@@ -139,6 +225,29 @@ const ProfessionalDashboard = () => {
     const allMeals = mealsRes.data || [];
     const allWeights = weightsRes.data || [];
 
+    // Add abandonment risk alerts from risk scores
+    patientLinks.forEach(p => {
+      if (p.riskScore?.risk_level === "high") {
+        alerts.push({
+          patientId: p.patient_id,
+          patientName: p.profile?.full_name?.split(" ")[0] || "Paciente",
+          type: "abandonment_risk",
+          message: `Risco de abandono: ${p.riskScore.risk_score}% — ${p.riskScore.active_signals.length} sinais ativos. Contato urgente recomendado.`,
+          priority: 0,
+          icon: "🚨",
+        });
+      } else if (p.riskScore?.risk_level === "medium") {
+        alerts.push({
+          patientId: p.patient_id,
+          patientName: p.profile?.full_name?.split(" ")[0] || "Paciente",
+          type: "abandonment_risk",
+          message: `Risco médio: ${p.riskScore.risk_score}% — monitorar de perto esta semana.`,
+          priority: 1,
+          icon: "⚠️",
+        });
+      }
+    });
+
     for (const prof of profiles) {
       const name = prof.full_name?.split(" ")[0] || "Paciente";
       const patientMeals = allMeals.filter((m: any) => m.user_id === prof.user_id);
@@ -163,7 +272,7 @@ const ProfessionalDashboard = () => {
             patientId: prof.user_id,
             patientName: name,
             type: "deficit_agressivo",
-            message: `Consumo médio de ${avg} kcal nos últimos 3 dias (meta: ${kcalTarget} kcal). Risco de perda muscular e desaceleração metabólica.`,
+            message: `Consumo médio de ${avg} kcal nos últimos 3 dias (meta: ${kcalTarget} kcal). Risco de perda muscular.`,
             priority: 1,
             icon: "🔴",
           });
@@ -179,57 +288,24 @@ const ProfessionalDashboard = () => {
             patientId: prof.user_id,
             patientName: name,
             type: "proteina_baixa",
-            message: `Proteína média de ${avg}g nos últimos 3 dias (meta: ${proteinTarget}g). Abaixo de 60% da meta.`,
+            message: `Proteína média de ${avg}g nos últimos 3 dias (meta: ${proteinTarget}g).`,
             priority: 1,
             icon: "⚠️",
           });
         }
       }
 
-      // Check plateau (weight stagnant)
-      if (patientWeights.length >= 5) {
-        const recent = patientWeights.slice(0, 10).map((w: any) => Number(w.weight_kg));
-        const min = Math.min(...recent);
-        const max = Math.max(...recent);
-        if (max - min < 0.3) {
-          alerts.push({
-            patientId: prof.user_id,
-            patientName: name,
-            type: "plateau",
-            message: `Peso estagnado há ${patientWeights.length}+ registros (variação < 300g). Considere revisar o plano alimentar.`,
-            priority: 2,
-            icon: "📊",
-          });
-        }
-      }
-
-      // Check culpa recorrente
+      // Check guilt emotions
       const guiltyMeals = patientMeals.filter((m: any) => m.emotion === "culpado");
       if (guiltyMeals.length >= 2) {
         alerts.push({
           patientId: prof.user_id,
           patientName: name,
           type: "culpa_recorrente",
-          message: `Registrou sentimento de culpa ${guiltyMeals.length}x nos últimos 3 dias. Considere entrar em contato para apoio emocional.`,
+          message: `Registrou culpa ${guiltyMeals.length}x nos últimos 3 dias. Considere apoio emocional.`,
           priority: 2,
           icon: "💬",
         });
-      }
-
-      // Check low adherence (fewer than 1 meal/day average)
-      if (dates.length > 0) {
-        const totalMeals = patientMeals.length;
-        const avgMealsPerDay = totalMeals / Math.max(dates.length, 1);
-        if (avgMealsPerDay < 1.5 && dates.length >= 2) {
-          alerts.push({
-            patientId: prof.user_id,
-            patientName: name,
-            type: "adesao_baixa",
-            message: `Média de ${avgMealsPerDay.toFixed(1)} refeições/dia nos últimos ${dates.length} dias. Adesão ao registro abaixo do esperado.`,
-            priority: 2,
-            icon: "📉",
-          });
-        }
       }
     }
 
@@ -242,12 +318,6 @@ const ProfessionalDashboard = () => {
     if (!addEmail.trim() || !user) return;
     setAddLoading(true);
 
-    // Look up user by checking profiles — we can't query auth.users
-    // The professional needs to know the patient's user_id or we search by name
-    // For now, we'll use a simplified approach: professional enters patient email
-    // and we create the link. The patient_id will need to be resolved.
-    
-    // Since we can't query auth.users from client, we'll search profiles by full_name
     const { data: foundProfiles } = await supabase
       .from("profiles")
       .select("user_id, full_name")
@@ -260,7 +330,6 @@ const ProfessionalDashboard = () => {
       return;
     }
 
-    // Check limit of 30
     if (patients.length >= 30) {
       toast.error("Limite de 30 pacientes atingido.");
       setAddLoading(false);
@@ -292,7 +361,6 @@ const ProfessionalDashboard = () => {
   const loadPatientDetail = async (patientId: string) => {
     setSelectedPatient(patientId);
 
-    // Load last 7 days of meals
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
     const dateStr = sevenDaysAgo.toISOString().split("T")[0];
@@ -315,7 +383,6 @@ const ProfessionalDashboard = () => {
     setPatientMeals(mealsRes.data || []);
     setPatientWeights(weightsRes.data || []);
 
-    // Aggregate daily stats
     const dailyMap = new Map<string, { kcal: number; protein: number; meals: number }>();
     (mealsRes.data || []).forEach((m: any) => {
       const existing = dailyMap.get(m.meal_date) || { kcal: 0, protein: 0, meals: 0 };
@@ -342,12 +409,114 @@ const ProfessionalDashboard = () => {
     fetchPatients();
   };
 
+  // Generate briefing for selected patient
+  const generateBriefing = async () => {
+    if (!selectedPatient || !user) return;
+    setBriefingLoading(true);
+    
+    const weekStart = getWeekStart(new Date()).toISOString().split("T")[0];
+    
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-coach-briefing", {
+        body: {
+          coachId: user.id,
+          patientId: selectedPatient,
+          weekStart,
+        },
+      });
+      
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      
+      setCurrentBriefing({
+        id: "new",
+        patient_id: selectedPatient,
+        week_start: weekStart,
+        briefing_data: data.briefing,
+        ai_analysis: data.briefing.ai_analysis,
+        suggested_questions: data.briefing.suggested_questions,
+        suggested_adjustments: data.briefing.suggested_adjustments,
+        recommended_tone: data.briefing.recommended_tone,
+        risk_level: data.briefing.risk_level,
+        positive_highlights: data.briefing.positive_highlights,
+        status: "pending",
+      });
+      setShowBriefingModal(true);
+      toast.success("Briefing gerado! 📋");
+    } catch (e: any) {
+      toast.error(e.message || "Erro ao gerar briefing");
+    }
+    setBriefingLoading(false);
+  };
+
+  // Generate plan revision for selected patient
+  const generatePlanRevision = async () => {
+    if (!selectedPatient || !user) return;
+    setRevisionLoading(true);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-plan-revision", {
+        body: {
+          userId: selectedPatient,
+          coachId: user.id,
+        },
+      });
+      
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      
+      setSelectedRevision({
+        id: data.revision.id,
+        user_id: selectedPatient,
+        analysis_summary: data.revision.analysis,
+        proposed_changes: data.revision.changes,
+        impact_summary: data.revision.impact,
+        status: "pending",
+        created_at: new Date().toISOString(),
+      });
+      toast.success("Revisão de plano gerada! 📝");
+      fetchPatients(); // Refresh to show pending revision
+    } catch (e: any) {
+      toast.error(e.message || "Erro ao gerar revisão");
+    }
+    setRevisionLoading(false);
+  };
+
+  // Approve plan revision
+  const approveRevision = async (revisionId: string) => {
+    const { error } = await supabase
+      .from("plan_revisions")
+      .update({ status: "approved", approved_at: new Date().toISOString() })
+      .eq("id", revisionId);
+    
+    if (!error) {
+      toast.success("Revisão aprovada! Plano atualizado. ✅");
+      setSelectedRevision(null);
+      fetchPatients();
+    }
+  };
+
+  // Reject plan revision
+  const rejectRevision = async (revisionId: string) => {
+    const { error } = await supabase
+      .from("plan_revisions")
+      .update({ status: "rejected" })
+      .eq("id", revisionId);
+    
+    if (!error) {
+      toast.success("Revisão rejeitada.");
+      setSelectedRevision(null);
+      fetchPatients();
+    }
+  };
+
   const filteredPatients = patients.filter(p =>
     !search || (p.profile?.full_name || "").toLowerCase().includes(search.toLowerCase())
   );
 
   const selectedData = patients.find(p => p.patient_id === selectedPatient);
   const sp = selectedData?.profile;
+  const patientRevision = pendingRevisions.find(r => r.user_id === selectedPatient);
 
   if (loading) {
     return (
@@ -369,9 +538,9 @@ const ProfessionalDashboard = () => {
               <ArrowLeft className="w-5 h-5" />
             </button>
             <div>
-              <h1 className="text-xl font-bold text-foreground">Painel Profissional</h1>
+              <h1 className="text-xl font-bold text-foreground">Painel Coach PRO</h1>
               <p className="text-xs text-muted-foreground font-mono">
-                {patients.length}/30 pacientes
+                {patients.length}/30 pacientes · {pendingRevisions.length} revisões pendentes
               </p>
             </div>
           </div>
@@ -399,14 +568,16 @@ const ProfessionalDashboard = () => {
               </span>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-              {patientAlerts.map((alert, i) => (
+              {patientAlerts.slice(0, 6).map((alert, i) => (
                 <motion.div
                   key={`${alert.patientId}-${alert.type}`}
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: i * 0.05 }}
                   className={`rounded-xl border p-3 cursor-pointer transition-all hover:scale-[1.01] ${
-                    alert.priority === 1
+                    alert.priority === 0
+                      ? "border-red-500/30 bg-red-500/5"
+                      : alert.priority === 1
                       ? "border-destructive/30 bg-destructive/5"
                       : "border-primary/20 bg-primary/5"
                   }`}
@@ -418,11 +589,13 @@ const ProfessionalDashboard = () => {
                       <div className="flex items-center gap-2 mb-1">
                         <span className="text-xs font-bold text-foreground">{alert.patientName}</span>
                         <span className={`text-[9px] font-mono px-1.5 py-0.5 rounded ${
-                          alert.priority === 1
+                          alert.priority === 0
+                            ? "bg-red-500/20 text-red-400"
+                            : alert.priority === 1
                             ? "bg-destructive/20 text-destructive"
                             : "bg-primary/20 text-primary"
                         }`}>
-                          {alert.priority === 1 ? "URGENTE" : "ATENÇÃO"}
+                          {alert.priority === 0 ? "CRÍTICO" : alert.priority === 1 ? "URGENTE" : "ATENÇÃO"}
                         </span>
                       </div>
                       <p className="text-xs text-muted-foreground leading-relaxed">{alert.message}</p>
@@ -436,9 +609,8 @@ const ProfessionalDashboard = () => {
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Patient list */}
+          {/* Patient list with risk indicators */}
           <div className="lg:col-span-1">
-            {/* Search */}
             <div className="relative mb-4">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <input
@@ -454,7 +626,6 @@ const ProfessionalDashboard = () => {
               <div className="rounded-xl border border-border bg-card/50 p-8 text-center">
                 <Users className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
                 <p className="text-sm text-muted-foreground">Nenhum paciente vinculado</p>
-                <p className="text-xs text-muted-foreground mt-1">Clique em "Vincular" para adicionar</p>
               </div>
             ) : (
               <div className="space-y-2">
@@ -468,12 +639,23 @@ const ProfessionalDashboard = () => {
                     className={`w-full rounded-xl border p-3 text-left transition-all ${
                       selectedPatient === p.patient_id
                         ? "border-primary/50 bg-primary/5"
+                        : p.riskScore?.risk_level === "high"
+                        ? "border-red-500/30 bg-red-500/5 hover:border-red-500/50"
+                        : p.riskScore?.risk_level === "medium"
+                        ? "border-yellow-500/30 bg-yellow-500/5 hover:border-yellow-500/50"
                         : "border-border bg-card hover:border-primary/20"
                     }`}
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">
-                        {(p.profile?.full_name || "?")[0].toUpperCase()}
+                      {/* Risk indicator */}
+                      <div className={`relative w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${
+                        p.riskScore?.risk_level === "high"
+                          ? "bg-red-500/20 text-red-400"
+                          : p.riskScore?.risk_level === "medium"
+                          ? "bg-yellow-500/20 text-yellow-400"
+                          : "bg-primary/10 text-primary"
+                      }`}>
+                        {p.riskScore?.risk_level === "high" ? "🔴" : p.riskScore?.risk_level === "medium" ? "🟡" : "🟢"}
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-semibold text-foreground truncate">
@@ -481,9 +663,19 @@ const ProfessionalDashboard = () => {
                         </p>
                         <p className="text-xs text-muted-foreground">
                           {goalLabels[p.profile?.goal || ""] || "—"} · Lv.{p.profile?.level || 1}
+                          {p.riskScore && (
+                            <span className={`ml-2 ${RISK_COLORS[p.riskScore.risk_level]}`}>
+                              {p.riskScore.risk_score}%
+                            </span>
+                          )}
                         </p>
                       </div>
                       <div className="flex items-center gap-1.5">
+                        {pendingRevisions.some(r => r.user_id === p.patient_id) && (
+                          <span className="text-[10px] font-mono bg-accent/20 text-accent px-1.5 py-0.5 rounded">
+                            REVISÃO
+                          </span>
+                        )}
                         {(p.profile?.streak_days || 0) > 0 && (
                           <span className="flex items-center gap-0.5 text-xs text-primary font-mono">
                             <Flame className="w-3 h-3" />
@@ -499,7 +691,7 @@ const ProfessionalDashboard = () => {
             )}
           </div>
 
-          {/* Patient detail */}
+          {/* Patient detail with coach tools */}
           <div className="lg:col-span-2">
             <AnimatePresence mode="wait">
               {!selectedPatient ? (
@@ -510,7 +702,7 @@ const ProfessionalDashboard = () => {
                   className="rounded-xl border border-border bg-card/30 p-12 text-center"
                 >
                   <Activity className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                  <p className="text-muted-foreground">Selecione um paciente para ver o progresso</p>
+                  <p className="text-muted-foreground">Selecione um paciente para ver o progresso e ferramentas de coach</p>
                 </motion.div>
               ) : (
                 <motion.div
@@ -520,17 +712,26 @@ const ProfessionalDashboard = () => {
                   exit={{ opacity: 0, x: -20 }}
                   className="space-y-4"
                 >
-                  {/* Patient header */}
+                  {/* Patient header with coach actions */}
                   <div className="rounded-xl border border-border bg-card p-4">
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-lg">
+                        <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg ${
+                          selectedData?.riskScore?.risk_level === "high"
+                            ? "bg-red-500/20 text-red-400"
+                            : selectedData?.riskScore?.risk_level === "medium"
+                            ? "bg-yellow-500/20 text-yellow-400"
+                            : "bg-primary/10 text-primary"
+                        }`}>
                           {(sp?.full_name || "?")[0].toUpperCase()}
                         </div>
                         <div>
                           <h2 className="text-lg font-bold text-foreground">{sp?.full_name || "Paciente"}</h2>
                           <p className="text-xs text-muted-foreground font-mono">
                             {goalLabels[sp?.goal || ""] || "—"} · {sp?.weight_kg || "—"}kg · {sp?.vet_kcal || "—"} kcal/dia
+                            {sp?.plano_atual === "ON PRO" && (
+                              <span className="ml-2 text-primary">👑 PRO</span>
+                            )}
                           </p>
                         </div>
                       </div>
@@ -543,13 +744,80 @@ const ProfessionalDashboard = () => {
                       </button>
                     </div>
 
+                    {/* Coach action buttons */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-4">
+                      <button
+                        onClick={generateBriefing}
+                        disabled={briefingLoading}
+                        className="flex items-center justify-center gap-2 p-3 rounded-lg bg-primary/10 border border-primary/20 text-primary hover:bg-primary/20 transition-colors disabled:opacity-50"
+                      >
+                        <FileBarChart className="w-4 h-4" />
+                        <span className="text-xs font-semibold">{briefingLoading ? "Gerando..." : "Briefing"}</span>
+                      </button>
+                      <button
+                        onClick={generatePlanRevision}
+                        disabled={revisionLoading || !!patientRevision}
+                        className="flex items-center justify-center gap-2 p-3 rounded-lg bg-accent/10 border border-accent/20 text-accent hover:bg-accent/20 transition-colors disabled:opacity-50"
+                      >
+                        <RefreshCw className="w-4 h-4" />
+                        <span className="text-xs font-semibold">{revisionLoading ? "Analisando..." : "Revisar Plano"}</span>
+                      </button>
+                      <button
+                        className="flex items-center justify-center gap-2 p-3 rounded-lg bg-secondary border border-border text-muted-foreground hover:text-foreground hover:border-primary/20 transition-colors"
+                      >
+                        <MessageSquare className="w-4 h-4" />
+                        <span className="text-xs font-semibold">Chat</span>
+                      </button>
+                      <button
+                        className="flex items-center justify-center gap-2 p-3 rounded-lg bg-secondary border border-border text-muted-foreground hover:text-foreground hover:border-primary/20 transition-colors"
+                      >
+                        <Mic className="w-4 h-4" />
+                        <span className="text-xs font-semibold">Áudio</span>
+                      </button>
+                    </div>
+
+                    {/* Pending revision alert */}
+                    {patientRevision && (
+                      <div className="rounded-lg bg-accent/10 border border-accent/20 p-3 mb-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <RefreshCw className="w-4 h-4 text-accent" />
+                            <span className="text-sm font-semibold text-accent">Revisão de Plano Pendente</span>
+                          </div>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => setSelectedRevision(patientRevision)}
+                              className="text-xs font-mono bg-accent/20 text-accent px-3 py-1 rounded hover:bg-accent/30"
+                            >
+                              Ver Detalhes
+                            </button>
+                            <button
+                              onClick={() => approveRevision(patientRevision.id)}
+                              className="text-xs font-mono bg-green-500/20 text-green-400 px-3 py-1 rounded hover:bg-green-500/30"
+                            >
+                              Aprovar ✅
+                            </button>
+                            <button
+                              onClick={() => rejectRevision(patientRevision.id)}
+                              className="text-xs font-mono bg-red-500/20 text-red-400 px-3 py-1 rounded hover:bg-red-500/30"
+                            >
+                              Rejeitar ❌
+                            </button>
+                          </div>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-2">
+                          {patientRevision.proposed_changes?.length || 0} ajustes propostos baseados em 14 dias de dados
+                        </p>
+                      </div>
+                    )}
+
                     {/* Quick stats */}
                     <div className="grid grid-cols-4 gap-3">
                       {[
                         { icon: Target, label: "Meta", value: `${sp?.vet_kcal || 0} kcal`, color: "text-primary" },
                         { icon: BarChart3, label: "Proteína", value: `${sp?.protein_g || 0}g`, color: "text-accent" },
                         { icon: Flame, label: "Streak", value: `${sp?.streak_days || 0}d`, color: "text-primary" },
-                        { icon: TrendingUp, label: "XP", value: `${sp?.xp || 0}`, color: "text-accent" },
+                        { icon: AlertTriangle, label: "Risco", value: `${selectedData?.riskScore?.risk_score || 0}%`, color: RISK_COLORS[selectedData?.riskScore?.risk_level || "low"] },
                       ].map(stat => (
                         <div key={stat.label} className="rounded-lg bg-secondary/50 p-3 text-center">
                           <stat.icon className={`w-4 h-4 ${stat.color} mx-auto mb-1`} />
@@ -679,6 +947,7 @@ const ProfessionalDashboard = () => {
                                 {meal.meal_type.replace(/_/g, " ")}
                               </span>
                               <span className="text-xs text-muted-foreground ml-2">{meal.meal_date}</span>
+                              {meal.emotion === "culpado" && <span className="ml-2">😔</span>}
                             </div>
                             <div className="text-right">
                               <span className="text-sm font-mono text-foreground">{meal.total_kcal || 0} kcal</span>
@@ -744,8 +1013,235 @@ const ProfessionalDashboard = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Briefing Modal */}
+      <AnimatePresence>
+        {showBriefingModal && currentBriefing && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-background/90 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto"
+            onClick={() => setShowBriefingModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              onClick={e => e.stopPropagation()}
+              className="w-full max-w-2xl rounded-xl border border-border bg-card p-6 my-8 max-h-[90vh] overflow-y-auto"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-lg font-bold text-foreground">📋 Briefing Semanal</h3>
+                  <p className="text-xs text-muted-foreground font-mono">
+                    {currentBriefing.briefing_data?.patient_name} · Semana de {currentBriefing.week_start}
+                  </p>
+                </div>
+                <button onClick={() => setShowBriefingModal(false)} className="text-muted-foreground hover:text-foreground">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Risk Level */}
+              <div className={`rounded-lg p-4 mb-4 ${RISK_BG[currentBriefing.risk_level]}`}>
+                <div className="flex items-center justify-between">
+                  <span className={`text-sm font-bold ${RISK_COLORS[currentBriefing.risk_level]}`}>
+                    Nível de Risco: {currentBriefing.risk_level.toUpperCase()}
+                  </span>
+                  <span className="text-xs text-muted-foreground font-mono">
+                    {currentBriefing.briefing_data?.adherence_rate || 0}% adesão
+                  </span>
+                </div>
+              </div>
+
+              {/* Macro Summary */}
+              <div className="grid grid-cols-4 gap-2 mb-4">
+                {["kcal", "protein", "carbs", "fat"].map(macro => {
+                  const data = currentBriefing.briefing_data?.macros?.[macro];
+                  return (
+                    <div key={macro} className="rounded-lg bg-secondary/50 p-2 text-center">
+                      <p className="text-xs text-muted-foreground capitalize">{macro === "kcal" ? "Calorias" : macro === "protein" ? "Proteína" : macro === "carbs" ? "Carbo" : "Gordura"}</p>
+                      <p className="text-sm font-mono font-bold text-foreground">{data?.avg || 0}{macro === "kcal" ? "" : "g"}</p>
+                      <p className="text-[10px] text-muted-foreground">{data?.pct || 0}% da meta</p>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* AI Analysis */}
+              <div className="rounded-lg bg-secondary/30 border border-border p-4 mb-4">
+                <h4 className="text-sm font-bold text-foreground mb-2">💡 Análise da IA</h4>
+                <p className="text-sm text-muted-foreground whitespace-pre-wrap">{currentBriefing.ai_analysis}</p>
+              </div>
+
+              {/* Critical Points */}
+              {currentBriefing.briefing_data?.critical_points?.length > 0 && (
+                <div className="rounded-lg bg-destructive/10 border border-destructive/20 p-4 mb-4">
+                  <h4 className="text-sm font-bold text-destructive mb-2">⚠️ Pontos Críticos</h4>
+                  <ul className="space-y-1">
+                    {currentBriefing.briefing_data.critical_points.map((pt: string, i: number) => (
+                      <li key={i} className="text-sm text-muted-foreground flex items-start gap-2">
+                        <span className="text-destructive">→</span> {pt}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Positive Highlights */}
+              {currentBriefing.positive_highlights?.length > 0 && (
+                <div className="rounded-lg bg-green-500/10 border border-green-500/20 p-4 mb-4">
+                  <h4 className="text-sm font-bold text-green-400 mb-2">🏆 Pontos Positivos</h4>
+                  <ul className="space-y-1">
+                    {currentBriefing.positive_highlights.map((pt: string, i: number) => (
+                      <li key={i} className="text-sm text-muted-foreground flex items-start gap-2">
+                        <span className="text-green-400">→</span> {pt}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Suggested Questions */}
+              {currentBriefing.suggested_questions?.length > 0 && (
+                <div className="rounded-lg bg-primary/10 border border-primary/20 p-4 mb-4">
+                  <h4 className="text-sm font-bold text-primary mb-2">🎯 Perguntas Sugeridas</h4>
+                  <ol className="space-y-2">
+                    {currentBriefing.suggested_questions.map((q: string, i: number) => (
+                      <li key={i} className="text-sm text-foreground flex items-start gap-2">
+                        <span className="font-mono text-primary">{i + 1}.</span> {q}
+                      </li>
+                    ))}
+                  </ol>
+                </div>
+              )}
+
+              {/* Recommended Tone */}
+              <div className="rounded-lg bg-accent/10 border border-accent/20 p-4">
+                <h4 className="text-sm font-bold text-accent mb-2">🎤 Tom Recomendado</h4>
+                <p className="text-sm text-muted-foreground">{currentBriefing.recommended_tone}</p>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Plan Revision Modal */}
+      <AnimatePresence>
+        {selectedRevision && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-background/90 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto"
+            onClick={() => setSelectedRevision(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              onClick={e => e.stopPropagation()}
+              className="w-full max-w-2xl rounded-xl border border-border bg-card p-6 my-8 max-h-[90vh] overflow-y-auto"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-lg font-bold text-foreground">📝 Revisão de Plano</h3>
+                  <p className="text-xs text-muted-foreground font-mono">
+                    Baseado em 14 dias de comportamento real
+                  </p>
+                </div>
+                <button onClick={() => setSelectedRevision(null)} className="text-muted-foreground hover:text-foreground">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Analysis Summary */}
+              <div className="rounded-lg bg-secondary/30 border border-border p-4 mb-4">
+                <h4 className="text-sm font-bold text-foreground mb-2">📊 Resumo da Análise</h4>
+                <p className="text-sm text-muted-foreground">{selectedRevision.analysis_summary}</p>
+              </div>
+
+              {/* Proposed Changes */}
+              <div className="space-y-3 mb-4">
+                <h4 className="text-sm font-bold text-foreground">🔄 Mudanças Propostas</h4>
+                {selectedRevision.proposed_changes?.map((change: any, i: number) => (
+                  <div key={i} className="rounded-lg bg-card border border-border p-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs font-mono text-muted-foreground uppercase">{change.meal_type}</span>
+                      <span className={`text-xs font-mono px-2 py-0.5 rounded ${
+                        change.change_type === "substituir" ? "bg-accent/20 text-accent" :
+                        change.change_type === "simplificar" ? "bg-yellow-500/20 text-yellow-400" :
+                        "bg-primary/20 text-primary"
+                      }`}>
+                        {change.change_type}
+                      </span>
+                    </div>
+                    {change.original && (
+                      <p className="text-sm text-muted-foreground line-through mb-1">❌ {change.original}</p>
+                    )}
+                    <p className="text-sm text-foreground mb-2">✅ {change.proposed}</p>
+                    <p className="text-xs text-muted-foreground italic">{change.justification}</p>
+                    {change.impact && (
+                      <div className="flex gap-3 mt-2 text-[10px] font-mono">
+                        <span className={change.impact.kcal > 0 ? "text-red-400" : "text-green-400"}>
+                          {change.impact.kcal > 0 ? "+" : ""}{change.impact.kcal} kcal
+                        </span>
+                        <span className={change.impact.protein > 0 ? "text-green-400" : "text-red-400"}>
+                          {change.impact.protein > 0 ? "+" : ""}{change.impact.protein}g prot
+                        </span>
+                        <span className="text-muted-foreground">
+                          Adesão esperada: {change.impact.adherence_expected}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {/* Impact Summary */}
+              {selectedRevision.impact_summary && (
+                <div className="rounded-lg bg-primary/10 border border-primary/20 p-4 mb-4">
+                  <h4 className="text-sm font-bold text-primary mb-2">📈 Impacto Total Estimado</h4>
+                  <div className="flex gap-4 text-sm">
+                    <span>Calorias: {selectedRevision.impact_summary.total_kcal_change > 0 ? "+" : ""}{selectedRevision.impact_summary.total_kcal_change || 0} kcal</span>
+                    <span>Proteína: {selectedRevision.impact_summary.total_protein_change > 0 ? "+" : ""}{selectedRevision.impact_summary.total_protein_change || 0}g</span>
+                    <span>Adesão: {selectedRevision.impact_summary.expected_adherence_improvement || "N/A"}</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              <div className="flex gap-3">
+                <button
+                  onClick={() => approveRevision(selectedRevision.id)}
+                  className="flex-1 py-3 rounded-lg bg-green-500 text-white font-bold text-sm hover:bg-green-600 transition-colors flex items-center justify-center gap-2"
+                >
+                  <Check className="w-4 h-4" />
+                  Aprovar Revisão
+                </button>
+                <button
+                  onClick={() => rejectRevision(selectedRevision.id)}
+                  className="flex-1 py-3 rounded-lg bg-red-500/20 text-red-400 border border-red-500/30 font-bold text-sm hover:bg-red-500/30 transition-colors flex items-center justify-center gap-2"
+                >
+                  <XCircle className="w-4 h-4" />
+                  Rejeitar
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
+
+// Helper function to get week start
+function getWeekStart(date: Date): Date {
+  const d = new Date(date);
+  const day = d.getDay();
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+  return new Date(d.setDate(diff));
+}
 
 export default ProfessionalDashboard;
