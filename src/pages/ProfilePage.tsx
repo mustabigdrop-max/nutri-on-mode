@@ -162,6 +162,38 @@ const ProfilePage = () => {
           </motion.div>
         )}
 
+        {/* GLP-1 Pro Badge */}
+        <motion.button
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          onClick={() => navigate("/glp1")}
+          className={`w-full rounded-xl border p-4 mb-6 flex items-center gap-3 transition-all ${
+            hasGlp1
+              ? "border-[#00C896]/30 bg-[#00C896]/5 hover:border-[#00C896]/50"
+              : "border-border bg-card hover:border-primary/30"
+          }`}
+        >
+          <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+            hasGlp1 ? "bg-[#00C896]/20" : "bg-muted"
+          }`}>
+            <Syringe className={`w-5 h-5 ${hasGlp1 ? "text-[#00C896]" : "text-muted-foreground"}`} />
+          </div>
+          <div className="flex-1 text-left">
+            <div className="flex items-center gap-2">
+              <p className="text-sm font-bold text-foreground">Protocolo GLP-1</p>
+              {hasGlp1 && (
+                <span className="text-[9px] font-mono font-bold px-2 py-0.5 rounded-full bg-[#00C896]/20 text-[#00C896]">
+                  PRO ATIVO
+                </span>
+              )}
+            </div>
+            <p className="text-[10px] text-muted-foreground">
+              {hasGlp1 ? "Protocolo de proteção muscular ativo" : "Ative o protocolo especializado"}
+            </p>
+          </div>
+          <ChevronRight className="w-4 h-4 text-muted-foreground" />
+        </motion.button>
+
         {/* Badges grid */}
         <div className="mb-6">
           <h3 className="text-sm font-semibold text-foreground mb-3">🏆 Conquistas ({unlockedCount}/{badges.length})</h3>
