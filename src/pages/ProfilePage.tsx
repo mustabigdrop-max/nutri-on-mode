@@ -27,6 +27,7 @@ const ProfilePage = () => {
   const navigate = useNavigate();
   const [mealCount, setMealCount] = useState(0);
   const [weightCount, setWeightCount] = useState(0);
+  const { hasSubscription: hasGlp1 } = useGlp1();
 
   useEffect(() => {
     if (!profile) return;
