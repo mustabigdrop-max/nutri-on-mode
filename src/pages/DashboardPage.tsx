@@ -456,6 +456,9 @@ const DashboardPage = () => {
           </button>
         </motion.div>
 
+        {/* Weekly Sabotage Diagnosis */}
+        <WeeklySabotageCard />
+
         {/* Proactive Recipe Suggestion */}
         <ProactiveRecipeSuggestion
           proteinConsumed={todayTotals.protein}
