@@ -559,8 +559,15 @@ const MealLogPage = () => {
 
         {/* Input mode selector */}
         <div className="grid grid-cols-4 gap-2 mb-2">
+          <button
+            onClick={() => setInputMode("visual")}
+            className={`flex items-center justify-center gap-1 py-2 rounded-xl text-[10px] font-semibold transition-all ${
+              inputMode === "visual" ? "bg-primary text-primary-foreground shadow-lg" : "bg-card border border-border text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <span className="text-sm">👐</span> Sem Balança
+          </button>
           {([
-            { mode: "visual" as InputMode, icon: () => <span className="text-sm">👐</span>, label: "Sem Balança" },
             { mode: "manual" as InputMode, icon: Search, label: "Busca" },
             { mode: "ai-text" as InputMode, icon: Sparkles, label: "IA Texto" },
             { mode: "ai-photo" as InputMode, icon: Camera, label: "IA Foto" },
@@ -569,12 +576,10 @@ const MealLogPage = () => {
               key={m.mode}
               onClick={() => setInputMode(m.mode)}
               className={`flex items-center justify-center gap-1 py-2 rounded-xl text-[10px] font-semibold transition-all ${
-                inputMode === m.mode
-                  ? "bg-primary text-primary-foreground shadow-lg"
-                  : "bg-card border border-border text-muted-foreground hover:text-foreground"
+                inputMode === m.mode ? "bg-primary text-primary-foreground shadow-lg" : "bg-card border border-border text-muted-foreground hover:text-foreground"
               }`}
             >
-              {typeof m.icon === "function" ? <m.icon /> : <m.icon className="w-3.5 h-3.5" />}
+              <m.icon className="w-3.5 h-3.5" />
               {m.label}
             </button>
           ))}
