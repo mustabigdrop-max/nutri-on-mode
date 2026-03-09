@@ -35,6 +35,9 @@ export interface Profile {
   nivel_treino: string | null;
   orcamento_semanal: number | null;
   prefere_refeicoes: string | null;
+  trial_ends_at: string | null;
+  first_meal_registered: boolean | null;
+  activation_completed: boolean | null;
 }
 
 export const useProfile = () => {

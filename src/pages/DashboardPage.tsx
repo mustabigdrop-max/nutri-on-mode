@@ -6,6 +6,8 @@ import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
 import { useWaterLogs } from "@/hooks/useWaterLogs";
 import { usePlanGate } from "@/hooks/usePlanGate";
+import TrialBanner from "@/components/dashboard/TrialBanner";
+import ReengagementPopup from "@/components/dashboard/ReengagementPopup";
 import UpgradeModal from "@/components/landing/UpgradeModal";
 import DashboardGamificationCards from "@/components/dashboard/DashboardGamificationCards";
 import SmartAlerts from "@/components/dashboard/SmartAlerts";
@@ -200,7 +202,7 @@ const DashboardPage = () => {
   const [todayTotals, setTodayTotals] = useState({ kcal: 0, protein: 0, carbs: 0, fat: 0 });
   const [todayMood, setTodayMood] = useState<MoodType | null>(null);
   const { todayLog: waterLog, addWater } = useWaterLogs();
-  const { hasAccess, plan } = usePlanGate();
+  const { hasAccess, plan, isTrialActive, trialEndsAt } = usePlanGate();
   const [upgradeModal, setUpgradeModal] = useState<{ open: boolean; feature: string }>({ open: false, feature: "" });
   const waterMl = waterLog?.ml_total ?? 0;
   const waterGlasses = Math.round(waterMl / 250);
@@ -316,7 +318,11 @@ const DashboardPage = () => {
         onMoodSelected={setTodayMood}
       />
 
+      <ReengagementPopup hasMealsToday={todayMeals.length > 0} />
+
       <div className="relative z-10 max-w-lg mx-auto px-4 pt-4">
+        {/* Trial Banner */}
+        <TrialBanner trialEndsAt={trialEndsAt || null} plan={plan} />
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}
