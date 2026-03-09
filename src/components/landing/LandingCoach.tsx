@@ -56,7 +56,7 @@ const LandingCoach = () => {
             <span style={{ WebkitTextStroke: "1px rgba(255,255,255,.12)", color: "transparent" }}>DA ÁREA.</span>
           </h2>
           <p className="text-[#7070a0] text-[.95rem] leading-[1.7] mt-5 max-w-[460px] font-landing">
-            Um painel B2B completo para <strong className="text-[#f0edf8]">Nutrition Coaches, Nutricionistas, Personal Trainers e profissionais de saúde</strong> que acompanham pacientes e alunos. Gerencie até 30 pessoas, receba alertas automáticos, use IA para acelerar seus atendimentos e entregue resultados que falam por si.
+            Um painel B2B completo para <strong className="text-[#f0edf8]">Nutrition Coaches, Nutricionistas e profissionais de saúde</strong> que acompanham pacientes e alunos. Gerencie até 30 pessoas, receba alertas automáticos, use IA para acelerar seus atendimentos e entregue resultados que falam por si.
           </p>
           <div className="mt-8 flex flex-col gap-2.5">
             {["✦ Alertas automáticos de risco", "✦ IA sugere texto de feedback", "✦ Diário fotográfico do aluno", "✦ Relatório PDF em 1 clique", "✦ White label disponível"].map((f) => (
