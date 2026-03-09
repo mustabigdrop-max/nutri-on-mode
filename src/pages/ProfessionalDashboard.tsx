@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
@@ -6,13 +6,22 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   Users, Search, TrendingUp, ArrowLeft, Plus, BarChart3,
   Flame, Target, ChevronRight, UserPlus, X, Mail,
-  Calendar, Activity, FileText, AlertCircle
+  Calendar, Activity, FileText, AlertCircle, AlertTriangle, ShieldAlert, Zap
 } from "lucide-react";
 import { toast } from "sonner";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, BarChart, Bar
 } from "recharts";
+
+interface PatientAlert {
+  patientId: string;
+  patientName: string;
+  type: "plateau" | "deficit_agressivo" | "proteina_baixa" | "adesao_baixa" | "culpa_recorrente";
+  message: string;
+  priority: number;
+  icon: string;
+}
 
 interface PatientProfile {
   user_id: string;
@@ -61,6 +70,9 @@ const ProfessionalDashboard = () => {
   const [patientWeights, setPatientWeights] = useState<any[]>([]);
   const [weeklyStats, setWeeklyStats] = useState<any[]>([]);
 
+  // Patient alerts
+  const [patientAlerts, setPatientAlerts] = useState<PatientAlert[]>([]);
+
   useEffect(() => {
     if (!user) return;
     fetchPatients();
@@ -93,6 +105,137 @@ const ProfessionalDashboard = () => {
 
     setPatients(merged);
     setLoading(false);
+
+    // Generate alerts for all patients
+    generatePatientAlerts(merged, profiles || []);
+  };
+
+  const generatePatientAlerts = async (
+    patientLinks: typeof patients,
+    profiles: PatientProfile[]
+  ) => {
+    const alerts: PatientAlert[] = [];
+    const threeDaysAgo = new Date(Date.now() - 3 * 86400000).toISOString().split("T")[0];
+    const patientIds = patientLinks.map(l => l.patient_id);
+
+    if (patientIds.length === 0) return;
+
+    // Fetch recent meals and weights for all patients
+    const [mealsRes, weightsRes] = await Promise.all([
+      supabase
+        .from("meal_logs")
+        .select("user_id, meal_date, total_kcal, total_protein, emotion")
+        .in("user_id", patientIds)
+        .gte("meal_date", threeDaysAgo)
+        .order("meal_date", { ascending: false }),
+      supabase
+        .from("weight_logs")
+        .select("user_id, weight_kg, logged_at")
+        .in("user_id", patientIds)
+        .order("logged_at", { ascending: false })
+        .limit(500),
+    ]);
+
+    const allMeals = mealsRes.data || [];
+    const allWeights = weightsRes.data || [];
+
+    for (const prof of profiles) {
+      const name = prof.full_name?.split(" ")[0] || "Paciente";
+      const patientMeals = allMeals.filter((m: any) => m.user_id === prof.user_id);
+      const patientWeights = allWeights.filter((w: any) => w.user_id === prof.user_id);
+      const kcalTarget = prof.vet_kcal || 2000;
+      const proteinTarget = prof.protein_g || 150;
+
+      // Group meals by date
+      const byDate: Record<string, any[]> = {};
+      patientMeals.forEach((m: any) => {
+        if (!byDate[m.meal_date]) byDate[m.meal_date] = [];
+        byDate[m.meal_date].push(m);
+      });
+      const dates = Object.keys(byDate).sort().reverse().slice(0, 3);
+
+      // Check deficit agressivo (3 days < 1000 kcal)
+      if (dates.length === 3) {
+        const dailyKcals = dates.map(d => byDate[d].reduce((s: number, m: any) => s + (Number(m.total_kcal) || 0), 0));
+        if (dailyKcals.every(k => k > 0 && k < 1000)) {
+          const avg = Math.round(dailyKcals.reduce((a, b) => a + b, 0) / 3);
+          alerts.push({
+            patientId: prof.user_id,
+            patientName: name,
+            type: "deficit_agressivo",
+            message: `Consumo médio de ${avg} kcal nos últimos 3 dias (meta: ${kcalTarget} kcal). Risco de perda muscular e desaceleração metabólica.`,
+            priority: 1,
+            icon: "🔴",
+          });
+        }
+      }
+
+      // Check proteína baixa (3 days < 60% target)
+      if (dates.length >= 3) {
+        const dailyProt = dates.map(d => byDate[d].reduce((s: number, m: any) => s + (Number(m.total_protein) || 0), 0));
+        if (dailyProt.every(p => p > 0 && p < proteinTarget * 0.6)) {
+          const avg = Math.round(dailyProt.reduce((a, b) => a + b, 0) / 3);
+          alerts.push({
+            patientId: prof.user_id,
+            patientName: name,
+            type: "proteina_baixa",
+            message: `Proteína média de ${avg}g nos últimos 3 dias (meta: ${proteinTarget}g). Abaixo de 60% da meta.`,
+            priority: 1,
+            icon: "⚠️",
+          });
+        }
+      }
+
+      // Check plateau (weight stagnant)
+      if (patientWeights.length >= 5) {
+        const recent = patientWeights.slice(0, 10).map((w: any) => Number(w.weight_kg));
+        const min = Math.min(...recent);
+        const max = Math.max(...recent);
+        if (max - min < 0.3) {
+          alerts.push({
+            patientId: prof.user_id,
+            patientName: name,
+            type: "plateau",
+            message: `Peso estagnado há ${patientWeights.length}+ registros (variação < 300g). Considere revisar o plano alimentar.`,
+            priority: 2,
+            icon: "📊",
+          });
+        }
+      }
+
+      // Check culpa recorrente
+      const guiltyMeals = patientMeals.filter((m: any) => m.emotion === "culpado");
+      if (guiltyMeals.length >= 2) {
+        alerts.push({
+          patientId: prof.user_id,
+          patientName: name,
+          type: "culpa_recorrente",
+          message: `Registrou sentimento de culpa ${guiltyMeals.length}x nos últimos 3 dias. Considere entrar em contato para apoio emocional.`,
+          priority: 2,
+          icon: "💬",
+        });
+      }
+
+      // Check low adherence (fewer than 1 meal/day average)
+      if (dates.length > 0) {
+        const totalMeals = patientMeals.length;
+        const avgMealsPerDay = totalMeals / Math.max(dates.length, 1);
+        if (avgMealsPerDay < 1.5 && dates.length >= 2) {
+          alerts.push({
+            patientId: prof.user_id,
+            patientName: name,
+            type: "adesao_baixa",
+            message: `Média de ${avgMealsPerDay.toFixed(1)} refeições/dia nos últimos ${dates.length} dias. Adesão ao registro abaixo do esperado.`,
+            priority: 2,
+            icon: "📉",
+          });
+        }
+      }
+    }
+
+    // Sort by priority
+    alerts.sort((a, b) => a.priority - b.priority);
+    setPatientAlerts(alerts);
   };
 
   const handleAddPatient = async () => {
@@ -240,6 +383,57 @@ const ProfessionalDashboard = () => {
             Vincular
           </button>
         </div>
+
+        {/* Patient Alerts Panel */}
+        {patientAlerts.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-6"
+          >
+            <div className="flex items-center gap-2 mb-3">
+              <ShieldAlert className="w-4 h-4 text-destructive" />
+              <h2 className="text-sm font-bold text-foreground">Alertas de Pacientes</h2>
+              <span className="text-[10px] font-mono text-destructive bg-destructive/10 px-2 py-0.5 rounded-full">
+                {patientAlerts.length}
+              </span>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              {patientAlerts.map((alert, i) => (
+                <motion.div
+                  key={`${alert.patientId}-${alert.type}`}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.05 }}
+                  className={`rounded-xl border p-3 cursor-pointer transition-all hover:scale-[1.01] ${
+                    alert.priority === 1
+                      ? "border-destructive/30 bg-destructive/5"
+                      : "border-primary/20 bg-primary/5"
+                  }`}
+                  onClick={() => loadPatientDetail(alert.patientId)}
+                >
+                  <div className="flex items-start gap-2">
+                    <span className="text-lg flex-shrink-0">{alert.icon}</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-xs font-bold text-foreground">{alert.patientName}</span>
+                        <span className={`text-[9px] font-mono px-1.5 py-0.5 rounded ${
+                          alert.priority === 1
+                            ? "bg-destructive/20 text-destructive"
+                            : "bg-primary/20 text-primary"
+                        }`}>
+                          {alert.priority === 1 ? "URGENTE" : "ATENÇÃO"}
+                        </span>
+                      </div>
+                      <p className="text-xs text-muted-foreground leading-relaxed">{alert.message}</p>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0 mt-1" />
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Patient list */}
