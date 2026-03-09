@@ -41,6 +41,7 @@ import FoodSimulatorPage from "./pages/FoodSimulatorPage";
 import MonthlyReportPage from "./pages/MonthlyReportPage";
 import Glp1Page from "./pages/Glp1Page";
 import NutriSyncPage from "./pages/NutriSyncPage";
+import WorkoutHistoryPage from "./pages/WorkoutHistoryPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -97,6 +98,7 @@ const App = () => (
             />
             <Route path="/glp1" element={<ProtectedRoute><Glp1Page /></ProtectedRoute>} />
             <Route path="/nutrisync" element={<ProtectedRoute><NutriSyncPage /></ProtectedRoute>} />
+            <Route path="/workout-history" element={<ProtectedRoute><WorkoutHistoryPage /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
