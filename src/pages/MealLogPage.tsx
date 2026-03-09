@@ -77,7 +77,7 @@ interface SelectedFood {
   quantity: number;
 }
 
-type InputMode = "manual" | "ai-text" | "ai-photo" | "voice" | "barcode" | "quick";
+type InputMode = "manual" | "ai-text" | "ai-photo" | "voice" | "barcode" | "quick" | "visual";
 
 interface SavedMeal {
   meal_type: string;
