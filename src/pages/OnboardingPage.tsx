@@ -103,6 +103,7 @@ const OnboardingPage = () => {
     strategies?: string[];
   } | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [showGlp1Upsell, setShowGlp1Upsell] = useState(false);
   const { updateProfile } = useProfile();
   const navigate = useNavigate();
   const scrollRef = useRef<HTMLDivElement>(null);
