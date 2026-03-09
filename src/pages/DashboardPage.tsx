@@ -6,6 +6,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
 import { useWaterLogs } from "@/hooks/useWaterLogs";
 import DashboardGamificationCards from "@/components/dashboard/DashboardGamificationCards";
+import SmartAlerts from "@/components/dashboard/SmartAlerts";
 import {
   ObjectiveBadge, getRingLabel, getScoreLabel,
   getPredictiveAlert, getHeaderSubtitle, getChildDashboardGreeting,
