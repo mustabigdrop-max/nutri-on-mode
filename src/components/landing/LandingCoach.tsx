@@ -1,10 +1,43 @@
 import { useRef } from "react";
 import { motion, useInView } from "framer-motion";
 
-const students = [
-  { name: "Marcos Silva", status: "Cutting · Semana 4 · −2.8kg · Coach", dot: "bg-[#00c896]" },
-  { name: "Juliana Costa", status: "Emagrecimento · Semana 7 · −1.1kg · Nutricionista", dot: "bg-[#ffcc00]" },
-  { name: "Rafael Moura", status: "Hipertrofia · Semana 2 · +0.9kg · Personal", dot: "bg-[#ff2d55]" },
+const patients = [
+  {
+    name: "Marcos Silva",
+    age: 34,
+    program: "Cutting",
+    week: "Semana 4 de 12",
+    delta: "−2.8kg",
+    goal: "Meta: −8kg",
+    adherence: 87,
+    alert: "⚠ Abaixo da meta semanal",
+    alertType: "warning",
+    dot: "bg-[#ffcc00]",
+  },
+  {
+    name: "Juliana Costa",
+    age: 29,
+    program: "Emagrecimento",
+    week: "Semana 7 de 16",
+    delta: "−4.1kg",
+    goal: "Meta: −10kg",
+    adherence: 62,
+    alert: "⚠ Registros irregulares esta semana",
+    alertType: "warning",
+    dot: "bg-[#ff2d55]",
+  },
+  {
+    name: "Rafael Moura",
+    age: 27,
+    program: "Hipertrofia",
+    week: "Semana 2 de 20",
+    delta: "+0.9kg",
+    goal: "Meta: +6kg",
+    adherence: 91,
+    alert: "✓ Evoluindo dentro do esperado",
+    alertType: "success",
+    dot: "bg-[#00c896]",
+  },
 ];
 
 const LandingCoach = () => {
@@ -36,26 +69,45 @@ const LandingCoach = () => {
           <div className="bg-[#0d0d1f] border border-[#14142a] rounded-2xl p-6 md:p-8 relative overflow-hidden">
             <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse at 30% 20%, rgba(232,160,32,.06), transparent 60%)" }} />
             <div className="relative">
-              <div className="flex justify-between items-center mb-6">
-                <div className="font-heading text-[1rem] tracking-[.1em] text-primary">PAINEL PROFISSIONAL</div>
-                <div className="font-mono text-[.6rem] text-[#00c896] flex items-center gap-1.5">
-                  <span className="w-[5px] h-[5px] bg-[#00c896] rounded-full animate-pulse" />
-                  3 alertas ativos
-                </div>
+              {/* Header */}
+              <div className="mb-1">
+                <div className="font-heading text-[1.1rem] tracking-[.08em] text-primary">PAINEL DO PROFISSIONAL</div>
+                <div className="w-full h-px bg-primary/20 mt-2 mb-3" />
               </div>
-              {students.map((s) => (
-                <div key={s.name} className="flex items-center gap-3.5 p-3.5 bg-white/[.02] border border-[#14142a] rounded-lg mb-2.5 cursor-pointer hover:bg-primary/[.03] transition-colors">
-                  <div className="w-9 h-9 rounded-full bg-[#2a2a4a] flex items-center justify-center text-[.8rem]">👤</div>
-                  <div className="flex-1">
-                    <div className="text-[.82rem] font-bold text-[#f0edf8] font-landing">{s.name}</div>
-                    <div className="font-mono text-[.6rem] text-[#50507a]">{s.status}</div>
+
+              {/* Stats bar */}
+              <div className="flex items-center gap-3 mb-5 font-mono text-[.6rem] text-[#9090b8]">
+                <span className="flex items-center gap-1.5">
+                  <span className="w-[5px] h-[5px] bg-[#ff2d55] rounded-full animate-pulse" />
+                  5 alertas ativos
+                </span>
+                <span className="text-[#2a2a4a]">•</span>
+                <span>28 pacientes</span>
+                <span className="text-[#2a2a4a]">•</span>
+                <span>Hoje, 08h47</span>
+              </div>
+
+              {/* Patient cards */}
+              {patients.map((p) => (
+                <div key={p.name} className="p-4 bg-white/[.02] border border-[#14142a] rounded-lg mb-3 cursor-pointer hover:bg-primary/[.03] transition-colors">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className={`w-[8px] h-[8px] rounded-full ${p.dot} shrink-0`} />
+                    <div className="text-[.85rem] font-bold text-[#f0edf8] font-landing">
+                      {p.name}, {p.age} anos
+                    </div>
                   </div>
-                  <div className={`w-[7px] h-[7px] rounded-full ${s.dot}`} />
+                  <div className="pl-5 space-y-1">
+                    <div className="font-mono text-[.6rem] text-[#7070a0]">
+                      {p.program} &nbsp;•&nbsp; {p.week} &nbsp;•&nbsp; <span className="text-[#f0edf8]">{p.delta}</span> &nbsp;•&nbsp; {p.goal}
+                    </div>
+                    <div className="font-mono text-[.6rem] flex items-center gap-2">
+                      <span className="text-[#9090b8]">Aderência: <span className={`font-bold ${p.adherence >= 80 ? "text-[#00c896]" : p.adherence >= 60 ? "text-[#ffcc00]" : "text-[#ff2d55]"}`}>{p.adherence}%</span></span>
+                      <span className="text-[#2a2a4a]">•</span>
+                      <span className={p.alertType === "success" ? "text-[#00c896]" : "text-[#ff8080]"}>{p.alert}</span>
+                    </div>
+                  </div>
                 </div>
               ))}
-              <div className="mt-4 p-3 bg-[#ff2d55]/[.06] border border-[#ff2d55]/[.15] rounded-md font-mono text-[.65rem] text-[#ff8080] flex items-center gap-2">
-                ⚠ Rafael não registra refeições há 2 dias — IA gerou sugestão de mensagem
-              </div>
             </div>
           </div>
         </motion.div>
