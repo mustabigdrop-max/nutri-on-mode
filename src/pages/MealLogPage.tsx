@@ -848,6 +848,22 @@ const MealLogPage = () => {
           </div>
         )}
 
+        {/* 7. Visual / Sem Balança */}
+        {inputMode === "visual" && (
+          <div className="mb-4">
+            <VisualPortionSelector
+              onAddFoods={(foods) => {
+                const newFoods = foods.map(f => ({
+                  food: { id: f.id, name: f.name, portion: f.portion, portionGrams: f.portionGrams, kcal: f.kcal, protein: f.protein, carbs: f.carbs, fat: f.fat, category: f.category },
+                  quantity: 1,
+                }));
+                setSelectedFoods(prev => [...prev, ...newFoods]);
+                toast.success(`${foods.length} item(ns) adicionado(s)! 👐`);
+              }}
+            />
+          </div>
+        )
+
         {/* Hunger & Satiety */}
         {selectedFoods.length > 0 && (
           <div className="space-y-4 mb-6">
