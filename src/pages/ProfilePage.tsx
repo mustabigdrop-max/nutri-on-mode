@@ -11,6 +11,7 @@ import {
   BarChart3, Utensils, Plus, MessageSquare, User, ChevronRight, Syringe
 } from "lucide-react";
 import { useGlp1 } from "@/hooks/useGlp1";
+import { useWorkoutSchedule } from "@/hooks/useWorkoutSchedule";
 
 interface Badge {
   id: string;
@@ -28,6 +29,8 @@ const ProfilePage = () => {
   const [mealCount, setMealCount] = useState(0);
   const [weightCount, setWeightCount] = useState(0);
   const { hasSubscription: hasGlp1 } = useGlp1();
+  const { schedule } = useWorkoutSchedule();
+  const hasNutriSync = schedule.some(s => s.workout_type !== "rest");
 
   useEffect(() => {
     if (!profile) return;
@@ -189,6 +192,38 @@ const ProfilePage = () => {
             </div>
             <p className="text-[10px] text-muted-foreground">
               {hasGlp1 ? "Protocolo de proteção muscular ativo" : "Ative o protocolo especializado"}
+            </p>
+          </div>
+          <ChevronRight className="w-4 h-4 text-muted-foreground" />
+        </motion.button>
+
+        {/* NutriSync Badge */}
+        <motion.button
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          onClick={() => navigate("/nutrisync")}
+          className={`w-full rounded-xl border p-4 mb-6 flex items-center gap-3 transition-all ${
+            hasNutriSync
+              ? "border-primary/30 bg-primary/5 hover:border-primary/50"
+              : "border-border bg-card hover:border-primary/30"
+          }`}
+        >
+          <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+            hasNutriSync ? "bg-primary/20" : "bg-muted"
+          }`}>
+            <Zap className={`w-5 h-5 ${hasNutriSync ? "text-primary" : "text-muted-foreground"}`} />
+          </div>
+          <div className="flex-1 text-left">
+            <div className="flex items-center gap-2">
+              <p className="text-sm font-bold text-foreground">NutriSync</p>
+              {hasNutriSync && (
+                <span className="text-[9px] font-mono font-bold px-2 py-0.5 rounded-full bg-primary/20 text-primary">
+                  ATIVO
+                </span>
+              )}
+            </div>
+            <p className="text-[10px] text-muted-foreground">
+              {hasNutriSync ? "Nutrição sincronizada com seu treino" : "Configure sua rotina de treino"}
             </p>
           </div>
           <ChevronRight className="w-4 h-4 text-muted-foreground" />
