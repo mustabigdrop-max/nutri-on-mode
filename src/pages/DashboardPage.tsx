@@ -757,8 +757,11 @@ const DashboardPage = () => {
             <span className="text-[10px] font-mono text-primary uppercase tracking-wider">Protocolo ativo</span>
           </div>
           <p className="text-xs font-mono text-foreground">
-            {profile.vet_kcal} kcal · {profile.protein_g}g P · {profile.carbs_g}g C · {profile.fat_g}g G
+            {kcalTarget} kcal · {proteinTarget}g P · {carbsTarget}g C · {fatTarget}g G
           </p>
+          {kcalDiff > 0 && (
+            <p className="text-[10px] font-mono text-primary mt-0.5">⚡ NutriSync: +{kcalDiff} kcal ajustado</p>
+          )}
         </motion.div>
       </div>
 
