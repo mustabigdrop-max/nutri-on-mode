@@ -2,25 +2,29 @@ import { useState, useRef } from "react";
 import BottomNav from "@/components/BottomNav";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Camera, Upload, Loader2, Share2, Sparkles, SlidersHorizontal } from "lucide-react";
+import { ArrowLeft, Camera, Upload, Loader2, Share2, Sparkles, SlidersHorizontal, CalendarDays } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 import { useProgressPhotos, ProgressPhoto } from "@/hooks/useProgressPhotos";
+import { useMonthlyCard } from "@/hooks/useMonthlyCard";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import PhotoTimeline from "@/components/transformation/PhotoTimeline";
 import BeforeAfterSlider from "@/components/transformation/BeforeAfterSlider";
 import TransformationShareCard from "@/components/transformation/TransformationShareCard";
+import MonthlyTransformationCard from "@/components/transformation/MonthlyTransformationCard";
 
 const TransformationPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { profile } = useProfile();
   const { photos, loading, uploading, uploadPhoto, deletePhoto } = useProgressPhotos();
+  const { cardData, loading: cardLoading, generateCard, setCardData } = useMonthlyCard();
 
   const [selectedPhotos, setSelectedPhotos] = useState<ProgressPhoto[]>([]);
   const [showSlider, setShowSlider] = useState(false);
   const [showShare, setShowShare] = useState(false);
+  const [showMonthlyCard, setShowMonthlyCard] = useState(false);
   const [uploadWeight, setUploadWeight] = useState("");
   const [showUploadForm, setShowUploadForm] = useState(false);
   const [aiAnalysis, setAiAnalysis] = useState("");
@@ -156,6 +160,19 @@ const TransformationPage = () => {
             {uploading ? "Enviando..." : "Nova Foto"}
           </button>
           <input ref={fileInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleFileSelect} />
+
+          <button
+            onClick={async () => {
+              const data = await generateCard(photos);
+              if (data) setShowMonthlyCard(true);
+              else toast.error("Não foi possível gerar o card");
+            }}
+            disabled={cardLoading}
+            className="px-4 py-3 rounded-xl bg-card border border-border text-xs font-bold text-foreground flex items-center gap-1 disabled:opacity-50"
+          >
+            {cardLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CalendarDays className="w-3.5 h-3.5" />}
+            Card Mensal
+          </button>
 
           {selectedPhotos.length === 2 && (
             <>
@@ -294,6 +311,16 @@ const TransformationPage = () => {
             onClose={() => setShowShare(false)}
             userName={profile?.full_name || ""}
             streakDays={profile?.streak_days || 0}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Monthly transformation card */}
+      <AnimatePresence>
+        {showMonthlyCard && cardData && (
+          <MonthlyTransformationCard
+            data={cardData}
+            onClose={() => { setShowMonthlyCard(false); setCardData(null); }}
           />
         )}
       </AnimatePresence>
