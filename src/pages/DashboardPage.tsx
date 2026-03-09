@@ -204,6 +204,7 @@ const DashboardPage = () => {
   const [todayMood, setTodayMood] = useState<MoodType | null>(null);
   const { todayLog: waterLog, addWater } = useWaterLogs();
   const { hasAccess, plan, isTrialActive, trialEndsAt } = usePlanGate();
+  const { getTodayWorkout, todayLog: workoutLog } = useWorkoutSchedule();
   const [upgradeModal, setUpgradeModal] = useState<{ open: boolean; feature: string }>({ open: false, feature: "" });
   const waterMl = waterLog?.ml_total ?? 0;
   const waterGlasses = Math.round(waterMl / 250);
@@ -255,10 +256,24 @@ const DashboardPage = () => {
   }, [user]);
 
   const objetivo = profile?.objetivo_principal || "saude_geral";
-  const kcalTarget = profile?.vet_kcal || 2000;
-  const proteinTarget = profile?.protein_g || 150;
-  const carbsTarget = profile?.carbs_g || 250;
-  const fatTarget = profile?.fat_g || 65;
+  const weightKg = profile?.weight_kg || 70;
+  const baseKcal = profile?.vet_kcal || 2000;
+  const baseProtein = profile?.protein_g || 150;
+  const baseCarbs = profile?.carbs_g || 250;
+  const baseFat = profile?.fat_g || 65;
+
+  // NutriSync: adjust targets based on today's workout
+  const todayWorkout = getTodayWorkout();
+  const workoutAdj = useMemo(() => {
+    const wType = (todayWorkout?.workout_type || "rest") as WorkoutType;
+    return getWorkoutAdjustment(wType, weightKg);
+  }, [todayWorkout, weightKg]);
+
+  const kcalTarget = Math.round(baseKcal * workoutAdj.kcalMultiplier);
+  const proteinTarget = Math.round(workoutAdj.proteinPerKg * weightKg);
+  const carbsTarget = Math.round(baseCarbs * workoutAdj.carbsMultiplier);
+  const fatTarget = Math.round(baseFat * workoutAdj.fatMultiplier);
+  const kcalDiff = kcalTarget - baseKcal;
 
   const kcalPercent = (todayTotals.kcal / kcalTarget) * 100;
   const protPercent = Math.min((todayTotals.protein / proteinTarget) * 100, 100);
