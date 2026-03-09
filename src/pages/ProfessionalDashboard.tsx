@@ -858,7 +858,7 @@ const ProfessionalDashboard = () => {
                               fontSize: 12,
                             }}
                           />
-                          <Bar dataKey="kcal" fill="hsl(43 100% 50%)" radius={[4, 4, 0, 0]} name="Kcal" />
+                          <Bar dataKey="kcal" fill="hsl(38 80% 52%)" radius={[4, 4, 0, 0]} name="Kcal" />
                         </BarChart>
                       </ResponsiveContainer>
                     )}
