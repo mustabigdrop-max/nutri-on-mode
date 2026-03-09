@@ -538,6 +538,24 @@ const MealLogPage = () => {
           )}
         </AnimatePresence>
 
+        {/* Quick access: Comi Fora + Refeição Livre */}
+        <div className="grid grid-cols-2 gap-2 mb-4">
+          <button
+            onClick={() => setSpecialFlow("eat-out")}
+            className="py-3 rounded-xl border border-border bg-card hover:border-primary/40 hover:bg-primary/5 transition-all flex items-center justify-center gap-2"
+          >
+            <UtensilsCrossed className="w-4 h-4 text-primary" />
+            <span className="text-sm font-semibold text-foreground">🍴 Comi fora</span>
+          </button>
+          <button
+            onClick={() => setSpecialFlow("free-meal")}
+            className="py-3 rounded-xl border border-border bg-card hover:border-primary/40 hover:bg-primary/5 transition-all flex items-center justify-center gap-2"
+          >
+            <PartyPopper className="w-4 h-4 text-primary" />
+            <span className="text-sm font-semibold text-foreground">🎉 Refeição Livre</span>
+          </button>
+        </div>
+
         {/* Input mode selector — 2 rows */}
         <div className="grid grid-cols-3 gap-2 mb-4">
           {([
