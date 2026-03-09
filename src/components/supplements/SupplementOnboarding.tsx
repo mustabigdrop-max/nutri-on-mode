@@ -50,10 +50,12 @@ const SupplementOnboarding = ({ onComplete, generating }: Props) => {
 
   const toggleItem = (list: string[], setList: (v: string[]) => void, item: string) => {
     if (item === "Nenhuma") { setList(["Nenhuma"]); return; }
-    setList(prev => {
-      const filtered = prev.filter(i => i !== "Nenhuma");
-      return filtered.includes(item) ? filtered.filter(i => i !== item) : [...filtered, item];
-    });
+    const filtered = list.filter(i => i !== "Nenhuma");
+    if (filtered.includes(item)) {
+      setList(filtered.filter(i => i !== item));
+    } else {
+      setList([...filtered, item]);
+    }
   };
 
   const canNext = step === 0 ? !!goal : step === 1 ? !!budget : true;
