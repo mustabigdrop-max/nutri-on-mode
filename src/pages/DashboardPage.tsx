@@ -740,6 +740,7 @@ const DashboardPage = () => {
                 { icon: Pill, label: "Protocolo GLP-1", desc: "Proteção muscular com caneta", path: "/glp1", emoji: "💉" },
                 { icon: Zap, label: "NutriSync", desc: "Treino + nutrição em tempo real", path: "/nutrisync", emoji: "⚡" },
                 { icon: Dumbbell, label: "Histórico Treinos", desc: "Consistência & calorias ajustadas", path: "/workout-history", emoji: "🏋️" },
+                { icon: Zap, label: "Performance Pro", desc: "Nutrição para atletas avançados", path: "/performance-pro", emoji: "⚡" },
               ];
               return items.map((item, i) => {
                 const isLocked = GATED_PATHS.includes(item.path) && !isOnPlus;
