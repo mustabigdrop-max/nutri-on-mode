@@ -862,7 +862,7 @@ const MealLogPage = () => {
               }}
             />
           </div>
-        )
+        )}
 
         {/* Hunger & Satiety */}
         {selectedFoods.length > 0 && (
