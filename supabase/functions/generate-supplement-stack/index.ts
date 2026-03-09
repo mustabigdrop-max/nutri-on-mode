@@ -22,9 +22,9 @@ serve(async (req) => {
     const { data: { user }, error: authError } = await anonClient.auth.getUser(authHeader.replace("Bearer ", ""));
     if (authError || !user) throw new Error("Unauthorized");
 
-    const { profile } = await req.json();
+    const { profile, goal, budget, currentSupplements, healthConditions, dietaryRestrictions } = await req.json();
 
-    // Fetch latest analyzed blood test
+    // Fetch latest blood test
     const { data: bloodTests } = await supabase
       .from("blood_tests")
       .select("ai_analysis, test_date")
@@ -34,42 +34,76 @@ serve(async (req) => {
       .limit(1);
 
     const bloodAnalysis = bloodTests?.[0]?.ai_analysis || null;
-    const bloodDate = bloodTests?.[0]?.test_date || null;
+
+    // Fetch workout schedule
+    const { data: workouts } = await supabase
+      .from("workout_schedule")
+      .select("workout_time, workout_type, day_of_week")
+      .eq("user_id", user.id);
+
+    // Fetch circadian profile
+    const { data: circadian } = await supabase
+      .from("circadian_profiles")
+      .select("wake_time, sleep_time, chronotype")
+      .eq("user_id", user.id)
+      .limit(1);
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
     const systemPrompt = `Você é um nutricionista esportivo brasileiro expert em suplementação baseada em evidências.
 
-Gere um stack de suplementação PERSONALIZADO usando tool calling. Considere:
-- Objetivo do paciente
-- Dados corporais (peso, altura, nível de atividade)
-- Esporte praticado
-- Condições de saúde e restrições alimentares
-- Uso de GLP-1 (se aplicável, ajustar para absorção)
-- Resultados de exames de sangue (se disponíveis) — priorize corrigir deficiências
+Gere um stack de suplementação PERSONALIZADO usando tool calling.
 
-Regras:
-1. Máximo 8 suplementos no stack
-2. Priorize essenciais primeiro, depois recomendados, depois opcionais
-3. Se houver deficiências no exame de sangue, INCLUA suplementos específicos para corrigi-las
-4. Inclua evidências científicas reais (autor, ano)
-5. Alertas de interações se houver condições de saúde
-6. Horários otimizados (manhã/tarde/noite/qualquer hora)`;
+REGRAS DE ORÇAMENTO:
+- Essencial (R$100-200): máximo 4 suplementos, priorize custo-benefício comprovado
+- Intermediário (R$200-500): 5-6 suplementos, stack completo otimizado
+- Avançado (R$500+): até 8 suplementos, máxima personalização
 
-    const userPrompt = `Perfil do paciente:
-- Objetivo: ${profile?.goal || "manutenção"}
-- Peso: ${profile?.weight || "não informado"} kg
-- Nível de atividade: ${profile?.activity || "moderado"}
-- Esporte: ${profile?.sport || "nenhum"}
-- Condições de saúde: ${(profile?.conditions || []).join(", ") || "nenhuma"}
-- Restrições alimentares: ${(profile?.restrictions || []).join(", ") || "nenhuma"}
-- Usa GLP-1: ${profile?.uses_glp1 ? "Sim" : "Não"}
+REGRAS DE TIMING:
+- Creatina: qualquer horário, recomendado pós-treino com carb
+- Whey: pós-treino (0-30min) ou manhã após jejum
+- Cafeína: 30-45min pré-treino, NUNCA após 15h
+- Beta-alanina: 30min pré-treino
+- Magnésio: 30-60min antes de dormir
+- Ômega-3: com refeição principal (manhã + noite)
+- L-Carnitina: 30min antes do treino/cardio
+- Vitamina D3: manhã com refeição gordurosa
+- Probiótico: em jejum pela manhã
+- Ashwagandha: noite para sono ou manhã para cortisol
 
-${bloodAnalysis ? `Exame de sangue (${bloodDate}):
-${JSON.stringify(bloodAnalysis, null, 2)}` : "Sem exame de sangue disponível."}
+ALERTAS DE INTERAÇÃO (verificar obrigatoriamente):
+- Cafeína + ansiedade/hipertensão → reduzir dose ou remover
+- Ferro + cálcio → separar horários
+- Whey + intolerância à lactose → sugerir isolado/vegano
+- Vitamina K2 + anticoagulante → alertar médico
+- Berberina + metformina/diabetes → alertar médico
+- Termogênico + cardiopatia → NÃO recomendar
 
-Gere o stack personalizado.`;
+REGRAS POR OBJETIVO:
+Emagrecimento: Whey (preservar massa) > Cafeína (termogênico) > Ômega-3 > Vit D3+K2
+Hipertrofia: Whey > Creatina 5g > Cafeína > Magnésio
+Saúde Geral: Multi + Ômega-3 + Vit D3 + Magnésio + Probiótico
+Performance: Creatina > Cafeína > Beta-alanina > Citrulina
+
+Inclua evidências científicas reais (autor, ano).
+Estime custo mensal de cada suplemento.`;
+
+    const userPrompt = `Objetivo: ${goal || profile?.goal || "saude_geral"}
+Orçamento: ${budget || "intermediario"}
+Peso: ${profile?.weight_kg || "não informado"} kg
+Nível atividade: ${profile?.activity_level || "moderado"}
+Esporte: ${profile?.sport || "nenhum"}
+Condições: ${(healthConditions || profile?.health_conditions || []).join(", ") || "nenhuma"}
+Restrições: ${(dietaryRestrictions || profile?.dietary_restrictions || []).join(", ") || "nenhuma"}
+Usa GLP-1: ${profile?.uses_glp1 ? "Sim" : "Não"}
+Suplementos atuais: ${(currentSupplements || []).join(", ") || "nenhum"}
+
+${workouts?.length ? `Treinos: ${workouts.map((w: any) => `Dia ${w.day_of_week}: ${w.workout_type} às ${w.workout_time}`).join(", ")}` : ""}
+${circadian?.[0] ? `Cronotipo: ${circadian[0].chronotype}, Acorda: ${circadian[0].wake_time}, Dorme: ${circadian[0].sleep_time}` : ""}
+${bloodAnalysis ? `Exame de sangue: ${JSON.stringify(bloodAnalysis)}` : "Sem exame disponível."}
+
+Gere o stack personalizado com custos.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -88,7 +122,7 @@ Gere o stack personalizado.`;
             type: "function",
             function: {
               name: "generate_stack",
-              description: "Return a personalized supplement stack",
+              description: "Return a personalized supplement stack with costs",
               parameters: {
                 type: "object",
                 properties: {
@@ -97,14 +131,15 @@ Gere o stack personalizado.`;
                     items: {
                       type: "object",
                       properties: {
-                        name: { type: "string", description: "Nome do suplemento" },
-                        dose: { type: "string", description: "Dosagem recomendada" },
-                        timing: { type: "string", description: "Quando tomar" },
+                        name: { type: "string" },
+                        dose: { type: "string" },
+                        timing: { type: "string" },
                         timingIcon: { type: "string", enum: ["morning", "afternoon", "night", "anytime"] },
-                        reason: { type: "string", description: "Por que esse suplemento" },
-                        evidence: { type: "string", description: "Evidência científica (autor, ano)" },
+                        reason: { type: "string" },
+                        evidence: { type: "string" },
                         priority: { type: "string", enum: ["essential", "recommended", "optional"] },
-                        warnings: { type: "string", description: "Avisos ou contraindicações (opcional)" },
+                        warnings: { type: "string", description: "Avisos ou contraindicações" },
+                        costPerMonth: { type: "number", description: "Custo estimado R$/mês" },
                       },
                       required: ["name", "dose", "timing", "timingIcon", "reason", "evidence", "priority"],
                       additionalProperties: false,
@@ -112,7 +147,6 @@ Gere o stack personalizado.`;
                   },
                   blood_based_additions: {
                     type: "array",
-                    description: "Suplementos adicionados especificamente por deficiências no exame",
                     items: {
                       type: "object",
                       properties: {
@@ -124,9 +158,16 @@ Gere o stack personalizado.`;
                       additionalProperties: false,
                     },
                   },
-                  summary: { type: "string", description: "Resumo de 1-2 frases sobre o stack" },
+                  interaction_warnings: {
+                    type: "array",
+                    items: { type: "string" },
+                    description: "Alertas de interação detectados",
+                  },
+                  total_monthly_cost: { type: "number", description: "Custo total estimado R$/mês" },
+                  budget_message: { type: "string", description: "Mensagem de otimização de orçamento" },
+                  summary: { type: "string" },
                 },
-                required: ["supplements", "blood_based_additions", "summary"],
+                required: ["supplements", "blood_based_additions", "interaction_warnings", "total_monthly_cost", "budget_message", "summary"],
                 additionalProperties: false,
               },
             },
@@ -154,21 +195,23 @@ Gere o stack personalizado.`;
 
     const aiData = await response.json();
     const toolCall = aiData.choices?.[0]?.message?.tool_calls?.[0];
-    
+
     let result;
     if (toolCall?.function?.arguments) {
       result = JSON.parse(toolCall.function.arguments);
     } else {
-      // Fallback: parse from content
       const content = aiData.choices?.[0]?.message?.content || "";
       const jsonMatch = content.match(/\{[\s\S]*\}/);
-      result = jsonMatch ? JSON.parse(jsonMatch[0]) : { supplements: [], blood_based_additions: [], summary: "Não foi possível gerar." };
+      result = jsonMatch ? JSON.parse(jsonMatch[0]) : { supplements: [], blood_based_additions: [], interaction_warnings: [], total_monthly_cost: 0, budget_message: "", summary: "" };
     }
 
     return new Response(JSON.stringify({
       success: true,
       supplements: result.supplements || [],
       blood_based_additions: result.blood_based_additions || [],
+      interaction_warnings: result.interaction_warnings || [],
+      total_monthly_cost: result.total_monthly_cost || 0,
+      budget_message: result.budget_message || "",
       summary: result.summary || "",
       has_blood_data: !!bloodAnalysis,
     }), {
