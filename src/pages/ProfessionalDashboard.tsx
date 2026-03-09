@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
@@ -6,13 +6,22 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   Users, Search, TrendingUp, ArrowLeft, Plus, BarChart3,
   Flame, Target, ChevronRight, UserPlus, X, Mail,
-  Calendar, Activity, FileText, AlertCircle
+  Calendar, Activity, FileText, AlertCircle, AlertTriangle, ShieldAlert, Zap
 } from "lucide-react";
 import { toast } from "sonner";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, BarChart, Bar
 } from "recharts";
+
+interface PatientAlert {
+  patientId: string;
+  patientName: string;
+  type: "plateau" | "deficit_agressivo" | "proteina_baixa" | "adesao_baixa" | "culpa_recorrente";
+  message: string;
+  priority: number;
+  icon: string;
+}
 
 interface PatientProfile {
   user_id: string;
