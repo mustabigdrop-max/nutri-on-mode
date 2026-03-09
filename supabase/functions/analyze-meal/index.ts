@@ -9,7 +9,7 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { mode, query, imageBase64, profileContext } = await req.json();
+    const { mode, query, imageBase64, photoObservation, profileContext } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
@@ -52,7 +52,7 @@ Regras:
         {
           role: "user",
           content: [
-            { type: "text", text: "Analise esta foto de refeição com macros e micronutrientes:" },
+            { type: "text", text: `Analise esta foto de refeição com macros e micronutrientes.${photoObservation ? `\n\nOBSERVAÇÃO IMPORTANTE DO USUÁRIO: "${photoObservation}". Use esta informação para corrigir a identificação dos alimentos.` : ""}` },
             { type: "image_url", image_url: { url: `data:image/jpeg;base64,${imageBase64}` } }
           ]
         }
