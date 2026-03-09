@@ -148,6 +148,12 @@ const LandingPlans = () => {
             >
               {plan.cta}
             </a>
+            <button
+              onClick={() => navigate("/auth?trial=true")}
+              className="block w-full text-center py-2.5 mt-2 rounded font-mono text-[.65rem] tracking-[.08em] text-muted-foreground hover:text-primary transition-colors"
+            >
+              🎁 Teste 7 dias grátis
+            </button>
           </div>
         ))}
       </div>
