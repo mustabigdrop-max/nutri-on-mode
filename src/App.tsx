@@ -246,6 +246,21 @@ const App = () => (
                   <ProtocolEnginePage />
                 </ProtectedRoute>
               }
+            <Route
+              path="/protocols"
+              element={
+                <ProtectedRoute>
+                  <ProtocolEnginePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/recipes"
+              element={
+                <ProtectedRoute>
+                  <RecipesPage />
+                </ProtectedRoute>
+              }
             />
             <Route path="*" element={<NotFound />} />
           </Routes>
