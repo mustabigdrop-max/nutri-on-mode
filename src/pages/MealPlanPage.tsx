@@ -556,9 +556,9 @@ const MealPlanPage = () => {
                         </p>
                       </div>
 
-                      {/* Swap button */}
+                      {/* Swap button — opens smart substitution */}
                       <button
-                        onClick={() => swapItem(item)}
+                        onClick={() => setSubModalItem(item)}
                         className="mt-0.5 w-7 h-7 rounded-lg border border-border flex items-center justify-center text-muted-foreground hover:text-accent hover:border-accent transition-all flex-shrink-0"
                         title="Substituir"
                       >
