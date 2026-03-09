@@ -31,14 +31,14 @@ const AuthPage = () => {
         email,
         password,
         options: {
-          data: { full_name: fullName },
+          data: { full_name: fullName, is_trial: isTrial },
           emailRedirectTo: window.location.origin,
         },
       });
       if (error) {
         toast.error(error.message);
       } else {
-        toast.success("Conta criada! Verifique seu email para confirmar.");
+        toast.success(isTrial ? "Trial ativado! Verifique seu email para confirmar." : "Conta criada! Verifique seu email para confirmar.");
       }
     }
     setLoading(false);
