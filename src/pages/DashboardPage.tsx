@@ -397,6 +397,29 @@ const DashboardPage = () => {
           </motion.div>
         )}
 
+        {/* NutriSync workout banner */}
+        {todayWorkout && todayWorkout.workout_type !== "rest" && (() => {
+          const wInfo = WORKOUT_TYPES[todayWorkout.workout_type as WorkoutType];
+          return (
+            <motion.button
+              initial={{ opacity: 0, y: -5 }}
+              animate={{ opacity: 1, y: 0 }}
+              onClick={() => navigate("/nutrisync")}
+              className="w-full rounded-xl border border-primary/20 bg-primary/5 p-3 mb-4 flex items-center gap-3 text-left hover:border-primary/30 transition-all"
+            >
+              <span className="text-2xl">{wInfo?.emoji}</span>
+              <div className="flex-1 min-w-0">
+                <p className="text-[10px] font-mono text-primary uppercase tracking-widest">⚡ NutriSync Ativo</p>
+                <p className="text-xs font-bold text-foreground truncate">{wInfo?.label}</p>
+                {kcalDiff > 0 && (
+                  <p className="text-[10px] font-mono text-primary">+{kcalDiff} kcal ajustado para hoje</p>
+                )}
+              </div>
+              <Zap className="w-4 h-4 text-primary flex-shrink-0" />
+            </motion.button>
+          );
+        })()}
+
         {/* Calorie ring */}
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
