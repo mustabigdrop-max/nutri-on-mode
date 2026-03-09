@@ -15,7 +15,7 @@
     --popover: 240 40% 7%;
     --popover-foreground: 260 30% 96%;
 
-    --primary: 43 100% 50%;
+    --primary: 43 52% 54;
     --primary-foreground: 240 50% 4%;
 
     --secondary: 240 30% 12%;
@@ -32,20 +32,20 @@
 
     --border: 240 30% 15%;
     --input: 240 30% 15%;
-    --ring: 43 100% 50%;
+    --ring: 43 152% 54;
 
     --radius: 0.75rem;
 
     /* Custom tokens */
-    --gold: 43 100% 50%;
-    --gold-glow: 43 100% 60%;
+    --gold: 43 52% 54%;
+    --gold-glow: 43 52% 64%;
     --cyan: 168 100% 50%;
     --cyan-glow: 168 100% 65%;
     --surface: 240 40% 7%;
     --surface-elevated: 240 35% 10%;
     --danger: 345 82% 57%;
 
-    --gradient-gold: linear-gradient(135deg, hsl(43 100% 50%), hsl(35 100% 55%));
+    --gradient-gold: linear-gradient(135deg, hsl(43 52% 54%), hsl(35 52% 58%));
     --gradient-cyan: linear-gradient(135deg, hsl(168 100% 50%), hsl(180 100% 60%));
     --gradient-hero: linear-gradient(180deg, hsl(240 50% 4%) 0%, hsl(240 40% 7%) 100%);
 
