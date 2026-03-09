@@ -70,6 +70,9 @@ const ProfessionalDashboard = () => {
   const [patientWeights, setPatientWeights] = useState<any[]>([]);
   const [weeklyStats, setWeeklyStats] = useState<any[]>([]);
 
+  // Patient alerts
+  const [patientAlerts, setPatientAlerts] = useState<PatientAlert[]>([]);
+
   useEffect(() => {
     if (!user) return;
     fetchPatients();
