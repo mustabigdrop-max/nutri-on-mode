@@ -680,6 +680,7 @@ const DashboardPage = () => {
                 { icon: Settings, label: "Configurações", desc: "Recalcular VET & macros", path: "/settings", emoji: "⚙️" },
                 { icon: Heart, label: "Profissional", desc: "Painel B2B completo", path: "/professional", emoji: "🩺" },
                 { icon: Pill, label: "Protocolo GLP-1", desc: "Proteção muscular com caneta", path: "/glp1", emoji: "💉" },
+                { icon: Zap, label: "NutriSync", desc: "Treino + nutrição em tempo real", path: "/nutrisync", emoji: "⚡" },
               ];
               return items.map((item, i) => {
                 const isLocked = GATED_PATHS.includes(item.path) && !isOnPlus;
