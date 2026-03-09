@@ -400,6 +400,21 @@ const WorkoutHistoryPage = () => {
             );
           })}
         </motion.div>
+
+        {/* Share button */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+          className="mb-4"
+        >
+          <WorkoutShareCard
+            weekData={weekData}
+            stats={stats}
+            weekLabel={formatWeekLabel()}
+            userName={profile?.full_name || "Piloto"}
+          />
+        </motion.div>
       </div>
       <BottomNav />
     </div>
