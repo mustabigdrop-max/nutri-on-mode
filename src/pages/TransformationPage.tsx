@@ -161,6 +161,19 @@ const TransformationPage = () => {
           </button>
           <input ref={fileInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleFileSelect} />
 
+          <button
+            onClick={async () => {
+              const data = await generateCard(photos);
+              if (data) setShowMonthlyCard(true);
+              else toast.error("Não foi possível gerar o card");
+            }}
+            disabled={cardLoading}
+            className="px-4 py-3 rounded-xl bg-card border border-border text-xs font-bold text-foreground flex items-center gap-1 disabled:opacity-50"
+          >
+            {cardLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CalendarDays className="w-3.5 h-3.5" />}
+            Card Mensal
+          </button>
+
           {selectedPhotos.length === 2 && (
             <>
               <button
