@@ -6,6 +6,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
 import { useWaterLogs } from "@/hooks/useWaterLogs";
 import { usePlanGate } from "@/hooks/usePlanGate";
+import { useWorkoutSchedule, getWorkoutAdjustment, WORKOUT_TYPES, type WorkoutType } from "@/hooks/useWorkoutSchedule";
 import TrialBanner from "@/components/dashboard/TrialBanner";
 import ReengagementPopup from "@/components/dashboard/ReengagementPopup";
 import UpgradeModal from "@/components/landing/UpgradeModal";
@@ -203,6 +204,7 @@ const DashboardPage = () => {
   const [todayMood, setTodayMood] = useState<MoodType | null>(null);
   const { todayLog: waterLog, addWater } = useWaterLogs();
   const { hasAccess, plan, isTrialActive, trialEndsAt } = usePlanGate();
+  const { getTodayWorkout, todayLog: workoutLog } = useWorkoutSchedule();
   const [upgradeModal, setUpgradeModal] = useState<{ open: boolean; feature: string }>({ open: false, feature: "" });
   const waterMl = waterLog?.ml_total ?? 0;
   const waterGlasses = Math.round(waterMl / 250);
@@ -254,10 +256,24 @@ const DashboardPage = () => {
   }, [user]);
 
   const objetivo = profile?.objetivo_principal || "saude_geral";
-  const kcalTarget = profile?.vet_kcal || 2000;
-  const proteinTarget = profile?.protein_g || 150;
-  const carbsTarget = profile?.carbs_g || 250;
-  const fatTarget = profile?.fat_g || 65;
+  const weightKg = profile?.weight_kg || 70;
+  const baseKcal = profile?.vet_kcal || 2000;
+  const baseProtein = profile?.protein_g || 150;
+  const baseCarbs = profile?.carbs_g || 250;
+  const baseFat = profile?.fat_g || 65;
+
+  // NutriSync: adjust targets based on today's workout
+  const todayWorkout = getTodayWorkout();
+  const workoutAdj = useMemo(() => {
+    const wType = (todayWorkout?.workout_type || "rest") as WorkoutType;
+    return getWorkoutAdjustment(wType, weightKg);
+  }, [todayWorkout, weightKg]);
+
+  const kcalTarget = Math.round(baseKcal * workoutAdj.kcalMultiplier);
+  const proteinTarget = Math.round(workoutAdj.proteinPerKg * weightKg);
+  const carbsTarget = Math.round(baseCarbs * workoutAdj.carbsMultiplier);
+  const fatTarget = Math.round(baseFat * workoutAdj.fatMultiplier);
+  const kcalDiff = kcalTarget - baseKcal;
 
   const kcalPercent = (todayTotals.kcal / kcalTarget) * 100;
   const protPercent = Math.min((todayTotals.protein / proteinTarget) * 100, 100);
@@ -380,6 +396,29 @@ const DashboardPage = () => {
             </div>
           </motion.div>
         )}
+
+        {/* NutriSync workout banner */}
+        {todayWorkout && todayWorkout.workout_type !== "rest" && (() => {
+          const wInfo = WORKOUT_TYPES[todayWorkout.workout_type as WorkoutType];
+          return (
+            <motion.button
+              initial={{ opacity: 0, y: -5 }}
+              animate={{ opacity: 1, y: 0 }}
+              onClick={() => navigate("/nutrisync")}
+              className="w-full rounded-xl border border-primary/20 bg-primary/5 p-3 mb-4 flex items-center gap-3 text-left hover:border-primary/30 transition-all"
+            >
+              <span className="text-2xl">{wInfo?.emoji}</span>
+              <div className="flex-1 min-w-0">
+                <p className="text-[10px] font-mono text-primary uppercase tracking-widest">⚡ NutriSync Ativo</p>
+                <p className="text-xs font-bold text-foreground truncate">{wInfo?.label}</p>
+                {kcalDiff > 0 && (
+                  <p className="text-[10px] font-mono text-primary">+{kcalDiff} kcal ajustado para hoje</p>
+                )}
+              </div>
+              <Zap className="w-4 h-4 text-primary flex-shrink-0" />
+            </motion.button>
+          );
+        })()}
 
         {/* Calorie ring */}
         <motion.div
@@ -718,8 +757,11 @@ const DashboardPage = () => {
             <span className="text-[10px] font-mono text-primary uppercase tracking-wider">Protocolo ativo</span>
           </div>
           <p className="text-xs font-mono text-foreground">
-            {profile.vet_kcal} kcal · {profile.protein_g}g P · {profile.carbs_g}g C · {profile.fat_g}g G
+            {kcalTarget} kcal · {proteinTarget}g P · {carbsTarget}g C · {fatTarget}g G
           </p>
+          {kcalDiff > 0 && (
+            <p className="text-[10px] font-mono text-primary mt-0.5">⚡ NutriSync: +{kcalDiff} kcal ajustado</p>
+          )}
         </motion.div>
       </div>
 
