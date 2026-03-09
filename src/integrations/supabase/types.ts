@@ -295,6 +295,87 @@ export type Database = {
           },
         ]
       }
+      circadian_meal_plans: {
+        Row: {
+          ai_message: string | null
+          chronotype_applied: string | null
+          created_at: string | null
+          generated_date: string | null
+          id: string
+          meals: Json | null
+          total_calories: number | null
+          total_carbs: number | null
+          total_fat: number | null
+          total_protein: number | null
+          user_id: string
+          workout_integrated: boolean | null
+        }
+        Insert: {
+          ai_message?: string | null
+          chronotype_applied?: string | null
+          created_at?: string | null
+          generated_date?: string | null
+          id?: string
+          meals?: Json | null
+          total_calories?: number | null
+          total_carbs?: number | null
+          total_fat?: number | null
+          total_protein?: number | null
+          user_id: string
+          workout_integrated?: boolean | null
+        }
+        Update: {
+          ai_message?: string | null
+          chronotype_applied?: string | null
+          created_at?: string | null
+          generated_date?: string | null
+          id?: string
+          meals?: Json | null
+          total_calories?: number | null
+          total_carbs?: number | null
+          total_fat?: number | null
+          total_protein?: number | null
+          user_id?: string
+          workout_integrated?: boolean | null
+        }
+        Relationships: []
+      }
+      circadian_profiles: {
+        Row: {
+          chronotype: string
+          created_at: string | null
+          id: string
+          meal_frequency: number
+          peak_energy: string
+          sleep_time: string
+          updated_at: string | null
+          user_id: string
+          wake_time: string
+        }
+        Insert: {
+          chronotype?: string
+          created_at?: string | null
+          id?: string
+          meal_frequency?: number
+          peak_energy?: string
+          sleep_time?: string
+          updated_at?: string | null
+          user_id: string
+          wake_time?: string
+        }
+        Update: {
+          chronotype?: string
+          created_at?: string | null
+          id?: string
+          meal_frequency?: number
+          peak_energy?: string
+          sleep_time?: string
+          updated_at?: string | null
+          user_id?: string
+          wake_time?: string
+        }
+        Relationships: []
+      }
       coach_briefings: {
         Row: {
           ai_analysis: string | null
