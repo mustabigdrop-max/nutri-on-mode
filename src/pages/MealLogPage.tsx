@@ -102,7 +102,7 @@ const MealLogPage = () => {
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
   const [showMealPicker, setShowMealPicker] = useState(false);
-
+  const [specialFlow, setSpecialFlow] = useState<"eat-out" | "free-meal" | null>(null);
   // AI states
   const [inputMode, setInputMode] = useState<InputMode>("manual");
   const [aiQuery, setAiQuery] = useState("");
