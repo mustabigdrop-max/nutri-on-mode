@@ -7,9 +7,12 @@ import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
 import {
   ArrowLeft, Search, Plus, Minus, Check, X, ChevronDown,
-  Camera, Sparkles, Loader2, Mic, MicOff, ScanBarcode, Star, Clock
+  Camera, Sparkles, Loader2, Mic, MicOff, ScanBarcode, Star, Clock,
+  UtensilsCrossed, PartyPopper
 } from "lucide-react";
 import { toast } from "sonner";
+import EatOutFlow from "@/components/meal/EatOutFlow";
+import FreeMealFlow from "@/components/meal/FreeMealFlow";
 
 const MEAL_TYPES = [
   { key: "cafe_manha", label: "Café da Manhã", emoji: "☕" },
@@ -99,7 +102,7 @@ const MealLogPage = () => {
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
   const [showMealPicker, setShowMealPicker] = useState(false);
-
+  const [specialFlow, setSpecialFlow] = useState<"eat-out" | "free-meal" | null>(null);
   // AI states
   const [inputMode, setInputMode] = useState<InputMode>("manual");
   const [aiQuery, setAiQuery] = useState("");
@@ -483,6 +486,17 @@ const MealLogPage = () => {
     <div className="min-h-screen bg-background pb-6">
       <div className="absolute inset-0 bg-grid opacity-10" />
       <div className="relative z-10 max-w-lg mx-auto px-4 pt-4">
+
+        {/* Special flows */}
+        {specialFlow === "eat-out" && (
+          <EatOutFlow onClose={() => setSpecialFlow(null)} />
+        )}
+        {specialFlow === "free-meal" && (
+          <FreeMealFlow onClose={() => setSpecialFlow(null)} />
+        )}
+
+        {!specialFlow && (
+        <>
         {/* Header */}
         <div className="flex items-center gap-3 mb-4">
           <button onClick={() => navigate("/dashboard")} className="p-2 rounded-lg text-muted-foreground hover:text-foreground transition-colors">
@@ -523,6 +537,24 @@ const MealLogPage = () => {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* Quick access: Comi Fora + Refeição Livre */}
+        <div className="grid grid-cols-2 gap-2 mb-4">
+          <button
+            onClick={() => setSpecialFlow("eat-out")}
+            className="py-3 rounded-xl border border-border bg-card hover:border-primary/40 hover:bg-primary/5 transition-all flex items-center justify-center gap-2"
+          >
+            <UtensilsCrossed className="w-4 h-4 text-primary" />
+            <span className="text-sm font-semibold text-foreground">🍴 Comi fora</span>
+          </button>
+          <button
+            onClick={() => setSpecialFlow("free-meal")}
+            className="py-3 rounded-xl border border-border bg-card hover:border-primary/40 hover:bg-primary/5 transition-all flex items-center justify-center gap-2"
+          >
+            <PartyPopper className="w-4 h-4 text-primary" />
+            <span className="text-sm font-semibold text-foreground">🎉 Refeição Livre</span>
+          </button>
+        </div>
 
         {/* Input mode selector — 2 rows */}
         <div className="grid grid-cols-3 gap-2 mb-4">
@@ -830,6 +862,8 @@ const MealLogPage = () => {
               `Registrar ${currentMeal.label} · ${Math.round(totals.kcal)} kcal`
             )}
           </motion.button>
+        )}
+        </>
         )}
       </div>
       <BottomNav />
