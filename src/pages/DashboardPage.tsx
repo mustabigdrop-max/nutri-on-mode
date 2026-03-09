@@ -296,9 +296,19 @@ const DashboardPage = () => {
     breakfast: "☕", lunch: "🍽️", dinner: "🌙", snack: "🥤",
   };
 
+  const moodData = MOODS.find(m => m.key === todayMood);
+  const isChallengeMode = todayMood === "animado";
+  const isSimplifiedMode = todayMood === "cansado";
+
   return (
     <div className="min-h-screen bg-background pb-24">
       <div className="absolute inset-0 bg-grid opacity-10" />
+
+      {/* Mood Check-in Modal */}
+      <MoodCheckinModal
+        userName={profile.full_name?.split(" ")[0] || "Piloto"}
+        onMoodSelected={setTodayMood}
+      />
 
       <div className="relative z-10 max-w-lg mx-auto px-4 pt-4">
         {/* Header */}
