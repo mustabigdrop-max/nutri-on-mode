@@ -27,14 +27,29 @@ const LandingManifesto = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
           <div>
             <div className="font-mono text-[.62rem] text-primary tracking-[.2em] uppercase mb-3.5">O problema</div>
-            <p className="text-[.95rem] text-[#6060a0] leading-[1.85] font-landing">
-              Todo mundo já fez dieta. Todo mundo já começou uma semana certinho. E todo mundo já abandonou na terceira semana sem saber exatamente por quê. Não é falta de força de vontade — é falta de <strong className="text-[#9090b8]">sistema</strong>. Você não precisa de motivação. Precisa de estrutura que funciona quando a motivação vai embora.
+            <p className="text-[.95rem] text-[#6060a0] leading-[1.85] font-landing mb-4">
+              Todo mundo já fez dieta. Todo mundo já começou uma semana certinho. E todo mundo já abandonou na terceira semana sem saber exatamente por quê.
+            </p>
+            <p className="text-[.95rem] text-[#6060a0] leading-[1.85] font-landing mb-4">
+              Não é fraqueza. É falta de <strong className="text-[#9090b8]">sistema</strong>.
+            </p>
+            <p className="text-[.95rem] text-[#9090b8] leading-[1.85] font-landing font-semibold">
+              Motivação vai embora. Estrutura fica.
             </p>
           </div>
           <div>
             <div className="font-mono text-[.62rem] text-primary tracking-[.2em] uppercase mb-3.5">A solução</div>
-            <p className="text-[.95rem] text-[#6060a0] leading-[1.85] font-landing">
-              O NUTRION é o único app construído com a mentalidade de um <strong className="text-[#9090b8]">nutrition coach e bodybuilder</strong> — quem sabe que resultado vem de protocolo, não de improviso. Motor de kcal científico, 10 protocolos de dieta, IA comportamental, exames de sangue, sono, microbioma. Tudo integrado. Tudo ON.
+            <p className="text-[.95rem] text-[#6060a0] leading-[1.85] font-landing mb-4">
+              O nutriON é o único app construído com a mentalidade de quem vive isso — <strong className="text-[#9090b8]">nutrition coach, bodybuilder e Analista em comportamento humano</strong>.
+            </p>
+            <p className="text-[.95rem] text-[#6060a0] leading-[1.85] font-landing mb-4">
+              Porque resultado não vem de inspiração. Vem de <strong className="text-[#9090b8]">protocolo</strong>.
+            </p>
+            <p className="text-[.95rem] text-[#6060a0] leading-[1.85] font-landing mb-4">
+              Motor de kcal científico, 10 protocolos de dieta, IA comportamental, exames de sangue, sono e microbioma — tudo integrado pela metodologia <strong className="text-[#9090b8]">MCE: Mindset, Comportamento e Execução</strong>.
+            </p>
+            <p className="text-[.95rem] text-primary leading-[1.85] font-landing font-semibold">
+              Isso não é mais um app de dieta. É o sistema que faltava.
             </p>
           </div>
         </div>
