@@ -26,7 +26,7 @@ import {
   Flame, TrendingUp, Droplets, Apple, BarChart3, MessageSquare,
   User, Plus, Utensils, LogOut, Zap, Brain, ChevronRight, Award,
   Camera, Users, Heart, Settings, HelpCircle, Leaf, Trophy, ShoppingCart, History, Dumbbell, FileText, Hammer,
-  Clock, Pill, Bug, Smile, CalendarDays, HelpingHand, BarChart, Lock
+  Clock, Pill, Bug, Smile, CalendarDays, HelpingHand, BarChart, Lock, Sun
 } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
 
@@ -727,6 +727,7 @@ const DashboardPage = () => {
                 { icon: Trophy, label: "Conquistas", desc: "XP, badges & ranking", path: "/gamification", emoji: "🎮" },
                 { icon: Hammer, label: "Montar Dieta", desc: "Construtor alimento a alimento", path: "/diet-builder", emoji: "🔨" },
                 { icon: Clock, label: "Cronobiologia", desc: "Janelas de macros por horário", path: "/chronobiology", emoji: "🕐" },
+                { icon: Sun, label: "Nutrição Circadiana", desc: "Plano por relógio biológico", path: "/circadian", emoji: "🌅" },
                 { icon: Smile, label: "Comportamental", desc: "Mindful eating & TCC", path: "/behavioral-nutrition", emoji: "🧠" },
                 { icon: Pill, label: "Suplementos", desc: "Stack personalizado IA", path: "/supplementation", emoji: "💊" },
                 { icon: Bug, label: "Microbioma", desc: "Saúde intestinal & Bristol", path: "/microbiome", emoji: "🦠" },
