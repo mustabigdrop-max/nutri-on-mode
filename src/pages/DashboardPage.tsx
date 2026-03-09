@@ -421,6 +421,14 @@ const DashboardPage = () => {
           );
         })()}
 
+        {/* NutriSync Comparison Card */}
+        <NutriSyncComparisonCard
+          baseKcal={baseKcal}
+          baseCarbs={baseCarbs}
+          baseFat={baseFat}
+          weightKg={weightKg}
+        />
+
         {/* Calorie ring */}
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
