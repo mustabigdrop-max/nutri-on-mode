@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Zap, Check, ChevronRight, Dumbbell, Clock, Droplets, Trophy, Calendar } from "lucide-react";
+import PeakWeekManager from "@/components/nutrisync/PeakWeekManager";
 import BottomNav from "@/components/BottomNav";
 import { useProfile } from "@/hooks/useProfile";
 import {
@@ -426,52 +427,7 @@ const NutriSyncPage = () => {
         )}
 
         {/* PEAK WEEK TAB */}
-        {activeTab === "peak" && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
-            <div className="rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10 p-6 text-center">
-              <Trophy className="w-10 h-10 text-primary mx-auto mb-3" />
-              <h2 className="text-lg font-bold text-foreground mb-2">Modo Competição / Peak Week</h2>
-              <p className="text-xs font-mono text-muted-foreground mb-4 leading-relaxed">
-                Protocolo de semana de pico com manipulação automática de carboidrato (depleção → supercompensação),
-                sódio, água e calorias por fase do dia.
-              </p>
-              <div className="space-y-2 text-left">
-                {[
-                  "📉 Depleção de carboidrato (Dias 1-3)",
-                  "📈 Supercompensação (Dias 4-6)",
-                  "💧 Manipulação de água e sódio",
-                  "✅ Checklist diário de protocolo",
-                  "⏰ Countdown para o evento",
-                ].map((item, i) => (
-                  <div key={i} className="flex items-center gap-2 p-2 rounded-lg bg-card/50 border border-border">
-                    <span className="text-xs font-mono text-foreground">{item}</span>
-                  </div>
-                ))}
-              </div>
-              <div className="mt-5 rounded-xl bg-card border border-border p-4">
-                <Dumbbell className="w-6 h-6 text-muted-foreground mx-auto mb-2" />
-                <p className="text-xs font-mono text-muted-foreground">Em breve — Configure sua data de competição para ativar.</p>
-              </div>
-            </div>
-
-            {/* Wearables future integration */}
-            <div className="rounded-2xl border border-border bg-card p-5">
-              <div className="flex items-center gap-2 mb-3">
-                <span className="text-lg">⌚</span>
-                <h3 className="text-sm font-bold text-foreground">Integração com Wearables</h3>
-              </div>
-              <p className="text-xs font-mono text-muted-foreground mb-3">
-                Estrutura preparada para receber dados de Apple Health, Google Fit, Garmin e Polar.
-                Ajuste automático de calorias por gasto real do treino.
-              </p>
-              <div className="flex gap-2 flex-wrap">
-                {["Apple Health", "Google Fit", "Garmin", "Polar"].map(w => (
-                  <span key={w} className="text-[10px] font-mono text-muted-foreground bg-background border border-border rounded-full px-3 py-1">{w}</span>
-                ))}
-              </div>
-            </div>
-          </motion.div>
-        )}
+        {activeTab === "peak" && <PeakWeekManager />}
       </div>
       <BottomNav />
     </div>
