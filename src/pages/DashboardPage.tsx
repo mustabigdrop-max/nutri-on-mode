@@ -336,7 +336,7 @@ const DashboardPage = () => {
           </div>
           <div className="flex items-center gap-2">
             <motion.div
-              animate={isON ? { boxShadow: ["0 0 0px hsl(43 100% 50% / 0)", "0 0 12px hsl(43 100% 50% / 0.4)", "0 0 0px hsl(43 100% 50% / 0)"] } : {}}
+              animate={isON ? { boxShadow: ["0 0 0px hsl(38 80% 52% / 0)", "0 0 12px hsl(38 80% 52% / 0.4)", "0 0 0px hsl(38 80% 52% / 0)"] } : {}}
               transition={{ duration: 2, repeat: Infinity }}
               className={`flex items-center gap-1.5 px-3 py-1 rounded-full border ${isON ? "border-primary/40 bg-primary/10" : "border-border bg-card"}`}
             >

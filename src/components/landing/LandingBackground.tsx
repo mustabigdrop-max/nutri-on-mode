@@ -43,7 +43,7 @@ const LandingBackground = () => {
       draw(ctx: CanvasRenderingContext2D) {
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(232,160,32,${this.a * 0.5})`;
+        ctx.fillStyle = `rgba(232,160,322,${this.a * 0.5})`;
         ctx.fill();
       }
     }
@@ -63,7 +63,7 @@ const LandingBackground = () => {
             ctx.beginPath();
             ctx.moveTo(particles[i].x, particles[i].y);
             ctx.lineTo(particles[j].x, particles[j].y);
-            ctx.strokeStyle = `rgba(255,184,0,${(1 - d / 120) * 0.06})`;
+            ctx.strokeStyle = `rgba(32,160,320,${(1 - d / 120) * 0.06})`;
             ctx.lineWidth = 0.5;
             ctx.stroke();
           }

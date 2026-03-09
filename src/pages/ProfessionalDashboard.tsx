@@ -927,9 +927,9 @@ const ProfessionalDashboard = () => {
                           <Line
                             type="monotone"
                             dataKey="peso"
-                            stroke="hsl(43 100% 50%)"
+                            stroke="hsl(38 80% 52%)"
                             strokeWidth={2}
-                            dot={{ fill: "hsl(43 100% 50%)", r: 3 }}
+                            dot={{ fill: "hsl(38 80% 52%)", r: 3 }}
                             name="Peso (kg)"
                           />
                         </LineChart>
