@@ -52,7 +52,7 @@ Regras:
         {
           role: "user",
           content: [
-            { type: "text", text: "Analise esta foto de refeição com macros e micronutrientes:" },
+            { type: "text", text: `Analise esta foto de refeição com macros e micronutrientes.${photoObservation ? `\n\nOBSERVAÇÃO IMPORTANTE DO USUÁRIO: "${photoObservation}". Use esta informação para corrigir a identificação dos alimentos.` : ""}` },
             { type: "image_url", image_url: { url: `data:image/jpeg;base64,${imageBase64}` } }
           ]
         }

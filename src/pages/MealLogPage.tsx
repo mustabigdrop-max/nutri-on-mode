@@ -276,6 +276,7 @@ const MealLogPage = () => {
           body: {
             mode: "photo",
             imageBase64: base64Data,
+            photoObservation: photoObservation.trim() || undefined,
             profileContext: profile ? `Objetivo: ${profile.goal}, Meta: ${profile.vet_kcal}kcal` : undefined,
           },
         });
