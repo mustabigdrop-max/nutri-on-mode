@@ -2,10 +2,11 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useProfile } from "@/hooks/useProfile";
-import { Send, Zap, Bot, User, Loader2, Flame, Dumbbell, Leaf, Baby, ChevronRight, Sparkles } from "lucide-react";
+import { Send, Zap, Bot, User, Loader2, Flame, Dumbbell, Leaf, Baby, ChevronRight, Sparkles, Syringe } from "lucide-react";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
 import { Progress } from "@/components/ui/progress";
+import Glp1UpsellModal from "@/components/glp1/Glp1UpsellModal";
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/onboarding-chat`;
 
