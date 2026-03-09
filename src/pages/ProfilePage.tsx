@@ -8,8 +8,9 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   ArrowLeft, Award, Flame, TrendingUp, Star, Trophy,
   Target, Zap, Shield, Heart, Crown, LogOut,
-  BarChart3, Utensils, Plus, MessageSquare, User, ChevronRight
+  BarChart3, Utensils, Plus, MessageSquare, User, ChevronRight, Syringe
 } from "lucide-react";
+import { useGlp1 } from "@/hooks/useGlp1";
 
 interface Badge {
   id: string;
