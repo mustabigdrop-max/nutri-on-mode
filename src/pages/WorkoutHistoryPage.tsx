@@ -8,6 +8,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
 import { useWorkoutSchedule, WORKOUT_TYPES, getWorkoutAdjustment, DAY_NAMES, type WorkoutType } from "@/hooks/useWorkoutSchedule";
 import BottomNav from "@/components/BottomNav";
+import WorkoutShareCard from "@/components/workout/WorkoutShareCard";
 
 interface DailyLog {
   id: string;
