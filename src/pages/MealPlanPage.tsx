@@ -11,6 +11,8 @@ import {
   Sparkles, Wallet, GripVertical
 } from "lucide-react";
 import { toast } from "sonner";
+import SubstitutionModal from "@/components/meal/SubstitutionModal";
+import type { SubOption } from "@/components/meal/substitutionDb";
 
 const MEAL_TYPES = [
   { key: "cafe_manha", label: "Café" },
@@ -133,6 +135,7 @@ const MealPlanPage = () => {
   const [generating, setGenerating] = useState(false);
   const [budgetMode, setBudgetMode] = useState(false);
   const [dragItem, setDragItem] = useState<PlanItem | null>(null);
+  const [subModalItem, setSubModalItem] = useState<PlanItem | null>(null);
 
   const fetchPlan = async () => {
     if (!user) return;
@@ -272,6 +275,36 @@ const MealPlanPage = () => {
       original_food_name: i.original_food_name || i.food_name,
     } : i));
     toast("Substituição feita 🔄");
+  };
+
+  const handleSmartSubstitution = async (item: PlanItem, sub: SubOption) => {
+    await supabase
+      .from("meal_plan_items")
+      .update({
+        food_name: sub.name,
+        portion: sub.portion,
+        kcal: sub.kcal,
+        protein_g: sub.protein,
+        carbs_g: sub.carbs,
+        fat_g: sub.fat,
+        swapped: true,
+        original_food_name: item.original_food_name || item.food_name,
+      })
+      .eq("id", item.id);
+
+    setItems(prev => prev.map(i => i.id === item.id ? {
+      ...i,
+      food_name: sub.name,
+      portion: sub.portion,
+      kcal: sub.kcal,
+      protein_g: sub.protein,
+      carbs_g: sub.carbs,
+      fat_g: sub.fat,
+      swapped: true,
+      original_food_name: i.original_food_name || i.food_name,
+    } : i));
+    setSubModalItem(null);
+    toast.success(`Substituição feita: ${sub.name} 🔄`);
   };
 
   // Drag-to-swap between meals
@@ -523,9 +556,9 @@ const MealPlanPage = () => {
                         </p>
                       </div>
 
-                      {/* Swap button */}
+                      {/* Swap button — opens smart substitution */}
                       <button
-                        onClick={() => swapItem(item)}
+                        onClick={() => setSubModalItem(item)}
                         className="mt-0.5 w-7 h-7 rounded-lg border border-border flex items-center justify-center text-muted-foreground hover:text-accent hover:border-accent transition-all flex-shrink-0"
                         title="Substituir"
                       >
@@ -576,6 +609,25 @@ const MealPlanPage = () => {
           </div>
         )}
       </div>
+
+      {/* Substitution Modal */}
+      <AnimatePresence>
+        {subModalItem && (
+          <SubstitutionModal
+            foodName={subModalItem.food_name}
+            currentKcal={subModalItem.kcal}
+            currentProtein={subModalItem.protein_g}
+            currentCarbs={subModalItem.carbs_g}
+            currentFat={subModalItem.fat_g}
+            goal={profile?.goal || profile?.objetivo_principal}
+            restrictions={profile?.dietary_restrictions}
+            dailyKcalTarget={profile?.vet_kcal}
+            dailyKcalConsumed={dayTotals.kcal}
+            onSelect={(sub) => handleSmartSubstitution(subModalItem, sub)}
+            onClose={() => setSubModalItem(null)}
+          />
+        )}
+      </AnimatePresence>
 
       <BottomNav />
     </div>
