@@ -505,7 +505,7 @@ const MealLogPage = () => {
           </button>
           <div className="flex-1">
             <h1 className="text-lg font-bold text-foreground">Registrar Refeição</h1>
-            <p className="text-[10px] font-mono text-muted-foreground">5 formas de registrar</p>
+            <p className="text-[10px] font-mono text-muted-foreground">7 formas de registrar</p>
           </div>
         </div>
 
