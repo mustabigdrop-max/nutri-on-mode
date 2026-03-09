@@ -7,9 +7,12 @@ import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
 import {
   ArrowLeft, Search, Plus, Minus, Check, X, ChevronDown,
-  Camera, Sparkles, Loader2, Mic, MicOff, ScanBarcode, Star, Clock
+  Camera, Sparkles, Loader2, Mic, MicOff, ScanBarcode, Star, Clock,
+  UtensilsCrossed, PartyPopper
 } from "lucide-react";
 import { toast } from "sonner";
+import EatOutFlow from "@/components/meal/EatOutFlow";
+import FreeMealFlow from "@/components/meal/FreeMealFlow";
 
 const MEAL_TYPES = [
   { key: "cafe_manha", label: "Café da Manhã", emoji: "☕" },
