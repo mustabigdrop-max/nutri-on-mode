@@ -8,6 +8,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
 import { useWorkoutSchedule, WORKOUT_TYPES, getWorkoutAdjustment, DAY_NAMES, type WorkoutType } from "@/hooks/useWorkoutSchedule";
 import BottomNav from "@/components/BottomNav";
+import WorkoutShareCard from "@/components/workout/WorkoutShareCard";
 
 interface DailyLog {
   id: string;
@@ -398,6 +399,21 @@ const WorkoutHistoryPage = () => {
               </motion.div>
             );
           })}
+        </motion.div>
+
+        {/* Share button */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+          className="mb-4"
+        >
+          <WorkoutShareCard
+            weekData={weekData}
+            stats={stats}
+            weekLabel={formatWeekLabel()}
+            userName={profile?.full_name || "Piloto"}
+          />
         </motion.div>
       </div>
       <BottomNav />
