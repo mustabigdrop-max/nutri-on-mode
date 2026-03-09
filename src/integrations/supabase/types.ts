@@ -1686,6 +1686,84 @@ export type Database = {
         }
         Relationships: []
       }
+      supplement_logs: {
+        Row: {
+          created_at: string | null
+          id: string
+          log_date: string | null
+          skipped: boolean | null
+          supplement_name: string
+          taken_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          log_date?: string | null
+          skipped?: boolean | null
+          supplement_name: string
+          taken_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          log_date?: string | null
+          skipped?: boolean | null
+          supplement_name?: string
+          taken_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      supplement_stacks: {
+        Row: {
+          active: boolean | null
+          ai_generated: boolean | null
+          ai_summary: string | null
+          budget_tier: string | null
+          created_at: string | null
+          current_supplements: string[] | null
+          dietary_restrictions: string[] | null
+          goal: string | null
+          health_conditions: string[] | null
+          id: string
+          monthly_cost: number | null
+          supplements: Json | null
+          user_id: string
+        }
+        Insert: {
+          active?: boolean | null
+          ai_generated?: boolean | null
+          ai_summary?: string | null
+          budget_tier?: string | null
+          created_at?: string | null
+          current_supplements?: string[] | null
+          dietary_restrictions?: string[] | null
+          goal?: string | null
+          health_conditions?: string[] | null
+          id?: string
+          monthly_cost?: number | null
+          supplements?: Json | null
+          user_id: string
+        }
+        Update: {
+          active?: boolean | null
+          ai_generated?: boolean | null
+          ai_summary?: string | null
+          budget_tier?: string | null
+          created_at?: string | null
+          current_supplements?: string[] | null
+          dietary_restrictions?: string[] | null
+          goal?: string | null
+          health_conditions?: string[] | null
+          id?: string
+          monthly_cost?: number | null
+          supplements?: Json | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       support_messages: {
         Row: {
           content: string
