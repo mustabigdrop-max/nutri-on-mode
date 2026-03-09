@@ -40,6 +40,7 @@ import EventModePage from "./pages/EventModePage";
 import FoodSimulatorPage from "./pages/FoodSimulatorPage";
 import MonthlyReportPage from "./pages/MonthlyReportPage";
 import Glp1Page from "./pages/Glp1Page";
+import NutriSyncPage from "./pages/NutriSyncPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
