@@ -112,6 +112,7 @@ const MealLogPage = () => {
   const [aiMicronutrients, setAiMicronutrients] = useState<Record<string, number>[]>([]);
   const [aiQualityScore, setAiQualityScore] = useState<number | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [photoObservation, setPhotoObservation] = useState("");
 
   // Voice states
   const [isListening, setIsListening] = useState(false);
