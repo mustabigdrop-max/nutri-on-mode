@@ -42,6 +42,7 @@ import MonthlyReportPage from "./pages/MonthlyReportPage";
 import Glp1Page from "./pages/Glp1Page";
 import NutriSyncPage from "./pages/NutriSyncPage";
 import WorkoutHistoryPage from "./pages/WorkoutHistoryPage";
+import CircadianPage from "./pages/CircadianPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
