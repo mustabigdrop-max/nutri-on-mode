@@ -640,50 +640,61 @@ const DashboardPage = () => {
             <h3 className="text-[10px] font-mono text-primary uppercase tracking-[.2em]">Todas as funções</h3>
           </div>
           <div className="grid grid-cols-3 gap-px bg-[#14142a] rounded-2xl overflow-hidden">
-            {[
-              { icon: Utensils, label: "Registrar", desc: "Log de refeições", path: "/meal-log", emoji: "🍽️" },
-              { icon: History, label: "Histórico", desc: "Refeições passadas", path: "/meal-history", emoji: "📋" },
-              { icon: Apple, label: "Plano Alimentar", desc: "Cardápio semanal IA", path: "/meal-plan", emoji: "🍎" },
-              { icon: ShoppingCart, label: "Lista de Compras", desc: "Custo + itens automáticos", path: "/shopping-list", emoji: "🛒" },
-              { icon: Apple, label: "Receitas", desc: "Filtradas por macros do dia", path: "/recipes", emoji: "🍳" },
-              { icon: CalendarDays, label: "Modo Evento", desc: "Estratégia pré/durante/pós", path: "/event-mode", emoji: "📅" },
-              { icon: HelpingHand, label: "Simulador", desc: "E se eu comer...?", path: "/food-simulator", emoji: "🤔" },
-              { icon: BarChart, label: "Relatório Mensal", desc: "Padrão alimentar do mês", path: "/monthly-report", emoji: "📊" },
-              { icon: MessageSquare, label: "Coach IA", desc: "Chat nutricional inteligente", path: "/chat", emoji: "🤖" },
-              { icon: Droplets, label: "Hidratação", desc: "Controle de água diário", path: "/hydration", emoji: "💧" },
-              { icon: TrendingUp, label: "Progresso", desc: "Gráficos de evolução", path: "/progress", emoji: "📈" },
-              { icon: Camera, label: "Diário Fotográfico", desc: "Slider antes × depois", path: "/transformation", emoji: "📸" },
-              { icon: Leaf, label: "Micronutrientes", desc: "Vitaminas & minerais", path: "/micronutrients", emoji: "🥬" },
-              { icon: Trophy, label: "Conquistas", desc: "XP, badges & ranking", path: "/gamification", emoji: "🎮" },
-              { icon: Hammer, label: "Montar Dieta", desc: "Construtor alimento a alimento", path: "/diet-builder", emoji: "🔨" },
-              { icon: Clock, label: "Cronobiologia", desc: "Janelas de macros por horário", path: "/chronobiology", emoji: "🕐" },
-              { icon: Smile, label: "Comportamental", desc: "Mindful eating & TCC", path: "/behavioral-nutrition", emoji: "🧠" },
-              { icon: Pill, label: "Suplementos", desc: "Stack personalizado IA", path: "/supplementation", emoji: "💊" },
-              { icon: Bug, label: "Microbioma", desc: "Saúde intestinal & Bristol", path: "/microbiome", emoji: "🦠" },
-              { icon: FileText, label: "Exames de Sangue", desc: "IA interpreta seus exames", path: "/blood-test", emoji: "🩸" },
-              { icon: Users, label: "Família", desc: "Perfis de filhos & idosos", path: "/family", emoji: "👨‍👩‍👧" },
-              { icon: Dumbbell, label: "Wearables", desc: "Passos, sono & atividade", path: "/wearables", emoji: "⌚" },
-              { icon: User, label: "Perfil", desc: "Seus dados & metas", path: "/profile", emoji: "👤" },
-              { icon: Settings, label: "Configurações", desc: "Recalcular VET & macros", path: "/settings", emoji: "⚙️" },
-              { icon: Heart, label: "Profissional", desc: "Painel B2B completo", path: "/professional", emoji: "🩺" },
-            ].map((item, i) => (
-              <motion.button
-                key={item.path}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 1.12 + i * 0.02 }}
-                onClick={() => navigate(item.path)}
-                className="bg-[hsl(var(--card))] p-4 text-left transition-colors hover:bg-primary/[.03] relative overflow-hidden group"
-              >
-                {/* Left gold bar on hover */}
-                <span className="absolute left-0 top-0 bottom-0 w-[2px] bg-primary scale-y-0 origin-top transition-transform duration-300 group-hover:scale-y-100" />
-                {/* Faded number */}
-                <div className="font-heading text-[2rem] text-border/40 leading-none mb-1 font-bold">{String(i + 1).padStart(2, "0")}</div>
-                <div className="text-lg mb-1">{item.emoji}</div>
-                <div className="text-[11px] font-bold text-foreground tracking-wide leading-tight mb-0.5">{item.label}</div>
-                <p className="text-[9px] text-muted-foreground leading-snug">{item.desc}</p>
-              </motion.button>
-            ))}
+            {(() => {
+              const GATED_PATHS = ["/event-mode", "/food-simulator", "/monthly-report"];
+              const GATE_LABELS: Record<string, string> = {
+                "/event-mode": "Modo Evento",
+                "/food-simulator": "Simulador 'E se eu comer?'",
+                "/monthly-report": "Relatório Mensal",
+              };
+              const items = [
+                { icon: Utensils, label: "Registrar", desc: "Log de refeições", path: "/meal-log", emoji: "🍽️" },
+                { icon: History, label: "Histórico", desc: "Refeições passadas", path: "/meal-history", emoji: "📋" },
+                { icon: Apple, label: "Plano Alimentar", desc: "Cardápio semanal IA", path: "/meal-plan", emoji: "🍎" },
+                { icon: ShoppingCart, label: "Lista de Compras", desc: "Custo + itens automáticos", path: "/shopping-list", emoji: "🛒" },
+                { icon: Apple, label: "Receitas", desc: "Filtradas por macros do dia", path: "/recipes", emoji: "🍳" },
+                { icon: CalendarDays, label: "Modo Evento", desc: "Estratégia pré/durante/pós", path: "/event-mode", emoji: "📅" },
+                { icon: HelpingHand, label: "Simulador", desc: "E se eu comer...?", path: "/food-simulator", emoji: "🤔" },
+                { icon: BarChart, label: "Relatório Mensal", desc: "Padrão alimentar do mês", path: "/monthly-report", emoji: "📊" },
+                { icon: MessageSquare, label: "Coach IA", desc: "Chat nutricional inteligente", path: "/chat", emoji: "🤖" },
+                { icon: Droplets, label: "Hidratação", desc: "Controle de água diário", path: "/hydration", emoji: "💧" },
+                { icon: TrendingUp, label: "Progresso", desc: "Gráficos de evolução", path: "/progress", emoji: "📈" },
+                { icon: Camera, label: "Diário Fotográfico", desc: "Slider antes × depois", path: "/transformation", emoji: "📸" },
+                { icon: Leaf, label: "Micronutrientes", desc: "Vitaminas & minerais", path: "/micronutrients", emoji: "🥬" },
+                { icon: Trophy, label: "Conquistas", desc: "XP, badges & ranking", path: "/gamification", emoji: "🎮" },
+                { icon: Hammer, label: "Montar Dieta", desc: "Construtor alimento a alimento", path: "/diet-builder", emoji: "🔨" },
+                { icon: Clock, label: "Cronobiologia", desc: "Janelas de macros por horário", path: "/chronobiology", emoji: "🕐" },
+                { icon: Smile, label: "Comportamental", desc: "Mindful eating & TCC", path: "/behavioral-nutrition", emoji: "🧠" },
+                { icon: Pill, label: "Suplementos", desc: "Stack personalizado IA", path: "/supplementation", emoji: "💊" },
+                { icon: Bug, label: "Microbioma", desc: "Saúde intestinal & Bristol", path: "/microbiome", emoji: "🦠" },
+                { icon: FileText, label: "Exames de Sangue", desc: "IA interpreta seus exames", path: "/blood-test", emoji: "🩸" },
+                { icon: Users, label: "Família", desc: "Perfis de filhos & idosos", path: "/family", emoji: "👨‍👩‍👧" },
+                { icon: Dumbbell, label: "Wearables", desc: "Passos, sono & atividade", path: "/wearables", emoji: "⌚" },
+                { icon: User, label: "Perfil", desc: "Seus dados & metas", path: "/profile", emoji: "👤" },
+                { icon: Settings, label: "Configurações", desc: "Recalcular VET & macros", path: "/settings", emoji: "⚙️" },
+                { icon: Heart, label: "Profissional", desc: "Painel B2B completo", path: "/professional", emoji: "🩺" },
+              ];
+              return items.map((item, i) => {
+                const isLocked = GATED_PATHS.includes(item.path) && !isOnPlus;
+                return (
+                  <motion.button
+                    key={item.path}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 1.12 + i * 0.02 }}
+                    onClick={() => isLocked ? setUpgradeModal({ open: true, feature: GATE_LABELS[item.path] }) : navigate(item.path)}
+                    className="bg-[hsl(var(--card))] p-4 text-left transition-colors hover:bg-primary/[.03] relative overflow-hidden group"
+                  >
+                    {isLocked && <Lock className="w-3 h-3 text-muted-foreground absolute top-2 right-2" />}
+                    <span className="absolute left-0 top-0 bottom-0 w-[2px] bg-primary scale-y-0 origin-top transition-transform duration-300 group-hover:scale-y-100" />
+                    <div className="font-heading text-[2rem] text-border/40 leading-none mb-1 font-bold">{String(i + 1).padStart(2, "0")}</div>
+                    <div className="text-lg mb-1">{item.emoji}</div>
+                    <div className="text-[11px] font-bold text-foreground tracking-wide leading-tight mb-0.5">{item.label}</div>
+                    <p className="text-[9px] text-muted-foreground leading-snug">{item.desc}</p>
+                  </motion.button>
+                );
+              });
+            })()}
           </div>
         </motion.div>
 
