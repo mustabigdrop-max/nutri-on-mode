@@ -33,6 +33,9 @@ import SupplementationPage from "./pages/SupplementationPage";
 import MicrobiomePage from "./pages/MicrobiomePage";
 import ProtocolEnginePage from "./pages/ProtocolEnginePage";
 import RecipesPage from "./pages/RecipesPage";
+import EventModePage from "./pages/EventModePage";
+import FoodSimulatorPage from "./pages/FoodSimulatorPage";
+import MonthlyReportPage from "./pages/MonthlyReportPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
