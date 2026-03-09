@@ -13,6 +13,7 @@ import {
 import { toast } from "sonner";
 import EatOutFlow from "@/components/meal/EatOutFlow";
 import FreeMealFlow from "@/components/meal/FreeMealFlow";
+import VisualPortionSelector from "@/components/meal/VisualPortionSelector";
 
 const MEAL_TYPES = [
   { key: "cafe_manha", label: "Café da Manhã", emoji: "☕" },
