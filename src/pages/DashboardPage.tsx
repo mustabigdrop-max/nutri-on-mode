@@ -350,6 +350,25 @@ const DashboardPage = () => {
           </motion.div>
         )}
 
+        {/* Mood-adaptive banner */}
+        {todayMood && todayMood !== "normal" && moodData && (
+          <motion.div
+            initial={{ opacity: 0, y: -5 }}
+            animate={{ opacity: 1, y: 0 }}
+            className={`rounded-xl border p-3 mb-4 flex items-center gap-3 ${moodData.color}`}
+          >
+            <span className="text-2xl">{moodData.emoji}</span>
+            <div className="flex-1 min-w-0">
+              <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider">
+                {isChallengeMode ? "🔥 Modo Desafio Ativado" : isSimplifiedMode ? "💤 Modo Simplificado" : "🧘 Modo Cuidado"}
+              </p>
+              <p className="text-xs text-foreground font-mono leading-relaxed truncate">
+                {isSimplifiedMode ? "Só 3 refeições hoje. Sem pressão." : isChallengeMode ? "Bata todas as metas hoje!" : "Priorize alimentos anti-estresse."}
+              </p>
+            </div>
+          </motion.div>
+        )}
+
         {/* Calorie ring */}
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
