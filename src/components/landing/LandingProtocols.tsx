@@ -56,7 +56,7 @@ const LandingProtocols = () => {
           <div className="flex flex-col gap-2 mt-1">
             {[
               { label: "Proteína", val: d.p, color: "#ff2d55" },
-              { label: "Carboidrato", val: d.c, color: "#FFB800" },
+              { label: "Carboidrato", val: d.c, color: "#E8A020" },
               { label: "Gordura", val: d.f, color: "#00f0d0" },
             ].map((m) => (
               <div key={m.label} className="flex items-center gap-2.5 text-[.72rem]">

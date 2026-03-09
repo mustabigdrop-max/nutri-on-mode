@@ -34,7 +34,7 @@ const LandingCoach = () => {
 
         <motion.div initial={{ opacity: 0, y: 40 }} animate={inView ? { opacity: 1, y: 0 } : {}} transition={{ duration: 0.7, delay: 0.2 }}>
           <div className="bg-[#0d0d1f] border border-[#14142a] rounded-2xl p-6 md:p-8 relative overflow-hidden">
-            <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse at 30% 20%, rgba(255,184,0,.06), transparent 60%)" }} />
+            <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse at 30% 20%, rgba(232,160,32,.06), transparent 60%)" }} />
             <div className="relative">
               <div className="flex justify-between items-center mb-6">
                 <div className="font-heading text-[1rem] tracking-[.1em] text-primary">PAINEL PROFISSIONAL</div>

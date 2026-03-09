@@ -21,7 +21,7 @@ const LandingNav = () => {
     >
       <div className="font-heading text-[1.8rem] tracking-[.12em]">
         <span className="text-[#f0edf8] opacity-85">NUTRI</span>
-        <span className="text-primary tracking-[.18em]" style={{ textShadow: "0 0 20px rgba(255,184,0,.5)" }}>ON</span>
+        <span className="text-primary tracking-[.18em]" style={{ textShadow: "0 0 20px rgba(232,160,32,.5)" }}>ON</span>
       </div>
       <div className="hidden md:flex items-center gap-8">
         <a href="#protocols" className="font-mono text-[.72rem] text-[#50507a] hover:text-primary transition-colors tracking-[.08em]">Protocolos</a>

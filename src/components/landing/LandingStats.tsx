@@ -25,7 +25,7 @@ const LandingStats = () => {
           >
             <div
               className="font-heading text-[4rem] text-primary leading-none"
-              style={stat.glow ? { textShadow: "0 0 30px rgba(255,184,0,.4)" } : {}}
+              style={stat.glow ? { textShadow: "0 0 30px rgba(232,160,32,.4)" } : {}}
             >
               {stat.val}
             </div>

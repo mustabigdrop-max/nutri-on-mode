@@ -107,7 +107,7 @@ const LandingHero = () => {
 
       {/* Scroll indicator */}
       <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-30">
-        <div className="w-px h-[60px] animate-pulse" style={{ background: "linear-gradient(to bottom, hsl(43 100% 50%), transparent)" }} />
+        <div className="w-px h-[60px] animate-pulse" style={{ background: "linear-gradient(to bottom, hsl(38 80% 52%), transparent)" }} />
       </div>
     </section>
   );
