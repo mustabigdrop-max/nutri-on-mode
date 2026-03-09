@@ -494,7 +494,7 @@ const DashboardPage = () => {
         </motion.div>
 
         {/* R$97 Exclusive: Consistency Score */}
-        <ConsistencyScoreCard />
+        {isOnPlus && <ConsistencyScoreCard />}
 
         {/* R$97 Exclusive: Quick Action Buttons */}
         <motion.div
@@ -504,9 +504,10 @@ const DashboardPage = () => {
           className="grid grid-cols-2 gap-2 mb-4"
         >
           <button
-            onClick={() => navigate("/event-mode")}
-            className="flex items-center gap-2 p-3 rounded-xl border border-primary/20 bg-primary/5 hover:border-primary/40 transition-all group"
+            onClick={() => isOnPlus ? navigate("/event-mode") : setUpgradeModal({ open: true, feature: "Modo Evento" })}
+            className="flex items-center gap-2 p-3 rounded-xl border border-primary/20 bg-primary/5 hover:border-primary/40 transition-all group relative"
           >
+            {!isOnPlus && <Lock className="w-3.5 h-3.5 text-muted-foreground absolute top-2 right-2" />}
             <CalendarDays className="w-5 h-5 text-primary" />
             <div className="text-left">
               <p className="text-xs font-mono text-foreground font-bold">📅 Tenho um evento</p>
@@ -514,9 +515,10 @@ const DashboardPage = () => {
             </div>
           </button>
           <button
-            onClick={() => navigate("/food-simulator")}
-            className="flex items-center gap-2 p-3 rounded-xl border border-accent/20 bg-accent/5 hover:border-accent/40 transition-all group"
+            onClick={() => isOnPlus ? navigate("/food-simulator") : setUpgradeModal({ open: true, feature: "Simulador 'E se eu comer?'" })}
+            className="flex items-center gap-2 p-3 rounded-xl border border-accent/20 bg-accent/5 hover:border-accent/40 transition-all group relative"
           >
+            {!isOnPlus && <Lock className="w-3.5 h-3.5 text-muted-foreground absolute top-2 right-2" />}
             <HelpingHand className="w-5 h-5 text-accent" />
             <div className="text-left">
               <p className="text-xs font-mono text-foreground font-bold">🤔 E se eu comer...?</p>
@@ -524,6 +526,14 @@ const DashboardPage = () => {
             </div>
           </button>
         </motion.div>
+
+        {/* Upgrade Modal */}
+        <UpgradeModal
+          open={upgradeModal.open}
+          onClose={() => setUpgradeModal({ open: false, feature: "" })}
+          fromPlan={plan === "free" ? "ON" : plan}
+          lockedFeature={upgradeModal.feature}
+        />
 
         {/* Weekly Sabotage Diagnosis */}
         <WeeklySabotageCard />
