@@ -98,6 +98,7 @@ const App = () => (
             />
             <Route path="/glp1" element={<ProtectedRoute><Glp1Page /></ProtectedRoute>} />
             <Route path="/nutrisync" element={<ProtectedRoute><NutriSyncPage /></ProtectedRoute>} />
+            <Route path="/workout-history" element={<ProtectedRoute><WorkoutHistoryPage /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
