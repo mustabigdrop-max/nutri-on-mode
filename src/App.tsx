@@ -258,6 +258,30 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/event-mode"
+              element={
+                <ProtectedRoute>
+                  <EventModePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/food-simulator"
+              element={
+                <ProtectedRoute>
+                  <FoodSimulatorPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/monthly-report"
+              element={
+                <ProtectedRoute>
+                  <MonthlyReportPage />
+                </ProtectedRoute>
+              }
+            />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
