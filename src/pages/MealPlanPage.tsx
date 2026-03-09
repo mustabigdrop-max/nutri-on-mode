@@ -277,6 +277,36 @@ const MealPlanPage = () => {
     toast("Substituição feita 🔄");
   };
 
+  const handleSmartSubstitution = async (item: PlanItem, sub: SubOption) => {
+    await supabase
+      .from("meal_plan_items")
+      .update({
+        food_name: sub.name,
+        portion: sub.portion,
+        kcal: sub.kcal,
+        protein_g: sub.protein,
+        carbs_g: sub.carbs,
+        fat_g: sub.fat,
+        swapped: true,
+        original_food_name: item.original_food_name || item.food_name,
+      })
+      .eq("id", item.id);
+
+    setItems(prev => prev.map(i => i.id === item.id ? {
+      ...i,
+      food_name: sub.name,
+      portion: sub.portion,
+      kcal: sub.kcal,
+      protein_g: sub.protein,
+      carbs_g: sub.carbs,
+      fat_g: sub.fat,
+      swapped: true,
+      original_food_name: i.original_food_name || i.food_name,
+    } : i));
+    setSubModalItem(null);
+    toast.success(`Substituição feita: ${sub.name} 🔄`);
+  };
+
   // Drag-to-swap between meals
   const handleDragStart = (item: PlanItem) => setDragItem(item);
 
