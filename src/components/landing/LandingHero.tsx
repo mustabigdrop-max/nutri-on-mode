@@ -32,9 +32,9 @@ const LandingHero = () => {
         <span style={{ WebkitTextStroke: "1px rgba(255,255,255,.12)", color: "transparent" }}>OPINIÃO.</span>
         <br />
         <span className="text-[#f0edf8]">NUTRI</span>
-        <span className="text-primary relative inline-block" style={{ textShadow: "0 0 60px rgba(255,184,0,.35)" }}>
+        <span className="text-primary relative inline-block" style={{ textShadow: "0 0 60px rgba(232,160,32,.35)" }}>
           ON
-          <span className="absolute bottom-[-4px] left-0 right-0 h-[3px] bg-primary" style={{ boxShadow: "0 0 16px hsl(43 100% 50%)" }} />
+          <span className="absolute bottom-[-4px] left-0 right-0 h-[3px] bg-primary" style={{ boxShadow: "0 0 16px hsl(38 80% 52%)" }} />
         </span>
         <span className="text-[#f0edf8]"> É AÇÃO.</span>
       </motion.h1>
@@ -107,7 +107,7 @@ const LandingHero = () => {
 
       {/* Scroll indicator */}
       <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-30">
-        <div className="w-px h-[60px] animate-pulse" style={{ background: "linear-gradient(to bottom, hsl(43 100% 50%), transparent)" }} />
+        <div className="w-px h-[60px] animate-pulse" style={{ background: "linear-gradient(to bottom, hsl(38 80% 52%), transparent)" }} />
       </div>
     </section>
   );

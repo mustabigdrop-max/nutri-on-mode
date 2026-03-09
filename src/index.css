@@ -15,7 +15,7 @@
     --popover: 240 40% 7%;
     --popover-foreground: 260 30% 96%;
 
-    --primary: 38 80% 52%%;
+    --primary: 38 80% 52%;
     --primary-foreground: 240 50% 4%;
 
     --secondary: 240 30% 12%;
@@ -32,7 +32,7 @@
 
     --border: 240 30% 15%;
     --input: 240 30% 15%;
-    --ring:38 80% 52%4;
+    --ring:3 38 80% 52%
 
     --radius: 0.75rem;
 
@@ -49,8 +49,8 @@
     --gradient-cyan: linear-gradient(135deg, hsl(168 100% 50%), hsl(180 100% 60%));
     --gradient-hero: linear-gradient(180deg, hsl(240 50% 4%) 0%, hsl(240 40% 7%) 100%);
 
-    --shadow-gold: 0 0 30px hsl(43 100% 50% / 0.3);
-    --shadow-gold-lg: 0 0 60px hsl(43 100% 50% / 0.2), 0 0 120px hsl(43 100% 50% / 0.1);
+    --shadow-gold: 0 0 30px hsl(38 80% 52% / 0.3);
+    --shadow-gold-lg: 0 0 60px hsl(38 80% 52% / 0.2), 0 0 120px hsl(38 80% 52% / 0.1);
     --shadow-cyan: 0 0 30px hsl(168 100% 50% / 0.2);
 
     --font-display: 'Space Grotesk', sans-serif;
@@ -110,7 +110,7 @@
   }
 
   .text-gradient-gold {
-    background: linear-gradient(135deg, hsl(43 100% 50%), hsl(35 100% 65%));
+    background: linear-gradient(135deg, hsl(38 80% 52%), hsl(30 80% 60%));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -136,7 +136,7 @@
   }
 
   .border-gold-subtle {
-    border-color: hsl(43 100% 50% / 0.2);
+    border-color: hsl(38 80% 52% / 0.2);
   }
 
   .border-cyan-subtle {
@@ -185,10 +185,10 @@
 
 @keyframes glow {
   0%, 100% {
-    box-shadow: 0 0 20px hsl(43 100% 50% / 0.2);
+    box-shadow: 0 0 20px hsl(38 80% 52% / 0.2);
   }
   50% {
-    box-shadow: 0 0 40px hsl(43 100% 50% / 0.4), 0 0 80px hsl(43 100% 50% / 0.1);
+    box-shadow: 0 0 40px hsl(38 80% 52% / 0.4), 0 0 80px hsl(38 80% 52% / 0.1);
   }
 }
 
