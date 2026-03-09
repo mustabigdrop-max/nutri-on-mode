@@ -43,7 +43,7 @@ const LandingBackground = () => {
       draw(ctx: CanvasRenderingContext2D) {
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(255,184,0,${this.a * 0.5})`;
+        ctx.fillStyle = `rgba(232,160,32,${this.a * 0.5})`;
         ctx.fill();
       }
     }
