@@ -311,6 +311,54 @@ export type Database = {
           },
         ]
       }
+      consistency_scores: {
+        Row: {
+          adherence_score: number
+          created_at: string
+          id: string
+          improvement_tip: string | null
+          percentile: number | null
+          positive_factor: string | null
+          progress_score: number
+          quality_score: number
+          recovery_score: number
+          total_score: number
+          user_id: string
+          week_end: string
+          week_start: string
+        }
+        Insert: {
+          adherence_score?: number
+          created_at?: string
+          id?: string
+          improvement_tip?: string | null
+          percentile?: number | null
+          positive_factor?: string | null
+          progress_score?: number
+          quality_score?: number
+          recovery_score?: number
+          total_score?: number
+          user_id: string
+          week_end: string
+          week_start: string
+        }
+        Update: {
+          adherence_score?: number
+          created_at?: string
+          id?: string
+          improvement_tip?: string | null
+          percentile?: number | null
+          positive_factor?: string | null
+          progress_score?: number
+          quality_score?: number
+          recovery_score?: number
+          total_score?: number
+          user_id?: string
+          week_end?: string
+          week_start?: string
+        }
+        Relationships: []
+      }
       conversations: {
         Row: {
           created_at: string
@@ -741,6 +789,72 @@ export type Database = {
         }
         Relationships: []
       }
+      monthly_reports: {
+        Row: {
+          ai_message: string | null
+          avg_consistency_score: number | null
+          best_week: number | null
+          best_week_score: number | null
+          created_at: string
+          focus_next_month: Json | null
+          id: string
+          macro_averages: Json | null
+          pattern_analysis: Json | null
+          previous_comparison: Json | null
+          projection: Json | null
+          protein_days_hit: number | null
+          read: boolean
+          report_month: string
+          top_foods: Json | null
+          total_meals_logged: number | null
+          user_id: string
+          weight_end: number | null
+          weight_start: number | null
+        }
+        Insert: {
+          ai_message?: string | null
+          avg_consistency_score?: number | null
+          best_week?: number | null
+          best_week_score?: number | null
+          created_at?: string
+          focus_next_month?: Json | null
+          id?: string
+          macro_averages?: Json | null
+          pattern_analysis?: Json | null
+          previous_comparison?: Json | null
+          projection?: Json | null
+          protein_days_hit?: number | null
+          read?: boolean
+          report_month: string
+          top_foods?: Json | null
+          total_meals_logged?: number | null
+          user_id: string
+          weight_end?: number | null
+          weight_start?: number | null
+        }
+        Update: {
+          ai_message?: string | null
+          avg_consistency_score?: number | null
+          best_week?: number | null
+          best_week_score?: number | null
+          created_at?: string
+          focus_next_month?: Json | null
+          id?: string
+          macro_averages?: Json | null
+          pattern_analysis?: Json | null
+          previous_comparison?: Json | null
+          projection?: Json | null
+          protein_days_hit?: number | null
+          read?: boolean
+          report_month?: string
+          top_foods?: Json | null
+          total_meals_logged?: number | null
+          user_id?: string
+          weight_end?: number | null
+          weight_start?: number | null
+        }
+        Relationships: []
+      }
       mood_checkins: {
         Row: {
           checkin_date: string
@@ -975,6 +1089,45 @@ export type Database = {
           tags?: string[] | null
           user_id?: string
           weight_kg?: number | null
+        }
+        Relationships: []
+      }
+      special_events: {
+        Row: {
+          created_at: string
+          day_strategy: string | null
+          event_date: string
+          event_type: string
+          id: string
+          intention: string
+          post_strategy: string | null
+          pre_strategy: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          day_strategy?: string | null
+          event_date: string
+          event_type: string
+          id?: string
+          intention?: string
+          post_strategy?: string | null
+          pre_strategy?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          day_strategy?: string | null
+          event_date?: string
+          event_type?: string
+          id?: string
+          intention?: string
+          post_strategy?: string | null
+          pre_strategy?: string | null
+          status?: string
+          user_id?: string
         }
         Relationships: []
       }

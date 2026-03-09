@@ -9,6 +9,7 @@ import DashboardGamificationCards from "@/components/dashboard/DashboardGamifica
 import SmartAlerts from "@/components/dashboard/SmartAlerts";
 import ProactiveRecipeSuggestion from "@/components/dashboard/ProactiveRecipeSuggestion";
 import WeeklySabotageCard from "@/components/dashboard/WeeklySabotageCard";
+import ConsistencyScoreCard from "@/components/dashboard/ConsistencyScoreCard";
 import MoodCheckinModal, { type MoodType, MOODS } from "@/components/dashboard/MoodCheckinModal";
 import {
   ObjectiveBadge, getRingLabel, getScoreLabel,
@@ -18,7 +19,7 @@ import {
   Flame, TrendingUp, Droplets, Apple, BarChart3, MessageSquare,
   User, Plus, Utensils, LogOut, Zap, Brain, ChevronRight, Award,
   Camera, Users, Heart, Settings, HelpCircle, Leaf, Trophy, ShoppingCart, History, Dumbbell, FileText, Hammer,
-  Clock, Pill, Bug, Smile
+  Clock, Pill, Bug, Smile, CalendarDays, HelpingHand, BarChart
 } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
 
@@ -487,6 +488,38 @@ const DashboardPage = () => {
           </button>
         </motion.div>
 
+        {/* R$97 Exclusive: Consistency Score */}
+        <ConsistencyScoreCard />
+
+        {/* R$97 Exclusive: Quick Action Buttons */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.86 }}
+          className="grid grid-cols-2 gap-2 mb-4"
+        >
+          <button
+            onClick={() => navigate("/event-mode")}
+            className="flex items-center gap-2 p-3 rounded-xl border border-primary/20 bg-primary/5 hover:border-primary/40 transition-all group"
+          >
+            <CalendarDays className="w-5 h-5 text-primary" />
+            <div className="text-left">
+              <p className="text-xs font-mono text-foreground font-bold">📅 Tenho um evento</p>
+              <p className="text-[9px] font-mono text-muted-foreground">Estratégia automática</p>
+            </div>
+          </button>
+          <button
+            onClick={() => navigate("/food-simulator")}
+            className="flex items-center gap-2 p-3 rounded-xl border border-accent/20 bg-accent/5 hover:border-accent/40 transition-all group"
+          >
+            <HelpingHand className="w-5 h-5 text-accent" />
+            <div className="text-left">
+              <p className="text-xs font-mono text-foreground font-bold">🤔 E se eu comer...?</p>
+              <p className="text-[9px] font-mono text-muted-foreground">Simule antes</p>
+            </div>
+          </button>
+        </motion.div>
+
         {/* Weekly Sabotage Diagnosis */}
         <WeeklySabotageCard />
 
@@ -598,6 +631,9 @@ const DashboardPage = () => {
               { icon: Apple, label: "Plano Alimentar", desc: "Cardápio semanal IA", path: "/meal-plan", emoji: "🍎" },
               { icon: ShoppingCart, label: "Lista de Compras", desc: "Custo + itens automáticos", path: "/shopping-list", emoji: "🛒" },
               { icon: Apple, label: "Receitas", desc: "Filtradas por macros do dia", path: "/recipes", emoji: "🍳" },
+              { icon: CalendarDays, label: "Modo Evento", desc: "Estratégia pré/durante/pós", path: "/event-mode", emoji: "📅" },
+              { icon: HelpingHand, label: "Simulador", desc: "E se eu comer...?", path: "/food-simulator", emoji: "🤔" },
+              { icon: BarChart, label: "Relatório Mensal", desc: "Padrão alimentar do mês", path: "/monthly-report", emoji: "📊" },
               { icon: MessageSquare, label: "Coach IA", desc: "Chat nutricional inteligente", path: "/chat", emoji: "🤖" },
               { icon: Droplets, label: "Hidratação", desc: "Controle de água diário", path: "/hydration", emoji: "💧" },
               { icon: TrendingUp, label: "Progresso", desc: "Gráficos de evolução", path: "/progress", emoji: "📈" },
