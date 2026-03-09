@@ -29,6 +29,8 @@ const ProfilePage = () => {
   const [mealCount, setMealCount] = useState(0);
   const [weightCount, setWeightCount] = useState(0);
   const { hasSubscription: hasGlp1 } = useGlp1();
+  const { schedule } = useWorkoutSchedule();
+  const hasNutriSync = schedule.some(s => s.workout_type !== "rest");
 
   useEffect(() => {
     if (!profile) return;
