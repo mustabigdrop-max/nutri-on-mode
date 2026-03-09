@@ -56,6 +56,57 @@ export type Database = {
         }
         Relationships: []
       }
+      activation_metrics: {
+        Row: {
+          created_at: string | null
+          days_active: number | null
+          first_meal_at: string | null
+          id: string
+          last_app_open: string | null
+          notification_preferences: Json | null
+          notifications_configured: boolean | null
+          reengagement_sent: number | null
+          signup_at: string | null
+          total_meals_day1: number | null
+          tour_completed_at: string | null
+          trial_pause_until: string | null
+          trial_paused: boolean | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          days_active?: number | null
+          first_meal_at?: string | null
+          id?: string
+          last_app_open?: string | null
+          notification_preferences?: Json | null
+          notifications_configured?: boolean | null
+          reengagement_sent?: number | null
+          signup_at?: string | null
+          total_meals_day1?: number | null
+          tour_completed_at?: string | null
+          trial_pause_until?: string | null
+          trial_paused?: boolean | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          days_active?: number | null
+          first_meal_at?: string | null
+          id?: string
+          last_app_open?: string | null
+          notification_preferences?: Json | null
+          notifications_configured?: boolean | null
+          reengagement_sent?: number | null
+          signup_at?: string | null
+          total_meals_day1?: number | null
+          tour_completed_at?: string | null
+          trial_pause_until?: string | null
+          trial_paused?: boolean | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       activity_logs: {
         Row: {
           calories_burned: number | null
@@ -1082,6 +1133,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          activation_completed: boolean | null
           active_protocol: string | null
           activity_level: string | null
           avatar_url: string | null
@@ -1091,6 +1143,7 @@ export type Database = {
           dietary_restrictions: string[] | null
           email: string | null
           fat_g: number | null
+          first_meal_registered: boolean | null
           full_name: string | null
           geb_kcal: number | null
           get_kcal: number | null
@@ -1113,6 +1166,7 @@ export type Database = {
           sport: string | null
           streak_days: number | null
           training_frequency: number | null
+          trial_ends_at: string | null
           updated_at: string
           user_id: string
           uses_glp1: boolean | null
@@ -1121,6 +1175,7 @@ export type Database = {
           xp: number | null
         }
         Insert: {
+          activation_completed?: boolean | null
           active_protocol?: string | null
           activity_level?: string | null
           avatar_url?: string | null
@@ -1130,6 +1185,7 @@ export type Database = {
           dietary_restrictions?: string[] | null
           email?: string | null
           fat_g?: number | null
+          first_meal_registered?: boolean | null
           full_name?: string | null
           geb_kcal?: number | null
           get_kcal?: number | null
@@ -1152,6 +1208,7 @@ export type Database = {
           sport?: string | null
           streak_days?: number | null
           training_frequency?: number | null
+          trial_ends_at?: string | null
           updated_at?: string
           user_id: string
           uses_glp1?: boolean | null
@@ -1160,6 +1217,7 @@ export type Database = {
           xp?: number | null
         }
         Update: {
+          activation_completed?: boolean | null
           active_protocol?: string | null
           activity_level?: string | null
           avatar_url?: string | null
@@ -1169,6 +1227,7 @@ export type Database = {
           dietary_restrictions?: string[] | null
           email?: string | null
           fat_g?: number | null
+          first_meal_registered?: boolean | null
           full_name?: string | null
           geb_kcal?: number | null
           get_kcal?: number | null
@@ -1191,6 +1250,7 @@ export type Database = {
           sport?: string | null
           streak_days?: number | null
           training_frequency?: number | null
+          trial_ends_at?: string | null
           updated_at?: string
           user_id?: string
           uses_glp1?: boolean | null
