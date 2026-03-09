@@ -195,6 +195,7 @@ const DashboardPage = () => {
   const navigate = useNavigate();
   const [todayMeals, setTodayMeals] = useState<any[]>([]);
   const [todayTotals, setTodayTotals] = useState({ kcal: 0, protein: 0, carbs: 0, fat: 0 });
+  const [todayMood, setTodayMood] = useState<MoodType | null>(null);
   const { todayLog: waterLog, addWater } = useWaterLogs();
   const waterMl = waterLog?.ml_total ?? 0;
   const waterGlasses = Math.round(waterMl / 250);
