@@ -44,3 +44,15 @@ verify_jwt = false
 
 [functions.generate-monthly-report]
 verify_jwt = false
+
+[functions.generate-coach-briefing]
+verify_jwt = false
+
+[functions.detect-abandonment-risk]
+verify_jwt = false
+
+[functions.generate-plan-revision]
+verify_jwt = false
+
+[functions.process-voice-checkin]
+verify_jwt = false
