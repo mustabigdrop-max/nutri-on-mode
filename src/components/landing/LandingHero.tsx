@@ -32,9 +32,9 @@ const LandingHero = () => {
         <span style={{ WebkitTextStroke: "1px rgba(255,255,255,.12)", color: "transparent" }}>OPINIÃO.</span>
         <br />
         <span className="text-[#f0edf8]">NUTRI</span>
-        <span className="text-primary relative inline-block" style={{ textShadow: "0 0 60px rgba(255,184,0,.35)" }}>
+        <span className="text-primary relative inline-block" style={{ textShadow: "0 0 60px rgba(232,160,32,.35)" }}>
           ON
-          <span className="absolute bottom-[-4px] left-0 right-0 h-[3px] bg-primary" style={{ boxShadow: "0 0 16px hsl(43 100% 50%)" }} />
+          <span className="absolute bottom-[-4px] left-0 right-0 h-[3px] bg-primary" style={{ boxShadow: "0 0 16px hsl(38 80% 52%)" }} />
         </span>
         <span className="text-[#f0edf8]"> É AÇÃO.</span>
       </motion.h1>
