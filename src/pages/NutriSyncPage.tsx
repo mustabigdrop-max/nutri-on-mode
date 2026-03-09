@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Zap, Check, ChevronRight, Dumbbell, Clock, Droplets, Trophy, Calendar } from "lucide-react";
+import PeakWeekManager from "@/components/nutrisync/PeakWeekManager";
 import BottomNav from "@/components/BottomNav";
 import { useProfile } from "@/hooks/useProfile";
 import {
