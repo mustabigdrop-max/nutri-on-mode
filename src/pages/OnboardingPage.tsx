@@ -542,7 +542,7 @@ const OnboardingPage = () => {
             </button>
           </motion.div>
 
-          <Glp1UpsellModal open={showGlp1Upsell} onClose={() => setShowGlp1Upsell(false)} />
+          <Glp1UpsellModal open={showGlp1Upsell} onClose={() => setShowGlp1Upsell(false)} onActivate={() => { setShowGlp1Upsell(false); navigate("/glp1"); }} />
 
           <div>
             <Progress value={100} className="h-1.5" />
