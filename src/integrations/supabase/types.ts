@@ -1207,6 +1207,75 @@ export type Database = {
         }
         Relationships: []
       }
+      weekly_sabotage_reports: {
+        Row: {
+          ai_suggestion: string | null
+          avg_kcal_deficit: number | null
+          created_at: string
+          id: string
+          main_trigger: string | null
+          meals_off_plan: number
+          meals_on_plan: number
+          positive_highlights: Json | null
+          projected_kg_30d: number | null
+          protein_days_hit: number
+          read: boolean
+          sabotage_pattern: Json | null
+          total_meals_logged: number
+          total_meals_planned: number
+          user_id: string
+          week_end: string
+          week_start: string
+          weight_trend: string | null
+          worst_day: string | null
+          worst_hour: string | null
+        }
+        Insert: {
+          ai_suggestion?: string | null
+          avg_kcal_deficit?: number | null
+          created_at?: string
+          id?: string
+          main_trigger?: string | null
+          meals_off_plan?: number
+          meals_on_plan?: number
+          positive_highlights?: Json | null
+          projected_kg_30d?: number | null
+          protein_days_hit?: number
+          read?: boolean
+          sabotage_pattern?: Json | null
+          total_meals_logged?: number
+          total_meals_planned?: number
+          user_id: string
+          week_end: string
+          week_start: string
+          weight_trend?: string | null
+          worst_day?: string | null
+          worst_hour?: string | null
+        }
+        Update: {
+          ai_suggestion?: string | null
+          avg_kcal_deficit?: number | null
+          created_at?: string
+          id?: string
+          main_trigger?: string | null
+          meals_off_plan?: number
+          meals_on_plan?: number
+          positive_highlights?: Json | null
+          projected_kg_30d?: number | null
+          protein_days_hit?: number
+          read?: boolean
+          sabotage_pattern?: Json | null
+          total_meals_logged?: number
+          total_meals_planned?: number
+          user_id?: string
+          week_end?: string
+          week_start?: string
+          weight_trend?: string | null
+          worst_day?: string | null
+          worst_hour?: string | null
+        }
+        Relationships: []
+      }
       weight_logs: {
         Row: {
           body_fat_pct: number | null
