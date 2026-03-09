@@ -384,6 +384,57 @@ const ProfessionalDashboard = () => {
           </button>
         </div>
 
+        {/* Patient Alerts Panel */}
+        {patientAlerts.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-6"
+          >
+            <div className="flex items-center gap-2 mb-3">
+              <ShieldAlert className="w-4 h-4 text-destructive" />
+              <h2 className="text-sm font-bold text-foreground">Alertas de Pacientes</h2>
+              <span className="text-[10px] font-mono text-destructive bg-destructive/10 px-2 py-0.5 rounded-full">
+                {patientAlerts.length}
+              </span>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              {patientAlerts.map((alert, i) => (
+                <motion.div
+                  key={`${alert.patientId}-${alert.type}`}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.05 }}
+                  className={`rounded-xl border p-3 cursor-pointer transition-all hover:scale-[1.01] ${
+                    alert.priority === 1
+                      ? "border-destructive/30 bg-destructive/5"
+                      : "border-primary/20 bg-primary/5"
+                  }`}
+                  onClick={() => loadPatientDetail(alert.patientId)}
+                >
+                  <div className="flex items-start gap-2">
+                    <span className="text-lg flex-shrink-0">{alert.icon}</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-xs font-bold text-foreground">{alert.patientName}</span>
+                        <span className={`text-[9px] font-mono px-1.5 py-0.5 rounded ${
+                          alert.priority === 1
+                            ? "bg-destructive/20 text-destructive"
+                            : "bg-primary/20 text-primary"
+                        }`}>
+                          {alert.priority === 1 ? "URGENTE" : "ATENÇÃO"}
+                        </span>
+                      </div>
+                      <p className="text-xs text-muted-foreground leading-relaxed">{alert.message}</p>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0 mt-1" />
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Patient list */}
           <div className="lg:col-span-1">
