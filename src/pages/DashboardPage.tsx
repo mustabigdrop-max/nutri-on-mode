@@ -488,6 +488,38 @@ const DashboardPage = () => {
           </button>
         </motion.div>
 
+        {/* R$97 Exclusive: Consistency Score */}
+        <ConsistencyScoreCard />
+
+        {/* R$97 Exclusive: Quick Action Buttons */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.86 }}
+          className="grid grid-cols-2 gap-2 mb-4"
+        >
+          <button
+            onClick={() => navigate("/event-mode")}
+            className="flex items-center gap-2 p-3 rounded-xl border border-primary/20 bg-primary/5 hover:border-primary/40 transition-all group"
+          >
+            <CalendarDays className="w-5 h-5 text-primary" />
+            <div className="text-left">
+              <p className="text-xs font-mono text-foreground font-bold">📅 Tenho um evento</p>
+              <p className="text-[9px] font-mono text-muted-foreground">Estratégia automática</p>
+            </div>
+          </button>
+          <button
+            onClick={() => navigate("/food-simulator")}
+            className="flex items-center gap-2 p-3 rounded-xl border border-accent/20 bg-accent/5 hover:border-accent/40 transition-all group"
+          >
+            <HelpingHand className="w-5 h-5 text-accent" />
+            <div className="text-left">
+              <p className="text-xs font-mono text-foreground font-bold">🤔 E se eu comer...?</p>
+              <p className="text-[9px] font-mono text-muted-foreground">Simule antes</p>
+            </div>
+          </button>
+        </motion.div>
+
         {/* Weekly Sabotage Diagnosis */}
         <WeeklySabotageCard />
 
