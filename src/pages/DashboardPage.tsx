@@ -455,6 +455,14 @@ const DashboardPage = () => {
           </button>
         </motion.div>
 
+        {/* Proactive Recipe Suggestion */}
+        <ProactiveRecipeSuggestion
+          proteinConsumed={todayTotals.protein}
+          proteinTarget={proteinTarget}
+          kcalConsumed={todayTotals.kcal}
+          kcalTarget={kcalTarget}
+        />
+
         {/* Smart Proactive Alerts */}
         <motion.div
           initial={{ opacity: 0 }}
