@@ -46,7 +46,7 @@ const plans = [
   },
   {
     name: "ON PRO",
-    price: "197",
+    price: "247",
     icon: Briefcase,
     description: "IA + Coach real. Vagas limitadas: máx. 20 alunos.",
     popular: false,
