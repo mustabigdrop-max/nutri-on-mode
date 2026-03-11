@@ -112,6 +112,12 @@ const App = () => (
               path="/performance-pro"
               element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON PRO" featureName="Performance Pro"><PerformanceProPage /></PlanGateWrapper></ProtectedRoute>}
             />
+            <Route path="/coach" element={<CoachLandingPage />} />
+            <Route path="/coach/onboarding" element={<ProtectedRoute><CoachOnboardingPage /></ProtectedRoute>} />
+            <Route path="/coach/dashboard" element={<ProtectedRoute><CoachDashboardPage /></ProtectedRoute>} />
+            <Route path="/coach/patient/:patientId" element={<ProtectedRoute><CoachPatientDetailPage /></ProtectedRoute>} />
+            <Route path="/coach/add-patient" element={<ProtectedRoute><CoachAddPatientPage /></ProtectedRoute>} />
+            <Route path="/coach/settings" element={<ProtectedRoute><CoachSettingsPage /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
