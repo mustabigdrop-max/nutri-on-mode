@@ -44,6 +44,12 @@ import NutriSyncPage from "./pages/NutriSyncPage";
 import WorkoutHistoryPage from "./pages/WorkoutHistoryPage";
 import CircadianPage from "./pages/CircadianPage";
 import PerformanceProPage from "./pages/PerformanceProPage";
+import CoachLandingPage from "./pages/CoachLandingPage";
+import CoachOnboardingPage from "./pages/CoachOnboardingPage";
+import CoachDashboardPage from "./pages/CoachDashboardPage";
+import CoachPatientDetailPage from "./pages/CoachPatientDetailPage";
+import CoachAddPatientPage from "./pages/CoachAddPatientPage";
+import CoachSettingsPage from "./pages/CoachSettingsPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
