@@ -24,7 +24,7 @@ const plans = [
   },
   {
     name: "ON +",
-    price: "97",
+    price: "147",
     icon: Crown,
     description: "IA completa 24h. Preço de fundador — 50 vagas.",
     popular: true,
