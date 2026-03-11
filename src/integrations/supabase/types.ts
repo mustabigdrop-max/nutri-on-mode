@@ -376,6 +376,50 @@ export type Database = {
         }
         Relationships: []
       }
+      coach_alerts: {
+        Row: {
+          alert_type: string
+          coach_id: string
+          created_at: string | null
+          id: string
+          message: string
+          patient_user_id: string
+          resolved: boolean | null
+          resolved_at: string | null
+          severity: string | null
+        }
+        Insert: {
+          alert_type: string
+          coach_id: string
+          created_at?: string | null
+          id?: string
+          message: string
+          patient_user_id: string
+          resolved?: boolean | null
+          resolved_at?: string | null
+          severity?: string | null
+        }
+        Update: {
+          alert_type?: string
+          coach_id?: string
+          created_at?: string | null
+          id?: string
+          message?: string
+          patient_user_id?: string
+          resolved?: boolean | null
+          resolved_at?: string | null
+          severity?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coach_alerts_coach_id_fkey"
+            columns: ["coach_id"]
+            isOneToOne: false
+            referencedRelation: "coach_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       coach_briefings: {
         Row: {
           ai_analysis: string | null
@@ -426,6 +470,204 @@ export type Database = {
           week_start?: string
         }
         Relationships: []
+      }
+      coach_messages: {
+        Row: {
+          attachment_url: string | null
+          coach_id: string
+          created_at: string | null
+          id: string
+          message: string
+          patient_user_id: string
+          read: boolean | null
+          sender: string
+        }
+        Insert: {
+          attachment_url?: string | null
+          coach_id: string
+          created_at?: string | null
+          id?: string
+          message: string
+          patient_user_id: string
+          read?: boolean | null
+          sender?: string
+        }
+        Update: {
+          attachment_url?: string | null
+          coach_id?: string
+          created_at?: string | null
+          id?: string
+          message?: string
+          patient_user_id?: string
+          read?: boolean | null
+          sender?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coach_messages_coach_id_fkey"
+            columns: ["coach_id"]
+            isOneToOne: false
+            referencedRelation: "coach_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      coach_patients: {
+        Row: {
+          coach_id: string
+          created_at: string | null
+          id: string
+          notes: string | null
+          patient_user_id: string
+          started_at: string | null
+          status: string | null
+        }
+        Insert: {
+          coach_id: string
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          patient_user_id: string
+          started_at?: string | null
+          status?: string | null
+        }
+        Update: {
+          coach_id?: string
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          patient_user_id?: string
+          started_at?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coach_patients_coach_id_fkey"
+            columns: ["coach_id"]
+            isOneToOne: false
+            referencedRelation: "coach_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      coach_profiles: {
+        Row: {
+          alert_channels: Json | null
+          alert_frequency: string | null
+          avatar_url: string | null
+          bio: string | null
+          created_at: string | null
+          crn: string | null
+          id: string
+          max_patients: number | null
+          plan: string | null
+          professional_name: string | null
+          specialties: string[] | null
+          tier: string | null
+          trial_ends_at: string | null
+          updated_at: string | null
+          user_id: string
+          white_label_app_name: string | null
+          white_label_domain: string | null
+          white_label_logo_url: string | null
+          white_label_primary_color: string | null
+          white_label_secondary_color: string | null
+          white_label_splash_url: string | null
+        }
+        Insert: {
+          alert_channels?: Json | null
+          alert_frequency?: string | null
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          crn?: string | null
+          id?: string
+          max_patients?: number | null
+          plan?: string | null
+          professional_name?: string | null
+          specialties?: string[] | null
+          tier?: string | null
+          trial_ends_at?: string | null
+          updated_at?: string | null
+          user_id: string
+          white_label_app_name?: string | null
+          white_label_domain?: string | null
+          white_label_logo_url?: string | null
+          white_label_primary_color?: string | null
+          white_label_secondary_color?: string | null
+          white_label_splash_url?: string | null
+        }
+        Update: {
+          alert_channels?: Json | null
+          alert_frequency?: string | null
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          crn?: string | null
+          id?: string
+          max_patients?: number | null
+          plan?: string | null
+          professional_name?: string | null
+          specialties?: string[] | null
+          tier?: string | null
+          trial_ends_at?: string | null
+          updated_at?: string | null
+          user_id?: string
+          white_label_app_name?: string | null
+          white_label_domain?: string | null
+          white_label_logo_url?: string | null
+          white_label_primary_color?: string | null
+          white_label_secondary_color?: string | null
+          white_label_splash_url?: string | null
+        }
+        Relationships: []
+      }
+      coach_reports: {
+        Row: {
+          ai_summary: string | null
+          coach_id: string
+          coach_message: string | null
+          created_at: string | null
+          id: string
+          patient_user_id: string
+          report_data: Json | null
+          report_period: string | null
+          report_url: string | null
+          sent_at: string | null
+        }
+        Insert: {
+          ai_summary?: string | null
+          coach_id: string
+          coach_message?: string | null
+          created_at?: string | null
+          id?: string
+          patient_user_id: string
+          report_data?: Json | null
+          report_period?: string | null
+          report_url?: string | null
+          sent_at?: string | null
+        }
+        Update: {
+          ai_summary?: string | null
+          coach_id?: string
+          coach_message?: string | null
+          created_at?: string | null
+          id?: string
+          patient_user_id?: string
+          report_data?: Json | null
+          report_period?: string | null
+          report_url?: string | null
+          sent_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coach_reports_coach_id_fkey"
+            columns: ["coach_id"]
+            isOneToOne: false
+            referencedRelation: "coach_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       coach_slots: {
         Row: {
@@ -981,6 +1223,56 @@ export type Database = {
           weight_kg?: number | null
         }
         Relationships: []
+      }
+      marketplace_protocols: {
+        Row: {
+          coach_id: string
+          created_at: string | null
+          description: string | null
+          duration_days: number | null
+          id: string
+          name: string
+          price: number | null
+          protocol_data: Json | null
+          purchases_count: number | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          coach_id: string
+          created_at?: string | null
+          description?: string | null
+          duration_days?: number | null
+          id?: string
+          name: string
+          price?: number | null
+          protocol_data?: Json | null
+          purchases_count?: number | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          coach_id?: string
+          created_at?: string | null
+          description?: string | null
+          duration_days?: number | null
+          id?: string
+          name?: string
+          price?: number | null
+          protocol_data?: Json | null
+          purchases_count?: number | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_protocols_coach_id_fkey"
+            columns: ["coach_id"]
+            isOneToOne: false
+            referencedRelation: "coach_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       meal_logs: {
         Row: {
@@ -1558,6 +1850,7 @@ export type Database = {
           activity_level: string | null
           avatar_url: string | null
           carbs_g: number | null
+          coach_profile_id: string | null
           created_at: string
           date_of_birth: string | null
           dietary_restrictions: string[] | null
@@ -1600,6 +1893,7 @@ export type Database = {
           activity_level?: string | null
           avatar_url?: string | null
           carbs_g?: number | null
+          coach_profile_id?: string | null
           created_at?: string
           date_of_birth?: string | null
           dietary_restrictions?: string[] | null
@@ -1642,6 +1936,7 @@ export type Database = {
           activity_level?: string | null
           avatar_url?: string | null
           carbs_g?: number | null
+          coach_profile_id?: string | null
           created_at?: string
           date_of_birth?: string | null
           dietary_restrictions?: string[] | null
@@ -1678,7 +1973,15 @@ export type Database = {
           weight_kg?: number | null
           xp?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_coach_profile_id_fkey"
+            columns: ["coach_profile_id"]
+            isOneToOne: false
+            referencedRelation: "coach_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       progress_photos: {
         Row: {
