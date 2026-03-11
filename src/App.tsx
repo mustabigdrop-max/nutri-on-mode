@@ -113,6 +113,10 @@ const App = () => (
               path="/performance-pro"
               element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON PRO" featureName="Performance Pro"><PerformanceProPage /></PlanGateWrapper></ProtectedRoute>}
             />
+            <Route
+              path="/mental-performance"
+              element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON +" featureName="Mental Performance"><MentalPerformancePage /></PlanGateWrapper></ProtectedRoute>}
+            />
             <Route path="/coach" element={<CoachLandingPage />} />
             <Route path="/coach/onboarding" element={<ProtectedRoute><CoachOnboardingPage /></ProtectedRoute>} />
             <Route path="/coach/dashboard" element={<ProtectedRoute><CoachDashboardPage /></ProtectedRoute>} />
