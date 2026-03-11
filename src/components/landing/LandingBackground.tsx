@@ -22,16 +22,16 @@ const LandingBackground = () => {
     class Particle {
       x = Math.random() * W;
       y = Math.random() * H;
-      vx = (Math.random() - 0.5) * 0.3;
-      vy = (Math.random() - 0.5) * 0.3;
-      r = Math.random() * 1.2 + 0.3;
-      a = Math.random();
+      vx = (Math.random() - 0.5) * 0.25;
+      vy = (Math.random() - 0.5) * 0.25;
+      r = Math.random() * 1.5 + 0.4;
+      a = Math.random() * 0.6 + 0.2;
 
       reset() {
         this.x = Math.random() * W;
         this.y = Math.random() * H;
-        this.vx = (Math.random() - 0.5) * 0.3;
-        this.vy = (Math.random() - 0.5) * 0.3;
+        this.vx = (Math.random() - 0.5) * 0.25;
+        this.vy = (Math.random() - 0.5) * 0.25;
       }
 
       update() {
@@ -43,12 +43,12 @@ const LandingBackground = () => {
       draw(ctx: CanvasRenderingContext2D) {
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(232,160,322,${this.a * 0.5})`;
+        ctx.fillStyle = `rgba(232,160,32,${this.a * 0.7})`;
         ctx.fill();
       }
     }
 
-    const particles = Array.from({ length: 60 }, () => new Particle());
+    const particles = Array.from({ length: 90 }, () => new Particle());
 
     const animate = () => {
       ctx.clearRect(0, 0, W, H);
@@ -59,12 +59,12 @@ const LandingBackground = () => {
           const dx = particles[i].x - particles[j].x;
           const dy = particles[i].y - particles[j].y;
           const d = Math.sqrt(dx * dx + dy * dy);
-          if (d < 120) {
+          if (d < 140) {
             ctx.beginPath();
             ctx.moveTo(particles[i].x, particles[i].y);
             ctx.lineTo(particles[j].x, particles[j].y);
-            ctx.strokeStyle = `rgba(32,160,320,${(1 - d / 120) * 0.06})`;
-            ctx.lineWidth = 0.5;
+            ctx.strokeStyle = `rgba(232,160,32,${(1 - d / 140) * 0.12})`;
+            ctx.lineWidth = 0.6;
             ctx.stroke();
           }
         }
@@ -81,10 +81,44 @@ const LandingBackground = () => {
 
   return (
     <>
-      <canvas ref={canvasRef} className="fixed top-0 left-0 w-full h-full z-0 opacity-40 pointer-events-none" />
-      {/* Noise overlay */}
+      <canvas
+        ref={canvasRef}
+        className="fixed top-0 left-0 w-full h-full z-0 opacity-50 pointer-events-none"
+      />
       <div
-        className="fixed inset-0 pointer-events-none z-[1] opacity-60"
+        className="fixed inset-0 pointer-events-none z-[1]"
+        style={{
+          backgroundImage: `
+            linear-gradient(rgba(232,160,32,.03) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(232,160,32,.03) 1px, transparent 1px)
+          `,
+          backgroundSize: "72px 72px",
+        }}
+      />
+      <div
+        className="fixed pointer-events-none z-[1]"
+        style={{
+          top: "-15%", right: "-8%", width: "700px", height: "700px",
+          borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(232,160,32,.07) 0%, transparent 65%)",
+        }}
+      />
+      <div
+        className="fixed pointer-events-none z-[1]"
+        style={{
+          bottom: "-20%", left: "-10%", width: "600px", height: "600px",
+          borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(0,240,180,.04) 0%, transparent 65%)",
+        }}
+      />
+      <div
+        className="fixed inset-0 pointer-events-none z-[1]"
+        style={{
+          background: "radial-gradient(ellipse 85% 85% at 50% 50%, transparent 25%, rgba(3,3,10,.65) 100%)",
+        }}
+      />
+      <div
+        className="fixed inset-0 pointer-events-none z-[1] opacity-35"
         style={{
           backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E")`,
         }}
