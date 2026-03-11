@@ -10,8 +10,8 @@ serve(async (req) => {
 
   try {
     const { query, category } = await req.json();
-    const PERPLEXITY_API_KEY = Deno.env.get("PERPLEXITY_API_KEY");
-    if (!PERPLEXITY_API_KEY) throw new Error("PERPLEXITY_API_KEY not configured");
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
     const systemPrompts: Record<string, string> = {
       nutrition: "Você é um especialista em nutrição e ciência dos alimentos. Responda com base em evidências científicas, citando estudos quando possível. Foque em: composição nutricional, efeitos metabólicos, recomendações baseadas em evidências. Responda em português BR.",
@@ -21,32 +21,30 @@ serve(async (req) => {
       general: "Você é um assistente de pesquisa científica focado em nutrição, saúde e performance. Responda com base em evidências, citando fontes. Responda em português BR.",
     };
 
-    const response = await fetch("https://api.perplexity.ai/chat/completions", {
+    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${PERPLEXITY_API_KEY}`,
+        Authorization: `Bearer ${LOVABLE_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "sonar-pro",
+        model: "google/gemini-2.5-flash",
         messages: [
           { role: "system", content: systemPrompts[category] || systemPrompts.general },
           { role: "user", content: query },
         ],
-        search_recency_filter: "month",
       }),
     });
 
     if (!response.ok) {
       const errBody = await response.text();
-      throw new Error(`Perplexity API error [${response.status}]: ${errBody}`);
+      throw new Error(`AI API error [${response.status}]: ${errBody}`);
     }
 
     const data = await response.json();
     const answer = data.choices?.[0]?.message?.content || "Sem resultado.";
-    const citations = data.citations || [];
 
-    return new Response(JSON.stringify({ answer, citations }), {
+    return new Response(JSON.stringify({ answer, citations: [] }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
