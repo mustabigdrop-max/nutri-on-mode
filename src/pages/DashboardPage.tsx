@@ -741,6 +741,7 @@ const DashboardPage = () => {
                 { icon: Zap, label: "NutriSync", desc: "Treino + nutrição em tempo real", path: "/nutrisync", emoji: "⚡" },
                 { icon: Dumbbell, label: "Histórico Treinos", desc: "Consistência & calorias ajustadas", path: "/workout-history", emoji: "🏋️" },
                 { icon: Zap, label: "Performance Pro", desc: "Nutrição para atletas avançados", path: "/performance-pro", emoji: "⚡" },
+                { icon: Zap, label: "Desempenho Mental", desc: "Nootrópicos, energia & foco", path: "/mental-performance", emoji: "🧠" },
               ];
               return items.map((item, i) => {
                 const isLocked = GATED_PATHS.includes(item.path) && !isOnPlus;
