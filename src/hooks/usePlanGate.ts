@@ -7,8 +7,11 @@ export type PlanTier = "free" | "ON" | "ON +" | "ON PRO";
 const PLAN_HIERARCHY: Record<string, number> = {
   free: 0,
   ON: 1,
+  on: 1,
   "ON +": 2,
+  "on_plus": 2,
   "ON PRO": 3,
+  "on_pro": 3,
 };
 
 export const usePlanGate = () => {
