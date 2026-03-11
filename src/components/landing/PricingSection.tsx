@@ -4,7 +4,7 @@ import { Check, Zap, Crown, Briefcase } from "lucide-react";
 const plans = [
   {
     name: "ON",
-    price: "47",
+    price: "97",
     icon: Zap,
     description: "A IA que te conhece, não só te conta.",
     popular: false,
