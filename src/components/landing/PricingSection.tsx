@@ -4,7 +4,7 @@ import { Check, Zap, Crown, Briefcase } from "lucide-react";
 const plans = [
   {
     name: "ON",
-    price: "47",
+    price: "97",
     icon: Zap,
     description: "A IA que te conhece, não só te conta.",
     popular: false,
@@ -24,7 +24,7 @@ const plans = [
   },
   {
     name: "ON +",
-    price: "97",
+    price: "147",
     icon: Crown,
     description: "IA completa 24h. Preço de fundador — 50 vagas.",
     popular: true,
@@ -46,7 +46,7 @@ const plans = [
   },
   {
     name: "ON PRO",
-    price: "197",
+    price: "247",
     icon: Briefcase,
     description: "IA + Coach real. Vagas limitadas: máx. 20 alunos.",
     popular: false,

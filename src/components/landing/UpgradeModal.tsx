@@ -11,7 +11,7 @@ interface UpgradeModalProps {
 const upgradePath: Record<string, { target: string; price: string; highlights: string[] }> = {
   ON: {
     target: "ON +",
-    price: "R$97",
+    price: "R$147",
     highlights: [
       "Chat IA nutriON ilimitado",
       "Plano semanal completo por IA",
@@ -25,7 +25,7 @@ const upgradePath: Record<string, { target: string; price: string; highlights: s
   },
   "ON +": {
     target: "ON PRO",
-    price: "R$197",
+    price: "R$247",
     highlights: [
       "2 check-ins mensais com Coach (vídeo/áudio)",
       "Coach com painel em tempo real",
