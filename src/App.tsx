@@ -44,6 +44,7 @@ import NutriSyncPage from "./pages/NutriSyncPage";
 import WorkoutHistoryPage from "./pages/WorkoutHistoryPage";
 import CircadianPage from "./pages/CircadianPage";
 import PerformanceProPage from "./pages/PerformanceProPage";
+import MentalPerformancePage from "./pages/MentalPerformancePage";
 import CoachLandingPage from "./pages/CoachLandingPage";
 import CoachOnboardingPage from "./pages/CoachOnboardingPage";
 import CoachDashboardPage from "./pages/CoachDashboardPage";
