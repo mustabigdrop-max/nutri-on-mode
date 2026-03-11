@@ -19,6 +19,7 @@ interface PatientRow {
   patient_name?: string;
   score?: number;
   last_activity?: string;
+  created_at: string;
 }
 
 const CoachDashboardPage = () => {
