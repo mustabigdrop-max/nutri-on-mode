@@ -44,6 +44,7 @@ import NutriSyncPage from "./pages/NutriSyncPage";
 import WorkoutHistoryPage from "./pages/WorkoutHistoryPage";
 import CircadianPage from "./pages/CircadianPage";
 import PerformanceProPage from "./pages/PerformanceProPage";
+import MentalPerformancePage from "./pages/MentalPerformancePage";
 import CoachLandingPage from "./pages/CoachLandingPage";
 import CoachOnboardingPage from "./pages/CoachOnboardingPage";
 import CoachDashboardPage from "./pages/CoachDashboardPage";
@@ -111,6 +112,10 @@ const App = () => (
             <Route
               path="/performance-pro"
               element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON PRO" featureName="Performance Pro"><PerformanceProPage /></PlanGateWrapper></ProtectedRoute>}
+            />
+            <Route
+              path="/mental-performance"
+              element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON +" featureName="Mental Performance"><MentalPerformancePage /></PlanGateWrapper></ProtectedRoute>}
             />
             <Route path="/coach" element={<CoachLandingPage />} />
             <Route path="/coach/onboarding" element={<ProtectedRoute><CoachOnboardingPage /></ProtectedRoute>} />

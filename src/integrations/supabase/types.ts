@@ -886,6 +886,72 @@ export type Database = {
         }
         Relationships: []
       }
+      energy_insights: {
+        Row: {
+          generated_at: string | null
+          id: string
+          insight_text: string | null
+          insight_type: string | null
+          read: boolean | null
+          user_id: string
+        }
+        Insert: {
+          generated_at?: string | null
+          id?: string
+          insight_text?: string | null
+          insight_type?: string | null
+          read?: boolean | null
+          user_id: string
+        }
+        Update: {
+          generated_at?: string | null
+          id?: string
+          insight_text?: string | null
+          insight_type?: string | null
+          read?: boolean | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      energy_scores: {
+        Row: {
+          calories_that_day: number | null
+          created_at: string | null
+          id: string
+          nootropic_taken: boolean | null
+          possible_cause: string | null
+          score: number
+          score_date: string | null
+          sleep_hours: number | null
+          user_id: string
+          workout_type: string | null
+        }
+        Insert: {
+          calories_that_day?: number | null
+          created_at?: string | null
+          id?: string
+          nootropic_taken?: boolean | null
+          possible_cause?: string | null
+          score?: number
+          score_date?: string | null
+          sleep_hours?: number | null
+          user_id: string
+          workout_type?: string | null
+        }
+        Update: {
+          calories_that_day?: number | null
+          created_at?: string | null
+          id?: string
+          nootropic_taken?: boolean | null
+          possible_cause?: string | null
+          score?: number
+          score_date?: string | null
+          sleep_hours?: number | null
+          user_id?: string
+          workout_type?: string | null
+        }
+        Relationships: []
+      }
       family_meal_logs: {
         Row: {
           created_at: string
@@ -1023,6 +1089,42 @@ export type Database = {
           question?: string
           sort_order?: number | null
           tags?: string[] | null
+        }
+        Relationships: []
+      }
+      focus_mode_logs: {
+        Row: {
+          created_at: string | null
+          duration_hours: number | null
+          event_date: string | null
+          event_time: string | null
+          event_type: string | null
+          id: string
+          performance_score: number | null
+          protocol_generated: Json | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          duration_hours?: number | null
+          event_date?: string | null
+          event_time?: string | null
+          event_type?: string | null
+          id?: string
+          performance_score?: number | null
+          protocol_generated?: Json | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          duration_hours?: number | null
+          event_date?: string | null
+          event_time?: string | null
+          event_type?: string | null
+          id?: string
+          performance_score?: number | null
+          protocol_generated?: Json | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -1558,6 +1660,66 @@ export type Database = {
         }
         Relationships: []
       }
+      nootropic_daily_logs: {
+        Row: {
+          adherence_score: number | null
+          created_at: string | null
+          id: string
+          items_taken: Json | null
+          log_date: string | null
+          user_id: string
+        }
+        Insert: {
+          adherence_score?: number | null
+          created_at?: string | null
+          id?: string
+          items_taken?: Json | null
+          log_date?: string | null
+          user_id: string
+        }
+        Update: {
+          adherence_score?: number | null
+          created_at?: string | null
+          id?: string
+          items_taken?: Json | null
+          log_date?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      nootropic_stacks: {
+        Row: {
+          caffeine_tolerance: string | null
+          challenge: string | null
+          created_at: string | null
+          generated_stack: Json | null
+          health_conditions: string[] | null
+          id: string
+          objective: string | null
+          user_id: string
+        }
+        Insert: {
+          caffeine_tolerance?: string | null
+          challenge?: string | null
+          created_at?: string | null
+          generated_stack?: Json | null
+          health_conditions?: string[] | null
+          id?: string
+          objective?: string | null
+          user_id: string
+        }
+        Update: {
+          caffeine_tolerance?: string | null
+          challenge?: string | null
+          created_at?: string | null
+          generated_stack?: Json | null
+          health_conditions?: string[] | null
+          id?: string
+          objective?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       peak_week_plans: {
         Row: {
           created_at: string | null
@@ -2022,6 +2184,36 @@ export type Database = {
           tags?: string[] | null
           user_id?: string
           weight_kg?: number | null
+        }
+        Relationships: []
+      }
+      research_searches: {
+        Row: {
+          category: string | null
+          citations: Json | null
+          created_at: string | null
+          id: string
+          query: string
+          results: Json | null
+          user_id: string
+        }
+        Insert: {
+          category?: string | null
+          citations?: Json | null
+          created_at?: string | null
+          id?: string
+          query: string
+          results?: Json | null
+          user_id: string
+        }
+        Update: {
+          category?: string | null
+          citations?: Json | null
+          created_at?: string | null
+          id?: string
+          query?: string
+          results?: Json | null
+          user_id?: string
         }
         Relationships: []
       }
