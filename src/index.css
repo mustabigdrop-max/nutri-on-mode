@@ -219,3 +219,102 @@
     opacity: 0.85;
   }
 }
+
+/* ── Surreal design animations ───────────────────────────── */
+
+@keyframes scan-line {
+  0%   { top: -2%; opacity: 0; }
+  4%   { opacity: 1; }
+  96%  { opacity: 1; }
+  100% { top: 102%; opacity: 0; }
+}
+
+@keyframes orbit {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes orbit-rev {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(-360deg); }
+}
+
+@keyframes pulse-ring {
+  0%   { transform: scale(0.6); opacity: 0.6; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+
+@keyframes data-float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-6px); }
+}
+
+@keyframes glitch-text {
+  0%, 86%, 100% { clip-path: none; transform: none; }
+  87% { clip-path: rect(22px, 9999px, 36px, 0); transform: translateX(-4px); }
+  88% { clip-path: rect(5px, 9999px, 18px, 0); transform: translateX(4px); }
+  90% { clip-path: rect(48px, 9999px, 55px, 0); transform: translateX(-2px); }
+  92% { clip-path: none; transform: none; }
+}
+
+@keyframes blink-cursor {
+  0%, 48% { opacity: 1; }
+  50%, 98% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+/* Utility classes */
+@layer utilities {
+  .animate-scan-line {
+    animation: scan-line 3s ease-in-out forwards;
+  }
+
+  .animate-orbit {
+    animation: orbit 20s linear infinite;
+  }
+
+  .animate-orbit-rev {
+    animation: orbit-rev 15s linear infinite;
+  }
+
+  .animate-pulse-ring {
+    animation: pulse-ring 3s ease-out infinite;
+  }
+
+  .animate-data-float {
+    animation: data-float 4s ease-in-out infinite;
+  }
+
+  .animate-glitch {
+    animation: glitch-text 8s ease-in-out infinite;
+  }
+
+  .animate-shimmer {
+    background-size: 200% auto;
+    animation: shimmer 3s linear infinite;
+  }
+
+  .text-gradient-surreal {
+    background: linear-gradient(135deg, #e8a020 0%, #f5d080 40%, #00f0b4 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .border-clip-corner {
+    clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+  }
+
+  .glow-cyan-strong {
+    box-shadow: 0 0 20px rgba(0,240,180,.4), 0 0 40px rgba(0,240,180,.15);
+  }
+
+  .glow-gold-strong {
+    box-shadow: 0 0 20px rgba(232,160,32,.5), 0 0 50px rgba(232,160,32,.2);
+  }
+}
