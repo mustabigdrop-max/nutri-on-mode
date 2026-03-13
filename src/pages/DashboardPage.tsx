@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useWaterLogs } from "@/hooks/useWaterLogs";
 import { usePlanGate } from "@/hooks/usePlanGate";
 import { useWorkoutSchedule, getWorkoutAdjustment, WORKOUT_TYPES, type WorkoutType } from "@/hooks/useWorkoutSchedule";
-
+import TrialBanner from "@/components/dashboard/TrialBanner";
 import ReengagementPopup from "@/components/dashboard/ReengagementPopup";
 import UpgradeModal from "@/components/landing/UpgradeModal";
 import DashboardGamificationCards from "@/components/dashboard/DashboardGamificationCards";
@@ -439,6 +439,7 @@ const DashboardPage = () => {
       <ReengagementPopup hasMealsToday={todayMeals.length > 0} />
 
       <div className="relative z-10 max-w-lg mx-auto px-4 pt-4">
+        <TrialBanner />
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}

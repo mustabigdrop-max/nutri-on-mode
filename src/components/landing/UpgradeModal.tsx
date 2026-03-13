@@ -8,10 +8,13 @@ interface UpgradeModalProps {
   lockedFeature: string;
 }
 
-const upgradePath: Record<string, { target: string; price: string; highlights: string[] }> = {
+const upgradePath: Record<string, { target: string; price: string; oldPrice: string; discount: string; slots: string; highlights: string[] }> = {
   ON: {
     target: "ON +",
-    price: "R$147",
+    price: "R$127",
+    oldPrice: "R$197",
+    discount: "35% off fundador",
+    slots: "50 vagas",
     highlights: [
       "Chat IA nutriON ilimitado",
       "Plano semanal completo por IA",
@@ -26,6 +29,9 @@ const upgradePath: Record<string, { target: string; price: string; highlights: s
   "ON +": {
     target: "ON PRO",
     price: "R$247",
+    oldPrice: "R$397",
+    discount: "37% off fundador",
+    slots: "20 vagas",
     highlights: [
       "2 check-ins mensais com Coach (vídeo/áudio)",
       "Coach com painel em tempo real",
@@ -81,14 +87,34 @@ const UpgradeModal = ({ open, onClose, fromPlan, lockedFeature }: UpgradeModalPr
               <span className="text-[#f0edf8] font-medium">{path.target}</span>.
             </p>
 
-            {/* Comparison */}
+            {/* Comparison card */}
             <div className="bg-[#06060f] border border-[#14142a] rounded-xl p-5 mb-6">
+              {/* Urgency badge */}
               <div className="flex items-center justify-between mb-4">
                 <span className="font-mono text-[.65rem] text-[#50507a] tracking-[.1em] uppercase">
                   {path.target}
                 </span>
-                <span className="font-heading text-primary text-[1.3rem]">{path.price}<span className="font-mono text-[.55rem] text-[#50507a]">/mês</span></span>
+                <div className="flex items-center gap-2">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
+                  </span>
+                  <span className="font-mono text-[.55rem] text-primary tracking-[.05em]">
+                    {path.slots} · restam poucas
+                  </span>
+                </div>
               </div>
+
+              {/* Price with anchoring */}
+              <div className="flex items-baseline gap-2 mb-4">
+                <span className="font-heading text-primary text-[1.5rem]">{path.price}</span>
+                <span className="font-mono text-[.55rem] text-[#50507a]">/mês</span>
+                <span className="font-mono text-[.65rem] text-[#50507a] line-through ml-1">{path.oldPrice}</span>
+                <span className="font-mono text-[.55rem] text-primary bg-primary/10 px-1.5 py-0.5 rounded-sm">
+                  {path.discount}
+                </span>
+              </div>
+
               <ul className="flex flex-col gap-2">
                 {path.highlights.map((h) => (
                   <li key={h} className="flex items-start gap-2 text-[.78rem] text-[#a0a0c0] font-landing">

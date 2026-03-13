@@ -3,10 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { motion, useInView } from "framer-motion";
 import { usePlanSlots } from "@/hooks/usePlanSlots";
 import UpgradeModal from "@/components/landing/UpgradeModal";
+import { Shield, Star, Zap } from "lucide-react";
 
 const plans = [
   {
-    name: "Essencial", price: "R$47", featured: false,
+    name: "ON", price: "R$67", oldPrice: "R$97", discount: "31% off fundador", featured: false,
     checkoutUrl: "https://pay.kiwify.com.br/2U4q4d9",
     features: [
       "Onboarding inteligente por conversa (sem formulário)",
@@ -24,7 +25,7 @@ const plans = [
     cta: "Começar agora →",
   },
   {
-    name: "ON +", price: "R$97", featured: true,
+    name: "ON +", price: "R$127", oldPrice: "R$197", discount: "35% off fundador", featured: true,
     slotKey: "on_plus",
     checkoutUrl: "https://pay.kiwify.com.br/6pXyygp",
     badge: "PREÇO DE FUNDADOR",
@@ -45,7 +46,7 @@ const plans = [
     cta: "Garantir vaga de fundador →",
   },
   {
-    name: "ON PRO", price: "R$197", featured: false,
+    name: "ON PRO", price: "R$247", oldPrice: "R$397", discount: "37% off fundador", featured: false,
     slotKey: "on_pro",
     checkoutUrl: "https://pay.kiwify.com.br/zbtOulj",
     badge: "VAGAS LIMITADAS",
@@ -90,7 +91,56 @@ const LandingPlans = () => {
         </h2>
       </motion.div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mt-16">
+      {/* Starter Tripwire Banner */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={inView ? { opacity: 1, y: 0 } : {}}
+        transition={{ delay: 0.3, duration: 0.6 }}
+        className="relative mt-10 mb-12 rounded-xl border border-primary/30 bg-primary/[.04] p-6 md:p-8 overflow-hidden"
+      >
+        {/* Glow effect */}
+        <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-[300px] h-[200px] bg-primary/10 rounded-full blur-[80px] pointer-events-none" />
+        
+        <div className="relative z-10 flex flex-col md:flex-row items-center gap-6 md:gap-10">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-xl bg-primary/15 border border-primary/25 flex items-center justify-center">
+              <Zap className="w-6 h-6 text-primary" />
+            </div>
+            <div>
+              <div className="font-mono text-[.6rem] text-primary tracking-[.15em] uppercase">Acesso Starter</div>
+              <div className="font-heading text-[1.8rem] text-[#f0edf8] leading-none mt-0.5">
+                R$9,90
+              </div>
+            </div>
+          </div>
+          
+          <div className="flex-1 text-center md:text-left">
+            <p className="text-[.88rem] text-[#a0a0c0] font-landing leading-relaxed">
+              <strong className="text-[#f0edf8]">7 dias de acesso completo ao ON+</strong> — pagamento único, sem renovação automática.
+            </p>
+            <p className="text-[.72rem] text-[#7070a0] font-mono mt-1.5">
+              Abata R$9,90 na primeira mensalidade se assinar em seguida
+            </p>
+          </div>
+          
+          <a
+            href="/auth"
+            onClick={(e) => { e.preventDefault(); navigate("/auth"); }}
+            className="shrink-0 px-7 py-3 rounded-lg bg-primary text-black font-mono text-[.72rem] font-medium tracking-[.08em] hover:bg-black hover:text-primary hover:outline hover:outline-1 hover:outline-primary transition-all whitespace-nowrap"
+          >
+            EXPERIMENTAR POR R$9,90 →
+          </a>
+        </div>
+      </motion.div>
+
+      {/* Divider */}
+      <div className="flex items-center gap-4 mb-12">
+        <div className="flex-1 h-px bg-[#14142a]" />
+        <span className="font-mono text-[.6rem] text-[#50507a] tracking-[.15em] uppercase">Ou assine um plano completo</span>
+        <div className="flex-1 h-px bg-[#14142a]" />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         {plans.map((plan) => (
           <div
             key={plan.name}
@@ -115,10 +165,21 @@ const LandingPlans = () => {
               </div>
             )}
             <div className="font-heading text-[1.5rem] tracking-[.08em] mb-1.5 text-[#f0edf8]">{plan.name}</div>
+            
+            {/* Price with anchoring */}
             <div className="my-5">
-              <span className="font-heading text-[3.5rem] text-primary leading-none">{plan.price}</span>
-              <span className="font-mono text-[.65rem] text-[#50507a]">/mês</span>
+              <div className="flex items-baseline gap-2.5">
+                <span className="font-heading text-[3.5rem] text-primary leading-none">{plan.price}</span>
+                <span className="font-mono text-[.65rem] text-[#50507a]">/mês</span>
+              </div>
+              <div className="flex items-center gap-2 mt-1.5">
+                <span className="font-mono text-[.7rem] text-[#50507a] line-through">{plan.oldPrice}</span>
+                <span className="font-mono text-[.6rem] text-primary bg-primary/10 px-2 py-0.5 rounded-sm tracking-[.05em]">
+                  {plan.discount}
+                </span>
+              </div>
             </div>
+
             <ul className="flex flex-col gap-2.5 mb-8">
               {plan.features.map((f, i) => {
                 const text = typeof f === "string" ? f : f.text;
@@ -150,6 +211,22 @@ const LandingPlans = () => {
             </a>
           </div>
         ))}
+      </div>
+
+      {/* Trust bar */}
+      <div className="flex flex-wrap items-center justify-center gap-6 mt-12 py-4">
+        <div className="flex items-center gap-2 text-[.7rem] font-mono text-[#50507a]">
+          <Shield className="w-3.5 h-3.5 text-primary/60" />
+          Cancele quando quiser
+        </div>
+        <div className="flex items-center gap-2 text-[.7rem] font-mono text-[#50507a]">
+          <Star className="w-3.5 h-3.5 text-primary/60" />
+          Pagamento seguro via Kiwify
+        </div>
+        <div className="flex items-center gap-2 text-[.7rem] font-mono text-[#50507a]">
+          <Zap className="w-3.5 h-3.5 text-primary/60" />
+          Acesso imediato após confirmação
+        </div>
       </div>
 
       <UpgradeModal

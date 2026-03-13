@@ -1,10 +1,13 @@
 import { motion } from "framer-motion";
-import { Check, Zap, Crown, Briefcase } from "lucide-react";
+import { Check, Zap, Crown, Briefcase, Shield, Star } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const plans = [
   {
     name: "ON",
-    price: "97",
+    price: "67",
+    oldPrice: "97",
+    discount: "31% off",
     icon: Zap,
     description: "A IA que te conhece, não só te conta.",
     popular: false,
@@ -24,7 +27,9 @@ const plans = [
   },
   {
     name: "ON +",
-    price: "147",
+    price: "127",
+    oldPrice: "197",
+    discount: "35% off",
     icon: Crown,
     description: "IA completa 24h. Preço de fundador — 50 vagas.",
     popular: true,
@@ -47,6 +52,8 @@ const plans = [
   {
     name: "ON PRO",
     price: "247",
+    oldPrice: "397",
+    discount: "37% off",
     icon: Briefcase,
     description: "IA + Coach real. Vagas limitadas: máx. 20 alunos.",
     popular: false,
@@ -66,6 +73,8 @@ const plans = [
 ];
 
 const PricingSection = () => {
+  const navigate = useNavigate();
+
   return (
     <section className="relative py-24 px-4" id="pricing">
       <div className="relative z-10 max-w-6xl mx-auto">
@@ -74,7 +83,7 @@ const PricingSection = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-16"
+          className="text-center mb-12"
         >
           <span className="text-sm font-mono text-primary tracking-widest uppercase mb-4 block">
             Planos
@@ -87,6 +96,49 @@ const PricingSection = () => {
             Cancele quando quiser.
           </p>
         </motion.div>
+
+        {/* Starter Tripwire */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+          className="relative rounded-2xl border border-primary/30 bg-primary/5 p-6 md:p-8 mb-10 overflow-hidden"
+        >
+          <div className="absolute -top-16 left-1/2 -translate-x-1/2 w-[250px] h-[150px] bg-primary/10 rounded-full blur-[60px] pointer-events-none" />
+          <div className="relative z-10 flex flex-col md:flex-row items-center gap-6">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-xl bg-primary/15 border border-primary/25 flex items-center justify-center">
+                <Zap className="w-6 h-6 text-primary" />
+              </div>
+              <div>
+                <p className="text-xs font-mono text-primary tracking-widest uppercase">Acesso Starter</p>
+                <p className="text-3xl font-bold text-foreground leading-none mt-0.5">R$9,90</p>
+              </div>
+            </div>
+            <div className="flex-1 text-center md:text-left">
+              <p className="text-sm text-muted-foreground">
+                <strong className="text-foreground">7 dias de acesso completo ao ON+</strong> — pagamento único, sem renovação automática.
+              </p>
+              <p className="text-xs text-muted-foreground/70 font-mono mt-1">
+                Abata R$9,90 na primeira mensalidade se assinar em seguida
+              </p>
+            </div>
+            <button
+              onClick={() => navigate("/auth")}
+              className="shrink-0 px-6 py-3 rounded-lg bg-primary text-primary-foreground font-bold text-sm hover:scale-[1.02] glow-gold transition-all whitespace-nowrap"
+            >
+              EXPERIMENTAR POR R$9,90 →
+            </button>
+          </div>
+        </motion.div>
+
+        {/* Divider */}
+        <div className="flex items-center gap-4 mb-10">
+          <div className="flex-1 h-px bg-border" />
+          <span className="text-xs font-mono text-muted-foreground tracking-widest uppercase">Ou assine um plano completo</span>
+          <div className="flex-1 h-px bg-border" />
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
           {plans.map((plan, index) => (
@@ -119,9 +171,17 @@ const PricingSection = () => {
               </div>
 
               <div className="mb-6">
-                <span className="text-sm text-muted-foreground">R$</span>
-                <span className="text-5xl font-bold font-mono text-foreground">{plan.price}</span>
-                <span className="text-muted-foreground">/mês</span>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-sm text-muted-foreground">R$</span>
+                  <span className="text-5xl font-bold font-mono text-foreground">{plan.price}</span>
+                  <span className="text-muted-foreground">/mês</span>
+                </div>
+                <div className="flex items-center gap-2 mt-1.5">
+                  <span className="text-sm text-muted-foreground line-through">R${plan.oldPrice}</span>
+                  <span className="text-xs font-mono text-primary bg-primary/10 px-2 py-0.5 rounded">
+                    {plan.discount} fundador
+                  </span>
+                </div>
               </div>
 
               <ul className="space-y-3 mb-8 flex-1">
@@ -157,6 +217,22 @@ const PricingSection = () => {
               </a>
             </motion.div>
           ))}
+        </div>
+
+        {/* Trust bar */}
+        <div className="flex flex-wrap items-center justify-center gap-6 mt-10">
+          <div className="flex items-center gap-2 text-xs font-mono text-muted-foreground">
+            <Shield className="w-3.5 h-3.5 text-primary/60" />
+            Cancele quando quiser
+          </div>
+          <div className="flex items-center gap-2 text-xs font-mono text-muted-foreground">
+            <Star className="w-3.5 h-3.5 text-primary/60" />
+            Pagamento seguro via Kiwify
+          </div>
+          <div className="flex items-center gap-2 text-xs font-mono text-muted-foreground">
+            <Zap className="w-3.5 h-3.5 text-primary/60" />
+            Acesso imediato após confirmação
+          </div>
         </div>
       </div>
     </section>
