@@ -208,9 +208,12 @@ const ChatPage = () => {
           <button
             onClick={send}
             disabled={!input.trim() || isLoading}
-            className="w-12 h-12 rounded-xl bg-primary text-primary-foreground flex items-center justify-center disabled:opacity-50 transition-all"
+            className="w-12 h-12 rounded-xl bg-primary text-primary-foreground flex items-center justify-center disabled:opacity-50 transition-all relative overflow-hidden group"
           >
-            <Send className="w-5 h-5" />
+            <Send className="w-5 h-5 relative z-10" />
+            {input.trim() && !isLoading && (
+              <div className="absolute inset-0 bg-primary/80 opacity-0 group-hover:opacity-100 transition-opacity" style={{ boxShadow: "0 0 20px hsl(var(--primary) / 0.4)" }} />
+            )}
           </button>
         </div>
       </div>
