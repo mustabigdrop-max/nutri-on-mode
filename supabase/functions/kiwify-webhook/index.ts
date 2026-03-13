@@ -106,7 +106,7 @@ Deno.serve(async (req) => {
           {
             user_id: user.id,
             email,
-            plano,
+            plano: planoEfetivo,
             periodo,
             kiwify_order_id: orderId,
             kiwify_product_id: productId,
@@ -121,21 +121,21 @@ Deno.serve(async (req) => {
         // Atualizar perfil
         await supabase
           .from("profiles")
-          .update({ plano_atual: plano, email, updated_at: new Date().toISOString() })
+          .update({ plano_atual: planoEfetivo, email, updated_at: new Date().toISOString() })
           .eq("user_id", user.id);
 
         // Incrementar vagas do coach se plano max
-        if (plano === "max") {
+        if (planoEfetivo === "max") {
           await supabase.rpc("increment_coach_slots");
         }
 
-        console.log(`Subscription activated for existing user: ${email} → ${plano}`);
+        console.log(`Subscription activated for existing user: ${email} → ${planoEfetivo} (${periodo})`);
       } else {
         // Usuário não existe ainda → salvar como pendente
         await supabase.from("subscriptions_pending").upsert(
           {
             email,
-            plano,
+            plano: planoEfetivo,
             periodo,
             kiwify_order_id: orderId,
             expires_at: expiresAt,
