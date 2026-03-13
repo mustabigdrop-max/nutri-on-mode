@@ -439,8 +439,6 @@ const DashboardPage = () => {
       <ReengagementPopup hasMealsToday={todayMeals.length > 0} />
 
       <div className="relative z-10 max-w-lg mx-auto px-4 pt-4">
-        {/* Trial Banner */}
-        <TrialBanner trialEndsAt={trialEndsAt || null} plan={plan} />
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}

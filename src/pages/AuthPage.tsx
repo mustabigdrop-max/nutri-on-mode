@@ -1,14 +1,12 @@
 import { useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
-import { Zap, Mail, Lock, User, ArrowLeft, Gift } from "lucide-react";
+import { Zap, Mail, Lock, User, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 
 const AuthPage = () => {
-  const [searchParams] = useSearchParams();
-  const isTrial = searchParams.get("trial") === "true";
-  const [isLogin, setIsLogin] = useState(!isTrial);
+  const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
@@ -31,14 +29,14 @@ const AuthPage = () => {
         email,
         password,
         options: {
-          data: { full_name: fullName, is_trial: isTrial },
+          data: { full_name: fullName },
           emailRedirectTo: window.location.origin,
         },
       });
       if (error) {
         toast.error(error.message);
       } else {
-        toast.success(isTrial ? "Trial ativado! Verifique seu email para confirmar." : "Conta criada! Verifique seu email para confirmar.");
+        toast.success("Conta criada! Verifique seu email para confirmar.");
       }
     }
     setLoading(false);
@@ -62,20 +60,13 @@ const AuthPage = () => {
           <span className="text-sm">Voltar</span>
         </button>
 
-        {isTrial && (
-          <div className="flex items-center gap-2 justify-center mb-4 px-4 py-2.5 rounded-lg bg-primary/10 border border-primary/20">
-            <Gift className="w-4 h-4 text-primary" />
-            <span className="text-sm text-primary font-semibold">7 dias grátis — sem compromisso</span>
-          </div>
-        )}
-
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold mb-2">
             <span className="text-foreground">NUTRI</span>
             <span className="text-gradient-gold">ON</span>
           </h1>
           <p className="text-muted-foreground">
-            {isTrial ? "Crie sua conta e comece seu teste grátis" : isLogin ? "Entre na sua conta" : "Crie sua conta e entre no modo ON"}
+            {isLogin ? "Entre na sua conta" : "Crie sua conta e entre no modo ON"}
           </p>
         </div>
 
