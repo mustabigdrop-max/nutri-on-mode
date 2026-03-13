@@ -23,6 +23,58 @@ interface SabotageReport {
   read: boolean;
 }
 
+// Animated arc component
+const AdherenceArc = ({ percent }: { percent: number }) => {
+  const radius = 36;
+  const stroke = 6;
+  const circumference = Math.PI * radius; // half circle
+  const offset = circumference - (Math.min(percent, 100) / 100) * circumference;
+  const color = percent >= 80 ? "hsl(var(--primary))" : percent >= 50 ? "hsl(var(--accent))" : "hsl(var(--destructive))";
+
+  return (
+    <div className="relative w-20 h-12 mx-auto">
+      <svg viewBox="0 0 80 44" className="w-full h-full">
+        <path
+          d="M 4 40 A 36 36 0 0 1 76 40"
+          fill="none"
+          stroke="hsl(var(--border))"
+          strokeWidth={stroke}
+          strokeLinecap="round"
+        />
+        <motion.path
+          d="M 4 40 A 36 36 0 0 1 76 40"
+          fill="none"
+          stroke={color}
+          strokeWidth={stroke}
+          strokeLinecap="round"
+          strokeDasharray={circumference}
+          initial={{ strokeDashoffset: circumference }}
+          animate={{ strokeDashoffset: offset }}
+          transition={{ duration: 1.2, ease: "easeOut", delay: 0.3 }}
+        />
+      </svg>
+      <div className="absolute inset-0 flex items-end justify-center pb-0">
+        <span className="text-sm font-bold font-mono text-foreground">{percent}%</span>
+      </div>
+    </div>
+  );
+};
+
+// Mini bar chart for protein days
+const ProteinBars = ({ hit, total }: { hit: number; total: number }) => (
+  <div className="flex items-end gap-0.5 h-6 justify-center">
+    {Array.from({ length: total }, (_, i) => (
+      <motion.div
+        key={i}
+        initial={{ height: 0 }}
+        animate={{ height: i < hit ? "100%" : "30%" }}
+        transition={{ delay: 0.5 + i * 0.08, duration: 0.4 }}
+        className={`w-2 rounded-sm ${i < hit ? "bg-primary" : "bg-border"}`}
+      />
+    ))}
+  </div>
+);
+
 const WeeklySabotageCard = () => {
   const { user } = useAuth();
   const [report, setReport] = useState<SabotageReport | null>(null);
@@ -75,7 +127,6 @@ const WeeklySabotageCard = () => {
       animate={{ opacity: 1, y: 0 }}
       className="rounded-xl border border-accent/20 bg-accent/5 p-4 mb-4 relative"
     >
-      {/* Dismiss */}
       <button
         onClick={() => { setDismissed(true); markRead(); }}
         className="absolute top-3 right-3 p-1 rounded-lg text-muted-foreground hover:text-foreground transition-colors"
@@ -101,22 +152,28 @@ const WeeklySabotageCard = () => {
         </div>
       </div>
 
-      {/* Summary stats */}
+      {/* Visual summary: Arc + Protein bars + Trend */}
       <div className="grid grid-cols-3 gap-2 mb-3">
         <div className="rounded-lg bg-card/60 border border-border p-2 text-center">
-          <p className="text-lg font-bold font-mono text-foreground">{adherence}%</p>
-          <p className="text-[9px] font-mono text-muted-foreground">Adesão</p>
+          <AdherenceArc percent={adherence} />
+          <p className="text-[9px] font-mono text-muted-foreground mt-1">Adesão</p>
         </div>
         <div className="rounded-lg bg-card/60 border border-border p-2 text-center">
-          <p className="text-lg font-bold font-mono text-primary">{report.protein_days_hit}/7</p>
-          <p className="text-[9px] font-mono text-muted-foreground">Proteína ok</p>
+          <ProteinBars hit={report.protein_days_hit} total={7} />
+          <p className="text-[9px] font-mono text-muted-foreground mt-1">Proteína {report.protein_days_hit}/7</p>
         </div>
-        <div className="rounded-lg bg-card/60 border border-border p-2 text-center flex flex-col items-center">
+        <div className="rounded-lg bg-card/60 border border-border p-2 text-center flex flex-col items-center justify-center">
           <div className="flex items-center gap-1">
             {trendIcon}
             <span className="text-sm font-bold font-mono text-foreground capitalize">{report.weight_trend || "—"}</span>
           </div>
           <p className="text-[9px] font-mono text-muted-foreground">Peso</p>
+          {/* Inline 30-day projection */}
+          {report.projected_kg_30d !== null && report.projected_kg_30d !== 0 && (
+            <p className="text-[8px] font-mono text-primary mt-0.5">
+              30d: {report.projected_kg_30d > 0 ? "+" : ""}{report.projected_kg_30d}kg
+            </p>
+          )}
         </div>
       </div>
 
@@ -151,7 +208,6 @@ const WeeklySabotageCard = () => {
             exit={{ height: 0, opacity: 0 }}
             className="overflow-hidden"
           >
-            {/* Sabotage pattern */}
             {(report.worst_hour || report.worst_day || report.main_trigger) && (
               <div className="mb-3 pt-2 border-t border-border">
                 <p className="text-[10px] font-mono text-destructive uppercase tracking-wider mb-1.5 flex items-center gap-1">
@@ -182,7 +238,6 @@ const WeeklySabotageCard = () => {
               </div>
             )}
 
-            {/* Projection */}
             {report.avg_kcal_deficit !== null && (
               <div className="mb-3 pt-2 border-t border-border">
                 <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider mb-1.5">📈 Projeção</p>
@@ -190,17 +245,9 @@ const WeeklySabotageCard = () => {
                   Déficit médio: <span className="font-bold">{Math.abs(report.avg_kcal_deficit)} kcal/dia</span>
                   {report.avg_kcal_deficit > 0 ? " (déficit)" : " (superávit)"}
                 </p>
-                {report.projected_kg_30d !== null && report.projected_kg_30d !== 0 && (
-                  <p className="text-xs text-foreground font-mono mt-0.5">
-                    Projeção 30 dias: <span className="font-bold text-primary">
-                      {report.projected_kg_30d > 0 ? "+" : ""}{report.projected_kg_30d}kg
-                    </span>
-                  </p>
-                )}
               </div>
             )}
 
-            {/* AI suggestion */}
             {report.ai_suggestion && (
               <div className="pt-2 border-t border-border">
                 <p className="text-[10px] font-mono text-primary uppercase tracking-wider mb-1.5 flex items-center gap-1">
