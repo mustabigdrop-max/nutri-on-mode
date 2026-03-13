@@ -15,17 +15,11 @@ const LandingIntro = ({ onDone }: { onDone: () => void }) => {
   const [phase, setPhase] = useState<"boot" | "ready" | "exit">("boot");
 
   const skip = useCallback(() => {
-    sessionStorage.setItem("nutrion-intro", "1");
     setPhase("exit");
     setTimeout(onDone, 450);
   }, [onDone]);
 
   useEffect(() => {
-    if (sessionStorage.getItem("nutrion-intro")) {
-      onDone();
-      return;
-    }
-
     // Progress bar animation
     let p = 0;
     const progId = setInterval(() => {
@@ -34,7 +28,7 @@ const LandingIntro = ({ onDone }: { onDone: () => void }) => {
       if (p >= 100) clearInterval(progId);
     }, 24);
 
-    // Boot lines
+    // Boot lines staggered
     const delays = [280, 560, 840, 1100, 1380];
     const timers = delays.map((d, i) =>
       setTimeout(() => setStep((s) => Math.max(s, i + 1)), d)
@@ -46,11 +40,8 @@ const LandingIntro = ({ onDone }: { onDone: () => void }) => {
     // Auto exit
     const tExit = setTimeout(() => {
       setPhase("exit");
-      setTimeout(() => {
-        sessionStorage.setItem("nutrion-intro", "1");
-        onDone();
-      }, 550);
-    }, 2500);
+      setTimeout(onDone, 550);
+    }, 2600);
 
     return () => {
       clearInterval(progId);
@@ -208,7 +199,7 @@ const LandingIntro = ({ onDone }: { onDone: () => void }) => {
       {/* Skip */}
       <button
         onClick={skip}
-        className="absolute bottom-7 right-8 font-mono text-[.5rem] text-[#18183a] hover:text-[#40407a] tracking-[.18em] transition-colors duration-300"
+        className="absolute bottom-7 right-8 font-mono text-[.5rem] text-[#222248] hover:text-[#40407a] tracking-[.18em] transition-colors duration-300 z-20"
       >
         PULAR →
       </button>
