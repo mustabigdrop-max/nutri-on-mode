@@ -11,8 +11,10 @@ import LandingAppDemo from "@/components/landing/LandingAppDemo";
 import LandingKcalEngine from "@/components/landing/LandingKcalEngine";
 import LandingFeatures from "@/components/landing/LandingFeatures";
 import LandingStats from "@/components/landing/LandingStats";
+import LandingTestimonials from "@/components/landing/LandingTestimonials";
 import LandingCoach from "@/components/landing/LandingCoach";
 import LandingPlans from "@/components/landing/LandingPlans";
+import LandingGuarantee from "@/components/landing/LandingGuarantee";
 import LandingCTA from "@/components/landing/LandingCTA";
 import LandingFooter from "@/components/landing/LandingFooter";
 import LandingIntro from "@/components/landing/LandingIntro";
@@ -24,10 +26,10 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-[#03030a] text-[#f0edf8] font-landing overflow-x-hidden">
-      {/* Cinematic boot intro — shows once per session */}
+      {/* Cinematic boot intro */}
       {!introComplete && <LandingIntro onDone={handleIntroDone} />}
 
-      {/* Ambient sound toggle */}
+      {/* Floating ambient sound toggle */}
       <LandingAudio />
 
       <LandingBackground />
@@ -43,8 +45,12 @@ const Index = () => {
         <LandingKcalEngine />
         <LandingFeatures />
         <LandingStats />
+        {/* Social proof — real case data before pushing to plans */}
+        <LandingTestimonials />
         <LandingCoach />
         <LandingPlans />
+        {/* Risk reversal — remove last objection before CTA */}
+        <LandingGuarantee />
         <LandingCTA />
         <LandingFooter />
       </div>
