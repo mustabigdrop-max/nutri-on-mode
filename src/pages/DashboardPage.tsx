@@ -26,7 +26,7 @@ import {
   Flame, TrendingUp, Droplets, Apple, BarChart3, MessageSquare,
   User, Plus, Utensils, LogOut, Zap, Brain, ChevronRight, Award,
   Camera, Users, Heart, Settings, HelpCircle, Leaf, Trophy, ShoppingCart, History, Dumbbell, FileText, Hammer,
-  Clock, Pill, Bug, Smile, CalendarDays, HelpingHand, BarChart, Lock, Sun
+  Clock, Pill, Bug, Smile, CalendarDays, HelpingHand, BarChart, Lock, Sun, AlertTriangle
 } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
 
@@ -861,6 +861,10 @@ const DashboardPage = () => {
                 { icon: Dumbbell, label: "Histórico Treinos", desc: "Consistência & calorias ajustadas", path: "/workout-history", emoji: "🏋️" },
                 { icon: Zap, label: "Performance Pro", desc: "Nutrição para atletas avançados", path: "/performance-pro", emoji: "⚡" },
                 { icon: Zap, label: "Desempenho Mental", desc: "Nootrópicos, energia & foco", path: "/mental-performance", emoji: "🧠" },
+                { icon: Heart, label: "Mapa de Gatilhos", desc: "TCC · padrões comportamentais", path: "/behavioral-triggers", emoji: "🧠" },
+                { icon: AlertTriangle, label: "Preditor de Quebra", desc: "Score de risco em tempo real", path: "/diet-break-predictor", emoji: "🚨" },
+                { icon: BarChart, label: "Mapa Vulnerabilidade", desc: "Seus horários de risco históricos", path: "/vulnerability-map", emoji: "🗺️" },
+                { icon: TrendingUp, label: "Reversão Metabólica", desc: "Saída científica do déficit severo", path: "/metabolic-reversion", emoji: "🔄" },
               ];
               return items.map((item, i) => {
                 const isLocked = GATED_PATHS.includes(item.path) && !isOnPlus;
