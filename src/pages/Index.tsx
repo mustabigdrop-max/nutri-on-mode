@@ -12,8 +12,10 @@ import LandingAppDemo from "@/components/landing/LandingAppDemo";
 import LandingKcalEngine from "@/components/landing/LandingKcalEngine";
 import LandingFeatures from "@/components/landing/LandingFeatures";
 import LandingStats from "@/components/landing/LandingStats";
+import LandingTestimonials from "@/components/landing/LandingTestimonials";
 import LandingCoach from "@/components/landing/LandingCoach";
 import LandingPlans from "@/components/landing/LandingPlans";
+import LandingGuarantee from "@/components/landing/LandingGuarantee";
 import LandingCTA from "@/components/landing/LandingCTA";
 import LandingFooter from "@/components/landing/LandingFooter";
 
@@ -35,8 +37,10 @@ const Index = () => {
         <LandingKcalEngine />
         <LandingFeatures />
         <LandingStats />
+        <LandingTestimonials />
         <LandingCoach />
         <LandingPlans />
+        <LandingGuarantee />
         <LandingCTA />
         <LandingFooter />
       </div>
