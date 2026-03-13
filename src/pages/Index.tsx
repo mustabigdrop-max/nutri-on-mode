@@ -4,6 +4,7 @@ import LandingBackground from "@/components/landing/LandingBackground";
 import LandingAudio from "@/components/landing/LandingAudio";
 import LandingHero from "@/components/landing/LandingHero";
 import LandingTicker from "@/components/landing/LandingTicker";
+import LandingInteractiveQuiz from "@/components/landing/LandingInteractiveQuiz";
 import LandingVSComparison from "@/components/landing/LandingVSComparison";
 import LandingManifesto from "@/components/landing/LandingManifesto";
 import LandingProtocols from "@/components/landing/LandingProtocols";
@@ -29,6 +30,7 @@ const Index = () => {
         <LandingNav />
         <LandingHero />
         <LandingTicker />
+        <LandingInteractiveQuiz />
         <LandingVSComparison />
         <LandingManifesto />
         <LandingProtocols />
