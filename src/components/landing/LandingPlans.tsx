@@ -8,7 +8,7 @@ import { Shield, Star, Zap } from "lucide-react";
 const plans = [
   {
     name: "ON", price: "R$67", oldPrice: "R$97", discount: "31% off fundador", featured: false,
-    checkoutUrl: "https://pay.kiwify.com.br/2U4q4d9",
+    checkoutUrl: "https://pay.kiwify.com.br/Y6CB7tE",
     features: [
       "Onboarding inteligente por conversa (sem formulário)",
       "Modo 'Sem Balança' — medidas visuais brasileiras",
