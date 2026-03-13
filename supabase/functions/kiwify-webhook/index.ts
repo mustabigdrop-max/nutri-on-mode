@@ -143,7 +143,7 @@ Deno.serve(async (req) => {
           { onConflict: "email" }
         );
 
-        console.log(`Pending subscription saved for: ${email} → ${plano}`);
+        console.log(`Pending subscription saved for: ${email} → ${planoEfetivo} (${periodo})`);
       }
     } else if (event === "refunded" || event === "chargedback" || event === "canceled") {
       // Cancelar assinatura
