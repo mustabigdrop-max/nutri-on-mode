@@ -19,6 +19,7 @@ import LandingCTA from "@/components/landing/LandingCTA";
 import LandingFooter from "@/components/landing/LandingFooter";
 import LandingIntro from "@/components/landing/LandingIntro";
 import LandingAudio from "@/components/landing/LandingAudio";
+import LandingInteractiveQuiz from "@/components/landing/LandingInteractiveQuiz";
 
 const Index = () => {
   const [introComplete, setIntroComplete] = useState(false);
@@ -37,6 +38,8 @@ const Index = () => {
         <LandingNav />
         <LandingHero />
         <LandingTicker />
+        {/* Protocol quiz — interactive engagement early in funnel */}
+        <LandingInteractiveQuiz />
         <LandingVSComparison />
         <LandingManifesto />
         <LandingProtocols />
