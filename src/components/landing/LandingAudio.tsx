@@ -16,41 +16,71 @@ const LandingAudio = () => {
     master.connect(ctx.destination);
     masterRef.current = master;
 
-    const makeOsc = (freq: number, type: OscillatorType, vol: number, lfoRate: number) => {
+    // Each layer starts at gain 0 and ramps up with staggered delays
+    // so no two layers activate simultaneously → zero transients
+    const makeLayer = (
+      freq: number,
+      type: OscillatorType,
+      peakVol: number,
+      lfoRate: number,
+      delaySeconds: number,
+      rampSeconds: number
+    ) => {
       const osc = ctx.createOscillator();
       osc.type = type;
       osc.frequency.value = freq;
+
       const gain = ctx.createGain();
-      gain.gain.value = vol;
+      gain.gain.setValueAtTime(0, ctx.currentTime);
+      // Staggered fade-in: starts silent, ramps after delay
+      gain.gain.setValueAtTime(0, ctx.currentTime + delaySeconds);
+      gain.gain.linearRampToValueAtTime(
+        peakVol,
+        ctx.currentTime + delaySeconds + rampSeconds
+      );
+
       osc.connect(gain).connect(master);
 
-      // Tremolo LFO
+      // Tremolo LFO — asymmetric breathing
       const lfo = ctx.createOscillator();
       lfo.type = "sine";
       lfo.frequency.value = lfoRate;
       const lfoGain = ctx.createGain();
-      lfoGain.gain.value = vol * 0.3;
+      lfoGain.gain.value = peakVol * 0.25;
       lfo.connect(lfoGain).connect(gain.gain);
+
       lfo.start();
       osc.start();
     };
 
-    // 6 pure oscillators — no convolver
-    makeOsc(41, "sine", 0.18, 0.06);      // Sub-bass
-    makeOsc(82, "sine", 0.10, 0.08);      // Oitava
-    makeOsc(123, "sine", 0.06, 0.11);     // Quinta perfeita
-    makeOsc(164, "triangle", 0.04, 0.14); // Mid warmth
-    makeOsc(328, "sine", 0.015, 0.27);    // Shimmer
-    makeOsc(41.3, "sine", 0.16, 0.07);    // Gêmeo desafinado — batimento orgânico
+    // Layer 1: Sub-bass foundation — 40Hz (felt, not heard on small speakers)
+    makeLayer(40, "sine", 0.18, 0.07, 0, 2.0);
 
-    // Fade in 3.5s
-    master.gain.linearRampToValueAtTime(0.22, ctx.currentTime + 3.5);
+    // Layer 2: Detuned twin — 40.5Hz creates 0.5Hz organic beat with Layer 1
+    makeLayer(40.5, "sine", 0.16, 0.11, 0.3, 2.0);
+
+    // Layer 3: Audible bass — 80Hz (this is what laptops/phones actually hear)
+    makeLayer(80, "sine", 0.10, 0.08, 0.8, 1.8);
+
+    // Layer 4: Harmonic warmth — 120Hz quinta
+    makeLayer(120, "sine", 0.05, 0.09, 1.1, 1.5);
+
+    // Layer 5: Upper shimmer — 240Hz soft triangle
+    makeLayer(240, "triangle", 0.02, 0.13, 1.5, 1.5);
+
+    // Master fade-in envelope
+    master.gain.setValueAtTime(0, ctx.currentTime);
+    master.gain.linearRampToValueAtTime(0.24, ctx.currentTime + 3.5);
+
     setPlaying(true);
   }, []);
 
   const stop = useCallback(() => {
     if (ctxRef.current && masterRef.current) {
-      masterRef.current.gain.linearRampToValueAtTime(0, ctxRef.current.currentTime + 1);
+      masterRef.current.gain.linearRampToValueAtTime(
+        0,
+        ctxRef.current.currentTime + 1
+      );
       setTimeout(() => {
         ctxRef.current?.close();
         ctxRef.current = null;
