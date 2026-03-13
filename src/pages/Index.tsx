@@ -2,8 +2,11 @@ import LandingNav from "@/components/landing/LandingNav";
 import LandingBackground from "@/components/landing/LandingBackground";
 import LandingHero from "@/components/landing/LandingHero";
 import LandingTicker from "@/components/landing/LandingTicker";
+import LandingVSComparison from "@/components/landing/LandingVSComparison";
 import LandingManifesto from "@/components/landing/LandingManifesto";
 import LandingProtocols from "@/components/landing/LandingProtocols";
+import LandingDayTimeline from "@/components/landing/LandingDayTimeline";
+import LandingAppDemo from "@/components/landing/LandingAppDemo";
 import LandingKcalEngine from "@/components/landing/LandingKcalEngine";
 import LandingFeatures from "@/components/landing/LandingFeatures";
 import LandingStats from "@/components/landing/LandingStats";
@@ -20,8 +23,11 @@ const Index = () => {
         <LandingNav />
         <LandingHero />
         <LandingTicker />
+        <LandingVSComparison />
         <LandingManifesto />
         <LandingProtocols />
+        <LandingDayTimeline />
+        <LandingAppDemo />
         <LandingKcalEngine />
         <LandingFeatures />
         <LandingStats />
