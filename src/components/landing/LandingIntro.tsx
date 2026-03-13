@@ -1,49 +1,53 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const bootLines = [
   { text: "CARREGANDO PROTOCOLOS CIENTÍFICOS...", delay: 400 },
-  { text: "IA COMPORTAMENTAL ONLINE...", delay: 800 },
-  { text: "MAPEANDO PERFIL METABÓLICO...", delay: 600 },
-  { text: "SISTEMA PRONTO ✓", delay: 500 },
+  { text: "IA COMPORTAMENTAL ONLINE...", delay: 500 },
+  { text: "MAPEANDO PERFIL METABÓLICO...", delay: 450 },
+  { text: "SISTEMA PRONTO ✓", delay: 350 },
 ];
 
 const LandingIntro = () => {
-  const [visible, setVisible] = useState(false);
   const [lines, setLines] = useState<string[]>([]);
   const [progress, setProgress] = useState(0);
   const [showFinal, setShowFinal] = useState(false);
   const [exiting, setExiting] = useState(false);
+  const [gone, setGone] = useState(false);
+
+  const dismiss = useCallback(() => {
+    if (exiting) return;
+    setExiting(true);
+    setTimeout(() => {
+      setGone(true);
+      document.body.style.overflow = "";
+    }, 700);
+  }, [exiting]);
 
   useEffect(() => {
-    const seen = sessionStorage.getItem("nutrion-intro-seen");
-    if (seen) return;
-    setVisible(true);
     document.body.style.overflow = "hidden";
 
-    let totalDelay = 300;
-    const progressStep = 100 / bootLines.length;
+    let totalDelay = 200;
+    const step = 100 / bootLines.length;
+    const timers: ReturnType<typeof setTimeout>[] = [];
 
     bootLines.forEach((line, i) => {
       totalDelay += line.delay;
-      setTimeout(() => {
-        setLines((prev) => [...prev, line.text]);
-        setProgress((i + 1) * progressStep);
-      }, totalDelay);
+      timers.push(
+        setTimeout(() => {
+          setLines((prev) => [...prev, line.text]);
+          setProgress((i + 1) * step);
+        }, totalDelay)
+      );
     });
 
-    setTimeout(() => setShowFinal(true), totalDelay + 600);
-    setTimeout(() => {
-      setExiting(true);
-      setTimeout(() => {
-        setVisible(false);
-        sessionStorage.setItem("nutrion-intro-seen", "1");
-        document.body.style.overflow = "";
-      }, 800);
-    }, totalDelay + 2400);
-  }, []);
+    timers.push(setTimeout(() => setShowFinal(true), totalDelay + 400));
+    timers.push(setTimeout(dismiss, totalDelay + 2000));
 
-  if (!visible) return null;
+    return () => timers.forEach(clearTimeout);
+  }, [dismiss]);
+
+  if (gone) return null;
 
   return (
     <AnimatePresence>
@@ -52,10 +56,10 @@ const LandingIntro = () => {
           key="intro"
           initial={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.7 }}
+          transition={{ duration: 0.6 }}
           className="fixed inset-0 z-[9999] bg-background flex flex-col items-center justify-center"
         >
-          {/* Scanline overlay */}
+          {/* Scanline */}
           <div
             className="absolute inset-0 pointer-events-none opacity-[.04]"
             style={{
@@ -64,8 +68,15 @@ const LandingIntro = () => {
             }}
           />
 
+          {/* Skip */}
+          <button
+            onClick={dismiss}
+            className="absolute top-6 right-6 font-mono text-[.65rem] tracking-[.15em] text-muted-foreground hover:text-primary transition-colors"
+          >
+            PULAR ›
+          </button>
+
           <div className="w-full max-w-md px-6">
-            {/* Boot lines */}
             <div className="font-mono text-xs space-y-2 mb-8 min-h-[120px]">
               {lines.map((line, i) => (
                 <motion.p
@@ -73,11 +84,7 @@ const LandingIntro = () => {
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.3 }}
-                  className={
-                    line.includes("✓")
-                      ? "text-accent"
-                      : "text-muted-foreground"
-                  }
+                  className={line.includes("✓") ? "text-accent" : "text-muted-foreground"}
                 >
                   <span className="text-primary/60 mr-2">{">"}</span>
                   {line}
@@ -85,7 +92,6 @@ const LandingIntro = () => {
               ))}
             </div>
 
-            {/* Progress bar */}
             <div className="w-full h-1 bg-secondary rounded-full overflow-hidden mb-6">
               <motion.div
                 className="h-full rounded-full"
@@ -96,7 +102,6 @@ const LandingIntro = () => {
               />
             </div>
 
-            {/* Final message */}
             <AnimatePresence>
               {showFinal && (
                 <motion.div

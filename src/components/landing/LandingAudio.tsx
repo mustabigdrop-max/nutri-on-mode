@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 const LandingAudio = () => {
   const [playing, setPlaying] = useState(false);
   const ctxRef = useRef<AudioContext | null>(null);
-  const nodesRef = useRef<{ gain: GainNode } | null>(null);
+  const masterRef = useRef<GainNode | null>(null);
 
   const start = useCallback(() => {
     const ctx = new AudioContext();
@@ -14,82 +14,47 @@ const LandingAudio = () => {
     const master = ctx.createGain();
     master.gain.value = 0;
     master.connect(ctx.destination);
+    masterRef.current = master;
 
-    // Sub-bass 41 Hz
-    const sub = ctx.createOscillator();
-    sub.type = "sine";
-    sub.frequency.value = 41;
-    const subGain = ctx.createGain();
-    subGain.gain.value = 0.18;
-    sub.connect(subGain).connect(master);
-    sub.start();
+    const makeOsc = (freq: number, type: OscillatorType, vol: number, lfoRate: number) => {
+      const osc = ctx.createOscillator();
+      osc.type = type;
+      osc.frequency.value = freq;
+      const gain = ctx.createGain();
+      gain.gain.value = vol;
+      osc.connect(gain).connect(master);
 
-    // Fifth harmonic
-    const fifth = ctx.createOscillator();
-    fifth.type = "sine";
-    fifth.frequency.value = 61.5;
-    const fifthGain = ctx.createGain();
-    fifthGain.gain.value = 0.08;
-    fifth.connect(fifthGain).connect(master);
-    fifth.start();
+      // Tremolo LFO
+      const lfo = ctx.createOscillator();
+      lfo.type = "sine";
+      lfo.frequency.value = lfoRate;
+      const lfoGain = ctx.createGain();
+      lfoGain.gain.value = vol * 0.3;
+      lfo.connect(lfoGain).connect(gain.gain);
+      lfo.start();
+      osc.start();
+    };
 
-    // Mid warmth
-    const mid = ctx.createOscillator();
-    mid.type = "triangle";
-    mid.frequency.value = 165;
-    const midGain = ctx.createGain();
-    midGain.gain.value = 0.04;
-    mid.connect(midGain).connect(master);
-    mid.start();
+    // 6 pure oscillators — no convolver
+    makeOsc(41, "sine", 0.18, 0.06);      // Sub-bass
+    makeOsc(82, "sine", 0.10, 0.08);      // Oitava
+    makeOsc(123, "sine", 0.06, 0.11);     // Quinta perfeita
+    makeOsc(164, "triangle", 0.04, 0.14); // Mid warmth
+    makeOsc(328, "sine", 0.015, 0.27);    // Shimmer
+    makeOsc(41.3, "sine", 0.16, 0.07);    // Gêmeo desafinado — batimento orgânico
 
-    // Shimmer
-    const shimmer = ctx.createOscillator();
-    shimmer.type = "sine";
-    shimmer.frequency.value = 528;
-    const shimGain = ctx.createGain();
-    shimGain.gain.value = 0.015;
-    shimmer.connect(shimGain).connect(master);
-    shimmer.start();
-
-    // LFO on master
-    const lfo = ctx.createOscillator();
-    lfo.type = "sine";
-    lfo.frequency.value = 0.08;
-    const lfoGain = ctx.createGain();
-    lfoGain.gain.value = 0.03;
-    lfo.connect(lfoGain).connect(master.gain);
-    lfo.start();
-
-    // Convolver reverb (synthetic impulse)
-    const convolver = ctx.createConvolver();
-    const rate = ctx.sampleRate;
-    const length = rate * 3;
-    const impulse = ctx.createBuffer(2, length, rate);
-    for (let ch = 0; ch < 2; ch++) {
-      const data = impulse.getChannelData(ch);
-      for (let i = 0; i < length; i++) {
-        data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / length, 2.5);
-      }
-    }
-    convolver.buffer = impulse;
-    const reverbGain = ctx.createGain();
-    reverbGain.gain.value = 0.12;
-    master.connect(convolver);
-    convolver.connect(reverbGain).connect(ctx.destination);
-
-    // Fade in
-    master.gain.linearRampToValueAtTime(0.25, ctx.currentTime + 2);
-    nodesRef.current = { gain: master };
+    // Fade in 3.5s
+    master.gain.linearRampToValueAtTime(0.22, ctx.currentTime + 3.5);
     setPlaying(true);
   }, []);
 
   const stop = useCallback(() => {
-    if (ctxRef.current && nodesRef.current) {
-      nodesRef.current.gain.gain.linearRampToValueAtTime(0, ctxRef.current.currentTime + 1);
+    if (ctxRef.current && masterRef.current) {
+      masterRef.current.gain.linearRampToValueAtTime(0, ctxRef.current.currentTime + 1);
       setTimeout(() => {
         ctxRef.current?.close();
         ctxRef.current = null;
-        nodesRef.current = null;
+        masterRef.current = null;
       }, 1200);
     }
     setPlaying(false);
