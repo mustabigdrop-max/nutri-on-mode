@@ -74,3 +74,9 @@ verify_jwt = false
 
 [functions.perplexity-search]
 verify_jwt = false
+
+[functions.generate-pca-result]
+verify_jwt = false
+
+[functions.generate-proactive-notification]
+verify_jwt = false
