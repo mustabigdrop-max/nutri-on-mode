@@ -33,7 +33,7 @@ const plans = [
     icon: Crown,
     description: "IA completa 24h. Preço de fundador — 50 vagas.",
     popular: true,
-    checkoutUrl: "https://pay.kiwify.com.br/6pXyygp",
+    checkoutUrl: "https://pay.kiwify.com.br/G8uxU9O",
     features: [
       "Tudo do ON +",
       "Chat IA nutriON ilimitado",
