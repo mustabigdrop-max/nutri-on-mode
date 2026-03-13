@@ -31,15 +31,30 @@ Deno.serve(async (req) => {
       throw new Error("KIWIFY_WEBHOOK_TOKEN not configured");
     }
 
+    // Kiwify pode enviar o token em diferentes headers ou na URL
+    const url = new URL(req.url);
     const signature = req.headers.get("x-kiwify-signature") ??
-                      req.headers.get("x-webhook-token") ?? "";
+                      req.headers.get("x-webhook-token") ??
+                      req.headers.get("authorization")?.replace("Bearer ", "") ??
+                      url.searchParams.get("token") ?? "";
 
     if (signature !== KIWIFY_TOKEN) {
-      console.error("Invalid webhook signature");
-      return new Response(
-        JSON.stringify({ error: "Unauthorized" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      // Tentar ler o token do body também (alguns webhooks enviam assim)
+      const clonedReq = req.clone();
+      let bodyToken = "";
+      try {
+        const bodyText = await clonedReq.text();
+        const bodyJson = JSON.parse(bodyText);
+        bodyToken = bodyJson.webhook_token ?? bodyJson.token ?? bodyJson.signature ?? "";
+      } catch { /* ignore */ }
+
+      if (bodyToken !== KIWIFY_TOKEN) {
+        console.error("Invalid webhook signature. Headers:", JSON.stringify(Object.fromEntries(req.headers.entries())));
+        return new Response(
+          JSON.stringify({ error: "Unauthorized" }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
     }
 
     // ── 2. Parse do payload ─────────────────────────────────
