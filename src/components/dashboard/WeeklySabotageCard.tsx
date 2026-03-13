@@ -101,22 +101,53 @@ const WeeklySabotageCard = () => {
         </div>
       </div>
 
-      {/* Summary stats */}
+      {/* Summary stats — upgraded with mini progress arcs */}
       <div className="grid grid-cols-3 gap-2 mb-3">
-        <div className="rounded-lg bg-card/60 border border-border p-2 text-center">
-          <p className="text-lg font-bold font-mono text-foreground">{adherence}%</p>
-          <p className="text-[9px] font-mono text-muted-foreground">Adesão</p>
-        </div>
-        <div className="rounded-lg bg-card/60 border border-border p-2 text-center">
-          <p className="text-lg font-bold font-mono text-primary">{report.protein_days_hit}/7</p>
-          <p className="text-[9px] font-mono text-muted-foreground">Proteína ok</p>
-        </div>
-        <div className="rounded-lg bg-card/60 border border-border p-2 text-center flex flex-col items-center">
-          <div className="flex items-center gap-1">
-            {trendIcon}
-            <span className="text-sm font-bold font-mono text-foreground capitalize">{report.weight_trend || "—"}</span>
+        {/* Adherence with arc */}
+        <div className="rounded-lg bg-card/60 border border-border p-2 flex flex-col items-center">
+          <div className="relative w-10 h-10 mb-0.5">
+            <svg viewBox="0 0 40 40" className="w-full h-full -rotate-90">
+              <circle cx="20" cy="20" r="15" fill="none" stroke="hsl(var(--border))" strokeWidth="3" />
+              <motion.circle
+                cx="20" cy="20" r="15" fill="none"
+                stroke={adherence >= 80 ? "hsl(var(--primary))" : adherence >= 50 ? "hsl(38,80%,52%)" : "hsl(var(--destructive))"}
+                strokeWidth="3" strokeLinecap="round"
+                strokeDasharray={2 * Math.PI * 15}
+                initial={{ strokeDashoffset: 2 * Math.PI * 15 }}
+                animate={{ strokeDashoffset: 2 * Math.PI * 15 * (1 - adherence / 100) }}
+                transition={{ duration: 1.2, ease: "easeOut" }}
+              />
+            </svg>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="text-[9px] font-bold font-mono text-foreground">{adherence}%</span>
+            </div>
           </div>
-          <p className="text-[9px] font-mono text-muted-foreground">Peso</p>
+          <p className="text-[8px] font-mono text-muted-foreground">Adesão</p>
+        </div>
+        {/* Protein days */}
+        <div className="rounded-lg bg-card/60 border border-border p-2 flex flex-col items-center">
+          <div className="flex gap-0.5 mb-1">
+            {[...Array(7)].map((_, d) => (
+              <div key={d} className={`w-2 h-4 rounded-sm ${d < report.protein_days_hit ? "bg-primary" : "bg-secondary"}`} />
+            ))}
+          </div>
+          <p className="text-[9px] font-bold font-mono text-primary">{report.protein_days_hit}/7</p>
+          <p className="text-[8px] font-mono text-muted-foreground">Proteína</p>
+        </div>
+        {/* Weight trend */}
+        <div className="rounded-lg bg-card/60 border border-border p-2 flex flex-col items-center justify-center">
+          <div className="flex items-center gap-1 mb-0.5">
+            {trendIcon}
+            <span className="text-xs font-bold font-mono text-foreground capitalize">
+              {report.weight_trend || "—"}
+            </span>
+          </div>
+          {report.projected_kg_30d !== null && report.projected_kg_30d !== 0 && (
+            <p className="text-[8px] font-mono text-primary text-center leading-tight">
+              {report.projected_kg_30d > 0 ? "+" : ""}{report.projected_kg_30d}kg/30d
+            </p>
+          )}
+          <p className="text-[8px] font-mono text-muted-foreground">Peso</p>
         </div>
       </div>
 

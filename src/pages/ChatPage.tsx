@@ -7,7 +7,8 @@ import { useChatHistory, Msg } from "@/hooks/useChatHistory";
 import { useMealHistory } from "@/hooks/useMealHistory";
 import ChatMessage from "@/components/chat/ChatMessage";
 import ChatEmptyState from "@/components/chat/ChatEmptyState";
-import { ArrowLeft, Send, Sparkles, Bot, Plus, Loader2 } from "lucide-react";
+import { motion } from "framer-motion";
+import { ArrowLeft, Send, Brain, Plus, Loader2, Zap } from "lucide-react";
 import { toast } from "sonner";
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/nutri-coach`;
@@ -128,54 +129,106 @@ const ChatPage = () => {
     <div className="min-h-screen bg-background flex flex-col">
       <div className="absolute inset-0 bg-grid opacity-10" />
 
-      {/* Header */}
-      <div className="relative z-10 flex items-center gap-3 px-4 pt-4 pb-3 border-b border-border bg-background/95 backdrop-blur">
-        <button onClick={() => navigate("/dashboard")} className="p-2 rounded-lg text-muted-foreground hover:text-foreground transition-colors">
-          <ArrowLeft className="w-5 h-5" />
-        </button>
-        <div className="flex items-center gap-2 flex-1">
-          <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
-            <Sparkles className="w-4 h-4 text-primary" />
+      {/* Header — professional NutriCoach MCE */}
+      <div className="relative z-10 border-b border-border bg-background/98 backdrop-blur">
+        <div className="flex items-center gap-3 px-4 pt-4 pb-3">
+          <button onClick={() => navigate("/dashboard")} className="p-2 rounded-lg text-muted-foreground hover:text-foreground transition-colors">
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <div className="flex items-center gap-3 flex-1">
+            {/* Agent avatar */}
+            <div className="relative flex-shrink-0">
+              <div className="w-9 h-9 rounded-full bg-primary/15 border border-primary/25 flex items-center justify-center">
+                <Brain className="w-4.5 h-4.5 text-primary" />
+              </div>
+              <motion.div
+                className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-primary border-2 border-background"
+                animate={{ scale: [1, 1.25, 1] }}
+                transition={{ duration: 2, repeat: Infinity }}
+              />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <h1 className="text-sm font-bold text-foreground">NutriCoach MCE</h1>
+                <span className="px-1.5 py-0.5 rounded-full text-[8px] font-mono bg-primary/10 text-primary border border-primary/20">
+                  IA
+                </span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <motion.div
+                  className="w-1.5 h-1.5 rounded-full bg-primary"
+                  animate={{ opacity: [0.5, 1, 0.5] }}
+                  transition={{ duration: 1.5, repeat: Infinity }}
+                />
+                <p className="text-[9px] text-muted-foreground font-mono truncate">
+                  {isLoading ? "Analisando seu perfil..." : "Motor Comportamental Especializado · online"}
+                </p>
+              </div>
+            </div>
           </div>
-          <div>
-            <h1 className="text-sm font-bold text-foreground">NutriCoach IA</h1>
-            <p className="text-[10px] text-muted-foreground font-mono">Coach comportamental inteligente</p>
-          </div>
+          <button
+            onClick={startNewConversation}
+            className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-card transition-all"
+            title="Nova conversa"
+          >
+            <Plus className="w-4 h-4" />
+          </button>
         </div>
-        <button
-          onClick={startNewConversation}
-          className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-card transition-all"
-          title="Nova conversa"
-        >
-          <Plus className="w-5 h-5" />
-        </button>
+        {/* Expertise strip */}
+        {messages.length === 0 && (
+          <div className="flex gap-1.5 px-4 pb-3 overflow-x-auto scrollbar-hide">
+            {["Comportamental", "Macros", "TCC", "Periodização", "Suplementos"].map(tag => (
+              <span key={tag} className="whitespace-nowrap px-2 py-0.5 rounded-full text-[8px] font-mono bg-card border border-border text-muted-foreground flex-shrink-0">
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Messages */}
       <div ref={scrollRef} className="relative z-10 flex-1 overflow-y-auto px-4 py-4 space-y-4">
         {loadingHistory ? (
           <div className="flex items-center justify-center py-12">
-            <Loader2 className="w-6 h-6 text-primary animate-spin" />
+            <Loader2 className="w-5 h-5 text-primary animate-spin" />
           </div>
         ) : messages.length === 0 ? (
           <ChatEmptyState
             userName={profile?.full_name?.split(" ")[0] || ""}
-            onSuggestionClick={setInput}
+            onSuggestionClick={text => { setInput(text); setTimeout(() => send(), 50); }}
           />
         ) : (
-          messages.map((msg, i) => <ChatMessage key={i} msg={msg} />)
+          messages.map((msg, i) => (
+            <ChatMessage
+              key={i}
+              msg={msg}
+              isLast={i === messages.length - 1 && msg.role === "assistant"}
+            />
+          ))
         )}
 
+        {/* Thinking indicator */}
         {isLoading && messages[messages.length - 1]?.role !== "assistant" && (
-          <div className="flex gap-2">
-            <div className="w-7 h-7 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
-              <Bot className="w-3.5 h-3.5 text-primary" />
+          <div className="flex gap-2.5">
+            <div className="w-7 h-7 rounded-full bg-primary/15 border border-primary/25 flex items-center justify-center flex-shrink-0 mt-1">
+              <Brain className="w-3.5 h-3.5 text-primary" />
             </div>
             <div className="bg-card border border-border rounded-2xl rounded-bl-md px-4 py-3">
-              <div className="flex gap-1">
-                <span className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-                <span className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                <span className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+              <p className="text-[8px] font-mono text-primary/60 uppercase tracking-wider mb-1.5 font-bold">
+                NutriCoach MCE
+              </p>
+              <div className="flex items-center gap-2">
+                <div className="flex gap-1">
+                  {[0, 150, 300].map(delay => (
+                    <motion.span
+                      key={delay}
+                      className="w-1.5 h-1.5 bg-primary/60 rounded-full"
+                      animate={{ y: [0, -5, 0], opacity: [0.4, 1, 0.4] }}
+                      transition={{ duration: 0.7, repeat: Infinity, delay: delay / 1000 }}
+                    />
+                  ))}
+                </div>
+                <span className="text-[9px] font-mono text-muted-foreground">analisando...</span>
               </div>
             </div>
           </div>
@@ -183,24 +236,40 @@ const ChatPage = () => {
       </div>
 
       {/* Input */}
-      <div className="relative z-10 px-4 py-3 border-t border-border bg-background/95 backdrop-blur">
+      <div className="relative z-10 px-4 py-3 border-t border-border bg-background/98 backdrop-blur">
         <div className="flex gap-2 max-w-lg mx-auto">
-          <input
-            type="text"
-            value={input}
-            onChange={e => setInput(e.target.value)}
-            onKeyDown={e => e.key === "Enter" && send()}
-            placeholder="Pergunte ao NutriCoach..."
-            className="flex-1 px-4 py-3 rounded-xl border border-border bg-card text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-          />
-          <button
+          <div className="flex-1 relative">
+            <input
+              type="text"
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              onKeyDown={e => e.key === "Enter" && !e.shiftKey && send()}
+              placeholder="Pergunte ao NutriCoach MCE..."
+              className="w-full pl-4 pr-10 py-3 rounded-xl border border-border bg-card text-foreground text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/40 transition-all"
+            />
+            {input.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="absolute right-3 top-1/2 -translate-y-1/2"
+              >
+                <Zap className="w-3.5 h-3.5 text-primary/50" />
+              </motion.div>
+            )}
+          </div>
+          <motion.button
             onClick={send}
             disabled={!input.trim() || isLoading}
-            className="w-12 h-12 rounded-xl bg-primary text-primary-foreground flex items-center justify-center disabled:opacity-50 transition-all"
+            whileTap={{ scale: 0.94 }}
+            className="w-12 h-12 rounded-xl bg-primary text-primary-foreground flex items-center justify-center disabled:opacity-40 transition-all"
+            style={{ boxShadow: input.trim() && !isLoading ? "0 0 16px hsl(var(--primary) / 0.3)" : "none" }}
           >
-            <Send className="w-5 h-5" />
-          </button>
+            {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+          </motion.button>
         </div>
+        <p className="text-center text-[8px] font-mono text-muted-foreground/30 mt-1.5">
+          NutriCoach MCE · responde com base no seu protocolo e histórico
+        </p>
       </div>
       <BottomNav />
     </div>

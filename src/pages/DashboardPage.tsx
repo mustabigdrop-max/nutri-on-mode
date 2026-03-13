@@ -30,60 +30,104 @@ import {
 } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
 
-// SVG animated ring component
+// SVG animated ring component — upgraded with dual rings, glow, status pulse
 const CalorieRing = ({ percent, kcal, target, objetivo }: { percent: number; kcal: number; target: number; objetivo?: string }) => {
-  const radius = 90;
-  const stroke = 10;
-  const circumference = 2 * Math.PI * radius;
-  const offset = circumference - (Math.min(percent, 100) / 100) * circumference;
+  const r1 = 88, r2 = 72, stroke1 = 10, stroke2 = 4;
+  const c1 = 2 * Math.PI * r1, c2 = 2 * Math.PI * r2;
+  const offset1 = c1 - (Math.min(percent, 100) / 100) * c1;
+  const offset2 = c2 - (Math.min(percent, 100) / 100) * c2;
   const remaining = Math.max(target - kcal, 0);
+  const isOnTarget = percent >= 80 && percent <= 115;
+  const isOver = percent > 115;
 
   return (
     <div className="relative w-56 h-56 mx-auto">
+      {/* Ambient glow */}
+      <div className="absolute inset-0 rounded-full pointer-events-none" style={{
+        background: isOver
+          ? "radial-gradient(circle at 50% 50%, hsl(var(--destructive) / 0.07), transparent 70%)"
+          : isOnTarget
+            ? "radial-gradient(circle at 50% 50%, hsl(var(--primary) / 0.09), transparent 70%)"
+            : "radial-gradient(circle at 50% 50%, hsl(var(--accent) / 0.06), transparent 70%)",
+        filter: "blur(12px)",
+      }} />
+
       <svg viewBox="0 0 200 200" className="w-full h-full -rotate-90">
-        <circle cx="100" cy="100" r={radius} fill="none" stroke="hsl(var(--border))" strokeWidth={stroke} />
         <defs>
+          <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="hsl(var(--primary))" />
+            <stop offset="60%" stopColor="hsl(var(--accent))" />
+            <stop offset="100%" stopColor="hsl(var(--primary))" />
+          </linearGradient>
           <filter id="ringGlow">
-            <feGaussianBlur stdDeviation="4" result="blur" />
+            <feGaussianBlur stdDeviation="3" result="blur" />
             <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
           </filter>
+          {/* Tick marks (8 dashes) */}
         </defs>
+        {/* Outer track */}
+        <circle cx="100" cy="100" r={r1} fill="none" stroke="hsl(var(--border))" strokeWidth={stroke1} opacity={0.6} />
+        {/* Outer fill */}
         <motion.circle
-          cx="100" cy="100" r={radius} fill="none"
-          stroke="hsl(var(--primary))"
-          strokeWidth={stroke}
-          strokeLinecap="round"
-          strokeDasharray={circumference}
-          initial={{ strokeDashoffset: circumference }}
-          animate={{ strokeDashoffset: offset }}
-          transition={{ duration: 1.5, ease: "easeOut", delay: 0.3 }}
+          cx="100" cy="100" r={r1} fill="none"
+          stroke={isOver ? "hsl(var(--destructive))" : "url(#ringGrad)"}
+          strokeWidth={stroke1} strokeLinecap="round"
+          strokeDasharray={c1}
+          initial={{ strokeDashoffset: c1 }}
+          animate={{ strokeDashoffset: offset1 }}
+          transition={{ duration: 1.6, ease: "easeOut", delay: 0.2 }}
           filter="url(#ringGlow)"
         />
+        {/* Inner track */}
+        <circle cx="100" cy="100" r={r2} fill="none" stroke="hsl(var(--border))" strokeWidth={stroke2} opacity={0.3} />
+        {/* Inner fill — tracks protein */}
         <motion.circle
-          cx="100" cy="100" r={radius - 14} fill="none"
+          cx="100" cy="100" r={r2} fill="none"
           stroke="hsl(var(--accent))"
-          strokeWidth={3}
-          strokeLinecap="round"
-          strokeDasharray={circumference * 0.7}
-          initial={{ strokeDashoffset: circumference * 0.7 }}
-          animate={{ strokeDashoffset: circumference * 0.7 * (1 - Math.min(percent, 100) / 100) }}
-          transition={{ duration: 1.8, ease: "easeOut", delay: 0.5 }}
-          opacity={0.4}
+          strokeWidth={stroke2} strokeLinecap="round"
+          strokeDasharray={c2}
+          initial={{ strokeDashoffset: c2 }}
+          animate={{ strokeDashoffset: offset2 }}
+          transition={{ duration: 1.9, ease: "easeOut", delay: 0.45 }}
+          opacity={0.45}
         />
+        {/* 12 o'clock dot */}
+        <circle cx="100" cy={100 - r1} r="3" fill="hsl(var(--border))" />
       </svg>
+
       <div className="absolute inset-0 flex flex-col items-center justify-center">
+        {/* Pulsing ON indicator */}
+        {isOnTarget && (
+          <motion.div
+            animate={{ opacity: [0.4, 1, 0.4] }}
+            transition={{ duration: 2.5, repeat: Infinity }}
+            className="absolute top-8 w-1.5 h-1.5 rounded-full bg-primary"
+          />
+        )}
         <motion.span
-          initial={{ opacity: 0, scale: 0.5 }}
+          initial={{ opacity: 0, scale: 0.6 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.5, type: "spring" }}
-          className="text-4xl font-bold font-mono text-foreground leading-none"
+          transition={{ delay: 0.4, type: "spring", stiffness: 200 }}
+          className={`text-[2.2rem] font-bold font-mono leading-none ${
+            isOver ? "text-destructive" : "text-foreground"
+          }`}
         >
           {Math.round(kcal).toLocaleString()}
         </motion.span>
-        <span className="text-xs font-mono text-muted-foreground mt-1">de {target.toLocaleString()} kcal</span>
-        <span className="text-[10px] font-mono text-primary mt-0.5">
+        <span className="text-[10px] font-mono text-muted-foreground mt-0.5">de {target.toLocaleString()} kcal</span>
+        <span className={`text-[9px] font-mono mt-1 ${isOnTarget ? "text-primary" : isOver ? "text-destructive" : "text-muted-foreground"}`}>
           {getRingLabel(objetivo || "saude_geral", remaining, percent)}
         </span>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1 }}
+          className={`mt-1.5 px-2 py-0.5 rounded-full text-[8px] font-mono font-bold ${
+            isOnTarget ? "bg-primary/10 text-primary" : isOver ? "bg-destructive/10 text-destructive" : "bg-card text-muted-foreground"
+          }`}
+        >
+          {Math.round(percent)}%
+        </motion.div>
       </div>
     </div>
   );
@@ -128,70 +172,149 @@ const HydrationWidget = ({ glasses, target }: { glasses: number; target: number 
   );
 };
 
-// Score gauge
+// Score gauge — arc-style with gradient fill
 const ScoreGauge = ({ score }: { score: number }) => {
-  const color = score >= 80 ? "text-primary" : score >= 50 ? "text-accent" : "text-danger";
+  const arcColor = score >= 80 ? "hsl(var(--primary))" : score >= 50 ? "hsl(var(--accent))" : "hsl(var(--destructive))";
   const label = score >= 80 ? "Excelente" : score >= 60 ? "Bom" : score >= 40 ? "Regular" : "Melhore";
+  // Half-arc: from 210° to 330° (120° sweep for 100%)
+  const RADIUS = 28, CX = 36, CY = 38;
+  const startAngle = -210, totalSweep = 240;
+  const sweepAngle = (Math.min(score, 100) / 100) * totalSweep;
+  const toRad = (deg: number) => (deg * Math.PI) / 180;
+  const arcPath = (sweep: number) => {
+    const sx = CX + RADIUS * Math.cos(toRad(startAngle));
+    const sy = CY + RADIUS * Math.sin(toRad(startAngle));
+    const ex = CX + RADIUS * Math.cos(toRad(startAngle + sweep));
+    const ey = CY + RADIUS * Math.sin(toRad(startAngle + sweep));
+    const large = sweep > 180 ? 1 : 0;
+    return `M ${sx} ${sy} A ${RADIUS} ${RADIUS} 0 ${large} 1 ${ex} ${ey}`;
+  };
+
   return (
-    <div className="rounded-xl border border-border bg-card p-3 h-24 flex flex-col items-center justify-center">
-      <Brain className="w-4 h-4 text-accent mb-1" />
-      <motion.span
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.8 }}
-        className={`text-2xl font-bold font-mono ${color}`}
-      >
-        {score}
-      </motion.span>
-      <p className="text-[10px] font-mono text-muted-foreground">Score</p>
-      <p className={`text-[9px] font-mono ${color}`}>{label}</p>
+    <div className="rounded-xl border border-border bg-card p-2 h-24 flex flex-col items-center justify-center relative overflow-hidden">
+      <div className="absolute inset-0 pointer-events-none" style={{
+        background: score >= 80 ? "radial-gradient(circle at 50% 80%, hsl(var(--primary) / 0.06), transparent 70%)" : "none",
+      }} />
+      <svg viewBox="0 0 72 52" className="w-16 h-14">
+        {/* Track */}
+        <path d={arcPath(totalSweep)} fill="none" stroke="hsl(var(--border))" strokeWidth="4.5" strokeLinecap="round" />
+        {/* Fill */}
+        <motion.path
+          d={arcPath(sweepAngle)}
+          fill="none" stroke={arcColor} strokeWidth="4.5" strokeLinecap="round"
+          initial={{ pathLength: 0 }}
+          animate={{ pathLength: 1 }}
+          transition={{ duration: 1.4, ease: "easeOut", delay: 0.5 }}
+        />
+        {/* Value */}
+        <text x={CX} y={CY + 2} textAnchor="middle" className="font-mono" fontSize="11" fontWeight="bold" fill={arcColor}>{score}</text>
+        <text x={CX} y={CY + 11} textAnchor="middle" fontSize="5.5" fill="hsl(var(--muted-foreground))">MCE Score</text>
+      </svg>
+      <p className="text-[8px] font-mono" style={{ color: arcColor }}>{label}</p>
     </div>
   );
 };
 
-// Streak fire
+// Streak fire — animated particles when streak > 0
 const StreakFire = ({ days }: { days: number }) => (
-  <div className="rounded-xl border border-border bg-card p-3 h-24 flex flex-col items-center justify-center relative overflow-hidden">
+  <div className="rounded-xl border border-border bg-card p-2 h-24 flex flex-col items-center justify-center relative overflow-hidden">
     {days > 0 && (
-      <div className="absolute inset-0 bg-gradient-to-t from-primary/10 to-transparent" />
+      <>
+        <div className="absolute inset-0 bg-gradient-to-t from-primary/12 via-primary/5 to-transparent pointer-events-none" />
+        {/* Floating particles */}
+        {[...Array(3)].map((_, i) => (
+          <motion.div
+            key={i}
+            className="absolute bottom-1 rounded-full"
+            style={{
+              width: 4 - i, height: 4 - i,
+              background: i === 0 ? "hsl(var(--primary))" : "hsl(var(--accent))",
+              left: `${28 + i * 18}%`,
+              opacity: 0.7,
+            }}
+            animate={{ y: [-4, -20 - i * 6], opacity: [0.7, 0], scale: [1, 0.3] }}
+            transition={{ duration: 1.2 + i * 0.3, repeat: Infinity, delay: i * 0.4, ease: "easeOut" }}
+          />
+        ))}
+      </>
     )}
     <div className="relative z-10 flex flex-col items-center">
       <motion.div
-        animate={days > 0 ? { scale: [1, 1.15, 1], rotate: [0, -3, 3, 0] } : {}}
-        transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+        animate={days > 0 ? { scale: [1, 1.18, 1], rotate: [-2, 2, -2] } : {}}
+        transition={{ duration: 1.3, repeat: Infinity, ease: "easeInOut" }}
       >
-        <Flame className={`w-6 h-6 ${days > 0 ? "text-primary" : "text-muted-foreground"}`} />
+        <Flame className={`w-5 h-5 ${days > 0 ? "text-primary" : "text-muted-foreground"}`}
+          style={days > 0 ? { filter: "drop-shadow(0 0 5px hsl(var(--primary) / 0.6))" } : {}}
+        />
       </motion.div>
-      <span className="text-2xl font-bold font-mono text-foreground">{days}</span>
-      <p className="text-[10px] font-mono text-muted-foreground">Streak</p>
+      <motion.span
+        className="text-2xl font-bold font-mono text-foreground leading-none mt-0.5"
+        initial={{ scale: 1 }}
+        animate={days > 0 ? { textShadow: ["0 0 0px transparent", "0 0 8px hsl(var(--primary) / 0.5)", "0 0 0px transparent"] } : {}}
+        transition={{ duration: 2, repeat: Infinity }}
+      >
+        {days}
+      </motion.span>
+      <p className="text-[9px] font-mono text-muted-foreground">Streak</p>
+      {days >= 7 && <p className="text-[8px] font-mono text-primary leading-none">🔥 semana!</p>}
     </div>
   </div>
 );
 
-// XP bar
+// XP bar — upgraded with milestone markers and shimmer
 const XPBar = ({ xp, level }: { xp: number; level: number }) => {
   const LEVEL_NAMES = ["", "Iniciante", "Consistente", "Focado", "Disciplinado", "Forte", "Máquina", "Lenda", "Imortal"];
   const xpPerLevel = 500;
   const currentLevelXP = xp % xpPerLevel;
   const percent = (currentLevelXP / xpPerLevel) * 100;
+  const MILESTONES = [25, 50, 75]; // % checkpoints
 
   return (
     <div className="rounded-xl border border-border bg-card p-3">
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
-          <Award className="w-4 h-4 text-primary" />
+          <motion.div
+            animate={{ rotate: [0, 10, -10, 0] }}
+            transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+          >
+            <Award className="w-4 h-4 text-primary" />
+          </motion.div>
           <span className="text-xs font-mono text-foreground font-bold">Lv.{level}</span>
-          <span className="text-[10px] font-mono text-primary">{LEVEL_NAMES[Math.min(level, 8)]}</span>
+          <span className="text-[10px] font-mono text-primary px-1.5 py-0.5 rounded-full bg-primary/10">
+            {LEVEL_NAMES[Math.min(level, 8)]}
+          </span>
         </div>
-        <span className="text-[10px] font-mono text-muted-foreground">{currentLevelXP}/{xpPerLevel} XP</span>
+        <div className="flex items-center gap-1.5">
+          <span className="text-[10px] font-mono text-primary font-bold">{currentLevelXP}</span>
+          <span className="text-[10px] font-mono text-muted-foreground">/ {xpPerLevel} XP</span>
+        </div>
       </div>
-      <div className="h-2 rounded-full bg-secondary overflow-hidden">
+      <div className="h-2.5 rounded-full bg-secondary overflow-hidden relative">
         <motion.div
-          className="h-full rounded-full bg-gradient-to-r from-primary to-gold-glow"
+          className="h-full rounded-full bg-gradient-to-r from-primary via-gold-glow to-accent relative overflow-hidden"
           initial={{ width: 0 }}
           animate={{ width: `${percent}%` }}
-          transition={{ duration: 1, ease: "easeOut", delay: 0.4 }}
-        />
+          transition={{ duration: 1.2, ease: "easeOut", delay: 0.4 }}
+        >
+          {/* Shimmer */}
+          <motion.div
+            className="absolute inset-y-0 w-8 bg-white/30 skew-x-12"
+            animate={{ x: ["-100%", "400%"] }}
+            transition={{ duration: 2, repeat: Infinity, delay: 1.5, ease: "linear" }}
+          />
+        </motion.div>
+        {/* Milestone markers */}
+        {MILESTONES.map(m => (
+          <div
+            key={m}
+            className="absolute top-0 bottom-0 w-px"
+            style={{ left: `${m}%`, background: "hsl(var(--border))", opacity: percent >= m ? 0.4 : 0.6 }}
+          />
+        ))}
+      </div>
+      <div className="flex justify-between mt-1">
+        <span className="text-[8px] font-mono text-muted-foreground/50">{level === 1 ? "início" : `Lv.${level}`}</span>
+        <span className="text-[8px] font-mono text-primary/50">{xpPerLevel - currentLevelXP} XP para Lv.{level + 1}</span>
       </div>
     </div>
   );
@@ -448,32 +571,50 @@ const DashboardPage = () => {
           <CalorieRing percent={kcalPercent} kcal={todayTotals.kcal} target={kcalTarget} objetivo={objetivo} />
         </motion.div>
 
-        {/* Macro bars */}
-        <div className="space-y-2.5 mb-4">
+        {/* Macro bars — upgraded */}
+        <div className="space-y-2 mb-4">
           {macros.map((macro, i) => (
             <motion.div
               key={macro.label}
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.4 + i * 0.1 }}
+              className="rounded-xl border border-border bg-card/60 p-2.5"
             >
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-xs font-mono text-muted-foreground flex items-center gap-1">
-                  <span className="text-sm">{macro.icon}</span> {macro.label}
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-xs font-mono text-muted-foreground flex items-center gap-1.5">
+                  <span className="text-sm">{macro.icon}</span>
+                  <span className="font-bold text-foreground/80">{macro.label}</span>
                 </span>
-                <span className="text-xs font-mono text-foreground font-bold">
-                  {Math.round(macro.value)}<span className="text-muted-foreground font-normal">/{macro.target}{macro.unit}</span>
-                </span>
+                <div className="flex items-center gap-1">
+                  <span className="text-xs font-mono text-foreground font-bold">{Math.round(macro.value)}</span>
+                  <span className="text-[10px] font-mono text-muted-foreground">/{macro.target}{macro.unit}</span>
+                  {macro.percent >= 95 && (
+                    <span className="text-[9px] font-mono text-primary ml-1">✓</span>
+                  )}
+                </div>
               </div>
-              <div className="h-3 rounded-full bg-secondary overflow-hidden relative">
+              <div className="h-2.5 rounded-full bg-secondary overflow-hidden relative">
                 <motion.div
                   initial={{ width: 0 }}
                   animate={{ width: `${Math.min(macro.percent, 100)}%` }}
-                  transition={{ delay: 0.6 + i * 0.1, duration: 1, ease: "easeOut" }}
-                  className={`h-full rounded-full bg-gradient-to-r ${macro.colorFrom} ${macro.colorTo}`}
-                />
-                {/* Target line */}
-                <div className="absolute right-0 top-0 bottom-0 w-px bg-foreground/20" />
+                  transition={{ delay: 0.6 + i * 0.1, duration: 1.1, ease: "easeOut" }}
+                  className={`h-full rounded-full bg-gradient-to-r ${macro.colorFrom} ${macro.colorTo} relative overflow-hidden`}
+                >
+                  {macro.percent >= 95 && (
+                    <motion.div
+                      className="absolute inset-y-0 w-6 bg-white/25 skew-x-12"
+                      animate={{ x: ["-100%", "500%"] }}
+                      transition={{ duration: 1.8, repeat: Infinity, delay: 1 + i * 0.4, ease: "linear" }}
+                    />
+                  )}
+                </motion.div>
+                <div className="absolute right-0 top-0 bottom-0 w-px bg-foreground/15" />
+              </div>
+              <div className="mt-1 flex justify-end">
+                <span className={`text-[9px] font-mono ${macro.percent >= 90 ? "text-primary" : "text-muted-foreground/40"}`}>
+                  {Math.round(macro.percent)}%
+                </span>
               </div>
             </motion.div>
           ))}
