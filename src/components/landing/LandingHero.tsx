@@ -1,44 +1,24 @@
 import { useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
-
-const provocations = [
-  "Você já tentou emagrecer 3 vezes este ano.",
-  "99% dos apps te pedem para contar caloria. 0% te explicam por que você errou.",
-  "Dieta sem método é só restrição com prazo de validade.",
-  "Você não precisa de mais informação. Precisa de execução.",
-  "O problema nunca foi falta de disciplina. Foi falta de estrutura.",
-];
 
 const LandingHero = () => {
   const navigate = useNavigate();
-  const [provIndex, setProvIndex] = useState(0);
+  const [activeCount, setActiveCount] = useState(23);
 
+  // Simulate live counter fluctuation
   useEffect(() => {
     const interval = setInterval(() => {
-      setProvIndex((prev) => (prev + 1) % provocations.length);
-    }, 4000);
+      setActiveCount((prev) => {
+        const delta = Math.random() > 0.5 ? 1 : -1;
+        return Math.max(15, Math.min(48, prev + delta));
+      });
+    }, 8000);
     return () => clearInterval(interval);
   }, []);
 
   return (
     <section className="min-h-screen flex flex-col justify-center px-6 md:px-12 pt-[120px] pb-20 relative overflow-hidden">
-      {/* Rotating provocation ticker */}
-      <div className="h-8 mb-6 overflow-hidden relative">
-        <AnimatePresence mode="wait">
-          <motion.p
-            key={provIndex}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.5 }}
-            className="font-mono text-[.75rem] text-primary/80 tracking-[.04em] absolute"
-          >
-            "{provocations[provIndex]}"
-          </motion.p>
-        </AnimatePresence>
-      </div>
-
       {/* Tag */}
       <motion.div
         initial={{ opacity: 0, y: 30 }}
@@ -66,7 +46,7 @@ const LandingHero = () => {
         </span>
       </motion.h1>
 
-      {/* Subheadline phrase */}
+      {/* Subheadline */}
       <motion.p
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -77,66 +57,59 @@ const LandingHero = () => {
         Planejamento sem execução é só opinião.
       </motion.p>
 
-      {/* Sub content */}
+      {/* Mirror copy — identity-based */}
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, delay: 0.8 }}
-        className="mt-10 max-w-[700px]"
+        transition={{ duration: 0.8, delay: 0.85 }}
+        className="mt-10 max-w-[640px]"
       >
-        <p className="text-[1.15rem] leading-[1.7] text-primary/90 font-semibold font-landing mb-4">
-          A única plataforma de nutrição baseada na metodologia MCE — Mindset, Comportamento e Execução — para quem não quer mais começar na segunda-feira.
+        <p className="text-[1.15rem] leading-[1.75] text-foreground/90 font-landing mb-4">
+          Você não chegou até aqui por acidente.
         </p>
-        <p className="text-[1rem] leading-[1.7] text-muted-foreground font-landing mb-6">
-          A maioria dos apps te dá um cardápio. O nutriON te dá um <strong className="text-foreground">método</strong>. Porque mudar o corpo começa na cabeça, passa pelo comportamento e só acontece de verdade na <strong className="text-foreground">execução diária</strong>.
+        <p className="text-[1rem] leading-[1.75] text-muted-foreground font-landing mb-3">
+          Quem chega aqui já tentou de tudo — app de caloria, dieta da internet, planilha do coach. E já sabe que{" "}
+          <strong className="text-foreground">nada colou</strong>.
         </p>
-
-        {/* US flag badge */}
-        <div className="inline-flex items-center gap-2 bg-primary/[.06] border border-primary/20 px-4 py-2 rounded-full mb-2">
-          <span className="text-[14px]">🇺🇸</span>
-          <span className="font-mono text-[.65rem] text-muted-foreground tracking-[.06em]">
-            Formação americana em nutrição
-          </span>
-        </div>
+        <p className="text-[1.05rem] leading-[1.75] text-primary/90 font-semibold font-landing">
+          O NUTRION não é mais uma tentativa. É o sistema que substitui todas elas.
+        </p>
       </motion.div>
 
-      {/* Stats */}
+      {/* Live counter badge */}
       <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, delay: 0.95 }}
-        className="mt-8 flex flex-wrap gap-6"
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.6, delay: 1.1 }}
+        className="mt-8 inline-flex items-center gap-2.5 bg-card/60 border border-border px-4 py-2.5 rounded-full w-fit"
       >
-        {[
-          { val: "MCE", label: "Mindset · Comportamento\n· Execução" },
-          { val: "24H", label: "Sempre ON — planejamento\nativo a qualquer hora" },
-          { val: "0", label: "Apps iguais no Brasil\nPrecisão de coach. Escala de IA." },
-        ].map((m) => (
-          <div key={m.val} className="flex items-center gap-3">
-            <span className="font-heading text-[1.8rem] text-primary min-w-[64px]">{m.val}</span>
-            <span className="font-mono text-[.68rem] text-muted-foreground tracking-[.06em] whitespace-pre-line">{m.label}</span>
-          </div>
-        ))}
+        <span className="relative flex h-2.5 w-2.5">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75" />
+          <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-accent" />
+        </span>
+        <span className="font-mono text-[.72rem] text-muted-foreground tracking-wide">
+          <span className="text-accent font-semibold">{activeCount}</span> pessoas ativas agora
+        </span>
       </motion.div>
 
       {/* Actions */}
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, delay: 1.1 }}
+        transition={{ duration: 0.8, delay: 1.3 }}
         className="mt-10 flex gap-4 flex-wrap"
       >
         <button
           onClick={() => navigate("/auth")}
           className="bg-primary text-primary-foreground font-heading text-[1.05rem] tracking-[.08em] px-9 py-4 rounded-[2px] inline-flex items-center gap-2.5 hover:bg-background hover:text-primary hover:outline-2 hover:outline hover:outline-primary transition-all"
         >
-          🟢 Quero sair do plano e entrar em resultado →
+          🟢 Ativar meu protocolo →
         </button>
         <a
           href="#protocols"
           className="border border-border text-muted-foreground font-mono text-[.75rem] tracking-[.08em] px-7 py-4 rounded-[2px] hover:border-primary hover:text-primary transition-all"
         >
-          Ver protocolos
+          Ver como funciona
         </a>
       </motion.div>
 

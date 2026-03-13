@@ -12,12 +12,24 @@ const LandingBackground = () => {
     let W = (canvas.width = window.innerWidth);
     let H = (canvas.height = window.innerHeight);
     let animId: number;
+    let mouseX = -9999;
+    let mouseY = -9999;
 
     const handleResize = () => {
       W = canvas.width = window.innerWidth;
       H = canvas.height = window.innerHeight;
     };
+    const handleMouse = (e: MouseEvent) => {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+    };
+    const handleLeave = () => {
+      mouseX = -9999;
+      mouseY = -9999;
+    };
     window.addEventListener("resize", handleResize);
+    window.addEventListener("mousemove", handleMouse);
+    window.addEventListener("mouseleave", handleLeave);
 
     class Particle {
       x = Math.random() * W;
@@ -26,15 +38,39 @@ const LandingBackground = () => {
       vy = (Math.random() - 0.5) * 0.25;
       r = Math.random() * 1.5 + 0.4;
       a = Math.random() * 0.6 + 0.2;
+      baseX = this.x;
+      baseY = this.y;
 
       reset() {
         this.x = Math.random() * W;
         this.y = Math.random() * H;
+        this.baseX = this.x;
+        this.baseY = this.y;
         this.vx = (Math.random() - 0.5) * 0.25;
         this.vy = (Math.random() - 0.5) * 0.25;
       }
 
       update() {
+        // Mouse repulsion
+        const dx = this.x - mouseX;
+        const dy = this.y - mouseY;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        const repelRadius = 160;
+        if (dist < repelRadius && dist > 0) {
+          const force = (repelRadius - dist) / repelRadius;
+          const angle = Math.atan2(dy, dx);
+          this.vx += Math.cos(angle) * force * 0.8;
+          this.vy += Math.sin(angle) * force * 0.8;
+        }
+
+        // Damping
+        this.vx *= 0.96;
+        this.vy *= 0.96;
+
+        // Drift
+        this.vx += (Math.random() - 0.5) * 0.02;
+        this.vy += (Math.random() - 0.5) * 0.02;
+
         this.x += this.vx;
         this.y += this.vy;
         if (this.x < 0 || this.x > W || this.y < 0 || this.y > H) this.reset();
@@ -76,6 +112,8 @@ const LandingBackground = () => {
     return () => {
       cancelAnimationFrame(animId);
       window.removeEventListener("resize", handleResize);
+      window.removeEventListener("mousemove", handleMouse);
+      window.removeEventListener("mouseleave", handleLeave);
     };
   }, []);
 
