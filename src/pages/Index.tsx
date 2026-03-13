@@ -1,5 +1,7 @@
+import LandingIntro from "@/components/landing/LandingIntro";
 import LandingNav from "@/components/landing/LandingNav";
 import LandingBackground from "@/components/landing/LandingBackground";
+import LandingAudio from "@/components/landing/LandingAudio";
 import LandingHero from "@/components/landing/LandingHero";
 import LandingTicker from "@/components/landing/LandingTicker";
 import LandingVSComparison from "@/components/landing/LandingVSComparison";
@@ -18,7 +20,9 @@ import LandingFooter from "@/components/landing/LandingFooter";
 const Index = () => {
   return (
     <div className="min-h-screen bg-[#03030a] text-[#f0edf8] font-landing overflow-x-hidden">
+      <LandingIntro />
       <LandingBackground />
+      <LandingAudio />
       <div className="relative z-[2]">
         <LandingNav />
         <LandingHero />
