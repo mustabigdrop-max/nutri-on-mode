@@ -1,6 +1,39 @@
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
+
+const PROVOCATIONS = [
+  "Você já tentou emagrecer 3 vezes este ano.",
+  "Seu app atual sabe o que você comeu. Não sabe por que você desistiu.",
+  "Motivação dura 2 semanas. Protocolo dura a vida.",
+  "Cardápio é intenção. Protocolo é resultado.",
+  "99% dos apps te pedem para contar caloria. 0% te explicam por que você errou.",
+];
+
+const RotatingProvocation = () => {
+  const [index, setIndex] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setIndex((i) => (i + 1) % PROVOCATIONS.length), 3800);
+    return () => clearInterval(t);
+  }, []);
+  return (
+    <div className="h-[1.4rem] overflow-hidden relative mb-10">
+      <AnimatePresence mode="wait">
+        <motion.p
+          key={index}
+          initial={{ y: 18, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          exit={{ y: -18, opacity: 0 }}
+          transition={{ duration: 0.45, ease: "easeInOut" }}
+          className="absolute inset-0 font-mono text-[.66rem] text-[#f0edf8]/32 tracking-[.05em]"
+        >
+          <span className="text-[#e8a020]/50 mr-2">›</span>
+          {PROVOCATIONS[index]}
+        </motion.p>
+      </AnimatePresence>
+    </div>
+  );
+};
 
 // Floating clinical data metrics
 const METRICS = [
@@ -192,6 +225,9 @@ const LandingHero = () => {
 
         {/* ── LEFT COLUMN ── */}
         <div className="flex-1 relative z-10">
+
+          {/* Rotating provocation */}
+          <RotatingProvocation />
 
           {/* System status badge */}
           <motion.div
