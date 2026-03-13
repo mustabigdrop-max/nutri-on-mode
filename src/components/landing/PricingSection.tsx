@@ -11,7 +11,7 @@ const plans = [
     icon: Zap,
     description: "A IA que te conhece, não só te conta.",
     popular: false,
-    checkoutUrl: "https://pay.kiwify.com.br/2U4q4d9",
+    checkoutUrl: "https://pay.kiwify.com.br/Y6CB7tE",
     features: [
       "Onboarding inteligente por conversa (sem formulário)",
       "Modo 'Sem Balança' — medidas visuais brasileiras",
