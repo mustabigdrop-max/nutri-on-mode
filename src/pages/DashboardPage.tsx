@@ -883,6 +883,10 @@ const DashboardPage = () => {
                 { icon: Dumbbell, label: "Histórico Treinos", desc: "Consistência & calorias ajustadas", path: "/workout-history", emoji: "🏋️" },
                 { icon: Zap, label: "Performance Pro", desc: "Nutrição para atletas avançados", path: "/performance-pro", emoji: "⚡" },
                 { icon: Zap, label: "Desempenho Mental", desc: "Nootrópicos, energia & foco", path: "/mental-performance", emoji: "🧠" },
+                { icon: Brain, label: "Agentes IA", desc: "7 especialistas MCE", path: "/agents", emoji: "🤖" },
+                { icon: Dumbbell, label: "Composição Corporal", desc: "FFMI, massa magra, recomp", path: "/body-composition", emoji: "💪" },
+                { icon: Zap, label: "Protocolo Refeed", desc: "Adaptação metabólica & refeed", path: "/refeed", emoji: "⚡" },
+                { icon: Heart, label: "Mapa de Gatilhos", desc: "TCC · padrões comportamentais", path: "/triggers", emoji: "🧠" },
               ];
               return items.map((item, i) => {
                 const isLocked = GATED_PATHS.includes(item.path) && !isOnPlus;

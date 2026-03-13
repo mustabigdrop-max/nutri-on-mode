@@ -51,6 +51,10 @@ import CoachDashboardPage from "./pages/CoachDashboardPage";
 import CoachPatientDetailPage from "./pages/CoachPatientDetailPage";
 import CoachAddPatientPage from "./pages/CoachAddPatientPage";
 import CoachSettingsPage from "./pages/CoachSettingsPage";
+import AgentsPage from "./pages/AgentsPage";
+import BodyCompositionPage from "./pages/BodyCompositionPage";
+import RefeedProtocolPage from "./pages/RefeedProtocolPage";
+import BehavioralTriggersPage from "./pages/BehavioralTriggersPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -123,6 +127,10 @@ const App = () => (
             <Route path="/coach/patient/:patientId" element={<ProtectedRoute><CoachPatientDetailPage /></ProtectedRoute>} />
             <Route path="/coach/add-patient" element={<ProtectedRoute><CoachAddPatientPage /></ProtectedRoute>} />
             <Route path="/coach/settings" element={<ProtectedRoute><CoachSettingsPage /></ProtectedRoute>} />
+            <Route path="/agents" element={<ProtectedRoute><AgentsPage /></ProtectedRoute>} />
+            <Route path="/body-composition" element={<ProtectedRoute><BodyCompositionPage /></ProtectedRoute>} />
+            <Route path="/refeed" element={<ProtectedRoute><RefeedProtocolPage /></ProtectedRoute>} />
+            <Route path="/triggers" element={<ProtectedRoute><BehavioralTriggersPage /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
