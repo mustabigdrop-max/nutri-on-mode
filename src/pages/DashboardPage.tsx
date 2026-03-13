@@ -548,35 +548,54 @@ const DashboardPage = () => {
           <CalorieRing percent={kcalPercent} kcal={todayTotals.kcal} target={kcalTarget} objetivo={objetivo} />
         </motion.div>
 
-        {/* Macro bars */}
-        <div className="space-y-2.5 mb-4">
-          {macros.map((macro, i) => (
-            <motion.div
-              key={macro.label}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.4 + i * 0.1 }}
-            >
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-xs font-mono text-muted-foreground flex items-center gap-1">
-                  <span className="text-sm">{macro.icon}</span> {macro.label}
-                </span>
-                <span className="text-xs font-mono text-foreground font-bold">
-                  {Math.round(macro.value)}<span className="text-muted-foreground font-normal">/{macro.target}{macro.unit}</span>
-                </span>
-              </div>
-              <div className="h-3 rounded-full bg-secondary overflow-hidden relative">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: `${Math.min(macro.percent, 100)}%` }}
-                  transition={{ delay: 0.6 + i * 0.1, duration: 1, ease: "easeOut" }}
-                  className={`h-full rounded-full bg-gradient-to-r ${macro.colorFrom} ${macro.colorTo}`}
-                />
-                {/* Target line */}
-                <div className="absolute right-0 top-0 bottom-0 w-px bg-foreground/20" />
-              </div>
-            </motion.div>
-          ))}
+        {/* Macro bars — card wrapped with shimmer and % */}
+        <div className="rounded-xl border border-border bg-card p-4 mb-4 space-y-3">
+          <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider mb-1">Macronutrientes</p>
+          {macros.map((macro, i) => {
+            const isNearTarget = macro.percent >= 95;
+            return (
+              <motion.div
+                key={macro.label}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.4 + i * 0.1 }}
+              >
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-xs font-mono text-muted-foreground flex items-center gap-1">
+                    <span className="text-sm">{macro.icon}</span> {macro.label}
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-[10px] font-mono font-bold ${
+                      macro.percent >= 95 ? "text-primary" : macro.percent >= 70 ? "text-accent" : "text-muted-foreground"
+                    }`}>
+                      {Math.round(macro.percent)}%
+                    </span>
+                    <span className="text-xs font-mono text-foreground font-bold">
+                      {Math.round(macro.value)}<span className="text-muted-foreground font-normal">/{macro.target}{macro.unit}</span>
+                    </span>
+                  </div>
+                </div>
+                <div className="h-3 rounded-full bg-secondary overflow-hidden relative">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${Math.min(macro.percent, 100)}%` }}
+                    transition={{ delay: 0.6 + i * 0.1, duration: 1, ease: "easeOut" }}
+                    className={`h-full rounded-full bg-gradient-to-r ${macro.colorFrom} ${macro.colorTo} relative overflow-hidden`}
+                  >
+                    {/* Shimmer when ≥95% */}
+                    {isNearTarget && (
+                      <motion.div
+                        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent"
+                        animate={{ x: ["-100%", "200%"] }}
+                        transition={{ duration: 2, repeat: Infinity, delay: 1 + i * 0.3, ease: "easeInOut" }}
+                      />
+                    )}
+                  </motion.div>
+                  <div className="absolute right-0 top-0 bottom-0 w-px bg-foreground/20" />
+                </div>
+              </motion.div>
+            );
+          })}
         </div>
 
         {/* Stats row: Score, Streak, Hydration */}
