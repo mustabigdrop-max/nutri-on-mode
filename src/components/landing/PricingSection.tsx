@@ -57,7 +57,7 @@ const plans = [
     icon: Briefcase,
     description: "IA + Coach real. Vagas limitadas: máx. 20 alunos.",
     popular: false,
-    checkoutUrl: "https://pay.kiwify.com.br/zbtOulj",
+    checkoutUrl: "https://pay.kiwify.com.br/nDxfj4b",
     features: [
       "Tudo do ON+ +",
       "2 check-ins mensais (vídeo/áudio)",

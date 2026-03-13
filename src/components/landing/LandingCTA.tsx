@@ -66,7 +66,7 @@ const LandingCTA = () => {
         className="relative mb-10"
       >
         <a
-          href="https://pay.kiwify.com.br/6pXyygp"
+          href="https://pay.kiwify.com.br/G8uxU9O"
           target="_blank"
           rel="noopener noreferrer"
           className="inline-block bg-black text-primary font-heading text-[1.3rem] tracking-[.1em] px-[52px] py-5 rounded-[2px] hover:bg-foreground hover:text-black transition-all"
