@@ -14,6 +14,14 @@ const LandingBackground = () => {
     let animId: number;
     let t = 0;
 
+    // Mouse position for reactive particles
+    const mouse = { x: -9999, y: -9999 };
+    const handleMouse = (e: MouseEvent) => {
+      mouse.x = e.clientX;
+      mouse.y = e.clientY;
+    };
+    window.addEventListener("mousemove", handleMouse);
+
     const handleResize = () => {
       W = canvas.width = window.innerWidth;
       H = canvas.height = window.innerHeight;
@@ -138,6 +146,19 @@ const LandingBackground = () => {
 
       // Draw bioluminescent cells
       cells.forEach((cell) => {
+        // Mouse repulsion — particles gently flee the cursor
+        const mdx = cell.x - mouse.x;
+        const mdy = cell.y - mouse.y;
+        const md = Math.sqrt(mdx * mdx + mdy * mdy);
+        if (md < 180 && md > 0) {
+          const force = (1 - md / 180) * 0.18;
+          cell.vx += (mdx / md) * force;
+          cell.vy += (mdy / md) * force;
+        }
+        // Velocity damping
+        cell.vx *= 0.978;
+        cell.vy *= 0.978;
+
         cell.x += cell.vx;
         cell.y += cell.vy;
         cell.pulse += cell.pulseSpeed;
@@ -192,6 +213,7 @@ const LandingBackground = () => {
     return () => {
       cancelAnimationFrame(animId);
       window.removeEventListener("resize", handleResize);
+      window.removeEventListener("mousemove", handleMouse);
     };
   }, []);
 

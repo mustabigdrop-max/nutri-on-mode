@@ -209,6 +209,15 @@
   }
 }
 
+@keyframes sound-bar {
+  from { transform: scaleY(0.3); opacity: 0.5; }
+  to   { transform: scaleY(1.4); opacity: 1; }
+}
+
+@keyframes ping {
+  75%, 100% { transform: scale(2); opacity: 0; }
+}
+
 @keyframes streak-fire {
   0%, 100% {
     transform: scaleY(1) scaleX(1);

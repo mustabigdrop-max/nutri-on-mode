@@ -1,3 +1,4 @@
+import { useState, useCallback } from "react";
 import LandingNav from "@/components/landing/LandingNav";
 import LandingBackground from "@/components/landing/LandingBackground";
 import LandingHero from "@/components/landing/LandingHero";
@@ -14,10 +15,21 @@ import LandingCoach from "@/components/landing/LandingCoach";
 import LandingPlans from "@/components/landing/LandingPlans";
 import LandingCTA from "@/components/landing/LandingCTA";
 import LandingFooter from "@/components/landing/LandingFooter";
+import LandingIntro from "@/components/landing/LandingIntro";
+import LandingAudio from "@/components/landing/LandingAudio";
 
 const Index = () => {
+  const [introComplete, setIntroComplete] = useState(false);
+  const handleIntroDone = useCallback(() => setIntroComplete(true), []);
+
   return (
     <div className="min-h-screen bg-[#03030a] text-[#f0edf8] font-landing overflow-x-hidden">
+      {/* Cinematic boot intro — shows once per session */}
+      {!introComplete && <LandingIntro onDone={handleIntroDone} />}
+
+      {/* Ambient sound toggle */}
+      <LandingAudio />
+
       <LandingBackground />
       <div className="relative z-[2]">
         <LandingNav />

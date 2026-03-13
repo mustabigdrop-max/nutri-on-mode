@@ -325,27 +325,35 @@ const LandingHero = () => {
             <div className="w-6 h-px bg-[#e8a020]/15" />
           </motion.div>
 
-          {/* Body copy */}
+          {/* Body copy — identity-driven */}
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 1.3 }}
             className="max-w-[500px] mb-8"
           >
-            <p className="text-[1rem] leading-[1.85] text-[#f0edf8]/55 font-landing mb-4">
-              A maioria dos apps te dá um cardápio. O NUTRION te dá um{" "}
-              <span className="text-[#e8a020] font-semibold">protocolo</span>. Baseado em ciência,
-              executado por{" "}
-              <span className="text-[#00f0b4] font-semibold">IA comportamental</span>, sustentado pelo
-              seu{" "}
-              <span className="text-[#f0edf8]/85 font-semibold">mindset</span>.
+            <p className="text-[1rem] leading-[1.9] text-[#f0edf8]/55 font-landing mb-3">
+              Você não chegou até aqui por acidente.{" "}
+              <span className="text-[#f0edf8]/75">Quem chega aqui já tentou de tudo.</span>{" "}
+              App genérico. Cardápio pronto. Motivação que durou 2 semanas.
+            </p>
+            <p className="text-[1rem] leading-[1.9] text-[#f0edf8]/70 font-landing font-semibold mb-4">
+              O NUTRION não é mais uma tentativa.{" "}
+              <span className="text-[#e8a020]">É o sistema que substitui todas elas.</span>
             </p>
 
-            {/* Inline badge */}
-            <div className="inline-flex items-center gap-2 border border-[#e8a020]/12 bg-[#e8a020]/[.03] px-3.5 py-1.5 rounded-full">
-              <span className="text-[12px]">🇺🇸</span>
-              <span className="font-mono text-[.58rem] text-[#8888b0] tracking-[.08em]">Formação americana em nutrição</span>
-              <span className="w-1 h-1 rounded-full bg-[#00f0b4]/40" />
+            {/* Live activity + badge row */}
+            <div className="flex flex-wrap items-center gap-3">
+              {/* Live counter */}
+              <div className="inline-flex items-center gap-2 border border-[#00f0b4]/15 bg-[#00f0b4]/[.03] px-3 py-1.5 rounded-full">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#00f0b4]" style={{ boxShadow: "0 0 6px rgba(0,240,180,.9)", animation: "pulse 1.5s ease-in-out infinite" }} />
+                <span className="font-mono text-[.56rem] text-[#00f0b4]/70 tracking-[.08em]">23 pessoas ativas agora</span>
+              </div>
+              {/* US badge */}
+              <div className="inline-flex items-center gap-2 border border-[#e8a020]/10 bg-[#e8a020]/[.03] px-3 py-1.5 rounded-full">
+                <span className="text-[11px]">🇺🇸</span>
+                <span className="font-mono text-[.55rem] text-[#8888b0] tracking-[.06em]">Formação americana em nutrição</span>
+              </div>
             </div>
           </motion.div>
 
