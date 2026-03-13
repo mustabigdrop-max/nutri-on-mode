@@ -134,12 +134,18 @@ const ChatPage = () => {
           <ArrowLeft className="w-5 h-5" />
         </button>
         <div className="flex items-center gap-2 flex-1">
-          <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+          <div className="w-9 h-9 rounded-xl bg-primary/20 border border-primary/20 flex items-center justify-center relative">
             <Sparkles className="w-4 h-4 text-primary" />
+            {/* Online pulse */}
+            <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-accent border-2 border-background animate-pulse" />
           </div>
           <div>
-            <h1 className="text-sm font-bold text-foreground">NutriCoach IA</h1>
-            <p className="text-[10px] text-muted-foreground font-mono">Coach comportamental inteligente</p>
+            <h1 className="text-sm font-bold text-foreground">NutriCoach MCE</h1>
+            <div className="flex items-center gap-1.5">
+              <div className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
+              <p className="text-[10px] text-accent font-mono">Online</p>
+              <span className="text-[9px] text-muted-foreground font-mono">· Comportamental · NutriSync</span>
+            </div>
           </div>
         </div>
         <button
@@ -171,11 +177,17 @@ const ChatPage = () => {
             <div className="w-7 h-7 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
               <Bot className="w-3.5 h-3.5 text-primary" />
             </div>
-            <div className="bg-card border border-border rounded-2xl rounded-bl-md px-4 py-3">
-              <div className="flex gap-1">
-                <span className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-                <span className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                <span className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+            <div>
+              <span className="text-[9px] font-mono text-primary uppercase tracking-wider mb-1 block">NutriCoach MCE</span>
+              <div className="bg-card border border-border rounded-2xl rounded-bl-md px-4 py-3">
+                <div className="flex items-center gap-2">
+                  <div className="flex gap-1">
+                    <span className="w-2 h-2 bg-primary/60 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                    <span className="w-2 h-2 bg-primary/60 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                    <span className="w-2 h-2 bg-primary/60 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                  </div>
+                  <span className="text-[10px] font-mono text-muted-foreground">analisando...</span>
+                </div>
               </div>
             </div>
           </div>
