@@ -205,24 +205,47 @@ const ScoreGauge = ({ score }: { score: number }) => {
   );
 };
 
-// Streak fire
-const StreakFire = ({ days }: { days: number }) => (
-  <div className="rounded-xl border border-border bg-card p-3 h-24 flex flex-col items-center justify-center relative overflow-hidden">
-    {days > 0 && (
-      <div className="absolute inset-0 bg-gradient-to-t from-primary/10 to-transparent" />
-    )}
-    <div className="relative z-10 flex flex-col items-center">
-      <motion.div
-        animate={days > 0 ? { scale: [1, 1.15, 1], rotate: [0, -3, 3, 0] } : {}}
-        transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-      >
-        <Flame className={`w-6 h-6 ${days > 0 ? "text-primary" : "text-muted-foreground"}`} />
-      </motion.div>
-      <span className="text-2xl font-bold font-mono text-foreground">{days}</span>
-      <p className="text-[10px] font-mono text-muted-foreground">Streak</p>
+// Streak fire — with floating particles and glow
+const StreakFire = ({ days }: { days: number }) => {
+  const isWeek = days >= 7;
+  return (
+    <div className="rounded-xl border border-border bg-card p-3 h-24 flex flex-col items-center justify-center relative overflow-hidden">
+      {days > 0 && (
+        <div className="absolute inset-0 bg-gradient-to-t from-primary/10 to-transparent" />
+      )}
+      {/* Floating particles */}
+      {days > 0 && [0, 1, 2].map(i => (
+        <motion.div
+          key={i}
+          className="absolute w-1 h-1 rounded-full bg-primary/60"
+          style={{ left: `${30 + i * 20}%` }}
+          animate={{ y: [0, -30, -60], opacity: [0, 0.8, 0], x: [0, (i - 1) * 8] }}
+          transition={{ duration: 2 + i * 0.5, repeat: Infinity, delay: i * 0.6, ease: "easeOut" }}
+        />
+      ))}
+      <div className="relative z-10 flex flex-col items-center">
+        <motion.div
+          animate={days > 0 ? { scale: [1, 1.15, 1], rotate: [0, -3, 3, 0] } : {}}
+          transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+          style={days > 0 ? { filter: "drop-shadow(0 0 6px hsl(38 80% 52% / 0.5))" } : {}}
+        >
+          <Flame className={`w-6 h-6 ${days > 0 ? "text-primary" : "text-muted-foreground"}`} />
+        </motion.div>
+        <span className="text-2xl font-bold font-mono text-foreground">{days}</span>
+        <p className="text-[10px] font-mono text-muted-foreground">Streak</p>
+        {isWeek && (
+          <motion.span
+            initial={{ opacity: 0, scale: 0 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="text-[8px] font-mono font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded-full mt-0.5"
+          >
+            🔥 semana!
+          </motion.span>
+        )}
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 // XP bar
 const XPBar = ({ xp, level }: { xp: number; level: number }) => {
