@@ -81,7 +81,7 @@ const RISK_FACTORS = [
 interface Intervention {
   title: string;
   desc: string;
-  icon: React.ComponentType<{ className?: string; size?: number }>;
+  icon: React.ComponentType<any>;
   color: string;
 }
 
