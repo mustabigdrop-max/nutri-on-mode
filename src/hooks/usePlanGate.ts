@@ -10,8 +10,10 @@ const PLAN_HIERARCHY: Record<string, number> = {
   on: 1,
   "ON +": 2,
   "on_plus": 2,
+  "full": 2,
   "ON PRO": 3,
   "on_pro": 3,
+  "max": 3,
 };
 
 export const usePlanGate = () => {
