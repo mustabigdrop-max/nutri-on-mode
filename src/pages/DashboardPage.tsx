@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useWaterLogs } from "@/hooks/useWaterLogs";
 import { usePlanGate } from "@/hooks/usePlanGate";
 import { useWorkoutSchedule, getWorkoutAdjustment, WORKOUT_TYPES, type WorkoutType } from "@/hooks/useWorkoutSchedule";
-import TrialBanner from "@/components/dashboard/TrialBanner";
+
 import ReengagementPopup from "@/components/dashboard/ReengagementPopup";
 import UpgradeModal from "@/components/landing/UpgradeModal";
 import DashboardGamificationCards from "@/components/dashboard/DashboardGamificationCards";
