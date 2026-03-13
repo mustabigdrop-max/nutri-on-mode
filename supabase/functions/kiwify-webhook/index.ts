@@ -79,12 +79,18 @@ Deno.serve(async (req) => {
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, serviceKey);
 
-    // ── 4. Determinar período (mensal / semestral) ──────────
+    // ── 4. Determinar período ──────────────────────────────
     const planName = body.Product?.product_name ?? body.product?.name ?? "";
-    const periodo = planName.toLowerCase().includes("semestral") ? "semestral" : "mensal";
-    const expiresAt = periodo === "semestral"
-      ? new Date(Date.now() + 180 * 24 * 60 * 60 * 1000).toISOString()
-      : null;
+    const isStarter = plano === "starter";
+    const periodo = isStarter ? "starter_7d" : (planName.toLowerCase().includes("semestral") ? "semestral" : "mensal");
+    // Starter = 7 dias de acesso ON+; semestral = 180 dias
+    const expiresAt = isStarter
+      ? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+      : periodo === "semestral"
+        ? new Date(Date.now() + 180 * 24 * 60 * 60 * 1000).toISOString()
+        : null;
+    // Starter concede acesso ao plano "full" (ON+) por 7 dias
+    const planoEfetivo = isStarter ? "full" : plano;
 
     // ── 5. Processar eventos ────────────────────────────────
     if (event === "paid" || event === "approved" || event === "completed") {
