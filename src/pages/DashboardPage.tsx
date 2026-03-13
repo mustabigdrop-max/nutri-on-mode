@@ -247,12 +247,14 @@ const StreakFire = ({ days }: { days: number }) => {
   );
 };
 
-// XP bar
+// XP bar — with milestones and shimmer
 const XPBar = ({ xp, level }: { xp: number; level: number }) => {
   const LEVEL_NAMES = ["", "Iniciante", "Consistente", "Focado", "Disciplinado", "Forte", "Máquina", "Lenda", "Imortal"];
   const xpPerLevel = 500;
   const currentLevelXP = xp % xpPerLevel;
   const percent = (currentLevelXP / xpPerLevel) * 100;
+  const xpToNext = xpPerLevel - currentLevelXP;
+  const milestones = [25, 50, 75];
 
   return (
     <div className="rounded-xl border border-border bg-card p-3">
@@ -262,15 +264,34 @@ const XPBar = ({ xp, level }: { xp: number; level: number }) => {
           <span className="text-xs font-mono text-foreground font-bold">Lv.{level}</span>
           <span className="text-[10px] font-mono text-primary">{LEVEL_NAMES[Math.min(level, 8)]}</span>
         </div>
-        <span className="text-[10px] font-mono text-muted-foreground">{currentLevelXP}/{xpPerLevel} XP</span>
+        <span className="text-[10px] font-mono text-muted-foreground">{xpToNext} XP para Lv.{level + 1}</span>
       </div>
-      <div className="h-2 rounded-full bg-secondary overflow-hidden">
+      <div className="relative h-3 rounded-full bg-secondary overflow-hidden">
         <motion.div
-          className="h-full rounded-full bg-gradient-to-r from-primary to-gold-glow"
+          className="h-full rounded-full bg-gradient-to-r from-primary to-gold-glow relative"
           initial={{ width: 0 }}
           animate={{ width: `${percent}%` }}
           transition={{ duration: 1, ease: "easeOut", delay: 0.4 }}
-        />
+        >
+          {/* Shimmer */}
+          <motion.div
+            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+            animate={{ x: ["-100%", "200%"] }}
+            transition={{ duration: 2, repeat: Infinity, delay: 1.5, ease: "easeInOut" }}
+          />
+        </motion.div>
+        {/* Milestone markers */}
+        {milestones.map(m => (
+          <div
+            key={m}
+            className="absolute top-0 bottom-0 w-px bg-foreground/15"
+            style={{ left: `${m}%` }}
+          />
+        ))}
+      </div>
+      <div className="flex justify-between mt-1">
+        <span className="text-[8px] font-mono text-muted-foreground">{currentLevelXP} XP</span>
+        <span className="text-[8px] font-mono text-muted-foreground">{xpPerLevel}</span>
       </div>
     </div>
   );
