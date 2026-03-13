@@ -294,10 +294,6 @@ const OnboardingPage = () => {
     const get = geb * factor;
     const { vet, protein, carbs, fat } = calcMacros(get, objetivo!, weight);
 
-    // Set trial_ends_at to 7 days from now
-    const trialEnd = new Date();
-    trialEnd.setDate(trialEnd.getDate() + 7);
-
     const error = await updateProfile({
       full_name: d.full_name || null,
       date_of_birth: d.date_of_birth || null,
@@ -319,7 +315,6 @@ const OnboardingPage = () => {
       fat_g: fat,
       active_protocol: d.behavioral_profile || null,
       onboarding_completed: true,
-      trial_ends_at: trialEnd.toISOString(),
     });
 
     if (error) {
