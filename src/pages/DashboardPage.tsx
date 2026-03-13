@@ -30,27 +30,49 @@ import {
 } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
 
-// SVG animated ring component
+// SVG animated ring component — premium dual ring with glow
 const CalorieRing = ({ percent, kcal, target, objetivo }: { percent: number; kcal: number; target: number; objetivo?: string }) => {
   const radius = 90;
+  const innerRadius = 76;
   const stroke = 10;
+  const innerStroke = 4;
   const circumference = 2 * Math.PI * radius;
+  const innerCircumference = 2 * Math.PI * innerRadius;
   const offset = circumference - (Math.min(percent, 100) / 100) * circumference;
+  const innerOffset = innerCircumference - (Math.min(percent, 100) / 100) * innerCircumference;
   const remaining = Math.max(target - kcal, 0);
+  const isOver = percent > 100;
+  const isOnTarget = percent >= 85 && percent <= 105;
 
   return (
     <div className="relative w-56 h-56 mx-auto">
+      {/* Ambient glow */}
+      {isOnTarget && (
+        <motion.div
+          className="absolute inset-4 rounded-full"
+          animate={{ boxShadow: ["0 0 20px hsl(var(--primary) / 0.1)", "0 0 40px hsl(var(--primary) / 0.25)", "0 0 20px hsl(var(--primary) / 0.1)"] }}
+          transition={{ duration: 2, repeat: Infinity }}
+        />
+      )}
       <svg viewBox="0 0 200 200" className="w-full h-full -rotate-90">
-        <circle cx="100" cy="100" r={radius} fill="none" stroke="hsl(var(--border))" strokeWidth={stroke} />
         <defs>
+          <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor={isOver ? "hsl(var(--destructive))" : "hsl(var(--primary))"} />
+            <stop offset="100%" stopColor={isOver ? "hsl(345 82% 70%)" : "hsl(var(--accent))"} />
+          </linearGradient>
           <filter id="ringGlow">
             <feGaussianBlur stdDeviation="4" result="blur" />
             <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
           </filter>
         </defs>
+        {/* Outer track */}
+        <circle cx="100" cy="100" r={radius} fill="none" stroke="hsl(var(--border))" strokeWidth={stroke} />
+        {/* Inner track */}
+        <circle cx="100" cy="100" r={innerRadius} fill="none" stroke="hsl(var(--border))" strokeWidth={innerStroke} opacity={0.4} />
+        {/* Outer ring — gradient gold→cyan */}
         <motion.circle
           cx="100" cy="100" r={radius} fill="none"
-          stroke="hsl(var(--primary))"
+          stroke="url(#ringGrad)"
           strokeWidth={stroke}
           strokeLinecap="round"
           strokeDasharray={circumference}
@@ -59,19 +81,31 @@ const CalorieRing = ({ percent, kcal, target, objetivo }: { percent: number; kca
           transition={{ duration: 1.5, ease: "easeOut", delay: 0.3 }}
           filter="url(#ringGlow)"
         />
+        {/* Inner ring — cyan accent */}
         <motion.circle
-          cx="100" cy="100" r={radius - 14} fill="none"
+          cx="100" cy="100" r={innerRadius} fill="none"
           stroke="hsl(var(--accent))"
-          strokeWidth={3}
+          strokeWidth={innerStroke}
           strokeLinecap="round"
-          strokeDasharray={circumference * 0.7}
-          initial={{ strokeDashoffset: circumference * 0.7 }}
-          animate={{ strokeDashoffset: circumference * 0.7 * (1 - Math.min(percent, 100) / 100) }}
+          strokeDasharray={innerCircumference}
+          initial={{ strokeDashoffset: innerCircumference }}
+          animate={{ strokeDashoffset: innerOffset }}
           transition={{ duration: 1.8, ease: "easeOut", delay: 0.5 }}
-          opacity={0.4}
+          opacity={0.5}
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
+        {/* Percentage badge */}
+        <motion.span
+          initial={{ opacity: 0, scale: 0 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 1.2, type: "spring" }}
+          className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full mb-1 ${
+            isOver ? "bg-destructive/20 text-destructive" : isOnTarget ? "bg-primary/20 text-primary" : "bg-secondary text-muted-foreground"
+          }`}
+        >
+          {Math.round(percent)}%
+        </motion.span>
         <motion.span
           initial={{ opacity: 0, scale: 0.5 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -84,6 +118,14 @@ const CalorieRing = ({ percent, kcal, target, objetivo }: { percent: number; kca
         <span className="text-[10px] font-mono text-primary mt-0.5">
           {getRingLabel(objetivo || "saude_geral", remaining, percent)}
         </span>
+        {/* On-target pulse */}
+        {isOnTarget && (
+          <motion.div
+            animate={{ scale: [1, 1.1, 1], opacity: [0.6, 1, 0.6] }}
+            transition={{ duration: 1.5, repeat: Infinity }}
+            className="mt-1 w-2 h-2 rounded-full bg-accent"
+          />
+        )}
       </div>
     </div>
   );
