@@ -170,23 +170,37 @@ const HydrationWidget = ({ glasses, target }: { glasses: number; target: number 
   );
 };
 
-// Score gauge
+// Score gauge — animated half-circle arc
 const ScoreGauge = ({ score }: { score: number }) => {
-  const color = score >= 80 ? "text-primary" : score >= 50 ? "text-accent" : "text-danger";
+  const color = score >= 80 ? "hsl(var(--primary))" : score >= 50 ? "hsl(var(--accent))" : "hsl(var(--destructive))";
+  const textColor = score >= 80 ? "text-primary" : score >= 50 ? "text-accent" : "text-destructive";
   const label = score >= 80 ? "Excelente" : score >= 60 ? "Bom" : score >= 40 ? "Regular" : "Melhore";
+  const radius = 30;
+  const circumference = Math.PI * radius;
+  const offset = circumference - (Math.min(score, 100) / 100) * circumference;
+
   return (
     <div className="rounded-xl border border-border bg-card p-3 h-24 flex flex-col items-center justify-center">
-      <Brain className="w-4 h-4 text-accent mb-1" />
-      <motion.span
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.8 }}
-        className={`text-2xl font-bold font-mono ${color}`}
-      >
-        {score}
-      </motion.span>
-      <p className="text-[10px] font-mono text-muted-foreground">Score</p>
-      <p className={`text-[9px] font-mono ${color}`}>{label}</p>
+      <div className="relative w-16 h-10">
+        <svg viewBox="0 0 68 38" className="w-full h-full">
+          <path d="M 4 34 A 30 30 0 0 1 64 34" fill="none" stroke="hsl(var(--border))" strokeWidth={5} strokeLinecap="round" />
+          <motion.path
+            d="M 4 34 A 30 30 0 0 1 64 34"
+            fill="none"
+            stroke={color}
+            strokeWidth={5}
+            strokeLinecap="round"
+            strokeDasharray={circumference}
+            initial={{ strokeDashoffset: circumference }}
+            animate={{ strokeDashoffset: offset }}
+            transition={{ duration: 1.2, ease: "easeOut", delay: 0.8 }}
+          />
+        </svg>
+        <div className="absolute inset-0 flex items-end justify-center">
+          <span className={`text-lg font-bold font-mono ${textColor}`}>{score}</span>
+        </div>
+      </div>
+      <p className={`text-[9px] font-mono ${textColor} mt-0.5`}>{label}</p>
     </div>
   );
 };
