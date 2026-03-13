@@ -75,66 +75,51 @@ const App = () => (
             <Route path="/first-meal" element={<ProtectedRoute><FirstMealScreen /></ProtectedRoute>} />
             <Route path="/activation-tour" element={<ProtectedRoute><ActivationTourPage /></ProtectedRoute>} />
             <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
-            <Route path="/meal-plan" element={<ProtectedRoute><MealPlanPage /></ProtectedRoute>} />
             <Route path="/meal-log" element={<ProtectedRoute><MealLogPage /></ProtectedRoute>} />
-            <Route path="/chat" element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />
-            <Route path="/micronutrients" element={<ProtectedRoute><MicronutrientsPage /></ProtectedRoute>} />
-            <Route path="/gamification" element={<ProtectedRoute><GamificationPage /></ProtectedRoute>} />
-            <Route path="/transformation" element={<ProtectedRoute><TransformationPage /></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-            <Route path="/professional" element={<ProtectedRoute><ProfessionalDashboard /></ProtectedRoute>} />
-            <Route path="/shopping-list" element={<ProtectedRoute><ShoppingListPage /></ProtectedRoute>} />
-            <Route path="/wearables" element={<ProtectedRoute><WearablesPage /></ProtectedRoute>} />
-            <Route path="/family" element={<ProtectedRoute><FamilyPage /></ProtectedRoute>} />
+            <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
             <Route path="/support" element={<ProtectedRoute><SupportPage /></ProtectedRoute>} />
             <Route path="/hydration" element={<ProtectedRoute><HydrationPage /></ProtectedRoute>} />
-            <Route path="/meal-history" element={<ProtectedRoute><MealHistoryPage /></ProtectedRoute>} />
-            <Route path="/progress" element={<ProtectedRoute><ProgressPage /></ProtectedRoute>} />
-            <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
-            <Route path="/blood-test" element={<ProtectedRoute><BloodTestPage /></ProtectedRoute>} />
-            <Route path="/diet-builder" element={<ProtectedRoute><DietBuilderPage /></ProtectedRoute>} />
-            <Route path="/chronobiology" element={<ProtectedRoute><ChronobiologyPage /></ProtectedRoute>} />
-            <Route path="/behavioral-nutrition" element={<ProtectedRoute><BehavioralNutritionPage /></ProtectedRoute>} />
-            <Route path="/supplementation" element={<ProtectedRoute><SupplementationPage /></ProtectedRoute>} />
-            <Route path="/microbiome" element={<ProtectedRoute><MicrobiomePage /></ProtectedRoute>} />
-            <Route path="/protocols" element={<ProtectedRoute><ProtocolEnginePage /></ProtectedRoute>} />
-            <Route path="/recipes" element={<ProtectedRoute><RecipesPage /></ProtectedRoute>} />
-            <Route
-              path="/event-mode"
-              element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON +" featureName="Modo Evento"><EventModePage /></PlanGateWrapper></ProtectedRoute>}
-            />
-            <Route
-              path="/food-simulator"
-              element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON +" featureName="Simulador 'E se eu comer?'"><FoodSimulatorPage /></PlanGateWrapper></ProtectedRoute>}
-            />
-            <Route
-              path="/monthly-report"
-              element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON +" featureName="Relatório Mensal"><MonthlyReportPage /></PlanGateWrapper></ProtectedRoute>}
-            />
-            <Route path="/glp1" element={<ProtectedRoute><Glp1Page /></ProtectedRoute>} />
-            <Route path="/nutrisync" element={<ProtectedRoute><NutriSyncPage /></ProtectedRoute>} />
-            <Route path="/workout-history" element={<ProtectedRoute><WorkoutHistoryPage /></ProtectedRoute>} />
-            <Route path="/circadian" element={<ProtectedRoute><CircadianPage /></ProtectedRoute>} />
-            <Route
-              path="/performance-pro"
-              element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON PRO" featureName="Performance Pro"><PerformanceProPage /></PlanGateWrapper></ProtectedRoute>}
-            />
-            <Route
-              path="/mental-performance"
-              element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON +" featureName="Mental Performance"><MentalPerformancePage /></PlanGateWrapper></ProtectedRoute>}
-            />
-            <Route path="/coach" element={<CoachLandingPage />} />
-            <Route path="/coach/onboarding" element={<ProtectedRoute><CoachOnboardingPage /></ProtectedRoute>} />
-            <Route path="/coach/dashboard" element={<ProtectedRoute><CoachDashboardPage /></ProtectedRoute>} />
-            <Route path="/coach/patient/:patientId" element={<ProtectedRoute><CoachPatientDetailPage /></ProtectedRoute>} />
-            <Route path="/coach/add-patient" element={<ProtectedRoute><CoachAddPatientPage /></ProtectedRoute>} />
-            <Route path="/coach/settings" element={<ProtectedRoute><CoachSettingsPage /></ProtectedRoute>} />
-            <Route path="/body-composition" element={<ProtectedRoute><BodyCompositionPage /></ProtectedRoute>} />
-            <Route path="/refeed-protocol" element={<ProtectedRoute><RefeedProtocolPage /></ProtectedRoute>} />
-            <Route path="/behavioral-triggers" element={<ProtectedRoute><BehavioralTriggersPage /></ProtectedRoute>} />
-            <Route path="/diet-break-predictor" element={<ProtectedRoute><DietBreakPredictorPage /></ProtectedRoute>} />
-            <Route path="/vulnerability-map" element={<ProtectedRoute><VulnerabilityMapPage /></ProtectedRoute>} />
-            <Route path="/metabolic-reversion" element={<ProtectedRoute><MetabolicReversionPage /></ProtectedRoute>} />
+
+            {/* ON Plan */}
+            <Route path="/meal-plan" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON" featureName="Plano Alimentar"><MealPlanPage /></PlanGateWrapper></ProtectedRoute>} />
+            <Route path="/chat" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON" featureName="Chat IA"><ChatPage /></PlanGateWrapper></ProtectedRoute>} />
+            <Route path="/micronutrients" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON" featureName="Micronutrientes"><MicronutrientsPage /></PlanGateWrapper></ProtectedRoute>} />
+            <Route path="/gamification" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON" featureName="Gamificação"><GamificationPage /></PlanGateWrapper></ProtectedRoute>} />
+            <Route path="/transformation" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON" featureName="Transformação"><TransformationPage /></PlanGateWrapper></ProtectedRoute>} />
+            <Route path="/shopping-list" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON" featureName="Lista de Compras"><ShoppingListPage /></PlanGateWrapper></ProtectedRoute>} />
+            <Route path="/meal-history" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON" featureName="Histórico de Refeições"><MealHistoryPage /></PlanGateWrapper></ProtectedRoute>} />
+            <Route path="/progress" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON" featureName="Progresso"><ProgressPage /></PlanGateWrapper></ProtectedRoute>} />
+            <Route path="/recipes" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON" featureName="Receitas"><RecipesPage /></PlanGateWrapper></ProtectedRoute>} />
+            <Route path="/workout-history" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON" featureName="Histórico de Treinos"><WorkoutHistoryPage /></PlanGateWrapper></ProtectedRoute>} />
+
+            {/* ON+ Plan */}
+            <Route path="/blood-test" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON +" featureName="Exames de Sangue"><BloodTestPage /></PlanGateWrapper></ProtectedRoute>} />
+            <Route path="/diet-builder" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON +" featureName="Diet Builder"><DietBuilderPage /></PlanGateWrapper></ProtectedRoute>} />
+            <Route path="/chronobiology" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON +" featureName="Cronobiologia"><ChronobiologyPage /></PlanGateWrapper></ProtectedRoute>} />
+            <Route path="/behavioral-nutrition" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON +" featureName="Nutrição Comportamental"><BehavioralNutritionPage /></PlanGateWrapper></ProtectedRoute>} />
+            <Route path="/supplementation" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON +" featureName="Suplementação"><SupplementationPage /></PlanGateWrapper></ProtectedRoute>} />
+            <Route path="/microbiome" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON +" featureName="Microbioma"><MicrobiomePage /></PlanGateWrapper></ProtectedRoute>} />
+            <Route path="/protocols" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON +" featureName="Motor de Protocolos"><ProtocolEnginePage /></PlanGateWrapper></ProtectedRoute>} />
+            <Route path="/event-mode" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON +" featureName="Modo Evento"><EventModePage /></PlanGateWrapper></ProtectedRoute>} />
+            <Route path="/food-simulator" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON +" featureName="Simulador 'E se eu comer?'"><FoodSimulatorPage /></PlanGateWrapper></ProtectedRoute>} />
+            <Route path="/monthly-report" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON +" featureName="Relatório Mensal"><MonthlyReportPage /></PlanGateWrapper></ProtectedRoute>} />
+            <Route path="/glp1" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON +" featureName="Protocolo GLP-1"><Glp1Page /></PlanGateWrapper></ProtectedRoute>} />
+            <Route path="/nutrisync" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON +" featureName="NutriSync"><NutriSyncPage /></PlanGateWrapper></ProtectedRoute>} />
+            <Route path="/circadian" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON +" featureName="Circadiano"><CircadianPage /></PlanGateWrapper></ProtectedRoute>} />
+            <Route path="/mental-performance" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON +" featureName="Mental Performance"><MentalPerformancePage /></PlanGateWrapper></ProtectedRoute>} />
+            <Route path="/wearables" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON +" featureName="Wearables"><WearablesPage /></PlanGateWrapper></ProtectedRoute>} />
+            <Route path="/family" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON +" featureName="Modo Família"><FamilyPage /></PlanGateWrapper></ProtectedRoute>} />
+            <Route path="/body-composition" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON +" featureName="Composição Corporal"><BodyCompositionPage /></PlanGateWrapper></ProtectedRoute>} />
+            <Route path="/refeed-protocol" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON +" featureName="Protocolo Refeed"><RefeedProtocolPage /></PlanGateWrapper></ProtectedRoute>} />
+            <Route path="/behavioral-triggers" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON +" featureName="Gatilhos Comportamentais"><BehavioralTriggersPage /></PlanGateWrapper></ProtectedRoute>} />
+            <Route path="/diet-break-predictor" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON +" featureName="Preditor de Diet Break"><DietBreakPredictorPage /></PlanGateWrapper></ProtectedRoute>} />
+            <Route path="/vulnerability-map" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON +" featureName="Mapa de Vulnerabilidade"><VulnerabilityMapPage /></PlanGateWrapper></ProtectedRoute>} />
+            <Route path="/metabolic-reversion" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON +" featureName="Reversão Metabólica"><MetabolicReversionPage /></PlanGateWrapper></ProtectedRoute>} />
+
+            {/* ON PRO Plan */}
+            <Route path="/performance-pro" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON PRO" featureName="Performance Pro"><PerformanceProPage /></PlanGateWrapper></ProtectedRoute>} />
+            <Route path="/professional" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON PRO" featureName="Dashboard Profissional"><ProfessionalDashboard /></PlanGateWrapper></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
