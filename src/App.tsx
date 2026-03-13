@@ -55,6 +55,9 @@ import AgentsPage from "./pages/AgentsPage";
 import BodyCompositionPage from "./pages/BodyCompositionPage";
 import RefeedProtocolPage from "./pages/RefeedProtocolPage";
 import BehavioralTriggersPage from "./pages/BehavioralTriggersPage";
+import DietBreakPredictorPage from "./pages/DietBreakPredictorPage";
+import VulnerabilityMapPage from "./pages/VulnerabilityMapPage";
+import MetabolicReversionPage from "./pages/MetabolicReversionPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -131,6 +134,9 @@ const App = () => (
             <Route path="/body-composition" element={<ProtectedRoute><BodyCompositionPage /></ProtectedRoute>} />
             <Route path="/refeed" element={<ProtectedRoute><RefeedProtocolPage /></ProtectedRoute>} />
             <Route path="/triggers" element={<ProtectedRoute><BehavioralTriggersPage /></ProtectedRoute>} />
+            <Route path="/diet-break-predictor" element={<ProtectedRoute><DietBreakPredictorPage /></ProtectedRoute>} />
+            <Route path="/vulnerability-map" element={<ProtectedRoute><VulnerabilityMapPage /></ProtectedRoute>} />
+            <Route path="/metabolic-reversion" element={<ProtectedRoute><MetabolicReversionPage /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
