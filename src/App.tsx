@@ -51,6 +51,12 @@ import CoachDashboardPage from "./pages/CoachDashboardPage";
 import CoachPatientDetailPage from "./pages/CoachPatientDetailPage";
 import CoachAddPatientPage from "./pages/CoachAddPatientPage";
 import CoachSettingsPage from "./pages/CoachSettingsPage";
+import BodyCompositionPage from "./pages/BodyCompositionPage";
+import RefeedProtocolPage from "./pages/RefeedProtocolPage";
+import BehavioralTriggersPage from "./pages/BehavioralTriggersPage";
+import DietBreakPredictorPage from "./pages/DietBreakPredictorPage";
+import VulnerabilityMapPage from "./pages/VulnerabilityMapPage";
+import MetabolicReversionPage from "./pages/MetabolicReversionPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -123,6 +129,12 @@ const App = () => (
             <Route path="/coach/patient/:patientId" element={<ProtectedRoute><CoachPatientDetailPage /></ProtectedRoute>} />
             <Route path="/coach/add-patient" element={<ProtectedRoute><CoachAddPatientPage /></ProtectedRoute>} />
             <Route path="/coach/settings" element={<ProtectedRoute><CoachSettingsPage /></ProtectedRoute>} />
+            <Route path="/body-composition" element={<ProtectedRoute><BodyCompositionPage /></ProtectedRoute>} />
+            <Route path="/refeed-protocol" element={<ProtectedRoute><RefeedProtocolPage /></ProtectedRoute>} />
+            <Route path="/behavioral-triggers" element={<ProtectedRoute><BehavioralTriggersPage /></ProtectedRoute>} />
+            <Route path="/diet-break-predictor" element={<ProtectedRoute><DietBreakPredictorPage /></ProtectedRoute>} />
+            <Route path="/vulnerability-map" element={<ProtectedRoute><VulnerabilityMapPage /></ProtectedRoute>} />
+            <Route path="/metabolic-reversion" element={<ProtectedRoute><MetabolicReversionPage /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
