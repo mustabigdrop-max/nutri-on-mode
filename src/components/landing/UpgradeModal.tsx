@@ -130,8 +130,8 @@ const UpgradeModal = ({ open, onClose, fromPlan, lockedFeature }: UpgradeModalPr
               onClick={() => {
                 onClose();
                 const links: Record<string, string> = {
-                  "ON +": "https://pay.kiwify.com.br/6pXyygp",
-                  "ON PRO": "https://pay.kiwify.com.br/zbtOulj",
+                  "ON +": "https://pay.kiwify.com.br/G8uxU9O",
+                  "ON PRO": "https://pay.kiwify.com.br/nDxfj4b",
                 };
                 window.open(links[path.target] || "/auth", "_blank");
               }}

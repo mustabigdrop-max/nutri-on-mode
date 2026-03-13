@@ -11,7 +11,7 @@ const plans = [
     icon: Zap,
     description: "A IA que te conhece, não só te conta.",
     popular: false,
-    checkoutUrl: "https://pay.kiwify.com.br/2U4q4d9",
+    checkoutUrl: "https://pay.kiwify.com.br/Y6CB7tE",
     features: [
       "Onboarding inteligente por conversa (sem formulário)",
       "Modo 'Sem Balança' — medidas visuais brasileiras",
@@ -33,7 +33,7 @@ const plans = [
     icon: Crown,
     description: "IA completa 24h. Preço de fundador — 50 vagas.",
     popular: true,
-    checkoutUrl: "https://pay.kiwify.com.br/6pXyygp",
+    checkoutUrl: "https://pay.kiwify.com.br/G8uxU9O",
     features: [
       "Tudo do ON +",
       "Chat IA nutriON ilimitado",
@@ -57,7 +57,7 @@ const plans = [
     icon: Briefcase,
     description: "IA + Coach real. Vagas limitadas: máx. 20 alunos.",
     popular: false,
-    checkoutUrl: "https://pay.kiwify.com.br/zbtOulj",
+    checkoutUrl: "https://pay.kiwify.com.br/nDxfj4b",
     features: [
       "Tudo do ON+ +",
       "2 check-ins mensais (vídeo/áudio)",
@@ -124,12 +124,14 @@ const PricingSection = () => {
                 Abata R$9,90 na primeira mensalidade se assinar em seguida
               </p>
             </div>
-            <button
-              onClick={() => navigate("/auth")}
+            <a
+              href="https://pay.kiwify.com.br/VaPRGfQ"
+              target="_blank"
+              rel="noopener noreferrer"
               className="shrink-0 px-6 py-3 rounded-lg bg-primary text-primary-foreground font-bold text-sm hover:scale-[1.02] glow-gold transition-all whitespace-nowrap"
             >
               EXPERIMENTAR POR R$9,90 →
-            </button>
+            </a>
           </div>
         </motion.div>
 

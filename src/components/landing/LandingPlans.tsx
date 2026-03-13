@@ -8,7 +8,7 @@ import { Shield, Star, Zap } from "lucide-react";
 const plans = [
   {
     name: "ON", price: "R$67", oldPrice: "R$97", discount: "31% off fundador", featured: false,
-    checkoutUrl: "https://pay.kiwify.com.br/2U4q4d9",
+    checkoutUrl: "https://pay.kiwify.com.br/Y6CB7tE",
     features: [
       "Onboarding inteligente por conversa (sem formulário)",
       "Modo 'Sem Balança' — medidas visuais brasileiras",
@@ -27,7 +27,7 @@ const plans = [
   {
     name: "ON +", price: "R$127", oldPrice: "R$197", discount: "35% off fundador", featured: true,
     slotKey: "on_plus",
-    checkoutUrl: "https://pay.kiwify.com.br/6pXyygp",
+    checkoutUrl: "https://pay.kiwify.com.br/G8uxU9O",
     badge: "PREÇO DE FUNDADOR",
     features: [
       { text: "<strong>Tudo do ON</strong> +" },
@@ -48,7 +48,7 @@ const plans = [
   {
     name: "ON PRO", price: "R$247", oldPrice: "R$397", discount: "37% off fundador", featured: false,
     slotKey: "on_pro",
-    checkoutUrl: "https://pay.kiwify.com.br/zbtOulj",
+    checkoutUrl: "https://pay.kiwify.com.br/nDxfj4b",
     badge: "VAGAS LIMITADAS",
     features: [
       { text: "<strong>Tudo do ON+</strong> +" },
@@ -124,8 +124,9 @@ const LandingPlans = () => {
           </div>
           
           <a
-            href="/auth"
-            onClick={(e) => { e.preventDefault(); navigate("/auth"); }}
+            href="https://pay.kiwify.com.br/VaPRGfQ"
+            target="_blank"
+            rel="noopener noreferrer"
             className="shrink-0 px-7 py-3 rounded-lg bg-primary text-black font-mono text-[.72rem] font-medium tracking-[.08em] hover:bg-black hover:text-primary hover:outline hover:outline-1 hover:outline-primary transition-all whitespace-nowrap"
           >
             EXPERIMENTAR POR R$9,90 →
