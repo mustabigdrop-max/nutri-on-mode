@@ -51,6 +51,12 @@ import CoachDashboardPage from "./pages/CoachDashboardPage";
 import CoachPatientDetailPage from "./pages/CoachPatientDetailPage";
 import CoachAddPatientPage from "./pages/CoachAddPatientPage";
 import CoachSettingsPage from "./pages/CoachSettingsPage";
+import BodyCompositionPage from "./pages/BodyCompositionPage";
+import RefeedProtocolPage from "./pages/RefeedProtocolPage";
+import BehavioralTriggersPage from "./pages/BehavioralTriggersPage";
+import DietBreakPredictorPage from "./pages/DietBreakPredictorPage";
+import VulnerabilityMapPage from "./pages/VulnerabilityMapPage";
+import MetabolicReversionPage from "./pages/MetabolicReversionPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
