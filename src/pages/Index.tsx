@@ -30,6 +30,7 @@ const Index = () => {
         <LandingNav />
         <LandingHero />
         <LandingTicker />
+        <LandingInteractiveQuiz />
         <LandingVSComparison />
         <LandingManifesto />
         <LandingProtocols />
