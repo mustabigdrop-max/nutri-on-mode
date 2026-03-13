@@ -124,8 +124,9 @@ const LandingPlans = () => {
           </div>
           
           <a
-            href="/auth"
-            onClick={(e) => { e.preventDefault(); navigate("/auth"); }}
+            href="https://pay.kiwify.com.br/VaPRGfQ"
+            target="_blank"
+            rel="noopener noreferrer"
             className="shrink-0 px-7 py-3 rounded-lg bg-primary text-black font-mono text-[.72rem] font-medium tracking-[.08em] hover:bg-black hover:text-primary hover:outline hover:outline-1 hover:outline-primary transition-all whitespace-nowrap"
           >
             EXPERIMENTAR POR R$9,90 →
