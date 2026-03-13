@@ -30,27 +30,49 @@ import {
 } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
 
-// SVG animated ring component
+// SVG animated ring component — premium dual ring with glow
 const CalorieRing = ({ percent, kcal, target, objetivo }: { percent: number; kcal: number; target: number; objetivo?: string }) => {
   const radius = 90;
+  const innerRadius = 76;
   const stroke = 10;
+  const innerStroke = 4;
   const circumference = 2 * Math.PI * radius;
+  const innerCircumference = 2 * Math.PI * innerRadius;
   const offset = circumference - (Math.min(percent, 100) / 100) * circumference;
+  const innerOffset = innerCircumference - (Math.min(percent, 100) / 100) * innerCircumference;
   const remaining = Math.max(target - kcal, 0);
+  const isOver = percent > 100;
+  const isOnTarget = percent >= 85 && percent <= 105;
 
   return (
     <div className="relative w-56 h-56 mx-auto">
+      {/* Ambient glow */}
+      {isOnTarget && (
+        <motion.div
+          className="absolute inset-4 rounded-full"
+          animate={{ boxShadow: ["0 0 20px hsl(var(--primary) / 0.1)", "0 0 40px hsl(var(--primary) / 0.25)", "0 0 20px hsl(var(--primary) / 0.1)"] }}
+          transition={{ duration: 2, repeat: Infinity }}
+        />
+      )}
       <svg viewBox="0 0 200 200" className="w-full h-full -rotate-90">
-        <circle cx="100" cy="100" r={radius} fill="none" stroke="hsl(var(--border))" strokeWidth={stroke} />
         <defs>
+          <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor={isOver ? "hsl(var(--destructive))" : "hsl(var(--primary))"} />
+            <stop offset="100%" stopColor={isOver ? "hsl(345 82% 70%)" : "hsl(var(--accent))"} />
+          </linearGradient>
           <filter id="ringGlow">
             <feGaussianBlur stdDeviation="4" result="blur" />
             <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
           </filter>
         </defs>
+        {/* Outer track */}
+        <circle cx="100" cy="100" r={radius} fill="none" stroke="hsl(var(--border))" strokeWidth={stroke} />
+        {/* Inner track */}
+        <circle cx="100" cy="100" r={innerRadius} fill="none" stroke="hsl(var(--border))" strokeWidth={innerStroke} opacity={0.4} />
+        {/* Outer ring — gradient gold→cyan */}
         <motion.circle
           cx="100" cy="100" r={radius} fill="none"
-          stroke="hsl(var(--primary))"
+          stroke="url(#ringGrad)"
           strokeWidth={stroke}
           strokeLinecap="round"
           strokeDasharray={circumference}
@@ -59,19 +81,31 @@ const CalorieRing = ({ percent, kcal, target, objetivo }: { percent: number; kca
           transition={{ duration: 1.5, ease: "easeOut", delay: 0.3 }}
           filter="url(#ringGlow)"
         />
+        {/* Inner ring — cyan accent */}
         <motion.circle
-          cx="100" cy="100" r={radius - 14} fill="none"
+          cx="100" cy="100" r={innerRadius} fill="none"
           stroke="hsl(var(--accent))"
-          strokeWidth={3}
+          strokeWidth={innerStroke}
           strokeLinecap="round"
-          strokeDasharray={circumference * 0.7}
-          initial={{ strokeDashoffset: circumference * 0.7 }}
-          animate={{ strokeDashoffset: circumference * 0.7 * (1 - Math.min(percent, 100) / 100) }}
+          strokeDasharray={innerCircumference}
+          initial={{ strokeDashoffset: innerCircumference }}
+          animate={{ strokeDashoffset: innerOffset }}
           transition={{ duration: 1.8, ease: "easeOut", delay: 0.5 }}
-          opacity={0.4}
+          opacity={0.5}
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
+        {/* Percentage badge */}
+        <motion.span
+          initial={{ opacity: 0, scale: 0 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 1.2, type: "spring" }}
+          className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full mb-1 ${
+            isOver ? "bg-destructive/20 text-destructive" : isOnTarget ? "bg-primary/20 text-primary" : "bg-secondary text-muted-foreground"
+          }`}
+        >
+          {Math.round(percent)}%
+        </motion.span>
         <motion.span
           initial={{ opacity: 0, scale: 0.5 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -84,6 +118,14 @@ const CalorieRing = ({ percent, kcal, target, objetivo }: { percent: number; kca
         <span className="text-[10px] font-mono text-primary mt-0.5">
           {getRingLabel(objetivo || "saude_geral", remaining, percent)}
         </span>
+        {/* On-target pulse */}
+        {isOnTarget && (
+          <motion.div
+            animate={{ scale: [1, 1.1, 1], opacity: [0.6, 1, 0.6] }}
+            transition={{ duration: 1.5, repeat: Infinity }}
+            className="mt-1 w-2 h-2 rounded-full bg-accent"
+          />
+        )}
       </div>
     </div>
   );
@@ -128,52 +170,91 @@ const HydrationWidget = ({ glasses, target }: { glasses: number; target: number 
   );
 };
 
-// Score gauge
+// Score gauge — animated half-circle arc
 const ScoreGauge = ({ score }: { score: number }) => {
-  const color = score >= 80 ? "text-primary" : score >= 50 ? "text-accent" : "text-danger";
+  const color = score >= 80 ? "hsl(var(--primary))" : score >= 50 ? "hsl(var(--accent))" : "hsl(var(--destructive))";
+  const textColor = score >= 80 ? "text-primary" : score >= 50 ? "text-accent" : "text-destructive";
   const label = score >= 80 ? "Excelente" : score >= 60 ? "Bom" : score >= 40 ? "Regular" : "Melhore";
+  const radius = 30;
+  const circumference = Math.PI * radius;
+  const offset = circumference - (Math.min(score, 100) / 100) * circumference;
+
   return (
     <div className="rounded-xl border border-border bg-card p-3 h-24 flex flex-col items-center justify-center">
-      <Brain className="w-4 h-4 text-accent mb-1" />
-      <motion.span
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.8 }}
-        className={`text-2xl font-bold font-mono ${color}`}
-      >
-        {score}
-      </motion.span>
-      <p className="text-[10px] font-mono text-muted-foreground">Score</p>
-      <p className={`text-[9px] font-mono ${color}`}>{label}</p>
+      <div className="relative w-16 h-10">
+        <svg viewBox="0 0 68 38" className="w-full h-full">
+          <path d="M 4 34 A 30 30 0 0 1 64 34" fill="none" stroke="hsl(var(--border))" strokeWidth={5} strokeLinecap="round" />
+          <motion.path
+            d="M 4 34 A 30 30 0 0 1 64 34"
+            fill="none"
+            stroke={color}
+            strokeWidth={5}
+            strokeLinecap="round"
+            strokeDasharray={circumference}
+            initial={{ strokeDashoffset: circumference }}
+            animate={{ strokeDashoffset: offset }}
+            transition={{ duration: 1.2, ease: "easeOut", delay: 0.8 }}
+          />
+        </svg>
+        <div className="absolute inset-0 flex items-end justify-center">
+          <span className={`text-lg font-bold font-mono ${textColor}`}>{score}</span>
+        </div>
+      </div>
+      <p className={`text-[9px] font-mono ${textColor} mt-0.5`}>{label}</p>
     </div>
   );
 };
 
-// Streak fire
-const StreakFire = ({ days }: { days: number }) => (
-  <div className="rounded-xl border border-border bg-card p-3 h-24 flex flex-col items-center justify-center relative overflow-hidden">
-    {days > 0 && (
-      <div className="absolute inset-0 bg-gradient-to-t from-primary/10 to-transparent" />
-    )}
-    <div className="relative z-10 flex flex-col items-center">
-      <motion.div
-        animate={days > 0 ? { scale: [1, 1.15, 1], rotate: [0, -3, 3, 0] } : {}}
-        transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-      >
-        <Flame className={`w-6 h-6 ${days > 0 ? "text-primary" : "text-muted-foreground"}`} />
-      </motion.div>
-      <span className="text-2xl font-bold font-mono text-foreground">{days}</span>
-      <p className="text-[10px] font-mono text-muted-foreground">Streak</p>
+// Streak fire — with floating particles and glow
+const StreakFire = ({ days }: { days: number }) => {
+  const isWeek = days >= 7;
+  return (
+    <div className="rounded-xl border border-border bg-card p-3 h-24 flex flex-col items-center justify-center relative overflow-hidden">
+      {days > 0 && (
+        <div className="absolute inset-0 bg-gradient-to-t from-primary/10 to-transparent" />
+      )}
+      {/* Floating particles */}
+      {days > 0 && [0, 1, 2].map(i => (
+        <motion.div
+          key={i}
+          className="absolute w-1 h-1 rounded-full bg-primary/60"
+          style={{ left: `${30 + i * 20}%` }}
+          animate={{ y: [0, -30, -60], opacity: [0, 0.8, 0], x: [0, (i - 1) * 8] }}
+          transition={{ duration: 2 + i * 0.5, repeat: Infinity, delay: i * 0.6, ease: "easeOut" }}
+        />
+      ))}
+      <div className="relative z-10 flex flex-col items-center">
+        <motion.div
+          animate={days > 0 ? { scale: [1, 1.15, 1], rotate: [0, -3, 3, 0] } : {}}
+          transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+          style={days > 0 ? { filter: "drop-shadow(0 0 6px hsl(38 80% 52% / 0.5))" } : {}}
+        >
+          <Flame className={`w-6 h-6 ${days > 0 ? "text-primary" : "text-muted-foreground"}`} />
+        </motion.div>
+        <span className="text-2xl font-bold font-mono text-foreground">{days}</span>
+        <p className="text-[10px] font-mono text-muted-foreground">Streak</p>
+        {isWeek && (
+          <motion.span
+            initial={{ opacity: 0, scale: 0 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="text-[8px] font-mono font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded-full mt-0.5"
+          >
+            🔥 semana!
+          </motion.span>
+        )}
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
-// XP bar
+// XP bar — with milestones and shimmer
 const XPBar = ({ xp, level }: { xp: number; level: number }) => {
   const LEVEL_NAMES = ["", "Iniciante", "Consistente", "Focado", "Disciplinado", "Forte", "Máquina", "Lenda", "Imortal"];
   const xpPerLevel = 500;
   const currentLevelXP = xp % xpPerLevel;
   const percent = (currentLevelXP / xpPerLevel) * 100;
+  const xpToNext = xpPerLevel - currentLevelXP;
+  const milestones = [25, 50, 75];
 
   return (
     <div className="rounded-xl border border-border bg-card p-3">
@@ -183,15 +264,34 @@ const XPBar = ({ xp, level }: { xp: number; level: number }) => {
           <span className="text-xs font-mono text-foreground font-bold">Lv.{level}</span>
           <span className="text-[10px] font-mono text-primary">{LEVEL_NAMES[Math.min(level, 8)]}</span>
         </div>
-        <span className="text-[10px] font-mono text-muted-foreground">{currentLevelXP}/{xpPerLevel} XP</span>
+        <span className="text-[10px] font-mono text-muted-foreground">{xpToNext} XP para Lv.{level + 1}</span>
       </div>
-      <div className="h-2 rounded-full bg-secondary overflow-hidden">
+      <div className="relative h-3 rounded-full bg-secondary overflow-hidden">
         <motion.div
-          className="h-full rounded-full bg-gradient-to-r from-primary to-gold-glow"
+          className="h-full rounded-full bg-gradient-to-r from-primary to-gold-glow relative"
           initial={{ width: 0 }}
           animate={{ width: `${percent}%` }}
           transition={{ duration: 1, ease: "easeOut", delay: 0.4 }}
-        />
+        >
+          {/* Shimmer */}
+          <motion.div
+            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+            animate={{ x: ["-100%", "200%"] }}
+            transition={{ duration: 2, repeat: Infinity, delay: 1.5, ease: "easeInOut" }}
+          />
+        </motion.div>
+        {/* Milestone markers */}
+        {milestones.map(m => (
+          <div
+            key={m}
+            className="absolute top-0 bottom-0 w-px bg-foreground/15"
+            style={{ left: `${m}%` }}
+          />
+        ))}
+      </div>
+      <div className="flex justify-between mt-1">
+        <span className="text-[8px] font-mono text-muted-foreground">{currentLevelXP} XP</span>
+        <span className="text-[8px] font-mono text-muted-foreground">{xpPerLevel}</span>
       </div>
     </div>
   );
@@ -448,35 +548,54 @@ const DashboardPage = () => {
           <CalorieRing percent={kcalPercent} kcal={todayTotals.kcal} target={kcalTarget} objetivo={objetivo} />
         </motion.div>
 
-        {/* Macro bars */}
-        <div className="space-y-2.5 mb-4">
-          {macros.map((macro, i) => (
-            <motion.div
-              key={macro.label}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.4 + i * 0.1 }}
-            >
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-xs font-mono text-muted-foreground flex items-center gap-1">
-                  <span className="text-sm">{macro.icon}</span> {macro.label}
-                </span>
-                <span className="text-xs font-mono text-foreground font-bold">
-                  {Math.round(macro.value)}<span className="text-muted-foreground font-normal">/{macro.target}{macro.unit}</span>
-                </span>
-              </div>
-              <div className="h-3 rounded-full bg-secondary overflow-hidden relative">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: `${Math.min(macro.percent, 100)}%` }}
-                  transition={{ delay: 0.6 + i * 0.1, duration: 1, ease: "easeOut" }}
-                  className={`h-full rounded-full bg-gradient-to-r ${macro.colorFrom} ${macro.colorTo}`}
-                />
-                {/* Target line */}
-                <div className="absolute right-0 top-0 bottom-0 w-px bg-foreground/20" />
-              </div>
-            </motion.div>
-          ))}
+        {/* Macro bars — card wrapped with shimmer and % */}
+        <div className="rounded-xl border border-border bg-card p-4 mb-4 space-y-3">
+          <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider mb-1">Macronutrientes</p>
+          {macros.map((macro, i) => {
+            const isNearTarget = macro.percent >= 95;
+            return (
+              <motion.div
+                key={macro.label}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.4 + i * 0.1 }}
+              >
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-xs font-mono text-muted-foreground flex items-center gap-1">
+                    <span className="text-sm">{macro.icon}</span> {macro.label}
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-[10px] font-mono font-bold ${
+                      macro.percent >= 95 ? "text-primary" : macro.percent >= 70 ? "text-accent" : "text-muted-foreground"
+                    }`}>
+                      {Math.round(macro.percent)}%
+                    </span>
+                    <span className="text-xs font-mono text-foreground font-bold">
+                      {Math.round(macro.value)}<span className="text-muted-foreground font-normal">/{macro.target}{macro.unit}</span>
+                    </span>
+                  </div>
+                </div>
+                <div className="h-3 rounded-full bg-secondary overflow-hidden relative">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${Math.min(macro.percent, 100)}%` }}
+                    transition={{ delay: 0.6 + i * 0.1, duration: 1, ease: "easeOut" }}
+                    className={`h-full rounded-full bg-gradient-to-r ${macro.colorFrom} ${macro.colorTo} relative overflow-hidden`}
+                  >
+                    {/* Shimmer when ≥95% */}
+                    {isNearTarget && (
+                      <motion.div
+                        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent"
+                        animate={{ x: ["-100%", "200%"] }}
+                        transition={{ duration: 2, repeat: Infinity, delay: 1 + i * 0.3, ease: "easeInOut" }}
+                      />
+                    )}
+                  </motion.div>
+                  <div className="absolute right-0 top-0 bottom-0 w-px bg-foreground/20" />
+                </div>
+              </motion.div>
+            );
+          })}
         </div>
 
         {/* Stats row: Score, Streak, Hydration */}
