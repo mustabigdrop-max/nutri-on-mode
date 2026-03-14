@@ -275,7 +275,7 @@ const NutricaoSportPage = () => {
                 {SPORTS.map((s) => (
                   <button
                     key={s.key}
-                    onClick={() => setSelectedSport(s.key)}
+                    onClick={() => { setSelectedSport(s.key); setPhase((SPORT_PHASES[s.key] || SPORT_PHASES.musculacao)[0].key); }}
                     className={`flex flex-col items-center gap-1 p-3 rounded-xl border transition-all text-center ${
                       selectedSport === s.key
                         ? "border-primary bg-primary/10 text-primary"
