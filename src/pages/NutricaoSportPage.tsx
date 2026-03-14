@@ -294,7 +294,7 @@ const NutricaoSportPage = () => {
               <div>
                 <p className="text-xs font-mono text-muted-foreground uppercase tracking-wider mb-2">Fase</p>
                 <div className="space-y-1.5">
-                  {PHASES.map((p) => (
+                  {(SPORT_PHASES[selectedSport] || SPORT_PHASES.musculacao).map((p) => (
                     <button
                       key={p.key}
                       onClick={() => setPhase(p.key)}
