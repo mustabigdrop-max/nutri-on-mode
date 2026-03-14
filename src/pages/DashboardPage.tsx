@@ -22,7 +22,7 @@ import {
   ObjectiveBadge, getRingLabel, getScoreLabel,
   getPredictiveAlert, getHeaderSubtitle, getChildDashboardGreeting,
 } from "@/components/dashboard/DashboardObjectiveAdapters";
-import AIFunctionsGrid from "@/components/dashboard/AIFunctionsGrid";
+
 import {
   Flame, TrendingUp, Droplets, Apple, BarChart3, MessageSquare,
   User, Plus, Utensils, LogOut, Zap, Brain, ChevronRight, Award,
@@ -411,6 +411,61 @@ const DashboardPage = () => {
   }
 
   const isON = kcalPercent >= 70 && protPercent >= 60;
+
+  const PLAN_BADGE: Record<string, { label: string; color: string }> = {
+    free: { label: "FREE", color: "text-muted-foreground bg-secondary" },
+    ON: { label: "ON", color: "text-primary bg-primary/10" },
+    "ON +": { label: "ON+", color: "text-accent bg-accent/10" },
+    "ON PRO": { label: "PRO", color: "text-destructive bg-destructive/10" },
+  };
+
+  type GridItem = { label: string; desc: string; path: string; emoji: string; plan: "free" | "ON" | "ON +" | "ON PRO" };
+
+  const gridItems: GridItem[] = [
+    // Free
+    { label: "Registrar", desc: "Log de refeições · IA analisa foto", path: "/meal-log", emoji: "🍽️", plan: "free" },
+    { label: "Histórico", desc: "Refeições passadas", path: "/meal-history", emoji: "📋", plan: "free" },
+    { label: "Hidratação", desc: "Controle de água diário", path: "/hydration", emoji: "💧", plan: "free" },
+    { label: "Perfil", desc: "Seus dados & metas", path: "/profile", emoji: "👤", plan: "free" },
+    { label: "Configurações", desc: "Recalcular VET & macros", path: "/settings", emoji: "⚙️", plan: "free" },
+    { label: "Suporte FAQ", desc: "Busca inteligente de dúvidas", path: "/support", emoji: "❓", plan: "free" },
+    // ON
+    { label: "Coach IA", desc: "Chat nutricional com contexto completo", path: "/chat", emoji: "🤖", plan: "ON" },
+    { label: "Plano Alimentar", desc: "Cardápio semanal personalizado por IA", path: "/meal-plan", emoji: "🍎", plan: "ON" },
+    { label: "Lista de Compras", desc: "Custo + itens automáticos", path: "/shopping-list", emoji: "🛒", plan: "ON" },
+    { label: "Receitas", desc: "Filtradas por macros do dia", path: "/recipes", emoji: "🍳", plan: "ON" },
+    { label: "Micronutrientes", desc: "Vitaminas & minerais", path: "/micronutrients", emoji: "🥬", plan: "ON" },
+    { label: "Conquistas", desc: "Desafios & missões por IA", path: "/gamification", emoji: "🎮", plan: "ON" },
+    { label: "Progresso", desc: "Gráficos de evolução", path: "/progress", emoji: "📈", plan: "ON" },
+    { label: "Diário Fotográfico", desc: "Slider antes × depois", path: "/transformation", emoji: "📸", plan: "ON" },
+    { label: "NutriSync", desc: "Treino + nutrição em tempo real", path: "/nutrisync", emoji: "⚡", plan: "ON" },
+    { label: "Histórico Treinos", desc: "Consistência & calorias ajustadas", path: "/workout-history", emoji: "🏋️", plan: "ON" },
+    { label: "Busca Avançada", desc: "Pesquisa científica com IA", path: "/chat", emoji: "🔍", plan: "ON" },
+    // ON+
+    { label: "Score Consistência", desc: "Análise semanal de aderência por IA", path: "/progress", emoji: "📊", plan: "ON +" },
+    { label: "Relatório Mensal", desc: "Análise completa do mês com projeções", path: "/monthly-report", emoji: "📈", plan: "ON +" },
+    { label: "Diagnóstico Sabotagem", desc: "Identifica padrões de autossabotagem", path: "/behavioral-triggers", emoji: "🚨", plan: "ON +" },
+    { label: "Nutrição Circadiana", desc: "Plano por relógio biológico", path: "/circadian", emoji: "🌅", plan: "ON +" },
+    { label: "Cronobiologia", desc: "Janelas de macros por horário", path: "/chronobiology", emoji: "🕐", plan: "ON +" },
+    { label: "Suplementos", desc: "Stack personalizado por IA", path: "/supplementation", emoji: "💊", plan: "ON +" },
+    { label: "Desempenho Mental", desc: "Nootrópicos, energia & foco", path: "/mental-performance", emoji: "🧠", plan: "ON +" },
+    { label: "Modo Evento", desc: "Estratégia pré/durante/pós evento", path: "/event-mode", emoji: "📅", plan: "ON +" },
+    { label: "Simulador", desc: "E se eu comer...?", path: "/food-simulator", emoji: "🤔", plan: "ON +" },
+    { label: "Exames de Sangue", desc: "IA interpreta seus exames", path: "/blood-test", emoji: "🩸", plan: "ON +" },
+    { label: "Protocolo GLP-1", desc: "Otimização nutricional com agonistas", path: "/glp1", emoji: "💉", plan: "ON +" },
+    { label: "Montar Dieta", desc: "Construtor alimento a alimento", path: "/diet-builder", emoji: "🔨", plan: "ON +" },
+    { label: "Comportamental", desc: "Mindful eating & TCC", path: "/behavioral-nutrition", emoji: "🧠", plan: "ON +" },
+    { label: "Microbioma", desc: "Saúde intestinal & Bristol", path: "/microbiome", emoji: "🦠", plan: "ON +" },
+    { label: "Família", desc: "Perfis de filhos & idosos", path: "/family", emoji: "👨‍👩‍👧", plan: "ON +" },
+    { label: "Wearables", desc: "Passos, sono & atividade", path: "/wearables", emoji: "⌚", plan: "ON +" },
+    { label: "Preditor de Quebra", desc: "Score de risco em tempo real", path: "/diet-break-predictor", emoji: "🚨", plan: "ON +" },
+    { label: "Mapa Vulnerabilidade", desc: "Seus horários de risco históricos", path: "/vulnerability-map", emoji: "🗺️", plan: "ON +" },
+    { label: "Reversão Metabólica", desc: "Saída científica do déficit severo", path: "/metabolic-reversion", emoji: "🔄", plan: "ON +" },
+    { label: "Check-in por Voz", desc: "Registro de refeição por áudio", path: "/meal-log", emoji: "🎤", plan: "ON +" },
+    // ON PRO
+    { label: "Performance Pro", desc: "Protocolo de nutrição para atletas", path: "/performance-pro", emoji: "🏋️", plan: "ON PRO" },
+    { label: "Profissional", desc: "Painel B2B · briefing semanal IA", path: "/professional", emoji: "🩺", plan: "ON PRO" },
+  ];
 
   const macros = [
     { label: "Proteína", value: todayTotals.protein, target: proteinTarget, unit: "g", percent: protPercent, colorFrom: "from-primary", colorTo: "to-gold-glow", icon: "💪" },
@@ -810,86 +865,66 @@ const DashboardPage = () => {
           )}
         </motion.div>
 
-        {/* AI Functions Grid */}
-        <AIFunctionsGrid />
 
-        {/* All Functions Grid — Landing-style */}
+        {/* All Functions Grid — Landing-style with plan badges */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1.1 }}
           className="mb-4"
         >
-          <div className="flex items-center gap-2 mb-4">
-            <span className="w-4 h-px bg-primary" />
-            <h3 className="text-[10px] font-mono text-primary uppercase tracking-[.2em]">Todas as funções</h3>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <span className="w-4 h-px bg-primary" />
+              <h3 className="text-[10px] font-mono text-primary uppercase tracking-[.2em]">Todas as funções</h3>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-[9px] font-mono text-muted-foreground">
+                {(() => {
+                  const allItems = gridItems;
+                  const unlocked = allItems.filter(it => hasAccess(it.plan)).length;
+                  return `${unlocked}/${allItems.length} ativas`;
+                })()}
+              </span>
+            </div>
           </div>
           <div className="grid grid-cols-3 gap-px bg-[#14142a] rounded-2xl overflow-hidden">
-            {(() => {
-              const GATED_PATHS = ["/event-mode", "/food-simulator", "/monthly-report"];
-              const GATE_LABELS: Record<string, string> = {
-                "/event-mode": "Modo Evento",
-                "/food-simulator": "Simulador 'E se eu comer?'",
-                "/monthly-report": "Relatório Mensal",
-              };
-              const items = [
-                { icon: Utensils, label: "Registrar", desc: "Log de refeições", path: "/meal-log", emoji: "🍽️" },
-                { icon: History, label: "Histórico", desc: "Refeições passadas", path: "/meal-history", emoji: "📋" },
-                { icon: Apple, label: "Plano Alimentar", desc: "Cardápio semanal IA", path: "/meal-plan", emoji: "🍎" },
-                { icon: ShoppingCart, label: "Lista de Compras", desc: "Custo + itens automáticos", path: "/shopping-list", emoji: "🛒" },
-                { icon: Apple, label: "Receitas", desc: "Filtradas por macros do dia", path: "/recipes", emoji: "🍳" },
-                { icon: CalendarDays, label: "Modo Evento", desc: "Estratégia pré/durante/pós", path: "/event-mode", emoji: "📅" },
-                { icon: HelpingHand, label: "Simulador", desc: "E se eu comer...?", path: "/food-simulator", emoji: "🤔" },
-                { icon: BarChart, label: "Relatório Mensal", desc: "Padrão alimentar do mês", path: "/monthly-report", emoji: "📊" },
-                { icon: MessageSquare, label: "Coach IA", desc: "Chat nutricional inteligente", path: "/chat", emoji: "🤖" },
-                { icon: Droplets, label: "Hidratação", desc: "Controle de água diário", path: "/hydration", emoji: "💧" },
-                { icon: TrendingUp, label: "Progresso", desc: "Gráficos de evolução", path: "/progress", emoji: "📈" },
-                { icon: Camera, label: "Diário Fotográfico", desc: "Slider antes × depois", path: "/transformation", emoji: "📸" },
-                { icon: Leaf, label: "Micronutrientes", desc: "Vitaminas & minerais", path: "/micronutrients", emoji: "🥬" },
-                { icon: Trophy, label: "Conquistas", desc: "XP, badges & ranking", path: "/gamification", emoji: "🎮" },
-                { icon: Hammer, label: "Montar Dieta", desc: "Construtor alimento a alimento", path: "/diet-builder", emoji: "🔨" },
-                { icon: Clock, label: "Cronobiologia", desc: "Janelas de macros por horário", path: "/chronobiology", emoji: "🕐" },
-                { icon: Sun, label: "Nutrição Circadiana", desc: "Plano por relógio biológico", path: "/circadian", emoji: "🌅" },
-                { icon: Smile, label: "Comportamental", desc: "Mindful eating & TCC", path: "/behavioral-nutrition", emoji: "🧠" },
-                { icon: Pill, label: "Suplementos", desc: "Stack personalizado IA", path: "/supplementation", emoji: "💊" },
-                { icon: Bug, label: "Microbioma", desc: "Saúde intestinal & Bristol", path: "/microbiome", emoji: "🦠" },
-                { icon: FileText, label: "Exames de Sangue", desc: "IA interpreta seus exames", path: "/blood-test", emoji: "🩸" },
-                { icon: Users, label: "Família", desc: "Perfis de filhos & idosos", path: "/family", emoji: "👨‍👩‍👧" },
-                { icon: Dumbbell, label: "Wearables", desc: "Passos, sono & atividade", path: "/wearables", emoji: "⌚" },
-                { icon: User, label: "Perfil", desc: "Seus dados & metas", path: "/profile", emoji: "👤" },
-                { icon: Settings, label: "Configurações", desc: "Recalcular VET & macros", path: "/settings", emoji: "⚙️" },
-                { icon: Heart, label: "Profissional", desc: "Painel B2B completo", path: "/professional", emoji: "🩺" },
-                { icon: Pill, label: "Protocolo GLP-1", desc: "Proteção muscular com caneta", path: "/glp1", emoji: "💉" },
-                { icon: Zap, label: "NutriSync", desc: "Treino + nutrição em tempo real", path: "/nutrisync", emoji: "⚡" },
-                { icon: Dumbbell, label: "Histórico Treinos", desc: "Consistência & calorias ajustadas", path: "/workout-history", emoji: "🏋️" },
-                { icon: Zap, label: "Performance Pro", desc: "Nutrição para atletas avançados", path: "/performance-pro", emoji: "⚡" },
-                { icon: Zap, label: "Desempenho Mental", desc: "Nootrópicos, energia & foco", path: "/mental-performance", emoji: "🧠" },
-                { icon: Heart, label: "Mapa de Gatilhos", desc: "TCC · padrões comportamentais", path: "/behavioral-triggers", emoji: "🧠" },
-                { icon: AlertTriangle, label: "Preditor de Quebra", desc: "Score de risco em tempo real", path: "/diet-break-predictor", emoji: "🚨" },
-                { icon: BarChart, label: "Mapa Vulnerabilidade", desc: "Seus horários de risco históricos", path: "/vulnerability-map", emoji: "🗺️" },
-                { icon: TrendingUp, label: "Reversão Metabólica", desc: "Saída científica do déficit severo", path: "/metabolic-reversion", emoji: "🔄" },
-              ];
-              return items.map((item, i) => {
-                const isLocked = GATED_PATHS.includes(item.path) && !isOnPlus;
-                return (
-                  <motion.button
-                    key={item.path}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 1.12 + i * 0.02 }}
-                    onClick={() => isLocked ? setUpgradeModal({ open: true, feature: GATE_LABELS[item.path] }) : navigate(item.path)}
-                    className="bg-[hsl(var(--card))] p-4 text-left transition-colors hover:bg-primary/[.03] relative overflow-hidden group"
-                  >
-                    {isLocked && <Lock className="w-3 h-3 text-muted-foreground absolute top-2 right-2" />}
-                    <span className="absolute left-0 top-0 bottom-0 w-[2px] bg-primary scale-y-0 origin-top transition-transform duration-300 group-hover:scale-y-100" />
-                    <div className="font-heading text-[2rem] text-border/40 leading-none mb-1 font-bold">{String(i + 1).padStart(2, "0")}</div>
-                    <div className="text-lg mb-1">{item.emoji}</div>
-                    <div className="text-[11px] font-bold text-foreground tracking-wide leading-tight mb-0.5">{item.label}</div>
-                    <p className="text-[9px] text-muted-foreground leading-snug">{item.desc}</p>
-                  </motion.button>
-                );
-              });
-            })()}
+            {gridItems.map((item, i) => {
+              const unlocked = hasAccess(item.plan);
+              const planBadge = PLAN_BADGE[item.plan];
+              return (
+                <motion.button
+                  key={item.path + item.label}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 1.12 + i * 0.02 }}
+                  onClick={() => unlocked ? navigate(item.path) : setUpgradeModal({ open: true, feature: item.label })}
+                  className={`bg-[hsl(var(--card))] p-4 text-left transition-colors relative overflow-hidden group ${
+                    unlocked ? "hover:bg-primary/[.03]" : "opacity-60"
+                  }`}
+                >
+                  {/* Plan badge */}
+                  <span className={`absolute top-1.5 right-1.5 text-[7px] font-mono font-bold px-1.5 py-0.5 rounded-full ${planBadge.color}`}>
+                    {planBadge.label}
+                  </span>
+
+                  {!unlocked && <Lock className="w-3 h-3 text-muted-foreground absolute bottom-2 right-2" />}
+
+                  {/* Hover bar */}
+                  <span className="absolute left-0 top-0 bottom-0 w-[2px] bg-primary scale-y-0 origin-top transition-transform duration-300 group-hover:scale-y-100" />
+
+                  {/* Active pulse */}
+                  {unlocked && (
+                    <div className="absolute top-2 left-2 w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
+                  )}
+
+                  <div className="font-heading text-[2rem] text-border/40 leading-none mb-1 font-bold">{String(i + 1).padStart(2, "0")}</div>
+                  <div className="text-lg mb-1">{item.emoji}</div>
+                  <div className="text-[11px] font-bold text-foreground tracking-wide leading-tight mb-0.5">{item.label}</div>
+                  <p className="text-[9px] text-muted-foreground leading-snug">{item.desc}</p>
+                </motion.button>
+              );
+            })}
           </div>
         </motion.div>
 
