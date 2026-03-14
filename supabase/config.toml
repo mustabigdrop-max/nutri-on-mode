@@ -80,3 +80,6 @@ verify_jwt = false
 
 [functions.generate-proactive-notification]
 verify_jwt = false
+
+[functions.nutricao-sport]
+verify_jwt = false
