@@ -117,6 +117,7 @@ const App = () => (
             <Route path="/diet-break-predictor" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON +" featureName="Preditor de Diet Break"><DietBreakPredictorPage /></PlanGateWrapper></ProtectedRoute>} />
             <Route path="/vulnerability-map" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON +" featureName="Mapa de Vulnerabilidade"><VulnerabilityMapPage /></PlanGateWrapper></ProtectedRoute>} />
             <Route path="/metabolic-reversion" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON +" featureName="Reversão Metabólica"><MetabolicReversionPage /></PlanGateWrapper></ProtectedRoute>} />
+            <Route path="/nutricao-sport" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON +" featureName="Nutrição Sport"><NutricaoSportPage /></PlanGateWrapper></ProtectedRoute>} />
 
             {/* ON PRO Plan */}
             <Route path="/performance-pro" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON PRO" featureName="Performance Pro"><PerformanceProPage /></PlanGateWrapper></ProtectedRoute>} />
