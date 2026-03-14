@@ -57,6 +57,7 @@ import BehavioralTriggersPage from "./pages/BehavioralTriggersPage";
 import DietBreakPredictorPage from "./pages/DietBreakPredictorPage";
 import VulnerabilityMapPage from "./pages/VulnerabilityMapPage";
 import MetabolicReversionPage from "./pages/MetabolicReversionPage";
+import NutricaoSportPage from "./pages/NutricaoSportPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
