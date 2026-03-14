@@ -810,6 +810,9 @@ const DashboardPage = () => {
           )}
         </motion.div>
 
+        {/* AI Functions Grid */}
+        <AIFunctionsGrid />
+
         {/* All Functions Grid — Landing-style */}
         <motion.div
           initial={{ opacity: 0 }}
