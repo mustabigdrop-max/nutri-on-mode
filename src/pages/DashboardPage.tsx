@@ -412,6 +412,61 @@ const DashboardPage = () => {
 
   const isON = kcalPercent >= 70 && protPercent >= 60;
 
+  const PLAN_BADGE: Record<string, { label: string; color: string }> = {
+    free: { label: "FREE", color: "text-muted-foreground bg-secondary" },
+    ON: { label: "ON", color: "text-primary bg-primary/10" },
+    "ON +": { label: "ON+", color: "text-accent bg-accent/10" },
+    "ON PRO": { label: "PRO", color: "text-destructive bg-destructive/10" },
+  };
+
+  type GridItem = { label: string; desc: string; path: string; emoji: string; plan: "free" | "ON" | "ON +" | "ON PRO" };
+
+  const gridItems: GridItem[] = [
+    // Free
+    { label: "Registrar", desc: "Log de refeições · IA analisa foto", path: "/meal-log", emoji: "🍽️", plan: "free" },
+    { label: "Histórico", desc: "Refeições passadas", path: "/meal-history", emoji: "📋", plan: "free" },
+    { label: "Hidratação", desc: "Controle de água diário", path: "/hydration", emoji: "💧", plan: "free" },
+    { label: "Perfil", desc: "Seus dados & metas", path: "/profile", emoji: "👤", plan: "free" },
+    { label: "Configurações", desc: "Recalcular VET & macros", path: "/settings", emoji: "⚙️", plan: "free" },
+    { label: "Suporte FAQ", desc: "Busca inteligente de dúvidas", path: "/support", emoji: "❓", plan: "free" },
+    // ON
+    { label: "Coach IA", desc: "Chat nutricional com contexto completo", path: "/chat", emoji: "🤖", plan: "ON" },
+    { label: "Plano Alimentar", desc: "Cardápio semanal personalizado por IA", path: "/meal-plan", emoji: "🍎", plan: "ON" },
+    { label: "Lista de Compras", desc: "Custo + itens automáticos", path: "/shopping-list", emoji: "🛒", plan: "ON" },
+    { label: "Receitas", desc: "Filtradas por macros do dia", path: "/recipes", emoji: "🍳", plan: "ON" },
+    { label: "Micronutrientes", desc: "Vitaminas & minerais", path: "/micronutrients", emoji: "🥬", plan: "ON" },
+    { label: "Conquistas", desc: "Desafios & missões por IA", path: "/gamification", emoji: "🎮", plan: "ON" },
+    { label: "Progresso", desc: "Gráficos de evolução", path: "/progress", emoji: "📈", plan: "ON" },
+    { label: "Diário Fotográfico", desc: "Slider antes × depois", path: "/transformation", emoji: "📸", plan: "ON" },
+    { label: "NutriSync", desc: "Treino + nutrição em tempo real", path: "/nutrisync", emoji: "⚡", plan: "ON" },
+    { label: "Histórico Treinos", desc: "Consistência & calorias ajustadas", path: "/workout-history", emoji: "🏋️", plan: "ON" },
+    { label: "Busca Avançada", desc: "Pesquisa científica com IA", path: "/chat", emoji: "🔍", plan: "ON" },
+    // ON+
+    { label: "Score Consistência", desc: "Análise semanal de aderência por IA", path: "/progress", emoji: "📊", plan: "ON +" },
+    { label: "Relatório Mensal", desc: "Análise completa do mês com projeções", path: "/monthly-report", emoji: "📈", plan: "ON +" },
+    { label: "Diagnóstico Sabotagem", desc: "Identifica padrões de autossabotagem", path: "/behavioral-triggers", emoji: "🚨", plan: "ON +" },
+    { label: "Nutrição Circadiana", desc: "Plano por relógio biológico", path: "/circadian", emoji: "🌅", plan: "ON +" },
+    { label: "Cronobiologia", desc: "Janelas de macros por horário", path: "/chronobiology", emoji: "🕐", plan: "ON +" },
+    { label: "Suplementos", desc: "Stack personalizado por IA", path: "/supplementation", emoji: "💊", plan: "ON +" },
+    { label: "Desempenho Mental", desc: "Nootrópicos, energia & foco", path: "/mental-performance", emoji: "🧠", plan: "ON +" },
+    { label: "Modo Evento", desc: "Estratégia pré/durante/pós evento", path: "/event-mode", emoji: "📅", plan: "ON +" },
+    { label: "Simulador", desc: "E se eu comer...?", path: "/food-simulator", emoji: "🤔", plan: "ON +" },
+    { label: "Exames de Sangue", desc: "IA interpreta seus exames", path: "/blood-test", emoji: "🩸", plan: "ON +" },
+    { label: "Protocolo GLP-1", desc: "Otimização nutricional com agonistas", path: "/glp1", emoji: "💉", plan: "ON +" },
+    { label: "Montar Dieta", desc: "Construtor alimento a alimento", path: "/diet-builder", emoji: "🔨", plan: "ON +" },
+    { label: "Comportamental", desc: "Mindful eating & TCC", path: "/behavioral-nutrition", emoji: "🧠", plan: "ON +" },
+    { label: "Microbioma", desc: "Saúde intestinal & Bristol", path: "/microbiome", emoji: "🦠", plan: "ON +" },
+    { label: "Família", desc: "Perfis de filhos & idosos", path: "/family", emoji: "👨‍👩‍👧", plan: "ON +" },
+    { label: "Wearables", desc: "Passos, sono & atividade", path: "/wearables", emoji: "⌚", plan: "ON +" },
+    { label: "Preditor de Quebra", desc: "Score de risco em tempo real", path: "/diet-break-predictor", emoji: "🚨", plan: "ON +" },
+    { label: "Mapa Vulnerabilidade", desc: "Seus horários de risco históricos", path: "/vulnerability-map", emoji: "🗺️", plan: "ON +" },
+    { label: "Reversão Metabólica", desc: "Saída científica do déficit severo", path: "/metabolic-reversion", emoji: "🔄", plan: "ON +" },
+    { label: "Check-in por Voz", desc: "Registro de refeição por áudio", path: "/meal-log", emoji: "🎤", plan: "ON +" },
+    // ON PRO
+    { label: "Performance Pro", desc: "Protocolo de nutrição para atletas", path: "/performance-pro", emoji: "🏋️", plan: "ON PRO" },
+    { label: "Profissional", desc: "Painel B2B · briefing semanal IA", path: "/professional", emoji: "🩺", plan: "ON PRO" },
+  ];
+
   const macros = [
     { label: "Proteína", value: todayTotals.protein, target: proteinTarget, unit: "g", percent: protPercent, colorFrom: "from-primary", colorTo: "to-gold-glow", icon: "💪" },
     { label: "Carboidrato", value: todayTotals.carbs, target: carbsTarget, unit: "g", percent: carbPercent, colorFrom: "from-accent", colorTo: "to-cyan-glow", icon: "⚡" },
