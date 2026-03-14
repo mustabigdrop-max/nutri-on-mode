@@ -73,12 +73,56 @@ const SPORT_SUGGESTIONS: Record<string, string[]> = {
   ],
 };
 
-const PHASES = [
-  { key: "bulk", label: "Bulk" },
-  { key: "cutting", label: "Cutting" },
-  { key: "recomp", label: "Recomposição" },
-  { key: "manutencao", label: "Manutenção" },
-];
+const SPORT_PHASES: Record<string, { key: string; label: string }[]> = {
+  musculacao: [
+    { key: "bulk", label: "Bulk" },
+    { key: "cutting", label: "Cutting" },
+    { key: "recomp", label: "Recomposição" },
+    { key: "manutencao", label: "Manutenção" },
+  ],
+  corrida: [
+    { key: "base", label: "Base / Volume" },
+    { key: "intensidade", label: "Intensidade" },
+    { key: "taper", label: "Taper pré-prova" },
+    { key: "recuperacao", label: "Recuperação" },
+  ],
+  crossfit: [
+    { key: "forca", label: "Bloco de Força" },
+    { key: "condicionamento", label: "Condicionamento" },
+    { key: "competicao", label: "Pré-competição" },
+    { key: "manutencao", label: "Manutenção" },
+  ],
+  futebol: [
+    { key: "pre_temporada", label: "Pré-temporada" },
+    { key: "temporada", label: "Em temporada" },
+    { key: "dia_jogo", label: "Semana de jogo" },
+    { key: "ferias", label: "Férias / Off" },
+  ],
+  ciclismo: [
+    { key: "base", label: "Base / Volume" },
+    { key: "build", label: "Build / Intensidade" },
+    { key: "taper", label: "Taper pré-prova" },
+    { key: "recuperacao", label: "Recuperação" },
+  ],
+  bjj: [
+    { key: "treino_normal", label: "Treino regular" },
+    { key: "pre_competicao", label: "Pré-competição" },
+    { key: "corte_peso", label: "Corte de peso" },
+    { key: "recuperacao", label: "Recuperação" },
+  ],
+  natacao: [
+    { key: "volume", label: "Volume alto" },
+    { key: "intensidade", label: "Intensidade" },
+    { key: "taper", label: "Taper pré-prova" },
+    { key: "recuperacao", label: "Recuperação" },
+  ],
+  triathlon: [
+    { key: "base", label: "Base / Volume" },
+    { key: "build", label: "Build / Específico" },
+    { key: "taper", label: "Taper pré-prova" },
+    { key: "recuperacao", label: "Recuperação" },
+  ],
+};
 
 const LEVELS = [
   { key: "iniciante", label: "Iniciante" },
