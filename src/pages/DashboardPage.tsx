@@ -22,6 +22,7 @@ import {
   ObjectiveBadge, getRingLabel, getScoreLabel,
   getPredictiveAlert, getHeaderSubtitle, getChildDashboardGreeting,
 } from "@/components/dashboard/DashboardObjectiveAdapters";
+import AIFunctionsGrid from "@/components/dashboard/AIFunctionsGrid";
 import {
   Flame, TrendingUp, Droplets, Apple, BarChart3, MessageSquare,
   User, Plus, Utensils, LogOut, Zap, Brain, ChevronRight, Award,
@@ -808,6 +809,9 @@ const DashboardPage = () => {
             </div>
           )}
         </motion.div>
+
+        {/* AI Functions Grid */}
+        <AIFunctionsGrid />
 
         {/* All Functions Grid — Landing-style */}
         <motion.div
