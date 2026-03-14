@@ -22,6 +22,57 @@ const SPORTS = [
   { key: "triathlon", label: "Triathlon", emoji: "🏅" },
 ];
 
+const SPORT_SUGGESTIONS: Record<string, string[]> = {
+  musculacao: [
+    "Qual o melhor pré-treino para musculação em cutting?",
+    "Protocolo de carb cycling para hipertrofia",
+    "Suplementação ideal para recomposição corporal",
+    "Timing de proteína pós-treino: whey vs refeição sólida?",
+  ],
+  corrida: [
+    "Como fazer carb loading para uma maratona?",
+    "Nutrição intra-corrida para meia maratona",
+    "Protocolo de ferro para corredores de alto volume",
+    "Melhor estratégia de hidratação em corrida no calor",
+  ],
+  crossfit: [
+    "Nutrição entre WODs em dia de competição",
+    "Melhor pré-treino para WODs de alta intensidade",
+    "Protocolo de carbo para AMRAPs longos",
+    "Suplementação com beta-alanina: como fazer loading?",
+  ],
+  futebol: [
+    "Protocolo nutricional para dia de jogo",
+    "O que comer no intervalo do jogo?",
+    "Recuperação nutricional entre jogos em 48h",
+    "Hidratação ideal para treino em temperatura alta",
+  ],
+  ciclismo: [
+    "Como treinar o intestino para 90g carbo/hora?",
+    "Nutrição para saídas longas de mais de 3 horas",
+    "Protocolo de nitrato/beterraba para ciclistas",
+    "Fat adaptation: quando vale a pena?",
+  ],
+  bjj: [
+    "Protocolo de corte de peso seguro para BJJ",
+    "Rehidratação pós-pesagem em 4 horas",
+    "Nutrição para treino duplo: BJJ + musculação",
+    "Suplementação para saúde articular em lutadores",
+  ],
+  natacao: [
+    "O que comer antes de treino às 5h da manhã?",
+    "Protocolo nutricional para nadadores de alto volume",
+    "Como lidar com a fome pós-treino na natação?",
+    "Suplementação de ferro para nadadores",
+  ],
+  triathlon: [
+    "Nutrição intra-prova para Ironman completo",
+    "Protocolo de taper nutricional pré-Ironman",
+    "Como treinar o GI para alto volume de carbo?",
+    "Estratégia de cafeína para prova de 8-17 horas",
+  ],
+};
+
 const PHASES = [
   { key: "bulk", label: "Bulk" },
   { key: "cutting", label: "Cutting" },
@@ -246,25 +297,22 @@ const NutricaoSportPage = () => {
             )}
 
             {/* Suggestions */}
-            <div>
-              <p className="text-xs font-mono text-muted-foreground uppercase tracking-wider mb-2">Ou pergunte diretamente</p>
-              <div className="space-y-2">
-                {[
-                  "Qual o melhor pré-treino para musculação em cutting?",
-                  "Como fazer carb loading para uma maratona?",
-                  "Protocolo de corte de peso seguro para BJJ",
-                  "Nutrição intra-prova para Ironman",
-                ].map((q) => (
-                  <button
-                    key={q}
-                    onClick={() => { if (!selectedSport) setSelectedSport("musculacao"); send(q); }}
-                    className="w-full text-left px-3 py-2.5 rounded-xl bg-card border border-border text-xs text-muted-foreground hover:border-primary/40 hover:text-foreground transition-all"
-                  >
-                    {q}
-                  </button>
-                ))}
+            {selectedSport && (
+              <div>
+                <p className="text-xs font-mono text-muted-foreground uppercase tracking-wider mb-2">Ou pergunte diretamente</p>
+                <div className="space-y-2">
+                  {(SPORT_SUGGESTIONS[selectedSport] || []).map((q) => (
+                    <button
+                      key={q}
+                      onClick={() => send(q)}
+                      className="w-full text-left px-3 py-2.5 rounded-xl bg-card border border-border text-xs text-muted-foreground hover:border-primary/40 hover:text-foreground transition-all"
+                    >
+                      {q}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
           </div>
         ) : (
           <>
