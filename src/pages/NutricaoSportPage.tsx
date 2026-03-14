@@ -73,12 +73,56 @@ const SPORT_SUGGESTIONS: Record<string, string[]> = {
   ],
 };
 
-const PHASES = [
-  { key: "bulk", label: "Bulk" },
-  { key: "cutting", label: "Cutting" },
-  { key: "recomp", label: "Recomposição" },
-  { key: "manutencao", label: "Manutenção" },
-];
+const SPORT_PHASES: Record<string, { key: string; label: string }[]> = {
+  musculacao: [
+    { key: "bulk", label: "Bulk" },
+    { key: "cutting", label: "Cutting" },
+    { key: "recomp", label: "Recomposição" },
+    { key: "manutencao", label: "Manutenção" },
+  ],
+  corrida: [
+    { key: "base", label: "Base / Volume" },
+    { key: "intensidade", label: "Intensidade" },
+    { key: "taper", label: "Taper pré-prova" },
+    { key: "recuperacao", label: "Recuperação" },
+  ],
+  crossfit: [
+    { key: "forca", label: "Bloco de Força" },
+    { key: "condicionamento", label: "Condicionamento" },
+    { key: "competicao", label: "Pré-competição" },
+    { key: "manutencao", label: "Manutenção" },
+  ],
+  futebol: [
+    { key: "pre_temporada", label: "Pré-temporada" },
+    { key: "temporada", label: "Em temporada" },
+    { key: "dia_jogo", label: "Semana de jogo" },
+    { key: "ferias", label: "Férias / Off" },
+  ],
+  ciclismo: [
+    { key: "base", label: "Base / Volume" },
+    { key: "build", label: "Build / Intensidade" },
+    { key: "taper", label: "Taper pré-prova" },
+    { key: "recuperacao", label: "Recuperação" },
+  ],
+  bjj: [
+    { key: "treino_normal", label: "Treino regular" },
+    { key: "pre_competicao", label: "Pré-competição" },
+    { key: "corte_peso", label: "Corte de peso" },
+    { key: "recuperacao", label: "Recuperação" },
+  ],
+  natacao: [
+    { key: "volume", label: "Volume alto" },
+    { key: "intensidade", label: "Intensidade" },
+    { key: "taper", label: "Taper pré-prova" },
+    { key: "recuperacao", label: "Recuperação" },
+  ],
+  triathlon: [
+    { key: "base", label: "Base / Volume" },
+    { key: "build", label: "Build / Específico" },
+    { key: "taper", label: "Taper pré-prova" },
+    { key: "recuperacao", label: "Recuperação" },
+  ],
+};
 
 const LEVELS = [
   { key: "iniciante", label: "Iniciante" },
@@ -196,7 +240,7 @@ const NutricaoSportPage = () => {
   const quickStart = (sport: string) => {
     setSelectedSport(sport);
     const sportLabel = SPORTS.find((s) => s.key === sport)?.label || sport;
-    send(`Crie meu protocolo nutricional completo para ${sportLabel}, fase ${PHASES.find(p => p.key === phase)?.label || phase}, nível ${LEVELS.find(l => l.key === level)?.label || level}. Inclua macros, timing, pré/intra/pós treino e suplementação.`);
+    send(`Crie meu protocolo nutricional completo para ${sportLabel}, fase ${(SPORT_PHASES[sport] || SPORT_PHASES.musculacao).find(p => p.key === phase)?.label || phase}, nível ${LEVELS.find(l => l.key === level)?.label || level}. Inclua macros, timing, pré/intra/pós treino e suplementação.`);
   };
 
   return (
@@ -231,7 +275,7 @@ const NutricaoSportPage = () => {
                 {SPORTS.map((s) => (
                   <button
                     key={s.key}
-                    onClick={() => setSelectedSport(s.key)}
+                    onClick={() => { setSelectedSport(s.key); setPhase((SPORT_PHASES[s.key] || SPORT_PHASES.musculacao)[0].key); }}
                     className={`flex flex-col items-center gap-1 p-3 rounded-xl border transition-all text-center ${
                       selectedSport === s.key
                         ? "border-primary bg-primary/10 text-primary"
@@ -250,7 +294,7 @@ const NutricaoSportPage = () => {
               <div>
                 <p className="text-xs font-mono text-muted-foreground uppercase tracking-wider mb-2">Fase</p>
                 <div className="space-y-1.5">
-                  {PHASES.map((p) => (
+                  {(SPORT_PHASES[selectedSport] || SPORT_PHASES.musculacao).map((p) => (
                     <button
                       key={p.key}
                       onClick={() => setPhase(p.key)}
