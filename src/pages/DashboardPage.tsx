@@ -462,6 +462,7 @@ const DashboardPage = () => {
     { label: "Mapa Vulnerabilidade", desc: "Seus horários de risco históricos", path: "/vulnerability-map", emoji: "🗺️", plan: "ON +" },
     { label: "Reversão Metabólica", desc: "Saída científica do déficit severo", path: "/metabolic-reversion", emoji: "🔄", plan: "ON +" },
     { label: "Check-in por Voz", desc: "Registro de refeição por áudio", path: "/meal-log", emoji: "🎤", plan: "ON +" },
+    { label: "Nutrição Sport", desc: "8 modalidades · Perplexity + IA", path: "/nutricao-sport", emoji: "🏅", plan: "ON +" },
     // ON PRO
     { label: "Performance Pro", desc: "Protocolo de nutrição para atletas", path: "/performance-pro", emoji: "🏋️", plan: "ON PRO" },
     { label: "Profissional", desc: "Painel B2B · briefing semanal IA", path: "/professional", emoji: "🩺", plan: "ON PRO" },

@@ -2256,6 +2256,36 @@ export type Database = {
         }
         Relationships: []
       }
+      sport_perplexity_cache: {
+        Row: {
+          cache_key: string
+          conhecimento: string
+          expira_em: string
+          fontes: Json | null
+          gerado_em: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          cache_key: string
+          conhecimento: string
+          expira_em: string
+          fontes?: Json | null
+          gerado_em?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          cache_key?: string
+          conhecimento?: string
+          expira_em?: string
+          fontes?: Json | null
+          gerado_em?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       subscriptions: {
         Row: {
           activated_at: string | null
