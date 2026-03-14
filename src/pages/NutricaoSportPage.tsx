@@ -240,7 +240,7 @@ const NutricaoSportPage = () => {
   const quickStart = (sport: string) => {
     setSelectedSport(sport);
     const sportLabel = SPORTS.find((s) => s.key === sport)?.label || sport;
-    send(`Crie meu protocolo nutricional completo para ${sportLabel}, fase ${PHASES.find(p => p.key === phase)?.label || phase}, nível ${LEVELS.find(l => l.key === level)?.label || level}. Inclua macros, timing, pré/intra/pós treino e suplementação.`);
+    send(`Crie meu protocolo nutricional completo para ${sportLabel}, fase ${(SPORT_PHASES[sport] || SPORT_PHASES.musculacao).find(p => p.key === phase)?.label || phase}, nível ${LEVELS.find(l => l.key === level)?.label || level}. Inclua macros, timing, pré/intra/pós treino e suplementação.`);
   };
 
   return (
