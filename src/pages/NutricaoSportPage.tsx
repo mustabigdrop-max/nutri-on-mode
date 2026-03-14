@@ -297,25 +297,22 @@ const NutricaoSportPage = () => {
             )}
 
             {/* Suggestions */}
-            <div>
-              <p className="text-xs font-mono text-muted-foreground uppercase tracking-wider mb-2">Ou pergunte diretamente</p>
-              <div className="space-y-2">
-                {[
-                  "Qual o melhor pré-treino para musculação em cutting?",
-                  "Como fazer carb loading para uma maratona?",
-                  "Protocolo de corte de peso seguro para BJJ",
-                  "Nutrição intra-prova para Ironman",
-                ].map((q) => (
-                  <button
-                    key={q}
-                    onClick={() => { if (!selectedSport) setSelectedSport("musculacao"); send(q); }}
-                    className="w-full text-left px-3 py-2.5 rounded-xl bg-card border border-border text-xs text-muted-foreground hover:border-primary/40 hover:text-foreground transition-all"
-                  >
-                    {q}
-                  </button>
-                ))}
+            {selectedSport && (
+              <div>
+                <p className="text-xs font-mono text-muted-foreground uppercase tracking-wider mb-2">Ou pergunte diretamente</p>
+                <div className="space-y-2">
+                  {(SPORT_SUGGESTIONS[selectedSport] || []).map((q) => (
+                    <button
+                      key={q}
+                      onClick={() => send(q)}
+                      className="w-full text-left px-3 py-2.5 rounded-xl bg-card border border-border text-xs text-muted-foreground hover:border-primary/40 hover:text-foreground transition-all"
+                    >
+                      {q}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
           </div>
         ) : (
           <>
