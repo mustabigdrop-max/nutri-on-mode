@@ -127,38 +127,61 @@ export default function LandingKcalEngine() {
 
   const [step, setStep] = useState(0);
   const [sexo, setSexo] = useState<"M" | "F" | null>(null);
-  const [peso, setPeso]       = useState(75);
-  const [altura, setAltura]   = useState(170);
-  const [idade, setIdade]     = useState(28);
+  const [peso, setPeso] = useState(75);
+  const [altura, setAltura] = useState(170);
+  const [idade, setIdade] = useState(28);
   const [atividade, setAtividade] = useState<string | null>(null);
-  const [objetivo, setObjetivo]   = useState<string | null>(null);
+  const [objetivo, setObjetivo] = useState<string | null>(null);
   const [showResult, setShowResult] = useState(false);
+  const [dadosTocados, setDadosTocados] = useState({
+    peso: false,
+    altura: false,
+    idade: false,
+  });
+
+  const dadosCompletos = dadosTocados.peso && dadosTocados.altura && dadosTocados.idade;
 
   const canAdvance = [
     sexo !== null,
-    true,
+    dadosCompletos,
     atividade !== null,
     objetivo !== null,
   ][step];
 
+  const handlePesoChange = (v: number) => {
+    setPeso(v);
+    setDadosTocados((prev) => ({ ...prev, peso: true }));
+  };
+
+  const handleAlturaChange = (v: number) => {
+    setAltura(v);
+    setDadosTocados((prev) => ({ ...prev, altura: true }));
+  };
+
+  const handleIdadeChange = (v: number) => {
+    setIdade(v);
+    setDadosTocados((prev) => ({ ...prev, idade: true }));
+  };
+
   function calculate() {
-    if (!sexo || !atividade || !objetivo) return;
+    if (!sexo || !atividade || !objetivo || !dadosCompletos) return;
     setShowResult(true);
   }
 
   function reset() {
     setStep(0); setSexo(null); setAtividade(null); setObjetivo(null); setShowResult(false);
     setPeso(75); setAltura(170); setIdade(28);
+    setDadosTocados({ peso: false, altura: false, idade: false });
   }
 
-  const actObj   = ACTIVITY.find(a => a.key === atividade);
-  const objObj   = OBJECTIVES.find(o => o.key === objetivo);
-  const geb      = sexo ? Math.round(calcGEB(sexo, peso, altura, idade)) : 0;
-  const get_val  = actObj ? Math.round(geb * actObj.factor) : 0;
-  const vet      = objObj ? Math.round(get_val + objObj.kcalDelta) : 0;
-  const macros   = objObj ? calcMacros(vet, peso, objObj.protFactor) : null;
+  const actObj = ACTIVITY.find((a) => a.key === atividade);
+  const objObj = OBJECTIVES.find((o) => o.key === objetivo);
+  const geb = sexo ? Math.round(calcGEB(sexo, peso, altura, idade)) : 0;
+  const get_val = actObj ? Math.round(geb * actObj.factor) : 0;
+  const vet = objObj ? Math.round(get_val + objObj.kcalDelta) : 0;
+  const macros = objObj ? calcMacros(vet, peso, objObj.protFactor) : null;
   const weeklyKg = objObj ? Math.abs(objObj.kcalDelta * 7 / 7700).toFixed(2) : "0";
-  const weeks    = objObj && objObj.kcalDelta !== 0 ? Math.round(10 / Math.abs(objObj.kcalDelta * 7 / 7700)) : 0;
+  const weeks = objObj && objObj.kcalDelta !== 0 ? Math.round(10 / Math.abs(objObj.kcalDelta * 7 / 7700)) : 0;
 
   const STEP_LABELS = ["Sexo", "Dados físicos", "Atividade", "Objetivo"];
 
