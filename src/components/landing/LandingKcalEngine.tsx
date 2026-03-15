@@ -459,10 +459,10 @@ export default function LandingKcalEngine() {
                   </div>
                 </div>
 
-                {/* Ring + macros */}
+                {/* Ring + macros — LIVE UPDATE */}
                 <div className="flex items-center gap-3 bg-white/[.018] rounded-xl p-3 border border-white/[.04]">
-                  {showResult && macros ? (
-                    <ResultRing kcal={vet} target={vet} />
+                  {hasPartialData ? (
+                    <ResultRing key={`${vet}-${geb}`} kcal={vet} target={Math.max(vet, get_val, geb)} />
                   ) : (
                     <div className="relative w-[110px] h-[110px] flex items-center justify-center">
                       <div className="w-full h-full rounded-full border-[7px] border-[#e8a020]/10" />
@@ -474,11 +474,11 @@ export default function LandingKcalEngine() {
                   )}
 
                   <div className="flex-1 space-y-2">
-                    {showResult && macros ? (
+                    {hasPartialData && macros ? (
                       <>
-                        <MacroBar label="Proteína" g={macros.protG} kcal={macros.protKcal} total={vet} color="#ff4466" delay={0.6} />
-                        <MacroBar label="Carbo"    g={macros.carbG} kcal={macros.carbKcal} total={vet} color="#e8a020" delay={0.8} />
-                        <MacroBar label="Gordura"  g={macros.fatG}  kcal={macros.fatKcal}  total={vet} color="#00f0b4" delay={1.0} />
+                        <MacroBar key={`p-${macros.protG}`} label="Proteína" g={macros.protG} kcal={macros.protKcal} total={vet} color="#ff4466" delay={0} />
+                        <MacroBar key={`c-${macros.carbG}`} label="Carbo"    g={macros.carbG} kcal={macros.carbKcal} total={vet} color="#e8a020" delay={0.1} />
+                        <MacroBar key={`f-${macros.fatG}`}  label="Gordura"  g={macros.fatG}  kcal={macros.fatKcal}  total={vet} color="#00f0b4" delay={0.2} />
                       </>
                     ) : (
                       ["Proteína", "Carbo", "Gordura"].map((l) => (
@@ -493,6 +493,30 @@ export default function LandingKcalEngine() {
                     )}
                   </div>
                 </div>
+
+                {/* Live stats row */}
+                {hasPartialData && (
+                  <motion.div
+                    key={`stats-${geb}-${get_val}-${vet}`}
+                    initial={{ opacity: 0, y: 4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="grid grid-cols-3 gap-1.5"
+                  >
+                    {[
+                      { label: "GEB", value: geb.toLocaleString("pt-BR"), active: true },
+                      { label: "GET", value: actObj ? get_val.toLocaleString("pt-BR") : "—", active: !!actObj },
+                      { label: "VET", value: objObj ? vet.toLocaleString("pt-BR") : "—", active: !!objObj },
+                    ].map(s => (
+                      <div key={s.label} className="rounded-lg p-2 text-center border" style={{
+                        background: s.active ? "rgba(232,160,32,.05)" : "rgba(255,255,255,.015)",
+                        borderColor: s.active ? "rgba(232,160,32,.15)" : "rgba(255,255,255,.04)",
+                      }}>
+                        <p className="font-mono text-[.42rem] uppercase tracking-wider" style={{ color: s.active ? "rgba(232,160,32,.6)" : "#303050" }}>{s.label}</p>
+                        <p className="font-heading text-[.7rem]" style={{ color: s.active ? "#e8a020" : "#303050" }}>{s.value}</p>
+                      </div>
+                    ))}
+                  </motion.div>
+                )}
 
                 {/* AI alert card */}
                 <AnimatePresence mode="wait">
@@ -509,8 +533,26 @@ export default function LandingKcalEngine() {
                         <div>
                           <p className="font-heading text-[.65rem] text-[#e8a020] mb-0.5">Protocolo ativado</p>
                           <p className="font-landing text-[.58rem] text-[#7070a0] leading-[1.4]">
-                            {ACTIVITY.find(a => a.key === atividade)?.label} · {vet.toLocaleString("pt-BR")} kcal/dia
+                            {actObj?.label} · {vet.toLocaleString("pt-BR")} kcal/dia
                             {objObj?.kcalDelta !== 0 && ` · ${objObj!.kcalDelta > 0 ? "+" : ""}${objObj!.kcalDelta} kcal`}
+                          </p>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ) : hasPartialData ? (
+                    <motion.div
+                      key="live"
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="rounded-xl p-3 border"
+                      style={{ background: "rgba(232,160,32,.04)", borderColor: "rgba(232,160,32,.12)" }}
+                    >
+                      <div className="flex items-start gap-2">
+                        <span className="text-[.85rem]">⚡</span>
+                        <div>
+                          <p className="font-heading text-[.65rem] text-[#e8a020]/70 mb-0.5">Calculando ao vivo</p>
+                          <p className="font-landing text-[.58rem] text-[#50507a] leading-[1.4]">
+                            {sexo === "M" ? "Masculino" : "Feminino"} · {peso}kg · {altura}cm · {idade}a
                           </p>
                         </div>
                       </div>
@@ -536,7 +578,7 @@ export default function LandingKcalEngine() {
                 </AnimatePresence>
 
                 {/* Unlock hint */}
-                {!showResult && (
+                {!hasPartialData && (
                   <div className="flex items-center justify-center gap-1.5 py-2">
                     <div className="w-1 h-1 rounded-full bg-[#e8a020] animate-pulse" />
                     <p className="font-mono text-[.52rem] text-[#50507a] tracking-[.08em]">
