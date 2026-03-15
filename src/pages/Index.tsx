@@ -1,4 +1,3 @@
-import LandingIntro from "@/components/landing/LandingIntro";
 import LandingNav from "@/components/landing/LandingNav";
 import LandingBackground from "@/components/landing/LandingBackground";
 import LandingAudio from "@/components/landing/LandingAudio";
