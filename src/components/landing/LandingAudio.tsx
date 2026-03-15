@@ -160,7 +160,7 @@ const LandingAudio = () => {
 
     ctxRef.current = ctx; masterRef.current = master;
     nextRef.current = ctx.currentTime + 0.1;
-    barRef.current = 0; pingRef.current = 0;
+    beatRef.current = 0; barRef.current = 0; pingRef.current = 0;
 
     timerRef.current = setInterval(() => {
       if (ctxRef.current) schedule(ctxRef.current, comp, rev);
