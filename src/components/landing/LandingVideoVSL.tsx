@@ -213,7 +213,9 @@ export default function LandingVideoVSL() {
               )}
               {current.cta && (
                 <a
-                  href="#planos"
+                  href="https://pay.kiwify.com.br/G8uxU9O"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full font-heading text-[1.1rem] tracking-wide transition-all hover:scale-105"
                   style={{
                     background: "linear-gradient(135deg, #00f0b4, #00c896)",

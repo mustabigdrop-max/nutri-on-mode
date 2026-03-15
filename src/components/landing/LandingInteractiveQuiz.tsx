@@ -252,7 +252,9 @@ const LandingInteractiveQuiz = () => {
                   </div>
 
                   <a
-                    href="#planos"
+                    href="https://pay.kiwify.com.br/G8uxU9O"
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-8 py-3.5 rounded-lg bg-[#00f0b4] text-[#03030a] font-bold text-sm hover:bg-[#00f0b4]/90 transition-colors"
                   >
                     Quero meu protocolo de 90 dias <ChevronRight className="w-4 h-4" />

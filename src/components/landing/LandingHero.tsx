@@ -1,9 +1,7 @@
-import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 
 const LandingHero = () => {
-  const navigate = useNavigate();
   const [activeCount, setActiveCount] = useState(23);
 
   // Simulate live counter fluctuation
@@ -99,12 +97,14 @@ const LandingHero = () => {
         transition={{ duration: 0.8, delay: 1.3 }}
         className="mt-10 flex gap-4 flex-wrap"
       >
-        <button
-          onClick={() => navigate("/auth")}
+        <a
+          href="https://pay.kiwify.com.br/G8uxU9O"
+          target="_blank"
+          rel="noopener noreferrer"
           className="bg-primary text-primary-foreground font-heading text-[1.05rem] tracking-[.08em] px-9 py-4 rounded-[2px] inline-flex items-center gap-2.5 hover:bg-background hover:text-primary hover:outline-2 hover:outline hover:outline-primary transition-all"
         >
           🟢 Ativar meu protocolo →
-        </button>
+        </a>
         <a
           href="#protocols"
           className="border border-border text-muted-foreground font-mono text-[.75rem] tracking-[.08em] px-7 py-4 rounded-[2px] hover:border-primary hover:text-primary transition-all"
