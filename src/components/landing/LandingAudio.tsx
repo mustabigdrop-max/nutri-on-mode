@@ -142,6 +142,7 @@ const LandingAudio = () => {
 
   const startEngine = () => {
     const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    void ctx.resume();
     const rev  = mkReverb(ctx);
     const revG = ctx.createGain();
     revG.gain.value = 0.38;
