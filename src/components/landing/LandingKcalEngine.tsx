@@ -266,9 +266,12 @@ export default function LandingKcalEngine() {
                   {step === 1 && (
                     <div className="space-y-7">
                       <p className="font-heading text-[1.2rem] text-[#f0edf8] mb-2">Seus dados físicos</p>
-                      <SliderField label="Peso" value={peso} min={40} max={180} unit="kg" onChange={setPeso} />
-                      <SliderField label="Altura" value={altura} min={140} max={220} unit="cm" onChange={setAltura} />
-                      <SliderField label="Idade" value={idade} min={16} max={75} unit="anos" onChange={setIdade} />
+                      <SliderField label="Peso" value={peso} min={40} max={180} unit="kg" onChange={handlePesoChange} />
+                      <SliderField label="Altura" value={altura} min={140} max={220} unit="cm" onChange={handleAlturaChange} />
+                      <SliderField label="Idade" value={idade} min={16} max={75} unit="anos" onChange={handleIdadeChange} />
+                      <p className="font-mono text-[.58rem] text-[#60607a] tracking-[.07em] uppercase">
+                        {dadosCompletos ? "Dados físicos confirmados ✓" : "Ajuste peso, altura e idade para continuar"}
+                      </p>
                     </div>
                   )}
 
