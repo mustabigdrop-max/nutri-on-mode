@@ -177,11 +177,14 @@ export default function LandingKcalEngine() {
   const actObj = ACTIVITY.find((a) => a.key === atividade);
   const objObj = OBJECTIVES.find((o) => o.key === objetivo);
   const geb = sexo ? Math.round(calcGEB(sexo, peso, altura, idade)) : 0;
-  const get_val = actObj ? Math.round(geb * actObj.factor) : 0;
-  const vet = objObj ? Math.round(get_val + objObj.kcalDelta) : 0;
-  const macros = objObj ? calcMacros(vet, peso, objObj.protFactor) : null;
+  const get_val = actObj ? Math.round(geb * actObj.factor) : geb > 0 ? Math.round(geb * 1.2) : 0;
+  const vet = objObj ? Math.round(get_val + objObj.kcalDelta) : get_val;
+  const macros = vet > 0 ? calcMacros(vet, peso, objObj?.protFactor ?? 1.8) : null;
   const weeklyKg = objObj ? Math.abs(objObj.kcalDelta * 7 / 7700).toFixed(2) : "0";
   const weeks = objObj && objObj.kcalDelta !== 0 ? Math.round(10 / Math.abs(objObj.kcalDelta * 7 / 7700)) : 0;
+
+  // Live preview: show data as soon as we have partial calculations
+  const hasPartialData = geb > 0;
 
   const STEP_LABELS = ["Sexo", "Dados físicos", "Atividade", "Objetivo"];
 
