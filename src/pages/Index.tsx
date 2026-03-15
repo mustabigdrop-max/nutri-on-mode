@@ -26,8 +26,8 @@ const Index = () => {
       <div className="relative z-[2]">
         <LandingNav />
         <LandingHero />
-        <LandingTicker />
         <LandingInteractiveQuiz />
+        <LandingTicker />
         <LandingVSComparison />
         <LandingManifesto />
         <LandingProtocols />
