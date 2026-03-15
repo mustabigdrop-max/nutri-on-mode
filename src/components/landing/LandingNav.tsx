@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 
 const LandingNav = () => {
   const [scrolled, setScrolled] = useState(false);
-  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 60);

@@ -3,7 +3,6 @@ import { useState, useEffect } from "react";
 import { useState, useEffect } from "react";
 
 const LandingHero = () => {
-  const navigate = useNavigate();
   const [activeCount, setActiveCount] = useState(23);
 
   // Simulate live counter fluctuation

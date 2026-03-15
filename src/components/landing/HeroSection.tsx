@@ -3,7 +3,7 @@ import { Zap, ChevronDown } from "lucide-react";
 
 
 const HeroSection = () => {
-  const navigate = useNavigate();
+
   return (
     <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden px-4">
       {/* Grid background */}
