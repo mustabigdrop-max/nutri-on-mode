@@ -1,6 +1,5 @@
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
-import { useState, useEffect } from "react";
 
 const LandingHero = () => {
   const [activeCount, setActiveCount] = useState(23);
