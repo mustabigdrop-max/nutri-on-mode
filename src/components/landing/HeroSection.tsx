@@ -71,7 +71,7 @@ const HeroSection = () => {
               <Zap className="w-5 h-5" />
               Começar agora
             </span>
-          </button>
+          </a>
           <button className="px-8 py-4 rounded-lg border border-border text-foreground font-semibold text-lg transition-all hover:border-primary/40 hover:bg-secondary/50">
             Ver como funciona
           </button>
