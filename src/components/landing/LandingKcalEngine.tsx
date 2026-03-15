@@ -367,6 +367,9 @@ export default function LandingKcalEngine() {
                 <p className="font-heading text-[1.6rem] text-[#f0edf8] leading-tight">
                   Sua meta: <span className="text-[#e8a020]">{vet.toLocaleString("pt-BR")} kcal</span>/dia
                 </p>
+                <p className="font-mono text-[.56rem] text-[#7070a0] tracking-[.08em] mt-1 uppercase">
+                  Base real: {peso}kg · {altura}cm · {idade} anos · {sexo === "M" ? "masculino" : "feminino"}
+                </p>
               </div>
 
               {/* Breakdown */}
