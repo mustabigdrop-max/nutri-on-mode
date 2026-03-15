@@ -430,7 +430,7 @@ export default function LandingKcalEngine() {
                 {/* Ring + macros */}
                 <div className="flex items-center gap-3 bg-white/[.018] rounded-xl p-3 border border-white/[.04]">
                   {showResult && macros ? (
-                    <ResultRing kcal={Math.round(vet * 0.35)} target={vet} />
+                    <ResultRing kcal={vet} target={vet} />
                   ) : (
                     <div className="relative w-[110px] h-[110px] flex items-center justify-center">
                       <div className="w-full h-full rounded-full border-[7px] border-[#e8a020]/10" />

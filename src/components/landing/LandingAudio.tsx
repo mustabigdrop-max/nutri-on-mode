@@ -108,15 +108,16 @@ const LandingAudio = () => {
   const masterRef = useRef<GainNode | null>(null);
   const timerRef  = useRef<ReturnType<typeof setInterval> | null>(null);
   const nextRef   = useRef(0);
+  const beatRef   = useRef(0);
   const barRef    = useRef(0);
   const pingRef   = useRef(0);
 
   const schedule = (ctx: AudioContext, dry: AudioNode, rev: AudioNode) => {
     const lookahead = 0.35;
     while (nextRef.current < ctx.currentTime + lookahead) {
-      const t    = nextRef.current;
-      const bar  = barRef.current;
-      const beat = bar % 4;
+      const t = nextRef.current;
+      const bar = barRef.current;
+      const beat = beatRef.current;
       const chord = CHORD_SEQ[bar % CHORD_SEQ.length];
 
       if (bar >= 2 && beat === 0) schedSubKick(ctx, dry, t);
@@ -129,13 +130,19 @@ const LandingAudio = () => {
         pingRef.current = t + BAR * 2;
       }
 
-      nextRef.current += BAR / 4;
-      if (beat === 3) barRef.current++;
+      nextRef.current += BEAT;
+      if (beat === 3) {
+        barRef.current += 1;
+        beatRef.current = 0;
+      } else {
+        beatRef.current += 1;
+      }
     }
   };
 
   const startEngine = () => {
     const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    void ctx.resume();
     const rev  = mkReverb(ctx);
     const revG = ctx.createGain();
     revG.gain.value = 0.38;
@@ -153,7 +160,7 @@ const LandingAudio = () => {
 
     ctxRef.current = ctx; masterRef.current = master;
     nextRef.current = ctx.currentTime + 0.1;
-    barRef.current = 0; pingRef.current = 0;
+    beatRef.current = 0; barRef.current = 0; pingRef.current = 0;
 
     timerRef.current = setInterval(() => {
       if (ctxRef.current) schedule(ctxRef.current, comp, rev);
