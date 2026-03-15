@@ -1,603 +1,329 @@
-import { useRef, useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, useInView, AnimatePresence } from "framer-motion";
-import { ChevronRight, Zap, RotateCcw } from "lucide-react";
+import { Cpu, Brain, Camera, TrendingUp } from "lucide-react";
 
-// ─── Mifflin-St Jeor ────────────────────────────────────────────────────────
-function calcGEB(sexo: "M" | "F", peso: number, altura: number, idade: number) {
-  return sexo === "M"
-    ? 10 * peso + 6.25 * altura - 5 * idade + 5
-    : 10 * peso + 6.25 * altura - 5 * idade - 161;
-}
-
-const ACTIVITY: { key: string; label: string; sub: string; factor: number }[] = [
-  { key: "sedentario", label: "Sedentário",   sub: "Escritório / sem exercício",  factor: 1.2   },
-  { key: "leve",       label: "Leve",         sub: "1–3x/semana",                 factor: 1.375 },
-  { key: "moderado",   label: "Moderado",     sub: "3–5x/semana",                 factor: 1.55  },
-  { key: "ativo",      label: "Ativo",        sub: "6–7x/semana",                 factor: 1.725 },
-  { key: "atleta",     label: "Atleta",       sub: "2x/dia ou trabalho físico",    factor: 1.9   },
+const FEATURES = [
+  { icon: Cpu, title: "Motor de protocolo", desc: "GEB, GET e VET calculados via Mifflin-St Jeor com ajuste dinâmico semanal." },
+  { icon: Brain, title: "IA adaptativa", desc: "Aprende seus padrões e recalibra macros automaticamente a cada 7 dias." },
+  { icon: Camera, title: "Foto → calorias", desc: "Tire uma foto da refeição e receba os macros em 3 segundos." },
+  { icon: TrendingUp, title: "Projeção de resultado", desc: "Veja exatamente quando vai atingir a meta com base nos seus dados reais." },
 ];
 
-const OBJECTIVES: { key: string; label: string; emoji: string; kcalDelta: number; protFactor: number }[] = [
-  { key: "perder", label: "Perder gordura", emoji: "🔥", kcalDelta: -450, protFactor: 2.0 },
-  { key: "manter", label: "Manter",         emoji: "⚖️", kcalDelta:    0, protFactor: 1.8 },
-  { key: "ganhar", label: "Ganhar massa",   emoji: "💪", kcalDelta: +300, protFactor: 2.2 },
+const TABS = [
+  { emoji: "📊", label: "Dashboard" },
+  { emoji: "🎯", label: "Protocolo" },
+  { emoji: "🧠", label: "IA Chat" },
 ];
 
-function calcMacros(vet: number, peso: number, protFactor: number) {
-  const protG    = Math.round(peso * protFactor);
-  const protKcal = protG * 4;
-  const fatKcal  = Math.round(vet * 0.26);
-  const fatG     = Math.round(fatKcal / 9);
-  const carbKcal = Math.max(0, vet - protKcal - fatKcal);
-  const carbG    = Math.round(carbKcal / 4);
-  return { protG, fatG, carbG, protKcal, fatKcal, carbKcal };
-}
+const CYCLE_MS = 4500;
 
-// ─── Mini CalorieRing para o resultado ──────────────────────────────────────
-function ResultRing({ kcal, target, size = 110 }: { kcal: number; target: number; size?: number }) {
-  const stroke = 7;
+// ── Phone screens ────────────────────────────────────────────────────────────
+
+function CalorieRing({ size = 100 }: { size?: number }) {
+  const kcal = 1847;
+  const target = 2560;
+  const stroke = 6;
   const r = (size - stroke) / 2;
   const circ = 2 * Math.PI * r;
-  const pct = Math.min(kcal / target, 1);
+  const pct = kcal / target;
   return (
     <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
       <svg width={size} height={size} style={{ transform: "rotate(-90deg)" }}>
-        <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="rgba(255,255,255,.05)" strokeWidth={stroke} />
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="rgba(255,255,255,.06)" strokeWidth={stroke} />
         <motion.circle
-          cx={size/2} cy={size/2} r={r} fill="none"
+          cx={size / 2} cy={size / 2} r={r} fill="none"
           stroke="#e8a020" strokeWidth={stroke} strokeLinecap="round"
           strokeDasharray={circ}
           initial={{ strokeDashoffset: circ }}
           animate={{ strokeDashoffset: circ * (1 - pct) }}
-          transition={{ duration: 1.4, ease: "easeOut", delay: 0.3 }}
-          style={{ filter: "drop-shadow(0 0 8px rgba(232,160,32,.6))" }}
+          transition={{ duration: 1.6, ease: "easeOut" }}
+          style={{ filter: "drop-shadow(0 0 6px rgba(232,160,32,.5))" }}
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <motion.div
-          className="font-heading text-[1.15rem] text-[#e8a020] leading-none"
-          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}
-        >
-          {kcal.toLocaleString("pt-BR")}
-        </motion.div>
-        <div className="font-mono text-[.38rem] text-[#606080] tracking-[.06em] mt-0.5">kcal / dia</div>
+        <span className="font-heading text-[1.1rem] text-[#e8a020] leading-none">1.847</span>
+        <span className="font-mono text-[.35rem] text-[#606080] tracking-[.06em] mt-0.5">de 2.560 kcal</span>
       </div>
     </div>
   );
 }
 
-// ─── MacroBar ────────────────────────────────────────────────────────────────
-function MacroBar({ label, g, kcal, total, color, delay }: {
-  label: string; g: number; kcal: number; total: number; color: string; delay: number;
-}) {
-  const pct = Math.round((kcal / total) * 100);
+function MacroRow({ label, value, max, color }: { label: string; value: number; max: number; color: string }) {
   return (
-    <div>
-      <div className="flex justify-between mb-1">
-        <span className="font-mono text-[.6rem]" style={{ color: `${color}90` }}>{label}</span>
-        <span className="font-mono text-[.6rem] text-[#f0edf8]/50">{g}g · {pct}%</span>
-      </div>
-      <div className="h-[3px] rounded-full bg-white/[.04] overflow-hidden">
+    <div className="flex items-center gap-2">
+      <span className="font-mono text-[.5rem] text-[#8080a0] w-[52px]">{label}</span>
+      <div className="flex-1 h-[3px] rounded-full bg-white/[.04] overflow-hidden">
         <motion.div
           className="h-full rounded-full"
           style={{ background: color }}
           initial={{ width: 0 }}
-          animate={{ width: `${pct}%` }}
-          transition={{ duration: 1.1, delay, ease: "easeOut" }}
+          animate={{ width: `${(value / max) * 100}%` }}
+          transition={{ duration: 1.2, ease: "easeOut" }}
         />
       </div>
+      <span className="font-mono text-[.48rem] text-[#606080] w-[32px] text-right">{value}g</span>
     </div>
   );
 }
 
-// ─── Slider input ────────────────────────────────────────────────────────────
-function SliderField({ label, value, min, max, step = 1, unit, onChange }: {
-  label: string; value: number; min: number; max: number; step?: number; unit: string;
-  onChange: (v: number) => void;
-}) {
+function DashboardScreen() {
   return (
-    <div>
-      <div className="flex justify-between mb-2">
-        <span className="font-mono text-[.62rem] text-[#7070a0] uppercase tracking-[.1em]">{label}</span>
-        <span className="font-heading text-[1.1rem] text-[#e8a020] leading-none">
-          {value}<span className="font-mono text-[.58rem] text-[#50507a] ml-0.5">{unit}</span>
-        </span>
+    <div className="flex flex-col items-center gap-3 pt-2">
+      <CalorieRing />
+      <div className="w-full space-y-2 px-1">
+        <MacroRow label="Proteína" value={156} max={200} color="#00f0b4" />
+        <MacroRow label="Carbo" value={198} max={280} color="#7890ff" />
+        <MacroRow label="Gordura" value={62} max={80} color="#e8a020" />
       </div>
-      <input
-        type="range" min={min} max={max} step={step} value={value}
-        onChange={e => onChange(Number(e.target.value))}
-        className="w-full h-1.5 rounded-full appearance-none cursor-pointer"
-        style={{
-          background: `linear-gradient(to right, #e8a020 ${((value - min) / (max - min)) * 100}%, rgba(255,255,255,.06) 0)`,
-          outline: "none",
-        }}
-      />
-      <div className="flex justify-between mt-1">
-        <span className="font-mono text-[.48rem] text-[#30305a]">{min}{unit}</span>
-        <span className="font-mono text-[.48rem] text-[#30305a]">{max}{unit}</span>
-      </div>
+      <motion.div
+        className="w-full mt-1 px-2.5 py-2 rounded-lg border border-[#e8a020]/20 bg-[#e8a020]/[.04]"
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 1.2 }}
+      >
+        <div className="flex items-center gap-1.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#e8a020] animate-pulse" />
+          <span className="font-mono text-[.48rem] text-[#e8a020]/80 tracking-wide">Janela anabólica · próx. 47min</span>
+        </div>
+      </motion.div>
     </div>
   );
 }
 
-// ─── Component ───────────────────────────────────────────────────────────────
+function MetricCard({ label, value, unit, delay }: { label: string; value: string; unit: string; delay: number }) {
+  return (
+    <motion.div
+      className="rounded-lg border border-white/[.06] bg-white/[.02] p-2.5 text-center"
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay, duration: 0.4 }}
+    >
+      <div className="font-mono text-[.42rem] text-[#7070a0] uppercase tracking-[.1em] mb-1">{label}</div>
+      <div className="font-heading text-[1rem] text-[#f0edf8] leading-none">{value}</div>
+      <div className="font-mono text-[.38rem] text-[#50507a] mt-0.5">{unit}</div>
+    </motion.div>
+  );
+}
+
+function ProtocoloScreen() {
+  return (
+    <div className="space-y-3 pt-1">
+      <div className="grid grid-cols-2 gap-2">
+        <MetricCard label="GEB" value="1.689" unit="kcal/dia" delay={0.1} />
+        <MetricCard label="GET" value="2.618" unit="kcal/dia" delay={0.2} />
+        <MetricCard label="VET" value="2.168" unit="kcal/dia" delay={0.3} />
+        <MetricCard label="Proteína" value="172" unit="g/dia" delay={0.4} />
+      </div>
+      <motion.div
+        className="rounded-lg border border-[#00f0b4]/20 bg-[#00f0b4]/[.04] px-3 py-2.5"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.7 }}
+      >
+        <div className="font-mono text-[.42rem] text-[#00f0b4]/60 uppercase tracking-[.1em] mb-1">IA Projeção</div>
+        <div className="font-heading text-[.8rem] text-[#00f0b4] leading-snug">
+          –0.58 kg/sem · <span className="text-[#f0edf8]">10 kg em 17 sem</span>
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
+const CHAT_MSGS = [
+  { role: "user" as const, text: "O que comer no pós-treino hoje?" },
+  { role: "ai" as const, text: "Com base no seu VET de 2.168 kcal e treino de força, recomendo:" },
+  { role: "ai" as const, text: "🍗 Frango grelhado 180g (297 kcal · 42g prot)\n🍚 Arroz integral 120g (156 kcal · 3.6g prot)\n🥦 Brócolis 80g (28 kcal)" },
+  { role: "ai" as const, text: "Total: 481 kcal · 48g proteína ✓ Janela anabólica aproveitada." },
+];
+
+function IAChatScreen() {
+  const [visibleMsgs, setVisibleMsgs] = useState(0);
+
+  useEffect(() => {
+    setVisibleMsgs(0);
+    const interval = setInterval(() => {
+      setVisibleMsgs((v) => {
+        if (v >= CHAT_MSGS.length) {
+          clearInterval(interval);
+          return v;
+        }
+        return v + 1;
+      });
+    }, 900);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="space-y-2 pt-1 max-h-[240px] overflow-hidden">
+      {CHAT_MSGS.slice(0, visibleMsgs).map((msg, i) => (
+        <motion.div
+          key={i}
+          className={`px-2.5 py-2 rounded-lg text-[.52rem] leading-relaxed whitespace-pre-line ${
+            msg.role === "user"
+              ? "bg-[#e8a020]/10 text-[#e8a020] ml-6 text-right"
+              : "bg-white/[.03] text-[#c0c0d0] mr-4"
+          }`}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          {msg.text}
+        </motion.div>
+      ))}
+      {visibleMsgs < CHAT_MSGS.length && (
+        <motion.div
+          className="flex items-center gap-1 px-2.5"
+          animate={{ opacity: [0.3, 1, 0.3] }}
+          transition={{ duration: 1.2, repeat: Infinity }}
+        >
+          <span className="w-1 h-1 rounded-full bg-[#7890ff]" />
+          <span className="w-1 h-1 rounded-full bg-[#7890ff]" />
+          <span className="w-1 h-1 rounded-full bg-[#7890ff]" />
+          <span className="font-mono text-[.4rem] text-[#50507a] ml-1">analisando...</span>
+        </motion.div>
+      )}
+    </div>
+  );
+}
+
+// ── Main component ───────────────────────────────────────────────────────────
+
 export default function LandingKcalEngine() {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: "-10%" });
+  const [activeTab, setActiveTab] = useState(0);
 
-  const [step, setStep] = useState(0);
-  const [sexo, setSexo] = useState<"M" | "F" | null>(null);
-  const [peso, setPeso] = useState(75);
-  const [altura, setAltura] = useState(170);
-  const [idade, setIdade] = useState(28);
-  const [atividade, setAtividade] = useState<string | null>(null);
-  const [objetivo, setObjetivo] = useState<string | null>(null);
-  const [showResult, setShowResult] = useState(false);
-  const [dadosTocados, setDadosTocados] = useState({
-    peso: false,
-    altura: false,
-    idade: false,
-  });
-
-  const dadosCompletos = dadosTocados.peso && dadosTocados.altura && dadosTocados.idade;
-
-  const canAdvance = [
-    sexo !== null,
-    dadosCompletos,
-    atividade !== null,
-    objetivo !== null,
-  ][step];
-
-  const handlePesoChange = (v: number) => {
-    setPeso(v);
-    setDadosTocados((prev) => ({ ...prev, peso: true }));
-  };
-
-  const handleAlturaChange = (v: number) => {
-    setAltura(v);
-    setDadosTocados((prev) => ({ ...prev, altura: true }));
-  };
-
-  const handleIdadeChange = (v: number) => {
-    setIdade(v);
-    setDadosTocados((prev) => ({ ...prev, idade: true }));
-  };
-
-  function calculate() {
-    if (!sexo || !atividade || !objetivo || !dadosCompletos) return;
-    setShowResult(true);
-  }
-
-  function reset() {
-    setStep(0); setSexo(null); setAtividade(null); setObjetivo(null); setShowResult(false);
-    setPeso(75); setAltura(170); setIdade(28);
-    setDadosTocados({ peso: false, altura: false, idade: false });
-  }
-
-  const actObj = ACTIVITY.find((a) => a.key === atividade);
-  const objObj = OBJECTIVES.find((o) => o.key === objetivo);
-  const geb = sexo ? Math.round(calcGEB(sexo, peso, altura, idade)) : 0;
-  const get_val = actObj ? Math.round(geb * actObj.factor) : geb > 0 ? Math.round(geb * 1.2) : 0;
-  const vet = objObj ? Math.round(get_val + objObj.kcalDelta) : get_val;
-  const macros = vet > 0 ? calcMacros(vet, peso, objObj?.protFactor ?? 1.8) : null;
-  const weeklyKg = objObj ? Math.abs(objObj.kcalDelta * 7 / 7700).toFixed(2) : "0";
-  const weeks = objObj && objObj.kcalDelta !== 0 ? Math.round(10 / Math.abs(objObj.kcalDelta * 7 / 7700)) : 0;
-
-  // Live preview: show data as soon as we have partial calculations
-  const hasPartialData = geb > 0;
-
-  const STEP_LABELS = ["Sexo", "Dados físicos", "Atividade", "Objetivo"];
+  useEffect(() => {
+    if (!inView) return;
+    const t = setInterval(() => setActiveTab((v) => (v + 1) % TABS.length), CYCLE_MS);
+    return () => clearInterval(t);
+  }, [inView]);
 
   return (
-    <section id="kcal" ref={ref} className="bg-[#03030a] px-6 md:px-12 py-[110px] overflow-hidden">
-
+    <section ref={ref} className="bg-[#03030a] px-6 md:px-12 py-[100px] overflow-hidden">
       {/* Header */}
-      <motion.div initial={{ opacity: 0, y: 30 }} animate={inView ? { opacity: 1, y: 0 } : {}} transition={{ duration: 0.6 }}>
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        animate={inView ? { opacity: 1, y: 0 } : {}}
+        transition={{ duration: 0.6 }}
+        className="max-w-5xl mx-auto"
+      >
         <div className="font-mono text-[.65rem] text-primary tracking-[.2em] uppercase mb-4 flex items-center gap-2.5">
-          <span className="w-4 h-px bg-primary" />Calculadora de protocolo
+          <span className="w-4 h-px bg-primary" />Motor de protocolo
         </div>
-        <h2 className="font-heading leading-[.92] mb-4" style={{ fontSize: "clamp(2.2rem, 5vw, 5rem)" }}>
+        <h2 className="font-heading leading-[.92] mb-4" style={{ fontSize: "clamp(2.2rem, 5vw, 4.5rem)" }}>
           SEU PROTOCOLO.<br />
-          <span className="text-primary">AO VIVO.</span>
+          <span className="text-primary">EM TEMPO REAL.</span>
         </h2>
-        <p className="font-landing text-[#60607a] text-[.9rem] max-w-md">
-          Nenhum app calcula isso antes de você se cadastrar. Aqui você vê seus números reais — GEB, GET e VET — agora.
-        </p>
       </motion.div>
 
-      <div className="mt-14 grid grid-cols-1 lg:grid-cols-2 gap-10 items-start max-w-5xl">
-
-        {/* ── Left: Form ─────────────────────────────────────────────────────── */}
-        <motion.div initial={{ opacity: 0, x: -24 }} animate={inView ? { opacity: 1, x: 0 } : {}} transition={{ duration: 0.7, delay: 0.15 }}>
-
-          {!showResult ? (
-            <div>
-              {/* Step indicator */}
-              <div className="flex items-center gap-0 mb-8">
-                {STEP_LABELS.map((label, i) => (
-                  <div key={i} className="flex items-center">
-                    <div className={`flex flex-col items-center gap-1 transition-all ${i <= step ? "opacity-100" : "opacity-30"}`}>
-                      <div className={`w-6 h-6 rounded-full flex items-center justify-center font-mono text-[.55rem] transition-all ${
-                        i < step ? "bg-primary text-black" : i === step ? "border-2 border-primary text-primary" : "border border-[#303050] text-[#303050]"
-                      }`}>
-                        {i < step ? "✓" : i + 1}
-                      </div>
-                      <span className="font-mono text-[.45rem] text-[#50507a] tracking-[.05em] whitespace-nowrap">{label}</span>
-                    </div>
-                    {i < STEP_LABELS.length - 1 && (
-                      <div className={`w-8 md:w-12 h-px mx-1 mb-4 transition-all ${i < step ? "bg-primary/50" : "bg-[#14142a]"}`} />
-                    )}
-                  </div>
-                ))}
+      <div className="mt-14 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center max-w-5xl mx-auto">
+        {/* ── Left: Feature bullets ──────────────────────────────────── */}
+        <motion.div
+          className="space-y-6"
+          initial={{ opacity: 0, x: -20 }}
+          animate={inView ? { opacity: 1, x: 0 } : {}}
+          transition={{ duration: 0.7, delay: 0.15 }}
+        >
+          {FEATURES.map((f, i) => (
+            <motion.div
+              key={f.title}
+              className="flex gap-4 items-start group"
+              initial={{ opacity: 0, y: 16 }}
+              animate={inView ? { opacity: 1, y: 0 } : {}}
+              transition={{ delay: 0.3 + i * 0.1 }}
+            >
+              <div className="w-10 h-10 rounded-xl bg-primary/[.08] border border-primary/20 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/[.15] transition-colors">
+                <f.icon className="w-4.5 h-4.5 text-primary" />
               </div>
-
-              {/* Step content */}
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={step}
-                  initial={{ opacity: 0, x: 16 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -16 }}
-                  transition={{ duration: 0.3 }}
-                  className="min-h-[200px]"
-                >
-                  {/* Step 0: Sexo */}
-                  {step === 0 && (
-                    <div>
-                      <p className="font-heading text-[1.2rem] text-[#f0edf8] mb-6">Qual é o seu sexo biológico?</p>
-                      <div className="grid grid-cols-2 gap-4">
-                        {(["M", "F"] as const).map(s => (
-                          <button
-                            key={s}
-                            onClick={() => setSexo(s)}
-                            className="py-6 rounded-xl border transition-all font-heading text-[2rem]"
-                            style={{
-                              background: sexo === s ? "rgba(232,160,32,.1)" : "rgba(255,255,255,.02)",
-                              borderColor: sexo === s ? "rgba(232,160,32,.5)" : "rgba(255,255,255,.06)",
-                              boxShadow: sexo === s ? "0 0 20px rgba(232,160,32,.1)" : "none",
-                            }}
-                          >
-                            {s === "M" ? "♂" : "♀"}
-                            <p className="font-mono text-[.6rem] text-[#7070a0] mt-2">{s === "M" ? "Masculino" : "Feminino"}</p>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Step 1: Dados físicos */}
-                  {step === 1 && (
-                    <div className="space-y-7">
-                      <p className="font-heading text-[1.2rem] text-[#f0edf8] mb-2">Seus dados físicos</p>
-                      <SliderField label="Peso" value={peso} min={40} max={180} unit="kg" onChange={handlePesoChange} />
-                      <SliderField label="Altura" value={altura} min={140} max={220} unit="cm" onChange={handleAlturaChange} />
-                      <SliderField label="Idade" value={idade} min={16} max={75} unit="anos" onChange={handleIdadeChange} />
-                      <p className="font-mono text-[.58rem] text-[#60607a] tracking-[.07em] uppercase">
-                        {dadosCompletos ? "Dados físicos confirmados ✓" : "Ajuste peso, altura e idade para continuar"}
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Step 2: Atividade */}
-                  {step === 2 && (
-                    <div>
-                      <p className="font-heading text-[1.2rem] text-[#f0edf8] mb-6">Nível de atividade física</p>
-                      <div className="space-y-2.5">
-                        {ACTIVITY.map(a => (
-                          <button
-                            key={a.key}
-                            onClick={() => setAtividade(a.key)}
-                            className="w-full px-4 py-3.5 rounded-xl border text-left flex items-center justify-between transition-all"
-                            style={{
-                              background: atividade === a.key ? "rgba(232,160,32,.08)" : "rgba(255,255,255,.02)",
-                              borderColor: atividade === a.key ? "rgba(232,160,32,.4)" : "rgba(255,255,255,.06)",
-                            }}
-                          >
-                            <div>
-                              <p className="font-heading text-[.95rem] text-[#f0edf8]/90">{a.label}</p>
-                              <p className="font-landing text-[.72rem] text-[#60607a]">{a.sub}</p>
-                            </div>
-                            <span className="font-mono text-[.62rem] text-[#e8a020]/60">×{a.factor}</span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Step 3: Objetivo */}
-                  {step === 3 && (
-                    <div>
-                      <p className="font-heading text-[1.2rem] text-[#f0edf8] mb-6">Qual é o seu objetivo?</p>
-                      <div className="space-y-3">
-                        {OBJECTIVES.map(o => (
-                          <button
-                            key={o.key}
-                            onClick={() => setObjetivo(o.key)}
-                            className="w-full px-5 py-4 rounded-xl border text-left flex items-center gap-4 transition-all"
-                            style={{
-                              background: objetivo === o.key ? "rgba(232,160,32,.08)" : "rgba(255,255,255,.02)",
-                              borderColor: objetivo === o.key ? "rgba(232,160,32,.4)" : "rgba(255,255,255,.06)",
-                            }}
-                          >
-                            <span className="text-2xl">{o.emoji}</span>
-                            <div>
-                              <p className="font-heading text-[1rem] text-[#f0edf8]/90">{o.label}</p>
-                              <p className="font-mono text-[.6rem] text-[#60607a]">
-                                {o.kcalDelta > 0 ? `+${o.kcalDelta}` : o.kcalDelta === 0 ? "±0" : o.kcalDelta} kcal / dia
-                              </p>
-                            </div>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </motion.div>
-              </AnimatePresence>
-
-              {/* Navigation */}
-              <div className="flex gap-3 mt-8">
-                {step > 0 && (
-                  <button
-                    onClick={() => setStep(s => s - 1)}
-                    className="px-5 py-3 rounded-xl border border-[#14142a] text-[#50507a] font-mono text-[.68rem] tracking-[.08em] hover:border-[#2a2a4a] hover:text-[#8080a0] transition-all"
-                  >
-                    ← Voltar
-                  </button>
-                )}
-                <button
-                  onClick={() => step < 3 ? setStep(s => s + 1) : calculate()}
-                  disabled={!canAdvance}
-                  className="flex-1 py-3 rounded-xl font-mono text-[.72rem] tracking-[.08em] font-medium transition-all flex items-center justify-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed"
-                  style={{
-                    background: canAdvance ? "linear-gradient(135deg, #e8a020, #f5b84c)" : "rgba(232,160,32,.08)",
-                    color: canAdvance ? "#000" : "#e8a020",
-                    border: canAdvance ? "none" : "1px solid rgba(232,160,32,.2)",
-                  }}
-                >
-                  {step < 3 ? (
-                    <><span>Próximo</span><ChevronRight className="w-4 h-4" /></>
-                  ) : (
-                    <><Zap className="w-4 h-4" /><span>Calcular meu protocolo</span></>
-                  )}
-                </button>
-              </div>
-            </div>
-          ) : (
-            /* Result — personalized copy */
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
               <div>
-                <p className="font-mono text-[.6rem] text-[#e8a020] tracking-[.15em] uppercase mb-1">Protocolo calculado · Mifflin-St Jeor + VENTA</p>
-                <p className="font-heading text-[1.6rem] text-[#f0edf8] leading-tight">
-                  Sua meta: <span className="text-[#e8a020]">{vet.toLocaleString("pt-BR")} kcal</span>/dia
-                </p>
-                <p className="font-mono text-[.56rem] text-[#7070a0] tracking-[.08em] mt-1 uppercase">
-                  Base real: {peso}kg · {altura}cm · {idade} anos · {sexo === "M" ? "masculino" : "feminino"}
-                </p>
+                <h3 className="font-heading text-[1rem] text-[#f0edf8] mb-1">{f.title}</h3>
+                <p className="font-landing text-[.78rem] text-[#60607a] leading-relaxed">{f.desc}</p>
               </div>
-
-              {/* Breakdown */}
-              <div className="grid grid-cols-3 gap-2">
-                {[
-                  { label: "GEB", value: geb.toLocaleString("pt-BR"), sub: "metabolismo basal" },
-                  { label: "GET", value: get_val.toLocaleString("pt-BR"), sub: "gasto total" },
-                  { label: "VET", value: vet.toLocaleString("pt-BR"), sub: "sua meta" },
-                ].map(item => (
-                  <motion.div
-                    key={item.label}
-                    initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-                    className="p-3 rounded-xl text-center"
-                    style={{ background: "rgba(232,160,32,.05)", border: "1px solid rgba(232,160,32,.1)" }}
-                  >
-                    <p className="font-mono text-[.52rem] text-[#e8a020]/60 uppercase tracking-wider mb-1">{item.label}</p>
-                    <p className="font-heading text-[.95rem] text-[#e8a020]">{item.value}</p>
-                    <p className="font-landing text-[.55rem] text-[#50507a]">{item.sub}</p>
-                  </motion.div>
-                ))}
-              </div>
-
-              {/* Projection */}
-              {objObj && objObj.kcalDelta !== 0 && (
-                <div className="p-4 rounded-xl" style={{ background: "rgba(255,255,255,.02)", border: "1px solid rgba(255,255,255,.05)" }}>
-                  <p className="font-mono text-[.6rem] text-[#50507a] uppercase tracking-wider mb-2">Projeção</p>
-                  <p className="font-landing text-[.85rem] text-[#c0c0d8]">
-                    Neste protocolo você {objObj.key === "perder" ? "perde" : "ganha"}{" "}
-                    <strong className="text-[#e8a020]">{weeklyKg}kg/semana</strong>.
-                    {weeks > 0 && <> Meta de 10kg em <strong className="text-[#f0edf8]">≈{weeks} semanas</strong>.</>}
-                  </p>
-                </div>
-              )}
-
-              {/* CTA */}
-              <a href="#plans" className="flex items-center justify-center gap-2 w-full py-4 rounded-xl font-mono text-[.72rem] tracking-[.08em] font-medium transition-all hover:scale-[1.02]"
-                style={{ background: "linear-gradient(135deg, #e8a020, #f5b84c)", color: "#000", boxShadow: "0 0 30px rgba(232,160,32,.2)" }}>
-                <Zap className="w-4 h-4" />
-                Ver meu plano completo → começar
-              </a>
-
-              <button onClick={reset} className="w-full flex items-center justify-center gap-2 py-2.5 text-[#50507a] font-mono text-[.62rem] hover:text-[#8080a0] transition-colors">
-                <RotateCcw className="w-3 h-3" /> Recalcular
-              </button>
             </motion.div>
-          )}
+          ))}
         </motion.div>
 
-        {/* ── Right: Live phone mockup ───────────────────────────────────────── */}
+        {/* ── Right: Phone mockup ────────────────────────────────────── */}
         <motion.div
-          initial={{ opacity: 0, x: 24 }}
+          className="flex flex-col items-center"
+          initial={{ opacity: 0, x: 20 }}
           animate={inView ? { opacity: 1, x: 0 } : {}}
-          transition={{ duration: 0.8, delay: 0.3 }}
-          className="flex justify-center lg:justify-end"
+          transition={{ duration: 0.7, delay: 0.25 }}
         >
-          <div className="relative">
-            {/* Glow */}
-            <div className="absolute -inset-8 rounded-full pointer-events-none"
-              style={{ background: "radial-gradient(ellipse at 50% 40%, rgba(232,160,32,.08), transparent 70%)" }} />
+          {/* Tabs */}
+          <div className="flex gap-1 mb-4">
+            {TABS.map((tab, i) => (
+              <button
+                key={tab.label}
+                onClick={() => setActiveTab(i)}
+                className="px-3.5 py-1.5 rounded-full font-mono text-[.6rem] tracking-wide transition-all flex items-center gap-1.5"
+                style={{
+                  background: activeTab === i ? "rgba(232,160,32,.12)" : "rgba(255,255,255,.03)",
+                  color: activeTab === i ? "#e8a020" : "#60607a",
+                  border: `1px solid ${activeTab === i ? "rgba(232,160,32,.3)" : "rgba(255,255,255,.06)"}`,
+                }}
+              >
+                <span>{tab.emoji}</span>
+                {tab.label}
+              </button>
+            ))}
+          </div>
 
-            {/* Phone shell */}
-            <div className="relative w-[260px] rounded-[30px] overflow-hidden"
-              style={{
-                background: "#060614",
-                border: "1px solid rgba(232,160,32,.12)",
-                boxShadow: "0 0 60px rgba(232,160,32,.07), 0 40px 80px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.04)",
-              }}
-            >
-              {/* Notch */}
-              <div className="h-7 flex items-center justify-center">
-                <div className="w-16 h-3.5 rounded-full bg-black" />
-              </div>
-
-              <div className="px-4 pb-5 pt-1 space-y-3">
-                {/* App header */}
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="font-heading text-[.6rem] tracking-[.1em] text-[#e8a020]/70">NUTRI<span className="text-[#e8a020]">ON</span></div>
-                    <div className="font-mono text-[.48rem] text-[#f0edf8]/25">Protocolo pessoal</div>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <span className="text-[.7rem]">🔥</span>
-                    <span className="font-heading text-[.75rem] text-[#e8a020]">1</span>
-                  </div>
-                </div>
-
-                {/* Ring + macros — LIVE UPDATE */}
-                <div className="flex items-center gap-3 bg-white/[.018] rounded-xl p-3 border border-white/[.04]">
-                  {hasPartialData ? (
-                    <ResultRing key={`${vet}-${geb}`} kcal={vet} target={Math.max(vet, get_val, geb)} />
-                  ) : (
-                    <div className="relative w-[110px] h-[110px] flex items-center justify-center">
-                      <div className="w-full h-full rounded-full border-[7px] border-[#e8a020]/10" />
-                      <div className="absolute inset-0 flex flex-col items-center justify-center">
-                        <div className="font-heading text-[1rem] text-[#e8a020]/30">—</div>
-                        <div className="font-mono text-[.38rem] text-[#303050] mt-0.5">kcal / dia</div>
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="flex-1 space-y-2">
-                    {hasPartialData && macros ? (
-                      <>
-                        <MacroBar key={`p-${macros.protG}`} label="Proteína" g={macros.protG} kcal={macros.protKcal} total={vet} color="#ff4466" delay={0} />
-                        <MacroBar key={`c-${macros.carbG}`} label="Carbo"    g={macros.carbG} kcal={macros.carbKcal} total={vet} color="#e8a020" delay={0.1} />
-                        <MacroBar key={`f-${macros.fatG}`}  label="Gordura"  g={macros.fatG}  kcal={macros.fatKcal}  total={vet} color="#00f0b4" delay={0.2} />
-                      </>
-                    ) : (
-                      ["Proteína", "Carbo", "Gordura"].map((l) => (
-                        <div key={l} className="flex items-center gap-2">
-                          <span className="font-mono text-[.5rem] w-[44px] text-[#303050]">{l}</span>
-                          <div className="flex-1 h-[3px] rounded-full bg-white/[.04]">
-                            <div className="h-full rounded-full w-0 bg-[#303050]" />
-                          </div>
-                          <span className="font-mono text-[.5rem] text-[#303050]">--%</span>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </div>
-
-                {/* Live stats row */}
-                {hasPartialData && (
-                  <motion.div
-                    key={`stats-${geb}-${get_val}-${vet}`}
-                    initial={{ opacity: 0, y: 4 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="grid grid-cols-3 gap-1.5"
-                  >
-                    {[
-                      { label: "GEB", value: geb.toLocaleString("pt-BR"), active: true },
-                      { label: "GET", value: actObj ? get_val.toLocaleString("pt-BR") : "—", active: !!actObj },
-                      { label: "VET", value: objObj ? vet.toLocaleString("pt-BR") : "—", active: !!objObj },
-                    ].map(s => (
-                      <div key={s.label} className="rounded-lg p-2 text-center border" style={{
-                        background: s.active ? "rgba(232,160,32,.05)" : "rgba(255,255,255,.015)",
-                        borderColor: s.active ? "rgba(232,160,32,.15)" : "rgba(255,255,255,.04)",
-                      }}>
-                        <p className="font-mono text-[.42rem] uppercase tracking-wider" style={{ color: s.active ? "rgba(232,160,32,.6)" : "#303050" }}>{s.label}</p>
-                        <p className="font-heading text-[.7rem]" style={{ color: s.active ? "#e8a020" : "#303050" }}>{s.value}</p>
-                      </div>
-                    ))}
-                  </motion.div>
-                )}
-
-                {/* AI alert card */}
-                <AnimatePresence mode="wait">
-                  {showResult ? (
-                    <motion.div
-                      key="result"
-                      initial={{ opacity: 0, y: 6 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="rounded-xl p-3 border"
-                      style={{ background: "rgba(232,160,32,.07)", borderColor: "rgba(232,160,32,.25)" }}
-                    >
-                      <div className="flex items-start gap-2">
-                        <span className="text-[.85rem]">🎯</span>
-                        <div>
-                          <p className="font-heading text-[.65rem] text-[#e8a020] mb-0.5">Protocolo ativado</p>
-                          <p className="font-landing text-[.58rem] text-[#7070a0] leading-[1.4]">
-                            {actObj?.label} · {vet.toLocaleString("pt-BR")} kcal/dia
-                            {objObj?.kcalDelta !== 0 && ` · ${objObj!.kcalDelta > 0 ? "+" : ""}${objObj!.kcalDelta} kcal`}
-                          </p>
-                        </div>
-                      </div>
-                    </motion.div>
-                  ) : hasPartialData ? (
-                    <motion.div
-                      key="live"
-                      initial={{ opacity: 0, y: 6 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="rounded-xl p-3 border"
-                      style={{ background: "rgba(232,160,32,.04)", borderColor: "rgba(232,160,32,.12)" }}
-                    >
-                      <div className="flex items-start gap-2">
-                        <span className="text-[.85rem]">⚡</span>
-                        <div>
-                          <p className="font-heading text-[.65rem] text-[#e8a020]/70 mb-0.5">Calculando ao vivo</p>
-                          <p className="font-landing text-[.58rem] text-[#50507a] leading-[1.4]">
-                            {sexo === "M" ? "Masculino" : "Feminino"} · {peso}kg · {altura}cm · {idade}a
-                          </p>
-                        </div>
-                      </div>
-                    </motion.div>
-                  ) : (
-                    <motion.div
-                      key="placeholder"
-                      className="rounded-xl p-3 border border-white/[.04] bg-white/[.018]"
-                    >
-                      <div className="flex items-start gap-2">
-                        <span className="text-[.85rem] opacity-20">🧠</span>
-                        <div>
-                          <p className="font-heading text-[.65rem] text-[#f0edf8]/15 mb-0.5">Alerta IA</p>
-                          <div className="space-y-1">
-                            {[40, 70, 55].map((w, i) => (
-                              <div key={i} className="h-[5px] rounded bg-white/[.04]" style={{ width: `${w}%` }} />
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-
-                {/* Unlock hint */}
-                {!hasPartialData && (
-                  <div className="flex items-center justify-center gap-1.5 py-2">
-                    <div className="w-1 h-1 rounded-full bg-[#e8a020] animate-pulse" />
-                    <p className="font-mono text-[.52rem] text-[#50507a] tracking-[.08em]">
-                      preencha os dados para desbloquear
-                    </p>
-                  </div>
-                )}
-
-                {/* Bottom nav dots */}
-                <div className="pt-2 border-t border-white/[.04] flex justify-around">
-                  {["🏠","💧","➕","💬","👤"].map((icon, i) => (
-                    <div key={i} className="flex flex-col items-center gap-1" style={{ opacity: i === 0 ? 1 : 0.2 }}>
-                      <span className="text-[.8rem]">{icon}</span>
-                      {i === 0 && <div className="w-1 h-1 rounded-full bg-[#e8a020]" />}
-                    </div>
-                  ))}
-                </div>
-              </div>
+          {/* Phone frame */}
+          <div
+            className="relative w-[240px] md:w-[270px] rounded-[28px] overflow-hidden border border-white/[.08]"
+            style={{
+              background: "linear-gradient(180deg, #0a0a18 0%, #060612 100%)",
+              boxShadow: "0 20px 60px rgba(0,0,0,.6), 0 0 40px rgba(232,160,32,.06)",
+            }}
+          >
+            {/* Notch */}
+            <div className="flex justify-center pt-2 pb-1">
+              <div className="w-16 h-1 rounded-full bg-white/[.08]" />
             </div>
+
+            {/* Status bar */}
+            <div className="flex justify-between items-center px-4 pb-2">
+              <span className="font-mono text-[.4rem] text-[#50507a]">9:41</span>
+              <span className="font-mono text-[.4rem] text-[#50507a]">●●●</span>
+            </div>
+
+            {/* Content */}
+            <div className="px-3 pb-4 min-h-[300px]">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={activeTab}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.35 }}
+                >
+                  {activeTab === 0 && <DashboardScreen />}
+                  {activeTab === 1 && <ProtocoloScreen />}
+                  {activeTab === 2 && <IAChatScreen />}
+                </motion.div>
+              </AnimatePresence>
+            </div>
+
+            {/* Home bar */}
+            <div className="flex justify-center pb-2">
+              <div className="w-24 h-1 rounded-full bg-white/[.1]" />
+            </div>
+          </div>
+
+          {/* Dot indicators */}
+          <div className="flex gap-1.5 mt-4">
+            {TABS.map((_, i) => (
+              <div
+                key={i}
+                className="w-1.5 h-1.5 rounded-full transition-all duration-300"
+                style={{
+                  background: activeTab === i ? "#e8a020" : "rgba(255,255,255,.12)",
+                  boxShadow: activeTab === i ? "0 0 8px rgba(232,160,32,.4)" : "none",
+                }}
+              />
+            ))}
           </div>
         </motion.div>
       </div>

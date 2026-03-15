@@ -2,6 +2,7 @@ import LandingNav from "@/components/landing/LandingNav";
 import LandingBackground from "@/components/landing/LandingBackground";
 import LandingAudio from "@/components/landing/LandingAudio";
 import LandingHero from "@/components/landing/LandingHero";
+import LandingVideoVSL from "@/components/landing/LandingVideoVSL";
 import LandingTicker from "@/components/landing/LandingTicker";
 import LandingInteractiveQuiz from "@/components/landing/LandingInteractiveQuiz";
 import LandingVSComparison from "@/components/landing/LandingVSComparison";
@@ -26,6 +27,7 @@ const Index = () => {
       <div className="relative z-[2]">
         <LandingNav />
         <LandingHero />
+        <LandingVideoVSL />
         <LandingKcalEngine />
         <LandingTicker />
         <LandingInteractiveQuiz />
