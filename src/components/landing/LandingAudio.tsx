@@ -108,6 +108,7 @@ const LandingAudio = () => {
   const masterRef = useRef<GainNode | null>(null);
   const timerRef  = useRef<ReturnType<typeof setInterval> | null>(null);
   const nextRef   = useRef(0);
+  const beatRef   = useRef(0);
   const barRef    = useRef(0);
   const pingRef   = useRef(0);
 
