@@ -63,6 +63,7 @@ const PLAN_LABELS: Record<string, { label: string; color: string }> = {
 
 const AIFunctionsGrid = () => {
   const { hasAccess } = usePlanGate();
+  const navigate = useNavigate();
   const [expanded, setExpanded] = useState(false);
 
   const visibleFunctions = expanded ? AI_FUNCTIONS : AI_FUNCTIONS.slice(0, 6);
