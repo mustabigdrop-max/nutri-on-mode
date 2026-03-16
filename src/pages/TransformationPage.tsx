@@ -159,7 +159,7 @@ const TransformationPage = () => {
             {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Camera className="w-4 h-4" />}
             {uploading ? "Enviando..." : "Nova Foto"}
           </button>
-          <input ref={fileInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleFileSelect} />
+          <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileSelect} />
 
           <button
             onClick={async () => {
