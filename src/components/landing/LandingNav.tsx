@@ -27,6 +27,12 @@ const LandingNav = () => {
         <a href="#coach" className="font-mono text-[.72rem] text-[#50507a] hover:text-primary transition-colors tracking-[.08em]">Coach</a>
         <a href="#plans" className="font-mono text-[.72rem] text-[#50507a] hover:text-primary transition-colors tracking-[.08em]">Planos</a>
         <a
+          href="/auth"
+          className="font-mono text-[.72rem] text-[#50507a] hover:text-primary transition-colors tracking-[.08em]"
+        >
+          Entrar
+        </a>
+        <a
           href="https://pay.kiwify.com.br/G8uxU9O"
           target="_blank"
           rel="noopener noreferrer"
