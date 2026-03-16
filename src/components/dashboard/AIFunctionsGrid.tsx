@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import { usePlanGate } from "@/hooks/usePlanGate";
 import { Lock, Brain, Zap, ChevronDown, ChevronUp } from "lucide-react";
 import { useState } from "react";
