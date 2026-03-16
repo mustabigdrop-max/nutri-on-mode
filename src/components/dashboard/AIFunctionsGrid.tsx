@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import { usePlanGate } from "@/hooks/usePlanGate";
 import { Lock, Brain, Zap, ChevronDown, ChevronUp } from "lucide-react";
 import { useState } from "react";
@@ -44,6 +45,8 @@ const AI_FUNCTIONS: AIFunction[] = [
   { key: "send-recovery-notifications", emoji: "💬", label: "Recuperação Ativa", desc: "Notificações de reengajamento", requiredPlan: "ON +" },
   { key: "process-voice-checkin", emoji: "🎤", label: "Check-in por Voz", desc: "Registro de refeição por áudio", requiredPlan: "ON +" },
   { key: "generate-pca-result", emoji: "🧪", label: "Análise PCA", desc: "Componentes principais do seu perfil", requiredPlan: "ON +" },
+  { key: "protocolo-feminino", emoji: "♀️", label: "Protocolo Feminino", desc: "Nutrição periodizada pelo ciclo menstrual", requiredPlan: "ON +", relatedPage: "/protocolo-feminino" },
+  { key: "nutricao-sport", emoji: "🏅", label: "Nutrição Sport", desc: "Periodização nutricional para atletas", requiredPlan: "ON +", relatedPage: "/nutricao-sport" },
 
   // ON PRO
   { key: "generate-performance-protocol", emoji: "🏋️", label: "Protocolo Performance", desc: "Nutrição avançada para atletas", requiredPlan: "ON PRO", relatedPage: "/performance-pro" },
@@ -60,6 +63,7 @@ const PLAN_LABELS: Record<string, { label: string; color: string }> = {
 
 const AIFunctionsGrid = () => {
   const { hasAccess } = usePlanGate();
+  const navigate = useNavigate();
   const [expanded, setExpanded] = useState(false);
 
   const visibleFunctions = expanded ? AI_FUNCTIONS : AI_FUNCTIONS.slice(0, 6);
@@ -104,9 +108,10 @@ const AIFunctionsGrid = () => {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.03 * i }}
+              onClick={() => unlocked && fn.relatedPage && navigate(fn.relatedPage)}
               className={`relative rounded-xl border p-3 transition-all group overflow-hidden ${
                 unlocked
-                  ? "border-border bg-card hover:border-accent/30 cursor-default"
+                  ? `border-border bg-card hover:border-accent/30 ${fn.relatedPage ? "cursor-pointer" : "cursor-default"}`
                   : "border-border/50 bg-card/40 opacity-60"
               }`}
             >
