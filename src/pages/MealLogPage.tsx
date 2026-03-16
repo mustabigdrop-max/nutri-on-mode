@@ -422,7 +422,7 @@ const MealLogPage = () => {
     }
 
     const foodNames = selectedFoods.map(sf => sf.food.name);
-    const { data: insertedMeal, error } = await supabase.from("meal_logs").insert({
+    const insertPayload = {
       user_id: user.id,
       meal_type: selectedMealType,
       total_kcal: Math.round(totals.kcal),
@@ -437,7 +437,10 @@ const MealLogPage = () => {
       confirmed: true,
       quality_score: aiQualityScore,
       food_names: foodNames,
-    }).select("id").single();
+    };
+    console.log("[MealLog] Insert payload:", JSON.stringify(insertPayload));
+    const { data: insertedMeal, error } = await supabase.from("meal_logs").insert(insertPayload).select("id").single();
+    if (error) console.error("[MealLog] Insert error:", JSON.stringify(error));
 
     if (!error && insertedMeal) {
       // Save micronutrients if available
