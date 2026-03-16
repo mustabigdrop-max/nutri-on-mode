@@ -108,9 +108,10 @@ const AIFunctionsGrid = () => {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.03 * i }}
+              onClick={() => unlocked && fn.relatedPage && navigate(fn.relatedPage)}
               className={`relative rounded-xl border p-3 transition-all group overflow-hidden ${
                 unlocked
-                  ? "border-border bg-card hover:border-accent/30 cursor-default"
+                  ? `border-border bg-card hover:border-accent/30 ${fn.relatedPage ? "cursor-pointer" : "cursor-default"}`
                   : "border-border/50 bg-card/40 opacity-60"
               }`}
             >
