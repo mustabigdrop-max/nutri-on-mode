@@ -59,6 +59,8 @@ import VulnerabilityMapPage from "./pages/VulnerabilityMapPage";
 import MetabolicReversionPage from "./pages/MetabolicReversionPage";
 import NutricaoSportPage from "./pages/NutricaoSportPage";
 import ProtocoloFemininoPage from "./pages/ProtocoloFemininoPage";
+import AssessmentPCA from "./pages/AssessmentPCA";
+import ResultadoPCAPage from "./pages/ResultadoPCA";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -73,6 +75,8 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<AuthPage />} />
+            <Route path="/assessment" element={<ProtectedRoute><AssessmentPCA /></ProtectedRoute>} />
+            <Route path="/resultado-pca" element={<ProtectedRoute><ResultadoPCAPage /></ProtectedRoute>} />
             <Route path="/onboarding" element={<ProtectedRoute><OnboardingPage /></ProtectedRoute>} />
             <Route path="/first-meal" element={<ProtectedRoute><FirstMealScreen /></ProtectedRoute>} />
             <Route path="/activation-tour" element={<ProtectedRoute><ActivationTourPage /></ProtectedRoute>} />
