@@ -126,18 +126,17 @@ const ChatPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="fixed inset-0 bg-background flex flex-col">
       <div className="absolute inset-0 bg-grid opacity-10" />
 
       {/* Header */}
-      <div className="relative z-10 flex items-center gap-3 px-4 pt-4 pb-3 border-b border-border bg-background/95 backdrop-blur">
+      <div className="relative z-10 flex-shrink-0 flex items-center gap-3 px-4 pt-4 pb-3 border-b border-border bg-background/95 backdrop-blur">
         <button onClick={() => navigate("/dashboard")} className="p-2 rounded-lg text-muted-foreground hover:text-foreground transition-colors">
           <ArrowLeft className="w-5 h-5" />
         </button>
         <div className="flex items-center gap-2 flex-1">
           <div className="w-9 h-9 rounded-xl bg-primary/20 border border-primary/20 flex items-center justify-center relative">
             <Sparkles className="w-4 h-4 text-primary" />
-            {/* Online pulse */}
             <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-accent border-2 border-background animate-pulse" />
           </div>
           <div>
@@ -159,7 +158,7 @@ const ChatPage = () => {
       </div>
 
       {/* Messages */}
-      <div ref={scrollRef} className="relative z-10 flex-1 overflow-y-auto px-4 py-4 space-y-4">
+      <div ref={scrollRef} className="relative z-10 flex-1 min-h-0 overflow-y-auto px-4 py-4 space-y-4">
         {loadingHistory ? (
           <div className="flex items-center justify-center py-12">
             <Loader2 className="w-6 h-6 text-primary animate-spin" />
@@ -196,7 +195,7 @@ const ChatPage = () => {
       </div>
 
       {/* Input */}
-      <div className="relative z-10 px-4 py-3 border-t border-border bg-background/95 backdrop-blur">
+      <div className="relative z-10 flex-shrink-0 px-4 py-3 border-t border-border bg-background/95 backdrop-blur safe-bottom">
         <div className="flex gap-2 max-w-lg mx-auto">
           <input
             type="text"
