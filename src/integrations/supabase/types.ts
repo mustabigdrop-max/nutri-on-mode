@@ -1092,6 +1092,78 @@ export type Database = {
         }
         Relationships: []
       }
+      feminine_profiles: {
+        Row: {
+          anticoncepcional: string
+          created_at: string
+          duracao_ciclo: number
+          fase_ciclo: string
+          id: string
+          menopausa: string
+          tpm_severa: boolean
+          triada_suspeita: boolean
+          ultima_menstruacao: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          anticoncepcional?: string
+          created_at?: string
+          duracao_ciclo?: number
+          fase_ciclo?: string
+          id?: string
+          menopausa?: string
+          tpm_severa?: boolean
+          triada_suspeita?: boolean
+          ultima_menstruacao?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          anticoncepcional?: string
+          created_at?: string
+          duracao_ciclo?: number
+          fase_ciclo?: string
+          id?: string
+          menopausa?: string
+          tpm_severa?: boolean
+          triada_suspeita?: boolean
+          ultima_menstruacao?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      feminino_perplexity_cache: {
+        Row: {
+          cache_key: string
+          conhecimento: string
+          expira_em: string
+          fontes: Json | null
+          gerado_em: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          cache_key: string
+          conhecimento: string
+          expira_em: string
+          fontes?: Json | null
+          gerado_em?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          cache_key?: string
+          conhecimento?: string
+          expira_em?: string
+          fontes?: Json | null
+          gerado_em?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       focus_mode_logs: {
         Row: {
           created_at: string | null
