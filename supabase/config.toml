@@ -83,3 +83,6 @@ verify_jwt = false
 
 [functions.nutricao-sport]
 verify_jwt = false
+
+[functions.protocolo-feminino]
+verify_jwt = false
