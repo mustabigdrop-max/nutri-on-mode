@@ -275,7 +275,7 @@ const EatOutFlow = ({ onClose }: EatOutFlowProps) => {
               ))}
             </div>
 
-            <input ref={fileInputRef} type="file" accept="image/*" capture="environment" onChange={handlePhotoSelect} className="hidden" />
+            <input ref={fileInputRef} type="file" accept="image/*" onChange={handlePhotoSelect} className="hidden" />
 
             {photoPreview ? (
               <div className="relative mb-3">

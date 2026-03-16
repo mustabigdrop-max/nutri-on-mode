@@ -737,7 +737,7 @@ const MealLogPage = () => {
         {/* 3. AI Photo */}
         {inputMode === "ai-photo" && !aiLoading && (
           <div className="mb-4 space-y-3">
-            <input ref={fileInputRef} type="file" accept="image/*" capture="environment" onChange={handlePhotoSelect} className="hidden" />
+            <input ref={fileInputRef} type="file" accept="image/*" onChange={handlePhotoSelect} className="hidden" />
             <div className="relative">
               <input
                 type="text"
