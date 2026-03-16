@@ -58,6 +58,7 @@ import DietBreakPredictorPage from "./pages/DietBreakPredictorPage";
 import VulnerabilityMapPage from "./pages/VulnerabilityMapPage";
 import MetabolicReversionPage from "./pages/MetabolicReversionPage";
 import NutricaoSportPage from "./pages/NutricaoSportPage";
+import ProtocoloFemininoPage from "./pages/ProtocoloFemininoPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
