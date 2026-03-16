@@ -44,6 +44,8 @@ const AI_FUNCTIONS: AIFunction[] = [
   { key: "send-recovery-notifications", emoji: "💬", label: "Recuperação Ativa", desc: "Notificações de reengajamento", requiredPlan: "ON +" },
   { key: "process-voice-checkin", emoji: "🎤", label: "Check-in por Voz", desc: "Registro de refeição por áudio", requiredPlan: "ON +" },
   { key: "generate-pca-result", emoji: "🧪", label: "Análise PCA", desc: "Componentes principais do seu perfil", requiredPlan: "ON +" },
+  { key: "protocolo-feminino", emoji: "♀️", label: "Protocolo Feminino", desc: "Nutrição periodizada pelo ciclo menstrual", requiredPlan: "ON +", relatedPage: "/protocolo-feminino" },
+  { key: "nutricao-sport", emoji: "🏅", label: "Nutrição Sport", desc: "Periodização nutricional para atletas", requiredPlan: "ON +", relatedPage: "/nutricao-sport" },
 
   // ON PRO
   { key: "generate-performance-protocol", emoji: "🏋️", label: "Protocolo Performance", desc: "Nutrição avançada para atletas", requiredPlan: "ON PRO", relatedPage: "/performance-pro" },
