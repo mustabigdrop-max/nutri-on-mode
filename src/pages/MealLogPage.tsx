@@ -5,10 +5,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
+import { useMealsSaved } from "@/hooks/useMealsSaved";
 import {
   ArrowLeft, Search, Plus, Minus, Check, X, ChevronDown,
   Camera, Sparkles, Loader2, Mic, MicOff, ScanBarcode, Star, Clock,
-  UtensilsCrossed, PartyPopper
+  UtensilsCrossed, PartyPopper, Pencil, Save, PlusCircle
 } from "lucide-react";
 import { toast } from "sonner";
 import EatOutFlow from "@/components/meal/EatOutFlow";
@@ -91,6 +92,7 @@ interface SavedMeal {
 const MealLogPage = () => {
   const { user } = useAuth();
   const { profile, updateProfile } = useProfile();
+  const { saveMeal: saveMealFavorite } = useMealsSaved();
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -126,6 +128,15 @@ const MealLogPage = () => {
   // Quick meals (frequent)
   const [quickMeals, setQuickMeals] = useState<SavedMeal[]>([]);
   const [quickLoading, setQuickLoading] = useState(false);
+
+  // Edit food states
+  const [editingFoodId, setEditingFoodId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState({ name: "", portion: "", kcal: 0, protein: 0, carbs: 0, fat: 0 });
+
+  // Save as favorite
+  const [showSaveFavorite, setShowSaveFavorite] = useState(false);
+  const [favoriteName, setFavoriteName] = useState("");
+  const [savingFavorite, setSavingFavorite] = useState(false);
 
   // Load frequent meals
   useEffect(() => {
@@ -665,28 +676,157 @@ const MealLogPage = () => {
         {/* Selected foods */}
         {selectedFoods.length > 0 && (
           <div className="mb-4 space-y-2">
-            <h3 className="text-xs font-mono text-muted-foreground uppercase tracking-wider">Alimentos selecionados</h3>
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-mono text-muted-foreground uppercase tracking-wider">Alimentos selecionados</h3>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => { setInputMode("ai-text"); }}
+                  className="flex items-center gap-1 text-[10px] font-semibold text-primary hover:text-primary/80 transition-colors"
+                >
+                  <PlusCircle className="w-3.5 h-3.5" />
+                  Adicionar mais
+                </button>
+                <button
+                  onClick={() => setShowSaveFavorite(true)}
+                  className="flex items-center gap-1 text-[10px] font-semibold text-primary hover:text-primary/80 transition-colors"
+                >
+                  <Save className="w-3.5 h-3.5" />
+                  Salvar refeição
+                </button>
+              </div>
+            </div>
             {selectedFoods.map(sf => (
               <motion.div key={sf.food.id} layout initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="rounded-xl border border-primary/20 bg-primary/5 p-3">
-                <div className="flex items-center gap-2">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-foreground truncate">
-                      {(sf.food.category === "🤖 IA" || sf.food.category === "📦 Produto") && <span className="text-primary mr-1">✨</span>}
-                      {sf.food.name}
-                    </p>
-                    <p className="text-xs text-muted-foreground font-mono">
-                      {sf.food.portion} · {Math.round(sf.food.kcal * sf.quantity)}kcal · {Math.round(sf.food.protein * sf.quantity)}g prot
-                    </p>
+                {editingFoodId === sf.food.id ? (
+                  /* Inline edit form */
+                  <div className="space-y-2">
+                    <input
+                      type="text"
+                      value={editForm.name}
+                      onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))}
+                      placeholder="Nome do alimento"
+                      className="w-full px-2 py-1.5 rounded-lg border border-border bg-card text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50"
+                    />
+                    <input
+                      type="text"
+                      value={editForm.portion}
+                      onChange={e => setEditForm(f => ({ ...f, portion: e.target.value }))}
+                      placeholder="Porção (ex: 150g)"
+                      className="w-full px-2 py-1.5 rounded-lg border border-border bg-card text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50"
+                    />
+                    <div className="grid grid-cols-4 gap-1.5">
+                      {(["kcal", "protein", "carbs", "fat"] as const).map(field => (
+                        <div key={field}>
+                          <label className="text-[9px] text-muted-foreground font-mono uppercase">{field === "protein" ? "Prot" : field === "carbs" ? "Carb" : field === "fat" ? "Gord" : "Kcal"}</label>
+                          <input
+                            type="number"
+                            value={editForm[field]}
+                            onChange={e => setEditForm(f => ({ ...f, [field]: +e.target.value }))}
+                            className="w-full px-2 py-1 rounded-lg border border-border bg-card text-xs text-foreground font-mono focus:outline-none focus:ring-1 focus:ring-primary/50"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                    <div className="flex gap-2 justify-end">
+                      <button
+                        onClick={() => setEditingFoodId(null)}
+                        className="px-3 py-1 rounded-lg text-xs text-muted-foreground hover:text-foreground border border-border"
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        onClick={() => {
+                          setSelectedFoods(prev => prev.map(item =>
+                            item.food.id === sf.food.id
+                              ? { ...item, food: { ...item.food, name: editForm.name, portion: editForm.portion, kcal: editForm.kcal, protein: editForm.protein, carbs: editForm.carbs, fat: editForm.fat } }
+                              : item
+                          ));
+                          setEditingFoodId(null);
+                          toast.success("Alimento atualizado! ✏️");
+                        }}
+                        className="px-3 py-1 rounded-lg text-xs bg-primary text-primary-foreground font-semibold"
+                      >
+                        Salvar
+                      </button>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <button onClick={() => updateQuantity(sf.food.id, -0.5)} className="w-7 h-7 rounded-lg border border-border flex items-center justify-center text-muted-foreground hover:text-foreground"><Minus className="w-3 h-3" /></button>
-                    <span className="text-sm font-mono font-bold text-foreground w-8 text-center">{sf.quantity}</span>
-                    <button onClick={() => updateQuantity(sf.food.id, 0.5)} className="w-7 h-7 rounded-lg border border-border flex items-center justify-center text-muted-foreground hover:text-foreground"><Plus className="w-3 h-3" /></button>
-                    <button onClick={() => removeFood(sf.food.id)} className="w-7 h-7 rounded-lg flex items-center justify-center text-destructive hover:bg-destructive/10 ml-1"><X className="w-3 h-3" /></button>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-foreground truncate">
+                        {(sf.food.category === "🤖 IA" || sf.food.category === "📦 Produto") && <span className="text-primary mr-1">✨</span>}
+                        {sf.food.name}
+                      </p>
+                      <p className="text-xs text-muted-foreground font-mono">
+                        {sf.food.portion} · {Math.round(sf.food.kcal * sf.quantity)}kcal · {Math.round(sf.food.protein * sf.quantity)}g prot
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => {
+                          setEditingFoodId(sf.food.id);
+                          setEditForm({ name: sf.food.name, portion: sf.food.portion, kcal: sf.food.kcal, protein: sf.food.protein, carbs: sf.food.carbs, fat: sf.food.fat });
+                        }}
+                        className="w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+                        title="Editar alimento"
+                      >
+                        <Pencil className="w-3 h-3" />
+                      </button>
+                      <button onClick={() => updateQuantity(sf.food.id, -0.5)} className="w-7 h-7 rounded-lg border border-border flex items-center justify-center text-muted-foreground hover:text-foreground"><Minus className="w-3 h-3" /></button>
+                      <span className="text-sm font-mono font-bold text-foreground w-8 text-center">{sf.quantity}</span>
+                      <button onClick={() => updateQuantity(sf.food.id, 0.5)} className="w-7 h-7 rounded-lg border border-border flex items-center justify-center text-muted-foreground hover:text-foreground"><Plus className="w-3 h-3" /></button>
+                      <button onClick={() => removeFood(sf.food.id)} className="w-7 h-7 rounded-lg flex items-center justify-center text-destructive hover:bg-destructive/10 ml-1"><X className="w-3 h-3" /></button>
+                    </div>
                   </div>
-                </div>
+                )}
               </motion.div>
             ))}
+
+            {/* Save as favorite modal */}
+            <AnimatePresence>
+              {showSaveFavorite && (
+                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="rounded-xl border border-primary/30 bg-card p-4 space-y-3">
+                  <p className="text-sm font-semibold text-foreground">💾 Salvar como refeição favorita</p>
+                  <input
+                    type="text"
+                    value={favoriteName}
+                    onChange={e => setFavoriteName(e.target.value)}
+                    placeholder="Nome da refeição (ex: Meu almoço fit)"
+                    className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  />
+                  <div className="flex gap-2 justify-end">
+                    <button
+                      onClick={() => { setShowSaveFavorite(false); setFavoriteName(""); }}
+                      className="px-4 py-2 rounded-lg text-xs text-muted-foreground hover:text-foreground border border-border"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      disabled={!favoriteName.trim() || savingFavorite}
+                      onClick={async () => {
+                        setSavingFavorite(true);
+                        const err = await saveMealFavorite({
+                          nome: favoriteName.trim(),
+                          alimentos: selectedFoods.map(sf => ({ food_id: sf.food.id, nome: sf.food.name, grams: sf.food.portionGrams * sf.quantity })),
+                          total_macros: { kcal: Math.round(totals.kcal), protein: Math.round(totals.protein), carbs: Math.round(totals.carbs), fat: Math.round(totals.fat) },
+                        });
+                        setSavingFavorite(false);
+                        if (!err) {
+                          toast.success("Refeição salva como favorita! ⭐");
+                          setShowSaveFavorite(false);
+                          setFavoriteName("");
+                        } else {
+                          toast.error("Erro ao salvar refeição");
+                        }
+                      }}
+                      className="px-4 py-2 rounded-lg text-xs bg-primary text-primary-foreground font-semibold disabled:opacity-50"
+                    >
+                      {savingFavorite ? <Loader2 className="w-3 h-3 animate-spin" /> : "Salvar ⭐"}
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         )}
 
