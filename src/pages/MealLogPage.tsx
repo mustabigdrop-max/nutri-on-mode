@@ -5,10 +5,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
+import { useMealsSaved } from "@/hooks/useMealsSaved";
 import {
   ArrowLeft, Search, Plus, Minus, Check, X, ChevronDown,
   Camera, Sparkles, Loader2, Mic, MicOff, ScanBarcode, Star, Clock,
-  UtensilsCrossed, PartyPopper
+  UtensilsCrossed, PartyPopper, Pencil, Save, PlusCircle
 } from "lucide-react";
 import { toast } from "sonner";
 import EatOutFlow from "@/components/meal/EatOutFlow";
