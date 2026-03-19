@@ -92,6 +92,7 @@ interface SavedMeal {
 const MealLogPage = () => {
   const { user } = useAuth();
   const { profile, updateProfile } = useProfile();
+  const { saveMeal: saveMealFavorite } = useMealsSaved();
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -127,6 +128,15 @@ const MealLogPage = () => {
   // Quick meals (frequent)
   const [quickMeals, setQuickMeals] = useState<SavedMeal[]>([]);
   const [quickLoading, setQuickLoading] = useState(false);
+
+  // Edit food states
+  const [editingFoodId, setEditingFoodId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState({ name: "", portion: "", kcal: 0, protein: 0, carbs: 0, fat: 0 });
+
+  // Save as favorite
+  const [showSaveFavorite, setShowSaveFavorite] = useState(false);
+  const [favoriteName, setFavoriteName] = useState("");
+  const [savingFavorite, setSavingFavorite] = useState(false);
 
   // Load frequent meals
   useEffect(() => {
