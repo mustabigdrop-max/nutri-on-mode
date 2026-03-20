@@ -17,6 +17,7 @@ import SmartAlerts from "@/components/dashboard/SmartAlerts";
 import ProactiveRecipeSuggestion from "@/components/dashboard/ProactiveRecipeSuggestion";
 import WeeklySabotageCard from "@/components/dashboard/WeeklySabotageCard";
 import ConsistencyScoreCard from "@/components/dashboard/ConsistencyScoreCard";
+import WeightCheckInCard from "@/components/dashboard/WeightCheckInCard";
 import MoodCheckinModal, { type MoodType, MOODS } from "@/components/dashboard/MoodCheckinModal";
 import {
   ObjectiveBadge, getRingLabel, getScoreLabel,
@@ -26,7 +27,7 @@ import {
   Flame, TrendingUp, Droplets, Apple, BarChart3, MessageSquare,
   User, Plus, Utensils, LogOut, Zap, Brain, ChevronRight, Award,
   Camera, Users, Heart, Settings, HelpCircle, Leaf, Trophy, ShoppingCart, History, Dumbbell, FileText, Hammer,
-  Clock, Pill, Bug, Smile, CalendarDays, HelpingHand, BarChart, Lock, Sun, AlertTriangle
+  Clock, Pill, Bug, Smile, CalendarDays, HelpingHand, BarChart, Lock, Sun, AlertTriangle, Scale
 } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
 
@@ -742,6 +743,9 @@ const DashboardPage = () => {
         {/* Weekly Sabotage Diagnosis */}
         <WeeklySabotageCard />
 
+        {/* MCE Adaptativo — Peso real + calibração TDEE */}
+        <WeightCheckInCard />
+
         {/* Proactive Recipe Suggestion */}
         <ProactiveRecipeSuggestion
           proteinConsumed={todayTotals.protein}
@@ -852,44 +856,48 @@ const DashboardPage = () => {
                 "/monthly-report": "Relatório Mensal",
               };
               const items = [
-                { icon: Utensils, label: "Registrar", desc: "Log de refeições", path: "/meal-log", emoji: "🍽️" },
-                { icon: History, label: "Histórico", desc: "Refeições passadas", path: "/meal-history", emoji: "📋" },
-                { icon: Apple, label: "Plano Alimentar", desc: "Cardápio semanal IA", path: "/meal-plan", emoji: "🍎" },
-                { icon: ShoppingCart, label: "Lista de Compras", desc: "Custo + itens automáticos", path: "/shopping-list", emoji: "🛒" },
-                { icon: Apple, label: "Receitas", desc: "Filtradas por macros do dia", path: "/recipes", emoji: "🍳" },
-                { icon: CalendarDays, label: "Modo Evento", desc: "Estratégia pré/durante/pós", path: "/event-mode", emoji: "📅" },
-                { icon: HelpingHand, label: "Simulador", desc: "E se eu comer...?", path: "/food-simulator", emoji: "🤔" },
-                { icon: BarChart, label: "Relatório Mensal", desc: "Padrão alimentar do mês", path: "/monthly-report", emoji: "📊" },
-                { icon: MessageSquare, label: "Coach IA", desc: "Chat nutricional inteligente", path: "/chat", emoji: "🤖" },
-                { icon: Droplets, label: "Hidratação", desc: "Controle de água diário", path: "/hydration", emoji: "💧" },
-                { icon: TrendingUp, label: "Progresso", desc: "Gráficos de evolução", path: "/progress", emoji: "📈" },
-                { icon: Camera, label: "Diário Fotográfico", desc: "Slider antes × depois", path: "/transformation", emoji: "📸" },
-                { icon: Leaf, label: "Micronutrientes", desc: "Vitaminas & minerais", path: "/micronutrients", emoji: "🥬" },
-                { icon: Trophy, label: "Conquistas", desc: "XP, badges & ranking", path: "/gamification", emoji: "🎮" },
-                { icon: Hammer, label: "Montar Dieta", desc: "Construtor alimento a alimento", path: "/diet-builder", emoji: "🔨" },
-                { icon: Clock, label: "Cronobiologia", desc: "Janelas de macros por horário", path: "/chronobiology", emoji: "🕐" },
-                { icon: Sun, label: "Nutrição Circadiana", desc: "Plano por relógio biológico", path: "/circadian", emoji: "🌅" },
-                { icon: Smile, label: "Comportamental", desc: "Mindful eating & TCC", path: "/behavioral-nutrition", emoji: "🧠" },
-                { icon: Pill, label: "Suplementos", desc: "Stack personalizado IA", path: "/supplementation", emoji: "💊" },
-                { icon: Bug, label: "Microbioma", desc: "Saúde intestinal & Bristol", path: "/microbiome", emoji: "🦠" },
-                { icon: FileText, label: "Exames de Sangue", desc: "IA interpreta seus exames", path: "/blood-test", emoji: "🩸" },
-                { icon: Users, label: "Família", desc: "Perfis de filhos & idosos", path: "/family", emoji: "👨‍👩‍👧" },
-                { icon: Dumbbell, label: "Wearables", desc: "Passos, sono & atividade", path: "/wearables", emoji: "⌚" },
-                { icon: User, label: "Perfil", desc: "Seus dados & metas", path: "/profile", emoji: "👤" },
-                { icon: Settings, label: "Configurações", desc: "Recalcular VET & macros", path: "/settings", emoji: "⚙️" },
-                { icon: Heart, label: "Profissional", desc: "Painel B2B completo", path: "/professional", emoji: "🩺" },
-                { icon: Pill, label: "Protocolo GLP-1", desc: "Proteção muscular com caneta", path: "/glp1", emoji: "💉" },
-                { icon: Zap, label: "NutriSync", desc: "Treino + nutrição em tempo real", path: "/nutrisync", emoji: "⚡" },
-                { icon: Dumbbell, label: "Histórico Treinos", desc: "Consistência & calorias ajustadas", path: "/workout-history", emoji: "🏋️" },
-                { icon: Zap, label: "Performance Pro", desc: "Nutrição para atletas avançados", path: "/performance-pro", emoji: "⚡" },
-                { icon: Zap, label: "Desempenho Mental", desc: "Nootrópicos, energia & foco", path: "/mental-performance", emoji: "🧠" },
-                { icon: Brain, label: "Agentes IA", desc: "7 especialistas MCE", path: "/agents", emoji: "🤖" },
-                { icon: Dumbbell, label: "Composição Corporal", desc: "FFMI, massa magra, recomp", path: "/body-composition", emoji: "💪" },
-                { icon: Zap, label: "Protocolo Refeed", desc: "Adaptação metabólica & refeed", path: "/refeed", emoji: "⚡" },
-                { icon: Heart, label: "Mapa de Gatilhos", desc: "TCC · padrões comportamentais", path: "/triggers", emoji: "🧠" },
-                { icon: AlertTriangle, label: "Preditor de Quebra", desc: "Score de risco em tempo real", path: "/diet-break-predictor", emoji: "🚨" },
-                { icon: BarChart, label: "Mapa Vulnerabilidade", desc: "Seus horários de risco históricos", path: "/vulnerability-map", emoji: "🗺️" },
-                { icon: TrendingUp, label: "Reversão Metabólica", desc: "Saída científica do déficit severo", path: "/metabolic-reversion", emoji: "🔄" },
+                // ── Core ──────────────────────────────────────────────────
+                { icon: Utensils,     label: "Registrar",          desc: "Log de refeições",               path: "/meal-log",              emoji: "🍽️" },
+                { icon: History,      label: "Histórico",           desc: "Refeições passadas",              path: "/meal-history",           emoji: "📋" },
+                { icon: Apple,        label: "Plano Alimentar",     desc: "Cardápio semanal IA",             path: "/meal-plan",              emoji: "🍎" },
+                { icon: ShoppingCart, label: "Lista de Compras",    desc: "Custo + itens automáticos",       path: "/shopping-list",          emoji: "🛒" },
+                { icon: Apple,        label: "Receitas",            desc: "Filtradas por macros do dia",     path: "/recipes",                emoji: "🍳" },
+                { icon: MessageSquare,label: "Coach IA",            desc: "Chat nutricional inteligente",    path: "/chat",                   emoji: "🤖" },
+                { icon: Brain,        label: "Agentes IA",          desc: "7 especialistas MCE",             path: "/agents",                 emoji: "🧬" },
+                // ── MCE Adaptativo (nova feature) ─────────────────────────
+                { icon: Scale,        label: "MCE Adaptativo",     desc: "Peso real + calibração TDEE",     path: "/weight-adaptive",       emoji: "⚖️" },
+                // ── Acompanhamento ────────────────────────────────────────
+                { icon: Droplets,     label: "Hidratação",          desc: "Controle de água diário",         path: "/hydration",              emoji: "💧" },
+                { icon: TrendingUp,   label: "Progresso",           desc: "Gráficos de evolução",            path: "/progress",               emoji: "📈" },
+                { icon: Camera,       label: "Diário Fotográfico",  desc: "Slider antes × depois",           path: "/transformation",         emoji: "📸" },
+                { icon: Dumbbell,     label: "Composição Corporal", desc: "FFMI, massa magra, recomp",       path: "/body-composition",       emoji: "💪" },
+                { icon: Trophy,       label: "Conquistas",          desc: "XP, badges & ranking",            path: "/gamification",           emoji: "🎮" },
+                // ── Nutrição Avançada ─────────────────────────────────────
+                { icon: Leaf,         label: "Micronutrientes",     desc: "Vitaminas & minerais",            path: "/micronutrients",         emoji: "🥬" },
+                { icon: FileText,     label: "Exames de Sangue",    desc: "IA interpreta seus exames",       path: "/blood-test",             emoji: "🩸" },
+                { icon: Pill,         label: "Suplementos",         desc: "Stack personalizado IA",          path: "/supplementation",        emoji: "💊" },
+                { icon: Hammer,       label: "Montar Dieta",        desc: "Construtor alimento a alimento",  path: "/diet-builder",           emoji: "🔨" },
+                // ── Protocolo & Treino ────────────────────────────────────
+                { icon: Zap,          label: "NutriSync",           desc: "Treino + nutrição em tempo real", path: "/nutrisync",              emoji: "⚡" },
+                { icon: Dumbbell,     label: "Histórico Treinos",   desc: "Consistência & calorias",         path: "/workout-history",        emoji: "🏋️" },
+                { icon: Zap,          label: "Protocolo Refeed",    desc: "Adaptação metabólica & refeed",   path: "/refeed",                 emoji: "🔄" },
+                // ── Cronobiologia ─────────────────────────────────────────
+                { icon: Sun,          label: "Nutrição Circadiana", desc: "Plano por relógio biológico",     path: "/circadian",              emoji: "🌅" },
+                { icon: Clock,        label: "Cronobiologia",       desc: "Janelas de macros por horário",   path: "/chronobiology",          emoji: "🕐" },
+                // ── Comportamental ────────────────────────────────────────
+                { icon: Smile,        label: "Comportamental",      desc: "Mindful eating & TCC",            path: "/behavioral-nutrition",   emoji: "🧠" },
+                { icon: Heart,        label: "Mapa de Gatilhos",    desc: "TCC · padrões comportamentais",   path: "/triggers",               emoji: "🎯" },
+                { icon: AlertTriangle,label: "Preditor de Quebra",  desc: "Score de risco em tempo real",    path: "/diet-break-predictor",   emoji: "🚨" },
+                // ── ON+ Exclusivo ─────────────────────────────────────────
+                { icon: CalendarDays, label: "Modo Evento",         desc: "Estratégia pré/durante/pós",      path: "/event-mode",             emoji: "📅" },
+                { icon: HelpingHand,  label: "Simulador",           desc: "E se eu comer...?",               path: "/food-simulator",         emoji: "🤔" },
+                { icon: BarChart,     label: "Relatório Mensal",    desc: "Padrão alimentar do mês",         path: "/monthly-report",         emoji: "📊" },
+                { icon: Zap,          label: "Performance Pro",     desc: "Nutrição para atletas avançados", path: "/performance-pro",        emoji: "🏆" },
+                { icon: Pill,         label: "Protocolo GLP-1",     desc: "Proteção muscular com caneta",    path: "/glp1",                   emoji: "💉" },
+                // ── Sistema ───────────────────────────────────────────────
+                { icon: Dumbbell,     label: "Wearables",           desc: "Passos, sono & atividade",        path: "/wearables",              emoji: "⌚" },
+                { icon: User,         label: "Perfil",              desc: "Seus dados & metas",              path: "/profile",                emoji: "👤" },
+                { icon: Settings,     label: "Configurações",       desc: "Recalcular VET & macros",         path: "/settings",               emoji: "⚙️" },
               ];
               return items.map((item, i) => {
                 const isLocked = GATED_PATHS.includes(item.path) && !isOnPlus;
