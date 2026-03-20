@@ -1,23 +1,16 @@
 import { useState, useRef, useEffect } from "react";
 
-/**
- * NUTRION — Ambient Tech Soundtrack
- * Web Audio API · 96 BPM · A minor · Minimal / Lo-fi electronic
- */
-
-const BPM  = 96;
+const BPM = 96;
 const BEAT = 60 / BPM;
-const BAR  = BEAT * 4;
-
-const PEN  = [220, 261.6, 293.7, 329.6, 392];
-
+const BAR = BEAT * 4;
+const PEN = [220, 261.6, 293.7, 329.6, 392];
 const PADS: Record<string, number[]> = {
   Am: [55, 82.4, 110, 164.8],
-  F:  [43.7, 65.4, 130.8],
-  C:  [65.4, 130.8, 196],
-  G:  [49, 98, 146.8],
+  F: [43.7, 65.4, 130.8],
+  C: [65.4, 130.8, 196],
+  G: [49, 98, 146.8],
 };
-const CHORD_SEQ = ["Am","Am","F","F","C","C","G","G"];
+const CHORD_SEQ = ["Am", "Am", "F", "F", "C", "C", "G", "G"];
 
 function mkNoise(ctx: AudioContext, dur: number) {
   const n = Math.ceil(ctx.sampleRate * dur);
@@ -29,9 +22,9 @@ function mkNoise(ctx: AudioContext, dur: number) {
 
 function mkReverb(ctx: AudioContext) {
   const conv = ctx.createConvolver();
-  const LEN  = Math.floor(ctx.sampleRate * 2.2);
-  const buf  = ctx.createBuffer(2, LEN, ctx.sampleRate);
-  const PRE  = Math.floor(ctx.sampleRate * 0.025);
+  const LEN = Math.floor(ctx.sampleRate * 2.2);
+  const buf = ctx.createBuffer(2, LEN, ctx.sampleRate);
+  const PRE = Math.floor(ctx.sampleRate * 0.025);
   for (let ch = 0; ch < 2; ch++) {
     const d = buf.getChannelData(ch);
     for (let i = 0; i < LEN; i++) {
@@ -69,8 +62,7 @@ function schedPad(ctx: AudioContext, dst: AudioNode, rev: AudioNode, t: number, 
       g.gain.linearRampToValueAtTime(0.014, t + 1.2);
       g.gain.setValueAtTime(0.014, t + BAR - 0.8);
       g.gain.linearRampToValueAtTime(0.001, t + BAR);
-      o.connect(g);
-      g.connect(dst);
+      o.connect(g); g.connect(dst);
       if (i > 0) g.connect(rev);
       o.start(t); o.stop(t + BAR + 0.1);
     });
@@ -78,9 +70,9 @@ function schedPad(ctx: AudioContext, dst: AudioNode, rev: AudioNode, t: number, 
 }
 
 function schedPing(ctx: AudioContext, rev: AudioNode, t: number, freq: number) {
-  const o  = ctx.createOscillator();
+  const o = ctx.createOscillator();
   const lp = ctx.createBiquadFilter();
-  const g  = ctx.createGain();
+  const g = ctx.createGain();
   o.type = "triangle"; o.frequency.value = freq * 2;
   lp.type = "lowpass"; lp.frequency.value = 1800;
   g.gain.setValueAtTime(0, t);
@@ -104,13 +96,13 @@ function schedHat(ctx: AudioContext, dst: AudioNode, t: number) {
 
 const LandingAudio = () => {
   const [on, setOn] = useState(false);
-  const ctxRef    = useRef<AudioContext | null>(null);
+  const ctxRef = useRef<AudioContext | null>(null);
   const masterRef = useRef<GainNode | null>(null);
-  const timerRef  = useRef<ReturnType<typeof setInterval> | null>(null);
-  const nextRef   = useRef(0);
-  const beatRef   = useRef(0);
-  const barRef    = useRef(0);
-  const pingRef   = useRef(0);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const nextRef = useRef(0);
+  const beatRef = useRef(0);
+  const barRef = useRef(0);
+  const pingRef = useRef(0);
 
   const schedule = (ctx: AudioContext, dry: AudioNode, rev: AudioNode) => {
     const lookahead = 0.35;
@@ -119,49 +111,36 @@ const LandingAudio = () => {
       const bar = barRef.current;
       const beat = beatRef.current;
       const chord = CHORD_SEQ[bar % CHORD_SEQ.length];
-
       if (bar >= 2 && beat === 0) schedSubKick(ctx, dry, t);
       if (bar >= 3 && beat === 0) schedPad(ctx, dry, rev, t, chord);
       if (bar >= 4 && Math.random() > 0.55) schedHat(ctx, dry, t + BEAT * 0.5);
-
       if (bar >= 6 && beat === Math.floor(Math.random() * 4) && t > pingRef.current) {
         const f = PEN[Math.floor(Math.random() * PEN.length)];
         schedPing(ctx, rev, t, f);
         pingRef.current = t + BAR * 2;
       }
-
       nextRef.current += BEAT;
-      if (beat === 3) {
-        barRef.current += 1;
-        beatRef.current = 0;
-      } else {
-        beatRef.current += 1;
-      }
+      if (beat === 3) { barRef.current += 1; beatRef.current = 0; } else { beatRef.current += 1; }
     }
   };
 
   const startEngine = () => {
     const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
     void ctx.resume();
-    const rev  = mkReverb(ctx);
+    const rev = mkReverb(ctx);
     const revG = ctx.createGain();
     revG.gain.value = 0.38;
     rev.connect(revG);
-
     const comp = ctx.createDynamicsCompressor();
     comp.threshold.value = -18; comp.ratio.value = 4;
     comp.attack.value = 0.003; comp.release.value = 0.3;
-
     const master = ctx.createGain();
     master.gain.setValueAtTime(0, ctx.currentTime);
     master.gain.linearRampToValueAtTime(0.42, ctx.currentTime + 6);
-
     revG.connect(comp); comp.connect(master); master.connect(ctx.destination);
-
     ctxRef.current = ctx; masterRef.current = master;
     nextRef.current = ctx.currentTime + 0.1;
     beatRef.current = 0; barRef.current = 0; pingRef.current = 0;
-
     timerRef.current = setInterval(() => {
       if (ctxRef.current) schedule(ctxRef.current, comp, rev);
     }, 60);
@@ -174,14 +153,10 @@ const LandingAudio = () => {
     const now = ctx.currentTime;
     master.gain.setValueAtTime(master.gain.value, now);
     master.gain.linearRampToValueAtTime(0, now + 2.5);
-    setTimeout(() => {
-      ctx.close().catch(() => {});
-      ctxRef.current = null; masterRef.current = null;
-    }, 2800);
+    setTimeout(() => { ctx.close().catch(() => {}); ctxRef.current = null; masterRef.current = null; }, 2800);
   };
 
   const toggle = () => { if (on) { stopEngine(); setOn(false); } else { startEngine(); setOn(true); } };
-
   useEffect(() => () => stopEngine(), []);
 
   return (
@@ -203,10 +178,9 @@ const LandingAudio = () => {
             <rect x="0.5" y="0.5" width="3" height="11" rx="1" fill="rgba(0,240,180,.8)" />
             <rect x="6.5" y="0.5" width="3" height="11" rx="1" fill="rgba(0,240,180,.8)" />
           </svg>
-          <span className="absolute inset-0 rounded-full animate-[ping_3s_ease-out_infinite]"
-            style={{ background: "rgba(0,240,180,.05)" }} />
+          <span className="absolute inset-0 rounded-full animate-[ping_3s_ease-out_infinite]" style={{ background: "rgba(0,240,180,.05)" }} />
           <div className="absolute -left-8 flex items-end gap-[2px]">
-            {[3,5,7,5,4].map((h, i) => (
+            {[3, 5, 7, 5, 4].map((h, i) => (
               <div key={i} style={{
                 width: "2px", height: `${h}px`, borderRadius: "1px",
                 background: `rgba(0,240,180,${0.25 + i * 0.07})`,
@@ -218,7 +192,7 @@ const LandingAudio = () => {
       ) : (
         <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
           <path d="M1 4.5V8.5H4L9 11.5V1.5L4 4.5H1Z" fill="rgba(255,255,255,.3)" />
-          <path d="M8.5 4.8C9.4 5.7 9.4 7.3 8.5 8.2" stroke="rgba(255,255,255,.2)" strokeWidth="1.1" strokeLinecap="round"/>
+          <path d="M8.5 4.8C9.4 5.7 9.4 7.3 8.5 8.2" stroke="rgba(255,255,255,.2)" strokeWidth="1.1" strokeLinecap="round" />
         </svg>
       )}
     </button>
