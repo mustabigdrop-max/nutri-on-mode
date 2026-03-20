@@ -500,7 +500,7 @@ const MealLogPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-6">
+    <div className="min-h-screen bg-background pb-24">
       <div className="absolute inset-0 bg-grid opacity-10" />
       <div className="relative z-10 max-w-lg mx-auto px-4 pt-4">
 
