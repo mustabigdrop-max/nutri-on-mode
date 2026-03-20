@@ -16,6 +16,7 @@ import WorkoutAlerts from "@/components/dashboard/WorkoutAlerts";
 import SmartAlerts from "@/components/dashboard/SmartAlerts";
 import ProactiveRecipeSuggestion from "@/components/dashboard/ProactiveRecipeSuggestion";
 import WeeklySabotageCard from "@/components/dashboard/WeeklySabotageCard";
+import WeightCheckInCard from "@/components/dashboard/WeightCheckInCard";
 import ConsistencyScoreCard from "@/components/dashboard/ConsistencyScoreCard";
 import MoodCheckinModal, { type MoodType, MOODS } from "@/components/dashboard/MoodCheckinModal";
 import {
