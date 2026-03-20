@@ -416,46 +416,57 @@ const MealLogPage = () => {
   };
 
   const saveMeal = async () => {
-    if (!user || selectedFoods.length === 0) return;
+    if (!user) {
+      toast.error("Você precisa estar logado para registrar refeições.");
+      return;
+    }
+    if (selectedFoods.length === 0) {
+      toast.error("Adicione pelo menos um alimento.");
+      return;
+    }
     setSaving(true);
 
-    let photoUrl: string | null = null;
-    if (photoPreview) {
-      try {
-        const blob = await fetch(photoPreview).then(r => r.blob());
-        const fileName = `${user.id}/${Date.now()}.jpg`;
-        const { error: uploadError } = await supabase.storage.from("meal-photos").upload(fileName, blob, { contentType: "image/jpeg" });
-        if (!uploadError) {
-          const { data: urlData } = supabase.storage.from("meal-photos").getPublicUrl(fileName);
-          photoUrl = urlData.publicUrl;
-        }
-      } catch { /* ignore */ }
-    }
+    try {
+      let photoUrl: string | null = null;
+      if (photoPreview) {
+        try {
+          const blob = await fetch(photoPreview).then(r => r.blob());
+          const fileName = `${user.id}/${Date.now()}.jpg`;
+          const { error: uploadError } = await supabase.storage.from("meal-photos").upload(fileName, blob, { contentType: "image/jpeg" });
+          if (!uploadError) {
+            const { data: urlData } = supabase.storage.from("meal-photos").getPublicUrl(fileName);
+            photoUrl = urlData.publicUrl;
+          }
+        } catch { /* ignore photo upload error */ }
+      }
 
-    const foodNames = selectedFoods.map(sf => sf.food.name);
-    const insertPayload = {
-      user_id: user.id,
-      meal_type: selectedMealType,
-      total_kcal: Math.round(totals.kcal),
-      total_protein: Math.round(totals.protein),
-      total_carbs: Math.round(totals.carbs),
-      total_fat: Math.round(totals.fat),
-      hunger_level: hungerLevel,
-      satiety_level: satietyLevel,
-      emotion: emotion || null,
-      notes: notes || null,
-      photo_url: photoUrl,
-      confirmed: true,
-      quality_score: aiQualityScore,
-      food_names: foodNames,
-    };
-    console.log("[MealLog] Insert payload:", JSON.stringify(insertPayload));
-    const { data: insertedMeal, error } = await supabase.from("meal_logs").insert(insertPayload).select("id").single();
-    if (error) console.error("[MealLog] Insert error:", JSON.stringify(error));
+      const foodNames = selectedFoods.map(sf => sf.food.name);
+      const { data: insertedMeal, error } = await supabase.from("meal_logs").insert({
+        user_id: user.id,
+        meal_type: selectedMealType,
+        total_kcal: Math.round(totals.kcal),
+        total_protein: Math.round(totals.protein),
+        total_carbs: Math.round(totals.carbs),
+        total_fat: Math.round(totals.fat),
+        hunger_level: hungerLevel,
+        satiety_level: satietyLevel,
+        emotion: emotion || null,
+        notes: notes || null,
+        photo_url: photoUrl,
+        confirmed: true,
+        quality_score: aiQualityScore,
+        food_names: foodNames,
+      }).select("id").single();
 
-    if (!error && insertedMeal) {
+      if (error) {
+        console.error("[MealLog] Insert error:", JSON.stringify(error));
+        toast.error(`Erro ao salvar: ${error.message}`);
+        setSaving(false);
+        return;
+      }
+
       // Save micronutrients if available
-      if (aiMicronutrients.length > 0) {
+      if (insertedMeal && aiMicronutrients.length > 0) {
         const nutrientRows = aiMicronutrients.flatMap(micros =>
           Object.entries(micros).filter(([, v]) => v > 0).map(([nutrient, amount]) => ({
             meal_log_id: insertedMeal.id,
@@ -469,6 +480,8 @@ const MealLogPage = () => {
           await supabase.from("meal_nutrients").insert(nutrientRows);
         }
       }
+
+      // Update XP and streak
       const currentXp = profile?.xp || 0;
       const currentLevel = profile?.level || 1;
       const newXp = currentXp + 15;
@@ -488,8 +501,9 @@ const MealLogPage = () => {
       });
       toast.success(`Refeição registrada! +15 XP 🎉${newLevel > currentLevel ? ` Level UP! → Lv.${newLevel}` : ""}`);
       navigate("/dashboard");
-    } else {
-      toast.error("Erro ao salvar refeição");
+    } catch (e: any) {
+      console.error("[MealLog] Unexpected error:", e);
+      toast.error(e.message || "Erro inesperado ao salvar refeição");
     }
     setSaving(false);
   };
