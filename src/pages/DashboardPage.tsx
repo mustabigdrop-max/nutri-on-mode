@@ -28,7 +28,7 @@ import {
   Flame, TrendingUp, Droplets, Apple, BarChart3, MessageSquare,
   User, Plus, Utensils, LogOut, Zap, Brain, ChevronRight, Award,
   Camera, Users, Heart, Settings, HelpCircle, Leaf, Trophy, ShoppingCart, History, Dumbbell, FileText, Hammer,
-  Clock, Pill, Bug, Smile, CalendarDays, HelpingHand, BarChart, Lock, Sun, AlertTriangle
+  Clock, Pill, Bug, Smile, CalendarDays, HelpingHand, BarChart, Lock, Sun, AlertTriangle, Scale
 } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
 
