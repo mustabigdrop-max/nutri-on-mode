@@ -17,12 +17,12 @@ import FreeMealFlow from "@/components/meal/FreeMealFlow";
 import VisualPortionSelector from "@/components/meal/VisualPortionSelector";
 
 const MEAL_TYPES = [
-  { key: "cafe_manha", label: "Café da Manhã", emoji: "☕" },
-  { key: "lanche_manha", label: "Lanche AM", emoji: "🍎" },
-  { key: "almoco", label: "Almoço", emoji: "🍽️" },
-  { key: "lanche_tarde", label: "Lanche PM", emoji: "🥤" },
-  { key: "jantar", label: "Jantar", emoji: "🌙" },
-  { key: "ceia", label: "Ceia", emoji: "🫖" },
+  { key: "breakfast", label: "Café da Manhã", emoji: "☕" },
+  { key: "morning_snack", label: "Lanche AM", emoji: "🍎" },
+  { key: "lunch", label: "Almoço", emoji: "🍽️" },
+  { key: "afternoon_snack", label: "Lanche PM", emoji: "🥤" },
+  { key: "dinner", label: "Jantar", emoji: "🌙" },
+  { key: "supper", label: "Ceia", emoji: "🫖" },
 ];
 
 interface FoodItem {
@@ -510,7 +510,7 @@ const MealLogPage = () => {
 
   const currentMeal = MEAL_TYPES.find(m => m.key === selectedMealType)!;
   const mealTypeIcons: Record<string, string> = {
-    cafe_manha: "☕", lanche_manha: "🍎", almoco: "🍽️", lanche_tarde: "🥤", jantar: "🌙", ceia: "🫖",
+    breakfast: "☕", morning_snack: "🍎", lunch: "🍽️", afternoon_snack: "🥤", dinner: "🌙", supper: "🫖",
   };
 
   return (
