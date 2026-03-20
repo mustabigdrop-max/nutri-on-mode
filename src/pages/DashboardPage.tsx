@@ -777,6 +777,9 @@ const DashboardPage = () => {
         {/* Weekly Sabotage Diagnosis */}
         <WeeklySabotageCard />
 
+        {/* MCE Adaptativo — Peso real + calibração TDEE */}
+        <WeightCheckInCard />
+
         {/* Proactive Recipe Suggestion */}
         <ProactiveRecipeSuggestion
           proteinConsumed={todayTotals.protein}
