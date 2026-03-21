@@ -870,6 +870,12 @@ const DashboardPage = () => {
           )}
         </motion.div>
 
+        {/* Muscle State + Nutrient Timing Cards */}
+        <div className="grid grid-cols-1 gap-3 mb-4">
+          <MuscleStateCard />
+          <NutrientTimingCard />
+        </div>
+
 
         {/* All Functions Grid — Landing-style with plan badges */}
         <motion.div
