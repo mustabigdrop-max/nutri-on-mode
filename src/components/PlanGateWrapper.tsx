@@ -9,7 +9,7 @@ interface PlanGateWrapperProps {
 }
 
 const PlanGateWrapper = ({ children, requiredPlan, featureName }: PlanGateWrapperProps) => {
-  const { plan, loading, hasAccess } = usePlanGate();
+  const { plan, loading, hasAccess, isCoachStudent } = usePlanGate();
   const [showUpgrade, setShowUpgrade] = useState(false);
 
   if (loading) {
@@ -17,6 +17,18 @@ const PlanGateWrapper = ({ children, requiredPlan, featureName }: PlanGateWrappe
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
       </div>
+    );
+  }
+
+  // Coach students get ON+ access — block ON PRO features
+  if (isCoachStudent && requiredPlan === "ON PRO") {
+    return (
+      <UpgradeModal
+        open={true}
+        onClose={() => window.history.back()}
+        fromPlan="ON +"
+        lockedFeature={featureName}
+      />
     );
   }
 

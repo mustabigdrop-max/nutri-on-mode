@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
 export type PlanTier = "free" | "ON" | "ON +" | "ON PRO";
+export type UserRole = "user" | "coach" | "aluno_coach" | "admin";
 
 const PLAN_HIERARCHY: Record<string, number> = {
   free: 0,
@@ -19,20 +20,25 @@ const PLAN_HIERARCHY: Record<string, number> = {
 export const usePlanGate = () => {
   const { user } = useAuth();
   const [plan, setPlan] = useState<PlanTier>("free");
+  const [role, setRole] = useState<UserRole>("user");
+  const [coachProfileId, setCoachProfileId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!user) { setPlan("free"); setLoading(false); return; }
+    if (!user) { setPlan("free"); setRole("user"); setCoachProfileId(null); setLoading(false); return; }
 
     const fetchPlan = async () => {
       const { data } = await supabase
         .from("profiles")
-        .select("plano_atual")
+        .select("plano_atual, role, coach_profile_id")
         .eq("user_id", user.id)
         .single();
       
       const currentPlan = (data?.plano_atual as PlanTier) || "free";
+      const currentRole = (data?.role as UserRole) || "user";
       setPlan(currentPlan);
+      setRole(currentRole);
+      setCoachProfileId(data?.coach_profile_id || null);
       setLoading(false);
     };
     fetchPlan();
@@ -42,5 +48,8 @@ export const usePlanGate = () => {
     return (PLAN_HIERARCHY[plan] ?? 0) >= (PLAN_HIERARCHY[requiredPlan] ?? 0);
   };
 
-  return { plan, loading, hasAccess };
+  const isCoachStudent = role === "aluno_coach";
+  const isCoach = role === "coach";
+
+  return { plan, role, loading, hasAccess, isCoachStudent, isCoach, coachProfileId };
 };
