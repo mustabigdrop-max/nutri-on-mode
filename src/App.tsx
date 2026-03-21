@@ -62,6 +62,7 @@ import ProtocoloFemininoPage from "./pages/ProtocoloFemininoPage";
 import AssessmentPCA from "./pages/AssessmentPCA";
 import ResultadoPCAPage from "./pages/ResultadoPCA";
 import WeightAdaptivePage from "./pages/WeightAdaptivePage";
+import CoachInvitePage from "./pages/CoachInvitePage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
