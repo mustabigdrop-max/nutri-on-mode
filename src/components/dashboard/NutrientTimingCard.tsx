@@ -25,7 +25,7 @@ function getAdvancedTimingWindows(workoutTime: WorkoutTime, workoutType: Workout
   const isLegs = workoutType === "legs";
   const isHIIT = workoutType === "cardio_hiit";
   const isCardioLight = workoutType === "cardio_light";
-  const isUpper = workoutType === "upper" || workoutType === "push" || workoutType === "pull";
+  const isUpper = !isLegs && !isHIIT && !isCardioLight;
 
   return [
     // ═══ REFEIÇÃO BASE: 2-3h antes ═══
