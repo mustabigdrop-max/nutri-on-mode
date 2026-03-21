@@ -62,6 +62,7 @@ import ProtocoloFemininoPage from "./pages/ProtocoloFemininoPage";
 import AssessmentPCA from "./pages/AssessmentPCA";
 import ResultadoPCAPage from "./pages/ResultadoPCA";
 import WeightAdaptivePage from "./pages/WeightAdaptivePage";
+import CoachInvitePage from "./pages/CoachInvitePage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -130,6 +131,7 @@ const App = () => (
             <Route path="/performance-pro" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON PRO" featureName="Performance Pro"><PerformanceProPage /></PlanGateWrapper></ProtectedRoute>} />
             <Route path="/professional" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON PRO" featureName="Dashboard Profissional"><ProfessionalDashboard /></PlanGateWrapper></ProtectedRoute>} />
             <Route path="/weight-adaptive" element={<ProtectedRoute><WeightAdaptivePage /></ProtectedRoute>} />
+            <Route path="/convite/:token" element={<CoachInvitePage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

@@ -13,6 +13,8 @@ export interface CoachProfile {
   plan: string;
   tier: string;
   max_patients: number;
+  alunos_ativos: number;
+  max_alunos: number;
   white_label_app_name: string | null;
   white_label_primary_color: string | null;
   white_label_secondary_color: string | null;

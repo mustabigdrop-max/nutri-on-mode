@@ -471,6 +471,36 @@ export type Database = {
         }
         Relationships: []
       }
+      coach_convites: {
+        Row: {
+          aluno_id: string | null
+          coach_id: string
+          created_at: string | null
+          expires_at: string
+          id: string
+          token: string
+          usado: boolean | null
+        }
+        Insert: {
+          aluno_id?: string | null
+          coach_id: string
+          created_at?: string | null
+          expires_at?: string
+          id?: string
+          token: string
+          usado?: boolean | null
+        }
+        Update: {
+          aluno_id?: string | null
+          coach_id?: string
+          created_at?: string | null
+          expires_at?: string
+          id?: string
+          token?: string
+          usado?: boolean | null
+        }
+        Relationships: []
+      }
       coach_messages: {
         Row: {
           attachment_url: string | null
@@ -554,11 +584,13 @@ export type Database = {
         Row: {
           alert_channels: Json | null
           alert_frequency: string | null
+          alunos_ativos: number | null
           avatar_url: string | null
           bio: string | null
           created_at: string | null
           crn: string | null
           id: string
+          max_alunos: number | null
           max_patients: number | null
           plan: string | null
           professional_name: string | null
@@ -577,11 +609,13 @@ export type Database = {
         Insert: {
           alert_channels?: Json | null
           alert_frequency?: string | null
+          alunos_ativos?: number | null
           avatar_url?: string | null
           bio?: string | null
           created_at?: string | null
           crn?: string | null
           id?: string
+          max_alunos?: number | null
           max_patients?: number | null
           plan?: string | null
           professional_name?: string | null
@@ -600,11 +634,13 @@ export type Database = {
         Update: {
           alert_channels?: Json | null
           alert_frequency?: string | null
+          alunos_ativos?: number | null
           avatar_url?: string | null
           bio?: string | null
           created_at?: string | null
           crn?: string | null
           id?: string
+          max_alunos?: number | null
           max_patients?: number | null
           plan?: string | null
           professional_name?: string | null
@@ -2133,6 +2169,7 @@ export type Database = {
           plano_atual: string | null
           prefere_refeicoes: string | null
           protein_g: number | null
+          role: string | null
           sex: string | null
           sport: string | null
           streak_days: number | null
@@ -2176,6 +2213,7 @@ export type Database = {
           plano_atual?: string | null
           prefere_refeicoes?: string | null
           protein_g?: number | null
+          role?: string | null
           sex?: string | null
           sport?: string | null
           streak_days?: number | null
@@ -2219,6 +2257,7 @@ export type Database = {
           plano_atual?: string | null
           prefere_refeicoes?: string | null
           protein_g?: number | null
+          role?: string | null
           sex?: string | null
           sport?: string | null
           streak_days?: number | null

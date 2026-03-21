@@ -7,8 +7,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Users, AlertTriangle, TrendingUp, Search, Bell, Settings, Plus, UserPlus, ArrowUpRight } from "lucide-react";
+import { Users, AlertTriangle, TrendingUp, Search, Bell, Settings, UserPlus, ArrowUpRight, Link2, Copy, Loader2, Trash2 } from "lucide-react";
 import { motion } from "framer-motion";
+import { toast } from "@/hooks/use-toast";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 interface PatientRow {
   id: string;
@@ -30,19 +38,20 @@ const CoachDashboardPage = () => {
   const [alerts, setAlerts] = useState<any[]>([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
+  const [generatingInvite, setGeneratingInvite] = useState(false);
+  const [inviteLink, setInviteLink] = useState("");
+  const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
 
   useEffect(() => {
     if (!profile) return;
 
     const loadData = async () => {
-      // Load patients
       const { data: patientsData } = await supabase
         .from("coach_patients")
         .select("*")
         .eq("coach_id", profile.id)
         .eq("status", "active");
 
-      // Load alerts
       const { data: alertsData } = await supabase
         .from("coach_alerts")
         .select("*")
@@ -51,7 +60,6 @@ const CoachDashboardPage = () => {
         .order("created_at", { ascending: false })
         .limit(10);
 
-      // Enrich patients with profile data
       const enriched: PatientRow[] = [];
       if (patientsData) {
         for (const p of patientsData) {
@@ -71,7 +79,7 @@ const CoachDashboardPage = () => {
 
           enriched.push({
             ...p,
-            patient_name: prof?.full_name || "Paciente",
+            patient_name: prof?.full_name || "Aluno",
             score: scoreData?.total_score ?? 0,
             last_activity: prof?.updated_at || p.created_at,
           });
@@ -86,6 +94,74 @@ const CoachDashboardPage = () => {
     loadData();
   }, [profile]);
 
+  const generateInviteLink = async () => {
+    if (!user || !profile) return;
+
+    const activeCount = profile.alunos_ativos ?? 0;
+    const maxCount = profile.max_alunos ?? 10;
+
+    if (activeCount >= maxCount) {
+      toast({
+        title: "Limite de alunos atingido",
+        description: `Você tem ${activeCount}/${maxCount} alunos. Faça upgrade para mais vagas.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setGeneratingInvite(true);
+    try {
+      const token = crypto.randomUUID().replace(/-/g, "").slice(0, 16);
+
+      const { error } = await supabase.from("coach_convites").insert({
+        coach_id: user.id,
+        token,
+        usado: false,
+        expires_at: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString(),
+      });
+
+      if (error) throw error;
+
+      const link = `${window.location.origin}/convite/${token}`;
+      setInviteLink(link);
+      toast({ title: "Link de convite gerado! 🔗" });
+    } catch (err: any) {
+      toast({ title: "Erro ao gerar convite", description: err.message, variant: "destructive" });
+    } finally {
+      setGeneratingInvite(false);
+    }
+  };
+
+  const copyLink = () => {
+    navigator.clipboard.writeText(inviteLink);
+    toast({ title: "Link copiado! 📋" });
+  };
+
+  const handleRemoveStudent = async (patientUserId: string, coachPatientId: string) => {
+    if (!profile) return;
+    try {
+      // Remove from coach_patients
+      await supabase.from("coach_patients").update({ status: "encerrado" }).eq("id", coachPatientId);
+
+      // Reset student profile
+      await supabase
+        .from("profiles")
+        .update({ role: "user", plano_atual: "free", coach_profile_id: null })
+        .eq("user_id", patientUserId);
+
+      // Decrement alunos_ativos
+      await supabase
+        .from("coach_profiles")
+        .update({ alunos_ativos: Math.max((profile.alunos_ativos ?? 1) - 1, 0) })
+        .eq("id", profile.id);
+
+      setPatients((prev) => prev.filter((p) => p.id !== coachPatientId));
+      toast({ title: "Aluno desvinculado" });
+    } catch (err: any) {
+      toast({ title: "Erro", description: err.message, variant: "destructive" });
+    }
+  };
+
   if (profileLoading || loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -99,13 +175,13 @@ const CoachDashboardPage = () => {
     return null;
   }
 
-  const activePatients = patients.filter(p => p.status === "active");
-  const atRisk = patients.filter(p => (p.score ?? 0) < 30);
+  const activePatients = patients.filter((p) => p.status === "active");
+  const atRisk = patients.filter((p) => (p.score ?? 0) < 30);
   const avgScore = activePatients.length
     ? Math.round(activePatients.reduce((sum, p) => sum + (p.score ?? 0), 0) / activePatients.length)
     : 0;
 
-  const filtered = activePatients.filter(p =>
+  const filtered = activePatients.filter((p) =>
     p.patient_name?.toLowerCase().includes(search.toLowerCase())
   );
 
@@ -127,12 +203,18 @@ const CoachDashboardPage = () => {
 
   const severityIcon = (severity: string) => {
     switch (severity) {
-      case "critical": return "🔴";
-      case "high": return "🔴";
-      case "medium": return "🟡";
-      default: return "🟢";
+      case "critical":
+      case "high":
+        return "🔴";
+      case "medium":
+        return "🟡";
+      default:
+        return "🟢";
     }
   };
+
+  const alunosAtivos = profile.alunos_ativos ?? 0;
+  const maxAlunos = profile.max_alunos ?? 10;
 
   return (
     <div className="min-h-screen bg-background">
@@ -170,7 +252,7 @@ const CoachDashboardPage = () => {
         {/* Metrics */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { icon: Users, label: "Pacientes Ativos", value: `${activePatients.length}/${profile.max_patients}`, color: "text-primary" },
+            { icon: Users, label: "Alunos Ativos", value: `${alunosAtivos}/${maxAlunos}`, color: "text-primary" },
             { icon: TrendingUp, label: "Score Médio", value: `${avgScore}/100`, color: avgScore >= 60 ? "text-green-400" : "text-yellow-400" },
             { icon: AlertTriangle, label: "Em Risco", value: atRisk.length.toString(), color: atRisk.length > 0 ? "text-red-400" : "text-green-400" },
             { icon: Bell, label: "Alertas Pendentes", value: alerts.length.toString(), color: alerts.length > 0 ? "text-yellow-400" : "text-green-400" },
@@ -190,13 +272,15 @@ const CoachDashboardPage = () => {
         </div>
 
         {/* Capacity warning */}
-        {activePatients.length >= profile.max_patients - 2 && (
+        {alunosAtivos >= maxAlunos - 2 && (
           <Card className="border-yellow-500/50 bg-yellow-500/10">
             <CardContent className="p-4 flex items-center justify-between">
               <p className="text-sm text-yellow-300">
-                ⚠️ Você tem {activePatients.length}/{profile.max_patients} pacientes — considere fazer upgrade
+                ⚠️ Você tem {alunosAtivos}/{maxAlunos} alunos — considere fazer upgrade
               </p>
-              <Button size="sm" variant="outline">Upgrade</Button>
+              <Button size="sm" variant="outline">
+                Upgrade
+              </Button>
             </CardContent>
           </Card>
         )}
@@ -206,21 +290,63 @@ const CoachDashboardPage = () => {
           <div className="md:col-span-2 space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold text-foreground">
-                Seus Pacientes — {activePatients.length} ativos
+                Seus Alunos — {activePatients.length} ativos
               </h2>
-              <Button size="sm" onClick={() => navigate("/coach/add-patient")}>
-                <UserPlus className="w-4 h-4 mr-1" /> Adicionar
-              </Button>
+              <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button size="sm">
+                    <Link2 className="w-4 h-4 mr-1" /> Convidar Aluno
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle className="flex items-center gap-2">
+                      <UserPlus className="w-5 h-5 text-primary" /> Convidar Aluno
+                    </DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <p className="text-sm text-muted-foreground">
+                      Gere um link único para convidar um aluno. O link é válido por 48 horas e pode ser usado apenas uma vez.
+                    </p>
+                    <p className="text-sm">
+                      Vagas disponíveis: <strong>{maxAlunos - alunosAtivos}</strong> de {maxAlunos}
+                    </p>
+
+                    {!inviteLink ? (
+                      <Button className="w-full" onClick={generateInviteLink} disabled={generatingInvite || alunosAtivos >= maxAlunos}>
+                        {generatingInvite ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Link2 className="w-4 h-4 mr-2" />}
+                        Gerar Link de Convite
+                      </Button>
+                    ) : (
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2 bg-muted rounded-lg p-3">
+                          <Input value={inviteLink} readOnly className="text-xs bg-transparent border-none" />
+                          <Button size="icon" variant="ghost" onClick={copyLink}>
+                            <Copy className="w-4 h-4" />
+                          </Button>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Compartilhe este link via WhatsApp. Válido por 48h, uso único.
+                        </p>
+                        <Button
+                          variant="outline"
+                          className="w-full"
+                          onClick={() => {
+                            setInviteLink("");
+                          }}
+                        >
+                          Gerar Novo Link
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </DialogContent>
+              </Dialog>
             </div>
 
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                placeholder="Buscar paciente..."
-                className="pl-9"
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-              />
+              <Input placeholder="Buscar aluno..." className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} />
             </div>
 
             <div className="space-y-2">
@@ -228,28 +354,23 @@ const CoachDashboardPage = () => {
                 <Card>
                   <CardContent className="p-8 text-center text-muted-foreground">
                     {activePatients.length === 0
-                      ? "Nenhum paciente cadastrado ainda. Clique em 'Adicionar' para começar."
-                      : "Nenhum paciente encontrado."}
+                      ? "Nenhum aluno vinculado ainda. Clique em 'Convidar Aluno' para gerar um link."
+                      : "Nenhum aluno encontrado."}
                   </CardContent>
                 </Card>
               ) : (
                 filtered.map((p, i) => {
                   const badge = getScoreBadge(p.score ?? 0);
                   return (
-                    <motion.div
-                      key={p.id}
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: i * 0.03 }}
-                    >
-                      <Card
-                        className="cursor-pointer hover:border-primary/50 transition-colors"
-                        onClick={() => navigate(`/coach/patient/${p.patient_user_id}`)}
-                      >
+                    <motion.div key={p.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.03 }}>
+                      <Card className="cursor-pointer hover:border-primary/50 transition-colors">
                         <CardContent className="p-4 flex items-center justify-between">
-                          <div className="flex items-center gap-3">
+                          <div
+                            className="flex items-center gap-3 flex-1"
+                            onClick={() => navigate(`/coach/patient/${p.patient_user_id}`)}
+                          >
                             <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-sm">
-                              {p.patient_name?.charAt(0) || "P"}
+                              {p.patient_name?.charAt(0) || "A"}
                             </div>
                             <div>
                               <p className="font-medium text-foreground text-sm">{p.patient_name}</p>
@@ -263,7 +384,21 @@ const CoachDashboardPage = () => {
                             <Badge className={`${badge.color} text-xs`}>
                               {badge.emoji} {p.score}/100
                             </Badge>
-                            <ArrowUpRight className="w-4 h-4 text-muted-foreground" />
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="text-muted-foreground hover:text-destructive"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleRemoveStudent(p.patient_user_id, p.id);
+                              }}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                            <ArrowUpRight
+                              className="w-4 h-4 text-muted-foreground cursor-pointer"
+                              onClick={() => navigate(`/coach/patient/${p.patient_user_id}`)}
+                            />
                           </div>
                         </CardContent>
                       </Card>
@@ -288,16 +423,22 @@ const CoachDashboardPage = () => {
             ) : (
               alerts.map((a, i) => (
                 <motion.div key={a.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.05 }}>
-                  <Card className="border-l-4" style={{
-                    borderLeftColor: a.severity === "critical" || a.severity === "high" ? "hsl(var(--destructive))" : a.severity === "medium" ? "#eab308" : "hsl(var(--primary))"
-                  }}>
+                  <Card
+                    className="border-l-4"
+                    style={{
+                      borderLeftColor:
+                        a.severity === "critical" || a.severity === "high"
+                          ? "hsl(var(--destructive))"
+                          : a.severity === "medium"
+                          ? "#eab308"
+                          : "hsl(var(--primary))",
+                    }}
+                  >
                     <CardContent className="p-3">
                       <p className="text-xs text-foreground">
                         {severityIcon(a.severity)} {a.message}
                       </p>
-                      <p className="text-[10px] text-muted-foreground mt-1">
-                        {formatRelativeTime(a.created_at)}
-                      </p>
+                      <p className="text-[10px] text-muted-foreground mt-1">{formatRelativeTime(a.created_at)}</p>
                     </CardContent>
                   </Card>
                 </motion.div>
