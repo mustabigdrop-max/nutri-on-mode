@@ -1732,6 +1732,30 @@ export type Database = {
         }
         Relationships: []
       }
+      muscle_state_checkins: {
+        Row: {
+          checkin_date: string
+          created_at: string | null
+          id: string
+          state: string
+          user_id: string
+        }
+        Insert: {
+          checkin_date?: string
+          created_at?: string | null
+          id?: string
+          state: string
+          user_id: string
+        }
+        Update: {
+          checkin_date?: string
+          created_at?: string | null
+          id?: string
+          state?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       nootropic_daily_logs: {
         Row: {
           adherence_score: number | null
