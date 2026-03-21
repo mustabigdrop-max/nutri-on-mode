@@ -462,6 +462,7 @@ const DashboardPage = () => {
     { label: "Simulador", desc: "E se eu comer...?", path: "/food-simulator", emoji: "🤔", plan: "ON +" },
     { label: "Relatório Mensal", desc: "Análise completa do mês com projeções", path: "/monthly-report", emoji: "📊", plan: "ON +" },
     { label: "Performance Pro", desc: "Protocolo de nutrição para atletas", path: "/performance-pro", emoji: "🏆", plan: "ON PRO" },
+    { label: "Painel do Coach", desc: "Gerencie seus alunos e convites", path: "/coach-dashboard", emoji: "👨‍🏫", plan: "ON PRO" },
     { label: "Protocolo GLP-1", desc: "Otimização nutricional com agonistas", path: "/glp1", emoji: "💉", plan: "ON +" },
     // Sistema
     { label: "Wearables", desc: "Passos, sono & atividade", path: "/wearables", emoji: "⌚", plan: "ON +" },
