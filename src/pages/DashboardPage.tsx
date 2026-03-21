@@ -19,6 +19,7 @@ import WeeklySabotageCard from "@/components/dashboard/WeeklySabotageCard";
 import ConsistencyScoreCard from "@/components/dashboard/ConsistencyScoreCard";
 import WeightCheckInCard from "@/components/dashboard/WeightCheckInCard";
 import MoodCheckinModal, { type MoodType, MOODS } from "@/components/dashboard/MoodCheckinModal";
+import MuscleStateCard, { type MuscleStateType } from "@/components/dashboard/MuscleStateCard";
 import {
   ObjectiveBadge, getRingLabel, getScoreLabel,
   getPredictiveAlert, getHeaderSubtitle, getChildDashboardGreeting,
@@ -328,6 +329,8 @@ const DashboardPage = () => {
   const [todayMeals, setTodayMeals] = useState<any[]>([]);
   const [todayTotals, setTodayTotals] = useState({ kcal: 0, protein: 0, carbs: 0, fat: 0 });
   const [todayMood, setTodayMood] = useState<MoodType | null>(null);
+  const [muscleState, setMuscleState] = useState<MuscleStateType | null>(null);
+  const [muscleCarbAdj, setMuscleCarbAdj] = useState<number>(1.0);
   const { todayLog: waterLog, addWater } = useWaterLogs();
   const { hasAccess, plan, isTrialActive, trialEndsAt } = usePlanGate();
   const { getTodayWorkout, todayLog: workoutLog } = useWorkoutSchedule();
@@ -397,7 +400,7 @@ const DashboardPage = () => {
 
   const kcalTarget = Math.round(baseKcal * workoutAdj.kcalMultiplier);
   const proteinTarget = Math.round(workoutAdj.proteinPerKg * weightKg);
-  const carbsTarget = Math.round(baseCarbs * workoutAdj.carbsMultiplier);
+  const carbsTarget = Math.round(baseCarbs * workoutAdj.carbsMultiplier * muscleCarbAdj);
   const fatTarget = Math.round(baseFat * workoutAdj.fatMultiplier);
   const kcalDiff = kcalTarget - baseKcal;
 
@@ -620,6 +623,14 @@ const DashboardPage = () => {
             </motion.div>
           ))}
         </div>
+
+        {/* Muscle State Check-in (Flat / Full / Spilled) */}
+        <MuscleStateCard
+          onStateSelected={(state, adj) => {
+            setMuscleState(state);
+            setMuscleCarbAdj(adj);
+          }}
+        />
 
         {/* Stats row: Score, Streak, Hydration */}
         <motion.div
