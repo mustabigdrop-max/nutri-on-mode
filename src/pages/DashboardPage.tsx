@@ -20,6 +20,7 @@ import ConsistencyScoreCard from "@/components/dashboard/ConsistencyScoreCard";
 import WeightCheckInCard from "@/components/dashboard/WeightCheckInCard";
 import MoodCheckinModal, { type MoodType, MOODS } from "@/components/dashboard/MoodCheckinModal";
 import MuscleStateCard, { type MuscleStateType } from "@/components/dashboard/MuscleStateCard";
+import NutrientTimingCard from "@/components/dashboard/NutrientTimingCard";
 import {
   ObjectiveBadge, getRingLabel, getScoreLabel,
   getPredictiveAlert, getHeaderSubtitle, getChildDashboardGreeting,
@@ -623,6 +624,17 @@ const DashboardPage = () => {
             </motion.div>
           ))}
         </div>
+
+        {/* Nutrient Timing — only on workout days */}
+        {todayWorkout && todayWorkout.workout_type !== "rest" && todayWorkout.workout_type !== "active_rest" && (
+          <NutrientTimingCard
+            workoutTime={todayWorkout.workout_time}
+            workoutType={todayWorkout.workout_type}
+            proteinTarget={proteinTarget}
+            carbsTarget={carbsTarget}
+            fatTarget={fatTarget}
+          />
+        )}
 
         {/* Muscle State Check-in (Flat / Full / Spilled) */}
         <MuscleStateCard
