@@ -53,10 +53,9 @@ const LandingManifesto = () => {
           O que é o NUTRION
         </div>
 
-        <div className="font-heading leading-[1.05] mb-12" style={{ fontSize: "clamp(1.8rem, 4vw, 3.2rem)" }}>
-          NUTRI É A <span className="text-primary" style={{ textShadow: "0 0 30px rgba(232,160,32,.4)" }}>CIÊNCIA.</span><br />
-          ON É A <span className="text-primary" style={{ textShadow: "0 0 30px rgba(232,160,32,.4)" }}>ATITUDE.</span><br />
-          JUNTOS SÃO UM <span className="text-primary" style={{ textShadow: "0 0 30px rgba(232,160,32,.4)" }}>RESULTADO.</span>
+        <div className="font-heading leading-[1.1] mb-12" style={{ fontSize: "clamp(1.6rem, 3.5vw, 2.8rem)" }}>
+          Execução sem planejamento é <span className="text-primary" style={{ textShadow: "0 0 30px rgba(232,160,32,.4)" }}>sofrimento.</span><br />
+          Planejamento sem execução é só <span className="text-primary" style={{ textShadow: "0 0 30px rgba(232,160,32,.4)" }}>opinião.</span>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">

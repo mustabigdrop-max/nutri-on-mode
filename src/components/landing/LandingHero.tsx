@@ -52,11 +52,9 @@ const LandingHero = () => {
         className="mt-4 max-w-[720px]"
       >
         <p className="font-heading text-foreground/70" style={{ fontSize: "clamp(1.1rem, 2.8vw, 2.2rem)", letterSpacing: "-.01em", lineHeight: 1.25 }}>
-          Execução sem planejamento é sofrimento.
+          Todo app te diz o que comer.
           <br />
-          Planejamento sem execução é só opinião.
-          <br />
-          <span className="text-foreground">O NUTRI<span className="text-primary">ON</span> É OS DOIS.</span>
+          <span className="text-foreground">O NUTRI<span className="text-primary">ON</span> descobre por que você para de comer certo.</span>
         </p>
       </motion.div>
 
