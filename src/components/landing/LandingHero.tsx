@@ -56,7 +56,7 @@ const LandingHero = () => {
           <br />
           Planejamento sem execução é só opinião.
           <br />
-          <span className="text-foreground">O nutri<span className="text-primary">ON</span> te dá os dois.</span>
+          <span className="text-foreground">O NUTRI<span className="text-primary">ON</span> É OS DOIS.</span>
         </p>
       </motion.div>
 
