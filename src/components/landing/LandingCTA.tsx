@@ -41,9 +41,9 @@ const LandingCTA = () => {
         initial={{ opacity: 0 }}
         animate={inView ? { opacity: 1 } : {}}
         transition={{ duration: 0.6, delay: 0.3 }}
-        className="text-[1rem] text-black/55 mb-2 font-landing max-w-[500px] mx-auto leading-[1.6] relative"
+        className="text-[1.1rem] text-black/70 mb-2 font-landing max-w-[540px] mx-auto leading-[1.6] relative font-semibold"
       >
-        Resultado não acontece quando você quer. Acontece quando você estrutura. Entra no modo ON agora.
+        O nutriON não é mais uma tentativa. É o protocolo feito pra quem você é.
       </motion.p>
 
       {/* Layer 3: Risk reversal */}
