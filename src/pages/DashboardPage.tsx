@@ -19,6 +19,8 @@ import WeeklySabotageCard from "@/components/dashboard/WeeklySabotageCard";
 import WeightCheckInCard from "@/components/dashboard/WeightCheckInCard";
 import ConsistencyScoreCard from "@/components/dashboard/ConsistencyScoreCard";
 import MoodCheckinModal, { type MoodType, MOODS } from "@/components/dashboard/MoodCheckinModal";
+import MuscleStateCard from "@/components/dashboard/MuscleStateCard";
+import NutrientTimingCard from "@/components/dashboard/NutrientTimingCard";
 import {
   ObjectiveBadge, getRingLabel, getScoreLabel,
   getPredictiveAlert, getHeaderSubtitle, getChildDashboardGreeting,
