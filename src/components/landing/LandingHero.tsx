@@ -26,7 +26,7 @@ const LandingHero = () => {
       >
         <span className="w-6 h-px bg-primary" />
         <span className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" />
-        Metodologia MCE · Mindset · Comportamento · Execução
+        METODOLOGIA MCE · método comportamental aplicado à nutrição
       </motion.div>
 
       {/* Headline */}
@@ -45,15 +45,20 @@ const LandingHero = () => {
       </motion.h1>
 
       {/* Subheadline */}
-      <motion.p
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, delay: 0.7 }}
-        className="font-heading text-foreground/70 mt-4"
-        style={{ fontSize: "clamp(1.2rem, 3vw, 2.4rem)", letterSpacing: "-.01em" }}
+        className="mt-4 max-w-[720px]"
       >
-        Planejamento sem execução é só opinião.
-      </motion.p>
+        <p className="font-heading text-foreground/70" style={{ fontSize: "clamp(1.1rem, 2.8vw, 2.2rem)", letterSpacing: "-.01em", lineHeight: 1.25 }}>
+          Execução sem planejamento é sofrimento.
+          <br />
+          Planejamento sem execução é só opinião.
+          <br />
+          <span className="text-foreground">O nutri<span className="text-primary">ON</span> te dá os dois.</span>
+        </p>
+      </motion.div>
 
       {/* Mirror copy — identity-based */}
       <motion.div
@@ -62,15 +67,13 @@ const LandingHero = () => {
         transition={{ duration: 0.8, delay: 0.85 }}
         className="mt-10 max-w-[640px]"
       >
-        <p className="text-[1.15rem] leading-[1.75] text-foreground/90 font-landing mb-4">
-          Você não chegou até aqui por acidente.
-        </p>
-        <p className="text-[1rem] leading-[1.75] text-muted-foreground font-landing mb-3">
-          Quem chega aqui já tentou de tudo — app de caloria, dieta da internet, planilha do coach. E já sabe que{" "}
-          <strong className="text-foreground">nada colou</strong>.
+        <p className="text-[1.1rem] leading-[1.75] text-muted-foreground font-landing mb-3">
+          Você já tentou dieta. Mais de uma vez. E parou.
+          <br />
+          O problema nunca foi você — foi o plano que não te conhecia.
         </p>
         <p className="text-[1.05rem] leading-[1.75] text-primary/90 font-semibold font-landing">
-          O NUTRION não é mais uma tentativa. É o sistema que substitui todas elas.
+          O nutriON não é mais uma tentativa. É o protocolo feito pra quem você é.
         </p>
       </motion.div>
 
