@@ -33,13 +33,14 @@ serve(async (req) => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            model: "sonar",
+            model: "sonar-pro",
             messages: [
-              { role: "system", content: "Você é um pesquisador científico. Busque estudos recentes sobre nutrição, suplementação e performance. Cite fontes. Responda em português BR." },
-              { role: "user", content: `${question} site:pubmed.gov OR site:examine.com OR site:jissn.com 2023 2024 2025` },
+              { role: "system", content: "Você é um pesquisador científico de elite. Busque os melhores estudos disponíveis mundialmente — PubMed, Cochrane, Nature, Lancet, JISSN, Cell, NEJM, Examine.com. Priorize meta-análises e RCTs recentes. Cite fontes completas. Responda em português BR." },
+              { role: "user", content: `${question} 2023 2024 2025` },
             ],
-            max_tokens: 1500,
+            max_tokens: 2500,
             search_recency_filter: "year",
+            search_mode: "academic",
           }),
         });
         if (pResp.ok) {
