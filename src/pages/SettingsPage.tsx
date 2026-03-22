@@ -30,6 +30,39 @@ const ACTIVITY_LEVELS: Record<string, string> = {
   athlete: "Atleta",
 };
 
+const MeuPlanoSection = ({ navigate }: { navigate: (path: string) => void }) => {
+  const { isAcompanhado, coachName } = useAccessControl();
+  if (!isAcompanhado) return null;
+
+  return (
+    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-3">
+      <h2 className="text-xs font-bold text-primary uppercase tracking-wider flex items-center gap-2">
+        <Shield className="w-3.5 h-3.5" /> Meu Plano
+      </h2>
+      <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 space-y-3">
+        <div className="flex items-center gap-2">
+          <Target className="w-4 h-4 text-primary" />
+          <span className="text-sm font-semibold text-foreground">
+            Modo Acompanhado — via {coachName || "Coach"}
+          </span>
+        </div>
+        <p className="text-xs text-muted-foreground">
+          Você tem acesso às funcionalidades essenciais através do seu coach.
+        </p>
+        <Button
+          size="sm"
+          variant="outline"
+          className="w-full border-primary/30 text-primary hover:bg-primary/10 text-xs"
+          onClick={() => navigate("/#planos")}
+        >
+          <Sparkles className="w-3.5 h-3.5 mr-1.5" />
+          Quero meu plano independente
+        </Button>
+      </div>
+    </motion.div>
+  );
+};
+
 const SettingsPage = () => {
   const navigate = useNavigate();
   const { signOut, user } = useAuth();
