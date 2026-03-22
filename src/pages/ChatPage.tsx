@@ -210,7 +210,7 @@ const ChatPage = () => {
       </div>
 
       {/* Input */}
-      <div className="relative z-10 flex-shrink-0 px-4 py-3 border-t border-border bg-background/95 backdrop-blur safe-bottom">
+      <div className="relative z-10 flex-shrink-0 px-4 py-3 pb-20 border-t border-border bg-background/95 backdrop-blur safe-bottom">
         <div className="flex gap-2 max-w-lg mx-auto">
           <input
             type="text"
