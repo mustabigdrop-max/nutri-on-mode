@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Dumbbell, Flame, Timer, Zap, Moon, Dna, Pill, Syringe, ChevronRight, BookOpen } from "lucide-react";
+import { Dumbbell, Flame, Timer, Zap, Moon, Dna, Pill, Syringe, ChevronRight, BookOpen, FlaskConical } from "lucide-react";
 
 const CATEGORIES = [
   { key: "hipertrofia", icon: Dumbbell, label: "Hipertrofia e Força", emoji: "💪" },
@@ -10,7 +10,8 @@ const CATEGORIES = [
   { key: "sono", icon: Moon, label: "Sono e Recuperação", emoji: "😴" },
   { key: "hormonal", icon: Dna, label: "Saúde Hormonal", emoji: "🧬" },
   { key: "suplementacao", icon: Pill, label: "Suplementação Avançada", emoji: "💊" },
-  { key: "peptideos", icon: Syringe, label: "Peptídeos e Ergogênicos", emoji: "🧪" },
+  { key: "peptideos", icon: Syringe, label: "Peptídeos", emoji: "🧪" },
+  { key: "anabolizantes", icon: FlaskConical, label: "Esteroides Anabolizantes", emoji: "⚗️" },
 ];
 
 const SAMPLE_PROTOCOLS: Record<string, Array<{ titulo: string; nivel: string; tempo: number; resumo: string }>> = {
@@ -58,10 +59,30 @@ const SAMPLE_PROTOCOLS: Record<string, Array<{ titulo: string; nivel: string; te
     { titulo: "Probióticos: Cepas Específicas por Objetivo", nivel: "Intermediário", tempo: 6, resumo: "Quais cepas probióticas têm evidência para cada objetivo: imunidade, humor, digestão, composição corporal." },
   ],
   peptideos: [
-    { titulo: "GLP-1 Agonistas: Nutrição Otimizada", nivel: "Avançado", tempo: 10, resumo: "Protocolos nutricionais completos para usuários de Semaglutida e Tirzepatida." },
-    { titulo: "Peptídeos Bioativos na Nutrição Esportiva", nivel: "Avançado", tempo: 8, resumo: "Colágeno hidrolisado, BPC-157 oral e outros peptídeos com evidência nutricional." },
-    { titulo: "Colágeno Hidrolisado e Articulações", nivel: "Intermediário", tempo: 5, resumo: "Dosagem de colágeno tipo II, timing com vitamina C e evidência para saúde articular." },
-    { titulo: "Ergogênicos Naturais: HMB, Fosfatidilserina e Ecdisterona", nivel: "Avançado", tempo: 7, resumo: "Evidência atualizada sobre ergogênicos não-hormonais para composição corporal e performance." },
+    { titulo: "BPC-157: Regeneração e Cicatrização", nivel: "Avançado", tempo: 8, resumo: "Mecanismo de ação do Body Protection Compound-157, estudos sobre cicatrização de tendões, músculos e mucosa gástrica. Dosagem, vias de administração e evidência pré-clínica." },
+    { titulo: "TB-500 (Timosina Beta-4): Recuperação Tecidual", nivel: "Avançado", tempo: 7, resumo: "Como a Timosina Beta-4 promove angiogênese, migração celular e reparo tecidual. Protocolos de dosagem, sinergias com BPC-157 e evidência científica." },
+    { titulo: "CJC-1295 com e sem DAC: Guia Completo", nivel: "Avançado", tempo: 9, resumo: "Diferenças entre CJC-1295 com DAC (Drug Affinity Complex) e sem DAC. Meia-vida, pulsos de GH, dosagem, timing e combinações com GHRP." },
+    { titulo: "Ipamorelin: Liberação Seletiva de GH", nivel: "Intermediário", tempo: 6, resumo: "Como o Ipamorelin estimula GH sem aumentar cortisol ou prolactina. Dosagem, combinação com CJC-1295 e protocolos de uso." },
+    { titulo: "GHRP-2 e GHRP-6: Secretagogos de GH", nivel: "Avançado", tempo: 7, resumo: "Comparação entre GHRP-2 e GHRP-6, efeitos sobre apetite, liberação de GH e efeitos colaterais. Protocolos e stacks com GHRH." },
+    { titulo: "GLP-1 Agonistas: Semaglutida e Tirzepatida", nivel: "Avançado", tempo: 10, resumo: "Protocolos nutricionais completos para usuários de GLP-1 agonistas. Prevenção de sarcopenia, suporte proteico e manejo de efeitos colaterais." },
+    { titulo: "MK-677 (Ibutamoren): GH Oral", nivel: "Intermediário", tempo: 6, resumo: "Mecanismo secretagogo oral de GH, impacto em sono, composição corporal e insulina. Riscos, dosagem e duração de ciclos." },
+    { titulo: "Colágeno Hidrolisado e Peptídeos Bioativos", nivel: "Iniciante", tempo: 5, resumo: "Tipos de colágeno (I, II, III), dosagem com vitamina C, timing para tendões e articulações. Evidência clínica para saúde articular." },
+    { titulo: "AOD-9604: Fragmento de GH para Lipólise", nivel: "Avançado", tempo: 6, resumo: "Como o fragmento 176-191 do GH estimula lipólise sem efeitos hiperglicêmicos. Dosagem, via subcutânea e evidência clínica." },
+    { titulo: "Epitalon e Telômeros: Peptídeo da Longevidade", nivel: "Avançado", tempo: 7, resumo: "Evidência sobre ativação de telomerase, protocolos de ciclo, dosagem e potencial anti-envelhecimento do Epitalon." },
+  ],
+  anabolizantes: [
+    { titulo: "Testosterona: Base de Todo Ciclo", nivel: "Avançado", tempo: 10, resumo: "Ésteres de testosterona (enantato, cipionato, propionato, undecanoato), meia-vida, dosagem, frequência de aplicação e monitoramento laboratorial essencial." },
+    { titulo: "Oxandrolona (Anavar): Perfil Completo", nivel: "Intermediário", tempo: 7, resumo: "Perfil anabólico/androgênico, impacto hepático, dosagem para homens e mulheres, efeito em lipídios e combinações comuns." },
+    { titulo: "Nandrolona (Deca / NPP): Guia Científico", nivel: "Avançado", tempo: 8, resumo: "Diferenças entre Decanoato e Fenilpropionato, impacto em articulações, efeitos colaterais progestagênicos, disfunção erétil (Deca Dick) e manejo." },
+    { titulo: "Boldenona (Equipoise): Análise de Evidência", nivel: "Avançado", tempo: 7, resumo: "Mecanismo de ação, impacto no hematócrito, tempo de detecção, metabólitos e relação risco-benefício baseada em literatura." },
+    { titulo: "Trembolona: Potência e Riscos", nivel: "Avançado", tempo: 9, resumo: "O anabolizante mais potente: acetato vs enantato, impacto cardíaco, renal, insônia, sudorese noturna. Evidências de toxicidade e protocolos de mitigação." },
+    { titulo: "Stanozolol (Winstrol): Oral vs Injetável", nivel: "Intermediário", tempo: 6, resumo: "Hepatotoxicidade, impacto em colesterol e articulações, dosagem e por que atletas ainda utilizam. Formas e comparações." },
+    { titulo: "Primobolan (Metenolona): O Suave Poderoso", nivel: "Avançado", tempo: 7, resumo: "Perfil de segurança, uso em cutting, dosagem eficaz, forma oral vs injetável e por que é considerado um dos mais seguros." },
+    { titulo: "TPC (Terapia Pós-Ciclo): Guia Definitivo", nivel: "Avançado", tempo: 10, resumo: "Protocolos de TPC com Tamoxifeno, Clomifeno e HCG. Timing, dosagem, restauração do eixo HPT e erros comuns." },
+    { titulo: "SARMs: Evidência Atual e Riscos Reais", nivel: "Intermediário", tempo: 8, resumo: "Ostarine, Ligandrol, RAD-140 e outros. O que a ciência realmente diz, supressão hormonal, hepatotoxicidade e legalidade." },
+    { titulo: "Suporte Nutricional em Ciclo: Proteção Hepática, Cardíaca e Renal", nivel: "Avançado", tempo: 9, resumo: "Stack de suporte com TUDCA, NAC, Coenzima Q10, ômega-3, citrus bergamot e monitoramento de marcadores. Nutrição otimizada durante uso de AAS." },
+    { titulo: "Insulina e GH: Protocolos Avançados", nivel: "Avançado", tempo: 10, resumo: "Uso combinado de insulina e hormônio do crescimento para hipertrofia extrema. Riscos de hipoglicemia, timing nutricional e monitoramento obrigatório." },
+    { titulo: "Exames Laboratoriais para Usuários de AAS", nivel: "Intermediário", tempo: 7, resumo: "Painel completo: hemograma, lipídios, hepático, renal, hormônios e marcadores cardíacos. Frequência e interpretação dos resultados." },
   ],
 };
 
