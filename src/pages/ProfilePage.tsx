@@ -4,14 +4,17 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
+import { useAccessControl } from "@/hooks/useAccessControl";
 import { supabase } from "@/integrations/supabase/client";
 import {
   ArrowLeft, Award, Flame, TrendingUp, Star, Trophy,
-  Target, Zap, Shield, Heart, Crown, LogOut,
+  Target, Zap, Shield, Heart, Crown, LogOut, Lock,
   BarChart3, Utensils, Plus, MessageSquare, User, ChevronRight, Syringe
 } from "lucide-react";
 import { useGlp1 } from "@/hooks/useGlp1";
 import { useWorkoutSchedule } from "@/hooks/useWorkoutSchedule";
+import CoachBadge from "@/components/acompanhado/CoachBadge";
+import LockedFeatureModal from "@/components/acompanhado/LockedFeatureModal";
 
 interface Badge {
   id: string;
