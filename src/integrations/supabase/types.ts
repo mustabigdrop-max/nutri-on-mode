@@ -591,6 +591,36 @@ export type Database = {
         }
         Relationships: []
       }
+      coach_exam_protocols: {
+        Row: {
+          admin_id: string
+          atleta_nome: string | null
+          created_at: string | null
+          exame: string | null
+          id: string
+          protocolo: Json | null
+          valor: string | null
+        }
+        Insert: {
+          admin_id: string
+          atleta_nome?: string | null
+          created_at?: string | null
+          exame?: string | null
+          id?: string
+          protocolo?: Json | null
+          valor?: string | null
+        }
+        Update: {
+          admin_id?: string
+          atleta_nome?: string | null
+          created_at?: string | null
+          exame?: string | null
+          id?: string
+          protocolo?: Json | null
+          valor?: string | null
+        }
+        Relationships: []
+      }
       coach_messages: {
         Row: {
           attachment_url: string | null
@@ -1317,6 +1347,51 @@ export type Database = {
           gerado_em?: string
           id?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      fitoterapicos_lib: {
+        Row: {
+          ciclo: string | null
+          contraindicoes: string[] | null
+          created_at: string | null
+          dose: string | null
+          farmacocinetica: Json | null
+          id: string
+          indicacoes: string[] | null
+          interacoes: string[] | null
+          mecanismo: string | null
+          nome: string
+          origem: string | null
+          timing: string | null
+        }
+        Insert: {
+          ciclo?: string | null
+          contraindicoes?: string[] | null
+          created_at?: string | null
+          dose?: string | null
+          farmacocinetica?: Json | null
+          id?: string
+          indicacoes?: string[] | null
+          interacoes?: string[] | null
+          mecanismo?: string | null
+          nome: string
+          origem?: string | null
+          timing?: string | null
+        }
+        Update: {
+          ciclo?: string | null
+          contraindicoes?: string[] | null
+          created_at?: string | null
+          dose?: string | null
+          farmacocinetica?: Json | null
+          id?: string
+          indicacoes?: string[] | null
+          interacoes?: string[] | null
+          mecanismo?: string | null
+          nome?: string
+          origem?: string | null
+          timing?: string | null
         }
         Relationships: []
       }
