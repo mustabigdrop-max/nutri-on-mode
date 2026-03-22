@@ -134,6 +134,7 @@ const App = () => (
             <Route path="/professional" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON PRO" featureName="Dashboard Profissional"><ProfessionalDashboard /></PlanGateWrapper></ProtectedRoute>} />
             <Route path="/weight-adaptive" element={<ProtectedRoute><WeightAdaptivePage /></ProtectedRoute>} />
             <Route path="/lab" element={<ProtectedRoute><LabPage /></ProtectedRoute>} />
+            <Route path="/admin/apex-coach" element={<ProtectedRoute><AdminApexCoachPage /></ProtectedRoute>} />
             <Route path="/convite/:token" element={<CoachInvitePage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
