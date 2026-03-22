@@ -63,6 +63,7 @@ import AssessmentPCA from "./pages/AssessmentPCA";
 import ResultadoPCAPage from "./pages/ResultadoPCA";
 import WeightAdaptivePage from "./pages/WeightAdaptivePage";
 import CoachInvitePage from "./pages/CoachInvitePage";
+import LabPage from "./pages/LabPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
