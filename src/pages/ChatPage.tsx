@@ -20,6 +20,7 @@ const ChatPage = () => {
   const navigate = useNavigate();
   const { messages, setMessages, saveMessage, startNewConversation, loadingHistory } = useChatHistory();
   const mealHistoryContext = useMealHistory();
+  const { isAcompanhado, chatUsedThisMonth, chatLimit, isChatUnlimited, incrementChatCount } = useAccessControl();
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
