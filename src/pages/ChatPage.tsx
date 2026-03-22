@@ -5,8 +5,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 import { useChatHistory, Msg } from "@/hooks/useChatHistory";
 import { useMealHistory } from "@/hooks/useMealHistory";
+import { useAccessControl } from "@/hooks/useAccessControl";
 import ChatMessage from "@/components/chat/ChatMessage";
 import ChatEmptyState from "@/components/chat/ChatEmptyState";
+import ChatLimitBanner from "@/components/acompanhado/ChatLimitBanner";
 import { ArrowLeft, Send, Sparkles, Bot, Plus, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -18,6 +20,7 @@ const ChatPage = () => {
   const navigate = useNavigate();
   const { messages, setMessages, saveMessage, startNewConversation, loadingHistory } = useChatHistory();
   const mealHistoryContext = useMealHistory();
+  const { isAcompanhado, chatUsedThisMonth, chatLimit, isChatUnlimited, incrementChatCount } = useAccessControl();
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -44,6 +47,12 @@ const ChatPage = () => {
     const text = input.trim();
     if (!text || isLoading) return;
 
+    // Check chat limit for acompanhado users
+    if (isAcompanhado && !isChatUnlimited && chatUsedThisMonth >= chatLimit) {
+      toast.error("Limite de mensagens atingido este mês.");
+      return;
+    }
+
     const userMsg: Msg = { role: "user", content: text };
     setMessages(prev => [...prev, userMsg]);
     setInput("");
@@ -51,6 +60,7 @@ const ChatPage = () => {
 
     // Save user message
     await saveMessage(userMsg);
+    if (isAcompanhado) incrementChatCount();
 
     let assistantSoFar = "";
     const upsertAssistant = (chunk: string) => {
@@ -156,6 +166,11 @@ const ChatPage = () => {
           <Plus className="w-5 h-5" />
         </button>
       </div>
+
+      {/* Chat limit banner for acompanhado */}
+      {isAcompanhado && (
+        <ChatLimitBanner used={chatUsedThisMonth} limit={chatLimit} isUnlimited={isChatUnlimited} />
+      )}
 
       {/* Messages */}
       <div ref={scrollRef} className="relative z-10 flex-1 min-h-0 overflow-y-auto px-4 py-4 space-y-4">

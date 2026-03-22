@@ -4,11 +4,13 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
+import { useAccessControl } from "@/hooks/useAccessControl";
 import {
   ArrowLeft, Save, LogOut, User, Target, Activity,
-  Scale, Ruler, Calendar, Dumbbell, Heart, Shield, Bell
+  Scale, Ruler, Calendar, Dumbbell, Heart, Shield, Bell, Sparkles
 } from "lucide-react";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 
 const GOALS: Record<string, string> = {
   lose_weight: "Emagrecimento",
@@ -26,6 +28,39 @@ const ACTIVITY_LEVELS: Record<string, string> = {
   moderate: "Moderado",
   very_active: "Muito Ativo",
   athlete: "Atleta",
+};
+
+const MeuPlanoSection = ({ navigate }: { navigate: (path: string) => void }) => {
+  const { isAcompanhado, coachName } = useAccessControl();
+  if (!isAcompanhado) return null;
+
+  return (
+    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-3">
+      <h2 className="text-xs font-bold text-primary uppercase tracking-wider flex items-center gap-2">
+        <Shield className="w-3.5 h-3.5" /> Meu Plano
+      </h2>
+      <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 space-y-3">
+        <div className="flex items-center gap-2">
+          <Target className="w-4 h-4 text-primary" />
+          <span className="text-sm font-semibold text-foreground">
+            Modo Acompanhado — via {coachName || "Coach"}
+          </span>
+        </div>
+        <p className="text-xs text-muted-foreground">
+          Você tem acesso às funcionalidades essenciais através do seu coach.
+        </p>
+        <Button
+          size="sm"
+          variant="outline"
+          className="w-full border-primary/30 text-primary hover:bg-primary/10 text-xs"
+          onClick={() => navigate("/#planos")}
+        >
+          <Sparkles className="w-3.5 h-3.5 mr-1.5" />
+          Quero meu plano independente
+        </Button>
+      </div>
+    </motion.div>
+  );
 };
 
 const SettingsPage = () => {
@@ -160,6 +195,8 @@ const SettingsPage = () => {
       </div>
 
       <div className="relative z-10 px-4 mt-4 max-w-lg mx-auto space-y-6">
+        {/* Meu Plano — for acompanhado users */}
+        <MeuPlanoSection navigate={navigate} />
         {/* Personal Info */}
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-3">
           <h2 className="text-xs font-bold text-primary uppercase tracking-wider flex items-center gap-2">

@@ -4,14 +4,17 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
+import { useAccessControl } from "@/hooks/useAccessControl";
 import { supabase } from "@/integrations/supabase/client";
 import {
   ArrowLeft, Award, Flame, TrendingUp, Star, Trophy,
-  Target, Zap, Shield, Heart, Crown, LogOut,
+  Target, Zap, Shield, Heart, Crown, LogOut, Lock,
   BarChart3, Utensils, Plus, MessageSquare, User, ChevronRight, Syringe
 } from "lucide-react";
 import { useGlp1 } from "@/hooks/useGlp1";
 import { useWorkoutSchedule } from "@/hooks/useWorkoutSchedule";
+import CoachBadge from "@/components/acompanhado/CoachBadge";
+import LockedFeatureModal from "@/components/acompanhado/LockedFeatureModal";
 
 interface Badge {
   id: string;
@@ -31,6 +34,8 @@ const ProfilePage = () => {
   const { hasSubscription: hasGlp1 } = useGlp1();
   const { schedule } = useWorkoutSchedule();
   const hasNutriSync = schedule.some(s => s.workout_type !== "rest");
+  const { isAcompanhado, coachName, coachBio, coachAvatar, checkAccess } = useAccessControl();
+  const [lockedFeature, setLockedFeature] = useState<string | null>(null);
 
   useEffect(() => {
     if (!profile) return;
@@ -104,9 +109,18 @@ const ProfilePage = () => {
             </div>
             <div>
               <h2 className="text-lg font-bold text-foreground">{profile.full_name || "Usuário"}</h2>
-              <p className="text-xs text-primary font-mono">{levelNames[level] || "Mestre"} · Lv.{level}</p>
+              <p className="text-xs text-primary font-mono">
+                {isAcompanhado && !checkAccess("niveis_avancados") ? "Iniciante" : (levelNames[level] || "Mestre")} · Lv.{isAcompanhado && !checkAccess("niveis_avancados") ? 1 : level}
+              </p>
             </div>
           </div>
+
+          {/* Coach Badge */}
+          {isAcompanhado && coachName && (
+            <div className="mb-4">
+              <CoachBadge coachName={coachName} coachBio={coachBio} coachAvatar={coachAvatar} />
+            </div>
+          )}
 
           {/* XP bar */}
           <div className="mb-3">
@@ -233,25 +247,36 @@ const ProfilePage = () => {
         <div className="mb-6">
           <h3 className="text-sm font-semibold text-foreground mb-3">🏆 Conquistas ({unlockedCount}/{badges.length})</h3>
           <div className="grid grid-cols-3 gap-2">
-            {badges.map((badge, i) => (
-              <motion.div
-                key={badge.id}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: i * 0.05 }}
-                className={`rounded-xl border p-3 text-center transition-all ${
-                  badge.unlocked
-                    ? "border-primary/30 bg-primary/5"
-                    : "border-border bg-card/50 opacity-50"
-                }`}
-              >
-                <div className={`mx-auto mb-1 ${badge.unlocked ? "text-primary" : "text-muted-foreground"}`}>
-                  {badge.icon}
-                </div>
-                <p className="text-[10px] font-semibold text-foreground truncate">{badge.name}</p>
-                <p className="text-[9px] text-muted-foreground font-mono">{badge.condition}</p>
-              </motion.div>
-            ))}
+            {badges.map((badge, i) => {
+              // In acompanhado mode, special badges are locked
+              const isSpecialBadge = ["streak_30", "meals_100", "level_5"].includes(badge.id);
+              const isLockedByPlan = isAcompanhado && !checkAccess("badges_especiais") && isSpecialBadge;
+
+              return (
+                <motion.div
+                  key={badge.id}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: i * 0.05 }}
+                  onClick={() => isLockedByPlan && setLockedFeature("Badges Especiais")}
+                  className={`rounded-xl border p-3 text-center transition-all ${
+                    isLockedByPlan
+                      ? "border-border bg-card/30 opacity-40 cursor-pointer"
+                      : badge.unlocked
+                        ? "border-primary/30 bg-primary/5"
+                        : "border-border bg-card/50 opacity-50"
+                  }`}
+                >
+                  <div className={`mx-auto mb-1 ${isLockedByPlan ? "text-muted-foreground" : badge.unlocked ? "text-primary" : "text-muted-foreground"}`}>
+                    {isLockedByPlan ? <Lock className="w-5 h-5 mx-auto" /> : badge.icon}
+                  </div>
+                  <p className="text-[10px] font-semibold text-foreground truncate">{badge.name}</p>
+                  <p className="text-[9px] text-muted-foreground font-mono">
+                    {isLockedByPlan ? "🔒 ON+" : badge.condition}
+                  </p>
+                </motion.div>
+              );
+            })}
           </div>
         </div>
 
@@ -308,6 +333,13 @@ const ProfilePage = () => {
           </div>
         </div>
       </div>
+
+      {/* Locked Feature Modal */}
+      <LockedFeatureModal
+        open={!!lockedFeature}
+        onClose={() => setLockedFeature(null)}
+        featureName={lockedFeature || ""}
+      />
 
       <BottomNav />
     </div>

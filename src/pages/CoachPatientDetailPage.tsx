@@ -8,8 +8,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Send, Check, Brain, FileText, AlertTriangle, MessageSquare, User, Activity } from "lucide-react";
+import { ArrowLeft, Send, Check, Brain, FileText, AlertTriangle, MessageSquare, User, Activity, Shield } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import CoachAccessManager from "@/components/acompanhado/CoachAccessManager";
 
 const CoachPatientDetailPage = () => {
   const { patientId } = useParams();
@@ -104,8 +105,9 @@ const CoachPatientDetailPage = () => {
 
       <main className="max-w-5xl mx-auto p-4">
         <Tabs defaultValue="overview" className="space-y-4">
-          <TabsList className="w-full grid grid-cols-5">
+          <TabsList className="w-full grid grid-cols-6">
             <TabsTrigger value="overview" className="text-xs"><User className="w-3 h-3 mr-1" />Visão Geral</TabsTrigger>
+            <TabsTrigger value="access" className="text-xs"><Shield className="w-3 h-3 mr-1" />Acesso</TabsTrigger>
             <TabsTrigger value="protocol" className="text-xs"><Brain className="w-3 h-3 mr-1" />Protocolo</TabsTrigger>
             <TabsTrigger value="exams" className="text-xs"><FileText className="w-3 h-3 mr-1" />Exames</TabsTrigger>
             <TabsTrigger value="alerts" className="text-xs"><AlertTriangle className="w-3 h-3 mr-1" />Alertas</TabsTrigger>
@@ -167,6 +169,16 @@ const CoachPatientDetailPage = () => {
                 <div><span className="text-muted-foreground">Streak:</span> <span className="text-foreground">{patient?.streak_days || 0} dias</span></div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* ACCESS MANAGEMENT */}
+          <TabsContent value="access" className="space-y-4">
+            {profile && patientId && (
+              <CoachAccessManager
+                patientUserId={patientId}
+                coachProfileId={profile.id}
+              />
+            )}
           </TabsContent>
 
           {/* PROTOCOL */}
