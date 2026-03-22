@@ -8,8 +8,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Send, Check, Brain, FileText, AlertTriangle, MessageSquare, User, Activity } from "lucide-react";
+import { ArrowLeft, Send, Check, Brain, FileText, AlertTriangle, MessageSquare, User, Activity, Shield } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import CoachAccessManager from "@/components/acompanhado/CoachAccessManager";
 
 const CoachPatientDetailPage = () => {
   const { patientId } = useParams();
