@@ -18,8 +18,6 @@ interface ApexChatProps {
   initialQuestion?: string;
 }
 
-const APEX_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/apex-scientific`;
-
 const ApexChat = ({ initialQuestion }: ApexChatProps) => {
   const { user } = useAuth();
   const { profile } = useProfile();
@@ -60,27 +58,21 @@ const ApexChat = ({ initialQuestion }: ApexChatProps) => {
         glp1: profile.uses_glp1,
       } : {};
 
-      const resp = await fetch(APEX_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-        },
-        body: JSON.stringify({
+      const { data, error } = await supabase.functions.invoke("apex-scientific", {
+        body: {
           question: text.trim(),
           profileContext,
           history: messages.slice(-6),
-        }),
+        },
       });
 
-      if (!resp.ok) throw new Error("Erro na conexão");
-      const data = await resp.json();
+      if (error) throw error;
 
       const assistantMsg: ApexMessage = {
         role: "assistant",
-        content: data.answer || "Sem resposta.",
-        fontes: data.citations || [],
-        perplexityUsed: data.perplexityUsed || false,
+        content: data?.answer || "Sem resposta.",
+        fontes: data?.citations || [],
+        perplexityUsed: data?.perplexityUsed || false,
       };
       setMessages(prev => [...prev, assistantMsg]);
 
@@ -94,9 +86,9 @@ const ApexChat = ({ initialQuestion }: ApexChatProps) => {
           perplexity_usado: assistantMsg.perplexityUsed,
         });
       }
-    } catch (e) {
-      console.error(e);
-      toast.error("Erro ao conectar com o APEX");
+    } catch (e: any) {
+      console.error("APEX error:", e);
+      toast.error("Erro ao conectar com o APEX. Tente novamente.");
     }
     setIsLoading(false);
   };
