@@ -38,6 +38,10 @@ export interface Profile {
   trial_ends_at: string | null;
   first_meal_registered: boolean | null;
   activation_completed: boolean | null;
+  features_override: Record<string, any> | null;
+  coach_profile_id: string | null;
+  role: string | null;
+  plano_atual: string | null;
 }
 
 export const useProfile = () => {
