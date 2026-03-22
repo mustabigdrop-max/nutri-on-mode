@@ -5,8 +5,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 import { useChatHistory, Msg } from "@/hooks/useChatHistory";
 import { useMealHistory } from "@/hooks/useMealHistory";
+import { useAccessControl } from "@/hooks/useAccessControl";
 import ChatMessage from "@/components/chat/ChatMessage";
 import ChatEmptyState from "@/components/chat/ChatEmptyState";
+import ChatLimitBanner from "@/components/acompanhado/ChatLimitBanner";
 import { ArrowLeft, Send, Sparkles, Bot, Plus, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
