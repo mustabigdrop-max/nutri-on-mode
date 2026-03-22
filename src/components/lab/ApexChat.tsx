@@ -1,11 +1,13 @@
 import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import ReactMarkdown from "react-markdown";
-import { Send, Microscope, Loader2, Bookmark, ExternalLink } from "lucide-react";
+import { Send, Microscope, Loader2, Bookmark, ExternalLink, Shield } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+
+const ADMIN_UID = "70e51469-1acf-4df6-afe6-f094d21db122";
 
 interface ApexMessage {
   role: "user" | "assistant";
@@ -24,8 +26,11 @@ const ApexChat = ({ initialQuestion }: ApexChatProps) => {
   const [messages, setMessages] = useState<ApexMessage[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [coachMode, setCoachMode] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const initialSent = useRef(false);
+
+  const isAdmin = user?.id === ADMIN_UID;
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
@@ -63,6 +68,7 @@ const ApexChat = ({ initialQuestion }: ApexChatProps) => {
           question: text.trim(),
           profileContext,
           history: messages.slice(-6),
+          coachMode: isAdmin && coachMode,
         },
       });
 
@@ -84,6 +90,7 @@ const ApexChat = ({ initialQuestion }: ApexChatProps) => {
           resposta: assistantMsg.content,
           fontes: assistantMsg.fontes,
           perplexity_usado: assistantMsg.perplexityUsed,
+          intent_type: isAdmin && coachMode ? "coach_elite" : "standard",
         });
       }
     } catch (e: any) {
@@ -108,18 +115,38 @@ const ApexChat = ({ initialQuestion }: ApexChatProps) => {
   return (
     <div className="flex flex-col h-full">
       {/* APEX Header */}
-      <div className="px-4 py-3 border-b border-border bg-[hsl(38_80%_52%/0.03)]">
+      <div className={`px-4 py-3 border-b border-border ${coachMode && isAdmin ? "bg-red-950/20" : "bg-[hsl(38_80%_52%/0.03)]"}`}>
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-primary/15 border border-primary/20 flex items-center justify-center">
-            <Microscope className="w-5 h-5 text-primary" />
+          <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${coachMode && isAdmin ? "bg-red-500/15 border border-red-500/20" : "bg-primary/15 border border-primary/20"}`}>
+            {coachMode && isAdmin ? (
+              <Shield className="w-5 h-5 text-red-400" />
+            ) : (
+              <Microscope className="w-5 h-5 text-primary" />
+            )}
           </div>
-          <div>
-            <h2 className="text-sm font-bold text-foreground">APEX — Agente Científico nutriON</h2>
+          <div className="flex-1">
+            <h2 className="text-sm font-bold text-foreground">
+              {coachMode && isAdmin ? "APEX ELITE COACH 🔒" : "APEX — Agente Científico nutriON"}
+            </h2>
             <div className="flex items-center gap-1.5">
-              <div className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
-              <span className="text-[10px] text-accent font-mono">Online — Conectado a base científica 2025</span>
+              <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${coachMode && isAdmin ? "bg-red-400" : "bg-accent"}`} />
+              <span className="text-[10px] font-mono" style={{ color: coachMode && isAdmin ? "hsl(0 60% 60%)" : undefined }}>
+                {coachMode && isAdmin ? "Coach Mode — Acesso Total Farmacológico" : "Online — Conectado a base científica 2025"}
+              </span>
             </div>
           </div>
+          {isAdmin && (
+            <button
+              onClick={() => { setCoachMode(prev => !prev); setMessages([]); }}
+              className={`px-3 py-1.5 rounded-lg text-[10px] font-mono font-bold border transition-all ${
+                coachMode
+                  ? "bg-red-500/20 border-red-500/30 text-red-400 hover:bg-red-500/30"
+                  : "bg-muted border-border text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {coachMode ? "⚡ COACH ON" : "🔓 Coach"}
+            </button>
+          )}
         </div>
       </div>
 
@@ -127,8 +154,21 @@ const ApexChat = ({ initialQuestion }: ApexChatProps) => {
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
         {messages.length === 0 && (
           <div className="text-center py-12 space-y-3">
-            <Microscope className="w-12 h-12 text-primary/30 mx-auto" />
-            <p className="text-sm text-muted-foreground">Faça uma pergunta científica ao APEX</p>
+            {coachMode && isAdmin ? (
+              <>
+                <Shield className="w-12 h-12 text-red-400/30 mx-auto" />
+                <p className="text-sm text-red-400/60">APEX ELITE COACH — Modo Admin</p>
+                <p className="text-xs text-muted-foreground max-w-xs mx-auto">
+                  Protocolos hormonais completos, TPC, GH, insulina, SARMs, manipulação avançada.
+                  Informação de elite para decisões de coaching.
+                </p>
+              </>
+            ) : (
+              <>
+                <Microscope className="w-12 h-12 text-primary/30 mx-auto" />
+                <p className="text-sm text-muted-foreground">Faça uma pergunta científica ao APEX</p>
+              </>
+            )}
           </div>
         )}
 
@@ -136,18 +176,24 @@ const ApexChat = ({ initialQuestion }: ApexChatProps) => {
           <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
             className={`flex gap-2 ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
             {msg.role === "assistant" && (
-              <div className="w-7 h-7 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-1">
-                <Microscope className="w-3.5 h-3.5 text-primary" />
+              <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-1 ${coachMode && isAdmin ? "bg-red-500/20" : "bg-primary/20"}`}>
+                {coachMode && isAdmin ? (
+                  <Shield className="w-3.5 h-3.5 text-red-400" />
+                ) : (
+                  <Microscope className="w-3.5 h-3.5 text-primary" />
+                )}
               </div>
             )}
             <div className={`max-w-[85%] ${msg.role === "user" ? "rounded-2xl rounded-br-md bg-primary text-primary-foreground px-4 py-3" : ""}`}>
               {msg.role === "assistant" ? (
                 <div>
-                  <span className="text-[9px] font-mono text-primary uppercase tracking-wider mb-1 block">APEX</span>
-                  <div className="rounded-2xl rounded-bl-md bg-card border border-border px-4 py-3 space-y-3">
+                  <span className={`text-[9px] font-mono uppercase tracking-wider mb-1 block ${coachMode && isAdmin ? "text-red-400" : "text-primary"}`}>
+                    {coachMode && isAdmin ? "APEX COACH" : "APEX"}
+                  </span>
+                  <div className={`rounded-2xl rounded-bl-md bg-card border px-4 py-3 space-y-3 ${coachMode && isAdmin ? "border-red-500/20" : "border-border"}`}>
                     {msg.perplexityUsed && (
-                      <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20">
-                        <span className="text-[10px] font-mono text-primary">📎 Baseado em {msg.fontes?.length || 0} estudos</span>
+                      <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border ${coachMode && isAdmin ? "bg-red-500/10 border-red-500/20" : "bg-primary/10 border-primary/20"}`}>
+                        <span className={`text-[10px] font-mono ${coachMode && isAdmin ? "text-red-400" : "text-primary"}`}>📎 Baseado em {msg.fontes?.length || 0} estudos</span>
                       </div>
                     )}
                     <div className="prose prose-sm prose-invert max-w-none text-sm
@@ -183,15 +229,23 @@ const ApexChat = ({ initialQuestion }: ApexChatProps) => {
 
         {isLoading && (
           <div className="flex gap-2">
-            <div className="w-7 h-7 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
-              <Microscope className="w-3.5 h-3.5 text-primary" />
+            <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 ${coachMode && isAdmin ? "bg-red-500/20" : "bg-primary/20"}`}>
+              {coachMode && isAdmin ? (
+                <Shield className="w-3.5 h-3.5 text-red-400" />
+              ) : (
+                <Microscope className="w-3.5 h-3.5 text-primary" />
+              )}
             </div>
             <div>
-              <span className="text-[9px] font-mono text-primary uppercase tracking-wider mb-1 block">APEX</span>
-              <div className="bg-card border border-border rounded-2xl rounded-bl-md px-4 py-3">
+              <span className={`text-[9px] font-mono uppercase tracking-wider mb-1 block ${coachMode && isAdmin ? "text-red-400" : "text-primary"}`}>
+                {coachMode && isAdmin ? "APEX COACH" : "APEX"}
+              </span>
+              <div className={`bg-card border rounded-2xl rounded-bl-md px-4 py-3 ${coachMode && isAdmin ? "border-red-500/20" : "border-border"}`}>
                 <div className="flex items-center gap-2">
-                  <Loader2 className="w-4 h-4 text-primary animate-spin" />
-                  <span className="text-[10px] font-mono text-muted-foreground">pesquisando e analisando...</span>
+                  <Loader2 className={`w-4 h-4 animate-spin ${coachMode && isAdmin ? "text-red-400" : "text-primary"}`} />
+                  <span className="text-[10px] font-mono text-muted-foreground">
+                    {coachMode && isAdmin ? "analisando protocolos avançados..." : "pesquisando e analisando..."}
+                  </span>
                 </div>
               </div>
             </div>
@@ -200,14 +254,18 @@ const ApexChat = ({ initialQuestion }: ApexChatProps) => {
       </div>
 
       {/* Input */}
-      <div className="px-4 py-3 pb-20 border-t border-border bg-background/95 backdrop-blur">
+      <div className={`px-4 py-3 pb-20 border-t bg-background/95 backdrop-blur ${coachMode && isAdmin ? "border-red-500/20" : "border-border"}`}>
         <div className="flex gap-2 max-w-lg mx-auto">
           <input type="text" value={input} onChange={e => setInput(e.target.value)}
             onKeyDown={e => e.key === "Enter" && sendMessage(input)}
-            placeholder="Pergunte ao APEX..."
-            className="flex-1 px-4 py-3 rounded-xl border border-border bg-card text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
+            placeholder={coachMode && isAdmin ? "Pergunte ao APEX Coach (modo admin)..." : "Pergunte ao APEX..."}
+            className={`flex-1 px-4 py-3 rounded-xl border bg-card text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 ${
+              coachMode && isAdmin ? "border-red-500/20 focus:ring-red-500/50" : "border-border focus:ring-primary/50"
+            }`} />
           <button onClick={() => sendMessage(input)} disabled={!input.trim() || isLoading}
-            className="w-12 h-12 rounded-xl bg-primary text-primary-foreground flex items-center justify-center disabled:opacity-50 transition-all">
+            className={`w-12 h-12 rounded-xl flex items-center justify-center disabled:opacity-50 transition-all ${
+              coachMode && isAdmin ? "bg-red-500 text-white" : "bg-primary text-primary-foreground"
+            }`}>
             <Send className="w-5 h-5" />
           </button>
         </div>
