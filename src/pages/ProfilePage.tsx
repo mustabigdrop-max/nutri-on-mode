@@ -247,25 +247,36 @@ const ProfilePage = () => {
         <div className="mb-6">
           <h3 className="text-sm font-semibold text-foreground mb-3">🏆 Conquistas ({unlockedCount}/{badges.length})</h3>
           <div className="grid grid-cols-3 gap-2">
-            {badges.map((badge, i) => (
-              <motion.div
-                key={badge.id}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: i * 0.05 }}
-                className={`rounded-xl border p-3 text-center transition-all ${
-                  badge.unlocked
-                    ? "border-primary/30 bg-primary/5"
-                    : "border-border bg-card/50 opacity-50"
-                }`}
-              >
-                <div className={`mx-auto mb-1 ${badge.unlocked ? "text-primary" : "text-muted-foreground"}`}>
-                  {badge.icon}
-                </div>
-                <p className="text-[10px] font-semibold text-foreground truncate">{badge.name}</p>
-                <p className="text-[9px] text-muted-foreground font-mono">{badge.condition}</p>
-              </motion.div>
-            ))}
+            {badges.map((badge, i) => {
+              // In acompanhado mode, special badges are locked
+              const isSpecialBadge = ["streak_30", "meals_100", "level_5"].includes(badge.id);
+              const isLockedByPlan = isAcompanhado && !checkAccess("badges_especiais") && isSpecialBadge;
+
+              return (
+                <motion.div
+                  key={badge.id}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: i * 0.05 }}
+                  onClick={() => isLockedByPlan && setLockedFeature("Badges Especiais")}
+                  className={`rounded-xl border p-3 text-center transition-all ${
+                    isLockedByPlan
+                      ? "border-border bg-card/30 opacity-40 cursor-pointer"
+                      : badge.unlocked
+                        ? "border-primary/30 bg-primary/5"
+                        : "border-border bg-card/50 opacity-50"
+                  }`}
+                >
+                  <div className={`mx-auto mb-1 ${isLockedByPlan ? "text-muted-foreground" : badge.unlocked ? "text-primary" : "text-muted-foreground"}`}>
+                    {isLockedByPlan ? <Lock className="w-5 h-5 mx-auto" /> : badge.icon}
+                  </div>
+                  <p className="text-[10px] font-semibold text-foreground truncate">{badge.name}</p>
+                  <p className="text-[9px] text-muted-foreground font-mono">
+                    {isLockedByPlan ? "🔒 ON+" : badge.condition}
+                  </p>
+                </motion.div>
+              );
+            })}
           </div>
         </div>
 
