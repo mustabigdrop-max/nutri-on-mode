@@ -34,6 +34,8 @@ const ProfilePage = () => {
   const { hasSubscription: hasGlp1 } = useGlp1();
   const { schedule } = useWorkoutSchedule();
   const hasNutriSync = schedule.some(s => s.workout_type !== "rest");
+  const { isAcompanhado, coachName, coachBio, coachAvatar, checkAccess } = useAccessControl();
+  const [lockedFeature, setLockedFeature] = useState<string | null>(null);
 
   useEffect(() => {
     if (!profile) return;
