@@ -162,6 +162,8 @@ const SettingsPage = () => {
       </div>
 
       <div className="relative z-10 px-4 mt-4 max-w-lg mx-auto space-y-6">
+        {/* Meu Plano — for acompanhado users */}
+        <MeuPlanoSection navigate={navigate} />
         {/* Personal Info */}
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-3">
           <h2 className="text-xs font-bold text-primary uppercase tracking-wider flex items-center gap-2">
