@@ -30,7 +30,7 @@ const LabPage = () => {
 
   return (
     <div className="fixed inset-0 bg-background flex flex-col">
-      <div className="absolute inset-0 bg-grid opacity-5" />
+      <div className="absolute inset-0 bg-grid opacity-5 pointer-events-none" />
 
       {/* Header */}
       <div className="relative z-10 flex-shrink-0 px-4 pt-4 pb-3 border-b border-border bg-background/95 backdrop-blur">
@@ -46,7 +46,9 @@ const LabPage = () => {
       </div>
 
       {showOnboarding ? (
-        <LabOnboarding onComplete={handleOnboardingComplete} onAskQuestion={(q) => { setInitialQuestion(q); handleOnboardingComplete(); }} />
+        <div className="relative z-10 flex-1 min-h-0">
+          <LabOnboarding onComplete={handleOnboardingComplete} onAskQuestion={(q) => { setInitialQuestion(q); handleOnboardingComplete(); }} />
+        </div>
       ) : (
         <>
           {/* Tabs */}
