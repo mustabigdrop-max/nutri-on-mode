@@ -109,9 +109,18 @@ const ProfilePage = () => {
             </div>
             <div>
               <h2 className="text-lg font-bold text-foreground">{profile.full_name || "Usuário"}</h2>
-              <p className="text-xs text-primary font-mono">{levelNames[level] || "Mestre"} · Lv.{level}</p>
+              <p className="text-xs text-primary font-mono">
+                {isAcompanhado && !checkAccess("niveis_avancados") ? "Iniciante" : (levelNames[level] || "Mestre")} · Lv.{isAcompanhado && !checkAccess("niveis_avancados") ? 1 : level}
+              </p>
             </div>
           </div>
+
+          {/* Coach Badge */}
+          {isAcompanhado && coachName && (
+            <div className="mb-4">
+              <CoachBadge coachName={coachName} coachBio={coachBio} coachAvatar={coachAvatar} />
+            </div>
+          )}
 
           {/* XP bar */}
           <div className="mb-3">
