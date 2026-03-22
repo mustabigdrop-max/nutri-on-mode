@@ -889,6 +889,33 @@ export type Database = {
         }
         Relationships: []
       }
+      conversion_events: {
+        Row: {
+          action: string | null
+          converted: boolean | null
+          created_at: string | null
+          feature: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          action?: string | null
+          converted?: boolean | null
+          created_at?: string | null
+          feature: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          action?: string | null
+          converted?: boolean | null
+          created_at?: string | null
+          feature?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       daily_missions: {
         Row: {
           completed: boolean
