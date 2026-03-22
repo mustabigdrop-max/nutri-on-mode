@@ -64,6 +64,7 @@ import ResultadoPCAPage from "./pages/ResultadoPCA";
 import WeightAdaptivePage from "./pages/WeightAdaptivePage";
 import CoachInvitePage from "./pages/CoachInvitePage";
 import LabPage from "./pages/LabPage";
+import AdminApexCoachPage from "./pages/AdminApexCoachPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();

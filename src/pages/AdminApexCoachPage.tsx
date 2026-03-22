@@ -24,11 +24,12 @@ const AdminApexCoachPage = () => {
   const [atletaRef, setAtletaRef] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  const isAdmin = !profileLoading && user && profile?.role === "admin";
+
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages]);
 
-  // Guard: only admin
   if (profileLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -37,7 +38,7 @@ const AdminApexCoachPage = () => {
     );
   }
 
-  if (!user || profile?.role !== "admin") {
+  if (!isAdmin) {
     return <Navigate to="/dashboard" replace />;
   }
 
