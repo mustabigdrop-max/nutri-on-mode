@@ -64,6 +64,7 @@ import ResultadoPCAPage from "./pages/ResultadoPCA";
 import WeightAdaptivePage from "./pages/WeightAdaptivePage";
 import CoachInvitePage from "./pages/CoachInvitePage";
 import LabPage from "./pages/LabPage";
+import AdminApexCoachPage from "./pages/AdminApexCoachPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -133,6 +134,7 @@ const App = () => (
             <Route path="/professional" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON PRO" featureName="Dashboard Profissional"><ProfessionalDashboard /></PlanGateWrapper></ProtectedRoute>} />
             <Route path="/weight-adaptive" element={<ProtectedRoute><WeightAdaptivePage /></ProtectedRoute>} />
             <Route path="/lab" element={<ProtectedRoute><LabPage /></ProtectedRoute>} />
+            <Route path="/admin/apex-coach" element={<ProtectedRoute><AdminApexCoachPage /></ProtectedRoute>} />
             <Route path="/convite/:token" element={<CoachInvitePage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
