@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import BottomNav from "@/components/BottomNav";
-import { Microscope, Bot, BookOpen, Search, FileText, Leaf } from "lucide-react";
+import { Microscope, Bot, BookOpen, Search, FileText, Leaf, Bug } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ApexChat from "@/components/lab/ApexChat";
 import ProtocolLibrary from "@/components/lab/ProtocolLibrary";
@@ -8,7 +8,7 @@ import StudySearch from "@/components/lab/StudySearch";
 import LabNotebook from "@/components/lab/LabNotebook";
 import LabOnboarding from "@/components/lab/LabOnboarding";
 import FitoterapicosLibrary from "@/components/lab/FitoterapicosLibrary";
-
+import MicrobiotaLibrary from "@/components/lab/MicrobiotaLibrary";
 const LabPage = () => {
   const [tab, setTab] = useState("apex");
   const [showOnboarding, setShowOnboarding] = useState(false);
