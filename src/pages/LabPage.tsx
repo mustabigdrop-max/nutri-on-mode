@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import BottomNav from "@/components/BottomNav";
-import { Microscope, Bot, BookOpen, Search, FileText } from "lucide-react";
+import { Microscope, Bot, BookOpen, Search, FileText, Leaf } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ApexChat from "@/components/lab/ApexChat";
 import ProtocolLibrary from "@/components/lab/ProtocolLibrary";
 import StudySearch from "@/components/lab/StudySearch";
 import LabNotebook from "@/components/lab/LabNotebook";
 import LabOnboarding from "@/components/lab/LabOnboarding";
+import FitoterapicosLibrary from "@/components/lab/FitoterapicosLibrary";
 
 const LabPage = () => {
   const [tab, setTab] = useState("apex");
@@ -60,6 +61,9 @@ const LabPage = () => {
               <TabsTrigger value="protocols" className="flex-1 text-xs gap-1 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
                 <BookOpen className="w-3.5 h-3.5" /> Protocolos
               </TabsTrigger>
+              <TabsTrigger value="fito" className="flex-1 text-xs gap-1 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
+                <Leaf className="w-3.5 h-3.5" /> Fito
+              </TabsTrigger>
               <TabsTrigger value="search" className="flex-1 text-xs gap-1 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
                 <Search className="w-3.5 h-3.5" /> Estudos
               </TabsTrigger>
@@ -73,6 +77,9 @@ const LabPage = () => {
             </TabsContent>
             <TabsContent value="protocols" className="flex-1 overflow-y-auto px-4 py-4 mt-0">
               <ProtocolLibrary onAskApex={handleAskApex} />
+            </TabsContent>
+            <TabsContent value="fito" className="flex-1 overflow-y-auto px-4 py-4 mt-0">
+              <FitoterapicosLibrary onAskApex={handleAskApex} />
             </TabsContent>
             <TabsContent value="search" className="flex-1 overflow-y-auto px-4 py-4 mt-0">
               <StudySearch onAskApex={handleAskApex} />
