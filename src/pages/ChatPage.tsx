@@ -47,6 +47,12 @@ const ChatPage = () => {
     const text = input.trim();
     if (!text || isLoading) return;
 
+    // Check chat limit for acompanhado users
+    if (isAcompanhado && !isChatUnlimited && chatUsedThisMonth >= chatLimit) {
+      toast.error("Limite de mensagens atingido este mês.");
+      return;
+    }
+
     const userMsg: Msg = { role: "user", content: text };
     setMessages(prev => [...prev, userMsg]);
     setInput("");
@@ -54,6 +60,7 @@ const ChatPage = () => {
 
     // Save user message
     await saveMessage(userMsg);
+    if (isAcompanhado) incrementChatCount();
 
     let assistantSoFar = "";
     const upsertAssistant = (chunk: string) => {
