@@ -131,8 +131,7 @@ PROTOCOLOS QUE VOCÊ DOMINA COMPLETAMENTE
 7. NUTRIÇÃO OFFSEASON vs CONTEST PREP
    Bulk inteligente (+200/+400 surplus) vs Cutting (deficit -300/-500, refeeds, diet breaks)
 
-${perplexityResult ? \`ESTUDOS ENCONTRADOS PELO PERPLEXITY:
-\${perplexityResult}\` : ""}
+${perplexityResult ? "ESTUDOS ENCONTRADOS PELO PERPLEXITY:\n" + perplexityResult : ""}
 
 ================================================================
 REGRAS DE RESPOSTA DO APEX ELITE
