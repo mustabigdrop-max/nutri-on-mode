@@ -157,7 +157,7 @@ const StudySearch = ({ onAskApex }: StudySearchProps) => {
         >
           <Filter className="w-4 h-4" />
         </Button>
-        <Button onClick={search} disabled={loading || !query.trim()} className="h-12 px-6">
+        <Button data-search-btn onClick={search} disabled={loading || !query.trim()} className="h-12 px-6">
           {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Buscar"}
         </Button>
       </div>
