@@ -208,7 +208,7 @@ const ApexChat = ({ initialQuestion }: ApexChatProps) => {
       </div>
 
       {/* Input */}
-      <div className="px-4 py-3 border-t border-border bg-background/95 backdrop-blur">
+      <div className="px-4 py-3 pb-20 border-t border-border bg-background/95 backdrop-blur">
         <div className="flex gap-2 max-w-lg mx-auto">
           <input type="text" value={input} onChange={e => setInput(e.target.value)}
             onKeyDown={e => e.key === "Enter" && sendMessage(input)}

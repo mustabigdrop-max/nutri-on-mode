@@ -137,7 +137,7 @@ const ChatPage = () => {
 
   return (
     <div className="fixed inset-0 bg-background flex flex-col">
-      <div className="absolute inset-0 bg-grid opacity-10" />
+      <div className="absolute inset-0 bg-grid opacity-10 pointer-events-none" />
 
       {/* Header */}
       <div className="relative z-10 flex-shrink-0 flex items-center gap-3 px-4 pt-4 pb-3 border-b border-border bg-background/95 backdrop-blur">
@@ -210,7 +210,7 @@ const ChatPage = () => {
       </div>
 
       {/* Input */}
-      <div className="relative z-10 flex-shrink-0 px-4 py-3 border-t border-border bg-background/95 backdrop-blur safe-bottom">
+      <div className="relative z-10 flex-shrink-0 px-4 py-3 pb-20 border-t border-border bg-background/95 backdrop-blur safe-bottom">
         <div className="flex gap-2 max-w-lg mx-auto">
           <input
             type="text"
