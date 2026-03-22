@@ -83,11 +83,11 @@ const LandingHero = () => {
         className="mt-8 inline-flex items-center gap-2.5 bg-card/60 border border-border px-4 py-2.5 rounded-full w-fit"
       >
         <span className="relative flex h-2.5 w-2.5">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75" />
-          <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-accent" />
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
+          <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-primary" />
         </span>
         <span className="font-mono text-[.72rem] text-muted-foreground tracking-wide">
-          <span className="text-accent font-semibold">{activeCount}</span> pessoas ativas agora
+          <span className="text-primary font-semibold">{activeCount}</span> pessoas ativas agora
         </span>
       </motion.div>
 
