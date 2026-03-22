@@ -18,6 +18,19 @@ const BONUS_FEATURES = [
 ];
 
 const LockedFeatureModal = ({ open, onClose, featureName }: LockedFeatureModalProps) => {
+  const { user } = useAuth();
+
+  // Track conversion event when modal opens
+  useEffect(() => {
+    if (open && user && featureName) {
+      supabase.from("conversion_events").insert({
+        user_id: user.id,
+        feature: featureName,
+        action: "blocked_access",
+      } as any).then(() => {});
+    }
+  }, [open, user, featureName]);
+
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="bg-card border-primary/20 max-w-sm mx-auto p-0 overflow-hidden">
