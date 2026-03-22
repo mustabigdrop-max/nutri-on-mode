@@ -167,17 +167,89 @@ MICRONUTRIENTES CRÍTICOS: D3 5-10kUI (alvo 60-80ng/mL) + K2 200mcg. Magnésio q
 FITOTERÁPICOS — GUIA POR OBJETIVO
 ================================================================
 
-HORMONAL/TESTO: Ashwagandha KSM-66 600mg (cortisol -28%, testo +15-17%). Tongkat Ali 200-400mg 100:1 (testo livre, reduz SHBG). Fadogia Agrestis 425-600mg (LH elevado, monitorar LFT). Tribulus 750-1500mg 45% saponinas (libido). Feno-grego Testofen 500-600mg (inibe SHBG).
+HORMONAL/TESTO: Ashwagandha KSM-66 600mg (cortisol -28%, testo +15-17%). Tongkat Ali 200-400mg 100:1 (testo livre, reduz SHBG). Fadogia Agrestis 425-600mg (LH elevado, monitorar LFT). Tribulus 750-1500mg 45% saponinas (libido). Feno-grego Testofen 500-600mg (inibe SHBG). Cistanche Tubulosa 500mg (eleva LH potentemente). Boron 6-10mg (reduz SHBG, eleva T livre). DAA 3g/dia 30d ciclado.
 
-ADAPTÓGENOS: Rhodiola 400-600mg (fadiga, VO2max, 5on/2off). Ginseng Panax 200-400mg (performance, erétil, cognição). Eleuthero 300-600mg (endurance). Maca 1.5-3g (libido).
+ADAPTÓGENOS: Rhodiola 400-600mg (fadiga, VO2max, 5on/2off). Ginseng Panax 200-400mg (performance, erétil, cognição). Eleuthero 300-600mg 0.8% eleuterosídeos 2x/dia (endurance). Maca preta gelatinizada 1.5-3g 2x/dia (libido, 4x biodisponibilidade vs amarela). "Adrenal Triad": Eleuthero+Rhodiola+Ashwagandha.
 
-ANTI-INFLAMATÓRIO: Curcumina 500-1000mg + Piperina 5-20mg (COX-2). Boswellia 300-500mg AKBA>10% (articulações). Gengibre 1-2g (DOMS). Cereja azeda 480mg 2x/dia (DOMS, melatonina). Hawthorne 500-1000mg (cardio).
+ANTI-INFLAMATÓRIO: Curcumina BCM-95/fitossomada 500mg 2x/dia COM GORDURA (COX-2). Boswellia AKBA>30% 100-250mg AKBA/dia COM GORDURA (5-LOX, leucotrienos). Gengibre 1-2g (DOMS). Cereja azeda 480mg 2x/dia (DOMS, melatonina). Hawthorne 1000-1200mg (cardio, PA). Unha de Gato 300-500mg 3% alcaloides 2-3x/dia (TNF-alfa, IL-1, IL-6). Garra do Diabo 500-750mg 2-3% harpagoside 3x/dia (analgésico = Ibuprofeno sem colateral gástrico).
 
 PROSTÁTICA: Saw Palmetto 320mg + Beta-sitosterol 60-130mg + Licopeno 10-15mg + Pygeum 100mg.
 
 SONO: Mag glicinato/treonato 400mg + L-Teanina 200-400mg + Glicina 3g + Apigenina 50mg + Melatonina 0.3-1mg (dose fisiológica!). 5-HTP 100-300mg (nunca com SSRI). Valeriana 300-600mg.
 
 COGNIÇÃO: Lion's Mane 500-1000mg (NGF). Bacopa 300mg 55% bacosídeos (8-12sem). Alfa GPC 300-600mg. Fosfatidilserina 100-300mg (cortisol -20-30%). Huperzina A 50-100mcg (ciclar 2sem on/off).
+
+================================================================
+FITOTERÁPICOS RAROS — ELITE MUNDIAL
+================================================================
+
+SENSIBILIDADE INSULÍNICA:
+Berberina: 500mg 3x/dia 15-20min ANTES refeição. Ativa AMPK (=Metformina), inibe DPP-4. Ciclo 8sem on/4off. Combo: Berberina+Silimarina=absorção 60% maior. Interação: potencializa hipoglicemiantes.
+Jiaogulan (Gynostemma): 200-450mg 98% gypenosídeos ou chá 3-5g 2x/dia. AMPK mais potente que Berberina em alguns estudos + SIRT1 + NF-κB. Uso crônico seguro. Combo: Jiaogulan+Berberina+Cromo = sensibilidade insulínica máxima.
+Agrimônia (Agrimonia eupatoria): 700mg 3x/dia IMEDIATAMENTE antes refeição. Inibe alfa-glicosidase (=Acarbose). Coaches alemães/escandinavos.
+Banaba (Ácido Corosólico): 10-48mg/dia 30min pré-refeição. Ativa GLUT4 diretamente (insulinomimético). Meia-vida 8-10h. Combo: Banaba+Berberina+Gymnema = tríade insulínica.
+Gymnema Sylvestre: 200-400mg 75% ác gimnêmicos 2x/dia 30min pré-carb. Bloqueia receptor doce + regenera células beta + reduz absorção glicose. Ideal compulsão por doce.
+Inositol: Myo 2g + D-Chiro 250mg ratio 8:1 manhã+noite. Segundo mensageiro insulina. SOP: 4g Myo + 400mg D-Chiro 2x/dia + Ác Fólico 400mcg.
+African Mango (Irvingia): 150mg 2x/dia 30-60min pré-refeição. Inibe adipogênese, melhora leptina/adiponectina. Ciclo 10-12sem/4off.
+Kudzu: 100-300mg 40% puerarina 2x/dia. GLUT4, vasodilatador. Homens: <200mg (efeito estrogênico fraco). Reduz craving álcool.
+
+CARDIOVASCULAR AVANÇADO:
+Nattokinase: 2000-4000FU 2x/dia JEJUM ABSOLUTO (proteases digestivas degradam). Fibrinólise direta, inibe PAI-1. Potencializa anticoagulantes — monitorar INR.
+Serrapeptase: 10-60mg (100k-600k UI) 2-3x/dia JEJUM ABSOLUTO. Revestimento entérico obrigatório. Dissolve fibrina/muco, reduz edema. "Fibrin Triad": Nattokinase+Serrapeptase+Lumbrokinase.
+Lumbrokinase: 20mg 2x/dia jejum. Mais potente fibrinolítico. Dissolve fibrina ativa E fibrinogênio. Ciclo 3m on/1m off.
+Pycnogenol: 100-200mg 95% OPC manhã com gordura. PDE5i natural (similar Viagra leve), NO, COX-1/2. Combo: Pycnogenol 80mg + L-Arginina 3g = protocolo NO erétil mais estudado.
+Bergamota BPF: 500-1000mg manhã jejum. Inibe HMG-CoA redutase (=estatina natural). Reduz LDL até 36% em 30d.
+Policosanol: 20-40mg NOITE (síntese colesterol 00h-06h). Reduz LDL até 24%.
+Red Yeast Rice: 600mg 2x/dia com refeição + CoQ10 200mg obrigatório. Contém monacolina K (=Lovastatina).
+Alho envelhecido: 600-1200mg manhã. Reduz PAS 8-10mmHg. Sem odor.
+Extrato oliveira: 500mg 2x/dia oleuropeína>18%. Vasodilatador NO. Reduz PAS 11.5mmHg.
+
+HEPÁTICO AVANÇADO:
+Schisandra Chinensis: 500mg-1g 9% schisandrinas 2x/dia. Induz fase II detox, adaptógeno, VO2max. Combo: Schisandra+TUDCA+NAC = protocolo hepático elite para orais.
+Andrographis: 400mg 30% andrografólida 2-3x/dia. Hepatoprotetor, imunomod, colerético. Ciclo 8-12sem máx. Contraindicação: gravidez.
+Siliphos (Silimarina fitossomada): 120-360mg 2x/dia COM GORDURA. Absorção 4-7x > silimarina padrão. Combo: Siliphos+TUDCA+Schisandra = triplo hepático elite.
+
+ANTI-INFLAMATÓRIO AVANÇADO:
+Resveratrol trans: 150-500mg manhã + Piperina 5mg (absorção +229%). SIRT1 ativação, longevidade.
+Quercetina: 500mg 2x/dia com refeição + Bromelaina 250mg (biodisponibilidade).
+EGCG: 400-800mg ENTRE refeições (com refeição -50% absorção). Máx 800mg (hepatotox).
+Astaxantina: 12mg COM GORDURA. 500x mais potente que Vit E.
+
+================================================================
+FARMACOCINÉTICA — REGRAS DE OURO
+================================================================
+LIPOFÍLICOS (sempre com gordura): D3, K2, Astaxantina, Curcumina, Boswellia, CoQ10, Resveratrol, Pycnogenol, Ômega-3, Vit E.
+HIDROFÍLICOS (sem refeição/água): Vit C, Magnésio, Zinco, B-vitaminas, Nattokinase, Serrapeptase, Berberina, aminoácidos.
+ENZIMAS PROTEOLÍTICAS (jejum absoluto): Nattokinase, Serrapeptase, Lumbrokinase.
+PRÉ-PRANDIAIS: Berberina(-15-20min), Banaba(-30min), Gymnema(-15min), Agrimônia(imediato), enzimas digestivas(início refeição).
+ESTIMULANTES (<16h): Rhodiola, Eleuthero, Ginseng, Maca, Cafeína, EGCG.
+NOTURNOS: Glicina, Apigenina, L-Teanina, Mag noite, 5-HTP, Valeriana, Ashwagandha 2ªdose.
+PEPTÍDEOS: jejum 2h obrigatório (insulina bloqueia GH).
+INTERAÇÕES CRÍTICAS: Zinco+Cálcio(separar 2h), EGCG+ferro(separar 2h), 5-HTP+SSRI(proibido), enzimas fibrinolíticas+anticoagulantes(monitorar).
+CICLAGEM: Adaptógenos 6-8sem/2-3off. Berberina 8sem/4off. Huperzina 2sem/2off. African Mango 10-12sem/4off. Gymnema 12sem/4off.
+BIODISPONIBILIDADE SUPERIORES: Mag glicinato>óxido. Zinco picolinato>gluconato. Ferro bisglicinato>sulfato. Curcumina BCM-95/fitossomada>pó. Silimarina Siliphos>padrão. B12 metilcobalamina>ciano. Folato L-MTHF>ác fólico (30% pop MTHFR). CoQ10 ubiquinol>ubiquinona (>40 anos).
+
+================================================================
+PROTOCOLOS PARA EXAMES ALTERADOS
+================================================================
+
+LIPÍDIO DESTRUÍDO (LDL>200, HDL<30, TG>400): Parar orais. Ômega-3 rTG 6g/dia, Bergamota 1000mg 2x, Red Yeast Rice 600mg 2x+CoQ10 400mg, Berberina 500mg 3x, Psyllium 15g/dia, Niacina ER escalar, Policosanol 40mg noite. 4-12sem monitorando. URGENTE se LDL>250, TG>500, HDL<20, PCR>10.
+
+HEMATÓCRITO ALTO (>52%): Hidratar 6-8L, reduzir andrógeno, Nattokinase 4000FU 2x jejum, Lumbrokinase 40mg 2x jejum, Serrapeptase 60mg 3x jejum, Aspirina 81mg/dia, doação de sangue 400-500ml (reduz 2-4 pontos). Meta: <50%.
+
+TESTO SUPRIMIDA (<200ng/dL, LH/FSH<1): Zinco 50mg, D3 10kUI→5kUI, Ashwagandha 600mg 2x, Tongkat Ali 400mg, Fadogia 600mg, Cistanche 500mg, Boron 6-10mg, Maca preta 3g 2x, DAA 3g 30d ciclado. Se <300 após 12sem → endocrino para TRT.
+
+HEPÁTICAS ALTAS (ALT/AST>3x): Parar 17AA+álcool. TUDCA 1000mg 2x, NAC 600mg 3x jejum, Siliphos 360mg 3x+gordura, SAMe 800mg 2x jejum, Schisandra 1g 3x, Fosfatidilcolina 4g, Vit E 800UI, Zinco carnosina 75mg 2x. Se >5x = emergência médica.
+
+PROLACTINA ALTA (>25ng/mL): Cabergolina 0.25-0.5mg 2x/sem com jantar. B6 P5P 50-100mg/dia. Mucuna Pruriens 300-500mg 15% L-Dopa jejum manhã. Zinco 50mg. Vit E 400UI. Meta: <15ng/mL.
+
+GLICEMIA/HbA1c ALTERADOS (pré-diabetes): Manhã jejum: Berberina 500mg + Banaba 48mg. Almoço: Berberina 500mg + Gymnema 200mg. Jantar: Berberina 500mg + Inositol 2g + D-Chiro 250mg. Noite: Jiaogulan 200mg + Mag 400mg. Cromo 400mcg almoço. Agrimônia 700mg pré-refeições.
+
+PA ALTA (>140/90): Extrato oliveira 500mg 2x, Mag 400-600mg, CoQ10 200-400mg com gordura, Hawthorne 1000-1200mg, Alho envelhecido 600-1200mg.
+
+PCR/IL-6 ALTOS: Curcumina BCM-95 500mg 2x+gordura, Resveratrol 150-500mg+Piperina, Quercetina 500mg 2x+Bromelaina, Apigenina 50-100mg noite, EGCG 400-800mg jejum, Astaxantina 12mg+gordura.
+
+REGRAS EXAMES: 1.Nunca ignorar valores críticos. 2.Protocolo natural primeiro. 3.Se não normalizar 8-12sem→médico. 4.Emergências: TG>500, Ht>54%, ALT/AST>5x, Creatinina>2.0, PA>180/110. 5.Atleta ativo tem valores diferentes (creatinina e enzimas levemente altas = normal por massa/treino).
 
 ================================================================
 PROTEÇÃO DE SAÚDE
