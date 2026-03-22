@@ -420,6 +420,33 @@ export type Database = {
           },
         ]
       }
+      coach_apex_log: {
+        Row: {
+          admin_id: string
+          atleta_ref: string | null
+          created_at: string | null
+          id: string
+          pergunta: string | null
+          resposta: string | null
+        }
+        Insert: {
+          admin_id: string
+          atleta_ref?: string | null
+          created_at?: string | null
+          id?: string
+          pergunta?: string | null
+          resposta?: string | null
+        }
+        Update: {
+          admin_id?: string
+          atleta_ref?: string | null
+          created_at?: string | null
+          id?: string
+          pergunta?: string | null
+          resposta?: string | null
+        }
+        Relationships: []
+      }
       coach_briefings: {
         Row: {
           ai_analysis: string | null
