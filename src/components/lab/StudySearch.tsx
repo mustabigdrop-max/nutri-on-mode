@@ -157,7 +157,7 @@ const StudySearch = ({ onAskApex }: StudySearchProps) => {
         >
           <Filter className="w-4 h-4" />
         </Button>
-        <Button onClick={search} disabled={loading || !query.trim()} className="h-12 px-6">
+        <Button data-search-btn onClick={search} disabled={loading || !query.trim()} className="h-12 px-6">
           {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Buscar"}
         </Button>
       </div>
@@ -347,7 +347,7 @@ const StudySearch = ({ onAskApex }: StudySearchProps) => {
           <p className="text-sm text-muted-foreground">Pesquise estudos científicos de todo o mundo</p>
           <p className="text-[10px] text-muted-foreground/60">Meta-análises · RCTs · Revisões Sistemáticas</p>
           <div className="flex flex-wrap gap-2 justify-center pt-2">
-            {["creatina dosagem", "jejum intermitente", "proteína pós-treino", "vitamina D imunidade", "microbioma e humor"].map(s => (
+            {["beta oxidação l-carnitina", "creatina dosagem", "jejum intermitente", "proteína pós-treino", "vitamina D imunidade", "microbioma e humor"].map(s => (
               <button
                 key={s}
                 onClick={() => { setQuery(s); }}
