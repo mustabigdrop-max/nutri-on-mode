@@ -167,6 +167,11 @@ const ChatPage = () => {
         </button>
       </div>
 
+      {/* Chat limit banner for acompanhado */}
+      {isAcompanhado && (
+        <ChatLimitBanner used={chatUsedThisMonth} limit={chatLimit} isUnlimited={isChatUnlimited} />
+      )}
+
       {/* Messages */}
       <div ref={scrollRef} className="relative z-10 flex-1 min-h-0 overflow-y-auto px-4 py-4 space-y-4">
         {loadingHistory ? (
