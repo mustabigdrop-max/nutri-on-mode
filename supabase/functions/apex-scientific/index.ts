@@ -252,6 +252,54 @@ PCR/IL-6 ALTOS: Curcumina BCM-95 500mg 2x+gordura, Resveratrol 150-500mg+Piperin
 REGRAS EXAMES: 1.Nunca ignorar valores críticos. 2.Protocolo natural primeiro. 3.Se não normalizar 8-12sem→médico. 4.Emergências: TG>500, Ht>54%, ALT/AST>5x, Creatinina>2.0, PA>180/110. 5.Atleta ativo tem valores diferentes (creatinina e enzimas levemente altas = normal por massa/treino).
 
 ================================================================
+MICROBIOTA — O ÓRGÃO INVISÍVEL DO ATLETA DE ELITE
+================================================================
+
+CONCEITO: 70-80% do sistema imune no intestino (GALT). Microbiota produz vitaminas (K2, B12, B9, B7), neurotransmissores (90% serotonina intestinal), SCFAs, regula permeabilidade, metaboliza hormônios (eixo entero-hepático), determina absorção real de nutrientes.
+
+IMPACTO NO ATLETA: Flora saudável = absorção proteína +40%, creatina +30%, inflamação reduzida, recuperação acelerada, testosterona mais elevada (beta-glucuronidase regula recirculação de andrógenos).
+
+SINAIS DE FLORA COMPROMETIDA: Gases pós-proteína, distensão crônica, alternância diarreia/constipação, Bristol<3 ou >5, recuperação lenta sem razão, PCR elevada sem causa, candidíase recorrente, acne resistente, fadiga mental pós-refeição, absorção ruim de supls.
+
+FATORES DESTRUTIVOS: 1.Antibióticos (recuperação 2-3 anos sem intervenção). 2.Orais 17AA (alteração pH). 3.IBPs crônicos. 4.AINEs crônicos. 5.Dieta hiperproteica sem fibra. 6.Álcool. 7.Estresse crônico. 8.Sono ruim. 9.Água clorada. 10.Adoçantes artificiais (sucralose, aspartame).
+
+EXAMES MICROBIOTA: Básico: parasitológico 3 amostras, coprocultura, H. pylori, calprotectina fecal, zonulina sérica, IgA secretória fecal, lactulose/manitol. Avançado: sequenciamento 16S rRNA, SIBO breath test (H2+metano), ácidos orgânicos urinários, SCFA fecais.
+
+FASE 1 — REMOVER (sem 1-4): Óleo orégano 200mg 3x/dia entre refeições (máx 4sem, separar 2h probióticos). Berberina 500mg 3x. Alicina 180-360mg com refeição. Ác caprílico C8 500-1000mg 3x com gordura (anti-Candida). Neem 500mg 2x pré-refeição. Pau D'Arco 500mg 3x ou chá 10g/L. GSE 250mg 3x pré-refeição. H.pylori: Mástique 1g 2x jejum 8-12sem + Lactoferrina 200mg 2x + Sulforafano 100mg + Vit C 1g 3x.
+
+FASE 2 — REPOVOAR (sem 3-8): CEPAS POR FUNÇÃO:
+Performance: L. acidophilus NCFM 10B (imunidade, digestão proteína), L. rhamnosus GG 10-20B (barreira, leaky gut — mais estudado 600+ estudos), L. plantarum 299v 10B (absorção ferro +50%, anti-inflamatório GI), L. plantarum TWK10 (força e endurance — estudos Taiwan).
+Testosterona: L. reuteri DSM 17938 100M (testo via redução inflamação testicular + oxitocina).
+Composição corporal: L. gasseri SBT2055 10B com almoço (reduz gordura visceral/abdominal — estudos japoneses 12sem).
+Barreira: Akkermansia muciniphila pasteurizada 100mg antes dormir jejum (fortalece muco, sensibilidade insulínica, anti-inflamatório — forma pasteurizada > viva).
+Psicobióticos: L. helveticus R0052 + B. longum R0175 3B cada manhã jejum (cortisol, ansiedade, humor — Cerebiome).
+Imunidade: B. longum BB536 10-20B antes dormir (reduz duração/severidade resfriados), B. infantis 35624 1B (IBS, TNF-alfa, PCR — Alflorex).
+Anti-diarreia: S. boulardii CNCM I-745 500-1000mg entre refeições (sobrevive antibióticos, antagoniza Candida, IgA — Florastor).
+Feminino: L. crispatus + L. jensenii 10B (saúde vaginal, previne candidíase com AAS femininos).
+
+STACK ATLETA MÍNIMO: 1.L.rhamnosus GG 20B + 2.B.longum BB536 15B + 3.S.boulardii 10B → antes dormir.
+STACK COMPLETO: Manhã: L.plantarum 299v + L.reuteri. Almoço: L.gasseri + Akkermansia. Noite: LGG + BB536 + NCFM + S.boulardii. Rotação cepas a cada 4-6sem.
+
+FASE 3 — NUTRIR (sem 1-12): PREBIÓTICOS: FOS 5-8g distribuído (alimenta Bifido, escalar de 2g). Inulina chicória 5-10g com refeições. GOS 5.5g (Bifido+Lacto). XOS 1-4g (mais potente/grama que FOS/GOS). Amido resistente 15-30g via alimentação (banana verde, batata/arroz resfriados — hack arroz: cozinhar com óleo coco, resfriar 12h = AR 10x maior). Psyllium 10-15g 2 doses pré-refeição (separar 2h medicamentos). Lactulose 5-10g manhã (potente Bifido). Pectina 6-12g/maçã com casca (alimenta Akkermansia). Beta-glucana 3-5g aveia/cogumelos. Arabinogalactana 4-6g (butirato + propionato + imunomod).
+
+FERMENTADOS: Kefir leite artesanal 200-400ml (30-50 cepas > cápsulas). Kefir água para intolerantes. Kombucha raw 200ml (não pasteurizado). Chucrute/Kimchi 50-100g (rico L.plantarum). Missô 1 colher (água morna, não quente). Natto 50-80g (nattokinase + K2 MK-7 1000mcg/100g + probióticos). Iogurte grego artesanal raw 200g.
+
+FASE 4 — PROTEGER (permanente): REPARADORES: L-Glutamina 10-20g dividido jejum (5g acordar + 5g pós-treino + 5g dormir). Colostro bovino 5-20g manhã jejum (IgA, lactoferrina, IGF-1, EGF). Zinco Carnosina 75mg 2x com refeições (mais específico mucosa — aprovado Japão úlceras). Butirato sódio 300-600mg 3x entérico (SCFA direto, HDAC inibidor, colonócito fuel). BPC-157 oral 250-500mcg jejum. Curcumina BCM-95 (tight junctions). Aloe vera 200-400ml ou 500mg manhã jejum. DGL 380mg 3x 20min pré-refeição (muco protetor). Marshmallow Root 400mg 4x jejum (mucilagem). Slippery Elm 400mg 3-4x jejum (mucoprotetor). Cálcio D-Glucarato 500-1000mg com refeições (inibe beta-glucuronidase → melhor excreção estrogênio).
+
+EIXOS: Intestino-Músculo (SCFAs → GPR41/43 → síntese proteica + insulina + mitocôndria. Amido resistente pós-treino. Kefir+whey sinergia). Intestino-Cérebro (90% serotonina, 50% dopamina, GABA por LGG). Intestino-Hormônios (beta-glucuronidase patogênica reabsorve estrogênio → Cálcio D-Glucarato. Flora saudável → menos LPS → menos inflamação → melhor função Leydig → mais testo). Intestino-Imune (IgA secretória: colostro + probióticos + glutamina + vit A + zinco. Tight junctions: glutamina, colostro, BPC-157, zinco carnosina, butirato, DGL).
+
+GUT ELITE PROTOCOL TIMING: Manhã jejum: Aloe 200ml → Glutamina 5g → Probióticos manhã → Slippery Elm 400mg + DGL 380mg → Colostro 10g. Com café: Kefir 200ml, Psyllium 5g, Butirato 300mg, Zinco carnosina 75mg, Beta-glucana 3g. Pós-treino: Glutamina 5g + amido resistente. Almoço: Enzimas + Betaína HCl + FOS/GOS 3g + Chucrute 50g. Tarde: L.gasseri. Jantar: Enzimas + Cálcio D-Glucarato 500mg + XOS 2g + Colostro 5g + Butirato 300mg. Pré-sono: LGG 20B + BB536 15B + S.boulardii 10B + NCFM 10B + Glutamina 5g + Marshmallow 500mg + Zinco carnosina 75mg.
+
+CASOS ESPECIAIS: Pós-antibiótico (8-12sem): Sem1-2: S.boulardii 1g 3x + Colostro 20g + Glutamina 20g + zero açúcar/álcool + kefir 400ml. Sem3-4: +LGG 20B + BB536 20B + FOS+Inulina 10g. Sem5-8: stack completo + Akkermansia. Sem9-12: manutenção.
+SIBO: Fase erradicação 4sem (orégano+berberina+alicina+caprílico, Low-FODMAP, SEM probióticos fermentadores exceto S.boulardii). Fase repovoar: gradual, começar L.reuteri + B.longum, evitar LGG/NCFM inicialmente (produtores H2).
+Candida: Fase 1 4sem (óleo coco 2-3 colheres, caprílico 1500mg 3x, GSE, berberina, pau d'arco, alicina, dieta zero açúcar/álcool/leveduras/frutas doces/glúten). Fase 2 (S.boulardii 1g 3x, L.acidophilus 20B, Biotina 5mg inibe forma hifal, Molibdênio 250mcg detoxifica acetaldeído).
+Leaky gut: Glutamina 20-30g 4x jejum, Colostro 20g jejum, Zinco carnosina 75mg 3x, Butirato 600mg 3x, BPC-157 500mcg oral jejum, DGL 380mg 4x, Marshmallow 400mg 4x, Slippery Elm 400mg 4x, Quercetina 500mg 3x (tight junctions), D3 10kUI, Vit A 10kUI, Ômega-3 6g. Eliminar glúten/laticínios/açúcar/AINEs/álcool 8-12sem. Reavaliar zonulina 12sem.
+
+POTENCIALIZAÇÃO POR FLORA SAUDÁVEL: Proteína absorção +40% (L.plantarum 299v). Creatina: flora ruim converte em creatinina inativa. Magnésio: B.longum+LGG melhoram absorção. Zinco: +35% com flora saudável. Ferro: L.plantarum 299v +50% não-heme. Curcumina: flora converte em tetra-hidrocurcumina (forma ativa). Isoflavonas: convertidas em equol (10x mais ativo) — 30-50% não têm bactéria conversora. Ômega-3: resolvinas/protectinas dependem de interação com flora.
+
+TIMING MICROBIOTA: Probióticos+antimicrobianos NUNCA juntos (separar 2-3h). Probióticos melhor com refeição leve ou 30min antes OU antes dormir (trânsito lento = colonização). NUNCA líquidos >40°C. NUNCA água clorada. Prebióticos com refeições (menos gases). Enzimas digestivas SEMPRE início da refeição. Escalar prebióticos em 2-3sem.
+
+================================================================
 PROTEÇÃO DE SAÚDE
 ================================================================
 CARDIO: Ômega-3 4-6g, CoQ10 200-400mg, Berberina 500mg 3x, Nattokinase 2000FU, K2 200mcg, Magnésio 400mg. Hematócrito >52% = flebotomia, >54% = parar.
@@ -378,7 +426,7 @@ serve(async (req) => {
 
     // Step 1: Classify intent
     const q = question.toLowerCase();
-    const isScientific = /estudo|pesquisa|evidência|ciência|pubmed|meta.?análise|creatina|whey|cafeína|suplemento|protocolo|dose|dosagem|ciclo|tpc|trembolona|testosterona|nandrolona|oxandrolona|winstrol|gh|insulina|sarms|clenbuterol|peak.?week|peptídeo|peptideo|bpc.?157|tb.?500|ipamorelin|ghrp|cjc.?1295|igf|aod.?9604|selank|semax|pt.?141|melanotan|epithalon|sermorelin|tesamorelin|fitoterápico|fitoterapico|ashwagandha|tongkat|rhodiola|curcumina|boswellia|lion.?s.?mane|bacopa|berberina|jiaogulan|gynostemma|agrimônia|agrimonia|banaba|corosolic|gymnema|inositol|african.?mango|irvingia|kudzu|nattokinase|serrapeptase|lumbrokinase|pycnogenol|schisandra|andrographis|siliphos|unha.?de.?gato|garra.?do.?diabo|harpagophytum|eleutherococcus|bergamota|policosanol|mucuna|cistanche|fadogia|hematócrito|hematocrito|prolactina|triglicerídeo|triglicerideos|ldl|hdl|glicemia|hba1c/.test(q);
+    const isScientific = /estudo|pesquisa|evidência|ciência|pubmed|meta.?análise|creatina|whey|cafeína|suplemento|protocolo|dose|dosagem|ciclo|tpc|trembolona|testosterona|nandrolona|oxandrolona|winstrol|gh|insulina|sarms|clenbuterol|peak.?week|peptídeo|peptideo|bpc.?157|tb.?500|ipamorelin|ghrp|cjc.?1295|igf|aod.?9604|selank|semax|pt.?141|melanotan|epithalon|sermorelin|tesamorelin|fitoterápico|fitoterapico|ashwagandha|tongkat|rhodiola|curcumina|boswellia|lion.?s.?mane|bacopa|berberina|jiaogulan|gynostemma|agrimônia|agrimonia|banaba|corosolic|gymnema|inositol|african.?mango|irvingia|kudzu|nattokinase|serrapeptase|lumbrokinase|pycnogenol|schisandra|andrographis|siliphos|unha.?de.?gato|garra.?do.?diabo|harpagophytum|eleutherococcus|bergamota|policosanol|mucuna|cistanche|fadogia|hematócrito|hematocrito|prolactina|triglicerídeo|triglicerideos|ldl|hdl|glicemia|hba1c|microbiota|microbioma|disbiose|sibo|candida|leaky.?gut|permeabilidade|probiótico|probiotico|prebiótico|prebiotico|kefir|kombucha|fermentado|intestin|glutamina|colostro|butirato|scfa|zonulina|calprotectina|akkermansia|rhamnosus|boulardii|plantarum|bifidobacterium|lactobacillus|coprocultura|h\.?pylori/.test(q);
 
     let perplexityResult = "";
     let citations: string[] = [];
