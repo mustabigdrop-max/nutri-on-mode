@@ -347,7 +347,7 @@ const StudySearch = ({ onAskApex }: StudySearchProps) => {
           <p className="text-sm text-muted-foreground">Pesquise estudos científicos de todo o mundo</p>
           <p className="text-[10px] text-muted-foreground/60">Meta-análises · RCTs · Revisões Sistemáticas</p>
           <div className="flex flex-wrap gap-2 justify-center pt-2">
-            {["creatina dosagem", "jejum intermitente", "proteína pós-treino", "vitamina D imunidade", "microbioma e humor"].map(s => (
+            {["beta oxidação l-carnitina", "creatina dosagem", "jejum intermitente", "proteína pós-treino", "vitamina D imunidade", "microbioma e humor"].map(s => (
               <button
                 key={s}
                 onClick={() => { setQuery(s); }}
