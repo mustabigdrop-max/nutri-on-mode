@@ -546,6 +546,7 @@ export type Database = {
         Row: {
           coach_id: string
           created_at: string | null
+          features_override: Json | null
           id: string
           notes: string | null
           patient_user_id: string
@@ -555,6 +556,7 @@ export type Database = {
         Insert: {
           coach_id: string
           created_at?: string | null
+          features_override?: Json | null
           id?: string
           notes?: string | null
           patient_user_id: string
@@ -564,6 +566,7 @@ export type Database = {
         Update: {
           coach_id?: string
           created_at?: string | null
+          features_override?: Json | null
           id?: string
           notes?: string | null
           patient_user_id?: string
@@ -2150,6 +2153,7 @@ export type Database = {
           dietary_restrictions: string[] | null
           email: string | null
           fat_g: number | null
+          features_override: Json | null
           first_meal_registered: boolean | null
           full_name: string | null
           geb_kcal: number | null
@@ -2194,6 +2198,7 @@ export type Database = {
           dietary_restrictions?: string[] | null
           email?: string | null
           fat_g?: number | null
+          features_override?: Json | null
           first_meal_registered?: boolean | null
           full_name?: string | null
           geb_kcal?: number | null
@@ -2238,6 +2243,7 @@ export type Database = {
           dietary_restrictions?: string[] | null
           email?: string | null
           fat_g?: number | null
+          features_override?: Json | null
           first_meal_registered?: boolean | null
           full_name?: string | null
           geb_kcal?: number | null
