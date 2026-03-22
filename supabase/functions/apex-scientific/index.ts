@@ -86,13 +86,107 @@ E. AMINOÁCIDOS INTRA-TREINO "O Cockpit"
 EAA 12g + Citrulina 4g + Beta-alanina 2g + Taurina 3g + Glutamina 5g + Carb 40-60g + Eletrólitos + Glicerol 5g + 750ml-1L água.
 
 ================================================================
+PEPTÍDEOS — GUIA COMPLETO
+================================================================
+
+A. SECRETAGOGOS DE GH:
+GHRP-2: 100-300mcg SC 2-3x/dia (acordar, pós-treino, dormir). Fome intensa (grelina). Combo ideal: GHRP-2 + CJC-1295.
+GHRP-6: 100-300mcg 2-3x/dia. Fome MUITO intensa. Melhor offseason, pior cutting.
+Ipamorelin: 200-300mcg 2-3x/dia. Mais seletivo, sem cortisol/prolactina elevados, sem fome. Preferido cutting. Combo: Ipamorelin + CJC-1295 DAC = mais limpo.
+CJC-1295 sem DAC: 100-200mcg/inj, meia-vida 30min. Sempre com GHRP. Amplifica GH 2-10x.
+CJC-1295 com DAC: 1-2mg 1-2x/sem (meia-vida 8d). Eleva GH contínuo.
+MOD GRF 1-29: 100mcg com GHRP. MOD GRF + Ipamorelin = protocolo mais popular atual.
+Hexarelin: 100-200mcg 2x/dia. Mais potente GHRP. Dessensibiliza rápido. Cardioprotetor.
+
+B. PEPTÍDEOS IGF E CRESCIMENTO:
+IGF-1 LR3: 20-50mcg pós-treino IM no músculo. Meia-vida 20-30h. Hiperplasia (novas células). 4sem on/4off.
+Des-IGF-1: 1mcg/kg pós-treino. 10x mais potente, ação localizada.
+PEG-MGF: 200mcg 2x/sem IM no músculo alvo. Estimula células satélite.
+
+C. QUEIMA DE GORDURA:
+AOD-9604: 300-500mcg/dia SC. Fragmento lipolítico do GH sem efeitos anabólicos. Sem impacto glicose/IGF-1. Aprovado Austrália.
+5-Amino-1MQ: 50-100mg/dia oral. Inibidor NNMT, aumenta NAD+. Novo, menos dados longo prazo.
+Tesamorelin: 1-2mg/dia SC. Aprovado FDA lipodistrofia. Reduz gordura visceral.
+
+D. RECUPERAÇÃO E REPARO:
+BPC-157: 250-500mcg/dia SC ou oral. Reparo tendões/ligamentos (extraordinário), cura muscular, proteção gástrica, neuroproteção. Colaterais mínimos. Agudo: 500mcg 4-6sem. Manutenção: 250mcg.
+TB-500: 2-2.5mg 2x/sem 4-6sem, depois 2mg/sem. Upregula actina, migração celular, angiogênese. BPC-157 + TB-500 = "wolverine stack".
+KPV: 500mcg-1mg/dia SC. Anti-inflamatório intestinal e sistêmico potente.
+Sermorelin: 200-300mcg antes dormir. Análogo GHRH fisiológico, não suprime eixo.
+
+E. PERFORMANCE E OUTROS:
+Selank: 250-500mcg intranasal/SC. Ansiolítico sem dependência/sedação. Ideal ansiedade competitiva.
+Semax: 300-600mcg intranasal. Nootropico, BDNF elevado, foco mental.
+PT-141: 1-2mg SC 2-4h antes. Função sexual via SNC (não vascular). Ambos sexos. Ondansetrona 4mg antes p/ náusea.
+Melanotan II: 0.25-1mg SC. Bronzeamento, libido, supressão apetite. NUNCA com histórico melanoma.
+Epithalon: 5-10mg/dia 10-20d (ciclo). Ativa telomerase. Antienvelhecimento, sono profundo.
+
+F. PEPTÍDEOS FEMININOS:
+Seguros: AOD-9604, BPC-157+TB-500, Ipamorelin, PT-141 (0.5-1mg), KPV, Sermorelin.
+Evitar: GHRP-6 (fome), Melanotan II (virilização doses altas).
+
+================================================================
+FÁRMACOS CONTROLE DE COLATERAIS
+================================================================
+
+CARDIOVASCULAR: Nebivolol 2.5-5mg (beta-bloq vasodilatador NO). Lisinopril/Enalapril 5-10mg (IECA, 1a escolha HAS+AAS). Anlodipino 5-10mg. Rosuvastatina/Pitavastatina (Pitava preferida - menos impacto testo) + CoQ10 200-400mg. Berberina 500mg 3x (alt natural estatinas + insulina + microbioma).
+
+HEPÁTICO: TUDCA 500mg, SAMe 400-800mg, Fosfatidilcolina 2-4g, Vit E tocoferóis 400UI.
+
+ACNE: Grau 1-2 tópico (peróxido benzoíla + ác azelaico + adapaleno + niacinamida). Grau 2-3 oral (Doxiciclina 100mg 2x 8-12sem, Zinco picolinato 30-50mg, Vit A 10kUI). Grau 3-4 (Isotretinoína 0.5-1mg/kg — evitar 17AA simultâneo). Fitoterápico: Saw Palmetto 320mg, EGCG 400mg.
+
+QUEDA CABELO: Nível 1 preventivo (Minoxidil 5%, cetoconazol 2% shampoo, biotina 5-10mg, saw palmetto). Nível 2 ativo (Finasterida 1mg ou Dutasterida 0.5mg, RU58841 50-75mg tópico). Nível 3 (mesoterapia, PRP, LLLT, transplante). GHK-Cu tópico + Minoxidil sinergia.
+
+PELE: Manhã (limpeza pH5.5, Vit C 15-20%, niacinamida 10%, FPS 50+). Noite (dupla limpeza, retinol 0.5-1%, peptídeos tópicos, hidratante). Suplementação: colágeno 10g, ác hialurônico oral 120mg, astaxantina 12mg, silício 100mg. Estrias: tretinoína 0.05-0.1% + microneedling.
+
+SEXUAL/ERÉTIL: Investigar causa (E2 alto, prolactina, testo baixa, psico/dopaminérgico). Natural: maca 3g, tribulus 750mg, ginseng 600mg, citrulina 6g, pycnogenol 120mg+arginina. Farmacológico: Tadalafila 5mg/dia ou 20mg conforme, Sildenafila 50-100mg, PT-141 1-2mg. Combo máx: Tadalafila + PT-141.
+
+DIGESTIVO: Probióticos 10-50bi UFC (L. acidophilus, L. rhamnosus GG, B. longum, S. boulardii). Prebióticos (inulina 5-10g, FOS 5g, psyllium 5-10g). Enzimas digestivas + Betaína HCl 500-1000mg. Intestino: glutamina 10-15g jejum, colostro 3-10g, zinco carnosina 75mg, BPC-157 oral 250-500mcg. Evitar IBPs crônicos.
+
+================================================================
+NUTRIÇÃO AVANÇADA — NÍVEL OLÍMPICO
+================================================================
+
+PERI-TREINO: Pré (60-90min): 30-40g whey + 50-80g carb baixo-médio IG + cafeína 3-6mg/kg + creatina 5g + citrulina 6-8g + beta-alanina 3.2g. Intra: "O Cockpit". Pós (2h): 40-60g proteína + 60-100g carb + creatina 5g + leucina 3g + glutamina 5g + vit C 500mg. Pré-sono: caseína 40g + ZMA + ashwagandha 600mg + glicina 3g.
+
+BULK INTELIGENTE: +300-500kcal, P:2.5g/kg C:4-6g/kg G:1g/kg. Se >0.5%peso/sem reduzir. Mini-cuts 2-3sem a cada 8-10sem bulk (-400kcal, P:3g/kg).
+
+CYCLING CALÓRICO: Treino pesado +200-300kcal, treino leve manutenção, descanso -200-300kcal.
+
+PROTEÍNA: 4-6 refeições 30-50g. Leucina threshold 2.5-3g/refeição. Animal > vegetal. Veganos: arroz+ervilha 70:30 + leucina isolada.
+
+CARB PERIODIZADO: Pernas/costas=alto, braços/ombros=médio, descanso=baixo+gordura alta.
+
+GORDURAS: 70% insaturadas, 20% saturadas, 10% ômega-3. MCT 15-30ml/dia. CLA 3-4g/dia.
+
+JEJUM: 16:8 com proteína pré-treino. Fasted cardio LISS <65%FCmax 30-45min com 10g EAA 20min antes. GH em jejum 300-400% maior.
+
+MICRONUTRIENTES CRÍTICOS: D3 5-10kUI (alvo 60-80ng/mL) + K2 200mcg. Magnésio quelato 400-600mg noite. Zinco picolinato 30-50mg. Ferro bisglicinato (se ferritina baixa). Iodo 150-300mcg. Selênio 200mcg. Cromo 200-400mcg. B12 metilcobalamina 1000mcg.
+
+================================================================
+FITOTERÁPICOS — GUIA POR OBJETIVO
+================================================================
+
+HORMONAL/TESTO: Ashwagandha KSM-66 600mg (cortisol -28%, testo +15-17%). Tongkat Ali 200-400mg 100:1 (testo livre, reduz SHBG). Fadogia Agrestis 425-600mg (LH elevado, monitorar LFT). Tribulus 750-1500mg 45% saponinas (libido). Feno-grego Testofen 500-600mg (inibe SHBG).
+
+ADAPTÓGENOS: Rhodiola 400-600mg (fadiga, VO2max, 5on/2off). Ginseng Panax 200-400mg (performance, erétil, cognição). Eleuthero 300-600mg (endurance). Maca 1.5-3g (libido).
+
+ANTI-INFLAMATÓRIO: Curcumina 500-1000mg + Piperina 5-20mg (COX-2). Boswellia 300-500mg AKBA>10% (articulações). Gengibre 1-2g (DOMS). Cereja azeda 480mg 2x/dia (DOMS, melatonina). Hawthorne 500-1000mg (cardio).
+
+PROSTÁTICA: Saw Palmetto 320mg + Beta-sitosterol 60-130mg + Licopeno 10-15mg + Pygeum 100mg.
+
+SONO: Mag glicinato/treonato 400mg + L-Teanina 200-400mg + Glicina 3g + Apigenina 50mg + Melatonina 0.3-1mg (dose fisiológica!). 5-HTP 100-300mg (nunca com SSRI). Valeriana 300-600mg.
+
+COGNIÇÃO: Lion's Mane 500-1000mg (NGF). Bacopa 300mg 55% bacosídeos (8-12sem). Alfa GPC 300-600mg. Fosfatidilserina 100-300mg (cortisol -20-30%). Huperzina A 50-100mcg (ciclar 2sem on/off).
+
+================================================================
 PROTEÇÃO DE SAÚDE
 ================================================================
 CARDIO: Ômega-3 4-6g, CoQ10 200-400mg, Berberina 500mg 3x, Nattokinase 2000FU, K2 200mcg, Magnésio 400mg. Hematócrito >52% = flebotomia, >54% = parar.
 HEPÁTICA: TUDCA 500mg + NAC 600mg 2x + Silimarina 400mg. Zero álcool com orais.
 RENAL: 4-6L água, Astragalus 500mg 2x, Cranberry 1000mg.
 TPC Base: Esperar 2sem pós-éster longo. Clomifeno 50/50/25/25 + Nolvadex 40/40/20/20 (4 sem). Avançado: HCG 1000-1500UI EOD 2sem antes.
-Scally HPTA Restart: HCG 2000UI EOD 20d → Clomifeno 100mg 30d → 50mg 30d.
+Scally HPTA Restart: HCG 2000UI EOD 20d, Clomifeno 100mg 30d, 50mg 30d.
 MENTAL: Ashwagandha KSM-66 600mg, Rhodiola 400mg, Mag treonato 144mg, D3 5-10kUI, Zinco 30-50mg.
 
 EXAMES: A cada 6 sem (hemograma, hepáticas, renais, lipídio). A cada 3 meses (hormônios, prolactina, E2, PSA). Anual (eco, holter, densitometria).
@@ -211,7 +305,7 @@ serve(async (req) => {
 
     // Step 1: Classify intent
     const q = question.toLowerCase();
-    const isScientific = /estudo|pesquisa|evidência|ciência|pubmed|meta.?análise|creatina|whey|cafeína|suplemento|protocolo|dose|dosagem|ciclo|tpc|trembolona|testosterona|nandrolona|oxandrolona|winstrol|gh|insulina|sarms|clenbuterol|peak.?week/.test(q);
+    const isScientific = /estudo|pesquisa|evidência|ciência|pubmed|meta.?análise|creatina|whey|cafeína|suplemento|protocolo|dose|dosagem|ciclo|tpc|trembolona|testosterona|nandrolona|oxandrolona|winstrol|gh|insulina|sarms|clenbuterol|peak.?week|peptídeo|peptideo|bpc.?157|tb.?500|ipamorelin|ghrp|cjc.?1295|igf|aod.?9604|selank|semax|pt.?141|melanotan|epithalon|sermorelin|tesamorelin|fitoterápico|fitoterapico|ashwagandha|tongkat|rhodiola|curcumina|boswellia|lion.?s.?mane|bacopa/.test(q);
 
     let perplexityResult = "";
     let citations: string[] = [];
