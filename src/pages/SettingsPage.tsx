@@ -4,11 +4,13 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
+import { useAccessControl } from "@/hooks/useAccessControl";
 import {
   ArrowLeft, Save, LogOut, User, Target, Activity,
-  Scale, Ruler, Calendar, Dumbbell, Heart, Shield, Bell
+  Scale, Ruler, Calendar, Dumbbell, Heart, Shield, Bell, Sparkles
 } from "lucide-react";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 
 const GOALS: Record<string, string> = {
   lose_weight: "Emagrecimento",
