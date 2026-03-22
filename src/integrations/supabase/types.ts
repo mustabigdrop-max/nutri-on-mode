@@ -1464,6 +1464,135 @@ export type Database = {
         }
         Relationships: []
       }
+      lab_conversations: {
+        Row: {
+          created_at: string | null
+          fontes: Json | null
+          id: string
+          intent_type: string | null
+          pergunta: string
+          perplexity_usado: boolean | null
+          resposta: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          fontes?: Json | null
+          id?: string
+          intent_type?: string | null
+          pergunta: string
+          perplexity_usado?: boolean | null
+          resposta?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          fontes?: Json | null
+          id?: string
+          intent_type?: string | null
+          pergunta?: string
+          perplexity_usado?: boolean | null
+          resposta?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      lab_protocols: {
+        Row: {
+          categoria: string
+          conteudo: Json | null
+          created_at: string | null
+          fontes: Json | null
+          id: string
+          nivel: string | null
+          tempo_leitura: number | null
+          titulo: string
+          updated_at: string | null
+        }
+        Insert: {
+          categoria: string
+          conteudo?: Json | null
+          created_at?: string | null
+          fontes?: Json | null
+          id?: string
+          nivel?: string | null
+          tempo_leitura?: number | null
+          titulo: string
+          updated_at?: string | null
+        }
+        Update: {
+          categoria?: string
+          conteudo?: Json | null
+          created_at?: string | null
+          fontes?: Json | null
+          id?: string
+          nivel?: string | null
+          tempo_leitura?: number | null
+          titulo?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      lab_saved_items: {
+        Row: {
+          conteudo: Json | null
+          created_at: string | null
+          id: string
+          tags: string[] | null
+          tipo: string
+          titulo: string | null
+          user_id: string
+        }
+        Insert: {
+          conteudo?: Json | null
+          created_at?: string | null
+          id?: string
+          tags?: string[] | null
+          tipo?: string
+          titulo?: string | null
+          user_id: string
+        }
+        Update: {
+          conteudo?: Json | null
+          created_at?: string | null
+          id?: string
+          tags?: string[] | null
+          tipo?: string
+          titulo?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      lab_subscriptions: {
+        Row: {
+          activated_at: string | null
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          kiwify_order_id: string | null
+          status: string | null
+          user_id: string
+        }
+        Insert: {
+          activated_at?: string | null
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          kiwify_order_id?: string | null
+          status?: string | null
+          user_id: string
+        }
+        Update: {
+          activated_at?: string | null
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          kiwify_order_id?: string | null
+          status?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       marketplace_protocols: {
         Row: {
           coach_id: string
