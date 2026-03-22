@@ -447,6 +447,69 @@ export type Database = {
         }
         Relationships: []
       }
+      coach_apex_sessions: {
+        Row: {
+          admin_id: string
+          atleta_nome: string | null
+          created_at: string | null
+          id: string
+          pergunta: string
+          protocolo_salvo: boolean | null
+          resposta: string | null
+          tema: string | null
+        }
+        Insert: {
+          admin_id: string
+          atleta_nome?: string | null
+          created_at?: string | null
+          id?: string
+          pergunta: string
+          protocolo_salvo?: boolean | null
+          resposta?: string | null
+          tema?: string | null
+        }
+        Update: {
+          admin_id?: string
+          atleta_nome?: string | null
+          created_at?: string | null
+          id?: string
+          pergunta?: string
+          protocolo_salvo?: boolean | null
+          resposta?: string | null
+          tema?: string | null
+        }
+        Relationships: []
+      }
+      coach_atleta_prontuario: {
+        Row: {
+          admin_id: string
+          atleta_nome: string
+          created_at: string | null
+          id: string
+          observacoes: string | null
+          protocolos: Json | null
+          updated_at: string | null
+        }
+        Insert: {
+          admin_id: string
+          atleta_nome: string
+          created_at?: string | null
+          id?: string
+          observacoes?: string | null
+          protocolos?: Json | null
+          updated_at?: string | null
+        }
+        Update: {
+          admin_id?: string
+          atleta_nome?: string
+          created_at?: string | null
+          id?: string
+          observacoes?: string | null
+          protocolos?: Json | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       coach_briefings: {
         Row: {
           ai_analysis: string | null
