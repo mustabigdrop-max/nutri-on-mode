@@ -171,6 +171,16 @@ const CoachPatientDetailPage = () => {
             </Card>
           </TabsContent>
 
+          {/* ACCESS MANAGEMENT */}
+          <TabsContent value="access" className="space-y-4">
+            {profile && patientId && (
+              <CoachAccessManager
+                patientUserId={patientId}
+                coachProfileId={profile.id}
+              />
+            )}
+          </TabsContent>
+
           {/* PROTOCOL */}
           <TabsContent value="protocol" className="space-y-4">
             <Card>
