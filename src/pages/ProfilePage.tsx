@@ -334,6 +334,13 @@ const ProfilePage = () => {
         </div>
       </div>
 
+      {/* Locked Feature Modal */}
+      <LockedFeatureModal
+        open={!!lockedFeature}
+        onClose={() => setLockedFeature(null)}
+        featureName={lockedFeature || ""}
+      />
+
       <BottomNav />
     </div>
   );
