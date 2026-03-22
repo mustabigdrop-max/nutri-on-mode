@@ -105,8 +105,9 @@ const CoachPatientDetailPage = () => {
 
       <main className="max-w-5xl mx-auto p-4">
         <Tabs defaultValue="overview" className="space-y-4">
-          <TabsList className="w-full grid grid-cols-5">
+          <TabsList className="w-full grid grid-cols-6">
             <TabsTrigger value="overview" className="text-xs"><User className="w-3 h-3 mr-1" />Visão Geral</TabsTrigger>
+            <TabsTrigger value="access" className="text-xs"><Shield className="w-3 h-3 mr-1" />Acesso</TabsTrigger>
             <TabsTrigger value="protocol" className="text-xs"><Brain className="w-3 h-3 mr-1" />Protocolo</TabsTrigger>
             <TabsTrigger value="exams" className="text-xs"><FileText className="w-3 h-3 mr-1" />Exames</TabsTrigger>
             <TabsTrigger value="alerts" className="text-xs"><AlertTriangle className="w-3 h-3 mr-1" />Alertas</TabsTrigger>
