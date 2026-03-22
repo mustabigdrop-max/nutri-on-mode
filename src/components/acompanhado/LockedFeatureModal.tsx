@@ -1,6 +1,9 @@
+import { useEffect } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Lock, Sparkles, BarChart3, BookOpen, ShoppingCart } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface LockedFeatureModalProps {
   open: boolean;
