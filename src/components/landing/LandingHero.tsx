@@ -70,7 +70,7 @@ const LandingHero = () => {
           <br />
           O problema nunca foi você — foi o plano que não te conhecia.
         </p>
-        <p className="text-[1.05rem] leading-[1.75] text-primary/90 font-semibold font-landing">
+        <p className="text-[1.05rem] leading-[1.75] text-foreground/80 font-semibold font-landing">
           O nutriON não é mais uma tentativa. É o protocolo feito pra quem você é.
         </p>
       </motion.div>
