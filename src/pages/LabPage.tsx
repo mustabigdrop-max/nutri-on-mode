@@ -54,7 +54,7 @@ const LabPage = () => {
         <>
           {/* Tabs */}
           <Tabs value={tab} onValueChange={setTab} className="relative z-10 flex-1 flex flex-col min-h-0">
-            <TabsList className="flex-shrink-0 mx-4 mt-3 bg-card border border-border h-10">
+            <TabsList className="flex-shrink-0 mx-4 mt-3 bg-card border border-border h-10 overflow-x-auto">
               <TabsTrigger value="apex" className="flex-1 text-xs gap-1 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
                 <Bot className="w-3.5 h-3.5" /> APEX
               </TabsTrigger>
@@ -63,6 +63,9 @@ const LabPage = () => {
               </TabsTrigger>
               <TabsTrigger value="fito" className="flex-1 text-xs gap-1 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
                 <Leaf className="w-3.5 h-3.5" /> Fito
+              </TabsTrigger>
+              <TabsTrigger value="microbiota" className="flex-1 text-xs gap-1 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
+                <Bug className="w-3.5 h-3.5" /> Microbiota
               </TabsTrigger>
               <TabsTrigger value="search" className="flex-1 text-xs gap-1 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
                 <Search className="w-3.5 h-3.5" /> Estudos
