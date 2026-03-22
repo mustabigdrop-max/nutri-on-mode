@@ -305,7 +305,7 @@ serve(async (req) => {
 
     // Step 1: Classify intent
     const q = question.toLowerCase();
-    const isScientific = /estudo|pesquisa|evidência|ciência|pubmed|meta.?análise|creatina|whey|cafeína|suplemento|protocolo|dose|dosagem|ciclo|tpc|trembolona|testosterona|nandrolona|oxandrolona|winstrol|gh|insulina|sarms|clenbuterol|peak.?week/.test(q);
+    const isScientific = /estudo|pesquisa|evidência|ciência|pubmed|meta.?análise|creatina|whey|cafeína|suplemento|protocolo|dose|dosagem|ciclo|tpc|trembolona|testosterona|nandrolona|oxandrolona|winstrol|gh|insulina|sarms|clenbuterol|peak.?week|peptídeo|peptideo|bpc.?157|tb.?500|ipamorelin|ghrp|cjc.?1295|igf|aod.?9604|selank|semax|pt.?141|melanotan|epithalon|sermorelin|tesamorelin|fitoterápico|fitoterapico|ashwagandha|tongkat|rhodiola|curcumina|boswellia|lion.?s.?mane|bacopa/.test(q);
 
     let perplexityResult = "";
     let citations: string[] = [];
