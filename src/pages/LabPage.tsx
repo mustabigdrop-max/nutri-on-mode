@@ -77,6 +77,9 @@ const LabPage = () => {
               <TabsTrigger value="elite" className="flex-1 text-xs gap-1 data-[state=active]:bg-destructive/10 data-[state=active]:text-destructive">
                 <Zap className="w-3.5 h-3.5" /> Elite
               </TabsTrigger>
+              <TabsTrigger value="training" className="flex-1 text-xs gap-1 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
+                <Dumbbell className="w-3.5 h-3.5" /> Training
+              </TabsTrigger>
               <TabsTrigger value="search" className="flex-1 text-xs gap-1 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
                 <Search className="w-3.5 h-3.5" /> Estudos
               </TabsTrigger>
