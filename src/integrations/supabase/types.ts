@@ -1138,6 +1138,123 @@ export type Database = {
         }
         Relationships: []
       }
+      exercise_sets: {
+        Row: {
+          concluida: boolean | null
+          created_at: string | null
+          diary_id: string
+          exercise_id: string | null
+          exercise_name: string
+          id: string
+          peso: number | null
+          reps: number | null
+          rir: number | null
+          serie_numero: number
+          tecnica_especial: string | null
+          tempo_descanso: number | null
+        }
+        Insert: {
+          concluida?: boolean | null
+          created_at?: string | null
+          diary_id: string
+          exercise_id?: string | null
+          exercise_name: string
+          id?: string
+          peso?: number | null
+          reps?: number | null
+          rir?: number | null
+          serie_numero?: number
+          tecnica_especial?: string | null
+          tempo_descanso?: number | null
+        }
+        Update: {
+          concluida?: boolean | null
+          created_at?: string | null
+          diary_id?: string
+          exercise_id?: string | null
+          exercise_name?: string
+          id?: string
+          peso?: number | null
+          reps?: number | null
+          rir?: number | null
+          serie_numero?: number
+          tecnica_especial?: string | null
+          tempo_descanso?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exercise_sets_diary_id_fkey"
+            columns: ["diary_id"]
+            isOneToOne: false
+            referencedRelation: "workout_diary"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exercise_sets_exercise_id_fkey"
+            columns: ["exercise_id"]
+            isOneToOne: false
+            referencedRelation: "exercises"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      exercises: {
+        Row: {
+          created_at: string | null
+          dicas_biomecanica: string | null
+          dificuldade: string | null
+          emg_activation: Json | null
+          equipamento: string | null
+          erros_comuns: string[] | null
+          execucao_texto: string | null
+          fases_recomendadas: string[] | null
+          grupo_muscular: string
+          id: string
+          musculo_primario: string
+          musculos_secundarios: string[] | null
+          nome: string
+          prioridade: number | null
+          subgrupo_especifico: string
+          variacoes: string[] | null
+        }
+        Insert: {
+          created_at?: string | null
+          dicas_biomecanica?: string | null
+          dificuldade?: string | null
+          emg_activation?: Json | null
+          equipamento?: string | null
+          erros_comuns?: string[] | null
+          execucao_texto?: string | null
+          fases_recomendadas?: string[] | null
+          grupo_muscular: string
+          id?: string
+          musculo_primario: string
+          musculos_secundarios?: string[] | null
+          nome: string
+          prioridade?: number | null
+          subgrupo_especifico: string
+          variacoes?: string[] | null
+        }
+        Update: {
+          created_at?: string | null
+          dicas_biomecanica?: string | null
+          dificuldade?: string | null
+          emg_activation?: Json | null
+          equipamento?: string | null
+          erros_comuns?: string[] | null
+          execucao_texto?: string | null
+          fases_recomendadas?: string[] | null
+          grupo_muscular?: string
+          id?: string
+          musculo_primario?: string
+          musculos_secundarios?: string[] | null
+          nome?: string
+          prioridade?: number | null
+          subgrupo_especifico?: string
+          variacoes?: string[] | null
+        }
+        Relationships: []
+      }
       family_meal_logs: {
         Row: {
           created_at: string
@@ -2362,6 +2479,42 @@ export type Database = {
         }
         Relationships: []
       }
+      personal_records: {
+        Row: {
+          created_at: string | null
+          data: string | null
+          exercise_name: string
+          id: string
+          notas: string | null
+          peso_maximo: number | null
+          reps_com_peso: number | null
+          user_id: string
+          volume_serie: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          data?: string | null
+          exercise_name: string
+          id?: string
+          notas?: string | null
+          peso_maximo?: number | null
+          reps_com_peso?: number | null
+          user_id: string
+          volume_serie?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          data?: string | null
+          exercise_name?: string
+          id?: string
+          notas?: string | null
+          peso_maximo?: number | null
+          reps_com_peso?: number | null
+          user_id?: string
+          volume_serie?: number | null
+        }
+        Relationships: []
+      }
       plan_revisions: {
         Row: {
           analysis_period_end: string | null
@@ -3300,6 +3453,57 @@ export type Database = {
         }
         Relationships: []
       }
+      workout_diary: {
+        Row: {
+          avaliacao_subjetiva: number | null
+          created_at: string | null
+          data: string
+          duracao_minutos: number | null
+          energia_durante: number | null
+          fadiga_pos: number | null
+          humor_pre: string | null
+          id: string
+          notas: string | null
+          reps_total: number | null
+          series_total: number | null
+          split_dia: string | null
+          user_id: string
+          volume_total: number | null
+        }
+        Insert: {
+          avaliacao_subjetiva?: number | null
+          created_at?: string | null
+          data?: string
+          duracao_minutos?: number | null
+          energia_durante?: number | null
+          fadiga_pos?: number | null
+          humor_pre?: string | null
+          id?: string
+          notas?: string | null
+          reps_total?: number | null
+          series_total?: number | null
+          split_dia?: string | null
+          user_id: string
+          volume_total?: number | null
+        }
+        Update: {
+          avaliacao_subjetiva?: number | null
+          created_at?: string | null
+          data?: string
+          duracao_minutos?: number | null
+          energia_durante?: number | null
+          fadiga_pos?: number | null
+          humor_pre?: string | null
+          id?: string
+          notas?: string | null
+          reps_total?: number | null
+          series_total?: number | null
+          split_dia?: string | null
+          user_id?: string
+          volume_total?: number | null
+        }
+        Relationships: []
+      }
       workout_schedule: {
         Row: {
           created_at: string | null
@@ -3330,6 +3534,36 @@ export type Database = {
           user_id?: string
           workout_time?: string
           workout_type?: string
+        }
+        Relationships: []
+      }
+      workout_templates: {
+        Row: {
+          created_at: string | null
+          exercicios: Json | null
+          fase: string | null
+          id: string
+          nome: string
+          split_tipo: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          exercicios?: Json | null
+          fase?: string | null
+          id?: string
+          nome: string
+          split_tipo?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          exercicios?: Json | null
+          fase?: string | null
+          id?: string
+          nome?: string
+          split_tipo?: string | null
+          user_id?: string
         }
         Relationships: []
       }

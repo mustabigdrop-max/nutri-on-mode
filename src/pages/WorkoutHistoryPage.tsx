@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell, LineChart, Line, Legend } from "recharts";
-import { ArrowLeft, Dumbbell, CheckCircle2, XCircle, TrendingUp, Flame, Droplets, Calendar } from "lucide-react";
+import { ArrowLeft, Dumbbell, CheckCircle2, XCircle, TrendingUp, Flame, Droplets, Calendar, Target } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
@@ -148,6 +148,13 @@ const WorkoutHistoryPage = () => {
               NutriSync · Consistência & Calorias
             </p>
           </div>
+          <button
+            onClick={() => navigate("/exercise-selector")}
+            className="ml-auto flex items-center gap-1.5 px-3 py-2 rounded-lg bg-primary/15 border border-primary/30 text-primary text-xs font-semibold hover:bg-primary/25 transition-colors"
+          >
+            <Target className="w-3.5 h-3.5" />
+            Exercícios
+          </button>
         </motion.div>
 
         {/* Week navigator */}
