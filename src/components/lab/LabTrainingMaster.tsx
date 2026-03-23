@@ -8,6 +8,7 @@ import {
   Activity, Zap, Heart, Footprints, ArrowUpDown, RotateCcw,
   Flame, Wind, Bone, Brain, Move, Timer, Repeat, TrendingUp,
 } from "lucide-react";
+import PosturalPhotos from "./PosturalPhotos";
 
 interface TrainingSection {
   id: string;
