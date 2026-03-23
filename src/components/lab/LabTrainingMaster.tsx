@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, lazy, Suspense } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,7 @@ import {
   Activity, Zap, Heart, Footprints, ArrowUpDown, RotateCcw,
   Flame, Wind, Bone, Brain, Move, Timer, Repeat, TrendingUp,
 } from "lucide-react";
+import PosturalPhotos from "./PosturalPhotos";
 
 interface TrainingSection {
   id: string;
@@ -751,6 +752,9 @@ const sections: TrainingSection[] = [
             "NÃO: sit-up tradicional (compressão discal), leg raises sem core ativado",
           ]} />
         </div>
+
+        {/* Registro Fotográfico */}
+        <PosturalPhotos />
       </div>
     ),
   },
