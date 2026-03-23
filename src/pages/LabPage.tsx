@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import BottomNav from "@/components/BottomNav";
-import { Microscope, Bot, BookOpen, Search, FileText, Leaf, Bug, Shield, Zap, Dumbbell, Apple } from "lucide-react";
+import { Microscope, Bot, BookOpen, Search, FileText, Leaf, Bug, Shield, Zap, Dumbbell, Apple, HeartPulse } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ApexChat from "@/components/lab/ApexChat";
 import ProtocolLibrary from "@/components/lab/ProtocolLibrary";
@@ -13,6 +13,7 @@ import MicrobiotaLibrary from "@/components/lab/MicrobiotaLibrary";
 import LabCoachMode from "@/components/lab/LabCoachMode";
 import LabTrainingMaster from "@/components/lab/LabTrainingMaster";
 import LabNutritionMaster from "@/components/lab/LabNutritionMaster";
+import LabHealthMaster from "@/components/lab/LabHealthMaster";
 
 const LabPage = () => {
   const [tab, setTab] = useState("apex");
@@ -84,6 +85,9 @@ const LabPage = () => {
               <TabsTrigger value="nutrition" className="flex-1 text-xs gap-1 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
                 <Apple className="w-3.5 h-3.5" /> Nutrição
               </TabsTrigger>
+              <TabsTrigger value="health" className="flex-1 text-xs gap-1 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
+                <HeartPulse className="w-3.5 h-3.5" /> Saúde
+              </TabsTrigger>
               <TabsTrigger value="search" className="flex-1 text-xs gap-1 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
                 <Search className="w-3.5 h-3.5" /> Estudos
               </TabsTrigger>
@@ -115,6 +119,9 @@ const LabPage = () => {
             </TabsContent>
             <TabsContent value="nutrition" className="flex-1 overflow-y-auto px-4 py-4 mt-0">
               <LabNutritionMaster onAskApex={handleAskApex} />
+            </TabsContent>
+            <TabsContent value="health" className="flex-1 overflow-y-auto px-4 py-4 mt-0">
+              <LabHealthMaster onAskApex={handleAskApex} />
             </TabsContent>
             <TabsContent value="search" className="flex-1 overflow-y-auto px-4 py-4 mt-0">
               <StudySearch onAskApex={handleAskApex} />
