@@ -791,6 +791,204 @@ const sections: TrainingSection[] = [
             "❌ Bicicleta nível alto / Elíptico velocidade alta",
           ]} />
         </Card>
+        <div>
+          <p className="text-foreground font-semibold mb-2">DOMS Preventivo — Protocolo Completo</p>
+          <BulletList items={[
+            "1. Caminhada: 15min (descrita acima)",
+            "2. Foam roll: quadríceps, isquiotibiais, panturrilha — 2-3 passagens lentas, 10-15s em pontos tensos",
+            "3. Estático: Quadríceps 60s/lado (em pé, joelho dobrado) | Isquiotibiais 60s/lado (perna elevada) | Panturrilha 60s/lado (parede) | Pigeon stretch 60s/lado",
+            "4. Contraste térmico: 3min chuveiro quente → 30s frio × 3 rounds",
+            "5. Nutrição: proteína + carb imediato pós-pernas (janela anabólica mais importante do dia)",
+            "6. Hidratação: 500ml água imediato pós-treino",
+          ]} />
+        </div>
+      </div>
+    ),
+  },
+
+  // ══ MÓDULO 8 — PERIODIZAÇÃO COMPLETA ══
+  {
+    id: "periodizacao",
+    title: "Periodização — Modelos Completos",
+    icon: <Repeat className="w-4 h-4 text-violet-500" />,
+    badge: "Programming",
+    badgeColor: "text-violet-500 border-violet-500/30",
+    content: (
+      <div className="space-y-4">
+        <div>
+          <p className="text-foreground font-semibold mb-2">A. Linear (Modelo Clássico)</p>
+          <ExerciseTable rows={[
+            { exercise: "Semanas 1-4", target: "Alto volume, baixa intensidade", sets: "3×15 @ 60%", notes: "Iniciantes" },
+            { exercise: "Semanas 5-8", target: "Volume médio, intensidade média", sets: "4×10 @ 70-75%" },
+            { exercise: "Semanas 9-12", target: "Baixo volume, alta intensidade", sets: "5×5 @ 80-85%" },
+            { exercise: "Semana 13", target: "Deload", sets: "50% volume" },
+            { exercise: "Semana 14", target: "Teste de força máxima", sets: "1RM" },
+          ]} />
+          <p className="text-xs text-muted-foreground mt-1">Para: iniciantes (funciona muito bem). Limite: intermediários/avançados (stalemate rápido)</p>
+        </div>
+        <div>
+          <p className="text-foreground font-semibold mb-2">B. Block Periodization (Issurin)</p>
+          <BulletList items={[
+            "Acumulação (3-4 sem): volume máximo, intensidade menor. MEV → MAV. Hipertrofia base",
+            "Intensificação (2-3 sem): volume reduzido, intensidade elevada. Força máxima, neuromuscular",
+            "Realização/Pico (1-2 sem): volume mínimo, intensidade máxima. Competição/teste de força",
+            "Deload obrigatório entre blocos (1 semana)",
+          ]} />
+        </div>
+        <div>
+          <p className="text-foreground font-semibold mb-2">C. DUP — Daily Undulating Periodization</p>
+          <ExerciseTable rows={[
+            { exercise: "Segunda (Força)", target: "Compostos principais", sets: "4×4-6 @ 85%", notes: "Força neural" },
+            { exercise: "Quarta (Hipertrofia)", target: "Compostos + isolamento", sets: "4×8-12 @ 70-75%", notes: "Crescimento" },
+            { exercise: "Sexta (Endurance muscular)", target: "Isolamento + máquinas", sets: "3×15-20 @ 60%", notes: "Pump/volume" },
+          ]} />
+          <p className="text-xs text-primary mt-1">Superior para intermediários e avançados — variação diária = estímulo sempre novo</p>
+        </div>
+        <div>
+          <p className="text-foreground font-semibold mb-2">D. Conjugado (Westside/Simmons)</p>
+          <BulletList items={[
+            "Max Effort Day: trabalho máximo de força (1-3RM)",
+            "Dynamic Effort Day: velocidade e potência (50-60% × 8-10×2-3)",
+            "Suplementar: isolamento de pontos fracos",
+            "Para bodybuilding: Max Effort (85-95%) + Hypertrophy (isolamento e máquinas) alternados",
+          ]} />
+        </div>
+        <Card className="bg-violet-500/5 border-violet-500/20 p-3">
+          <p className="text-xs font-semibold text-violet-400 mb-1">E. RP Hypertrophy (Mike Israetel — Estado da Arte)</p>
+          <BulletList items={[
+            "MEV (Minimum Effective Volume): mínimo para estimular crescimento. Ponto de partida",
+            "MAV (Maximum Adaptive Volume): volume ótimo — melhor resposta/fadiga ratio",
+            "MRV (Maximum Recoverable Volume): máximo que consegue se recuperar. Final do mesociclo",
+          ]} />
+          <p className="text-xs mt-2 font-semibold text-violet-400">Mesociclo RP (4-6 semanas):</p>
+          <p className="text-xs">Sem 1: MEV → Sem 2: MEV+2 → Sem 3: MAV → Sem 4: MAV+2 → Sem 5: MRV → Sem 6: Deload (50%)</p>
+        </Card>
+        <div>
+          <p className="text-foreground font-semibold mb-2">Volumes RP por Grupo Muscular (séries/semana)</p>
+          <EMGTable rows={[
+            { position: "Peitoral", activation: "MEV 8 | MAV 12-16 | MRV 22" },
+            { position: "Costas", activation: "MEV 10 | MAV 14-18 | MRV 25" },
+            { position: "Ombros", activation: "MEV 8 | MAV 12-16 | MRV 22" },
+            { position: "Bíceps", activation: "MEV 8 | MAV 10-14 | MRV 20" },
+            { position: "Tríceps", activation: "MEV 6 | MAV 10-14 | MRV 18" },
+            { position: "Quadríceps", activation: "MEV 8 | MAV 12-16 | MRV 20" },
+            { position: "Isquiotibiais", activation: "MEV 6 | MAV 10-14 | MRV 16" },
+            { position: "Glúteos", activation: "MEV 0 | MAV 4-8 | MRV 16" },
+            { position: "Panturrilha", activation: "MEV 6 | MAV 8-12 | MRV 16" },
+          ]} />
+        </div>
+      </div>
+    ),
+  },
+
+  // ══ MÓDULO 9 — TÉCNICAS DE INTENSIDADE ══
+  {
+    id: "tecnicas-intensidade",
+    title: "Técnicas de Intensidade Avançadas",
+    icon: <Flame className="w-4 h-4 text-amber-500" />,
+    badge: "Advanced",
+    badgeColor: "text-amber-500 border-amber-500/30",
+    content: (
+      <div className="space-y-4">
+        <div>
+          <p className="text-foreground font-semibold mb-2">Drop Set</p>
+          <BulletList items={[
+            "Série até falha → reduzir carga 20-30% imediatamente → nova série sem descanso → repetir 1-3x",
+            "Quando usar: final de sessão, exercícios de isolamento",
+            "NÃO usar: compostos pesados (risco de lesão)",
+          ]} />
+        </div>
+        <div>
+          <p className="text-foreground font-semibold mb-2">Rest-Pause (base do DC Training)</p>
+          <BulletList items={[
+            "Série até falha → descanso 10-15 respirações (15-20s) → mais reps até falha → repetir 2-3x",
+            "Anotar total de reps. Próxima sessão: bater o recorde",
+          ]} />
+        </div>
+        <div>
+          <p className="text-foreground font-semibold mb-2">Mechanical Drop Set</p>
+          <BulletList items={[
+            "Mesma carga — mudar a mecânica para ficar mais fácil",
+            "Exemplo: puxada pronada → supinada → assistida. Permite mais volume com fadiga acumulada",
+          ]} />
+        </div>
+        <div>
+          <p className="text-foreground font-semibold mb-2">Super Set & Giant Set</p>
+          <BulletList items={[
+            "Super Set Antagonista: bíceps + tríceps (sem compromisso de força)",
+            "Super Set Agonista: supino + crucifixo (pré-exaustão)",
+            "Giant Set: 3-4 exercícios seguidos sem descanso — para pump/congestão, final de sessão",
+          ]} />
+        </div>
+        <div>
+          <p className="text-foreground font-semibold mb-2">Pausa (Pause Reps) & Excêntrico Lento</p>
+          <BulletList items={[
+            "Pause Reps: 2-3s na posição de maior tensão — elimina bounce, aumenta recrutamento. Melhor para compostos",
+            "Excêntrico Lento: descida 3-5s — maior dano muscular. Reduzir volume total. Melhor para isolamento/máquinas",
+          ]} />
+        </div>
+        <Card className="bg-amber-500/5 border-amber-500/20 p-3">
+          <p className="text-xs font-semibold text-amber-400 mb-1">High Frequency Training (CBUM Method)</p>
+          <BulletList items={[
+            "Treinar cada grupo muscular 3x/semana — volume menor por sessão, volume semanal total mantido/aumentado",
+            "Evidência: frequência 2-3x > 1x para hipertrofia",
+          ]} />
+        </Card>
+      </div>
+    ),
+  },
+
+  // ══ MÓDULO 10 — NUTRIÇÃO INTEGRADA AO TREINO ══
+  {
+    id: "nutricao-treino",
+    title: "Nutrição Integrada ao Treino",
+    icon: <Activity className="w-4 h-4 text-green-500" />,
+    badge: "Timing",
+    badgeColor: "text-green-500 border-green-500/30",
+    content: (
+      <div className="space-y-4">
+        <div>
+          <p className="text-foreground font-semibold mb-2">Pré-Treino Timing</p>
+          <ExerciseTable rows={[
+            { exercise: "2-3h antes", target: "Refeição completa", sets: "600-800 kcal", notes: "Proteína + carb complexo + gordura mínima" },
+            { exercise: "30-60min antes", target: "Se fez refeição 2-3h antes", sets: "Pré-workout", notes: "Se não: whey 30g + banana + água" },
+          ]} />
+        </div>
+        <div>
+          <p className="text-foreground font-semibold mb-2">Intra-Treino</p>
+          <BulletList items={[
+            "EAA/BCAA + carb simples — apenas se treino > 60min ou em cutting",
+          ]} />
+        </div>
+        <Card className="bg-green-500/5 border-green-500/20 p-3">
+          <p className="text-xs font-semibold text-green-400 mb-1">Pós-Treino — TIMING CRÍTICO PARA PERNAS</p>
+          <BulletList items={[
+            "Imediato (0-30min): Whey 40g + Dextrose 60-80g + Creatina 5g",
+            "1-2h depois: Refeição completa — proteína + carboidrato + vegetal. Maior refeição do dia no dia de pernas",
+          ]} />
+        </Card>
+      </div>
+    ),
+  },
+
+  // ══ REGRAS FINAIS ══
+  {
+    id: "regras-finais",
+    title: "Regras Finais — APEX Training Master",
+    icon: <Brain className="w-4 h-4 text-primary" />,
+    badge: "Filosofia",
+    content: (
+      <div className="space-y-4">
+        <BulletList items={[
+          "1. Biomecânica individual: não existe execução 'universal'. Morfologia do atleta determina variações (fêmur longo, braços longos, torso curto)",
+          "2. Progressão é lei: sem progressão = sem crescimento. Anotar TUDO: carga, reps, séries, RIR",
+          "3. Técnica > Carga sempre: carga com técnica ruim = lesão = zero crescimento",
+          "4. Volume tolerado: começar no MEV, aumentar progressivamente. Recuperação comprometida → reduzir",
+          "5. Individualização: genética determina resposta. Testar e medir = única forma de saber",
+          "6. Lesão = modifique, não pare: dor articular aguda → parar. Dor muscular → modificar exercício",
+          "7. Deload é crescimento: supercompensação ocorre no descanso. A cada 4-8 semanas: 1 semana de deload",
+          "8. Integração: nutrição sincronizada com volume | sono = recuperação | hormônios = capacidade | microbiota = absorção | psicologia = consistência",
+        ]} />
       </div>
     ),
   },
@@ -803,7 +1001,11 @@ const QUICK_ACTIONS = [
   { label: "Protocolo Mountain Dog para peito com pré-exaustão", icon: <TrendingUp className="w-3 h-3" /> },
   { label: "Correção de síndrome cruzada superior — rotina diária", icon: <Bone className="w-3 h-3" /> },
   { label: "Cardio estratégico para bodybuilding em cutting", icon: <Heart className="w-3 h-3" /> },
-  { label: "Protocolo de mobilidade para agachamento ATG", icon: <Move className="w-3 h-3" /> },
+  { label: "Periodização DUP completa — força + hipertrofia + endurance", icon: <Repeat className="w-3 h-3" /> },
+  { label: "Volumes RP por grupo muscular — MEV/MAV/MRV para meu nível", icon: <TrendingUp className="w-3 h-3" /> },
+  { label: "Protocolo DOMS preventivo pós-pernas completo", icon: <Wind className="w-3 h-3" /> },
+  { label: "Técnicas de intensidade: drop set vs rest-pause vs mechanical", icon: <Flame className="w-3 h-3" /> },
+  { label: "Nutrição peri-treino ideal para hipertrofia", icon: <Activity className="w-3 h-3" /> },
   { label: "Split PPL 6 dias com periodização de força e hipertrofia", icon: <Dumbbell className="w-3 h-3" /> },
 ];
 
