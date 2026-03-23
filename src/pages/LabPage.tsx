@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import BottomNav from "@/components/BottomNav";
-import { Microscope, Bot, BookOpen, Search, FileText, Leaf, Bug } from "lucide-react";
+import { Microscope, Bot, BookOpen, Search, FileText, Leaf, Bug, Shield } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ApexChat from "@/components/lab/ApexChat";
 import ProtocolLibrary from "@/components/lab/ProtocolLibrary";
@@ -9,6 +9,8 @@ import LabNotebook from "@/components/lab/LabNotebook";
 import LabOnboarding from "@/components/lab/LabOnboarding";
 import FitoterapicosLibrary from "@/components/lab/FitoterapicosLibrary";
 import MicrobiotaLibrary from "@/components/lab/MicrobiotaLibrary";
+import LabCoachMode from "@/components/lab/LabCoachMode";
+
 const LabPage = () => {
   const [tab, setTab] = useState("apex");
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -67,6 +69,9 @@ const LabPage = () => {
               <TabsTrigger value="microbiota" className="flex-1 text-xs gap-1 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
                 <Bug className="w-3.5 h-3.5" /> Microbiota
               </TabsTrigger>
+              <TabsTrigger value="coach" className="flex-1 text-xs gap-1 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
+                <Shield className="w-3.5 h-3.5" /> Coach
+              </TabsTrigger>
               <TabsTrigger value="search" className="flex-1 text-xs gap-1 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
                 <Search className="w-3.5 h-3.5" /> Estudos
               </TabsTrigger>
@@ -86,6 +91,9 @@ const LabPage = () => {
             </TabsContent>
             <TabsContent value="microbiota" className="flex-1 overflow-y-auto px-4 py-4 mt-0">
               <MicrobiotaLibrary onAskApex={handleAskApex} />
+            </TabsContent>
+            <TabsContent value="coach" className="flex-1 min-h-0 mt-0">
+              <LabCoachMode onAskApex={handleAskApex} />
             </TabsContent>
             <TabsContent value="search" className="flex-1 overflow-y-auto px-4 py-4 mt-0">
               <StudySearch onAskApex={handleAskApex} />
