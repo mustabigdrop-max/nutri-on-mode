@@ -11,6 +11,7 @@ import LabOnboarding from "@/components/lab/LabOnboarding";
 import FitoterapicosLibrary from "@/components/lab/FitoterapicosLibrary";
 import MicrobiotaLibrary from "@/components/lab/MicrobiotaLibrary";
 import LabCoachMode from "@/components/lab/LabCoachMode";
+import LabTrainingMaster from "@/components/lab/LabTrainingMaster";
 
 const LabPage = () => {
   const [tab, setTab] = useState("apex");
