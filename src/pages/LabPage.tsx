@@ -73,6 +73,9 @@ const LabPage = () => {
               <TabsTrigger value="coach" className="flex-1 text-xs gap-1 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
                 <Shield className="w-3.5 h-3.5" /> Coach
               </TabsTrigger>
+              <TabsTrigger value="elite" className="flex-1 text-xs gap-1 data-[state=active]:bg-destructive/10 data-[state=active]:text-destructive">
+                <Zap className="w-3.5 h-3.5" /> Elite
+              </TabsTrigger>
               <TabsTrigger value="search" className="flex-1 text-xs gap-1 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
                 <Search className="w-3.5 h-3.5" /> Estudos
               </TabsTrigger>
@@ -95,6 +98,9 @@ const LabPage = () => {
             </TabsContent>
             <TabsContent value="coach" className="flex-1 min-h-0 mt-0">
               <LabCoachMode onAskApex={handleAskApex} />
+            </TabsContent>
+            <TabsContent value="elite" className="flex-1 min-h-0 mt-0">
+              <LabApexElite />
             </TabsContent>
             <TabsContent value="search" className="flex-1 overflow-y-auto px-4 py-4 mt-0">
               <StudySearch onAskApex={handleAskApex} />
