@@ -3306,6 +3306,7 @@ export type Database = {
           day_of_week: number
           duration_minutes: number
           id: string
+          slot: number
           user_id: string
           workout_time: string
           workout_type: string
@@ -3315,6 +3316,7 @@ export type Database = {
           day_of_week: number
           duration_minutes?: number
           id?: string
+          slot?: number
           user_id: string
           workout_time?: string
           workout_type?: string
@@ -3324,6 +3326,7 @@ export type Database = {
           day_of_week?: number
           duration_minutes?: number
           id?: string
+          slot?: number
           user_id?: string
           workout_time?: string
           workout_type?: string
