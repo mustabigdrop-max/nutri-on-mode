@@ -523,10 +523,8 @@ const HEALTH_SECTIONS: HealthSection[] = [
         <div className="bg-primary/5 border border-primary/20 rounded p-2">
           <p className="italic">"DM2 é doença de excesso de glicose na dieta. A solução é óbvia." — Dr. Jason Fung</p>
         </div>
-
         <p className="font-semibold text-foreground">Metas ótimas:</p>
         <p>Glicemia jejum &lt;90 • HbA1c &lt;5.7% • Pós-prandial 2h &lt;120 • HOMA-IR &lt;2.0</p>
-
         <InfoTable
           headers={["Estratégia", "Eficácia", "Observação"]}
           rows={[
@@ -535,15 +533,12 @@ const HEALTH_SECTIONS: HealthSection[] = [
             ["Jejum terapêutico", "Reset insulínico", "Supervisão médica obrigatória"],
           ]}
         />
-
         <p className="font-semibold text-foreground">Suplementação DM2:</p>
         <p>Berberina 500mg 3x • Inositol Myo+D-Chiro • Banaba 48mg 2x • Cromo 400-1000mcg • ALA 600mg • Magnésio 400-600mg • Cúrcuma BCM-95 1g 2x</p>
 
         <p className="font-bold text-foreground text-sm mt-4">B. Hipertensão</p>
         <p className="font-semibold text-foreground">DASH modificada:</p>
         <p>Sódio &lt;1500-2000mg • Potássio 4-5g • Magnésio 400-600mg • Nitrato (beterraba, rúcula) • Ômega-3 4g/dia</p>
-
-        <p className="font-semibold text-foreground">Suplementação HAS:</p>
         <InfoTable
           headers={["Suplemento", "Dose", "Efeito na PA"]}
           rows={[
@@ -554,18 +549,207 @@ const HEALTH_SECTIONS: HealthSection[] = [
             ["Vitamina K2", "200mcg", "Flexibilidade vascular"],
           ]}
         />
+        <p className="text-[10px] italic">Medicações que causam ganho de peso: Beta-bloqueadores (+2-5kg), Amlodipino (retenção hídrica), alguns diuréticos (RI)</p>
 
         <p className="font-bold text-foreground text-sm mt-4">C. Hipotireoidismo & Hashimoto</p>
         <p>TSH ideal: 0.5-2.0 (não apenas "normal" até 4.5). Levotiroxina: jejum, 30-60min antes do café. NÃO tomar com: cálcio, ferro, soja, fibra (-20-40% absorção).</p>
 
         <p className="font-bold text-foreground text-sm mt-4">D. Doenças Autoimunes — Protocolo AIP</p>
         <p className="font-semibold text-foreground">Fase eliminação (30-90 dias):</p>
-        <p>Eliminar: glúten, laticínios (caseína A1), grãos, leguminosas, ovos, solanáceas (tomate, pimentão, beringela), AINEs, álcool</p>
-        <p className="italic">Reintrodução gradual após 30-90 dias, um alimento por vez, avaliando sintomas durante 72h.</p>
+        <p><strong className="text-foreground">Eliminar:</strong> glúten, laticínios (caseína A1), grãos, leguminosas, ovos, solanáceas</p>
+        <p><strong className="text-foreground">Manter:</strong> carnes/peixes, vegetais (exceto sombras), frutas, gorduras saudáveis, osso/cartilagem, fermentados</p>
+        <p className="font-semibold text-foreground">Suplementação autoimune:</p>
+        <p>D3 10000UI • Ômega-3 6g • Vitamina A 10000UI • Selênio 200mcg • Zinco 30-50mg • Curcumina BCM-95 1g 3x • Boswellia AKBA 250mg 2x • Glutamina 15g/dia</p>
+        <p className="italic">Reintrodução: um alimento por vez, 3 dias, monitorar sintomas.</p>
+
+        <p className="font-bold text-foreground text-sm mt-4">E. Esteatose Hepática (Fígado Gorduroso)</p>
+        <p>Prevalência: 25-30% adultos. Frequentemente silenciosa. Diagnóstico: ALT/AST elevadas + US abdominal + FibroScan.</p>
+        <div className="bg-muted/30 rounded p-3 space-y-1">
+          <p className="font-semibold text-foreground">Protocolo de reversão:</p>
+          <p>• Perda de 7-10% peso: reverte em 90% dos casos</p>
+          <p>• Frutose: ELIMINAR (metabolizada 100% no fígado → lipogênese)</p>
+          <p>• Álcool: ZERO (mesmo doses leves pioram)</p>
+          <p>• Cafeína: 2-4 xícaras café/dia = hepatoprotetor (evidência forte)</p>
+        </div>
+        <p className="font-semibold text-foreground">Suplementação esteatose:</p>
+        <p>TUDCA 500-1000mg • NAC 600mg 2x • Siliphos 240mg 2x • Vitamina E 800UI (AASLD guideline) • Betaína TMG 3g • Colina 1-2g • Berberina 500mg 3x</p>
+
+        <p className="font-bold text-foreground text-sm mt-4">F. Doença Renal Crônica (DRC)</p>
+        <div className="bg-destructive/10 border border-destructive/30 rounded p-2">
+          <p className="font-bold text-destructive">⚠️ CRÍTICO: Proteína na DRC é completamente diferente</p>
+        </div>
+        <InfoTable
+          headers={["Estágio DRC", "TFG", "Proteína g/kg/dia"]}
+          rows={[
+            ["1-2", "> 60", "Sem restrição"],
+            ["3", "30-59", "0.8"],
+            ["4", "15-29", "0.6-0.8"],
+            ["5 / Diálise", "< 15", "1.2-1.4 (diálise remove proteína)"],
+          ]}
+        />
+        <p className="italic">NUNCA prescrever alta proteína sem saber estágio. Solicitar: creatinina + TFG + albumina. Restringir potássio e fósforo conforme estágio.</p>
 
         <div className="bg-destructive/10 border border-destructive/30 rounded p-2 mt-2">
           <p className="font-bold text-destructive">⚠️ Encaminhamento urgente:</p>
-          <p>HbA1c &gt;9% sem tratamento • Glicemia &gt;300 consistente • Cetoacidose • Hipoglicemia severa &lt;50 com medicação</p>
+          <p>HbA1c &gt;9% sem tratamento • Glicemia &gt;300 • Cetoacidose • Hipoglicemia severa &lt;50</p>
+        </div>
+      </div>
+    ),
+  },
+  {
+    id: "longevidade",
+    title: "Longevidade para Pessoas Comuns",
+    icon: <Sparkles className="w-4 h-4 text-emerald-500" />,
+    badge: "Módulo 9",
+    badgeColor: "text-emerald-500 border-emerald-500/30",
+    content: (
+      <div className="space-y-4">
+        <p className="font-bold text-foreground">5 Pilares da Longevidade (Peter Attia):</p>
+        <InfoTable
+          headers={["Pilar", "Por quê", "Prioridade"]}
+          rows={[
+            ["Exercício", "VO2max = melhor preditor de longevidade", "Mais importante isoladamente"],
+            ["Sono", "Crônico < 6h = +50% risco mortalidade", "7-9h mínimo"],
+            ["Nutrição", "Mediterrânea = mais estudada positivamente", "Sem ultra-processados"],
+            ["Saúde mental", "Solidão = +50% mortalidade (= 15 cigarros/dia)", "Conexão social"],
+            ["Suplementos", "D3, Ômega-3, Mg = evidência forte", "NMN/NR/Rapamicina = emergente"],
+          ]}
+        />
+
+        <p className="font-bold text-foreground">Dieta Mediterrânea — Padrão Ouro:</p>
+        <p>PREDIMED study: -30% eventos CV. Reduz: DCV, DM2, câncer, demência, depressão. MAIOR aderência de todas as dietas.</p>
+        <div className="bg-muted/30 rounded p-3 space-y-1">
+          <p className="font-semibold text-foreground">Componentes chave:</p>
+          <p>• Azeite AOVE: 4+ colheres/dia (gordura principal)</p>
+          <p>• Vegetais 5-7 porções • Frutas 2-4 porções</p>
+          <p>• Leguminosas 4-7x/sem • Peixe 2-3x/sem</p>
+          <p>• Nozes: punhado/dia • Carne vermelha: &lt;1x/sem</p>
+          <p>• Álcool: "não existe dose saudável" (AHA 2023)</p>
+        </div>
+
+        <p className="font-bold text-foreground">Zonas Azuis — Lições Práticas:</p>
+        <p className="text-[10px]">Sardegna • Okinawa • Nicoya • Icária • Loma Linda</p>
+        <ol className="list-decimal pl-4 space-y-1">
+          <li><strong className="text-foreground">Movimento natural:</strong> não academia, vida ativa (jardinar, caminhar)</li>
+          <li><strong className="text-foreground">Propósito (Ikigai):</strong> pessoas com propósito vivem 7 anos mais</li>
+          <li><strong className="text-foreground">Baixo estresse:</strong> sesta, oração, natureza</li>
+          <li><strong className="text-foreground">Hara Hachi Bu:</strong> parar quando 80% satisfeito</li>
+          <li><strong className="text-foreground">Plant-forward:</strong> feijão como base proteica</li>
+          <li><strong className="text-foreground">Tribo:</strong> pertencer a comunidade com saúde positiva</li>
+          <li><strong className="text-foreground">Família:</strong> avós na casa (anti-solidão)</li>
+        </ol>
+
+        <p className="font-bold text-foreground">Medicina Preventiva — Exames por Faixa Etária:</p>
+        <InfoTable
+          headers={["Idade", "Exames essenciais"]}
+          rows={[
+            ["20-30", "Hemograma, lipidograma, glicemia+insulina, TSH, Vit D, ferritina, PA"],
+            ["30-40", "+ HOMA-IR, PCR-us, homocisteína, testosterona(H), hormônios(M)"],
+            ["40-50", "+ Colonoscopia, cálcio coronário, PSA(H), mamografia(M), DEXA(M)"],
+            ["50-60+", "+ Colonoscopia 5-10a, doppler carotídeo, avaliação cognitiva, oftalmologia"],
+          ]}
+        />
+      </div>
+    ),
+  },
+  {
+    id: "nutricao-pratica",
+    title: "Nutrição Prática para Vida Real",
+    icon: <ShoppingCart className="w-4 h-4 text-primary" />,
+    badge: "Módulo 10",
+    content: (
+      <div className="space-y-4">
+        <p className="font-bold text-foreground">Meal Prep — Sistema de 3 Etapas (2h no domingo):</p>
+        <InfoTable
+          headers={["Etapa", "Tempo", "O que preparar"]}
+          rows={[
+            ["1. Proteínas", "40min", "Frango 1kg assado • 12 ovos cozidos • Patinho grelhado"],
+            ["2. Carboidratos", "30min", "Arroz integral 500g • Batata doce 1kg assada • Aveia porcionada"],
+            ["3. Vegetais", "30min", "Legumes assados mix • Salada lavada/seca • Crus cortados"],
+          ]}
+        />
+        <p className="italic">Resultado: 4-5 refeições/dia por 4-5 dias. Montagem diária: 10-15min.</p>
+
+        <p className="font-bold text-foreground">Comer Fora — Protocolo:</p>
+        <div className="bg-muted/30 rounded p-3 space-y-1">
+          <p className="font-semibold text-foreground">No restaurante:</p>
+          <p>1. Água (não suco) • 2. Salada primeiro (fibra = pico menor)</p>
+          <p>3. Proteína como centro • 4. Carb: metade da porção</p>
+          <p>5. Molho à parte (200-400kcal ocultas) • 6. Sem pão da cesta</p>
+          <p className="font-semibold text-foreground mt-2">Fast food (inevitável):</p>
+          <p>Sem molho especial • Grelhado &gt; frito • Salada &gt; batata frita • Tamanho médio</p>
+        </div>
+
+        <p className="font-bold text-foreground">Rotulagem — Como Ler:</p>
+        <ul className="list-disc pl-4 space-y-1">
+          <li><strong className="text-foreground">Ingredientes:</strong> ordem = maior para menor; açúcar nos top 3 = muito açucarado</li>
+          <li><strong className="text-foreground">Açúcar disfarçado:</strong> xarope de milho, maltose, dextrose, concentrado de suco, agave</li>
+          <li><strong className="text-foreground">Gordura trans:</strong> "0g" mas "parcialmente hidrogenada" nos ingredientes = mentira (&lt;0.5g/porção)</li>
+          <li><strong className="text-foreground">Semáforo:</strong> 🟢 ingredientes reconhecíveis | 🟡 alguns artificiais | 🔴 açúcar top 3 + trans + &gt;5 artificiais</li>
+        </ul>
+
+        <p className="font-bold text-foreground">Orçamento — Alimentação Saudável Barata:</p>
+        <InfoTable
+          headers={["Categoria", "Melhores opções custo-benefício"]}
+          rows={[
+            ["Proteína", "Ovos (mais barata/g), sardinha/atum lata, frango c/ osso, feijão/lentilha"],
+            ["Carboidrato", "Arroz integral, aveia, batata doce, mandioca, banana"],
+            ["Vegetais", "Couve/espinafre/agrião, cenoura, beterraba, tomate, cebola/alho"],
+            ["Gordura", "Ovo inteiro, amendoim/pasta, sardinha, leite integral"],
+            ["Suplementos", "D3 (mais barata+importante), Mg óxido, creatina genérica, whey concentrado"],
+          ]}
+        />
+      </div>
+    ),
+  },
+  {
+    id: "criancas-adolescentes",
+    title: "Crianças & Adolescentes",
+    icon: <GraduationCap className="w-4 h-4 text-sky-500" />,
+    badge: "Módulo 11",
+    badgeColor: "text-sky-500 border-sky-500/30",
+    content: (
+      <div className="space-y-4">
+        <div className="bg-destructive/10 border border-destructive/30 rounded p-3">
+          <p className="font-bold text-destructive">⚠️ NÃO aplicar protocolos de adultos em crianças</p>
+          <p>Crianças não são adultos em miniatura. Desenvolvimento nutricional, hormonal e psicológico ativo.</p>
+        </div>
+
+        <p className="font-bold text-foreground">Obesidade Infantil — Abordagem Segura:</p>
+        <div className="grid grid-cols-2 gap-2">
+          <div className="bg-destructive/5 border border-destructive/20 rounded p-2">
+            <p className="font-bold text-destructive text-[10px]">❌ NUNCA</p>
+            <p className="text-[10px]">Dieta restritiva • Falar peso na frente da criança • Comparar com outros • Comida como recompensa/punição</p>
+          </div>
+          <div className="bg-primary/5 border border-primary/20 rounded p-2">
+            <p className="font-bold text-primary text-[10px]">✅ SEMPRE</p>
+            <p className="text-[10px]">Trabalhar FAMÍLIA inteira • Foco em saúde (não peso) • Adicionar, não remover • Tornar prazeroso</p>
+          </div>
+        </div>
+
+        <p className="font-semibold text-foreground">Estratégia:</p>
+        <ul className="list-disc pl-4 space-y-1">
+          <li>Reduzir ultra-processados gradualmente (não eliminar = trauma)</li>
+          <li>Aumentar proteína (saciante, preserva massa magra)</li>
+          <li>Vegetais: exposição repetida — 15-20x para aceitar um novo</li>
+          <li>Atividade física como BRINCADEIRA</li>
+          <li>Sono: criticamente importante (privação = obesidade)</li>
+          <li>Telas: &lt;2h/dia (substitui movimento + altera sono)</li>
+        </ul>
+
+        <p className="font-bold text-foreground">Adolescente que quer Hipertrofia:</p>
+        <p>Treino de força seguro a partir dos 13-14 anos com supervisão. Sem cargas máximas (1RM) — esqueleto em formação. Objetivo: aprender padrões de movimento.</p>
+
+        <p className="font-semibold text-foreground">Suplementação para adolescentes:</p>
+        <div className="grid grid-cols-2 gap-2">
+          <div className="bg-primary/5 border border-primary/20 rounded p-2">
+            <p className="font-bold text-primary text-[10px]">✅ Seguro</p>
+            <p className="text-[10px]">Vitamina D 2000-5000UI • Magnésio 200-400mg • Whey (se dieta insuficiente) • Creatina: debate (decisão c/ médico)</p>
+          </div>
+          <div className="bg-destructive/5 border border-destructive/20 rounded p-2">
+            <p className="font-bold text-destructive text-[10px]">❌ PROIBIDO</p>
+            <p className="text-[10px]">Pré-treinos estimulantes • SARMs (NUNCA) • Hormônios • Termogênicos • AAS (fecha epífise = para de crescer)</p>
+          </div>
         </div>
       </div>
     ),
@@ -581,9 +765,13 @@ const QUICK_ACTIONS = [
   { label: "Reverter sarcopenia no idoso", icon: <Users className="w-3.5 h-3.5" /> },
   { label: "Nutrição para depressão e ansiedade", icon: <Smile className="w-3.5 h-3.5" /> },
   { label: "Diabetes tipo 2 — remissão nutricional", icon: <HeartPulse className="w-3.5 h-3.5" /> },
+  { label: "Esteatose hepática — protocolo reversão", icon: <Pill className="w-3.5 h-3.5" /> },
+  { label: "Dieta Mediterrânea e longevidade", icon: <Sparkles className="w-3.5 h-3.5" /> },
+  { label: "Zonas Azuis — hábitos de longevidade", icon: <Target className="w-3.5 h-3.5" /> },
+  { label: "Meal prep e comer fora — protocolo", icon: <ShoppingCart className="w-3.5 h-3.5" /> },
   { label: "Burnout — recuperação com suplementação", icon: <Zap className="w-3.5 h-3.5" /> },
   { label: "Gestação e amamentação — suplementos", icon: <Baby className="w-3.5 h-3.5" /> },
-  { label: "Hipertensão — DASH + suplementação", icon: <Thermometer className="w-3.5 h-3.5" /> },
+  { label: "Nutrição para crianças e adolescentes", icon: <GraduationCap className="w-3.5 h-3.5" /> },
   { label: "Protocolo anti-rebound pós-dieta", icon: <TrendingUp className="w-3.5 h-3.5" /> },
 ];
 
