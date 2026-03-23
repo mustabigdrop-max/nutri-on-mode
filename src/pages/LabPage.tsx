@@ -120,6 +120,9 @@ const LabPage = () => {
             <TabsContent value="nutrition" className="flex-1 overflow-y-auto px-4 py-4 mt-0">
               <LabNutritionMaster onAskApex={handleAskApex} />
             </TabsContent>
+            <TabsContent value="health" className="flex-1 overflow-y-auto px-4 py-4 mt-0">
+              <LabHealthMaster onAskApex={handleAskApex} />
+            </TabsContent>
             <TabsContent value="search" className="flex-1 overflow-y-auto px-4 py-4 mt-0">
               <StudySearch onAskApex={handleAskApex} />
             </TabsContent>
