@@ -270,12 +270,12 @@ export const useWorkoutSchedule = () => {
 
   const removeSlot = async (dayOfWeek: number, slot: number) => {
     if (!user) return;
-    await supabase
+    await (supabase
       .from("workout_schedule")
-      .delete()
+      .delete() as any)
       .eq("user_id", user.id)
       .eq("day_of_week", dayOfWeek)
-      .eq("slot" as any, slot);
+      .eq("slot", slot);
     await fetchSchedule();
   };
 
