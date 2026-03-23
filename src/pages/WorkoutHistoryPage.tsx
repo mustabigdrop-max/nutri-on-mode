@@ -148,6 +148,13 @@ const WorkoutHistoryPage = () => {
               NutriSync · Consistência & Calorias
             </p>
           </div>
+          <button
+            onClick={() => navigate("/exercise-selector")}
+            className="ml-auto flex items-center gap-1.5 px-3 py-2 rounded-lg bg-primary/15 border border-primary/30 text-primary text-xs font-semibold hover:bg-primary/25 transition-colors"
+          >
+            <Target className="w-3.5 h-3.5" />
+            Exercícios
+          </button>
         </motion.div>
 
         {/* Week navigator */}
