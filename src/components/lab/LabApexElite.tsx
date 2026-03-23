@@ -259,7 +259,7 @@ const sections: EliteSection[] = [
             { name: "Coenzima Q10 (Ubiquinol)", dose: "200-400mg/dia", timing: "Com gordura", notes: "Energia mitocondrial cardíaca" },
             { name: "Ômega-3 (EPA+DHA)", dose: "4-6g/dia", timing: "Distribuído", notes: "Triglicerídeos ↓↓" },
             { name: "Taurina", dose: "3-5g/dia", timing: "Distribuído", notes: "Osmoprotetor cardíaco" },
-            { name: "Nebivolol (Rx)", dose: "2.5-5mg/dia", timing: "Se PA > 140/90", notes: "Beta-bloqueador + NO" },
+            { name: "Nebivolol (Rx)", dose: "2.5-5mg/dia", timing: "Se PA acima de 140/90", notes: "Beta-bloqueador + NO" },
           ]} />
         </div>
         <div>

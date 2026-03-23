@@ -282,13 +282,13 @@ const sections: CoachSection[] = [
       <div className="space-y-4">
         <p>Indicadores-chave para monitorar progresso dos clientes.</p>
         <ProtocolTable rows={[
-          { name: "Adesão ao plano", dose: "% refeições registradas", timing: "Semanal", notes: "Meta > 80%" },
+          { name: "Adesão ao plano", dose: "% refeições registradas", timing: "Semanal", notes: "Meta: acima de 80%" },
           { name: "Variação de peso", dose: "Média móvel 7 dias", timing: "Diário → semanal", notes: "0.5-1% peso/semana cutting" },
           { name: "Consistência Score", dose: "Score 0-100", timing: "Semanal", notes: "Algoritmo NUTRION" },
-          { name: "Qualidade alimentar", dose: "Score refeição 1-5", timing: "Por refeição", notes: "Média > 3.5" },
+          { name: "Qualidade alimentar", dose: "Score refeição 1-5", timing: "Por refeição", notes: "Média acima de 3.5" },
           { name: "Hidratação", dose: "ml/kg peso", timing: "Diário", notes: "Meta 35-45ml/kg" },
-          { name: "Sono", dose: "Horas + qualidade", timing: "Diário", notes: "Meta > 7h, qualidade > 3" },
-          { name: "Nível de energia", dose: "Score 1-10", timing: "Diário", notes: "Alerta se < 5 por 3+ dias" },
+          { name: "Sono", dose: "Horas + qualidade", timing: "Diário", notes: "Meta: 7h+, qualidade 3+" },
+          { name: "Nível de energia", dose: "Score 1-10", timing: "Diário", notes: "Alerta se abaixo de 5 por 3+ dias" },
         ]} />
       </div>
     ),
