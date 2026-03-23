@@ -224,7 +224,7 @@ const sections: CoachSection[] = [
           </Card>
           <Card className="bg-blue-500/5 border-blue-500/20 p-3">
             <p className="text-xs font-semibold text-blue-400 mb-1">Red Flags — Quando Intervir</p>
-            <p className="text-xs">Perda > 1% peso/semana | Compulsão recorrente | Humor/sono muito alterados | Amenorreia | Lesão recorrente</p>
+            <p className="text-xs">{"Perda > 1% peso/semana | Compulsão recorrente | Humor/sono muito alterados | Amenorreia | Lesão recorrente"}</p>
           </Card>
           <Card className="bg-green-500/5 border-green-500/20 p-3">
             <p className="text-xs font-semibold text-green-400 mb-1">Modelo de Feedback</p>
