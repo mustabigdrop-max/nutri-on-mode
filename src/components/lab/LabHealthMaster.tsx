@@ -1028,8 +1028,12 @@ const QUICK_ACTIONS = [
   { label: "Meal prep e comer fora — protocolo", icon: <ShoppingCart className="w-3.5 h-3.5" /> },
   { label: "Burnout — recuperação com suplementação", icon: <Zap className="w-3.5 h-3.5" /> },
   { label: "Gestação e amamentação — suplementos", icon: <Baby className="w-3.5 h-3.5" /> },
-  { label: "Nutrição para crianças e adolescentes", icon: <GraduationCap className="w-3.5 h-3.5" /> },
   { label: "Protocolo anti-rebound pós-dieta", icon: <TrendingUp className="w-3.5 h-3.5" /> },
+  { label: "Nutrição para jovem atleta — macros e micros", icon: <GraduationCap className="w-3.5 h-3.5" /> },
+  { label: "Treino de força seguro para adolescentes", icon: <GraduationCap className="w-3.5 h-3.5" /> },
+  { label: "Tríade da atleta feminina — protocolo de emergência", icon: <AlertTriangle className="w-3.5 h-3.5" /> },
+  { label: "Suplementação segura para menores de 18", icon: <GraduationCap className="w-3.5 h-3.5" /> },
+  { label: "Prevenção de burnout em jovens atletas", icon: <GraduationCap className="w-3.5 h-3.5" /> },
 ];
 
 interface LabHealthMasterProps {
