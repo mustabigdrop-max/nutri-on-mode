@@ -106,6 +106,9 @@ const LabPage = () => {
             <TabsContent value="elite" className="flex-1 overflow-y-auto px-4 py-4 mt-0">
               <LabApexElite onAskApex={handleAskApex} />
             </TabsContent>
+            <TabsContent value="training" className="flex-1 overflow-y-auto px-4 py-4 mt-0">
+              <LabTrainingMaster onAskApex={handleAskApex} />
+            </TabsContent>
             <TabsContent value="search" className="flex-1 overflow-y-auto px-4 py-4 mt-0">
               <StudySearch onAskApex={handleAskApex} />
             </TabsContent>
