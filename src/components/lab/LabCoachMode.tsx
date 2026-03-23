@@ -135,7 +135,7 @@ const sections: CoachSection[] = [
         ]} />
         <Card className="bg-blue-500/5 border-blue-500/20 p-3">
           <p className="text-xs font-semibold text-blue-400 mb-1">Sinais de Adaptação Metabólica:</p>
-          <p className="text-xs">Platô > 2 semanas | Fome excessiva | Energia ↓↓ | Sono prejudicado | Libido ↓ | T3/T4 alterados</p>
+          <p className="text-xs">{"Platô > 2 semanas | Fome excessiva | Energia ↓↓ | Sono prejudicado | Libido ↓ | T3/T4 alterados"}</p>
         </Card>
       </div>
     ),
