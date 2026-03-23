@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import { supabase } from "@/integrations/supabase/client";
-import { Search, Leaf, Clock, AlertTriangle, Zap, ChevronRight, ArrowLeft, Pill } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Search, ChevronDown, ChevronUp, Leaf, Clock, AlertTriangle, Zap, Pill, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Fitoterapico {
   id: string;
@@ -19,6 +20,119 @@ interface Fitoterapico {
   farmacocinetica: Record<string, string> | null;
 }
 
+const FitoSectionCard = ({ item }: { item: Fitoterapico }) => {
+  const [open, setOpen] = useState(false);
+  return (
+    <Card className="border-border/60 bg-card/80 backdrop-blur">
+      <CardHeader className="cursor-pointer py-3 px-4" onClick={() => setOpen(!open)}>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Leaf className="w-4 h-4 text-accent" />
+            <CardTitle className="text-sm font-bold">{item.nome}</CardTitle>
+            {item.origem && (
+              <Badge variant="outline" className="text-muted-foreground border-border text-[9px]">
+                {item.origem}
+              </Badge>
+            )}
+          </div>
+          {open ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+        </div>
+      </CardHeader>
+      {open && (
+        <CardContent className="pt-0 px-4 pb-4 text-xs text-muted-foreground leading-relaxed space-y-3">
+          {/* Mecanismo */}
+          {item.mecanismo && (
+            <Card className="bg-primary/5 border-primary/20 p-3">
+              <p className="text-[10px] font-mono text-primary uppercase tracking-wider mb-1">⚙️ Mecanismo de Ação</p>
+              <p className="text-xs text-foreground leading-relaxed">{item.mecanismo}</p>
+            </Card>
+          )}
+
+          {/* Dose + Timing + Ciclo table */}
+          {(item.dose || item.timing || item.ciclo) && (
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs border border-border/40 rounded">
+                <thead>
+                  <tr className="bg-muted/30">
+                    {item.dose && <th className="text-left p-2 font-semibold text-foreground">Dose</th>}
+                    {item.timing && <th className="text-left p-2 font-semibold text-foreground">Timing</th>}
+                    {item.ciclo && <th className="text-left p-2 font-semibold text-foreground">Ciclo</th>}
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr className="border-t border-border/20">
+                    {item.dose && <td className="p-2 text-foreground">{item.dose}</td>}
+                    {item.timing && <td className="p-2 text-foreground">{item.timing}</td>}
+                    {item.ciclo && <td className="p-2 text-foreground">{item.ciclo}</td>}
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* Farmacocinética */}
+          {item.farmacocinetica && Object.keys(item.farmacocinetica).length > 0 && (
+            <Card className="bg-primary/5 border-primary/20 p-3">
+              <p className="text-[10px] font-mono text-primary uppercase tracking-wider mb-2">📊 Farmacocinética</p>
+              <div className="grid grid-cols-2 gap-2">
+                {Object.entries(item.farmacocinetica).map(([key, val]) => (
+                  <div key={key} className="space-y-0.5">
+                    <p className="text-[9px] font-mono text-muted-foreground capitalize">{key.replace(/_/g, " ")}</p>
+                    <p className="text-[11px] text-foreground">{val}</p>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          )}
+
+          {/* Indicações */}
+          {(item.indicacoes || []).length > 0 && (
+            <div>
+              <p className="text-foreground font-semibold text-xs flex items-center gap-1 mb-2">
+                <Zap className="w-3 h-3 text-accent" /> Indicações
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {item.indicacoes!.map((ind, i) => (
+                  <Badge key={i} variant="secondary" className="text-[10px]">{ind}</Badge>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Contraindicações */}
+          {(item.contraindicoes || []).length > 0 && (
+            <Card className="bg-destructive/5 border-destructive/20 p-3">
+              <p className="text-[10px] font-mono text-destructive uppercase tracking-wider flex items-center gap-1 mb-2">
+                <AlertTriangle className="w-3 h-3" /> Contraindicações
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {item.contraindicoes!.map((c, i) => (
+                  <Badge key={i} variant="destructive" className="text-[10px]">{c}</Badge>
+                ))}
+              </div>
+            </Card>
+          )}
+
+          {/* Interações */}
+          {(item.interacoes || []).length > 0 && (
+            <div>
+              <p className="text-foreground font-semibold text-xs mb-2">🔗 Interações e Sinergias</p>
+              <ul className="space-y-1">
+                {item.interacoes!.map((int_, i) => (
+                  <li key={i} className="flex gap-2 items-start">
+                    <span className="text-primary mt-0.5">▸</span>
+                    <span className="text-xs text-foreground">{int_}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </CardContent>
+      )}
+    </Card>
+  );
+};
+
 interface FitoterapicosLibraryProps {
   onAskApex: (question: string) => void;
 }
@@ -27,7 +141,6 @@ const FitoterapicosLibrary = ({ onAskApex }: FitoterapicosLibraryProps) => {
   const [items, setItems] = useState<Fitoterapico[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [selected, setSelected] = useState<Fitoterapico | null>(null);
 
   useEffect(() => {
     const load = async () => {
@@ -51,126 +164,15 @@ const FitoterapicosLibrary = ({ onAskApex }: FitoterapicosLibraryProps) => {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
-
-  if (selected) {
-    return (
-      <div className="space-y-4 pb-16">
-        <button onClick={() => setSelected(null)} className="flex items-center gap-1 text-xs text-primary font-mono hover:underline">
-          <ArrowLeft className="w-3 h-3" /> Voltar à biblioteca
-        </button>
-
-        <div className="space-y-1">
-          <h3 className="text-lg font-bold text-foreground">{selected.nome}</h3>
-          {selected.origem && <p className="text-xs text-muted-foreground font-mono">{selected.origem}</p>}
-        </div>
-
-        {/* Mecanismo */}
-        {selected.mecanismo && (
-          <div className="p-3 rounded-xl bg-card border border-border space-y-1">
-            <p className="text-[10px] font-mono text-primary uppercase tracking-wider">⚙️ Mecanismo de Ação</p>
-            <p className="text-xs text-foreground leading-relaxed">{selected.mecanismo}</p>
-          </div>
-        )}
-
-        {/* Dose + Timing + Ciclo */}
-        <div className="grid grid-cols-1 gap-2">
-          {selected.dose && (
-            <div className="p-3 rounded-xl bg-card border border-border space-y-1">
-              <p className="text-[10px] font-mono text-accent uppercase tracking-wider flex items-center gap-1"><Pill className="w-3 h-3" /> Dose</p>
-              <p className="text-xs text-foreground">{selected.dose}</p>
-            </div>
-          )}
-          {selected.timing && (
-            <div className="p-3 rounded-xl bg-card border border-border space-y-1">
-              <p className="text-[10px] font-mono text-accent uppercase tracking-wider flex items-center gap-1"><Clock className="w-3 h-3" /> Timing</p>
-              <p className="text-xs text-foreground">{selected.timing}</p>
-            </div>
-          )}
-          {selected.ciclo && (
-            <div className="p-3 rounded-xl bg-card border border-border space-y-1">
-              <p className="text-[10px] font-mono text-accent uppercase tracking-wider">🔄 Ciclo</p>
-              <p className="text-xs text-foreground">{selected.ciclo}</p>
-            </div>
-          )}
-        </div>
-
-        {/* Farmacocinética */}
-        {selected.farmacocinetica && Object.keys(selected.farmacocinetica).length > 0 && (
-          <div className="p-3 rounded-xl bg-card border border-primary/20 space-y-2">
-            <p className="text-[10px] font-mono text-primary uppercase tracking-wider">📊 Farmacocinética</p>
-            <div className="grid grid-cols-2 gap-2">
-              {Object.entries(selected.farmacocinetica).map(([key, val]) => (
-                <div key={key} className="space-y-0.5">
-                  <p className="text-[9px] font-mono text-muted-foreground capitalize">{key.replace(/_/g, " ")}</p>
-                  <p className="text-[11px] text-foreground">{val}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Indicações */}
-        {(selected.indicacoes || []).length > 0 && (
-          <div className="p-3 rounded-xl bg-card border border-border space-y-2">
-            <p className="text-[10px] font-mono text-accent uppercase tracking-wider flex items-center gap-1"><Zap className="w-3 h-3" /> Indicações</p>
-            <div className="flex flex-wrap gap-1.5">
-              {selected.indicacoes!.map((ind, i) => (
-                <Badge key={i} variant="secondary" className="text-[10px]">{ind}</Badge>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Contraindicações */}
-        {(selected.contraindicoes || []).length > 0 && (
-          <div className="p-3 rounded-xl bg-destructive/5 border border-destructive/20 space-y-2">
-            <p className="text-[10px] font-mono text-destructive uppercase tracking-wider flex items-center gap-1"><AlertTriangle className="w-3 h-3" /> Contraindicações</p>
-            <div className="flex flex-wrap gap-1.5">
-              {selected.contraindicoes!.map((c, i) => (
-                <Badge key={i} variant="destructive" className="text-[10px]">{c}</Badge>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Interações */}
-        {(selected.interacoes || []).length > 0 && (
-          <div className="p-3 rounded-xl bg-card border border-border space-y-2">
-            <p className="text-[10px] font-mono text-primary uppercase tracking-wider">🔗 Interações e Sinergias</p>
-            <ul className="space-y-1">
-              {selected.interacoes!.map((int_, i) => (
-                <li key={i} className="text-xs text-foreground">• {int_}</li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        {/* Ask APEX */}
-        <button
-          onClick={() => onAskApex(`Analise o fitoterápico "${selected.nome}" para o meu perfil. Considere meus exames, objetivos e possíveis interações com meu protocolo atual.`)}
-          className="w-full p-3 rounded-xl bg-primary/10 border border-primary/20 text-primary text-xs font-mono hover:bg-primary/20 transition-colors"
-        >
-          🤖 Perguntar ao APEX sobre {selected.nome} →
-        </button>
+        <Loader2 className="w-6 h-6 text-primary animate-spin" />
       </div>
     );
   }
 
   return (
     <div className="space-y-4 pb-16">
-      <div className="space-y-1">
-        <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
-          <Leaf className="w-4 h-4 text-accent" /> Biblioteca de Fitoterápicos
-        </h3>
-        <p className="text-[10px] text-muted-foreground font-mono">{items.length} compostos • Farmacocinética completa</p>
-      </div>
-
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
         <Input
           placeholder="Buscar por nome, indicação ou mecanismo..."
           value={search}
@@ -179,40 +181,24 @@ const FitoterapicosLibrary = ({ onAskApex }: FitoterapicosLibraryProps) => {
         />
       </div>
 
-      <div className="space-y-2">
-        {filtered.map((item, i) => (
-          <motion.button
-            key={item.id}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.03 }}
-            onClick={() => setSelected(item)}
-            className="w-full p-3 rounded-xl bg-card border border-border hover:border-primary/30 text-left transition-all space-y-1.5"
-          >
-            <div className="flex items-center justify-between">
-              <h4 className="text-sm font-semibold text-foreground flex-1">{item.nome}</h4>
-              <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-            </div>
-            {item.origem && (
-              <p className="text-[10px] text-muted-foreground font-mono">{item.origem}</p>
-            )}
-            {(item.indicacoes || []).length > 0 && (
-              <div className="flex flex-wrap gap-1">
-                {item.indicacoes!.slice(0, 3).map((ind, j) => (
-                  <Badge key={j} variant="outline" className="text-[9px] h-4 px-1.5">{ind}</Badge>
-                ))}
-                {item.indicacoes!.length > 3 && (
-                  <Badge variant="outline" className="text-[9px] h-4 px-1.5">+{item.indicacoes!.length - 3}</Badge>
-                )}
-              </div>
-            )}
-          </motion.button>
-        ))}
+      <Button
+        variant="outline"
+        size="sm"
+        className="w-full text-xs border-primary/30 text-primary hover:bg-primary/10"
+        onClick={() => onAskApex("Monte um protocolo fitoterápico personalizado para os meus objetivos, considerando interações e timing ideal.")}
+      >
+        <Leaf className="w-3.5 h-3.5 mr-1" /> Perguntar ao APEX sobre Fitoterápicos
+      </Button>
 
-        {filtered.length === 0 && (
-          <p className="text-xs text-muted-foreground text-center py-8">Nenhum fitoterápico encontrado.</p>
-        )}
+      <div className="space-y-2">
+        {filtered.map((item) => (
+          <FitoSectionCard key={item.id} item={item} />
+        ))}
       </div>
+
+      {filtered.length === 0 && (
+        <p className="text-xs text-muted-foreground text-center py-8">Nenhum fitoterápico encontrado.</p>
+      )}
     </div>
   );
 };
