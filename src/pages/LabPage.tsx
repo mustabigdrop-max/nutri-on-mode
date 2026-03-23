@@ -96,11 +96,11 @@ const LabPage = () => {
             <TabsContent value="microbiota" className="flex-1 overflow-y-auto px-4 py-4 mt-0">
               <MicrobiotaLibrary onAskApex={handleAskApex} />
             </TabsContent>
-            <TabsContent value="coach" className="flex-1 min-h-0 mt-0">
+            <TabsContent value="coach" className="flex-1 overflow-y-auto px-4 py-4 mt-0">
               <LabCoachMode onAskApex={handleAskApex} />
             </TabsContent>
-            <TabsContent value="elite" className="flex-1 min-h-0 mt-0">
-              <LabApexElite />
+            <TabsContent value="elite" className="flex-1 overflow-y-auto px-4 py-4 mt-0">
+              <LabApexElite onAskApex={handleAskApex} />
             </TabsContent>
             <TabsContent value="search" className="flex-1 overflow-y-auto px-4 py-4 mt-0">
               <StudySearch onAskApex={handleAskApex} />
