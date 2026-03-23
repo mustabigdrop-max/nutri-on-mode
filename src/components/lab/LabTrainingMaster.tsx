@@ -1001,7 +1001,11 @@ const QUICK_ACTIONS = [
   { label: "Protocolo Mountain Dog para peito com pré-exaustão", icon: <TrendingUp className="w-3 h-3" /> },
   { label: "Correção de síndrome cruzada superior — rotina diária", icon: <Bone className="w-3 h-3" /> },
   { label: "Cardio estratégico para bodybuilding em cutting", icon: <Heart className="w-3 h-3" /> },
-  { label: "Protocolo de mobilidade para agachamento ATG", icon: <Move className="w-3 h-3" /> },
+  { label: "Periodização DUP completa — força + hipertrofia + endurance", icon: <Repeat className="w-3 h-3" /> },
+  { label: "Volumes RP por grupo muscular — MEV/MAV/MRV para meu nível", icon: <TrendingUp className="w-3 h-3" /> },
+  { label: "Protocolo DOMS preventivo pós-pernas completo", icon: <Wind className="w-3 h-3" /> },
+  { label: "Técnicas de intensidade: drop set vs rest-pause vs mechanical", icon: <Flame className="w-3 h-3" /> },
+  { label: "Nutrição peri-treino ideal para hipertrofia", icon: <Activity className="w-3 h-3" /> },
   { label: "Split PPL 6 dias com periodização de força e hipertrofia", icon: <Dumbbell className="w-3 h-3" /> },
 ];
 
