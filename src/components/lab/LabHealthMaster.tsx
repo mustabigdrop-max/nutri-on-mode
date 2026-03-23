@@ -703,53 +703,310 @@ const HEALTH_SECTIONS: HealthSection[] = [
     ),
   },
   {
-    id: "criancas-adolescentes",
-    title: "Crianças & Adolescentes",
+    id: "criancas-adolescentes-atletas",
+    title: "Crianças & Adolescentes Atletas",
     icon: <GraduationCap className="w-4 h-4 text-sky-500" />,
     badge: "Módulo 11",
     badgeColor: "text-sky-500 border-sky-500/30",
     content: (
       <div className="space-y-4">
         <div className="bg-destructive/10 border border-destructive/30 rounded p-3">
-          <p className="font-bold text-destructive">⚠️ NÃO aplicar protocolos de adultos em crianças</p>
-          <p>Crianças não são adultos em miniatura. Desenvolvimento nutricional, hormonal e psicológico ativo.</p>
+          <p className="font-bold text-destructive">⚠️ AVISO CRÍTICO — Erros nesta fase são frequentemente irreversíveis:</p>
+          <p>Fechamento precoce de epífise (AAS) = altura permanentemente reduzida • Transtorno alimentar = sequelas por décadas • Burnout precoce = abandono definitivo • Lesão por overuse = dano permanente • Pressão excessiva = trauma psicológico duradouro</p>
         </div>
 
-        <p className="font-bold text-foreground">Obesidade Infantil — Abordagem Segura:</p>
-        <div className="grid grid-cols-2 gap-2">
-          <div className="bg-destructive/5 border border-destructive/20 rounded p-2">
-            <p className="font-bold text-destructive text-[10px]">❌ NUNCA</p>
-            <p className="text-[10px]">Dieta restritiva • Falar peso na frente da criança • Comparar com outros • Comida como recompensa/punição</p>
-          </div>
-          <div className="bg-primary/5 border border-primary/20 rounded p-2">
-            <p className="font-bold text-primary text-[10px]">✅ SEMPRE</p>
-            <p className="text-[10px]">Trabalhar FAMÍLIA inteira • Foco em saúde (não peso) • Adicionar, não remover • Tornar prazeroso</p>
-          </div>
+        <div className="bg-primary/5 border border-primary/20 rounded-lg p-3">
+          <p className="font-bold text-foreground mb-1">Filosofia APEX</p>
+          <p className="italic">"A criança não é um adulto em miniatura. Cada fase do desenvolvimento tem necessidades únicas que, se respeitadas, constroem o atleta mais durável e saudável possível. Se ignoradas, destroem antes de florescer."</p>
+          <p className="text-[10px] mt-1">Referências: AAP • NSCA • ACSM • Dr. Avery Faigenbaum • Dr. Jean Côté (DMSP) • Dr. Lyle Micheli • Dr. Timothy Hewett</p>
         </div>
 
-        <p className="font-semibold text-foreground">Estratégia:</p>
+        {/* MÓDULO 1 — Desenvolvimento por Fase */}
+        <p className="font-bold text-foreground text-sm">📊 Desenvolvimento Atlético por Fase (DMSP)</p>
+        <InfoTable
+          headers={["Fase", "Idade", "Esportes", "Ênfase", "Objetivo"]}
+          rows={[
+            ["1 — Amostragem", "6-12 anos", "3-5 diferentes", "DIVERSÃO e participação", "Desenvolvimento motor amplo"],
+            ["2 — Especialização", "13-15 anos", "2-3 esportes", "Desenvolvimento + competição", "Identificar primário"],
+            ["3 — Investimento", "16+ anos", "1 primário", "Periodização avançada", "Objetivos competitivos"],
+          ]}
+        />
+        <p className="font-semibold text-foreground">Janelas de desenvolvimento:</p>
         <ul className="list-disc pl-4 space-y-1">
-          <li>Reduzir ultra-processados gradualmente (não eliminar = trauma)</li>
-          <li>Aumentar proteína (saciante, preserva massa magra)</li>
-          <li>Vegetais: exposição repetida — 15-20x para aceitar um novo</li>
-          <li>Atividade física como BRINCADEIRA</li>
-          <li>Sono: criticamente importante (privação = obesidade)</li>
-          <li>Telas: &lt;2h/dia (substitui movimento + altera sono)</li>
+          <li><strong className="text-foreground">6-8 anos:</strong> velocidade, agilidade, equilíbrio (SNC altamente plástico)</li>
+          <li><strong className="text-foreground">8-12 anos:</strong> coordenação motora — "Golden Age" (aprender técnica agora = mais fácil que qualquer outra fase)</li>
+          <li><strong className="text-foreground">10-12 anos:</strong> início de potência e resistência</li>
         </ul>
 
-        <p className="font-bold text-foreground">Adolescente que quer Hipertrofia:</p>
-        <p>Treino de força seguro a partir dos 13-14 anos com supervisão. Sem cargas máximas (1RM) — esqueleto em formação. Objetivo: aprender padrões de movimento.</p>
+        {/* MÓDULO 2 — Fisiologia */}
+        <p className="font-bold text-foreground text-sm">🧬 Fisiologia do Jovem Atleta</p>
+        <p className="font-semibold text-foreground">Diferenças fundamentais vs adulto:</p>
 
-        <p className="font-semibold text-foreground">Suplementação para adolescentes:</p>
+        <div className="bg-muted/30 rounded p-3 space-y-2">
+          <p className="font-bold text-foreground">Placa Epifisária (cartilagem de crescimento):</p>
+          <p>Ponto mais fraco do esqueleto (mais fraco que ligamentos/tendões). Fecha: meninas ~14-15 / meninos ~16-18 anos. Sobrecarga excessiva → Lesão de Salter-Harris (fratura de crescimento) → crescimento assimétrico ou interrompido.</p>
+          <p className="mt-1"><strong className="text-foreground">Implicações:</strong> evitar impacto excessivo repetitivo • proibir 1RM até fechamento • Osgood-Schlatter muito comum 10-15 anos</p>
+        </div>
+
+        <div className="bg-muted/30 rounded p-3 space-y-2">
+          <p className="font-bold text-foreground">Densidade Óssea na Adolescência:</p>
+          <p>40-60% da massa óssea adulta formada nessa fase. Pico de massa óssea: 25-30 anos. O que constrói: impacto, carga, vitamina D, cálcio. O que destrói: Tríade da Atleta Feminina.</p>
+        </div>
+
+        <InfoTable
+          headers={["Sistema", "Característica", "Implicação"]}
+          rows={[
+            ["Cardiovascular", "FC max similar, VO2max menor por kg até puberdade", "Recuperação SUPERIOR — mais rápido entre esforços"],
+            ["Nervoso", "Plasticidade neural MÁXIMA até 12-13 anos", "Priorizar TÉCNICA — 'Golden Age of Motor Learning'"],
+            ["Endócrino pré-puberal", "T e E2 muito baixos — ganho de força via neural", "Não forçar hipertrofia — benefício: coordenação, técnica, osso"],
+            ["Endócrino puberdade", "Explosão GH, IGF-1, T(M), E2(F) — 8-12cm/ano", "Maior vulnerabilidade a lesões (osso cresce mais rápido que músculo)"],
+          ]}
+        />
+
+        {/* MÓDULO 3 — Nutrição */}
+        <p className="font-bold text-foreground text-sm">🍎 Nutrição para o Jovem Atleta</p>
+        <div className="bg-primary/5 border border-primary/20 rounded-lg p-3">
+          <p className="italic">"A nutrição serve 3 objetivos SIMULTÂNEOS: 1) Crescimento normal 2) Performance 3) Recuperação. Sacrificar qualquer um é erro com consequências permanentes."</p>
+        </div>
+
+        <p className="font-bold text-foreground">Necessidades calóricas:</p>
+        <InfoTable
+          headers={["Faixa", "Meninos", "Meninas"]}
+          rows={[
+            ["6-9 anos ativos", "2200-2600 kcal", "2000-2400 kcal"],
+            ["10-13 anos ativos", "2600-3200 kcal", "2200-2800 kcal"],
+            ["14-17 anos atletas", "3200-5000+ kcal", "2600-4000 kcal"],
+          ]}
+        />
+
+        <div className="bg-destructive/10 border border-destructive/30 rounded p-3">
+          <p className="font-bold text-destructive">⚠️ Sinais de ingestão insuficiente:</p>
+          <p>Fadiga crônica • Crescimento abaixo do esperado • Atraso puberal • Performance em declínio • Humor irritável • Lesões frequentes • Amenorreia (meninas) = alarme máximo • Doença frequente</p>
+        </div>
+
+        <p className="font-bold text-foreground">Proteína:</p>
+        <InfoTable
+          headers={["Nível", "Necessidade (g/kg)"]}
+          rows={[
+            ["Sedentário", "0.85-1.0 (RDA)"],
+            ["Atleta moderado", "1.2-1.6"],
+            ["Atleta intenso", "1.6-2.0"],
+            ["Atleta elite", "1.8-2.2"],
+          ]}
+        />
+        <p>4-5 refeições com proteína • Mín 20g por refeição principal • Fontes ideais: leite integral, chocolate milk pós-treino, ovos, frango, peixe, leguminosas</p>
+
+        <p className="font-bold text-foreground">Carboidrato — O combustível do crescimento:</p>
+        <p className="text-destructive font-semibold">NÃO fazer low carb ou cetogênica em jovens atletas!</p>
+        <InfoTable
+          headers={["Nível", "Carb (g/kg/dia)"]}
+          rows={[
+            ["Moderado", "4-6"],
+            ["Intenso", "6-8"],
+            ["Competição", "8-10"],
+          ]}
+        />
+        <p>Nunca treinar em jejum (hipoglicemia + catabolismo). Pós-treino: chocolate milk funciona muito bem.</p>
+
+        <p className="font-bold text-foreground">Gordura: 30-35% das calorias</p>
+        <p>Não restringir! Hormônios sexuais, desenvolvimento cerebral (DHA), vitaminas lipossolúveis. Fontes: peixes gordurosos, ovos inteiros, leite integral, abacate, oleaginosas.</p>
+
+        {/* Micronutrientes */}
+        <p className="font-bold text-foreground">Micronutrientes CRÍTICOS:</p>
+        <InfoTable
+          headers={["Nutriente", "Meta/dia", "Por quê"]}
+          rows={[
+            ["Cálcio", "1300mg (mais que adulto!)", "Pico de massa óssea em formação"],
+            ["Vitamina D", "1000-4000UI", "80%+ deficientes no Brasil"],
+            ["Ferro", "Ferritina > 30", "Crítico pós-menarca em meninas"],
+            ["Zinco", "9-11mg", "Crescimento, imunidade, cofator GH/IGF-1"],
+            ["Magnésio", "360-410mg", "Sono, crescimento, função muscular"],
+            ["Ômega-3 (DHA)", "500-1000mg EPA+DHA", "Desenvolvimento cerebral até 25 anos"],
+          ]}
+        />
+
+        <p className="font-bold text-foreground">Hidratação em jovens (mais vulneráveis):</p>
+        <p>Antes: 400-600ml 1-2h antes • Durante: 150-250ml a cada 15-20min • Depois: 450-675ml para cada 0.5kg perdido. Eletrólitos em treinos &gt;60min.</p>
+
+        {/* Tríade */}
+        <div className="bg-destructive/10 border border-destructive/30 rounded p-3 space-y-2">
+          <p className="font-bold text-destructive text-sm">🚨 TRÍADE DA ATLETA FEMININA (RED-S) — Protocolo Mais Crítico</p>
+          <p>Déficit energético + disfunção menstrual + baixa densidade óssea. Prevalência: 15-60% de atletas femininas jovens.</p>
+          <p><strong className="text-foreground">Esportes de ALTO RISCO:</strong> Ginástica artística/rítmica • Natação • Atletismo fundo • Dança/ballet • Patinação • Lutas</p>
+          <p className="font-bold text-destructive">Sinais de alarme — agir IMEDIATAMENTE:</p>
+          <p>Menarca &gt;16 anos • Ciclos irregulares • Amenorreia 3+ meses • Fraturas de estresse • Crescimento abaixo da curva • Comportamento restritivo • Exercício compulsivo</p>
+          <p><strong className="text-foreground">Protocolo:</strong> Aumentar disponibilidade energética IMEDIATAMENTE • Equipe multidisciplinar • NÃO apenas reposição hormonal • Psicólogo + DEXA + hormônios a cada 3 meses</p>
+        </div>
+
+        {/* MÓDULO 4 — Treino de Força */}
+        <p className="font-bold text-foreground text-sm">🏋️ Treinamento de Força em Jovens</p>
+        <div className="bg-primary/5 border border-primary/20 rounded-lg p-3">
+          <p className="font-bold text-foreground">Mito REFUTADO: "Treino de força interrompe crescimento"</p>
+          <p>NSCA, AAP, ACSM: posição oficial = SEGURO E RECOMENDADO. Risco de lesão supervisionado: MENOR que futebol ou basquete.</p>
+        </div>
+
+        <p className="font-bold text-foreground">Diretrizes por faixa etária:</p>
+        <InfoTable
+          headers={["Idade", "Modalidade", "Intensidade", "Ênfase"]}
+          rows={[
+            ["6-9 anos", "Peso corporal, lúdico", "Muito leve", "Divertido, coordenação"],
+            ["10-12 anos", "Pesos livres LEVES + supervisão", "15-20 reps fáceis, 1-2 séries", "TÉCNICA perfeita (Golden Age)"],
+            ["12-14 anos", "Progressão gradual de carga", "50-70% 1RM, 8-15 reps", "Técnica + volume crescente"],
+            ["15-17 anos", "Próximo ao adulto", "Até 75-80% 1RM", "Periodização intermediária"],
+            ["18+", "Protocolo adulto", "Completo", "Creatina OK, volume alto OK"],
+          ]}
+        />
+
+        <p className="font-bold text-foreground">Padrões de movimento prioritários:</p>
+        <ul className="list-disc pl-4 space-y-1">
+          <li><strong className="text-foreground">Agachamento:</strong> air → goblet → barra frontal → barra traseira</li>
+          <li><strong className="text-foreground">Empurrar:</strong> push-up (inclinado → completo → declive) → press halteres</li>
+          <li><strong className="text-foreground">Puxar:</strong> inverted row → pull-up assistido → pull-up completo</li>
+          <li><strong className="text-foreground">Hinge:</strong> hip hinge com bastão → kettlebell swing → RDL → terra</li>
+          <li><strong className="text-foreground">Core:</strong> McGill Big 3 (bird-dog, dead bug, side plank) + hollow body + farmer's carry</li>
+        </ul>
+
+        <div className="bg-muted/30 rounded p-3 space-y-2">
+          <p className="font-bold text-foreground">Exemplo treino 12-15 anos (3x/sem):</p>
+          <p>Aquecimento 10min (corda, mobilidade, ativação) → A1 Agachamento goblet 3×10 + A2 Push-up 3×10-15 → B1 RDL halteres 3×10 + B2 Puxada assistida 3×8-10 → C1 Press halteres 2×10 + C2 Remada 2×10 → D Core + Sprint 4-6×20m → Alongamento</p>
+        </div>
+
+        {/* MÓDULO 5 — Suplementação */}
+        <p className="font-bold text-foreground text-sm">💊 Suplementação — Semáforo</p>
+        <p className="font-semibold text-foreground">Princípio: FOOD FIRST — 90% vem da alimentação</p>
+
+        <div className="space-y-2">
+          <div className="bg-green-500/10 border border-green-500/30 rounded p-3">
+            <p className="font-bold text-green-600 dark:text-green-400">🟢 SEGURO e frequentemente necessário:</p>
+            <InfoTable
+              headers={["Suplemento", "Dose", "Observação"]}
+              rows={[
+                ["Vitamina D3", "1000-4000UI/dia", "Universalmente deficiente no BR"],
+                ["Cálcio (se < 3 porções laticínio)", "500mg 2x citrato", "Não exceder 2500mg total"],
+                ["Magnésio", "200-300mg glicinato", "Sono, crescimento, músculo"],
+                ["Ferro (se ferritina < 20)", "30-60mg bisglicinato", "Com vitamina C, reavaliar 3 meses"],
+                ["Ômega-3", "500-1000mg EPA+DHA", "Desenvolvimento cerebral"],
+                ["Probióticos", "L. rhamnosus GG 10bi UFC", "Seguro desde recém-nascido"],
+                ["Proteína em pó (> 10 anos)", "Whey concentrado", "Apenas se dieta insuficiente"],
+              ]}
+            />
+          </div>
+
+          <div className="bg-amber-500/10 border border-amber-500/30 rounded p-3">
+            <p className="font-bold text-amber-600 dark:text-amber-400">🟡 Com critério e supervisão:</p>
+            <p>Creatina: provavelmente segura pós-puberal (15-16+), 3-5g/dia sem loading, decisão médico + pais • Beta-alanina: 15+ anos, 2-3g/dia • Cafeína: &lt;12 NÃO, 13-17 máx 100mg/dia • B12: obrigatório se vegetariano</p>
+          </div>
+
+          <div className="bg-destructive/10 border border-destructive/30 rounded p-3">
+            <p className="font-bold text-destructive">🔴 NUNCA para jovens:</p>
+            <InfoTable
+              headers={["Substância", "Consequência"]}
+              rows={[
+                ["❌ AAS (esteroides)", "Fechamento epífise = altura reduzida PERMANENTE + infertilidade + ginecomastia irreversível"],
+                ["❌ SARMs", "Mesma supressão hormonal que AAS — sem dados de segurança"],
+                ["❌ Pré-treinos adultos", "Arritmia e parada cardíaca relatados — SNC vulnerável"],
+                ["❌ GH (sem indicação)", "Acromegalia, diabetes, tumores"],
+                ["❌ Diuréticos", "Risco renal grave + arritmia + colapso + morte"],
+                ["❌ Termogênicos", "Estresse cardiovascular inaceitável"],
+                ["❌ Peptídeos", "Sem dados de segurança pediátrica"],
+              ]}
+            />
+          </div>
+        </div>
+
+        {/* MÓDULO 6 — Esportes Específicos */}
+        <p className="font-bold text-foreground text-sm">⚽ Esportes Específicos</p>
+        <InfoTable
+          headers={["Esporte", "Demandas", "Nutrição chave", "Alerta"]}
+          rows={[
+            ["Futebol", "8-13km/jogo, 150-250 sprints", "Carb alto, pós-jogo: chocolate milk", "Nordics: -50% lesão isquiotibiais (FIFA 11+)"],
+            ["Ginástica", "Força relativa máxima", "LEA > 45kcal/kg massa magra", "MAIOR risco de TA e Tríade — nunca comentar peso"],
+            ["Natação", "10-20km/sem, temp. água ↑ gasto", "3500-5000kcal, ferro + Vit D", "Não sentem suar — hidratação subestimada"],
+            ["Basquete/Vôlei", "Saltos repetitivos", "Cálcio 1300mg + Vit D 4000UI", "Osgood-Schlatter muito comum 10-15 anos"],
+            ["Atletismo fundo", "Alto risco de Tríade", "Ferro mensal, cálcio + D", "NÃO monitorar peso < 16 anos"],
+            ["Lutas (Judô, etc.)", "Corte de peso = PERIGOSO", "Competir no peso natural", "Sem cortes > 3% do peso corporal"],
+          ]}
+        />
+
+        {/* MÓDULO 7 — Psicologia */}
+        <p className="font-bold text-foreground text-sm">🧠 Psicologia do Jovem Atleta</p>
+        <div className="bg-destructive/10 border border-destructive/30 rounded p-3">
+          <p className="font-bold text-destructive">Burnout Precoce — 70% abandonam o esporte antes dos 13 anos</p>
+          <p>Principal razão: "não é mais divertido". Sinais: resistência em treinar, lesões frequentes sem causa, queda de performance, perda do prazer, desempenho escolar caindo.</p>
+        </div>
+
+        <p className="font-bold text-foreground">Prevenção de burnout:</p>
+        <ol className="list-decimal pl-4 space-y-1">
+          <li>Múltiplos esportes até 12-13 anos</li>
+          <li>Tempo livre sem estrutura (jogo livre = criatividade + resiliência)</li>
+          <li>Férias do esporte: 3 meses/ano mínimo</li>
+          <li>Escola em primeiro lugar</li>
+          <li>Criança deve poder expressar desejo de mudar de esporte</li>
+          <li>Sucesso ≠ vitória — trabalho e caráter &gt; troféus</li>
+        </ol>
+
         <div className="grid grid-cols-2 gap-2">
-          <div className="bg-primary/5 border border-primary/20 rounded p-2">
-            <p className="font-bold text-primary text-[10px]">✅ Seguro</p>
-            <p className="text-[10px]">Vitamina D 2000-5000UI • Magnésio 200-400mg • Whey (se dieta insuficiente) • Creatina: debate (decisão c/ médico)</p>
-          </div>
           <div className="bg-destructive/5 border border-destructive/20 rounded p-2">
-            <p className="font-bold text-destructive text-[10px]">❌ PROIBIDO</p>
-            <p className="text-[10px]">Pré-treinos estimulantes • SARMs (NUNCA) • Hormônios • Termogênicos • AAS (fecha epífise = para de crescer)</p>
+            <p className="font-bold text-destructive text-[10px]">❌ Pais que PREJUDICAM</p>
+            <p className="text-[10px]">Gritar durante jogos • Comparar com outros • Viver sonhos pelo filho • Pressionar resultado • Não dar descanso</p>
           </div>
+          <div className="bg-primary/5 border border-primary/20 rounded p-2">
+            <p className="font-bold text-primary text-[10px]">✅ Pais que AJUDAM</p>
+            <p className="text-[10px]">Presença positiva • "Você se esforçou?" (não "ganhou?") • Pais ativos = inspiram • Alimentação em casa • Proteger sono • Escutar</p>
+          </div>
+        </div>
+
+        {/* MÓDULO 8 — Lesões */}
+        <p className="font-bold text-foreground text-sm">🩹 Lesões Comuns em Jovens Atletas</p>
+        <InfoTable
+          headers={["Lesão", "Local", "Pico", "Manejo"]}
+          rows={[
+            ["Osgood-Schlatter", "Apófise tibial", "M 12-15 / F 10-13", "Reduzir quadríceps, alongar, gelo, cálcio + D"],
+            ["Síndrome de Sever", "Calcanhar", "8-13 anos", "Reduzir impacto, palmilha, alongar panturrilha"],
+            ["Scheuermann", "Vértebras (cifose)", "Adolescentes", "Extensão torácica, fortalecer eretores"],
+            ["Salter-Harris", "Placa de crescimento", "Qualquer idade", "EMERGÊNCIA — imobilizar e PS imediatamente"],
+          ]}
+        />
+        <p className="font-semibold text-foreground">Prevenção de overuse:</p>
+        <p>Regra dos 10% (nunca ↑ volume &gt;10%/sem) • 1-2 dias descanso/sem • Variação de esportes • Dor &gt;48h = investigar (NÃO é normal em jovens)</p>
+
+        {/* MÓDULO 9 — Sono */}
+        <p className="font-bold text-foreground text-sm">😴 Sono em Jovens Atletas</p>
+        <InfoTable
+          headers={["Idade", "Sono necessário", "Durante sono"]}
+          rows={[
+            ["6-12 anos", "9-12h (obrigatório)", "70-80% do GH, consolidação motora e memória"],
+            ["13-18 anos", "8-10h (obrigatório)", "Reparação tecidual, regulação imune, desenvolvimento cerebral"],
+          ]}
+        />
+        <p className="font-semibold text-foreground">Protocolo:</p>
+        <p>Temperatura 18-20°C • Escuridão total • Sem eletrônicos no quarto • Sem telas 60-90min antes • Horário consistente (±1h fim de semana) • Sem cafeína após 14h • Jantar 2-3h antes</p>
+
+        {/* MÓDULO 10 — Exames */}
+        <p className="font-bold text-foreground text-sm">🔬 Exames e Monitoramento</p>
+        <p className="font-semibold text-foreground">Exames anuais para todo jovem atleta:</p>
+        <p>Hemograma • Ferritina (meninas: semestral) • Vitamina D • Zinco • Cálcio e fósforo • TSH, T3 • Glicemia • PA • ECG • Antropometria (curvas WHO/CDC)</p>
+        <p className="font-semibold text-foreground mt-1">Adicionar para meninas:</p>
+        <p>Histórico menstrual • Estrogênio + progesterona se amenorreia • DEXA se fraturas de estresse</p>
+
+        <p className="font-bold text-foreground">Estatura estimada:</p>
+        <p>Menino: (pai + mãe + 13cm) / 2 ± 8.5cm • Menina: (pai + mãe - 13cm) / 2 ± 8.5cm. Se muito abaixo: investigar.</p>
+
+        {/* Regras Finais */}
+        <div className="bg-primary/5 border border-primary/20 rounded-lg p-3 space-y-1">
+          <p className="font-bold text-foreground text-sm">📋 10 Regras Finais APEX</p>
+          <ol className="list-decimal pl-4 space-y-1">
+            <li><strong className="text-foreground">Primum non nocere:</strong> crescimento e saúde &gt; performance SEMPRE</li>
+            <li><strong className="text-foreground">Diversão = KPI até 12 anos</strong></li>
+            <li><strong className="text-foreground">Alimentar crescimento ANTES da performance</strong></li>
+            <li><strong className="text-foreground">Técnica antes de carga</strong> — janela técnica não espera</li>
+            <li><strong className="text-foreground">Sono inegociável:</strong> 9-10h crianças, 8-9h adolescentes</li>
+            <li><strong className="text-foreground">Tríade em meninas = EMERGÊNCIA</strong></li>
+            <li><strong className="text-foreground">NUNCA AAS ou farmacológicos</strong> — nenhuma exceção</li>
+            <li><strong className="text-foreground">Envolver família sempre</strong></li>
+            <li><strong className="text-foreground">Equipe multidisciplinar</strong></li>
+            <li><strong className="text-foreground">Longo prazo:</strong> "Atleta saudável aos 30, não campeão lesionado aos 20" — Dr. Lyle Micheli</li>
+          </ol>
         </div>
       </div>
     ),
