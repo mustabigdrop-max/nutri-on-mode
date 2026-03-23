@@ -752,6 +752,9 @@ const sections: TrainingSection[] = [
             "NÃO: sit-up tradicional (compressão discal), leg raises sem core ativado",
           ]} />
         </div>
+
+        {/* Registro Fotográfico */}
+        <PosturalPhotos />
       </div>
     ),
   },
