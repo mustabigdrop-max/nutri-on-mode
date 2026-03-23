@@ -2434,6 +2434,36 @@ export type Database = {
         }
         Relationships: []
       }
+      postural_photos: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          notes: string | null
+          photo_date: string
+          photo_url: string
+          user_id: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          photo_date?: string
+          photo_url: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          photo_date?: string
+          photo_url?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       professional_patients: {
         Row: {
           created_at: string
