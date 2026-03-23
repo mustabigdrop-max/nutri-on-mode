@@ -7,7 +7,7 @@ import {
   Search, ChevronDown, ChevronUp, Heart, Scale, Brain, Activity,
   Users, Baby, Pill, AlertTriangle, Flame, Salad, Utensils,
   Moon, Shield, Zap, Target, TrendingUp, FlaskConical, Droplets,
-  Clock, Eye, Smile, HeartPulse, Thermometer,
+  Clock, Eye, Smile, HeartPulse, Thermometer, Sparkles, ShoppingCart, GraduationCap,
 } from "lucide-react";
 
 interface HealthSection {
