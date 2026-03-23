@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell, LineChart, Line, Legend } from "recharts";
-import { ArrowLeft, Dumbbell, CheckCircle2, XCircle, TrendingUp, Flame, Droplets, Calendar } from "lucide-react";
+import { ArrowLeft, Dumbbell, CheckCircle2, XCircle, TrendingUp, Flame, Droplets, Calendar, Target } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
