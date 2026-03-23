@@ -93,6 +93,9 @@ const LabPage = () => {
               <TabsTrigger value="peptides" className="flex-1 text-xs gap-1 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
                 <Syringe className="w-3.5 h-3.5" /> Peptídeos
               </TabsTrigger>
+              <TabsTrigger value="cardio" className="flex-1 text-xs gap-1 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
+                <Activity className="w-3.5 h-3.5" /> Cardio
+              </TabsTrigger>
               <TabsTrigger value="search" className="flex-1 text-xs gap-1 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
                 <Search className="w-3.5 h-3.5" /> Estudos
               </TabsTrigger>
