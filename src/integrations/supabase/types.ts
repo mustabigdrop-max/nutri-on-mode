@@ -1138,6 +1138,50 @@ export type Database = {
         }
         Relationships: []
       }
+      exercise_cues: {
+        Row: {
+          created_at: string | null
+          cue_texto: string
+          cue_tipo: string | null
+          exercise_id: string | null
+          fase: string | null
+          id: string
+          musculo_alvo: string | null
+          problema_comum: string | null
+          solucao: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          cue_texto: string
+          cue_tipo?: string | null
+          exercise_id?: string | null
+          fase?: string | null
+          id?: string
+          musculo_alvo?: string | null
+          problema_comum?: string | null
+          solucao?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          cue_texto?: string
+          cue_tipo?: string | null
+          exercise_id?: string | null
+          fase?: string | null
+          id?: string
+          musculo_alvo?: string | null
+          problema_comum?: string | null
+          solucao?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exercise_cues_exercise_id_fkey"
+            columns: ["exercise_id"]
+            isOneToOne: false
+            referencedRelation: "exercises"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       exercise_sets: {
         Row: {
           concluida: boolean | null
@@ -2832,6 +2876,56 @@ export type Database = {
         }
         Relationships: []
       }
+      progression_log: {
+        Row: {
+          acao_tomada: string | null
+          carga_atual: number | null
+          created_at: string | null
+          data: string | null
+          exercise_id: string | null
+          id: string
+          reps_atual: number | null
+          rir_medio: number | null
+          sugestao_ia: string | null
+          user_id: string
+          volume_serie: number | null
+        }
+        Insert: {
+          acao_tomada?: string | null
+          carga_atual?: number | null
+          created_at?: string | null
+          data?: string | null
+          exercise_id?: string | null
+          id?: string
+          reps_atual?: number | null
+          rir_medio?: number | null
+          sugestao_ia?: string | null
+          user_id: string
+          volume_serie?: number | null
+        }
+        Update: {
+          acao_tomada?: string | null
+          carga_atual?: number | null
+          created_at?: string | null
+          data?: string | null
+          exercise_id?: string | null
+          id?: string
+          reps_atual?: number | null
+          rir_medio?: number | null
+          sugestao_ia?: string | null
+          user_id?: string
+          volume_serie?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "progression_log_exercise_id_fkey"
+            columns: ["exercise_id"]
+            isOneToOne: false
+            referencedRelation: "exercises"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       research_searches: {
         Row: {
           category: string | null
@@ -3504,6 +3598,67 @@ export type Database = {
         }
         Relationships: []
       }
+      workout_feedback: {
+        Row: {
+          created_at: string | null
+          diary_id: string | null
+          exercise_id: string | null
+          id: string
+          musculo_correto: boolean | null
+          notas: string | null
+          problemas: string[] | null
+          qualidade_contracao: number | null
+          rir_real: number | null
+          set_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          diary_id?: string | null
+          exercise_id?: string | null
+          id?: string
+          musculo_correto?: boolean | null
+          notas?: string | null
+          problemas?: string[] | null
+          qualidade_contracao?: number | null
+          rir_real?: number | null
+          set_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          diary_id?: string | null
+          exercise_id?: string | null
+          id?: string
+          musculo_correto?: boolean | null
+          notas?: string | null
+          problemas?: string[] | null
+          qualidade_contracao?: number | null
+          rir_real?: number | null
+          set_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workout_feedback_diary_id_fkey"
+            columns: ["diary_id"]
+            isOneToOne: false
+            referencedRelation: "workout_diary"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workout_feedback_exercise_id_fkey"
+            columns: ["exercise_id"]
+            isOneToOne: false
+            referencedRelation: "exercises"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workout_feedback_set_id_fkey"
+            columns: ["set_id"]
+            isOneToOne: false
+            referencedRelation: "workout_sets_detail"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       workout_schedule: {
         Row: {
           created_at: string | null
@@ -3536,6 +3691,87 @@ export type Database = {
           workout_type?: string
         }
         Relationships: []
+      }
+      workout_sets_detail: {
+        Row: {
+          carga: number | null
+          concluida: boolean | null
+          created_at: string | null
+          diary_id: string | null
+          exercise_id: string | null
+          id: string
+          notas: string | null
+          onde_sentiu: string | null
+          percentual_top: number | null
+          qualidade: number | null
+          reps_alvo: number | null
+          reps_realizadas: number | null
+          rir_alvo: number | null
+          rir_real: number | null
+          set_number: number | null
+          set_type: string
+          tecnica_especial: string | null
+          tempo_descanso: number | null
+          tempo_execucao: string | null
+        }
+        Insert: {
+          carga?: number | null
+          concluida?: boolean | null
+          created_at?: string | null
+          diary_id?: string | null
+          exercise_id?: string | null
+          id?: string
+          notas?: string | null
+          onde_sentiu?: string | null
+          percentual_top?: number | null
+          qualidade?: number | null
+          reps_alvo?: number | null
+          reps_realizadas?: number | null
+          rir_alvo?: number | null
+          rir_real?: number | null
+          set_number?: number | null
+          set_type?: string
+          tecnica_especial?: string | null
+          tempo_descanso?: number | null
+          tempo_execucao?: string | null
+        }
+        Update: {
+          carga?: number | null
+          concluida?: boolean | null
+          created_at?: string | null
+          diary_id?: string | null
+          exercise_id?: string | null
+          id?: string
+          notas?: string | null
+          onde_sentiu?: string | null
+          percentual_top?: number | null
+          qualidade?: number | null
+          reps_alvo?: number | null
+          reps_realizadas?: number | null
+          rir_alvo?: number | null
+          rir_real?: number | null
+          set_number?: number | null
+          set_type?: string
+          tecnica_especial?: string | null
+          tempo_descanso?: number | null
+          tempo_execucao?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workout_sets_detail_diary_id_fkey"
+            columns: ["diary_id"]
+            isOneToOne: false
+            referencedRelation: "workout_diary"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workout_sets_detail_exercise_id_fkey"
+            columns: ["exercise_id"]
+            isOneToOne: false
+            referencedRelation: "exercises"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       workout_templates: {
         Row: {
