@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import BottomNav from "@/components/BottomNav";
-import { Microscope, Bot, BookOpen, Search, FileText, Leaf, Bug, Shield, Zap, Dumbbell, Apple, HeartPulse, Syringe, Activity } from "lucide-react";
+import { Microscope, Bot, BookOpen, Search, FileText, Leaf, Bug, Shield, Zap, Dumbbell, Apple, HeartPulse, Syringe, Activity, Target } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ApexChat from "@/components/lab/ApexChat";
 import ProtocolLibrary from "@/components/lab/ProtocolLibrary";
@@ -16,6 +16,7 @@ import LabNutritionMaster from "@/components/lab/LabNutritionMaster";
 import LabHealthMaster from "@/components/lab/LabHealthMaster";
 import LabPeptideLibrary from "@/components/lab/LabPeptideLibrary";
 import LabCardioMaster from "@/components/lab/LabCardioMaster";
+import ExerciseSelector from "@/components/workout/ExerciseSelector";
 
 const LabPage = () => {
   const [tab, setTab] = useState("apex");
