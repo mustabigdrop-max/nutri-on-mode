@@ -103,6 +103,7 @@ const LabPage = () => {
                </TabsTrigger>
               <TabsTrigger value="protraining" className="flex-1 text-xs gap-1 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
                 <GraduationCap className="w-3.5 h-3.5" /> Pro Training
+              </TabsTrigger>
               <TabsTrigger value="search" className="flex-1 text-xs gap-1 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
                 <Search className="w-3.5 h-3.5" /> Estudos
               </TabsTrigger>
