@@ -17,6 +17,7 @@ import LabHealthMaster from "@/components/lab/LabHealthMaster";
 import LabPeptideLibrary from "@/components/lab/LabPeptideLibrary";
 import LabCardioMaster from "@/components/lab/LabCardioMaster";
 import ExerciseSelector from "@/components/workout/ExerciseSelector";
+import LabProTraining from "@/components/lab/LabProTraining";
 
 const LabPage = () => {
   const [tab, setTab] = useState("apex");
