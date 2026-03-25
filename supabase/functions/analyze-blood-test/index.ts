@@ -26,7 +26,7 @@ serve(async (req) => {
     const { blood_test_id, pdf_url } = await req.json();
     if (!blood_test_id || !pdf_url) throw new Error("Missing blood_test_id or pdf_url");
 
-    // Download the PDF from storage
+    // Download the file from storage
     const pathParts = pdf_url.split("/blood-tests/");
     const filePath = pathParts[pathParts.length - 1];
     
@@ -37,8 +37,21 @@ serve(async (req) => {
 
     if (downloadError || !fileData) {
       console.error("Download error:", downloadError);
-      throw new Error("Failed to download PDF");
+      throw new Error("Failed to download file");
     }
+
+    // Detect MIME type from file extension
+    const ext = filePath.split(".").pop()?.toLowerCase() || "";
+    const mimeMap: Record<string, string> = {
+      pdf: "application/pdf",
+      jpg: "image/jpeg",
+      jpeg: "image/jpeg",
+      png: "image/png",
+      webp: "image/webp",
+      heic: "image/heic",
+      heif: "image/heif",
+    };
+    const mimeType = mimeMap[ext] || fileData.type || "application/pdf";
 
     // Convert to base64 for AI (chunk to avoid stack overflow)
     const arrayBuffer = await fileData.arrayBuffer();
@@ -125,7 +138,7 @@ IMPORTANTE: Retorne SOMENTE o JSON, sem markdown, sem explicações extras.`;
               {
                 type: "image_url",
                 image_url: {
-                  url: `data:application/pdf;base64,${base64}`
+                  url: `data:${mimeType};base64,${base64}`
                 }
               }
             ]
