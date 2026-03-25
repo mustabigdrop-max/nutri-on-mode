@@ -615,5 +615,39 @@ export const useWorkoutSchedule = () => {
     return schedule.filter(s => s.day_of_week === dow);
   };
 
-  return { schedule, todayLog, loading, saveDay, removeSlot, completeWorkout, getTodayWorkout, getTodayWorkouts, getWorkoutsForDay, refetch: fetchSchedule };
+  /** Returns 7-day macro plan based on workout schedule */
+  const getWeeklyKcalPlan = (
+    baseTDEE: number,
+    wKg: number,
+    objetivo: "bulking" | "cutting" | "manutencao" = "manutencao"
+  ) => {
+    const goalMult = objetivo === "bulking" ? 1.12 : objetivo === "cutting" ? 0.88 : 1.0;
+    return [0, 1, 2, 3, 4, 5, 6].map(dow => {
+      const dayW = getWorkoutsForDay(dow);
+      const adj = combineAdjustments(dayW, wKg);
+      const kcal = Math.round(baseTDEE * adj.kcalMultiplier * goalMult);
+      const protein = Math.round(wKg * adj.proteinPerKg);
+      const fatPct = objetivo === "cutting" ? 0.20 : 0.25;
+      const fat = Math.round((kcal * fatPct) / 9);
+      const carbs = Math.round((kcal - protein * 4 - fat * 9) / 4);
+      const mainType = dayW.length > 0 ? dayW[0].workout_type : "rest";
+      const category = WORKOUT_TYPES[mainType as WorkoutType]?.category || "descanso";
+      return { dow, kcal, protein, carbs, fat, type: mainType, category };
+    });
+  };
+
+  /** Find the next rest day from today */
+  const getNextRestDay = (): { dow: number; distance: number } => {
+    const todayDow = new Date().getDay();
+    for (let i = 1; i <= 7; i++) {
+      const checkDow = (todayDow + i) % 7;
+      const dayW = getWorkoutsForDay(checkDow);
+      if (dayW.length === 0 || dayW.every(w => w.workout_type === "rest" || w.workout_type === "active_rest")) {
+        return { dow: checkDow, distance: i };
+      }
+    }
+    return { dow: (todayDow + 1) % 7, distance: 1 };
+  };
+
+  return { schedule, todayLog, loading, saveDay, removeSlot, completeWorkout, getTodayWorkout, getTodayWorkouts, getWorkoutsForDay, getWeeklyKcalPlan, getNextRestDay, refetch: fetchSchedule };
 };
