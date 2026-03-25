@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { getLocalDateStr } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
@@ -186,6 +187,7 @@ const RecipesPage = () => {
     const { error } = await supabase.from("meal_logs").insert({
       user_id: user.id,
       meal_type: mealType,
+      meal_date: getLocalDateStr(),
       food_names: recipe.ingredients.map(i => i.name),
       total_kcal: recipe.kcal,
       total_protein: recipe.protein,

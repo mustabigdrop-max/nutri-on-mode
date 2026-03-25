@@ -391,6 +391,7 @@ const MealLogPage = () => {
     const { error } = await supabase.from("meal_logs").insert({
       user_id: user.id,
       meal_type: meal.meal_type,
+      meal_date: getLocalDateStr(),
       total_kcal: Math.round(meal.total_kcal),
       total_protein: Math.round(meal.total_protein),
       total_carbs: Math.round(meal.total_carbs),
@@ -445,6 +446,7 @@ const MealLogPage = () => {
       const { data: insertedMeal, error } = await supabase.from("meal_logs").insert({
         user_id: user.id,
         meal_type: selectedMealType,
+        meal_date: getLocalDateStr(),
         total_kcal: Math.round(totals.kcal),
         total_protein: Math.round(totals.protein),
         total_carbs: Math.round(totals.carbs),

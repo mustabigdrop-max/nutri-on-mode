@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { getLocalDateStr } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
@@ -56,6 +57,7 @@ const FirstMealScreen = () => {
       await supabase.from("meal_logs").insert({
         user_id: user.id,
         meal_type: data?.meal_type || "almoco",
+        meal_date: getLocalDateStr(),
         food_names: foods.map((f: any) => f.name),
         total_kcal: totals.total_kcal,
         total_protein: totals.total_protein,

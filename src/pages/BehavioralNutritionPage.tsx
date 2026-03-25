@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { getLocalDateStr } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
@@ -124,6 +125,7 @@ const BehavioralNutritionPage = () => {
     const { error } = await supabase.from("meal_logs").insert({
       user_id: user.id,
       meal_type: "check_in",
+      meal_date: getLocalDateStr(),
       hunger_level: selectedHunger,
       emotion: selectedEmotion,
       notes: diaryNote || `Check-in emocional: ${selectedEmotion}, Fome: ${selectedHunger}/10`,

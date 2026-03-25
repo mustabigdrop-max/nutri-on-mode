@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { getLocalDateStr } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { Camera, ImageIcon, ArrowRight, Loader2, X, ArrowLeft, MessageCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -100,6 +101,7 @@ const FreeMealFlow = ({ onClose }: FreeMealFlowProps) => {
     const { error } = await supabase.from("meal_logs").insert({
       user_id: user.id,
       meal_type: mealType === "extra" ? "lanche_tarde" : mealType,
+      meal_date: getLocalDateStr(),
       total_kcal: aiEstimatedKcal || 0,
       total_protein: 0,
       total_carbs: 0,

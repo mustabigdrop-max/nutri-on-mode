@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { getLocalDateStr } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { Camera, ImageIcon, ArrowRight, Loader2, X, ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -139,6 +140,7 @@ const EatOutFlow = ({ onClose }: EatOutFlowProps) => {
     const { error } = await supabase.from("meal_logs").insert({
       user_id: user.id,
       meal_type: mealType,
+      meal_date: getLocalDateStr(),
       total_kcal: macros.kcal,
       total_protein: macros.protein,
       total_carbs: macros.carbs,
