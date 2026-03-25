@@ -71,6 +71,34 @@ const NutriSyncPage = () => {
   const adjustedFat = dayTimeline.macros.fat;
   const kcalDiff = adjustedKcal - baseKcal;
 
+  const weeklyPlan = useMemo(() => getWeeklyKcalPlan(baseKcal, weightKg, objetivo), [schedule, baseKcal, weightKg, objetivo]);
+
+  // Next meal countdown timer
+  useEffect(() => {
+    if (dayTimeline.items.length === 0) return;
+    const updateCountdown = () => {
+      const now = new Date();
+      const nowMinutes = now.getHours() * 60 + now.getMinutes();
+      const mealItems = dayTimeline.items.filter(i => i.type === "meal");
+      const next = mealItems.find(i => {
+        const [h, m] = i.time.split(":").map(Number);
+        return h * 60 + m > nowMinutes;
+      });
+      if (next) {
+        const [h, m] = next.time.split(":").map(Number);
+        const diff = (h * 60 + m) - nowMinutes;
+        const hrs = Math.floor(diff / 60);
+        const mins = diff % 60;
+        setNextMealCountdown(hrs > 0 ? `${hrs}h ${mins}min` : `${mins}min`);
+      } else {
+        setNextMealCountdown("");
+      }
+    };
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 60000);
+    return () => clearInterval(interval);
+  }, [dayTimeline]);
+
   const handleStartEdit = (dayOfWeek: number, slot: number, existing?: WorkoutScheduleEntry) => {
     setEditForm({
       day_of_week: dayOfWeek,
