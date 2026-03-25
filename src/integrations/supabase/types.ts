@@ -737,6 +737,42 @@ export type Database = {
         }
         Relationships: []
       }
+      biological_age_scores: {
+        Row: {
+          age_delta: number | null
+          biological_age: number
+          calculated_at: string
+          chronological_age: number
+          created_at: string | null
+          id: string
+          improvement_tips: string[] | null
+          score_breakdown: Json | null
+          user_id: string
+        }
+        Insert: {
+          age_delta?: number | null
+          biological_age: number
+          calculated_at?: string
+          chronological_age: number
+          created_at?: string | null
+          id?: string
+          improvement_tips?: string[] | null
+          score_breakdown?: Json | null
+          user_id: string
+        }
+        Update: {
+          age_delta?: number | null
+          biological_age?: number
+          calculated_at?: string
+          chronological_age?: number
+          created_at?: string | null
+          id?: string
+          improvement_tips?: string[] | null
+          score_breakdown?: Json | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       blood_tests: {
         Row: {
           ai_analysis: Json | null
