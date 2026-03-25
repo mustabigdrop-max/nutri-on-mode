@@ -31,9 +31,10 @@ import {
   Flame, TrendingUp, Droplets, Apple, BarChart3, MessageSquare,
   User, Plus, Utensils, LogOut, Zap, Brain, ChevronRight, Award,
   Camera, Users, Heart, Settings, HelpCircle, Leaf, Trophy, ShoppingCart, History, Dumbbell, FileText, Hammer,
-  Clock, Pill, Bug, Smile, CalendarDays, HelpingHand, BarChart, Lock, Sun, AlertTriangle, Scale
+  Clock, Pill, Bug, Smile, CalendarDays, HelpingHand, BarChart, Lock, Sun, AlertTriangle, Scale, Trash2
 } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
+import { toast } from "sonner";
 
 // SVG animated ring component — premium dual ring with glow
 const CalorieRing = ({ percent, kcal, target, objetivo }: { percent: number; kcal: number; target: number; objetivo?: string }) => {
@@ -866,6 +867,22 @@ const DashboardPage = () => {
                     </p>
                   </div>
                   {meal.confirmed && <span className="text-primary text-xs font-mono">✓</span>}
+                  <button
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      const { error } = await supabase.from("meal_logs").delete().eq("id", meal.id);
+                      if (!error) {
+                        toast.success("Refeição removida");
+                        fetchMeals();
+                      } else {
+                        toast.error("Erro ao remover");
+                      }
+                    }}
+                    className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors flex-shrink-0"
+                    title="Remover refeição"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
                 </motion.div>
               ))}
             </div>

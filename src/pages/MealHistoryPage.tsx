@@ -203,6 +203,13 @@ const MealHistoryPage = () => {
                         <span className="text-[10px] text-muted-foreground font-mono">
                           {format(new Date(meal.created_at), "HH:mm")}
                         </span>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); deleteMeal(meal.id); }}
+                          className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                          title="Remover refeição"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
                       </div>
                     </button>
 
