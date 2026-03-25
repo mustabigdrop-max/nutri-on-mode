@@ -15,6 +15,8 @@ export interface BehavioralProfile {
   streak_maximo: number;
   taxa_aderencia_geral: number;
   risco_abandono: number;
+  ponto_sabotagem_percent: number | null;
+  padrao_recaida: string | null;
   horarios_criticos: string[] | null;
   dias_criticos: string[] | null;
   situacoes_risco: string[] | null;
@@ -22,6 +24,8 @@ export interface BehavioralProfile {
   gatilhos_mapeados: any;
   loops_negativos: any;
   loops_positivos: any;
+  implementation_intents: any;
+  environment_design: any;
 }
 
 export interface BehavioralDiaryEntry {
