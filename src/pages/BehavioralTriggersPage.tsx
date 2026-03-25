@@ -1,22 +1,31 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Brain, Heart, RefreshCw, Fingerprint, Battery, BookOpen, AlertTriangle } from "lucide-react";
+import { ArrowLeft, Brain, Heart, RefreshCw, Fingerprint, Battery, BookOpen, AlertTriangle, MessageCircle, Lock } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import BottomNav from "@/components/BottomNav";
 import { useBehavioral } from "@/hooks/useBehavioral";
+import { usePlanGate } from "@/hooks/usePlanGate";
 import BehavioralProfileCard from "@/components/behavioral/BehavioralProfileCard";
 import BehavioralDiary from "@/components/behavioral/BehavioralDiary";
 import BehavioralLoops from "@/components/behavioral/BehavioralLoops";
 import IdentityCard from "@/components/behavioral/IdentityCard";
 import WillpowerCard from "@/components/behavioral/WillpowerCard";
 import EmotionRegulationModal from "@/components/behavioral/EmotionRegulationModal";
+import BehavioralAgentChat from "@/components/behavioral/BehavioralAgentChat";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 
 export default function BehavioralTriggersPage() {
   const navigate = useNavigate();
   const { profile, diary, loops, loading, saveProfile, addDiaryEntry, addLoop, addEmotionLog, incrementVoto } = useBehavioral();
+  const { plan, role } = usePlanGate();
   const [tab, setTab] = useState("perfil");
   const [showRegulation, setShowRegulation] = useState(false);
+
+  const planLevel = plan === "ON PRO" || plan === "ON +" ? 2 : plan === "ON" ? 1 : 0;
+  const isAdmin = role === "admin";
+  const hasAgentAccess = planLevel >= 2 || isAdmin;
+  const hasDiaryAccess = planLevel >= 2 || isAdmin;
 
   if (loading) {
     return (
@@ -25,6 +34,21 @@ export default function BehavioralTriggersPage() {
       </div>
     );
   }
+
+  const LockedCard = ({ feature, requiredPlan }: { feature: string; requiredPlan: string }) => (
+    <Card className="border-amber-500/20 bg-amber-500/5">
+      <CardContent className="py-8 text-center space-y-3">
+        <Lock className="w-8 h-8 text-amber-400 mx-auto" />
+        <div>
+          <p className="text-sm font-semibold text-foreground">{feature}</p>
+          <p className="text-[10px] text-muted-foreground mt-1">Disponível a partir do plano {requiredPlan}</p>
+        </div>
+        <Button variant="outline" size="sm" onClick={() => navigate("/settings")} className="text-[10px] border-amber-500/30 text-amber-400 hover:bg-amber-500/10">
+          Ver Planos
+        </Button>
+      </CardContent>
+    </Card>
+  );
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -48,6 +72,9 @@ export default function BehavioralTriggersPage() {
           <TabsTrigger value="perfil" className="flex-1 text-[10px] gap-1 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
             <Brain className="w-3 h-3" /> Perfil
           </TabsTrigger>
+          <TabsTrigger value="coach" className="flex-1 text-[10px] gap-1 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
+            <MessageCircle className="w-3 h-3" /> Coach
+          </TabsTrigger>
           <TabsTrigger value="diario" className="flex-1 text-[10px] gap-1 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
             <BookOpen className="w-3 h-3" /> Diário
           </TabsTrigger>
@@ -66,8 +93,20 @@ export default function BehavioralTriggersPage() {
           <BehavioralProfileCard profile={profile} onSave={saveProfile} />
         </TabsContent>
 
+        <TabsContent value="coach" className="mt-3">
+          {hasAgentAccess ? (
+            <BehavioralAgentChat />
+          ) : (
+            <LockedCard feature="🧠 Coach Comportamental com IA" requiredPlan="ON+" />
+          )}
+        </TabsContent>
+
         <TabsContent value="diario" className="mt-3">
-          <BehavioralDiary entries={diary} onAdd={addDiaryEntry} />
+          {hasDiaryAccess ? (
+            <BehavioralDiary entries={diary} onAdd={addDiaryEntry} />
+          ) : (
+            <LockedCard feature="Diário Comportamental Completo" requiredPlan="ON+" />
+          )}
         </TabsContent>
 
         <TabsContent value="loops" className="mt-3">
