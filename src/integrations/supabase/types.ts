@@ -260,6 +260,45 @@ export type Database = {
         }
         Relationships: []
       }
+      cardio_sessions: {
+        Row: {
+          calorias: number | null
+          created_at: string | null
+          data: string
+          duracao: number | null
+          horario: string | null
+          id: string
+          observacoes: string | null
+          tipo: string | null
+          user_id: string
+          zona: string | null
+        }
+        Insert: {
+          calorias?: number | null
+          created_at?: string | null
+          data: string
+          duracao?: number | null
+          horario?: string | null
+          id?: string
+          observacoes?: string | null
+          tipo?: string | null
+          user_id: string
+          zona?: string | null
+        }
+        Update: {
+          calorias?: number | null
+          created_at?: string | null
+          data?: string
+          duracao?: number | null
+          horario?: string | null
+          id?: string
+          observacoes?: string | null
+          tipo?: string | null
+          user_id?: string
+          zona?: string | null
+        }
+        Relationships: []
+      }
       chat_messages: {
         Row: {
           content: string
@@ -1069,6 +1108,78 @@ export type Database = {
           title?: string
           user_id?: string
           xp_reward?: number
+        }
+        Relationships: []
+      }
+      daily_nutrition_protocol: {
+        Row: {
+          alertas_gerados: Json | null
+          calorias_consumidas: number | null
+          calorias_meta: number | null
+          carb_consumido: number | null
+          carb_meta: number | null
+          cardio_duracao: number | null
+          cardio_tipo: string | null
+          data: string
+          gordura_consumida: number | null
+          gordura_meta: number | null
+          id: string
+          meal_timeline: Json | null
+          objetivo: string | null
+          proteina_consumida: number | null
+          proteina_meta: number | null
+          sincronizado: boolean | null
+          supplement_schedule: Json | null
+          tipo_dia: string | null
+          treino_tipo: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          alertas_gerados?: Json | null
+          calorias_consumidas?: number | null
+          calorias_meta?: number | null
+          carb_consumido?: number | null
+          carb_meta?: number | null
+          cardio_duracao?: number | null
+          cardio_tipo?: string | null
+          data: string
+          gordura_consumida?: number | null
+          gordura_meta?: number | null
+          id?: string
+          meal_timeline?: Json | null
+          objetivo?: string | null
+          proteina_consumida?: number | null
+          proteina_meta?: number | null
+          sincronizado?: boolean | null
+          supplement_schedule?: Json | null
+          tipo_dia?: string | null
+          treino_tipo?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          alertas_gerados?: Json | null
+          calorias_consumidas?: number | null
+          calorias_meta?: number | null
+          carb_consumido?: number | null
+          carb_meta?: number | null
+          cardio_duracao?: number | null
+          cardio_tipo?: string | null
+          data?: string
+          gordura_consumida?: number | null
+          gordura_meta?: number | null
+          id?: string
+          meal_timeline?: Json | null
+          objetivo?: string | null
+          proteina_consumida?: number | null
+          proteina_meta?: number | null
+          sincronizado?: boolean | null
+          supplement_schedule?: Json | null
+          tipo_dia?: string | null
+          treino_tipo?: string | null
+          updated_at?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -2333,6 +2444,33 @@ export type Database = {
           health_conditions?: string[] | null
           id?: string
           objective?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      nutry_sync_log: {
+        Row: {
+          alteracoes: Json | null
+          created_at: string | null
+          data: string | null
+          id: string
+          trigger: string | null
+          user_id: string
+        }
+        Insert: {
+          alteracoes?: Json | null
+          created_at?: string | null
+          data?: string | null
+          id?: string
+          trigger?: string | null
+          user_id: string
+        }
+        Update: {
+          alteracoes?: Json | null
+          created_at?: string | null
+          data?: string | null
+          id?: string
+          trigger?: string | null
           user_id?: string
         }
         Relationships: []
