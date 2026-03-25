@@ -777,6 +777,9 @@ const NutriSyncPage = () => {
           </motion.div>
         )}
 
+        {/* ANALYSIS TAB */}
+        {activeTab === "analysis" && <NutriSyncAnalysisTab weeklyPlan={weeklyPlan} />}
+
         {/* PEAK WEEK TAB */}
         {activeTab === "peak" && <PeakWeekManager />}
       </div>
