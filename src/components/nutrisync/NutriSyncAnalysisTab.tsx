@@ -52,28 +52,29 @@ const NutriSyncAnalysisTab = ({ weeklyPlan }: Props) => {
 
       const { data: logs } = await supabase
         .from("meal_logs")
-        .select("meal_type, protein_g, carbs_g, logged_at")
+        .select("meal_type, total_protein, total_carbs, meal_date")
         .eq("user_id", user.id)
-        .gte("logged_at", weekAgo.toISOString())
-        .order("logged_at", { ascending: false });
+        .gte("meal_date", weekAgo.toISOString().split("T")[0])
+        .order("meal_date", { ascending: false });
 
       if (!logs || logs.length === 0) {
         setMealData({ totalProtein: 0, timingScore: 0, carbsLast3Days: 0 });
         return;
       }
 
-      const totalProtein = logs.reduce((sum, l) => sum + (l.protein_g || 0), 0);
+      const totalProtein = logs.reduce((sum, l) => sum + (l.total_protein || 0), 0);
 
       // Carbs last 3 days
-      const recent = logs.filter(l => new Date(l.logged_at) >= threeDaysAgo);
-      const carbsLast3Days = recent.reduce((sum, l) => sum + (l.carbs_g || 0), 0);
+      const threeDaysAgoStr = threeDaysAgo.toISOString().split("T")[0];
+      const recent = logs.filter(l => l.meal_date >= threeDaysAgoStr);
+      const carbsLast3Days = recent.reduce((sum, l) => sum + (l.total_carbs || 0), 0);
 
       // Timing quality: % of days with pre/post workout logs
       const prePosts = logs.filter(l =>
         l.meal_type?.includes("pre") || l.meal_type?.includes("post") || l.meal_type?.includes("pos")
       );
-      const uniqueDays = new Set(logs.map(l => l.logged_at?.split("T")[0]));
-      const daysWithTiming = new Set(prePosts.map(l => l.logged_at?.split("T")[0]));
+      const uniqueDays = new Set(logs.map(l => l.meal_date));
+      const daysWithTiming = new Set(prePosts.map(l => l.meal_date));
       const timingScore = uniqueDays.size > 0 ? Math.round((daysWithTiming.size / uniqueDays.size) * 100) : 0;
 
       setMealData({ totalProtein: Math.round(totalProtein), timingScore, carbsLast3Days: Math.round(carbsLast3Days) });
