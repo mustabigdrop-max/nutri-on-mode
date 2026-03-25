@@ -131,15 +131,16 @@ const BloodTestPage = () => {
         .upload(fileName, file);
       if (uploadError) throw uploadError;
 
-      const { data: urlData } = supabase.storage
+      const { data: urlData } = await supabase.storage
         .from("blood-tests")
-        .getPublicUrl(fileName);
+        .createSignedUrl(fileName, 60 * 60 * 24 * 365); // 1 year signed URL
+      if (!urlData?.signedUrl) throw new Error("Falha ao gerar URL do PDF");
 
       const { data: testData, error: insertError } = await supabase
         .from("blood_tests")
         .insert({
           user_id: user.id,
-          pdf_url: urlData.publicUrl,
+          pdf_url: urlData.signedUrl,
           test_date: new Date().toISOString().split("T")[0],
         } as any)
         .select()
@@ -152,7 +153,7 @@ const BloodTestPage = () => {
       
       // Auto-analyze
       if (testData) {
-        await analyzeTest((testData as any).id, urlData.publicUrl);
+        await analyzeTest((testData as any).id, urlData.signedUrl);
       }
     } catch (err: any) {
       console.error(err);
