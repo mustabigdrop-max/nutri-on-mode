@@ -15,7 +15,7 @@ export const useWaterLogs = () => {
   const { user } = useAuth();
   const [todayLog, setTodayLog] = useState<WaterLog | null>(null);
   const [loading, setLoading] = useState(true);
-  const today = format(new Date(), "yyyy-MM-dd");
+  const today = getLocalDateStr();
 
   const fetchToday = useCallback(async () => {
     if (!user) return;
