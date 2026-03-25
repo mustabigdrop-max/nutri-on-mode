@@ -111,11 +111,13 @@ const BloodTestPage = () => {
 
   useEffect(() => { fetchTests(); }, [user]);
 
+  const ACCEPTED_TYPES = ["application/pdf", "image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"];
+
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !user) return;
-    if (file.type !== "application/pdf") {
-      toast.error("Apenas arquivos PDF são aceitos");
+    if (!ACCEPTED_TYPES.includes(file.type) && !file.name.match(/\.(pdf|jpe?g|png|webp|heic|heif)$/i)) {
+      toast.error("Envie PDF ou foto (JPG, PNG, WEBP)");
       return;
     }
     if (file.size > 50 * 1024 * 1024) {
@@ -148,7 +150,7 @@ const BloodTestPage = () => {
 
       if (insertError) throw insertError;
 
-      toast.success("PDF enviado! Iniciando análise com IA...");
+      toast.success("Arquivo enviado! Iniciando análise com IA...");
       await fetchTests();
       
       // Auto-analyze
@@ -157,7 +159,7 @@ const BloodTestPage = () => {
       }
     } catch (err: any) {
       console.error(err);
-      toast.error("Erro ao enviar PDF");
+      toast.error("Erro ao enviar arquivo");
     } finally {
       setUploading(false);
     }
@@ -238,7 +240,7 @@ const BloodTestPage = () => {
             {uploading ? (
               <div className="flex flex-col items-center gap-3">
                 <Loader2 className="w-8 h-8 text-primary animate-spin" />
-                <p className="text-sm text-muted-foreground">Enviando PDF...</p>
+                <p className="text-sm text-muted-foreground">Enviando arquivo...</p>
               </div>
             ) : (
               <>
@@ -246,13 +248,13 @@ const BloodTestPage = () => {
                   <Upload className="w-6 h-6 text-primary" />
                 </div>
                 <p className="text-sm font-semibold text-foreground mb-1">Enviar exame de sangue</p>
-                <p className="text-xs text-muted-foreground">PDF até 10MB · A IA analisa automaticamente</p>
+                <p className="text-xs text-muted-foreground">PDF ou foto (JPG, PNG) até 50MB</p>
               </>
             )}
           </div>
           <input
             type="file"
-            accept=".pdf"
+            accept=".pdf,.jpg,.jpeg,.png,.webp,.heic,.heif,image/*"
             onChange={handleUpload}
             disabled={uploading}
             className="hidden"
