@@ -313,7 +313,7 @@ const DashboardPage = () => {
   const [todayMood, setTodayMood] = useState<MoodType | null>(null);
   const { todayLog: waterLog, addWater } = useWaterLogs();
   const { hasAccess, plan } = usePlanGate();
-  const { getTodayWorkout, todayLog: workoutLog } = useWorkoutSchedule();
+  const { getTodayWorkout, getTodayWorkouts, getNextRestDay, getWorkoutsForDay, todayLog: workoutLog } = useWorkoutSchedule();
   const [upgradeModal, setUpgradeModal] = useState<{ open: boolean; feature: string }>({ open: false, feature: "" });
   const waterMl = waterLog?.ml_total ?? 0;
   const waterGlasses = Math.round(waterMl / 250);
@@ -608,6 +608,9 @@ const DashboardPage = () => {
           baseCarbs={baseCarbs}
           baseFat={baseFat}
           weightKg={weightKg}
+          todayWorkouts={getTodayWorkouts()}
+          nextRestDow={getNextRestDay().dow}
+          restDayWorkouts={getWorkoutsForDay(getNextRestDay().dow)}
         />
 
         {/* Calorie ring */}

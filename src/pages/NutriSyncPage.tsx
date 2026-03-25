@@ -1,8 +1,9 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Zap, Check, ChevronRight, Dumbbell, Clock, Droplets, Trophy, Calendar, History, Plus, Trash2, Target, Pill, AlertTriangle, ChevronDown, ChevronUp } from "lucide-react";
+import { ArrowLeft, Zap, Check, ChevronRight, Dumbbell, Clock, Droplets, Trophy, Calendar, History, Plus, Trash2, Target, Pill, AlertTriangle, ChevronDown, ChevronUp, BarChart3 } from "lucide-react";
 import PeakWeekManager from "@/components/nutrisync/PeakWeekManager";
+import NutriSyncAnalysisTab from "@/components/nutrisync/NutriSyncAnalysisTab";
 import BottomNav from "@/components/BottomNav";
 import { useProfile } from "@/hooks/useProfile";
 import {
@@ -37,8 +38,8 @@ const OBJETIVO_OPTIONS = [
 const NutriSyncPage = () => {
   const navigate = useNavigate();
   const { profile } = useProfile();
-  const { schedule, todayLog, loading, saveDay, removeSlot, completeWorkout, getTodayWorkouts, getWorkoutsForDay } = useWorkoutSchedule();
-  const [activeTab, setActiveTab] = useState<"today" | "timeline" | "schedule" | "peak">("today");
+  const { schedule, todayLog, loading, saveDay, removeSlot, completeWorkout, getTodayWorkouts, getWorkoutsForDay, getWeeklyKcalPlan, getNextRestDay } = useWorkoutSchedule();
+  const [activeTab, setActiveTab] = useState<"today" | "timeline" | "schedule" | "analysis" | "peak">("today");
   const [editingDay, setEditingDay] = useState<number | null>(null);
   const [editingSlot, setEditingSlot] = useState<number | null>(null);
   const [editForm, setEditForm] = useState<Partial<WorkoutScheduleEntry>>({});
@@ -47,6 +48,9 @@ const NutriSyncPage = () => {
     (profile?.goal === "emagrecer" ? "cutting" : profile?.goal === "ganhar_massa" ? "bulking" : "manutencao") as any
   );
   const [expandedTimeline, setExpandedTimeline] = useState<string | null>(null);
+  const [preWorkoutDone, setPreWorkoutDone] = useState(false);
+  const [postWorkoutDone, setPostWorkoutDone] = useState(false);
+  const [nextMealCountdown, setNextMealCountdown] = useState("");
 
   const todayWorkouts = getTodayWorkouts();
   const todayDow = new Date().getDay();
@@ -66,6 +70,34 @@ const NutriSyncPage = () => {
   const adjustedCarbs = dayTimeline.macros.carbs;
   const adjustedFat = dayTimeline.macros.fat;
   const kcalDiff = adjustedKcal - baseKcal;
+
+  const weeklyPlan = useMemo(() => getWeeklyKcalPlan(baseKcal, weightKg, objetivo), [schedule, baseKcal, weightKg, objetivo]);
+
+  // Next meal countdown timer
+  useEffect(() => {
+    if (dayTimeline.items.length === 0) return;
+    const updateCountdown = () => {
+      const now = new Date();
+      const nowMinutes = now.getHours() * 60 + now.getMinutes();
+      const mealItems = dayTimeline.items.filter(i => i.type === "meal");
+      const next = mealItems.find(i => {
+        const [h, m] = i.time.split(":").map(Number);
+        return h * 60 + m > nowMinutes;
+      });
+      if (next) {
+        const [h, m] = next.time.split(":").map(Number);
+        const diff = (h * 60 + m) - nowMinutes;
+        const hrs = Math.floor(diff / 60);
+        const mins = diff % 60;
+        setNextMealCountdown(hrs > 0 ? `${hrs}h ${mins}min` : `${mins}min`);
+      } else {
+        setNextMealCountdown("");
+      }
+    };
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 60000);
+    return () => clearInterval(interval);
+  }, [dayTimeline]);
 
   const handleStartEdit = (dayOfWeek: number, slot: number, existing?: WorkoutScheduleEntry) => {
     setEditForm({
@@ -154,6 +186,7 @@ const NutriSyncPage = () => {
             { key: "today", label: "Hoje", icon: Zap },
             { key: "timeline", label: "Timeline", icon: Clock },
             { key: "schedule", label: "Rotina", icon: Calendar },
+            { key: "analysis", label: "Análise", icon: BarChart3 },
             { key: "peak", label: "Peak Week", icon: Trophy },
           ] as const).map(tab => (
             <button
@@ -324,6 +357,78 @@ const NutriSyncPage = () => {
                 </div>
               </div>
             </div>
+
+            {/* Next Meal Countdown */}
+            {nextMealCountdown && (
+              <div className="rounded-2xl border border-accent/20 bg-accent/5 p-4 flex items-center gap-3">
+                <Clock className="w-5 h-5 text-accent" />
+                <div>
+                  <p className="text-xs font-bold text-foreground">Próxima refeição em</p>
+                  <p className="text-lg font-bold font-mono text-accent">{nextMealCountdown}</p>
+                </div>
+              </div>
+            )}
+
+            {/* Pre/Post Workout Checklist */}
+            {todayWorkouts.length > 0 && (
+              <div className="rounded-2xl border border-border bg-card p-4">
+                <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest mb-3">✅ Checklist Nutricional</p>
+                <div className="space-y-2">
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={preWorkoutDone}
+                      onChange={e => setPreWorkoutDone(e.target.checked)}
+                      className="w-4 h-4 rounded border-border accent-primary"
+                    />
+                    <span className={`text-xs font-mono ${preWorkoutDone ? "text-accent line-through" : "text-foreground"}`}>
+                      Completei o pré-treino ⚡
+                    </span>
+                  </label>
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={postWorkoutDone}
+                      onChange={e => setPostWorkoutDone(e.target.checked)}
+                      className="w-4 h-4 rounded border-border accent-primary"
+                    />
+                    <span className={`text-xs font-mono ${postWorkoutDone ? "text-accent line-through" : "text-foreground"}`}>
+                      Completei o pós-treino 🚀
+                    </span>
+                  </label>
+                </div>
+              </div>
+            )}
+
+            {/* Recovery Card */}
+            {todayLog?.completed && (
+              <div className="rounded-2xl border border-accent/20 bg-gradient-to-br from-accent/5 to-accent/10 p-4">
+                <p className="text-[10px] font-mono text-accent uppercase tracking-widest mb-2">🌙 Recuperação Ativa</p>
+                <p className="text-xs font-bold text-foreground mb-2">Sugestões para recuperação noturna</p>
+                <div className="space-y-1.5 text-[11px] font-mono text-muted-foreground">
+                  {todayWorkouts.some(w => w.workout_type === "legs" || w.workout_type === "lower") ? (
+                    <>
+                      <p>🥩 Caseína 40g ou cottage 200g (síntese proteica noturna)</p>
+                      <p>🍠 Carb complexo leve: batata doce ou aveia (repor glicogênio)</p>
+                      <p>💊 Magnésio glicinato 400mg + Glicina 3g (relaxamento muscular)</p>
+                      <p>🧊 Crioterapia local ou banho de contraste nas pernas</p>
+                    </>
+                  ) : todayWorkouts.some(w => WORKOUT_TYPES[w.workout_type as WorkoutType]?.category === "cardio") ? (
+                    <>
+                      <p>🥛 Whey + banana ou leite com mel (reposição rápida)</p>
+                      <p>💧 Eletrólitos: sódio + potássio + magnésio</p>
+                      <p>💊 Ômega-3 3g (anti-inflamatório)</p>
+                    </>
+                  ) : (
+                    <>
+                      <p>🥩 Caseína 30-40g ou 200g de cottage (proteína lenta)</p>
+                      <p>🥑 Gordura boa: abacate ou castanhas (hormonal recovery)</p>
+                      <p>💊 ZMA: Zinco 30mg + Magnésio 450mg + B6 10mg</p>
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
           </motion.div>
         )}
 
@@ -671,6 +776,9 @@ const NutriSyncPage = () => {
             })}
           </motion.div>
         )}
+
+        {/* ANALYSIS TAB */}
+        {activeTab === "analysis" && <NutriSyncAnalysisTab weeklyPlan={weeklyPlan} />}
 
         {/* PEAK WEEK TAB */}
         {activeTab === "peak" && <PeakWeekManager />}
