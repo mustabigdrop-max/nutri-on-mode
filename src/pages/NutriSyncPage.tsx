@@ -48,6 +48,11 @@ const NutriSyncPage = () => {
     (profile?.goal === "emagrecer" ? "cutting" : profile?.goal === "ganhar_massa" ? "bulking" : "manutencao") as any
   );
   const [expandedTimeline, setExpandedTimeline] = useState<string | null>(null);
+  const [preWorkoutDone, setPreWorkoutDone] = useState(false);
+  const [postWorkoutDone, setPostWorkoutDone] = useState(false);
+  const [nextMealCountdown, setNextMealCountdown] = useState("");
+
+  const weeklyPlan = useMemo(() => getWeeklyKcalPlan(baseKcal || 2000, weightKg || 70, objetivo), [schedule, baseKcal, weightKg, objetivo]);
 
   const todayWorkouts = getTodayWorkouts();
   const todayDow = new Date().getDay();
