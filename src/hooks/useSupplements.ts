@@ -97,7 +97,7 @@ export const useSupplements = () => {
     let count = 0;
     const d = new Date();
     for (const date of dates) {
-      const expected = format(d, "yyyy-MM-dd");
+      const expected = getLocalDateStr(d);
       if (date === expected) { count++; d.setDate(d.getDate() - 1); }
       else break;
     }
