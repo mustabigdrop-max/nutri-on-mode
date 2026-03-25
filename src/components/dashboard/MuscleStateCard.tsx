@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { getLocalDateStr } from "@/lib/utils";
 
 type MuscleState = "flat" | "full" | "spilled";
 
@@ -19,7 +20,7 @@ const MuscleStateCard = () => {
 
   useEffect(() => {
     if (!user) return;
-    const today = new Date().toISOString().split("T")[0];
+    const today = getLocalDateStr();
     supabase
       .from("muscle_state_checkins" as any)
       .select("state")

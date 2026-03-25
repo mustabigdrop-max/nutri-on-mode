@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
+import { getLocalDateStr } from "@/lib/utils";
 import { useMealsSaved } from "@/hooks/useMealsSaved";
 import {
   ArrowLeft, Search, Plus, Minus, Check, X, ChevronDown,
@@ -399,9 +400,9 @@ const MealLogPage = () => {
     if (!error) {
       const currentXp = profile?.xp || 0;
       const newXp = currentXp + 10;
-      const today = new Date().toISOString().split("T")[0];
+      const today = getLocalDateStr();
       const lastDate = profile?.last_streak_date;
-      const yesterday = new Date(Date.now() - 86400000).toISOString().split("T")[0];
+      const yesterday = getLocalDateStr(new Date(Date.now() - 86400000));
       let newStreak = profile?.streak_days || 0;
       if (lastDate !== today) {
         newStreak = lastDate === yesterday ? newStreak + 1 : 1;
@@ -486,9 +487,9 @@ const MealLogPage = () => {
       const currentLevel = profile?.level || 1;
       const newXp = currentXp + 15;
       const newLevel = Math.floor(newXp / 100) + 1;
-      const today = new Date().toISOString().split("T")[0];
+      const today = getLocalDateStr();
       const lastDate = profile?.last_streak_date;
-      const yesterday = new Date(Date.now() - 86400000).toISOString().split("T")[0];
+      const yesterday = getLocalDateStr(new Date(Date.now() - 86400000));
       let newStreak = profile?.streak_days || 0;
       if (lastDate !== today) {
         newStreak = lastDate === yesterday ? newStreak + 1 : 1;

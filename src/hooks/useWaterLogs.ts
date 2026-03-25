@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { format } from "date-fns";
+import { getLocalDateStr } from "@/lib/utils";
 
 export interface WaterLog {
   id: string;
@@ -15,7 +15,7 @@ export const useWaterLogs = () => {
   const { user } = useAuth();
   const [todayLog, setTodayLog] = useState<WaterLog | null>(null);
   const [loading, setLoading] = useState(true);
-  const today = format(new Date(), "yyyy-MM-dd");
+  const today = getLocalDateStr();
 
   const fetchToday = useCallback(async () => {
     if (!user) return;

@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
+import { getLocalDateStr } from "@/lib/utils";
 import { ArrowLeft, Search, Loader2, Check } from "lucide-react";
 import { toast } from "sonner";
 import BottomNav from "@/components/BottomNav";
@@ -54,7 +55,7 @@ const FoodSimulatorPage = () => {
 
   useEffect(() => {
     if (!user) return;
-    const today = new Date().toISOString().split("T")[0];
+    const today = getLocalDateStr();
     supabase.from("meal_logs").select("total_kcal, total_protein, total_carbs, total_fat")
       .eq("user_id", user.id).eq("meal_date", today)
       .then(({ data }) => {

@@ -11,6 +11,7 @@ import {
 import { toast } from "sonner";
 import { format, subDays, addDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { getLocalDateStr } from "@/lib/utils";
 
 const MEAL_LABELS: Record<string, { label: string; emoji: string }> = {
   cafe_manha: { label: "Café da Manhã", emoji: "☕" },
@@ -54,7 +55,7 @@ const MealHistoryPage = () => {
 
   const dateStr = format(selectedDate, "yyyy-MM-dd");
   const displayDate = format(selectedDate, "EEEE, dd 'de' MMMM", { locale: ptBR });
-  const isToday = dateStr === format(new Date(), "yyyy-MM-dd");
+  const isToday = dateStr === getLocalDateStr();
 
   useEffect(() => {
     if (!user) return;
