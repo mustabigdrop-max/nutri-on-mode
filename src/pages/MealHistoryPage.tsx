@@ -179,39 +179,40 @@ const MealHistoryPage = () => {
                     transition={{ delay: i * 0.05 }}
                     className="rounded-xl border border-border bg-card overflow-hidden"
                   >
-                    <button
-                      onClick={() => setExpandedMeal(isExpanded ? null : meal.id)}
-                      className="w-full p-3 flex items-center gap-3 text-left"
-                    >
-                      <span className="text-2xl">{info.emoji}</span>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-foreground">{info.label}</p>
-                        <p className="text-[11px] text-muted-foreground font-mono">
-                          {Math.round(Number(meal.total_kcal) || 0)} kcal · {Math.round(Number(meal.total_protein) || 0)}g P
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {meal.quality_score && (
-                          <span className={`text-xs font-mono font-bold ${
-                            meal.quality_score >= 80 ? "text-primary" :
-                            meal.quality_score >= 50 ? "text-accent" : "text-destructive"
-                          }`}>
-                            {meal.quality_score}pts
+                    <div className="flex items-center p-3 gap-3">
+                      <div
+                        onClick={() => setExpandedMeal(isExpanded ? null : meal.id)}
+                        className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer"
+                      >
+                        <span className="text-2xl">{info.emoji}</span>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-foreground">{info.label}</p>
+                          <p className="text-[11px] text-muted-foreground font-mono">
+                            {Math.round(Number(meal.total_kcal) || 0)} kcal · {Math.round(Number(meal.total_protein) || 0)}g P
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          {meal.quality_score && (
+                            <span className={`text-xs font-mono font-bold ${
+                              meal.quality_score >= 80 ? "text-primary" :
+                              meal.quality_score >= 50 ? "text-accent" : "text-destructive"
+                            }`}>
+                              {meal.quality_score}pts
+                            </span>
+                          )}
+                          <span className="text-[10px] text-muted-foreground font-mono">
+                            {format(new Date(meal.created_at), "HH:mm")}
                           </span>
-                        )}
-                        <Clock className="w-3.5 h-3.5 text-muted-foreground" />
-                        <span className="text-[10px] text-muted-foreground font-mono">
-                          {format(new Date(meal.created_at), "HH:mm")}
-                        </span>
-                        <button
-                          onClick={(e) => { e.stopPropagation(); deleteMeal(meal.id); }}
-                          className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-                          title="Remover refeição"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
+                        </div>
                       </div>
-                    </button>
+                      <button
+                        onClick={() => deleteMeal(meal.id)}
+                        className="p-2 rounded-lg text-destructive/60 hover:text-destructive hover:bg-destructive/10 transition-colors shrink-0"
+                        title="Remover refeição"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
 
                     <AnimatePresence>
                       {isExpanded && (
