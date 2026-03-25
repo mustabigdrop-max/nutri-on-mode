@@ -608,6 +608,9 @@ const DashboardPage = () => {
           baseCarbs={baseCarbs}
           baseFat={baseFat}
           weightKg={weightKg}
+          todayWorkouts={getTodayWorkouts ? getTodayWorkouts() : []}
+          nextRestDow={getNextRestDay ? getNextRestDay().dow : (new Date().getDay() + 1) % 7}
+          restDayWorkouts={[]}
         />
 
         {/* Calorie ring */}
