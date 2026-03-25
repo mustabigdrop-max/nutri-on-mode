@@ -1,8 +1,9 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Zap, Check, ChevronRight, Dumbbell, Clock, Droplets, Trophy, Calendar, History, Plus, Trash2, Target, Pill, AlertTriangle, ChevronDown, ChevronUp } from "lucide-react";
+import { ArrowLeft, Zap, Check, ChevronRight, Dumbbell, Clock, Droplets, Trophy, Calendar, History, Plus, Trash2, Target, Pill, AlertTriangle, ChevronDown, ChevronUp, BarChart3 } from "lucide-react";
 import PeakWeekManager from "@/components/nutrisync/PeakWeekManager";
+import NutriSyncAnalysisTab from "@/components/nutrisync/NutriSyncAnalysisTab";
 import BottomNav from "@/components/BottomNav";
 import { useProfile } from "@/hooks/useProfile";
 import {
