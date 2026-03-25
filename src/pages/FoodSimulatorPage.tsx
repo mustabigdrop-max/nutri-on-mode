@@ -100,6 +100,7 @@ const FoodSimulatorPage = () => {
     const { error } = await supabase.from("meal_logs").insert({
       user_id: user.id,
       meal_type: mealType,
+      meal_date: getLocalDateStr(),
       food_names: [`${quantity}x ${selectedFood.name}`],
       total_kcal: impact.kcal,
       total_protein: impact.protein,

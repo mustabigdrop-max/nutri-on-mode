@@ -186,6 +186,7 @@ const RecipesPage = () => {
     const { error } = await supabase.from("meal_logs").insert({
       user_id: user.id,
       meal_type: mealType,
+      meal_date: getLocalDateStr(),
       food_names: recipe.ingredients.map(i => i.name),
       total_kcal: recipe.kcal,
       total_protein: recipe.protein,

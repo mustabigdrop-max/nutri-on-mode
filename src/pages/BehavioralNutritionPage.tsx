@@ -124,6 +124,7 @@ const BehavioralNutritionPage = () => {
     const { error } = await supabase.from("meal_logs").insert({
       user_id: user.id,
       meal_type: "check_in",
+      meal_date: getLocalDateStr(),
       hunger_level: selectedHunger,
       emotion: selectedEmotion,
       notes: diaryNote || `Check-in emocional: ${selectedEmotion}, Fome: ${selectedHunger}/10`,

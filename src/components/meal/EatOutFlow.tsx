@@ -139,6 +139,7 @@ const EatOutFlow = ({ onClose }: EatOutFlowProps) => {
     const { error } = await supabase.from("meal_logs").insert({
       user_id: user.id,
       meal_type: mealType,
+      meal_date: getLocalDateStr(),
       total_kcal: macros.kcal,
       total_protein: macros.protein,
       total_carbs: macros.carbs,

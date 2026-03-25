@@ -56,6 +56,7 @@ const FirstMealScreen = () => {
       await supabase.from("meal_logs").insert({
         user_id: user.id,
         meal_type: data?.meal_type || "almoco",
+        meal_date: getLocalDateStr(),
         food_names: foods.map((f: any) => f.name),
         total_kcal: totals.total_kcal,
         total_protein: totals.total_protein,
