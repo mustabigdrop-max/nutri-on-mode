@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -19,8 +18,8 @@ const BiologicalAgeCard = () => {
   useEffect(() => {
     if (!user?.id) return;
 
-    const chronological = profile?.birth_date
-      ? differenceInYears(new Date(), new Date(profile.birth_date))
+    const chronological = profile?.date_of_birth
+      ? differenceInYears(new Date(), new Date(profile.date_of_birth))
       : null;
     setChronoAge(chronological);
 
@@ -40,7 +39,7 @@ const BiologicalAgeCard = () => {
       }
     };
     fetchLatest();
-  }, [user?.id, profile?.birth_date]);
+  }, [user?.id, profile?.date_of_birth]);
 
   const isYounger = delta !== null && delta < 0;
   const isOlder = delta !== null && delta > 0;
@@ -65,7 +64,7 @@ const BiologicalAgeCard = () => {
               <p className="text-[9px] font-mono text-muted-foreground mt-0.5">Cronológica</p>
             </div>
             <div className="text-center">
-              <span className={`text-3xl font-mono font-bold ${isYounger ? "text-emerald-400" : isOlder ? "text-[hsl(var(--destructive))]" : "text-foreground"}`}>
+              <span className={`text-3xl font-mono font-bold ${isYounger ? "text-emerald-400" : isOlder ? "text-destructive" : "text-foreground"}`}>
                 {Math.round(bioAge)}
               </span>
               <p className="text-[9px] font-mono text-muted-foreground mt-0.5">Biológica</p>
@@ -77,9 +76,9 @@ const BiologicalAgeCard = () => {
               {isYounger ? (
                 <TrendingDown className="w-3.5 h-3.5 text-emerald-400" />
               ) : (
-                <TrendingUp className="w-3.5 h-3.5 text-[hsl(var(--destructive))]" />
+                <TrendingUp className="w-3.5 h-3.5 text-destructive" />
               )}
-              <span className={`text-xs font-mono font-bold ${isYounger ? "text-emerald-400" : "text-[hsl(var(--destructive))]"}`}>
+              <span className={`text-xs font-mono font-bold ${isYounger ? "text-emerald-400" : "text-destructive"}`}>
                 {delta > 0 ? "+" : ""}{Math.round(delta)} anos
               </span>
             </div>

@@ -22,6 +22,7 @@ import ConsistencyScoreCard from "@/components/dashboard/ConsistencyScoreCard";
 import MoodCheckinModal, { type MoodType, MOODS } from "@/components/dashboard/MoodCheckinModal";
 import MuscleStateCard from "@/components/dashboard/MuscleStateCard";
 import NutrientTimingCard from "@/components/dashboard/NutrientTimingCard";
+import BiologicalAgeCard from "@/components/dashboard/BiologicalAgeCard";
 import {
   ObjectiveBadge, getRingLabel, getScoreLabel,
   getPredictiveAlert, getHeaderSubtitle, getChildDashboardGreeting,
@@ -904,10 +905,11 @@ const DashboardPage = () => {
           )}
         </motion.div>
 
-        {/* Muscle State + Nutrient Timing Cards */}
+        {/* Muscle State + Nutrient Timing + Biological Age Cards */}
         <div className="grid grid-cols-1 gap-3 mb-4">
           <MuscleStateCard />
           <NutrientTimingCard />
+          <BiologicalAgeCard />
         </div>
 
 

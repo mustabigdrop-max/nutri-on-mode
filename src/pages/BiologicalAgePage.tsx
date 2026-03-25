@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -75,21 +74,19 @@ const BiologicalAgePage = () => {
   }, [user?.id]);
 
   const calculate = useCallback(async () => {
-    if (!user?.id || !profile?.birth_date) {
+    if (!user?.id || !profile?.date_of_birth) {
       toast.error("Preencha sua data de nascimento no perfil");
       return;
     }
     setCalculating(true);
     try {
-      const today = getLocalDateStr();
       const weekAgo = format(subDays(new Date(), 7), "yyyy-MM-dd");
-      const age = differenceInYears(new Date(), new Date(profile.birth_date));
+      const age = differenceInYears(new Date(), new Date(profile.date_of_birth));
 
-      // Fetch data
       const [mealRes, waterRes, moodRes] = await Promise.all([
-        supabase.from("meal_logs").select("meal_type, calories, protein, notes").eq("user_id", user.id).gte("log_date", weekAgo),
-        supabase.from("water_logs").select("amount_ml").eq("user_id", user.id).gte("log_date", weekAgo),
-        supabase.from("mood_checkins").select("mood, energy_level").eq("user_id", user.id).gte("checkin_date", weekAgo),
+        supabase.from("meal_logs").select("meal_type, total_kcal, total_protein, notes").eq("user_id", user.id).gte("meal_date", weekAgo),
+        supabase.from("water_logs").select("ml_total").eq("user_id", user.id).gte("log_date", weekAgo),
+        supabase.from("mood_checkins").select("mood").eq("user_id", user.id).gte("checkin_date", weekAgo),
       ]);
 
       const meals = mealRes.data || [];
@@ -101,22 +98,20 @@ const BiologicalAgePage = () => {
       const dietQuality = clamp(Math.min(mealCount / 21, 1) * 100);
 
       // protein_adequacy
-      const totalProtein = meals.reduce((s, m) => s + (m.protein || 0), 0);
+      const totalProtein = meals.reduce((s, m) => s + (m.total_protein || 0), 0);
       const targetWeekly = (profile.weight_kg || 70) * 1.6 * 7;
       const proteinAdequacy = clamp((totalProtein / targetWeekly) * 100);
 
       // hydration
-      const totalWater = waters.reduce((s, w) => s + (w.amount_ml || 0), 0);
+      const totalWater = waters.reduce((s, w) => s + (w.ml_total || 0), 0);
       const targetWater = (profile.weight_kg || 70) * 35 * 7;
       const hydration = clamp((totalWater / targetWater) * 100);
 
       // sleep_consistency (proxy from mood check-ins)
-      const sleepScore = moods.length > 0
-        ? clamp((moods.length / 7) * 100)
-        : 30;
+      const sleepScore = moods.length > 0 ? clamp((moods.length / 7) * 100) : 30;
 
-      // inflammatory_load (inverse — higher meals with notes about processed food = worse)
-      const inflammatoryLoad = clamp(70 + Math.random() * 20); // simplified proxy
+      // inflammatory_load (simplified proxy)
+      const inflammatoryLoad = clamp(70 + Math.random() * 20);
 
       // micronutrient_coverage
       const uniqueMealTypes = new Set(meals.map(m => m.meal_type)).size;
@@ -131,8 +126,10 @@ const BiologicalAgePage = () => {
         micronutrient_coverage: Math.round(microCoverage),
       };
 
-      // Weighted average (inflammatory_load inverted)
-      const weights = { diet_quality: 0.2, protein_adequacy: 0.2, hydration: 0.15, sleep_consistency: 0.15, inflammatory_load: 0.15, micronutrient_coverage: 0.15 };
+      const weights: Record<keyof Breakdown, number> = {
+        diet_quality: 0.2, protein_adequacy: 0.2, hydration: 0.15,
+        sleep_consistency: 0.15, inflammatory_load: 0.15, micronutrient_coverage: 0.15,
+      };
       const scoreTotal = Object.entries(bd).reduce((sum, [k, v]) => {
         const w = weights[k as keyof Breakdown];
         const val = k === "inflammatory_load" ? 100 - v : v;
@@ -141,7 +138,6 @@ const BiologicalAgePage = () => {
 
       const biologicalAge = Math.round((age - (scoreTotal - 50) / 10) * 10) / 10;
 
-      // Tips
       const newTips: string[] = [];
       if (bd.diet_quality < 60) newTips.push("Registre pelo menos 3 refeições por dia para melhorar a qualidade da dieta");
       if (bd.protein_adequacy < 70) newTips.push("Aumente a ingestão de proteínas para atingir a meta diária");
@@ -166,7 +162,7 @@ const BiologicalAgePage = () => {
       setTips(newTips);
       setLastCalc(new Date().toISOString());
       toast.success("Idade biológica calculada!");
-    } catch (e) {
+    } catch {
       toast.error("Erro ao calcular");
     } finally {
       setCalculating(false);
@@ -178,7 +174,6 @@ const BiologicalAgePage = () => {
 
   return (
     <div className="min-h-screen bg-background text-foreground pb-24">
-      {/* Header */}
       <div className="sticky top-0 z-20 bg-background/90 backdrop-blur border-b border-border px-4 py-3 flex items-center gap-3">
         <button onClick={() => navigate(-1)}>
           <ArrowLeft className="w-5 h-5 text-foreground" />
@@ -194,11 +189,11 @@ const BiologicalAgePage = () => {
           animate={{ opacity: 1, scale: 1 }}
           className="flex items-center justify-center gap-8"
         >
-          {/* Chrono */}
           <div className="relative">
             <svg width="120" height="120" viewBox="0 0 120 120">
               <circle cx="60" cy="60" r="52" fill="none" stroke="hsl(var(--border))" strokeWidth="4" />
-              <circle cx="60" cy="60" r="52" fill="none" stroke="hsl(var(--muted-foreground))" strokeWidth="4" strokeDasharray={`${2 * Math.PI * 52}`} strokeDashoffset={`${2 * Math.PI * 52 * 0.15}`} strokeLinecap="round" />
+              <circle cx="60" cy="60" r="52" fill="none" stroke="hsl(var(--muted-foreground))" strokeWidth="4"
+                strokeDasharray={`${2 * Math.PI * 52}`} strokeDashoffset={`${2 * Math.PI * 52 * 0.15}`} strokeLinecap="round" />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
               <span className="text-3xl font-mono font-bold text-foreground">{chronoAge ?? "—"}</span>
@@ -206,7 +201,6 @@ const BiologicalAgePage = () => {
             </div>
           </div>
 
-          {/* Bio */}
           <div className="relative">
             <svg width="120" height="120" viewBox="0 0 120 120">
               <circle cx="60" cy="60" r="52" fill="none" stroke="hsl(var(--border))" strokeWidth="4" />
@@ -221,7 +215,7 @@ const BiologicalAgePage = () => {
               />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className={`text-3xl font-mono font-bold ${isYounger ? "text-emerald-400" : delta && delta > 0 ? "text-[hsl(var(--destructive))]" : "text-foreground"}`}>
+              <span className={`text-3xl font-mono font-bold ${isYounger ? "text-emerald-400" : delta && delta > 0 ? "text-destructive" : "text-foreground"}`}>
                 {bioAge !== null ? Math.round(bioAge) : "—"}
               </span>
               <span className="text-[9px] font-mono text-muted-foreground">Biológica</span>
@@ -231,7 +225,7 @@ const BiologicalAgePage = () => {
 
         {delta !== null && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center">
-            <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-mono font-bold ${isYounger ? "bg-emerald-500/10 text-emerald-400" : "bg-[hsl(var(--destructive))]/10 text-[hsl(var(--destructive))]"}`}>
+            <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-mono font-bold ${isYounger ? "bg-emerald-500/10 text-emerald-400" : "bg-destructive/10 text-destructive"}`}>
               {delta > 0 ? "+" : ""}{Math.round(delta)} anos
             </span>
           </motion.div>
@@ -246,12 +240,7 @@ const BiologicalAgePage = () => {
               const inverted = key === "inflammatory_load";
               const displayVal = inverted ? 100 - val : val;
               return (
-                <motion.div
-                  key={key}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.3 + i * 0.05 }}
-                >
+                <motion.div key={key} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 + i * 0.05 }}>
                   <div className="flex justify-between mb-1">
                     <span className="text-[11px] font-mono text-foreground">{LABELS[key]}</span>
                     <span className="text-[11px] font-mono text-muted-foreground">{displayVal}%</span>
