@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { format } from "date-fns";
+import { getLocalDateStr } from "@/lib/utils";
 
 export interface SupplementItem {
   name: string;
@@ -46,7 +46,7 @@ export const useSupplements = () => {
   const [streak, setStreak] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  const today = format(new Date(), "yyyy-MM-dd");
+  const today = getLocalDateStr();
 
   const fetchStack = useCallback(async () => {
     if (!user) return;
