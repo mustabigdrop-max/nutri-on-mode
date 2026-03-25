@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
@@ -308,6 +308,7 @@ const DashboardPage = () => {
   const { profile, loading } = useProfile();
   const navigate = useNavigate();
   const [todayMeals, setTodayMeals] = useState<any[]>([]);
+  const lastDateRef = useRef(getLocalDateStr());
   const [todayTotals, setTodayTotals] = useState({ kcal: 0, protein: 0, carbs: 0, fat: 0 });
   const [todayMood, setTodayMood] = useState<MoodType | null>(null);
   const { todayLog: waterLog, addWater } = useWaterLogs();
@@ -346,6 +347,17 @@ const DashboardPage = () => {
 
   useEffect(() => {
     fetchMeals();
+
+    // Auto-refresh at midnight when the date changes
+    const checkDateChange = () => {
+      const currentDate = getLocalDateStr();
+      if (currentDate !== lastDateRef.current) {
+        lastDateRef.current = currentDate;
+        fetchMeals();
+      }
+    };
+    const interval = setInterval(checkDateChange, 30000); // check every 30s
+    return () => clearInterval(interval);
   }, [user]);
 
   // Realtime subscription
