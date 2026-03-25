@@ -81,13 +81,14 @@ const ChatPage = () => {
           "Content-Type": "application/json",
           Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
         },
-        body: JSON.stringify({
+      body: JSON.stringify({
           messages: [...messages, userMsg],
           profileContext,
           mealHistoryContext,
           objetivo: profile?.objetivo_principal || profile?.goal || "saude_geral",
           perfilPCA: profile?.perfil_comportamental || "",
           perfilComportamental: profile?.perfil_comportamental || "",
+          agentSystemPrompt: localStorage.getItem("nutrion_agent_prompt") || "",
         }),
       });
 

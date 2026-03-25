@@ -66,6 +66,7 @@ import CoachInvitePage from "./pages/CoachInvitePage";
 import LabPage from "./pages/LabPage";
 import AdminApexCoachPage from "./pages/AdminApexCoachPage";
 import ExerciseSelectorPage from "./pages/ExerciseSelectorPage";
+import AgentsPage from "./pages/AgentsPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -104,6 +105,7 @@ const App = () => (
             <Route path="/recipes" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON" featureName="Receitas"><RecipesPage /></PlanGateWrapper></ProtectedRoute>} />
             <Route path="/workout-history" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON" featureName="Histórico de Treinos"><WorkoutHistoryPage /></PlanGateWrapper></ProtectedRoute>} />
             <Route path="/exercise-selector" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON" featureName="Seleção de Exercícios"><ExerciseSelectorPage /></PlanGateWrapper></ProtectedRoute>} />
+            <Route path="/agents" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON" featureName="Agentes IA"><AgentsPage /></PlanGateWrapper></ProtectedRoute>} />
 
             {/* ON+ Plan */}
             <Route path="/blood-test" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON +" featureName="Exames de Sangue"><BloodTestPage /></PlanGateWrapper></ProtectedRoute>} />
