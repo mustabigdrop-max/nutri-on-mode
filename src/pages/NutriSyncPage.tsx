@@ -52,8 +52,6 @@ const NutriSyncPage = () => {
   const [postWorkoutDone, setPostWorkoutDone] = useState(false);
   const [nextMealCountdown, setNextMealCountdown] = useState("");
 
-  const weeklyPlan = useMemo(() => getWeeklyKcalPlan(baseKcal || 2000, weightKg || 70, objetivo), [schedule, baseKcal, weightKg, objetivo]);
-
   const todayWorkouts = getTodayWorkouts();
   const todayDow = new Date().getDay();
   const weightKg = profile?.weight_kg || 70;
