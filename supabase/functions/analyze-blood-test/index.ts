@@ -138,7 +138,7 @@ IMPORTANTE: Retorne SOMENTE o JSON, sem markdown, sem explicações extras.`;
               {
                 type: "image_url",
                 image_url: {
-                  url: `data:application/pdf;base64,${base64}`
+                  url: `data:${mimeType};base64,${base64}`
                 }
               }
             ]
