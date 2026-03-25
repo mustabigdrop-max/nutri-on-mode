@@ -155,6 +155,7 @@ const NutriSyncPage = () => {
             { key: "today", label: "Hoje", icon: Zap },
             { key: "timeline", label: "Timeline", icon: Clock },
             { key: "schedule", label: "Rotina", icon: Calendar },
+            { key: "analysis", label: "Análise", icon: BarChart3 },
             { key: "peak", label: "Peak Week", icon: Trophy },
           ] as const).map(tab => (
             <button
