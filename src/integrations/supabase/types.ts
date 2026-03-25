@@ -212,6 +212,309 @@ export type Database = {
         }
         Relationships: []
       }
+      behavioral_diary: {
+        Row: {
+          alimento_consumido: string | null
+          alternativa_usada: string | null
+          arrependimento: boolean | null
+          atividade: string | null
+          com_quem: string | null
+          created_at: string | null
+          decisao_tomada: string | null
+          emocao_intensidade: number | null
+          emocao_primaria: string | null
+          estado_antes: string | null
+          estado_depois: string | null
+          fome_antes: number | null
+          fome_real: boolean | null
+          gatilho_id: string | null
+          horario_tipo: string | null
+          id: string
+          intervencao_eficaz: boolean | null
+          intervencao_usada: string | null
+          local: string | null
+          loop_identificado: string | null
+          o_que_aconteceu: string | null
+          o_que_aprendi: string | null
+          proxima_vez: string | null
+          saciedade_depois: number | null
+          satisfacao: number | null
+          user_id: string
+        }
+        Insert: {
+          alimento_consumido?: string | null
+          alternativa_usada?: string | null
+          arrependimento?: boolean | null
+          atividade?: string | null
+          com_quem?: string | null
+          created_at?: string | null
+          decisao_tomada?: string | null
+          emocao_intensidade?: number | null
+          emocao_primaria?: string | null
+          estado_antes?: string | null
+          estado_depois?: string | null
+          fome_antes?: number | null
+          fome_real?: boolean | null
+          gatilho_id?: string | null
+          horario_tipo?: string | null
+          id?: string
+          intervencao_eficaz?: boolean | null
+          intervencao_usada?: string | null
+          local?: string | null
+          loop_identificado?: string | null
+          o_que_aconteceu?: string | null
+          o_que_aprendi?: string | null
+          proxima_vez?: string | null
+          saciedade_depois?: number | null
+          satisfacao?: number | null
+          user_id: string
+        }
+        Update: {
+          alimento_consumido?: string | null
+          alternativa_usada?: string | null
+          arrependimento?: boolean | null
+          atividade?: string | null
+          com_quem?: string | null
+          created_at?: string | null
+          decisao_tomada?: string | null
+          emocao_intensidade?: number | null
+          emocao_primaria?: string | null
+          estado_antes?: string | null
+          estado_depois?: string | null
+          fome_antes?: number | null
+          fome_real?: boolean | null
+          gatilho_id?: string | null
+          horario_tipo?: string | null
+          id?: string
+          intervencao_eficaz?: boolean | null
+          intervencao_usada?: string | null
+          local?: string | null
+          loop_identificado?: string | null
+          o_que_aconteceu?: string | null
+          o_que_aprendi?: string | null
+          proxima_vez?: string | null
+          saciedade_depois?: number | null
+          satisfacao?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      behavioral_loops: {
+        Row: {
+          ativo: boolean | null
+          created_at: string | null
+          eficacia: number | null
+          gatilho: string | null
+          id: string
+          recompensa: string | null
+          rotina_antiga: string | null
+          rotina_nova: string | null
+          tipo: string | null
+          user_id: string
+          vezes_ativado: number | null
+          vezes_sucesso: number | null
+        }
+        Insert: {
+          ativo?: boolean | null
+          created_at?: string | null
+          eficacia?: number | null
+          gatilho?: string | null
+          id?: string
+          recompensa?: string | null
+          rotina_antiga?: string | null
+          rotina_nova?: string | null
+          tipo?: string | null
+          user_id: string
+          vezes_ativado?: number | null
+          vezes_sucesso?: number | null
+        }
+        Update: {
+          ativo?: boolean | null
+          created_at?: string | null
+          eficacia?: number | null
+          gatilho?: string | null
+          id?: string
+          recompensa?: string | null
+          rotina_antiga?: string | null
+          rotina_nova?: string | null
+          tipo?: string | null
+          user_id?: string
+          vezes_ativado?: number | null
+          vezes_sucesso?: number | null
+        }
+        Relationships: []
+      }
+      behavioral_predictions: {
+        Row: {
+          acertou: boolean | null
+          created_at: string | null
+          data_predicao: string | null
+          id: string
+          intervencao_sugerida: string | null
+          resultado_real: string | null
+          score_risco: number | null
+          sinais_detectados: string[] | null
+          tipo: string | null
+          user_id: string
+        }
+        Insert: {
+          acertou?: boolean | null
+          created_at?: string | null
+          data_predicao?: string | null
+          id?: string
+          intervencao_sugerida?: string | null
+          resultado_real?: string | null
+          score_risco?: number | null
+          sinais_detectados?: string[] | null
+          tipo?: string | null
+          user_id: string
+        }
+        Update: {
+          acertou?: boolean | null
+          created_at?: string | null
+          data_predicao?: string | null
+          id?: string
+          intervencao_sugerida?: string | null
+          resultado_real?: string | null
+          score_risco?: number | null
+          sinais_detectados?: string[] | null
+          tipo?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      behavioral_profiles: {
+        Row: {
+          alertas_ativos: string[] | null
+          created_at: string | null
+          crencas_limitantes: string[] | null
+          decisoes_antecipadas: Json | null
+          declaracao_identidade: string | null
+          dias_criticos: string[] | null
+          environment_design: Json | null
+          episodios_emocionais: number | null
+          episodios_retorno: number | null
+          estagio_mudanca: string | null
+          estagio_score: number | null
+          gatilhos_mapeados: Json | null
+          historico_sabotagem: Json | null
+          horarios_criticos: string[] | null
+          id: string
+          identidade_score: number | null
+          implementation_intents: Json | null
+          intervencoes_coach: Json | null
+          loops_negativos: Json | null
+          loops_positivos: Json | null
+          mindset_score: number | null
+          mindset_tipo: string | null
+          notas_coach: string | null
+          padrao_recaida: string | null
+          perfil_mce: string | null
+          perfil_primario: string | null
+          perfil_secundario: string | null
+          ponto_sabotagem_percent: number | null
+          previsao_abandono: string | null
+          risco_abandono: number | null
+          rotinas_substitutas: Json | null
+          situacoes_risco: string[] | null
+          streak_atual: number | null
+          streak_maximo: number | null
+          taxa_aderencia_7dias: number | null
+          taxa_aderencia_geral: number | null
+          ultima_recaida: string | null
+          updated_at: string | null
+          user_id: string
+          velocidade_retorno_media: number | null
+          votos_identidade: number | null
+        }
+        Insert: {
+          alertas_ativos?: string[] | null
+          created_at?: string | null
+          crencas_limitantes?: string[] | null
+          decisoes_antecipadas?: Json | null
+          declaracao_identidade?: string | null
+          dias_criticos?: string[] | null
+          environment_design?: Json | null
+          episodios_emocionais?: number | null
+          episodios_retorno?: number | null
+          estagio_mudanca?: string | null
+          estagio_score?: number | null
+          gatilhos_mapeados?: Json | null
+          historico_sabotagem?: Json | null
+          horarios_criticos?: string[] | null
+          id?: string
+          identidade_score?: number | null
+          implementation_intents?: Json | null
+          intervencoes_coach?: Json | null
+          loops_negativos?: Json | null
+          loops_positivos?: Json | null
+          mindset_score?: number | null
+          mindset_tipo?: string | null
+          notas_coach?: string | null
+          padrao_recaida?: string | null
+          perfil_mce?: string | null
+          perfil_primario?: string | null
+          perfil_secundario?: string | null
+          ponto_sabotagem_percent?: number | null
+          previsao_abandono?: string | null
+          risco_abandono?: number | null
+          rotinas_substitutas?: Json | null
+          situacoes_risco?: string[] | null
+          streak_atual?: number | null
+          streak_maximo?: number | null
+          taxa_aderencia_7dias?: number | null
+          taxa_aderencia_geral?: number | null
+          ultima_recaida?: string | null
+          updated_at?: string | null
+          user_id: string
+          velocidade_retorno_media?: number | null
+          votos_identidade?: number | null
+        }
+        Update: {
+          alertas_ativos?: string[] | null
+          created_at?: string | null
+          crencas_limitantes?: string[] | null
+          decisoes_antecipadas?: Json | null
+          declaracao_identidade?: string | null
+          dias_criticos?: string[] | null
+          environment_design?: Json | null
+          episodios_emocionais?: number | null
+          episodios_retorno?: number | null
+          estagio_mudanca?: string | null
+          estagio_score?: number | null
+          gatilhos_mapeados?: Json | null
+          historico_sabotagem?: Json | null
+          horarios_criticos?: string[] | null
+          id?: string
+          identidade_score?: number | null
+          implementation_intents?: Json | null
+          intervencoes_coach?: Json | null
+          loops_negativos?: Json | null
+          loops_positivos?: Json | null
+          mindset_score?: number | null
+          mindset_tipo?: string | null
+          notas_coach?: string | null
+          padrao_recaida?: string | null
+          perfil_mce?: string | null
+          perfil_primario?: string | null
+          perfil_secundario?: string | null
+          ponto_sabotagem_percent?: number | null
+          previsao_abandono?: string | null
+          risco_abandono?: number | null
+          rotinas_substitutas?: Json | null
+          situacoes_risco?: string[] | null
+          streak_atual?: number | null
+          streak_maximo?: number | null
+          taxa_aderencia_7dias?: number | null
+          taxa_aderencia_geral?: number | null
+          ultima_recaida?: string | null
+          updated_at?: string | null
+          user_id?: string
+          velocidade_retorno_media?: number | null
+          votos_identidade?: number | null
+        }
+        Relationships: []
+      }
       blood_tests: {
         Row: {
           ai_analysis: Json | null
@@ -1179,6 +1482,42 @@ export type Database = {
           tipo_dia?: string | null
           treino_tipo?: string | null
           updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      emotion_regulation_log: {
+        Row: {
+          created_at: string | null
+          decisao_pos: string | null
+          duracao_segundos: number | null
+          eficacia: number | null
+          emocao: string | null
+          id: string
+          intensidade: number | null
+          tecnica_usada: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          decisao_pos?: string | null
+          duracao_segundos?: number | null
+          eficacia?: number | null
+          emocao?: string | null
+          id?: string
+          intensidade?: number | null
+          tecnica_usada?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          decisao_pos?: string | null
+          duracao_segundos?: number | null
+          eficacia?: number | null
+          emocao?: string | null
+          id?: string
+          intensidade?: number | null
+          tecnica_usada?: string | null
           user_id?: string
         }
         Relationships: []
@@ -3090,6 +3429,42 @@ export type Database = {
           id?: string
           query?: string
           results?: Json | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      risk_interventions: {
+        Row: {
+          acao_resultante: string | null
+          created_at: string | null
+          eficacia: number | null
+          id: string
+          intervencao_tipo: string | null
+          resposta_usuario: string | null
+          score_risco: number | null
+          tipo_risco: string | null
+          user_id: string
+        }
+        Insert: {
+          acao_resultante?: string | null
+          created_at?: string | null
+          eficacia?: number | null
+          id?: string
+          intervencao_tipo?: string | null
+          resposta_usuario?: string | null
+          score_risco?: number | null
+          tipo_risco?: string | null
+          user_id: string
+        }
+        Update: {
+          acao_resultante?: string | null
+          created_at?: string | null
+          eficacia?: number | null
+          id?: string
+          intervencao_tipo?: string | null
+          resposta_usuario?: string | null
+          score_risco?: number | null
+          tipo_risco?: string | null
           user_id?: string
         }
         Relationships: []
