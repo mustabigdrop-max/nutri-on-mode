@@ -151,7 +151,7 @@ const ChatPage = () => {
             <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-accent border-2 border-background animate-pulse" />
           </div>
           <div>
-            <h1 className="text-sm font-bold text-foreground">NutriCoach MCE</h1>
+            <h1 className="text-sm font-bold text-foreground">{localStorage.getItem("nutrion_agent_name") || "NutriCoach MCE"}</h1>
             <div className="flex items-center gap-1.5">
               <div className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
               <p className="text-[10px] text-accent font-mono">Online</p>
