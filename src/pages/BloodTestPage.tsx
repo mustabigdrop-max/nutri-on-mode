@@ -273,7 +273,7 @@ const BloodTestPage = () => {
             <div>
               <p className="text-xs font-bold text-foreground mb-1">Como funciona</p>
               <ol className="text-[11px] text-muted-foreground space-y-1 list-decimal list-inside">
-                <li>Envie o PDF do seu exame de sangue</li>
+                <li>Envie o PDF ou foto do seu exame de sangue</li>
                 <li>A IA identifica marcadores e interpreta resultados</li>
                 <li>Sugestões de ajuste no plano são geradas</li>
                 <li>Seu profissional valida antes de aplicar</li>
