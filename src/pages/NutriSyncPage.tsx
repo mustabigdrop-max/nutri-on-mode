@@ -38,8 +38,8 @@ const OBJETIVO_OPTIONS = [
 const NutriSyncPage = () => {
   const navigate = useNavigate();
   const { profile } = useProfile();
-  const { schedule, todayLog, loading, saveDay, removeSlot, completeWorkout, getTodayWorkouts, getWorkoutsForDay } = useWorkoutSchedule();
-  const [activeTab, setActiveTab] = useState<"today" | "timeline" | "schedule" | "peak">("today");
+  const { schedule, todayLog, loading, saveDay, removeSlot, completeWorkout, getTodayWorkouts, getWorkoutsForDay, getWeeklyKcalPlan, getNextRestDay } = useWorkoutSchedule();
+  const [activeTab, setActiveTab] = useState<"today" | "timeline" | "schedule" | "analysis" | "peak">("today");
   const [editingDay, setEditingDay] = useState<number | null>(null);
   const [editingSlot, setEditingSlot] = useState<number | null>(null);
   const [editForm, setEditForm] = useState<Partial<WorkoutScheduleEntry>>({});
