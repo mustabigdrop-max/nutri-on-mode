@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { getLocalDateStr } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { Camera, ImageIcon, ArrowRight, Loader2, X, ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
