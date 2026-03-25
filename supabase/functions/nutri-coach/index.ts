@@ -170,19 +170,24 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { messages, profileContext, mealHistoryContext, objetivo, perfilPCA, perfilComportamental, globalKnowledge } = await req.json();
+    const { messages, profileContext, mealHistoryContext, objetivo, perfilPCA, perfilComportamental, globalKnowledge, agentSystemPrompt } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
-    // Priority: PCA profile > old behavioral profile > objective-based
+    // Priority: Agent-specific prompt > PCA profile > old behavioral profile > objective-based
     let basePrompt: string;
-    const pcaKey = perfilPCA || perfilComportamental || "";
-    const pcaLower = pcaKey.toLowerCase().replace(/\s+/g, "_");
 
-    if (PCA_PROMPTS[pcaLower]) {
-      basePrompt = PCA_PROMPTS[pcaLower];
+    if (agentSystemPrompt && agentSystemPrompt.trim()) {
+      basePrompt = agentSystemPrompt;
     } else {
-      basePrompt = OBJECTIVE_PROMPTS[objetivo] || OBJECTIVE_PROMPTS["saude_geral"];
+      const pcaKey = perfilPCA || perfilComportamental || "";
+      const pcaLower = pcaKey.toLowerCase().replace(/\s+/g, "_");
+
+      if (PCA_PROMPTS[pcaLower]) {
+        basePrompt = PCA_PROMPTS[pcaLower];
+      } else {
+        basePrompt = OBJECTIVE_PROMPTS[objetivo] || OBJECTIVE_PROMPTS["saude_geral"];
+      }
     }
 
     // Build user message with personalization (prompt 06 from Master Prompt Book)

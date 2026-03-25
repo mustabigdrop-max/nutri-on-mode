@@ -81,13 +81,14 @@ const ChatPage = () => {
           "Content-Type": "application/json",
           Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
         },
-        body: JSON.stringify({
+      body: JSON.stringify({
           messages: [...messages, userMsg],
           profileContext,
           mealHistoryContext,
           objetivo: profile?.objetivo_principal || profile?.goal || "saude_geral",
           perfilPCA: profile?.perfil_comportamental || "",
           perfilComportamental: profile?.perfil_comportamental || "",
+          agentSystemPrompt: localStorage.getItem("nutrion_agent_prompt") || "",
         }),
       });
 
@@ -150,7 +151,7 @@ const ChatPage = () => {
             <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-accent border-2 border-background animate-pulse" />
           </div>
           <div>
-            <h1 className="text-sm font-bold text-foreground">NutriCoach MCE</h1>
+            <h1 className="text-sm font-bold text-foreground">{localStorage.getItem("nutrion_agent_name") || "NutriCoach MCE"}</h1>
             <div className="flex items-center gap-1.5">
               <div className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
               <p className="text-[10px] text-accent font-mono">Online</p>
