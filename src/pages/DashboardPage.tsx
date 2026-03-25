@@ -346,6 +346,17 @@ const DashboardPage = () => {
 
   useEffect(() => {
     fetchMeals();
+
+    // Auto-refresh at midnight when the date changes
+    const checkDateChange = () => {
+      const currentDate = getLocalDateStr();
+      if (currentDate !== lastDateRef.current) {
+        lastDateRef.current = currentDate;
+        fetchMeals();
+      }
+    };
+    const interval = setInterval(checkDateChange, 30000); // check every 30s
+    return () => clearInterval(interval);
   }, [user]);
 
   // Realtime subscription
