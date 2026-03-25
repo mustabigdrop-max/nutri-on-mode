@@ -140,7 +140,7 @@ const BloodTestPage = () => {
         .from("blood_tests")
         .insert({
           user_id: user.id,
-          pdf_url: urlData.publicUrl,
+          pdf_url: urlData.signedUrl,
           test_date: new Date().toISOString().split("T")[0],
         } as any)
         .select()
@@ -153,7 +153,7 @@ const BloodTestPage = () => {
       
       // Auto-analyze
       if (testData) {
-        await analyzeTest((testData as any).id, urlData.publicUrl);
+        await analyzeTest((testData as any).id, urlData.signedUrl);
       }
     } catch (err: any) {
       console.error(err);
