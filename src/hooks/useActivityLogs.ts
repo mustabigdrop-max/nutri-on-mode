@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 import { format, subDays } from "date-fns";
+import { getLocalDateStr } from "@/lib/utils";
 
 export interface ActivityLog {
   id: string;
@@ -24,7 +25,7 @@ export const useActivityLogs = () => {
   const [todayLog, setTodayLog] = useState<ActivityLog | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const today = format(new Date(), "yyyy-MM-dd");
+  const today = getLocalDateStr();
 
   const fetchLogs = async () => {
     if (!user) return;
