@@ -357,6 +357,78 @@ const NutriSyncPage = () => {
                 </div>
               </div>
             </div>
+
+            {/* Next Meal Countdown */}
+            {nextMealCountdown && (
+              <div className="rounded-2xl border border-accent/20 bg-accent/5 p-4 flex items-center gap-3">
+                <Clock className="w-5 h-5 text-accent" />
+                <div>
+                  <p className="text-xs font-bold text-foreground">Próxima refeição em</p>
+                  <p className="text-lg font-bold font-mono text-accent">{nextMealCountdown}</p>
+                </div>
+              </div>
+            )}
+
+            {/* Pre/Post Workout Checklist */}
+            {todayWorkouts.length > 0 && (
+              <div className="rounded-2xl border border-border bg-card p-4">
+                <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest mb-3">✅ Checklist Nutricional</p>
+                <div className="space-y-2">
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={preWorkoutDone}
+                      onChange={e => setPreWorkoutDone(e.target.checked)}
+                      className="w-4 h-4 rounded border-border accent-primary"
+                    />
+                    <span className={`text-xs font-mono ${preWorkoutDone ? "text-accent line-through" : "text-foreground"}`}>
+                      Completei o pré-treino ⚡
+                    </span>
+                  </label>
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={postWorkoutDone}
+                      onChange={e => setPostWorkoutDone(e.target.checked)}
+                      className="w-4 h-4 rounded border-border accent-primary"
+                    />
+                    <span className={`text-xs font-mono ${postWorkoutDone ? "text-accent line-through" : "text-foreground"}`}>
+                      Completei o pós-treino 🚀
+                    </span>
+                  </label>
+                </div>
+              </div>
+            )}
+
+            {/* Recovery Card */}
+            {todayLog?.completed && (
+              <div className="rounded-2xl border border-accent/20 bg-gradient-to-br from-accent/5 to-accent/10 p-4">
+                <p className="text-[10px] font-mono text-accent uppercase tracking-widest mb-2">🌙 Recuperação Ativa</p>
+                <p className="text-xs font-bold text-foreground mb-2">Sugestões para recuperação noturna</p>
+                <div className="space-y-1.5 text-[11px] font-mono text-muted-foreground">
+                  {todayWorkouts.some(w => w.workout_type === "legs" || w.workout_type === "lower") ? (
+                    <>
+                      <p>🥩 Caseína 40g ou cottage 200g (síntese proteica noturna)</p>
+                      <p>🍠 Carb complexo leve: batata doce ou aveia (repor glicogênio)</p>
+                      <p>💊 Magnésio glicinato 400mg + Glicina 3g (relaxamento muscular)</p>
+                      <p>🧊 Crioterapia local ou banho de contraste nas pernas</p>
+                    </>
+                  ) : todayWorkouts.some(w => WORKOUT_TYPES[w.workout_type as WorkoutType]?.category === "cardio") ? (
+                    <>
+                      <p>🥛 Whey + banana ou leite com mel (reposição rápida)</p>
+                      <p>💧 Eletrólitos: sódio + potássio + magnésio</p>
+                      <p>💊 Ômega-3 3g (anti-inflamatório)</p>
+                    </>
+                  ) : (
+                    <>
+                      <p>🥩 Caseína 30-40g ou 200g de cottage (proteína lenta)</p>
+                      <p>🥑 Gordura boa: abacate ou castanhas (hormonal recovery)</p>
+                      <p>💊 ZMA: Zinco 30mg + Magnésio 450mg + B6 10mg</p>
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
           </motion.div>
         )}
 
