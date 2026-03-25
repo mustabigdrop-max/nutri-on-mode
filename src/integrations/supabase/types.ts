@@ -173,6 +173,228 @@ export type Database = {
         }
         Relationships: []
       }
+      athlete_exams: {
+        Row: {
+          acido_urico: number | null
+          acoes_prioritarias: Json | null
+          alertas: string[] | null
+          alt_tgp: number | null
+          analise_ia: string | null
+          ast_tgo: number | null
+          b12: number | null
+          bilirrubina_direta: number | null
+          bilirrubina_indireta: number | null
+          bilirrubina_total: number | null
+          calcio: number | null
+          ciclo_atual: string | null
+          colesterol_total: number | null
+          cortisol_matinal: number | null
+          created_at: string | null
+          creatinina: number | null
+          data_coleta: string
+          dhea_s: number | null
+          estradiol: number | null
+          fase: string | null
+          ferritina: number | null
+          ferro_serico: number | null
+          fosfatase_alcalina: number | null
+          fosforo: number | null
+          fsh: number | null
+          ggt: number | null
+          gh: number | null
+          glicemia_jejum: number | null
+          hba1c: number | null
+          hdl: number | null
+          hematocrito: number | null
+          hemoglobina: number | null
+          homa_ir: number | null
+          homocisteina: number | null
+          id: string
+          igf1: number | null
+          insulina_jejum: number | null
+          ldl: number | null
+          leucocitos: number | null
+          lh: number | null
+          magnesio: number | null
+          medicacoes_atuais: string[] | null
+          microalbuminuria: number | null
+          notas_medico: string | null
+          pa_diastolica: number | null
+          pa_sistolica: number | null
+          pcr_ultrassensivel: number | null
+          plaquetas: number | null
+          progesterona: number | null
+          prolactina: number | null
+          proximos_exames: Json | null
+          psa: number | null
+          revisado_medico: boolean | null
+          semaforo_geral: string | null
+          semana_ciclo: number | null
+          shbg: number | null
+          suplementacao_ajust: Json | null
+          t3_livre: number | null
+          t4_livre: number | null
+          tendencias: Json | null
+          testosterona_livre: number | null
+          testosterona_total: number | null
+          tfg_estimado: number | null
+          triglicerideos: number | null
+          tsh: number | null
+          ureia: number | null
+          user_id: string
+          variacao_baseline: Json | null
+          vhs: number | null
+          vitamina_d: number | null
+          zinco: number | null
+        }
+        Insert: {
+          acido_urico?: number | null
+          acoes_prioritarias?: Json | null
+          alertas?: string[] | null
+          alt_tgp?: number | null
+          analise_ia?: string | null
+          ast_tgo?: number | null
+          b12?: number | null
+          bilirrubina_direta?: number | null
+          bilirrubina_indireta?: number | null
+          bilirrubina_total?: number | null
+          calcio?: number | null
+          ciclo_atual?: string | null
+          colesterol_total?: number | null
+          cortisol_matinal?: number | null
+          created_at?: string | null
+          creatinina?: number | null
+          data_coleta: string
+          dhea_s?: number | null
+          estradiol?: number | null
+          fase?: string | null
+          ferritina?: number | null
+          ferro_serico?: number | null
+          fosfatase_alcalina?: number | null
+          fosforo?: number | null
+          fsh?: number | null
+          ggt?: number | null
+          gh?: number | null
+          glicemia_jejum?: number | null
+          hba1c?: number | null
+          hdl?: number | null
+          hematocrito?: number | null
+          hemoglobina?: number | null
+          homa_ir?: number | null
+          homocisteina?: number | null
+          id?: string
+          igf1?: number | null
+          insulina_jejum?: number | null
+          ldl?: number | null
+          leucocitos?: number | null
+          lh?: number | null
+          magnesio?: number | null
+          medicacoes_atuais?: string[] | null
+          microalbuminuria?: number | null
+          notas_medico?: string | null
+          pa_diastolica?: number | null
+          pa_sistolica?: number | null
+          pcr_ultrassensivel?: number | null
+          plaquetas?: number | null
+          progesterona?: number | null
+          prolactina?: number | null
+          proximos_exames?: Json | null
+          psa?: number | null
+          revisado_medico?: boolean | null
+          semaforo_geral?: string | null
+          semana_ciclo?: number | null
+          shbg?: number | null
+          suplementacao_ajust?: Json | null
+          t3_livre?: number | null
+          t4_livre?: number | null
+          tendencias?: Json | null
+          testosterona_livre?: number | null
+          testosterona_total?: number | null
+          tfg_estimado?: number | null
+          triglicerideos?: number | null
+          tsh?: number | null
+          ureia?: number | null
+          user_id: string
+          variacao_baseline?: Json | null
+          vhs?: number | null
+          vitamina_d?: number | null
+          zinco?: number | null
+        }
+        Update: {
+          acido_urico?: number | null
+          acoes_prioritarias?: Json | null
+          alertas?: string[] | null
+          alt_tgp?: number | null
+          analise_ia?: string | null
+          ast_tgo?: number | null
+          b12?: number | null
+          bilirrubina_direta?: number | null
+          bilirrubina_indireta?: number | null
+          bilirrubina_total?: number | null
+          calcio?: number | null
+          ciclo_atual?: string | null
+          colesterol_total?: number | null
+          cortisol_matinal?: number | null
+          created_at?: string | null
+          creatinina?: number | null
+          data_coleta?: string
+          dhea_s?: number | null
+          estradiol?: number | null
+          fase?: string | null
+          ferritina?: number | null
+          ferro_serico?: number | null
+          fosfatase_alcalina?: number | null
+          fosforo?: number | null
+          fsh?: number | null
+          ggt?: number | null
+          gh?: number | null
+          glicemia_jejum?: number | null
+          hba1c?: number | null
+          hdl?: number | null
+          hematocrito?: number | null
+          hemoglobina?: number | null
+          homa_ir?: number | null
+          homocisteina?: number | null
+          id?: string
+          igf1?: number | null
+          insulina_jejum?: number | null
+          ldl?: number | null
+          leucocitos?: number | null
+          lh?: number | null
+          magnesio?: number | null
+          medicacoes_atuais?: string[] | null
+          microalbuminuria?: number | null
+          notas_medico?: string | null
+          pa_diastolica?: number | null
+          pa_sistolica?: number | null
+          pcr_ultrassensivel?: number | null
+          plaquetas?: number | null
+          progesterona?: number | null
+          prolactina?: number | null
+          proximos_exames?: Json | null
+          psa?: number | null
+          revisado_medico?: boolean | null
+          semaforo_geral?: string | null
+          semana_ciclo?: number | null
+          shbg?: number | null
+          suplementacao_ajust?: Json | null
+          t3_livre?: number | null
+          t4_livre?: number | null
+          tendencias?: Json | null
+          testosterona_livre?: number | null
+          testosterona_total?: number | null
+          tfg_estimado?: number | null
+          triglicerideos?: number | null
+          tsh?: number | null
+          ureia?: number | null
+          user_id?: string
+          variacao_baseline?: Json | null
+          vhs?: number | null
+          vitamina_d?: number | null
+          zinco?: number | null
+        }
+        Relationships: []
+      }
       badges: {
         Row: {
           category: string
@@ -1378,6 +1600,54 @@ export type Database = {
         }
         Relationships: []
       }
+      cycle_tracking: {
+        Row: {
+          compostos: Json | null
+          created_at: string | null
+          data_fim_prevista: string | null
+          data_inicio: string | null
+          doses: Json | null
+          fase_atual: string | null
+          id: string
+          nome_ciclo: string | null
+          observacoes: string | null
+          protocolo_suporte: Json | null
+          semana_atual: number | null
+          tpc_protocolo: Json | null
+          user_id: string
+        }
+        Insert: {
+          compostos?: Json | null
+          created_at?: string | null
+          data_fim_prevista?: string | null
+          data_inicio?: string | null
+          doses?: Json | null
+          fase_atual?: string | null
+          id?: string
+          nome_ciclo?: string | null
+          observacoes?: string | null
+          protocolo_suporte?: Json | null
+          semana_atual?: number | null
+          tpc_protocolo?: Json | null
+          user_id: string
+        }
+        Update: {
+          compostos?: Json | null
+          created_at?: string | null
+          data_fim_prevista?: string | null
+          data_inicio?: string | null
+          doses?: Json | null
+          fase_atual?: string | null
+          id?: string
+          nome_ciclo?: string | null
+          observacoes?: string | null
+          protocolo_suporte?: Json | null
+          semana_atual?: number | null
+          tpc_protocolo?: Json | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       daily_missions: {
         Row: {
           completed: boolean
@@ -1587,6 +1857,53 @@ export type Database = {
           workout_type?: string | null
         }
         Relationships: []
+      }
+      exam_alerts: {
+        Row: {
+          acao_recomendada: string | null
+          created_at: string | null
+          exam_id: string | null
+          id: string
+          marcador: string | null
+          mensagem: string | null
+          nivel: string | null
+          resolvido: boolean | null
+          user_id: string
+          valor: number | null
+        }
+        Insert: {
+          acao_recomendada?: string | null
+          created_at?: string | null
+          exam_id?: string | null
+          id?: string
+          marcador?: string | null
+          mensagem?: string | null
+          nivel?: string | null
+          resolvido?: boolean | null
+          user_id: string
+          valor?: number | null
+        }
+        Update: {
+          acao_recomendada?: string | null
+          created_at?: string | null
+          exam_id?: string | null
+          id?: string
+          marcador?: string | null
+          mensagem?: string | null
+          nivel?: string | null
+          resolvido?: boolean | null
+          user_id?: string
+          valor?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exam_alerts_exam_id_fkey"
+            columns: ["exam_id"]
+            isOneToOne: false
+            referencedRelation: "athlete_exams"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       exercise_cues: {
         Row: {
