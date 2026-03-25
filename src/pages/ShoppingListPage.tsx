@@ -72,23 +72,73 @@ function classifyItem(foodName: string): string {
   return "outros";
 }
 
-// Average prices per item (R$ per portion) — Brazilian regional estimates
+// Preços médios por porção (R$) — base mercados brasileiros Mar/2026
+// Fontes: CEAGESP, DIEESE Cesta Básica, supermercados regionais
 const ITEM_PRICES: Record<string, number> = {
-  "frango": 3.50, "carne": 5.00, "peixe": 6.00, "salmão": 12.00, "tilápia": 5.50,
-  "atum": 4.00, "ovo": 0.80, "whey": 3.00, "queijo": 2.50, "iogurte": 2.00,
-  "leite": 1.50, "arroz": 0.60, "feijão": 0.80, "batata doce": 0.70, "aveia": 0.50,
-  "pão": 0.40, "macarrão": 0.70, "banana": 0.50, "maçã": 1.00, "morango": 2.00,
-  "tomate": 0.60, "alface": 1.00, "brócolis": 1.50, "cenoura": 0.40, "cebola": 0.30,
-  "alho": 0.20, "azeite": 1.50, "pasta de amendoim": 1.00, "castanha": 2.00,
-  "default": 2.00,
+  // Proteínas
+  "frango grelhado": 4.20, "peito de frango": 4.50, "frango": 3.80, "frango desfiado": 3.80,
+  "coxa": 2.80, "sobrecoxa": 2.80,
+  "carne moída": 5.50, "carne": 6.00, "patinho": 6.50, "acém": 5.00, "alcatra": 7.50,
+  "filé mignon": 12.00, "strogonoff": 5.00,
+  "peixe": 6.50, "salmão": 14.00, "tilápia": 5.80, "sardinha": 3.50, "atum": 4.50,
+  "camarão": 10.00,
+  "ovo": 0.75, "ovos": 2.25, "omelete": 2.25,
+  "linguiça": 3.50, "pernil": 4.00,
+  // Laticínios
+  "whey": 3.50, "caseína": 4.00, "albumina": 2.00,
+  "queijo branco": 2.80, "queijo": 3.00, "mussarela": 3.50, "cottage": 4.00, "ricota": 2.50,
+  "iogurte": 2.20, "iogurte natural": 2.00,
+  "leite": 1.80, "requeijão": 1.50, "cream cheese": 2.50,
+  "manteiga": 1.00, "nata": 1.50,
+  // Grãos e carboidratos
+  "arroz": 0.55, "arroz integral": 0.70,
+  "feijão": 0.75, "feijão preto": 0.80, "lentilha": 1.20, "grão de bico": 1.50,
+  "batata doce": 0.80, "batata": 0.60, "mandioca": 0.70,
+  "aveia": 0.60, "granola": 1.50,
+  "pão integral": 0.50, "pão": 0.45, "torrada": 0.30,
+  "tapioca": 0.80, "crepioca": 1.20,
+  "macarrão": 0.80, "massa": 0.80,
+  "quinoa": 2.50, "farinha": 0.30,
+  // Frutas
+  "banana": 0.45, "maçã": 1.20, "laranja": 0.60, "limão": 0.25,
+  "morango": 2.50, "mamão": 0.80, "manga": 1.00, "abacate": 1.50,
+  "melancia": 0.80, "uva": 2.00, "kiwi": 1.80, "pêra": 1.50,
+  "acerola": 0.80, "goiaba": 0.70,
+  // Vegetais
+  "tomate": 0.70, "alface": 1.20, "brócolis": 1.80, "cenoura": 0.45,
+  "cebola": 0.35, "alho": 0.25, "espinafre": 1.50, "couve": 0.60,
+  "pepino": 0.50, "abóbora": 0.60, "berinjela": 0.70, "abobrinha": 0.60,
+  "repolho": 0.50, "chuchu": 0.40, "beterraba": 0.50,
+  "pimentão": 0.80, "milho": 0.60,
+  // Suplementos
+  "barra de proteína": 6.00, "shake": 3.50, "creatina": 1.50,
+  "colágeno": 2.00, "multivitamínico": 1.00,
+  "scoop": 3.50,
+  // Outros
+  "azeite": 1.80, "óleo": 0.40,
+  "pasta de amendoim": 1.20, "castanha": 2.50, "castanha-do-pará": 1.50,
+  "nuts": 2.50, "amendoim": 1.00, "chia": 1.00, "linhaça": 0.80,
+  "mel": 0.80, "canela": 0.10,
+  "gelatina": 1.00, "chá": 0.50, "café": 0.30,
+  "açaí": 4.50,
+  "wrap": 1.50, "sanduíche": 2.00,
+  "sopa": 3.00, "caldo": 2.50,
+  "panqueca": 1.80,
+  "default": 2.50,
 };
 
 function estimatePrice(foodName: string): number {
   const lower = foodName.toLowerCase();
+  // Try longest match first for specificity
+  let bestMatch = "";
+  let bestPrice = ITEM_PRICES.default;
   for (const [key, price] of Object.entries(ITEM_PRICES)) {
-    if (key !== "default" && lower.includes(key)) return price;
+    if (key !== "default" && lower.includes(key) && key.length > bestMatch.length) {
+      bestMatch = key;
+      bestPrice = price;
+    }
   }
-  return ITEM_PRICES.default;
+  return bestPrice;
 }
 
 interface ShoppingItem {
