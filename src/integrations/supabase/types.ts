@@ -1828,6 +1828,120 @@ export type Database = {
         }
         Relationships: []
       }
+      emotional_episodes: {
+        Row: {
+          ate_anyway: boolean | null
+          automatic_thought: string | null
+          behavior: string | null
+          context_deficit_kcal: number | null
+          context_sleep_quality: number | null
+          context_stress_level: number | null
+          created_at: string | null
+          day_of_week: number | null
+          emotion: string | null
+          emotion_intensity: number | null
+          hour_of_day: number | null
+          hunger_type: string | null
+          id: string
+          linked_meal_log_id: string | null
+          notes: string | null
+          occurred_at: string | null
+          post_emotion_intensity: number | null
+          resisted: boolean | null
+          situation: string | null
+          technique_completed: boolean | null
+          technique_duration_sec: number | null
+          technique_used: string | null
+          user_id: string
+        }
+        Insert: {
+          ate_anyway?: boolean | null
+          automatic_thought?: string | null
+          behavior?: string | null
+          context_deficit_kcal?: number | null
+          context_sleep_quality?: number | null
+          context_stress_level?: number | null
+          created_at?: string | null
+          day_of_week?: number | null
+          emotion?: string | null
+          emotion_intensity?: number | null
+          hour_of_day?: number | null
+          hunger_type?: string | null
+          id?: string
+          linked_meal_log_id?: string | null
+          notes?: string | null
+          occurred_at?: string | null
+          post_emotion_intensity?: number | null
+          resisted?: boolean | null
+          situation?: string | null
+          technique_completed?: boolean | null
+          technique_duration_sec?: number | null
+          technique_used?: string | null
+          user_id: string
+        }
+        Update: {
+          ate_anyway?: boolean | null
+          automatic_thought?: string | null
+          behavior?: string | null
+          context_deficit_kcal?: number | null
+          context_sleep_quality?: number | null
+          context_stress_level?: number | null
+          created_at?: string | null
+          day_of_week?: number | null
+          emotion?: string | null
+          emotion_intensity?: number | null
+          hour_of_day?: number | null
+          hunger_type?: string | null
+          id?: string
+          linked_meal_log_id?: string | null
+          notes?: string | null
+          occurred_at?: string | null
+          post_emotion_intensity?: number | null
+          resisted?: boolean | null
+          situation?: string | null
+          technique_completed?: boolean | null
+          technique_duration_sec?: number | null
+          technique_used?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      emotional_win_rates: {
+        Row: {
+          id: string
+          resisted_count: number | null
+          streak_days: number | null
+          top_emotion: string | null
+          top_technique: string | null
+          total_episodes: number | null
+          user_id: string
+          week_start: string
+          win_rate: number | null
+        }
+        Insert: {
+          id?: string
+          resisted_count?: number | null
+          streak_days?: number | null
+          top_emotion?: string | null
+          top_technique?: string | null
+          total_episodes?: number | null
+          user_id: string
+          week_start: string
+          win_rate?: number | null
+        }
+        Update: {
+          id?: string
+          resisted_count?: number | null
+          streak_days?: number | null
+          top_emotion?: string | null
+          top_technique?: string | null
+          total_episodes?: number | null
+          user_id?: string
+          week_start?: string
+          win_rate?: number | null
+        }
+        Relationships: []
+      }
       energy_insights: {
         Row: {
           generated_at: string | null
