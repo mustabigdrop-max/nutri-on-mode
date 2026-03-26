@@ -22,8 +22,12 @@ const MEAL_TYPES = [
   { key: "morning_snack", label: "Lanche AM", emoji: "🍎" },
   { key: "lunch", label: "Almoço", emoji: "🍽️" },
   { key: "afternoon_snack", label: "Lanche PM", emoji: "🥤" },
+  { key: "pre_workout", label: "Pré-Treino", emoji: "💪" },
+  { key: "post_workout", label: "Pós-Treino", emoji: "🏋️" },
   { key: "dinner", label: "Jantar", emoji: "🌙" },
   { key: "supper", label: "Ceia", emoji: "🫖" },
+  { key: "snack", label: "Lanche Extra", emoji: "🥜" },
+  { key: "extra", label: "Refeição Extra", emoji: "➕" },
 ];
 
 interface FoodItem {
