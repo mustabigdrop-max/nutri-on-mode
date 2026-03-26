@@ -155,8 +155,14 @@ const MealPlanPage = () => {
     if (!user || !profile) return;
     setGenerating(true);
     try {
+      // Fetch workout schedule to personalize meal plan per training day
+      const { data: workoutData } = await supabase
+        .from("workout_schedule")
+        .select("day_of_week, workout_type, workout_time, duration_minutes, slot")
+        .eq("user_id", user.id);
+
       const { data, error } = await supabase.functions.invoke("generate-meal-plan", {
-        body: { profile, weekStart, budgetMode },
+        body: { profile, weekStart, budgetMode, workoutSchedule: workoutData || [] },
       });
 
       if (error) throw error;
