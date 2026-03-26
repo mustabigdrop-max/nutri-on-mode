@@ -25,9 +25,22 @@ const ChatPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  // Load agent context from sessionStorage
+  const [agentContextBadge, setAgentContextBadge] = useState("");
+
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages]);
+
+  useEffect(() => {
+    const ctx = sessionStorage.getItem("agent_context");
+    if (ctx) {
+      try {
+        const parsed = JSON.parse(ctx);
+        setAgentContextBadge(`Contexto carregado: ${parsed.episodeCount || parsed.episodes?.length || 0} episódios`);
+      } catch {}
+    }
+  }, []);
 
   const profileContext = profile ? [
     `Nome: ${profile.full_name || "Usuário"}`,
@@ -81,6 +94,22 @@ const ChatPage = () => {
           "Content-Type": "application/json",
           Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
         },
+      // Build agent prompt with context
+      let agentPrompt = localStorage.getItem("nutrion_agent_prompt") || "";
+      const agentCtx = sessionStorage.getItem("agent_context");
+      if (agentCtx) {
+        try {
+          const ctx = JSON.parse(agentCtx);
+          if (ctx.episodes && ctx.episodes.length > 0) {
+            agentPrompt += `\n\nCONTEXTO REAL DO USUÁRIO:
+Este usuário teve ${ctx.episodes.length} episódios comportamentais recentes.
+Top emoção: ${ctx.topEmotion}. Win rate: ${ctx.winRate}%.
+Últimos episódios: ${JSON.stringify(ctx.episodes.slice(0, 3))}.
+Use este contexto para personalizar completamente suas respostas.`;
+          }
+        } catch {}
+      }
+
       body: JSON.stringify({
           messages: [...messages, userMsg],
           profileContext,
@@ -88,7 +117,7 @@ const ChatPage = () => {
           objetivo: profile?.objetivo_principal || profile?.goal || "saude_geral",
           perfilPCA: profile?.perfil_comportamental || "",
           perfilComportamental: profile?.perfil_comportamental || "",
-          agentSystemPrompt: localStorage.getItem("nutrion_agent_prompt") || "",
+          agentSystemPrompt: agentPrompt,
         }),
       });
 
