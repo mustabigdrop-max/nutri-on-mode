@@ -17,3 +17,20 @@ export function getLocalDateStr(date?: Date): string {
   const day = String(d.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
 }
+
+/**
+ * Returns the UTC ISO boundaries that correspond to the user's local day.
+ * Useful when filtering timestamp columns (created_at) without mixing
+ * records from yesterday/tomorrow around timezone boundaries.
+ */
+export function getLocalDayBounds(date?: Date) {
+  const d = date ?? new Date();
+  const start = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0);
+  const end = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1, 0, 0, 0, 0);
+
+  return {
+    date: getLocalDateStr(d),
+    startIso: start.toISOString(),
+    endIso: end.toISOString(),
+  };
+}
