@@ -3071,6 +3071,42 @@ export type Database = {
         }
         Relationships: []
       }
+      microbioma_logs: {
+        Row: {
+          analise_ia: string | null
+          classificacao: string
+          created_at: string | null
+          id: string
+          meta_fibras_g: number | null
+          perfil_snapshot: Json | null
+          score: number
+          sintomas: string[]
+          user_id: string
+        }
+        Insert: {
+          analise_ia?: string | null
+          classificacao?: string
+          created_at?: string | null
+          id?: string
+          meta_fibras_g?: number | null
+          perfil_snapshot?: Json | null
+          score?: number
+          sintomas?: string[]
+          user_id: string
+        }
+        Update: {
+          analise_ia?: string | null
+          classificacao?: string
+          created_at?: string | null
+          id?: string
+          meta_fibras_g?: number | null
+          perfil_snapshot?: Json | null
+          score?: number
+          sintomas?: string[]
+          user_id?: string
+        }
+        Relationships: []
+      }
       monthly_reports: {
         Row: {
           ai_message: string | null
