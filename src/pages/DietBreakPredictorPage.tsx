@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -6,6 +6,9 @@ import {
   TrendingDown, Calendar, Zap, Shield, ChevronRight, RefreshCw,
   Clock, Heart, Coffee, Activity
 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { subDays, format } from "date-fns";
 import BottomNav from "@/components/BottomNav";
 
 const RISK_FACTORS = [
@@ -83,13 +86,14 @@ interface Intervention {
   desc: string;
   icon: React.ComponentType<any>;
   color: string;
+  action?: string;
 }
 
 const INTERVENTIONS: Record<string, Intervention[]> = {
   high: [
-    { title: "Ativar Refeed Hoje", desc: "Adicione +300–500 kcal de carboidrato limpo. Reduz leptina baixa e previne episódio de hiperfagia.", icon: Zap, color: "lime" },
-    { title: "Modo Flexível 24h", desc: "Sem contagem rígida até amanhã. Coma dentro do perfil alimentar sem culpa.", icon: Shield, color: "blue" },
-    { title: "Âncora de Identidade", desc: "\"Eu sou um atleta em protocolo. Recarregar é parte do processo, não é fraqueza.\"", icon: Brain, color: "violet" },
+    { title: "Ativar Refeed Hoje", desc: "Adicione +300–500 kcal de carboidrato limpo. Reduz leptina baixa e previne episódio de hiperfagia.", icon: Zap, color: "lime", action: "refeed" },
+    { title: "Modo Flexível 24h", desc: "Sem contagem rígida até amanhã. Coma dentro do perfil alimentar sem culpa.", icon: Shield, color: "blue", action: "flex" },
+    { title: "Âncora de Identidade", desc: "\"Eu sou um atleta em protocolo. Recarregar é parte do processo, não é fraqueza.\"", icon: Brain, color: "violet", action: "identity" },
   ],
   medium: [
     { title: "Aumentar Proteína no Próximo Meal", desc: "+30–40g proteína aumenta saciedade e reduz risco de comer fora do plano.", icon: Activity, color: "orange" },
@@ -142,20 +146,65 @@ function ScoreGauge({ score }: { score: number }) {
 
 export default function DietBreakPredictorPage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [showResult, setShowResult] = useState(false);
+  const [history, setHistory] = useState<{ date: string; score: number }[]>([]);
 
   const totalScore = Object.values(answers).reduce((a, b) => a + b, 0);
   const allAnswered = Object.keys(answers).length === RISK_FACTORS.length;
   const risk = getRiskLevel(totalScore);
 
+  useEffect(() => {
+    if (user) loadHistory();
+  }, [user]);
+
+  async function loadHistory() {
+    if (!user) return;
+    const { data } = await supabase
+      .from("abandonment_risk_scores")
+      .select("score_date, risk_score")
+      .eq("user_id", user.id)
+      .order("score_date", { ascending: false })
+      .limit(7) as any;
+    if (data) setHistory(data.reverse().map((d: any) => ({ date: d.score_date, score: d.risk_score || 0 })));
+  }
+
   function handleAnswer(factorId: string, value: number) {
     setAnswers(prev => ({ ...prev, [factorId]: value }));
+  }
+
+  async function calculate() {
+    setShowResult(true);
+    if (!user) return;
+    // Persist score
+    const today = format(new Date(), "yyyy-MM-dd");
+    try {
+      await supabase.from("abandonment_risk_scores").upsert({
+        user_id: user.id,
+        score_date: today,
+        risk_score: totalScore,
+        risk_level: risk.level,
+        signal_details: answers,
+      } as any, { onConflict: "user_id,score_date" } as any);
+      loadHistory();
+    } catch (e) {
+      console.error("Failed to save score", e);
+    }
   }
 
   function reset() {
     setAnswers({});
     setShowResult(false);
+  }
+
+  function handleIntervention(action?: string) {
+    if (action === "refeed") navigate("/nutrisync?mode=refeed");
+    else if (action === "identity") {
+      localStorage.setItem("nutrion_agent_prompt", "Você é o Agente TCC do NutriON. O usuário está em momento de risco de quebra de dieta. Use âncora de identidade e técnicas de reestruturação cognitiva para ajudá-lo a manter o foco.");
+      localStorage.setItem("nutrion_agent_name", "Agente TCC");
+      navigate("/chat");
+    }
   }
 
   const colorMap: Record<string, string> = {
@@ -170,16 +219,23 @@ export default function DietBreakPredictorPage() {
     green: "border-green-500/40 bg-green-500/10 text-green-300",
   };
 
+  const historyBars = history.length > 0 ? [...history] : [];
+  // Add today if calculated
+  if (showResult && !historyBars.find(h => h.date === format(new Date(), "yyyy-MM-dd"))) {
+    historyBars.push({ date: format(new Date(), "yyyy-MM-dd"), score: totalScore });
+  }
+  const displayBars = historyBars.slice(-7);
+
   return (
-    <div className="min-h-screen bg-black text-white pb-24">
+    <div className="min-h-screen bg-background text-foreground pb-24">
       {/* Header */}
       <div className="flex items-center gap-3 px-4 pt-6 pb-4">
-        <button onClick={() => navigate(-1)} className="p-2 rounded-xl hover:bg-white/5 transition-colors">
+        <button onClick={() => navigate(-1)} className="p-2 rounded-xl hover:bg-muted transition-colors">
           <ArrowLeft size={20} />
         </button>
         <div className="flex-1">
           <h1 className="text-lg font-bold">Preditor de Quebra de Dieta</h1>
-          <p className="text-xs text-white/50">Score de risco em tempo real</p>
+          <p className="text-xs text-muted-foreground">Score de risco em tempo real</p>
         </div>
         <div className="p-2 rounded-xl bg-orange-500/10 border border-orange-500/30">
           <AlertTriangle size={18} className="text-orange-400" />
@@ -190,14 +246,14 @@ export default function DietBreakPredictorPage() {
         {/* Intro card */}
         {!showResult && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+            <div className="rounded-2xl border border-border bg-card p-4">
               <div className="flex gap-3 items-start">
                 <div className="p-2 rounded-xl bg-orange-500/10 border border-orange-500/30">
                   <Brain size={20} className="text-orange-400" />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-white/90">Nenhum app previne a quebra antes de acontecer.</p>
-                  <p className="text-xs text-white/50 mt-1">Responda 6 perguntas e descubra seu risco agora. Intervenções automáticas são ativadas se risco &gt; 65.</p>
+                  <p className="text-sm font-semibold">Nenhum app previne a quebra antes de acontecer.</p>
+                  <p className="text-xs text-muted-foreground mt-1">Responda 6 perguntas e descubra seu risco agora. Intervenções automáticas são ativadas se risco &gt; 65.</p>
                 </div>
               </div>
             </div>
@@ -210,13 +266,13 @@ export default function DietBreakPredictorPage() {
           const answered = answers[factor.id] !== undefined;
           return (
             <motion.div key={factor.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}>
-              <div className={`rounded-2xl border p-4 transition-all ${answered ? "border-lime-500/30 bg-lime-500/[0.03]" : "border-white/10 bg-white/[0.03]"}`}>
+              <div className={`rounded-2xl border p-4 transition-all ${answered ? "border-emerald-500/30 bg-emerald-500/[0.03]" : "border-border bg-card"}`}>
                 <div className="flex items-center gap-2 mb-3">
                   <div className={`p-1.5 rounded-lg border ${colorMap[factor.color]}`}>
                     <Icon size={16} />
                   </div>
-                  <span className="text-sm font-medium text-white/80">{factor.label}</span>
-                  {answered && <CheckCircle2 size={14} className="text-lime-400 ml-auto" />}
+                  <span className="text-sm font-medium">{factor.label}</span>
+                  {answered && <CheckCircle2 size={14} className="text-emerald-400 ml-auto" />}
                 </div>
                 <div className="space-y-2">
                   {factor.options.map(opt => (
@@ -225,8 +281,8 @@ export default function DietBreakPredictorPage() {
                       onClick={() => handleAnswer(factor.id, opt.value)}
                       className={`w-full text-left px-3 py-2.5 rounded-xl text-sm transition-all border ${
                         answers[factor.id] === opt.value
-                          ? "bg-lime-500/15 border-lime-500/40 text-lime-300 font-medium"
-                          : "border-white/[0.08] bg-white/[0.03] text-white/60 hover:bg-white/[0.06] hover:text-white/80"
+                          ? "bg-emerald-500/15 border-emerald-500/40 text-emerald-400 font-medium"
+                          : "border-border bg-card hover:bg-muted"
                       }`}
                     >
                       {opt.label}
@@ -243,13 +299,13 @@ export default function DietBreakPredictorPage() {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}>
             <button
               disabled={!allAnswered}
-              onClick={() => setShowResult(true)}
-              className="w-full py-4 rounded-2xl font-bold text-base bg-gradient-to-r from-lime-400 to-green-500 text-black disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-lime-500/20"
+              onClick={calculate}
+              className="w-full py-4 rounded-2xl font-bold text-base bg-gradient-to-r from-emerald-400 to-green-500 text-black disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg"
             >
               <ChevronRight size={20} />
               Calcular Score de Risco
             </button>
-            <p className="text-center text-xs text-white/30 mt-2">
+            <p className="text-center text-xs text-muted-foreground mt-2">
               {Object.keys(answers).length}/{RISK_FACTORS.length} perguntas respondidas
             </p>
           </motion.div>
@@ -260,16 +316,16 @@ export default function DietBreakPredictorPage() {
           {showResult && (
             <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-4">
               {/* Gauge */}
-              <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 flex flex-col items-center">
+              <div className="rounded-2xl border border-border bg-card p-6 flex flex-col items-center">
                 <ScoreGauge score={totalScore} />
-                <p className="text-xs text-white/40 mt-4 text-center">
+                <p className="text-xs text-muted-foreground mt-4 text-center">
                   Score calculado com base em sono, estresse, dias de déficit, eventos sociais, treino e humor
                 </p>
               </div>
 
               {/* Intervenções */}
               <div className="space-y-3">
-                <h2 className="text-sm font-semibold text-white/70 px-1">
+                <h2 className="text-sm font-semibold text-muted-foreground px-1">
                   Intervenções Recomendadas
                 </h2>
                 <div className="space-y-2">
@@ -277,40 +333,50 @@ export default function DietBreakPredictorPage() {
                     const Icon = item.icon;
                     return (
                       <motion.div key={i} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 + i * 0.1 }}>
-                        <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 flex gap-3 items-start">
+                        <button
+                          onClick={() => item.action && handleIntervention(item.action)}
+                          className="w-full rounded-2xl border border-border bg-card p-4 flex gap-3 items-start text-left hover:border-primary/30 transition-colors"
+                        >
                           <div className={`p-2 rounded-xl border ${colorMap[item.color]}`}>
                             <Icon size={18} />
                           </div>
                           <div className="flex-1">
-                            <p className="text-sm font-semibold text-white/90">{item.title}</p>
-                            <p className="text-xs text-white/50 mt-1">{item.desc}</p>
+                            <p className="text-sm font-semibold">{item.title}</p>
+                            <p className="text-xs text-muted-foreground mt-1">{item.desc}</p>
                           </div>
-                        </div>
+                          {item.action && <ChevronRight size={16} className="text-muted-foreground mt-1" />}
+                        </button>
                       </motion.div>
                     );
                   })}
                 </div>
               </div>
 
-              {/* Histórico placeholder */}
-              <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-                <p className="text-sm font-semibold text-white/70 mb-3">Histórico de Scores</p>
-                <div className="flex items-end justify-between gap-1 h-20">
-                  {[22, 45, 38, 71, 55, 30, totalScore].map((s, i) => {
-                    const h = (s / 100) * 64;
-                    const col = s >= 65 ? "bg-red-400" : s >= 35 ? "bg-orange-400" : "bg-lime-400";
-                    return (
-                      <div key={i} className="flex flex-col items-center gap-1 flex-1">
-                        <div className={`w-full max-w-[24px] rounded-t-md ${col}`} style={{ height: `${h}px` }} />
-                        <span className="text-[10px] text-white/30">{["S", "T", "Q", "Q", "S", "S", "H"][i]}</span>
-                      </div>
-                    );
-                  })}
-                </div>
+              {/* Histórico */}
+              <div className="rounded-2xl border border-border bg-card p-4">
+                <p className="text-sm font-semibold text-muted-foreground mb-3">Histórico de Scores</p>
+                {displayBars.length === 0 ? (
+                  <p className="text-xs text-muted-foreground text-center py-4">Primeiro score registrado hoje!</p>
+                ) : (
+                  <div className="flex items-end justify-between gap-1 h-20">
+                    {displayBars.map((s, i) => {
+                      const h = (s.score / 100) * 64;
+                      const col = s.score >= 65 ? "bg-red-400" : s.score >= 35 ? "bg-orange-400" : "bg-emerald-400";
+                      const dayLabel = format(new Date(s.date + "T12:00"), "EEE").slice(0, 1).toUpperCase();
+                      return (
+                        <div key={i} className="flex flex-col items-center gap-1 flex-1">
+                          <span className="text-[9px] text-muted-foreground font-mono">{s.score}</span>
+                          <div className={`w-full max-w-[24px] rounded-t-md ${col}`} style={{ height: `${Math.max(h, 4)}px` }} />
+                          <span className="text-[10px] text-muted-foreground">{dayLabel}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
 
               {/* Nova análise */}
-              <button onClick={reset} className="w-full py-3 rounded-2xl border border-white/10 text-white/60 text-sm font-medium flex items-center justify-center gap-2 hover:bg-white/5 transition-colors">
+              <button onClick={reset} className="w-full py-3 rounded-2xl border border-border text-muted-foreground text-sm font-medium flex items-center justify-center gap-2 hover:bg-muted transition-colors">
                 <RefreshCw size={16} />
                 Refazer Análise
               </button>
