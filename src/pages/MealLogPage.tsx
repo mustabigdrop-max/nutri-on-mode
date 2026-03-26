@@ -560,7 +560,7 @@ const MealLogPage = () => {
         <AnimatePresence>
           {showMealPicker && (
             <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden mb-4">
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {MEAL_TYPES.map(mt => (
                   <button
                     key={mt.key}
