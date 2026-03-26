@@ -9,7 +9,7 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { profile, weekStart, budgetMode } = await req.json();
+    const { profile, weekStart, budgetMode, workoutSchedule } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
@@ -18,6 +18,40 @@ serve(async (req) => {
     const protAlvo = profile?.protein_g || 120;
     const carbAlvo = profile?.carbs_g || 200;
     const fatAlvo = profile?.fat_g || 60;
+
+    // Build workout context per day
+    const dayNames = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
+    let workoutContext = "";
+    if (workoutSchedule && workoutSchedule.length > 0) {
+      const byDay: Record<number, any[]> = {};
+      for (const ws of workoutSchedule) {
+        if (!byDay[ws.day_of_week]) byDay[ws.day_of_week] = [];
+        byDay[ws.day_of_week].push(ws);
+      }
+      workoutContext = `\n═══════════════════════════════════════════
+ROTINA DE TREINO DO USUÁRIO (ADAPTAR CADA DIA)
+═══════════════════════════════════════════\n`;
+      for (let d = 0; d < 7; d++) {
+        const sessions = byDay[d];
+        if (sessions && sessions.length > 0) {
+          const descs = sessions.map((s: any) => `${s.workout_type} (${s.workout_time}, ${s.duration_minutes}min)`).join(" + ");
+          workoutContext += `${dayNames[d]}: ${descs}\n`;
+        } else {
+          workoutContext += `${dayNames[d]}: DESCANSO\n`;
+        }
+      }
+      workoutContext += `
+REGRAS DE ADAPTAÇÃO POR DIA DE TREINO:
+- Dias de LEGS/lower: +10-15% carboidratos, refeição pós-treino robusta
+- Dias de PUSH/PULL/upper: distribuição padrão com proteína alta pós-treino
+- Dias de CARDIO: mais carboidratos pré-treino, refeição pós mais leve
+- Dias de DESCANSO: reduzir carboidratos em 15-20%, aumentar gorduras boas
+- TREINO MANHÃ: café da manhã mais leve + lanche pré-treino, almoço robusto pós-treino
+- TREINO TARDE: almoço como pré-treino, lanche PM robusto pós-treino
+- TREINO NOITE: jantar como pós-treino principal, ceia com caseína
+- TREINO DUPLO: distribuir 40% AM, 35% peri-treino PM, 25% pós
+- A meta calórica diária (${kcalAlvo}kcal) deve ser mantida, apenas REDISTRIBUIR ao longo do dia
+`;
 
     const systemPrompt = `Você é um nutricionista IA especialista em planejamento alimentar brasileiro.
 Gere um plano semanal de refeições (7 dias, 6 refeições/dia) RIGOROSAMENTE PERSONALIZADO.
