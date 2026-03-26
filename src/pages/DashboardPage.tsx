@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
@@ -329,10 +329,17 @@ const DashboardPage = () => {
     }
   }, [profile, loading]);
 
+  const syncActiveDate = useCallback(() => {
+    const currentDate = getLocalDateStr();
+    lastDateRef.current = currentDate;
+    activeDateRef.current = currentDate;
+    return currentDate;
+  }, []);
+
   const fetchMealsRef = useRef<() => Promise<void>>();
   fetchMealsRef.current = async () => {
     if (!user) return;
-    const requestDate = activeDateRef.current;
+    const requestDate = syncActiveDate();
     const { data } = await supabase
       .from("meal_logs")
       .select("*")
@@ -361,8 +368,7 @@ const DashboardPage = () => {
     const checkDateChange = () => {
       const currentDate = getLocalDateStr();
       if (currentDate !== lastDateRef.current) {
-        lastDateRef.current = currentDate;
-        activeDateRef.current = currentDate;
+        syncActiveDate();
         setTodayMood(null);
         setTodayMeals([]);
         setTodayTotals({ kcal: 0, protein: 0, carbs: 0, fat: 0 });
@@ -392,7 +398,7 @@ const DashboardPage = () => {
       document.removeEventListener("visibilitychange", handleVisibility);
       window.removeEventListener("focus", handleFocus);
     };
-  }, [user]);
+  }, [user, syncActiveDate]);
 
   // Realtime subscription
   useEffect(() => {

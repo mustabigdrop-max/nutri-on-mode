@@ -145,6 +145,12 @@ const MealLogPage = () => {
   const [savingFavorite, setSavingFavorite] = useState(false);
   const draftDateRef = useRef(getLocalDateStr());
 
+  const syncDraftDate = useCallback(() => {
+    const currentDate = getLocalDateStr();
+    draftDateRef.current = currentDate;
+    return currentDate;
+  }, []);
+
   const resetDraft = useCallback((keepMealType = true) => {
     setSelectedFoods([]);
     setHungerLevel(5);
@@ -171,16 +177,37 @@ const MealLogPage = () => {
   }, []);
 
   useEffect(() => {
-    const interval = setInterval(() => {
+    const handleDateTurn = () => {
       const currentDate = getLocalDateStr();
       if (currentDate !== draftDateRef.current) {
         draftDateRef.current = currentDate;
         resetDraft();
         toast.info("Virou o dia — iniciamos um novo registro.");
+        return true;
       }
-    }, 30000);
+      return false;
+    };
 
-    return () => clearInterval(interval);
+    const interval = setInterval(handleDateTurn, 1000);
+
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") {
+        handleDateTurn();
+      }
+    };
+
+    const handleFocus = () => {
+      handleDateTurn();
+    };
+
+    document.addEventListener("visibilitychange", handleVisibility);
+    window.addEventListener("focus", handleFocus);
+
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener("visibilitychange", handleVisibility);
+      window.removeEventListener("focus", handleFocus);
+    };
   }, [resetDraft]);
 
   // Load frequent meals
@@ -435,7 +462,7 @@ const MealLogPage = () => {
     if (now - lastSaveTimestampRef.current < 5000) return;
     lastSaveTimestampRef.current = now;
     setSaving(true);
-    const today = getLocalDateStr();
+    const today = syncDraftDate();
     const { error } = await supabase.from("meal_logs").insert({
       user_id: user.id,
       meal_type: meal.meal_type,
@@ -484,7 +511,7 @@ const MealLogPage = () => {
     setSaving(true);
 
     try {
-      const today = getLocalDateStr();
+      const today = syncDraftDate();
       let photoUrl: string | null = null;
       if (photoPreview) {
         try {
