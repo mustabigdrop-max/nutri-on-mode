@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
-import { getLocalDateStr } from "@/lib/utils";
+import { getLocalDateStr, getLocalDayBounds } from "@/lib/utils";
 import { useWaterLogs } from "@/hooks/useWaterLogs";
 import { usePlanGate } from "@/hooks/usePlanGate";
 import { useWorkoutSchedule, getWorkoutAdjustment, WORKOUT_TYPES, type WorkoutType } from "@/hooks/useWorkoutSchedule";
@@ -340,16 +340,18 @@ const DashboardPage = () => {
   fetchMealsRef.current = async () => {
     if (!user) return;
     const requestDate = syncActiveDate();
+    const { startIso, endIso } = getLocalDayBounds();
     const { data } = await supabase
       .from("meal_logs")
       .select("*")
       .eq("user_id", user.id)
-      .eq("meal_date", requestDate)
+      .gte("created_at", startIso)
+      .lt("created_at", endIso)
       .order("created_at", { ascending: true });
 
     if (requestDate !== activeDateRef.current) return;
 
-    const meals = data ?? [];
+    const meals = (data ?? []).filter((meal) => meal.meal_date === requestDate || !meal.meal_date);
     setTodayMeals(meals);
     setTodayTotals({
       kcal: meals.reduce((s, m) => s + (Number(m.total_kcal) || 0), 0),
