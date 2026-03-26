@@ -69,6 +69,7 @@ import ExerciseSelectorPage from "./pages/ExerciseSelectorPage";
 import AgentsPage from "./pages/AgentsPage";
 import BiologicalAgePage from "./pages/BiologicalAgePage";
 import EmotionalScanPage from "./pages/EmotionalScanPage";
+import RefeicaoSnapPage from "./pages/RefeicaoSnapPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -143,6 +144,7 @@ const App = () => (
             <Route path="/lab" element={<ProtectedRoute><LabPage /></ProtectedRoute>} />
             <Route path="/admin/apex-coach" element={<ProtectedRoute><AdminApexCoachPage /></ProtectedRoute>} />
             <Route path="/emotional-scan" element={<ProtectedRoute><EmotionalScanPage /></ProtectedRoute>} />
+            <Route path="/refeicao-snap" element={<ProtectedRoute><RefeicaoSnapPage /></ProtectedRoute>} />
             <Route path="/convite/:token" element={<CoachInvitePage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>

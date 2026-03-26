@@ -3906,6 +3906,54 @@ export type Database = {
           },
         ]
       }
+      refeicoes_log: {
+        Row: {
+          analise_completa: Json
+          calorias_total: number | null
+          carboidratos_g: number | null
+          classificacao: string | null
+          created_at: string | null
+          descricao_usuario: string | null
+          gorduras_g: number | null
+          id: string
+          imagem_url: string | null
+          proteinas_g: number | null
+          score: number | null
+          tipo_input: string
+          user_id: string
+        }
+        Insert: {
+          analise_completa?: Json
+          calorias_total?: number | null
+          carboidratos_g?: number | null
+          classificacao?: string | null
+          created_at?: string | null
+          descricao_usuario?: string | null
+          gorduras_g?: number | null
+          id?: string
+          imagem_url?: string | null
+          proteinas_g?: number | null
+          score?: number | null
+          tipo_input?: string
+          user_id: string
+        }
+        Update: {
+          analise_completa?: Json
+          calorias_total?: number | null
+          carboidratos_g?: number | null
+          classificacao?: string | null
+          created_at?: string | null
+          descricao_usuario?: string | null
+          gorduras_g?: number | null
+          id?: string
+          imagem_url?: string | null
+          proteinas_g?: number | null
+          score?: number | null
+          tipo_input?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       research_searches: {
         Row: {
           category: string | null
