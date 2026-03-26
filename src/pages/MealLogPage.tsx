@@ -215,10 +215,12 @@ const MealLogPage = () => {
     if (!user || inputMode !== "quick") return;
     const loadFrequent = async () => {
       setQuickLoading(true);
+      const today = syncDraftDate();
       const { data } = await supabase
         .from("meal_logs")
         .select("meal_type, total_kcal, total_protein, total_carbs, total_fat, notes")
         .eq("user_id", user.id)
+        .eq("meal_date", today)
         .order("created_at", { ascending: false })
         .limit(50);
       if (data && data.length > 0) {
