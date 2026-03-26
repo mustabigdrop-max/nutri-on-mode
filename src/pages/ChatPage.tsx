@@ -185,6 +185,9 @@ Use este contexto para personalizar completamente suas respostas.`;
               <div className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
               <p className="text-[10px] text-accent font-mono">Online</p>
               <span className="text-[9px] text-muted-foreground font-mono">· Comportamental · NutriSync</span>
+              {agentContextBadge && (
+                <span className="text-[8px] text-emerald-400 font-mono bg-emerald-500/10 px-1.5 py-0.5 rounded-full">{agentContextBadge}</span>
+              )}
             </div>
           </div>
         </div>
