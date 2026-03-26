@@ -517,7 +517,9 @@ const MealLogPage = () => {
 
   const currentMeal = MEAL_TYPES.find(m => m.key === selectedMealType)!;
   const mealTypeIcons: Record<string, string> = {
-    breakfast: "☕", morning_snack: "🍎", lunch: "🍽️", afternoon_snack: "🥤", dinner: "🌙", supper: "🫖",
+    breakfast: "☕", morning_snack: "🍎", lunch: "🍽️", afternoon_snack: "🥤",
+    pre_workout: "💪", post_workout: "🏋️", dinner: "🌙", supper: "🫖",
+    snack: "🥜", extra: "➕",
   };
 
   return (
