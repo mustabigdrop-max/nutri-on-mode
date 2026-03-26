@@ -52,6 +52,7 @@ REGRAS DE ADAPTAÇÃO POR DIA DE TREINO:
 - TREINO DUPLO: distribuir 40% AM, 35% peri-treino PM, 25% pós
 - A meta calórica diária (${kcalAlvo}kcal) deve ser mantida, apenas REDISTRIBUIR ao longo do dia
 `;
+    }
 
     const systemPrompt = `Você é um nutricionista IA especialista em planejamento alimentar brasileiro.
 Gere um plano semanal de refeições (7 dias, 6 refeições/dia) RIGOROSAMENTE PERSONALIZADO.
