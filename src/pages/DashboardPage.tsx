@@ -312,6 +312,7 @@ const DashboardPage = () => {
   const navigate = useNavigate();
   const [todayMeals, setTodayMeals] = useState<any[]>([]);
   const lastDateRef = useRef(getLocalDateStr());
+  const activeDateRef = useRef(getLocalDateStr());
   const [todayTotals, setTodayTotals] = useState({ kcal: 0, protein: 0, carbs: 0, fat: 0 });
   const [todayMood, setTodayMood] = useState<MoodType | null>(null);
   const { todayLog: waterLog, addWater } = useWaterLogs();
@@ -331,13 +332,16 @@ const DashboardPage = () => {
   const fetchMealsRef = useRef<() => Promise<void>>();
   fetchMealsRef.current = async () => {
     if (!user) return;
-    const today = getLocalDateStr();
+    const requestDate = activeDateRef.current;
     const { data } = await supabase
       .from("meal_logs")
       .select("*")
       .eq("user_id", user.id)
-      .eq("meal_date", today)
+      .eq("meal_date", requestDate)
       .order("created_at", { ascending: true });
+
+    if (requestDate !== activeDateRef.current) return;
+
     const meals = data ?? [];
     setTodayMeals(meals);
     setTodayTotals({
@@ -358,24 +362,27 @@ const DashboardPage = () => {
       const currentDate = getLocalDateStr();
       if (currentDate !== lastDateRef.current) {
         lastDateRef.current = currentDate;
-        // Reset immediately before fetching to avoid showing stale data
+        activeDateRef.current = currentDate;
+        setTodayMood(null);
         setTodayMeals([]);
         setTodayTotals({ kcal: 0, protein: 0, carbs: 0, fat: 0 });
         fetchMealsRef.current?.();
+        return true;
       }
+      return false;
     };
-    const interval = setInterval(checkDateChange, 10000);
+    const interval = setInterval(checkDateChange, 1000);
 
     // When phone/browser wakes from sleep, interval may be stale — check immediately
     const handleVisibility = () => {
       if (document.visibilityState === "visible") {
-        checkDateChange();
-        fetchMealsRef.current?.();
+        const changed = checkDateChange();
+        if (!changed) fetchMealsRef.current?.();
       }
     };
     const handleFocus = () => {
-      checkDateChange();
-      fetchMealsRef.current?.();
+      const changed = checkDateChange();
+      if (!changed) fetchMealsRef.current?.();
     };
     document.addEventListener("visibilitychange", handleVisibility);
     window.addEventListener("focus", handleFocus);
