@@ -364,8 +364,27 @@ const DashboardPage = () => {
         fetchMealsRef.current?.();
       }
     };
-    const interval = setInterval(checkDateChange, 10000); // check every 10s
-    return () => clearInterval(interval);
+    const interval = setInterval(checkDateChange, 10000);
+
+    // When phone/browser wakes from sleep, interval may be stale — check immediately
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") {
+        checkDateChange();
+        fetchMealsRef.current?.();
+      }
+    };
+    const handleFocus = () => {
+      checkDateChange();
+      fetchMealsRef.current?.();
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+    window.addEventListener("focus", handleFocus);
+
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener("visibilitychange", handleVisibility);
+      window.removeEventListener("focus", handleFocus);
+    };
   }, [user]);
 
   // Realtime subscription
