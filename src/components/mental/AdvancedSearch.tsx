@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Search, ExternalLink, Clock, Brain, FlaskConical, Salad, HeartPulse } from "lucide-react";
+import VoiceRecorderButton from "@/components/ui/VoiceRecorderButton";
 import ReactMarkdown from "react-markdown";
 import { usePerplexitySearch } from "@/hooks/useMentalPerformance";
 
@@ -60,6 +61,7 @@ const AdvancedSearch = () => {
         <Input placeholder="Ex: Efeitos do magnésio no sono..." value={query} onChange={e => setQuery(e.target.value)}
           onKeyDown={e => e.key === "Enter" && handleSearch()}
           className="flex-1 border-[hsl(200,80%,50%)]/30 focus-visible:ring-[hsl(200,80%,50%)]" />
+        <VoiceRecorderButton onTranscript={(t) => setQuery(prev => prev ? prev + " " + t : t)} disabled={loading} size="sm" />
         <Button onClick={() => handleSearch()} disabled={loading || !query.trim()} className="bg-[hsl(200,80%,50%)]">
           {loading ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <Search className="w-4 h-4" />}
         </Button>

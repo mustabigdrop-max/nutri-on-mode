@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import { Send, Brain, Loader2 } from "lucide-react";
+import VoiceRecorderButton from "@/components/ui/VoiceRecorderButton";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 import { useBehavioral } from "@/hooks/useBehavioral";
@@ -226,6 +227,7 @@ export default function BehavioralAgentChat() {
             onKeyDown={e => e.key === "Enter" && sendMessage(input)}
             placeholder="Conte como você está..."
             className="flex-1 px-3 py-2.5 rounded-xl border border-border bg-card text-foreground text-xs placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
+          <VoiceRecorderButton onTranscript={(t) => setInput(prev => prev ? prev + " " + t : t)} disabled={isLoading} size="sm" />
           <button onClick={() => sendMessage(input)} disabled={!input.trim() || isLoading}
             className="w-10 h-10 rounded-xl bg-primary text-primary-foreground flex items-center justify-center disabled:opacity-50 transition-all">
             <Send className="w-4 h-4" />

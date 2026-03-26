@@ -10,6 +10,7 @@ import ChatMessage from "@/components/chat/ChatMessage";
 import ChatEmptyState from "@/components/chat/ChatEmptyState";
 import ChatLimitBanner from "@/components/acompanhado/ChatLimitBanner";
 import { ArrowLeft, Send, Sparkles, Bot, Plus, Loader2 } from "lucide-react";
+import VoiceRecorderButton from "@/components/ui/VoiceRecorderButton";
 import { toast } from "sonner";
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/nutri-coach`;
@@ -253,6 +254,7 @@ Use este contexto para personalizar completamente suas respostas.`;
             placeholder="Pergunte ao NutriCoach..."
             className="flex-1 px-4 py-3 rounded-xl border border-border bg-card text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
           />
+          <VoiceRecorderButton onTranscript={(t) => setInput(prev => prev ? prev + " " + t : t)} disabled={isLoading} />
           <button
             onClick={send}
             disabled={!input.trim() || isLoading}
