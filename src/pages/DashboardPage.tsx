@@ -503,8 +503,12 @@ const DashboardPage = () => {
     { label: "Cronobiologia", desc: "Janelas de macros por horário", path: "/chronobiology", emoji: "🕐", plan: "ON +" },
     // Comportamental
     { label: "Comportamental", desc: "Mindful eating & TCC", path: "/behavioral-nutrition", emoji: "🧠", plan: "ON +" },
+    { label: "Scan Emocional", desc: "Diagnóstico comportamental profundo", path: "/emotional-scan", emoji: "🔬", plan: "ON +" },
     { label: "Mapa de Gatilhos", desc: "Identifica padrões de autossabotagem", path: "/behavioral-triggers", emoji: "🎯", plan: "ON +" },
     { label: "Preditor de Quebra", desc: "Score de risco em tempo real", path: "/diet-break-predictor", emoji: "🚨", plan: "ON +" },
+    // Módulos especiais
+    { label: "Refeição Snap", desc: "Análise instantânea por foto, áudio ou texto", path: "/refeicao-snap", emoji: "📸", plan: "ON" },
+    { label: "Microbioma", desc: "Saúde intestinal & protocolo de fibras", path: "/microbiome", emoji: "🦠", plan: "ON +" },
     // ON+ Exclusivo
     { label: "Modo Evento", desc: "Estratégia pré/durante/pós evento", path: "/event-mode", emoji: "📅", plan: "ON +" },
     { label: "Simulador", desc: "E se eu comer...?", path: "/food-simulator", emoji: "🤔", plan: "ON +" },
