@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, Loader2, ExternalLink, MessageSquare, Bookmark, Filter, Globe2, FlaskConical, GraduationCap, Dna, Brain, Pill, Dumbbell, Clock, ChevronDown, ChevronUp } from "lucide-react";
+import VoiceRecorderButton from "@/components/ui/VoiceRecorderButton";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
@@ -224,6 +225,7 @@ const StudySearch = ({ onAskApex }: StudySearchProps) => {
         >
           <Filter className="w-4 h-4" />
         </Button>
+        <VoiceRecorderButton onTranscript={(t) => setQuery(prev => prev ? prev + " " + t : t)} disabled={loading} size="sm" />
         <Button data-search-btn onClick={search} disabled={loading || !query.trim()} className="h-10 px-5 text-xs">
           {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Buscar"}
         </Button>
