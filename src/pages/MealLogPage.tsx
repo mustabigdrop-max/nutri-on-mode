@@ -109,6 +109,7 @@ const MealLogPage = () => {
   const [emotion, setEmotion] = useState("");
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
+  const lastSaveTimestampRef = useRef(0);
   const [showMealPicker, setShowMealPicker] = useState(false);
   const [specialFlow, setSpecialFlow] = useState<"eat-out" | "free-meal" | null>(null);
   // AI states
@@ -429,7 +430,10 @@ const MealLogPage = () => {
 
   // Quick meal register
   const registerQuickMeal = async (meal: SavedMeal) => {
-    if (!user) return;
+    if (!user || saving) return;
+    const now = Date.now();
+    if (now - lastSaveTimestampRef.current < 5000) return;
+    lastSaveTimestampRef.current = now;
     setSaving(true);
     const today = getLocalDateStr();
     const { error } = await supabase.from("meal_logs").insert({
@@ -469,6 +473,14 @@ const MealLogPage = () => {
       toast.error("Adicione pelo menos um alimento.");
       return;
     }
+    // Prevent duplicate saves within 5 seconds
+    const now = Date.now();
+    if (now - lastSaveTimestampRef.current < 5000) {
+      toast.info("Refeição já está sendo salva...");
+      return;
+    }
+    if (saving) return;
+    lastSaveTimestampRef.current = now;
     setSaving(true);
 
     try {

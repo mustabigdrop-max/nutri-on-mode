@@ -69,14 +69,11 @@ export const useActivityLogs = () => {
     return { data, error };
   };
 
-  const adjustCalorieTarget = async (log: ActivityLog) => {
-    if (!profile?.get_kcal || !profile?.geb_kcal) return;
-    // Simple formula: base GET + extra burned beyond baseline (300 kcal baseline)
-    const extraBurned = Math.max(0, (log.calories_burned ?? 0) - 300);
-    const adjusted = Math.round(profile.get_kcal + extraBurned * 0.5);
-    if (adjusted !== profile.vet_kcal) {
-      await updateProfile({ vet_kcal: adjusted });
-    }
+  // NOTE: Removed permanent vet_kcal modification.
+  // The NutriSync system already adjusts daily targets based on workout type.
+  // Permanently changing vet_kcal from activity logs caused stale/incorrect daily targets.
+  const adjustCalorieTarget = async (_log: ActivityLog) => {
+    // No-op: daily adjustments are handled by NutriSync workout multipliers
   };
 
   const weekAvg = (field: keyof Pick<ActivityLog, "steps" | "calories_burned" | "sleep_hours">) => {
