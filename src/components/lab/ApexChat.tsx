@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import { Send, Microscope, Loader2, Bookmark, ExternalLink } from "lucide-react";
+import VoiceRecorderButton from "@/components/ui/VoiceRecorderButton";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
@@ -202,6 +203,7 @@ const ApexChat = ({ initialQuestion }: ApexChatProps) => {
             onKeyDown={e => e.key === "Enter" && sendMessage(input)}
             placeholder="Pergunte ao APEX..."
             className="flex-1 px-4 py-3 rounded-xl border border-border bg-card text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
+          <VoiceRecorderButton onTranscript={(t) => setInput(prev => prev ? prev + " " + t : t)} disabled={isLoading} />
           <button onClick={() => sendMessage(input)} disabled={!input.trim() || isLoading}
             className="w-12 h-12 rounded-xl bg-primary text-primary-foreground flex items-center justify-center disabled:opacity-50 transition-all">
             <Send className="w-5 h-5" />
