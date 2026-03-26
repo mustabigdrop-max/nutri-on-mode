@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect } from "react";
+import { useState, useMemo, useRef, useEffect, useCallback } from "react";
 import BottomNav from "@/components/BottomNav";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -142,6 +142,45 @@ const MealLogPage = () => {
   const [showSaveFavorite, setShowSaveFavorite] = useState(false);
   const [favoriteName, setFavoriteName] = useState("");
   const [savingFavorite, setSavingFavorite] = useState(false);
+  const draftDateRef = useRef(getLocalDateStr());
+
+  const resetDraft = useCallback((keepMealType = true) => {
+    setSelectedFoods([]);
+    setHungerLevel(5);
+    setSatietyLevel(5);
+    setEmotion("");
+    setNotes("");
+    setAiQuery("");
+    setAiComment("");
+    setAiMicronutrients([]);
+    setAiQualityScore(null);
+    setPhotoPreview(null);
+    setPhotoObservation("");
+    setVoiceTranscript("");
+    setBarcodeQuery("");
+    setSearchQuery("");
+    setEditingFoodId(null);
+    setShowSaveFavorite(false);
+    setFavoriteName("");
+    setShowMealPicker(false);
+    setSpecialFlow(null);
+    if (!keepMealType) {
+      setSelectedMealType(MEAL_TYPES[0].key);
+    }
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const currentDate = getLocalDateStr();
+      if (currentDate !== draftDateRef.current) {
+        draftDateRef.current = currentDate;
+        resetDraft();
+        toast.info("Virou o dia — iniciamos um novo registro.");
+      }
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [resetDraft]);
 
   // Load frequent meals
   useEffect(() => {
@@ -392,10 +431,11 @@ const MealLogPage = () => {
   const registerQuickMeal = async (meal: SavedMeal) => {
     if (!user) return;
     setSaving(true);
+    const today = getLocalDateStr();
     const { error } = await supabase.from("meal_logs").insert({
       user_id: user.id,
       meal_type: meal.meal_type,
-      meal_date: getLocalDateStr(),
+      meal_date: today,
       total_kcal: Math.round(meal.total_kcal),
       total_protein: Math.round(meal.total_protein),
       total_carbs: Math.round(meal.total_carbs),
@@ -405,7 +445,6 @@ const MealLogPage = () => {
     if (!error) {
       const currentXp = profile?.xp || 0;
       const newXp = currentXp + 10;
-      const today = getLocalDateStr();
       const lastDate = profile?.last_streak_date;
       const yesterday = getLocalDateStr(new Date(Date.now() - 86400000));
       let newStreak = profile?.streak_days || 0;
@@ -433,6 +472,7 @@ const MealLogPage = () => {
     setSaving(true);
 
     try {
+      const today = getLocalDateStr();
       let photoUrl: string | null = null;
       if (photoPreview) {
         try {
@@ -450,7 +490,7 @@ const MealLogPage = () => {
       const { data: insertedMeal, error } = await supabase.from("meal_logs").insert({
         user_id: user.id,
         meal_type: selectedMealType,
-        meal_date: getLocalDateStr(),
+        meal_date: today,
         total_kcal: Math.round(totals.kcal),
         total_protein: Math.round(totals.protein),
         total_carbs: Math.round(totals.carbs),
@@ -484,7 +524,10 @@ const MealLogPage = () => {
           }))
         );
         if (nutrientRows.length > 0) {
-          await supabase.from("meal_nutrients").insert(nutrientRows);
+          const { error: nutrientsError } = await supabase.from("meal_nutrients").insert(nutrientRows);
+          if (nutrientsError) {
+            console.error("[MealLog] Nutrients insert error:", JSON.stringify(nutrientsError));
+          }
         }
       }
 
@@ -493,19 +536,24 @@ const MealLogPage = () => {
       const currentLevel = profile?.level || 1;
       const newXp = currentXp + 15;
       const newLevel = Math.floor(newXp / 100) + 1;
-      const today = getLocalDateStr();
       const lastDate = profile?.last_streak_date;
       const yesterday = getLocalDateStr(new Date(Date.now() - 86400000));
       let newStreak = profile?.streak_days || 0;
       if (lastDate !== today) {
         newStreak = lastDate === yesterday ? newStreak + 1 : 1;
       }
-      await updateProfile({
-        xp: newXp,
-        level: newLevel > currentLevel ? newLevel : currentLevel,
-        streak_days: newStreak,
-        last_streak_date: today,
-      });
+      try {
+        await updateProfile({
+          xp: newXp,
+          level: newLevel > currentLevel ? newLevel : currentLevel,
+          streak_days: newStreak,
+          last_streak_date: today,
+        });
+      } catch (profileError) {
+        console.error("[MealLog] Profile update error:", profileError);
+      }
+
+      resetDraft();
       toast.success(`Refeição registrada! +15 XP 🎉${newLevel > currentLevel ? ` Level UP! → Lv.${newLevel}` : ""}`);
       navigate("/dashboard");
     } catch (e: any) {
@@ -1074,16 +1122,18 @@ const MealLogPage = () => {
 
         {/* Save button */}
         {selectedFoods.length > 0 && (
-          <motion.button initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} onClick={saveMeal} disabled={saving} className="w-full py-4 rounded-xl bg-primary text-primary-foreground font-bold text-sm glow-gold disabled:opacity-50 transition-all mb-4">
-            {saving ? (
-              <span className="flex items-center justify-center gap-2">
-                <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
-                Salvando...
-              </span>
-            ) : (
-              `Registrar ${currentMeal.label} · ${Math.round(totals.kcal)} kcal`
-            )}
-          </motion.button>
+          <div className="sticky bottom-20 z-20 -mx-4 px-4 pb-4 pt-3 bg-gradient-to-t from-background via-background/95 to-transparent">
+            <motion.button initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} onClick={saveMeal} disabled={saving} className="w-full py-4 rounded-xl bg-primary text-primary-foreground font-bold text-sm glow-gold disabled:opacity-50 transition-all shadow-lg shadow-primary/20">
+              {saving ? (
+                <span className="flex items-center justify-center gap-2">
+                  <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
+                  Salvando...
+                </span>
+              ) : (
+                `Salvar ${selectedFoods.length} item(ns) em ${currentMeal.label} · ${Math.round(totals.kcal)} kcal`
+              )}
+            </motion.button>
+          </div>
         )}
         </>
         )}
