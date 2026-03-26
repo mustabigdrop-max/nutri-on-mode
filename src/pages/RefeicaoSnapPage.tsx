@@ -88,7 +88,7 @@ export default function RefeicaoSnapPage() {
   // Fetch history
   const fetchHistory = useCallback(async () => {
     if (!user) return;
-    const { data } = await supabase.from("refeicoes_log").select("*").eq("user_id", user.id).order("created_at", { ascending: false }).limit(20);
+    const { data } = await (supabase as any).from("refeicoes_log").select("*").eq("user_id", user.id).order("created_at", { ascending: false }).limit(20);
     setHistory((data as any[]) || []);
   }, [user]);
 
@@ -135,7 +135,7 @@ export default function RefeicaoSnapPage() {
       setActiveTab("analysis");
 
       // Save to DB
-      await supabase.from("refeicoes_log").insert({
+      await (supabase as any).from("refeicoes_log").insert({
         user_id: user.id,
         tipo_input: imageBase64 ? "foto" : "texto",
         descricao_usuario: texto || a.refeicao?.descricao || "",
