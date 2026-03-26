@@ -88,12 +88,6 @@ const ChatPage = () => {
     };
 
     try {
-      const resp = await fetch(CHAT_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-        },
       // Build agent prompt with context
       let agentPrompt = localStorage.getItem("nutrion_agent_prompt") || "";
       const agentCtx = sessionStorage.getItem("agent_context");
@@ -110,7 +104,13 @@ Use este contexto para personalizar completamente suas respostas.`;
         } catch {}
       }
 
-      body: JSON.stringify({
+      const resp = await fetch(CHAT_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({
           messages: [...messages, userMsg],
           profileContext,
           mealHistoryContext,
