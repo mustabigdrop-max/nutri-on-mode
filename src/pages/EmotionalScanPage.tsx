@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
+import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Brain, Shield, Eye, Heart, Copy, Check, ChevronDown, ChevronUp, RotateCcw, Sparkles } from "lucide-react";
@@ -132,6 +133,7 @@ const PROFILE_COLORS: Record<string, string> = {
 // ─── Component ───
 export default function EmotionalScanPage() {
   const { user } = useAuth();
+  const { profile } = useProfile();
   const navigate = useNavigate();
   const [step, setStep] = useState(0); // 0-4 = blocks, 5 = loading, 6 = result
   const [data, setData] = useState<ScanData>({
@@ -185,7 +187,18 @@ export default function EmotionalScanPage() {
   const callAI = async () => {
     try {
       const { data: fnData, error: fnError } = await supabase.functions.invoke("emotional-scan", {
-        body: { scanData: data, userId: user?.id },
+        body: {
+          scanData: data,
+          userId: user?.id,
+          userProfile: profile ? {
+            goal: profile.goal || profile.objetivo_principal,
+            vet_kcal: profile.vet_kcal,
+            protein_g: profile.protein_g,
+            weight_kg: profile.weight_kg,
+            sport: profile.sport,
+            training_frequency: profile.training_frequency,
+          } : null,
+        },
       });
       if (fnError) throw fnError;
       if (fnData?.error) throw new Error(fnData.error);

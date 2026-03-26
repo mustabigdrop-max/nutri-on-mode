@@ -93,12 +93,23 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { scanData } = await req.json();
+    const { scanData, userProfile } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
-    const userPrompt = `Dados do scan emocional alimentar do usuário:
+    const profileContext = userProfile ? `
+PERFIL NUTRICIONAL DO USUÁRIO:
+- Objetivo: ${userProfile.goal || "não informado"}
+- Meta calórica: ${userProfile.vet_kcal || "não definida"}kcal/dia
+- Proteína alvo: ${userProfile.protein_g || "?"}g/dia
+- Peso: ${userProfile.weight_kg || "?"}kg
+- Esporte: ${userProfile.sport || "não pratica"}
+- Frequência de treino: ${userProfile.training_frequency || 0}x/semana
+Use esses dados para personalizar as substituições e o timing nutricional.
+` : "";
 
+    const userPrompt = `Dados do scan emocional alimentar do usuário:
+${profileContext}
 GATILHOS SELECIONADOS: ${scanData.triggers.join(", ")}
 
 PADRÃO DE FISSURA:
