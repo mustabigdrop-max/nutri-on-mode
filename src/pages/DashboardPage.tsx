@@ -328,7 +328,8 @@ const DashboardPage = () => {
     }
   }, [profile, loading]);
 
-  const fetchMeals = async () => {
+  const fetchMealsRef = useRef<() => Promise<void>>();
+  fetchMealsRef.current = async () => {
     if (!user) return;
     const today = getLocalDateStr();
     const { data } = await supabase
@@ -337,16 +338,17 @@ const DashboardPage = () => {
       .eq("user_id", user.id)
       .eq("meal_date", today)
       .order("created_at", { ascending: true });
-    if (data) {
-      setTodayMeals(data);
-      setTodayTotals({
-        kcal: data.reduce((s, m) => s + (Number(m.total_kcal) || 0), 0),
-        protein: data.reduce((s, m) => s + (Number(m.total_protein) || 0), 0),
-        carbs: data.reduce((s, m) => s + (Number(m.total_carbs) || 0), 0),
-        fat: data.reduce((s, m) => s + (Number(m.total_fat) || 0), 0),
-      });
-    }
+    const meals = data ?? [];
+    setTodayMeals(meals);
+    setTodayTotals({
+      kcal: meals.reduce((s, m) => s + (Number(m.total_kcal) || 0), 0),
+      protein: meals.reduce((s, m) => s + (Number(m.total_protein) || 0), 0),
+      carbs: meals.reduce((s, m) => s + (Number(m.total_carbs) || 0), 0),
+      fat: meals.reduce((s, m) => s + (Number(m.total_fat) || 0), 0),
+    });
   };
+
+  const fetchMeals = () => fetchMealsRef.current?.();
 
   useEffect(() => {
     fetchMeals();
@@ -356,10 +358,13 @@ const DashboardPage = () => {
       const currentDate = getLocalDateStr();
       if (currentDate !== lastDateRef.current) {
         lastDateRef.current = currentDate;
-        fetchMeals();
+        // Reset immediately before fetching to avoid showing stale data
+        setTodayMeals([]);
+        setTodayTotals({ kcal: 0, protein: 0, carbs: 0, fat: 0 });
+        fetchMealsRef.current?.();
       }
     };
-    const interval = setInterval(checkDateChange, 30000); // check every 30s
+    const interval = setInterval(checkDateChange, 10000); // check every 10s
     return () => clearInterval(interval);
   }, [user]);
 
