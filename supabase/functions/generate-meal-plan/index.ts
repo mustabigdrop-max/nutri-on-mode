@@ -104,8 +104,8 @@ SAÚDE/MANUTENÇÃO:
 - Anti-inflamatório: ômega-3, cúrcuma, gengibre
 - Fibras: 30g+ por dia
 - Minimizar ultra-processados
-` : ""}
-
+ ` : ""}
+${workoutContext}
 ═══════════════════════════════════════════
 MICRONUTRIENTES OBRIGATÓRIOS
 ═══════════════════════════════════════════
