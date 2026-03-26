@@ -22,8 +22,12 @@ const MEAL_TYPES = [
   { key: "morning_snack", label: "Lanche AM", emoji: "🍎" },
   { key: "lunch", label: "Almoço", emoji: "🍽️" },
   { key: "afternoon_snack", label: "Lanche PM", emoji: "🥤" },
+  { key: "pre_workout", label: "Pré-Treino", emoji: "💪" },
+  { key: "post_workout", label: "Pós-Treino", emoji: "🏋️" },
   { key: "dinner", label: "Jantar", emoji: "🌙" },
   { key: "supper", label: "Ceia", emoji: "🫖" },
+  { key: "snack", label: "Lanche Extra", emoji: "🥜" },
+  { key: "extra", label: "Refeição Extra", emoji: "➕" },
 ];
 
 interface FoodItem {
@@ -513,7 +517,9 @@ const MealLogPage = () => {
 
   const currentMeal = MEAL_TYPES.find(m => m.key === selectedMealType)!;
   const mealTypeIcons: Record<string, string> = {
-    breakfast: "☕", morning_snack: "🍎", lunch: "🍽️", afternoon_snack: "🥤", dinner: "🌙", supper: "🫖",
+    breakfast: "☕", morning_snack: "🍎", lunch: "🍽️", afternoon_snack: "🥤",
+    pre_workout: "💪", post_workout: "🏋️", dinner: "🌙", supper: "🫖",
+    snack: "🥜", extra: "➕",
   };
 
   return (
@@ -554,7 +560,7 @@ const MealLogPage = () => {
         <AnimatePresence>
           {showMealPicker && (
             <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden mb-4">
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {MEAL_TYPES.map(mt => (
                   <button
                     key={mt.key}

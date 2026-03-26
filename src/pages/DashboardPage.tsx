@@ -493,7 +493,9 @@ const DashboardPage = () => {
 
   const mealTypeIcons: Record<string, string> = {
     cafe_da_manha: "☕", almoco: "🍽️", jantar: "🌙", lanche: "🥤", ceia: "🫖",
-    breakfast: "☕", lunch: "🍽️", dinner: "🌙", snack: "🥤",
+    breakfast: "☕", morning_snack: "🍎", lunch: "🍽️", afternoon_snack: "🥤",
+    pre_workout: "💪", post_workout: "🏋️", dinner: "🌙", supper: "🫖",
+    snack: "🥜", extra: "➕",
   };
 
   const moodData = MOODS.find(m => m.key === todayMood);
