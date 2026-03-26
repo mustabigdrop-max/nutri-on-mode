@@ -1,0 +1,1 @@
+UPDATE profiles SET vet_kcal = get_kcal WHERE get_kcal IS NOT NULL AND vet_kcal != get_kcal;
