@@ -1,4 +1,6 @@
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import BottomNav from "@/components/BottomNav";
 import { ArrowLeft, Dna, Brain, Salad, Activity, Heart, Sparkles, Baby, Pill, Flame, MessageCircle, Stethoscope } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -146,8 +148,9 @@ Sempre personalize com base no perfil do usuário (idade, objetivo, histórico).
 
 const AgentsPage = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
 
-  const activateAgent = (agent: Agent) => {
+  const activateAgent = async (agent: Agent) => {
     if (agent.systemPrompt) {
       localStorage.setItem("nutrion_agent_prompt", agent.systemPrompt);
       localStorage.setItem("nutrion_agent_name", agent.name);
@@ -155,6 +158,40 @@ const AgentsPage = () => {
       localStorage.removeItem("nutrion_agent_prompt");
       localStorage.removeItem("nutrion_agent_name");
     }
+
+    // Load context for TCC and comportamental agents
+    if ((agent.id === "tcc" || agent.id === "comportamental") && user) {
+      try {
+        const { data: episodes } = await supabase
+          .from("emotional_episodes")
+          .select("emotion, behavior, technique_used, resisted, occurred_at, situation")
+          .eq("user_id", user.id)
+          .order("occurred_at", { ascending: false })
+          .limit(10) as any;
+
+        if (episodes && episodes.length > 0) {
+          const emotionCounts: Record<string, number> = {};
+          let resistedCount = 0;
+          episodes.forEach((ep: any) => {
+            if (ep.emotion) emotionCounts[ep.emotion] = (emotionCounts[ep.emotion] || 0) + 1;
+            if (ep.resisted) resistedCount++;
+          });
+          const topEmotion = Object.entries(emotionCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || "";
+          const winRate = episodes.length > 0 ? Math.round((resistedCount / episodes.length) * 100) : 0;
+
+          sessionStorage.setItem("agent_context", JSON.stringify({
+            agentId: agent.id,
+            episodes: episodes.slice(0, 5),
+            topEmotion,
+            winRate,
+            episodeCount: episodes.length,
+          }));
+        }
+      } catch (e) {
+        console.error("Failed to load agent context", e);
+      }
+    }
+
     navigate("/chat");
   };
 

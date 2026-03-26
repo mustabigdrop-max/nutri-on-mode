@@ -25,9 +25,22 @@ const ChatPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  // Load agent context from sessionStorage
+  const [agentContextBadge, setAgentContextBadge] = useState("");
+
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages]);
+
+  useEffect(() => {
+    const ctx = sessionStorage.getItem("agent_context");
+    if (ctx) {
+      try {
+        const parsed = JSON.parse(ctx);
+        setAgentContextBadge(`Contexto carregado: ${parsed.episodeCount || parsed.episodes?.length || 0} episódios`);
+      } catch {}
+    }
+  }, []);
 
   const profileContext = profile ? [
     `Nome: ${profile.full_name || "Usuário"}`,
@@ -75,20 +88,36 @@ const ChatPage = () => {
     };
 
     try {
+      // Build agent prompt with context
+      let agentPrompt = localStorage.getItem("nutrion_agent_prompt") || "";
+      const agentCtx = sessionStorage.getItem("agent_context");
+      if (agentCtx) {
+        try {
+          const ctx = JSON.parse(agentCtx);
+          if (ctx.episodes && ctx.episodes.length > 0) {
+            agentPrompt += `\n\nCONTEXTO REAL DO USUÁRIO:
+Este usuário teve ${ctx.episodes.length} episódios comportamentais recentes.
+Top emoção: ${ctx.topEmotion}. Win rate: ${ctx.winRate}%.
+Últimos episódios: ${JSON.stringify(ctx.episodes.slice(0, 3))}.
+Use este contexto para personalizar completamente suas respostas.`;
+          }
+        } catch {}
+      }
+
       const resp = await fetch(CHAT_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
         },
-      body: JSON.stringify({
+        body: JSON.stringify({
           messages: [...messages, userMsg],
           profileContext,
           mealHistoryContext,
           objetivo: profile?.objetivo_principal || profile?.goal || "saude_geral",
           perfilPCA: profile?.perfil_comportamental || "",
           perfilComportamental: profile?.perfil_comportamental || "",
-          agentSystemPrompt: localStorage.getItem("nutrion_agent_prompt") || "",
+          agentSystemPrompt: agentPrompt,
         }),
       });
 
@@ -156,6 +185,9 @@ const ChatPage = () => {
               <div className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
               <p className="text-[10px] text-accent font-mono">Online</p>
               <span className="text-[9px] text-muted-foreground font-mono">· Comportamental · NutriSync</span>
+              {agentContextBadge && (
+                <span className="text-[8px] text-emerald-400 font-mono bg-emerald-500/10 px-1.5 py-0.5 rounded-full">{agentContextBadge}</span>
+              )}
             </div>
           </div>
         </div>

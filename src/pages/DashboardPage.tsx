@@ -23,6 +23,8 @@ import MoodCheckinModal, { type MoodType, MOODS } from "@/components/dashboard/M
 import MuscleStateCard from "@/components/dashboard/MuscleStateCard";
 import NutrientTimingCard from "@/components/dashboard/NutrientTimingCard";
 import BiologicalAgeCard from "@/components/dashboard/BiologicalAgeCard";
+import EmotionalWinRateCard from "@/components/dashboard/EmotionalWinRateCard";
+import SosHungerInterceptor from "@/components/dashboard/SosHungerInterceptor";
 import {
   ObjectiveBadge, getRingLabel, getScoreLabel,
   getPredictiveAlert, getHeaderSubtitle, getChildDashboardGreeting,
@@ -907,11 +909,12 @@ const DashboardPage = () => {
           )}
         </motion.div>
 
-        {/* Muscle State + Nutrient Timing + Biological Age Cards */}
+        {/* Muscle State + Nutrient Timing + Biological Age + Win Rate Cards */}
         <div className="grid grid-cols-1 gap-3 mb-4">
           <MuscleStateCard />
           <NutrientTimingCard />
           <BiologicalAgeCard />
+          <EmotionalWinRateCard />
         </div>
 
 
@@ -997,6 +1000,7 @@ const DashboardPage = () => {
         </motion.div>
       </div>
 
+      <SosHungerInterceptor />
       <BottomNav />
     </div>
   );
