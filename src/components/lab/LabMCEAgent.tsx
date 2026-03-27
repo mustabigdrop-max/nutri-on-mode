@@ -27,6 +27,17 @@ const QUICK_PROMPTS = [
   "Creatina tem evidência forte pra performance?",
 ];
 
+const QUICK_ACTIONS = [
+  { emoji: "🧠", label: "Diagnóstico de Identidade", prompt: "Quero fazer o diagnóstico completo de identidade alimentar. Me guie pelas 5 perguntas do framework MCE." },
+  { emoji: "🔄", label: "Mapear Habit Loop", prompt: "Me ajuda a mapear meu Habit Loop alimentar completo: CUE → ROTINA → RECOMPENSA. Vamos identificar o que realmente dispara meus comportamentos." },
+  { emoji: "⚡", label: "Implementation Intention", prompt: "Quero criar 3 implementation intentions concretas para os meus principais gatilhos alimentares desta semana." },
+  { emoji: "📊", label: "Análise Semanal MCE", prompt: "Faz minha análise semanal MCE completa: evidências de identidade, padrões de CUE detectados, e define o foco comportamental da próxima semana." },
+  { emoji: "🛡️", label: "Plano Anti-Sabotagem", prompt: "Identifique meus 3 maiores pontos de sabotagem alimentar e monte um plano de prevenção com rotinas substitutas para cada um." },
+  { emoji: "🎯", label: "Design de Ambiente", prompt: "Me ajude a redesenhar meu ambiente usando os 4 princípios de James Clear (óbvio, atraente, fácil, satisfatório) aplicados à minha alimentação." },
+  { emoji: "💬", label: "Coaching de Crise", prompt: "Estou prestes a sair do protocolo agora. Me ajuda a processar o que estou sentindo e tomar uma decisão consciente." },
+  { emoji: "🔬", label: "Evidência Científica", prompt: "Quero entender a ciência por trás do MCE: quais estudos validam essa abordagem comportamental para nutrição?" },
+];
+
 const LabMCEAgent = ({ onAskApex }: LabMCEAgentProps) => {
   const { user } = useAuth();
   const { profile } = useProfile();
