@@ -70,6 +70,9 @@ import AgentsPage from "./pages/AgentsPage";
 import BiologicalAgePage from "./pages/BiologicalAgePage";
 import EmotionalScanPage from "./pages/EmotionalScanPage";
 import RefeicaoSnapPage from "./pages/RefeicaoSnapPage";
+import AdminPartnersPage from "./pages/AdminPartnersPage";
+import PartnerDashboardPage from "./pages/PartnerDashboardPage";
+import PartnerBlockedPage from "./pages/PartnerBlockedPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -146,6 +149,9 @@ const App = () => (
             <Route path="/emotional-scan" element={<ProtectedRoute><EmotionalScanPage /></ProtectedRoute>} />
             <Route path="/refeicao-snap" element={<ProtectedRoute><RefeicaoSnapPage /></ProtectedRoute>} />
             <Route path="/convite/:token" element={<CoachInvitePage />} />
+            <Route path="/admin/partners" element={<ProtectedRoute><AdminPartnersPage /></ProtectedRoute>} />
+            <Route path="/partner" element={<ProtectedRoute><PartnerDashboardPage /></ProtectedRoute>} />
+            <Route path="/blocked" element={<PartnerBlockedPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

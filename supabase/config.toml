@@ -89,3 +89,9 @@ verify_jwt = false
 
 [functions.mce-agent]
 verify_jwt = false
+
+[functions.check-session]
+verify_jwt = false
+
+[functions.create-partner]
+verify_jwt = false
