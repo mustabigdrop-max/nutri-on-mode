@@ -86,3 +86,6 @@ verify_jwt = false
 
 [functions.protocolo-feminino]
 verify_jwt = false
+
+[functions.mce-agent]
+verify_jwt = false
