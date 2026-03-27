@@ -27,6 +27,17 @@ const QUICK_PROMPTS = [
   "Creatina tem evidência forte pra performance?",
 ];
 
+const QUICK_ACTIONS = [
+  { emoji: "🧠", label: "Diagnóstico de Identidade", prompt: "Quero fazer o diagnóstico completo de identidade alimentar. Me guie pelas 5 perguntas do framework MCE." },
+  { emoji: "🔄", label: "Mapear Habit Loop", prompt: "Me ajuda a mapear meu Habit Loop alimentar completo: CUE → ROTINA → RECOMPENSA. Vamos identificar o que realmente dispara meus comportamentos." },
+  { emoji: "⚡", label: "Implementation Intention", prompt: "Quero criar 3 implementation intentions concretas para os meus principais gatilhos alimentares desta semana." },
+  { emoji: "📊", label: "Análise Semanal MCE", prompt: "Faz minha análise semanal MCE completa: evidências de identidade, padrões de CUE detectados, e define o foco comportamental da próxima semana." },
+  { emoji: "🛡️", label: "Plano Anti-Sabotagem", prompt: "Identifique meus 3 maiores pontos de sabotagem alimentar e monte um plano de prevenção com rotinas substitutas para cada um." },
+  { emoji: "🎯", label: "Design de Ambiente", prompt: "Me ajude a redesenhar meu ambiente usando os 4 princípios de James Clear (óbvio, atraente, fácil, satisfatório) aplicados à minha alimentação." },
+  { emoji: "💬", label: "Coaching de Crise", prompt: "Estou prestes a sair do protocolo agora. Me ajuda a processar o que estou sentindo e tomar uma decisão consciente." },
+  { emoji: "🔬", label: "Evidência Científica", prompt: "Quero entender a ciência por trás do MCE: quais estudos validam essa abordagem comportamental para nutrição?" },
+];
+
 const LabMCEAgent = ({ onAskApex }: LabMCEAgentProps) => {
   const { user } = useAuth();
   const { profile } = useProfile();
@@ -92,22 +103,40 @@ const LabMCEAgent = ({ onAskApex }: LabMCEAgentProps) => {
       {/* Messages */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
         {messages.length === 0 && (
-          <div className="text-center py-8 space-y-4">
-            <Brain className="w-12 h-12 text-primary/30 mx-auto" />
-            <div className="space-y-1">
+          <div className="space-y-5 py-4">
+            <div className="text-center space-y-1">
+              <Brain className="w-10 h-10 text-primary/30 mx-auto" />
               <p className="text-sm font-semibold text-foreground">MCE Coach</p>
-              <p className="text-xs text-muted-foreground max-w-sm mx-auto">
-                Ciência comportamental aplicada à nutrição. Baseado em SDT (Deci & Ryan), Habit Loop (Duhigg), 
-                Identity-Based Habits (James Clear) e Implementation Intentions (Gollwitzer).
+              <p className="text-[11px] text-muted-foreground max-w-xs mx-auto">
+                Mindset · Comportamento · Execução — ciência comportamental aplicada à nutrição.
               </p>
             </div>
-            <div className="flex flex-wrap gap-2 justify-center max-w-md mx-auto">
-              {QUICK_PROMPTS.map((q, i) => (
-                <button key={i} onClick={() => sendMessage(q)}
-                  className="text-[11px] px-3 py-1.5 rounded-full border border-border bg-card hover:bg-primary/10 hover:border-primary/30 text-muted-foreground hover:text-foreground transition-all">
-                  {q}
-                </button>
-              ))}
+
+            {/* Quick Actions Grid */}
+            <div>
+              <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider mb-2 px-1">⚡ Ações rápidas</p>
+              <div className="grid grid-cols-2 gap-2">
+                {QUICK_ACTIONS.map((action, i) => (
+                  <button key={i} onClick={() => sendMessage(action.prompt)}
+                    className="flex items-start gap-2 p-3 rounded-xl border border-border bg-card hover:bg-primary/5 hover:border-primary/30 text-left transition-all group">
+                    <span className="text-lg mt-0.5">{action.emoji}</span>
+                    <span className="text-[11px] font-medium text-muted-foreground group-hover:text-foreground leading-tight">{action.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Quick Prompts */}
+            <div>
+              <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider mb-2 px-1">💬 Perguntas sugeridas</p>
+              <div className="flex flex-wrap gap-1.5">
+                {QUICK_PROMPTS.map((q, i) => (
+                  <button key={i} onClick={() => sendMessage(q)}
+                    className="text-[11px] px-3 py-1.5 rounded-full border border-border bg-card hover:bg-primary/10 hover:border-primary/30 text-muted-foreground hover:text-foreground transition-all">
+                    {q}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         )}
