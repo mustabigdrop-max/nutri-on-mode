@@ -138,6 +138,7 @@ const LabMCEAgent = ({ onAskApex }: LabMCEAgentProps) => {
                 ))}
               </div>
             </div>
+          </div>
         )}
 
         {messages.map((msg, i) => (
