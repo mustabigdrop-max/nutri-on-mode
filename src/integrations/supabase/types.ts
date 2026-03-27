@@ -1446,6 +1446,41 @@ export type Database = {
         }
         Relationships: []
       }
+      commissions: {
+        Row: {
+          amount: number | null
+          client_name: string | null
+          created_at: string | null
+          id: string
+          partner_id: string | null
+          plan_purchased: string | null
+        }
+        Insert: {
+          amount?: number | null
+          client_name?: string | null
+          created_at?: string | null
+          id?: string
+          partner_id?: string | null
+          plan_purchased?: string | null
+        }
+        Update: {
+          amount?: number | null
+          client_name?: string | null
+          created_at?: string | null
+          id?: string
+          partner_id?: string | null
+          plan_purchased?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "commissions_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       community_groups: {
         Row: {
           created_at: string
@@ -3317,6 +3352,89 @@ export type Database = {
         }
         Relationships: []
       }
+      partner_sessions: {
+        Row: {
+          created_at: string | null
+          device_info: string | null
+          id: string
+          ip_address: string | null
+          last_active: string | null
+          partner_id: string | null
+          session_token: string
+        }
+        Insert: {
+          created_at?: string | null
+          device_info?: string | null
+          id?: string
+          ip_address?: string | null
+          last_active?: string | null
+          partner_id?: string | null
+          session_token: string
+        }
+        Update: {
+          created_at?: string | null
+          device_info?: string | null
+          id?: string
+          ip_address?: string | null
+          last_active?: string | null
+          partner_id?: string | null
+          session_token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partner_sessions_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      partners: {
+        Row: {
+          commission_total: number | null
+          created_at: string | null
+          created_by: string | null
+          email: string
+          full_name: string
+          id: string
+          internal_note: string | null
+          modules: string[] | null
+          plan: string | null
+          referral_count: number | null
+          status: string | null
+          user_id: string | null
+        }
+        Insert: {
+          commission_total?: number | null
+          created_at?: string | null
+          created_by?: string | null
+          email: string
+          full_name: string
+          id?: string
+          internal_note?: string | null
+          modules?: string[] | null
+          plan?: string | null
+          referral_count?: number | null
+          status?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          commission_total?: number | null
+          created_at?: string | null
+          created_by?: string | null
+          email?: string
+          full_name?: string
+          id?: string
+          internal_note?: string | null
+          modules?: string[] | null
+          plan?: string | null
+          referral_count?: number | null
+          status?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       peak_week_plans: {
         Row: {
           created_at: string | null
@@ -4019,6 +4137,44 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      session_alerts: {
+        Row: {
+          action_taken: string | null
+          created_at: string | null
+          id: string
+          ips: string[] | null
+          partner_id: string | null
+          partner_name: string | null
+          sessions_count: number | null
+        }
+        Insert: {
+          action_taken?: string | null
+          created_at?: string | null
+          id?: string
+          ips?: string[] | null
+          partner_id?: string | null
+          partner_name?: string | null
+          sessions_count?: number | null
+        }
+        Update: {
+          action_taken?: string | null
+          created_at?: string | null
+          id?: string
+          ips?: string[] | null
+          partner_id?: string | null
+          partner_name?: string | null
+          sessions_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_alerts_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       special_events: {
         Row: {
