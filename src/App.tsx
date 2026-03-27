@@ -65,6 +65,7 @@ import WeightAdaptivePage from "./pages/WeightAdaptivePage";
 import CoachInvitePage from "./pages/CoachInvitePage";
 import LabPage from "./pages/LabPage";
 import AdminApexCoachPage from "./pages/AdminApexCoachPage";
+import AdminDashboardPage from "./pages/AdminDashboardPage";
 import ExerciseSelectorPage from "./pages/ExerciseSelectorPage";
 import AgentsPage from "./pages/AgentsPage";
 import BiologicalAgePage from "./pages/BiologicalAgePage";
@@ -145,6 +146,7 @@ const App = () => (
             <Route path="/weight-adaptive" element={<ProtectedRoute><WeightAdaptivePage /></ProtectedRoute>} />
             <Route path="/biological-age" element={<ProtectedRoute><BiologicalAgePage /></ProtectedRoute>} />
             <Route path="/lab" element={<ProtectedRoute><LabPage /></ProtectedRoute>} />
+            <Route path="/admin" element={<ProtectedRoute><AdminDashboardPage /></ProtectedRoute>} />
             <Route path="/admin/apex-coach" element={<ProtectedRoute><AdminApexCoachPage /></ProtectedRoute>} />
             <Route path="/emotional-scan" element={<ProtectedRoute><EmotionalScanPage /></ProtectedRoute>} />
             <Route path="/refeicao-snap" element={<ProtectedRoute><RefeicaoSnapPage /></ProtectedRoute>} />
