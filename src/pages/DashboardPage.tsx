@@ -529,6 +529,9 @@ const DashboardPage = () => {
     { label: "Wearables", desc: "Passos, sono & atividade", path: "/wearables", emoji: "⌚", plan: "ON +" },
     { label: "Perfil", desc: "Seus dados & metas", path: "/profile", emoji: "👤", plan: "free" },
     { label: "Configurações", desc: "Recalcular VET & macros", path: "/settings", emoji: "⚙️", plan: "free" },
+    // Admin & Parceiro
+    { label: "Painel Admin", desc: "Gerenciar parceiros e sistema", path: "/admin", emoji: "🛡️", plan: "free" },
+    { label: "Painel Parceiro", desc: "Seus módulos e comissões", path: "/partner", emoji: "🤝", plan: "free" },
   ];
 
   const macros = [
