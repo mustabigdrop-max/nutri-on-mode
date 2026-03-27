@@ -506,6 +506,7 @@ const DashboardPage = () => {
     { label: "NutriSync", desc: "Treino + nutrição em tempo real", path: "/nutrisync", emoji: "⚡", plan: "ON" },
     { label: "Histórico Treinos", desc: "Consistência & calorias ajustadas", path: "/workout-history", emoji: "🏋️", plan: "ON" },
     { label: "Protocolo Refeed", desc: "Refeed e diet break científicos", path: "/refeed-protocol", emoji: "🔄", plan: "ON +" },
+    { label: "Nutrição Sport", desc: "Periodização nutricional para atletas", path: "/nutricao-sport", emoji: "🏅", plan: "ON +" },
     // Cronobiologia
     { label: "Nutrição Circadiana", desc: "Plano por relógio biológico", path: "/circadian", emoji: "🌅", plan: "ON +" },
     { label: "Cronobiologia", desc: "Janelas de macros por horário", path: "/chronobiology", emoji: "🕐", plan: "ON +" },
