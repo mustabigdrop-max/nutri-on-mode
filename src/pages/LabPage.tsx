@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import BottomNav from "@/components/BottomNav";
-import { Microscope, Bot, BookOpen, Search, FileText, Leaf, Bug, Shield, Zap, Dumbbell, Apple, HeartPulse, Syringe, Activity, Target, GraduationCap } from "lucide-react";
+import { Microscope, Bot, BookOpen, Search, FileText, Leaf, Bug, Shield, Zap, Dumbbell, Apple, HeartPulse, Syringe, Activity, Target, GraduationCap, Brain } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ApexChat from "@/components/lab/ApexChat";
 import ProtocolLibrary from "@/components/lab/ProtocolLibrary";
@@ -18,6 +18,7 @@ import LabPeptideLibrary from "@/components/lab/LabPeptideLibrary";
 import LabCardioMaster from "@/components/lab/LabCardioMaster";
 import ExerciseSelector from "@/components/workout/ExerciseSelector";
 import LabProTraining from "@/components/lab/LabProTraining";
+import LabMCEAgent from "@/components/lab/LabMCEAgent";
 
 const LabPage = () => {
   const [tab, setTab] = useState("apex");
@@ -68,6 +69,9 @@ const LabPage = () => {
               <TabsTrigger value="apex" className="flex-1 text-xs gap-1 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
                 <Bot className="w-3.5 h-3.5" /> APEX
               </TabsTrigger>
+              <TabsTrigger value="mce" className="flex-1 text-xs gap-1 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
+                <Brain className="w-3.5 h-3.5" /> MCE
+              </TabsTrigger>
               <TabsTrigger value="protocols" className="flex-1 text-xs gap-1 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
                 <BookOpen className="w-3.5 h-3.5" /> Protocolos
               </TabsTrigger>
@@ -114,6 +118,9 @@ const LabPage = () => {
 
             <TabsContent value="apex" className="flex-1 min-h-0 mt-0">
               <ApexChat initialQuestion={initialQuestion} />
+            </TabsContent>
+            <TabsContent value="mce" className="flex-1 min-h-0 mt-0">
+              <LabMCEAgent onAskApex={handleAskApex} />
             </TabsContent>
             <TabsContent value="protocols" className="flex-1 overflow-y-auto px-4 py-4 mt-0">
               <ProtocolLibrary onAskApex={handleAskApex} />
