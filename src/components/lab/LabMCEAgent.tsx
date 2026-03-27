@@ -103,21 +103,42 @@ const LabMCEAgent = ({ onAskApex }: LabMCEAgentProps) => {
       {/* Messages */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
         {messages.length === 0 && (
-          <div className="text-center py-8 space-y-4">
-            <Brain className="w-12 h-12 text-primary/30 mx-auto" />
-            <div className="space-y-1">
+          <div className="space-y-5 py-4">
+            <div className="text-center space-y-1">
+              <Brain className="w-10 h-10 text-primary/30 mx-auto" />
               <p className="text-sm font-semibold text-foreground">MCE Coach</p>
-              <p className="text-xs text-muted-foreground max-w-sm mx-auto">
-                Ciência comportamental aplicada à nutrição. Baseado em SDT (Deci & Ryan), Habit Loop (Duhigg), 
-                Identity-Based Habits (James Clear) e Implementation Intentions (Gollwitzer).
+              <p className="text-[11px] text-muted-foreground max-w-xs mx-auto">
+                Mindset · Comportamento · Execução — ciência comportamental aplicada à nutrição.
               </p>
             </div>
-            <div className="flex flex-wrap gap-2 justify-center max-w-md mx-auto">
-              {QUICK_PROMPTS.map((q, i) => (
-                <button key={i} onClick={() => sendMessage(q)}
-                  className="text-[11px] px-3 py-1.5 rounded-full border border-border bg-card hover:bg-primary/10 hover:border-primary/30 text-muted-foreground hover:text-foreground transition-all">
-                  {q}
-                </button>
+
+            {/* Quick Actions Grid */}
+            <div>
+              <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider mb-2 px-1">⚡ Ações rápidas</p>
+              <div className="grid grid-cols-2 gap-2">
+                {QUICK_ACTIONS.map((action, i) => (
+                  <button key={i} onClick={() => sendMessage(action.prompt)}
+                    className="flex items-start gap-2 p-3 rounded-xl border border-border bg-card hover:bg-primary/5 hover:border-primary/30 text-left transition-all group">
+                    <span className="text-lg mt-0.5">{action.emoji}</span>
+                    <span className="text-[11px] font-medium text-muted-foreground group-hover:text-foreground leading-tight">{action.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Quick Prompts */}
+            <div>
+              <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider mb-2 px-1">💬 Perguntas sugeridas</p>
+              <div className="flex flex-wrap gap-1.5">
+                {QUICK_PROMPTS.map((q, i) => (
+                  <button key={i} onClick={() => sendMessage(q)}
+                    className="text-[11px] px-3 py-1.5 rounded-full border border-border bg-card hover:bg-primary/10 hover:border-primary/30 text-muted-foreground hover:text-foreground transition-all">
+                    {q}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
               ))}
             </div>
           </div>
