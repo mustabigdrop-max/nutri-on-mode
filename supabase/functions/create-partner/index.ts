@@ -8,7 +8,7 @@ const corsHeaders = {
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response("ok", { headers: corsHeaders });
   }
 
   try {
@@ -16,39 +16,39 @@ Deno.serve(async (req) => {
     if (!authHeader?.startsWith("Bearer ")) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
-        headers: corsHeaders,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const supabaseAdmin = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
-    );
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
 
-    // Verify caller is admin using getUser
-    const anonClient = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_ANON_KEY")!,
-      { global: { headers: { Authorization: authHeader } } }
-    );
-    const { data: { user: callerUser }, error: userErr } = await anonClient.auth.getUser();
+    // User client to get caller identity
+    const userClient = createClient(supabaseUrl, anonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const { data: { user: callerUser }, error: userErr } = await userClient.auth.getUser();
     if (userErr || !callerUser) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
-        headers: corsHeaders,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-    const callerId = callerUser.id;
 
-    const { data: roles } = await supabaseAdmin
+    // Admin client for privileged operations
+    const adminClient = createClient(supabaseUrl, serviceRoleKey);
+
+    // Verify caller is admin
+    const { data: roles } = await adminClient
       .from("user_roles")
       .select("role")
-      .eq("user_id", callerId);
+      .eq("user_id", callerUser.id);
 
     if (!roles?.some((r: any) => r.role === "admin")) {
       return new Response(JSON.stringify({ error: "Forbidden" }), {
         status: 403,
-        headers: corsHeaders,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
@@ -58,13 +58,13 @@ Deno.serve(async (req) => {
     if (!email || !password || !full_name) {
       return new Response(
         JSON.stringify({ error: "email, password e full_name são obrigatórios" }),
-        { status: 400, headers: corsHeaders }
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
     // Create auth user
     const { data: newUser, error: createErr } =
-      await supabaseAdmin.auth.admin.createUser({
+      await adminClient.auth.admin.createUser({
         email,
         password,
         email_confirm: true,
@@ -73,12 +73,12 @@ Deno.serve(async (req) => {
     if (createErr) {
       return new Response(JSON.stringify({ error: createErr.message }), {
         status: 400,
-        headers: corsHeaders,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
     // Insert partner record
-    const { error: insertErr } = await supabaseAdmin.from("partners").insert({
+    const { error: insertErr } = await adminClient.from("partners").insert({
       user_id: newUser.user.id,
       full_name,
       email,
@@ -91,7 +91,7 @@ Deno.serve(async (req) => {
     if (insertErr) {
       return new Response(JSON.stringify({ error: insertErr.message }), {
         status: 500,
-        headers: corsHeaders,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
