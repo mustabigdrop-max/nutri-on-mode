@@ -8,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { getLocalDateStr, getLocalDayBounds } from "@/lib/utils";
 import { useWaterLogs } from "@/hooks/useWaterLogs";
 import { usePlanGate } from "@/hooks/usePlanGate";
-import { useWorkoutSchedule, getWorkoutAdjustment, WORKOUT_TYPES, type WorkoutType } from "@/hooks/useWorkoutSchedule";
+import { useWorkoutSchedule, getWorkoutAdjustment, combineAdjustments, WORKOUT_TYPES, type WorkoutType } from "@/hooks/useWorkoutSchedule";
 import TrialBanner from "@/components/dashboard/TrialBanner";
 import ReengagementPopup from "@/components/dashboard/ReengagementPopup";
 import UpgradeModal from "@/components/landing/UpgradeModal";
@@ -426,12 +426,13 @@ const DashboardPage = () => {
   const baseCarbs = profile?.carbs_g || 250;
   const baseFat = profile?.fat_g || 65;
 
-  // NutriSync: adjust targets based on today's workout
+  // NutriSync: adjust targets based on ALL today's workouts (combined)
   const todayWorkout = getTodayWorkout();
+  const todayAllWorkouts = getTodayWorkouts();
   const workoutAdj = useMemo(() => {
-    const wType = (todayWorkout?.workout_type || "rest") as WorkoutType;
-    return getWorkoutAdjustment(wType, weightKg);
-  }, [todayWorkout, weightKg]);
+    if (todayAllWorkouts.length === 0) return getWorkoutAdjustment("rest" as WorkoutType, weightKg);
+    return combineAdjustments(todayAllWorkouts, weightKg);
+  }, [todayAllWorkouts, weightKg]);
 
   const kcalTarget = Math.round(baseKcal * workoutAdj.kcalMultiplier);
   const proteinTarget = Math.round(workoutAdj.proteinPerKg * weightKg);
