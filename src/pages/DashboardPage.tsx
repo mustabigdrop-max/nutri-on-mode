@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
+import { usePartner } from "@/hooks/usePartner";
 import { supabase } from "@/integrations/supabase/client";
 import { getLocalDateStr, getLocalDayBounds } from "@/lib/utils";
 import { useWaterLogs } from "@/hooks/useWaterLogs";
@@ -317,6 +318,7 @@ const DashboardPage = () => {
   const [todayMood, setTodayMood] = useState<MoodType | null>(null);
   const { todayLog: waterLog, addWater } = useWaterLogs();
   const { hasAccess, plan } = usePlanGate();
+  const { partner, isAdmin } = usePartner();
   const { getTodayWorkout, getTodayWorkouts, getNextRestDay, getWorkoutsForDay, todayLog: workoutLog } = useWorkoutSchedule();
   const [upgradeModal, setUpgradeModal] = useState<{ open: boolean; feature: string }>({ open: false, feature: "" });
   const waterMl = waterLog?.ml_total ?? 0;
@@ -533,6 +535,12 @@ const DashboardPage = () => {
     { label: "Painel Admin", desc: "Gerenciar parceiros e sistema", path: "/admin", emoji: "🛡️", plan: "free" },
     { label: "Painel Parceiro", desc: "Seus módulos e comissões", path: "/partner", emoji: "🤝", plan: "free" },
   ];
+
+  const visibleGridItems = gridItems.filter((item) => {
+    if (item.path === "/admin") return isAdmin;
+    if (item.path === "/partner") return Boolean(partner);
+    return true;
+  });
 
   const macros = [
     { label: "Proteína", value: todayTotals.protein, target: proteinTarget, unit: "g", percent: protPercent, colorFrom: "from-primary", colorTo: "to-gold-glow", icon: "💪" },
@@ -836,6 +844,47 @@ const DashboardPage = () => {
           </button>
         </motion.div>
 
+        {(isAdmin || partner) && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.9 }}
+            className="mb-4 grid grid-cols-1 gap-2"
+          >
+            {isAdmin && (
+              <button
+                onClick={() => navigate("/admin")}
+                className="w-full flex items-center gap-3 rounded-xl border border-primary/30 bg-primary/10 p-4 text-left transition-all hover:border-primary/50 hover:bg-primary/15"
+              >
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/15 text-xl">
+                  🛡️
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-bold text-foreground">Painel Admin</p>
+                  <p className="text-[11px] text-muted-foreground">Gerenciar parceiros, acessos e sistema</p>
+                </div>
+                <ChevronRight className="h-4 w-4 text-primary" />
+              </button>
+            )}
+
+            {partner && (
+              <button
+                onClick={() => navigate("/partner")}
+                className="w-full flex items-center gap-3 rounded-xl border border-accent/30 bg-accent/10 p-4 text-left transition-all hover:border-accent/50 hover:bg-accent/15"
+              >
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent/15 text-xl">
+                  🤝
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-bold text-foreground">Painel Parceiro</p>
+                  <p className="text-[11px] text-muted-foreground">Ver módulos liberados e comissões</p>
+                </div>
+                <ChevronRight className="h-4 w-4 text-accent" />
+              </button>
+            )}
+          </motion.div>
+        )}
+
         {/* Upgrade Modal */}
         <UpgradeModal
           open={upgradeModal.open}
@@ -980,15 +1029,15 @@ const DashboardPage = () => {
             <div className="flex items-center gap-2">
               <span className="text-[9px] font-mono text-muted-foreground">
                 {(() => {
-                  const allItems = gridItems;
+                  const allItems = visibleGridItems;
                   const unlocked = allItems.filter(it => hasAccess(it.plan)).length;
                   return `${unlocked}/${allItems.length} ativas`;
                 })()}
               </span>
             </div>
           </div>
-          <div className="grid grid-cols-3 gap-px bg-[#14142a] rounded-2xl overflow-hidden">
-            {gridItems.map((item, i) => {
+          <div className="grid grid-cols-3 gap-px rounded-2xl overflow-hidden bg-border/60">
+            {visibleGridItems.map((item, i) => {
               const unlocked = hasAccess(item.plan);
               const planBadge = PLAN_BADGE[item.plan];
               return (
