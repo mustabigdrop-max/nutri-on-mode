@@ -161,7 +161,7 @@ Deno.serve(async (req) => {
     }
 
     const { error: insertErr } = await adminClient.from("partners").insert({
-      user_id: newUser.user.id,
+      user_id: userId,
       full_name,
       email: normalizedEmail,
       plan: plan || "on_plus",
