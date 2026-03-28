@@ -175,7 +175,6 @@ Deno.serve(async (req) => {
 
     if (insertErr) {
       console.error("create-partner partner insert error", insertErr);
-      await adminClient.auth.admin.deleteUser(newUser.user.id);
       return new Response(JSON.stringify({ error: insertErr.message }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -183,7 +182,7 @@ Deno.serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ success: true, user_id: newUser.user.id }),
+      JSON.stringify({ success: true, user_id: userId }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
