@@ -118,26 +118,50 @@ Deno.serve(async (req) => {
       });
     }
 
+    let userId: string;
+
     const { data: newUser, error: createErr } =
       await adminClient.auth.admin.createUser({
         email: normalizedEmail,
         password,
         email_confirm: true,
-        user_metadata: {
-          full_name,
-        },
+        user_metadata: { full_name },
       });
 
     if (createErr) {
-      console.error("create-partner auth create error", createErr);
-      return new Response(JSON.stringify({ error: createErr.message }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      if (createErr.message?.includes("already been registered")) {
+        // User exists in auth — find their ID and reuse
+        const { data: listData, error: listErr } = await adminClient.auth.admin.listUsers();
+        if (listErr) {
+          console.error("create-partner list users error", listErr);
+          return new Response(JSON.stringify({ error: "Erro ao buscar usuário existente" }), {
+            status: 500,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        const existingUser = listData.users.find(
+          (u: any) => u.email?.toLowerCase() === normalizedEmail
+        );
+        if (!existingUser) {
+          return new Response(JSON.stringify({ error: "Usuário existe mas não foi encontrado" }), {
+            status: 404,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        userId = existingUser.id;
+      } else {
+        console.error("create-partner auth create error", createErr);
+        return new Response(JSON.stringify({ error: createErr.message }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    } else {
+      userId = newUser.user.id;
     }
 
     const { error: insertErr } = await adminClient.from("partners").insert({
-      user_id: newUser.user.id,
+      user_id: userId,
       full_name,
       email: normalizedEmail,
       plan: plan || "on_plus",
@@ -151,7 +175,6 @@ Deno.serve(async (req) => {
 
     if (insertErr) {
       console.error("create-partner partner insert error", insertErr);
-      await adminClient.auth.admin.deleteUser(newUser.user.id);
       return new Response(JSON.stringify({ error: insertErr.message }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -159,7 +182,7 @@ Deno.serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ success: true, user_id: newUser.user.id }),
+      JSON.stringify({ success: true, user_id: userId }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
