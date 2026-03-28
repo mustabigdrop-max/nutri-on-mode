@@ -64,6 +64,7 @@ const ApexChat = ({ initialQuestion }: ApexChatProps) => {
           question: text.trim(),
           profileContext,
           history: messages.slice(-6),
+          coachMode: true,
         },
       });
 
