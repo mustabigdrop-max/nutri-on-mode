@@ -426,12 +426,13 @@ const DashboardPage = () => {
   const baseCarbs = profile?.carbs_g || 250;
   const baseFat = profile?.fat_g || 65;
 
-  // NutriSync: adjust targets based on today's workout
+  // NutriSync: adjust targets based on ALL today's workouts (combined)
   const todayWorkout = getTodayWorkout();
+  const todayAllWorkouts = getTodayWorkouts();
   const workoutAdj = useMemo(() => {
-    const wType = (todayWorkout?.workout_type || "rest") as WorkoutType;
-    return getWorkoutAdjustment(wType, weightKg);
-  }, [todayWorkout, weightKg]);
+    if (todayAllWorkouts.length === 0) return getWorkoutAdjustment("rest" as WorkoutType, weightKg);
+    return combineAdjustments(todayAllWorkouts, weightKg);
+  }, [todayAllWorkouts, weightKg]);
 
   const kcalTarget = Math.round(baseKcal * workoutAdj.kcalMultiplier);
   const proteinTarget = Math.round(workoutAdj.proteinPerKg * weightKg);
