@@ -95,13 +95,14 @@ export default function AdminPartnersPage() {
         body: { email: newEmail, password: newPassword, full_name: newName, plan: newPlan, modules: newModules, internal_note: newNote, created_by: user?.id },
       });
       if (error) throw error;
+      if (data?.error) throw new Error(data.error);
       toast.success("Parceiro cadastrado com sucesso!");
       setNewName(""); setNewEmail(""); setNewPassword(""); setNewNote("");
       setNewModules(["pca", "protocolo_atleta", "nutricao_sport", "cardio_on"]);
       loadData();
       setTab("parceiros");
     } catch (err: any) {
-      toast.error(err.message || "Erro ao criar parceiro");
+      toast.error(err?.message || err?.context?.error || "Erro ao criar parceiro");
     } finally {
       setCreating(false);
     }

@@ -1,10 +1,20 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { z } from "npm:zod";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
+
+const CreatePartnerSchema = z.object({
+  email: z.string().trim().email(),
+  password: z.string().min(8, "A senha deve ter pelo menos 8 caracteres"),
+  full_name: z.string().trim().min(2, "Informe o nome completo"),
+  plan: z.string().trim().min(1).optional(),
+  modules: z.array(z.string().trim().min(1)).optional(),
+  internal_note: z.string().trim().max(2000).optional().nullable(),
+});
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -23,27 +33,41 @@ Deno.serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const token = authHeader.replace("Bearer ", "");
 
-    // User client to get caller identity
     const userClient = createClient(supabaseUrl, anonKey, {
       global: { headers: { Authorization: authHeader } },
     });
-    const { data: { user: callerUser }, error: userErr } = await userClient.auth.getUser();
-    if (userErr || !callerUser) {
+
+    const {
+      data: claimsData,
+      error: claimsError,
+    } = await userClient.auth.getClaims(token);
+
+    if (claimsError || !claimsData?.claims?.sub) {
+      console.error("create-partner unauthorized", claimsError);
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Admin client for privileged operations
+    const callerUserId = claimsData.claims.sub;
+
     const adminClient = createClient(supabaseUrl, serviceRoleKey);
 
-    // Verify caller is admin
-    const { data: roles } = await adminClient
+    const { data: roles, error: rolesError } = await adminClient
       .from("user_roles")
       .select("role")
-      .eq("user_id", callerUser.id);
+      .eq("user_id", callerUserId);
+
+    if (rolesError) {
+      console.error("create-partner role lookup error", rolesError);
+      return new Response(JSON.stringify({ error: "Erro ao validar permissões" }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     if (!roles?.some((r: any) => r.role === "admin")) {
       return new Response(JSON.stringify({ error: "Forbidden" }), {
@@ -52,43 +76,82 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { email, password, full_name, plan, modules, internal_note, created_by } =
-      await req.json();
-
-    if (!email || !password || !full_name) {
+    const body = CreatePartnerSchema.safeParse(await req.json());
+    if (!body.success) {
       return new Response(
-        JSON.stringify({ error: "email, password e full_name são obrigatórios" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ error: body.error.issues[0]?.message || "Dados inválidos" }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
       );
     }
 
-    // Create auth user
+    const {
+      email,
+      password,
+      full_name,
+      plan,
+      modules,
+      internal_note,
+    } = body.data;
+    const normalizedEmail = email.trim().toLowerCase();
+
+    const { data: existingPartner, error: existingPartnerError } = await adminClient
+      .from("partners")
+      .select("id")
+      .eq("email", normalizedEmail)
+      .maybeSingle();
+
+    if (existingPartnerError) {
+      console.error("create-partner existing partner lookup error", existingPartnerError);
+      return new Response(JSON.stringify({ error: "Erro ao verificar parceiro existente" }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (existingPartner) {
+      return new Response(JSON.stringify({ error: "Já existe um parceiro com este email" }), {
+        status: 409,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const { data: newUser, error: createErr } =
       await adminClient.auth.admin.createUser({
-        email,
+        email: normalizedEmail,
         password,
         email_confirm: true,
+        user_metadata: {
+          full_name,
+        },
       });
 
     if (createErr) {
+      console.error("create-partner auth create error", createErr);
       return new Response(JSON.stringify({ error: createErr.message }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Insert partner record
     const { error: insertErr } = await adminClient.from("partners").insert({
       user_id: newUser.user.id,
       full_name,
-      email,
+      email: normalizedEmail,
       plan: plan || "on_plus",
       modules: modules || ["pca", "protocolo_atleta", "nutricao_sport", "cardio_on"],
       internal_note,
-      created_by,
+      created_by: callerUserId,
+      status: "active",
+      referral_count: 0,
+      commission_total: 0,
     });
 
     if (insertErr) {
+      console.error("create-partner partner insert error", insertErr);
+      await adminClient.auth.admin.deleteUser(newUser.user.id);
       return new Response(JSON.stringify({ error: insertErr.message }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -100,7 +163,8 @@ Deno.serve(async (req) => {
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
+    console.error("create-partner unexpected error", error);
+    return new Response(JSON.stringify({ error: error instanceof Error ? error.message : "Erro interno" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
