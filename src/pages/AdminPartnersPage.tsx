@@ -88,14 +88,29 @@ export default function AdminPartnersPage() {
       toast.error("Preencha nome, email e senha");
       return;
     }
+
     setCreating(true);
+
     try {
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+
+      if (sessionError) {
+        await supabase.auth.signOut({ scope: "local" });
+        throw new Error("Sua sessão expirou. Faça login novamente.");
+      }
+
+      if (!sessionData.session?.access_token) {
+        throw new Error("Sessão inválida. Faça login novamente.");
+      }
+
       // Use edge function to create user (admin API requires service role)
       const { data, error } = await supabase.functions.invoke("create-partner", {
         body: { email: newEmail, password: newPassword, full_name: newName, plan: newPlan, modules: newModules, internal_note: newNote, created_by: user?.id },
       });
+
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
+
       toast.success("Parceiro cadastrado com sucesso!");
       setNewName(""); setNewEmail(""); setNewPassword(""); setNewNote("");
       setNewModules(["pca", "protocolo_atleta", "nutricao_sport", "cardio_on"]);
