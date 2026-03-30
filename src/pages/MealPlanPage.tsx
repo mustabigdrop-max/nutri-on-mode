@@ -4,11 +4,12 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
+import { usePlanGate } from "@/hooks/usePlanGate";
 import { supabase } from "@/integrations/supabase/client";
 import {
   ChevronLeft, ChevronRight, Check, RefreshCw, Utensils,
   BarChart3, Plus, MessageSquare, User, ArrowLeft, ShoppingCart,
-  Sparkles, Wallet, GripVertical
+  Sparkles, Wallet, GripVertical, Send, X, Loader2
 } from "lucide-react";
 import { toast } from "sonner";
 import SubstitutionModal from "@/components/meal/SubstitutionModal";
