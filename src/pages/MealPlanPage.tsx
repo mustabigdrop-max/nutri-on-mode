@@ -4,11 +4,12 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
+import { usePlanGate } from "@/hooks/usePlanGate";
 import { supabase } from "@/integrations/supabase/client";
 import {
   ChevronLeft, ChevronRight, Check, RefreshCw, Utensils,
   BarChart3, Plus, MessageSquare, User, ArrowLeft, ShoppingCart,
-  Sparkles, Wallet, GripVertical
+  Sparkles, Wallet, GripVertical, Send, X, Loader2
 } from "lucide-react";
 import { toast } from "sonner";
 import SubstitutionModal from "@/components/meal/SubstitutionModal";
@@ -124,6 +125,7 @@ interface PlanItem {
 const MealPlanPage = () => {
   const { user } = useAuth();
   const { profile } = useProfile();
+  const { role, isCoach } = usePlanGate();
   const navigate = useNavigate();
   const [weekStart, setWeekStart] = useState(getWeekStart(new Date()));
   const [items, setItems] = useState<PlanItem[]>([]);
@@ -137,6 +139,100 @@ const MealPlanPage = () => {
   const [dragItem, setDragItem] = useState<PlanItem | null>(null);
   const [subModalItem, setSubModalItem] = useState<PlanItem | null>(null);
 
+  // Send to client state
+  const [showSendModal, setShowSendModal] = useState(false);
+  const [clients, setClients] = useState<any[]>([]);
+  const [loadingClients, setLoadingClients] = useState(false);
+  const [sendingTo, setSendingTo] = useState<string | null>(null);
+
+  const canSendToClients = role === "admin" || isCoach;
+
+  const loadClients = async () => {
+    if (!user) return;
+    setLoadingClients(true);
+    // Get coach_profile id
+    const { data: coachProf } = await supabase
+      .from("coach_profiles")
+      .select("id")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    let patientList: any[] = [];
+    if (coachProf) {
+      const { data: patients } = await supabase
+        .from("coach_patients")
+        .select("patient_user_id, status")
+        .eq("coach_id", coachProf.id)
+        .eq("status", "active");
+      if (patients) {
+        const ids = patients.map(p => p.patient_user_id);
+        if (ids.length > 0) {
+          const { data: profiles } = await supabase
+            .from("profiles")
+            .select("user_id, full_name")
+            .in("user_id", ids);
+          patientList = profiles || [];
+        }
+      }
+    }
+
+    // Also get partner clients
+    const { data: partnerData } = await supabase
+      .from("partners")
+      .select("id")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (partnerData) {
+      // Partners may have sessions with clients - but for simplicity, 
+      // we combine coach_patients approach
+    }
+
+    setClients(patientList);
+    setLoadingClients(false);
+  };
+
+  const openSendModal = () => {
+    setShowSendModal(true);
+    loadClients();
+  };
+
+  const sendPlanToClient = async (clientUserId: string, clientName: string) => {
+    if (!user || items.length === 0) return;
+    setSendingTo(clientUserId);
+    try {
+      // Delete existing plan for this client for the week
+      await supabase
+        .from("meal_plan_items")
+        .delete()
+        .eq("user_id", clientUserId)
+        .eq("week_start", weekStart);
+
+      // Copy current plan items with client's user_id
+      const newItems = items.map(item => ({
+        user_id: clientUserId,
+        week_start: item.week_start,
+        day_index: item.day_index,
+        meal_type: item.meal_type,
+        food_name: item.food_name,
+        portion: item.portion,
+        kcal: item.kcal,
+        protein_g: item.protein_g,
+        carbs_g: item.carbs_g,
+        fat_g: item.fat_g,
+        confirmed: false,
+        swapped: false,
+      }));
+
+      await supabase.from("meal_plan_items").insert(newItems);
+      toast.success(`Plano enviado para ${clientName}! ✅`);
+    } catch (e: any) {
+      console.error(e);
+      toast.error("Erro ao enviar plano");
+    }
+    setSendingTo(null);
+  };
+
   const fetchPlan = async () => {
     if (!user) return;
     setLoading(true);
@@ -148,8 +244,6 @@ const MealPlanPage = () => {
     setItems((data as PlanItem[] | null) ?? []);
     setLoading(false);
   };
-
-  useEffect(() => { fetchPlan(); }, [user, weekStart]);
 
   const generateWithAI = async () => {
     if (!user || !profile) return;
@@ -612,6 +706,15 @@ const MealPlanPage = () => {
                 Lista de Compras
               </button>
             </div>
+            {canSendToClients && items.length > 0 && (
+              <button
+                onClick={openSendModal}
+                className="w-full py-2.5 mt-2 rounded-xl bg-accent/10 border border-accent/20 text-sm font-mono text-accent hover:bg-accent/20 transition-all flex items-center justify-center gap-1.5"
+              >
+                <Send className="w-3.5 h-3.5" />
+                Enviar plano para cliente
+              </button>
+            )}
           </div>
         )}
       </div>
@@ -632,6 +735,74 @@ const MealPlanPage = () => {
             onSelect={(sub) => handleSmartSubstitution(subModalItem, sub)}
             onClose={() => setSubModalItem(null)}
           />
+        )}
+      </AnimatePresence>
+
+      {/* Send to Client Modal */}
+      <AnimatePresence>
+        {showSendModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/60 flex items-end sm:items-center justify-center p-4"
+            onClick={() => setShowSendModal(false)}
+          >
+            <motion.div
+              initial={{ y: 100, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 100, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-md bg-card border border-border rounded-2xl overflow-hidden"
+            >
+              <div className="flex items-center justify-between p-4 border-b border-border">
+                <h3 className="font-bold text-foreground flex items-center gap-2">
+                  <Send className="w-4 h-4 text-primary" />
+                  Enviar plano da semana
+                </h3>
+                <button onClick={() => setShowSendModal(false)} className="text-muted-foreground hover:text-foreground">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="p-4">
+                <p className="text-xs text-muted-foreground mb-3 font-mono">
+                  Semana {formatWeekRange(weekStart)} • {items.length} refeições
+                </p>
+                {loadingClients ? (
+                  <div className="flex justify-center py-8">
+                    <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                  </div>
+                ) : clients.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-8">
+                    Nenhum cliente vinculado encontrado.
+                  </p>
+                ) : (
+                  <div className="space-y-2 max-h-72 overflow-y-auto">
+                    {clients.map(c => (
+                      <button
+                        key={c.user_id}
+                        onClick={() => sendPlanToClient(c.user_id, c.full_name || "Cliente")}
+                        disabled={sendingTo === c.user_id}
+                        className="w-full flex items-center gap-3 p-3 rounded-xl border border-border hover:border-primary/30 hover:bg-primary/5 transition-all text-left disabled:opacity-50"
+                      >
+                        <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-sm">
+                          {(c.full_name || "?")[0].toUpperCase()}
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm font-semibold text-foreground">{c.full_name || "Sem nome"}</p>
+                        </div>
+                        {sendingTo === c.user_id ? (
+                          <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                        ) : (
+                          <Send className="w-4 h-4 text-muted-foreground" />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
         )}
       </AnimatePresence>
 
