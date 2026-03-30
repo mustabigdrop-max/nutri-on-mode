@@ -868,6 +868,22 @@ const DashboardPage = () => {
               </button>
             )}
 
+            {isCoach && (
+              <button
+                onClick={() => navigate("/coach-dashboard")}
+                className="w-full flex items-center gap-3 rounded-xl border border-primary/30 bg-primary/10 p-4 text-left transition-all hover:border-primary/50 hover:bg-primary/15"
+              >
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/15 text-xl">
+                  🏋️
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-bold text-foreground">Painel Coach</p>
+                  <p className="text-[11px] text-muted-foreground">Gerenciar clientes e planos</p>
+                </div>
+                <ChevronRight className="h-4 w-4 text-primary" />
+              </button>
+            )}
+
             {partner && (
               <button
                 onClick={() => navigate("/partner")}
