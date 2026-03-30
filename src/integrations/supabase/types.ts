@@ -3265,6 +3265,30 @@ export type Database = {
         }
         Relationships: []
       }
+      nexus_bio_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          role: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       nootropic_daily_logs: {
         Row: {
           adherence_score: number | null
@@ -3464,6 +3488,30 @@ export type Database = {
           id?: string
           start_date?: string
           status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      peptide_search_history: {
+        Row: {
+          created_at: string
+          id: string
+          query: string
+          result_summary: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          query: string
+          result_summary?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          query?: string
+          result_summary?: string | null
           user_id?: string
         }
         Relationships: []
