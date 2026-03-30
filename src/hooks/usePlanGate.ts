@@ -49,7 +49,7 @@ export const usePlanGate = () => {
   };
 
   const isCoachStudent = role === "aluno_coach";
-  const isCoach = role === "coach";
+  const isCoach = role === "coach" || role === "admin";
 
   return { plan, role, loading, hasAccess, isCoachStudent, isCoach, coachProfileId };
 };
