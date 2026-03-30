@@ -3427,6 +3427,7 @@ export type Database = {
           plan: string | null
           referral_count: number | null
           status: string | null
+          temp_password: string | null
           user_id: string | null
         }
         Insert: {
@@ -3441,6 +3442,7 @@ export type Database = {
           plan?: string | null
           referral_count?: number | null
           status?: string | null
+          temp_password?: string | null
           user_id?: string | null
         }
         Update: {
@@ -3455,6 +3457,7 @@ export type Database = {
           plan?: string | null
           referral_count?: number | null
           status?: string | null
+          temp_password?: string | null
           user_id?: string | null
         }
         Relationships: []

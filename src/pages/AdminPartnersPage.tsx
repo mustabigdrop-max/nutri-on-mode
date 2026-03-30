@@ -13,7 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Users, AlertTriangle, DollarSign, UserPlus, Shield, Ban, Eye, RotateCcw } from "lucide-react";
+import { Users, AlertTriangle, DollarSign, UserPlus, Shield, Ban, Eye, RotateCcw, Trash2, Key } from "lucide-react";
 
 const MODULE_OPTIONS = [
   { key: "pca", label: "PCA Assessment" },
@@ -49,6 +49,10 @@ export default function AdminPartnersPage() {
 
   // Revoke confirmation
   const [revokeTarget, setRevokeTarget] = useState<any>(null);
+  // Delete confirmation
+  const [deleteTarget, setDeleteTarget] = useState<any>(null);
+  // View password
+  const [viewPasswordPartner, setViewPasswordPartner] = useState<any>(null);
 
   useEffect(() => {
     if (isAdmin) loadData();
@@ -143,6 +147,16 @@ export default function AdminPartnersPage() {
     loadData();
   };
 
+  const deletePartner = async () => {
+    if (!deleteTarget) return;
+    await supabase.from("partner_sessions").delete().eq("partner_id", deleteTarget.id);
+    await supabase.from("commissions").delete().eq("partner_id", deleteTarget.id);
+    await supabase.from("partners").delete().eq("id", deleteTarget.id);
+    toast.success("Parceiro excluído");
+    setDeleteTarget(null);
+    loadData();
+  };
+
   const resolveAlert = async (alert: any, action: string) => {
     await supabase.from("session_alerts").update({ action_taken: action }).eq("id", alert.id);
     if (action === "blocked") {
@@ -219,9 +233,11 @@ export default function AdminPartnersPage() {
                         <td className="px-4 py-3 text-center">{statusBadge(p.status)}</td>
                         <td className="px-4 py-3 text-center">{p.referral_count || 0}</td>
                         <td className="px-4 py-3 text-center space-x-1">
-                          <Button size="sm" variant="ghost" onClick={() => setDetailPartner(p)}><Eye className="w-4 h-4" /></Button>
+                          <Button size="sm" variant="ghost" onClick={() => setDetailPartner(p)} title="Ver detalhes"><Eye className="w-4 h-4" /></Button>
+                          <Button size="sm" variant="ghost" onClick={() => setViewPasswordPartner(p)} title="Ver chave"><Key className="w-4 h-4 text-amber-500" /></Button>
                           <Button size="sm" variant="ghost" onClick={() => toggleBlock(p)}>{p.status === "blocked" ? <RotateCcw className="w-4 h-4 text-green-600" /> : <Ban className="w-4 h-4 text-red-600" />}</Button>
                           {p.status !== "revoked" && <Button size="sm" variant="ghost" onClick={() => setRevokeTarget(p)} className="text-red-600">Revogar</Button>}
+                          <Button size="sm" variant="ghost" onClick={() => setDeleteTarget(p)} title="Excluir"><Trash2 className="w-4 h-4 text-red-600" /></Button>
                         </td>
                       </tr>
                     ))}
@@ -337,6 +353,38 @@ export default function AdminPartnersPage() {
             <Button variant="outline" onClick={() => setRevokeTarget(null)}>Cancelar</Button>
             <Button variant="destructive" onClick={revokePartner}>Revogar Acesso</Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      {/* Delete Confirmation */}
+      <Dialog open={!!deleteTarget} onOpenChange={() => setDeleteTarget(null)}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Excluir parceiro</DialogTitle></DialogHeader>
+          <p className="text-sm">Tem certeza que deseja excluir permanentemente <strong>{deleteTarget?.full_name}</strong>? Esta ação não pode ser desfeita.</p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteTarget(null)}>Cancelar</Button>
+            <Button variant="destructive" onClick={deletePartner}>Excluir</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* View Password */}
+      <Dialog open={!!viewPasswordPartner} onOpenChange={() => setViewPasswordPartner(null)}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Chave de Acesso</DialogTitle></DialogHeader>
+          {viewPasswordPartner && (
+            <div className="space-y-3 text-sm">
+              <p><strong>Parceiro:</strong> {viewPasswordPartner.full_name}</p>
+              <p><strong>Email:</strong> {viewPasswordPartner.email}</p>
+              <div className="bg-muted p-3 rounded-lg">
+                <p className="text-xs text-muted-foreground mb-1">Senha temporária</p>
+                <p className="font-mono text-lg font-bold">{viewPasswordPartner.temp_password || "Não disponível"}</p>
+              </div>
+              <Button size="sm" variant="outline" onClick={() => {
+                navigator.clipboard.writeText(viewPasswordPartner.temp_password || "");
+                toast.success("Senha copiada!");
+              }}>Copiar senha</Button>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>
