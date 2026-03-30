@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -10,7 +11,7 @@ import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
 import {
   MessageCircle, BookOpen, Search, Shield, AlertTriangle,
-  Send, ChevronDown, ChevronUp, ArrowLeft, Loader2, Sparkles, ExternalLink
+  Send, ChevronDown, ChevronUp, ArrowLeft, Loader2, Sparkles, ExternalLink, Save, Trash2
 } from "lucide-react";
 import {
   peptides, protocols, dietRevolutionCards, alerts as initialAlerts,
