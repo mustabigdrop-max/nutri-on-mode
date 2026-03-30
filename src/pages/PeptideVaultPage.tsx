@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -10,7 +11,7 @@ import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
 import {
   MessageCircle, BookOpen, Search, Shield, AlertTriangle,
-  Send, ChevronDown, ChevronUp, ArrowLeft, Loader2, Sparkles, ExternalLink
+  Send, ChevronDown, ChevronUp, ArrowLeft, Loader2, Sparkles, ExternalLink, Save, Trash2
 } from "lucide-react";
 import {
   peptides, protocols, dietRevolutionCards, alerts as initialAlerts,
@@ -30,6 +31,7 @@ const tabConfig: { id: Tab; label: string; icon: React.ReactNode }[] = [
 type Msg = { role: "user" | "assistant"; content: string };
 
 export default function PeptideVaultPage() {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<Tab>("oracle");
 
@@ -37,7 +39,7 @@ export default function PeptideVaultPage() {
     <div className="min-h-screen flex flex-col" style={{ background: "#0a0f0a", fontFamily: "'DM Sans', sans-serif" }}>
       {/* Header */}
       <div className="px-4 pt-4 pb-2 flex items-center gap-3">
-        <Button variant="ghost" size="icon" onClick={() => window.history.back()} className="text-[#4ade80]">
+        <Button variant="ghost" size="icon" onClick={() => navigate("/lab")} className="text-[#4ade80]">
           <ArrowLeft className="w-5 h-5" />
         </Button>
         <div>
@@ -81,22 +83,7 @@ function OracleTab({ userId }: { userId?: string }) {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [historyLoaded, setHistoryLoaded] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!userId || historyLoaded) return;
-    (async () => {
-      const { data } = await supabase
-        .from("nexus_bio_messages")
-        .select("role, content")
-        .eq("user_id", userId)
-        .order("created_at", { ascending: true })
-        .limit(40);
-      if (data?.length) setMessages(data.map((m) => ({ role: m.role as "user" | "assistant", content: m.content })));
-      setHistoryLoaded(true);
-    })();
-  }, [userId, historyLoaded]);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
@@ -105,6 +92,21 @@ function OracleTab({ userId }: { userId?: string }) {
   const saveMsg = async (role: string, content: string) => {
     if (!userId) return;
     await supabase.from("nexus_bio_messages").insert({ user_id: userId, role, content });
+  };
+
+  const saveToNotebook = async (content: string) => {
+    if (!userId) return;
+    try {
+      await supabase.from("nexus_bio_messages").insert({ user_id: userId, role: "notebook", content });
+      toast.success("Salvo no caderno!");
+    } catch {
+      toast.error("Erro ao salvar");
+    }
+  };
+
+  const clearChat = () => {
+    setMessages([]);
+    setInput("");
   };
 
   const send = async (text: string) => {
@@ -171,6 +173,13 @@ function OracleTab({ userId }: { userId?: string }) {
 
   return (
     <div className="flex flex-col h-full">
+      {messages.length > 0 && (
+        <div className="px-4 pt-2 flex justify-end">
+          <Button variant="ghost" size="sm" onClick={clearChat} className="text-gray-500 hover:text-red-400 text-xs gap-1">
+            <Trash2 className="w-3 h-3" /> Limpar conversa
+          </Button>
+        </div>
+      )}
       <ScrollArea className="flex-1 px-4" ref={scrollRef}>
         <div className="py-4 space-y-4">
           {messages.length === 0 && (
@@ -189,14 +198,24 @@ function OracleTab({ userId }: { userId?: string }) {
           )}
           {messages.map((m, i) => (
             <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
-              <div className={`max-w-[85%] rounded-xl px-4 py-3 text-sm ${
-                m.role === "user" ? "bg-[#4ade80]/15 text-[#4ade80] border border-[#4ade80]/20" : "bg-gray-900 text-gray-200 border border-gray-800"
-              }`}>
-                {m.role === "assistant" ? (
-                  <div className="prose prose-sm prose-invert max-w-none">
-                    <ReactMarkdown>{m.content}</ReactMarkdown>
-                  </div>
-                ) : m.content}
+              <div className="flex flex-col gap-1 max-w-[85%]">
+                <div className={`rounded-xl px-4 py-3 text-sm ${
+                  m.role === "user" ? "bg-[#4ade80]/15 text-[#4ade80] border border-[#4ade80]/20" : "bg-gray-900 text-gray-200 border border-gray-800"
+                }`}>
+                  {m.role === "assistant" ? (
+                    <div className="prose prose-sm prose-invert max-w-none">
+                      <ReactMarkdown>{m.content}</ReactMarkdown>
+                    </div>
+                  ) : m.content}
+                </div>
+                {m.role === "assistant" && !loading && (
+                  <button
+                    onClick={() => saveToNotebook(m.content)}
+                    className="self-start flex items-center gap-1 text-[10px] text-gray-500 hover:text-[#4ade80] transition px-1"
+                  >
+                    <Save className="w-3 h-3" /> Salvar no caderno
+                  </button>
+                )}
               </div>
             </div>
           ))}
@@ -227,6 +246,8 @@ function OracleTab({ userId }: { userId?: string }) {
     </div>
   );
 }
+
+
 
 /* ==================== ENCYCLOPEDIA TAB ==================== */
 function EncyclopediaTab() {
@@ -369,23 +390,40 @@ function ResearchTab({ userId }: { userId?: string }) {
         )}
 
         {result && (
-          <Card className="border border-[#4ade80]/20 bg-gray-900/50">
-            <CardContent className="p-4">
-              <div className="prose prose-sm prose-invert max-w-none">
-                <ReactMarkdown>{result}</ReactMarkdown>
-              </div>
-              {citations.length > 0 && (
-                <div className="mt-4 pt-3 border-t border-gray-800 space-y-1">
-                  <p className="text-xs text-gray-500 font-medium">Fontes:</p>
-                  {citations.map((c, i) => (
-                    <a key={i} href={c} target="_blank" rel="noopener noreferrer" className="text-xs text-[#4ade80]/70 hover:text-[#4ade80] flex items-center gap-1">
-                      <ExternalLink className="w-3 h-3" /> {c}
-                    </a>
-                  ))}
-                </div>
+          <div className="space-y-3">
+            <div className="flex justify-between items-center">
+              <Button variant="ghost" size="sm" onClick={() => { setResult(""); setCitations([]); setQuery(""); }} className="text-gray-500 hover:text-red-400 text-xs gap-1">
+                <Trash2 className="w-3 h-3" /> Nova pesquisa
+              </Button>
+              {userId && (
+                <Button variant="ghost" size="sm" onClick={async () => {
+                  try {
+                    await supabase.from("nexus_bio_messages").insert({ user_id: userId, role: "notebook", content: result });
+                    toast.success("Salvo no caderno!");
+                  } catch { toast.error("Erro ao salvar"); }
+                }} className="text-gray-500 hover:text-[#4ade80] text-xs gap-1">
+                  <Save className="w-3 h-3" /> Salvar no caderno
+                </Button>
               )}
-            </CardContent>
-          </Card>
+            </div>
+            <Card className="border border-[#4ade80]/20 bg-gray-900/50">
+              <CardContent className="p-4">
+                <div className="prose prose-sm prose-invert max-w-none">
+                  <ReactMarkdown>{result}</ReactMarkdown>
+                </div>
+                {citations.length > 0 && (
+                  <div className="mt-4 pt-3 border-t border-gray-800 space-y-1">
+                    <p className="text-xs text-gray-500 font-medium">Fontes:</p>
+                    {citations.map((c, i) => (
+                      <a key={i} href={c} target="_blank" rel="noopener noreferrer" className="text-xs text-[#4ade80]/70 hover:text-[#4ade80] flex items-center gap-1">
+                        <ExternalLink className="w-3 h-3" /> {c}
+                      </a>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         )}
       </div>
     </ScrollArea>
