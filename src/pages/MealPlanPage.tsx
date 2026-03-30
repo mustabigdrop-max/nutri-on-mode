@@ -125,7 +125,7 @@ interface PlanItem {
 const MealPlanPage = () => {
   const { user } = useAuth();
   const { profile } = useProfile();
-  const { role, isAdmin, isCoach } = usePlanGate();
+  const { role, isCoach } = usePlanGate();
   const navigate = useNavigate();
   const [weekStart, setWeekStart] = useState(getWeekStart(new Date()));
   const [items, setItems] = useState<PlanItem[]>([]);
