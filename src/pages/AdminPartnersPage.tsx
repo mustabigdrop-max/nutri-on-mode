@@ -233,9 +233,11 @@ export default function AdminPartnersPage() {
                         <td className="px-4 py-3 text-center">{statusBadge(p.status)}</td>
                         <td className="px-4 py-3 text-center">{p.referral_count || 0}</td>
                         <td className="px-4 py-3 text-center space-x-1">
-                          <Button size="sm" variant="ghost" onClick={() => setDetailPartner(p)}><Eye className="w-4 h-4" /></Button>
+                          <Button size="sm" variant="ghost" onClick={() => setDetailPartner(p)} title="Ver detalhes"><Eye className="w-4 h-4" /></Button>
+                          <Button size="sm" variant="ghost" onClick={() => setViewPasswordPartner(p)} title="Ver chave"><Key className="w-4 h-4 text-amber-500" /></Button>
                           <Button size="sm" variant="ghost" onClick={() => toggleBlock(p)}>{p.status === "blocked" ? <RotateCcw className="w-4 h-4 text-green-600" /> : <Ban className="w-4 h-4 text-red-600" />}</Button>
                           {p.status !== "revoked" && <Button size="sm" variant="ghost" onClick={() => setRevokeTarget(p)} className="text-red-600">Revogar</Button>}
+                          <Button size="sm" variant="ghost" onClick={() => setDeleteTarget(p)} title="Excluir"><Trash2 className="w-4 h-4 text-red-600" /></Button>
                         </td>
                       </tr>
                     ))}
