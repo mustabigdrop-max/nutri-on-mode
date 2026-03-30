@@ -8,9 +8,56 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Send, Check, Brain, FileText, AlertTriangle, MessageSquare, User, Activity, Shield } from "lucide-react";
+import { ArrowLeft, Send, Check, Brain, FileText, AlertTriangle, MessageSquare, User, Activity, Shield, Utensils, RefreshCw, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import CoachAccessManager from "@/components/acompanhado/CoachAccessManager";
+
+const MEAL_TYPES = [
+  { key: "cafe_manha", label: "☕ Café" },
+  { key: "lanche_manha", label: "🍎 Lanche AM" },
+  { key: "almoco", label: "🍽️ Almoço" },
+  { key: "lanche_tarde", label: "🥤 Lanche PM" },
+  { key: "jantar", label: "🌙 Jantar" },
+  { key: "ceia", label: "🫖 Ceia" },
+];
+const DAY_LABELS = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
+
+function getWeekStart(date: Date): string {
+  const d = new Date(date);
+  const day = d.getDay();
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+  d.setDate(diff);
+  return d.toISOString().split("T")[0];
+}
+function addWeeks(dateStr: string, weeks: number): string {
+  const d = new Date(dateStr);
+  d.setDate(d.getDate() + weeks * 7);
+  return d.toISOString().split("T")[0];
+}
+function formatWeekRange(weekStart: string): string {
+  const start = new Date(weekStart + "T12:00:00");
+  const end = new Date(start);
+  end.setDate(end.getDate() + 6);
+  const fmt = (d: Date) => `${d.getDate().toString().padStart(2, "0")}/${(d.getMonth() + 1).toString().padStart(2, "0")}`;
+  return `${fmt(start)} – ${fmt(end)}`;
+}
+
+interface PlanItem {
+  id: string;
+  user_id: string;
+  week_start: string;
+  day_index: number;
+  meal_type: string;
+  food_name: string;
+  portion: string | null;
+  kcal: number;
+  protein_g: number;
+  carbs_g: number;
+  fat_g: number;
+  confirmed: boolean;
+  swapped: boolean;
+  original_food_name: string | null;
+}
 
 const CoachPatientDetailPage = () => {
   const { patientId } = useParams();
@@ -27,10 +74,24 @@ const CoachPatientDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
 
+  // Meal plan state
+  const [weekStart, setWeekStart] = useState(getWeekStart(new Date()));
+  const [planItems, setPlanItems] = useState<PlanItem[]>([]);
+  const [selectedDay, setSelectedDay] = useState(() => {
+    const today = new Date().getDay();
+    return today === 0 ? 6 : today - 1;
+  });
+  const [planLoading, setPlanLoading] = useState(false);
+  const [generating, setGenerating] = useState(false);
+
   useEffect(() => {
     if (!profile || !patientId) return;
     loadPatientData();
   }, [profile, patientId]);
+
+  useEffect(() => {
+    if (patientId) fetchMealPlan();
+  }, [patientId, weekStart]);
 
   const loadPatientData = async () => {
     if (!profile || !patientId) return;
@@ -51,6 +112,76 @@ const CoachPatientDetailPage = () => {
     setMealLogs(mealsRes.data || []);
     setExams(examsRes.data || []);
     setLoading(false);
+  };
+
+  const fetchMealPlan = async () => {
+    if (!patientId) return;
+    setPlanLoading(true);
+    const { data } = await supabase
+      .from("meal_plan_items")
+      .select("*")
+      .eq("user_id", patientId)
+      .eq("week_start", weekStart);
+    setPlanItems((data as PlanItem[] | null) ?? []);
+    setPlanLoading(false);
+  };
+
+  const generateMealPlanForPatient = async () => {
+    if (!patientId || !patient) return;
+    setGenerating(true);
+    try {
+      const { data: workoutData } = await supabase
+        .from("workout_schedule")
+        .select("day_of_week, workout_type, workout_time, duration_minutes, slot")
+        .eq("user_id", patientId);
+
+      const { data, error } = await supabase.functions.invoke("generate-meal-plan", {
+        body: {
+          profile: patient,
+          weekStart,
+          budgetMode: false,
+          workoutSchedule: workoutData || [],
+        },
+      });
+
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      // Delete existing plan for this patient
+      await supabase
+        .from("meal_plan_items")
+        .delete()
+        .eq("user_id", patientId)
+        .eq("week_start", weekStart);
+
+      // Insert new items with patient's user_id
+      const newItems: any[] = [];
+      for (const day of data.days) {
+        for (const meal of day.meals) {
+          newItems.push({
+            user_id: patientId,
+            week_start: weekStart,
+            day_index: day.day_index,
+            meal_type: meal.meal_type,
+            food_name: meal.food_name,
+            portion: meal.portion,
+            kcal: meal.kcal,
+            protein_g: meal.protein_g,
+            carbs_g: meal.carbs_g,
+            fat_g: meal.fat_g,
+            confirmed: false,
+            swapped: false,
+          });
+        }
+      }
+      await supabase.from("meal_plan_items").insert(newItems);
+      toast({ title: "Plano alimentar gerado! 🤖✨", description: `Semana ${formatWeekRange(weekStart)} criada para ${patient.full_name}` });
+      await fetchMealPlan();
+    } catch (e: any) {
+      console.error(e);
+      toast({ title: "Erro ao gerar plano", description: e.message, variant: "destructive" });
+    }
+    setGenerating(false);
   };
 
   const sendMessage = async () => {
@@ -84,11 +215,19 @@ const CoachPatientDetailPage = () => {
   const latestScore = scores[0]?.total_score ?? 0;
   const adherencePct = mealLogs.length > 0 ? Math.round((mealLogs.filter(m => m.confirmed).length / mealLogs.length) * 100) : 0;
 
+  const dayItems = planItems.filter(i => i.day_index === selectedDay);
+  const dayTotals = dayItems.reduce((a, i) => ({
+    kcal: a.kcal + (i.kcal || 0),
+    protein: a.protein + (i.protein_g || 0),
+    carbs: a.carbs + (i.carbs_g || 0),
+    fat: a.fat + (i.fat_g || 0),
+  }), { kcal: 0, protein: 0, carbs: 0, fat: 0 });
+
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border bg-card px-4 py-3">
         <div className="max-w-5xl mx-auto flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/coach/dashboard")}>
+          <Button variant="ghost" size="icon" onClick={() => navigate("/coach-dashboard")}>
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div className="flex-1">
@@ -105,13 +244,14 @@ const CoachPatientDetailPage = () => {
 
       <main className="max-w-5xl mx-auto p-4">
         <Tabs defaultValue="overview" className="space-y-4">
-          <TabsList className="w-full grid grid-cols-6">
-            <TabsTrigger value="overview" className="text-xs"><User className="w-3 h-3 mr-1" />Visão Geral</TabsTrigger>
+          <TabsList className="w-full grid grid-cols-7">
+            <TabsTrigger value="overview" className="text-xs"><User className="w-3 h-3 mr-1" />Geral</TabsTrigger>
+            <TabsTrigger value="mealplan" className="text-xs"><Utensils className="w-3 h-3 mr-1" />Plano</TabsTrigger>
             <TabsTrigger value="access" className="text-xs"><Shield className="w-3 h-3 mr-1" />Acesso</TabsTrigger>
             <TabsTrigger value="protocol" className="text-xs"><Brain className="w-3 h-3 mr-1" />Protocolo</TabsTrigger>
             <TabsTrigger value="exams" className="text-xs"><FileText className="w-3 h-3 mr-1" />Exames</TabsTrigger>
             <TabsTrigger value="alerts" className="text-xs"><AlertTriangle className="w-3 h-3 mr-1" />Alertas</TabsTrigger>
-            <TabsTrigger value="messages" className="text-xs"><MessageSquare className="w-3 h-3 mr-1" />Mensagens</TabsTrigger>
+            <TabsTrigger value="messages" className="text-xs"><MessageSquare className="w-3 h-3 mr-1" />Chat</TabsTrigger>
           </TabsList>
 
           {/* OVERVIEW */}
@@ -169,6 +309,138 @@ const CoachPatientDetailPage = () => {
                 <div><span className="text-muted-foreground">Streak:</span> <span className="text-foreground">{patient?.streak_days || 0} dias</span></div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* MEAL PLAN */}
+          <TabsContent value="mealplan" className="space-y-4">
+            {/* Week navigation */}
+            <div className="flex items-center justify-between">
+              <Button variant="ghost" size="icon" onClick={() => setWeekStart(addWeeks(weekStart, -1))}>
+                <ChevronLeft className="w-4 h-4" />
+              </Button>
+              <span className="text-sm font-mono text-foreground">{formatWeekRange(weekStart)}</span>
+              <Button variant="ghost" size="icon" onClick={() => setWeekStart(addWeeks(weekStart, 1))}>
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+            </div>
+
+            {/* Generate button */}
+            <Button
+              className="w-full"
+              onClick={generateMealPlanForPatient}
+              disabled={generating}
+            >
+              {generating ? (
+                <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Gerando plano com IA...</>
+              ) : (
+                <><Brain className="w-4 h-4 mr-2" /> Gerar Plano Alimentar com IA</>
+              )}
+            </Button>
+
+            {/* Patient macro targets */}
+            {patient && (
+              <Card>
+                <CardContent className="p-3">
+                  <p className="text-xs text-muted-foreground mb-2">Metas do paciente</p>
+                  <div className="grid grid-cols-4 gap-2 text-center">
+                    <div>
+                      <p className="text-lg font-bold text-foreground">{patient.vet_kcal || "—"}</p>
+                      <p className="text-[10px] text-muted-foreground">kcal</p>
+                    </div>
+                    <div>
+                      <p className="text-lg font-bold text-primary">{patient.protein_g || "—"}g</p>
+                      <p className="text-[10px] text-muted-foreground">Proteína</p>
+                    </div>
+                    <div>
+                      <p className="text-lg font-bold text-accent">{patient.carbs_g || "—"}g</p>
+                      <p className="text-[10px] text-muted-foreground">Carboidrato</p>
+                    </div>
+                    <div>
+                      <p className="text-lg font-bold text-yellow-400">{patient.fat_g || "—"}g</p>
+                      <p className="text-[10px] text-muted-foreground">Gordura</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Day selector */}
+            <div className="flex gap-1">
+              {DAY_LABELS.map((label, i) => (
+                <button
+                  key={i}
+                  onClick={() => setSelectedDay(i)}
+                  className={`flex-1 py-2 rounded-lg text-xs font-mono transition-all ${
+                    selectedDay === i
+                      ? "bg-primary text-primary-foreground font-bold"
+                      : "bg-muted text-muted-foreground hover:bg-muted/80"
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            {planLoading ? (
+              <div className="flex justify-center py-10">
+                <Loader2 className="w-6 h-6 animate-spin text-primary" />
+              </div>
+            ) : dayItems.length === 0 ? (
+              <Card>
+                <CardContent className="p-8 text-center text-muted-foreground text-sm">
+                  Nenhum plano para esta semana. Clique em "Gerar Plano Alimentar com IA" para criar.
+                </CardContent>
+              </Card>
+            ) : (
+              <>
+                {/* Day totals */}
+                <div className="grid grid-cols-4 gap-2 text-center">
+                  <div className="rounded-lg bg-muted p-2">
+                    <p className="text-sm font-bold text-foreground">{Math.round(dayTotals.kcal)}</p>
+                    <p className="text-[10px] text-muted-foreground">kcal</p>
+                  </div>
+                  <div className="rounded-lg bg-primary/10 p-2">
+                    <p className="text-sm font-bold text-primary">{Math.round(dayTotals.protein)}g</p>
+                    <p className="text-[10px] text-muted-foreground">Prot</p>
+                  </div>
+                  <div className="rounded-lg bg-accent/10 p-2">
+                    <p className="text-sm font-bold text-accent">{Math.round(dayTotals.carbs)}g</p>
+                    <p className="text-[10px] text-muted-foreground">Carb</p>
+                  </div>
+                  <div className="rounded-lg bg-yellow-500/10 p-2">
+                    <p className="text-sm font-bold text-yellow-400">{Math.round(dayTotals.fat)}g</p>
+                    <p className="text-[10px] text-muted-foreground">Gord</p>
+                  </div>
+                </div>
+
+                {/* Meals list */}
+                <div className="space-y-2">
+                  {MEAL_TYPES.map(({ key, label }) => {
+                    const mealItems = dayItems.filter(i => i.meal_type === key);
+                    if (mealItems.length === 0) return null;
+                    return (
+                      <Card key={key}>
+                        <CardContent className="p-3">
+                          <p className="text-xs font-bold text-foreground mb-2">{label}</p>
+                          {mealItems.map(item => (
+                            <div key={item.id} className="flex items-center justify-between py-1 border-b border-border last:border-0">
+                              <div>
+                                <p className="text-sm text-foreground">{item.food_name}</p>
+                                <p className="text-[10px] text-muted-foreground">{item.portion}</p>
+                              </div>
+                              <div className="text-right text-[10px] text-muted-foreground">
+                                <p>{item.kcal} kcal</p>
+                                <p>P{item.protein_g}g C{item.carbs_g}g G{item.fat_g}g</p>
+                              </div>
+                            </div>
+                          ))}
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              </>
+            )}
           </TabsContent>
 
           {/* ACCESS MANAGEMENT */}
