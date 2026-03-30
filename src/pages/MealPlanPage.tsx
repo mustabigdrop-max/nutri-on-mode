@@ -449,6 +449,10 @@ const MealPlanPage = () => {
     toast("Refeições trocadas! 🔄");
   };
 
+  useEffect(() => {
+    fetchPlan();
+  }, [user, weekStart]);
+
   const dayItems = useMemo(() =>
     items.filter(i => i.day_index === selectedDay)
       .sort((a, b) => MEAL_TYPES.findIndex(m => m.key === a.meal_type) - MEAL_TYPES.findIndex(m => m.key === b.meal_type)),
