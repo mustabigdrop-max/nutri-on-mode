@@ -125,6 +125,7 @@ interface PlanItem {
 const MealPlanPage = () => {
   const { user } = useAuth();
   const { profile } = useProfile();
+  const { role, isAdmin, isCoach } = usePlanGate();
   const navigate = useNavigate();
   const [weekStart, setWeekStart] = useState(getWeekStart(new Date()));
   const [items, setItems] = useState<PlanItem[]>([]);
@@ -137,6 +138,14 @@ const MealPlanPage = () => {
   const [budgetMode, setBudgetMode] = useState(false);
   const [dragItem, setDragItem] = useState<PlanItem | null>(null);
   const [subModalItem, setSubModalItem] = useState<PlanItem | null>(null);
+
+  // Send to client state
+  const [showSendModal, setShowSendModal] = useState(false);
+  const [clients, setClients] = useState<any[]>([]);
+  const [loadingClients, setLoadingClients] = useState(false);
+  const [sendingTo, setSendingTo] = useState<string | null>(null);
+
+  const canSendToClients = isAdmin || isCoach;
 
   const fetchPlan = async () => {
     if (!user) return;
