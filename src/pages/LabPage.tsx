@@ -118,7 +118,7 @@ const LabPage = () => {
               </TabsTrigger>
               <button
                 onClick={() => navigate("/peptide-vault")}
-                className="flex-1 flex items-center justify-center gap-1 text-xs px-3 py-1.5 rounded-md text-emerald-400 hover:bg-emerald-500/10 transition-colors font-medium"
+                className="flex-1 flex items-center justify-center gap-1 text-xs px-3 py-1.5 rounded-md text-primary hover:bg-primary/10 transition-colors font-medium"
               >
                 <Dna className="w-3.5 h-3.5" /> NEXUS-BIO
               </button>
