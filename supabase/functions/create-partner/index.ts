@@ -149,6 +149,12 @@ Deno.serve(async (req) => {
           });
         }
         userId = existingUser.id;
+
+        // Update password so partner can log in with the new credentials
+        await adminClient.auth.admin.updateUserById(userId, {
+          password,
+          email_confirm: true,
+        });
       } else {
         console.error("create-partner auth create error", createErr);
         return new Response(JSON.stringify({ error: createErr.message }), {
