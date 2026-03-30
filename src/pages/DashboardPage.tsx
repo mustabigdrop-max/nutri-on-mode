@@ -845,7 +845,7 @@ const DashboardPage = () => {
           </button>
         </motion.div>
 
-        {(isAdmin || partner) && (
+        {(isAdmin || partner || isCoach) && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
