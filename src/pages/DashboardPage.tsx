@@ -317,7 +317,7 @@ const DashboardPage = () => {
   const [todayTotals, setTodayTotals] = useState({ kcal: 0, protein: 0, carbs: 0, fat: 0 });
   const [todayMood, setTodayMood] = useState<MoodType | null>(null);
   const { todayLog: waterLog, addWater } = useWaterLogs();
-  const { hasAccess, plan } = usePlanGate();
+  const { hasAccess, plan, isCoach } = usePlanGate();
   const { partner, isAdmin } = usePartner();
   const { getTodayWorkout, getTodayWorkouts, getNextRestDay, getWorkoutsForDay, todayLog: workoutLog } = useWorkoutSchedule();
   const [upgradeModal, setUpgradeModal] = useState<{ open: boolean; feature: string }>({ open: false, feature: "" });
@@ -845,7 +845,7 @@ const DashboardPage = () => {
           </button>
         </motion.div>
 
-        {(isAdmin || partner) && (
+        {(isAdmin || partner || isCoach) && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -863,6 +863,22 @@ const DashboardPage = () => {
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-bold text-foreground">Painel Admin</p>
                   <p className="text-[11px] text-muted-foreground">Gerenciar parceiros, acessos e sistema</p>
+                </div>
+                <ChevronRight className="h-4 w-4 text-primary" />
+              </button>
+            )}
+
+            {isCoach && (
+              <button
+                onClick={() => navigate("/coach-dashboard")}
+                className="w-full flex items-center gap-3 rounded-xl border border-primary/30 bg-primary/10 p-4 text-left transition-all hover:border-primary/50 hover:bg-primary/15"
+              >
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/15 text-xl">
+                  🏋️
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-bold text-foreground">Painel Coach</p>
+                  <p className="text-[11px] text-muted-foreground">Gerenciar clientes e planos</p>
                 </div>
                 <ChevronRight className="h-4 w-4 text-primary" />
               </button>
