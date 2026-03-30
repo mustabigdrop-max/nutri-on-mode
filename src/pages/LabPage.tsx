@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import BottomNav from "@/components/BottomNav";
-import { Microscope, Bot, BookOpen, Search, FileText, Leaf, Bug, Shield, Zap, Dumbbell, Apple, HeartPulse, Syringe, Activity, Target, GraduationCap, Brain } from "lucide-react";
+import { Microscope, Bot, BookOpen, Search, FileText, Leaf, Bug, Shield, Zap, Dumbbell, Apple, HeartPulse, Syringe, Activity, Target, GraduationCap, Brain, Dna } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ApexChat from "@/components/lab/ApexChat";
 import ProtocolLibrary from "@/components/lab/ProtocolLibrary";
@@ -24,6 +25,7 @@ const LabPage = () => {
   const [tab, setTab] = useState("apex");
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [initialQuestion, setInitialQuestion] = useState<string | undefined>();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const seen = localStorage.getItem("lab_onboarding_done");
@@ -114,6 +116,12 @@ const LabPage = () => {
               <TabsTrigger value="notebook" className="flex-1 text-xs gap-1 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
                 <FileText className="w-3.5 h-3.5" /> Caderno
               </TabsTrigger>
+              <button
+                onClick={() => navigate("/peptide-vault")}
+                className="flex-1 flex items-center justify-center gap-1 text-xs px-3 py-1.5 rounded-md text-primary hover:bg-primary/10 transition-colors font-medium"
+              >
+                <Dna className="w-3.5 h-3.5" /> NEXUS-BIO
+              </button>
             </TabsList>
 
             <TabsContent value="apex" className="flex-1 min-h-0 mt-0">
