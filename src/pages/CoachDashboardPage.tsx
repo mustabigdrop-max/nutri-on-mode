@@ -43,7 +43,11 @@ const CoachDashboardPage = () => {
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
 
   useEffect(() => {
-    if (!profile) return;
+    if (profileLoading) return;
+    if (!profile) {
+      setLoading(false);
+      return;
+    }
 
     const loadData = async () => {
       const { data: patientsData } = await supabase
@@ -79,8 +83,8 @@ const CoachDashboardPage = () => {
 
           enriched.push({
             ...p,
-            patient_name: prof?.full_name || "Aluno",
-            score: scoreData?.total_score ?? 0,
+            patient_name: prof?.full_name || "Paciente",
+            score: scoreData?.total_score || 0,
             last_activity: prof?.updated_at || p.created_at,
           });
         }
@@ -92,7 +96,7 @@ const CoachDashboardPage = () => {
     };
 
     loadData();
-  }, [profile]);
+  }, [profile, profileLoading]);
 
   const generateInviteLink = async () => {
     if (!user || !profile) return;
