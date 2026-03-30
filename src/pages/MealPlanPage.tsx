@@ -796,6 +796,7 @@ const MealPlanPage = () => {
                         </div>
                         <div className="flex-1">
                           <p className="text-sm font-semibold text-foreground">{c.full_name || "Sem nome"}</p>
+                          <span className="text-[10px] font-mono text-muted-foreground uppercase">{c.type || "cliente"}</span>
                         </div>
                         {sendingTo === c.user_id ? (
                           <Loader2 className="w-4 h-4 animate-spin text-primary" />
