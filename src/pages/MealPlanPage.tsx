@@ -147,6 +147,92 @@ const MealPlanPage = () => {
 
   const canSendToClients = role === "admin" || isCoach;
 
+  const loadClients = async () => {
+    if (!user) return;
+    setLoadingClients(true);
+    // Get coach_profile id
+    const { data: coachProf } = await supabase
+      .from("coach_profiles")
+      .select("id")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    let patientList: any[] = [];
+    if (coachProf) {
+      const { data: patients } = await supabase
+        .from("coach_patients")
+        .select("patient_user_id, status")
+        .eq("coach_id", coachProf.id)
+        .eq("status", "active");
+      if (patients) {
+        const ids = patients.map(p => p.patient_user_id);
+        if (ids.length > 0) {
+          const { data: profiles } = await supabase
+            .from("profiles")
+            .select("user_id, full_name")
+            .in("user_id", ids);
+          patientList = profiles || [];
+        }
+      }
+    }
+
+    // Also get partner clients
+    const { data: partnerData } = await supabase
+      .from("partners")
+      .select("id")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (partnerData) {
+      // Partners may have sessions with clients - but for simplicity, 
+      // we combine coach_patients approach
+    }
+
+    setClients(patientList);
+    setLoadingClients(false);
+  };
+
+  const openSendModal = () => {
+    setShowSendModal(true);
+    loadClients();
+  };
+
+  const sendPlanToClient = async (clientUserId: string, clientName: string) => {
+    if (!user || items.length === 0) return;
+    setSendingTo(clientUserId);
+    try {
+      // Delete existing plan for this client for the week
+      await supabase
+        .from("meal_plan_items")
+        .delete()
+        .eq("user_id", clientUserId)
+        .eq("week_start", weekStart);
+
+      // Copy current plan items with client's user_id
+      const newItems = items.map(item => ({
+        user_id: clientUserId,
+        week_start: item.week_start,
+        day_index: item.day_index,
+        meal_type: item.meal_type,
+        food_name: item.food_name,
+        portion: item.portion,
+        kcal: item.kcal,
+        protein_g: item.protein_g,
+        carbs_g: item.carbs_g,
+        fat_g: item.fat_g,
+        confirmed: false,
+        swapped: false,
+      }));
+
+      await supabase.from("meal_plan_items").insert(newItems);
+      toast.success(`Plano enviado para ${clientName}! ✅`);
+    } catch (e: any) {
+      console.error(e);
+      toast.error("Erro ao enviar plano");
+    }
+    setSendingTo(null);
+  };
+
   const fetchPlan = async () => {
     if (!user) return;
     setLoading(true);
@@ -158,8 +244,6 @@ const MealPlanPage = () => {
     setItems((data as PlanItem[] | null) ?? []);
     setLoading(false);
   };
-
-  useEffect(() => { fetchPlan(); }, [user, weekStart]);
 
   const generateWithAI = async () => {
     if (!user || !profile) return;
