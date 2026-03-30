@@ -390,23 +390,40 @@ function ResearchTab({ userId }: { userId?: string }) {
         )}
 
         {result && (
-          <Card className="border border-[#4ade80]/20 bg-gray-900/50">
-            <CardContent className="p-4">
-              <div className="prose prose-sm prose-invert max-w-none">
-                <ReactMarkdown>{result}</ReactMarkdown>
-              </div>
-              {citations.length > 0 && (
-                <div className="mt-4 pt-3 border-t border-gray-800 space-y-1">
-                  <p className="text-xs text-gray-500 font-medium">Fontes:</p>
-                  {citations.map((c, i) => (
-                    <a key={i} href={c} target="_blank" rel="noopener noreferrer" className="text-xs text-[#4ade80]/70 hover:text-[#4ade80] flex items-center gap-1">
-                      <ExternalLink className="w-3 h-3" /> {c}
-                    </a>
-                  ))}
-                </div>
+          <div className="space-y-3">
+            <div className="flex justify-between items-center">
+              <Button variant="ghost" size="sm" onClick={() => { setResult(""); setCitations([]); setQuery(""); }} className="text-gray-500 hover:text-red-400 text-xs gap-1">
+                <Trash2 className="w-3 h-3" /> Nova pesquisa
+              </Button>
+              {userId && (
+                <Button variant="ghost" size="sm" onClick={async () => {
+                  try {
+                    await supabase.from("nexus_bio_messages").insert({ user_id: userId, role: "notebook", content: result });
+                    toast.success("Salvo no caderno!");
+                  } catch { toast.error("Erro ao salvar"); }
+                }} className="text-gray-500 hover:text-[#4ade80] text-xs gap-1">
+                  <Save className="w-3 h-3" /> Salvar no caderno
+                </Button>
               )}
-            </CardContent>
-          </Card>
+            </div>
+            <Card className="border border-[#4ade80]/20 bg-gray-900/50">
+              <CardContent className="p-4">
+                <div className="prose prose-sm prose-invert max-w-none">
+                  <ReactMarkdown>{result}</ReactMarkdown>
+                </div>
+                {citations.length > 0 && (
+                  <div className="mt-4 pt-3 border-t border-gray-800 space-y-1">
+                    <p className="text-xs text-gray-500 font-medium">Fontes:</p>
+                    {citations.map((c, i) => (
+                      <a key={i} href={c} target="_blank" rel="noopener noreferrer" className="text-xs text-[#4ade80]/70 hover:text-[#4ade80] flex items-center gap-1">
+                        <ExternalLink className="w-3 h-3" /> {c}
+                      </a>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         )}
       </div>
     </ScrollArea>
