@@ -355,6 +355,38 @@ export default function AdminPartnersPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      {/* Delete Confirmation */}
+      <Dialog open={!!deleteTarget} onOpenChange={() => setDeleteTarget(null)}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Excluir parceiro</DialogTitle></DialogHeader>
+          <p className="text-sm">Tem certeza que deseja excluir permanentemente <strong>{deleteTarget?.full_name}</strong>? Esta ação não pode ser desfeita.</p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteTarget(null)}>Cancelar</Button>
+            <Button variant="destructive" onClick={deletePartner}>Excluir</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* View Password */}
+      <Dialog open={!!viewPasswordPartner} onOpenChange={() => setViewPasswordPartner(null)}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Chave de Acesso</DialogTitle></DialogHeader>
+          {viewPasswordPartner && (
+            <div className="space-y-3 text-sm">
+              <p><strong>Parceiro:</strong> {viewPasswordPartner.full_name}</p>
+              <p><strong>Email:</strong> {viewPasswordPartner.email}</p>
+              <div className="bg-muted p-3 rounded-lg">
+                <p className="text-xs text-muted-foreground mb-1">Senha temporária</p>
+                <p className="font-mono text-lg font-bold">{viewPasswordPartner.temp_password || "Não disponível"}</p>
+              </div>
+              <Button size="sm" variant="outline" onClick={() => {
+                navigator.clipboard.writeText(viewPasswordPartner.temp_password || "");
+                toast.success("Senha copiada!");
+              }}>Copiar senha</Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
