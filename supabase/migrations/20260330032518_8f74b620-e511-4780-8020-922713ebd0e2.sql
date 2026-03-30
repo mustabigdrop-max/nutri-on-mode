@@ -1,0 +1,1 @@
+ALTER TABLE public.partners ADD COLUMN temp_password text;
