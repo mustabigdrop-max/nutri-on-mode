@@ -738,6 +738,74 @@ const MealPlanPage = () => {
         )}
       </AnimatePresence>
 
+      {/* Send to Client Modal */}
+      <AnimatePresence>
+        {showSendModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/60 flex items-end sm:items-center justify-center p-4"
+            onClick={() => setShowSendModal(false)}
+          >
+            <motion.div
+              initial={{ y: 100, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 100, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-md bg-card border border-border rounded-2xl overflow-hidden"
+            >
+              <div className="flex items-center justify-between p-4 border-b border-border">
+                <h3 className="font-bold text-foreground flex items-center gap-2">
+                  <Send className="w-4 h-4 text-primary" />
+                  Enviar plano da semana
+                </h3>
+                <button onClick={() => setShowSendModal(false)} className="text-muted-foreground hover:text-foreground">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="p-4">
+                <p className="text-xs text-muted-foreground mb-3 font-mono">
+                  Semana {formatWeekRange(weekStart)} • {items.length} refeições
+                </p>
+                {loadingClients ? (
+                  <div className="flex justify-center py-8">
+                    <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                  </div>
+                ) : clients.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-8">
+                    Nenhum cliente vinculado encontrado.
+                  </p>
+                ) : (
+                  <div className="space-y-2 max-h-72 overflow-y-auto">
+                    {clients.map(c => (
+                      <button
+                        key={c.user_id}
+                        onClick={() => sendPlanToClient(c.user_id, c.full_name || "Cliente")}
+                        disabled={sendingTo === c.user_id}
+                        className="w-full flex items-center gap-3 p-3 rounded-xl border border-border hover:border-primary/30 hover:bg-primary/5 transition-all text-left disabled:opacity-50"
+                      >
+                        <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-sm">
+                          {(c.full_name || "?")[0].toUpperCase()}
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm font-semibold text-foreground">{c.full_name || "Sem nome"}</p>
+                        </div>
+                        {sendingTo === c.user_id ? (
+                          <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                        ) : (
+                          <Send className="w-4 h-4 text-muted-foreground" />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <BottomNav />
     </div>
   );
