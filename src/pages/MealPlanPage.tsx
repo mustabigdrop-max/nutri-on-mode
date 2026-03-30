@@ -150,45 +150,47 @@ const MealPlanPage = () => {
   const loadClients = async () => {
     if (!user) return;
     setLoadingClients(true);
-    // Get coach_profile id
+    let allClients: { user_id: string; full_name: string; type: string }[] = [];
+
+    // Get coach patients
     const { data: coachProf } = await supabase
       .from("coach_profiles")
       .select("id")
       .eq("user_id", user.id)
       .maybeSingle();
 
-    let patientList: any[] = [];
     if (coachProf) {
       const { data: patients } = await supabase
         .from("coach_patients")
         .select("patient_user_id, status")
         .eq("coach_id", coachProf.id)
         .eq("status", "active");
-      if (patients) {
+      if (patients && patients.length > 0) {
         const ids = patients.map(p => p.patient_user_id);
-        if (ids.length > 0) {
-          const { data: profiles } = await supabase
-            .from("profiles")
-            .select("user_id, full_name")
-            .in("user_id", ids);
-          patientList = profiles || [];
+        const { data: profiles } = await supabase
+          .from("profiles")
+          .select("user_id, full_name")
+          .in("user_id", ids);
+        allClients = (profiles || []).map(p => ({ user_id: p.user_id, full_name: p.full_name || "Sem nome", type: "aluno" }));
+      }
+    }
+
+    // Get partners (created by this admin)
+    const { data: partnersList } = await supabase
+      .from("partners")
+      .select("user_id, full_name, status")
+      .eq("created_by", user.id)
+      .eq("status", "active");
+
+    if (partnersList) {
+      for (const p of partnersList) {
+        if (p.user_id && !allClients.find(c => c.user_id === p.user_id)) {
+          allClients.push({ user_id: p.user_id, full_name: p.full_name || "Parceiro", type: "parceiro" });
         }
       }
     }
 
-    // Also get partner clients
-    const { data: partnerData } = await supabase
-      .from("partners")
-      .select("id")
-      .eq("user_id", user.id)
-      .maybeSingle();
-
-    if (partnerData) {
-      // Partners may have sessions with clients - but for simplicity, 
-      // we combine coach_patients approach
-    }
-
-    setClients(patientList);
+    setClients(allClients);
     setLoadingClients(false);
   };
 
@@ -446,6 +448,10 @@ const MealPlanPage = () => {
     setDragItem(null);
     toast("Refeições trocadas! 🔄");
   };
+
+  useEffect(() => {
+    fetchPlan();
+  }, [user, weekStart]);
 
   const dayItems = useMemo(() =>
     items.filter(i => i.day_index === selectedDay)
@@ -790,6 +796,7 @@ const MealPlanPage = () => {
                         </div>
                         <div className="flex-1">
                           <p className="text-sm font-semibold text-foreground">{c.full_name || "Sem nome"}</p>
+                          <span className="text-[10px] font-mono text-muted-foreground uppercase">{c.type || "cliente"}</span>
                         </div>
                         {sendingTo === c.user_id ? (
                           <Loader2 className="w-4 h-4 animate-spin text-primary" />
