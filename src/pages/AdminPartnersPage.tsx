@@ -49,6 +49,10 @@ export default function AdminPartnersPage() {
 
   // Revoke confirmation
   const [revokeTarget, setRevokeTarget] = useState<any>(null);
+  // Delete confirmation
+  const [deleteTarget, setDeleteTarget] = useState<any>(null);
+  // View password
+  const [viewPasswordPartner, setViewPasswordPartner] = useState<any>(null);
 
   useEffect(() => {
     if (isAdmin) loadData();
