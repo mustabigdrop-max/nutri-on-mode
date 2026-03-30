@@ -144,6 +144,7 @@ const MealPlanPage = () => {
   const [clients, setClients] = useState<any[]>([]);
   const [loadingClients, setLoadingClients] = useState(false);
   const [sendingTo, setSendingTo] = useState<string | null>(null);
+  const [sendMode, setSendMode] = useState<"copy" | "personalized">("personalized");
 
   const canSendToClients = role === "admin" || isCoach;
 
