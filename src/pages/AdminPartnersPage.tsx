@@ -13,7 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Users, AlertTriangle, DollarSign, UserPlus, Shield, Ban, Eye, RotateCcw } from "lucide-react";
+import { Users, AlertTriangle, DollarSign, UserPlus, Shield, Ban, Eye, RotateCcw, Trash2, Key } from "lucide-react";
 
 const MODULE_OPTIONS = [
   { key: "pca", label: "PCA Assessment" },
@@ -144,6 +144,16 @@ export default function AdminPartnersPage() {
     await supabase.from("partner_sessions").delete().eq("partner_id", revokeTarget.id);
     toast.success("Acesso do parceiro revogado");
     setRevokeTarget(null);
+    loadData();
+  };
+
+  const deletePartner = async () => {
+    if (!deleteTarget) return;
+    await supabase.from("partner_sessions").delete().eq("partner_id", deleteTarget.id);
+    await supabase.from("commissions").delete().eq("partner_id", deleteTarget.id);
+    await supabase.from("partners").delete().eq("id", deleteTarget.id);
+    toast.success("Parceiro excluído");
+    setDeleteTarget(null);
     loadData();
   };
 
