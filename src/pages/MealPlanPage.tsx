@@ -706,6 +706,15 @@ const MealPlanPage = () => {
                 Lista de Compras
               </button>
             </div>
+            {canSendToClients && items.length > 0 && (
+              <button
+                onClick={openSendModal}
+                className="w-full py-2.5 mt-2 rounded-xl bg-accent/10 border border-accent/20 text-sm font-mono text-accent hover:bg-accent/20 transition-all flex items-center justify-center gap-1.5"
+              >
+                <Send className="w-3.5 h-3.5" />
+                Enviar plano para cliente
+              </button>
+            )}
           </div>
         )}
       </div>
