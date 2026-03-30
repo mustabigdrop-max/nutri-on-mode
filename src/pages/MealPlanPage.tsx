@@ -831,8 +831,23 @@ const MealPlanPage = () => {
                 </button>
               </div>
               <div className="p-4">
+                {/* Mode toggle */}
+                <div className="flex gap-2 mb-3">
+                  <button
+                    onClick={() => setSendMode("personalized")}
+                    className={`flex-1 py-2 rounded-lg text-xs font-mono transition-all ${sendMode === "personalized" ? "bg-primary text-primary-foreground" : "border border-border text-muted-foreground"}`}
+                  >
+                    🎯 Personalizado (IA)
+                  </button>
+                  <button
+                    onClick={() => setSendMode("copy")}
+                    className={`flex-1 py-2 rounded-lg text-xs font-mono transition-all ${sendMode === "copy" ? "bg-primary text-primary-foreground" : "border border-border text-muted-foreground"}`}
+                  >
+                    📋 Copiar meu plano
+                  </button>
+                </div>
                 <p className="text-xs text-muted-foreground mb-3 font-mono">
-                  Semana {formatWeekRange(weekStart)} • {items.length} refeições
+                  Semana {formatWeekRange(weekStart)} • {sendMode === "personalized" ? "IA gera com GEB/GET/VET do cliente" : `${items.length} refeições`}
                 </p>
                 {loadingClients ? (
                   <div className="flex justify-center py-8">
@@ -847,16 +862,23 @@ const MealPlanPage = () => {
                     {clients.map(c => (
                       <button
                         key={c.user_id}
-                        onClick={() => sendPlanToClient(c.user_id, c.full_name || "Cliente")}
-                        disabled={sendingTo === c.user_id}
+                        onClick={() => sendPlanToClient(c)}
+                        disabled={!!sendingTo}
                         className="w-full flex items-center gap-3 p-3 rounded-xl border border-border hover:border-primary/30 hover:bg-primary/5 transition-all text-left disabled:opacity-50"
                       >
                         <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-sm">
                           {(c.full_name || "?")[0].toUpperCase()}
                         </div>
-                        <div className="flex-1">
+                        <div className="flex-1 min-w-0">
                           <p className="text-sm font-semibold text-foreground">{c.full_name || "Sem nome"}</p>
-                          <span className="text-[10px] font-mono text-muted-foreground uppercase">{c.type || "cliente"}</span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-mono text-muted-foreground uppercase">{c.type || "cliente"}</span>
+                            {c.vet_kcal && (
+                              <span className="text-[10px] font-mono text-primary">
+                                {Math.round(c.vet_kcal)}kcal · {c.protein_g || "?"}P · {c.carbs_g || "?"}C · {c.fat_g || "?"}G
+                              </span>
+                            )}
+                          </div>
                         </div>
                         {sendingTo === c.user_id ? (
                           <Loader2 className="w-4 h-4 animate-spin text-primary" />
