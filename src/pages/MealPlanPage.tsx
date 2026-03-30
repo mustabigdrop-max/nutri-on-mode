@@ -145,7 +145,7 @@ const MealPlanPage = () => {
   const [loadingClients, setLoadingClients] = useState(false);
   const [sendingTo, setSendingTo] = useState<string | null>(null);
 
-  const canSendToClients = isAdmin || isCoach;
+  const canSendToClients = role === "admin" || isCoach;
 
   const fetchPlan = async () => {
     if (!user) return;
