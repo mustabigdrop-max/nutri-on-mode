@@ -74,6 +74,7 @@ import RefeicaoSnapPage from "./pages/RefeicaoSnapPage";
 import AdminPartnersPage from "./pages/AdminPartnersPage";
 import PartnerDashboardPage from "./pages/PartnerDashboardPage";
 import PartnerBlockedPage from "./pages/PartnerBlockedPage";
+import PeptideVaultPage from "./pages/PeptideVaultPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -154,6 +155,7 @@ const App = () => (
             <Route path="/admin/partners" element={<ProtectedRoute><AdminPartnersPage /></ProtectedRoute>} />
             <Route path="/partner" element={<ProtectedRoute><PartnerDashboardPage /></ProtectedRoute>} />
             <Route path="/blocked" element={<PartnerBlockedPage />} />
+            <Route path="/peptide-vault" element={<ProtectedRoute><PeptideVaultPage /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
