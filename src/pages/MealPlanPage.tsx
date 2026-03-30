@@ -151,7 +151,7 @@ const MealPlanPage = () => {
   const loadClients = async () => {
     if (!user) return;
     setLoadingClients(true);
-    let allClients: { user_id: string; full_name: string; type: string }[] = [];
+    let allClients: { user_id: string; full_name: string; type: string; geb_kcal?: number; get_kcal?: number; vet_kcal?: number; protein_g?: number; carbs_g?: number; fat_g?: number; weight_kg?: number; height_cm?: number; sex?: string; goal?: string; objetivo_principal?: string; dietary_restrictions?: string[]; health_conditions?: string[]; uses_glp1?: boolean; sport?: string; training_frequency?: number; activity_level?: string; }[] = [];
 
     // Get coach patients
     const { data: coachProf } = await supabase
@@ -170,13 +170,13 @@ const MealPlanPage = () => {
         const ids = patients.map(p => p.patient_user_id);
         const { data: profiles } = await supabase
           .from("profiles")
-          .select("user_id, full_name")
+          .select("user_id, full_name, geb_kcal, get_kcal, vet_kcal, protein_g, carbs_g, fat_g, weight_kg, height_cm, sex, goal, objetivo_principal, dietary_restrictions, health_conditions, uses_glp1, sport, training_frequency, activity_level")
           .in("user_id", ids);
-        allClients = (profiles || []).map(p => ({ user_id: p.user_id, full_name: p.full_name || "Sem nome", type: "aluno" }));
+        allClients = (profiles || []).map(p => ({ ...p, full_name: p.full_name || "Sem nome", type: "aluno" }));
       }
     }
 
-    // Get partners (created by this admin)
+    // Get partners
     const { data: partnersList } = await supabase
       .from("partners")
       .select("user_id, full_name, status")
@@ -184,9 +184,14 @@ const MealPlanPage = () => {
       .eq("status", "active");
 
     if (partnersList) {
-      for (const p of partnersList) {
-        if (p.user_id && !allClients.find(c => c.user_id === p.user_id)) {
-          allClients.push({ user_id: p.user_id, full_name: p.full_name || "Parceiro", type: "parceiro" });
+      const partnerIds = partnersList.filter(p => p.user_id && !allClients.find(c => c.user_id === p.user_id)).map(p => p.user_id!);
+      if (partnerIds.length > 0) {
+        const { data: partnerProfiles } = await supabase
+          .from("profiles")
+          .select("user_id, full_name, geb_kcal, get_kcal, vet_kcal, protein_g, carbs_g, fat_g, weight_kg, height_cm, sex, goal, objetivo_principal, dietary_restrictions, health_conditions, uses_glp1, sport, training_frequency, activity_level")
+          .in("user_id", partnerIds);
+        for (const pp of (partnerProfiles || [])) {
+          allClients.push({ ...pp, full_name: pp.full_name || "Parceiro", type: "parceiro" });
         }
       }
     }
@@ -200,38 +205,92 @@ const MealPlanPage = () => {
     loadClients();
   };
 
-  const sendPlanToClient = async (clientUserId: string, clientName: string) => {
-    if (!user || items.length === 0) return;
+  const sendPlanToClient = async (client: any) => {
+    if (!user) return;
+    const clientUserId = client.user_id;
+    const clientName = client.full_name || "Cliente";
     setSendingTo(clientUserId);
     try {
-      // Delete existing plan for this client for the week
-      await supabase
-        .from("meal_plan_items")
-        .delete()
-        .eq("user_id", clientUserId)
-        .eq("week_start", weekStart);
+      if (sendMode === "personalized") {
+        // Generate a personalized plan using client's own profile/macros
+        const clientProfile = {
+          goal: client.goal || client.objetivo_principal || profile?.goal,
+          vet_kcal: client.vet_kcal || client.get_kcal || 2000,
+          get_kcal: client.get_kcal || 2000,
+          protein_g: client.protein_g || 120,
+          carbs_g: client.carbs_g || 200,
+          fat_g: client.fat_g || 60,
+          sex: client.sex,
+          weight_kg: client.weight_kg,
+          height_cm: client.height_cm,
+          dietary_restrictions: client.dietary_restrictions,
+          health_conditions: client.health_conditions,
+          uses_glp1: client.uses_glp1,
+          sport: client.sport,
+          training_frequency: client.training_frequency,
+          activity_level: client.activity_level,
+        };
 
-      // Copy current plan items with client's user_id
-      const newItems = items.map(item => ({
-        user_id: clientUserId,
-        week_start: item.week_start,
-        day_index: item.day_index,
-        meal_type: item.meal_type,
-        food_name: item.food_name,
-        portion: item.portion,
-        kcal: item.kcal,
-        protein_g: item.protein_g,
-        carbs_g: item.carbs_g,
-        fat_g: item.fat_g,
-        confirmed: false,
-        swapped: false,
-      }));
+        // Fetch client's workout schedule
+        const { data: clientWorkouts } = await supabase
+          .from("workout_schedule")
+          .select("day_of_week, workout_type, workout_time, duration_minutes, slot")
+          .eq("user_id", clientUserId);
 
-      await supabase.from("meal_plan_items").insert(newItems);
-      toast.success(`Plano enviado para ${clientName}! ✅`);
+        const { data, error } = await supabase.functions.invoke("generate-meal-plan", {
+          body: { profile: clientProfile, weekStart, budgetMode, workoutSchedule: clientWorkouts || [] },
+        });
+
+        if (error) throw error;
+        if (data?.error) throw new Error(data.error);
+
+        // Delete existing and insert personalized plan
+        await supabase.from("meal_plan_items").delete().eq("user_id", clientUserId).eq("week_start", weekStart);
+        const newItems: any[] = [];
+        for (const day of data.days) {
+          for (const meal of day.meals) {
+            newItems.push({
+              user_id: clientUserId,
+              week_start: weekStart,
+              day_index: day.day_index,
+              meal_type: meal.meal_type,
+              food_name: meal.food_name,
+              portion: meal.portion,
+              kcal: meal.kcal,
+              protein_g: meal.protein_g,
+              carbs_g: meal.carbs_g,
+              fat_g: meal.fat_g,
+              confirmed: false,
+              swapped: false,
+            });
+          }
+        }
+        await supabase.from("meal_plan_items").insert(newItems);
+        toast.success(`Plano personalizado enviado para ${clientName}! 🎯✅`);
+      } else {
+        // Copy mode — clone coach's current plan
+        if (items.length === 0) { toast.error("Nenhum plano para copiar"); setSendingTo(null); return; }
+        await supabase.from("meal_plan_items").delete().eq("user_id", clientUserId).eq("week_start", weekStart);
+        const newItems = items.map(item => ({
+          user_id: clientUserId,
+          week_start: item.week_start,
+          day_index: item.day_index,
+          meal_type: item.meal_type,
+          food_name: item.food_name,
+          portion: item.portion,
+          kcal: item.kcal,
+          protein_g: item.protein_g,
+          carbs_g: item.carbs_g,
+          fat_g: item.fat_g,
+          confirmed: false,
+          swapped: false,
+        }));
+        await supabase.from("meal_plan_items").insert(newItems);
+        toast.success(`Plano copiado para ${clientName}! ✅`);
+      }
     } catch (e: any) {
       console.error(e);
-      toast.error("Erro ao enviar plano");
+      toast.error("Erro ao enviar plano. Tente novamente.");
     }
     setSendingTo(null);
   };
