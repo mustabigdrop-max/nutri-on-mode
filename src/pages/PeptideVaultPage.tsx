@@ -31,6 +31,7 @@ const tabConfig: { id: Tab; label: string; icon: React.ReactNode }[] = [
 type Msg = { role: "user" | "assistant"; content: string };
 
 export default function PeptideVaultPage() {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<Tab>("oracle");
 
@@ -38,7 +39,7 @@ export default function PeptideVaultPage() {
     <div className="min-h-screen flex flex-col" style={{ background: "#0a0f0a", fontFamily: "'DM Sans', sans-serif" }}>
       {/* Header */}
       <div className="px-4 pt-4 pb-2 flex items-center gap-3">
-        <Button variant="ghost" size="icon" onClick={() => window.history.back()} className="text-[#4ade80]">
+        <Button variant="ghost" size="icon" onClick={() => navigate("/lab")} className="text-[#4ade80]">
           <ArrowLeft className="w-5 h-5" />
         </Button>
         <div>
