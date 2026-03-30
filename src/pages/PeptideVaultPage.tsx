@@ -246,15 +246,6 @@ function OracleTab({ userId }: { userId?: string }) {
     </div>
   );
 }
-    if (!text.trim() || loading) return;
-    const userMsg: Msg = { role: "user", content: text.trim() };
-    setMessages((p) => [...p, userMsg]);
-    setInput("");
-    setLoading(true);
-    await saveMsg("user", userMsg.content);
-
-    let assistantSoFar = "";
-    const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/nexus-bio-chat`;
 
     try {
       const resp = await fetch(CHAT_URL, {
