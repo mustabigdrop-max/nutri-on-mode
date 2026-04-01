@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import BottomNav from "@/components/BottomNav";
-import { Microscope, Bot, BookOpen, Search, FileText, Leaf, Bug, Shield, Zap, Dumbbell, Apple, HeartPulse, Syringe, Activity, Target, GraduationCap, Brain, Dna } from "lucide-react";
+import { Microscope, Bot, BookOpen, Search, FileText, Leaf, Bug, Shield, Zap, Dumbbell, Apple, HeartPulse, Syringe, Activity, Target, GraduationCap, Brain, Dna, Users } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ApexChat from "@/components/lab/ApexChat";
 import ProtocolLibrary from "@/components/lab/ProtocolLibrary";
@@ -20,6 +20,7 @@ import LabCardioMaster from "@/components/lab/LabCardioMaster";
 import ExerciseSelector from "@/components/workout/ExerciseSelector";
 import LabProTraining from "@/components/lab/LabProTraining";
 import LabMCEAgent from "@/components/lab/LabMCEAgent";
+import LabCoachPlanner from "@/components/lab/LabCoachPlanner";
 
 const LabPage = () => {
   const [tab, setTab] = useState("apex");
@@ -110,6 +111,9 @@ const LabPage = () => {
               <TabsTrigger value="protraining" className="flex-1 text-xs gap-1 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
                 <GraduationCap className="w-3.5 h-3.5" /> Pro Training
               </TabsTrigger>
+              <TabsTrigger value="coachplanner" className="flex-1 text-xs gap-1 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
+                <Users className="w-3.5 h-3.5" /> Coach Plan
+              </TabsTrigger>
               <TabsTrigger value="search" className="flex-1 text-xs gap-1 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
                 <Search className="w-3.5 h-3.5" /> Estudos
               </TabsTrigger>
@@ -165,6 +169,9 @@ const LabPage = () => {
             </TabsContent>
             <TabsContent value="protraining" className="flex-1 overflow-y-auto px-4 py-4 mt-0">
               <LabProTraining onAskApex={handleAskApex} />
+            </TabsContent>
+            <TabsContent value="coachplanner" className="flex-1 overflow-y-auto mt-0">
+              <LabCoachPlanner onAskApex={handleAskApex} />
             </TabsContent>
             <TabsContent value="search" className="flex-1 overflow-y-auto px-4 py-4 mt-0">
               <StudySearch onAskApex={handleAskApex} />
