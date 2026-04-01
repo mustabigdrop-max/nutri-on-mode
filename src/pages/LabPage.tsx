@@ -20,6 +20,7 @@ import LabCardioMaster from "@/components/lab/LabCardioMaster";
 import ExerciseSelector from "@/components/workout/ExerciseSelector";
 import LabProTraining from "@/components/lab/LabProTraining";
 import LabMCEAgent from "@/components/lab/LabMCEAgent";
+import LabCoachPlanner from "@/components/lab/LabCoachPlanner";
 
 const LabPage = () => {
   const [tab, setTab] = useState("apex");
