@@ -52,7 +52,7 @@ FORMATO DE RESPOSTA (JSON OBRIGATÓRIO):
   ]
 }`;
 
-    const response = await fetch("https://api.lovable.dev/v1/chat/completions", {
+    const response = await fetch("https://api.lovable.dev/api/ai/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
