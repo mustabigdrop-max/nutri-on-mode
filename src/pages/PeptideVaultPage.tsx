@@ -13,6 +13,7 @@ import {
   MessageCircle, BookOpen, Search, Shield, AlertTriangle,
   Send, ChevronDown, ChevronUp, ArrowLeft, Loader2, Sparkles, ExternalLink, Save, Trash2
 } from "lucide-react";
+import { PeptideNutritionalStrategy } from "@/components/lab/PeptideNutritionalStrategy";
 import {
   peptides, protocols, dietRevolutionCards, alerts as initialAlerts,
   quickPrompts, searchSuggestions, type Peptide, type Alert
@@ -298,6 +299,10 @@ function EncyclopediaTab() {
               ))}
             </CardContent>
           </Card>
+
+          <PeptideNutritionalStrategy peptideSlug={
+            ({ bpc157: "bpc-157", semaglutide: "semaglutida", tirzepatide: "tirzepatida", ipamorelin: "ipamorelin-cjc1295", cjc1295: "ipamorelin-cjc1295", tb500: "tb-500", follistatin344: "folistatina-344", aod9604: "aod-9604", ghkcu: "ghk-cu", motsc: "mots-c" } as Record<string, string>)[selected.id] || selected.id
+          } />
         </div>
       </ScrollArea>
     );
