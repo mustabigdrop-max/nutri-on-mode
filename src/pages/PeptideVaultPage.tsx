@@ -13,6 +13,7 @@ import {
   MessageCircle, BookOpen, Search, Shield, AlertTriangle,
   Send, ChevronDown, ChevronUp, ArrowLeft, Loader2, Sparkles, ExternalLink, Save, Trash2
 } from "lucide-react";
+import { PeptideNutritionalStrategy } from "@/components/lab/PeptideNutritionalStrategy";
 import {
   peptides, protocols, dietRevolutionCards, alerts as initialAlerts,
   quickPrompts, searchSuggestions, type Peptide, type Alert
