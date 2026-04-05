@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Users, AlertTriangle, TrendingUp, Search, Bell, Settings, UserPlus, ArrowUpRight, Link2, Copy, Loader2, Trash2 } from "lucide-react";
+import { Users, AlertTriangle, TrendingUp, Search, Bell, Settings, UserPlus, ArrowUpRight, Link2, Copy, Loader2, Trash2, Zap } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "@/hooks/use-toast";
 import {
@@ -288,6 +288,13 @@ const CoachDashboardPage = () => {
             </CardContent>
           </Card>
         )}
+
+        {/* Quick actions */}
+        <div className="flex gap-3">
+          <Button onClick={() => navigate("/coach/plano-alimentar")} className="flex items-center gap-2">
+            <Zap className="w-4 h-4" /> Gerar Plano Alimentar
+          </Button>
+        </div>
 
         <div className="grid md:grid-cols-3 gap-6">
           {/* Patient list */}
