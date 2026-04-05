@@ -289,6 +289,13 @@ const CoachDashboardPage = () => {
           </Card>
         )}
 
+        {/* Quick actions */}
+        <div className="flex gap-3">
+          <Button onClick={() => navigate("/coach/plano-alimentar")} className="flex items-center gap-2">
+            <Zap className="w-4 h-4" /> Gerar Plano Alimentar
+          </Button>
+        </div>
+
         <div className="grid md:grid-cols-3 gap-6">
           {/* Patient list */}
           <div className="md:col-span-2 space-y-4">
