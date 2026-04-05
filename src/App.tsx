@@ -158,6 +158,7 @@ const App = () => (
             <Route path="/blocked" element={<PartnerBlockedPage />} />
             <Route path="/peptide-vault" element={<ProtectedRoute><PeptideVaultPage /></ProtectedRoute>} />
             {/* COACH */}
+            <Route path="/coach/plano-alimentar" element={<ProtectedRoute><PlanoAlimentarIA /></ProtectedRoute>} />
             <Route path="/coach" element={<CoachLandingPage />} />
             <Route path="/coach-onboarding" element={<ProtectedRoute><CoachOnboardingPage /></ProtectedRoute>} />
             <Route path="/coach-dashboard" element={<ProtectedRoute><CoachDashboardPage /></ProtectedRoute>} />
