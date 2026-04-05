@@ -75,6 +75,7 @@ import AdminPartnersPage from "./pages/AdminPartnersPage";
 import PartnerDashboardPage from "./pages/PartnerDashboardPage";
 import PartnerBlockedPage from "./pages/PartnerBlockedPage";
 import PeptideVaultPage from "./pages/PeptideVaultPage";
+import PlanoAlimentarIA from "./components/coach/PlanoAlimentarIA";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
