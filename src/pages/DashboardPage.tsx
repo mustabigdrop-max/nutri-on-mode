@@ -426,6 +426,19 @@ const DashboardPage = () => {
   const baseCarbs = profile?.carbs_g || 250;
   const baseFat = profile?.fat_g || 65;
 
+  // Goal-based phase multiplier (applied on top of VET)
+  const goalPhase = useMemo(() => {
+    switch (objetivo) {
+      case "hipertrofia":
+        return { label: "BULKING", emoji: "📈", multiplier: 1.15, proteinBoost: 1.1, color: "text-blue-400", bg: "bg-blue-400/10 border-blue-400/20" };
+      case "emagrecimento":
+        return { label: "CUTTING", emoji: "🔥", multiplier: 0.80, proteinBoost: 1.15, color: "text-red-400", bg: "bg-red-400/10 border-red-400/20" };
+      case "saude_geral":
+      default:
+        return { label: "MANUTENÇÃO", emoji: "⚖️", multiplier: 1.0, proteinBoost: 1.0, color: "text-primary", bg: "bg-primary/10 border-primary/20" };
+    }
+  }, [objetivo]);
+
   // NutriSync: adjust targets based on ALL today's workouts (combined)
   const todayWorkout = getTodayWorkout();
   const todayAllWorkouts = getTodayWorkouts();
@@ -434,9 +447,10 @@ const DashboardPage = () => {
     return combineAdjustments(todayAllWorkouts, weightKg);
   }, [todayAllWorkouts, weightKg]);
 
-  const kcalTarget = Math.round(baseKcal * workoutAdj.kcalMultiplier);
-  const proteinTarget = Math.round(workoutAdj.proteinPerKg * weightKg);
-  const carbsTarget = Math.round(baseCarbs * workoutAdj.carbsMultiplier);
+  // Final targets = VET × goal phase × workout adjustment
+  const kcalTarget = Math.round(baseKcal * goalPhase.multiplier * workoutAdj.kcalMultiplier);
+  const proteinTarget = Math.round(workoutAdj.proteinPerKg * weightKg * goalPhase.proteinBoost);
+  const carbsTarget = Math.round(baseCarbs * goalPhase.multiplier * workoutAdj.carbsMultiplier);
   const fatTarget = Math.round(baseFat * workoutAdj.fatMultiplier);
   const kcalDiff = kcalTarget - baseKcal;
 
@@ -632,6 +646,25 @@ const DashboardPage = () => {
           </motion.div>
         )}
 
+        {/* Goal phase banner */}
+        <motion.div
+          initial={{ opacity: 0, y: -5 }}
+          animate={{ opacity: 1, y: 0 }}
+          className={`rounded-xl border p-3 mb-4 flex items-center justify-between ${goalPhase.bg}`}
+        >
+          <div className="flex items-center gap-3">
+            <span className="text-2xl">{goalPhase.emoji}</span>
+            <div>
+              <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">Fase atual</p>
+              <p className={`text-sm font-bold ${goalPhase.color}`}>{goalPhase.label}</p>
+            </div>
+          </div>
+          <div className="text-right">
+            <p className="text-lg font-bold text-foreground">{kcalTarget}</p>
+            <p className="text-[10px] font-mono text-muted-foreground">kcal/dia</p>
+          </div>
+        </motion.div>
+
         {/* NutriSync workout banner */}
         {todayWorkout && todayWorkout.workout_type !== "rest" && (() => {
           const wInfo = WORKOUT_TYPES[todayWorkout.workout_type as WorkoutType];
@@ -646,8 +679,10 @@ const DashboardPage = () => {
               <div className="flex-1 min-w-0">
                 <p className="text-[10px] font-mono text-primary uppercase tracking-widest">⚡ NutriSync Ativo</p>
                 <p className="text-xs font-bold text-foreground truncate">{wInfo?.label}</p>
-                {kcalDiff > 0 && (
-                  <p className="text-[10px] font-mono text-primary">+{kcalDiff} kcal ajustado para hoje</p>
+                {kcalDiff !== 0 && (
+                  <p className={`text-[10px] font-mono ${kcalDiff > 0 ? "text-primary" : "text-destructive"}`}>
+                    {kcalDiff > 0 ? "+" : ""}{kcalDiff} kcal ajustado para hoje
+                  </p>
                 )}
               </div>
               <Zap className="w-4 h-4 text-primary flex-shrink-0" />
