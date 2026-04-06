@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import BottomNav from "@/components/BottomNav";
-import { Microscope, Bot, BookOpen, Search, FileText, Leaf, Bug, Shield, Zap, Dumbbell, Apple, HeartPulse, Syringe, Activity, Target, GraduationCap, Brain, Dna, Users } from "lucide-react";
+import { Microscope, Bot, BookOpen, Search, FileText, Leaf, Bug, Shield, Zap, Dumbbell, Apple, HeartPulse, Dna, Activity, Target, GraduationCap, Brain, Users } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ApexChat from "@/components/lab/ApexChat";
 import ProtocolLibrary from "@/components/lab/ProtocolLibrary";
@@ -15,7 +15,6 @@ import LabCoachMode from "@/components/lab/LabCoachMode";
 import LabTrainingMaster from "@/components/lab/LabTrainingMaster";
 import LabNutritionMaster from "@/components/lab/LabNutritionMaster";
 import LabHealthMaster from "@/components/lab/LabHealthMaster";
-import LabPeptideLibrary from "@/components/lab/LabPeptideLibrary";
 import LabCardioMaster from "@/components/lab/LabCardioMaster";
 import ExerciseSelector from "@/components/workout/ExerciseSelector";
 import LabProTraining from "@/components/lab/LabProTraining";
@@ -99,9 +98,12 @@ const LabPage = () => {
               <TabsTrigger value="health" className="flex-1 text-xs gap-1 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
                 <HeartPulse className="w-3.5 h-3.5" /> Saúde
               </TabsTrigger>
-              <TabsTrigger value="peptides" className="flex-1 text-xs gap-1 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
-                <Syringe className="w-3.5 h-3.5" /> Peptídeos
-              </TabsTrigger>
+              <button
+                onClick={() => navigate("/peptide-vault")}
+                className="flex-1 flex items-center justify-center gap-1 text-xs px-3 py-1.5 rounded-md text-primary hover:bg-primary/10 transition-colors font-medium"
+              >
+                <Dna className="w-3.5 h-3.5" /> Peptídeos
+              </button>
               <TabsTrigger value="cardio" className="flex-1 text-xs gap-1 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
                 <Activity className="w-3.5 h-3.5" /> Cardio
               </TabsTrigger>
@@ -120,12 +122,6 @@ const LabPage = () => {
               <TabsTrigger value="notebook" className="flex-1 text-xs gap-1 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
                 <FileText className="w-3.5 h-3.5" /> Caderno
               </TabsTrigger>
-              <button
-                onClick={() => navigate("/peptide-vault")}
-                className="flex-1 flex items-center justify-center gap-1 text-xs px-3 py-1.5 rounded-md text-primary hover:bg-primary/10 transition-colors font-medium"
-              >
-                <Dna className="w-3.5 h-3.5" /> NEXUS-BIO
-              </button>
             </TabsList>
 
             <TabsContent value="apex" className="flex-1 min-h-0 mt-0">
@@ -157,9 +153,6 @@ const LabPage = () => {
             </TabsContent>
             <TabsContent value="health" className="flex-1 overflow-y-auto px-4 py-4 mt-0">
               <LabHealthMaster onAskApex={handleAskApex} />
-            </TabsContent>
-            <TabsContent value="peptides" className="flex-1 overflow-y-auto px-4 py-4 mt-0">
-              <LabPeptideLibrary onAskApex={handleAskApex} />
             </TabsContent>
             <TabsContent value="cardio" className="flex-1 overflow-y-auto px-4 py-4 mt-0">
               <LabCardioMaster onAskApex={handleAskApex} />
