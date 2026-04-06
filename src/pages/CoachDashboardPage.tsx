@@ -374,7 +374,7 @@ const CoachDashboardPage = () => {
                   const badge = getScoreBadge(p.score ?? 0);
                   return (
                     <motion.div key={p.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.03 }}>
-                      <Card className="cursor-pointer hover:border-primary/50 transition-colors">
+                      <Card className="cursor-pointer hover:border-primary/50 transition-colors" onClick={() => navigate(`/coach/patient/${p.patient_user_id}`)}>
                         <CardContent className="p-4 flex items-center justify-between">
                           <div
                             className="flex items-center gap-3 flex-1"
