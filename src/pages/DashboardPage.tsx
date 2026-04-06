@@ -646,6 +646,25 @@ const DashboardPage = () => {
           </motion.div>
         )}
 
+        {/* Goal phase banner */}
+        <motion.div
+          initial={{ opacity: 0, y: -5 }}
+          animate={{ opacity: 1, y: 0 }}
+          className={`rounded-xl border p-3 mb-4 flex items-center justify-between ${goalPhase.bg}`}
+        >
+          <div className="flex items-center gap-3">
+            <span className="text-2xl">{goalPhase.emoji}</span>
+            <div>
+              <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">Fase atual</p>
+              <p className={`text-sm font-bold ${goalPhase.color}`}>{goalPhase.label}</p>
+            </div>
+          </div>
+          <div className="text-right">
+            <p className="text-lg font-bold text-foreground">{kcalTarget}</p>
+            <p className="text-[10px] font-mono text-muted-foreground">kcal/dia</p>
+          </div>
+        </motion.div>
+
         {/* NutriSync workout banner */}
         {todayWorkout && todayWorkout.workout_type !== "rest" && (() => {
           const wInfo = WORKOUT_TYPES[todayWorkout.workout_type as WorkoutType];
@@ -660,8 +679,10 @@ const DashboardPage = () => {
               <div className="flex-1 min-w-0">
                 <p className="text-[10px] font-mono text-primary uppercase tracking-widest">⚡ NutriSync Ativo</p>
                 <p className="text-xs font-bold text-foreground truncate">{wInfo?.label}</p>
-                {kcalDiff > 0 && (
-                  <p className="text-[10px] font-mono text-primary">+{kcalDiff} kcal ajustado para hoje</p>
+                {kcalDiff !== 0 && (
+                  <p className={`text-[10px] font-mono ${kcalDiff > 0 ? "text-primary" : "text-destructive"}`}>
+                    {kcalDiff > 0 ? "+" : ""}{kcalDiff} kcal ajustado para hoje
+                  </p>
                 )}
               </div>
               <Zap className="w-4 h-4 text-primary flex-shrink-0" />
