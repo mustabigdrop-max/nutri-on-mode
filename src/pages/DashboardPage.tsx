@@ -419,25 +419,76 @@ const DashboardPage = () => {
     return () => { supabase.removeChannel(channel); };
   }, [user]);
 
-  const objetivo = profile?.objetivo_principal || "saude_geral";
+  // Unify goal from both fields (objetivo_principal or goal)
+  const rawGoal = profile?.objetivo_principal || profile?.goal || "saude_geral";
+  const objetivo = rawGoal;
   const weightKg = profile?.weight_kg || 70;
-  const baseKcal = profile?.vet_kcal || 2000;
-  const baseProtein = profile?.protein_g || 150;
-  const baseCarbs = profile?.carbs_g || 250;
-  const baseFat = profile?.fat_g || 65;
+  const heightCm = profile?.height_cm || 170;
+  const sex = profile?.sex || "male";
+  const activityLevel = profile?.activity_level || "moderate";
+  const usesGlp1 = profile?.uses_glp1 || false;
+  const dateOfBirth = profile?.date_of_birth;
 
-  // Goal-based phase multiplier (applied on top of VET)
-  const goalPhase = useMemo(() => {
-    switch (objetivo) {
-      case "hipertrofia":
-        return { label: "BULKING", emoji: "📈", multiplier: 1.15, proteinBoost: 1.1, color: "text-blue-400", bg: "bg-blue-400/10 border-blue-400/20" };
-      case "emagrecimento":
-        return { label: "CUTTING", emoji: "🔥", multiplier: 0.80, proteinBoost: 1.15, color: "text-red-400", bg: "bg-red-400/10 border-red-400/20" };
-      case "saude_geral":
-      default:
-        return { label: "MANUTENÇÃO", emoji: "⚖️", multiplier: 1.0, proteinBoost: 1.0, color: "text-primary", bg: "bg-primary/10 border-primary/20" };
+  // Auto-calculate VET from profile if not set
+  const autoCalc = useMemo(() => {
+    const ACTIVITY_FACTORS: Record<string, number> = {
+      sedentary: 1.2, light: 1.375, moderate: 1.55, very_active: 1.725, athlete: 1.9,
+    };
+    const age = dateOfBirth
+      ? Math.floor((Date.now() - new Date(dateOfBirth).getTime()) / (365.25 * 24 * 60 * 60 * 1000))
+      : 30;
+    const geb = sex === "male"
+      ? 10 * weightKg + 6.25 * heightCm - 5 * age + 5
+      : 10 * weightKg + 6.25 * heightCm - 5 * age - 161;
+    const factor = ACTIVITY_FACTORS[activityLevel] || 1.55;
+    const get = geb * factor;
+
+    // Determine goal phase adjustments
+    let vet = get;
+    let proteinPerKg = 1.6;
+    const g = rawGoal;
+    if (g === "lose_weight" || g === "emagrecimento" || g === "cutting") {
+      vet = get - 500; proteinPerKg = 2.0;
+    } else if (g === "gain_muscle" || g === "hipertrofia" || g === "bulking") {
+      vet = get + 350; proteinPerKg = 2.2;
+    } else if (g === "definition" || g === "definicao") {
+      vet = get - 500; proteinPerKg = 2.2;
+    } else if (g === "performance") {
+      vet = get + 250; proteinPerKg = 2.0;
+    } else if (g === "glp1") {
+      vet = get - 400; proteinPerKg = 2.2;
     }
-  }, [objetivo]);
+    if (usesGlp1) proteinPerKg = Math.max(proteinPerKg, 2.0);
+
+    const protein = Math.round(weightKg * proteinPerKg);
+    const fat = Math.round((vet * 0.25) / 9);
+    const carbs = Math.round(Math.max((vet - protein * 4 - fat * 9) / 4, 50));
+    return { vet: Math.round(vet), protein, carbs, fat };
+  }, [weightKg, heightCm, sex, activityLevel, rawGoal, usesGlp1, dateOfBirth]);
+
+  // Use profile macros if set, otherwise auto-calculate
+  const baseKcal = profile?.vet_kcal || autoCalc.vet;
+  const baseProtein = profile?.protein_g || autoCalc.protein;
+  const baseCarbs = profile?.carbs_g || autoCalc.carbs;
+  const baseFat = profile?.fat_g || autoCalc.fat;
+
+  // Goal-based phase multiplier (NutriSync overlay)
+  const goalPhase = useMemo(() => {
+    const g = rawGoal;
+    if (g === "gain_muscle" || g === "hipertrofia" || g === "bulking") {
+      return { label: "BULKING", emoji: "📈", multiplier: 1.0, proteinBoost: 1.0, color: "text-blue-400", bg: "bg-blue-400/10 border-blue-400/20" };
+    }
+    if (g === "lose_weight" || g === "emagrecimento" || g === "cutting" || g === "definition" || g === "definicao") {
+      return { label: "CUTTING", emoji: "🔥", multiplier: 1.0, proteinBoost: 1.0, color: "text-red-400", bg: "bg-red-400/10 border-red-400/20" };
+    }
+    if (g === "performance") {
+      return { label: "PERFORMANCE", emoji: "⚡", multiplier: 1.0, proteinBoost: 1.0, color: "text-amber-400", bg: "bg-amber-400/10 border-amber-400/20" };
+    }
+    if (g === "glp1") {
+      return { label: "GLP-1", emoji: "💉", multiplier: 1.0, proteinBoost: 1.0, color: "text-purple-400", bg: "bg-purple-400/10 border-purple-400/20" };
+    }
+    return { label: "MANUTENÇÃO", emoji: "⚖️", multiplier: 1.0, proteinBoost: 1.0, color: "text-primary", bg: "bg-primary/10 border-primary/20" };
+  }, [rawGoal]);
 
   // NutriSync: adjust targets based on ALL today's workouts (combined)
   const todayWorkout = getTodayWorkout();
