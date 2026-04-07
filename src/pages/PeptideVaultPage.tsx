@@ -253,6 +253,18 @@ function OracleTab({ userId }: { userId?: string }) {
 /* ==================== ENCYCLOPEDIA TAB ==================== */
 function EncyclopediaTab() {
   const [selected, setSelected] = useState<Peptide | null>(null);
+  const [catFilter, setCatFilter] = useState("Todos");
+  const [tagFilter, setTagFilter] = useState("todos");
+  const [sortBy, setSortBy] = useState<"status" | "name" | "category">("status");
+
+  const filtered = useMemo(() => {
+    let list = peptides;
+    if (catFilter !== "Todos") list = list.filter(p => p.category === catFilter);
+    if (tagFilter !== "todos") list = list.filter(p => p.tags?.includes(tagFilter));
+    if (sortBy === "name") list = [...list].sort((a, b) => a.name.localeCompare(b.name));
+    else if (sortBy === "category") list = [...list].sort((a, b) => a.category.localeCompare(b.category));
+    return list;
+  }, [catFilter, tagFilter, sortBy]);
 
   if (selected) {
     return (
@@ -278,7 +290,7 @@ function EncyclopediaTab() {
             { title: "🔗 Sinergias", content: selected.synergies },
             { title: "🍽️ Impacto na Dieta", content: selected.dietImpact, highlight: true },
           ].map((s) => (
-            <Card key={s.title} className={`border ${s.highlight ? `border-[${selected.color}]/40 bg-[${selected.color}]/5` : "border-gray-800 bg-gray-900/50"}`}
+            <Card key={s.title} className={`border ${s.highlight ? "" : "border-gray-800 bg-gray-900/50"}`}
               style={s.highlight ? { borderColor: `${selected.color}40`, backgroundColor: `${selected.color}08` } : {}}>
               <CardHeader className="pb-2 pt-4 px-4">
                 <CardTitle className="text-sm font-semibold" style={{ color: s.highlight ? selected.color : "#d1d5db" }}>{s.title}</CardTitle>
@@ -310,21 +322,83 @@ function EncyclopediaTab() {
 
   return (
     <ScrollArea className="h-full px-4">
-      <div className="py-4 grid grid-cols-2 gap-3">
-        {peptides.map((p) => (
-          <button key={p.id} onClick={() => setSelected(p)}
-            className="text-left rounded-xl p-3 border transition-all hover:scale-[1.02]"
-            style={{ borderColor: `${p.color}30`, backgroundColor: `${p.color}08` }}
-            onMouseEnter={(e) => (e.currentTarget.style.borderColor = p.color)}
-            onMouseLeave={(e) => (e.currentTarget.style.borderColor = `${p.color}30`)}>
-            <Badge className="text-[9px] mb-2 border" style={{ backgroundColor: `${p.badgeColor}15`, color: p.badgeColor, borderColor: `${p.badgeColor}40` }}>
-              {p.badge}
-            </Badge>
-            <h3 className="text-sm font-bold text-white" style={{ fontFamily: "'Space Grotesk'" }}>{p.name}</h3>
-            <p className="text-[10px] text-gray-500 mt-1 line-clamp-2">{p.classe}</p>
-            <p className="text-[10px] mt-1" style={{ color: p.color }}>{p.status} · t½ {p.halfLife}</p>
-          </button>
-        ))}
+      <div className="py-4 space-y-3">
+        {/* Stats */}
+        <div className="grid grid-cols-4 gap-2">
+          {[
+            { icon: "🧪", val: peptides.length, label: "Total" },
+            { icon: "✅", val: peptides.filter(p => p.badge.includes("APROVADO")).length, label: "Aprovados" },
+            { icon: "🔄", val: peptides.filter(p => p.badge.includes("BLEND")).length, label: "Blends" },
+            { icon: "🔥", val: peptides.filter(p => p.badge.includes("VANGUARDA")).length, label: "Vanguarda+" },
+          ].map(s => (
+            <div key={s.label} className="rounded-lg border border-gray-800 bg-gray-900/50 p-2 text-center">
+              <span className="text-lg">{s.icon}</span>
+              <p className="text-sm font-bold text-white">{s.val}</p>
+              <p className="text-[9px] text-gray-500">{s.label}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Category filter */}
+        <div className="flex flex-wrap gap-1.5">
+          {["Todos","Metabólico","Eixo GH","Eixo IGF","Reparo","Blends","Neuro/Cognitivo","Longevidade","Bioreguladores","Sexual/Melanocortina","Cosmético","Imune"].map(c => (
+            <button key={c} onClick={() => setCatFilter(c)}
+              className={`text-[10px] px-2.5 py-1 rounded-full border transition-colors ${catFilter === c ? "bg-[#4ade80]/20 border-[#4ade80]/50 text-[#4ade80]" : "border-gray-700 text-gray-500 hover:text-gray-300"}`}>
+              {c}
+            </button>
+          ))}
+        </div>
+
+        {/* Tag filter */}
+        <div className="flex flex-wrap gap-1.5">
+          <span className="text-[10px] text-gray-600 self-center mr-1">Objetivo:</span>
+          {["todos","emagrecimento","musculação","longevidade","neuro","imune","reparo","sono","sexual","metabolismo","aprovado","gh","blend","anti-aging","cognitivo"].map(t => (
+            <button key={t} onClick={() => setTagFilter(t)}
+              className={`text-[10px] px-2 py-0.5 rounded-full border transition-colors ${tagFilter === t ? "bg-[#4ade80]/15 border-[#4ade80]/40 text-[#4ade80]" : "border-gray-800 text-gray-600 hover:text-gray-400"}`}>
+              {t}
+            </button>
+          ))}
+        </div>
+
+        {/* Sort */}
+        <div className="flex items-center gap-2 text-[10px] text-gray-500">
+          <span>Ordenar:</span>
+          {(["status","name","category"] as const).map(s => (
+            <button key={s} onClick={() => setSortBy(s)}
+              className={`px-2 py-0.5 rounded border transition ${sortBy === s ? "border-[#4ade80]/40 text-[#4ade80]" : "border-gray-800 hover:text-gray-300"}`}>
+              {s === "status" ? "Status" : s === "name" ? "A-Z" : "Categoria"}
+            </button>
+          ))}
+        </div>
+
+        <p className="text-[10px] text-gray-600">{filtered.length} de {peptides.length} compostos</p>
+
+        {/* Grid */}
+        <div className="grid grid-cols-2 gap-3">
+          {filtered.map((p) => (
+            <button key={p.id} onClick={() => setSelected(p)}
+              className="text-left rounded-xl p-3 border transition-all hover:scale-[1.02]"
+              style={{ borderColor: `${p.color}30`, backgroundColor: `${p.color}08` }}
+              onMouseEnter={(e) => (e.currentTarget.style.borderColor = p.color)}
+              onMouseLeave={(e) => (e.currentTarget.style.borderColor = `${p.color}30`)}>
+              <Badge className="text-[9px] mb-2 border" style={{ backgroundColor: `${p.badgeColor}15`, color: p.badgeColor, borderColor: `${p.badgeColor}40` }}>
+                {p.badge}
+              </Badge>
+              <h3 className="text-sm font-bold text-white" style={{ fontFamily: "'Space Grotesk'" }}>{p.name}</h3>
+              <p className="text-[10px] text-gray-500 mt-1 line-clamp-1">{p.classe}</p>
+              <p className="text-[9px] text-gray-600 mt-0.5">{p.category}t½ {p.halfLife}</p>
+              <div className="flex flex-wrap gap-1 mt-1.5">
+                {p.tags?.slice(0, 3).map(t => (
+                  <span key={t} className="text-[8px] px-1.5 py-0.5 rounded-full border border-gray-800 text-gray-500">{t}</span>
+                ))}
+              </div>
+            </button>
+          ))}
+        </div>
+
+        <p className="text-center text-[10px] text-gray-700 py-4">
+          NEXUS-BIO PeptideVault v2 · nutriON · Fins educacionais e científicos. Não substituem orientação médica.
+        </p>
       </div>
     </ScrollArea>
   );
