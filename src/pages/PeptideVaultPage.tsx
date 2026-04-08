@@ -18,6 +18,7 @@ import {
   peptides, protocols, dietRevolutionCards, alerts as initialAlerts,
   quickPrompts, searchSuggestions, type Peptide, type Alert
 } from "@/data/peptideVaultData";
+import { protocolPeptides } from "@/data/peptideProtocols";
 
 type Tab = "oracle" | "encyclopedia" | "research" | "protocols" | "alerts";
 
