@@ -312,9 +312,17 @@ function EncyclopediaTab() {
             </CardContent>
           </Card>
 
-          <PeptideNutritionalStrategy peptideSlug={
-            ({ bpc157: "bpc-157", semaglutide: "semaglutida", tirzepatide: "tirzepatida", ipamorelin: "ipamorelin-cjc1295", cjc1295: "ipamorelin-cjc1295", tb500: "tb-500", follistatin344: "folistatina-344", aod9604: "aod-9604", ghkcu: "ghk-cu", motsc: "mots-c" } as Record<string, string>)[selected.id] || selected.id
-          } />
+          <PeptideNutritionalStrategy
+            peptideSlug={
+              ({ bpc157: "bpc-157", semaglutide: "semaglutida", tirzepatide: "tirzepatida", ipamorelin: "ipamorelin-cjc1295", cjc1295: "ipamorelin-cjc1295", tb500: "tb-500", follistatin344: "folistatina-344", aod9604: "aod-9604", ghkcu: "ghk-cu", motsc: "mots-c" } as Record<string, string>)[selected.id] || selected.id
+            }
+            fallbackData={{
+              dietImpact: selected.dietImpact,
+              synergies: selected.synergies,
+              dosage: selected.dosage,
+              mechanism: selected.mechanism,
+            }}
+          />
         </div>
       </ScrollArea>
     );
