@@ -18,6 +18,7 @@ import {
   peptides, protocols, dietRevolutionCards, alerts as initialAlerts,
   quickPrompts, searchSuggestions, type Peptide, type Alert
 } from "@/data/peptideVaultData";
+import { protocolPeptides } from "@/data/peptideProtocols";
 
 type Tab = "oracle" | "encyclopedia" | "research" | "protocols" | "alerts";
 
@@ -520,6 +521,9 @@ function ResearchTab({ userId }: { userId?: string }) {
 /* ==================== PROTOCOLS TAB ==================== */
 function ProtocolsTab() {
   const [openId, setOpenId] = useState<string | null>(null);
+  const [selectedPeptide, setSelectedPeptide] = useState<string | null>(null);
+
+  const tierColors: Record<string, string> = { S: "#4ade80", A: "#fbbf24", B: "#818cf8" };
 
   return (
     <ScrollArea className="h-full px-4">
@@ -538,8 +542,77 @@ function ProtocolsTab() {
               </CollapsibleTrigger>
               <CollapsibleContent>
                 <CardContent className="space-y-3 pt-0">
-                  <div>
-                    <p className="text-xs font-semibold text-gray-300 mb-2">Stack:</p>
+                  {/* Peptide Grid */}
+                  {protocolPeptides[p.id] && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {protocolPeptides[p.id].map((pep) => {
+                        const isOpen = selectedPeptide === `${p.id}-${pep.name}`;
+                        const key = `${p.id}-${pep.name}`;
+                        return (
+                          <div key={key}>
+                            <button
+                              onClick={() => setSelectedPeptide(isOpen ? null : key)}
+                              className="w-full text-left rounded-lg p-3 border transition-all hover:scale-[1.01]"
+                              style={{
+                                borderColor: isOpen ? tierColors[pep.tier] : `${tierColors[pep.tier]}30`,
+                                backgroundColor: isOpen ? `${tierColors[pep.tier]}12` : `${tierColors[pep.tier]}06`,
+                              }}
+                            >
+                              <div className="flex items-center gap-2 mb-1">
+                                <span
+                                  className="text-[10px] font-bold px-1.5 py-0.5 rounded"
+                                  style={{ backgroundColor: `${tierColors[pep.tier]}25`, color: tierColors[pep.tier] }}
+                                >
+                                  {pep.tier}
+                                </span>
+                                <span className="text-xs font-bold text-white" style={{ fontFamily: "'Space Grotesk'" }}>{pep.name}</span>
+                              </div>
+                              <p className="text-[10px] text-gray-400 line-clamp-2 leading-relaxed">{pep.role}</p>
+                              <p className="text-[10px] text-[#4ade80] mt-1 font-medium">{pep.dose}</p>
+                            </button>
+
+                            {/* Expanded detail panel */}
+                            <div
+                              className="overflow-hidden transition-all duration-300 ease-in-out"
+                              style={{
+                                maxHeight: isOpen ? "600px" : "0px",
+                                opacity: isOpen ? 1 : 0,
+                              }}
+                            >
+                              <div className="mt-1 rounded-lg border p-3 space-y-2" style={{ borderColor: `${tierColors[pep.tier]}20`, backgroundColor: "#0d140d" }}>
+                                <div>
+                                  <p className="text-[10px] font-semibold text-[#4ade80] mb-0.5">⚙️ Mecanismo de Ação</p>
+                                  <p className="text-[10px] text-gray-400 leading-relaxed">{pep.mechanism}</p>
+                                </div>
+                                <div className="grid grid-cols-3 gap-2 text-[10px]">
+                                  <div>
+                                    <span className="text-gray-600">Meia-vida</span>
+                                    <p className="text-white font-medium">{pep.halfLife}</p>
+                                  </div>
+                                  <div>
+                                    <span className="text-gray-600">Via</span>
+                                    <p className="text-white font-medium">{pep.via}</p>
+                                  </div>
+                                  <div>
+                                    <span className="text-gray-600">Frequência</span>
+                                    <p className="text-white font-medium">{pep.frequency}</p>
+                                  </div>
+                                </div>
+                                <div>
+                                  <p className="text-[10px] font-semibold text-amber-400 mb-0.5">🔗 Sinergias</p>
+                                  <p className="text-[10px] text-gray-400">{pep.synergy}</p>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {/* Existing stack summary */}
+                  <div className="border-t border-gray-800/50 pt-2 mt-2">
+                    <p className="text-xs font-semibold text-gray-300 mb-2">📋 Stack resumo:</p>
                     {p.stack.map((s, i) => (
                       <div key={i} className="flex justify-between text-xs py-1.5 border-b border-gray-800/50 last:border-0">
                         <span className="text-white font-medium">{s.peptide}</span>
@@ -583,8 +656,6 @@ function ProtocolsTab() {
     </ScrollArea>
   );
 }
-
-/* ==================== ALERTS TAB ==================== */
 function AlertsTab({ userId }: { userId?: string }) {
   const [checking, setChecking] = useState(false);
   const [extraAlerts, setExtraAlerts] = useState("");

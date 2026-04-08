@@ -1860,6 +1860,8 @@ export const dietRevolutionCards = [
   { emoji: "⚡", title: "Partição de nutrientes com GIP", description: "Carboidratos são direcionados para glicogênio muscular PRIMEIRO, reduzindo armazenamento adiposo em até 40%." },
   { emoji: "📈", title: "GH e a eficiência proteica", description: "Com GH otimizado via Ipamorelin+CJC, 1.6g/kg de proteína funciona como 2.4g/kg antes." },
   { emoji: "🦠", title: "Microbioma e peptídeos", description: "BPC-157+KPV modulam o microbioma para gerar 150-200kcal extras via AGCC por dia." },
+  { emoji: "🔬", title: "AOD-9604 — lipolítico sem efeito diabetogênico", description: "Fragmento C-terminal do GH (hGH 176-191) com atividade lipolítica 12.5x superior ao GH isolado, sem resistência à insulina. Ativa beta-3 adrenoreceptores no tecido adiposo." },
+  { emoji: "🧬", title: "Follistatin 344 — removendo o teto genético", description: "Inibidor de miostatina. Remove o freio biológico no crescimento muscular. Com partição de nutrientes otimizada, ganho muscular líquido aumenta 35-50% vs protocolo sem peptídeos." },
 ];
 
 export interface Alert {
