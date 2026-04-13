@@ -32,6 +32,7 @@ const sectionNav: { id: Section; label: string; icon: any }[] = [
 
 export default function TrainingPage() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [section, setSection] = useState<Section>("gerar");
 
   return (
@@ -39,6 +40,9 @@ export default function TrainingPage() {
       {/* Header */}
       <div className="px-4 pt-6 pb-2">
         <div className="flex items-center gap-3 mb-4">
+          <button onClick={() => navigate(-1)} className="w-10 h-10 rounded-xl flex items-center justify-center hover:opacity-80 transition-opacity" style={{ background: "rgba(255,255,255,0.05)" }}>
+            <ArrowLeft className="w-5 h-5" style={{ color: "#f0fdf4" }} />
+          </button>
           <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "rgba(74,222,128,0.15)" }}>
             <Dumbbell className="w-5 h-5" style={{ color: "#4ade80" }} />
           </div>
