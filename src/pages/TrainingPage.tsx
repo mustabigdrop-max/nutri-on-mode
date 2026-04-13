@@ -341,6 +341,80 @@ function EliteGenerateSection({ userId }: { userId?: string }) {
       { id: "periodizacao", label: "Periodização", icon: BarChart3 },
     ];
 
+    const saveToNotebook = async () => {
+      if (!userId) return;
+      const protocolData = protocol || textResults;
+      await supabase.from("lab_saved_items").insert({
+        user_id: userId,
+        tipo: "protocolo_treino",
+        titulo: `Protocolo: ${clientName} — ${PHASES.find(p => p.id === phase)?.name || phase}`,
+        conteudo: { protocol: protocolData, clientName, phase, muscles, level, weeks, days },
+        tags: ["training", phase],
+      });
+      toast.success("Salvo no caderno científico!");
+    };
+
+    const exportFormatted = () => {
+      const lines: string[] = [];
+      const ov = protocol?.block_overview;
+      if (ov) {
+        lines.push(`═══════════════════════════════════════`);
+        lines.push(`PROTOCOLO DE TREINO — ${clientName.toUpperCase()}`);
+        lines.push(`═══════════════════════════════════════\n`);
+        lines.push(`📋 ${ov.title || "Protocolo de Elite"}`);
+        lines.push(`⏱  Duração: ${ov.duration_weeks} semanas | Deload: Semana ${ov.deload_week}`);
+        lines.push(`🔀 Divisão: ${ov.split_type}`);
+        lines.push(`\n📝 JUSTIFICATIVA DA DIVISÃO:`);
+        lines.push(ov.split_justification || "");
+        lines.push(`\n📈 MODELO DE PROGRESSÃO:`);
+        lines.push(ov.progression_model || "");
+        if (ov.muscle_priorities?.length) {
+          lines.push(`\n🎯 PRIORIDADES MUSCULARES:`);
+          ov.muscle_priorities.forEach((mp: any) => lines.push(`  • ${mp.muscle} — ${mp.weekly_sets} séries/sem (${mp.priority})`));
+        }
+        if (ov.maintenance_muscles?.length) {
+          lines.push(`\n🔄 MANUTENÇÃO:`);
+          ov.maintenance_muscles.forEach((mm: any) => {
+            const label = typeof mm === "string" ? mm : `${mm.muscle} — ${mm.weekly_sets} séries/sem`;
+            lines.push(`  • ${label}`);
+          });
+        }
+        if (ov.coach_notes) lines.push(`\n💡 OBSERVAÇÕES DO COACH:\n${ov.coach_notes}`);
+      }
+      if (protocol?.improvement_alerts?.length) {
+        lines.push(`\n⚠️ ALERTAS DE MELHORIA:`);
+        protocol.improvement_alerts.forEach((a: any) => lines.push(`  [${a.severity?.toUpperCase()}] ${a.area}: ${a.message}`));
+      }
+      if (protocol?.training_days?.length) {
+        protocol.training_days.forEach((day: any) => {
+          lines.push(`\n${"─".repeat(40)}`);
+          lines.push(`DIA ${day.day_number} — ${day.session_title}`);
+          lines.push(`Foco: ${day.focus_muscles?.join(", ")} | Duração: ${day.estimated_duration}`);
+          if (day.warmup?.length) {
+            lines.push(`\n  🔥 WARM-UP:`);
+            day.warmup.forEach((w: any) => lines.push(`    • ${w.name} — ${w.sets}×${w.reps}`));
+          }
+          day.exercises?.forEach((ex: any, i: number) => {
+            lines.push(`\n  ${i + 1}. ${ex.name}`);
+            lines.push(`     Alvo: ${ex.muscle_target} | Tempo: ${ex.tempo || "—"}`);
+            const s = ex.structure || {};
+            if (s.feeder_sets?.length) s.feeder_sets.forEach((f: any) => lines.push(`     [FEEDER] ${f.load_percent} × ${f.reps}`));
+            if (s.top_set) lines.push(`     [TOP SET] ${s.top_set.sets}×${s.top_set.reps} RPE ${s.top_set.rpe} | Descanso: ${s.top_set.rest}`);
+            if (s.backoff_sets) lines.push(`     [BACK-OFF] ${s.backoff_sets.sets} séries × ${s.backoff_sets.reps} (${s.backoff_sets.load_reduction})`);
+            if (s.work_sets) lines.push(`     [TRABALHO] ${s.work_sets.sets} séries × ${s.work_sets.reps} RPE ${s.work_sets.rpe}`);
+            if (ex.execution_cues) lines.push(`     📌 ${ex.execution_cues}`);
+          });
+          if (day.session_notes) lines.push(`\n  📝 ${day.session_notes}`);
+        });
+      }
+      if (!protocol && textResults.protocolo) lines.push(textResults.protocolo);
+      const text = lines.join("\n");
+      const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a"); a.href = url; a.download = `protocolo_${clientName.replace(/\s+/g, "_")}.txt`; a.click();
+      URL.revokeObjectURL(url);
+    };
+
     return (
       <div className="space-y-4 mt-3">
         <div className="flex items-center justify-between">
@@ -349,15 +423,13 @@ function EliteGenerateSection({ userId }: { userId?: string }) {
             <ChevronLeft className="w-3 h-3" /> Novo protocolo
           </button>
           <div className="flex gap-1.5">
+            <button onClick={saveToNotebook} className="flex items-center gap-1 text-[10px] px-2.5 py-1.5 rounded-lg font-semibold" style={{ background: "rgba(139,92,246,0.08)", color: "#a78bfa", border: "1px solid rgba(139,92,246,0.15)" }}>
+              <Bookmark className="w-3 h-3" /> Caderno
+            </button>
             <button onClick={saveProtocol} className="flex items-center gap-1 text-[10px] px-2.5 py-1.5 rounded-lg font-semibold" style={{ background: GREEN_DIM, color: GREEN, border: `1px solid ${BORDER}` }}>
               <Save className="w-3 h-3" /> Salvar
             </button>
-            <button onClick={() => {
-              const text = protocol ? JSON.stringify(protocol, null, 2) : Object.values(textResults).join("\n\n");
-              const blob = new Blob([text], { type: "text/plain" });
-              const url = URL.createObjectURL(blob);
-              const a = document.createElement("a"); a.href = url; a.download = `protocolo_${clientName}.txt`; a.click();
-            }} className="flex items-center gap-1 text-[10px] px-2.5 py-1.5 rounded-lg font-semibold" style={{ background: GREEN_DIM, color: GREEN, border: `1px solid ${BORDER}` }}>
+            <button onClick={exportFormatted} className="flex items-center gap-1 text-[10px] px-2.5 py-1.5 rounded-lg font-semibold" style={{ background: GREEN_DIM, color: GREEN, border: `1px solid ${BORDER}` }}>
               <Download className="w-3 h-3" /> Exportar
             </button>
           </div>
