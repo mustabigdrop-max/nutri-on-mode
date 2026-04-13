@@ -1109,20 +1109,130 @@ function HistorySection({ userId }: { userId?: string }) {
 
       <AnimatePresence>
         {viewModal && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-end justify-center" style={{ background: "rgba(0,0,0,0.8)" }} onClick={() => setViewModal(null)}>
-            <motion.div initial={{ y: 400 }} animate={{ y: 0 }} exit={{ y: 400 }} onClick={e => e.stopPropagation()}
-              className="w-full max-w-lg rounded-t-2xl p-5 max-h-[85vh] overflow-y-auto" style={{ background: BG, border: `1px solid ${BORDER_ACTIVE}` }}>
-              <h3 className="text-sm font-bold mb-1" style={{ color: GREEN }}>{viewModal.client_name}</h3>
-              <p className="text-[10px] mb-4" style={{ color: TEXT_MUTED }}>{viewModal.phase} · {viewModal.weeks} sem</p>
-              <div className="text-[11px] whitespace-pre-wrap space-y-3" style={{ color: TEXT_DIM }}>
-                {viewModal.protocol_text && <div><h4 className="font-bold mb-1" style={{ color: GREEN }}>Protocolo</h4>{viewModal.protocol_text}</div>}
-                {viewModal.anatomy_text && <div><h4 className="font-bold mb-1" style={{ color: GREEN }}>Anatomia</h4>{viewModal.anatomy_text}</div>}
-              </div>
-            </motion.div>
-          </motion.div>
+          <HistoryViewModal protocol={viewModal} onClose={() => setViewModal(null)} userId={userId} />
         )}
       </AnimatePresence>
     </div>
+  );
+}
+
+/* ── History View Modal ── */
+function HistoryViewModal({ protocol: p, onClose, userId }: { protocol: any; onClose: () => void; userId?: string }) {
+  const [expandedDay, setExpandedDay] = useState<number | null>(0);
+  const [expandedExercise, setExpandedExercise] = useState<string | null>(null);
+
+  let parsed: any = null;
+  try {
+    parsed = typeof p.protocol_text === "string" ? JSON.parse(p.protocol_text) : p.protocol_text;
+  } catch { parsed = null; }
+
+  const saveToNotebook = async () => {
+    if (!userId) return;
+    await supabase.from("lab_saved_items").insert({
+      user_id: userId,
+      tipo: "protocolo_treino",
+      titulo: `Protocolo: ${p.client_name} — ${PHASES.find((ph: any) => ph.id === p.phase)?.name || p.phase}`,
+      conteudo: { protocol: parsed || p.protocol_text, clientName: p.client_name, phase: p.phase },
+      tags: ["training", p.phase],
+    });
+    toast.success("Salvo no caderno científico!");
+  };
+
+  const exportFormatted = () => {
+    const lines: string[] = [];
+    const ov = parsed?.block_overview;
+    lines.push(`PROTOCOLO DE TREINO — ${p.client_name?.toUpperCase()}`);
+    lines.push(`${p.phase} · ${p.weeks} semanas\n`);
+    if (ov) {
+      lines.push(ov.title || "");
+      lines.push(`Divisão: ${ov.split_type || "—"}`);
+      lines.push(`Duração: ${ov.duration_weeks} semanas`);
+      if (ov.split_justification) lines.push(`\nJustificativa: ${ov.split_justification}`);
+      if (ov.coach_notes) lines.push(`\nObservações: ${ov.coach_notes}`);
+    }
+    if (parsed?.training_days?.length) {
+      parsed.training_days.forEach((day: any) => {
+        lines.push(`\n${"─".repeat(40)}`);
+        lines.push(`DIA ${day.day_number} — ${day.session_title}`);
+        day.exercises?.forEach((ex: any, i: number) => {
+          lines.push(`  ${i + 1}. ${ex.name} — ${ex.muscle_target}`);
+          const s = ex.structure || {};
+          if (s.top_set) lines.push(`     [TOP SET] ${s.top_set.sets}×${s.top_set.reps} RPE ${s.top_set.rpe}`);
+          if (s.backoff_sets) lines.push(`     [BACK-OFF] ${s.backoff_sets.sets}×${s.backoff_sets.reps}`);
+          if (s.work_sets) lines.push(`     [TRABALHO] ${s.work_sets.sets}×${s.work_sets.reps}`);
+        });
+      });
+    } else if (p.protocol_text && !parsed) {
+      lines.push(p.protocol_text);
+    }
+    const blob = new Blob([lines.join("\n")], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a"); a.href = url; a.download = `protocolo_${p.client_name?.replace(/\s+/g, "_")}.txt`; a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-end justify-center" style={{ background: "rgba(0,0,0,0.85)" }} onClick={onClose}>
+      <motion.div initial={{ y: 400 }} animate={{ y: 0 }} exit={{ y: 400 }} onClick={e => e.stopPropagation()}
+        className="w-full max-w-lg rounded-t-2xl max-h-[90vh] overflow-y-auto" style={{ background: BG, border: `1px solid ${BORDER_ACTIVE}` }}>
+        {/* Header */}
+        <div className="sticky top-0 z-10 px-5 pt-5 pb-3" style={{ background: BG, borderBottom: `1px solid ${BORDER}` }}>
+          <div className="flex items-center justify-between mb-2">
+            <div>
+              <h3 className="text-sm font-black" style={{ color: TEXT, fontFamily: FONT }}>{p.client_name}</h3>
+              <p className="text-[10px]" style={{ color: TEXT_MUTED }}>
+                {PHASES.find((ph: any) => ph.id === p.phase)?.name || p.phase} · {p.weeks} sem · {new Date(p.created_at).toLocaleDateString("pt-BR")}
+              </p>
+            </div>
+            <button onClick={onClose} className="text-[10px] px-2 py-1 rounded-lg" style={{ background: SURFACE2, color: TEXT_MUTED }}>✕</button>
+          </div>
+          <div className="flex gap-1.5">
+            <button onClick={saveToNotebook} className="flex items-center gap-1 text-[9px] px-2 py-1 rounded-lg font-semibold" style={{ background: "rgba(139,92,246,0.08)", color: "#a78bfa", border: "1px solid rgba(139,92,246,0.15)" }}>
+              <Bookmark className="w-2.5 h-2.5" /> Caderno
+            </button>
+            <button onClick={exportFormatted} className="flex items-center gap-1 text-[9px] px-2 py-1 rounded-lg font-semibold" style={{ background: GREEN_DIM, color: GREEN, border: `1px solid ${BORDER}` }}>
+              <Download className="w-2.5 h-2.5" /> Exportar
+            </button>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="px-5 py-4 space-y-3">
+          {parsed?.block_overview ? (
+            <>
+              <BlockOverviewCard overview={parsed.block_overview} alerts={parsed.improvement_alerts} clientName={p.client_name} />
+              {parsed.training_days?.map((day: any, idx: number) => (
+                <TrainingDayCard key={idx} day={day} index={idx} expanded={expandedDay === idx} onToggle={() => setExpandedDay(expandedDay === idx ? null : idx)}
+                  expandedExercise={expandedExercise} setExpandedExercise={setExpandedExercise} />
+              ))}
+            </>
+          ) : p.protocol_text ? (
+            <TextCard content={typeof p.protocol_text === "string" ? p.protocol_text : JSON.stringify(p.protocol_text, null, 2)} />
+          ) : (
+            <p className="text-xs text-center py-8" style={{ color: TEXT_MUTED }}>Sem dados do protocolo</p>
+          )}
+
+          {p.anatomy_text && (
+            <div>
+              <h4 className="text-[11px] font-bold mb-2" style={{ color: GREEN }}>📐 Anatomia</h4>
+              <TextCard content={p.anatomy_text} />
+            </div>
+          )}
+          {p.tecnica_text && (
+            <div>
+              <h4 className="text-[11px] font-bold mb-2" style={{ color: GREEN }}>🎯 Técnica</h4>
+              <TextCard content={p.tecnica_text} />
+            </div>
+          )}
+          {p.periodizacao_text && (
+            <div>
+              <h4 className="text-[11px] font-bold mb-2" style={{ color: GREEN }}>📊 Periodização</h4>
+              <TextCard content={p.periodizacao_text} />
+            </div>
+          )}
+        </div>
+      </motion.div>
+    </motion.div>
   );
 }
 
