@@ -466,36 +466,40 @@ class PremiumPDF {
           this.y += 13;
 
           const struct = ex.structure || {};
+          const s = (v: any, fb: string = "—") => (v !== undefined && v !== null && v !== "") ? String(v) : fb;
 
           // Sets table
           const sets: { type: string; detail: string; color: RGB; rest?: string }[] = [];
           if (struct.feeder_sets?.length) {
             struct.feeder_sets.forEach((f: any, fi: number) => {
-              sets.push({ type: `Feeder ${fi + 1}`, detail: `${f.load_percent} × ${f.reps}`, color: C.purple });
+              sets.push({ type: `Feeder ${fi + 1}`, detail: `${s(f.load_percent, "50%")} × ${s(f.reps, "5-6")}`, color: C.purple });
             });
           }
           if (struct.top_set) {
+            const ts = struct.top_set;
             sets.push({
               type: "TOP SET",
-              detail: `${struct.top_set.sets}×${struct.top_set.reps} RPE ${struct.top_set.rpe}`,
+              detail: `${s(ts.sets, "1")}×${s(ts.reps, "6-8")} RPE ${s(ts.rpe, "8-9")}`,
               color: C.orange,
-              rest: struct.top_set.rest,
+              rest: s(ts.rest, "2-3min"),
             });
           }
           if (struct.backoff_sets) {
+            const bo = struct.backoff_sets;
             sets.push({
               type: "Back-off",
-              detail: `${struct.backoff_sets.sets}×${struct.backoff_sets.reps} (${struct.backoff_sets.load_reduction})`,
+              detail: `${s(bo.sets, "2")}×${s(bo.reps, "8-12")}${bo.load_reduction ? ` (${bo.load_reduction})` : ""}`,
               color: C.yellow,
-              rest: struct.backoff_sets.rest,
+              rest: s(bo.rest, "90s"),
             });
           }
           if (struct.work_sets) {
+            const ws = struct.work_sets;
             sets.push({
               type: "Trabalho",
-              detail: `${struct.work_sets.sets}×${struct.work_sets.reps} RPE ${struct.work_sets.rpe}`,
+              detail: `${s(ws.sets, "3")}×${s(ws.reps, "8-12")} RPE ${s(ws.rpe, "7-8")}`,
               color: C.green,
-              rest: struct.work_sets.rest,
+              rest: s(ws.rest, "90s"),
             });
           }
 
