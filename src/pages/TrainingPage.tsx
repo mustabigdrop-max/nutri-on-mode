@@ -356,6 +356,7 @@ function EliteGenerateSection({ userId }: { userId?: string }) {
   if (generated) {
     const resultTabs = [
       { id: "overview", label: "Visão Geral", icon: Eye },
+      { id: "fases", label: "Fases", icon: TrendingUp },
       { id: "treino", label: "Treino", icon: Dumbbell },
       { id: "anatomia", label: "Anatomia", icon: Activity },
       { id: "tecnica", label: "Técnica", icon: Target },
