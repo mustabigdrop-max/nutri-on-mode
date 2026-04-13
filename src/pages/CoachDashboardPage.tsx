@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Users, AlertTriangle, TrendingUp, Search, Bell, Settings, UserPlus, ArrowUpRight, Link2, Copy, Loader2, Trash2, Zap, Dumbbell, FlaskConical, Bone, Flame } from "lucide-react";
+import { Users, AlertTriangle, TrendingUp, Search, Bell, Settings, UserPlus, ArrowUpRight, Link2, Copy, Loader2, Trash2, Zap, Dumbbell, FlaskConical, Bone, Flame, ArrowLeft } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "@/hooks/use-toast";
 import {
@@ -225,16 +225,21 @@ const CoachDashboardPage = () => {
       {/* Header */}
       <header className="border-b border-border bg-card px-4 py-4">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
-              {profile.plan === "white_label" && profile.white_label_app_name
-                ? profile.white_label_app_name
-                : "nutriON Coach"}
-              <Badge variant="outline" className="text-xs">
-                {profile.plan === "white_label" ? "White Label" : "Coach Pro"}
-              </Badge>
-            </h1>
-            <p className="text-sm text-muted-foreground">{profile.professional_name}</p>
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="icon" onClick={() => navigate("/dashboard")} className="shrink-0">
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
+            <div>
+              <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
+                {profile.plan === "white_label" && profile.white_label_app_name
+                  ? profile.white_label_app_name
+                  : "nutriON Coach"}
+                <Badge variant="outline" className="text-xs">
+                  {profile.plan === "white_label" ? "White Label" : "Coach Pro"}
+                </Badge>
+              </h1>
+              <p className="text-sm text-muted-foreground">{profile.professional_name}</p>
+            </div>
           </div>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="icon" onClick={() => navigate("/coach/settings")}>
