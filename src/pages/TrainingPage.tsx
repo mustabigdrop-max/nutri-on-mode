@@ -395,6 +395,17 @@ function EliteGenerateSection({ userId }: { userId?: string }) {
           if (ph.rationale) lines.push(`  Justificativa: ${ph.rationale}`);
         });
         if (pp.deload_strategy) lines.push(`\n🛡️ DELOAD: ${pp.deload_strategy}`);
+        if (pp.post_deload_decision?.scenarios?.length) {
+          lines.push(`\n⚡ DECISÃO PÓS-DELOAD:`);
+          if (pp.post_deload_decision.intro) lines.push(`${pp.post_deload_decision.intro}\n`);
+          pp.post_deload_decision.scenarios.forEach((sc: any, i: number) => {
+            lines.push(`  ${i + 1}. ${sc.condition}`);
+            lines.push(`     Sinais: ${sc.signal}`);
+            lines.push(`     Decisão: ${sc.decision}`);
+            lines.push(`     Ação: ${sc.action}`);
+            lines.push(`     Início do próximo bloco: ${sc.how_next_block_starts}\n`);
+          });
+        }
         if (pp.long_term_note) lines.push(`\n🎯 VISÃO LONGO PRAZO: ${pp.long_term_note}`);
         lines.push(`\n`);
       }
