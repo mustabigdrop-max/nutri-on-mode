@@ -21,11 +21,28 @@ const tabSystemPrompts: Record<string, string> = {
   ciencia: "Compile todos os estudos recentes sobre este exercício. Para cada estudo: título, autores, ano, journal, achado principal, implicação prática. Ordene por relevância para bodybuilding.",
 };
 
+async function fetchWithTimeout(url: string, options: RequestInit, timeoutMs = 25000): Promise<Response> {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const res = await fetch(url, { ...options, signal: controller.signal });
+    return res;
+  } finally {
+    clearTimeout(id);
+  }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
     const { exerciseName, muscleGroup, tab } = await req.json();
+    if (!exerciseName || !muscleGroup) {
+      return new Response(JSON.stringify({ error: "exerciseName e muscleGroup são obrigatórios" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const PERPLEXITY_API_KEY = Deno.env.get("PERPLEXITY_API_KEY");
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!PERPLEXITY_API_KEY) throw new Error("PERPLEXITY_API_KEY not configured");
@@ -35,26 +52,33 @@ serve(async (req) => {
     const searchQuery = queryFn(exerciseName, muscleGroup);
 
     // Perplexity
-    const ppxRes = await fetch("https://api.perplexity.ai/chat/completions", {
-      method: "POST",
-      headers: { "Authorization": `Bearer ${PERPLEXITY_API_KEY}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: "sonar-pro",
-        messages: [
-          { role: "system", content: "Pesquisador em biomecânica e fisiologia do exercício. Busque estudos recentes, dados de EMG, análises cinemáticas e cinéticas. Cite autor, ano e achado principal." },
-          { role: "user", content: searchQuery }
-        ],
-        search_recency_filter: "year",
-      })
-    });
+    let rawScience = "";
+    let citations: string[] = [];
+    try {
+      const ppxRes = await fetchWithTimeout("https://api.perplexity.ai/chat/completions", {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${PERPLEXITY_API_KEY}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "sonar-pro",
+          messages: [
+            { role: "system", content: "Pesquisador em biomecânica e fisiologia do exercício. Busque estudos recentes, dados de EMG, análises cinemáticas e cinéticas. Cite autor, ano e achado principal." },
+            { role: "user", content: searchQuery }
+          ],
+          search_recency_filter: "year",
+        })
+      });
 
-    const ppxData = await ppxRes.json();
-    const rawScience = ppxData.choices?.[0]?.message?.content || "";
-    const citations = ppxData.citations || [];
+      const ppxData = await ppxRes.json();
+      rawScience = ppxData.choices?.[0]?.message?.content || "";
+      citations = ppxData.citations || [];
+    } catch (ppxErr) {
+      console.error("Perplexity error (continuing with AI only):", ppxErr);
+      rawScience = "Dados da Perplexity indisponíveis no momento. Gere análise com base no seu conhecimento.";
+    }
 
     // Lovable AI
     const systemPrompt = tabSystemPrompts[tab] || tabSystemPrompts.ciencia;
-    const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const aiRes = await fetchWithTimeout("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: { "Authorization": `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -65,11 +89,13 @@ serve(async (req) => {
         ],
         temperature: 0.5,
       })
-    });
+    }, 30000);
 
     if (!aiRes.ok) {
-      if (aiRes.status === 429) return new Response(JSON.stringify({ error: "Rate limit." }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      if (aiRes.status === 429) return new Response(JSON.stringify({ error: "Rate limit. Tente novamente em alguns segundos." }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       if (aiRes.status === 402) return new Response(JSON.stringify({ error: "Créditos insuficientes." }), { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      const errBody = await aiRes.text();
+      console.error("AI error body:", errBody);
       throw new Error(`AI error: ${aiRes.status}`);
     }
 
@@ -81,7 +107,7 @@ serve(async (req) => {
     });
   } catch (e: any) {
     console.error("analyze-biomechanics error:", e);
-    return new Response(JSON.stringify({ error: e.message }), {
+    return new Response(JSON.stringify({ error: e.message || "Erro interno" }), {
       status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
