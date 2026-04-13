@@ -482,8 +482,11 @@ function EliteGenerateSection({ userId }: { userId?: string }) {
             <button onClick={() => setShowSaveModal(true)} className="flex items-center gap-1 text-[10px] px-2.5 py-1.5 rounded-lg font-semibold" style={{ background: GREEN_DIM, color: GREEN, border: `1px solid ${BORDER}` }}>
               <Save className="w-3 h-3" /> Salvar
             </button>
+            <button onClick={exportPDF} className="flex items-center gap-1 text-[10px] px-2.5 py-1.5 rounded-lg font-semibold" style={{ background: "rgba(239,68,68,0.08)", color: "#f87171", border: "1px solid rgba(239,68,68,0.15)" }}>
+              <FileDown className="w-3 h-3" /> PDF
+            </button>
             <button onClick={exportFormatted} className="flex items-center gap-1 text-[10px] px-2.5 py-1.5 rounded-lg font-semibold" style={{ background: GREEN_DIM, color: GREEN, border: `1px solid ${BORDER}` }}>
-              <Download className="w-3 h-3" /> Exportar
+              <Download className="w-3 h-3" /> TXT
             </button>
           </div>
         </div>
