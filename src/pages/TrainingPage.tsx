@@ -466,7 +466,7 @@ function EliteGenerateSection({ userId }: { userId?: string }) {
               {resultTabs.map(t => (
                 <button key={t.id} onClick={() => {
                   setActiveResultTab(t.id);
-                  if (t.id !== "overview" && t.id !== "treino") loadTab(t.id);
+                  if (t.id !== "overview" && t.id !== "treino" && t.id !== "fases") loadTab(t.id);
                 }}
                   className="flex items-center gap-1 text-[10px] px-3 py-2 whitespace-nowrap rounded-xl transition-all font-semibold"
                   style={{
