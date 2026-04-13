@@ -781,6 +781,46 @@ function PhasePlanCard({ plan }: { plan: any }) {
   );
 }
 
+/* ── Post-Deload Scenario Card ── */
+function PostDeloadScenario({ scenario, color, icon, index }: { scenario: any; color: string; icon: string; index: number }) {
+  const [expanded, setExpanded] = useState(false);
+  return (
+    <div className="rounded-xl overflow-hidden" style={{ background: `${color}06`, border: `1px solid ${color}15` }}>
+      <button onClick={() => setExpanded(!expanded)} className="w-full p-3 flex items-center gap-2.5 text-left">
+        <span className="text-base">{icon}</span>
+        <div className="flex-1 min-w-0">
+          <p className="text-[11px] font-bold" style={{ color: TEXT }}>{scenario.condition}</p>
+          <p className="text-[9px] truncate" style={{ color: TEXT_MUTED }}>{scenario.signal}</p>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="text-[8px] px-2 py-0.5 rounded-full font-bold whitespace-nowrap" style={{ background: `${color}15`, color }}>{scenario.decision}</span>
+          {expanded ? <ChevronUp className="w-3 h-3 shrink-0" style={{ color: TEXT_MUTED }} /> : <ChevronDown className="w-3 h-3 shrink-0" style={{ color: TEXT_MUTED }} />}
+        </div>
+      </button>
+      <AnimatePresence>
+        {expanded && (
+          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }}>
+            <div className="px-3 pb-3 space-y-2">
+              <div className="rounded-lg p-2.5" style={{ background: SURFACE2 }}>
+                <span className="text-[8px] font-bold tracking-wider uppercase" style={{ color: TEXT_MUTED }}>Sinais Observados</span>
+                <p className="text-[10px] mt-0.5" style={{ color: TEXT_DIM }}>{scenario.signal}</p>
+              </div>
+              <div className="rounded-lg p-2.5" style={{ background: SURFACE2 }}>
+                <span className="text-[8px] font-bold tracking-wider uppercase" style={{ color }}>Ação Recomendada</span>
+                <p className="text-[10px] mt-0.5" style={{ color: TEXT_DIM }}>{scenario.action}</p>
+              </div>
+              <div className="rounded-lg p-2.5" style={{ background: `${color}08`, border: `1px solid ${color}12` }}>
+                <span className="text-[8px] font-bold tracking-wider uppercase" style={{ color }}>Como o Próximo Bloco Começa</span>
+                <p className="text-[10px] mt-0.5" style={{ color: TEXT_DIM }}>{scenario.how_next_block_starts}</p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
 /* ── Block Overview Card ── */
 function BlockOverviewCard({ overview, alerts, clientName }: { overview: any; alerts?: any[]; clientName: string }) {
   return (
