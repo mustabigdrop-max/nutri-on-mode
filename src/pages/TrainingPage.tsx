@@ -999,6 +999,38 @@ function TrainingDayCard({ day, index, expanded, onToggle, expandedExercise, set
 }
 
 /* ── Exercise Card ── */
+const hasMeaningfulValue = (value: unknown) => {
+  if (value === undefined || value === null) return false;
+  const normalized = String(value).trim().toLowerCase();
+  return normalized !== "" && normalized !== "undefined" && normalized !== "null";
+};
+
+const sanitizeRenderedText = (value: unknown, fallback: string) => {
+  if (!hasMeaningfulValue(value)) return fallback;
+
+  const cleaned = String(value)
+    .replace(/\bundefined\b/gi, "")
+    .replace(/\bnull\b/gi, "")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+
+  return cleaned || fallback;
+};
+
+const formatSetLabel = (sets: unknown, fallback: string) => (
+  hasMeaningfulValue(sets) ? `${sanitizeRenderedText(sets, "")} séries` : fallback
+);
+
+const formatEffort = (data: { rpe?: unknown; rir?: unknown }, fallback = "intensidade guiada") => {
+  if (hasMeaningfulValue(data.rpe)) return `RPE ${sanitizeRenderedText(data.rpe, "")}`;
+  if (hasMeaningfulValue(data.rir)) return `RIR ${sanitizeRenderedText(data.rir, "")}`;
+  return fallback;
+};
+
+const joinDefinedParts = (parts: Array<string | false | null | undefined>, separator = " • ") => (
+  parts.filter(Boolean).join(separator)
+);
+
 function ExerciseCard({ exercise, expanded, onToggle }: { exercise: any; expanded: boolean; onToggle: () => void }) {
   const struct = exercise.structure || {};
   const hasTopSet = !!struct.top_set;
@@ -1028,7 +1060,16 @@ function ExerciseCard({ exercise, expanded, onToggle }: { exercise: any; expande
                 <div className="space-y-1">
                   <span className="text-[8px] font-bold tracking-widest uppercase" style={{ color: "#818cf8" }}>FEEDER SETS</span>
                   {struct.feeder_sets.map((f: any, i: number) => (
-                    <SetRow key={i} label={f.set_label || `Feeder ${i + 1}`} detail={`${f.load_percent} × ${f.reps}`} note={f.notes} color="#818cf8" />
+                    <SetRow
+                      key={i}
+                      label={sanitizeRenderedText(f.set_label, `Feeder ${i + 1}`)}
+                      detail={joinDefinedParts([
+                        hasMeaningfulValue(f.load_percent) ? sanitizeRenderedText(f.load_percent, "") : "carga guiada",
+                        hasMeaningfulValue(f.reps) ? sanitizeRenderedText(f.reps, "") : "reps ajustadas",
+                      ], " × ")}
+                      note={f.notes}
+                      color="#818cf8"
+                    />
                   ))}
                 </div>
               )}
@@ -1037,7 +1078,16 @@ function ExerciseCard({ exercise, expanded, onToggle }: { exercise: any; expande
               {struct.top_set && (
                 <div>
                   <span className="text-[8px] font-bold tracking-widest uppercase" style={{ color: "#f97316" }}>TOP SET</span>
-                  <SetRow label="Top Set" detail={`${struct.top_set.sets}×${struct.top_set.reps} RPE ${struct.top_set.rpe}`} note={struct.top_set.notes} color="#f97316" rest={struct.top_set.rest} />
+                  <SetRow
+                    label="Top Set"
+                    detail={joinDefinedParts([
+                      `${sanitizeRenderedText(struct.top_set.sets, "1")}×${sanitizeRenderedText(struct.top_set.reps, "6-10")}`,
+                      formatEffort(struct.top_set, "esforço principal guiado"),
+                    ], " ")}
+                    note={struct.top_set.notes}
+                    color="#f97316"
+                    rest={struct.top_set.rest}
+                  />
                 </div>
               )}
 
@@ -1045,7 +1095,18 @@ function ExerciseCard({ exercise, expanded, onToggle }: { exercise: any; expande
               {struct.backoff_sets && (
                 <div>
                   <span className="text-[8px] font-bold tracking-widest uppercase" style={{ color: "#fbbf24" }}>BACK-OFF SETS</span>
-                  <SetRow label={`${struct.backoff_sets.sets} séries`} detail={`${struct.backoff_sets.reps} (${struct.backoff_sets.load_reduction})`} note={struct.backoff_sets.notes} color="#fbbf24" rest={struct.backoff_sets.rest} />
+                  <SetRow
+                    label={formatSetLabel(struct.backoff_sets.sets, "Back-off ajustado")}
+                    detail={joinDefinedParts([
+                      hasMeaningfulValue(struct.backoff_sets.reps) ? sanitizeRenderedText(struct.backoff_sets.reps, "") : "faixa ajustada",
+                      hasMeaningfulValue(struct.backoff_sets.load_reduction)
+                        ? `(${sanitizeRenderedText(struct.backoff_sets.load_reduction, "")})`
+                        : "redução guiada",
+                    ], " ")}
+                    note={struct.backoff_sets.notes}
+                    color="#fbbf24"
+                    rest={struct.backoff_sets.rest}
+                  />
                 </div>
               )}
 
@@ -1053,7 +1114,16 @@ function ExerciseCard({ exercise, expanded, onToggle }: { exercise: any; expande
               {struct.work_sets && (
                 <div>
                   <span className="text-[8px] font-bold tracking-widest uppercase" style={{ color: GREEN }}>SÉRIES DE TRABALHO</span>
-                  <SetRow label={`${struct.work_sets.sets} séries`} detail={`${struct.work_sets.reps} RPE ${struct.work_sets.rpe}`} note={struct.work_sets.notes} color={GREEN} rest={struct.work_sets.rest} />
+                  <SetRow
+                    label={formatSetLabel(struct.work_sets.sets, "Séries autoajustadas")}
+                    detail={joinDefinedParts([
+                      hasMeaningfulValue(struct.work_sets.reps) ? sanitizeRenderedText(struct.work_sets.reps, "") : "faixa de reps ajustada",
+                      formatEffort(struct.work_sets),
+                    ])}
+                    note={struct.work_sets.notes}
+                    color={GREEN}
+                    rest={struct.work_sets.rest}
+                  />
                 </div>
               )}
 
@@ -1082,16 +1152,21 @@ function ExerciseCard({ exercise, expanded, onToggle }: { exercise: any; expande
 
 /* ── Set Row ── */
 function SetRow({ label, detail, note, color, rest }: { label: string; detail: string; note?: string; color: string; rest?: string }) {
+  const safeLabel = sanitizeRenderedText(label, "Estrutura ajustada");
+  const safeDetail = sanitizeRenderedText(detail, "Parâmetros autoajustados");
+  const safeNote = hasMeaningfulValue(note) ? sanitizeRenderedText(note, "") : "";
+  const safeRest = hasMeaningfulValue(rest) ? sanitizeRenderedText(rest, "") : "";
+
   return (
     <div className="rounded-lg p-2" style={{ background: `${color}08`, border: `1px solid ${color}15` }}>
       <div className="flex items-center justify-between">
-        <span className="text-[10px] font-bold" style={{ color }}>{label}</span>
+        <span className="text-[10px] font-bold" style={{ color }}>{safeLabel}</span>
         <div className="flex items-center gap-2">
-          <span className="text-[10px] font-mono font-bold" style={{ color: TEXT }}>{detail}</span>
-          {rest && <span className="text-[9px] px-1.5 py-0.5 rounded" style={{ background: `${color}10`, color: TEXT_MUTED }}>⏱ {rest}</span>}
+          <span className="text-[10px] font-mono font-bold" style={{ color: TEXT }}>{safeDetail}</span>
+          {safeRest && <span className="text-[9px] px-1.5 py-0.5 rounded" style={{ background: `${color}10`, color: TEXT_MUTED }}>⏱ {safeRest}</span>}
         </div>
       </div>
-      {note && <p className="text-[9px] mt-0.5" style={{ color: TEXT_MUTED }}>{note}</p>}
+      {safeNote && <p className="text-[9px] mt-0.5" style={{ color: TEXT_MUTED }}>{safeNote}</p>}
     </div>
   );
 }
