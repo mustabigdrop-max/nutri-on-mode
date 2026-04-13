@@ -8,7 +8,7 @@ import {
   Dumbbell, ChevronRight, ChevronLeft, Download, FileText, Save,
   BarChart3, History, Settings, Zap, TrendingUp, Search, ArrowLeft,
   Target, Shield, AlertTriangle, Clock, Flame, Eye, Brain,
-  ChevronDown, ChevronUp, Activity, Award,
+  ChevronDown, ChevronUp, Activity, Award, Bookmark, Share2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
