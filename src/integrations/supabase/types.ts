@@ -3202,6 +3202,36 @@ export type Database = {
         }
         Relationships: []
       }
+      metabolicon_conversations: {
+        Row: {
+          ai_source: string | null
+          created_at: string | null
+          id: string
+          message: string
+          response: string
+          route: string | null
+          user_id: string
+        }
+        Insert: {
+          ai_source?: string | null
+          created_at?: string | null
+          id?: string
+          message: string
+          response: string
+          route?: string | null
+          user_id: string
+        }
+        Update: {
+          ai_source?: string | null
+          created_at?: string | null
+          id?: string
+          message?: string
+          response?: string
+          route?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       microbioma_logs: {
         Row: {
           analise_ia: string | null
@@ -4940,6 +4970,75 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_metabolic_profiles: {
+        Row: {
+          activity_level: string | null
+          age: number | null
+          body_fat_percent: number | null
+          budget_level: string | null
+          created_at: string | null
+          does_aej: boolean | null
+          goal: string | null
+          health_conditions: string[] | null
+          height: number | null
+          id: string
+          lean_mass: number | null
+          pca_profile: string | null
+          post_cardio: boolean | null
+          restrictions: string[] | null
+          sex: string | null
+          tdee: number | null
+          train_time: string | null
+          updated_at: string | null
+          user_id: string
+          weight: number | null
+        }
+        Insert: {
+          activity_level?: string | null
+          age?: number | null
+          body_fat_percent?: number | null
+          budget_level?: string | null
+          created_at?: string | null
+          does_aej?: boolean | null
+          goal?: string | null
+          health_conditions?: string[] | null
+          height?: number | null
+          id?: string
+          lean_mass?: number | null
+          pca_profile?: string | null
+          post_cardio?: boolean | null
+          restrictions?: string[] | null
+          sex?: string | null
+          tdee?: number | null
+          train_time?: string | null
+          updated_at?: string | null
+          user_id: string
+          weight?: number | null
+        }
+        Update: {
+          activity_level?: string | null
+          age?: number | null
+          body_fat_percent?: number | null
+          budget_level?: string | null
+          created_at?: string | null
+          does_aej?: boolean | null
+          goal?: string | null
+          health_conditions?: string[] | null
+          height?: number | null
+          id?: string
+          lean_mass?: number | null
+          pca_profile?: string | null
+          post_cardio?: boolean | null
+          restrictions?: string[] | null
+          sex?: string | null
+          tdee?: number | null
+          train_time?: string | null
+          updated_at?: string | null
+          user_id?: string
+          weight?: number | null
+        }
+        Relationships: []
       }
       user_roles: {
         Row: {
