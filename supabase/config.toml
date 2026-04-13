@@ -116,3 +116,6 @@ verify_jwt = false
 
 [functions.pubmed-live]
 verify_jwt = false
+
+[functions.metabolicon]
+verify_jwt = false
