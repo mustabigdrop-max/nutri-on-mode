@@ -395,6 +395,17 @@ function EliteGenerateSection({ userId }: { userId?: string }) {
           if (ph.rationale) lines.push(`  Justificativa: ${ph.rationale}`);
         });
         if (pp.deload_strategy) lines.push(`\n🛡️ DELOAD: ${pp.deload_strategy}`);
+        if (pp.post_deload_decision?.scenarios?.length) {
+          lines.push(`\n⚡ DECISÃO PÓS-DELOAD:`);
+          if (pp.post_deload_decision.intro) lines.push(`${pp.post_deload_decision.intro}\n`);
+          pp.post_deload_decision.scenarios.forEach((sc: any, i: number) => {
+            lines.push(`  ${i + 1}. ${sc.condition}`);
+            lines.push(`     Sinais: ${sc.signal}`);
+            lines.push(`     Decisão: ${sc.decision}`);
+            lines.push(`     Ação: ${sc.action}`);
+            lines.push(`     Início do próximo bloco: ${sc.how_next_block_starts}\n`);
+          });
+        }
         if (pp.long_term_note) lines.push(`\n🎯 VISÃO LONGO PRAZO: ${pp.long_term_note}`);
         lines.push(`\n`);
       }
@@ -744,6 +755,29 @@ function PhasePlanCard({ plan }: { plan: any }) {
         </div>
       )}
 
+      {/* Post-Deload Decision Tree */}
+      {plan.post_deload_decision && (
+        <div className="rounded-2xl overflow-hidden" style={{ background: SURFACE, border: `1px solid rgba(249,115,22,0.2)` }}>
+          <div className="p-4" style={{ background: "rgba(249,115,22,0.06)" }}>
+            <div className="flex items-center gap-2 mb-1">
+              <Zap className="w-4 h-4" style={{ color: "#f97316" }} />
+              <span className="text-[11px] font-black tracking-wider uppercase" style={{ color: "#f97316" }}>Decisão Pós-Deload</span>
+            </div>
+            <p className="text-[10px] leading-relaxed" style={{ color: TEXT_DIM }}>{plan.post_deload_decision.intro || "Após o deload, o sistema decide o próximo passo com base na resposta do aluno."}</p>
+          </div>
+          <div className="p-3 space-y-2">
+            {plan.post_deload_decision.scenarios?.map((sc: any, i: number) => {
+              const scenarioColors = ["#4ade80", "#60a5fa", "#ef4444", "#fbbf24", "#a78bfa"];
+              const scenarioIcons = ["📈", "🔄", "🛑", "🔀", "🎯"];
+              const color = scenarioColors[i] || GREEN;
+              return (
+                <PostDeloadScenario key={i} scenario={sc} color={color} icon={scenarioIcons[i] || "▸"} index={i} />
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Long-term Note */}
       {plan.long_term_note && (
         <div className="rounded-xl p-3" style={{ background: "rgba(74,222,128,0.04)", borderLeft: `3px solid ${GREEN}` }}>
@@ -754,6 +788,46 @@ function PhasePlanCard({ plan }: { plan: any }) {
           <p className="text-[11px] leading-relaxed" style={{ color: TEXT_DIM }}>{plan.long_term_note}</p>
         </div>
       )}
+    </div>
+  );
+}
+
+/* ── Post-Deload Scenario Card ── */
+function PostDeloadScenario({ scenario, color, icon, index }: { scenario: any; color: string; icon: string; index: number }) {
+  const [expanded, setExpanded] = useState(false);
+  return (
+    <div className="rounded-xl overflow-hidden" style={{ background: `${color}06`, border: `1px solid ${color}15` }}>
+      <button onClick={() => setExpanded(!expanded)} className="w-full p-3 flex items-center gap-2.5 text-left">
+        <span className="text-base">{icon}</span>
+        <div className="flex-1 min-w-0">
+          <p className="text-[11px] font-bold" style={{ color: TEXT }}>{scenario.condition}</p>
+          <p className="text-[9px] truncate" style={{ color: TEXT_MUTED }}>{scenario.signal}</p>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="text-[8px] px-2 py-0.5 rounded-full font-bold whitespace-nowrap" style={{ background: `${color}15`, color }}>{scenario.decision}</span>
+          {expanded ? <ChevronUp className="w-3 h-3 shrink-0" style={{ color: TEXT_MUTED }} /> : <ChevronDown className="w-3 h-3 shrink-0" style={{ color: TEXT_MUTED }} />}
+        </div>
+      </button>
+      <AnimatePresence>
+        {expanded && (
+          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }}>
+            <div className="px-3 pb-3 space-y-2">
+              <div className="rounded-lg p-2.5" style={{ background: SURFACE2 }}>
+                <span className="text-[8px] font-bold tracking-wider uppercase" style={{ color: TEXT_MUTED }}>Sinais Observados</span>
+                <p className="text-[10px] mt-0.5" style={{ color: TEXT_DIM }}>{scenario.signal}</p>
+              </div>
+              <div className="rounded-lg p-2.5" style={{ background: SURFACE2 }}>
+                <span className="text-[8px] font-bold tracking-wider uppercase" style={{ color }}>Ação Recomendada</span>
+                <p className="text-[10px] mt-0.5" style={{ color: TEXT_DIM }}>{scenario.action}</p>
+              </div>
+              <div className="rounded-lg p-2.5" style={{ background: `${color}08`, border: `1px solid ${color}12` }}>
+                <span className="text-[8px] font-bold tracking-wider uppercase" style={{ color }}>Como o Próximo Bloco Começa</span>
+                <p className="text-[10px] mt-0.5" style={{ color: TEXT_DIM }}>{scenario.how_next_block_starts}</p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
