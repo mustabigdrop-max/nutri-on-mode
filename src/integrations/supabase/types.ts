@@ -5007,6 +5007,7 @@ export type Database = {
           injuries: string | null
           level: string | null
           muscles: string[] | null
+          patient_user_id: string | null
           periodizacao_text: string | null
           phase: string | null
           protocol_text: string | null
@@ -5026,6 +5027,7 @@ export type Database = {
           injuries?: string | null
           level?: string | null
           muscles?: string[] | null
+          patient_user_id?: string | null
           periodizacao_text?: string | null
           phase?: string | null
           protocol_text?: string | null
@@ -5045,6 +5047,7 @@ export type Database = {
           injuries?: string | null
           level?: string | null
           muscles?: string[] | null
+          patient_user_id?: string | null
           periodizacao_text?: string | null
           phase?: string | null
           protocol_text?: string | null
