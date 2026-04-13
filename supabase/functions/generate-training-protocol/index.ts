@@ -156,7 +156,47 @@ FORMATO JSON OBRIGATÓRIO:
       }
     ],
     "deload_strategy": "Deload programado a cada 4-6 semanas (semana de deload = -40% volume, manter intensidade). Deload reativo se RPE consistentemente >9.5 ou sintomas de overreaching.",
-    "long_term_note": "Estratégia de longo prazo voltada para ciclos de ganho/definição progressivos. A cada macrociclo, o ponto de partida do bulking deve ser melhor (mais massa, menos gordura, melhor base de força)."
+    "long_term_note": "Estratégia de longo prazo voltada para ciclos de ganho/definição progressivos. A cada macrociclo, o ponto de partida do bulking deve ser melhor (mais massa, menos gordura, melhor base de força).",
+    "post_deload_decision": {
+      "intro": "Após o deload, o sistema deve decidir entre: novo bloco, ajuste da fase, troca de divisão ou nova recuperação, sempre com base na resposta do aluno.",
+      "scenarios": [
+        {
+          "condition": "Recuperou e performou melhor",
+          "signal": "RPE normalizado (7-8), cargas iguais ou superiores ao pré-deload, disposição alta",
+          "decision": "Novo bloco de progressão",
+          "action": "Iniciar novo mesociclo com +5% de volume ou progressão de carga. Manter divisão atual.",
+          "how_next_block_starts": "Semana 1 do novo bloco com volume no MEV, intensidade RPE 7-8, foco em qualidade técnica."
+        },
+        {
+          "condition": "Recuperou, mas objetivo mudou",
+          "signal": "Cliente deseja mudar de bulking para cutting, ou vice-versa",
+          "decision": "Transição de fase",
+          "action": "Inserir 1-2 semanas de manutenção calórica antes da nova fase. Ajustar volume e seleção de exercícios para o novo objetivo.",
+          "how_next_block_starts": "Semana de transição com volume MAV, intensidade RPE 7-8, ajuste nutricional gradual."
+        },
+        {
+          "condition": "Fadiga persistente após deload",
+          "signal": "RPE ainda elevado (>8.5 em cargas moderadas), sono ruim, motivação baixa",
+          "decision": "Prolongar recuperação",
+          "action": "Novo mini-deload de 3-5 dias ou redução de 20-30% no volume do próximo bloco. Avaliar fatores externos (sono, estresse, nutrição).",
+          "how_next_block_starts": "Retorno gradual com volume abaixo do MEV por 1 semana, subindo progressivamente."
+        },
+        {
+          "condition": "Estagnação ou logística mudou",
+          "signal": "Cargas paradas por 3+ semanas, mudança de horário/equipamento disponível",
+          "decision": "Trocar divisão ou estímulo",
+          "action": "Reorganizar a divisão (ex: PPL → Upper/Lower), variar exercícios principais, alterar faixas de repetição.",
+          "how_next_block_starts": "Nova divisão com exercícios novos, volume no MAV, foco em adaptação neural nas primeiras 2 semanas."
+        },
+        {
+          "condition": "Objetivo estético mudou",
+          "signal": "Cliente quer priorizar outro grupo muscular ou mudar foco corporal",
+          "decision": "Ajustar prioridades musculares",
+          "action": "Redistribuir volume semanal: aumentar séries para novos músculos prioritários, reduzir para manutenção os antigos.",
+          "how_next_block_starts": "Novo bloco com mapa de prioridades atualizado, volume MEV→MAV progressivo nos novos focos."
+        }
+      ]
+    }
   },
   "block_overview": {
     "title": "Bloco de Hipertrofia — Foco em Costas e Deltoide Lateral",
