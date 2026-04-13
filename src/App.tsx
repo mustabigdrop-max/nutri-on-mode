@@ -75,6 +75,7 @@ import AdminPartnersPage from "./pages/AdminPartnersPage";
 import PartnerDashboardPage from "./pages/PartnerDashboardPage";
 import PartnerBlockedPage from "./pages/PartnerBlockedPage";
 import PeptideVaultPage from "./pages/PeptideVaultPage";
+import TrainingPage from "./pages/TrainingPage";
 import PlanoAlimentarIA from "./components/coach/PlanoAlimentarIA";
 import NotFound from "./pages/NotFound";
 
@@ -157,6 +158,8 @@ const App = () => (
             <Route path="/partner" element={<ProtectedRoute><PartnerDashboardPage /></ProtectedRoute>} />
             <Route path="/blocked" element={<PartnerBlockedPage />} />
             <Route path="/peptide-vault" element={<ProtectedRoute><PeptideVaultPage /></ProtectedRoute>} />
+            {/* Training */}
+            <Route path="/training" element={<ProtectedRoute><TrainingPage /></ProtectedRoute>} />
             {/* COACH */}
             <Route path="/coach/plano-alimentar" element={<ProtectedRoute><PlanoAlimentarIA /></ProtectedRoute>} />
             <Route path="/coach" element={<CoachLandingPage />} />
