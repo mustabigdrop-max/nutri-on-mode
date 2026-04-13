@@ -9,6 +9,7 @@ import {
   BarChart3, History, Settings, Zap, TrendingUp, Search, ArrowLeft,
   Target, Shield, AlertTriangle, Clock, Flame, Eye, Brain,
   ChevronDown, ChevronUp, Activity, Award, Bookmark, Share2,
+  Trash2, Edit3, Users, X, Check,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -188,7 +189,25 @@ function EliteGenerateSection({ userId }: { userId?: string }) {
     }
   };
 
-  const saveProtocol = async () => {
+  const [showSaveModal, setShowSaveModal] = useState(false);
+  const [patients, setPatients] = useState<any[]>([]);
+  const [selectedPatient, setSelectedPatient] = useState("");
+
+  useEffect(() => {
+    if (!userId) return;
+    supabase.from("coach_patients").select("id, patient_user_id, status, notes").eq("status", "active")
+      .then(async ({ data }) => {
+        if (!data?.length) return;
+        const ids = data.map(p => p.patient_user_id);
+        const { data: profiles } = await supabase.from("profiles").select("user_id, full_name").in("user_id", ids);
+        setPatients(data.map(cp => ({
+          ...cp,
+          name: profiles?.find(pr => pr.user_id === cp.patient_user_id)?.full_name || "Sem nome",
+        })));
+      });
+  }, [userId]);
+
+  const saveProtocol = async (patientId?: string) => {
     if (!userId) return;
     const { error } = await supabase.from("training_protocols").insert({
       user_id: userId, client_name: clientName, phase, muscles, level, weeks,
@@ -198,9 +217,11 @@ function EliteGenerateSection({ userId }: { userId?: string }) {
       anatomy_text: textResults.anatomia || "",
       tecnica_text: textResults.tecnica || "",
       periodizacao_text: textResults.periodizacao || "",
+      patient_user_id: patientId || null,
     });
     if (error) toast.error("Erro ao salvar");
     else toast.success("Protocolo salvo!");
+    setShowSaveModal(false);
   };
 
   // ── Step 1: Anamnese ──
@@ -423,10 +444,10 @@ function EliteGenerateSection({ userId }: { userId?: string }) {
             <ChevronLeft className="w-3 h-3" /> Novo protocolo
           </button>
           <div className="flex gap-1.5">
-            <button onClick={saveToNotebook} className="flex items-center gap-1 text-[10px] px-2.5 py-1.5 rounded-lg font-semibold" style={{ background: "rgba(139,92,246,0.08)", color: "#a78bfa", border: "1px solid rgba(139,92,246,0.15)" }}>
+            <button onClick={() => saveToNotebook()} className="flex items-center gap-1 text-[10px] px-2.5 py-1.5 rounded-lg font-semibold" style={{ background: "rgba(139,92,246,0.08)", color: "#a78bfa", border: "1px solid rgba(139,92,246,0.15)" }}>
               <Bookmark className="w-3 h-3" /> Caderno
             </button>
-            <button onClick={saveProtocol} className="flex items-center gap-1 text-[10px] px-2.5 py-1.5 rounded-lg font-semibold" style={{ background: GREEN_DIM, color: GREEN, border: `1px solid ${BORDER}` }}>
+            <button onClick={() => setShowSaveModal(true)} className="flex items-center gap-1 text-[10px] px-2.5 py-1.5 rounded-lg font-semibold" style={{ background: GREEN_DIM, color: GREEN, border: `1px solid ${BORDER}` }}>
               <Save className="w-3 h-3" /> Salvar
             </button>
             <button onClick={exportFormatted} className="flex items-center gap-1 text-[10px] px-2.5 py-1.5 rounded-lg font-semibold" style={{ background: GREEN_DIM, color: GREEN, border: `1px solid ${BORDER}` }}>
@@ -483,14 +504,97 @@ function EliteGenerateSection({ userId }: { userId?: string }) {
               loadingTab[activeResultTab] ? <LoadingState /> :
               textResults[activeResultTab] ? <TextCard content={textResults[activeResultTab]} /> :
               <div className="py-12 text-center"><p className="text-xs" style={{ color: TEXT_MUTED }}>Clique na aba para carregar</p></div>
-            )}
-          </>
-        )}
-      </div>
-    );
-  }
+             )}
+           </>
+         )}
 
-  return null;
+         {/* Save Modal */}
+         <AnimatePresence>
+           {showSaveModal && (
+             <SaveProtocolModal
+               patients={patients}
+               selectedPatient={selectedPatient}
+               setSelectedPatient={setSelectedPatient}
+               clientName={clientName}
+               onSave={(patientId) => saveProtocol(patientId)}
+               onClose={() => setShowSaveModal(false)}
+             />
+           )}
+         </AnimatePresence>
+       </div>
+     );
+   }
+
+   return null;
+ }
+
+/* ── Save Protocol Modal ── */
+function SaveProtocolModal({ patients, selectedPatient, setSelectedPatient, clientName, onSave, onClose }: {
+  patients: any[]; selectedPatient: string; setSelectedPatient: (v: string) => void;
+  clientName: string; onSave: (patientId?: string) => void; onClose: () => void;
+}) {
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.85)" }} onClick={onClose}>
+      <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
+        onClick={e => e.stopPropagation()} className="w-full max-w-sm rounded-2xl p-5" style={{ background: BG, border: `1px solid ${BORDER_ACTIVE}` }}>
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <Save className="w-4 h-4" style={{ color: GREEN }} />
+            <h3 className="text-sm font-black" style={{ color: TEXT, fontFamily: FONT }}>Salvar Protocolo</h3>
+          </div>
+          <button onClick={onClose} className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: SURFACE2 }}>
+            <X className="w-3.5 h-3.5" style={{ color: TEXT_MUTED }} />
+          </button>
+        </div>
+
+        <div className="rounded-xl p-3 mb-4" style={{ background: SURFACE, border: `1px solid ${BORDER}` }}>
+          <p className="text-[10px] font-semibold mb-0.5" style={{ color: TEXT_MUTED }}>Cliente</p>
+          <p className="text-sm font-bold" style={{ color: TEXT }}>{clientName}</p>
+        </div>
+
+        {patients.length > 0 && (
+          <div className="mb-4">
+            <p className="text-[10px] font-semibold mb-2 tracking-wide uppercase" style={{ color: TEXT_MUTED }}>
+              <Users className="w-3 h-3 inline mr-1" />Vincular a um paciente
+            </p>
+            <div className="space-y-1.5 max-h-40 overflow-y-auto">
+              <button onClick={() => setSelectedPatient("")}
+                className="w-full text-left px-3 py-2.5 rounded-xl text-[11px] font-medium transition-all"
+                style={{
+                  background: !selectedPatient ? GREEN_DIM : SURFACE,
+                  border: `1px solid ${!selectedPatient ? BORDER_ACTIVE : BORDER}`,
+                  color: !selectedPatient ? GREEN : TEXT_DIM,
+                }}>
+                Sem vínculo (salvar apenas)
+              </button>
+              {patients.map(p => (
+                <button key={p.patient_user_id} onClick={() => setSelectedPatient(p.patient_user_id)}
+                  className="w-full text-left px-3 py-2.5 rounded-xl text-[11px] font-medium transition-all"
+                  style={{
+                    background: selectedPatient === p.patient_user_id ? GREEN_DIM : SURFACE,
+                    border: `1px solid ${selectedPatient === p.patient_user_id ? BORDER_ACTIVE : BORDER}`,
+                    color: selectedPatient === p.patient_user_id ? GREEN : TEXT_DIM,
+                  }}>
+                  <span className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-black" style={{ background: GREEN_DIM, color: GREEN }}>
+                      {p.name?.charAt(0)?.toUpperCase()}
+                    </div>
+                    {p.name}
+                    {selectedPatient === p.patient_user_id && <Check className="w-3 h-3 ml-auto" style={{ color: GREEN }} />}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <Button onClick={() => onSave(selectedPatient || undefined)} className="w-full font-bold text-sm h-11 rounded-xl" style={{ background: GREEN, color: BG }}>
+          <Save className="w-4 h-4 mr-2" /> Salvar Protocolo
+        </Button>
+      </motion.div>
+    </motion.div>
+  );
 }
 
 /* ── Block Overview Card ── */
@@ -1073,12 +1177,25 @@ function HistorySection({ userId }: { userId?: string }) {
   const [protocols, setProtocols] = useState<any[]>([]);
   const [search, setSearch] = useState("");
   const [viewModal, setViewModal] = useState<any>(null);
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
-  useEffect(() => {
+  const loadProtocols = useCallback(() => {
     if (!userId) return;
     supabase.from("training_protocols").select("*").eq("user_id", userId).order("created_at", { ascending: false }).limit(50)
       .then(({ data }) => setProtocols(data || []));
   }, [userId]);
+
+  useEffect(() => { loadProtocols(); }, [loadProtocols]);
+
+  const deleteProtocol = async (id: string) => {
+    const { error } = await supabase.from("training_protocols").delete().eq("id", id);
+    if (error) toast.error("Erro ao excluir");
+    else {
+      toast.success("Protocolo excluído");
+      setProtocols(prev => prev.filter(p => p.id !== id));
+      setConfirmDelete(null);
+    }
+  };
 
   const filtered = protocols.filter(p => p.client_name?.toLowerCase().includes(search.toLowerCase()) || p.phase?.toLowerCase().includes(search.toLowerCase()));
   const phaseColor: Record<string, string> = { bulking: GREEN, cutting: "#ef4444", manutencao: "#3b82f6", recomposicao: "#8b5cf6", emagrecimento: "#f97316", performance: "#fbbf24" };
@@ -1100,16 +1217,36 @@ function HistorySection({ userId }: { userId?: string }) {
               {PHASES.find(ph => ph.id === p.phase)?.name || p.phase}
             </span>
           </div>
-          <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 mb-2">
             <span className="text-[10px]" style={{ color: TEXT_MUTED }}>{new Date(p.created_at).toLocaleDateString("pt-BR")}</span>
-            <button onClick={() => setViewModal(p)} className="text-[10px] px-2.5 py-1 rounded-lg font-semibold" style={{ background: GREEN_DIM, color: GREEN }}>Ver</button>
+            {p.weeks && <span className="text-[9px] px-1.5 py-0.5 rounded" style={{ background: GREEN_DIM, color: GREEN }}>{p.weeks} sem</span>}
+            {p.level && <span className="text-[9px] px-1.5 py-0.5 rounded" style={{ background: SURFACE2, color: TEXT_MUTED }}>{p.level}</span>}
+          </div>
+          <div className="flex items-center gap-1.5">
+            <button onClick={() => setViewModal(p)} className="flex-1 text-[10px] py-2 rounded-lg font-semibold text-center" style={{ background: GREEN_DIM, color: GREEN, border: `1px solid ${BORDER}` }}>
+              <Eye className="w-3 h-3 inline mr-1" />Ver Treino
+            </button>
+            {confirmDelete === p.id ? (
+              <>
+                <button onClick={() => deleteProtocol(p.id)} className="text-[10px] px-3 py-2 rounded-lg font-semibold" style={{ background: "rgba(239,68,68,0.1)", color: "#ef4444", border: "1px solid rgba(239,68,68,0.2)" }}>
+                  Confirmar
+                </button>
+                <button onClick={() => setConfirmDelete(null)} className="text-[10px] px-2 py-2 rounded-lg" style={{ background: SURFACE2, color: TEXT_MUTED }}>
+                  <X className="w-3 h-3" />
+                </button>
+              </>
+            ) : (
+              <button onClick={() => setConfirmDelete(p.id)} className="text-[10px] px-2.5 py-2 rounded-lg font-semibold" style={{ background: "rgba(239,68,68,0.06)", color: "#ef4444", border: "1px solid rgba(239,68,68,0.1)" }}>
+                <Trash2 className="w-3 h-3" />
+              </button>
+            )}
           </div>
         </div>
       ))}
 
       <AnimatePresence>
         {viewModal && (
-          <HistoryViewModal protocol={viewModal} onClose={() => setViewModal(null)} userId={userId} />
+          <HistoryViewModal protocol={viewModal} onClose={() => setViewModal(null)} userId={userId} onUpdate={loadProtocols} />
         )}
       </AnimatePresence>
     </div>
@@ -1117,14 +1254,22 @@ function HistorySection({ userId }: { userId?: string }) {
 }
 
 /* ── History View Modal ── */
-function HistoryViewModal({ protocol: p, onClose, userId }: { protocol: any; onClose: () => void; userId?: string }) {
+function HistoryViewModal({ protocol: p, onClose, userId, onUpdate }: { protocol: any; onClose: () => void; userId?: string; onUpdate?: () => void }) {
   const [expandedDay, setExpandedDay] = useState<number | null>(0);
   const [expandedExercise, setExpandedExercise] = useState<string | null>(null);
+  const [editing, setEditing] = useState(false);
+  const [editName, setEditName] = useState(p.client_name || "");
 
   let parsed: any = null;
   try {
     parsed = typeof p.protocol_text === "string" ? JSON.parse(p.protocol_text) : p.protocol_text;
   } catch { parsed = null; }
+
+  const updateProtocol = async () => {
+    const { error } = await supabase.from("training_protocols").update({ client_name: editName }).eq("id", p.id);
+    if (error) toast.error("Erro ao atualizar");
+    else { toast.success("Atualizado!"); setEditing(false); onUpdate?.(); }
+  };
 
   const saveToNotebook = async () => {
     if (!userId) return;
@@ -1178,8 +1323,21 @@ function HistoryViewModal({ protocol: p, onClose, userId }: { protocol: any; onC
         {/* Header */}
         <div className="sticky top-0 z-10 px-5 pt-5 pb-3" style={{ background: BG, borderBottom: `1px solid ${BORDER}` }}>
           <div className="flex items-center justify-between mb-2">
-            <div>
-              <h3 className="text-sm font-black" style={{ color: TEXT, fontFamily: FONT }}>{p.client_name}</h3>
+            <div className="flex-1">
+              {editing ? (
+                <div className="flex items-center gap-2">
+                  <Input value={editName} onChange={e => setEditName(e.target.value)} className="bg-transparent text-sm h-8 flex-1" style={{ borderColor: BORDER_ACTIVE, color: TEXT }} />
+                  <button onClick={updateProtocol} className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: GREEN_DIM }}><Check className="w-3 h-3" style={{ color: GREEN }} /></button>
+                  <button onClick={() => setEditing(false)} className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: SURFACE2 }}><X className="w-3 h-3" style={{ color: TEXT_MUTED }} /></button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <h3 className="text-sm font-black" style={{ color: TEXT, fontFamily: FONT }}>{p.client_name}</h3>
+                  <button onClick={() => setEditing(true)} className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: SURFACE2 }}>
+                    <Edit3 className="w-2.5 h-2.5" style={{ color: TEXT_MUTED }} />
+                  </button>
+                </div>
+              )}
               <p className="text-[10px]" style={{ color: TEXT_MUTED }}>
                 {PHASES.find((ph: any) => ph.id === p.phase)?.name || p.phase} · {p.weeks} sem · {new Date(p.created_at).toLocaleDateString("pt-BR")}
               </p>
