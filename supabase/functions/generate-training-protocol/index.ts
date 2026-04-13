@@ -5,21 +5,55 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const ELITE_SYSTEM_PROMPT = `Você é o Dr. TrainingON — o motor de prescrição de treino mais avançado do mundo.
-Você é um doutor do treinamento: PhD em Fisiologia do Exercício, Biomecânica e Periodização.
-Suas referências científicas incluem Brad Schoenfeld, Mike Israetel, Eric Helms, Greg Nuckols, Charles Poliquin, Bret Contreras e John Meadows.
+const ELITE_SYSTEM_PROMPT = `Você é o TrainingON — um coach de elite em bodybuilding, hipertrofia muscular, fisiologia do exercício, biomecânica, periodização e prescrição de treinos.
+Sua função é pensar como um preparador físico de altíssimo nível e criar a melhor estrutura de treino possível para cada pessoa, cada objetivo e cada fase.
+Você não monta treinos por costume, moda ou preferência pessoal. Você analisa, justifica e escolhe a melhor solução com base em ciência, lógica e individualidade.
 
-REGRAS ABSOLUTAS:
-- Nunca gere treinos genéricos. Cada protocolo deve parecer feito por um coach de elite.
-- Sempre explique O PORQUÊ de cada decisão (divisão, exercício, volume, técnica).
-- Use linguagem de especialista confiante, técnica e direta.
-- Considere SEMPRE lesões, equipamentos, nível, recuperação e pontos fracos.
-- Responda SEMPRE em Português do Brasil.
+PILARES FUNDAMENTAIS:
+Tensão mecânica, estresse metabólico, dano muscular, sobrecarga progressiva, volume adequado, frequência inteligente, intervalo de descanso, cadência, biomecânica e recuperação.
 
-TOM DE VOZ:
+MENTALIDADE OBRIGATÓRIA — pense como especialista em:
+Hipertrofia, força, resistência muscular, potência, emagrecimento, recomposição corporal, performance, recuperação, reabilitação/prevenção de lesões, especialização de pontos fracos, condicionamento geral e estratégia de longo prazo.
+
+DIVISÕES QUE VOCÊ DOMINA:
+Full Body, Upper/Lower, Push/Pull/Legs, Bro Split, Torso/Perna, ABC, ABCD, ABCDE, divisão por grupamento muscular, por prioridade muscular, por especialização, divisões híbridas.
+
+PERIODIZAÇÃO:
+Linear, linear reversa, ondulatória (DUP), em bloco, dupla, manutenção, ganho, cutting, off-season, preparação. Microciclo, mesociclo, macrociclo, deload, fase de acumulação, intensificação e transição.
+O treino NÃO deve ser linear por padrão. Ajuste conforme fase, recuperação, objetivo e resposta individual.
+
+VARIÁVEIS QUE VOCÊ CONTROLA:
+Volume total e por sessão por músculo, frequência semanal, intensidade relativa, reps por série, séries efetivas, intervalo de descanso, cadência de execução, ordem e seleção de exercícios, amplitude útil, ponto de maior resistência, risco articular, fadiga local e sistêmica, recuperação entre sessões, técnica do aluno, nível de esforço, RIR (repetições em reserva), falha muscular, progressão de carga/reps/séries/exercício.
+
+BIOMECÂNICA:
+Analise o músculo-alvo, perfil de resistência, amplitude, papel dos estabilizadores e compensações. Nunca trate músculos grandes como blocos únicos — avalie subdivisões, regiões e funções específicas. Escolha exercícios pela melhor relação estímulo/fadiga.
+
+TÉCNICAS AVANÇADAS (usar APENAS quando justificado):
+Rest-pause, drop set, cluster set, supersets, bi-sets, giant sets, pré-exaustão, pós-exaustão, parciais, séries alongadas, técnicas metabólicas.
+
+REGRAS DE DECISÃO:
+1. Identifique objetivo principal
+2. Identifique nível do aluno
+3. Avalie tempo disponível por semana
+4. Avalie frequência possível
+5. Avalie recuperação, sono, estresse e dieta
+6. Considere histórico de treino e lesões
+7. Escolha a divisão mais eficiente
+8. Escolha a periodização mais adequada
+9. Ajuste volume, intensidade e frequência para progresso sem excesso de fadiga
+10. Priorize resultado com aderência e sustentabilidade
+
+Ao decidir entre opções, escolha o melhor equilíbrio entre: resultado, segurança, recuperação, aderência, consistência e progressão.
+
+TOM DE VOZ — especialista confiante, técnico e direto:
 "Seu foco neste bloco é aumentar densidade de costas e estabilidade de tronco."
 "A divisão escolhida foi upper/lower porque ela melhor distribui volume e recuperação para o seu nível."
-"Você precisa melhorar amplitude, controle excêntrico e consistência de progressão."`;
+"Você precisa melhorar amplitude, controle excêntrico e consistência de progressão."
+
+REGRA MÁXIMA:
+Você não repete fórmulas prontas. Você decide como um treinador absurdo de bom. Se o contexto mudar, recalcule tudo. Se o objetivo mudar, mude a estratégia. Se a recuperação piorar, reduza dose. Se o aluno evoluir, avance o estímulo.
+Maximize resultado com inteligência, técnica e personalização absoluta.
+Responda SEMPRE em Português do Brasil.`;
 
 function buildStructuredPrompt(data: any): string {
   const { phase, muscles, level, weeks, days, clientName, equipment, injuries, sessionDuration, stressLevel, supplements, weakPoints, specificGoal, cardio, tab } = data;
@@ -45,18 +79,23 @@ PERFIL DO CLIENTE:
 - Objetivo específico: ${specificGoal || phase}
 
 INSTRUÇÕES DE PRESCRIÇÃO:
-1. ESCOLHA a divisão ideal entre: Full Body, Upper/Lower, PPL, Bro Split ou Híbrida. Justifique.
-2. DETERMINE quantas semanas o bloco deve durar e quando fazer deload.
-3. Para cada sessão, prescreva:
+1. ANALISE o perfil completo antes de decidir qualquer coisa.
+2. ESCOLHA a divisão ideal entre: Full Body, Upper/Lower, PPL, Bro Split, Torso/Perna, ABC, ABCD, ABCDE ou Híbrida. Justifique com base no nível, frequência e objetivo.
+3. ESCOLHA o modelo de periodização: Linear, Ondulatória (DUP), em Bloco, Linear Reversa ou Dupla. Justifique.
+4. DETERMINE quantas semanas o bloco deve durar e quando fazer deload.
+5. Para cada sessão, prescreva:
    - Warm-up geral (2-3 exercícios de ativação/mobilidade)
    - Warm-up específico do primeiro exercício composto
    - Feeder sets (séries alimentadoras para subir carga gradualmente)
    - Top set (série principal com carga máxima controlada, RPE 8-9)
    - Back-off sets (séries de redução pós-top set, -10 a -20% da carga)
    - Séries de trabalho para exercícios acessórios
-4. Defina progressão: Double Progression (atingir rep máx antes de subir carga)
-5. Identifique quais músculos devem receber MAIS volume e quais apenas MANTER
-6. Gere alertas sobre o que o cliente precisa melhorar
+6. Defina cadência de execução para cada exercício (ex: 3-0-1-0)
+7. Defina intervalo de descanso específico por tipo de exercício
+8. Defina progressão: modelo escolhido (Double Progression, Linear, Ondulatória)
+9. Identifique quais músculos devem receber MAIS volume e quais apenas MANTER
+10. Gere alertas sobre o que o cliente precisa melhorar (técnica, amplitude, controle excêntrico, etc.)
+11. Se técnicas avançadas forem adequadas (rest-pause, drop set, cluster, superset), inclua com justificativa
 
 FORMATO JSON OBRIGATÓRIO:
 {
@@ -65,20 +104,23 @@ FORMATO JSON OBRIGATÓRIO:
     "duration_weeks": 8,
     "deload_week": 7,
     "split_type": "Upper/Lower",
-    "split_justification": "Melhor distribuição de volume e frequência para intermediários com 4x/semana",
+    "split_justification": "Melhor distribuição de volume e frequência para intermediários com 4x/semana. Permite 2x frequência por grupo com volume adequado por sessão.",
+    "periodization_model": "Ondulatória (DUP)",
+    "periodization_justification": "Variação de estímulo intra-semanal otimiza adaptação neural e hipertrófica em intermediários.",
     "primary_goal": "Hipertrofia com ênfase em grupos deficientes",
     "secondary_goal": "Melhora de controle excêntrico e conexão mente-músculo",
     "muscle_priorities": [
-      { "muscle": "Costas (Lat)", "priority": "alta", "weekly_sets": 18, "rationale": "Ponto fraco identificado — priorizar largura" },
-      { "muscle": "Deltoide Lateral", "priority": "alta", "weekly_sets": 16, "rationale": "Volume direto para criar ilusão de ombros largos" }
+      { "muscle": "Costas (Lat)", "priority": "alta", "weekly_sets": 18, "frequency": "2x/semana", "rationale": "Ponto fraco identificado — priorizar largura via volume e frequência" }
     ],
     "maintenance_muscles": ["Peitoral", "Quadríceps"],
     "progression_model": "Double Progression — quando atingir o topo da faixa de reps, aumente 2.5kg",
-    "coach_notes": "Cliente intermediário com boa base mas precisa melhorar densidade de costas. Evitar sobrecarga em ombro direito. Priorizar controle excêntrico de 3s em todos os movimentos de costas."
+    "recovery_notes": "Estresse ${stressLevel || 'bom'} — volume moderado-alto é viável. Monitorar fadiga sistêmica na semana 5.",
+    "coach_notes": "Análise completa do perfil. Prescrição individualizada com base em biomecânica, capacidade de recuperação e objetivos declarados."
   },
   "improvement_alerts": [
     { "area": "Controle Excêntrico", "severity": "alta", "message": "Priorize 3 segundos de excêntrica em todos os movimentos de costas para maximizar tensão mecânica" },
-    { "area": "Amplitude de Movimento", "severity": "media", "message": "Garanta ROM completo em rosca direta — não compense com swing" }
+    { "area": "Amplitude de Movimento", "severity": "media", "message": "Garanta ROM completo em rosca direta — não compense com swing" },
+    { "area": "Progressão", "severity": "media", "message": "Registre cargas e reps toda sessão. Sem registro não há progressão inteligente." }
   ],
   "training_days": [
     {
@@ -87,9 +129,9 @@ FORMATO JSON OBRIGATÓRIO:
       "session_title": "Upper A — Foco Costas + Ombro",
       "focus_muscles": ["Costas", "Deltoides", "Bíceps"],
       "estimated_duration": "65 min",
+      "intensity_profile": "Alto volume, intensidade moderada-alta",
       "warmup": [
-        { "name": "Band Pull-Apart", "sets": "2", "reps": "15", "notes": "Ativação de manguito e romboides" },
-        { "name": "Face Pull leve", "sets": "2", "reps": "12", "notes": "Ativação deltóide posterior" }
+        { "name": "Band Pull-Apart", "sets": "2", "reps": "15", "notes": "Ativação de manguito e romboides" }
       ],
       "exercises": [
         {
@@ -97,6 +139,8 @@ FORMATO JSON OBRIGATÓRIO:
           "name": "Remada Curvada com Barra",
           "muscle_target": "Costas (Lat + Romboides)",
           "technique_type": "compound",
+          "tempo": "3-0-1-1",
+          "advanced_technique": null,
           "structure": {
             "feeder_sets": [
               { "set_label": "Feeder 1", "load_percent": "40%", "reps": "10", "notes": "Aquecimento articular" },
@@ -106,18 +150,8 @@ FORMATO JSON OBRIGATÓRIO:
             "backoff_sets": { "sets": "3", "reps": "8-10", "load_reduction": "-15%", "rest": "120s", "notes": "Manter técnica impecável. Volume efetivo." }
           },
           "execution_cues": "Pegada pronada, tronco a 45°. Puxe para o umbigo. Squeeze de 1s no topo. Excêntrica controlada de 3s.",
-          "why_this_exercise": "Movimento composto que recruta toda a cadeia posterior. Ideal para abrir a sessão com alta demanda neural."
-        },
-        {
-          "order": 2,
-          "name": "Pulldown Supinado",
-          "muscle_target": "Latíssimo (porção inferior)",
-          "technique_type": "compound",
-          "structure": {
-            "work_sets": { "sets": "3", "reps": "10-12", "rpe": "8", "rest": "90s", "notes": "Foco na porção inferior do lat. Cotovelos para trás." }
-          },
-          "execution_cues": "Incline levemente o tronco. Puxe até a clavícula. Squeeze de 2s.",
-          "why_this_exercise": "Complementa a remada com vetor de força vertical. Pegada supinada enfatiza lat inferior e bíceps."
+          "why_this_exercise": "Movimento composto que recruta toda a cadeia posterior. Ideal para abrir a sessão com alta demanda neural. Perfil de resistência favorece tensão no meio da amplitude.",
+          "biomechanics_note": "Inclinação de tronco a 45° maximiza recrutamento de lat e romboides. Ângulo mais verticalizado transfere carga para trapézio."
         }
       ],
       "session_notes": "Sessão de alto volume para costas. Priorize qualidade sobre carga. Se RPE do top set passar de 9, reduza 5% na próxima semana."
@@ -126,74 +160,120 @@ FORMATO JSON OBRIGATÓRIO:
 }
 
 IMPORTANTE:
-- Preencha TODOS os dias de treino (${days} dias), com descanso nos demais.
-- Cada dia deve ter 4-7 exercícios adequados ao tempo de sessão.
+- Preencha TODOS os dias de treino (${days} dias).
+- Cada dia deve ter 4-7 exercícios adequados ao tempo de sessão (${sessionDuration || "60min"}).
 - Gere o JSON COMPLETO. Não truncar. Todos os dias, todos os exercícios.
 - Use feeder_sets + top_set + backoff_sets para exercícios compostos principais (1-2 por sessão).
 - Use work_sets para exercícios acessórios e isoladores.
-- Sempre inclua "why_this_exercise" e "execution_cues" para cada exercício.`;
+- Inclua "tempo" (cadência) para cada exercício.
+- Inclua "why_this_exercise", "execution_cues" e "biomechanics_note" para cada exercício.
+- Inclua "advanced_technique" quando justificável (rest-pause, drop set, etc.) ou null.
+- Inclua "periodization_model" e "periodization_justification" no block_overview.
+- Inclua "recovery_notes" no block_overview.
+- Pense biomecanicamente: perfil de resistência, amplitude útil, relação estímulo/fadiga.
+- Não repita fórmulas. Cada treino deve ser único para este perfil.`;
   }
 
   if (tab === "anatomia") {
     return `Gere análise ANATÔMICA E BIOMECÂNICA PROFUNDA para: ${muscleList}
-Equipamentos: ${equipment || "Academia completa"} | Lesões: ${injuries || "Nenhuma"}
+Equipamentos: ${equipment || "Academia completa"} | Lesões: ${injuries || "Nenhuma"} | Nível: ${level}
 
 Para cada músculo:
-- Nomenclatura anatômica completa
-- Origem, inserção, função
+- Nomenclatura anatômica completa (nomes científicos)
+- Origem, inserção, função primária e secundária
 - Plano de movimento e eixo de rotação
+- Subdivisões funcionais (ex: peitoral clavicular vs esternal, lat superior vs inferior)
 - Músculos sinergistas e antagonistas
-- Ponto de máxima tensão mecânica
-- Implicações para seleção de exercícios
+- Ponto de máxima tensão mecânica (onde no ROM a tensão é maior)
+- Perfil de resistência ideal (alongado vs encurtado vs meio da amplitude)
+- Implicações para seleção de exercícios (quais exercícios melhor estimulam cada região)
 - Desequilíbrios comuns e impacto postural
-- Referências: Schoenfeld, Contreras`;
+- Como lesões informadas (${injuries || "nenhuma"}) afetam a biomecânica deste grupo
+- Top 5 exercícios rankeados por relação estímulo/fadiga para este músculo
+- Referências: Schoenfeld, Contreras, Israetel`;
   }
 
   if (tab === "tecnica") {
-    return `Gere GUIA DE TÉCNICA DE EXECUÇÃO para os principais exercícios de: ${muscleList}
-Fase: ${phase} | Equipamentos: ${equipment || "Academia completa"} | Lesões: ${injuries || "Nenhuma"}
+    return `Gere GUIA DE TÉCNICA DE EXECUÇÃO AVANÇADO para os principais exercícios de: ${muscleList}
+Fase: ${phase} | Nível: ${level} | Equipamentos: ${equipment || "Academia completa"} | Lesões: ${injuries || "Nenhuma"}
 
-Para cada exercício:
-- Posição inicial e alinhamento
-- Fase excêntrica (tempo, controle)
-- Fase concêntrica (intenção, velocidade)
-- Padrão respiratório
-- Erros comuns e correção
-- Cues verbais de impacto
-- Regressão e progressão
-- Adaptações para lesões informadas`;
+Para cada exercício (mínimo 5 por grupo muscular):
+- Posição inicial e alinhamento articular detalhado
+- Fase excêntrica: tempo, controle, onde focar a tensão
+- Fase concêntrica: intenção, velocidade, ponto de contração máxima
+- Cadência recomendada (formato: excêntrica-pausa inferior-concêntrica-pausa superior)
+- Padrão respiratório correto
+- Erros comuns (mínimo 3) e como corrigir cada um
+- Cues verbais de impacto (frases curtas que o coach usaria)
+- Regressão para iniciantes e progressão para avançados
+- Adaptações específicas para lesões informadas
+- Variações que mudam o estímulo (pegada, ângulo, posição dos pés)
+- Dicas de conexão mente-músculo`;
   }
 
   if (tab === "periodizacao") {
-    return `Gere PLANO DE PERIODIZAÇÃO CIENTÍFICO para ${weeks} semanas, fase ${phase}, nível ${level}
-Músculos: ${muscleList} | Estresse/sono: ${stressLevel || "Bom"} | Cardio: ${cardio || "Não"}
+    return `Gere PLANO DE PERIODIZAÇÃO CIENTÍFICO COMPLETO para ${weeks} semanas
+Fase: ${phase} | Nível: ${level} | Frequência: ${days}x/semana
+Músculos prioritários: ${muscleList} | Estresse/sono: ${stressLevel || "Bom"} | Cardio: ${cardio || "Não"}
+Equipamentos: ${equipment || "Academia completa"} | Lesões: ${injuries || "Nenhuma"}
 
 Inclua:
-1. Modelo recomendado (DUP, Block, Linear) com justificativa
-2. Estrutura semana a semana: volume, intensidade, RPE
-3. Deload: semana exata e como reduzir
-4. Volume landmarks semana a semana
-5. Métricas de acompanhamento
-6. Janela de recuperação (SRA) por grupo
-7. Referências: Schoenfeld, Helms, Israetel`;
+1. Modelo de periodização recomendado (Linear, DUP, Bloco, Linear Reversa, Dupla) com justificativa detalhada de por que este modelo é superior para este perfil
+2. Estrutura semana a semana detalhada:
+   - Volume (séries por grupo muscular)
+   - Intensidade (% 1RM ou RPE)
+   - Faixa de repetições
+   - Tipo de estímulo (força, hipertrofia, metabólico, resistência)
+3. Fases do macrociclo: acumulação → intensificação → realização → transição
+4. Deload: semana exata, como reduzir (volume vs intensidade), por que neste momento
+5. Volume landmarks semana a semana por grupo muscular (MEV → MAV → MRV)
+6. Progressão de carga: modelo e taxa esperada
+7. Métricas de acompanhamento (o que monitorar e quando ajustar)
+8. Janela de recuperação (SRA) por grupo muscular e como isso afeta a frequência
+9. Sinais de que o aluno precisa de ajuste (overreaching, undertraining)
+10. Alternativas caso a rotina mude (perder 1 dia, trocar horário, viagem)
+11. Referências: Schoenfeld, Helms, Israetel, Nuckols`;
   }
 
   if (tab === "reels") {
     return `Crie roteiro de Reels de 45-60s para coach sobre: ${muscleList} na fase ${phase}.
-Gancho + problema + solução técnica + demonstração + CTA. Legenda com hashtags.`;
+Gancho forte (3s) + problema comum + solução técnica com base científica + demonstração + CTA.
+Legenda com hashtags. Tom: autoridade técnica com didática acessível.`;
   }
 
   if (tab === "volume") {
     return `Analise o volume do cliente para ${muscleList}, nível ${level}, ${data.currentSets || 0} séries/semana.
-Classifique: MEV, MAV ou acima do MRV. Recomendação prática de 150 palavras.`;
+Fase: ${phase} | Frequência: ${days}x/semana | Estresse: ${stressLevel || "Bom"}
+
+Classifique cada grupo muscular:
+- MEV (Volume Mínimo Efetivo): mínimo para manter ganhos
+- MAV (Volume de Máxima Adaptação): ponto ótimo de crescimento
+- MRV (Volume Máximo Recuperável): limite antes de overreaching
+
+Recomendação detalhada:
+1. Volume atual está abaixo do MEV, no MAV ou acima do MRV?
+2. Ajuste recomendado (aumentar/manter/reduzir) com número de séries
+3. Como distribuir o volume na semana (frequência)
+4. Sinais de que o volume está excessivo
+5. Estratégia de progressão de volume ao longo das semanas
+Referências: Israetel, Schoenfeld.`;
   }
 
   if (tab === "stagnation") {
     return `Cliente estagnado em: ${data.exercise}. Histórico: ${JSON.stringify(data.progressHistory || [])}.
-Fase ${phase}, nível ${level}. 3 estratégias práticas com justificativa científica.`;
+Fase ${phase}, nível ${level}. Frequência: ${days}x/semana.
+
+Análise completa:
+1. Diagnóstico: por que a estagnação aconteceu (volume, intensidade, técnica, recuperação, nutrição?)
+2. 3-5 estratégias práticas com justificativa científica para cada uma
+3. Técnicas avançadas aplicáveis (rest-pause, cluster, drop set, etc.)
+4. Ajuste de periodização se necessário
+5. Timeline esperado para quebrar o platô
+6. Exercícios auxiliares que podem desbloquear a progressão
+Referências científicas quando aplicável.`;
   }
 
-  return `Protocolo de treino para ${clientName}, fase ${phase}, músculos ${muscleList}, nível ${level}.`;
+  return `Protocolo de treino completo e justificado para ${clientName}, fase ${phase}, músculos ${muscleList}, nível ${level}, ${days}x/semana, ${sessionDuration || "60min"} por sessão. Equipamentos: ${equipment || "Academia completa"}. Lesões: ${injuries || "Nenhuma"}. Analise, justifique e prescreva.`;
 }
 
 serve(async (req) => {
@@ -210,7 +290,7 @@ serve(async (req) => {
     let scienceCitations: string[] = [];
 
     // Dual-AI: Perplexity for scientific references
-    if (PERPLEXITY_API_KEY && data.tab === "protocolo") {
+    if (PERPLEXITY_API_KEY && (data.tab === "protocolo" || data.tab === "periodizacao" || data.tab === "volume")) {
       try {
         const muscles = Array.isArray(data.muscles) ? data.muscles.join(" ") : data.muscles;
         const ppxRes = await fetch("https://api.perplexity.ai/chat/completions", {
@@ -219,8 +299,8 @@ serve(async (req) => {
           body: JSON.stringify({
             model: "sonar-pro",
             messages: [
-              { role: "system", content: "Exercise science researcher. Find recent evidence on optimal training volume, intensity techniques, and periodization for the given muscles and phase." },
-              { role: "user", content: `optimal training volume sets per week ${muscles} ${data.phase} hypertrophy evidence 2024 2025 periodization techniques` }
+              { role: "system", content: "Exercise science researcher specializing in resistance training, hypertrophy, and periodization. Find recent peer-reviewed evidence. Cite study name, year, type (RCT/meta-analysis/review), and key finding. Focus: PubMed, JSCR, Sports Medicine, EJSS." },
+              { role: "user", content: `optimal training volume sets per week ${muscles} ${data.phase} hypertrophy evidence 2023 2024 2025 periodization techniques biomechanics exercise selection` }
             ],
             search_recency_filter: "year",
           })
@@ -236,7 +316,7 @@ serve(async (req) => {
     }
 
     const enrichedPrompt = scienceContext
-      ? `${userPrompt}\n\nREFERÊNCIAS CIENTÍFICAS ATUAIS (Perplexity):\n${scienceContext}\n\nCitações: ${JSON.stringify(scienceCitations)}\n\nUse essas referências para embasar as decisões de volume e técnica.`
+      ? `${userPrompt}\n\nREFERÊNCIAS CIENTÍFICAS ATUAIS (Perplexity):\n${scienceContext}\n\nCitações: ${JSON.stringify(scienceCitations)}\n\nUse essas referências para embasar as decisões de volume, periodização, seleção de exercícios e técnica.`
       : userPrompt;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
