@@ -9,8 +9,9 @@ import {
   BarChart3, History, Settings, Zap, TrendingUp, Search, ArrowLeft,
   Target, Shield, AlertTriangle, Clock, Flame, Eye, Brain,
   ChevronDown, ChevronUp, Activity, Award, Bookmark, Share2,
-  Trash2, Edit3, Users, X, Check,
+  Trash2, Edit3, Users, X, Check, FileDown,
 } from "lucide-react";
+import { exportTrainingPDF } from "@/lib/trainingPdfExport";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -376,9 +377,19 @@ function EliteGenerateSection({ userId }: { userId?: string }) {
       toast.success("Salvo no caderno científico!");
     };
 
+    const exportPDF = () => {
+      const data = protocol || textResults;
+      exportTrainingPDF(data, clientName, {
+        phase: PHASES.find(p => p.id === phase)?.name || phase,
+        level,
+        weeks,
+        days,
+      });
+      toast.success("PDF premium exportado!");
+    };
+
     const exportFormatted = () => {
       const lines: string[] = [];
-      // Phase Plan
       const pp = protocol?.phase_plan;
       if (pp) {
         lines.push(`═══════════════════════════════════════`);
@@ -425,18 +436,7 @@ function EliteGenerateSection({ userId }: { userId?: string }) {
           lines.push(`\n🎯 PRIORIDADES MUSCULARES:`);
           ov.muscle_priorities.forEach((mp: any) => lines.push(`  • ${mp.muscle} — ${mp.weekly_sets} séries/sem (${mp.priority})`));
         }
-        if (ov.maintenance_muscles?.length) {
-          lines.push(`\n🔄 MANUTENÇÃO:`);
-          ov.maintenance_muscles.forEach((mm: any) => {
-            const label = typeof mm === "string" ? mm : `${mm.muscle} — ${mm.weekly_sets} séries/sem`;
-            lines.push(`  • ${label}`);
-          });
-        }
         if (ov.coach_notes) lines.push(`\n💡 OBSERVAÇÕES DO COACH:\n${ov.coach_notes}`);
-      }
-      if (protocol?.improvement_alerts?.length) {
-        lines.push(`\n⚠️ ALERTAS DE MELHORIA:`);
-        protocol.improvement_alerts.forEach((a: any) => lines.push(`  [${a.severity?.toUpperCase()}] ${a.area}: ${a.message}`));
       }
       if (protocol?.training_days?.length) {
         protocol.training_days.forEach((day: any) => {
@@ -482,8 +482,11 @@ function EliteGenerateSection({ userId }: { userId?: string }) {
             <button onClick={() => setShowSaveModal(true)} className="flex items-center gap-1 text-[10px] px-2.5 py-1.5 rounded-lg font-semibold" style={{ background: GREEN_DIM, color: GREEN, border: `1px solid ${BORDER}` }}>
               <Save className="w-3 h-3" /> Salvar
             </button>
+            <button onClick={exportPDF} className="flex items-center gap-1 text-[10px] px-2.5 py-1.5 rounded-lg font-semibold" style={{ background: "rgba(239,68,68,0.08)", color: "#f87171", border: "1px solid rgba(239,68,68,0.15)" }}>
+              <FileDown className="w-3 h-3" /> PDF
+            </button>
             <button onClick={exportFormatted} className="flex items-center gap-1 text-[10px] px-2.5 py-1.5 rounded-lg font-semibold" style={{ background: GREEN_DIM, color: GREEN, border: `1px solid ${BORDER}` }}>
-              <Download className="w-3 h-3" /> Exportar
+              <Download className="w-3 h-3" /> TXT
             </button>
           </div>
         </div>
