@@ -9,6 +9,7 @@ import {
   BarChart3, History, Settings, Zap, TrendingUp, Search, ArrowLeft,
   Target, Shield, AlertTriangle, Clock, Flame, Eye, Brain,
   ChevronDown, ChevronUp, Activity, Award, Bookmark, Share2,
+  Trash2, Edit3, Users, X, Check,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
