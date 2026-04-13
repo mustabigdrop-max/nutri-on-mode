@@ -504,14 +504,97 @@ function EliteGenerateSection({ userId }: { userId?: string }) {
               loadingTab[activeResultTab] ? <LoadingState /> :
               textResults[activeResultTab] ? <TextCard content={textResults[activeResultTab]} /> :
               <div className="py-12 text-center"><p className="text-xs" style={{ color: TEXT_MUTED }}>Clique na aba para carregar</p></div>
-            )}
-          </>
-        )}
-      </div>
-    );
-  }
+             )}
+           </>
+         )}
 
-  return null;
+         {/* Save Modal */}
+         <AnimatePresence>
+           {showSaveModal && (
+             <SaveProtocolModal
+               patients={patients}
+               selectedPatient={selectedPatient}
+               setSelectedPatient={setSelectedPatient}
+               clientName={clientName}
+               onSave={(patientId) => saveProtocol(patientId)}
+               onClose={() => setShowSaveModal(false)}
+             />
+           )}
+         </AnimatePresence>
+       </div>
+     );
+   }
+
+   return null;
+ }
+
+/* ── Save Protocol Modal ── */
+function SaveProtocolModal({ patients, selectedPatient, setSelectedPatient, clientName, onSave, onClose }: {
+  patients: any[]; selectedPatient: string; setSelectedPatient: (v: string) => void;
+  clientName: string; onSave: (patientId?: string) => void; onClose: () => void;
+}) {
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.85)" }} onClick={onClose}>
+      <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
+        onClick={e => e.stopPropagation()} className="w-full max-w-sm rounded-2xl p-5" style={{ background: BG, border: `1px solid ${BORDER_ACTIVE}` }}>
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <Save className="w-4 h-4" style={{ color: GREEN }} />
+            <h3 className="text-sm font-black" style={{ color: TEXT, fontFamily: FONT }}>Salvar Protocolo</h3>
+          </div>
+          <button onClick={onClose} className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: SURFACE2 }}>
+            <X className="w-3.5 h-3.5" style={{ color: TEXT_MUTED }} />
+          </button>
+        </div>
+
+        <div className="rounded-xl p-3 mb-4" style={{ background: SURFACE, border: `1px solid ${BORDER}` }}>
+          <p className="text-[10px] font-semibold mb-0.5" style={{ color: TEXT_MUTED }}>Cliente</p>
+          <p className="text-sm font-bold" style={{ color: TEXT }}>{clientName}</p>
+        </div>
+
+        {patients.length > 0 && (
+          <div className="mb-4">
+            <p className="text-[10px] font-semibold mb-2 tracking-wide uppercase" style={{ color: TEXT_MUTED }}>
+              <Users className="w-3 h-3 inline mr-1" />Vincular a um paciente
+            </p>
+            <div className="space-y-1.5 max-h-40 overflow-y-auto">
+              <button onClick={() => setSelectedPatient("")}
+                className="w-full text-left px-3 py-2.5 rounded-xl text-[11px] font-medium transition-all"
+                style={{
+                  background: !selectedPatient ? GREEN_DIM : SURFACE,
+                  border: `1px solid ${!selectedPatient ? BORDER_ACTIVE : BORDER}`,
+                  color: !selectedPatient ? GREEN : TEXT_DIM,
+                }}>
+                Sem vínculo (salvar apenas)
+              </button>
+              {patients.map(p => (
+                <button key={p.patient_user_id} onClick={() => setSelectedPatient(p.patient_user_id)}
+                  className="w-full text-left px-3 py-2.5 rounded-xl text-[11px] font-medium transition-all"
+                  style={{
+                    background: selectedPatient === p.patient_user_id ? GREEN_DIM : SURFACE,
+                    border: `1px solid ${selectedPatient === p.patient_user_id ? BORDER_ACTIVE : BORDER}`,
+                    color: selectedPatient === p.patient_user_id ? GREEN : TEXT_DIM,
+                  }}>
+                  <span className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-black" style={{ background: GREEN_DIM, color: GREEN }}>
+                      {p.name?.charAt(0)?.toUpperCase()}
+                    </div>
+                    {p.name}
+                    {selectedPatient === p.patient_user_id && <Check className="w-3 h-3 ml-auto" style={{ color: GREEN }} />}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <Button onClick={() => onSave(selectedPatient || undefined)} className="w-full font-bold text-sm h-11 rounded-xl" style={{ background: GREEN, color: BG }}>
+          <Save className="w-4 h-4 mr-2" /> Salvar Protocolo
+        </Button>
+      </motion.div>
+    </motion.div>
+  );
 }
 
 /* ── Block Overview Card ── */
