@@ -444,10 +444,10 @@ function EliteGenerateSection({ userId }: { userId?: string }) {
             <ChevronLeft className="w-3 h-3" /> Novo protocolo
           </button>
           <div className="flex gap-1.5">
-            <button onClick={saveToNotebook} className="flex items-center gap-1 text-[10px] px-2.5 py-1.5 rounded-lg font-semibold" style={{ background: "rgba(139,92,246,0.08)", color: "#a78bfa", border: "1px solid rgba(139,92,246,0.15)" }}>
+            <button onClick={() => saveToNotebook()} className="flex items-center gap-1 text-[10px] px-2.5 py-1.5 rounded-lg font-semibold" style={{ background: "rgba(139,92,246,0.08)", color: "#a78bfa", border: "1px solid rgba(139,92,246,0.15)" }}>
               <Bookmark className="w-3 h-3" /> Caderno
             </button>
-            <button onClick={saveProtocol} className="flex items-center gap-1 text-[10px] px-2.5 py-1.5 rounded-lg font-semibold" style={{ background: GREEN_DIM, color: GREEN, border: `1px solid ${BORDER}` }}>
+            <button onClick={() => setShowSaveModal(true)} className="flex items-center gap-1 text-[10px] px-2.5 py-1.5 rounded-lg font-semibold" style={{ background: GREEN_DIM, color: GREEN, border: `1px solid ${BORDER}` }}>
               <Save className="w-3 h-3" /> Salvar
             </button>
             <button onClick={exportFormatted} className="flex items-center gap-1 text-[10px] px-2.5 py-1.5 rounded-lg font-semibold" style={{ background: GREEN_DIM, color: GREEN, border: `1px solid ${BORDER}` }}>
