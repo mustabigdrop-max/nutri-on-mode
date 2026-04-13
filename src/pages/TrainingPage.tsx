@@ -189,7 +189,25 @@ function EliteGenerateSection({ userId }: { userId?: string }) {
     }
   };
 
-  const saveProtocol = async () => {
+  const [showSaveModal, setShowSaveModal] = useState(false);
+  const [patients, setPatients] = useState<any[]>([]);
+  const [selectedPatient, setSelectedPatient] = useState("");
+
+  useEffect(() => {
+    if (!userId) return;
+    supabase.from("coach_patients").select("id, patient_user_id, status, notes").eq("status", "active")
+      .then(async ({ data }) => {
+        if (!data?.length) return;
+        const ids = data.map(p => p.patient_user_id);
+        const { data: profiles } = await supabase.from("profiles").select("user_id, full_name").in("user_id", ids);
+        setPatients(data.map(cp => ({
+          ...cp,
+          name: profiles?.find(pr => pr.user_id === cp.patient_user_id)?.full_name || "Sem nome",
+        })));
+      });
+  }, [userId]);
+
+  const saveProtocol = async (patientId?: string) => {
     if (!userId) return;
     const { error } = await supabase.from("training_protocols").insert({
       user_id: userId, client_name: clientName, phase, muscles, level, weeks,
@@ -199,9 +217,11 @@ function EliteGenerateSection({ userId }: { userId?: string }) {
       anatomy_text: textResults.anatomia || "",
       tecnica_text: textResults.tecnica || "",
       periodizacao_text: textResults.periodizacao || "",
+      patient_user_id: patientId || null,
     });
     if (error) toast.error("Erro ao salvar");
     else toast.success("Protocolo salvo!");
+    setShowSaveModal(false);
   };
 
   // ── Step 1: Anamnese ──
