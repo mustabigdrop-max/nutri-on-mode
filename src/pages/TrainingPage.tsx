@@ -1257,11 +1257,19 @@ function HistorySection({ userId }: { userId?: string }) {
 function HistoryViewModal({ protocol: p, onClose, userId, onUpdate }: { protocol: any; onClose: () => void; userId?: string; onUpdate?: () => void }) {
   const [expandedDay, setExpandedDay] = useState<number | null>(0);
   const [expandedExercise, setExpandedExercise] = useState<string | null>(null);
+  const [editing, setEditing] = useState(false);
+  const [editName, setEditName] = useState(p.client_name || "");
 
   let parsed: any = null;
   try {
     parsed = typeof p.protocol_text === "string" ? JSON.parse(p.protocol_text) : p.protocol_text;
   } catch { parsed = null; }
+
+  const updateProtocol = async () => {
+    const { error } = await supabase.from("training_protocols").update({ client_name: editName }).eq("id", p.id);
+    if (error) toast.error("Erro ao atualizar");
+    else { toast.success("Atualizado!"); setEditing(false); onUpdate?.(); }
+  };
 
   const saveToNotebook = async () => {
     if (!userId) return;
