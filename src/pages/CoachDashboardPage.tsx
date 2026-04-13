@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Users, AlertTriangle, TrendingUp, Search, Bell, Settings, UserPlus, ArrowUpRight, Link2, Copy, Loader2, Trash2, Zap, Dumbbell } from "lucide-react";
+import { Users, AlertTriangle, TrendingUp, Search, Bell, Settings, UserPlus, ArrowUpRight, Link2, Copy, Loader2, Trash2, Zap, Dumbbell, FlaskConical, Bone } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "@/hooks/use-toast";
 import {
@@ -296,6 +296,12 @@ const CoachDashboardPage = () => {
           </Button>
           <Button onClick={() => navigate("/training")} variant="outline" className="flex items-center gap-2">
             <Dumbbell className="w-4 h-4" /> TrainingON
+          </Button>
+          <Button onClick={() => navigate("/biomechanics")} variant="outline" className="flex items-center gap-2">
+            <Bone className="w-4 h-4" /> Biomecânica
+          </Button>
+          <Button onClick={() => navigate("/science")} variant="outline" className="flex items-center gap-2">
+            <FlaskConical className="w-4 h-4" /> ScienceHub
           </Button>
         </div>
 
