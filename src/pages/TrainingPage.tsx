@@ -1323,8 +1323,21 @@ function HistoryViewModal({ protocol: p, onClose, userId, onUpdate }: { protocol
         {/* Header */}
         <div className="sticky top-0 z-10 px-5 pt-5 pb-3" style={{ background: BG, borderBottom: `1px solid ${BORDER}` }}>
           <div className="flex items-center justify-between mb-2">
-            <div>
-              <h3 className="text-sm font-black" style={{ color: TEXT, fontFamily: FONT }}>{p.client_name}</h3>
+            <div className="flex-1">
+              {editing ? (
+                <div className="flex items-center gap-2">
+                  <Input value={editName} onChange={e => setEditName(e.target.value)} className="bg-transparent text-sm h-8 flex-1" style={{ borderColor: BORDER_ACTIVE, color: TEXT }} />
+                  <button onClick={updateProtocol} className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: GREEN_DIM }}><Check className="w-3 h-3" style={{ color: GREEN }} /></button>
+                  <button onClick={() => setEditing(false)} className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: SURFACE2 }}><X className="w-3 h-3" style={{ color: TEXT_MUTED }} /></button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <h3 className="text-sm font-black" style={{ color: TEXT, fontFamily: FONT }}>{p.client_name}</h3>
+                  <button onClick={() => setEditing(true)} className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: SURFACE2 }}>
+                    <Edit3 className="w-2.5 h-2.5" style={{ color: TEXT_MUTED }} />
+                  </button>
+                </div>
+              )}
               <p className="text-[10px]" style={{ color: TEXT_MUTED }}>
                 {PHASES.find((ph: any) => ph.id === p.phase)?.name || p.phase} · {p.weeks} sem · {new Date(p.created_at).toLocaleDateString("pt-BR")}
               </p>
