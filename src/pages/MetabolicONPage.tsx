@@ -151,13 +151,12 @@ const MetabolicONPage = () => {
       // Try to load from profiles table for defaults
       const { data: baseProfile } = await supabase
         .from("profiles")
-        .select("weight_kg, height_cm, age, sex, goal, activity_level, full_name")
+        .select("weight_kg, height_cm, sex, goal, activity_level, full_name")
         .eq("user_id", user!.id)
         .maybeSingle();
       if (baseProfile) {
         setFormWeight(baseProfile.weight_kg?.toString() || "");
         setFormHeight(baseProfile.height_cm?.toString() || "");
-        setFormAge(baseProfile.age?.toString() || "");
         setFormSex(baseProfile.sex || "masculino");
         setFormGoal(baseProfile.goal || "emagrecimento");
         setFormActivity(baseProfile.activity_level || "moderado");
