@@ -833,7 +833,7 @@ function CoachConfigSection({ userId }: { userId?: string }) {
           setCoachName(data.professional_name || "");
           setCoachTitle(data.bio || "");
           setCoachInstagram(data.specialties?.[0] || "");
-          setCoachEmail(data.alert_channels?.email || "");
+          setCoachEmail(typeof data.alert_channels === "object" && data.alert_channels !== null ? (data.alert_channels as any).email || "" : "");
           setCoachCref(data.crn || "");
         }
       });
