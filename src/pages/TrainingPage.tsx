@@ -4,31 +4,46 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
-import { Dumbbell, ChevronRight, ChevronLeft, Download, FileText, Video, Save, BarChart3, History, Settings, Zap, TrendingUp, AlertTriangle, Search, ArrowLeft } from "lucide-react";
+import {
+  Dumbbell, ChevronRight, ChevronLeft, Download, FileText, Save,
+  BarChart3, History, Settings, Zap, TrendingUp, Search, ArrowLeft,
+  Target, Shield, AlertTriangle, Clock, Flame, Eye, Brain,
+  ChevronDown, ChevronUp, Activity, Award,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import BottomNav from "@/components/BottomNav";
 import {
   PHASES, MUSCLES, LEVELS, WEEKS_OPTIONS, DAYS_OPTIONS,
   SESSION_DURATIONS, CARDIO_OPTIONS, STRESS_OPTIONS, EQUIPMENT_OPTIONS,
-  VOLUME_LANDMARKS, RESULT_TABS,
+  VOLUME_LANDMARKS,
 } from "@/data/trainingData";
 
 type Section = "gerar" | "progressao" | "volume" | "historico" | "config";
-type TabId = "protocolo" | "anatomia" | "tecnica" | "periodizacao";
 
 const sectionNav: { id: Section; label: string; icon: any }[] = [
-  { id: "gerar", label: "Gerar Protocolo", icon: Zap },
+  { id: "gerar", label: "Prescrição", icon: Brain },
   { id: "progressao", label: "Progressão", icon: TrendingUp },
   { id: "volume", label: "Volume", icon: BarChart3 },
   { id: "historico", label: "Histórico", icon: History },
   { id: "config", label: "Config", icon: Settings },
 ];
+
+// ── Design tokens ──
+const BG = "#060a06";
+const SURFACE = "#0c120c";
+const SURFACE2 = "#111a11";
+const BORDER = "rgba(74,222,128,0.1)";
+const BORDER_ACTIVE = "rgba(74,222,128,0.35)";
+const GREEN = "#4ade80";
+const GREEN_DIM = "rgba(74,222,128,0.08)";
+const TEXT = "#f0fdf4";
+const TEXT_DIM = "#94a3b8";
+const TEXT_MUTED = "#64748b";
+const FONT = "'Space Grotesk', sans-serif";
 
 export default function TrainingPage() {
   const { user } = useAuth();
@@ -36,35 +51,38 @@ export default function TrainingPage() {
   const [section, setSection] = useState<Section>("gerar");
 
   return (
-    <div className="min-h-screen" style={{ background: "#0a0f0a" }}>
-      {/* Header */}
-      <div className="px-4 pt-6 pb-2">
+    <div className="min-h-screen" style={{ background: BG }}>
+      {/* ── Header ── */}
+      <div className="px-4 pt-5 pb-3">
         <div className="flex items-center gap-3 mb-4">
-          <button onClick={() => navigate(-1)} className="w-10 h-10 rounded-xl flex items-center justify-center hover:opacity-80 transition-opacity" style={{ background: "rgba(255,255,255,0.05)" }}>
-            <ArrowLeft className="w-5 h-5" style={{ color: "#f0fdf4" }} />
+          <button onClick={() => navigate(-1)} className="w-10 h-10 rounded-xl flex items-center justify-center transition-all hover:scale-105" style={{ background: SURFACE2, border: `1px solid ${BORDER}` }}>
+            <ArrowLeft className="w-4 h-4" style={{ color: TEXT_DIM }} />
           </button>
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "rgba(74,222,128,0.15)" }}>
-            <Dumbbell className="w-5 h-5" style={{ color: "#4ade80" }} />
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "rgba(74,222,128,0.12)", border: `1px solid ${BORDER_ACTIVE}` }}>
+            <Dumbbell className="w-5 h-5" style={{ color: GREEN }} />
           </div>
-          <div>
-            <h1 className="text-xl font-bold" style={{ color: "#f0fdf4", fontFamily: "'Space Grotesk', sans-serif" }}>TrainingON</h1>
-            <p className="text-xs" style={{ color: "#9ca3af" }}>Motor de Treino Científico</p>
+          <div className="flex-1">
+            <h1 className="text-lg font-black tracking-tight" style={{ color: TEXT, fontFamily: FONT }}>
+              Training<span style={{ color: GREEN }}>ON</span>
+            </h1>
+            <p className="text-[10px] font-medium tracking-wider uppercase" style={{ color: TEXT_MUTED }}>Motor de Prescrição de Elite</p>
+          </div>
+          <div className="flex items-center gap-1 px-2 py-1 rounded-full" style={{ background: GREEN_DIM, border: `1px solid ${BORDER}` }}>
+            <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: GREEN }} />
+            <span className="text-[9px] font-bold" style={{ color: GREEN }}>AI LIVE</span>
           </div>
         </div>
 
         {/* Section Nav */}
-        <div className="flex gap-1 overflow-x-auto pb-2 no-scrollbar">
+        <div className="flex gap-1.5 overflow-x-auto pb-1 no-scrollbar">
           {sectionNav.map((s) => (
-            <button
-              key={s.id}
-              onClick={() => setSection(s.id)}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-all"
+            <button key={s.id} onClick={() => setSection(s.id)}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-[11px] font-semibold whitespace-nowrap transition-all"
               style={{
-                background: section === s.id ? "rgba(74,222,128,0.15)" : "rgba(255,255,255,0.03)",
-                color: section === s.id ? "#4ade80" : "#9ca3af",
-                border: `1px solid ${section === s.id ? "rgba(74,222,128,0.3)" : "rgba(74,222,128,0.08)"}`,
-              }}
-            >
+                background: section === s.id ? GREEN_DIM : "transparent",
+                color: section === s.id ? GREEN : TEXT_MUTED,
+                border: `1px solid ${section === s.id ? BORDER_ACTIVE : "transparent"}`,
+              }}>
               <s.icon className="w-3.5 h-3.5" />
               {s.label}
             </button>
@@ -72,13 +90,17 @@ export default function TrainingPage() {
         </div>
       </div>
 
-      {/* Content */}
+      {/* ── Content ── */}
       <div className="px-4 pb-24">
-        {section === "gerar" && <GenerateSection userId={user?.id} />}
-        {section === "progressao" && <ProgressionSection userId={user?.id} />}
-        {section === "volume" && <VolumeLandmarksSection userId={user?.id} />}
-        {section === "historico" && <HistorySection userId={user?.id} />}
-        {section === "config" && <CoachConfigSection userId={user?.id} />}
+        <AnimatePresence mode="wait">
+          <motion.div key={section} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
+            {section === "gerar" && <EliteGenerateSection userId={user?.id} />}
+            {section === "progressao" && <ProgressionSection userId={user?.id} />}
+            {section === "volume" && <VolumeLandmarksSection userId={user?.id} />}
+            {section === "historico" && <HistorySection userId={user?.id} />}
+            {section === "config" && <CoachConfigSection userId={user?.id} />}
+          </motion.div>
+        </AnimatePresence>
       </div>
 
       <BottomNav />
@@ -86,10 +108,10 @@ export default function TrainingPage() {
   );
 }
 
-/* ============================================================
-   SECTION 1 — GENERATE PROTOCOL
-   ============================================================ */
-function GenerateSection({ userId }: { userId?: string }) {
+/* ================================================================
+   ELITE GENERATE SECTION — Premium Protocol Generator
+   ================================================================ */
+function EliteGenerateSection({ userId }: { userId?: string }) {
   const [step, setStep] = useState(1);
   // Anamnese
   const [injuries, setInjuries] = useState("");
@@ -100,7 +122,7 @@ function GenerateSection({ userId }: { userId?: string }) {
   const [cardio, setCardio] = useState("Não");
   const [stressLevel, setStressLevel] = useState("Bom");
   const [supplements, setSupplements] = useState("");
-  // Protocol params
+  // Protocol
   const [phase, setPhase] = useState("");
   const [muscles, setMuscles] = useState<string[]>([]);
   const [level, setLevel] = useState("");
@@ -108,149 +130,98 @@ function GenerateSection({ userId }: { userId?: string }) {
   const [days, setDays] = useState("5");
   const [clientName, setClientName] = useState("");
   // Results
-  const [results, setResults] = useState<Record<string, string>>({});
-  const [loading, setLoading] = useState<Record<string, boolean>>({});
-  const [activeTab, setActiveTab] = useState<TabId>("protocolo");
+  const [protocol, setProtocol] = useState<any>(null);
+  const [textResults, setTextResults] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(false);
+  const [loadingTab, setLoadingTab] = useState<Record<string, boolean>>({});
   const [generated, setGenerated] = useState(false);
-  const [reelsModal, setReelsModal] = useState(false);
-  const [reelsContent, setReelsContent] = useState("");
-  const [reelsLoading, setReelsLoading] = useState(false);
+  const [activeResultTab, setActiveResultTab] = useState<string>("overview");
+  const [expandedDay, setExpandedDay] = useState<number | null>(0);
+  const [expandedExercise, setExpandedExercise] = useState<string | null>(null);
 
-  const toggleEquipment = (e: string) => {
-    setEquipment(prev => prev.includes(e) ? prev.filter(x => x !== e) : [...prev, e]);
-  };
-  const toggleMuscle = (m: string) => {
-    setMuscles(prev => prev.includes(m) ? prev.filter(x => x !== m) : [...prev, m]);
-  };
+  const toggleEquipment = (e: string) => setEquipment(prev => prev.includes(e) ? prev.filter(x => x !== e) : [...prev, e]);
+  const toggleMuscle = (m: string) => setMuscles(prev => prev.includes(m) ? prev.filter(x => x !== m) : [...prev, m]);
 
-  const callAI = useCallback(async (tab: string) => {
-    setLoading(prev => ({ ...prev, [tab]: true }));
-    try {
-      const { data, error } = await supabase.functions.invoke("generate-training-protocol", {
-        body: { phase, muscles, level, weeks, days, clientName, equipment: equipment.join(", "), injuries, sessionDuration, stressLevel, supplements, weakPoints, specificGoal, cardio, tab },
-      });
-      if (error) throw error;
-      setResults(prev => ({ ...prev, [tab]: data.content }));
-    } catch (e: any) {
-      toast.error(`Erro ao gerar ${tab}: ${e.message}`);
-    } finally {
-      setLoading(prev => ({ ...prev, [tab]: false }));
-    }
-  }, [phase, muscles, level, weeks, days, clientName, equipment, injuries, sessionDuration, stressLevel, supplements, weakPoints, specificGoal, cardio]);
+  const bodyData = useMemo(() => ({
+    phase, muscles, level, weeks, days, clientName,
+    equipment: equipment.join(", "), injuries, sessionDuration,
+    stressLevel, supplements, weakPoints, specificGoal, cardio,
+  }), [phase, muscles, level, weeks, days, clientName, equipment, injuries, sessionDuration, stressLevel, supplements, weakPoints, specificGoal, cardio]);
 
   const generate = async () => {
     if (!phase || muscles.length === 0 || !level || !clientName) {
       toast.error("Preencha fase, músculos, nível e nome do cliente");
       return;
     }
+    setLoading(true);
     setGenerated(true);
-    setActiveTab("protocolo");
-    await callAI("protocolo");
-    // Load others in parallel
-    Promise.allSettled([callAI("anatomia"), callAI("tecnica"), callAI("periodizacao")]);
+    setActiveResultTab("overview");
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-training-protocol", {
+        body: { ...bodyData, tab: "protocolo" },
+      });
+      if (error) throw error;
+      if (data.protocol) {
+        setProtocol(data.protocol);
+      } else if (data.content) {
+        setTextResults(prev => ({ ...prev, protocolo: data.content }));
+      }
+    } catch (e: any) {
+      toast.error(`Erro: ${e.message}`);
+      setGenerated(false);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadTab = async (tab: string) => {
+    if (textResults[tab] || loadingTab[tab]) return;
+    setLoadingTab(prev => ({ ...prev, [tab]: true }));
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-training-protocol", { body: { ...bodyData, tab } });
+      if (error) throw error;
+      setTextResults(prev => ({ ...prev, [tab]: data.content }));
+    } catch (e: any) {
+      toast.error(`Erro ao gerar ${tab}`);
+    } finally {
+      setLoadingTab(prev => ({ ...prev, [tab]: false }));
+    }
   };
 
   const saveProtocol = async () => {
     if (!userId) return;
     const { error } = await supabase.from("training_protocols").insert({
-      user_id: userId,
-      client_name: clientName,
-      phase, muscles, level, weeks,
-      days_per_week: days,
-      equipment: equipment.join(", "),
-      injuries, session_duration: sessionDuration,
-      protocol_text: results.protocolo || "",
-      anatomy_text: results.anatomia || "",
-      tecnica_text: results.tecnica || "",
-      periodizacao_text: results.periodizacao || "",
+      user_id: userId, client_name: clientName, phase, muscles, level, weeks,
+      days_per_week: days, equipment: equipment.join(", "), injuries,
+      session_duration: sessionDuration,
+      protocol_text: protocol ? JSON.stringify(protocol) : textResults.protocolo || "",
+      anatomy_text: textResults.anatomia || "",
+      tecnica_text: textResults.tecnica || "",
+      periodizacao_text: textResults.periodizacao || "",
     });
     if (error) toast.error("Erro ao salvar");
-    else toast.success("Protocolo salvo com sucesso!");
+    else toast.success("Protocolo salvo!");
   };
 
-  const saveAsTemplate = async () => {
-    if (!userId) return;
-    const tName = prompt("Nome do template:");
-    if (!tName) return;
-    const { error } = await supabase.from("training_templates").insert({
-      user_id: userId,
-      template_name: tName,
-      phase, muscles, level, weeks,
-      days_per_week: days,
-      equipment: equipment.join(", "),
-      protocol_text: results.protocolo || "",
-    });
-    if (error) toast.error("Erro ao salvar template");
-    else toast.success("Template salvo!");
-  };
-
-  const generateReels = async () => {
-    setReelsModal(true);
-    setReelsLoading(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("generate-training-protocol", {
-        body: { phase, muscles, level, weeks, days, clientName, tab: "reels" },
-      });
-      if (error) throw error;
-      setReelsContent(data.content);
-    } catch (e: any) {
-      toast.error("Erro ao gerar roteiro");
-    } finally {
-      setReelsLoading(false);
-    }
-  };
-
-  const formatContent = (text: string) => {
-    if (!text) return null;
-    const lines = text.split("\n");
-    return lines.map((line, i) => {
-      const trimmed = line.trim();
-      if (!trimmed) return <div key={i} className="h-2" />;
-      if (/^#{1,3}\s/.test(trimmed) || /^[A-ZÀÁÂÃÉÊÍÓÔÕÚÇ\d][A-ZÀÁÂÃÉÊÍÓÔÕÚÇ\d\s:—–\-]{4,}$/.test(trimmed)) {
-        return <h3 key={i} className="text-base font-bold mt-4 mb-2" style={{ color: "#4ade80", fontFamily: "'Space Grotesk', sans-serif" }}>{trimmed.replace(/^#+\s*/, "")}</h3>;
-      }
-      if (trimmed.startsWith("- ") || trimmed.startsWith("• ")) {
-        return <p key={i} className="text-sm ml-3 mb-1" style={{ color: "#d1d5db" }}>• {trimmed.slice(2)}</p>;
-      }
-      if (/^\d+\./.test(trimmed)) {
-        return <p key={i} className="text-sm ml-3 mb-1" style={{ color: "#d1d5db" }}>{trimmed}</p>;
-      }
-      if (trimmed.includes("|")) {
-        const cells = trimmed.split("|").map(c => c.trim()).filter(Boolean);
-        if (cells.every(c => /^[-:]+$/.test(c))) return null;
-        return (
-          <div key={i} className="grid gap-1 text-xs mb-0.5" style={{ gridTemplateColumns: `repeat(${cells.length}, 1fr)`, color: "#d1d5db" }}>
-            {cells.map((c, ci) => <div key={ci} className="px-1 py-0.5 border-b" style={{ borderColor: "rgba(74,222,128,0.1)" }}>{c}</div>)}
-          </div>
-        );
-      }
-      return <p key={i} className="text-sm mb-1" style={{ color: "#d1d5db" }}>{trimmed}</p>;
-    });
-  };
-
-  // Step 1: Anamnese
+  // ── Step 1: Anamnese ──
   if (step === 1 && !generated) {
     return (
-      <div className="space-y-4 mt-4">
-        <div className="flex items-center gap-2 mb-2">
-          <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: "#4ade80", color: "#0a0f0a" }}>1</div>
-          <span className="text-sm font-semibold" style={{ color: "#f0fdf4" }}>Anamnese de Treino</span>
-          <span className="text-xs ml-auto" style={{ color: "#6b7280" }}>Step 1 de 2</span>
-        </div>
+      <div className="space-y-4 mt-3">
+        <StepHeader step={1} total={2} title="Anamnese de Treino" subtitle="Dados do cliente para prescrição personalizada" />
 
         <Field label="Histórico de lesões ou restrições">
-          <Textarea value={injuries} onChange={e => setInjuries(e.target.value)} placeholder="Ex: joelho direito, hérnia L4-L5" className="bg-transparent border-[rgba(74,222,128,0.12)] text-[#f0fdf4] placeholder:text-[#6b7280] text-sm" />
+          <Textarea value={injuries} onChange={e => setInjuries(e.target.value)} placeholder="Ex: joelho direito, hérnia L4-L5, ombro com impingement" className="bg-transparent text-sm min-h-[60px]" style={{ borderColor: BORDER, color: TEXT }} />
         </Field>
 
         <Field label="Equipamentos disponíveis">
           <div className="grid grid-cols-2 gap-2">
             {EQUIPMENT_OPTIONS.map(e => (
               <button key={e} onClick={() => toggleEquipment(e)}
-                className="text-xs px-3 py-2 rounded-lg transition-all text-left"
+                className="text-[11px] px-3 py-2.5 rounded-xl transition-all text-left font-medium"
                 style={{
-                  background: equipment.includes(e) ? "rgba(74,222,128,0.12)" : "rgba(255,255,255,0.03)",
-                  border: `1px solid ${equipment.includes(e) ? "#4ade80" : "rgba(74,222,128,0.08)"}`,
-                  color: equipment.includes(e) ? "#4ade80" : "#9ca3af",
+                  background: equipment.includes(e) ? GREEN_DIM : SURFACE,
+                  border: `1px solid ${equipment.includes(e) ? BORDER_ACTIVE : BORDER}`,
+                  color: equipment.includes(e) ? GREEN : TEXT_DIM,
                 }}>{e}</button>
             ))}
           </div>
@@ -265,41 +236,40 @@ function GenerateSection({ userId }: { userId?: string }) {
           </Field>
         </div>
 
-        <Field label="Objetivo específico">
-          <Textarea value={specificGoal} onChange={e => setSpecificGoal(e.target.value)} placeholder="Ex: aumentar glúteo, definir abdômen" className="bg-transparent border-[rgba(74,222,128,0.12)] text-[#f0fdf4] placeholder:text-[#6b7280] text-sm min-h-[60px]" />
+        <Field label="Objetivo específico do cliente">
+          <Textarea value={specificGoal} onChange={e => setSpecificGoal(e.target.value)} placeholder="Ex: aumentar largura de costas, melhorar glúteos, definir abdômen" className="bg-transparent text-sm min-h-[50px]" style={{ borderColor: BORDER, color: TEXT }} />
         </Field>
 
-        <Field label="Pontos fracos do cliente">
-          <Input value={weakPoints} onChange={e => setWeakPoints(e.target.value)} placeholder="Ex: ombros pequenos" className="bg-transparent border-[rgba(74,222,128,0.12)] text-[#f0fdf4] placeholder:text-[#6b7280] text-sm" />
+        <Field label="Pontos fracos identificados">
+          <Input value={weakPoints} onChange={e => setWeakPoints(e.target.value)} placeholder="Ex: ombros pequenos, posterior de coxa fraco" className="bg-transparent text-sm" style={{ borderColor: BORDER, color: TEXT }} />
         </Field>
 
         <div className="grid grid-cols-2 gap-3">
-          <Field label="Estresse/sono">
+          <Field label="Estresse / Recuperação">
             <StyledSelect value={stressLevel} onValueChange={setStressLevel} options={STRESS_OPTIONS.map(v => ({ value: v, label: v }))} />
           </Field>
-          <Field label="Suplementos">
-            <Input value={supplements} onChange={e => setSupplements(e.target.value)} placeholder="creatina, whey..." className="bg-transparent border-[rgba(74,222,128,0.12)] text-[#f0fdf4] placeholder:text-[#6b7280] text-sm" />
+          <Field label="Suplementos em uso">
+            <Input value={supplements} onChange={e => setSupplements(e.target.value)} placeholder="creatina, whey..." className="bg-transparent text-sm" style={{ borderColor: BORDER, color: TEXT }} />
           </Field>
         </div>
 
-        <Button onClick={() => setStep(2)} className="w-full font-bold text-sm" style={{ background: "#4ade80", color: "#0a0f0a" }}>
-          Continuar para o Protocolo <ChevronRight className="w-4 h-4 ml-1" />
+        <Button onClick={() => setStep(2)} className="w-full font-bold text-sm h-12 rounded-xl" style={{ background: GREEN, color: BG }}>
+          Continuar para Protocolo <ChevronRight className="w-4 h-4 ml-1" />
         </Button>
       </div>
     );
   }
 
-  // Step 2: Protocol config
+  // ── Step 2: Protocol Config ──
   if (step === 2 && !generated) {
     return (
-      <div className="space-y-4 mt-4">
-        <div className="flex items-center gap-2 mb-2">
-          <button onClick={() => setStep(1)} className="text-xs flex items-center gap-1" style={{ color: "#9ca3af" }}>
+      <div className="space-y-4 mt-3">
+        <div className="flex items-center gap-2">
+          <button onClick={() => setStep(1)} className="text-xs flex items-center gap-1 transition-colors hover:opacity-80" style={{ color: TEXT_DIM }}>
             <ChevronLeft className="w-3 h-3" /> Voltar
           </button>
-          <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: "#4ade80", color: "#0a0f0a" }}>2</div>
-          <span className="text-sm font-semibold" style={{ color: "#f0fdf4" }}>Configurar Protocolo</span>
         </div>
+        <StepHeader step={2} total={2} title="Configurar Protocolo" subtitle="Defina fase, divisão e prioridades musculares" />
 
         <Field label="Fase de treinamento">
           <div className="grid grid-cols-3 gap-2">
@@ -307,26 +277,26 @@ function GenerateSection({ userId }: { userId?: string }) {
               <button key={p.id} onClick={() => setPhase(p.id)}
                 className="p-3 rounded-xl text-center transition-all"
                 style={{
-                  background: phase === p.id ? "rgba(74,222,128,0.08)" : "rgba(255,255,255,0.03)",
-                  border: `1px solid ${phase === p.id ? "#4ade80" : "rgba(74,222,128,0.08)"}`,
+                  background: phase === p.id ? GREEN_DIM : SURFACE,
+                  border: `1px solid ${phase === p.id ? BORDER_ACTIVE : BORDER}`,
                 }}>
-                <div className="text-lg mb-1">{p.emoji}</div>
-                <div className="text-xs font-medium" style={{ color: phase === p.id ? "#4ade80" : "#f0fdf4" }}>{p.name}</div>
-                <div className="text-[10px]" style={{ color: "#6b7280" }}>{p.subtitle}</div>
+                <div className="text-lg mb-0.5">{p.emoji}</div>
+                <div className="text-[11px] font-bold" style={{ color: phase === p.id ? GREEN : TEXT }}>{p.name}</div>
+                <div className="text-[9px]" style={{ color: TEXT_MUTED }}>{p.subtitle}</div>
               </button>
             ))}
           </div>
         </Field>
 
-        <Field label={`Músculos prioritários (${muscles.length} selecionados)`}>
-          <div className="grid grid-cols-4 gap-1.5">
+        <Field label={`Músculos prioritários (${muscles.length})`}>
+          <div className="flex flex-wrap gap-1.5">
             {MUSCLES.map(m => (
               <button key={m} onClick={() => toggleMuscle(m)}
-                className="text-[10px] px-2 py-1.5 rounded-full transition-all text-center"
+                className="text-[10px] px-2.5 py-1.5 rounded-full transition-all font-medium"
                 style={{
-                  background: muscles.includes(m) ? "rgba(74,222,128,0.12)" : "rgba(255,255,255,0.03)",
-                  border: `1px solid ${muscles.includes(m) ? "#4ade80" : "rgba(74,222,128,0.08)"}`,
-                  color: muscles.includes(m) ? "#4ade80" : "#9ca3af",
+                  background: muscles.includes(m) ? GREEN_DIM : SURFACE,
+                  border: `1px solid ${muscles.includes(m) ? BORDER_ACTIVE : BORDER}`,
+                  color: muscles.includes(m) ? GREEN : TEXT_DIM,
                 }}>{m}</button>
             ))}
           </div>
@@ -346,103 +316,104 @@ function GenerateSection({ userId }: { userId?: string }) {
             <StyledSelect value={days} onValueChange={setDays} options={DAYS_OPTIONS.map(d => ({ value: d, label: `${d} dias` }))} />
           </Field>
           <Field label="Nome do cliente">
-            <Input value={clientName} onChange={e => setClientName(e.target.value)} placeholder="Nome completo" className="bg-transparent border-[rgba(74,222,128,0.12)] text-[#f0fdf4] placeholder:text-[#6b7280] text-sm" />
+            <Input value={clientName} onChange={e => setClientName(e.target.value)} placeholder="Nome completo" className="bg-transparent text-sm" style={{ borderColor: BORDER, color: TEXT }} />
           </Field>
         </div>
 
-        <Button onClick={generate} disabled={loading.protocolo} className="w-full font-bold text-sm py-3" style={{ background: "#4ade80", color: "#0a0f0a" }}>
-          {loading.protocolo ? "Gerando protocolo..." : "⚡ Gerar Protocolo Científico Completo"}
+        <Button onClick={generate} disabled={loading} className="w-full font-black text-sm h-12 rounded-xl tracking-wide" style={{ background: loading ? TEXT_MUTED : GREEN, color: BG }}>
+          {loading ? (
+            <span className="flex items-center gap-2"><Activity className="w-4 h-4 animate-spin" /> Gerando protocolo de elite...</span>
+          ) : (
+            <span className="flex items-center gap-2"><Brain className="w-4 h-4" /> GERAR PROTOCOLO DE ELITE</span>
+          )}
         </Button>
       </div>
     );
   }
 
-  // Results view
+  // ── Results View ──
   if (generated) {
+    const resultTabs = [
+      { id: "overview", label: "Visão Geral", icon: Eye },
+      { id: "treino", label: "Treino", icon: Dumbbell },
+      { id: "anatomia", label: "Anatomia", icon: Activity },
+      { id: "tecnica", label: "Técnica", icon: Target },
+      { id: "periodizacao", label: "Periodização", icon: BarChart3 },
+    ];
+
     return (
-      <div className="space-y-4 mt-4">
-        <button onClick={() => { setGenerated(false); setStep(2); setResults({}); }} className="text-xs flex items-center gap-1" style={{ color: "#9ca3af" }}>
-          <ChevronLeft className="w-3 h-3" /> Novo protocolo
-        </button>
-
-        <div className="text-sm font-bold" style={{ color: "#f0fdf4" }}>
-          Protocolo: <span style={{ color: "#4ade80" }}>{clientName}</span> — {PHASES.find(p => p.id === phase)?.name}
+      <div className="space-y-4 mt-3">
+        <div className="flex items-center justify-between">
+          <button onClick={() => { setGenerated(false); setStep(2); setProtocol(null); setTextResults({}); }}
+            className="text-xs flex items-center gap-1" style={{ color: TEXT_DIM }}>
+            <ChevronLeft className="w-3 h-3" /> Novo protocolo
+          </button>
+          <div className="flex gap-1.5">
+            <button onClick={saveProtocol} className="flex items-center gap-1 text-[10px] px-2.5 py-1.5 rounded-lg font-semibold" style={{ background: GREEN_DIM, color: GREEN, border: `1px solid ${BORDER}` }}>
+              <Save className="w-3 h-3" /> Salvar
+            </button>
+            <button onClick={() => {
+              const text = protocol ? JSON.stringify(protocol, null, 2) : Object.values(textResults).join("\n\n");
+              const blob = new Blob([text], { type: "text/plain" });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement("a"); a.href = url; a.download = `protocolo_${clientName}.txt`; a.click();
+            }} className="flex items-center gap-1 text-[10px] px-2.5 py-1.5 rounded-lg font-semibold" style={{ background: GREEN_DIM, color: GREEN, border: `1px solid ${BORDER}` }}>
+              <Download className="w-3 h-3" /> Exportar
+            </button>
+          </div>
         </div>
 
-        {/* Tabs */}
-        <div className="flex gap-1 overflow-x-auto no-scrollbar">
-          {RESULT_TABS.map(t => (
-            <button key={t.id} onClick={() => { setActiveTab(t.id as TabId); if (!results[t.id] && !loading[t.id]) callAI(t.id); }}
-              className="text-xs px-3 py-2 whitespace-nowrap rounded-t-lg transition-all"
-              style={{
-                color: activeTab === t.id ? "#4ade80" : "#9ca3af",
-                borderBottom: activeTab === t.id ? "2px solid #4ade80" : "2px solid transparent",
-                background: activeTab === t.id ? "rgba(74,222,128,0.05)" : "transparent",
-              }}>{t.label}</button>
-          ))}
-        </div>
-
-        {/* Tab content */}
-        <div className="rounded-xl p-4" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(74,222,128,0.12)" }}>
-          {loading[activeTab] ? (
-            <div className="space-y-3">
-              <div className="h-1 rounded-full overflow-hidden" style={{ background: "rgba(74,222,128,0.1)" }}>
-                <motion.div animate={{ x: ["-100%", "100%"] }} transition={{ repeat: Infinity, duration: 1.5 }} className="h-full w-1/3 rounded-full" style={{ background: "#4ade80" }} />
-              </div>
-              {[...Array(8)].map((_, i) => <Skeleton key={i} className="h-4 bg-[rgba(255,255,255,0.05)]" style={{ width: `${60 + Math.random() * 40}%` }} />)}
+        {loading ? (
+          <LoadingState />
+        ) : (
+          <>
+            {/* Result Tabs */}
+            <div className="flex gap-1 overflow-x-auto no-scrollbar">
+              {resultTabs.map(t => (
+                <button key={t.id} onClick={() => {
+                  setActiveResultTab(t.id);
+                  if (t.id !== "overview" && t.id !== "treino") loadTab(t.id);
+                }}
+                  className="flex items-center gap-1 text-[10px] px-3 py-2 whitespace-nowrap rounded-xl transition-all font-semibold"
+                  style={{
+                    background: activeResultTab === t.id ? GREEN_DIM : "transparent",
+                    color: activeResultTab === t.id ? GREEN : TEXT_MUTED,
+                    border: `1px solid ${activeResultTab === t.id ? BORDER_ACTIVE : "transparent"}`,
+                  }}>
+                  <t.icon className="w-3 h-3" />{t.label}
+                </button>
+              ))}
             </div>
-          ) : results[activeTab] ? (
-            <div className="space-y-1">{formatContent(results[activeTab])}</div>
-          ) : (
-            <p className="text-sm" style={{ color: "#6b7280" }}>Clique para carregar este conteúdo.</p>
-          )}
-        </div>
 
-        {/* Actions */}
-        <div className="grid grid-cols-2 gap-2">
-          <Button onClick={saveProtocol} variant="outline" className="text-xs border-[rgba(74,222,128,0.2)] text-[#4ade80] bg-transparent hover:bg-[rgba(74,222,128,0.1)]">
-            <Save className="w-3 h-3 mr-1" /> Salvar
-          </Button>
-          <Button onClick={saveAsTemplate} variant="outline" className="text-xs border-[rgba(74,222,128,0.2)] text-[#4ade80] bg-transparent hover:bg-[rgba(74,222,128,0.1)]">
-            <FileText className="w-3 h-3 mr-1" /> Salvar Template
-          </Button>
-          <Button onClick={generateReels} variant="outline" className="text-xs border-[rgba(74,222,128,0.2)] text-[#4ade80] bg-transparent hover:bg-[rgba(74,222,128,0.1)]">
-            <Video className="w-3 h-3 mr-1" /> Roteiro Reels
-          </Button>
-          <Button onClick={() => {
-            const blob = new Blob([
-              `PROTOCOLO DE TREINO — ${clientName}\nFase: ${phase} | ${weeks} semanas | ${days} dias/sem\n\n` +
-              `=== PROTOCOLO ===\n${results.protocolo || ""}\n\n` +
-              `=== ANATOMIA ===\n${results.anatomia || ""}\n\n` +
-              `=== TÉCNICA ===\n${results.tecnica || ""}\n\n` +
-              `=== PERIODIZAÇÃO ===\n${results.periodizacao || ""}\n\n` +
-              `Gerado por nutriON · TrainingON Engine`
-            ], { type: "text/plain" });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url; a.download = `protocolo_${clientName.replace(/\s/g, "_")}.txt`; a.click();
-            URL.revokeObjectURL(url);
-          }} variant="outline" className="text-xs border-[rgba(74,222,128,0.2)] text-[#4ade80] bg-transparent hover:bg-[rgba(74,222,128,0.1)]">
-            <Download className="w-3 h-3 mr-1" /> Exportar TXT
-          </Button>
-        </div>
+            {/* ── Overview Tab ── */}
+            {activeResultTab === "overview" && protocol?.block_overview && (
+              <BlockOverviewCard overview={protocol.block_overview} alerts={protocol.improvement_alerts} clientName={clientName} />
+            )}
+            {activeResultTab === "overview" && !protocol?.block_overview && textResults.protocolo && (
+              <TextCard content={textResults.protocolo} />
+            )}
 
-        {/* Reels Modal */}
-        <AnimatePresence>
-          {reelsModal && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-end justify-center" style={{ background: "rgba(0,0,0,0.7)" }} onClick={() => setReelsModal(false)}>
-              <motion.div initial={{ y: 300 }} animate={{ y: 0 }} exit={{ y: 300 }} onClick={e => e.stopPropagation()}
-                className="w-full max-w-lg rounded-t-2xl p-5 max-h-[80vh] overflow-y-auto" style={{ background: "#0a0f0a", border: "1px solid rgba(74,222,128,0.15)" }}>
-                <h3 className="text-sm font-bold mb-3" style={{ color: "#4ade80" }}>🎬 Roteiro de Reels</h3>
-                {reelsLoading ? (
-                  <div className="space-y-2">{[...Array(5)].map((_, i) => <Skeleton key={i} className="h-4 bg-[rgba(255,255,255,0.05)]" />)}</div>
-                ) : (
-                  <div className="text-sm whitespace-pre-wrap" style={{ color: "#d1d5db" }}>{reelsContent}</div>
-                )}
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+            {/* ── Training Days Tab ── */}
+            {activeResultTab === "treino" && protocol?.training_days && (
+              <div className="space-y-3">
+                {protocol.training_days.map((day: any, idx: number) => (
+                  <TrainingDayCard key={idx} day={day} index={idx} expanded={expandedDay === idx} onToggle={() => setExpandedDay(expandedDay === idx ? null : idx)}
+                    expandedExercise={expandedExercise} setExpandedExercise={setExpandedExercise} />
+                ))}
+              </div>
+            )}
+            {activeResultTab === "treino" && !protocol?.training_days && textResults.protocolo && (
+              <TextCard content={textResults.protocolo} />
+            )}
+
+            {/* ── Text Tabs ── */}
+            {["anatomia", "tecnica", "periodizacao"].includes(activeResultTab) && (
+              loadingTab[activeResultTab] ? <LoadingState /> :
+              textResults[activeResultTab] ? <TextCard content={textResults[activeResultTab]} /> :
+              <div className="py-12 text-center"><p className="text-xs" style={{ color: TEXT_MUTED }}>Clique na aba para carregar</p></div>
+            )}
+          </>
+        )}
       </div>
     );
   }
@@ -450,9 +421,351 @@ function GenerateSection({ userId }: { userId?: string }) {
   return null;
 }
 
-/* ============================================================
-   SECTION 2 — PROGRESSION
-   ============================================================ */
+/* ── Block Overview Card ── */
+function BlockOverviewCard({ overview, alerts, clientName }: { overview: any; alerts?: any[]; clientName: string }) {
+  return (
+    <div className="space-y-3">
+      {/* Hero */}
+      <div className="rounded-2xl p-5 relative overflow-hidden" style={{ background: `linear-gradient(135deg, ${SURFACE} 0%, ${SURFACE2} 100%)`, border: `1px solid ${BORDER_ACTIVE}` }}>
+        <div className="absolute top-0 right-0 w-32 h-32 rounded-full blur-3xl" style={{ background: "rgba(74,222,128,0.06)" }} />
+        <div className="relative">
+          <div className="flex items-center gap-2 mb-1">
+            <Award className="w-4 h-4" style={{ color: GREEN }} />
+            <span className="text-[10px] font-bold tracking-widest uppercase" style={{ color: GREEN }}>Protocolo de Elite</span>
+          </div>
+          <h2 className="text-base font-black mb-1" style={{ color: TEXT, fontFamily: FONT }}>{overview.title || `Bloco para ${clientName}`}</h2>
+          <p className="text-[11px] leading-relaxed" style={{ color: TEXT_DIM }}>{overview.split_justification}</p>
+
+          <div className="grid grid-cols-3 gap-2 mt-4">
+            <MiniStat icon={<Clock className="w-3 h-3" />} label="Duração" value={`${overview.duration_weeks} sem`} />
+            <MiniStat icon={<Target className="w-3 h-3" />} label="Divisão" value={overview.split_type} />
+            <MiniStat icon={<Shield className="w-3 h-3" />} label="Deload" value={`Sem ${overview.deload_week}`} />
+          </div>
+        </div>
+      </div>
+
+      {/* Progression Model */}
+      {overview.progression_model && (
+        <div className="rounded-xl p-3" style={{ background: SURFACE, border: `1px solid ${BORDER}` }}>
+          <div className="flex items-center gap-2 mb-1">
+            <TrendingUp className="w-3.5 h-3.5" style={{ color: GREEN }} />
+            <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: GREEN }}>Modelo de Progressão</span>
+          </div>
+          <p className="text-[11px]" style={{ color: TEXT_DIM }}>{overview.progression_model}</p>
+        </div>
+      )}
+
+      {/* Muscle Priorities */}
+      {overview.muscle_priorities?.length > 0 && (
+        <div className="rounded-xl p-3" style={{ background: SURFACE, border: `1px solid ${BORDER}` }}>
+          <div className="flex items-center gap-2 mb-2">
+            <Flame className="w-3.5 h-3.5" style={{ color: "#f97316" }} />
+            <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: TEXT }}>Prioridade Muscular</span>
+          </div>
+          <div className="space-y-2">
+            {overview.muscle_priorities.map((mp: any, i: number) => (
+              <div key={i} className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full" style={{ background: mp.priority === "alta" ? "#f97316" : mp.priority === "media" ? "#fbbf24" : GREEN }} />
+                <span className="text-[11px] font-semibold flex-1" style={{ color: TEXT }}>{mp.muscle}</span>
+                <span className="text-[10px] px-2 py-0.5 rounded-full font-bold" style={{ background: "rgba(74,222,128,0.08)", color: GREEN }}>{mp.weekly_sets} séries/sem</span>
+              </div>
+            ))}
+          </div>
+          {overview.maintenance_muscles?.length > 0 && (
+            <div className="mt-2 pt-2" style={{ borderTop: `1px solid ${BORDER}` }}>
+              <span className="text-[9px] font-medium" style={{ color: TEXT_MUTED }}>Manutenção: {overview.maintenance_muscles.join(", ")}</span>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Coach Notes */}
+      {overview.coach_notes && (
+        <div className="rounded-xl p-3" style={{ background: "rgba(74,222,128,0.04)", borderLeft: `3px solid ${GREEN}` }}>
+          <div className="flex items-center gap-1.5 mb-1">
+            <Brain className="w-3 h-3" style={{ color: GREEN }} />
+            <span className="text-[10px] font-bold" style={{ color: GREEN }}>Observações do Coach</span>
+          </div>
+          <p className="text-[11px] leading-relaxed" style={{ color: TEXT_DIM }}>{overview.coach_notes}</p>
+        </div>
+      )}
+
+      {/* Improvement Alerts */}
+      {alerts?.length > 0 && (
+        <div className="space-y-2">
+          <div className="flex items-center gap-1.5">
+            <AlertTriangle className="w-3.5 h-3.5" style={{ color: "#fbbf24" }} />
+            <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "#fbbf24" }}>Alertas de Melhoria</span>
+          </div>
+          {alerts.map((a: any, i: number) => (
+            <div key={i} className="rounded-xl p-3" style={{
+              background: a.severity === "alta" ? "rgba(239,68,68,0.06)" : "rgba(251,191,36,0.06)",
+              border: `1px solid ${a.severity === "alta" ? "rgba(239,68,68,0.15)" : "rgba(251,191,36,0.15)"}`,
+            }}>
+              <div className="flex items-center gap-2 mb-0.5">
+                <span className="text-[10px] font-bold" style={{ color: a.severity === "alta" ? "#ef4444" : "#fbbf24" }}>{a.area}</span>
+                <span className="text-[8px] px-1.5 py-0.5 rounded-full font-bold uppercase" style={{
+                  background: a.severity === "alta" ? "rgba(239,68,68,0.15)" : "rgba(251,191,36,0.15)",
+                  color: a.severity === "alta" ? "#ef4444" : "#fbbf24",
+                }}>{a.severity}</span>
+              </div>
+              <p className="text-[11px]" style={{ color: TEXT_DIM }}>{a.message}</p>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ── Training Day Card ── */
+function TrainingDayCard({ day, index, expanded, onToggle, expandedExercise, setExpandedExercise }: any) {
+  return (
+    <div className="rounded-2xl overflow-hidden" style={{ background: SURFACE, border: `1px solid ${expanded ? BORDER_ACTIVE : BORDER}` }}>
+      <button onClick={onToggle} className="w-full p-4 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl flex items-center justify-center font-black text-sm" style={{ background: GREEN_DIM, color: GREEN, fontFamily: FONT }}>
+            D{day.day_number || index + 1}
+          </div>
+          <div className="text-left">
+            <p className="text-[12px] font-bold" style={{ color: TEXT }}>{day.session_title}</p>
+            <div className="flex items-center gap-2 mt-0.5">
+              {day.estimated_duration && (
+                <span className="text-[9px] flex items-center gap-0.5" style={{ color: TEXT_MUTED }}>
+                  <Clock className="w-2.5 h-2.5" />{day.estimated_duration}
+                </span>
+              )}
+              {day.focus_muscles?.map((m: string, i: number) => (
+                <span key={i} className="text-[8px] px-1.5 py-0.5 rounded-full" style={{ background: GREEN_DIM, color: GREEN }}>{m}</span>
+              ))}
+            </div>
+          </div>
+        </div>
+        {expanded ? <ChevronUp className="w-4 h-4" style={{ color: TEXT_MUTED }} /> : <ChevronDown className="w-4 h-4" style={{ color: TEXT_MUTED }} />}
+      </button>
+
+      <AnimatePresence>
+        {expanded && (
+          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.25 }}>
+            <div className="px-4 pb-4 space-y-3">
+              {/* Warm-up */}
+              {day.warmup?.length > 0 && (
+                <div className="rounded-xl p-3" style={{ background: "rgba(59,130,246,0.06)", border: "1px solid rgba(59,130,246,0.12)" }}>
+                  <span className="text-[9px] font-bold tracking-widest uppercase" style={{ color: "#60a5fa" }}>🔥 WARM-UP</span>
+                  <div className="mt-2 space-y-1.5">
+                    {day.warmup.map((w: any, i: number) => (
+                      <div key={i} className="flex items-center justify-between">
+                        <span className="text-[11px] font-medium" style={{ color: TEXT }}>{w.name}</span>
+                        <span className="text-[10px]" style={{ color: TEXT_DIM }}>{w.sets}×{w.reps}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Exercises */}
+              {day.exercises?.map((ex: any, i: number) => (
+                <ExerciseCard key={i} exercise={ex} expanded={expandedExercise === `${index}-${i}`}
+                  onToggle={() => setExpandedExercise(expandedExercise === `${index}-${i}` ? null : `${index}-${i}`)} />
+              ))}
+
+              {/* Session Notes */}
+              {day.session_notes && (
+                <div className="rounded-xl p-3" style={{ background: "rgba(74,222,128,0.04)", borderLeft: `3px solid ${GREEN}` }}>
+                  <span className="text-[9px] font-bold" style={{ color: GREEN }}>📝 NOTA DA SESSÃO</span>
+                  <p className="text-[11px] mt-1" style={{ color: TEXT_DIM }}>{day.session_notes}</p>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+/* ── Exercise Card ── */
+function ExerciseCard({ exercise, expanded, onToggle }: { exercise: any; expanded: boolean; onToggle: () => void }) {
+  const struct = exercise.structure || {};
+  const hasTopSet = !!struct.top_set;
+
+  return (
+    <div className="rounded-xl overflow-hidden" style={{ background: SURFACE2, border: `1px solid ${BORDER}` }}>
+      <button onClick={onToggle} className="w-full p-3 flex items-center justify-between">
+        <div className="flex items-center gap-2.5">
+          <div className="w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-black" style={{ background: GREEN_DIM, color: GREEN }}>{exercise.order}</div>
+          <div className="text-left">
+            <p className="text-[11px] font-bold" style={{ color: TEXT }}>{exercise.name}</p>
+            <p className="text-[9px]" style={{ color: TEXT_MUTED }}>{exercise.muscle_target}</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-1.5">
+          {hasTopSet && <span className="text-[8px] px-1.5 py-0.5 rounded-full font-bold" style={{ background: "rgba(249,115,22,0.12)", color: "#f97316" }}>TOP SET</span>}
+          {expanded ? <ChevronUp className="w-3 h-3" style={{ color: TEXT_MUTED }} /> : <ChevronDown className="w-3 h-3" style={{ color: TEXT_MUTED }} />}
+        </div>
+      </button>
+
+      <AnimatePresence>
+        {expanded && (
+          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }}>
+            <div className="px-3 pb-3 space-y-2">
+              {/* Feeder Sets */}
+              {struct.feeder_sets?.length > 0 && (
+                <div className="space-y-1">
+                  <span className="text-[8px] font-bold tracking-widest uppercase" style={{ color: "#818cf8" }}>FEEDER SETS</span>
+                  {struct.feeder_sets.map((f: any, i: number) => (
+                    <SetRow key={i} label={f.set_label || `Feeder ${i + 1}`} detail={`${f.load_percent} × ${f.reps}`} note={f.notes} color="#818cf8" />
+                  ))}
+                </div>
+              )}
+
+              {/* Top Set */}
+              {struct.top_set && (
+                <div>
+                  <span className="text-[8px] font-bold tracking-widest uppercase" style={{ color: "#f97316" }}>TOP SET</span>
+                  <SetRow label="Top Set" detail={`${struct.top_set.sets}×${struct.top_set.reps} RPE ${struct.top_set.rpe}`} note={struct.top_set.notes} color="#f97316" rest={struct.top_set.rest} />
+                </div>
+              )}
+
+              {/* Back-off Sets */}
+              {struct.backoff_sets && (
+                <div>
+                  <span className="text-[8px] font-bold tracking-widest uppercase" style={{ color: "#fbbf24" }}>BACK-OFF SETS</span>
+                  <SetRow label={`${struct.backoff_sets.sets} séries`} detail={`${struct.backoff_sets.reps} (${struct.backoff_sets.load_reduction})`} note={struct.backoff_sets.notes} color="#fbbf24" rest={struct.backoff_sets.rest} />
+                </div>
+              )}
+
+              {/* Work Sets */}
+              {struct.work_sets && (
+                <div>
+                  <span className="text-[8px] font-bold tracking-widest uppercase" style={{ color: GREEN }}>SÉRIES DE TRABALHO</span>
+                  <SetRow label={`${struct.work_sets.sets} séries`} detail={`${struct.work_sets.reps} RPE ${struct.work_sets.rpe}`} note={struct.work_sets.notes} color={GREEN} rest={struct.work_sets.rest} />
+                </div>
+              )}
+
+              {/* Execution Cues */}
+              {exercise.execution_cues && (
+                <div className="rounded-lg p-2.5 mt-1" style={{ background: "rgba(74,222,128,0.04)" }}>
+                  <span className="text-[8px] font-bold" style={{ color: GREEN }}>EXECUÇÃO</span>
+                  <p className="text-[10px] mt-0.5" style={{ color: TEXT_DIM }}>{exercise.execution_cues}</p>
+                </div>
+              )}
+
+              {/* Why */}
+              {exercise.why_this_exercise && (
+                <div className="rounded-lg p-2.5" style={{ background: "rgba(139,92,246,0.04)" }}>
+                  <span className="text-[8px] font-bold" style={{ color: "#a78bfa" }}>POR QUE ESTE EXERCÍCIO?</span>
+                  <p className="text-[10px] mt-0.5" style={{ color: TEXT_DIM }}>{exercise.why_this_exercise}</p>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+/* ── Set Row ── */
+function SetRow({ label, detail, note, color, rest }: { label: string; detail: string; note?: string; color: string; rest?: string }) {
+  return (
+    <div className="rounded-lg p-2" style={{ background: `${color}08`, border: `1px solid ${color}15` }}>
+      <div className="flex items-center justify-between">
+        <span className="text-[10px] font-bold" style={{ color }}>{label}</span>
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] font-mono font-bold" style={{ color: TEXT }}>{detail}</span>
+          {rest && <span className="text-[9px] px-1.5 py-0.5 rounded" style={{ background: `${color}10`, color: TEXT_MUTED }}>⏱ {rest}</span>}
+        </div>
+      </div>
+      {note && <p className="text-[9px] mt-0.5" style={{ color: TEXT_MUTED }}>{note}</p>}
+    </div>
+  );
+}
+
+/* ── Text Card ── */
+function TextCard({ content }: { content: string }) {
+  const lines = content.split("\n");
+  return (
+    <div className="rounded-2xl p-4 space-y-1" style={{ background: SURFACE, border: `1px solid ${BORDER}` }}>
+      {lines.map((line, i) => {
+        const t = line.trim();
+        if (!t) return <div key={i} className="h-2" />;
+        if (/^#{1,3}\s/.test(t) || /^[A-ZÀÁÂÃÉÊÍÓÔÕÚÇ\d][A-ZÀÁÂÃÉÊÍÓÔÕÚÇ\d\s:—–\-]{4,}$/.test(t)) {
+          return <h3 key={i} className="text-[13px] font-black mt-4 mb-2" style={{ color: GREEN, fontFamily: FONT }}>{t.replace(/^#+\s*/, "")}</h3>;
+        }
+        if (t.startsWith("- ") || t.startsWith("• ")) return <p key={i} className="text-[11px] ml-3 mb-0.5" style={{ color: TEXT_DIM }}>• {t.slice(2)}</p>;
+        if (/^\d+\./.test(t)) return <p key={i} className="text-[11px] ml-3 mb-0.5" style={{ color: TEXT_DIM }}>{t}</p>;
+        if (t.includes("|")) {
+          const cells = t.split("|").map(c => c.trim()).filter(Boolean);
+          if (cells.every(c => /^[-:]+$/.test(c))) return null;
+          return (
+            <div key={i} className="grid gap-1 text-[10px] mb-0.5" style={{ gridTemplateColumns: `repeat(${cells.length}, 1fr)`, color: TEXT_DIM }}>
+              {cells.map((c, ci) => <div key={ci} className="px-1 py-0.5" style={{ borderBottom: `1px solid ${BORDER}` }}>{c}</div>)}
+            </div>
+          );
+        }
+        return <p key={i} className="text-[11px] mb-0.5 leading-relaxed" style={{ color: TEXT_DIM }}>{t}</p>;
+      })}
+    </div>
+  );
+}
+
+/* ── Loading State ── */
+function LoadingState() {
+  return (
+    <div className="space-y-4 py-4">
+      <div className="rounded-2xl p-6" style={{ background: SURFACE, border: `1px solid ${BORDER}` }}>
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: GREEN_DIM }}>
+            <Brain className="w-4 h-4 animate-pulse" style={{ color: GREEN }} />
+          </div>
+          <div>
+            <p className="text-[11px] font-bold" style={{ color: TEXT }}>Analisando perfil e montando protocolo...</p>
+            <p className="text-[9px]" style={{ color: TEXT_MUTED }}>Dual-AI: Perplexity + Gemini processando</p>
+          </div>
+        </div>
+        <div className="h-1 rounded-full overflow-hidden" style={{ background: `${GREEN}15` }}>
+          <motion.div animate={{ x: ["-100%", "100%"] }} transition={{ repeat: Infinity, duration: 1.8, ease: "easeInOut" }}
+            className="h-full w-1/3 rounded-full" style={{ background: GREEN }} />
+        </div>
+        <div className="space-y-2 mt-4">
+          {[85, 70, 55, 90, 60, 75, 45].map((w, i) => (
+            <div key={i} className="h-3 rounded animate-pulse" style={{ background: `${GREEN}08`, width: `${w}%` }} />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── MiniStat ── */
+function MiniStat({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
+  return (
+    <div className="rounded-xl p-2.5 text-center" style={{ background: SURFACE2, border: `1px solid ${BORDER}` }}>
+      <div className="flex items-center justify-center mb-1" style={{ color: GREEN }}>{icon}</div>
+      <p className="text-[9px]" style={{ color: TEXT_MUTED }}>{label}</p>
+      <p className="text-[11px] font-black" style={{ color: TEXT, fontFamily: FONT }}>{value}</p>
+    </div>
+  );
+}
+
+/* ── Step Header ── */
+function StepHeader({ step, total, title, subtitle }: { step: number; total: number; title: string; subtitle: string }) {
+  return (
+    <div className="flex items-center gap-3 mb-1">
+      <div className="w-8 h-8 rounded-xl flex items-center justify-center text-sm font-black" style={{ background: GREEN, color: BG }}>{step}</div>
+      <div className="flex-1">
+        <p className="text-sm font-bold" style={{ color: TEXT, fontFamily: FONT }}>{title}</p>
+        <p className="text-[10px]" style={{ color: TEXT_MUTED }}>{subtitle}</p>
+      </div>
+      <span className="text-[10px] font-medium" style={{ color: TEXT_MUTED }}>{step}/{total}</span>
+    </div>
+  );
+}
+
+/* ================================================================
+   SECTION 2 — PROGRESSION (kept similar, refined style)
+   ================================================================ */
 function ProgressionSection({ userId }: { userId?: string }) {
   const [protocols, setProtocols] = useState<any[]>([]);
   const [selectedProtocol, setSelectedProtocol] = useState("");
@@ -497,9 +810,7 @@ function ProgressionSection({ userId }: { userId?: string }) {
 
   const chartData = useMemo(() => {
     if (!exercise) return [];
-    return progress.filter(p => p.exercise === exercise).map(p => ({
-      semana: `S${p.week_number}`, carga: p.weight_kg,
-    }));
+    return progress.filter(p => p.exercise === exercise).map(p => ({ semana: `S${p.week_number}`, carga: p.weight_kg }));
   }, [progress, exercise]);
 
   const suggestion = useMemo(() => {
@@ -507,23 +818,17 @@ function ProgressionSection({ userId }: { userId?: string }) {
     if (exProgress.length < 2) return null;
     const last = exProgress[exProgress.length - 1];
     const prev = exProgress[exProgress.length - 2];
-    if (last.rpe_real && last.rpe_real <= 8 && last.reps_done >= (prev.reps_done || 0)) {
-      return { type: "up", text: `RPE ${last.rpe_real} — Aumente 2.5kg na próxima sessão (dupla progressão)` };
-    }
-    if (last.rpe_real && last.rpe_real > 9) {
-      return { type: "down", text: `RPE ${last.rpe_real} — Considere reduzir volume ou programar deload` };
-    }
-    if (last.weight_kg === prev.weight_kg) {
-      return { type: "stag", text: "Carga estagnada por 2 sessões — considere variar estímulo" };
-    }
+    if (last.rpe_real && last.rpe_real <= 8 && last.reps_done >= (prev.reps_done || 0)) return { type: "up", text: `RPE ${last.rpe_real} — Aumente 2.5kg na próxima sessão (dupla progressão)` };
+    if (last.rpe_real && last.rpe_real > 9) return { type: "down", text: `RPE ${last.rpe_real} — Considere reduzir volume ou programar deload` };
+    if (last.weight_kg === prev.weight_kg) return { type: "stag", text: "Carga estagnada por 2 sessões — considere variar estímulo" };
     return { type: "ok", text: "Progressão normal — mantenha a carga atual" };
   }, [progress, exercise]);
 
   return (
-    <div className="space-y-4 mt-4">
+    <div className="space-y-4 mt-3">
       <Field label="Selecionar protocolo">
         <StyledSelect value={selectedProtocol} onValueChange={setSelectedProtocol} placeholder="Escolha um protocolo"
-          options={protocols.map(p => ({ value: p.id, label: `${p.client_name} — ${p.phase} (${new Date(p.created_at).toLocaleDateString("pt-BR")})` }))} />
+          options={protocols.map(p => ({ value: p.id, label: `${p.client_name} — ${p.phase}` }))} />
       </Field>
 
       {selectedProtocol && (
@@ -533,57 +838,40 @@ function ProgressionSection({ userId }: { userId?: string }) {
               <StyledSelect value={weekNumber} onValueChange={setWeekNumber} options={Array.from({ length: 16 }, (_, i) => ({ value: String(i + 1), label: `Semana ${i + 1}` }))} />
             </Field>
             <Field label="Exercício">
-              <Input value={exercise} onChange={e => setExercise(e.target.value)} placeholder="Ex: Supino Reto" className="bg-transparent border-[rgba(74,222,128,0.12)] text-[#f0fdf4] placeholder:text-[#6b7280] text-sm" />
+              <Input value={exercise} onChange={e => setExercise(e.target.value)} placeholder="Ex: Supino Reto" className="bg-transparent text-sm" style={{ borderColor: BORDER, color: TEXT }} />
             </Field>
           </div>
           <div className="grid grid-cols-4 gap-2">
-            <Field label="Séries"><Input value={setsDone} onChange={e => setSetsDone(e.target.value)} type="number" className="bg-transparent border-[rgba(74,222,128,0.12)] text-[#f0fdf4] text-sm" /></Field>
-            <Field label="Reps"><Input value={repsDone} onChange={e => setRepsDone(e.target.value)} type="number" className="bg-transparent border-[rgba(74,222,128,0.12)] text-[#f0fdf4] text-sm" /></Field>
-            <Field label="Carga (kg)"><Input value={weightKg} onChange={e => setWeightKg(e.target.value)} type="number" className="bg-transparent border-[rgba(74,222,128,0.12)] text-[#f0fdf4] text-sm" /></Field>
-            <Field label="RPE"><Input value={rpeReal} onChange={e => setRpeReal(e.target.value)} type="number" className="bg-transparent border-[rgba(74,222,128,0.12)] text-[#f0fdf4] text-sm" /></Field>
+            <Field label="Séries"><Input value={setsDone} onChange={e => setSetsDone(e.target.value)} type="number" className="bg-transparent text-sm" style={{ borderColor: BORDER, color: TEXT }} /></Field>
+            <Field label="Reps"><Input value={repsDone} onChange={e => setRepsDone(e.target.value)} type="number" className="bg-transparent text-sm" style={{ borderColor: BORDER, color: TEXT }} /></Field>
+            <Field label="Carga"><Input value={weightKg} onChange={e => setWeightKg(e.target.value)} type="number" className="bg-transparent text-sm" style={{ borderColor: BORDER, color: TEXT }} /></Field>
+            <Field label="RPE"><Input value={rpeReal} onChange={e => setRpeReal(e.target.value)} type="number" className="bg-transparent text-sm" style={{ borderColor: BORDER, color: TEXT }} /></Field>
           </div>
-          <Field label="Observações">
-            <Input value={notes} onChange={e => setNotes(e.target.value)} placeholder="Opcional" className="bg-transparent border-[rgba(74,222,128,0.12)] text-[#f0fdf4] placeholder:text-[#6b7280] text-sm" />
-          </Field>
-          <Button onClick={logProgress} className="w-full font-bold text-sm" style={{ background: "#4ade80", color: "#0a0f0a" }}>Registrar Progressão</Button>
+          <Button onClick={logProgress} className="w-full font-bold text-sm h-11 rounded-xl" style={{ background: GREEN, color: BG }}>Registrar Progressão</Button>
 
           {suggestion && (
             <div className="rounded-xl p-3" style={{
-              background: suggestion.type === "up" ? "rgba(74,222,128,0.08)" : suggestion.type === "stag" ? "rgba(251,191,36,0.08)" : suggestion.type === "down" ? "rgba(239,68,68,0.08)" : "rgba(255,255,255,0.03)",
-              border: `1px solid ${suggestion.type === "up" ? "rgba(74,222,128,0.3)" : suggestion.type === "stag" ? "rgba(251,191,36,0.3)" : suggestion.type === "down" ? "rgba(239,68,68,0.3)" : "rgba(74,222,128,0.12)"}`,
+              background: suggestion.type === "up" ? "rgba(74,222,128,0.06)" : suggestion.type === "stag" ? "rgba(251,191,36,0.06)" : suggestion.type === "down" ? "rgba(239,68,68,0.06)" : SURFACE,
+              border: `1px solid ${suggestion.type === "up" ? "rgba(74,222,128,0.2)" : suggestion.type === "stag" ? "rgba(251,191,36,0.2)" : suggestion.type === "down" ? "rgba(239,68,68,0.2)" : BORDER}`,
             }}>
-              <p className="text-xs font-medium" style={{ color: suggestion.type === "up" ? "#4ade80" : suggestion.type === "stag" ? "#fbbf24" : suggestion.type === "down" ? "#ef4444" : "#9ca3af" }}>
+              <p className="text-[11px] font-semibold" style={{ color: suggestion.type === "up" ? GREEN : suggestion.type === "stag" ? "#fbbf24" : suggestion.type === "down" ? "#ef4444" : TEXT_DIM }}>
                 {suggestion.type === "up" ? "📈" : suggestion.type === "stag" ? "⚠️" : suggestion.type === "down" ? "🔻" : "✓"} {suggestion.text}
               </p>
             </div>
           )}
 
           {chartData.length > 1 && (
-            <div className="rounded-xl p-4" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(74,222,128,0.12)" }}>
-              <p className="text-xs font-medium mb-2" style={{ color: "#f0fdf4" }}>Evolução: {exercise}</p>
-              <ResponsiveContainer width="100%" height={180}>
+            <div className="rounded-xl p-4" style={{ background: SURFACE, border: `1px solid ${BORDER}` }}>
+              <p className="text-[11px] font-bold mb-2" style={{ color: TEXT }}>Evolução: {exercise}</p>
+              <ResponsiveContainer width="100%" height={160}>
                 <LineChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(74,222,128,0.08)" />
-                  <XAxis dataKey="semana" tick={{ fill: "#6b7280", fontSize: 10 }} />
-                  <YAxis tick={{ fill: "#6b7280", fontSize: 10 }} />
-                  <Tooltip contentStyle={{ background: "#0a0f0a", border: "1px solid rgba(74,222,128,0.2)", borderRadius: 8, color: "#f0fdf4", fontSize: 12 }} />
-                  <Line type="monotone" dataKey="carga" stroke="#4ade80" strokeWidth={2} dot={{ fill: "#4ade80", r: 4 }} />
+                  <CartesianGrid strokeDasharray="3 3" stroke={BORDER} />
+                  <XAxis dataKey="semana" tick={{ fill: TEXT_MUTED, fontSize: 10 }} />
+                  <YAxis tick={{ fill: TEXT_MUTED, fontSize: 10 }} />
+                  <Tooltip contentStyle={{ background: BG, border: `1px solid ${BORDER_ACTIVE}`, borderRadius: 10, color: TEXT, fontSize: 11 }} />
+                  <Line type="monotone" dataKey="carga" stroke={GREEN} strokeWidth={2} dot={{ fill: GREEN, r: 3 }} />
                 </LineChart>
               </ResponsiveContainer>
-            </div>
-          )}
-
-          {progress.length > 0 && (
-            <div className="rounded-xl p-3" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(74,222,128,0.12)" }}>
-              <p className="text-xs font-medium mb-2" style={{ color: "#f0fdf4" }}>Registros recentes</p>
-              <div className="space-y-1 max-h-48 overflow-y-auto">
-                {progress.slice(-10).reverse().map(p => (
-                  <div key={p.id} className="flex justify-between text-[10px] py-1 border-b" style={{ borderColor: "rgba(74,222,128,0.06)", color: "#9ca3af" }}>
-                    <span style={{ color: "#d1d5db" }}>{p.exercise}</span>
-                    <span>S{p.week_number} · {p.sets_done}x{p.reps_done} · {p.weight_kg}kg · RPE{p.rpe_real}</span>
-                  </div>
-                ))}
-              </div>
             </div>
           )}
         </>
@@ -592,9 +880,9 @@ function ProgressionSection({ userId }: { userId?: string }) {
   );
 }
 
-/* ============================================================
+/* ================================================================
    SECTION 3 — VOLUME LANDMARKS
-   ============================================================ */
+   ================================================================ */
 function VolumeLandmarksSection({ userId }: { userId?: string }) {
   const [selectedMuscle, setSelectedMuscle] = useState("");
   const [currentSets, setCurrentSets] = useState("");
@@ -608,13 +896,14 @@ function VolumeLandmarksSection({ userId }: { userId?: string }) {
 
   const getZone = () => {
     if (!levelData || !sets) return null;
-    if (sets < levelData.mev) return { label: "Abaixo do MEV", color: "#6b7280", desc: "Volume insuficiente para estímulo de crescimento" };
-    if (sets <= levelData.mav) return { label: "Zona de Crescimento", color: "#4ade80", desc: "Volume ideal — continue progredindo" };
-    if (sets <= levelData.mrv) return { label: "Zona de Atenção", color: "#fbbf24", desc: "Planeje deload em breve" };
-    return { label: "Acima do MRV", color: "#ef4444", desc: "Overreaching — risco de overtraining" };
+    if (sets < levelData.mev) return { label: "Abaixo do MEV", color: "#6b7280", desc: "Volume insuficiente" };
+    if (sets <= levelData.mav) return { label: "Zona de Crescimento", color: GREEN, desc: "Volume ideal" };
+    if (sets <= levelData.mrv) return { label: "Zona de Atenção", color: "#fbbf24", desc: "Planeje deload" };
+    return { label: "Acima do MRV", color: "#ef4444", desc: "Risco de overtraining" };
   };
 
   const zone = getZone();
+  const barPercent = levelData ? Math.min((sets / levelData.mrv) * 100, 120) : 0;
 
   const analyzeVolume = async () => {
     if (!userId || !selectedMuscle) return;
@@ -625,107 +914,79 @@ function VolumeLandmarksSection({ userId }: { userId?: string }) {
       });
       if (error) throw error;
       setAnalysis(data.content);
-    } catch (e: any) {
-      toast.error("Erro na análise");
-    } finally {
-      setAnalyzing(false);
-    }
+    } catch { toast.error("Erro na análise"); }
+    finally { setAnalyzing(false); }
   };
 
-  const barPercent = levelData ? Math.min((sets / levelData.mrv) * 100, 120) : 0;
-
   return (
-    <div className="space-y-4 mt-4">
+    <div className="space-y-4 mt-3">
       <div className="grid grid-cols-2 gap-3">
         <Field label="Músculo">
           <StyledSelect value={selectedMuscle} onValueChange={setSelectedMuscle} placeholder="Selecione" options={VOLUME_LANDMARKS.map(v => ({ value: v.muscle, label: v.muscle }))} />
         </Field>
         <Field label="Nível">
           <StyledSelect value={selectedLevel} onValueChange={setSelectedLevel} options={[
-            { value: "beginner", label: "Iniciante" },
-            { value: "intermediate", label: "Intermediário" },
-            { value: "advanced", label: "Avançado" },
+            { value: "beginner", label: "Iniciante" }, { value: "intermediate", label: "Intermediário" }, { value: "advanced", label: "Avançado" },
           ]} />
         </Field>
       </div>
 
       {levelData && (
-        <div className="rounded-xl p-4" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(74,222,128,0.12)" }}>
-          <div className="flex justify-between text-xs mb-3" style={{ color: "#9ca3af" }}>
-            <span>MEV: <b style={{ color: "#4ade80" }}>{levelData.mev}</b></span>
-            <span>MAV: <b style={{ color: "#4ade80" }}>{levelData.mav}</b></span>
+        <div className="rounded-2xl p-4" style={{ background: SURFACE, border: `1px solid ${BORDER}` }}>
+          <div className="flex justify-between text-[10px] mb-3" style={{ color: TEXT_DIM }}>
+            <span>MEV: <b style={{ color: GREEN }}>{levelData.mev}</b></span>
+            <span>MAV: <b style={{ color: GREEN }}>{levelData.mav}</b></span>
             <span>MRV: <b style={{ color: "#fbbf24" }}>{levelData.mrv}</b></span>
           </div>
 
           <Field label="Séries atuais por semana">
-            <Input value={currentSets} onChange={e => setCurrentSets(e.target.value)} type="number" placeholder="Ex: 14" className="bg-transparent border-[rgba(74,222,128,0.12)] text-[#f0fdf4] placeholder:text-[#6b7280] text-sm" />
+            <Input value={currentSets} onChange={e => setCurrentSets(e.target.value)} type="number" placeholder="Ex: 14" className="bg-transparent text-sm" style={{ borderColor: BORDER, color: TEXT }} />
           </Field>
 
           {sets > 0 && (
             <>
-              {/* Progress bar */}
-              <div className="mt-3 relative h-6 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.05)" }}>
-                <div className="absolute h-full rounded-full transition-all" style={{
-                  width: `${Math.min((levelData.mev / levelData.mrv) * 100, 100)}%`,
-                  background: "rgba(74,222,128,0.1)",
-                }} />
-                <div className="absolute h-full rounded-full transition-all" style={{
-                  width: `${Math.min((levelData.mav / levelData.mrv) * 100, 100)}%`,
-                  background: "rgba(74,222,128,0.15)",
-                }} />
-                <div className="absolute h-full rounded-full transition-all" style={{
-                  width: `${Math.min(barPercent, 100)}%`,
-                  background: zone?.color || "#4ade80",
-                  opacity: 0.5,
-                }} />
-                <div className="absolute top-0 h-full w-0.5" style={{ left: `${Math.min(barPercent, 100)}%`, background: zone?.color || "#4ade80" }} />
-                <div className="absolute top-1 text-[9px] font-bold" style={{ left: `${Math.min(barPercent, 98)}%`, color: zone?.color }}>{sets}</div>
+              <div className="mt-3 relative h-5 rounded-full overflow-hidden" style={{ background: `${GREEN}08` }}>
+                <div className="absolute h-full rounded-full transition-all" style={{ width: `${Math.min(barPercent, 100)}%`, background: zone?.color || GREEN, opacity: 0.4 }} />
+                <div className="absolute top-0 h-full w-0.5" style={{ left: `${Math.min(barPercent, 100)}%`, background: zone?.color }} />
               </div>
-
               {zone && (
-                <div className="mt-2 rounded-lg p-2" style={{ background: `${zone.color}15`, border: `1px solid ${zone.color}30` }}>
-                  <p className="text-xs font-bold" style={{ color: zone.color }}>{zone.label}</p>
-                  <p className="text-[10px]" style={{ color: "#9ca3af" }}>{zone.desc}</p>
+                <div className="mt-2 rounded-xl p-2.5" style={{ background: `${zone.color}10`, border: `1px solid ${zone.color}20` }}>
+                  <p className="text-[11px] font-bold" style={{ color: zone.color }}>{zone.label}</p>
+                  <p className="text-[10px]" style={{ color: TEXT_MUTED }}>{zone.desc}</p>
                 </div>
               )}
             </>
           )}
 
-          <Button onClick={analyzeVolume} disabled={analyzing || !sets} className="w-full mt-3 text-xs font-bold" style={{ background: "#4ade80", color: "#0a0f0a" }}>
-            {analyzing ? "Analisando..." : "🔬 Analisar Volume com IA"}
+          <Button onClick={analyzeVolume} disabled={analyzing || !sets} className="w-full mt-3 text-xs font-bold h-10 rounded-xl" style={{ background: GREEN, color: BG }}>
+            {analyzing ? "Analisando..." : "🔬 Analisar com IA"}
           </Button>
 
           {analysis && (
-            <div className="mt-3 rounded-xl p-3" style={{ background: "rgba(74,222,128,0.05)", borderLeft: "3px solid #4ade80" }}>
-              <p className="text-xs whitespace-pre-wrap" style={{ color: "#d1d5db" }}>{analysis}</p>
+            <div className="mt-3 rounded-xl p-3" style={{ background: "rgba(74,222,128,0.04)", borderLeft: `3px solid ${GREEN}` }}>
+              <p className="text-[11px] whitespace-pre-wrap" style={{ color: TEXT_DIM }}>{analysis}</p>
             </div>
           )}
         </div>
       )}
 
-      {/* Reference table */}
-      <div className="rounded-xl p-3" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(74,222,128,0.12)" }}>
-        <p className="text-xs font-bold mb-2" style={{ color: "#f0fdf4" }}>📊 Tabela de Referência (séries/semana)</p>
+      {/* Reference Table */}
+      <div className="rounded-2xl p-3" style={{ background: SURFACE, border: `1px solid ${BORDER}` }}>
+        <p className="text-[11px] font-bold mb-2" style={{ color: TEXT }}>📊 Referência de Volume (séries/sem)</p>
         <div className="overflow-x-auto">
-          <table className="w-full text-[9px]" style={{ color: "#9ca3af" }}>
-            <thead>
-              <tr style={{ borderBottom: "1px solid rgba(74,222,128,0.1)" }}>
-                <th className="text-left py-1 pr-2" style={{ color: "#f0fdf4" }}>Músculo</th>
-                <th className="text-center py-1 px-1">Ini MEV/MAV/MRV</th>
-                <th className="text-center py-1 px-1">Int MEV/MAV/MRV</th>
-                <th className="text-center py-1 px-1">Ava MEV/MAV/MRV</th>
+          <table className="w-full text-[9px]" style={{ color: TEXT_MUTED }}>
+            <thead><tr style={{ borderBottom: `1px solid ${BORDER}` }}>
+              <th className="text-left py-1 pr-2" style={{ color: TEXT }}>Músculo</th>
+              <th className="text-center py-1">Ini</th><th className="text-center py-1">Int</th><th className="text-center py-1">Ava</th>
+            </tr></thead>
+            <tbody>{VOLUME_LANDMARKS.map(v => (
+              <tr key={v.muscle} style={{ borderBottom: `1px solid ${BORDER}` }}>
+                <td className="py-1 pr-2" style={{ color: TEXT_DIM }}>{v.muscle}</td>
+                <td className="text-center py-1">{v.beginner.mev}/{v.beginner.mav}/{v.beginner.mrv}</td>
+                <td className="text-center py-1">{v.intermediate.mev}/{v.intermediate.mav}/{v.intermediate.mrv}</td>
+                <td className="text-center py-1">{v.advanced.mev}/{v.advanced.mav}/{v.advanced.mrv}</td>
               </tr>
-            </thead>
-            <tbody>
-              {VOLUME_LANDMARKS.map(v => (
-                <tr key={v.muscle} style={{ borderBottom: "1px solid rgba(74,222,128,0.05)" }}>
-                  <td className="py-1 pr-2" style={{ color: "#d1d5db" }}>{v.muscle}</td>
-                  <td className="text-center py-1">{v.beginner.mev}/{v.beginner.mav}/{v.beginner.mrv}</td>
-                  <td className="text-center py-1">{v.intermediate.mev}/{v.intermediate.mav}/{v.intermediate.mrv}</td>
-                  <td className="text-center py-1">{v.advanced.mev}/{v.advanced.mav}/{v.advanced.mrv}</td>
-                </tr>
-              ))}
-            </tbody>
+            ))}</tbody>
           </table>
         </div>
       </div>
@@ -733,9 +994,9 @@ function VolumeLandmarksSection({ userId }: { userId?: string }) {
   );
 }
 
-/* ============================================================
+/* ================================================================
    SECTION 4 — HISTORY
-   ============================================================ */
+   ================================================================ */
 function HistorySection({ userId }: { userId?: string }) {
   const [protocols, setProtocols] = useState<any[]>([]);
   const [search, setSearch] = useState("");
@@ -747,68 +1008,43 @@ function HistorySection({ userId }: { userId?: string }) {
       .then(({ data }) => setProtocols(data || []));
   }, [userId]);
 
-  const filtered = protocols.filter(p =>
-    p.client_name?.toLowerCase().includes(search.toLowerCase()) ||
-    p.phase?.toLowerCase().includes(search.toLowerCase())
-  );
-
-  const phaseColor: Record<string, string> = {
-    bulking: "#4ade80", cutting: "#ef4444", manutencao: "#3b82f6", recomposicao: "#8b5cf6", emagrecimento: "#f97316", performance: "#fbbf24",
-  };
+  const filtered = protocols.filter(p => p.client_name?.toLowerCase().includes(search.toLowerCase()) || p.phase?.toLowerCase().includes(search.toLowerCase()));
+  const phaseColor: Record<string, string> = { bulking: GREEN, cutting: "#ef4444", manutencao: "#3b82f6", recomposicao: "#8b5cf6", emagrecimento: "#f97316", performance: "#fbbf24" };
 
   return (
-    <div className="space-y-4 mt-4">
+    <div className="space-y-3 mt-3">
       <div className="relative">
-        <Search className="absolute left-3 top-2.5 w-4 h-4" style={{ color: "#6b7280" }} />
-        <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar por cliente ou fase..." className="bg-transparent border-[rgba(74,222,128,0.12)] text-[#f0fdf4] placeholder:text-[#6b7280] text-sm pl-9" />
+        <Search className="absolute left-3 top-2.5 w-4 h-4" style={{ color: TEXT_MUTED }} />
+        <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar..." className="bg-transparent text-sm pl-9" style={{ borderColor: BORDER, color: TEXT }} />
       </div>
 
       {filtered.length === 0 ? (
-        <p className="text-sm text-center py-8" style={{ color: "#6b7280" }}>Nenhum protocolo encontrado</p>
-      ) : (
-        <div className="space-y-2">
-          {filtered.map(p => (
-            <div key={p.id} className="rounded-xl p-3" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(74,222,128,0.12)" }}>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-bold" style={{ color: "#f0fdf4" }}>{p.client_name}</span>
-                <span className="text-[10px] px-2 py-0.5 rounded-full font-medium" style={{ background: `${phaseColor[p.phase] || "#4ade80"}20`, color: phaseColor[p.phase] || "#4ade80" }}>
-                  {PHASES.find(ph => ph.id === p.phase)?.name || p.phase}
-                </span>
-              </div>
-              <div className="flex flex-wrap gap-1 mb-2">
-                {p.muscles?.slice(0, 5).map((m: string) => (
-                  <span key={m} className="text-[9px] px-1.5 py-0.5 rounded-full" style={{ background: "rgba(74,222,128,0.08)", color: "#4ade80" }}>{m}</span>
-                ))}
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-[10px]" style={{ color: "#6b7280" }}>{new Date(p.created_at).toLocaleDateString("pt-BR")}</span>
-                <div className="flex gap-1">
-                  <button onClick={() => setViewModal(p)} className="text-[10px] px-2 py-1 rounded-lg" style={{ background: "rgba(74,222,128,0.1)", color: "#4ade80" }}>Ver</button>
-                  <button onClick={() => {
-                    const blob = new Blob([`PROTOCOLO: ${p.client_name}\n\n${p.protocol_text || ""}\n\n${p.anatomy_text || ""}\n\n${p.tecnica_text || ""}\n\n${p.periodizacao_text || ""}`], { type: "text/plain" });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement("a"); a.href = url; a.download = `protocolo_${p.client_name}.txt`; a.click();
-                  }} className="text-[10px] px-2 py-1 rounded-lg" style={{ background: "rgba(74,222,128,0.1)", color: "#4ade80" }}>Exportar</button>
-                </div>
-              </div>
-            </div>
-          ))}
+        <p className="text-xs text-center py-10" style={{ color: TEXT_MUTED }}>Nenhum protocolo encontrado</p>
+      ) : filtered.map(p => (
+        <div key={p.id} className="rounded-xl p-3" style={{ background: SURFACE, border: `1px solid ${BORDER}` }}>
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="text-[12px] font-bold" style={{ color: TEXT }}>{p.client_name}</span>
+            <span className="text-[9px] px-2 py-0.5 rounded-full font-bold" style={{ background: `${phaseColor[p.phase] || GREEN}15`, color: phaseColor[p.phase] || GREEN }}>
+              {PHASES.find(ph => ph.id === p.phase)?.name || p.phase}
+            </span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-[10px]" style={{ color: TEXT_MUTED }}>{new Date(p.created_at).toLocaleDateString("pt-BR")}</span>
+            <button onClick={() => setViewModal(p)} className="text-[10px] px-2.5 py-1 rounded-lg font-semibold" style={{ background: GREEN_DIM, color: GREEN }}>Ver</button>
+          </div>
         </div>
-      )}
+      ))}
 
-      {/* View Modal */}
       <AnimatePresence>
         {viewModal && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-end justify-center" style={{ background: "rgba(0,0,0,0.7)" }} onClick={() => setViewModal(null)}>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-end justify-center" style={{ background: "rgba(0,0,0,0.8)" }} onClick={() => setViewModal(null)}>
             <motion.div initial={{ y: 400 }} animate={{ y: 0 }} exit={{ y: 400 }} onClick={e => e.stopPropagation()}
-              className="w-full max-w-lg rounded-t-2xl p-5 max-h-[85vh] overflow-y-auto" style={{ background: "#0a0f0a", border: "1px solid rgba(74,222,128,0.15)" }}>
-              <h3 className="text-sm font-bold mb-1" style={{ color: "#4ade80" }}>{viewModal.client_name}</h3>
-              <p className="text-[10px] mb-4" style={{ color: "#6b7280" }}>{viewModal.phase} · {viewModal.weeks} sem · {viewModal.days_per_week} dias/sem</p>
-              <div className="text-xs whitespace-pre-wrap space-y-4" style={{ color: "#d1d5db" }}>
-                {viewModal.protocol_text && <div><h4 className="font-bold mb-1" style={{ color: "#4ade80" }}>Protocolo</h4>{viewModal.protocol_text}</div>}
-                {viewModal.anatomy_text && <div><h4 className="font-bold mb-1" style={{ color: "#4ade80" }}>Anatomia</h4>{viewModal.anatomy_text}</div>}
-                {viewModal.tecnica_text && <div><h4 className="font-bold mb-1" style={{ color: "#4ade80" }}>Técnica</h4>{viewModal.tecnica_text}</div>}
-                {viewModal.periodizacao_text && <div><h4 className="font-bold mb-1" style={{ color: "#4ade80" }}>Periodização</h4>{viewModal.periodizacao_text}</div>}
+              className="w-full max-w-lg rounded-t-2xl p-5 max-h-[85vh] overflow-y-auto" style={{ background: BG, border: `1px solid ${BORDER_ACTIVE}` }}>
+              <h3 className="text-sm font-bold mb-1" style={{ color: GREEN }}>{viewModal.client_name}</h3>
+              <p className="text-[10px] mb-4" style={{ color: TEXT_MUTED }}>{viewModal.phase} · {viewModal.weeks} sem</p>
+              <div className="text-[11px] whitespace-pre-wrap space-y-3" style={{ color: TEXT_DIM }}>
+                {viewModal.protocol_text && <div><h4 className="font-bold mb-1" style={{ color: GREEN }}>Protocolo</h4>{viewModal.protocol_text}</div>}
+                {viewModal.anatomy_text && <div><h4 className="font-bold mb-1" style={{ color: GREEN }}>Anatomia</h4>{viewModal.anatomy_text}</div>}
               </div>
             </motion.div>
           </motion.div>
@@ -818,16 +1054,13 @@ function HistorySection({ userId }: { userId?: string }) {
   );
 }
 
-/* ============================================================
+/* ================================================================
    SECTION 5 — COACH CONFIG
-   ============================================================ */
+   ================================================================ */
 function CoachConfigSection({ userId }: { userId?: string }) {
   const [coachName, setCoachName] = useState("");
   const [coachTitle, setCoachTitle] = useState("");
-  const [coachInstagram, setCoachInstagram] = useState("");
-  const [coachEmail, setCoachEmail] = useState("");
   const [coachCref, setCoachCref] = useState("");
-  const [accentColor, setAccentColor] = useState("#4ade80");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -837,8 +1070,6 @@ function CoachConfigSection({ userId }: { userId?: string }) {
         if (data) {
           setCoachName(data.professional_name || "");
           setCoachTitle(data.bio || "");
-          setCoachInstagram(data.specialties?.[0] || "");
-          setCoachEmail(typeof data.alert_channels === "object" && data.alert_channels !== null ? (data.alert_channels as any).email || "" : "");
           setCoachCref(data.crn || "");
         }
       });
@@ -847,68 +1078,53 @@ function CoachConfigSection({ userId }: { userId?: string }) {
   const save = async () => {
     if (!userId) return;
     setSaving(true);
-    const { error } = await supabase.from("coach_profiles").update({
-      professional_name: coachName,
-      bio: coachTitle,
-      crn: coachCref,
-    }).eq("user_id", userId);
+    const { error } = await supabase.from("coach_profiles").update({ professional_name: coachName, bio: coachTitle, crn: coachCref }).eq("user_id", userId);
     if (error) toast.error("Erro ao salvar");
     else toast.success("Configurações salvas!");
     setSaving(false);
   };
 
   return (
-    <div className="space-y-4 mt-4">
-      <div className="rounded-xl p-4" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(74,222,128,0.12)" }}>
-        <h3 className="text-sm font-bold mb-3" style={{ color: "#f0fdf4" }}>⚙️ Configurações do Coach</h3>
-
+    <div className="space-y-4 mt-3">
+      <div className="rounded-2xl p-4" style={{ background: SURFACE, border: `1px solid ${BORDER}` }}>
+        <h3 className="text-sm font-bold mb-3" style={{ color: TEXT, fontFamily: FONT }}>⚙️ Configurações do Coach</h3>
         <div className="space-y-3">
           <Field label="Nome completo">
-            <Input value={coachName} onChange={e => setCoachName(e.target.value)} placeholder="Seu nome" className="bg-transparent border-[rgba(74,222,128,0.12)] text-[#f0fdf4] placeholder:text-[#6b7280] text-sm" />
+            <Input value={coachName} onChange={e => setCoachName(e.target.value)} placeholder="Seu nome" className="bg-transparent text-sm" style={{ borderColor: BORDER, color: TEXT }} />
           </Field>
           <Field label="Título profissional">
-            <Input value={coachTitle} onChange={e => setCoachTitle(e.target.value)} placeholder="Especialista em Hipertrofia | CREF..." className="bg-transparent border-[rgba(74,222,128,0.12)] text-[#f0fdf4] placeholder:text-[#6b7280] text-sm" />
+            <Input value={coachTitle} onChange={e => setCoachTitle(e.target.value)} placeholder="Especialista em..." className="bg-transparent text-sm" style={{ borderColor: BORDER, color: TEXT }} />
           </Field>
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Instagram">
-              <Input value={coachInstagram} onChange={e => setCoachInstagram(e.target.value)} placeholder="@seu_insta" className="bg-transparent border-[rgba(74,222,128,0.12)] text-[#f0fdf4] placeholder:text-[#6b7280] text-sm" />
-            </Field>
-            <Field label="CREF">
-              <Input value={coachCref} onChange={e => setCoachCref(e.target.value)} placeholder="123456-G/RJ" className="bg-transparent border-[rgba(74,222,128,0.12)] text-[#f0fdf4] placeholder:text-[#6b7280] text-sm" />
-            </Field>
-          </div>
-          <Field label="E-mail profissional">
-            <Input value={coachEmail} onChange={e => setCoachEmail(e.target.value)} placeholder="coach@email.com" className="bg-transparent border-[rgba(74,222,128,0.12)] text-[#f0fdf4] placeholder:text-[#6b7280] text-sm" />
+          <Field label="CREF">
+            <Input value={coachCref} onChange={e => setCoachCref(e.target.value)} placeholder="123456-G/RJ" className="bg-transparent text-sm" style={{ borderColor: BORDER, color: TEXT }} />
           </Field>
-
-          <Button onClick={save} disabled={saving} className="w-full font-bold text-sm" style={{ background: "#4ade80", color: "#0a0f0a" }}>
+          <Button onClick={save} disabled={saving} className="w-full font-bold text-sm h-11 rounded-xl" style={{ background: GREEN, color: BG }}>
             {saving ? "Salvando..." : "Salvar Configurações"}
           </Button>
         </div>
       </div>
 
-      {/* Preview */}
-      <div className="rounded-xl p-4 text-center" style={{ background: "#0a0f0a", border: "1px solid rgba(74,222,128,0.2)" }}>
-        <p className="text-[10px] mb-1" style={{ color: "#6b7280" }}>Preview da capa do PDF</p>
-        <div className="py-6 rounded-lg" style={{ background: "#050805" }}>
-          <p className="text-lg font-bold" style={{ color: accentColor, fontFamily: "'Space Grotesk', sans-serif" }}>nutriON</p>
-          <p className="text-xs mt-2" style={{ color: "#f0fdf4" }}>PROTOCOLO DE TREINO CIENTÍFICO</p>
-          <p className="text-sm mt-1" style={{ color: accentColor }}>{coachName || "Nome do Coach"}</p>
-          <p className="text-[10px] mt-1" style={{ color: "#6b7280" }}>{coachTitle || "Título profissional"}</p>
-          <p className="text-[10px]" style={{ color: "#6b7280" }}>{coachCref && `CREF: ${coachCref}`}</p>
+      <div className="rounded-2xl p-5 text-center" style={{ background: BG, border: `1px solid ${BORDER_ACTIVE}` }}>
+        <p className="text-[10px] mb-2" style={{ color: TEXT_MUTED }}>Preview PDF</p>
+        <div className="py-6 rounded-xl" style={{ background: SURFACE }}>
+          <p className="text-lg font-black" style={{ color: GREEN, fontFamily: FONT }}>Training<span style={{ color: TEXT }}>ON</span></p>
+          <p className="text-[11px] mt-2 font-bold tracking-wider uppercase" style={{ color: TEXT_DIM }}>Protocolo de Treino Científico</p>
+          <p className="text-sm mt-2 font-bold" style={{ color: GREEN }}>{coachName || "Nome do Coach"}</p>
+          <p className="text-[10px]" style={{ color: TEXT_MUTED }}>{coachTitle || "Título profissional"}</p>
+          {coachCref && <p className="text-[10px]" style={{ color: TEXT_MUTED }}>CREF: {coachCref}</p>}
         </div>
       </div>
     </div>
   );
 }
 
-/* ============================================================
-   SHARED COMPONENTS
-   ============================================================ */
+/* ================================================================
+   SHARED
+   ================================================================ */
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <label className="text-[10px] font-medium mb-1 block" style={{ color: "#9ca3af" }}>{label}</label>
+      <label className="text-[10px] font-semibold mb-1 block tracking-wide uppercase" style={{ color: TEXT_MUTED }}>{label}</label>
       {children}
     </div>
   );
@@ -921,12 +1137,12 @@ function StyledSelect({ value, onValueChange, options, placeholder }: {
 }) {
   return (
     <Select value={value} onValueChange={onValueChange}>
-      <SelectTrigger className="bg-transparent border-[rgba(74,222,128,0.12)] text-[#f0fdf4] text-sm h-9">
+      <SelectTrigger className="bg-transparent text-sm h-10 rounded-xl" style={{ borderColor: BORDER, color: TEXT }}>
         <SelectValue placeholder={placeholder || "Selecione"} />
       </SelectTrigger>
-      <SelectContent className="bg-[#111] border-[rgba(74,222,128,0.15)]">
+      <SelectContent className="border rounded-xl" style={{ background: SURFACE2, borderColor: BORDER_ACTIVE }}>
         {options.map(o => (
-          <SelectItem key={o.value} value={o.value} className="text-[#f0fdf4] text-sm focus:bg-[rgba(74,222,128,0.1)] focus:text-[#4ade80]">{o.label}</SelectItem>
+          <SelectItem key={o.value} value={o.value} className="text-sm" style={{ color: TEXT }}>{o.label}</SelectItem>
         ))}
       </SelectContent>
     </Select>
