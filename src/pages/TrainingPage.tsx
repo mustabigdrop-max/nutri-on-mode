@@ -377,9 +377,19 @@ function EliteGenerateSection({ userId }: { userId?: string }) {
       toast.success("Salvo no caderno científico!");
     };
 
+    const exportPDF = () => {
+      const data = protocol || textResults;
+      exportTrainingPDF(data, clientName, {
+        phase: PHASES.find(p => p.id === phase)?.name || phase,
+        level,
+        weeks,
+        days,
+      });
+      toast.success("PDF premium exportado!");
+    };
+
     const exportFormatted = () => {
       const lines: string[] = [];
-      // Phase Plan
       const pp = protocol?.phase_plan;
       if (pp) {
         lines.push(`═══════════════════════════════════════`);
@@ -426,18 +436,7 @@ function EliteGenerateSection({ userId }: { userId?: string }) {
           lines.push(`\n🎯 PRIORIDADES MUSCULARES:`);
           ov.muscle_priorities.forEach((mp: any) => lines.push(`  • ${mp.muscle} — ${mp.weekly_sets} séries/sem (${mp.priority})`));
         }
-        if (ov.maintenance_muscles?.length) {
-          lines.push(`\n🔄 MANUTENÇÃO:`);
-          ov.maintenance_muscles.forEach((mm: any) => {
-            const label = typeof mm === "string" ? mm : `${mm.muscle} — ${mm.weekly_sets} séries/sem`;
-            lines.push(`  • ${label}`);
-          });
-        }
         if (ov.coach_notes) lines.push(`\n💡 OBSERVAÇÕES DO COACH:\n${ov.coach_notes}`);
-      }
-      if (protocol?.improvement_alerts?.length) {
-        lines.push(`\n⚠️ ALERTAS DE MELHORIA:`);
-        protocol.improvement_alerts.forEach((a: any) => lines.push(`  [${a.severity?.toUpperCase()}] ${a.area}: ${a.message}`));
       }
       if (protocol?.training_days?.length) {
         protocol.training_days.forEach((day: any) => {
