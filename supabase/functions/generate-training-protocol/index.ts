@@ -22,6 +22,17 @@ PERIODIZAÇÃO:
 Linear, linear reversa, ondulatória (DUP), em bloco, dupla, manutenção, ganho, cutting, off-season, preparação. Microciclo, mesociclo, macrociclo, deload, fase de acumulação, intensificação e transição.
 O treino NÃO deve ser linear por padrão. Ajuste conforme fase, recuperação, objetivo e resposta individual.
 
+PLANEJAMENTO DE FASES (OBRIGATÓRIO):
+Você NÃO prescreve apenas um treino isolado. Você prescreve uma ESTRATÉGIA COMPLETA de construção corporal.
+Sugira a duração de cada fase (bulking, cutting, manutenção, transição, deload) com base em critérios práticos.
+Referências de duração:
+- Bulking: 16-24 semanas
+- Cutting: 8-16 semanas
+- Manutenção/Transição: 1-4 semanas
+- Mesociclos: 4-8 semanas
+A duração NUNCA deve ser arbitrária — justifique tecnicamente com base em: percentual de gordura estimado, resposta ao treino, performance, recuperação e adesão.
+Inclua o macrociclo completo: qual fase vem ANTES, qual fase vem DEPOIS, e por quê.
+
 VARIÁVEIS QUE VOCÊ CONTROLA:
 Volume total e por sessão por músculo, frequência semanal, intensidade relativa, reps por série, séries efetivas, intervalo de descanso, cadência de execução, ordem e seleção de exercícios, amplitude útil, ponto de maior resistência, risco articular, fadiga local e sistêmica, recuperação entre sessões, técnica do aluno, nível de esforço, RIR (repetições em reserva), falha muscular, progressão de carga/reps/séries/exercício.
 
@@ -99,6 +110,44 @@ INSTRUÇÕES DE PRESCRIÇÃO:
 
 FORMATO JSON OBRIGATÓRIO:
 {
+  "phase_plan": {
+    "macrocycle_title": "Macrociclo Anual — Hipertrofia com Cutting Estratégico",
+    "current_phase": "Bulking — Mesociclo 1 de 3",
+    "phases": [
+      {
+        "name": "Bulking (Fase Atual)",
+        "duration_weeks": "16-20",
+        "mesocycles": 3,
+        "objective": "Ganho máximo de massa muscular com controle de gordura",
+        "criteria_to_advance": "BF estimado atingir 18% ou ganho de 6-8kg",
+        "volume_strategy": "Progressão de volume: MEV → MAV → MRV ao longo dos mesociclos",
+        "intensity_strategy": "RPE 7-8 no meso 1, RPE 8-9 no meso 2, RPE 9+ no meso 3",
+        "rationale": "O cliente está com BF estimado de ~14%, nível intermediário, com boa capacidade de recuperação. Bulking de 16-20 semanas permite ganho significativo antes de acumular gordura excessiva."
+      },
+      {
+        "name": "Transição (Manutenção)",
+        "duration_weeks": "2-3",
+        "mesocycles": 1,
+        "objective": "Estabilizar peso, normalizar hormônios, preparar para cutting",
+        "criteria_to_advance": "Peso estável por 2 semanas + performance mantida",
+        "volume_strategy": "Redução para MAV",
+        "intensity_strategy": "RPE 7-8, sem falha",
+        "rationale": "Período de adaptação reversa para normalizar leptina e metabolismo antes do déficit calórico."
+      },
+      {
+        "name": "Cutting",
+        "duration_weeks": "10-14",
+        "mesocycles": 2,
+        "objective": "Reduzir BF para ~10-12% mantendo massa muscular",
+        "criteria_to_advance": "BF alvo atingido ou perda de força >10%",
+        "volume_strategy": "Manter frequência, reduzir volume 20-30%",
+        "intensity_strategy": "Manter cargas pesadas, reduzir volume acessório",
+        "rationale": "Cutting após bulking bem conduzido. Duração baseada na quantidade de gordura a perder (estimativa de 4-6kg)."
+      }
+    ],
+    "deload_strategy": "Deload programado a cada 4-6 semanas (semana de deload = -40% volume, manter intensidade). Deload reativo se RPE consistentemente >9.5 ou sintomas de overreaching.",
+    "long_term_note": "Estratégia de longo prazo voltada para ciclos de ganho/definição progressivos. A cada macrociclo, o ponto de partida do bulking deve ser melhor (mais massa, menos gordura, melhor base de força)."
+  },
   "block_overview": {
     "title": "Bloco de Hipertrofia — Foco em Costas e Deltoide Lateral",
     "duration_weeks": 8,
@@ -160,6 +209,7 @@ FORMATO JSON OBRIGATÓRIO:
 }
 
 IMPORTANTE:
+- Inclua OBRIGATORIAMENTE o campo "phase_plan" com o macrociclo completo, fases antes e depois da fase atual, duração justificada, critérios de transição e estratégia de deload.
 - Preencha TODOS os dias de treino (${days} dias).
 - Cada dia deve ter 4-7 exercícios adequados ao tempo de sessão (${sessionDuration || "60min"}).
 - Gere o JSON COMPLETO. Não truncar. Todos os dias, todos os exercícios.
