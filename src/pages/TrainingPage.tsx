@@ -1254,7 +1254,7 @@ function HistorySection({ userId }: { userId?: string }) {
 }
 
 /* ── History View Modal ── */
-function HistoryViewModal({ protocol: p, onClose, userId }: { protocol: any; onClose: () => void; userId?: string }) {
+function HistoryViewModal({ protocol: p, onClose, userId, onUpdate }: { protocol: any; onClose: () => void; userId?: string; onUpdate?: () => void }) {
   const [expandedDay, setExpandedDay] = useState<number | null>(0);
   const [expandedExercise, setExpandedExercise] = useState<string | null>(null);
 
