@@ -78,6 +78,7 @@ import PeptideVaultPage from "./pages/PeptideVaultPage";
 import TrainingPage from "./pages/TrainingPage";
 import ScienceHubPage from "./pages/ScienceHubPage";
 import BiomechanicsVaultPage from "./pages/BiomechanicsVaultPage";
+import MetabolicONPage from "./pages/MetabolicONPage";
 import PlanoAlimentarIA from "./components/coach/PlanoAlimentarIA";
 import NotFound from "./pages/NotFound";
 
@@ -164,6 +165,7 @@ const App = () => (
             <Route path="/training" element={<ProtectedRoute><TrainingPage /></ProtectedRoute>} />
             <Route path="/science" element={<ProtectedRoute><ScienceHubPage /></ProtectedRoute>} />
             <Route path="/biomechanics" element={<ProtectedRoute><BiomechanicsVaultPage /></ProtectedRoute>} />
+            <Route path="/metabolicon" element={<ProtectedRoute><MetabolicONPage /></ProtectedRoute>} />
             {/* COACH */}
             <Route path="/coach/plano-alimentar" element={<ProtectedRoute><PlanoAlimentarIA /></ProtectedRoute>} />
             <Route path="/coach" element={<CoachLandingPage />} />
