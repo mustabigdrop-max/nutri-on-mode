@@ -608,6 +608,136 @@ function SaveProtocolModal({ patients, selectedPatient, setSelectedPatient, clie
   );
 }
 
+/* ── Phase Plan Card ── */
+function PhasePlanCard({ plan }: { plan: any }) {
+  const phaseColors: Record<string, string> = {
+    "Bulking": "#4ade80",
+    "Cutting": "#f97316",
+    "Transição": "#60a5fa",
+    "Manutenção": "#fbbf24",
+  };
+
+  const getPhaseColor = (name: string) => {
+    for (const key in phaseColors) {
+      if (name.toLowerCase().includes(key.toLowerCase())) return phaseColors[key];
+    }
+    return GREEN;
+  };
+
+  return (
+    <div className="space-y-3">
+      {/* Macrocycle Header */}
+      <div className="rounded-2xl p-5 relative overflow-hidden" style={{ background: `linear-gradient(135deg, ${SURFACE} 0%, ${SURFACE2} 100%)`, border: `1px solid ${BORDER_ACTIVE}` }}>
+        <div className="absolute top-0 right-0 w-32 h-32 rounded-full blur-3xl" style={{ background: "rgba(74,222,128,0.06)" }} />
+        <div className="relative">
+          <div className="flex items-center gap-2 mb-1">
+            <TrendingUp className="w-4 h-4" style={{ color: GREEN }} />
+            <span className="text-[10px] font-bold tracking-widest uppercase" style={{ color: GREEN }}>Planejamento de Fases</span>
+          </div>
+          <h2 className="text-base font-black mb-1" style={{ color: TEXT, fontFamily: FONT }}>{plan.macrocycle_title || "Macrociclo"}</h2>
+          {plan.current_phase && (
+            <div className="inline-flex items-center gap-1.5 mt-1 px-3 py-1.5 rounded-full" style={{ background: GREEN_DIM, border: `1px solid ${BORDER_ACTIVE}` }}>
+              <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: GREEN }} />
+              <span className="text-[10px] font-bold" style={{ color: GREEN }}>{plan.current_phase}</span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Phase Timeline */}
+      {plan.phases?.map((phase: any, i: number) => {
+        const color = getPhaseColor(phase.name);
+        const isCurrent = phase.name.toLowerCase().includes("atual");
+        return (
+          <div key={i} className="rounded-xl overflow-hidden" style={{ background: SURFACE, border: `1px solid ${isCurrent ? color + "40" : BORDER}` }}>
+            {/* Phase Header */}
+            <div className="p-4" style={{ borderLeft: `3px solid ${color}` }}>
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-black" style={{ background: `${color}15`, color }}>
+                    {i + 1}
+                  </div>
+                  <div>
+                    <p className="text-[12px] font-bold" style={{ color: TEXT }}>{phase.name}</p>
+                    <p className="text-[9px]" style={{ color: TEXT_MUTED }}>{phase.duration_weeks} semanas{phase.mesocycles ? ` · ${phase.mesocycles} mesociclo${phase.mesocycles > 1 ? "s" : ""}` : ""}</p>
+                  </div>
+                </div>
+                {isCurrent && (
+                  <span className="text-[8px] px-2 py-1 rounded-full font-bold uppercase" style={{ background: `${color}15`, color }}>Fase Atual</span>
+                )}
+              </div>
+
+              {/* Objective */}
+              <p className="text-[11px] mb-3 leading-relaxed" style={{ color: TEXT_DIM }}>{phase.objective}</p>
+
+              {/* Strategy Grid */}
+              <div className="grid grid-cols-2 gap-2 mb-3">
+                {phase.volume_strategy && (
+                  <div className="rounded-lg p-2" style={{ background: SURFACE2 }}>
+                    <span className="text-[8px] font-bold tracking-wider uppercase" style={{ color: TEXT_MUTED }}>Volume</span>
+                    <p className="text-[10px] mt-0.5" style={{ color: TEXT_DIM }}>{phase.volume_strategy}</p>
+                  </div>
+                )}
+                {phase.intensity_strategy && (
+                  <div className="rounded-lg p-2" style={{ background: SURFACE2 }}>
+                    <span className="text-[8px] font-bold tracking-wider uppercase" style={{ color: TEXT_MUTED }}>Intensidade</span>
+                    <p className="text-[10px] mt-0.5" style={{ color: TEXT_DIM }}>{phase.intensity_strategy}</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Criteria to advance */}
+              {phase.criteria_to_advance && (
+                <div className="rounded-lg p-2" style={{ background: `${color}06`, border: `1px solid ${color}15` }}>
+                  <span className="text-[8px] font-bold" style={{ color }}>📊 CRITÉRIO PARA AVANÇAR</span>
+                  <p className="text-[10px] mt-0.5" style={{ color: TEXT_DIM }}>{phase.criteria_to_advance}</p>
+                </div>
+              )}
+
+              {/* Rationale */}
+              {phase.rationale && (
+                <div className="mt-2 rounded-lg p-2" style={{ background: "rgba(74,222,128,0.03)" }}>
+                  <span className="text-[8px] font-bold" style={{ color: GREEN }}>💡 JUSTIFICATIVA</span>
+                  <p className="text-[10px] mt-0.5 leading-relaxed" style={{ color: TEXT_MUTED }}>{phase.rationale}</p>
+                </div>
+              )}
+            </div>
+
+            {/* Connector */}
+            {i < (plan.phases?.length || 0) - 1 && (
+              <div className="flex justify-center py-0">
+                <div className="w-px h-3" style={{ background: BORDER_ACTIVE }} />
+              </div>
+            )}
+          </div>
+        );
+      })}
+
+      {/* Deload Strategy */}
+      {plan.deload_strategy && (
+        <div className="rounded-xl p-3" style={{ background: "rgba(96,165,250,0.06)", border: "1px solid rgba(96,165,250,0.15)" }}>
+          <div className="flex items-center gap-1.5 mb-1">
+            <Shield className="w-3 h-3" style={{ color: "#60a5fa" }} />
+            <span className="text-[10px] font-bold" style={{ color: "#60a5fa" }}>Estratégia de Deload</span>
+          </div>
+          <p className="text-[11px]" style={{ color: TEXT_DIM }}>{plan.deload_strategy}</p>
+        </div>
+      )}
+
+      {/* Long-term Note */}
+      {plan.long_term_note && (
+        <div className="rounded-xl p-3" style={{ background: "rgba(74,222,128,0.04)", borderLeft: `3px solid ${GREEN}` }}>
+          <div className="flex items-center gap-1.5 mb-1">
+            <Brain className="w-3 h-3" style={{ color: GREEN }} />
+            <span className="text-[10px] font-bold" style={{ color: GREEN }}>Visão de Longo Prazo</span>
+          </div>
+          <p className="text-[11px] leading-relaxed" style={{ color: TEXT_DIM }}>{plan.long_term_note}</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ── Block Overview Card ── */
 function BlockOverviewCard({ overview, alerts, clientName }: { overview: any; alerts?: any[]; clientName: string }) {
   return (
