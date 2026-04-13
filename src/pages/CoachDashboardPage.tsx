@@ -225,6 +225,10 @@ const CoachDashboardPage = () => {
       {/* Header */}
       <header className="border-b border-border bg-card px-4 py-4">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="icon" onClick={() => navigate("/dashboard")} className="shrink-0">
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
           <div>
             <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
               {profile.plan === "white_label" && profile.white_label_app_name
