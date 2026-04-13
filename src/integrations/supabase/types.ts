@@ -2838,6 +2838,162 @@ export type Database = {
         }
         Relationships: []
       }
+      guton_assessments: {
+        Row: {
+          antibiotic_last_year: boolean | null
+          assessed_at: string | null
+          bloating_frequency: string | null
+          bristol_score: number | null
+          foods_trigger: string[] | null
+          id: string
+          notes: string | null
+          pattern: string | null
+          sleep_quality: string | null
+          stress_level: string | null
+          symptoms: string[] | null
+          user_id: string
+        }
+        Insert: {
+          antibiotic_last_year?: boolean | null
+          assessed_at?: string | null
+          bloating_frequency?: string | null
+          bristol_score?: number | null
+          foods_trigger?: string[] | null
+          id?: string
+          notes?: string | null
+          pattern?: string | null
+          sleep_quality?: string | null
+          stress_level?: string | null
+          symptoms?: string[] | null
+          user_id: string
+        }
+        Update: {
+          antibiotic_last_year?: boolean | null
+          assessed_at?: string | null
+          bloating_frequency?: string | null
+          bristol_score?: number | null
+          foods_trigger?: string[] | null
+          id?: string
+          notes?: string | null
+          pattern?: string | null
+          sleep_quality?: string | null
+          stress_level?: string | null
+          symptoms?: string[] | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      guton_conversations: {
+        Row: {
+          ai_source: string | null
+          created_at: string | null
+          id: string
+          message: string
+          pattern_detected: string | null
+          response: string
+          user_id: string
+        }
+        Insert: {
+          ai_source?: string | null
+          created_at?: string | null
+          id?: string
+          message: string
+          pattern_detected?: string | null
+          response: string
+          user_id: string
+        }
+        Update: {
+          ai_source?: string | null
+          created_at?: string | null
+          id?: string
+          message?: string
+          pattern_detected?: string | null
+          response?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      guton_protocols: {
+        Row: {
+          foods_allowed: string[] | null
+          foods_restricted: string[] | null
+          id: string
+          pattern: string | null
+          phase: number | null
+          protocol_text: string | null
+          started_at: string | null
+          supplements: Json | null
+          target_end_at: string | null
+          user_id: string
+          week_number: number | null
+        }
+        Insert: {
+          foods_allowed?: string[] | null
+          foods_restricted?: string[] | null
+          id?: string
+          pattern?: string | null
+          phase?: number | null
+          protocol_text?: string | null
+          started_at?: string | null
+          supplements?: Json | null
+          target_end_at?: string | null
+          user_id: string
+          week_number?: number | null
+        }
+        Update: {
+          foods_allowed?: string[] | null
+          foods_restricted?: string[] | null
+          id?: string
+          pattern?: string | null
+          phase?: number | null
+          protocol_text?: string | null
+          started_at?: string | null
+          supplements?: Json | null
+          target_end_at?: string | null
+          user_id?: string
+          week_number?: number | null
+        }
+        Relationships: []
+      }
+      guton_symptom_log: {
+        Row: {
+          bloating: number | null
+          bristol: number | null
+          date: string | null
+          energy: number | null
+          evacuations: number | null
+          id: string
+          mood: number | null
+          notes: string | null
+          pain: number | null
+          user_id: string
+        }
+        Insert: {
+          bloating?: number | null
+          bristol?: number | null
+          date?: string | null
+          energy?: number | null
+          evacuations?: number | null
+          id?: string
+          mood?: number | null
+          notes?: string | null
+          pain?: number | null
+          user_id: string
+        }
+        Update: {
+          bloating?: number | null
+          bristol?: number | null
+          date?: string | null
+          energy?: number | null
+          evacuations?: number | null
+          id?: string
+          mood?: number | null
+          notes?: string | null
+          pain?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       lab_conversations: {
         Row: {
           created_at: string | null

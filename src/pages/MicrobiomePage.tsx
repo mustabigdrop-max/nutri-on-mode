@@ -1,23 +1,27 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft, Calculator, ListChecks, Brain, BookOpen, BarChart3,
   Droplets, ChevronDown, ChevronRight, Sparkles, Check, Loader2,
-  AlertTriangle, Leaf, FlaskConical, Dna
+  AlertTriangle, Leaf, FlaskConical, Dna, MessageCircle, Send,
+  Activity, Smile, Frown, Meh, TrendingUp, Plus
 } from "lucide-react";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
 import BottomNav from "@/components/BottomNav";
 import { useProfile } from "@/hooks/useProfile";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { analisarMicrobioma, salvarDiagnosticoMicrobioma } from "@/lib/microbioma";
-import VoiceRecorderButton from "@/components/ui/VoiceRecorderButton";
 
 // ── CONSTANTS ──
 
 const TABS = [
+  { id: "guton", label: "GutON", icon: MessageCircle },
   { id: "fibras", label: "Fibras", icon: Calculator },
   { id: "protocolo", label: "Protocolo", icon: ListChecks },
+  { id: "sintomas", label: "Diário", icon: Activity },
   { id: "ia", label: "IA", icon: Brain },
   { id: "ciencia", label: "Ciência", icon: BookOpen },
 ] as const;
@@ -65,98 +69,96 @@ const SINTOMAS = [
 
 const PROTOCOL_PHASES = [
   {
-    phase: 1, title: "Limpeza e Preparo", weeks: "Semanas 1-2", fiberPercent: 50,
+    phase: 1, title: "Remove — Limpeza", weeks: "Semanas 1-2", fiberPercent: 50,
     steps: [
-      "Remover ultraprocessados, adoçantes artificiais (aspartame, sacarina) e álcool",
-      "Introduzir fibras gradualmente: começar com **50% da meta** calculada para evitar disbiose aguda",
-      "Hidratação: mínimo **35ml/kg** de peso corporal",
-      "Adicionar **1 colher de sopa de psyllium** à noite",
+      "Eliminar açúcar refinado, álcool, ultraprocessados com emulsificantes",
+      "Remover adoçantes artificiais (sucralose, sacarina) — meta-análise 2022 confirma dano ao microbioma",
+      "Introduzir fibras gradualmente: começar com **50% da meta**",
+      "Hidratação mínima: **35ml/kg** de peso corporal",
+      "Adicionar **gengibre e cúrcuma** diariamente (anti-inflamatórios naturais)",
     ],
-    foundation: "Evitar disbiose osmótica — Sonnenburg Lab, Stanford 2022",
+    foundation: "Framework 4R — Remove: eliminar agentes que perpetuam disbiose",
   },
   {
-    phase: 2, title: "Semeadura (Seeding)", weeks: "Semanas 3-5", fiberPercent: 75,
+    phase: 2, title: "Replace + Reinoculate", weeks: "Semanas 3-5", fiberPercent: 75,
     steps: [
-      "Introduzir alimentos fermentados: **1-2 porções/dia** (kefir, iogurte natural integral, chucrute, kombucha low-sugar)",
-      "Escalar fibras para **75% da meta** individual",
-      "Probiótico: **Lactobacillus rhamnosus GG** ou **L. acidophilus NCFM** — mínimo 10 bilhões UFC/dia",
-      "Introduzir amido resistente: **batata-doce cozida e resfriada**, arroz resfriado",
+      "Enzimas digestivas via alimentos: **abacaxi** (bromelina), **mamão** (papaína), **gengibre**",
+      "Vinagre de maçã não filtrado (1 col sopa antes das refeições): ácido acético",
+      "Introduzir fermentados: **kefir caseiro** (30-50 cepas), iogurte natural integral, chucrute",
+      "Escalar fibras para **75% da meta** — aveia, banana verde, linhaça",
+      "Probiótico: **L. rhamnosus GG** ou **S. boulardii** — 10 bi UFC/dia",
     ],
-    foundation: "Estudo PREDICT — Tim Spector / King's College London",
+    foundation: "PREDICT Study + Sonnenburg Lab — fermentados > diversidade microbiana",
   },
   {
-    phase: 3, title: "Diversificação", weeks: "Semanas 6-9", fiberPercent: 100,
+    phase: 3, title: "Repair — Diversificação", weeks: "Semanas 6-9", fiberPercent: 100,
     steps: [
-      "Regra dos **30 vegetais por semana** (American Gut Project — Sonnenburg/Knight Lab)",
-      "Atingir **100% da meta** de fibras calculada",
-      "Introduzir prebióticos específicos: **FOS** (alcachofra, alho, cebola, alho-poró), **inulina** (chicória, banana verde)",
-      "Incluir pelo menos **5 cores de vegetais** por dia",
-      "Monitorar trânsito intestinal: ideal **1-2 evacuações/dia**, escala de Bristol tipo 3-4",
+      "Regra dos **30 vegetais/semana** (American Gut Project)",
+      "Atingir **100% da meta** de fibras",
+      "Prebióticos específicos: FOS (alho, cebola), inulina (chicória, banana verde)",
+      "L-glutamina 5-10g/dia para Leaky Gut (reparar tight junctions)",
+      "Ômega-3 via sardinha 2-3x/semana (reduz zonulina — marcador de permeabilidade)",
+      "Polifenóis: cúrcuma, chá verde, maçã — aumentam Akkermansia e Bifidobacterium",
     ],
-    foundation: "American Gut Project — Knight Lab 2018",
+    foundation: "Nutrients 2021 — L-glutamina melhora integridade da barreira intestinal",
   },
   {
     phase: 4, title: "Consolidação", weeks: "Semanas 10-12", fiberPercent: 100,
     steps: [
-      "Manter meta de fibras + rodar ciclo de **30 vegetais/semana** como hábito",
-      "Reduzir probiótico para manutenção (**5 bilhões UFC/dia**) ou via alimentação",
-      "Avaliar **reintrodução** de grupos alimentares removidos na Fase 1",
-      "Bônus anti-inflamatório: **Omega-3** (2-4g EPA+DHA/dia), polifenóis (mirtilo, cacau 70%+, chá verde)",
+      "Manter **30 vegetais/semana** como hábito permanente",
+      "Reduzir probiótico para manutenção (5 bi UFC/dia) ou manter via alimentação",
+      "Reintroduzir grupos removidos na Fase 1 (um por vez, a cada 3 dias)",
+      "Protocolo Low-FODMAP: iniciar fase de reintrodução se aplicável",
+      "Caldo de osso 200ml em jejum (colágeno + gelatina + glicina → reparo mucosa)",
     ],
-    foundation: "Gut-brain axis — Cryan et al., Nature Reviews Neuroscience 2019",
+    foundation: "Cryan et al. 2019 — eixo intestino-cérebro consolidado",
   },
 ];
 
 const STUDIES = [
   {
     icon: "🔬", title: "Sonnenburg Lab — Stanford (2021)", tag: "Stanford",
-    finding: "Dieta rica em fibras vs dieta fermentada: impacto na diversidade microbiana.",
+    finding: "Dieta rica em fermentados vs fibras: fermentados aumentaram diversidade microbiana.",
     stat: "+19 espécies",
-    detail: "Fermentados aumentaram diversidade em 19 espécies bacterianas em média.",
+    detail: "Fermentados superam fibras isoladas para diversidade do microbioma.",
   },
   {
     icon: "🧬", title: "PREDICT Study — King's College London (2022)", tag: "UK Research",
-    finding: "Resposta glicêmica individual depende mais da microbiota que do alimento em si.",
+    finding: "Resposta glicêmica individual depende mais da microbiota que do alimento.",
     stat: "Personalização",
-    detail: "Base para personalização nutricional baseada no perfil do microbioma.",
-  },
-  {
-    icon: "🥦", title: "American Gut Project — Knight Lab (2018)", tag: "NIH",
-    finding: "Consumidores de 30+ vegetais/semana têm microbiota significativamente mais diversa.",
-    stat: "30+ vegetais/sem",
-    detail: "vs consumidores de menos de 10 tipos por semana.",
+    detail: "Base para personalização nutricional via perfil do microbioma.",
   },
   {
     icon: "🧠", title: "Cryan et al. — Nature Reviews Neuroscience (2019)", tag: "Neuroscience",
     finding: "Eixo intestino-cérebro: microbiota produz 90% da serotonina corporal.",
     stat: "90% serotonina",
-    detail: "Impacta diretamente humor, ansiedade e cognição.",
+    detail: "Disbiose impacta humor, ansiedade, compulsão alimentar e cognição.",
+  },
+  {
+    icon: "🦠", title: "Mayer et al. — Cell Host & Microbe (2022)", tag: "Cell",
+    finding: "Emulsificantes (carboximetilcelulose, polissorbato 80) danificam biofilme intestinal.",
+    stat: "↑ Permeabilidade",
+    detail: "Ultraprocessados como causa direta de Leaky Gut.",
+  },
+  {
+    icon: "🥦", title: "American Gut Project — Knight Lab (2018)", tag: "NIH",
+    finding: "30+ vegetais/semana = microbiota significativamente mais diversa.",
+    stat: "30+ vegetais/sem",
+    detail: "Ervas e especiarias contam — facilita atingir a meta.",
   },
   {
     icon: "🏋️", title: "Clarke et al. (2014)", tag: "Sports Science",
-    finding: "Atletas de elite apresentam microbiota com maior diversidade.",
+    finding: "Atletas de elite possuem microbiota com maior diversidade e Akkermansia.",
     stat: "↑ Akkermansia",
-    detail: "Maior proporção de Akkermansia muciniphila vs sedentários.",
-  },
-  {
-    icon: "🌍", title: "NIH Human Microbiome Project", tag: "NIH",
-    finding: "Microbiota saudável possui >1.000 espécies bacterianas.",
-    stat: "1000+ espécies",
-    detail: "Disbiose moderna reduz para 300-400 espécies.",
+    detail: "Exercício regular = prebiótico natural para o microbioma.",
   },
 ];
 
+const BRISTOL_LABELS = ["", "🪨 Bolinhas duras", "🔗 Grumoso", "🌽 Salsicha rachada", "✅ Liso e macio", "🔸 Pedaços macios", "🥣 Pastoso", "💧 Líquido"];
+
 // ── FIBER CALCULATOR LOGIC ──
 
-function calcFiberGoal(
-  sex: string,
-  age: number,
-  weightKg: number,
-  heightCm: number,
-  activity: string,
-  objective: string
-) {
-  // Base Harris-Benedict for kcal estimation
+function calcFiberGoal(sex: string, age: number, weightKg: number, heightCm: number, activity: string, objective: string) {
   let bmr: number;
   if (sex === "masculino") {
     bmr = 88.362 + 13.397 * weightKg + 4.799 * heightCm - 5.677 * age;
@@ -165,47 +167,40 @@ function calcFiberGoal(
   }
   const actFactor = ACTIVITY_LEVELS.find(a => a.value === activity)?.factor || 1.375;
   const tdee = bmr * actFactor;
-
-  // Base: 14g per 1000 kcal
   let baseFiber = (tdee / 1000) * 14;
-
-  // Gender/age guidelines
   let guidelineFiber: number;
   if (sex === "masculino") {
     guidelineFiber = age <= 50 ? 38 : 30;
   } else {
     guidelineFiber = age <= 50 ? 25 : 21;
   }
-
-  // Use the higher of the two
   let fiberGoal = Math.max(baseFiber, guidelineFiber);
-
-  // Objective adjustments
   if (objective === "emagrecimento") fiberGoal *= 1.15;
   else if (objective === "performance") fiberGoal *= 1.10;
   else if (objective === "glp1") fiberGoal *= 0.90;
-
   fiberGoal = Math.round(fiberGoal);
   const soluble = Math.round(fiberGoal * 0.30);
   const insoluble = Math.round(fiberGoal * 0.70);
   const extraWater = Math.max(0, Math.round(((fiberGoal - 25) / 5) * 200));
-
   let tip = "";
   if (objective === "emagrecimento") tip = "Priorize fibras solúveis (aveia, chia, psyllium) para maior saciedade e controle glicêmico.";
   else if (objective === "performance") tip = "Atletas com microbiota diversa apresentam melhor recuperação — diversifique fontes de fibra.";
   else if (objective === "glp1") tip = "Com GLP-1, prefira fibras solúveis em menores doses e evite excessos que causem distensão.";
   else if (objective === "ibs") tip = "Comece com protocolo low-FODMAP e aumente fibras progressivamente sob orientação profissional.";
   else tip = "Distribua a fibra ao longo do dia para melhor absorção e menor desconforto intestinal.";
-
   return { total: fiberGoal, soluble, insoluble, extraWater, tip, tdee: Math.round(tdee) };
 }
+
+// ── GutON Chat Message Type ──
+type GutMsg = { role: "user" | "assistant"; content: string };
 
 // ── COMPONENT ──
 
 const MicrobiomePage = () => {
   const navigate = useNavigate();
   const { profile } = useProfile();
-  const [activeTab, setActiveTab] = useState<TabId>("fibras");
+  const { user } = useAuth();
+  const [activeTab, setActiveTab] = useState<TabId>("guton");
 
   // ── Fiber Calculator State ──
   const [fiberSex, setFiberSex] = useState("masculino");
@@ -224,6 +219,23 @@ const MicrobiomePage = () => {
   const [iaLoading, setIaLoading] = useState(false);
   const [iaResult, setIaResult] = useState("");
   const [iaScore, setIaScore] = useState<number | null>(null);
+
+  // ── GutON Chat State ──
+  const [chatMessages, setChatMessages] = useState<GutMsg[]>([]);
+  const [chatInput, setChatInput] = useState("");
+  const [chatLoading, setChatLoading] = useState(false);
+  const chatEndRef = useRef<HTMLDivElement>(null);
+
+  // ── Symptom Log State ──
+  const [symBloating, setSymBloating] = useState(0);
+  const [symPain, setSymPain] = useState(0);
+  const [symEnergy, setSymEnergy] = useState(5);
+  const [symMood, setSymMood] = useState(5);
+  const [symBristol, setSymBristol] = useState(4);
+  const [symEvacuations, setSymEvacuations] = useState(1);
+  const [symNotes, setSymNotes] = useState("");
+  const [symSaving, setSymSaving] = useState(false);
+  const [recentLogs, setRecentLogs] = useState<any[]>([]);
 
   // Prefill from profile
   useEffect(() => {
@@ -245,6 +257,24 @@ const MicrobiomePage = () => {
     }
   }, [profile]);
 
+  // Load recent symptom logs
+  useEffect(() => {
+    if (!user) return;
+    supabase
+      .from("guton_symptom_log" as any)
+      .select("*")
+      .eq("user_id", user.id)
+      .order("date", { ascending: false })
+      .limit(7)
+      .then(({ data }) => {
+        if (data) setRecentLogs(data);
+      });
+  }, [user]);
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [chatMessages]);
+
   const handleCalcFiber = () => {
     const res = calcFiberGoal(fiberSex, fiberAge, fiberWeight, fiberHeight, fiberActivity, fiberObjective);
     setFiberResult(res);
@@ -259,50 +289,138 @@ const MicrobiomePage = () => {
   const scoreColor = score >= 80 ? "text-primary" : score >= 60 ? "text-yellow-400" : score >= 40 ? "text-orange-400" : "text-red-500";
 
   const handleIaDiagnosis = useCallback(async () => {
-    if (selectedSintomas.length === 0) {
-      toast.error("Selecione pelo menos um sintoma");
-      return;
-    }
+    if (selectedSintomas.length === 0) { toast.error("Selecione pelo menos um sintoma"); return; }
     setIaLoading(true);
     setIaResult("");
     setIaScore(score);
-
     let fullText = "";
-
     await analisarMicrobioma(
-      selectedSintomas,
-      score,
-      {
-        sexo: fiberSex,
-        idade: fiberAge,
-        peso: fiberWeight,
-        objetivo: fiberObjective,
-        atividade: fiberActivity,
-        metaFibras: fiberResult?.total,
-      },
-      (delta) => {
-        fullText += delta;
-        setIaResult(fullText);
-      },
+      selectedSintomas, score,
+      { sexo: fiberSex, idade: fiberAge, peso: fiberWeight, objetivo: fiberObjective, atividade: fiberActivity, metaFibras: fiberResult?.total },
+      (delta) => { fullText += delta; setIaResult(fullText); },
       async () => {
         setIaLoading(false);
-        // Save to DB
-        await salvarDiagnosticoMicrobioma({
-          sintomas: selectedSintomas,
-          score,
-          classificacao,
-          metaFibrasG: fiberResult?.total,
-          analiseIA: fullText,
-          perfilSnapshot: { sexo: fiberSex, idade: fiberAge, peso: fiberWeight, objetivo: fiberObjective },
-        });
-        toast.success("Análise salva com sucesso!");
+        await salvarDiagnosticoMicrobioma({ sintomas: selectedSintomas, score, classificacao, metaFibrasG: fiberResult?.total, analiseIA: fullText, perfilSnapshot: { sexo: fiberSex, idade: fiberAge, peso: fiberWeight, objetivo: fiberObjective } });
+        toast.success("Análise salva!");
       },
-      (error) => {
-        setIaLoading(false);
-        toast.error(error);
-      }
+      (error) => { setIaLoading(false); toast.error(error); }
     );
   }, [selectedSintomas, score, fiberSex, fiberAge, fiberWeight, fiberObjective, fiberActivity, fiberResult, classificacao]);
+
+  // ── GutON Chat ──
+  const sendGutMessage = useCallback(async () => {
+    if (!chatInput.trim() || chatLoading) return;
+    const userMsg = chatInput.trim();
+    setChatInput("");
+    const newMsgs: GutMsg[] = [...chatMessages, { role: "user", content: userMsg }];
+    setChatMessages(newMsgs);
+    setChatLoading(true);
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/guton`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          },
+          body: JSON.stringify({
+            message: userMsg,
+            userProfile: {
+              sexo: fiberSex,
+              idade: fiberAge,
+              peso: fiberWeight,
+              objetivo: fiberObjective,
+            },
+            conversationHistory: chatMessages.slice(-8).map(m => ({ role: m.role, content: m.content })),
+          }),
+        }
+      );
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: "Erro" }));
+        throw new Error(err.error || `Erro ${res.status}`);
+      }
+
+      const reader = res.body?.getReader();
+      if (!reader) throw new Error("Stream não disponível");
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let fullResponse = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        let newlineIndex: number;
+        while ((newlineIndex = buffer.indexOf("\n")) !== -1) {
+          let line = buffer.slice(0, newlineIndex);
+          buffer = buffer.slice(newlineIndex + 1);
+          if (line.endsWith("\r")) line = line.slice(0, -1);
+          if (!line.startsWith("data: ")) continue;
+          const jsonStr = line.slice(6).trim();
+          if (jsonStr === "[DONE]") break;
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const content = parsed.choices?.[0]?.delta?.content;
+            if (content) {
+              fullResponse += content;
+              setChatMessages([...newMsgs, { role: "assistant", content: fullResponse }]);
+            }
+          } catch { /* partial JSON */ }
+        }
+      }
+
+      if (fullResponse) {
+        setChatMessages([...newMsgs, { role: "assistant", content: fullResponse }]);
+        // Save conversation
+        if (user) {
+          await supabase.from("guton_conversations" as any).insert({
+            user_id: user.id,
+            message: userMsg,
+            response: fullResponse,
+            ai_source: res.headers.get("X-GutON-Source") || "gateway",
+          });
+        }
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao conectar com GutON");
+      setChatMessages(newMsgs);
+    } finally {
+      setChatLoading(false);
+    }
+  }, [chatInput, chatLoading, chatMessages, fiberSex, fiberAge, fiberWeight, fiberObjective, user]);
+
+  // ── Symptom Log Save ──
+  const saveSymptomLog = async () => {
+    if (!user) { toast.error("Faça login primeiro"); return; }
+    setSymSaving(true);
+    const { error } = await supabase.from("guton_symptom_log" as any).insert({
+      user_id: user.id,
+      bloating: symBloating,
+      pain: symPain,
+      energy: symEnergy,
+      mood: symMood,
+      bristol: symBristol,
+      evacuations: symEvacuations,
+      notes: symNotes || null,
+    });
+    setSymSaving(false);
+    if (error) { toast.error("Erro ao salvar"); return; }
+    toast.success("Diário salvo!");
+    setSymNotes("");
+    // Refresh logs
+    const { data } = await supabase
+      .from("guton_symptom_log" as any)
+      .select("*")
+      .eq("user_id", user.id)
+      .order("date", { ascending: false })
+      .limit(7);
+    if (data) setRecentLogs(data);
+  };
 
   return (
     <div className="min-h-screen bg-[#0a0f0a] pb-24">
@@ -313,14 +431,14 @@ const MicrobiomePage = () => {
             <ArrowLeft className="w-4 h-4 text-green-400" />
           </button>
           <div className="flex-1">
-            <h1 className="text-lg font-bold text-green-400 font-mono tracking-tight">Microbioma Intelligence</h1>
-            <p className="text-[10px] text-green-600 font-mono">Saúde intestinal baseada em evidências</p>
+            <h1 className="text-lg font-bold text-green-400 font-mono tracking-tight">GutON 2.0</h1>
+            <p className="text-[10px] text-green-600 font-mono">Inteligência intestinal clínica avançada</p>
           </div>
           <Dna className="w-5 h-5 text-green-500" />
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-1 mb-5 bg-green-950/30 rounded-xl p-1">
+        <div className="flex gap-0.5 mb-5 bg-green-950/30 rounded-xl p-1 overflow-x-auto">
           {TABS.map(tab => {
             const Icon = tab.icon;
             const active = activeTab === tab.id;
@@ -328,11 +446,11 @@ const MicrobiomePage = () => {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex-1 flex flex-col items-center gap-0.5 py-2 px-1 rounded-lg text-[10px] font-mono transition-all ${
+                className={`flex-1 min-w-0 flex flex-col items-center gap-0.5 py-2 px-1 rounded-lg text-[9px] font-mono transition-all ${
                   active ? "bg-green-500/20 text-green-400 border border-green-500/30" : "text-green-700 hover:text-green-500"
                 }`}
               >
-                <Icon className="w-4 h-4" />
+                <Icon className="w-3.5 h-3.5" />
                 {tab.label}
               </button>
             );
@@ -340,15 +458,99 @@ const MicrobiomePage = () => {
         </div>
 
         <AnimatePresence mode="wait">
-          {/* ──── ABA 1: CALCULADORA DE FIBRAS ──── */}
+          {/* ──── ABA: GUTON CHAT ──── */}
+          {activeTab === "guton" && (
+            <motion.div key="guton" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-3">
+              {/* Welcome */}
+              {chatMessages.length === 0 && (
+                <div className="rounded-xl border border-green-500/20 bg-green-950/30 p-5 space-y-3">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center">
+                      <Dna className="w-4 h-4 text-green-400" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-green-400 font-mono">GutON 2.0</p>
+                      <p className="text-[9px] text-green-600 font-mono">Dual-AI: Perplexity + Gemini</p>
+                    </div>
+                  </div>
+                  <p className="text-xs text-green-500/80 font-mono leading-relaxed">
+                    90% da sua serotonina é produzida no intestino. Sua saciedade, humor, energia e cravings — tudo passa pelo microbioma.
+                  </p>
+                  <div className="space-y-1.5">
+                    {[
+                      "Tenho inchaço forte depois de comer",
+                      "Qual o melhor probiótico pro meu caso?",
+                      "Como curar intestino permeável com alimentos baratos?",
+                      "Por que tenho craving de doce à tarde?",
+                    ].map((q) => (
+                      <button
+                        key={q}
+                        onClick={() => { setChatInput(q); }}
+                        className="w-full text-left px-3 py-2 rounded-lg border border-green-900/20 text-[10px] text-green-600 font-mono hover:border-green-500/30 hover:text-green-400 transition-all"
+                      >
+                        → {q}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Messages */}
+              <div className="space-y-3 max-h-[50vh] overflow-y-auto pr-1">
+                {chatMessages.map((msg, i) => (
+                  <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+                    <div className={`max-w-[85%] rounded-xl px-4 py-3 ${
+                      msg.role === "user"
+                        ? "bg-green-500/20 border border-green-500/30 text-green-300"
+                        : "bg-green-950/40 border border-green-900/30 text-green-500/80"
+                    }`}>
+                      {msg.role === "assistant" ? (
+                        <div className="prose prose-sm prose-invert max-w-none prose-headings:text-green-400 prose-headings:font-mono prose-headings:text-xs prose-strong:text-green-400 prose-p:text-[11px] prose-p:leading-relaxed prose-p:font-mono prose-li:text-[11px] prose-li:font-mono">
+                          <ReactMarkdown>{msg.content}</ReactMarkdown>
+                        </div>
+                      ) : (
+                        <p className="text-[11px] font-mono">{msg.content}</p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+                {chatLoading && chatMessages[chatMessages.length - 1]?.role === "user" && (
+                  <div className="flex justify-start">
+                    <div className="bg-green-950/40 border border-green-900/30 rounded-xl px-4 py-3">
+                      <Loader2 className="w-4 h-4 text-green-500 animate-spin" />
+                    </div>
+                  </div>
+                )}
+                <div ref={chatEndRef} />
+              </div>
+
+              {/* Input */}
+              <div className="flex gap-2 items-end">
+                <input
+                  value={chatInput}
+                  onChange={e => setChatInput(e.target.value)}
+                  onKeyDown={e => e.key === "Enter" && !e.shiftKey && sendGutMessage()}
+                  placeholder="Pergunte ao GutON 2.0..."
+                  className="flex-1 bg-green-950/40 border border-green-900/30 rounded-xl px-4 py-3 text-xs text-green-300 font-mono placeholder:text-green-800 focus:outline-none focus:border-green-500"
+                />
+                <button
+                  onClick={sendGutMessage}
+                  disabled={chatLoading || !chatInput.trim()}
+                  className="p-3 rounded-xl bg-green-500 text-black disabled:opacity-40 hover:bg-green-400 transition-all"
+                >
+                  <Send className="w-4 h-4" />
+                </button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* ──── ABA: CALCULADORA DE FIBRAS ──── */}
           {activeTab === "fibras" && (
             <motion.div key="fibras" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-4">
               <div className="rounded-xl border border-green-900/30 bg-green-950/20 p-4 space-y-4">
                 <h2 className="text-sm font-bold text-green-400 font-mono flex items-center gap-2">
                   <Calculator className="w-4 h-4" /> Calculadora Personalizada de Fibras
                 </h2>
-
-                {/* Sex */}
                 <div>
                   <label className="text-[10px] text-green-600 font-mono mb-1 block">Sexo biológico</label>
                   <div className="flex gap-2">
@@ -360,8 +562,6 @@ const MicrobiomePage = () => {
                     ))}
                   </div>
                 </div>
-
-                {/* Number inputs */}
                 <div className="grid grid-cols-3 gap-3">
                   {[
                     { label: "Idade", value: fiberAge, set: setFiberAge, suffix: "anos" },
@@ -370,18 +570,12 @@ const MicrobiomePage = () => {
                   ].map(f => (
                     <div key={f.label}>
                       <label className="text-[10px] text-green-600 font-mono mb-1 block">{f.label}</label>
-                      <input
-                        type="number"
-                        value={f.value}
-                        onChange={e => f.set(Number(e.target.value))}
-                        className="w-full bg-green-950/40 border border-green-900/30 rounded-lg px-2 py-2 text-sm text-green-300 font-mono text-center focus:outline-none focus:border-green-500"
-                      />
+                      <input type="number" value={f.value} onChange={e => f.set(Number(e.target.value))}
+                        className="w-full bg-green-950/40 border border-green-900/30 rounded-lg px-2 py-2 text-sm text-green-300 font-mono text-center focus:outline-none focus:border-green-500" />
                       <span className="text-[9px] text-green-700 font-mono">{f.suffix}</span>
                     </div>
                   ))}
                 </div>
-
-                {/* Objective */}
                 <div>
                   <label className="text-[10px] text-green-600 font-mono mb-1 block">Objetivo principal</label>
                   <div className="flex flex-wrap gap-1.5">
@@ -393,8 +587,6 @@ const MicrobiomePage = () => {
                     ))}
                   </div>
                 </div>
-
-                {/* Activity */}
                 <div>
                   <label className="text-[10px] text-green-600 font-mono mb-1 block">Nível de atividade</label>
                   <div className="flex flex-wrap gap-1.5">
@@ -406,34 +598,27 @@ const MicrobiomePage = () => {
                     ))}
                   </div>
                 </div>
-
                 <button onClick={handleCalcFiber}
                   className="w-full py-3 rounded-xl bg-green-500 text-black font-mono text-sm font-bold hover:bg-green-400 transition-all">
                   <Calculator className="w-4 h-4 inline mr-2" /> Calcular Meta de Fibras
                 </button>
               </div>
 
-              {/* Result */}
               {fiberResult && (
                 <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="space-y-3">
-                  {/* Main number */}
                   <div className="rounded-xl border border-green-500/30 bg-green-500/5 p-6 text-center">
                     <p className="text-[10px] text-green-600 font-mono mb-1">Sua meta diária de fibras</p>
                     <p className="text-5xl font-bold text-green-400 font-mono">{fiberResult.total}<span className="text-lg">g</span></p>
-                    <p className="text-[10px] text-green-700 font-mono mt-1">baseado em ~{fiberResult.tdee} kcal/dia estimadas</p>
+                    <p className="text-[10px] text-green-700 font-mono mt-1">baseado em ~{fiberResult.tdee} kcal/dia</p>
                   </div>
-
-                  {/* Cards */}
                   <div className="grid grid-cols-3 gap-2">
                     <div className="rounded-xl border border-green-900/30 bg-green-950/30 p-3 text-center">
                       <p className="text-[9px] text-green-600 font-mono">Solúvel</p>
                       <p className="text-xl font-bold text-green-400 font-mono">{fiberResult.soluble}g</p>
-                      <p className="text-[8px] text-green-700">30%</p>
                     </div>
                     <div className="rounded-xl border border-green-900/30 bg-green-950/30 p-3 text-center">
                       <p className="text-[9px] text-green-600 font-mono">Insolúvel</p>
                       <p className="text-xl font-bold text-green-400 font-mono">{fiberResult.insoluble}g</p>
-                      <p className="text-[8px] text-green-700">70%</p>
                     </div>
                     <div className="rounded-xl border border-blue-900/30 bg-blue-950/30 p-3 text-center">
                       <Droplets className="w-3 h-3 text-blue-400 mx-auto mb-1" />
@@ -441,14 +626,10 @@ const MicrobiomePage = () => {
                       <p className="text-xl font-bold text-blue-400 font-mono">+{fiberResult.extraWater}<span className="text-xs">ml</span></p>
                     </div>
                   </div>
-
-                  {/* Tip */}
                   <div className="rounded-xl border border-green-900/30 bg-green-950/20 p-3 flex items-start gap-2">
                     <Leaf className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
                     <p className="text-xs text-green-500/80 font-mono">{fiberResult.tip}</p>
                   </div>
-
-                  {/* Food grid */}
                   <div className="rounded-xl border border-green-900/30 bg-green-950/20 p-4">
                     <h3 className="text-xs font-bold text-green-400 font-mono mb-3">🥦 Fontes alimentares recomendadas</h3>
                     <div className="grid grid-cols-2 gap-2">
@@ -469,12 +650,13 @@ const MicrobiomePage = () => {
             </motion.div>
           )}
 
-          {/* ──── ABA 2: PROTOCOLO 12 SEMANAS ──── */}
+          {/* ──── ABA: PROTOCOLO 4R ──── */}
           {activeTab === "protocolo" && (
             <motion.div key="protocolo" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-3">
               <h2 className="text-sm font-bold text-green-400 font-mono flex items-center gap-2">
-                <ListChecks className="w-4 h-4" /> Protocolo de Restauração — 12 semanas
+                <ListChecks className="w-4 h-4" /> Protocolo 4R — Reparo Intestinal
               </h2>
+              <p className="text-[10px] text-green-600 font-mono">Remove → Replace → Reinoculate → Repair (12 semanas)</p>
 
               {PROTOCOL_PHASES.map(phase => {
                 const isOpen = expandedPhase === phase.phase;
@@ -489,48 +671,29 @@ const MicrobiomePage = () => {
                         <p className="text-xs font-bold text-green-400 font-mono">{phase.title}</p>
                         <p className="text-[10px] text-green-700">{phase.weeks}</p>
                       </div>
-                      {/* Fiber progress */}
                       <div className="text-right mr-2">
                         <p className="text-xs font-bold text-green-400 font-mono">{phase.fiberPercent}%</p>
                         <p className="text-[8px] text-green-700">da meta</p>
                       </div>
                       {isOpen ? <ChevronDown className="w-4 h-4 text-green-500" /> : <ChevronRight className="w-4 h-4 text-green-700" />}
                     </button>
-
                     <AnimatePresence>
                       {isOpen && (
-                        <motion.div
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: "auto", opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          className="overflow-hidden"
-                        >
+                        <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
                           <div className="px-4 pb-4 space-y-3">
-                            {/* Fiber bar */}
                             <div className="h-2 rounded-full bg-green-900/30 overflow-hidden">
-                              <motion.div className="h-full bg-green-500 rounded-full"
-                                initial={{ width: 0 }}
-                                animate={{ width: `${phase.fiberPercent}%` }}
-                                transition={{ duration: 0.8 }}
-                              />
+                              <motion.div className="h-full bg-green-500 rounded-full" initial={{ width: 0 }} animate={{ width: `${phase.fiberPercent}%` }} transition={{ duration: 0.8 }} />
                             </div>
-
-                            {/* Steps */}
                             <ol className="space-y-2">
                               {phase.steps.map((step, i) => (
                                 <li key={i} className="flex items-start gap-2">
                                   <span className="w-5 h-5 rounded-full bg-green-900/30 flex items-center justify-center text-[9px] text-green-500 font-mono shrink-0 mt-0.5">{i + 1}</span>
                                   <p className="text-[11px] text-green-500/80 leading-relaxed">
-                                    <ReactMarkdown components={{
-                                      strong: ({ children }) => <strong className="text-green-400 font-bold">{children}</strong>,
-                                      p: ({ children }) => <span>{children}</span>,
-                                    }}>{step}</ReactMarkdown>
+                                    <ReactMarkdown components={{ strong: ({ children }) => <strong className="text-green-400 font-bold">{children}</strong>, p: ({ children }) => <span>{children}</span> }}>{step}</ReactMarkdown>
                                   </p>
                                 </li>
                               ))}
                             </ol>
-
-                            {/* Foundation badge */}
                             <div className="flex items-center gap-2 p-2 rounded-lg bg-green-500/5 border border-green-500/10">
                               <FlaskConical className="w-3 h-3 text-green-500 shrink-0" />
                               <p className="text-[9px] text-green-600 font-mono">{phase.foundation}</p>
@@ -545,14 +708,106 @@ const MicrobiomePage = () => {
             </motion.div>
           )}
 
-          {/* ──── ABA 3: DIAGNÓSTICO IA ──── */}
+          {/* ──── ABA: DIÁRIO DE SINTOMAS ──── */}
+          {activeTab === "sintomas" && (
+            <motion.div key="sintomas" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-4">
+              <h2 className="text-sm font-bold text-green-400 font-mono flex items-center gap-2">
+                <Activity className="w-4 h-4" /> Diário Intestinal
+              </h2>
+
+              <div className="rounded-xl border border-green-900/30 bg-green-950/20 p-4 space-y-4">
+                {/* Sliders */}
+                {[
+                  { label: "Inchaço", value: symBloating, set: setSymBloating, max: 10, emoji: symBloating > 6 ? "😣" : symBloating > 3 ? "😐" : "😊" },
+                  { label: "Dor abdominal", value: symPain, set: setSymPain, max: 10, emoji: symPain > 6 ? "😖" : symPain > 3 ? "😐" : "😊" },
+                  { label: "Energia", value: symEnergy, set: setSymEnergy, max: 10, emoji: symEnergy > 6 ? "⚡" : symEnergy > 3 ? "🔋" : "🪫" },
+                  { label: "Humor", value: symMood, set: setSymMood, max: 10, emoji: symMood > 6 ? "😄" : symMood > 3 ? "😐" : "😔" },
+                ].map(s => (
+                  <div key={s.label}>
+                    <div className="flex justify-between mb-1">
+                      <label className="text-[10px] text-green-600 font-mono">{s.label}</label>
+                      <span className="text-xs font-mono text-green-400">{s.emoji} {s.value}/10</span>
+                    </div>
+                    <input type="range" min={0} max={s.max} value={s.value} onChange={e => s.set(Number(e.target.value))}
+                      className="w-full h-2 bg-green-900/30 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-green-500" />
+                  </div>
+                ))}
+
+                {/* Bristol */}
+                <div>
+                  <label className="text-[10px] text-green-600 font-mono mb-2 block">Escala de Bristol</label>
+                  <div className="grid grid-cols-7 gap-1">
+                    {[1, 2, 3, 4, 5, 6, 7].map(b => (
+                      <button key={b} onClick={() => setSymBristol(b)}
+                        className={`py-2 rounded-lg text-xs font-mono border transition-all ${
+                          symBristol === b
+                            ? b >= 3 && b <= 5 ? "border-green-500 bg-green-500/20 text-green-400" : "border-orange-500 bg-orange-500/20 text-orange-400"
+                            : "border-green-900/20 text-green-700"
+                        }`}>
+                        {b}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-[9px] text-green-700 font-mono mt-1 text-center">{BRISTOL_LABELS[symBristol]}</p>
+                </div>
+
+                {/* Evacuations */}
+                <div>
+                  <label className="text-[10px] text-green-600 font-mono mb-1 block">Evacuações hoje</label>
+                  <div className="flex gap-2">
+                    {[0, 1, 2, 3, 4, 5].map(n => (
+                      <button key={n} onClick={() => setSymEvacuations(n)}
+                        className={`flex-1 py-2 rounded-lg text-xs font-mono border transition-all ${symEvacuations === n ? "border-green-500 bg-green-500/10 text-green-400" : "border-green-900/20 text-green-700"}`}>
+                        {n === 5 ? "5+" : n}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Notes */}
+                <div>
+                  <label className="text-[10px] text-green-600 font-mono mb-1 block">Observações</label>
+                  <textarea value={symNotes} onChange={e => setSymNotes(e.target.value)} rows={2}
+                    placeholder="Ex: comi feijão ontem, tomei kefir..."
+                    className="w-full bg-green-950/40 border border-green-900/30 rounded-lg px-3 py-2 text-xs text-green-300 font-mono placeholder:text-green-800 focus:outline-none focus:border-green-500 resize-none" />
+                </div>
+
+                <button onClick={saveSymptomLog} disabled={symSaving}
+                  className="w-full py-3 rounded-xl bg-green-500 text-black font-mono text-sm font-bold disabled:opacity-50 hover:bg-green-400 transition-all flex items-center justify-center gap-2">
+                  {symSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+                  Salvar Registro
+                </button>
+              </div>
+
+              {/* Recent logs */}
+              {recentLogs.length > 0 && (
+                <div className="space-y-2">
+                  <h3 className="text-xs font-bold text-green-400 font-mono">Últimos 7 dias</h3>
+                  {recentLogs.map((log: any, i: number) => (
+                    <div key={i} className="rounded-lg border border-green-900/20 bg-green-950/30 p-3 flex items-center gap-3">
+                      <div className="text-center">
+                        <p className="text-[10px] text-green-600 font-mono">{new Date(log.date).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}</p>
+                      </div>
+                      <div className="flex-1 flex gap-3">
+                        <span className="text-[9px] text-green-700 font-mono">💨 {log.bloating}</span>
+                        <span className="text-[9px] text-green-700 font-mono">😣 {log.pain}</span>
+                        <span className="text-[9px] text-green-700 font-mono">⚡ {log.energy}</span>
+                        <span className="text-[9px] text-green-700 font-mono">😊 {log.mood}</span>
+                        <span className="text-[9px] text-green-700 font-mono">Bristol {log.bristol}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </motion.div>
+          )}
+
+          {/* ──── ABA: DIAGNÓSTICO IA ──── */}
           {activeTab === "ia" && (
             <motion.div key="ia" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-4">
               <h2 className="text-sm font-bold text-green-400 font-mono flex items-center gap-2">
                 <Brain className="w-4 h-4" /> Diagnóstico Inteligente do Microbioma
               </h2>
-
-              {/* Symptoms */}
               <div className="rounded-xl border border-green-900/30 bg-green-950/20 p-4">
                 <p className="text-xs text-green-600 font-mono mb-3">Selecione seus sintomas:</p>
                 <div className="space-y-2">
@@ -572,8 +827,6 @@ const MicrobiomePage = () => {
                   })}
                 </div>
               </div>
-
-              {/* Score */}
               {selectedSintomas.length > 0 && (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="rounded-xl border border-green-900/30 bg-green-950/20 p-4 text-center">
                   <p className="text-[10px] text-green-600 font-mono mb-1">Score de Saúde Intestinal</p>
@@ -587,24 +840,15 @@ const MicrobiomePage = () => {
                   )}
                 </motion.div>
               )}
-
-              {/* Generate button */}
               <button onClick={handleIaDiagnosis} disabled={iaLoading || selectedSintomas.length === 0}
                 className="w-full py-3 rounded-xl bg-green-500 text-black font-mono text-sm font-bold disabled:opacity-50 hover:bg-green-400 transition-all flex items-center justify-center gap-2">
                 {iaLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
                 {iaLoading ? "Analisando microbioma..." : "Gerar Análise com IA"}
               </button>
-
-              {/* IA Result */}
               {iaResult && (
                 <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
                   className="rounded-xl border border-green-500/20 bg-green-950/30 p-4">
-                  <div className="prose prose-sm prose-invert max-w-none
-                    prose-headings:text-green-400 prose-headings:font-mono prose-headings:text-sm
-                    prose-strong:text-green-400
-                    prose-p:text-green-500/80 prose-p:text-[11px] prose-p:leading-relaxed prose-p:font-mono
-                    prose-li:text-green-500/80 prose-li:text-[11px] prose-li:font-mono
-                    prose-ol:text-green-500/80 prose-ul:text-green-500/80">
+                  <div className="prose prose-sm prose-invert max-w-none prose-headings:text-green-400 prose-headings:font-mono prose-headings:text-sm prose-strong:text-green-400 prose-p:text-green-500/80 prose-p:text-[11px] prose-p:leading-relaxed prose-p:font-mono prose-li:text-green-500/80 prose-li:text-[11px] prose-li:font-mono">
                     <ReactMarkdown>{iaResult}</ReactMarkdown>
                   </div>
                   {iaLoading && <span className="inline-block w-2 h-4 bg-green-500 animate-pulse ml-1" />}
@@ -613,13 +857,12 @@ const MicrobiomePage = () => {
             </motion.div>
           )}
 
-          {/* ──── ABA 4: BASE CIENTÍFICA ──── */}
+          {/* ──── ABA: BASE CIENTÍFICA ──── */}
           {activeTab === "ciencia" && (
             <motion.div key="ciencia" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-3">
               <h2 className="text-sm font-bold text-green-400 font-mono flex items-center gap-2">
-                <BookOpen className="w-4 h-4" /> Base Científica
+                <BookOpen className="w-4 h-4" /> Base Científica — Eixo Intestino-Cérebro
               </h2>
-
               {STUDIES.map((study, i) => (
                 <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}
                   className="rounded-xl border border-green-900/30 bg-green-950/20 p-4">
