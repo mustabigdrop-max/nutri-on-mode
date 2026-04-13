@@ -259,7 +259,7 @@ FORMATO JSON OBRIGATÓRIO:
 }
 
 IMPORTANTE:
-- Inclua OBRIGATORIAMENTE o campo "phase_plan" com o macrociclo completo, fases antes e depois da fase atual, duração justificada, critérios de transição e estratégia de deload.
+- Inclua OBRIGATORIAMENTE o campo "phase_plan" com o macrociclo completo, fases antes e depois da fase atual, duração justificada, critérios de transição, estratégia de deload E o campo "post_deload_decision" com os 5 cenários de decisão pós-deload (recuperou e performou, objetivo mudou, fadiga persistente, estagnação/logística, objetivo estético mudou). Cada cenário deve ter: condition, signal, decision, action, how_next_block_starts.
 - Preencha TODOS os dias de treino (${days} dias).
 - Cada dia deve ter 4-7 exercícios adequados ao tempo de sessão (${sessionDuration || "60min"}).
 - Gere o JSON COMPLETO. Não truncar. Todos os dias, todos os exercícios.
