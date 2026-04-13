@@ -378,6 +378,26 @@ function EliteGenerateSection({ userId }: { userId?: string }) {
 
     const exportFormatted = () => {
       const lines: string[] = [];
+      // Phase Plan
+      const pp = protocol?.phase_plan;
+      if (pp) {
+        lines.push(`═══════════════════════════════════════`);
+        lines.push(`PLANEJAMENTO DE FASES — ${clientName.toUpperCase()}`);
+        lines.push(`═══════════════════════════════════════\n`);
+        if (pp.macrocycle_title) lines.push(`📊 ${pp.macrocycle_title}`);
+        if (pp.current_phase) lines.push(`🔵 Fase Atual: ${pp.current_phase}`);
+        pp.phases?.forEach((ph: any, i: number) => {
+          lines.push(`\n  ── FASE ${i + 1}: ${ph.name} (${ph.duration_weeks} semanas) ──`);
+          if (ph.objective) lines.push(`  Objetivo: ${ph.objective}`);
+          if (ph.volume_strategy) lines.push(`  Volume: ${ph.volume_strategy}`);
+          if (ph.intensity_strategy) lines.push(`  Intensidade: ${ph.intensity_strategy}`);
+          if (ph.criteria_to_advance) lines.push(`  Critério: ${ph.criteria_to_advance}`);
+          if (ph.rationale) lines.push(`  Justificativa: ${ph.rationale}`);
+        });
+        if (pp.deload_strategy) lines.push(`\n🛡️ DELOAD: ${pp.deload_strategy}`);
+        if (pp.long_term_note) lines.push(`\n🎯 VISÃO LONGO PRAZO: ${pp.long_term_note}`);
+        lines.push(`\n`);
+      }
       const ov = protocol?.block_overview;
       if (ov) {
         lines.push(`═══════════════════════════════════════`);
