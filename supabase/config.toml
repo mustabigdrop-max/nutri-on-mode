@@ -98,3 +98,6 @@ verify_jwt = false
 
 [functions.generate-training-plan]
 verify_jwt = false
+
+[functions.generate-training-protocol]
+verify_jwt = false
