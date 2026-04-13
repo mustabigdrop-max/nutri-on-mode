@@ -9,8 +9,9 @@ import {
   BarChart3, History, Settings, Zap, TrendingUp, Search, ArrowLeft,
   Target, Shield, AlertTriangle, Clock, Flame, Eye, Brain,
   ChevronDown, ChevronUp, Activity, Award, Bookmark, Share2,
-  Trash2, Edit3, Users, X, Check,
+  Trash2, Edit3, Users, X, Check, FileDown,
 } from "lucide-react";
+import { exportTrainingPDF } from "@/lib/trainingPdfExport";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
