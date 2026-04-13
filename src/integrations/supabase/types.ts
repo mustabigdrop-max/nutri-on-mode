@@ -4514,6 +4514,161 @@ export type Database = {
         }
         Relationships: []
       }
+      training_progress: {
+        Row: {
+          client_name: string | null
+          exercise: string | null
+          id: string
+          logged_at: string | null
+          notes: string | null
+          protocol_id: string | null
+          reps_done: number | null
+          rpe_real: number | null
+          sets_done: number | null
+          user_id: string
+          week_number: number | null
+          weight_kg: number | null
+        }
+        Insert: {
+          client_name?: string | null
+          exercise?: string | null
+          id?: string
+          logged_at?: string | null
+          notes?: string | null
+          protocol_id?: string | null
+          reps_done?: number | null
+          rpe_real?: number | null
+          sets_done?: number | null
+          user_id: string
+          week_number?: number | null
+          weight_kg?: number | null
+        }
+        Update: {
+          client_name?: string | null
+          exercise?: string | null
+          id?: string
+          logged_at?: string | null
+          notes?: string | null
+          protocol_id?: string | null
+          reps_done?: number | null
+          rpe_real?: number | null
+          sets_done?: number | null
+          user_id?: string
+          week_number?: number | null
+          weight_kg?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "training_progress_protocol_id_fkey"
+            columns: ["protocol_id"]
+            isOneToOne: false
+            referencedRelation: "training_protocols"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      training_protocols: {
+        Row: {
+          anatomy_text: string | null
+          client_name: string | null
+          created_at: string | null
+          days_per_week: string | null
+          equipment: string | null
+          id: string
+          injuries: string | null
+          level: string | null
+          muscles: string[] | null
+          periodizacao_text: string | null
+          phase: string | null
+          protocol_text: string | null
+          session_duration: string | null
+          tecnica_text: string | null
+          user_id: string
+          volume_landmarks: Json | null
+          weeks: string | null
+        }
+        Insert: {
+          anatomy_text?: string | null
+          client_name?: string | null
+          created_at?: string | null
+          days_per_week?: string | null
+          equipment?: string | null
+          id?: string
+          injuries?: string | null
+          level?: string | null
+          muscles?: string[] | null
+          periodizacao_text?: string | null
+          phase?: string | null
+          protocol_text?: string | null
+          session_duration?: string | null
+          tecnica_text?: string | null
+          user_id: string
+          volume_landmarks?: Json | null
+          weeks?: string | null
+        }
+        Update: {
+          anatomy_text?: string | null
+          client_name?: string | null
+          created_at?: string | null
+          days_per_week?: string | null
+          equipment?: string | null
+          id?: string
+          injuries?: string | null
+          level?: string | null
+          muscles?: string[] | null
+          periodizacao_text?: string | null
+          phase?: string | null
+          protocol_text?: string | null
+          session_duration?: string | null
+          tecnica_text?: string | null
+          user_id?: string
+          volume_landmarks?: Json | null
+          weeks?: string | null
+        }
+        Relationships: []
+      }
+      training_templates: {
+        Row: {
+          created_at: string | null
+          days_per_week: string | null
+          equipment: string | null
+          id: string
+          level: string | null
+          muscles: string[] | null
+          phase: string | null
+          protocol_text: string | null
+          template_name: string | null
+          user_id: string
+          weeks: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          days_per_week?: string | null
+          equipment?: string | null
+          id?: string
+          level?: string | null
+          muscles?: string[] | null
+          phase?: string | null
+          protocol_text?: string | null
+          template_name?: string | null
+          user_id: string
+          weeks?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          days_per_week?: string | null
+          equipment?: string | null
+          id?: string
+          level?: string | null
+          muscles?: string[] | null
+          phase?: string | null
+          protocol_text?: string | null
+          template_name?: string | null
+          user_id?: string
+          weeks?: string | null
+        }
+        Relationships: []
+      }
       user_badges: {
         Row: {
           badge_id: string
