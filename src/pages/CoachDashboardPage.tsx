@@ -229,16 +229,17 @@ const CoachDashboardPage = () => {
             <Button variant="ghost" size="icon" onClick={() => navigate("/dashboard")} className="shrink-0">
               <ArrowLeft className="w-5 h-5" />
             </Button>
-          <div>
-            <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
-              {profile.plan === "white_label" && profile.white_label_app_name
-                ? profile.white_label_app_name
-                : "nutriON Coach"}
-              <Badge variant="outline" className="text-xs">
-                {profile.plan === "white_label" ? "White Label" : "Coach Pro"}
-              </Badge>
-            </h1>
-            <p className="text-sm text-muted-foreground">{profile.professional_name}</p>
+            <div>
+              <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
+                {profile.plan === "white_label" && profile.white_label_app_name
+                  ? profile.white_label_app_name
+                  : "nutriON Coach"}
+                <Badge variant="outline" className="text-xs">
+                  {profile.plan === "white_label" ? "White Label" : "Coach Pro"}
+                </Badge>
+              </h1>
+              <p className="text-sm text-muted-foreground">{profile.professional_name}</p>
+            </div>
           </div>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="icon" onClick={() => navigate("/coach/settings")}>
