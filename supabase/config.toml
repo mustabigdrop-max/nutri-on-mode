@@ -119,3 +119,6 @@ verify_jwt = false
 
 [functions.metabolicon]
 verify_jwt = false
+
+[functions.guton]
+verify_jwt = false
