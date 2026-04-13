@@ -1586,8 +1586,23 @@ function HistoryViewModal({ protocol: p, onClose, userId, onUpdate }: { protocol
             <button onClick={saveToNotebook} className="flex items-center gap-1 text-[9px] px-2 py-1 rounded-lg font-semibold" style={{ background: "rgba(139,92,246,0.08)", color: "#a78bfa", border: "1px solid rgba(139,92,246,0.15)" }}>
               <Bookmark className="w-2.5 h-2.5" /> Caderno
             </button>
+            <button onClick={() => {
+              if (parsed) {
+                exportTrainingPDF(parsed, p.client_name || "Cliente", {
+                  phase: PHASES.find((ph: any) => ph.id === p.phase)?.name || p.phase,
+                  level: p.level || "",
+                  weeks: p.weeks || "",
+                  days: p.days || "",
+                });
+                toast.success("PDF premium exportado!");
+              } else {
+                toast.error("Sem dados para exportar");
+              }
+            }} className="flex items-center gap-1 text-[9px] px-2 py-1 rounded-lg font-semibold" style={{ background: "rgba(239,68,68,0.08)", color: "#f87171", border: "1px solid rgba(239,68,68,0.15)" }}>
+              <FileDown className="w-2.5 h-2.5" /> PDF
+            </button>
             <button onClick={exportFormatted} className="flex items-center gap-1 text-[9px] px-2 py-1 rounded-lg font-semibold" style={{ background: GREEN_DIM, color: GREEN, border: `1px solid ${BORDER}` }}>
-              <Download className="w-2.5 h-2.5" /> Exportar
+              <Download className="w-2.5 h-2.5" /> TXT
             </button>
           </div>
         </div>
