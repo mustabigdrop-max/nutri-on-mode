@@ -1177,12 +1177,25 @@ function HistorySection({ userId }: { userId?: string }) {
   const [protocols, setProtocols] = useState<any[]>([]);
   const [search, setSearch] = useState("");
   const [viewModal, setViewModal] = useState<any>(null);
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
-  useEffect(() => {
+  const loadProtocols = useCallback(() => {
     if (!userId) return;
     supabase.from("training_protocols").select("*").eq("user_id", userId).order("created_at", { ascending: false }).limit(50)
       .then(({ data }) => setProtocols(data || []));
   }, [userId]);
+
+  useEffect(() => { loadProtocols(); }, [loadProtocols]);
+
+  const deleteProtocol = async (id: string) => {
+    const { error } = await supabase.from("training_protocols").delete().eq("id", id);
+    if (error) toast.error("Erro ao excluir");
+    else {
+      toast.success("Protocolo excluído");
+      setProtocols(prev => prev.filter(p => p.id !== id));
+      setConfirmDelete(null);
+    }
+  };
 
   const filtered = protocols.filter(p => p.client_name?.toLowerCase().includes(search.toLowerCase()) || p.phase?.toLowerCase().includes(search.toLowerCase()));
   const phaseColor: Record<string, string> = { bulking: GREEN, cutting: "#ef4444", manutencao: "#3b82f6", recomposicao: "#8b5cf6", emagrecimento: "#f97316", performance: "#fbbf24" };
@@ -1204,16 +1217,36 @@ function HistorySection({ userId }: { userId?: string }) {
               {PHASES.find(ph => ph.id === p.phase)?.name || p.phase}
             </span>
           </div>
-          <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 mb-2">
             <span className="text-[10px]" style={{ color: TEXT_MUTED }}>{new Date(p.created_at).toLocaleDateString("pt-BR")}</span>
-            <button onClick={() => setViewModal(p)} className="text-[10px] px-2.5 py-1 rounded-lg font-semibold" style={{ background: GREEN_DIM, color: GREEN }}>Ver</button>
+            {p.weeks && <span className="text-[9px] px-1.5 py-0.5 rounded" style={{ background: GREEN_DIM, color: GREEN }}>{p.weeks} sem</span>}
+            {p.level && <span className="text-[9px] px-1.5 py-0.5 rounded" style={{ background: SURFACE2, color: TEXT_MUTED }}>{p.level}</span>}
+          </div>
+          <div className="flex items-center gap-1.5">
+            <button onClick={() => setViewModal(p)} className="flex-1 text-[10px] py-2 rounded-lg font-semibold text-center" style={{ background: GREEN_DIM, color: GREEN, border: `1px solid ${BORDER}` }}>
+              <Eye className="w-3 h-3 inline mr-1" />Ver Treino
+            </button>
+            {confirmDelete === p.id ? (
+              <>
+                <button onClick={() => deleteProtocol(p.id)} className="text-[10px] px-3 py-2 rounded-lg font-semibold" style={{ background: "rgba(239,68,68,0.1)", color: "#ef4444", border: "1px solid rgba(239,68,68,0.2)" }}>
+                  Confirmar
+                </button>
+                <button onClick={() => setConfirmDelete(null)} className="text-[10px] px-2 py-2 rounded-lg" style={{ background: SURFACE2, color: TEXT_MUTED }}>
+                  <X className="w-3 h-3" />
+                </button>
+              </>
+            ) : (
+              <button onClick={() => setConfirmDelete(p.id)} className="text-[10px] px-2.5 py-2 rounded-lg font-semibold" style={{ background: "rgba(239,68,68,0.06)", color: "#ef4444", border: "1px solid rgba(239,68,68,0.1)" }}>
+                <Trash2 className="w-3 h-3" />
+              </button>
+            )}
           </div>
         </div>
       ))}
 
       <AnimatePresence>
         {viewModal && (
-          <HistoryViewModal protocol={viewModal} onClose={() => setViewModal(null)} userId={userId} />
+          <HistoryViewModal protocol={viewModal} onClose={() => setViewModal(null)} userId={userId} onUpdate={loadProtocols} />
         )}
       </AnimatePresence>
     </div>
