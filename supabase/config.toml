@@ -101,3 +101,18 @@ verify_jwt = false
 
 [functions.generate-training-protocol]
 verify_jwt = false
+
+[functions.dr-evidence]
+verify_jwt = false
+
+[functions.analyze-supplement]
+verify_jwt = false
+
+[functions.verify-myth]
+verify_jwt = false
+
+[functions.analyze-biomechanics]
+verify_jwt = false
+
+[functions.pubmed-live]
+verify_jwt = false

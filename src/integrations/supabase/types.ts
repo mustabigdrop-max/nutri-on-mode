@@ -773,6 +773,69 @@ export type Database = {
         }
         Relationships: []
       }
+      biomechanics_exercises: {
+        Row: {
+          anatomy_text: string | null
+          biomechanics_text: string | null
+          created_at: string | null
+          execution_text: string | null
+          exercise_name: string
+          id: string
+          joint_actions: string[] | null
+          movement_pattern: string | null
+          muscle_group: string
+          muscles_primary: string[] | null
+          muscles_secondary: string[] | null
+          muscles_stabilizer: string[] | null
+          perplexity_citations: Json | null
+          plane_of_motion: string | null
+          recruitment_text: string | null
+          science_text: string | null
+          user_id: string
+          youtube_url: string | null
+        }
+        Insert: {
+          anatomy_text?: string | null
+          biomechanics_text?: string | null
+          created_at?: string | null
+          execution_text?: string | null
+          exercise_name: string
+          id?: string
+          joint_actions?: string[] | null
+          movement_pattern?: string | null
+          muscle_group: string
+          muscles_primary?: string[] | null
+          muscles_secondary?: string[] | null
+          muscles_stabilizer?: string[] | null
+          perplexity_citations?: Json | null
+          plane_of_motion?: string | null
+          recruitment_text?: string | null
+          science_text?: string | null
+          user_id: string
+          youtube_url?: string | null
+        }
+        Update: {
+          anatomy_text?: string | null
+          biomechanics_text?: string | null
+          created_at?: string | null
+          execution_text?: string | null
+          exercise_name?: string
+          id?: string
+          joint_actions?: string[] | null
+          movement_pattern?: string | null
+          muscle_group?: string
+          muscles_primary?: string[] | null
+          muscles_secondary?: string[] | null
+          muscles_stabilizer?: string[] | null
+          perplexity_citations?: Json | null
+          plane_of_motion?: string | null
+          recruitment_text?: string | null
+          science_text?: string | null
+          user_id?: string
+          youtube_url?: string | null
+        }
+        Relationships: []
+      }
       blood_tests: {
         Row: {
           ai_analysis: Json | null
@@ -1823,6 +1886,39 @@ export type Database = {
           tipo_dia?: string | null
           treino_tipo?: string | null
           updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      dr_evidence_history: {
+        Row: {
+          asked_at: string | null
+          citations: Json | null
+          claude_answer: string | null
+          context_tags: string[] | null
+          id: string
+          perplexity_raw: string | null
+          question: string | null
+          user_id: string
+        }
+        Insert: {
+          asked_at?: string | null
+          citations?: Json | null
+          claude_answer?: string | null
+          context_tags?: string[] | null
+          id?: string
+          perplexity_raw?: string | null
+          question?: string | null
+          user_id: string
+        }
+        Update: {
+          asked_at?: string | null
+          citations?: Json | null
+          claude_answer?: string | null
+          context_tags?: string[] | null
+          id?: string
+          perplexity_raw?: string | null
+          question?: string | null
           user_id?: string
         }
         Relationships: []
@@ -4189,6 +4285,126 @@ export type Database = {
         }
         Relationships: []
       }
+      saved_studies: {
+        Row: {
+          authors: string | null
+          exercise_tags: string[] | null
+          finding: string | null
+          id: string
+          journal: string | null
+          muscle_tags: string[] | null
+          practical_implication: string | null
+          saved_at: string | null
+          title: string | null
+          topic_tags: string[] | null
+          url: string | null
+          user_id: string
+          year: number | null
+        }
+        Insert: {
+          authors?: string | null
+          exercise_tags?: string[] | null
+          finding?: string | null
+          id?: string
+          journal?: string | null
+          muscle_tags?: string[] | null
+          practical_implication?: string | null
+          saved_at?: string | null
+          title?: string | null
+          topic_tags?: string[] | null
+          url?: string | null
+          user_id: string
+          year?: number | null
+        }
+        Update: {
+          authors?: string | null
+          exercise_tags?: string[] | null
+          finding?: string | null
+          id?: string
+          journal?: string | null
+          muscle_tags?: string[] | null
+          practical_implication?: string | null
+          saved_at?: string | null
+          title?: string | null
+          topic_tags?: string[] | null
+          url?: string | null
+          user_id?: string
+          year?: number | null
+        }
+        Relationships: []
+      }
+      science_cache: {
+        Row: {
+          cache_key: string
+          citations: Json | null
+          claude_formatted: string | null
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          module: string | null
+          perplexity_raw: string | null
+          query: string
+        }
+        Insert: {
+          cache_key: string
+          citations?: Json | null
+          claude_formatted?: string | null
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          module?: string | null
+          perplexity_raw?: string | null
+          query: string
+        }
+        Update: {
+          cache_key?: string
+          citations?: Json | null
+          claude_formatted?: string | null
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          module?: string | null
+          perplexity_raw?: string | null
+          query?: string
+        }
+        Relationships: []
+      }
+      science_feed: {
+        Row: {
+          category: string | null
+          citations: Json | null
+          created_at: string | null
+          full_content: string | null
+          id: string
+          relevance_score: number | null
+          summary: string | null
+          topic: string | null
+          week_reference: string | null
+        }
+        Insert: {
+          category?: string | null
+          citations?: Json | null
+          created_at?: string | null
+          full_content?: string | null
+          id?: string
+          relevance_score?: number | null
+          summary?: string | null
+          topic?: string | null
+          week_reference?: string | null
+        }
+        Update: {
+          category?: string | null
+          citations?: Json | null
+          created_at?: string | null
+          full_content?: string | null
+          id?: string
+          relevance_score?: number | null
+          summary?: string | null
+          topic?: string | null
+          week_reference?: string | null
+        }
+        Relationships: []
+      }
       session_alerts: {
         Row: {
           action_taken: string | null
@@ -4371,6 +4587,33 @@ export type Database = {
           kiwify_order_id?: string | null
           periodo?: string | null
           plano?: string
+        }
+        Relationships: []
+      }
+      supplement_analyses: {
+        Row: {
+          analysis_text: string | null
+          citations: Json | null
+          evidence_level: string | null
+          id: string
+          last_updated: string | null
+          supplement_name: string | null
+        }
+        Insert: {
+          analysis_text?: string | null
+          citations?: Json | null
+          evidence_level?: string | null
+          id?: string
+          last_updated?: string | null
+          supplement_name?: string | null
+        }
+        Update: {
+          analysis_text?: string | null
+          citations?: Json | null
+          evidence_level?: string | null
+          id?: string
+          last_updated?: string | null
+          supplement_name?: string | null
         }
         Relationships: []
       }

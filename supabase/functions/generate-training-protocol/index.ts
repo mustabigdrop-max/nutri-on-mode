@@ -124,9 +124,42 @@ serve(async (req) => {
   try {
     const data = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    const PERPLEXITY_API_KEY = Deno.env.get("PERPLEXITY_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
     const userPrompt = buildUserPrompt(data);
+    let scienceContext = "";
+    let scienceCitations: string[] = [];
+
+    // Dual-AI: Perplexity busca referências científicas atuais (se disponível)
+    if (PERPLEXITY_API_KEY && data.tab === "protocolo") {
+      try {
+        const muscles = Array.isArray(data.muscles) ? data.muscles.join(" ") : data.muscles;
+        const ppxRes = await fetch("https://api.perplexity.ai/chat/completions", {
+          method: "POST",
+          headers: { "Authorization": `Bearer ${PERPLEXITY_API_KEY}`, "Content-Type": "application/json" },
+          body: JSON.stringify({
+            model: "sonar-pro",
+            messages: [
+              { role: "system", content: "Pesquisador em fisiologia do exercício. Busque estudos recentes sobre volume, intensidade e periodização para os músculos e fase informados." },
+              { role: "user", content: `volume training ${muscles} ${data.phase} hypertrophy evidence 2024 2025 sets per week optimal` }
+            ],
+            search_recency_filter: "year",
+          })
+        });
+        if (ppxRes.ok) {
+          const ppxData = await ppxRes.json();
+          scienceContext = ppxData.choices?.[0]?.message?.content || "";
+          scienceCitations = ppxData.citations || [];
+        }
+      } catch (e) {
+        console.log("Perplexity optional enrichment failed, continuing without:", e);
+      }
+    }
+
+    const enrichedPrompt = scienceContext
+      ? `${userPrompt}\n\nREFERÊNCIAS CIENTÍFICAS ATUAIS (buscadas em tempo real via Perplexity):\n${scienceContext}\n\nCitações: ${JSON.stringify(scienceCitations)}\n\nUse essas referências para embasar o protocolo. Cite estudos ao longo do texto.`
+      : userPrompt;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -138,7 +171,7 @@ serve(async (req) => {
         model: "google/gemini-2.5-flash",
         messages: [
           { role: "system", content: SYSTEM_PROMPT },
-          { role: "user", content: userPrompt },
+          { role: "user", content: enrichedPrompt },
         ],
         temperature: 0.7,
       }),
@@ -162,7 +195,7 @@ serve(async (req) => {
     const aiData = await response.json();
     const content = aiData.choices?.[0]?.message?.content || "";
 
-    return new Response(JSON.stringify({ content }), {
+    return new Response(JSON.stringify({ content, citations: scienceCitations }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e: any) {
