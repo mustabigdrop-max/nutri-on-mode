@@ -744,6 +744,29 @@ function PhasePlanCard({ plan }: { plan: any }) {
         </div>
       )}
 
+      {/* Post-Deload Decision Tree */}
+      {plan.post_deload_decision && (
+        <div className="rounded-2xl overflow-hidden" style={{ background: SURFACE, border: `1px solid rgba(249,115,22,0.2)` }}>
+          <div className="p-4" style={{ background: "rgba(249,115,22,0.06)" }}>
+            <div className="flex items-center gap-2 mb-1">
+              <Zap className="w-4 h-4" style={{ color: "#f97316" }} />
+              <span className="text-[11px] font-black tracking-wider uppercase" style={{ color: "#f97316" }}>Decisão Pós-Deload</span>
+            </div>
+            <p className="text-[10px] leading-relaxed" style={{ color: TEXT_DIM }}>{plan.post_deload_decision.intro || "Após o deload, o sistema decide o próximo passo com base na resposta do aluno."}</p>
+          </div>
+          <div className="p-3 space-y-2">
+            {plan.post_deload_decision.scenarios?.map((sc: any, i: number) => {
+              const scenarioColors = ["#4ade80", "#60a5fa", "#ef4444", "#fbbf24", "#a78bfa"];
+              const scenarioIcons = ["📈", "🔄", "🛑", "🔀", "🎯"];
+              const color = scenarioColors[i] || GREEN;
+              return (
+                <PostDeloadScenario key={i} scenario={sc} color={color} icon={scenarioIcons[i] || "▸"} index={i} />
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Long-term Note */}
       {plan.long_term_note && (
         <div className="rounded-xl p-3" style={{ background: "rgba(74,222,128,0.04)", borderLeft: `3px solid ${GREEN}` }}>
