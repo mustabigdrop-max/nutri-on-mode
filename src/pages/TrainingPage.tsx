@@ -487,6 +487,16 @@ function EliteGenerateSection({ userId }: { userId?: string }) {
               <TextCard content={textResults.protocolo} />
             )}
 
+            {/* ── Phase Plan Tab ── */}
+            {activeResultTab === "fases" && protocol?.phase_plan && (
+              <PhasePlanCard plan={protocol.phase_plan} />
+            )}
+            {activeResultTab === "fases" && !protocol?.phase_plan && (
+              <div className="rounded-2xl p-5 text-center" style={{ background: SURFACE, border: `1px solid ${BORDER}` }}>
+                <p className="text-[11px]" style={{ color: TEXT_MUTED }}>Planejamento de fases não disponível neste protocolo.</p>
+              </div>
+            )}
+
             {/* ── Training Days Tab ── */}
             {activeResultTab === "treino" && protocol?.training_days && (
               <div className="space-y-3">
