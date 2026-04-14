@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import BottomNav from "@/components/BottomNav";
 import { useActivityLogs } from "@/hooks/useActivityLogs";
 import { useProfile } from "@/hooks/useProfile";
@@ -39,7 +39,7 @@ const WearablesPage = () => {
   const [saving, setSaving] = useState(false);
 
   // Sync form when todayLog loads
-  useState(() => {
+  useEffect(() => {
     if (todayLog) {
       setSteps(todayLog.steps?.toString() ?? "");
       setCaloriesBurned(todayLog.calories_burned?.toString() ?? "");
@@ -48,7 +48,7 @@ const WearablesPage = () => {
       setHeartRateMax(todayLog.heart_rate_max?.toString() ?? "");
       setNotes(todayLog.notes ?? "");
     }
-  });
+  }, [todayLog]);
 
   const handleSave = async () => {
     setSaving(true);
