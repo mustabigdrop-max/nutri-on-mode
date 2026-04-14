@@ -77,10 +77,10 @@ export default function BodyCompositionPage() {
     });
 
     const perfilUsuario = profile ? {
-      sexo: profile.sexo || undefined,
-      idade: profile.idade || undefined,
-      peso: profile.peso_kg || undefined,
-      altura: profile.altura_cm || undefined,
+      sexo: profile.sex || undefined,
+      idade: profile.date_of_birth ? Math.floor((Date.now() - new Date(profile.date_of_birth).getTime()) / 31557600000) : undefined,
+      peso: profile.weight_kg || undefined,
+      altura: profile.height_cm || undefined,
       objetivo: profile.objetivo_principal || profile.goal || undefined,
       metaCalorica: profile.vet_kcal || undefined,
     } : undefined;
