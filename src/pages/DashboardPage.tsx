@@ -453,8 +453,12 @@ const DashboardPage = () => {
       vet = get + 350; proteinPerKg = 2.2;
     } else if (g === "definition" || g === "definicao") {
       vet = get - 500; proteinPerKg = 2.2;
+    } else if (g === "recomposition" || g === "recomposicao") {
+      vet = get; proteinPerKg = 2.2;
     } else if (g === "performance") {
       vet = get + 250; proteinPerKg = 2.0;
+    } else if (g === "longevity" || g === "longevidade") {
+      vet = get - 100; proteinPerKg = 1.8;
     } else if (g === "glp1") {
       vet = get - 400; proteinPerKg = 2.2;
     }
@@ -481,8 +485,14 @@ const DashboardPage = () => {
     if (g === "lose_weight" || g === "emagrecimento" || g === "cutting" || g === "definition" || g === "definicao") {
       return { label: "CUTTING", emoji: "🔥", multiplier: 1.0, proteinBoost: 1.0, color: "text-red-400", bg: "bg-red-400/10 border-red-400/20" };
     }
+    if (g === "recomposition" || g === "recomposicao") {
+      return { label: "RECOMPOSIÇÃO", emoji: "🔄", multiplier: 1.0, proteinBoost: 1.0, color: "text-emerald-400", bg: "bg-emerald-400/10 border-emerald-400/20" };
+    }
     if (g === "performance") {
       return { label: "PERFORMANCE", emoji: "⚡", multiplier: 1.0, proteinBoost: 1.0, color: "text-amber-400", bg: "bg-amber-400/10 border-amber-400/20" };
+    }
+    if (g === "longevity" || g === "longevidade") {
+      return { label: "LONGEVIDADE", emoji: "🧬", multiplier: 1.0, proteinBoost: 1.0, color: "text-teal-400", bg: "bg-teal-400/10 border-teal-400/20" };
     }
     if (g === "glp1") {
       return { label: "GLP-1", emoji: "💉", multiplier: 1.0, proteinBoost: 1.0, color: "text-purple-400", bg: "bg-purple-400/10 border-purple-400/20" };
