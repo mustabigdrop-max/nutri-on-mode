@@ -16,9 +16,13 @@ const GOALS: Record<string, string> = {
   lose_weight: "Emagrecimento",
   gain_muscle: "Hipertrofia",
   definition: "Definição",
+  cutting: "Cutting",
+  bulking: "Bulking",
+  recomposition: "Recomposição Corporal",
   health: "Saúde Geral",
   maintenance: "Manutenção",
   performance: "Performance",
+  longevity: "Longevidade",
   glp1: "Protocolo GLP-1",
 };
 
@@ -121,9 +125,11 @@ const SettingsPage = () => {
     let proteinPerKg = 1.6;
     switch (goal) {
       case "lose_weight": vet = get - 500; proteinPerKg = 2.0; break;
-      case "gain_muscle": vet = get + 350; proteinPerKg = 2.2; break;
-      case "definition": vet = get - 500; proteinPerKg = 2.2; break;
+      case "gain_muscle": case "bulking": vet = get + 350; proteinPerKg = 2.2; break;
+      case "definition": case "cutting": vet = get - 500; proteinPerKg = 2.2; break;
+      case "recomposition": vet = get; proteinPerKg = 2.2; break;
       case "performance": vet = get + 250; proteinPerKg = 2.0; break;
+      case "longevity": vet = get - 100; proteinPerKg = 1.8; break;
       case "glp1": vet = get - 400; proteinPerKg = 2.2; break;
     }
     if (usesGlp1) proteinPerKg = Math.max(proteinPerKg, 2.0);
