@@ -324,11 +324,7 @@ const ProfilePage = () => {
             <div className="text-foreground font-semibold">{profile.fat_g}g</div>
             <div className="text-muted-foreground">Objetivo:</div>
             <div className="text-primary font-semibold">
-              {profile.goal === "lose_weight" ? "Emagrecimento" :
-               profile.goal === "gain_muscle" ? "Hipertrofia" :
-               profile.goal === "definition" ? "Definição" :
-               profile.goal === "glp1" ? "GLP-1" :
-               profile.goal === "performance" ? "Performance" : "Saúde"}
+              {{ lose_weight: "Emagrecimento", gain_muscle: "Hipertrofia", definition: "Definição", cutting: "Cutting", bulking: "Bulking", recomposition: "Recomposição", health: "Saúde Geral", maintenance: "Manutenção", performance: "Performance", longevity: "Longevidade", glp1: "GLP-1" }[profile.goal || ""] || "Saúde"}
             </div>
           </div>
         </div>

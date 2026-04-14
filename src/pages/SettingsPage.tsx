@@ -16,9 +16,13 @@ const GOALS: Record<string, string> = {
   lose_weight: "Emagrecimento",
   gain_muscle: "Hipertrofia",
   definition: "Definição",
+  cutting: "Cutting",
+  bulking: "Bulking",
+  recomposition: "Recomposição Corporal",
   health: "Saúde Geral",
   maintenance: "Manutenção",
   performance: "Performance",
+  longevity: "Longevidade",
   glp1: "Protocolo GLP-1",
 };
 
