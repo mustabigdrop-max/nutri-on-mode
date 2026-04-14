@@ -1034,6 +1034,14 @@ const joinDefinedParts = (parts: Array<string | false | null | undefined>, separ
 function ExerciseCard({ exercise, expanded, onToggle }: { exercise: any; expanded: boolean; onToggle: () => void }) {
   const struct = exercise.structure || {};
   const hasTopSet = !!struct.top_set;
+  const safeExerciseName = sanitizeRenderedText(exercise.name, "Exercício prescrito");
+  const safeMuscleTarget = sanitizeRenderedText(exercise.muscle_target, "Alvo muscular ajustado");
+  const safeExecutionCues = hasMeaningfulValue(exercise.execution_cues)
+    ? sanitizeRenderedText(exercise.execution_cues, "Execução guiada pelo coach.")
+    : "";
+  const safeWhyThisExercise = hasMeaningfulValue(exercise.why_this_exercise)
+    ? sanitizeRenderedText(exercise.why_this_exercise, "Escolha técnica ajustada ao bloco.")
+    : "";
 
   return (
     <div className="rounded-xl overflow-hidden" style={{ background: SURFACE2, border: `1px solid ${BORDER}` }}>
@@ -1041,8 +1049,8 @@ function ExerciseCard({ exercise, expanded, onToggle }: { exercise: any; expande
         <div className="flex items-center gap-2.5">
           <div className="w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-black" style={{ background: GREEN_DIM, color: GREEN }}>{exercise.order}</div>
           <div className="text-left">
-            <p className="text-[11px] font-bold" style={{ color: TEXT }}>{exercise.name}</p>
-            <p className="text-[9px]" style={{ color: TEXT_MUTED }}>{exercise.muscle_target}</p>
+            <p className="text-[11px] font-bold" style={{ color: TEXT }}>{safeExerciseName}</p>
+            <p className="text-[9px]" style={{ color: TEXT_MUTED }}>{safeMuscleTarget}</p>
           </div>
         </div>
         <div className="flex items-center gap-1.5">
@@ -1128,18 +1136,18 @@ function ExerciseCard({ exercise, expanded, onToggle }: { exercise: any; expande
               )}
 
               {/* Execution Cues */}
-              {exercise.execution_cues && (
+              {safeExecutionCues && (
                 <div className="rounded-lg p-2.5 mt-1" style={{ background: "rgba(74,222,128,0.04)" }}>
                   <span className="text-[8px] font-bold" style={{ color: GREEN }}>EXECUÇÃO</span>
-                  <p className="text-[10px] mt-0.5" style={{ color: TEXT_DIM }}>{exercise.execution_cues}</p>
+                  <p className="text-[10px] mt-0.5" style={{ color: TEXT_DIM }}>{safeExecutionCues}</p>
                 </div>
               )}
 
               {/* Why */}
-              {exercise.why_this_exercise && (
+              {safeWhyThisExercise && (
                 <div className="rounded-lg p-2.5" style={{ background: "rgba(139,92,246,0.04)" }}>
                   <span className="text-[8px] font-bold" style={{ color: "#a78bfa" }}>POR QUE ESTE EXERCÍCIO?</span>
-                  <p className="text-[10px] mt-0.5" style={{ color: TEXT_DIM }}>{exercise.why_this_exercise}</p>
+                  <p className="text-[10px] mt-0.5" style={{ color: TEXT_DIM }}>{safeWhyThisExercise}</p>
                 </div>
               )}
             </div>

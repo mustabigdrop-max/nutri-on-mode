@@ -52,6 +52,38 @@ const TEXT_DIM_T = "#94a3b8";
 const TEXT_MUTED_T = "#64748b";
 const FONT_T = "'Space Grotesk', sans-serif";
 
+const hasMeaningfulValueT = (value: unknown) => {
+  if (value === undefined || value === null) return false;
+  const normalized = String(value).trim().toLowerCase();
+  return normalized !== "" && normalized !== "undefined" && normalized !== "null";
+};
+
+const sanitizeRenderedTextT = (value: unknown, fallback: string) => {
+  if (!hasMeaningfulValueT(value)) return fallback;
+
+  const cleaned = String(value)
+    .replace(/\bundefined\b/gi, "")
+    .replace(/\bnull\b/gi, "")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+
+  return cleaned || fallback;
+};
+
+const joinDefinedPartsT = (parts: Array<string | false | null | undefined>, separator = " • ") => (
+  parts.filter(Boolean).join(separator)
+);
+
+const formatEffortT = (data: { rpe?: unknown; rir?: unknown }, fallback = "intensidade guiada") => {
+  if (hasMeaningfulValueT(data.rpe)) return `RPE ${sanitizeRenderedTextT(data.rpe, "")}`;
+  if (hasMeaningfulValueT(data.rir)) return `RIR ${sanitizeRenderedTextT(data.rir, "")}`;
+  return fallback;
+};
+
+const formatSetLabelT = (prefix: string, sets: unknown, fallback: string) => (
+  hasMeaningfulValueT(sets) ? `${prefix} ${sanitizeRenderedTextT(sets, "")}${Number(sets) > 1 ? "s" : ""}` : fallback
+);
+
 /* ── Training Protocol Viewer ── */
 const TrainingProtocolViewer = ({ item, onExportPDF }: { item: SavedItem; onExportPDF: () => void }) => {
   const data = item.conteudo?.protocol;
@@ -172,14 +204,23 @@ const TrainingProtocolViewer = ({ item, onExportPDF }: { item: SavedItem; onExpo
                     const exKey = `${idx}-${i}`;
                     const struct = ex.structure || {};
                     const isExpanded = expandedEx === exKey;
+                    const safeExerciseName = sanitizeRenderedTextT(ex.name, "Exercício prescrito");
+                    const safeMuscleTarget = sanitizeRenderedTextT(ex.muscle_target, "Alvo muscular ajustado");
+                    const safeExecutionCues = hasMeaningfulValueT(ex.execution_cues)
+                      ? sanitizeRenderedTextT(ex.execution_cues, "Execução guiada pelo coach.")
+                      : "";
+                    const safeWhyThisExercise = hasMeaningfulValueT(ex.why_this_exercise)
+                      ? sanitizeRenderedTextT(ex.why_this_exercise, "Escolha técnica ajustada ao bloco.")
+                      : "";
+
                     return (
                       <div key={i} className="rounded-lg overflow-hidden" style={{ background: SURFACE2_T, border: `1px solid ${BORDER_T}` }}>
                         <button onClick={() => setExpandedEx(isExpanded ? null : exKey)} className="w-full p-2.5 flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             <div className="w-5 h-5 rounded flex items-center justify-center text-[9px] font-black" style={{ background: GREEN_DIM_T, color: GREEN_T }}>{ex.order || i + 1}</div>
                             <div className="text-left">
-                              <p className="text-[10px] font-bold" style={{ color: TEXT_T }}>{ex.name}</p>
-                              <p className="text-[8px]" style={{ color: TEXT_MUTED_T }}>{ex.muscle_target}</p>
+                              <p className="text-[10px] font-bold" style={{ color: TEXT_T }}>{safeExerciseName}</p>
+                              <p className="text-[8px]" style={{ color: TEXT_MUTED_T }}>{safeMuscleTarget}</p>
                             </div>
                           </div>
                           <div className="flex items-center gap-1">
@@ -192,21 +233,61 @@ const TrainingProtocolViewer = ({ item, onExportPDF }: { item: SavedItem; onExpo
                             <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }}>
                               <div className="px-2.5 pb-2.5 space-y-1.5">
                                 {struct.feeder_sets?.map((f: any, fi: number) => (
-                                  <SetBadge key={fi} label={f.set_label || `Feeder ${fi + 1}`} detail={`${f.load_percent} × ${f.reps}`} color="#818cf8" />
+                                  <SetBadge
+                                    key={fi}
+                                    label={sanitizeRenderedTextT(f.set_label, `Feeder ${fi + 1}`)}
+                                    detail={joinDefinedPartsT([
+                                      hasMeaningfulValueT(f.load_percent) ? sanitizeRenderedTextT(f.load_percent, "") : "carga guiada",
+                                      hasMeaningfulValueT(f.reps) ? sanitizeRenderedTextT(f.reps, "") : "reps ajustadas",
+                                    ], " × ")}
+                                    color="#818cf8"
+                                  />
                                 ))}
-                                {struct.top_set && <SetBadge label="Top Set" detail={`${struct.top_set.sets}×${struct.top_set.reps} RPE ${struct.top_set.rpe}`} color="#f97316" rest={struct.top_set.rest} />}
-                                {struct.backoff_sets && <SetBadge label={`Back-off ${struct.backoff_sets.sets}s`} detail={`${struct.backoff_sets.reps} (${struct.backoff_sets.load_reduction})`} color="#fbbf24" rest={struct.backoff_sets.rest} />}
-                                {struct.work_sets && <SetBadge label={`Trabalho ${struct.work_sets.sets}s`} detail={`${struct.work_sets.reps} RPE ${struct.work_sets.rpe}`} color={GREEN_T} rest={struct.work_sets.rest} />}
-                                {ex.execution_cues && (
+                                {struct.top_set && (
+                                  <SetBadge
+                                    label="Top Set"
+                                    detail={joinDefinedPartsT([
+                                      `${sanitizeRenderedTextT(struct.top_set.sets, "1")}×${sanitizeRenderedTextT(struct.top_set.reps, "6-10")}`,
+                                      formatEffortT(struct.top_set, "esforço principal guiado"),
+                                    ], " ")}
+                                    color="#f97316"
+                                    rest={struct.top_set.rest}
+                                  />
+                                )}
+                                {struct.backoff_sets && (
+                                  <SetBadge
+                                    label={formatSetLabelT("Back-off", struct.backoff_sets.sets, "Back-off ajustado")}
+                                    detail={joinDefinedPartsT([
+                                      hasMeaningfulValueT(struct.backoff_sets.reps) ? sanitizeRenderedTextT(struct.backoff_sets.reps, "") : "faixa ajustada",
+                                      hasMeaningfulValueT(struct.backoff_sets.load_reduction)
+                                        ? `(${sanitizeRenderedTextT(struct.backoff_sets.load_reduction, "")})`
+                                        : "redução guiada",
+                                    ], " ")}
+                                    color="#fbbf24"
+                                    rest={struct.backoff_sets.rest}
+                                  />
+                                )}
+                                {struct.work_sets && (
+                                  <SetBadge
+                                    label={formatSetLabelT("Trabalho", struct.work_sets.sets, "Trabalho ajustado")}
+                                    detail={joinDefinedPartsT([
+                                      hasMeaningfulValueT(struct.work_sets.reps) ? sanitizeRenderedTextT(struct.work_sets.reps, "") : "faixa de reps ajustada",
+                                      formatEffortT(struct.work_sets),
+                                    ])}
+                                    color={GREEN_T}
+                                    rest={struct.work_sets.rest}
+                                  />
+                                )}
+                                {safeExecutionCues && (
                                   <div className="rounded-lg p-2" style={{ background: "rgba(74,222,128,0.04)" }}>
                                     <span className="text-[7px] font-bold" style={{ color: GREEN_T }}>EXECUÇÃO</span>
-                                    <p className="text-[9px] mt-0.5" style={{ color: TEXT_DIM_T }}>{ex.execution_cues}</p>
+                                    <p className="text-[9px] mt-0.5" style={{ color: TEXT_DIM_T }}>{safeExecutionCues}</p>
                                   </div>
                                 )}
-                                {ex.why_this_exercise && (
+                                {safeWhyThisExercise && (
                                   <div className="rounded-lg p-2" style={{ background: "rgba(139,92,246,0.04)" }}>
                                     <span className="text-[7px] font-bold" style={{ color: "#a78bfa" }}>POR QUÊ?</span>
-                                    <p className="text-[9px] mt-0.5" style={{ color: TEXT_DIM_T }}>{ex.why_this_exercise}</p>
+                                    <p className="text-[9px] mt-0.5" style={{ color: TEXT_DIM_T }}>{safeWhyThisExercise}</p>
                                   </div>
                                 )}
                               </div>
@@ -252,17 +333,23 @@ const TrainingProtocolViewer = ({ item, onExportPDF }: { item: SavedItem; onExpo
   );
 };
 
-const SetBadge = ({ label, detail, color, rest }: { label: string; detail: string; color: string; rest?: string }) => (
-  <div className="rounded-lg p-2" style={{ background: `${color}08`, border: `1px solid ${color}15` }}>
-    <div className="flex items-center justify-between">
-      <span className="text-[9px] font-bold" style={{ color }}>{label}</span>
-      <div className="flex items-center gap-1.5">
-        <span className="text-[9px] font-mono font-bold" style={{ color: TEXT_T }}>{detail}</span>
-        {rest && <span className="text-[8px] px-1 py-0.5 rounded" style={{ background: `${color}10`, color: TEXT_MUTED_T }}>⏱ {rest}</span>}
+const SetBadge = ({ label, detail, color, rest }: { label: string; detail: string; color: string; rest?: string }) => {
+  const safeLabel = sanitizeRenderedTextT(label, "Estrutura ajustada");
+  const safeDetail = sanitizeRenderedTextT(detail, "Parâmetros autoajustados");
+  const safeRest = hasMeaningfulValueT(rest) ? sanitizeRenderedTextT(rest, "") : "";
+
+  return (
+    <div className="rounded-lg p-2" style={{ background: `${color}08`, border: `1px solid ${color}15` }}>
+      <div className="flex items-center justify-between">
+        <span className="text-[9px] font-bold" style={{ color }}>{safeLabel}</span>
+        <div className="flex items-center gap-1.5">
+          <span className="text-[9px] font-mono font-bold" style={{ color: TEXT_T }}>{safeDetail}</span>
+          {safeRest && <span className="text-[8px] px-1 py-0.5 rounded" style={{ background: `${color}10`, color: TEXT_MUTED_T }}>⏱ {safeRest}</span>}
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 const MiniStat = ({ label, value }: { label: string; value: string }) => (
   <div className="rounded-lg p-2 text-center" style={{ background: SURFACE2_T }}>
