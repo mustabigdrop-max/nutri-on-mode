@@ -21,6 +21,7 @@ const VIEW_LABELS = { frente: "Frente", costas: "Costas", ambos: "Ambos" };
 // ─── Exercise Detail Card ───
 function ExerciseCard({ ex, phase }: { ex: ExerciseEntry; phase: Phase }) {
   const [open, setOpen] = useState(false);
+  const [showSubs, setShowSubs] = useState(false);
   return (
     <Card className="border-border bg-card/80 overflow-hidden">
       <button onClick={() => setOpen(!open)} className="w-full text-left p-3 flex items-center gap-3">
@@ -55,6 +56,31 @@ function ExerciseCard({ ex, phase }: { ex: ExerciseEntry; phase: Phase }) {
                 <Badge variant="outline" className="text-[9px] border-green-500/30 text-green-400">Bulk: {ex.fases.bulking}</Badge>
                 <Badge variant="outline" className="text-[9px] border-red-500/30 text-red-400">Cut: {ex.fases.cutting}</Badge>
               </div>
+
+              {/* Substitutes */}
+              {ex.substitutos && ex.substitutos.length > 0 && (
+                <div>
+                  <button onClick={() => setShowSubs(!showSubs)}
+                    className="flex items-center gap-1.5 text-[10px] font-bold text-blue-400 uppercase mb-1">
+                    <RotateCcw className="w-3 h-3" /> Substitutos ({ex.substitutos.length})
+                  </button>
+                  <AnimatePresence>
+                    {showSubs && (
+                      <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }}>
+                        <div className="space-y-1.5">
+                          {ex.substitutos.map((sub, i) => (
+                            <div key={i} className="rounded-lg p-2 bg-blue-500/5 border border-blue-500/10">
+                              <p className="text-xs font-semibold text-foreground">{sub.nome}</p>
+                              <p className="text-[10px] text-muted-foreground">{sub.motivo}</p>
+                              <Badge variant="outline" className="text-[8px] border-blue-500/20 text-blue-400 mt-1">{sub.equipamento}</Badge>
+                            </div>
+                          ))}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              )}
             </div>
           </motion.div>
         )}
