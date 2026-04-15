@@ -167,6 +167,7 @@ const App = () => (
             <Route path="/science" element={<ProtectedRoute><ScienceHubPage /></ProtectedRoute>} />
             <Route path="/biomechanics" element={<ProtectedRoute><BiomechanicsVaultPage /></ProtectedRoute>} />
             <Route path="/metabolicon" element={<ProtectedRoute><MetabolicONPage /></ProtectedRoute>} />
+            <Route path="/dr-nexus" element={<ProtectedRoute><DrNexusPage /></ProtectedRoute>} />
             {/* COACH */}
             <Route path="/coach/plano-alimentar" element={<ProtectedRoute><PlanoAlimentarIA /></ProtectedRoute>} />
             <Route path="/coach" element={<CoachLandingPage />} />
