@@ -363,6 +363,13 @@ function EliteGenerateSection({ userId }: { userId?: string }) {
       { id: "anatomia", label: "Anatomia", icon: Activity },
       { id: "tecnica", label: "Técnica", icon: Target },
       { id: "periodizacao", label: "Periodização", icon: BarChart3 },
+      { id: "biomec", label: "Biomecânica", icon: Microscope },
+      { id: "emg", label: "EMG", icon: Zap },
+      { id: "postural", label: "Postural", icon: Scan },
+      { id: "recuperacao", label: "Recuperação", icon: HeartPulse },
+      { id: "metodologia", label: "Metodologia", icon: BookOpen },
+      { id: "feminino", label: "Feminino", icon: Shield },
+      { id: "platô", label: "Platô", icon: TrendingDown },
     ];
 
     const saveToNotebook = async () => {
