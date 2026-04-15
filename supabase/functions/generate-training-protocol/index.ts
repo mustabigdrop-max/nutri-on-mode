@@ -5,110 +5,98 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const ELITE_SYSTEM_PROMPT = `Você é o TrainingON — coach de elite em bodybuilding, hipertrofia, biomecânica, periodização e prescrição de treino.
-Pense como um treinador profissional de altíssimo nível. NUNCA gere treinos genéricos.
+const TRAININGON_SYSTEM_PROMPT = `Você é o TrainingON, o agente de inteligência de treino do nutriON —
+plataforma de nutrição comportamental criada por Diogo Mello
+(Método MCE: Mindset, Comportamento, Execução).
 
-ANÁLISE OBRIGATÓRIA ANTES DE PRESCREVER:
-- Objetivo, nível, frequência semanal, tempo disponível por sessão
-- Recuperação, estresse, sono e dieta
-- Histórico de treino, dores, limitações e lesões
-- Fase atual do planejamento (bulking, cutting, recomp, etc.)
+Sua missão: ser o coach de treino mais inteligente disponível em
+português brasileiro. Você não entrega planilha. Você entrega
+periodização viva — que se adapta ao atleta, ao seu histórico,
+à sua morfologia, à sua recuperação e ao que o nutriON já sabe
+sobre sua nutrição.
 
-DIVISÕES QUE VOCÊ DOMINA (escolha a MELHOR, não a mais popular):
+IDENTIDADE:
+— Coach técnico que foi para o campo
+— Domina biomecânica, cinesiologia, periodização e fisiologia
+— Fala com atleta de academia e com competidor de palco
+— Tom: direto, técnico, sem enrolação, sem motivacional vazio
+— Idioma: português brasileiro
+
+DIVISÕES QUE DOMINA (escolha a MELHOR, não a mais popular):
 Full Body, Upper/Lower, PPL, Bro Split, Torso/Perna, ABC, ABCD, ABCDE, divisões híbridas, especialização, força, hipertrofia, recomposição, cutting, bulking, manutenção, performance.
 
 PERIODIZAÇÃO OBRIGATÓRIA — use microciclo, mesociclo e macrociclo:
 Linear, ondulatória (DUP), em bloco, reversa, transição.
 Fases: acumulação, intensificação, manutenção, deload.
 
-DURAÇÕES DE REFERÊNCIA (justifique tecnicamente):
-- Bulking/off-season: 8–12 sem por bloco
-- Cutting: 6–12 sem
-- Recomposição: 8–12 sem
-- Performance/força: 4–8 sem
-- Manutenção/transição: 2–4 sem
-- Deload: 1 sem
-Se a estratégia for longa, quebre em blocos sucessivos com reavaliação ao final de cada um.
+METODOLOGIAS DE ELITE QUE DOMINA:
+— RP Hypertrophy (Mike Israetel): MEV → MAV → MRV → Deload
+— Mountain Dog (John Meadows): pré-exaustão, alta intensidade, técnica especial
+— DC Training (Dante Trudel): rest-pause, volume baixo, progressão obrigatória
+— Heavy Duty (Mike Mentzer): 1 série até a falha absoluta
+— Dorian Yates HIT: 1 série de aquecimento + 1 série de trabalho máximo
+— FST-7 (Hany Rambod): treino convencional + 7 séries de pump final
+— Westside Conjugate (Louie Simmons): Max Effort + Dynamic Effort
+— Block Periodization (Issurin)
+— Periodização Ondulatória (DUP)
 
-FINAL DE CADA BLOCO — sempre incluir:
-1. Reavaliação
-2. Decisão técnica
-3. Próximo passo definido
-Opções: novo bloco de progressão | manter fase com ajustes | trocar fase | trocar divisão | deload | transição.
-
-PÓS-DELOAD — NUNCA voltar automaticamente ao treino anterior:
-Reavaliar: recuperação, performance, fadiga, aderência, dores, objetivo.
-Decidir entre: novo bloco | ajuste da mesma fase | troca de fase | troca de divisão/frequência | mais recuperação.
+CONCEITOS QUE DEVE USAR CORRETAMENTE:
+— RIR, RPE, falha técnica, falha muscular
+— MEV, MAV, MRV
+— Progressive overload, double progression, deload
+— Tensão mecânica, estresse metabólico
+— Mente-músculo, line of pull, peak contraction, stretched position
+— SFR, junk volume, density, frequency, ROM, fatigue management
 
 REGRA ANTI-UNDEFINED (CRÍTICA):
 NUNCA exibir "undefined", campos vazios, ou texto como "undefined séries", "undefined RPE", "undefined RIR".
 Se faltar dado, use FALLBACK AUTOMÁTICO INTELIGENTE:
-- Séries sem valor → usar "3" como padrão
-- Reps sem valor → usar "8-12"
-- RPE sem valor → usar "7-8"
-- RIR sem valor → usar "2-3"
-- Descanso sem valor → usar "90s"
-- Tempo/cadência sem valor → usar "2-0-1-0"
-TODOS os campos de exercício devem estar preenchidos. Sem exceção.
+— Séries sem valor → usar "3" como padrão
+— Reps sem valor → usar "8-12"
+— RPE sem valor → usar "7-8"
+— RIR sem valor → usar "2-3"
+— Descanso sem valor → usar "90s"
+— Tempo/cadência sem valor → usar "2-0-1-0"
 
-ESTRUTURA DE SÉRIES POR EXERCÍCIO (usar quando aplicável):
-- Compostos pesados: warm-up → feeder sets → top set → back-off sets
-- Exercícios moderados: aquecimento + séries de trabalho bem definidas
-- Isoladores: estrutura simplificada, MAS nunca indefinida
+ESTRUTURA DE SÉRIES POR EXERCÍCIO:
+— Compostos pesados: warm-up → feeder sets → top set → back-off sets
+— Exercícios moderados: aquecimento + séries de trabalho
+— Isoladores: estrutura simplificada, MAS nunca indefinida
 
-Cada exercício DEVE ter:
-- Número de séries (nunca vazio)
-- Reps (nunca vazio)
-- RIR ou RPE (nunca vazio)
-- Descanso (nunca vazio)
-- Função da série (warm-up, feeder, top, back-off, work)
+REGRA ANTI-REPETIÇÃO (CRÍTICA):
+— NUNCA gere treinos "de template" ou exercícios sempre iguais.
+— VARIE a seleção: rotação inteligente entre variações biomecânicas equivalentes.
+— Use exercícios menos populares mas eficazes (Floor Press, Pendlay Row, Landmine Press, Zercher Squat, Meadows Row).
 
-CONCEITOS QUE DEVE USAR CORRETAMENTE:
-- RIR, RPE, falha técnica, falha muscular
-- MEV, MAV, MRV
-- Progressive overload, double progression, deload
-- Tensão mecânica, estresse metabólico
-- Mente-músculo, line of pull, peak contraction, stretched position
-- SFR, junk volume, density, frequency, ROM, fatigue management
-
-NUNCA CONFUNDIR:
-- Top set ≠ work set genérico
-- Back-off set ≠ drop set
-- Falha técnica ≠ falha absoluta
-- Volume útil ≠ junk volume
+EXERCÍCIOS SUBSTITUTOS (OBRIGATÓRIO):
+Para CADA exercício, inclua "substitutes" com 2-3 alternativas:
+{ "name": "string", "reason": "motivo", "equipment": "equipamento" }
 
 SELEÇÃO DE EXERCÍCIOS — biomecanicamente inteligente:
 Considerar: músculo-alvo, perfil de resistência, estabilidade, amplitude útil, stretched position, peak contraction, custo articular, relação estímulo/fadiga.
 
-REGRA ANTI-REPETIÇÃO (CRÍTICA):
-- NUNCA gere treinos "de template" ou exercícios sempre iguais.
-- VARIE a seleção de exercícios entre gerações: use rotação inteligente entre variações biomecânicas equivalentes.
-- Considere ângulos diferentes, equipamentos diferentes, pegadas diferentes, planos de movimento diferentes.
-- Se o cliente já fez um ciclo anterior, o novo bloco DEVE ter pelo menos 30-40% de exercícios diferentes.
-- Use exercícios menos populares mas igualmente eficazes quando fizer sentido (ex: Floor Press, Pendlay Row, Landmine Press, Zercher Squat).
+INTEGRAÇÃO nutriON:
+— Dia de treino PESADO → carboidrato elevado, proteína alta, surplus calórico
+— Dia de treino MODERADO → macros de manutenção
+— Dia de DESCANSO → carboidrato reduzido, proteína elevada, gordura aumentada
+— Pré-treino (90-120 min antes): carboidrato médio IG + proteína magra
+— Pós-treino (30-60 min): whey + carboidrato simples
+— Sempre conectar treino com estado nutricional do nutriON
 
-EXERCÍCIOS SUBSTITUTOS (OBRIGATÓRIO):
-- Para CADA exercício prescrito, inclua um array "substitutes" com 2-3 alternativas viáveis.
-- Cada substituto deve conter: "name", "reason" (por que é uma boa alternativa), "equipment" (equipamento necessário).
-- Os substitutos devem cobrir cenários como: "aparelho ocupado", "não tem este equipamento", "dor/desconforto neste exercício".
-- Priorize substitutos que mantenham o mesmo padrão de movimento e perfil de resistência.
-
-TÉCNICAS AVANÇADAS (APENAS quando fizer sentido):
-Drop set, rest-pause, myo-reps, giant sets, supersets, cluster sets, mechanical drop sets.
-
-SAÍDA OBRIGATÓRIA para tab "protocolo":
-- Objetivo do bloco, fase atual, duração sugerida
-- Divisão escolhida + justificativa
-- Frequência por músculo, volume estimado
-- Faixa de reps, RIR/RPE, descanso
-- Progressão definida
-- Estrutura das séries por exercício (COMPLETA)
-- Reavaliação final + decisão pós-bloco
-- Decisão pós-deload (se houver)
+TREINO FEMININO ESPECIALIZADO:
+— Ciclo menstrual em 4 fases com implicações diretas na prescrição
+— Fase folicular: overload / aumento de carga
+— Ovulação: sessão mais intensa / PRs
+— Fase lútea inicial: volume normal, manutenção
+— Fase lútea tardia: reduzir volume 20-30% / foco técnico
+— Mulheres respondem bem a volume mais alto (+2-4 séries/grupo vs homens)
+— Toleram treinar mesmo grupo 3x/semana
+— Priorizar glúteos com Hip Thrust, Bulgarian, RDL, Cable Pull-Through
 
 TOM: especialista confiante, técnico, direto. Responda SEMPRE em Português do Brasil.
+REGRA MÁXIMA: Cada treino é único para o perfil. Se o contexto mudar, recalcule tudo.
 
-REGRA MÁXIMA: Você não repete fórmulas prontas. Cada treino é único para o perfil. Se o contexto mudar, recalcule tudo.`;
+TrainingON v1.0 | nutrion.app.br | Método MCE: Mindset → Comportamento → Execução`;
 
 function sanitizeExercise(ex: any): any {
   if (!ex || typeof ex !== 'object') return ex;
@@ -217,128 +205,81 @@ PERFIL DO CLIENTE:
 
 INSTRUÇÕES DE PRESCRIÇÃO:
 1. ANALISE o perfil completo antes de decidir qualquer coisa.
-2. ESCOLHA a divisão ideal (Full Body, Upper/Lower, PPL, Bro Split, Torso/Perna, ABC, ABCD, ABCDE, Híbrida). Justifique.
-3. ESCOLHA o modelo de periodização (Linear, DUP, Bloco, Reversa, Dupla). Justifique.
+2. ESCOLHA a divisão ideal. Justifique.
+3. ESCOLHA o modelo de periodização. Justifique.
 4. DETERMINE duração do bloco e quando fazer deload.
 5. Para cada sessão:
-   - Warm-up geral (2-3 exercícios de ativação/mobilidade)
-   - Warm-up específico do primeiro composto
-   - Feeder sets (séries alimentadoras para subir carga gradualmente)
-   - Top set (série principal, RPE 8-9)
-   - Back-off sets (-10 a -20% da carga)
-   - Séries de trabalho para acessórios
-6. Cadência (tempo) para cada exercício (ex: 3-0-1-0)
-7. Descanso específico por tipo de exercício
+   - Warm-up geral + específico
+   - Feeder sets → Top set → Back-off sets (compostos)
+   - Séries de trabalho (acessórios)
+6. Cadência (tempo) para cada exercício
+7. Descanso específico por tipo
 8. Progressão definida (Double Progression, Linear, Ondulatória)
-9. Volume por músculo: quais recebem MAIS volume, quais MANTÊM
-10. Alertas de melhoria (técnica, amplitude, controle excêntrico)
-11. Técnicas avançadas quando adequadas (rest-pause, drop set, cluster, superset), com justificativa
+9. Volume por músculo: MEV/MAV/MRV
+10. Alertas de melhoria
+11. Técnicas avançadas quando adequadas com justificativa
 
-REGRA ANTI-UNDEFINED (OBRIGATÓRIA):
-- NUNCA retornar campos com valor undefined, null, vazio ou faltando
-- Todo exercício DEVE ter: name, sets/reps preenchidos, rpe ou rir, rest, tempo
-- Se não souber o valor exato, use fallback inteligente (ex: sets="3", reps="8-12", rpe="7-8", rest="90s", tempo="2-0-1-0")
-- CADA field de feeder_sets, top_set, backoff_sets e work_sets deve ter TODOS os sub-campos preenchidos
+INTEGRAÇÃO nutriON (OBRIGATÓRIO):
+- Macros pré-treino recomendados por sessão
+- Janela pós-treino
+- Ajuste calórico por tipo de dia (treino pesado / moderado / descanso)
 
 FORMATO JSON OBRIGATÓRIO:
 {
   "phase_plan": {
     "macrocycle_title": "string",
     "current_phase": "string",
-    "phases": [
-      {
-        "name": "string",
-        "duration_weeks": "string",
-        "mesocycles": number,
-        "objective": "string",
-        "criteria_to_advance": "string",
-        "volume_strategy": "string",
-        "intensity_strategy": "string",
-        "rationale": "string"
-      }
-    ],
+    "phases": [{ "name": "string", "duration_weeks": "string", "mesocycles": number, "objective": "string", "criteria_to_advance": "string", "volume_strategy": "string", "intensity_strategy": "string", "rationale": "string" }],
     "deload_strategy": "string",
     "long_term_note": "string",
     "post_deload_decision": {
-      "intro": "Após o deload, reavaliar recuperação, performance, fadiga, aderência, dores e objetivo antes de decidir o próximo passo.",
-      "scenarios": [
-        {
-          "condition": "string",
-          "signal": "string",
-          "decision": "string",
-          "action": "string",
-          "how_next_block_starts": "string"
-        }
-      ]
+      "intro": "string",
+      "scenarios": [{ "condition": "string", "signal": "string", "decision": "string", "action": "string", "how_next_block_starts": "string" }]
     }
   },
   "block_overview": {
-    "title": "string",
-    "duration_weeks": number,
-    "deload_week": number,
-    "split_type": "string",
-    "split_justification": "string",
-    "periodization_model": "string",
-    "periodization_justification": "string",
-    "primary_goal": "string",
-    "secondary_goal": "string",
-    "muscle_priorities": [
-      { "muscle": "string", "priority": "string", "weekly_sets": number, "frequency": "string", "rationale": "string" }
-    ],
-    "maintenance_muscles": ["string"],
-    "progression_model": "string",
-    "recovery_notes": "string",
-    "coach_notes": "string"
-  },
-  "improvement_alerts": [
-    { "area": "string", "severity": "string", "message": "string" }
-  ],
-  "training_days": [
-    {
-      "day_number": number,
-      "day_label": "string",
-      "session_title": "string",
-      "focus_muscles": ["string"],
-      "estimated_duration": "string",
-      "intensity_profile": "string",
-      "warmup": [
-        { "name": "string", "sets": "string", "reps": "string", "notes": "string" }
-      ],
-      "exercises": [
-        {
-          "order": number,
-          "name": "string (NUNCA vazio)",
-          "muscle_target": "string (NUNCA vazio)",
-          "technique_type": "compound|accessory|isolation",
-          "tempo": "string (ex: 3-0-1-0, NUNCA vazio)",
-          "advanced_technique": "string|null",
-          "structure": {
-            "feeder_sets": [{ "set_label": "string", "load_percent": "string", "reps": "string (NUNCA vazio)", "notes": "string" }],
-            "top_set": { "sets": "string (NUNCA vazio)", "reps": "string (NUNCA vazio)", "rpe": "string (NUNCA vazio)", "rest": "string (NUNCA vazio)", "notes": "string" },
-            "backoff_sets": { "sets": "string (NUNCA vazio)", "reps": "string (NUNCA vazio)", "load_reduction": "string", "rest": "string (NUNCA vazio)", "notes": "string" },
-            "work_sets": { "sets": "string (NUNCA vazio)", "reps": "string (NUNCA vazio)", "rpe": "string (NUNCA vazio)", "rest": "string (NUNCA vazio)", "notes": "string" }
-          },
-          "execution_cues": "string",
-          "why_this_exercise": "string",
-          "biomechanics_note": "string",
-          "substitutes": [
-            { "name": "string", "reason": "string", "equipment": "string" }
-          ]
-        }
-      ],
-      "session_notes": "string"
+    "title": "string", "duration_weeks": number, "deload_week": number, "split_type": "string",
+    "split_justification": "string", "periodization_model": "string", "periodization_justification": "string",
+    "primary_goal": "string", "secondary_goal": "string",
+    "muscle_priorities": [{ "muscle": "string", "priority": "string", "weekly_sets": number, "frequency": "string", "rationale": "string" }],
+    "maintenance_muscles": ["string"], "progression_model": "string", "recovery_notes": "string", "coach_notes": "string",
+    "nutrion_integration": {
+      "heavy_day_carbs": "string", "heavy_day_protein": "string",
+      "rest_day_carbs": "string", "rest_day_protein": "string",
+      "pre_workout_protocol": "string", "post_workout_protocol": "string"
     }
-  ]
+  },
+  "improvement_alerts": [{ "area": "string", "severity": "string", "message": "string" }],
+  "training_days": [{
+    "day_number": number, "day_label": "string", "session_title": "string",
+    "focus_muscles": ["string"], "estimated_duration": "string", "intensity_profile": "string",
+    "warmup": [{ "name": "string", "sets": "string", "reps": "string", "notes": "string" }],
+    "exercises": [{
+      "order": number, "name": "string", "muscle_target": "string",
+      "technique_type": "compound|accessory|isolation", "tempo": "string",
+      "advanced_technique": "string|null",
+      "structure": {
+        "feeder_sets": [{ "set_label": "string", "load_percent": "string", "reps": "string", "notes": "string" }],
+        "top_set": { "sets": "string", "reps": "string", "rpe": "string", "rest": "string", "notes": "string" },
+        "backoff_sets": { "sets": "string", "reps": "string", "load_reduction": "string", "rest": "string", "notes": "string" },
+        "work_sets": { "sets": "string", "reps": "string", "rpe": "string", "rest": "string", "notes": "string" }
+      },
+      "execution_cues": "string", "why_this_exercise": "string", "biomechanics_note": "string",
+      "substitutes": [{ "name": "string", "reason": "string", "equipment": "string" }]
+    }],
+    "session_notes": "string",
+    "nutrition_notes": "string"
+  }]
 }
 
 IMPORTANTE:
-- Inclua OBRIGATORIAMENTE "phase_plan" com macrociclo, fases, deload_strategy E "post_deload_decision" com 5 cenários.
+- Inclua OBRIGATORIAMENTE "phase_plan" com macrociclo, fases, deload_strategy E "post_deload_decision".
 - Preencha TODOS os ${days} dias de treino.
 - Cada dia: 4-7 exercícios adequados ao tempo (${sessionDuration || "60min"}).
-- JSON COMPLETO. Não truncar. Todos os dias, todos os exercícios, todos os campos preenchidos.
-- Use feeder_sets + top_set + backoff_sets para compostos principais (1-2 por sessão).
+- JSON COMPLETO. ZERO campos undefined/vazios. Todos os dias, todos os exercícios.
+- Use feeder_sets + top_set + backoff_sets para compostos principais.
 - Use work_sets para acessórios e isoladores.
-- ZERO campos undefined/vazios. Se faltar info, use fallback inteligente.`;
+- Inclua "nutrition_notes" por sessão com orientação peri-treino.`;
   }
 
   if (tab === "anatomia") {
@@ -382,7 +323,6 @@ Para cada exercício (mínimo 5 por grupo muscular):
     return `Gere PLANO DE PERIODIZAÇÃO CIENTÍFICO COMPLETO para ${weeks} semanas
 Fase: ${phase} | Nível: ${level} | Frequência: ${days}x/semana
 Músculos: ${muscleList} | Estresse: ${stressLevel || "Bom"} | Cardio: ${cardio || "Não"}
-Equipamentos: ${equipment || "Academia completa"} | Lesões: ${injuries || "Nenhuma"}
 
 Inclua:
 1. Modelo de periodização + justificativa
@@ -396,6 +336,224 @@ Inclua:
 9. Sinais de overreaching/undertraining
 10. Alternativas se rotina mudar
 11. Referências: Schoenfeld, Helms, Israetel, Nuckols`;
+  }
+
+  if (tab === "biomec") {
+    const exerciseName = data.exerciseName || muscleList;
+    return `Execute análise BIOMECÂNICA E CINESIOLÓGICA COMPLETA do exercício: ${exerciseName}
+
+━━━━━━━━━━━━━━━━━━━━━━━━
+[${exerciseName}]
+━━━━━━━━━━━━━━━━━━━━━━━━
+
+Entregue:
+
+▸ MÚSCULOS ENVOLVIDOS
+Primário: [músculo + % contribuição estimada]
+Secundário: [músculos sinergistas]
+Estabilizadores: [músculos de suporte]
+
+▸ ANÁLISE BIOMECÂNICA
+Classificação: [Composto / Isolamento / Semi-composto]
+Padrão de movimento: [Push / Pull / Hinge / Squat / Carry / Rotate]
+Eixo de movimento: [sagital / frontal / transversal]
+Articulações envolvidas
+Vetor de força
+Ponto de máxima tensão (no ROM)
+Ponto de mínima tensão
+Alavanca mecânica
+
+▸ EXECUÇÃO TÉCNICA
+Posição inicial detalhada
+Fase excêntrica: tempo, ângulos, pontos críticos
+Ponto de inversão
+Fase concêntrica: velocidade, cue principal
+Respiração
+
+▸ ERROS TÉCNICOS MAIS COMUNS (mínimo 3)
+[Erro] → [Consequência] → [Correção]
+
+▸ ADAPTAÇÕES POR MORFOLOGIA
+Fêmur longo | Torso longo | Braços longos | Mobilidade limitada
+
+▸ VARIAÇÕES & PROGRESSÕES
+Regressão | Progressão | Variação de ênfase
+
+▸ ATIVAÇÃO EMG (baseado em literatura)
+Ativação no músculo primário (% MVIC se disponível)
+Comparado a exercício de referência
+
+▸ INDICAÇÃO CLÍNICA
+Indicado para / Contraindicado para / Modificação para lesão
+
+▸ INTEGRAÇÃO nutriON
+Demanda energética | Impacto no EPOC | Pré-treino recomendado`;
+  }
+
+  if (tab === "emg") {
+    const muscleTarget = data.muscleTarget || muscleList;
+    return `Gere RANKING EMG COMPLETO para o músculo: ${muscleTarget}
+Baseado em estudos de ativação muscular (Contreras, Loenneke, Beardsley, Schoenfeld).
+
+Entregue:
+
+TOP 10 EXERCÍCIOS POR ATIVAÇÃO (MVIC%):
+🥇 [Exercício] — Ativação: [X% MVIC] — Por que ativa mais — Melhor para [objetivo]
+🥈 [Exercício] — [idem]
+...
+
+EXERCÍCIOS POR PORÇÃO MUSCULAR:
+— Porção superior: melhor exercício = [X] (por que)
+— Porção média: melhor exercício = [X] (por que)
+— Porção inferior: melhor exercício = [X] (por que)
+
+COMBINAÇÃO IDEAL PARA HIPERTROFIA MÁXIMA:
+[Exercício A] + [Exercício B] + [Exercício C]
+Justificativa: diferentes ângulos, porções e vetores de força
+
+NOTA: Diferenciar ativação EMG de hipertrofia. Alta ativação EMG não garante crescimento superior.
+Tensão mecânica, dano muscular e estresse metabólico são os 3 mecanismos (Schoenfeld, 2010).`;
+  }
+
+  if (tab === "postural") {
+    return `Execute AVALIAÇÃO POSTURAL COMPLETA baseada nas informações:
+Lesões: ${injuries || "Nenhuma"} | Pontos fracos: ${weakPoints || "Nenhum"} | Nível: ${level}
+
+Entregue análise de:
+
+VISTA ANTERIOR (frontal):
+Alinhamento cabeça, ombros, EIAS, joelhos, pés
+
+VISTA LATERAL (sagital):
+Cabeça anteriorizada, hipercifose, hiperlordose, anterversão/retroversão pélvica
+
+DESEQUILÍBRIOS IDENTIFICADOS:
+[Desequilíbrio] → Músculo encurtado: [X] / Músculo fraco: [Y]
+
+PROTOCOLO CORRETIVO:
+FASE 1 — INIBIÇÃO (foam roller)
+FASE 2 — ALONGAMENTO
+FASE 3 — ATIVAÇÃO
+FASE 4 — INTEGRAÇÃO
+
+IMPACTO NO TREINO:
+Como cada desequilíbrio afeta exercícios específicos + modificações
+
+FREQUÊNCIA: [X] vezes por semana / [Y] minutos por sessão
+
+INTEGRAÇÃO nutriON: desequilíbrios posturais x deficiências nutricionais / hidratação / inflamação`;
+  }
+
+  if (tab === "recuperacao") {
+    return `Gere PROTOCOLO COMPLETO DE RECUPERAÇÃO E DELOAD para:
+Nível: ${level} | Fase: ${phase} | Frequência: ${days}x/semana | Estresse: ${stressLevel || "Bom"}
+
+Entregue:
+
+TIPOS DE DELOAD:
+1. DELOAD DE VOLUME — manter carga, reduzir volume 40-50%
+2. DELOAD DE INTENSIDADE — reduzir carga 40-50%, manter volume
+3. DELOAD TOTAL — reduzir ambos 50%+
+4. DESCANSO ATIVO — sem treino de força
+
+PROTOCOLOS DE RECUPERAÇÃO ENTRE SESSÕES:
+▸ SONO: alvo, janela anabólica GH, higiene do sono
+▸ NUTRIÇÃO PÓS-TREINO: janela, proteína, carboidrato — integração nutriON
+▸ TÉCNICAS ATIVAS: foam roller, alongamento, banho frio/contraste, compressão
+▸ SUPLEMENTAÇÃO: creatina, ômega-3, magnésio, vitamina D3, ZMA
+
+MARCADORES DE OVERTRAINING:
+— Queda de performance 2+ semanas
+— FC de repouso elevada
+— Humor negativo persistente
+— Sono prejudicado com cansaço extremo
+— Perda de motivação
+
+INTEGRAÇÃO nutriON: ajustar calorias para manutenção na semana de deload`;
+  }
+
+  if (tab === "metodologia") {
+    const metodo = data.methodName || "RP Hypertrophy";
+    return `Explique COMPLETAMENTE a metodologia: ${metodo}
+
+Entregue:
+1. FILOSOFIA — o princípio central
+2. CARACTERÍSTICAS — o que define esta metodologia
+3. ESTRUTURA DE TREINO SEMANAL — exemplo completo
+4. EXEMPLO DE SESSÃO COMPLETA — detalhada
+5. PARA QUAL PERFIL É IDEAL — nível, objetivo, frequência
+6. COMO PERIODIZAR — dentro desta metodologia
+7. PRÓS E CONTRAS — honestamente
+8. INTEGRAÇÃO COM NUTRIÇÃO nutriON — como alimentar para esta metodologia
+
+Metodologias disponíveis:
+— Mountain Dog (Meadows) — DC Training (Trudel) — RP Hypertrophy (Israetel)
+— Heavy Duty (Mentzer) — Dorian Yates HIT — FST-7 (Rambod)
+— Westside Conjugate (Simmons) — Block Periodization (Issurin)`;
+  }
+
+  if (tab === "feminino") {
+    return `Gere PROTOCOLO DE TREINO FEMININO ESPECIALIZADO:
+Nível: ${level} | Fase: ${phase} | Frequência: ${days}x/semana
+Músculos: ${muscleList} | Equipamentos: ${equipment || "Academia completa"} | Lesões: ${injuries || "Nenhuma"}
+
+CONSIDERAR OBRIGATORIAMENTE:
+
+▸ HORMÔNIOS & PERFORMANCE POR FASE DO CICLO:
+— Folicular (dias 1-14): overload / aumento de carga — melhor recuperação
+— Ovulação (dia 14): sessão mais intensa / PRs — pico de estrogênio
+— Lútea Inicial (15-21): volume normal, manutenção
+— Lútea Tardia (22-28): reduzir volume 20-30% / foco técnico — queda hormonal
+
+▸ DIFERENÇAS NA PRESCRIÇÃO:
+— Volume: +2-4 séries/grupo vs homens
+— Frequência: 3x/semana por grupo muscular
+— Intensidade: 65-80% 1RM
+— Descanso: intervalos menores sem prejuízo
+
+▸ GLÚTEOS & POSTERIOR (prioridade EMG):
+1. Hip Thrust (>100% MVIC glúteo máx)
+2. Bulgarian Split Squat
+3. Romanian Deadlift
+4. Cable Pull-Through
+5. Abdução lateral
+
+▸ DIVISÃO RECOMENDADA:
+4x: 2x inferior + 1x push + 1x pull
+OU 3x full-body com ênfase inferior
+
+▸ NUTRIÇÃO FEMININA INTEGRADA (nutriON):
+— Fase folicular: carboidrato elevado → performance
+— Fase lútea: proteína elevada → anti-catabolismo
+— TPM: magnésio + ômega-3 → reduzir inflamação`;
+  }
+
+  if (tab === "platô") {
+    const exerciseName = data.exercise || "exercício principal";
+    return `ANÁLISE DE PLATÔ E ESTRATÉGIAS DE QUEBRA para: ${exerciseName}
+Fase: ${phase} | Nível: ${level} | Frequência: ${days}x/semana
+Histórico: ${JSON.stringify(data.progressHistory || [])}
+
+Entregue:
+
+DIAGNÓSTICO DO PLATÔ:
+Causas prováveis:
+□ Volume insuficiente (abaixo do MEV)
+□ Intensidade insuficiente (RPE muito baixo)
+□ Nutrição inadequada (verificar nutriON)
+□ Sono/recuperação comprometidos
+□ Mesmo estímulo por tempo excessivo
+□ Desequilíbrio muscular limitante
+□ Técnica incorreta perdendo ativação
+
+ESTRATÉGIAS DE QUEBRA:
+1. SOBRECARGA PROGRESSIVA FORÇADA — reps forçadas, rest-pause
+2. VARIAÇÃO DE ESTÍMULO — trocar exercício, pegada, ângulo, ordem
+3. TÉCNICAS ESPECIAIS — drop sets, myo-reps, pause reps, tempo controlado
+4. DELOAD ESTRATÉGICO — 1 semana volume 50% para supercompensação
+5. REVISÃO NUTRICIONAL → comunicar ao nutriON: verificar ingestão calórica e proteica
+
+TIMELINE: estimativa de retomada em [X] semanas`;
   }
 
   if (tab === "reels") {
@@ -432,7 +590,7 @@ Fase ${phase}, nível ${level}. Frequência: ${days}x/semana.
 Referências científicas.`;
   }
 
-  return `Protocolo de treino completo para ${clientName || "Cliente"}, fase ${phase}, músculos ${muscleList}, nível ${level}, ${days}x/semana, ${sessionDuration || "60min"} por sessão. Equipamentos: ${equipment || "Academia completa"}. Lesões: ${injuries || "Nenhuma"}. Analise, justifique e prescreva.`;
+  return `Protocolo de treino completo para ${clientName || "Cliente"}, fase ${phase}, músculos ${muscleList}, nível ${level}, ${days}x/semana, ${sessionDuration || "60min"} por sessão. Equipamentos: ${equipment || "Academia completa"}. Lesões: ${injuries || "Nenhuma"}. Analise, justifique e prescreva. Integre com recomendações nutricionais do nutriON.`;
 }
 
 serve(async (req) => {
@@ -449,17 +607,26 @@ serve(async (req) => {
     let scienceCitations: string[] = [];
 
     // Dual-AI: Perplexity for scientific references
-    if (PERPLEXITY_API_KEY && (data.tab === "protocolo" || data.tab === "periodizacao" || data.tab === "volume")) {
+    const scienceTabs = ["protocolo", "periodizacao", "volume", "biomec", "emg", "postural", "feminino"];
+    if (PERPLEXITY_API_KEY && scienceTabs.includes(data.tab)) {
       try {
         const muscles = Array.isArray(data.muscles) ? data.muscles.join(" ") : data.muscles;
+        const searchQuery = data.tab === "biomec"
+          ? `biomechanics ${data.exerciseName || muscles} EMG activation muscle recruitment evidence`
+          : data.tab === "emg"
+          ? `EMG activation ${data.muscleTarget || muscles} exercise comparison MVIC% evidence`
+          : data.tab === "feminino"
+          ? `female resistance training menstrual cycle periodization glute activation evidence`
+          : `optimal training volume sets per week ${muscles} ${data.phase} hypertrophy evidence 2023 2024 2025 periodization techniques`;
+        
         const ppxRes = await fetch("https://api.perplexity.ai/chat/completions", {
           method: "POST",
           headers: { "Authorization": `Bearer ${PERPLEXITY_API_KEY}`, "Content-Type": "application/json" },
           body: JSON.stringify({
             model: "sonar-pro",
             messages: [
-              { role: "system", content: "Exercise science researcher specializing in resistance training, hypertrophy, and periodization. Find recent peer-reviewed evidence. Cite study name, year, type (RCT/meta-analysis/review), and key finding. Focus: PubMed, JSCR, Sports Medicine, EJSS." },
-              { role: "user", content: `optimal training volume sets per week ${muscles} ${data.phase} hypertrophy evidence 2023 2024 2025 periodization techniques biomechanics exercise selection` }
+              { role: "system", content: "Exercise science researcher specializing in resistance training, hypertrophy, biomechanics, and periodization. Find recent peer-reviewed evidence. Cite study name, year, type, and key finding. Focus: PubMed, JSCR, Sports Medicine, EJSS." },
+              { role: "user", content: searchQuery }
             ],
             search_recency_filter: "year",
           })
@@ -475,7 +642,7 @@ serve(async (req) => {
     }
 
     const enrichedPrompt = scienceContext
-      ? `${userPrompt}\n\nREFERÊNCIAS CIENTÍFICAS ATUAIS (Perplexity):\n${scienceContext}\n\nCitações: ${JSON.stringify(scienceCitations)}\n\nUse essas referências para embasar as decisões de volume, periodização, seleção de exercícios e técnica.`
+      ? `${userPrompt}\n\nREFERÊNCIAS CIENTÍFICAS ATUAIS (Perplexity):\n${scienceContext}\n\nCitações: ${JSON.stringify(scienceCitations)}\n\nUse essas referências para embasar as decisões.`
       : userPrompt;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -487,7 +654,7 @@ serve(async (req) => {
       body: JSON.stringify({
         model: "google/gemini-2.5-flash",
         messages: [
-          { role: "system", content: ELITE_SYSTEM_PROMPT },
+          { role: "system", content: TRAININGON_SYSTEM_PROMPT },
           { role: "user", content: enrichedPrompt },
         ],
         temperature: 0.7,
