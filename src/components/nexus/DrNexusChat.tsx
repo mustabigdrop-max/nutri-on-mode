@@ -1,11 +1,12 @@
 import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import ReactMarkdown from "react-markdown";
-import { Send, Brain, Loader2, Bookmark } from "lucide-react";
+import { Send, Loader2, Bookmark } from "lucide-react";
 import VoiceRecorderButton from "@/components/ui/VoiceRecorderButton";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import VertexLogoSmall from "@/components/vertex/VertexLogoSmall";
 
 interface VertexMessage {
   role: "user" | "assistant";
@@ -96,12 +97,12 @@ const DrNexusChat = () => {
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
         {messages.length === 0 && !streamingContent && (
           <div className="text-center py-12 space-y-3">
-            <Brain className="w-12 h-12 text-red-400/30 mx-auto" />
-            <p className="text-sm text-muted-foreground">Pergunte ao Dr. VERTEX sobre qualquer composto</p>
+            <VertexLogoSmall size={48} className="mx-auto" />
+            <p className="text-sm text-muted-foreground font-['JetBrains_Mono']">Pergunte ao Dr. VERTEX sobre qualquer composto</p>
             <div className="flex flex-wrap justify-center gap-2 mt-4">
               {["Retatrutida", "BPC-157 + TB-500", "Protocolo PCT", "Ashwagandha KSM-66", "TRT otimizada"].map(s => (
                 <button key={s} onClick={() => sendMessage(s)}
-                  className="px-3 py-1.5 rounded-lg bg-red-500/10 border border-red-500/20 text-[11px] text-red-400 hover:bg-red-500/20 transition-colors">
+                  className="px-3 py-1.5 rounded-lg bg-[#7c3aed]/10 border border-[#7c3aed]/20 text-[11px] text-[#a78bfa] hover:bg-[#7c3aed]/20 transition-colors font-['JetBrains_Mono']">
                   {s}
                 </button>
               ))}
@@ -113,23 +114,23 @@ const DrNexusChat = () => {
           <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
             className={`flex gap-2 ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
             {msg.role === "assistant" && (
-              <div className="w-7 h-7 rounded-full bg-red-500/20 flex items-center justify-center flex-shrink-0 mt-1">
-                <Brain className="w-3.5 h-3.5 text-red-400" />
+              <div className="w-7 h-7 rounded-full bg-[#7c3aed]/20 flex items-center justify-center flex-shrink-0 mt-1 border border-[#7c3aed]/30">
+                <VertexLogoSmall size={20} />
               </div>
             )}
-            <div className={`max-w-[85%] ${msg.role === "user" ? "rounded-2xl rounded-br-md bg-red-500 text-white px-4 py-3" : ""}`}>
+            <div className={`max-w-[85%] ${msg.role === "user" ? "rounded-2xl rounded-br-md bg-[#7c3aed] text-white px-4 py-3" : ""}`}>
               {msg.role === "assistant" ? (
                 <div>
-                  <span className="text-[9px] font-mono text-red-400 uppercase tracking-wider mb-1 block">DR. VERTEX</span>
-                  <div className="rounded-2xl rounded-bl-md bg-card border border-red-500/20 px-4 py-3 space-y-2">
+                  <span className="text-[9px] font-['JetBrains_Mono'] text-[#a78bfa] uppercase tracking-wider mb-1 block">DR. VERTEX</span>
+                  <div className="rounded-2xl rounded-bl-md bg-[#0a0514] border border-[#7c3aed]/20 px-4 py-3 space-y-2">
                     <div className="prose prose-sm prose-invert max-w-none text-sm
-                      [&_p]:mb-2 [&_ul]:mb-2 [&_strong]:text-red-400 [&_h3]:text-red-400 [&_h3]:text-sm [&_h3]:font-bold
-                      [&_h2]:text-red-400 [&_h2]:text-base [&_h2]:font-bold [&_h1]:text-red-400
-                      [&_code]:bg-secondary [&_code]:text-accent [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-xs">
+                      [&_p]:mb-2 [&_ul]:mb-2 [&_strong]:text-[#a78bfa] [&_h3]:text-[#a78bfa] [&_h3]:text-sm [&_h3]:font-bold
+                      [&_h2]:text-[#a78bfa] [&_h2]:text-base [&_h2]:font-bold [&_h1]:text-[#c4b5fd]
+                      [&_code]:bg-[#7c3aed]/10 [&_code]:text-[#06b6d4] [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-xs">
                       <ReactMarkdown>{msg.content}</ReactMarkdown>
                     </div>
                     <button onClick={() => saveToNotebook(msg, i)}
-                      className="flex items-center gap-1 text-[10px] font-mono text-muted-foreground hover:text-red-400 transition-colors mt-1">
+                      className="flex items-center gap-1 text-[10px] font-['JetBrains_Mono'] text-muted-foreground hover:text-[#a78bfa] transition-colors mt-1">
                       <Bookmark className="w-3 h-3" /> Salvar no Caderno Científico
                     </button>
                   </div>
@@ -143,20 +144,20 @@ const DrNexusChat = () => {
 
         {(isLoading || streamingContent) && !messages.find((_, i) => i === messages.length - 1 && messages[i]?.role === "assistant") && (
           <div className="flex gap-2">
-            <div className="w-7 h-7 rounded-full bg-red-500/20 flex items-center justify-center flex-shrink-0">
-              <Brain className="w-3.5 h-3.5 text-red-400" />
+            <div className="w-7 h-7 rounded-full bg-[#7c3aed]/20 flex items-center justify-center flex-shrink-0 border border-[#7c3aed]/30">
+              <VertexLogoSmall size={20} />
             </div>
             <div className="flex-1">
-              <span className="text-[9px] font-mono text-red-400 uppercase tracking-wider mb-1 block">DR. VERTEX</span>
-              <div className="bg-card border border-red-500/20 rounded-2xl rounded-bl-md px-4 py-3">
+              <span className="text-[9px] font-['JetBrains_Mono'] text-[#a78bfa] uppercase tracking-wider mb-1 block">DR. VERTEX</span>
+              <div className="bg-[#0a0514] border border-[#7c3aed]/20 rounded-2xl rounded-bl-md px-4 py-3">
                 {streamingContent ? (
-                  <div className="prose prose-sm prose-invert max-w-none text-sm [&_strong]:text-red-400 [&_h3]:text-red-400">
+                  <div className="prose prose-sm prose-invert max-w-none text-sm [&_strong]:text-[#a78bfa] [&_h3]:text-[#a78bfa]">
                     <ReactMarkdown>{streamingContent}</ReactMarkdown>
                   </div>
                 ) : (
                   <div className="flex items-center gap-2">
-                    <Loader2 className="w-4 h-4 text-red-400 animate-spin" />
-                    <span className="text-[10px] font-mono text-muted-foreground">convergindo evidências...</span>
+                    <Loader2 className="w-4 h-4 text-[#7c3aed] animate-spin" />
+                    <span className="text-[10px] font-['JetBrains_Mono'] text-muted-foreground">convergindo evidências...</span>
                   </div>
                 )}
               </div>
@@ -165,15 +166,15 @@ const DrNexusChat = () => {
         )}
       </div>
 
-      <div className="px-4 py-3 pb-20 border-t border-border bg-background/95 backdrop-blur">
+      <div className="px-4 py-3 pb-20 border-t border-[#7c3aed]/15 bg-[#030408]/95 backdrop-blur">
         <div className="flex gap-2 max-w-lg mx-auto">
           <input type="text" value={input} onChange={e => setInput(e.target.value)}
             onKeyDown={e => e.key === "Enter" && sendMessage(input)}
             placeholder="Pergunte ao Dr. VERTEX..."
-            className="flex-1 px-4 py-3 rounded-xl border border-border bg-card text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-red-500/50" />
+            className="flex-1 px-4 py-3 rounded-xl border border-[#7c3aed]/20 bg-[#0a0514] text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-[#7c3aed]/50 font-['JetBrains_Mono']" />
           <VoiceRecorderButton onTranscript={(t) => setInput(prev => prev ? prev + " " + t : t)} disabled={isLoading} />
           <button onClick={() => sendMessage(input)} disabled={!input.trim() || isLoading}
-            className="w-12 h-12 rounded-xl bg-red-500 text-white flex items-center justify-center disabled:opacity-50 transition-all">
+            className="w-12 h-12 rounded-xl bg-[#7c3aed] text-white flex items-center justify-center disabled:opacity-50 transition-all hover:bg-[#6d28d9]">
             <Send className="w-5 h-5" />
           </button>
         </div>

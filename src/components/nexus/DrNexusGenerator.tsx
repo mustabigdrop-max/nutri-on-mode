@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import ReactMarkdown from "react-markdown";
-import { Brain, Loader2, Search, Bookmark, Download, ExternalLink, Database } from "lucide-react";
+import { Loader2, Search, Bookmark, Download, ExternalLink, Database } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import VertexLogoSmall from "@/components/vertex/VertexLogoSmall";
 
 interface DrNexusGeneratorProps {
   mode: string;
@@ -18,6 +19,12 @@ const COMPOUND_SUGGESTIONS: Record<string, string[]> = {
   briefing: ["Testosterona TRT", "Clenbuterol", "Ipamorelin + CJC-1295", "Creatina", "Melatonina"],
   offlabel: ["Tadalafila", "Metformina", "Rapamicina", "LDN", "Modafinil"],
   sinergias: ["BPC-157 + TB-500", "Ipamorelin + CJC-1295", "Retatrutida + Follistatin", "Berberina + Silimarina"],
+  comparativo: ["Retatrutida vs Tirzepatida", "Oxandrolona vs Turinabol", "Ostarine vs LGD-4033", "BPC-157 vs TB-500"],
+  exames: ["Painel hormonal masculino", "Painel hepático pós-ciclo", "Painel tireoidiano", "Painel lipídico"],
+  dose: ["BPC-157 80kg", "Ipamorelin 75kg", "Semaglutida 90kg", "TB-500 70kg"],
+  pct: ["PCT após Test E + Deca", "PCT após RAD-140", "PCT após Test + Trembolona", "PCT após Oxandrolona"],
+  interacoes: ["Test E + Deca + AI", "BPC-157 + TB-500 + GHK-Cu", "Metformina + Berberina", "Semaglutida + Ipamorelin"],
+  exportar: ["Retatrutida", "BPC-157", "Oxandrolona", "Semaglutida"],
 };
 
 const DrNexusGenerator = ({ mode, title, description }: DrNexusGeneratorProps) => {
@@ -63,8 +70,8 @@ const DrNexusGenerator = ({ mode, title, description }: DrNexusGeneratorProps) =
   return (
     <div className="px-4 py-6 space-y-6">
       <div className="space-y-2">
-        <h2 className="text-lg font-bold text-foreground">{title}</h2>
-        <p className="text-xs text-muted-foreground">{description}</p>
+        <h2 className="text-lg font-['Rajdhani'] font-bold text-[#a78bfa]">{title}</h2>
+        <p className="text-xs text-muted-foreground font-['JetBrains_Mono']">{description}</p>
       </div>
 
       <div className="flex gap-2">
@@ -72,11 +79,11 @@ const DrNexusGenerator = ({ mode, title, description }: DrNexusGeneratorProps) =
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <input type="text" value={compound} onChange={e => setCompound(e.target.value)}
             onKeyDown={e => e.key === "Enter" && generate()}
-            placeholder="Nome do composto..."
-            className="w-full pl-10 pr-4 py-3 rounded-xl border border-border bg-card text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-red-500/50" />
+            placeholder={mode === "exames" ? "Cole seus resultados ou descreva..." : mode === "pct" ? "Ex: PCT após Test E 500mg 12 semanas..." : "Nome do composto..."}
+            className="w-full pl-10 pr-4 py-3 rounded-xl border border-[#7c3aed]/20 bg-[#0a0514] text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-[#7c3aed]/50 font-['JetBrains_Mono']" />
         </div>
         <button onClick={() => generate()} disabled={!compound.trim() || isLoading}
-          className="px-6 py-3 rounded-xl bg-red-500 text-white text-sm font-medium disabled:opacity-50 transition-all hover:bg-red-600">
+          className="px-6 py-3 rounded-xl bg-[#7c3aed] text-white text-sm font-medium disabled:opacity-50 transition-all hover:bg-[#6d28d9] font-['Rajdhani']">
           {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Gerar"}
         </button>
       </div>
@@ -85,7 +92,7 @@ const DrNexusGenerator = ({ mode, title, description }: DrNexusGeneratorProps) =
         <div className="flex flex-wrap gap-2">
           {suggestions.map(s => (
             <button key={s} onClick={() => generate(s)}
-              className="px-3 py-1.5 rounded-lg bg-red-500/10 border border-red-500/20 text-[11px] text-red-400 hover:bg-red-500/20 transition-colors">
+              className="px-3 py-1.5 rounded-lg bg-[#7c3aed]/10 border border-[#7c3aed]/20 text-[11px] text-[#a78bfa] hover:bg-[#7c3aed]/20 transition-colors font-['JetBrains_Mono']">
               {s}
             </button>
           ))}
@@ -94,11 +101,11 @@ const DrNexusGenerator = ({ mode, title, description }: DrNexusGeneratorProps) =
 
       {isLoading && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-          className="rounded-2xl bg-card border border-red-500/20 p-6 text-center space-y-3">
-          <Loader2 className="w-8 h-8 text-red-400 animate-spin mx-auto" />
+          className="rounded-2xl bg-[#0a0514] border border-[#7c3aed]/20 p-6 text-center space-y-3">
+          <Loader2 className="w-8 h-8 text-[#7c3aed] animate-spin mx-auto" />
           <div>
-            <p className="text-sm font-medium text-foreground">Dr. VERTEX convergindo...</p>
-            <p className="text-[10px] font-mono text-muted-foreground mt-1">Varredura nutriON → Perplexity → Análise IA</p>
+            <p className="text-sm font-medium text-foreground font-['Rajdhani']">Dr. VERTEX convergindo...</p>
+            <p className="text-[10px] font-['JetBrains_Mono'] text-muted-foreground mt-1">Varredura nutriON → Perplexity → Análise IA</p>
           </div>
         </motion.div>
       )}
@@ -107,33 +114,33 @@ const DrNexusGenerator = ({ mode, title, description }: DrNexusGeneratorProps) =
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
           <div className="flex flex-wrap gap-2">
             {result.varreduraStatus && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-red-500/10 border border-red-500/20 text-[10px] font-mono text-red-400">
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#7c3aed]/10 border border-[#7c3aed]/20 text-[10px] font-['JetBrains_Mono'] text-[#a78bfa]">
                 <Database className="w-3 h-3" /> {result.varreduraStatus}
               </span>
             )}
             {result.perplexityUsed && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-[10px] font-mono text-blue-400">
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#06b6d4]/10 border border-[#06b6d4]/20 text-[10px] font-['JetBrains_Mono'] text-[#06b6d4]">
                 📎 {result.citations?.length || 0} fontes científicas
               </span>
             )}
           </div>
 
-          <div className="rounded-2xl bg-card border border-red-500/20 px-5 py-5">
+          <div className="rounded-2xl bg-[#0a0514] border border-[#7c3aed]/20 px-5 py-5">
             <div className="prose prose-sm prose-invert max-w-none text-sm
-              [&_p]:mb-3 [&_ul]:mb-3 [&_strong]:text-red-400 [&_h1]:text-red-400 [&_h1]:text-lg [&_h1]:font-bold
-              [&_h2]:text-red-400 [&_h2]:text-base [&_h2]:font-bold [&_h3]:text-red-400 [&_h3]:text-sm [&_h3]:font-bold
-              [&_code]:bg-secondary [&_code]:text-accent [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-xs
-              [&_blockquote]:border-l-red-500 [&_blockquote]:bg-red-500/5">
+              [&_p]:mb-3 [&_ul]:mb-3 [&_strong]:text-[#a78bfa] [&_h1]:text-[#c4b5fd] [&_h1]:text-lg [&_h1]:font-bold
+              [&_h2]:text-[#a78bfa] [&_h2]:text-base [&_h2]:font-bold [&_h3]:text-[#a78bfa] [&_h3]:text-sm [&_h3]:font-bold
+              [&_code]:bg-[#7c3aed]/10 [&_code]:text-[#06b6d4] [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-xs
+              [&_blockquote]:border-l-[#7c3aed] [&_blockquote]:bg-[#7c3aed]/5">
               <ReactMarkdown>{result.answer}</ReactMarkdown>
             </div>
           </div>
 
           {result.citations && result.citations.length > 0 && (
-            <div className="rounded-xl bg-card border border-border p-4 space-y-2">
-              <p className="text-[10px] font-mono text-muted-foreground uppercase">Fontes Científicas</p>
+            <div className="rounded-xl bg-[#0a0514] border border-[#7c3aed]/15 p-4 space-y-2">
+              <p className="text-[10px] font-['JetBrains_Mono'] text-muted-foreground uppercase">Fontes Científicas</p>
               {result.citations.slice(0, 8).map((c: string, i: number) => (
                 <a key={i} href={c} target="_blank" rel="noopener noreferrer"
-                  className="flex items-center gap-1 text-[11px] text-red-400/70 hover:text-red-400 truncate">
+                  className="flex items-center gap-1 text-[11px] text-[#a78bfa]/70 hover:text-[#a78bfa] truncate">
                   <ExternalLink className="w-3 h-3 flex-shrink-0" /> {c}
                 </a>
               ))}
@@ -142,7 +149,7 @@ const DrNexusGenerator = ({ mode, title, description }: DrNexusGeneratorProps) =
 
           <div className="flex gap-3">
             <button onClick={saveToNotebook}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-red-500/10 border border-red-500/20 text-sm text-red-400 hover:bg-red-500/20 transition-colors">
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#7c3aed]/10 border border-[#7c3aed]/20 text-sm text-[#a78bfa] hover:bg-[#7c3aed]/20 transition-colors font-['JetBrains_Mono']">
               <Bookmark className="w-4 h-4" /> Salvar no Caderno
             </button>
             <button onClick={() => {
@@ -150,12 +157,12 @@ const DrNexusGenerator = ({ mode, title, description }: DrNexusGeneratorProps) =
               const url = URL.createObjectURL(blob);
               const a = document.createElement("a"); a.href = url; a.download = `vertex-${mode}-${compound}.json`; a.click();
             }}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-muted border border-border text-sm text-muted-foreground hover:text-foreground transition-colors">
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-muted border border-border text-sm text-muted-foreground hover:text-foreground transition-colors font-['JetBrains_Mono']">
               <Download className="w-4 h-4" /> Exportar JSON
             </button>
           </div>
 
-          <p className="text-[9px] text-muted-foreground/60 italic">
+          <p className="text-[9px] text-muted-foreground/60 italic font-['JetBrains_Mono']">
             Este conteúdo é para fins educacionais e informativos. Aplicações práticas requerem supervisão de profissional habilitado.
           </p>
         </motion.div>

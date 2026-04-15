@@ -1,12 +1,42 @@
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, FileText, Newspaper, AlertTriangle, GitBranch, MessageSquare } from "lucide-react";
+import { useState } from "react";
+import { ArrowLeft, FileText, Newspaper, AlertTriangle, GitBranch, MessageSquare, Scale, FlaskConical, Calculator, Shield, AlertCircle, Download } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import DrNexusChat from "@/components/nexus/DrNexusChat";
 import DrNexusGenerator from "@/components/nexus/DrNexusGenerator";
 import VertexLogoHorizontal from "@/components/vertex/VertexLogoHorizontal";
 
+const TABS = [
+  { value: "chat", label: "Chat", icon: MessageSquare },
+  { value: "ficha", label: "Ficha", icon: FileText },
+  { value: "editorial", label: "Editorial", icon: Newspaper },
+  { value: "briefing", label: "Briefing", icon: FileText },
+  { value: "offlabel", label: "Off-Label", icon: AlertTriangle },
+  { value: "sinergias", label: "Sinergias", icon: GitBranch },
+  { value: "comparativo", label: "Comparar", icon: Scale },
+  { value: "exames", label: "Exames", icon: FlaskConical },
+  { value: "dose", label: "Dose", icon: Calculator },
+  { value: "pct", label: "PCT", icon: Shield },
+  { value: "interacoes", label: "Interações", icon: AlertCircle },
+  { value: "exportar", label: "Exportar", icon: Download },
+];
+
+const TAB_META: Record<string, { title: string; description: string }> = {
+  ficha: { title: "Ficha Técnica Completa", description: "Identificação, mecanismo, farmacocinética, evidências, dosagem, sinergias, impacto na dieta e TOME VERTEX." },
+  editorial: { title: "Estudo da Semana", description: "Editorial científico — contexto, ciência, prática, gap e conclusão provocativa." },
+  briefing: { title: "Briefing Rápido", description: "Resumo de ~2 min para pré-atendimento com cliente." },
+  offlabel: { title: "Análise Off-Label", description: "Contraste uso aprovado vs. prática avançada com riscos regulatórios." },
+  sinergias: { title: "Mapa de Sinergias", description: "Combinações sinérgicas com mecanismos moleculares e protocolos práticos." },
+  comparativo: { title: "Comparativo Lado a Lado", description: "Análise comparativa detalhada entre dois compostos — mecanismo, dose, segurança e decisão." },
+  exames: { title: "Interpretação de Exames", description: "Análise laboratorial na ótica do atleta — hormonal, metabólico, hepático, renal e cardiovascular." },
+  dose: { title: "Calculadora de Dose", description: "Dose calibrada por peso com reconstituição, seringa e protocolo completo." },
+  pct: { title: "Protocolo PCT", description: "Restauração de eixo pós-ciclo com SERMs, hCG, ancilares e suporte nutricional." },
+  interacoes: { title: "Verificador de Interações", description: "Análise de stack — combinações seguras, antagonismos, gaps e otimização." },
+  exportar: { title: "Exportar JSON", description: "Gera ficha estruturada em JSON para integração com o banco de dados nutriON." },
+};
+
 const DrNexusPage = () => {
   const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState("chat");
 
   return (
     <div className="min-h-screen bg-[#030408] flex flex-col">
@@ -20,47 +50,46 @@ const DrNexusPage = () => {
         </div>
       </div>
 
-      <Tabs defaultValue="chat" className="flex-1 flex flex-col">
-        <TabsList className="mx-4 mt-3 bg-[#0a0514] p-1 rounded-xl grid grid-cols-6 h-auto border border-[#7c3aed]/15">
-          <TabsTrigger value="chat" className="text-[10px] py-1.5 gap-1 text-[#a78bfa]/60 data-[state=active]:bg-[#7c3aed]/20 data-[state=active]:text-[#a78bfa]">
-            <MessageSquare className="w-3 h-3" /> Chat
-          </TabsTrigger>
-          <TabsTrigger value="ficha" className="text-[10px] py-1.5 gap-1 text-[#a78bfa]/60 data-[state=active]:bg-[#7c3aed]/20 data-[state=active]:text-[#a78bfa]">
-            <FileText className="w-3 h-3" /> Ficha
-          </TabsTrigger>
-          <TabsTrigger value="editorial" className="text-[10px] py-1.5 gap-1 text-[#a78bfa]/60 data-[state=active]:bg-[#7c3aed]/20 data-[state=active]:text-[#a78bfa]">
-            <Newspaper className="w-3 h-3" /> Editorial
-          </TabsTrigger>
-          <TabsTrigger value="briefing" className="text-[10px] py-1.5 gap-1 text-[#a78bfa]/60 data-[state=active]:bg-[#7c3aed]/20 data-[state=active]:text-[#a78bfa]">
-            <FileText className="w-3 h-3" /> Briefing
-          </TabsTrigger>
-          <TabsTrigger value="offlabel" className="text-[10px] py-1.5 gap-1 text-[#a78bfa]/60 data-[state=active]:bg-[#7c3aed]/20 data-[state=active]:text-[#a78bfa]">
-            <AlertTriangle className="w-3 h-3" /> Off-Label
-          </TabsTrigger>
-          <TabsTrigger value="sinergias" className="text-[10px] py-1.5 gap-1 text-[#a78bfa]/60 data-[state=active]:bg-[#7c3aed]/20 data-[state=active]:text-[#a78bfa]">
-            <GitBranch className="w-3 h-3" /> Sinergias
-          </TabsTrigger>
-        </TabsList>
+      {/* Tab bar - scrollable */}
+      <div className="border-b border-[#7c3aed]/10 bg-[#0a0514]/80">
+        <div className="overflow-x-auto scrollbar-none">
+          <div className="flex gap-0.5 px-3 py-2 min-w-max">
+            {TABS.map(tab => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.value;
+              return (
+                <button
+                  key={tab.value}
+                  onClick={() => setActiveTab(tab.value)}
+                  className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-[10px] font-['JetBrains_Mono'] whitespace-nowrap transition-all ${
+                    isActive
+                      ? "bg-[#7c3aed]/20 text-[#a78bfa] border border-[#7c3aed]/30"
+                      : "text-[#a78bfa]/40 hover:text-[#a78bfa]/70 hover:bg-[#7c3aed]/5 border border-transparent"
+                  }`}
+                >
+                  <Icon className="w-3 h-3" />
+                  {tab.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
 
-        <TabsContent value="chat" className="flex-1 flex flex-col mt-0 data-[state=inactive]:hidden">
+      {/* Content */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {activeTab === "chat" ? (
           <DrNexusChat />
-        </TabsContent>
-        <TabsContent value="ficha" className="flex-1 overflow-y-auto mt-0">
-          <DrNexusGenerator mode="ficha" title="Ficha Técnica Completa" description="Gera ficha com identificação, mecanismo, evidências, aplicações, protocolos, sinergias, segurança, regulatório e TOME VERTEX." />
-        </TabsContent>
-        <TabsContent value="editorial" className="flex-1 overflow-y-auto mt-0">
-          <DrNexusGenerator mode="editorial" title="Estudo da Semana" description="Editorial científico para publicação — contexto, ciência, prática, gap e conclusão." />
-        </TabsContent>
-        <TabsContent value="briefing" className="flex-1 overflow-y-auto mt-0">
-          <DrNexusGenerator mode="briefing" title="Briefing Rápido" description="Resumo de ~2 min para pré-atendimento com cliente." />
-        </TabsContent>
-        <TabsContent value="offlabel" className="flex-1 overflow-y-auto mt-0">
-          <DrNexusGenerator mode="offlabel" title="Análise Off-Label" description="Contraste uso aprovado vs. prática avançada com riscos regulatórios." />
-        </TabsContent>
-        <TabsContent value="sinergias" className="flex-1 overflow-y-auto mt-0">
-          <DrNexusGenerator mode="sinergias" title="Mapa de Sinergias" description="Combinações sinérgicas com mecanismos e protocolos práticos." />
-        </TabsContent>
-      </Tabs>
+        ) : (
+          <div className="flex-1 overflow-y-auto">
+            <DrNexusGenerator
+              mode={activeTab}
+              title={TAB_META[activeTab]?.title || activeTab}
+              description={TAB_META[activeTab]?.description || ""}
+            />
+          </div>
+        )}
+      </div>
     </div>
   );
 };
