@@ -24,7 +24,7 @@ const SYSTEM_PROMPT = `Você é um pesquisador científico especialista em pept�
 ## O Que Ainda Não Sabemos
 [Lacunas na pesquisa, questões em aberto, trials em andamento]
 
-## INSIGHT NEXUS-BIO
+## INSIGHT VERTEX-BIO
 [Uma revelação que sintetiza tudo de forma única — o que ninguém está falando]
 
 Use dados reais, seja específico com percentuais e não invente estudos. Responda em português brasileiro.`;
