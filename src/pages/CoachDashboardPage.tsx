@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Users, AlertTriangle, TrendingUp, Search, Bell, Settings, UserPlus, ArrowUpRight, Link2, Copy, Loader2, Trash2, Zap, Dumbbell, FlaskConical, Bone, Flame, ArrowLeft } from "lucide-react";
+import { Users, AlertTriangle, TrendingUp, Search, Bell, Settings, UserPlus, ArrowUpRight, Link2, Copy, Loader2, Trash2, Zap, Dumbbell, FlaskConical, Bone, Flame, ArrowLeft, Handshake } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "@/hooks/use-toast";
 import {
@@ -35,6 +35,7 @@ const CoachDashboardPage = () => {
   const { user } = useAuth();
   const { profile, loading: profileLoading } = useCoachProfile();
   const [patients, setPatients] = useState<PatientRow[]>([]);
+  const [partners, setPartners] = useState<any[]>([]);
   const [alerts, setAlerts] = useState<any[]>([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
@@ -90,6 +91,14 @@ const CoachDashboardPage = () => {
         }
       }
 
+      // Load partners created by this admin/coach
+      const { data: partnersData } = await supabase
+        .from("partners")
+        .select("id, full_name, email, plan, status, created_at, user_id")
+        .eq("created_by", user?.id)
+        .order("created_at", { ascending: false });
+
+      setPartners(partnersData || []);
       setPatients(enriched);
       setAlerts(alertsData || []);
       setLoading(false);
@@ -471,6 +480,39 @@ const CoachDashboardPage = () => {
                   </Card>
                 </motion.div>
               ))
+            )}
+            {/* Partners section */}
+            {partners.length > 0 && (
+              <div className="space-y-3 mt-6">
+                <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                  <Handshake className="w-5 h-5" /> Meus Parceiros
+                </h2>
+                {partners.map((p, i) => (
+                  <motion.div key={p.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.03 }}>
+                    <Card>
+                      <CardContent className="p-3 flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-xs">
+                            {p.full_name?.charAt(0) || "P"}
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-foreground">{p.full_name}</p>
+                            <p className="text-[10px] text-muted-foreground">{p.email}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline" className="text-[10px]">
+                            {p.plan?.toUpperCase() || "ON+"}
+                          </Badge>
+                          <Badge className={p.status === "active" ? "bg-green-500/20 text-green-400 border-green-500/30 text-[10px]" : "bg-red-500/20 text-red-400 border-red-500/30 text-[10px]"}>
+                            {p.status === "active" ? "Ativo" : "Inativo"}
+                          </Badge>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                ))}
+              </div>
             )}
           </div>
         </div>

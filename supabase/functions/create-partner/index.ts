@@ -130,7 +130,6 @@ Deno.serve(async (req) => {
 
     if (createErr) {
       if (createErr.message?.includes("already been registered")) {
-        // User exists in auth — find their ID and reuse
         const { data: listData, error: listErr } = await adminClient.auth.admin.listUsers();
         if (listErr) {
           console.error("create-partner list users error", listErr);
@@ -150,7 +149,6 @@ Deno.serve(async (req) => {
         }
         userId = existingUser.id;
 
-        // Update password so partner can log in with the new credentials
         await adminClient.auth.admin.updateUserById(userId, {
           password,
           email_confirm: true,
@@ -186,6 +184,48 @@ Deno.serve(async (req) => {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
+    }
+
+    // Also link partner as coach student if caller has a coach profile
+    try {
+      const { data: coachProfile } = await adminClient
+        .from("coach_profiles")
+        .select("id, alunos_ativos, max_alunos")
+        .eq("user_id", callerUserId)
+        .maybeSingle();
+
+      if (coachProfile) {
+        // Check not already linked
+        const { data: existing } = await adminClient
+          .from("coach_patients")
+          .select("id")
+          .eq("coach_id", coachProfile.id)
+          .eq("patient_user_id", userId)
+          .maybeSingle();
+
+        if (!existing) {
+          await adminClient.from("coach_patients").insert({
+            coach_id: coachProfile.id,
+            patient_user_id: userId,
+            status: "active",
+            notes: `Parceiro: ${full_name}`,
+          });
+
+          // Update profile with coach reference and role
+          await adminClient.from("profiles").update({
+            coach_profile_id: coachProfile.id,
+            role: "aluno_coach",
+            plano_atual: plan || "on_plus",
+          }).eq("user_id", userId);
+
+          // Increment alunos_ativos
+          await adminClient.from("coach_profiles").update({
+            alunos_ativos: (coachProfile.alunos_ativos || 0) + 1,
+          }).eq("id", coachProfile.id);
+        }
+      }
+    } catch (linkErr) {
+      console.error("create-partner coach link error (non-fatal):", linkErr);
     }
 
     return new Response(
