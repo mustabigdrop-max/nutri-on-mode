@@ -80,6 +80,19 @@ NUNCA CONFUNDIR:
 SELEÇÃO DE EXERCÍCIOS — biomecanicamente inteligente:
 Considerar: músculo-alvo, perfil de resistência, estabilidade, amplitude útil, stretched position, peak contraction, custo articular, relação estímulo/fadiga.
 
+REGRA ANTI-REPETIÇÃO (CRÍTICA):
+- NUNCA gere treinos "de template" ou exercícios sempre iguais.
+- VARIE a seleção de exercícios entre gerações: use rotação inteligente entre variações biomecânicas equivalentes.
+- Considere ângulos diferentes, equipamentos diferentes, pegadas diferentes, planos de movimento diferentes.
+- Se o cliente já fez um ciclo anterior, o novo bloco DEVE ter pelo menos 30-40% de exercícios diferentes.
+- Use exercícios menos populares mas igualmente eficazes quando fizer sentido (ex: Floor Press, Pendlay Row, Landmine Press, Zercher Squat).
+
+EXERCÍCIOS SUBSTITUTOS (OBRIGATÓRIO):
+- Para CADA exercício prescrito, inclua um array "substitutes" com 2-3 alternativas viáveis.
+- Cada substituto deve conter: "name", "reason" (por que é uma boa alternativa), "equipment" (equipamento necessário).
+- Os substitutos devem cobrir cenários como: "aparelho ocupado", "não tem este equipamento", "dor/desconforto neste exercício".
+- Priorize substitutos que mantenham o mesmo padrão de movimento e perfil de resistência.
+
 TÉCNICAS AVANÇADAS (APENAS quando fizer sentido):
 Drop set, rest-pause, myo-reps, giant sets, supersets, cluster sets, mechanical drop sets.
 
@@ -307,7 +320,10 @@ FORMATO JSON OBRIGATÓRIO:
           },
           "execution_cues": "string",
           "why_this_exercise": "string",
-          "biomechanics_note": "string"
+          "biomechanics_note": "string",
+          "substitutes": [
+            { "name": "string", "reason": "string", "equipment": "string" }
+          ]
         }
       ],
       "session_notes": "string"

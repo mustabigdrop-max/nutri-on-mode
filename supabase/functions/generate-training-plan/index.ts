@@ -35,6 +35,17 @@ REGRAS OBRIGATÓRIAS:
 - Séries de trabalho com técnica de intensidade adequada ao nível
 - Progressão: Double Progression (atingir rep máx antes de subir carga)
 
+REGRA ANTI-REPETIÇÃO (CRÍTICA):
+- NUNCA repita sempre os mesmos exercícios em cada geração.
+- USE rotação inteligente entre variações biomecânicas equivalentes.
+- VARIE ângulos, pegadas, equipamentos e planos de movimento.
+- Inclua exercícios menos comuns mas eficazes (ex: Pendlay Row, Landmine Press, Floor Press, Zercher Squat, Meadows Row).
+
+EXERCÍCIOS SUBSTITUTOS (OBRIGATÓRIO):
+- Para CADA exercício, inclua "substitutes": array com 2-3 alternativas.
+- Cada substituto: { "name": "string", "reason": "motivo da troca", "equipment": "equipamento necessário" }
+- Cobrir cenários: aparelho ocupado, não tem equipamento, dor/desconforto.
+
 ${coachNotes ? `OBSERVAÇÕES DO COACH:\n${coachNotes}` : ""}
 
 FORMATO DE RESPOSTA (JSON OBRIGATÓRIO):
@@ -44,7 +55,7 @@ FORMATO DE RESPOSTA (JSON OBRIGATÓRIO):
       "day_index": 0,
       "title": "Push (Peito + Ombro + Tríceps)",
       "exercises": [
-        { "name": "Supino Reto", "sets": "4", "reps": "8-10", "rest": "90s", "notes": "Top set + 2 back-offs" },
+        { "name": "Supino Reto", "sets": "4", "reps": "8-10", "rest": "90s", "notes": "Top set + 2 back-offs", "substitutes": [{"name": "Floor Press", "reason": "Menos stress no ombro", "equipment": "Barra + anilhas"}] },
         ...
       ]
     },
