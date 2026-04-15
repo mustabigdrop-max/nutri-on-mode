@@ -91,6 +91,14 @@ const CoachDashboardPage = () => {
         }
       }
 
+      // Load partners created by this admin/coach
+      const { data: partnersData } = await supabase
+        .from("partners")
+        .select("id, full_name, email, plan, status, created_at, user_id")
+        .eq("created_by", user?.id)
+        .order("created_at", { ascending: false });
+
+      setPartners(partnersData || []);
       setPatients(enriched);
       setAlerts(alertsData || []);
       setLoading(false);
