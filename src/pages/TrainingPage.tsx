@@ -1032,32 +1032,107 @@ const joinDefinedParts = (parts: Array<string | false | null | undefined>, separ
 );
 
 function ExerciseCard({ exercise, expanded, onToggle }: { exercise: any; expanded: boolean; onToggle: () => void }) {
-  const struct = exercise.structure || {};
+  const [showSubs, setShowSubs] = useState(false);
+  const [currentExercise, setCurrentExercise] = useState(exercise);
+  const [swapHistory, setSwapHistory] = useState<string[]>([]);
+
+  const struct = currentExercise.structure || {};
   const hasTopSet = !!struct.top_set;
-  const safeExerciseName = sanitizeRenderedText(exercise.name, "Exercício prescrito");
-  const safeMuscleTarget = sanitizeRenderedText(exercise.muscle_target, "Alvo muscular ajustado");
-  const safeExecutionCues = hasMeaningfulValue(exercise.execution_cues)
-    ? sanitizeRenderedText(exercise.execution_cues, "Execução guiada pelo coach.")
+  const safeExerciseName = sanitizeRenderedText(currentExercise.name, "Exercício prescrito");
+  const safeMuscleTarget = sanitizeRenderedText(currentExercise.muscle_target, "Alvo muscular ajustado");
+  const safeExecutionCues = hasMeaningfulValue(currentExercise.execution_cues)
+    ? sanitizeRenderedText(currentExercise.execution_cues, "Execução guiada pelo coach.")
     : "";
-  const safeWhyThisExercise = hasMeaningfulValue(exercise.why_this_exercise)
-    ? sanitizeRenderedText(exercise.why_this_exercise, "Escolha técnica ajustada ao bloco.")
+  const safeWhyThisExercise = hasMeaningfulValue(currentExercise.why_this_exercise)
+    ? sanitizeRenderedText(currentExercise.why_this_exercise, "Escolha técnica ajustada ao bloco.")
     : "";
+  const substitutes = currentExercise.substitutes || exercise.substitutes || [];
+  const isSwapped = swapHistory.length > 0;
+
+  const handleSwap = (sub: any) => {
+    setSwapHistory(prev => [...prev, currentExercise.name]);
+    setCurrentExercise({
+      ...currentExercise,
+      name: sub.name,
+      why_this_exercise: sub.reason,
+      execution_cues: `Substituto para: ${swapHistory.length > 0 ? swapHistory[0] : exercise.name}. Equipamento: ${sub.equipment}.`,
+    });
+    setShowSubs(false);
+    toast.success(`Exercício trocado para ${sub.name}`);
+  };
+
+  const handleRevert = () => {
+    setCurrentExercise(exercise);
+    setSwapHistory([]);
+    toast.success("Exercício original restaurado");
+  };
 
   return (
-    <div className="rounded-xl overflow-hidden" style={{ background: SURFACE2, border: `1px solid ${BORDER}` }}>
+    <div className="rounded-xl overflow-hidden" style={{ background: SURFACE2, border: `1px solid ${isSwapped ? "rgba(59,130,246,0.3)" : BORDER}` }}>
       <button onClick={onToggle} className="w-full p-3 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
           <div className="w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-black" style={{ background: GREEN_DIM, color: GREEN }}>{exercise.order}</div>
           <div className="text-left">
-            <p className="text-[11px] font-bold" style={{ color: TEXT }}>{safeExerciseName}</p>
+            <div className="flex items-center gap-1.5">
+              <p className="text-[11px] font-bold" style={{ color: TEXT }}>{safeExerciseName}</p>
+              {isSwapped && (
+                <span className="text-[7px] px-1 py-0.5 rounded font-bold" style={{ background: "rgba(59,130,246,0.15)", color: "#60a5fa" }}>SUBSTITUTO</span>
+              )}
+            </div>
             <p className="text-[9px]" style={{ color: TEXT_MUTED }}>{safeMuscleTarget}</p>
           </div>
         </div>
         <div className="flex items-center gap-1.5">
           {hasTopSet && <span className="text-[8px] px-1.5 py-0.5 rounded-full font-bold" style={{ background: "rgba(249,115,22,0.12)", color: "#f97316" }}>TOP SET</span>}
+          {substitutes.length > 0 && (
+            <button onClick={(e) => { e.stopPropagation(); setShowSubs(!showSubs); }}
+              className="w-6 h-6 rounded-lg flex items-center justify-center transition-all hover:scale-110"
+              style={{ background: "rgba(59,130,246,0.1)", border: "1px solid rgba(59,130,246,0.2)" }}
+              title="Ver exercícios substitutos">
+              <RotateCcw className="w-3 h-3" style={{ color: "#60a5fa" }} />
+            </button>
+          )}
           {expanded ? <ChevronUp className="w-3 h-3" style={{ color: TEXT_MUTED }} /> : <ChevronDown className="w-3 h-3" style={{ color: TEXT_MUTED }} />}
         </div>
       </button>
+
+      {/* Substitutes Panel */}
+      <AnimatePresence>
+        {showSubs && substitutes.length > 0 && (
+          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }}>
+            <div className="px-3 pb-2 space-y-1.5">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-[9px] font-bold tracking-widest uppercase" style={{ color: "#60a5fa" }}>
+                  🔄 EXERCÍCIOS SUBSTITUTOS
+                </span>
+                {isSwapped && (
+                  <button onClick={handleRevert} className="text-[9px] font-semibold px-2 py-1 rounded-lg" style={{ background: "rgba(251,191,36,0.1)", color: "#fbbf24" }}>
+                    ↩ Original
+                  </button>
+                )}
+              </div>
+              {substitutes.map((sub: any, i: number) => (
+                <button key={i} onClick={() => handleSwap(sub)}
+                  className="w-full text-left rounded-lg p-2.5 transition-all hover:scale-[1.01]"
+                  style={{ background: "rgba(59,130,246,0.05)", border: "1px solid rgba(59,130,246,0.12)" }}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[11px] font-bold" style={{ color: TEXT }}>{sub.name}</p>
+                      <p className="text-[9px] mt-0.5" style={{ color: TEXT_DIM }}>{sub.reason}</p>
+                    </div>
+                    <div className="flex items-center gap-1.5 ml-2 shrink-0">
+                      <span className="text-[8px] px-1.5 py-0.5 rounded-full" style={{ background: "rgba(59,130,246,0.1)", color: "#60a5fa" }}>
+                        {sub.equipment}
+                      </span>
+                      <ChevronRight className="w-3 h-3" style={{ color: "#60a5fa" }} />
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <AnimatePresence>
         {expanded && (
