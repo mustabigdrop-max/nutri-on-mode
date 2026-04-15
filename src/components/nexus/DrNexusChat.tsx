@@ -6,7 +6,7 @@ import VoiceRecorderButton from "@/components/ui/VoiceRecorderButton";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { VertexLogo32 } from "@/components/vertex/VertexLogoSmall";
+import { VertexLogo48, VertexLogo20 } from "@/components/vertex/VertexLogoSmall";
 
 interface VertexMessage {
   role: "user" | "assistant";
@@ -97,7 +97,7 @@ const DrNexusChat = () => {
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
         {messages.length === 0 && !streamingContent && (
           <div className="text-center py-12 space-y-3">
-            <VertexLogoSmall size={48} className="mx-auto" />
+            <VertexLogo48 className="mx-auto" />
             <p className="text-sm text-muted-foreground font-['JetBrains_Mono']">Pergunte ao Dr. VERTEX sobre qualquer composto</p>
             <div className="flex flex-wrap justify-center gap-2 mt-4">
               {["Retatrutida", "BPC-157 + TB-500", "Protocolo PCT", "Ashwagandha KSM-66", "TRT otimizada"].map(s => (
@@ -115,7 +115,7 @@ const DrNexusChat = () => {
             className={`flex gap-2 ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
             {msg.role === "assistant" && (
               <div className="w-7 h-7 rounded-full bg-[#7c3aed]/20 flex items-center justify-center flex-shrink-0 mt-1 border border-[#7c3aed]/30">
-                <VertexLogoSmall size={20} />
+                <VertexLogo20 />
               </div>
             )}
             <div className={`max-w-[85%] ${msg.role === "user" ? "rounded-2xl rounded-br-md bg-[#7c3aed] text-white px-4 py-3" : ""}`}>
@@ -145,7 +145,7 @@ const DrNexusChat = () => {
         {(isLoading || streamingContent) && !messages.find((_, i) => i === messages.length - 1 && messages[i]?.role === "assistant") && (
           <div className="flex gap-2">
             <div className="w-7 h-7 rounded-full bg-[#7c3aed]/20 flex items-center justify-center flex-shrink-0 border border-[#7c3aed]/30">
-              <VertexLogoSmall size={20} />
+              <VertexLogo20 />
             </div>
             <div className="flex-1">
               <span className="text-[9px] font-['JetBrains_Mono'] text-[#a78bfa] uppercase tracking-wider mb-1 block">DR. VERTEX</span>
