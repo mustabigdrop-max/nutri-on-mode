@@ -108,7 +108,7 @@ const LabPage = () => {
                 onClick={() => navigate("/dr-nexus")}
                 className="flex-1 flex items-center justify-center gap-1 text-xs px-3 py-1.5 rounded-md text-destructive hover:bg-destructive/10 transition-colors font-medium"
               >
-                <FlaskConical className="w-3.5 h-3.5" /> Dr. NEXUS
+                <FlaskConical className="w-3.5 h-3.5" /> Dr. VERTEX
               </button>
               <TabsTrigger value="cardio" className="flex-1 text-xs gap-1 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
                 <Activity className="w-3.5 h-3.5" /> Cardio
