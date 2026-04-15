@@ -35,6 +35,7 @@ const CoachDashboardPage = () => {
   const { user } = useAuth();
   const { profile, loading: profileLoading } = useCoachProfile();
   const [patients, setPatients] = useState<PatientRow[]>([]);
+  const [partners, setPartners] = useState<any[]>([]);
   const [alerts, setAlerts] = useState<any[]>([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
