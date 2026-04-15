@@ -22,7 +22,7 @@ export interface Peptide {
 export const CATEGORIES = [
   "Todos", "Metabólico", "Eixo GH", "Eixo IGF", "Reparo", "Blends",
   "Neuro/Cognitivo", "Longevidade", "Bioreguladores", "Sexual/Melanocortina",
-  "Cosmético", "Imune",
+  "Cosmético", "Imune", "Mitocondrial",
 ] as const;
 
 export const OBJECTIVE_TAGS = [
