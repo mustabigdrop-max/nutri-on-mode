@@ -481,6 +481,39 @@ const CoachDashboardPage = () => {
                 </motion.div>
               ))
             )}
+            {/* Partners section */}
+            {partners.length > 0 && (
+              <div className="space-y-3 mt-6">
+                <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                  <Handshake className="w-5 h-5" /> Meus Parceiros
+                </h2>
+                {partners.map((p, i) => (
+                  <motion.div key={p.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.03 }}>
+                    <Card>
+                      <CardContent className="p-3 flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-xs">
+                            {p.full_name?.charAt(0) || "P"}
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-foreground">{p.full_name}</p>
+                            <p className="text-[10px] text-muted-foreground">{p.email}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline" className="text-[10px]">
+                            {p.plan?.toUpperCase() || "ON+"}
+                          </Badge>
+                          <Badge className={p.status === "active" ? "bg-green-500/20 text-green-400 border-green-500/30 text-[10px]" : "bg-red-500/20 text-red-400 border-red-500/30 text-[10px]"}>
+                            {p.status === "active" ? "Ativo" : "Inativo"}
+                          </Badge>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </main>
