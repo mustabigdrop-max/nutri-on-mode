@@ -2,6 +2,12 @@
 // BANCO DE DADOS LOCAL DE EXERCÍCIOS — SELEÇÃO INTELIGENTE
 // ============================================================
 
+export interface ExerciseSubstitute {
+  nome: string;
+  motivo: string;
+  equipamento: string;
+}
+
 export interface ExerciseEntry {
   nome: string;
   rank: "🥇" | "🥈";
@@ -10,6 +16,7 @@ export interface ExerciseEntry {
   dicas: string[];
   erros: string[];
   fases: { bulking: string; cutting: string };
+  substitutos?: ExerciseSubstitute[];
 }
 
 export interface MuscleSubgroup {
