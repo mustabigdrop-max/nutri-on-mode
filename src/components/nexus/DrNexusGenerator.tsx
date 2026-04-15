@@ -5,7 +5,7 @@ import { Loader2, Search, Bookmark, Download, ExternalLink, Database } from "luc
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import VertexLogoSmall from "@/components/vertex/VertexLogoSmall";
+import { VertexLogo48 } from "@/components/vertex/VertexLogoSmall";
 
 interface DrNexusGeneratorProps {
   mode: string;

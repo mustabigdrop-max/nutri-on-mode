@@ -6,7 +6,7 @@ import VoiceRecorderButton from "@/components/ui/VoiceRecorderButton";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import VertexLogoSmall from "@/components/vertex/VertexLogoSmall";
+import { VertexLogo32 } from "@/components/vertex/VertexLogoSmall";
 
 interface VertexMessage {
   role: "user" | "assistant";
