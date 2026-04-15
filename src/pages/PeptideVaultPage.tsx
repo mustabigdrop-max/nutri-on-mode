@@ -350,7 +350,7 @@ function EncyclopediaTab() {
 
         {/* Category filter */}
         <div className="flex flex-wrap gap-1.5">
-          {["Todos","Metabólico","Eixo GH","Eixo IGF","Reparo","Blends","Neuro/Cognitivo","Longevidade","Bioreguladores","Sexual/Melanocortina","Cosmético","Imune"].map(c => (
+          {["Todos","Metabólico","Eixo GH","Eixo IGF","Reparo","Blends","Neuro/Cognitivo","Longevidade","Bioreguladores","Sexual/Melanocortina","Cosmético","Imune","Mitocondrial"].map(c => (
             <button key={c} onClick={() => setCatFilter(c)}
               className={`text-[10px] px-2.5 py-1 rounded-full border transition-colors ${catFilter === c ? "bg-[#4ade80]/20 border-[#4ade80]/50 text-[#4ade80]" : "border-gray-700 text-gray-500 hover:text-gray-300"}`}>
               {c}
@@ -361,7 +361,7 @@ function EncyclopediaTab() {
         {/* Tag filter */}
         <div className="flex flex-wrap gap-1.5">
           <span className="text-[10px] text-gray-600 self-center mr-1">Objetivo:</span>
-          {["todos","emagrecimento","musculação","longevidade","neuro","imune","reparo","sono","sexual","metabolismo","aprovado","gh","blend","anti-aging","cognitivo"].map(t => (
+          {["todos","emagrecimento","musculação","longevidade","neuro","imune","reparo","sono","sexual","metabolismo","aprovado","gh","blend","anti-aging","cognitivo","cosmético","mitocondrial"].map(t => (
             <button key={t} onClick={() => setTagFilter(t)}
               className={`text-[10px] px-2 py-0.5 rounded-full border transition-colors ${tagFilter === t ? "bg-[#4ade80]/15 border-[#4ade80]/40 text-[#4ade80]" : "border-gray-800 text-gray-600 hover:text-gray-400"}`}>
               {t}
