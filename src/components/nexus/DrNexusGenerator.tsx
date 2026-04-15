@@ -40,7 +40,7 @@ const DrNexusGenerator = ({ mode, title, description }: DrNexusGeneratorProps) =
       if (error) throw error;
       setResult(data);
     } catch (e: any) {
-      console.error("Dr. NEXUS generator error:", e);
+      console.error("Dr. VERTEX generator error:", e);
       toast.error("Erro ao gerar conteúdo.");
     }
     setIsLoading(false);
@@ -53,7 +53,7 @@ const DrNexusGenerator = ({ mode, title, description }: DrNexusGeneratorProps) =
       tipo: mode === "ficha" ? "ficha_tecnica" : mode,
       titulo: `[${mode.toUpperCase()}] ${compound}`,
       conteudo: { compound, mode, answer: result.answer, citations: result.citations, varreduraStatus: result.varreduraStatus },
-      tags: ["dr-nexus", mode, compound.toLowerCase()],
+      tags: ["dr-vertex", mode, compound.toLowerCase()],
     });
     toast.success("Salvo no Caderno Científico!");
   };
@@ -62,13 +62,11 @@ const DrNexusGenerator = ({ mode, title, description }: DrNexusGeneratorProps) =
 
   return (
     <div className="px-4 py-6 space-y-6">
-      {/* Header */}
       <div className="space-y-2">
         <h2 className="text-lg font-bold text-foreground">{title}</h2>
         <p className="text-xs text-muted-foreground">{description}</p>
       </div>
 
-      {/* Input */}
       <div className="flex gap-2">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -83,7 +81,6 @@ const DrNexusGenerator = ({ mode, title, description }: DrNexusGeneratorProps) =
         </button>
       </div>
 
-      {/* Suggestions */}
       {!result && !isLoading && (
         <div className="flex flex-wrap gap-2">
           {suggestions.map(s => (
@@ -95,22 +92,19 @@ const DrNexusGenerator = ({ mode, title, description }: DrNexusGeneratorProps) =
         </div>
       )}
 
-      {/* Loading */}
       {isLoading && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
           className="rounded-2xl bg-card border border-red-500/20 p-6 text-center space-y-3">
           <Loader2 className="w-8 h-8 text-red-400 animate-spin mx-auto" />
           <div>
-            <p className="text-sm font-medium text-foreground">Dr. NEXUS processando...</p>
-            <p className="text-[10px] font-mono text-muted-foreground mt-1">Varredura Supabase → Perplexity → Análise IA</p>
+            <p className="text-sm font-medium text-foreground">Dr. VERTEX convergindo...</p>
+            <p className="text-[10px] font-mono text-muted-foreground mt-1">Varredura nutriON → Perplexity → Análise IA</p>
           </div>
         </motion.div>
       )}
 
-      {/* Result */}
       {result && (
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
-          {/* Status badges */}
           <div className="flex flex-wrap gap-2">
             {result.varreduraStatus && (
               <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-red-500/10 border border-red-500/20 text-[10px] font-mono text-red-400">
@@ -124,7 +118,6 @@ const DrNexusGenerator = ({ mode, title, description }: DrNexusGeneratorProps) =
             )}
           </div>
 
-          {/* Content */}
           <div className="rounded-2xl bg-card border border-red-500/20 px-5 py-5">
             <div className="prose prose-sm prose-invert max-w-none text-sm
               [&_p]:mb-3 [&_ul]:mb-3 [&_strong]:text-red-400 [&_h1]:text-red-400 [&_h1]:text-lg [&_h1]:font-bold
@@ -135,7 +128,6 @@ const DrNexusGenerator = ({ mode, title, description }: DrNexusGeneratorProps) =
             </div>
           </div>
 
-          {/* Citations */}
           {result.citations && result.citations.length > 0 && (
             <div className="rounded-xl bg-card border border-border p-4 space-y-2">
               <p className="text-[10px] font-mono text-muted-foreground uppercase">Fontes Científicas</p>
@@ -148,7 +140,6 @@ const DrNexusGenerator = ({ mode, title, description }: DrNexusGeneratorProps) =
             </div>
           )}
 
-          {/* Actions */}
           <div className="flex gap-3">
             <button onClick={saveToNotebook}
               className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-red-500/10 border border-red-500/20 text-sm text-red-400 hover:bg-red-500/20 transition-colors">
@@ -157,14 +148,13 @@ const DrNexusGenerator = ({ mode, title, description }: DrNexusGeneratorProps) =
             <button onClick={() => {
               const blob = new Blob([JSON.stringify({ compound, mode, ...result }, null, 2)], { type: "application/json" });
               const url = URL.createObjectURL(blob);
-              const a = document.createElement("a"); a.href = url; a.download = `nexus-${mode}-${compound}.json`; a.click();
+              const a = document.createElement("a"); a.href = url; a.download = `vertex-${mode}-${compound}.json`; a.click();
             }}
               className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-muted border border-border text-sm text-muted-foreground hover:text-foreground transition-colors">
               <Download className="w-4 h-4" /> Exportar JSON
             </button>
           </div>
 
-          {/* Disclaimer */}
           <p className="text-[9px] text-muted-foreground/60 italic">
             Este conteúdo é para fins educacionais e informativos. Aplicações práticas requerem supervisão de profissional habilitado.
           </p>

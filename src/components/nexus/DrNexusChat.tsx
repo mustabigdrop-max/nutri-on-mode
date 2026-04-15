@@ -7,14 +7,14 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-interface NexusMessage {
+interface VertexMessage {
   role: "user" | "assistant";
   content: string;
 }
 
 const DrNexusChat = () => {
   const { user } = useAuth();
-  const [messages, setMessages] = useState<NexusMessage[]>([]);
+  const [messages, setMessages] = useState<VertexMessage[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [streamingContent, setStreamingContent] = useState("");
@@ -26,7 +26,7 @@ const DrNexusChat = () => {
 
   const sendMessage = async (text: string) => {
     if (!text.trim() || isLoading) return;
-    const userMsg: NexusMessage = { role: "user", content: text.trim() };
+    const userMsg: VertexMessage = { role: "user", content: text.trim() };
     setMessages(prev => [...prev, userMsg]);
     setInput("");
     setIsLoading(true);
@@ -42,7 +42,6 @@ const DrNexusChat = () => {
         },
       });
 
-      // Handle streaming
       if (response.data instanceof ReadableStream) {
         const reader = response.data.getReader();
         const decoder = new TextDecoder();
@@ -73,21 +72,21 @@ const DrNexusChat = () => {
         throw new Error(response.error.message || "Erro na resposta");
       }
     } catch (e: any) {
-      console.error("Dr. NEXUS error:", e);
-      toast.error("Erro ao conectar com Dr. NEXUS.");
+      console.error("Dr. VERTEX error:", e);
+      toast.error("Erro ao conectar com Dr. VERTEX.");
     }
     setIsLoading(false);
   };
 
-  const saveToNotebook = async (msg: NexusMessage, idx: number) => {
+  const saveToNotebook = async (msg: VertexMessage, idx: number) => {
     if (!user) return;
     const questionMsg = messages[idx - 1];
     await supabase.from("lab_saved_items").insert({
       user_id: user.id,
       tipo: "resposta",
-      titulo: questionMsg?.content?.slice(0, 80) || "Resposta Dr. NEXUS",
-      conteudo: { question: questionMsg?.content, answer: msg.content, source: "dr-nexus" },
-      tags: ["dr-nexus", "farmacologia"],
+      titulo: questionMsg?.content?.slice(0, 80) || "Resposta Dr. VERTEX",
+      conteudo: { question: questionMsg?.content, answer: msg.content, source: "dr-vertex" },
+      tags: ["dr-vertex", "farmacologia"],
     });
     toast.success("Salvo no Caderno Científico!");
   };
@@ -98,7 +97,7 @@ const DrNexusChat = () => {
         {messages.length === 0 && !streamingContent && (
           <div className="text-center py-12 space-y-3">
             <Brain className="w-12 h-12 text-red-400/30 mx-auto" />
-            <p className="text-sm text-muted-foreground">Pergunte ao Dr. NEXUS sobre qualquer composto</p>
+            <p className="text-sm text-muted-foreground">Pergunte ao Dr. VERTEX sobre qualquer composto</p>
             <div className="flex flex-wrap justify-center gap-2 mt-4">
               {["Retatrutida", "BPC-157 + TB-500", "Protocolo PCT", "Ashwagandha KSM-66", "TRT otimizada"].map(s => (
                 <button key={s} onClick={() => sendMessage(s)}
@@ -121,7 +120,7 @@ const DrNexusChat = () => {
             <div className={`max-w-[85%] ${msg.role === "user" ? "rounded-2xl rounded-br-md bg-red-500 text-white px-4 py-3" : ""}`}>
               {msg.role === "assistant" ? (
                 <div>
-                  <span className="text-[9px] font-mono text-red-400 uppercase tracking-wider mb-1 block">DR. NEXUS</span>
+                  <span className="text-[9px] font-mono text-red-400 uppercase tracking-wider mb-1 block">DR. VERTEX</span>
                   <div className="rounded-2xl rounded-bl-md bg-card border border-red-500/20 px-4 py-3 space-y-2">
                     <div className="prose prose-sm prose-invert max-w-none text-sm
                       [&_p]:mb-2 [&_ul]:mb-2 [&_strong]:text-red-400 [&_h3]:text-red-400 [&_h3]:text-sm [&_h3]:font-bold
@@ -148,7 +147,7 @@ const DrNexusChat = () => {
               <Brain className="w-3.5 h-3.5 text-red-400" />
             </div>
             <div className="flex-1">
-              <span className="text-[9px] font-mono text-red-400 uppercase tracking-wider mb-1 block">DR. NEXUS</span>
+              <span className="text-[9px] font-mono text-red-400 uppercase tracking-wider mb-1 block">DR. VERTEX</span>
               <div className="bg-card border border-red-500/20 rounded-2xl rounded-bl-md px-4 py-3">
                 {streamingContent ? (
                   <div className="prose prose-sm prose-invert max-w-none text-sm [&_strong]:text-red-400 [&_h3]:text-red-400">
@@ -157,7 +156,7 @@ const DrNexusChat = () => {
                 ) : (
                   <div className="flex items-center gap-2">
                     <Loader2 className="w-4 h-4 text-red-400 animate-spin" />
-                    <span className="text-[10px] font-mono text-muted-foreground">analisando composto...</span>
+                    <span className="text-[10px] font-mono text-muted-foreground">convergindo evidências...</span>
                   </div>
                 )}
               </div>
@@ -170,7 +169,7 @@ const DrNexusChat = () => {
         <div className="flex gap-2 max-w-lg mx-auto">
           <input type="text" value={input} onChange={e => setInput(e.target.value)}
             onKeyDown={e => e.key === "Enter" && sendMessage(input)}
-            placeholder="Pergunte ao Dr. NEXUS..."
+            placeholder="Pergunte ao Dr. VERTEX..."
             className="flex-1 px-4 py-3 rounded-xl border border-border bg-card text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-red-500/50" />
           <VoiceRecorderButton onTranscript={(t) => setInput(prev => prev ? prev + " " + t : t)} disabled={isLoading} />
           <button onClick={() => sendMessage(input)} disabled={!input.trim() || isLoading}

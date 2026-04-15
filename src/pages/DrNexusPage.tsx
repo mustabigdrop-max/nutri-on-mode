@@ -20,10 +20,10 @@ const DrNexusPage = () => {
             <Brain className="w-5 h-5 text-red-400" />
           </div>
           <div>
-            <h1 className="text-sm font-bold text-foreground">Dr. NEXUS — Pharmacological Intelligence</h1>
+            <h1 className="text-sm font-bold text-foreground">Dr. VERTEX — Pharmacological Intelligence</h1>
             <div className="flex items-center gap-1.5">
               <div className="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse" />
-              <span className="text-[10px] text-red-400 font-mono">nutriON CSO | v1.0</span>
+              <span className="text-[10px] text-red-400 font-mono">nutriON CSO | v3.0</span>
             </div>
           </div>
         </div>
@@ -55,7 +55,7 @@ const DrNexusPage = () => {
           <DrNexusChat />
         </TabsContent>
         <TabsContent value="ficha" className="flex-1 overflow-y-auto mt-0">
-          <DrNexusGenerator mode="ficha" title="Ficha Técnica Completa" description="Gera ficha com 9 blocos: identificação, mecanismo, evidências, aplicações, protocolos, sinergias, segurança, regulatório e Take NEXUS." />
+          <DrNexusGenerator mode="ficha" title="Ficha Técnica Completa" description="Gera ficha com identificação, mecanismo, evidências, aplicações, protocolos, sinergias, segurança, regulatório e TOME VERTEX." />
         </TabsContent>
         <TabsContent value="editorial" className="flex-1 overflow-y-auto mt-0">
           <DrNexusGenerator mode="editorial" title="Estudo da Semana" description="Editorial científico para publicação — contexto, ciência, prática, gap e conclusão." />
