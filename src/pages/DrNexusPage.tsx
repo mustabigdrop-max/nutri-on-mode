@@ -1,52 +1,43 @@
-import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Brain, FileText, Newspaper, AlertTriangle, GitBranch, MessageSquare } from "lucide-react";
+import { ArrowLeft, FileText, Newspaper, AlertTriangle, GitBranch, MessageSquare } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import DrNexusChat from "@/components/nexus/DrNexusChat";
 import DrNexusGenerator from "@/components/nexus/DrNexusGenerator";
+import VertexLogoHorizontal from "@/components/vertex/VertexLogoHorizontal";
 
 const DrNexusPage = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-[#030408] flex flex-col">
       {/* Header */}
-      <div className="px-4 py-3 border-b border-border bg-background/95 backdrop-blur">
+      <div className="px-4 py-3 border-b border-[#7c3aed]/20 bg-[#0a0514]/95 backdrop-blur">
         <div className="flex items-center gap-3">
-          <button onClick={() => navigate(-1)} className="p-2 rounded-lg hover:bg-muted transition-colors">
-            <ArrowLeft className="w-5 h-5 text-foreground" />
+          <button onClick={() => navigate(-1)} className="p-2 rounded-lg hover:bg-[#7c3aed]/10 transition-colors">
+            <ArrowLeft className="w-5 h-5 text-[#a78bfa]" />
           </button>
-          <div className="w-10 h-10 rounded-xl bg-red-500/15 border border-red-500/30 flex items-center justify-center">
-            <Brain className="w-5 h-5 text-red-400" />
-          </div>
-          <div>
-            <h1 className="text-sm font-bold text-foreground">Dr. VERTEX — Pharmacological Intelligence</h1>
-            <div className="flex items-center gap-1.5">
-              <div className="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse" />
-              <span className="text-[10px] text-red-400 font-mono">nutriON CSO | v3.0</span>
-            </div>
-          </div>
+          <VertexLogoHorizontal className="h-[52px] w-auto" />
         </div>
       </div>
 
       <Tabs defaultValue="chat" className="flex-1 flex flex-col">
-        <TabsList className="mx-4 mt-3 bg-muted/50 p-1 rounded-xl grid grid-cols-6 h-auto">
-          <TabsTrigger value="chat" className="text-[10px] py-1.5 gap-1 data-[state=active]:bg-red-500/20 data-[state=active]:text-red-400">
+        <TabsList className="mx-4 mt-3 bg-[#0a0514] p-1 rounded-xl grid grid-cols-6 h-auto border border-[#7c3aed]/15">
+          <TabsTrigger value="chat" className="text-[10px] py-1.5 gap-1 text-[#a78bfa]/60 data-[state=active]:bg-[#7c3aed]/20 data-[state=active]:text-[#a78bfa]">
             <MessageSquare className="w-3 h-3" /> Chat
           </TabsTrigger>
-          <TabsTrigger value="ficha" className="text-[10px] py-1.5 gap-1 data-[state=active]:bg-red-500/20 data-[state=active]:text-red-400">
+          <TabsTrigger value="ficha" className="text-[10px] py-1.5 gap-1 text-[#a78bfa]/60 data-[state=active]:bg-[#7c3aed]/20 data-[state=active]:text-[#a78bfa]">
             <FileText className="w-3 h-3" /> Ficha
           </TabsTrigger>
-          <TabsTrigger value="editorial" className="text-[10px] py-1.5 gap-1 data-[state=active]:bg-red-500/20 data-[state=active]:text-red-400">
+          <TabsTrigger value="editorial" className="text-[10px] py-1.5 gap-1 text-[#a78bfa]/60 data-[state=active]:bg-[#7c3aed]/20 data-[state=active]:text-[#a78bfa]">
             <Newspaper className="w-3 h-3" /> Editorial
           </TabsTrigger>
-          <TabsTrigger value="briefing" className="text-[10px] py-1.5 gap-1 data-[state=active]:bg-red-500/20 data-[state=active]:text-red-400">
+          <TabsTrigger value="briefing" className="text-[10px] py-1.5 gap-1 text-[#a78bfa]/60 data-[state=active]:bg-[#7c3aed]/20 data-[state=active]:text-[#a78bfa]">
             <FileText className="w-3 h-3" /> Briefing
           </TabsTrigger>
-          <TabsTrigger value="offlabel" className="text-[10px] py-1.5 gap-1 data-[state=active]:bg-red-500/20 data-[state=active]:text-red-400">
+          <TabsTrigger value="offlabel" className="text-[10px] py-1.5 gap-1 text-[#a78bfa]/60 data-[state=active]:bg-[#7c3aed]/20 data-[state=active]:text-[#a78bfa]">
             <AlertTriangle className="w-3 h-3" /> Off-Label
           </TabsTrigger>
-          <TabsTrigger value="sinergias" className="text-[10px] py-1.5 gap-1 data-[state=active]:bg-red-500/20 data-[state=active]:text-red-400">
+          <TabsTrigger value="sinergias" className="text-[10px] py-1.5 gap-1 text-[#a78bfa]/60 data-[state=active]:bg-[#7c3aed]/20 data-[state=active]:text-[#a78bfa]">
             <GitBranch className="w-3 h-3" /> Sinergias
           </TabsTrigger>
         </TabsList>
