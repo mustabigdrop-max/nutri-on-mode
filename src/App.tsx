@@ -80,6 +80,7 @@ import ScienceHubPage from "./pages/ScienceHubPage";
 import BiomechanicsVaultPage from "./pages/BiomechanicsVaultPage";
 import MetabolicONPage from "./pages/MetabolicONPage";
 import PlanoAlimentarIA from "./components/coach/PlanoAlimentarIA";
+import DrNexusPage from "./pages/DrNexusPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
