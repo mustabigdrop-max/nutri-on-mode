@@ -553,7 +553,7 @@ function EliteGenerateSection({ userId }: { userId?: string }) {
             )}
 
             {/* ── Text Tabs ── */}
-            {["anatomia", "tecnica", "periodizacao"].includes(activeResultTab) && (
+            {["anatomia", "tecnica", "periodizacao", "biomec", "emg", "postural", "recuperacao", "metodologia", "feminino", "platô"].includes(activeResultTab) && (
               loadingTab[activeResultTab] ? <LoadingState /> :
               textResults[activeResultTab] ? <TextCard content={textResults[activeResultTab]} /> :
               <div className="py-12 text-center"><p className="text-xs" style={{ color: TEXT_MUTED }}>Clique na aba para carregar</p></div>
