@@ -1781,15 +1781,7 @@ export const peptides: Peptide[] = [
     dietImpact: "Precursores dietéticos: niacina, triptofano. NMN/NR suplementar. Jejum intermitente ativa NAMPT.",
     recentStudies: ["🔬 2024 — Cell Metabolism — NMN oral: biodisponibilidade e eficácia em humanos"],
   },
-];
-
-// ─── PROTOCOLS ─────────────────────────────────────────────
-export interface Protocol {
-  id: string;
-  name: string;
-  objective: string;
-  color: string;
-  stack: { peptide: string; dose: string }[  // ─── NOVOS COMPOSTOS v2.0 ───────────────────────────────────────────
+  // ─── NOVOS COMPOSTOS v2.0 ───────────────────────────────────────────
   {
     id: "kpv",
     name: "KPV",
@@ -2967,6 +2959,14 @@ export interface Protocol {
     ],
   },
 ];
+
+// ─── PROTOCOLS ─────────────────────────────────────────────
+export interface Protocol {
+  id: string;
+  name: string;
+  objective: string;
+  color: string;
+  stack: { peptide: string; dose: string }[];
   diet: string;
   duration: string;
 }
