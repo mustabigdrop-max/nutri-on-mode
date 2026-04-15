@@ -10,6 +10,7 @@ import {
   Target, Shield, AlertTriangle, Clock, Flame, Eye, Brain,
   ChevronDown, ChevronUp, Activity, Award, Bookmark, Share2,
   Trash2, Edit3, Users, X, Check, FileDown, RotateCcw,
+  Microscope, Scan, HeartPulse, BookOpen, TrendingDown,
 } from "lucide-react";
 import { exportTrainingPDF } from "@/lib/trainingPdfExport";
 import { Button } from "@/components/ui/button";
@@ -362,6 +363,13 @@ function EliteGenerateSection({ userId }: { userId?: string }) {
       { id: "anatomia", label: "Anatomia", icon: Activity },
       { id: "tecnica", label: "Técnica", icon: Target },
       { id: "periodizacao", label: "Periodização", icon: BarChart3 },
+      { id: "biomec", label: "Biomecânica", icon: Microscope },
+      { id: "emg", label: "EMG", icon: Zap },
+      { id: "postural", label: "Postural", icon: Scan },
+      { id: "recuperacao", label: "Recuperação", icon: HeartPulse },
+      { id: "metodologia", label: "Metodologia", icon: BookOpen },
+      { id: "feminino", label: "Feminino", icon: Shield },
+      { id: "platô", label: "Platô", icon: TrendingDown },
     ];
 
     const saveToNotebook = async () => {
@@ -545,7 +553,7 @@ function EliteGenerateSection({ userId }: { userId?: string }) {
             )}
 
             {/* ── Text Tabs ── */}
-            {["anatomia", "tecnica", "periodizacao"].includes(activeResultTab) && (
+            {["anatomia", "tecnica", "periodizacao", "biomec", "emg", "postural", "recuperacao", "metodologia", "feminino", "platô"].includes(activeResultTab) && (
               loadingTab[activeResultTab] ? <LoadingState /> :
               textResults[activeResultTab] ? <TextCard content={textResults[activeResultTab]} /> :
               <div className="py-12 text-center"><p className="text-xs" style={{ color: TEXT_MUTED }}>Clique na aba para carregar</p></div>
