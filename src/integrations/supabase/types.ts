@@ -3571,6 +3571,96 @@ export type Database = {
         }
         Relationships: []
       }
+      nexus_compounds: {
+        Row: {
+          analise_offlabel: string | null
+          aplicacoes_clinicas: string | null
+          aplicacoes_offlabel: string | null
+          briefing_rapido: string | null
+          classe: string
+          created_at: string
+          created_by: string | null
+          editorial_estudo_semana: string | null
+          estudos_chave: Json | null
+          familia_farmacologica: string | null
+          id: string
+          lacunas_evidencia: string | null
+          mapa_sinergias: string | null
+          mecanismo_acao: string | null
+          nivel_evidencia: string | null
+          nome: string
+          nome_quimico: string | null
+          origem: string | null
+          perfil_seguranca: Json | null
+          protocolos: Json | null
+          sinergias: Json | null
+          sinonimos: string[] | null
+          status_regulatorio: string | null
+          status_regulatorio_paises: Json | null
+          take_nexus: string | null
+          updated_at: string
+          uso_performance: string | null
+        }
+        Insert: {
+          analise_offlabel?: string | null
+          aplicacoes_clinicas?: string | null
+          aplicacoes_offlabel?: string | null
+          briefing_rapido?: string | null
+          classe?: string
+          created_at?: string
+          created_by?: string | null
+          editorial_estudo_semana?: string | null
+          estudos_chave?: Json | null
+          familia_farmacologica?: string | null
+          id?: string
+          lacunas_evidencia?: string | null
+          mapa_sinergias?: string | null
+          mecanismo_acao?: string | null
+          nivel_evidencia?: string | null
+          nome: string
+          nome_quimico?: string | null
+          origem?: string | null
+          perfil_seguranca?: Json | null
+          protocolos?: Json | null
+          sinergias?: Json | null
+          sinonimos?: string[] | null
+          status_regulatorio?: string | null
+          status_regulatorio_paises?: Json | null
+          take_nexus?: string | null
+          updated_at?: string
+          uso_performance?: string | null
+        }
+        Update: {
+          analise_offlabel?: string | null
+          aplicacoes_clinicas?: string | null
+          aplicacoes_offlabel?: string | null
+          briefing_rapido?: string | null
+          classe?: string
+          created_at?: string
+          created_by?: string | null
+          editorial_estudo_semana?: string | null
+          estudos_chave?: Json | null
+          familia_farmacologica?: string | null
+          id?: string
+          lacunas_evidencia?: string | null
+          mapa_sinergias?: string | null
+          mecanismo_acao?: string | null
+          nivel_evidencia?: string | null
+          nome?: string
+          nome_quimico?: string | null
+          origem?: string | null
+          perfil_seguranca?: Json | null
+          protocolos?: Json | null
+          sinergias?: Json | null
+          sinonimos?: string[] | null
+          status_regulatorio?: string | null
+          status_regulatorio_paises?: Json | null
+          take_nexus?: string | null
+          updated_at?: string
+          uso_performance?: string | null
+        }
+        Relationships: []
+      }
       nootropic_daily_logs: {
         Row: {
           adherence_score: number | null
