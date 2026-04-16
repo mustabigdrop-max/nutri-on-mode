@@ -45,9 +45,12 @@ const VideoFormPage = () => {
     setResult(null);
 
     const isQuickTime = file.type === "video/quicktime" || /\.mov$/i.test(file.name);
-    const ok = isQuickTime ? false : await canBrowserDecode(file);
+    const ok = await canBrowserDecode(file);
     if (ok) {
       setVideoUrl(URL.createObjectURL(file));
+      if (isQuickTime) {
+        toast({ title: "Vídeo .mov aceito", description: "Seu navegador conseguiu abrir o arquivo sem conversão." });
+      }
       return;
     }
 
