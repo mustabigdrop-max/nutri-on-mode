@@ -10,7 +10,7 @@ import { ArrowLeft, Video, Upload, Loader2, Activity, Sparkles } from "lucide-re
 import { motion } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import { getPoseLandmarker, analyzeFrame, countReps, type FrameAnalysis } from "@/lib/poseAnalysis";
-import { canBrowserDecode, transcodeToMp4 } from "@/lib/videoTranscode";
+import { canBrowserDecode, transcodeToMp4, needsConversion } from "@/lib/videoTranscode";
 
 const EXERCISES = [
   "Agachamento livre", "Agachamento com barra", "Leg press", "Stiff", "Levantamento terra",
@@ -26,15 +26,28 @@ const VideoFormPage = () => {
 
   const [exercise, setExercise] = useState("auto");
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
+  const [originalFileName, setOriginalFileName] = useState<string | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [progress, setProgress] = useState(0);
   const [statusText, setStatusText] = useState("");
   const [result, setResult] = useState<{ content: string; reps: number; frames: number } | null>(null);
+  const [converting, setConverting] = useState<{ fileName: string; pct: number } | null>(null);
+  const [conversionError, setConversionError] = useState<string | null>(null);
+
+  const showConversionError = (msg: string) => {
+    setConversionError(msg);
+    window.setTimeout(() => setConversionError(null), 8000);
+  };
+
+  const mountVideoPlayer = (file: File, displayName: string) => {
+    setVideoUrl(URL.createObjectURL(file));
+    setOriginalFileName(displayName);
+  };
 
   const handleFile = async (file: File) => {
     const isVideo = file.type.startsWith("video/") || /\.(mp4|mov|webm|m4v|avi|mkv)$/i.test(file.name);
     if (!isVideo) {
-      toast({ title: "Arquivo inválido", description: "Envie um vídeo (.mp4, .mov, .webm)", variant: "destructive" });
+      toast({ title: "Arquivo inválido", description: "Envie um vídeo (.mp4, .mov, .webm, .avi, .mkv)", variant: "destructive" });
       return;
     }
     if (file.size > 100 * 1024 * 1024) {
@@ -43,35 +56,45 @@ const VideoFormPage = () => {
     }
 
     setResult(null);
+    setVideoUrl(null);
 
-    const isQuickTime = file.type === "video/quicktime" || /\.mov$/i.test(file.name);
-    const ok = await canBrowserDecode(file);
-    if (ok) {
-      setVideoUrl(URL.createObjectURL(file));
-      if (isQuickTime) {
-        toast({ title: "Vídeo .mov aceito", description: "Seu navegador conseguiu abrir o arquivo sem conversão." });
+    // Se for formato incompatível (MOV/AVI/MKV), converte direto
+    if (needsConversion(file)) {
+      setConverting({ fileName: file.name, pct: 0 });
+      try {
+        const converted = await transcodeToMp4(file, (pct) =>
+          setConverting((c) => (c ? { ...c, pct } : c))
+        );
+        setConverting(null);
+        mountVideoPlayer(converted, file.name);
+        toast({ title: "Vídeo convertido", description: "Pronto para análise." });
+      } catch (err: any) {
+        setConverting(null);
+        console.error("[VideoForm] conversão falhou:", err);
+        showConversionError(err?.message || "Não foi possível converter. Converta para MP4 no celular e tente novamente.");
       }
       return;
     }
 
+    // MP4/WebM: testa decode nativo, converte só se falhar
+    const ok = await canBrowserDecode(file);
+    if (ok) {
+      mountVideoPlayer(file, file.name);
+      return;
+    }
+
+    setConverting({ fileName: file.name, pct: 0 });
     try {
-      setAnalyzing(true);
-      setProgress(2);
-      setStatusText(isQuickTime ? "Convertendo .mov para MP4 compatível..." : "Convertendo vídeo para MP4 compatível...");
-      const mp4 = await transcodeToMp4(file, (p) => setProgress(Math.max(2, Math.round(p * 0.4))));
-      setVideoUrl(URL.createObjectURL(mp4));
+      const converted = await transcodeToMp4(file, (pct) =>
+        setConverting((c) => (c ? { ...c, pct } : c))
+      );
+      setConverting(null);
+      mountVideoPlayer(converted, file.name);
       toast({ title: "Vídeo convertido", description: "Pronto para análise." });
     } catch (err: any) {
-      console.error("[VideoForm] transcode falhou:", err);
-      toast({
-        title: "Não foi possível converter o vídeo",
-        description: "Esse .mov não conseguiu ser convertido no navegador. Exporte como MP4 no celular e envie novamente.",
-        variant: "destructive",
-      });
-    } finally {
-      setAnalyzing(false);
-      setProgress(0);
-      setStatusText("");
+      setConverting(null);
+      console.error("[VideoForm] conversão falhou:", err);
+      showConversionError(err?.message || "Não foi possível converter. Converta para MP4 no celular e tente novamente.");
     }
   };
 
@@ -226,8 +249,13 @@ const VideoFormPage = () => {
             </div>
 
             {videoUrl && (
-              <div className="rounded-lg overflow-hidden border border-border bg-black">
-                <video ref={videoRef} src={videoUrl} controls className="w-full max-h-[400px] mx-auto" playsInline muted />
+              <div className="space-y-2">
+                <div className="rounded-lg overflow-hidden border border-border bg-black">
+                  <video ref={videoRef} src={videoUrl} controls className="w-full max-h-[400px] mx-auto" playsInline muted />
+                </div>
+                {originalFileName && (
+                  <p className="text-xs text-muted-foreground font-mono truncate">📁 {originalFileName}</p>
+                )}
               </div>
             )}
 
@@ -298,6 +326,38 @@ const VideoFormPage = () => {
           </motion.div>
         )}
       </main>
+
+      {converting && (
+        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 w-[92%] max-w-md">
+          <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 backdrop-blur-md shadow-2xl p-4 space-y-2">
+            <div className="flex items-center gap-2">
+              <Loader2 className="w-4 h-4 animate-spin text-amber-500" />
+              <p className="text-sm font-semibold text-amber-500 truncate">
+                Convertendo {converting.fileName}…
+              </p>
+            </div>
+            <p className="text-xs text-amber-200/80">
+              Esse formato não é suportado pelo navegador — convertendo para MP4
+            </p>
+            <div className="h-1.5 rounded-full bg-amber-950/40 overflow-hidden">
+              <div
+                className="h-full bg-amber-500 transition-all duration-200"
+                style={{ width: `${converting.pct}%` }}
+              />
+            </div>
+            <p className="text-[10px] font-mono text-amber-200/60 text-right">{converting.pct}%</p>
+          </div>
+        </div>
+      )}
+
+      {conversionError && (
+        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 w-[92%] max-w-md">
+          <div className="rounded-lg border border-destructive/50 bg-destructive/15 backdrop-blur-md shadow-2xl p-4">
+            <p className="text-sm font-semibold text-destructive">Erro na conversão</p>
+            <p className="text-xs text-destructive/90 mt-1">{conversionError}</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
