@@ -119,7 +119,7 @@ serve(async (req) => {
 
     const exerciseInfo = exerciseName
       ? `Exercício informado pelo usuário: ${exerciseName}`
-      : `Exercício: NÃO INFORMADO — identifique pelos dados de pose ANTES de analisar (use o formato EXERCÍCIO IDENTIFICADO obrigatório)`;
+      : `Exercício: NÃO INFORMADO — identifique pelos dados de pose ANTES de analisar (use o formato EXERCÍCIO IDENTIFICADO obrigatório)${clientHint ? `\nDica do cliente (heurística local, use como referência mas valide com os ângulos): ${clientHint.name} (${clientHint.confidence}% — ${clientHint.reason}). Alternativas: ${(clientHint.alternatives || []).join(" · ")}` : ""}`;
 
     const userContent = `${exerciseInfo}
 Fonte: ${source === "live" ? "câmera ao vivo" : "vídeo enviado pelo usuário"}
