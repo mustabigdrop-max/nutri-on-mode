@@ -9,7 +9,7 @@ import { toast } from "@/hooks/use-toast";
 import { ArrowLeft, Video, Upload, Loader2, Activity, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
 import ReactMarkdown from "react-markdown";
-import { getPoseLandmarker, analyzeFrame, countReps, type FrameAnalysis } from "@/lib/poseAnalysis";
+import { getPoseLandmarker, analyzeFrame, countReps, detectExercise, type FrameAnalysis } from "@/lib/poseAnalysis";
 import { useFFmpegConvert } from "@/hooks/useFFmpegConvert";
 
 const EXERCISES = [
@@ -159,6 +159,7 @@ const VideoFormPage = () => {
       }
 
       const reps = countReps(frames);
+      const clientHint = exercise === "auto" ? detectExercise(frames) : null;
       setStatusText("Enviando para o VideoForm AI...");
       setProgress(96);
 
@@ -168,6 +169,7 @@ const VideoFormPage = () => {
           poseData: frames,
           repsDetected: reps,
           source: "upload",
+          clientHint,
         },
       });
       if (error) throw error;

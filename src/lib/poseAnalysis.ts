@@ -80,6 +80,97 @@ export function analyzeFrame(landmarks: NormalizedLandmark[], t: number): FrameA
   };
 }
 
+export type ExerciseSignature = {
+  name: string;
+  confidence: number;
+  alternatives: string[];
+  reason: string;
+};
+
+/**
+ * Detecta o exercício mais provável a partir de uma série de frames analisados.
+ * Usa heurísticas baseadas em ângulos médios/mínimos de joelho, quadril, cotovelo e tronco.
+ */
+export function detectExercise(frames: FrameAnalysis[]): ExerciseSignature | null {
+  if (frames.length < 4) return null;
+  const avg = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length;
+  const min = (xs: number[]) => Math.min(...xs);
+  const max = (xs: number[]) => Math.max(...xs);
+
+  const kneeAvg = avg(frames.map(f => (f.angles.leftKnee + f.angles.rightKnee) / 2));
+  const kneeMin = min(frames.map(f => Math.min(f.angles.leftKnee, f.angles.rightKnee)));
+  const hipAvg = avg(frames.map(f => (f.angles.leftHip + f.angles.rightHip) / 2));
+  const hipMin = min(frames.map(f => Math.min(f.angles.leftHip, f.angles.rightHip)));
+  const elbowAvg = avg(frames.map(f => (f.angles.leftElbow + f.angles.rightElbow) / 2));
+  const elbowMin = min(frames.map(f => Math.min(f.angles.leftElbow, f.angles.rightElbow)));
+  const trunkAvg = avg(frames.map(f => f.angles.trunkLean));
+  const hipYAvg = avg(frames.map(f => f.hipY));
+  const kneeRange = max(frames.map(f => (f.angles.leftKnee + f.angles.rightKnee) / 2)) - kneeMin;
+  const elbowRange = max(frames.map(f => (f.angles.leftElbow + f.angles.rightElbow) / 2)) - elbowMin;
+
+  // Push-up / Prancha: quadril alto na imagem (y grande), corpo horizontal
+  if (hipYAvg > 0.55 && kneeAvg > 150) {
+    if (elbowRange < 20 && elbowAvg > 140) {
+      return { name: "Prancha", confidence: 82, alternatives: ["Dead bug", "Prancha lateral"], reason: "corpo em linha horizontal sem flexão de cotovelo" };
+    }
+    if (elbowRange > 25) {
+      return { name: "Push-up", confidence: 85, alternatives: ["Supino reto", "Flexão diamante"], reason: "corpo horizontal com flexão de cotovelo cíclica" };
+    }
+  }
+
+  // Agachamento: joelho desce abaixo de 120° + tronco relativamente ereto
+  if (kneeMin < 120 && trunkAvg > 60 && hipAvg > 80) {
+    return {
+      name: "Agachamento livre",
+      confidence: kneeMin < 95 ? 90 : 78,
+      alternatives: ["Agachamento com barra", "Agachamento goblet", "Hack squat"],
+      reason: `joelho mínimo ${Math.round(kneeMin)}° com tronco ereto (${Math.round(trunkAvg)}°)`,
+    };
+  }
+
+  // Levantamento terra / Stiff: flexão de quadril dominante, joelho pouco fletido
+  if (hipMin < 100 && kneeMin > 130) {
+    return {
+      name: "Levantamento terra",
+      confidence: 80,
+      alternatives: ["Stiff", "Terra sumô", "Bom-dia"],
+      reason: `quadril mínimo ${Math.round(hipMin)}° com joelho semi-estendido (${Math.round(kneeMin)}°)`,
+    };
+  }
+
+  // Desenvolvimento: cotovelo cíclico acima da cabeça, tronco ereto
+  if (elbowRange > 30 && trunkAvg > 70 && elbowAvg < 120) {
+    return {
+      name: "Desenvolvimento",
+      confidence: 72,
+      alternatives: ["Elevação lateral", "Arnold press"],
+      reason: "cotovelo cíclico com tronco ereto",
+    };
+  }
+
+  // Rosca: cotovelo cíclico, tronco ereto, sem ativação de joelho
+  if (elbowRange > 25 && kneeRange < 15 && trunkAvg > 75) {
+    return {
+      name: "Rosca direta",
+      confidence: 70,
+      alternatives: ["Rosca alternada", "Martelo", "Rosca scott"],
+      reason: "flexão de cotovelo cíclica com tronco estável",
+    };
+  }
+
+  // Remada: tronco inclinado + flexão de cotovelo
+  if (trunkAvg < 60 && elbowRange > 20 && hipMin < 130) {
+    return {
+      name: "Remada curvada",
+      confidence: 70,
+      alternatives: ["Remada unilateral", "Remada cavalinho"],
+      reason: "tronco inclinado com puxada de cotovelo",
+    };
+  }
+
+  return null;
+}
+
 export function countReps(frames: FrameAnalysis[]): number {
   if (frames.length < 8) return 0;
   // Use average knee angle oscillation as proxy
