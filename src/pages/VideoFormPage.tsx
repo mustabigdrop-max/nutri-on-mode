@@ -10,7 +10,7 @@ import { ArrowLeft, Video, Upload, Loader2, Activity, Sparkles } from "lucide-re
 import { motion } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import { getPoseLandmarker, analyzeFrame, countReps, type FrameAnalysis } from "@/lib/poseAnalysis";
-import { canBrowserDecode, transcodeToMp4, needsConversion } from "@/lib/videoTranscode";
+import { useFFmpegConvert } from "@/hooks/useFFmpegConvert";
 
 const EXERCISES = [
   "Agachamento livre", "Agachamento com barra", "Leg press", "Stiff", "Levantamento terra",
@@ -31,8 +31,8 @@ const VideoFormPage = () => {
   const [progress, setProgress] = useState(0);
   const [statusText, setStatusText] = useState("");
   const [result, setResult] = useState<{ content: string; reps: number; frames: number } | null>(null);
-  const [converting, setConverting] = useState<{ fileName: string; pct: number } | null>(null);
   const [conversionError, setConversionError] = useState<string | null>(null);
+  const { convert: ffmpegConvert, needsConversion, isConverting: ffmpegConverting, isLoading: ffmpegLoading, progress: ffmpegProgress } = useFFmpegConvert();
 
   const showConversionError = (msg: string) => {
     setConversionError(msg);
@@ -55,8 +55,10 @@ const VideoFormPage = () => {
     }, 80);
   };
 
+  const [convertingFileName, setConvertingFileName] = useState<string | null>(null);
+
   const handleFile = async (file: File) => {
-    const isVideo = file.type.startsWith("video/") || /\.(mp4|mov|webm|m4v|avi|mkv)$/i.test(file.name);
+    const isVideo = file.type.startsWith("video/") || /\.(mp4|mov|webm|m4v|avi|mkv|3gp|wmv)$/i.test(file.name);
     if (!isVideo) {
       toast({ title: "Arquivo inválido", description: "Envie um vídeo (.mp4, .mov, .webm, .avi, .mkv)", variant: "destructive" });
       return;
@@ -69,44 +71,23 @@ const VideoFormPage = () => {
     setResult(null);
     setVideoUrl(null);
 
-    // Se for formato incompatível (MOV/AVI/MKV), converte direto
+    let fileToLoad = file;
     if (needsConversion(file)) {
-      setConverting({ fileName: file.name, pct: 0 });
+      setConvertingFileName(file.name);
       try {
-        const converted = await transcodeToMp4(file, (pct) =>
-          setConverting((c) => (c ? { ...c, pct } : c))
-        );
-        setConverting(null);
-        mountVideoPlayer(converted, file.name);
+        fileToLoad = await ffmpegConvert(file);
         toast({ title: "Vídeo convertido", description: "Pronto para análise." });
       } catch (err: any) {
-        setConverting(null);
         console.error("[VideoForm] conversão falhou:", err);
         showConversionError(err?.message || "Não foi possível converter. Converta para MP4 no celular e tente novamente.");
+        setConvertingFileName(null);
+        return;
+      } finally {
+        setConvertingFileName(null);
       }
-      return;
     }
 
-    // MP4/WebM: testa decode nativo, converte só se falhar
-    const ok = await canBrowserDecode(file);
-    if (ok) {
-      mountVideoPlayer(file, file.name);
-      return;
-    }
-
-    setConverting({ fileName: file.name, pct: 0 });
-    try {
-      const converted = await transcodeToMp4(file, (pct) =>
-        setConverting((c) => (c ? { ...c, pct } : c))
-      );
-      setConverting(null);
-      mountVideoPlayer(converted, file.name);
-      toast({ title: "Vídeo convertido", description: "Pronto para análise." });
-    } catch (err: any) {
-      setConverting(null);
-      console.error("[VideoForm] conversão falhou:", err);
-      showConversionError(err?.message || "Não foi possível converter. Converta para MP4 no celular e tente novamente.");
-    }
+    mountVideoPlayer(fileToLoad, file.name);
   };
 
   const extractPoseData = async (): Promise<FrameAnalysis[]> => {
@@ -338,25 +319,29 @@ const VideoFormPage = () => {
         )}
       </main>
 
-      {converting && (
+      {convertingFileName && (
         <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 w-[92%] max-w-md">
           <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 backdrop-blur-md shadow-2xl p-4 space-y-2">
             <div className="flex items-center gap-2">
               <Loader2 className="w-4 h-4 animate-spin text-amber-500" />
               <p className="text-sm font-semibold text-amber-500 truncate">
-                Convertendo {converting.fileName}…
+                Convertendo {convertingFileName}…
               </p>
             </div>
             <p className="text-xs text-amber-200/80">
-              Esse formato não é suportado pelo navegador — convertendo para MP4
+              {ffmpegLoading
+                ? "Carregando FFmpeg (primeira vez ~30MB)…"
+                : ffmpegProgress > 0
+                ? `${ffmpegProgress}% concluído`
+                : "Iniciando FFmpeg…"}
             </p>
             <div className="h-1.5 rounded-full bg-amber-950/40 overflow-hidden">
               <div
                 className="h-full bg-amber-500 transition-all duration-200"
-                style={{ width: `${converting.pct}%` }}
+                style={{ width: `${ffmpegProgress}%` }}
               />
             </div>
-            <p className="text-[10px] font-mono text-amber-200/60 text-right">{converting.pct}%</p>
+            <p className="text-[10px] font-mono text-amber-200/60 text-right">{ffmpegProgress}%</p>
           </div>
         </div>
       )}
