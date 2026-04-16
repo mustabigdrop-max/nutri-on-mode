@@ -56,8 +56,11 @@ export async function transcodeToMp4(
   const outputName = "output.mp4";
   await ffmpeg.writeFile(inputName, await fetchFile(file));
 
-  const commonArgs = [
+  const primaryArgs = [
     "-i", inputName,
+    "-c:v", "libx264",
+    "-preset", "ultrafast",
+    "-crf", "30",
     "-vf", "scale=720:-2:force_original_aspect_ratio=decrease",
     "-pix_fmt", "yuv420p",
     "-an",
@@ -65,21 +68,25 @@ export async function transcodeToMp4(
     outputName,
   ];
 
-  try {
-    await ffmpeg.exec([
-      "-i", inputName,
-      "-c:v", "libx264",
-      "-preset", "ultrafast",
-      "-crf", "28",
-      ...commonArgs.slice(2),
-    ]);
-  } catch {
-    await ffmpeg.exec([
-      "-i", inputName,
-      "-c:v", "mpeg4",
-      "-q:v", "6",
-      ...commonArgs.slice(2),
-    ]);
+  const fallbackArgs = [
+    "-i", inputName,
+    "-c:v", "mpeg4",
+    "-q:v", "8",
+    "-vf", "scale=720:-2:force_original_aspect_ratio=decrease",
+    "-an",
+    outputName,
+  ];
+
+  let exitCode = await ffmpeg.exec(primaryArgs, 120000);
+  if (exitCode !== 0) {
+    try {
+      await ffmpeg.deleteFile(outputName);
+    } catch {}
+    exitCode = await ffmpeg.exec(fallbackArgs, 120000);
+  }
+
+  if (exitCode !== 0) {
+    throw new Error("Falha ao converter o vídeo no navegador.");
   }
 
   const data = await ffmpeg.readFile(outputName);
