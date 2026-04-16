@@ -131,7 +131,9 @@ const VideoFormPage = () => {
       setProgress(100);
       setStatusText("");
     } catch (e: any) {
-      toast({ title: "Erro na análise", description: e.message, variant: "destructive" });
+      console.error("[VideoForm] erro completo:", e);
+      const msg = e?.message || e?.error?.message || JSON.stringify(e) || "Erro desconhecido";
+      toast({ title: "Erro na análise", description: msg, variant: "destructive" });
     } finally {
       setAnalyzing(false);
     }
