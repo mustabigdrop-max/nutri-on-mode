@@ -19,7 +19,8 @@ export function useFFmpegConvert() {
     setIsLoading(true);
     try {
       const ffmpeg = new FFmpeg();
-      const baseURL = "https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd";
+      // jsDelivr — CDN mais estável que unpkg
+      const baseURL = "https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/umd";
 
       await ffmpeg.load({
         coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, "text/javascript"),
@@ -49,13 +50,19 @@ export function useFFmpegConvert() {
 
       await ffmpeg.writeFile(inputName, await fetchFile(file));
 
+      // Comando robusto para MOV do iPhone (HEVC ou H.264)
       await ffmpeg.exec([
         "-i", inputName,
         "-c:v", "libx264",
-        "-preset", "fast",
-        "-crf", "23",
+        "-profile:v", "baseline",
+        "-level", "3.0",
+        "-preset", "ultrafast",
+        "-crf", "28",
         "-c:a", "aac",
+        "-b:a", "128k",
+        "-ac", "2",
         "-movflags", "+faststart",
+        "-vf", "scale=trunc(iw/2)*2:trunc(ih/2)*2",
         "-y", outputName,
       ]);
 
@@ -73,11 +80,30 @@ export function useFFmpegConvert() {
 
       return converted;
     } catch (err) {
-      const msg = (err as Error).message || "Erro na conversão";
+      const raw = (err as Error).message || String(err) || "";
+      let msg: string;
+      if (/SharedArrayBuffer|cross-origin|crossOriginIsolated/i.test(raw)) {
+        msg = "Erro de configuração do servidor (Cross-Origin Isolation). Recarregue a página; se persistir, contate o suporte.";
+      } else if (/memory|OOM|out of memory|allocat/i.test(raw)) {
+        msg = "Vídeo muito grande para converter no navegador. Tente um vídeo menor que 100MB ou recorte para 10–20s.";
+      } else {
+        msg = "Não foi possível converter o vídeo. No iPhone vá em Ajustes → Câmera → Formatos → 'Mais Compatível' (grava em MP4/H.264) e tente novamente.";
+      }
       setError(msg);
       throw new Error(msg);
     } finally {
       setIsConverting(false);
+    }
+  };
+
+  // Fallback: tenta usar o arquivo original sem converter
+  // (funciona para MOV H.264 em Chrome/Edge — falha apenas para HEVC)
+  const convertWithFallback = async (file: File): Promise<File> => {
+    try {
+      return await convert(file);
+    } catch (err) {
+      console.warn("[FFmpeg] conversão falhou, tentando fallback direto:", err);
+      return file;
     }
   };
 
@@ -96,5 +122,5 @@ export function useFFmpegConvert() {
     );
   };
 
-  return { convert, needsConversion, isConverting, isLoading, progress, error };
+  return { convert, convertWithFallback, needsConversion, isConverting, isLoading, progress, error };
 }
