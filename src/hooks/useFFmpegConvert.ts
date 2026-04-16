@@ -59,8 +59,9 @@ export function useFFmpegConvert() {
         "-y", outputName,
       ]);
 
-      const data = await ffmpeg.readFile(outputName);
-      const blob = new Blob([data as Uint8Array], { type: "video/mp4" });
+      const data = (await ffmpeg.readFile(outputName)) as Uint8Array;
+      const buf = new Uint8Array(data);
+      const blob = new Blob([buf.buffer as ArrayBuffer], { type: "video/mp4" });
       const converted = new File(
         [blob],
         file.name.replace(/\.[^.]+$/, ".mp4"),
