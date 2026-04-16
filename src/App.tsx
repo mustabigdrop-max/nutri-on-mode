@@ -81,6 +81,7 @@ import BiomechanicsVaultPage from "./pages/BiomechanicsVaultPage";
 import MetabolicONPage from "./pages/MetabolicONPage";
 import PlanoAlimentarIA from "./components/coach/PlanoAlimentarIA";
 import DrNexusPage from "./pages/DrNexusPage";
+import VideoFormPage from "./pages/VideoFormPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -168,6 +169,7 @@ const App = () => (
             <Route path="/biomechanics" element={<ProtectedRoute><BiomechanicsVaultPage /></ProtectedRoute>} />
             <Route path="/metabolicon" element={<ProtectedRoute><MetabolicONPage /></ProtectedRoute>} />
             <Route path="/dr-nexus" element={<ProtectedRoute><DrNexusPage /></ProtectedRoute>} />
+            <Route path="/videoform" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON PRO" featureName="VideoForm AI"><VideoFormPage /></PlanGateWrapper></ProtectedRoute>} />
             {/* COACH */}
             <Route path="/coach/plano-alimentar" element={<ProtectedRoute><PlanoAlimentarIA /></ProtectedRoute>} />
             <Route path="/coach" element={<CoachLandingPage />} />
