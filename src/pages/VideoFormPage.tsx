@@ -40,8 +40,19 @@ const VideoFormPage = () => {
   };
 
   const mountVideoPlayer = (file: File, displayName: string) => {
-    setVideoUrl(URL.createObjectURL(file));
+    // Hard-reset obrigatório — sem isso o browser ignora a nova src
+    const v = videoRef.current;
+    if (v) {
+      try { v.pause(); } catch {}
+      v.removeAttribute("src");
+      try { v.load(); } catch {}
+    }
+    setVideoUrl(null);
     setOriginalFileName(displayName);
+    // Delay 80ms para o browser liberar o recurso anterior antes da nova src
+    setTimeout(() => {
+      setVideoUrl(URL.createObjectURL(file));
+    }, 80);
   };
 
   const handleFile = async (file: File) => {
