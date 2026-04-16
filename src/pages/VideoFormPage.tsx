@@ -132,7 +132,22 @@ const VideoFormPage = () => {
       setStatusText("");
     } catch (e: any) {
       console.error("[VideoForm] erro completo:", e);
-      const msg = e?.message || e?.error?.message || JSON.stringify(e) || "Erro desconhecido";
+      let msg = "Erro desconhecido";
+      if (e instanceof Event) {
+        const v = videoRef.current;
+        const code = v?.error?.code;
+        const codeMap: Record<number, string> = {
+          1: "Carregamento abortado",
+          2: "Erro de rede ao carregar vídeo",
+          3: "Falha ao decodificar (codec não suportado — use MP4 H.264)",
+          4: "Formato de vídeo não suportado pelo navegador (use MP4 H.264, evite .mov/HEVC do iPhone)",
+        };
+        msg = code ? codeMap[code] || `Erro de vídeo (código ${code})` : "Falha ao processar o vídeo. Tente outro arquivo (MP4 H.264).";
+      } else if (e?.message) {
+        msg = e.message;
+      } else if (typeof e === "string") {
+        msg = e;
+      }
       toast({ title: "Erro na análise", description: msg, variant: "destructive" });
     } finally {
       setAnalyzing(false);
