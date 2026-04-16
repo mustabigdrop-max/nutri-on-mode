@@ -541,7 +541,7 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { compound, mode = "chat", messages = [], history = [] } = await req.json();
+    const { compound, mode = "chat", messages = [], history = [], attachments = [] } = await req.json();
     
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     const PERPLEXITY_API_KEY = Deno.env.get("PERPLEXITY_API_KEY");
