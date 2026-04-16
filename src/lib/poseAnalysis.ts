@@ -30,15 +30,22 @@ export async function getPoseLandmarker(): Promise<PoseLandmarker> {
   const vision = await FilesetResolver.forVisionTasks(
     "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/wasm"
   );
-  cachedLandmarker = await PoseLandmarker.createFromOptions(vision, {
-    baseOptions: {
-      modelAssetPath:
-        "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task",
-      delegate: "GPU",
-    },
-    runningMode: "VIDEO",
-    numPoses: 1,
-  });
+  const modelPath =
+    "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task";
+  try {
+    cachedLandmarker = await PoseLandmarker.createFromOptions(vision, {
+      baseOptions: { modelAssetPath: modelPath, delegate: "GPU" },
+      runningMode: "VIDEO",
+      numPoses: 1,
+    });
+  } catch (gpuErr) {
+    console.warn("GPU delegate falhou, caindo para CPU:", gpuErr);
+    cachedLandmarker = await PoseLandmarker.createFromOptions(vision, {
+      baseOptions: { modelAssetPath: modelPath, delegate: "CPU" },
+      runningMode: "VIDEO",
+      numPoses: 1,
+    });
+  }
   return cachedLandmarker;
 }
 

@@ -46,17 +46,41 @@ const VideoFormPage = () => {
 
   const extractPoseData = async (): Promise<FrameAnalysis[]> => {
     const video = videoRef.current!;
+
+    // Garantir que metadata carregou (duration disponível)
+    if (!isFinite(video.duration) || video.duration === 0) {
+      await new Promise<void>((resolve, reject) => {
+        const onMeta = () => { video.removeEventListener("loadedmetadata", onMeta); resolve(); };
+        const onErr = () => { video.removeEventListener("error", onErr); reject(new Error("Falha ao carregar o vídeo")); };
+        video.addEventListener("loadedmetadata", onMeta);
+        video.addEventListener("error", onErr);
+        video.load();
+        setTimeout(() => reject(new Error("Timeout carregando metadata do vídeo")), 10000);
+      });
+    }
+
     const landmarker = await getPoseLandmarker();
     const frames: FrameAnalysis[] = [];
     const duration = video.duration;
-    const STEP = 0.1; // 10 fps sampling
+    if (!isFinite(duration) || duration <= 0) {
+      throw new Error("Não foi possível ler a duração do vídeo. Tente outro arquivo (.mp4 H.264).");
+    }
+    const STEP = 0.15; // ~7 fps amostragem (mais leve)
 
     for (let t = 0; t < duration; t += STEP) {
-      video.currentTime = t;
-      await new Promise<void>(r => { video.onseeked = () => r(); });
-      const result = landmarker.detectForVideo(video, t * 1000);
-      if (result.landmarks?.[0]) {
-        frames.push(analyzeFrame(result.landmarks[0], t * 1000));
+      try {
+        video.currentTime = t;
+        await new Promise<void>((resolve, reject) => {
+          const onSeek = () => { video.removeEventListener("seeked", onSeek); resolve(); };
+          video.addEventListener("seeked", onSeek);
+          setTimeout(() => { video.removeEventListener("seeked", onSeek); resolve(); }, 2000);
+        });
+        const result = landmarker.detectForVideo(video, Math.round(t * 1000));
+        if (result.landmarks?.[0]) {
+          frames.push(analyzeFrame(result.landmarks[0], t * 1000));
+        }
+      } catch (frameErr) {
+        console.warn("Frame falhou em t=", t, frameErr);
       }
       setProgress(Math.min(95, Math.round((t / duration) * 90)));
     }
