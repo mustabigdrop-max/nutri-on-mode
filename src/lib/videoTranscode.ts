@@ -1,54 +1,17 @@
-import { FFmpeg } from "@ffmpeg/ffmpeg";
-import { fetchFile, toBlobURL } from "@ffmpeg/util";
-import coreURL from "@ffmpeg/core?url";
-import wasmURL from "@ffmpeg/core/wasm?url";
+// Conversão nativa via canvas + MediaRecorder (sem FFmpeg/wasm).
+// Suporta MOV, AVI, MKV → MP4 (ou WebM como fallback) usando recursos do navegador.
 
-let ffmpegInstance: FFmpeg | null = null;
-let ffmpegLoadPromise: Promise<FFmpeg> | null = null;
-
-async function loadWithTimeout(ffmpeg: FFmpeg, onLog?: (msg: string) => void): Promise<void> {
-  const controller = new AbortController();
-  const timeoutId = window.setTimeout(() => controller.abort(), 20000);
-
-  try {
-    await ffmpeg.load(
-      {
-        coreURL: await toBlobURL(coreURL, "text/javascript"),
-        wasmURL: await toBlobURL(wasmURL, "application/wasm"),
-      },
-      { signal: controller.signal }
-    );
-  } catch (error) {
-    ffmpeg.terminate();
-    if (controller.signal.aborted) {
-      throw new Error("O motor de conversão demorou para iniciar. Tente novamente em uma conexão melhor ou envie o vídeo já em MP4.");
-    }
-    throw error;
-  } finally {
-    window.clearTimeout(timeoutId);
-    if (onLog) ffmpeg.off("log", ({ message }) => onLog(message));
-  }
-}
-
-async function getFFmpeg(onLog?: (msg: string) => void): Promise<FFmpeg> {
-  if (ffmpegInstance) return ffmpegInstance;
-
-  if (!ffmpegLoadPromise) {
-    const ffmpeg = new FFmpeg();
-    if (onLog) ffmpeg.on("log", ({ message }) => onLog(message));
-
-    ffmpegLoadPromise = loadWithTimeout(ffmpeg, onLog)
-      .then(() => {
-        ffmpegInstance = ffmpeg;
-        return ffmpeg;
-      })
-      .catch((error) => {
-        ffmpegLoadPromise = null;
-        throw error;
-      });
-  }
-
-  return ffmpegLoadPromise;
+export function needsConversion(file: File): boolean {
+  const name = file.name.toLowerCase();
+  const type = file.type.toLowerCase();
+  return (
+    name.endsWith(".mov") ||
+    name.endsWith(".avi") ||
+    name.endsWith(".mkv") ||
+    type === "video/quicktime" ||
+    type === "video/x-msvideo" ||
+    type === "video/x-matroska"
+  );
 }
 
 export async function canBrowserDecode(file: File): Promise<boolean> {
@@ -75,57 +38,133 @@ export async function canBrowserDecode(file: File): Promise<boolean> {
   });
 }
 
+/**
+ * Converte um vídeo (MOV/AVI/MKV) para MP4 (ou WebM como fallback) usando
+ * canvas + MediaRecorder. Reporta progresso baseado no currentTime/duration.
+ */
 export async function transcodeToMp4(
   file: File,
   onProgress?: (pct: number) => void
 ): Promise<File> {
-  const ffmpeg = await getFFmpeg();
-  if (onProgress) {
-    ffmpeg.on("progress", ({ progress }) => {
-      onProgress(Math.min(99, Math.round(progress * 100)));
+  if (typeof MediaRecorder === "undefined") {
+    throw new Error("Seu navegador não suporta conversão de vídeo. Converta para MP4 no celular e tente novamente.");
+  }
+
+  return new Promise<File>((resolve, reject) => {
+    const tmpVideo = document.createElement("video");
+    tmpVideo.muted = true;
+    tmpVideo.playsInline = true;
+    tmpVideo.preload = "auto";
+    tmpVideo.style.cssText = "position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none";
+    document.body.appendChild(tmpVideo);
+
+    const url = URL.createObjectURL(file);
+    let cleaned = false;
+    const cleanup = () => {
+      if (cleaned) return;
+      cleaned = true;
+      try { tmpVideo.pause(); } catch {}
+      try { document.body.removeChild(tmpVideo); } catch {}
+      URL.revokeObjectURL(url);
+    };
+
+    tmpVideo.addEventListener("error", () => {
+      cleanup();
+      reject(new Error("Não foi possível converter. Converta para MP4 no celular e tente novamente."));
     });
-  }
 
-  const inputExt = file.name.split(".").pop() || "mov";
-  const inputName = `input.${inputExt}`;
-  const outputName = "output.mp4";
-  await ffmpeg.writeFile(inputName, await fetchFile(file));
+    tmpVideo.addEventListener("loadedmetadata", async () => {
+      try {
+        const w = tmpVideo.videoWidth || 640;
+        const h = tmpVideo.videoHeight || 360;
+        const duration = isFinite(tmpVideo.duration) && tmpVideo.duration > 0 ? tmpVideo.duration : 0;
 
-  const primaryArgs = [
-    "-i", inputName,
-    "-c:v", "libx264",
-    "-preset", "ultrafast",
-    "-crf", "30",
-    "-vf", "scale=720:-2:force_original_aspect_ratio=decrease",
-    "-pix_fmt", "yuv420p",
-    "-an",
-    "-movflags", "+faststart",
-    outputName,
-  ];
+        const cvs = document.createElement("canvas");
+        cvs.width = w;
+        cvs.height = h;
+        const ctx = cvs.getContext("2d");
+        if (!ctx) throw new Error("Canvas indisponível neste navegador.");
 
-  const fallbackArgs = [
-    "-i", inputName,
-    "-c:v", "mpeg4",
-    "-q:v", "8",
-    "-vf", "scale=720:-2:force_original_aspect_ratio=decrease",
-    "-an",
-    outputName,
-  ];
+        const mimeCandidates = [
+          "video/mp4;codecs=h264",
+          "video/mp4",
+          "video/webm;codecs=vp9",
+          "video/webm;codecs=vp8",
+          "video/webm",
+        ];
+        const mimeType =
+          mimeCandidates.find((m) => MediaRecorder.isTypeSupported(m)) || "video/webm";
 
-  let exitCode = await ffmpeg.exec(primaryArgs, 120000);
-  if (exitCode !== 0) {
-    try {
-      await ffmpeg.deleteFile(outputName);
-    } catch {}
-    exitCode = await ffmpeg.exec(fallbackArgs, 120000);
-  }
+        const stream = (cvs as any).captureStream ? (cvs as HTMLCanvasElement).captureStream(30) : null;
+        if (!stream) throw new Error("captureStream indisponível neste navegador.");
 
-  if (exitCode !== 0) {
-    throw new Error("Falha ao converter o vídeo no navegador.");
-  }
+        const recorder = new MediaRecorder(stream, {
+          mimeType,
+          videoBitsPerSecond: 2_500_000,
+        });
 
-  const data = await ffmpeg.readFile(outputName);
-  const bytes = data instanceof Uint8Array ? new Uint8Array(data) : new TextEncoder().encode(data as string);
-  const blob = new Blob([bytes.buffer as ArrayBuffer], { type: "video/mp4" });
-  return new File([blob], file.name.replace(/\.[^.]+$/, ".mp4"), { type: "video/mp4" });
+        const chunks: Blob[] = [];
+        recorder.ondataavailable = (e) => {
+          if (e.data.size > 0) chunks.push(e.data);
+        };
+        recorder.onerror = () => {
+          cleanup();
+          reject(new Error("Não foi possível converter. Converta para MP4 no celular e tente novamente."));
+        };
+        recorder.onstop = () => {
+          try {
+            const blob = new Blob(chunks, { type: mimeType });
+            const ext = mimeType.includes("mp4") ? ".mp4" : ".webm";
+            const outType = mimeType.includes("mp4") ? "video/mp4" : "video/webm";
+            const converted = new File(
+              [blob],
+              file.name.replace(/\.[^.]+$/, ext),
+              { type: outType }
+            );
+            cleanup();
+            onProgress?.(100);
+            resolve(converted);
+          } catch (e) {
+            cleanup();
+            reject(e instanceof Error ? e : new Error("Falha ao finalizar conversão."));
+          }
+        };
+
+        recorder.start(100);
+        await tmpVideo.play();
+
+        const drawLoop = () => {
+          if (cleaned) return;
+          if (tmpVideo.paused || tmpVideo.ended) {
+            try { recorder.state !== "inactive" && recorder.stop(); } catch {}
+            return;
+          }
+          ctx.drawImage(tmpVideo, 0, 0, w, h);
+          if (duration > 0 && onProgress) {
+            onProgress(Math.min(99, Math.round((tmpVideo.currentTime / duration) * 100)));
+          }
+          requestAnimationFrame(drawLoop);
+        };
+        drawLoop();
+
+        tmpVideo.addEventListener("ended", () => {
+          try { recorder.state !== "inactive" && recorder.stop(); } catch {}
+        });
+
+        // Failsafe: se duration conhecida, força stop após duration + 5s
+        if (duration > 0) {
+          setTimeout(() => {
+            if (recorder.state !== "inactive") {
+              try { recorder.stop(); } catch {}
+            }
+          }, Math.ceil(duration * 1000) + 5000);
+        }
+      } catch (err) {
+        cleanup();
+        reject(err instanceof Error ? err : new Error("Falha ao converter o vídeo."));
+      }
+    });
+
+    tmpVideo.src = url;
+  });
 }
