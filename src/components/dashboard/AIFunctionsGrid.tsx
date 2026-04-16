@@ -52,7 +52,6 @@ const AI_FUNCTIONS: AIFunction[] = [
   { key: "nutricao-sport", emoji: "🏅", label: "Nutrição Sport", desc: "Periodização nutricional para atletas", requiredPlan: "ON +", relatedPage: "/nutricao-sport" },
 
   // ON PRO
-  { key: "videoform-ai", emoji: "🎥", label: "VideoForm AI", desc: "Análise biomecânica de execução por vídeo", requiredPlan: "ON PRO", relatedPage: "/videoform" },
   { key: "generate-performance-protocol", emoji: "🏋️", label: "Protocolo Performance", desc: "Nutrição avançada para atletas", requiredPlan: "ON PRO", relatedPage: "/performance-pro" },
   { key: "generate-coach-briefing", emoji: "🩺", label: "Briefing do Coach", desc: "Resumo semanal para o profissional", requiredPlan: "ON PRO", relatedPage: "/professional" },
   { key: "kiwify-webhook", emoji: "🔗", label: "Integração Kiwify", desc: "Webhook de pagamento automático", requiredPlan: "ON PRO" },
