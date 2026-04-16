@@ -249,8 +249,13 @@ const VideoFormPage = () => {
             </div>
 
             {videoUrl && (
-              <div className="rounded-lg overflow-hidden border border-border bg-black">
-                <video ref={videoRef} src={videoUrl} controls className="w-full max-h-[400px] mx-auto" playsInline muted />
+              <div className="space-y-2">
+                <div className="rounded-lg overflow-hidden border border-border bg-black">
+                  <video ref={videoRef} src={videoUrl} controls className="w-full max-h-[400px] mx-auto" playsInline muted />
+                </div>
+                {originalFileName && (
+                  <p className="text-xs text-muted-foreground font-mono truncate">📁 {originalFileName}</p>
+                )}
               </div>
             )}
 
