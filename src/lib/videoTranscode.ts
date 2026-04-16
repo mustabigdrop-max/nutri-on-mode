@@ -131,11 +131,28 @@ export async function transcodeToMp4(
         };
 
         recorder.start(100);
-        await tmpVideo.play();
+
+        // Safety timer: força stop após duração + 5s (evita travamento)
+        const safetyTimer = window.setTimeout(() => {
+          if (recorder.state === "recording") {
+            try { recorder.stop(); } catch {}
+          }
+        }, ((duration || 60) * 1000) + 5000);
+
+        // Trata bloqueio de autoplay (Safari/iOS)
+        await tmpVideo.play().catch(() => {
+          clearTimeout(safetyTimer);
+          if (recorder.state === "recording") {
+            try { recorder.stop(); } catch {}
+          }
+          cleanup();
+          reject(new Error("Não foi possível reproduzir o vídeo para conversão. Toque para liberar a reprodução e tente novamente."));
+        });
 
         const drawLoop = () => {
-          if (cleaned) return;
+          if (cleaned) { clearTimeout(safetyTimer); return; }
           if (tmpVideo.paused || tmpVideo.ended) {
+            clearTimeout(safetyTimer);
             try { recorder.state !== "inactive" && recorder.stop(); } catch {}
             return;
           }
@@ -148,17 +165,9 @@ export async function transcodeToMp4(
         drawLoop();
 
         tmpVideo.addEventListener("ended", () => {
+          clearTimeout(safetyTimer);
           try { recorder.state !== "inactive" && recorder.stop(); } catch {}
         });
-
-        // Failsafe: se duration conhecida, força stop após duration + 5s
-        if (duration > 0) {
-          setTimeout(() => {
-            if (recorder.state !== "inactive") {
-              try { recorder.stop(); } catch {}
-            }
-          }, Math.ceil(duration * 1000) + 5000);
-        }
       } catch (err) {
         cleanup();
         reject(err instanceof Error ? err : new Error("Falha ao converter o vídeo."));
