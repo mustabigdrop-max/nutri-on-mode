@@ -10,6 +10,7 @@ import { ArrowLeft, Video, Upload, Loader2, Activity, Sparkles } from "lucide-re
 import { motion } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import { getPoseLandmarker, analyzeFrame, countReps, type FrameAnalysis } from "@/lib/poseAnalysis";
+import { canBrowserDecode, transcodeToMp4 } from "@/lib/videoTranscode";
 
 const EXERCISES = [
   "Agachamento livre", "Agachamento com barra", "Leg press", "Stiff", "Levantamento terra",
@@ -30,18 +31,45 @@ const VideoFormPage = () => {
   const [statusText, setStatusText] = useState("");
   const [result, setResult] = useState<{ content: string; reps: number; frames: number } | null>(null);
 
-  const handleFile = (file: File) => {
-    if (!file.type.startsWith("video/")) {
+  const handleFile = async (file: File) => {
+    const isVideo = file.type.startsWith("video/") || /\.(mp4|mov|webm|m4v|avi|mkv)$/i.test(file.name);
+    if (!isVideo) {
       toast({ title: "Arquivo inválido", description: "Envie um vídeo (.mp4, .mov, .webm)", variant: "destructive" });
       return;
     }
     if (file.size > 100 * 1024 * 1024) {
-      toast({ title: "Vídeo muito grande", description: "Máximo 100MB. Tente recortar para 10-20 segundos.", variant: "destructive" });
+      toast({ title: "Vídeo muito grande", description: "Máximo 100MB. Recorte para 10-20s.", variant: "destructive" });
       return;
     }
-    const url = URL.createObjectURL(file);
-    setVideoUrl(url);
+
     setResult(null);
+
+    // Testa se o navegador consegue decodificar; senão, transcoda no browser
+    const ok = await canBrowserDecode(file);
+    if (ok) {
+      setVideoUrl(URL.createObjectURL(file));
+      return;
+    }
+
+    try {
+      setAnalyzing(true);
+      setProgress(2);
+      setStatusText("Convertendo vídeo (.mov/HEVC) para MP4 compatível...");
+      const mp4 = await transcodeToMp4(file, (p) => setProgress(Math.max(2, Math.round(p * 0.4))));
+      setVideoUrl(URL.createObjectURL(mp4));
+      toast({ title: "Vídeo convertido", description: "Pronto para análise." });
+    } catch (err: any) {
+      console.error("[VideoForm] transcode falhou:", err);
+      toast({
+        title: "Não foi possível converter o vídeo",
+        description: "Tente exportar como MP4 H.264 no seu celular ou usar outro arquivo.",
+        variant: "destructive",
+      });
+    } finally {
+      setAnalyzing(false);
+      setProgress(0);
+      setStatusText("");
+    }
   };
 
   const extractPoseData = async (): Promise<FrameAnalysis[]> => {
