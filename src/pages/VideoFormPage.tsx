@@ -44,8 +44,8 @@ const VideoFormPage = () => {
 
     setResult(null);
 
-    // Testa se o navegador consegue decodificar; senão, transcoda no browser
-    const ok = await canBrowserDecode(file);
+    const isQuickTime = file.type === "video/quicktime" || /\.mov$/i.test(file.name);
+    const ok = isQuickTime ? false : await canBrowserDecode(file);
     if (ok) {
       setVideoUrl(URL.createObjectURL(file));
       return;
@@ -54,7 +54,7 @@ const VideoFormPage = () => {
     try {
       setAnalyzing(true);
       setProgress(2);
-      setStatusText("Convertendo vídeo (.mov/HEVC) para MP4 compatível...");
+      setStatusText(isQuickTime ? "Convertendo .mov para MP4 compatível..." : "Convertendo vídeo para MP4 compatível...");
       const mp4 = await transcodeToMp4(file, (p) => setProgress(Math.max(2, Math.round(p * 0.4))));
       setVideoUrl(URL.createObjectURL(mp4));
       toast({ title: "Vídeo convertido", description: "Pronto para análise." });
@@ -62,7 +62,7 @@ const VideoFormPage = () => {
       console.error("[VideoForm] transcode falhou:", err);
       toast({
         title: "Não foi possível converter o vídeo",
-        description: "Tente exportar como MP4 H.264 no seu celular ou usar outro arquivo.",
+        description: "Esse .mov não conseguiu ser convertido no navegador. Exporte como MP4 no celular e envie novamente.",
         variant: "destructive",
       });
     } finally {
