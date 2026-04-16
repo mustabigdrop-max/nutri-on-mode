@@ -23,7 +23,7 @@ const VideoFormPage = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [exercise, setExercise] = useState("");
+  const [exercise, setExercise] = useState("auto");
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -64,10 +64,6 @@ const VideoFormPage = () => {
   };
 
   const handleAnalyze = async () => {
-    if (!exercise) {
-      toast({ title: "Selecione o exercício", variant: "destructive" });
-      return;
-    }
     if (!videoRef.current || !videoUrl) {
       toast({ title: "Envie um vídeo", variant: "destructive" });
       return;
@@ -97,7 +93,12 @@ const VideoFormPage = () => {
       setProgress(96);
 
       const { data, error } = await supabase.functions.invoke("videoform-ai", {
-        body: { exerciseName: exercise, poseData: frames, repsDetected: reps },
+        body: {
+          exerciseName: exercise === "auto" ? null : exercise,
+          poseData: frames,
+          repsDetected: reps,
+          source: "upload",
+        },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
@@ -132,10 +133,11 @@ const VideoFormPage = () => {
           <CardContent className="p-5 space-y-4">
             <div className="grid sm:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-xs font-mono text-muted-foreground uppercase tracking-wider">Exercício</label>
+                <label className="text-xs font-mono text-muted-foreground uppercase tracking-wider">Exercício (opcional)</label>
                 <Select value={exercise} onValueChange={setExercise}>
-                  <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="auto">🤖 Detectar automaticamente</SelectItem>
                     {EXERCISES.map(ex => <SelectItem key={ex} value={ex}>{ex}</SelectItem>)}
                   </SelectContent>
                 </Select>
@@ -160,7 +162,7 @@ const VideoFormPage = () => {
             <div className="flex items-center gap-3">
               <Button
                 onClick={handleAnalyze}
-                disabled={analyzing || !videoUrl || !exercise}
+                disabled={analyzing || !videoUrl}
                 className="flex-1"
                 size="lg"
               >
