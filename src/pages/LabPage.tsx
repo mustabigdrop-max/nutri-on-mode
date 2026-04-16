@@ -113,6 +113,12 @@ const LabPage = () => {
               <TabsTrigger value="cardio" className="flex-1 text-xs gap-1 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
                 <Activity className="w-3.5 h-3.5" /> Cardio
               </TabsTrigger>
+              <button
+                onClick={() => navigate("/videoform")}
+                className="flex-1 flex items-center justify-center gap-1 text-xs px-3 py-1.5 rounded-md text-accent hover:bg-accent/10 transition-colors font-medium"
+              >
+                <Video className="w-3.5 h-3.5" /> VideoForm
+              </button>
               <TabsTrigger value="exercises" className="flex-1 text-xs gap-1 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
                 <Target className="w-3.5 h-3.5" /> Exercícios
                </TabsTrigger>
