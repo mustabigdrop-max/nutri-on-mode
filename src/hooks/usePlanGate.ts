@@ -45,6 +45,7 @@ export const usePlanGate = () => {
   }, [user]);
 
   const hasAccess = (requiredPlan: PlanTier) => {
+    if (role === "admin") return true; // admin bypass — acesso total
     return (PLAN_HIERARCHY[plan] ?? 0) >= (PLAN_HIERARCHY[requiredPlan] ?? 0);
   };
 
