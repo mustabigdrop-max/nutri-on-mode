@@ -122,3 +122,6 @@ verify_jwt = false
 
 [functions.guton]
 verify_jwt = false
+
+[functions.videoform-ai]
+verify_jwt = false
