@@ -615,9 +615,12 @@ serve(async (req) => {
     if (existingData) contextBlock += `\n[DADOS EXISTENTES]:\n${JSON.stringify(existingData, null, 2)}\n`;
     if (perplexityData) contextBlock += `\n[EVIDÊNCIAS RECENTES (Perplexity)]:\n${perplexityData}\n\n[CITAÇÕES]: ${JSON.stringify(citations)}\n`;
 
-    const aiMessages: Array<{role: string; content: string}> = [
+    const aiMessages: Array<{role: string; content: any}> = [
       { role: "system", content: SYSTEM_PROMPT },
     ];
+
+    // Build multimodal content for exames with attachments
+    const hasAttachments = mode === "exames" && attachments && attachments.length > 0;
 
     if (mode === "chat") {
       if (history.length > 0) {
@@ -628,6 +631,40 @@ serve(async (req) => {
         role: "user",
         content: `${contextBlock}\n\n${modeInstruction}\n\nPergunta/Composto: ${lastUserMsg}`
       });
+    } else if (hasAttachments) {
+      // Multimodal: images + text for exam interpretation
+      const contentParts: any[] = [];
+      
+      // Add text context first
+      const textContext = `${contextBlock}\n\n${modeInstruction}\n\n${compound ? `Contexto adicional do paciente: ${compound}\n\n` : ""}Analise os exames anexados abaixo. Extraia todos os valores laboratoriais visíveis e interprete na ótica do atleta/otimização conforme o protocolo VERTEX.`;
+      contentParts.push({ type: "text", text: textContext });
+      
+      // Add each attachment as image
+      for (const att of attachments) {
+        if (att.type === "application/pdf") {
+          // For PDFs, send as text instruction since vision doesn't support PDF directly
+          contentParts.push({
+            type: "text",
+            text: `[Arquivo PDF anexado: ${att.name} — O conteúdo do PDF foi enviado como imagem para análise visual]`
+          });
+          // Still try to send as image — Gemini can handle base64 PDFs
+          contentParts.push({
+            type: "image_url",
+            image_url: {
+              url: `data:${att.type};base64,${att.base64}`,
+            }
+          });
+        } else {
+          contentParts.push({
+            type: "image_url",
+            image_url: {
+              url: `data:${att.type};base64,${att.base64}`,
+            }
+          });
+        }
+      }
+      
+      aiMessages.push({ role: "user", content: contentParts });
     } else {
       aiMessages.push({
         role: "user",
