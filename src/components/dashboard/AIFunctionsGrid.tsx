@@ -14,6 +14,9 @@ type AIFunction = {
 };
 
 const AI_FUNCTIONS: AIFunction[] = [
+  // 🆕 NOVO — destaque
+  { key: "videoform-ai", emoji: "🎥", label: "VideoForm AI", desc: "Análise biomecânica de execução por vídeo", requiredPlan: "ON PRO", relatedPage: "/videoform" },
+
   // Free
   { key: "analyze-meal", emoji: "📸", label: "Análise de Refeição", desc: "IA analisa foto e estima macros", requiredPlan: "free", relatedPage: "/meal-log" },
   { key: "onboarding-chat", emoji: "👋", label: "Onboarding Inteligente", desc: "Chat guiado para configuração inicial", requiredPlan: "free", relatedPage: "/onboarding" },
