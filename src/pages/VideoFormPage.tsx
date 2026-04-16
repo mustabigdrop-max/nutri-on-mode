@@ -159,6 +159,7 @@ const VideoFormPage = () => {
       }
 
       const reps = countReps(frames);
+      const clientHint = exercise === "auto" ? detectExercise(frames) : null;
       setStatusText("Enviando para o VideoForm AI...");
       setProgress(96);
 
@@ -168,6 +169,7 @@ const VideoFormPage = () => {
           poseData: frames,
           repsDetected: reps,
           source: "upload",
+          clientHint,
         },
       });
       if (error) throw error;
