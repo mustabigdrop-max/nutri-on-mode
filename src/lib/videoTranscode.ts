@@ -11,14 +11,12 @@ async function getFFmpeg(onLog?: (msg: string) => void): Promise<FFmpeg> {
   await ffmpeg.load({
     coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, "text/javascript"),
     wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, "application/wasm"),
+    workerURL: await toBlobURL(`${baseURL}/ffmpeg-core.worker.js`, "text/javascript"),
   });
   ffmpegInstance = ffmpeg;
   return ffmpeg;
 }
 
-/**
- * Verifica se o navegador consegue decodificar o vídeo (toca metadata + 1 seek).
- */
 export async function canBrowserDecode(file: File): Promise<boolean> {
   return new Promise((resolve) => {
     const url = URL.createObjectURL(file);
@@ -43,9 +41,6 @@ export async function canBrowserDecode(file: File): Promise<boolean> {
   });
 }
 
-/**
- * Transcodifica qualquer vídeo (.mov, HEVC etc.) para MP4 H.264 + AAC compatível com browser.
- */
 export async function transcodeToMp4(
   file: File,
   onProgress?: (pct: number) => void
@@ -56,19 +51,38 @@ export async function transcodeToMp4(
       onProgress(Math.min(99, Math.round(progress * 100)));
     });
   }
-  const inputName = "input." + (file.name.split(".").pop() || "mov");
+
+  const inputExt = file.name.split(".").pop() || "mov";
+  const inputName = `input.${inputExt}`;
   const outputName = "output.mp4";
   await ffmpeg.writeFile(inputName, await fetchFile(file));
-  await ffmpeg.exec([
+
+  const commonArgs = [
     "-i", inputName,
-    "-c:v", "libx264",
-    "-preset", "ultrafast",
-    "-crf", "28",
-    "-vf", "scale='min(720,iw)':-2",
-    "-an", // sem áudio (não precisamos para análise)
+    "-vf", "scale=720:-2:force_original_aspect_ratio=decrease",
+    "-pix_fmt", "yuv420p",
+    "-an",
     "-movflags", "+faststart",
     outputName,
-  ]);
+  ];
+
+  try {
+    await ffmpeg.exec([
+      "-i", inputName,
+      "-c:v", "libx264",
+      "-preset", "ultrafast",
+      "-crf", "28",
+      ...commonArgs.slice(2),
+    ]);
+  } catch {
+    await ffmpeg.exec([
+      "-i", inputName,
+      "-c:v", "mpeg4",
+      "-q:v", "6",
+      ...commonArgs.slice(2),
+    ]);
+  }
+
   const data = await ffmpeg.readFile(outputName);
   const bytes = data instanceof Uint8Array ? new Uint8Array(data) : new TextEncoder().encode(data as string);
   const blob = new Blob([bytes.buffer as ArrayBuffer], { type: "video/mp4" });
