@@ -31,8 +31,8 @@ const VideoFormPage = () => {
   const [progress, setProgress] = useState(0);
   const [statusText, setStatusText] = useState("");
   const [result, setResult] = useState<{ content: string; reps: number; frames: number } | null>(null);
-  const [converting, setConverting] = useState<{ fileName: string; pct: number } | null>(null);
   const [conversionError, setConversionError] = useState<string | null>(null);
+  const { convert: ffmpegConvert, needsConversion, isConverting: ffmpegConverting, isLoading: ffmpegLoading, progress: ffmpegProgress } = useFFmpegConvert();
 
   const showConversionError = (msg: string) => {
     setConversionError(msg);
