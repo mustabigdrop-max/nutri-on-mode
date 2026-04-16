@@ -83,7 +83,7 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { exerciseName, poseData, repsDetected, profile, source } = await req.json();
+    const { exerciseName, poseData, repsDetected, profile, source, clientHint } = await req.json();
     if (!poseData) {
       return new Response(JSON.stringify({ error: "poseData é obrigatório" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
