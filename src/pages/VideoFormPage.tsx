@@ -326,6 +326,38 @@ const VideoFormPage = () => {
           </motion.div>
         )}
       </main>
+
+      {converting && (
+        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 w-[92%] max-w-md">
+          <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 backdrop-blur-md shadow-2xl p-4 space-y-2">
+            <div className="flex items-center gap-2">
+              <Loader2 className="w-4 h-4 animate-spin text-amber-500" />
+              <p className="text-sm font-semibold text-amber-500 truncate">
+                Convertendo {converting.fileName}…
+              </p>
+            </div>
+            <p className="text-xs text-amber-200/80">
+              Esse formato não é suportado pelo navegador — convertendo para MP4
+            </p>
+            <div className="h-1.5 rounded-full bg-amber-950/40 overflow-hidden">
+              <div
+                className="h-full bg-amber-500 transition-all duration-200"
+                style={{ width: `${converting.pct}%` }}
+              />
+            </div>
+            <p className="text-[10px] font-mono text-amber-200/60 text-right">{converting.pct}%</p>
+          </div>
+        </div>
+      )}
+
+      {conversionError && (
+        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 w-[92%] max-w-md">
+          <div className="rounded-lg border border-destructive/50 bg-destructive/15 backdrop-blur-md shadow-2xl p-4">
+            <p className="text-sm font-semibold text-destructive">Erro na conversão</p>
+            <p className="text-xs text-destructive/90 mt-1">{conversionError}</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
