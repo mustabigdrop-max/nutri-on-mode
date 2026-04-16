@@ -46,7 +46,7 @@ export default function PeptideVaultPage() {
         </Button>
         <div>
           <h1 className="text-lg font-bold text-[#4ade80]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-            🧬 VERTEX-BIO PeptideVault
+            🧬 NEXUS-BIO PeptideVault
           </h1>
           <p className="text-xs text-gray-500">Enciclopédia viva de peptídeos com IA</p>
         </div>
@@ -187,7 +187,7 @@ function OracleTab({ userId }: { userId?: string }) {
           {messages.length === 0 && (
             <div className="text-center py-12 space-y-4">
               <div className="text-5xl">🧬</div>
-              <h2 className="text-[#4ade80] font-bold text-xl" style={{ fontFamily: "'Space Grotesk'" }}>VERTEX-BIO Oracle</h2>
+              <h2 className="text-[#4ade80] font-bold text-xl" style={{ fontFamily: "'Space Grotesk'" }}>NEXUS-BIO Oracle</h2>
               <p className="text-gray-500 text-sm max-w-xs mx-auto">Pergunte sobre peptídeos, protocolos, mecanismos moleculares e aplicações práticas.</p>
               <div className="flex flex-wrap gap-2 justify-center mt-4">
                 {quickPrompts.map((q) => (
@@ -237,7 +237,7 @@ function OracleTab({ userId }: { userId?: string }) {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && send(input)}
-            placeholder="Pergunte ao VERTEX-BIO..."
+            placeholder="Pergunte ao NEXUS-BIO..."
             className="flex-1 bg-gray-900 border border-gray-800 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-[#4ade80]/50"
           />
           <Button onClick={() => send(input)} disabled={loading || !input.trim()} className="bg-[#4ade80] hover:bg-[#22c55e] text-black rounded-xl px-4">
@@ -406,7 +406,7 @@ function EncyclopediaTab() {
         </div>
 
         <p className="text-center text-[10px] text-gray-700 py-4">
-          VERTEX-BIO PeptideVault v2 · nutriON · Fins educacionais e científicos. Não substituem orientação médica.
+          NEXUS-BIO PeptideVault v2 · nutriON · Fins educacionais e científicos. Não substituem orientação médica.
         </p>
       </div>
     </ScrollArea>
