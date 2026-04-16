@@ -10,7 +10,7 @@ import { ArrowLeft, Video, Upload, Loader2, Activity, Sparkles } from "lucide-re
 import { motion } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import { getPoseLandmarker, analyzeFrame, countReps, type FrameAnalysis } from "@/lib/poseAnalysis";
-import { canBrowserDecode, transcodeToMp4 } from "@/lib/videoTranscode";
+import { canBrowserDecode, transcodeToMp4, needsConversion } from "@/lib/videoTranscode";
 
 const EXERCISES = [
   "Agachamento livre", "Agachamento com barra", "Leg press", "Stiff", "Levantamento terra",
