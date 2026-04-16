@@ -1,19 +1,54 @@
 import { FFmpeg } from "@ffmpeg/ffmpeg";
 import { fetchFile, toBlobURL } from "@ffmpeg/util";
+import coreURL from "@ffmpeg/core?url";
+import wasmURL from "@ffmpeg/core/wasm?url";
 
 let ffmpegInstance: FFmpeg | null = null;
+let ffmpegLoadPromise: Promise<FFmpeg> | null = null;
+
+async function loadWithTimeout(ffmpeg: FFmpeg, onLog?: (msg: string) => void): Promise<void> {
+  const controller = new AbortController();
+  const timeoutId = window.setTimeout(() => controller.abort(), 20000);
+
+  try {
+    await ffmpeg.load(
+      {
+        coreURL: await toBlobURL(coreURL, "text/javascript"),
+        wasmURL: await toBlobURL(wasmURL, "application/wasm"),
+      },
+      { signal: controller.signal }
+    );
+  } catch (error) {
+    ffmpeg.terminate();
+    if (controller.signal.aborted) {
+      throw new Error("O motor de conversão demorou para iniciar. Tente novamente em uma conexão melhor ou envie o vídeo já em MP4.");
+    }
+    throw error;
+  } finally {
+    window.clearTimeout(timeoutId);
+    if (onLog) ffmpeg.off("log", ({ message }) => onLog(message));
+  }
+}
 
 async function getFFmpeg(onLog?: (msg: string) => void): Promise<FFmpeg> {
   if (ffmpegInstance) return ffmpegInstance;
-  const ffmpeg = new FFmpeg();
-  if (onLog) ffmpeg.on("log", ({ message }) => onLog(message));
-  const baseURL = "https://unpkg.com/@ffmpeg/core@0.12.10/dist/umd";
-  await ffmpeg.load({
-    coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, "text/javascript"),
-    wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, "application/wasm"),
-  });
-  ffmpegInstance = ffmpeg;
-  return ffmpeg;
+
+  if (!ffmpegLoadPromise) {
+    const ffmpeg = new FFmpeg();
+    if (onLog) ffmpeg.on("log", ({ message }) => onLog(message));
+
+    ffmpegLoadPromise = loadWithTimeout(ffmpeg, onLog)
+      .then(() => {
+        ffmpegInstance = ffmpeg;
+        return ffmpeg;
+      })
+      .catch((error) => {
+        ffmpegLoadPromise = null;
+        throw error;
+      });
+  }
+
+  return ffmpegLoadPromise;
 }
 
 export async function canBrowserDecode(file: File): Promise<boolean> {
