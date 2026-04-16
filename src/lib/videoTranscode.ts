@@ -70,6 +70,7 @@ export async function transcodeToMp4(
     outputName,
   ]);
   const data = await ffmpeg.readFile(outputName);
-  const blob = new Blob([data as Uint8Array], { type: "video/mp4" });
+  const bytes = data instanceof Uint8Array ? new Uint8Array(data) : new TextEncoder().encode(data as string);
+  const blob = new Blob([bytes.buffer as ArrayBuffer], { type: "video/mp4" });
   return new File([blob], file.name.replace(/\.[^.]+$/, ".mp4"), { type: "video/mp4" });
 }
