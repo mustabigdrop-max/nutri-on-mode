@@ -55,8 +55,10 @@ const VideoFormPage = () => {
     }, 80);
   };
 
+  const [convertingFileName, setConvertingFileName] = useState<string | null>(null);
+
   const handleFile = async (file: File) => {
-    const isVideo = file.type.startsWith("video/") || /\.(mp4|mov|webm|m4v|avi|mkv)$/i.test(file.name);
+    const isVideo = file.type.startsWith("video/") || /\.(mp4|mov|webm|m4v|avi|mkv|3gp|wmv)$/i.test(file.name);
     if (!isVideo) {
       toast({ title: "Arquivo inválido", description: "Envie um vídeo (.mp4, .mov, .webm, .avi, .mkv)", variant: "destructive" });
       return;
@@ -69,44 +71,23 @@ const VideoFormPage = () => {
     setResult(null);
     setVideoUrl(null);
 
-    // Se for formato incompatível (MOV/AVI/MKV), converte direto
+    let fileToLoad = file;
     if (needsConversion(file)) {
-      setConverting({ fileName: file.name, pct: 0 });
+      setConvertingFileName(file.name);
       try {
-        const converted = await transcodeToMp4(file, (pct) =>
-          setConverting((c) => (c ? { ...c, pct } : c))
-        );
-        setConverting(null);
-        mountVideoPlayer(converted, file.name);
+        fileToLoad = await ffmpegConvert(file);
         toast({ title: "Vídeo convertido", description: "Pronto para análise." });
       } catch (err: any) {
-        setConverting(null);
         console.error("[VideoForm] conversão falhou:", err);
         showConversionError(err?.message || "Não foi possível converter. Converta para MP4 no celular e tente novamente.");
+        setConvertingFileName(null);
+        return;
+      } finally {
+        setConvertingFileName(null);
       }
-      return;
     }
 
-    // MP4/WebM: testa decode nativo, converte só se falhar
-    const ok = await canBrowserDecode(file);
-    if (ok) {
-      mountVideoPlayer(file, file.name);
-      return;
-    }
-
-    setConverting({ fileName: file.name, pct: 0 });
-    try {
-      const converted = await transcodeToMp4(file, (pct) =>
-        setConverting((c) => (c ? { ...c, pct } : c))
-      );
-      setConverting(null);
-      mountVideoPlayer(converted, file.name);
-      toast({ title: "Vídeo convertido", description: "Pronto para análise." });
-    } catch (err: any) {
-      setConverting(null);
-      console.error("[VideoForm] conversão falhou:", err);
-      showConversionError(err?.message || "Não foi possível converter. Converta para MP4 no celular e tente novamente.");
-    }
+    mountVideoPlayer(fileToLoad, file.name);
   };
 
   const extractPoseData = async (): Promise<FrameAnalysis[]> => {
