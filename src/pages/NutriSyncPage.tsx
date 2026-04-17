@@ -117,6 +117,25 @@ const NutriSyncPage = () => {
     handleStartEdit(dayOfWeek, nextSlot);
   };
 
+  const handleQuickAddCardio = async (
+    dayOfWeek: number,
+    cardioType: WorkoutType,
+    cardioTime: WorkoutTime,
+    durationMinutes: number = 30,
+  ) => {
+    const dayEntries = getWorkoutsForDay(dayOfWeek);
+    const nextSlot = dayEntries.length > 0 ? Math.max(...dayEntries.map(e => e.slot || 1)) + 1 : 1;
+    setSaving(true);
+    await saveDay({
+      day_of_week: dayOfWeek,
+      workout_type: cardioType,
+      workout_time: cardioTime,
+      duration_minutes: durationMinutes,
+      slot: nextSlot,
+    } as WorkoutScheduleEntry);
+    setSaving(false);
+  };
+
   const handleRemoveSlot = async (dayOfWeek: number, slot: number) => {
     await removeSlot(dayOfWeek, slot);
     setEditingDay(null);
