@@ -579,11 +579,11 @@ serve(async (req) => {
       }
     }
 
-    // STEP 2: Perplexity search for recent evidence
+    // STEP 2: Perplexity search for recent evidence (skip in chat mode for speed)
     let perplexityData = "";
     let citations: string[] = [];
     
-    if (PERPLEXITY_API_KEY && compound) {
+    if (PERPLEXITY_API_KEY && compound && mode !== "chat") {
       try {
         const pRes = await fetch("https://api.perplexity.ai/chat/completions", {
           method: "POST",
@@ -677,7 +677,7 @@ serve(async (req) => {
       method: "POST",
       headers: { "Authorization": `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: "google/gemini-2.5-pro",
+        model: mode === "chat" ? "google/gemini-2.5-flash" : "google/gemini-2.5-pro",
         messages: aiMessages,
         temperature: 0.5,
         stream: mode === "chat",
