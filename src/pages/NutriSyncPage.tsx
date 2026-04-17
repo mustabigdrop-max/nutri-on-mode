@@ -117,6 +117,25 @@ const NutriSyncPage = () => {
     handleStartEdit(dayOfWeek, nextSlot);
   };
 
+  const handleQuickAddCardio = async (
+    dayOfWeek: number,
+    cardioType: WorkoutType,
+    cardioTime: WorkoutTime,
+    durationMinutes: number = 30,
+  ) => {
+    const dayEntries = getWorkoutsForDay(dayOfWeek);
+    const nextSlot = dayEntries.length > 0 ? Math.max(...dayEntries.map(e => e.slot || 1)) + 1 : 1;
+    setSaving(true);
+    await saveDay({
+      day_of_week: dayOfWeek,
+      workout_type: cardioType,
+      workout_time: cardioTime,
+      duration_minutes: durationMinutes,
+      slot: nextSlot,
+    } as WorkoutScheduleEntry);
+    setSaving(false);
+  };
+
   const handleRemoveSlot = async (dayOfWeek: number, slot: number) => {
     await removeSlot(dayOfWeek, slot);
     setEditingDay(null);
@@ -310,6 +329,66 @@ const NutriSyncPage = () => {
                 <span className="text-xs font-mono text-foreground">Hidratação: <strong>{adjustment.hydrationLiters}L</strong></span>
               </div>
             </div>
+
+            {/* Quick Add Cardio Extra */}
+            {(() => {
+              const hasMusc = todayWorkouts.some(w => WORKOUT_TYPES[w.workout_type as WorkoutType]?.category === "musculacao");
+              const hasCardio = todayWorkouts.some(w => WORKOUT_TYPES[w.workout_type as WorkoutType]?.category === "cardio");
+              if (hasCardio) return null;
+              const muscW = todayWorkouts.find(w => WORKOUT_TYPES[w.workout_type as WorkoutType]?.category === "musculacao");
+              const muscTime = muscW?.workout_time;
+              // Post-workout slot: same time slot as musc (treina manhã = cardio manhã pós; tarde = tarde; noite = noite)
+              const postSlot: WorkoutTime = muscTime || "afternoon";
+              // Outro horário = oposto: se musc é manhã, sugerir noite; se é tarde, sugerir manhã (AEJ); se é noite, sugerir manhã
+              const otherSlot: WorkoutTime = muscTime === "morning" ? "night" : "morning";
+              const otherEmoji = otherSlot === "morning" ? "🌅" : "🌙";
+              const otherLabel = otherSlot === "morning" ? "AEJ Manhã" : "Cardio Noite";
+
+              return (
+                <div className="rounded-2xl border border-border bg-card p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Plus className="w-4 h-4 text-primary" />
+                    <h3 className="text-sm font-bold text-foreground">Adicionar Cardio Extra</h3>
+                  </div>
+                  <p className="text-[10px] font-mono text-muted-foreground mb-3">
+                    {hasMusc
+                      ? "Inclua cardio pós-treino ou em outro horário do dia. Recalcula kcal automaticamente."
+                      : "Adicione uma sessão de cardio no horário desejado."}
+                  </p>
+                  <div className="grid grid-cols-3 gap-1.5">
+                    {hasMusc && (
+                      <button
+                        onClick={() => handleQuickAddCardio(todayDow, "cardio_z2", postSlot, 30)}
+                        disabled={saving}
+                        className="rounded-lg border border-primary/20 bg-primary/5 p-2.5 text-center hover:border-primary/40 transition-all disabled:opacity-50"
+                      >
+                        <p className="text-base">🏃</p>
+                        <p className="text-[10px] font-mono font-bold text-primary mt-0.5">Pós-treino</p>
+                        <p className="text-[8px] font-mono text-muted-foreground">Z2 · 30min</p>
+                      </button>
+                    )}
+                    <button
+                      onClick={() => handleQuickAddCardio(todayDow, "cardio_z2", otherSlot, otherSlot === "morning" ? 40 : 30)}
+                      disabled={saving}
+                      className="rounded-lg border border-border bg-background/50 p-2.5 text-center hover:border-primary/30 transition-all disabled:opacity-50"
+                    >
+                      <p className="text-base">{otherEmoji}</p>
+                      <p className="text-[10px] font-mono font-bold text-foreground mt-0.5">{otherLabel}</p>
+                      <p className="text-[8px] font-mono text-muted-foreground">Z2 · {otherSlot === "morning" ? "40" : "30"}min</p>
+                    </button>
+                    <button
+                      onClick={() => handleAddSlot(todayDow)}
+                      disabled={saving}
+                      className="rounded-lg border border-dashed border-border p-2.5 text-center hover:border-primary/30 transition-all disabled:opacity-50"
+                    >
+                      <p className="text-base">⚙️</p>
+                      <p className="text-[10px] font-mono font-bold text-foreground mt-0.5">Personalizar</p>
+                      <p className="text-[8px] font-mono text-muted-foreground">tipo + horário</p>
+                    </button>
+                  </div>
+                </div>
+              );
+            })()}
 
             {/* Quick Alerts */}
             <div className="space-y-2">
