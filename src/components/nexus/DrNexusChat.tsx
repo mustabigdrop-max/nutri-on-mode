@@ -35,44 +35,65 @@ const DrNexusChat = () => {
     setStreamingContent("");
 
     try {
-      const response = await supabase.functions.invoke("dr-nexus", {
-        body: {
+      const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/dr-nexus`;
+      const resp = await fetch(CHAT_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({
           compound: text.trim(),
           mode: "chat",
           messages: [{ role: "user", content: text.trim() }],
           history: messages.slice(-10),
-        },
+        }),
       });
 
-      if (response.data instanceof ReadableStream) {
-        const reader = response.data.getReader();
-        const decoder = new TextDecoder();
-        let fullContent = "";
+      if (!resp.ok || !resp.body) {
+        if (resp.status === 429) throw new Error("Limite de requisições excedido. Aguarde alguns segundos.");
+        if (resp.status === 402) throw new Error("Créditos esgotados. Adicione créditos na workspace.");
+        throw new Error("Erro ao iniciar stream");
+      }
 
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          const chunk = decoder.decode(value);
-          const lines = chunk.split("\n").filter(l => l.startsWith("data: "));
-          for (const line of lines) {
-            const data = line.slice(6);
-            if (data === "[DONE]") continue;
-            try {
-              const parsed = JSON.parse(data);
-              const delta = parsed.choices?.[0]?.delta?.content || "";
+      const reader = resp.body.getReader();
+      const decoder = new TextDecoder();
+      let fullContent = "";
+      let textBuffer = "";
+      let streamDone = false;
+
+      while (!streamDone) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        textBuffer += decoder.decode(value, { stream: true });
+
+        let newlineIndex: number;
+        while ((newlineIndex = textBuffer.indexOf("\n")) !== -1) {
+          let line = textBuffer.slice(0, newlineIndex);
+          textBuffer = textBuffer.slice(newlineIndex + 1);
+          if (line.endsWith("\r")) line = line.slice(0, -1);
+          if (line.startsWith(":") || line.trim() === "") continue;
+          if (!line.startsWith("data: ")) continue;
+          const jsonStr = line.slice(6).trim();
+          if (jsonStr === "[DONE]") { streamDone = true; break; }
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const delta = parsed.choices?.[0]?.delta?.content || "";
+            if (delta) {
               fullContent += delta;
               setStreamingContent(fullContent);
-            } catch {}
+            }
+          } catch {
+            textBuffer = line + "\n" + textBuffer;
+            break;
           }
         }
-
-        setMessages(prev => [...prev, { role: "assistant", content: fullContent }]);
-        setStreamingContent("");
-      } else if (response.data?.answer) {
-        setMessages(prev => [...prev, { role: "assistant", content: response.data.answer }]);
-      } else if (response.error) {
-        throw new Error(response.error.message || "Erro na resposta");
       }
+
+      if (fullContent) {
+        setMessages(prev => [...prev, { role: "assistant", content: fullContent }]);
+      }
+      setStreamingContent("");
     } catch (e: any) {
       console.error("Dr. VERTEX error:", e);
       toast.error("Erro ao conectar com Dr. VERTEX.");
