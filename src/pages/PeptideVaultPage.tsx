@@ -14,6 +14,7 @@ import {
   Send, ChevronDown, ChevronUp, ArrowLeft, Loader2, Sparkles, ExternalLink, Save, Trash2
 } from "lucide-react";
 import { PeptideNutritionalStrategy } from "@/components/lab/PeptideNutritionalStrategy";
+import { PeptideReconstitutionCard } from "@/components/lab/PeptideReconstitutionCard";
 import {
   peptides, protocols, dietRevolutionCards, alerts as initialAlerts,
   quickPrompts, searchSuggestions, type Peptide, type Alert
@@ -312,6 +313,8 @@ function EncyclopediaTab() {
               ))}
             </CardContent>
           </Card>
+
+          <PeptideReconstitutionCard peptideId={selected.id} />
 
           <PeptideNutritionalStrategy
             peptideSlug={
