@@ -10,7 +10,7 @@ import { ArrowLeft, Video, Upload, Loader2, Activity, Sparkles } from "lucide-re
 import { motion } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import { getPoseLandmarker, analyzeFrame, countReps, detectExercise, type FrameAnalysis } from "@/lib/poseAnalysis";
-import { useVideoConvert } from "@/hooks/useVideoConvert";
+import { useFFmpegConvert } from "@/hooks/useFFmpegConvert";
 
 const EXERCISES = [
   "Agachamento livre", "Agachamento com barra", "Leg press", "Stiff", "Levantamento terra",
@@ -32,7 +32,7 @@ const VideoFormPage = () => {
   const [statusText, setStatusText] = useState("");
   const [result, setResult] = useState<{ content: string; reps: number; frames: number } | null>(null);
   const [conversionError, setConversionError] = useState<string | null>(null);
-  const { convert: ffmpegConvert, needsConversion, isConverting: ffmpegConverting, isLoading: ffmpegLoading, progress: ffmpegProgress } = useVideoConvert();
+  const { convert: ffmpegConvert, needsConversion, isConverting: ffmpegConverting, isLoading: ffmpegLoading, progress: ffmpegProgress } = useFFmpegConvert();
 
   const showConversionError = (msg: string) => {
     setConversionError(msg);
