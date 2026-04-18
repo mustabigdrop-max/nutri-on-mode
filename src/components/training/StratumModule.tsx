@@ -42,6 +42,8 @@ export default function StratumModule({ onApplyToTraining }: Props) {
   const [activeModuleId, setActiveModuleId] = useState<string>(STRATUM_MODULES[0].id);
   const [activeLevel, setActiveLevel] = useState<StratumLevel>("intermediario");
   const [showPillars, setShowPillars] = useState(false);
+  const [showProgression, setShowProgression] = useState(false);
+  const [showFullRefs, setShowFullRefs] = useState(false);
   const [showRefs, setShowRefs] = useState(false);
 
   const activeModule = useMemo(
