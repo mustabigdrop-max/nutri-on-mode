@@ -119,6 +119,103 @@ export default function StratumModule({ onApplyToTraining }: Props) {
         </AnimatePresence>
       </div>
 
+      {/* Sistema de Progressão Global */}
+      <div className="rounded-2xl p-3" style={{ background: SURFACE, border: `1px solid ${BORDER}` }}>
+        <button
+          onClick={() => setShowProgression((v) => !v)}
+          className="w-full flex items-center justify-between text-[11px] font-semibold"
+          style={{ color: TEXT_DIM }}
+        >
+          <span className="flex items-center gap-2">
+            <TrendingUp className="w-3.5 h-3.5" style={{ color: GREEN }} />
+            Sistema de Progressão STRATUM · Regras Globais
+          </span>
+          {showProgression ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+        </button>
+
+        <AnimatePresence>
+          {showProgression && (
+            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
+              <div className="space-y-2 mt-3">
+                <div className="p-2.5 rounded-lg" style={{ background: SURFACE2, border: `1px solid ${BORDER}` }}>
+                  <div className="text-[10px] font-black mb-1.5" style={{ color: GREEN }}>📈 PROGRESSÃO DE CARGA</div>
+                  <div className="space-y-1">
+                    {STRATUM_PROGRESSION_RULES.loadProgression.map((p, i) => (
+                      <div key={i} className="text-[10px]">
+                        <div className="font-bold" style={{ color: TEXT }}>{p.type}</div>
+                        <div style={{ color: TEXT_DIM }}>→ {p.rule}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="p-2.5 rounded-lg" style={{ background: SURFACE2, border: `1px solid ${BORDER_ACTIVE}` }}>
+                  <div className="text-[10px] font-black mb-1.5" style={{ color: GREEN }}>🔄 {STRATUM_PROGRESSION_RULES.deload.title.toUpperCase()}</div>
+                  <ul className="text-[10px] space-y-0.5" style={{ color: TEXT_DIM }}>
+                    {STRATUM_PROGRESSION_RULES.deload.rules.map((r, i) => <li key={i}>• {r}</li>)}
+                  </ul>
+                  <p className="text-[9px] italic mt-1" style={{ color: TEXT_MUTED }}>📚 {STRATUM_PROGRESSION_RULES.deload.ref}</p>
+                </div>
+
+                <div className="p-2.5 rounded-lg" style={{ background: SURFACE2, border: `1px solid ${BORDER}` }}>
+                  <div className="text-[10px] font-black mb-1.5" style={{ color: GREEN }}>🎯 ESCALA RPE / RIR</div>
+                  <div className="space-y-0.5">
+                    {STRATUM_PROGRESSION_RULES.rpeScale.map((r, i) => (
+                      <div key={i} className="flex justify-between text-[10px]">
+                        <span className="font-bold" style={{ color: TEXT }}>{r.rpe}</span>
+                        <span style={{ color: TEXT_DIM }}>{r.desc}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-[9px] italic mt-1" style={{ color: TEXT_MUTED }}>📚 {STRATUM_PROGRESSION_RULES.rpeRef}</p>
+                </div>
+
+                <div className="p-2.5 rounded-lg" style={{ background: GREEN_DIM, border: `1px solid ${BORDER_ACTIVE}` }}>
+                  <div className="text-[10px] font-black mb-1.5" style={{ color: GREEN }}>🍽️ INTEGRAÇÃO nutriON 360</div>
+                  <div className="space-y-1">
+                    {STRATUM_PROGRESSION_RULES.nutritionIntegration.map((n, i) => (
+                      <div key={i} className="text-[10px]">
+                        <div className="font-bold" style={{ color: TEXT }}>{n.day}</div>
+                        <div style={{ color: TEXT_DIM }}>→ {n.carbs}</div>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-[9px] italic mt-1.5" style={{ color: TEXT_DIM }}>O nutriON 360 ajusta automaticamente baseado no módulo ativo.</p>
+                </div>
+
+                <button
+                  onClick={() => setShowFullRefs((v) => !v)}
+                  className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-[11px] font-semibold"
+                  style={{ background: SURFACE2, border: `1px solid ${BORDER}`, color: TEXT_DIM }}
+                >
+                  <span className="flex items-center gap-2">
+                    <BookOpen className="w-3.5 h-3.5" style={{ color: GREEN }} />
+                    Bibliografia Completa STRATUM v2 ({STRATUM_FULL_REFERENCES.length})
+                  </span>
+                  {showFullRefs ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                </button>
+
+                <AnimatePresence>
+                  {showFullRefs && (
+                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
+                      <ol className="mt-2 space-y-0.5 pl-4 list-decimal" style={{ color: TEXT_DIM }}>
+                        {STRATUM_FULL_REFERENCES.map((r, i) => (
+                          <li key={i} className="text-[9.5px] leading-relaxed">{r}</li>
+                        ))}
+                      </ol>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                <p className="text-[9px] italic text-center mt-2" style={{ color: TEXT_MUTED }}>
+                  STRATUM Protocol v2 · Diogo Mello · "Cada camada tem um propósito. Cada sessão tem uma razão."
+                </p>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
       {/* Seletor de módulos */}
       <div className="grid grid-cols-3 sm:grid-cols-5 gap-1.5">
         {STRATUM_MODULES.map((m) => {
