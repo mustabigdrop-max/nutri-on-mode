@@ -1903,8 +1903,8 @@ export const peptides: Peptide[] = [
     ],
   },
   {
-    id: "sermorelin",
-    name: "Sermorelin",
+    id: "sermorelin-v2",
+    name: "Sermorelin (v2)",
     classe: "Secretagogo de GH",
     status: "Ativo",
     badge: "✅ APROVADO",
