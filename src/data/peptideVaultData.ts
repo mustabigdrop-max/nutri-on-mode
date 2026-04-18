@@ -1927,8 +1927,8 @@ export const peptides: Peptide[] = [
     ],
   },
   {
-    id: "tesamorelin",
-    name: "Tesamorelin",
+    id: "tesamorelin-v2",
+    name: "Tesamorelin (v2)",
     classe: "Secretagogo de GH",
     status: "Ativo",
     badge: "✅ APROVADO",
