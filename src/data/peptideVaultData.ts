@@ -1783,8 +1783,8 @@ export const peptides: Peptide[] = [
   },
   // ─── NOVOS COMPOSTOS v2.0 ───────────────────────────────────────────
   {
-    id: "kpv",
-    name: "KPV",
+    id: "kpv-v2",
+    name: "KPV (v2)",
     classe: "Anti-inflamatório",
     status: "Ativo",
     badge: "📋 PESQUISA",
