@@ -19,16 +19,20 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import BottomNav from "@/components/BottomNav";
+import StratumModule from "@/components/training/StratumModule";
 import {
   PHASES, MUSCLES, LEVELS, WEEKS_OPTIONS, DAYS_OPTIONS,
   SESSION_DURATIONS, CARDIO_OPTIONS, STRESS_OPTIONS, EQUIPMENT_OPTIONS,
   VOLUME_LANDMARKS,
 } from "@/data/trainingData";
 
-type Section = "gerar" | "progressao" | "volume" | "historico" | "config";
+const ADMIN_UID = "70e51469-1acf-4df6-afe6-f094d21db122";
 
-const sectionNav: { id: Section; label: string; icon: any }[] = [
+type Section = "gerar" | "stratum" | "progressao" | "volume" | "historico" | "config";
+
+const sectionNav: { id: Section; label: string; icon: any; adminOnly?: boolean }[] = [
   { id: "gerar", label: "Prescrição", icon: Brain },
+  { id: "stratum", label: "STRATUM", icon: Microscope, adminOnly: true },
   { id: "progressao", label: "Progressão", icon: TrendingUp },
   { id: "volume", label: "Volume", icon: BarChart3 },
   { id: "historico", label: "Histórico", icon: History },
