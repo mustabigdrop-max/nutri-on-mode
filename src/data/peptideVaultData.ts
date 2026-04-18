@@ -1783,8 +1783,8 @@ export const peptides: Peptide[] = [
   },
   // ─── NOVOS COMPOSTOS v2.0 ───────────────────────────────────────────
   {
-    id: "kpv",
-    name: "KPV",
+    id: "kpv-v2",
+    name: "KPV (v2)",
     classe: "Anti-inflamatório",
     status: "Ativo",
     badge: "📋 PESQUISA",
@@ -1903,8 +1903,8 @@ export const peptides: Peptide[] = [
     ],
   },
   {
-    id: "sermorelin",
-    name: "Sermorelin",
+    id: "sermorelin-v2",
+    name: "Sermorelin (v2)",
     classe: "Secretagogo de GH",
     status: "Ativo",
     badge: "✅ APROVADO",
@@ -1927,8 +1927,8 @@ export const peptides: Peptide[] = [
     ],
   },
   {
-    id: "tesamorelin",
-    name: "Tesamorelin",
+    id: "tesamorelin-v2",
+    name: "Tesamorelin (v2)",
     classe: "Secretagogo de GH",
     status: "Ativo",
     badge: "✅ APROVADO",
@@ -2791,8 +2791,8 @@ export const peptides: Peptide[] = [
     ],
   },
   {
-    id: "testagen",
-    name: "Testagen",
+    id: "testagen-v2",
+    name: "Testagen (v2)",
     classe: "bioregulador-peptidico",
     status: "Em Pesquisa",
     badge: "📋 PESQUISA",
