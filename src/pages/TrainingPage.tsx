@@ -20,6 +20,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import BottomNav from "@/components/BottomNav";
 import StratumModule from "@/components/training/StratumModule";
+import StratumProtocolHub from "@/components/training/StratumProtocolHub";
 import {
   PHASES, MUSCLES, LEVELS, WEEKS_OPTIONS, DAYS_OPTIONS,
   SESSION_DURATIONS, CARDIO_OPTIONS, STRESS_OPTIONS, EQUIPMENT_OPTIONS,
@@ -106,10 +107,13 @@ export default function TrainingPage() {
           <motion.div key={section} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
             {section === "gerar" && <EliteGenerateSection userId={user?.id} />}
             {section === "stratum" && isAdmin && (
-              <StratumModule onApplyToTraining={({ module, level }) => {
-                toast.success(`STRATUM ${module.name} (${level}) carregado — vá para Prescrição para gerar.`);
-                setSection("gerar");
-              }} />
+              <div className="space-y-6">
+                <StratumProtocolHub />
+                <StratumModule onApplyToTraining={({ module, level }) => {
+                  toast.success(`STRATUM ${module.name} (${level}) carregado — vá para Prescrição para gerar.`);
+                  setSection("gerar");
+                }} />
+              </div>
             )}
             {section === "progressao" && <ProgressionSection userId={user?.id} />}
             {section === "volume" && <VolumeLandmarksSection userId={user?.id} />}
