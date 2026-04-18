@@ -6,7 +6,8 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
-  STRATUM_MODULES, STRATUM_PILLARS, type StratumLevel, type StratumModule,
+  STRATUM_MODULES, STRATUM_PILLARS, STRATUM_PROGRESSION_RULES, STRATUM_FULL_REFERENCES,
+  type StratumLevel, type StratumModule,
 } from "@/data/stratumData";
 
 const BG = "#060a06";
