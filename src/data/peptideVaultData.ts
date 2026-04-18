@@ -2791,8 +2791,8 @@ export const peptides: Peptide[] = [
     ],
   },
   {
-    id: "testagen",
-    name: "Testagen",
+    id: "testagen-v2",
+    name: "Testagen (v2)",
     classe: "bioregulador-peptidico",
     status: "Em Pesquisa",
     badge: "📋 PESQUISA",
