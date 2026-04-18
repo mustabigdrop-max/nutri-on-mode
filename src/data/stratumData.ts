@@ -82,6 +82,93 @@ export const STRATUM_PILLARS = [
 ];
 
 // ════════════════════════════════════════════════════════════════
+// SISTEMA DE PROGRESSÃO STRATUM — REGRAS GLOBAIS
+// ════════════════════════════════════════════════════════════════
+export const STRATUM_PROGRESSION_RULES = {
+  loadProgression: [
+    { type: "Compostos pesados (<8 reps)", rule: "+2.5 kg quando completar todas as séries com RPE <8 e RIR >2" },
+    { type: "Hipertrofia (8-15 reps)", rule: "+1-2.5 kg quando completar todas as séries com RPE <7 e RIR >3" },
+    { type: "Isolamento (>15 reps)", rule: "+0.5-1 kg ou +1-2 reps quando confortável" },
+  ],
+  deload: {
+    title: "Deload Obrigatório (semana 5 de cada mesociclo)",
+    rules: [
+      "Volume: -40 a -50%",
+      "Intensidade: manter carga (não reduzir)",
+      "Frequência: manter",
+    ],
+    ref: "Helms ER et al. Recommendations for natural bodybuilding contest preparation. JISSN, 2014.",
+  },
+  rpeScale: [
+    { rpe: "RPE 6", desc: "4+ reps na reserva (muito fácil)" },
+    { rpe: "RPE 7", desc: "3 reps na reserva" },
+    { rpe: "RPE 8", desc: "2 reps na reserva — zona de hipertrofia" },
+    { rpe: "RPE 9", desc: "1 rep na reserva — zona de força" },
+    { rpe: "RPE 10", desc: "Falha real" },
+  ],
+  rpeRef: "Zourdos MC et al. JSCR, 2016.",
+  nutritionIntegration: [
+    { day: "Treino pesado (A1 patterns)", carbs: "Carbo alto: 5-7 g/kg" },
+    { day: "Treino de volume", carbs: "Carbo moderado: 3-5 g/kg" },
+    { day: "Deload", carbs: "Carbo baixo-moderado: 2-3 g/kg" },
+    { day: "Proteína (todos os dias)", carbs: "Mín. 1.8 g/kg — ideal 2.2-2.5 g/kg" },
+  ],
+};
+
+// Bibliografia completa STRATUM Protocol v2 (48 referências)
+export const STRATUM_FULL_REFERENCES: string[] = [
+  "Barnett C, Kippers V, Turner P. JSCR, 1995.",
+  "Beardsley C, Contreras B. Strength Cond J, 2014.",
+  "Bloomquist K et al. EJAP, 2013.",
+  "Boehren AM, Burkhart S. J Sports Phys Ther, 2010.",
+  "Bourne MN et al. Sports Med, 2018.",
+  "Campos GE et al. Eur J Appl Physiol, 2002.",
+  "Campos YA et al. JSCR, 2020.",
+  "Colquhoun RJ et al. JSCR, 2018.",
+  "Contreras B et al. JSCR, 2011, 2015.",
+  "Cools AM et al. Am J Sports Med, 2007.",
+  "Cormie P, McGuigan MR, Newton RU. Sports Med, 2011.",
+  "Escamilla RF et al. Med Sci Sports Exerc, 1998.",
+  "Escamilla RF et al. Phys Ther, 2006.",
+  "Fenwick CM et al. JSCR, 2009.",
+  "Glass SC, Armstrong T. JSCR, 1997.",
+  "Helms ER et al. JISSN, 2014.",
+  "Hewett TE et al. Am J Sports Med, 2005.",
+  "Israetel M, Hoffmann J, Case T. RP Strength, 2019.",
+  "Kholinne E et al. J Phys Ther Sci, 2018.",
+  "Kolber MJ et al. JSCR, 2009.",
+  "Krieger JW. JSCR, 2010.",
+  "Krzysztofik M et al. J Funct Morphol Kinesiol, 2019.",
+  "Lehman GJ et al. Dynamic Medicine, 2004.",
+  "Loenneke JP et al. Front Physiol, 2012.",
+  "Maeo S et al. JSCR, 2021.",
+  "McCaw ST, Friday JJ. JSCR, 1994.",
+  "McGill SM. Strength Cond J, 2010.",
+  "McNulty KL et al. Sports Med, 2020.",
+  "Oliveira LF et al. JSCR, 2009.",
+  "Petersen J et al. Am J Sports Med, 2011.",
+  "Prestes J et al. JSCR, 2019.",
+  "Reinold MM et al. JOSPT, 2004.",
+  "Riemann BL et al. JSCR, 2011.",
+  "Robbins DW et al. JSCR, 2010.",
+  "Roig M et al. Br J Sports Med, 2009.",
+  "Saeterbakken AH, Fimland MS. JSCR, 2013.",
+  "Schoenfeld BJ. JSCR, 2010.",
+  "Schoenfeld BJ, Grgic J. JSCR, 2020.",
+  "Schoenfeld BJ, Ogborn D, Krieger JW. Sports Med, 2016.",
+  "Seitz LB, Haff GG. Sports Med, 2016.",
+  "Snarr RL, Esco MR. JSCR, 2014.",
+  "Sperandei S et al. JSCR, 2009.",
+  "Stone MH et al. Strength Cond J, 1999.",
+  "Suchomel TJ et al. Sports Med, 2016.",
+  "Sung E et al. SpringerPlus, 2014.",
+  "Vera-Garcia FJ et al. J Electromyogr Kinesiol, 2007.",
+  "Wikström-Frisén L et al. J Sports Med Phys Fitness, 2017.",
+  "Wilson GJ et al. Med Sci Sports Exerc, 1993.",
+  "Zourdos MC et al. JSCR, 2016.",
+];
+
+// ════════════════════════════════════════════════════════════════
 // MÓDULOS STRATUM
 // ════════════════════════════════════════════════════════════════
 export const STRATUM_MODULES: StratumModule[] = [
