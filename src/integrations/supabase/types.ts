@@ -4788,6 +4788,332 @@ export type Database = {
         }
         Relationships: []
       }
+      stratum_adaptations: {
+        Row: {
+          aplicado: boolean | null
+          created_at: string
+          dados: Json | null
+          detalhe: string
+          exercicio: string | null
+          id: string
+          tipo: string
+          user_id: string
+        }
+        Insert: {
+          aplicado?: boolean | null
+          created_at?: string
+          dados?: Json | null
+          detalhe: string
+          exercicio?: string | null
+          id?: string
+          tipo: string
+          user_id: string
+        }
+        Update: {
+          aplicado?: boolean | null
+          created_at?: string
+          dados?: Json | null
+          detalhe?: string
+          exercicio?: string | null
+          id?: string
+          tipo?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      stratum_exercises: {
+        Row: {
+          carga: number | null
+          created_at: string
+          exercicio: string
+          id: string
+          ordem: number | null
+          pr: boolean | null
+          reps_realizadas: Json | null
+          reps_target: string | null
+          rir: number | null
+          rpe: number | null
+          session_id: string
+          sets: number | null
+          unidade: string | null
+          user_id: string
+        }
+        Insert: {
+          carga?: number | null
+          created_at?: string
+          exercicio: string
+          id?: string
+          ordem?: number | null
+          pr?: boolean | null
+          reps_realizadas?: Json | null
+          reps_target?: string | null
+          rir?: number | null
+          rpe?: number | null
+          session_id: string
+          sets?: number | null
+          unidade?: string | null
+          user_id: string
+        }
+        Update: {
+          carga?: number | null
+          created_at?: string
+          exercicio?: string
+          id?: string
+          ordem?: number | null
+          pr?: boolean | null
+          reps_realizadas?: Json | null
+          reps_target?: string | null
+          rir?: number | null
+          rpe?: number | null
+          session_id?: string
+          sets?: number | null
+          unidade?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stratum_exercises_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "stratum_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stratum_profiles: {
+        Row: {
+          acesso_academia: string | null
+          adaptacoes: Json | null
+          anamnese_respostas: Json | null
+          contraindicacoes: Json | null
+          created_at: string
+          diagnostico_completo: string | null
+          frequencia_semanal: number | null
+          historico_protocolos: Json | null
+          id: string
+          lesoes: Json | null
+          modulo_recomendado: string | null
+          morfologia: Json | null
+          nivel: string | null
+          objetivo: string | null
+          pca_perfil: string | null
+          prioridades: Json | null
+          prontidao_psicologica: number | null
+          split_ideal: string | null
+          tempo_por_sessao: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          acesso_academia?: string | null
+          adaptacoes?: Json | null
+          anamnese_respostas?: Json | null
+          contraindicacoes?: Json | null
+          created_at?: string
+          diagnostico_completo?: string | null
+          frequencia_semanal?: number | null
+          historico_protocolos?: Json | null
+          id?: string
+          lesoes?: Json | null
+          modulo_recomendado?: string | null
+          morfologia?: Json | null
+          nivel?: string | null
+          objetivo?: string | null
+          pca_perfil?: string | null
+          prioridades?: Json | null
+          prontidao_psicologica?: number | null
+          split_ideal?: string | null
+          tempo_por_sessao?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          acesso_academia?: string | null
+          adaptacoes?: Json | null
+          anamnese_respostas?: Json | null
+          contraindicacoes?: Json | null
+          created_at?: string
+          diagnostico_completo?: string | null
+          frequencia_semanal?: number | null
+          historico_protocolos?: Json | null
+          id?: string
+          lesoes?: Json | null
+          modulo_recomendado?: string | null
+          morfologia?: Json | null
+          nivel?: string | null
+          objetivo?: string | null
+          pca_perfil?: string | null
+          prioridades?: Json | null
+          prontidao_psicologica?: number | null
+          split_ideal?: string | null
+          tempo_por_sessao?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      stratum_readiness: {
+        Row: {
+          check_date: string
+          created_at: string
+          dor: string | null
+          dor_local: string | null
+          energia: number | null
+          estresse: string | null
+          hrv_delta: number | null
+          id: string
+          recomendacao: string | null
+          score: number | null
+          sono: number | null
+          user_id: string
+          zona: string | null
+        }
+        Insert: {
+          check_date?: string
+          created_at?: string
+          dor?: string | null
+          dor_local?: string | null
+          energia?: number | null
+          estresse?: string | null
+          hrv_delta?: number | null
+          id?: string
+          recomendacao?: string | null
+          score?: number | null
+          sono?: number | null
+          user_id: string
+          zona?: string | null
+        }
+        Update: {
+          check_date?: string
+          created_at?: string
+          dor?: string | null
+          dor_local?: string | null
+          energia?: number | null
+          estresse?: string | null
+          hrv_delta?: number | null
+          id?: string
+          recomendacao?: string | null
+          score?: number | null
+          sono?: number | null
+          user_id?: string
+          zona?: string | null
+        }
+        Relationships: []
+      }
+      stratum_reports: {
+        Row: {
+          aderencia_pct: number | null
+          ajustes_automaticos: Json | null
+          alertas: Json | null
+          analise_pca: string | null
+          created_at: string
+          enviado: boolean | null
+          fase_proxima: string | null
+          id: string
+          prontidao_media: number | null
+          proxima_semana: Json | null
+          prs: Json | null
+          ratio_empurrar_puxar: string | null
+          rpe_medio: number | null
+          semana_fim: string
+          semana_inicio: string
+          user_id: string
+          volume_por_grupo: Json | null
+          volume_total: number | null
+        }
+        Insert: {
+          aderencia_pct?: number | null
+          ajustes_automaticos?: Json | null
+          alertas?: Json | null
+          analise_pca?: string | null
+          created_at?: string
+          enviado?: boolean | null
+          fase_proxima?: string | null
+          id?: string
+          prontidao_media?: number | null
+          proxima_semana?: Json | null
+          prs?: Json | null
+          ratio_empurrar_puxar?: string | null
+          rpe_medio?: number | null
+          semana_fim: string
+          semana_inicio: string
+          user_id: string
+          volume_por_grupo?: Json | null
+          volume_total?: number | null
+        }
+        Update: {
+          aderencia_pct?: number | null
+          ajustes_automaticos?: Json | null
+          alertas?: Json | null
+          analise_pca?: string | null
+          created_at?: string
+          enviado?: boolean | null
+          fase_proxima?: string | null
+          id?: string
+          prontidao_media?: number | null
+          proxima_semana?: Json | null
+          prs?: Json | null
+          ratio_empurrar_puxar?: string | null
+          rpe_medio?: number | null
+          semana_fim?: string
+          semana_inicio?: string
+          user_id?: string
+          volume_por_grupo?: Json | null
+          volume_total?: number | null
+        }
+        Relationships: []
+      }
+      stratum_sessions: {
+        Row: {
+          completado: boolean | null
+          created_at: string
+          data_sessao: string
+          duracao_minutos: number | null
+          fadiga_reportada: number | null
+          grupo_principal: string | null
+          id: string
+          modulo: string | null
+          motivo_incompleto: string | null
+          observacoes: string | null
+          rpe_medio: number | null
+          tipo_treino: string | null
+          user_id: string
+          volume_total: number | null
+        }
+        Insert: {
+          completado?: boolean | null
+          created_at?: string
+          data_sessao?: string
+          duracao_minutos?: number | null
+          fadiga_reportada?: number | null
+          grupo_principal?: string | null
+          id?: string
+          modulo?: string | null
+          motivo_incompleto?: string | null
+          observacoes?: string | null
+          rpe_medio?: number | null
+          tipo_treino?: string | null
+          user_id: string
+          volume_total?: number | null
+        }
+        Update: {
+          completado?: boolean | null
+          created_at?: string
+          data_sessao?: string
+          duracao_minutos?: number | null
+          fadiga_reportada?: number | null
+          grupo_principal?: string | null
+          id?: string
+          modulo?: string | null
+          motivo_incompleto?: string | null
+          observacoes?: string | null
+          rpe_medio?: number | null
+          tipo_treino?: string | null
+          user_id?: string
+          volume_total?: number | null
+        }
+        Relationships: []
+      }
       subscriptions: {
         Row: {
           activated_at: string | null
