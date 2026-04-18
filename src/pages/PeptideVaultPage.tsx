@@ -386,27 +386,33 @@ function EncyclopediaTab() {
         <p className="text-[10px] text-gray-600">{filtered.length} de {peptides.length} compostos</p>
 
         {/* Grid */}
-        <div className="grid grid-cols-2 gap-3">
-          {filtered.map((p) => (
-            <button key={p.id} onClick={() => setSelected(p)}
-              className="text-left rounded-xl p-3 border transition-all hover:scale-[1.02]"
-              style={{ borderColor: `${p.color}30`, backgroundColor: `${p.color}08` }}
-              onMouseEnter={(e) => (e.currentTarget.style.borderColor = p.color)}
-              onMouseLeave={(e) => (e.currentTarget.style.borderColor = `${p.color}30`)}>
-              <Badge className="text-[9px] mb-2 border" style={{ backgroundColor: `${p.badgeColor}15`, color: p.badgeColor, borderColor: `${p.badgeColor}40` }}>
-                {p.badge}
-              </Badge>
-              <h3 className="text-sm font-bold text-white" style={{ fontFamily: "'Space Grotesk'" }}>{p.name}</h3>
-              <p className="text-[10px] text-gray-500 mt-1 line-clamp-1">{p.classe}</p>
-              <p className="text-[9px] text-gray-600 mt-0.5">{p.category}t½ {p.halfLife}</p>
-              <div className="flex flex-wrap gap-1 mt-1.5">
-                {p.tags?.slice(0, 3).map(t => (
-                  <span key={t} className="text-[8px] px-1.5 py-0.5 rounded-full border border-gray-800 text-gray-500">{t}</span>
-                ))}
-              </div>
-            </button>
-          ))}
-        </div>
+        {filtered.length === 0 ? (
+          <div className="text-center py-12 text-gray-500 text-sm">
+            Nenhum composto encontrado para esses filtros.
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-3">
+            {filtered.map((p) => (
+              <button key={p.id} onClick={() => setSelected(p)}
+                className="text-left rounded-xl p-3 border transition-all hover:scale-[1.02]"
+                style={{ borderColor: `${p.color}30`, backgroundColor: `${p.color}08` }}
+                onMouseEnter={(e) => (e.currentTarget.style.borderColor = p.color)}
+                onMouseLeave={(e) => (e.currentTarget.style.borderColor = `${p.color}30`)}>
+                <Badge className="text-[9px] mb-2 border" style={{ backgroundColor: `${p.badgeColor}15`, color: p.badgeColor, borderColor: `${p.badgeColor}40` }}>
+                  {p.badge}
+                </Badge>
+                <h3 className="text-sm font-bold text-white" style={{ fontFamily: "'Space Grotesk'" }}>{p.name}</h3>
+                <p className="text-[10px] text-gray-500 mt-1 line-clamp-1">{p.classe}</p>
+                <p className="text-[9px] text-gray-600 mt-0.5">{p.category} · t½ {p.halfLife}</p>
+                <div className="flex flex-wrap gap-1 mt-1.5">
+                  {p.tags?.slice(0, 3).map(t => (
+                    <span key={t} className="text-[8px] px-1.5 py-0.5 rounded-full border border-gray-800 text-gray-500">{t}</span>
+                  ))}
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
 
         <p className="text-center text-[10px] text-gray-700 py-4">
           NEXUS-BIO PeptideVault v2 · nutriON · Fins educacionais e científicos. Não substituem orientação médica.
