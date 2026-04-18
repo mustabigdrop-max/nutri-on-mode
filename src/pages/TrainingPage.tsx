@@ -19,16 +19,20 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import BottomNav from "@/components/BottomNav";
+import StratumModule from "@/components/training/StratumModule";
 import {
   PHASES, MUSCLES, LEVELS, WEEKS_OPTIONS, DAYS_OPTIONS,
   SESSION_DURATIONS, CARDIO_OPTIONS, STRESS_OPTIONS, EQUIPMENT_OPTIONS,
   VOLUME_LANDMARKS,
 } from "@/data/trainingData";
 
-type Section = "gerar" | "progressao" | "volume" | "historico" | "config";
+const ADMIN_UID = "70e51469-1acf-4df6-afe6-f094d21db122";
 
-const sectionNav: { id: Section; label: string; icon: any }[] = [
+type Section = "gerar" | "stratum" | "progressao" | "volume" | "historico" | "config";
+
+const sectionNav: { id: Section; label: string; icon: any; adminOnly?: boolean }[] = [
   { id: "gerar", label: "Prescrição", icon: Brain },
+  { id: "stratum", label: "STRATUM", icon: Microscope, adminOnly: true },
   { id: "progressao", label: "Progressão", icon: TrendingUp },
   { id: "volume", label: "Volume", icon: BarChart3 },
   { id: "historico", label: "Histórico", icon: History },
@@ -52,6 +56,8 @@ export default function TrainingPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [section, setSection] = useState<Section>("gerar");
+  const isAdmin = user?.id === ADMIN_UID;
+  const visibleNav = sectionNav.filter((s) => !s.adminOnly || isAdmin);
 
   return (
     <div className="min-h-screen" style={{ background: BG }}>
@@ -78,7 +84,7 @@ export default function TrainingPage() {
 
         {/* Section Nav */}
         <div className="flex gap-1.5 overflow-x-auto pb-1 no-scrollbar">
-          {sectionNav.map((s) => (
+          {visibleNav.map((s) => (
             <button key={s.id} onClick={() => setSection(s.id)}
               className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-[11px] font-semibold whitespace-nowrap transition-all"
               style={{
@@ -88,6 +94,7 @@ export default function TrainingPage() {
               }}>
               <s.icon className="w-3.5 h-3.5" />
               {s.label}
+              {s.adminOnly && <span className="text-[8px] px-1 rounded" style={{ background: GREEN_DIM, color: GREEN }}>ADM</span>}
             </button>
           ))}
         </div>
@@ -98,6 +105,12 @@ export default function TrainingPage() {
         <AnimatePresence mode="wait">
           <motion.div key={section} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
             {section === "gerar" && <EliteGenerateSection userId={user?.id} />}
+            {section === "stratum" && isAdmin && (
+              <StratumModule onApplyToTraining={({ module, level }) => {
+                toast.success(`STRATUM ${module.name} (${level}) carregado — vá para Prescrição para gerar.`);
+                setSection("gerar");
+              }} />
+            )}
             {section === "progressao" && <ProgressionSection userId={user?.id} />}
             {section === "volume" && <VolumeLandmarksSection userId={user?.id} />}
             {section === "historico" && <HistorySection userId={user?.id} />}
