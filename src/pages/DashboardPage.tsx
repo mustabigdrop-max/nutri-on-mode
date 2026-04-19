@@ -10,6 +10,7 @@ import { useWaterLogs } from "@/hooks/useWaterLogs";
 import { usePlanGate } from "@/hooks/usePlanGate";
 import { useWorkoutSchedule, getWorkoutAdjustment, combineAdjustments, WORKOUT_TYPES, type WorkoutType } from "@/hooks/useWorkoutSchedule";
 import TrialBanner from "@/components/dashboard/TrialBanner";
+import CoachNotificationsCard from "@/components/dashboard/CoachNotificationsCard";
 import ReengagementPopup from "@/components/dashboard/ReengagementPopup";
 import UpgradeModal from "@/components/landing/UpgradeModal";
 import DashboardGamificationCards from "@/components/dashboard/DashboardGamificationCards";
@@ -649,6 +650,7 @@ const DashboardPage = () => {
 
       <div className="relative z-10 max-w-lg mx-auto px-4 pt-4">
         <TrialBanner />
+        <CoachNotificationsCard />
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}

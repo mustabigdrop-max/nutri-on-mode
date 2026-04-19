@@ -1325,6 +1325,45 @@ export type Database = {
           },
         ]
       }
+      coach_notifications: {
+        Row: {
+          action_url: string | null
+          created_at: string
+          id: string
+          message: string | null
+          notification_type: string
+          read: boolean
+          recipient_user_id: string
+          reference_id: string | null
+          sender_user_id: string
+          title: string
+        }
+        Insert: {
+          action_url?: string | null
+          created_at?: string
+          id?: string
+          message?: string | null
+          notification_type?: string
+          read?: boolean
+          recipient_user_id: string
+          reference_id?: string | null
+          sender_user_id: string
+          title: string
+        }
+        Update: {
+          action_url?: string | null
+          created_at?: string
+          id?: string
+          message?: string | null
+          notification_type?: string
+          read?: boolean
+          recipient_user_id?: string
+          reference_id?: string | null
+          sender_user_id?: string
+          title?: string
+        }
+        Relationships: []
+      }
       coach_patients: {
         Row: {
           coach_id: string

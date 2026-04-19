@@ -228,7 +228,7 @@ function EliteGenerateSection({ userId }: { userId?: string }) {
 
   const saveProtocol = async (patientId?: string) => {
     if (!userId) return;
-    const { error } = await supabase.from("training_protocols").insert({
+    const { data: inserted, error } = await supabase.from("training_protocols").insert({
       user_id: userId, client_name: clientName, phase, muscles, level, weeks,
       days_per_week: days, equipment: equipment.join(", "), injuries,
       session_duration: sessionDuration,
@@ -237,9 +237,26 @@ function EliteGenerateSection({ userId }: { userId?: string }) {
       tecnica_text: textResults.tecnica || "",
       periodizacao_text: textResults.periodizacao || "",
       patient_user_id: patientId || null,
-    });
-    if (error) toast.error("Erro ao salvar");
-    else toast.success("Protocolo salvo!");
+    }).select("id").single();
+    if (error) { toast.error("Erro ao salvar"); setShowSaveModal(false); return; }
+
+    // Se enviou para um aluno, dispara notificação
+    if (patientId && inserted?.id) {
+      const patientName = patients.find(p => p.patient_user_id === patientId)?.name || "aluno";
+      const { error: notifErr } = await supabase.from("coach_notifications").insert({
+        recipient_user_id: patientId,
+        sender_user_id: userId,
+        notification_type: "training_plan",
+        title: "Novo plano de treino do seu coach",
+        message: `${clientName || "Seu protocolo"} — ${phase || "treino"} (${days || "?"} dias/sem)`,
+        action_url: "/training",
+        reference_id: inserted.id,
+      });
+      if (notifErr) console.error("Notif error:", notifErr);
+      toast.success(`Plano enviado para ${patientName}!`);
+    } else {
+      toast.success("Protocolo salvo!");
+    }
     setShowSaveModal(false);
   };
 
