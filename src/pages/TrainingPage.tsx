@@ -21,6 +21,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import BottomNav from "@/components/BottomNav";
 import StratumModule from "@/components/training/StratumModule";
 import StratumProtocolHub from "@/components/training/StratumProtocolHub";
+import TrainingOnFibrasChat from "@/components/training/TrainingOnFibrasChat";
 import {
   PHASES, MUSCLES, LEVELS, WEEKS_OPTIONS, DAYS_OPTIONS,
   SESSION_DURATIONS, CARDIO_OPTIONS, STRESS_OPTIONS, EQUIPMENT_OPTIONS,
@@ -29,10 +30,11 @@ import {
 
 const ADMIN_UID = "70e51469-1acf-4df6-afe6-f094d21db122";
 
-type Section = "gerar" | "stratum" | "progressao" | "volume" | "historico" | "config";
+type Section = "gerar" | "fibras" | "stratum" | "progressao" | "volume" | "historico" | "config";
 
 const sectionNav: { id: Section; label: string; icon: any; adminOnly?: boolean }[] = [
   { id: "gerar", label: "Prescrição", icon: Brain },
+  { id: "fibras", label: "Fibras IA", icon: Activity },
   { id: "stratum", label: "STRATUM", icon: Microscope, adminOnly: true },
   { id: "progressao", label: "Progressão", icon: TrendingUp },
   { id: "volume", label: "Volume", icon: BarChart3 },
@@ -106,6 +108,7 @@ export default function TrainingPage() {
         <AnimatePresence mode="wait">
           <motion.div key={section} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
             {section === "gerar" && <EliteGenerateSection userId={user?.id} />}
+            {section === "fibras" && <TrainingOnFibrasChat />}
             {section === "stratum" && isAdmin && (
               <div className="space-y-6">
                 <StratumProtocolHub />
