@@ -650,6 +650,7 @@ const DashboardPage = () => {
 
       <div className="relative z-10 max-w-lg mx-auto px-4 pt-4">
         <TrialBanner />
+        <CoachNotificationsCard />
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}
