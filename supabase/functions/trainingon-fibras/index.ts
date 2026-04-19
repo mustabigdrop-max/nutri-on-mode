@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -90,7 +91,15 @@ NOTAS: recuperação, peri-treino, progressão
 ## INTEGRAÇÃO NUTRION
 - Treino IIX pesado → mais carbo peri-treino
 - Treino Tipo I volume alto → priorizar proteína
-- Mencione que o nutriON tem os protocolos nutricionais integrados`;
+- Mencione que o nutriON tem os protocolos nutricionais integrados
+
+## SINALIZAÇÃO DE PERFIL (OBRIGATÓRIO)
+Ao final de TODA resposta completa de protocolo, inclua SEMPRE este bloco exato (uma única linha, sem markdown ao redor):
+
+FIBER_PROFILE_DATA:{"dominancia":"TIPO_IIA","notas":"Resumo em 1 linha do perfil identificado"}
+
+Substitua TIPO_IIA pelo tipo correto identificado para o cliente: TIPO_I, TIPO_IIA, TIPO_IIX ou MISTO.
+A "notas" deve ser um resumo curto (≤120 chars) do perfil fisiológico identificado para esse usuário.`;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -102,7 +111,24 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY missing");
 
-    const response = await fetch(
+    // Captura userId do JWT (se presente)
+    let userId: string | null = null;
+    try {
+      const authHeader = req.headers.get("authorization") || "";
+      const token = authHeader.replace("Bearer ", "");
+      if (token) {
+        const supabaseAuth = createClient(
+          Deno.env.get("SUPABASE_URL")!,
+          Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+        );
+        const { data: { user } } = await supabaseAuth.auth.getUser(token);
+        userId = user?.id || null;
+      }
+    } catch (_) {
+      // ignora — chat segue sem persistência de perfil
+    }
+
+    const aiResp = await fetch(
       "https://ai.gateway.lovable.dev/v1/chat/completions",
       {
         method: "POST",
@@ -121,28 +147,102 @@ serve(async (req) => {
       },
     );
 
-    if (!response.ok) {
-      if (response.status === 429) {
+    if (!aiResp.ok) {
+      if (aiResp.status === 429) {
         return new Response(
           JSON.stringify({ error: "Limite de requisições atingido. Tente em instantes." }),
           { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } },
         );
       }
-      if (response.status === 402) {
+      if (aiResp.status === 402) {
         return new Response(
           JSON.stringify({ error: "Créditos esgotados. Adicione créditos no workspace." }),
           { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } },
         );
       }
-      const t = await response.text();
-      console.error("AI gateway error:", response.status, t);
+      const t = await aiResp.text();
+      console.error("AI gateway error:", aiResp.status, t);
       return new Response(JSON.stringify({ error: "AI gateway error" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    return new Response(response.body, {
+    if (!aiResp.body) {
+      return new Response(JSON.stringify({ error: "No stream" }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Stream tee: passa para o cliente E acumula fullText para extrair FIBER_PROFILE_DATA
+    let fullText = "";
+    const reader = aiResp.body.getReader();
+    const decoder = new TextDecoder();
+
+    const stream = new ReadableStream({
+      async start(controller) {
+        try {
+          let buffer = "";
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            controller.enqueue(value);
+            buffer += decoder.decode(value, { stream: true });
+
+            let nl: number;
+            while ((nl = buffer.indexOf("\n")) !== -1) {
+              let line = buffer.slice(0, nl);
+              buffer = buffer.slice(nl + 1);
+              if (line.endsWith("\r")) line = line.slice(0, -1);
+              if (!line.startsWith("data: ")) continue;
+              const json = line.slice(6).trim();
+              if (json === "[DONE]") continue;
+              try {
+                const parsed = JSON.parse(json);
+                const delta = parsed.choices?.[0]?.delta?.content;
+                if (delta) fullText += delta;
+              } catch {
+                // ignora pedaços parciais
+              }
+            }
+          }
+          controller.close();
+
+          // Após o stream, tenta extrair perfil de fibras
+          const match = fullText.match(/FIBER_PROFILE_DATA:(\{[^}]+\})/);
+          if (match && userId) {
+            try {
+              const profileData = JSON.parse(match[1]);
+              const dominancia = String(profileData.dominancia || "").toLowerCase();
+              const allowed = ["tipo_i", "tipo_iia", "tipo_iix", "misto"];
+              if (allowed.includes(dominancia)) {
+                const supabaseAdmin = createClient(
+                  Deno.env.get("SUPABASE_URL")!,
+                  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+                );
+                await supabaseAdmin.from("fiber_profiles").upsert(
+                  {
+                    user_id: userId,
+                    dominancia,
+                    notas: profileData.notas || null,
+                    updated_at: new Date().toISOString(),
+                  },
+                  { onConflict: "user_id" },
+                );
+              }
+            } catch (e) {
+              console.error("saveFiberProfile error:", e);
+            }
+          }
+        } catch (e) {
+          console.error("stream error:", e);
+          controller.error(e);
+        }
+      },
+    });
+
+    return new Response(stream, {
       headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
     });
   } catch (e) {
