@@ -597,12 +597,17 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const data = await req.json();
+    const reqBody = await req.json();
+    const { elitePrompt, ...data } = reqBody || {};
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     const PERPLEXITY_API_KEY = Deno.env.get("PERPLEXITY_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
-    const userPrompt = buildStructuredPrompt(data);
+    // Se vier elitePrompt do frontend (Fibras + Ready sincronizados), usa diretamente.
+    // Caso contrário, usa o pipeline padrão de prompts por tab.
+    const userPrompt = elitePrompt
+      ? elitePrompt
+      : buildStructuredPrompt(data);
     let scienceContext = "";
     let scienceCitations: string[] = [];
 

@@ -162,6 +162,18 @@ function EliteGenerateSection({ userId }: { userId?: string }) {
   const [expandedDay, setExpandedDay] = useState<number | null>(0);
   const [expandedExercise, setExpandedExercise] = useState<string | null>(null);
 
+  // Sync sources: STRATUM Ready + Fibras IA
+  const [readyCheckin, setReadyCheckin] = useState<{
+    sono: number;
+    energia: number;
+    dorMuscular: string;
+    estresseHoje: string;
+  } | null>(null);
+  const [fiberProfile, setFiberProfile] = useState<{
+    dominancia: string;
+    notas: string;
+  } | null>(null);
+
   const toggleEquipment = (e: string) => setEquipment(prev => prev.includes(e) ? prev.filter(x => x !== e) : [...prev, e]);
   const toggleMuscle = (m: string) => setMuscles(prev => prev.includes(m) ? prev.filter(x => x !== m) : [...prev, m]);
 
@@ -170,6 +182,95 @@ function EliteGenerateSection({ userId }: { userId?: string }) {
     equipment: equipment.join(", "), injuries, sessionDuration,
     stressLevel, supplements, weakPoints, specificGoal, cardio,
   }), [phase, muscles, level, weeks, days, clientName, equipment, injuries, sessionDuration, stressLevel, supplements, weakPoints, specificGoal, cardio]);
+
+  // Carrega perfil de fibras + último STRATUM Ready check-in
+  useEffect(() => {
+    if (!userId) return;
+
+    (supabase
+      .from("fiber_profiles" as any)
+      .select("dominancia, notas")
+      .eq("user_id", userId)
+      .maybeSingle() as any)
+      .then(({ data }: any) => {
+        if (data) setFiberProfile({ dominancia: data.dominancia, notas: data.notas });
+      });
+
+    (supabase
+      .from("stratum_checkins" as any)
+      .select("sono, energia, dor_muscular, estresse_hoje")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle() as any)
+      .then(({ data }: any) => {
+        if (data) setReadyCheckin({
+          sono: data.sono,
+          energia: data.energia,
+          dorMuscular: data.dor_muscular,
+          estresseHoje: data.estresse_hoje,
+        });
+      });
+  }, [userId]);
+
+  const buildElitePrompt = () => {
+    let readyScore = 7;
+    if (readyCheckin) {
+      const dorPenalty: Record<string, number> = { Nenhuma: 0, Leve: 0.5, Moderada: 1.5, Forte: 3 };
+      const stressPenalty: Record<string, number> = { Baixo: 0, Médio: 0.5, Alto: 1.5 };
+      const base = (readyCheckin.sono + readyCheckin.energia) / 2;
+      const penalty = (dorPenalty[readyCheckin.dorMuscular] || 0) + (stressPenalty[readyCheckin.estresseHoje] || 0);
+      readyScore = Math.max(1, Math.round((base - penalty) * 10) / 10);
+    }
+
+    const prontidaoBloco = readyCheckin
+      ? `
+━━━ PRONTIDÃO DO DIA (STRATUM Ready) ━━━
+- Sono: ${readyCheckin.sono}/10
+- Energia: ${readyCheckin.energia}/10
+- Dor muscular: ${readyCheckin.dorMuscular}
+- Estresse: ${readyCheckin.estresseHoje}
+- Score: ${readyScore}/10
+${readyScore >= 8 ? "✅ Score ALTO — protocolo completo, RPE máximo permitido" : readyScore >= 6 ? "⚡ Score MÉDIO — reduzir 1-2 sets, manter intensidade" : "⚠️ Score BAIXO — -20% volume, RPE máx 7, foco em técnica"}`
+      : `━━━ PRONTIDÃO DO DIA: não registrada (assumir score 7/10) ━━━`;
+
+    const fibrasBloco = fiberProfile
+      ? `
+━━━ PERFIL DE FIBRAS (Fibras IA) ━━━
+- Dominância: ${fiberProfile.dominancia.toUpperCase()}
+- Notas: ${fiberProfile.notas}
+${fiberProfile.dominancia === "tipo_i" ? "→ Mais sets, reps altas (15-25), descanso 60-90s" : fiberProfile.dominancia === "tipo_iia" ? "→ 6-12 reps, tensão mecânica máxima, descanso 2-3min" : fiberProfile.dominancia === "tipo_iix" ? "→ 3-6 reps pesadas + finisher metabólico, descanso 3-5min" : "→ Periodização por bloco na sessão (pesado → metabólico)"}`
+      : `━━━ PERFIL DE FIBRAS: não avaliado (usar padrão para o nível) ━━━`;
+
+    return `Você é o Motor de Prescrição de Elite do TrainingON — camada máxima do sistema STRATUM.
+
+Integre TRÊS fontes de inteligência em UM protocolo definitivo:
+
+━━━ DADOS DO CLIENTE ━━━
+- Lesões: ${injuries || "nenhuma"}
+- Equipamentos: ${equipment.join(", ") || "academia completa"}
+- Tempo por sessão: ${sessionDuration}
+- Cardio: ${cardio}
+- Objetivo: ${specificGoal || "não informado"}
+- Pontos fracos: ${weakPoints || "não informado"}
+- Estresse/recuperação: ${stressLevel}
+- Suplementos: ${supplements || "não informado"}
+- Fase: ${phase} | Músculos: ${muscles.join(", ")}
+- Nível: ${level} | ${weeks} semanas | ${days} dias/sem
+- Cliente: ${clientName}
+${prontidaoBloco}
+${fibrasBloco}
+
+━━━ OUTPUT OBRIGATÓRIO ━━━
+1. AQUECIMENTO específico (considera lesões e grupo muscular)
+2. 4-6 EXERCÍCIOS com: nome exato, sets×reps (ajustados às fibras+prontidão), RPE, cadência (ex: 3-1-2-0), cue técnico, referência científica
+3. VOLUME LANDMARKS — MEV / MAV / MRV para este contexto
+4. PROGRESSÃO SEMANAL — 6 semanas com deload na semana 5
+5. NOTA DE INTEGRAÇÃO — 3 linhas explicando decisões baseadas em fibras + prontidão
+6. ALERTA DE LESÃO se houver restrição
+
+Português. Específico. Científico. Zero genérico.`;
+  };
 
   const generate = async () => {
     if (!phase || muscles.length === 0 || !level || !clientName) {
@@ -181,11 +282,21 @@ function EliteGenerateSection({ userId }: { userId?: string }) {
     setActiveResultTab("overview");
     try {
       const { data, error } = await supabase.functions.invoke("generate-training-protocol", {
-        body: { ...bodyData, tab: "protocolo" },
+        body: {
+          ...bodyData,
+          tab: "protocolo",
+          ...(fiberProfile || readyCheckin ? { elitePrompt: buildElitePrompt() } : {}),
+        },
       });
       if (error) throw error;
       if (data.protocol) {
         setProtocol(data.protocol);
+        if (fiberProfile || readyCheckin) {
+          toast.success(
+            `Elite gerado com${fiberProfile ? ` Fibras ${fiberProfile.dominancia.toUpperCase()}` : ""}${readyCheckin ? ` + Ready ⚡` : ""}`,
+            { duration: 4000 }
+          );
+        }
       } else if (data.content) {
         setTextResults(prev => ({ ...prev, protocolo: data.content }));
       }
@@ -380,13 +491,53 @@ function EliteGenerateSection({ userId }: { userId?: string }) {
           </Field>
         </div>
 
-        <Button onClick={generate} disabled={loading} className="w-full font-black text-sm h-12 rounded-xl tracking-wide" style={{ background: loading ? TEXT_MUTED : GREEN, color: BG }}>
-          {loading ? (
-            <span className="flex items-center gap-2"><Activity className="w-4 h-4 animate-spin" /> Gerando protocolo de elite...</span>
-          ) : (
-            <span className="flex items-center gap-2"><Brain className="w-4 h-4" /> GERAR PROTOCOLO DE ELITE</span>
+        <div className="space-y-2">
+          <div className="flex gap-2 flex-wrap">
+            <div
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-[10px] font-bold"
+              style={{
+                background: fiberProfile ? "rgba(74,222,128,0.1)" : "rgba(100,116,139,0.08)",
+                border: `1px solid ${fiberProfile ? "rgba(74,222,128,0.3)" : "rgba(100,116,139,0.15)"}`,
+                color: fiberProfile ? GREEN : TEXT_MUTED,
+              }}
+            >
+              <div className="w-1.5 h-1.5 rounded-full" style={{ background: fiberProfile ? GREEN : TEXT_MUTED }} />
+              {fiberProfile ? `🧬 Fibras: ${fiberProfile.dominancia.replace("tipo_", "Tipo ").toUpperCase()}` : "🧬 Fibras: não avaliado"}
+            </div>
+            <div
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-[10px] font-bold"
+              style={{
+                background: readyCheckin ? "rgba(249,115,22,0.1)" : "rgba(100,116,139,0.08)",
+                border: `1px solid ${readyCheckin ? "rgba(249,115,22,0.3)" : "rgba(100,116,139,0.15)"}`,
+                color: readyCheckin ? "#f97316" : TEXT_MUTED,
+              }}
+            >
+              <div className="w-1.5 h-1.5 rounded-full" style={{ background: readyCheckin ? "#f97316" : TEXT_MUTED }} />
+              {readyCheckin ? `⚡ Ready: Sono ${readyCheckin.sono} · Energia ${readyCheckin.energia}` : "⚡ STRATUM Ready: não registrado"}
+            </div>
+          </div>
+
+          <Button
+            onClick={generate}
+            disabled={loading}
+            className="w-full font-black text-sm h-12 rounded-xl tracking-wide"
+            style={{ background: loading ? TEXT_MUTED : GREEN, color: BG }}
+          >
+            {loading ? (
+              <span className="flex items-center gap-2"><Activity className="w-4 h-4 animate-spin" /> Gerando protocolo de elite...</span>
+            ) : (fiberProfile || readyCheckin) ? (
+              <span className="flex items-center gap-2"><Brain className="w-4 h-4" /> GERAR PROTOCOLO ELITE SINCRONIZADO</span>
+            ) : (
+              <span className="flex items-center gap-2"><Brain className="w-4 h-4" /> GERAR PROTOCOLO DE ELITE</span>
+            )}
+          </Button>
+
+          {!fiberProfile && (
+            <p className="text-[9px] text-center" style={{ color: TEXT_MUTED }}>
+              💡 Vá em <b>Fibras IA</b> e converse com o agente para ativar a prescrição sincronizada
+            </p>
           )}
-        </Button>
+        </div>
       </div>
     );
   }
