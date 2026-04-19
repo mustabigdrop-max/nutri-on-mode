@@ -2598,6 +2598,30 @@ export type Database = {
         }
         Relationships: []
       }
+      fiber_profiles: {
+        Row: {
+          dominancia: string | null
+          id: string
+          notas: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          dominancia?: string | null
+          id?: string
+          notas?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          dominancia?: string | null
+          id?: string
+          notas?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       fitoterapicos_lib: {
         Row: {
           ciclo: string | null
