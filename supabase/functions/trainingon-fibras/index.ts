@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -93,13 +93,10 @@ NOTAS: recuperação, peri-treino, progressão
 - Treino Tipo I volume alto → priorizar proteína
 - Mencione que o nutriON tem os protocolos nutricionais integrados
 
-## SINALIZAÇÃO DE PERFIL (OBRIGATÓRIO)
-Ao final de TODA resposta completa de protocolo, inclua SEMPRE este bloco exato (uma única linha, sem markdown ao redor):
-
-FIBER_PROFILE_DATA:{"dominancia":"TIPO_IIA","notas":"Resumo em 1 linha do perfil identificado"}
-
-Substitua TIPO_IIA pelo tipo correto identificado para o cliente: TIPO_I, TIPO_IIA, TIPO_IIX ou MISTO.
-A "notas" deve ser um resumo curto (≤120 chars) do perfil fisiológico identificado para esse usuário.`;
+## SINALIZAÇÃO OBRIGATÓRIA
+Ao final de toda resposta completa inclua na última linha exatamente isto:
+FIBER_PROFILE_DATA:{"dominancia":"TIPO_IIA","notas":"perfil em 1 linha"}
+Use TIPO_I, TIPO_IIA, TIPO_IIX ou MISTO.`;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
