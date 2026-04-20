@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Send, Brain, Loader2, Trash2 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 const GREEN = "#4ade80";
 const TEXT = "#f0fdf4";
