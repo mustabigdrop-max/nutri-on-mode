@@ -1284,6 +1284,48 @@ export type Database = {
         }
         Relationships: []
       }
+      coach_meal_plans: {
+        Row: {
+          coach_id: string
+          created_at: string
+          id: string
+          objetivo: string | null
+          observacao: string | null
+          patient_name: string
+          patient_user_id: string | null
+          plano: Json
+          sent_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          coach_id: string
+          created_at?: string
+          id?: string
+          objetivo?: string | null
+          observacao?: string | null
+          patient_name: string
+          patient_user_id?: string | null
+          plano: Json
+          sent_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          coach_id?: string
+          created_at?: string
+          id?: string
+          objetivo?: string | null
+          observacao?: string | null
+          patient_name?: string
+          patient_user_id?: string | null
+          plano?: Json
+          sent_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       coach_messages: {
         Row: {
           attachment_url: string | null
