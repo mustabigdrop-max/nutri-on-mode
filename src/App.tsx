@@ -82,6 +82,7 @@ import MetabolicONPage from "./pages/MetabolicONPage";
 import PlanoAlimentarIA from "./components/coach/PlanoAlimentarIA";
 import DrNexusPage from "./pages/DrNexusPage";
 import VideoFormPage from "./pages/VideoFormPage";
+import MeusProtocolosPage from "./pages/MeusProtocolosPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
