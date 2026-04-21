@@ -672,6 +672,29 @@ const DashboardPage = () => {
       <div className="relative z-10 max-w-lg mx-auto px-4 pt-4">
         <TrialBanner />
         <CoachNotificationsCard />
+        {protocolosInfo.total > 0 && (
+          <button
+            onClick={() => navigate("/meus-protocolos")}
+            className="w-full mb-3 flex items-center gap-3 p-3 rounded-xl border border-primary/30 bg-primary/10 hover:bg-primary/15 transition-all text-left"
+          >
+            <div className="relative w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+              <Bell className="w-5 h-5 text-primary" />
+              {protocolosInfo.unread > 0 && (
+                <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-destructive rounded-full text-[10px] font-bold text-destructive-foreground flex items-center justify-center">
+                  {protocolosInfo.unread}
+                </span>
+              )}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-foreground">Meus Protocolos</p>
+              <p className="text-xs text-muted-foreground">
+                {protocolosInfo.unread > 0
+                  ? `${protocolosInfo.unread} novo${protocolosInfo.unread > 1 ? "s" : ""} do seu coach`
+                  : `${protocolosInfo.total} protocolo${protocolosInfo.total > 1 ? "s" : ""} recebido${protocolosInfo.total > 1 ? "s" : ""}`}
+              </p>
+            </div>
+          </button>
+        )}
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}
