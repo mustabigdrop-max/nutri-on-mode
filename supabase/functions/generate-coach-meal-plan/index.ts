@@ -5,6 +5,51 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+const SYSTEM_PROMPT = `Você é o NutriSync Elite, o gerador de planos alimentares mais avançado do Brasil para bodybuilding e atletas de alto rendimento. Você integra nutrição clínica, fisiologia do exercício e farmacologia aplicada ao esporte.
+
+REGRAS DE CÁLCULO OBRIGATÓRIAS:
+
+1. TDEE BASE: Use SEMPRE Katch-McArdle (370 + 21.6 × massa magra em kg). NUNCA use Harris-Benedict. Massa magra = peso × (1 - %gordura/100).
+
+2. AJUSTE FARMACOLÓGICO — analise CADA composto informado e aplique:
+   - Testosterona / Boldenona / Primobolan: +15% síntese proteica → proteína mínima 2.8g/kg MM. Volume alimentar maior.
+   - Nandrolona (NPP/Deca): +recuperação → micronutrientes elevados (Ferro, Zinco, Magnésio). Citar fontes alimentares.
+   - SLU-PP-332 (ERR agonist): +30–40% no TDEE basal por mimetismo de exercício mitocondrial. Aplicar multiplicador 1.30–1.40 sobre TMB.
+   - Retratutida / Semaglutida / Tirzepatida (GLP-1 agonists): Apetite suprimido — ALERTAR que o aluno deve comer mesmo sem fome. TDEE basal aumentado 15–25%. Calcular para cima.
+   - CJC-1295 / Ipamorelin / GH secretagogos: Particionamento melhorado → priorizar carboidratos peri-workout. Lipólise aumentada em repouso → gordura dietética pode ser levemente menor.
+   - Metformina: Absorção de B12 comprometida → citar suplementação. Sensibilidade à glicose aumentada.
+   - GH exógeno: Sensibilidade insulínica reduzida → distribuir carboidratos com cuidado, evitar picos glicêmicos isolados.
+   - Compostos desconhecidos ou experimentais: Pesquisar mecanismo de ação e inferir impacto metabólico com base na classe do composto.
+
+3. CARDIO INTEGRADO:
+   - Z1 (50–60% FCmax): ~4–6 kcal/min. Oxidação de gordura predominante. Não reduzir carboidratos no dia.
+   - Z2 (60–70% FCmax): ~6–8 kcal/min. Ótimo para lipólise. Lanche leve pós se >45min.
+   - Z3 (70–80% FCmax): ~8–10 kcal/min. Misto gordura/glicogênio. Reposição de carbo pós obrigatória.
+   - Z4 (80–90% FCmax): ~10–14 kcal/min. Glicogênio-dependente. Carbo pré e pós obrigatórios.
+   - HIIT: Calcular déficit calórico do EPOC (~15–20% a mais). Carbo pré essencial.
+   - AEJ: Calcular calorias queimadas. Alertar risco de catabolismo em usuários de anabolizantes em cutting agressivo — recomendar EAA ou whey antes se protocolo de cutting hard.
+   - Nos DIAS DE CARDIO: aumentar calorias totais pelo gasto do cardio (se toggle "entra no cálculo" = sim).
+
+4. FASES DE PERIODIZAÇÃO:
+   - Bulk Limpo: TDEE + 10–15% (superávit controlado)
+   - Bulk Agressivo: TDEE + 20–25% (para atletas com protocolos anabólicos — o particionamento favorece músculo)
+   - Cutting: TDEE – 20–25% MÁXIMO. Em usuários de anabolizantes, déficit maior é tolerado (até –30%) mas alertar risco.
+   - Recomposição: TDEE ± 5%. Proteína máxima. Ciclagem de carboidratos.
+   - Peak Week: Protocolo específico — 7 dias com: dias 1–3 (depleção de carbo), dias 4–5 (carb loading progressivo), dias 6–7 (ajuste final sódio/potássio/água). Detalhar dia a dia.
+   - Manutenção: TDEE exato.
+
+5. ESTRUTURA DO OUTPUT OBRIGATÓRIA:
+   a) RESUMO METABÓLICO: TMB calculada, TDEE ajustado com todos os fatores, macros finais (g e %) para dias de treino e dias de descanso separados.
+   b) ALERTAS FARMACOLÓGICOS: lista de cuidados específicos baseados no protocolo do aluno.
+   c) PLANO ALIMENTAR: refeições com alimentos, quantidades em gramas, horários sugeridos, calorias e macros por refeição.
+   d) PROTOCOLO DE CARDIO: como executar cada modalidade informada, alimentação pré/durante/pós.
+   e) SUPLEMENTAÇÃO COMPLEMENTAR: baseada no protocolo farmacológico (ex: NPP → recomendar Ferro + Zinco + Mg).
+   f) OBSERVAÇÕES DO COACH: campo para personalização com a observação clínica informada.
+
+Escreva de forma técnica, objetiva e direta. Este plano é usado por coaches profissionais de bodybuilding. Sem disclaimer genérico. Sem linguagem de app de dieta comum. Nível: coach de competição.
+
+IMPORTANTE: Responda APENAS com JSON válido, sem markdown, sem blocos de código.`;
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -14,46 +59,67 @@ serve(async (req) => {
       nome, idade, sexo, peso, altura, objetivo, perfilPCA,
       nivelAtividade, treino, refeicoes, calorias,
       restricoesStr, protocStr, preferencias, suplementos, observacoes,
+      // Novas seções
+      fasePeriodizacao, bfAtual, bfMeta, dataCompeticao,
+      fazCardio, cardioModalidades, cardioFrequencia, cardioDuracao, cardioQuando, cardioNoCalculo,
+      protocoloFarmacologico, atletaCompetitivo, federacaoCategoria,
     } = body;
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
     const imc = peso && altura ? (parseFloat(peso) / Math.pow(parseFloat(altura) / 100, 2)).toFixed(1) : "N/A";
+    const massaMagra = peso && bfAtual
+      ? (parseFloat(peso) * (1 - parseFloat(bfAtual) / 100)).toFixed(1)
+      : null;
 
-    const prompt = `Você é um nutricionista especialista em nutrição comportamental e ciência do exercício.
+    const cardioBlock = fazCardio
+      ? `- Faz cardio: SIM
+- Modalidades: ${(cardioModalidades || []).join(", ") || "Não especificado"}
+- Frequência: ${cardioFrequencia || "N/A"}
+- Duração média: ${cardioDuracao || "N/A"}
+- Quando: ${cardioQuando || "N/A"}
+- Cardio entra no cálculo calórico: ${cardioNoCalculo ? "SIM (somar gasto ao TDEE nos dias de cardio)" : "NÃO (manter TDEE base)"}`
+      : `- Faz cardio: NÃO`;
 
-Crie um plano alimentar COMPLETO e INDIVIDUALIZADO para o seguinte paciente:
-
-DADOS DO PACIENTE:
+    const userPrompt = `DADOS DO PACIENTE:
 - Nome: ${nome || "Paciente"}
 - Idade: ${idade} anos | Sexo: ${sexo}
-- Peso: ${peso}kg | Altura: ${altura}cm | IMC estimado: ${imc}
+- Peso: ${peso}kg | Altura: ${altura}cm | IMC: ${imc}
+- % Gordura corporal atual: ${bfAtual ? `${bfAtual}%` : "Não informado (estimar pelo IMC e contexto)"}
+- % Gordura corporal meta: ${bfMeta ? `${bfMeta}%` : "Não informada"}
+- Massa magra estimada: ${massaMagra ? `${massaMagra}kg` : "Calcular após estimativa de %BF"}
 - Objetivo principal: ${objetivo}
 - Perfil comportamental PCA: ${perfilPCA}
 - Nível de atividade: ${nivelAtividade}
 - Modalidade de treino: ${treino}
 - Número de refeições/dia: ${refeicoes}
-${calorias ? `- Meta calórica definida pelo coach: ${calorias} kcal` : "- Meta calórica: calcular automaticamente com base nos dados"}
+${calorias ? `- Meta calórica definida pelo coach: ${calorias} kcal` : "- Meta calórica: calcular via Katch-McArdle + ajustes"}
+
+FASE DE PERIODIZAÇÃO:
+- Fase atual: ${fasePeriodizacao || "manutenção"}
+${dataCompeticao ? `- Data da competição: ${dataCompeticao}` : ""}
+${atletaCompetitivo ? `- Atleta competitivo: SIM (Federação/Categoria: ${federacaoCategoria || "não informada"})` : "- Atleta competitivo: NÃO"}
+
+PROTOCOLO DE CARDIO:
+${cardioBlock}
+
+PROTOCOLO FARMACOLÓGICO ATIVO (interprete CADA composto e aplique os ajustes da Regra 2):
+${protocoloFarmacologico || protocStr || "Nenhum protocolo farmacológico informado"}
+
+OUTROS DADOS:
 - Restrições alimentares: ${restricoesStr || "Nenhuma"}
 - Preferências alimentares: ${preferencias || "Não informadas"}
 - Suplementação atual: ${suplementos || "Não informada"}
-- Protocolo de peptídeos: ${protocStr || "Nenhum"}
 - Observações clínicas: ${observacoes || "Nenhuma"}
 
-INSTRUÇÕES CRÍTICAS:
-1. Adapte TUDO ao perfil PCA "${perfilPCA}" — linguagem, estrutura e autonomia do plano devem refletir esse perfil
-2. Se há protocolo de peptídeos, integre as estratégias nutricionais específicas (timing, macros, alimentos sinérgicos)
-3. Calcule TMB (Mifflin-St Jeor) + fator atividade para obter GET. Defina déficit/superávit conforme objetivo
-4. Distribua macros: proteína mínima 1.8g/kg para todos, CHO e gordura conforme objetivo e protocolo
-5. Use alimentos 100% brasileiros, acessíveis, com medidas caseiras claras
-6. Inclua dica comportamental alinhada ao Método MCE (Mindset, Comportamento, Execução)
+Aplique TODAS as regras de cálculo (Katch-McArdle, ajustes farmacológicos por composto, integração de cardio, fase de periodização). Use alimentos brasileiros acessíveis com gramagem precisa. Linguagem técnica de coach de competição.
 
-Responda APENAS com JSON válido. Estrutura exata:
+Responda APENAS com JSON válido nesta estrutura exata:
 {
   "resumo": {
     "nome": "string",
-    "objetivo": "string",
+    "objetivo": "string (incluindo fase de periodização)",
     "calorias_totais": number,
     "proteina_total": number,
     "carboidrato_total": number,
@@ -61,7 +127,7 @@ Responda APENAS com JSON válido. Estrutura exata:
     "tmb": number,
     "get": number,
     "imc": "string",
-    "observacao_protocolo": "string ou null"
+    "observacao_protocolo": "string com resumo técnico do TDEE ajustado, fatores aplicados (farmacologia, cardio, fase) e split treino/descanso"
   },
   "refeicoes": [
     {
@@ -70,19 +136,19 @@ Responda APENAS com JSON válido. Estrutura exata:
       "calorias": number,
       "macros": { "proteina": number, "carboidrato": number, "gordura": number },
       "alimentos": [
-        { "alimento": "string", "quantidade": "string", "observacao": "string ou null" }
+        { "alimento": "string", "quantidade": "string em gramas", "observacao": "string ou null" }
       ]
     }
   ],
   "suplementacao": [
-    { "suplemento": "string", "dose": "string", "timing": "string", "justificativa": "string" }
+    { "suplemento": "string", "dose": "string", "timing": "string", "justificativa": "string (ligar ao composto farmacológico quando aplicável)" }
   ],
   "dica_mce": {
     "mindset": "string",
     "comportamento": "string",
-    "execucao": "string"
+    "execucao": "string (incluir alertas farmacológicos e protocolo de cardio detalhado pré/durante/pós)"
   },
-  "alerta_coach": "string ou null"
+  "alerta_coach": "string com alertas farmacológicos críticos consolidados, ou null"
 }`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -92,10 +158,10 @@ Responda APENAS com JSON válido. Estrutura exata:
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: "google/gemini-2.5-pro",
         messages: [
-          { role: "system", content: "Você é um nutricionista clínico avançado. Responda APENAS com JSON válido, sem markdown, sem blocos de código." },
-          { role: "user", content: prompt },
+          { role: "system", content: SYSTEM_PROMPT },
+          { role: "user", content: userPrompt },
         ],
       }),
     });
