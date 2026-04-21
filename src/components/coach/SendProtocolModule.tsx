@@ -125,13 +125,14 @@ export default function SendProtocolModule({ coachProfileId, coachUserId }: Prop
         for (const k of selected) {
           const opt = ALUNO_OPTS.find((o) => o.key === k);
           if (!opt) continue;
-          const { data } = await supabase
-            .from(opt.table as any)
+          const { data } = await (supabase as any)
+            .from(opt.table)
             .select("id")
             .eq("user_id", openFor.user_id)
             .order("created_at", { ascending: false })
             .limit(1);
-          if (data?.[0]?.id) conteudoIds[k] = [data[0].id];
+          const row = (data as any[] | null)?.[0];
+          if (row?.id) conteudoIds[k] = [row.id];
         }
       }
 
