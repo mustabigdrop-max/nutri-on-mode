@@ -324,6 +324,19 @@ const CoachDashboardPage = () => {
           </Button>
         </div>
 
+        <Tabs defaultValue="overview" className="w-full">
+          <TabsList>
+            <TabsTrigger value="overview">Visão Geral</TabsTrigger>
+            <TabsTrigger value="send">
+              <Send className="w-4 h-4 mr-1" /> Enviar Protocolo
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="send" className="mt-4">
+            <SendProtocolModule coachProfileId={profile.id} coachUserId={user?.id || ""} />
+          </TabsContent>
+
+          <TabsContent value="overview" className="mt-4">
         <div className="grid md:grid-cols-3 gap-6">
           {/* Patient list */}
           <div className="md:col-span-2 space-y-4">
