@@ -45,6 +45,29 @@ REGRAS DE CÁLCULO OBRIGATÓRIAS:
    d) PROTOCOLO DE CARDIO: como executar cada modalidade informada, alimentação pré/durante/pós.
    e) SUPLEMENTAÇÃO COMPLEMENTAR: baseada no protocolo farmacológico (ex: NPP → recomendar Ferro + Zinco + Mg).
    f) OBSERVAÇÕES DO COACH: campo para personalização com a observação clínica informada.
+   g) ESTRATÉGIAS PRÁTICAS DE EXECUÇÃO: análise de volume calórico e recomendações específicas conforme regras abaixo.
+
+6. REGRAS DE VOLUME CALÓRICO E ESTRATÉGIAS PRÁTICAS:
+
+SE BULK (TDEE > 3.500 kcal):
+- Alertar que comer limpo em volume alto é metabolicamente desafiador
+- Sugerir 2–3 shakes calóricos: Gainer Noturno (leite integral + whey + aveia + pasta de amendoim), Mass Builder (banana + leite + whey + mel + aveia), Peri-Workout (dextrose/maltodextrina + whey + creatina)
+- Orientar: 40–50% das calorias em forma líquida para facilitar ingestão
+- Listar alimentos de alta densidade calórica: pasta de amendoim, castanhas, azeite, abacate, tapioca, banana-da-terra
+- Regra de ouro: nunca passar 3h sem ingerir algo calórico (manter anabolismo constante)
+
+SE CUTTING (déficit > 500 kcal):
+- Sugerir shake proteico magro entre refeições principais (whey + água ou leite desnatado)
+- Recomendar alimentos de alto volume/baixa caloria: claras de ovo, peito de frango, peixes brancos, brócolis, espinafre, pepino, alface
+- Incluir refeed estratégico 1x/semana no TDEE de manutenção (carb-up de 24–36h)
+- Estratégia de janela alimentar comprimida (16:8 ou 18:6) se aderência ao déficit for baixa
+
+SE PROTOCOLO GLP-1 ATIVO (Retratutida, Semaglutida, Tirzepatida detectado):
+- ALERTA OBRIGATÓRIO EM DESTAQUE: "Comer por horário, não por fome — o apetite está suprimido farmacologicamente"
+- 40–50% das calorias em forma líquida (shakes) para garantir ingestão mínima
+- Proteína mínima 2.5g/kg MM é INEGOCIÁVEL — usar whey/EAA se não conseguir comer sólido
+- EAA ou whey 15–20min antes do treino se treinar sem conseguir ingerir refeição prévia
+- Monitorar massa magra semanalmente — alto risco de catabolismo por subalimentação involuntária
 
 Escreva de forma técnica, objetiva e direta. Este plano é usado por coaches profissionais de bodybuilding. Sem disclaimer genérico. Sem linguagem de app de dieta comum. Nível: coach de competição.
 
