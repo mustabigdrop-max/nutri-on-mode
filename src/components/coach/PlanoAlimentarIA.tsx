@@ -323,6 +323,115 @@ export default function PlanoAlimentarIA() {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const salvarPlano = async (): Promise<string | null> => {
+    if (!plano || !coachProfileId) {
+      toast({ title: "Coach não identificado", variant: "destructive" });
+      return null;
+    }
+    if (savedId) return savedId;
+    setSaving(true);
+    try {
+      const { data, error: insErr } = await supabase
+        .from("coach_meal_plans")
+        .insert({
+          coach_id: coachProfileId,
+          patient_name: plano.resumo.nome || form.nome || "Paciente",
+          objetivo: plano.resumo.objetivo || form.objetivo,
+          plano: plano as any,
+          observacao: form.observacoes || null,
+          status: "draft",
+        })
+        .select("id")
+        .single();
+      if (insErr) throw insErr;
+      setSavedId(data.id);
+      toast({ title: "Plano salvo ✅", description: "Disponível no histórico do coach." });
+      return data.id;
+    } catch (e: any) {
+      toast({ title: "Erro ao salvar", description: e.message, variant: "destructive" });
+      return null;
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const enviarPlano = async () => {
+    if (!plano || !coachProfileId || !user?.id) return;
+    if (!selectedPatient) {
+      toast({ title: "Selecione um aluno", variant: "destructive" });
+      return;
+    }
+    setSending(true);
+    try {
+      let planId = savedId;
+      if (!planId) {
+        const { data, error: insErr } = await supabase
+          .from("coach_meal_plans")
+          .insert({
+            coach_id: coachProfileId,
+            patient_user_id: selectedPatient,
+            patient_name: plano.resumo.nome || form.nome || "Paciente",
+            objetivo: plano.resumo.objetivo || form.objetivo,
+            plano: plano as any,
+            observacao: sendObs || form.observacoes || null,
+            status: "sent",
+            sent_at: new Date().toISOString(),
+          })
+          .select("id")
+          .single();
+        if (insErr) throw insErr;
+        planId = data.id;
+      } else {
+        const { error: upErr } = await supabase
+          .from("coach_meal_plans")
+          .update({
+            patient_user_id: selectedPatient,
+            status: "sent",
+            sent_at: new Date().toISOString(),
+            observacao: sendObs || form.observacoes || null,
+          })
+          .eq("id", planId);
+        if (upErr) throw upErr;
+      }
+      setSavedId(planId);
+
+      await supabase.from("protocolo_envios").insert({
+        coach_id: coachProfileId,
+        destinatario_id: selectedPatient,
+        tipo_destinatario: "aluno",
+        tipo_conteudo: ["plano_alimentar"],
+        conteudo_ids: { plano_alimentar: [planId] },
+        observacao: sendObs || null,
+        status: "enviado",
+      });
+
+      const titulo = "Novo plano alimentar recebido!";
+      const corpo = `Seu coach enviou um novo plano alimentar.${sendObs ? ` ${sendObs}` : ""}`;
+      await supabase.from("coach_notifications").insert({
+        recipient_user_id: selectedPatient,
+        sender_user_id: user.id,
+        notification_type: "meal_plan_sent",
+        title: titulo,
+        message: corpo,
+        reference_id: planId,
+      });
+
+      try {
+        await supabase.functions.invoke("dispara_notificacao", {
+          body: { destinatario_id: selectedPatient, titulo, corpo, referencia_id: planId, tipo: "plano_alimentar" },
+        });
+      } catch {}
+
+      toast({ title: "Plano enviado 📨", description: `Para ${patients.find((p) => p.user_id === selectedPatient)?.name || "aluno"}` });
+      setShowSendModal(false);
+      setSendObs("");
+    } catch (e: any) {
+      toast({ title: "Erro ao enviar", description: e.message, variant: "destructive" });
+    } finally {
+      setSending(false);
+    }
+  };
+
   const exportPDF = () => {
     if (!plano) return;
     const r = plano.resumo;
