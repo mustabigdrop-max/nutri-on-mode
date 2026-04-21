@@ -185,6 +185,20 @@ export default function PlanoAlimentarIA() {
     restricoes: [] as string[], outraRestricao: "",
     preferencias: "", suplementos: "", observacoes: "",
     refeicoes: "5", calorias: "", protocolo: "nenhum",
+    // Fase de periodização
+    fasePeriodizacao: "manutencao_offseason",
+    bfAtual: "", bfMeta: "", dataCompeticao: "",
+    // Cardio
+    fazCardio: false,
+    cardioModalidades: [] as string[],
+    cardioFrequencia: "3x",
+    cardioDuracao: "30min",
+    cardioQuando: "pos_treino",
+    cardioNoCalculo: true,
+    // Recursos ergogênicos
+    protocoloFarmacologico: "",
+    atletaCompetitivo: false,
+    federacaoCategoria: "",
   });
 
   const set = (k: string, v: any) => setForm(f => ({ ...f, [k]: v }));
@@ -559,20 +573,171 @@ export default function PlanoAlimentarIA() {
           </div>
         </Section>
 
-        {/* Protocolo de peptídeos */}
-        <Section title="Protocolo de peptídeos">
-          <Label>Protocolo ativo do paciente</Label>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-            {protocolos.map(p => (
-              <button key={p.v} onClick={() => set("protocolo", p.v)} style={{
-                padding: "9px 14px", borderRadius: 8, textAlign: "left" as const, cursor: "pointer",
-                border: `1px solid ${form.protocolo === p.v ? T.green : T.border2}`,
-                background: form.protocolo === p.v ? T.greenBg : "transparent",
-                color: form.protocolo === p.v ? T.green : T.muted,
-                fontSize: 12, transition: "all .15s", fontFamily: "inherit"
-              }}>{p.l}</button>
-            ))}
+        {/* Fase de periodização */}
+        <Section title="Fase de periodização">
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 14 }}>
+            <div style={{ gridColumn: "1 / -1" }}>
+              <Label required>Fase atual</Label>
+              <SelectField value={form.fasePeriodizacao} onChange={e => set("fasePeriodizacao", e.target.value)}>
+                <option value="bulk_limpo">Bulk Limpo</option>
+                <option value="bulk_agressivo">Bulk Agressivo</option>
+                <option value="cutting">Cutting</option>
+                <option value="recomposicao">Recomposição</option>
+                <option value="peak_week">Peak Week (competição)</option>
+                <option value="manutencao_offseason">Manutenção Off-Season</option>
+              </SelectField>
+            </div>
+            <div>
+              <Label>% Gordura corporal atual</Label>
+              <InputField type="number" placeholder="Ex: 14" value={form.bfAtual} onChange={e => set("bfAtual", e.target.value)} />
+            </div>
+            <div>
+              <Label>% Gordura corporal meta</Label>
+              <InputField type="number" placeholder="Ex: 8" value={form.bfMeta} onChange={e => set("bfMeta", e.target.value)} />
+            </div>
+            {form.fasePeriodizacao === "peak_week" && (
+              <div style={{ gridColumn: "1 / -1" }}>
+                <Label required>Data da competição</Label>
+                <InputField type="date" value={form.dataCompeticao} onChange={e => set("dataCompeticao", e.target.value)} />
+              </div>
+            )}
           </div>
+        </Section>
+
+        {/* Protocolo de cardio */}
+        <Section title="Protocolo de cardio">
+          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: form.fazCardio ? 16 : 0 }}>
+            <Label>Faz cardio?</Label>
+            <button
+              type="button"
+              onClick={() => set("fazCardio", !form.fazCardio)}
+              style={{
+                width: 46, height: 24, borderRadius: 999, position: "relative",
+                background: form.fazCardio ? T.green : T.bg3,
+                border: `1px solid ${form.fazCardio ? T.green : T.border2}`,
+                cursor: "pointer", transition: "all .2s", padding: 0
+              }}
+            >
+              <div style={{
+                width: 18, height: 18, borderRadius: "50%",
+                background: form.fazCardio ? "#0a0f0a" : T.muted,
+                position: "absolute", top: 2, left: form.fazCardio ? 24 : 2,
+                transition: "all .2s"
+              }} />
+            </button>
+            <span style={{ fontSize: 12, color: T.muted }}>{form.fazCardio ? "Sim" : "Não"}</span>
+          </div>
+
+          {form.fazCardio && (
+            <>
+              <div style={{ marginBottom: 14 }}>
+                <Label>Modalidade de cardio</Label>
+                <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 8 }}>
+                  {["LISS", "HIIT", "Zona 1 (50–60% FCmax)", "Zona 2 (60–70%)", "Zona 3 (70–80%)", "Zona 4 (80–90%)", "AEJ (Aeróbico em Jejum)", "Caminhada NEAT"].map(m => (
+                    <Tag key={m} label={m} active={form.cardioModalidades.includes(m)} onClick={() => toggleArr("cardioModalidades", m)} />
+                  ))}
+                </div>
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 14 }}>
+                <div>
+                  <Label>Frequência cardio</Label>
+                  <SelectField value={form.cardioFrequencia} onChange={e => set("cardioFrequencia", e.target.value)}>
+                    {["1x", "2x", "3x", "4x", "5x", "Diário", "2x ao dia"].map(o => <option key={o} value={o}>{o}</option>)}
+                  </SelectField>
+                </div>
+                <div>
+                  <Label>Duração média</Label>
+                  <SelectField value={form.cardioDuracao} onChange={e => set("cardioDuracao", e.target.value)}>
+                    {["20min", "30min", "45min", "60min", "90min"].map(o => <option key={o} value={o}>{o}</option>)}
+                  </SelectField>
+                </div>
+                <div style={{ gridColumn: "1 / -1" }}>
+                  <Label>Quando faz cardio</Label>
+                  <SelectField value={form.cardioQuando} onChange={e => set("cardioQuando", e.target.value)}>
+                    <option value="pos_treino">Pós-treino</option>
+                    <option value="pre_treino">Pré-treino</option>
+                    <option value="separado">Separado do treino</option>
+                    <option value="jejum_manha">Em jejum manhã</option>
+                    <option value="noite">Noite</option>
+                  </SelectField>
+                </div>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <Label>Cardio entra no cálculo calórico?</Label>
+                <button
+                  type="button"
+                  onClick={() => set("cardioNoCalculo", !form.cardioNoCalculo)}
+                  style={{
+                    width: 46, height: 24, borderRadius: 999, position: "relative",
+                    background: form.cardioNoCalculo ? T.green : T.bg3,
+                    border: `1px solid ${form.cardioNoCalculo ? T.green : T.border2}`,
+                    cursor: "pointer", transition: "all .2s", padding: 0
+                  }}
+                >
+                  <div style={{
+                    width: 18, height: 18, borderRadius: "50%",
+                    background: form.cardioNoCalculo ? "#0a0f0a" : T.muted,
+                    position: "absolute", top: 2, left: form.cardioNoCalculo ? 24 : 2,
+                    transition: "all .2s"
+                  }} />
+                </button>
+                <span style={{ fontSize: 12, color: T.muted }}>{form.cardioNoCalculo ? "Sim" : "Não"}</span>
+              </div>
+            </>
+          )}
+        </Section>
+
+        {/* Recursos ergogênicos */}
+        <Section title="Recursos ergogênicos">
+          <div style={{ marginBottom: 14 }}>
+            <Label>Protocolo farmacológico ativo</Label>
+            <TextareaField
+              rows={4}
+              style={{ minHeight: 110 }}
+              placeholder="Descreva tudo que o aluno usa. Ex: Testosterona Enantato 300mg/sem, NPP 200mg/sem, CJC-1295 sem DAC 2mg 2x/sem, Ipamorelin 200mcg 3x/dia, SLU-PP-332 experimental, Retratutida 2mg/sem, Metformina 500mg..."
+              value={form.protocoloFarmacologico}
+              onChange={e => set("protocoloFarmacologico", e.target.value)}
+            />
+            <div style={{
+              marginTop: 10, padding: "10px 12px", borderRadius: 8,
+              background: T.greenBg, border: `1px solid ${T.border2}`,
+              display: "flex", alignItems: "flex-start", gap: 8
+            }}>
+              <span style={{ fontSize: 14, lineHeight: 1 }}>🧠</span>
+              <span style={{ fontSize: 11, color: T.green, lineHeight: 1.5 }}>
+                A IA interpretará cada composto e ajustará TDEE, macros e timing automaticamente com base em evidências farmacológicas.
+              </span>
+            </div>
+          </div>
+
+          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: form.atletaCompetitivo ? 14 : 0 }}>
+            <Label>É atleta competitivo?</Label>
+            <button
+              type="button"
+              onClick={() => set("atletaCompetitivo", !form.atletaCompetitivo)}
+              style={{
+                width: 46, height: 24, borderRadius: 999, position: "relative",
+                background: form.atletaCompetitivo ? T.green : T.bg3,
+                border: `1px solid ${form.atletaCompetitivo ? T.green : T.border2}`,
+                cursor: "pointer", transition: "all .2s", padding: 0
+              }}
+            >
+              <div style={{
+                width: 18, height: 18, borderRadius: "50%",
+                background: form.atletaCompetitivo ? "#0a0f0a" : T.muted,
+                position: "absolute", top: 2, left: form.atletaCompetitivo ? 24 : 2,
+                transition: "all .2s"
+              }} />
+            </button>
+            <span style={{ fontSize: 12, color: T.muted }}>{form.atletaCompetitivo ? "Sim" : "Não"}</span>
+          </div>
+
+          {form.atletaCompetitivo && (
+            <div>
+              <Label>Federação / Categoria</Label>
+              <InputField placeholder="Ex: IFBB Pro Men's Physique, NPC Classic Physique..." value={form.federacaoCategoria} onChange={e => set("federacaoCategoria", e.target.value)} />
+            </div>
+          )}
         </Section>
 
         {/* Configuração do plano */}
