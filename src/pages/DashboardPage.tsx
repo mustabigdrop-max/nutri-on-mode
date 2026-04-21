@@ -322,9 +322,30 @@ const DashboardPage = () => {
   const { partner, isAdmin } = usePartner();
   const { getTodayWorkout, getTodayWorkouts, getNextRestDay, getWorkoutsForDay, todayLog: workoutLog } = useWorkoutSchedule();
   const [upgradeModal, setUpgradeModal] = useState<{ open: boolean; feature: string }>({ open: false, feature: "" });
+  const [protocolosInfo, setProtocolosInfo] = useState<{ total: number; unread: number }>({ total: 0, unread: 0 });
   const waterMl = waterLog?.ml_total ?? 0;
   const waterGlasses = Math.round(waterMl / 250);
   const isOnPlus = hasAccess("ON +");
+
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      const { data: envs } = await supabase
+        .from("protocolo_envios")
+        .select("id")
+        .eq("destinatario_id", user.id);
+      const ids = (envs || []).map((e: any) => e.id);
+      if (!ids.length) return setProtocolosInfo({ total: 0, unread: 0 });
+      const { data: notifs } = await supabase
+        .from("coach_notifications")
+        .select("reference_id, read")
+        .eq("recipient_user_id", user.id)
+        .in("reference_id", ids);
+      const readIds = new Set((notifs || []).filter((n: any) => n.read).map((n: any) => n.reference_id));
+      const unread = ids.filter((id) => !readIds.has(id)).length;
+      setProtocolosInfo({ total: ids.length, unread });
+    })();
+  }, [user]);
 
   useEffect(() => {
     if (!profile?.onboarding_completed && !loading) {
