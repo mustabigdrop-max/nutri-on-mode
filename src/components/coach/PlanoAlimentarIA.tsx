@@ -185,6 +185,20 @@ export default function PlanoAlimentarIA() {
     restricoes: [] as string[], outraRestricao: "",
     preferencias: "", suplementos: "", observacoes: "",
     refeicoes: "5", calorias: "", protocolo: "nenhum",
+    // Fase de periodização
+    fasePeriodizacao: "manutencao_offseason",
+    bfAtual: "", bfMeta: "", dataCompeticao: "",
+    // Cardio
+    fazCardio: false,
+    cardioModalidades: [] as string[],
+    cardioFrequencia: "3x",
+    cardioDuracao: "30min",
+    cardioQuando: "pos_treino",
+    cardioNoCalculo: true,
+    // Recursos ergogênicos
+    protocoloFarmacologico: "",
+    atletaCompetitivo: false,
+    federacaoCategoria: "",
   });
 
   const set = (k: string, v: any) => setForm(f => ({ ...f, [k]: v }));
