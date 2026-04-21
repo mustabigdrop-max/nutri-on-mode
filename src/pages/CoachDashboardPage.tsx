@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Users, AlertTriangle, TrendingUp, Search, Bell, Settings, UserPlus, ArrowUpRight, Link2, Copy, Loader2, Trash2, Zap, Dumbbell, FlaskConical, Bone, Flame, ArrowLeft, Handshake } from "lucide-react";
+import { Users, AlertTriangle, TrendingUp, Search, Bell, Settings, UserPlus, ArrowUpRight, Link2, Copy, Loader2, Trash2, Zap, Dumbbell, FlaskConical, Bone, Flame, ArrowLeft, Handshake, Send } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "@/hooks/use-toast";
 import {
@@ -17,6 +17,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import SendProtocolModule from "@/components/coach/SendProtocolModule";
 
 interface PatientRow {
   id: string;
@@ -322,6 +324,19 @@ const CoachDashboardPage = () => {
           </Button>
         </div>
 
+        <Tabs defaultValue="overview" className="w-full">
+          <TabsList>
+            <TabsTrigger value="overview">Visão Geral</TabsTrigger>
+            <TabsTrigger value="send">
+              <Send className="w-4 h-4 mr-1" /> Enviar Protocolo
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="send" className="mt-4">
+            <SendProtocolModule coachProfileId={profile.id} coachUserId={user?.id || ""} />
+          </TabsContent>
+
+          <TabsContent value="overview" className="mt-4">
         <div className="grid md:grid-cols-3 gap-6">
           {/* Patient list */}
           <div className="md:col-span-2 space-y-4">
@@ -516,6 +531,8 @@ const CoachDashboardPage = () => {
             )}
           </div>
         </div>
+          </TabsContent>
+        </Tabs>
       </main>
     </div>
   );

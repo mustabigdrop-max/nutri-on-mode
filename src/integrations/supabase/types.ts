@@ -4510,6 +4510,42 @@ export type Database = {
           },
         ]
       }
+      protocolo_envios: {
+        Row: {
+          coach_id: string
+          conteudo_ids: Json | null
+          created_at: string
+          destinatario_id: string
+          id: string
+          observacao: string | null
+          status: string
+          tipo_conteudo: string[]
+          tipo_destinatario: string
+        }
+        Insert: {
+          coach_id: string
+          conteudo_ids?: Json | null
+          created_at?: string
+          destinatario_id: string
+          id?: string
+          observacao?: string | null
+          status?: string
+          tipo_conteudo?: string[]
+          tipo_destinatario: string
+        }
+        Update: {
+          coach_id?: string
+          conteudo_ids?: Json | null
+          created_at?: string
+          destinatario_id?: string
+          id?: string
+          observacao?: string | null
+          status?: string
+          tipo_conteudo?: string[]
+          tipo_destinatario?: string
+        }
+        Relationships: []
+      }
       refeicoes_log: {
         Row: {
           analise_completa: Json
