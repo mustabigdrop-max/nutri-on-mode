@@ -1,7 +1,8 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "@/hooks/use-toast";
 
 // ─── Design tokens (alinhados ao nutriON: dark bg, green accent) ──────────────
 const T = {
@@ -176,7 +177,49 @@ export default function PlanoAlimentarIA() {
   const [plano, setPlano] = useState<PlanoData | null>(null);
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [savedId, setSavedId] = useState<string | null>(null);
+  const [coachProfileId, setCoachProfileId] = useState<string | null>(null);
+  const [patients, setPatients] = useState<{ user_id: string; name: string }[]>([]);
+  const [showSendModal, setShowSendModal] = useState(false);
+  const [selectedPatient, setSelectedPatient] = useState<string>("");
+  const [sendObs, setSendObs] = useState("");
+  const [sending, setSending] = useState(false);
   const resultRef = useRef<HTMLDivElement>(null);
+
+  // Load coach profile + patients
+  useEffect(() => {
+    if (!user?.id) return;
+    (async () => {
+      const { data: cp } = await supabase
+        .from("coach_profiles")
+        .select("id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (!cp?.id) return;
+      setCoachProfileId(cp.id);
+
+      const { data: pts } = await supabase
+        .from("coach_patients")
+        .select("patient_user_id")
+        .eq("coach_id", cp.id)
+        .eq("status", "active");
+
+      if (pts?.length) {
+        const ids = pts.map((p) => p.patient_user_id);
+        const { data: profs } = await supabase
+          .from("profiles")
+          .select("user_id, full_name")
+          .in("user_id", ids);
+        setPatients(
+          pts.map((p) => ({
+            user_id: p.patient_user_id,
+            name: profs?.find((x) => x.user_id === p.patient_user_id)?.full_name || "Aluno",
+          }))
+        );
+      }
+    })();
+  }, [user?.id]);
 
   const [form, setForm] = useState({
     nome: "", idade: "", sexo: "masculino", peso: "", altura: "",
@@ -280,6 +323,115 @@ export default function PlanoAlimentarIA() {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const salvarPlano = async (): Promise<string | null> => {
+    if (!plano || !coachProfileId) {
+      toast({ title: "Coach não identificado", variant: "destructive" });
+      return null;
+    }
+    if (savedId) return savedId;
+    setSaving(true);
+    try {
+      const { data, error: insErr } = await supabase
+        .from("coach_meal_plans")
+        .insert({
+          coach_id: coachProfileId,
+          patient_name: plano.resumo.nome || form.nome || "Paciente",
+          objetivo: plano.resumo.objetivo || form.objetivo,
+          plano: plano as any,
+          observacao: form.observacoes || null,
+          status: "draft",
+        })
+        .select("id")
+        .single();
+      if (insErr) throw insErr;
+      setSavedId(data.id);
+      toast({ title: "Plano salvo ✅", description: "Disponível no histórico do coach." });
+      return data.id;
+    } catch (e: any) {
+      toast({ title: "Erro ao salvar", description: e.message, variant: "destructive" });
+      return null;
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const enviarPlano = async () => {
+    if (!plano || !coachProfileId || !user?.id) return;
+    if (!selectedPatient) {
+      toast({ title: "Selecione um aluno", variant: "destructive" });
+      return;
+    }
+    setSending(true);
+    try {
+      let planId = savedId;
+      if (!planId) {
+        const { data, error: insErr } = await supabase
+          .from("coach_meal_plans")
+          .insert({
+            coach_id: coachProfileId,
+            patient_user_id: selectedPatient,
+            patient_name: plano.resumo.nome || form.nome || "Paciente",
+            objetivo: plano.resumo.objetivo || form.objetivo,
+            plano: plano as any,
+            observacao: sendObs || form.observacoes || null,
+            status: "sent",
+            sent_at: new Date().toISOString(),
+          })
+          .select("id")
+          .single();
+        if (insErr) throw insErr;
+        planId = data.id;
+      } else {
+        const { error: upErr } = await supabase
+          .from("coach_meal_plans")
+          .update({
+            patient_user_id: selectedPatient,
+            status: "sent",
+            sent_at: new Date().toISOString(),
+            observacao: sendObs || form.observacoes || null,
+          })
+          .eq("id", planId);
+        if (upErr) throw upErr;
+      }
+      setSavedId(planId);
+
+      await supabase.from("protocolo_envios").insert({
+        coach_id: coachProfileId,
+        destinatario_id: selectedPatient,
+        tipo_destinatario: "aluno",
+        tipo_conteudo: ["plano_alimentar"],
+        conteudo_ids: { plano_alimentar: [planId] },
+        observacao: sendObs || null,
+        status: "enviado",
+      });
+
+      const titulo = "Novo plano alimentar recebido!";
+      const corpo = `Seu coach enviou um novo plano alimentar.${sendObs ? ` ${sendObs}` : ""}`;
+      await supabase.from("coach_notifications").insert({
+        recipient_user_id: selectedPatient,
+        sender_user_id: user.id,
+        notification_type: "meal_plan_sent",
+        title: titulo,
+        message: corpo,
+        reference_id: planId,
+      });
+
+      try {
+        await supabase.functions.invoke("dispara_notificacao", {
+          body: { destinatario_id: selectedPatient, titulo, corpo, referencia_id: planId, tipo: "plano_alimentar" },
+        });
+      } catch {}
+
+      toast({ title: "Plano enviado 📨", description: `Para ${patients.find((p) => p.user_id === selectedPatient)?.name || "aluno"}` });
+      setShowSendModal(false);
+      setSendObs("");
+    } catch (e: any) {
+      toast({ title: "Erro ao enviar", description: e.message, variant: "destructive" });
+    } finally {
+      setSending(false);
+    }
+  };
+
   const exportPDF = () => {
     if (!plano) return;
     const r = plano.resumo;
@@ -354,18 +506,63 @@ export default function PlanoAlimentarIA() {
             <div style={{ fontSize: 11, color: T.muted, textTransform: "uppercase" as const, letterSpacing: "0.1em" }}>nutriON · Dashboard do Coach</div>
             <div style={{ fontSize: 18, fontWeight: 700, color: T.text, marginTop: 4 }}>Plano Alimentar — {r.nome}</div>
           </div>
-          <div style={{ display: "flex", gap: 8 }}>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" as const }}>
             <button onClick={copiarJSON} style={{ padding: "8px 16px", borderRadius: 8, background: T.bg3, border: `1px solid ${T.border2}`, color: T.muted, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>
               {copied ? "✓ Copiado" : "Copiar JSON"}
             </button>
             <button onClick={exportPDF} style={{ padding: "8px 16px", borderRadius: 8, background: T.bg3, border: `1px solid ${T.border2}`, color: T.muted, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>
               📄 PDF
             </button>
-            <button onClick={() => { setPlano(null); setStep("form"); }} style={{ padding: "8px 16px", borderRadius: 8, background: T.greenBg, border: `1px solid ${T.green}`, color: T.green, fontSize: 12, cursor: "pointer", fontFamily: "inherit", fontWeight: 600 }}>
-              + Novo plano
+            <button onClick={() => salvarPlano()} disabled={saving || !!savedId} style={{ padding: "8px 16px", borderRadius: 8, background: savedId ? T.greenBg : T.bg3, border: `1px solid ${savedId ? T.green : T.border2}`, color: savedId ? T.green : T.text, fontSize: 12, cursor: saving ? "wait" : "pointer", fontFamily: "inherit", fontWeight: 600, opacity: saving ? 0.6 : 1 }}>
+              {saving ? "Salvando..." : savedId ? "✓ Salvo" : "💾 Salvar"}
+            </button>
+            <button onClick={() => setShowSendModal(true)} style={{ padding: "8px 16px", borderRadius: 8, background: T.green, border: `1px solid ${T.green}`, color: "#0a0f0a", fontSize: 12, cursor: "pointer", fontFamily: "inherit", fontWeight: 700 }}>
+              📨 Enviar ao aluno
+            </button>
+            <button onClick={() => { setPlano(null); setSavedId(null); setStep("form"); }} style={{ padding: "8px 16px", borderRadius: 8, background: T.bg3, border: `1px solid ${T.border2}`, color: T.muted, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>
+              + Novo
             </button>
           </div>
         </div>
+
+        {showSendModal && (
+          <div onClick={() => setShowSendModal(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+            <div onClick={(e) => e.stopPropagation()} style={{ background: T.bg2, border: `1px solid ${T.border2}`, borderRadius: 14, padding: 24, maxWidth: 440, width: "100%" }}>
+              <div style={{ fontSize: 16, fontWeight: 700, color: T.text, marginBottom: 4 }}>Enviar plano alimentar</div>
+              <div style={{ fontSize: 12, color: T.muted, marginBottom: 20 }}>O aluno receberá o plano + notificação no app.</div>
+
+              <div style={{ marginBottom: 14 }}>
+                <Label required>Aluno destinatário</Label>
+                {patients.length === 0 ? (
+                  <div style={{ fontSize: 12, color: T.amber, padding: "10px 12px", background: "#1f1a0a", border: `1px solid ${T.amber}33`, borderRadius: 8 }}>
+                    Nenhum aluno vinculado encontrado.
+                  </div>
+                ) : (
+                  <SelectField value={selectedPatient} onChange={(e) => setSelectedPatient(e.target.value)}>
+                    <option value="">Selecione um aluno...</option>
+                    {patients.map((p) => (
+                      <option key={p.user_id} value={p.user_id}>{p.name}</option>
+                    ))}
+                  </SelectField>
+                )}
+              </div>
+
+              <div style={{ marginBottom: 20 }}>
+                <Label>Mensagem (opcional)</Label>
+                <TextareaField placeholder="Observação para o aluno..." value={sendObs} onChange={(e) => setSendObs(e.target.value)} />
+              </div>
+
+              <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+                <button onClick={() => setShowSendModal(false)} style={{ padding: "9px 18px", borderRadius: 8, background: T.bg3, border: `1px solid ${T.border2}`, color: T.muted, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>
+                  Cancelar
+                </button>
+                <button onClick={enviarPlano} disabled={sending || !selectedPatient} style={{ padding: "9px 18px", borderRadius: 8, background: T.green, border: `1px solid ${T.green}`, color: "#0a0f0a", fontSize: 12, cursor: sending ? "wait" : "pointer", fontFamily: "inherit", fontWeight: 700, opacity: sending || !selectedPatient ? 0.6 : 1 }}>
+                  {sending ? "Enviando..." : "📨 Enviar agora"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         <div style={{ maxWidth: 800, margin: "0 auto", padding: "32px 24px" }} className="fade-up">
           {/* Resumo cards */}
