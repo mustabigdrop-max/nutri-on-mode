@@ -531,6 +531,8 @@ const CoachDashboardPage = () => {
             )}
           </div>
         </div>
+          </TabsContent>
+        </Tabs>
       </main>
     </div>
   );
