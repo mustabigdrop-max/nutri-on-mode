@@ -177,7 +177,49 @@ export default function PlanoAlimentarIA() {
   const [plano, setPlano] = useState<PlanoData | null>(null);
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [savedId, setSavedId] = useState<string | null>(null);
+  const [coachProfileId, setCoachProfileId] = useState<string | null>(null);
+  const [patients, setPatients] = useState<{ user_id: string; name: string }[]>([]);
+  const [showSendModal, setShowSendModal] = useState(false);
+  const [selectedPatient, setSelectedPatient] = useState<string>("");
+  const [sendObs, setSendObs] = useState("");
+  const [sending, setSending] = useState(false);
   const resultRef = useRef<HTMLDivElement>(null);
+
+  // Load coach profile + patients
+  useEffect(() => {
+    if (!user?.id) return;
+    (async () => {
+      const { data: cp } = await supabase
+        .from("coach_profiles")
+        .select("id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (!cp?.id) return;
+      setCoachProfileId(cp.id);
+
+      const { data: pts } = await supabase
+        .from("coach_patients")
+        .select("patient_user_id")
+        .eq("coach_id", cp.id)
+        .eq("status", "active");
+
+      if (pts?.length) {
+        const ids = pts.map((p) => p.patient_user_id);
+        const { data: profs } = await supabase
+          .from("profiles")
+          .select("user_id, full_name")
+          .in("user_id", ids);
+        setPatients(
+          pts.map((p) => ({
+            user_id: p.patient_user_id,
+            name: profs?.find((x) => x.user_id === p.patient_user_id)?.full_name || "Aluno",
+          }))
+        );
+      }
+    })();
+  }, [user?.id]);
 
   const [form, setForm] = useState({
     nome: "", idade: "", sexo: "masculino", peso: "", altura: "",
