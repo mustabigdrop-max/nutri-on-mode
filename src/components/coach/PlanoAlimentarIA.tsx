@@ -592,6 +592,16 @@ export default function PlanoAlimentarIA() {
       .meta-box span{font-size:24px;font-weight:bold;color:#059669;display:block}
       .meal{background:#fafafa;border:1px solid #e5e7eb;border-radius:8px;padding:16px;margin:12px 0}
       .meal h3{margin:0 0 8px;color:#065f46}
+      .alimento{padding:6px 0;border-bottom:1px dashed #e5e7eb}
+      .alimento:last-child{border-bottom:none}
+      .subs{margin:6px 0 4px 14px;padding:8px;background:#ecfdf5;border:1px dashed #10b98155;border-radius:6px}
+      .subs-title{font-size:10px;color:#059669;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
+      .subs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:6px}
+      .sub-card{background:#fff;border:1px solid #d1fae5;border-radius:6px;padding:6px 8px;font-size:11px}
+      .sub-badge{display:inline-block;font-size:9px;padding:1px 6px;border-radius:999px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px}
+      .sub-name{font-weight:600;color:#1f2937}
+      .sub-qty{color:#6b7280;font-size:10px}
+      .sub-obs{color:#9ca3af;font-size:9px;font-style:italic;margin-top:2px}
       .macros{display:flex;gap:16px;margin-top:8px;font-size:13px;color:#6b7280}
       .tip{font-style:italic;color:#059669;font-size:12px;margin-top:6px}
       .footer{margin-top:32px;text-align:center;color:#9ca3af;font-size:11px}
@@ -607,12 +617,29 @@ export default function PlanoAlimentarIA() {
       ${plano.refeicoes.map(m => `
         <div class="meal">
           <h3>${m.refeicao} — ${m.horario || ""}</h3>
-          ${m.alimentos?.map(a => `
-            <div>
-              ${a.alimento} — ${a.quantidade || ""}${a.observacao ? ` (${a.observacao})` : ""}
-              ${a.substituicoes && a.substituicoes.length ? `<div style="margin:4px 0 8px 14px;font-size:11px;color:#059669"><b>Substitutos:</b> ${a.substituicoes.map(s => `${s.alimento}${s.quantidade ? ` (${s.quantidade})` : ""}`).join(" · ")}</div>` : ""}
+          ${m.alimentos?.map(a => {
+            const subs = (a.substituicoes || []).map(s => ({ ...s, grupo: inferGrupo(s) }));
+            return `
+            <div class="alimento">
+              <div><b>${a.alimento}</b> — ${a.quantidade || ""}${a.observacao ? ` <i style="color:#6b7280">(${a.observacao})</i>` : ""}</div>
+              ${subs.length ? `
+                <div class="subs">
+                  <div class="subs-title">⇄ Substitutos isocalóricos</div>
+                  <div class="subs-grid">
+                    ${subs.map(s => {
+                      const meta = GRUPO_META[(s.grupo as GrupoSub) || "outro"];
+                      return `<div class="sub-card">
+                        <span class="sub-badge" style="background:${meta.color}22;color:${meta.color}">${meta.emoji} ${meta.label}</span>
+                        <div class="sub-name">${s.alimento}</div>
+                        ${s.quantidade ? `<div class="sub-qty">${s.quantidade}</div>` : ""}
+                        ${s.observacao ? `<div class="sub-obs">${s.observacao}</div>` : ""}
+                      </div>`;
+                    }).join("")}
+                  </div>
+                </div>
+              ` : ""}
             </div>
-          `).join("") || ""}
+          `;}).join("") || ""}
           <div class="macros">🔥 ${m.calorias || 0} kcal | P: ${m.macros?.proteina || 0}g | C: ${m.macros?.carboidrato || 0}g | G: ${m.macros?.gordura || 0}g</div>
         </div>
       `).join("")}
