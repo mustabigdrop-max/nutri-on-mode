@@ -84,6 +84,7 @@ import DrNexusPage from "./pages/DrNexusPage";
 import VideoFormPage from "./pages/VideoFormPage";
 import MeusProtocolosPage from "./pages/MeusProtocolosPage";
 import ErgoVaultPage from "./pages/ErgoVaultPage";
+import ErgoDiaryPage from "./pages/ErgoDiaryPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -151,6 +152,7 @@ const App = () => (
             <Route path="/nutricao-sport" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON +" featureName="Nutrição Sport"><NutricaoSportPage /></PlanGateWrapper></ProtectedRoute>} />
             <Route path="/protocolo-feminino" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON +" featureName="Protocolo Feminino"><ProtocoloFemininoPage /></PlanGateWrapper></ProtectedRoute>} />
             <Route path="/ergo-vault" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON +" featureName="ERGO VAULT Feminino"><ErgoVaultPage /></PlanGateWrapper></ProtectedRoute>} />
+            <Route path="/ergo-diary" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON +" featureName="Diários de Ergogênicos"><ErgoDiaryPage /></PlanGateWrapper></ProtectedRoute>} />
 
             {/* ON PRO Plan */}
             <Route path="/performance-pro" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON PRO" featureName="Performance Pro"><PerformanceProPage /></PlanGateWrapper></ProtectedRoute>} />
