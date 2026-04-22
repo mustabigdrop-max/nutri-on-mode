@@ -498,7 +498,12 @@ export default function PlanoAlimentarIA() {
       ${plano.refeicoes.map(m => `
         <div class="meal">
           <h3>${m.refeicao} — ${m.horario || ""}</h3>
-          ${m.alimentos?.map(a => `<div>${a.alimento} — ${a.quantidade || ""}${a.observacao ? ` (${a.observacao})` : ""}</div>`).join("") || ""}
+          ${m.alimentos?.map(a => `
+            <div>
+              ${a.alimento} — ${a.quantidade || ""}${a.observacao ? ` (${a.observacao})` : ""}
+              ${a.substituicoes && a.substituicoes.length ? `<div style="margin:4px 0 8px 14px;font-size:11px;color:#059669"><b>Substitutos:</b> ${a.substituicoes.map(s => `${s.alimento}${s.quantidade ? ` (${s.quantidade})` : ""}`).join(" · ")}</div>` : ""}
+            </div>
+          `).join("") || ""}
           <div class="macros">🔥 ${m.calorias || 0} kcal | P: ${m.macros?.proteina || 0}g | C: ${m.macros?.carboidrato || 0}g | G: ${m.macros?.gordura || 0}g</div>
         </div>
       `).join("")}
