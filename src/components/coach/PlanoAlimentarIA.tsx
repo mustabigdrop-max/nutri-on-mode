@@ -773,7 +773,37 @@ export default function PlanoAlimentarIA() {
               <div style={{ width: 16, height: 1, background: T.green }} />
               Refeições do dia
             </div>
-            {plano.refeicoes?.map((m, i) => <MealCard key={i} meal={m} index={i} />)}
+            {plano.refeicoes?.map((m, i) => (
+              <MealCard
+                key={i}
+                meal={m}
+                index={i}
+                onSwap={(alimentoIdx, sub) => {
+                  setPlano((prev) => {
+                    if (!prev) return prev;
+                    const next = JSON.parse(JSON.stringify(prev)) as PlanoData;
+                    const meal = next.refeicoes[i];
+                    const original = meal.alimentos?.[alimentoIdx];
+                    if (!meal.alimentos || !original) return prev;
+                    const otherSubs = (original.substituicoes || []).filter(
+                      (s) => s.alimento !== sub.alimento
+                    );
+                    meal.alimentos[alimentoIdx] = {
+                      alimento: sub.alimento,
+                      quantidade: sub.quantidade,
+                      observacao: sub.observacao,
+                      substituicoes: [
+                        { alimento: original.alimento, quantidade: original.quantidade, observacao: original.observacao, grupo: (sub as any).grupo },
+                        ...otherSubs,
+                      ],
+                    };
+                    return next;
+                  });
+                  setSavedId(null);
+                  toast({ title: "Alimento trocado ✅", description: `${sub.alimento} aplicado ao plano.` });
+                }}
+              />
+            ))}
           </div>
 
           {/* Suplementação */}
