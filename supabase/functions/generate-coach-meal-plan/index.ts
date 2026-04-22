@@ -47,6 +47,12 @@ REGRAS DE CÁLCULO OBRIGATÓRIAS:
    f) OBSERVAÇÕES DO COACH: campo para personalização com a observação clínica informada.
    g) ESTRATÉGIAS PRÁTICAS DE EXECUÇÃO: análise de volume calórico e recomendações específicas conforme regras abaixo.
 
+   h) SUBSTITUIÇÕES INTELIGENTES POR ALIMENTO: para CADA alimento de CADA refeição, gerar entre 2 e 4 substitutos isocalóricos e isoproteicos (variação máxima de ±10% em kcal e ±15% em proteína). As substituições devem:
+      - Ser brasileiras, acessíveis e do mesmo grupo funcional (proteína animal ↔ proteína animal; carbo complexo ↔ carbo complexo; gordura boa ↔ gordura boa).
+      - Ter quantidade EM GRAMAS calculada para bater os mesmos macros do alimento original.
+      - Respeitar restrições alimentares informadas (sem lactose, vegetariano etc.).
+      - Citar uma observação curta quando houver vantagem ou alerta (ex: "mais saciedade", "mais rápido de preparar", "evitar se intolerância").
+
 6. REGRAS DE VOLUME CALÓRICO E ESTRATÉGIAS PRÁTICAS:
 
 SE BULK (TDEE > 3.500 kcal):
@@ -159,7 +165,14 @@ Responda APENAS com JSON válido nesta estrutura exata:
       "calorias": number,
       "macros": { "proteina": number, "carboidrato": number, "gordura": number },
       "alimentos": [
-        { "alimento": "string", "quantidade": "string em gramas", "observacao": "string ou null" }
+        {
+          "alimento": "string",
+          "quantidade": "string em gramas",
+          "observacao": "string ou null",
+          "substituicoes": [
+            { "alimento": "string", "quantidade": "string em gramas", "observacao": "string ou null" }
+          ]
+        }
       ]
     }
   ],

@@ -93,6 +93,7 @@ interface MealAlimento {
   alimento: string;
   quantidade?: string;
   observacao?: string;
+  substituicoes?: { alimento: string; quantidade?: string; observacao?: string }[];
 }
 
 interface Meal {
@@ -132,6 +133,7 @@ interface PlanoData {
 const MealCard = ({ meal, index }: { meal: Meal; index: number }) => {
   const colors = [T.green, T.blue, T.amber, "#a78bfa", "#f472b6", "#34d399", "#fb923c"];
   const color = colors[index % colors.length];
+  const [openSubs, setOpenSubs] = useState<Record<number, boolean>>({});
   return (
     <div style={{ border: `1px solid ${T.border}`, borderRadius: 12, overflow: "hidden", marginBottom: 12, background: T.card }}>
       <div style={{ padding: "12px 16px", borderBottom: `1px solid ${T.border}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -145,15 +147,50 @@ const MealCard = ({ meal, index }: { meal: Meal; index: number }) => {
         )}
       </div>
       <div style={{ padding: "12px 16px" }}>
-        {meal.alimentos?.map((a, i) => (
-          <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", padding: "6px 0", borderBottom: i < (meal.alimentos?.length || 0) - 1 ? `1px solid ${T.border}` : "none" }}>
-            <div style={{ flex: 1 }}>
-              <span style={{ fontSize: 13, color: T.text }}>{a.alimento}</span>
-              {a.observacao && <div style={{ fontSize: 11, color: T.muted, marginTop: 2 }}>{a.observacao}</div>}
+        {meal.alimentos?.map((a, i) => {
+          const subs = a.substituicoes || [];
+          const open = !!openSubs[i];
+          return (
+            <div key={i} style={{ padding: "6px 0", borderBottom: i < (meal.alimentos?.length || 0) - 1 ? `1px solid ${T.border}` : "none" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
+                <div style={{ flex: 1 }}>
+                  <span style={{ fontSize: 13, color: T.text }}>{a.alimento}</span>
+                  {a.observacao && <div style={{ fontSize: 11, color: T.muted, marginTop: 2 }}>{a.observacao}</div>}
+                  {subs.length > 0 && (
+                    <button
+                      onClick={() => setOpenSubs((s) => ({ ...s, [i]: !s[i] }))}
+                      style={{
+                        marginTop: 6, padding: "3px 10px", borderRadius: 999,
+                        background: open ? T.greenBg : "transparent",
+                        border: `1px solid ${open ? T.green : T.border2}`,
+                        color: open ? T.green : T.muted,
+                        fontSize: 10, cursor: "pointer", fontFamily: "inherit",
+                        display: "inline-flex", alignItems: "center", gap: 6,
+                      }}
+                    >
+                      ⇄ {subs.length} substituto{subs.length > 1 ? "s" : ""} {open ? "▲" : "▼"}
+                    </button>
+                  )}
+                </div>
+                {a.quantidade && <span style={{ fontSize: 12, color: T.muted, whiteSpace: "nowrap" }}>{a.quantidade}</span>}
+              </div>
+              {open && subs.length > 0 && (
+                <div style={{ marginTop: 8, padding: "8px 10px", background: T.bg2, border: `1px dashed ${T.border2}`, borderRadius: 8 }}>
+                  <div style={{ fontSize: 9, color: T.green, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6, fontWeight: 700 }}>Substitutos isocalóricos</div>
+                  {subs.map((sub, si) => (
+                    <div key={si} style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, padding: "4px 0", borderTop: si > 0 ? `1px solid ${T.border}` : "none" }}>
+                      <div style={{ flex: 1 }}>
+                        <span style={{ fontSize: 12, color: T.text }}>{sub.alimento}</span>
+                        {sub.observacao && <div style={{ fontSize: 10, color: T.muted, marginTop: 1 }}>{sub.observacao}</div>}
+                      </div>
+                      {sub.quantidade && <span style={{ fontSize: 11, color: T.muted, whiteSpace: "nowrap" }}>{sub.quantidade}</span>}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
-            {a.quantidade && <span style={{ fontSize: 12, color: T.muted, marginLeft: 16, whiteSpace: "nowrap" }}>{a.quantidade}</span>}
-          </div>
-        ))}
+          );
+        })}
         {meal.macros && (
           <div style={{ display: "flex", gap: 12, marginTop: 10, paddingTop: 10, borderTop: `1px solid ${T.border}` }}>
             {([["P", meal.macros.proteina, T.blue], ["C", meal.macros.carboidrato, T.amber], ["G", meal.macros.gordura, "#f472b6"]] as [string, number | undefined, string][]).map(([l, v, c]) => v != null && (
