@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import BottomNav from "@/components/BottomNav";
-import { Microscope, Bot, BookOpen, Search, FileText, Leaf, Bug, Shield, Zap, Dumbbell, Apple, HeartPulse, Dna, Activity, Target, GraduationCap, Brain, Users, FlaskConical, Video } from "lucide-react";
+import { Microscope, Bot, BookOpen, Search, FileText, Leaf, Bug, Shield, Zap, Dumbbell, Apple, HeartPulse, Dna, Activity, Target, GraduationCap, Brain, Users, FlaskConical, Video, Sparkles } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ApexChat from "@/components/lab/ApexChat";
 import ProtocolLibrary from "@/components/lab/ProtocolLibrary";
@@ -109,6 +109,12 @@ const LabPage = () => {
                 className="flex-1 flex items-center justify-center gap-1 text-xs px-3 py-1.5 rounded-md text-destructive hover:bg-destructive/10 transition-colors font-medium"
               >
                 <FlaskConical className="w-3.5 h-3.5" /> Dr. VERTEX
+              </button>
+              <button
+                onClick={() => navigate("/ergo-vault")}
+                className="flex-1 flex items-center justify-center gap-1 text-xs px-3 py-1.5 rounded-md text-accent hover:bg-accent/10 transition-colors font-medium"
+              >
+                <Sparkles className="w-3.5 h-3.5" /> Ergo ♀
               </button>
               <TabsTrigger value="cardio" className="flex-1 text-xs gap-1 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
                 <Activity className="w-3.5 h-3.5" /> Cardio
