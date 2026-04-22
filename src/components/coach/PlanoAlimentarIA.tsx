@@ -388,7 +388,19 @@ export default function PlanoAlimentarIA() {
     protocoloFarmacologico: "",
     atletaCompetitivo: false,
     federacaoCategoria: "",
+    // GLUT-4 Pós-Treino
+    glut4Enabled: false,
+    glut4UsesIntraMalto: true,
+    glut4IntraMaltoG: "60",
+    glut4TimingMin: "30",
+    glut4CarbSource: "doce_de_leite",
+    glut4CarbGrams: "",
+    glut4AddLeucine: false,
   });
+
+  // GLUT-4 output state
+  const [glut4Text, setGlut4Text] = useState<string>("");
+  const [glut4Loading, setGlut4Loading] = useState(false);
 
   const set = (k: string, v: any) => setForm(f => ({ ...f, [k]: v }));
   const toggleArr = (k: string, v: string) => {
