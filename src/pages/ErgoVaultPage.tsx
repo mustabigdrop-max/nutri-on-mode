@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Sparkles, Zap, Dot } from "lucide-react";
+import { ArrowLeft, Sparkles, Zap, Dot, BookOpen } from "lucide-react";
 import {
   ERGO_COMPOUNDS,
   ERGO_CATEGORIAS,
@@ -305,16 +305,28 @@ export default function ErgoVaultPage() {
             </span>
           </div>
 
-          <div className="hidden items-center gap-3 md:flex">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => navigate("/ergo-diary")}
+              className="flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[10px] uppercase tracking-[0.2em] transition hover:scale-[1.03]"
+              style={{
+                fontFamily: FONT_MONO,
+                color: PALETTE.rose,
+                borderColor: "rgba(196,84,106,0.4)",
+                background: "rgba(196,84,106,0.06)",
+              }}
+            >
+              <BookOpen className="h-3 w-3" /> Diários
+            </button>
             <span
-              className="flex items-center gap-1 text-[10px] uppercase tracking-[0.2em]"
+              className="hidden items-center gap-1 text-[10px] uppercase tracking-[0.2em] md:flex"
               style={{ fontFamily: FONT_MONO, color: PALETTE.sage }}
             >
               <Dot className="h-4 w-4 animate-pulse" style={{ color: PALETTE.sage }} />
               VERTEX
             </span>
             <span
-              className="flex items-center gap-1 text-[10px] uppercase tracking-[0.2em]"
+              className="hidden items-center gap-1 text-[10px] uppercase tracking-[0.2em] md:flex"
               style={{ fontFamily: FONT_MONO, color: PALETTE.lavender }}
             >
               <Dot className="h-4 w-4 animate-pulse" style={{ color: PALETTE.lavender }} />
