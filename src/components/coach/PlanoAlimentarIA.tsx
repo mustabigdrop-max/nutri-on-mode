@@ -1234,6 +1234,129 @@ export default function PlanoAlimentarIA() {
           </div>
         </Section>
 
+        {/* ─── Módulo GLUT-4 Pós-Treino ─────────────────────────────────────── */}
+        <div style={{
+          background: T.card, border: `1px solid ${form.glut4Enabled ? T.green : T.border}`,
+          borderRadius: 12, padding: 18, marginBottom: 18,
+          boxShadow: form.glut4Enabled ? `0 0 24px ${T.green}22` : "none",
+          transition: "all .2s",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: form.glut4Enabled ? 14 : 0 }}>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: T.text, display: "flex", alignItems: "center", gap: 8 }}>
+                ⚡ Priorizar GLUT-4 Pós-Treino
+              </div>
+              <div style={{ fontSize: 11, color: T.muted, marginTop: 4 }}>
+                Janela fisiológica de translocação do GLUT-4 — CHO isolado, zero gordura, zero proteína completa.
+              </div>
+            </div>
+            <div
+              onClick={() => set("glut4Enabled", !form.glut4Enabled)}
+              style={{
+                width: 44, height: 24, borderRadius: 999,
+                background: form.glut4Enabled ? T.green : T.bg3,
+                border: `1px solid ${form.glut4Enabled ? T.green : T.border2}`,
+                position: "relative", cursor: "pointer", transition: "all .2s", flexShrink: 0,
+              }}
+            >
+              <div style={{
+                width: 18, height: 18, borderRadius: "50%",
+                background: form.glut4Enabled ? "#0a0f0a" : T.muted,
+                position: "absolute", top: 2, left: form.glut4Enabled ? 22 : 2,
+                transition: "left .2s",
+              }} />
+            </div>
+          </div>
+
+          {form.glut4Enabled && (
+            <>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12, marginBottom: 12 }}>
+                <div>
+                  <Label>Usou maltodextrina intra-treino?</Label>
+                  <SelectField value={form.glut4UsesIntraMalto ? "1" : "0"} onChange={e => set("glut4UsesIntraMalto", e.target.value === "1")}>
+                    <option value="1">Sim</option>
+                    <option value="0">Não</option>
+                  </SelectField>
+                </div>
+                <div>
+                  <Label>Maltodextrina intra (g)</Label>
+                  <InputField type="number" placeholder="60" value={form.glut4IntraMaltoG} onChange={e => set("glut4IntraMaltoG", e.target.value)} disabled={!form.glut4UsesIntraMalto} />
+                </div>
+                <div>
+                  <Label>Timing janela (min)</Label>
+                  <InputField type="number" placeholder="30" value={form.glut4TimingMin} onChange={e => set("glut4TimingMin", e.target.value)} />
+                </div>
+                <div>
+                  <Label>CHO da janela (g) — vazio = auto</Label>
+                  <InputField type="number" placeholder="auto pelo peso" value={form.glut4CarbGrams} onChange={e => set("glut4CarbGrams", e.target.value)} />
+                </div>
+                <div style={{ gridColumn: "span 2" }}>
+                  <Label>Fonte de carboidrato</Label>
+                  <SelectField value={form.glut4CarbSource} onChange={e => set("glut4CarbSource", e.target.value)}>
+                    <option value="dextrose">Dextrose pura (IG 100)</option>
+                    <option value="tamaras">Tâmaras Medjool (IG 103)</option>
+                    <option value="pao_frances">Pão francês (IG 95)</option>
+                    <option value="pao_branco">Pão de forma branco (IG 85)</option>
+                    <option value="doce_de_leite">Doce de leite light (IG 65)</option>
+                    <option value="mel">Mel puro (IG 61)</option>
+                    <option value="geleia">Geleia açucarada (IG 65)</option>
+                    <option value="leite_condensado">Leite condensado desnatado (IG 61)</option>
+                    <option value="banana">Banana bem madura (IG 72)</option>
+                    <option value="coca">Coca-Cola — competição (IG 65)</option>
+                    {!form.glut4UsesIntraMalto && <option value="maltodextrina">Maltodextrina (IG 95)</option>}
+                  </SelectField>
+                </div>
+              </div>
+
+              <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", marginBottom: 14, fontSize: 12, color: T.text }}>
+                <input type="checkbox" checked={form.glut4AddLeucine} onChange={e => set("glut4AddLeucine", e.target.checked)} style={{ accentColor: T.green }} />
+                Adicionar L-Leucina isolada (2g) — mTORC1 sem competição de aminoácidos
+              </label>
+
+              <button
+                onClick={gerarGlut4}
+                disabled={glut4Loading}
+                style={{
+                  width: "100%", padding: 12, borderRadius: 8,
+                  background: glut4Loading ? T.bg3 : T.greenBg,
+                  border: `1px solid ${T.green}`, color: T.green,
+                  fontSize: 13, fontWeight: 700, cursor: glut4Loading ? "wait" : "pointer",
+                  fontFamily: "inherit", letterSpacing: "0.02em",
+                }}
+              >
+                {glut4Loading ? "Calculando fisiologia..." : "⚡ Gerar Janela GLUT-4"}
+              </button>
+
+              {glut4Text && (
+                <div style={{
+                  marginTop: 14, background: T.bg2, border: `1px solid ${T.green}55`,
+                  borderRadius: 10, padding: 14,
+                }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: T.green, textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                      Bloco fisiológico gerado
+                    </div>
+                    <button
+                      onClick={() => setGlut4Text("")}
+                      style={{ background: "transparent", border: "none", color: T.muted, fontSize: 11, cursor: "pointer" }}
+                    >
+                      Limpar
+                    </button>
+                  </div>
+                  <pre style={{
+                    whiteSpace: "pre-wrap", wordBreak: "break-word",
+                    fontFamily: "inherit", fontSize: 12, color: T.text,
+                    margin: 0, lineHeight: 1.6,
+                  }}>{glut4Text}</pre>
+                  <div style={{ fontSize: 10, color: T.muted2, marginTop: 8, fontStyle: "italic" }}>
+                    Será incluído automaticamente no plano alimentar e no PDF.
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+
         {error && (
           <div style={{ background: "#1f0a0a", border: "1px solid #3d1010", borderRadius: 8, padding: "10px 14px", color: T.red, fontSize: 13, marginBottom: 16 }}>
             {error}
