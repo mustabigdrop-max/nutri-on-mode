@@ -582,6 +582,7 @@ const DashboardPage = () => {
 
   const gridItems: GridItem[] = [
     // Core
+    { label: "Diários de Ergogênicos", desc: "Ciclos, check-ins e exames com IA", path: "/ergo-diary", emoji: "📋", plan: "ON +" },
     { label: "Registrar", desc: "Log de refeições · IA analisa foto", path: "/meal-log", emoji: "🍽️", plan: "free" },
     { label: "Histórico", desc: "Refeições passadas", path: "/meal-history", emoji: "📋", plan: "free" },
     { label: "Plano Alimentar", desc: "Cardápio semanal personalizado por IA", path: "/meal-plan", emoji: "🍎", plan: "ON" },
@@ -986,6 +987,25 @@ const DashboardPage = () => {
             </div>
           </button>
         </motion.div>
+
+        <motion.button
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.88 }}
+          onClick={() => isOnPlus ? navigate("/ergo-diary") : setUpgradeModal({ open: true, feature: "Diários de Ergogênicos" })}
+          className="w-full mb-4 flex items-center gap-3 rounded-xl border border-accent/20 bg-accent/5 p-4 text-left transition-all hover:border-accent/40 group relative"
+        >
+          {!isOnPlus && <Lock className="w-3.5 h-3.5 text-muted-foreground absolute top-2 right-2" />}
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent/10 text-xl group-hover:bg-accent/20 transition-colors">
+            📋
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-bold text-foreground">Diários de Ergogênicos</p>
+            <p className="text-[11px] text-muted-foreground">Registrar ciclos, check-ins e análise de exames com IA</p>
+          </div>
+          <span className="rounded-full bg-accent/10 px-2 py-1 text-[9px] font-mono font-bold text-accent">ON+</span>
+          <ChevronRight className="h-4 w-4 text-accent" />
+        </motion.button>
 
         {(isAdmin || partner || isCoach) && (
           <motion.div
