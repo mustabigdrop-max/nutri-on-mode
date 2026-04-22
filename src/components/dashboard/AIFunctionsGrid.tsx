@@ -15,6 +15,7 @@ type AIFunction = {
 
 const AI_FUNCTIONS: AIFunction[] = [
   // 🆕 NOVO — destaque
+  { key: "ergo-diary", emoji: "📋", label: "Diários de Ergogênicos", desc: "Registre ciclos, check-ins e análise de exames com IA", requiredPlan: "ON +", relatedPage: "/ergo-diary" },
   { key: "videoform-ai", emoji: "🎥", label: "VideoForm AI", desc: "Análise biomecânica de execução por vídeo", requiredPlan: "ON PRO", relatedPage: "/videoform" },
 
   // Free
