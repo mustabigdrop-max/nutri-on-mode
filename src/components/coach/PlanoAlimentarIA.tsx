@@ -419,6 +419,40 @@ export default function PlanoAlimentarIA() {
     { v: "cognicao", l: "Nootrópicos (Semax / Selank)" },
   ];
 
+  const gerarGlut4 = async () => {
+    if (!form.peso) {
+      toast({ title: "Peso obrigatório", description: "Informe o peso para calcular a janela GLUT-4.", variant: "destructive" });
+      return;
+    }
+    setGlut4Loading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("glut4-strategy", {
+        body: {
+          patient_name: form.nome || "Paciente",
+          weight_kg: Number(form.peso),
+          objective: form.objetivo,
+          periodization_phase: form.fasePeriodizacao,
+          uses_intra_malto: form.glut4UsesIntraMalto,
+          intra_malto_grams: Number(form.glut4IntraMaltoG) || 0,
+          timing_minutes: Number(form.glut4TimingMin) || 30,
+          carb_source: form.glut4CarbSource,
+          carb_grams: form.glut4CarbGrams ? Number(form.glut4CarbGrams) : null,
+          add_leucine: form.glut4AddLeucine,
+          ergogenic_protocol: form.protocoloFarmacologico || null,
+          plan_context: null,
+        },
+      });
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      setGlut4Text((data as any)?.text || "");
+      toast({ title: "Janela GLUT-4 gerada ⚡", description: "Bloco fisiológico pronto para o plano." });
+    } catch (e: any) {
+      toast({ title: "Erro GLUT-4", description: e?.message || "Falha ao gerar bloco.", variant: "destructive" });
+    } finally {
+      setGlut4Loading(false);
+    }
+  };
+
   const gerar = async () => {
     if (!form.peso || !form.altura || !form.idade) {
       setError("Preencha pelo menos: peso, altura e idade do paciente.");
