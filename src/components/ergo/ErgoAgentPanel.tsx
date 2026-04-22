@@ -337,13 +337,63 @@ export default function ErgoAgentPanel({
                   </div>
                 </div>
               </div>
-              <button
-                onClick={onClose}
-                className="rounded-lg p-2 transition-colors hover:bg-white/5"
-                style={{ color: "#EDE6DA" }}
-              >
-                <X className="h-4 w-4" />
-              </button>
+              <div className="flex items-center gap-1">
+                {messages.length > 0 && (
+                  <div className="relative">
+                    <button
+                      onClick={() => setExportOpen((v) => !v)}
+                      className="flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-[10px] uppercase tracking-[0.15em] transition-colors hover:bg-white/5"
+                      style={{
+                        fontFamily: FONT_MONO,
+                        color: cfg.color,
+                        borderColor: `${cfg.color}40`,
+                      }}
+                      title="Exportar resumo para o coach"
+                    >
+                      <Download className="h-3 w-3" />
+                      Exportar
+                    </button>
+                    {exportOpen && (
+                      <div
+                        className="absolute right-0 top-full z-10 mt-1 w-44 overflow-hidden rounded-lg border shadow-xl"
+                        style={{
+                          background: "rgba(12,11,18,0.98)",
+                          borderColor: `${cfg.color}40`,
+                          backdropFilter: "blur(20px)",
+                        }}
+                      >
+                        <button
+                          onClick={exportPdf}
+                          className="flex w-full items-center gap-2 px-3 py-2.5 text-left text-xs transition-colors hover:bg-white/5"
+                          style={{ fontFamily: FONT_UI, color: "#EDE6DA" }}
+                        >
+                          <FileDown className="h-3.5 w-3.5" style={{ color: cfg.color }} />
+                          PDF formatado
+                        </button>
+                        <button
+                          onClick={exportTxt}
+                          className="flex w-full items-center gap-2 border-t px-3 py-2.5 text-left text-xs transition-colors hover:bg-white/5"
+                          style={{
+                            fontFamily: FONT_UI,
+                            color: "#EDE6DA",
+                            borderColor: `${cfg.color}20`,
+                          }}
+                        >
+                          <FileText className="h-3.5 w-3.5" style={{ color: cfg.color }} />
+                          Texto (.txt)
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+                <button
+                  onClick={onClose}
+                  className="rounded-lg p-2 transition-colors hover:bg-white/5"
+                  style={{ color: "#EDE6DA" }}
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
             </div>
 
             {/* Context strip */}
