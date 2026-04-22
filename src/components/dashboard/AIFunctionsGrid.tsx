@@ -15,6 +15,7 @@ type AIFunction = {
 
 const AI_FUNCTIONS: AIFunction[] = [
   // 🆕 NOVO — destaque
+  { key: "ergo-diary", emoji: "📋", label: "Diários de Ergogênicos", desc: "Registre ciclos, check-ins e análise de exames com IA", requiredPlan: "ON +", relatedPage: "/ergo-diary" },
   { key: "videoform-ai", emoji: "🎥", label: "VideoForm AI", desc: "Análise biomecânica de execução por vídeo", requiredPlan: "ON PRO", relatedPage: "/videoform" },
 
   // Free
@@ -50,7 +51,6 @@ const AI_FUNCTIONS: AIFunction[] = [
   { key: "generate-pca-result", emoji: "🧪", label: "Análise PCA", desc: "Componentes principais do seu perfil", requiredPlan: "ON +" },
   { key: "protocolo-feminino", emoji: "♀️", label: "Protocolo Feminino", desc: "Nutrição periodizada pelo ciclo menstrual", requiredPlan: "ON +", relatedPage: "/protocolo-feminino" },
   { key: "ergo-vault", emoji: "✦", label: "ERGO VAULT Feminino", desc: "Enciclopédia de ergogênicos, peptídeos e hormonal feminino", requiredPlan: "ON +", relatedPage: "/ergo-vault" },
-  { key: "ergo-diary", emoji: "📋", label: "Diários de Ergogênicos", desc: "Registre ciclos, check-ins e análise de exames com IA", requiredPlan: "ON +", relatedPage: "/ergo-diary" },
   { key: "nutricao-sport", emoji: "🏅", label: "Nutrição Sport", desc: "Periodização nutricional para atletas", requiredPlan: "ON +", relatedPage: "/nutricao-sport" },
 
   // ON PRO
