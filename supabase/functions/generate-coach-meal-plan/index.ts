@@ -52,6 +52,7 @@ REGRAS DE CÁLCULO OBRIGATÓRIAS:
       - Ter quantidade EM GRAMAS calculada para bater os mesmos macros do alimento original.
       - Respeitar restrições alimentares informadas (sem lactose, vegetariano etc.).
       - Citar uma observação curta quando houver vantagem ou alerta (ex: "mais saciedade", "mais rápido de preparar", "evitar se intolerância").
+      - Classificar o substituto no campo "grupo" como: "proteina" (fontes predominantemente proteicas), "carbo" (fontes predominantemente de carboidratos) ou "gordura" (fontes predominantemente lipídicas).
 
 6. REGRAS DE VOLUME CALÓRICO E ESTRATÉGIAS PRÁTICAS:
 
@@ -170,7 +171,7 @@ Responda APENAS com JSON válido nesta estrutura exata:
           "quantidade": "string em gramas",
           "observacao": "string ou null",
           "substituicoes": [
-            { "alimento": "string", "quantidade": "string em gramas", "observacao": "string ou null" }
+            { "alimento": "string", "quantidade": "string em gramas", "observacao": "string ou null", "grupo": "proteina | carbo | gordura" }
           ]
         }
       ]

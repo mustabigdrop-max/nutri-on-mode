@@ -89,11 +89,18 @@ const Section = ({ title, children }: { title: string; children: React.ReactNode
 );
 
 // ─── Meal display ─────────────────────────────────────────────────────────────
+type GrupoSub = "proteina" | "carbo" | "gordura" | "outro";
+interface SubstituicaoItem {
+  alimento: string;
+  quantidade?: string;
+  observacao?: string;
+  grupo?: GrupoSub;
+}
 interface MealAlimento {
   alimento: string;
   quantidade?: string;
   observacao?: string;
-  substituicoes?: { alimento: string; quantidade?: string; observacao?: string }[];
+  substituicoes?: SubstituicaoItem[];
 }
 
 interface Meal {
@@ -130,10 +137,35 @@ interface PlanoData {
   alerta_coach?: string | null;
 }
 
-const MealCard = ({ meal, index }: { meal: Meal; index: number }) => {
+const GRUPO_META: Record<GrupoSub, { label: string; color: string; emoji: string }> = {
+  proteina: { label: "Proteína", color: T.blue, emoji: "🥩" },
+  carbo: { label: "Carbo", color: T.amber, emoji: "🍚" },
+  gordura: { label: "Gordura", color: "#f472b6", emoji: "🥑" },
+  outro: { label: "Outro", color: T.muted, emoji: "🍽️" },
+};
+
+const inferGrupo = (s: SubstituicaoItem): GrupoSub => {
+  if (s.grupo && GRUPO_META[s.grupo]) return s.grupo;
+  const t = (s.alimento || "").toLowerCase();
+  if (/(frango|carne|peixe|atum|tilapia|salmão|salmao|ovo|clara|whey|isolado|caseína|caseina|iogurte|cottage|queijo|tofu|presunto|peru|patinho|alcatra)/.test(t)) return "proteina";
+  if (/(arroz|batata|mandioca|inhame|aveia|pão|pao|tapioca|macarrão|macarrao|feijão|feijao|lentilha|grão|grao|fruta|banana|maçã|maca|melão|melao|mamão|mamao|uva|laranja|cuscuz|granola|cereal)/.test(t)) return "carbo";
+  if (/(azeite|óleo|oleo|abacate|castanha|amêndoa|amendoa|nozes|amendoim|pasta de amendoim|coco|manteiga|gergelim|chia|linhaça|linhaca)/.test(t)) return "gordura";
+  return "outro";
+};
+
+interface MealCardProps {
+  meal: Meal;
+  index: number;
+  onSwap: (alimentoIdx: number, sub: SubstituicaoItem) => void;
+}
+
+const MealCard = ({ meal, index, onSwap }: MealCardProps) => {
   const colors = [T.green, T.blue, T.amber, "#a78bfa", "#f472b6", "#34d399", "#fb923c"];
   const color = colors[index % colors.length];
   const [openSubs, setOpenSubs] = useState<Record<number, boolean>>({});
+  const [filter, setFilter] = useState<Record<number, GrupoSub | "todos">>({});
+  const [search, setSearch] = useState<Record<number, string>>({});
+
   return (
     <div style={{ border: `1px solid ${T.border}`, borderRadius: 12, overflow: "hidden", marginBottom: 12, background: T.card }}>
       <div style={{ padding: "12px 16px", borderBottom: `1px solid ${T.border}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -148,8 +180,15 @@ const MealCard = ({ meal, index }: { meal: Meal; index: number }) => {
       </div>
       <div style={{ padding: "12px 16px" }}>
         {meal.alimentos?.map((a, i) => {
-          const subs = a.substituicoes || [];
+          const subs: SubstituicaoItem[] = (a.substituicoes || []).map((s) => ({ ...s, grupo: inferGrupo(s) }));
           const open = !!openSubs[i];
+          const f = filter[i] || "todos";
+          const q = (search[i] || "").trim().toLowerCase();
+          const filteredSubs = subs.filter((s) =>
+            (f === "todos" || s.grupo === f) &&
+            (!q || s.alimento.toLowerCase().includes(q))
+          );
+
           return (
             <div key={i} style={{ padding: "6px 0", borderBottom: i < (meal.alimentos?.length || 0) - 1 ? `1px solid ${T.border}` : "none" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
@@ -174,18 +213,88 @@ const MealCard = ({ meal, index }: { meal: Meal; index: number }) => {
                 </div>
                 {a.quantidade && <span style={{ fontSize: 12, color: T.muted, whiteSpace: "nowrap" }}>{a.quantidade}</span>}
               </div>
+
               {open && subs.length > 0 && (
-                <div style={{ marginTop: 8, padding: "8px 10px", background: T.bg2, border: `1px dashed ${T.border2}`, borderRadius: 8 }}>
-                  <div style={{ fontSize: 9, color: T.green, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6, fontWeight: 700 }}>Substitutos isocalóricos</div>
-                  {subs.map((sub, si) => (
-                    <div key={si} style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, padding: "4px 0", borderTop: si > 0 ? `1px solid ${T.border}` : "none" }}>
-                      <div style={{ flex: 1 }}>
-                        <span style={{ fontSize: 12, color: T.text }}>{sub.alimento}</span>
-                        {sub.observacao && <div style={{ fontSize: 10, color: T.muted, marginTop: 1 }}>{sub.observacao}</div>}
-                      </div>
-                      {sub.quantidade && <span style={{ fontSize: 11, color: T.muted, whiteSpace: "nowrap" }}>{sub.quantidade}</span>}
+                <div style={{ marginTop: 10, padding: 12, background: T.bg2, border: `1px dashed ${T.border2}`, borderRadius: 10 }}>
+                  <div style={{ fontSize: 9, color: T.green, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 10, fontWeight: 700 }}>
+                    Substitutos isocalóricos
+                  </div>
+
+                  <input
+                    value={search[i] || ""}
+                    onChange={(e) => setSearch((s) => ({ ...s, [i]: e.target.value }))}
+                    placeholder="Buscar substituto..."
+                    style={{
+                      width: "100%", background: T.bg3, border: `1px solid ${T.border2}`,
+                      borderRadius: 8, padding: "7px 10px", color: T.text, fontSize: 12,
+                      outline: "none", fontFamily: "inherit", marginBottom: 8,
+                    }}
+                  />
+
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
+                    {(["todos", "proteina", "carbo", "gordura"] as const).map((g) => {
+                      const active = f === g;
+                      const meta = g === "todos" ? { label: "Todos", color: T.green, emoji: "✦" } : GRUPO_META[g];
+                      return (
+                        <button
+                          key={g}
+                          onClick={() => setFilter((s) => ({ ...s, [i]: g }))}
+                          style={{
+                            padding: "3px 10px", borderRadius: 999, fontSize: 10,
+                            border: `1px solid ${active ? meta.color : T.border2}`,
+                            background: active ? `${meta.color}22` : "transparent",
+                            color: active ? meta.color : T.muted,
+                            cursor: "pointer", fontFamily: "inherit",
+                          }}
+                        >
+                          {meta.emoji} {meta.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {filteredSubs.length === 0 ? (
+                    <div style={{ fontSize: 11, color: T.muted2, textAlign: "center", padding: "10px 0" }}>
+                      Nenhum substituto encontrado.
                     </div>
-                  ))}
+                  ) : (
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: 8 }}>
+                      {filteredSubs.map((sub, si) => {
+                        const meta = GRUPO_META[(sub.grupo as GrupoSub) || "outro"];
+                        return (
+                          <div
+                            key={si}
+                            style={{
+                              background: T.bg3, border: `1px solid ${T.border2}`,
+                              borderRadius: 10, padding: 10, display: "flex", flexDirection: "column", gap: 6,
+                            }}
+                          >
+                            <span style={{
+                              alignSelf: "flex-start",
+                              fontSize: 9, padding: "2px 6px", borderRadius: 999,
+                              background: `${meta.color}22`, color: meta.color, fontWeight: 700,
+                              textTransform: "uppercase", letterSpacing: "0.05em",
+                            }}>{meta.emoji} {meta.label}</span>
+                            <div style={{ fontSize: 12, color: T.text, fontWeight: 600, lineHeight: 1.3 }}>{sub.alimento}</div>
+                            {sub.quantidade && <div style={{ fontSize: 11, color: T.muted }}>{sub.quantidade}</div>}
+                            {sub.observacao && <div style={{ fontSize: 10, color: T.muted2, fontStyle: "italic" }}>{sub.observacao}</div>}
+                            <button
+                              onClick={() => onSwap(i, sub)}
+                              style={{
+                                marginTop: 2, padding: "5px 8px", borderRadius: 6,
+                                background: T.greenBg, border: `1px solid ${T.green}`,
+                                color: T.green, fontSize: 10, fontWeight: 700,
+                                cursor: "pointer", fontFamily: "inherit",
+                                display: "flex", alignItems: "center", justifyContent: "center", gap: 4,
+                              }}
+                            >
+                              ⇄ Trocar agora
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -483,6 +592,16 @@ export default function PlanoAlimentarIA() {
       .meta-box span{font-size:24px;font-weight:bold;color:#059669;display:block}
       .meal{background:#fafafa;border:1px solid #e5e7eb;border-radius:8px;padding:16px;margin:12px 0}
       .meal h3{margin:0 0 8px;color:#065f46}
+      .alimento{padding:6px 0;border-bottom:1px dashed #e5e7eb}
+      .alimento:last-child{border-bottom:none}
+      .subs{margin:6px 0 4px 14px;padding:8px;background:#ecfdf5;border:1px dashed #10b98155;border-radius:6px}
+      .subs-title{font-size:10px;color:#059669;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
+      .subs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:6px}
+      .sub-card{background:#fff;border:1px solid #d1fae5;border-radius:6px;padding:6px 8px;font-size:11px}
+      .sub-badge{display:inline-block;font-size:9px;padding:1px 6px;border-radius:999px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px}
+      .sub-name{font-weight:600;color:#1f2937}
+      .sub-qty{color:#6b7280;font-size:10px}
+      .sub-obs{color:#9ca3af;font-size:9px;font-style:italic;margin-top:2px}
       .macros{display:flex;gap:16px;margin-top:8px;font-size:13px;color:#6b7280}
       .tip{font-style:italic;color:#059669;font-size:12px;margin-top:6px}
       .footer{margin-top:32px;text-align:center;color:#9ca3af;font-size:11px}
@@ -498,12 +617,29 @@ export default function PlanoAlimentarIA() {
       ${plano.refeicoes.map(m => `
         <div class="meal">
           <h3>${m.refeicao} — ${m.horario || ""}</h3>
-          ${m.alimentos?.map(a => `
-            <div>
-              ${a.alimento} — ${a.quantidade || ""}${a.observacao ? ` (${a.observacao})` : ""}
-              ${a.substituicoes && a.substituicoes.length ? `<div style="margin:4px 0 8px 14px;font-size:11px;color:#059669"><b>Substitutos:</b> ${a.substituicoes.map(s => `${s.alimento}${s.quantidade ? ` (${s.quantidade})` : ""}`).join(" · ")}</div>` : ""}
+          ${m.alimentos?.map(a => {
+            const subs = (a.substituicoes || []).map(s => ({ ...s, grupo: inferGrupo(s) }));
+            return `
+            <div class="alimento">
+              <div><b>${a.alimento}</b> — ${a.quantidade || ""}${a.observacao ? ` <i style="color:#6b7280">(${a.observacao})</i>` : ""}</div>
+              ${subs.length ? `
+                <div class="subs">
+                  <div class="subs-title">⇄ Substitutos isocalóricos</div>
+                  <div class="subs-grid">
+                    ${subs.map(s => {
+                      const meta = GRUPO_META[(s.grupo as GrupoSub) || "outro"];
+                      return `<div class="sub-card">
+                        <span class="sub-badge" style="background:${meta.color}22;color:${meta.color}">${meta.emoji} ${meta.label}</span>
+                        <div class="sub-name">${s.alimento}</div>
+                        ${s.quantidade ? `<div class="sub-qty">${s.quantidade}</div>` : ""}
+                        ${s.observacao ? `<div class="sub-obs">${s.observacao}</div>` : ""}
+                      </div>`;
+                    }).join("")}
+                  </div>
+                </div>
+              ` : ""}
             </div>
-          `).join("") || ""}
+          `;}).join("") || ""}
           <div class="macros">🔥 ${m.calorias || 0} kcal | P: ${m.macros?.proteina || 0}g | C: ${m.macros?.carboidrato || 0}g | G: ${m.macros?.gordura || 0}g</div>
         </div>
       `).join("")}
@@ -664,7 +800,37 @@ export default function PlanoAlimentarIA() {
               <div style={{ width: 16, height: 1, background: T.green }} />
               Refeições do dia
             </div>
-            {plano.refeicoes?.map((m, i) => <MealCard key={i} meal={m} index={i} />)}
+            {plano.refeicoes?.map((m, i) => (
+              <MealCard
+                key={i}
+                meal={m}
+                index={i}
+                onSwap={(alimentoIdx, sub) => {
+                  setPlano((prev) => {
+                    if (!prev) return prev;
+                    const next = JSON.parse(JSON.stringify(prev)) as PlanoData;
+                    const meal = next.refeicoes[i];
+                    const original = meal.alimentos?.[alimentoIdx];
+                    if (!meal.alimentos || !original) return prev;
+                    const otherSubs = (original.substituicoes || []).filter(
+                      (s) => s.alimento !== sub.alimento
+                    );
+                    meal.alimentos[alimentoIdx] = {
+                      alimento: sub.alimento,
+                      quantidade: sub.quantidade,
+                      observacao: sub.observacao,
+                      substituicoes: [
+                        { alimento: original.alimento, quantidade: original.quantidade, observacao: original.observacao, grupo: (sub as any).grupo },
+                        ...otherSubs,
+                      ],
+                    };
+                    return next;
+                  });
+                  setSavedId(null);
+                  toast({ title: "Alimento trocado ✅", description: `${sub.alimento} aplicado ao plano.` });
+                }}
+              />
+            ))}
           </div>
 
           {/* Suplementação */}
