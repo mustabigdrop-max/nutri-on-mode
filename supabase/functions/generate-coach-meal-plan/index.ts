@@ -170,7 +170,7 @@ Responda APENAS com JSON válido nesta estrutura exata:
           "quantidade": "string em gramas",
           "observacao": "string ou null",
           "substituicoes": [
-            { "alimento": "string", "quantidade": "string em gramas", "observacao": "string ou null" }
+            { "alimento": "string", "quantidade": "string em gramas", "observacao": "string ou null", "grupo": "proteina | carbo | gordura" }
           ]
         }
       ]
