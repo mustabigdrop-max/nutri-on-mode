@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
-import { X, Send, Loader2, Sparkles, Zap } from "lucide-react";
+import { X, Send, Loader2, Sparkles, Zap, Download, FileText, FileDown } from "lucide-react";
+import jsPDF from "jspdf";
+import { toast } from "sonner";
 
 type AgentType = "vertex" | "nexus";
 
