@@ -110,6 +110,12 @@ const LabPage = () => {
               >
                 <FlaskConical className="w-3.5 h-3.5" /> Dr. VERTEX
               </button>
+              <button
+                onClick={() => navigate("/ergo-vault")}
+                className="flex-1 flex items-center justify-center gap-1 text-xs px-3 py-1.5 rounded-md text-accent hover:bg-accent/10 transition-colors font-medium"
+              >
+                <Sparkles className="w-3.5 h-3.5" /> Ergo ♀
+              </button>
               <TabsTrigger value="cardio" className="flex-1 text-xs gap-1 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
                 <Activity className="w-3.5 h-3.5" /> Cardio
               </TabsTrigger>
