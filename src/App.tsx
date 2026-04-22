@@ -83,6 +83,7 @@ import PlanoAlimentarIA from "./components/coach/PlanoAlimentarIA";
 import DrNexusPage from "./pages/DrNexusPage";
 import VideoFormPage from "./pages/VideoFormPage";
 import MeusProtocolosPage from "./pages/MeusProtocolosPage";
+import ErgoVaultPage from "./pages/ErgoVaultPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -149,6 +150,7 @@ const App = () => (
             <Route path="/metabolic-reversion" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON +" featureName="Reversão Metabólica"><MetabolicReversionPage /></PlanGateWrapper></ProtectedRoute>} />
             <Route path="/nutricao-sport" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON +" featureName="Nutrição Sport"><NutricaoSportPage /></PlanGateWrapper></ProtectedRoute>} />
             <Route path="/protocolo-feminino" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON +" featureName="Protocolo Feminino"><ProtocoloFemininoPage /></PlanGateWrapper></ProtectedRoute>} />
+            <Route path="/ergo-vault" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON +" featureName="ERGO VAULT Feminino"><ErgoVaultPage /></PlanGateWrapper></ProtectedRoute>} />
 
             {/* ON PRO Plan */}
             <Route path="/performance-pro" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON PRO" featureName="Performance Pro"><PerformanceProPage /></PlanGateWrapper></ProtectedRoute>} />
