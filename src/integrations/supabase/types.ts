@@ -2220,6 +2220,172 @@ export type Database = {
         }
         Relationships: []
       }
+      ergo_checkins: {
+        Row: {
+          analise_ia: string | null
+          created_at: string
+          data_checkin: string
+          diary_id: string
+          exames: Json | null
+          id: string
+          libido: string | null
+          observacoes: string | null
+          pa_diastolica: number | null
+          pa_sistolica: number | null
+          peso: number | null
+          qualidade_sono: number | null
+          semana: number | null
+          sensacao_geral: number | null
+          user_id: string
+        }
+        Insert: {
+          analise_ia?: string | null
+          created_at?: string
+          data_checkin?: string
+          diary_id: string
+          exames?: Json | null
+          id?: string
+          libido?: string | null
+          observacoes?: string | null
+          pa_diastolica?: number | null
+          pa_sistolica?: number | null
+          peso?: number | null
+          qualidade_sono?: number | null
+          semana?: number | null
+          sensacao_geral?: number | null
+          user_id: string
+        }
+        Update: {
+          analise_ia?: string | null
+          created_at?: string
+          data_checkin?: string
+          diary_id?: string
+          exames?: Json | null
+          id?: string
+          libido?: string | null
+          observacoes?: string | null
+          pa_diastolica?: number | null
+          pa_sistolica?: number | null
+          peso?: number | null
+          qualidade_sono?: number | null
+          semana?: number | null
+          sensacao_geral?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ergo_checkins_diary_id_fkey"
+            columns: ["diary_id"]
+            isOneToOne: false
+            referencedRelation: "ergo_diaries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ergo_diaries: {
+        Row: {
+          alertas: Json | null
+          auxiliares: Json | null
+          bf_inicial: number | null
+          created_at: string
+          data_fim_prevista: string | null
+          data_inicio: string | null
+          duracao_semanas: number | null
+          exames_pre_ciclo: Json | null
+          id: string
+          nome: string
+          objetivo: string | null
+          observacoes: string | null
+          peptideos: Json | null
+          perfil_usuario: string | null
+          peso_inicial: number | null
+          status: string | null
+          substancias: Json | null
+          tpc_planejada: Json | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          alertas?: Json | null
+          auxiliares?: Json | null
+          bf_inicial?: number | null
+          created_at?: string
+          data_fim_prevista?: string | null
+          data_inicio?: string | null
+          duracao_semanas?: number | null
+          exames_pre_ciclo?: Json | null
+          id?: string
+          nome: string
+          objetivo?: string | null
+          observacoes?: string | null
+          peptideos?: Json | null
+          perfil_usuario?: string | null
+          peso_inicial?: number | null
+          status?: string | null
+          substancias?: Json | null
+          tpc_planejada?: Json | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          alertas?: Json | null
+          auxiliares?: Json | null
+          bf_inicial?: number | null
+          created_at?: string
+          data_fim_prevista?: string | null
+          data_inicio?: string | null
+          duracao_semanas?: number | null
+          exames_pre_ciclo?: Json | null
+          id?: string
+          nome?: string
+          objetivo?: string | null
+          observacoes?: string | null
+          peptideos?: Json | null
+          perfil_usuario?: string | null
+          peso_inicial?: number | null
+          status?: string | null
+          substancias?: Json | null
+          tpc_planejada?: Json | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      ergo_diary_messages: {
+        Row: {
+          content: string
+          created_at: string
+          diary_id: string | null
+          id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          diary_id?: string | null
+          id?: string
+          role: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          diary_id?: string | null
+          id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ergo_diary_messages_diary_id_fkey"
+            columns: ["diary_id"]
+            isOneToOne: false
+            referencedRelation: "ergo_diaries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       exam_alerts: {
         Row: {
           acao_recomendada: string | null
