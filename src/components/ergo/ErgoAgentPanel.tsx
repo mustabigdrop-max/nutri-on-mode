@@ -54,7 +54,130 @@ export default function ErgoAgentPanel({
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [streaming, setStreaming] = useState("");
+  const [exportOpen, setExportOpen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  const buildSummary = () => {
+    const date = new Date().toLocaleString("pt-BR");
+    const header =
+      `RESUMO DE CONSULTA — ${cfg.name}\n${cfg.role}\n` +
+      `Composto: ${compoundName}\nData: ${date}\n` +
+      `Plataforma: nutriON · ERGO VAULT\n${"=".repeat(60)}\n\n`;
+    const body = messages
+      .map((m) => `[${m.role === "user" ? "VOCÊ" : cfg.name}]\n${m.content}\n`)
+      .join("\n");
+    const footer =
+      `\n${"=".repeat(60)}\nAviso: conteúdo educacional. Compartilhe com seu coach/médico\n` +
+      `para validação clínica antes de qualquer protocolo.\n`;
+    return header + body + footer;
+  };
+
+  const exportTxt = () => {
+    const blob = new Blob([buildSummary()], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${cfg.name}_${compoundName.replace(/\s+/g, "-")}_${Date.now()}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+    setExportOpen(false);
+    toast.success("Resumo TXT exportado");
+  };
+
+  const exportPdf = () => {
+    const doc = new jsPDF({ unit: "pt", format: "a4" });
+    const pageW = doc.internal.pageSize.getWidth();
+    const pageH = doc.internal.pageSize.getHeight();
+    const margin = 48;
+    const maxW = pageW - margin * 2;
+
+    const c = cfg.color.replace("#", "");
+    const r = parseInt(c.slice(0, 2), 16);
+    const g = parseInt(c.slice(2, 4), 16);
+    const b = parseInt(c.slice(4, 6), 16);
+
+    // Header band
+    doc.setFillColor(5, 5, 10);
+    doc.rect(0, 0, pageW, 80, "F");
+    doc.setTextColor(r, g, b);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    doc.text(cfg.name, margin, 38);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.setTextColor(200, 200, 200);
+    doc.text(cfg.role.toUpperCase(), margin, 54);
+    doc.setFontSize(8);
+    doc.text("nutriON · ERGO VAULT", margin, 68);
+    doc.text(new Date().toLocaleString("pt-BR"), pageW - margin, 68, { align: "right" });
+
+    let y = 110;
+    doc.setTextColor(40, 40, 40);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.text("COMPOSTO EM ANÁLISE", margin, y);
+    y += 16;
+    doc.setFont("helvetica", "italic");
+    doc.setFontSize(14);
+    doc.setTextColor(r, g, b);
+    doc.text(compoundName, margin, y);
+    y += 24;
+    doc.setDrawColor(220, 220, 220);
+    doc.line(margin, y, pageW - margin, y);
+    y += 20;
+
+    messages.forEach((m) => {
+      const isUser = m.role === "user";
+      const label = isUser ? "VOCÊ PERGUNTOU" : `${cfg.name} RESPONDEU`;
+      if (y > pageH - margin - 40) {
+        doc.addPage();
+        y = margin;
+      }
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(8);
+      if (isUser) doc.setTextColor(90, 90, 90);
+      else doc.setTextColor(r, g, b);
+      doc.text(label, margin, y);
+      y += 14;
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      doc.setTextColor(30, 30, 30);
+      const clean = m.content
+        .replace(/\*\*(.*?)\*\*/g, "$1")
+        .replace(/\*(.*?)\*/g, "$1")
+        .replace(/`(.*?)`/g, "$1")
+        .replace(/^#+\s*/gm, "");
+      const lines = doc.splitTextToSize(clean, maxW);
+      lines.forEach((line: string) => {
+        if (y > pageH - margin - 20) {
+          doc.addPage();
+          y = margin;
+        }
+        doc.text(line, margin, y);
+        y += 13;
+      });
+      y += 12;
+    });
+
+    const pageCount = doc.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFontSize(7);
+      doc.setTextColor(140, 140, 140);
+      doc.text(
+        "Conteúdo educacional · Compartilhe com seu coach/médico antes de aplicar.",
+        pageW / 2,
+        pageH - 20,
+        { align: "center" }
+      );
+      doc.text(`${i}/${pageCount}`, pageW - margin, pageH - 20, { align: "right" });
+    }
+
+    doc.save(`${cfg.name}_${compoundName.replace(/\s+/g, "-")}_${Date.now()}.pdf`);
+    setExportOpen(false);
+    toast.success("Resumo PDF exportado");
+  };
 
   // Reset ao trocar composto/agente
   useEffect(() => {
