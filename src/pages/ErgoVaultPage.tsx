@@ -10,6 +10,7 @@ import {
   type ErgoCategoria,
   type ErgoCompound,
 } from "@/data/ergoData";
+import ErgoAgentPanel from "@/components/ergo/ErgoAgentPanel";
 
 // ── Paleta ERGO VAULT (apenas nesta página) ─────────────────────────────
 const PALETTE = {
@@ -231,7 +232,10 @@ const CompoundCard = ({
 export default function ErgoVaultPage() {
   const navigate = useNavigate();
   const [filtro, setFiltro] = useState<ErgoCategoria | "todos">("todos");
-  const [comingSoon, setComingSoon] = useState<{ agent: string; nome: string } | null>(null);
+  const [agentPanel, setAgentPanel] = useState<{
+    agent: "vertex" | "nexus";
+    compound: ErgoCompound;
+  } | null>(null);
 
   const compostos = useMemo(
     () =>
@@ -242,7 +246,7 @@ export default function ErgoVaultPage() {
   );
 
   const handleAgent = (agent: "vertex" | "nexus", c: ErgoCompound) => {
-    setComingSoon({ agent: agent === "vertex" ? "DR.VERTEX" : "DR.NEXUS", nome: c.nome });
+    setAgentPanel({ agent, compound: c });
   };
 
   return (
@@ -607,61 +611,20 @@ export default function ErgoVaultPage() {
         </div>
       </footer>
 
-      {/* Modal coming soon */}
-      <AnimatePresence>
-        {comingSoon && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setComingSoon(null)}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4"
-            style={{ background: "rgba(5,5,10,0.85)", backdropFilter: "blur(8px)" }}
-          >
-            <motion.div
-              initial={{ scale: 0.95, y: 10 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.95, y: 10 }}
-              onClick={(e) => e.stopPropagation()}
-              className="max-w-md rounded-2xl border p-8 text-center"
-              style={{
-                background: PALETTE.obsidian,
-                borderColor: "rgba(196,84,106,0.3)",
-              }}
-            >
-              <div
-                className="mb-3 text-[10px] uppercase tracking-[0.3em]"
-                style={{ fontFamily: FONT_MONO, color: PALETTE.rose }}
-              >
-                Em breve
-              </div>
-              <h3
-                className="mb-3 text-2xl"
-                style={{ fontFamily: FONT_DISPLAY, color: PALETTE.cream }}
-              >
-                {comingSoon.agent}
-              </h3>
-              <p className="mb-6 text-sm opacity-80" style={{ fontFamily: FONT_UI }}>
-                Os agentes IA serão integrados na próxima fase.
-                <br />
-                Composto em análise: <strong>{comingSoon.nome}</strong>
-              </p>
-              <button
-                onClick={() => setComingSoon(null)}
-                className="rounded-full px-6 py-2 text-xs uppercase tracking-[0.25em]"
-                style={{
-                  fontFamily: FONT_MONO,
-                  background: PALETTE.rose,
-                  color: PALETTE.obsidian,
-                  fontWeight: 600,
-                }}
-              >
-                Entendi
-              </button>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Painel dos agentes DR.VERTEX / DR.NEXUS */}
+      <ErgoAgentPanel
+        isOpen={!!agentPanel}
+        onClose={() => setAgentPanel(null)}
+        agent={agentPanel?.agent ?? "vertex"}
+        compoundName={agentPanel?.compound.nome ?? ""}
+        quickActions={
+          agentPanel
+            ? agentPanel.agent === "vertex"
+              ? agentPanel.compound.quickActionsVertex
+              : agentPanel.compound.quickActionsNexus
+            : []
+        }
+      />
     </div>
   );
 }
