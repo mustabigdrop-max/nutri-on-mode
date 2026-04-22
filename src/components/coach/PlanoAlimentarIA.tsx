@@ -660,6 +660,12 @@ export default function PlanoAlimentarIA() {
         <div class="meta-box"><span>${r.calorias_totais}</span>VET (kcal)</div>
         <div class="meta-box"><span>${r.imc}</span>IMC</div>
       </div>
+      ${glut4Text ? `
+        <div style="background:#f0fdf4;border:2px solid #4ade80;border-radius:10px;padding:16px;margin:16px 0;">
+          <h3 style="color:#166534;margin:0 0 8px 0;">⚡ Estratégia GLUT-4 Pós-Treino</h3>
+          <pre style="white-space:pre-wrap;font-family:inherit;font-size:12px;color:#1f2937;margin:0;line-height:1.6;">${glut4Text.replace(/</g, "&lt;")}</pre>
+        </div>
+      ` : ""}
       ${plano.refeicoes.map(m => `
         <div class="meal">
           <h3>${m.refeicao} — ${m.horario || ""}</h3>
