@@ -478,6 +478,10 @@ export default function PlanoAlimentarIA() {
     protocoloMicrobiota: false,
     cyclingCarbo: false,
     modoEconomico: false,
+    // Perfil econômico (independente do toggle modoEconomico — mais granular)
+    perfilEconomico: "intermediario" as "economico" | "intermediario" | "premium",
+    alimentosDisponiveis: [] as string[],
+    outrosAlimentos: "",
   });
 
   // Estado de UI para a seção colapsável Elite
@@ -504,6 +508,19 @@ export default function PlanoAlimentarIA() {
   };
 
   const restricoesOpts = ["Lactose", "Glúten", "Frutos do mar", "Amendoim", "Ovo", "Soja", "Vegetariano", "Vegano", "Sem carne vermelha", "Sem porco"];
+
+  const perfilEconomicoOpts: { v: "economico" | "intermediario" | "premium"; titulo: string; desc: string }[] = [
+    { v: "economico", titulo: "Econômico", desc: "Prioriza cortes populares, vísceras, ovos, leite em pó, azeite básico." },
+    { v: "intermediario", titulo: "Intermediário", desc: "Mix de alimentos acessíveis com alguns premium quando necessário." },
+    { v: "premium", titulo: "Premium", desc: "Melhores fontes de cada categoria sem considerar custo." },
+  ];
+
+  const alimentosDisponiveisGrupos: { grupo: string; itens: string[] }[] = [
+    { grupo: "Proteínas acessíveis", itens: ["Ovo", "Frango inteiro", "Fígado bovino", "Moela", "Coração de frango", "Língua bovina", "Sardinha em lata", "Atum em lata", "Leite em pó integral"] },
+    { grupo: "Carboidratos acessíveis", itens: ["Aveia", "Arroz branco", "Batata inglesa", "Mandioca", "Inhame", "Pão francês", "Farinha de aveia", "Mucilon", "Farinha láctea"] },
+    { grupo: "Gorduras acessíveis", itens: ["Azeite de oliva", "Leite de coco", "Coco ralado", "Amendoim", "Pasta de amendoim", "Banha de porco", "Manteiga"] },
+    { grupo: "Laticínios", itens: ["Leite integral", "Iogurte natural", "Queijo minas", "Requeijão", "Queijo coalho"] },
+  ];
   const protocolos = [
     { v: "nenhum", l: "Sem protocolo específico" },
     { v: "glp1", l: "GLP-1 / Análogos (Sema, Retrat, Tirze)" },
