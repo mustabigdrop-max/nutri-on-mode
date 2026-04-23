@@ -352,7 +352,7 @@ ${glut4Config?.enabled ? `
 - L-Leucina isolada: ${glut4Config.add_leucine ? "SIM (2g)" : "NÃO"}
 
 OBRIGAÇÕES:
-1) A refeição "Pós-Treino Imediato" DEVE conter EXCLUSIVAMENTE "${glut4Config.carb_source_label}" como item principal — proibido whey, maltodextrina (se já usada intra), proteína animal, gordura.
+1) A refeição "Pós-Treino Imediato" DEVE ter "${glut4Config.carb_source_label}" como fonte principal de carboidrato — proibido whey, proteína animal e gordura. PERMITIDO combinar 2 ou mais carboidratos COMPATÍVEIS de absorção rápida/média da mesma família (ex: tapioca + mel cru, mucilon + banana madura, dextrose + maltodextrina, batata-doce + mel, banana + tapioca, arroz branco + mel) desde que o TOTAL de gramas de CHO bata o alvo (${glut4Config.carb_grams ?? "calculado pelo peso"}g) e a soma respeite proteína=0g e gordura=0g. Quando combinar, listar cada alimento com sua gramagem e CHO individual, e explicar em 1 linha o motivo da combinação (ex: "tapioca para reposição rápida + mel cru para frutose hepática"). Maltodextrina já usada intra-treino não pode reaparecer aqui.
 2) O HORÁRIO da refeição "Pós-Treino Imediato" DEVE ser exatamente HORÁRIO_DO_TREINO + duração + ${glut4Config.timing_minutes} minutos (use o time/duration_min do dia de treino do schedule). Em hipótese alguma colocar refeições peri-workout em horário desconectado do treino.
 3) Crie também uma refeição "Pós-Treino Sólido" 60–90min depois (com proteína completa + CHO moderado).
 4) Pré-treino sólido: 60–90min ANTES do horário do treino (não horas antes).
