@@ -151,15 +151,15 @@ export default function MeusProtocolosPage() {
       const table = TABLE_FOR_TIPO[tipo];
       if (!table) continue;
       const ids = envio.conteudo_ids?.[tipo];
+      const userCol = tipo === "plano_alimentar" ? "patient_user_id" : "user_id";
       if (ids?.length) {
         const { data } = await (supabase as any).from(table).select("*").in("id", ids);
         result[tipo] = data || [];
       } else {
-        // fallback: busca o mais recente do aluno
         const { data } = await (supabase as any)
           .from(table)
           .select("*")
-          .eq("user_id", user.id)
+          .eq(userCol, user.id)
           .order("created_at", { ascending: false })
           .limit(1);
         result[tipo] = data || [];
