@@ -47,7 +47,7 @@ const TIPO_LABEL: Record<string, { label: string; icon: any }> = {
 
 const TABLE_FOR_TIPO: Record<string, string> = {
   treino: "training_protocols",
-  plano_alimentar: "daily_nutrition_protocol",
+  plano_alimentar: "coach_meal_plans",
   suplementacao: "lab_protocols",
   peptideos: "peptide_search_history",
 };
