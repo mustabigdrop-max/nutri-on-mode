@@ -478,6 +478,10 @@ export default function PlanoAlimentarIA() {
     protocoloMicrobiota: false,
     cyclingCarbo: false,
     modoEconomico: false,
+    // Perfil econômico (independente do toggle modoEconomico — mais granular)
+    perfilEconomico: "intermediario" as "economico" | "intermediario" | "premium",
+    alimentosDisponiveis: [] as string[],
+    outrosAlimentos: "",
   });
 
   // Estado de UI para a seção colapsável Elite
@@ -504,6 +508,19 @@ export default function PlanoAlimentarIA() {
   };
 
   const restricoesOpts = ["Lactose", "Glúten", "Frutos do mar", "Amendoim", "Ovo", "Soja", "Vegetariano", "Vegano", "Sem carne vermelha", "Sem porco"];
+
+  const perfilEconomicoOpts: { v: "economico" | "intermediario" | "premium"; titulo: string; desc: string }[] = [
+    { v: "economico", titulo: "Econômico", desc: "Prioriza cortes populares, vísceras, ovos, leite em pó, azeite básico." },
+    { v: "intermediario", titulo: "Intermediário", desc: "Mix de alimentos acessíveis com alguns premium quando necessário." },
+    { v: "premium", titulo: "Premium", desc: "Melhores fontes de cada categoria sem considerar custo." },
+  ];
+
+  const alimentosDisponiveisGrupos: { grupo: string; itens: string[] }[] = [
+    { grupo: "Proteínas acessíveis", itens: ["Ovo", "Frango inteiro", "Fígado bovino", "Moela", "Coração de frango", "Língua bovina", "Sardinha em lata", "Atum em lata", "Leite em pó integral"] },
+    { grupo: "Carboidratos acessíveis", itens: ["Aveia", "Arroz branco", "Batata inglesa", "Mandioca", "Inhame", "Pão francês", "Farinha de aveia", "Mucilon", "Farinha láctea"] },
+    { grupo: "Gorduras acessíveis", itens: ["Azeite de oliva", "Leite de coco", "Coco ralado", "Amendoim", "Pasta de amendoim", "Banha de porco", "Manteiga"] },
+    { grupo: "Laticínios", itens: ["Leite integral", "Iogurte natural", "Queijo minas", "Requeijão", "Queijo coalho"] },
+  ];
   const protocolos = [
     { v: "nenhum", l: "Sem protocolo específico" },
     { v: "glp1", l: "GLP-1 / Análogos (Sema, Retrat, Tirze)" },
@@ -597,6 +614,9 @@ export default function PlanoAlimentarIA() {
           protocolo_microbiota: form.protocoloMicrobiota,
           cycling_carbo: form.cyclingCarbo,
           modo_economico: modoEcon,
+          perfil_economico: form.perfilEconomico,
+          alimentos_disponiveis: form.alimentosDisponiveis,
+          outros_alimentos: form.outrosAlimentos || null,
         },
       },
     });
@@ -2355,6 +2375,70 @@ export default function PlanoAlimentarIA() {
           </div>
           <Label>Outra restrição ou alergia</Label>
           <InputField placeholder="Ex: FODMAP, histamina..." value={form.outraRestricao} onChange={e => set("outraRestricao", e.target.value)} />
+        </Section>
+
+        {/* Perfil de orçamento alimentar */}
+        <Section title="Condição econômica do plano">
+          <div style={{ fontSize: 11, color: T.muted, marginBottom: 12 }}>
+            Define a faixa de custo dos alimentos priorizados pela IA. A equivalência nutricional é mantida em todas as opções.
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 10, marginBottom: 18 }}>
+            {perfilEconomicoOpts.map(opt => {
+              const active = form.perfilEconomico === opt.v;
+              return (
+                <div
+                  key={opt.v}
+                  onClick={() => set("perfilEconomico", opt.v)}
+                  style={{
+                    cursor: "pointer",
+                    padding: 14,
+                    borderRadius: 12,
+                    background: active ? `${T.green}15` : T.bg3,
+                    border: `1px solid ${active ? T.green : T.border2}`,
+                    boxShadow: active ? `0 0 18px ${T.green}22` : "none",
+                    transition: "all .15s",
+                  }}
+                >
+                  <div style={{ fontSize: 13, fontWeight: 700, color: active ? T.green : T.text, marginBottom: 6 }}>
+                    {opt.titulo}
+                  </div>
+                  <div style={{ fontSize: 11, color: T.muted, lineHeight: 1.4 }}>
+                    {opt.desc}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <Label>Alimentos disponíveis em casa ou de preferência (opcional)</Label>
+          <div style={{ fontSize: 11, color: T.muted, marginBottom: 10 }}>
+            A IA prioriza esses itens, mas não fica restrita a eles.
+          </div>
+          {alimentosDisponiveisGrupos.map(g => (
+            <div key={g.grupo} style={{ marginBottom: 12 }}>
+              <div style={{ fontSize: 11, fontWeight: 600, color: T.muted, marginBottom: 6, textTransform: "uppercase", letterSpacing: 0.5 }}>
+                {g.grupo}
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 6 }}>
+                {g.itens.map(item => (
+                  <Tag
+                    key={item}
+                    label={item}
+                    active={form.alimentosDisponiveis.includes(item)}
+                    onClick={() => toggleArr("alimentosDisponiveis", item)}
+                  />
+                ))}
+              </div>
+            </div>
+          ))}
+          <div style={{ marginTop: 12 }}>
+            <Label>Outros alimentos que tem em casa ou quer incluir</Label>
+            <InputField
+              placeholder="Ex: tapioca, cuscuz, feijão preto, macaxeira..."
+              value={form.outrosAlimentos}
+              onChange={e => set("outrosAlimentos", e.target.value)}
+            />
+          </div>
         </Section>
 
         {/* Preferências e obs */}
