@@ -333,11 +333,32 @@ export default function PlanoAlimentarIA() {
   const [savedId, setSavedId] = useState<string | null>(null);
   const [coachProfileId, setCoachProfileId] = useState<string | null>(null);
   const [patients, setPatients] = useState<{ user_id: string; name: string }[]>([]);
+  const [partnersList, setPartnersList] = useState<{ id: string; user_id: string | null; name: string; email?: string }[]>([]);
   const [showSendModal, setShowSendModal] = useState(false);
+  const [recipientType, setRecipientType] = useState<"aluno" | "parceiro">("aluno");
   const [selectedPatient, setSelectedPatient] = useState<string>("");
+  const [selectedPartner, setSelectedPartner] = useState<string>("");
   const [sendObs, setSendObs] = useState("");
   const [sending, setSending] = useState(false);
+  // Histórico
+  const [showHistory, setShowHistory] = useState(false);
+  const [history, setHistory] = useState<any[]>([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
+  const [historySearch, setHistorySearch] = useState("");
   const resultRef = useRef<HTMLDivElement>(null);
+
+  const loadHistory = async () => {
+    if (!coachProfileId) return;
+    setLoadingHistory(true);
+    const { data } = await supabase
+      .from("coach_meal_plans")
+      .select("id, patient_name, objetivo, status, created_at, sent_at, plano, observacao, patient_user_id")
+      .eq("coach_id", coachProfileId)
+      .order("created_at", { ascending: false })
+      .limit(100);
+    setHistory(data || []);
+    setLoadingHistory(false);
+  };
 
   // Load coach profile + patients
   useEffect(() => {
