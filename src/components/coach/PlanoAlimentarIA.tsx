@@ -1394,6 +1394,121 @@ export default function PlanoAlimentarIA() {
           </div>
         </Section>
 
+        {/* ─── Perfil Fisiológico Avançado (Elite) ─────────────────────── */}
+        <div style={{ marginBottom: 28 }}>
+          <button
+            type="button"
+            onClick={() => setPerfilFisioOpen(!perfilFisioOpen)}
+            style={{
+              width: "100%", background: "transparent", border: "none", padding: 0,
+              cursor: "pointer", display: "flex", alignItems: "center", gap: 8, marginBottom: 16,
+              fontFamily: "inherit",
+            }}
+          >
+            <div style={{ width: 16, height: 1, background: "#B8922A" }} />
+            <div style={{ fontSize: 11, fontWeight: 700, color: "#B8922A", textTransform: "uppercase" as const, letterSpacing: "0.1em" }}>
+              Perfil Fisiológico Avançado
+            </div>
+            <span style={{
+              fontSize: 11, fontWeight: 700, color: "#B8922A",
+              background: "rgba(184, 146, 42, 0.15)",
+              border: "1px solid rgba(184, 146, 42, 0.3)",
+              borderRadius: 4, padding: "2px 8px", letterSpacing: "0.04em",
+            }}>🔬 Elite</span>
+            <div style={{ flex: 1 }} />
+            <span style={{ fontSize: 14, color: "#B8922A", transition: "transform .2s", transform: perfilFisioOpen ? "rotate(180deg)" : "rotate(0deg)" }}>▾</span>
+          </button>
+
+          {perfilFisioOpen && (
+            <div style={{ display: "grid", gap: 14 }}>
+              <div>
+                <Label>Histórico intestinal</Label>
+                <SelectField value={form.historicoIntestinal} onChange={e => set("historicoIntestinal", e.target.value)}>
+                  <option value="">Selecione...</option>
+                  <option value="sem_queixas">Sem queixas</option>
+                  <option value="gases_inchaco">Gases ou inchaço frequente</option>
+                  <option value="transito_irregular">Trânsito irregular (prisão de ventre ou diarreia)</option>
+                  <option value="antibioticos_12m">Uso de antibióticos nos últimos 12 meses</option>
+                  <option value="sii_disbiose">SII ou disbiose diagnosticada</option>
+                </SelectField>
+              </div>
+
+              <div>
+                <Label>Fermentados na dieta atual</Label>
+                <SelectField value={form.fermentadosAtual} onChange={e => set("fermentadosAtual", e.target.value)}>
+                  <option value="">Selecione...</option>
+                  <option value="nao_consumo">Não consumo fermentados</option>
+                  <option value="iogurte_ocasional">Iogurte ocasional (1–2x/semana)</option>
+                  <option value="iogurte_diario">Iogurte diário</option>
+                  <option value="kefir_kimchi_chucrute">Kefir, kimchi ou chucrute regularmente</option>
+                </SelectField>
+                <div style={{ marginTop: 6, fontSize: 11, color: T.green, lineHeight: 1.5 }}>
+                  A IA ajustará a introdução de fermentados de forma progressiva conforme o histórico intestinal.
+                </div>
+              </div>
+
+              <div>
+                <Label>Sensibilidade à insulina (auto-avaliação)</Label>
+                <SelectField value={form.sensibilidadeInsulina} onChange={e => set("sensibilidadeInsulina", e.target.value)}>
+                  <option value="">Selecione...</option>
+                  <option value="excelente">Excelente — ganho pouco gordura mesmo em superávit</option>
+                  <option value="boa">Boa — ganho moderado em superávit</option>
+                  <option value="regular">Regular — ganho gordura com facilidade</option>
+                  <option value="ruim">Ruim — qualquer excesso calórico vai para gordura</option>
+                </SelectField>
+                <div style={{ marginTop: 6, fontSize: 11, color: T.green, lineHeight: 1.5 }}>
+                  A IA ativará ciclagem de carboidratos e protocolos de sensibilização conforme este perfil.
+                </div>
+              </div>
+
+              <div>
+                <Label>Objetivos secundários (selecione todos que se aplicam)</Label>
+                <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 8 }}>
+                  {[
+                    "Otimizar microbiota",
+                    "Melhorar sensibilidade à insulina",
+                    "Reduzir inflamação sistêmica",
+                    "Melhorar qualidade do sono",
+                    "Saúde hormonal",
+                    "Maximizar absorção de nutrientes",
+                    "Saúde intestinal (TGI)",
+                  ].map(o => (
+                    <Tag key={o} label={o} active={form.objetivosSecundarios.includes(o)} onClick={() => toggleArr("objetivosSecundarios", o)} />
+                  ))}
+                </div>
+              </div>
+
+              <div style={{
+                display: "flex", alignItems: "flex-start", gap: 12,
+                padding: "12px 14px", background: T.card, border: `1px solid ${form.variedadeFuncional ? "#B8922A" : T.border}`,
+                borderRadius: 10,
+              }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: T.text }}>🌿 Priorizar variedade funcional de alimentos?</div>
+                  <div style={{ fontSize: 11, color: T.green, marginTop: 4, lineHeight: 1.5 }}>
+                    Ativa protocolo de 20+ espécies vegetais/semana — frutas funcionais por categoria, vegetais por função fisiológica, fermentados diários e temperos ativos (cúrcuma, gengibre, alho).
+                  </div>
+                </div>
+                <div
+                  onClick={() => set("variedadeFuncional", !form.variedadeFuncional)}
+                  style={{
+                    width: 44, height: 24, borderRadius: 999,
+                    background: form.variedadeFuncional ? "#B8922A" : T.bg3,
+                    border: `1px solid ${form.variedadeFuncional ? "#B8922A" : T.border2}`,
+                    position: "relative", cursor: "pointer", transition: "all .2s", flexShrink: 0,
+                  }}
+                >
+                  <div style={{
+                    width: 18, height: 18, borderRadius: "50%",
+                    background: form.variedadeFuncional ? "#0a0f0a" : T.muted,
+                    position: "absolute", top: 2, left: form.variedadeFuncional ? 22 : 2, transition: "left .2s",
+                  }} />
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
         {/* Rotina de treino semanal */}
         <Section title="Rotina de treino">
           <TrainingSchedule value={trainingSchedule} onChange={setTrainingSchedule} />
