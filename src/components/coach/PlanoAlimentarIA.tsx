@@ -478,6 +478,7 @@ export default function PlanoAlimentarIA() {
     protocoloMicrobiota: false,
     cyclingCarbo: false,
     modoEconomico: false,
+    medidasCaseiras: false,
     // Perfil econômico (independente do toggle modoEconomico — mais granular)
     perfilEconomico: "intermediario" as "economico" | "intermediario" | "premium",
     alimentosDisponiveis: [] as string[],
@@ -614,6 +615,7 @@ export default function PlanoAlimentarIA() {
           protocolo_microbiota: form.protocoloMicrobiota,
           cycling_carbo: form.cyclingCarbo,
           modo_economico: modoEcon,
+          medidas_caseiras: form.medidasCaseiras,
           perfil_economico: form.perfilEconomico,
           alimentos_disponiveis: form.alimentosDisponiveis,
           outros_alimentos: form.outrosAlimentos || null,
@@ -2669,6 +2671,37 @@ export default function PlanoAlimentarIA() {
               width: 18, height: 18, borderRadius: "50%",
               background: form.modoEconomico ? "#0a0f0a" : T.muted,
               position: "absolute", top: 2, left: form.modoEconomico ? 22 : 2, transition: "left .2s",
+            }} />
+          </div>
+        </div>
+
+        {/* Toggle: Medidas Caseiras (Nutrition Coach IA) */}
+        <div style={{
+          background: T.card, border: `1px solid ${form.medidasCaseiras ? "#B8922A" : T.border}`,
+          borderRadius: 12, padding: 18, marginBottom: 18,
+          display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12,
+        }}>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: T.text, display: "flex", alignItems: "center", gap: 8 }}>
+              🥄 Medidas Caseiras (Nutrition Coach IA)
+            </div>
+            <div style={{ fontSize: 11, color: T.muted, marginTop: 4, lineHeight: 1.5 }}>
+              Quando ATIVO: a IA descreve cada alimento em medidas caseiras (colher de sopa, xícara, fatia, concha, unidade) e adiciona ao final do plano um <b>Mapa de Referência</b> com a gramatura exata de cada medida usada. Ideal para o paciente seguir sem balança. O nutricionista continua recebendo a gramatura técnica internamente.
+            </div>
+          </div>
+          <div
+            onClick={() => set("medidasCaseiras", !form.medidasCaseiras)}
+            style={{
+              width: 44, height: 24, borderRadius: 999,
+              background: form.medidasCaseiras ? "#B8922A" : T.bg3,
+              border: `1px solid ${form.medidasCaseiras ? "#B8922A" : T.border2}`,
+              position: "relative", cursor: "pointer", transition: "all .2s", flexShrink: 0,
+            }}
+          >
+            <div style={{
+              width: 18, height: 18, borderRadius: "50%",
+              background: form.medidasCaseiras ? "#0a0f0a" : T.muted,
+              position: "absolute", top: 2, left: form.medidasCaseiras ? 22 : 2, transition: "left .2s",
             }} />
           </div>
         </div>
