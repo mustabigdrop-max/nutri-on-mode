@@ -3,6 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
+import {
+  TrainingSchedule,
+  WeeklySchedule,
+  defaultWeeklySchedule,
+  buildTrainingSchedulePrompt,
+} from "@/components/coach/TrainingSchedule";
 
 // ─── Design tokens (alinhados ao nutriON: dark bg, green accent) ──────────────
 const T = {
