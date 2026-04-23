@@ -1419,24 +1419,37 @@ export default function PlanoAlimentarIA() {
                       : ` Gere a versão ${labelOposto} para comparar custo, macros e substituições.`}
                   </div>
                 </div>
-                <button
-                  onClick={compararModos}
-                  disabled={comparing}
-                  style={{
-                    padding: "10px 16px", borderRadius: 8,
-                    background: comparing ? T.bg3 : (planoComparativo ? "transparent" : "#B8922A"),
-                    border: `1px solid ${planoComparativo ? T.green : "#B8922A"}`,
-                    color: planoComparativo ? T.green : (comparing ? T.muted : "#0a0f0a"),
-                    fontSize: 12, fontWeight: 700, cursor: comparing ? "wait" : "pointer",
-                    fontFamily: "inherit", whiteSpace: "nowrap" as const,
-                  }}
-                >
-                  {comparing
-                    ? "Calculando..."
-                    : planoComparativo
-                      ? (showCompare ? "Ocultar comparativo" : "Mostrar comparativo")
-                      : `⇄ Gerar versão ${labelOposto}`}
-                </button>
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" as const }}>
+                  <button
+                    onClick={abrirHistoricoComparacoes}
+                    style={{
+                      padding: "10px 14px", borderRadius: 8,
+                      background: "transparent", border: `1px solid ${T.border2}`,
+                      color: T.muted, fontSize: 12, fontWeight: 700, cursor: "pointer",
+                      fontFamily: "inherit", whiteSpace: "nowrap" as const,
+                    }}
+                  >
+                    🕘 Histórico
+                  </button>
+                  <button
+                    onClick={compararModos}
+                    disabled={comparing}
+                    style={{
+                      padding: "10px 16px", borderRadius: 8,
+                      background: comparing ? T.bg3 : (planoComparativo ? "transparent" : "#B8922A"),
+                      border: `1px solid ${planoComparativo ? T.green : "#B8922A"}`,
+                      color: planoComparativo ? T.green : (comparing ? T.muted : "#0a0f0a"),
+                      fontSize: 12, fontWeight: 700, cursor: comparing ? "wait" : "pointer",
+                      fontFamily: "inherit", whiteSpace: "nowrap" as const,
+                    }}
+                  >
+                    {comparing
+                      ? "Calculando..."
+                      : planoComparativo
+                        ? (showCompare ? "Ocultar comparativo" : "Mostrar comparativo")
+                        : `⇄ Gerar versão ${labelOposto}`}
+                  </button>
+                </div>
               </div>
             );
           })()}
