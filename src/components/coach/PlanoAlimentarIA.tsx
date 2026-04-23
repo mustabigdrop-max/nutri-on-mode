@@ -662,6 +662,7 @@ export default function PlanoAlimentarIA() {
       });
       const outro = await gerarPlanoCore(oposto);
       setPlanoComparativo(outro);
+      setSavedComparisonId(null);
       setShowCompare(true);
       toast({ title: "Comparativo pronto ✅", description: "Role para ver as diferenças." });
     } catch (e: any) {
