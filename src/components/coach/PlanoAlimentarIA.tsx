@@ -9,6 +9,7 @@ import {
   defaultWeeklySchedule,
   buildTrainingSchedulePrompt,
 } from "@/components/coach/TrainingSchedule";
+import { validateMedidasCaseiras } from "@/lib/medidasCaseirasValidator";
 
 // ─── Design tokens (alinhados ao nutriON: dark bg, green accent) ──────────────
 const T = {
