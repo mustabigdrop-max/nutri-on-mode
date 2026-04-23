@@ -162,6 +162,7 @@ serve(async (req) => {
       // GLUT-4 (pós-treino imediato prescrito pelo coach)
       glut4Config,
       glut4Text,
+      perfilFisiologico,
     } = body;
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
