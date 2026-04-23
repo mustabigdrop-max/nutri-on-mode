@@ -1274,6 +1274,225 @@ export default function PlanoAlimentarIA() {
             );
           })()}
 
+          {/* Botão: Comparar modos (Econômico vs Padrão) */}
+          {(() => {
+            const isAtualEconomico = !!plano.custo_estimado?.modo_economico_ativo || !!form.modoEconomico;
+            const labelOposto = isAtualEconomico ? "Padrão" : "Econômico";
+            const labelAtual = isAtualEconomico ? "Econômico" : "Padrão";
+            return (
+              <div style={{
+                background: T.card, border: `1px dashed ${T.border2}`, borderRadius: 12,
+                padding: "14px 18px", marginBottom: 20,
+                display: "flex", alignItems: "center", justifyContent: "space-between",
+                gap: 12, flexWrap: "wrap" as const,
+              }}>
+                <div style={{ flex: 1, minWidth: 220 }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: T.text, marginBottom: 4 }}>
+                    🔀 Comparar modos no mesmo ciclo
+                  </div>
+                  <div style={{ fontSize: 11, color: T.muted, lineHeight: 1.5 }}>
+                    Plano atual: <span style={{ color: "#B8922A", fontWeight: 700 }}>{labelAtual}</span>.
+                    {planoComparativo
+                      ? ` Comparativo (${labelOposto}) ${showCompare ? "exibido" : "oculto"} abaixo.`
+                      : ` Gere a versão ${labelOposto} para comparar custo, macros e substituições.`}
+                  </div>
+                </div>
+                <button
+                  onClick={compararModos}
+                  disabled={comparing}
+                  style={{
+                    padding: "10px 16px", borderRadius: 8,
+                    background: comparing ? T.bg3 : (planoComparativo ? "transparent" : "#B8922A"),
+                    border: `1px solid ${planoComparativo ? T.green : "#B8922A"}`,
+                    color: planoComparativo ? T.green : (comparing ? T.muted : "#0a0f0a"),
+                    fontSize: 12, fontWeight: 700, cursor: comparing ? "wait" : "pointer",
+                    fontFamily: "inherit", whiteSpace: "nowrap" as const,
+                  }}
+                >
+                  {comparing
+                    ? "Calculando..."
+                    : planoComparativo
+                      ? (showCompare ? "Ocultar comparativo" : "Mostrar comparativo")
+                      : `⇄ Gerar versão ${labelOposto}`}
+                </button>
+              </div>
+            );
+          })()}
+
+          {/* Painel comparativo: A (atual) vs B (comparativo) */}
+          {planoComparativo && showCompare && (() => {
+            const A = plano;
+            const B = planoComparativo;
+            const aIsEcon = !!A.custo_estimado?.modo_economico_ativo || !!form.modoEconomico;
+            const bIsEcon = !aIsEcon;
+            const labelA = aIsEcon ? "Econômico" : "Padrão";
+            const labelB = bIsEcon ? "Econômico" : "Padrão";
+            const colorA = aIsEcon ? "#1D9E75" : "#B8922A";
+            const colorB = bIsEcon ? "#1D9E75" : "#B8922A";
+
+            const fmt$ = (v?: number) =>
+              typeof v === "number" ? v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }) : "—";
+
+            // Custo (cada plano carrega seu próprio custo_estimado quando econômico)
+            const custoA = aIsEcon ? A.custo_estimado?.custo_diario_economico : A.custo_estimado?.custo_diario_padrao_equivalente;
+            const custoB = bIsEcon ? B.custo_estimado?.custo_diario_economico : B.custo_estimado?.custo_diario_padrao_equivalente;
+            const custoEcon = aIsEcon ? custoA : custoB;
+            const custoPad = aIsEcon ? custoB : custoA;
+            const economiaDia =
+              typeof custoEcon === "number" && typeof custoPad === "number" ? custoPad - custoEcon : undefined;
+            const economiaPct =
+              typeof economiaDia === "number" && typeof custoPad === "number" && custoPad > 0
+                ? (economiaDia / custoPad) * 100
+                : undefined;
+            const economiaMes = typeof economiaDia === "number" ? economiaDia * 30 : undefined;
+
+            // Macros
+            const rA = A.resumo, rB = B.resumo;
+            const macroRows: { l: string; a: number; b: number; unit: string }[] = [
+              { l: "Calorias", a: rA.calorias_totais, b: rB.calorias_totais, unit: "kcal" },
+              { l: "Proteína", a: rA.proteina_total, b: rB.proteina_total, unit: "g" },
+              { l: "Carboidrato", a: rA.carboidrato_total, b: rB.carboidrato_total, unit: "g" },
+              { l: "Gordura", a: rA.gordura_total, b: rB.gordura_total, unit: "g" },
+            ];
+
+            // Substituições principais por refeição: pareia por nome de refeição
+            const refsA = A.refeicoes || [];
+            const refsB = B.refeicoes || [];
+            type Diff = { refeicao: string; deA: string; paraB: string };
+            const diffs: Diff[] = [];
+            refsA.forEach((mA) => {
+              const mB = refsB.find((x) => x.refeicao?.toLowerCase() === mA.refeicao?.toLowerCase());
+              if (!mB) return;
+              const lenA = mA.alimentos?.length || 0;
+              const lenB = mB.alimentos?.length || 0;
+              const len = Math.min(lenA, lenB);
+              for (let i = 0; i < len; i++) {
+                const aN = mA.alimentos?.[i]?.alimento?.trim() || "";
+                const bN = mB.alimentos?.[i]?.alimento?.trim() || "";
+                if (aN && bN && aN.toLowerCase() !== bN.toLowerCase()) {
+                  diffs.push({ refeicao: mA.refeicao, deA: aN, paraB: bN });
+                }
+              }
+            });
+            const diffsTop = diffs.slice(0, 12);
+
+            return (
+              <div style={{
+                background: "#0d1218", border: "1px solid #2a3d4a", borderLeft: "3px solid #60a5fa",
+                borderRadius: 10, padding: "16px 20px", marginBottom: 20,
+              }}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: "#60a5fa", letterSpacing: "0.06em", textTransform: "uppercase" as const, marginBottom: 14 }}>
+                  🔀 Comparativo · {labelA} (atual) × {labelB}
+                </div>
+
+                {/* Custo */}
+                <div style={{ marginBottom: 18 }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: T.muted, letterSpacing: "0.08em", textTransform: "uppercase" as const, marginBottom: 8 }}>
+                    Custo estimado
+                  </div>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 10 }}>
+                    <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 8, padding: "10px 12px" }}>
+                      <div style={{ fontSize: 10, color: T.muted, marginBottom: 4 }}>{labelA} / dia</div>
+                      <div style={{ fontSize: 16, fontWeight: 800, color: colorA }}>{fmt$(custoA)}</div>
+                    </div>
+                    <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 8, padding: "10px 12px" }}>
+                      <div style={{ fontSize: 10, color: T.muted, marginBottom: 4 }}>{labelB} / dia</div>
+                      <div style={{ fontSize: 16, fontWeight: 800, color: colorB }}>{fmt$(custoB)}</div>
+                    </div>
+                    <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 8, padding: "10px 12px" }}>
+                      <div style={{ fontSize: 10, color: T.muted, marginBottom: 4 }}>Economia / dia</div>
+                      <div style={{ fontSize: 16, fontWeight: 800, color: "#1D9E75" }}>
+                        {fmt$(economiaDia)}{" "}
+                        {typeof economiaPct === "number" && (
+                          <span style={{ fontSize: 10, color: T.muted, fontWeight: 600 }}>({economiaPct.toFixed(1)}%)</span>
+                        )}
+                      </div>
+                    </div>
+                    <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 8, padding: "10px 12px" }}>
+                      <div style={{ fontSize: 10, color: T.muted, marginBottom: 4 }}>Projeção / mês</div>
+                      <div style={{ fontSize: 16, fontWeight: 800, color: "#1D9E75" }}>{fmt$(economiaMes)}</div>
+                    </div>
+                  </div>
+                  {(!custoA || !custoB) && (
+                    <div style={{ marginTop: 8, fontSize: 10, color: T.muted, fontStyle: "italic" as const }}>
+                      Estimativas de custo dependem do bloco "Custo Estimado" gerado pela IA — pode ser parcial se um dos modos não retornou valores.
+                    </div>
+                  )}
+                </div>
+
+                {/* Macros */}
+                <div style={{ marginBottom: 18 }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: T.muted, letterSpacing: "0.08em", textTransform: "uppercase" as const, marginBottom: 8 }}>
+                    Macros & calorias
+                  </div>
+                  <div style={{ display: "grid", gap: 6 }}>
+                    {macroRows.map(({ l, a, b, unit }) => {
+                      const delta = (b ?? 0) - (a ?? 0);
+                      const sign = delta > 0 ? "+" : "";
+                      const deltaColor = Math.abs(delta) < 1 ? T.muted : delta > 0 ? "#fbbf24" : "#60a5fa";
+                      return (
+                        <div key={l} style={{
+                          display: "grid", gridTemplateColumns: "1fr auto auto auto", gap: 12, alignItems: "center",
+                          padding: "8px 12px", background: T.card, border: `1px solid ${T.border}`, borderRadius: 6,
+                          fontSize: 12,
+                        }}>
+                          <span style={{ color: T.text, fontWeight: 600 }}>{l}</span>
+                          <span style={{ color: colorA, fontWeight: 700, minWidth: 80, textAlign: "right" as const }}>
+                            {a ?? "—"} <span style={{ color: T.muted, fontWeight: 500 }}>{unit}</span>
+                          </span>
+                          <span style={{ color: colorB, fontWeight: 700, minWidth: 80, textAlign: "right" as const }}>
+                            {b ?? "—"} <span style={{ color: T.muted, fontWeight: 500 }}>{unit}</span>
+                          </span>
+                          <span style={{ color: deltaColor, fontSize: 11, fontWeight: 700, minWidth: 70, textAlign: "right" as const }}>
+                            Δ {sign}{Math.round(delta)} {unit}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div style={{ marginTop: 6, display: "flex", gap: 14, fontSize: 10, color: T.muted }}>
+                    <span><span style={{ color: colorA, fontWeight: 700 }}>■</span> {labelA}</span>
+                    <span><span style={{ color: colorB, fontWeight: 700 }}>■</span> {labelB}</span>
+                    <span>Δ = {labelB} − {labelA}</span>
+                  </div>
+                </div>
+
+                {/* Substituições */}
+                <div>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: T.muted, letterSpacing: "0.08em", textTransform: "uppercase" as const, marginBottom: 8 }}>
+                    Substituições detectadas {diffs.length > diffsTop.length && (
+                      <span style={{ color: T.muted2, textTransform: "none" as const, fontWeight: 500 }}>
+                        (mostrando {diffsTop.length} de {diffs.length})
+                      </span>
+                    )}
+                  </div>
+                  {diffsTop.length === 0 ? (
+                    <div style={{ fontSize: 12, color: T.muted, fontStyle: "italic" as const, padding: "8px 0" }}>
+                      Nenhuma substituição relevante entre os planos para os mesmos slots de refeição.
+                    </div>
+                  ) : (
+                    <div style={{ display: "grid", gap: 6 }}>
+                      {diffsTop.map((d, i) => (
+                        <div key={i} style={{
+                          display: "grid", gridTemplateColumns: "auto 1fr auto 1fr", gap: 10, alignItems: "center",
+                          padding: "8px 12px", background: T.card, border: `1px solid ${T.border}`, borderRadius: 6,
+                          fontSize: 12,
+                        }}>
+                          <span style={{ fontSize: 10, color: T.muted, textTransform: "uppercase" as const, letterSpacing: "0.06em", minWidth: 80 }}>
+                            {d.refeicao}
+                          </span>
+                          <span style={{ color: colorA, fontWeight: 600 }}>{d.deA}</span>
+                          <span style={{ color: T.muted, fontWeight: 700 }}>→</span>
+                          <span style={{ color: colorB, fontWeight: 600 }}>{d.paraB}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })()}
+
           {/* Bloco GLUT-4 (se gerado) */}
           {glut4Text && (
             <div style={{ marginBottom: 24 }}>
