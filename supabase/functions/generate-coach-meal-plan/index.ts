@@ -539,10 +539,11 @@ Responda APENAS com JSON válido nesta estrutura exata:
       "alimentos": [
         {
           "alimento": "string",
-          "quantidade": "string em gramas",
+          "quantidade": "string (${perfilFisiologico?.medidas_caseiras ? "MEDIDA CASEIRA, ex: '2 colheres de sopa cheias', '1 xícara de chá', '1 fatia média'" : "em gramas"})",
+          "quantidade_g": "string (gramatura técnica em g, ex: '120g'${perfilFisiologico?.medidas_caseiras ? " — OBRIGATÓRIO quando medidas caseiras está ativo" : " — opcional, igual a 'quantidade'"})",
           "observacao": "string ou null",
           "substituicoes": [
-            { "alimento": "string", "quantidade": "string em gramas", "observacao": "string ou null", "grupo": "proteina | carbo | gordura" }
+            { "alimento": "string", "quantidade": "string ${perfilFisiologico?.medidas_caseiras ? "(medida caseira)" : "(em gramas)"}", "quantidade_g": "string (gramatura em g)", "observacao": "string ou null", "grupo": "proteina | carbo | gordura" }
           ]
         }
       ]
@@ -564,7 +565,18 @@ Responda APENAS com JSON válido nesta estrutura exata:
     "cycling_ativo": boolean,
     "protocolos_ativos": ["string"],
     "insights_coach": ["string"]
-  }${perfilFisiologico?.modo_economico ? `,
+  }${perfilFisiologico?.medidas_caseiras ? `,
+  "mapa_medidas_caseiras": {
+    "ativo": true,
+    "descricao": "Tabela de equivalência: cada medida caseira usada no plano e sua gramatura/volume exato. Use este mapa quando precisar converter para a balança.",
+    "equivalencias": [
+      { "medida": "string (ex: '1 colher de sopa cheia de arroz cozido')", "gramatura": "string (ex: '25g')", "alimento_referencia": "string (ex: 'arroz branco cozido')", "observacao": "string ou null" }
+    ],
+    "utensilios_padrao": [
+      { "utensilio": "string (ex: 'Colher de sopa rasa')", "volume_ml": number, "peso_referencia_g": "string (ex: '10–15g sólidos secos / 10ml líquidos')" }
+    ],
+    "dica_paciente": "string curta orientando o paciente a usar a balança APENAS na primeira semana para calibrar o olho — depois, seguir pelas medidas caseiras."
+  }` : ""}${perfilFisiologico?.modo_economico ? `,
   "custo_estimado": {
     "moeda": "BRL",
     "modo_economico_ativo": true,
