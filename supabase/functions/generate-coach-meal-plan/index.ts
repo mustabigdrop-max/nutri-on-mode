@@ -238,6 +238,15 @@ ${glut4Text ? `BLOCO FISIOLÓGICO COMPLETO GERADO PARA REFERÊNCIA (use as quant
 PROTOCOLO FARMACOLÓGICO ATIVO (interprete CADA composto e aplique os ajustes da Regra 2):
 ${protocoloFarmacologico || protocStr || "Nenhum protocolo farmacológico informado"}
 
+PERFIL FISIOLÓGICO AVANÇADO (aplicar protocolos do system prompt conforme flags):
+- Histórico intestinal: ${perfilFisiologico?.historico_intestinal || "Não informado"}
+- Fermentados atuais: ${perfilFisiologico?.fermentados_atual || "Não informado"}
+- Sensibilidade à insulina: ${perfilFisiologico?.sensibilidade_insulina || "Não informada"}
+- Objetivos secundários: ${(perfilFisiologico?.objetivos_secundarios || []).join(", ") || "Nenhum"}
+- Variedade funcional ativa: ${perfilFisiologico?.variedade_funcional ? "true" : "false"}
+- Protocolo microbiota ativo: ${perfilFisiologico?.protocolo_microbiota ? "true" : "false"}
+- Cycling de carboidratos: ${perfilFisiologico?.cycling_carbo ? "true" : "false"}
+
 OUTROS DADOS:
 - Restrições alimentares: ${restricoesStr || "Nenhuma"}
 - Preferências alimentares: ${preferencias || "Não informadas"}
