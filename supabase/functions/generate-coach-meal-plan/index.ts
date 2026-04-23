@@ -388,6 +388,9 @@ PERFIL FISIOLÓGICO AVANÇADO (aplicar protocolos do system prompt conforme flag
 - Protocolo microbiota ativo: ${perfilFisiologico?.protocolo_microbiota ? "true" : "false"}
 - Cycling de carboidratos: ${perfilFisiologico?.cycling_carbo ? "true" : "false"}
 - Modo Econômico: ${perfilFisiologico?.modo_economico ? "true" : "false"}
+- Perfil econômico do plano: ${perfilFisiologico?.perfil_economico || "intermediario"}
+- Alimentos disponíveis/preferidos do paciente: ${(perfilFisiologico?.alimentos_disponiveis || []).join(", ") || "Nenhum informado"}
+- Outros alimentos preferidos: ${perfilFisiologico?.outros_alimentos || "Nenhum"}
 
 ${perfilFisiologico?.modo_economico ? `
 💰 MODO ECONÔMICO ATIVO — REGRA PRIORITÁRIA DE SELEÇÃO DE ALIMENTOS:
@@ -400,6 +403,73 @@ Priorize EXCLUSIVAMENTE alimentos do banco classificados como "custo": "muito_ba
 - EVITE no Modo Econômico: salmão, camarão, alcatra/contrafilé, costela bovina, bacon, queijo cottage importado, pasta de amendoim premium, mel cru artesanal — substitua por equivalentes nutricionais de menor custo (ex: salmão → sardinha em lata; alcatra → patinho/acém; cottage → queijo minas; mel cru → mel comum em dose menor).
 - MANTENHA todas as outras regras (rotação de proteínas, vísceras 2–3x/semana, ômega-3 via sardinha 3–4x/semana, temperos funcionais, fibras funcionais, regras de combinação obrigatórias).
 - Inclua na resposta uma breve nota explicando 2–3 substituições de equivalência aplicadas (ex: "salmão → sardinha em lata: mesmo perfil EPA+DHA, custo ~80% menor").
+` : ""}
+
+${perfilFisiologico?.perfil_economico === "economico" ? `
+🪙 PERFIL ECONÔMICO DO PLANO = ECONÔMICO — REGRAS OBRIGATÓRIAS DE SUBSTITUIÇÃO:
+
+PROTEÍNAS — priorizar nesta ordem:
+1. Ovo inteiro (base — 4–6/dia é protocolo elite, PDCAAS 1.0)
+2. Sardinha/atum em lata (ômega-3 EPA+DHA barato — 3–4x/semana)
+3. Fígado bovino (2–3x/semana — "nature's multivitamin": B12, ferro heme, vit A, CoQ10, colina)
+4. Moela de frango (2–3x/semana — colágeno + glucosamina + condroitina + 26g proteína/100g)
+5. Coração de frango ou bovino (CoQ10 superior a suplemento + ferro heme + B12)
+6. Coxa/sobrecoxa de frango sem pele (mais barata e palatável que peito)
+7. Língua bovina (1–2x/semana — proteína completa + alta palatabilidade)
+8. Patinho moído / acém / músculo bovino (cortes populares de alto valor)
+— Whey APENAS se já estiver na suplementação atual do paciente.
+
+LATICÍNIOS — priorizar:
+1. Leite em pó integral (4 colheres / 35g em 200ml água = 1 copo de leite integral concentrado, mais barato)
+2. Leite integral (base de aveia — gordura estabiliza IG)
+3. Iogurte natural integral SEM açúcar + 2 colheres de leite em pó batido = "iogurte grego caseiro" com custo ~3x menor
+4. Queijo minas frescal (substituto cottage/ricota — caseína para pré-sono)
+
+CARBOIDRATOS — incluir obrigatoriamente opções populares brasileiras:
+1. Arroz branco + feijão (combinação completa de aminoácidos, baratíssima)
+2. Mandioca / aipim cozido (substituta de batata-doce; amido resistente quando resfriada)
+3. Inhame (IG baixo, prebiótico, vit B6)
+4. Tapioca (apenas pós-treino — substituta de cream of rice)
+5. Cuscuz nordestino (quando aplicável)
+6. Pão francês (refeições rápidas)
+— Mucilon e farinha láctea: APENAS no pós-treino imediato (alto IG), nunca em outras refeições.
+
+GORDURAS — priorizar:
+1. Azeite de oliva extra virgem comprado a granel (1–2 col sopa/refeição)
+2. Amendoim torrado sem sal / pasta de amendoim integral (fonte mais barata de gordura + proteína vegetal)
+3. Leite de coco (receitas de aveia e vitaminas calóricas)
+4. Manteiga sem sal (1 col café no preparo — CLA + vit K2 + butirato)
+— NUNCA prescrever castanha-do-pará, macadâmia, nozes premium ou MCT em pó no perfil econômico.
+
+REGRA DE PALATABILIDADE DAS VÍSCERAS (obrigatório):
+Sempre incluir instrução de preparo no campo "observacao" do alimento ao prescrever vísceras:
+- Fígado: "Refogar com cebola roxa, alho amassado e suco de limão — limão neutraliza sabor forte."
+- Moela: "Pressão 25–30min, depois refogar com temperos."
+- Coração: "Espeto grelhado com cebola e pimentão — alta palatabilidade."
+
+REGRA IOGURTE GREGO CASEIRO (incluir como observação quando prescrever lácteo proteico):
+"Alternativa econômica: bater 200g de iogurte natural integral + 2 col sopa de leite em pó integral no liquidificador = iogurte grego caseiro com custo ~3x menor."
+
+REGRA AVEIA + LÍQUIDO PROTEICO (perfil econômico):
+"Preparar a aveia com leite em pó integral reconstituído (4 col em 200ml água) OU leite integral. Não usar água pura — a gordura do líquido retarda o IG e melhora saciedade."
+
+HACKS DO COACH — incluir no campo "observacao_protocolo" do resumo, lista de 3–5 hacks de custo aplicados ao plano. Ex:
+• "Iogurte grego caseiro: 200g iogurte natural + 2 col leite em pó = proteína equivalente, custo 3x menor"
+• "Fígado 2x/semana elimina necessidade de multivitamínico (~R$80/mês de economia)"
+• "Sardinha em lata 3x/semana = protocolo de ômega-3 completo sem suplemento"
+• "Amendoim a granel = fonte mais barata de gordura + proteína vegetal do mercado"
+• "Leite em pó na aveia = caloria densa + caseína + custo mínimo"
+` : perfilFisiologico?.perfil_economico === "premium" ? `
+💎 PERFIL ECONÔMICO DO PLANO = PREMIUM — sem restrição de orçamento.
+Use as melhores fontes de cada categoria nutricional sem considerar custo (salmão, alcatra, whey isolado, oleaginosas premium, mel cru artesanal, kefir, azeite extra virgem premium, etc.). Vísceras podem aparecer pelo VALOR NUTRICIONAL, não por custo.
+` : `
+⚖️ PERFIL ECONÔMICO DO PLANO = INTERMEDIÁRIO (default).
+Mescle alimentos econômicos com premium. Mantenha vísceras 1–2x/semana pelo valor nutricional. Whey 1x/dia padrão. Sardinha 2–3x/semana.
+`}
+
+${(perfilFisiologico?.alimentos_disponiveis || []).length > 0 || perfilFisiologico?.outros_alimentos ? `
+🛒 ALIMENTOS PREFERIDOS DO PACIENTE (priorize estes itens quando equivalência nutricional permitir; não fique restrito a eles):
+${(perfilFisiologico?.alimentos_disponiveis || []).join(", ")}${perfilFisiologico?.outros_alimentos ? ` | Outros: ${perfilFisiologico?.outros_alimentos}` : ""}
 ` : ""}
 
 OUTROS DADOS:
