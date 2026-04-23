@@ -149,6 +149,19 @@ interface PlanoData {
     protocolos_ativos?: string[];
     insights_coach?: string[];
   };
+  custo_estimado?: {
+    moeda?: string;
+    modo_economico_ativo?: boolean;
+    custo_diario_economico?: number;
+    custo_diario_padrao_equivalente?: number;
+    economia_diaria?: number;
+    economia_percentual?: number;
+    custo_mensal_economico?: number;
+    economia_mensal?: number;
+    refeicoes?: { refeicao: string; custo_economico: number; custo_padrao: number; economia: number }[];
+    premissas?: string;
+    principais_substituicoes?: { de: string; para: string; economia_aprox: string }[];
+  };
 }
 
 const GRUPO_META: Record<GrupoSub, { label: string; color: string; emoji: string }> = {
