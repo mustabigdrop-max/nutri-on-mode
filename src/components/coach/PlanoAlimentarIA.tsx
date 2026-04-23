@@ -1974,6 +1974,7 @@ export default function PlanoAlimentarIA() {
           </div>
         </div>
 
+        {error && (
           <div style={{ background: "#1f0a0a", border: "1px solid #3d1010", borderRadius: 8, padding: "10px 14px", color: T.red, fontSize: 13, marginBottom: 16 }}>
             {error}
           </div>
