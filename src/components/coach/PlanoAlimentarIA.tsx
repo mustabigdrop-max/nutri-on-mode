@@ -164,6 +164,13 @@ interface PlanoData {
     premissas?: string;
     principais_substituicoes?: { de: string; para: string; economia_aprox: string }[];
   };
+  mapa_medidas_caseiras?: {
+    ativo?: boolean;
+    descricao?: string;
+    equivalencias?: { medida: string; gramatura: string; alimento_referencia?: string; observacao?: string | null }[];
+    utensilios_padrao?: { utensilio: string; volume_ml?: number; peso_referencia_g?: string }[];
+    dica_paciente?: string;
+  };
 }
 
 const GRUPO_META: Record<GrupoSub, { label: string; color: string; emoji: string }> = {
@@ -240,7 +247,16 @@ const MealCard = ({ meal, index, onSwap }: MealCardProps) => {
                     </button>
                   )}
                 </div>
-                {a.quantidade && <span style={{ fontSize: 12, color: T.muted, whiteSpace: "nowrap" }}>{a.quantidade}</span>}
+                {a.quantidade && (
+                  <span style={{ fontSize: 12, color: T.muted, whiteSpace: "nowrap", textAlign: "right" }}>
+                    {a.quantidade}
+                    {a.quantidade_g && a.quantidade_g.replace(/\s/g, "").toLowerCase() !== a.quantidade.replace(/\s/g, "").toLowerCase() && (
+                      <span style={{ display: "block", fontSize: 10, color: T.muted2, fontWeight: 600 }}>
+                        ≈ {a.quantidade_g}
+                      </span>
+                    )}
+                  </span>
+                )}
               </div>
 
               {open && subs.length > 0 && (
@@ -305,7 +321,14 @@ const MealCard = ({ meal, index, onSwap }: MealCardProps) => {
                               textTransform: "uppercase", letterSpacing: "0.05em",
                             }}>{meta.emoji} {meta.label}</span>
                             <div style={{ fontSize: 12, color: T.text, fontWeight: 600, lineHeight: 1.3 }}>{sub.alimento}</div>
-                            {sub.quantidade && <div style={{ fontSize: 11, color: T.muted }}>{sub.quantidade}</div>}
+                            {sub.quantidade && (
+                              <div style={{ fontSize: 11, color: T.muted }}>
+                                {sub.quantidade}
+                                {sub.quantidade_g && sub.quantidade_g.replace(/\s/g, "").toLowerCase() !== sub.quantidade.replace(/\s/g, "").toLowerCase() && (
+                                  <span style={{ marginLeft: 6, fontSize: 10, color: T.muted2 }}>≈ {sub.quantidade_g}</span>
+                                )}
+                              </div>
+                            )}
                             {sub.observacao && <div style={{ fontSize: 10, color: T.muted2, fontStyle: "italic" }}>{sub.observacao}</div>}
                             <button
                               onClick={() => onSwap(i, sub)}
