@@ -839,7 +839,10 @@ export default function PlanoAlimentarIA() {
               {saving ? "Salvando..." : savedId ? "✓ Salvo" : "💾 Salvar"}
             </button>
             <button onClick={() => setShowSendModal(true)} style={{ padding: "8px 16px", borderRadius: 8, background: T.green, border: `1px solid ${T.green}`, color: "#0a0f0a", fontSize: 12, cursor: "pointer", fontFamily: "inherit", fontWeight: 700 }}>
-              📨 Enviar ao aluno
+              📨 Enviar
+            </button>
+            <button onClick={() => { setShowHistory(true); loadHistory(); }} style={{ padding: "8px 16px", borderRadius: 8, background: T.bg3, border: `1px solid ${T.border2}`, color: T.text, fontSize: 12, cursor: "pointer", fontFamily: "inherit", fontWeight: 600 }}>
+              🗂️ Histórico
             </button>
             <button onClick={() => { setPlano(null); setSavedId(null); setStep("form"); }} style={{ padding: "8px 16px", borderRadius: 8, background: T.bg3, border: `1px solid ${T.border2}`, color: T.muted, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>
               + Novo
