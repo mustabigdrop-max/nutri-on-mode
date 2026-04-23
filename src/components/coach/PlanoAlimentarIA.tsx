@@ -1091,6 +1091,11 @@ export default function PlanoAlimentarIA() {
           </div>
         </Section>
 
+        {/* Rotina de treino semanal */}
+        <Section title="Rotina de treino">
+          <TrainingSchedule value={trainingSchedule} onChange={setTrainingSchedule} />
+        </Section>
+
         {/* Protocolo de cardio */}
         <Section title="Protocolo de cardio">
           <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: form.fazCardio ? 16 : 0 }}>
