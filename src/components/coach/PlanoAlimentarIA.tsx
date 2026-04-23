@@ -369,6 +369,12 @@ export default function PlanoAlimentarIA() {
   const [history, setHistory] = useState<any[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [historySearch, setHistorySearch] = useState("");
+  // Histórico de comparações
+  const [savingComparison, setSavingComparison] = useState(false);
+  const [savedComparisonId, setSavedComparisonId] = useState<string | null>(null);
+  const [showCompareHistory, setShowCompareHistory] = useState(false);
+  const [compareHistory, setCompareHistory] = useState<any[]>([]);
+  const [loadingCompareHistory, setLoadingCompareHistory] = useState(false);
   const resultRef = useRef<HTMLDivElement>(null);
 
   const loadHistory = async () => {
