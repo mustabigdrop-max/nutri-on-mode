@@ -3,6 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
+import {
+  TrainingSchedule,
+  WeeklySchedule,
+  defaultWeeklySchedule,
+  buildTrainingSchedulePrompt,
+} from "@/components/coach/TrainingSchedule";
 
 // ─── Design tokens (alinhados ao nutriON: dark bg, green accent) ──────────────
 const T = {
@@ -402,6 +408,9 @@ export default function PlanoAlimentarIA() {
   const [glut4Text, setGlut4Text] = useState<string>("");
   const [glut4Loading, setGlut4Loading] = useState(false);
 
+  // Rotina de treino semanal (TrainingSchedule)
+  const [trainingSchedule, setTrainingSchedule] = useState<WeeklySchedule>(defaultWeeklySchedule);
+
   const set = (k: string, v: any) => setForm(f => ({ ...f, [k]: v }));
   const toggleArr = (k: string, v: string) => {
     const arr = (form as any)[k] as string[];
@@ -481,12 +490,20 @@ export default function PlanoAlimentarIA() {
       const restricoesStr = [...form.restricoes, form.outraRestricao].filter(Boolean).join(", ") || "Nenhuma";
       const protocStr = protocolos.find(p => p.v === form.protocolo)?.l || "Nenhum";
 
+      const trainingSchedulePrompt = buildTrainingSchedulePrompt(
+        trainingSchedule,
+        form.peso ? Number(form.peso) : undefined,
+        form.calorias ? Number(form.calorias) : undefined,
+      );
+
       const { data, error: fnError } = await supabase.functions.invoke("generate-coach-meal-plan", {
         body: {
           ...form,
           restricoesStr,
           protocStr,
           userId: user?.id,
+          trainingSchedule,
+          trainingSchedulePrompt,
         },
       });
 
@@ -1072,6 +1089,11 @@ export default function PlanoAlimentarIA() {
               </div>
             )}
           </div>
+        </Section>
+
+        {/* Rotina de treino semanal */}
+        <Section title="Rotina de treino">
+          <TrainingSchedule value={trainingSchedule} onChange={setTrainingSchedule} />
         </Section>
 
         {/* Protocolo de cardio */}
