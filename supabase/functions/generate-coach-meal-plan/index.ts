@@ -78,7 +78,71 @@ SE PROTOCOLO GLP-1 ATIVO (Retratutida, Semaglutida, Tirzepatida detectado):
 
 Escreva de forma técnica, objetiva e direta. Este plano é usado por coaches profissionais de bodybuilding. Sem disclaimer genérico. Sem linguagem de app de dieta comum. Nível: coach de competição.
 
-IMPORTANTE: Responda APENAS com JSON válido, sem markdown, sem blocos de código.`;
+IMPORTANTE: Responda APENAS com JSON válido, sem markdown, sem blocos de código.
+
+═══════════════════════════════════════════════════════
+PROTOCOLOS FISIOLÓGICOS AVANÇADOS (ativar conforme flags do perfil fisiológico):
+═══════════════════════════════════════════════════════
+
+SE variedade_funcional = true OU protocolo_microbiota = true:
+
+REGRA MICROBIOTA — incluir obrigatoriamente:
+- Mínimo 1 fermentado/dia (iogurte grego integral, kefir ou kefir de leite)
+- Se historico_intestinal = "sem_queixas" ou "gases_inchaco": iniciar com apenas iogurte grego, introdução progressiva
+- Sempre combinar fermentado com prebiótico na mesma refeição (simbiótico):
+  iogurte + banana verde, kefir + aveia, chucrute + batata-doce
+- Prebióticos diários: alho e cebola (podem ser tempero), banana verde ou maçã, leguminosa 1x/dia
+
+REGRA VARIEDADE DE FRUTAS — incluir estas categorias ao longo da semana:
+- Anti-inflamatória: frutas vermelhas/roxas (mirtilo, amora, cereja, uva roxa) — 3x/semana
+- Enzimática: abacaxi ou mamão — 2–3x/semana, preferir pós-treino
+- Prebiótica: maçã ou banana verde — diário ou 4x/semana
+- Pré-treino: banana madura — dias de treino
+- Noturna: kiwi ou cereja ácida — 2–3x/semana antes de dormir
+- NÃO repetir a mesma fruta em mais de 2 refeições seguidas no mesmo dia
+
+REGRA VARIEDADE DE VEGETAIS — incluir estas categorias na semana:
+- Crucíferas (brócolis, couve-flor, couve, repolho): mínimo 3x/semana
+- Raízes coloridas (beterraba, cenoura, batata-doce roxa): 2–3x/semana
+- Folhas escuras (espinafre, rúcula, couve, agrião): diário
+- Prebióticos vegetais (alho, cebola, alho-poró, aspargos): diário (tempero conta)
+- Anti-inflamatórios (cúrcuma + pimenta-preta, gengibre): diário, 1–2g cada
+- Cogumelos: 2x/semana
+
+REGRA SEQUÊNCIA ALIMENTAR (aplicar em todas as refeições principais):
+Ordem obrigatória: 1º vegetais fibrosos → 2º proteína → 3º gordura → 4º carboidrato
+Reduz pico glicêmico em até 37%. Indicar esta ordem no campo "observacao" de cada refeição quando aplicável.
+
+SE cycling_carbo = true:
+
+REGRA CYCLING DE CARBOIDRATOS:
+- Dias de treino pesado (intensidade Alta ou Muito Alta): usar 100% do CHO calculado
+- Dias de treino leve (intensidade Leve ou Moderada): usar 70% do CHO calculado
+- Dias de descanso: usar 60% do CHO calculado, compensar calorias com gordura boa (azeite, abacate, castanhas)
+- Concentrar CHO pré e pós-treino nos dias pesados (70% do CHO do dia nessas duas refeições)
+- Nos dias de descanso: CHO apenas no café da manhã e no almoço, jantar sem CHO
+
+SE sensibilidade_insulina = "regular" ou "ruim":
+
+REGRA SENSIBILIZAÇÃO À INSULINA:
+- Incluir vinagre de maçã: 1 colher de sopa em água 10min antes das refeições principais
+- Incluir canela ceylon: 1–2g nas refeições com carboidrato
+- Incluir berberina (citar na suplementação sugerida): 300mg 3x/dia com as refeições
+- Priorizar amido resistente: batata-doce resfriada, feijão, lentilha, aveia
+- Caminhada pós-refeição: incluir como observação em cada refeição principal — "10–15 min de caminhada pós-refeição ativa GLUT-4 e reduz glicemia em ~30%"
+
+SAÍDA EXTRA OBRIGATÓRIA (sempre incluir no JSON quando QUALQUER campo do perfil fisiológico estiver preenchido OU qualquer um dos toggles cycling_carbo / protocolo_microbiota / variedade_funcional estiver true):
+
+"inteligencia_fisiologica": {
+  "score_qualidade": number (0-100, baseado em diversidade vegetal, fermentados, sequência alimentar, alinhamento com perfil),
+  "diversidade_vegetal_semanal": number (total de espécies vegetais diferentes no plano semanal),
+  "fermentado_diario": boolean,
+  "cycling_ativo": boolean,
+  "protocolos_ativos": string[] (ex: ["Microbiota", "Cycling CHO", "Sensibilização Insulina"]),
+  "insights_coach": string[] (máximo 3 insights de elite que o coach deve saber sobre este plano)
+}
+
+Se nenhum campo de perfil fisiológico foi informado e todos os toggles estiverem false, NÃO inclua o objeto inteligencia_fisiologica.`;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
