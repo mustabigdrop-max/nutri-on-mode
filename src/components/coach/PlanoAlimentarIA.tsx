@@ -9,6 +9,7 @@ import {
   defaultWeeklySchedule,
   buildTrainingSchedulePrompt,
 } from "@/components/coach/TrainingSchedule";
+import { validateMedidasCaseiras } from "@/lib/medidasCaseirasValidator";
 
 // ─── Design tokens (alinhados ao nutriON: dark bg, green accent) ──────────────
 const T = {
@@ -2893,6 +2894,70 @@ export default function PlanoAlimentarIA() {
                   style={{ minHeight: 60 }}
                 />
               </div>
+
+              {/* Validação automática contra banco de referências */}
+              {(() => {
+                const report = validateMedidasCaseiras(mp);
+                const headerColor =
+                  report.error > 0 ? T.red : report.warn > 0 ? T.amber : T.green;
+                const headerBg =
+                  report.error > 0 ? "rgba(248,113,113,0.08)" :
+                  report.warn > 0 ? "rgba(251,191,36,0.08)" :
+                  "rgba(74,222,128,0.08)";
+                const icon = report.error > 0 ? "⛔" : report.warn > 0 ? "⚠️" : "✅";
+                return (
+                  <div style={{
+                    marginTop: 14, marginBottom: 4,
+                    background: headerBg,
+                    border: `1px solid ${headerColor}`,
+                    borderRadius: 10, padding: 12,
+                  }}>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: headerColor, marginBottom: 6, display: "flex", alignItems: "center", gap: 6 }}>
+                      {icon} Validação contra banco de referências
+                    </div>
+                    <div style={{ fontSize: 11, color: T.text, marginBottom: 10, lineHeight: 1.5 }}>
+                      {report.resumo}
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                      {report.itens.map((it) => {
+                        const c = it.status === "error" ? T.red : it.status === "warn" ? T.amber : T.green;
+                        const ic = it.status === "error" ? "⛔" : it.status === "warn" ? "⚠️" : "✓";
+                        return (
+                          <div key={it.chave} style={{
+                            display: "flex", alignItems: "flex-start", gap: 8,
+                            padding: "6px 8px", borderRadius: 6,
+                            background: "rgba(0,0,0,0.25)",
+                            borderLeft: `2px solid ${c}`,
+                          }}>
+                            <span style={{ color: c, fontSize: 11, fontWeight: 700, minWidth: 14 }}>{ic}</span>
+                            <div style={{ flex: 1 }}>
+                              <div style={{ fontSize: 11, fontWeight: 600, color: T.text }}>
+                                {it.unidade}{" "}
+                                <span style={{ color: T.muted, fontWeight: 400 }}>
+                                  · {it.encontrados} item(ns){it.esperadoMin > 1 ? ` / mín. ${it.esperadoMin}` : ""}
+                                </span>
+                              </div>
+                              <div style={{ fontSize: 10, color: T.muted, marginTop: 2, lineHeight: 1.4 }}>
+                                {it.mensagem}
+                              </div>
+                              {it.exemplos.length > 0 && (
+                                <div style={{ fontSize: 10, color: T.muted2, marginTop: 2 }}>
+                                  Ex.: {it.exemplos.join(" · ")}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    {report.error > 0 && (
+                      <div style={{ marginTop: 10, fontSize: 10, color: T.red, lineHeight: 1.5 }}>
+                        💡 Sugestão: troque por uma unidade alternativa (ex.: "ambas" para colher, "palma" para proteína) ou desative a opção problemática.
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
 
               {plano && (
                 <button
