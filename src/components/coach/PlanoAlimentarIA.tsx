@@ -348,6 +348,9 @@ export default function PlanoAlimentarIA() {
   const [step, setStep] = useState<"form" | "loading" | "result">("form");
   const [loadingMsg, setLoadingMsg] = useState("");
   const [plano, setPlano] = useState<PlanoData | null>(null);
+  const [planoComparativo, setPlanoComparativo] = useState<PlanoData | null>(null);
+  const [showCompare, setShowCompare] = useState(false);
+  const [comparing, setComparing] = useState(false);
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
   const [saving, setSaving] = useState(false);
