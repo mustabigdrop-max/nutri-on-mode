@@ -322,7 +322,7 @@ const DashboardPage = () => {
   const { partner, isAdmin } = usePartner();
   const { getTodayWorkout, getTodayWorkouts, getNextRestDay, getWorkoutsForDay, todayLog: workoutLog } = useWorkoutSchedule();
   const [upgradeModal, setUpgradeModal] = useState<{ open: boolean; feature: string }>({ open: false, feature: "" });
-  const [protocolosInfo, setProtocolosInfo] = useState<{ total: number; unread: number }>({ total: 0, unread: 0 });
+  const [protocolosInfo, setProtocolosInfo] = useState<{ total: number; unread: number; hasMealPlan: boolean }>({ total: 0, unread: 0, hasMealPlan: false });
   const waterMl = waterLog?.ml_total ?? 0;
   const waterGlasses = Math.round(waterMl / 250);
   const isOnPlus = hasAccess("ON +");
@@ -332,10 +332,14 @@ const DashboardPage = () => {
     (async () => {
       const { data: envs } = await supabase
         .from("protocolo_envios")
-        .select("id")
+        .select("id, tipo_conteudo")
         .eq("destinatario_id", user.id);
-      const ids = (envs || []).map((e: any) => e.id);
-      if (!ids.length) return setProtocolosInfo({ total: 0, unread: 0 });
+      const list = envs || [];
+      const ids = list.map((e: any) => e.id);
+      const hasMealPlan = list.some((e: any) =>
+        Array.isArray(e.tipo_conteudo) && e.tipo_conteudo.includes("plano_alimentar")
+      );
+      if (!ids.length) return setProtocolosInfo({ total: 0, unread: 0, hasMealPlan: false });
       const { data: notifs } = await supabase
         .from("coach_notifications")
         .select("reference_id, read")
@@ -343,7 +347,7 @@ const DashboardPage = () => {
         .in("reference_id", ids);
       const readIds = new Set((notifs || []).filter((n: any) => n.read).map((n: any) => n.reference_id));
       const unread = ids.filter((id) => !readIds.has(id)).length;
-      setProtocolosInfo({ total: ids.length, unread });
+      setProtocolosInfo({ total: ids.length, unread, hasMealPlan });
     })();
   }, [user]);
 
@@ -696,7 +700,21 @@ const DashboardPage = () => {
             </div>
           </button>
         )}
-        {/* Header */}
+        {protocolosInfo.hasMealPlan && (
+          <button
+            onClick={() => navigate("/meus-protocolos")}
+            className="w-full mb-3 flex items-center gap-3 p-3 rounded-xl border border-primary/40 bg-gradient-to-r from-primary/15 to-primary/5 hover:from-primary/20 hover:to-primary/10 transition-all text-left"
+          >
+            <div className="w-10 h-10 rounded-full bg-primary/25 flex items-center justify-center shrink-0">
+              <Utensils className="w-5 h-5 text-primary" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-foreground">Plano Alimentar do Coach</p>
+              <p className="text-xs text-muted-foreground">Toque para abrir e ver suas refeições</p>
+            </div>
+            <ChevronRight className="w-4 h-4 text-primary shrink-0" />
+          </button>
+        )}
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
