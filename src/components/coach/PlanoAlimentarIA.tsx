@@ -665,6 +665,8 @@ export default function PlanoAlimentarIA() {
       setComparing(false);
     }
   };
+
+  const copiarJSON = () => {
     navigator.clipboard.writeText(JSON.stringify(plano, null, 2));
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
