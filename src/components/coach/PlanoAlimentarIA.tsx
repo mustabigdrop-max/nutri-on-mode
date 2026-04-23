@@ -673,7 +673,121 @@ export default function PlanoAlimentarIA() {
     }
   };
 
-  const copiarJSON = () => {
+  // Salva a comparação atual (Econômico vs Padrão) no histórico do coach.
+  const salvarComparacao = async () => {
+    if (!plano || !planoComparativo || !coachProfileId) {
+      toast({ title: "Comparativo indisponível", description: "Gere a versão alternativa antes de salvar.", variant: "destructive" });
+      return;
+    }
+    if (savedComparisonId) {
+      toast({ title: "Comparação já salva ✅", description: "Acesse pelo histórico de comparações." });
+      return;
+    }
+    setSavingComparison(true);
+    try {
+      const aIsEcon = !!plano.custo_estimado?.modo_economico_ativo || !!form.modoEconomico;
+      const A = plano;
+      const B = planoComparativo;
+      const econ = aIsEcon ? A : B;
+      const pad = aIsEcon ? B : A;
+      const resumo = {
+        modo_principal: aIsEcon ? "economico" : "padrao",
+        custo_diario_economico: econ.custo_estimado?.custo_diario_economico ?? null,
+        custo_diario_padrao: pad.custo_estimado?.custo_diario_padrao_equivalente ?? econ.custo_estimado?.custo_diario_padrao_equivalente ?? null,
+        economia_diaria: econ.custo_estimado?.economia_diaria ?? null,
+        economia_mensal: econ.custo_estimado?.economia_mensal ?? null,
+        economia_percentual: econ.custo_estimado?.economia_percentual ?? null,
+        kcal_a: A.resumo.calorias_totais,
+        kcal_b: B.resumo.calorias_totais,
+        proteina_a: A.resumo.proteina_total,
+        proteina_b: B.resumo.proteina_total,
+        carbo_a: A.resumo.carboidrato_total,
+        carbo_b: B.resumo.carboidrato_total,
+        gordura_a: A.resumo.gordura_total,
+        gordura_b: B.resumo.gordura_total,
+      };
+      const { data, error: insErr } = await supabase
+        .from("plano_comparacoes_historico")
+        .insert({
+          coach_id: coachProfileId,
+          patient_name: plano.resumo.nome || form.nome || "Paciente",
+          objetivo: plano.resumo.objetivo || form.objetivo,
+          modo_principal: aIsEcon ? "economico" : "padrao",
+          plano_a: A as any,
+          plano_b: B as any,
+          resumo: resumo as any,
+          observacao: form.observacoes || null,
+        })
+        .select("id")
+        .single();
+      if (insErr) throw insErr;
+      setSavedComparisonId(data.id);
+      toast({ title: "Comparação salva ✅", description: "Disponível no histórico para revisar depois." });
+    } catch (e: any) {
+      toast({ title: "Erro ao salvar comparação", description: e?.message || "Tente novamente.", variant: "destructive" });
+    } finally {
+      setSavingComparison(false);
+    }
+  };
+
+  const carregarHistoricoComparacoes = async () => {
+    if (!coachProfileId) return;
+    setLoadingCompareHistory(true);
+    try {
+      const { data, error: e } = await supabase
+        .from("plano_comparacoes_historico")
+        .select("id, patient_name, objetivo, modo_principal, resumo, created_at")
+        .eq("coach_id", coachProfileId)
+        .order("created_at", { ascending: false })
+        .limit(100);
+      if (e) throw e;
+      setCompareHistory(data || []);
+    } catch (e: any) {
+      toast({ title: "Erro ao carregar histórico", description: e?.message, variant: "destructive" });
+    } finally {
+      setLoadingCompareHistory(false);
+    }
+  };
+
+  const abrirHistoricoComparacoes = async () => {
+    setShowCompareHistory(true);
+    await carregarHistoricoComparacoes();
+  };
+
+  const carregarComparacaoSalva = async (id: string) => {
+    try {
+      const { data, error: e } = await supabase
+        .from("plano_comparacoes_historico")
+        .select("plano_a, plano_b, modo_principal")
+        .eq("id", id)
+        .single();
+      if (e) throw e;
+      setPlano(data.plano_a as any);
+      setPlanoComparativo(data.plano_b as any);
+      setShowCompare(true);
+      setSavedComparisonId(id);
+      setShowCompareHistory(false);
+      setStep("result");
+      toast({ title: "Comparação carregada", description: "Role até o painel comparativo." });
+      setTimeout(() => resultRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
+    } catch (e: any) {
+      toast({ title: "Erro ao carregar", description: e?.message, variant: "destructive" });
+    }
+  };
+
+  const removerComparacaoSalva = async (id: string) => {
+    if (!confirm("Remover esta comparação do histórico?")) return;
+    try {
+      const { error: e } = await supabase.from("plano_comparacoes_historico").delete().eq("id", id);
+      if (e) throw e;
+      setCompareHistory((arr) => arr.filter((x) => x.id !== id));
+      if (savedComparisonId === id) setSavedComparisonId(null);
+      toast({ title: "Removida do histórico" });
+    } catch (e: any) {
+      toast({ title: "Erro ao remover", description: e?.message, variant: "destructive" });
+    }
+  };
+
     navigator.clipboard.writeText(JSON.stringify(plano, null, 2));
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
