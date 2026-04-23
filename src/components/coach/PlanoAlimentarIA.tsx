@@ -455,6 +455,7 @@ export default function PlanoAlimentarIA() {
     variedadeFuncional: false,
     protocoloMicrobiota: false,
     cyclingCarbo: false,
+    modoEconomico: false,
   });
 
   // Estado de UI para a seção colapsável Elite
