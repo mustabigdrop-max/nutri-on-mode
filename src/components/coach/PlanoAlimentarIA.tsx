@@ -605,6 +605,7 @@ export default function PlanoAlimentarIA() {
             variedade_funcional: form.variedadeFuncional,
             protocolo_microbiota: form.protocoloMicrobiota,
             cycling_carbo: form.cyclingCarbo,
+            modo_economico: form.modoEconomico,
           },
         },
       });
