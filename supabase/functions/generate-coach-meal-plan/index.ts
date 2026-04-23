@@ -399,6 +399,34 @@ PERFIL FISIOLÓGICO AVANÇADO (aplicar protocolos do system prompt conforme flag
 - Perfil econômico do plano: ${perfilFisiologico?.perfil_economico || "intermediario"}
 - Alimentos disponíveis/preferidos do paciente: ${(perfilFisiologico?.alimentos_disponiveis || []).join(", ") || "Nenhum informado"}
 - Outros alimentos preferidos: ${perfilFisiologico?.outros_alimentos || "Nenhum"}
+- Medidas Caseiras (Nutrition Coach IA): ${perfilFisiologico?.medidas_caseiras ? "true" : "false"}
+
+${perfilFisiologico?.medidas_caseiras ? `
+🥄 MEDIDAS CASEIRAS ATIVAS — REGRA OBRIGATÓRIA DE APRESENTAÇÃO AO PACIENTE:
+Esta opção é destinada ao paciente final (Nutrition Coach IA). O nutricionista continua tendo acesso à gramatura técnica internamente — você DEVE preencher AMBOS os campos descritos abaixo.
+
+INSTRUÇÕES:
+1) Para CADA alimento de CADA refeição, preencha o campo "quantidade" usando uma medida caseira clara, brasileira e prática (ex: "2 colheres de sopa cheias", "1 xícara de chá", "1 fatia média", "1 concha rasa", "1 unidade média", "1 filé do tamanho da palma da mão", "1 punhado fechado").
+2) Em PARALELO, preencha SEMPRE o campo "quantidade_g" com a gramatura técnica exata em gramas (ex: "120g", "30g", "200g") — esta é a gramatura que o nutricionista usa para conferência interna.
+3) Faça o mesmo nas substituições: "quantidade" em medida caseira + "quantidade_g" em gramatura.
+4) Use medidas caseiras CONSISTENTES no plano inteiro (ex: se "1 colher de sopa de azeite = 10g", use sempre essa equivalência em todas as refeições).
+5) Ao final do JSON, preencha OBRIGATORIAMENTE o objeto "mapa_medidas_caseiras" listando TODAS as medidas caseiras únicas usadas no plano e sua gramatura/volume de referência. Inclua também utensílios padrão (colher de sopa, colher de chá, xícara de chá, copo americano, concha, etc).
+6) Tabela de referência base (use estes valores como padrão, ajuste por densidade do alimento):
+   • 1 colher de sopa rasa: 10–15g (líquidos: 10ml; sólidos secos: 12–15g)
+   • 1 colher de sopa cheia: 18–25g
+   • 1 colher de chá: 3–5g (líquidos: 5ml)
+   • 1 colher de sobremesa: 8–10g
+   • 1 xícara de chá (240ml): arroz cozido ~160g, aveia em flocos ~80g, vegetais cozidos ~120g
+   • 1 copo americano (200ml): leite/iogurte líquido 200g, suco 200g
+   • 1 concha média (80ml): feijão com caldo ~80–100g, sopa ~80ml
+   • 1 escumadeira média: ~100g de arroz/grão escorrido
+   • 1 fatia média de pão de forma: ~25g; 1 fatia de pão francês: ~25g; 1 unidade de pão francês: 50g
+   • 1 unidade média de ovo: 50g; 1 unidade de banana: 100g; 1 unidade média de maçã: 130g
+   • 1 filé de frango do tamanho da palma da mão: 100–120g
+   • 1 bife médio (palma da mão): 100–120g
+   • 1 punhado fechado de oleaginosas: 30g
+   • 1 fio de azeite: 5ml (~5g); 1 colher de sopa de azeite: 10ml (~9g)
+` : ""}
 
 ${perfilFisiologico?.modo_economico ? `
 💰 MODO ECONÔMICO ATIVO — REGRA PRIORITÁRIA DE SELEÇÃO DE ALIMENTOS:
@@ -511,10 +539,11 @@ Responda APENAS com JSON válido nesta estrutura exata:
       "alimentos": [
         {
           "alimento": "string",
-          "quantidade": "string em gramas",
+          "quantidade": "string (${perfilFisiologico?.medidas_caseiras ? "MEDIDA CASEIRA, ex: '2 colheres de sopa cheias', '1 xícara de chá', '1 fatia média'" : "em gramas"})",
+          "quantidade_g": "string (gramatura técnica em g, ex: '120g'${perfilFisiologico?.medidas_caseiras ? " — OBRIGATÓRIO quando medidas caseiras está ativo" : " — opcional, igual a 'quantidade'"})",
           "observacao": "string ou null",
           "substituicoes": [
-            { "alimento": "string", "quantidade": "string em gramas", "observacao": "string ou null", "grupo": "proteina | carbo | gordura" }
+            { "alimento": "string", "quantidade": "string ${perfilFisiologico?.medidas_caseiras ? "(medida caseira)" : "(em gramas)"}", "quantidade_g": "string (gramatura em g)", "observacao": "string ou null", "grupo": "proteina | carbo | gordura" }
           ]
         }
       ]
@@ -536,7 +565,18 @@ Responda APENAS com JSON válido nesta estrutura exata:
     "cycling_ativo": boolean,
     "protocolos_ativos": ["string"],
     "insights_coach": ["string"]
-  }${perfilFisiologico?.modo_economico ? `,
+  }${perfilFisiologico?.medidas_caseiras ? `,
+  "mapa_medidas_caseiras": {
+    "ativo": true,
+    "descricao": "Tabela de equivalência: cada medida caseira usada no plano e sua gramatura/volume exato. Use este mapa quando precisar converter para a balança.",
+    "equivalencias": [
+      { "medida": "string (ex: '1 colher de sopa cheia de arroz cozido')", "gramatura": "string (ex: '25g')", "alimento_referencia": "string (ex: 'arroz branco cozido')", "observacao": "string ou null" }
+    ],
+    "utensilios_padrao": [
+      { "utensilio": "string (ex: 'Colher de sopa rasa')", "volume_ml": number, "peso_referencia_g": "string (ex: '10–15g sólidos secos / 10ml líquidos')" }
+    ],
+    "dica_paciente": "string curta orientando o paciente a usar a balança APENAS na primeira semana para calibrar o olho — depois, seguir pelas medidas caseiras."
+  }` : ""}${perfilFisiologico?.modo_economico ? `,
   "custo_estimado": {
     "moeda": "BRL",
     "modo_economico_ativo": true,
