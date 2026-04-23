@@ -614,6 +614,9 @@ export default function PlanoAlimentarIA() {
           protocolo_microbiota: form.protocoloMicrobiota,
           cycling_carbo: form.cyclingCarbo,
           modo_economico: modoEcon,
+          perfil_economico: form.perfilEconomico,
+          alimentos_disponiveis: form.alimentosDisponiveis,
+          outros_alimentos: form.outrosAlimentos || null,
         },
       },
     });
