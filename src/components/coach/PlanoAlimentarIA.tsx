@@ -639,7 +639,32 @@ export default function PlanoAlimentarIA() {
     }
   };
 
-  const copiarJSON = () => {
+  // Gera (ou esconde) o plano comparativo no modo oposto ao atual.
+  const compararModos = async () => {
+    if (!plano) return;
+    if (planoComparativo) {
+      setShowCompare((s) => !s);
+      return;
+    }
+    const isAtualEconomico = !!plano.custo_estimado?.modo_economico_ativo || !!form.modoEconomico;
+    const oposto = !isAtualEconomico;
+    setComparing(true);
+    try {
+      toast({
+        title: oposto ? "Gerando versão econômica..." : "Gerando versão padrão...",
+        description: "Calculando o mesmo ciclo no modo oposto para comparação.",
+      });
+      const outro = await gerarPlanoCore(oposto);
+      setPlanoComparativo(outro);
+      setShowCompare(true);
+      toast({ title: "Comparativo pronto ✅", description: "Role para ver as diferenças." });
+    } catch (e: any) {
+      console.error(e);
+      toast({ title: "Erro ao gerar comparativo", description: e?.message || "Tente novamente.", variant: "destructive" });
+    } finally {
+      setComparing(false);
+    }
+  };
     navigator.clipboard.writeText(JSON.stringify(plano, null, 2));
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
