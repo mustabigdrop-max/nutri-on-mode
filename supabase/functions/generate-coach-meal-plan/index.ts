@@ -93,6 +93,8 @@ serve(async (req) => {
       fasePeriodizacao, bfAtual, bfMeta, dataCompeticao,
       fazCardio, cardioModalidades, cardioFrequencia, cardioDuracao, cardioQuando, cardioNoCalculo,
       protocoloFarmacologico, atletaCompetitivo, federacaoCategoria,
+      // Rotina de treino semanal
+      trainingSchedulePrompt,
     } = body;
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
@@ -133,6 +135,8 @@ ${atletaCompetitivo ? `- Atleta competitivo: SIM (Federação/Categoria: ${feder
 
 PROTOCOLO DE CARDIO:
 ${cardioBlock}
+
+${trainingSchedulePrompt ? `\n${trainingSchedulePrompt}\n` : ""}
 
 PROTOCOLO FARMACOLÓGICO ATIVO (interprete CADA composto e aplique os ajustes da Regra 2):
 ${protocoloFarmacologico || protocStr || "Nenhum protocolo farmacológico informado"}
