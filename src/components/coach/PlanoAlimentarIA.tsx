@@ -631,8 +631,15 @@ export default function PlanoAlimentarIA() {
 
   const enviarPlano = async () => {
     if (!plano || !coachProfileId || !user?.id) return;
-    if (!selectedPatient) {
-      toast({ title: "Selecione um aluno", variant: "destructive" });
+    const isAluno = recipientType === "aluno";
+    const destUserId = isAluno ? selectedPatient : (partnersList.find((p) => p.id === selectedPartner)?.user_id || null);
+    const destDisplayId = isAluno ? selectedPatient : selectedPartner;
+    const destNome = isAluno
+      ? (patients.find((p) => p.user_id === selectedPatient)?.name || "aluno")
+      : (partnersList.find((p) => p.id === selectedPartner)?.name || "parceiro");
+
+    if (!destDisplayId) {
+      toast({ title: `Selecione um ${isAluno ? "aluno" : "parceiro"}`, variant: "destructive" });
       return;
     }
     setSending(true);
@@ -643,8 +650,8 @@ export default function PlanoAlimentarIA() {
           .from("coach_meal_plans")
           .insert({
             coach_id: coachProfileId,
-            patient_user_id: selectedPatient,
-            patient_name: plano.resumo.nome || form.nome || "Paciente",
+            patient_user_id: destUserId,
+            patient_name: destNome || plano.resumo.nome || form.nome || "Destinatário",
             objetivo: plano.resumo.objetivo || form.objetivo,
             plano: plano as any,
             observacao: sendObs || form.observacoes || null,
@@ -659,7 +666,7 @@ export default function PlanoAlimentarIA() {
         const { error: upErr } = await supabase
           .from("coach_meal_plans")
           .update({
-            patient_user_id: selectedPatient,
+            patient_user_id: destUserId,
             status: "sent",
             sent_at: new Date().toISOString(),
             observacao: sendObs || form.observacoes || null,
@@ -671,32 +678,34 @@ export default function PlanoAlimentarIA() {
 
       await supabase.from("protocolo_envios").insert({
         coach_id: coachProfileId,
-        destinatario_id: selectedPatient,
-        tipo_destinatario: "aluno",
+        destinatario_id: destUserId || destDisplayId,
+        tipo_destinatario: recipientType,
         tipo_conteudo: ["plano_alimentar"],
         conteudo_ids: { plano_alimentar: [planId] },
         observacao: sendObs || null,
         status: "enviado",
       });
 
-      const titulo = "Novo plano alimentar recebido!";
-      const corpo = `Seu coach enviou um novo plano alimentar.${sendObs ? ` ${sendObs}` : ""}`;
-      await supabase.from("coach_notifications").insert({
-        recipient_user_id: selectedPatient,
-        sender_user_id: user.id,
-        notification_type: "meal_plan_sent",
-        title: titulo,
-        message: corpo,
-        reference_id: planId,
-      });
-
-      try {
-        await supabase.functions.invoke("dispara_notificacao", {
-          body: { destinatario_id: selectedPatient, titulo, corpo, referencia_id: planId, tipo: "plano_alimentar" },
+      if (destUserId) {
+        const titulo = "Novo plano alimentar recebido!";
+        const corpo = `Seu coach enviou um novo plano alimentar.${sendObs ? ` ${sendObs}` : ""}`;
+        await supabase.from("coach_notifications").insert({
+          recipient_user_id: destUserId,
+          sender_user_id: user.id,
+          notification_type: "meal_plan_sent",
+          title: titulo,
+          message: corpo,
+          reference_id: planId,
         });
-      } catch {}
 
-      toast({ title: "Plano enviado 📨", description: `Para ${patients.find((p) => p.user_id === selectedPatient)?.name || "aluno"}` });
+        try {
+          await supabase.functions.invoke("dispara_notificacao", {
+            body: { destinatario_id: destUserId, titulo, corpo, referencia_id: planId, tipo: "plano_alimentar" },
+          });
+        } catch {}
+      }
+
+      toast({ title: "Plano enviado 📨", description: `Para ${destNome}` });
       setShowSendModal(false);
       setSendObs("");
     } catch (e: any) {
