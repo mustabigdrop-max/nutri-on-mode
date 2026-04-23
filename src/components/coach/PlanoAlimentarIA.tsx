@@ -504,6 +504,17 @@ export default function PlanoAlimentarIA() {
     cyclingCarbo: false,
     modoEconomico: false,
     medidasCaseiras: false,
+    // Preferências de unidades caseiras (usadas quando medidasCaseiras = true)
+    medidasPrefs: {
+      colher: "sopa" as "sopa" | "cha" | "ambas",
+      xicara: "cha_240" as "cha_240" | "grande_300" | "ambas",
+      copo: "americano_200" as "americano_200" | "grande_300" | "ambas",
+      concha: "media_80" as "pequena_50" | "media_80" | "grande_120",
+      proteinaUnidade: "palma" as "palma" | "filé_tamanho" | "gramas_visuais",
+      usarPunhado: true,
+      usarFatias: true,
+      observacoesMedidas: "",
+    },
     // Perfil econômico (independente do toggle modoEconomico — mais granular)
     perfilEconomico: "intermediario" as "economico" | "intermediario" | "premium",
     alimentosDisponiveis: [] as string[],
