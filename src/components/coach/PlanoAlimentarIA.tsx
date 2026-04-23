@@ -1943,7 +1943,37 @@ export default function PlanoAlimentarIA() {
           </div>
         </div>
 
-        {error && (
+        {/* Toggle: Modo Econômico */}
+        <div style={{
+          background: T.card, border: `1px solid ${form.modoEconomico ? "#B8922A" : T.border}`,
+          borderRadius: 12, padding: 18, marginBottom: 18,
+          display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12,
+        }}>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: T.text, display: "flex", alignItems: "center", gap: 8 }}>
+              💰 Modo Econômico
+            </div>
+            <div style={{ fontSize: 11, color: T.muted, marginTop: 4, lineHeight: 1.5 }}>
+              Prioriza alimentos de menor custo do banco (vísceras, ovo, sardinha em lata, frango inteiro, músculo, leite em pó, aveia) mantendo as MESMAS equivalências nutricionais (proteína ±3g, perfil de gordura, IG).
+            </div>
+          </div>
+          <div
+            onClick={() => set("modoEconomico", !form.modoEconomico)}
+            style={{
+              width: 44, height: 24, borderRadius: 999,
+              background: form.modoEconomico ? "#B8922A" : T.bg3,
+              border: `1px solid ${form.modoEconomico ? "#B8922A" : T.border2}`,
+              position: "relative", cursor: "pointer", transition: "all .2s", flexShrink: 0,
+            }}
+          >
+            <div style={{
+              width: 18, height: 18, borderRadius: "50%",
+              background: form.modoEconomico ? "#0a0f0a" : T.muted,
+              position: "absolute", top: 2, left: form.modoEconomico ? 22 : 2, transition: "left .2s",
+            }} />
+          </div>
+        </div>
+
           <div style={{ background: "#1f0a0a", border: "1px solid #3d1010", borderRadius: 8, padding: "10px 14px", color: T.red, fontSize: 13, marginBottom: 16 }}>
             {error}
           </div>
