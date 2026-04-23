@@ -142,7 +142,144 @@ SAÍDA EXTRA OBRIGATÓRIA (sempre incluir no JSON quando QUALQUER campo do perfi
   "insights_coach": string[] (máximo 3 insights de elite que o coach deve saber sobre este plano)
 }
 
-Se nenhum campo de perfil fisiológico foi informado e todos os toggles estiverem false, NÃO inclua o objeto inteligencia_fisiologica.`;
+Se nenhum campo de perfil fisiológico foi informado e todos os toggles estiverem false, NÃO inclua o objeto inteligencia_fisiologica.
+
+═══════════════════════════════════════════════════════
+BANCO COMPLETO DE ALIMENTOS — BASE DE DADOS NUTRICIONAL nutriON
+═══════════════════════════════════════════════════════
+
+INSTRUÇÃO GERAL: Use este banco para escolher alimentos conforme perfil econômico do usuário, sugerir substitutos com equivalência nutricional REAL (mesma proteína/100g, mesmo perfil de gordura, mesmo IG), distribuir variedade ao longo da semana (NUNCA repetir a mesma proteína mais de 2 dias seguidos), priorizar diversidade dentro da categoria disponível, e adicionar fibras funcionais + temperos ativos em todas as refeições possíveis.
+
+═══════ BLOCO 1 — PROTEÍNAS ANIMAIS COMPLETAS ═══════
+
+BOVINO (proteína/gordura/kcal por 100g | custo | obs coach):
+- Patinho moído >90% magro: 26/5/150 | médio | Base da Vertical Diet (Efferding). Versátil e digerível.
+- Alcatra/contrafilé: 27/8/185 | médio-alto | Israetel: carne vermelha 3-4x/sem.
+- Acém: 24/10/195 | baixo | Pressão libera colágeno. Off-season calórico.
+- Coxão mole/duro: 28/4/145 | médio | Magro ideal cutting/pós-treino.
+- Músculo: 22/6/150 | muito baixo | Colágeno tipo 1, glucosamina natural. Pressão 40min.
+- Costela: 20/18/245 | médio | Off-season, alta palatabilidade = aderência.
+- Fígado: 26/4/140 | muito baixo | B12 >1000% IDR, vit A, ferro heme, CoQ10, colina. 2-3x/sem 100-150g. Refogar com cebola roxa + alho + limão. Poliquin: "nature's multivitamin".
+- Coração: 17/5/115 | muito baixo | CoQ10 altíssimo, taurina. 2x/sem.
+- Língua: 23/15/225 | baixo | Pressão 40min, retirar película. Alta palatabilidade.
+- Tutano: 7/84/786 | muito baixo | Off-season extremo. Ácido oleico, glicina, colágeno.
+
+FRANGO:
+- Peito sem pele: 31/2/165 | médio | Padrão universal. Cutting principal (Israetel).
+- Coxa sem pele: 27/7/180 | baixo | Efferding prefere ao peito (palatabilidade).
+- Sobrecoxa com pele: 24/15/230 | muito baixo | Off-season pesado.
+- Frango inteiro assado: 25/10/200 | muito baixo | Meal prep RP — 1 compra = 5 refeições.
+- Moela: 26/3/130 | muito baixo | Colágeno + glucosamina + condroitina. Pressão 25min.
+- Coração: 26/9/185 | muito baixo | CoQ10, taurina. Espeto ou refogado.
+- Fígado: 24/5/140 | muito baixo | B12, vit A, folato. Refogar rápido com cebola e limão.
+
+SUÍNO:
+- Filé de lombo: 29/4/155 | baixo | Helms: substituto do frango. B1 altíssima. Subestimado.
+- Pernil sem pele: 26/8/185 | baixo | B1, B6, zinco.
+- Paleta: 22/14/215 | muito baixo | Colágeno. Pressão ou assado lento. Off-season.
+- Costelinha: 19/20/260 | médio | Off-season. Refeição de "recuperação emocional".
+- Bacon (sem aditivos): 12/42/417 | médio | Off-season, condimento calórico 1-2 fatias. Alto sódio.
+- Linguiça calabresa artesanal: 15/28/310 | baixo | Off-season esporádico, máx 1x/sem.
+
+PEIXES E FRUTOS DO MAR:
+- Sardinha lata (água): 25/11/200 | muito baixo | EPA+DHA 2g/lata, cálcio (espinhas), vit D. 3-4x/sem. Helms: melhor custo-benefício de ômega-3.
+- Atum lata (água): 28/1/120 | baixo | Selênio alto, ultra-magro. Alternar com sardinha.
+- Tilápia: 26/3/130 | baixo | Magra, textura neutra.
+- Salmão: 25/13/220 | alto | EPA+DHA 3g/100g, astaxantina, vit D. 1-2x/sem.
+- Camarão: 24/1/100 | médio-alto | Astaxantina, iodo. Mais magro por kcal.
+
+OVOS E LATICÍNIOS:
+- Ovo inteiro: 6g prot/5g gord/70 kcal por unidade | muito baixo | PDCAAS 1.0, colina, luteína, vit D. 3-6/dia (sem limite por evidência atual em atletas saudáveis). Efferding/Poliquin/Helms: unanimidade.
+- Iogurte grego integral: 10/5/100 | médio | Caseína+whey, probiótico vivo. Pós-treino/café. Combinar com aveia/banana verde/mel cru.
+- Queijo cottage: 12/4/90 | médio | Caseína liberação lenta. Pré-sono.
+- Queijo minas frescal: 17/10/165 | médio-baixo | Pré-sono.
+- Leite integral: 3.3/3.5/65 por 100ml | baixo | Caseína+whey natural, CLA. Base da aveia. Vertical Diet: 500ml-1L/dia em off-season.
+- Leite em pó integral: 9 prot/9 gord/175 kcal por 35g | muito baixo | Hack: 4 col em 200ml água = leite integral concentrado e mais barato.
+- Kefir de leite: 3.5/3.5/65 por 100ml | baixo | 30-50 cepas vivas. Sonnenburg (Stanford): +19 espécies bacterianas em 10 sem.
+
+═══════ BLOCO 2 — FIBRAS FUNCIONAIS ═══════
+
+- Psyllium husk: 80g fibra/100g | dose 5-10g antes refeições principais | gel viscoso, reduz pico glicêmico até 25%, reduz LDL. Sempre com 300ml+ água. Efferding/Poliquin: controle glicêmico off-season.
+- Linhaça dourada moída: 27 fibra/18 prot/42 gord/534 kcal por 100g | dose 15-30g/dia | ALA, lignanas, anti-inflamatória. SEMPRE moída. Helms: complemento ao peixe.
+- Chia: 34 fibra/17 prot/31 gord/486 kcal por 100g | dose 15-25g/dia | Expande 12x em água, ALA + cálcio + zn + mg. Hidratar 15min vira gel. Pudim: chia + iogurte grego.
+- Aveia em flocos integral: 10 fibra/13 prot/58 cho/370 kcal | dose 60-100g/refeição | Beta-glucana, prebiótico Bifidobacterium. SEMPRE com líquido proteico (regra absoluta nutriON).
+- Farelo de aveia: 15 fibra/17 prot/50 cho/360 kcal | dose 30-50g | Upgrade da aveia, mais beta-glucana e saciedade. Cutting.
+- Semente de abóbora s/casca: 6 fibra/30 prot/49 gord/559 kcal | dose 20-30g/dia | Magnésio mais alto de qualquer semente (262mg/100g), zinco, triptofano. Poliquin: testosterona. Efferding: sono.
+- Semente de girassol: 9 fibra/21 prot/51 gord/585 kcal | dose 20-30g/dia | Vit E, selênio, B5.
+
+═══════ BLOCO 3 — TEMPEROS FUNCIONAIS E ERVAS ═══════
+
+ANTI-INFLAMATÓRIOS:
+- Cúrcuma (curcumina): 1-2g pó/refeição | SEMPRE com pimenta-preta (piperina +2000% absorção). Inibe NFkB/TNF-α (=overtraining markers), reduz DOMS comparável ibuprofeno. Hepatoprotetor. Poliquin/Helms/Efferding.
+- Gengibre (gingerol): 1-3g fresco ou 0.5-1g pó/dia | Inibe COX-2 sem dano GI. Melhora digestão. Reduz náusea (protocolos farmacológicos). Sarcev: bulking.
+- Pimenta-preta (piperina): pitada toda refeição com cúrcuma. REGRA nutriON: cúrcuma sem pimenta-preta NUNCA.
+- Alho (allicina): 2-4 dentes/dia | Antimicrobiano seletivo, vasodilatador, prebiótico (FOS). Base de TODO refogado salgado. Efferding: pilar Vertical Diet. Poliquin: "antibiótico natural do atleta".
+- Cebola (quercetina+FOS): 100-150g/dia | Anti-inflamatório, prebiótico Bifidobacterium, sensibilidade insulina.
+
+MODULADORES DE GLICEMIA:
+- Canela CEYLON (cinamaldeído): 1-3g/dia | APENAS Ceylon (Cássia tem cumarina hepatotóxica). Ativa GLUT-4, reduz pico glicêmico 18-29%. Aveia/iogurte/café. Poliquin: protocolo sensibilização. Israetel.
+- Vinagre de maçã não filtrado (ácido acético): 1 col sopa diluída 10-15min antes refeições com CHO. Reduz pico glicêmico até 34% (Johnston). Esvaziamento gástrico.
+
+ERVAS E DIGESTIVOS:
+- Orégano seco: carvacrol antimicrobiano, vit K. Sobre ovos/carnes/vegetais.
+- Alecrim (ácido rosmarínico+carnosol): neuroprotetor, antioxidante. Marinada carnes/assados.
+- Coentro fresco: quelante metais pesados, vit C/K. Pós-preparo.
+- Salsinha fresca: vit C 133mg/100g (mais que laranja), vit K, folato, ferro. 1 col com feijão = absorção ferro não-heme ↑.
+- Louro: OBRIGATÓRIO no preparo de feijão/lentilha/grão-de-bico (reduz gases).
+- Hortelã (mentol): relaxa músculo liso intestinal. Chá pós-refeição pesada.
+- Manjericão fresco (eugenol): adicionar APÓS preparo (calor destrói).
+- Limão fresco (vit C+flavonoides): suco 1/2 limão por refeição proteica. Aumenta ferro não-heme até 3x. REGRA nutriON: SEMPRE em fígado/feijão/espinafre.
+- Sal rosa Himalaia/marinho não refinado: 3-5g/dia em off-season alta caloria. Efferding: sódio essencial para volume celular muscular e performance.
+
+CONDIMENTOS PREMIUM:
+- Mel cru não pasteurizado: 80 cho/300 kcal por 100g | 1-2 col chá iogurte/aveia | Oligossacarídeos prebióticos, enzimas ativas (só no cru).
+- Azeite de oliva extra virgem (acidez <0.5%): 100g gord/884 kcal | 1-2 col sopa/refeição | Oleocanthal anti-inflamatório, polifenóis, sensibilidade insulina. NUNCA aquecer >180°C. Unanimidade Poliquin/Efferding/Israetel/Helms: 2-4 col/dia.
+- Shoyu/tamari sem glúten baixo sódio: umami sem calorias, fermentado. Marinada/ovo mexido/arroz.
+
+═══════ BLOCO 4 — REGRAS DE EQUIVALÊNCIA NUTRICIONAL (SUBSTITUIÇÃO) ═══════
+
+PROTEÍNA (por 100g comestível):
+- Peito frango (31g) ≈ Lombo suíno (29g) ≈ Coxão mole (28g) ≈ Atum lata (28g)
+- Coxa frango (27g) ≈ Patinho (26g) ≈ Moela (26g) ≈ Coração frango (26g) ≈ Fígado bovino (26g)
+- Sardinha lata (25g) ≈ Alcatra (27g) ≈ Língua (23g)
+- Ovo inteiro: 1 ovo = 6g prot → 3 ovos ≈ 70g peito frango
+
+GORDURA BOA:
+- Azeite 1 col sopa (14g) ≈ Pasta amendoim 25g (12g) ≈ Abacate 80g (12g)
+- Leite de coco 100ml (17g) ≈ Coco ralado 28g (17g)
+
+CHO (IG médio):
+- Arroz branco 150g cozido ≈ Batata inglesa 200g ≈ Mandioca 130g ≈ Inhame 180g ≈ Tapioca 70g
+
+FIBRA (dose funcional solúvel):
+- Psyllium 5g ≈ Chia 20g ≈ Linhaça moída 25g
+
+REGRA SUBSTITUIÇÃO: manter (1) proteína ±3g, (2) perfil de gordura adequado à fase (magro cutting, variado off-season), (3) preferência pelo perfil econômico do usuário, (4) NUNCA o mesmo alimento 2x seguidas.
+
+═══════ BLOCO 5 — REGRAS DE COMBINAÇÃO OBRIGATÓRIAS ═══════
+
+1. Aveia + líquido proteico (leite/kefir/iogurte/leite coco) — OBRIGATÓRIO.
+2. Feijão/lentilha + LOURO — reduz gases, melhora digestão.
+3. Ferro não-heme (feijão/espinafre/lentilha) + vit C (limão ou salsinha fresca).
+4. Cúrcuma + pimenta-preta — SEMPRE juntos.
+5. Alho + azeite — base de todo refogado salgado.
+6. Fibra solúvel (psyllium/chia/aveia) + 300ml+ água.
+7. Fígado/moela + limão — neutraliza sabor e ↑ ferro.
+8. Carne vermelha + vegetais coloridos (antioxidantes compensam estresse oxidativo).
+9. Proteína pós-treino + fruta enzimática (abacaxi/mamão) — ↑ absorção ~15%.
+10. Pré-sono: caseína (cottage/minas) + magnésio (semente abóbora) + triptofano (leite morno).
+
+═══════ INSTRUÇÃO FINAL OBRIGATÓRIA AO GERAR PLANO ═══════
+
+- NUNCA repetir mesma proteína principal mais de 2 dias consecutivos.
+- Rodar semana: bovino / frango / suíno / peixe / ovo / víscera — mín 5 categorias/sem.
+- Vísceras 2-3x/sem independente do perfil (valor nutricional).
+- Sardinha ou atum 3-4x/sem (ômega-3).
+- Temperos funcionais em TODA refeição salgada: mín alho + cebola + cúrcuma + pimenta-preta.
+- Fibra funcional (psyllium/chia/linhaça) em 1-2 refeições/dia, ROTACIONAR (não a mesma todo dia).
+- Suco de limão em TODA refeição com feijão ou víscera.
+- Vísceras: SEMPRE mencionar forma de preparo (palatabilidade = aderência).
+- Mel cru (se disponível) como prebiótico em iogurte/aveia.`;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
