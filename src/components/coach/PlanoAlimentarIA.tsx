@@ -679,7 +679,8 @@ export default function PlanoAlimentarIA() {
       </div>
       ${glut4Text ? `
         <div style="background:#f0fdf4;border:2px solid #4ade80;border-radius:10px;padding:16px;margin:16px 0;">
-          <h3 style="color:#166534;margin:0 0 8px 0;">⚡ Estratégia GLUT-4 Pós-Treino</h3>
+          <h3 style="color:#166534;margin:0 0 4px 0;">⚡ Pós-Treino Imediato — Janela GLUT-4</h3>
+          <div style="font-size:11px;color:#166534;margin:0 0 10px 0;font-weight:600;">📌 Referência prescrita pelo coach: ${({dextrose:"Dextrose pura",tamaras:"Tâmaras Medjool",pao_frances:"Pão francês",pao_branco:"Pão de forma branco",doce_de_leite:"Doce de leite light",mel:"Mel puro",geleia:"Geleia açucarada com pão",leite_condensado:"Leite condensado desnatado",banana:"Banana bem madura",coca:"Coca-Cola (competição)",maltodextrina:"Maltodextrina"} as Record<string,string>)[form.glut4CarbSource] || form.glut4CarbSource}</div>
           <pre style="white-space:pre-wrap;font-family:inherit;font-size:12px;color:#1f2937;margin:0;line-height:1.6;">${glut4Text.replace(/</g, "&lt;")}</pre>
         </div>
       ` : ""}
