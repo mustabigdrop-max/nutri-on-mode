@@ -1816,6 +1816,68 @@ export default function PlanoAlimentarIA() {
           )}
         </div>
 
+        {/* Toggle: Protocolo Microbiota */}
+        <div style={{
+          background: T.card, border: `1px solid ${form.protocoloMicrobiota ? "#B8922A" : T.border}`,
+          borderRadius: 12, padding: 18, marginBottom: 12,
+          display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12,
+        }}>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: T.text, display: "flex", alignItems: "center", gap: 8 }}>
+              🦠 Protocolo Microbiota Ativo
+            </div>
+            <div style={{ fontSize: 11, color: T.muted, marginTop: 4, lineHeight: 1.5 }}>
+              Inclui fermentado diário, combinações simbióticas e prebióticos estratégicos em cada refeição.
+            </div>
+          </div>
+          <div
+            onClick={() => set("protocoloMicrobiota", !form.protocoloMicrobiota)}
+            style={{
+              width: 44, height: 24, borderRadius: 999,
+              background: form.protocoloMicrobiota ? "#B8922A" : T.bg3,
+              border: `1px solid ${form.protocoloMicrobiota ? "#B8922A" : T.border2}`,
+              position: "relative", cursor: "pointer", transition: "all .2s", flexShrink: 0,
+            }}
+          >
+            <div style={{
+              width: 18, height: 18, borderRadius: "50%",
+              background: form.protocoloMicrobiota ? "#0a0f0a" : T.muted,
+              position: "absolute", top: 2, left: form.protocoloMicrobiota ? 22 : 2, transition: "left .2s",
+            }} />
+          </div>
+        </div>
+
+        {/* Toggle: Cycling de Carboidratos */}
+        <div style={{
+          background: T.card, border: `1px solid ${form.cyclingCarbo ? "#B8922A" : T.border}`,
+          borderRadius: 12, padding: 18, marginBottom: 18,
+          display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12,
+        }}>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: T.text, display: "flex", alignItems: "center", gap: 8 }}>
+              📊 Cycling de Carboidratos
+            </div>
+            <div style={{ fontSize: 11, color: T.muted, marginTop: 4, lineHeight: 1.5 }}>
+              Dias de treino pesado recebem CHO máximo. Dias leves e descanso recebem 60–70% do CHO — mantém sensibilidade à insulina alta.
+            </div>
+          </div>
+          <div
+            onClick={() => set("cyclingCarbo", !form.cyclingCarbo)}
+            style={{
+              width: 44, height: 24, borderRadius: 999,
+              background: form.cyclingCarbo ? "#B8922A" : T.bg3,
+              border: `1px solid ${form.cyclingCarbo ? "#B8922A" : T.border2}`,
+              position: "relative", cursor: "pointer", transition: "all .2s", flexShrink: 0,
+            }}
+          >
+            <div style={{
+              width: 18, height: 18, borderRadius: "50%",
+              background: form.cyclingCarbo ? "#0a0f0a" : T.muted,
+              position: "absolute", top: 2, left: form.cyclingCarbo ? 22 : 2, transition: "left .2s",
+            }} />
+          </div>
+        </div>
+
         {error && (
           <div style={{ background: "#1f0a0a", border: "1px solid #3d1010", borderRadius: 8, padding: "10px 14px", color: T.red, fontSize: 13, marginBottom: 16 }}>
             {error}
