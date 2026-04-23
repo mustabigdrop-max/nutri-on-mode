@@ -504,6 +504,17 @@ export default function PlanoAlimentarIA() {
     cyclingCarbo: false,
     modoEconomico: false,
     medidasCaseiras: false,
+    // Preferências de unidades caseiras (usadas quando medidasCaseiras = true)
+    medidasPrefs: {
+      colher: "sopa" as "sopa" | "cha" | "ambas",
+      xicara: "cha_240" as "cha_240" | "grande_300" | "ambas",
+      copo: "americano_200" as "americano_200" | "grande_300" | "ambas",
+      concha: "media_80" as "pequena_50" | "media_80" | "grande_120",
+      proteinaUnidade: "palma" as "palma" | "filé_tamanho" | "gramas_visuais",
+      usarPunhado: true,
+      usarFatias: true,
+      observacoesMedidas: "",
+    },
     // Perfil econômico (independente do toggle modoEconomico — mais granular)
     perfilEconomico: "intermediario" as "economico" | "intermediario" | "premium",
     alimentosDisponiveis: [] as string[],
@@ -641,6 +652,7 @@ export default function PlanoAlimentarIA() {
           cycling_carbo: form.cyclingCarbo,
           modo_economico: modoEcon,
           medidas_caseiras: form.medidasCaseiras,
+          medidas_preferencias: form.medidasCaseiras ? form.medidasPrefs : null,
           perfil_economico: form.perfilEconomico,
           alimentos_disponiveis: form.alimentosDisponiveis,
           outros_alimentos: form.outrosAlimentos || null,
@@ -2805,6 +2817,99 @@ export default function PlanoAlimentarIA() {
           </div>
         </div>
 
+        {/* Painel: Preferências de Unidades Caseiras */}
+        {form.medidasCaseiras && (() => {
+          const mp = form.medidasPrefs;
+          const setMP = (k: keyof typeof mp, v: any) =>
+            setForm(f => ({ ...f, medidasPrefs: { ...f.medidasPrefs, [k]: v } }));
+          const Group = ({ title, children }: { title: string; children: React.ReactNode }) => (
+            <div style={{ marginBottom: 14 }}>
+              <div style={{ fontSize: 10, fontWeight: 700, color: "#B8922A", letterSpacing: "0.08em", textTransform: "uppercase" as const, marginBottom: 8 }}>{title}</div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>{children}</div>
+            </div>
+          );
+          const Chip = ({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) => (
+            <button onClick={onClick} style={{
+              padding: "6px 12px", borderRadius: 999, fontSize: 11, cursor: "pointer", fontFamily: "inherit",
+              border: `1px solid ${active ? "#B8922A" : T.border2}`,
+              background: active ? "rgba(184,146,42,0.15)" : "transparent",
+              color: active ? "#B8922A" : T.muted, fontWeight: active ? 700 : 500,
+              transition: "all .15s",
+            }}>{children}</button>
+          );
+          return (
+            <div style={{
+              background: T.card, border: `1px solid #B8922A`, borderRadius: 12,
+              padding: 18, marginBottom: 18,
+            }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: T.text, marginBottom: 4, display: "flex", alignItems: "center", gap: 8 }}>
+                ⚙️ Preferências de Unidades Caseiras
+              </div>
+              <div style={{ fontSize: 11, color: T.muted, lineHeight: 1.5, marginBottom: 14 }}>
+                Escolha quais utensílios e medidas a IA deve usar como padrão. O Mapa de Referência será regenerado com base nessas escolhas.
+              </div>
+
+              <Group title="Colher padrão">
+                <Chip active={mp.colher === "sopa"} onClick={() => setMP("colher", "sopa")}>Colher de sopa</Chip>
+                <Chip active={mp.colher === "cha"} onClick={() => setMP("colher", "cha")}>Colher de chá</Chip>
+                <Chip active={mp.colher === "ambas"} onClick={() => setMP("colher", "ambas")}>Ambas (sopa + chá)</Chip>
+              </Group>
+
+              <Group title="Xícara padrão">
+                <Chip active={mp.xicara === "cha_240"} onClick={() => setMP("xicara", "cha_240")}>Xícara de chá (240 ml)</Chip>
+                <Chip active={mp.xicara === "grande_300"} onClick={() => setMP("xicara", "grande_300")}>Xícara grande (300 ml)</Chip>
+                <Chip active={mp.xicara === "ambas"} onClick={() => setMP("xicara", "ambas")}>Ambas</Chip>
+              </Group>
+
+              <Group title="Copo padrão">
+                <Chip active={mp.copo === "americano_200"} onClick={() => setMP("copo", "americano_200")}>Copo americano (200 ml)</Chip>
+                <Chip active={mp.copo === "grande_300"} onClick={() => setMP("copo", "grande_300")}>Copo grande (300 ml)</Chip>
+                <Chip active={mp.copo === "ambas"} onClick={() => setMP("copo", "ambas")}>Ambos</Chip>
+              </Group>
+
+              <Group title="Concha (sopas / feijão)">
+                <Chip active={mp.concha === "pequena_50"} onClick={() => setMP("concha", "pequena_50")}>Pequena (~50 ml)</Chip>
+                <Chip active={mp.concha === "media_80"} onClick={() => setMP("concha", "media_80")}>Média (~80 ml)</Chip>
+                <Chip active={mp.concha === "grande_120"} onClick={() => setMP("concha", "grande_120")}>Grande (~120 ml)</Chip>
+              </Group>
+
+              <Group title="Referência de proteína (filé / bife)">
+                <Chip active={mp.proteinaUnidade === "palma"} onClick={() => setMP("proteinaUnidade", "palma")}>Palma da mão</Chip>
+                <Chip active={mp.proteinaUnidade === "filé_tamanho"} onClick={() => setMP("proteinaUnidade", "filé_tamanho")}>Filé pequeno/médio/grande</Chip>
+                <Chip active={mp.proteinaUnidade === "gramas_visuais"} onClick={() => setMP("proteinaUnidade", "gramas_visuais")}>Comparações visuais (baralho, etc.)</Chip>
+              </Group>
+
+              <Group title="Outras unidades">
+                <Chip active={mp.usarPunhado} onClick={() => setMP("usarPunhado", !mp.usarPunhado)}>{mp.usarPunhado ? "✓ " : ""}Usar "punhado" (oleaginosas)</Chip>
+                <Chip active={mp.usarFatias} onClick={() => setMP("usarFatias", !mp.usarFatias)}>{mp.usarFatias ? "✓ " : ""}Usar "fatias" (pão, queijo, frios)</Chip>
+              </Group>
+
+              <div>
+                <Label>Observações para a IA (opcional)</Label>
+                <TextareaField
+                  value={mp.observacoesMedidas}
+                  onChange={(e) => setMP("observacoesMedidas", e.target.value)}
+                  placeholder='Ex: "use sempre colher de sopa rasa", "prefiro ‘1 prato fundo’ ao invés de xícaras", "evite ‘punhado’"'
+                  style={{ minHeight: 60 }}
+                />
+              </div>
+
+              {plano && (
+                <button
+                  onClick={() => gerar()}
+                  style={{
+                    marginTop: 12, padding: "10px 14px", borderRadius: 8,
+                    background: "#B8922A", border: "none", color: "#0a0f0a",
+                    fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
+                    width: "100%",
+                  }}
+                >
+                  ⟳ Regenerar plano e mapa com estas preferências
+                </button>
+              )}
+            </div>
+          );
+        })()}
         {error && (
           <div style={{ background: "#1f0a0a", border: "1px solid #3d1010", borderRadius: 8, padding: "10px 14px", color: T.red, fontSize: 13, marginBottom: 16 }}>
             {error}

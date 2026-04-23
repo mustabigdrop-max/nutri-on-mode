@@ -401,32 +401,65 @@ PERFIL FISIOLÓGICO AVANÇADO (aplicar protocolos do system prompt conforme flag
 - Outros alimentos preferidos: ${perfilFisiologico?.outros_alimentos || "Nenhum"}
 - Medidas Caseiras (Nutrition Coach IA): ${perfilFisiologico?.medidas_caseiras ? "true" : "false"}
 
-${perfilFisiologico?.medidas_caseiras ? `
+${perfilFisiologico?.medidas_caseiras ? (() => {
+  const mp = perfilFisiologico?.medidas_preferencias || {};
+  const colherTxt = mp.colher === "cha" ? "Use APENAS colher de chá (3–5g) como referência principal — evite colher de sopa."
+                  : mp.colher === "ambas" ? "Use colher de sopa E colher de chá conforme apropriado (azeite/açúcar pequenos = chá; arroz/feijão = sopa)."
+                  : "Use colher de sopa (10–15g rasa / 18–25g cheia) como referência principal.";
+  const xicaraTxt = mp.xicara === "grande_300" ? "Use xícara grande (300 ml) como padrão — ex: arroz cozido ~200g, aveia ~100g."
+                  : mp.xicara === "ambas" ? "Pode usar xícara de chá (240 ml) e xícara grande (300 ml) — sempre indique qual."
+                  : "Use xícara de chá (240 ml) como padrão — ex: arroz cozido ~160g, aveia ~80g.";
+  const copoTxt = mp.copo === "grande_300" ? "Use copo grande (300 ml) como padrão para líquidos."
+                : mp.copo === "ambas" ? "Pode usar copo americano (200 ml) e copo grande (300 ml) — sempre indique qual."
+                : "Use copo americano (200 ml) como padrão para líquidos (leite, suco, iogurte).";
+  const conchaTxt = mp.concha === "pequena_50" ? "Use concha PEQUENA (~50 ml / ~50–60g de feijão com caldo)."
+                  : mp.concha === "grande_120" ? "Use concha GRANDE (~120 ml / ~130–150g de feijão com caldo)."
+                  : "Use concha MÉDIA (~80 ml / ~80–100g de feijão com caldo).";
+  const protTxt = mp.proteinaUnidade === "filé_tamanho" ? "Para proteínas, descreva como 'filé pequeno (~80g) / médio (~120g) / grande (~160g)'."
+                : mp.proteinaUnidade === "gramas_visuais" ? "Para proteínas, use comparações visuais (ex: 'do tamanho de um baralho ~100g', 'do tamanho de uma caixa de fósforo ~30g de queijo')."
+                : "Para proteínas, use 'tamanho da palma da mão' (~100–120g) como referência principal.";
+  const punhadoTxt = mp.usarPunhado === false ? "NÃO use a unidade 'punhado' — sempre converta para colheres ou gramas visuais." : "Pode usar 'punhado fechado' (~30g) para oleaginosas.";
+  const fatiasTxt = mp.usarFatias === false ? "EVITE 'fatias' — descreva por unidades ou gramas visuais." : "Pode usar 'fatia' para pão de forma (~25g), pão francês (~25g cada metade), queijos (~20g) e frios (~15g).";
+  const obs = mp.observacoesMedidas ? `\n• Observações específicas do coach: ${mp.observacoesMedidas}` : "";
+  return `
 🥄 MEDIDAS CASEIRAS ATIVAS — REGRA OBRIGATÓRIA DE APRESENTAÇÃO AO PACIENTE:
 Esta opção é destinada ao paciente final (Nutrition Coach IA). O nutricionista continua tendo acesso à gramatura técnica internamente — você DEVE preencher AMBOS os campos descritos abaixo.
 
+PREFERÊNCIAS DE UNIDADES (escolhidas pelo coach — siga RIGOROSAMENTE):
+• Colher: ${colherTxt}
+• Xícara: ${xicaraTxt}
+• Copo: ${copoTxt}
+• Concha: ${conchaTxt}
+• Proteína: ${protTxt}
+• ${punhadoTxt}
+• ${fatiasTxt}${obs}
+
 INSTRUÇÕES:
-1) Para CADA alimento de CADA refeição, preencha o campo "quantidade" usando uma medida caseira clara, brasileira e prática (ex: "2 colheres de sopa cheias", "1 xícara de chá", "1 fatia média", "1 concha rasa", "1 unidade média", "1 filé do tamanho da palma da mão", "1 punhado fechado").
+1) Para CADA alimento de CADA refeição, preencha o campo "quantidade" usando as medidas caseiras conforme as PREFERÊNCIAS acima.
 2) Em PARALELO, preencha SEMPRE o campo "quantidade_g" com a gramatura técnica exata em gramas (ex: "120g", "30g", "200g") — esta é a gramatura que o nutricionista usa para conferência interna.
 3) Faça o mesmo nas substituições: "quantidade" em medida caseira + "quantidade_g" em gramatura.
 4) Use medidas caseiras CONSISTENTES no plano inteiro (ex: se "1 colher de sopa de azeite = 10g", use sempre essa equivalência em todas as refeições).
-5) Ao final do JSON, preencha OBRIGATORIAMENTE o objeto "mapa_medidas_caseiras" listando TODAS as medidas caseiras únicas usadas no plano e sua gramatura/volume de referência. Inclua também utensílios padrão (colher de sopa, colher de chá, xícara de chá, copo americano, concha, etc).
-6) Tabela de referência base (use estes valores como padrão, ajuste por densidade do alimento):
+5) Ao final do JSON, preencha OBRIGATORIAMENTE o objeto "mapa_medidas_caseiras" listando TODAS as medidas caseiras únicas usadas no plano e sua gramatura/volume de referência. Inclua APENAS os utensílios escolhidos nas preferências (não liste utensílios que o coach pediu para evitar).
+6) Tabela de referência base (ajuste por densidade do alimento):
    • 1 colher de sopa rasa: 10–15g (líquidos: 10ml; sólidos secos: 12–15g)
    • 1 colher de sopa cheia: 18–25g
    • 1 colher de chá: 3–5g (líquidos: 5ml)
    • 1 colher de sobremesa: 8–10g
-   • 1 xícara de chá (240ml): arroz cozido ~160g, aveia em flocos ~80g, vegetais cozidos ~120g
-   • 1 copo americano (200ml): leite/iogurte líquido 200g, suco 200g
-   • 1 concha média (80ml): feijão com caldo ~80–100g, sopa ~80ml
+   • 1 xícara de chá (240ml): arroz cozido ~160g, aveia ~80g, vegetais cozidos ~120g
+   • 1 xícara grande (300ml): arroz cozido ~200g, aveia ~100g
+   • 1 copo americano (200ml): leite/iogurte 200g, suco 200g
+   • 1 copo grande (300ml): leite/iogurte 300g
+   • 1 concha pequena (~50ml): feijão com caldo ~50–60g
+   • 1 concha média (~80ml): feijão com caldo ~80–100g
+   • 1 concha grande (~120ml): feijão com caldo ~130–150g
    • 1 escumadeira média: ~100g de arroz/grão escorrido
    • 1 fatia média de pão de forma: ~25g; 1 fatia de pão francês: ~25g; 1 unidade de pão francês: 50g
    • 1 unidade média de ovo: 50g; 1 unidade de banana: 100g; 1 unidade média de maçã: 130g
-   • 1 filé de frango do tamanho da palma da mão: 100–120g
-   • 1 bife médio (palma da mão): 100–120g
+   • 1 filé de frango/bife do tamanho da palma da mão: 100–120g
    • 1 punhado fechado de oleaginosas: 30g
    • 1 fio de azeite: 5ml (~5g); 1 colher de sopa de azeite: 10ml (~9g)
-` : ""}
+`;
+})() : ""}
 
 ${perfilFisiologico?.modo_economico ? `
 💰 MODO ECONÔMICO ATIVO — REGRA PRIORITÁRIA DE SELEÇÃO DE ALIMENTOS:
