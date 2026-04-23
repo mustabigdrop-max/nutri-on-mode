@@ -496,6 +496,32 @@ export default function PlanoAlimentarIA() {
         form.calorias ? Number(form.calorias) : undefined,
       );
 
+      const CARB_LABELS: Record<string, string> = {
+        dextrose: "Dextrose pura",
+        tamaras: "Tâmaras Medjool",
+        pao_frances: "Pão francês",
+        pao_branco: "Pão de forma branco",
+        doce_de_leite: "Doce de leite light",
+        mel: "Mel puro",
+        geleia: "Geleia açucarada com pão",
+        leite_condensado: "Leite condensado desnatado",
+        banana: "Banana bem madura",
+        coca: "Coca-Cola (competição)",
+        maltodextrina: "Maltodextrina",
+      };
+      const glut4Config = form.glut4Enabled
+        ? {
+            enabled: true,
+            carb_source_key: form.glut4CarbSource,
+            carb_source_label: CARB_LABELS[form.glut4CarbSource] || form.glut4CarbSource,
+            uses_intra_malto: form.glut4UsesIntraMalto,
+            intra_malto_grams: Number(form.glut4IntraMaltoG) || 0,
+            timing_minutes: Number(form.glut4TimingMin) || 30,
+            carb_grams: form.glut4CarbGrams ? Number(form.glut4CarbGrams) : null,
+            add_leucine: form.glut4AddLeucine,
+          }
+        : null;
+
       const { data, error: fnError } = await supabase.functions.invoke("generate-coach-meal-plan", {
         body: {
           ...form,
@@ -504,6 +530,8 @@ export default function PlanoAlimentarIA() {
           userId: user?.id,
           trainingSchedule,
           trainingSchedulePrompt,
+          glut4Config,
+          glut4Text: form.glut4Enabled ? glut4Text : "",
         },
       });
 
