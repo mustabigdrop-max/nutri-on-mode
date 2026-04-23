@@ -1165,6 +1165,91 @@ export default function PlanoAlimentarIA() {
             );
           })()}
 
+          {/* Bloco Modo Econômico — Custo & Economia */}
+          {plano.custo_estimado?.modo_economico_ativo && (() => {
+            const c = plano.custo_estimado!;
+            const fmt = (v?: number) =>
+              typeof v === "number"
+                ? v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
+                : "—";
+            const pct = typeof c.economia_percentual === "number" ? c.economia_percentual.toFixed(1) : "—";
+            return (
+              <div style={{
+                background: "#0f1a12", border: "1px solid #1D9E7555", borderLeft: "3px solid #1D9E75",
+                borderRadius: 10, padding: "16px 20px", marginBottom: 20,
+              }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: "#1D9E75", letterSpacing: "0.06em", textTransform: "uppercase" as const }}>
+                    💰 Modo Econômico — Custo Estimado
+                  </span>
+                </div>
+
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 10, marginBottom: 14 }}>
+                  <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 8, padding: "10px 12px" }}>
+                    <div style={{ fontSize: 10, color: T.muted, textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: 4 }}>Custo/dia (econômico)</div>
+                    <div style={{ fontSize: 18, fontWeight: 800, color: "#1D9E75" }}>{fmt(c.custo_diario_economico)}</div>
+                  </div>
+                  <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 8, padding: "10px 12px" }}>
+                    <div style={{ fontSize: 10, color: T.muted, textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: 4 }}>Custo/dia (padrão)</div>
+                    <div style={{ fontSize: 18, fontWeight: 800, color: T.text, textDecoration: "line-through", opacity: 0.7 }}>{fmt(c.custo_diario_padrao_equivalente)}</div>
+                  </div>
+                  <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 8, padding: "10px 12px" }}>
+                    <div style={{ fontSize: 10, color: T.muted, textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: 4 }}>Economia/dia</div>
+                    <div style={{ fontSize: 18, fontWeight: 800, color: "#1D9E75" }}>{fmt(c.economia_diaria)} <span style={{ fontSize: 11, color: T.muted, fontWeight: 600 }}>({pct}%)</span></div>
+                  </div>
+                  <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 8, padding: "10px 12px" }}>
+                    <div style={{ fontSize: 10, color: T.muted, textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: 4 }}>Economia/mês</div>
+                    <div style={{ fontSize: 18, fontWeight: 800, color: "#1D9E75" }}>{fmt(c.economia_mensal)}</div>
+                  </div>
+                </div>
+
+                {c.refeicoes && c.refeicoes.length > 0 && (
+                  <div style={{ marginBottom: 12 }}>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: "#1D9E75", letterSpacing: "0.08em", textTransform: "uppercase" as const, marginBottom: 8 }}>
+                      Custo por refeição
+                    </div>
+                    <div style={{ display: "grid", gap: 6 }}>
+                      {c.refeicoes.map((r, i) => (
+                        <div key={i} style={{
+                          display: "grid", gridTemplateColumns: "1fr auto auto auto", gap: 10, alignItems: "center",
+                          padding: "8px 10px", background: T.card, border: `1px solid ${T.border}`, borderRadius: 6,
+                          fontSize: 12,
+                        }}>
+                          <span style={{ color: T.text, fontWeight: 600 }}>{r.refeicao}</span>
+                          <span style={{ color: T.muted, textDecoration: "line-through", minWidth: 60, textAlign: "right" as const }}>{fmt(r.custo_padrao)}</span>
+                          <span style={{ color: "#1D9E75", fontWeight: 700, minWidth: 60, textAlign: "right" as const }}>{fmt(r.custo_economico)}</span>
+                          <span style={{ color: "#1D9E75", fontSize: 11, fontWeight: 700, minWidth: 70, textAlign: "right" as const }}>−{fmt(r.economia)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {c.principais_substituicoes && c.principais_substituicoes.length > 0 && (
+                  <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid rgba(29,158,117,0.2)" }}>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: "#1D9E75", letterSpacing: "0.08em", textTransform: "uppercase" as const, marginBottom: 8 }}>
+                      Principais substituições aplicadas
+                    </div>
+                    <ul style={{ margin: 0, padding: "0 0 0 18px", color: T.text, fontSize: 12, lineHeight: 1.7 }}>
+                      {c.principais_substituicoes.map((s, i) => (
+                        <li key={i}>
+                          <span style={{ color: T.muted }}>{s.de}</span> → <span style={{ color: T.text, fontWeight: 600 }}>{s.para}</span>
+                          {" "}<span style={{ color: "#1D9E75", fontWeight: 700 }}>({s.economia_aprox})</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {c.premissas && (
+                  <div style={{ marginTop: 12, fontSize: 10, color: T.muted, fontStyle: "italic" as const }}>
+                    📊 {c.premissas}
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+
           {/* Bloco GLUT-4 (se gerado) */}
           {glut4Text && (
             <div style={{ marginBottom: 24 }}>
