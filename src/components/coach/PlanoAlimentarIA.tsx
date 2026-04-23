@@ -439,7 +439,18 @@ export default function PlanoAlimentarIA() {
     glut4CarbSource: "doce_de_leite",
     glut4CarbGrams: "",
     glut4AddLeucine: false,
+    // Perfil Fisiológico Avançado (Elite)
+    historicoIntestinal: "",
+    fermentadosAtual: "",
+    sensibilidadeInsulina: "",
+    objetivosSecundarios: [] as string[],
+    variedadeFuncional: false,
+    protocoloMicrobiota: false,
+    cyclingCarbo: false,
   });
+
+  // Estado de UI para a seção colapsável Elite
+  const [perfilFisioOpen, setPerfilFisioOpen] = useState(false);
 
   // GLUT-4 output state
   const [glut4Text, setGlut4Text] = useState<string>("");
