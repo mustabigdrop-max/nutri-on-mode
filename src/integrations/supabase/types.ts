@@ -4423,6 +4423,53 @@ export type Database = {
         }
         Relationships: []
       }
+      plano_comparacoes_historico: {
+        Row: {
+          coach_id: string
+          created_at: string
+          id: string
+          modo_principal: string
+          objetivo: string | null
+          observacao: string | null
+          patient_name: string | null
+          plano_a: Json
+          plano_b: Json
+          resumo: Json | null
+        }
+        Insert: {
+          coach_id: string
+          created_at?: string
+          id?: string
+          modo_principal?: string
+          objetivo?: string | null
+          observacao?: string | null
+          patient_name?: string | null
+          plano_a: Json
+          plano_b: Json
+          resumo?: Json | null
+        }
+        Update: {
+          coach_id?: string
+          created_at?: string
+          id?: string
+          modo_principal?: string
+          objetivo?: string | null
+          observacao?: string | null
+          patient_name?: string | null
+          plano_a?: Json
+          plano_b?: Json
+          resumo?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plano_comparacoes_historico_coach_id_fkey"
+            columns: ["coach_id"]
+            isOneToOne: false
+            referencedRelation: "coach_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       postural_photos: {
         Row: {
           category: string

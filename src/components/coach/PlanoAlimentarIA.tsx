@@ -369,6 +369,12 @@ export default function PlanoAlimentarIA() {
   const [history, setHistory] = useState<any[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [historySearch, setHistorySearch] = useState("");
+  // Histórico de comparações
+  const [savingComparison, setSavingComparison] = useState(false);
+  const [savedComparisonId, setSavedComparisonId] = useState<string | null>(null);
+  const [showCompareHistory, setShowCompareHistory] = useState(false);
+  const [compareHistory, setCompareHistory] = useState<any[]>([]);
+  const [loadingCompareHistory, setLoadingCompareHistory] = useState(false);
   const resultRef = useRef<HTMLDivElement>(null);
 
   const loadHistory = async () => {
@@ -656,6 +662,7 @@ export default function PlanoAlimentarIA() {
       });
       const outro = await gerarPlanoCore(oposto);
       setPlanoComparativo(outro);
+      setSavedComparisonId(null);
       setShowCompare(true);
       toast({ title: "Comparativo pronto ✅", description: "Role para ver as diferenças." });
     } catch (e: any) {
@@ -663,6 +670,121 @@ export default function PlanoAlimentarIA() {
       toast({ title: "Erro ao gerar comparativo", description: e?.message || "Tente novamente.", variant: "destructive" });
     } finally {
       setComparing(false);
+    }
+  };
+
+  // Salva a comparação atual (Econômico vs Padrão) no histórico do coach.
+  const salvarComparacao = async () => {
+    if (!plano || !planoComparativo || !coachProfileId) {
+      toast({ title: "Comparativo indisponível", description: "Gere a versão alternativa antes de salvar.", variant: "destructive" });
+      return;
+    }
+    if (savedComparisonId) {
+      toast({ title: "Comparação já salva ✅", description: "Acesse pelo histórico de comparações." });
+      return;
+    }
+    setSavingComparison(true);
+    try {
+      const aIsEcon = !!plano.custo_estimado?.modo_economico_ativo || !!form.modoEconomico;
+      const A = plano;
+      const B = planoComparativo;
+      const econ = aIsEcon ? A : B;
+      const pad = aIsEcon ? B : A;
+      const resumo = {
+        modo_principal: aIsEcon ? "economico" : "padrao",
+        custo_diario_economico: econ.custo_estimado?.custo_diario_economico ?? null,
+        custo_diario_padrao: pad.custo_estimado?.custo_diario_padrao_equivalente ?? econ.custo_estimado?.custo_diario_padrao_equivalente ?? null,
+        economia_diaria: econ.custo_estimado?.economia_diaria ?? null,
+        economia_mensal: econ.custo_estimado?.economia_mensal ?? null,
+        economia_percentual: econ.custo_estimado?.economia_percentual ?? null,
+        kcal_a: A.resumo.calorias_totais,
+        kcal_b: B.resumo.calorias_totais,
+        proteina_a: A.resumo.proteina_total,
+        proteina_b: B.resumo.proteina_total,
+        carbo_a: A.resumo.carboidrato_total,
+        carbo_b: B.resumo.carboidrato_total,
+        gordura_a: A.resumo.gordura_total,
+        gordura_b: B.resumo.gordura_total,
+      };
+      const { data, error: insErr } = await supabase
+        .from("plano_comparacoes_historico")
+        .insert({
+          coach_id: coachProfileId,
+          patient_name: plano.resumo.nome || form.nome || "Paciente",
+          objetivo: plano.resumo.objetivo || form.objetivo,
+          modo_principal: aIsEcon ? "economico" : "padrao",
+          plano_a: A as any,
+          plano_b: B as any,
+          resumo: resumo as any,
+          observacao: form.observacoes || null,
+        })
+        .select("id")
+        .single();
+      if (insErr) throw insErr;
+      setSavedComparisonId(data.id);
+      toast({ title: "Comparação salva ✅", description: "Disponível no histórico para revisar depois." });
+    } catch (e: any) {
+      toast({ title: "Erro ao salvar comparação", description: e?.message || "Tente novamente.", variant: "destructive" });
+    } finally {
+      setSavingComparison(false);
+    }
+  };
+
+  const carregarHistoricoComparacoes = async () => {
+    if (!coachProfileId) return;
+    setLoadingCompareHistory(true);
+    try {
+      const { data, error: e } = await supabase
+        .from("plano_comparacoes_historico")
+        .select("id, patient_name, objetivo, modo_principal, resumo, created_at")
+        .eq("coach_id", coachProfileId)
+        .order("created_at", { ascending: false })
+        .limit(100);
+      if (e) throw e;
+      setCompareHistory(data || []);
+    } catch (e: any) {
+      toast({ title: "Erro ao carregar histórico", description: e?.message, variant: "destructive" });
+    } finally {
+      setLoadingCompareHistory(false);
+    }
+  };
+
+  const abrirHistoricoComparacoes = async () => {
+    setShowCompareHistory(true);
+    await carregarHistoricoComparacoes();
+  };
+
+  const carregarComparacaoSalva = async (id: string) => {
+    try {
+      const { data, error: e } = await supabase
+        .from("plano_comparacoes_historico")
+        .select("plano_a, plano_b, modo_principal")
+        .eq("id", id)
+        .single();
+      if (e) throw e;
+      setPlano(data.plano_a as any);
+      setPlanoComparativo(data.plano_b as any);
+      setShowCompare(true);
+      setSavedComparisonId(id);
+      setShowCompareHistory(false);
+      setStep("result");
+      toast({ title: "Comparação carregada", description: "Role até o painel comparativo." });
+      setTimeout(() => resultRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
+    } catch (e: any) {
+      toast({ title: "Erro ao carregar", description: e?.message, variant: "destructive" });
+    }
+  };
+
+  const removerComparacaoSalva = async (id: string) => {
+    if (!confirm("Remover esta comparação do histórico?")) return;
+    try {
+      const { error: e } = await supabase.from("plano_comparacoes_historico").delete().eq("id", id);
+      if (e) throw e;
+      setCompareHistory((arr) => arr.filter((x) => x.id !== id));
+      if (savedComparisonId === id) setSavedComparisonId(null);
+      toast({ title: "Removida do histórico" });
+    } catch (e: any) {
+      toast({ title: "Erro ao remover", description: e?.message, variant: "destructive" });
     }
   };
 
@@ -1297,24 +1419,37 @@ export default function PlanoAlimentarIA() {
                       : ` Gere a versão ${labelOposto} para comparar custo, macros e substituições.`}
                   </div>
                 </div>
-                <button
-                  onClick={compararModos}
-                  disabled={comparing}
-                  style={{
-                    padding: "10px 16px", borderRadius: 8,
-                    background: comparing ? T.bg3 : (planoComparativo ? "transparent" : "#B8922A"),
-                    border: `1px solid ${planoComparativo ? T.green : "#B8922A"}`,
-                    color: planoComparativo ? T.green : (comparing ? T.muted : "#0a0f0a"),
-                    fontSize: 12, fontWeight: 700, cursor: comparing ? "wait" : "pointer",
-                    fontFamily: "inherit", whiteSpace: "nowrap" as const,
-                  }}
-                >
-                  {comparing
-                    ? "Calculando..."
-                    : planoComparativo
-                      ? (showCompare ? "Ocultar comparativo" : "Mostrar comparativo")
-                      : `⇄ Gerar versão ${labelOposto}`}
-                </button>
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" as const }}>
+                  <button
+                    onClick={abrirHistoricoComparacoes}
+                    style={{
+                      padding: "10px 14px", borderRadius: 8,
+                      background: "transparent", border: `1px solid ${T.border2}`,
+                      color: T.muted, fontSize: 12, fontWeight: 700, cursor: "pointer",
+                      fontFamily: "inherit", whiteSpace: "nowrap" as const,
+                    }}
+                  >
+                    🕘 Histórico
+                  </button>
+                  <button
+                    onClick={compararModos}
+                    disabled={comparing}
+                    style={{
+                      padding: "10px 16px", borderRadius: 8,
+                      background: comparing ? T.bg3 : (planoComparativo ? "transparent" : "#B8922A"),
+                      border: `1px solid ${planoComparativo ? T.green : "#B8922A"}`,
+                      color: planoComparativo ? T.green : (comparing ? T.muted : "#0a0f0a"),
+                      fontSize: 12, fontWeight: 700, cursor: comparing ? "wait" : "pointer",
+                      fontFamily: "inherit", whiteSpace: "nowrap" as const,
+                    }}
+                  >
+                    {comparing
+                      ? "Calculando..."
+                      : planoComparativo
+                        ? (showCompare ? "Ocultar comparativo" : "Mostrar comparativo")
+                        : `⇄ Gerar versão ${labelOposto}`}
+                  </button>
+                </div>
               </div>
             );
           })()}
@@ -1492,6 +1627,145 @@ export default function PlanoAlimentarIA() {
               </div>
             );
           })()}
+
+          {/* Botão: Salvar comparação no histórico */}
+          {planoComparativo && showCompare && (
+            <div style={{
+              background: T.card, border: `1px solid ${T.border2}`, borderRadius: 12,
+              padding: "12px 16px", marginBottom: 20,
+              display: "flex", alignItems: "center", justifyContent: "space-between",
+              gap: 12, flexWrap: "wrap" as const,
+            }}>
+              <div style={{ flex: 1, minWidth: 220 }}>
+                <div style={{ fontSize: 12, fontWeight: 700, color: T.text, marginBottom: 2 }}>
+                  💾 Salvar esta comparação
+                </div>
+                <div style={{ fontSize: 11, color: T.muted, lineHeight: 1.5 }}>
+                  Guarda os dois planos com data e modo no histórico do coach para você revisar depois.
+                </div>
+              </div>
+              <button
+                onClick={salvarComparacao}
+                disabled={savingComparison || !!savedComparisonId}
+                style={{
+                  padding: "10px 16px", borderRadius: 8,
+                  background: savedComparisonId ? T.greenBg : (savingComparison ? T.bg3 : T.green),
+                  border: `1px solid ${T.green}`,
+                  color: savedComparisonId ? T.green : (savingComparison ? T.muted : "#0a0f0a"),
+                  fontSize: 12, fontWeight: 700,
+                  cursor: savingComparison || savedComparisonId ? "default" : "pointer",
+                  fontFamily: "inherit", whiteSpace: "nowrap" as const,
+                }}
+              >
+                {savingComparison ? "Salvando..." : savedComparisonId ? "✓ Salva no histórico" : "💾 Salvar comparação"}
+              </button>
+            </div>
+          )}
+
+          {/* Modal: Histórico de comparações */}
+          {showCompareHistory && (
+            <div
+              onClick={() => setShowCompareHistory(false)}
+              style={{
+                position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", zIndex: 1000,
+                display: "flex", alignItems: "center", justifyContent: "center", padding: 20,
+              }}
+            >
+              <div
+                onClick={(e) => e.stopPropagation()}
+                style={{
+                  background: T.bg2, border: `1px solid ${T.border2}`, borderRadius: 14,
+                  width: "100%", maxWidth: 760, maxHeight: "80vh", overflow: "hidden",
+                  display: "flex", flexDirection: "column",
+                }}
+              >
+                <div style={{ padding: "14px 18px", borderBottom: `1px solid ${T.border}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <div>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: T.text }}>🕘 Histórico de comparações</div>
+                    <div style={{ fontSize: 11, color: T.muted, marginTop: 2 }}>
+                      Econômico × Padrão — clique para abrir uma comparação salva.
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setShowCompareHistory(false)}
+                    style={{ padding: "6px 12px", background: T.bg3, border: `1px solid ${T.border2}`, borderRadius: 8, color: T.muted, cursor: "pointer", fontSize: 12, fontFamily: "inherit" }}
+                  >
+                    Fechar
+                  </button>
+                </div>
+                <div style={{ padding: 14, overflowY: "auto" }}>
+                  {loadingCompareHistory ? (
+                    <div style={{ textAlign: "center", padding: 40, color: T.muted, fontSize: 13 }}>Carregando...</div>
+                  ) : compareHistory.length === 0 ? (
+                    <div style={{ textAlign: "center", padding: 40, color: T.muted, fontSize: 13 }}>
+                      Nenhuma comparação salva ainda.
+                    </div>
+                  ) : (
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                      {compareHistory.map((h) => {
+                        const r = h.resumo || {};
+                        const data = new Date(h.created_at);
+                        const dataFmt = data.toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
+                        const modoColor = h.modo_principal === "economico" ? "#1D9E75" : "#B8922A";
+                        const economiaPct = typeof r.economia_percentual === "number" ? `${r.economia_percentual.toFixed(0)}%` : "—";
+                        const economiaMes = typeof r.economia_mensal === "number"
+                          ? r.economia_mensal.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
+                          : "—";
+                        return (
+                          <div key={h.id} style={{
+                            background: T.card, border: `1px solid ${T.border}`, borderRadius: 10,
+                            padding: 12, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10,
+                          }}>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" as const, marginBottom: 4 }}>
+                                <span style={{ fontSize: 13, fontWeight: 700, color: T.text }}>
+                                  {h.patient_name || "Paciente"}
+                                </span>
+                                <span style={{
+                                  fontSize: 9, padding: "2px 8px", borderRadius: 999,
+                                  background: `${modoColor}22`, color: modoColor, fontWeight: 700,
+                                  textTransform: "uppercase" as const, letterSpacing: "0.06em",
+                                }}>
+                                  {h.modo_principal === "economico" ? "Econômico" : "Padrão"}
+                                </span>
+                              </div>
+                              <div style={{ fontSize: 11, color: T.muted, display: "flex", gap: 12, flexWrap: "wrap" as const }}>
+                                <span>📅 {dataFmt}</span>
+                                {h.objetivo && <span>🎯 {h.objetivo}</span>}
+                                <span style={{ color: T.green }}>💰 economia {economiaPct} · {economiaMes}/mês</span>
+                              </div>
+                            </div>
+                            <div style={{ display: "flex", gap: 6 }}>
+                              <button
+                                onClick={() => carregarComparacaoSalva(h.id)}
+                                style={{
+                                  padding: "6px 12px", borderRadius: 6,
+                                  background: T.greenBg, border: `1px solid ${T.green}`,
+                                  color: T.green, fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
+                                }}
+                              >
+                                Abrir
+                              </button>
+                              <button
+                                onClick={() => removerComparacaoSalva(h.id)}
+                                style={{
+                                  padding: "6px 10px", borderRadius: 6,
+                                  background: "transparent", border: `1px solid ${T.border2}`,
+                                  color: T.red, fontSize: 11, cursor: "pointer", fontFamily: "inherit",
+                                }}
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Bloco GLUT-4 (se gerado) */}
           {glut4Text && (
