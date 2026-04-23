@@ -391,6 +391,22 @@ export default function PlanoAlimentarIA() {
           }))
         );
       }
+
+      // Parceiros criados pelo coach (auth user_id)
+      const { data: prs } = await supabase
+        .from("partners")
+        .select("id, user_id, full_name, email")
+        .eq("created_by", user.id);
+      if (prs?.length) {
+        setPartnersList(
+          prs.map((p) => ({
+            id: p.id,
+            user_id: p.user_id,
+            name: p.full_name || "Parceiro",
+            email: p.email || undefined,
+          }))
+        );
+      }
     })();
   }, [user?.id]);
 
