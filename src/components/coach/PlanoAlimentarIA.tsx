@@ -1094,6 +1094,62 @@ export default function PlanoAlimentarIA() {
             </div>
           )}
 
+          {/* Banner Inteligência Fisiológica (Elite) */}
+          {plano.inteligencia_fisiologica && (() => {
+            const inf = plano.inteligencia_fisiologica!;
+            const score = inf.score_qualidade ?? 0;
+            const scoreColor = score >= 90 ? "#1D9E75" : score >= 75 ? "#B8922A" : score >= 60 ? T.muted : T.red;
+            const scoreLabel = score >= 90 ? "Plano de nível elite" : score >= 75 ? "Alta performance" : score >= 60 ? "Funcional — otimização possível" : "Básico — revisar protocolo";
+            const C = 28, R = 24, CIRC = 2 * Math.PI * R;
+            const dash = (score / 100) * CIRC;
+            return (
+              <div style={{
+                background: "#1A1A1A", borderLeft: "3px solid #B8922A", borderRadius: 8,
+                padding: "16px 20px", marginBottom: 20,
+              }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: "#B8922A", letterSpacing: "0.06em", textTransform: "uppercase" as const }}>
+                    ⚡ Inteligência Fisiológica do Plano
+                  </span>
+                </div>
+                <div style={{ display: "flex", gap: 20, alignItems: "center", flexWrap: "wrap" as const }}>
+                  <div style={{ position: "relative", width: C * 2, height: C * 2 }}>
+                    <svg width={C * 2} height={C * 2} style={{ transform: "rotate(-90deg)" }}>
+                      <circle cx={C} cy={C} r={R} fill="none" stroke={T.border2} strokeWidth="4" />
+                      <circle cx={C} cy={C} r={R} fill="none" stroke="#B8922A" strokeWidth="4"
+                        strokeDasharray={`${dash} ${CIRC}`} strokeLinecap="round" />
+                    </svg>
+                    <div style={{
+                      position: "absolute", inset: 0, display: "flex", flexDirection: "column",
+                      alignItems: "center", justifyContent: "center",
+                    }}>
+                      <span style={{ fontSize: 16, fontWeight: 800, color: "#B8922A" }}>{score}</span>
+                      <span style={{ fontSize: 8, color: T.muted }}>/ 100</span>
+                    </div>
+                  </div>
+                  <div style={{ flex: 1, minWidth: 200 }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: scoreColor, marginBottom: 8 }}>{scoreLabel}</div>
+                    <div style={{ display: "grid", gap: 4, fontSize: 12, color: T.muted }}>
+                      <div>Diversidade vegetal: <span style={{ color: T.text, fontWeight: 600 }}>{inf.diversidade_vegetal_semanal ?? 0} espécies/semana</span></div>
+                      <div>Fermentado diário: <span style={{ color: inf.fermentado_diario ? "#1D9E75" : T.muted }}>{inf.fermentado_diario ? "✓" : "✗"}</span></div>
+                      <div>Cycling de CHO: <span style={{ color: inf.cycling_ativo ? "#1D9E75" : T.muted }}>{inf.cycling_ativo ? "✓ Ativo" : "— Inativo"}</span></div>
+                    </div>
+                  </div>
+                </div>
+                {inf.insights_coach && inf.insights_coach.length > 0 && (
+                  <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid rgba(184,146,42,0.2)" }}>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: "#B8922A", letterSpacing: "0.08em", textTransform: "uppercase" as const, marginBottom: 8 }}>
+                      Insights do Coach
+                    </div>
+                    <ul style={{ margin: 0, padding: "0 0 0 18px", color: T.text, fontSize: 12, lineHeight: 1.7 }}>
+                      {inf.insights_coach.map((ins, i) => <li key={i}>{ins}</li>)}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+
           {/* Bloco GLUT-4 (se gerado) */}
           {glut4Text && (
             <div style={{ marginBottom: 24 }}>
