@@ -322,7 +322,7 @@ const DashboardPage = () => {
   const { partner, isAdmin } = usePartner();
   const { getTodayWorkout, getTodayWorkouts, getNextRestDay, getWorkoutsForDay, todayLog: workoutLog } = useWorkoutSchedule();
   const [upgradeModal, setUpgradeModal] = useState<{ open: boolean; feature: string }>({ open: false, feature: "" });
-  const [protocolosInfo, setProtocolosInfo] = useState<{ total: number; unread: number }>({ total: 0, unread: 0 });
+  const [protocolosInfo, setProtocolosInfo] = useState<{ total: number; unread: number; hasMealPlan: boolean }>({ total: 0, unread: 0, hasMealPlan: false });
   const waterMl = waterLog?.ml_total ?? 0;
   const waterGlasses = Math.round(waterMl / 250);
   const isOnPlus = hasAccess("ON +");
