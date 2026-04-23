@@ -99,12 +99,14 @@ type GrupoSub = "proteina" | "carbo" | "gordura" | "outro";
 interface SubstituicaoItem {
   alimento: string;
   quantidade?: string;
+  quantidade_g?: string;
   observacao?: string;
   grupo?: GrupoSub;
 }
 interface MealAlimento {
   alimento: string;
   quantidade?: string;
+  quantidade_g?: string;
   observacao?: string;
   substituicoes?: SubstituicaoItem[];
 }
