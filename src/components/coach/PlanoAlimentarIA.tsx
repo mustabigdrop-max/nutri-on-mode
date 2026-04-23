@@ -467,6 +467,13 @@ export default function PlanoAlimentarIA() {
   // Rotina de treino semanal (TrainingSchedule)
   const [trainingSchedule, setTrainingSchedule] = useState<WeeklySchedule>(defaultWeeklySchedule);
 
+  // Auto-ativar Cycling quando fase = Bulk ou Recomposição
+  useEffect(() => {
+    if (form.fasePeriodizacao === "bulk_limpo" || form.fasePeriodizacao === "bulk_agressivo" || form.fasePeriodizacao === "recomposicao") {
+      setForm(f => f.cyclingCarbo ? f : { ...f, cyclingCarbo: true });
+    }
+  }, [form.fasePeriodizacao]);
+
   const set = (k: string, v: any) => setForm(f => ({ ...f, [k]: v }));
   const toggleArr = (k: string, v: string) => {
     const arr = (form as any)[k] as string[];
