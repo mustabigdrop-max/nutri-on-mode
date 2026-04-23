@@ -580,6 +580,16 @@ export default function PlanoAlimentarIA() {
           trainingSchedulePrompt,
           glut4Config,
           glut4Text: form.glut4Enabled ? glut4Text : "",
+          // Perfil fisiológico avançado
+          perfilFisiologico: {
+            historico_intestinal: form.historicoIntestinal || null,
+            fermentados_atual: form.fermentadosAtual || null,
+            sensibilidade_insulina: form.sensibilidadeInsulina || null,
+            objetivos_secundarios: form.objetivosSecundarios,
+            variedade_funcional: form.variedadeFuncional,
+            protocolo_microbiota: form.protocoloMicrobiota,
+            cycling_carbo: form.cyclingCarbo,
+          },
         },
       });
 
