@@ -332,10 +332,14 @@ const DashboardPage = () => {
     (async () => {
       const { data: envs } = await supabase
         .from("protocolo_envios")
-        .select("id")
+        .select("id, tipo_conteudo")
         .eq("destinatario_id", user.id);
-      const ids = (envs || []).map((e: any) => e.id);
-      if (!ids.length) return setProtocolosInfo({ total: 0, unread: 0 });
+      const list = envs || [];
+      const ids = list.map((e: any) => e.id);
+      const hasMealPlan = list.some((e: any) =>
+        Array.isArray(e.tipo_conteudo) && e.tipo_conteudo.includes("plano_alimentar")
+      );
+      if (!ids.length) return setProtocolosInfo({ total: 0, unread: 0, hasMealPlan: false });
       const { data: notifs } = await supabase
         .from("coach_notifications")
         .select("reference_id, read")
@@ -343,7 +347,7 @@ const DashboardPage = () => {
         .in("reference_id", ids);
       const readIds = new Set((notifs || []).filter((n: any) => n.read).map((n: any) => n.reference_id));
       const unread = ids.filter((id) => !readIds.has(id)).length;
-      setProtocolosInfo({ total: ids.length, unread });
+      setProtocolosInfo({ total: ids.length, unread, hasMealPlan });
     })();
   }, [user]);
 
