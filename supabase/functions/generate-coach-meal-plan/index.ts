@@ -600,10 +600,11 @@ ${perfilFisiologico?.modo_economico ? `
       throw new Error("Resposta da IA não é um JSON válido");
     }
 
-    // ── Sanitização determinística do Pós-Treino Imediato (GLUT-4) ──
-    // Garante que, quando o coach prescreveu uma fonte específica de carboidrato,
-    // a refeição "Pós-Treino Imediato" contenha EXCLUSIVAMENTE essa fonte —
-    // sem whey, maltodextrina, proteína ou gordura.
+    // ── Validação determinística do Pós-Treino Imediato (GLUT-4) ──
+    // Permite 1+ carboidratos compatíveis combinados, mas garante:
+    //   • a fonte principal prescrita pelo coach está presente
+    //   • zero proteína e zero gordura adicionadas (filtra whey/leite/oleaginosas/etc)
+    //   • soma de gramas de CHO bate o alvo (com tolerância ±5g; ajusta a fonte principal se necessário)
     if (glut4Config?.enabled && Array.isArray(parsed?.refeicoes)) {
       const isPosImediato = (nome: string) =>
         /p[óo]s[\s-]?treino\s*imediato|janela\s*glut|glut[\s-]?4/i.test(nome || "");
@@ -616,33 +617,123 @@ ${perfilFisiologico?.modo_economico ? `
           const base = glut4Config.uses_intra_malto ? w * 0.45 : w * 0.65;
           return Math.max(30, Math.min(100, Math.round(base / 5) * 5));
         })();
-      const kcalCho = Math.round(carbGrams * 4);
+
+      // Carboidratos compatíveis permitidos no pós-treino imediato (alta/média absorção)
+      const CARBS_COMPATIVEIS = [
+        "tapioca", "mucilon", "dextrose", "maltodextrina", "malto", "mel", "rapadura",
+        "doce de leite", "leite condensado", "geleia", "geléia", "açúcar", "acucar",
+        "banana", "pão francês", "pao frances", "pão", "pao", "batata-doce", "batata doce",
+        "arroz branco", "frutose", "glicose", "waxy maize", "ciclodextrina", "vitargo",
+        "polvilho", "biju", "beiju", "água de coco", "agua de coco", "suco de uva",
+        "suco de laranja", "purê de batata", "pure de batata", "cuscuz", "cream of rice",
+      ];
+      // Itens proibidos (proteína/gordura) — removidos automaticamente
+      const PROIBIDOS = [
+        "whey", "caseína", "caseina", "albumina", "frango", "peito", "atum", "sardinha",
+        "carne", "patinho", "alcatra", "ovo", "clara", "iogurte", "queijo", "cottage",
+        "ricota", "leite integral", "leite desnatado", "leite semi", "leite em pó",
+        "leite em po", "manteiga", "azeite", "óleo", "oleo", "abacate", "amendoim",
+        "castanha", "noz", "amêndoa", "amendoa", "macadâmia", "macadamia", "pasta de amendoim",
+        "coco ralado", "leite de coco", "bacon", "salmão", "salmao", "tilápia", "tilapia",
+        "leucina", "bcaa", "creatina", "colágeno", "colageno",
+      ];
+      const isCompativel = (nome: string) =>
+        CARBS_COMPATIVEIS.some((c) => nome.toLowerCase().includes(c));
+      const isProibido = (nome: string) =>
+        PROIBIDOS.some((p) => nome.toLowerCase().includes(p));
+
+      // Heurística simples para extrair gramas de uma string "30g", "45 g", "1 colher (15g)"
+      const extrairGramasCho = (a: any): number => {
+        // Se houver campo macros/cho explícito no item, prioriza
+        if (typeof a?.cho === "number") return a.cho;
+        if (typeof a?.carboidrato === "number") return a.carboidrato;
+        const q = String(a?.quantidade || "");
+        const matchCho = q.match(/(\d+(?:[.,]\d+)?)\s*g\s*(?:de\s*)?(?:cho|carboidrato)/i);
+        if (matchCho) return parseFloat(matchCho[1].replace(",", "."));
+        const matchG = q.match(/(\d+(?:[.,]\d+)?)\s*g/i);
+        if (matchG) return parseFloat(matchG[1].replace(",", "."));
+        return 0;
+      };
 
       parsed.refeicoes = parsed.refeicoes.map((m: any) => {
         if (!isPosImediato(m?.refeicao || "")) return m;
 
-        const alimentos: any[] = [
-          {
+        const inputAlimentos: any[] = Array.isArray(m?.alimentos) ? m.alimentos : [];
+        const validacao: string[] = [];
+
+        // 1) Filtra fora qualquer item proibido (proteína/gordura)
+        let limpos = inputAlimentos.filter((a) => {
+          const nome = String(a?.alimento || "");
+          if (isProibido(nome)) {
+            validacao.push(`removido: "${nome}" (proteína/gordura não permitida no pós-imediato)`);
+            return false;
+          }
+          return true;
+        });
+
+        // 2) Mantém apenas carboidratos compatíveis
+        let carbs = limpos.filter((a) => isCompativel(String(a?.alimento || "")));
+        const naoCompat = limpos.filter((a) => !isCompativel(String(a?.alimento || "")));
+        naoCompat.forEach((a) =>
+          validacao.push(`removido: "${a.alimento}" (não é carboidrato compatível pós-treino)`),
+        );
+
+        // 3) Garante presença da fonte principal prescrita pelo coach
+        const temPrincipal = carbs.some((a) =>
+          String(a?.alimento || "").toLowerCase().includes(carbLabel.toLowerCase()),
+        );
+        if (!temPrincipal) {
+          carbs.unshift({
             alimento: carbLabel,
-            quantidade: `${carbGrams}g de carboidrato`,
-            observacao: "Fonte prescrita pelo coach — CHO isolado para pico insulinêmico e translocação de GLUT-4. SEM proteína, SEM gordura.",
+            quantidade: `${carbGrams}g`,
+            observacao: "Fonte principal prescrita pelo coach (adicionada pela validação).",
             substituicoes: [],
-          },
-        ];
+            cho: carbGrams,
+          });
+          validacao.push(`adicionado: fonte principal "${carbLabel}" estava ausente`);
+        }
+
+        // 4) Soma CHO total e ajusta a fonte principal se necessário (tolerância ±5g)
+        let somaCho = carbs.reduce((acc, a) => acc + extrairGramasCho(a), 0);
+        const delta = carbGrams - somaCho;
+        if (Math.abs(delta) > 5) {
+          // Ajusta a primeira ocorrência da fonte principal
+          const idxPrincipal = carbs.findIndex((a) =>
+            String(a?.alimento || "").toLowerCase().includes(carbLabel.toLowerCase()),
+          );
+          if (idxPrincipal >= 0) {
+            const atual = extrairGramasCho(carbs[idxPrincipal]);
+            const novo = Math.max(5, Math.round(atual + delta));
+            carbs[idxPrincipal] = {
+              ...carbs[idxPrincipal],
+              quantidade: `${novo}g`,
+              cho: novo,
+              observacao:
+                (carbs[idxPrincipal].observacao || "") +
+                ` [ajustado de ${atual}g→${novo}g para bater alvo de ${carbGrams}g de CHO]`,
+            };
+            validacao.push(`ajustado: "${carbLabel}" ${atual}g → ${novo}g (alvo ${carbGrams}g)`);
+            somaCho = carbs.reduce((acc, a) => acc + extrairGramasCho(a), 0);
+          }
+        }
+
+        // 5) Adiciona L-leucina se prescrita (aminoácido isolado é permitido)
         if (glut4Config.add_leucine) {
-          alimentos.push({
+          carbs.push({
             alimento: "L-Leucina isolada",
             quantidade: "2g",
             observacao: "mTORC1 isolado, sem competição de aminoácidos.",
             substituicoes: [],
+            cho: 0,
           });
         }
 
         return {
           ...m,
-          alimentos,
-          calorias: kcalCho,
-          macros: { proteina: 0, carboidrato: carbGrams, gordura: 0 },
+          alimentos: carbs,
+          calorias: Math.round(somaCho * 4),
+          macros: { proteina: 0, carboidrato: Math.round(somaCho), gordura: 0 },
+          validacao_pos_treino: validacao.length ? validacao : ["ok: combinação válida, alvo de CHO atingido"],
         };
       });
     }
