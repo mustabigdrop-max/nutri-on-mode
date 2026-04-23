@@ -141,6 +141,35 @@ ${cardioBlock}
 
 ${trainingSchedulePrompt ? `\n${trainingSchedulePrompt}\n` : ""}
 
+${glut4Config?.enabled ? `
+🚨 PÓS-TREINO IMEDIATO PRESCRITO PELO COACH (REGRA INVIOLÁVEL — NÃO SUBSTITUA, NÃO ADICIONE PROTEÍNA, NÃO TROQUE A FONTE):
+- Fonte de carboidrato escolhida: ${glut4Config.carb_source_label}
+- Timing: até ${glut4Config.timing_minutes} minutos após o término do treino
+- Carboidratos: ${glut4Config.carb_grams ?? "calcular pelo peso"}g | Proteína: 0g | Gordura: 0g
+- Maltodextrina intra-treino: ${glut4Config.uses_intra_malto ? `${glut4Config.intra_malto_grams}g (já considerada)` : "NÃO usa"}
+- L-Leucina isolada: ${glut4Config.add_leucine ? "SIM (2g)" : "NÃO"}
+
+OBRIGAÇÕES:
+1) A refeição "Pós-Treino Imediato" DEVE conter EXCLUSIVAMENTE "${glut4Config.carb_source_label}" como item principal — proibido whey, maltodextrina (se já usada intra), proteína animal, gordura.
+2) O HORÁRIO da refeição "Pós-Treino Imediato" DEVE ser exatamente HORÁRIO_DO_TREINO + duração + ${glut4Config.timing_minutes} minutos (use o time/duration_min do dia de treino do schedule). Em hipótese alguma colocar refeições peri-workout em horário desconectado do treino.
+3) Crie também uma refeição "Pós-Treino Sólido" 60–90min depois (com proteína completa + CHO moderado).
+4) Pré-treino sólido: 60–90min ANTES do horário do treino (não horas antes).
+5) Demais refeições do dia distribuídas ao redor desse eixo (não criar café da manhã às 06:00 se o treino é às 13:00 — reorganize todo o cronograma).
+
+${glut4Text ? `BLOCO FISIOLÓGICO COMPLETO GERADO PARA REFERÊNCIA (use as quantidades exatas):\n${glut4Text}\n` : ""}
+` : ""}
+
+⏰ REGRA UNIVERSAL DE TIMING DAS REFEIÇÕES:
+- TODAS as refeições do "PLANO — DIA DE TREINO" devem ser ancoradas ao HORÁRIO REAL do treino daquele dia (campo "time" do schedule). Não use horários genéricos como 06:00 / 09:00 se o treino é em outro turno.
+- Estrutura típica para treino às HH:mm:
+  • Pré-treino sólido: HH:mm − 90min
+  • (opcional) Pré-treino líquido/whey: HH:mm − 30min
+  • Intra-treino: durante o treino (se aplicável)
+  • Pós-treino imediato: fim do treino + 0–30min
+  • Pós-treino sólido: 60–90min depois
+  • Demais refeições: distribuídas ao longo do dia respeitando intervalos de 3h
+- O nome de cada refeição DEVE conter o contexto peri-workout entre parênteses, ex: "Refeição 3 (Pós-Treino Imediato)".
+
 PROTOCOLO FARMACOLÓGICO ATIVO (interprete CADA composto e aplique os ajustes da Regra 2):
 ${protocoloFarmacologico || protocStr || "Nenhum protocolo farmacológico informado"}
 
