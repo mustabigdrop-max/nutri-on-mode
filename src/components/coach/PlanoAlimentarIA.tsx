@@ -141,6 +141,14 @@ interface PlanoData {
   suplementacao?: Suplemento[];
   dica_mce?: { mindset: string; comportamento: string; execucao: string };
   alerta_coach?: string | null;
+  inteligencia_fisiologica?: {
+    score_qualidade?: number;
+    diversidade_vegetal_semanal?: number;
+    fermentado_diario?: boolean;
+    cycling_ativo?: boolean;
+    protocolos_ativos?: string[];
+    insights_coach?: string[];
+  };
 }
 
 const GRUPO_META: Record<GrupoSub, { label: string; color: string; emoji: string }> = {
