@@ -364,6 +364,16 @@ function ContentRenderer({ tipo, items }: { tipo: string; items: any[] }) {
     );
   }
 
+  if (tipo === "plano_alimentar") {
+    return (
+      <div className="space-y-4">
+        {items.map((item: any, idx: number) => (
+          <MealPlanCard key={item.id || idx} item={item} />
+        ))}
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-3">
       {items.map((item: any, idx: number) => (
@@ -396,11 +406,6 @@ function ContentRenderer({ tipo, items }: { tipo: string; items: any[] }) {
                   : JSON.stringify(item.protocol, null, 2)}
               </div>
             )}
-            {item.meals && (
-              <div className="text-xs text-foreground bg-muted/30 rounded p-3 overflow-auto">
-                <pre className="whitespace-pre-wrap">{JSON.stringify(item.meals, null, 2)}</pre>
-              </div>
-            )}
             {item.query && (
               <div className="text-sm">
                 <span className="text-muted-foreground">Pesquisa: </span>
@@ -418,5 +423,147 @@ function ContentRenderer({ tipo, items }: { tipo: string; items: any[] }) {
         </Card>
       ))}
     </div>
+  );
+}
+
+function MealPlanCard({ item }: { item: any }) {
+  const plano = item.plano || {};
+  const resumo = plano.resumo || {};
+  const refeicoes: any[] = Array.isArray(plano.refeicoes)
+    ? plano.refeicoes
+    : Array.isArray(plano.meals)
+    ? plano.meals
+    : [];
+
+  return (
+    <Card className="border-primary/20">
+      <CardContent className="p-4 space-y-4">
+        <div className="flex items-start justify-between gap-3 flex-wrap">
+          <div>
+            <p className="text-[10px] uppercase tracking-wide text-primary font-mono">
+              Plano Alimentar
+            </p>
+            <p className="font-semibold text-foreground">
+              {item.patient_name || "Seu plano"}
+            </p>
+            {(item.objetivo || resumo.objetivo) && (
+              <p className="text-xs text-muted-foreground capitalize">
+                Objetivo: {item.objetivo || resumo.objetivo}
+              </p>
+            )}
+          </div>
+          {(resumo.kcal || resumo.calorias) && (
+            <Badge variant="outline" className="text-xs">
+              {resumo.kcal || resumo.calorias} kcal/dia
+            </Badge>
+          )}
+        </div>
+
+        {(resumo.proteina || resumo.carbo || resumo.gordura) && (
+          <div className="grid grid-cols-3 gap-2">
+            {resumo.proteina != null && (
+              <div className="rounded-lg bg-muted/30 p-2 text-center">
+                <p className="text-[10px] text-muted-foreground uppercase">Proteína</p>
+                <p className="text-sm font-bold text-foreground">{resumo.proteina}g</p>
+              </div>
+            )}
+            {resumo.carbo != null && (
+              <div className="rounded-lg bg-muted/30 p-2 text-center">
+                <p className="text-[10px] text-muted-foreground uppercase">Carbo</p>
+                <p className="text-sm font-bold text-foreground">{resumo.carbo}g</p>
+              </div>
+            )}
+            {resumo.gordura != null && (
+              <div className="rounded-lg bg-muted/30 p-2 text-center">
+                <p className="text-[10px] text-muted-foreground uppercase">Gordura</p>
+                <p className="text-sm font-bold text-foreground">{resumo.gordura}g</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {refeicoes.length > 0 ? (
+          <div className="space-y-2">
+            {refeicoes.map((r: any, i: number) => {
+              const itens: any[] = Array.isArray(r.itens)
+                ? r.itens
+                : Array.isArray(r.items)
+                ? r.items
+                : Array.isArray(r.alimentos)
+                ? r.alimentos
+                : [];
+              const macros = r.macros || {};
+              return (
+                <div
+                  key={i}
+                  className="rounded-lg border border-border bg-card/50 p-3 space-y-2"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="font-semibold text-foreground text-sm">
+                      {r.horario || r.time ? (
+                        <span className="text-primary font-mono mr-2">
+                          {r.horario || r.time}
+                        </span>
+                      ) : null}
+                      {r.nome || r.name || `Refeição ${i + 1}`}
+                    </p>
+                    {(macros.calories || macros.kcal || r.kcal) && (
+                      <Badge variant="outline" className="text-[10px]">
+                        {macros.calories || macros.kcal || r.kcal} kcal
+                      </Badge>
+                    )}
+                  </div>
+                  {itens.length > 0 && (
+                    <ul className="text-xs text-muted-foreground space-y-0.5 pl-1">
+                      {itens.map((it: any, j: number) => (
+                        <li key={j} className="flex gap-2">
+                          <span className="text-primary">•</span>
+                          <span>
+                            {typeof it === "string"
+                              ? it
+                              : `${it.nome || it.name || ""}${
+                                  it.quantidade || it.portion
+                                    ? ` — ${it.quantidade || it.portion}`
+                                    : ""
+                                }`}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  {(macros.protein || macros.carbs || macros.fat) && (
+                    <div className="flex gap-3 text-[10px] text-muted-foreground pt-1 border-t border-border/50">
+                      {macros.protein != null && <span>P: {macros.protein}g</span>}
+                      {macros.carbs != null && <span>C: {macros.carbs}g</span>}
+                      {macros.fat != null && <span>G: {macros.fat}g</span>}
+                    </div>
+                  )}
+                  {r.observacao && (
+                    <p className="text-[11px] text-muted-foreground italic">
+                      {r.observacao}
+                    </p>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="text-xs text-foreground bg-muted/30 rounded p-3 max-h-80 overflow-auto">
+            <pre className="whitespace-pre-wrap">{JSON.stringify(plano, null, 2)}</pre>
+          </div>
+        )}
+
+        {item.observacao && (
+          <div className="rounded-lg bg-primary/5 border border-primary/20 p-3">
+            <p className="text-[10px] uppercase text-primary font-semibold mb-1">
+              Observação do coach
+            </p>
+            <p className="text-sm text-foreground whitespace-pre-wrap">
+              {item.observacao}
+            </p>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }
