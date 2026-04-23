@@ -95,6 +95,9 @@ serve(async (req) => {
       protocoloFarmacologico, atletaCompetitivo, federacaoCategoria,
       // Rotina de treino semanal
       trainingSchedulePrompt,
+      // GLUT-4 (pós-treino imediato prescrito pelo coach)
+      glut4Config,
+      glut4Text,
     } = body;
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
