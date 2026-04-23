@@ -267,6 +267,53 @@ Responda APENAS com JSON válido nesta estrutura exata:
       throw new Error("Resposta da IA não é um JSON válido");
     }
 
+    // ── Sanitização determinística do Pós-Treino Imediato (GLUT-4) ──
+    // Garante que, quando o coach prescreveu uma fonte específica de carboidrato,
+    // a refeição "Pós-Treino Imediato" contenha EXCLUSIVAMENTE essa fonte —
+    // sem whey, maltodextrina, proteína ou gordura.
+    if (glut4Config?.enabled && Array.isArray(parsed?.refeicoes)) {
+      const isPosImediato = (nome: string) =>
+        /p[óo]s[\s-]?treino\s*imediato|janela\s*glut|glut[\s-]?4/i.test(nome || "");
+
+      const carbLabel = glut4Config.carb_source_label as string;
+      const carbGrams =
+        glut4Config.carb_grams ??
+        (() => {
+          const w = Number(peso) || 80;
+          const base = glut4Config.uses_intra_malto ? w * 0.45 : w * 0.65;
+          return Math.max(30, Math.min(100, Math.round(base / 5) * 5));
+        })();
+      const kcalCho = Math.round(carbGrams * 4);
+
+      parsed.refeicoes = parsed.refeicoes.map((m: any) => {
+        if (!isPosImediato(m?.refeicao || "")) return m;
+
+        const alimentos: any[] = [
+          {
+            alimento: carbLabel,
+            quantidade: `${carbGrams}g de carboidrato`,
+            observacao: "Fonte prescrita pelo coach — CHO isolado para pico insulinêmico e translocação de GLUT-4. SEM proteína, SEM gordura.",
+            substituicoes: [],
+          },
+        ];
+        if (glut4Config.add_leucine) {
+          alimentos.push({
+            alimento: "L-Leucina isolada",
+            quantidade: "2g",
+            observacao: "mTORC1 isolado, sem competição de aminoácidos.",
+            substituicoes: [],
+          });
+        }
+
+        return {
+          ...m,
+          alimentos,
+          calorias: kcalCho,
+          macros: { proteina: 0, carboidrato: carbGrams, gordura: 0 },
+        };
+      });
+    }
+
     return new Response(JSON.stringify({ plan: parsed }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
