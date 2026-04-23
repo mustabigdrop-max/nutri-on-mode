@@ -295,7 +295,15 @@ Responda APENAS com JSON válido nesta estrutura exata:
     "comportamento": "string",
     "execucao": "string (incluir alertas farmacológicos e protocolo de cardio detalhado pré/durante/pós)"
   },
-  "alerta_coach": "string com alertas farmacológicos críticos consolidados, ou null"
+  "alerta_coach": "string com alertas farmacológicos críticos consolidados, ou null",
+  "inteligencia_fisiologica": {
+    "score_qualidade": number,
+    "diversidade_vegetal_semanal": number,
+    "fermentado_diario": boolean,
+    "cycling_ativo": boolean,
+    "protocolos_ativos": ["string"],
+    "insights_coach": ["string"]
+  }
 }`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
