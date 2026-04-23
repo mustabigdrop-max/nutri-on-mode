@@ -112,6 +112,23 @@ Deno.serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY ausente");
 
+    // Mapeia chave técnica -> nome humano da fonte (referência explícita escolhida pelo coach)
+    const CARB_SOURCE_LABELS: Record<string, string> = {
+      dextrose: "Dextrose pura",
+      tamaras: "Tâmaras Medjool",
+      pao_frances: "Pão francês",
+      pao_branco: "Pão de forma branco",
+      doce_de_leite: "Doce de leite light",
+      mel: "Mel puro",
+      geleia: "Geleia açucarada com pão",
+      leite_condensado: "Leite condensado desnatado",
+      banana: "Banana bem madura",
+      coca: "Coca-Cola (protocolo de competição)",
+      maltodextrina: "Maltodextrina",
+    };
+    const carbSourceKey = params.carb_source ?? "dextrose";
+    const carbSourceLabel = CARB_SOURCE_LABELS[carbSourceKey] ?? carbSourceKey;
+
     const userMsg = JSON.stringify({
       patient_name: params.patient_name ?? "Paciente",
       weight_kg: Number(params.weight_kg) || 80,
@@ -120,11 +137,17 @@ Deno.serve(async (req) => {
       uses_intra_malto: !!params.uses_intra_malto,
       intra_malto_grams: Number(params.intra_malto_grams) || 0,
       timing_minutes: Number(params.timing_minutes) || 30,
-      carb_source: params.carb_source ?? "dextrose",
+      carb_source: carbSourceKey,
+      carb_source_label: carbSourceLabel,
       carb_grams: params.carb_grams ?? null,
       add_leucine: !!params.add_leucine,
       ergogenic_protocol: params.ergogenic_protocol ?? null,
       plan_context: params.plan_context ?? null,
+      instrucoes_extras: [
+        `O título do bloco DEVE ser exatamente "⚡ PÓS-TREINO IMEDIATO — JANELA GLUT-4".`,
+        `A fonte de CHO escolhida pelo coach foi: "${carbSourceLabel}". Use ESTE nome literal em "🍬 O QUE CONSUMIR" — não substitua por outra fonte.`,
+        `Mostre uma linha "📌 Referência prescrita pelo coach: ${carbSourceLabel}" logo abaixo do título da seção, antes do timing.`,
+      ],
     });
 
     const resp = await fetch(

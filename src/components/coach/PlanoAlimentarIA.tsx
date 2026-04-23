@@ -679,7 +679,8 @@ export default function PlanoAlimentarIA() {
       </div>
       ${glut4Text ? `
         <div style="background:#f0fdf4;border:2px solid #4ade80;border-radius:10px;padding:16px;margin:16px 0;">
-          <h3 style="color:#166534;margin:0 0 8px 0;">⚡ Estratégia GLUT-4 Pós-Treino</h3>
+          <h3 style="color:#166534;margin:0 0 4px 0;">⚡ Pós-Treino Imediato — Janela GLUT-4</h3>
+          <div style="font-size:11px;color:#166534;margin:0 0 10px 0;font-weight:600;">📌 Referência prescrita pelo coach: ${({dextrose:"Dextrose pura",tamaras:"Tâmaras Medjool",pao_frances:"Pão francês",pao_branco:"Pão de forma branco",doce_de_leite:"Doce de leite light",mel:"Mel puro",geleia:"Geleia açucarada com pão",leite_condensado:"Leite condensado desnatado",banana:"Banana bem madura",coca:"Coca-Cola (competição)",maltodextrina:"Maltodextrina"} as Record<string,string>)[form.glut4CarbSource] || form.glut4CarbSource}</div>
           <pre style="white-space:pre-wrap;font-family:inherit;font-size:12px;color:#1f2937;margin:0;line-height:1.6;">${glut4Text.replace(/</g, "&lt;")}</pre>
         </div>
       ` : ""}
@@ -868,9 +869,12 @@ export default function PlanoAlimentarIA() {
             <div style={{ marginBottom: 24 }}>
               <div style={{ fontSize: 11, fontWeight: 700, color: T.green, textTransform: "uppercase" as const, letterSpacing: "0.1em", marginBottom: 12, display: "flex", alignItems: "center", gap: 8 }}>
                 <div style={{ width: 16, height: 1, background: T.green }} />
-                ⚡ Estratégia GLUT-4 Pós-Treino
+                ⚡ Pós-Treino Imediato — Janela GLUT-4
               </div>
               <div style={{ background: T.card, border: `1px solid ${T.green}55`, borderRadius: 10, padding: 16, boxShadow: `0 0 18px ${T.green}11` }}>
+                <div style={{ fontSize: 11, color: T.green, fontWeight: 700, marginBottom: 10, letterSpacing: "0.04em" }}>
+                  📌 Referência prescrita pelo coach: {({dextrose:"Dextrose pura",tamaras:"Tâmaras Medjool",pao_frances:"Pão francês",pao_branco:"Pão de forma branco",doce_de_leite:"Doce de leite light",mel:"Mel puro",geleia:"Geleia açucarada com pão",leite_condensado:"Leite condensado desnatado",banana:"Banana bem madura",coca:"Coca-Cola (competição)",maltodextrina:"Maltodextrina"} as Record<string,string>)[form.glut4CarbSource] || form.glut4CarbSource}
+                </div>
                 <pre style={{ whiteSpace: "pre-wrap", wordBreak: "break-word", fontFamily: "inherit", fontSize: 12, color: T.text, margin: 0, lineHeight: 1.6 }}>{glut4Text}</pre>
               </div>
             </div>
