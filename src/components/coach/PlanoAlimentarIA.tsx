@@ -2959,6 +2959,7 @@ export default function PlanoAlimentarIA() {
                 );
               })()}
 
+              {plano && (
                 <button
                   onClick={() => gerar()}
                   style={{
