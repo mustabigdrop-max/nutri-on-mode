@@ -115,12 +115,20 @@ Reduz pico glicêmico em até 37%. Indicar esta ordem no campo "observacao" de c
 
 SE cycling_carbo = true:
 
-REGRA CYCLING DE CARBOIDRATOS:
-- Dias de treino pesado (intensidade Alta ou Muito Alta): usar 100% do CHO calculado
-- Dias de treino leve (intensidade Leve ou Moderada): usar 70% do CHO calculado
-- Dias de descanso: usar 60% do CHO calculado, compensar calorias com gordura boa (azeite, abacate, castanhas)
-- Concentrar CHO pré e pós-treino nos dias pesados (70% do CHO do dia nessas duas refeições)
-- Nos dias de descanso: CHO apenas no café da manhã e no almoço, jantar sem CHO
+REGRA CYCLING DE CARBOIDRATOS — APLICAR SEM REDUZIR O NÚMERO DE REFEIÇÕES:
+⚠️ OBRIGATÓRIO: o plano do dia DEVE conter TODAS as refeições normais (café, lanche manhã, almoço, lanche tarde, pré-treino se houver, pós-treino se houver, jantar e ceia conforme o protocolo do paciente). O cycling apenas REDISTRIBUI os carboidratos entre as refeições — NUNCA elimina refeições nem deixa refeições vazias.
+
+- Dias de treino PESADO (intensidade Alta ou Muito Alta): usar 100% do CHO calculado. Concentrar 60–70% do CHO nas refeições peri-treino (pré + pós). Demais refeições mantêm CHO menor mas PRESENTE (ex: 15–25g de CHO de fonte complexa/fruta).
+- Dias de treino LEVE (intensidade Leve ou Moderada): usar 70% do CHO calculado, distribuído em TODAS as refeições do dia de forma proporcional. Compensar as calorias restantes com proteína magra extra e gordura boa.
+- Dias de DESCANSO: usar 50–60% do CHO calculado, distribuído em TODAS as refeições do dia (incluindo jantar e ceia). NÃO zerar CHO em nenhuma refeição — apenas reduzir proporcionalmente. Compensar calorias com gordura boa (azeite, abacate, castanhas, ovo inteiro) e manter proteína integral.
+- Jantar em dia de descanso: CHO reduzido (ex: 10–20g vindos de vegetais, leguminosa pequena ou fruta), NUNCA zero. Manter proteína completa + gordura boa + vegetais.
+- Ceia: sempre presente quando o protocolo prevê. Caseína/cottage/iogurte + fibra ± fruta pequena.
+
+REGRA DE INTEGRIDADE DO PLANO (cycling ativo):
+✅ Toda refeição prescrita deve ter pelo menos 1 alimento em cada um dos macros relevantes para aquela refeição.
+✅ Soma de calorias do dia DEVE bater (±5%) o alvo calórico do dia (ajustado pelo tipo: pesado/leve/descanso).
+✅ NUNCA retornar refeições com array de alimentos vazio.
+✅ NUNCA omitir refeições do array "refeicoes" — se o paciente tem 6 refeições no protocolo, retornar 6 refeições no JSON, mesmo nos dias de descanso.
 
 SE sensibilidade_insulina = "regular" ou "ruim":
 
