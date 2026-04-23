@@ -387,6 +387,20 @@ PERFIL FISIOLÓGICO AVANÇADO (aplicar protocolos do system prompt conforme flag
 - Variedade funcional ativa: ${perfilFisiologico?.variedade_funcional ? "true" : "false"}
 - Protocolo microbiota ativo: ${perfilFisiologico?.protocolo_microbiota ? "true" : "false"}
 - Cycling de carboidratos: ${perfilFisiologico?.cycling_carbo ? "true" : "false"}
+- Modo Econômico: ${perfilFisiologico?.modo_economico ? "true" : "false"}
+
+${perfilFisiologico?.modo_economico ? `
+💰 MODO ECONÔMICO ATIVO — REGRA PRIORITÁRIA DE SELEÇÃO DE ALIMENTOS:
+Priorize EXCLUSIVAMENTE alimentos do banco classificados como "custo": "muito_baixo" ou "baixo", mantendo as MESMAS equivalências nutricionais (proteína ±3g por porção, perfil de gordura adequado à fase, mesmo IG/categoria de CHO).
+- Proteínas preferenciais: ovo inteiro, sardinha em lata (água), atum em lata, frango inteiro/sobrecoxa/coxa, músculo bovino, acém, patinho moído, fígado bovino, coração bovino/de frango, moela, língua, lombo/pernil/paleta suína, tilápia.
+- Laticínios preferenciais: leite integral, leite em pó integral (4 col em 200ml = leite reconstituído mais barato), kefir caseiro, queijo minas frescal.
+- Fibras preferenciais: aveia em flocos, farelo de aveia, linhaça moída, semente de girassol.
+- CHO preferenciais: arroz branco, batata inglesa, mandioca, inhame, pão francês, banana.
+- Gorduras preferenciais: azeite (uso moderado), ovo inteiro, sementes (girassol/abóbora a granel).
+- EVITE no Modo Econômico: salmão, camarão, alcatra/contrafilé, costela bovina, bacon, queijo cottage importado, pasta de amendoim premium, mel cru artesanal — substitua por equivalentes nutricionais de menor custo (ex: salmão → sardinha em lata; alcatra → patinho/acém; cottage → queijo minas; mel cru → mel comum em dose menor).
+- MANTENHA todas as outras regras (rotação de proteínas, vísceras 2–3x/semana, ômega-3 via sardinha 3–4x/semana, temperos funcionais, fibras funcionais, regras de combinação obrigatórias).
+- Inclua na resposta uma breve nota explicando 2–3 substituições de equivalência aplicadas (ex: "salmão → sardinha em lata: mesmo perfil EPA+DHA, custo ~80% menor").
+` : ""}
 
 OUTROS DADOS:
 - Restrições alimentares: ${restricoesStr || "Nenhuma"}
