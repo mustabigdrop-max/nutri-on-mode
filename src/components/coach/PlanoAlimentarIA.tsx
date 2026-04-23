@@ -652,6 +652,7 @@ export default function PlanoAlimentarIA() {
           cycling_carbo: form.cyclingCarbo,
           modo_economico: modoEcon,
           medidas_caseiras: form.medidasCaseiras,
+          medidas_preferencias: form.medidasCaseiras ? form.medidasPrefs : null,
           perfil_economico: form.perfilEconomico,
           alimentos_disponiveis: form.alimentosDisponiveis,
           outros_alimentos: form.outrosAlimentos || null,
