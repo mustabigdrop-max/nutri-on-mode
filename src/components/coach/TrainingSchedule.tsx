@@ -359,12 +359,31 @@ export const buildTrainingSchedulePrompt = (
     const parts = [
       labelOf(MODALITIES, day.modality),
       day.muscle_group ? labelOf(MUSCLE_GROUPS, day.muscle_group) : null,
-      day.time ? `às ${day.time}` : null,
-      day.duration_min ? `${day.duration_min}min` : null,
+      day.time ? `time=${day.time}` : null,
+      day.duration_min ? `duration_min=${day.duration_min}` : null,
       day.intensity ? `intensidade ${day.intensity}` : null,
       day.notes ? `obs: ${day.notes}` : null,
     ].filter(Boolean).join(" · ");
     lines.push(`- ${DAY_LABEL[d]}: TREINO · ${parts}${dbl}`);
+  }
+
+  // Resumo de horários distintos para a IA
+  const trainingDays = DAY_ORDER
+    .map((d) => ({ d, day: schedule.base[d] }))
+    .filter((x) => x.day.is_training_day && x.day.time);
+  const distinctTimes = Array.from(new Set(trainingDays.map((x) => x.day.time!)));
+
+  lines.push("");
+  if (distinctTimes.length === 1) {
+    lines.push(`⏰ HORÁRIO ÚNICO DE TREINO DA SEMANA: ${distinctTimes[0]} — ancore TODAS as refeições peri-workout neste horário (NUNCA use 05:30/07:00 default).`);
+  } else if (distinctTimes.length > 1) {
+    lines.push(`⏰ HORÁRIOS DISTINTOS DE TREINO DETECTADOS: ${distinctTimes.join(", ")}`);
+    lines.push("Gere UM SUB-PLANO POR HORÁRIO distinto, nomeando-o com o horário real (ex: 'PLANO — DIA DE TREINO 18:00'). Mapeamento dia → horário:");
+    for (const { d, day } of trainingDays) {
+      lines.push(`   • ${DAY_LABEL[d]} → ${day.time} (${day.duration_min || 60}min)`);
+    }
+  } else {
+    lines.push("⚠️ Nenhum horário de treino informado — use horários peri-workout neutros e avise no observacao_protocolo.");
   }
 
   lines.push("");
@@ -373,7 +392,7 @@ export const buildTrainingSchedulePrompt = (
   lines.push("");
   lines.push("INSTRUÇÕES OBRIGATÓRIAS DE ADAPTAÇÃO:");
   lines.push("1. Gere DOIS sub-planos quando aplicável: 'PLANO — DIA DE TREINO' e 'PLANO — DIA DE DESCANSO'.");
-  lines.push("2. Em dias de TREINO, posicione refeições peri-workout (pré, intra opcional, pós-treino imediato e pós-treino sólido) ao redor do horário do treino.");
+  lines.push("2. Em dias de TREINO, posicione refeições peri-workout (pré, intra opcional, pós-treino imediato e pós-treino sólido) ao redor do HORÁRIO REAL (time) do treino — JAMAIS use horários default (05:30/07:00) se o coach informou outro time.");
   lines.push("3. Em dias de PERNAS / LOWER, eleve carboidrato em +10–15% no dia (priorizando peri-workout).");
   lines.push("4. Em dias de PUSH/PULL/UPPER, mantenha proteína alta distribuída em todas as refeições.");
   lines.push("5. Em dias de CARDIO puro (sem musculação), reduza carbo do dia em 5–10% e aumente gordura boa.");
