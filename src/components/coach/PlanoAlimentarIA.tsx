@@ -333,11 +333,32 @@ export default function PlanoAlimentarIA() {
   const [savedId, setSavedId] = useState<string | null>(null);
   const [coachProfileId, setCoachProfileId] = useState<string | null>(null);
   const [patients, setPatients] = useState<{ user_id: string; name: string }[]>([]);
+  const [partnersList, setPartnersList] = useState<{ id: string; user_id: string | null; name: string; email?: string }[]>([]);
   const [showSendModal, setShowSendModal] = useState(false);
+  const [recipientType, setRecipientType] = useState<"aluno" | "parceiro">("aluno");
   const [selectedPatient, setSelectedPatient] = useState<string>("");
+  const [selectedPartner, setSelectedPartner] = useState<string>("");
   const [sendObs, setSendObs] = useState("");
   const [sending, setSending] = useState(false);
+  // Histórico
+  const [showHistory, setShowHistory] = useState(false);
+  const [history, setHistory] = useState<any[]>([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
+  const [historySearch, setHistorySearch] = useState("");
   const resultRef = useRef<HTMLDivElement>(null);
+
+  const loadHistory = async () => {
+    if (!coachProfileId) return;
+    setLoadingHistory(true);
+    const { data } = await supabase
+      .from("coach_meal_plans")
+      .select("id, patient_name, objetivo, status, created_at, sent_at, plano, observacao, patient_user_id")
+      .eq("coach_id", coachProfileId)
+      .order("created_at", { ascending: false })
+      .limit(100);
+    setHistory(data || []);
+    setLoadingHistory(false);
+  };
 
   // Load coach profile + patients
   useEffect(() => {
@@ -367,6 +388,22 @@ export default function PlanoAlimentarIA() {
           pts.map((p) => ({
             user_id: p.patient_user_id,
             name: profs?.find((x) => x.user_id === p.patient_user_id)?.full_name || "Aluno",
+          }))
+        );
+      }
+
+      // Parceiros criados pelo coach (auth user_id)
+      const { data: prs } = await supabase
+        .from("partners")
+        .select("id, user_id, full_name, email")
+        .eq("created_by", user.id);
+      if (prs?.length) {
+        setPartnersList(
+          prs.map((p) => ({
+            id: p.id,
+            user_id: p.user_id,
+            name: p.full_name || "Parceiro",
+            email: p.email || undefined,
           }))
         );
       }
@@ -594,8 +631,15 @@ export default function PlanoAlimentarIA() {
 
   const enviarPlano = async () => {
     if (!plano || !coachProfileId || !user?.id) return;
-    if (!selectedPatient) {
-      toast({ title: "Selecione um aluno", variant: "destructive" });
+    const isAluno = recipientType === "aluno";
+    const destUserId = isAluno ? selectedPatient : (partnersList.find((p) => p.id === selectedPartner)?.user_id || null);
+    const destDisplayId = isAluno ? selectedPatient : selectedPartner;
+    const destNome = isAluno
+      ? (patients.find((p) => p.user_id === selectedPatient)?.name || "aluno")
+      : (partnersList.find((p) => p.id === selectedPartner)?.name || "parceiro");
+
+    if (!destDisplayId) {
+      toast({ title: `Selecione um ${isAluno ? "aluno" : "parceiro"}`, variant: "destructive" });
       return;
     }
     setSending(true);
@@ -606,8 +650,8 @@ export default function PlanoAlimentarIA() {
           .from("coach_meal_plans")
           .insert({
             coach_id: coachProfileId,
-            patient_user_id: selectedPatient,
-            patient_name: plano.resumo.nome || form.nome || "Paciente",
+            patient_user_id: destUserId,
+            patient_name: destNome || plano.resumo.nome || form.nome || "Destinatário",
             objetivo: plano.resumo.objetivo || form.objetivo,
             plano: plano as any,
             observacao: sendObs || form.observacoes || null,
@@ -622,7 +666,7 @@ export default function PlanoAlimentarIA() {
         const { error: upErr } = await supabase
           .from("coach_meal_plans")
           .update({
-            patient_user_id: selectedPatient,
+            patient_user_id: destUserId,
             status: "sent",
             sent_at: new Date().toISOString(),
             observacao: sendObs || form.observacoes || null,
@@ -634,32 +678,34 @@ export default function PlanoAlimentarIA() {
 
       await supabase.from("protocolo_envios").insert({
         coach_id: coachProfileId,
-        destinatario_id: selectedPatient,
-        tipo_destinatario: "aluno",
+        destinatario_id: destUserId || destDisplayId,
+        tipo_destinatario: recipientType,
         tipo_conteudo: ["plano_alimentar"],
         conteudo_ids: { plano_alimentar: [planId] },
         observacao: sendObs || null,
         status: "enviado",
       });
 
-      const titulo = "Novo plano alimentar recebido!";
-      const corpo = `Seu coach enviou um novo plano alimentar.${sendObs ? ` ${sendObs}` : ""}`;
-      await supabase.from("coach_notifications").insert({
-        recipient_user_id: selectedPatient,
-        sender_user_id: user.id,
-        notification_type: "meal_plan_sent",
-        title: titulo,
-        message: corpo,
-        reference_id: planId,
-      });
-
-      try {
-        await supabase.functions.invoke("dispara_notificacao", {
-          body: { destinatario_id: selectedPatient, titulo, corpo, referencia_id: planId, tipo: "plano_alimentar" },
+      if (destUserId) {
+        const titulo = "Novo plano alimentar recebido!";
+        const corpo = `Seu coach enviou um novo plano alimentar.${sendObs ? ` ${sendObs}` : ""}`;
+        await supabase.from("coach_notifications").insert({
+          recipient_user_id: destUserId,
+          sender_user_id: user.id,
+          notification_type: "meal_plan_sent",
+          title: titulo,
+          message: corpo,
+          reference_id: planId,
         });
-      } catch {}
 
-      toast({ title: "Plano enviado 📨", description: `Para ${patients.find((p) => p.user_id === selectedPatient)?.name || "aluno"}` });
+        try {
+          await supabase.functions.invoke("dispara_notificacao", {
+            body: { destinatario_id: destUserId, titulo, corpo, referencia_id: planId, tipo: "plano_alimentar" },
+          });
+        } catch {}
+      }
+
+      toast({ title: "Plano enviado 📨", description: `Para ${destNome}` });
       setShowSendModal(false);
       setSendObs("");
     } catch (e: any) {
@@ -793,7 +839,10 @@ export default function PlanoAlimentarIA() {
               {saving ? "Salvando..." : savedId ? "✓ Salvo" : "💾 Salvar"}
             </button>
             <button onClick={() => setShowSendModal(true)} style={{ padding: "8px 16px", borderRadius: 8, background: T.green, border: `1px solid ${T.green}`, color: "#0a0f0a", fontSize: 12, cursor: "pointer", fontFamily: "inherit", fontWeight: 700 }}>
-              📨 Enviar ao aluno
+              📨 Enviar
+            </button>
+            <button onClick={() => { setShowHistory(true); loadHistory(); }} style={{ padding: "8px 16px", borderRadius: 8, background: T.bg3, border: `1px solid ${T.border2}`, color: T.text, fontSize: 12, cursor: "pointer", fontFamily: "inherit", fontWeight: 600 }}>
+              🗂️ Histórico
             </button>
             <button onClick={() => { setPlano(null); setSavedId(null); setStep("form"); }} style={{ padding: "8px 16px", borderRadius: 8, background: T.bg3, border: `1px solid ${T.border2}`, color: T.muted, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>
               + Novo
@@ -803,42 +852,159 @@ export default function PlanoAlimentarIA() {
 
         {showSendModal && (
           <div onClick={() => setShowSendModal(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
-            <div onClick={(e) => e.stopPropagation()} style={{ background: T.bg2, border: `1px solid ${T.border2}`, borderRadius: 14, padding: 24, maxWidth: 440, width: "100%" }}>
+            <div onClick={(e) => e.stopPropagation()} style={{ background: T.bg2, border: `1px solid ${T.border2}`, borderRadius: 14, padding: 24, maxWidth: 460, width: "100%" }}>
               <div style={{ fontSize: 16, fontWeight: 700, color: T.text, marginBottom: 4 }}>Enviar plano alimentar</div>
-              <div style={{ fontSize: 12, color: T.muted, marginBottom: 20 }}>O aluno receberá o plano + notificação no app.</div>
+              <div style={{ fontSize: 12, color: T.muted, marginBottom: 20 }}>Escolha um aluno ou parceiro. Ele receberá o plano + notificação no app.</div>
 
               <div style={{ marginBottom: 14 }}>
-                <Label required>Aluno destinatário</Label>
-                {patients.length === 0 ? (
-                  <div style={{ fontSize: 12, color: T.amber, padding: "10px 12px", background: "#1f1a0a", border: `1px solid ${T.amber}33`, borderRadius: 8 }}>
-                    Nenhum aluno vinculado encontrado.
-                  </div>
+                <Label required>Tipo de destinatário</Label>
+                <div style={{ display: "flex", gap: 8 }}>
+                  {(["aluno", "parceiro"] as const).map((t) => (
+                    <button
+                      key={t}
+                      onClick={() => { setRecipientType(t); setSelectedPatient(""); setSelectedPartner(""); }}
+                      style={{
+                        flex: 1, padding: "9px 12px", borderRadius: 8,
+                        background: recipientType === t ? T.greenBg : T.bg3,
+                        border: `1px solid ${recipientType === t ? T.green : T.border2}`,
+                        color: recipientType === t ? T.green : T.muted,
+                        fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
+                      }}
+                    >
+                      {t === "aluno" ? "🎓 Aluno" : "🤝 Parceiro"}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div style={{ marginBottom: 14 }}>
+                <Label required>{recipientType === "aluno" ? "Aluno destinatário" : "Parceiro destinatário"}</Label>
+                {recipientType === "aluno" ? (
+                  patients.length === 0 ? (
+                    <div style={{ fontSize: 12, color: T.amber, padding: "10px 12px", background: "#1f1a0a", border: `1px solid ${T.amber}33`, borderRadius: 8 }}>
+                      Nenhum aluno vinculado encontrado.
+                    </div>
+                  ) : (
+                    <SelectField value={selectedPatient} onChange={(e) => setSelectedPatient(e.target.value)}>
+                      <option value="">Selecione um aluno...</option>
+                      {patients.map((p) => (
+                        <option key={p.user_id} value={p.user_id}>{p.name}</option>
+                      ))}
+                    </SelectField>
+                  )
                 ) : (
-                  <SelectField value={selectedPatient} onChange={(e) => setSelectedPatient(e.target.value)}>
-                    <option value="">Selecione um aluno...</option>
-                    {patients.map((p) => (
-                      <option key={p.user_id} value={p.user_id}>{p.name}</option>
-                    ))}
-                  </SelectField>
+                  partnersList.length === 0 ? (
+                    <div style={{ fontSize: 12, color: T.amber, padding: "10px 12px", background: "#1f1a0a", border: `1px solid ${T.amber}33`, borderRadius: 8 }}>
+                      Nenhum parceiro cadastrado.
+                    </div>
+                  ) : (
+                    <SelectField value={selectedPartner} onChange={(e) => setSelectedPartner(e.target.value)}>
+                      <option value="">Selecione um parceiro...</option>
+                      {partnersList.map((p) => (
+                        <option key={p.id} value={p.id}>{p.name}{p.email ? ` — ${p.email}` : ""}</option>
+                      ))}
+                    </SelectField>
+                  )
                 )}
               </div>
 
               <div style={{ marginBottom: 20 }}>
                 <Label>Mensagem (opcional)</Label>
-                <TextareaField placeholder="Observação para o aluno..." value={sendObs} onChange={(e) => setSendObs(e.target.value)} />
+                <TextareaField placeholder="Observação para o destinatário..." value={sendObs} onChange={(e) => setSendObs(e.target.value)} />
               </div>
 
               <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
                 <button onClick={() => setShowSendModal(false)} style={{ padding: "9px 18px", borderRadius: 8, background: T.bg3, border: `1px solid ${T.border2}`, color: T.muted, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>
                   Cancelar
                 </button>
-                <button onClick={enviarPlano} disabled={sending || !selectedPatient} style={{ padding: "9px 18px", borderRadius: 8, background: T.green, border: `1px solid ${T.green}`, color: "#0a0f0a", fontSize: 12, cursor: sending ? "wait" : "pointer", fontFamily: "inherit", fontWeight: 700, opacity: sending || !selectedPatient ? 0.6 : 1 }}>
+                <button
+                  onClick={enviarPlano}
+                  disabled={sending || (recipientType === "aluno" ? !selectedPatient : !selectedPartner)}
+                  style={{ padding: "9px 18px", borderRadius: 8, background: T.green, border: `1px solid ${T.green}`, color: "#0a0f0a", fontSize: 12, cursor: sending ? "wait" : "pointer", fontFamily: "inherit", fontWeight: 700, opacity: sending || (recipientType === "aluno" ? !selectedPatient : !selectedPartner) ? 0.6 : 1 }}>
                   {sending ? "Enviando..." : "📨 Enviar agora"}
                 </button>
               </div>
             </div>
           </div>
         )}
+
+        {showHistory && (
+          <div onClick={() => setShowHistory(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+            <div onClick={(e) => e.stopPropagation()} style={{ background: T.bg2, border: `1px solid ${T.border2}`, borderRadius: 14, padding: 20, maxWidth: 720, width: "100%", maxHeight: "85vh", display: "flex", flexDirection: "column" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+                <div>
+                  <div style={{ fontSize: 16, fontWeight: 700, color: T.text }}>🗂️ Histórico de planos</div>
+                  <div style={{ fontSize: 11, color: T.muted, marginTop: 2 }}>Todos os planos alimentares criados — abra para ver, reenviar ou usar como base.</div>
+                </div>
+                <button onClick={() => setShowHistory(false)} style={{ background: "transparent", border: "none", color: T.muted, fontSize: 22, cursor: "pointer" }}>×</button>
+              </div>
+
+              <input
+                value={historySearch}
+                onChange={(e) => setHistorySearch(e.target.value)}
+                placeholder="Buscar por nome ou objetivo..."
+                style={{
+                  width: "100%", background: T.bg3, border: `1px solid ${T.border2}`,
+                  borderRadius: 8, padding: "9px 12px", color: T.text, fontSize: 13,
+                  outline: "none", marginBottom: 14, fontFamily: "inherit",
+                }}
+              />
+
+              <div style={{ overflowY: "auto", flex: 1, paddingRight: 4 }}>
+                {loadingHistory ? (
+                  <div style={{ textAlign: "center", padding: 30, color: T.muted, fontSize: 13 }}>Carregando...</div>
+                ) : history.length === 0 ? (
+                  <div style={{ textAlign: "center", padding: 30, color: T.muted, fontSize: 13 }}>Nenhum plano salvo ainda.</div>
+                ) : (
+                  history
+                    .filter((h) => {
+                      const q = historySearch.trim().toLowerCase();
+                      if (!q) return true;
+                      return (h.patient_name || "").toLowerCase().includes(q) || (h.objetivo || "").toLowerCase().includes(q);
+                    })
+                    .map((h) => {
+                      const isSent = h.status === "sent";
+                      const dt = new Date(h.created_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "2-digit", hour: "2-digit", minute: "2-digit" });
+                      const kcal = h.plano?.resumo?.calorias_totais;
+                      return (
+                        <div key={h.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, padding: "12px 14px", border: `1px solid ${T.border}`, borderRadius: 10, background: T.card, marginBottom: 8 }}>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                              <span style={{ fontSize: 13, fontWeight: 700, color: T.text }}>{h.patient_name}</span>
+                              <span style={{ fontSize: 10, padding: "2px 8px", borderRadius: 999, background: isSent ? T.greenBg : T.bg3, border: `1px solid ${isSent ? T.green : T.border2}`, color: isSent ? T.green : T.muted, fontWeight: 700, textTransform: "uppercase" }}>
+                                {isSent ? "Enviado" : "Rascunho"}
+                              </span>
+                            </div>
+                            <div style={{ fontSize: 11, color: T.muted, marginTop: 4 }}>
+                              {h.objetivo || "—"} {kcal ? `· ${kcal} kcal` : ""} · {dt}
+                            </div>
+                            {h.observacao && (
+                              <div style={{ fontSize: 11, color: T.muted2, marginTop: 4, fontStyle: "italic" }}>"{h.observacao}"</div>
+                            )}
+                          </div>
+                          <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+                            <button
+                              onClick={() => { setPlano(h.plano); setSavedId(h.id); setShowHistory(false); setStep("result"); }}
+                              style={{ padding: "7px 12px", borderRadius: 7, background: T.bg3, border: `1px solid ${T.border2}`, color: T.text, fontSize: 11, cursor: "pointer", fontFamily: "inherit", fontWeight: 600 }}
+                            >
+                              👁️ Abrir
+                            </button>
+                            <button
+                              onClick={() => { setPlano(h.plano); setSavedId(h.id); setShowHistory(false); setStep("result"); setTimeout(() => setShowSendModal(true), 100); }}
+                              style={{ padding: "7px 12px", borderRadius: 7, background: T.green, border: `1px solid ${T.green}`, color: "#0a0f0a", fontSize: 11, cursor: "pointer", fontFamily: "inherit", fontWeight: 700 }}
+                            >
+                              📨 Enviar
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
 
         <div style={{ maxWidth: 800, margin: "0 auto", padding: "32px 24px" }} className="fade-up">
           {/* Resumo cards */}
@@ -1005,11 +1171,87 @@ export default function PlanoAlimentarIA() {
             <path d="M19 12H5M12 19l-7-7 7-7" />
           </svg>
         </button>
-        <div>
+        <div style={{ flex: 1 }}>
           <div style={{ fontSize: 11, color: T.muted, textTransform: "uppercase" as const, letterSpacing: "0.1em" }}>nutriON · Dashboard do Coach</div>
           <div style={{ fontSize: 16, fontWeight: 700, color: T.text }}>Gerador de Plano Alimentar por IA</div>
         </div>
+        <button
+          onClick={() => { setShowHistory(true); loadHistory(); }}
+          style={{ padding: "8px 16px", borderRadius: 8, background: T.bg3, border: `1px solid ${T.border2}`, color: T.text, fontSize: 12, cursor: "pointer", fontFamily: "inherit", fontWeight: 600 }}
+        >
+          🗂️ Histórico
+        </button>
       </div>
+
+      {/* Modal de histórico no formulário */}
+      {showHistory && (
+        <div onClick={() => setShowHistory(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+          <div onClick={(e) => e.stopPropagation()} style={{ background: T.bg2, border: `1px solid ${T.border2}`, borderRadius: 14, padding: 20, maxWidth: 720, width: "100%", maxHeight: "85vh", display: "flex", flexDirection: "column" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+              <div>
+                <div style={{ fontSize: 16, fontWeight: 700, color: T.text }}>🗂️ Histórico de planos</div>
+                <div style={{ fontSize: 11, color: T.muted, marginTop: 2 }}>Todos os planos alimentares criados — abra para ver, reenviar ou usar como base.</div>
+              </div>
+              <button onClick={() => setShowHistory(false)} style={{ background: "transparent", border: "none", color: T.muted, fontSize: 22, cursor: "pointer" }}>×</button>
+            </div>
+            <input
+              value={historySearch}
+              onChange={(e) => setHistorySearch(e.target.value)}
+              placeholder="Buscar por nome ou objetivo..."
+              style={{ width: "100%", background: T.bg3, border: `1px solid ${T.border2}`, borderRadius: 8, padding: "9px 12px", color: T.text, fontSize: 13, outline: "none", marginBottom: 14, fontFamily: "inherit" }}
+            />
+            <div style={{ overflowY: "auto", flex: 1, paddingRight: 4 }}>
+              {loadingHistory ? (
+                <div style={{ textAlign: "center", padding: 30, color: T.muted, fontSize: 13 }}>Carregando...</div>
+              ) : history.length === 0 ? (
+                <div style={{ textAlign: "center", padding: 30, color: T.muted, fontSize: 13 }}>Nenhum plano salvo ainda.</div>
+              ) : (
+                history
+                  .filter((h) => {
+                    const q = historySearch.trim().toLowerCase();
+                    if (!q) return true;
+                    return (h.patient_name || "").toLowerCase().includes(q) || (h.objetivo || "").toLowerCase().includes(q);
+                  })
+                  .map((h) => {
+                    const isSent = h.status === "sent";
+                    const dt = new Date(h.created_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "2-digit", hour: "2-digit", minute: "2-digit" });
+                    const kcal = h.plano?.resumo?.calorias_totais;
+                    return (
+                      <div key={h.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, padding: "12px 14px", border: `1px solid ${T.border}`, borderRadius: 10, background: T.card, marginBottom: 8 }}>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                            <span style={{ fontSize: 13, fontWeight: 700, color: T.text }}>{h.patient_name}</span>
+                            <span style={{ fontSize: 10, padding: "2px 8px", borderRadius: 999, background: isSent ? T.greenBg : T.bg3, border: `1px solid ${isSent ? T.green : T.border2}`, color: isSent ? T.green : T.muted, fontWeight: 700, textTransform: "uppercase" }}>
+                              {isSent ? "Enviado" : "Rascunho"}
+                            </span>
+                          </div>
+                          <div style={{ fontSize: 11, color: T.muted, marginTop: 4 }}>
+                            {h.objetivo || "—"} {kcal ? `· ${kcal} kcal` : ""} · {dt}
+                          </div>
+                          {h.observacao && <div style={{ fontSize: 11, color: T.muted2, marginTop: 4, fontStyle: "italic" }}>"{h.observacao}"</div>}
+                        </div>
+                        <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+                          <button
+                            onClick={() => { setPlano(h.plano); setSavedId(h.id); setShowHistory(false); setStep("result"); }}
+                            style={{ padding: "7px 12px", borderRadius: 7, background: T.bg3, border: `1px solid ${T.border2}`, color: T.text, fontSize: 11, cursor: "pointer", fontFamily: "inherit", fontWeight: 600 }}
+                          >
+                            👁️ Abrir
+                          </button>
+                          <button
+                            onClick={() => { setPlano(h.plano); setSavedId(h.id); setShowHistory(false); setStep("result"); setTimeout(() => setShowSendModal(true), 100); }}
+                            style={{ padding: "7px 12px", borderRadius: 7, background: T.green, border: `1px solid ${T.green}`, color: "#0a0f0a", fontSize: 11, cursor: "pointer", fontFamily: "inherit", fontWeight: 700 }}
+                          >
+                            📨 Enviar
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       <div style={{ maxWidth: 680, margin: "0 auto", padding: "32px 24px" }}>
         {/* Dados do paciente */}
