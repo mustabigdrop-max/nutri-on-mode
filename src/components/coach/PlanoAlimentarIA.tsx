@@ -1358,6 +1358,80 @@ export default function PlanoAlimentarIA() {
             );
           })()}
 
+          {/* Mapa de Medidas Caseiras (Nutrition Coach IA) */}
+          {plano.mapa_medidas_caseiras?.ativo && (
+            <div style={{
+              background: "#1A1A1A", borderLeft: "3px solid #B8922A", borderRadius: 8,
+              padding: "16px 20px", marginBottom: 20,
+            }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+                <span style={{ fontSize: 13, fontWeight: 700, color: "#B8922A", letterSpacing: "0.06em", textTransform: "uppercase" as const }}>
+                  🥄 Mapa de Medidas Caseiras
+                </span>
+              </div>
+              {plano.mapa_medidas_caseiras.descricao && (
+                <div style={{ fontSize: 12, color: T.muted, lineHeight: 1.5, marginBottom: 14 }}>
+                  {plano.mapa_medidas_caseiras.descricao}
+                </div>
+              )}
+
+              {plano.mapa_medidas_caseiras.equivalencias && plano.mapa_medidas_caseiras.equivalencias.length > 0 && (
+                <div style={{ marginBottom: 14 }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: "#B8922A", letterSpacing: "0.08em", textTransform: "uppercase" as const, marginBottom: 8 }}>
+                    Equivalências do plano
+                  </div>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 8 }}>
+                    {plano.mapa_medidas_caseiras.equivalencias.map((eq, i) => (
+                      <div key={i} style={{
+                        background: T.bg3, border: `1px solid ${T.border2}`,
+                        borderRadius: 8, padding: "8px 10px",
+                      }}>
+                        <div style={{ fontSize: 12, color: T.text, fontWeight: 600, lineHeight: 1.3 }}>{eq.medida}</div>
+                        <div style={{ fontSize: 11, color: "#B8922A", fontWeight: 700, marginTop: 2 }}>= {eq.gramatura}</div>
+                        {eq.alimento_referencia && (
+                          <div style={{ fontSize: 10, color: T.muted2, marginTop: 2 }}>{eq.alimento_referencia}</div>
+                        )}
+                        {eq.observacao && (
+                          <div style={{ fontSize: 10, color: T.muted2, fontStyle: "italic", marginTop: 2 }}>{eq.observacao}</div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {plano.mapa_medidas_caseiras.utensilios_padrao && plano.mapa_medidas_caseiras.utensilios_padrao.length > 0 && (
+                <div style={{ marginBottom: 12 }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: "#B8922A", letterSpacing: "0.08em", textTransform: "uppercase" as const, marginBottom: 8 }}>
+                    Utensílios padrão
+                  </div>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 6 }}>
+                    {plano.mapa_medidas_caseiras.utensilios_padrao.map((u, i) => (
+                      <div key={i} style={{
+                        background: T.bg2, border: `1px dashed ${T.border2}`,
+                        borderRadius: 8, padding: "6px 10px",
+                        fontSize: 11, color: T.muted,
+                      }}>
+                        <span style={{ color: T.text, fontWeight: 600 }}>{u.utensilio}</span>
+                        {u.volume_ml ? <span> · {u.volume_ml}ml</span> : null}
+                        {u.peso_referencia_g ? <span> · {u.peso_referencia_g}</span> : null}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {plano.mapa_medidas_caseiras.dica_paciente && (
+                <div style={{
+                  marginTop: 12, paddingTop: 12, borderTop: "1px solid rgba(184,146,42,0.2)",
+                  fontSize: 12, color: T.text, lineHeight: 1.6,
+                }}>
+                  💡 {plano.mapa_medidas_caseiras.dica_paciente}
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Bloco Modo Econômico — Custo & Economia */}
           {plano.custo_estimado?.modo_economico_ativo && (() => {
             const c = plano.custo_estimado!;
