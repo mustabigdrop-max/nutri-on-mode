@@ -539,6 +539,63 @@ export default function PlanoAlimentarIA() {
     }
   };
 
+  // Núcleo reutilizável: gera plano forçando modo econômico ON/OFF (default = valor do form).
+  const gerarPlanoCore = async (overrideModoEconomico?: boolean): Promise<PlanoData | null> => {
+    const restricoesStr = [...form.restricoes, form.outraRestricao].filter(Boolean).join(", ") || "Nenhuma";
+    const protocStr = protocolos.find(p => p.v === form.protocolo)?.l || "Nenhum";
+    const trainingSchedulePrompt = buildTrainingSchedulePrompt(
+      trainingSchedule,
+      form.peso ? Number(form.peso) : undefined,
+      form.calorias ? Number(form.calorias) : undefined,
+    );
+    const CARB_LABELS_LOCAL: Record<string, string> = {
+      dextrose: "Dextrose pura", tamaras: "Tâmaras Medjool", pao_frances: "Pão francês",
+      pao_branco: "Pão de forma branco", doce_de_leite: "Doce de leite light", mel: "Mel puro",
+      geleia: "Geleia açucarada com pão", leite_condensado: "Leite condensado desnatado",
+      banana: "Banana bem madura", coca: "Coca-Cola (competição)", maltodextrina: "Maltodextrina",
+    };
+    const glut4Config = form.glut4Enabled
+      ? {
+          enabled: true,
+          carb_source_key: form.glut4CarbSource,
+          carb_source_label: CARB_LABELS_LOCAL[form.glut4CarbSource] || form.glut4CarbSource,
+          uses_intra_malto: form.glut4UsesIntraMalto,
+          intra_malto_grams: Number(form.glut4IntraMaltoG) || 0,
+          timing_minutes: Number(form.glut4TimingMin) || 30,
+          carb_grams: form.glut4CarbGrams ? Number(form.glut4CarbGrams) : null,
+          add_leucine: form.glut4AddLeucine,
+        }
+      : null;
+    const modoEcon = typeof overrideModoEconomico === "boolean" ? overrideModoEconomico : form.modoEconomico;
+
+    const { data, error: fnError } = await supabase.functions.invoke("generate-coach-meal-plan", {
+      body: {
+        ...form,
+        modoEconomico: modoEcon,
+        restricoesStr,
+        protocStr,
+        userId: user?.id,
+        trainingSchedule,
+        trainingSchedulePrompt,
+        glut4Config,
+        glut4Text: form.glut4Enabled ? glut4Text : "",
+        perfilFisiologico: {
+          historico_intestinal: form.historicoIntestinal || null,
+          fermentados_atual: form.fermentadosAtual || null,
+          sensibilidade_insulina: form.sensibilidadeInsulina || null,
+          objetivos_secundarios: form.objetivosSecundarios,
+          variedade_funcional: form.variedadeFuncional,
+          protocolo_microbiota: form.protocoloMicrobiota,
+          cycling_carbo: form.cyclingCarbo,
+          modo_economico: modoEcon,
+        },
+      },
+    });
+    if (fnError) throw fnError;
+    if (!data?.plan) throw new Error("Resposta inválida da IA");
+    return data.plan as PlanoData;
+  };
+
   const gerar = async () => {
     if (!form.peso || !form.altura || !form.idade) {
       setError("Preencha pelo menos: peso, altura e idade do paciente.");
@@ -564,14 +621,6 @@ export default function PlanoAlimentarIA() {
     }, 1800);
 
     try {
-      const restricoesStr = [...form.restricoes, form.outraRestricao].filter(Boolean).join(", ") || "Nenhuma";
-      const protocStr = protocolos.find(p => p.v === form.protocolo)?.l || "Nenhum";
-
-      const trainingSchedulePrompt = buildTrainingSchedulePrompt(
-        trainingSchedule,
-        form.peso ? Number(form.peso) : undefined,
-        form.calorias ? Number(form.calorias) : undefined,
-      );
 
       const CARB_LABELS: Record<string, string> = {
         dextrose: "Dextrose pura",
