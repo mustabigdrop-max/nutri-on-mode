@@ -1628,6 +1628,145 @@ export default function PlanoAlimentarIA() {
             );
           })()}
 
+          {/* Botão: Salvar comparação no histórico */}
+          {planoComparativo && showCompare && (
+            <div style={{
+              background: T.card, border: `1px solid ${T.border2}`, borderRadius: 12,
+              padding: "12px 16px", marginBottom: 20,
+              display: "flex", alignItems: "center", justifyContent: "space-between",
+              gap: 12, flexWrap: "wrap" as const,
+            }}>
+              <div style={{ flex: 1, minWidth: 220 }}>
+                <div style={{ fontSize: 12, fontWeight: 700, color: T.text, marginBottom: 2 }}>
+                  💾 Salvar esta comparação
+                </div>
+                <div style={{ fontSize: 11, color: T.muted, lineHeight: 1.5 }}>
+                  Guarda os dois planos com data e modo no histórico do coach para você revisar depois.
+                </div>
+              </div>
+              <button
+                onClick={salvarComparacao}
+                disabled={savingComparison || !!savedComparisonId}
+                style={{
+                  padding: "10px 16px", borderRadius: 8,
+                  background: savedComparisonId ? T.greenBg : (savingComparison ? T.bg3 : T.green),
+                  border: `1px solid ${T.green}`,
+                  color: savedComparisonId ? T.green : (savingComparison ? T.muted : "#0a0f0a"),
+                  fontSize: 12, fontWeight: 700,
+                  cursor: savingComparison || savedComparisonId ? "default" : "pointer",
+                  fontFamily: "inherit", whiteSpace: "nowrap" as const,
+                }}
+              >
+                {savingComparison ? "Salvando..." : savedComparisonId ? "✓ Salva no histórico" : "💾 Salvar comparação"}
+              </button>
+            </div>
+          )}
+
+          {/* Modal: Histórico de comparações */}
+          {showCompareHistory && (
+            <div
+              onClick={() => setShowCompareHistory(false)}
+              style={{
+                position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", zIndex: 1000,
+                display: "flex", alignItems: "center", justifyContent: "center", padding: 20,
+              }}
+            >
+              <div
+                onClick={(e) => e.stopPropagation()}
+                style={{
+                  background: T.bg2, border: `1px solid ${T.border2}`, borderRadius: 14,
+                  width: "100%", maxWidth: 760, maxHeight: "80vh", overflow: "hidden",
+                  display: "flex", flexDirection: "column",
+                }}
+              >
+                <div style={{ padding: "14px 18px", borderBottom: `1px solid ${T.border}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <div>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: T.text }}>🕘 Histórico de comparações</div>
+                    <div style={{ fontSize: 11, color: T.muted, marginTop: 2 }}>
+                      Econômico × Padrão — clique para abrir uma comparação salva.
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setShowCompareHistory(false)}
+                    style={{ padding: "6px 12px", background: T.bg3, border: `1px solid ${T.border2}`, borderRadius: 8, color: T.muted, cursor: "pointer", fontSize: 12, fontFamily: "inherit" }}
+                  >
+                    Fechar
+                  </button>
+                </div>
+                <div style={{ padding: 14, overflowY: "auto" }}>
+                  {loadingCompareHistory ? (
+                    <div style={{ textAlign: "center", padding: 40, color: T.muted, fontSize: 13 }}>Carregando...</div>
+                  ) : compareHistory.length === 0 ? (
+                    <div style={{ textAlign: "center", padding: 40, color: T.muted, fontSize: 13 }}>
+                      Nenhuma comparação salva ainda.
+                    </div>
+                  ) : (
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                      {compareHistory.map((h) => {
+                        const r = h.resumo || {};
+                        const data = new Date(h.created_at);
+                        const dataFmt = data.toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
+                        const modoColor = h.modo_principal === "economico" ? "#1D9E75" : "#B8922A";
+                        const economiaPct = typeof r.economia_percentual === "number" ? `${r.economia_percentual.toFixed(0)}%` : "—";
+                        const economiaMes = typeof r.economia_mensal === "number"
+                          ? r.economia_mensal.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
+                          : "—";
+                        return (
+                          <div key={h.id} style={{
+                            background: T.card, border: `1px solid ${T.border}`, borderRadius: 10,
+                            padding: 12, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10,
+                          }}>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" as const, marginBottom: 4 }}>
+                                <span style={{ fontSize: 13, fontWeight: 700, color: T.text }}>
+                                  {h.patient_name || "Paciente"}
+                                </span>
+                                <span style={{
+                                  fontSize: 9, padding: "2px 8px", borderRadius: 999,
+                                  background: `${modoColor}22`, color: modoColor, fontWeight: 700,
+                                  textTransform: "uppercase" as const, letterSpacing: "0.06em",
+                                }}>
+                                  {h.modo_principal === "economico" ? "Econômico" : "Padrão"}
+                                </span>
+                              </div>
+                              <div style={{ fontSize: 11, color: T.muted, display: "flex", gap: 12, flexWrap: "wrap" as const }}>
+                                <span>📅 {dataFmt}</span>
+                                {h.objetivo && <span>🎯 {h.objetivo}</span>}
+                                <span style={{ color: T.green }}>💰 economia {economiaPct} · {economiaMes}/mês</span>
+                              </div>
+                            </div>
+                            <div style={{ display: "flex", gap: 6 }}>
+                              <button
+                                onClick={() => carregarComparacaoSalva(h.id)}
+                                style={{
+                                  padding: "6px 12px", borderRadius: 6,
+                                  background: T.greenBg, border: `1px solid ${T.green}`,
+                                  color: T.green, fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
+                                }}
+                              >
+                                Abrir
+                              </button>
+                              <button
+                                onClick={() => removerComparacaoSalva(h.id)}
+                                style={{
+                                  padding: "6px 10px", borderRadius: 6,
+                                  background: "transparent", border: `1px solid ${T.border2}`,
+                                  color: T.red, fontSize: 11, cursor: "pointer", fontFamily: "inherit",
+                                }}
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Bloco GLUT-4 (se gerado) */}
           {glut4Text && (
             <div style={{ marginBottom: 24 }}>
