@@ -141,6 +141,14 @@ interface PlanoData {
   suplementacao?: Suplemento[];
   dica_mce?: { mindset: string; comportamento: string; execucao: string };
   alerta_coach?: string | null;
+  inteligencia_fisiologica?: {
+    score_qualidade?: number;
+    diversidade_vegetal_semanal?: number;
+    fermentado_diario?: boolean;
+    cycling_ativo?: boolean;
+    protocolos_ativos?: string[];
+    insights_coach?: string[];
+  };
 }
 
 const GRUPO_META: Record<GrupoSub, { label: string; color: string; emoji: string }> = {
@@ -439,7 +447,18 @@ export default function PlanoAlimentarIA() {
     glut4CarbSource: "doce_de_leite",
     glut4CarbGrams: "",
     glut4AddLeucine: false,
+    // Perfil Fisiológico Avançado (Elite)
+    historicoIntestinal: "",
+    fermentadosAtual: "",
+    sensibilidadeInsulina: "",
+    objetivosSecundarios: [] as string[],
+    variedadeFuncional: false,
+    protocoloMicrobiota: false,
+    cyclingCarbo: false,
   });
+
+  // Estado de UI para a seção colapsável Elite
+  const [perfilFisioOpen, setPerfilFisioOpen] = useState(false);
 
   // GLUT-4 output state
   const [glut4Text, setGlut4Text] = useState<string>("");
@@ -447,6 +466,13 @@ export default function PlanoAlimentarIA() {
 
   // Rotina de treino semanal (TrainingSchedule)
   const [trainingSchedule, setTrainingSchedule] = useState<WeeklySchedule>(defaultWeeklySchedule);
+
+  // Auto-ativar Cycling quando fase = Bulk ou Recomposição
+  useEffect(() => {
+    if (form.fasePeriodizacao === "bulk_limpo" || form.fasePeriodizacao === "bulk_agressivo" || form.fasePeriodizacao === "recomposicao") {
+      setForm(f => f.cyclingCarbo ? f : { ...f, cyclingCarbo: true });
+    }
+  }, [form.fasePeriodizacao]);
 
   const set = (k: string, v: any) => setForm(f => ({ ...f, [k]: v }));
   const toggleArr = (k: string, v: string) => {
@@ -569,6 +595,16 @@ export default function PlanoAlimentarIA() {
           trainingSchedulePrompt,
           glut4Config,
           glut4Text: form.glut4Enabled ? glut4Text : "",
+          // Perfil fisiológico avançado
+          perfilFisiologico: {
+            historico_intestinal: form.historicoIntestinal || null,
+            fermentados_atual: form.fermentadosAtual || null,
+            sensibilidade_insulina: form.sensibilidadeInsulina || null,
+            objetivos_secundarios: form.objetivosSecundarios,
+            variedade_funcional: form.variedadeFuncional,
+            protocolo_microbiota: form.protocoloMicrobiota,
+            cycling_carbo: form.cyclingCarbo,
+          },
         },
       });
 
@@ -1058,6 +1094,62 @@ export default function PlanoAlimentarIA() {
             </div>
           )}
 
+          {/* Banner Inteligência Fisiológica (Elite) */}
+          {plano.inteligencia_fisiologica && (() => {
+            const inf = plano.inteligencia_fisiologica!;
+            const score = inf.score_qualidade ?? 0;
+            const scoreColor = score >= 90 ? "#1D9E75" : score >= 75 ? "#B8922A" : score >= 60 ? T.muted : T.red;
+            const scoreLabel = score >= 90 ? "Plano de nível elite" : score >= 75 ? "Alta performance" : score >= 60 ? "Funcional — otimização possível" : "Básico — revisar protocolo";
+            const C = 28, R = 24, CIRC = 2 * Math.PI * R;
+            const dash = (score / 100) * CIRC;
+            return (
+              <div style={{
+                background: "#1A1A1A", borderLeft: "3px solid #B8922A", borderRadius: 8,
+                padding: "16px 20px", marginBottom: 20,
+              }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: "#B8922A", letterSpacing: "0.06em", textTransform: "uppercase" as const }}>
+                    ⚡ Inteligência Fisiológica do Plano
+                  </span>
+                </div>
+                <div style={{ display: "flex", gap: 20, alignItems: "center", flexWrap: "wrap" as const }}>
+                  <div style={{ position: "relative", width: C * 2, height: C * 2 }}>
+                    <svg width={C * 2} height={C * 2} style={{ transform: "rotate(-90deg)" }}>
+                      <circle cx={C} cy={C} r={R} fill="none" stroke={T.border2} strokeWidth="4" />
+                      <circle cx={C} cy={C} r={R} fill="none" stroke="#B8922A" strokeWidth="4"
+                        strokeDasharray={`${dash} ${CIRC}`} strokeLinecap="round" />
+                    </svg>
+                    <div style={{
+                      position: "absolute", inset: 0, display: "flex", flexDirection: "column",
+                      alignItems: "center", justifyContent: "center",
+                    }}>
+                      <span style={{ fontSize: 16, fontWeight: 800, color: "#B8922A" }}>{score}</span>
+                      <span style={{ fontSize: 8, color: T.muted }}>/ 100</span>
+                    </div>
+                  </div>
+                  <div style={{ flex: 1, minWidth: 200 }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: scoreColor, marginBottom: 8 }}>{scoreLabel}</div>
+                    <div style={{ display: "grid", gap: 4, fontSize: 12, color: T.muted }}>
+                      <div>Diversidade vegetal: <span style={{ color: T.text, fontWeight: 600 }}>{inf.diversidade_vegetal_semanal ?? 0} espécies/semana</span></div>
+                      <div>Fermentado diário: <span style={{ color: inf.fermentado_diario ? "#1D9E75" : T.muted }}>{inf.fermentado_diario ? "✓" : "✗"}</span></div>
+                      <div>Cycling de CHO: <span style={{ color: inf.cycling_ativo ? "#1D9E75" : T.muted }}>{inf.cycling_ativo ? "✓ Ativo" : "— Inativo"}</span></div>
+                    </div>
+                  </div>
+                </div>
+                {inf.insights_coach && inf.insights_coach.length > 0 && (
+                  <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid rgba(184,146,42,0.2)" }}>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: "#B8922A", letterSpacing: "0.08em", textTransform: "uppercase" as const, marginBottom: 8 }}>
+                      Insights do Coach
+                    </div>
+                    <ul style={{ margin: 0, padding: "0 0 0 18px", color: T.text, fontSize: 12, lineHeight: 1.7 }}>
+                      {inf.insights_coach.map((ins, i) => <li key={i}>{ins}</li>)}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+
           {/* Bloco GLUT-4 (se gerado) */}
           {glut4Text && (
             <div style={{ marginBottom: 24 }}>
@@ -1365,6 +1457,121 @@ export default function PlanoAlimentarIA() {
           </div>
         </Section>
 
+        {/* ─── Perfil Fisiológico Avançado (Elite) ─────────────────────── */}
+        <div style={{ marginBottom: 28 }}>
+          <button
+            type="button"
+            onClick={() => setPerfilFisioOpen(!perfilFisioOpen)}
+            style={{
+              width: "100%", background: "transparent", border: "none", padding: 0,
+              cursor: "pointer", display: "flex", alignItems: "center", gap: 8, marginBottom: 16,
+              fontFamily: "inherit",
+            }}
+          >
+            <div style={{ width: 16, height: 1, background: "#B8922A" }} />
+            <div style={{ fontSize: 11, fontWeight: 700, color: "#B8922A", textTransform: "uppercase" as const, letterSpacing: "0.1em" }}>
+              Perfil Fisiológico Avançado
+            </div>
+            <span style={{
+              fontSize: 11, fontWeight: 700, color: "#B8922A",
+              background: "rgba(184, 146, 42, 0.15)",
+              border: "1px solid rgba(184, 146, 42, 0.3)",
+              borderRadius: 4, padding: "2px 8px", letterSpacing: "0.04em",
+            }}>🔬 Elite</span>
+            <div style={{ flex: 1 }} />
+            <span style={{ fontSize: 14, color: "#B8922A", transition: "transform .2s", transform: perfilFisioOpen ? "rotate(180deg)" : "rotate(0deg)" }}>▾</span>
+          </button>
+
+          {perfilFisioOpen && (
+            <div style={{ display: "grid", gap: 14 }}>
+              <div>
+                <Label>Histórico intestinal</Label>
+                <SelectField value={form.historicoIntestinal} onChange={e => set("historicoIntestinal", e.target.value)}>
+                  <option value="">Selecione...</option>
+                  <option value="sem_queixas">Sem queixas</option>
+                  <option value="gases_inchaco">Gases ou inchaço frequente</option>
+                  <option value="transito_irregular">Trânsito irregular (prisão de ventre ou diarreia)</option>
+                  <option value="antibioticos_12m">Uso de antibióticos nos últimos 12 meses</option>
+                  <option value="sii_disbiose">SII ou disbiose diagnosticada</option>
+                </SelectField>
+              </div>
+
+              <div>
+                <Label>Fermentados na dieta atual</Label>
+                <SelectField value={form.fermentadosAtual} onChange={e => set("fermentadosAtual", e.target.value)}>
+                  <option value="">Selecione...</option>
+                  <option value="nao_consumo">Não consumo fermentados</option>
+                  <option value="iogurte_ocasional">Iogurte ocasional (1–2x/semana)</option>
+                  <option value="iogurte_diario">Iogurte diário</option>
+                  <option value="kefir_kimchi_chucrute">Kefir, kimchi ou chucrute regularmente</option>
+                </SelectField>
+                <div style={{ marginTop: 6, fontSize: 11, color: T.green, lineHeight: 1.5 }}>
+                  A IA ajustará a introdução de fermentados de forma progressiva conforme o histórico intestinal.
+                </div>
+              </div>
+
+              <div>
+                <Label>Sensibilidade à insulina (auto-avaliação)</Label>
+                <SelectField value={form.sensibilidadeInsulina} onChange={e => set("sensibilidadeInsulina", e.target.value)}>
+                  <option value="">Selecione...</option>
+                  <option value="excelente">Excelente — ganho pouco gordura mesmo em superávit</option>
+                  <option value="boa">Boa — ganho moderado em superávit</option>
+                  <option value="regular">Regular — ganho gordura com facilidade</option>
+                  <option value="ruim">Ruim — qualquer excesso calórico vai para gordura</option>
+                </SelectField>
+                <div style={{ marginTop: 6, fontSize: 11, color: T.green, lineHeight: 1.5 }}>
+                  A IA ativará ciclagem de carboidratos e protocolos de sensibilização conforme este perfil.
+                </div>
+              </div>
+
+              <div>
+                <Label>Objetivos secundários (selecione todos que se aplicam)</Label>
+                <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 8 }}>
+                  {[
+                    "Otimizar microbiota",
+                    "Melhorar sensibilidade à insulina",
+                    "Reduzir inflamação sistêmica",
+                    "Melhorar qualidade do sono",
+                    "Saúde hormonal",
+                    "Maximizar absorção de nutrientes",
+                    "Saúde intestinal (TGI)",
+                  ].map(o => (
+                    <Tag key={o} label={o} active={form.objetivosSecundarios.includes(o)} onClick={() => toggleArr("objetivosSecundarios", o)} />
+                  ))}
+                </div>
+              </div>
+
+              <div style={{
+                display: "flex", alignItems: "flex-start", gap: 12,
+                padding: "12px 14px", background: T.card, border: `1px solid ${form.variedadeFuncional ? "#B8922A" : T.border}`,
+                borderRadius: 10,
+              }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: T.text }}>🌿 Priorizar variedade funcional de alimentos?</div>
+                  <div style={{ fontSize: 11, color: T.green, marginTop: 4, lineHeight: 1.5 }}>
+                    Ativa protocolo de 20+ espécies vegetais/semana — frutas funcionais por categoria, vegetais por função fisiológica, fermentados diários e temperos ativos (cúrcuma, gengibre, alho).
+                  </div>
+                </div>
+                <div
+                  onClick={() => set("variedadeFuncional", !form.variedadeFuncional)}
+                  style={{
+                    width: 44, height: 24, borderRadius: 999,
+                    background: form.variedadeFuncional ? "#B8922A" : T.bg3,
+                    border: `1px solid ${form.variedadeFuncional ? "#B8922A" : T.border2}`,
+                    position: "relative", cursor: "pointer", transition: "all .2s", flexShrink: 0,
+                  }}
+                >
+                  <div style={{
+                    width: 18, height: 18, borderRadius: "50%",
+                    background: form.variedadeFuncional ? "#0a0f0a" : T.muted,
+                    position: "absolute", top: 2, left: form.variedadeFuncional ? 22 : 2, transition: "left .2s",
+                  }} />
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
         {/* Rotina de treino semanal */}
         <Section title="Rotina de treino">
           <TrainingSchedule value={trainingSchedule} onChange={setTrainingSchedule} />
@@ -1670,6 +1877,68 @@ export default function PlanoAlimentarIA() {
               )}
             </>
           )}
+        </div>
+
+        {/* Toggle: Protocolo Microbiota */}
+        <div style={{
+          background: T.card, border: `1px solid ${form.protocoloMicrobiota ? "#B8922A" : T.border}`,
+          borderRadius: 12, padding: 18, marginBottom: 12,
+          display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12,
+        }}>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: T.text, display: "flex", alignItems: "center", gap: 8 }}>
+              🦠 Protocolo Microbiota Ativo
+            </div>
+            <div style={{ fontSize: 11, color: T.muted, marginTop: 4, lineHeight: 1.5 }}>
+              Inclui fermentado diário, combinações simbióticas e prebióticos estratégicos em cada refeição.
+            </div>
+          </div>
+          <div
+            onClick={() => set("protocoloMicrobiota", !form.protocoloMicrobiota)}
+            style={{
+              width: 44, height: 24, borderRadius: 999,
+              background: form.protocoloMicrobiota ? "#B8922A" : T.bg3,
+              border: `1px solid ${form.protocoloMicrobiota ? "#B8922A" : T.border2}`,
+              position: "relative", cursor: "pointer", transition: "all .2s", flexShrink: 0,
+            }}
+          >
+            <div style={{
+              width: 18, height: 18, borderRadius: "50%",
+              background: form.protocoloMicrobiota ? "#0a0f0a" : T.muted,
+              position: "absolute", top: 2, left: form.protocoloMicrobiota ? 22 : 2, transition: "left .2s",
+            }} />
+          </div>
+        </div>
+
+        {/* Toggle: Cycling de Carboidratos */}
+        <div style={{
+          background: T.card, border: `1px solid ${form.cyclingCarbo ? "#B8922A" : T.border}`,
+          borderRadius: 12, padding: 18, marginBottom: 18,
+          display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12,
+        }}>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: T.text, display: "flex", alignItems: "center", gap: 8 }}>
+              📊 Cycling de Carboidratos
+            </div>
+            <div style={{ fontSize: 11, color: T.muted, marginTop: 4, lineHeight: 1.5 }}>
+              Dias de treino pesado recebem CHO máximo. Dias leves e descanso recebem 60–70% do CHO — mantém sensibilidade à insulina alta.
+            </div>
+          </div>
+          <div
+            onClick={() => set("cyclingCarbo", !form.cyclingCarbo)}
+            style={{
+              width: 44, height: 24, borderRadius: 999,
+              background: form.cyclingCarbo ? "#B8922A" : T.bg3,
+              border: `1px solid ${form.cyclingCarbo ? "#B8922A" : T.border2}`,
+              position: "relative", cursor: "pointer", transition: "all .2s", flexShrink: 0,
+            }}
+          >
+            <div style={{
+              width: 18, height: 18, borderRadius: "50%",
+              background: form.cyclingCarbo ? "#0a0f0a" : T.muted,
+              position: "absolute", top: 2, left: form.cyclingCarbo ? 22 : 2, transition: "left .2s",
+            }} />
+          </div>
         </div>
 
         {error && (
