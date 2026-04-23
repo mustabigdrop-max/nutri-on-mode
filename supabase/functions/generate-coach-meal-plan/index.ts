@@ -458,8 +458,34 @@ Responda APENAS com JSON válido nesta estrutura exata:
     "cycling_ativo": boolean,
     "protocolos_ativos": ["string"],
     "insights_coach": ["string"]
-  }
-}`;
+  }${perfilFisiologico?.modo_economico ? `,
+  "custo_estimado": {
+    "moeda": "BRL",
+    "modo_economico_ativo": true,
+    "custo_diario_economico": number,
+    "custo_diario_padrao_equivalente": number,
+    "economia_diaria": number,
+    "economia_percentual": number,
+    "custo_mensal_economico": number,
+    "economia_mensal": number,
+    "refeicoes": [
+      { "refeicao": "string (mesmo nome da refeição)", "custo_economico": number, "custo_padrao": number, "economia": number }
+    ],
+    "premissas": "string curta com base de preços usada (ex: 'preços médios de mercado BR — atacado/feira, nov/2024')",
+    "principais_substituicoes": [
+      { "de": "string (alimento padrão)", "para": "string (alimento econômico)", "economia_aprox": "string (ex: ~70%)" }
+    ]
+  }` : ""}
+}
+
+${perfilFisiologico?.modo_economico ? `
+💰 INSTRUÇÃO ADICIONAL — CÁLCULO DE CUSTO (OBRIGATÓRIO no Modo Econômico):
+- Estime o custo de CADA refeição em REAIS (BRL) usando preços médios brasileiros realistas (atacado/feira/supermercado popular, base 2024).
+- Para cada refeição, calcule também o "custo_padrao": quanto custaria a MESMA refeição usando os equivalentes nutricionais NÃO-econômicos (ex: salmão no lugar de sardinha, alcatra no lugar de patinho, cottage premium no lugar de minas, mel cru no lugar de mel comum, whey importado no lugar de ovo, frutas vermelhas importadas no lugar de banana). Mantenha as MESMAS gramagens nutricionais.
+- Some os totais para "custo_diario_economico" e "custo_diario_padrao_equivalente". Calcule "economia_diaria", "economia_percentual" (1 casa decimal) e "custo_mensal_economico" / "economia_mensal" (× 30).
+- Liste 3–5 "principais_substituicoes" mostrando a troca aplicada e a economia aproximada.
+- Todos os valores numéricos em BRL, com no máximo 2 casas decimais. Sem string, apenas números no JSON.
+` : ""}`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
