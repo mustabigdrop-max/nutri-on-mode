@@ -1553,6 +1553,42 @@ export default function PlanoAlimentarIA() {
             );
           })()}
 
+          {/* Relatório do ajuste calórico pós-processamento */}
+          {(() => {
+            const aj: any = (plano as any)?.ajuste_calorico;
+            if (!aj || !aj.aplicado) return null;
+            const ok = !!aj.dentro_da_banda;
+            const accent = ok ? T.green : T.amber;
+            const bg = ok ? T.greenBg : "#1f1608";
+            return (
+              <div style={{
+                background: bg,
+                border: `1px solid ${accent}55`,
+                borderLeft: `3px solid ${accent}`,
+                borderRadius: 10,
+                padding: "12px 16px",
+                marginBottom: 16,
+                color: T.text,
+                fontSize: 12,
+              }}>
+                <div style={{ fontWeight: 700, marginBottom: 6, color: accent, display: "flex", alignItems: "center", gap: 6 }}>
+                  ⚖ Ajuste calórico automático {ok ? "aplicado com sucesso" : "aplicado parcialmente"}
+                </div>
+                <div style={{ color: T.muted, fontSize: 11, lineHeight: 1.6 }}>
+                  Alvo: <span style={{ color: T.text, fontWeight: 600 }}>{aj.alvo} kcal</span> (banda {aj.banda_min}–{aj.banda_max})
+                  {" · "}Antes: <span style={{ color: T.red, fontWeight: 600 }}>{aj.total_antes} kcal</span>
+                  {" → "}Depois: <span style={{ color: accent, fontWeight: 600 }}>{aj.total_depois} kcal</span>
+                  {" · "}Δ <span style={{ color: T.text }}>+{aj.delta_kcal} kcal</span>
+                  {" · "}Fator: <span style={{ color: T.text }}>×{aj.fator}</span>
+                  {aj.fator_limitado && <span style={{ color: T.red }}> (limitado a ×1.5)</span>}
+                </div>
+                <div style={{ color: T.muted, fontSize: 11, marginTop: 6, fontStyle: "italic" }}>
+                  {aj.mensagem}
+                </div>
+              </div>
+            );
+          })()}
+
           {/* Alerta protocolo */}
           {r.observacao_protocolo && (
             <div style={{ background: T.greenBg, border: `1px solid ${T.green}33`, borderRadius: 10, padding: "12px 16px", color: T.green, fontSize: 12, marginBottom: 16 }}>
