@@ -1705,7 +1705,7 @@ ${perfilFisiologico?.modo_economico ? `
       const _getFarmaEtapa = Math.round(_getComCardio * _fatorFarmaCap);
       const _getFinalEtapa = Math.round(_getFarmaEtapa * calc.fatorNeat);
       parsed.resumo.auditoria_calculo = {
-        formula_tmb: "Mifflin-St Jeor",
+        formula_tmb: resultadoTMB.formula,
         tmb: calc.tmb,
         fator_atividade: calc.fatorAtividade,
         get_base: _getBaseAtiv,                     // TMB × atividade
