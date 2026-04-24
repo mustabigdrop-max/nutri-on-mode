@@ -645,7 +645,8 @@ ${perfilFisiologico?.modo_economico ? `
 ` : ""}`;
 
     // Retry com backoff + fallback de modelo em caso de 503/timeout
-    const MODELS_FALLBACK = ["google/gemini-2.5-pro", "google/gemini-2.5-flash", "google/gemini-2.5-flash-lite"];
+    // Ordem: flash primeiro (rápido, evita timeout 504 em planos grandes); pro como fallback se flash falhar
+    const MODELS_FALLBACK = ["google/gemini-2.5-flash", "google/gemini-2.5-pro", "google/gemini-2.5-flash-lite"];
     let response: Response | null = null;
     let lastErrorStatus = 0;
     let lastErrorBody = "";
