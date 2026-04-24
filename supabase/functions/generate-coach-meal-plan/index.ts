@@ -1364,20 +1364,35 @@ ${perfilFisiologico?.modo_economico ? `
     const aiData = await response.json();
     const raw = aiData.choices?.[0]?.message?.content || "";
     const finishReason = aiData.choices?.[0]?.finish_reason;
-    const clean = raw.replace(/```json|```/g, "").trim();
+    let clean = raw.replace(/```json|```/g, "").trim();
+
+    // Extrai o objeto JSON principal mesmo quando a IA prefixar/sufixar texto explicativo.
+    const firstBrace = clean.indexOf("{");
+    const lastBrace = clean.lastIndexOf("}");
+    if (firstBrace > 0 || (lastBrace !== -1 && lastBrace < clean.length - 1)) {
+      if (firstBrace !== -1 && lastBrace > firstBrace) {
+        clean = clean.substring(firstBrace, lastBrace + 1);
+      }
+    }
 
     let parsed;
     try {
       parsed = JSON.parse(clean);
-    } catch {
-      console.error("Failed to parse AI response. finish_reason:", finishReason, "len:", clean.length, "tail:", clean.substring(clean.length - 300));
-      const truncated = finishReason === "length" || !clean.endsWith("}");
-      const msg = truncated
-        ? "A IA gerou um plano grande demais e a resposta foi truncada (finish_reason=length). O limite de tokens foi aumentado — tente novamente."
-        : "Resposta da IA não é um JSON válido.";
-      return new Response(JSON.stringify({ error: msg, finish_reason: finishReason }), {
-        status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    } catch (e) {
+      // Segunda tentativa: remover vírgulas pendentes antes de } ou ]
+      try {
+        const repaired = clean.replace(/,(\s*[}\]])/g, "$1");
+        parsed = JSON.parse(repaired);
+      } catch {
+        console.error("Failed to parse AI response. finish_reason:", finishReason, "len:", clean.length, "head:", clean.substring(0, 200), "tail:", clean.substring(clean.length - 300));
+        const truncated = finishReason === "length" || !clean.endsWith("}");
+        const msg = truncated
+          ? "A IA gerou um plano grande demais e a resposta foi truncada (finish_reason=length). O limite de tokens foi aumentado — tente novamente."
+          : "Resposta da IA não é um JSON válido. Tente novamente.";
+        return new Response(JSON.stringify({ error: msg, finish_reason: finishReason }), {
+          status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
     }
 
     // ── Validação determinística do Pós-Treino Imediato (GLUT-4) ──
