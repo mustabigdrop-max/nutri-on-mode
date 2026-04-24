@@ -40,41 +40,99 @@ interface AdjustmentRow {
   created_at: string;
 }
 
+interface FixAllStep {
+  id: string;
+  run_id: string;
+  patient_name: string | null;
+  step_index: number;
+  step_type: string;
+  attempt: number | null;
+  ok: boolean;
+  message: string | null;
+  details: any;
+  created_at: string;
+}
+
+interface FixAllRun {
+  run_id: string;
+  patient_name: string | null;
+  started_at: string;
+  steps: FixAllStep[];
+}
+
 const fmtKcal = (n: number | null | undefined) =>
   n == null ? "—" : `${Math.round(Number(n))} kcal`;
 
 const fmtFator = (n: number | null | undefined) =>
   n == null ? "—" : `×${Number(n).toFixed(3)}`;
 
+const STEP_LABEL: Record<string, { label: string; color: string }> = {
+  snap_inicial: { label: "1️⃣ Snap inicial", color: "bg-blue-600" },
+  regerar_inicio: { label: "🚀 Início regeração", color: "bg-amber-600" },
+  regerar_tentativa: { label: "🔄 Tentativa", color: "bg-amber-700" },
+  snap_final: { label: "3️⃣ Snap final", color: "bg-blue-700" },
+  concluido_sem_regeracao: { label: "✅ Concluído", color: "bg-green-600" },
+  nada_a_corrigir: { label: "✓ Nada a corrigir", color: "bg-slate-600" },
+};
+
 const CoachAdjustmentLogPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { profile, loading: profileLoading } = useCoachProfile();
   const [rows, setRows] = useState<AdjustmentRow[]>([]);
+  const [fixRuns, setFixRuns] = useState<FixAllRun[]>([]);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [expandedRun, setExpandedRun] = useState<string | null>(null);
 
   const load = async () => {
     if (!profile) return;
     setLoading(true);
-    const { data, error } = await supabase
-      .from("coach_plan_adjustments" as any)
-      .select(
-        "id, patient_name, objetivo, target_kcal, total_antes, total_depois, delta_kcal, fator, dentro_da_banda, status_msg, ajuste_meta, created_at"
-      )
-      .eq("coach_id", profile.id)
-      .order("created_at", { ascending: false })
-      .limit(100);
 
-    if (error) {
+    const [adjRes, fixRes] = await Promise.all([
+      supabase
+        .from("coach_plan_adjustments" as any)
+        .select(
+          "id, patient_name, objetivo, target_kcal, total_antes, total_depois, delta_kcal, fator, dentro_da_banda, status_msg, ajuste_meta, created_at"
+        )
+        .eq("coach_id", profile.id)
+        .order("created_at", { ascending: false })
+        .limit(100),
+      supabase
+        .from("coach_fix_all_logs" as any)
+        .select("id, run_id, patient_name, step_index, step_type, attempt, ok, message, details, created_at")
+        .eq("coach_id", profile.id)
+        .order("created_at", { ascending: false })
+        .limit(500),
+    ]);
+
+    if (adjRes.error) {
       toast({
         title: "Erro ao carregar log",
-        description: error.message,
+        description: adjRes.error.message,
         variant: "destructive",
       });
     } else {
-      setRows((data as any) || []);
+      setRows((adjRes.data as any) || []);
     }
+
+    // Agrupa steps por run_id
+    const stepsByRun = new Map<string, FixAllStep[]>();
+    for (const s of ((fixRes.data as any) || []) as FixAllStep[]) {
+      if (!stepsByRun.has(s.run_id)) stepsByRun.set(s.run_id, []);
+      stepsByRun.get(s.run_id)!.push(s);
+    }
+    const runs: FixAllRun[] = Array.from(stepsByRun.entries()).map(([run_id, steps]) => {
+      steps.sort((a, b) => a.step_index - b.step_index);
+      return {
+        run_id,
+        patient_name: steps[0]?.patient_name || null,
+        started_at: steps[0]?.created_at || "",
+        steps,
+      };
+    });
+    runs.sort((a, b) => (b.started_at > a.started_at ? 1 : -1));
+    setFixRuns(runs.slice(0, 30));
     setLoading(false);
   };
 
