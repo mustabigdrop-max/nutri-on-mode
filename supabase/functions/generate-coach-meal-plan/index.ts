@@ -471,12 +471,12 @@ serve(async (req) => {
       const idadeNum = parseFloat(idade) || 0;
       if (!pesoNum || !altNum || !idadeNum) return null;
 
-      // ── BLOCO 1: TMB Mifflin-St Jeor ──
+      // ── BLOCO 1: TMB — fórmula selecionada automaticamente ──
+      // Pode ser Mifflin / Harris-Benedict / Schofield / FAO-OMS /
+      // Cunningham / Katch-McArdle dependendo do perfil (idade, IMC, atleta, BF).
       const sexoNorm = String(sexo || "").toLowerCase();
       const isHomem = /masc|homem|m$|^m/i.test(sexoNorm);
-      const tmb = isHomem
-        ? (10 * pesoNum) + (6.25 * altNum) - (5 * idadeNum) + 5
-        : (10 * pesoNum) + (6.25 * altNum) - (5 * idadeNum) - 161;
+      const tmb = resultadoTMB.tmb;
 
       // ── BLOCO 2: Fator de atividade ──
       const nivelRaw = String(nivelAtividade || "moderado").toLowerCase().trim();
