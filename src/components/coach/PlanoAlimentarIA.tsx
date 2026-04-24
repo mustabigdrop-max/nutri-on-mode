@@ -536,6 +536,10 @@ export default function PlanoAlimentarIA() {
   const [planoComparativo, setPlanoComparativo] = useState<PlanoData | null>(null);
   const [showCompare, setShowCompare] = useState(false);
   const [comparing, setComparing] = useState(false);
+  // Modal de revisão do protocolo farmacológico (recálculo determinístico)
+  const [showProtocoloModal, setShowProtocoloModal] = useState(false);
+  const [protocoloDraft, setProtocoloDraft] = useState("");
+  const [protocoloRecalc, setProtocoloRecalc] = useState(false);
   const [error, setError] = useState("");
   const [errorDetails, setErrorDetails] = useState<{
     kind: "validation" | "unavailable" | "timeout" | "rate_limit" | "credits" | "invalid_json" | "network" | "unknown";
@@ -879,6 +883,47 @@ export default function PlanoAlimentarIA() {
     if (fnError) throw fnError;
     if (!data?.plan) throw new Error("Resposta inválida da IA");
     return data.plan as PlanoData;
+  };
+
+  // Abre o modal de revisão do protocolo farmacológico com o texto atual
+  const abrirRevisaoProtocolo = () => {
+    setProtocoloDraft(form.protocoloFarmacologico || "");
+    setShowProtocoloModal(true);
+  };
+
+  // Salva o novo texto do protocolo no form e regera o plano (recalcula
+  // compostos detectados, fator farmacológico, macros e refeições).
+  const recalcularComProtocolo = async () => {
+    const novoTexto = (protocoloDraft || "").trim();
+    // Atualiza o form ANTES de regerar (gerarPlanoCore lê de form.protocoloFarmacologico)
+    set("protocoloFarmacologico", novoTexto);
+    setProtocoloRecalc(true);
+    setShowProtocoloModal(false);
+    setError("");
+    setErrorDetails(null);
+    setStep("loading");
+    setLoadingMsg("Reanalisando protocolo farmacológico...");
+    try {
+      // Pequeno delay garante que o setState do form seja aplicado antes do invoke
+      await new Promise((r) => setTimeout(r, 30));
+      const novo = await gerarPlanoCore();
+      if (novo) {
+        setPlano(novo);
+        setPlanoComparativo(null);
+        setShowCompare(false);
+        setSavedId(null);
+      }
+      setStep("result");
+      setTimeout(() => resultRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
+    } catch (e: any) {
+      console.error("[PlanoAlimentarIA] erro ao recalcular protocolo:", e);
+      const details = classifyError(e);
+      setErrorDetails(details);
+      setError(details.title);
+      setStep("result");
+    } finally {
+      setProtocoloRecalc(false);
+    }
   };
 
   // Classifica o erro vindo do supabase.functions.invoke / fetch
@@ -1513,6 +1558,94 @@ export default function PlanoAlimentarIA() {
           </div>
         </div>
 
+        {/* Modal: Revisão do protocolo farmacológico — recalcula tudo */}
+        {showProtocoloModal && (
+          <div onClick={() => !protocoloRecalc && setShowProtocoloModal(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", zIndex: 60, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+            <div onClick={(e) => e.stopPropagation()} style={{ background: T.bg2, border: `1px solid ${T.border2}`, borderRadius: 14, padding: 24, maxWidth: 600, width: "100%", maxHeight: "90vh", overflow: "auto" as const }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                <span style={{ fontSize: 18 }}>🧪</span>
+                <div style={{ fontSize: 16, fontWeight: 700, color: T.text }}>Revisar protocolo farmacológico</div>
+              </div>
+              <div style={{ fontSize: 12, color: T.muted, marginBottom: 16, lineHeight: 1.5 }}>
+                Edite o texto abaixo. Ao recalcular, o sistema vai detectar novamente cada composto, recalcular o fator farmacológico, ajustar os macros (proteína, carbo, gordura) e regerar todas as refeições.
+              </div>
+
+              <div style={{ marginBottom: 14 }}>
+                <Label>Protocolo (texto livre)</Label>
+                <textarea
+                  value={protocoloDraft}
+                  onChange={(e) => setProtocoloDraft(e.target.value)}
+                  rows={7}
+                  disabled={protocoloRecalc}
+                  placeholder="Ex: Testosterona Enantato 300mg/sem, NPP 200mg/sem, CJC-1295 sem DAC 2mg 2x/sem, Ipamorelin 200mcg 3x/dia, Metformina 500mg 2x/dia..."
+                  style={{
+                    width: "100%",
+                    minHeight: 160,
+                    background: T.bg3,
+                    border: `1px solid ${T.border2}`,
+                    borderRadius: 8,
+                    padding: 12,
+                    color: T.text,
+                    fontSize: 13,
+                    fontFamily: "inherit",
+                    lineHeight: 1.5,
+                    resize: "vertical" as const,
+                    boxSizing: "border-box" as const,
+                  }}
+                  maxLength={2000}
+                />
+                <div style={{ fontSize: 10, color: T.muted, marginTop: 4, textAlign: "right" as const }}>
+                  {protocoloDraft.length}/2000
+                </div>
+              </div>
+
+              <div style={{ background: T.greenBg, border: `1px solid ${T.border2}`, borderRadius: 8, padding: "10px 12px", marginBottom: 16 }}>
+                <div style={{ fontSize: 11, color: T.green, lineHeight: 1.5 }}>
+                  💡 <strong>Dica:</strong> use nomes completos quando possível (ex: "trembolona", "stanozolol", "semaglutida"). O detector reconhece ~35 compostos com várias grafias e abreviações ("test e", "deca", "tren a", "GW", "MK-677" etc.).
+                </div>
+              </div>
+
+              <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" as const }}>
+                <button
+                  onClick={() => setShowProtocoloModal(false)}
+                  disabled={protocoloRecalc}
+                  style={{
+                    padding: "10px 18px",
+                    borderRadius: 8,
+                    background: T.bg3,
+                    border: `1px solid ${T.border2}`,
+                    color: T.muted,
+                    fontSize: 12,
+                    cursor: protocoloRecalc ? "not-allowed" : "pointer",
+                    fontFamily: "inherit",
+                    opacity: protocoloRecalc ? 0.5 : 1,
+                  }}
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={recalcularComProtocolo}
+                  disabled={protocoloRecalc}
+                  style={{
+                    padding: "10px 18px",
+                    borderRadius: 8,
+                    background: T.amber,
+                    border: `1px solid ${T.amber}`,
+                    color: "#1a1206",
+                    fontSize: 12,
+                    fontWeight: 700,
+                    cursor: protocoloRecalc ? "wait" : "pointer",
+                    fontFamily: "inherit",
+                    opacity: protocoloRecalc ? 0.6 : 1,
+                  }}
+                >
+                  {protocoloRecalc ? "Recalculando..." : "🔄 Recalcular plano"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {showSendModal && (
           <div onClick={() => setShowSendModal(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
             <div onClick={(e) => e.stopPropagation()} style={{ background: T.bg2, border: `1px solid ${T.border2}`, borderRadius: 14, padding: 24, maxWidth: 460, width: "100%" }}>
@@ -1706,6 +1839,111 @@ export default function PlanoAlimentarIA() {
               ))}
             </div>
           </div>
+
+          {/* ───────── Card: Protocolo Farmacológico (revisão + recálculo) ───────── */}
+          {(() => {
+            const compostos = ((r as any)?.compostos_detectados as string[] | undefined) || [];
+            const fatorFarm = (r as any)?.fator_farmacologico as number | undefined;
+            const alertasCrit = ((r as any)?.alertas_criticos as string[] | undefined) || [];
+            const hepatoCount = (r as any)?.hepatotoxico_count as number | undefined;
+            const protoTexto = (form.protocoloFarmacologico || "").trim();
+            return (
+              <div style={{
+                marginBottom: 24,
+                padding: 16,
+                background: T.card,
+                border: `1px solid ${T.border}`,
+                borderRadius: 12,
+              }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, marginBottom: (compostos.length || protoTexto) ? 12 : 0 }}>
+                  <div>
+                    <div style={{ fontSize: 11, color: T.muted, textTransform: "uppercase" as const, letterSpacing: "0.05em", marginBottom: 4 }}>
+                      🧪 Protocolo farmacológico
+                    </div>
+                    <div style={{ fontSize: 13, color: T.text, fontWeight: 600 }}>
+                      {compostos.length > 0
+                        ? `${compostos.length} composto${compostos.length > 1 ? "s" : ""} detectado${compostos.length > 1 ? "s" : ""}`
+                        : protoTexto
+                          ? "Texto preenchido — nenhum composto reconhecido pelo detector"
+                          : "Nenhum protocolo informado"}
+                    </div>
+                    {typeof fatorFarm === "number" && fatorFarm !== 1 && (
+                      <div style={{ fontSize: 11, color: T.muted, marginTop: 3 }}>
+                        Fator farmacológico aplicado: <span style={{ color: T.amber, fontWeight: 600 }}>×{fatorFarm.toFixed(3)}</span>
+                        {hepatoCount && hepatoCount > 0 ? <> · <span style={{ color: "#f87171" }}>{hepatoCount} hepatotóxico{hepatoCount > 1 ? "s" : ""}</span></> : null}
+                      </div>
+                    )}
+                  </div>
+                  <button
+                    onClick={abrirRevisaoProtocolo}
+                    disabled={protocoloRecalc}
+                    style={{
+                      padding: "8px 14px",
+                      borderRadius: 8,
+                      background: T.amber,
+                      border: `1px solid ${T.amber}`,
+                      color: "#1a1206",
+                      fontSize: 12,
+                      fontWeight: 700,
+                      cursor: protocoloRecalc ? "wait" : "pointer",
+                      fontFamily: "inherit",
+                      whiteSpace: "nowrap" as const,
+                      opacity: protocoloRecalc ? 0.6 : 1,
+                    }}
+                    title="Editar o texto do protocolo e recalcular automaticamente compostos detectados, fator farmacológico, macros e refeições"
+                  >
+                    ✏️ Revisar protocolo
+                  </button>
+                </div>
+
+                {compostos.length > 0 && (
+                  <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 6, marginBottom: alertasCrit.length ? 10 : 0 }}>
+                    {compostos.map((c) => (
+                      <span key={c} style={{
+                        padding: "4px 9px",
+                        borderRadius: 999,
+                        background: T.bg3,
+                        border: `1px solid ${T.border2}`,
+                        color: T.text,
+                        fontSize: 11,
+                        fontWeight: 600,
+                        textTransform: "lowercase" as const,
+                      }}>{c}</span>
+                    ))}
+                  </div>
+                )}
+
+                {alertasCrit.length > 0 && (
+                  <div style={{
+                    background: "#1f0808",
+                    border: `1px solid #f8717155`,
+                    borderLeft: `3px solid #f87171`,
+                    borderRadius: 8,
+                    padding: "10px 12px",
+                    color: "#fca5a5",
+                    fontSize: 11,
+                    lineHeight: 1.5,
+                  }}>
+                    <div style={{ fontWeight: 700, marginBottom: 4 }}>⛔ Alertas críticos:</div>
+                    {alertasCrit.map((a, i) => (
+                      <div key={i} style={{ marginTop: i === 0 ? 0 : 4 }}>• {a}</div>
+                    ))}
+                  </div>
+                )}
+
+                {protoTexto && compostos.length === 0 && (
+                  <div style={{
+                    marginTop: 6,
+                    fontSize: 11,
+                    color: T.muted,
+                    fontStyle: "italic" as const,
+                  }}>
+                    O texto livre não casou com nenhuma das ~35 keywords do detector. Use "Revisar protocolo" para ajustar a grafia (ex: "testosterona enantato" em vez de abreviações próprias) e recalcular.
+                  </div>
+                )}
+              </div>
+            );
+          })()}
 
           {/* Aviso de validação de timing peri-workout vs schedule (somente o alerta — botões agora ficam num bloco sempre visível abaixo) */}
           {(() => {
