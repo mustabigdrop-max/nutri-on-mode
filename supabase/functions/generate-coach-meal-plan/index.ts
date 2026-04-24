@@ -681,9 +681,9 @@ serve(async (req) => {
       if (/peak[_ ]?week|peak/.test(faseLower)) {
         perfilObj = "peak_week"; multObj = 0.90; pctGordura = 0.15; protGkgFinal = Math.max(protGkgFinal, 2.5);
       } else if (/bulk_agressivo|bulk agressivo|bulk_pesado/.test(faseLower) || /bulk_agress/.test(objLower)) {
-        perfilObj = "bulk_agressivo"; multObj = 1.20; pctGordura = 0.28;
+        perfilObj = "bulk_agressivo"; multObj = 1.20; pctGordura = 0.30; // ↑ 28→30 (precursor hormonal)
       } else if (/bulk|hipertrof|massa|ganho/.test(objLower) || /bulk/.test(faseLower)) {
-        perfilObj = "bulk_limpo"; multObj = 1.10; pctGordura = 0.25;
+        perfilObj = "bulk_limpo"; multObj = 1.10; pctGordura = 0.28; // ↑ 25→28 (precursor hormonal)
       } else if (/cut|emagrec|perda|defici|seca/.test(objLower) || /cut/.test(faseLower)) {
         perfilObj = "cutting"; multObj = 0.80; pctGordura = 0.25;
         protGkgFinal = Math.max(protGkgFinal, 2.4);
