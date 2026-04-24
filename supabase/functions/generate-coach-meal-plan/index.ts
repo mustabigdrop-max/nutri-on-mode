@@ -674,8 +674,9 @@ serve(async (req) => {
       // getBase neste ponto = TMB × atividade + kcal_cardio (cardio já somado no BLOCO 3)
       const getComCardio = getBase;
 
-      // ── BLOCO 4: FARMACOLÓGICO (multiplicar sobre get_com_cardio, cap 1.75) ──
-      const fatorFarmaCap = Math.min(multFarm, 1.75);
+      // ── BLOCO 4: FARMACOLÓGICO (multiplicar sobre get_com_cardio) ──
+      // multFarm já vem com diminishing returns + cap escalonado aplicado.
+      const fatorFarmaCap = multFarm;
       const getFarmaCalc = getComCardio * fatorFarmaCap;
 
       // ── BLOCO 5: TEF — REMOVIDO como fator multiplicativo ──
