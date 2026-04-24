@@ -865,6 +865,135 @@ ${perfilFisiologico?.modo_economico ? `
       });
     }
 
+    // ── AJUSTE PÓS-PROCESSAMENTO: escala gramaturas para bater alvo calórico ±3% ──
+    // Se o coach definiu meta calórica e o total da IA ficou abaixo da banda inferior,
+    // multiplica proporcionalmente todas as gramaturas (exceto pós-treino imediato, já validado)
+    // até o total cair dentro de ±3% do alvo. Devolve o relatório do ajuste no JSON.
+    const ajusteCalorico: any = { aplicado: false };
+    if (calorias && Number(calorias) > 0 && Array.isArray(parsed?.refeicoes)) {
+      const alvo = Number(calorias);
+      const minBand = Math.round(alvo * 0.97);
+      const maxBand = Math.round(alvo * 1.03);
+
+      const isPosImediato = (nome: string) =>
+        /p[óo]s[\s-]?treino\s*imediato|janela\s*glut|glut[\s-]?4/i.test(nome || "");
+
+      const somaTotal = (): number =>
+        (parsed.refeicoes as any[]).reduce(
+          (acc, m) => acc + (Number(m?.calorias) || 0),
+          0,
+        );
+
+      const totalAntes = Math.round(somaTotal());
+      ajusteCalorico.alvo = alvo;
+      ajusteCalorico.banda_min = minBand;
+      ajusteCalorico.banda_max = maxBand;
+      ajusteCalorico.total_antes = totalAntes;
+
+      if (totalAntes > 0 && totalAntes < minBand) {
+        // Calcula massa calórica ajustável (exclui pós-imediato que já foi travado pelo GLUT-4)
+        const ajustaveis = (parsed.refeicoes as any[]).filter(
+          (m) => !isPosImediato(m?.refeicao || ""),
+        );
+        const fixas = (parsed.refeicoes as any[]).filter((m) =>
+          isPosImediato(m?.refeicao || ""),
+        );
+        const kcalFixas = fixas.reduce((a, m) => a + (Number(m?.calorias) || 0), 0);
+        const kcalAjustaveis = ajustaveis.reduce(
+          (a, m) => a + (Number(m?.calorias) || 0),
+          0,
+        );
+
+        if (kcalAjustaveis > 0) {
+          // Fator que faz (kcalAjustaveis * fator + kcalFixas) === alvo
+          const fator = (alvo - kcalFixas) / kcalAjustaveis;
+          const fatorClamp = Math.max(1.0, Math.min(1.5, fator)); // só aumenta, máximo +50%
+
+          const escalarGramas = (q: any): any => {
+            if (typeof q === "number") return Math.round(q * fatorClamp);
+            const s = String(q ?? "");
+            // Substitui o primeiro número seguido (ou não) de unidade g/ml
+            return s.replace(
+              /(\d+(?:[.,]\d+)?)(\s*(?:g|ml|gramas?|mililitros?)?)/i,
+              (_m, num, unit) => {
+                const n = parseFloat(num.replace(",", "."));
+                if (!isFinite(n)) return _m;
+                return `${Math.round(n * fatorClamp)}${unit || "g"}`;
+              },
+            );
+          };
+
+          parsed.refeicoes = (parsed.refeicoes as any[]).map((m) => {
+            if (isPosImediato(m?.refeicao || "")) return m;
+            const novosAlimentos = Array.isArray(m?.alimentos)
+              ? m.alimentos.map((a: any) => {
+                  const nova: any = { ...a, quantidade: escalarGramas(a?.quantidade) };
+                  if (typeof a?.cho === "number") nova.cho = Math.round(a.cho * fatorClamp);
+                  if (typeof a?.proteina === "number")
+                    nova.proteina = Math.round(a.proteina * fatorClamp);
+                  if (typeof a?.gordura === "number")
+                    nova.gordura = Math.round(a.gordura * fatorClamp);
+                  return nova;
+                })
+              : m?.alimentos;
+
+            const novasMacros = m?.macros
+              ? {
+                  proteina: Math.round((Number(m.macros.proteina) || 0) * fatorClamp),
+                  carboidrato: Math.round((Number(m.macros.carboidrato) || 0) * fatorClamp),
+                  gordura: Math.round((Number(m.macros.gordura) || 0) * fatorClamp),
+                }
+              : m?.macros;
+
+            return {
+              ...m,
+              alimentos: novosAlimentos,
+              calorias: Math.round((Number(m?.calorias) || 0) * fatorClamp),
+              macros: novasMacros,
+              ajuste_proporcional: `gramaturas escaladas ×${fatorClamp.toFixed(3)} para bater alvo calórico`,
+            };
+          });
+
+          const totalDepois = Math.round(somaTotal());
+
+          // Atualiza totais de topo (calorias_totais e macros_totais se existirem)
+          if (typeof parsed.calorias_totais === "number") {
+            parsed.calorias_totais = totalDepois;
+          }
+          if (parsed.macros_totais && typeof parsed.macros_totais === "object") {
+            parsed.macros_totais = {
+              proteina: Math.round((Number(parsed.macros_totais.proteina) || 0) * fatorClamp),
+              carboidrato: Math.round(
+                (Number(parsed.macros_totais.carboidrato) || 0) * fatorClamp,
+              ),
+              gordura: Math.round((Number(parsed.macros_totais.gordura) || 0) * fatorClamp),
+            };
+          }
+
+          ajusteCalorico.aplicado = true;
+          ajusteCalorico.fator = Number(fatorClamp.toFixed(3));
+          ajusteCalorico.fator_solicitado = Number(fator.toFixed(3));
+          ajusteCalorico.fator_limitado = fator > 1.5;
+          ajusteCalorico.total_depois = totalDepois;
+          ajusteCalorico.delta_kcal = totalDepois - totalAntes;
+          ajusteCalorico.dentro_da_banda = totalDepois >= minBand && totalDepois <= maxBand;
+          ajusteCalorico.refeicoes_fixas_ignoradas = fixas.map((f) => f?.refeicao);
+          ajusteCalorico.mensagem = ajusteCalorico.dentro_da_banda
+            ? `Plano abaixo do alvo (${totalAntes} kcal). Gramaturas escaladas ×${fatorClamp.toFixed(3)} → ${totalDepois} kcal (dentro de ±3% de ${alvo}).`
+            : `Plano escalado ×${fatorClamp.toFixed(3)} (limite máximo) → ${totalDepois} kcal. Ainda fora da banda ${minBand}-${maxBand}. Considere revisar manualmente.`;
+        } else {
+          ajusteCalorico.mensagem = `Sem refeições ajustáveis (todas peri-treino travadas).`;
+        }
+      } else if (totalAntes > maxBand) {
+        ajusteCalorico.mensagem = `Plano acima do alvo (${totalAntes} > ${maxBand}). Não foi reduzido automaticamente — revise manualmente.`;
+      } else if (totalAntes >= minBand && totalAntes <= maxBand) {
+        ajusteCalorico.mensagem = `Plano já dentro de ±3% (${totalAntes} kcal vs alvo ${alvo}). Sem ajuste necessário.`;
+        ajusteCalorico.dentro_da_banda = true;
+      }
+
+      parsed.ajuste_calorico = ajusteCalorico;
+    }
+
     return new Response(JSON.stringify({ plan: parsed }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
