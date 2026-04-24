@@ -453,6 +453,8 @@ serve(async (req) => {
       let refeicoesMinimoFarm = 0;
       let proteinaCompensarCarbo = false;
       const compostosDetectados: string[] = [];
+      const compostosDetectadosSet = new Set<string>();
+      const fatorFarmaDetalhado: { composto: string; fator: number }[] = [];
       const micronutrientesFarm: string[] = [];
       const alertasFarm: string[] = [];
       const alertasCriticosFarm: string[] = [];
@@ -462,7 +464,11 @@ serve(async (req) => {
       for (const [nome, c] of Object.entries(COMPOSTOS)) {
         const detectado = c.keywords.some(kw => protoStr.includes(kw));
         if (!detectado) continue;
+        // EVITAR DUPLICIDADE — cada composto contado apenas UMA vez
+        if (compostosDetectadosSet.has(nome)) continue;
+        compostosDetectadosSet.add(nome);
         compostosDetectados.push(nome);
+        fatorFarmaDetalhado.push({ composto: nome, fator: c.fator_get ?? 1.0 });
         if (c.fator_get) multFarm *= c.fator_get;
         if (c.proteina_bonus_gkg) proteinaBonusGkg += c.proteina_bonus_gkg;
         if (c.carbo_delta_pct) carboDeltaPct += c.carbo_delta_pct;
@@ -484,8 +490,8 @@ serve(async (req) => {
         flagsFarm.push(`${nome} ×${(c.fator_get ?? 1).toFixed(2)}${c.proteina_bonus_gkg ? ` +${c.proteina_bonus_gkg}g·kg` : ""}${c.carbo_delta_pct ? ` CHO${c.carbo_delta_pct > 0 ? "+" : ""}${c.carbo_delta_pct}%` : ""}`);
       }
 
-      // CAP global: máximo ×2.0
-      multFarm = Math.min(multFarm, 2.0);
+      // CAP global: máximo ×1.75 (protocolo real raramente excede isso)
+      multFarm = Math.min(multFarm, 1.75);
 
       if (hepatotoxicoCount >= 2) {
         alertasCriticosFarm.push(
@@ -517,7 +523,7 @@ serve(async (req) => {
       const objLower = String(objetivo || "").toLowerCase();
       const faseLower = String(fasePeriodizacao || "").toLowerCase();
       const protBaseGkg = 2.2;
-      let protGkgFinal = Math.min(3.5, protBaseGkg + proteinaBonusGkg);
+      let protGkgFinal = Math.min(3.2, protBaseGkg + proteinaBonusGkg);
 
       let perfilObj = "manutencao";
       let multObj = 1.0;
@@ -538,6 +544,8 @@ serve(async (req) => {
         perfilObj = "manutencao"; multObj = 1.0; pctGordura = 0.30;
         protGkgFinal = 2.0; // override conforme spec
       }
+      // CAP final de proteína g/kg (após eventuais Math.max acima)
+      protGkgFinal = Math.min(protGkgFinal, 3.2);
 
       // ── BLOCO 4: TEF (aplica só agora que sabemos a proteína final) ──
       const aplicaTef = protGkgFinal > 2.0;
@@ -590,6 +598,23 @@ serve(async (req) => {
       if (!/cutting|peak/.test(perfilObj)) {
         const carboMin = Math.round(pesoNum * 4);
         if (carboG < carboMin) carboG = carboMin;
+      }
+
+      // ── SANIDADE: total calórico não pode estourar GET farma × 1.20 ──
+      // Se passar, recalcular forçando meta = getFarma × multObj e gordura = pct × meta.
+      if (!metaSourceCoach) {
+        const totalCalculado = (proteinaG * 4) + (gorduraG * 9) + (carboG * 4);
+        if (totalCalculado > getFarma * 1.20) {
+          console.error('[SANIDADE] Total calórico muito alto — recalculando:', {
+            total_calculado: totalCalculado,
+            get_farma: Math.round(getFarma),
+            limite: Math.round(getFarma * 1.20),
+          });
+          metaKcal = Math.round(getFarma * multObj);
+          gorduraG = Math.round((metaKcal * pctGordura) / 9);
+          const carboKcalCorrigido = metaKcal - (proteinaG * 4) - (gorduraG * 9);
+          carboG = Math.max(0, Math.round(carboKcalCorrigido / 4));
+        }
       }
 
       // ── BLOCO 8: Cycling de carboidrato ──
@@ -669,6 +694,7 @@ serve(async (req) => {
         refeicoesRecomendadas,
         // ── Novos campos do detector COMPOSTOS ──
         compostosDetectados,
+        fatorFarmaDetalhado,
         carboDeltaPct,
         gorduraDeltaPct,
         gorduraMinPct,
@@ -1493,6 +1519,24 @@ ${perfilFisiologico?.modo_economico ? `
       parsed.resumo.alertas_farmacologicos = calc.alertasFarm;
       parsed.resumo.timings_farmacologicos = calc.timingsFarm;
       parsed.resumo.hepatotoxico_count = calc.hepatotoxicoCount;
+
+      // ── AUDITORIA DETERMINÍSTICA — coach pode validar cada etapa do cálculo ──
+      parsed.resumo.auditoria_calculo = {
+        tmb: calc.tmb,
+        get_base_atividade: Math.round(calc.tmb * calc.fatorAtividade),
+        get_cardio: calc.kcalCardio,
+        get_neat_mult: calc.fatorNeat,
+        get_tef_mult: calc.fatorTef,
+        get_base_total: calc.getBase, // já inclui cardio + NEAT
+        get_farma: calc.getFarma,
+        fator_farma_detalhado: calc.fatorFarmaDetalhado || [],
+        fator_farma_total: Math.round(calc.multFarm * 1000) / 1000,
+        meta_kcal: calc.metaKcal,
+        meta_kcal_real: calc.metaKcalReal,
+        surplus_aplicado: calc.multObj,
+        proteina_gkg: calc.protGkgFinal,
+        proteina_bonus_gkg: calc.proteinaBonusGkg,
+      };
 
       // Cycling e refeeding como blocos top-level (compatível com spec)
       if (calc.cyclingPlan) parsed.cycling_carboidratos = calc.cyclingPlan;
