@@ -514,7 +514,40 @@ export default function PlanoAlimentarIA() {
   const [showCompareHistory, setShowCompareHistory] = useState(false);
   const [compareHistory, setCompareHistory] = useState<any[]>([]);
   const [loadingCompareHistory, setLoadingCompareHistory] = useState(false);
+  const [adjustHistory, setAdjustHistory] = useState<any[]>([]);
+  const [loadingAdjustHistory, setLoadingAdjustHistory] = useState(false);
+  const [showAdjustHistory, setShowAdjustHistory] = useState(false);
   const resultRef = useRef<HTMLDivElement>(null);
+
+  // Carrega histórico de ajustes calóricos (filtra pelo nome do paciente atual quando houver)
+  const loadAdjustHistory = async () => {
+    if (!coachProfileId) return;
+    setLoadingAdjustHistory(true);
+    try {
+      const patientName: string | undefined =
+        (plano as any)?.resumo?.nome || (form as any)?.nome;
+      let q: any = (supabase as any)
+        .from("coach_plan_adjustments")
+        .select(
+          "id, patient_name, objetivo, target_kcal, total_antes, total_depois, delta_kcal, fator, dentro_da_banda, aplicado, status_msg, created_at",
+        )
+        .eq("coach_id", coachProfileId)
+        .order("created_at", { ascending: false })
+        .limit(20);
+      if (patientName) q = q.ilike("patient_name", patientName);
+      const { data } = await q;
+      setAdjustHistory(data || []);
+    } finally {
+      setLoadingAdjustHistory(false);
+    }
+  };
+
+  useEffect(() => {
+    if (coachProfileId && plano) {
+      loadAdjustHistory();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [coachProfileId, (plano as any)?.ajuste_calorico_id]);
 
   const loadHistory = async () => {
     if (!coachProfileId) return;
