@@ -339,7 +339,7 @@ serve(async (req) => {
 - Nível de atividade: ${nivelAtividade}
 - Modalidade de treino: ${treino}
 - Número de refeições/dia: ${refeicoes}
-${calorias ? `- Meta calórica definida pelo coach: ${calorias} kcal` : "- Meta calórica: calcular via Katch-McArdle + ajustes"}
+${calorias ? `- Meta calórica definida pelo coach: ${calorias} kcal  ⚠️ INVIOLÁVEL — o total do plano DEVE ficar entre ${Math.round(Number(calorias) * 0.97)} e ${Math.round(Number(calorias) * 1.03)} kcal (tolerância ±3%). NUNCA reduza a meta porque "parece muito" — o coach já calculou. Se o total bater abaixo, AUMENTE a gramatura proporcionalmente até atingir o alvo.` : "- Meta calórica: calcular via Katch-McArdle + ajustes"}
 
 FASE DE PERIODIZAÇÃO:
 - Fase atual: ${fasePeriodizacao || "manutenção"}
@@ -370,9 +370,10 @@ ${glut4Text ? `BLOCO FISIOLÓGICO COMPLETO GERADO PARA REFERÊNCIA (use as quant
 ` : ""}
 
 ⏰ REGRA UNIVERSAL DE TIMING DAS REFEIÇÕES (CRÍTICA — INVIOLÁVEL):
-- LEIA o campo "time" e "duration_min" de CADA dia de treino do schedule acima. Use SEMPRE esses valores reais — NUNCA invente, NUNCA use horários default como 07:00 se o coach informou outro.
-- Se houver MÚLTIPLOS horários diferentes ao longo da semana (ex: seg 06:00, ter 18:00, qua 13:00), gere UM SUB-PLANO POR HORÁRIO DISTINTO de treino. Nomeie cada sub-plano com o horário real, ex: "PLANO — DIA DE TREINO MANHÃ (06:00)", "PLANO — DIA DE TREINO TARDE (13:00)", "PLANO — DIA DE TREINO NOITE (18:00)". NUNCA use "Ex:" ou rótulos genéricos.
-- Se TODOS os dias de treino tiverem o MESMO horário, gere apenas 1 plano de treino chamado "PLANO — DIA DE TREINO (HH:mm)" com o horário real.
+- LEIA o campo "time" e "duration_min" de CADA dia de treino do schedule acima. Use SEMPRE esses valores REAIS — NUNCA invente, NUNCA use horários default (07:00/05:30/06:00) se o coach informou outro.
+- ⚠️ FALHA #1 A EVITAR: o coach reportou que horários default foram usados ignorando o schedule. NÃO REPITA. Antes de gerar cada refeição, releia o "time" do dia e calcule.
+- Se houver MÚLTIPLOS horários diferentes ao longo da semana (ex: seg 06:00, ter 18:00, qua 13:00), gere UM SUB-PLANO POR HORÁRIO DISTINTO de treino. Nomeie cada sub-plano com o horário real, ex: "PLANO — DIA DE TREINO MANHÃ (06:00)", "PLANO — DIA DE TREINO TARDE (13:00)", "PLANO — DIA DE TREINO NOITE (18:00)".
+- Se TODOS os dias de treino tiverem o MESMO horário, gere apenas 1 plano de treino chamado "PLANO — DIA DE TREINO (HH:mm)" com o horário REAL extraído do schedule.
 - Cada refeição peri-workout deve ter horário calculado a partir do "time" REAL do dia:
   • Pré-treino sólido: time − 90min
   • (opcional) Pré-treino líquido/whey: time − 30min
@@ -380,9 +381,14 @@ ${glut4Text ? `BLOCO FISIOLÓGICO COMPLETO GERADO PARA REFERÊNCIA (use as quant
   • Pós-treino imediato: time + duration_min + 0–30min
   • Pós-treino sólido: time + duration_min + 60–90min
   • Demais refeições: distribuídas ao longo do dia respeitando intervalos de ~3h
-- Se o treino for à TARDE/NOITE, o café da manhã NÃO pode virar "pré-treino". Reorganize a sequência: café normal → almoço → pré-treino → pós-treino → ceia.
-- O nome de cada refeição DEVE conter o contexto peri-workout entre parênteses, ex: "Refeição 3 (18:00 — Pré-Treino Sólido)".
-- PROIBIDO: usar horários default 05:30, 06:00, 07:00 se o "time" real do schedule for diferente. Esta é a falha #1 a evitar.
+- Se o treino for à TARDE/NOITE (>= 12:00), o café da manhã NÃO pode virar "pré-treino". Reorganize: café normal → almoço → pré-treino → pós-treino → ceia.
+- O nome de cada refeição DEVE conter o contexto peri-workout entre parênteses, ex: "Refeição 3 (12:00 — Pré-Treino Sólido)".
+- PROIBIDO: usar 05:00, 05:30, 06:00, 07:00 se o "time" REAL do schedule for diferente. Esta é a falha #1 a evitar.
+
+🎯 REGRA DE INTEGRIDADE CALÓRICA (INVIOLÁVEL quando o coach define meta):
+- Se "Meta calórica definida pelo coach" estiver presente, o campo "calorias_totais" do JSON DEVE bater a meta com tolerância máxima de ±3%.
+- Antes de finalizar, SOME mentalmente as calorias de TODAS as refeições e confira se bate o alvo. Se faltar, AUMENTE a gramatura dos carboidratos/gorduras até bater. Se sobrar, reduza proporcionalmente.
+- NUNCA entregue um plano com déficit > 3% da meta — isso quebra a prescrição do coach.
 
 PROTOCOLO FARMACOLÓGICO ATIVO (interprete CADA composto e aplique os ajustes da Regra 2):
 ${protocoloFarmacologico || protocStr || "Nenhum protocolo farmacológico informado"}
@@ -639,7 +645,7 @@ ${perfilFisiologico?.modo_economico ? `
 ` : ""}`;
 
     // Retry com backoff + fallback de modelo em caso de 503/timeout
-    const MODELS_FALLBACK = ["google/gemini-2.5-flash", "google/gemini-2.5-flash-lite", "google/gemini-2.5-pro"];
+    const MODELS_FALLBACK = ["google/gemini-2.5-pro", "google/gemini-2.5-flash", "google/gemini-2.5-flash-lite"];
     let response: Response | null = null;
     let lastErrorStatus = 0;
     let lastErrorBody = "";
