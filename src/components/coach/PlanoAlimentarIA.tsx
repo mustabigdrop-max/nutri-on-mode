@@ -1507,6 +1507,52 @@ export default function PlanoAlimentarIA() {
             </div>
           </div>
 
+          {/* Aviso de validação de timing peri-workout vs schedule */}
+          {(() => {
+            const mismatches = validateTimingVsSchedule(plano.refeicoes as any, trainingSchedule);
+            if (!mismatches.length) return null;
+            return (
+              <div style={{
+                background: "#1f1108",
+                border: `1px solid ${T.red}55`,
+                borderLeft: `3px solid ${T.red}`,
+                borderRadius: 10,
+                padding: "12px 16px",
+                marginBottom: 16,
+                color: T.red,
+                fontSize: 12,
+              }}>
+                <div style={{ fontWeight: 700, marginBottom: 6, display: "flex", alignItems: "center", gap: 6 }}>
+                  ⏱ Atenção: {mismatches.length} refeição{mismatches.length > 1 ? "ões" : ""} peri-workout fora do horário do schedule
+                </div>
+                <div style={{ color: "#fbbf24", fontSize: 11, marginBottom: 8 }}>
+                  A IA gerou refeições com horário desalinhado do treino que você cadastrou. Considere regenerar ou ajustar manualmente.
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  {mismatches.map((m, i) => (
+                    <div key={i} style={{
+                      background: "#0a0606",
+                      border: `1px solid ${T.red}33`,
+                      borderRadius: 6,
+                      padding: "6px 10px",
+                      color: T.text,
+                      fontSize: 11,
+                      lineHeight: 1.5,
+                    }}>
+                      <div style={{ fontWeight: 600, color: T.amber }}>{PERI_KIND_LABEL[m.kind]} — “{m.refeicao}”</div>
+                      <div style={{ color: T.muted }}>
+                        Horário no plano: <span style={{ color: T.red, fontWeight: 600 }}>{m.horario_plano}</span>
+                        {" · "}Esperado: <span style={{ color: T.green, fontWeight: 600 }}>{m.horario_esperado}</span>
+                        {" · "}Treino: <span style={{ color: T.text }}>{m.treino_ref}</span>
+                        {" · "}Δ <span style={{ color: T.red }}>{m.delta_min}min</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
+
           {/* Alerta protocolo */}
           {r.observacao_protocolo && (
             <div style={{ background: T.greenBg, border: `1px solid ${T.green}33`, borderRadius: 10, padding: "12px 16px", color: T.green, fontSize: 12, marginBottom: 16 }}>
