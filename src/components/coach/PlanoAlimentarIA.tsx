@@ -885,6 +885,47 @@ export default function PlanoAlimentarIA() {
     return data.plan as PlanoData;
   };
 
+  // Abre o modal de revisão do protocolo farmacológico com o texto atual
+  const abrirRevisaoProtocolo = () => {
+    setProtocoloDraft(form.protocoloFarmacologico || "");
+    setShowProtocoloModal(true);
+  };
+
+  // Salva o novo texto do protocolo no form e regera o plano (recalcula
+  // compostos detectados, fator farmacológico, macros e refeições).
+  const recalcularComProtocolo = async () => {
+    const novoTexto = (protocoloDraft || "").trim();
+    // Atualiza o form ANTES de regerar (gerarPlanoCore lê de form.protocoloFarmacologico)
+    set("protocoloFarmacologico", novoTexto);
+    setProtocoloRecalc(true);
+    setShowProtocoloModal(false);
+    setError("");
+    setErrorDetails(null);
+    setStep("loading");
+    setLoadingMsg("Reanalisando protocolo farmacológico...");
+    try {
+      // Pequeno delay garante que o setState do form seja aplicado antes do invoke
+      await new Promise((r) => setTimeout(r, 30));
+      const novo = await gerarPlanoCore();
+      if (novo) {
+        setPlano(novo);
+        setPlanoComparativo(null);
+        setShowCompare(false);
+        setSavedId(null);
+      }
+      setStep("result");
+      setTimeout(() => resultRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
+    } catch (e: any) {
+      console.error("[PlanoAlimentarIA] erro ao recalcular protocolo:", e);
+      const details = classifyError(e);
+      setErrorDetails(details);
+      setError(details.title);
+      setStep("result");
+    } finally {
+      setProtocoloRecalc(false);
+    }
+  };
+
   // Classifica o erro vindo do supabase.functions.invoke / fetch
   const classifyError = (e: any) => {
     const ctx = e?.context;
