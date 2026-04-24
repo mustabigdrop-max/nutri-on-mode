@@ -95,7 +95,112 @@ const Section = ({ title, children }: { title: string; children: React.ReactNode
   </div>
 );
 
-// ─── Meal display ─────────────────────────────────────────────────────────────
+// ─── Validação de timing peri-workout vs schedule ─────────────────────────────
+// Compara o horário de cada refeição peri-workout (pré/intra/pós) gerada pela IA
+// com os horários reais do schedule semanal informado pelo coach.
+type PeriKind = "pre_solido" | "pre_liquido" | "intra" | "pos_imediato" | "pos_solido";
+interface TimingMismatch {
+  refeicao: string;
+  horario_plano: string;
+  horario_esperado: string;
+  delta_min: number;
+  kind: PeriKind;
+  treino_ref: string; // ex: "Seg 13:30 (60min)"
+}
+
+const parseHHmm = (s?: string): number | null => {
+  if (!s) return null;
+  const m = String(s).match(/(\d{1,2})\s*[:hH]\s*(\d{2})/);
+  if (!m) return null;
+  const h = parseInt(m[1], 10);
+  const min = parseInt(m[2], 10);
+  if (isNaN(h) || isNaN(min)) return null;
+  return h * 60 + min;
+};
+const formatMinutes = (mins: number): string => {
+  const total = ((mins % 1440) + 1440) % 1440;
+  const h = Math.floor(total / 60);
+  const m = total % 60;
+  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+};
+const detectPeriKind = (nome: string): PeriKind | null => {
+  const n = nome.toLowerCase();
+  if (/p[óo]s[\s-]?treino\s*imediato|janela\s*glut|glut[\s-]?4/.test(n)) return "pos_imediato";
+  if (/p[óo]s[\s-]?treino\s*s[óo]lido/.test(n)) return "pos_solido";
+  if (/p[óo]s[\s-]?treino/.test(n)) return "pos_imediato";
+  if (/intra[\s-]?treino/.test(n)) return "intra";
+  if (/pr[ée][\s-]?treino\s*l[íi]quido|pr[ée][\s-]?treino\s*whey/.test(n)) return "pre_liquido";
+  if (/pr[ée][\s-]?treino/.test(n)) return "pre_solido";
+  return null;
+};
+
+const validateTimingVsSchedule = (
+  refeicoes: Array<{ refeicao?: string; horario?: string }> | undefined,
+  schedule: WeeklySchedule | undefined,
+): TimingMismatch[] => {
+  if (!Array.isArray(refeicoes) || !schedule?.base) return [];
+  const trainingDays = (Object.entries(schedule.base) as Array<[string, any]>)
+    .filter(([, d]) => d?.is_training_day && d?.time)
+    .map(([k, d]) => ({
+      key: k,
+      timeMin: parseHHmm(d.time),
+      duration: Number(d.duration_min) || 60,
+      label: `${k.toUpperCase()} ${d.time} (${d.duration_min || 60}min)`,
+    }))
+    .filter((d) => d.timeMin !== null) as Array<{ key: string; timeMin: number; duration: number; label: string }>;
+  if (trainingDays.length === 0) return [];
+
+  const expectedFor = (kind: PeriKind, time: number, dur: number): { min: number; max: number } => {
+    switch (kind) {
+      case "pre_solido": return { min: time - 105, max: time - 60 };  // ~90min antes ±15
+      case "pre_liquido": return { min: time - 45, max: time - 15 };  // ~30min antes
+      case "intra": return { min: time, max: time + dur };
+      case "pos_imediato": return { min: time + dur, max: time + dur + 45 };
+      case "pos_solido": return { min: time + dur + 45, max: time + dur + 120 };
+    }
+  };
+
+  const out: TimingMismatch[] = [];
+  for (const r of refeicoes) {
+    const kind = detectPeriKind(r?.refeicao || "");
+    if (!kind) continue;
+    const planoMin = parseHHmm(r?.horario);
+    if (planoMin === null) continue;
+    // Para cada dia de treino, calcula o melhor encaixe e mantém o de menor delta.
+    let best: TimingMismatch | null = null;
+    for (const td of trainingDays) {
+      const { min, max } = expectedFor(kind, td.timeMin, td.duration);
+      const inRange = planoMin >= min && planoMin <= max;
+      if (inRange) { best = null; break; }
+      const delta = Math.min(Math.abs(planoMin - min), Math.abs(planoMin - max));
+      const mid = Math.round((min + max) / 2);
+      if (!best || delta < best.delta_min) {
+        best = {
+          refeicao: r.refeicao || "(sem nome)",
+          horario_plano: r.horario || formatMinutes(planoMin),
+          horario_esperado: `${formatMinutes(min)}–${formatMinutes(max)}`,
+          delta_min: delta,
+          kind,
+          treino_ref: td.label,
+        };
+      }
+      // se em algum dia ficou dentro do range, é válido — limpa o best
+      if (inRange) { best = null; break; }
+    }
+    // Tolerância de 10min para evitar ruído
+    if (best && best.delta_min > 10) out.push(best);
+  }
+  return out;
+};
+
+const PERI_KIND_LABEL: Record<PeriKind, string> = {
+  pre_solido: "Pré-treino sólido",
+  pre_liquido: "Pré-treino líquido",
+  intra: "Intra-treino",
+  pos_imediato: "Pós-treino imediato",
+  pos_solido: "Pós-treino sólido",
+};
+
 type GrupoSub = "proteina" | "carbo" | "gordura" | "outro";
 interface SubstituicaoItem {
   alimento: string;
