@@ -1894,7 +1894,107 @@ export default function PlanoAlimentarIA() {
             );
           })()}
 
-          {/* ───────── Card: Protocolo Farmacológico (revisão + recálculo) ───────── */}
+          {/* ───────── Card colapsável: Auditoria do Cálculo ───────── */}
+          {(() => {
+            const aud = (r as any)?.auditoria_calculo;
+            if (!aud) return null;
+            const formula = aud.formula_tmb || "—";
+            const tmb = aud.tmb ?? "—";
+            const fatAtiv = aud.fator_atividade ?? "—";
+            const getBase = aud.get_base ?? "—";
+            const kcalCardio = aud.kcal_cardio_dia ?? 0;
+            const getComCardio = aud.get_com_cardio ?? "—";
+            const fatorFarma = aud.fator_farma ?? 1;
+            const getFarma = aud.get_farma ?? "—";
+            const fatorNeat = aud.fator_neat ?? 1;
+            const getFinal = aud.get_final ?? "—";
+            const surplus = aud.surplus ?? 1;
+            const surplusPct = Math.round((surplus - 1) * 100);
+            const metaKcal = aud.meta_kcal ?? "—";
+            const protGkg = aud.proteina_gkg ?? "—";
+            const gordPct = aud.gordura_pct ? Math.round(aud.gordura_pct * 100) : null;
+            const cap = aud.ajuste_carbo_cap;
+            const bfUsed = (r as any)?.bf_utilizado;
+            const metodoBF = (r as any)?.metodo_bf;
+            const massaMagra = (r as any)?.massa_magra;
+            const aviso = (r as any)?.aviso_bf;
+            const pesoForm = parseFloat(String(form.peso || "0")) || 0;
+            const proteinaG = (r as any)?.proteina_total;
+            const carboG = (r as any)?.carboidrato_total;
+            const gorduraG = (r as any)?.gordura_total;
+            const nivelAtv = form.nivelAtividade || "—";
+            const cardioFreq = form.cardioFrequencia || "—";
+            const cardioDur = form.cardioDuracao || "—";
+            const fase = form.fasePeriodizacao || form.objetivo || "—";
+
+            const Linha = ({ label, value, accent }: { label: string; value: React.ReactNode; accent?: boolean }) => (
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "6px 0", borderBottom: `1px dashed ${T.border}`, fontSize: 12 }}>
+                <span style={{ color: T.muted }}>{label}</span>
+                <span style={{ color: accent ? T.amber : T.text, fontWeight: accent ? 700 : 500, fontFamily: "ui-monospace, monospace" }}>{value}</span>
+              </div>
+            );
+
+            return (
+              <div style={{ marginBottom: 24 }}>
+                <details style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: 12, overflow: "hidden" }}>
+                  <summary style={{ padding: 14, cursor: "pointer", listStyle: "none", display: "flex", justifyContent: "space-between", alignItems: "center", userSelect: "none" as const }}>
+                    <div>
+                      <div style={{ fontSize: 11, color: T.muted, textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>📊 Auditoria do Cálculo</div>
+                      <div style={{ fontSize: 13, color: T.text, fontWeight: 600, marginTop: 2 }}>
+                        Step-by-step: TMB → GET → Macros
+                      </div>
+                    </div>
+                    <span style={{ fontSize: 11, color: T.muted }}>clique para abrir ▾</span>
+                  </summary>
+                  <div style={{ padding: "0 16px 16px 16px" }}>
+                    <Linha label={`TMB (${formula})`} value={`${tmb} kcal`} />
+                    <Linha label={`× Fator atividade (${nivelAtv})`} value={`×${fatAtiv} = ${getBase} kcal`} />
+                    {kcalCardio > 0 && (
+                      <Linha label={`+ Cardio (${cardioFreq}× ${cardioDur}min)`} value={`+${kcalCardio} kcal`} />
+                    )}
+                    <Linha label="= GET com cardio" value={`${getComCardio} kcal`} />
+                    <Linha label="× Fator farmacológico" value={`×${fatorFarma} = ${getFarma} kcal`} />
+                    {fatorNeat !== 1 && (
+                      <Linha label="× NEAT" value={`×${fatorNeat} = ${getFinal} kcal`} />
+                    )}
+                    <Linha
+                      label={`× Surplus (${fase}) ${surplusPct >= 0 ? "+" : ""}${surplusPct}%`}
+                      value={`= ${metaKcal} kcal`}
+                      accent
+                    />
+                    <div style={{ height: 10 }} />
+                    <Linha label="Proteína" value={`${protGkg}g/kg × ${pesoForm}kg = ${proteinaG}g`} />
+                    {gordPct !== null && (
+                      <Linha label="Gordura" value={`${gordPct}% de ${metaKcal}kcal = ${gorduraG}g`} />
+                    )}
+                    <Linha label="Carboidrato" value={`restante = ${carboG}g`} />
+
+                    {cap && (
+                      <div style={{ marginTop: 10, padding: "8px 10px", background: "#facc1515", border: `1px solid #facc1555`, borderRadius: 8, fontSize: 11, color: "#facc15", lineHeight: 1.5 }}>
+                        ⚠️ Carbo limitado ao cap de palatabilidade: {cap.carbo_original}g → {cap.carbo_ajustado}g.
+                        Excesso transferido para gordura: +{cap.gordura_bonus}g.
+                      </div>
+                    )}
+
+                    <div style={{ height: 14 }} />
+                    <Linha
+                      label="BF utilizado"
+                      value={`${bfUsed ?? "—"}% (${metodoBF || "—"})`}
+                    />
+                    <Linha label="Massa magra" value={`${massaMagra ?? "—"} kg`} />
+                    <Linha label="Fórmula TMB" value={formula} />
+
+                    {aviso && (
+                      <div style={{ marginTop: 10, padding: "8px 10px", background: "#facc1515", border: `1px solid #facc1555`, borderRadius: 8, fontSize: 11, color: "#facc15", lineHeight: 1.5 }}>
+                        ⚠️ {aviso}
+                      </div>
+                    )}
+                  </div>
+                </details>
+              </div>
+            );
+          })()}
+
           {(() => {
             const compostos = ((r as any)?.compostos_detectados as string[] | undefined) || [];
             const fatorFarm = (r as any)?.fator_farmacologico as number | undefined;

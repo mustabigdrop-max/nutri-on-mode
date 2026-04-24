@@ -681,9 +681,9 @@ serve(async (req) => {
       if (/peak[_ ]?week|peak/.test(faseLower)) {
         perfilObj = "peak_week"; multObj = 0.90; pctGordura = 0.15; protGkgFinal = Math.max(protGkgFinal, 2.5);
       } else if (/bulk_agressivo|bulk agressivo|bulk_pesado/.test(faseLower) || /bulk_agress/.test(objLower)) {
-        perfilObj = "bulk_agressivo"; multObj = 1.20; pctGordura = 0.28;
+        perfilObj = "bulk_agressivo"; multObj = 1.20; pctGordura = 0.30; // ↑ 28→30 (precursor hormonal)
       } else if (/bulk|hipertrof|massa|ganho/.test(objLower) || /bulk/.test(faseLower)) {
-        perfilObj = "bulk_limpo"; multObj = 1.10; pctGordura = 0.25;
+        perfilObj = "bulk_limpo"; multObj = 1.10; pctGordura = 0.28; // ↑ 25→28 (precursor hormonal)
       } else if (/cut|emagrec|perda|defici|seca/.test(objLower) || /cut/.test(faseLower)) {
         perfilObj = "cutting"; multObj = 0.80; pctGordura = 0.25;
         protGkgFinal = Math.max(protGkgFinal, 2.4);
@@ -746,6 +746,34 @@ serve(async (req) => {
       if (!/cutting|peak/.test(perfilObj)) {
         const carboMin = Math.round(pesoNum * 4);
         if (carboG < carboMin) carboG = carboMin;
+      }
+
+      // ── CAP DE CARBO (palatabilidade) — excesso vai para gordura ──
+      const CARBO_CAP_G: Record<string, number> = {
+        bulk_limpo: 900,
+        bulk_agressivo: 1000,
+        cutting: 400,
+        emagrecimento: 350,
+        recomposicao: 500,
+        manutencao: 600,
+        manutencao_offseason: 600,
+        peak_week: 800,
+      };
+      let ajusteCarboCap: any = null;
+      const capAtual = CARBO_CAP_G[perfilObj];
+      if (capAtual && carboG > capAtual) {
+        const carboOriginal = carboG;
+        const excessoG = carboG - capAtual;
+        const excessoKcal = excessoG * 4;
+        const gorduraBonusG = Math.round(excessoKcal / 9);
+        carboG = capAtual;
+        gorduraG = gorduraG + gorduraBonusG;
+        ajusteCarboCap = {
+          carbo_original: carboOriginal,
+          carbo_ajustado: carboG,
+          gordura_bonus: gorduraBonusG,
+          motivo: "Cap de palatabilidade aplicado — excesso transferido para gordura",
+        };
       }
 
       // ── SANIDADE: total calórico não pode estourar GET farma × 1.20 ──
@@ -851,8 +879,30 @@ serve(async (req) => {
         alertasFarm,
         alertasCriticosFarm,
         timingsFarm,
+        ajusteCarboCap,
       };
     })();
+
+    // ── AJUSTE BF VISUAL com retentores hídricos (testo, nandro, dianabol, oxime) ──
+    // Aplicado APÓS o detector farmacológico para conhecer os compostos.
+    {
+      const compostosRetentores = ["testosterona", "nandrolona", "dianabol", "oximetolona"];
+      const detectados = (calc?.compostosDetectados || []).map((c: string) => c.toLowerCase());
+      const temRetentor = compostosRetentores.some((c) => detectados.includes(c));
+      if (resultadoTMB.metodo_bf === "visual" && temRetentor && resultadoTMB.bf !== null) {
+        const bfOriginal = resultadoTMB.bf;
+        const bfAjustado = bfOriginal + 3;
+        resultadoTMB.bf = bfAjustado;
+        const pesoNumLocal = parseFloat(String(body?.peso || "0")) || 0;
+        if (pesoNumLocal > 0) {
+          resultadoTMB.massa_magra = Math.round(pesoNumLocal * (1 - bfAjustado / 100) * 10) / 10;
+        }
+        resultadoTMB.aviso_bf =
+          `BF visual ${bfOriginal}% ajustado para ${bfAjustado}% (+3% por retenção hídrica de compostos anabólicos). ` +
+          `Testosterona/Nandrolona causam retenção que infla o peso sem ser gordura real. ` +
+          `Para BF real: medir em período off ou usar método Navy com fita métrica.`;
+      }
+    }
 
     const calcBlock = calc ? `
 ═══════════════════════════════════════════════════════════════
@@ -1746,7 +1796,12 @@ ${perfilFisiologico?.modo_economico ? `
         meta_kcal_real: calc.metaKcalReal,
         proteina_gkg: calc.protGkgFinal,
         proteina_bonus_gkg: calc.proteinaBonusGkg,
+        gordura_pct: calc.pctGordura,
+        ajuste_carbo_cap: calc.ajusteCarboCap || null,
       };
+
+      // Expor diretamente no resumo para a UI
+      if (calc.ajusteCarboCap) parsed.resumo.ajuste_carbo_cap = calc.ajusteCarboCap;
 
       // Cycling e refeeding como blocos top-level (compatível com spec)
       if (calc.cyclingPlan) parsed.cycling_carboidratos = calc.cyclingPlan;
