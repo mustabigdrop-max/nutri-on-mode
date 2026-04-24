@@ -1696,7 +1696,7 @@ export default function PlanoAlimentarIA() {
             </div>
           </div>
 
-          {/* Aviso de validação de timing peri-workout vs schedule */}
+          {/* Aviso de validação de timing peri-workout vs schedule (somente o alerta — botões agora ficam num bloco sempre visível abaixo) */}
           {(() => {
             const mismatches = validateTimingVsSchedule(plano.refeicoes as any, trainingSchedule);
             if (!mismatches.length) return null;
@@ -1715,7 +1715,7 @@ export default function PlanoAlimentarIA() {
                   ⏱ Atenção: {mismatches.length} refeição{mismatches.length > 1 ? "ões" : ""} peri-workout fora do horário do schedule
                 </div>
                 <div style={{ color: "#fbbf24", fontSize: 11, marginBottom: 8 }}>
-                  A IA gerou refeições com horário desalinhado do treino que você cadastrou. Considere regenerar ou ajustar manualmente.
+                  A IA gerou refeições com horário desalinhado do treino que você cadastrou. Use os botões de correção abaixo.
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                   {mismatches.map((m, i) => (
@@ -1738,8 +1738,45 @@ export default function PlanoAlimentarIA() {
                     </div>
                   ))}
                 </div>
+              </div>
+            );
+          })()}
 
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 12 }}>
+          {/* Bloco de ações de correção — SEMPRE visível quando há plano */}
+          {(() => {
+            const mismatches = validateTimingVsSchedule(plano.refeicoes as any, trainingSchedule);
+            const aj: any = (plano as any)?.ajuste_calorico;
+            const dentroDaBanda = aj?.aplicado ? !!aj.dentro_da_banda : true;
+            const tudoOk = mismatches.length === 0 && dentroDaBanda;
+            const borderColor = tudoOk ? T.green : T.amber;
+            const bgColor = tudoOk ? T.greenBg : "#1f1608";
+            return (
+              <div style={{
+                background: bgColor,
+                border: `1px solid ${borderColor}55`,
+                borderLeft: `3px solid ${borderColor}`,
+                borderRadius: 10,
+                padding: "12px 16px",
+                marginBottom: 16,
+              }}>
+                <div style={{
+                  fontSize: 12,
+                  fontWeight: 700,
+                  color: borderColor,
+                  marginBottom: 4,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                }}>
+                  🛠 Ações de correção do plano
+                </div>
+                <div style={{ fontSize: 11, color: T.muted, marginBottom: 12 }}>
+                  {tudoOk
+                    ? "Plano alinhado em horários e calorias. Você ainda pode forçar um reajuste manual quando quiser."
+                    : `Pendências detectadas: ${mismatches.length > 0 ? `${mismatches.length} horário(s) peri-workout` : ""}${mismatches.length > 0 && !dentroDaBanda ? " · " : ""}${!dentroDaBanda ? "calorias fora da banda ±3%" : ""}.`}
+                </div>
+
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                   <button
                     onClick={async () => {
                       if (retrying || autoRetrying) return;
@@ -1821,17 +1858,17 @@ export default function PlanoAlimentarIA() {
                       }
 
                       // 2) Verifica banda calórica e regenera se necessário
-                      const aj: any = (plano as any)?.ajuste_calorico;
-                      const foraDaBanda = aj && aj.aplicado && !aj.dentro_da_banda;
+                      const ajNow: any = (plano as any)?.ajuste_calorico;
+                      const foraDaBanda = ajNow && ajNow.aplicado && !ajNow.dentro_da_banda;
                       if (foraDaBanda) {
                         await logStep(
                           "regerar_inicio",
                           true,
-                          `Plano fora da banda ±3% (${aj.total_depois} vs alvo ${aj.alvo}). Iniciando regeração.`,
+                          `Plano fora da banda ±3% (${ajNow.total_depois} vs alvo ${ajNow.alvo}). Iniciando regeração.`,
                           {
-                            alvo: aj.alvo,
-                            total_antes: aj.total_depois,
-                            delta_kcal: (aj.total_depois ?? 0) - (aj.alvo ?? 0),
+                            alvo: ajNow.alvo,
+                            total_antes: ajNow.total_depois,
+                            delta_kcal: (ajNow.total_depois ?? 0) - (ajNow.alvo ?? 0),
                             max_tentativas: MAX_AUTO_RETRIES,
                           },
                         );
@@ -1880,7 +1917,6 @@ export default function PlanoAlimentarIA() {
                           if (r.fixedCount === 0) return prev;
                           return { ...prev, refeicoes: r.refeicoes as any };
                         });
-                        // grava o snap final fora do setState (assíncrono mas com valores capturados)
                         setTimeout(() => {
                           void logStep(
                             "snap_final",
