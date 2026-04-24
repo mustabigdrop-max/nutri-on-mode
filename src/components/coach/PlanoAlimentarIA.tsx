@@ -1679,6 +1679,32 @@ export default function PlanoAlimentarIA() {
                 <div style={{ color: T.muted, fontSize: 11, marginTop: 6, fontStyle: "italic" }}>
                   {aj.mensagem}
                 </div>
+                {!ok && (
+                  <div style={{ marginTop: 10, display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                    <button
+                      onClick={regerarAteAtingirMeta}
+                      disabled={autoRetrying}
+                      style={{
+                        background: autoRetrying ? T.bg2 : accent,
+                        color: autoRetrying ? T.muted : "#000",
+                        border: `1px solid ${accent}`,
+                        padding: "6px 12px",
+                        borderRadius: 6,
+                        fontSize: 11,
+                        fontWeight: 700,
+                        cursor: autoRetrying ? "wait" : "pointer",
+                        fontFamily: "inherit",
+                      }}
+                    >
+                      {autoRetrying
+                        ? `⟳ Regerando... (${autoRetryAttempt}/${MAX_AUTO_RETRIES})`
+                        : `🎯 Regerar até atingir a meta (até ${MAX_AUTO_RETRIES}x)`}
+                    </button>
+                    <span style={{ fontSize: 10, color: T.muted }}>
+                      Tenta novas gerações até o total cair na banda ±3% ou esgotar as tentativas. Mantém o melhor resultado.
+                    </span>
+                  </div>
+                )}
               </div>
             );
           })()}
