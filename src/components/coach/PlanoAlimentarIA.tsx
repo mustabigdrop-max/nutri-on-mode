@@ -683,6 +683,13 @@ export default function PlanoAlimentarIA() {
     // Fase de periodização
     fasePeriodizacao: "manutencao_offseason",
     bfAtual: "", bfMeta: "", dataCompeticao: "",
+    // Anos de treino + método de estimativa de BF (seleção de fórmula TMB)
+    anosTreino: "" as string,
+    metodoBF: "tenho_bf" as "tenho_bf" | "navy" | "visual" | "nao_sei",
+    circPescoco: "" as string,
+    circAbdomen: "" as string,
+    circQuadril: "" as string,
+    perfilVisual: "" as string,
     // Cardio
     fazCardio: false,
     cardioModalidades: [] as string[],
