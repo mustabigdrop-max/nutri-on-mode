@@ -318,6 +318,24 @@ serve(async (req) => {
       ? (parseFloat(peso) * (1 - parseFloat(bfAtual) / 100)).toFixed(1)
       : null;
 
+    // Detecta perfil treinado/atleta — nesses casos o IMC NÃO é parâmetro válido
+    // (massa magra elevada infla o IMC sem refletir adiposidade real).
+    const objetivoLower = String(objetivo || "").toLowerCase();
+    const nivelLower = String(nivelAtividade || "").toLowerCase();
+    const treinoLower = String(treino || "").toLowerCase();
+    const bfNum = bfAtual ? parseFloat(bfAtual) : NaN;
+    const isAtletaTreinado =
+      atletaCompetitivo === true ||
+      /atleta|bodybuild|bulking|cutting|recomp|hipertrofia|forç|power|crossfit|performance/i.test(
+        `${objetivoLower} ${treinoLower}`,
+      ) ||
+      /muito ativo|atleta|alto volume|6.*x.*semana|7.*x.*semana/i.test(nivelLower) ||
+      (!Number.isNaN(bfNum) && ((sexo === "masculino" && bfNum <= 18) || (sexo === "feminino" && bfNum <= 25)));
+
+    const imcDisplay = isAtletaTreinado
+      ? `${imc} ⚠️ NÃO USAR como parâmetro (paciente treinado: massa magra elevada distorce o IMC)`
+      : imc;
+
     const cardioBlock = fazCardio
       ? `- Faz cardio: SIM
 - Modalidades: ${(cardioModalidades || []).join(", ") || "Não especificado"}
@@ -330,8 +348,8 @@ serve(async (req) => {
     const userPrompt = `DADOS DO PACIENTE:
 - Nome: ${nome || "Paciente"}
 - Idade: ${idade} anos | Sexo: ${sexo}
-- Peso: ${peso}kg | Altura: ${altura}cm | IMC: ${imc}
-- % Gordura corporal atual: ${bfAtual ? `${bfAtual}%` : "Não informado (estimar pelo IMC e contexto)"}
+- Peso: ${peso}kg | Altura: ${altura}cm | IMC: ${imcDisplay}
+${isAtletaTreinado ? `- ⚠️ PERFIL TREINADO/ATLETA: IGNORE classificações de IMC (sobrepeso/obesidade). Avalie composição corporal por % gordura, massa magra e contexto de treino. NUNCA recomende déficit baseado em IMC. NUNCA mencione "IMC indica sobrepeso" ou similar.\n` : ""}- % Gordura corporal atual: ${bfAtual ? `${bfAtual}%` : isAtletaTreinado ? "Não informado (estimar por massa magra e contexto de treino — NÃO usar IMC)" : "Não informado (estimar pelo IMC e contexto)"}
 - % Gordura corporal meta: ${bfMeta ? `${bfMeta}%` : "Não informada"}
 - Massa magra estimada: ${massaMagra ? `${massaMagra}kg` : "Calcular após estimativa de %BF"}
 - Objetivo principal: ${objetivo}
