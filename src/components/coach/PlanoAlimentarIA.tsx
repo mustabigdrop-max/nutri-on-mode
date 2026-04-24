@@ -3076,11 +3076,74 @@ export default function PlanoAlimentarIA() {
             </div>
           );
         })()}
-        {error && (
-          <div style={{ background: "#1f0a0a", border: "1px solid #3d1010", borderRadius: 8, padding: "10px 14px", color: T.red, fontSize: 13, marginBottom: 16 }}>
-            {error}
-          </div>
-        )}
+        {(errorDetails || error) && (() => {
+          const d = errorDetails || {
+            kind: "unknown" as const, title: error, description: "", canRetry: true, technical: "",
+          };
+          const palette: Record<string, { bg: string; border: string; fg: string; icon: string }> = {
+            unavailable: { bg: "#2a1a05", border: "#5a3a10", fg: "#ffb84d", icon: "⚠️" },
+            timeout:     { bg: "#2a1a05", border: "#5a3a10", fg: "#ffb84d", icon: "⏱️" },
+            rate_limit:  { bg: "#1a1a2e", border: "#3a3a6e", fg: "#9aa8ff", icon: "🚦" },
+            credits:     { bg: "#2a0a1a", border: "#5a103a", fg: "#ff7aa8", icon: "💳" },
+            invalid_json:{ bg: "#1f0a0a", border: "#3d1010", fg: T.red,     icon: "🧩" },
+            network:     { bg: "#1f0a0a", border: "#3d1010", fg: T.red,     icon: "📡" },
+            validation:  { bg: "#1f0a0a", border: "#3d1010", fg: T.red,     icon: "✏️" },
+            unknown:     { bg: "#1f0a0a", border: "#3d1010", fg: T.red,     icon: "❌" },
+          };
+          const p = palette[d.kind] || palette.unknown;
+          return (
+            <div style={{
+              background: p.bg, border: `1px solid ${p.border}`, borderRadius: 10,
+              padding: "14px 16px", marginBottom: 16, color: p.fg, fontSize: 13,
+            }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, fontWeight: 700, fontSize: 14, marginBottom: 6 }}>
+                <span style={{ fontSize: 18 }}>{p.icon}</span>
+                <span>{d.title}</span>
+              </div>
+              {d.description && (
+                <div style={{ color: "#ccc", fontSize: 12.5, lineHeight: 1.5, marginBottom: d.canRetry ? 12 : 4 }}>
+                  {d.description}
+                </div>
+              )}
+              {d.technical && (
+                <details style={{ marginBottom: d.canRetry ? 12 : 0 }}>
+                  <summary style={{ cursor: "pointer", fontSize: 11, color: T.muted2, userSelect: "none" }}>
+                    Detalhes técnicos
+                  </summary>
+                  <code style={{ display: "block", marginTop: 6, fontSize: 11, color: T.muted2, wordBreak: "break-all" }}>
+                    {d.technical}
+                  </code>
+                </details>
+              )}
+              {d.canRetry && (
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  <button
+                    onClick={tentarNovamente}
+                    disabled={retrying}
+                    style={{
+                      padding: "8px 14px", borderRadius: 8, border: "none",
+                      background: p.fg, color: "#0a0f0a", fontSize: 12, fontWeight: 700,
+                      cursor: retrying ? "wait" : "pointer", fontFamily: "inherit",
+                      opacity: retrying ? 0.6 : 1,
+                    }}
+                  >
+                    {retrying ? "⟳ Tentando..." : "⟳ Tentar novamente (com fallback)"}
+                  </button>
+                  <button
+                    onClick={() => { setError(""); setErrorDetails(null); }}
+                    style={{
+                      padding: "8px 14px", borderRadius: 8, border: `1px solid ${p.border}`,
+                      background: "transparent", color: p.fg, fontSize: 12, fontWeight: 600,
+                      cursor: "pointer", fontFamily: "inherit",
+                    }}
+                  >
+                    Dispensar
+                  </button>
+                </div>
+              )}
+            </div>
+          );
+        })()}
 
         <button onClick={gerar} style={{
           width: "100%", padding: 15, borderRadius: 10,
