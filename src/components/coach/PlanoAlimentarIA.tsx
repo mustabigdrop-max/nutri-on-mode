@@ -378,6 +378,14 @@ export default function PlanoAlimentarIA() {
   const [showCompare, setShowCompare] = useState(false);
   const [comparing, setComparing] = useState(false);
   const [error, setError] = useState("");
+  const [errorDetails, setErrorDetails] = useState<{
+    kind: "validation" | "unavailable" | "timeout" | "rate_limit" | "credits" | "invalid_json" | "network" | "unknown";
+    title: string;
+    description: string;
+    technical?: string;
+    canRetry: boolean;
+  } | null>(null);
+  const [retrying, setRetrying] = useState(false);
   const [copied, setCopied] = useState(false);
   const [saving, setSaving] = useState(false);
   const [savedId, setSavedId] = useState<string | null>(null);
@@ -665,12 +673,96 @@ export default function PlanoAlimentarIA() {
     return data.plan as PlanoData;
   };
 
+  // Classifica o erro vindo do supabase.functions.invoke / fetch
+  const classifyError = (e: any) => {
+    const ctx = e?.context;
+    const status: number | undefined = ctx?.status ?? e?.status;
+    const rawMsg: string = (e?.message || "").toLowerCase();
+    let serverMsg = "";
+    try {
+      // tenta extrair body JSON do FunctionsHttpError
+      if (ctx?.body && typeof ctx.body === "string") {
+        const parsed = JSON.parse(ctx.body);
+        serverMsg = parsed?.error || "";
+      }
+    } catch {/* noop */}
+
+    if (status === 503 || /503|unavailable|indispon/i.test(serverMsg) || /503/.test(rawMsg)) {
+      return {
+        kind: "unavailable" as const,
+        title: "Modelo de IA temporariamente indisponível (503)",
+        description: serverMsg || "O provedor de IA não respondeu agora. Já tentamos 3 vezes em 3 modelos diferentes (flash → flash-lite → pro) sem sucesso. Aguarde alguns segundos.",
+        technical: `status=${status} ${e?.message || ""}`.trim(),
+        canRetry: true,
+      };
+    }
+    if (status === 504 || /timeout|timed out|connection closed before/i.test(rawMsg + serverMsg)) {
+      return {
+        kind: "timeout" as const,
+        title: "Tempo esgotado ao gerar (timeout)",
+        description: "A IA demorou demais para responder. Tente reduzir restrições/observações ou gerar novamente.",
+        technical: `status=${status || "504"} ${e?.message || ""}`.trim(),
+        canRetry: true,
+      };
+    }
+    if (status === 429 || /rate limit|too many/i.test(rawMsg + serverMsg)) {
+      return {
+        kind: "rate_limit" as const,
+        title: "Muitas requisições (429)",
+        description: "Você atingiu o limite de chamadas por minuto. Aguarde ~30s e tente novamente.",
+        technical: `status=${status} ${e?.message || ""}`.trim(),
+        canRetry: true,
+      };
+    }
+    if (status === 402 || /cr[ée]ditos|insufficient/i.test(rawMsg + serverMsg)) {
+      return {
+        kind: "credits" as const,
+        title: "Créditos de IA insuficientes (402)",
+        description: "O workspace está sem créditos para o gateway de IA. Adicione créditos em Settings → Workspace → Usage.",
+        technical: `status=${status} ${e?.message || ""}`.trim(),
+        canRetry: false,
+      };
+    }
+    if (/json|parse|invalid|inv[áa]lid/i.test(rawMsg + serverMsg)) {
+      return {
+        kind: "invalid_json" as const,
+        title: "Resposta da IA em formato inválido",
+        description: "A IA retornou um conteúdo que não pôde ser interpretado como plano. Geralmente resolve ao tentar novamente.",
+        technical: e?.message || serverMsg || "JSON inválido",
+        canRetry: true,
+      };
+    }
+    if (/network|failed to fetch|networkerror/i.test(rawMsg)) {
+      return {
+        kind: "network" as const,
+        title: "Falha de rede",
+        description: "Não foi possível alcançar o servidor. Verifique sua conexão e tente novamente.",
+        technical: e?.message,
+        canRetry: true,
+      };
+    }
+    return {
+      kind: "unknown" as const,
+      title: "Erro inesperado ao gerar o plano",
+      description: serverMsg || e?.message || "Ocorreu um problema desconhecido. Tente novamente.",
+      technical: `status=${status ?? "?"} ${e?.message || ""}`.trim(),
+      canRetry: true,
+    };
+  };
+
   const gerar = async () => {
     if (!form.peso || !form.altura || !form.idade) {
+      setErrorDetails({
+        kind: "validation",
+        title: "Dados obrigatórios faltando",
+        description: "Preencha pelo menos: peso, altura e idade do paciente.",
+        canRetry: false,
+      });
       setError("Preencha pelo menos: peso, altura e idade do paciente.");
       return;
     }
     setError("");
+    setErrorDetails(null);
     setStep("loading");
 
     const msgs = [
@@ -699,10 +791,19 @@ export default function PlanoAlimentarIA() {
       setTimeout(() => resultRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
     } catch (e: any) {
       clearInterval(interval);
-      console.error(e);
-      setError("Erro ao gerar o plano. Verifique a conexão e tente novamente.");
+      console.error("[PlanoAlimentarIA] erro ao gerar:", e);
+      const details = classifyError(e);
+      setErrorDetails(details);
+      setError(details.title);
       setStep("form");
+    } finally {
+      setRetrying(false);
     }
+  };
+
+  const tentarNovamente = async () => {
+    setRetrying(true);
+    await gerar();
   };
 
   // Gera (ou esconde) o plano comparativo no modo oposto ao atual.
@@ -2975,11 +3076,74 @@ export default function PlanoAlimentarIA() {
             </div>
           );
         })()}
-        {error && (
-          <div style={{ background: "#1f0a0a", border: "1px solid #3d1010", borderRadius: 8, padding: "10px 14px", color: T.red, fontSize: 13, marginBottom: 16 }}>
-            {error}
-          </div>
-        )}
+        {(errorDetails || error) && (() => {
+          const d = errorDetails || {
+            kind: "unknown" as const, title: error, description: "", canRetry: true, technical: "",
+          };
+          const palette: Record<string, { bg: string; border: string; fg: string; icon: string }> = {
+            unavailable: { bg: "#2a1a05", border: "#5a3a10", fg: "#ffb84d", icon: "⚠️" },
+            timeout:     { bg: "#2a1a05", border: "#5a3a10", fg: "#ffb84d", icon: "⏱️" },
+            rate_limit:  { bg: "#1a1a2e", border: "#3a3a6e", fg: "#9aa8ff", icon: "🚦" },
+            credits:     { bg: "#2a0a1a", border: "#5a103a", fg: "#ff7aa8", icon: "💳" },
+            invalid_json:{ bg: "#1f0a0a", border: "#3d1010", fg: T.red,     icon: "🧩" },
+            network:     { bg: "#1f0a0a", border: "#3d1010", fg: T.red,     icon: "📡" },
+            validation:  { bg: "#1f0a0a", border: "#3d1010", fg: T.red,     icon: "✏️" },
+            unknown:     { bg: "#1f0a0a", border: "#3d1010", fg: T.red,     icon: "❌" },
+          };
+          const p = palette[d.kind] || palette.unknown;
+          return (
+            <div style={{
+              background: p.bg, border: `1px solid ${p.border}`, borderRadius: 10,
+              padding: "14px 16px", marginBottom: 16, color: p.fg, fontSize: 13,
+            }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, fontWeight: 700, fontSize: 14, marginBottom: 6 }}>
+                <span style={{ fontSize: 18 }}>{p.icon}</span>
+                <span>{d.title}</span>
+              </div>
+              {d.description && (
+                <div style={{ color: "#ccc", fontSize: 12.5, lineHeight: 1.5, marginBottom: d.canRetry ? 12 : 4 }}>
+                  {d.description}
+                </div>
+              )}
+              {d.technical && (
+                <details style={{ marginBottom: d.canRetry ? 12 : 0 }}>
+                  <summary style={{ cursor: "pointer", fontSize: 11, color: T.muted2, userSelect: "none" }}>
+                    Detalhes técnicos
+                  </summary>
+                  <code style={{ display: "block", marginTop: 6, fontSize: 11, color: T.muted2, wordBreak: "break-all" }}>
+                    {d.technical}
+                  </code>
+                </details>
+              )}
+              {d.canRetry && (
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  <button
+                    onClick={tentarNovamente}
+                    disabled={retrying}
+                    style={{
+                      padding: "8px 14px", borderRadius: 8, border: "none",
+                      background: p.fg, color: "#0a0f0a", fontSize: 12, fontWeight: 700,
+                      cursor: retrying ? "wait" : "pointer", fontFamily: "inherit",
+                      opacity: retrying ? 0.6 : 1,
+                    }}
+                  >
+                    {retrying ? "⟳ Tentando..." : "⟳ Tentar novamente (com fallback)"}
+                  </button>
+                  <button
+                    onClick={() => { setError(""); setErrorDetails(null); }}
+                    style={{
+                      padding: "8px 14px", borderRadius: 8, border: `1px solid ${p.border}`,
+                      background: "transparent", color: p.fg, fontSize: 12, fontWeight: 600,
+                      cursor: "pointer", fontFamily: "inherit",
+                    }}
+                  >
+                    Dispensar
+                  </button>
+                </div>
+              )}
+            </div>
+          );
+        })()}
 
         <button onClick={gerar} style={{
           width: "100%", padding: 15, borderRadius: 10,
