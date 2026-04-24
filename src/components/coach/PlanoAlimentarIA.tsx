@@ -1888,7 +1888,7 @@ export default function PlanoAlimentarIA() {
                 {!ok && (
                   <div style={{ marginTop: 10, display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
                     <button
-                      onClick={regerarAteAtingirMeta}
+                      onClick={() => { void regerarAteAtingirMeta(); }}
                       disabled={autoRetrying}
                       style={{
                         background: autoRetrying ? T.bg2 : accent,
