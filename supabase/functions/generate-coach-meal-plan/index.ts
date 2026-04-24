@@ -1796,7 +1796,12 @@ ${perfilFisiologico?.modo_economico ? `
         meta_kcal_real: calc.metaKcalReal,
         proteina_gkg: calc.protGkgFinal,
         proteina_bonus_gkg: calc.proteinaBonusGkg,
+        gordura_pct: calc.pctGordura,
+        ajuste_carbo_cap: calc.ajusteCarboCap || null,
       };
+
+      // Expor diretamente no resumo para a UI
+      if (calc.ajusteCarboCap) parsed.resumo.ajuste_carbo_cap = calc.ajusteCarboCap;
 
       // Cycling e refeeding como blocos top-level (compatível com spec)
       if (calc.cyclingPlan) parsed.cycling_carboidratos = calc.cyclingPlan;
