@@ -1624,7 +1624,99 @@ export default function PlanoAlimentarIA() {
             );
           })()}
 
-          {/* Alerta protocolo */}
+          {/* Histórico de ajustes calóricos — comparativo entre versões */}
+          {adjustHistory.length > 0 && (
+            <div style={{
+              background: T.bg2,
+              border: `1px solid ${T.border}`,
+              borderLeft: `3px solid ${T.amber}`,
+              borderRadius: 10,
+              padding: "12px 16px",
+              marginBottom: 16,
+              color: T.text,
+              fontSize: 12,
+            }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                <div style={{ fontWeight: 700, color: T.amber, display: "flex", alignItems: "center", gap: 6 }}>
+                  📊 Histórico de ajustes calóricos
+                  <span style={{ fontSize: 10, color: T.muted, fontWeight: 500 }}>
+                    ({adjustHistory.length} versão{adjustHistory.length === 1 ? "" : "es"})
+                  </span>
+                </div>
+                <button
+                  onClick={() => setShowAdjustHistory((v) => !v)}
+                  style={{
+                    background: "transparent",
+                    border: `1px solid ${T.border2}`,
+                    color: T.muted,
+                    fontSize: 11,
+                    padding: "4px 10px",
+                    borderRadius: 6,
+                    cursor: "pointer",
+                  }}
+                >
+                  {showAdjustHistory ? "Recolher" : "Comparar versões"}
+                </button>
+              </div>
+
+              {showAdjustHistory && (
+                <div style={{ overflowX: "auto", marginTop: 8 }}>
+                  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 11 }}>
+                    <thead>
+                      <tr style={{ color: T.muted, textAlign: "left" as const }}>
+                        <th style={{ padding: "6px 8px", borderBottom: `1px solid ${T.border}` }}>Quando</th>
+                        <th style={{ padding: "6px 8px", borderBottom: `1px solid ${T.border}` }}>Alvo</th>
+                        <th style={{ padding: "6px 8px", borderBottom: `1px solid ${T.border}` }}>Antes</th>
+                        <th style={{ padding: "6px 8px", borderBottom: `1px solid ${T.border}` }}>Depois</th>
+                        <th style={{ padding: "6px 8px", borderBottom: `1px solid ${T.border}` }}>Δ</th>
+                        <th style={{ padding: "6px 8px", borderBottom: `1px solid ${T.border}` }}>Fator</th>
+                        <th style={{ padding: "6px 8px", borderBottom: `1px solid ${T.border}` }}>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {adjustHistory.map((h, idx) => {
+                        const ok = !!h.dentro_da_banda;
+                        const accent = ok ? T.green : T.amber;
+                        const isLatest = idx === 0;
+                        return (
+                          <tr key={h.id} style={{ background: isLatest ? `${T.amber}10` : "transparent" }}>
+                            <td style={{ padding: "6px 8px", borderBottom: `1px solid ${T.border}`, color: T.text }}>
+                              {new Date(h.created_at).toLocaleString("pt-BR", {
+                                day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit",
+                              })}
+                              {isLatest && <span style={{ marginLeft: 6, color: T.amber, fontSize: 9 }}>● ATUAL</span>}
+                            </td>
+                            <td style={{ padding: "6px 8px", borderBottom: `1px solid ${T.border}`, color: T.text }}>
+                              {h.target_kcal ? `${Math.round(h.target_kcal)}` : "—"}
+                            </td>
+                            <td style={{ padding: "6px 8px", borderBottom: `1px solid ${T.border}`, color: T.muted }}>
+                              {h.total_antes ? `${Math.round(h.total_antes)}` : "—"}
+                            </td>
+                            <td style={{ padding: "6px 8px", borderBottom: `1px solid ${T.border}`, color: accent, fontWeight: 600 }}>
+                              {h.total_depois ? `${Math.round(h.total_depois)}` : "—"}
+                            </td>
+                            <td style={{ padding: "6px 8px", borderBottom: `1px solid ${T.border}`, color: T.text }}>
+                              {h.delta_kcal != null ? `${h.delta_kcal > 0 ? "+" : ""}${Math.round(h.delta_kcal)}` : "—"}
+                            </td>
+                            <td style={{ padding: "6px 8px", borderBottom: `1px solid ${T.border}`, color: T.text }}>
+                              {h.fator ? `×${Number(h.fator).toFixed(3)}` : "—"}
+                            </td>
+                            <td style={{ padding: "6px 8px", borderBottom: `1px solid ${T.border}`, color: accent }}>
+                              {h.aplicado ? (ok ? "✓ Na banda" : "⚠ Limitado") : "— Sem ajuste"}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                  {loadingAdjustHistory && (
+                    <div style={{ color: T.muted, fontSize: 11, marginTop: 8 }}>Carregando…</div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
           {r.observacao_protocolo && (
             <div style={{ background: T.greenBg, border: `1px solid ${T.green}33`, borderRadius: 10, padding: "12px 16px", color: T.green, fontSize: 12, marginBottom: 16 }}>
               ✦ Protocolo integrado: {r.observacao_protocolo}
