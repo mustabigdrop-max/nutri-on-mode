@@ -683,6 +683,13 @@ export default function PlanoAlimentarIA() {
     // Fase de periodização
     fasePeriodizacao: "manutencao_offseason",
     bfAtual: "", bfMeta: "", dataCompeticao: "",
+    // Anos de treino + método de estimativa de BF (seleção de fórmula TMB)
+    anosTreino: "" as string,
+    metodoBF: "tenho_bf" as "tenho_bf" | "navy" | "visual" | "nao_sei",
+    circPescoco: "" as string,
+    circAbdomen: "" as string,
+    circQuadril: "" as string,
+    perfilVisual: "" as string,
     // Cardio
     fazCardio: false,
     cardioModalidades: [] as string[],
@@ -1839,6 +1846,53 @@ export default function PlanoAlimentarIA() {
               ))}
             </div>
           </div>
+
+          {/* ───────── Card: Fórmula TMB selecionada automaticamente ───────── */}
+          {(() => {
+            const formula = (r as any)?.formula_tmb as string | undefined;
+            if (!formula) return null;
+            const justificativa = (r as any)?.justificativa_formula as string | undefined;
+            const bfUsed = (r as any)?.bf_utilizado as number | null | undefined;
+            const metodoBF = (r as any)?.metodo_bf as string | undefined;
+            const conf = (r as any)?.confiabilidade_bf as string | undefined;
+            const massaMagra = (r as any)?.massa_magra as number | null | undefined;
+            const aviso = (r as any)?.aviso_bf as string | null | undefined;
+            const corConf =
+              conf === "alta" ? "#22c55e" :
+              conf === "media-alta" ? "#86efac" :
+              conf === "media" ? "#facc15" :
+              conf === "baixa" ? "#f97316" : T.muted;
+            const labelMetodo: Record<string, string> = {
+              informado_coach: "informado",
+              navy: "Método Navy",
+              visual: "estimativa visual",
+              estimativa_automatica: "estimativa automática",
+              nao_disponivel: "não disponível",
+            };
+            return (
+              <div style={{ marginBottom: 24, padding: 16, background: T.card, border: `1px solid ${T.border}`, borderRadius: 12 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                  <div style={{ fontSize: 11, color: T.muted, textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>📐 Fórmula TMB</div>
+                  <div style={{ fontSize: 10, color: corConf, border: `1px solid ${corConf}55`, padding: "1px 6px", borderRadius: 999, background: `${corConf}15` }}>
+                    confiabilidade BF: {conf || "—"}
+                  </div>
+                </div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: T.amber, marginBottom: 4 }}>{formula}</div>
+                {justificativa && (
+                  <div style={{ fontSize: 11, color: T.muted, marginBottom: 8, lineHeight: 1.5 }}>{justificativa}</div>
+                )}
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 12, fontSize: 12, color: T.text }}>
+                  <div>BF: <strong>{bfUsed !== null && bfUsed !== undefined ? `${bfUsed}%` : "—"}</strong>{metodoBF ? <span style={{ color: T.muted }}> ({labelMetodo[metodoBF] || metodoBF})</span> : null}</div>
+                  <div>Massa magra: <strong>{massaMagra !== null && massaMagra !== undefined ? `${massaMagra} kg` : "—"}</strong></div>
+                </div>
+                {aviso && (
+                  <div style={{ marginTop: 10, padding: "8px 10px", background: "#facc1515", border: `1px solid #facc1555`, borderRadius: 8, fontSize: 11, color: "#facc15", lineHeight: 1.5 }}>
+                    ⚠️ {aviso}
+                  </div>
+                )}
+              </div>
+            );
+          })()}
 
           {/* ───────── Card: Protocolo Farmacológico (revisão + recálculo) ───────── */}
           {(() => {
@@ -3358,13 +3412,114 @@ export default function PlanoAlimentarIA() {
               </SelectField>
             </div>
             <div>
-              <Label>% Gordura corporal atual</Label>
-              <InputField type="number" placeholder="Ex: 14" value={form.bfAtual} onChange={e => set("bfAtual", e.target.value)} />
+              <Label>Anos de treino</Label>
+              <SelectField value={form.anosTreino} onChange={e => set("anosTreino", e.target.value)}>
+                <option value="">Selecione...</option>
+                <option value="0">Iniciante (menos de 1 ano)</option>
+                <option value="1">1 a 2 anos</option>
+                <option value="3">3 a 5 anos</option>
+                <option value="5">5 a 10 anos</option>
+                <option value="10">Mais de 10 anos</option>
+              </SelectField>
             </div>
             <div>
               <Label>% Gordura corporal meta</Label>
               <InputField type="number" placeholder="Ex: 8" value={form.bfMeta} onChange={e => set("bfMeta", e.target.value)} />
             </div>
+            <div style={{ gridColumn: "1 / -1" }}>
+              <Label>Como deseja informar o % gordura?</Label>
+              <SelectField value={form.metodoBF} onChange={e => set("metodoBF", e.target.value)}>
+                <option value="tenho_bf">Sei meu % gordura (informar abaixo)</option>
+                <option value="navy">Calcular pelo Método Navy (fita métrica)</option>
+                <option value="visual">Estimativa visual (sem medições)</option>
+                <option value="nao_sei">Não sei — usar estimativa automática</option>
+              </SelectField>
+            </div>
+            {form.metodoBF === "tenho_bf" && (
+              <div style={{ gridColumn: "1 / -1" }}>
+                <Label>% Gordura corporal atual</Label>
+                <InputField type="number" placeholder="Ex: 14" value={form.bfAtual} onChange={e => set("bfAtual", e.target.value)} />
+              </div>
+            )}
+            {form.metodoBF === "navy" && (
+              <>
+                <div>
+                  <Label>Circunferência do pescoço (cm)</Label>
+                  <InputField type="number" placeholder="Ex: 42" value={form.circPescoco} onChange={e => set("circPescoco", e.target.value)} />
+                  <div style={{ fontSize: 10, color: T.muted, marginTop: 4 }}>Medir abaixo do pomo de adão, relaxado.</div>
+                </div>
+                <div>
+                  <Label>Circunferência do abdômen (cm)</Label>
+                  <InputField type="number" placeholder="Ex: 92" value={form.circAbdomen} onChange={e => set("circAbdomen", e.target.value)} />
+                  <div style={{ fontSize: 10, color: T.muted, marginTop: 4 }}>Medir na altura do umbigo, relaxado, sem sugar.</div>
+                </div>
+                {String(form.sexo || "").toLowerCase().startsWith("f") && (
+                  <div>
+                    <Label>Circunferência do quadril (cm)</Label>
+                    <InputField type="number" placeholder="Ex: 100" value={form.circQuadril} onChange={e => set("circQuadril", e.target.value)} />
+                    <div style={{ fontSize: 10, color: T.muted, marginTop: 4 }}>Medir na parte mais larga do quadril.</div>
+                  </div>
+                )}
+                {(() => {
+                  const altura = Number(form.altura) || 0;
+                  const peso = Number(form.peso) || 0;
+                  const pescoco = Number(form.circPescoco) || 0;
+                  const abdomen = Number(form.circAbdomen) || 0;
+                  const quadril = Number(form.circQuadril) || 0;
+                  const isHomem = !String(form.sexo || "").toLowerCase().startsWith("f");
+                  if (!altura || !pescoco || !abdomen || (!isHomem && !quadril)) return null;
+                  let bf = isHomem
+                    ? 495 / (1.0324 - 0.19077 * Math.log10(abdomen - pescoco) + 0.15456 * Math.log10(altura)) - 450
+                    : 495 / (1.29579 - 0.35004 * Math.log10(abdomen + quadril - pescoco) + 0.22100 * Math.log10(altura)) - 450;
+                  const anos = Number(form.anosTreino) || 0;
+                  if (form.atletaCompetitivo) bf -= 3;
+                  else if (anos >= 5) bf -= 2;
+                  else if (anos >= 3) bf -= 1;
+                  bf = Math.max(4, Math.min(50, Math.round(bf * 10) / 10));
+                  const mm = peso ? Math.round(peso * (1 - bf / 100) * 10) / 10 : null;
+                  return (
+                    <div style={{ gridColumn: "1 / -1", padding: "10px 12px", background: T.bg3, border: `1px solid ${T.border2}`, borderRadius: 8, fontSize: 12, color: T.text }}>
+                      <strong style={{ color: T.amber }}>BF estimado: {bf}%</strong>
+                      {mm !== null && <> · Massa magra: <strong>{mm} kg</strong></>}
+                    </div>
+                  );
+                })()}
+              </>
+            )}
+            {form.metodoBF === "visual" && (
+              <div style={{ gridColumn: "1 / -1" }}>
+                <Label>Físico atual do paciente</Label>
+                <SelectField value={form.perfilVisual} onChange={e => set("perfilVisual", e.target.value)}>
+                  <option value="">Selecione...</option>
+                  {String(form.sexo || "").toLowerCase().startsWith("f") ? (
+                    <>
+                      <option value="competicao">Competição — definição muscular extrema (10-13%)</option>
+                      <option value="definido_repouso">Definida — abs visíveis, atlética (14-18%)</option>
+                      <option value="atletico_contracao">Atlética — boa definição (19-23%)</option>
+                      <option value="forma_boa">Boa forma — curvas definidas (24-28%)</option>
+                      <option value="forma_media">Forma média — gordura moderada (29-33%)</option>
+                      <option value="acima_peso">Acima do peso (34-38%)</option>
+                      <option value="obesidade">Obesidade (39%+)</option>
+                    </>
+                  ) : (
+                    <>
+                      <option value="competicao">Competição — veias em todo corpo, estriações (3-6%)</option>
+                      <option value="definido_repouso">Definido — abs visíveis em repouso, veias nos braços (7-10%)</option>
+                      <option value="atletico_contracao">Atlético — abs visíveis com contração (11-15%)</option>
+                      <option value="forma_boa">Boa forma — pouca gordura abdominal (16-20%)</option>
+                      <option value="forma_media">Forma média — gordura abdominal moderada (21-25%)</option>
+                      <option value="acima_peso">Acima do peso — barriga proeminente (26-30%)</option>
+                      <option value="obesidade">Obesidade — gordura distribuída (31%+)</option>
+                    </>
+                  )}
+                </SelectField>
+              </div>
+            )}
+            {form.metodoBF === "nao_sei" && (
+              <div style={{ gridColumn: "1 / -1", padding: "10px 12px", background: T.bg3, border: `1px solid ${T.border2}`, borderRadius: 8, fontSize: 11, color: T.muted }}>
+                A fórmula será selecionada automaticamente com base na idade, IMC e nível de atividade. Para maior precisão, informe o % gordura.
+              </div>
+            )}
             {form.fasePeriodizacao === "peak_week" && (
               <div style={{ gridColumn: "1 / -1" }}>
                 <Label required>Data da competição</Label>
