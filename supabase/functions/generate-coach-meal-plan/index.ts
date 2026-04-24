@@ -544,6 +544,8 @@ serve(async (req) => {
         perfilObj = "manutencao"; multObj = 1.0; pctGordura = 0.30;
         protGkgFinal = 2.0; // override conforme spec
       }
+      // CAP final de proteína g/kg (após eventuais Math.max acima)
+      protGkgFinal = Math.min(protGkgFinal, 3.2);
 
       // ── BLOCO 4: TEF (aplica só agora que sabemos a proteína final) ──
       const aplicaTef = protGkgFinal > 2.0;
