@@ -994,7 +994,65 @@ ${perfilFisiologico?.modo_economico ? `
       parsed.ajuste_calorico = ajusteCalorico;
     }
 
-    return new Response(JSON.stringify({ plan: parsed }), {
+    // ── PERSISTÊNCIA DO HISTÓRICO DE AJUSTES CALÓRICOS ──
+    // Grava cada ajuste aplicado para que o coach possa comparar versões posteriormente.
+    let adjustmentId: string | null = null;
+    try {
+      const coachProfileId = body?.coachProfileId || body?.coach_profile_id || null;
+      const patientUserId = body?.patientUserId || body?.patient_user_id || null;
+      const patientName = body?.nome || body?.patient_name || "Paciente";
+      const aj: any = parsed?.ajuste_calorico;
+
+      if (coachProfileId && aj) {
+        const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+        const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+        if (SUPABASE_URL && SERVICE_KEY) {
+          const insertResp = await fetch(
+            `${SUPABASE_URL}/rest/v1/coach_plan_adjustments`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                apikey: SERVICE_KEY,
+                Authorization: `Bearer ${SERVICE_KEY}`,
+                Prefer: "return=representation",
+              },
+              body: JSON.stringify({
+                coach_id: coachProfileId,
+                patient_user_id: patientUserId,
+                patient_name: patientName,
+                objetivo: objetivo || null,
+                target_kcal: aj?.alvo ?? (calorias ? Number(calorias) : null),
+                total_antes: aj?.total_antes ?? null,
+                total_depois: aj?.total_depois ?? aj?.total_antes ?? null,
+                delta_kcal: aj?.delta_kcal ?? null,
+                fator: aj?.fator ?? null,
+                dentro_da_banda: aj?.dentro_da_banda ?? null,
+                aplicado: aj?.aplicado ?? false,
+                status_msg: aj?.mensagem ?? null,
+                plano_snapshot: parsed,
+                ajuste_meta: aj,
+              }),
+            },
+          );
+          if (insertResp.ok) {
+            const rows = await insertResp.json();
+            adjustmentId = Array.isArray(rows) && rows[0]?.id ? rows[0].id : null;
+            (parsed as any).ajuste_calorico_id = adjustmentId;
+          } else {
+            console.error(
+              "[adjust-history] insert failed",
+              insertResp.status,
+              await insertResp.text(),
+            );
+          }
+        }
+      }
+    } catch (logErr) {
+      console.error("[adjust-history] error:", logErr);
+    }
+
+    return new Response(JSON.stringify({ plan: parsed, adjustmentId }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
