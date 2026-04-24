@@ -182,18 +182,115 @@ const CoachAdjustmentLogPage = () => {
         </Button>
       </div>
 
+      {/* Auditoria do botão "Corrigir tudo agora" */}
+      {!loading && fixRuns.length > 0 && (
+        <Card className="mb-6 border-amber-500/30">
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2">
+              ✨ Execuções do "Corrigir tudo agora" ({fixRuns.length})
+            </CardTitle>
+            <p className="text-xs text-muted-foreground">
+              Cada execução registra: snap inicial de horários → tentativas de regeração → snap final, com totais kcal e fator aplicado.
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {fixRuns.map((run) => {
+              const isOpen = expandedRun === run.run_id;
+              const tentativas = run.steps.filter((s) => s.step_type === "regerar_tentativa");
+              const ultimaTentativa = tentativas[tentativas.length - 1];
+              const sucesso = ultimaTentativa?.details?.dentro_da_banda ?? run.steps.some((s) => s.step_type === "concluido_sem_regeracao" || s.step_type === "nada_a_corrigir");
+              const snapInicial = run.steps.find((s) => s.step_type === "snap_inicial");
+              const snapsFix = (snapInicial?.details?.fixed_count ?? 0) + (run.steps.find(s => s.step_type === "snap_final")?.details?.fixed_count ?? 0);
+              return (
+                <div key={run.run_id} className="rounded-md border bg-card">
+                  <button
+                    className="w-full flex items-center justify-between p-3 text-left hover:bg-muted/40 transition"
+                    onClick={() => setExpandedRun(isOpen ? null : run.run_id)}
+                  >
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <span className="text-xs font-mono text-muted-foreground">
+                        {new Date(run.started_at).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
+                      </span>
+                      <span className="text-sm font-medium">{run.patient_name || "—"}</span>
+                      <Badge variant="outline" className="text-[10px]">{run.steps.length} passos</Badge>
+                      {tentativas.length > 0 && (
+                        <Badge variant="outline" className="text-[10px]">{tentativas.length} tentativa{tentativas.length > 1 ? "s" : ""}</Badge>
+                      )}
+                      {snapsFix > 0 && (
+                        <Badge variant="outline" className="text-[10px]">⏱ {snapsFix} horário{snapsFix > 1 ? "s" : ""}</Badge>
+                      )}
+                      {sucesso ? (
+                        <Badge className="bg-green-600 hover:bg-green-600 gap-1 text-[10px]"><CheckCircle2 className="h-3 w-3" /> ok</Badge>
+                      ) : (
+                        <Badge variant="destructive" className="gap-1 text-[10px]"><AlertTriangle className="h-3 w-3" /> fora da banda</Badge>
+                      )}
+                    </div>
+                    {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                  </button>
+                  {isOpen && (
+                    <div className="border-t p-3 space-y-2 bg-muted/20">
+                      {run.steps.map((s) => {
+                        const meta = STEP_LABEL[s.step_type] || { label: s.step_type, color: "bg-slate-600" };
+                        const d = s.details || {};
+                        return (
+                          <div key={s.id} className="rounded border bg-background p-2 text-xs space-y-1">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <Badge className={`${meta.color} hover:${meta.color} text-white text-[10px]`}>{meta.label}{s.attempt ? ` ${s.attempt}` : ""}</Badge>
+                              {!s.ok && <Badge variant="destructive" className="text-[10px]">erro</Badge>}
+                              <span className="text-[10px] text-muted-foreground font-mono">{new Date(s.created_at).toLocaleTimeString("pt-BR")}</span>
+                            </div>
+                            {s.message && <div className="text-foreground">{s.message}</div>}
+                            {/* Detalhes de snap */}
+                            {(s.step_type === "snap_inicial" || s.step_type === "snap_final") && Array.isArray(d.horarios_corrigidos) && d.horarios_corrigidos.length > 0 && (
+                              <div className="space-y-0.5 mt-1">
+                                <div className="text-muted-foreground">Horários corrigidos:</div>
+                                {d.horarios_corrigidos.map((h: any, i: number) => (
+                                  <div key={i} className="font-mono text-[11px]">
+                                    • {h.refeicao}: <span className="text-red-400">{h.de}</span> → <span className="text-green-400">{h.para}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                            {/* Detalhes de regeração */}
+                            {s.step_type === "regerar_tentativa" && (
+                              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-1 text-[11px] font-mono">
+                                <div><span className="text-muted-foreground">Alvo:</span> {fmtKcal(d.alvo)}</div>
+                                <div><span className="text-muted-foreground">Total:</span> {fmtKcal(d.total_depois)}</div>
+                                <div><span className="text-muted-foreground">Δ:</span> {d.delta_kcal != null ? `${d.delta_kcal > 0 ? "+" : ""}${Math.round(d.delta_kcal)} kcal` : "—"}</div>
+                                <div><span className="text-muted-foreground">Fator:</span> {fmtFator(d.fator)}</div>
+                              </div>
+                            )}
+                            {s.step_type === "regerar_inicio" && (
+                              <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-1 text-[11px] font-mono">
+                                <div><span className="text-muted-foreground">Alvo:</span> {fmtKcal(d.alvo)}</div>
+                                <div><span className="text-muted-foreground">Antes:</span> {fmtKcal(d.total_antes)}</div>
+                                <div><span className="text-muted-foreground">Δ inicial:</span> {d.delta_kcal != null ? `${Math.round(d.delta_kcal)} kcal` : "—"}</div>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </CardContent>
+        </Card>
+      )}
+
       {loading ? (
         <div className="flex items-center justify-center py-20">
           <Loader2 className="h-6 w-6 animate-spin" />
         </div>
-      ) : rows.length === 0 ? (
+      ) : rows.length === 0 && fixRuns.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center text-muted-foreground">
             Nenhum plano gerado ainda. Os ajustes aparecerão aqui assim que você
             gerar um plano alimentar.
           </CardContent>
         </Card>
-      ) : (
+      ) : rows.length === 0 ? null : (
         <Card>
           <CardHeader>
             <CardTitle className="text-base">
