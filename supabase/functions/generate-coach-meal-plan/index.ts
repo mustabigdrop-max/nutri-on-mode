@@ -858,7 +858,14 @@ serve(async (req) => {
 ═══════════════════════════════════════════════════════════════
 🔒 VALORES CALCULADOS DETERMINISTICAMENTE — NÃO ALTERE NENHUM DESTES
 ═══════════════════════════════════════════════════════════════
-TMB (Mifflin-St Jeor): ${calc.tmb} kcal
+FÓRMULA TMB UTILIZADA: ${resultadoTMB.formula}
+Justificativa: ${resultadoTMB.justificativa}
+TMB: ${calc.tmb} kcal
+BF: ${resultadoTMB.bf !== null ? resultadoTMB.bf + "%" : "não disponível"} (método: ${resultadoTMB.metodo_bf}, confiabilidade: ${resultadoTMB.confiabilidade_bf})
+Massa magra: ${resultadoTMB.massa_magra !== null ? resultadoTMB.massa_magra + " kg" : "não calculada"}
+${resultadoTMB.aviso_bf ? `Aviso BF: ${resultadoTMB.aviso_bf}` : ""}
+⛔ NÃO recalcular TMB — usar exatamente ${calc.tmb} kcal.
+⛔ NÃO trocar a fórmula — ${resultadoTMB.formula} foi selecionada automaticamente para este perfil.
 Fator de atividade: ×${calc.fatorAtividade} (${calc.nivelAtividadeNorm})
 NEAT: ×${calc.fatorNeat} (${calc.neatNorm})
 Cardio: ${calc.kcalCardio} kcal/dia ${calc.flagsCardio.join(" | ")}
