@@ -491,6 +491,9 @@ export default function PlanoAlimentarIA() {
     canRetry: boolean;
   } | null>(null);
   const [retrying, setRetrying] = useState(false);
+  const [autoRetrying, setAutoRetrying] = useState(false);
+  const [autoRetryAttempt, setAutoRetryAttempt] = useState(0);
+  const MAX_AUTO_RETRIES = 4;
   const [copied, setCopied] = useState(false);
   const [saving, setSaving] = useState(false);
   const [savedId, setSavedId] = useState<string | null>(null);
