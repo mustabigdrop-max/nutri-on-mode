@@ -1447,6 +1447,71 @@ export type Database = {
           },
         ]
       }
+      coach_plan_adjustments: {
+        Row: {
+          ajuste_meta: Json | null
+          aplicado: boolean | null
+          coach_id: string
+          created_at: string
+          delta_kcal: number | null
+          dentro_da_banda: boolean | null
+          fator: number | null
+          id: string
+          objetivo: string | null
+          patient_name: string | null
+          patient_user_id: string | null
+          plano_snapshot: Json | null
+          status_msg: string | null
+          target_kcal: number | null
+          total_antes: number | null
+          total_depois: number | null
+        }
+        Insert: {
+          ajuste_meta?: Json | null
+          aplicado?: boolean | null
+          coach_id: string
+          created_at?: string
+          delta_kcal?: number | null
+          dentro_da_banda?: boolean | null
+          fator?: number | null
+          id?: string
+          objetivo?: string | null
+          patient_name?: string | null
+          patient_user_id?: string | null
+          plano_snapshot?: Json | null
+          status_msg?: string | null
+          target_kcal?: number | null
+          total_antes?: number | null
+          total_depois?: number | null
+        }
+        Update: {
+          ajuste_meta?: Json | null
+          aplicado?: boolean | null
+          coach_id?: string
+          created_at?: string
+          delta_kcal?: number | null
+          dentro_da_banda?: boolean | null
+          fator?: number | null
+          id?: string
+          objetivo?: string | null
+          patient_name?: string | null
+          patient_user_id?: string | null
+          plano_snapshot?: Json | null
+          status_msg?: string | null
+          target_kcal?: number | null
+          total_antes?: number | null
+          total_depois?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coach_plan_adjustments_coach_id_fkey"
+            columns: ["coach_id"]
+            isOneToOne: false
+            referencedRelation: "coach_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       coach_profiles: {
         Row: {
           alert_channels: Json | null
