@@ -996,7 +996,7 @@ ${perfilFisiologico?.modo_economico ? `
           ajusteCalorico.aplicado = true;
           ajusteCalorico.fator = Number(fatorClamp.toFixed(3));
           ajusteCalorico.fator_solicitado = Number(fator.toFixed(3));
-          ajusteCalorico.fator_limitado = fator > 1.5;
+          ajusteCalorico.fator_limitado = fator > 2.5;
           ajusteCalorico.total_depois = totalDepois;
           ajusteCalorico.delta_kcal = totalDepois - totalAntes;
           ajusteCalorico.dentro_da_banda = totalDepois >= minBand && totalDepois <= maxBand;
@@ -1004,6 +1004,7 @@ ${perfilFisiologico?.modo_economico ? `
           ajusteCalorico.mensagem = ajusteCalorico.dentro_da_banda
             ? `Plano abaixo do alvo (${totalAntes} kcal). Gramaturas escaladas ×${fatorClamp.toFixed(3)} → ${totalDepois} kcal (dentro de ±3% de ${alvo}).`
             : `Plano escalado ×${fatorClamp.toFixed(3)} (limite máximo) → ${totalDepois} kcal. Ainda fora da banda ${minBand}-${maxBand}. Considere revisar manualmente.`;
+          console.log(`[ajuste-calorico] aplicado: ${ajusteCalorico.mensagem}`);
         } else {
           ajusteCalorico.mensagem = `Sem refeições ajustáveis (todas peri-treino travadas).`;
         }
