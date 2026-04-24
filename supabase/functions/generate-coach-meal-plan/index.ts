@@ -690,6 +690,12 @@ NEAT: ×${calc.fatorNeat} (${calc.neatNorm})
 Cardio: ${calc.kcalCardio} kcal/dia ${calc.flagsCardio.join(" | ")}
 GET base (atividade+cardio+NEAT): ${calc.getBase} kcal
 Mult. farmacológico: ×${calc.multFarm.toFixed(3)} ${calc.flagsFarm.length ? `[${calc.flagsFarm.join(" | ")}]` : "(nenhum)"}
+${calc.compostosDetectados.length ? `🧪 COMPOSTOS DETECTADOS: ${calc.compostosDetectados.join(", ")}` : ""}
+${calc.hepatotoxicoCount > 0 ? `🩺 Compostos hepatotóxicos: ${calc.hepatotoxicoCount}` : ""}
+${calc.timingsFarm.length ? `⏰ TIMINGS OBRIGATÓRIOS:\n${calc.timingsFarm.map((t: string) => `• ${t}`).join("\n")}` : ""}
+${calc.micronutrientesFarm.length ? `💊 MICRONUTRIENTES OBRIGATÓRIOS NO PLANO:\n${calc.micronutrientesFarm.map((m: string) => `• ${m}`).join("\n")}` : ""}
+${calc.alertasCriticosFarm.length ? `⛔ ALERTAS CRÍTICOS:\n${calc.alertasCriticosFarm.map((a: string) => `• ${a}`).join("\n")}` : ""}
+${calc.alertasFarm.length ? `⚠️ ALERTAS:\n${calc.alertasFarm.map((a: string) => `• ${a}`).join("\n")}` : ""}
 TEF: ×${calc.fatorTef} ${calc.fatorTef > 1 ? "(proteína > 2g/kg)" : ""}
 GET ajustado final: ${calc.getFarma} kcal
 Perfil de objetivo: ${calc.perfilObj} (mult ${calc.multObj})
