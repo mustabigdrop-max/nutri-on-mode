@@ -623,8 +623,34 @@ serve(async (req) => {
         flagsFarm.push(`${nome} ×${(c.fator_get ?? 1).toFixed(2)}${c.proteina_bonus_gkg ? ` +${c.proteina_bonus_gkg}g·kg` : ""}${c.carbo_delta_pct ? ` CHO${c.carbo_delta_pct > 0 ? "+" : ""}${c.carbo_delta_pct}%` : ""}`);
       }
 
-      // CAP global: máximo ×1.75 (protocolo real raramente excede isso)
-      multFarm = Math.min(multFarm, 1.75);
+      // ── DIMINISHING RETURNS + CAP ESCALONADO POR Nº DE COMPOSTOS ──
+      // Mecanismos farmacológicos se sobrepõem na prática clínica.
+      // Fator matemático puro (produtório) superestima o gasto real.
+      const fatorFarmaBruto = multFarm; // produto matemático puro
+      const numCompostos = compostosDetectados.length;
+      // Reduz 3% por composto acima de 3 (sobreposição de mecanismos)
+      if (numCompostos >= 4) {
+        const reducao = (numCompostos - 3) * 0.03;
+        multFarm = multFarm * (1 - reducao);
+      }
+      // Caps escalonados baseados em protocolos clínicos reais
+      const CAPS_FARMA: Record<number, number> = {
+        0: 1.00,
+        1: 1.12,
+        2: 1.20,
+        3: 1.28,
+        4: 1.35,
+        5: 1.40,
+        6: 1.45,
+        7: 1.48,
+        8: 1.50, // 8+ compostos — cap final
+      };
+      const capAplicado = CAPS_FARMA[Math.min(numCompostos, 8)] ?? 1.50;
+      multFarm = Math.min(multFarm, capAplicado);
+      multFarm = Math.round(multFarm * 1000) / 1000;
+      const notaFatorFarma = numCompostos > 0
+        ? `Fator farmacológico: ×${multFarm} (${numCompostos} composto${numCompostos > 1 ? "s" : ""} — cap escalonado ×${capAplicado} com diminishing returns aplicado). Fator matemático bruto seria ×${fatorFarmaBruto.toFixed(3)}, mas mecanismos se sobrepõem na prática clínica.`
+        : null;
 
       if (hepatotoxicoCount >= 2) {
         alertasCriticosFarm.push(
