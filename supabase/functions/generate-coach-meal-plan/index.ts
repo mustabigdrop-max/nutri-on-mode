@@ -1356,7 +1356,7 @@ ${perfilFisiologico?.modo_economico ? `
       parsed.resumo.nome = parsed.resumo.nome || nome || "Paciente";
       parsed.resumo.objetivo = parsed.resumo.objetivo || objetivo;
       parsed.resumo.tmb = calc.tmb;
-      parsed.resumo.get = calc.getFinal;
+      parsed.resumo.get = calc.getFarma;
       parsed.resumo.calorias_totais = calc.metaKcal;
       parsed.resumo.proteina_total = calc.proteinaG;
       parsed.resumo.carboidrato_total = calc.carboG;
@@ -1368,23 +1368,36 @@ ${perfilFisiologico?.modo_economico ? `
         formula_tmb: "Mifflin-St Jeor",
         fator_atividade: calc.fatorAtividade,
         nivel_atividade: calc.nivelAtividadeNorm,
+        fator_neat: calc.fatorNeat,
+        neat: calc.neatNorm,
+        kcal_cardio_dia: calc.kcalCardio,
+        flags_cardio: calc.flagsCardio,
         get_base: calc.getBase,
         multiplicador_farmacologico: calc.multFarm,
         flags_farmacologicas: calc.flagsFarm,
-        kcal_cardio_dia: calc.kcalCardio,
-        flags_cardio: calc.flagsCardio,
-        get_final: calc.getFinal,
+        fator_tef: calc.fatorTef,
+        get_final: calc.getFarma,
         meta_kcal: calc.metaKcal,
         meta_origem: calc.metaSourceCoach ? "coach" : "calculada",
         perfil_objetivo: calc.perfilObj,
+        multiplicador_objetivo: calc.multObj,
         proteina_g: calc.proteinaG,
         carbo_g: calc.carboG,
         gordura_g: calc.gorduraG,
         proteina_pct: calc.protPct,
         carbo_pct: calc.carbPct,
         gordura_pct: calc.fatPct,
-        proteina_por_kg: calc.protPorKg,
+        proteina_por_kg: calc.protGkgFinal,
+        proteina_bonus_gkg: calc.proteinaBonusGkg,
         usa_metformina: calc.usaMetformina,
+        usa_igf1: calc.usaIgf1,
+        usa_glp1: calc.usaGlp1,
+        sono_ruim: calc.sonoRuim,
+        carbo_noturno_bonus_g: calc.carboNoturnoBonus,
+        semanas_em_deficit: calc.semanasEmDeficit,
+        cycling_carbo: calc.cyclingPlan,
+        refeeding: calc.refeedingPlan,
+        refeicoes_recomendadas: calc.refeicoesRecomendadas,
       };
     }
 
