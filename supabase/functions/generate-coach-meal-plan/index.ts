@@ -1687,6 +1687,15 @@ ${perfilFisiologico?.modo_economico ? `
       parsed.resumo.gordura_total = calc.gorduraG;
       parsed.resumo.imc = parsed.resumo.imc || imc;
 
+      // ── Fórmula TMB selecionada automaticamente + dados de BF ──
+      parsed.resumo.formula_tmb = resultadoTMB.formula;
+      parsed.resumo.justificativa_formula = resultadoTMB.justificativa;
+      parsed.resumo.bf_utilizado = resultadoTMB.bf;
+      parsed.resumo.metodo_bf = resultadoTMB.metodo_bf;
+      parsed.resumo.confiabilidade_bf = resultadoTMB.confiabilidade_bf;
+      parsed.resumo.massa_magra = resultadoTMB.massa_magra;
+      parsed.resumo.aviso_bf = resultadoTMB.aviso_bf;
+
       // Contexto farmacológico exposto no resumo (para a UI exibir badges/alertas)
       parsed.resumo.compostos_detectados = calc.compostosDetectados;
       parsed.resumo.fator_farmacologico = Math.round(calc.multFarm * 1000) / 1000;
