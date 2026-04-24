@@ -1558,6 +1558,94 @@ export default function PlanoAlimentarIA() {
           </div>
         </div>
 
+        {/* Modal: Revisão do protocolo farmacológico — recalcula tudo */}
+        {showProtocoloModal && (
+          <div onClick={() => !protocoloRecalc && setShowProtocoloModal(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", zIndex: 60, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+            <div onClick={(e) => e.stopPropagation()} style={{ background: T.bg2, border: `1px solid ${T.border2}`, borderRadius: 14, padding: 24, maxWidth: 600, width: "100%", maxHeight: "90vh", overflow: "auto" as const }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                <span style={{ fontSize: 18 }}>🧪</span>
+                <div style={{ fontSize: 16, fontWeight: 700, color: T.text }}>Revisar protocolo farmacológico</div>
+              </div>
+              <div style={{ fontSize: 12, color: T.muted, marginBottom: 16, lineHeight: 1.5 }}>
+                Edite o texto abaixo. Ao recalcular, o sistema vai detectar novamente cada composto, recalcular o fator farmacológico, ajustar os macros (proteína, carbo, gordura) e regerar todas as refeições.
+              </div>
+
+              <div style={{ marginBottom: 14 }}>
+                <Label>Protocolo (texto livre)</Label>
+                <textarea
+                  value={protocoloDraft}
+                  onChange={(e) => setProtocoloDraft(e.target.value)}
+                  rows={7}
+                  disabled={protocoloRecalc}
+                  placeholder="Ex: Testosterona Enantato 300mg/sem, NPP 200mg/sem, CJC-1295 sem DAC 2mg 2x/sem, Ipamorelin 200mcg 3x/dia, Metformina 500mg 2x/dia..."
+                  style={{
+                    width: "100%",
+                    minHeight: 160,
+                    background: T.bg3,
+                    border: `1px solid ${T.border2}`,
+                    borderRadius: 8,
+                    padding: 12,
+                    color: T.text,
+                    fontSize: 13,
+                    fontFamily: "inherit",
+                    lineHeight: 1.5,
+                    resize: "vertical" as const,
+                    boxSizing: "border-box" as const,
+                  }}
+                  maxLength={2000}
+                />
+                <div style={{ fontSize: 10, color: T.muted, marginTop: 4, textAlign: "right" as const }}>
+                  {protocoloDraft.length}/2000
+                </div>
+              </div>
+
+              <div style={{ background: T.greenBg, border: `1px solid ${T.border2}`, borderRadius: 8, padding: "10px 12px", marginBottom: 16 }}>
+                <div style={{ fontSize: 11, color: T.green, lineHeight: 1.5 }}>
+                  💡 <strong>Dica:</strong> use nomes completos quando possível (ex: "trembolona", "stanozolol", "semaglutida"). O detector reconhece ~35 compostos com várias grafias e abreviações ("test e", "deca", "tren a", "GW", "MK-677" etc.).
+                </div>
+              </div>
+
+              <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" as const }}>
+                <button
+                  onClick={() => setShowProtocoloModal(false)}
+                  disabled={protocoloRecalc}
+                  style={{
+                    padding: "10px 18px",
+                    borderRadius: 8,
+                    background: T.bg3,
+                    border: `1px solid ${T.border2}`,
+                    color: T.muted,
+                    fontSize: 12,
+                    cursor: protocoloRecalc ? "not-allowed" : "pointer",
+                    fontFamily: "inherit",
+                    opacity: protocoloRecalc ? 0.5 : 1,
+                  }}
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={recalcularComProtocolo}
+                  disabled={protocoloRecalc}
+                  style={{
+                    padding: "10px 18px",
+                    borderRadius: 8,
+                    background: T.amber,
+                    border: `1px solid ${T.amber}`,
+                    color: "#1a1206",
+                    fontSize: 12,
+                    fontWeight: 700,
+                    cursor: protocoloRecalc ? "wait" : "pointer",
+                    fontFamily: "inherit",
+                    opacity: protocoloRecalc ? 0.6 : 1,
+                  }}
+                >
+                  {protocoloRecalc ? "Recalculando..." : "🔄 Recalcular plano"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {showSendModal && (
           <div onClick={() => setShowSendModal(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
             <div onClick={(e) => e.stopPropagation()} style={{ background: T.bg2, border: `1px solid ${T.border2}`, borderRadius: 14, padding: 24, maxWidth: 460, width: "100%" }}>
