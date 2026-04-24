@@ -1284,6 +1284,59 @@ export type Database = {
         }
         Relationships: []
       }
+      coach_fix_all_logs: {
+        Row: {
+          attempt: number | null
+          coach_id: string
+          created_at: string
+          details: Json | null
+          id: string
+          message: string | null
+          ok: boolean
+          patient_name: string | null
+          patient_user_id: string | null
+          run_id: string
+          step_index: number
+          step_type: string
+        }
+        Insert: {
+          attempt?: number | null
+          coach_id: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          message?: string | null
+          ok?: boolean
+          patient_name?: string | null
+          patient_user_id?: string | null
+          run_id: string
+          step_index: number
+          step_type: string
+        }
+        Update: {
+          attempt?: number | null
+          coach_id?: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          message?: string | null
+          ok?: boolean
+          patient_name?: string | null
+          patient_user_id?: string | null
+          run_id?: string
+          step_index?: number
+          step_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coach_fix_all_logs_coach_id_fkey"
+            columns: ["coach_id"]
+            isOneToOne: false
+            referencedRelation: "coach_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       coach_meal_plans: {
         Row: {
           coach_id: string
