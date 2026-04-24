@@ -1847,6 +1847,53 @@ export default function PlanoAlimentarIA() {
             </div>
           </div>
 
+          {/* ───────── Card: Fórmula TMB selecionada automaticamente ───────── */}
+          {(() => {
+            const formula = (r as any)?.formula_tmb as string | undefined;
+            if (!formula) return null;
+            const justificativa = (r as any)?.justificativa_formula as string | undefined;
+            const bfUsed = (r as any)?.bf_utilizado as number | null | undefined;
+            const metodoBF = (r as any)?.metodo_bf as string | undefined;
+            const conf = (r as any)?.confiabilidade_bf as string | undefined;
+            const massaMagra = (r as any)?.massa_magra as number | null | undefined;
+            const aviso = (r as any)?.aviso_bf as string | null | undefined;
+            const corConf =
+              conf === "alta" ? "#22c55e" :
+              conf === "media-alta" ? "#86efac" :
+              conf === "media" ? "#facc15" :
+              conf === "baixa" ? "#f97316" : T.muted;
+            const labelMetodo: Record<string, string> = {
+              informado_coach: "informado",
+              navy: "Método Navy",
+              visual: "estimativa visual",
+              estimativa_automatica: "estimativa automática",
+              nao_disponivel: "não disponível",
+            };
+            return (
+              <div style={{ marginBottom: 24, padding: 16, background: T.card, border: `1px solid ${T.border}`, borderRadius: 12 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                  <div style={{ fontSize: 11, color: T.muted, textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>📐 Fórmula TMB</div>
+                  <div style={{ fontSize: 10, color: corConf, border: `1px solid ${corConf}55`, padding: "1px 6px", borderRadius: 999, background: `${corConf}15` }}>
+                    confiabilidade BF: {conf || "—"}
+                  </div>
+                </div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: T.amber, marginBottom: 4 }}>{formula}</div>
+                {justificativa && (
+                  <div style={{ fontSize: 11, color: T.muted, marginBottom: 8, lineHeight: 1.5 }}>{justificativa}</div>
+                )}
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 12, fontSize: 12, color: T.text }}>
+                  <div>BF: <strong>{bfUsed !== null && bfUsed !== undefined ? `${bfUsed}%` : "—"}</strong>{metodoBF ? <span style={{ color: T.muted }}> ({labelMetodo[metodoBF] || metodoBF})</span> : null}</div>
+                  <div>Massa magra: <strong>{massaMagra !== null && massaMagra !== undefined ? `${massaMagra} kg` : "—"}</strong></div>
+                </div>
+                {aviso && (
+                  <div style={{ marginTop: 10, padding: "8px 10px", background: "#facc1515", border: `1px solid #facc1555`, borderRadius: 8, fontSize: 11, color: "#facc15", lineHeight: 1.5 }}>
+                    ⚠️ {aviso}
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+
           {/* ───────── Card: Protocolo Farmacológico (revisão + recálculo) ───────── */}
           {(() => {
             const compostos = ((r as any)?.compostos_detectados as string[] | undefined) || [];
