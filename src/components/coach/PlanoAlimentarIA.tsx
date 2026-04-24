@@ -723,6 +723,10 @@ export default function PlanoAlimentarIA() {
     perfilEconomico: "intermediario" as "economico" | "intermediario" | "premium",
     alimentosDisponiveis: [] as string[],
     outrosAlimentos: "",
+    // BLOCO 11 — campos para cálculo determinístico expandido
+    neat: "medio" as "baixo" | "medio" | "alto",
+    qualidadeSono: "boa" as "boa" | "regular" | "ruim",
+    semanasEmDeficit: "" as string,
   });
 
   // Estado de UI para a seção colapsável Elite
@@ -848,6 +852,10 @@ export default function PlanoAlimentarIA() {
         trainingSchedulePrompt,
         glut4Config,
         glut4Text: form.glut4Enabled ? glut4Text : "",
+        // Campos para o cálculo determinístico (BLOCO 11)
+        neat: form.neat,
+        qualidadeSono: form.qualidadeSono,
+        semanasEmDeficit: form.semanasEmDeficit ? Number(form.semanasEmDeficit) : 0,
         perfilFisiologico: {
           historico_intestinal: form.historicoIntestinal || null,
           fermentados_atual: form.fermentadosAtual || null,
@@ -862,6 +870,9 @@ export default function PlanoAlimentarIA() {
           perfil_economico: form.perfilEconomico,
           alimentos_disponiveis: form.alimentosDisponiveis,
           outros_alimentos: form.outrosAlimentos || null,
+          neat: form.neat,
+          qualidade_sono: form.qualidadeSono,
+          semanas_em_deficit: form.semanasEmDeficit ? Number(form.semanasEmDeficit) : 0,
         },
       },
     });
@@ -3048,6 +3059,35 @@ export default function PlanoAlimentarIA() {
                 <option value="muito_ativo">Muito ativo (2x/dia ou atleta)</option>
               </SelectField>
             </div>
+            <div>
+              <Label>NEAT (atividade não-exercício)</Label>
+              <SelectField value={form.neat} onChange={e => set("neat", e.target.value)}>
+                <option value="baixo">Sedentário no trabalho (home office / escritório)</option>
+                <option value="medio">Moderado (anda bastante, trabalho ativo)</option>
+                <option value="alto">Muito ativo (trabalho físico, militar, campo)</option>
+              </SelectField>
+            </div>
+            <div>
+              <Label>Qualidade do sono</Label>
+              <SelectField value={form.qualidadeSono} onChange={e => set("qualidadeSono", e.target.value)}>
+                <option value="boa">Boa (7–9h regulares)</option>
+                <option value="regular">Regular (5–7h)</option>
+                <option value="ruim">Ruim (&lt; 5h ou muito fragmentado)</option>
+              </SelectField>
+            </div>
+            {(/cut|emagrec|defici|seca/i.test(String(form.objetivo)) || /cut/i.test(String(form.fasePeriodizacao))) && (
+              <div>
+                <Label>Semanas em déficit (refeeding automático ≥4)</Label>
+                <InputField
+                  type="number"
+                  min={0}
+                  max={52}
+                  value={form.semanasEmDeficit}
+                  placeholder="0 se está começando agora"
+                  onChange={e => set("semanasEmDeficit", e.target.value)}
+                />
+              </div>
+            )}
             <div>
               <Label>Modalidade de treino</Label>
               <SelectField value={form.treino} onChange={e => set("treino", e.target.value)}>

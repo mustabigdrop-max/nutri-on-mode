@@ -308,7 +308,17 @@ serve(async (req) => {
       glut4Config,
       glut4Text,
       perfilFisiologico,
+      // Novos campos para cálculo determinístico expandido
+      neat,                  // "baixo" | "medio" | "alto"
+      qualidadeSono,         // "boa" | "regular" | "ruim"
+      semanasEmDeficit,      // number
+      cyclingCarbo,          // boolean (já existia em perfilFisiologico)
     } = body;
+    // Fallbacks para suportar payload antigo
+    const _neat = neat ?? perfilFisiologico?.neat ?? "medio";
+    const _qualidadeSono = qualidadeSono ?? perfilFisiologico?.qualidade_sono ?? "boa";
+    const _semanasDef = Number(semanasEmDeficit ?? perfilFisiologico?.semanas_em_deficit ?? 0);
+    const _cyclingCarbo = cyclingCarbo ?? perfilFisiologico?.cycling_carbo ?? false;
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
@@ -319,25 +329,23 @@ serve(async (req) => {
       : null;
 
     // ═══════════════════════════════════════════════════════════════
-    // CÁLCULO DETERMINÍSTICO DE TMB / GET / MACROS
-    // Mesmos inputs → mesmos valores SEMPRE. A IA não decide nada disso.
+    // CÁLCULO DETERMINÍSTICO COMPLETO — TMB / GET / Macros / Cycling / Refeeding
+    // BLOCOS 1–10. Mesmos inputs → mesmos valores SEMPRE.
     // ═══════════════════════════════════════════════════════════════
     const calc = (() => {
       const pesoNum = parseFloat(peso) || 0;
       const altNum = parseFloat(altura) || 0;
       const idadeNum = parseFloat(idade) || 0;
-      if (!pesoNum || !altNum || !idadeNum) {
-        return null;
-      }
+      if (!pesoNum || !altNum || !idadeNum) return null;
 
-      // 1) TMB Mifflin-St Jeor
+      // ── BLOCO 1: TMB Mifflin-St Jeor ──
       const sexoNorm = String(sexo || "").toLowerCase();
       const isHomem = /masc|homem|m$|^m/i.test(sexoNorm);
       const tmb = isHomem
         ? (10 * pesoNum) + (6.25 * altNum) - (5 * idadeNum) + 5
         : (10 * pesoNum) + (6.25 * altNum) - (5 * idadeNum) - 161;
 
-      // 2) Fator de atividade (mapeamento fixo)
+      // ── BLOCO 2: Fator de atividade ──
       const nivelRaw = String(nivelAtividade || "moderado").toLowerCase().trim();
       const FATORES: Record<string, number> = {
         sedentario: 1.2, sedentário: 1.2, sed: 1.2,
@@ -350,22 +358,9 @@ serve(async (req) => {
       for (const k of Object.keys(FATORES)) {
         if (nivelRaw.includes(k)) { fatorAtividade = FATORES[k]; break; }
       }
-      const getBase = tmb * fatorAtividade;
+      let getBase = tmb * fatorAtividade;
 
-      // 3) Ajustes farmacológicos MULTIPLICATIVOS e FIXOS
-      const protoStr = String(protocoloFarmacologico || protocStr || "").toLowerCase();
-      let multFarm = 1.0;
-      const flagsFarm: string[] = [];
-      if (/(testosterona|enantato|cipionato|propionato|sustanon|deca|nandrolona|trembolona|trenbolona|boldenona|equipoise|stano|stanozolol|winstrol|oxandrolona|anavar|dianabol|metandr|primobolan|masteron|halotest|anabolizante|aas\b|trt\b)/i.test(protoStr)) {
-        multFarm *= 1.15; flagsFarm.push("AAS/TRT ×1.15");
-      }
-      if (/(\bgh\b|hgh|hormonio do crescimento|hormônio do crescimento|somatropina|ipamorelin|cjc[- ]?1295|cjc1295|tesamorelin|sermorelin|hexarelin|ghrp|secretagogo)/i.test(protoStr)) {
-        multFarm *= 1.08; flagsFarm.push("GH/secretagogo ×1.08");
-      }
-      const usaMetformina = /metformin|glifage/i.test(protoStr);
-      if (usaMetformina) flagsFarm.push("Metformina (CHO −10% / PTN +)");
-
-      // 4) Cardio (apenas se cardioNoCalculo = true)
+      // ── BLOCO 3: Cardio (somado ao GET base) ──
       let kcalCardio = 0;
       const flagsCardio: string[] = [];
       if (fazCardio && cardioNoCalculo) {
@@ -375,100 +370,245 @@ serve(async (req) => {
         const durMin = durMatch ? parseInt(durMatch[1]) : 0;
         if (freqSemana > 0 && durMin > 0) {
           kcalCardio = Math.round((freqSemana / 7) * durMin * 7);
-          flagsCardio.push(`Cardio +${kcalCardio}kcal/dia (${freqSemana}×/sem × ${durMin}min × 7kcal/min ÷ 7)`);
+          flagsCardio.push(`+${kcalCardio}kcal/dia (${freqSemana}×/sem × ${durMin}min × 7kcal/min ÷ 7)`);
+          getBase += kcalCardio;
         }
       }
 
-      const getFinal = Math.round(getBase * multFarm + kcalCardio);
+      // ── BLOCO 6: Protocolo farmacológico (mult fixos, proteína bonus, ajustes) ──
+      const protoStr = String(protocoloFarmacologico || protocStr || "").toLowerCase();
+      let multFarm = 1.0;
+      let proteinaBonusGkg = 0;
+      let gorduraReducaoPct = 0;       // %, aplicado depois (BLOCO 6 — GH)
+      let usaIgf1 = false;
+      let usaGlp1 = false;
+      const flagsFarm: string[] = [];
 
-      // 5) Macros por objetivo
-      const objLower = String(objetivo || "").toLowerCase();
-      let metaKcal = getFinal;
-      let protPorKg = 2.0;
-      let pctGordura = 0.30;
-      let perfilObj = "manutencao";
-
-      if (/bulk|hipertrof|massa|ganho/.test(objLower)) {
-        metaKcal = Math.round(getFinal * 1.10);
-        protPorKg = 2.2; pctGordura = 0.25; perfilObj = "bulk_limpo";
-      } else if (/cut|emagrec|perda|defici|seca/.test(objLower)) {
-        metaKcal = Math.round(getFinal * 0.80);
-        protPorKg = 2.4; pctGordura = 0.25; perfilObj = "cutting";
-      } else if (/recomp/.test(objLower)) {
-        metaKcal = getFinal;
-        protPorKg = 2.2; pctGordura = 0.28; perfilObj = "recomposicao";
-      } else {
-        metaKcal = getFinal;
-        protPorKg = 2.0; pctGordura = 0.30; perfilObj = "manutencao";
+      // Testosterona / ésteres
+      if (/(testosterona|enantato|cipionato|propionato|sustanon|trt\b)/i.test(protoStr)) {
+        multFarm *= 1.15; proteinaBonusGkg += 0.2;
+        flagsFarm.push("Testosterona ×1.15 / +0.2g·kg ptn");
+      }
+      // Nandrolona / NPP / Deca
+      if (/(nandrolona|\bnpp\b|\bdeca\b|deca-?durabolin)/i.test(protoStr)) {
+        multFarm *= 1.08; proteinaBonusGkg += 0.1;
+        flagsFarm.push("Nandrolona/Deca ×1.08 / +0.1g·kg ptn");
+      }
+      // Outros AAS (sem incrementar duplo se já caiu em testosterona)
+      if (/(trembolona|trenbolona|boldenona|equipoise|stano|stanozolol|winstrol|oxandrolona|anavar|dianabol|metandr|primobolan|masteron|halotest)/i.test(protoStr)
+          && !/(testosterona|enantato|cipionato|propionato|sustanon|trt\b)/i.test(protoStr)) {
+        multFarm *= 1.10; proteinaBonusGkg += 0.15;
+        flagsFarm.push("AAS oral/injetável ×1.10 / +0.15g·kg ptn");
+      }
+      // GH / secretagogos
+      if (/(\bgh\b|hgh|hormonio do crescimento|hormônio do crescimento|somatropina|ipamorelin|cjc[- ]?1295|cjc1295|tesamorelin|sermorelin|hexarelin|ghrp|secretagogo)/i.test(protoStr)) {
+        multFarm *= 1.08; proteinaBonusGkg += 0.1; gorduraReducaoPct -= 0.03;
+        flagsFarm.push("GH/secretagogo ×1.08 / +0.1g·kg ptn / gordura −3%");
+      }
+      // IGF-1 (sem mult de TDEE — só captação proteica)
+      if (/(igf[- ]?1|igf1[- ]?des|igf-?1des)/i.test(protoStr)) {
+        proteinaBonusGkg += 0.4; usaIgf1 = true;
+        flagsFarm.push("IGF-1 +0.4g·kg ptn / refeição proteica 25-30min pós-aplicação");
+      }
+      // Metformina
+      const usaMetformina = /metformin|glifage/i.test(protoStr);
+      if (usaMetformina) flagsFarm.push("Metformina (CHO −10% / PTN compensa)");
+      // GLP-1
+      if (/(glp[- ]?1|semaglutida|ozempic|wegovy|mounjaro|tirzepatida|retatrutida|liraglutida|saxenda|victoza)/i.test(protoStr)) {
+        multFarm *= 0.92; usaGlp1 = true;
+        flagsFarm.push("GLP-1 ×0.92 (supressão apetite) / fracionar ≥5 refeições");
       }
 
-      // Override: meta calórica do coach SEMPRE prevalece sobre cálculo
-      const metaCoach = calorias ? Number(calorias) : null;
-      if (metaCoach && metaCoach > 0) metaKcal = Math.round(metaCoach);
+      // ── BLOCO 4 (TEF) — placeholder, recalculado depois de definir prot/kg final ──
+      // (A regra é "se prot > 2g/kg, GET × 1.05" — aplicado mais abaixo.)
 
-      let proteinaG = Math.round(pesoNum * protPorKg);
+      // ── BLOCO 5: NEAT ──
+      const NEAT_MULT: Record<string, number> = { baixo: 1.0, medio: 1.05, médio: 1.05, alto: 1.10 };
+      const fatorNeat = NEAT_MULT[String(_neat).toLowerCase()] ?? 1.05;
+      getBase = getBase * fatorNeat;
+
+      // GET após farma (sem TEF ainda)
+      let getFarmaPreTef = getBase * multFarm;
+
+      // ── BLOCO 7: Macros por objetivo ──
+      const objLower = String(objetivo || "").toLowerCase();
+      const faseLower = String(fasePeriodizacao || "").toLowerCase();
+      const protBaseGkg = 2.2;
+      let protGkgFinal = Math.min(3.0, protBaseGkg + proteinaBonusGkg);
+
+      let perfilObj = "manutencao";
+      let multObj = 1.0;
+      let pctGordura = 0.30;
+
+      if (/peak[_ ]?week|peak/.test(faseLower)) {
+        perfilObj = "peak_week"; multObj = 0.90; pctGordura = 0.15; protGkgFinal = Math.max(protGkgFinal, 2.5);
+      } else if (/bulk_agressivo|bulk agressivo|bulk_pesado/.test(faseLower) || /bulk_agress/.test(objLower)) {
+        perfilObj = "bulk_agressivo"; multObj = 1.20; pctGordura = 0.28;
+      } else if (/bulk|hipertrof|massa|ganho/.test(objLower) || /bulk/.test(faseLower)) {
+        perfilObj = "bulk_limpo"; multObj = 1.10; pctGordura = 0.25;
+      } else if (/cut|emagrec|perda|defici|seca/.test(objLower) || /cut/.test(faseLower)) {
+        perfilObj = "cutting"; multObj = 0.80; pctGordura = 0.25;
+        protGkgFinal = Math.max(protGkgFinal, 2.4);
+      } else if (/recomp/.test(objLower) || /recomp/.test(faseLower)) {
+        perfilObj = "recomposicao"; multObj = 1.0; pctGordura = 0.28;
+      } else {
+        perfilObj = "manutencao"; multObj = 1.0; pctGordura = 0.30;
+        protGkgFinal = 2.0; // override conforme spec
+      }
+
+      // ── BLOCO 4: TEF (aplica só agora que sabemos a proteína final) ──
+      const aplicaTef = protGkgFinal > 2.0;
+      const fatorTef = aplicaTef ? 1.05 : 1.0;
+      const getFarma = getFarmaPreTef * fatorTef;
+
+      // Reduções farmacológicas em pctGordura (BLOCO 6 — GH)
+      pctGordura = Math.max(0.10, pctGordura + gorduraReducaoPct);
+
+      // Meta calórica
+      let metaKcal = Math.round(getFarma * multObj);
+
+      // ── BLOCO 10: Sono ruim → meta × 0.95 ──
+      const sonoLower = String(_qualidadeSono).toLowerCase();
+      const sonoRuim = /ruim|< ?5h|menos de 5|fragmentado/.test(sonoLower) ||
+                       (/regular/.test(sonoLower) && /< ?6/.test(sonoLower));
+      let carboNoturnoBonus = 0;
+      if (sonoRuim) {
+        metaKcal = Math.round(metaKcal * 0.95);
+        carboNoturnoBonus = 30;
+      }
+
+      // Override: meta calórica do coach SEMPRE prevalece
+      const metaCoach = calorias ? Number(calorias) : null;
+      const metaSourceCoach = !!(metaCoach && metaCoach > 0);
+      if (metaSourceCoach) metaKcal = Math.round(metaCoach as number);
+
+      // Macros
+      let proteinaG = Math.round(pesoNum * protGkgFinal);
       let gorduraG = Math.round((metaKcal * pctGordura) / 9);
       let kcalRestante = metaKcal - (proteinaG * 4 + gorduraG * 9);
       let carboG = Math.max(0, Math.round(kcalRestante / 4));
 
-      // Ajuste metformina: −10% CHO, kcal compensa em proteína
-      if (usaMetformina) {
+      // Metformina: −10% CHO, kcal compensa em proteína (1g cho 4kcal = 1g ptn 4kcal)
+      if (usaMetformina && carboG > 0) {
         const choReducaoG = Math.round(carboG * 0.10);
         carboG -= choReducaoG;
-        proteinaG += Math.round((choReducaoG * 4) / 4); // 1g CHO = 1g PTN em kcal/g equivalente
+        proteinaG += choReducaoG;
       }
+
+      // ── BLOCO 8: Cycling de carboidrato ──
+      let cyclingPlan: any = null;
+      if (_cyclingCarbo) {
+        const choPesado = carboG;
+        const choLeve = Math.round(carboG * 0.70);
+        const choDescanso = Math.round(carboG * 0.60);
+        const gAjLeve = Math.round(((choPesado - choLeve) * 4) / 9);
+        const gAjDescanso = Math.round(((choPesado - choDescanso) * 4) / 9);
+        cyclingPlan = {
+          dia_treino_pesado: { carbo_g: choPesado, gordura_g: gorduraG, proteina_g: proteinaG, kcal: metaKcal },
+          dia_treino_leve:    { carbo_g: choLeve,    gordura_g: gorduraG + gAjLeve,    proteina_g: proteinaG, kcal: metaKcal },
+          dia_descanso:       { carbo_g: choDescanso, gordura_g: gorduraG + gAjDescanso, proteina_g: proteinaG, kcal: metaKcal },
+        };
+      }
+
+      // ── BLOCO 9: Refeeding (cutting + ≥4 semanas em déficit) ──
+      let refeedingPlan: any = null;
+      if (perfilObj === "cutting" && _semanasDef >= 4) {
+        const refCarbo = Math.round(carboG * 1.25);
+        const refGord = gorduraG;
+        const refProt = proteinaG;
+        const refKcal = refCarbo * 4 + refGord * 9 + refProt * 4;
+        refeedingPlan = {
+          ativo: true,
+          frequencia: "1×/semana",
+          carbo_g: refCarbo, gordura_g: refGord, proteina_g: refProt, kcal: refKcal,
+          objetivo_fisiologico: "Reset de leptina, T3 e mTOR",
+        };
+      }
+
+      // GLP-1 → fracionar refeições mínimas
+      const refeicoesRecomendadas = usaGlp1
+        ? Math.max(Number(refeicoes) || 5, 5)
+        : (Number(refeicoes) || 5);
 
       const protPct = Math.round(((proteinaG * 4) / metaKcal) * 100);
       const carbPct = Math.round(((carboG * 4) / metaKcal) * 100);
-      const fatPct = Math.round(((gorduraG * 9) / metaKcal) * 100);
+      const fatPct  = Math.round(((gorduraG * 9) / metaKcal) * 100);
 
       return {
         tmb: Math.round(tmb),
         fatorAtividade,
         nivelAtividadeNorm: nivelRaw,
-        getBase: Math.round(getBase),
-        multFarm,
-        flagsFarm,
         kcalCardio,
         flagsCardio,
-        getFinal,
-        metaKcal,
-        metaSourceCoach: !!(metaCoach && metaCoach > 0),
+        fatorNeat,
+        neatNorm: String(_neat).toLowerCase(),
+        getBase: Math.round(getBase),       // Já com cardio + NEAT
+        multFarm,
+        flagsFarm,
+        fatorTef,
+        getFarma: Math.round(getFarma),
         perfilObj,
+        multObj,
+        protGkgFinal: Math.round(protGkgFinal * 100) / 100,
+        proteinaBonusGkg,
+        gorduraReducaoPct,
+        usaMetformina, usaIgf1, usaGlp1,
+        sonoRuim, carboNoturnoBonus,
+        semanasEmDeficit: _semanasDef,
+        metaKcal, metaSourceCoach,
         proteinaG, carboG, gorduraG,
         protPct, carbPct, fatPct,
-        protPorKg, pctGordura,
-        usaMetformina,
+        pctGordura,
+        cyclingPlan, refeedingPlan,
+        refeicoesRecomendadas,
       };
     })();
 
     const calcBlock = calc ? `
 ═══════════════════════════════════════════════════════════════
-🔒 VALORES CALCULADOS PELO SISTEMA — NÃO ALTERE, NÃO RECALCULE
+🔒 VALORES CALCULADOS DETERMINISTICAMENTE — NÃO ALTERE NENHUM DESTES
 ═══════════════════════════════════════════════════════════════
 TMB (Mifflin-St Jeor): ${calc.tmb} kcal
 Fator de atividade: ×${calc.fatorAtividade} (${calc.nivelAtividadeNorm})
-GET base: ${calc.getBase} kcal
-Multiplicador farmacológico: ×${calc.multFarm.toFixed(2)} ${calc.flagsFarm.length ? `[${calc.flagsFarm.join(" | ")}]` : "(nenhum)"}
-Cardio adicional: ${calc.kcalCardio} kcal/dia ${calc.flagsCardio.length ? `[${calc.flagsCardio.join(" | ")}]` : ""}
-GET final ajustado: ${calc.getFinal} kcal
-Perfil de objetivo: ${calc.perfilObj}
-META CALÓRICA DIÁRIA: ${calc.metaKcal} kcal ${calc.metaSourceCoach ? "(definida pelo coach — prevalece)" : "(calculada pelo sistema)"}
+NEAT: ×${calc.fatorNeat} (${calc.neatNorm})
+Cardio: ${calc.kcalCardio} kcal/dia ${calc.flagsCardio.join(" | ")}
+GET base (atividade+cardio+NEAT): ${calc.getBase} kcal
+Mult. farmacológico: ×${calc.multFarm.toFixed(3)} ${calc.flagsFarm.length ? `[${calc.flagsFarm.join(" | ")}]` : "(nenhum)"}
+TEF: ×${calc.fatorTef} ${calc.fatorTef > 1 ? "(proteína > 2g/kg)" : ""}
+GET ajustado final: ${calc.getFarma} kcal
+Perfil de objetivo: ${calc.perfilObj} (mult ${calc.multObj})
+${calc.sonoRuim ? `⚠️ Sono ruim → meta × 0.95 + ${calc.carboNoturnoBonus}g CHO baixo IG na última refeição` : ""}
+META CALÓRICA DIÁRIA: ${calc.metaKcal} kcal ${calc.metaSourceCoach ? "(definida pelo coach — prevalece)" : "(calculada deterministicamente)"}
 
-🎯 MACROS TRAVADOS (use EXATAMENTE estes números no resumo e distribua nas refeições):
-PROTEÍNA: ${calc.proteinaG}g (${calc.protPct}%) — ${calc.protPorKg}g/kg
+🎯 MACROS TRAVADOS:
+PROTEÍNA: ${calc.proteinaG}g (${calc.protPct}%) — ${calc.protGkgFinal}g/kg
 CARBOIDRATO: ${calc.carboG}g (${calc.carbPct}%)
-GORDURA: ${calc.gorduraG}g (${calc.fatPct}%) — ${Math.round(calc.pctGordura * 100)}% das kcal
+GORDURA: ${calc.gorduraG}g (${calc.fatPct}%)
 ${calc.usaMetformina ? "⚠️ Metformina ativa: CHO já reduzido em 10%, proteína compensada." : ""}
+${calc.usaIgf1 ? "💉 IGF-1 ativo: INCLUIR refeição proteica (30–40g proteína, 0g gordura) 25–30min após aplicação." : ""}
+${calc.usaGlp1 ? `💊 GLP-1 ativo: distribuir em ≥${calc.refeicoesRecomendadas} refeições para evitar náusea.` : ""}
+${calc.sonoRuim ? `😴 Sono ruim: aumentar ${calc.carboNoturnoBonus}g de CHO de baixo IG (aveia/batata-doce/arroz integral) na última refeição para reduzir cortisol noturno.` : ""}
+
+${calc.cyclingPlan ? `🔁 CYCLING DE CARBOIDRATO ATIVO — distribuir entre dias:
+• Dia treino PESADO: CHO ${calc.cyclingPlan.dia_treino_pesado.carbo_g}g / GORD ${calc.cyclingPlan.dia_treino_pesado.gordura_g}g / PTN ${calc.cyclingPlan.dia_treino_pesado.proteina_g}g (~${calc.cyclingPlan.dia_treino_pesado.kcal} kcal)
+• Dia treino LEVE: CHO ${calc.cyclingPlan.dia_treino_leve.carbo_g}g / GORD ${calc.cyclingPlan.dia_treino_leve.gordura_g}g / PTN ${calc.cyclingPlan.dia_treino_leve.proteina_g}g (~${calc.cyclingPlan.dia_treino_leve.kcal} kcal)
+• Dia DESCANSO: CHO ${calc.cyclingPlan.dia_descanso.carbo_g}g / GORD ${calc.cyclingPlan.dia_descanso.gordura_g}g / PTN ${calc.cyclingPlan.dia_descanso.proteina_g}g (~${calc.cyclingPlan.dia_descanso.kcal} kcal)
+Em dias low-carb, as kcal retiradas vão para gordura (azeite/castanhas/abacate).` : ""}
+
+${calc.refeedingPlan ? `🍚 REFEEDING SEMANAL ATIVO (cutting + ${calc.semanasEmDeficit} semanas em déficit):
+• Frequência: ${calc.refeedingPlan.frequencia}
+• Macros do dia de refeeding: CHO ${calc.refeedingPlan.carbo_g}g / GORD ${calc.refeedingPlan.gordura_g}g / PTN ${calc.refeedingPlan.proteina_g}g (~${calc.refeedingPlan.kcal} kcal)
+• Objetivo: ${calc.refeedingPlan.objetivo_fisiologico}.
+Incluir explicitamente um "PLANO — DIA DE REFEEDING" no JSON.` : ""}
 
 REGRA INVIOLÁVEL:
 - O campo resumo.tmb DEVE = ${calc.tmb}
-- O campo resumo.get DEVE = ${calc.getFinal}
+- O campo resumo.get DEVE = ${calc.getFarma}
 - O campo resumo.calorias_totais DEVE = ${calc.metaKcal} (±3% nas refeições)
 - A SOMA de proteína das refeições DEVE = ${calc.proteinaG}g (±5%)
 - A SOMA de carboidrato das refeições DEVE = ${calc.carboG}g (±5%)
 - A SOMA de gordura das refeições DEVE = ${calc.gorduraG}g (±5%)
-A IA APENAS distribui esses macros entre as refeições. NÃO recalcule TMB/GET/macros.
+A IA APENAS distribui esses macros entre as refeições e aplica as estratégias clínicas. NÃO recalcule TMB/GET/macros.
 ═══════════════════════════════════════════════════════════════
 ` : "";
 
@@ -1216,7 +1356,7 @@ ${perfilFisiologico?.modo_economico ? `
       parsed.resumo.nome = parsed.resumo.nome || nome || "Paciente";
       parsed.resumo.objetivo = parsed.resumo.objetivo || objetivo;
       parsed.resumo.tmb = calc.tmb;
-      parsed.resumo.get = calc.getFinal;
+      parsed.resumo.get = calc.getFarma;
       parsed.resumo.calorias_totais = calc.metaKcal;
       parsed.resumo.proteina_total = calc.proteinaG;
       parsed.resumo.carboidrato_total = calc.carboG;
@@ -1228,23 +1368,36 @@ ${perfilFisiologico?.modo_economico ? `
         formula_tmb: "Mifflin-St Jeor",
         fator_atividade: calc.fatorAtividade,
         nivel_atividade: calc.nivelAtividadeNorm,
+        fator_neat: calc.fatorNeat,
+        neat: calc.neatNorm,
+        kcal_cardio_dia: calc.kcalCardio,
+        flags_cardio: calc.flagsCardio,
         get_base: calc.getBase,
         multiplicador_farmacologico: calc.multFarm,
         flags_farmacologicas: calc.flagsFarm,
-        kcal_cardio_dia: calc.kcalCardio,
-        flags_cardio: calc.flagsCardio,
-        get_final: calc.getFinal,
+        fator_tef: calc.fatorTef,
+        get_final: calc.getFarma,
         meta_kcal: calc.metaKcal,
         meta_origem: calc.metaSourceCoach ? "coach" : "calculada",
         perfil_objetivo: calc.perfilObj,
+        multiplicador_objetivo: calc.multObj,
         proteina_g: calc.proteinaG,
         carbo_g: calc.carboG,
         gordura_g: calc.gorduraG,
         proteina_pct: calc.protPct,
         carbo_pct: calc.carbPct,
         gordura_pct: calc.fatPct,
-        proteina_por_kg: calc.protPorKg,
+        proteina_por_kg: calc.protGkgFinal,
+        proteina_bonus_gkg: calc.proteinaBonusGkg,
         usa_metformina: calc.usaMetformina,
+        usa_igf1: calc.usaIgf1,
+        usa_glp1: calc.usaGlp1,
+        sono_ruim: calc.sonoRuim,
+        carbo_noturno_bonus_g: calc.carboNoturnoBonus,
+        semanas_em_deficit: calc.semanasEmDeficit,
+        cycling_carbo: calc.cyclingPlan,
+        refeeding: calc.refeedingPlan,
+        refeicoes_recomendadas: calc.refeicoesRecomendadas,
       };
     }
 
