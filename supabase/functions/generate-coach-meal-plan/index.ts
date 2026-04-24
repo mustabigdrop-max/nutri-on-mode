@@ -14,7 +14,7 @@ REGRAS DE CÁLCULO OBRIGATÓRIAS:
 2. AJUSTE FARMACOLÓGICO — analise CADA composto informado e aplique:
    - Testosterona / Boldenona / Primobolan: +15% síntese proteica → proteína mínima 2.8g/kg MM. Volume alimentar maior.
    - Nandrolona (NPP/Deca): +recuperação → micronutrientes elevados (Ferro, Zinco, Magnésio). Citar fontes alimentares.
-   - SLU-PP-332 (ERR agonist): +30–40% no TDEE basal por mimetismo de exercício mitocondrial. Aplicar multiplicador 1.30–1.40 sobre TMB.
+   - SLU-PP-332 (agonista ERR — exercício mimético): biogênese mitocondrial e oxidação de gordura. NÃO é GLP-1, NÃO suprime apetite. Aumenta gasto energético mitocondrial. Garantir ingestão calórica integral mesmo em dias de menor apetite. Suporte: CoQ10 200mg + PQQ 20mg + Ômega 3 4g/dia.
    - Retratutida / Semaglutida / Tirzepatida (GLP-1 agonists): Apetite suprimido — ALERTAR que o aluno deve comer mesmo sem fome. TDEE basal aumentado 15–25%. Calcular para cima.
    - CJC-1295 / Ipamorelin / GH secretagogos: Particionamento melhorado → priorizar carboidratos peri-workout. Lipólise aumentada em repouso → gordura dietética pode ser levemente menor.
    - Metformina: Absorção de B12 comprometida → citar suplementação. Sensibilidade à glicose aumentada.
@@ -31,7 +31,7 @@ REGRAS DE CÁLCULO OBRIGATÓRIAS:
    - Nos DIAS DE CARDIO: aumentar calorias totais pelo gasto do cardio (se toggle "entra no cálculo" = sim).
 
 4. FASES DE PERIODIZAÇÃO:
-   - Bulk Limpo: TDEE + 10–15% (superávit controlado)
+   - Bulk Limpo: TDEE + 10% FIXO (NÃO usar faixa 10–15%, NÃO arredondar para cima — superávit exato de 10%)
    - Bulk Agressivo: TDEE + 20–25% (para atletas com protocolos anabólicos — o particionamento favorece músculo)
    - Cutting: TDEE – 20–25% MÁXIMO. Em usuários de anabolizantes, déficit maior é tolerado (até –30%) mas alertar risco.
    - Recomposição: TDEE ± 5%. Proteína máxima. Ciclagem de carboidratos.
@@ -422,7 +422,7 @@ serve(async (req) => {
         yk11: { keywords:["yk-11","yk11"], fator_get:1.10, proteina_bonus_gkg:0.20, categoria:"sarm", hepatotoxico:true, micronutrientes:["TUDCA 500mg recomendado"], alerta:"YK-11 estrutura esteroidal — hepatotóxico possível. TUDCA recomendado." },
         cjc1295: { keywords:["cjc-1295","cjc1295","cjc","mod-grf","sermorelin","tesamorelin","cjc 1295"], fator_get:1.08, proteina_bonus_gkg:0.10, categoria:"peptideo_gh", micronutrientes:["Magnésio 300mg à noite","Zinco 15mg à noite"], timing:"Aplicar em jejum ou 2h+ pós-refeição. Não comer 30-40min após.", alerta:"GH secretagogo — janela de jejum obrigatória para pico de GH." },
         ipamorelin: { keywords:["ipamorelin","ipamorelim","ghrp-2","ghrp2","ghrp-6","ghrp6","hexarelin","pralmorelin"], fator_get:1.06, proteina_bonus_gkg:0.05, categoria:"peptideo_gh", micronutrientes:["Magnésio 200mg","Zinco 10mg"], timing:"Aplicar em jejum. Não comer 30min após.", alerta_ghrp6:"GHRP-6 aumenta fome agressivamente — planejar refeição pós-aplicação." },
-        igf1: { keywords:["igf-1","igf1","igf-1 des","igf1des","igf1-des","igf-1 lr3","igf1lr3","igf des","des igf"], fator_get:1.05, proteina_bonus_gkg:0.40, categoria:"peptideo_gh", micronutrientes:["Dextrose disponível sempre (anti-hipoglicemia)"], timing:"Refeição 25-30min após: 40-50g whey isolado + 30-40g carbo simples + ZERO gordura.", alerta:"⚠️ Monitorar glicemia. Risco hipoglicemia. Sempre ter dextrose disponível." },
+        igf1: { keywords:["igf-1","igf1","igf-1 des","igf1des","igf1-des","igf-1 lr3","igf1lr3","igf des","des igf"], fator_get:1.05, proteina_bonus_gkg:0.40, categoria:"peptideo_gh", micronutrientes:["Dextrose disponível sempre (anti-hipoglicemia)"], timing:"IGF-1 Des — meia-vida 20-30min (ação local). Aplicar IMEDIATAMENTE PÓS-TREINO (janela 0-5min após o término, NUNCA pré-treino). Refeição 25-30min após injeção: 40-50g whey isolado + 30-40g carbo simples + ZERO gordura + ZERO fibra (não atrasar absorção de AA nem esvaziamento gástrico).", alerta:"⚠️ IGF-1 Des: aplicar PÓS-TREINO (não pré). Risco de hipoglicemia local — sempre ter dextrose disponível. Refeição pós-aplicação obrigatória em 25-30min." },
         bpc157: { keywords:["bpc-157","bpc157","bpc"], fator_get:1.00, categoria:"peptideo_recuperacao", micronutrientes:["Glutamina 10g/dia","Colágeno 10g/dia","Vitamina C 1g/dia"], alerta:"BPC-157 potencializa cicatrização intestinal. Glutamina + colágeno para sinergia." },
         tb500: { keywords:["tb-500","tb500","thymosin beta","tb 500"], fator_get:1.00, categoria:"peptideo_recuperacao", micronutrientes:["Colágeno 10g/dia","Proteína alta mínima 2g/kg"], alerta:"TB-500 — suporte tecidual. Colágeno + proteína alta para sinergia." },
         slupp332: { keywords:["slu-pp-332","slupp332","slu332","slu pp 332","slu-pp"], fator_get:1.12, carbo_delta_pct:5, categoria:"peptideo_mitocondrial", micronutrientes:["CoQ10 200mg/dia","PQQ 20mg/dia","Ômega 3 4g/dia"], alerta:"Exercício mimético mitocondrial. Aumentar carbo complexo. Aplicar pré-treino." },
@@ -748,7 +748,7 @@ PROTEÍNA: ${calc.proteinaG}g (${calc.protPct}%) — ${calc.protGkgFinal}g/kg
 CARBOIDRATO: ${calc.carboG}g (${calc.carbPct}%)
 GORDURA: ${calc.gorduraG}g (${calc.fatPct}%)
 ${calc.usaMetformina ? "⚠️ Metformina ativa: CHO já reduzido em 10%, proteína compensada." : ""}
-${calc.usaIgf1 ? "💉 IGF-1 ativo: INCLUIR refeição proteica (30–40g proteína, 0g gordura) 25–30min após aplicação." : ""}
+${calc.usaIgf1 ? "💉 IGF-1 Des ativo (meia-vida 20-30min): aplicar IMEDIATAMENTE PÓS-TREINO (janela 0-5min, NUNCA pré-treino). Refeição 25-30min após injeção: 40-50g whey isolado + 30-40g carbo simples + ZERO gordura + ZERO fibra. Dextrose disponível (risco hipoglicemia)." : ""}
 ${calc.usaGlp1 ? `💊 GLP-1 ativo: distribuir em ≥${calc.refeicoesRecomendadas} refeições para evitar náusea.` : ""}
 ${calc.sonoRuim ? `😴 Sono ruim: aumentar ${calc.carboNoturnoBonus}g de CHO de baixo IG (aveia/batata-doce/arroz integral) na última refeição para reduzir cortisol noturno.` : ""}
 
@@ -772,6 +772,27 @@ REGRA INVIOLÁVEL:
 - A SOMA de carboidrato das refeições DEVE = ${calc.carboG}g (±5%)
 - A SOMA de gordura das refeições DEVE = ${calc.gorduraG}g (±5%)
 A IA APENAS distribui esses macros entre as refeições e aplica as estratégias clínicas. NÃO recalcule TMB/GET/macros.
+
+═══════════════════════════════════════════════════════════════
+📝 TEMPLATE OBRIGATÓRIO PARA resumo.observacao_protocolo
+═══════════════════════════════════════════════════════════════
+Preencher resumo.observacao_protocolo EXATAMENTE neste formato (substituindo as variáveis pelos valores calculados acima). NUNCA mencione "Katch-McArdle" — sempre "Mifflin-St Jeor":
+
+"TDEE base calculado via Mifflin-St Jeor (TMB ${calc.tmb} kcal × fator atividade ${calc.fatorAtividade}${calc.kcalCardio > 0 ? ` + cardio ${calc.kcalCardio} kcal/dia` : ""}) × fator farmacológico ×${calc.multFarm.toFixed(2)}${calc.compostosDetectados.length ? ` (${calc.compostosDetectados.join(", ")})` : ""}. GET ajustado: ${calc.getFarma} kcal. ${calc.perfilObj === "bulk_limpo" ? `Superávit bulk limpo +10% FIXO: meta ${calc.metaKcal} kcal` : `Meta calórica: ${calc.metaKcal} kcal`}. Proteína ${calc.proteinaG}g (${calc.protGkgFinal}g/kg)${calc.compostosDetectados.length ? " para maximizar síntese com protocolo anabólico" : ""}.${calc.cyclingPlan ? ` Cycling de carboidratos ativo: dia treino pesado ${calc.cyclingPlan.dia_treino_pesado.carbo_g}g CHO, dia treino leve ${calc.cyclingPlan.dia_treino_leve.carbo_g}g CHO, dia descanso ${calc.cyclingPlan.dia_descanso.carbo_g}g CHO.` : ""}${calc.usaMetformina ? " Metformina: CHO reduzido 10% com compensação proteica." : ""}${calc.usaIgf1 ? " Refeição pós-IGF-1 Des: 25-30min pós-aplicação PÓS-TREINO — whey isolado 40g + carbo simples 35g + zero gordura + zero fibra." : ""}"
+
+═══════════════════════════════════════════════════════════════
+🚨 ORDEM FIXA DE ALERTAS — preencher resumo.alertas (array) NESTA ORDEM, incluindo apenas os que se aplicam ao protocolo detectado
+═══════════════════════════════════════════════════════════════
+1. ⚠️ HEMOGENIN HEPATOTÓXICO (17-alfa alquilado): TUDCA 500mg/dia OBRIGATÓRIO. ALT/AST a cada 4 semanas. Uso máximo 6 semanas. Crucíferas diárias + cúrcuma 500mg + beterraba.
+2. ⚠️ METFORMINA ATIVA: B12 sublingual 1000mcg/dia OBRIGATÓRIO. Magnésio 200mg/dia (depleção por metformina). Folato 400mcg/dia. Manter dextrose disponível (risco hipoglicemia com treino intenso + metformina).
+3. ⚠️ TESTOSTERONA — AROMATIZAÇÃO ELEVADA: Monitorar E2 regularmente. DIM natural (crucíferas) diariamente. AI (anastrozol/exemestano) conforme protocolo médico.
+4. ⚠️ NANDROLONA — PROLACTINA: Monitorar prolactina. Vitamina B6 100mg/dia (suporte dopaminérgico leve). Cabergolina conforme protocolo médico se necessário.
+5. ⚠️ GH SECRETAGOGOS (CJC-1295 + Ipamorelin): Aplicar em jejum ou 2h+ pós-refeição. NÃO comer 30-40min após aplicação. Magnésio 300mg + Zinco 15mg à noite para potencializar pico de GH noturno.
+6. ⚠️ IGF-1 Des — TIMING CRÍTICO: Aplicar imediatamente PÓS-TREINO (NÃO pré-treino). Refeição 25-30min após: whey 40g + carbo simples 35g + ZERO gordura + ZERO fibra. Sempre ter dextrose disponível.
+7. ℹ️ SLU-PP-332 — EXERCÍCIO MIMÉTICO: Agonista ERR — biogênese mitocondrial. NÃO é GLP-1, NÃO suprime apetite. CoQ10 200mg + PQQ 20mg + Ômega 3 4g/dia. Aplicar pré-treino ou pré-cardio.
+8. ℹ️ PARTICIONAMENTO OTIMIZADO: Testosterona + Metformina + SLU-PP-332 melhoram sensibilidade insulínica. Oximetolona reduz levemente — compensado pelos demais. Net do protocolo: sensibilidade NORMAL a AUMENTADA. Estratégia: priorizar carboidratos nas janelas peri-workout (captação máxima). Canela de Ceylon 2g + Berberina opcional nas refeições com maior carga de CHO.
+
+NÃO inventar alertas fora desta lista. NÃO reordenar. Omitir os que não se aplicam ao protocolo detectado (compostos_detectados acima).
 ═══════════════════════════════════════════════════════════════
 ` : "";
 
