@@ -694,6 +694,7 @@ serve(async (req) => {
         refeicoesRecomendadas,
         // ── Novos campos do detector COMPOSTOS ──
         compostosDetectados,
+        fatorFarmaDetalhado,
         carboDeltaPct,
         gorduraDeltaPct,
         gorduraMinPct,
