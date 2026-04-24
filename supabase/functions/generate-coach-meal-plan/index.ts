@@ -719,14 +719,21 @@ ${perfilFisiologico?.modo_economico ? `
 
     const aiData = await response.json();
     const raw = aiData.choices?.[0]?.message?.content || "";
+    const finishReason = aiData.choices?.[0]?.finish_reason;
     const clean = raw.replace(/```json|```/g, "").trim();
 
     let parsed;
     try {
       parsed = JSON.parse(clean);
     } catch {
-      console.error("Failed to parse AI response:", clean.substring(0, 500));
-      throw new Error("Resposta da IA não é um JSON válido");
+      console.error("Failed to parse AI response. finish_reason:", finishReason, "len:", clean.length, "tail:", clean.substring(clean.length - 300));
+      const truncated = finishReason === "length" || !clean.endsWith("}");
+      const msg = truncated
+        ? "A IA gerou um plano grande demais e a resposta foi truncada (finish_reason=length). O limite de tokens foi aumentado — tente novamente."
+        : "Resposta da IA não é um JSON válido.";
+      return new Response(JSON.stringify({ error: msg, finish_reason: finishReason }), {
+        status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     // ── Validação determinística do Pós-Treino Imediato (GLUT-4) ──
