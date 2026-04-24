@@ -1794,6 +1794,9 @@ ${perfilFisiologico?.modo_economico ? `
       // Contexto farmacológico exposto no resumo (para a UI exibir badges/alertas)
       parsed.resumo.compostos_detectados = calc.compostosDetectados;
       parsed.resumo.fator_farmacologico = Math.round(calc.multFarm * 1000) / 1000;
+      parsed.resumo.fator_farmacologico_bruto = calc.fatorFarmaBruto;
+      parsed.resumo.fator_farmacologico_cap = calc.fatorFarmaCapAplicado;
+      if (calc.notaFatorFarma) parsed.resumo.nota_fator_farma = calc.notaFatorFarma;
       parsed.resumo.micronutrientes_obrigatorios = calc.micronutrientesFarm;
       parsed.resumo.alertas_criticos = calc.alertasCriticosFarm;
       parsed.resumo.alertas_farmacologicos = calc.alertasFarm;
