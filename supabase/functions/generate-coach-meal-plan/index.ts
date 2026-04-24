@@ -1798,11 +1798,11 @@ ${perfilFisiologico?.modo_economico ? `
       parsed.resumo.hepatotoxico_count = calc.hepatotoxicoCount;
 
       // ── AUDITORIA DETERMINÍSTICA — ordem correta de aplicação dos fatores ──
-      // 1.TMB → 2.atividade → 3.cardio(SOMA) → 4.farma(MULT, cap 1.75)
+      // 1.TMB → 2.atividade → 3.cardio(SOMA) → 4.farma(MULT, diminishing returns + cap escalonado)
       // 5.TEF=1.0 (já embutido em atividade) → 6.NEAT (só se não-atleta)
       const _getBaseAtiv = Math.round(calc.tmb * calc.fatorAtividade);
       const _getComCardio = _getBaseAtiv + calc.kcalCardio;
-      const _fatorFarmaCap = Math.min(calc.multFarm, 1.75);
+      const _fatorFarmaCap = calc.multFarm; // já vem capado
       const _getFarmaEtapa = Math.round(_getComCardio * _fatorFarmaCap);
       const _getFinalEtapa = Math.round(_getFarmaEtapa * calc.fatorNeat);
       parsed.resumo.auditoria_calculo = {
