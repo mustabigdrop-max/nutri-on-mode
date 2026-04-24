@@ -772,6 +772,27 @@ REGRA INVIOLÁVEL:
 - A SOMA de carboidrato das refeições DEVE = ${calc.carboG}g (±5%)
 - A SOMA de gordura das refeições DEVE = ${calc.gorduraG}g (±5%)
 A IA APENAS distribui esses macros entre as refeições e aplica as estratégias clínicas. NÃO recalcule TMB/GET/macros.
+
+═══════════════════════════════════════════════════════════════
+📝 TEMPLATE OBRIGATÓRIO PARA resumo.observacao_protocolo
+═══════════════════════════════════════════════════════════════
+Preencher resumo.observacao_protocolo EXATAMENTE neste formato (substituindo as variáveis pelos valores calculados acima). NUNCA mencione "Katch-McArdle" — sempre "Mifflin-St Jeor":
+
+"TDEE base calculado via Mifflin-St Jeor (TMB ${calc.tmb} kcal × fator atividade ${calc.fatorAtividade}${calc.kcalCardio > 0 ? ` + cardio ${calc.kcalCardio} kcal/dia` : ""}) × fator farmacológico ×${calc.multFarm.toFixed(2)}${calc.compostosDetectados.length ? ` (${calc.compostosDetectados.join(", ")})` : ""}. GET ajustado: ${calc.getFarma} kcal. ${calc.perfilObj === "bulk_limpo" ? `Superávit bulk limpo +10% FIXO: meta ${calc.metaKcal} kcal` : `Meta calórica: ${calc.metaKcal} kcal`}. Proteína ${calc.proteinaG}g (${calc.protGkgFinal}g/kg)${calc.compostosDetectados.length ? " para maximizar síntese com protocolo anabólico" : ""}.${calc.cyclingPlan ? ` Cycling de carboidratos ativo: dia treino pesado ${calc.cyclingPlan.dia_treino_pesado.carbo_g}g CHO, dia treino leve ${calc.cyclingPlan.dia_treino_leve.carbo_g}g CHO, dia descanso ${calc.cyclingPlan.dia_descanso.carbo_g}g CHO.` : ""}${calc.usaMetformina ? " Metformina: CHO reduzido 10% com compensação proteica." : ""}${calc.usaIgf1 ? " Refeição pós-IGF-1 Des: 25-30min pós-aplicação PÓS-TREINO — whey isolado 40g + carbo simples 35g + zero gordura + zero fibra." : ""}"
+
+═══════════════════════════════════════════════════════════════
+🚨 ORDEM FIXA DE ALERTAS — preencher resumo.alertas (array) NESTA ORDEM, incluindo apenas os que se aplicam ao protocolo detectado
+═══════════════════════════════════════════════════════════════
+1. ⚠️ HEMOGENIN HEPATOTÓXICO (17-alfa alquilado): TUDCA 500mg/dia OBRIGATÓRIO. ALT/AST a cada 4 semanas. Uso máximo 6 semanas. Crucíferas diárias + cúrcuma 500mg + beterraba.
+2. ⚠️ METFORMINA ATIVA: B12 sublingual 1000mcg/dia OBRIGATÓRIO. Magnésio 200mg/dia (depleção por metformina). Folato 400mcg/dia. Manter dextrose disponível (risco hipoglicemia com treino intenso + metformina).
+3. ⚠️ TESTOSTERONA — AROMATIZAÇÃO ELEVADA: Monitorar E2 regularmente. DIM natural (crucíferas) diariamente. AI (anastrozol/exemestano) conforme protocolo médico.
+4. ⚠️ NANDROLONA — PROLACTINA: Monitorar prolactina. Vitamina B6 100mg/dia (suporte dopaminérgico leve). Cabergolina conforme protocolo médico se necessário.
+5. ⚠️ GH SECRETAGOGOS (CJC-1295 + Ipamorelin): Aplicar em jejum ou 2h+ pós-refeição. NÃO comer 30-40min após aplicação. Magnésio 300mg + Zinco 15mg à noite para potencializar pico de GH noturno.
+6. ⚠️ IGF-1 Des — TIMING CRÍTICO: Aplicar imediatamente PÓS-TREINO (NÃO pré-treino). Refeição 25-30min após: whey 40g + carbo simples 35g + ZERO gordura + ZERO fibra. Sempre ter dextrose disponível.
+7. ℹ️ SLU-PP-332 — EXERCÍCIO MIMÉTICO: Agonista ERR — biogênese mitocondrial. NÃO é GLP-1, NÃO suprime apetite. CoQ10 200mg + PQQ 20mg + Ômega 3 4g/dia. Aplicar pré-treino ou pré-cardio.
+8. ℹ️ PARTICIONAMENTO OTIMIZADO: Testosterona + Metformina + SLU-PP-332 melhoram sensibilidade insulínica. Oximetolona reduz levemente — compensado pelos demais. Net do protocolo: sensibilidade NORMAL a AUMENTADA. Estratégia: priorizar carboidratos nas janelas peri-workout (captação máxima). Canela de Ceylon 2g + Berberina opcional nas refeições com maior carga de CHO.
+
+NÃO inventar alertas fora desta lista. NÃO reordenar. Omitir os que não se aplicam ao protocolo detectado (compostos_detectados acima).
 ═══════════════════════════════════════════════════════════════
 ` : "";
 
