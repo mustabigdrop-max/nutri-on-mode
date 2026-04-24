@@ -638,35 +638,75 @@ ${perfilFisiologico?.modo_economico ? `
 - Todos os valores numéricos em BRL, com no máximo 2 casas decimais. Sem string, apenas números no JSON.
 ` : ""}`;
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [
-          { role: "system", content: SYSTEM_PROMPT },
-          { role: "user", content: userPrompt },
-        ],
-      }),
-    });
+    // Retry com backoff + fallback de modelo em caso de 503/timeout
+    const MODELS_FALLBACK = ["google/gemini-2.5-flash", "google/gemini-2.5-flash-lite", "google/gemini-2.5-pro"];
+    let response: Response | null = null;
+    let lastErrorStatus = 0;
+    let lastErrorBody = "";
 
-    if (!response.ok) {
-      if (response.status === 429) {
+    outer: for (const model of MODELS_FALLBACK) {
+      for (let attempt = 0; attempt < 3; attempt++) {
+        try {
+          response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${LOVABLE_API_KEY}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              model,
+              messages: [
+                { role: "system", content: SYSTEM_PROMPT },
+                { role: "user", content: userPrompt },
+              ],
+            }),
+          });
+
+          if (response.ok) {
+            console.log(`✅ AI gateway sucesso: ${model} (tentativa ${attempt + 1})`);
+            break outer;
+          }
+
+          lastErrorStatus = response.status;
+          lastErrorBody = await response.text();
+          console.warn(`⚠️ AI gateway ${response.status} no modelo ${model} (tentativa ${attempt + 1}): ${lastErrorBody.substring(0, 200)}`);
+
+          // Erros não-recuperáveis: sair imediatamente
+          if (response.status === 429 || response.status === 402 || response.status === 401) {
+            break outer;
+          }
+          // 503 / 5xx → retry com backoff
+          if (response.status >= 500) {
+            await new Promise((r) => setTimeout(r, 800 * (attempt + 1)));
+            continue;
+          }
+          // Outros 4xx → sai
+          break outer;
+        } catch (fetchErr) {
+          console.warn(`⚠️ Fetch error modelo ${model} tentativa ${attempt + 1}:`, fetchErr instanceof Error ? fetchErr.message : fetchErr);
+          await new Promise((r) => setTimeout(r, 800 * (attempt + 1)));
+        }
+      }
+      console.warn(`↪️ Trocando para próximo modelo após falhas em ${model}`);
+    }
+
+    if (!response || !response.ok) {
+      if (lastErrorStatus === 429) {
         return new Response(JSON.stringify({ error: "Rate limit excedido. Aguarde e tente novamente." }), {
           status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      if (response.status === 402) {
+      if (lastErrorStatus === 402) {
         return new Response(JSON.stringify({ error: "Créditos insuficientes. Adicione créditos ao workspace." }), {
           status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      const t = await response.text();
-      console.error("AI gateway error:", response.status, t);
-      throw new Error("AI gateway error: " + response.status);
+      console.error("AI gateway falhou em todos os modelos. Último status:", lastErrorStatus, lastErrorBody.substring(0, 500));
+      return new Response(JSON.stringify({
+        error: "O serviço de IA está temporariamente indisponível (erro " + (lastErrorStatus || "rede") + "). Aguarde alguns segundos e tente novamente.",
+      }), {
+        status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     const aiData = await response.json();
