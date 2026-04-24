@@ -1083,7 +1083,31 @@ ${glut4Config?.enabled ? `
 - L-Leucina isolada: ${glut4Config.add_leucine ? "SIM (2g)" : "NÃO"}
 
 OBRIGAÇÕES:
-1) A refeição "Pós-Treino Imediato" DEVE ter "${glut4Config.carb_source_label}" como fonte principal de carboidrato — proibido whey, proteína animal e gordura adicionada. PERMITIDO combinar 2 ou mais carboidratos COMPATÍVEIS de absorção rápida/média para acelerar reposição de glicogênio (glicose muscular + frutose hepática). Exemplos válidos: tapioca + mel cru, mucilon + banana madura, dextrose + maltodextrina, batata-doce + mel, banana + tapioca, arroz branco + mel, pão francês + leite condensado, pão francês + doce de leite, pão francês + geleia de frutas, pão francês + mel, tapioca + doce de leite, tapioca + leite condensado, rapadura + banana, water + dextrose + frutose. O TOTAL de gramas de CHO deve bater o alvo (${glut4Config.carb_grams ?? "calculado pelo peso"}g), gordura ≤ 2g e proteína ≤ 3g (apenas residual do pão/tapioca, sem adicionar fonte proteica). Quando combinar, listar cada alimento com sua gramagem e CHO individual, e explicar em 1 linha o motivo (ex: "pão francês = glicose rápida + leite condensado = sacarose/frutose para repor glicogênio hepático"). Maltodextrina já usada intra-treino não pode reaparecer aqui.
+1) A refeição "Pós-Treino Imediato" DEVE ter "${glut4Config.carb_source_label}" como fonte principal de carboidrato — proibido whey, proteína animal e gordura adicionada.
+
+   ⚠️ OBRIGATÓRIO COMBINAR 2+ ALIMENTOS (NUNCA deixar a refeição com 1 só ingrediente):
+   - Se a fonte principal for um AÇÚCAR/XAROPE PURO (leite condensado, doce de leite, mel cru, melado, rapadura, geleia, dextrose, maltodextrina, açúcar de coco, mucilon puro), VOCÊ É OBRIGADO a adicionar um CARBOIDRATO ESTRUTURAL/VEÍCULO junto na MESMA refeição: pão francês, pão de forma, tapioca, banana madura, batata-doce cozida, arroz branco, biscoito de arroz, ou cuscuz. NUNCA prescreva leite condensado/doce de leite/mel/geleia "puro" — sempre como recheio/cobertura de um veículo sólido.
+   - Combos válidos e ENCORAJADOS (escolha um conforme preferência/disponibilidade do paciente — VARIE entre os dias do plano):
+     • Pão francês + leite condensado desnatado
+     • Pão francês + doce de leite
+     • Pão francês + geleia de frutas (uva/morango/goiaba)
+     • Pão francês + mel cru
+     • Pão de forma + doce de leite + banana
+     • Tapioca + doce de leite
+     • Tapioca + leite condensado
+     • Tapioca + mel cru + banana
+     • Banana madura + mel cru + aveia instantânea (escaldada)
+     • Batata-doce cozida + mel cru
+     • Arroz branco + mel cru
+     • Biscoito de arroz + geleia + banana
+     • Mucilon escaldado + banana + mel
+     • Cuscuz + mel + banana
+     • Rapadura ralada + banana
+     • Dextrose + maltodextrina + água (apenas se paciente preferir shake)
+   - Cada alimento deve aparecer como ITEM SEPARADO no array "alimentos" da refeição, com sua própria gramagem, kcal e macros individuais. NUNCA agrupar tudo num só item tipo "pão com leite condensado 165g".
+   - Listar no campo de descrição/justificativa de cada item o papel fisiológico (ex: "pão francês = amido de absorção rápida → glicose muscular" / "leite condensado = sacarose → glicose+frutose para reposição hepática de glicogênio").
+
+   O TOTAL de gramas de CHO deve bater o alvo (${glut4Config.carb_grams ?? "calculado pelo peso"}g), gordura ≤ 2g e proteína ≤ 3g (apenas residual do pão/tapioca, sem adicionar fonte proteica). Maltodextrina já usada intra-treino não pode reaparecer aqui.
 2) O HORÁRIO da refeição "Pós-Treino Imediato" DEVE ser exatamente HORÁRIO_DO_TREINO + duração + ${glut4Config.timing_minutes} minutos (use o time/duration_min do dia de treino do schedule). Em hipótese alguma colocar refeições peri-workout em horário desconectado do treino.
 3) Crie também uma refeição "Pós-Treino Sólido" 60–90min depois (com proteína completa + CHO moderado).
 4) Pré-treino sólido: 60–90min ANTES do horário do treino (não horas antes).
