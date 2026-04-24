@@ -1697,6 +1697,60 @@ export default function PlanoAlimentarIA() {
                     </div>
                   ))}
                 </div>
+
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 12 }}>
+                  <button
+                    onClick={() => {
+                      const { refeicoes: novasRef, fixedCount } = autoFixPeriWorkoutTimings(
+                        plano.refeicoes as any,
+                        trainingSchedule,
+                      );
+                      if (fixedCount === 0) {
+                        toast({ title: "Nada para ajustar", description: "Nenhum horário fora da janela esperada." });
+                        return;
+                      }
+                      setPlano((prev) => prev ? ({ ...prev, refeicoes: novasRef as any }) : prev);
+                      toast({
+                        title: "✓ Horários corrigidos",
+                        description: `${fixedCount} refeição${fixedCount > 1 ? "ões" : ""} peri-workout reajustada${fixedCount > 1 ? "s" : ""} para a janela ideal do treino.`,
+                      });
+                    }}
+                    disabled={loading || autoRetrying}
+                    style={{
+                      background: T.green,
+                      color: "#000",
+                      border: "none",
+                      borderRadius: 8,
+                      padding: "8px 14px",
+                      fontSize: 12,
+                      fontWeight: 700,
+                      cursor: loading || autoRetrying ? "not-allowed" : "pointer",
+                      fontFamily: "inherit",
+                      opacity: loading || autoRetrying ? 0.5 : 1,
+                    }}
+                  >
+                    ⏱ Ajustar horários automaticamente
+                  </button>
+
+                  <button
+                    onClick={() => { void gerar(); }}
+                    disabled={loading || autoRetrying}
+                    style={{
+                      background: "transparent",
+                      color: T.amber,
+                      border: `1px solid ${T.amber}`,
+                      borderRadius: 8,
+                      padding: "8px 14px",
+                      fontSize: 12,
+                      fontWeight: 700,
+                      cursor: loading || autoRetrying ? "not-allowed" : "pointer",
+                      fontFamily: "inherit",
+                      opacity: loading || autoRetrying ? 0.5 : 1,
+                    }}
+                  >
+                    {loading ? "⟳ Regerando..." : "🔄 Regerar plano"}
+                  </button>
+                </div>
               </div>
             );
           })()}
