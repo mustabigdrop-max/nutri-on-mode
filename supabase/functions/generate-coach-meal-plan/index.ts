@@ -9,7 +9,7 @@ const SYSTEM_PROMPT = `Você é o NutriSync Elite, o gerador de planos alimentar
 
 REGRAS DE CÁLCULO OBRIGATÓRIAS:
 
-1. TDEE BASE: Use SEMPRE Katch-McArdle (370 + 21.6 × massa magra em kg). NUNCA use Harris-Benedict. Massa magra = peso × (1 - %gordura/100).
+1. TDEE BASE: Use SEMPRE Mifflin-St Jeor. NÃO use Katch-McArdle. NÃO use Harris-Benedict. NÃO use nenhuma outra fórmula. Os valores de TMB/GET/META já vêm pré-calculados no bloco "VALORES CALCULADOS DETERMINISTICAMENTE" — apenas distribua os macros.
 
 2. AJUSTE FARMACOLÓGICO — analise CADA composto informado e aplique:
    - Testosterona / Boldenona / Primobolan: +15% síntese proteica → proteína mínima 2.8g/kg MM. Volume alimentar maior.
@@ -508,16 +508,32 @@ serve(async (req) => {
         gorduraReducaoPct -= 0.03;
       }
 
-      // ── BLOCO 4 (TEF) — placeholder, recalculado depois de definir prot/kg final ──
-      // (A regra é "se prot > 2g/kg, GET × 1.05" — aplicado mais abaixo.)
+      // ── ORDEM CORRETA DE APLICAÇÃO DOS FATORES ──
+      // 1. TMB (Mifflin) → 2. atividade → 3. cardio (SOMA) → 4. farma (MULT)
+      // 5. TEF: NÃO multiplicar (já embutido no fator atividade) → 6. NEAT só se NÃO atleta
+      //
+      // getBase neste ponto = TMB × atividade + kcal_cardio (cardio já somado no BLOCO 3)
+      const getComCardio = getBase;
 
-      // ── BLOCO 5: NEAT ──
-      const NEAT_MULT: Record<string, number> = { baixo: 1.0, medio: 1.05, médio: 1.05, alto: 1.10 };
-      const fatorNeat = NEAT_MULT[String(_neat).toLowerCase()] ?? 1.05;
-      getBase = getBase * fatorNeat;
+      // ── BLOCO 4: FARMACOLÓGICO (multiplicar sobre get_com_cardio, cap 1.75) ──
+      const fatorFarmaCap = Math.min(multFarm, 1.75);
+      const getFarmaCalc = getComCardio * fatorFarmaCap;
 
-      // GET após farma (sem TEF ainda)
-      let getFarmaPreTef = getBase * multFarm;
+      // ── BLOCO 5: TEF — REMOVIDO como fator multiplicativo ──
+      // TEF real (~10%) já está embutido no fator de atividade Mifflin-St Jeor.
+      // Não aplicar multiplicação adicional para evitar acúmulo exponencial.
+      const fatorTef = 1.0;
+
+      // ── BLOCO 6: NEAT — só aplicar se NÃO for atleta ativo ──
+      // Para nivelAtividade = ativo (1.725) ou muito_ativo (1.9), NEAT já está embutido.
+      const isAtletaAtivo = ["ativo", "muito_ativo"].some(k => nivelRaw.includes(k));
+      const NEAT_MULT: Record<string, number> = { baixo: 1.0, medio: 1.03, médio: 1.03, alto: 1.06 };
+      const fatorNeat = isAtletaAtivo ? 1.0 : (NEAT_MULT[String(_neat).toLowerCase()] ?? 1.0);
+      const getFinal = getFarmaCalc * fatorNeat;
+
+      // Compatibilidade com nomes anteriores
+      getBase = getComCardio; // mantém semântica para logs antigos (TMB×atividade+cardio)
+      let getFarmaPreTef = getFinal; // TEF não mais multiplicativo
 
       // ── BLOCO 7: Macros por objetivo ──
       const objLower = String(objetivo || "").toLowerCase();
@@ -547,10 +563,9 @@ serve(async (req) => {
       // CAP final de proteína g/kg (após eventuais Math.max acima)
       protGkgFinal = Math.min(protGkgFinal, 3.2);
 
-      // ── BLOCO 4: TEF (aplica só agora que sabemos a proteína final) ──
-      const aplicaTef = protGkgFinal > 2.0;
-      const fatorTef = aplicaTef ? 1.05 : 1.0;
-      const getFarma = getFarmaPreTef * fatorTef;
+      // ── BLOCO 4: TEF — DESATIVADO como multiplicador (já embutido no fator atividade) ──
+      const aplicaTef = false;
+      const getFarma = getFarmaPreTef; // sem TEF multiplicativo
 
       // Reduções farmacológicas em pctGordura (BLOCO 6 — GH)
       pctGordura = Math.max(0.10, pctGordura + gorduraReducaoPct);
@@ -806,7 +821,7 @@ ${calorias ? `- Meta calórica definida pelo coach: ${calorias} kcal  ⚠️ INV
    • Use porções ROBUSTAS de carbo: arroz 200-300g cozido, batata doce 300-400g, aveia 100-150g por refeição principal.
    • Proteína 50-80g por refeição (200-300g de carne/frango cozido).
    • Inclua gorduras densas: 30-50g de castanhas, 1-2 col sopa de azeite, abacate inteiro.
-   • Antes de finalizar, SOME mentalmente: se total < ${Math.round(Number(calorias) * 0.97)}, DOBRE as porções de arroz/batata/aveia até bater. NÃO entregue plano abaixo do alvo.` : "- Meta calórica: calcular via Katch-McArdle + ajustes"}
+   • Antes de finalizar, SOME mentalmente: se total < ${Math.round(Number(calorias) * 0.97)}, DOBRE as porções de arroz/batata/aveia até bater. NÃO entregue plano abaixo do alvo.` : "- Meta calórica: usar valor pré-calculado em VALORES CALCULADOS DETERMINISTICAMENTE (Mifflin-St Jeor)"}
 
 FASE DE PERIODIZAÇÃO:
 - Fase atual: ${fasePeriodizacao || "manutenção"}
@@ -1020,7 +1035,7 @@ OUTROS DADOS:
 - Suplementação atual: ${suplementos || "Não informada"}
 - Observações clínicas: ${observacoes || "Nenhuma"}
 
-Aplique TODAS as regras de cálculo (Katch-McArdle, ajustes farmacológicos por composto, integração de cardio, fase de periodização). Use alimentos brasileiros acessíveis com gramagem precisa. Linguagem técnica de coach de competição.
+Aplique TODAS as regras de cálculo (Mifflin-St Jeor — valores já pré-calculados no bloco determinístico, ajustes farmacológicos por composto, integração de cardio, fase de periodização). Use alimentos brasileiros acessíveis com gramagem precisa. Linguagem técnica de coach de competição.
 
 Responda APENAS com JSON válido nesta estrutura exata:
 {
@@ -1520,20 +1535,30 @@ ${perfilFisiologico?.modo_economico ? `
       parsed.resumo.timings_farmacologicos = calc.timingsFarm;
       parsed.resumo.hepatotoxico_count = calc.hepatotoxicoCount;
 
-      // ── AUDITORIA DETERMINÍSTICA — coach pode validar cada etapa do cálculo ──
+      // ── AUDITORIA DETERMINÍSTICA — ordem correta de aplicação dos fatores ──
+      // 1.TMB → 2.atividade → 3.cardio(SOMA) → 4.farma(MULT, cap 1.75)
+      // 5.TEF=1.0 (já embutido em atividade) → 6.NEAT (só se não-atleta)
+      const _getBaseAtiv = Math.round(calc.tmb * calc.fatorAtividade);
+      const _getComCardio = _getBaseAtiv + calc.kcalCardio;
+      const _fatorFarmaCap = Math.min(calc.multFarm, 1.75);
+      const _getFarmaEtapa = Math.round(_getComCardio * _fatorFarmaCap);
+      const _getFinalEtapa = Math.round(_getFarmaEtapa * calc.fatorNeat);
       parsed.resumo.auditoria_calculo = {
+        formula_tmb: "Mifflin-St Jeor",
         tmb: calc.tmb,
-        get_base_atividade: Math.round(calc.tmb * calc.fatorAtividade),
-        get_cardio: calc.kcalCardio,
-        get_neat_mult: calc.fatorNeat,
-        get_tef_mult: calc.fatorTef,
-        get_base_total: calc.getBase, // já inclui cardio + NEAT
-        get_farma: calc.getFarma,
+        fator_atividade: calc.fatorAtividade,
+        get_base: _getBaseAtiv,                     // TMB × atividade
+        kcal_cardio_dia: calc.kcalCardio,
+        get_com_cardio: _getComCardio,              // get_base + cardio (SOMA)
+        fator_farma: Math.round(_fatorFarmaCap * 1000) / 1000,
         fator_farma_detalhado: calc.fatorFarmaDetalhado || [],
-        fator_farma_total: Math.round(calc.multFarm * 1000) / 1000,
+        get_farma: _getFarmaEtapa,                  // get_com_cardio × farma
+        fator_tef: calc.fatorTef,                   // 1.0 — TEF não multiplicativo
+        fator_neat: calc.fatorNeat,                 // 1.0 se atleta ativo/muito_ativo
+        get_final: _getFinalEtapa,                  // get_farma × NEAT
+        surplus: calc.multObj,
         meta_kcal: calc.metaKcal,
         meta_kcal_real: calc.metaKcalReal,
-        surplus_aplicado: calc.multObj,
         proteina_gkg: calc.protGkgFinal,
         proteina_bonus_gkg: calc.proteinaBonusGkg,
       };
