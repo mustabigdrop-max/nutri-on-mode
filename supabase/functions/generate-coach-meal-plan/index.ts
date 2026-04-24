@@ -879,6 +879,7 @@ serve(async (req) => {
         alertasFarm,
         alertasCriticosFarm,
         timingsFarm,
+        ajusteCarboCap,
       };
     })();
 
