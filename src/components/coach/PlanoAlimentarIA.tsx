@@ -673,12 +673,96 @@ export default function PlanoAlimentarIA() {
     return data.plan as PlanoData;
   };
 
+  // Classifica o erro vindo do supabase.functions.invoke / fetch
+  const classifyError = (e: any) => {
+    const ctx = e?.context;
+    const status: number | undefined = ctx?.status ?? e?.status;
+    const rawMsg: string = (e?.message || "").toLowerCase();
+    let serverMsg = "";
+    try {
+      // tenta extrair body JSON do FunctionsHttpError
+      if (ctx?.body && typeof ctx.body === "string") {
+        const parsed = JSON.parse(ctx.body);
+        serverMsg = parsed?.error || "";
+      }
+    } catch {/* noop */}
+
+    if (status === 503 || /503|unavailable|indispon/i.test(serverMsg) || /503/.test(rawMsg)) {
+      return {
+        kind: "unavailable" as const,
+        title: "Modelo de IA temporariamente indisponível (503)",
+        description: serverMsg || "O provedor de IA não respondeu agora. Já tentamos 3 vezes em 3 modelos diferentes (flash → flash-lite → pro) sem sucesso. Aguarde alguns segundos.",
+        technical: `status=${status} ${e?.message || ""}`.trim(),
+        canRetry: true,
+      };
+    }
+    if (status === 504 || /timeout|timed out|connection closed before/i.test(rawMsg + serverMsg)) {
+      return {
+        kind: "timeout" as const,
+        title: "Tempo esgotado ao gerar (timeout)",
+        description: "A IA demorou demais para responder. Tente reduzir restrições/observações ou gerar novamente.",
+        technical: `status=${status || "504"} ${e?.message || ""}`.trim(),
+        canRetry: true,
+      };
+    }
+    if (status === 429 || /rate limit|too many/i.test(rawMsg + serverMsg)) {
+      return {
+        kind: "rate_limit" as const,
+        title: "Muitas requisições (429)",
+        description: "Você atingiu o limite de chamadas por minuto. Aguarde ~30s e tente novamente.",
+        technical: `status=${status} ${e?.message || ""}`.trim(),
+        canRetry: true,
+      };
+    }
+    if (status === 402 || /cr[ée]ditos|insufficient/i.test(rawMsg + serverMsg)) {
+      return {
+        kind: "credits" as const,
+        title: "Créditos de IA insuficientes (402)",
+        description: "O workspace está sem créditos para o gateway de IA. Adicione créditos em Settings → Workspace → Usage.",
+        technical: `status=${status} ${e?.message || ""}`.trim(),
+        canRetry: false,
+      };
+    }
+    if (/json|parse|invalid|inv[áa]lid/i.test(rawMsg + serverMsg)) {
+      return {
+        kind: "invalid_json" as const,
+        title: "Resposta da IA em formato inválido",
+        description: "A IA retornou um conteúdo que não pôde ser interpretado como plano. Geralmente resolve ao tentar novamente.",
+        technical: e?.message || serverMsg || "JSON inválido",
+        canRetry: true,
+      };
+    }
+    if (/network|failed to fetch|networkerror/i.test(rawMsg)) {
+      return {
+        kind: "network" as const,
+        title: "Falha de rede",
+        description: "Não foi possível alcançar o servidor. Verifique sua conexão e tente novamente.",
+        technical: e?.message,
+        canRetry: true,
+      };
+    }
+    return {
+      kind: "unknown" as const,
+      title: "Erro inesperado ao gerar o plano",
+      description: serverMsg || e?.message || "Ocorreu um problema desconhecido. Tente novamente.",
+      technical: `status=${status ?? "?"} ${e?.message || ""}`.trim(),
+      canRetry: true,
+    };
+  };
+
   const gerar = async () => {
     if (!form.peso || !form.altura || !form.idade) {
+      setErrorDetails({
+        kind: "validation",
+        title: "Dados obrigatórios faltando",
+        description: "Preencha pelo menos: peso, altura e idade do paciente.",
+        canRetry: false,
+      });
       setError("Preencha pelo menos: peso, altura e idade do paciente.");
       return;
     }
     setError("");
+    setErrorDetails(null);
     setStep("loading");
 
     const msgs = [
@@ -707,10 +791,19 @@ export default function PlanoAlimentarIA() {
       setTimeout(() => resultRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
     } catch (e: any) {
       clearInterval(interval);
-      console.error(e);
-      setError("Erro ao gerar o plano. Verifique a conexão e tente novamente.");
+      console.error("[PlanoAlimentarIA] erro ao gerar:", e);
+      const details = classifyError(e);
+      setErrorDetails(details);
+      setError(details.title);
       setStep("form");
+    } finally {
+      setRetrying(false);
     }
+  };
+
+  const tentarNovamente = async () => {
+    setRetrying(true);
+    await gerar();
   };
 
   // Gera (ou esconde) o plano comparativo no modo oposto ao atual.
