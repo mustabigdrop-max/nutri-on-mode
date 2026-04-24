@@ -308,7 +308,17 @@ serve(async (req) => {
       glut4Config,
       glut4Text,
       perfilFisiologico,
+      // Novos campos para cálculo determinístico expandido
+      neat,                  // "baixo" | "medio" | "alto"
+      qualidadeSono,         // "boa" | "regular" | "ruim"
+      semanasEmDeficit,      // number
+      cyclingCarbo,          // boolean (já existia em perfilFisiologico)
     } = body;
+    // Fallbacks para suportar payload antigo
+    const _neat = neat ?? perfilFisiologico?.neat ?? "medio";
+    const _qualidadeSono = qualidadeSono ?? perfilFisiologico?.qualidade_sono ?? "boa";
+    const _semanasDef = Number(semanasEmDeficit ?? perfilFisiologico?.semanas_em_deficit ?? 0);
+    const _cyclingCarbo = cyclingCarbo ?? perfilFisiologico?.cycling_carbo ?? false;
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
