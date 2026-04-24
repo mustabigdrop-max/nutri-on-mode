@@ -339,7 +339,14 @@ serve(async (req) => {
 - Nível de atividade: ${nivelAtividade}
 - Modalidade de treino: ${treino}
 - Número de refeições/dia: ${refeicoes}
-${calorias ? `- Meta calórica definida pelo coach: ${calorias} kcal  ⚠️ INVIOLÁVEL — o total do plano DEVE ficar entre ${Math.round(Number(calorias) * 0.97)} e ${Math.round(Number(calorias) * 1.03)} kcal (tolerância ±3%). NUNCA reduza a meta porque "parece muito" — o coach já calculou. Se o total bater abaixo, AUMENTE a gramatura proporcionalmente até atingir o alvo.` : "- Meta calórica: calcular via Katch-McArdle + ajustes"}
+${calorias ? `- Meta calórica definida pelo coach: ${calorias} kcal  ⚠️ INVIOLÁVEL — o total do plano DEVE ficar entre ${Math.round(Number(calorias) * 0.97)} e ${Math.round(Number(calorias) * 1.03)} kcal (tolerância ±3%). NUNCA reduza a meta porque "parece muito" — o coach já calculou. Se o total bater abaixo, AUMENTE a gramatura proporcionalmente até atingir o alvo.
+
+⚡ PROTOCOLO PARA PLANOS DE ALTA CALORIA (>4000 kcal):
+   • Distribua o alvo igualmente: ${Math.round(Number(calorias) / Number(refeicoes || 5))} kcal por refeição em média.
+   • Use porções ROBUSTAS de carbo: arroz 200-300g cozido, batata doce 300-400g, aveia 100-150g por refeição principal.
+   • Proteína 50-80g por refeição (200-300g de carne/frango cozido).
+   • Inclua gorduras densas: 30-50g de castanhas, 1-2 col sopa de azeite, abacate inteiro.
+   • Antes de finalizar, SOME mentalmente: se total < ${Math.round(Number(calorias) * 0.97)}, DOBRE as porções de arroz/batata/aveia até bater. NÃO entregue plano abaixo do alvo.` : "- Meta calórica: calcular via Katch-McArdle + ajustes"}
 
 FASE DE PERIODIZAÇÃO:
 - Fase atual: ${fasePeriodizacao || "manutenção"}
@@ -900,6 +907,10 @@ ${perfilFisiologico?.modo_economico ? `
       ajusteCalorico.banda_max = maxBand;
       ajusteCalorico.total_antes = totalAntes;
 
+      console.log(
+        `[ajuste-calorico] alvo=${alvo} totalAntes=${totalAntes} banda=[${minBand},${maxBand}] refeicoes=${parsed.refeicoes.length}`,
+      );
+
       if (totalAntes > 0 && totalAntes < minBand) {
         // Calcula massa calórica ajustável (exclui pós-imediato que já foi travado pelo GLUT-4)
         const ajustaveis = (parsed.refeicoes as any[]).filter(
@@ -914,10 +925,19 @@ ${perfilFisiologico?.modo_economico ? `
           0,
         );
 
+        console.log(
+          `[ajuste-calorico] ajustaveis=${ajustaveis.length} (${kcalAjustaveis}kcal) fixas=${fixas.length} (${kcalFixas}kcal)`,
+        );
+
         if (kcalAjustaveis > 0) {
           // Fator que faz (kcalAjustaveis * fator + kcalFixas) === alvo
           const fator = (alvo - kcalFixas) / kcalAjustaveis;
-          const fatorClamp = Math.max(1.0, Math.min(1.5, fator)); // só aumenta, máximo +50%
+          // Aumentado de 1.5 → 2.5 para suportar planos onde a IA gera bem abaixo do alvo
+          // (ex.: 5100kcal pedido, IA gera 3617 → fator 1.41; mas planos 5500/3000 precisam 1.83)
+          const fatorClamp = Math.max(1.0, Math.min(2.5, fator)); // só aumenta, máximo +150%
+          console.log(
+            `[ajuste-calorico] fator=${fator.toFixed(3)} → clamp=${fatorClamp.toFixed(3)}`,
+          );
 
           const escalarGramas = (q: any): any => {
             if (typeof q === "number") return Math.round(q * fatorClamp);
@@ -983,7 +1003,7 @@ ${perfilFisiologico?.modo_economico ? `
           ajusteCalorico.aplicado = true;
           ajusteCalorico.fator = Number(fatorClamp.toFixed(3));
           ajusteCalorico.fator_solicitado = Number(fator.toFixed(3));
-          ajusteCalorico.fator_limitado = fator > 1.5;
+          ajusteCalorico.fator_limitado = fator > 2.5;
           ajusteCalorico.total_depois = totalDepois;
           ajusteCalorico.delta_kcal = totalDepois - totalAntes;
           ajusteCalorico.dentro_da_banda = totalDepois >= minBand && totalDepois <= maxBand;
@@ -991,6 +1011,7 @@ ${perfilFisiologico?.modo_economico ? `
           ajusteCalorico.mensagem = ajusteCalorico.dentro_da_banda
             ? `Plano abaixo do alvo (${totalAntes} kcal). Gramaturas escaladas ×${fatorClamp.toFixed(3)} → ${totalDepois} kcal (dentro de ±3% de ${alvo}).`
             : `Plano escalado ×${fatorClamp.toFixed(3)} (limite máximo) → ${totalDepois} kcal. Ainda fora da banda ${minBand}-${maxBand}. Considere revisar manualmente.`;
+          console.log(`[ajuste-calorico] aplicado: ${ajusteCalorico.mensagem}`);
         } else {
           ajusteCalorico.mensagem = `Sem refeições ajustáveis (todas peri-treino travadas).`;
         }
