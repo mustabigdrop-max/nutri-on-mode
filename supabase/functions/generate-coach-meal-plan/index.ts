@@ -1535,20 +1535,30 @@ ${perfilFisiologico?.modo_economico ? `
       parsed.resumo.timings_farmacologicos = calc.timingsFarm;
       parsed.resumo.hepatotoxico_count = calc.hepatotoxicoCount;
 
-      // ── AUDITORIA DETERMINÍSTICA — coach pode validar cada etapa do cálculo ──
+      // ── AUDITORIA DETERMINÍSTICA — ordem correta de aplicação dos fatores ──
+      // 1.TMB → 2.atividade → 3.cardio(SOMA) → 4.farma(MULT, cap 1.75)
+      // 5.TEF=1.0 (já embutido em atividade) → 6.NEAT (só se não-atleta)
+      const _getBaseAtiv = Math.round(calc.tmb * calc.fatorAtividade);
+      const _getComCardio = _getBaseAtiv + calc.kcalCardio;
+      const _fatorFarmaCap = Math.min(calc.multFarm, 1.75);
+      const _getFarmaEtapa = Math.round(_getComCardio * _fatorFarmaCap);
+      const _getFinalEtapa = Math.round(_getFarmaEtapa * calc.fatorNeat);
       parsed.resumo.auditoria_calculo = {
+        formula_tmb: "Mifflin-St Jeor",
         tmb: calc.tmb,
-        get_base_atividade: Math.round(calc.tmb * calc.fatorAtividade),
-        get_cardio: calc.kcalCardio,
-        get_neat_mult: calc.fatorNeat,
-        get_tef_mult: calc.fatorTef,
-        get_base_total: calc.getBase, // já inclui cardio + NEAT
-        get_farma: calc.getFarma,
+        fator_atividade: calc.fatorAtividade,
+        get_base: _getBaseAtiv,                     // TMB × atividade
+        kcal_cardio_dia: calc.kcalCardio,
+        get_com_cardio: _getComCardio,              // get_base + cardio (SOMA)
+        fator_farma: Math.round(_fatorFarmaCap * 1000) / 1000,
         fator_farma_detalhado: calc.fatorFarmaDetalhado || [],
-        fator_farma_total: Math.round(calc.multFarm * 1000) / 1000,
+        get_farma: _getFarmaEtapa,                  // get_com_cardio × farma
+        fator_tef: calc.fatorTef,                   // 1.0 — TEF não multiplicativo
+        fator_neat: calc.fatorNeat,                 // 1.0 se atleta ativo/muito_ativo
+        get_final: _getFinalEtapa,                  // get_farma × NEAT
+        surplus: calc.multObj,
         meta_kcal: calc.metaKcal,
         meta_kcal_real: calc.metaKcalReal,
-        surplus_aplicado: calc.multObj,
         proteina_gkg: calc.protGkgFinal,
         proteina_bonus_gkg: calc.proteinaBonusGkg,
       };
