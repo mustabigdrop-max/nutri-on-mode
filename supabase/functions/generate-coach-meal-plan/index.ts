@@ -1207,6 +1207,47 @@ ${perfilFisiologico?.modo_economico ? `
       }
     }
 
+    // ═══════════════════════════════════════════════════════════════
+    // SOBRESCRITA DETERMINÍSTICA DO RESUMO
+    // TMB, GET, calorias_totais e macros_totais SÃO do código, não da IA.
+    // ═══════════════════════════════════════════════════════════════
+    if (calc && parsed && typeof parsed === "object") {
+      parsed.resumo = parsed.resumo || {};
+      parsed.resumo.nome = parsed.resumo.nome || nome || "Paciente";
+      parsed.resumo.objetivo = parsed.resumo.objetivo || objetivo;
+      parsed.resumo.tmb = calc.tmb;
+      parsed.resumo.get = calc.getFinal;
+      parsed.resumo.calorias_totais = calc.metaKcal;
+      parsed.resumo.proteina_total = calc.proteinaG;
+      parsed.resumo.carboidrato_total = calc.carboG;
+      parsed.resumo.gordura_total = calc.gorduraG;
+      parsed.resumo.imc = parsed.resumo.imc || imc;
+
+      parsed.calculo_deterministico = {
+        tmb: calc.tmb,
+        formula_tmb: "Mifflin-St Jeor",
+        fator_atividade: calc.fatorAtividade,
+        nivel_atividade: calc.nivelAtividadeNorm,
+        get_base: calc.getBase,
+        multiplicador_farmacologico: calc.multFarm,
+        flags_farmacologicas: calc.flagsFarm,
+        kcal_cardio_dia: calc.kcalCardio,
+        flags_cardio: calc.flagsCardio,
+        get_final: calc.getFinal,
+        meta_kcal: calc.metaKcal,
+        meta_origem: calc.metaSourceCoach ? "coach" : "calculada",
+        perfil_objetivo: calc.perfilObj,
+        proteina_g: calc.proteinaG,
+        carbo_g: calc.carboG,
+        gordura_g: calc.gorduraG,
+        proteina_pct: calc.protPct,
+        carbo_pct: calc.carbPct,
+        gordura_pct: calc.fatPct,
+        proteina_por_kg: calc.protPorKg,
+        usa_metformina: calc.usaMetformina,
+      };
+    }
+
     // ── PERSISTÊNCIA DO HISTÓRICO DE AJUSTES CALÓRICOS ──
     // Grava cada ajuste aplicado para que o coach possa comparar versões posteriormente.
     let adjustmentId: string | null = null;
