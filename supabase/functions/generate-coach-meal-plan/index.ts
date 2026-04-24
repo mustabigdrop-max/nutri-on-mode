@@ -748,6 +748,34 @@ serve(async (req) => {
         if (carboG < carboMin) carboG = carboMin;
       }
 
+      // ── CAP DE CARBO (palatabilidade) — excesso vai para gordura ──
+      const CARBO_CAP_G: Record<string, number> = {
+        bulk_limpo: 900,
+        bulk_agressivo: 1000,
+        cutting: 400,
+        emagrecimento: 350,
+        recomposicao: 500,
+        manutencao: 600,
+        manutencao_offseason: 600,
+        peak_week: 800,
+      };
+      let ajusteCarboCap: any = null;
+      const capAtual = CARBO_CAP_G[perfilObj];
+      if (capAtual && carboG > capAtual) {
+        const carboOriginal = carboG;
+        const excessoG = carboG - capAtual;
+        const excessoKcal = excessoG * 4;
+        const gorduraBonusG = Math.round(excessoKcal / 9);
+        carboG = capAtual;
+        gorduraG = gorduraG + gorduraBonusG;
+        ajusteCarboCap = {
+          carbo_original: carboOriginal,
+          carbo_ajustado: carboG,
+          gordura_bonus: gorduraBonusG,
+          motivo: "Cap de palatabilidade aplicado — excesso transferido para gordura",
+        };
+      }
+
       // ── SANIDADE: total calórico não pode estourar GET farma × 1.20 ──
       // Se passar, recalcular forçando meta = getFarma × multObj e gordura = pct × meta.
       if (!metaSourceCoach) {
