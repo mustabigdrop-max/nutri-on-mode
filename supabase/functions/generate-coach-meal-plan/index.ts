@@ -900,6 +900,10 @@ ${perfilFisiologico?.modo_economico ? `
       ajusteCalorico.banda_max = maxBand;
       ajusteCalorico.total_antes = totalAntes;
 
+      console.log(
+        `[ajuste-calorico] alvo=${alvo} totalAntes=${totalAntes} banda=[${minBand},${maxBand}] refeicoes=${parsed.refeicoes.length}`,
+      );
+
       if (totalAntes > 0 && totalAntes < minBand) {
         // Calcula massa calórica ajustável (exclui pós-imediato que já foi travado pelo GLUT-4)
         const ajustaveis = (parsed.refeicoes as any[]).filter(
@@ -914,10 +918,19 @@ ${perfilFisiologico?.modo_economico ? `
           0,
         );
 
+        console.log(
+          `[ajuste-calorico] ajustaveis=${ajustaveis.length} (${kcalAjustaveis}kcal) fixas=${fixas.length} (${kcalFixas}kcal)`,
+        );
+
         if (kcalAjustaveis > 0) {
           // Fator que faz (kcalAjustaveis * fator + kcalFixas) === alvo
           const fator = (alvo - kcalFixas) / kcalAjustaveis;
-          const fatorClamp = Math.max(1.0, Math.min(1.5, fator)); // só aumenta, máximo +50%
+          // Aumentado de 1.5 → 2.5 para suportar planos onde a IA gera bem abaixo do alvo
+          // (ex.: 5100kcal pedido, IA gera 3617 → fator 1.41; mas planos 5500/3000 precisam 1.83)
+          const fatorClamp = Math.max(1.0, Math.min(2.5, fator)); // só aumenta, máximo +150%
+          console.log(
+            `[ajuste-calorico] fator=${fator.toFixed(3)} → clamp=${fatorClamp.toFixed(3)}`,
+          );
 
           const escalarGramas = (q: any): any => {
             if (typeof q === "number") return Math.round(q * fatorClamp);
