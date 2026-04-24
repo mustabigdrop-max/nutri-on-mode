@@ -31,7 +31,7 @@ REGRAS DE CÁLCULO OBRIGATÓRIAS:
    - Nos DIAS DE CARDIO: aumentar calorias totais pelo gasto do cardio (se toggle "entra no cálculo" = sim).
 
 4. FASES DE PERIODIZAÇÃO:
-   - Bulk Limpo: TDEE + 10–15% (superávit controlado)
+   - Bulk Limpo: TDEE + 10% FIXO (NÃO usar faixa 10–15%, NÃO arredondar para cima — superávit exato de 10%)
    - Bulk Agressivo: TDEE + 20–25% (para atletas com protocolos anabólicos — o particionamento favorece músculo)
    - Cutting: TDEE – 20–25% MÁXIMO. Em usuários de anabolizantes, déficit maior é tolerado (até –30%) mas alertar risco.
    - Recomposição: TDEE ± 5%. Proteína máxima. Ciclagem de carboidratos.
