@@ -1752,6 +1752,111 @@ export default function PlanoAlimentarIA() {
             </div>
           </div>
 
+          {/* ───────── Card: Protocolo Farmacológico (revisão + recálculo) ───────── */}
+          {(() => {
+            const compostos = ((r as any)?.compostos_detectados as string[] | undefined) || [];
+            const fatorFarm = (r as any)?.fator_farmacologico as number | undefined;
+            const alertasCrit = ((r as any)?.alertas_criticos as string[] | undefined) || [];
+            const hepatoCount = (r as any)?.hepatotoxico_count as number | undefined;
+            const protoTexto = (form.protocoloFarmacologico || "").trim();
+            return (
+              <div style={{
+                marginBottom: 24,
+                padding: 16,
+                background: T.card,
+                border: `1px solid ${T.border}`,
+                borderRadius: 12,
+              }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, marginBottom: (compostos.length || protoTexto) ? 12 : 0 }}>
+                  <div>
+                    <div style={{ fontSize: 11, color: T.muted, textTransform: "uppercase" as const, letterSpacing: "0.05em", marginBottom: 4 }}>
+                      🧪 Protocolo farmacológico
+                    </div>
+                    <div style={{ fontSize: 13, color: T.text, fontWeight: 600 }}>
+                      {compostos.length > 0
+                        ? `${compostos.length} composto${compostos.length > 1 ? "s" : ""} detectado${compostos.length > 1 ? "s" : ""}`
+                        : protoTexto
+                          ? "Texto preenchido — nenhum composto reconhecido pelo detector"
+                          : "Nenhum protocolo informado"}
+                    </div>
+                    {typeof fatorFarm === "number" && fatorFarm !== 1 && (
+                      <div style={{ fontSize: 11, color: T.muted, marginTop: 3 }}>
+                        Fator farmacológico aplicado: <span style={{ color: T.amber, fontWeight: 600 }}>×{fatorFarm.toFixed(3)}</span>
+                        {hepatoCount && hepatoCount > 0 ? <> · <span style={{ color: "#f87171" }}>{hepatoCount} hepatotóxico{hepatoCount > 1 ? "s" : ""}</span></> : null}
+                      </div>
+                    )}
+                  </div>
+                  <button
+                    onClick={abrirRevisaoProtocolo}
+                    disabled={protocoloRecalc}
+                    style={{
+                      padding: "8px 14px",
+                      borderRadius: 8,
+                      background: T.amber,
+                      border: `1px solid ${T.amber}`,
+                      color: "#1a1206",
+                      fontSize: 12,
+                      fontWeight: 700,
+                      cursor: protocoloRecalc ? "wait" : "pointer",
+                      fontFamily: "inherit",
+                      whiteSpace: "nowrap" as const,
+                      opacity: protocoloRecalc ? 0.6 : 1,
+                    }}
+                    title="Editar o texto do protocolo e recalcular automaticamente compostos detectados, fator farmacológico, macros e refeições"
+                  >
+                    ✏️ Revisar protocolo
+                  </button>
+                </div>
+
+                {compostos.length > 0 && (
+                  <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 6, marginBottom: alertasCrit.length ? 10 : 0 }}>
+                    {compostos.map((c) => (
+                      <span key={c} style={{
+                        padding: "4px 9px",
+                        borderRadius: 999,
+                        background: T.bg3,
+                        border: `1px solid ${T.border2}`,
+                        color: T.text,
+                        fontSize: 11,
+                        fontWeight: 600,
+                        textTransform: "lowercase" as const,
+                      }}>{c}</span>
+                    ))}
+                  </div>
+                )}
+
+                {alertasCrit.length > 0 && (
+                  <div style={{
+                    background: "#1f0808",
+                    border: `1px solid #f8717155`,
+                    borderLeft: `3px solid #f87171`,
+                    borderRadius: 8,
+                    padding: "10px 12px",
+                    color: "#fca5a5",
+                    fontSize: 11,
+                    lineHeight: 1.5,
+                  }}>
+                    <div style={{ fontWeight: 700, marginBottom: 4 }}>⛔ Alertas críticos:</div>
+                    {alertasCrit.map((a, i) => (
+                      <div key={i} style={{ marginTop: i === 0 ? 0 : 4 }}>• {a}</div>
+                    ))}
+                  </div>
+                )}
+
+                {protoTexto && compostos.length === 0 && (
+                  <div style={{
+                    marginTop: 6,
+                    fontSize: 11,
+                    color: T.muted,
+                    fontStyle: "italic" as const,
+                  }}>
+                    O texto livre não casou com nenhuma das ~35 keywords do detector. Use "Revisar protocolo" para ajustar a grafia (ex: "testosterona enantato" em vez de abreviações próprias) e recalcular.
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+
           {/* Aviso de validação de timing peri-workout vs schedule (somente o alerta — botões agora ficam num bloco sempre visível abaixo) */}
           {(() => {
             const mismatches = validateTimingVsSchedule(plano.refeicoes as any, trainingSchedule);
