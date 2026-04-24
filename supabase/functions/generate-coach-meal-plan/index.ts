@@ -318,6 +318,160 @@ serve(async (req) => {
       ? (parseFloat(peso) * (1 - parseFloat(bfAtual) / 100)).toFixed(1)
       : null;
 
+    // ═══════════════════════════════════════════════════════════════
+    // CÁLCULO DETERMINÍSTICO DE TMB / GET / MACROS
+    // Mesmos inputs → mesmos valores SEMPRE. A IA não decide nada disso.
+    // ═══════════════════════════════════════════════════════════════
+    const calc = (() => {
+      const pesoNum = parseFloat(peso) || 0;
+      const altNum = parseFloat(altura) || 0;
+      const idadeNum = parseFloat(idade) || 0;
+      if (!pesoNum || !altNum || !idadeNum) {
+        return null;
+      }
+
+      // 1) TMB Mifflin-St Jeor
+      const sexoNorm = String(sexo || "").toLowerCase();
+      const isHomem = /masc|homem|m$|^m/i.test(sexoNorm);
+      const tmb = isHomem
+        ? (10 * pesoNum) + (6.25 * altNum) - (5 * idadeNum) + 5
+        : (10 * pesoNum) + (6.25 * altNum) - (5 * idadeNum) - 161;
+
+      // 2) Fator de atividade (mapeamento fixo)
+      const nivelRaw = String(nivelAtividade || "moderado").toLowerCase().trim();
+      const FATORES: Record<string, number> = {
+        sedentario: 1.2, sedentário: 1.2, sed: 1.2,
+        leve: 1.375, levemente_ativo: 1.375,
+        moderado: 1.55, moderadamente_ativo: 1.55, mod: 1.55,
+        ativo: 1.725, intenso: 1.725,
+        muito_ativo: 1.9, "muito ativo": 1.9, atleta: 1.9,
+      };
+      let fatorAtividade = 1.55;
+      for (const k of Object.keys(FATORES)) {
+        if (nivelRaw.includes(k)) { fatorAtividade = FATORES[k]; break; }
+      }
+      const getBase = tmb * fatorAtividade;
+
+      // 3) Ajustes farmacológicos MULTIPLICATIVOS e FIXOS
+      const protoStr = String(protocoloFarmacologico || protocStr || "").toLowerCase();
+      let multFarm = 1.0;
+      const flagsFarm: string[] = [];
+      if (/(testosterona|enantato|cipionato|propionato|sustanon|deca|nandrolona|trembolona|trenbolona|boldenona|equipoise|stano|stanozolol|winstrol|oxandrolona|anavar|dianabol|metandr|primobolan|masteron|halotest|anabolizante|aas\b|trt\b)/i.test(protoStr)) {
+        multFarm *= 1.15; flagsFarm.push("AAS/TRT ×1.15");
+      }
+      if (/(\bgh\b|hgh|hormonio do crescimento|hormônio do crescimento|somatropina|ipamorelin|cjc[- ]?1295|cjc1295|tesamorelin|sermorelin|hexarelin|ghrp|secretagogo)/i.test(protoStr)) {
+        multFarm *= 1.08; flagsFarm.push("GH/secretagogo ×1.08");
+      }
+      const usaMetformina = /metformin|glifage/i.test(protoStr);
+      if (usaMetformina) flagsFarm.push("Metformina (CHO −10% / PTN +)");
+
+      // 4) Cardio (apenas se cardioNoCalculo = true)
+      let kcalCardio = 0;
+      const flagsCardio: string[] = [];
+      if (fazCardio && cardioNoCalculo) {
+        const freqMatch = String(cardioFrequencia || "").match(/(\d+)/);
+        const durMatch = String(cardioDuracao || "").match(/(\d+)/);
+        const freqSemana = freqMatch ? parseInt(freqMatch[1]) : 0;
+        const durMin = durMatch ? parseInt(durMatch[1]) : 0;
+        if (freqSemana > 0 && durMin > 0) {
+          kcalCardio = Math.round((freqSemana / 7) * durMin * 7);
+          flagsCardio.push(`Cardio +${kcalCardio}kcal/dia (${freqSemana}×/sem × ${durMin}min × 7kcal/min ÷ 7)`);
+        }
+      }
+
+      const getFinal = Math.round(getBase * multFarm + kcalCardio);
+
+      // 5) Macros por objetivo
+      const objLower = String(objetivo || "").toLowerCase();
+      let metaKcal = getFinal;
+      let protPorKg = 2.0;
+      let pctGordura = 0.30;
+      let perfilObj = "manutencao";
+
+      if (/bulk|hipertrof|massa|ganho/.test(objLower)) {
+        metaKcal = Math.round(getFinal * 1.10);
+        protPorKg = 2.2; pctGordura = 0.25; perfilObj = "bulk_limpo";
+      } else if (/cut|emagrec|perda|defici|seca/.test(objLower)) {
+        metaKcal = Math.round(getFinal * 0.80);
+        protPorKg = 2.4; pctGordura = 0.25; perfilObj = "cutting";
+      } else if (/recomp/.test(objLower)) {
+        metaKcal = getFinal;
+        protPorKg = 2.2; pctGordura = 0.28; perfilObj = "recomposicao";
+      } else {
+        metaKcal = getFinal;
+        protPorKg = 2.0; pctGordura = 0.30; perfilObj = "manutencao";
+      }
+
+      // Override: meta calórica do coach SEMPRE prevalece sobre cálculo
+      const metaCoach = calorias ? Number(calorias) : null;
+      if (metaCoach && metaCoach > 0) metaKcal = Math.round(metaCoach);
+
+      let proteinaG = Math.round(pesoNum * protPorKg);
+      let gorduraG = Math.round((metaKcal * pctGordura) / 9);
+      let kcalRestante = metaKcal - (proteinaG * 4 + gorduraG * 9);
+      let carboG = Math.max(0, Math.round(kcalRestante / 4));
+
+      // Ajuste metformina: −10% CHO, kcal compensa em proteína
+      if (usaMetformina) {
+        const choReducaoG = Math.round(carboG * 0.10);
+        carboG -= choReducaoG;
+        proteinaG += Math.round((choReducaoG * 4) / 4); // 1g CHO = 1g PTN em kcal/g equivalente
+      }
+
+      const protPct = Math.round(((proteinaG * 4) / metaKcal) * 100);
+      const carbPct = Math.round(((carboG * 4) / metaKcal) * 100);
+      const fatPct = Math.round(((gorduraG * 9) / metaKcal) * 100);
+
+      return {
+        tmb: Math.round(tmb),
+        fatorAtividade,
+        nivelAtividadeNorm: nivelRaw,
+        getBase: Math.round(getBase),
+        multFarm,
+        flagsFarm,
+        kcalCardio,
+        flagsCardio,
+        getFinal,
+        metaKcal,
+        metaSourceCoach: !!(metaCoach && metaCoach > 0),
+        perfilObj,
+        proteinaG, carboG, gorduraG,
+        protPct, carbPct, fatPct,
+        protPorKg, pctGordura,
+        usaMetformina,
+      };
+    })();
+
+    const calcBlock = calc ? `
+═══════════════════════════════════════════════════════════════
+🔒 VALORES CALCULADOS PELO SISTEMA — NÃO ALTERE, NÃO RECALCULE
+═══════════════════════════════════════════════════════════════
+TMB (Mifflin-St Jeor): ${calc.tmb} kcal
+Fator de atividade: ×${calc.fatorAtividade} (${calc.nivelAtividadeNorm})
+GET base: ${calc.getBase} kcal
+Multiplicador farmacológico: ×${calc.multFarm.toFixed(2)} ${calc.flagsFarm.length ? `[${calc.flagsFarm.join(" | ")}]` : "(nenhum)"}
+Cardio adicional: ${calc.kcalCardio} kcal/dia ${calc.flagsCardio.length ? `[${calc.flagsCardio.join(" | ")}]` : ""}
+GET final ajustado: ${calc.getFinal} kcal
+Perfil de objetivo: ${calc.perfilObj}
+META CALÓRICA DIÁRIA: ${calc.metaKcal} kcal ${calc.metaSourceCoach ? "(definida pelo coach — prevalece)" : "(calculada pelo sistema)"}
+
+🎯 MACROS TRAVADOS (use EXATAMENTE estes números no resumo e distribua nas refeições):
+PROTEÍNA: ${calc.proteinaG}g (${calc.protPct}%) — ${calc.protPorKg}g/kg
+CARBOIDRATO: ${calc.carboG}g (${calc.carbPct}%)
+GORDURA: ${calc.gorduraG}g (${calc.fatPct}%) — ${Math.round(calc.pctGordura * 100)}% das kcal
+${calc.usaMetformina ? "⚠️ Metformina ativa: CHO já reduzido em 10%, proteína compensada." : ""}
+
+REGRA INVIOLÁVEL:
+- O campo resumo.tmb DEVE = ${calc.tmb}
+- O campo resumo.get DEVE = ${calc.getFinal}
+- O campo resumo.calorias_totais DEVE = ${calc.metaKcal} (±3% nas refeições)
+- A SOMA de proteína das refeições DEVE = ${calc.proteinaG}g (±5%)
+- A SOMA de carboidrato das refeições DEVE = ${calc.carboG}g (±5%)
+- A SOMA de gordura das refeições DEVE = ${calc.gorduraG}g (±5%)
+A IA APENAS distribui esses macros entre as refeições. NÃO recalcule TMB/GET/macros.
+═══════════════════════════════════════════════════════════════
+` : "";
+
     // Detecta perfil treinado/atleta — nesses casos o IMC NÃO é parâmetro válido
     // (massa magra elevada infla o IMC sem refletir adiposidade real).
     const objetivoLower = String(objetivo || "").toLowerCase();
