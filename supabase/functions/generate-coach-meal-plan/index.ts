@@ -1040,7 +1040,17 @@ ${perfilFisiologico?.modo_economico ? `
         ajusteCalorico.dentro_da_banda = true;
       }
 
+      // Sinaliza que o IMC foi desconsiderado (perfil treinado/atleta)
+      ajusteCalorico.is_atleta_treinado = isAtletaTreinado;
+      ajusteCalorico.imc_desconsiderado = isAtletaTreinado;
+
       parsed.ajuste_calorico = ajusteCalorico;
+
+      // Marca o resumo do plano para a UI saber que IMC não deve ser usado como classificação
+      if (parsed?.resumo && isAtletaTreinado) {
+        parsed.resumo.imc_aplicavel = false;
+        parsed.resumo.imc_observacao = "IMC não aplicável: paciente treinado (massa magra elevada).";
+      }
     }
 
     // ── PERSISTÊNCIA DO HISTÓRICO DE AJUSTES CALÓRICOS ──
