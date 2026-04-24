@@ -536,15 +536,15 @@ serve(async (req) => {
       };
 
       const COMPOSTOS: Record<string, Composto> = {
-        testosterona: { keywords:["testosterona","testosterone","enantato","cipionato","propionato","sustanon","omnadren","nebido","undecanoato","test e","test c","test p","test base","trt"], fator_get:1.15, proteina_bonus_gkg:0.20, categoria:"eaa", micronutrientes:["Zinco 25mg/dia","Vitamina D 5000UI/dia","Crucíferos diários (DIM natural)"], alerta:"Monitorar E2 — aromatização elevada.", gordura_min_pct:20 },
-        nandrolona: { keywords:["nandrolona","nandrolone","npp","deca decanoato","fenilpropionato","deca-durabolin","deca durabolin","deca"], fator_get:1.08, proteina_bonus_gkg:0.10, categoria:"eaa", micronutrientes:["Colágeno hidrolisado 10g/dia","Vitamina C 1g/dia","Vitamina B6 100mg (prolactina)"], alerta:"Monitorar prolactina. Cabergolina se necessário." },
+        testosterona: { keywords:["testosterona","testosterone","enantato","cipionato","propionato","sustanon","omnadren","nebido","undecanoato","test e","test c","test p","test base","trt"], fator_get:1.12, proteina_bonus_gkg:0.20, categoria:"eaa", micronutrientes:["Zinco 25mg/dia","Vitamina D 5000UI/dia","Crucíferos diários (DIM natural)"], alerta:"Monitorar E2 — aromatização elevada.", gordura_min_pct:20 },
+        nandrolona: { keywords:["nandrolona","nandrolone","npp","deca decanoato","fenilpropionato","deca-durabolin","deca durabolin","deca"], fator_get:1.06, proteina_bonus_gkg:0.10, categoria:"eaa", micronutrientes:["Colágeno hidrolisado 10g/dia","Vitamina C 1g/dia","Vitamina B6 100mg (prolactina)"], alerta:"Monitorar prolactina. Cabergolina se necessário." },
         boldenona: { keywords:["boldenona","boldenone","equipoise","eq","undecylenate","bold"], fator_get:1.08, proteina_bonus_gkg:0.10, categoria:"eaa", micronutrientes:["Ferro heme aumentado","Vitamina B6 50mg","Hidratação +500ml/dia"], alerta:"Hematócrito pode subir — hidratação aumentada obrigatória." },
-        trembolona: { keywords:["trembolona","trenbolone","tren","parabolan","tren a","tren e","hexahidrobenzilcarbonato","acetato de trembolona"], fator_get:1.20, proteina_bonus_gkg:0.30, carbo_delta_pct:-5, categoria:"eaa", alerta_cv:true, micronutrientes:["Vitamina B6 100mg/dia","Taurina 3g/dia","Eletrólitos aumentados (sudorese noturna)"], alerta:"Trembolona eleva prolactina e causa sudorese noturna severa. Eletrólitos diários obrigatórios." },
+        trembolona: { keywords:["trembolona","trenbolone","tren","parabolan","tren a","tren e","hexahidrobenzilcarbonato","acetato de trembolona"], fator_get:1.15, proteina_bonus_gkg:0.30, carbo_delta_pct:-5, categoria:"eaa", alerta_cv:true, micronutrientes:["Vitamina B6 100mg/dia","Taurina 3g/dia","Eletrólitos aumentados (sudorese noturna)"], alerta:"Trembolona eleva prolactina e causa sudorese noturna severa. Eletrólitos diários obrigatórios." },
         masteron: { keywords:["masteron","drostanolona","drostanolone","mast e","mast p"], fator_get:1.05, proteina_bonus_gkg:0.10, gordura_delta_pct:-3, categoria:"eaa", micronutrientes:["Ômega 3 3g/dia"], alerta:"Efeito anti-estrogênico leve. Manter gorduras boas no plano." },
         stanozolol: { keywords:["stanozolol","winstrol","estanozolol","winny","stan"], fator_get:1.08, proteina_bonus_gkg:0.15, categoria:"eaa", hepatotoxico:true, micronutrientes:["Ômega 3 4g/dia","Plant sterols 2g/dia","TUDCA 500mg/dia","Cardo Mariano 300mg/dia"], alerta:"Stanozolol impacta HDL severamente. Exame lipídico a cada 6 semanas." },
-        oximetolona: { keywords:["oximetolona","oxymetholone","hemogenin","anapolon","anadrol"], fator_get:1.10, proteina_bonus_gkg:0.20, categoria:"eaa", hepatotoxico:true, micronutrientes:["TUDCA 500mg/dia OBRIGATÓRIO","Cardo Mariano 300mg/dia","Cúrcuma 500mg + Piperina","Beterraba diária","Crucíferos diários"], alerta:"⚠️ 17-alfa alquilado HEPATOTÓXICO. TUDCA 500mg obrigatório. ALT/AST a cada 4 semanas. Uso máximo 6 semanas." },
+        oximetolona: { keywords:["oximetolona","oxymetholone","hemogenin","anapolon","anadrol"], fator_get:1.08, proteina_bonus_gkg:0.20, categoria:"eaa", hepatotoxico:true, micronutrientes:["TUDCA 500mg/dia OBRIGATÓRIO","Cardo Mariano 300mg/dia","Cúrcuma 500mg + Piperina","Beterraba diária","Crucíferos diários"], alerta:"⚠️ 17-alfa alquilado HEPATOTÓXICO. TUDCA 500mg obrigatório. ALT/AST a cada 4 semanas. Uso máximo 6 semanas." },
         oxandrolona: { keywords:["oxandrolona","oxandrolone","anavar","var","oxan"], fator_get:1.06, proteina_bonus_gkg:0.10, categoria:"eaa", micronutrientes:["Ômega 3 3g/dia","Plant sterols 1g/dia"], alerta:"Impacto lipídico moderado. Exame lipídico recomendado." },
-        dianabol: { keywords:["dianabol","dbol","metandrostenolona","methandrostenolone","naposim","metandienona"], fator_get:1.12, proteina_bonus_gkg:0.20, categoria:"eaa", hepatotoxico:true, micronutrientes:["TUDCA 500mg/dia OBRIGATÓRIO","Cardo Mariano 300mg/dia","Sódio controlado no plano"], alerta:"⚠️ 17-alfa alquilado. TUDCA obrigatório. Retenção hídrica — sódio controlado." },
+        dianabol: { keywords:["dianabol","dbol","metandrostenolona","methandrostenolone","naposim","metandienona"], fator_get:1.08, proteina_bonus_gkg:0.20, categoria:"eaa", hepatotoxico:true, micronutrientes:["TUDCA 500mg/dia OBRIGATÓRIO","Cardo Mariano 300mg/dia","Sódio controlado no plano"], alerta:"⚠️ 17-alfa alquilado. TUDCA obrigatório. Retenção hídrica — sódio controlado." },
         primobolan: { keywords:["primobolan","metenolona","methenolone","primo"], fator_get:1.06, proteina_bonus_gkg:0.10, categoria:"eaa", micronutrientes:["Ômega 3 2g/dia"], alerta:"Perfil lipídico favorável. Excelente para cutting — manter proteína alta." },
         ostarine: { keywords:["ostarine","mk-2866","mk2866","enobosarm","ostarina"], fator_get:1.05, proteina_bonus_gkg:0.10, categoria:"sarm", micronutrientes:["Zinco 15mg/dia","Vitamina D 3000UI"], alerta:"Supressão leve. PCT leve pós-ciclo. Exame hormonal pós-ciclo." },
         lgd4033: { keywords:["lgd-4033","lgd4033","ligandrol","lgd"], fator_get:1.08, proteina_bonus_gkg:0.15, categoria:"sarm", micronutrientes:["Ômega 3 3g/dia (suporte lipídico)"], alerta:"Supressão moderada. PCT necessária. Monitorar HDL." },
@@ -553,18 +553,18 @@ serve(async (req) => {
         cardarine: { keywords:["gw-501516","gw501516","cardarine","endurobol"], fator_get:1.10, carbo_delta_pct:8, categoria:"sarm", micronutrientes:["Antioxidantes aumentados","Vitamina E 400UI"], alerta:"Cardarine — oxidação de gordura aumentada. Garantir calorias suficientes." },
         sr9009: { keywords:["sr9009","sr-9009","stenabolic"], fator_get:1.08, categoria:"sarm", micronutrientes:["CoQ10 100mg/dia"], alerta:"SR9009 aumenta metabolismo basal. Garantir calorias suficientes." },
         yk11: { keywords:["yk-11","yk11"], fator_get:1.10, proteina_bonus_gkg:0.20, categoria:"sarm", hepatotoxico:true, micronutrientes:["TUDCA 500mg recomendado"], alerta:"YK-11 estrutura esteroidal — hepatotóxico possível. TUDCA recomendado." },
-        cjc1295: { keywords:["cjc-1295","cjc1295","cjc","mod-grf","sermorelin","tesamorelin","cjc 1295"], fator_get:1.08, proteina_bonus_gkg:0.10, categoria:"peptideo_gh", micronutrientes:["Magnésio 300mg à noite","Zinco 15mg à noite"], timing:"Aplicar em jejum ou 2h+ pós-refeição. Não comer 30-40min após.", alerta:"GH secretagogo — janela de jejum obrigatória para pico de GH." },
-        ipamorelin: { keywords:["ipamorelin","ipamorelim","ghrp-2","ghrp2","ghrp-6","ghrp6","hexarelin","pralmorelin"], fator_get:1.06, proteina_bonus_gkg:0.05, categoria:"peptideo_gh", micronutrientes:["Magnésio 200mg","Zinco 10mg"], timing:"Aplicar em jejum. Não comer 30min após.", alerta_ghrp6:"GHRP-6 aumenta fome agressivamente — planejar refeição pós-aplicação." },
-        igf1: { keywords:["igf-1","igf1","igf-1 des","igf1des","igf1-des","igf-1 lr3","igf1lr3","igf des","des igf"], fator_get:1.05, proteina_bonus_gkg:0.40, categoria:"peptideo_gh", micronutrientes:["Dextrose disponível sempre (anti-hipoglicemia)"], timing:"IGF-1 Des — meia-vida 20-30min (ação local). Aplicar IMEDIATAMENTE PÓS-TREINO (janela 0-5min após o término, NUNCA pré-treino). Refeição 25-30min após injeção: 40-50g whey isolado + 30-40g carbo simples + ZERO gordura + ZERO fibra (não atrasar absorção de AA nem esvaziamento gástrico).", alerta:"⚠️ IGF-1 Des: aplicar PÓS-TREINO (não pré). Risco de hipoglicemia local — sempre ter dextrose disponível. Refeição pós-aplicação obrigatória em 25-30min." },
+        cjc1295: { keywords:["cjc-1295","cjc1295","cjc","mod-grf","sermorelin","tesamorelin","cjc 1295"], fator_get:1.05, proteina_bonus_gkg:0.10, categoria:"peptideo_gh", micronutrientes:["Magnésio 300mg à noite","Zinco 15mg à noite"], timing:"Aplicar em jejum ou 2h+ pós-refeição. Não comer 30-40min após.", alerta:"GH secretagogo — janela de jejum obrigatória para pico de GH." },
+        ipamorelin: { keywords:["ipamorelin","ipamorelim","ghrp-2","ghrp2","ghrp-6","ghrp6","hexarelin","pralmorelin"], fator_get:1.04, proteina_bonus_gkg:0.05, categoria:"peptideo_gh", micronutrientes:["Magnésio 200mg","Zinco 10mg"], timing:"Aplicar em jejum. Não comer 30min após.", alerta_ghrp6:"GHRP-6 aumenta fome agressivamente — planejar refeição pós-aplicação." },
+        igf1: { keywords:["igf-1","igf1","igf-1 des","igf1des","igf1-des","igf-1 lr3","igf1lr3","igf des","des igf"], fator_get:1.03, proteina_bonus_gkg:0.40, categoria:"peptideo_gh", micronutrientes:["Dextrose disponível sempre (anti-hipoglicemia)"], timing:"IGF-1 Des — meia-vida 20-30min (ação local). Aplicar IMEDIATAMENTE PÓS-TREINO (janela 0-5min após o término, NUNCA pré-treino). Refeição 25-30min após injeção: 40-50g whey isolado + 30-40g carbo simples + ZERO gordura + ZERO fibra (não atrasar absorção de AA nem esvaziamento gástrico).", alerta:"⚠️ IGF-1 Des: aplicar PÓS-TREINO (não pré). Risco de hipoglicemia local — sempre ter dextrose disponível. Refeição pós-aplicação obrigatória em 25-30min." },
         bpc157: { keywords:["bpc-157","bpc157","bpc"], fator_get:1.00, categoria:"peptideo_recuperacao", micronutrientes:["Glutamina 10g/dia","Colágeno 10g/dia","Vitamina C 1g/dia"], alerta:"BPC-157 potencializa cicatrização intestinal. Glutamina + colágeno para sinergia." },
         tb500: { keywords:["tb-500","tb500","thymosin beta","tb 500"], fator_get:1.00, categoria:"peptideo_recuperacao", micronutrientes:["Colágeno 10g/dia","Proteína alta mínima 2g/kg"], alerta:"TB-500 — suporte tecidual. Colágeno + proteína alta para sinergia." },
-        slupp332: { keywords:["slu-pp-332","slupp332","slu332","slu pp 332","slu-pp"], fator_get:1.12, carbo_delta_pct:5, categoria:"peptideo_mitocondrial", micronutrientes:["CoQ10 200mg/dia","PQQ 20mg/dia","Ômega 3 4g/dia"], alerta:"Exercício mimético mitocondrial. Aumentar carbo complexo. Aplicar pré-treino." },
+        slupp332: { keywords:["slu-pp-332","slupp332","slu332","slu pp 332","slu-pp"], fator_get:1.08, carbo_delta_pct:5, categoria:"peptideo_mitocondrial", micronutrientes:["CoQ10 200mg/dia","PQQ 20mg/dia","Ômega 3 4g/dia"], alerta:"Exercício mimético mitocondrial. Aumentar carbo complexo. Aplicar pré-treino." },
         motsc: { keywords:["mots-c","motsc","mots c"], fator_get:1.06, categoria:"peptideo_mitocondrial", micronutrientes:["CoQ10 100mg/dia","PQQ 10mg/dia"], alerta:"MOTS-c ativa AMPK. Aplicar pré-cardio para maximizar oxidação de gordura." },
         epithalon: { keywords:["epithalon","epitalon","epithalamin"], fator_get:1.00, categoria:"peptideo_longevidade", micronutrientes:["Vitamina C 1g/dia","Resveratrol 200mg","NMN 250mg","Ômega 3 2g/dia"], alerta:"Epithalon longevidade — sinergia com antioxidantes e NMN." },
         glp1: { keywords:["semaglutida","semaglutide","ozempic","wegovy","retatrutida","retatrutide","tirzepatida","tirzepatide","mounjaro","liraglutida","liraglutide","victoza","rybelsus","glp-1","glp1"], fator_get:0.92, refeicoes_minimo:5, categoria:"glp1", micronutrientes:["Proteína em todas refeições (anti-sarcopenia)"], alerta:"GLP-1 — fracionar refeições. Priorizar proteína primeiro em cada refeição. Monitorar déficit proteico." },
         folistatina: { keywords:["folistatina","follistatin","fs-344","fs344"], fator_get:1.08, proteina_bonus_gkg:0.30, categoria:"peptideo_anabolico", micronutrientes:["Proteína a cada 3h (janela anabólica contínua)"], alerta:"Folistatina inibe miostatina — janela anabólica extrema. Proteína distribuída a cada 3h." },
-        clenbuterol: { keywords:["clenbuterol","clen","clembuterol"], fator_get:1.10, proteina_bonus_gkg:0.30, carbo_delta_pct:-5, categoria:"estimulante", micronutrientes:["Taurina 3g/dia OBRIGATÓRIO","Potássio aumentado","Magnésio 400mg/dia"], alerta:"Clenbuterol catabólico após 2 semanas. Proteína mínima 2.5g/kg. Taurina obrigatória (previne cãibras)." },
-        t3t4: { keywords:["t3","t4","citomed","cytomel","liotironina","liothyronine","levotiroxina","levothyroxine","synthroid"], fator_get:1.12, proteina_bonus_gkg:0.30, categoria:"hormonio_tireoide", micronutrientes:["Selênio 200mcg/dia","Iodo alimentar"], alerta:"T3 exógeno é catabólico em excesso. Proteína mínima 2.5g/kg obrigatório. Nunca em déficit sem base anabólica." },
+        clenbuterol: { keywords:["clenbuterol","clen","clembuterol"], fator_get:1.07, proteina_bonus_gkg:0.30, carbo_delta_pct:-5, categoria:"estimulante", micronutrientes:["Taurina 3g/dia OBRIGATÓRIO","Potássio aumentado","Magnésio 400mg/dia"], alerta:"Clenbuterol catabólico após 2 semanas. Proteína mínima 2.5g/kg. Taurina obrigatória (previne cãibras)." },
+        t3t4: { keywords:["t3","t4","citomed","cytomel","liotironina","liothyronine","levotiroxina","levothyroxine","synthroid"], fator_get:1.08, proteina_bonus_gkg:0.30, categoria:"hormonio_tireoide", micronutrientes:["Selênio 200mcg/dia","Iodo alimentar"], alerta:"T3 exógeno é catabólico em excesso. Proteína mínima 2.5g/kg obrigatório. Nunca em déficit sem base anabólica." },
         metformina: { keywords:["metformina","metformin","glifage","glucophage"], fator_get:1.00, carbo_delta_pct:-10, proteina_compensar_carbo:true, categoria:"sensibilizador", micronutrientes:["B12 sublingual 1000mcg/dia OBRIGATÓRIO","Folato 400mcg/dia","Magnésio 200mg/dia"], alerta:"⚠️ Metformina depleta B12. Suplementação sublingual obrigatória." },
         berberina: { keywords:["berberina","berberine"], fator_get:1.00, carbo_delta_pct:-7, categoria:"sensibilizador", micronutrientes:["B12 monitorar"], alerta:"Berberina — tomar 500mg antes das 3 maiores refeições." },
         insulina: { keywords:["insulina","insulin","humulin","novolog","humalog","nph","glargina","lantus","novorapid"], fator_get:1.20, carbo_delta_pct:20, proteina_bonus_gkg:0.20, categoria:"insulina", alerta_critico:true, micronutrientes:["Dextrose SEMPRE disponível"], alerta:"⛔ INSULINA EXÓGENA — RISCO DE VIDA. Nunca em jejum. Dextrose sempre disponível. Refeição com 60-80g carbo imediatamente após aplicação." },
@@ -623,8 +623,34 @@ serve(async (req) => {
         flagsFarm.push(`${nome} ×${(c.fator_get ?? 1).toFixed(2)}${c.proteina_bonus_gkg ? ` +${c.proteina_bonus_gkg}g·kg` : ""}${c.carbo_delta_pct ? ` CHO${c.carbo_delta_pct > 0 ? "+" : ""}${c.carbo_delta_pct}%` : ""}`);
       }
 
-      // CAP global: máximo ×1.75 (protocolo real raramente excede isso)
-      multFarm = Math.min(multFarm, 1.75);
+      // ── DIMINISHING RETURNS + CAP ESCALONADO POR Nº DE COMPOSTOS ──
+      // Mecanismos farmacológicos se sobrepõem na prática clínica.
+      // Fator matemático puro (produtório) superestima o gasto real.
+      const fatorFarmaBruto = multFarm; // produto matemático puro
+      const numCompostos = compostosDetectados.length;
+      // Reduz 3% por composto acima de 3 (sobreposição de mecanismos)
+      if (numCompostos >= 4) {
+        const reducao = (numCompostos - 3) * 0.03;
+        multFarm = multFarm * (1 - reducao);
+      }
+      // Caps escalonados baseados em protocolos clínicos reais
+      const CAPS_FARMA: Record<number, number> = {
+        0: 1.00,
+        1: 1.12,
+        2: 1.20,
+        3: 1.28,
+        4: 1.35,
+        5: 1.40,
+        6: 1.45,
+        7: 1.48,
+        8: 1.50, // 8+ compostos — cap final
+      };
+      const capAplicado = CAPS_FARMA[Math.min(numCompostos, 8)] ?? 1.50;
+      multFarm = Math.min(multFarm, capAplicado);
+      multFarm = Math.round(multFarm * 1000) / 1000;
+      const notaFatorFarma = numCompostos > 0
+        ? `Fator farmacológico: ×${multFarm} (${numCompostos} composto${numCompostos > 1 ? "s" : ""} — cap escalonado ×${capAplicado} com diminishing returns aplicado). Fator matemático bruto seria ×${fatorFarmaBruto.toFixed(3)}, mas mecanismos se sobrepõem na prática clínica.`
+        : null;
 
       if (hepatotoxicoCount >= 2) {
         alertasCriticosFarm.push(
@@ -648,8 +674,9 @@ serve(async (req) => {
       // getBase neste ponto = TMB × atividade + kcal_cardio (cardio já somado no BLOCO 3)
       const getComCardio = getBase;
 
-      // ── BLOCO 4: FARMACOLÓGICO (multiplicar sobre get_com_cardio, cap 1.75) ──
-      const fatorFarmaCap = Math.min(multFarm, 1.75);
+      // ── BLOCO 4: FARMACOLÓGICO (multiplicar sobre get_com_cardio) ──
+      // multFarm já vem com diminishing returns + cap escalonado aplicado.
+      const fatorFarmaCap = multFarm;
       const getFarmaCalc = getComCardio * fatorFarmaCap;
 
       // ── BLOCO 5: TEF — REMOVIDO como fator multiplicativo ──
@@ -849,6 +876,9 @@ serve(async (req) => {
         neatNorm: String(_neat).toLowerCase(),
         getBase: Math.round(getBase),       // Já com cardio + NEAT
         multFarm,
+        fatorFarmaBruto: Math.round(fatorFarmaBruto * 1000) / 1000,
+        fatorFarmaCapAplicado: capAplicado,
+        notaFatorFarma,
         flagsFarm,
         fatorTef,
         getFarma: Math.round(getFarma),
@@ -1764,6 +1794,9 @@ ${perfilFisiologico?.modo_economico ? `
       // Contexto farmacológico exposto no resumo (para a UI exibir badges/alertas)
       parsed.resumo.compostos_detectados = calc.compostosDetectados;
       parsed.resumo.fator_farmacologico = Math.round(calc.multFarm * 1000) / 1000;
+      parsed.resumo.fator_farmacologico_bruto = calc.fatorFarmaBruto;
+      parsed.resumo.fator_farmacologico_cap = calc.fatorFarmaCapAplicado;
+      if (calc.notaFatorFarma) parsed.resumo.nota_fator_farma = calc.notaFatorFarma;
       parsed.resumo.micronutrientes_obrigatorios = calc.micronutrientesFarm;
       parsed.resumo.alertas_criticos = calc.alertasCriticosFarm;
       parsed.resumo.alertas_farmacologicos = calc.alertasFarm;
@@ -1771,11 +1804,11 @@ ${perfilFisiologico?.modo_economico ? `
       parsed.resumo.hepatotoxico_count = calc.hepatotoxicoCount;
 
       // ── AUDITORIA DETERMINÍSTICA — ordem correta de aplicação dos fatores ──
-      // 1.TMB → 2.atividade → 3.cardio(SOMA) → 4.farma(MULT, cap 1.75)
+      // 1.TMB → 2.atividade → 3.cardio(SOMA) → 4.farma(MULT, diminishing returns + cap escalonado)
       // 5.TEF=1.0 (já embutido em atividade) → 6.NEAT (só se não-atleta)
       const _getBaseAtiv = Math.round(calc.tmb * calc.fatorAtividade);
       const _getComCardio = _getBaseAtiv + calc.kcalCardio;
-      const _fatorFarmaCap = Math.min(calc.multFarm, 1.75);
+      const _fatorFarmaCap = calc.multFarm; // já vem capado
       const _getFarmaEtapa = Math.round(_getComCardio * _fatorFarmaCap);
       const _getFinalEtapa = Math.round(_getFarmaEtapa * calc.fatorNeat);
       parsed.resumo.auditoria_calculo = {
