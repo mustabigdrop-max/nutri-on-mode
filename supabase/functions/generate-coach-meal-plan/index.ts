@@ -563,10 +563,9 @@ serve(async (req) => {
       // CAP final de proteína g/kg (após eventuais Math.max acima)
       protGkgFinal = Math.min(protGkgFinal, 3.2);
 
-      // ── BLOCO 4: TEF (aplica só agora que sabemos a proteína final) ──
-      const aplicaTef = protGkgFinal > 2.0;
-      const fatorTef = aplicaTef ? 1.05 : 1.0;
-      const getFarma = getFarmaPreTef * fatorTef;
+      // ── BLOCO 4: TEF — DESATIVADO como multiplicador (já embutido no fator atividade) ──
+      const aplicaTef = false;
+      const getFarma = getFarmaPreTef; // sem TEF multiplicativo
 
       // Reduções farmacológicas em pctGordura (BLOCO 6 — GH)
       pctGordura = Math.max(0.10, pctGordura + gorduraReducaoPct);
