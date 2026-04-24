@@ -491,6 +491,9 @@ export default function PlanoAlimentarIA() {
     canRetry: boolean;
   } | null>(null);
   const [retrying, setRetrying] = useState(false);
+  const [autoRetrying, setAutoRetrying] = useState(false);
+  const [autoRetryAttempt, setAutoRetryAttempt] = useState(0);
+  const MAX_AUTO_RETRIES = 4;
   const [copied, setCopied] = useState(false);
   const [saving, setSaving] = useState(false);
   const [savedId, setSavedId] = useState<string | null>(null);
@@ -944,6 +947,62 @@ export default function PlanoAlimentarIA() {
   const tentarNovamente = async () => {
     setRetrying(true);
     await gerar();
+  };
+
+  // Regera o plano múltiplas vezes até o ajuste calórico cair dentro da banda ±3% (ou atingir limite)
+  const regerarAteAtingirMeta = async () => {
+    if (autoRetrying) return;
+    setAutoRetrying(true);
+    setAutoRetryAttempt(0);
+    let melhor: PlanoData | null = plano;
+    let melhorDelta = (() => {
+      const aj: any = (plano as any)?.ajuste_calorico;
+      if (!aj) return Infinity;
+      return Math.abs((aj.total_depois ?? 0) - (aj.alvo ?? 0));
+    })();
+
+    try {
+      for (let i = 1; i <= MAX_AUTO_RETRIES; i++) {
+        setAutoRetryAttempt(i);
+        toast({
+          title: `Tentativa ${i}/${MAX_AUTO_RETRIES}`,
+          description: "Regerando plano para tentar ficar dentro da banda ±3%...",
+        });
+        try {
+          const novo = await gerarPlanoCore();
+          if (!novo) continue;
+          const aj: any = (novo as any)?.ajuste_calorico;
+          const alvo = aj?.alvo ?? 0;
+          const total = aj?.total_depois ?? 0;
+          const delta = Math.abs(total - alvo);
+          if (delta < melhorDelta) {
+            melhor = novo;
+            melhorDelta = delta;
+            setPlano(novo);
+            setPlanoComparativo(null);
+            setShowCompare(false);
+          }
+          if (aj?.dentro_da_banda) {
+            toast({
+              title: "🎯 Meta atingida!",
+              description: `Plano dentro da banda em ${i} tentativa${i > 1 ? "s" : ""} (${total} kcal vs alvo ${alvo}).`,
+            });
+            return;
+          }
+        } catch (e: any) {
+          console.error(`[regerarAteAtingirMeta] tentativa ${i} falhou:`, e);
+        }
+      }
+      // Esgotou tentativas
+      toast({
+        title: "Limite de tentativas atingido",
+        description: `Após ${MAX_AUTO_RETRIES} tentativas, o melhor plano ficou ${Math.round(melhorDelta)} kcal fora do alvo. Mantido o melhor resultado.`,
+        variant: "destructive",
+      });
+    } finally {
+      setAutoRetrying(false);
+      setAutoRetryAttempt(0);
+    }
   };
 
   // Gera (ou esconde) o plano comparativo no modo oposto ao atual.
@@ -1620,6 +1679,32 @@ export default function PlanoAlimentarIA() {
                 <div style={{ color: T.muted, fontSize: 11, marginTop: 6, fontStyle: "italic" }}>
                   {aj.mensagem}
                 </div>
+                {!ok && (
+                  <div style={{ marginTop: 10, display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                    <button
+                      onClick={regerarAteAtingirMeta}
+                      disabled={autoRetrying}
+                      style={{
+                        background: autoRetrying ? T.bg2 : accent,
+                        color: autoRetrying ? T.muted : "#000",
+                        border: `1px solid ${accent}`,
+                        padding: "6px 12px",
+                        borderRadius: 6,
+                        fontSize: 11,
+                        fontWeight: 700,
+                        cursor: autoRetrying ? "wait" : "pointer",
+                        fontFamily: "inherit",
+                      }}
+                    >
+                      {autoRetrying
+                        ? `⟳ Regerando... (${autoRetryAttempt}/${MAX_AUTO_RETRIES})`
+                        : `🎯 Regerar até atingir a meta (até ${MAX_AUTO_RETRIES}x)`}
+                    </button>
+                    <span style={{ fontSize: 10, color: T.muted }}>
+                      Tenta novas gerações até o total cair na banda ±3% ou esgotar as tentativas. Mantém o melhor resultado.
+                    </span>
+                  </div>
+                )}
               </div>
             );
           })()}
