@@ -852,6 +852,10 @@ export default function PlanoAlimentarIA() {
         trainingSchedulePrompt,
         glut4Config,
         glut4Text: form.glut4Enabled ? glut4Text : "",
+        // Campos para o cálculo determinístico (BLOCO 11)
+        neat: form.neat,
+        qualidadeSono: form.qualidadeSono,
+        semanasEmDeficit: form.semanasEmDeficit ? Number(form.semanasEmDeficit) : 0,
         perfilFisiologico: {
           historico_intestinal: form.historicoIntestinal || null,
           fermentados_atual: form.fermentadosAtual || null,
@@ -866,6 +870,9 @@ export default function PlanoAlimentarIA() {
           perfil_economico: form.perfilEconomico,
           alimentos_disponiveis: form.alimentosDisponiveis,
           outros_alimentos: form.outrosAlimentos || null,
+          neat: form.neat,
+          qualidade_sono: form.qualidadeSono,
+          semanas_em_deficit: form.semanasEmDeficit ? Number(form.semanasEmDeficit) : 0,
         },
       },
     });
