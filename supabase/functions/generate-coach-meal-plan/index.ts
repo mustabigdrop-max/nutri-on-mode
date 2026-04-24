@@ -883,6 +883,27 @@ serve(async (req) => {
       };
     })();
 
+    // ── AJUSTE BF VISUAL com retentores hídricos (testo, nandro, dianabol, oxime) ──
+    // Aplicado APÓS o detector farmacológico para conhecer os compostos.
+    {
+      const compostosRetentores = ["testosterona", "nandrolona", "dianabol", "oximetolona"];
+      const detectados = (calc?.compostosDetectados || []).map((c: string) => c.toLowerCase());
+      const temRetentor = compostosRetentores.some((c) => detectados.includes(c));
+      if (resultadoTMB.metodo_bf === "visual" && temRetentor && resultadoTMB.bf !== null) {
+        const bfOriginal = resultadoTMB.bf;
+        const bfAjustado = bfOriginal + 3;
+        resultadoTMB.bf = bfAjustado;
+        const pesoNumLocal = parseFloat(String(body?.peso || "0")) || 0;
+        if (pesoNumLocal > 0) {
+          resultadoTMB.massa_magra = Math.round(pesoNumLocal * (1 - bfAjustado / 100) * 10) / 10;
+        }
+        resultadoTMB.aviso_bf =
+          `BF visual ${bfOriginal}% ajustado para ${bfAjustado}% (+3% por retenção hídrica de compostos anabólicos). ` +
+          `Testosterona/Nandrolona causam retenção que infla o peso sem ser gordura real. ` +
+          `Para BF real: medir em período off ou usar método Navy com fita métrica.`;
+      }
+    }
+
     const calcBlock = calc ? `
 ═══════════════════════════════════════════════════════════════
 🔒 VALORES CALCULADOS DETERMINISTICAMENTE — NÃO ALTERE NENHUM DESTES
