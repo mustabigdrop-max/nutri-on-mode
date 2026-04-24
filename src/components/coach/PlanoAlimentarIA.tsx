@@ -723,6 +723,10 @@ export default function PlanoAlimentarIA() {
     perfilEconomico: "intermediario" as "economico" | "intermediario" | "premium",
     alimentosDisponiveis: [] as string[],
     outrosAlimentos: "",
+    // BLOCO 11 — campos para cálculo determinístico expandido
+    neat: "medio" as "baixo" | "medio" | "alto",
+    qualidadeSono: "boa" as "boa" | "regular" | "ruim",
+    semanasEmDeficit: "" as string,
   });
 
   // Estado de UI para a seção colapsável Elite
