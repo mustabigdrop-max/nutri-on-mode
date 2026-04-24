@@ -3060,6 +3060,35 @@ export default function PlanoAlimentarIA() {
               </SelectField>
             </div>
             <div>
+              <Label>NEAT (atividade não-exercício)</Label>
+              <SelectField value={form.neat} onChange={e => set("neat", e.target.value)}>
+                <option value="baixo">Sedentário no trabalho (home office / escritório)</option>
+                <option value="medio">Moderado (anda bastante, trabalho ativo)</option>
+                <option value="alto">Muito ativo (trabalho físico, militar, campo)</option>
+              </SelectField>
+            </div>
+            <div>
+              <Label>Qualidade do sono</Label>
+              <SelectField value={form.qualidadeSono} onChange={e => set("qualidadeSono", e.target.value)}>
+                <option value="boa">Boa (7–9h regulares)</option>
+                <option value="regular">Regular (5–7h)</option>
+                <option value="ruim">Ruim (&lt; 5h ou muito fragmentado)</option>
+              </SelectField>
+            </div>
+            {(/cut|emagrec|defici|seca/i.test(String(form.objetivo)) || /cut/i.test(String(form.fasePeriodizacao))) && (
+              <div>
+                <Label>Semanas em déficit (refeeding automático ≥4)</Label>
+                <Input
+                  type="number"
+                  min={0}
+                  max={52}
+                  value={form.semanasEmDeficit}
+                  placeholder="0 se está começando agora"
+                  onChange={e => set("semanasEmDeficit", e.target.value)}
+                />
+              </div>
+            )}
+            <div>
               <Label>Modalidade de treino</Label>
               <SelectField value={form.treino} onChange={e => set("treino", e.target.value)}>
                 <option value="musculacao">Musculação / Hipertrofia</option>
