@@ -1715,7 +1715,7 @@ export default function PlanoAlimentarIA() {
                         description: `${fixedCount} refeição${fixedCount > 1 ? "ões" : ""} peri-workout reajustada${fixedCount > 1 ? "s" : ""} para a janela ideal do treino.`,
                       });
                     }}
-                    disabled={step === "loading" || autoRetrying}
+                    disabled={retrying || autoRetrying}
                     style={{
                       background: T.green,
                       color: "#000",
@@ -1724,9 +1724,9 @@ export default function PlanoAlimentarIA() {
                       padding: "8px 14px",
                       fontSize: 12,
                       fontWeight: 700,
-                      cursor: step === "loading" || autoRetrying ? "not-allowed" : "pointer",
+                      cursor: retrying || autoRetrying ? "not-allowed" : "pointer",
                       fontFamily: "inherit",
-                      opacity: step === "loading" || autoRetrying ? 0.5 : 1,
+                      opacity: retrying || autoRetrying ? 0.5 : 1,
                     }}
                   >
                     ⏱ Ajustar horários automaticamente
@@ -1734,7 +1734,7 @@ export default function PlanoAlimentarIA() {
 
                   <button
                     onClick={() => { void gerar(); }}
-                    disabled={step === "loading" || autoRetrying}
+                    disabled={retrying || autoRetrying}
                     style={{
                       background: "transparent",
                       color: T.amber,
@@ -1743,9 +1743,9 @@ export default function PlanoAlimentarIA() {
                       padding: "8px 14px",
                       fontSize: 12,
                       fontWeight: 700,
-                      cursor: step === "loading" || autoRetrying ? "not-allowed" : "pointer",
+                      cursor: retrying || autoRetrying ? "not-allowed" : "pointer",
                       fontFamily: "inherit",
-                      opacity: step === "loading" || autoRetrying ? 0.5 : 1,
+                      opacity: retrying || autoRetrying ? 0.5 : 1,
                     }}
                   >
                     {step === "loading" ? "⟳ Regerando..." : "🔄 Regerar plano"}
