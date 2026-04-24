@@ -453,6 +453,8 @@ serve(async (req) => {
       let refeicoesMinimoFarm = 0;
       let proteinaCompensarCarbo = false;
       const compostosDetectados: string[] = [];
+      const compostosDetectadosSet = new Set<string>();
+      const fatorFarmaDetalhado: { composto: string; fator: number }[] = [];
       const micronutrientesFarm: string[] = [];
       const alertasFarm: string[] = [];
       const alertasCriticosFarm: string[] = [];
@@ -462,7 +464,11 @@ serve(async (req) => {
       for (const [nome, c] of Object.entries(COMPOSTOS)) {
         const detectado = c.keywords.some(kw => protoStr.includes(kw));
         if (!detectado) continue;
+        // EVITAR DUPLICIDADE — cada composto contado apenas UMA vez
+        if (compostosDetectadosSet.has(nome)) continue;
+        compostosDetectadosSet.add(nome);
         compostosDetectados.push(nome);
+        fatorFarmaDetalhado.push({ composto: nome, fator: c.fator_get ?? 1.0 });
         if (c.fator_get) multFarm *= c.fator_get;
         if (c.proteina_bonus_gkg) proteinaBonusGkg += c.proteina_bonus_gkg;
         if (c.carbo_delta_pct) carboDeltaPct += c.carbo_delta_pct;
