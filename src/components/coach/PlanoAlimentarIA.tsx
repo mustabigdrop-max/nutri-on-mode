@@ -378,6 +378,14 @@ export default function PlanoAlimentarIA() {
   const [showCompare, setShowCompare] = useState(false);
   const [comparing, setComparing] = useState(false);
   const [error, setError] = useState("");
+  const [errorDetails, setErrorDetails] = useState<{
+    kind: "validation" | "unavailable" | "timeout" | "rate_limit" | "credits" | "invalid_json" | "network" | "unknown";
+    title: string;
+    description: string;
+    technical?: string;
+    canRetry: boolean;
+  } | null>(null);
+  const [retrying, setRetrying] = useState(false);
   const [copied, setCopied] = useState(false);
   const [saving, setSaving] = useState(false);
   const [savedId, setSavedId] = useState<string | null>(null);
