@@ -499,7 +499,7 @@ A IA APENAS distribui esses macros entre as refeições. NÃO recalcule TMB/GET/
 - Cardio entra no cálculo calórico: ${cardioNoCalculo ? "SIM (somar gasto ao TDEE nos dias de cardio)" : "NÃO (manter TDEE base)"}`
       : `- Faz cardio: NÃO`;
 
-    const userPrompt = `DADOS DO PACIENTE:
+    const userPrompt = `${calcBlock}DADOS DO PACIENTE:
 - Nome: ${nome || "Paciente"}
 - Idade: ${idade} anos | Sexo: ${sexo}
 - Peso: ${peso}kg | Altura: ${altura}cm | IMC: ${imcDisplay}
