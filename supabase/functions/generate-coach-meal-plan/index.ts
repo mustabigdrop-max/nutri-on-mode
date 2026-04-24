@@ -339,7 +339,7 @@ serve(async (req) => {
 - Nível de atividade: ${nivelAtividade}
 - Modalidade de treino: ${treino}
 - Número de refeições/dia: ${refeicoes}
-${calorias ? `- Meta calórica definida pelo coach: ${calorias} kcal` : "- Meta calórica: calcular via Katch-McArdle + ajustes"}
+${calorias ? `- Meta calórica definida pelo coach: ${calorias} kcal  ⚠️ INVIOLÁVEL — o total do plano DEVE ficar entre ${Math.round(Number(calorias) * 0.97)} e ${Math.round(Number(calorias) * 1.03)} kcal (tolerância ±3%). NUNCA reduza a meta porque "parece muito" — o coach já calculou. Se o total bater abaixo, AUMENTE a gramatura proporcionalmente até atingir o alvo.` : "- Meta calórica: calcular via Katch-McArdle + ajustes"}
 
 FASE DE PERIODIZAÇÃO:
 - Fase atual: ${fasePeriodizacao || "manutenção"}
