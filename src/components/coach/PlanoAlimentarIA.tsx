@@ -1748,7 +1748,7 @@ export default function PlanoAlimentarIA() {
                       opacity: retrying || autoRetrying ? 0.5 : 1,
                     }}
                   >
-                    {step === "loading" ? "⟳ Regerando..." : "🔄 Regerar plano"}
+                    {retrying ? "⟳ Regerando..." : "🔄 Regerar plano"}
                   </button>
                 </div>
               </div>
