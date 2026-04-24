@@ -3078,7 +3078,7 @@ export default function PlanoAlimentarIA() {
             {(/cut|emagrec|defici|seca/i.test(String(form.objetivo)) || /cut/i.test(String(form.fasePeriodizacao))) && (
               <div>
                 <Label>Semanas em déficit (refeeding automático ≥4)</Label>
-                <Input
+                <InputField
                   type="number"
                   min={0}
                   max={52}
