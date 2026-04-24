@@ -508,16 +508,32 @@ serve(async (req) => {
         gorduraReducaoPct -= 0.03;
       }
 
-      // ── BLOCO 4 (TEF) — placeholder, recalculado depois de definir prot/kg final ──
-      // (A regra é "se prot > 2g/kg, GET × 1.05" — aplicado mais abaixo.)
+      // ── ORDEM CORRETA DE APLICAÇÃO DOS FATORES ──
+      // 1. TMB (Mifflin) → 2. atividade → 3. cardio (SOMA) → 4. farma (MULT)
+      // 5. TEF: NÃO multiplicar (já embutido no fator atividade) → 6. NEAT só se NÃO atleta
+      //
+      // getBase neste ponto = TMB × atividade + kcal_cardio (cardio já somado no BLOCO 3)
+      const getComCardio = getBase;
 
-      // ── BLOCO 5: NEAT ──
-      const NEAT_MULT: Record<string, number> = { baixo: 1.0, medio: 1.05, médio: 1.05, alto: 1.10 };
-      const fatorNeat = NEAT_MULT[String(_neat).toLowerCase()] ?? 1.05;
-      getBase = getBase * fatorNeat;
+      // ── BLOCO 4: FARMACOLÓGICO (multiplicar sobre get_com_cardio, cap 1.75) ──
+      const fatorFarmaCap = Math.min(multFarm, 1.75);
+      const getFarmaCalc = getComCardio * fatorFarmaCap;
 
-      // GET após farma (sem TEF ainda)
-      let getFarmaPreTef = getBase * multFarm;
+      // ── BLOCO 5: TEF — REMOVIDO como fator multiplicativo ──
+      // TEF real (~10%) já está embutido no fator de atividade Mifflin-St Jeor.
+      // Não aplicar multiplicação adicional para evitar acúmulo exponencial.
+      const fatorTef = 1.0;
+
+      // ── BLOCO 6: NEAT — só aplicar se NÃO for atleta ativo ──
+      // Para nivelAtividade = ativo (1.725) ou muito_ativo (1.9), NEAT já está embutido.
+      const isAtletaAtivo = ["ativo", "muito_ativo"].some(k => nivelRaw.includes(k));
+      const NEAT_MULT: Record<string, number> = { baixo: 1.0, medio: 1.03, médio: 1.03, alto: 1.06 };
+      const fatorNeat = isAtletaAtivo ? 1.0 : (NEAT_MULT[String(_neat).toLowerCase()] ?? 1.0);
+      const getFinal = getFarmaCalc * fatorNeat;
+
+      // Compatibilidade com nomes anteriores
+      getBase = getComCardio; // mantém semântica para logs antigos (TMB×atividade+cardio)
+      let getFarmaPreTef = getFinal; // TEF não mais multiplicativo
 
       // ── BLOCO 7: Macros por objetivo ──
       const objLower = String(objetivo || "").toLowerCase();
