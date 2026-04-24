@@ -752,6 +752,8 @@ export default function PlanoAlimentarIA() {
         restricoesStr,
         protocStr,
         userId: user?.id,
+        coachProfileId,
+        patientUserId: (form as any)?.patientUserId || null,
         trainingSchedule,
         trainingSchedulePrompt,
         glut4Config,
