@@ -876,6 +876,9 @@ serve(async (req) => {
         neatNorm: String(_neat).toLowerCase(),
         getBase: Math.round(getBase),       // Já com cardio + NEAT
         multFarm,
+        fatorFarmaBruto: Math.round(fatorFarmaBruto * 1000) / 1000,
+        fatorFarmaCapAplicado: capAplicado,
+        notaFatorFarma,
         flagsFarm,
         fatorTef,
         getFarma: Math.round(getFarma),
