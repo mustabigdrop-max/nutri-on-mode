@@ -339,7 +339,14 @@ serve(async (req) => {
 - Nível de atividade: ${nivelAtividade}
 - Modalidade de treino: ${treino}
 - Número de refeições/dia: ${refeicoes}
-${calorias ? `- Meta calórica definida pelo coach: ${calorias} kcal  ⚠️ INVIOLÁVEL — o total do plano DEVE ficar entre ${Math.round(Number(calorias) * 0.97)} e ${Math.round(Number(calorias) * 1.03)} kcal (tolerância ±3%). NUNCA reduza a meta porque "parece muito" — o coach já calculou. Se o total bater abaixo, AUMENTE a gramatura proporcionalmente até atingir o alvo.` : "- Meta calórica: calcular via Katch-McArdle + ajustes"}
+${calorias ? `- Meta calórica definida pelo coach: ${calorias} kcal  ⚠️ INVIOLÁVEL — o total do plano DEVE ficar entre ${Math.round(Number(calorias) * 0.97)} e ${Math.round(Number(calorias) * 1.03)} kcal (tolerância ±3%). NUNCA reduza a meta porque "parece muito" — o coach já calculou. Se o total bater abaixo, AUMENTE a gramatura proporcionalmente até atingir o alvo.
+
+⚡ PROTOCOLO PARA PLANOS DE ALTA CALORIA (>4000 kcal):
+   • Distribua o alvo igualmente: ${Math.round(Number(calorias) / Number(refeicoes || 5))} kcal por refeição em média.
+   • Use porções ROBUSTAS de carbo: arroz 200-300g cozido, batata doce 300-400g, aveia 100-150g por refeição principal.
+   • Proteína 50-80g por refeição (200-300g de carne/frango cozido).
+   • Inclua gorduras densas: 30-50g de castanhas, 1-2 col sopa de azeite, abacate inteiro.
+   • Antes de finalizar, SOME mentalmente: se total < ${Math.round(Number(calorias) * 0.97)}, DOBRE as porções de arroz/batata/aveia até bater. NÃO entregue plano abaixo do alvo.` : "- Meta calórica: calcular via Katch-McArdle + ajustes"}
 
 FASE DE PERIODIZAÇÃO:
 - Fase atual: ${fasePeriodizacao || "manutenção"}
