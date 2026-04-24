@@ -821,7 +821,7 @@ ${calorias ? `- Meta calórica definida pelo coach: ${calorias} kcal  ⚠️ INV
    • Use porções ROBUSTAS de carbo: arroz 200-300g cozido, batata doce 300-400g, aveia 100-150g por refeição principal.
    • Proteína 50-80g por refeição (200-300g de carne/frango cozido).
    • Inclua gorduras densas: 30-50g de castanhas, 1-2 col sopa de azeite, abacate inteiro.
-   • Antes de finalizar, SOME mentalmente: se total < ${Math.round(Number(calorias) * 0.97)}, DOBRE as porções de arroz/batata/aveia até bater. NÃO entregue plano abaixo do alvo.` : "- Meta calórica: calcular via Katch-McArdle + ajustes"}
+   • Antes de finalizar, SOME mentalmente: se total < ${Math.round(Number(calorias) * 0.97)}, DOBRE as porções de arroz/batata/aveia até bater. NÃO entregue plano abaixo do alvo.` : "- Meta calórica: usar valor pré-calculado em VALORES CALCULADOS DETERMINISTICAMENTE (Mifflin-St Jeor)"}
 
 FASE DE PERIODIZAÇÃO:
 - Fase atual: ${fasePeriodizacao || "manutenção"}
