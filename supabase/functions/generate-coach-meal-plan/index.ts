@@ -748,7 +748,7 @@ PROTEÍNA: ${calc.proteinaG}g (${calc.protPct}%) — ${calc.protGkgFinal}g/kg
 CARBOIDRATO: ${calc.carboG}g (${calc.carbPct}%)
 GORDURA: ${calc.gorduraG}g (${calc.fatPct}%)
 ${calc.usaMetformina ? "⚠️ Metformina ativa: CHO já reduzido em 10%, proteína compensada." : ""}
-${calc.usaIgf1 ? "💉 IGF-1 ativo: INCLUIR refeição proteica (30–40g proteína, 0g gordura) 25–30min após aplicação." : ""}
+${calc.usaIgf1 ? "💉 IGF-1 Des ativo (meia-vida 20-30min): aplicar IMEDIATAMENTE PÓS-TREINO (janela 0-5min, NUNCA pré-treino). Refeição 25-30min após injeção: 40-50g whey isolado + 30-40g carbo simples + ZERO gordura + ZERO fibra. Dextrose disponível (risco hipoglicemia)." : ""}
 ${calc.usaGlp1 ? `💊 GLP-1 ativo: distribuir em ≥${calc.refeicoesRecomendadas} refeições para evitar náusea.` : ""}
 ${calc.sonoRuim ? `😴 Sono ruim: aumentar ${calc.carboNoturnoBonus}g de CHO de baixo IG (aveia/batata-doce/arroz integral) na última refeição para reduzir cortisol noturno.` : ""}
 
