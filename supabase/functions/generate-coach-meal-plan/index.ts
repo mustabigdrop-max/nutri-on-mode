@@ -324,9 +324,142 @@ serve(async (req) => {
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
     const imc = peso && altura ? (parseFloat(peso) / Math.pow(parseFloat(altura) / 100, 2)).toFixed(1) : "N/A";
-    const massaMagra = peso && bfAtual
-      ? (parseFloat(peso) * (1 - parseFloat(bfAtual) / 100)).toFixed(1)
-      : null;
+
+    // ═══════════════════════════════════════════════════════════════
+    // SELEÇÃO AUTOMÁTICA DE FÓRMULA TMB + cálculo de BF
+    // (Mifflin / Harris-Benedict / Schofield / FAO-OMS / Cunningham / Katch-McArdle)
+    // ═══════════════════════════════════════════════════════════════
+    const calcularTMBCompleto = (f: any) => {
+      const pesoN = Number(f.peso) || 0;
+      const altN = Number(f.altura) || 0;
+      const idadeN = Number(f.idade) || 0;
+      const sexoNorm = String(f.sexo || "").toLowerCase();
+      const isHomem = /masc|homem|^m/.test(sexoNorm);
+      const imcN = pesoN && altN ? pesoN / Math.pow(altN / 100, 2) : 0;
+      const anosTreino = Number(f.anosTreino) || 0;
+      const atletaComp = !!f.atletaCompetitivo;
+      const metodoBF = String(f.metodoBF || "nao_sei");
+
+      // PASSO 1 — BF
+      let bf: number | null = null;
+      let metodo_bf = "nao_disponivel";
+      let confiabilidade_bf: "alta" | "media-alta" | "media" | "baixa" = "baixa";
+      let aviso_bf: string | null = null;
+
+      if (metodoBF === "tenho_bf" && f.bfAtual && Number(f.bfAtual) > 0) {
+        bf = Number(f.bfAtual);
+        metodo_bf = "informado_coach";
+        confiabilidade_bf = "alta";
+      } else if (metodoBF === "navy" && f.circPescoco && f.circAbdomen) {
+        const pescoco = Number(f.circPescoco);
+        const abdomen = Number(f.circAbdomen);
+        const quadril = Number(f.circQuadril) || 0;
+        let bfCalc: number;
+        if (isHomem) {
+          bfCalc = 495 / (1.0324 - 0.19077 * Math.log10(abdomen - pescoco) + 0.15456 * Math.log10(altN)) - 450;
+        } else {
+          bfCalc = 495 / (1.29579 - 0.35004 * Math.log10(abdomen + quadril - pescoco) + 0.22100 * Math.log10(altN)) - 450;
+        }
+        if (atletaComp) bfCalc -= 3;
+        else if (anosTreino >= 5) bfCalc -= 2;
+        else if (anosTreino >= 3) bfCalc -= 1;
+        bf = Math.max(4, Math.min(50, Math.round(bfCalc * 10) / 10));
+        metodo_bf = "navy";
+        confiabilidade_bf = "media-alta";
+        aviso_bf = `BF estimado pelo Método Navy: ${bf}% (±3-4%)`;
+      } else if (metodoBF === "visual" && f.perfilVisual) {
+        const mapaM: Record<string, number> = {
+          competicao: 5, definido_repouso: 9, atletico_contracao: 13,
+          forma_boa: 18, forma_media: 23, acima_peso: 28, obesidade: 35,
+        };
+        const mapaF: Record<string, number> = {
+          competicao: 12, definido_repouso: 16, atletico_contracao: 21,
+          forma_boa: 26, forma_media: 31, acima_peso: 36, obesidade: 42,
+        };
+        const mapa = isHomem ? mapaM : mapaF;
+        bf = mapa[String(f.perfilVisual)] ?? null;
+        metodo_bf = "visual";
+        confiabilidade_bf = "media";
+        if (bf !== null) aviso_bf = `BF estimado visualmente: ${bf}% (±5%)`;
+      } else {
+        // Estimativa automática (Deurenberg ajustado)
+        let bfCalc = (1.20 * imcN) + (0.23 * idadeN) - (10.8 * (isHomem ? 1 : 0)) - 5.4;
+        if (atletaComp) bfCalc -= 8;
+        else if (anosTreino >= 10) bfCalc -= 7;
+        else if (anosTreino >= 5) bfCalc -= 5;
+        else if (anosTreino >= 3) bfCalc -= 3;
+        else if (anosTreino >= 1) bfCalc -= 1;
+        bf = Math.max(4, Math.min(50, Math.round(bfCalc * 10) / 10));
+        metodo_bf = "estimativa_automatica";
+        confiabilidade_bf = "baixa";
+        aviso_bf = `BF estimado automaticamente: ${bf}%. Recomendado informar BF real (bioimpedância, Navy ou DEXA) para maior precisão.`;
+      }
+
+      const massa_magra = bf !== null && pesoN > 0
+        ? Math.round(pesoN * (1 - bf / 100) * 10) / 10
+        : null;
+
+      // PASSO 2 — fórmula TMB
+      let tmb = 0;
+      let formula = "";
+      let justificativa = "";
+
+      if (idadeN > 0 && idadeN < 18) {
+        if (isHomem) {
+          tmb = idadeN < 10 ? (22.7 * pesoN) + 495 : (17.5 * pesoN) + 651;
+        } else {
+          tmb = idadeN < 10 ? (22.5 * pesoN) + 499 : (12.2 * pesoN) + 746;
+        }
+        formula = "Schofield";
+        justificativa = `Paciente ${idadeN} anos — Schofield validado para menores de 18 anos.`;
+      } else if (idadeN >= 60) {
+        tmb = isHomem
+          ? 88.362 + (13.397 * pesoN) + (4.799 * altN) - (5.677 * idadeN)
+          : 447.593 + (9.247 * pesoN) + (3.098 * altN) - (4.330 * idadeN);
+        formula = "Harris-Benedict Revisada";
+        justificativa = `Paciente ${idadeN} anos — Harris-Benedict mais precisa para idosos.`;
+      } else if (imcN > 0 && imcN < 17) {
+        tmb = isHomem ? (15.3 * pesoN) + 679 : (14.7 * pesoN) + 496;
+        formula = "FAO/OMS";
+        justificativa = `IMC ${imcN.toFixed(1)} — FAO/OMS indicada para baixo peso/desnutrição.`;
+      } else if (atletaComp && bf !== null && bf < 10 && massa_magra !== null) {
+        tmb = 500 + (22 * massa_magra);
+        formula = "Cunningham";
+        justificativa = `Atleta competitivo elite, BF ${bf}% < 10% — Cunningham mais preciso.`;
+      } else if ((atletaComp || anosTreino >= 3) && bf !== null && massa_magra !== null && confiabilidade_bf !== "baixa") {
+        tmb = 370 + (21.6 * massa_magra);
+        formula = "Katch-McArdle";
+        justificativa = `Atleta com BF ${bf}% (${metodo_bf}) — Katch-McArdle mais preciso.`;
+      } else if (atletaComp || anosTreino >= 3) {
+        const base = isHomem
+          ? (10 * pesoN) + (6.25 * altN) - (5 * idadeN) + 5
+          : (10 * pesoN) + (6.25 * altN) - (5 * idadeN) - 161;
+        tmb = Math.round(base * 1.05);
+        formula = "Mifflin-St Jeor (+5% atleta)";
+        justificativa = `Atleta sem BF confiável — Mifflin com ajuste +5% para massa muscular. ${aviso_bf || ""} Recomendado medir BF para usar Katch-McArdle.`;
+      } else {
+        tmb = isHomem
+          ? (10 * pesoN) + (6.25 * altN) - (5 * idadeN) + 5
+          : (10 * pesoN) + (6.25 * altN) - (5 * idadeN) - 161;
+        formula = "Mifflin-St Jeor";
+        justificativa = "Fórmula padrão — mais validada para população geral.";
+      }
+
+      return {
+        tmb: Math.round(tmb),
+        formula,
+        justificativa,
+        bf,
+        massa_magra,
+        metodo_bf,
+        confiabilidade_bf,
+        aviso_bf,
+        imc: imcN ? Math.round(imcN * 10) / 10 : 0,
+      };
+    };
+
+    const resultadoTMB = calcularTMBCompleto(body);
+    const massaMagra = resultadoTMB.massa_magra !== null ? String(resultadoTMB.massa_magra) : null;
 
     // ═══════════════════════════════════════════════════════════════
     // CÁLCULO DETERMINÍSTICO COMPLETO — TMB / GET / Macros / Cycling / Refeeding
