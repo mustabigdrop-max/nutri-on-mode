@@ -600,6 +600,23 @@ serve(async (req) => {
         if (carboG < carboMin) carboG = carboMin;
       }
 
+      // ── SANIDADE: total calórico não pode estourar GET farma × 1.20 ──
+      // Se passar, recalcular forçando meta = getFarma × multObj e gordura = pct × meta.
+      if (!metaSourceCoach) {
+        const totalCalculado = (proteinaG * 4) + (gorduraG * 9) + (carboG * 4);
+        if (totalCalculado > getFarma * 1.20) {
+          console.error('[SANIDADE] Total calórico muito alto — recalculando:', {
+            total_calculado: totalCalculado,
+            get_farma: Math.round(getFarma),
+            limite: Math.round(getFarma * 1.20),
+          });
+          metaKcal = Math.round(getFarma * multObj);
+          gorduraG = Math.round((metaKcal * pctGordura) / 9);
+          const carboKcalCorrigido = metaKcal - (proteinaG * 4) - (gorduraG * 9);
+          carboG = Math.max(0, Math.round(carboKcalCorrigido / 4));
+        }
+      }
+
       // ── BLOCO 8: Cycling de carboidrato ──
       let cyclingPlan: any = null;
       if (_cyclingCarbo) {
