@@ -622,14 +622,21 @@ serve(async (req) => {
         };
       }
 
-      // GLP-1 → fracionar refeições mínimas
-      const refeicoesRecomendadas = usaGlp1
-        ? Math.max(Number(refeicoes) || 5, 5)
+      // GLP-1 e outros compostos com refeicoes_minimo (ex: GLP-1 = 5)
+      const minRefFarm = Math.max(refeicoesMinimoFarm, usaGlp1 ? 5 : 0);
+      const refeicoesRecomendadas = minRefFarm > 0
+        ? Math.max(Number(refeicoes) || minRefFarm, minRefFarm)
         : (Number(refeicoes) || 5);
 
-      const protPct = Math.round(((proteinaG * 4) / metaKcal) * 100);
-      const carbPct = Math.round(((carboG * 4) / metaKcal) * 100);
-      const fatPct  = Math.round(((gorduraG * 9) / metaKcal) * 100);
+      // Recalcular meta_kcal real após ajustes de macros (carbo mínimo, deltas farma)
+      const metaKcalReal = (proteinaG * 4) + (gorduraG * 9) + (carboG * 4);
+      // Se a meta foi definida pelo coach, mantemos exibição alinhada à coach,
+      // mas o valor "real" das somas é metaKcalReal (usado para validar refeições).
+      const metaKcalExibida = metaSourceCoach ? metaKcal : metaKcalReal;
+
+      const protPct = Math.round(((proteinaG * 4) / metaKcalExibida) * 100);
+      const carbPct = Math.round(((carboG * 4) / metaKcalExibida) * 100);
+      const fatPct  = Math.round(((gorduraG * 9) / metaKcalExibida) * 100);
 
       return {
         tmb: Math.round(tmb),
@@ -652,12 +659,24 @@ serve(async (req) => {
         usaMetformina, usaIgf1, usaGlp1,
         sonoRuim, carboNoturnoBonus,
         semanasEmDeficit: _semanasDef,
-        metaKcal, metaSourceCoach,
+        metaKcal: metaKcalExibida,
+        metaKcalReal,
+        metaSourceCoach,
         proteinaG, carboG, gorduraG,
         protPct, carbPct, fatPct,
         pctGordura,
         cyclingPlan, refeedingPlan,
         refeicoesRecomendadas,
+        // ── Novos campos do detector COMPOSTOS ──
+        compostosDetectados,
+        carboDeltaPct,
+        gorduraDeltaPct,
+        gorduraMinPct,
+        hepatotoxicoCount,
+        micronutrientesFarm: [...new Set(micronutrientesFarm)],
+        alertasFarm,
+        alertasCriticosFarm,
+        timingsFarm,
       };
     })();
 
