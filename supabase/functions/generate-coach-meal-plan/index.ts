@@ -565,17 +565,31 @@ serve(async (req) => {
       const metaSourceCoach = !!(metaCoach && metaCoach > 0);
       if (metaSourceCoach) metaKcal = Math.round(metaCoach as number);
 
+      // Aplicar piso mínimo de gordura (ex: IA aromatase exige 25%) e delta % farma
+      pctGordura = Math.max(pctGordura, gorduraMinPct / 100);
+      pctGordura = Math.max(0.10, pctGordura + (gorduraDeltaPct / 100));
+
       // Macros
       let proteinaG = Math.round(pesoNum * protGkgFinal);
       let gorduraG = Math.round((metaKcal * pctGordura) / 9);
       let kcalRestante = metaKcal - (proteinaG * 4 + gorduraG * 9);
       let carboG = Math.max(0, Math.round(kcalRestante / 4));
 
-      // Metformina: −10% CHO, kcal compensa em proteína (1g cho 4kcal = 1g ptn 4kcal)
-      if (usaMetformina && carboG > 0) {
-        const choReducaoG = Math.round(carboG * 0.10);
-        carboG -= choReducaoG;
-        proteinaG += choReducaoG;
+      // Aplicar delta % de carbo farmacológico (somatório de todos os compostos detectados)
+      if (carboDeltaPct !== 0 && carboG > 0) {
+        const carboAntes = carboG;
+        carboG = Math.max(0, Math.round(carboG * (1 + carboDeltaPct / 100)));
+        // Compensar em proteína se algum composto pediu (ex: metformina)
+        if (proteinaCompensarCarbo) {
+          const carboRetiradoG = carboAntes - carboG;
+          if (carboRetiradoG > 0) proteinaG += carboRetiradoG;
+        }
+      }
+
+      // CARBOIDRATO MÍNIMO (4g/kg) — exceto cutting agressivo / peak week
+      if (!/cutting|peak/.test(perfilObj)) {
+        const carboMin = Math.round(pesoNum * 4);
+        if (carboG < carboMin) carboG = carboMin;
       }
 
       // ── BLOCO 8: Cycling de carboidrato ──
