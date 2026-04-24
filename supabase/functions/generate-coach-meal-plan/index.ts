@@ -1520,6 +1520,24 @@ ${perfilFisiologico?.modo_economico ? `
       parsed.resumo.timings_farmacologicos = calc.timingsFarm;
       parsed.resumo.hepatotoxico_count = calc.hepatotoxicoCount;
 
+      // ── AUDITORIA DETERMINÍSTICA — coach pode validar cada etapa do cálculo ──
+      parsed.resumo.auditoria_calculo = {
+        tmb: calc.tmb,
+        get_base_atividade: Math.round(calc.tmb * calc.fatorAtividade),
+        get_cardio: calc.kcalCardio,
+        get_neat_mult: calc.fatorNeat,
+        get_tef_mult: calc.fatorTef,
+        get_base_total: calc.getBase, // já inclui cardio + NEAT
+        get_farma: calc.getFarma,
+        fator_farma_detalhado: calc.fatorFarmaDetalhado || [],
+        fator_farma_total: Math.round(calc.multFarm * 1000) / 1000,
+        meta_kcal: calc.metaKcal,
+        meta_kcal_real: calc.metaKcalReal,
+        surplus_aplicado: calc.multObj,
+        proteina_gkg: calc.protGkgFinal,
+        proteina_bonus_gkg: calc.proteinaBonusGkg,
+      };
+
       // Cycling e refeeding como blocos top-level (compatível com spec)
       if (calc.cyclingPlan) parsed.cycling_carboidratos = calc.cyclingPlan;
       if (calc.refeedingPlan) parsed.refeeding_semanal = calc.refeedingPlan;
