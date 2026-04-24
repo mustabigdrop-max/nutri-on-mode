@@ -2519,6 +2519,13 @@ export default function PlanoAlimentarIA() {
           <div style={{ fontSize: 16, fontWeight: 700, color: T.text }}>Gerador de Plano Alimentar por IA</div>
         </div>
         <button
+          onClick={() => navigate("/coach/adjustment-log")}
+          style={{ padding: "8px 14px", borderRadius: 8, background: T.bg3, border: `1px solid ${T.border2}`, color: T.text, fontSize: 12, cursor: "pointer", fontFamily: "inherit", fontWeight: 600 }}
+          title="Log do ajuste calórico (alvo, antes, depois, fator)"
+        >
+          📊 Log de ajuste
+        </button>
+        <button
           onClick={() => { setShowHistory(true); loadHistory(); }}
           style={{ padding: "8px 16px", borderRadius: 8, background: T.bg3, border: `1px solid ${T.border2}`, color: T.text, fontSize: 12, cursor: "pointer", fontFamily: "inherit", fontWeight: 600 }}
         >

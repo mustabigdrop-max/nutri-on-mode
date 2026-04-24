@@ -51,6 +51,7 @@ import CoachDashboardPage from "./pages/CoachDashboardPage";
 import CoachPatientDetailPage from "./pages/CoachPatientDetailPage";
 import CoachAddPatientPage from "./pages/CoachAddPatientPage";
 import CoachSettingsPage from "./pages/CoachSettingsPage";
+import CoachAdjustmentLogPage from "./pages/CoachAdjustmentLogPage";
 import BodyCompositionPage from "./pages/BodyCompositionPage";
 import RefeedProtocolPage from "./pages/RefeedProtocolPage";
 import BehavioralTriggersPage from "./pages/BehavioralTriggersPage";
@@ -184,6 +185,7 @@ const App = () => (
             <Route path="/coach/patient/:id" element={<ProtectedRoute><CoachPatientDetailPage /></ProtectedRoute>} />
             <Route path="/coach/add-patient" element={<ProtectedRoute><CoachAddPatientPage /></ProtectedRoute>} />
             <Route path="/coach/settings" element={<ProtectedRoute><CoachSettingsPage /></ProtectedRoute>} />
+            <Route path="/coach/adjustment-log" element={<ProtectedRoute><CoachAdjustmentLogPage /></ProtectedRoute>} />
 
             <Route path="*" element={<NotFound />} />
           </Routes>
