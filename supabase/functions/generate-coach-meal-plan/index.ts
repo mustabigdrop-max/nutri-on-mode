@@ -1485,6 +1485,19 @@ ${perfilFisiologico?.modo_economico ? `
       parsed.resumo.gordura_total = calc.gorduraG;
       parsed.resumo.imc = parsed.resumo.imc || imc;
 
+      // Contexto farmacológico exposto no resumo (para a UI exibir badges/alertas)
+      parsed.resumo.compostos_detectados = calc.compostosDetectados;
+      parsed.resumo.fator_farmacologico = Math.round(calc.multFarm * 1000) / 1000;
+      parsed.resumo.micronutrientes_obrigatorios = calc.micronutrientesFarm;
+      parsed.resumo.alertas_criticos = calc.alertasCriticosFarm;
+      parsed.resumo.alertas_farmacologicos = calc.alertasFarm;
+      parsed.resumo.timings_farmacologicos = calc.timingsFarm;
+      parsed.resumo.hepatotoxico_count = calc.hepatotoxicoCount;
+
+      // Cycling e refeeding como blocos top-level (compatível com spec)
+      if (calc.cyclingPlan) parsed.cycling_carboidratos = calc.cyclingPlan;
+      if (calc.refeedingPlan) parsed.refeeding_semanal = calc.refeedingPlan;
+
       parsed.calculo_deterministico = {
         tmb: calc.tmb,
         formula_tmb: "Mifflin-St Jeor",
@@ -1497,9 +1510,19 @@ ${perfilFisiologico?.modo_economico ? `
         get_base: calc.getBase,
         multiplicador_farmacologico: calc.multFarm,
         flags_farmacologicas: calc.flagsFarm,
+        compostos_detectados: calc.compostosDetectados,
+        carbo_delta_pct_farma: calc.carboDeltaPct,
+        gordura_delta_pct_farma: calc.gorduraDeltaPct,
+        gordura_min_pct_farma: calc.gorduraMinPct,
+        hepatotoxico_count: calc.hepatotoxicoCount,
+        micronutrientes_obrigatorios: calc.micronutrientesFarm,
+        timings_farmacologicos: calc.timingsFarm,
+        alertas_farmacologicos: calc.alertasFarm,
+        alertas_criticos: calc.alertasCriticosFarm,
         fator_tef: calc.fatorTef,
         get_final: calc.getFarma,
         meta_kcal: calc.metaKcal,
+        meta_kcal_real: calc.metaKcalReal,
         meta_origem: calc.metaSourceCoach ? "coach" : "calculada",
         perfil_objetivo: calc.perfilObj,
         multiplicador_objetivo: calc.multObj,
