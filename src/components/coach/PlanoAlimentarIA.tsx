@@ -201,6 +201,60 @@ const PERI_KIND_LABEL: Record<PeriKind, string> = {
   pos_solido: "Pós-treino sólido",
 };
 
+// Recalcula o horário ideal de cada refeição peri-workout com base no schedule
+// e devolve um novo array de refeições com horário corrigido (snap para o ponto
+// médio da janela esperada do treino mais próximo). Não altera kcal/macros.
+const autoFixPeriWorkoutTimings = (
+  refeicoes: Array<{ refeicao?: string; horario?: string }> | undefined,
+  schedule: WeeklySchedule | undefined,
+): { refeicoes: any[]; fixedCount: number } => {
+  if (!Array.isArray(refeicoes) || !schedule?.base) {
+    return { refeicoes: refeicoes || [], fixedCount: 0 };
+  }
+  const trainingDays = (Object.entries(schedule.base) as Array<[string, any]>)
+    .filter(([, d]) => d?.is_training_day && d?.time)
+    .map(([, d]) => ({
+      timeMin: parseHHmm(d.time),
+      duration: Number(d.duration_min) || 60,
+    }))
+    .filter((d) => d.timeMin !== null) as Array<{ timeMin: number; duration: number }>;
+  if (trainingDays.length === 0) return { refeicoes: refeicoes as any[], fixedCount: 0 };
+
+  const expectedFor = (kind: PeriKind, time: number, dur: number): { min: number; max: number } => {
+    switch (kind) {
+      case "pre_solido": return { min: time - 105, max: time - 60 };
+      case "pre_liquido": return { min: time - 45, max: time - 15 };
+      case "intra": return { min: time, max: time + dur };
+      case "pos_imediato": return { min: time + dur, max: time + dur + 45 };
+      case "pos_solido": return { min: time + dur + 45, max: time + dur + 120 };
+    }
+  };
+
+  let fixedCount = 0;
+  const out = (refeicoes as any[]).map((r) => {
+    const kind = detectPeriKind(r?.refeicao || "");
+    if (!kind) return r;
+    const planoMin = parseHHmm(r?.horario);
+    if (planoMin === null) return r;
+    // Procura o treino com janela mais próxima
+    let bestTd: { timeMin: number; duration: number } | null = null;
+    let bestDelta = Infinity;
+    let bestInRange = false;
+    for (const td of trainingDays) {
+      const { min, max } = expectedFor(kind, td.timeMin, td.duration);
+      if (planoMin >= min && planoMin <= max) { bestInRange = true; break; }
+      const delta = Math.min(Math.abs(planoMin - min), Math.abs(planoMin - max));
+      if (delta < bestDelta) { bestDelta = delta; bestTd = td; }
+    }
+    if (bestInRange || !bestTd || bestDelta <= 10) return r;
+    const { min, max } = expectedFor(kind, bestTd.timeMin, bestTd.duration);
+    const mid = Math.round((min + max) / 2);
+    fixedCount += 1;
+    return { ...r, horario: formatMinutes(mid) };
+  });
+  return { refeicoes: out, fixedCount };
+};
+
 type GrupoSub = "proteina" | "carbo" | "gordura" | "outro";
 interface SubstituicaoItem {
   alimento: string;
