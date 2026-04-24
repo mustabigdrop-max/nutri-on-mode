@@ -1003,8 +1003,27 @@ export default function PlanoAlimentarIA() {
     await gerar();
   };
 
+  // Soma calórica total das refeições do plano (fallback caso ajuste_calorico não esteja disponível)
+  const sumKcalRefeicoes = (refs: any[] | undefined): number => {
+    if (!Array.isArray(refs)) return 0;
+    return refs.reduce((acc, r) => acc + (Number(r?.calorias) || 0), 0);
+  };
+
   // Regera o plano múltiplas vezes até o ajuste calórico cair dentro da banda ±3% (ou atingir limite)
-  const regerarAteAtingirMeta = async () => {
+  // onAttempt: callback opcional invocado a cada tentativa para auditoria/log externo
+  const regerarAteAtingirMeta = async (
+    onAttempt?: (info: {
+      attempt: number;
+      ok: boolean;
+      alvo: number;
+      total_depois: number;
+      delta_kcal: number;
+      fator: number | null;
+      dentro_da_banda: boolean;
+      ajuste_meta: any;
+      error?: string;
+    }) => Promise<void> | void,
+  ) => {
     if (autoRetrying) return;
     setAutoRetrying(true);
     setAutoRetryAttempt(0);
@@ -1024,11 +1043,28 @@ export default function PlanoAlimentarIA() {
         });
         try {
           const novo = await gerarPlanoCore();
-          if (!novo) continue;
+          if (!novo) {
+            await onAttempt?.({
+              attempt: i, ok: false, alvo: 0, total_depois: 0, delta_kcal: 0,
+              fator: null, dentro_da_banda: false, ajuste_meta: null,
+              error: "gerarPlanoCore retornou vazio",
+            });
+            continue;
+          }
           const aj: any = (novo as any)?.ajuste_calorico;
           const alvo = aj?.alvo ?? 0;
-          const total = aj?.total_depois ?? 0;
+          const total = aj?.total_depois ?? sumKcalRefeicoes((novo as any)?.refeicoes);
           const delta = Math.abs(total - alvo);
+          await onAttempt?.({
+            attempt: i,
+            ok: true,
+            alvo,
+            total_depois: total,
+            delta_kcal: total - alvo,
+            fator: aj?.fator ?? null,
+            dentro_da_banda: !!aj?.dentro_da_banda,
+            ajuste_meta: aj || null,
+          });
           if (delta < melhorDelta) {
             melhor = novo;
             melhorDelta = delta;
@@ -1045,6 +1081,11 @@ export default function PlanoAlimentarIA() {
           }
         } catch (e: any) {
           console.error(`[regerarAteAtingirMeta] tentativa ${i} falhou:`, e);
+          await onAttempt?.({
+            attempt: i, ok: false, alvo: 0, total_depois: 0, delta_kcal: 0,
+            fator: null, dentro_da_banda: false, ajuste_meta: null,
+            error: e?.message || String(e),
+          });
         }
       }
       // Esgotou tentativas
