@@ -1035,7 +1035,7 @@ OUTROS DADOS:
 - Suplementação atual: ${suplementos || "Não informada"}
 - Observações clínicas: ${observacoes || "Nenhuma"}
 
-Aplique TODAS as regras de cálculo (Katch-McArdle, ajustes farmacológicos por composto, integração de cardio, fase de periodização). Use alimentos brasileiros acessíveis com gramagem precisa. Linguagem técnica de coach de competição.
+Aplique TODAS as regras de cálculo (Mifflin-St Jeor — valores já pré-calculados no bloco determinístico, ajustes farmacológicos por composto, integração de cardio, fase de periodização). Use alimentos brasileiros acessíveis com gramagem precisa. Linguagem técnica de coach de competição.
 
 Responda APENAS com JSON válido nesta estrutura exata:
 {
