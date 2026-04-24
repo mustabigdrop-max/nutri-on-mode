@@ -536,6 +536,10 @@ export default function PlanoAlimentarIA() {
   const [planoComparativo, setPlanoComparativo] = useState<PlanoData | null>(null);
   const [showCompare, setShowCompare] = useState(false);
   const [comparing, setComparing] = useState(false);
+  // Modal de revisão do protocolo farmacológico (recálculo determinístico)
+  const [showProtocoloModal, setShowProtocoloModal] = useState(false);
+  const [protocoloDraft, setProtocoloDraft] = useState("");
+  const [protocoloRecalc, setProtocoloRecalc] = useState(false);
   const [error, setError] = useState("");
   const [errorDetails, setErrorDetails] = useState<{
     kind: "validation" | "unavailable" | "timeout" | "rate_limit" | "credits" | "invalid_json" | "network" | "unknown";
