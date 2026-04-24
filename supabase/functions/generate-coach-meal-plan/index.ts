@@ -523,7 +523,7 @@ serve(async (req) => {
       const objLower = String(objetivo || "").toLowerCase();
       const faseLower = String(fasePeriodizacao || "").toLowerCase();
       const protBaseGkg = 2.2;
-      let protGkgFinal = Math.min(3.5, protBaseGkg + proteinaBonusGkg);
+      let protGkgFinal = Math.min(3.2, protBaseGkg + proteinaBonusGkg);
 
       let perfilObj = "manutencao";
       let multObj = 1.0;
