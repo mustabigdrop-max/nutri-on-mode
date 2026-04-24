@@ -1743,10 +1743,74 @@ export default function PlanoAlimentarIA() {
                   <button
                     onClick={async () => {
                       if (retrying || autoRetrying) return;
-                      // 1) Snap nos horários peri-workout
+
+                      // Inicializa run de auditoria
+                      const runId =
+                        (typeof crypto !== "undefined" && (crypto as any).randomUUID)
+                          ? (crypto as any).randomUUID()
+                          : `run_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+                      let stepIndex = 0;
+                      const patientName: string | undefined =
+                        (plano as any)?.resumo?.nome || (form as any)?.nome;
+                      const logStep = async (
+                        step_type: string,
+                        ok: boolean,
+                        message: string,
+                        details: any,
+                        attempt?: number,
+                      ) => {
+                        if (!coachProfileId) return;
+                        try {
+                          stepIndex += 1;
+                          await (supabase as any).from("coach_fix_all_logs").insert({
+                            coach_id: coachProfileId,
+                            run_id: runId,
+                            patient_name: patientName || null,
+                            step_index: stepIndex,
+                            step_type,
+                            attempt: attempt ?? null,
+                            ok,
+                            message,
+                            details,
+                          });
+                        } catch (e) {
+                          console.error("[fix-all log] falhou:", e);
+                        }
+                      };
+
+                      // 1) Snap inicial nos horários peri-workout
+                      const totalAntesSnap = sumKcalRefeicoes(plano.refeicoes as any);
+                      const ajAntes: any = (plano as any)?.ajuste_calorico;
                       const { refeicoes: novasRef, fixedCount } = autoFixPeriWorkoutTimings(
                         plano.refeicoes as any,
                         trainingSchedule,
+                      );
+                      const horariosCorrigidos = (plano.refeicoes as any[])
+                        .map((r, i) => {
+                          const novo = (novasRef as any[])[i];
+                          if (!novo || novo.horario === r.horario) return null;
+                          return { refeicao: r.refeicao, de: r.horario, para: novo.horario };
+                        })
+                        .filter(Boolean);
+                      await logStep(
+                        "snap_inicial",
+                        true,
+                        fixedCount > 0
+                          ? `${fixedCount} refeição(ões) peri-workout reposicionada(s).`
+                          : "Nenhum horário peri-workout fora da janela.",
+                        {
+                          fixed_count: fixedCount,
+                          horarios_corrigidos: horariosCorrigidos,
+                          total_kcal_plano: totalAntesSnap,
+                          ajuste_calorico_inicial: ajAntes
+                            ? {
+                                alvo: ajAntes.alvo,
+                                total_depois: ajAntes.total_depois,
+                                dentro_da_banda: ajAntes.dentro_da_banda,
+                                fator: ajAntes.fator,
+                              }
+                            : null,
+                        },
                       );
                       if (fixedCount > 0) {
                         setPlano((prev) => prev ? ({ ...prev, refeicoes: novasRef as any }) : prev);
@@ -1755,25 +1819,100 @@ export default function PlanoAlimentarIA() {
                           description: `${fixedCount} refeição${fixedCount > 1 ? "ões" : ""} peri-workout reposicionada${fixedCount > 1 ? "s" : ""}.`,
                         });
                       }
+
                       // 2) Verifica banda calórica e regenera se necessário
                       const aj: any = (plano as any)?.ajuste_calorico;
                       const foraDaBanda = aj && aj.aplicado && !aj.dentro_da_banda;
                       if (foraDaBanda) {
+                        await logStep(
+                          "regerar_inicio",
+                          true,
+                          `Plano fora da banda ±3% (${aj.total_depois} vs alvo ${aj.alvo}). Iniciando regeração.`,
+                          {
+                            alvo: aj.alvo,
+                            total_antes: aj.total_depois,
+                            delta_kcal: (aj.total_depois ?? 0) - (aj.alvo ?? 0),
+                            max_tentativas: MAX_AUTO_RETRIES,
+                          },
+                        );
                         toast({
                           title: "⚙️ Corrigindo calorias",
                           description: "Plano fora da banda ±3% — iniciando regeração até atingir a meta...",
                         });
-                        await regerarAteAtingirMeta();
+                        await regerarAteAtingirMeta(async (info) => {
+                          await logStep(
+                            "regerar_tentativa",
+                            info.ok,
+                            info.error
+                              ? `Tentativa ${info.attempt} falhou: ${info.error}`
+                              : `Tentativa ${info.attempt}: ${info.total_depois} kcal (alvo ${info.alvo}, Δ${Math.round(info.delta_kcal)}, ${info.dentro_da_banda ? "dentro" : "fora"} da banda).`,
+                            {
+                              alvo: info.alvo,
+                              total_depois: info.total_depois,
+                              delta_kcal: info.delta_kcal,
+                              fator: info.fator,
+                              dentro_da_banda: info.dentro_da_banda,
+                              ajuste_meta: info.ajuste_meta,
+                              error: info.error,
+                            },
+                            info.attempt,
+                          );
+                        });
+
                         // 3) Re-snap nos horários do plano regenerado
+                        let finalSnapCount = 0;
+                        let finalCorrecoes: any[] = [];
+                        let finalTotal = 0;
+                        let finalAj: any = null;
                         setPlano((prev) => {
                           if (!prev) return prev;
+                          finalAj = (prev as any)?.ajuste_calorico;
+                          finalTotal = sumKcalRefeicoes(prev.refeicoes as any);
                           const r = autoFixPeriWorkoutTimings(prev.refeicoes as any, trainingSchedule);
+                          finalSnapCount = r.fixedCount;
+                          finalCorrecoes = (prev.refeicoes as any[])
+                            .map((rr, i) => {
+                              const novo = (r.refeicoes as any[])[i];
+                              if (!novo || novo.horario === rr.horario) return null;
+                              return { refeicao: rr.refeicao, de: rr.horario, para: novo.horario };
+                            })
+                            .filter(Boolean);
                           if (r.fixedCount === 0) return prev;
                           return { ...prev, refeicoes: r.refeicoes as any };
                         });
+                        // grava o snap final fora do setState (assíncrono mas com valores capturados)
+                        setTimeout(() => {
+                          void logStep(
+                            "snap_final",
+                            true,
+                            finalSnapCount > 0
+                              ? `Re-snap aplicado em ${finalSnapCount} refeição(ões) após regeração.`
+                              : "Plano regenerado já estava com horários alinhados.",
+                            {
+                              fixed_count: finalSnapCount,
+                              horarios_corrigidos: finalCorrecoes,
+                              total_kcal_plano: finalTotal,
+                              ajuste_calorico_final: finalAj
+                                ? {
+                                    alvo: finalAj.alvo,
+                                    total_depois: finalAj.total_depois,
+                                    dentro_da_banda: finalAj.dentro_da_banda,
+                                    fator: finalAj.fator,
+                                  }
+                                : null,
+                            },
+                          );
+                        }, 0);
                       } else if (fixedCount === 0) {
+                        await logStep("nada_a_corrigir", true, "Plano já alinhado em horários e calorias.", {});
                         toast({ title: "Nada a corrigir", description: "Plano já está alinhado em horários e calorias." });
                       } else {
+                        await logStep(
+                          "concluido_sem_regeracao",
+                          true,
+                          "Horários corrigidos e calorias dentro da banda ±3%.",
+                          { fixed_count: fixedCount },
+                        );
                         toast({ title: "🎯 Tudo certo", description: "Horários corrigidos e calorias dentro da banda ±3%." });
                       }
                     }}
