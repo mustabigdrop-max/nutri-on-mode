@@ -1700,6 +1700,63 @@ export default function PlanoAlimentarIA() {
 
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 12 }}>
                   <button
+                    onClick={async () => {
+                      if (retrying || autoRetrying) return;
+                      // 1) Snap nos horários peri-workout
+                      const { refeicoes: novasRef, fixedCount } = autoFixPeriWorkoutTimings(
+                        plano.refeicoes as any,
+                        trainingSchedule,
+                      );
+                      if (fixedCount > 0) {
+                        setPlano((prev) => prev ? ({ ...prev, refeicoes: novasRef as any }) : prev);
+                        toast({
+                          title: "✓ Horários ajustados",
+                          description: `${fixedCount} refeição${fixedCount > 1 ? "ões" : ""} peri-workout reposicionada${fixedCount > 1 ? "s" : ""}.`,
+                        });
+                      }
+                      // 2) Verifica banda calórica e regenera se necessário
+                      const aj: any = (plano as any)?.ajuste_calorico;
+                      const foraDaBanda = aj && aj.aplicado && !aj.dentro_da_banda;
+                      if (foraDaBanda) {
+                        toast({
+                          title: "⚙️ Corrigindo calorias",
+                          description: "Plano fora da banda ±3% — iniciando regeração até atingir a meta...",
+                        });
+                        await regerarAteAtingirMeta();
+                        // 3) Re-snap nos horários do plano regenerado
+                        setPlano((prev) => {
+                          if (!prev) return prev;
+                          const r = autoFixPeriWorkoutTimings(prev.refeicoes as any, trainingSchedule);
+                          if (r.fixedCount === 0) return prev;
+                          return { ...prev, refeicoes: r.refeicoes as any };
+                        });
+                      } else if (fixedCount === 0) {
+                        toast({ title: "Nada a corrigir", description: "Plano já está alinhado em horários e calorias." });
+                      } else {
+                        toast({ title: "🎯 Tudo certo", description: "Horários corrigidos e calorias dentro da banda ±3%." });
+                      }
+                    }}
+                    disabled={retrying || autoRetrying}
+                    style={{
+                      background: `linear-gradient(135deg, ${T.green} 0%, ${T.greenDim} 100%)`,
+                      color: "#000",
+                      border: "none",
+                      borderRadius: 8,
+                      padding: "10px 18px",
+                      fontSize: 13,
+                      fontWeight: 800,
+                      cursor: retrying || autoRetrying ? "not-allowed" : "pointer",
+                      fontFamily: "inherit",
+                      opacity: retrying || autoRetrying ? 0.5 : 1,
+                      boxShadow: `0 4px 12px ${T.green}33`,
+                    }}
+                  >
+                    {autoRetrying
+                      ? `⟳ Corrigindo... (${autoRetryAttempt}/${MAX_AUTO_RETRIES})`
+                      : "✨ Corrigir tudo agora"}
+                  </button>
+
+                  <button
                     onClick={() => {
                       const { refeicoes: novasRef, fixedCount } = autoFixPeriWorkoutTimings(
                         plano.refeicoes as any,
@@ -1717,9 +1774,9 @@ export default function PlanoAlimentarIA() {
                     }}
                     disabled={retrying || autoRetrying}
                     style={{
-                      background: T.green,
-                      color: "#000",
-                      border: "none",
+                      background: "transparent",
+                      color: T.green,
+                      border: `1px solid ${T.green}`,
                       borderRadius: 8,
                       padding: "8px 14px",
                       fontSize: 12,
@@ -1729,7 +1786,7 @@ export default function PlanoAlimentarIA() {
                       opacity: retrying || autoRetrying ? 0.5 : 1,
                     }}
                   >
-                    ⏱ Ajustar horários automaticamente
+                    ⏱ Só ajustar horários
                   </button>
 
                   <button
