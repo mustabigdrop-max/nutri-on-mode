@@ -1480,22 +1480,73 @@ ${perfilFisiologico?.modo_economico ? `
     }
 
     let parsed;
+    let parseError: unknown = null;
     try {
       parsed = JSON.parse(clean);
-    } catch (e) {
-      // Segunda tentativa: remover vírgulas pendentes antes de } ou ]
+    } catch (e1) {
+      parseError = e1;
+      // Tentativa 2: remover vírgulas pendentes antes de } ou ]
       try {
         const repaired = clean.replace(/,(\s*[}\]])/g, "$1");
         parsed = JSON.parse(repaired);
-      } catch {
-        console.error("Failed to parse AI response. finish_reason:", finishReason, "len:", clean.length, "head:", clean.substring(0, 200), "tail:", clean.substring(clean.length - 300));
-        const truncated = finishReason === "length" || !clean.endsWith("}");
-        const msg = truncated
-          ? "A IA gerou um plano grande demais e a resposta foi truncada (finish_reason=length). O limite de tokens foi aumentado — tente novamente."
-          : "Resposta da IA não é um JSON válido. Tente novamente.";
-        return new Response(JSON.stringify({ error: msg, finish_reason: finishReason }), {
-          status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+      } catch (e2) {
+        parseError = e2;
+        // Tentativa 3: reparo agressivo
+        // - normaliza quebras de linha literais dentro de strings
+        // - remove caracteres de controle inválidos
+        // - remove vírgulas pendentes
+        // - remove BOM/zero-width
+        try {
+          let aggressive = clean
+            .replace(/\uFEFF|\u200B|\u200C|\u200D/g, "")
+            // remove caracteres de controle exceto \n \r \t (serão escapados depois)
+            .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, "");
+
+          // Escapa quebras de linha cruas dentro de strings JSON
+          // Walker simples: percorre e quando estiver dentro de "..." substitui \n \r \t por \\n \\r \\t
+          let out = "";
+          let inStr = false;
+          let escape = false;
+          for (let i = 0; i < aggressive.length; i++) {
+            const ch = aggressive[i];
+            if (escape) { out += ch; escape = false; continue; }
+            if (ch === "\\") { out += ch; escape = true; continue; }
+            if (ch === '"') { inStr = !inStr; out += ch; continue; }
+            if (inStr) {
+              if (ch === "\n") { out += "\\n"; continue; }
+              if (ch === "\r") { out += "\\r"; continue; }
+              if (ch === "\t") { out += "\\t"; continue; }
+            }
+            out += ch;
+          }
+          out = out.replace(/,(\s*[}\]])/g, "$1");
+          parsed = JSON.parse(out);
+        } catch (e3) {
+          parseError = e3;
+          const errMsg = e3 instanceof Error ? e3.message : String(e3);
+          // tenta extrair posição do erro para log
+          const posMatch = /position\s+(\d+)/i.exec(errMsg);
+          let context = "";
+          if (posMatch) {
+            const pos = parseInt(posMatch[1], 10);
+            context = clean.substring(Math.max(0, pos - 120), Math.min(clean.length, pos + 120));
+          }
+          console.error(
+            "Failed to parse AI response. finish_reason:", finishReason,
+            "len:", clean.length,
+            "err:", errMsg,
+            "context:", context,
+            "head:", clean.substring(0, 200),
+            "tail:", clean.substring(clean.length - 300),
+          );
+          const truncated = finishReason === "length" || !clean.trimEnd().endsWith("}");
+          const msg = truncated
+            ? "A IA gerou um plano grande demais e a resposta foi truncada. Tente novamente."
+            : "Resposta da IA não é um JSON válido (" + errMsg.slice(0, 120) + "). Tente novamente.";
+          return new Response(JSON.stringify({ error: msg, finish_reason: finishReason, parse_error: errMsg }), {
+            status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
       }
     }
 
