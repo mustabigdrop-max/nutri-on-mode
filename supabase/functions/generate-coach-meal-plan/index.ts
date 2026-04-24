@@ -490,8 +490,8 @@ serve(async (req) => {
         flagsFarm.push(`${nome} ×${(c.fator_get ?? 1).toFixed(2)}${c.proteina_bonus_gkg ? ` +${c.proteina_bonus_gkg}g·kg` : ""}${c.carbo_delta_pct ? ` CHO${c.carbo_delta_pct > 0 ? "+" : ""}${c.carbo_delta_pct}%` : ""}`);
       }
 
-      // CAP global: máximo ×2.0
-      multFarm = Math.min(multFarm, 2.0);
+      // CAP global: máximo ×1.75 (protocolo real raramente excede isso)
+      multFarm = Math.min(multFarm, 1.75);
 
       if (hepatotoxicoCount >= 2) {
         alertasCriticosFarm.push(
