@@ -14,7 +14,7 @@ REGRAS DE CÁLCULO OBRIGATÓRIAS:
 2. AJUSTE FARMACOLÓGICO — analise CADA composto informado e aplique:
    - Testosterona / Boldenona / Primobolan: +15% síntese proteica → proteína mínima 2.8g/kg MM. Volume alimentar maior.
    - Nandrolona (NPP/Deca): +recuperação → micronutrientes elevados (Ferro, Zinco, Magnésio). Citar fontes alimentares.
-   - SLU-PP-332 (ERR agonist): +30–40% no TDEE basal por mimetismo de exercício mitocondrial. Aplicar multiplicador 1.30–1.40 sobre TMB.
+   - SLU-PP-332 (agonista ERR — exercício mimético): biogênese mitocondrial e oxidação de gordura. NÃO é GLP-1, NÃO suprime apetite. Aumenta gasto energético mitocondrial. Garantir ingestão calórica integral mesmo em dias de menor apetite. Suporte: CoQ10 200mg + PQQ 20mg + Ômega 3 4g/dia.
    - Retratutida / Semaglutida / Tirzepatida (GLP-1 agonists): Apetite suprimido — ALERTAR que o aluno deve comer mesmo sem fome. TDEE basal aumentado 15–25%. Calcular para cima.
    - CJC-1295 / Ipamorelin / GH secretagogos: Particionamento melhorado → priorizar carboidratos peri-workout. Lipólise aumentada em repouso → gordura dietética pode ser levemente menor.
    - Metformina: Absorção de B12 comprometida → citar suplementação. Sensibilidade à glicose aumentada.
