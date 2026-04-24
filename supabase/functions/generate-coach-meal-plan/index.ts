@@ -1730,7 +1730,7 @@ ${perfilFisiologico?.modo_economico ? `
 
       parsed.calculo_deterministico = {
         tmb: calc.tmb,
-        formula_tmb: "Mifflin-St Jeor",
+        formula_tmb: resultadoTMB.formula,
         fator_atividade: calc.fatorAtividade,
         nivel_atividade: calc.nivelAtividadeNorm,
         fator_neat: calc.fatorNeat,
