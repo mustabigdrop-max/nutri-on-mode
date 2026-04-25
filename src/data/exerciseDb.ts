@@ -10,7 +10,7 @@ export interface ExerciseSubstitute {
 
 export interface ExerciseEntry {
   nome: string;
-  rank: "🥇" | "🥈";
+  rank: "🥇" | "🥈" | "🥉";
   execucao: string;
   series: string;
   dicas: string[];
