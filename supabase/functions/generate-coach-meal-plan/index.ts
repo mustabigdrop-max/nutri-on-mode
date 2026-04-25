@@ -1116,8 +1116,11 @@ OBRIGAÇÕES:
 1) A refeição "Pós-Treino Imediato" DEVE ter "${glut4Config.carb_source_label}" como fonte principal de carboidrato — proibido whey, proteína animal e gordura adicionada.
 
    ⚠️ OBRIGATÓRIO COMBINAR 2+ ALIMENTOS (NUNCA deixar a refeição com 1 só ingrediente):
-   - Se a fonte principal for um AÇÚCAR/XAROPE PURO (leite condensado, doce de leite, mel cru, melado, rapadura, geleia, dextrose, maltodextrina, açúcar de coco, mucilon puro), VOCÊ É OBRIGADO a adicionar um CARBOIDRATO ESTRUTURAL/VEÍCULO junto na MESMA refeição: pão francês, pão de forma, tapioca, banana madura, batata-doce cozida, arroz branco, biscoito de arroz, ou cuscuz. NUNCA prescreva leite condensado/doce de leite/mel/geleia "puro" — sempre como recheio/cobertura de um veículo sólido.
-   - Combos válidos e ENCORAJADOS (escolha um conforme preferência/disponibilidade do paciente — VARIE entre os dias do plano):
+
+   ⛔ PROIBIDO ABSOLUTO no PÓS-TREINO IMEDIATO: dextrose, maltodextrina, malto, waxy maize, ciclodextrina, vitargo, palatinose, karbolyn ou QUALQUER carboidrato em pó tipo "shake esportivo de reposição". Esses compostos são EXCLUSIVAMENTE de uso INTRA-TREINO (durante o treino, dissolvidos em água). Se o paciente usa maltodextrina/dextrose, elas DEVEM aparecer em uma refeição separada chamada "Intra-Treino" (durante o treino), NUNCA dentro do "Pós-Treino Imediato". O pós-imediato usa SEMPRE alimentos sólidos/semi-sólidos reais (pão, tapioca, banana, mel, leite condensado, doce de leite, geleia, batata-doce, arroz branco, etc.).
+
+   - Se a fonte principal for um AÇÚCAR/XAROPE PURO (leite condensado, doce de leite, mel cru, melado, rapadura, geleia, açúcar de coco, mucilon puro), VOCÊ É OBRIGADO a adicionar um CARBOIDRATO ESTRUTURAL/VEÍCULO junto na MESMA refeição: pão francês, pão de forma, tapioca, banana madura, batata-doce cozida, arroz branco, biscoito de arroz, ou cuscuz. NUNCA prescreva leite condensado/doce de leite/mel/geleia "puro" — sempre como recheio/cobertura de um veículo sólido.
+   - Combos válidos e ENCORAJADOS para o PÓS-IMEDIATO (escolha um conforme preferência/disponibilidade do paciente — VARIE entre os dias do plano):
      • Pão francês + leite condensado desnatado
      • Pão francês + doce de leite
      • Pão francês + geleia de frutas (uva/morango/goiaba)
@@ -1133,11 +1136,17 @@ OBRIGAÇÕES:
      • Mucilon escaldado + banana + mel
      • Cuscuz + mel + banana
      • Rapadura ralada + banana
-     • Dextrose + maltodextrina + água (apenas se paciente preferir shake)
    - Cada alimento deve aparecer como ITEM SEPARADO no array "alimentos" da refeição, com sua própria gramagem, kcal e macros individuais. NUNCA agrupar tudo num só item tipo "pão com leite condensado 165g".
    - Listar no campo de descrição/justificativa de cada item o papel fisiológico (ex: "pão francês = amido de absorção rápida → glicose muscular" / "leite condensado = sacarose → glicose+frutose para reposição hepática de glicogênio").
 
-   O TOTAL de gramas de CHO deve bater o alvo (${glut4Config.carb_grams ?? "calculado pelo peso"}g), gordura ≤ 2g e proteína ≤ 3g (apenas residual do pão/tapioca, sem adicionar fonte proteica). Maltodextrina já usada intra-treino não pode reaparecer aqui.
+   O TOTAL de gramas de CHO deve bater o alvo (${glut4Config.carb_grams ?? "calculado pelo peso"}g), gordura ≤ 2g e proteína ≤ 3g (apenas residual do pão/tapioca, sem adicionar fonte proteica).
+
+${glut4Config.uses_intra_malto ? `📍 REFEIÇÃO INTRA-TREINO OBRIGATÓRIA (separada do pós-imediato):
+   - Nome: "Refeição X (HH:MM — Intra-Treino)" com horário = início do treino + 15-20min (no meio do treino).
+   - Conteúdo: ${glut4Config.intra_malto_grams}g de maltodextrina (ou dextrose, ou 50/50 malto+dextrose) dissolvidos em 500-700ml de água. Opcionalmente: 5g de creatina + eletrólitos.
+   - Macros: ${glut4Config.intra_malto_grams}g CHO | 0g proteína | 0g gordura | ~${(glut4Config.intra_malto_grams || 0) * 4} kcal.
+   - PROIBIDO: aparecer maltodextrina/dextrose em qualquer outra refeição que não esta.
+` : ""}
 2) O HORÁRIO da refeição "Pós-Treino Imediato" DEVE ser exatamente HORÁRIO_DO_TREINO + duração + ${glut4Config.timing_minutes} minutos (use o time/duration_min do dia de treino do schedule). Em hipótese alguma colocar refeições peri-workout em horário desconectado do treino.
 3) Crie também uma refeição "Pós-Treino Sólido" 60–90min depois (com proteína completa + CHO moderado).
 4) Pré-treino sólido: 60–90min ANTES do horário do treino (não horas antes).
