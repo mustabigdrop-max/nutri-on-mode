@@ -128,6 +128,7 @@ const CoachPatientDetailPage = () => {
     setMealLogs(mealsRes.data || []);
     setExams(examsRes.data || []);
     setLoading(false);
+    loadCompetitionPlans();
   };
 
   const fetchMealPlan = async () => {
