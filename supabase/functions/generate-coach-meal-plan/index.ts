@@ -1660,13 +1660,22 @@ ${perfilFisiologico?.modo_economico ? `
         })();
 
       // Carboidratos compatíveis permitidos no pós-treino imediato (alta/média absorção)
+      // ⛔ EXCLUÍDOS: dextrose, maltodextrina, waxy maize, ciclodextrina, vitargo, palatinose,
+      //    karbolyn — esses são EXCLUSIVAMENTE intra-treino (em pó dissolvido em água).
       const CARBS_COMPATIVEIS = [
-        "tapioca", "mucilon", "dextrose", "maltodextrina", "malto", "mel", "rapadura",
+        "tapioca", "mucilon", "mel", "rapadura",
         "doce de leite", "leite condensado", "geleia", "geléia", "açúcar", "acucar",
         "banana", "pão francês", "pao frances", "pão", "pao", "batata-doce", "batata doce",
-        "arroz branco", "frutose", "glicose", "waxy maize", "ciclodextrina", "vitargo",
+        "arroz branco", "frutose",
         "polvilho", "biju", "beiju", "água de coco", "agua de coco", "suco de uva",
         "suco de laranja", "purê de batata", "pure de batata", "cuscuz", "cream of rice",
+        "melado", "melaço", "açúcar de coco", "acucar de coco",
+      ];
+      // Carboidratos EXCLUSIVOS de intra-treino (NUNCA no pós-imediato — devem migrar para refeição "Intra-Treino")
+      const CARBS_INTRA_TREINO = [
+        "dextrose", "maltodextrina", "malto", "waxy maize", "ciclodextrina",
+        "vitargo", "palatinose", "karbolyn", "glicose em pó", "glicose em po",
+        "carb up", "carbup",
       ];
       // Itens proibidos (proteína/gordura) — removidos automaticamente
       const PROIBIDOS = [
@@ -1682,6 +1691,8 @@ ${perfilFisiologico?.modo_economico ? `
         CARBS_COMPATIVEIS.some((c) => nome.toLowerCase().includes(c));
       const isProibido = (nome: string) =>
         PROIBIDOS.some((p) => nome.toLowerCase().includes(p));
+      const isIntraTreino = (nome: string) =>
+        CARBS_INTRA_TREINO.some((c) => nome.toLowerCase().includes(c));
 
       // Heurística simples para extrair gramas de uma string "30g", "45 g", "1 colher (15g)"
       const extrairGramasCho = (a: any): number => {
