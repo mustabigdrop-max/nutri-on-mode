@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Dumbbell, BarChart3, Flame, Swords } from "lucide-react";
+import { ArrowLeft, Dumbbell, BarChart3, Flame, Swords, Heart } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
 import ExerciseSelector from "@/components/workout/ExerciseSelector";
 
@@ -45,6 +45,13 @@ const ExerciseSelectorPage = () => {
             >
               <Swords className="w-3 h-3 text-yellow-400" />
               <span className="text-[9px] font-semibold text-yellow-400">Arsenal</span>
+            </button>
+            <button
+              onClick={() => navigate("/recovery-protocols")}
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/30 hover:bg-emerald-500/20 transition-colors"
+            >
+              <Heart className="w-3 h-3 text-emerald-400" />
+              <span className="text-[9px] font-semibold text-emerald-400">Recovery</span>
             </button>
           </div>
         </div>
