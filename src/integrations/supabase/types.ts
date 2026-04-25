@@ -1834,6 +1834,268 @@ export type Database = {
           },
         ]
       }
+      competition_daily_logs: {
+        Row: {
+          calorias_consumidas: number | null
+          carbo_consumido: number | null
+          cardio_duracao_min: number | null
+          cardio_tipo: string | null
+          competition_plan_id: string
+          compostos_aplicados: Json | null
+          created_at: string
+          data: string
+          duracao_posing_min: number | null
+          exercicios_log: Json | null
+          gordura_consumida: number | null
+          hidratacao_ml: number | null
+          id: string
+          observacoes: string | null
+          posing_realizado: boolean | null
+          proteina_consumida: number | null
+          recovery_score_pre: number | null
+          score_dia: number | null
+          semana: number
+          treino_realizado: boolean | null
+          volume_total_kg: number | null
+        }
+        Insert: {
+          calorias_consumidas?: number | null
+          carbo_consumido?: number | null
+          cardio_duracao_min?: number | null
+          cardio_tipo?: string | null
+          competition_plan_id: string
+          compostos_aplicados?: Json | null
+          created_at?: string
+          data: string
+          duracao_posing_min?: number | null
+          exercicios_log?: Json | null
+          gordura_consumida?: number | null
+          hidratacao_ml?: number | null
+          id?: string
+          observacoes?: string | null
+          posing_realizado?: boolean | null
+          proteina_consumida?: number | null
+          recovery_score_pre?: number | null
+          score_dia?: number | null
+          semana: number
+          treino_realizado?: boolean | null
+          volume_total_kg?: number | null
+        }
+        Update: {
+          calorias_consumidas?: number | null
+          carbo_consumido?: number | null
+          cardio_duracao_min?: number | null
+          cardio_tipo?: string | null
+          competition_plan_id?: string
+          compostos_aplicados?: Json | null
+          created_at?: string
+          data?: string
+          duracao_posing_min?: number | null
+          exercicios_log?: Json | null
+          gordura_consumida?: number | null
+          hidratacao_ml?: number | null
+          id?: string
+          observacoes?: string | null
+          posing_realizado?: boolean | null
+          proteina_consumida?: number | null
+          recovery_score_pre?: number | null
+          score_dia?: number | null
+          semana?: number
+          treino_realizado?: boolean | null
+          volume_total_kg?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "competition_daily_logs_competition_plan_id_fkey"
+            columns: ["competition_plan_id"]
+            isOneToOne: false
+            referencedRelation: "competition_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      competition_plans: {
+        Row: {
+          altura: number
+          athlete_id: string
+          bf_atual: number | null
+          bloco_atual: string | null
+          blocos: Json
+          calculo_meta: Json | null
+          categoria: string
+          coach_id: string
+          created_at: string
+          data_competicao: string
+          federacao: string
+          id: string
+          local_competicao: string | null
+          massa_magra: number | null
+          nome_competicao: string
+          peso_alvo_palco: number
+          peso_atual: number
+          peso_limite_categoria: number | null
+          protocolo_farmacologico: string | null
+          semana_atual: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          altura: number
+          athlete_id: string
+          bf_atual?: number | null
+          bloco_atual?: string | null
+          blocos?: Json
+          calculo_meta?: Json | null
+          categoria: string
+          coach_id: string
+          created_at?: string
+          data_competicao: string
+          federacao: string
+          id?: string
+          local_competicao?: string | null
+          massa_magra?: number | null
+          nome_competicao: string
+          peso_alvo_palco: number
+          peso_atual: number
+          peso_limite_categoria?: number | null
+          protocolo_farmacologico?: string | null
+          semana_atual?: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          altura?: number
+          athlete_id?: string
+          bf_atual?: number | null
+          bloco_atual?: string | null
+          blocos?: Json
+          calculo_meta?: Json | null
+          categoria?: string
+          coach_id?: string
+          created_at?: string
+          data_competicao?: string
+          federacao?: string
+          id?: string
+          local_competicao?: string | null
+          massa_magra?: number | null
+          nome_competicao?: string
+          peso_alvo_palco?: number
+          peso_atual?: number
+          peso_limite_categoria?: number | null
+          protocolo_farmacologico?: string | null
+          semana_atual?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      competition_weekly_logs: {
+        Row: {
+          aderencia_dieta: number | null
+          aderencia_treino: number | null
+          ajuste_calorico: number | null
+          ajuste_cardio: number | null
+          ajuste_volume: number | null
+          ajustes_proxima_semana: Json | null
+          alertas: Json | null
+          analise_semana: string | null
+          bf_estimado: number | null
+          bloco: string | null
+          circunferencia_cintura: number | null
+          competition_plan_id: string
+          created_at: string
+          dor_muscular: number | null
+          energia_geral: number | null
+          episodio_compulsao: boolean | null
+          forca_status: string | null
+          foto_costas_url: string | null
+          foto_frente_url: string | null
+          foto_lateral_url: string | null
+          horas_sono_media: number | null
+          id: string
+          maior_dificuldade: string | null
+          massa_magra_estimada: number | null
+          peso: number | null
+          posing_com_musica: boolean | null
+          posing_minutos: number | null
+          qualidade_sono: number | null
+          recovery_score: number | null
+          semana: number
+        }
+        Insert: {
+          aderencia_dieta?: number | null
+          aderencia_treino?: number | null
+          ajuste_calorico?: number | null
+          ajuste_cardio?: number | null
+          ajuste_volume?: number | null
+          ajustes_proxima_semana?: Json | null
+          alertas?: Json | null
+          analise_semana?: string | null
+          bf_estimado?: number | null
+          bloco?: string | null
+          circunferencia_cintura?: number | null
+          competition_plan_id: string
+          created_at?: string
+          dor_muscular?: number | null
+          energia_geral?: number | null
+          episodio_compulsao?: boolean | null
+          forca_status?: string | null
+          foto_costas_url?: string | null
+          foto_frente_url?: string | null
+          foto_lateral_url?: string | null
+          horas_sono_media?: number | null
+          id?: string
+          maior_dificuldade?: string | null
+          massa_magra_estimada?: number | null
+          peso?: number | null
+          posing_com_musica?: boolean | null
+          posing_minutos?: number | null
+          qualidade_sono?: number | null
+          recovery_score?: number | null
+          semana: number
+        }
+        Update: {
+          aderencia_dieta?: number | null
+          aderencia_treino?: number | null
+          ajuste_calorico?: number | null
+          ajuste_cardio?: number | null
+          ajuste_volume?: number | null
+          ajustes_proxima_semana?: Json | null
+          alertas?: Json | null
+          analise_semana?: string | null
+          bf_estimado?: number | null
+          bloco?: string | null
+          circunferencia_cintura?: number | null
+          competition_plan_id?: string
+          created_at?: string
+          dor_muscular?: number | null
+          energia_geral?: number | null
+          episodio_compulsao?: boolean | null
+          forca_status?: string | null
+          foto_costas_url?: string | null
+          foto_frente_url?: string | null
+          foto_lateral_url?: string | null
+          horas_sono_media?: number | null
+          id?: string
+          maior_dificuldade?: string | null
+          massa_magra_estimada?: number | null
+          peso?: number | null
+          posing_com_musica?: boolean | null
+          posing_minutos?: number | null
+          qualidade_sono?: number | null
+          recovery_score?: number | null
+          semana?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "competition_weekly_logs_competition_plan_id_fkey"
+            columns: ["competition_plan_id"]
+            isOneToOne: false
+            referencedRelation: "competition_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       consistency_scores: {
         Row: {
           adherence_score: number
@@ -6655,6 +6917,14 @@ export type Database = {
         Returns: boolean
       }
       increment_coach_slots: { Args: never; Returns: undefined }
+      user_is_athlete_of_plan: {
+        Args: { _plan_id: string; _user_id: string }
+        Returns: boolean
+      }
+      user_owns_competition_plan: {
+        Args: { _plan_id: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user" | "professional"
