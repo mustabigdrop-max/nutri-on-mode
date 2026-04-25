@@ -265,11 +265,33 @@ const sections: MicrobiotaSection[] = [
             { name: "Vitamina C", dose: "1000mg 3x/dia", timing: "Durante protocolo" },
           ]} />
         </div>
+
+        <Card className="bg-red-500/5 border-red-500/20 p-3 space-y-2">
+          <p className="text-xs font-semibold text-red-400">⚠️ Protocolo específico para 17-alfa alquilados (Hemogenin/Dianabol)</p>
+          <p className="text-xs">17AA alteram pH intestinal e perfil de ácidos biliares — ambiente favorável para Candida e gram-negativas patogênicas.</p>
+          <ProtocolTable rows={[
+            { name: "Saccharomyces boulardii", dose: "500mg 2x/dia", timing: "Entre refeições", notes: "Sobrevive ao H. pylori e antibióticos. Florastor" },
+            { name: "Ácido Caprílico C8", dose: "500mg 3x/dia", timing: "Com refeição gordurosa", notes: "Anti-Candida específico" },
+            { name: "Cálcio D-Glucarato", dose: "500mg 2x/dia", timing: "Com refeições", notes: "Inibe beta-glucuronidase (hormônios)" },
+            { name: "Probiótico de levedura", dose: "Rotacionar c/ bacteriano", timing: "—", notes: "Não competem — agem diferente" },
+          ]} />
+          <div className="text-xs space-y-1">
+            <p className="text-foreground font-medium">Sinais de Candida intestinal em atletas:</p>
+            <p>→ Desejo intenso de doce após treino</p>
+            <p>→ Gases excessivos com proteína alta</p>
+            <p>→ Fadiga após refeições ricas em carbo</p>
+            <p>→ Língua com saburra branca</p>
+            <p>→ Candidíase recorrente</p>
+          </div>
+          <div className="text-xs space-y-1">
+            <p className="text-foreground font-medium">Protocolo anti-Candida específico:</p>
+            <p>▸ <span className="text-foreground">Fase 1 (sem 1-2):</span> dieta anti-Candida (sem açúcar, álcool, leveduras)</p>
+            <p>▸ <span className="text-foreground">Fase 2 (sem 2-4):</span> óleo de orégano + ácido caprílico + GSE</p>
+            <p>▸ <span className="text-foreground">Fase 3 (sem 3-8):</span> repovoar com S. boulardii + L. acidophilus NCFM</p>
+          </div>
+        </Card>
       </div>
     ),
-  },
-  {
-    id: "fase2",
     title: "Fase 2 — REPOVOAR (semanas 3-8)",
     icon: <Pill className="w-4 h-4 text-green-500" />,
     badge: "Probióticos",
