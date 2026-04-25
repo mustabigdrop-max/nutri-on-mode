@@ -652,6 +652,17 @@ const CoachPatientDetailPage = () => {
           </TabsContent>
         </Tabs>
       </main>
+
+      {profile && patientId && (
+        <CoachCompetitionWizard
+          open={wizardOpen}
+          onOpenChange={setWizardOpen}
+          coachId={profile.id}
+          athleteId={patientId}
+          athleteName={patient?.full_name}
+          onCreated={() => loadCompetitionPlans()}
+        />
+      )}
     </div>
   );
 };
