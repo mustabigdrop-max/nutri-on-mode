@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Dumbbell, BarChart3 } from "lucide-react";
+import { ArrowLeft, Dumbbell, BarChart3, Flame } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
 import ExerciseSelector from "@/components/workout/ExerciseSelector";
 
