@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, ChevronDown, ChevronUp, AlertTriangle, Shield, Brain, Dumbbell, Syringe, Pill, FlaskConical, Leaf, Clock, Bug, ShieldAlert, HeartPulse } from "lucide-react";
+import MicrobiomeScoreCalculator from "./MicrobiomeScoreCalculator";
 
 interface MicrobiotaSection {
   id: string;
@@ -98,6 +99,31 @@ const sections: MicrobiotaSection[] = [
             Microbiota saudável = absorção proteína +40% | creatina +30% | B12 endógena | inflamação ↓ | recuperação ↑ | testosterona ↑
           </p>
         </Card>
+
+        <div className="pt-2">
+          <p className="text-foreground font-semibold mb-2">🧬 Microbiota e compostos anabólicos</p>
+          <ProtocolTable rows={[
+            { name: "Testosterona exógena", dose: "Reduz diversidade -20%", timing: "—", notes: "Rotação de cepas obrigatória" },
+            { name: "Nandrolona (NPP)", dose: "Altera motilidade", timing: "—", notes: "Probiótico pró-cinético" },
+            { name: "Hemogenin (17AA)", dose: "Altera bile acids", timing: "—", notes: "Kefir dose dupla + butirato" },
+            { name: "Metformina", dose: "✅ Aumenta Akkermansia", timing: "—", notes: "Potencializar com FOS" },
+            { name: "IGF-1 Des", dose: "✅ Repara epitélio", timing: "—", notes: "Sinergia com glutamina" },
+            { name: "SLU-PP-332", dose: "✅ Ativa ERRα intestinal", timing: "—", notes: "Sinergia com urolitina A" },
+            { name: "CJC/Ipamorelin", dose: "Neutro", timing: "—", notes: "Manter protocolo base" },
+          ]} />
+        </div>
+
+        <Card className="bg-green-500/5 border-green-500/20 p-3">
+          <p className="text-xs font-semibold text-green-400 mb-1">📈 Microbiota otimizada vs degradada (atleta):</p>
+          <ul className="text-xs space-y-0.5">
+            <li>▸ Absorção de proteína: <span className="text-green-400">+18%</span> (Nature Metabolism 2023)</li>
+            <li>▸ Absorção de creatina: <span className="text-green-400">+30%</span> (via transportador)</li>
+            <li>▸ Síntese proteica muscular: <span className="text-green-400">+18%</span></li>
+            <li>▸ Recuperação pós-treino: <span className="text-green-400">-23% de tempo</span></li>
+            <li>▸ Testosterona endógena: <span className="text-green-400">+15%</span> via L. reuteri</li>
+            <li>▸ Cortisol crônico: <span className="text-green-400">-25%</span> via B. longum R0175</li>
+          </ul>
+        </Card>
       </div>
     ),
   },
@@ -133,6 +159,8 @@ const sections: MicrobiotaSection[] = [
             ))}
           </ol>
         </div>
+
+        <MicrobiomeScoreCalculator />
       </div>
     ),
   },
@@ -165,6 +193,48 @@ const sections: MicrobiotaSection[] = [
             { name: "SCFA fecais", dose: "Butirato/Propionato/Acetato", timing: "—" },
           ]} />
         </div>
+
+        <Card className="bg-red-500/5 border-red-500/20 p-3 space-y-2">
+          <p className="text-xs font-semibold text-red-400">📋 Interpretação dos valores — atletas com protocolo anabólico</p>
+          <div className="text-xs space-y-2">
+            <div>
+              <p className="text-foreground font-medium">Calprotectina fecal:</p>
+              <p>▸ Normal população: &lt; 50 mcg/g</p>
+              <p>▸ Atleta com EAA: aceitar até <span className="text-yellow-500">80 mcg/g</span> (inflamação leve esperada)</p>
+              <p>▸ Alerta: <span className="text-red-400">&gt; 150 mcg/g</span> = investigar</p>
+            </div>
+            <div>
+              <p className="text-foreground font-medium">Zonulina sérica:</p>
+              <p>▸ Normal: &lt; 50 ng/ml | Atleta com EAA: &gt; 70 ng/ml comum | Reparo se &gt; 100 ng/ml</p>
+            </div>
+            <div>
+              <p className="text-foreground font-medium">sIgA fecal:</p>
+              <p>▸ Normal: 510-2040 mcg/ml | &lt; 300 = imunidade mucosa comprometida (overtraining)</p>
+              <p>▸ Solução: colostro + glutamina + reduzir volume</p>
+            </div>
+            <div>
+              <p className="text-foreground font-medium">SCFA fecais (proporção ideal):</p>
+              <p>▸ Butirato &gt; 30% | Propionato 20-25% | Acetato 50-60%</p>
+              <p>▸ Aumentar butirato: amido resistente + arabinogalactana</p>
+            </div>
+          </div>
+        </Card>
+
+        <Card className="bg-card border-border/40 p-3 space-y-2">
+          <p className="text-xs font-semibold text-foreground">Adicionais para atletas com protocolo:</p>
+          <div className="text-xs space-y-2">
+            <div>
+              <p className="text-foreground font-medium">Ácidos orgânicos urinários:</p>
+              <p>▸ D-arabinitol = marcador de Candida sistêmica (comum com Hemogenin — pH alterado)</p>
+            </div>
+            <div>
+              <p className="text-foreground font-medium">TMAO sérico:</p>
+              <p>▸ Marcador metabolismo de colina/carnitina pela microbiota</p>
+              <p>▸ Alto TMAO = risco cardiovascular (importante com testosterona)</p>
+              <p>▸ Reduzir: DMB (extrato de balsâmico) + Akkermansia + menos carnitina</p>
+            </div>
+          </div>
+        </Card>
       </div>
     ),
   },
@@ -195,6 +265,31 @@ const sections: MicrobiotaSection[] = [
             { name: "Vitamina C", dose: "1000mg 3x/dia", timing: "Durante protocolo" },
           ]} />
         </div>
+
+        <Card className="bg-red-500/5 border-red-500/20 p-3 space-y-2">
+          <p className="text-xs font-semibold text-red-400">⚠️ Protocolo específico para 17-alfa alquilados (Hemogenin/Dianabol)</p>
+          <p className="text-xs">17AA alteram pH intestinal e perfil de ácidos biliares — ambiente favorável para Candida e gram-negativas patogênicas.</p>
+          <ProtocolTable rows={[
+            { name: "Saccharomyces boulardii", dose: "500mg 2x/dia", timing: "Entre refeições", notes: "Sobrevive ao H. pylori e antibióticos. Florastor" },
+            { name: "Ácido Caprílico C8", dose: "500mg 3x/dia", timing: "Com refeição gordurosa", notes: "Anti-Candida específico" },
+            { name: "Cálcio D-Glucarato", dose: "500mg 2x/dia", timing: "Com refeições", notes: "Inibe beta-glucuronidase (hormônios)" },
+            { name: "Probiótico de levedura", dose: "Rotacionar c/ bacteriano", timing: "—", notes: "Não competem — agem diferente" },
+          ]} />
+          <div className="text-xs space-y-1">
+            <p className="text-foreground font-medium">Sinais de Candida intestinal em atletas:</p>
+            <p>→ Desejo intenso de doce após treino</p>
+            <p>→ Gases excessivos com proteína alta</p>
+            <p>→ Fadiga após refeições ricas em carbo</p>
+            <p>→ Língua com saburra branca</p>
+            <p>→ Candidíase recorrente</p>
+          </div>
+          <div className="text-xs space-y-1">
+            <p className="text-foreground font-medium">Protocolo anti-Candida específico:</p>
+            <p>▸ <span className="text-foreground">Fase 1 (sem 1-2):</span> dieta anti-Candida (sem açúcar, álcool, leveduras)</p>
+            <p>▸ <span className="text-foreground">Fase 2 (sem 2-4):</span> óleo de orégano + ácido caprílico + GSE</p>
+            <p>▸ <span className="text-foreground">Fase 3 (sem 3-8):</span> repovoar com S. boulardii + L. acidophilus NCFM</p>
+          </div>
+        </Card>
       </div>
     ),
   },
@@ -230,6 +325,47 @@ const sections: MicrobiotaSection[] = [
           <p className="text-xs">Almoço: L. gasseri SBT2055 + Akkermansia</p>
           <p className="text-xs">Noite: L. rhamnosus GG + B. longum BB536 + L. acidophilus NCFM + S. boulardii</p>
         </Card>
+
+        <Card className="bg-purple-500/5 border-purple-500/20 p-3 space-y-2">
+          <p className="text-xs font-semibold text-purple-400">🔄 Protocolo de rotação de cepas</p>
+          <p className="text-xs">Uso contínuo da mesma cepa = tolerância em 8-12 semanas. Rotação = mais diversidade = melhor resultado.</p>
+          <div className="text-xs space-y-2">
+            <div>
+              <p className="text-foreground font-medium">Meses 1-3 (Força/Off-season):</p>
+              <p>▸ Foco: síntese proteica + testosterona</p>
+              <p>▸ Manhã: L. plantarum TWK10 + L. reuteri DSM 17938</p>
+              <p>▸ Noite: B. longum BB536 + S. boulardii</p>
+            </div>
+            <div>
+              <p className="text-foreground font-medium">Meses 4-6 (Definição/Cutting):</p>
+              <p>▸ Foco: gordura visceral + cortisol</p>
+              <p>▸ Manhã: L. gasseri SBT2055 + Akkermansia</p>
+              <p>▸ Noite: L. helveticus R0052 + B. longum R0175</p>
+            </div>
+            <div>
+              <p className="text-foreground font-medium">Meses 7-9 (Competição/Pré-prep):</p>
+              <p>▸ Foco: imunidade + barreira intestinal</p>
+              <p>▸ Manhã: L. acidophilus NCFM + L. rhamnosus GG</p>
+              <p>▸ Noite: B. infantis 35624 + S. boulardii</p>
+            </div>
+            <div>
+              <p className="text-foreground font-medium">Meses 10-12 (Recuperação/Pós-comp):</p>
+              <p>▸ Foco: reparo + diversidade</p>
+              <p>▸ Manhã: Mix completo elite (todas as cepas)</p>
+              <p>▸ Noite: Akkermansia + B. longum BB536</p>
+            </div>
+          </div>
+        </Card>
+
+        <div>
+          <p className="text-foreground font-semibold mb-2">🆕 Novas cepas — Pesquisa 2024-2025:</p>
+          <ProtocolTable rows={[
+            { name: "Veillonella atypica", dose: "Via alimentos", timing: "Pós-treino", notes: "Converte lactato em propionato. Harvard 2019" },
+            { name: "Faecalibacterium prausnitzii", dose: "Via prebióticos", timing: "—", notes: "Maior produtor de butirato. Estimular com AR" },
+            { name: "Prevotella copri", dose: "Via dieta mediterrânea", timing: "—", notes: "Performance atlética. Vegetais" },
+            { name: "Christensenellaceae", dose: "Via genética + dieta", timing: "—", notes: "Lean phenotype. Jejum + fibra" },
+          ]} />
+        </div>
       </div>
     ),
   },
@@ -263,6 +399,43 @@ const sections: MicrobiotaSection[] = [
             { name: "Natto", dose: "50-80g/dia", timing: "—", notes: "Nattokinase + K2 MK-7 1000mcg/100g" },
           ]} />
         </div>
+
+        <Card className="bg-emerald-500/5 border-emerald-500/20 p-3 space-y-3">
+          <p className="text-xs font-semibold text-emerald-400">🍽️ Receitas simbióticas para atletas</p>
+          <div className="text-xs space-y-2">
+            <div>
+              <p className="text-foreground font-medium">1 — Kefir Anabólico:</p>
+              <p>200ml kefir artesanal + 30g whey isolado + 50g aveia crua + 1 banana verde fatiada + 1 colher mel cru + canela de Ceylon</p>
+              <p className="text-emerald-400">= 520 kcal | P 42g | C 65g | G 8g — pós-cardio perfeito</p>
+            </div>
+            <div>
+              <p className="text-foreground font-medium">2 — Bowl Microbiota Elite:</p>
+              <p>150g iogurte grego + 30g granola artesanal + 50g frutas vermelhas + 1 col chia + 1 col tahine + 30g romã (punicalagina = Akkermansia)</p>
+            </div>
+            <div>
+              <p className="text-foreground font-medium">3 — Shot Imunidade (jejum):</p>
+              <p>50ml kefir + 1 dente alho cru + 1cm gengibre + suco limão + cúrcuma + pimenta preta</p>
+            </div>
+            <div>
+              <p className="text-foreground font-medium">4 — Arroz Resistente:</p>
+              <p>Cozinhar normal → refrigerar 24h → reaquecer leve. AR aumenta 3-4x = mesmo arroz, muito mais prebiótico.</p>
+            </div>
+          </div>
+        </Card>
+
+        <div>
+          <p className="text-foreground font-semibold mb-2">🌿 Polifenóis como prebióticos</p>
+          <ProtocolTable rows={[
+            { name: "Resveratrol (uva/romã)", dose: "150ml suco uva/dia", timing: "—", notes: "Akkermansia + Lacto" },
+            { name: "Quercetina (maçã/cebola)", dose: "1 maçã com casca/dia", timing: "—", notes: "Lacto + Bifido" },
+            { name: "EGCG (matcha/chá verde)", dose: "1-2 col matcha/dia", timing: "—", notes: "Diversidade geral" },
+            { name: "Curcumina", dose: "500mg + piperina/dia", timing: "—", notes: "Anti-inflamatório geral" },
+            { name: "Punicalagina (romã)", dose: "100ml romã/dia", timing: "—", notes: "Akkermansia específico" },
+            { name: "Antocianinas (frutas vermelhas)", dose: "50-100g/dia", timing: "—", notes: "Bifido + Lacto" },
+            { name: "Sulforafano (brócolis germ.)", dose: "100mg/dia", timing: "—", notes: "Elimina H. pylori" },
+            { name: "Capsaicina (pimenta)", dose: "Adicionar refeições", timing: "—", notes: "Bifido + motilidade" },
+          ]} />
+        </div>
       </div>
     ),
   },
@@ -287,6 +460,37 @@ const sections: MicrobiotaSection[] = [
           { name: "Marshmallow Root", dose: "2-4g ou 500mg 4x/dia", timing: "Em jejum ou entre refeições", notes: "Mucoprotetor subestimado" },
           { name: "Slippery Elm", dose: "400mg 3-4x/dia", timing: "Em jejum ou entre refeições", notes: "Sinergia com Marshmallow" },
         ]} />
+
+        <Card className="bg-blue-500/5 border-blue-500/20 p-3 space-y-2">
+          <p className="text-xs font-semibold text-blue-400">🔬 Postbióticos — fronteira 2024-2025</p>
+          <p className="text-xs">Produtos bioativos produzidos pelas bactérias — agem mesmo sem as bactérias vivas (ISAPP 2021).</p>
+          <ProtocolTable rows={[
+            { name: "Tributirina", dose: "600mg/dia", timing: "Com refeição entérica", notes: "Precursor de butirato — superior ao butirato de sódio" },
+            { name: "Urolitina A (Mitopure)", dose: "500mg/dia", timing: "Jejum pré-cardio", notes: "Mitofagia + biogênese — sinergia com SLU-PP-332" },
+            { name: "Equol", dose: "Via alimentos", timing: "—", notes: "Liga-se ao DHT — proteção parcial queda cabelo" },
+            { name: "Indol-3-carbinol", dose: "200mg/dia", timing: "Com refeição", notes: "Metabolismo estrogênico — alternativa ao DIM" },
+            { name: "DIM (3,3'-Diindolilmetano)", dose: "200mg/dia", timing: "Com refeição gordurosa", notes: "Inibe aromatização" },
+            { name: "Urolitina B", dose: "Pesquisa", timing: "—", notes: "Hipertrofia direta — em desenvolvimento" },
+          ]} />
+        </Card>
+
+        <Card className="bg-purple-500/5 border-purple-500/20 p-3 space-y-2">
+          <p className="text-xs font-semibold text-purple-400">⚡ Sinergia postbiótico + protocolo</p>
+          <div className="text-xs space-y-2">
+            <div>
+              <p className="text-foreground font-medium">Urolitina A + SLU-PP-332:</p>
+              <p>▸ Ambos ativam mitofagia + biogênese = efeito mitocondrial multiplicado</p>
+            </div>
+            <div>
+              <p className="text-foreground font-medium">Tributirina + Metformina:</p>
+              <p>▸ Ambos ativam AMPK = sinergia controle glicêmico + particionamento calórico</p>
+            </div>
+            <div>
+              <p className="text-foreground font-medium">Equol + Testosterona exógena:</p>
+              <p>▸ Equol se liga ao DHT livre = proteção couro cabeludo, sem impactar T total</p>
+            </div>
+          </div>
+        </Card>
       </div>
     ),
   },
@@ -320,6 +524,27 @@ const sections: MicrobiotaSection[] = [
           <p className="text-xs">sIgA: 1ª linha de defesa mucosa. Aumentar: colostro, probióticos, glutamina, vitamina A, zinco</p>
           <p className="text-xs mt-1">Barreira: Claudina, ocludina, ZO-1. Reparar: L-glutamina, colostro, BPC-157, zinco carnosina, butirato</p>
         </Card>
+
+        <Card className="bg-emerald-500/5 border-emerald-500/20 p-3">
+          <p className="text-xs font-semibold text-emerald-400 mb-1">E. Eixo Intestino-Mitocôndria (Gut-Mito Axis)</p>
+          <p className="text-xs">Descoberta 2023 — Cell Metabolism: SCFAs → GPR109a → PGC-1α = biogênese mitocondrial muscular</p>
+          <p className="text-xs mt-1">Cepas produtoras de butirato: F. prausnitzii, Roseburia intestinalis, Eubacterium rectale</p>
+          <p className="text-xs mt-1 text-primary">Hack: Amido resistente 30g/dia → mais butirato → mais mitocôndrias → sinergia com SLU-PP-332 + CoQ10</p>
+        </Card>
+
+        <Card className="bg-yellow-500/5 border-yellow-500/20 p-3">
+          <p className="text-xs font-semibold text-yellow-500 mb-1">F. Eixo Intestino-Tendão (Gut-Tendon Axis)</p>
+          <p className="text-xs">Atletas com anabólicos: músculo cresce mais rápido que tendão = risco de ruptura</p>
+          <p className="text-xs mt-1">Microbiota regula colágeno: butirato → HATs → expressão genes de colágeno tipo I e III</p>
+          <p className="text-xs mt-1 text-primary">Protocolo: L. rhamnosus GG + colágeno hidrolisado 10g + Vit C 1g + butirato sódio 300mg</p>
+        </Card>
+
+        <Card className="bg-indigo-500/5 border-indigo-500/20 p-3">
+          <p className="text-xs font-semibold text-indigo-400 mb-1">G. Eixo Intestino-Sono (Gut-Sleep Axis)</p>
+          <p className="text-xs">Microbiota produz: serotonina (90% intestinal → melatonina), GABA (L. rhamnosus JB-1), triptofano</p>
+          <p className="text-xs mt-1 text-primary">Protocolo pré-sono: L. rhamnosus GG + B. longum BB536 + suco cereja azeda 150ml + L-triptofano 500mg</p>
+          <p className="text-xs mt-1">= sono profundo = GH máximo = sinergia com CJC/Ipamorelin</p>
+        </Card>
       </div>
     ),
   },
@@ -348,6 +573,42 @@ const sections: MicrobiotaSection[] = [
             <p className="text-xs">{entry.items}</p>
           </div>
         ))}
+
+        <Card className="bg-orange-500/5 border-orange-500/20 p-3 space-y-1 mt-4">
+          <p className="text-xs font-semibold text-orange-400">📅 Versão CUTTING (déficit calórico)</p>
+          <p className="text-xs">Intestino mais vulnerável: menos calorias = menos substrato; mais cortisol = mais permeabilidade; mais cardio = mais stress oxidativo.</p>
+          <div className="text-xs">
+            <p className="text-foreground font-medium mt-1">Aumentar:</p>
+            <p>▸ L-Glutamina 20g/dia (10+5+5) · Colostro 20g · Kefir 400ml · Zinco carnosina 150mg</p>
+            <p className="text-foreground font-medium mt-1">Manter:</p>
+            <p>▸ Probióticos · Prebióticos · BPC-157 (essencial no cutting)</p>
+            <p className="text-foreground font-medium mt-1">Reduzir:</p>
+            <p>▸ Psyllium para 10g/dia · Suspender lactulose (gases com déficit)</p>
+          </div>
+        </Card>
+
+        <Card className="bg-red-500/5 border-red-500/20 p-3 space-y-1">
+          <p className="text-xs font-semibold text-red-400">📅 Versão PEAK WEEK</p>
+          <p className="text-xs">Intestino precisa estar zerado visualmente.</p>
+          <div className="text-xs space-y-0.5">
+            <p>▸ <span className="text-foreground">48h antes:</span> parar psyllium e FOS/GOS (reduz gás)</p>
+            <p>▸ <span className="text-foreground">48h antes:</span> manter probióticos (sem impacto visual)</p>
+            <p>▸ <span className="text-foreground">48h antes:</span> glutamina 20g/dia (manter barreira no corte hídrico)</p>
+            <p>▸ <span className="text-foreground">3 dias antes:</span> parar kefir (zero gás)</p>
+            <p>▸ <span className="text-foreground">Dia da competição:</span> manhã glutamina 5g + probiótico, sem fibra (zero distensão)</p>
+          </div>
+        </Card>
+
+        <Card className="bg-green-500/5 border-green-500/20 p-3 space-y-1">
+          <p className="text-xs font-semibold text-green-400">📅 Versão PÓS-COMPETIÇÃO (4 semanas)</p>
+          <p className="text-xs">Microbiota comprometida após corte severo + manipulação hídrica + diuréticos.</p>
+          <div className="text-xs">
+            <p className="text-foreground font-medium mt-1">Semanas 1-2 (Reparo emergencial):</p>
+            <p>▸ Glutamina 20g · Colostro 20g · S. boulardii 1g · Dieta variada sem restrição</p>
+            <p className="text-foreground font-medium mt-1">Semanas 3-4 (Repopulação):</p>
+            <p>▸ Stack elite completo · Kefir 400ml · Todos os prebióticos · Natto 50g (K2 + B. subtilis)</p>
+          </div>
+        </Card>
       </div>
     ),
   },
@@ -381,6 +642,27 @@ const sections: MicrobiotaSection[] = [
           <p className="text-xs">Intensivo: L-Glutamina 20-30g/dia + Colostro 20g + Zinco carnosina 75mg 3x + Butirato 600mg 3x + BPC-157 500mcg + DGL 380mg 4x + Marshmallow 400mg 4x + Slippery Elm 400mg 4x + Quercetina 500mg 3x + D3 10.000UI + Vit A 10.000UI + Omega-3 6g</p>
           <p className="text-xs mt-1 text-primary">Eliminar: glúten, laticínios, açúcar, AINEs, álcool por 8-12 semanas. Reavaliar zonulina após 12 sem.</p>
         </Card>
+
+        <Card className="bg-card border-border/40 p-3 space-y-1">
+          <p className="text-xs font-semibold text-foreground">🆕 Caso — Atleta com SIBO confirmado (breath test H2/CH4)</p>
+          <p className="text-xs">Suspeitar: gases excessivos com boa dieta, inchaço 30-90min pós-refeição, intolerância a prebióticos, alternância diarreia/constipação.</p>
+          <p className="text-xs"><span className="text-foreground">Fase 1 (sem 1-4):</span> Rifaximina (prescrição) ou natural (orégano + alicina + GSE + Neem) + Low-FODMAP. NÃO usar prebióticos durante SIBO ativo.</p>
+          <p className="text-xs"><span className="text-foreground">Fase 2 (sem 5-8):</span> S. boulardii primeiro (não coloniza delgado) + L. rhamnosus GG.</p>
+          <p className="text-xs"><span className="text-foreground">Fase 3 (sem 9-12):</span> Protocolo normal — gradual.</p>
+        </Card>
+
+        <Card className="bg-card border-border/40 p-3 space-y-1">
+          <p className="text-xs font-semibold text-foreground">🆕 Caso — H. pylori (integração com plano alimentar)</p>
+          <p className="text-xs"><span className="text-foreground">Inibem H. pylori:</span> brócolis germinado 100g/dia (sulforafano), cranberry 400ml (proantocianidinas), alho cru 3 dentes (allicina), mel Manuka UMF 10+, chá verde 3x/dia, sulforafano isolado.</p>
+          <p className="text-xs"><span className="text-foreground">Protegem mucosa:</span> aloe vera 200ml em jejum, banana, batata doce crua (mucoprotetora).</p>
+        </Card>
+
+        <Card className="bg-card border-border/40 p-3 space-y-1">
+          <p className="text-xs font-semibold text-foreground">🆕 Caso — Vegetariano/Vegano com protocolo anabólico</p>
+          <p className="text-xs"><span className="text-foreground">Desafios:</span> proteína vegetal menor absorção, ferro não-heme 15% vs 35%, B12 deficiência comum, zinco com antinutrientes.</p>
+          <p className="text-xs"><span className="text-foreground">Microbiota vegana:</span> mais Prevotella + F. prausnitzii (butirato) — diversidade alta, inflamação menor.</p>
+          <p className="text-xs"><span className="text-foreground">Protocolo absorção:</span> L. plantarum 299v (ferro +50%) + Vit C com refeições ferrosas + protease fúngica + Betaína HCl + B12 sublingual 1000mcg/dia obrigatório + zinco em jejum (separar fitatos).</p>
+        </Card>
       </div>
     ),
   },
@@ -401,6 +683,29 @@ const sections: MicrobiotaSection[] = [
           { name: "Isoflavonas", dose: "10x mais ativo (equol)", timing: "30-50% não possuem bactéria conversora" },
           { name: "Ômega-3", dose: "Resolvinas ativadas", timing: "Interação Ω-3 + microbiota = anti-inflamação" },
         ]} />
+
+        <div className="space-y-2">
+          <p className="text-foreground font-semibold">💊 Detalhamento por suplemento:</p>
+
+          {[
+            { t: "WHEY PROTEIN", d: "Microbiota saudável → +18-25% absorção via PepT1 upregulado. Potencializador: L. plantarum 299v. Timing: kefir junto ao whey pós-treino." },
+            { t: "CREATINA", d: "Microbiota comprometida converte creatina em creatinina (inativa). Barreira saudável = +30% absorção real. Investir em glutamina + zinco carnosina." },
+            { t: "VITAMINA D", d: "Lipossolúvel — depende de bile e lipase. Microbiota saudável = mais bile acids = melhor absorção. Tomar com gordura + probiótico." },
+            { t: "ZINCO", d: "Fitatos inibem absorção. L. plantarum produz fitase = +40% absorção (mesma cepa que melhora ferro)." },
+            { t: "MAGNÉSIO", d: "Butirato melhora absorção via transporte ativo no colonócito. Mais amido resistente = mais butirato = mais Mg absorvido." },
+            { t: "ÔMEGA 3", d: "Bile acids emulsificam ALA/EPA/DHA. Microbiota recircula bile (entero-hepático). Tomar com kefir junto." },
+            { t: "BCAA/EAA", d: "Leucina ativa mTOR via SESN2 — mas precisa absorção via PepT1. Microbiota comprometida = BCAA 'jogado fora'." },
+            { t: "VITAMINAS B", d: "S. boulardii produz B12 local; Lacto/Bifido produzem B2; Bifido produz folato endógeno = menos suplementação necessária." },
+            { t: "TESTOSTERONA EXÓGENA", d: "Beta-glucuronidase bacteriana alta = recirculação excessiva de E2 mesmo com AI. Solução: Cálcio D-Glucarato + L. reuteri (reduz beta-glucuronidase)." },
+            { t: "PEPTÍDEOS (geral)", d: "IGF-1 Des: SC/IM, não passa pelo intestino — neutro. BPC-157 oral: paradoxo — repara a barreira que ajuda a absorvê-lo. GLP-1 análogos: SC apenas — neutro." },
+            { t: "METFORMINA", d: "Age ATRAVÉS da microbiota — Akkermansia é necessária para o efeito glicêmico. L. gasseri + Akkermansia são críticos para quem usa metformina." },
+          ].map((item, i) => (
+            <Card key={i} className="bg-card border-border/40 p-2">
+              <p className="text-xs font-semibold text-primary">{item.t}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">{item.d}</p>
+            </Card>
+          ))}
+        </div>
       </div>
     ),
   },
