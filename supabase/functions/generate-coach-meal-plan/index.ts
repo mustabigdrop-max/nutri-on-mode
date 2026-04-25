@@ -1580,6 +1580,58 @@ ${perfilFisiologico?.modo_economico ? `
       }
     }
 
+    // ── FILTRO ABSOLUTO: AEJ NÃO É REFEIÇÃO ──
+    // Remove qualquer refeição com horário antes das 08:00 ou com "AEJ" no nome.
+    if (Array.isArray(parsed?.refeicoes)) {
+      const antes = parsed.refeicoes.length;
+      parsed.refeicoes = parsed.refeicoes.filter((r: any) => {
+        const horario: string = r?.horario || "00:00";
+        const nome: string = (r?.refeicao || "").toString().toLowerCase();
+
+        const [hStr] = horario.split(":");
+        const h = Number(hStr);
+        if (Number.isFinite(h) && h < 8) {
+          console.warn("[FILTRO-AEJ] Refeição removida (horário <08:00):", r?.refeicao, horario);
+          return false;
+        }
+
+        if (
+          nome.includes("aej") ||
+          nome.includes("aeróbico em jejum") ||
+          nome.includes("aerobico em jejum") ||
+          nome.includes("pré-aej") ||
+          nome.includes("pre-aej")
+        ) {
+          console.warn("[FILTRO-AEJ] Refeição AEJ removida:", r?.refeicao);
+          return false;
+        }
+        return true;
+      });
+
+      // Renumerar refeições após filtro
+      parsed.refeicoes = parsed.refeicoes.map((r: any, i: number) => ({
+        ...r,
+        refeicao: typeof r?.refeicao === "string"
+          ? r.refeicao.replace(/Refei[çc][ãa]o\s+\d+/i, `Refeição ${i + 1}`)
+          : r?.refeicao,
+      }));
+
+      // Garantir que primeira refeição não comece antes das 08:30
+      if (parsed.refeicoes.length > 0) {
+        const primeira = parsed.refeicoes[0];
+        const [hStr] = (primeira?.horario || "00:00").split(":");
+        const h = Number(hStr);
+        if (!Number.isFinite(h) || h < 8) {
+          parsed.refeicoes[0].horario = "08:30";
+          console.warn("[FILTRO-AEJ] Horário da primeira refeição forçado para 08:30");
+        }
+      }
+
+      if (parsed.refeicoes.length !== antes) {
+        console.warn(`[FILTRO-AEJ] Total filtrado: ${antes} → ${parsed.refeicoes.length}`);
+      }
+    }
+
     // ── Validação determinística do Pós-Treino Imediato (GLUT-4) ──
     // Permite 1+ carboidratos compatíveis combinados, mas garante:
     //   • a fonte principal prescrita pelo coach está presente
