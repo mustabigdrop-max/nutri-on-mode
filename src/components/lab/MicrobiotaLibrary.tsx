@@ -159,6 +159,8 @@ const sections: MicrobiotaSection[] = [
             ))}
           </ol>
         </div>
+
+        <MicrobiomeScoreCalculator />
       </div>
     ),
   },
