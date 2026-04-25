@@ -460,6 +460,37 @@ const sections: MicrobiotaSection[] = [
           { name: "Marshmallow Root", dose: "2-4g ou 500mg 4x/dia", timing: "Em jejum ou entre refeições", notes: "Mucoprotetor subestimado" },
           { name: "Slippery Elm", dose: "400mg 3-4x/dia", timing: "Em jejum ou entre refeições", notes: "Sinergia com Marshmallow" },
         ]} />
+
+        <Card className="bg-blue-500/5 border-blue-500/20 p-3 space-y-2">
+          <p className="text-xs font-semibold text-blue-400">🔬 Postbióticos — fronteira 2024-2025</p>
+          <p className="text-xs">Produtos bioativos produzidos pelas bactérias — agem mesmo sem as bactérias vivas (ISAPP 2021).</p>
+          <ProtocolTable rows={[
+            { name: "Tributirina", dose: "600mg/dia", timing: "Com refeição entérica", notes: "Precursor de butirato — superior ao butirato de sódio" },
+            { name: "Urolitina A (Mitopure)", dose: "500mg/dia", timing: "Jejum pré-cardio", notes: "Mitofagia + biogênese — sinergia com SLU-PP-332" },
+            { name: "Equol", dose: "Via alimentos", timing: "—", notes: "Liga-se ao DHT — proteção parcial queda cabelo" },
+            { name: "Indol-3-carbinol", dose: "200mg/dia", timing: "Com refeição", notes: "Metabolismo estrogênico — alternativa ao DIM" },
+            { name: "DIM (3,3'-Diindolilmetano)", dose: "200mg/dia", timing: "Com refeição gordurosa", notes: "Inibe aromatização" },
+            { name: "Urolitina B", dose: "Pesquisa", timing: "—", notes: "Hipertrofia direta — em desenvolvimento" },
+          ]} />
+        </Card>
+
+        <Card className="bg-purple-500/5 border-purple-500/20 p-3 space-y-2">
+          <p className="text-xs font-semibold text-purple-400">⚡ Sinergia postbiótico + protocolo</p>
+          <div className="text-xs space-y-2">
+            <div>
+              <p className="text-foreground font-medium">Urolitina A + SLU-PP-332:</p>
+              <p>▸ Ambos ativam mitofagia + biogênese = efeito mitocondrial multiplicado</p>
+            </div>
+            <div>
+              <p className="text-foreground font-medium">Tributirina + Metformina:</p>
+              <p>▸ Ambos ativam AMPK = sinergia controle glicêmico + particionamento calórico</p>
+            </div>
+            <div>
+              <p className="text-foreground font-medium">Equol + Testosterona exógena:</p>
+              <p>▸ Equol se liga ao DHT livre = proteção couro cabeludo, sem impactar T total</p>
+            </div>
+          </div>
+        </Card>
       </div>
     ),
   },
