@@ -68,6 +68,7 @@ import LabPage from "./pages/LabPage";
 import AdminApexCoachPage from "./pages/AdminApexCoachPage";
 import AdminDashboardPage from "./pages/AdminDashboardPage";
 import ExerciseSelectorPage from "./pages/ExerciseSelectorPage";
+import PeriodizationPage from "./pages/PeriodizationPage";
 import AgentsPage from "./pages/AgentsPage";
 import BiologicalAgePage from "./pages/BiologicalAgePage";
 import EmotionalScanPage from "./pages/EmotionalScanPage";
