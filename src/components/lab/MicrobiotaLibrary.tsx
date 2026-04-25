@@ -683,6 +683,29 @@ const sections: MicrobiotaSection[] = [
           { name: "Isoflavonas", dose: "10x mais ativo (equol)", timing: "30-50% não possuem bactéria conversora" },
           { name: "Ômega-3", dose: "Resolvinas ativadas", timing: "Interação Ω-3 + microbiota = anti-inflamação" },
         ]} />
+
+        <div className="space-y-2">
+          <p className="text-foreground font-semibold">💊 Detalhamento por suplemento:</p>
+
+          {[
+            { t: "WHEY PROTEIN", d: "Microbiota saudável → +18-25% absorção via PepT1 upregulado. Potencializador: L. plantarum 299v. Timing: kefir junto ao whey pós-treino." },
+            { t: "CREATINA", d: "Microbiota comprometida converte creatina em creatinina (inativa). Barreira saudável = +30% absorção real. Investir em glutamina + zinco carnosina." },
+            { t: "VITAMINA D", d: "Lipossolúvel — depende de bile e lipase. Microbiota saudável = mais bile acids = melhor absorção. Tomar com gordura + probiótico." },
+            { t: "ZINCO", d: "Fitatos inibem absorção. L. plantarum produz fitase = +40% absorção (mesma cepa que melhora ferro)." },
+            { t: "MAGNÉSIO", d: "Butirato melhora absorção via transporte ativo no colonócito. Mais amido resistente = mais butirato = mais Mg absorvido." },
+            { t: "ÔMEGA 3", d: "Bile acids emulsificam ALA/EPA/DHA. Microbiota recircula bile (entero-hepático). Tomar com kefir junto." },
+            { t: "BCAA/EAA", d: "Leucina ativa mTOR via SESN2 — mas precisa absorção via PepT1. Microbiota comprometida = BCAA 'jogado fora'." },
+            { t: "VITAMINAS B", d: "S. boulardii produz B12 local; Lacto/Bifido produzem B2; Bifido produz folato endógeno = menos suplementação necessária." },
+            { t: "TESTOSTERONA EXÓGENA", d: "Beta-glucuronidase bacteriana alta = recirculação excessiva de E2 mesmo com AI. Solução: Cálcio D-Glucarato + L. reuteri (reduz beta-glucuronidase)." },
+            { t: "PEPTÍDEOS (geral)", d: "IGF-1 Des: SC/IM, não passa pelo intestino — neutro. BPC-157 oral: paradoxo — repara a barreira que ajuda a absorvê-lo. GLP-1 análogos: SC apenas — neutro." },
+            { t: "METFORMINA", d: "Age ATRAVÉS da microbiota — Akkermansia é necessária para o efeito glicêmico. L. gasseri + Akkermansia são críticos para quem usa metformina." },
+          ].map((item, i) => (
+            <Card key={i} className="bg-card border-border/40 p-2">
+              <p className="text-xs font-semibold text-primary">{item.t}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">{item.d}</p>
+            </Card>
+          ))}
+        </div>
       </div>
     ),
   },
