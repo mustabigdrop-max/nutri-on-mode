@@ -8,9 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Send, Check, Brain, FileText, AlertTriangle, MessageSquare, User, Activity, Shield, Utensils, RefreshCw, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowLeft, Send, Check, Brain, FileText, AlertTriangle, MessageSquare, User, Activity, Shield, Utensils, RefreshCw, Loader2, ChevronLeft, ChevronRight, Trophy, Plus } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import CoachAccessManager from "@/components/acompanhado/CoachAccessManager";
+import CoachCompetitionWizard from "@/components/coach/CoachCompetitionWizard";
 
 const MEAL_TYPES = [
   { key: "cafe_manha", label: "☕ Café" },
