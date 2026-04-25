@@ -573,6 +573,42 @@ const sections: MicrobiotaSection[] = [
             <p className="text-xs">{entry.items}</p>
           </div>
         ))}
+
+        <Card className="bg-orange-500/5 border-orange-500/20 p-3 space-y-1 mt-4">
+          <p className="text-xs font-semibold text-orange-400">📅 Versão CUTTING (déficit calórico)</p>
+          <p className="text-xs">Intestino mais vulnerável: menos calorias = menos substrato; mais cortisol = mais permeabilidade; mais cardio = mais stress oxidativo.</p>
+          <div className="text-xs">
+            <p className="text-foreground font-medium mt-1">Aumentar:</p>
+            <p>▸ L-Glutamina 20g/dia (10+5+5) · Colostro 20g · Kefir 400ml · Zinco carnosina 150mg</p>
+            <p className="text-foreground font-medium mt-1">Manter:</p>
+            <p>▸ Probióticos · Prebióticos · BPC-157 (essencial no cutting)</p>
+            <p className="text-foreground font-medium mt-1">Reduzir:</p>
+            <p>▸ Psyllium para 10g/dia · Suspender lactulose (gases com déficit)</p>
+          </div>
+        </Card>
+
+        <Card className="bg-red-500/5 border-red-500/20 p-3 space-y-1">
+          <p className="text-xs font-semibold text-red-400">📅 Versão PEAK WEEK</p>
+          <p className="text-xs">Intestino precisa estar zerado visualmente.</p>
+          <div className="text-xs space-y-0.5">
+            <p>▸ <span className="text-foreground">48h antes:</span> parar psyllium e FOS/GOS (reduz gás)</p>
+            <p>▸ <span className="text-foreground">48h antes:</span> manter probióticos (sem impacto visual)</p>
+            <p>▸ <span className="text-foreground">48h antes:</span> glutamina 20g/dia (manter barreira no corte hídrico)</p>
+            <p>▸ <span className="text-foreground">3 dias antes:</span> parar kefir (zero gás)</p>
+            <p>▸ <span className="text-foreground">Dia da competição:</span> manhã glutamina 5g + probiótico, sem fibra (zero distensão)</p>
+          </div>
+        </Card>
+
+        <Card className="bg-green-500/5 border-green-500/20 p-3 space-y-1">
+          <p className="text-xs font-semibold text-green-400">📅 Versão PÓS-COMPETIÇÃO (4 semanas)</p>
+          <p className="text-xs">Microbiota comprometida após corte severo + manipulação hídrica + diuréticos.</p>
+          <div className="text-xs">
+            <p className="text-foreground font-medium mt-1">Semanas 1-2 (Reparo emergencial):</p>
+            <p>▸ Glutamina 20g · Colostro 20g · S. boulardii 1g · Dieta variada sem restrição</p>
+            <p className="text-foreground font-medium mt-1">Semanas 3-4 (Repopulação):</p>
+            <p>▸ Stack elite completo · Kefir 400ml · Todos os prebióticos · Natto 50g (K2 + B. subtilis)</p>
+          </div>
+        </Card>
       </div>
     ),
   },
