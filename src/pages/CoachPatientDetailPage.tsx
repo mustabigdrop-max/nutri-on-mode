@@ -472,6 +472,54 @@ const CoachPatientDetailPage = () => {
 
           {/* PROTOCOL */}
           <TabsContent value="protocol" className="space-y-4">
+            {/* COMPETITION MODE */}
+            <Card className="border-primary/30 bg-gradient-to-br from-primary/5 to-background">
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <CardTitle className="text-sm flex items-center gap-2">
+                    <Trophy className="w-4 h-4 text-primary" />
+                    Competition Mode
+                    <Badge variant="outline" className="text-[10px] border-primary/40 text-primary">ON PRO</Badge>
+                  </CardTitle>
+                  <Button size="sm" onClick={() => setWizardOpen(true)}>
+                    <Plus className="w-3 h-3 mr-1" /> Novo plano
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                {competitionPlans.length === 0 ? (
+                  <p className="text-xs text-muted-foreground">Nenhum plano de competição. Crie o primeiro para gerar blocos automáticos (Off-season → Cutting → Pré-peak → Peak Week).</p>
+                ) : (
+                  competitionPlans.map((p) => {
+                    const dias = Math.ceil((new Date(p.data_competicao).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+                    const semanas = Math.ceil(dias / 7);
+                    return (
+                      <button
+                        key={p.id}
+                        onClick={() => navigate(`/coach/competition/${p.id}`)}
+                        className="w-full text-left p-3 rounded-lg border border-border/50 bg-card hover:border-primary/40 hover:bg-muted/30 transition-colors"
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-semibold truncate">{p.nome_competicao}</p>
+                            <p className="text-[11px] text-muted-foreground truncate">
+                              {p.federacao} · {p.categoria} · {new Date(p.data_competicao).toLocaleDateString("pt-BR")}
+                            </p>
+                          </div>
+                          <div className="text-right shrink-0">
+                            <Badge variant="outline" className="text-[10px]" style={{ borderColor: dias < 0 ? "#888" : dias < 28 ? "#ef4444" : dias < 84 ? "#f59e0b" : "#22c55e" }}>
+                              {dias < 0 ? "Encerrado" : `${semanas} sem`}
+                            </Badge>
+                            <p className="text-[10px] text-muted-foreground mt-0.5">{p.peso_atual} → {p.peso_alvo_palco} kg</p>
+                          </div>
+                        </div>
+                      </button>
+                    );
+                  })
+                )}
+              </CardContent>
+            </Card>
+
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
