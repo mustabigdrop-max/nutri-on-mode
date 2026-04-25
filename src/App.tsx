@@ -51,6 +51,7 @@ import CoachDashboardPage from "./pages/CoachDashboardPage";
 import CoachPatientDetailPage from "./pages/CoachPatientDetailPage";
 import CoachAddPatientPage from "./pages/CoachAddPatientPage";
 import CoachSettingsPage from "./pages/CoachSettingsPage";
+import CoachCompetitionPlanPage from "./pages/CoachCompetitionPlanPage";
 import CoachAdjustmentLogPage from "./pages/CoachAdjustmentLogPage";
 import BodyCompositionPage from "./pages/BodyCompositionPage";
 import RefeedProtocolPage from "./pages/RefeedProtocolPage";
