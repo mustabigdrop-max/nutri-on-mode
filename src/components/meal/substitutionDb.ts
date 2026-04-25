@@ -215,6 +215,13 @@ const DAIRY_POOL: FoodSub[] = [
   { name: "Queijo mussarela light", portion: "30g", kcal: 80, protein: 8, carbs: 1, fat: 5 },
   { name: "Ricota", portion: "100g", kcal: 110, protein: 11, carbs: 4, fat: 5 },
   { name: "Cream cheese light", portion: "30g", kcal: 60, protein: 3, carbs: 2, fat: 4 },
+  { name: "Requeijão light", portion: "30g", kcal: 50, protein: 2.5, carbs: 2, fat: 3 },
+  { name: "Queijo prato light", portion: "30g", kcal: 75, protein: 7, carbs: 0.5, fat: 5 },
+  { name: "Queijo coalho", portion: "60g", kcal: 175, protein: 15, carbs: 1, fat: 12 },
+  { name: "Parmesão ralado", portion: "15g", kcal: 60, protein: 5, carbs: 0.5, fat: 4 },
+  { name: "Iogurte de coco (vegano)", portion: "170g", kcal: 130, protein: 1, carbs: 12, fat: 8 },
+  { name: "Bebida de arroz", portion: "200ml", kcal: 95, protein: 1, carbs: 19, fat: 1.5 },
+  { name: "Bebida de castanha de caju", portion: "200ml", kcal: 50, protein: 1, carbs: 5, fat: 2.5 },
 ];
 
 // Helper para criar entradas com pool completo (excluindo o próprio item)
