@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Dumbbell, BarChart3, Flame } from "lucide-react";
+import { ArrowLeft, Dumbbell, BarChart3, Flame, Swords } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
 import ExerciseSelector from "@/components/workout/ExerciseSelector";
 
@@ -38,6 +38,13 @@ const ExerciseSelectorPage = () => {
             >
               <Flame className="w-3 h-3 text-orange-400" />
               <span className="text-[9px] font-semibold text-orange-400">Técnicas</span>
+            </button>
+            <button
+              onClick={() => navigate("/exercise-arsenal")}
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-yellow-500/10 border border-yellow-500/30 hover:bg-yellow-500/20 transition-colors"
+            >
+              <Swords className="w-3 h-3 text-yellow-400" />
+              <span className="text-[9px] font-semibold text-yellow-400">Arsenal</span>
             </button>
           </div>
         </div>
