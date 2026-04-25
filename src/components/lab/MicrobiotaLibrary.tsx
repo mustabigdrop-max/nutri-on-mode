@@ -399,11 +399,45 @@ const sections: MicrobiotaSection[] = [
             { name: "Natto", dose: "50-80g/dia", timing: "—", notes: "Nattokinase + K2 MK-7 1000mcg/100g" },
           ]} />
         </div>
+
+        <Card className="bg-emerald-500/5 border-emerald-500/20 p-3 space-y-3">
+          <p className="text-xs font-semibold text-emerald-400">🍽️ Receitas simbióticas para atletas</p>
+          <div className="text-xs space-y-2">
+            <div>
+              <p className="text-foreground font-medium">1 — Kefir Anabólico:</p>
+              <p>200ml kefir artesanal + 30g whey isolado + 50g aveia crua + 1 banana verde fatiada + 1 colher mel cru + canela de Ceylon</p>
+              <p className="text-emerald-400">= 520 kcal | P 42g | C 65g | G 8g — pós-cardio perfeito</p>
+            </div>
+            <div>
+              <p className="text-foreground font-medium">2 — Bowl Microbiota Elite:</p>
+              <p>150g iogurte grego + 30g granola artesanal + 50g frutas vermelhas + 1 col chia + 1 col tahine + 30g romã (punicalagina = Akkermansia)</p>
+            </div>
+            <div>
+              <p className="text-foreground font-medium">3 — Shot Imunidade (jejum):</p>
+              <p>50ml kefir + 1 dente alho cru + 1cm gengibre + suco limão + cúrcuma + pimenta preta</p>
+            </div>
+            <div>
+              <p className="text-foreground font-medium">4 — Arroz Resistente:</p>
+              <p>Cozinhar normal → refrigerar 24h → reaquecer leve. AR aumenta 3-4x = mesmo arroz, muito mais prebiótico.</p>
+            </div>
+          </div>
+        </Card>
+
+        <div>
+          <p className="text-foreground font-semibold mb-2">🌿 Polifenóis como prebióticos</p>
+          <ProtocolTable rows={[
+            { name: "Resveratrol (uva/romã)", dose: "150ml suco uva/dia", timing: "—", notes: "Akkermansia + Lacto" },
+            { name: "Quercetina (maçã/cebola)", dose: "1 maçã com casca/dia", timing: "—", notes: "Lacto + Bifido" },
+            { name: "EGCG (matcha/chá verde)", dose: "1-2 col matcha/dia", timing: "—", notes: "Diversidade geral" },
+            { name: "Curcumina", dose: "500mg + piperina/dia", timing: "—", notes: "Anti-inflamatório geral" },
+            { name: "Punicalagina (romã)", dose: "100ml romã/dia", timing: "—", notes: "Akkermansia específico" },
+            { name: "Antocianinas (frutas vermelhas)", dose: "50-100g/dia", timing: "—", notes: "Bifido + Lacto" },
+            { name: "Sulforafano (brócolis germ.)", dose: "100mg/dia", timing: "—", notes: "Elimina H. pylori" },
+            { name: "Capsaicina (pimenta)", dose: "Adicionar refeições", timing: "—", notes: "Bifido + motilidade" },
+          ]} />
+        </div>
       </div>
     ),
-  },
-  {
-    id: "fase4",
     title: "Fase 4 — PROTEGER (permanente)",
     icon: <Shield className="w-4 h-4 text-blue-500" />,
     badge: "Barreira",
