@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, ChevronDown, ChevronUp, AlertTriangle, Shield, Brain, Dumbbell, Syringe, Pill, FlaskConical, Leaf, Clock, Bug, ShieldAlert, HeartPulse } from "lucide-react";
+import MicrobiomeScoreCalculator from "./MicrobiomeScoreCalculator";
 
 interface MicrobiotaSection {
   id: string;
