@@ -642,6 +642,27 @@ const sections: MicrobiotaSection[] = [
           <p className="text-xs">Intensivo: L-Glutamina 20-30g/dia + Colostro 20g + Zinco carnosina 75mg 3x + Butirato 600mg 3x + BPC-157 500mcg + DGL 380mg 4x + Marshmallow 400mg 4x + Slippery Elm 400mg 4x + Quercetina 500mg 3x + D3 10.000UI + Vit A 10.000UI + Omega-3 6g</p>
           <p className="text-xs mt-1 text-primary">Eliminar: glúten, laticínios, açúcar, AINEs, álcool por 8-12 semanas. Reavaliar zonulina após 12 sem.</p>
         </Card>
+
+        <Card className="bg-card border-border/40 p-3 space-y-1">
+          <p className="text-xs font-semibold text-foreground">🆕 Caso — Atleta com SIBO confirmado (breath test H2/CH4)</p>
+          <p className="text-xs">Suspeitar: gases excessivos com boa dieta, inchaço 30-90min pós-refeição, intolerância a prebióticos, alternância diarreia/constipação.</p>
+          <p className="text-xs"><span className="text-foreground">Fase 1 (sem 1-4):</span> Rifaximina (prescrição) ou natural (orégano + alicina + GSE + Neem) + Low-FODMAP. NÃO usar prebióticos durante SIBO ativo.</p>
+          <p className="text-xs"><span className="text-foreground">Fase 2 (sem 5-8):</span> S. boulardii primeiro (não coloniza delgado) + L. rhamnosus GG.</p>
+          <p className="text-xs"><span className="text-foreground">Fase 3 (sem 9-12):</span> Protocolo normal — gradual.</p>
+        </Card>
+
+        <Card className="bg-card border-border/40 p-3 space-y-1">
+          <p className="text-xs font-semibold text-foreground">🆕 Caso — H. pylori (integração com plano alimentar)</p>
+          <p className="text-xs"><span className="text-foreground">Inibem H. pylori:</span> brócolis germinado 100g/dia (sulforafano), cranberry 400ml (proantocianidinas), alho cru 3 dentes (allicina), mel Manuka UMF 10+, chá verde 3x/dia, sulforafano isolado.</p>
+          <p className="text-xs"><span className="text-foreground">Protegem mucosa:</span> aloe vera 200ml em jejum, banana, batata doce crua (mucoprotetora).</p>
+        </Card>
+
+        <Card className="bg-card border-border/40 p-3 space-y-1">
+          <p className="text-xs font-semibold text-foreground">🆕 Caso — Vegetariano/Vegano com protocolo anabólico</p>
+          <p className="text-xs"><span className="text-foreground">Desafios:</span> proteína vegetal menor absorção, ferro não-heme 15% vs 35%, B12 deficiência comum, zinco com antinutrientes.</p>
+          <p className="text-xs"><span className="text-foreground">Microbiota vegana:</span> mais Prevotella + F. prausnitzii (butirato) — diversidade alta, inflamação menor.</p>
+          <p className="text-xs"><span className="text-foreground">Protocolo absorção:</span> L. plantarum 299v (ferro +50%) + Vit C com refeições ferrosas + protease fúngica + Betaína HCl + B12 sublingual 1000mcg/dia obrigatório + zinco em jejum (separar fitatos).</p>
+        </Card>
       </div>
     ),
   },
