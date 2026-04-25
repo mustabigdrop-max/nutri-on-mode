@@ -98,6 +98,31 @@ const sections: MicrobiotaSection[] = [
             Microbiota saudável = absorção proteína +40% | creatina +30% | B12 endógena | inflamação ↓ | recuperação ↑ | testosterona ↑
           </p>
         </Card>
+
+        <div className="pt-2">
+          <p className="text-foreground font-semibold mb-2">🧬 Microbiota e compostos anabólicos</p>
+          <ProtocolTable rows={[
+            { name: "Testosterona exógena", dose: "Reduz diversidade -20%", timing: "—", notes: "Rotação de cepas obrigatória" },
+            { name: "Nandrolona (NPP)", dose: "Altera motilidade", timing: "—", notes: "Probiótico pró-cinético" },
+            { name: "Hemogenin (17AA)", dose: "Altera bile acids", timing: "—", notes: "Kefir dose dupla + butirato" },
+            { name: "Metformina", dose: "✅ Aumenta Akkermansia", timing: "—", notes: "Potencializar com FOS" },
+            { name: "IGF-1 Des", dose: "✅ Repara epitélio", timing: "—", notes: "Sinergia com glutamina" },
+            { name: "SLU-PP-332", dose: "✅ Ativa ERRα intestinal", timing: "—", notes: "Sinergia com urolitina A" },
+            { name: "CJC/Ipamorelin", dose: "Neutro", timing: "—", notes: "Manter protocolo base" },
+          ]} />
+        </div>
+
+        <Card className="bg-green-500/5 border-green-500/20 p-3">
+          <p className="text-xs font-semibold text-green-400 mb-1">📈 Microbiota otimizada vs degradada (atleta):</p>
+          <ul className="text-xs space-y-0.5">
+            <li>▸ Absorção de proteína: <span className="text-green-400">+18%</span> (Nature Metabolism 2023)</li>
+            <li>▸ Absorção de creatina: <span className="text-green-400">+30%</span> (via transportador)</li>
+            <li>▸ Síntese proteica muscular: <span className="text-green-400">+18%</span></li>
+            <li>▸ Recuperação pós-treino: <span className="text-green-400">-23% de tempo</span></li>
+            <li>▸ Testosterona endógena: <span className="text-green-400">+15%</span> via L. reuteri</li>
+            <li>▸ Cortisol crônico: <span className="text-green-400">-25%</span> via B. longum R0175</li>
+          </ul>
+        </Card>
       </div>
     ),
   },
