@@ -193,6 +193,48 @@ const sections: MicrobiotaSection[] = [
             { name: "SCFA fecais", dose: "Butirato/Propionato/Acetato", timing: "—" },
           ]} />
         </div>
+
+        <Card className="bg-red-500/5 border-red-500/20 p-3 space-y-2">
+          <p className="text-xs font-semibold text-red-400">📋 Interpretação dos valores — atletas com protocolo anabólico</p>
+          <div className="text-xs space-y-2">
+            <div>
+              <p className="text-foreground font-medium">Calprotectina fecal:</p>
+              <p>▸ Normal população: &lt; 50 mcg/g</p>
+              <p>▸ Atleta com EAA: aceitar até <span className="text-yellow-500">80 mcg/g</span> (inflamação leve esperada)</p>
+              <p>▸ Alerta: <span className="text-red-400">&gt; 150 mcg/g</span> = investigar</p>
+            </div>
+            <div>
+              <p className="text-foreground font-medium">Zonulina sérica:</p>
+              <p>▸ Normal: &lt; 50 ng/ml | Atleta com EAA: &gt; 70 ng/ml comum | Reparo se &gt; 100 ng/ml</p>
+            </div>
+            <div>
+              <p className="text-foreground font-medium">sIgA fecal:</p>
+              <p>▸ Normal: 510-2040 mcg/ml | &lt; 300 = imunidade mucosa comprometida (overtraining)</p>
+              <p>▸ Solução: colostro + glutamina + reduzir volume</p>
+            </div>
+            <div>
+              <p className="text-foreground font-medium">SCFA fecais (proporção ideal):</p>
+              <p>▸ Butirato &gt; 30% | Propionato 20-25% | Acetato 50-60%</p>
+              <p>▸ Aumentar butirato: amido resistente + arabinogalactana</p>
+            </div>
+          </div>
+        </Card>
+
+        <Card className="bg-card border-border/40 p-3 space-y-2">
+          <p className="text-xs font-semibold text-foreground">Adicionais para atletas com protocolo:</p>
+          <div className="text-xs space-y-2">
+            <div>
+              <p className="text-foreground font-medium">Ácidos orgânicos urinários:</p>
+              <p>▸ D-arabinitol = marcador de Candida sistêmica (comum com Hemogenin — pH alterado)</p>
+            </div>
+            <div>
+              <p className="text-foreground font-medium">TMAO sérico:</p>
+              <p>▸ Marcador metabolismo de colina/carnitina pela microbiota</p>
+              <p>▸ Alto TMAO = risco cardiovascular (importante com testosterona)</p>
+              <p>▸ Reduzir: DMB (extrato de balsâmico) + Akkermansia + menos carnitina</p>
+            </div>
+          </div>
+        </Card>
       </div>
     ),
   },
