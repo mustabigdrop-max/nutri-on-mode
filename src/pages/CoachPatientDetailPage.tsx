@@ -85,6 +85,21 @@ const CoachPatientDetailPage = () => {
   const [planLoading, setPlanLoading] = useState(false);
   const [generating, setGenerating] = useState(false);
 
+  // Competition Mode state
+  const [competitionPlans, setCompetitionPlans] = useState<any[]>([]);
+  const [wizardOpen, setWizardOpen] = useState(false);
+
+  const loadCompetitionPlans = async () => {
+    if (!profile || !patientId) return;
+    const { data } = await supabase
+      .from("competition_plans" as any)
+      .select("id, nome_competicao, federacao, categoria, data_competicao, status, peso_atual, peso_alvo_palco")
+      .eq("coach_id", profile.id)
+      .eq("athlete_id", patientId)
+      .order("data_competicao", { ascending: true });
+    setCompetitionPlans((data as any[]) || []);
+  };
+
   useEffect(() => {
     if (!profile || !patientId) return;
     loadPatientData();
