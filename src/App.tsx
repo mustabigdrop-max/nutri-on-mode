@@ -126,6 +126,7 @@ const App = () => (
             <Route path="/recipes" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON" featureName="Receitas"><RecipesPage /></PlanGateWrapper></ProtectedRoute>} />
             <Route path="/workout-history" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON" featureName="Histórico de Treinos"><WorkoutHistoryPage /></PlanGateWrapper></ProtectedRoute>} />
             <Route path="/exercise-selector" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON" featureName="Seleção de Exercícios"><ExerciseSelectorPage /></PlanGateWrapper></ProtectedRoute>} />
+            <Route path="/periodization" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON" featureName="Periodização"><PeriodizationPage /></PlanGateWrapper></ProtectedRoute>} />
             <Route path="/agents" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON" featureName="Agentes IA"><AgentsPage /></PlanGateWrapper></ProtectedRoute>} />
 
             {/* ON+ Plan */}
