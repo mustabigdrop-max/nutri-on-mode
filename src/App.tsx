@@ -70,6 +70,7 @@ import AdminDashboardPage from "./pages/AdminDashboardPage";
 import ExerciseSelectorPage from "./pages/ExerciseSelectorPage";
 import PeriodizationPage from "./pages/PeriodizationPage";
 import IntensityTechniquesPage from "./pages/IntensityTechniquesPage";
+import ExerciseArsenalPage from "./pages/ExerciseArsenalPage";
 import AgentsPage from "./pages/AgentsPage";
 import BiologicalAgePage from "./pages/BiologicalAgePage";
 import EmotionalScanPage from "./pages/EmotionalScanPage";
@@ -129,6 +130,7 @@ const App = () => (
             <Route path="/exercise-selector" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON" featureName="Seleção de Exercícios"><ExerciseSelectorPage /></PlanGateWrapper></ProtectedRoute>} />
             <Route path="/periodization" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON" featureName="Periodização"><PeriodizationPage /></PlanGateWrapper></ProtectedRoute>} />
             <Route path="/intensity-techniques" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON" featureName="Técnicas de Intensidade"><IntensityTechniquesPage /></PlanGateWrapper></ProtectedRoute>} />
+            <Route path="/exercise-arsenal" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON" featureName="Arsenal de Exercícios"><ExerciseArsenalPage /></PlanGateWrapper></ProtectedRoute>} />
             <Route path="/agents" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON" featureName="Agentes IA"><AgentsPage /></PlanGateWrapper></ProtectedRoute>} />
 
             {/* ON+ Plan */}
