@@ -325,6 +325,47 @@ const sections: MicrobiotaSection[] = [
           <p className="text-xs">Almoço: L. gasseri SBT2055 + Akkermansia</p>
           <p className="text-xs">Noite: L. rhamnosus GG + B. longum BB536 + L. acidophilus NCFM + S. boulardii</p>
         </Card>
+
+        <Card className="bg-purple-500/5 border-purple-500/20 p-3 space-y-2">
+          <p className="text-xs font-semibold text-purple-400">🔄 Protocolo de rotação de cepas</p>
+          <p className="text-xs">Uso contínuo da mesma cepa = tolerância em 8-12 semanas. Rotação = mais diversidade = melhor resultado.</p>
+          <div className="text-xs space-y-2">
+            <div>
+              <p className="text-foreground font-medium">Meses 1-3 (Força/Off-season):</p>
+              <p>▸ Foco: síntese proteica + testosterona</p>
+              <p>▸ Manhã: L. plantarum TWK10 + L. reuteri DSM 17938</p>
+              <p>▸ Noite: B. longum BB536 + S. boulardii</p>
+            </div>
+            <div>
+              <p className="text-foreground font-medium">Meses 4-6 (Definição/Cutting):</p>
+              <p>▸ Foco: gordura visceral + cortisol</p>
+              <p>▸ Manhã: L. gasseri SBT2055 + Akkermansia</p>
+              <p>▸ Noite: L. helveticus R0052 + B. longum R0175</p>
+            </div>
+            <div>
+              <p className="text-foreground font-medium">Meses 7-9 (Competição/Pré-prep):</p>
+              <p>▸ Foco: imunidade + barreira intestinal</p>
+              <p>▸ Manhã: L. acidophilus NCFM + L. rhamnosus GG</p>
+              <p>▸ Noite: B. infantis 35624 + S. boulardii</p>
+            </div>
+            <div>
+              <p className="text-foreground font-medium">Meses 10-12 (Recuperação/Pós-comp):</p>
+              <p>▸ Foco: reparo + diversidade</p>
+              <p>▸ Manhã: Mix completo elite (todas as cepas)</p>
+              <p>▸ Noite: Akkermansia + B. longum BB536</p>
+            </div>
+          </div>
+        </Card>
+
+        <div>
+          <p className="text-foreground font-semibold mb-2">🆕 Novas cepas — Pesquisa 2024-2025:</p>
+          <ProtocolTable rows={[
+            { name: "Veillonella atypica", dose: "Via alimentos", timing: "Pós-treino", notes: "Converte lactato em propionato. Harvard 2019" },
+            { name: "Faecalibacterium prausnitzii", dose: "Via prebióticos", timing: "—", notes: "Maior produtor de butirato. Estimular com AR" },
+            { name: "Prevotella copri", dose: "Via dieta mediterrânea", timing: "—", notes: "Performance atlética. Vegetais" },
+            { name: "Christensenellaceae", dose: "Via genética + dieta", timing: "—", notes: "Lean phenotype. Jejum + fibra" },
+          ]} />
+        </div>
       </div>
     ),
   },
