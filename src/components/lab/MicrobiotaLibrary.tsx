@@ -292,6 +292,9 @@ const sections: MicrobiotaSection[] = [
         </Card>
       </div>
     ),
+  },
+  {
+    id: "fase2",
     title: "Fase 2 — REPOVOAR (semanas 3-8)",
     icon: <Pill className="w-4 h-4 text-green-500" />,
     badge: "Probióticos",
