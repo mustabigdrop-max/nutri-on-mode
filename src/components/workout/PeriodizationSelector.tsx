@@ -157,8 +157,10 @@ export default function PeriodizationSelector() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-0.5">
                   <p className="text-sm font-semibold text-foreground truncate">{model.nome}</p>
-                  {model.alerta?.includes("usando este modelo") && (
-                    <Badge className="text-[8px] bg-green-500/15 text-green-400 border-green-500/30">Atual</Badge>
+                  {(model.alerta?.includes("usando este modelo") || model.alerta?.includes("usa parcialmente")) && (
+                    <Badge className="text-[8px] bg-green-500/15 text-green-400 border-green-500/30">
+                      {model.alerta?.includes("parcialmente") ? "Parcial" : "Atual"}
+                    </Badge>
                   )}
                 </div>
                 <p className="text-[10px] text-muted-foreground line-clamp-2">{model.resumo}</p>
