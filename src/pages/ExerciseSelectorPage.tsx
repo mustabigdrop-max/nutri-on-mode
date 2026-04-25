@@ -24,13 +24,22 @@ const ExerciseSelectorPage = () => {
             <h1 className="text-sm font-bold text-foreground tracking-tight">SELEÇÃO INTELIGENTE <span className="text-primary">🎯</span></h1>
             <p className="text-[10px] text-muted-foreground font-mono">Exercícios por área específica + fase</p>
           </div>
-          <button
-            onClick={() => navigate("/periodization")}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-primary/10 border border-primary/30 hover:bg-primary/20 transition-colors"
-          >
-            <BarChart3 className="w-3.5 h-3.5 text-primary" />
-            <span className="text-[10px] font-semibold text-primary">Periodização</span>
-          </button>
+          <div className="flex flex-col gap-1">
+            <button
+              onClick={() => navigate("/periodization")}
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-primary/10 border border-primary/30 hover:bg-primary/20 transition-colors"
+            >
+              <BarChart3 className="w-3 h-3 text-primary" />
+              <span className="text-[9px] font-semibold text-primary">Periodização</span>
+            </button>
+            <button
+              onClick={() => navigate("/intensity-techniques")}
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-orange-500/10 border border-orange-500/30 hover:bg-orange-500/20 transition-colors"
+            >
+              <Flame className="w-3 h-3 text-orange-400" />
+              <span className="text-[9px] font-semibold text-orange-400">Técnicas</span>
+            </button>
+          </div>
         </div>
       </div>
 
