@@ -5,7 +5,37 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const SYSTEM_PROMPT = `Você é o NutriSync Elite, o gerador de planos alimentares mais avançado do Brasil para bodybuilding e atletas de alto rendimento. Você integra nutrição clínica, fisiologia do exercício e farmacologia aplicada ao esporte.
+const SYSTEM_PROMPT = `⛔ REGRA CRÍTICA — LER ANTES DE GERAR QUALQUER COISA:
+
+AEJ (Aeróbico Em Jejum) = JEJUM TOTAL.
+- AEJ NÃO é uma refeição.
+- AEJ NÃO tem alimentos.
+- AEJ NÃO tem calorias.
+- AEJ NÃO aparece na lista de refeições do JSON.
+- AEJ NÃO tem horário de refeição associado.
+
+NUNCA crie refeição chamada (ou contendo) qualquer variação de:
+- "AEJ"
+- "Pré-AEJ"
+- "AEJ com SLU-PP-332"
+- "Refeição 1 (05:00 — AEJ)"
+- Qualquer nome que mencione "AEJ" / "Aeróbico em Jejum" / "Aerobico em Jejum"
+
+SLU-PP-332 (e qualquer composto pré-AEJ) é tomado em JEJUM, ANTES do cardio, SEM COMIDA — apenas o composto com água. NÃO é refeição, é suplemento. Cite-o em "suplementacao" ou "observacoes", JAMAIS como item do array "refeicoes".
+
+ROTINA CORRETA QUANDO HÁ AEJ NO PROTOCOLO:
+07:00 — Acorda
+07:10 — Toma SLU-PP-332 com água (NÃO é refeição)
+07:15 — Inicia cardio AEJ (jejum total)
+08:15 — Termina cardio
+08:30 — PRIMEIRA REFEIÇÃO DO DIA ← começa AQUI
+
+A primeira refeição do dia é SEMPRE a partir das 08:30.
+NUNCA antes das 08:00. NUNCA às 05:00, 06:00 ou 07:00.
+
+═══════════════════════════════════════════════════════
+
+Você é o NutriSync Elite, o gerador de planos alimentares mais avançado do Brasil para bodybuilding e atletas de alto rendimento. Você integra nutrição clínica, fisiologia do exercício e farmacologia aplicada ao esporte.
 
 REGRAS DE CÁLCULO OBRIGATÓRIAS:
 
@@ -1547,6 +1577,58 @@ ${perfilFisiologico?.modo_economico ? `
             status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" },
           });
         }
+      }
+    }
+
+    // ── FILTRO ABSOLUTO: AEJ NÃO É REFEIÇÃO ──
+    // Remove qualquer refeição com horário antes das 08:00 ou com "AEJ" no nome.
+    if (Array.isArray(parsed?.refeicoes)) {
+      const antes = parsed.refeicoes.length;
+      parsed.refeicoes = parsed.refeicoes.filter((r: any) => {
+        const horario: string = r?.horario || "00:00";
+        const nome: string = (r?.refeicao || "").toString().toLowerCase();
+
+        const [hStr] = horario.split(":");
+        const h = Number(hStr);
+        if (Number.isFinite(h) && h < 8) {
+          console.warn("[FILTRO-AEJ] Refeição removida (horário <08:00):", r?.refeicao, horario);
+          return false;
+        }
+
+        if (
+          nome.includes("aej") ||
+          nome.includes("aeróbico em jejum") ||
+          nome.includes("aerobico em jejum") ||
+          nome.includes("pré-aej") ||
+          nome.includes("pre-aej")
+        ) {
+          console.warn("[FILTRO-AEJ] Refeição AEJ removida:", r?.refeicao);
+          return false;
+        }
+        return true;
+      });
+
+      // Renumerar refeições após filtro
+      parsed.refeicoes = parsed.refeicoes.map((r: any, i: number) => ({
+        ...r,
+        refeicao: typeof r?.refeicao === "string"
+          ? r.refeicao.replace(/Refei[çc][ãa]o\s+\d+/i, `Refeição ${i + 1}`)
+          : r?.refeicao,
+      }));
+
+      // Garantir que primeira refeição não comece antes das 08:30
+      if (parsed.refeicoes.length > 0) {
+        const primeira = parsed.refeicoes[0];
+        const [hStr] = (primeira?.horario || "00:00").split(":");
+        const h = Number(hStr);
+        if (!Number.isFinite(h) || h < 8) {
+          parsed.refeicoes[0].horario = "08:30";
+          console.warn("[FILTRO-AEJ] Horário da primeira refeição forçado para 08:30");
+        }
+      }
+
+      if (parsed.refeicoes.length !== antes) {
+        console.warn(`[FILTRO-AEJ] Total filtrado: ${antes} → ${parsed.refeicoes.length}`);
       }
     }
 
