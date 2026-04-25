@@ -10,7 +10,7 @@ export interface ExerciseSubstitute {
 
 export interface ExerciseEntry {
   nome: string;
-  rank: "🥇" | "🥈";
+  rank: "🥇" | "🥈" | "🥉";
   execucao: string;
   series: string;
   dicas: string[];
@@ -357,28 +357,37 @@ export const MUSCLE_GROUPS: MuscleGroup[] = [
         descricao: "Acima e medial ao joelho", funcao: "Extensão final do joelho (últimos 30°)",
         visual: "\"Gota\" acima do joelho — saúde e visual",
         nota: "Fraco = joelho valgo + dor patelar",
-        exercicios: [
-          { nome: "Leg Extension (ROM completa)", rank: "🥇",
-            execucao: "Movimento COMPLETO. Pausa 2s na extensão TOTAL. Últimos 30° = máxima ativação VMO. NÃO fazer parcial. Pé neutro.",
-            series: "3-4 × 12-15", dicas: ["Extensão TOTAL é obrigatória", "Pausa no topo"],
-            erros: ["ROM parcial (perde o VMO)", "Carga excessiva com compensação"], fases: { bulking: "4×12-15", cutting: "3×15-20" } },
+         exercicios: [
+          { nome: "Leg Extension (ROM completa + Pausa 2s)", rank: "🥇",
+            execucao: "Movimento COMPLETO. Pausa 2s na extensão TOTAL (no topo). Últimos 30° = máxima ativação VMO. NÃO fazer parcial. Pé neutro — para deslocar para vasto lateral, ponta do pé levemente para DENTRO.",
+            series: "3-4 × 12-15", dicas: ["Extensão TOTAL é obrigatória", "Pausa 2s no topo (apertar o quadríceps)", "Ponta do pé p/ dentro = mais vasto lateral"],
+            erros: ["ROM parcial (perde o VMO)", "Carga excessiva com compensação", "Sem pausa no topo"], fases: { bulking: "4×12-15", cutting: "3×15-20" } },
           { nome: "Hack Squat Profundo", rank: "🥈",
             execucao: "Descer completamente (90°+). Mais VMO que Leg Press. Pés próximos e paralelos.",
-            series: "4 × 10-12", dicas: ["Profundidade é chave"], erros: ["Descer pouco"],
+            series: "4 × 10-12", dicas: ["Profundidade é chave", "Pre-exhaust ideal: extensora ANTES da hack squat"], erros: ["Descer pouco"],
             fases: { bulking: "4×10-12", cutting: "3×12-15" } },
+          { nome: "Sissy Squat", rank: "🥉",
+            execucao: "Em pé, calcanhares elevados. Joelhos avançam à frente enquanto o tronco se inclina para trás (linha reta joelho-quadril-ombro). Descer até quase encostar no chão. Foco máximo nos vastos.",
+            series: "3 × 10-15", dicas: ["Isolamento brutal do quadríceps", "Use suporte para equilíbrio", "Excêntrica controlada (3s)"],
+            erros: ["Sentar (vira agachamento)", "Calcanhar no chão"], fases: { bulking: "3×10-12", cutting: "3×12-15" } },
         ]
       },
       {
         id: "vasto-lateral", nome: "Quadríceps Lateral (Sweep)", emoji: "🟠",
-        descricao: "Curvatura lateral da coxa", funcao: "Extensão de joelho (porção lateral)",
-        visual: "Curvatura externa da coxa (90% genética)",
+        descricao: "Curvatura lateral da coxa — o 'sweep'", funcao: "Extensão de joelho (porção lateral)",
+        visual: "Curvatura externa da coxa (90% genética, 10% trabalho focado)",
+        nota: "Back Squat NÃO é o melhor para sweep — preferir Hack Squat pés fechados (maior impacto direto no vasto lateral, menor envolvimento de glúteo/posterior).",
         exercicios: [
-          { nome: "Hack Squat Pés Próximos", rank: "🥇",
-            execucao: "Pés próximos e paralelos. Joelhos acompanham pés. Profundidade mínima paralelo.",
-            series: "4 × 10-12", dicas: ["Pés próximos = mais vasto lateral"], erros: ["Pés muito largos"],
-            fases: { bulking: "4×10-12", cutting: "3×12-15" } },
-          { nome: "Leg Press Pés Baixos e Próximos", rank: "🥈",
-            execucao: "Pés no centro da plataforma, próximos. Máxima flexão de joelho.",
+          { nome: "Hack Squat Pés Fechados (Substitui Back Squat)", rank: "🥇",
+            execucao: "Pés JUNTOS e paralelos no centro/baixo da plataforma. Joelhos acompanham os pés (avanço permitido). Profundidade abaixo do paralelo. Excêntrica 3s. Substitui o Back Squat para foco em vasto lateral — maior impacto direto, menor compensação de glúteo/posterior.",
+            series: "4 × 8-12", dicas: ["Pés FECHADOS = sweep máximo", "Substitui back squat para hipertrofia de vasto lateral", "Joelho à frente é desejado aqui"], erros: ["Pés afastados (perde foco no sweep)", "ROM parcial"],
+            fases: { bulking: "4×8-10", cutting: "3×12-15" } },
+          { nome: "Búlgaro Passada Curta", rank: "🥈",
+            execucao: "Pé traseiro elevado no banco. PASSADA CURTA (pé da frente próximo do banco) = joelho avança = quadríceps/vasto lateral dominante. Tronco vertical. Descer profundo.",
+            series: "3 × 10-12 cada", dicas: ["Passada curta = quadríceps", "Passada longa = glúteo (não é o foco aqui)", "Joelho pode passar do pé"],
+            erros: ["Passada longa (vira exercício de glúteo)", "Tronco inclinado à frente"], fases: { bulking: "3×10 cada", cutting: "3×12 cada" } },
+          { nome: "Leg Press Pés Baixos e Próximos", rank: "🥉",
+            execucao: "Pés no centro/baixo da plataforma, próximos. Máxima flexão de joelho.",
             series: "3 × 12-15", dicas: ["Posição dos pés define o estímulo"], erros: ["Pés muito altos na plataforma"],
             fases: { bulking: "3×12", cutting: "3×15" } },
         ]
@@ -427,15 +436,19 @@ export const MUSCLE_GROUPS: MuscleGroup[] = [
         id: "gluteo-medio", nome: "Glúteo Médio (Lateral)", emoji: "🟣",
         descricao: "Lateral — largura do quadril", funcao: "Abdução + estabilização do quadril",
         visual: "Largura lateral do quadril",
-        nota: "Frequentemente fraco — causa valgo de joelho",
+        nota: "Frequentemente fraco — causa valgo de joelho. INCLUIR OBRIGATORIAMENTE no Legs B (1-2 exercícios diretos).",
         exercicios: [
           { nome: "Abdução no Cabo (Em Pé)", rank: "🥇",
-            execucao: "Polia baixa no tornozelo. Elevar perna lateralmente. 90° máximo. Controlar descida.",
-            series: "3-4 × 15-20", dicas: ["Tensão constante do cabo"], erros: ["Inclinar o tronco"],
+            execucao: "Polia baixa no tornozelo. Elevar perna lateralmente. 90° máximo. Controlar descida. Tronco estável.",
+            series: "3-4 × 15-20", dicas: ["Tensão constante do cabo", "Obrigatório no Legs B"], erros: ["Inclinar o tronco"],
             fases: { bulking: "4×15-20", cutting: "3×15-20" } },
-          { nome: "Monster Walk (Elástico)", rank: "🥈",
+          { nome: "Abdução de Quadril na Máquina (Sentado)", rank: "🥈",
+            execucao: "Sentado na máquina abdutora. Afastar joelhos contra a resistência. Pausa 1-2s no fim do movimento. Tronco levemente inclinado à frente = mais glúteo médio. Excêntrica controlada.",
+            series: "4 × 15-20", dicas: ["Inclinar tronco à frente recruta mais glúteo médio (vs. TFL)", "Pausa no final = pico de contração", "Combina perfeitamente com abdução no cabo no Legs B"],
+            erros: ["Tronco totalmente vertical (vira TFL)", "ROM parcial", "Velocidade excessiva"], fases: { bulking: "4×15-20", cutting: "3×20-25" } },
+          { nome: "Monster Walk (Elástico)", rank: "🥉",
             execucao: "Elástico acima dos joelhos. Andar lateralmente mantendo tensão.",
-            series: "3 × 15 passos cada", dicas: ["Excelente ativação"], erros: ["Passos muito curtos"],
+            series: "3 × 15 passos cada", dicas: ["Excelente ativação como finalizador"], erros: ["Passos muito curtos"],
             fases: { bulking: "3×15 cada", cutting: "3×15 cada" } },
         ]
       },
@@ -459,6 +472,40 @@ export const MUSCLE_GROUPS: MuscleGroup[] = [
             execucao: "Joelho FLEXIONADO = gastro desativado = sóleo isolado. ROM completa. Pausa 2s no topo. Excêntrico 3-4s.",
             series: "4 × 20-30", dicas: ["Fibras tipo I = ALTA REPETIÇÃO", "Sentado = sóleo puro"],
             erros: ["Reps baixas (sóleo é tipo I)", "ROM parcial"], fases: { bulking: "4×20-30", cutting: "4×25-30" } },
+        ]
+      },
+      {
+        id: "estrategias-pernas", nome: "Estratégias Avançadas (Pernas)", emoji: "🧠",
+        descricao: "Métodos e finalizadores para maximizar resultado de perna",
+        funcao: "Pré-fadiga, retenção, posing e técnicas de intensificação",
+        visual: "Aplicar 1-2 estratégias por treino para vencer platôs",
+        nota: "Não são exercícios — são MÉTODOS aplicados sobre os exercícios principais.",
+        exercicios: [
+          { nome: "Pre-Exhaust: Extensora → Hack Squat", rank: "🥇",
+            execucao: "Iniciar com 3×12-15 de cadeira extensora ATÉ A FALHA. Em seguida, ir DIRETO para Hack Squat (descanso máx. 60s). A pré-fadiga isolada do quadríceps faz com que ele seja o limitante na hack — máximo recrutamento de fibras dos vastos.",
+            series: "3 super-séries (extensora + hack)", dicas: ["Use cargas menores na hack (a fadiga já existe)", "Aplicar no Legs A (foco quadríceps)", "Excelente para quem 'sente glúteo/posterior' demais na hack"],
+            erros: ["Carga excessiva na hack após pré-fadiga", "Descanso longo entre extensora e hack (perde a pré-fadiga)"],
+            fases: { bulking: "3 super-séries", cutting: "3-4 super-séries" } },
+          { nome: "Posing 5min Pós-Treino de Perna", rank: "🥈",
+            execucao: "Ao FINAL do treino de perna (Legs A e Legs B), realizar 5 minutos de posing focado: quarter turns, side chest, side tríceps + flexão MÁXIMA do quadríceps em cada pose (10s contração + 5s relaxa). Aumenta densidade muscular, conexão mente-músculo e capilarização.",
+            series: "5 min contínuos (todo fim de treino de perna)", dicas: ["Contração isométrica máxima nos vastos", "Trabalha mind-muscle connection", "Bônus estético para fase competitiva"],
+            erros: ["Pular o posing", "Posar sem contração real (apenas postura)"],
+            fases: { bulking: "5 min", cutting: "8-10 min (mais detalhamento)" } },
+          { nome: "Cadeira Extensora — Pé p/ Dentro (Técnica Vasto Lateral)", rank: "🥉",
+            execucao: "CORREÇÃO TÉCNICA: na cadeira extensora, posicionar a ponta do pé LEVEMENTE para DENTRO (rotação interna sutil do tornozelo, ~10-15°). Isso desloca a ativação para o vasto lateral (sweep). Pé neutro = quadríceps geral. Pé p/ fora = vasto medial (VMO).",
+            series: "Aplicar em 2 das 4 séries da extensora", dicas: ["Rotação SUTIL — não forçar o joelho", "Alternar séries: 2 com pé neutro + 2 com pé p/ dentro", "Manter alinhamento joelho-pé"],
+            erros: ["Rotação excessiva (estresse no joelho)", "Aplicar em todas as séries (perde variação de estímulo)"],
+            fases: { bulking: "2 séries com técnica", cutting: "2-3 séries com técnica" } },
+          { nome: "BFR ao Final do Legs A (Futuro — Requer Equipamento)", rank: "🥉",
+            execucao: "FUTURO — quando tiver as faixas de oclusão (BFR / Kaatsu). Ao final do Legs A, aplicar faixas de pressão (~70% oclusão) na raiz das coxas. Realizar 4 séries de extensora ou leg press com 30% 1RM: 30-15-15-15 reps com 30s descanso. Hipertrofia equivalente a alta intensidade com baixa carga.",
+            series: "4 × 30-15-15-15 com 30% 1RM", dicas: ["Requer faixas BFR específicas (não improvisar)", "Sensação de queimação extrema é normal", "Não usar com varizes/trombose"],
+            erros: ["Pressão excessiva (>80%)", "Improvisar faixas (perigoso)"],
+            fases: { bulking: "4 séries finais", cutting: "4 séries finais" } },
+          { nome: "Análise de Vídeo da Execução (Futuro)", rank: "🥉",
+            execucao: "FUTURO — gravar séries-chave (hack squat, RDL, hip thrust) em ângulo lateral. Analisar: profundidade, alinhamento joelho-pé, neutralidade da coluna, simetria de força. Use o módulo VideoForm do app para análise biomecânica via IA.",
+            series: "1 vídeo por exercício/semana", dicas: ["Ângulo lateral é o mais informativo", "Comparar vídeos mês a mês = progressão técnica visível"],
+            erros: ["Filmar de frente (perde info de profundidade)"],
+            fases: { bulking: "Semanal", cutting: "Semanal" } },
         ]
       },
     ]
