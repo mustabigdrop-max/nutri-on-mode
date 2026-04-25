@@ -524,6 +524,27 @@ const sections: MicrobiotaSection[] = [
           <p className="text-xs">sIgA: 1ª linha de defesa mucosa. Aumentar: colostro, probióticos, glutamina, vitamina A, zinco</p>
           <p className="text-xs mt-1">Barreira: Claudina, ocludina, ZO-1. Reparar: L-glutamina, colostro, BPC-157, zinco carnosina, butirato</p>
         </Card>
+
+        <Card className="bg-emerald-500/5 border-emerald-500/20 p-3">
+          <p className="text-xs font-semibold text-emerald-400 mb-1">E. Eixo Intestino-Mitocôndria (Gut-Mito Axis)</p>
+          <p className="text-xs">Descoberta 2023 — Cell Metabolism: SCFAs → GPR109a → PGC-1α = biogênese mitocondrial muscular</p>
+          <p className="text-xs mt-1">Cepas produtoras de butirato: F. prausnitzii, Roseburia intestinalis, Eubacterium rectale</p>
+          <p className="text-xs mt-1 text-primary">Hack: Amido resistente 30g/dia → mais butirato → mais mitocôndrias → sinergia com SLU-PP-332 + CoQ10</p>
+        </Card>
+
+        <Card className="bg-yellow-500/5 border-yellow-500/20 p-3">
+          <p className="text-xs font-semibold text-yellow-500 mb-1">F. Eixo Intestino-Tendão (Gut-Tendon Axis)</p>
+          <p className="text-xs">Atletas com anabólicos: músculo cresce mais rápido que tendão = risco de ruptura</p>
+          <p className="text-xs mt-1">Microbiota regula colágeno: butirato → HATs → expressão genes de colágeno tipo I e III</p>
+          <p className="text-xs mt-1 text-primary">Protocolo: L. rhamnosus GG + colágeno hidrolisado 10g + Vit C 1g + butirato sódio 300mg</p>
+        </Card>
+
+        <Card className="bg-indigo-500/5 border-indigo-500/20 p-3">
+          <p className="text-xs font-semibold text-indigo-400 mb-1">G. Eixo Intestino-Sono (Gut-Sleep Axis)</p>
+          <p className="text-xs">Microbiota produz: serotonina (90% intestinal → melatonina), GABA (L. rhamnosus JB-1), triptofano</p>
+          <p className="text-xs mt-1 text-primary">Protocolo pré-sono: L. rhamnosus GG + B. longum BB536 + suco cereja azeda 150ml + L-triptofano 500mg</p>
+          <p className="text-xs mt-1">= sono profundo = GH máximo = sinergia com CJC/Ipamorelin</p>
+        </Card>
       </div>
     ),
   },
