@@ -438,6 +438,9 @@ const sections: MicrobiotaSection[] = [
         </div>
       </div>
     ),
+  },
+  {
+    id: "fase4",
     title: "Fase 4 — PROTEGER (permanente)",
     icon: <Shield className="w-4 h-4 text-blue-500" />,
     badge: "Barreira",
