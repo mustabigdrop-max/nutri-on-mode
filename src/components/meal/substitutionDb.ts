@@ -182,6 +182,17 @@ const FAT_POOL: FoodSub[] = [
   { name: "Sementes de abóbora", portion: "15g", kcal: 85, protein: 4, carbs: 2, fat: 7 },
   { name: "Coco fresco ralado", portion: "20g", kcal: 70, protein: 1, carbs: 3, fat: 7 },
   { name: "Azeitonas pretas", portion: "30g", kcal: 35, protein: 0.3, carbs: 1, fat: 3.5 },
+  { name: "Azeitonas verdes", portion: "30g", kcal: 35, protein: 0.4, carbs: 1, fat: 3.5 },
+  { name: "Azeite de abacate", portion: "10ml", kcal: 90, protein: 0, carbs: 0, fat: 10 },
+  { name: "Manteiga", portion: "10g", kcal: 75, protein: 0.1, carbs: 0, fat: 8 },
+  { name: "Cream cheese tradicional", portion: "20g", kcal: 70, protein: 1, carbs: 1, fat: 7 },
+  { name: "Maionese tradicional", portion: "10g", kcal: 70, protein: 0, carbs: 0, fat: 8 },
+  { name: "Pesto caseiro", portion: "15g", kcal: 80, protein: 1, carbs: 1, fat: 8 },
+  { name: "Mix de oleaginosas", portion: "20g", kcal: 120, protein: 4, carbs: 4, fat: 10 },
+  { name: "Castanha portuguesa assada", portion: "30g", kcal: 60, protein: 1, carbs: 13, fat: 0.5 },
+  { name: "Amendoim torrado sem sal", portion: "20g", kcal: 115, protein: 5, carbs: 4, fat: 9 },
+  { name: "Gergelim", portion: "15g", kcal: 85, protein: 3, carbs: 3, fat: 7 },
+  { name: "Óleo de linhaça", portion: "10ml", kcal: 90, protein: 0, carbs: 0, fat: 10 },
 ];
 
 const DAIRY_POOL: FoodSub[] = [
