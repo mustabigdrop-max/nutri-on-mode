@@ -1116,8 +1116,11 @@ OBRIGAÇÕES:
 1) A refeição "Pós-Treino Imediato" DEVE ter "${glut4Config.carb_source_label}" como fonte principal de carboidrato — proibido whey, proteína animal e gordura adicionada.
 
    ⚠️ OBRIGATÓRIO COMBINAR 2+ ALIMENTOS (NUNCA deixar a refeição com 1 só ingrediente):
-   - Se a fonte principal for um AÇÚCAR/XAROPE PURO (leite condensado, doce de leite, mel cru, melado, rapadura, geleia, dextrose, maltodextrina, açúcar de coco, mucilon puro), VOCÊ É OBRIGADO a adicionar um CARBOIDRATO ESTRUTURAL/VEÍCULO junto na MESMA refeição: pão francês, pão de forma, tapioca, banana madura, batata-doce cozida, arroz branco, biscoito de arroz, ou cuscuz. NUNCA prescreva leite condensado/doce de leite/mel/geleia "puro" — sempre como recheio/cobertura de um veículo sólido.
-   - Combos válidos e ENCORAJADOS (escolha um conforme preferência/disponibilidade do paciente — VARIE entre os dias do plano):
+
+   ⛔ PROIBIDO ABSOLUTO no PÓS-TREINO IMEDIATO: dextrose, maltodextrina, malto, waxy maize, ciclodextrina, vitargo, palatinose, karbolyn ou QUALQUER carboidrato em pó tipo "shake esportivo de reposição". Esses compostos são EXCLUSIVAMENTE de uso INTRA-TREINO (durante o treino, dissolvidos em água). Se o paciente usa maltodextrina/dextrose, elas DEVEM aparecer em uma refeição separada chamada "Intra-Treino" (durante o treino), NUNCA dentro do "Pós-Treino Imediato". O pós-imediato usa SEMPRE alimentos sólidos/semi-sólidos reais (pão, tapioca, banana, mel, leite condensado, doce de leite, geleia, batata-doce, arroz branco, etc.).
+
+   - Se a fonte principal for um AÇÚCAR/XAROPE PURO (leite condensado, doce de leite, mel cru, melado, rapadura, geleia, açúcar de coco, mucilon puro), VOCÊ É OBRIGADO a adicionar um CARBOIDRATO ESTRUTURAL/VEÍCULO junto na MESMA refeição: pão francês, pão de forma, tapioca, banana madura, batata-doce cozida, arroz branco, biscoito de arroz, ou cuscuz. NUNCA prescreva leite condensado/doce de leite/mel/geleia "puro" — sempre como recheio/cobertura de um veículo sólido.
+   - Combos válidos e ENCORAJADOS para o PÓS-IMEDIATO (escolha um conforme preferência/disponibilidade do paciente — VARIE entre os dias do plano):
      • Pão francês + leite condensado desnatado
      • Pão francês + doce de leite
      • Pão francês + geleia de frutas (uva/morango/goiaba)
@@ -1133,11 +1136,17 @@ OBRIGAÇÕES:
      • Mucilon escaldado + banana + mel
      • Cuscuz + mel + banana
      • Rapadura ralada + banana
-     • Dextrose + maltodextrina + água (apenas se paciente preferir shake)
    - Cada alimento deve aparecer como ITEM SEPARADO no array "alimentos" da refeição, com sua própria gramagem, kcal e macros individuais. NUNCA agrupar tudo num só item tipo "pão com leite condensado 165g".
    - Listar no campo de descrição/justificativa de cada item o papel fisiológico (ex: "pão francês = amido de absorção rápida → glicose muscular" / "leite condensado = sacarose → glicose+frutose para reposição hepática de glicogênio").
 
-   O TOTAL de gramas de CHO deve bater o alvo (${glut4Config.carb_grams ?? "calculado pelo peso"}g), gordura ≤ 2g e proteína ≤ 3g (apenas residual do pão/tapioca, sem adicionar fonte proteica). Maltodextrina já usada intra-treino não pode reaparecer aqui.
+   O TOTAL de gramas de CHO deve bater o alvo (${glut4Config.carb_grams ?? "calculado pelo peso"}g), gordura ≤ 2g e proteína ≤ 3g (apenas residual do pão/tapioca, sem adicionar fonte proteica).
+
+${glut4Config.uses_intra_malto ? `📍 REFEIÇÃO INTRA-TREINO OBRIGATÓRIA (separada do pós-imediato):
+   - Nome: "Refeição X (HH:MM — Intra-Treino)" com horário = início do treino + 15-20min (no meio do treino).
+   - Conteúdo: ${glut4Config.intra_malto_grams}g de maltodextrina (ou dextrose, ou 50/50 malto+dextrose) dissolvidos em 500-700ml de água. Opcionalmente: 5g de creatina + eletrólitos.
+   - Macros: ${glut4Config.intra_malto_grams}g CHO | 0g proteína | 0g gordura | ~${(glut4Config.intra_malto_grams || 0) * 4} kcal.
+   - PROIBIDO: aparecer maltodextrina/dextrose em qualquer outra refeição que não esta.
+` : ""}
 2) O HORÁRIO da refeição "Pós-Treino Imediato" DEVE ser exatamente HORÁRIO_DO_TREINO + duração + ${glut4Config.timing_minutes} minutos (use o time/duration_min do dia de treino do schedule). Em hipótese alguma colocar refeições peri-workout em horário desconectado do treino.
 3) Crie também uma refeição "Pós-Treino Sólido" 60–90min depois (com proteína completa + CHO moderado).
 4) Pré-treino sólido: 60–90min ANTES do horário do treino (não horas antes).
@@ -1651,13 +1660,22 @@ ${perfilFisiologico?.modo_economico ? `
         })();
 
       // Carboidratos compatíveis permitidos no pós-treino imediato (alta/média absorção)
+      // ⛔ EXCLUÍDOS: dextrose, maltodextrina, waxy maize, ciclodextrina, vitargo, palatinose,
+      //    karbolyn — esses são EXCLUSIVAMENTE intra-treino (em pó dissolvido em água).
       const CARBS_COMPATIVEIS = [
-        "tapioca", "mucilon", "dextrose", "maltodextrina", "malto", "mel", "rapadura",
+        "tapioca", "mucilon", "mel", "rapadura",
         "doce de leite", "leite condensado", "geleia", "geléia", "açúcar", "acucar",
         "banana", "pão francês", "pao frances", "pão", "pao", "batata-doce", "batata doce",
-        "arroz branco", "frutose", "glicose", "waxy maize", "ciclodextrina", "vitargo",
+        "arroz branco", "frutose",
         "polvilho", "biju", "beiju", "água de coco", "agua de coco", "suco de uva",
         "suco de laranja", "purê de batata", "pure de batata", "cuscuz", "cream of rice",
+        "melado", "melaço", "açúcar de coco", "acucar de coco",
+      ];
+      // Carboidratos EXCLUSIVOS de intra-treino (NUNCA no pós-imediato — devem migrar para refeição "Intra-Treino")
+      const CARBS_INTRA_TREINO = [
+        "dextrose", "maltodextrina", "malto", "waxy maize", "ciclodextrina",
+        "vitargo", "palatinose", "karbolyn", "glicose em pó", "glicose em po",
+        "carb up", "carbup",
       ];
       // Itens proibidos (proteína/gordura) — removidos automaticamente
       const PROIBIDOS = [
@@ -1673,6 +1691,8 @@ ${perfilFisiologico?.modo_economico ? `
         CARBS_COMPATIVEIS.some((c) => nome.toLowerCase().includes(c));
       const isProibido = (nome: string) =>
         PROIBIDOS.some((p) => nome.toLowerCase().includes(p));
+      const isIntraTreino = (nome: string) =>
+        CARBS_INTRA_TREINO.some((c) => nome.toLowerCase().includes(c));
 
       // Heurística simples para extrair gramas de uma string "30g", "45 g", "1 colher (15g)"
       const extrairGramasCho = (a: any): number => {
@@ -1687,8 +1707,15 @@ ${perfilFisiologico?.modo_economico ? `
         return 0;
       };
 
-      parsed.refeicoes = parsed.refeicoes.map((m: any) => {
+      // Acumulador de itens intra-treino extraídos do pós-imediato (serão movidos)
+      const intraTreinoExtraidos: any[] = [];
+      let posImediatoHorario: string | null = null;
+      let posImediatoIdx = -1;
+
+      parsed.refeicoes = parsed.refeicoes.map((m: any, idx: number) => {
         if (!isPosImediato(m?.refeicao || "")) return m;
+        posImediatoHorario = m?.horario || null;
+        posImediatoIdx = idx;
 
         const inputAlimentos: any[] = Array.isArray(m?.alimentos) ? m.alimentos : [];
         const validacao: string[] = [];
@@ -1702,6 +1729,14 @@ ${perfilFisiologico?.modo_economico ? `
           }
           return true;
         });
+
+        // 1b) EXTRAI itens intra-treino (dextrose/maltodextrina/etc) — eles vão para refeição própria
+        const intraItens = limpos.filter((a) => isIntraTreino(String(a?.alimento || "")));
+        intraItens.forEach((a) => {
+          intraTreinoExtraidos.push(a);
+          validacao.push(`movido: "${a.alimento}" do pós-imediato → refeição "Intra-Treino" (uso correto)`);
+        });
+        limpos = limpos.filter((a) => !isIntraTreino(String(a?.alimento || "")));
 
         // 2) Mantém apenas carboidratos compatíveis
         let carbs = limpos.filter((a) => isCompativel(String(a?.alimento || "")));
@@ -1729,7 +1764,6 @@ ${perfilFisiologico?.modo_economico ? `
         let somaCho = carbs.reduce((acc, a) => acc + extrairGramasCho(a), 0);
         const delta = carbGrams - somaCho;
         if (Math.abs(delta) > 5) {
-          // Ajusta a primeira ocorrência da fonte principal
           const idxPrincipal = carbs.findIndex((a) =>
             String(a?.alimento || "").toLowerCase().includes(carbLabel.toLowerCase()),
           );
@@ -1768,6 +1802,81 @@ ${perfilFisiologico?.modo_economico ? `
           validacao_pos_treino: validacao.length ? validacao : ["ok: combinação válida, alvo de CHO atingido"],
         };
       });
+
+      // ── Cria/garante refeição "Intra-Treino" se houver itens extraídos OU se uses_intra_malto ──
+      const jaTemIntra = parsed.refeicoes.some((m: any) =>
+        /intra[\s-]?treino|durante\s*o\s*treino/i.test(String(m?.refeicao || "")),
+      );
+      const precisaIntra = intraTreinoExtraidos.length > 0 || glut4Config.uses_intra_malto;
+
+      if (precisaIntra && !jaTemIntra) {
+        // Calcula horário do intra: pós-imediato − (timing_minutes + ~25min) ≈ meio do treino
+        let horarioIntra = "12:30";
+        if (posImediatoHorario) {
+          const [hh, mm] = posImediatoHorario.split(":").map(Number);
+          if (Number.isFinite(hh) && Number.isFinite(mm)) {
+            const totalMin = hh * 60 + mm - (Number(glut4Config.timing_minutes) || 30) - 25;
+            const h2 = Math.floor(totalMin / 60);
+            const m2 = totalMin % 60;
+            if (h2 >= 0 && h2 < 24) {
+              horarioIntra = `${String(h2).padStart(2, "0")}:${String(m2).padStart(2, "0")}`;
+            }
+          }
+        }
+
+        const gramasIntra =
+          intraTreinoExtraidos.reduce((acc, a) => acc + extrairGramasCho(a), 0) ||
+          Number(glut4Config.intra_malto_grams) || 40;
+
+        const itensIntra = intraTreinoExtraidos.length > 0
+          ? intraTreinoExtraidos.map((a) => ({
+              ...a,
+              observacao:
+                (a.observacao || "") +
+                " [movido automaticamente: dextrose/maltodextrina é uso INTRA-treino, não pós-imediato]",
+            }))
+          : [{
+              alimento: "Maltodextrina (ou Dextrose)",
+              quantidade: `${gramasIntra}g`,
+              observacao: "Dissolver em 500-700ml de água. Consumir gole a gole DURANTE o treino para reposição contínua de glicogênio e manutenção da glicemia.",
+              substituicoes: [
+                { alimento: "Dextrose", quantidade: `${gramasIntra}g`, observacao: "Pico glicêmico mais rápido." },
+                { alimento: "Maltodextrina + Dextrose 50/50", quantidade: `${gramasIntra}g`, observacao: "Combo clássico — absorção em duas fases." },
+                { alimento: "Waxy Maize", quantidade: `${gramasIntra}g`, observacao: "Esvaziamento gástrico mais lento, menos pico insulínico." },
+                { alimento: "Ciclodextrina (HBCD)", quantidade: `${gramasIntra}g`, observacao: "Premium — alta osmolaridade, zero desconforto gástrico." },
+              ],
+              cho: gramasIntra,
+            }];
+
+        const refeicaoIntra = {
+          refeicao: `Intra-Treino (${horarioIntra} — Durante o Treino)`,
+          horario: horarioIntra,
+          alimentos: itensIntra,
+          calorias: Math.round(gramasIntra * 4),
+          macros: { proteina: 0, carboidrato: Math.round(gramasIntra), gordura: 0 },
+          observacao_clinica: "Carboidrato líquido de absorção rápida durante o treino — repõe glicogênio em uso, mantém glicemia, atenua catabolismo. NÃO confundir com pós-treino imediato (que usa alimento sólido + sacarose/amido).",
+        };
+
+        // Insere imediatamente ANTES do pós-imediato (ordem cronológica natural)
+        if (posImediatoIdx >= 0) {
+          parsed.refeicoes.splice(posImediatoIdx, 0, refeicaoIntra);
+        } else {
+          parsed.refeicoes.push(refeicaoIntra);
+        }
+        console.log(`[INTRA-TREINO] Refeição criada: ${horarioIntra} | ${gramasIntra}g CHO`);
+      } else if (precisaIntra && jaTemIntra && intraTreinoExtraidos.length > 0) {
+        // Já existe refeição intra — adiciona os itens extraídos lá
+        const idxIntra = parsed.refeicoes.findIndex((m: any) =>
+          /intra[\s-]?treino|durante\s*o\s*treino/i.test(String(m?.refeicao || "")),
+        );
+        if (idxIntra >= 0) {
+          const ref = parsed.refeicoes[idxIntra];
+          ref.alimentos = [...(ref.alimentos || []), ...intraTreinoExtraidos];
+          const novaSoma = ref.alimentos.reduce((acc: number, a: any) => acc + extrairGramasCho(a), 0);
+          ref.macros = { proteina: 0, carboidrato: Math.round(novaSoma), gordura: 0 };
+          ref.calorias = Math.round(novaSoma * 4);
+        }
+      }
     }
 
     // ── AJUSTE PÓS-PROCESSAMENTO: escala gramaturas para bater alvo calórico ±3% ──
