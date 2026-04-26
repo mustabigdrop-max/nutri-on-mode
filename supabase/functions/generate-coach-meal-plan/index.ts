@@ -1511,6 +1511,55 @@ ${perfilFisiologico?.modo_economico ? `
     const finishReason = aiData.choices?.[0]?.finish_reason;
     let clean = raw.replace(/```json|```/g, "").trim();
 
+    const convertSingleQuotedStrings = (src: string): string => {
+      let out = "";
+      let inDouble = false;
+      let inSingle = false;
+      let esc = false;
+
+      const nextSignificant = (from: number) => {
+        for (let j = from + 1; j < src.length; j++) {
+          const c = src[j];
+          if (!/\s/.test(c)) return c;
+        }
+        return "";
+      };
+
+      for (let i = 0; i < src.length; i++) {
+        const ch = src[i];
+        if (inSingle) {
+          if (esc) { out += ch === "'" ? "'" : `\\${ch}`; esc = false; continue; }
+          if (ch === "\\") { esc = true; continue; }
+          if (ch === "'") {
+            const next = nextSignificant(i);
+            if (!next || next === "," || next === "}" || next === "]" || next === ":") {
+              out += '"';
+              inSingle = false;
+              continue;
+            }
+          }
+          if (ch === '"') { out += '\\"'; continue; }
+          if (ch === "\n") { out += "\\n"; continue; }
+          if (ch === "\r") { out += "\\r"; continue; }
+          if (ch === "\t") { out += "\\t"; continue; }
+          out += ch;
+          continue;
+        }
+        if (esc) { out += ch; esc = false; continue; }
+        if (ch === "\\") { out += ch; esc = true; continue; }
+        if (ch === '"') { inDouble = !inDouble; out += ch; continue; }
+        if (!inDouble && ch === "'") { inSingle = true; out += '"'; continue; }
+        out += ch;
+      }
+      if (inSingle) out += '"';
+      return out;
+    };
+
+    const repairJsonLikeText = (src: string): string => convertSingleQuotedStrings(src)
+      .replace(/\uFEFF|\u200B|\u200C|\u200D/g, "")
+      .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, "")
+      .replace(/,\s*([}\]])/g, "$1");
+
     // Extrai TODOS os objetos JSON balanceados de nível superior e escolhe aquele que CONTÉM "refeicoes".
     // Isso evita pegar um objeto explicativo inicial quando a IA retorna múltiplos blocos ({...}{plano real}).
     const extractTopLevelObjects = (src: string): string[] => {
@@ -1550,6 +1599,69 @@ ${perfilFisiologico?.modo_economico ? `
       }
     }
 
+    const buildFallbackMealPlan = (reason: string) => {
+      const targetKcal = Math.round(calc?.metaKcal || Number(calorias) || 2200);
+      const prot = Math.round(calc?.proteinaG || ((Number(peso) || 75) * 2));
+      const carb = Math.round(calc?.carboG || Math.max(120, (targetKcal - prot * 4 - targetKcal * 0.25) / 4));
+      const fat = Math.round(calc?.gorduraG || Math.max(45, (targetKcal - prot * 4 - carb * 4) / 9));
+      const count = Math.max(3, Math.min(7, Number(refeicoes) || calc?.refeicoesRecomendadas || 5));
+      const horarios = ["08:30", "10:30", "12:30", "15:30", "17:30", "20:30", "22:30"];
+      const labels = ["R1 — Café da manhã", "R2 — Lanche da manhã", "R3 — Almoço", "R4 — Lanche / Pré-treino", "R5 — Pós-treino", "R6 — Jantar", "R7 — Ceia"];
+      const ratiosBase = [0.18, 0.12, 0.24, 0.14, 0.16, 0.12, 0.04].slice(0, count);
+      const ratioSum = ratiosBase.reduce((a, b) => a + b, 0) || 1;
+      const templates = [
+        ["Ovos inteiros", "Aveia", "Banana"],
+        ["Iogurte natural", "Fruta", "Castanhas"],
+        ["Frango grelhado", "Arroz", "Feijão", "Vegetais"],
+        ["Whey protein", "Tapioca", "Banana"],
+        ["Tilápia", "Batata-doce", "Legumes"],
+        ["Patinho moído", "Arroz ou mandioca", "Salada com azeite"],
+        ["Cottage ou iogurte", "Chia"],
+      ];
+      return {
+        resumo: {
+          nome: nome || "Paciente",
+          objetivo: objetivo || "Plano alimentar",
+          calorias_totais: targetKcal,
+          proteina_total: prot,
+          carboidrato_total: carb,
+          gordura_total: fat,
+          tmb: calc?.tmb || 0,
+          get: calc?.getFarma || targetKcal,
+          imc,
+          observacao_protocolo: "Plano seguro gerado com cálculo determinístico após falha de formatação da IA.",
+        },
+        refeicoes: ratiosBase.map((ratio, i) => {
+          const r = ratio / ratioSum;
+          return {
+            refeicao: labels[i],
+            horario: horarios[i],
+            calorias: Math.round(targetKcal * r),
+            macros: { proteina: Math.round(prot * r), carboidrato: Math.round(carb * r), gordura: Math.round(fat * r) },
+            alimentos: templates[i].map((alimento) => ({
+              alimento,
+              quantidade: "ajustar pela meta da refeição",
+              quantidade_g: null,
+              observacao: "Base técnica ajustável pelo coach.",
+              substituicoes: [
+                { alimento: "Frango / tilápia / patinho", quantidade: "porção equivalente", quantidade_g: null, observacao: "troca proteica equivalente", grupo: "proteina" },
+                { alimento: "Arroz / batata / mandioca", quantidade: "porção equivalente", quantidade_g: null, observacao: "troca de carboidrato equivalente", grupo: "carbo" },
+                { alimento: "Azeite / castanhas / abacate", quantidade: "porção equivalente", quantidade_g: null, observacao: "troca de gordura equivalente", grupo: "gordura" },
+              ],
+            })),
+          };
+        }),
+        suplementacao: [],
+        dica_mce: {
+          mindset: "Executar o plano por horários e revisar aderência diariamente.",
+          comportamento: "Manter preparo simples e repetir bases alimentares seguras.",
+          execucao: "Coach deve ajustar gramagens finas conforme resposta do paciente.",
+        },
+        alerta_coach: `Fallback ativado porque a IA retornou JSON malformado: ${reason.slice(0, 120)}`,
+        fallback_gerado: true,
+      };
+    };
+
     let parsed;
     let parseError: unknown = null;
     try {
@@ -1562,16 +1674,12 @@ ${perfilFisiologico?.modo_economico ? `
         parsed = JSON.parse(repaired);
       } catch (e2) {
         parseError = e2;
-        // Tentativa 3: reparo agressivo
+        // Tentativa 3: reparo agressivo para saída "JSON-like" de LLM
+        // - converte strings com aspas simples para aspas duplas sem mexer em apóstrofos internos
         // - normaliza quebras de linha literais dentro de strings
-        // - remove caracteres de controle inválidos
-        // - remove vírgulas pendentes
-        // - remove BOM/zero-width
+        // - remove caracteres de controle inválidos, vírgulas pendentes e BOM/zero-width
         try {
-          let aggressive = clean
-            .replace(/\uFEFF|\u200B|\u200C|\u200D/g, "")
-            // remove caracteres de controle exceto \n \r \t (serão escapados depois)
-            .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, "");
+          let aggressive = repairJsonLikeText(clean);
 
           // Escapa quebras de linha cruas dentro de strings JSON
           // Walker simples: percorre e quando estiver dentro de "..." substitui \n \r \t por \\n \\r \\t
@@ -1614,11 +1722,15 @@ ${perfilFisiologico?.modo_economico ? `
           const msg = truncated
             ? "A IA gerou um plano grande demais e a resposta foi truncada. Tente novamente."
             : "Resposta da IA não é um JSON válido (" + errMsg.slice(0, 120) + "). Tente novamente.";
-          return new Response(JSON.stringify({ error: msg, finish_reason: finishReason, parse_error: errMsg }), {
-            status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" },
-          });
+          console.warn("[parser-fallback] retornando plano determinístico em vez de erro 502:", msg);
+          parsed = buildFallbackMealPlan(errMsg);
         }
       }
+    }
+
+    if (!Array.isArray(parsed?.refeicoes) || parsed.refeicoes.length === 0) {
+      console.warn("[parser-fallback] resposta sem refeicoes válidas; usando plano determinístico mínimo");
+      parsed = buildFallbackMealPlan("resposta sem array refeicoes válido");
     }
 
     // ── FILTRO ABSOLUTO: AEJ NÃO É REFEIÇÃO ──
@@ -1845,7 +1957,7 @@ ${perfilFisiologico?.modo_economico ? `
         // Calcula horário do intra: pós-imediato − (timing_minutes + ~25min) ≈ meio do treino
         let horarioIntra = "12:30";
         if (posImediatoHorario) {
-          const [hh, mm] = posImediatoHorario.split(":").map(Number);
+          const [hh, mm] = String(posImediatoHorario).split(":").map(Number);
           if (Number.isFinite(hh) && Number.isFinite(mm)) {
             const totalMin = hh * 60 + mm - (Number(glut4Config.timing_minutes) || 30) - 25;
             const h2 = Math.floor(totalMin / 60);
