@@ -29,6 +29,8 @@ import {
 } from "@/data/trainingData";
 import SystemSelectorInline from "@/components/training/systems/SystemSelectorInline";
 import SystemConflictAlerts from "@/components/training/systems/SystemConflictAlerts";
+import ProtocolDurationCheck from "@/components/training/systems/ProtocolDurationCheck";
+import { estimateProtocolDuration } from "@/data/protocolDuration";
 import { buildSystemPrescription } from "@/data/recommendSystem";
 import { TRAINING_SYSTEMS } from "@/data/trainingSystems";
 
@@ -300,6 +302,12 @@ Português. Específico. Científico. Zero genérico.`;
       toast.error("Preencha fase, músculos, nível e nome do cliente");
       return;
     }
+    // Bloqueio por tempo: protocolo não cabe na sessão (margem severa de 15min)
+    const est = estimateProtocolDuration({ systemId: trainingSystem, muscles, level, sessionDuration, cardio });
+    if (est.diff <= -15) {
+      toast.error(`Protocolo estoura ${Math.abs(est.diff)}min do tempo de sessão. Ajuste antes de gerar.`);
+      return;
+    }
     setLoading(true);
     setGenerated(true);
     setActiveResultTab("overview");
@@ -544,6 +552,21 @@ Português. Específico. Científico. Zero genérico.`;
           />
         </Field>
 
+        {/* Validação de duração estimada vs tempo disponível */}
+        <Field label="⏱️ Validação de Tempo de Sessão">
+          <ProtocolDurationCheck
+            systemId={trainingSystem}
+            muscles={muscles}
+            level={level}
+            sessionDuration={sessionDuration}
+            cardio={cardio}
+            surface={SURFACE} surface2={SURFACE2}
+            border={BORDER} borderActive={BORDER_ACTIVE}
+            green={GREEN} greenDim={GREEN_DIM}
+            text={TEXT} textDim={TEXT_DIM} textMuted={TEXT_MUTED}
+          />
+        </Field>
+
         <div className="space-y-2">
           <div className="flex gap-2 flex-wrap">
             <div
@@ -570,20 +593,29 @@ Português. Específico. Científico. Zero genérico.`;
             </div>
           </div>
 
-          <Button
-            onClick={generate}
-            disabled={loading}
-            className="w-full font-black text-sm h-12 rounded-xl tracking-wide"
-            style={{ background: loading ? TEXT_MUTED : GREEN, color: BG }}
-          >
-            {loading ? (
-              <span className="flex items-center gap-2"><Activity className="w-4 h-4 animate-spin" /> Gerando protocolo de elite...</span>
-            ) : (fiberProfile || readyCheckin) ? (
-              <span className="flex items-center gap-2"><Brain className="w-4 h-4" /> GERAR PROTOCOLO ELITE SINCRONIZADO</span>
-            ) : (
-              <span className="flex items-center gap-2"><Brain className="w-4 h-4" /> GERAR PROTOCOLO DE ELITE</span>
-            )}
-          </Button>
+          {(() => {
+            const durEst = estimateProtocolDuration({ systemId: trainingSystem, muscles, level, sessionDuration, cardio });
+            const blockedByTime = durEst.diff <= -15;
+            const disabled = loading || blockedByTime;
+            return (
+              <Button
+                onClick={generate}
+                disabled={disabled}
+                className="w-full font-black text-sm h-12 rounded-xl tracking-wide"
+                style={{ background: disabled ? TEXT_MUTED : (blockedByTime ? "#f87171" : GREEN), color: BG, opacity: disabled ? 0.7 : 1 }}
+              >
+                {loading ? (
+                  <span className="flex items-center gap-2"><Activity className="w-4 h-4 animate-spin" /> Gerando protocolo de elite...</span>
+                ) : blockedByTime ? (
+                  <span className="flex items-center gap-2">⛔ TEMPO INSUFICIENTE — ESTOURA {Math.abs(durEst.diff)}MIN</span>
+                ) : (fiberProfile || readyCheckin) ? (
+                  <span className="flex items-center gap-2"><Brain className="w-4 h-4" /> GERAR PROTOCOLO ELITE SINCRONIZADO</span>
+                ) : (
+                  <span className="flex items-center gap-2"><Brain className="w-4 h-4" /> GERAR PROTOCOLO DE ELITE</span>
+                )}
+              </Button>
+            );
+          })()}
 
           {!fiberProfile && (
             <p className="text-[9px] text-center" style={{ color: TEXT_MUTED }}>
