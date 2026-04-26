@@ -27,6 +27,9 @@ import {
   SESSION_DURATIONS, CARDIO_OPTIONS, STRESS_OPTIONS, EQUIPMENT_OPTIONS,
   VOLUME_LANDMARKS,
 } from "@/data/trainingData";
+import SystemSelectorInline from "@/components/training/systems/SystemSelectorInline";
+import { buildSystemPrescription } from "@/data/recommendSystem";
+import { TRAINING_SYSTEMS } from "@/data/trainingSystems";
 
 const ADMIN_UID = "70e51469-1acf-4df6-afe6-f094d21db122";
 
@@ -158,6 +161,7 @@ function EliteGenerateSection({ userId }: { userId?: string }) {
   const [weeks, setWeeks] = useState("8");
   const [days, setDays] = useState("5");
   const [clientName, setClientName] = useState("");
+  const [trainingSystem, setTrainingSystem] = useState<string>("");
   // Results
   const [protocol, setProtocol] = useState<any>(null);
   const [textResults, setTextResults] = useState<Record<string, string>>({});
@@ -187,7 +191,10 @@ function EliteGenerateSection({ userId }: { userId?: string }) {
     phase, muscles, level, weeks, days, clientName,
     equipment: equipment.join(", "), injuries, sessionDuration,
     stressLevel, supplements, weakPoints, specificGoal, cardio,
-  }), [phase, muscles, level, weeks, days, clientName, equipment, injuries, sessionDuration, stressLevel, supplements, weakPoints, specificGoal, cardio]);
+    trainingSystem,
+    trainingSystemName: TRAINING_SYSTEMS.find(s => s.id === trainingSystem)?.nome || "",
+    systemPrescription: trainingSystem ? buildSystemPrescription(trainingSystem, phase) : "",
+  }), [phase, muscles, level, weeks, days, clientName, equipment, injuries, sessionDuration, stressLevel, supplements, weakPoints, specificGoal, cardio, trainingSystem]);
 
   // Carrega perfil de fibras + último STRATUM Ready check-in
   useEffect(() => {
@@ -248,9 +255,13 @@ ${readyScore >= 8 ? "✅ Score ALTO — protocolo completo, RPE máximo permitid
 ${fiberProfile.dominancia === "tipo_i" ? "→ Mais sets, reps altas (15-25), descanso 60-90s" : fiberProfile.dominancia === "tipo_iia" ? "→ 6-12 reps, tensão mecânica máxima, descanso 2-3min" : fiberProfile.dominancia === "tipo_iix" ? "→ 3-6 reps pesadas + finisher metabólico, descanso 3-5min" : "→ Periodização por bloco na sessão (pesado → metabólico)"}`
       : `━━━ PERFIL DE FIBRAS: não avaliado (usar padrão para o nível) ━━━`;
 
+    const sistemaBloco = trainingSystem
+      ? buildSystemPrescription(trainingSystem, phase)
+      : `━━━ SISTEMA DE TREINAMENTO: não definido (usar padrão da fase) ━━━`;
+
     return `Você é o Motor de Prescrição de Elite do TrainingON — camada máxima do sistema STRATUM.
 
-Integre TRÊS fontes de inteligência em UM protocolo definitivo:
+Integre QUATRO fontes de inteligência em UM protocolo definitivo:
 
 ━━━ DADOS DO CLIENTE ━━━
 - Lesões: ${injuries || "nenhuma"}
@@ -266,14 +277,19 @@ Integre TRÊS fontes de inteligência em UM protocolo definitivo:
 - Cliente: ${clientName}
 ${prontidaoBloco}
 ${fibrasBloco}
+${sistemaBloco}
 
 ━━━ OUTPUT OBRIGATÓRIO ━━━
 1. AQUECIMENTO específico (considera lesões e grupo muscular)
-2. 4-6 EXERCÍCIOS com: nome exato, sets×reps (ajustados às fibras+prontidão), RPE, cadência (ex: 3-1-2-0), cue técnico, referência científica
+2. 4-6 EXERCÍCIOS por sessão com: nome exato, sets×reps (SEGUINDO os parâmetros do SISTEMA acima), RPE/RIR, cadência, cue técnico, referência científica
 3. VOLUME LANDMARKS — MEV / MAV / MRV para este contexto
-4. PROGRESSÃO SEMANAL — 6 semanas com deload na semana 5
-5. NOTA DE INTEGRAÇÃO — 3 linhas explicando decisões baseadas em fibras + prontidão
-6. ALERTA DE LESÃO se houver restrição
+4. PROGRESSÃO SEMANAL — adaptada à duração ideal do sistema escolhido (com deload)
+5. BLOCO DE CARDIO — frequência, duração e tipo CONFORME a recomendação do sistema
+6. BLOCO DE NUTRIÇÃO — superávit/déficit, proteína g/kg, timing CONFORME o sistema + fase
+7. NOTA DE INTEGRAÇÃO — 4 linhas explicando como o sistema, fibras, prontidão e fase se combinam
+8. ALERTA DE LESÃO se houver restrição
+
+REGRA ABSOLUTA: Os parâmetros do SISTEMA DE TREINAMENTO BASE são INVIOLÁVEIS. Sets, reps, RIR, descanso, cadência e técnicas devem refletir EXATAMENTE o que está prescrito no bloco de sistema. Você adapta apenas o exercício ao equipamento e lesão.
 
 Português. Específico. Científico. Zero genérico.`;
   };
@@ -291,18 +307,18 @@ Português. Específico. Científico. Zero genérico.`;
         body: {
           ...bodyData,
           tab: "protocolo",
-          ...(fiberProfile || readyCheckin ? { elitePrompt: buildElitePrompt() } : {}),
+          // Sempre injetar elitePrompt (agora inclui sistema de treino)
+          elitePrompt: buildElitePrompt(),
         },
       });
       if (error) throw error;
       if (data.protocol) {
         setProtocol(data.protocol);
-        if (fiberProfile || readyCheckin) {
-          toast.success(
-            `Elite gerado com${fiberProfile ? ` Fibras ${fiberProfile.dominancia.toUpperCase()}` : ""}${readyCheckin ? ` + Ready ⚡` : ""}`,
-            { duration: 4000 }
-          );
-        }
+        const sysName = TRAINING_SYSTEMS.find(s => s.id === trainingSystem)?.nome;
+        toast.success(
+          `✅ Protocolo gerado${sysName ? ` · ${sysName}` : ""}${fiberProfile ? ` · Fibras ${fiberProfile.dominancia.toUpperCase()}` : ""}${readyCheckin ? ` · Ready ⚡` : ""}`,
+          { duration: 4000 }
+        );
       } else if (data.content) {
         setTextResults(prev => ({ ...prev, protocolo: data.content }));
       }
@@ -496,6 +512,22 @@ Português. Específico. Científico. Zero genérico.`;
             <Input value={clientName} onChange={e => setClientName(e.target.value)} placeholder="Nome completo" className="bg-transparent text-sm" style={{ borderColor: BORDER, color: TEXT }} />
           </Field>
         </div>
+
+        <Field label="🧬 Sistema de Treinamento Base">
+          <SystemSelectorInline
+            context={{
+              phase, level, days, weeks,
+              fiberType: fiberProfile?.dominancia,
+              weakPoints, specificGoal,
+            }}
+            selectedId={trainingSystem}
+            onSelect={setTrainingSystem}
+            surface={SURFACE} surface2={SURFACE2}
+            border={BORDER} borderActive={BORDER_ACTIVE}
+            green={GREEN} greenDim={GREEN_DIM}
+            text={TEXT} textDim={TEXT_DIM} textMuted={TEXT_MUTED}
+          />
+        </Field>
 
         <div className="space-y-2">
           <div className="flex gap-2 flex-wrap">
