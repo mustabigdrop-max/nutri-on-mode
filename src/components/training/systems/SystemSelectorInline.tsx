@@ -1,7 +1,8 @@
 import { useMemo, useState } from "react";
 import { TRAINING_SYSTEMS, SYSTEM_CATEGORIES, TrainingSystem } from "@/data/trainingSystems";
 import { recommendSystem, RecommendationContext } from "@/data/recommendSystem";
-import { Sparkles, ChevronDown, AlertTriangle, Check, Zap } from "lucide-react";
+import { Sparkles, ChevronDown, AlertTriangle, Check } from "lucide-react";
+import RecommendationRationalePanel from "./RecommendationRationalePanel";
 
 interface Props {
   context: RecommendationContext;
@@ -43,6 +44,17 @@ export default function SystemSelectorInline({
 
   return (
     <div className="space-y-2">
+      {/* Painel clicável de motivos detalhados da recomendação */}
+      <RecommendationRationalePanel
+        context={context}
+        best={reco.best}
+        reasons={reco.scores[0]?.reasons || []}
+        surface={surface} surface2={surface2}
+        border={border} borderActive={borderActive}
+        green={green} greenDim={greenDim}
+        text={text} textDim={textDim} textMuted={textMuted}
+      />
+
       {/* Trigger card */}
       <button
         onClick={() => setOpen((o) => !o)}
