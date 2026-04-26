@@ -10,7 +10,7 @@ import {
   Target, Shield, AlertTriangle, Clock, Flame, Eye, Brain,
   ChevronDown, ChevronUp, Activity, Award, Bookmark, Share2,
   Trash2, Edit3, Users, X, Check, FileDown, RotateCcw,
-  Microscope, Scan, HeartPulse, BookOpen, TrendingDown,
+  Microscope, Scan, HeartPulse, BookOpen, TrendingDown, Layers,
 } from "lucide-react";
 import { exportTrainingPDF } from "@/lib/trainingPdfExport";
 import { Button } from "@/components/ui/button";
@@ -30,11 +30,12 @@ import {
 
 const ADMIN_UID = "70e51469-1acf-4df6-afe6-f094d21db122";
 
-type Section = "gerar" | "fibras" | "stratum" | "competicao" | "progressao" | "volume" | "historico" | "config";
+type Section = "gerar" | "fibras" | "sistemas" | "stratum" | "competicao" | "progressao" | "volume" | "historico" | "config";
 
 const sectionNav: { id: Section; label: string; icon: any; adminOnly?: boolean }[] = [
   { id: "gerar", label: "Prescrição", icon: Brain },
   { id: "fibras", label: "Fibras IA", icon: Activity },
+  { id: "sistemas", label: "Sistemas", icon: Layers, adminOnly: true },
   { id: "stratum", label: "STRATUM", icon: Microscope, adminOnly: true },
   { id: "competicao", label: "Competição", icon: Award, adminOnly: true },
   { id: "progressao", label: "Progressão", icon: TrendingUp },
@@ -88,9 +89,10 @@ export default function TrainingPage() {
 
         {/* Section Nav */}
         <div className="flex gap-1.5 overflow-x-auto pb-1 no-scrollbar">
-          {visibleNav.map((s) => (
+            {visibleNav.map((s) => (
             <button key={s.id} onClick={() => {
               if (s.id === "competicao") { navigate("/coach/dashboard"); return; }
+              if (s.id === "sistemas") { navigate("/training/systems"); return; }
               setSection(s.id);
             }}
               className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-[11px] font-semibold whitespace-nowrap transition-all"
