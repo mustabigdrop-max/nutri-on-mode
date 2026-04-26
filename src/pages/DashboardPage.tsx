@@ -680,6 +680,7 @@ const DashboardPage = () => {
         <TrialBanner />
         <CoachNotificationsCard />
         <AthleteCompetitionCard />
+        <div className="mb-3"><CoachCompetitionShortcut /></div>
         {protocolosInfo.total > 0 && (
           <button
             onClick={() => navigate("/meus-protocolos")}
