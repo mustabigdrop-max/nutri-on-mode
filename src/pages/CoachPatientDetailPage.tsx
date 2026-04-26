@@ -8,9 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Send, Check, Brain, FileText, AlertTriangle, MessageSquare, User, Activity, Shield, Utensils, RefreshCw, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowLeft, Send, Check, Brain, FileText, AlertTriangle, MessageSquare, User, Activity, Shield, Utensils, RefreshCw, Loader2, ChevronLeft, ChevronRight, Trophy, Plus } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import CoachAccessManager from "@/components/acompanhado/CoachAccessManager";
+import CoachCompetitionWizard from "@/components/coach/CoachCompetitionWizard";
 
 const MEAL_TYPES = [
   { key: "cafe_manha", label: "☕ Café" },
@@ -84,6 +85,21 @@ const CoachPatientDetailPage = () => {
   const [planLoading, setPlanLoading] = useState(false);
   const [generating, setGenerating] = useState(false);
 
+  // Competition Mode state
+  const [competitionPlans, setCompetitionPlans] = useState<any[]>([]);
+  const [wizardOpen, setWizardOpen] = useState(false);
+
+  const loadCompetitionPlans = async () => {
+    if (!profile || !patientId) return;
+    const { data } = await supabase
+      .from("competition_plans" as any)
+      .select("id, nome_competicao, federacao, categoria, data_competicao, status, peso_atual, peso_alvo_palco")
+      .eq("coach_id", profile.id)
+      .eq("athlete_id", patientId)
+      .order("data_competicao", { ascending: true });
+    setCompetitionPlans((data as any[]) || []);
+  };
+
   useEffect(() => {
     if (!profile || !patientId) return;
     loadPatientData();
@@ -112,6 +128,7 @@ const CoachPatientDetailPage = () => {
     setMealLogs(mealsRes.data || []);
     setExams(examsRes.data || []);
     setLoading(false);
+    loadCompetitionPlans();
   };
 
   const fetchMealPlan = async () => {
@@ -455,6 +472,54 @@ const CoachPatientDetailPage = () => {
 
           {/* PROTOCOL */}
           <TabsContent value="protocol" className="space-y-4">
+            {/* COMPETITION MODE */}
+            <Card className="border-primary/30 bg-gradient-to-br from-primary/5 to-background">
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <CardTitle className="text-sm flex items-center gap-2">
+                    <Trophy className="w-4 h-4 text-primary" />
+                    Competition Mode
+                    <Badge variant="outline" className="text-[10px] border-primary/40 text-primary">ON PRO</Badge>
+                  </CardTitle>
+                  <Button size="sm" onClick={() => setWizardOpen(true)}>
+                    <Plus className="w-3 h-3 mr-1" /> Novo plano
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                {competitionPlans.length === 0 ? (
+                  <p className="text-xs text-muted-foreground">Nenhum plano de competição. Crie o primeiro para gerar blocos automáticos (Off-season → Cutting → Pré-peak → Peak Week).</p>
+                ) : (
+                  competitionPlans.map((p) => {
+                    const dias = Math.ceil((new Date(p.data_competicao).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+                    const semanas = Math.ceil(dias / 7);
+                    return (
+                      <button
+                        key={p.id}
+                        onClick={() => navigate(`/coach/competition/${p.id}`)}
+                        className="w-full text-left p-3 rounded-lg border border-border/50 bg-card hover:border-primary/40 hover:bg-muted/30 transition-colors"
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-semibold truncate">{p.nome_competicao}</p>
+                            <p className="text-[11px] text-muted-foreground truncate">
+                              {p.federacao} · {p.categoria} · {new Date(p.data_competicao).toLocaleDateString("pt-BR")}
+                            </p>
+                          </div>
+                          <div className="text-right shrink-0">
+                            <Badge variant="outline" className="text-[10px]" style={{ borderColor: dias < 0 ? "#888" : dias < 28 ? "#ef4444" : dias < 84 ? "#f59e0b" : "#22c55e" }}>
+                              {dias < 0 ? "Encerrado" : `${semanas} sem`}
+                            </Badge>
+                            <p className="text-[10px] text-muted-foreground mt-0.5">{p.peso_atual} → {p.peso_alvo_palco} kg</p>
+                          </div>
+                        </div>
+                      </button>
+                    );
+                  })
+                )}
+              </CardContent>
+            </Card>
+
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
@@ -587,6 +652,17 @@ const CoachPatientDetailPage = () => {
           </TabsContent>
         </Tabs>
       </main>
+
+      {profile && patientId && (
+        <CoachCompetitionWizard
+          open={wizardOpen}
+          onOpenChange={setWizardOpen}
+          coachId={profile.id}
+          athleteId={patientId}
+          athleteName={patient?.full_name}
+          onCreated={() => loadCompetitionPlans()}
+        />
+      )}
     </div>
   );
 };
