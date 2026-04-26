@@ -10,6 +10,8 @@ import {
   Loader2, Target, FlaskConical, TrendingDown, ChevronDown, ChevronUp, Sparkles,
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import WeeklyCheckInsPanel from "@/components/coach/WeeklyCheckInsPanel";
+import { ClipboardCheck } from "lucide-react";
 
 interface Bloco {
   nome: string;
@@ -169,11 +171,16 @@ const CoachCompetitionPlanPage = () => {
 
       <div className="px-4 pt-4 max-w-5xl mx-auto">
         <Tabs defaultValue="timeline" className="space-y-4">
-          <TabsList className="w-full grid grid-cols-3">
+          <TabsList className="w-full grid grid-cols-4">
             <TabsTrigger value="timeline" className="text-xs"><Sparkles className="w-3 h-3 mr-1" />Timeline</TabsTrigger>
             <TabsTrigger value="blocos" className="text-xs"><Dumbbell className="w-3 h-3 mr-1" />Blocos</TabsTrigger>
+            <TabsTrigger value="checkins" className="text-xs"><ClipboardCheck className="w-3 h-3 mr-1" />Check-ins</TabsTrigger>
             <TabsTrigger value="protocolo" className="text-xs"><FlaskConical className="w-3 h-3 mr-1" />Protocolo</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="checkins" className="space-y-3">
+            <WeeklyCheckInsPanel planId={plan.id} />
+          </TabsContent>
 
           {/* TIMELINE */}
           <TabsContent value="timeline" className="space-y-3">
