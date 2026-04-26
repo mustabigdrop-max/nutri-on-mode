@@ -593,20 +593,29 @@ Português. Específico. Científico. Zero genérico.`;
             </div>
           </div>
 
-          <Button
-            onClick={generate}
-            disabled={loading}
-            className="w-full font-black text-sm h-12 rounded-xl tracking-wide"
-            style={{ background: loading ? TEXT_MUTED : GREEN, color: BG }}
-          >
-            {loading ? (
-              <span className="flex items-center gap-2"><Activity className="w-4 h-4 animate-spin" /> Gerando protocolo de elite...</span>
-            ) : (fiberProfile || readyCheckin) ? (
-              <span className="flex items-center gap-2"><Brain className="w-4 h-4" /> GERAR PROTOCOLO ELITE SINCRONIZADO</span>
-            ) : (
-              <span className="flex items-center gap-2"><Brain className="w-4 h-4" /> GERAR PROTOCOLO DE ELITE</span>
-            )}
-          </Button>
+          {(() => {
+            const durEst = estimateProtocolDuration({ systemId: trainingSystem, muscles, level, sessionDuration, cardio });
+            const blockedByTime = durEst.diff <= -15;
+            const disabled = loading || blockedByTime;
+            return (
+              <Button
+                onClick={generate}
+                disabled={disabled}
+                className="w-full font-black text-sm h-12 rounded-xl tracking-wide"
+                style={{ background: disabled ? TEXT_MUTED : (blockedByTime ? "#f87171" : GREEN), color: BG, opacity: disabled ? 0.7 : 1 }}
+              >
+                {loading ? (
+                  <span className="flex items-center gap-2"><Activity className="w-4 h-4 animate-spin" /> Gerando protocolo de elite...</span>
+                ) : blockedByTime ? (
+                  <span className="flex items-center gap-2">⛔ TEMPO INSUFICIENTE — ESTOURA {Math.abs(durEst.diff)}MIN</span>
+                ) : (fiberProfile || readyCheckin) ? (
+                  <span className="flex items-center gap-2"><Brain className="w-4 h-4" /> GERAR PROTOCOLO ELITE SINCRONIZADO</span>
+                ) : (
+                  <span className="flex items-center gap-2"><Brain className="w-4 h-4" /> GERAR PROTOCOLO DE ELITE</span>
+                )}
+              </Button>
+            );
+          })()}
 
           {!fiberProfile && (
             <p className="text-[9px] text-center" style={{ color: TEXT_MUTED }}>
