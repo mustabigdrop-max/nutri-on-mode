@@ -1511,6 +1511,55 @@ ${perfilFisiologico?.modo_economico ? `
     const finishReason = aiData.choices?.[0]?.finish_reason;
     let clean = raw.replace(/```json|```/g, "").trim();
 
+    const convertSingleQuotedStrings = (src: string): string => {
+      let out = "";
+      let inDouble = false;
+      let inSingle = false;
+      let esc = false;
+
+      const nextSignificant = (from: number) => {
+        for (let j = from + 1; j < src.length; j++) {
+          const c = src[j];
+          if (!/\s/.test(c)) return c;
+        }
+        return "";
+      };
+
+      for (let i = 0; i < src.length; i++) {
+        const ch = src[i];
+        if (inSingle) {
+          if (esc) { out += ch === "'" ? "'" : `\\${ch}`; esc = false; continue; }
+          if (ch === "\\") { esc = true; continue; }
+          if (ch === "'") {
+            const next = nextSignificant(i);
+            if (!next || next === "," || next === "}" || next === "]" || next === ":") {
+              out += '"';
+              inSingle = false;
+              continue;
+            }
+          }
+          if (ch === '"') { out += '\\"'; continue; }
+          if (ch === "\n") { out += "\\n"; continue; }
+          if (ch === "\r") { out += "\\r"; continue; }
+          if (ch === "\t") { out += "\\t"; continue; }
+          out += ch;
+          continue;
+        }
+        if (esc) { out += ch; esc = false; continue; }
+        if (ch === "\\") { out += ch; esc = true; continue; }
+        if (ch === '"') { inDouble = !inDouble; out += ch; continue; }
+        if (!inDouble && ch === "'") { inSingle = true; out += '"'; continue; }
+        out += ch;
+      }
+      if (inSingle) out += '"';
+      return out;
+    };
+
+    const repairJsonLikeText = (src: string): string => convertSingleQuotedStrings(src)
+      .replace(/\uFEFF|\u200B|\u200C|\u200D/g, "")
+      .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, "")
+      .replace(/,\s*([}\]])/g, "$1");
+
     // Extrai TODOS os objetos JSON balanceados de nível superior e escolhe aquele que CONTÉM "refeicoes".
     // Isso evita pegar um objeto explicativo inicial quando a IA retorna múltiplos blocos ({...}{plano real}).
     const extractTopLevelObjects = (src: string): string[] => {
