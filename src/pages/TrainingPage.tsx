@@ -98,7 +98,6 @@ export default function TrainingPage() {
         <div className="flex gap-1.5 overflow-x-auto pb-1 no-scrollbar">
             {visibleNav.map((s) => (
             <button key={s.id} onClick={() => {
-              if (s.id === "competicao") { navigate("/coach/dashboard"); return; }
               if (s.id === "sistemas") { navigate("/training/systems"); return; }
               setSection(s.id);
             }}
