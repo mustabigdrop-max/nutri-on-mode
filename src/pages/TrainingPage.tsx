@@ -30,12 +30,13 @@ import {
 
 const ADMIN_UID = "70e51469-1acf-4df6-afe6-f094d21db122";
 
-type Section = "gerar" | "fibras" | "stratum" | "progressao" | "volume" | "historico" | "config";
+type Section = "gerar" | "fibras" | "stratum" | "competicao" | "progressao" | "volume" | "historico" | "config";
 
 const sectionNav: { id: Section; label: string; icon: any; adminOnly?: boolean }[] = [
   { id: "gerar", label: "Prescrição", icon: Brain },
   { id: "fibras", label: "Fibras IA", icon: Activity },
   { id: "stratum", label: "STRATUM", icon: Microscope, adminOnly: true },
+  { id: "competicao", label: "Competição", icon: Award, adminOnly: true },
   { id: "progressao", label: "Progressão", icon: TrendingUp },
   { id: "volume", label: "Volume", icon: BarChart3 },
   { id: "historico", label: "Histórico", icon: History },
