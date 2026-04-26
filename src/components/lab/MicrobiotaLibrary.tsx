@@ -671,11 +671,25 @@ const sections: MicrobiotaSection[] = [
           <p className="text-xs"><span className="text-foreground">Microbiota vegana:</span> mais Prevotella + F. prausnitzii (butirato) — diversidade alta, inflamação menor.</p>
           <p className="text-xs"><span className="text-foreground">Protocolo absorção:</span> L. plantarum 299v (ferro +50%) + Vit C com refeições ferrosas + protease fúngica + Betaína HCl + B12 sublingual 1000mcg/dia obrigatório + zinco em jejum (separar fitatos).</p>
         </Card>
+
+        <Card className="bg-orange-500/5 border-orange-500/30 p-3 space-y-1">
+          <p className="text-xs font-semibold text-orange-400">🆕 Caso 5 — Atleta em Cutting Severo (déficit &gt;25% por &gt;8 semanas)</p>
+          <p className="text-xs">Cutting severo + treino intenso = síndrome do intestino do corredor → permeabilidade aumentada → absorção comprometida justamente quando mais precisa.</p>
+          <p className="text-xs"><span className="text-foreground">Sinais:</span> gases aumentando conforme cutting avança · absorção de suplementos cai · imunidade baixa (resfriados frequentes) · recuperação mais lenta.</p>
+          <p className="text-xs mt-1"><span className="text-foreground">Protocolo:</span> L-Glutamina 20g/dia (dobrar dose) · Colostro 20g/dia (dobrar) · Zinco carnosina 150mg/dia · BPC-157 oral mantido obrigatório.</p>
+          <p className="text-xs"><span className="text-foreground">Parar:</span> psyllium e lactulose (gases no cutting = pesadelo visual).</p>
+        </Card>
+
+        <Card className="bg-green-500/5 border-green-500/30 p-3 space-y-1">
+          <p className="text-xs font-semibold text-green-400">🆕 Caso 6 — Pós-Competição (reparo completo)</p>
+          <p className="text-xs">Após prep + peak week + competição a microbiota fica severamente comprometida.</p>
+          <p className="text-xs mt-1"><span className="text-foreground">Semana 1-2 (emergencial):</span> S. boulardii 1g/dia · Glutamina 20g/dia · dieta variada sem restrição.</p>
+          <p className="text-xs"><span className="text-foreground">Semana 3-4 (repopulação):</span> Stack elite completo · Kefir 400ml/dia · Natto 50g/dia.</p>
+          <p className="text-xs"><span className="text-foreground">Semana 5-8 (diversidade):</span> 30+ espécies vegetais/semana · todos os prebióticos · fermentados diários variados.</p>
+        </Card>
       </div>
     ),
   },
-  {
-    id: "absorcao",
     title: "Suplementos Potencializados pela Microbiota",
     icon: <Dumbbell className="w-4 h-4 text-primary" />,
     badge: "Absorção",
