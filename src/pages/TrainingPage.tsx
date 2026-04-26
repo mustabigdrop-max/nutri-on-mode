@@ -33,6 +33,7 @@ import ProtocolDurationCheck from "@/components/training/systems/ProtocolDuratio
 import { estimateProtocolDuration } from "@/data/protocolDuration";
 import { buildSystemPrescription } from "@/data/recommendSystem";
 import { TRAINING_SYSTEMS } from "@/data/trainingSystems";
+import CompetitionModeBlocks from "@/components/training/systems/CompetitionModeBlocks";
 
 const ADMIN_UID = "70e51469-1acf-4df6-afe6-f094d21db122";
 
@@ -97,7 +98,6 @@ export default function TrainingPage() {
         <div className="flex gap-1.5 overflow-x-auto pb-1 no-scrollbar">
             {visibleNav.map((s) => (
             <button key={s.id} onClick={() => {
-              if (s.id === "competicao") { navigate("/coach/dashboard"); return; }
               if (s.id === "sistemas") { navigate("/training/systems"); return; }
               setSection(s.id);
             }}
@@ -134,6 +134,18 @@ export default function TrainingPage() {
             {section === "volume" && <VolumeLandmarksSection userId={user?.id} />}
             {section === "historico" && <HistorySection userId={user?.id} />}
             {section === "config" && <CoachConfigSection userId={user?.id} />}
+            {section === "competicao" && isAdmin && (
+              <div className="space-y-4">
+                <CompetitionModeBlocks />
+                <button
+                  onClick={() => navigate("/coach/dashboard")}
+                  className="w-full p-3 rounded-xl text-xs font-bold transition"
+                  style={{ background: GREEN_DIM, color: GREEN, border: `1px solid ${BORDER_ACTIVE}` }}
+                >
+                  → Abrir Coach Dashboard (gestão completa de competição)
+                </button>
+              </div>
+            )}
           </motion.div>
         </AnimatePresence>
       </div>
