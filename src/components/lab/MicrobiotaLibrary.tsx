@@ -690,6 +690,8 @@ const sections: MicrobiotaSection[] = [
       </div>
     ),
   },
+  {
+    id: "absorcao",
     title: "Suplementos Potencializados pela Microbiota",
     icon: <Dumbbell className="w-4 h-4 text-primary" />,
     badge: "Absorção",
@@ -697,13 +699,21 @@ const sections: MicrobiotaSection[] = [
       <div className="space-y-2">
         <ProtocolTable rows={[
           { name: "Proteína", dose: "Absorção +40%", timing: "L. plantarum 299v melhora absorção" },
+          { name: "Whey Isolado", dose: "+25% velocidade", timing: "PepT1 upregulado por L. plantarum · kefir junto ao whey pós-treino" },
           { name: "Creatina", dose: "Absorção +30%", timing: "Flora saudável = conversão mínima em creatinina" },
+          { name: "BCAA/Leucina", dose: "pH-dependente", timing: "pH ácido correto = absorção máxima · Betaína HCl + L. plantarum 299v" },
+          { name: "Glutamina", dose: "Dose maior se barreira comprometida", timing: "Enterócitos consomem 40% antes de chegar ao músculo" },
+          { name: "Colágeno", dose: "Via PepT1", timing: "Mesmo sistema da proteína · L. plantarum 299v potencializa" },
           { name: "Magnésio", dose: "↑ absorção", timing: "B. longum + L. rhamnosus" },
           { name: "Zinco", dose: "+35% absorção", timing: "Fitobactérias degradam fitato (antinutriente)" },
           { name: "Ferro", dose: "+50% não-heme", timing: "L. plantarum 299v via ácido lático → pH ↓" },
+          { name: "Vitamina D", dose: "+40% absorção", timing: "Bile acids reciclados pela microbiota · kefir + gordura + D juntos" },
+          { name: "Vitamina B12", dose: "Produção endógena parcial", timing: "S. boulardii + Lacto produzem B12 = dose menor com flora saudável" },
           { name: "Curcumina", dose: "Ativação bioativa", timing: "Convertida em tetra-hidrocurcumina pela flora" },
           { name: "Isoflavonas", dose: "10x mais ativo (equol)", timing: "30-50% não possuem bactéria conversora" },
           { name: "Ômega-3", dose: "Resolvinas ativadas", timing: "Interação Ω-3 + microbiota = anti-inflamação" },
+          { name: "Testosterona exógena", dose: "Metabolismo intestinal", timing: "Beta-glucuronidase afeta E2 · Cálcio D-Glucarato + L. reuteri" },
+          { name: "Metformina", dose: "Eficácia −40% sem Akkermansia", timing: "Age VIA microbiota — requer Akkermansia para efeito pleno" },
         ]} />
 
         <div className="space-y-2">
