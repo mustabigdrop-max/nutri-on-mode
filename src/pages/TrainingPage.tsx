@@ -302,6 +302,12 @@ Português. Específico. Científico. Zero genérico.`;
       toast.error("Preencha fase, músculos, nível e nome do cliente");
       return;
     }
+    // Bloqueio por tempo: protocolo não cabe na sessão (margem severa de 15min)
+    const est = estimateProtocolDuration({ systemId: trainingSystem, muscles, level, sessionDuration, cardio });
+    if (est.diff <= -15) {
+      toast.error(`Protocolo estoura ${Math.abs(est.diff)}min do tempo de sessão. Ajuste antes de gerar.`);
+      return;
+    }
     setLoading(true);
     setGenerated(true);
     setActiveResultTab("overview");
