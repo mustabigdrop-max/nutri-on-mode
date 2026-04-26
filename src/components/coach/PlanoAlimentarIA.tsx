@@ -10,6 +10,7 @@ import {
   buildTrainingSchedulePrompt,
 } from "@/components/coach/TrainingSchedule";
 import { validateMedidasCaseiras } from "@/lib/medidasCaseirasValidator";
+import SubstitutionsAgentPage from "@/pages/SubstitutionsAgentPage";
 
 // ─── Design tokens (alinhados ao nutriON: dark bg, green accent) ──────────────
 const T = {
