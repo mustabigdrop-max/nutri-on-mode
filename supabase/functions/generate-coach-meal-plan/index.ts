@@ -1722,9 +1722,8 @@ ${perfilFisiologico?.modo_economico ? `
           const msg = truncated
             ? "A IA gerou um plano grande demais e a resposta foi truncada. Tente novamente."
             : "Resposta da IA não é um JSON válido (" + errMsg.slice(0, 120) + "). Tente novamente.";
-          return new Response(JSON.stringify({ error: msg, finish_reason: finishReason, parse_error: errMsg }), {
-            status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" },
-          });
+          console.warn("[parser-fallback] retornando plano determinístico em vez de erro 502:", msg);
+          parsed = buildFallbackMealPlan(errMsg);
         }
       }
     }
