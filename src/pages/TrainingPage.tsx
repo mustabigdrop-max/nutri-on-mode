@@ -30,12 +30,13 @@ import {
 
 const ADMIN_UID = "70e51469-1acf-4df6-afe6-f094d21db122";
 
-type Section = "gerar" | "fibras" | "stratum" | "progressao" | "volume" | "historico" | "config";
+type Section = "gerar" | "fibras" | "stratum" | "competicao" | "progressao" | "volume" | "historico" | "config";
 
 const sectionNav: { id: Section; label: string; icon: any; adminOnly?: boolean }[] = [
   { id: "gerar", label: "Prescrição", icon: Brain },
   { id: "fibras", label: "Fibras IA", icon: Activity },
   { id: "stratum", label: "STRATUM", icon: Microscope, adminOnly: true },
+  { id: "competicao", label: "Competição", icon: Award, adminOnly: true },
   { id: "progressao", label: "Progressão", icon: TrendingUp },
   { id: "volume", label: "Volume", icon: BarChart3 },
   { id: "historico", label: "Histórico", icon: History },
@@ -88,7 +89,10 @@ export default function TrainingPage() {
         {/* Section Nav */}
         <div className="flex gap-1.5 overflow-x-auto pb-1 no-scrollbar">
           {visibleNav.map((s) => (
-            <button key={s.id} onClick={() => setSection(s.id)}
+            <button key={s.id} onClick={() => {
+              if (s.id === "competicao") { navigate("/coach/dashboard"); return; }
+              setSection(s.id);
+            }}
               className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-[11px] font-semibold whitespace-nowrap transition-all"
               style={{
                 background: section === s.id ? GREEN_DIM : "transparent",
