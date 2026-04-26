@@ -35,7 +35,7 @@ import BehavioralNutritionPage from "./pages/BehavioralNutritionPage";
 import SupplementationPage from "./pages/SupplementationPage";
 import MicrobiomePage from "./pages/MicrobiomePage";
 import ProtocolEnginePage from "./pages/ProtocolEnginePage";
-import SubstitutionsAgentPage from "./pages/SubstitutionsAgentPage";
+
 import RecipesPage from "./pages/RecipesPage";
 import EventModePage from "./pages/EventModePage";
 import FoodSimulatorPage from "./pages/FoodSimulatorPage";
