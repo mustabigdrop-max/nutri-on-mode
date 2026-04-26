@@ -620,8 +620,16 @@ const sections: MicrobiotaSection[] = [
     badgeColor: "text-red-400 border-red-400/30",
     content: (
       <div className="space-y-4">
+        <Card className="bg-amber-500/5 border-amber-500/30 p-3 space-y-1">
+          <p className="text-xs font-semibold text-amber-400">🆕 Caso 1 — Atleta com 17AA (Hemogenin / Dianabol)</p>
+          <p className="text-xs">Compostos 17-alfa alquilados alteram pH intestinal e perfil de bile acids → disbiose específica.</p>
+          <p className="text-xs"><span className="text-foreground">Sinais:</span> gases com odor sulfuroso · fezes mais escuras · língua amarelada (bile) · náusea matinal.</p>
+          <p className="text-xs mt-1"><span className="text-foreground">Fase 1 (durante uso):</span> S. boulardii 1g/dia (sobrevive ao pH alterado) · Ácido caprílico C8 500mg 3x/dia · Kefir 400ml/dia (dose dobrada) · Butirato de sódio 600mg 3x/dia · TUDCA 500mg/dia (bile acid protetor).</p>
+          <p className="text-xs"><span className="text-foreground">Fase 2 (pós-ciclo, 8 sem):</span> Stack elite completo + Arabinogalactana 6g/dia (repõe diversidade rapidamente).</p>
+        </Card>
+
         <Card className="bg-card border-border/40 p-3">
-          <p className="text-xs font-semibold text-foreground mb-2">Caso 1 — Pós-Antibiótico (8-12 semanas)</p>
+          <p className="text-xs font-semibold text-foreground mb-2">Caso 1b — Pós-Antibiótico (8-12 semanas)</p>
           <p className="text-xs">Sem 1-2: S. boulardii 1000mg 3x + Colostro 20g + Glutamina 20g + Kefir 400ml</p>
           <p className="text-xs">Sem 3-4: + LGG 20B + BB536 20B + FOS/Inulina 10g</p>
           <p className="text-xs">Sem 5-8: Stack completo + Akkermansia + prebióticos múltiplos</p>
