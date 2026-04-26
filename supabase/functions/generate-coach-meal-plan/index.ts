@@ -1599,6 +1599,69 @@ ${perfilFisiologico?.modo_economico ? `
       }
     }
 
+    const buildFallbackMealPlan = (reason: string) => {
+      const targetKcal = Math.round(calc?.metaKcal || Number(calorias) || 2200);
+      const prot = Math.round(calc?.proteinaG || ((Number(peso) || 75) * 2));
+      const carb = Math.round(calc?.carboG || Math.max(120, (targetKcal - prot * 4 - targetKcal * 0.25) / 4));
+      const fat = Math.round(calc?.gorduraG || Math.max(45, (targetKcal - prot * 4 - carb * 4) / 9));
+      const count = Math.max(3, Math.min(7, Number(refeicoes) || calc?.refeicoesRecomendadas || 5));
+      const horarios = ["08:30", "10:30", "12:30", "15:30", "17:30", "20:30", "22:30"];
+      const labels = ["R1 — Café da manhã", "R2 — Lanche da manhã", "R3 — Almoço", "R4 — Lanche / Pré-treino", "R5 — Pós-treino", "R6 — Jantar", "R7 — Ceia"];
+      const ratiosBase = [0.18, 0.12, 0.24, 0.14, 0.16, 0.12, 0.04].slice(0, count);
+      const ratioSum = ratiosBase.reduce((a, b) => a + b, 0) || 1;
+      const templates = [
+        ["Ovos inteiros", "Aveia", "Banana"],
+        ["Iogurte natural", "Fruta", "Castanhas"],
+        ["Frango grelhado", "Arroz", "Feijão", "Vegetais"],
+        ["Whey protein", "Tapioca", "Banana"],
+        ["Tilápia", "Batata-doce", "Legumes"],
+        ["Patinho moído", "Arroz ou mandioca", "Salada com azeite"],
+        ["Cottage ou iogurte", "Chia"],
+      ];
+      return {
+        resumo: {
+          nome: nome || "Paciente",
+          objetivo: objetivo || "Plano alimentar",
+          calorias_totais: targetKcal,
+          proteina_total: prot,
+          carboidrato_total: carb,
+          gordura_total: fat,
+          tmb: calc?.tmb || 0,
+          get: calc?.getFarma || targetKcal,
+          imc,
+          observacao_protocolo: "Plano seguro gerado com cálculo determinístico após falha de formatação da IA.",
+        },
+        refeicoes: ratiosBase.map((ratio, i) => {
+          const r = ratio / ratioSum;
+          return {
+            refeicao: labels[i],
+            horario: horarios[i],
+            calorias: Math.round(targetKcal * r),
+            macros: { proteina: Math.round(prot * r), carboidrato: Math.round(carb * r), gordura: Math.round(fat * r) },
+            alimentos: templates[i].map((alimento) => ({
+              alimento,
+              quantidade: "ajustar pela meta da refeição",
+              quantidade_g: null,
+              observacao: "Base técnica ajustável pelo coach.",
+              substituicoes: [
+                { alimento: "Frango / tilápia / patinho", quantidade: "porção equivalente", quantidade_g: null, observacao: "troca proteica equivalente", grupo: "proteina" },
+                { alimento: "Arroz / batata / mandioca", quantidade: "porção equivalente", quantidade_g: null, observacao: "troca de carboidrato equivalente", grupo: "carbo" },
+                { alimento: "Azeite / castanhas / abacate", quantidade: "porção equivalente", quantidade_g: null, observacao: "troca de gordura equivalente", grupo: "gordura" },
+              ],
+            })),
+          };
+        }),
+        suplementacao: [],
+        dica_mce: {
+          mindset: "Executar o plano por horários e revisar aderência diariamente.",
+          comportamento: "Manter preparo simples e repetir bases alimentares seguras.",
+          execucao: "Coach deve ajustar gramagens finas conforme resposta do paciente.",
+        },
+        alerta_coach: `Fallback ativado porque a IA retornou JSON malformado: ${reason.slice(0, 120)}`,
+        fallback_gerado: true,
+      };
+    };
+
     let parsed;
     let parseError: unknown = null;
     try {
