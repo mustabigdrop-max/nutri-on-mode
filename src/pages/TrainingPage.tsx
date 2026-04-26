@@ -134,6 +134,18 @@ export default function TrainingPage() {
             {section === "volume" && <VolumeLandmarksSection userId={user?.id} />}
             {section === "historico" && <HistorySection userId={user?.id} />}
             {section === "config" && <CoachConfigSection userId={user?.id} />}
+            {section === "competicao" && isAdmin && (
+              <div className="space-y-4">
+                <CompetitionModeBlocks />
+                <button
+                  onClick={() => navigate("/coach/dashboard")}
+                  className="w-full p-3 rounded-xl text-xs font-bold transition"
+                  style={{ background: GREEN_DIM, color: GREEN, border: `1px solid ${BORDER_ACTIVE}` }}
+                >
+                  → Abrir Coach Dashboard (gestão completa de competição)
+                </button>
+              </div>
+            )}
           </motion.div>
         </AnimatePresence>
       </div>
