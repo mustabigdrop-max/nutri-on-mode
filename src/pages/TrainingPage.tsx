@@ -255,9 +255,13 @@ ${readyScore >= 8 ? "✅ Score ALTO — protocolo completo, RPE máximo permitid
 ${fiberProfile.dominancia === "tipo_i" ? "→ Mais sets, reps altas (15-25), descanso 60-90s" : fiberProfile.dominancia === "tipo_iia" ? "→ 6-12 reps, tensão mecânica máxima, descanso 2-3min" : fiberProfile.dominancia === "tipo_iix" ? "→ 3-6 reps pesadas + finisher metabólico, descanso 3-5min" : "→ Periodização por bloco na sessão (pesado → metabólico)"}`
       : `━━━ PERFIL DE FIBRAS: não avaliado (usar padrão para o nível) ━━━`;
 
+    const sistemaBloco = trainingSystem
+      ? buildSystemPrescription(trainingSystem, phase)
+      : `━━━ SISTEMA DE TREINAMENTO: não definido (usar padrão da fase) ━━━`;
+
     return `Você é o Motor de Prescrição de Elite do TrainingON — camada máxima do sistema STRATUM.
 
-Integre TRÊS fontes de inteligência em UM protocolo definitivo:
+Integre QUATRO fontes de inteligência em UM protocolo definitivo:
 
 ━━━ DADOS DO CLIENTE ━━━
 - Lesões: ${injuries || "nenhuma"}
@@ -273,14 +277,19 @@ Integre TRÊS fontes de inteligência em UM protocolo definitivo:
 - Cliente: ${clientName}
 ${prontidaoBloco}
 ${fibrasBloco}
+${sistemaBloco}
 
 ━━━ OUTPUT OBRIGATÓRIO ━━━
 1. AQUECIMENTO específico (considera lesões e grupo muscular)
-2. 4-6 EXERCÍCIOS com: nome exato, sets×reps (ajustados às fibras+prontidão), RPE, cadência (ex: 3-1-2-0), cue técnico, referência científica
+2. 4-6 EXERCÍCIOS por sessão com: nome exato, sets×reps (SEGUINDO os parâmetros do SISTEMA acima), RPE/RIR, cadência, cue técnico, referência científica
 3. VOLUME LANDMARKS — MEV / MAV / MRV para este contexto
-4. PROGRESSÃO SEMANAL — 6 semanas com deload na semana 5
-5. NOTA DE INTEGRAÇÃO — 3 linhas explicando decisões baseadas em fibras + prontidão
-6. ALERTA DE LESÃO se houver restrição
+4. PROGRESSÃO SEMANAL — adaptada à duração ideal do sistema escolhido (com deload)
+5. BLOCO DE CARDIO — frequência, duração e tipo CONFORME a recomendação do sistema
+6. BLOCO DE NUTRIÇÃO — superávit/déficit, proteína g/kg, timing CONFORME o sistema + fase
+7. NOTA DE INTEGRAÇÃO — 4 linhas explicando como o sistema, fibras, prontidão e fase se combinam
+8. ALERTA DE LESÃO se houver restrição
+
+REGRA ABSOLUTA: Os parâmetros do SISTEMA DE TREINAMENTO BASE são INVIOLÁVEIS. Sets, reps, RIR, descanso, cadência e técnicas devem refletir EXATAMENTE o que está prescrito no bloco de sistema. Você adapta apenas o exercício ao equipamento e lesão.
 
 Português. Específico. Científico. Zero genérico.`;
   };
