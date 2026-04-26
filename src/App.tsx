@@ -123,7 +123,7 @@ const App = () => (
 
             {/* ON Plan */}
             <Route path="/meal-plan" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON" featureName="Plano Alimentar"><MealPlanPage /></PlanGateWrapper></ProtectedRoute>} />
-            <Route path="/substitutions" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON" featureName="Substituições NUTRION"><SubstitutionsAgentPage /></PlanGateWrapper></ProtectedRoute>} />
+            
             <Route path="/chat" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON" featureName="Chat IA"><ChatPage /></PlanGateWrapper></ProtectedRoute>} />
             <Route path="/micronutrients" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON" featureName="Micronutrientes"><MicronutrientsPage /></PlanGateWrapper></ProtectedRoute>} />
             <Route path="/gamification" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON" featureName="Gamificação"><GamificationPage /></PlanGateWrapper></ProtectedRoute>} />
