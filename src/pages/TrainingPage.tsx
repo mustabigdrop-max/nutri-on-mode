@@ -546,6 +546,21 @@ Português. Específico. Científico. Zero genérico.`;
           />
         </Field>
 
+        {/* Validação de duração estimada vs tempo disponível */}
+        <Field label="⏱️ Validação de Tempo de Sessão">
+          <ProtocolDurationCheck
+            systemId={trainingSystem}
+            muscles={muscles}
+            level={level}
+            sessionDuration={sessionDuration}
+            cardio={cardio}
+            surface={SURFACE} surface2={SURFACE2}
+            border={BORDER} borderActive={BORDER_ACTIVE}
+            green={GREEN} greenDim={GREEN_DIM}
+            text={TEXT} textDim={TEXT_DIM} textMuted={TEXT_MUTED}
+          />
+        </Field>
+
         <div className="space-y-2">
           <div className="flex gap-2 flex-wrap">
             <div
