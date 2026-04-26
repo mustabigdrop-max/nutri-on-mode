@@ -487,7 +487,7 @@ const MealCard = ({ meal, index, onSwap }: MealCardProps) => {
       </div>
       <div style={{ padding: "12px 16px" }}>
         {meal.alimentos?.map((a, i) => {
-          const subs: SubstituicaoItem[] = (a.substituicoes || []).map((s) => ({ ...s, grupo: inferGrupo(s) }));
+          const subs: SubstituicaoItem[] = enrichSubstitutes(a, meal.horario);
           const open = !!openSubs[i];
           const f = filter[i] || "todos";
           const q = (search[i] || "").trim().toLowerCase();
