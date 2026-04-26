@@ -567,6 +567,8 @@ export default function PlanoAlimentarIA() {
   const [sending, setSending] = useState(false);
   // Histórico
   const [showHistory, setShowHistory] = useState(false);
+  // Substituições NUTRION (módulo embutido)
+  const [showSubstitutions, setShowSubstitutions] = useState(false);
   const [history, setHistory] = useState<any[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [historySearch, setHistorySearch] = useState("");
