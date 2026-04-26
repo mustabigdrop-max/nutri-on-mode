@@ -89,7 +89,10 @@ export default function TrainingPage() {
         {/* Section Nav */}
         <div className="flex gap-1.5 overflow-x-auto pb-1 no-scrollbar">
           {visibleNav.map((s) => (
-            <button key={s.id} onClick={() => setSection(s.id)}
+            <button key={s.id} onClick={() => {
+              if (s.id === "competicao") { navigate("/coach/dashboard"); return; }
+              setSection(s.id);
+            }}
               className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-[11px] font-semibold whitespace-nowrap transition-all"
               style={{
                 background: section === s.id ? GREEN_DIM : "transparent",
