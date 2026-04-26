@@ -1728,6 +1728,11 @@ ${perfilFisiologico?.modo_economico ? `
       }
     }
 
+    if (!Array.isArray(parsed?.refeicoes) || parsed.refeicoes.length === 0) {
+      console.warn("[parser-fallback] resposta sem refeicoes válidas; usando plano determinístico mínimo");
+      parsed = buildFallbackMealPlan("resposta sem array refeicoes válido");
+    }
+
     // ── FILTRO ABSOLUTO: AEJ NÃO É REFEIÇÃO ──
     // Remove qualquer refeição com horário antes das 08:00 ou com "AEJ" no nome.
     if (Array.isArray(parsed?.refeicoes)) {
