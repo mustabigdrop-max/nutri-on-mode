@@ -11,6 +11,7 @@ import { usePlanGate } from "@/hooks/usePlanGate";
 import { useWorkoutSchedule, getWorkoutAdjustment, combineAdjustments, WORKOUT_TYPES, type WorkoutType } from "@/hooks/useWorkoutSchedule";
 import TrialBanner from "@/components/dashboard/TrialBanner";
 import CoachNotificationsCard from "@/components/dashboard/CoachNotificationsCard";
+import AthleteCompetitionCard from "@/components/dashboard/AthleteCompetitionCard";
 import ReengagementPopup from "@/components/dashboard/ReengagementPopup";
 import UpgradeModal from "@/components/landing/UpgradeModal";
 import DashboardGamificationCards from "@/components/dashboard/DashboardGamificationCards";
@@ -677,6 +678,7 @@ const DashboardPage = () => {
       <div className="relative z-10 max-w-lg mx-auto px-4 pt-4">
         <TrialBanner />
         <CoachNotificationsCard />
+        <AthleteCompetitionCard />
         {protocolosInfo.total > 0 && (
           <button
             onClick={() => navigate("/meus-protocolos")}
