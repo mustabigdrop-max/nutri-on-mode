@@ -83,6 +83,7 @@ import PartnerDashboardPage from "./pages/PartnerDashboardPage";
 import PartnerBlockedPage from "./pages/PartnerBlockedPage";
 import PeptideVaultPage from "./pages/PeptideVaultPage";
 import TrainingPage from "./pages/TrainingPage";
+import TrainingSystemsPage from "./pages/TrainingSystemsPage";
 import ScienceHubPage from "./pages/ScienceHubPage";
 import BiomechanicsVaultPage from "./pages/BiomechanicsVaultPage";
 import MetabolicONPage from "./pages/MetabolicONPage";
@@ -182,6 +183,7 @@ const App = () => (
             <Route path="/peptide-vault" element={<ProtectedRoute><PeptideVaultPage /></ProtectedRoute>} />
             {/* Training & Science */}
             <Route path="/training" element={<ProtectedRoute><TrainingPage /></ProtectedRoute>} />
+            <Route path="/training/systems" element={<ProtectedRoute><TrainingSystemsPage /></ProtectedRoute>} />
             <Route path="/science" element={<ProtectedRoute><ScienceHubPage /></ProtectedRoute>} />
             <Route path="/biomechanics" element={<ProtectedRoute><BiomechanicsVaultPage /></ProtectedRoute>} />
             <Route path="/metabolicon" element={<ProtectedRoute><MetabolicONPage /></ProtectedRoute>} />
