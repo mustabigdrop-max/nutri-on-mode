@@ -27,6 +27,9 @@ import {
   SESSION_DURATIONS, CARDIO_OPTIONS, STRESS_OPTIONS, EQUIPMENT_OPTIONS,
   VOLUME_LANDMARKS,
 } from "@/data/trainingData";
+import SystemSelectorInline from "@/components/training/systems/SystemSelectorInline";
+import { buildSystemPrescription } from "@/data/recommendSystem";
+import { TRAINING_SYSTEMS } from "@/data/trainingSystems";
 
 const ADMIN_UID = "70e51469-1acf-4df6-afe6-f094d21db122";
 
@@ -158,6 +161,7 @@ function EliteGenerateSection({ userId }: { userId?: string }) {
   const [weeks, setWeeks] = useState("8");
   const [days, setDays] = useState("5");
   const [clientName, setClientName] = useState("");
+  const [trainingSystem, setTrainingSystem] = useState<string>("");
   // Results
   const [protocol, setProtocol] = useState<any>(null);
   const [textResults, setTextResults] = useState<Record<string, string>>({});
@@ -187,7 +191,10 @@ function EliteGenerateSection({ userId }: { userId?: string }) {
     phase, muscles, level, weeks, days, clientName,
     equipment: equipment.join(", "), injuries, sessionDuration,
     stressLevel, supplements, weakPoints, specificGoal, cardio,
-  }), [phase, muscles, level, weeks, days, clientName, equipment, injuries, sessionDuration, stressLevel, supplements, weakPoints, specificGoal, cardio]);
+    trainingSystem,
+    trainingSystemName: TRAINING_SYSTEMS.find(s => s.id === trainingSystem)?.nome || "",
+    systemPrescription: trainingSystem ? buildSystemPrescription(trainingSystem, phase) : "",
+  }), [phase, muscles, level, weeks, days, clientName, equipment, injuries, sessionDuration, stressLevel, supplements, weakPoints, specificGoal, cardio, trainingSystem]);
 
   // Carrega perfil de fibras + último STRATUM Ready check-in
   useEffect(() => {
