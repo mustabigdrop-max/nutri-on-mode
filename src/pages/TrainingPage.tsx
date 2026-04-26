@@ -504,6 +504,22 @@ Português. Específico. Científico. Zero genérico.`;
           </Field>
         </div>
 
+        <Field label="🧬 Sistema de Treinamento Base">
+          <SystemSelectorInline
+            context={{
+              phase, level, days, weeks,
+              fiberType: fiberProfile?.dominancia,
+              weakPoints, specificGoal,
+            }}
+            selectedId={trainingSystem}
+            onSelect={setTrainingSystem}
+            surface={SURFACE} surface2={SURFACE2}
+            border={BORDER} borderActive={BORDER_ACTIVE}
+            green={GREEN} greenDim={GREEN_DIM}
+            text={TEXT} textDim={TEXT_DIM} textMuted={TEXT_MUTED}
+          />
+        </Field>
+
         <div className="space-y-2">
           <div className="flex gap-2 flex-wrap">
             <div
