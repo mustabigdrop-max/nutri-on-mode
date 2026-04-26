@@ -1511,12 +1511,28 @@ ${perfilFisiologico?.modo_economico ? `
     const finishReason = aiData.choices?.[0]?.finish_reason;
     let clean = raw.replace(/```json|```/g, "").trim();
 
-    // Extrai o objeto JSON principal mesmo quando a IA prefixar/sufixar texto explicativo.
+    // Extrai o objeto JSON principal mesmo quando a IA prefixar/sufixar texto explicativo
+    // OU quando retorna múltiplos objetos concatenados ({...}{...}). Pegamos o PRIMEIRO objeto balanceado.
     const firstBrace = clean.indexOf("{");
-    const lastBrace = clean.lastIndexOf("}");
-    if (firstBrace > 0 || (lastBrace !== -1 && lastBrace < clean.length - 1)) {
-      if (firstBrace !== -1 && lastBrace > firstBrace) {
-        clean = clean.substring(firstBrace, lastBrace + 1);
+    if (firstBrace !== -1) {
+      let depth = 0;
+      let endIdx = -1;
+      let inStr = false;
+      let esc = false;
+      for (let i = firstBrace; i < clean.length; i++) {
+        const ch = clean[i];
+        if (esc) { esc = false; continue; }
+        if (ch === "\\") { esc = true; continue; }
+        if (ch === '"') { inStr = !inStr; continue; }
+        if (inStr) continue;
+        if (ch === "{") depth++;
+        else if (ch === "}") {
+          depth--;
+          if (depth === 0) { endIdx = i; break; }
+        }
+      }
+      if (endIdx !== -1) {
+        clean = clean.substring(firstBrace, endIdx + 1);
       }
     }
 
