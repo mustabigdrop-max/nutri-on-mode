@@ -2244,6 +2244,7 @@ ${perfilFisiologico?.modo_economico ? `
       console.error("[adjust-history] error:", logErr);
     }
 
+    console.log(`[generate-coach-meal-plan] retornando plan: refeicoes=${Array.isArray((parsed as any)?.refeicoes) ? (parsed as any).refeicoes.length : "N/A"}, suplementacao=${Array.isArray((parsed as any)?.suplementacao) ? (parsed as any).suplementacao.length : 0}`);
     return new Response(JSON.stringify({ plan: parsed, adjustmentId }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
