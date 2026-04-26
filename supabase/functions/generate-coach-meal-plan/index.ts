@@ -1341,7 +1341,8 @@ OUTROS DADOS:
 
 Aplique TODAS as regras de cálculo (Mifflin-St Jeor — valores já pré-calculados no bloco determinístico, ajustes farmacológicos por composto, integração de cardio, fase de periodização). Use alimentos brasileiros acessíveis com gramagem precisa. Linguagem técnica de coach de competição.
 
-Responda APENAS com JSON válido nesta estrutura exata:
+🚨 REGRA CRÍTICA DE FORMATO 🚨
+Responda APENAS com UM ÚNICO objeto JSON válido (root é um único "{...}"). NÃO retorne múltiplos objetos concatenados, NÃO retorne array no nível raiz, NÃO retorne "PLANO 1 / PLANO 2", NÃO repita o objeto para diferentes dias da semana. Gere UM plano único representativo. Estrutura exata:
 {
   "resumo": {
     "nome": "string",
