@@ -592,7 +592,7 @@ const DashboardPage = () => {
     { label: "Registrar", desc: "Log de refeições · IA analisa foto", path: "/meal-log", emoji: "🍽️", plan: "free" },
     { label: "Histórico", desc: "Refeições passadas", path: "/meal-history", emoji: "📋", plan: "free" },
     { label: "Plano Alimentar", desc: "Cardápio semanal personalizado por IA", path: "/meal-plan", emoji: "🍎", plan: "ON" },
-    { label: "Substituições NUTRION", desc: "Banco v2.0 + Agente IA · variedade real por refeição", path: "/substitutions", emoji: "🔄", plan: "ON" },
+    
     { label: "Lista de Compras", desc: "Custo + itens automáticos", path: "/shopping-list", emoji: "🛒", plan: "ON" },
     { label: "Receitas", desc: "Filtradas por macros do dia", path: "/recipes", emoji: "🍳", plan: "ON" },
     { label: "Coach IA", desc: "Chat nutricional com contexto completo", path: "/chat", emoji: "🤖", plan: "ON" },

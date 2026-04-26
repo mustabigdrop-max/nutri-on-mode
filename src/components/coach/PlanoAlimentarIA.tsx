@@ -10,6 +10,7 @@ import {
   buildTrainingSchedulePrompt,
 } from "@/components/coach/TrainingSchedule";
 import { validateMedidasCaseiras } from "@/lib/medidasCaseirasValidator";
+import SubstitutionsAgentPage from "@/pages/SubstitutionsAgentPage";
 
 // ─── Design tokens (alinhados ao nutriON: dark bg, green accent) ──────────────
 const T = {
@@ -566,6 +567,8 @@ export default function PlanoAlimentarIA() {
   const [sending, setSending] = useState(false);
   // Histórico
   const [showHistory, setShowHistory] = useState(false);
+  // Substituições NUTRION (módulo embutido)
+  const [showSubstitutions, setShowSubstitutions] = useState(false);
   const [history, setHistory] = useState<any[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [historySearch, setHistorySearch] = useState("");
@@ -3310,12 +3313,35 @@ export default function PlanoAlimentarIA() {
           📊 Log de ajuste
         </button>
         <button
+          onClick={() => setShowSubstitutions(true)}
+          style={{ padding: "8px 14px", borderRadius: 8, background: "#0d1f0d", border: `1px solid ${T.green}`, color: T.green, fontSize: 12, cursor: "pointer", fontFamily: "inherit", fontWeight: 700 }}
+          title="Banco v2.0 + Agente IA · variedade real por refeição"
+        >
+          🔄 Substituições NUTRION
+        </button>
+        <button
           onClick={() => { setShowHistory(true); loadHistory(); }}
           style={{ padding: "8px 16px", borderRadius: 8, background: T.bg3, border: `1px solid ${T.border2}`, color: T.text, fontSize: 12, cursor: "pointer", fontFamily: "inherit", fontWeight: 600 }}
         >
           🗂️ Histórico
         </button>
       </div>
+
+      {/* Overlay: Módulo Substituições NUTRION */}
+      {showSubstitutions && (
+        <div style={{ position: "fixed", inset: 0, background: T.bg, zIndex: 60, overflow: "auto" }}>
+          <div style={{ position: "sticky", top: 0, zIndex: 61, padding: "12px 24px", borderBottom: `1px solid ${T.border}`, display: "flex", alignItems: "center", gap: 12, background: T.bg2 }}>
+            <button
+              onClick={() => setShowSubstitutions(false)}
+              style={{ padding: "8px 14px", borderRadius: 8, background: T.bg3, border: `1px solid ${T.border2}`, color: T.text, fontSize: 12, cursor: "pointer", fontFamily: "inherit", fontWeight: 600 }}
+            >
+              ← Voltar ao Plano Alimentar
+            </button>
+            <div style={{ fontSize: 13, fontWeight: 700, color: T.green }}>🔄 Substituições NUTRION</div>
+          </div>
+          <SubstitutionsAgentPage />
+        </div>
+      )}
 
       {/* Modal de histórico no formulário */}
       {showHistory && (
