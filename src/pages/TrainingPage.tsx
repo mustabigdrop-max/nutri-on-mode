@@ -29,6 +29,8 @@ import {
 } from "@/data/trainingData";
 import SystemSelectorInline from "@/components/training/systems/SystemSelectorInline";
 import SystemConflictAlerts from "@/components/training/systems/SystemConflictAlerts";
+import ProtocolDurationCheck from "@/components/training/systems/ProtocolDurationCheck";
+import { estimateProtocolDuration } from "@/data/protocolDuration";
 import { buildSystemPrescription } from "@/data/recommendSystem";
 import { TRAINING_SYSTEMS } from "@/data/trainingSystems";
 
