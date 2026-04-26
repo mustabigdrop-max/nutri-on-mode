@@ -12,6 +12,7 @@ import { useWorkoutSchedule, getWorkoutAdjustment, combineAdjustments, WORKOUT_T
 import TrialBanner from "@/components/dashboard/TrialBanner";
 import CoachNotificationsCard from "@/components/dashboard/CoachNotificationsCard";
 import AthleteCompetitionCard from "@/components/dashboard/AthleteCompetitionCard";
+import CoachCompetitionShortcut from "@/components/dashboard/CoachCompetitionShortcut";
 import ReengagementPopup from "@/components/dashboard/ReengagementPopup";
 import UpgradeModal from "@/components/landing/UpgradeModal";
 import DashboardGamificationCards from "@/components/dashboard/DashboardGamificationCards";
@@ -679,6 +680,7 @@ const DashboardPage = () => {
         <TrialBanner />
         <CoachNotificationsCard />
         <AthleteCompetitionCard />
+        <div className="mb-3"><CoachCompetitionShortcut /></div>
         {protocolosInfo.total > 0 && (
           <button
             onClick={() => navigate("/meus-protocolos")}
