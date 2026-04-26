@@ -82,18 +82,7 @@ export default function SystemSelectorInline({
 
       {open && (
         <div className="rounded-xl space-y-2 p-3" style={{ background: surface2, border: `1px solid ${border}` }}>
-          {/* Recommendation rationale */}
-          <div className="p-2 rounded-lg" style={{ background: greenDim, border: `1px solid ${borderActive}` }}>
-            <div className="flex items-center gap-1.5 mb-1">
-              <Zap className="w-3 h-3" style={{ color: green }} />
-              <span className="text-[10px] font-black uppercase tracking-wider" style={{ color: green }}>Por que recomendamos {reco.best.nome}</span>
-            </div>
-            <ul className="text-[10px] space-y-0.5" style={{ color: text }}>
-              {reco.scores[0].reasons.slice(0, 4).map((r, i) => (
-                <li key={i}>• {r}</li>
-              ))}
-            </ul>
-          </div>
+          {/* Motivos detalhados ficam no painel clicável acima — aqui apenas o seletor */}
 
           {/* Toggle ver todos */}
           <button
