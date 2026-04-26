@@ -307,18 +307,18 @@ Português. Específico. Científico. Zero genérico.`;
         body: {
           ...bodyData,
           tab: "protocolo",
-          ...(fiberProfile || readyCheckin ? { elitePrompt: buildElitePrompt() } : {}),
+          // Sempre injetar elitePrompt (agora inclui sistema de treino)
+          elitePrompt: buildElitePrompt(),
         },
       });
       if (error) throw error;
       if (data.protocol) {
         setProtocol(data.protocol);
-        if (fiberProfile || readyCheckin) {
-          toast.success(
-            `Elite gerado com${fiberProfile ? ` Fibras ${fiberProfile.dominancia.toUpperCase()}` : ""}${readyCheckin ? ` + Ready ⚡` : ""}`,
-            { duration: 4000 }
-          );
-        }
+        const sysName = TRAINING_SYSTEMS.find(s => s.id === trainingSystem)?.nome;
+        toast.success(
+          `✅ Protocolo gerado${sysName ? ` · ${sysName}` : ""}${fiberProfile ? ` · Fibras ${fiberProfile.dominancia.toUpperCase()}` : ""}${readyCheckin ? ` · Ready ⚡` : ""}`,
+          { duration: 4000 }
+        );
       } else if (data.content) {
         setTextResults(prev => ({ ...prev, protocolo: data.content }));
       }
