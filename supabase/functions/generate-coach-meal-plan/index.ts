@@ -1611,16 +1611,12 @@ ${perfilFisiologico?.modo_economico ? `
         parsed = JSON.parse(repaired);
       } catch (e2) {
         parseError = e2;
-        // Tentativa 3: reparo agressivo
+        // Tentativa 3: reparo agressivo para saída "JSON-like" de LLM
+        // - converte strings com aspas simples para aspas duplas sem mexer em apóstrofos internos
         // - normaliza quebras de linha literais dentro de strings
-        // - remove caracteres de controle inválidos
-        // - remove vírgulas pendentes
-        // - remove BOM/zero-width
+        // - remove caracteres de controle inválidos, vírgulas pendentes e BOM/zero-width
         try {
-          let aggressive = clean
-            .replace(/\uFEFF|\u200B|\u200C|\u200D/g, "")
-            // remove caracteres de controle exceto \n \r \t (serão escapados depois)
-            .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, "");
+          let aggressive = repairJsonLikeText(clean);
 
           // Escapa quebras de linha cruas dentro de strings JSON
           // Walker simples: percorre e quando estiver dentro de "..." substitui \n \r \t por \\n \\r \\t
