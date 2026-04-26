@@ -620,8 +620,16 @@ const sections: MicrobiotaSection[] = [
     badgeColor: "text-red-400 border-red-400/30",
     content: (
       <div className="space-y-4">
+        <Card className="bg-amber-500/5 border-amber-500/30 p-3 space-y-1">
+          <p className="text-xs font-semibold text-amber-400">🆕 Caso 1 — Atleta com 17AA (Hemogenin / Dianabol)</p>
+          <p className="text-xs">Compostos 17-alfa alquilados alteram pH intestinal e perfil de bile acids → disbiose específica.</p>
+          <p className="text-xs"><span className="text-foreground">Sinais:</span> gases com odor sulfuroso · fezes mais escuras · língua amarelada (bile) · náusea matinal.</p>
+          <p className="text-xs mt-1"><span className="text-foreground">Fase 1 (durante uso):</span> S. boulardii 1g/dia (sobrevive ao pH alterado) · Ácido caprílico C8 500mg 3x/dia · Kefir 400ml/dia (dose dobrada) · Butirato de sódio 600mg 3x/dia · TUDCA 500mg/dia (bile acid protetor).</p>
+          <p className="text-xs"><span className="text-foreground">Fase 2 (pós-ciclo, 8 sem):</span> Stack elite completo + Arabinogalactana 6g/dia (repõe diversidade rapidamente).</p>
+        </Card>
+
         <Card className="bg-card border-border/40 p-3">
-          <p className="text-xs font-semibold text-foreground mb-2">Caso 1 — Pós-Antibiótico (8-12 semanas)</p>
+          <p className="text-xs font-semibold text-foreground mb-2">Caso 1b — Pós-Antibiótico (8-12 semanas)</p>
           <p className="text-xs">Sem 1-2: S. boulardii 1000mg 3x + Colostro 20g + Glutamina 20g + Kefir 400ml</p>
           <p className="text-xs">Sem 3-4: + LGG 20B + BB536 20B + FOS/Inulina 10g</p>
           <p className="text-xs">Sem 5-8: Stack completo + Akkermansia + prebióticos múltiplos</p>
@@ -663,6 +671,22 @@ const sections: MicrobiotaSection[] = [
           <p className="text-xs"><span className="text-foreground">Microbiota vegana:</span> mais Prevotella + F. prausnitzii (butirato) — diversidade alta, inflamação menor.</p>
           <p className="text-xs"><span className="text-foreground">Protocolo absorção:</span> L. plantarum 299v (ferro +50%) + Vit C com refeições ferrosas + protease fúngica + Betaína HCl + B12 sublingual 1000mcg/dia obrigatório + zinco em jejum (separar fitatos).</p>
         </Card>
+
+        <Card className="bg-orange-500/5 border-orange-500/30 p-3 space-y-1">
+          <p className="text-xs font-semibold text-orange-400">🆕 Caso 5 — Atleta em Cutting Severo (déficit &gt;25% por &gt;8 semanas)</p>
+          <p className="text-xs">Cutting severo + treino intenso = síndrome do intestino do corredor → permeabilidade aumentada → absorção comprometida justamente quando mais precisa.</p>
+          <p className="text-xs"><span className="text-foreground">Sinais:</span> gases aumentando conforme cutting avança · absorção de suplementos cai · imunidade baixa (resfriados frequentes) · recuperação mais lenta.</p>
+          <p className="text-xs mt-1"><span className="text-foreground">Protocolo:</span> L-Glutamina 20g/dia (dobrar dose) · Colostro 20g/dia (dobrar) · Zinco carnosina 150mg/dia · BPC-157 oral mantido obrigatório.</p>
+          <p className="text-xs"><span className="text-foreground">Parar:</span> psyllium e lactulose (gases no cutting = pesadelo visual).</p>
+        </Card>
+
+        <Card className="bg-green-500/5 border-green-500/30 p-3 space-y-1">
+          <p className="text-xs font-semibold text-green-400">🆕 Caso 6 — Pós-Competição (reparo completo)</p>
+          <p className="text-xs">Após prep + peak week + competição a microbiota fica severamente comprometida.</p>
+          <p className="text-xs mt-1"><span className="text-foreground">Semana 1-2 (emergencial):</span> S. boulardii 1g/dia · Glutamina 20g/dia · dieta variada sem restrição.</p>
+          <p className="text-xs"><span className="text-foreground">Semana 3-4 (repopulação):</span> Stack elite completo · Kefir 400ml/dia · Natto 50g/dia.</p>
+          <p className="text-xs"><span className="text-foreground">Semana 5-8 (diversidade):</span> 30+ espécies vegetais/semana · todos os prebióticos · fermentados diários variados.</p>
+        </Card>
       </div>
     ),
   },
@@ -675,13 +699,21 @@ const sections: MicrobiotaSection[] = [
       <div className="space-y-2">
         <ProtocolTable rows={[
           { name: "Proteína", dose: "Absorção +40%", timing: "L. plantarum 299v melhora absorção" },
+          { name: "Whey Isolado", dose: "+25% velocidade", timing: "PepT1 upregulado por L. plantarum · kefir junto ao whey pós-treino" },
           { name: "Creatina", dose: "Absorção +30%", timing: "Flora saudável = conversão mínima em creatinina" },
+          { name: "BCAA/Leucina", dose: "pH-dependente", timing: "pH ácido correto = absorção máxima · Betaína HCl + L. plantarum 299v" },
+          { name: "Glutamina", dose: "Dose maior se barreira comprometida", timing: "Enterócitos consomem 40% antes de chegar ao músculo" },
+          { name: "Colágeno", dose: "Via PepT1", timing: "Mesmo sistema da proteína · L. plantarum 299v potencializa" },
           { name: "Magnésio", dose: "↑ absorção", timing: "B. longum + L. rhamnosus" },
           { name: "Zinco", dose: "+35% absorção", timing: "Fitobactérias degradam fitato (antinutriente)" },
           { name: "Ferro", dose: "+50% não-heme", timing: "L. plantarum 299v via ácido lático → pH ↓" },
+          { name: "Vitamina D", dose: "+40% absorção", timing: "Bile acids reciclados pela microbiota · kefir + gordura + D juntos" },
+          { name: "Vitamina B12", dose: "Produção endógena parcial", timing: "S. boulardii + Lacto produzem B12 = dose menor com flora saudável" },
           { name: "Curcumina", dose: "Ativação bioativa", timing: "Convertida em tetra-hidrocurcumina pela flora" },
           { name: "Isoflavonas", dose: "10x mais ativo (equol)", timing: "30-50% não possuem bactéria conversora" },
           { name: "Ômega-3", dose: "Resolvinas ativadas", timing: "Interação Ω-3 + microbiota = anti-inflamação" },
+          { name: "Testosterona exógena", dose: "Metabolismo intestinal", timing: "Beta-glucuronidase afeta E2 · Cálcio D-Glucarato + L. reuteri" },
+          { name: "Metformina", dose: "Eficácia −40% sem Akkermansia", timing: "Age VIA microbiota — requer Akkermansia para efeito pleno" },
         ]} />
 
         <div className="space-y-2">
