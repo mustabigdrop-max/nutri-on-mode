@@ -1890,7 +1890,7 @@ ${perfilFisiologico?.modo_economico ? `
         // Calcula horário do intra: pós-imediato − (timing_minutes + ~25min) ≈ meio do treino
         let horarioIntra = "12:30";
         if (posImediatoHorario) {
-          const [hh, mm] = posImediatoHorario.split(":").map(Number);
+          const [hh, mm] = String(posImediatoHorario).split(":").map(Number);
           if (Number.isFinite(hh) && Number.isFinite(mm)) {
             const totalMin = hh * 60 + mm - (Number(glut4Config.timing_minutes) || 30) - 25;
             const h2 = Math.floor(totalMin / 60);
