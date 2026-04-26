@@ -11,6 +11,7 @@ import {
 } from "@/components/coach/TrainingSchedule";
 import { validateMedidasCaseiras } from "@/lib/medidasCaseirasValidator";
 import SubstitutionsAgentPage from "@/pages/SubstitutionsAgentPage";
+import { SUBSTITUTION_BANK_V2, type FoodCategoryV2 } from "@/data/substitutionBank";
 
 // ─── Design tokens (alinhados ao nutriON: dark bg, green accent) ──────────────
 const T = {
@@ -350,6 +351,115 @@ const inferGrupo = (s: SubstituicaoItem): GrupoSub => {
   return "outro";
 };
 
+// ─── Enricher: mescla substitutos da IA com SUBSTITUTION_BANK_V2 (mais variações) ──
+const norm = (s: string) =>
+  (s || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9 ]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+const CATEGORY_TO_GRUPO: Record<FoodCategoryV2, GrupoSub> = {
+  peixe: "proteina",
+  frutos_do_mar: "proteina",
+  carne_vermelha: "proteina",
+  ave: "proteina",
+  porco: "proteina",
+  laticinios: "proteina",
+  shake: "proteina",
+  fruta: "carbo",
+  vegetal: "carbo",
+  legume_tuberculo: "carbo",
+};
+
+// dado um horário "HH:MM", encontra o MealBlockV2 mais próximo
+const findBlockByHorario = (horario?: string) => {
+  if (!horario || !SUBSTITUTION_BANK_V2.length) return null;
+  const [h, m] = horario.split(":").map((x) => parseInt(x, 10));
+  if (isNaN(h)) return null;
+  const target = h * 60 + (isNaN(m) ? 0 : m);
+  let best = SUBSTITUTION_BANK_V2[0];
+  let bestDiff = Infinity;
+  for (const b of SUBSTITUTION_BANK_V2) {
+    const [bh, bm] = b.horario.split(":").map((x) => parseInt(x, 10));
+    const t = bh * 60 + (isNaN(bm) ? 0 : bm);
+    const diff = Math.abs(t - target);
+    if (diff < bestDiff) { bestDiff = diff; best = b; }
+  }
+  return best;
+};
+
+// Enriquece os substitutos de um alimento com itens do banco V2 (mesma refeição)
+const enrichSubstitutes = (
+  alimento: MealAlimento,
+  mealHorario?: string
+): SubstituicaoItem[] => {
+  const original: SubstituicaoItem[] = (alimento.substituicoes || []).map((s) => ({
+    ...s,
+    grupo: inferGrupo(s),
+  }));
+  const block = findBlockByHorario(mealHorario);
+  if (!block) return original;
+
+  // Tenta achar o "alimento principal" correspondente no bloco para puxar substitutos diretos
+  const aliNorm = norm(alimento.alimento);
+  const matchPrincipal = block.alimentos.find((a) => {
+    const n = norm(a.nome);
+    return n === aliNorm || n.includes(aliNorm) || aliNorm.includes(n);
+  });
+
+  // Pool de candidatos: substitutos do principal correspondente + todos os substitutos do bloco
+  const pool: { nome: string; medida: string; gramatura: number; grupo: GrupoSub; nota: string }[] = [];
+  const pushItem = (s: { nome: string; medida_caseira: string; gramatura_g: number; categoria: FoodCategoryV2; nota: string }) => {
+    pool.push({
+      nome: s.nome,
+      medida: s.medida_caseira,
+      gramatura: s.gramatura_g,
+      grupo: CATEGORY_TO_GRUPO[s.categoria] || "outro",
+      nota: s.nota,
+    });
+  };
+  if (matchPrincipal) {
+    matchPrincipal.substitutos.forEach(pushItem);
+    // Também inclui o próprio principal como variação se for diferente
+    if (norm(matchPrincipal.nome) !== aliNorm) {
+      pool.push({
+        nome: matchPrincipal.nome,
+        medida: matchPrincipal.medida_caseira,
+        gramatura: matchPrincipal.gramatura_g,
+        grupo: "proteina",
+        nota: matchPrincipal.nota_nutricional,
+      });
+    }
+  }
+  // Adiciona substitutos de outros principais da mesma refeição (variação extra)
+  block.alimentos.forEach((a) => {
+    if (matchPrincipal && a.id === matchPrincipal.id) return;
+    a.substitutos.forEach(pushItem);
+  });
+
+  // Dedup por nome normalizado, evitando colidir com originais da IA
+  const seen = new Set<string>();
+  original.forEach((s) => seen.add(norm(s.alimento)));
+  const extras: SubstituicaoItem[] = [];
+  for (const p of pool) {
+    const key = norm(p.nome);
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    extras.push({
+      alimento: p.nome,
+      quantidade: p.medida,
+      quantidade_g: `${p.gramatura}g`,
+      observacao: p.nota,
+      grupo: p.grupo,
+    });
+  }
+  return [...original, ...extras];
+};
+
+
 interface MealCardProps {
   meal: Meal;
   index: number;
@@ -377,7 +487,7 @@ const MealCard = ({ meal, index, onSwap }: MealCardProps) => {
       </div>
       <div style={{ padding: "12px 16px" }}>
         {meal.alimentos?.map((a, i) => {
-          const subs: SubstituicaoItem[] = (a.substituicoes || []).map((s) => ({ ...s, grupo: inferGrupo(s) }));
+          const subs: SubstituicaoItem[] = enrichSubstitutes(a, meal.horario);
           const open = !!openSubs[i];
           const f = filter[i] || "todos";
           const q = (search[i] || "").trim().toLowerCase();
