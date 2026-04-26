@@ -22,7 +22,7 @@ export const LEVELS = [
 
 export const WEEKS_OPTIONS = ["4", "6", "8", "12", "16"];
 export const DAYS_OPTIONS = ["3", "4", "5", "6"];
-export const SESSION_DURATIONS = ["30min", "45min", "60min", "75min", "90min+"];
+export const SESSION_DURATIONS = ["30min", "45min", "60min", "75min", "90min", "105min", "120min", "150min", "180min+"];
 export const CARDIO_OPTIONS = ["Não", "1-2x semana", "3-4x semana", "Diário"];
 export const STRESS_OPTIONS = ["Ótimo", "Bom", "Regular", "Ruim"];
 
