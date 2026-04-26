@@ -1511,28 +1511,42 @@ ${perfilFisiologico?.modo_economico ? `
     const finishReason = aiData.choices?.[0]?.finish_reason;
     let clean = raw.replace(/```json|```/g, "").trim();
 
-    // Extrai o objeto JSON principal mesmo quando a IA prefixar/sufixar texto explicativo
-    // OU quando retorna múltiplos objetos concatenados ({...}{...}). Pegamos o PRIMEIRO objeto balanceado.
-    const firstBrace = clean.indexOf("{");
-    if (firstBrace !== -1) {
+    // Extrai TODOS os objetos JSON balanceados de nível superior e escolhe aquele que CONTÉM "refeicoes".
+    // Isso evita pegar um objeto explicativo inicial quando a IA retorna múltiplos blocos ({...}{plano real}).
+    const extractTopLevelObjects = (src: string): string[] => {
+      const objs: string[] = [];
       let depth = 0;
-      let endIdx = -1;
+      let start = -1;
       let inStr = false;
       let esc = false;
-      for (let i = firstBrace; i < clean.length; i++) {
-        const ch = clean[i];
+      for (let i = 0; i < src.length; i++) {
+        const ch = src[i];
         if (esc) { esc = false; continue; }
         if (ch === "\\") { esc = true; continue; }
         if (ch === '"') { inStr = !inStr; continue; }
         if (inStr) continue;
-        if (ch === "{") depth++;
-        else if (ch === "}") {
+        if (ch === "{") {
+          if (depth === 0) start = i;
+          depth++;
+        } else if (ch === "}") {
           depth--;
-          if (depth === 0) { endIdx = i; break; }
+          if (depth === 0 && start !== -1) {
+            objs.push(src.substring(start, i + 1));
+            start = -1;
+          }
         }
       }
-      if (endIdx !== -1) {
-        clean = clean.substring(firstBrace, endIdx + 1);
+      return objs;
+    };
+    const candidates = extractTopLevelObjects(clean);
+    if (candidates.length > 0) {
+      // Prefere o que contém "refeicoes"; caso contrário, o maior
+      const withRefeicoes = candidates.filter((c) => /"refeicoes"\s*:/.test(c));
+      const pool = withRefeicoes.length > 0 ? withRefeicoes : candidates;
+      pool.sort((a, b) => b.length - a.length);
+      clean = pool[0];
+      if (candidates.length > 1) {
+        console.warn(`[parser] múltiplos objetos JSON detectados (${candidates.length}); selecionado ${withRefeicoes.length > 0 ? "com refeicoes" : "o maior"} (${clean.length} chars)`);
       }
     }
 
