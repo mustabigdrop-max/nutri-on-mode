@@ -28,6 +28,7 @@ import {
   VOLUME_LANDMARKS,
 } from "@/data/trainingData";
 import SystemSelectorInline from "@/components/training/systems/SystemSelectorInline";
+import SystemConflictAlerts from "@/components/training/systems/SystemConflictAlerts";
 import { buildSystemPrescription } from "@/data/recommendSystem";
 import { TRAINING_SYSTEMS } from "@/data/trainingSystems";
 
@@ -525,6 +526,20 @@ Português. Específico. Científico. Zero genérico.`;
             surface={SURFACE} surface2={SURFACE2}
             border={BORDER} borderActive={BORDER_ACTIVE}
             green={GREEN} greenDim={GREEN_DIM}
+            text={TEXT} textDim={TEXT_DIM} textMuted={TEXT_MUTED}
+          />
+        </Field>
+
+        {/* Alertas automáticos: lesões, equipamento, tempo de sessão */}
+        <Field label="🚨 Verificação de Compatibilidade">
+          <SystemConflictAlerts
+            systemId={trainingSystem}
+            injuries={injuries}
+            equipment={equipment}
+            sessionDuration={sessionDuration}
+            onSwitchSystem={setTrainingSystem}
+            surface={SURFACE} surface2={SURFACE2}
+            border={BORDER} borderActive={BORDER_ACTIVE}
             text={TEXT} textDim={TEXT_DIM} textMuted={TEXT_MUTED}
           />
         </Field>
