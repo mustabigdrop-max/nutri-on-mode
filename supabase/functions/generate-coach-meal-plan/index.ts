@@ -1161,15 +1161,16 @@ ${glut4Text ? `BLOCO FISIOLÓGICO COMPLETO GERADO PARA REFERÊNCIA (use as quant
 - Se houver MÚLTIPLOS horários diferentes ao longo da semana (ex: seg 06:00, ter 18:00, qua 13:00), gere UM SUB-PLANO POR HORÁRIO DISTINTO de treino. Nomeie cada sub-plano com o horário real, ex: "PLANO — DIA DE TREINO MANHÃ (06:00)", "PLANO — DIA DE TREINO TARDE (13:00)", "PLANO — DIA DE TREINO NOITE (18:00)".
 - Se TODOS os dias de treino tiverem o MESMO horário, gere apenas 1 plano de treino chamado "PLANO — DIA DE TREINO (HH:mm)" com o horário REAL extraído do schedule.
 - Cada refeição peri-workout deve ter horário calculado a partir do "time" REAL do dia:
-  • Pré-treino sólido: time − 90min
-  • (opcional) Pré-treino líquido/whey: time − 30min
+  • Pré-treino sólido: time − 60min (EXATAMENTE 1h antes — não use 30min, não use 90min)
+  • (opcional) Pré-treino líquido/whey: time − 20min
   • Intra-treino: durante o treino
-  • Pós-treino imediato: time + duration_min + 0–30min
+  • Pós-treino imediato: time + duration_min + 0–30min (APENAS UMA refeição com este nome — NUNCA crie "Pós-IGF-1", "Pós-Treino 2", "Janela Anabólica" ou variantes; tudo deve ser consolidado em UMA única "Pós-Treino Imediato")
   • Pós-treino sólido: time + duration_min + 60–90min
   • Demais refeições: distribuídas ao longo do dia respeitando intervalos de ~3h
 - Se o treino for à TARDE/NOITE (>= 12:00), o café da manhã NÃO pode virar "pré-treino". Reorganize: café normal → almoço → pré-treino → pós-treino → ceia.
 - O nome de cada refeição DEVE conter o contexto peri-workout entre parênteses, ex: "Refeição 3 (12:00 — Pré-Treino Sólido)".
 - PROIBIDO: usar 05:00, 05:30, 06:00, 07:00 se o "time" REAL do schedule for diferente. Esta é a falha #1 a evitar.
+- PROIBIDO: criar 2 refeições pós-treino imediato. Se você precisa de uma janela anabólica adicional, ela é o "Pós-Treino Sólido" (60–90min depois) — nunca duplique o "imediato".
 
 🎯 REGRA DE INTEGRIDADE CALÓRICA (INVIOLÁVEL quando o coach define meta):
 - Se "Meta calórica definida pelo coach" estiver presente, o campo "calorias_totais" do JSON DEVE bater a meta com tolerância máxima de ±3%.
@@ -2021,6 +2022,84 @@ ${perfilFisiologico?.modo_economico ? `
           ref.calorias = Math.round(novaSoma * 4);
         }
       }
+    }
+
+    // ── DEDUPE PÓS-TREINO IMEDIATO + AJUSTE TIMING PRÉ-TREINO ──
+    // Garante apenas 1 refeição "Pós-Treino Imediato" e que o pré-treino sólido
+    // fique exatamente 60min antes do horário real do treino (extraído do schedule).
+    if (Array.isArray(parsed?.refeicoes)) {
+      const isPosImediatoMeal = (nome: string) =>
+        /p[óo]s[\s-]?treino\s*imediato|janela\s*glut|glut[\s-]?4|p[óo]s[\s-]?igf/i.test(nome || "");
+      const isPreTreinoMeal = (nome: string) =>
+        /pr[ée][\s-]?treino/i.test(nome || "") && !/p[óo]s/i.test(nome || "");
+
+      // 1) Dedupe pós-imediato — mantém o PRIMEIRO, remove os demais
+      const posIdxs: number[] = [];
+      (parsed.refeicoes as any[]).forEach((m, i) => {
+        if (isPosImediatoMeal(m?.refeicao || "")) posIdxs.push(i);
+      });
+      if (posIdxs.length > 1) {
+        const keep = posIdxs[0];
+        const remover = new Set(posIdxs.slice(1));
+        const removidos = posIdxs.slice(1).map((i) => parsed.refeicoes[i]?.refeicao);
+        parsed.refeicoes = (parsed.refeicoes as any[]).filter((_, i) => !remover.has(i));
+        // Padroniza nome para evitar variantes ("Pós-IGF-1", etc)
+        const m0 = parsed.refeicoes[keep > 0 ? keep : 0];
+        if (m0 && isPosImediatoMeal(m0.refeicao || "")) {
+          const horario = m0.horario || "";
+          m0.refeicao = `Pós-Treino Imediato${horario ? ` (${horario})` : ""}`;
+        }
+        console.log(`[DEDUPE-POS] removidas ${removidos.length} refeições pós-imediato duplicadas: ${removidos.join(" | ")}`);
+      }
+
+      // 2) Extrai horário real do treino do trainingSchedulePrompt (time=HH:MM)
+      let trainingTimeMin: number | null = null;
+      let trainingDurationMin = 60;
+      if (typeof trainingSchedulePrompt === "string" && trainingSchedulePrompt) {
+        const mTime = trainingSchedulePrompt.match(/time=(\d{1,2}):(\d{2})/);
+        const mDur = trainingSchedulePrompt.match(/duration_min=(\d{1,3})/);
+        if (mTime) {
+          const hh = Number(mTime[1]);
+          const mm = Number(mTime[2]);
+          if (Number.isFinite(hh) && Number.isFinite(mm)) {
+            trainingTimeMin = hh * 60 + mm;
+          }
+        }
+        if (mDur) {
+          const d = Number(mDur[1]);
+          if (Number.isFinite(d) && d > 0) trainingDurationMin = d;
+        }
+      }
+
+      // 3) Ajusta horário do pré-treino sólido para EXATAMENTE treino − 60min
+      if (trainingTimeMin !== null) {
+        const preMin = trainingTimeMin - 60;
+        if (preMin >= 0) {
+          const novoHorario = `${String(Math.floor(preMin / 60)).padStart(2, "0")}:${String(preMin % 60).padStart(2, "0")}`;
+          (parsed.refeicoes as any[]).forEach((m) => {
+            if (isPreTreinoMeal(m?.refeicao || "")) {
+              const antigo = m.horario;
+              if (antigo !== novoHorario) {
+                m.horario = novoHorario;
+                // Atualiza horário entre parênteses no nome se houver
+                if (typeof m.refeicao === "string") {
+                  m.refeicao = m.refeicao.replace(/\d{1,2}:\d{2}/, novoHorario);
+                }
+                console.log(`[PRE-TREINO-FIX] horário ajustado: ${antigo} → ${novoHorario} (treino ${Math.floor(trainingTimeMin / 60)}:${String(trainingTimeMin % 60).padStart(2, "0")} − 60min)`);
+              }
+            }
+          });
+        }
+      }
+
+      // 4) Reordena refeições por horário ascendente para manter coerência cronológica
+      parsed.refeicoes = (parsed.refeicoes as any[]).sort((a, b) => {
+        const toMin = (h: string) => {
+          const m = String(h || "").match(/(\d{1,2}):(\d{2})/);
+          return m ? Number(m[1]) * 60 + Number(m[2]) : 9999;
+        };
+        return toMin(a?.horario) - toMin(b?.horario);
+      });
     }
 
     // ── AJUSTE PÓS-PROCESSAMENTO: escala gramaturas para bater alvo calórico ±3% ──
