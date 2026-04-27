@@ -2372,7 +2372,8 @@ AEJ não é refeição e nunca deve aparecer em refeicoes. Pós-Treino Imediato 
         `[ajuste-calorico] alvo=${alvo} totalAntes=${totalAntes} banda=[${minBand},${maxBand}] refeicoes=${parsed.refeicoes.length}`,
       );
 
-      if (totalAntes > 0 && totalAntes < minBand) {
+      const foraDaBanda = totalAntes > 0 && (totalAntes < minBand || totalAntes > maxBand);
+      if (foraDaBanda) {
         // Calcula massa calórica ajustável (exclui pós-imediato que já foi travado pelo GLUT-4)
         const ajustaveis = (parsed.refeicoes as any[]).filter(
           (m) => !isPosImediato(m?.refeicao || ""),
@@ -2393,9 +2394,8 @@ AEJ não é refeição e nunca deve aparecer em refeicoes. Pós-Treino Imediato 
         if (kcalAjustaveis > 0) {
           // Fator que faz (kcalAjustaveis * fator + kcalFixas) === alvo
           const fator = (alvo - kcalFixas) / kcalAjustaveis;
-          // Aumentado de 1.5 → 2.5 para suportar planos onde a IA gera bem abaixo do alvo
-          // (ex.: 5100kcal pedido, IA gera 3617 → fator 1.41; mas planos 5500/3000 precisam 1.83)
-          const fatorClamp = Math.max(1.0, Math.min(2.5, fator)); // só aumenta, máximo +150%
+          // Permite escalar PARA CIMA (até 2.5x) e PARA BAIXO (até 0.5x) para fechar o alvo
+          const fatorClamp = Math.max(0.5, Math.min(2.5, fator));
           console.log(
             `[ajuste-calorico] fator=${fator.toFixed(3)} → clamp=${fatorClamp.toFixed(3)}`,
           );
@@ -2464,20 +2464,19 @@ AEJ não é refeição e nunca deve aparecer em refeicoes. Pós-Treino Imediato 
           ajusteCalorico.aplicado = true;
           ajusteCalorico.fator = Number(fatorClamp.toFixed(3));
           ajusteCalorico.fator_solicitado = Number(fator.toFixed(3));
-          ajusteCalorico.fator_limitado = fator > 2.5;
+          ajusteCalorico.fator_limitado = fator > 2.5 || fator < 0.5;
           ajusteCalorico.total_depois = totalDepois;
           ajusteCalorico.delta_kcal = totalDepois - totalAntes;
           ajusteCalorico.dentro_da_banda = totalDepois >= minBand && totalDepois <= maxBand;
           ajusteCalorico.refeicoes_fixas_ignoradas = fixas.map((f) => f?.refeicao);
+          const direcao = fatorClamp >= 1 ? "abaixo do" : "acima do";
           ajusteCalorico.mensagem = ajusteCalorico.dentro_da_banda
-            ? `Plano abaixo do alvo (${totalAntes} kcal). Gramaturas escaladas ×${fatorClamp.toFixed(3)} → ${totalDepois} kcal (dentro de ±3% de ${alvo}).`
-            : `Plano escalado ×${fatorClamp.toFixed(3)} (limite máximo) → ${totalDepois} kcal. Ainda fora da banda ${minBand}-${maxBand}. Considere revisar manualmente.`;
+            ? `Plano ${direcao} alvo (${totalAntes} kcal). Gramaturas escaladas ×${fatorClamp.toFixed(3)} → ${totalDepois} kcal (dentro de ±3% de ${alvo}).`
+            : `Plano escalado ×${fatorClamp.toFixed(3)} (limite) → ${totalDepois} kcal. Ainda fora da banda ${minBand}-${maxBand}. Considere revisar manualmente.`;
           console.log(`[ajuste-calorico] aplicado: ${ajusteCalorico.mensagem}`);
         } else {
           ajusteCalorico.mensagem = `Sem refeições ajustáveis (todas peri-treino travadas).`;
         }
-      } else if (totalAntes > maxBand) {
-        ajusteCalorico.mensagem = `Plano acima do alvo (${totalAntes} > ${maxBand}). Não foi reduzido automaticamente — revise manualmente.`;
       } else if (totalAntes >= minBand && totalAntes <= maxBand) {
         ajusteCalorico.mensagem = `Plano já dentro de ±3% (${totalAntes} kcal vs alvo ${alvo}). Sem ajuste necessário.`;
         ajusteCalorico.dentro_da_banda = true;
