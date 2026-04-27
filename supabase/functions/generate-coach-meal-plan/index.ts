@@ -1468,9 +1468,17 @@ ${perfilFisiologico?.modo_economico ? `
 - Todos os valores numéricos em BRL, com no máximo 2 casas decimais. Sem string, apenas números no JSON.
 ` : ""}`;
 
-    // Retry enxuto + modelos rápidos: evita 504 quando variedade funcional aumenta o JSON.
-    // A saída foi compactada acima; Pro tende a exceder o tempo da função em planos grandes.
-    const MODELS_FALLBACK = ["google/gemini-2.5-flash", "google/gemini-2.5-flash-lite"];
+    // Retry enxuto + prompt compacto: evita timeout quando variedade funcional aumenta o JSON.
+    // O SYSTEM_PROMPT completo contém um banco alimentar grande; com variedade ativa, o userPrompt
+    // já carrega as regras necessárias, então usamos um sistema curto para reduzir latência.
+    const COMPACT_SYSTEM_PROMPT = `Você é o NutriSync Elite, gerador técnico de plano alimentar para coach.
+Responda APENAS com um único JSON válido, sem markdown.
+Siga rigorosamente horários reais do treino, macros/calorias calculados, restrições, medidas caseiras e regras peri-workout do prompt do usuário.
+AEJ não é refeição e nunca deve aparecer em refeicoes. Pós-Treino Imediato deve ser único.`;
+    const activeSystemPrompt = perfilFisiologico?.variedade_funcional || perfilFisiologico?.protocolo_microbiota || perfilFisiologico?.medidas_caseiras
+      ? COMPACT_SYSTEM_PROMPT
+      : SYSTEM_PROMPT;
+    const MODELS_FALLBACK = ["google/gemini-3-flash-preview", "google/gemini-2.5-flash-lite"];
     let response: Response | null = null;
     let lastErrorStatus = 0;
     let lastErrorBody = "";
@@ -1488,10 +1496,10 @@ ${perfilFisiologico?.modo_economico ? `
             body: JSON.stringify({
               model,
               messages: [
-                { role: "system", content: SYSTEM_PROMPT },
+                { role: "system", content: activeSystemPrompt },
                 { role: "user", content: userPrompt },
               ],
-              max_tokens: 18000,
+              max_tokens: perfilFisiologico?.variedade_funcional ? 12000 : 16000,
               response_format: { type: "json_object" },
             }),
           });
