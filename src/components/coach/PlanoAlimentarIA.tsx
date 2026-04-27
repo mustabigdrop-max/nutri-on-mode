@@ -511,7 +511,7 @@ const MealCard = ({ meal, index, onSwap }: MealCardProps) => {
       <div style={{ padding: "12px 16px", borderBottom: `1px solid ${T.border}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <div style={{ width: 3, height: 20, background: color, borderRadius: 2 }} />
-          <span style={{ fontSize: 14, fontWeight: 600, color: T.text }}>{meal.refeicao}</span>
+          <span style={{ fontSize: 14, fontWeight: 600, color: T.text }}>{stripHorarioFromTitle(meal.refeicao, meal.horario)}</span>
           {meal.horario && <span style={{ fontSize: 11, color: T.muted, background: T.bg3, padding: "2px 8px", borderRadius: 999 }}>{meal.horario}</span>}
         </div>
         {meal.calorias && (
