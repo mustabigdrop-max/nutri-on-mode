@@ -2428,6 +2428,67 @@ AEJ não é refeição e nunca deve aparecer em refeicoes. Pós-Treino Imediato 
           console.log(`[CEIA-FIX] injetada Ceia às 22:00 (estava ausente)`);
         }
       }
+
+      // ── REPOSICIONAMENTO DA CEIA: deve ser SEMPRE a última refeição e vir APÓS o Jantar ──
+      // Considera o horário REAL do treino do dia (já presente no plano via Pós-Treino Sólido / Jantar).
+      // Regras:
+      //  • Ceia >= Jantar + 2h30 (mínimo) e dentro de [21:30, 23:30].
+      //  • Se Ceia for o "Pós-Treino Sólido" de treino noturno, mantém a tag "Ceia / Pós-Treino Sólido"
+      //    e apenas garante que ela seja a ÚLTIMA refeição do dia.
+      const refsArr = parsed.refeicoes as any[];
+      const idxCeia = refsArr.findIndex((m) =>
+        /\bceia\b/i.test(String(m?.refeicao || "")),
+      );
+      if (idxCeia >= 0) {
+        const ceia = refsArr[idxCeia];
+        const idxJantar = refsArr.findIndex(
+          (m, i) => i !== idxCeia && /\bjantar\b/i.test(String(m?.refeicao || "")),
+        );
+        const jantarMin = idxJantar >= 0 ? toMin3(refsArr[idxJantar]?.horario) : -1;
+        let ceiaMin = toMin3(ceia?.horario);
+
+        // Garante mínimo Jantar + 150min (2h30)
+        if (jantarMin > 0) {
+          const minPermitido = jantarMin + 150;
+          if (ceiaMin < minPermitido || ceiaMin <= jantarMin) {
+            ceiaMin = Math.max(minPermitido, 21 * 60 + 30);
+          }
+        }
+        // Janela alvo [21:30, 23:30]
+        if (ceiaMin < 21 * 60 + 30) ceiaMin = 21 * 60 + 30;
+        if (ceiaMin > 23 * 60 + 30) ceiaMin = 23 * 60 + 30;
+
+        // Ceia precisa ser estritamente posterior à maior horário entre as DEMAIS refeições
+        const maxOutro = Math.max(
+          ...refsArr
+            .map((m, i) => (i === idxCeia ? -1 : toMin3(m?.horario)))
+            .filter((v) => v >= 0),
+          -1,
+        );
+        if (maxOutro >= 0 && ceiaMin <= maxOutro) {
+          ceiaMin = Math.min(maxOutro + 30, 23 * 60 + 30);
+        }
+
+        const novoHorario = `${String(Math.floor(ceiaMin / 60)).padStart(2, "0")}:${String(ceiaMin % 60).padStart(2, "0")}`;
+        if (novoHorario !== ceia?.horario) {
+          console.log(`[CEIA-FIX] horário ajustado: ${ceia?.horario} → ${novoHorario} (jantar=${idxJantar >= 0 ? refsArr[idxJantar]?.horario : "n/a"})`);
+          ceia.horario = novoHorario;
+          // Atualiza o sufixo "(HH:MM)" no nome se existir
+          if (typeof ceia.refeicao === "string") {
+            ceia.refeicao = ceia.refeicao.replace(/\(\d{1,2}:\d{2}\)/, `(${novoHorario})`);
+          }
+        }
+
+        // Reordena por horário e renumera "Refeição N"
+        refsArr.sort((a, b) => toMin3(a?.horario) - toMin3(b?.horario));
+        let _i = 1;
+        refsArr.forEach((m) => {
+          if (typeof m?.refeicao === "string" && /Refei[çc][ãa]o\s*\d+/i.test(m.refeicao)) {
+            m.refeicao = m.refeicao.replace(/Refei[çc][ãa]o\s*\d+/i, `Refeição ${_i}`);
+          }
+          _i++;
+        });
+      }
     }
 
     // ── AJUSTE PÓS-PROCESSAMENTO: escala gramaturas para bater alvo calórico ±3% ──
