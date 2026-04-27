@@ -1166,11 +1166,13 @@ ${glut4Text ? `BLOCO FISIOLÓGICO COMPLETO GERADO PARA REFERÊNCIA (use as quant
   • Intra-treino: durante o treino
   • Pós-treino imediato: time + duration_min + 0–30min (APENAS UMA refeição com este nome — NUNCA crie "Pós-IGF-1", "Pós-Treino 2", "Janela Anabólica" ou variantes; tudo deve ser consolidado em UMA única "Pós-Treino Imediato")
   • Pós-treino sólido: time + duration_min + 60–90min
-  • Demais refeições: distribuídas ao longo do dia respeitando intervalos de ~3h
-- Se o treino for à TARDE/NOITE (>= 12:00), o café da manhã NÃO pode virar "pré-treino". Reorganize: café normal → almoço → pré-treino → pós-treino → ceia.
+  • Demais refeições: distribuídas ao longo do dia respeitando intervalos MÍNIMOS de 2h30 entre refeições principais (3h é o ideal).
+- ⚠️ ESPAÇAMENTO MÍNIMO ENTRE REFEIÇÕES: NUNCA coloque duas refeições com menos de 2h30 de diferença. Se o pré-treino fica em "time − 60min" e o almoço ficaria a menos de 2h30 antes dele, REORGANIZE: o almoço deve ser ANTECIPADO e um LANCHE DA MANHÃ deve ser inserido entre café e almoço (ou entre almoço e pré-treino) para preencher o intervalo. Exemplo concreto: treino 13:30 → pré-treino 12:30 → almoço NÃO pode ser 11:00 (1h30 do pré). Solução: café 07:00 → lanche manhã 09:30 → almoço 10:30 (2h do pré ainda é apertado — prefira mover almoço para 10:00 OU eliminar almoço e tratar o pré-treino como refeição substancial). Esquema ideal para treino 13:30: café 07:00 → lanche manhã 10:00 → almoço/refeição principal cedo 10:30 → lanche pré-treino 12:30 → intra 13:45 → pós-imediato 14:30 → pós-sólido 15:30 → jantar 19:00 → ceia 22:00.
+- Se o treino for à TARDE/NOITE (>= 12:00), o café da manhã NÃO pode virar "pré-treino". Reorganize: café normal → lanche manhã → almoço cedo → pré-treino → pós-treino → ceia.
 - O nome de cada refeição DEVE conter o contexto peri-workout entre parênteses, ex: "Refeição 3 (12:00 — Pré-Treino Sólido)".
 - PROIBIDO: usar 05:00, 05:30, 06:00, 07:00 se o "time" REAL do schedule for diferente. Esta é a falha #1 a evitar.
 - PROIBIDO: criar 2 refeições pós-treino imediato. Se você precisa de uma janela anabólica adicional, ela é o "Pós-Treino Sólido" (60–90min depois) — nunca duplique o "imediato".
+- PROIBIDO: deixar gap menor que 2h30 entre quaisquer duas refeições — sempre insira um lanche intermediário ou redistribua horários.
 
 🎯 REGRA DE INTEGRIDADE CALÓRICA (INVIOLÁVEL quando o coach define meta):
 - Se "Meta calórica definida pelo coach" estiver presente, o campo "calorias_totais" do JSON DEVE bater a meta com tolerância máxima de ±3%.
@@ -2093,12 +2095,72 @@ ${perfilFisiologico?.modo_economico ? `
       }
 
       // 4) Reordena refeições por horário ascendente para manter coerência cronológica
-      parsed.refeicoes = (parsed.refeicoes as any[]).sort((a, b) => {
-        const toMin = (h: string) => {
-          const m = String(h || "").match(/(\d{1,2}):(\d{2})/);
-          return m ? Number(m[1]) * 60 + Number(m[2]) : 9999;
-        };
-        return toMin(a?.horario) - toMin(b?.horario);
+      const toMin = (h: string) => {
+        const m = String(h || "").match(/(\d{1,2}):(\d{2})/);
+        return m ? Number(m[1]) * 60 + Number(m[2]) : 9999;
+      };
+      const fromMin = (mm: number) =>
+        `${String(Math.floor(mm / 60)).padStart(2, "0")}:${String(mm % 60).padStart(2, "0")}`;
+      parsed.refeicoes = (parsed.refeicoes as any[]).sort((a, b) => toMin(a?.horario) - toMin(b?.horario));
+
+      // 5) Garante GAP MÍNIMO 2h30 entre pré-treino e refeição imediatamente anterior.
+      //    Se gap < 150min, antecipa a anterior e injeta "Lanche da Manhã" se sobrar buraco.
+      const MIN_GAP = 150;
+      const isPre = (n: string) => /pr[ée][\s-]?treino/i.test(n || "") && !/p[óo]s/i.test(n || "");
+      const isPeri = (n: string) =>
+        /pr[ée][\s-]?treino|p[óo]s[\s-]?treino|intra[\s-]?treino|janela\s*glut|glut[\s-]?4/i.test(n || "");
+
+      const preIdx = (parsed.refeicoes as any[]).findIndex((m) => isPre(m?.refeicao || ""));
+      if (preIdx > 0) {
+        const preMin = toMin((parsed.refeicoes as any[])[preIdx]?.horario);
+        const anterior = (parsed.refeicoes as any[])[preIdx - 1];
+        const antMin = toMin(anterior?.horario);
+        const gap = preMin - antMin;
+        if (gap < MIN_GAP && !isPeri(anterior?.refeicao || "")) {
+          const novoAntMin = Math.max(0, preMin - MIN_GAP);
+          const novoAntH = fromMin(novoAntMin);
+          const antigoH = anterior.horario;
+          anterior.horario = novoAntH;
+          if (typeof anterior.refeicao === "string") {
+            anterior.refeicao = anterior.refeicao.replace(/\d{1,2}:\d{2}/, novoAntH);
+          }
+          console.log(`[GAP-FIX] "${anterior.refeicao}" antecipada: ${antigoH} → ${novoAntH}`);
+
+          if (preIdx - 2 >= 0) {
+            const antAnt = (parsed.refeicoes as any[])[preIdx - 2];
+            const novoGapTras = novoAntMin - toMin(antAnt?.horario);
+            if (novoGapTras > MIN_GAP + 30) {
+              const lancheMin = Math.round((toMin(antAnt?.horario) + novoAntMin) / 2 / 5) * 5;
+              const lancheH = fromMin(lancheMin);
+              const lanche = {
+                refeicao: `Lanche da Manhã (${lancheH})`,
+                horario: lancheH,
+                alimentos: [
+                  { alimento: "Iogurte natural integral", quantidade: "200g", observacao: "Proteína de digestão lenta + probióticos.", substituicoes: [] },
+                  { alimento: "Banana madura", quantidade: "1 unidade média (100g)", observacao: "Carboidrato de absorção média + potássio.", substituicoes: [] },
+                  { alimento: "Castanha-do-pará", quantidade: "2 unidades (10g)", observacao: "Selênio + gordura boa para saciedade.", substituicoes: [] },
+                ],
+                calorias: 320,
+                macros: { proteina: 12, carboidrato: 35, gordura: 14 },
+                observacao_clinica: "Lanche intermediário inserido automaticamente para manter espaçamento mínimo de 2h30 entre refeições principais.",
+              };
+              parsed.refeicoes.push(lanche);
+              console.log(`[GAP-FIX] Lanche da Manhã injetado às ${lancheH} (gap ${novoGapTras}min).`);
+            }
+          }
+        }
+      }
+
+      // 6) Reordena novamente após ajustes
+      parsed.refeicoes = (parsed.refeicoes as any[]).sort((a, b) => toMin(a?.horario) - toMin(b?.horario));
+
+      // 7) Renumera "Refeição N" para refletir ordem cronológica final
+      let _n = 1;
+      (parsed.refeicoes as any[]).forEach((m) => {
+        if (typeof m?.refeicao === "string" && /Refei[çc][ãa]o\s*\d+/i.test(m.refeicao)) {
+          m.refeicao = m.refeicao.replace(/Refei[çc][ãa]o\s*\d+/i, `Refeição ${_n}`);
+        }
+        _n++;
       });
     }
 
