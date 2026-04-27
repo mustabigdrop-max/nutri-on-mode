@@ -1227,7 +1227,7 @@ REGRAS DE NOMENCLATURA:
 - Formato do nome: "Refeição N — Nome (HH:MM)" — ex: "Refeição 3 — Almoço / Pré-Treino Sólido (12:30)".
 - O nome PRINCIPAL deve ser SEMPRE um dos 6 nomes brasileiros: Café da Manhã, Lanche da Manhã, Almoço, Lanche da Tarde, Jantar, Ceia. As refeições peri-workout extras (Intra-Treino, Pós-Treino Imediato, Pós-Treino Sólido) só aparecem QUANDO houver treino e GLUT-4 ativo.
 - ⚠️ CAFÉ DA MANHÃ É OBRIGATÓRIO EM TODOS OS PLANOS (treino ou descanso). NUNCA omita o Café da Manhã. Se o treino é à tarde/noite, ele aparece como primeira refeição (~07:00). Se o treino é manhã cedo, ele se funde com o pré-treino sólido ("Café da Manhã / Pré-Treino Sólido"). NUNCA chame a primeira refeição do dia de "Lanche da Manhã" — a primeira refeição SEMPRE é Café da Manhã.
-- ⚠️ CEIA É OBRIGATÓRIA EM TODOS OS PLANOS (treino ou descanso). NUNCA omita a Ceia. Sempre inclua como ÚLTIMA refeição entre 21:30 e 23:00, com proteína de absorção lenta (caseína, cottage, iogurte grego, ricota, ovo) ± fibra/gordura boa. Se o treino é à noite e o pós-sólido coincide, use "Ceia / Pós-Treino Sólido".
+- ⚠️ CEIA É OBRIGATÓRIA EM TODOS OS PLANOS (treino ou descanso). NUNCA omita a Ceia. Sempre inclua como ÚLTIMA refeição do dia (maior horário), entre 21:30 e 23:00, e SEMPRE depois do Jantar com gap mínimo de 2h30 (Ceia ≥ Jantar + 2h30). Proteína de absorção lenta (caseína, cottage, iogurte grego, ricota, ovo) ± fibra/gordura boa. Se o treino é à noite e o pós-sólido coincide, use "Ceia / Pós-Treino Sólido" — ainda assim, deve ser a última refeição. PROIBIDO posicionar a Ceia ANTES do Jantar ou no MESMO horário do Jantar.
 - ⚠️ NÚMERO DE REFEIÇÕES: o plano pode ter ATÉ 8 refeições/dia. Se o paciente tem ${refeicoes} refeições no protocolo + treino com peri-workout (pré, intra, pós-imediato, pós-sólido), some TUDO (ex: 6 base + 2 peri = 8 refeições). NUNCA corte Ceia para caber em 6/7 — gere 8 se necessário.
 - ⚠️ INTRA-TREINO: só inclua a refeição "Intra-Treino" se o coach habilitou maltodextrina intra-treino (uses_intra_malto=true). Caso contrário, NÃO crie essa refeição.
 - Quando uma refeição padrão (almoço/jantar/ceia/lanche) COINCIDIR com função peri-workout, USE BARRA: "Almoço / Pré-Treino Sólido", "Jantar / Pós-Treino Sólido", "Ceia / Pós-Treino Sólido", "Café da Manhã / Pré-Treino Sólido".
@@ -2427,6 +2427,67 @@ AEJ não é refeição e nunca deve aparecer em refeicoes. Pós-Treino Imediato 
           });
           console.log(`[CEIA-FIX] injetada Ceia às 22:00 (estava ausente)`);
         }
+      }
+
+      // ── REPOSICIONAMENTO DA CEIA: deve ser SEMPRE a última refeição e vir APÓS o Jantar ──
+      // Considera o horário REAL do treino do dia (já presente no plano via Pós-Treino Sólido / Jantar).
+      // Regras:
+      //  • Ceia >= Jantar + 2h30 (mínimo) e dentro de [21:30, 23:30].
+      //  • Se Ceia for o "Pós-Treino Sólido" de treino noturno, mantém a tag "Ceia / Pós-Treino Sólido"
+      //    e apenas garante que ela seja a ÚLTIMA refeição do dia.
+      const refsArr = parsed.refeicoes as any[];
+      const idxCeia = refsArr.findIndex((m) =>
+        /\bceia\b/i.test(String(m?.refeicao || "")),
+      );
+      if (idxCeia >= 0) {
+        const ceia = refsArr[idxCeia];
+        const idxJantar = refsArr.findIndex(
+          (m, i) => i !== idxCeia && /\bjantar\b/i.test(String(m?.refeicao || "")),
+        );
+        const jantarMin = idxJantar >= 0 ? toMin3(refsArr[idxJantar]?.horario) : -1;
+        let ceiaMin = toMin3(ceia?.horario);
+
+        // Garante mínimo Jantar + 150min (2h30)
+        if (jantarMin > 0) {
+          const minPermitido = jantarMin + 150;
+          if (ceiaMin < minPermitido || ceiaMin <= jantarMin) {
+            ceiaMin = Math.max(minPermitido, 21 * 60 + 30);
+          }
+        }
+        // Janela alvo [21:30, 23:30]
+        if (ceiaMin < 21 * 60 + 30) ceiaMin = 21 * 60 + 30;
+        if (ceiaMin > 23 * 60 + 30) ceiaMin = 23 * 60 + 30;
+
+        // Ceia precisa ser estritamente posterior à maior horário entre as DEMAIS refeições
+        const maxOutro = Math.max(
+          ...refsArr
+            .map((m, i) => (i === idxCeia ? -1 : toMin3(m?.horario)))
+            .filter((v) => v >= 0),
+          -1,
+        );
+        if (maxOutro >= 0 && ceiaMin <= maxOutro) {
+          ceiaMin = Math.min(maxOutro + 30, 23 * 60 + 30);
+        }
+
+        const novoHorario = `${String(Math.floor(ceiaMin / 60)).padStart(2, "0")}:${String(ceiaMin % 60).padStart(2, "0")}`;
+        if (novoHorario !== ceia?.horario) {
+          console.log(`[CEIA-FIX] horário ajustado: ${ceia?.horario} → ${novoHorario} (jantar=${idxJantar >= 0 ? refsArr[idxJantar]?.horario : "n/a"})`);
+          ceia.horario = novoHorario;
+          // Atualiza o sufixo "(HH:MM)" no nome se existir
+          if (typeof ceia.refeicao === "string") {
+            ceia.refeicao = ceia.refeicao.replace(/\(\d{1,2}:\d{2}\)/, `(${novoHorario})`);
+          }
+        }
+
+        // Reordena por horário e renumera "Refeição N"
+        refsArr.sort((a, b) => toMin3(a?.horario) - toMin3(b?.horario));
+        let _i = 1;
+        refsArr.forEach((m) => {
+          if (typeof m?.refeicao === "string" && /Refei[çc][ãa]o\s*\d+/i.test(m.refeicao)) {
+            m.refeicao = m.refeicao.replace(/Refei[çc][ãa]o\s*\d+/i, `Refeição ${_i}`);
+          }
+          _i++;
+        });
       }
     }
 
