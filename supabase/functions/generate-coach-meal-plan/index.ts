@@ -1161,15 +1161,16 @@ ${glut4Text ? `BLOCO FISIOLÓGICO COMPLETO GERADO PARA REFERÊNCIA (use as quant
 - Se houver MÚLTIPLOS horários diferentes ao longo da semana (ex: seg 06:00, ter 18:00, qua 13:00), gere UM SUB-PLANO POR HORÁRIO DISTINTO de treino. Nomeie cada sub-plano com o horário real, ex: "PLANO — DIA DE TREINO MANHÃ (06:00)", "PLANO — DIA DE TREINO TARDE (13:00)", "PLANO — DIA DE TREINO NOITE (18:00)".
 - Se TODOS os dias de treino tiverem o MESMO horário, gere apenas 1 plano de treino chamado "PLANO — DIA DE TREINO (HH:mm)" com o horário REAL extraído do schedule.
 - Cada refeição peri-workout deve ter horário calculado a partir do "time" REAL do dia:
-  • Pré-treino sólido: time − 90min
-  • (opcional) Pré-treino líquido/whey: time − 30min
+  • Pré-treino sólido: time − 60min (EXATAMENTE 1h antes — não use 30min, não use 90min)
+  • (opcional) Pré-treino líquido/whey: time − 20min
   • Intra-treino: durante o treino
-  • Pós-treino imediato: time + duration_min + 0–30min
+  • Pós-treino imediato: time + duration_min + 0–30min (APENAS UMA refeição com este nome — NUNCA crie "Pós-IGF-1", "Pós-Treino 2", "Janela Anabólica" ou variantes; tudo deve ser consolidado em UMA única "Pós-Treino Imediato")
   • Pós-treino sólido: time + duration_min + 60–90min
   • Demais refeições: distribuídas ao longo do dia respeitando intervalos de ~3h
 - Se o treino for à TARDE/NOITE (>= 12:00), o café da manhã NÃO pode virar "pré-treino". Reorganize: café normal → almoço → pré-treino → pós-treino → ceia.
 - O nome de cada refeição DEVE conter o contexto peri-workout entre parênteses, ex: "Refeição 3 (12:00 — Pré-Treino Sólido)".
 - PROIBIDO: usar 05:00, 05:30, 06:00, 07:00 se o "time" REAL do schedule for diferente. Esta é a falha #1 a evitar.
+- PROIBIDO: criar 2 refeições pós-treino imediato. Se você precisa de uma janela anabólica adicional, ela é o "Pós-Treino Sólido" (60–90min depois) — nunca duplique o "imediato".
 
 🎯 REGRA DE INTEGRIDADE CALÓRICA (INVIOLÁVEL quando o coach define meta):
 - Se "Meta calórica definida pelo coach" estiver presente, o campo "calorias_totais" do JSON DEVE bater a meta com tolerância máxima de ±3%.
