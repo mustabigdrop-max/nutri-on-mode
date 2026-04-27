@@ -392,55 +392,74 @@ const findBlockByHorario = (horario?: string) => {
 };
 
 // Enriquece os substitutos de um alimento com itens do banco V2 (mesma refeição)
+// IMPORTANTE: filtra apenas itens do MESMO grupo macronutriente do alimento original
+// (carboidrato → só carboidratos; proteína → só proteínas; gordura → só gorduras).
 const enrichSubstitutes = (
   alimento: MealAlimento,
   mealHorario?: string
 ): SubstituicaoItem[] => {
-  const original: SubstituicaoItem[] = (alimento.substituicoes || []).map((s) => ({
-    ...s,
-    grupo: inferGrupo(s),
-  }));
+  // grupo do alimento original (referência para filtragem)
+  const grupoRef: GrupoSub = inferGrupo({ alimento: alimento.alimento } as SubstituicaoItem);
+
+  const original: SubstituicaoItem[] = (alimento.substituicoes || [])
+    .map((s) => ({ ...s, grupo: inferGrupo(s) }))
+    // descarta substitutos de grupo diferente vindos da IA (ex.: gordura no lugar de carbo)
+    .filter((s) => grupoRef === "outro" || s.grupo === grupoRef || s.grupo === "outro");
+
   const block = findBlockByHorario(mealHorario);
   if (!block) return original;
 
-  // Tenta achar o "alimento principal" correspondente no bloco para puxar substitutos diretos
   const aliNorm = norm(alimento.alimento);
   const matchPrincipal = block.alimentos.find((a) => {
     const n = norm(a.nome);
     return n === aliNorm || n.includes(aliNorm) || aliNorm.includes(n);
   });
 
-  // Pool de candidatos: substitutos do principal correspondente + todos os substitutos do bloco
   const pool: { nome: string; medida: string; gramatura: number; grupo: GrupoSub; nota: string }[] = [];
   const pushItem = (s: { nome: string; medida_caseira: string; gramatura_g: number; categoria: FoodCategoryV2; nota: string }) => {
+    const grupo = CATEGORY_TO_GRUPO[s.categoria] || "outro";
+    // ⛔ só aceita substitutos do mesmo macronutriente do alimento original
+    if (grupoRef !== "outro" && grupo !== grupoRef) return;
     pool.push({
       nome: s.nome,
       medida: s.medida_caseira,
       gramatura: s.gramatura_g,
-      grupo: CATEGORY_TO_GRUPO[s.categoria] || "outro",
+      grupo,
       nota: s.nota,
     });
   };
+
+  // Inferir grupo de um MainFoodV2 a partir do nome ou da categoria do 1º substituto
+  const grupoDoPrincipal = (a: typeof block.alimentos[number]): GrupoSub => {
+    const g = inferGrupo({ alimento: a.nome } as SubstituicaoItem);
+    if (g !== "outro") return g;
+    const cat = a.substitutos?.[0]?.categoria as FoodCategoryV2 | undefined;
+    return cat ? (CATEGORY_TO_GRUPO[cat] || "outro") : "outro";
+  };
+
   if (matchPrincipal) {
     matchPrincipal.substitutos.forEach(pushItem);
-    // Também inclui o próprio principal como variação se for diferente
     if (norm(matchPrincipal.nome) !== aliNorm) {
-      pool.push({
-        nome: matchPrincipal.nome,
-        medida: matchPrincipal.medida_caseira,
-        gramatura: matchPrincipal.gramatura_g,
-        grupo: "proteina",
-        nota: matchPrincipal.nota_nutricional,
-      });
+      const grupoPrinc = grupoDoPrincipal(matchPrincipal);
+      if (grupoRef === "outro" || grupoPrinc === grupoRef) {
+        pool.push({
+          nome: matchPrincipal.nome,
+          medida: matchPrincipal.medida_caseira,
+          gramatura: matchPrincipal.gramatura_g,
+          grupo: grupoPrinc,
+          nota: matchPrincipal.nota_nutricional,
+        });
+      }
     }
   }
-  // Adiciona substitutos de outros principais da mesma refeição (variação extra)
+  // Variação extra: outros principais da mesma refeição — SOMENTE se forem do mesmo grupo
   block.alimentos.forEach((a) => {
     if (matchPrincipal && a.id === matchPrincipal.id) return;
+    const grupoA = grupoDoPrincipal(a);
+    if (grupoRef !== "outro" && grupoA !== grupoRef) return;
     a.substitutos.forEach(pushItem);
   });
 
-  // Dedup por nome normalizado, evitando colidir com originais da IA
   const seen = new Set<string>();
   original.forEach((s) => seen.add(norm(s.alimento)));
   const extras: SubstituicaoItem[] = [];
@@ -457,6 +476,20 @@ const enrichSubstitutes = (
     });
   }
   return [...original, ...extras];
+};
+
+// Remove o "(HH:MM ...)" do nome da refeição para evitar duplicação com o badge de horário
+const stripHorarioFromTitle = (titulo: string, horario?: string): string => {
+  if (!titulo) return titulo;
+  let t = titulo;
+  if (horario) {
+    // remove "(HH:MM - ...)" inteiro se começar com o mesmo horário
+    const re = new RegExp(`\\s*\\(\\s*${horario.replace(/[.*+?^${}()|[\\]\\\\]/g, "\\$&")}\\s*[-–—]?\\s*([^)]*)\\)\\s*$`);
+    t = t.replace(re, (_m, resto) => (resto && resto.trim() ? ` — ${resto.trim()}` : ""));
+  }
+  // fallback: remove qualquer "(HH:MM ...)" no fim
+  t = t.replace(/\s*\(\s*\d{1,2}:\d{2}\s*[-–—]?\s*([^)]*)\)\s*$/, (_m, resto) => (resto && resto.trim() ? ` — ${resto.trim()}` : ""));
+  return t.trim();
 };
 
 
@@ -478,7 +511,7 @@ const MealCard = ({ meal, index, onSwap }: MealCardProps) => {
       <div style={{ padding: "12px 16px", borderBottom: `1px solid ${T.border}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <div style={{ width: 3, height: 20, background: color, borderRadius: 2 }} />
-          <span style={{ fontSize: 14, fontWeight: 600, color: T.text }}>{meal.refeicao}</span>
+          <span style={{ fontSize: 14, fontWeight: 600, color: T.text }}>{stripHorarioFromTitle(meal.refeicao, meal.horario)}</span>
           {meal.horario && <span style={{ fontSize: 11, color: T.muted, background: T.bg3, padding: "2px 8px", borderRadius: 999 }}>{meal.horario}</span>}
         </div>
         {meal.calorias && (
