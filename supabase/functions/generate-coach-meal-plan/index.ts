@@ -1226,6 +1226,8 @@ A nomenclatura é PADRÃO BRASILEIRO + função peri-workout. NUNCA use rótulos
 REGRAS DE NOMENCLATURA:
 - Formato do nome: "Refeição N — Nome (HH:MM)" — ex: "Refeição 3 — Almoço / Pré-Treino Sólido (12:30)".
 - O nome PRINCIPAL deve ser SEMPRE um dos 6 nomes brasileiros: Café da Manhã, Lanche da Manhã, Almoço, Lanche da Tarde, Jantar, Ceia. As refeições peri-workout extras (Intra-Treino, Pós-Treino Imediato, Pós-Treino Sólido) só aparecem QUANDO houver treino e GLUT-4 ativo.
+- ⚠️ CAFÉ DA MANHÃ É OBRIGATÓRIO EM TODOS OS PLANOS (treino ou descanso). NUNCA omita o Café da Manhã. Se o treino é à tarde/noite, ele aparece como primeira refeição (~07:00). Se o treino é manhã cedo, ele se funde com o pré-treino sólido ("Café da Manhã / Pré-Treino Sólido"). NUNCA chame a primeira refeição do dia de "Lanche da Manhã" — a primeira refeição SEMPRE é Café da Manhã.
+- ⚠️ INTRA-TREINO: só inclua a refeição "Intra-Treino" se o coach habilitou maltodextrina intra-treino (uses_intra_malto=true). Caso contrário, NÃO crie essa refeição.
 - Quando uma refeição padrão (almoço/jantar/ceia/lanche) COINCIDIR com função peri-workout, USE BARRA: "Almoço / Pré-Treino Sólido", "Jantar / Pós-Treino Sólido", "Ceia / Pós-Treino Sólido", "Café da Manhã / Pré-Treino Sólido".
 - PROIBIDO: usar "Almoço Cedo", "Pré-Treino Sólido" sozinho como nome principal, "Refeição 1" sem nome funcional, ou criar "Almoço" + "Pré-Treino" como duas refeições separadas a menos de 2h30 — eles são A MESMA refeição com função dupla.
 - PROIBIDO: usar 05:00, 05:30, 06:00, 07:00 se o "time" REAL do schedule for diferente.
