@@ -1197,35 +1197,22 @@ PERFIL FISIOLÓGICO AVANÇADO (aplicar protocolos do system prompt conforme flag
 - Medidas Caseiras (Nutrition Coach IA): ${perfilFisiologico?.medidas_caseiras ? "true" : "false"}
 
 ${perfilFisiologico?.variedade_funcional ? `
-🌿 PROTOCOLO VARIEDADE FUNCIONAL ATIVO — ALTA VARIEDADE SEM ESTOURAR O JSON:
-Objetivo semanal: ≥20 espécies vegetais, ≥12 frutas, ≥12 proteínas, ≥6 carboidratos, ≥5 gorduras, ≥4 leguminosas e fermentados em ≥5 dias/semana.
+🌿 VARIEDADE FUNCIONAL — JSON ENXUTO (regras curtas para evitar timeout):
+Meta semanal: ≥20 vegetais, ≥12 frutas, ≥12 proteínas, ≥6 carbos, ≥5 gorduras, ≥4 leguminosas, fermentados ≥5d/sem.
+Frutas: 6 categorias (vermelhas, cítricas, enzimáticas, prebióticas, tropicais, secas). Use ≥2 categorias/dia, sem repetir fruta no mesmo dia.
+Rotação: não repetir proteína nem combo proteína+CHO em dias seguidos.
 
-FRUTAS: cobrir 6 categorias (vermelhas/roxas, cítricas, enzimáticas, prebióticas, tropicais, secas). No dia gerado, use pelo menos 2 frutas de categorias diferentes. Não repita a mesma fruta no mesmo dia.
+SUBSTITUIÇÕES (compacto):
+- Para cada alimento, EXATAMENTE 2 substitutos do mesmo grupo (proteína↔proteína, carbo↔carbo, fruta↔fruta, gordura↔gordura, vegetal↔vegetal, fermentado↔fermentado, tempero↔tempero). Nunca vazio.
+- Cada substituto: { "alimento", "quantidade_g", "grupo" }. SEM "observacao", SEM "quantidade" textual quando idêntica a quantidade_g (ex.: "120g").
+- Fermentados: rotacionar entre kefir, iogurte grego, kombucha, chucrute, kimchi, missô, kefir de água.
+- Temperos: combos curtos (cúrcuma+pimenta, gengibre+limão, alecrim+alho, orégano+manjericão, curry+gengibre).
 
-ROTAÇÃO: não repetir proteína principal nem combinação proteína+CHO em dias consecutivos. Varie saladas/vegetais, temperos e fontes de gordura.
+TEMPERO FUNCIONAL: 1 item por refeição salgada, nome curto ("Tempero: cúrcuma+pimenta"), quantidade "1 col chá".
+MODO DE PREPARO: campo "modo_preparo" por refeição principal, MÁX 120 caracteres, sem listas — frase única com técnica+tempo. Ex.: "Grelhar frango 3min/lado, vegetais no vapor 4min, finalizar com limão."
+FERMENTADOS: ≥1 item/dia quando viável; lactose-restrita → kefir de água, kombucha, chucrute, kimchi, missô.
 
-SUBSTITUIÇÕES — REGRA COMPACTA PARA EVITAR TIMEOUT:
-- Para CADA alimento, preencher "substituicoes" com 3 a 4 opções equivalentes, nunca vazio.
-- Substitutos devem ser do mesmo grupo: proteína↔proteína, carbo↔carbo, fruta↔fruta, gordura↔gordura, vegetal↔vegetal, fermentado↔fermentado, tempero↔tempero.
-- Para frutas, as 3–4 opções devem cobrir categorias funcionais diferentes quando possível.
-- Para fermentados, usar 3–4 opções entre kefir, iogurte natural/grego, kombucha, chucrute, kimchi, missô, kefir de água, iogurte de coco fermentado.
-- Para temperos funcionais, usar 3–4 combos entre cúrcuma+pimenta, gengibre+limão, alecrim+alho, orégano+manjericão, coentro+cominho, hortelã+limão, curry+gengibre.
-- Cada substituto: { "alimento", "quantidade", "quantidade_g", "observacao", "grupo" }. Observação curta (máx. 90 caracteres).
-
-TEMPEROS FUNCIONAIS:
-- Toda refeição salgada deve incluir 1 item no array "alimentos" chamado "Tempero funcional: ..." com 3–4 substitutos.
-- Quantidade compacta: ex. "1 colher chá + ervas/alho/limão".
-
-MODO DE PREPARO:
-- Toda refeição principal deve incluir "modo_preparo" na própria refeição.
-- Máximo 180 caracteres: técnica + ordem + tempo + finalização. Ex: "Refogar alho/cebola 1min, grelhar frango 3min/lado, cozinhar legumes no vapor 4min e finalizar com limão/ervas."
-
-FERMENTADOS:
-- Incluir pelo menos 1 item fermentado no dia quando compatível com a rotina, com 3–4 substitutos fermentados.
-- Se houver restrição à lactose, priorizar kefir de água, kombucha, chucrute, kimchi, missô ou iogurte vegetal fermentado.
-
-SAÍDA METADADOS:
-Adicionar "variedade_aplicada": { "frutas_distintas": N, "vegetais_distintos": N, "proteinas_distintas": N, "carbos_distintos": N, "categorias_frutas_cobertas": ["vermelhas","citricas","enzimaticas","prebioticas","tropicais","secas"], "temperos_funcionais": true, "fermentados_com_substitutos": true }.
+METADADOS: "variedade_aplicada": { "frutas_distintas": N, "vegetais_distintos": N, "proteinas_distintas": N, "carbos_distintos": N, "temperos_funcionais": true, "fermentados_com_substitutos": true }.
 ` : ""}
 
 
