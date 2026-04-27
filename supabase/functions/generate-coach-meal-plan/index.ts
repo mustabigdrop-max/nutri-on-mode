@@ -2429,6 +2429,8 @@ AEJ não é refeição e nunca deve aparecer em refeicoes. Pós-Treino Imediato 
         }
       }
     }
+
+    // ── AJUSTE PÓS-PROCESSAMENTO: escala gramaturas para bater alvo calórico ±3% ──
     // Se o coach definiu meta calórica e o total da IA ficou abaixo da banda inferior,
     // multiplica proporcionalmente todas as gramaturas (exceto pós-treino imediato, já validado)
     // até o total cair dentro de ±3% do alvo. Devolve o relatório do ajuste no JSON.
