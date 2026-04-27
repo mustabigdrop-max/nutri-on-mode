@@ -1167,12 +1167,70 @@ ${glut4Text ? `BLOCO FISIOLÓGICO COMPLETO GERADO PARA REFERÊNCIA (use as quant
   • Pós-treino imediato: time + duration_min + 0–30min (APENAS UMA refeição com este nome — NUNCA crie "Pós-IGF-1", "Pós-Treino 2", "Janela Anabólica" ou variantes; tudo deve ser consolidado em UMA única "Pós-Treino Imediato")
   • Pós-treino sólido: time + duration_min + 60–90min
   • Demais refeições: distribuídas ao longo do dia respeitando intervalos MÍNIMOS de 2h30 entre refeições principais (3h é o ideal).
-- ⚠️ ESPAÇAMENTO MÍNIMO ENTRE REFEIÇÕES: NUNCA coloque duas refeições com menos de 2h30 de diferença. Se o pré-treino fica em "time − 60min" e o almoço ficaria a menos de 2h30 antes dele, REORGANIZE: o almoço deve ser ANTECIPADO e um LANCHE DA MANHÃ deve ser inserido entre café e almoço (ou entre almoço e pré-treino) para preencher o intervalo. Exemplo concreto: treino 13:30 → pré-treino 12:30 → almoço NÃO pode ser 11:00 (1h30 do pré). Solução: café 07:00 → lanche manhã 09:30 → almoço 10:30 (2h do pré ainda é apertado — prefira mover almoço para 10:00 OU eliminar almoço e tratar o pré-treino como refeição substancial). Esquema ideal para treino 13:30: café 07:00 → lanche manhã 10:00 → almoço/refeição principal cedo 10:30 → lanche pré-treino 12:30 → intra 13:45 → pós-imediato 14:30 → pós-sólido 15:30 → jantar 19:00 → ceia 22:00.
-- Se o treino for à TARDE/NOITE (>= 12:00), o café da manhã NÃO pode virar "pré-treino". Reorganize: café normal → lanche manhã → almoço cedo → pré-treino → pós-treino → ceia.
-- O nome de cada refeição DEVE conter o contexto peri-workout entre parênteses, ex: "Refeição 3 (12:00 — Pré-Treino Sólido)".
-- PROIBIDO: usar 05:00, 05:30, 06:00, 07:00 se o "time" REAL do schedule for diferente. Esta é a falha #1 a evitar.
-- PROIBIDO: criar 2 refeições pós-treino imediato. Se você precisa de uma janela anabólica adicional, ela é o "Pós-Treino Sólido" (60–90min depois) — nunca duplique o "imediato".
-- PROIBIDO: deixar gap menor que 2h30 entre quaisquer duas refeições — sempre insira um lanche intermediário ou redistribua horários.
+- ⚠️ ESPAÇAMENTO MÍNIMO ENTRE REFEIÇÕES: NUNCA coloque duas refeições com menos de 2h30 de diferença. Sempre insira um lanche intermediário ou redistribua horários.
+
+🍽️ NOMENCLATURA OBRIGATÓRIA DAS REFEIÇÕES (use os nomes EXATOS — não invente "Almoço Cedo", "Refeição 1", etc.):
+A nomenclatura é PADRÃO BRASILEIRO + função peri-workout. NUNCA use rótulos como "Almoço Cedo", "Refeição da Manhã", "Lanche Pré-Treino" como nome principal — o pré-treino sólido É o almoço quando ele cai 60min antes do treino.
+
+📋 ESQUEMA POR HORÁRIO DE TREINO (siga RIGOROSAMENTE — apenas substitua HH:MM pelo "time" REAL do schedule):
+
+▸ TREINO MANHÃ (06:00–10:00) — ex: treino 07:00
+   1. Café da Manhã (Pré-Treino Sólido) — 06:00 (time − 60min)
+   2. Intra-Treino — 07:20
+   3. Pós-Treino Imediato (Janela GLUT-4) — 08:30
+   4. Pós-Treino Sólido — 10:00
+   5. Almoço — 12:30
+   6. Lanche da Tarde — 16:00
+   7. Jantar — 19:30
+   8. Ceia — 22:00
+
+▸ TREINO MEIO-DIA/INÍCIO TARDE (11:00–14:00) — ex: treino 13:30 ✅ (caso do usuário)
+   1. Café da Manhã (Desjejum) — 07:00
+   2. Lanche da Manhã — 10:00
+   3. Almoço (Pré-Treino Sólido) — 12:30 (time − 60min) ← O ALMOÇO É O PRÉ-TREINO
+   4. Intra-Treino — 13:45 (no meio do treino)
+   5. Pós-Treino Imediato (Janela GLUT-4) — 14:45 (time + duration + 0–30min)
+   6. Pós-Treino Sólido — 16:00 (60–90min após o imediato)
+   7. Jantar — 19:30
+   8. Ceia — 22:00
+
+▸ TREINO TARDE (15:00–18:00) — ex: treino 17:00
+   1. Café da Manhã — 07:00
+   2. Lanche da Manhã — 10:00
+   3. Almoço — 12:30
+   4. Lanche da Tarde (Pré-Treino Sólido) — 16:00 (time − 60min)
+   5. Intra-Treino — 17:20
+   6. Pós-Treino Imediato (Janela GLUT-4) — 18:30
+   7. Jantar (Pós-Treino Sólido) — 20:00 ← O JANTAR é o pós-sólido
+   8. Ceia — 22:30
+
+▸ TREINO NOITE (>= 19:00) — ex: treino 20:00
+   1. Café da Manhã — 07:00
+   2. Lanche da Manhã — 10:00
+   3. Almoço — 12:30
+   4. Lanche da Tarde — 16:00
+   5. Jantar (Pré-Treino Sólido) — 19:00 (time − 60min) ← O JANTAR é o pré-sólido
+   6. Intra-Treino — 20:20
+   7. Pós-Treino Imediato (Janela GLUT-4) — 21:30
+   8. Ceia (Pós-Treino Sólido) — 22:30 ← A CEIA é o pós-sólido
+
+▸ DIA DE DESCANSO (sem treino):
+   1. Café da Manhã — 07:00
+   2. Lanche da Manhã — 10:00
+   3. Almoço — 12:30
+   4. Lanche da Tarde — 16:00
+   5. Jantar — 19:30
+   6. Ceia — 22:00
+   (sem intra-treino, sem pós-imediato, sem pós-sólido — redistribuir CHO conforme regra de cycling)
+
+REGRAS DE NOMENCLATURA:
+- Formato do nome: "Refeição N — Nome (HH:MM)" — ex: "Refeição 3 — Almoço / Pré-Treino Sólido (12:30)".
+- O nome PRINCIPAL deve ser SEMPRE um dos 6 nomes brasileiros: Café da Manhã, Lanche da Manhã, Almoço, Lanche da Tarde, Jantar, Ceia. As refeições peri-workout extras (Intra-Treino, Pós-Treino Imediato, Pós-Treino Sólido) só aparecem QUANDO houver treino e GLUT-4 ativo.
+- Quando uma refeição padrão (almoço/jantar/ceia/lanche) COINCIDIR com função peri-workout, USE BARRA: "Almoço / Pré-Treino Sólido", "Jantar / Pós-Treino Sólido", "Ceia / Pós-Treino Sólido", "Café da Manhã / Pré-Treino Sólido".
+- PROIBIDO: usar "Almoço Cedo", "Pré-Treino Sólido" sozinho como nome principal, "Refeição 1" sem nome funcional, ou criar "Almoço" + "Pré-Treino" como duas refeições separadas a menos de 2h30 — eles são A MESMA refeição com função dupla.
+- PROIBIDO: usar 05:00, 05:30, 06:00, 07:00 se o "time" REAL do schedule for diferente.
+- PROIBIDO: criar 2 refeições pós-treino imediato.
+- PROIBIDO: deixar gap menor que 2h30 entre quaisquer duas refeições.
 
 🎯 REGRA DE INTEGRIDADE CALÓRICA (INVIOLÁVEL quando o coach define meta):
 - Se "Meta calórica definida pelo coach" estiver presente, o campo "calorias_totais" do JSON DEVE bater a meta com tolerância máxima de ±3%.
