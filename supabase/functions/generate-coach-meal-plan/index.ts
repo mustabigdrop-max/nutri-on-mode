@@ -1398,6 +1398,7 @@ Responda APENAS com UM ÚNICO objeto JSON válido (root é um único "{...}"). N
       "horario": "string",
       "calorias": number,
       "macros": { "proteina": number, "carboidrato": number, "gordura": number },
+      "modo_preparo": "string curto quando variedade_funcional estiver ativo; null nos demais casos",
       "alimentos": [
         {
           "alimento": "string",
