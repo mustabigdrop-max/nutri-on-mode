@@ -9,7 +9,7 @@ import {
 } from "./meal_timing.ts";
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
-const last = (refs: Refeicao[]) => refs[refs.length - 1];
+const last = <T,>(arr: T[]): T => arr[arr.length - 1];
 const findCeia = (refs: Refeicao[]) =>
   refs.find((m) => /\bceia\b/i.test(String(m.refeicao || "")));
 const findJantar = (refs: Refeicao[]) =>
