@@ -1166,11 +1166,13 @@ ${glut4Text ? `BLOCO FISIOLÓGICO COMPLETO GERADO PARA REFERÊNCIA (use as quant
   • Intra-treino: durante o treino
   • Pós-treino imediato: time + duration_min + 0–30min (APENAS UMA refeição com este nome — NUNCA crie "Pós-IGF-1", "Pós-Treino 2", "Janela Anabólica" ou variantes; tudo deve ser consolidado em UMA única "Pós-Treino Imediato")
   • Pós-treino sólido: time + duration_min + 60–90min
-  • Demais refeições: distribuídas ao longo do dia respeitando intervalos de ~3h
-- Se o treino for à TARDE/NOITE (>= 12:00), o café da manhã NÃO pode virar "pré-treino". Reorganize: café normal → almoço → pré-treino → pós-treino → ceia.
+  • Demais refeições: distribuídas ao longo do dia respeitando intervalos MÍNIMOS de 2h30 entre refeições principais (3h é o ideal).
+- ⚠️ ESPAÇAMENTO MÍNIMO ENTRE REFEIÇÕES: NUNCA coloque duas refeições com menos de 2h30 de diferença. Se o pré-treino fica em "time − 60min" e o almoço ficaria a menos de 2h30 antes dele, REORGANIZE: o almoço deve ser ANTECIPADO e um LANCHE DA MANHÃ deve ser inserido entre café e almoço (ou entre almoço e pré-treino) para preencher o intervalo. Exemplo concreto: treino 13:30 → pré-treino 12:30 → almoço NÃO pode ser 11:00 (1h30 do pré). Solução: café 07:00 → lanche manhã 09:30 → almoço 10:30 (2h do pré ainda é apertado — prefira mover almoço para 10:00 OU eliminar almoço e tratar o pré-treino como refeição substancial). Esquema ideal para treino 13:30: café 07:00 → lanche manhã 10:00 → almoço/refeição principal cedo 10:30 → lanche pré-treino 12:30 → intra 13:45 → pós-imediato 14:30 → pós-sólido 15:30 → jantar 19:00 → ceia 22:00.
+- Se o treino for à TARDE/NOITE (>= 12:00), o café da manhã NÃO pode virar "pré-treino". Reorganize: café normal → lanche manhã → almoço cedo → pré-treino → pós-treino → ceia.
 - O nome de cada refeição DEVE conter o contexto peri-workout entre parênteses, ex: "Refeição 3 (12:00 — Pré-Treino Sólido)".
 - PROIBIDO: usar 05:00, 05:30, 06:00, 07:00 se o "time" REAL do schedule for diferente. Esta é a falha #1 a evitar.
 - PROIBIDO: criar 2 refeições pós-treino imediato. Se você precisa de uma janela anabólica adicional, ela é o "Pós-Treino Sólido" (60–90min depois) — nunca duplique o "imediato".
+- PROIBIDO: deixar gap menor que 2h30 entre quaisquer duas refeições — sempre insira um lanche intermediário ou redistribua horários.
 
 🎯 REGRA DE INTEGRIDADE CALÓRICA (INVIOLÁVEL quando o coach define meta):
 - Se "Meta calórica definida pelo coach" estiver presente, o campo "calorias_totais" do JSON DEVE bater a meta com tolerância máxima de ±3%.
