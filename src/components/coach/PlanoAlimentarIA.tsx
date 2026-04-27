@@ -429,10 +429,18 @@ const enrichSubstitutes = (
     });
   };
 
+  // Inferir grupo de um MainFoodV2 a partir do nome ou da categoria do 1º substituto
+  const grupoDoPrincipal = (a: typeof block.alimentos[number]): GrupoSub => {
+    const g = inferGrupo({ alimento: a.nome } as SubstituicaoItem);
+    if (g !== "outro") return g;
+    const cat = a.substitutos?.[0]?.categoria as FoodCategoryV2 | undefined;
+    return cat ? (CATEGORY_TO_GRUPO[cat] || "outro") : "outro";
+  };
+
   if (matchPrincipal) {
     matchPrincipal.substitutos.forEach(pushItem);
     if (norm(matchPrincipal.nome) !== aliNorm) {
-      const grupoPrinc = CATEGORY_TO_GRUPO[matchPrincipal.categoria as FoodCategoryV2] || "proteina";
+      const grupoPrinc = grupoDoPrincipal(matchPrincipal);
       if (grupoRef === "outro" || grupoPrinc === grupoRef) {
         pool.push({
           nome: matchPrincipal.nome,
@@ -444,10 +452,10 @@ const enrichSubstitutes = (
       }
     }
   }
-  // Variação extra: outros principais da mesma refeição — mas SOMENTE se forem do mesmo grupo
+  // Variação extra: outros principais da mesma refeição — SOMENTE se forem do mesmo grupo
   block.alimentos.forEach((a) => {
     if (matchPrincipal && a.id === matchPrincipal.id) return;
-    const grupoA = CATEGORY_TO_GRUPO[a.categoria as FoodCategoryV2] || "outro";
+    const grupoA = grupoDoPrincipal(a);
     if (grupoRef !== "outro" && grupoA !== grupoRef) return;
     a.substitutos.forEach(pushItem);
   });
