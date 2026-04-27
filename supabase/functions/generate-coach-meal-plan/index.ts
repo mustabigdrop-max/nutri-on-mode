@@ -1468,9 +1468,81 @@ ${perfilFisiologico?.modo_economico ? `
 - Todos os valores numéricos em BRL, com no máximo 2 casas decimais. Sem string, apenas números no JSON.
 ` : ""}`;
 
-    // Retry enxuto + modelos rápidos: evita 504 quando variedade funcional aumenta o JSON.
-    // A saída foi compactada acima; Pro tende a exceder o tempo da função em planos grandes.
-    const MODELS_FALLBACK = ["google/gemini-2.5-flash", "google/gemini-2.5-flash-lite"];
+    const buildFallbackMealPlan = (reason: string) => {
+      const targetKcal = Math.round(calc?.metaKcal || Number(calorias) || 2200);
+      const prot = Math.round(calc?.proteinaG || ((Number(peso) || 75) * 2));
+      const carb = Math.round(calc?.carboG || Math.max(120, (targetKcal - prot * 4 - targetKcal * 0.25) / 4));
+      const fat = Math.round(calc?.gorduraG || Math.max(45, (targetKcal - prot * 4 - carb * 4) / 9));
+      const count = Math.max(3, Math.min(7, Number(refeicoes) || calc?.refeicoesRecomendadas || 5));
+      const horarios = ["08:30", "10:30", "12:30", "15:30", "17:30", "20:30", "22:30"];
+      const labels = ["R1 — Café da manhã", "R2 — Lanche da manhã", "R3 — Almoço", "R4 — Lanche / Pré-treino", "R5 — Pós-treino", "R6 — Jantar", "R7 — Ceia"];
+      const ratiosBase = [0.18, 0.12, 0.24, 0.14, 0.16, 0.12, 0.04].slice(0, count);
+      const ratioSum = ratiosBase.reduce((a, b) => a + b, 0) || 1;
+      const templates = [
+        ["Ovos inteiros", "Aveia", "Banana"],
+        ["Iogurte natural", "Fruta", "Castanhas"],
+        ["Frango grelhado", "Arroz", "Feijão", "Vegetais", "Tempero funcional: cúrcuma + pimenta-preta"],
+        ["Whey protein", "Tapioca", "Banana"],
+        ["Tilápia", "Batata-doce", "Legumes", "Tempero funcional: alho + limão"],
+        ["Patinho moído", "Arroz ou mandioca", "Salada com azeite", "Tempero funcional: ervas + alho"],
+        ["Cottage ou iogurte", "Chia"],
+      ];
+      return {
+        resumo: {
+          nome: nome || "Paciente",
+          objetivo: objetivo || "Plano alimentar",
+          calorias_totais: targetKcal,
+          proteina_total: prot,
+          carboidrato_total: carb,
+          gordura_total: fat,
+          tmb: calc?.tmb || 0,
+          get: calc?.getFarma || targetKcal,
+          imc,
+          observacao_protocolo: "Plano seguro gerado com cálculo determinístico após indisponibilidade temporária da IA.",
+        },
+        refeicoes: ratiosBase.map((ratio, i) => {
+          const r = ratio / ratioSum;
+          return {
+            refeicao: labels[i],
+            horario: horarios[i],
+            calorias: Math.round(targetKcal * r),
+            macros: { proteina: Math.round(prot * r), carboidrato: Math.round(carb * r), gordura: Math.round(fat * r) },
+            modo_preparo: perfilFisiologico?.variedade_funcional ? "Grelhar/refogar proteína, cozinhar carbo, inserir vegetais e finalizar com tempero funcional." : null,
+            alimentos: templates[i].map((alimento) => ({
+              alimento,
+              quantidade: "ajustar pela meta da refeição",
+              quantidade_g: null,
+              observacao: "Base técnica ajustável pelo coach.",
+              substituicoes: [
+                { alimento: "Frango / tilápia / patinho", quantidade: "porção equivalente", quantidade_g: null, observacao: "troca proteica equivalente", grupo: "proteina" },
+                { alimento: "Arroz / batata / mandioca", quantidade: "porção equivalente", quantidade_g: null, observacao: "troca de carboidrato equivalente", grupo: "carbo" },
+                { alimento: "Azeite / castanhas / abacate", quantidade: "porção equivalente", quantidade_g: null, observacao: "troca de gordura equivalente", grupo: "gordura" },
+              ],
+            })),
+          };
+        }),
+        suplementacao: [],
+        dica_mce: {
+          mindset: "Executar o plano por horários e revisar aderência diariamente.",
+          comportamento: "Manter preparo simples e repetir bases alimentares seguras.",
+          execucao: "Coach deve ajustar gramagens finas conforme resposta do paciente.",
+        },
+        alerta_coach: `Fallback ativado: ${reason.slice(0, 120)}`,
+        fallback_gerado: true,
+      };
+    };
+
+    // Retry enxuto + prompt compacto: evita timeout quando variedade funcional aumenta o JSON.
+    // O SYSTEM_PROMPT completo contém um banco alimentar grande; com variedade ativa, o userPrompt
+    // já carrega as regras necessárias, então usamos um sistema curto para reduzir latência.
+    const COMPACT_SYSTEM_PROMPT = `Você é o NutriSync Elite, gerador técnico de plano alimentar para coach.
+Responda APENAS com um único JSON válido, sem markdown.
+Siga rigorosamente horários reais do treino, macros/calorias calculados, restrições, medidas caseiras e regras peri-workout do prompt do usuário.
+AEJ não é refeição e nunca deve aparecer em refeicoes. Pós-Treino Imediato deve ser único.`;
+    const activeSystemPrompt = perfilFisiologico?.variedade_funcional || perfilFisiologico?.protocolo_microbiota || perfilFisiologico?.medidas_caseiras
+      ? COMPACT_SYSTEM_PROMPT
+      : SYSTEM_PROMPT;
+    const MODELS_FALLBACK = ["google/gemini-3-flash-preview", "google/gemini-2.5-flash-lite"];
     let response: Response | null = null;
     let lastErrorStatus = 0;
     let lastErrorBody = "";
@@ -1488,10 +1560,10 @@ ${perfilFisiologico?.modo_economico ? `
             body: JSON.stringify({
               model,
               messages: [
-                { role: "system", content: SYSTEM_PROMPT },
+                { role: "system", content: activeSystemPrompt },
                 { role: "user", content: userPrompt },
               ],
-              max_tokens: 18000,
+              max_tokens: perfilFisiologico?.variedade_funcional ? 12000 : 16000,
               response_format: { type: "json_object" },
             }),
           });
@@ -1536,10 +1608,9 @@ ${perfilFisiologico?.modo_economico ? `
         });
       }
       console.error("AI gateway falhou em todos os modelos. Último status:", lastErrorStatus, lastErrorBody.substring(0, 500));
-      return new Response(JSON.stringify({
-        error: "O serviço de IA está temporariamente indisponível (erro " + (lastErrorStatus || "rede") + "). Aguarde alguns segundos e tente novamente.",
-      }), {
-        status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      const fallbackPlan = buildFallbackMealPlan("serviço de IA temporariamente indisponível");
+      return new Response(JSON.stringify({ plan: fallbackPlan, adjustmentId: null }), {
+        status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
@@ -1635,69 +1706,6 @@ ${perfilFisiologico?.modo_economico ? `
         console.warn(`[parser] múltiplos objetos JSON detectados (${candidates.length}); selecionado ${withRefeicoes.length > 0 ? "com refeicoes" : "o maior"} (${clean.length} chars)`);
       }
     }
-
-    const buildFallbackMealPlan = (reason: string) => {
-      const targetKcal = Math.round(calc?.metaKcal || Number(calorias) || 2200);
-      const prot = Math.round(calc?.proteinaG || ((Number(peso) || 75) * 2));
-      const carb = Math.round(calc?.carboG || Math.max(120, (targetKcal - prot * 4 - targetKcal * 0.25) / 4));
-      const fat = Math.round(calc?.gorduraG || Math.max(45, (targetKcal - prot * 4 - carb * 4) / 9));
-      const count = Math.max(3, Math.min(7, Number(refeicoes) || calc?.refeicoesRecomendadas || 5));
-      const horarios = ["08:30", "10:30", "12:30", "15:30", "17:30", "20:30", "22:30"];
-      const labels = ["R1 — Café da manhã", "R2 — Lanche da manhã", "R3 — Almoço", "R4 — Lanche / Pré-treino", "R5 — Pós-treino", "R6 — Jantar", "R7 — Ceia"];
-      const ratiosBase = [0.18, 0.12, 0.24, 0.14, 0.16, 0.12, 0.04].slice(0, count);
-      const ratioSum = ratiosBase.reduce((a, b) => a + b, 0) || 1;
-      const templates = [
-        ["Ovos inteiros", "Aveia", "Banana"],
-        ["Iogurte natural", "Fruta", "Castanhas"],
-        ["Frango grelhado", "Arroz", "Feijão", "Vegetais"],
-        ["Whey protein", "Tapioca", "Banana"],
-        ["Tilápia", "Batata-doce", "Legumes"],
-        ["Patinho moído", "Arroz ou mandioca", "Salada com azeite"],
-        ["Cottage ou iogurte", "Chia"],
-      ];
-      return {
-        resumo: {
-          nome: nome || "Paciente",
-          objetivo: objetivo || "Plano alimentar",
-          calorias_totais: targetKcal,
-          proteina_total: prot,
-          carboidrato_total: carb,
-          gordura_total: fat,
-          tmb: calc?.tmb || 0,
-          get: calc?.getFarma || targetKcal,
-          imc,
-          observacao_protocolo: "Plano seguro gerado com cálculo determinístico após falha de formatação da IA.",
-        },
-        refeicoes: ratiosBase.map((ratio, i) => {
-          const r = ratio / ratioSum;
-          return {
-            refeicao: labels[i],
-            horario: horarios[i],
-            calorias: Math.round(targetKcal * r),
-            macros: { proteina: Math.round(prot * r), carboidrato: Math.round(carb * r), gordura: Math.round(fat * r) },
-            alimentos: templates[i].map((alimento) => ({
-              alimento,
-              quantidade: "ajustar pela meta da refeição",
-              quantidade_g: null,
-              observacao: "Base técnica ajustável pelo coach.",
-              substituicoes: [
-                { alimento: "Frango / tilápia / patinho", quantidade: "porção equivalente", quantidade_g: null, observacao: "troca proteica equivalente", grupo: "proteina" },
-                { alimento: "Arroz / batata / mandioca", quantidade: "porção equivalente", quantidade_g: null, observacao: "troca de carboidrato equivalente", grupo: "carbo" },
-                { alimento: "Azeite / castanhas / abacate", quantidade: "porção equivalente", quantidade_g: null, observacao: "troca de gordura equivalente", grupo: "gordura" },
-              ],
-            })),
-          };
-        }),
-        suplementacao: [],
-        dica_mce: {
-          mindset: "Executar o plano por horários e revisar aderência diariamente.",
-          comportamento: "Manter preparo simples e repetir bases alimentares seguras.",
-          execucao: "Coach deve ajustar gramagens finas conforme resposta do paciente.",
-        },
-        alerta_coach: `Fallback ativado porque a IA retornou JSON malformado: ${reason.slice(0, 120)}`,
-        fallback_gerado: true,
-      };
-    };
 
     let parsed;
     let parseError: unknown = null;
