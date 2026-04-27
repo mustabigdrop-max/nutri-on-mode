@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { enforceCeiaPosition } from "./meal_timing.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -2347,147 +2348,15 @@ AEJ não é refeição e nunca deve aparecer em refeicoes. Pós-Treino Imediato 
       }
     }
 
-    // ── ENFORCEMENT DETERMINÍSTICO DA CEIA ──
-    // Garante que TODO plano (treino ou descanso) tenha "Ceia" como última refeição (21:30–23:00).
-    // Se ausente, renomeia a última refeição após 21:00 OU injeta uma Ceia ~22:00.
+    // ── ENFORCEMENT DETERMINÍSTICO DA CEIA (extraído para meal_timing.ts) ──
+    // Garante: Ceia presente, sempre ÚLTIMA refeição, depois do Jantar (gap ≥2h30),
+    // dentro da janela [21:30, 23:30]. Coberto por testes em meal_timing_test.ts.
     if (Array.isArray(parsed?.refeicoes) && parsed.refeicoes.length > 0) {
-      const toMin3 = (h: string) => {
-        const m = String(h || "").match(/(\d{1,2}):(\d{2})/);
-        return m ? Number(m[1]) * 60 + Number(m[2]) : -1;
-      };
-      const temCeia = (parsed.refeicoes as any[]).some((m) =>
-        /\bceia\b/i.test(String(m?.refeicao || "")),
-      );
-
-      if (!temCeia) {
-        // Tenta promover a última refeição após 21:00 a "Ceia"
-        const sorted = [...(parsed.refeicoes as any[])].sort(
-          (a, b) => toMin3(a?.horario) - toMin3(b?.horario),
-        );
-        const candidato = [...sorted].reverse().find((m) => {
-          const min = toMin3(m?.horario);
-          const nome = String(m?.refeicao || "");
-          return (
-            min >= 21 * 60 &&
-            !/intra[\s-]?treino|p[óo]s[\s-]?treino\s*imediato|janela\s*glut|glut[\s-]?4|pr[ée][\s-]?treino/i.test(nome)
-          );
-        });
-
-        if (candidato) {
-          const antigo = candidato.refeicao;
-          const horario = candidato.horario || "22:00";
-          candidato.refeicao = `Ceia (${horario})`;
-          console.log(`[CEIA-FIX] renomeado: "${antigo}" → "${candidato.refeicao}"`);
-        } else {
-          // Nenhuma refeição noturna → injeta Ceia às 22:00 com macros padrão
-          const ceiaRef = {
-            refeicao: "Ceia (22:00)",
-            horario: "22:00",
-            alimentos: [
-              {
-                alimento: "Iogurte grego natural integral",
-                quantidade: "1 pote (200g)",
-                observacao: "Caseína de absorção lenta — libera aminoácidos por 6–8h durante o sono.",
-                substituicoes: [
-                  { alimento: "Cottage", quantidade_g: 200, grupo: "proteina" },
-                  { alimento: "Ricota fresca", quantidade_g: 200, grupo: "proteina" },
-                ],
-              },
-              {
-                alimento: "Castanha do Pará",
-                quantidade: "3 unidades (15g)",
-                observacao: "Selênio + gordura boa — anti-inflamatório noturno e hormonal.",
-                substituicoes: [
-                  { alimento: "Amêndoas", quantidade_g: 20, grupo: "gordura" },
-                  { alimento: "Nozes", quantidade_g: 20, grupo: "gordura" },
-                ],
-              },
-              {
-                alimento: "Linhaça dourada moída",
-                quantidade: "1 col sopa (10g)",
-                observacao: "Fibra solúvel + ômega-3 vegetal — saciedade e digestão lenta.",
-                substituicoes: [
-                  { alimento: "Chia", quantidade_g: 10, grupo: "fibra" },
-                  { alimento: "Aveia em flocos", quantidade_g: 20, grupo: "fibra" },
-                ],
-              },
-            ],
-            calorias: 320,
-            macros: { proteina: 22, carboidrato: 14, gordura: 18 },
-            observacao_clinica: "Ceia obrigatória injetada pelo sistema (estava ausente no plano gerado).",
-          };
-          (parsed.refeicoes as any[]).push(ceiaRef);
-          (parsed.refeicoes as any[]).sort((a, b) => toMin3(a?.horario) - toMin3(b?.horario));
-          let _i = 1;
-          (parsed.refeicoes as any[]).forEach((m) => {
-            if (typeof m?.refeicao === "string" && /Refei[çc][ãa]o\s*\d+/i.test(m.refeicao)) {
-              m.refeicao = m.refeicao.replace(/Refei[çc][ãa]o\s*\d+/i, `Refeição ${_i}`);
-            }
-            _i++;
-          });
-          console.log(`[CEIA-FIX] injetada Ceia às 22:00 (estava ausente)`);
-        }
-      }
-
-      // ── REPOSICIONAMENTO DA CEIA: deve ser SEMPRE a última refeição e vir APÓS o Jantar ──
-      // Considera o horário REAL do treino do dia (já presente no plano via Pós-Treino Sólido / Jantar).
-      // Regras:
-      //  • Ceia >= Jantar + 2h30 (mínimo) e dentro de [21:30, 23:30].
-      //  • Se Ceia for o "Pós-Treino Sólido" de treino noturno, mantém a tag "Ceia / Pós-Treino Sólido"
-      //    e apenas garante que ela seja a ÚLTIMA refeição do dia.
-      const refsArr = parsed.refeicoes as any[];
-      const idxCeia = refsArr.findIndex((m) =>
-        /\bceia\b/i.test(String(m?.refeicao || "")),
-      );
-      if (idxCeia >= 0) {
-        const ceia = refsArr[idxCeia];
-        const idxJantar = refsArr.findIndex(
-          (m, i) => i !== idxCeia && /\bjantar\b/i.test(String(m?.refeicao || "")),
-        );
-        const jantarMin = idxJantar >= 0 ? toMin3(refsArr[idxJantar]?.horario) : -1;
-        let ceiaMin = toMin3(ceia?.horario);
-
-        // Garante mínimo Jantar + 150min (2h30)
-        if (jantarMin > 0) {
-          const minPermitido = jantarMin + 150;
-          if (ceiaMin < minPermitido || ceiaMin <= jantarMin) {
-            ceiaMin = Math.max(minPermitido, 21 * 60 + 30);
-          }
-        }
-        // Janela alvo [21:30, 23:30]
-        if (ceiaMin < 21 * 60 + 30) ceiaMin = 21 * 60 + 30;
-        if (ceiaMin > 23 * 60 + 30) ceiaMin = 23 * 60 + 30;
-
-        // Ceia precisa ser estritamente posterior à maior horário entre as DEMAIS refeições
-        const maxOutro = Math.max(
-          ...refsArr
-            .map((m, i) => (i === idxCeia ? -1 : toMin3(m?.horario)))
-            .filter((v) => v >= 0),
-          -1,
-        );
-        if (maxOutro >= 0 && ceiaMin <= maxOutro) {
-          ceiaMin = Math.min(maxOutro + 30, 23 * 60 + 30);
-        }
-
-        const novoHorario = `${String(Math.floor(ceiaMin / 60)).padStart(2, "0")}:${String(ceiaMin % 60).padStart(2, "0")}`;
-        if (novoHorario !== ceia?.horario) {
-          console.log(`[CEIA-FIX] horário ajustado: ${ceia?.horario} → ${novoHorario} (jantar=${idxJantar >= 0 ? refsArr[idxJantar]?.horario : "n/a"})`);
-          ceia.horario = novoHorario;
-          // Atualiza o sufixo "(HH:MM)" no nome se existir
-          if (typeof ceia.refeicao === "string") {
-            ceia.refeicao = ceia.refeicao.replace(/\(\d{1,2}:\d{2}\)/, `(${novoHorario})`);
-          }
-        }
-
-        // Reordena por horário e renumera "Refeição N"
-        refsArr.sort((a, b) => toMin3(a?.horario) - toMin3(b?.horario));
-        let _i = 1;
-        refsArr.forEach((m) => {
-          if (typeof m?.refeicao === "string" && /Refei[çc][ãa]o\s*\d+/i.test(m.refeicao)) {
-            m.refeicao = m.refeicao.replace(/Refei[çc][ãa]o\s*\d+/i, `Refeição ${_i}`);
-          }
-          _i++;
-        });
+      const antes = JSON.stringify(parsed.refeicoes.map((m: any) => [m?.refeicao, m?.horario]));
+      enforceCeiaPosition(parsed.refeicoes as any[]);
+      const depois = JSON.stringify(parsed.refeicoes.map((m: any) => [m?.refeicao, m?.horario]));
+      if (antes !== depois) {
+        console.log(`[CEIA-FIX] reposicionado/injetado. antes=${antes} depois=${depois}`);
       }
     }
 
