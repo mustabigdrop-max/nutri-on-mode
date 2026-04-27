@@ -1237,6 +1237,51 @@ REGRAS ANTI-REPETIÇÃO (CRÍTICAS):
 - Cada substituto deve incluir: { "alimento": "Nome", "quantidade": "Xg", "observacao": "equivalente em macros + benefício específico" }.
 - PROIBIDO retornar arrays vazios ou com 1–2 itens em "substituicoes". Mínimo 6 sempre.
 
+🌶️ TEMPEROS, MODO DE PREPARO E FERMENTADOS (OBRIGATÓRIO COM VARIEDADE FUNCIONAL):
+
+A) TEMPEROS FUNCIONAIS — TODA refeição salgada DEVE conter um item explícito de tempero, com seus substitutos:
+- Adicione um item no array "alimentos" da refeição com formato:
+  { "alimento": "Tempero funcional: cúrcuma + pimenta-preta + alho + cebola roxa + azeite",
+    "quantidade": "1 colher de chá cúrcuma + 1 pitada pimenta + 2 dentes alho + 1/4 cebola + 1 fio azeite",
+    "observacao": "Curcumina (cúrcuma) tem biodisponibilidade ↑2000% com piperina (pimenta-preta). Alho cru = alicina anti-inflamatória. Sempre refogar alho/cebola em azeite frio antes de adicionar a proteína.",
+    "substituicoes": [
+      { "alimento": "Gengibre fresco ralado + limão + alho + salsinha", "quantidade": "1 colher de chá gengibre + suco 1/2 limão + 2 dentes alho + 1 colher salsinha", "observacao": "Gingerol = anti-inflamatório + ↑digestão. Substitui cúrcuma sem perder potência." },
+      { "alimento": "Alecrim + tomilho + alho + azeite", "quantidade": "1 colher chá ervas + 2 dentes alho + 1 fio azeite", "observacao": "Combo mediterrâneo — alecrim ↑memória, tomilho antibacteriano." },
+      { "alimento": "Orégano + manjericão + alho + tomate seco", "quantidade": "1 colher chá ervas + 2 dentes alho + 3 tomates secos", "observacao": "Combo italiano — carvacrol (orégano) antifúngico." },
+      { "alimento": "Coentro + cominho + alho + páprica defumada", "quantidade": "1 colher chá ervas + 2 dentes alho + 1/2 colher chá páprica", "observacao": "Combo árabe — cominho ↑digestão, coentro quelante de metais pesados." },
+      { "alimento": "Hortelã + limão + alho + azeite", "quantidade": "5 folhas hortelã + suco 1/2 limão + 1 dente alho + 1 fio azeite", "observacao": "Refrescante — mentol ↑digestão, antiespasmódico." },
+      { "alimento": "Curry + gengibre + alho + leite de coco light", "quantidade": "1 colher chá curry + 1 colher chá gengibre + 2 dentes alho + 50ml leite coco", "observacao": "Combo indiano — múltiplas especiarias anti-inflamatórias." }
+    ]
+  }
+- ROTACIONAR o combo de tempero entre os 6 estilos (brasileiro, mediterrâneo, italiano, árabe, refrescante, indiano) ao longo da semana — NUNCA repetir o mesmo combo em 2 dias seguidos.
+
+B) MODO DE PREPARO — TODA refeição principal DEVE incluir o campo "modo_preparo" com instrução técnica clara (não vago):
+- Formato: { "modo_preparo": "1) Refogar alho e cebola em azeite frio por 1min; 2) Adicionar a proteína temperada e selar 3min de cada lado; 3) Reduzir fogo, tampar e cozinhar 8min; 4) Finalizar com salsinha fresca e suco de limão fora do fogo." }
+- SEMPRE indicar: ordem de adição dos ingredientes, tempo, fogo (alto/médio/baixo), técnica (refogar, grelhar, assar, cozinhar no vapor, etc.), e finalização (ervas frescas, limão, azeite cru).
+- Para vegetais: indicar se é cru, no vapor, refogado ou assado — e justificar (ex: "brócolis no vapor 4min preserva sulforafano; refogar destrói").
+- Para arroz/leguminosas: indicar se vai resfriado depois (amido resistente).
+
+C) FERMENTADOS — TODA refeição que aceitar fermentado (café, lanches, almoço, jantar, ceia) DEVE incluir um item de fermentado com 6+ substitutos:
+- Formato:
+  { "alimento": "Iogurte grego natural integral",
+    "quantidade": "150g",
+    "observacao": "Probiótico vivo — Lactobacillus + Bifidobacterium para microbiota. Combine com fonte prebiótica (banana verde, aveia, mel cru) para efeito simbiótico.",
+    "substituicoes": [
+      { "alimento": "Kefir de leite integral", "quantidade": "200ml", "observacao": "30+ cepas probióticas vs 2-3 do iogurte. Mais potente para disbiose." },
+      { "alimento": "Kefir de água com fruta", "quantidade": "200ml", "observacao": "Sem lactose — opção para sensibilidade." },
+      { "alimento": "Kombucha natural sem açúcar", "quantidade": "200ml", "observacao": "Probiótico + ácidos orgânicos hepatoprotetores. Evitar versões adoçadas." },
+      { "alimento": "Chucrute cru artesanal", "quantidade": "2 colheres de sopa (40g)", "observacao": "Lactobacillus plantarum + vitamina K2. Como acompanhamento de carnes." },
+      { "alimento": "Kimchi tradicional", "quantidade": "2 colheres de sopa (40g)", "observacao": "Fermentado picante coreano — probióticos + capsaicina termogênica." },
+      { "alimento": "Missô orgânico (pasta)", "quantidade": "1 colher de chá (10g)", "observacao": "Adicionar em sopa morna FORA do fogo (preserva probióticos). Aspergillus oryzae + isoflavonas." },
+      { "alimento": "Iogurte de coco fermentado", "quantidade": "150g", "observacao": "Sem lactose, com cepas probióticas adicionadas. Para intolerantes." },
+      { "alimento": "Picles natural fermentado (não em vinagre)", "quantidade": "3 unidades (50g)", "observacao": "Conferir rótulo: deve ser fermentação láctica, não vinagre." }
+    ]
+  }
+- Mínimo 5 dias da semana com fermentado prescrito, RODÍZIO obrigatório entre os 8 tipos acima.
+
+REGRA DE OURO: cada refeição salgada do dia DEVE conter pelo menos: 1 proteína + 1 CHO + 1 vegetal/salada + 1 tempero funcional + 1 modo_preparo descrito. Refeições que aceitam fermentado devem incluí-lo (mín 1x/dia).
+
+
 GERAÇÃO DO PLANO:
 - Quando gerar 7 dias, EXPLICITE no JSON o "tema funcional" de cada dia em "observacao_clinica".
 - No campo "inteligencia_fisiologica.diversidade_vegetal_semanal" RETORNE o número REAL de espécies vegetais distintas contadas (deve ser ≥ 20).
