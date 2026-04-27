@@ -78,9 +78,9 @@ REGRAS DE CÁLCULO OBRIGATÓRIAS:
    f) OBSERVAÇÕES DO COACH: campo para personalização com a observação clínica informada.
    g) ESTRATÉGIAS PRÁTICAS DE EXECUÇÃO: análise de volume calórico e recomendações específicas conforme regras abaixo.
 
-   h) SUBSTITUIÇÕES INTELIGENTES POR ALIMENTO: para CADA alimento de CADA refeição, gerar entre 2 e 4 substitutos isocalóricos e isoproteicos (variação máxima de ±10% em kcal e ±15% em proteína). As substituições devem:
-      - Ser brasileiras, acessíveis e do mesmo grupo funcional (proteína animal ↔ proteína animal; carbo complexo ↔ carbo complexo; gordura boa ↔ gordura boa).
-      - Ter quantidade EM GRAMAS calculada para bater os mesmos macros do alimento original.
+    h) SUBSTITUIÇÕES INTELIGENTES POR ALIMENTO: para CADA alimento de CADA refeição, gerar entre 2 e 4 substitutos ESTRITAMENTE ISOCALÓRICOS (tolerância MÁX ±3% em kcal vs alimento original — NUNCA exceder) e isoproteicos quando o grupo for proteína (±10% prot). As substituições devem:
+       - Ser brasileiras, acessíveis e do mesmo grupo funcional (proteína animal ↔ proteína animal; carbo complexo ↔ carbo complexo; gordura boa ↔ gordura boa).
+       - Ter quantidade EM GRAMAS RECALCULADA pela densidade calórica do substituto para bater EXATAMENTE as kcal do alimento original (ex.: original = 180 kcal → substituto deve ficar entre 175–185 kcal). NUNCA repetir a mesma gramatura do original sem recalcular.
       - Respeitar restrições alimentares informadas (sem lactose, vegetariano etc.).
       - Citar uma observação curta quando houver vantagem ou alerta (ex: "mais saciedade", "mais rápido de preparar", "evitar se intolerância").
       - Classificar o substituto no campo "grupo" como: "proteina" (fontes predominantemente proteicas), "carbo" (fontes predominantemente de carboidratos) ou "gordura" (fontes predominantemente lipídicas).
@@ -1267,7 +1267,8 @@ Rotação: não repetir proteína nem combo proteína+CHO em dias seguidos.
 
 SUBSTITUIÇÕES (compacto):
 - Para cada alimento, EXATAMENTE 2 substitutos do mesmo grupo (proteína↔proteína, carbo↔carbo, fruta↔fruta, gordura↔gordura, vegetal↔vegetal, fermentado↔fermentado, tempero↔tempero). Nunca vazio.
-- Cada substituto: { "alimento", "quantidade_g", "grupo" }. SEM "observacao", SEM "quantidade" textual quando idêntica a quantidade_g (ex.: "120g").
+- ISOCALÓRICO OBRIGATÓRIO: cada substituto DEVE ter as MESMAS kcal do alimento original (tolerância ±3%). Recalcule a "quantidade_g" pela densidade calórica do substituto — ex.: 100g de arroz branco (130 kcal) ↔ ~37g de aveia crua (130 kcal), NÃO 100g de aveia.
+- Cada substituto: { "alimento", "quantidade_g", "kcal", "grupo" }. O campo "kcal" é OBRIGATÓRIO e deve bater (±3%) com o kcal do alimento original.
 - Fermentados: rotacionar entre kefir, iogurte grego, kombucha, chucrute, kimchi, missô, kefir de água.
 - Temperos: combos curtos (cúrcuma+pimenta, gengibre+limão, alecrim+alho, orégano+manjericão, curry+gengibre).
 
