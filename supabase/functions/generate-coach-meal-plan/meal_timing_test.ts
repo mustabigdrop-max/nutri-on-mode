@@ -64,7 +64,7 @@ Deno.test("template TARDE (17:00): jantar = pós-sólido, ceia 22:30 última", (
 Deno.test("template NOITE (20:00): jantar = pré-treino, ceia = pós-sólido", () => {
   const t = buildMealTemplate("noite", "20:00", { usaIntra: true, durationMin: 60 });
   assert(t.some((m) => /Jantar \/ Pré-Treino Sólido/.test(m.refeicao) && m.horario === "19:00"));
-  assert(/Ceia/.test(last(t).refeicao));
+  assert(/Ceia/.test(String(last(t).refeicao)));
   // Ceia é a última, possivelmente com tag pós-sólido
   assert(toMinutes(last(t).horario) >= 22 * 60);
 });
