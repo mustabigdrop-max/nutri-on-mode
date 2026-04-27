@@ -1202,7 +1202,16 @@ ${perfilFisiologico?.variedade_funcional ? `
 Este plano DEVE atingir ≥ 20 espécies vegetais distintas / semana e ≥ 12 fontes proteicas distintas / semana. NUNCA repita a mesma combinação proteína+CHO em dias consecutivos.
 
 OBRIGAÇÕES MÍNIMAS POR SEMANA:
-• Frutas: ≥ 8 espécies diferentes (rotacionar entre vermelhas, cítricas, enzimáticas, prebióticas, tropicais, secas)
+• Frutas: ≥ 12 espécies diferentes na semana (NÃO 8 — DOZE), distribuídas obrigatoriamente entre TODAS as 6 categorias funcionais abaixo, com pelo menos 2 frutas DIFERENTES por categoria:
+   ① VERMELHAS/ROXAS antioxidantes (mirtilo, amora, morango, framboesa, açaí, uva roxa, jabuticaba, cereja) — mín 3x/semana
+   ② CÍTRICAS vit C (laranja, tangerina, kiwi, acerola, limão, pomelo, bergamota) — mín 3x/semana
+   ③ ENZIMÁTICAS digestivas (abacaxi, mamão, kiwi, manga) — mín 2x/semana, ideal pós-treino
+   ④ PREBIÓTICAS (banana verde, maçã com casca, pera com casca, caqui) — mín 4x/semana
+   ⑤ TROPICAIS energéticas (banana madura, manga, manga rosa, goiaba, maracujá, abacate) — mín 3x/semana
+   ⑥ DESIDRATADAS/SECAS (tâmara, damasco seco, ameixa preta, uva passa, figo seco) — mín 2x/semana, em pequena quantidade
+   → CADA dia do plano deve incluir frutas de pelo menos 2 categorias DIFERENTES.
+   → NUNCA repetir a mesma fruta no mesmo dia (banana no café + banana no lanche = PROIBIDO).
+   → NUNCA repetir a mesma fruta em 2 dias consecutivos no mesmo slot (ex: maçã no lanche da tarde de seg E ter).
 • Vegetais: ≥ 12 espécies diferentes (mín. 3 crucíferas, 3 folhas escuras, 2 raízes coloridas, 2 alíáceas, 2 cogumelos/funcionais)
 • Proteínas animais: rotacionar OBRIGATORIAMENTE entre 6 categorias na semana — bovino magro, frango, peixe branco, peixe gorduroso (sardinha/salmão/atum), ovo, suíno magro/víscera. Mínimo 2 espécies de peixe diferentes.
 • Carboidratos: rotacionar entre ≥ 6 fontes — arroz branco, arroz integral, batata-doce, batata inglesa, mandioca/aipim, inhame, quinoa, aveia, tapioca, cuscuz, pão integral. NÃO repetir o mesmo CHO em mais de 2 refeições consecutivas no mesmo dia.
@@ -1215,13 +1224,23 @@ REGRAS ANTI-REPETIÇÃO (CRÍTICAS):
 1. NUNCA prescrever a mesma proteína principal em 2 dias consecutivos (ex: frango seg+ter é PROIBIDO).
 2. NUNCA prescrever o mesmo CHO principal em 2 refeições principais do mesmo dia (ex: arroz no almoço E no jantar é PROIBIDO — alterne com batata-doce, mandioca, etc).
 3. Cada dia da semana deve ter um "tema" funcional diferente: ex. seg = frutos do mar + folhas escuras; ter = aves + raízes; qua = vegetariano + leguminosas; qui = vermelhos + crucíferas; sex = peixe gordo + cogumelos; sáb = víscera + fermentados; dom = ovos + tubérculos coloridos.
-4. Frutas no café da manhã e nos lanches DEVEM ser diferentes a cada dia (rodízio de 7+ frutas/semana).
+4. Frutas no café da manhã e nos lanches DEVEM ser diferentes a cada dia (rodízio de 12+ frutas/semana, cobrindo as 6 categorias).
 5. Saladas devem variar composição diária — não repetir mesma combinação de folhas+tubérculos+sementes.
+
+🔁 SUBSTITUTOS EXPANDIDOS (OBRIGATÓRIO COM VARIEDADE FUNCIONAL):
+- Para CADA item de alimento prescrito, retornar no campo "substituicoes" um array com no MÍNIMO 6 substitutos equivalentes (idealmente 8–10), TODOS do mesmo grupo macronutricional do alimento original:
+   • Se o item é PROTEÍNA → 6+ substitutos só de proteínas (ex: frango → tilápia, pescada, ovo, patinho, peito de peru, atum em água, ricota, tofu firme).
+   • Se o item é CARBOIDRATO → 6+ substitutos só de carboidratos (ex: arroz → batata-doce, mandioca, inhame, cuscuz, quinoa, tapioca, macarrão integral, polenta).
+   • Se o item é FRUTA → 6+ substitutos cobrindo as 6 categorias funcionais (vermelhas, cítricas, enzimáticas, prebióticas, tropicais, secas).
+   • Se o item é GORDURA → 6+ substitutos só de gorduras (ex: azeite → abacate, castanha-do-pará, nozes, amêndoa, semente de abóbora, tahine, ghee).
+   • Se o item é VEGETAL/SALADA → 6+ vegetais equivalentes funcionalmente (folhas, crucíferas, raízes coloridas).
+- Cada substituto deve incluir: { "alimento": "Nome", "quantidade": "Xg", "observacao": "equivalente em macros + benefício específico" }.
+- PROIBIDO retornar arrays vazios ou com 1–2 itens em "substituicoes". Mínimo 6 sempre.
 
 GERAÇÃO DO PLANO:
 - Quando gerar 7 dias, EXPLICITE no JSON o "tema funcional" de cada dia em "observacao_clinica".
 - No campo "inteligencia_fisiologica.diversidade_vegetal_semanal" RETORNE o número REAL de espécies vegetais distintas contadas (deve ser ≥ 20).
-- Adicione no JSON: "variedade_aplicada": { "frutas_distintas": N, "vegetais_distintos": N, "proteinas_distintas": N, "carbos_distintos": N }.
+- Adicione no JSON: "variedade_aplicada": { "frutas_distintas": N, "vegetais_distintos": N, "proteinas_distintas": N, "carbos_distintos": N, "categorias_frutas_cobertas": ["vermelhas","citricas","enzimaticas","prebioticas","tropicais","secas"] }.
 ` : ""}
 
 
