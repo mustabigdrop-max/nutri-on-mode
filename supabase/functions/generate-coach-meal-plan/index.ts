@@ -1196,6 +1196,35 @@ PERFIL FISIOLÓGICO AVANÇADO (aplicar protocolos do system prompt conforme flag
 - Outros alimentos preferidos: ${perfilFisiologico?.outros_alimentos || "Nenhum"}
 - Medidas Caseiras (Nutrition Coach IA): ${perfilFisiologico?.medidas_caseiras ? "true" : "false"}
 
+${perfilFisiologico?.variedade_funcional ? `
+🌿 PROTOCOLO VARIEDADE FUNCIONAL ATIVO (INVIOLÁVEL — o coach LIGOU explicitamente esta flag):
+═══════════════════════════════════════════════════════════════════════════════════
+Este plano DEVE atingir ≥ 20 espécies vegetais distintas / semana e ≥ 12 fontes proteicas distintas / semana. NUNCA repita a mesma combinação proteína+CHO em dias consecutivos.
+
+OBRIGAÇÕES MÍNIMAS POR SEMANA:
+• Frutas: ≥ 8 espécies diferentes (rotacionar entre vermelhas, cítricas, enzimáticas, prebióticas, tropicais, secas)
+• Vegetais: ≥ 12 espécies diferentes (mín. 3 crucíferas, 3 folhas escuras, 2 raízes coloridas, 2 alíáceas, 2 cogumelos/funcionais)
+• Proteínas animais: rotacionar OBRIGATORIAMENTE entre 6 categorias na semana — bovino magro, frango, peixe branco, peixe gorduroso (sardinha/salmão/atum), ovo, suíno magro/víscera. Mínimo 2 espécies de peixe diferentes.
+• Carboidratos: rotacionar entre ≥ 6 fontes — arroz branco, arroz integral, batata-doce, batata inglesa, mandioca/aipim, inhame, quinoa, aveia, tapioca, cuscuz, pão integral. NÃO repetir o mesmo CHO em mais de 2 refeições consecutivas no mesmo dia.
+• Gorduras: rotacionar entre ≥ 5 fontes — azeite extra-virgem, abacate, castanhas (variar tipo a cada dia: pará, caju, nozes, amêndoa, macadâmia), sementes (chia, linhaça, abóbora, gergelim), coco, manteiga ghee.
+• Leguminosas: ≥ 4 tipos na semana — feijão carioca, feijão preto, lentilha, grão-de-bico, ervilha, feijão branco.
+• Temperos funcionais OBRIGATÓRIOS em refeições salgadas: rotacionar cúrcuma+pimenta-preta, gengibre fresco, alho cru, cebola roxa, manjericão, alecrim, orégano, coentro, salsinha, hortelã.
+• Fermentados: ≥ 5 dias da semana, variando entre kefir de leite, iogurte grego natural, kombucha, chucrute, kimchi, missô.
+
+REGRAS ANTI-REPETIÇÃO (CRÍTICAS):
+1. NUNCA prescrever a mesma proteína principal em 2 dias consecutivos (ex: frango seg+ter é PROIBIDO).
+2. NUNCA prescrever o mesmo CHO principal em 2 refeições principais do mesmo dia (ex: arroz no almoço E no jantar é PROIBIDO — alterne com batata-doce, mandioca, etc).
+3. Cada dia da semana deve ter um "tema" funcional diferente: ex. seg = frutos do mar + folhas escuras; ter = aves + raízes; qua = vegetariano + leguminosas; qui = vermelhos + crucíferas; sex = peixe gordo + cogumelos; sáb = víscera + fermentados; dom = ovos + tubérculos coloridos.
+4. Frutas no café da manhã e nos lanches DEVEM ser diferentes a cada dia (rodízio de 7+ frutas/semana).
+5. Saladas devem variar composição diária — não repetir mesma combinação de folhas+tubérculos+sementes.
+
+GERAÇÃO DO PLANO:
+- Quando gerar 7 dias, EXPLICITE no JSON o "tema funcional" de cada dia em "observacao_clinica".
+- No campo "inteligencia_fisiologica.diversidade_vegetal_semanal" RETORNE o número REAL de espécies vegetais distintas contadas (deve ser ≥ 20).
+- Adicione no JSON: "variedade_aplicada": { "frutas_distintas": N, "vegetais_distintos": N, "proteinas_distintas": N, "carbos_distintos": N }.
+` : ""}
+
+
 ${perfilFisiologico?.medidas_caseiras ? (() => {
   const mp = perfilFisiologico?.medidas_preferencias || {};
   const colherTxt = mp.colher === "cha" ? "Use APENAS colher de chá (3–5g) como referência principal — evite colher de sopa."
