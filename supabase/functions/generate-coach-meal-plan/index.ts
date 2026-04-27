@@ -1227,6 +1227,8 @@ REGRAS DE NOMENCLATURA:
 - Formato do nome: "Refeição N — Nome (HH:MM)" — ex: "Refeição 3 — Almoço / Pré-Treino Sólido (12:30)".
 - O nome PRINCIPAL deve ser SEMPRE um dos 6 nomes brasileiros: Café da Manhã, Lanche da Manhã, Almoço, Lanche da Tarde, Jantar, Ceia. As refeições peri-workout extras (Intra-Treino, Pós-Treino Imediato, Pós-Treino Sólido) só aparecem QUANDO houver treino e GLUT-4 ativo.
 - ⚠️ CAFÉ DA MANHÃ É OBRIGATÓRIO EM TODOS OS PLANOS (treino ou descanso). NUNCA omita o Café da Manhã. Se o treino é à tarde/noite, ele aparece como primeira refeição (~07:00). Se o treino é manhã cedo, ele se funde com o pré-treino sólido ("Café da Manhã / Pré-Treino Sólido"). NUNCA chame a primeira refeição do dia de "Lanche da Manhã" — a primeira refeição SEMPRE é Café da Manhã.
+- ⚠️ CEIA É OBRIGATÓRIA EM TODOS OS PLANOS (treino ou descanso). NUNCA omita a Ceia. Sempre inclua como ÚLTIMA refeição entre 21:30 e 23:00, com proteína de absorção lenta (caseína, cottage, iogurte grego, ricota, ovo) ± fibra/gordura boa. Se o treino é à noite e o pós-sólido coincide, use "Ceia / Pós-Treino Sólido".
+- ⚠️ NÚMERO DE REFEIÇÕES: o plano pode ter ATÉ 8 refeições/dia. Se o paciente tem ${refeicoes} refeições no protocolo + treino com peri-workout (pré, intra, pós-imediato, pós-sólido), some TUDO (ex: 6 base + 2 peri = 8 refeições). NUNCA corte Ceia para caber em 6/7 — gere 8 se necessário.
 - ⚠️ INTRA-TREINO: só inclua a refeição "Intra-Treino" se o coach habilitou maltodextrina intra-treino (uses_intra_malto=true). Caso contrário, NÃO crie essa refeição.
 - Quando uma refeição padrão (almoço/jantar/ceia/lanche) COINCIDIR com função peri-workout, USE BARRA: "Almoço / Pré-Treino Sólido", "Jantar / Pós-Treino Sólido", "Ceia / Pós-Treino Sólido", "Café da Manhã / Pré-Treino Sólido".
 - PROIBIDO: usar "Almoço Cedo", "Pré-Treino Sólido" sozinho como nome principal, "Refeição 1" sem nome funcional, ou criar "Almoço" + "Pré-Treino" como duas refeições separadas a menos de 2h30 — eles são A MESMA refeição com função dupla.
@@ -1520,9 +1522,9 @@ ${perfilFisiologico?.modo_economico ? `
       const prot = Math.round(calc?.proteinaG || ((Number(peso) || 75) * 2));
       const carb = Math.round(calc?.carboG || Math.max(120, (targetKcal - prot * 4 - targetKcal * 0.25) / 4));
       const fat = Math.round(calc?.gorduraG || Math.max(45, (targetKcal - prot * 4 - carb * 4) / 9));
-      const count = Math.max(3, Math.min(7, Number(refeicoes) || calc?.refeicoesRecomendadas || 5));
+      const count = Math.max(3, Math.min(8, Number(refeicoes) || calc?.refeicoesRecomendadas || 5));
       const horarios = ["08:30", "10:30", "12:30", "15:30", "17:30", "20:30", "22:30"];
-      const labels = ["R1 — Café da manhã", "R2 — Lanche da manhã", "R3 — Almoço", "R4 — Lanche / Pré-treino", "R5 — Pós-treino", "R6 — Jantar", "R7 — Ceia"];
+      const labels = ["R1 — Café da manhã", "R2 — Lanche da manhã", "R3 — Almoço", "R4 — Lanche / Pré-treino", "R5 — Pós-treino", "R6 — Jantar", "R7 — Ceia", "R8 — Ceia 2"];
       const ratiosBase = [0.18, 0.12, 0.24, 0.14, 0.16, 0.12, 0.04].slice(0, count);
       const ratioSum = ratiosBase.reduce((a, b) => a + b, 0) || 1;
       const templates = [
@@ -2341,6 +2343,89 @@ AEJ não é refeição e nunca deve aparecer em refeicoes. Pós-Treino Imediato 
             _i++;
           });
           console.log(`[CAFE-FIX] injetado Café da Manhã às 07:00 (estava ausente)`);
+        }
+      }
+    }
+
+    // ── ENFORCEMENT DETERMINÍSTICO DA CEIA ──
+    // Garante que TODO plano (treino ou descanso) tenha "Ceia" como última refeição (21:30–23:00).
+    // Se ausente, renomeia a última refeição após 21:00 OU injeta uma Ceia ~22:00.
+    if (Array.isArray(parsed?.refeicoes) && parsed.refeicoes.length > 0) {
+      const toMin3 = (h: string) => {
+        const m = String(h || "").match(/(\d{1,2}):(\d{2})/);
+        return m ? Number(m[1]) * 60 + Number(m[2]) : -1;
+      };
+      const temCeia = (parsed.refeicoes as any[]).some((m) =>
+        /\bceia\b/i.test(String(m?.refeicao || "")),
+      );
+
+      if (!temCeia) {
+        // Tenta promover a última refeição após 21:00 a "Ceia"
+        const sorted = [...(parsed.refeicoes as any[])].sort(
+          (a, b) => toMin3(a?.horario) - toMin3(b?.horario),
+        );
+        const candidato = [...sorted].reverse().find((m) => {
+          const min = toMin3(m?.horario);
+          const nome = String(m?.refeicao || "");
+          return (
+            min >= 21 * 60 &&
+            !/intra[\s-]?treino|p[óo]s[\s-]?treino\s*imediato|janela\s*glut|glut[\s-]?4|pr[ée][\s-]?treino/i.test(nome)
+          );
+        });
+
+        if (candidato) {
+          const antigo = candidato.refeicao;
+          const horario = candidato.horario || "22:00";
+          candidato.refeicao = `Ceia (${horario})`;
+          console.log(`[CEIA-FIX] renomeado: "${antigo}" → "${candidato.refeicao}"`);
+        } else {
+          // Nenhuma refeição noturna → injeta Ceia às 22:00 com macros padrão
+          const ceiaRef = {
+            refeicao: "Ceia (22:00)",
+            horario: "22:00",
+            alimentos: [
+              {
+                alimento: "Iogurte grego natural integral",
+                quantidade: "1 pote (200g)",
+                observacao: "Caseína de absorção lenta — libera aminoácidos por 6–8h durante o sono.",
+                substituicoes: [
+                  { alimento: "Cottage", quantidade_g: 200, grupo: "proteina" },
+                  { alimento: "Ricota fresca", quantidade_g: 200, grupo: "proteina" },
+                ],
+              },
+              {
+                alimento: "Castanha do Pará",
+                quantidade: "3 unidades (15g)",
+                observacao: "Selênio + gordura boa — anti-inflamatório noturno e hormonal.",
+                substituicoes: [
+                  { alimento: "Amêndoas", quantidade_g: 20, grupo: "gordura" },
+                  { alimento: "Nozes", quantidade_g: 20, grupo: "gordura" },
+                ],
+              },
+              {
+                alimento: "Linhaça dourada moída",
+                quantidade: "1 col sopa (10g)",
+                observacao: "Fibra solúvel + ômega-3 vegetal — saciedade e digestão lenta.",
+                substituicoes: [
+                  { alimento: "Chia", quantidade_g: 10, grupo: "fibra" },
+                  { alimento: "Aveia em flocos", quantidade_g: 20, grupo: "fibra" },
+                ],
+              },
+            ],
+            calorias: 320,
+            macros: { proteina: 22, carboidrato: 14, gordura: 18 },
+            observacao_clinica: "Ceia obrigatória injetada pelo sistema (estava ausente no plano gerado).",
+          };
+          (parsed.refeicoes as any[]).push(ceiaRef);
+          (parsed.refeicoes as any[]).sort((a, b) => toMin3(a?.horario) - toMin3(b?.horario));
+          let _i = 1;
+          (parsed.refeicoes as any[]).forEach((m) => {
+            if (typeof m?.refeicao === "string" && /Refei[çc][ãa]o\s*\d+/i.test(m.refeicao)) {
+              m.refeicao = m.refeicao.replace(/Refei[çc][ãa]o\s*\d+/i, `Refeição ${_i}`);
+            }
+            _i++;
+          });
+          console.log(`[CEIA-FIX] injetada Ceia às 22:00 (estava ausente)`);
         }
       }
     }
