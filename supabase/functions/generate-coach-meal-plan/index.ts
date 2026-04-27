@@ -2023,6 +2023,84 @@ ${perfilFisiologico?.modo_economico ? `
       }
     }
 
+    // ── DEDUPE PÓS-TREINO IMEDIATO + AJUSTE TIMING PRÉ-TREINO ──
+    // Garante apenas 1 refeição "Pós-Treino Imediato" e que o pré-treino sólido
+    // fique exatamente 60min antes do horário real do treino (extraído do schedule).
+    if (Array.isArray(parsed?.refeicoes)) {
+      const isPosImediatoMeal = (nome: string) =>
+        /p[óo]s[\s-]?treino\s*imediato|janela\s*glut|glut[\s-]?4|p[óo]s[\s-]?igf/i.test(nome || "");
+      const isPreTreinoMeal = (nome: string) =>
+        /pr[ée][\s-]?treino/i.test(nome || "") && !/p[óo]s/i.test(nome || "");
+
+      // 1) Dedupe pós-imediato — mantém o PRIMEIRO, remove os demais
+      const posIdxs: number[] = [];
+      (parsed.refeicoes as any[]).forEach((m, i) => {
+        if (isPosImediatoMeal(m?.refeicao || "")) posIdxs.push(i);
+      });
+      if (posIdxs.length > 1) {
+        const keep = posIdxs[0];
+        const remover = new Set(posIdxs.slice(1));
+        const removidos = posIdxs.slice(1).map((i) => parsed.refeicoes[i]?.refeicao);
+        parsed.refeicoes = (parsed.refeicoes as any[]).filter((_, i) => !remover.has(i));
+        // Padroniza nome para evitar variantes ("Pós-IGF-1", etc)
+        const m0 = parsed.refeicoes[keep > 0 ? keep : 0];
+        if (m0 && isPosImediatoMeal(m0.refeicao || "")) {
+          const horario = m0.horario || "";
+          m0.refeicao = `Pós-Treino Imediato${horario ? ` (${horario})` : ""}`;
+        }
+        console.log(`[DEDUPE-POS] removidas ${removidos.length} refeições pós-imediato duplicadas: ${removidos.join(" | ")}`);
+      }
+
+      // 2) Extrai horário real do treino do trainingSchedulePrompt (time=HH:MM)
+      let trainingTimeMin: number | null = null;
+      let trainingDurationMin = 60;
+      if (typeof trainingSchedulePrompt === "string" && trainingSchedulePrompt) {
+        const mTime = trainingSchedulePrompt.match(/time=(\d{1,2}):(\d{2})/);
+        const mDur = trainingSchedulePrompt.match(/duration_min=(\d{1,3})/);
+        if (mTime) {
+          const hh = Number(mTime[1]);
+          const mm = Number(mTime[2]);
+          if (Number.isFinite(hh) && Number.isFinite(mm)) {
+            trainingTimeMin = hh * 60 + mm;
+          }
+        }
+        if (mDur) {
+          const d = Number(mDur[1]);
+          if (Number.isFinite(d) && d > 0) trainingDurationMin = d;
+        }
+      }
+
+      // 3) Ajusta horário do pré-treino sólido para EXATAMENTE treino − 60min
+      if (trainingTimeMin !== null) {
+        const preMin = trainingTimeMin - 60;
+        if (preMin >= 0) {
+          const novoHorario = `${String(Math.floor(preMin / 60)).padStart(2, "0")}:${String(preMin % 60).padStart(2, "0")}`;
+          (parsed.refeicoes as any[]).forEach((m) => {
+            if (isPreTreinoMeal(m?.refeicao || "")) {
+              const antigo = m.horario;
+              if (antigo !== novoHorario) {
+                m.horario = novoHorario;
+                // Atualiza horário entre parênteses no nome se houver
+                if (typeof m.refeicao === "string") {
+                  m.refeicao = m.refeicao.replace(/\d{1,2}:\d{2}/, novoHorario);
+                }
+                console.log(`[PRE-TREINO-FIX] horário ajustado: ${antigo} → ${novoHorario} (treino ${Math.floor(trainingTimeMin / 60)}:${String(trainingTimeMin % 60).padStart(2, "0")} − 60min)`);
+              }
+            }
+          });
+        }
+      }
+
+      // 4) Reordena refeições por horário ascendente para manter coerência cronológica
+      parsed.refeicoes = (parsed.refeicoes as any[]).sort((a, b) => {
+        const toMin = (h: string) => {
+          const m = String(h || "").match(/(\d{1,2}):(\d{2})/);
+          return m ? Number(m[1]) * 60 + Number(m[2]) : 9999;
+        };
+        return toMin(a?.horario) - toMin(b?.horario);
+      });
+    }
+
     // ── AJUSTE PÓS-PROCESSAMENTO: escala gramaturas para bater alvo calórico ±3% ──
     // Se o coach definiu meta calórica e o total da IA ficou abaixo da banda inferior,
     // multiplica proporcionalmente todas as gramaturas (exceto pós-treino imediato, já validado)
