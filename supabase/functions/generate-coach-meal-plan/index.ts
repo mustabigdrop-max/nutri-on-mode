@@ -2347,7 +2347,88 @@ AEJ não é refeição e nunca deve aparecer em refeicoes. Pós-Treino Imediato 
       }
     }
 
-    // ── AJUSTE PÓS-PROCESSAMENTO: escala gramaturas para bater alvo calórico ±3% ──
+    // ── ENFORCEMENT DETERMINÍSTICO DA CEIA ──
+    // Garante que TODO plano (treino ou descanso) tenha "Ceia" como última refeição (21:30–23:00).
+    // Se ausente, renomeia a última refeição após 21:00 OU injeta uma Ceia ~22:00.
+    if (Array.isArray(parsed?.refeicoes) && parsed.refeicoes.length > 0) {
+      const toMin3 = (h: string) => {
+        const m = String(h || "").match(/(\d{1,2}):(\d{2})/);
+        return m ? Number(m[1]) * 60 + Number(m[2]) : -1;
+      };
+      const temCeia = (parsed.refeicoes as any[]).some((m) =>
+        /\bceia\b/i.test(String(m?.refeicao || "")),
+      );
+
+      if (!temCeia) {
+        // Tenta promover a última refeição após 21:00 a "Ceia"
+        const sorted = [...(parsed.refeicoes as any[])].sort(
+          (a, b) => toMin3(a?.horario) - toMin3(b?.horario),
+        );
+        const candidato = [...sorted].reverse().find((m) => {
+          const min = toMin3(m?.horario);
+          const nome = String(m?.refeicao || "");
+          return (
+            min >= 21 * 60 &&
+            !/intra[\s-]?treino|p[óo]s[\s-]?treino\s*imediato|janela\s*glut|glut[\s-]?4|pr[ée][\s-]?treino/i.test(nome)
+          );
+        });
+
+        if (candidato) {
+          const antigo = candidato.refeicao;
+          const horario = candidato.horario || "22:00";
+          candidato.refeicao = `Ceia (${horario})`;
+          console.log(`[CEIA-FIX] renomeado: "${antigo}" → "${candidato.refeicao}"`);
+        } else {
+          // Nenhuma refeição noturna → injeta Ceia às 22:00 com macros padrão
+          const ceiaRef = {
+            refeicao: "Ceia (22:00)",
+            horario: "22:00",
+            alimentos: [
+              {
+                alimento: "Iogurte grego natural integral",
+                quantidade: "1 pote (200g)",
+                observacao: "Caseína de absorção lenta — libera aminoácidos por 6–8h durante o sono.",
+                substituicoes: [
+                  { alimento: "Cottage", quantidade_g: 200, grupo: "proteina" },
+                  { alimento: "Ricota fresca", quantidade_g: 200, grupo: "proteina" },
+                ],
+              },
+              {
+                alimento: "Castanha do Pará",
+                quantidade: "3 unidades (15g)",
+                observacao: "Selênio + gordura boa — anti-inflamatório noturno e hormonal.",
+                substituicoes: [
+                  { alimento: "Amêndoas", quantidade_g: 20, grupo: "gordura" },
+                  { alimento: "Nozes", quantidade_g: 20, grupo: "gordura" },
+                ],
+              },
+              {
+                alimento: "Linhaça dourada moída",
+                quantidade: "1 col sopa (10g)",
+                observacao: "Fibra solúvel + ômega-3 vegetal — saciedade e digestão lenta.",
+                substituicoes: [
+                  { alimento: "Chia", quantidade_g: 10, grupo: "fibra" },
+                  { alimento: "Aveia em flocos", quantidade_g: 20, grupo: "fibra" },
+                ],
+              },
+            ],
+            calorias: 320,
+            macros: { proteina: 22, carboidrato: 14, gordura: 18 },
+            observacao_clinica: "Ceia obrigatória injetada pelo sistema (estava ausente no plano gerado).",
+          };
+          (parsed.refeicoes as any[]).push(ceiaRef);
+          (parsed.refeicoes as any[]).sort((a, b) => toMin3(a?.horario) - toMin3(b?.horario));
+          let _i = 1;
+          (parsed.refeicoes as any[]).forEach((m) => {
+            if (typeof m?.refeicao === "string" && /Refei[çc][ãa]o\s*\d+/i.test(m.refeicao)) {
+              m.refeicao = m.refeicao.replace(/Refei[çc][ãa]o\s*\d+/i, `Refeição ${_i}`);
+            }
+            _i++;
+          });
+          console.log(`[CEIA-FIX] injetada Ceia às 22:00 (estava ausente)`);
+        }
+      }
+    }
     // Se o coach definiu meta calórica e o total da IA ficou abaixo da banda inferior,
     // multiplica proporcionalmente todas as gramaturas (exceto pós-treino imediato, já validado)
     // até o total cair dentro de ±3% do alvo. Devolve o relatório do ajuste no JSON.
