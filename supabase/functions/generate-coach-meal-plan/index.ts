@@ -2257,6 +2257,92 @@ AEJ não é refeição e nunca deve aparecer em refeicoes. Pós-Treino Imediato 
       });
     }
 
+    // ── ENFORCEMENT DETERMINÍSTICO DO CAFÉ DA MANHÃ ──
+    // Garante que TODO plano (treino ou descanso) tenha "Café da Manhã" — exceto se o
+    // treino é de manhã cedo e o pré-treino sólido já cumpre essa função (já vem nomeado
+    // "Café da Manhã / Pré-Treino Sólido"). Se ausente, renomeia o primeiro lanche/refeição
+    // antes das 09:30 OU injeta um Café da Manhã ~07:00.
+    if (Array.isArray(parsed?.refeicoes) && parsed.refeicoes.length > 0) {
+      const toMin2 = (h: string) => {
+        const m = String(h || "").match(/(\d{1,2}):(\d{2})/);
+        return m ? Number(m[1]) * 60 + Number(m[2]) : 9999;
+      };
+      const temCafe = (parsed.refeicoes as any[]).some((m) =>
+        /caf[ée]\s*da\s*manh[ãa]|desjejum/i.test(String(m?.refeicao || "")),
+      );
+
+      if (!temCafe) {
+        // Tenta promover o primeiro item antes das 09:30 a "Café da Manhã"
+        const sorted = [...(parsed.refeicoes as any[])].sort(
+          (a, b) => toMin2(a?.horario) - toMin2(b?.horario),
+        );
+        const candidato = sorted.find((m) => {
+          const min = toMin2(m?.horario);
+          const nome = String(m?.refeicao || "");
+          return (
+            min < 9 * 60 + 30 &&
+            !/intra[\s-]?treino|p[óo]s[\s-]?treino|pr[ée][\s-]?treino|janela\s*glut|glut[\s-]?4/i.test(nome)
+          );
+        });
+
+        if (candidato) {
+          const antigo = candidato.refeicao;
+          const horario = candidato.horario || "07:00";
+          candidato.refeicao = `Café da Manhã (${horario})`;
+          console.log(`[CAFE-FIX] renomeado: "${antigo}" → "${candidato.refeicao}"`);
+        } else {
+          // Nenhuma refeição matinal → injeta Café da Manhã às 07:00 com macros padrão
+          const cafeRef = {
+            refeicao: "Café da Manhã (07:00)",
+            horario: "07:00",
+            alimentos: [
+              {
+                alimento: "Ovos inteiros",
+                quantidade: "3 unidades (150g)",
+                observacao: "Proteína de alto valor biológico + colina + colesterol bom (matriz hormonal).",
+                substituicoes: [
+                  { alimento: "Claras + 1 ovo inteiro", quantidade_g: 200, grupo: "proteina" },
+                  { alimento: "Iogurte grego natural", quantidade_g: 200, grupo: "proteina" },
+                ],
+              },
+              {
+                alimento: "Pão francês",
+                quantidade: "2 unidades (100g)",
+                observacao: "Carboidrato matinal de absorção rápida — cortisol em pico aproveita glicose.",
+                substituicoes: [
+                  { alimento: "Tapioca", quantidade_g: 80, grupo: "carbo" },
+                  { alimento: "Aveia em flocos", quantidade_g: 70, grupo: "carbo" },
+                ],
+              },
+              {
+                alimento: "Banana madura",
+                quantidade: "1 unidade (100g)",
+                observacao: "Frutose + potássio — recompõe glicogênio hepático após jejum noturno.",
+                substituicoes: [
+                  { alimento: "Mamão", quantidade_g: 150, grupo: "fruta" },
+                  { alimento: "Maçã", quantidade_g: 150, grupo: "fruta" },
+                ],
+              },
+            ],
+            calorias: 600,
+            macros: { proteina: 28, carboidrato: 75, gordura: 18 },
+            observacao_clinica: "Café da Manhã obrigatório injetado pelo sistema (estava ausente no plano gerado).",
+          };
+          (parsed.refeicoes as any[]).push(cafeRef);
+          (parsed.refeicoes as any[]).sort((a, b) => toMin2(a?.horario) - toMin2(b?.horario));
+          // Renumera
+          let _i = 1;
+          (parsed.refeicoes as any[]).forEach((m) => {
+            if (typeof m?.refeicao === "string" && /Refei[çc][ãa]o\s*\d+/i.test(m.refeicao)) {
+              m.refeicao = m.refeicao.replace(/Refei[çc][ãa]o\s*\d+/i, `Refeição ${_i}`);
+            }
+            _i++;
+          });
+          console.log(`[CAFE-FIX] injetado Café da Manhã às 07:00 (estava ausente)`);
+        }
+      }
+    }
+
     // ── AJUSTE PÓS-PROCESSAMENTO: escala gramaturas para bater alvo calórico ±3% ──
     // Se o coach definiu meta calórica e o total da IA ficou abaixo da banda inferior,
     // multiplica proporcionalmente todas as gramaturas (exceto pós-treino imediato, já validado)
