@@ -1522,7 +1522,7 @@ ${perfilFisiologico?.modo_economico ? `
       const fat = Math.round(calc?.gorduraG || Math.max(45, (targetKcal - prot * 4 - carb * 4) / 9));
       const count = Math.max(3, Math.min(8, Number(refeicoes) || calc?.refeicoesRecomendadas || 5));
       const horarios = ["08:30", "10:30", "12:30", "15:30", "17:30", "20:30", "22:30"];
-      const labels = ["R1 — Café da manhã", "R2 — Lanche da manhã", "R3 — Almoço", "R4 — Lanche / Pré-treino", "R5 — Pós-treino", "R6 — Jantar", "R7 — Ceia"];
+      const labels = ["R1 — Café da manhã", "R2 — Lanche da manhã", "R3 — Almoço", "R4 — Lanche / Pré-treino", "R5 — Pós-treino", "R6 — Jantar", "R7 — Ceia", "R8 — Ceia 2"];
       const ratiosBase = [0.18, 0.12, 0.24, 0.14, 0.16, 0.12, 0.04].slice(0, count);
       const ratioSum = ratiosBase.reduce((a, b) => a + b, 0) || 1;
       const templates = [
