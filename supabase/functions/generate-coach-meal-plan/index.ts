@@ -1197,95 +1197,35 @@ PERFIL FISIOLÓGICO AVANÇADO (aplicar protocolos do system prompt conforme flag
 - Medidas Caseiras (Nutrition Coach IA): ${perfilFisiologico?.medidas_caseiras ? "true" : "false"}
 
 ${perfilFisiologico?.variedade_funcional ? `
-🌿 PROTOCOLO VARIEDADE FUNCIONAL ATIVO (INVIOLÁVEL — o coach LIGOU explicitamente esta flag):
-═══════════════════════════════════════════════════════════════════════════════════
-Este plano DEVE atingir ≥ 20 espécies vegetais distintas / semana e ≥ 12 fontes proteicas distintas / semana. NUNCA repita a mesma combinação proteína+CHO em dias consecutivos.
+🌿 PROTOCOLO VARIEDADE FUNCIONAL ATIVO — ALTA VARIEDADE SEM ESTOURAR O JSON:
+Objetivo semanal: ≥20 espécies vegetais, ≥12 frutas, ≥12 proteínas, ≥6 carboidratos, ≥5 gorduras, ≥4 leguminosas e fermentados em ≥5 dias/semana.
 
-OBRIGAÇÕES MÍNIMAS POR SEMANA:
-• Frutas: ≥ 12 espécies diferentes na semana (NÃO 8 — DOZE), distribuídas obrigatoriamente entre TODAS as 6 categorias funcionais abaixo, com pelo menos 2 frutas DIFERENTES por categoria:
-   ① VERMELHAS/ROXAS antioxidantes (mirtilo, amora, morango, framboesa, açaí, uva roxa, jabuticaba, cereja) — mín 3x/semana
-   ② CÍTRICAS vit C (laranja, tangerina, kiwi, acerola, limão, pomelo, bergamota) — mín 3x/semana
-   ③ ENZIMÁTICAS digestivas (abacaxi, mamão, kiwi, manga) — mín 2x/semana, ideal pós-treino
-   ④ PREBIÓTICAS (banana verde, maçã com casca, pera com casca, caqui) — mín 4x/semana
-   ⑤ TROPICAIS energéticas (banana madura, manga, manga rosa, goiaba, maracujá, abacate) — mín 3x/semana
-   ⑥ DESIDRATADAS/SECAS (tâmara, damasco seco, ameixa preta, uva passa, figo seco) — mín 2x/semana, em pequena quantidade
-   → CADA dia do plano deve incluir frutas de pelo menos 2 categorias DIFERENTES.
-   → NUNCA repetir a mesma fruta no mesmo dia (banana no café + banana no lanche = PROIBIDO).
-   → NUNCA repetir a mesma fruta em 2 dias consecutivos no mesmo slot (ex: maçã no lanche da tarde de seg E ter).
-• Vegetais: ≥ 12 espécies diferentes (mín. 3 crucíferas, 3 folhas escuras, 2 raízes coloridas, 2 alíáceas, 2 cogumelos/funcionais)
-• Proteínas animais: rotacionar OBRIGATORIAMENTE entre 6 categorias na semana — bovino magro, frango, peixe branco, peixe gorduroso (sardinha/salmão/atum), ovo, suíno magro/víscera. Mínimo 2 espécies de peixe diferentes.
-• Carboidratos: rotacionar entre ≥ 6 fontes — arroz branco, arroz integral, batata-doce, batata inglesa, mandioca/aipim, inhame, quinoa, aveia, tapioca, cuscuz, pão integral. NÃO repetir o mesmo CHO em mais de 2 refeições consecutivas no mesmo dia.
-• Gorduras: rotacionar entre ≥ 5 fontes — azeite extra-virgem, abacate, castanhas (variar tipo a cada dia: pará, caju, nozes, amêndoa, macadâmia), sementes (chia, linhaça, abóbora, gergelim), coco, manteiga ghee.
-• Leguminosas: ≥ 4 tipos na semana — feijão carioca, feijão preto, lentilha, grão-de-bico, ervilha, feijão branco.
-• Temperos funcionais OBRIGATÓRIOS em refeições salgadas: rotacionar cúrcuma+pimenta-preta, gengibre fresco, alho cru, cebola roxa, manjericão, alecrim, orégano, coentro, salsinha, hortelã.
-• Fermentados: ≥ 5 dias da semana, variando entre kefir de leite, iogurte grego natural, kombucha, chucrute, kimchi, missô.
+FRUTAS: cobrir 6 categorias (vermelhas/roxas, cítricas, enzimáticas, prebióticas, tropicais, secas). No dia gerado, use pelo menos 2 frutas de categorias diferentes. Não repita a mesma fruta no mesmo dia.
 
-REGRAS ANTI-REPETIÇÃO (CRÍTICAS):
-1. NUNCA prescrever a mesma proteína principal em 2 dias consecutivos (ex: frango seg+ter é PROIBIDO).
-2. NUNCA prescrever o mesmo CHO principal em 2 refeições principais do mesmo dia (ex: arroz no almoço E no jantar é PROIBIDO — alterne com batata-doce, mandioca, etc).
-3. Cada dia da semana deve ter um "tema" funcional diferente: ex. seg = frutos do mar + folhas escuras; ter = aves + raízes; qua = vegetariano + leguminosas; qui = vermelhos + crucíferas; sex = peixe gordo + cogumelos; sáb = víscera + fermentados; dom = ovos + tubérculos coloridos.
-4. Frutas no café da manhã e nos lanches DEVEM ser diferentes a cada dia (rodízio de 12+ frutas/semana, cobrindo as 6 categorias).
-5. Saladas devem variar composição diária — não repetir mesma combinação de folhas+tubérculos+sementes.
+ROTAÇÃO: não repetir proteína principal nem combinação proteína+CHO em dias consecutivos. Varie saladas/vegetais, temperos e fontes de gordura.
 
-🔁 SUBSTITUTOS EXPANDIDOS (OBRIGATÓRIO COM VARIEDADE FUNCIONAL):
-- Para CADA item de alimento prescrito, retornar no campo "substituicoes" um array com no MÍNIMO 6 substitutos equivalentes (idealmente 8–10), TODOS do mesmo grupo macronutricional do alimento original:
-   • Se o item é PROTEÍNA → 6+ substitutos só de proteínas (ex: frango → tilápia, pescada, ovo, patinho, peito de peru, atum em água, ricota, tofu firme).
-   • Se o item é CARBOIDRATO → 6+ substitutos só de carboidratos (ex: arroz → batata-doce, mandioca, inhame, cuscuz, quinoa, tapioca, macarrão integral, polenta).
-   • Se o item é FRUTA → 6+ substitutos cobrindo as 6 categorias funcionais (vermelhas, cítricas, enzimáticas, prebióticas, tropicais, secas).
-   • Se o item é GORDURA → 6+ substitutos só de gorduras (ex: azeite → abacate, castanha-do-pará, nozes, amêndoa, semente de abóbora, tahine, ghee).
-   • Se o item é VEGETAL/SALADA → 6+ vegetais equivalentes funcionalmente (folhas, crucíferas, raízes coloridas).
-- Cada substituto deve incluir: { "alimento": "Nome", "quantidade": "Xg", "observacao": "equivalente em macros + benefício específico" }.
-- PROIBIDO retornar arrays vazios ou com 1–2 itens em "substituicoes". Mínimo 6 sempre.
+SUBSTITUIÇÕES — REGRA COMPACTA PARA EVITAR TIMEOUT:
+- Para CADA alimento, preencher "substituicoes" com 3 a 4 opções equivalentes, nunca vazio.
+- Substitutos devem ser do mesmo grupo: proteína↔proteína, carbo↔carbo, fruta↔fruta, gordura↔gordura, vegetal↔vegetal, fermentado↔fermentado, tempero↔tempero.
+- Para frutas, as 3–4 opções devem cobrir categorias funcionais diferentes quando possível.
+- Para fermentados, usar 3–4 opções entre kefir, iogurte natural/grego, kombucha, chucrute, kimchi, missô, kefir de água, iogurte de coco fermentado.
+- Para temperos funcionais, usar 3–4 combos entre cúrcuma+pimenta, gengibre+limão, alecrim+alho, orégano+manjericão, coentro+cominho, hortelã+limão, curry+gengibre.
+- Cada substituto: { "alimento", "quantidade", "quantidade_g", "observacao", "grupo" }. Observação curta (máx. 90 caracteres).
 
-🌶️ TEMPEROS, MODO DE PREPARO E FERMENTADOS (OBRIGATÓRIO COM VARIEDADE FUNCIONAL):
+TEMPEROS FUNCIONAIS:
+- Toda refeição salgada deve incluir 1 item no array "alimentos" chamado "Tempero funcional: ..." com 3–4 substitutos.
+- Quantidade compacta: ex. "1 colher chá + ervas/alho/limão".
 
-A) TEMPEROS FUNCIONAIS — TODA refeição salgada DEVE conter um item explícito de tempero, com seus substitutos:
-- Adicione um item no array "alimentos" da refeição com formato:
-  { "alimento": "Tempero funcional: cúrcuma + pimenta-preta + alho + cebola roxa + azeite",
-    "quantidade": "1 colher de chá cúrcuma + 1 pitada pimenta + 2 dentes alho + 1/4 cebola + 1 fio azeite",
-    "observacao": "Curcumina (cúrcuma) tem biodisponibilidade ↑2000% com piperina (pimenta-preta). Alho cru = alicina anti-inflamatória. Sempre refogar alho/cebola em azeite frio antes de adicionar a proteína.",
-    "substituicoes": [
-      { "alimento": "Gengibre fresco ralado + limão + alho + salsinha", "quantidade": "1 colher de chá gengibre + suco 1/2 limão + 2 dentes alho + 1 colher salsinha", "observacao": "Gingerol = anti-inflamatório + ↑digestão. Substitui cúrcuma sem perder potência." },
-      { "alimento": "Alecrim + tomilho + alho + azeite", "quantidade": "1 colher chá ervas + 2 dentes alho + 1 fio azeite", "observacao": "Combo mediterrâneo — alecrim ↑memória, tomilho antibacteriano." },
-      { "alimento": "Orégano + manjericão + alho + tomate seco", "quantidade": "1 colher chá ervas + 2 dentes alho + 3 tomates secos", "observacao": "Combo italiano — carvacrol (orégano) antifúngico." },
-      { "alimento": "Coentro + cominho + alho + páprica defumada", "quantidade": "1 colher chá ervas + 2 dentes alho + 1/2 colher chá páprica", "observacao": "Combo árabe — cominho ↑digestão, coentro quelante de metais pesados." },
-      { "alimento": "Hortelã + limão + alho + azeite", "quantidade": "5 folhas hortelã + suco 1/2 limão + 1 dente alho + 1 fio azeite", "observacao": "Refrescante — mentol ↑digestão, antiespasmódico." },
-      { "alimento": "Curry + gengibre + alho + leite de coco light", "quantidade": "1 colher chá curry + 1 colher chá gengibre + 2 dentes alho + 50ml leite coco", "observacao": "Combo indiano — múltiplas especiarias anti-inflamatórias." }
-    ]
-  }
-- ROTACIONAR o combo de tempero entre os 6 estilos (brasileiro, mediterrâneo, italiano, árabe, refrescante, indiano) ao longo da semana — NUNCA repetir o mesmo combo em 2 dias seguidos.
+MODO DE PREPARO:
+- Toda refeição principal deve incluir "modo_preparo" na própria refeição.
+- Máximo 180 caracteres: técnica + ordem + tempo + finalização. Ex: "Refogar alho/cebola 1min, grelhar frango 3min/lado, cozinhar legumes no vapor 4min e finalizar com limão/ervas."
 
-B) MODO DE PREPARO — TODA refeição principal DEVE incluir o campo "modo_preparo" com instrução técnica clara (não vago):
-- Formato: { "modo_preparo": "1) Refogar alho e cebola em azeite frio por 1min; 2) Adicionar a proteína temperada e selar 3min de cada lado; 3) Reduzir fogo, tampar e cozinhar 8min; 4) Finalizar com salsinha fresca e suco de limão fora do fogo." }
-- SEMPRE indicar: ordem de adição dos ingredientes, tempo, fogo (alto/médio/baixo), técnica (refogar, grelhar, assar, cozinhar no vapor, etc.), e finalização (ervas frescas, limão, azeite cru).
-- Para vegetais: indicar se é cru, no vapor, refogado ou assado — e justificar (ex: "brócolis no vapor 4min preserva sulforafano; refogar destrói").
-- Para arroz/leguminosas: indicar se vai resfriado depois (amido resistente).
+FERMENTADOS:
+- Incluir pelo menos 1 item fermentado no dia quando compatível com a rotina, com 3–4 substitutos fermentados.
+- Se houver restrição à lactose, priorizar kefir de água, kombucha, chucrute, kimchi, missô ou iogurte vegetal fermentado.
 
-C) FERMENTADOS — TODA refeição que aceitar fermentado (café, lanches, almoço, jantar, ceia) DEVE incluir um item de fermentado com 6+ substitutos:
-- Formato:
-  { "alimento": "Iogurte grego natural integral",
-    "quantidade": "150g",
-    "observacao": "Probiótico vivo — Lactobacillus + Bifidobacterium para microbiota. Combine com fonte prebiótica (banana verde, aveia, mel cru) para efeito simbiótico.",
-    "substituicoes": [
-      { "alimento": "Kefir de leite integral", "quantidade": "200ml", "observacao": "30+ cepas probióticas vs 2-3 do iogurte. Mais potente para disbiose." },
-      { "alimento": "Kefir de água com fruta", "quantidade": "200ml", "observacao": "Sem lactose — opção para sensibilidade." },
-      { "alimento": "Kombucha natural sem açúcar", "quantidade": "200ml", "observacao": "Probiótico + ácidos orgânicos hepatoprotetores. Evitar versões adoçadas." },
-      { "alimento": "Chucrute cru artesanal", "quantidade": "2 colheres de sopa (40g)", "observacao": "Lactobacillus plantarum + vitamina K2. Como acompanhamento de carnes." },
-      { "alimento": "Kimchi tradicional", "quantidade": "2 colheres de sopa (40g)", "observacao": "Fermentado picante coreano — probióticos + capsaicina termogênica." },
-      { "alimento": "Missô orgânico (pasta)", "quantidade": "1 colher de chá (10g)", "observacao": "Adicionar em sopa morna FORA do fogo (preserva probióticos). Aspergillus oryzae + isoflavonas." },
-      { "alimento": "Iogurte de coco fermentado", "quantidade": "150g", "observacao": "Sem lactose, com cepas probióticas adicionadas. Para intolerantes." },
-      { "alimento": "Picles natural fermentado (não em vinagre)", "quantidade": "3 unidades (50g)", "observacao": "Conferir rótulo: deve ser fermentação láctica, não vinagre." }
-    ]
-  }
-- Mínimo 5 dias da semana com fermentado prescrito, RODÍZIO obrigatório entre os 8 tipos acima.
-
-REGRA DE OURO: cada refeição salgada do dia DEVE conter pelo menos: 1 proteína + 1 CHO + 1 vegetal/salada + 1 tempero funcional + 1 modo_preparo descrito. Refeições que aceitam fermentado devem incluí-lo (mín 1x/dia).
-
-
-GERAÇÃO DO PLANO:
-- Quando gerar 7 dias, EXPLICITE no JSON o "tema funcional" de cada dia em "observacao_clinica".
-- No campo "inteligencia_fisiologica.diversidade_vegetal_semanal" RETORNE o número REAL de espécies vegetais distintas contadas (deve ser ≥ 20).
-- Adicione no JSON: "variedade_aplicada": { "frutas_distintas": N, "vegetais_distintos": N, "proteinas_distintas": N, "carbos_distintos": N, "categorias_frutas_cobertas": ["vermelhas","citricas","enzimaticas","prebioticas","tropicais","secas"] }.
+SAÍDA METADADOS:
+Adicionar "variedade_aplicada": { "frutas_distintas": N, "vegetais_distintos": N, "proteinas_distintas": N, "carbos_distintos": N, "categorias_frutas_cobertas": ["vermelhas","citricas","enzimaticas","prebioticas","tropicais","secas"], "temperos_funcionais": true, "fermentados_com_substitutos": true }.
 ` : ""}
 
 
@@ -1458,6 +1398,7 @@ Responda APENAS com UM ÚNICO objeto JSON válido (root é um único "{...}"). N
       "horario": "string",
       "calorias": number,
       "macros": { "proteina": number, "carboidrato": number, "gordura": number },
+      "modo_preparo": "string curto quando variedade_funcional estiver ativo; null nos demais casos",
       "alimentos": [
         {
           "alimento": "string",
@@ -1527,19 +1468,19 @@ ${perfilFisiologico?.modo_economico ? `
 - Todos os valores numéricos em BRL, com no máximo 2 casas decimais. Sem string, apenas números no JSON.
 ` : ""}`;
 
-    // Retry com backoff + fallback de modelo em caso de 503/timeout
-    // Ordem: flash primeiro (rápido, evita timeout 504 em planos grandes); pro como fallback se flash falhar
-    // Pro primeiro: maior output budget (planos grandes truncavam no Flash com finish_reason=length)
-    const MODELS_FALLBACK = ["google/gemini-2.5-pro", "google/gemini-2.5-flash", "google/gemini-2.5-flash-lite"];
+    // Retry enxuto + modelos rápidos: evita 504 quando variedade funcional aumenta o JSON.
+    // A saída foi compactada acima; Pro tende a exceder o tempo da função em planos grandes.
+    const MODELS_FALLBACK = ["google/gemini-2.5-flash", "google/gemini-2.5-flash-lite"];
     let response: Response | null = null;
     let lastErrorStatus = 0;
     let lastErrorBody = "";
 
     outer: for (const model of MODELS_FALLBACK) {
-      for (let attempt = 0; attempt < 3; attempt++) {
+      for (let attempt = 0; attempt < 2; attempt++) {
         try {
           response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
             method: "POST",
+            signal: AbortSignal.timeout(22_000),
             headers: {
               Authorization: `Bearer ${LOVABLE_API_KEY}`,
               "Content-Type": "application/json",
@@ -1550,7 +1491,7 @@ ${perfilFisiologico?.modo_economico ? `
                 { role: "system", content: SYSTEM_PROMPT },
                 { role: "user", content: userPrompt },
               ],
-              max_tokens: 32000,
+              max_tokens: 18000,
               response_format: { type: "json_object" },
             }),
           });
