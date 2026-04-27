@@ -1539,7 +1539,7 @@ AEJ não é refeição e nunca deve aparecer em refeicoes. Pós-Treino Imediato 
         try {
           response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
             method: "POST",
-            signal: AbortSignal.timeout(22_000),
+            signal: AbortSignal.timeout(28_000),
             headers: {
               Authorization: `Bearer ${LOVABLE_API_KEY}`,
               "Content-Type": "application/json",
@@ -1550,7 +1550,7 @@ AEJ não é refeição e nunca deve aparecer em refeicoes. Pós-Treino Imediato 
                 { role: "system", content: activeSystemPrompt },
                 { role: "user", content: userPrompt },
               ],
-              max_tokens: perfilFisiologico?.variedade_funcional ? 12000 : 16000,
+              max_tokens: perfilFisiologico?.variedade_funcional ? 9000 : 14000,
               response_format: { type: "json_object" },
             }),
           });
