@@ -1226,6 +1226,8 @@ A nomenclatura é PADRÃO BRASILEIRO + função peri-workout. NUNCA use rótulos
 REGRAS DE NOMENCLATURA:
 - Formato do nome: "Refeição N — Nome (HH:MM)" — ex: "Refeição 3 — Almoço / Pré-Treino Sólido (12:30)".
 - O nome PRINCIPAL deve ser SEMPRE um dos 6 nomes brasileiros: Café da Manhã, Lanche da Manhã, Almoço, Lanche da Tarde, Jantar, Ceia. As refeições peri-workout extras (Intra-Treino, Pós-Treino Imediato, Pós-Treino Sólido) só aparecem QUANDO houver treino e GLUT-4 ativo.
+- ⚠️ CAFÉ DA MANHÃ É OBRIGATÓRIO EM TODOS OS PLANOS (treino ou descanso). NUNCA omita o Café da Manhã. Se o treino é à tarde/noite, ele aparece como primeira refeição (~07:00). Se o treino é manhã cedo, ele se funde com o pré-treino sólido ("Café da Manhã / Pré-Treino Sólido"). NUNCA chame a primeira refeição do dia de "Lanche da Manhã" — a primeira refeição SEMPRE é Café da Manhã.
+- ⚠️ INTRA-TREINO: só inclua a refeição "Intra-Treino" se o coach habilitou maltodextrina intra-treino (uses_intra_malto=true). Caso contrário, NÃO crie essa refeição.
 - Quando uma refeição padrão (almoço/jantar/ceia/lanche) COINCIDIR com função peri-workout, USE BARRA: "Almoço / Pré-Treino Sólido", "Jantar / Pós-Treino Sólido", "Ceia / Pós-Treino Sólido", "Café da Manhã / Pré-Treino Sólido".
 - PROIBIDO: usar "Almoço Cedo", "Pré-Treino Sólido" sozinho como nome principal, "Refeição 1" sem nome funcional, ou criar "Almoço" + "Pré-Treino" como duas refeições separadas a menos de 2h30 — eles são A MESMA refeição com função dupla.
 - PROIBIDO: usar 05:00, 05:30, 06:00, 07:00 se o "time" REAL do schedule for diferente.
@@ -2041,7 +2043,13 @@ AEJ não é refeição e nunca deve aparecer em refeicoes. Pós-Treino Imediato 
       const jaTemIntra = parsed.refeicoes.some((m: any) =>
         /intra[\s-]?treino|durante\s*o\s*treino/i.test(String(m?.refeicao || "")),
       );
-      const precisaIntra = intraTreinoExtraidos.length > 0 || glut4Config.uses_intra_malto;
+      // Intra-Treino só quando coach habilitou explicitamente (uses_intra_malto = true).
+      // Se a IA gerou itens de malto/dextrose por engano fora do pós-imediato e o coach NÃO
+      // habilitou o intra, esses itens são removidos silenciosamente (não criamos refeição).
+      const precisaIntra = !!glut4Config.uses_intra_malto;
+      if (!precisaIntra && intraTreinoExtraidos.length > 0) {
+        console.log(`[INTRA-TREINO] descartados ${intraTreinoExtraidos.length} itens (coach não habilitou intra-malto)`);
+      }
 
       if (precisaIntra && !jaTemIntra) {
         // Calcula horário do intra: pós-imediato − (timing_minutes + ~25min) ≈ meio do treino
@@ -2251,6 +2259,92 @@ AEJ não é refeição e nunca deve aparecer em refeicoes. Pós-Treino Imediato 
       });
     }
 
+    // ── ENFORCEMENT DETERMINÍSTICO DO CAFÉ DA MANHÃ ──
+    // Garante que TODO plano (treino ou descanso) tenha "Café da Manhã" — exceto se o
+    // treino é de manhã cedo e o pré-treino sólido já cumpre essa função (já vem nomeado
+    // "Café da Manhã / Pré-Treino Sólido"). Se ausente, renomeia o primeiro lanche/refeição
+    // antes das 09:30 OU injeta um Café da Manhã ~07:00.
+    if (Array.isArray(parsed?.refeicoes) && parsed.refeicoes.length > 0) {
+      const toMin2 = (h: string) => {
+        const m = String(h || "").match(/(\d{1,2}):(\d{2})/);
+        return m ? Number(m[1]) * 60 + Number(m[2]) : 9999;
+      };
+      const temCafe = (parsed.refeicoes as any[]).some((m) =>
+        /caf[ée]\s*da\s*manh[ãa]|desjejum/i.test(String(m?.refeicao || "")),
+      );
+
+      if (!temCafe) {
+        // Tenta promover o primeiro item antes das 09:30 a "Café da Manhã"
+        const sorted = [...(parsed.refeicoes as any[])].sort(
+          (a, b) => toMin2(a?.horario) - toMin2(b?.horario),
+        );
+        const candidato = sorted.find((m) => {
+          const min = toMin2(m?.horario);
+          const nome = String(m?.refeicao || "");
+          return (
+            min < 9 * 60 + 30 &&
+            !/intra[\s-]?treino|p[óo]s[\s-]?treino|pr[ée][\s-]?treino|janela\s*glut|glut[\s-]?4/i.test(nome)
+          );
+        });
+
+        if (candidato) {
+          const antigo = candidato.refeicao;
+          const horario = candidato.horario || "07:00";
+          candidato.refeicao = `Café da Manhã (${horario})`;
+          console.log(`[CAFE-FIX] renomeado: "${antigo}" → "${candidato.refeicao}"`);
+        } else {
+          // Nenhuma refeição matinal → injeta Café da Manhã às 07:00 com macros padrão
+          const cafeRef = {
+            refeicao: "Café da Manhã (07:00)",
+            horario: "07:00",
+            alimentos: [
+              {
+                alimento: "Ovos inteiros",
+                quantidade: "3 unidades (150g)",
+                observacao: "Proteína de alto valor biológico + colina + colesterol bom (matriz hormonal).",
+                substituicoes: [
+                  { alimento: "Claras + 1 ovo inteiro", quantidade_g: 200, grupo: "proteina" },
+                  { alimento: "Iogurte grego natural", quantidade_g: 200, grupo: "proteina" },
+                ],
+              },
+              {
+                alimento: "Pão francês",
+                quantidade: "2 unidades (100g)",
+                observacao: "Carboidrato matinal de absorção rápida — cortisol em pico aproveita glicose.",
+                substituicoes: [
+                  { alimento: "Tapioca", quantidade_g: 80, grupo: "carbo" },
+                  { alimento: "Aveia em flocos", quantidade_g: 70, grupo: "carbo" },
+                ],
+              },
+              {
+                alimento: "Banana madura",
+                quantidade: "1 unidade (100g)",
+                observacao: "Frutose + potássio — recompõe glicogênio hepático após jejum noturno.",
+                substituicoes: [
+                  { alimento: "Mamão", quantidade_g: 150, grupo: "fruta" },
+                  { alimento: "Maçã", quantidade_g: 150, grupo: "fruta" },
+                ],
+              },
+            ],
+            calorias: 600,
+            macros: { proteina: 28, carboidrato: 75, gordura: 18 },
+            observacao_clinica: "Café da Manhã obrigatório injetado pelo sistema (estava ausente no plano gerado).",
+          };
+          (parsed.refeicoes as any[]).push(cafeRef);
+          (parsed.refeicoes as any[]).sort((a, b) => toMin2(a?.horario) - toMin2(b?.horario));
+          // Renumera
+          let _i = 1;
+          (parsed.refeicoes as any[]).forEach((m) => {
+            if (typeof m?.refeicao === "string" && /Refei[çc][ãa]o\s*\d+/i.test(m.refeicao)) {
+              m.refeicao = m.refeicao.replace(/Refei[çc][ãa]o\s*\d+/i, `Refeição ${_i}`);
+            }
+            _i++;
+          });
+          console.log(`[CAFE-FIX] injetado Café da Manhã às 07:00 (estava ausente)`);
+        }
+      }
+    }
+
     // ── AJUSTE PÓS-PROCESSAMENTO: escala gramaturas para bater alvo calórico ±3% ──
     // Se o coach definiu meta calórica e o total da IA ficou abaixo da banda inferior,
     // multiplica proporcionalmente todas as gramaturas (exceto pós-treino imediato, já validado)
@@ -2280,7 +2374,8 @@ AEJ não é refeição e nunca deve aparecer em refeicoes. Pós-Treino Imediato 
         `[ajuste-calorico] alvo=${alvo} totalAntes=${totalAntes} banda=[${minBand},${maxBand}] refeicoes=${parsed.refeicoes.length}`,
       );
 
-      if (totalAntes > 0 && totalAntes < minBand) {
+      const foraDaBanda = totalAntes > 0 && (totalAntes < minBand || totalAntes > maxBand);
+      if (foraDaBanda) {
         // Calcula massa calórica ajustável (exclui pós-imediato que já foi travado pelo GLUT-4)
         const ajustaveis = (parsed.refeicoes as any[]).filter(
           (m) => !isPosImediato(m?.refeicao || ""),
@@ -2301,9 +2396,8 @@ AEJ não é refeição e nunca deve aparecer em refeicoes. Pós-Treino Imediato 
         if (kcalAjustaveis > 0) {
           // Fator que faz (kcalAjustaveis * fator + kcalFixas) === alvo
           const fator = (alvo - kcalFixas) / kcalAjustaveis;
-          // Aumentado de 1.5 → 2.5 para suportar planos onde a IA gera bem abaixo do alvo
-          // (ex.: 5100kcal pedido, IA gera 3617 → fator 1.41; mas planos 5500/3000 precisam 1.83)
-          const fatorClamp = Math.max(1.0, Math.min(2.5, fator)); // só aumenta, máximo +150%
+          // Permite escalar PARA CIMA (até 2.5x) e PARA BAIXO (até 0.5x) para fechar o alvo
+          const fatorClamp = Math.max(0.5, Math.min(2.5, fator));
           console.log(
             `[ajuste-calorico] fator=${fator.toFixed(3)} → clamp=${fatorClamp.toFixed(3)}`,
           );
@@ -2372,20 +2466,19 @@ AEJ não é refeição e nunca deve aparecer em refeicoes. Pós-Treino Imediato 
           ajusteCalorico.aplicado = true;
           ajusteCalorico.fator = Number(fatorClamp.toFixed(3));
           ajusteCalorico.fator_solicitado = Number(fator.toFixed(3));
-          ajusteCalorico.fator_limitado = fator > 2.5;
+          ajusteCalorico.fator_limitado = fator > 2.5 || fator < 0.5;
           ajusteCalorico.total_depois = totalDepois;
           ajusteCalorico.delta_kcal = totalDepois - totalAntes;
           ajusteCalorico.dentro_da_banda = totalDepois >= minBand && totalDepois <= maxBand;
           ajusteCalorico.refeicoes_fixas_ignoradas = fixas.map((f) => f?.refeicao);
+          const direcao = fatorClamp >= 1 ? "abaixo do" : "acima do";
           ajusteCalorico.mensagem = ajusteCalorico.dentro_da_banda
-            ? `Plano abaixo do alvo (${totalAntes} kcal). Gramaturas escaladas ×${fatorClamp.toFixed(3)} → ${totalDepois} kcal (dentro de ±3% de ${alvo}).`
-            : `Plano escalado ×${fatorClamp.toFixed(3)} (limite máximo) → ${totalDepois} kcal. Ainda fora da banda ${minBand}-${maxBand}. Considere revisar manualmente.`;
+            ? `Plano ${direcao} alvo (${totalAntes} kcal). Gramaturas escaladas ×${fatorClamp.toFixed(3)} → ${totalDepois} kcal (dentro de ±3% de ${alvo}).`
+            : `Plano escalado ×${fatorClamp.toFixed(3)} (limite) → ${totalDepois} kcal. Ainda fora da banda ${minBand}-${maxBand}. Considere revisar manualmente.`;
           console.log(`[ajuste-calorico] aplicado: ${ajusteCalorico.mensagem}`);
         } else {
           ajusteCalorico.mensagem = `Sem refeições ajustáveis (todas peri-treino travadas).`;
         }
-      } else if (totalAntes > maxBand) {
-        ajusteCalorico.mensagem = `Plano acima do alvo (${totalAntes} > ${maxBand}). Não foi reduzido automaticamente — revise manualmente.`;
       } else if (totalAntes >= minBand && totalAntes <= maxBand) {
         ajusteCalorico.mensagem = `Plano já dentro de ±3% (${totalAntes} kcal vs alvo ${alvo}). Sem ajuste necessário.`;
         ajusteCalorico.dentro_da_banda = true;
