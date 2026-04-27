@@ -1468,19 +1468,19 @@ ${perfilFisiologico?.modo_economico ? `
 - Todos os valores numéricos em BRL, com no máximo 2 casas decimais. Sem string, apenas números no JSON.
 ` : ""}`;
 
-    // Retry com backoff + fallback de modelo em caso de 503/timeout
-    // Ordem: flash primeiro (rápido, evita timeout 504 em planos grandes); pro como fallback se flash falhar
-    // Pro primeiro: maior output budget (planos grandes truncavam no Flash com finish_reason=length)
-    const MODELS_FALLBACK = ["google/gemini-2.5-pro", "google/gemini-2.5-flash", "google/gemini-2.5-flash-lite"];
+    // Retry enxuto + modelos rápidos: evita 504 quando variedade funcional aumenta o JSON.
+    // A saída foi compactada acima; Pro tende a exceder o tempo da função em planos grandes.
+    const MODELS_FALLBACK = ["google/gemini-2.5-flash", "google/gemini-2.5-flash-lite"];
     let response: Response | null = null;
     let lastErrorStatus = 0;
     let lastErrorBody = "";
 
     outer: for (const model of MODELS_FALLBACK) {
-      for (let attempt = 0; attempt < 3; attempt++) {
+      for (let attempt = 0; attempt < 2; attempt++) {
         try {
           response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
             method: "POST",
+            signal: AbortSignal.timeout(22_000),
             headers: {
               Authorization: `Bearer ${LOVABLE_API_KEY}`,
               "Content-Type": "application/json",
@@ -1491,7 +1491,7 @@ ${perfilFisiologico?.modo_economico ? `
                 { role: "system", content: SYSTEM_PROMPT },
                 { role: "user", content: userPrompt },
               ],
-              max_tokens: 32000,
+              max_tokens: 18000,
               response_format: { type: "json_object" },
             }),
           });
