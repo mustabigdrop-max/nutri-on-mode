@@ -2041,7 +2041,13 @@ AEJ não é refeição e nunca deve aparecer em refeicoes. Pós-Treino Imediato 
       const jaTemIntra = parsed.refeicoes.some((m: any) =>
         /intra[\s-]?treino|durante\s*o\s*treino/i.test(String(m?.refeicao || "")),
       );
-      const precisaIntra = intraTreinoExtraidos.length > 0 || glut4Config.uses_intra_malto;
+      // Intra-Treino só quando coach habilitou explicitamente (uses_intra_malto = true).
+      // Se a IA gerou itens de malto/dextrose por engano fora do pós-imediato e o coach NÃO
+      // habilitou o intra, esses itens são removidos silenciosamente (não criamos refeição).
+      const precisaIntra = !!glut4Config.uses_intra_malto;
+      if (!precisaIntra && intraTreinoExtraidos.length > 0) {
+        console.log(`[INTRA-TREINO] descartados ${intraTreinoExtraidos.length} itens (coach não habilitou intra-malto)`);
+      }
 
       if (precisaIntra && !jaTemIntra) {
         // Calcula horário do intra: pós-imediato − (timing_minutes + ~25min) ≈ meio do treino
