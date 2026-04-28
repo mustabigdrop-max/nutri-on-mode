@@ -1268,6 +1268,21 @@ ${calc.usaIgf1 ? "💉 IGF-1 Des ativo (meia-vida 20-30min): aplicar IMEDIATAMEN
 ${calc.usaGlp1 ? `💊 GLP-1 ativo: distribuir em ≥${calc.refeicoesRecomendadas} refeições para evitar náusea.` : ""}
 ${calc.sonoRuim ? `😴 Sono ruim: aumentar ${calc.carboNoturnoBonus}g de CHO de baixo IG (aveia/batata-doce/arroz integral) na última refeição para reduzir cortisol noturno.` : ""}
 
+💧 HIDRATAÇÃO PRÉ-CALCULADA (USE ESTES VALORES EXATOS NO JSON):
+• Base (peso × 35): ${calc.hidratacaoBaseMl}ml
+• Treino (${calc.horasTreinoDia.toFixed(1)}h × 500): ${calc.hidratacaoTreinoMl}ml
+• Ajuste farmacológico: ${calc.hidratacaoAjusteMl}ml ${calc.hidratacaoCompostos.length ? `[${calc.hidratacaoCompostos.map((c: any) => `${c.composto} +${c.ml}ml`).join(" | ")}]` : "(nenhum composto altera hidratação)"}
+• META DIÁRIA TOTAL: ${calc.hidratacaoTotalMl}ml
+• Fórmula aplicada: ${calc.hidratacaoFormula}
+
+⛔ O JSON DEVE conter o objeto "hidratacao" com EXATAMENTE:
+  - meta_diaria_ml: ${calc.hidratacaoTotalMl}
+  - formula_aplicada: "${calc.hidratacaoFormula}"
+  - ajuste_farmacologico_ml: ${calc.hidratacaoAjusteMl}
+  - compostos_que_alteraram: ${JSON.stringify(calc.hidratacaoCompostos.map((c: any) => c.composto))}
+  - distribuicao: { ao_acordar: "500ml em jejum", pre_refeicoes: "200ml 30min antes de cada refeição", intra_treino: "500–700ml com eletrólitos (sódio 400–600mg/L)", pos_treino: "500ml", restante_dia: "completar saldo até 21:00" }
+  - alerta: ${calc.hidratacaoAjusteMl >= 1000 ? `"Hidratação aumentada por protocolo farmacológico (+${calc.hidratacaoAjusteMl}ml). Monitorar eletrólitos."` : "null"}
+
 ${calc.cyclingPlan ? `🔁 CYCLING DE CARBOIDRATO ATIVO — distribuir entre dias:
 • Dia treino PESADO: CHO ${calc.cyclingPlan.dia_treino_pesado.carbo_g}g / GORD ${calc.cyclingPlan.dia_treino_pesado.gordura_g}g / PTN ${calc.cyclingPlan.dia_treino_pesado.proteina_g}g (~${calc.cyclingPlan.dia_treino_pesado.kcal} kcal)
 • Dia treino LEVE: CHO ${calc.cyclingPlan.dia_treino_leve.carbo_g}g / GORD ${calc.cyclingPlan.dia_treino_leve.gordura_g}g / PTN ${calc.cyclingPlan.dia_treino_leve.proteina_g}g (~${calc.cyclingPlan.dia_treino_leve.kcal} kcal)
