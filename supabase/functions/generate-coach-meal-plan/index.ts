@@ -550,6 +550,11 @@ OUTPUT OBRIGATÓRIO quando exames presentes — incluir no JSON:
 - Meta semanal: mínimo 40 espécies alimentares distintas no plano.
 - Matriz de cores de vegetais obrigatória: verde, laranja, vermelho, roxo, branco.
 - Fermentado presente em mínimo 5 dias da semana.
+- Frutas obrigatórias: mínimo 2 porções/dia em posições estratégicas:
+  · Manhã: banana/manga/abacaxi (cortisol aproveita frutose)
+  · Pós-treino: abacaxi ou mamão (bromelina/papaína ↑ absorção proteína 15%)
+  · Nunca omitir fruta do plano — substituir carbo estrutural por fruta 2x/semana para diversidade circadiana.
+- Rotação semanal de frutas obrigatória: mín 5 espécies distintas/semana (banana, abacaxi, mamão, maçã, frutas vermelhas, kiwi, manga, melancia).
 - Hidratação calculada e incluída no JSON em todo plano (campo "hidratacao").
 - Exames laboratoriais: interpretar e ajustar se presentes no perfil (campo "analise_laboratorial").
 - Distribuição de macros por refeição segue as janelas circadianas obrigatórias.`;
