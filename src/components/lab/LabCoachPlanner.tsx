@@ -208,31 +208,88 @@ const LabCoachPlanner = ({ onAskApex }: { onAskApex: (q: string) => void }) => {
     setGeneratingDiet(true);
     try {
       const c = selectedClient;
-      const clientProfile = {
-        goal: c.goal || c.objetivo_principal || "saúde geral",
-        vet_kcal: c.vet_kcal || c.get_kcal || 2000,
-        get_kcal: c.get_kcal || 2000,
-        geb_kcal: c.geb_kcal,
-        protein_g: c.protein_g || 120,
-        carbs_g: c.carbs_g || 200,
-        fat_g: c.fat_g || 60,
-        sex: c.sex,
-        weight_kg: c.weight_kg,
-        height_cm: c.height_cm,
-        dietary_restrictions: c.dietary_restrictions,
-        health_conditions: c.health_conditions,
-        sport: c.sport,
-        training_frequency: c.training_frequency,
-        activity_level: c.activity_level,
-      };
-
       const { data: ws } = await supabase
         .from("workout_schedule")
         .select("day_of_week, workout_type, workout_time, duration_minutes, slot")
         .eq("user_id", c.user_id);
 
       const { data, error } = await supabase.functions.invoke("generate-meal-plan", {
-        body: { profile: clientProfile, weekStart, budgetMode: false, workoutSchedule: ws || [], coachNotes },
+        body: {
+          // ── Dados demográficos diretos (Edge Function espera no body raiz) ──
+          nome: c.full_name || "Paciente",
+          idade: (c as any).age || 30,
+          sexo: c.sex === "F" ? "Feminino" : "Masculino",
+          peso: c.weight_kg,
+          altura: c.height_cm,
+          objetivo: c.goal || c.objetivo_principal || "saúde geral",
+          perfilPCA: (c as any).perfil_pca || "Executor",
+          nivelAtividade: c.activity_level || "moderado",
+          treino: c.sport || "Musculação / Hipertrofia",
+          refeicoes: c.training_frequency || 5,
+          calorias: c.vet_kcal || c.get_kcal || null,
+
+          // ── Fase e periodização ──
+          fasePeriodizacao: (c as any).fase_periodizacao || null,
+          bfAtual: (c as any).bf_atual || null,
+          bfMeta: (c as any).bf_meta || null,
+          metodoBF: (c as any).metodo_bf || "visual",
+          perfilVisual: (c as any).perfil_visual || null,
+
+          // ── Cardio ──
+          fazCardio: (c as any).faz_cardio || false,
+          cardioModalidades: (c as any).cardio_modalidades || [],
+          cardioFrequencia: (c as any).cardio_frequencia || null,
+          cardioDuracao: (c as any).cardio_duracao || null,
+          cardioQuando: (c as any).cardio_quando || null,
+          cardioNoCalculo: (c as any).cardio_no_calculo || false,
+
+          // ── Farmacológico ──
+          protocoloFarmacologico: c.active_protocol || "",
+          atletaCompetitivo: (c as any).atleta_competitivo || false,
+          federacaoCategoria: (c as any).federacao_categoria || null,
+
+          // ── Restrições e preferências ──
+          restricoesStr: (c.dietary_restrictions || []).join(", "),
+          preferencias: (c as any).preferencias_alimentares || null,
+          suplementos: (c as any).suplementacao_atual || null,
+          observacoes: (c.health_conditions || []).join(", "),
+
+          // ── Perfil fisiológico ──
+          neat: (c as any).neat || "medio",
+          qualidadeSono: (c as any).qualidade_sono || "boa",
+          semanasEmDeficit: (c as any).semanas_em_deficit || 0,
+          cyclingCarbo: (c as any).cycling_carbo || false,
+          perfilFisiologico: {
+            historico_intestinal: (c as any).historico_intestinal || null,
+            fermentados_atual: (c as any).fermentados_atual || null,
+            sensibilidade_insulina: (c as any).sensibilidade_insulina || null,
+            objetivos_secundarios: (c as any).objetivos_secundarios || [],
+            variedade_funcional: (c as any).variedade_funcional || false,
+            protocolo_microbiota: (c as any).protocolo_microbiota || false,
+            cycling_carbo: (c as any).cycling_carbo || false,
+            modo_economico: (c as any).modo_economico || false,
+            perfil_economico: (c as any).perfil_economico || "intermediario",
+            alimentos_disponiveis: (c as any).alimentos_disponiveis || [],
+            outros_alimentos: (c as any).outros_alimentos || null,
+            medidas_caseiras: (c as any).medidas_caseiras || false,
+          },
+
+          // ── Treino e schedule ──
+          workoutSchedule: ws || [],
+          trainingSchedulePrompt: ws?.length
+            ? ws.map((w: any) =>
+                `dia=${w.day_of_week} tipo=${w.workout_type} time=${w.workout_time || "07:00"} duration_min=${w.duration_minutes || 60}`
+              ).join("\n")
+            : null,
+
+          // ── GLUT-4 ──
+          glut4Config: (c as any).glut4_config || null,
+          glut4Text: (c as any).glut4_text || null,
+
+          // ── Coach ──
+          coachNotes,
+          weekStart,
+        },
       });
 
       if (error) throw error;
@@ -242,13 +299,21 @@ const LabCoachPlanner = ({ onAskApex }: { onAskApex: (q: string) => void }) => {
         .eq("user_id", c.user_id).eq("week_start", weekStart);
 
       const items: any[] = [];
-      for (const day of data.days) {
+      for (const day of data.days || []) {
         for (const meal of day.meals) {
           items.push({
-            user_id: c.user_id, week_start: weekStart, day_index: day.day_index,
-            meal_type: meal.meal_type, food_name: meal.food_name, portion: meal.portion,
-            kcal: meal.kcal, protein_g: meal.protein_g, carbs_g: meal.carbs_g, fat_g: meal.fat_g,
-            confirmed: false, swapped: false,
+            user_id: c.user_id,
+            week_start: weekStart,
+            day_index: day.day_index,
+            meal_type: meal.meal_type,
+            food_name: meal.food_name,
+            portion: meal.portion,
+            kcal: meal.kcal,
+            protein_g: meal.protein_g,
+            carbs_g: meal.carbs_g,
+            fat_g: meal.fat_g,
+            confirmed: false,
+            swapped: false,
           });
         }
       }
