@@ -2915,6 +2915,55 @@ AEJ não é refeição e nunca deve aparecer em refeicoes. Pós-Treino Imediato 
       };
     }
 
+    // ═══════════════════════════════════════════════════════════════
+    // NORMALIZAÇÃO DETERMINÍSTICA DO BLOCO "hidratacao"
+    // Garante que o JSON sempre contenha meta_diaria_ml, formula_aplicada,
+    // ajuste_farmacologico_ml, compostos_que_alteraram e distribuicao completa.
+    // Usa os valores PRÉ-CALCULADOS como fonte de verdade — IA não pode subestimar.
+    // ═══════════════════════════════════════════════════════════════
+    if (calc && parsed && typeof parsed === "object") {
+      const hSrc: any = (parsed as any).hidratacao && typeof (parsed as any).hidratacao === "object"
+        ? (parsed as any).hidratacao
+        : {};
+      const hCompostosCalc: string[] = Array.isArray(calc.hidratacaoCompostos)
+        ? calc.hidratacaoCompostos.map((c: any) => c?.composto).filter(Boolean)
+        : [];
+      const distSrc: any = hSrc.distribuicao && typeof hSrc.distribuicao === "object" ? hSrc.distribuicao : {};
+      const totalMl = Number(calc.hidratacaoTotalMl) || 0;
+      const restanteMl = Math.max(0, totalMl - 500 - 500); // descontando ao_acordar + pos_treino
+      const intraTreinoDefault = (Number(calc.horasTreinoDia) || 0) > 0
+        ? `${Math.round((Number(calc.horasTreinoDia) || 1) * 600)}ml + eletrólitos (sódio 300–500mg/L, potássio 100–200mg/L)`
+        : "Não aplicável (sem treino programado)";
+      const alertaDefault = (Number(calc.hidratacaoAjusteMl) || 0) >= 1000
+        ? `Hidratação aumentada por protocolo farmacológico (+${calc.hidratacaoAjusteMl}ml). Monitorar eletrólitos diariamente.`
+        : null;
+
+      (parsed as any).hidratacao = {
+        meta_diaria_ml: Number(hSrc.meta_diaria_ml) > 0 ? Number(hSrc.meta_diaria_ml) : totalMl,
+        formula_aplicada: typeof hSrc.formula_aplicada === "string" && hSrc.formula_aplicada.trim().length > 0
+          ? hSrc.formula_aplicada
+          : (calc.hidratacaoFormula || ""),
+        ajuste_farmacologico_ml: Number.isFinite(Number(hSrc.ajuste_farmacologico_ml))
+          ? Number(hSrc.ajuste_farmacologico_ml)
+          : (Number(calc.hidratacaoAjusteMl) || 0),
+        compostos_que_alteraram: Array.isArray(hSrc.compostos_que_alteraram) && hSrc.compostos_que_alteraram.length > 0
+          ? hSrc.compostos_que_alteraram.map((x: any) => String(x)).filter(Boolean)
+          : hCompostosCalc,
+        distribuicao: {
+          ao_acordar: typeof distSrc.ao_acordar === "string" && distSrc.ao_acordar.trim() ? distSrc.ao_acordar : "500ml em jejum (reidratação noturna)",
+          pre_refeicoes: typeof distSrc.pre_refeicoes === "string" && distSrc.pre_refeicoes.trim() ? distSrc.pre_refeicoes : "200ml 30min antes de cada refeição principal",
+          intra_treino: typeof distSrc.intra_treino === "string" && distSrc.intra_treino.trim() ? distSrc.intra_treino : intraTreinoDefault,
+          pos_treino: typeof distSrc.pos_treino === "string" && distSrc.pos_treino.trim() ? distSrc.pos_treino : "500ml imediatamente pós-treino",
+          restante_dia: typeof distSrc.restante_dia === "string" && distSrc.restante_dia.trim() ? distSrc.restante_dia : `${restanteMl}ml distribuídos ao longo do dia (gole a cada 20–30min)`,
+        },
+        alerta: typeof hSrc.alerta === "string" && hSrc.alerta.trim() ? hSrc.alerta : alertaDefault,
+        // Auditoria — facilita debug e exibição na UI
+        base_ml: Number(calc.hidratacaoBaseMl) || 0,
+        treino_ml: Number(calc.hidratacaoTreinoMl) || 0,
+        compostos_detalhe: Array.isArray(calc.hidratacaoCompostos) ? calc.hidratacaoCompostos : [],
+      };
+    }
+
     // ── PERSISTÊNCIA DO HISTÓRICO DE AJUSTES CALÓRICOS ──
     // Grava cada ajuste aplicado para que o coach possa comparar versões posteriormente.
     let adjustmentId: string | null = null;
