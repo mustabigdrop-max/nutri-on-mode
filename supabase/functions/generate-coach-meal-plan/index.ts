@@ -1138,6 +1138,22 @@ serve(async (req) => {
       const carbPct = Math.round(((carboG * 4) / metaKcalExibida) * 100);
       const fatPct  = Math.round(((gorduraG * 9) / metaKcalExibida) * 100);
 
+      // ── HIDRATAÇÃO PRÉ-CALCULADA (peso × 35 + horas_treino × 500 + ajuste farmacológico) ──
+      const pesoNumH = Number(peso) || 0;
+      // Estimar horas/dia de treino a partir da rotina semanal (média) ou treino texto
+      const treinoStr = String(treino || trainingSchedulePrompt || "").toLowerCase();
+      const matchMin = treinoStr.match(/(\d{2,3})\s*min/);
+      const matchH = treinoStr.match(/(\d(?:[.,]\d)?)\s*h(?!z)/);
+      const horasTreinoDia = matchMin
+        ? Math.min(3, Number(matchMin[1]) / 60)
+        : matchH
+          ? Math.min(3, Number(matchH[1].replace(",", ".")))
+          : 1; // fallback 1h/dia
+      const hidratacaoBaseMl = Math.round(pesoNumH * 35);
+      const hidratacaoTreinoMl = Math.round(horasTreinoDia * 500);
+      const hidratacaoTotalMl = hidratacaoBaseMl + hidratacaoTreinoMl + hidratacaoAjusteMl;
+      const hidratacaoFormula = `(${pesoNumH}kg × 35) + (${horasTreinoDia.toFixed(1)}h × 500) + ${hidratacaoAjusteMl}ml farmaco = ${hidratacaoTotalMl}ml`;
+
       return {
         tmb: Math.round(tmb),
         fatorAtividade,
