@@ -1198,6 +1198,14 @@ serve(async (req) => {
         alertasCriticosFarm,
         timingsFarm,
         ajusteCarboCap,
+        // ── Hidratação farmacológica pré-calculada ──
+        hidratacaoBaseMl,
+        hidratacaoTreinoMl,
+        hidratacaoAjusteMl,
+        hidratacaoTotalMl,
+        hidratacaoFormula,
+        hidratacaoCompostos,
+        horasTreinoDia,
       };
     })();
 
