@@ -3179,6 +3179,103 @@ AEJ não é refeição e nunca deve aparecer em refeicoes. Pós-Treino Imediato 
       };
     }
 
+    // ── VALIDAÇÃO DE FRUTAS — mínimo 2 porções/dia + 5 espécies/semana ──
+    try {
+      const FRUTAS_KEYWORDS = [
+        "banana","abacaxi","mamão","mamao","maçã","maca","frutas vermelhas","morango",
+        "mirtilo","blueberry","framboesa","amora","kiwi","manga","melancia","melão","melao",
+        "uva","goiaba","pera","laranja","tangerina","mexerica","abacate","cereja",
+        "pêssego","pessego","ameixa","figo","caqui","açaí","acai","coco","romã","roma",
+        "pitaya","maracujá","maracuja","caju","graviola","jabuticaba","lichia","carambola"
+      ];
+      const detectarFrutas = (texto: string): string[] => {
+        const t = (texto || "").toLowerCase();
+        const achadas = new Set<string>();
+        for (const f of FRUTAS_KEYWORDS) {
+          if (t.includes(f)) {
+            // normaliza variantes
+            const norm = f.replace("mamao","mamão").replace("maca","maçã")
+              .replace("melao","melão").replace("pessego","pêssego")
+              .replace("acai","açaí").replace("roma","romã")
+              .replace("maracuja","maracujá");
+            achadas.add(norm);
+          }
+        }
+        return Array.from(achadas);
+      };
+
+      const dias: any[] = Array.isArray((parsed as any)?.dias) ? (parsed as any).dias
+        : Array.isArray((parsed as any)?.semana) ? (parsed as any).semana
+        : Array.isArray((parsed as any)?.plano_semanal) ? (parsed as any).plano_semanal
+        : [];
+
+      const alertasFrutas: string[] = [];
+      const especiesSemana = new Set<string>();
+      const auditoriaFrutas: { dia: string; porcoes: number; especies: string[] }[] = [];
+
+      if (dias.length > 0) {
+        for (let i = 0; i < dias.length; i++) {
+          const dia = dias[i] || {};
+          const nomeDia = dia?.dia || dia?.nome || dia?.label || `Dia ${i + 1}`;
+          const refeicoes: any[] = Array.isArray(dia?.refeicoes) ? dia.refeicoes
+            : Array.isArray(dia?.meals) ? dia.meals : [];
+          let porcoesDia = 0;
+          const especiesDia = new Set<string>();
+          for (const ref of refeicoes) {
+            const itens: any[] = Array.isArray(ref?.itens) ? ref.itens
+              : Array.isArray(ref?.alimentos) ? ref.alimentos
+              : Array.isArray(ref?.foods) ? ref.foods : [];
+            for (const it of itens) {
+              const nome = String(it?.alimento || it?.nome || it?.name || it?.food || "");
+              const achadas = detectarFrutas(nome);
+              if (achadas.length > 0) {
+                porcoesDia += 1;
+                achadas.forEach(f => { especiesDia.add(f); especiesSemana.add(f); });
+              }
+            }
+            // fallback: varrer descrição/observação
+            if (typeof ref?.descricao === "string") {
+              detectarFrutas(ref.descricao).forEach(f => { especiesDia.add(f); especiesSemana.add(f); });
+            }
+          }
+          auditoriaFrutas.push({ dia: nomeDia, porcoes: porcoesDia, especies: Array.from(especiesDia) });
+          if (porcoesDia < 2) {
+            alertasFrutas.push(`⚠️ ${nomeDia}: apenas ${porcoesDia} porção(ões) de fruta — mínimo recomendado é 2/dia (manhã + pós-treino).`);
+          }
+        }
+
+        if (especiesSemana.size < 5) {
+          const faltam = 5 - especiesSemana.size;
+          alertasFrutas.push(
+            `⚠️ Diversidade de frutas insuficiente: ${especiesSemana.size} espécie(s) na semana — faltam ${faltam} para atingir o mínimo de 5 espécies distintas (rotação circadiana).`
+          );
+        }
+      } else {
+        alertasFrutas.push("⚠️ Não foi possível auditar frutas — estrutura de dias/refeições não reconhecida no plano.");
+      }
+
+      (parsed as any).validacao_frutas = {
+        porcoes_minimas_por_dia: 2,
+        especies_minimas_por_semana: 5,
+        especies_detectadas_semana: Array.from(especiesSemana),
+        total_especies_semana: especiesSemana.size,
+        auditoria_diaria: auditoriaFrutas,
+        conforme: alertasFrutas.length === 0,
+        alertas: alertasFrutas,
+      };
+
+      // Propaga alertas ao resumo (se existir) sem sobrescrever os farmacológicos
+      if (alertasFrutas.length > 0) {
+        if (!(parsed as any).resumo) (parsed as any).resumo = {};
+        const arr = Array.isArray((parsed as any).resumo.alertas_nutricionais)
+          ? (parsed as any).resumo.alertas_nutricionais
+          : [];
+        (parsed as any).resumo.alertas_nutricionais = [...arr, ...alertasFrutas];
+      }
+    } catch (e) {
+      console.warn("[validacao_frutas] falha ao auditar frutas:", e);
+    }
+
     // ── PERSISTÊNCIA DO HISTÓRICO DE AJUSTES CALÓRICOS ──
     // Grava cada ajuste aplicado para que o coach possa comparar versões posteriormente.
     let adjustmentId: string | null = null;
