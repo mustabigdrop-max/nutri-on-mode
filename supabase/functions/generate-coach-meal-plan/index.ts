@@ -308,6 +308,234 @@ REGRA SUBSTITUIÇÃO: manter (1) proteína ±3g, (2) perfil de gordura adequado 
 9. Proteína pós-treino + fruta enzimática (abacaxi/mamão) — ↑ absorção ~15%.
 10. Pré-sono: caseína (cottage/minas) + magnésio (semente abóbora) + triptofano (leite morno).
 
+═══════════════════════════════════════════════════════
+CRONOBIOLOGIA NUTRICIONAL — RELÓGIO CIRCADIANO APLICADO
+═══════════════════════════════════════════════════════
+
+REGRA INVIOLÁVEL: A HORA DO DIA MUDA A BIOQUÍMICA — distribua nutrientes
+conforme o relógio circadiano, não apenas conforme o treino.
+
+JANELAS CIRCADIANAS OBRIGATÓRIAS:
+
+🌅 MANHÃ (06:00–12:00) — Cortisol + Insulina em pico:
+   - Carboidrato de IG MODERADO-ALTO é bem-vindo — cortisol eleva glicemia de base,
+     insulina em pico limpa a glicose rapidamente → sem acúmulo de gordura
+   - Proteína COMPLETA obrigatória — síntese proteica matinal é 25% maior
+   - Gordura MODERADA — não bloquear absorção de proteína pós-jejum
+   - Fibra solúvel (aveia/chia) — reduz pico glicêmico sem bloquear energia
+   - PROIBIDO: refeição pesada em gordura saturada de manhã (retarda metabolismo)
+
+☀️ MEIO-DIA (12:00–15:00) — Pico de performance metabólica:
+   - Maior janela de absorção de carboidratos do dia (transportadores GLUT4 em máximo)
+   - Almoço = refeição mais calórica do dia quando possível
+   - Proteína + carbo complexo + vegetal colorido — combinação ideal
+   - Gordura boa permitida (azeite, abacate) — metabolismo oxidativo no pico
+
+🌇 TARDE (15:00–19:00) — Sensibilidade insulínica caindo:
+   - Reduzir carboidrato simples progressivamente
+   - Manter proteína alta (preservar MPS durante queda de cortisol)
+   - Aumentar gordura boa (ácidos graxos como combustível alternativo)
+   - Pré-treino nesta janela: carbo moderado + proteína (não exceder 60g carbo)
+
+🌙 NOITE (19:00–23:00) — Melatonina subindo, insulina baixa:
+   - REDUZIR carboidrato simples radicalmente (insulina bloqueia melatonina e GH)
+   - AUMENTAR triptofano (precursor serotonina → melatonina)
+   - Proteína de digestão lenta (caseína, cottage, ovo)
+   - Gordura de absorção lenta (pasta amendoim, coco ralado)
+   - Magnésio + Zinco — potencializam GH noturno
+   - PROIBIDO: banana, mel, doce, pão branco, arroz branco após 20:00
+     em protocolos com GH secretagogos (CJC-1295/Ipamorelin/MK-677)
+
+APLICAÇÃO PRÁTICA POR REFEIÇÃO (proporção macros):
+- Café da Manhã: 45–55% carbo / 25–30% proteína / 20–25% gordura
+- Almoço: 40–50% carbo / 30–35% proteína / 15–25% gordura
+- Lanche Tarde: 30–40% carbo / 35–40% proteína / 20–30% gordura
+- Jantar: 15–25% carbo / 40–45% proteína / 30–40% gordura
+- Ceia: 5–10% carbo / 40–50% proteína / 40–50% gordura
+
+═══════════════════════════════════════════════════════
+HIDRATAÇÃO FARMACOLÓGICA INTELIGENTE
+═══════════════════════════════════════════════════════
+
+CALCULAR E INCLUIR PROTOCOLO DE HIDRATAÇÃO EM TODO PLANO.
+
+FÓRMULA BASE:
+   hidratacao_ml = (peso_kg × 35) + (horas_treino × 500) + ajuste_farmacologico
+
+AJUSTES FARMACOLÓGICOS (somatório):
+   - Testosterona > 300mg/sem: +500ml/dia
+   - Nandrolona ativa: +300ml/dia
+   - Trembolona: +800ml/dia (hipertermia + sudorese severa)
+   - Clenbuterol: +600ml/dia
+   - Metformina: +300ml/dia (acidose lática)
+   - GLP-1 (Semaglutida/Retratutida): +400ml/dia
+   - DNP: +2000ml/dia MÍNIMO (risco de vida)
+   - Diuréticos (furosemida/HCT): +1000ml/dia
+
+DISTRIBUIÇÃO OBRIGATÓRIA:
+   - Ao acordar: 500ml em jejum
+   - 30min antes de cada refeição: 200ml
+   - Intra-treino: 500–700ml com eletrólitos (sódio 400–600mg/L)
+   - Pós-treino imediato: 500ml
+   - À noite (até 21:00): completar saldo
+   - PROIBIDO: >300ml de uma vez (dilui suco gástrico)
+
+ELETRÓLITOS EM PROTOCOLOS ANABÓLICOS:
+   - Sódio: 3–5g/dia (não restringir em off-season)
+   - Potássio: 4–5g/dia via alimentação (banana, batata-doce, espinafre, abacate)
+   - Magnésio: 400–600mg/dia (suplementar)
+   - Fósforo: monitorar (nandrolona altera metabolismo fosfórico)
+
+OUTPUT OBRIGATÓRIO no JSON do plano:
+"hidratacao": {
+  "meta_diaria_ml": number,
+  "formula_aplicada": "string",
+  "ajuste_farmacologico_ml": number,
+  "compostos_que_alteraram": ["string"],
+  "distribuicao": {
+    "ao_acordar": "500ml em jejum",
+    "pre_refeicoes": "200ml 30min antes",
+    "intra_treino": "string com volume + eletrólitos",
+    "pos_treino": "500ml",
+    "restante_dia": "string"
+  },
+  "alerta": "string ou null"
+}
+
+═══════════════════════════════════════════════════════
+DIVERSIDADE ALIMENTAR ELITE — PROTOCOLO SURREAL
+═══════════════════════════════════════════════════════
+
+REGRA: plano elite usa MÍNIMO 40 alimentos distintos na semana
+(evidência Sonnenburg/Stanford — diversidade > 30 espécies = microbioma de atleta elite).
+
+PROTEÍNAS — ROTAÇÃO SEMANAL (mín 7 fontes/semana):
+   Seg: Patinho/acém (bovino vermelho)
+   Ter: Sardinha + ovo inteiro (peixe + ovo)
+   Qua: Coxa/sobrecoxa de frango
+   Qui: Fígado bovino refogado (víscera)
+   Sex: Tilápia ou salmão
+   Sáb: Lombo suíno ou pernil
+   Dom: Moela ou coração de frango (víscera)
+   → NUNCA repetir proteína principal em dias consecutivos.
+
+CARBOIDRATOS — ROTAÇÃO FUNCIONAL (mín 6 fontes/semana):
+   Arroz branco + feijão preto, batata-doce, mandioca/aipim, aveia integral,
+   inhame, quinoa (2x/sem), cuscuz nordestino, tapioca (apenas pós-treino imediato),
+   beterraba (3x/sem — nitratos vasodilatadores).
+   → NUNCA arroz branco em TODAS as refeições de carbo.
+
+VEGETAIS — MATRIZ DE CORES (mín 8 espécies/semana):
+   🟢 Verde escuro (1x/dia): espinafre, couve, rúcula, agrião, brócolis
+   🟠 Laranja/amarelo (3x/sem): cenoura, abóbora, pimentão amarelo
+   🔴 Vermelho (3x/sem): tomate, pimentão vermelho, beterraba
+   🟣 Roxo (2x/sem): repolho roxo, berinjela, cebola roxa
+   ⚪ Allium (diário): alho + cebola
+   🍄 Cogumelos (2x/sem): shiitake, paris, portobello (beta-glucanas + vit D2)
+   → Nunca o mesmo vegetal em mais de 2 refeições no mesmo dia.
+
+FRUTAS — POR JANELA (mín 6 espécies/semana):
+   Manhã: banana madura, manga, abacaxi
+   Pós-treino: banana + abacaxi (bromelina ↑ absorção proteína 15%)
+   Tarde: maçã com casca (quercetina + pectina)
+   Noite: kiwi, cereja ácida (triptofano + melatonina)
+   Anti-inflamatórias 3x/sem: mirtilo, amora, uva roxa
+   → NUNCA repetir mesma fruta mais de 1x no mesmo dia.
+
+GORDURAS — DIVERSIDADE DE PERFIL (mín 4 fontes/semana):
+   Ômega-3 (3–4x/sem): sardinha, salmão, linhaça moída, chia
+   Mono (diário): azeite extra virgem 2–3 col sopa
+   Saturada funcional (2x/sem): ovo inteiro, coco, manteiga
+   Poli vegetal (2x/sem): girassol, linhaça
+   → Nunca apenas azeite como única fonte de gordura no dia.
+
+FERMENTADOS — MICROBIOMA ELITE (mín 5x/semana):
+   Seg: kefir de leite 200ml; Ter: iogurte grego natural integral;
+   Qua: kombucha 200ml ou kefir de água; Qui: chucrute 30g;
+   Sex: kefir ou iogurte natural.
+   → Sempre combinar com prebiótico na mesma refeição (simbiótico).
+
+═══════════════════════════════════════════════════════
+PROTOCOLOS NUTRICIONAIS PARA STACKS FARMACOLÓGICOS PESADOS
+═══════════════════════════════════════════════════════
+
+QUANDO DETECTAR 4+ COMPOSTOS SIMULTÂNEOS, aplicar PROTOCOLO ELITE:
+
+STACK TIPO 1 — BULK MÁXIMO (Testo + Nandro + Oral + GH Secretagogo):
+   → Proteína: 2,5g/kg MM | Carbo: 5–6g/kg | Gordura: 25–30%
+   → Hepatoproteção: TUDCA 500mg + Cardo Mariano 300mg + NAC 600mg +
+     Cúrcuma 500mg + Beterraba diária + Crucíferas diárias
+   → Micros: Zinco 25mg, Mg 400mg, Vit D 5000UI, B12 SL, CoQ10 200mg, Selênio 200mcg
+   → Hidratação: base + 1200ml
+   → Cardio support: Ômega-3 4g, Plant sterols 2g, CoQ10 200mg, Taurina 3g (se trembo)
+
+STACK TIPO 2 — CUTTING FARMACO (Testo + Trembo + T3 + GLP-1):
+   → Proteína: 3,2g/kg MÍNIMO | Carbo ciclado: treino 2,5 / descanso 1g/kg | Gordura: 20% mín
+   → ALERTA: comer por horário (GLP-1 suprime apetite)
+   → Taurina 3g, Selênio 200mcg, eletrólitos↑, refeed 1x/sem OBRIGATÓRIO
+
+STACK TIPO 3 — RECOMP AVANÇADA (Testo + Primo + IGF-1 + Metformina):
+   → Proteína: 2,8g/kg, leucina mín 3g/refeição
+   → Carbo 80% peri-treino | Metformina: CHO −10%, +B12 SL
+   → IGF-1 Des: refeição em 25–30min (whey 40g + carbo simples)
+   → Berberina 300mg pré-refeições principais
+
+STACK TIPO 4 — PEPTÍDEOS (GH + IGF-1 + BPC-157 + TB-500):
+   → Proteína 2,8g/kg + colágeno hidrolisado 10g/dia
+   → Vit C 2g, Glutamina 10g, CoQ10 200mg + PQQ 20mg
+   → Não comer 30–40min após GH secretagogo
+   → Pós-IGF-1: janela 0–5min pós-treino (NUNCA pré)
+
+STACK TIPO 5 — FEMININO AVANÇADO (Oxa + GH Secretagogo + GLP-1):
+   → Proteína 2,5g/kg | Carbo 40–45% (sem ciclagem agressiva)
+   → Ferro heme 3x/sem, Folato 400mcg, Cálcio 1200mg/dia alimentar
+   → Evitar fitoestrógenos em excesso (soja isolada)
+   → Periodização menstrual se ciclo preservado:
+     Folicular (D1–14): mais carbo, menos gordura
+     Lútea (D15–28): mais gordura, menos carbo, +Magnésio
+
+═══════════════════════════════════════════════════════
+ANÁLISE LABORATORIAL INTEGRADA — AJUSTE POR EXAMES
+═══════════════════════════════════════════════════════
+
+SE "exames_laboratoriais" preenchido, INTERPRETAR e AJUSTAR:
+
+LIPÍDIOS:
+   HDL <40: +Ômega-3 4g, +Plant sterols 2g, −sat 5%
+   LDL >160: +Beta-glucana aveia 6g, +Azeite 3 col
+   TG >150: −Carbo simples 20%, +Ômega-3, −álcool
+
+GLICEMIA:
+   Jejum >100: canela Ceylon 2g, vinagre maçã pré-refeição, baixo IG, berberina 300mg 3x
+   HbA1c >5,7%: carbo ciclado, sem simples fora peri-treino, caminhada 10min pós-refeição
+
+HORMÔNIOS:
+   Testo total <300: Zn 25mg, Mg 400mg, Vit D 5000UI, sat 25% mín
+   Testo >1200 + Hct >50%: hidratação +500ml, Vit E 400UI, evitar ferro
+   TSH >4,0: Selênio 200mcg, iodo alimentar, evitar crucíferas cruas excesso
+   TSH <0,5: alertar coach (hipertireoidismo)
+   IGF-1 <150: proteína 2,8g/kg + sono 8h + Zn + Mg
+   Insulina jejum >15: protocolo metformina-like (canela, berberina, vinagre, amido resistente)
+
+HEMATOLOGIA:
+   Hb <13(H)/<12(F): Ferro heme 3x/sem (fígado, carne vermelha) + Vit C; sem chá/café na refeição
+   Hct >52%: hidratação +1L, sem ferro suplementar, monitorar PA
+   Ferritina <30: fígado bovino obrigatório 3x/sem
+
+FUNÇÃO HEPÁTICA:
+   ALT/AST >2× LSN: ALERTA VERMELHO — remover orais, TUDCA 1g, Cardo 600mg, NAC 1200mg,
+     sat ≤10%, alcachofra, dente-de-leão
+   ALT/AST 1–2×: TUDCA 500mg, cúrcuma 500mg, beterraba diária, crucíferas diárias
+
+OUTPUT OBRIGATÓRIO quando exames presentes — incluir no JSON:
+"analise_laboratorial": {
+  "exames_interpretados": ["string"],
+  "ajustes_aplicados": ["string"],
+  "alertas_criticos": ["string"],
+  "proximos_exames_recomendados": ["string"],
+  "score_saude_metabolica": number
+}
+
 ═══════ INSTRUÇÃO FINAL OBRIGATÓRIA AO GERAR PLANO ═══════
 
 - NUNCA repetir mesma proteína principal mais de 2 dias consecutivos.
@@ -318,7 +546,13 @@ REGRA SUBSTITUIÇÃO: manter (1) proteína ±3g, (2) perfil de gordura adequado 
 - Fibra funcional (psyllium/chia/linhaça) em 1-2 refeições/dia, ROTACIONAR (não a mesma todo dia).
 - Suco de limão em TODA refeição com feijão ou víscera.
 - Vísceras: SEMPRE mencionar forma de preparo (palatabilidade = aderência).
-- Mel cru (se disponível) como prebiótico em iogurte/aveia.`;
+- Mel cru (se disponível) como prebiótico em iogurte/aveia.
+- Meta semanal: mínimo 40 espécies alimentares distintas no plano.
+- Matriz de cores de vegetais obrigatória: verde, laranja, vermelho, roxo, branco.
+- Fermentado presente em mínimo 5 dias da semana.
+- Hidratação calculada e incluída no JSON em todo plano (campo "hidratacao").
+- Exames laboratoriais: interpretar e ajustar se presentes no perfil (campo "analise_laboratorial").
+- Distribuição de macros por refeição segue as janelas circadianas obrigatórias.`;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
