@@ -1,24 +1,28 @@
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { BarChart3, Droplets, Plus, MessageSquare, User, Microscope, Lock } from "lucide-react";
+import { BarChart3, Droplets, Plus, User, Microscope, Lock, ClipboardList } from "lucide-react";
 import { useLabSubscription } from "@/hooks/useLabSubscription";
+import { useCoachAccess } from "@/hooks/useCoachAccess";
 import LabUpsellModal from "@/components/lab/LabUpsellModal";
-
-const NAV_ITEMS = [
-  { id: "home", icon: BarChart3, label: "Home", path: "/dashboard" },
-  { id: "hydration", icon: Droplets, label: "Água", path: "/hydration" },
-  { id: "add", icon: Plus, label: "", path: "/meal-log" },
-  { id: "lab", icon: Microscope, label: "LAB", path: "/lab" },
-  { id: "profile", icon: User, label: "Perfil", path: "/profile" },
-];
 
 const BottomNav = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const currentPath = location.pathname;
   const { hasLab, loading: labLoading } = useLabSubscription();
+  const { hasAccess: hasCoachAccess } = useCoachAccess();
   const [showUpsell, setShowUpsell] = useState(false);
+
+  const NAV_ITEMS = [
+    { id: "home", icon: BarChart3, label: "Home", path: "/dashboard" },
+    { id: "hydration", icon: Droplets, label: "Água", path: "/hydration" },
+    { id: "add", icon: Plus, label: "", path: "/meal-log" },
+    ...(hasCoachAccess
+      ? [{ id: "coach", icon: ClipboardList, label: "Coach", path: "/meus-protocolos" }]
+      : [{ id: "lab", icon: Microscope, label: "LAB", path: "/lab" }]),
+    { id: "profile", icon: User, label: "Perfil", path: "/profile" },
+  ];
 
   return (
     <>
