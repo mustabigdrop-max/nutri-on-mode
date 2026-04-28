@@ -798,13 +798,14 @@ serve(async (req) => {
         timing?: string;
         alerta?: string;
         alerta_ghrp6?: string;
+        hidratacao_ajuste_ml?: number;
       };
 
       const COMPOSTOS: Record<string, Composto> = {
-        testosterona: { keywords:["testosterona","testosterone","enantato","cipionato","propionato","sustanon","omnadren","nebido","undecanoato","test e","test c","test p","test base","trt"], fator_get:1.12, proteina_bonus_gkg:0.20, categoria:"eaa", micronutrientes:["Zinco 25mg/dia","Vitamina D 5000UI/dia","Crucíferos diários (DIM natural)"], alerta:"Monitorar E2 — aromatização elevada.", gordura_min_pct:20 },
-        nandrolona: { keywords:["nandrolona","nandrolone","npp","deca decanoato","fenilpropionato","deca-durabolin","deca durabolin","deca"], fator_get:1.06, proteina_bonus_gkg:0.10, categoria:"eaa", micronutrientes:["Colágeno hidrolisado 10g/dia","Vitamina C 1g/dia","Vitamina B6 100mg (prolactina)"], alerta:"Monitorar prolactina. Cabergolina se necessário." },
-        boldenona: { keywords:["boldenona","boldenone","equipoise","eq","undecylenate","bold"], fator_get:1.08, proteina_bonus_gkg:0.10, categoria:"eaa", micronutrientes:["Ferro heme aumentado","Vitamina B6 50mg","Hidratação +500ml/dia"], alerta:"Hematócrito pode subir — hidratação aumentada obrigatória." },
-        trembolona: { keywords:["trembolona","trenbolone","tren","parabolan","tren a","tren e","hexahidrobenzilcarbonato","acetato de trembolona"], fator_get:1.15, proteina_bonus_gkg:0.30, carbo_delta_pct:-5, categoria:"eaa", alerta_cv:true, micronutrientes:["Vitamina B6 100mg/dia","Taurina 3g/dia","Eletrólitos aumentados (sudorese noturna)"], alerta:"Trembolona eleva prolactina e causa sudorese noturna severa. Eletrólitos diários obrigatórios." },
+        testosterona: { keywords:["testosterona","testosterone","enantato","cipionato","propionato","sustanon","omnadren","nebido","undecanoato","test e","test c","test p","test base","trt"], fator_get:1.12, proteina_bonus_gkg:0.20, categoria:"eaa", micronutrientes:["Zinco 25mg/dia","Vitamina D 5000UI/dia","Crucíferos diários (DIM natural)"], alerta:"Monitorar E2 — aromatização elevada.", gordura_min_pct:20, hidratacao_ajuste_ml:500 },
+        nandrolona: { keywords:["nandrolona","nandrolone","npp","deca decanoato","fenilpropionato","deca-durabolin","deca durabolin","deca"], fator_get:1.06, proteina_bonus_gkg:0.10, categoria:"eaa", micronutrientes:["Colágeno hidrolisado 10g/dia","Vitamina C 1g/dia","Vitamina B6 100mg (prolactina)"], alerta:"Monitorar prolactina. Cabergolina se necessário.", hidratacao_ajuste_ml:300 },
+        boldenona: { keywords:["boldenona","boldenone","equipoise","eq","undecylenate","bold"], fator_get:1.08, proteina_bonus_gkg:0.10, categoria:"eaa", micronutrientes:["Ferro heme aumentado","Vitamina B6 50mg","Hidratação +500ml/dia"], alerta:"Hematócrito pode subir — hidratação aumentada obrigatória.", hidratacao_ajuste_ml:500 },
+        trembolona: { keywords:["trembolona","trenbolone","tren","parabolan","tren a","tren e","hexahidrobenzilcarbonato","acetato de trembolona"], fator_get:1.15, proteina_bonus_gkg:0.30, carbo_delta_pct:-5, categoria:"eaa", alerta_cv:true, micronutrientes:["Vitamina B6 100mg/dia","Taurina 3g/dia","Eletrólitos aumentados (sudorese noturna)"], alerta:"Trembolona eleva prolactina e causa sudorese noturna severa. Eletrólitos diários obrigatórios.", hidratacao_ajuste_ml:800 },
         masteron: { keywords:["masteron","drostanolona","drostanolone","mast e","mast p"], fator_get:1.05, proteina_bonus_gkg:0.10, gordura_delta_pct:-3, categoria:"eaa", micronutrientes:["Ômega 3 3g/dia"], alerta:"Efeito anti-estrogênico leve. Manter gorduras boas no plano." },
         stanozolol: { keywords:["stanozolol","winstrol","estanozolol","winny","stan"], fator_get:1.08, proteina_bonus_gkg:0.15, categoria:"eaa", hepatotoxico:true, micronutrientes:["Ômega 3 4g/dia","Plant sterols 2g/dia","TUDCA 500mg/dia","Cardo Mariano 300mg/dia"], alerta:"Stanozolol impacta HDL severamente. Exame lipídico a cada 6 semanas." },
         oximetolona: { keywords:["oximetolona","oxymetholone","hemogenin","anapolon","anadrol"], fator_get:1.08, proteina_bonus_gkg:0.20, categoria:"eaa", hepatotoxico:true, micronutrientes:["TUDCA 500mg/dia OBRIGATÓRIO","Cardo Mariano 300mg/dia","Cúrcuma 500mg + Piperina","Beterraba diária","Crucíferos diários"], alerta:"⚠️ 17-alfa alquilado HEPATOTÓXICO. TUDCA 500mg obrigatório. ALT/AST a cada 4 semanas. Uso máximo 6 semanas." },
@@ -826,17 +827,17 @@ serve(async (req) => {
         slupp332: { keywords:["slu-pp-332","slupp332","slu332","slu pp 332","slu-pp"], fator_get:1.08, carbo_delta_pct:5, categoria:"peptideo_mitocondrial", micronutrientes:["CoQ10 200mg/dia","PQQ 20mg/dia","Ômega 3 4g/dia"], alerta:"Exercício mimético mitocondrial. Aumentar carbo complexo. Aplicar pré-treino." },
         motsc: { keywords:["mots-c","motsc","mots c"], fator_get:1.06, categoria:"peptideo_mitocondrial", micronutrientes:["CoQ10 100mg/dia","PQQ 10mg/dia"], alerta:"MOTS-c ativa AMPK. Aplicar pré-cardio para maximizar oxidação de gordura." },
         epithalon: { keywords:["epithalon","epitalon","epithalamin"], fator_get:1.00, categoria:"peptideo_longevidade", micronutrientes:["Vitamina C 1g/dia","Resveratrol 200mg","NMN 250mg","Ômega 3 2g/dia"], alerta:"Epithalon longevidade — sinergia com antioxidantes e NMN." },
-        glp1: { keywords:["semaglutida","semaglutide","ozempic","wegovy","retatrutida","retatrutide","tirzepatida","tirzepatide","mounjaro","liraglutida","liraglutide","victoza","rybelsus","glp-1","glp1"], fator_get:0.92, refeicoes_minimo:5, categoria:"glp1", micronutrientes:["Proteína em todas refeições (anti-sarcopenia)"], alerta:"GLP-1 — fracionar refeições. Priorizar proteína primeiro em cada refeição. Monitorar déficit proteico." },
+        glp1: { keywords:["semaglutida","semaglutide","ozempic","wegovy","retatrutida","retatrutide","tirzepatida","tirzepatide","mounjaro","liraglutida","liraglutide","victoza","rybelsus","glp-1","glp1"], fator_get:0.92, refeicoes_minimo:5, categoria:"glp1", micronutrientes:["Proteína em todas refeições (anti-sarcopenia)"], alerta:"GLP-1 — fracionar refeições. Priorizar proteína primeiro em cada refeição. Monitorar déficit proteico.", hidratacao_ajuste_ml:400 },
         folistatina: { keywords:["folistatina","follistatin","fs-344","fs344"], fator_get:1.08, proteina_bonus_gkg:0.30, categoria:"peptideo_anabolico", micronutrientes:["Proteína a cada 3h (janela anabólica contínua)"], alerta:"Folistatina inibe miostatina — janela anabólica extrema. Proteína distribuída a cada 3h." },
-        clenbuterol: { keywords:["clenbuterol","clen","clembuterol"], fator_get:1.07, proteina_bonus_gkg:0.30, carbo_delta_pct:-5, categoria:"estimulante", micronutrientes:["Taurina 3g/dia OBRIGATÓRIO","Potássio aumentado","Magnésio 400mg/dia"], alerta:"Clenbuterol catabólico após 2 semanas. Proteína mínima 2.5g/kg. Taurina obrigatória (previne cãibras)." },
+        clenbuterol: { keywords:["clenbuterol","clen","clembuterol"], fator_get:1.07, proteina_bonus_gkg:0.30, carbo_delta_pct:-5, categoria:"estimulante", micronutrientes:["Taurina 3g/dia OBRIGATÓRIO","Potássio aumentado","Magnésio 400mg/dia"], alerta:"Clenbuterol catabólico após 2 semanas. Proteína mínima 2.5g/kg. Taurina obrigatória (previne cãibras).", hidratacao_ajuste_ml:600 },
         t3t4: { keywords:["t3","t4","citomed","cytomel","liotironina","liothyronine","levotiroxina","levothyroxine","synthroid"], fator_get:1.08, proteina_bonus_gkg:0.30, categoria:"hormonio_tireoide", micronutrientes:["Selênio 200mcg/dia","Iodo alimentar"], alerta:"T3 exógeno é catabólico em excesso. Proteína mínima 2.5g/kg obrigatório. Nunca em déficit sem base anabólica." },
-        metformina: { keywords:["metformina","metformin","glifage","glucophage"], fator_get:1.00, carbo_delta_pct:-10, proteina_compensar_carbo:true, categoria:"sensibilizador", micronutrientes:["B12 sublingual 1000mcg/dia OBRIGATÓRIO","Folato 400mcg/dia","Magnésio 200mg/dia"], alerta:"⚠️ Metformina depleta B12. Suplementação sublingual obrigatória." },
+        metformina: { keywords:["metformina","metformin","glifage","glucophage"], fator_get:1.00, carbo_delta_pct:-10, proteina_compensar_carbo:true, categoria:"sensibilizador", micronutrientes:["B12 sublingual 1000mcg/dia OBRIGATÓRIO","Folato 400mcg/dia","Magnésio 200mg/dia"], alerta:"⚠️ Metformina depleta B12. Suplementação sublingual obrigatória.", hidratacao_ajuste_ml:300 },
         berberina: { keywords:["berberina","berberine"], fator_get:1.00, carbo_delta_pct:-7, categoria:"sensibilizador", micronutrientes:["B12 monitorar"], alerta:"Berberina — tomar 500mg antes das 3 maiores refeições." },
         insulina: { keywords:["insulina","insulin","humulin","novolog","humalog","nph","glargina","lantus","novorapid"], fator_get:1.20, carbo_delta_pct:20, proteina_bonus_gkg:0.20, categoria:"insulina", alerta_critico:true, micronutrientes:["Dextrose SEMPRE disponível"], alerta:"⛔ INSULINA EXÓGENA — RISCO DE VIDA. Nunca em jejum. Dextrose sempre disponível. Refeição com 60-80g carbo imediatamente após aplicação." },
         cafeina: { keywords:["cafeina","caffeine"], fator_get:1.03, categoria:"estimulante", micronutrientes:["Hidratação +500ml/dia","Magnésio 200mg"], alerta:"Cafeína depleta magnésio. Não usar após 14h (sono)." },
         cabergolina: { keywords:["cabergolina","cabergoline","dostinex","caber"], fator_get:1.00, categoria:"dopaminergico", micronutrientes:[], alerta:"Tomar com alimento para reduzir náusea." },
         ia_aromatase: { keywords:["anastrozol","anastrozole","arimidex","letrozol","letrozole","femara","exemestane","exemestano","aromasin"], fator_get:1.00, gordura_min_pct:25, categoria:"ia", micronutrientes:["Gorduras boas aumentadas (estrogênio baixo)"], alerta:"Manter gorduras saudáveis altas. Estradiol muito baixo prejudica anabolismo, libido e sono." },
-        dnp: { keywords:["dnp","dinitrofenol","dinitrophenol"], fator_get:1.40, carbo_delta_pct:20, categoria:"desacoplador", alerta_critico:true, micronutrientes:["Eletrólitos a cada 2h","Vitamina C 2g","Vitamina E 400UI","Hidratação 6-8L/dia"], alerta:"⛔ DNP — RISCO DE VIDA. Hipertermia fatal possível. Hidratação extrema obrigatória." },
+        dnp: { keywords:["dnp","dinitrofenol","dinitrophenol"], fator_get:1.40, carbo_delta_pct:20, categoria:"desacoplador", alerta_critico:true, micronutrientes:["Eletrólitos a cada 2h","Vitamina C 2g","Vitamina E 400UI","Hidratação 6-8L/dia"], alerta:"⛔ DNP — RISCO DE VIDA. Hipertermia fatal possível. Hidratação extrema obrigatória.", hidratacao_ajuste_ml:2000 },
       };
 
       let multFarm = 1.0;
@@ -858,6 +859,8 @@ serve(async (req) => {
       const alertasCriticosFarm: string[] = [];
       const timingsFarm: string[] = [];
       const flagsFarm: string[] = [];
+      let hidratacaoAjusteMl = 0;
+      const hidratacaoCompostos: { composto: string; ml: number }[] = [];
 
       for (const [nome, c] of Object.entries(COMPOSTOS)) {
         const detectado = c.keywords.some(kw => protoStr.includes(kw));
@@ -885,7 +888,11 @@ serve(async (req) => {
         if (nome === "igf1") usaIgf1 = true;
         if (nome === "glp1") usaGlp1 = true;
         if (nome === "metformina") usaMetformina = true;
-        flagsFarm.push(`${nome} ×${(c.fator_get ?? 1).toFixed(2)}${c.proteina_bonus_gkg ? ` +${c.proteina_bonus_gkg}g·kg` : ""}${c.carbo_delta_pct ? ` CHO${c.carbo_delta_pct > 0 ? "+" : ""}${c.carbo_delta_pct}%` : ""}`);
+        if (c.hidratacao_ajuste_ml && c.hidratacao_ajuste_ml > 0) {
+          hidratacaoAjusteMl += c.hidratacao_ajuste_ml;
+          hidratacaoCompostos.push({ composto: nome, ml: c.hidratacao_ajuste_ml });
+        }
+        flagsFarm.push(`${nome} ×${(c.fator_get ?? 1).toFixed(2)}${c.proteina_bonus_gkg ? ` +${c.proteina_bonus_gkg}g·kg` : ""}${c.carbo_delta_pct ? ` CHO${c.carbo_delta_pct > 0 ? "+" : ""}${c.carbo_delta_pct}%` : ""}${c.hidratacao_ajuste_ml ? ` H₂O+${c.hidratacao_ajuste_ml}ml` : ""}`);
       }
 
       // ── DIMINISHING RETURNS + CAP ESCALONADO POR Nº DE COMPOSTOS ──
@@ -1131,6 +1138,22 @@ serve(async (req) => {
       const carbPct = Math.round(((carboG * 4) / metaKcalExibida) * 100);
       const fatPct  = Math.round(((gorduraG * 9) / metaKcalExibida) * 100);
 
+      // ── HIDRATAÇÃO PRÉ-CALCULADA (peso × 35 + horas_treino × 500 + ajuste farmacológico) ──
+      const pesoNumH = Number(peso) || 0;
+      // Estimar horas/dia de treino a partir da rotina semanal (média) ou treino texto
+      const treinoStr = String(treino || trainingSchedulePrompt || "").toLowerCase();
+      const matchMin = treinoStr.match(/(\d{2,3})\s*min/);
+      const matchH = treinoStr.match(/(\d(?:[.,]\d)?)\s*h(?!z)/);
+      const horasTreinoDia = matchMin
+        ? Math.min(3, Number(matchMin[1]) / 60)
+        : matchH
+          ? Math.min(3, Number(matchH[1].replace(",", ".")))
+          : 1; // fallback 1h/dia
+      const hidratacaoBaseMl = Math.round(pesoNumH * 35);
+      const hidratacaoTreinoMl = Math.round(horasTreinoDia * 500);
+      const hidratacaoTotalMl = hidratacaoBaseMl + hidratacaoTreinoMl + hidratacaoAjusteMl;
+      const hidratacaoFormula = `(${pesoNumH}kg × 35) + (${horasTreinoDia.toFixed(1)}h × 500) + ${hidratacaoAjusteMl}ml farmaco = ${hidratacaoTotalMl}ml`;
+
       return {
         tmb: Math.round(tmb),
         fatorAtividade,
@@ -1175,6 +1198,14 @@ serve(async (req) => {
         alertasCriticosFarm,
         timingsFarm,
         ajusteCarboCap,
+        // ── Hidratação farmacológica pré-calculada ──
+        hidratacaoBaseMl,
+        hidratacaoTreinoMl,
+        hidratacaoAjusteMl,
+        hidratacaoTotalMl,
+        hidratacaoFormula,
+        hidratacaoCompostos,
+        horasTreinoDia,
       };
     })();
 
@@ -1236,6 +1267,21 @@ ${calc.usaMetformina ? "⚠️ Metformina ativa: CHO já reduzido em 10%, prote�
 ${calc.usaIgf1 ? "💉 IGF-1 Des ativo (meia-vida 20-30min): aplicar IMEDIATAMENTE PÓS-TREINO (janela 0-5min, NUNCA pré-treino). Refeição 25-30min após injeção: 40-50g whey isolado + 30-40g carbo simples + ZERO gordura + ZERO fibra. Dextrose disponível (risco hipoglicemia)." : ""}
 ${calc.usaGlp1 ? `💊 GLP-1 ativo: distribuir em ≥${calc.refeicoesRecomendadas} refeições para evitar náusea.` : ""}
 ${calc.sonoRuim ? `😴 Sono ruim: aumentar ${calc.carboNoturnoBonus}g de CHO de baixo IG (aveia/batata-doce/arroz integral) na última refeição para reduzir cortisol noturno.` : ""}
+
+💧 HIDRATAÇÃO PRÉ-CALCULADA (USE ESTES VALORES EXATOS NO JSON):
+• Base (peso × 35): ${calc.hidratacaoBaseMl}ml
+• Treino (${calc.horasTreinoDia.toFixed(1)}h × 500): ${calc.hidratacaoTreinoMl}ml
+• Ajuste farmacológico: ${calc.hidratacaoAjusteMl}ml ${calc.hidratacaoCompostos.length ? `[${calc.hidratacaoCompostos.map((c: any) => `${c.composto} +${c.ml}ml`).join(" | ")}]` : "(nenhum composto altera hidratação)"}
+• META DIÁRIA TOTAL: ${calc.hidratacaoTotalMl}ml
+• Fórmula aplicada: ${calc.hidratacaoFormula}
+
+⛔ O JSON DEVE conter o objeto "hidratacao" com EXATAMENTE:
+  - meta_diaria_ml: ${calc.hidratacaoTotalMl}
+  - formula_aplicada: "${calc.hidratacaoFormula}"
+  - ajuste_farmacologico_ml: ${calc.hidratacaoAjusteMl}
+  - compostos_que_alteraram: ${JSON.stringify(calc.hidratacaoCompostos.map((c: any) => c.composto))}
+  - distribuicao: { ao_acordar: "500ml em jejum", pre_refeicoes: "200ml 30min antes de cada refeição", intra_treino: "500–700ml com eletrólitos (sódio 400–600mg/L)", pos_treino: "500ml", restante_dia: "completar saldo até 21:00" }
+  - alerta: ${calc.hidratacaoAjusteMl >= 1000 ? `"Hidratação aumentada por protocolo farmacológico (+${calc.hidratacaoAjusteMl}ml). Monitorar eletrólitos."` : "null"}
 
 ${calc.cyclingPlan ? `🔁 CYCLING DE CARBOIDRATO ATIVO — distribuir entre dias:
 • Dia treino PESADO: CHO ${calc.cyclingPlan.dia_treino_pesado.carbo_g}g / GORD ${calc.cyclingPlan.dia_treino_pesado.gordura_g}g / PTN ${calc.cyclingPlan.dia_treino_pesado.proteina_g}g (~${calc.cyclingPlan.dia_treino_pesado.kcal} kcal)
