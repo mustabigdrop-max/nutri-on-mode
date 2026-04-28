@@ -323,6 +323,7 @@ const DashboardPage = () => {
   const { todayLog: waterLog, addWater } = useWaterLogs();
   const { hasAccess, plan, isCoach } = usePlanGate();
   const { partner, isAdmin } = usePartner();
+  const { hasAccess: hasCoachAccess } = useCoachAccess();
   const { getTodayWorkout, getTodayWorkouts, getNextRestDay, getWorkoutsForDay, todayLog: workoutLog } = useWorkoutSchedule();
   const [upgradeModal, setUpgradeModal] = useState<{ open: boolean; feature: string }>({ open: false, feature: "" });
   const [protocolosInfo, setProtocolosInfo] = useState<{ total: number; unread: number; hasMealPlan: boolean }>({ total: 0, unread: 0, hasMealPlan: false });
