@@ -859,6 +859,8 @@ serve(async (req) => {
       const alertasCriticosFarm: string[] = [];
       const timingsFarm: string[] = [];
       const flagsFarm: string[] = [];
+      let hidratacaoAjusteMl = 0;
+      const hidratacaoCompostos: { composto: string; ml: number }[] = [];
 
       for (const [nome, c] of Object.entries(COMPOSTOS)) {
         const detectado = c.keywords.some(kw => protoStr.includes(kw));
