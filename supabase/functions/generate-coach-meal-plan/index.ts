@@ -295,6 +295,216 @@ FIBRA (dose funcional solúvel):
 
 REGRA SUBSTITUIÇÃO: manter (1) proteína ±3g, (2) perfil de gordura adequado à fase (magro cutting, variado off-season), (3) preferência pelo perfil econômico do usuário, (4) NUNCA o mesmo alimento 2x seguidas.
 
+═══════════════════════════════════════════════════════
+BLOCO 4B — ISOCALORIA ABSOLUTA + TABELA DE DENSIDADES
+═══════════════════════════════════════════════════════
+
+⛔ REGRA CRÍTICA DE ISOCALORIA — INVIOLÁVEL EM TODAS AS SUBSTITUIÇÕES:
+
+ALGORITMO OBRIGATÓRIO PARA CADA SUBSTITUTO:
+1. Calcule kcal do alimento ORIGINAL: gramas_original × (kcal/100g_original ÷ 100)
+2. Calcule gramas do SUBSTITUTO: kcal_original ÷ (kcal/100g_substituto ÷ 100)
+3. Converta para medida caseira pela gramagem calculada
+4. Tolerância MÁXIMA: ±3% das kcal originais — NUNCA exceder
+5. NUNCA usar a mesma gramagem do original sem recalcular densidade
+
+EXEMPLO OBRIGATÓRIO:
+Original: Batata inglesa 350g = 350 × 0.77 = 270 kcal
+→ Arroz branco cozido: 270 ÷ 1.30 = 207g = "1 escumadeira cheia e meia ≈ 207g" ✅
+→ Feijão carioca: 270 ÷ 1.10 = 245g = "2 conchas e meia ≈ 245g" ✅
+→ Lentilha cozida: 270 ÷ 1.16 = 233g = "2 conchas cheias ≈ 233g" ✅
+→ ERRADO: Arroz branco 130g = 169 kcal (falta 101 kcal = -37%) ❌
+→ ERRADO: Feijão carioca 200g = 220 kcal (falta 50 kcal = -18%) ❌
+
+═══════════════════════════════════════════════════════
+TABELA DE DENSIDADE CALÓRICA NUTRION — BASE OFICIAL
+(kcal/100g — usar SEMPRE no cálculo de substituições)
+═══════════════════════════════════════════════════════
+
+CARBOIDRATOS COZIDOS:
+Arroz branco cozido: 130 kcal | Arroz integral cozido: 124 kcal
+Feijão preto cozido: 112 kcal | Feijão carioca cozido: 110 kcal
+Feijão branco cozido: 118 kcal | Lentilha cozida: 116 kcal
+Grão-de-bico cozido: 164 kcal | Ervilha cozida: 81 kcal
+Feijão-fradinho cozido: 114 kcal | Soja cozida: 173 kcal
+Batata inglesa cozida: 77 kcal | Batata-doce cozida: 86 kcal
+Batata-doce assada: 90 kcal | Mandioca/aipim cozida: 125 kcal
+Inhame cozido: 97 kcal | Cará cozido: 98 kcal
+Cuscuz cozido: 112 kcal | Cuscuz seco: 358 kcal
+Quinoa cozida: 120 kcal | Quinoa crua: 368 kcal
+Aveia crua/flocos: 366 kcal | Aveia cozida: 71 kcal
+Farelo de aveia cru: 246 kcal | Tapioca hidratada/goma: 130 kcal
+Macarrão cozido: 131 kcal | Macarrão integral cozido: 124 kcal
+Polenta cozida: 70 kcal | Fubá/milho seco: 360 kcal
+
+PÃES E PANIFICADOS:
+Pão francês: 300 kcal | Pão de forma integral: 253 kcal
+Pão de forma branco: 270 kcal | Pão sírio integral: 264 kcal
+Biscoito de arroz: 387 kcal | Bolacha água e sal: 428 kcal
+Wrap integral: 280 kcal | Tapioca seca (polvilho): 344 kcal
+
+FRUTAS (peso líquido sem casca):
+Banana madura: 89 kcal | Banana verde: 65 kcal
+Abacaxi: 50 kcal | Mamão: 40 kcal
+Manga: 60 kcal | Maçã com casca: 52 kcal
+Pera: 57 kcal | Uva: 69 kcal
+Melancia: 30 kcal | Melão: 34 kcal
+Laranja: 47 kcal | Limão: 29 kcal
+Morango: 32 kcal | Mirtilo: 57 kcal
+Cereja: 63 kcal | Kiwi: 61 kcal
+Abacate: 160 kcal | Coco fresco: 354 kcal
+Tâmara seca: 282 kcal | Ameixa seca: 240 kcal
+Banana-da-terra cozida: 116 kcal | Goiaba: 54 kcal
+Maracujá (polpa): 68 kcal | Caju: 43 kcal
+
+PROTEÍNAS ANIMAIS COZIDAS:
+Peito de frango grelhado: 165 kcal | Coxa frango s/pele: 185 kcal
+Sobrecoxa frango s/pele: 197 kcal | Frango inteiro assado: 200 kcal
+Patinho moído grelhado: 219 kcal | Alcatra grelhada: 185 kcal
+Acém cozido: 195 kcal | Coxão mole grelhado: 175 kcal
+Músculo cozido pressão: 168 kcal | Fígado bovino refogado: 175 kcal
+Coração bovino grelhado: 180 kcal | Língua bovina cozida: 225 kcal
+Moela de frango cozida: 130 kcal | Coração de frango grelhado: 185 kcal
+Fígado de frango refogado: 140 kcal | Lombo suíno grelhado: 155 kcal
+Pernil suíno assado: 185 kcal | Tilápia grelhada: 128 kcal
+Salmão grelhado: 220 kcal | Sardinha em lata (água): 208 kcal
+Sardinha em lata (azeite): 245 kcal | Atum em lata (água): 128 kcal
+Camarão cozido: 100 kcal | Ovo inteiro cozido: 155 kcal
+Clara de ovo cozida: 52 kcal | Ovo mexido (s/gordura): 148 kcal
+
+LATICÍNIOS:
+Leite integral: 61 kcal/100ml | Leite desnatado: 35 kcal/100ml
+Leite em pó integral: 496 kcal | Leite em pó desnatado: 358 kcal
+Iogurte natural integral: 61 kcal | Iogurte grego integral: 115 kcal
+Iogurte grego desnatado: 59 kcal | Kefir de leite: 65 kcal
+Queijo minas frescal: 264 kcal | Queijo cottage: 98 kcal
+Queijo parmesão: 431 kcal | Queijo muçarela: 280 kcal
+Requeijão cremoso: 240 kcal | Cream cheese: 342 kcal
+Ricota fresca: 174 kcal | Manteiga: 717 kcal
+
+GORDURAS E OLEAGINOSAS:
+Azeite de oliva: 884 kcal | Óleo de coco: 892 kcal
+Óleo de girassol: 884 kcal | Manteiga: 717 kcal
+Pasta de amendoim integral: 588 kcal | Amendoim torrado: 567 kcal
+Castanha-do-pará: 656 kcal | Castanha de caju: 553 kcal
+Amêndoas: 579 kcal | Nozes: 654 kcal
+Abacate: 160 kcal | Coco ralado sem açúcar: 604 kcal
+Leite de coco: 197 kcal | Sementes de abóbora: 559 kcal
+Sementes de girassol: 584 kcal | Sementes de chia: 486 kcal
+Linhaça dourada moída: 534 kcal | Gergelim: 573 kcal
+Tahine: 595 kcal | Azeitona: 145 kcal
+
+PROTEÍNAS VEGETAIS:
+Tofu firme: 76 kcal | Tempeh: 193 kcal
+Proteína de soja texturizada seca: 336 kcal
+Proteína de soja texturizada hidratada: 130 kcal
+Edamame cozido: 122 kcal | Seitan: 370 kcal
+
+SUPLEMENTOS:
+Whey protein isolado: 370 kcal/100g (~120 kcal/30g scoop)
+Whey protein concentrado: 380 kcal/100g (~114 kcal/30g scoop)
+Caseína: 360 kcal/100g (~108 kcal/30g scoop)
+Albumina: 360 kcal/100g
+Maltodextrina: 380 kcal/100g | Dextrose: 380 kcal/100g
+Creatina: 0 kcal | Cafeína: 0 kcal
+
+═══════════════════════════════════════════════════════
+TABELA DE MEDIDAS CASEIRAS — CONVERSÃO GRAMAS
+(usar para expressar substituições em medidas práticas)
+═══════════════════════════════════════════════════════
+
+COLHERES:
+1 colher de sopa rasa (sólidos secos): 10–15g
+1 colher de sopa cheia (sólidos secos): 18–25g
+1 colher de sopa (líquidos/óleos): 10ml ≈ 9g
+1 colher de chá (sólidos): 3–5g
+1 colher de sobremesa: 8–10g
+
+XÍCARAS:
+1 xícara de chá (240ml): arroz cozido ≈ 160g | aveia crua ≈ 80g
+1 xícara grande (300ml): arroz cozido ≈ 200g | aveia crua ≈ 100g
+1 xícara (feijão cozido): ≈ 180g | 1 xícara (farinha): ≈ 120g
+
+CONCHAS E ESCUMADEIRAS:
+1 concha pequena (~50ml): feijão com caldo ≈ 55g
+1 concha média (~80ml): feijão com caldo ≈ 90g
+1 concha grande (~120ml): feijão com caldo ≈ 140g
+1 escumadeira média: arroz/grão escorrido ≈ 100g
+1 escumadeira cheia: arroz/grão escorrido ≈ 130g
+1 escumadeira e meia: arroz/grão escorrido ≈ 195g
+2 escumadeiras: arroz/grão escorrido ≈ 260g
+
+UNIDADES E PORÇÕES:
+1 ovo inteiro médio: 50g | 1 ovo grande: 60g
+1 banana média: 100g | 1 banana grande: 130g
+1 maçã média: 130g | 1 laranja média: 150g
+1 fatia média pão de forma: 25g
+1 unidade pão francês: 50g (cada metade: 25g)
+1 filé frango palma da mão: 100–120g
+1 bife médio: 100–120g | 1 bife grande: 150–180g
+1 lata sardinha (média): 125g | 1 lata atum (pequena): 120g
+1 punhado fechado oleaginosas: 30g
+1 fio de azeite: 5ml ≈ 4.5g
+1 fatia queijo minas: 30g | 3 fatias médias: 80–90g
+1 col sopa pasta amendoim rasa: 15g | cheia: 20–25g
+
+═══════════════════════════════════════════════════════
+PROTOCOLO DE FRUTAS OBRIGATÓRIO — MÍNIMO 2 PORÇÕES/DIA
+═══════════════════════════════════════════════════════
+
+FRUTAS SÃO OBRIGATÓRIAS EM TODO PLANO — não são opcionais.
+Meta: mínimo 2 porções/dia, mínimo 5 espécies distintas/semana.
+
+POSICIONAMENTO ESTRATÉGICO POR JANELA CIRCADIANA:
+
+MANHÃ (cortisol alto — aproveita frutose hepática):
+   Banana madura: glicogênio hepático + potássio + energia
+   Manga: betacaroteno + Vit C + energia rápida
+   Abacaxi: bromelina → ↑ absorção proteína 15%
+   Frutas cítricas: Vit C + flavonoides
+
+PÓS-TREINO IMEDIATO ou até 30min após:
+   Abacaxi 100–150g: bromelina → digestão proteína + anti-inflamatório
+   Mamão 150g: papaína → digestão + Vit C + betacaroteno
+   Banana madura: reposição glicogênio rápida (pós-treino que não usa GLUT-4 puro)
+
+LANCHE DA TARDE:
+   Maçã com casca: pectina prebiótica + quercetina anti-inflamatória
+   Pera: fibra solúvel + baixo IG
+   Goiaba: Vit C mais alta de qualquer fruta tropical
+
+NOITE / CEIA (se não houver protocolo GH ativo):
+   Kiwi 2un: triptofano + serotonina → melatonina + ↑ qualidade sono 42%
+   Cereja ácida 100g: única fonte alimentar de melatonina biodisponível
+   PROIBIDO se GH secretagogo ativo: banana, manga, mel (insulina bloqueia GH)
+
+ANTI-INFLAMATÓRIO (3x/semana mínimo):
+   Frutas vermelhas/roxas 100g: mirtilo, amora, framboesa, uva roxa
+   Romã: punicalaginas → anti-inflamatório superior ao vinho tinto
+
+ENZIMÁTICAS (2–3x/semana):
+   Abacaxi + mamão: bromelina + papaína → digestão proteína aumentada
+
+REGRAS DE ROTAÇÃO:
+- NUNCA repetir a mesma fruta em mais de 1 refeição/dia
+- Rotacionar pelo menos 5 espécies distintas ao longo da semana
+- Não substituir fruta por suco (fibra perdida + IG aumentado)
+- Banana pode aparecer diariamente em diferentes refeições SE espécies diferentes
+  (banana madura manhã / banana verde como prebiótico no almoço)
+
+POSIÇÕES OBRIGATÓRIAS NO PLANO:
+- Café da manhã: 1 fruta obrigatória (banana madura OU abacaxi OU manga)
+- Lanche da manhã OU tarde: 1 fruta obrigatória (maçã / pera / goiaba / frutas vermelhas)
+- Ceia (sem protocolo GH): kiwi OU cereja ácida (sono)
+- Pós-treino sólido: fruta enzimática se disponível (abacaxi/mamão)
+
+QUANTIDADE PADRÃO POR FRUTA:
+Banana: 1 unidade média (100g) | Abacaxi: 1 fatia grossa (150g)
+Mamão: 1 fatia média (150g) | Maçã: 1 unidade (130g)
+Frutas vermelhas: 1 xícara (100g) | Kiwi: 2 unidades (160g)
+Manga: 1/2 unidade média (150g) | Goiaba: 1 unidade (120g)
+Uva: 1 cacho pequeno (100g) | Melancia: 2 fatias (300g)
+
 ═══════ BLOCO 5 — REGRAS DE COMBINAÇÃO OBRIGATÓRIAS ═══════
 
 1. Aveia + líquido proteico (leite/kefir/iogurte/leite coco) — OBRIGATÓRIO.
