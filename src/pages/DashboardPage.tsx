@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 import { usePartner } from "@/hooks/usePartner";
+import { useCoachAccess } from "@/hooks/useCoachAccess";
 import { supabase } from "@/integrations/supabase/client";
 import { getLocalDateStr, getLocalDayBounds } from "@/lib/utils";
 import { useWaterLogs } from "@/hooks/useWaterLogs";
@@ -322,6 +323,7 @@ const DashboardPage = () => {
   const { todayLog: waterLog, addWater } = useWaterLogs();
   const { hasAccess, plan, isCoach } = usePlanGate();
   const { partner, isAdmin } = usePartner();
+  const { hasAccess: hasCoachAccess } = useCoachAccess();
   const { getTodayWorkout, getTodayWorkouts, getNextRestDay, getWorkoutsForDay, todayLog: workoutLog } = useWorkoutSchedule();
   const [upgradeModal, setUpgradeModal] = useState<{ open: boolean; feature: string }>({ open: false, feature: "" });
   const [protocolosInfo, setProtocolosInfo] = useState<{ total: number; unread: number; hasMealPlan: boolean }>({ total: 0, unread: 0, hasMealPlan: false });
@@ -682,6 +684,21 @@ const DashboardPage = () => {
         <CoachNotificationsCard />
         <AthleteCompetitionCard />
         <div className="mb-3"><CoachCompetitionShortcut /></div>
+        {hasCoachAccess && protocolosInfo.total === 0 && (
+          <button
+            onClick={() => navigate("/meus-protocolos")}
+            className="w-full mb-3 flex items-center gap-3 p-3 rounded-xl border border-primary/40 bg-gradient-to-r from-primary/15 to-primary/5 hover:from-primary/20 hover:to-primary/10 transition-all text-left"
+          >
+            <div className="w-10 h-10 rounded-full bg-primary/25 flex items-center justify-center shrink-0">
+              <Users className="w-5 h-5 text-primary" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-foreground">Área Coach</p>
+              <p className="text-xs text-muted-foreground">Acesse plano alimentar, treino e envios do seu coach</p>
+            </div>
+            <ChevronRight className="w-4 h-4 text-primary shrink-0" />
+          </button>
+        )}
         {protocolosInfo.total > 0 && (
           <button
             onClick={() => navigate("/meus-protocolos")}
