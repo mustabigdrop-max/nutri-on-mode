@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 import { usePartner } from "@/hooks/usePartner";
+import { useCoachAccess } from "@/hooks/useCoachAccess";
 import { supabase } from "@/integrations/supabase/client";
 import { getLocalDateStr, getLocalDayBounds } from "@/lib/utils";
 import { useWaterLogs } from "@/hooks/useWaterLogs";
