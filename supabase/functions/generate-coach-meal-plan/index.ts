@@ -798,6 +798,7 @@ serve(async (req) => {
         timing?: string;
         alerta?: string;
         alerta_ghrp6?: string;
+        hidratacao_ajuste_ml?: number;
       };
 
       const COMPOSTOS: Record<string, Composto> = {
