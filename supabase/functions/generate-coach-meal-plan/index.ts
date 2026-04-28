@@ -888,7 +888,11 @@ serve(async (req) => {
         if (nome === "igf1") usaIgf1 = true;
         if (nome === "glp1") usaGlp1 = true;
         if (nome === "metformina") usaMetformina = true;
-        flagsFarm.push(`${nome} ×${(c.fator_get ?? 1).toFixed(2)}${c.proteina_bonus_gkg ? ` +${c.proteina_bonus_gkg}g·kg` : ""}${c.carbo_delta_pct ? ` CHO${c.carbo_delta_pct > 0 ? "+" : ""}${c.carbo_delta_pct}%` : ""}`);
+        if (c.hidratacao_ajuste_ml && c.hidratacao_ajuste_ml > 0) {
+          hidratacaoAjusteMl += c.hidratacao_ajuste_ml;
+          hidratacaoCompostos.push({ composto: nome, ml: c.hidratacao_ajuste_ml });
+        }
+        flagsFarm.push(`${nome} ×${(c.fator_get ?? 1).toFixed(2)}${c.proteina_bonus_gkg ? ` +${c.proteina_bonus_gkg}g·kg` : ""}${c.carbo_delta_pct ? ` CHO${c.carbo_delta_pct > 0 ? "+" : ""}${c.carbo_delta_pct}%` : ""}${c.hidratacao_ajuste_ml ? ` H₂O+${c.hidratacao_ajuste_ml}ml` : ""}`);
       }
 
       // ── DIMINISHING RETURNS + CAP ESCALONADO POR Nº DE COMPOSTOS ──
