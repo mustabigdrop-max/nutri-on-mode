@@ -3264,6 +3264,50 @@ AEJ não é refeição e nunca deve aparecer em refeicoes. Pós-Treino Imediato 
         alertas: alertasFrutas,
       };
 
+      // ── SUGESTÕES DE FRUTAS (opções equivalentes ≈100 kcal/porção) ──
+      // Catálogo isocalórico — todas as porções equivalem a ~100 kcal
+      // para que o coach escolha sem alterar o total energético do plano.
+      const CATALOGO_FRUTAS_EQUIV: { fruta: string; porcao: string; gramas: number; kcal: number; janela: string; beneficio: string }[] = [
+        { fruta: "Banana",          porcao: "1 unidade média",      gramas: 110, kcal: 97,  janela: "manhã / pré-treino", beneficio: "Potássio + frutose — cortisol matinal aproveita." },
+        { fruta: "Abacaxi",         porcao: "1 fatia grossa",       gramas: 165, kcal: 83,  janela: "pós-treino",         beneficio: "Bromelina ↑ absorção proteica em ~15%." },
+        { fruta: "Mamão papaia",    porcao: "1 fatia média",        gramas: 220, kcal: 95,  janela: "pós-treino / manhã", beneficio: "Papaína digestiva + vitamina C." },
+        { fruta: "Maçã",            porcao: "1 unidade",            gramas: 180, kcal: 94,  janela: "lanche tarde",       beneficio: "Pectina + saciedade glicêmica estável." },
+        { fruta: "Frutas vermelhas",porcao: "1,5 xícara",           gramas: 175, kcal: 100, janela: "ceia / pós-treino",  beneficio: "Antocianinas — antioxidante anti-inflamatório." },
+        { fruta: "Kiwi",            porcao: "2 unidades",           gramas: 160, kcal: 98,  janela: "ceia",               beneficio: "Serotonina + vit. C — melhora qualidade do sono." },
+        { fruta: "Manga",           porcao: "1/2 unidade",          gramas: 165, kcal: 99,  janela: "manhã",              beneficio: "Beta-caroteno + frutose matinal." },
+        { fruta: "Goiaba",          porcao: "1 unidade",            gramas: 150, kcal: 102, janela: "lanche",             beneficio: "Vit. C 4× laranja + fibra solúvel." },
+        { fruta: "Melancia",        porcao: "2 fatias",             gramas: 330, kcal: 99,  janela: "pós-treino",         beneficio: "Citrulina + reidratação." },
+        { fruta: "Uva",             porcao: "1 cacho pequeno",      gramas: 145, kcal: 100, janela: "pré-treino",         beneficio: "Resveratrol + glicose rápida." },
+        { fruta: "Pera",            porcao: "1 unidade",            gramas: 175, kcal: 100, janela: "lanche tarde",       beneficio: "Fibra solúvel — saciedade prolongada." },
+        { fruta: "Laranja",         porcao: "1 unidade grande",     gramas: 210, kcal: 99,  janela: "manhã",              beneficio: "Vit. C + flavonoides — absorção de ferro." },
+        { fruta: "Cereja ácida",    porcao: "1 xícara",             gramas: 155, kcal: 100, janela: "ceia",               beneficio: "Melatonina natural — recuperação noturna." },
+        { fruta: "Abacate",         porcao: "2 colheres de sopa",   gramas: 60,  kcal: 96,  janela: "manhã / lanche",     beneficio: "Gordura monoinsaturada — saciedade." },
+      ];
+
+      const especiesJaPresentes = new Set(
+        Array.from(especiesSemana).map(s => s.toLowerCase())
+      );
+      const sugeridas = CATALOGO_FRUTAS_EQUIV
+        .filter(f => !especiesJaPresentes.has(f.fruta.toLowerCase()))
+        .slice(0, 8);
+
+      const motivoSugestao: string[] = [];
+      const diasComDeficit = auditoriaFrutas.filter(d => d.porcoes < 2).map(d => d.dia);
+      if (diasComDeficit.length > 0) {
+        motivoSugestao.push(`Déficit diário em: ${diasComDeficit.join(", ")} (<2 porções).`);
+      }
+      if (especiesSemana.size < 5) {
+        motivoSugestao.push(`Diversidade semanal: ${especiesSemana.size}/5 espécies.`);
+      }
+
+      (parsed as any).sugestoes_frutas = {
+        ativo: alertasFrutas.length > 0,
+        motivo: motivoSugestao,
+        instrucao: "Escolha 1 ou mais opções abaixo para completar a meta. Todas equivalem a ~100 kcal — não impactam o fechamento calórico do plano.",
+        opcoes_equivalentes_100kcal: sugeridas,
+        regra_substituicao: "Cada porção listada vale 1 'porção de fruta'. Encaixe nas janelas sugeridas (manhã para frutose/cortisol, pós-treino para enzimas digestivas, ceia para sono).",
+      };
+
       // Propaga alertas ao resumo (se existir) sem sobrescrever os farmacológicos
       if (alertasFrutas.length > 0) {
         if (!(parsed as any).resumo) (parsed as any).resumo = {};
