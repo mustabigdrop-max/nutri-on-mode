@@ -1747,6 +1747,7 @@ PROTOCOLO DE CARDIO:
 ${cardioBlock}
 
 ${trainingSchedulePrompt ? `\n${trainingSchedulePrompt}\n` : ""}
+${trainingOnPrompt}
 
 ${glut4Config?.enabled ? `
 🚨 PÓS-TREINO IMEDIATO PRESCRITO PELO COACH (REGRA INVIOLÁVEL — NÃO SUBSTITUA, NÃO ADICIONE PROTEÍNA, NÃO TROQUE A FONTE):
