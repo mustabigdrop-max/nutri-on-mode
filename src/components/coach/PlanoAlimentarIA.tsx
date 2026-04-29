@@ -861,6 +861,7 @@ export default function PlanoAlimentarIA() {
     sensibilidadeInsulina: "",
     objetivosSecundarios: [] as string[],
     variedadeFuncional: false,
+    diversidadeAlimentarElite: false,
     protocoloMicrobiota: false,
     cyclingCarbo: false,
     cronobiologiaAtiva: false,
@@ -1021,6 +1022,7 @@ export default function PlanoAlimentarIA() {
           sensibilidade_insulina: form.sensibilidadeInsulina || null,
           objetivos_secundarios: form.objetivosSecundarios,
           variedade_funcional: form.variedadeFuncional,
+          diversidade_alimentar_elite: form.diversidadeAlimentarElite,
           protocolo_microbiota: form.protocoloMicrobiota,
           cycling_carbo: form.cyclingCarbo,
           cronobiologia_aplicada: form.cronobiologiaAtiva,
@@ -3910,6 +3912,34 @@ export default function PlanoAlimentarIA() {
                     width: 18, height: 18, borderRadius: "50%",
                     background: form.variedadeFuncional ? "#0a0f0a" : T.muted,
                     position: "absolute", top: 2, left: form.variedadeFuncional ? 22 : 2, transition: "left .2s",
+                  }} />
+                </div>
+              </div>
+
+              <div style={{
+                display: "flex", alignItems: "flex-start", gap: 12,
+                padding: "12px 14px", background: T.card, border: `1px solid ${form.diversidadeAlimentarElite ? "#B8922A" : T.border}`,
+                borderRadius: 10, marginTop: 10,
+              }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: T.text }}>🧬 Diversidade Alimentar Elite — Protocolo Surreal</div>
+                  <div style={{ fontSize: 11, color: T.muted, marginTop: 4, lineHeight: 1.5 }}>
+                    Meta: 40+ espécies/semana (microbioma de atleta de elite — Sonnenburg/Stanford). Rotação obrigatória: 7 proteínas (incl. vísceras), 6 carbs funcionais, 8 vegetais por matriz de cores, 6 frutas por janela circadiana, 4 perfis lipídicos e fermentados 5x/semana. NUNCA repete proteína em dias consecutivos.
+                  </div>
+                </div>
+                <div
+                  onClick={() => set("diversidadeAlimentarElite", !form.diversidadeAlimentarElite)}
+                  style={{
+                    width: 44, height: 24, borderRadius: 999,
+                    background: form.diversidadeAlimentarElite ? "#B8922A" : T.bg3,
+                    border: `1px solid ${form.diversidadeAlimentarElite ? "#B8922A" : T.border2}`,
+                    position: "relative", cursor: "pointer", transition: "all .2s", flexShrink: 0,
+                  }}
+                >
+                  <div style={{
+                    width: 18, height: 18, borderRadius: "50%",
+                    background: form.diversidadeAlimentarElite ? "#0a0f0a" : T.muted,
+                    position: "absolute", top: 2, left: form.diversidadeAlimentarElite ? 22 : 2, transition: "left .2s",
                   }} />
                 </div>
               </div>
