@@ -12,6 +12,7 @@ import {
 import { validateMedidasCaseiras } from "@/lib/medidasCaseirasValidator";
 import SubstitutionsAgentPage from "@/pages/SubstitutionsAgentPage";
 import { SUBSTITUTION_BANK_V2, type FoodCategoryV2 } from "@/data/substitutionBank";
+import NutrientDensityPanel from "@/components/coach/NutrientDensityPanel";
 
 // ─── Design tokens (alinhados ao nutriON: dark bg, green accent) ──────────────
 const T = {
@@ -3351,6 +3352,11 @@ export default function PlanoAlimentarIA() {
                 <pre style={{ whiteSpace: "pre-wrap", wordBreak: "break-word", fontFamily: "inherit", fontSize: 12, color: T.text, margin: 0, lineHeight: 1.6 }}>{glut4Text}</pre>
               </div>
             </div>
+          )}
+
+          {/* Painel de Densidade Nutricional */}
+          {plano.refeicoes && plano.refeicoes.length > 0 && (
+            <NutrientDensityPanel refeicoes={plano.refeicoes as any} />
           )}
 
           {/* Refeições */}
