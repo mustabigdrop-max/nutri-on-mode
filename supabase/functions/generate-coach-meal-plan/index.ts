@@ -1897,6 +1897,9 @@ PERFIL FISIOLÓGICO AVANÇADO (aplicar protocolos do system prompt conforme flag
 - Variedade funcional ativa: ${perfilFisiologico?.variedade_funcional ? "true" : "false"}
 - Protocolo microbiota ativo: ${perfilFisiologico?.protocolo_microbiota ? "true" : "false"}
 - Cycling de carboidratos: ${perfilFisiologico?.cycling_carbo ? "true" : "false"}
+- Diversidade Alimentar Elite: ${perfilFisiologico?.diversidade_alimentar_elite ? "true" : "false"}
+- Cronobiologia Nutricional aplicada: ${perfilFisiologico?.cronobiologia_aplicada ? "true" : "false"}
+- Hidratação Farmacológica Inteligente: ${perfilFisiologico?.hidratacao_farmacologica ? "true" : "false"}
 - Modo Econômico: ${perfilFisiologico?.modo_economico ? "true" : "false"}
 - Perfil econômico do plano: ${perfilFisiologico?.perfil_economico || "intermediario"}
 - Alimentos disponíveis/preferidos do paciente: ${(perfilFisiologico?.alimentos_disponiveis || []).join(", ") || "Nenhum informado"}
