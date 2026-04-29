@@ -797,6 +797,10 @@ serve(async (req) => {
       qualidadeSono,         // "boa" | "regular" | "ruim"
       semanasEmDeficit,      // number
       cyclingCarbo,          // boolean (já existia em perfilFisiologico)
+      // Density Boost & Protocolo de Frutas Obrigatório
+      densityBoost,
+      fruitProtocol,
+      fruitProtocolText,
     } = body;
     // Fallbacks para suportar payload antigo
     const _neat = neat ?? perfilFisiologico?.neat ?? "medio";
