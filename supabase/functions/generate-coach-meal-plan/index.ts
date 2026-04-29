@@ -2749,6 +2749,76 @@ AEJ não é refeição e nunca deve aparecer em refeicoes. Pós-Treino Imediato 
           : r?.refeicao,
       }));
 
+      // ── Sanitizer de quantidades: garante valor concreto em "quantidade" e "quantidade_g" ──
+      // Cobre o caso recorrente em que a IA devolve "1 porção" / vazio / "à vontade",
+      // e especialmente para LEGUMES/VEGETAIS dá uma especificação acionável.
+      const usarCaseirasSan = !!perfilFisiologico?.medidas_caseiras;
+      const isPlaceholderQty = (s: string) => {
+        const t = (s || "").toString().trim();
+        if (!t) return true;
+        if (/^(1\s*)?porç(ã|a)o\s*$/i.test(t)) return true;
+        if (/^(a\s*gosto|à\s*vontade|n\/?a|--+)\s*$/i.test(t)) return true;
+        if (/^(ajustar|definir|a\s*definir|conforme|meta)/i.test(t)) return true;
+        if (!/\d/.test(t)) return true;
+        return false;
+      };
+      const inferQty = (nome: string): { quantidade: string; quantidade_g: string } => {
+        const n = (nome || "").toLowerCase();
+        if (/(legume|vegetal|salada|verdura|br(ó|o)colis|couve[- ]?flor|couve|espinafre|alface|rúcula|rucula|tomate|cenoura|abobrinha|chuchu|berinjela|pimentão|pimentao|pepino|aspargo|vagem|quiabo|repolho|acelga|escarola|agri(ã|a)o)/.test(n)) {
+          return { quantidade: usarCaseirasSan ? "1 prato de sobremesa cheio (~150g)" : "150g", quantidade_g: "150g" };
+        }
+        if (/(banana|maçã|maca|mam(ã|a)o|laranja|manga|abacaxi|morango|kiwi|pera|uva|melancia|goiaba|pêssego|pessego|ameixa)/.test(n)) {
+          return { quantidade: "1 unidade média (~120g)", quantidade_g: "120g" };
+        }
+        if (/(frango|peito|peixe|tilapia|tilápia|patinho|carne|atum|salm|file|filé)/.test(n)) {
+          return { quantidade: usarCaseirasSan ? "1 palma da mão (~120g)" : "120g", quantidade_g: "120g" };
+        }
+        if (/ovo/.test(n) && !/clara/.test(n)) return { quantidade: "2 unidades (~100g)", quantidade_g: "100g" };
+        if (/clara/.test(n)) return { quantidade: usarCaseirasSan ? "4 claras (~140g)" : "140g", quantidade_g: "140g" };
+        if (/whey|albumina/.test(n)) return { quantidade: "1 scoop (~30g)", quantidade_g: "30g" };
+        if (/iogurte/.test(n)) return { quantidade: usarCaseirasSan ? "1 copo americano (~200g)" : "200g", quantidade_g: "200g" };
+        if (/queijo|cottage/.test(n)) return { quantidade: usarCaseirasSan ? "2 fatias (~40g)" : "40g", quantidade_g: "40g" };
+        if (/aveia|granola/.test(n)) return { quantidade: usarCaseirasSan ? "3 colheres de sopa (~40g)" : "40g", quantidade_g: "40g" };
+        if (/pão|pao/.test(n)) return { quantidade: "2 fatias (~50g)", quantidade_g: "50g" };
+        if (/arroz|cuscuz|quinoa/.test(n)) return { quantidade: usarCaseirasSan ? "1 xícara de chá (~150g cozido)" : "150g", quantidade_g: "150g" };
+        if (/macarr/.test(n)) return { quantidade: "1 escumadeira (~120g cozido)", quantidade_g: "120g" };
+        if (/batata|mandioca|inhame|tapioca/.test(n)) return { quantidade: usarCaseirasSan ? "1 porção do tamanho do punho (~150g)" : "150g", quantidade_g: "150g" };
+        if (/feij(ã|a)o|lentilha|gr(ã|a)o/.test(n)) return { quantidade: usarCaseirasSan ? "1 concha média (~90g)" : "90g", quantidade_g: "90g" };
+        if (/(azeite|óleo|oleo)/.test(n)) return { quantidade: "1 colher de sopa (~10ml)", quantidade_g: "10g" };
+        if (/(manteiga|ghee)/.test(n)) return { quantidade: "1 colher de chá (~5g)", quantidade_g: "5g" };
+        if (/abacate/.test(n)) return { quantidade: usarCaseirasSan ? "2 colheres de sopa (~50g)" : "50g", quantidade_g: "50g" };
+        if (/(castanha|am(ê|e)ndoa|noz|amendoim)/.test(n) && !/pasta/.test(n)) return { quantidade: usarCaseirasSan ? "1 punhado (~25g)" : "25g", quantidade_g: "25g" };
+        if (/pasta/.test(n)) return { quantidade: "1 colher de sopa (~15g)", quantidade_g: "15g" };
+        if (/tempero|curcuma|cúrcuma|alho|limão|limao|sal|pimenta|ervas/.test(n)) return { quantidade: "1 colher de chá (~3g)", quantidade_g: "3g" };
+        if (/água|agua|chá|cha\b/.test(n)) return { quantidade: "1 copo (~200ml)", quantidade_g: "200g" };
+        return { quantidade: usarCaseirasSan ? "1 porção média (~100g)" : "100g", quantidade_g: "100g" };
+      };
+      if (Array.isArray(parsed?.refeicoes)) {
+        let injecoes = 0;
+        parsed.refeicoes.forEach((r: any) => {
+          if (!Array.isArray(r?.alimentos)) return;
+          r.alimentos.forEach((a: any) => {
+            const qOk = !isPlaceholderQty(a?.quantidade);
+            const gOk = a?.quantidade_g && /\d/.test(String(a.quantidade_g));
+            if (qOk && gOk) return;
+            const inf = inferQty(String(a?.alimento || ""));
+            if (!qOk) { a.quantidade = inf.quantidade; injecoes++; }
+            if (!gOk) a.quantidade_g = inf.quantidade_g;
+            if (Array.isArray(a?.substituicoes)) {
+              a.substituicoes.forEach((s: any) => {
+                const sqOk = !isPlaceholderQty(s?.quantidade);
+                const sgOk = s?.quantidade_g && /\d/.test(String(s.quantidade_g));
+                if (sqOk && sgOk) return;
+                const sinf = inferQty(String(s?.alimento || ""));
+                if (!sqOk) s.quantidade = sinf.quantidade;
+                if (!sgOk) s.quantidade_g = sinf.quantidade_g;
+              });
+            }
+          });
+        });
+        if (injecoes > 0) console.warn(`[sanitizer-qty] ${injecoes} quantidade(s) injetada(s) por placeholder/ausência`);
+      }
+
       // Garantir que primeira refeição não comece antes das 08:30
       if (parsed.refeicoes.length > 0) {
         const primeira = parsed.refeicoes[0];
