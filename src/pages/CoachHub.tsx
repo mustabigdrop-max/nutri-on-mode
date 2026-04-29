@@ -103,43 +103,6 @@ function CoachHubSidebar({ active, setActive }: { active: ModuleKey; setActive: 
   );
 }
 
-const PlaceholderModule = ({
-  title,
-  description,
-  ctaLabel,
-  onCta,
-  bullets,
-}: {
-  title: string;
-  description: string;
-  ctaLabel?: string;
-  onCta?: () => void;
-  bullets?: string[];
-}) => (
-  <Card className="border-amber-500/20 bg-card">
-    <CardHeader>
-      <CardTitle className="text-xl">{title}</CardTitle>
-      <p className="text-sm text-muted-foreground">{description}</p>
-    </CardHeader>
-    <CardContent className="space-y-4">
-      {bullets && (
-        <ul className="space-y-2 text-sm">
-          {bullets.map((b, i) => (
-            <li key={i} className="flex items-start gap-2">
-              <span className="mt-1 h-1.5 w-1.5 rounded-full bg-amber-500" />
-              <span>{b}</span>
-            </li>
-          ))}
-        </ul>
-      )}
-      {ctaLabel && onCta && (
-        <Button onClick={onCta} className="bg-amber-500 hover:bg-amber-600 text-black">
-          {ctaLabel}
-        </Button>
-      )}
-    </CardContent>
-  </Card>
-);
 
 const CoachHub = () => {
   const [active, setActive] = useState<ModuleKey>("atletas");
