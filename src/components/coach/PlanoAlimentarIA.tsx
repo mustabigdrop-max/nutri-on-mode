@@ -864,6 +864,7 @@ export default function PlanoAlimentarIA() {
     protocoloMicrobiota: false,
     cyclingCarbo: false,
     cronobiologiaAtiva: false,
+    hidratacaoFarmacologica: false,
     modoEconomico: false,
     medidasCaseiras: false,
     // Preferências de unidades caseiras (usadas quando medidasCaseiras = true)
@@ -1023,6 +1024,7 @@ export default function PlanoAlimentarIA() {
           protocolo_microbiota: form.protocoloMicrobiota,
           cycling_carbo: form.cyclingCarbo,
           cronobiologia_aplicada: form.cronobiologiaAtiva,
+          hidratacao_farmacologica: form.hidratacaoFarmacologica,
           modo_economico: modoEcon,
           medidas_caseiras: form.medidasCaseiras,
           medidas_preferencias: form.medidasCaseiras ? form.medidasPrefs : null,
