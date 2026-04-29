@@ -20,6 +20,7 @@ import {
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import SendProtocolModule from "@/components/coach/SendProtocolModule";
 import AthleteRoster from "@/components/coach/AthleteRoster";
+import CoachHub from "@/pages/CoachHub";
 
 interface PatientRow {
   id: string;
@@ -328,6 +329,9 @@ const CoachDashboardPage = () => {
         <Tabs defaultValue="overview" className="w-full">
           <TabsList>
             <TabsTrigger value="overview">Visão Geral</TabsTrigger>
+            <TabsTrigger value="hub">
+              <Zap className="w-4 h-4 mr-1" /> Coach Hub
+            </TabsTrigger>
             <TabsTrigger value="athletes">
               <Trophy className="w-4 h-4 mr-1" /> Atletas
             </TabsTrigger>
@@ -335,6 +339,12 @@ const CoachDashboardPage = () => {
               <Send className="w-4 h-4 mr-1" /> Enviar Protocolo
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="hub" className="mt-4 -mx-4 md:-mx-6">
+            <div className="h-[calc(100vh-220px)] border border-border rounded-lg overflow-hidden">
+              <CoachHub />
+            </div>
+          </TabsContent>
 
           <TabsContent value="athletes" className="mt-4">
             <AthleteRoster />
