@@ -9,9 +9,29 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { profile, weekStart, budgetMode, workoutSchedule } = await req.json();
+    const body = await req.json();
+    const {
+      profile, weekStart, budgetMode, workoutSchedule,
+      // ═══ Sincronização TrainingON ↔ NutriON ═══
+      training_phase,          // "Bulking" | "Cutting" | "Recomposição" | "Performance"
+      sistema_treino,          // "5/3/1" | "FST-7" | "Y3T" | "Heavy Duty" | "DC" | "GVT" | "PPL"
+      volume_sets_semana,      // number — total de sets na semana
+      musculos_prioritarios,   // string[] — grupos prioritários
+      tipo_fibra,              // "TIPO_I" | "TIPO_IIA" | "TIPO_IIX" | "MISTO"
+      tempo_sessao_min,        // number — duração real da sessão
+      stratum_fase,            // "acumulacao" | "intensificacao" | "realizacao" | "deload"
+      cardio_mesmo_dia,        // boolean
+      intensidade_treino,      // "leve" | "moderada" | "alta" | "muito_alta"
+    } = body;
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
+
+    // Detecta presença de payload do TrainingON
+    const _hasTrainingOn = !!(
+      training_phase || sistema_treino || volume_sets_semana ||
+      (Array.isArray(musculos_prioritarios) && musculos_prioritarios.length) ||
+      tipo_fibra || tempo_sessao_min || stratum_fase
+    );
 
     const objetivo = profile?.goal || profile?.objetivo_principal || "saúde geral";
     const kcalAlvo = profile?.vet_kcal || profile?.get_kcal || 2000;
