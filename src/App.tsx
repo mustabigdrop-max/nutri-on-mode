@@ -91,6 +91,7 @@ import MetabolicONPage from "./pages/MetabolicONPage";
 import PlanoAlimentarIA from "./components/coach/PlanoAlimentarIA";
 import AthleteRoster from "./components/coach/AthleteRoster";
 import AthleteProgressTracker from "./components/coach/AthleteProgressTracker";
+import CoachHub from "./pages/CoachHub";
 import DrNexusPage from "./pages/DrNexusPage";
 import VideoFormPage from "./pages/VideoFormPage";
 import MeusProtocolosPage from "./pages/MeusProtocolosPage";
@@ -205,6 +206,7 @@ const App = () => (
             <Route path="/coach/adjustment-log" element={<ProtectedRoute><CoachAdjustmentLogPage /></ProtectedRoute>} />
             <Route path="/coach/competition/:planId" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON PRO" featureName="Competition Mode"><CoachCompetitionPlanPage /></PlanGateWrapper></ProtectedRoute>} />
             <Route path="/athlete/competition/:planId/check-in" element={<ProtectedRoute><AthleteCompetitionCheckInPage /></ProtectedRoute>} />
+            <Route path="/coach/hub" element={<ProtectedRoute><CoachHub /></ProtectedRoute>} />
             <Route path="/coach/atletas" element={<ProtectedRoute><AthleteRoster /></ProtectedRoute>} />
             <Route path="/coach/atletas/:id" element={<ProtectedRoute><AthleteProgressTracker /></ProtectedRoute>} />
 
