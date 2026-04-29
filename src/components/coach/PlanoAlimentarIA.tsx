@@ -3424,6 +3424,8 @@ export default function PlanoAlimentarIA() {
               refeicoes={plano.refeicoes as any}
               onRegenerate={regerarComMaisDensidade}
               regenerating={densityRegenLoading}
+              onFruitProtocol={aplicarProtocoloFrutas}
+              fruitLoading={fruitProtocolLoading}
             />
           )}
 
