@@ -552,16 +552,27 @@ const MealCard = ({ meal, index, onSwap }: MealCardProps) => {
                     </button>
                   )}
                 </div>
-                {a.quantidade && (
-                  <span style={{ fontSize: 12, color: T.muted, whiteSpace: "nowrap", textAlign: "right" }}>
-                    {a.quantidade}
-                    {a.quantidade_g && a.quantidade_g.replace(/\s/g, "").toLowerCase() !== a.quantidade.replace(/\s/g, "").toLowerCase() && (
-                      <span style={{ display: "block", fontSize: 10, color: T.muted2, fontWeight: 600 }}>
-                        ≈ {a.quantidade_g}
-                      </span>
-                    )}
-                  </span>
-                )}
+                {(() => {
+                  // Sanitiza: se a IA mandou texto placeholder ("ajustar pela meta", "a definir", etc.)
+                  // ou veio vazio, fazemos fallback usando quantidade_g ou um valor padrão visível.
+                  const raw = (a.quantidade || "").toString().trim();
+                  const isPlaceholder = !raw || /ajustar|definir|meta|conforme|porç(ã|a)o|a gosto|n\/a|--+/i.test(raw) || !/\d/.test(raw);
+                  const qtdG = (a.quantidade_g || "").toString().trim();
+                  const display = !isPlaceholder
+                    ? raw
+                    : (qtdG && /\d/.test(qtdG) ? qtdG : "1 porção");
+                  const showApprox = qtdG && /\d/.test(qtdG) && qtdG.replace(/\s/g, "").toLowerCase() !== display.replace(/\s/g, "").toLowerCase();
+                  return (
+                    <span style={{ fontSize: 12, color: T.text, whiteSpace: "nowrap", textAlign: "right", fontWeight: 600 }}>
+                      {display}
+                      {showApprox && (
+                        <span style={{ display: "block", fontSize: 10, color: T.muted2, fontWeight: 600 }}>
+                          ≈ {qtdG}
+                        </span>
+                      )}
+                    </span>
+                  );
+                })()}
               </div>
 
               {open && subs.length > 0 && (

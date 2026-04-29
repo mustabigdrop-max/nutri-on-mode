@@ -2256,23 +2256,59 @@ ${perfilFisiologico?.modo_economico ? `
         },
         refeicoes: ratiosBase.map((ratio, i) => {
           const r = ratio / ratioSum;
+          const kcalRef = Math.round(targetKcal * r);
+          const protRef = Math.round(prot * r);
+          const carbRef = Math.round(carb * r);
+          const fatRef = Math.round(fat * r);
+          const gramasFor = (nome: string): string => {
+            const n = nome.toLowerCase();
+            if (/(frango|peito|peixe|tilapia|tilápia|patinho|carne|atum|salm|ovo|clara|whey|albumina|iogurte|queijo|cottage)/.test(n)) {
+              if (/whey|albumina/.test(n)) return `${Math.max(20, Math.round(protRef / 0.8))}g`;
+              if (/ovo/.test(n) && !/clara/.test(n)) return `${Math.max(1, Math.round(protRef / 6))} unidade(s)`;
+              if (/iogurte|queijo|cottage/.test(n)) return `${Math.max(80, Math.round(protRef / 0.11))}g`;
+              return `${Math.max(60, Math.round(protRef / 0.22))}g`;
+            }
+            if (/(arroz|batata|mandioca|macarr|pão|pao|aveia|tapioca|cuscuz|inhame|quinoa|granola)/.test(n)) {
+              if (/aveia|granola/.test(n)) return `${Math.max(20, Math.round(carbRef / 0.6))}g`;
+              if (/pão|pao/.test(n)) return `${Math.max(1, Math.round(carbRef / 25))} fatia(s)`;
+              return `${Math.max(50, Math.round(carbRef / 0.25))}g`;
+            }
+            if (/(banana|maçã|maca|fruta|mam(ã|a)o|laranja|manga|abacaxi|morango)/.test(n)) {
+              return `1 unidade média (~${Math.max(80, Math.round(carbRef / 0.22))}g)`;
+            }
+            if (/(azeite|óleo|oleo|manteiga|ghee)/.test(n)) {
+              return `${Math.max(1, Math.round(fatRef / 13.5))} colher(es) de sopa (~${Math.max(5, Math.round(fatRef * 1.1))}g)`;
+            }
+            if (/(castanha|am(ê|e)ndoa|noz|amendoim|pasta|abacate)/.test(n)) {
+              if (/abacate/.test(n)) return `${Math.max(40, Math.round(fatRef / 0.15))}g`;
+              return `${Math.max(15, Math.round(fatRef / 0.5))}g`;
+            }
+            if (/(salada|legume|vegetal|br(ó|o)colis|couve|espinafre|alface|tomate|cenoura|abobrinha)/.test(n)) {
+              return "à vontade (~150g)";
+            }
+            return "1 porção (~100g)";
+          };
           return {
             refeicao: labels[i],
             horario: horarios[i],
-            calorias: Math.round(targetKcal * r),
-            macros: { proteina: Math.round(prot * r), carboidrato: Math.round(carb * r), gordura: Math.round(fat * r) },
+            calorias: kcalRef,
+            macros: { proteina: protRef, carboidrato: carbRef, gordura: fatRef },
             modo_preparo: perfilFisiologico?.variedade_funcional ? "Grelhar/refogar proteína, cozinhar carbo, inserir vegetais e finalizar com tempero funcional." : null,
-            alimentos: templates[i].map((alimento) => ({
-              alimento,
-              quantidade: "ajustar pela meta da refeição",
-              quantidade_g: null,
-              observacao: "Base técnica ajustável pelo coach.",
-              substituicoes: [
-                { alimento: "Frango / tilápia / patinho", quantidade: "porção equivalente", quantidade_g: null, observacao: "troca proteica equivalente", grupo: "proteina" },
-                { alimento: "Arroz / batata / mandioca", quantidade: "porção equivalente", quantidade_g: null, observacao: "troca de carboidrato equivalente", grupo: "carbo" },
-                { alimento: "Azeite / castanhas / abacate", quantidade: "porção equivalente", quantidade_g: null, observacao: "troca de gordura equivalente", grupo: "gordura" },
-              ],
-            })),
+            alimentos: templates[i].map((alimento) => {
+              const q = gramasFor(alimento);
+              const qg = q.match(/(\d+)\s*g/)?.[0] ?? null;
+              return {
+                alimento,
+                quantidade: q,
+                quantidade_g: qg,
+                observacao: "Base técnica ajustável pelo coach.",
+                substituicoes: [
+                  { alimento: "Frango / tilápia / patinho", quantidade: `${Math.max(60, Math.round(protRef / 0.22))}g`, quantidade_g: `${Math.max(60, Math.round(protRef / 0.22))}g`, observacao: "troca proteica equivalente", grupo: "proteina" },
+                  { alimento: "Arroz / batata / mandioca", quantidade: `${Math.max(50, Math.round(carbRef / 0.25))}g`, quantidade_g: `${Math.max(50, Math.round(carbRef / 0.25))}g`, observacao: "troca de carboidrato equivalente", grupo: "carbo" },
+                  { alimento: "Azeite / castanhas / abacate", quantidade: `${Math.max(5, Math.round(fatRef * 1.1))}g`, quantidade_g: `${Math.max(5, Math.round(fatRef * 1.1))}g`, observacao: "troca de gordura equivalente", grupo: "gordura" },
+                ],
+              };
+            }),
           };
         }),
         suplementacao: [],
