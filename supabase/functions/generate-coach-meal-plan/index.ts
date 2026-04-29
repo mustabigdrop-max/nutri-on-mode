@@ -1920,6 +1920,26 @@ O coach considerou o plano anterior pobre em micronutrientes. Você DEVE:
 4. NÃO aumentar gramaturas além do necessário para manter macros — a estratégia é SUBSTITUIR alimentos pobres por densos, não ampliar porções.
 5. Adicionar campo "density_boost_aplicado": true no resumo do plano e listar em "alimentos_densos_adicionados": [array com 5-10 alimentos novos densos incluídos vs versão anterior].
 ` : ""}
+
+${perfilFisiologico?.fruit_protocol || (req as any)?.body?.fruitProtocol ? `
+🍎🔥 PROTOCOLO DE FRUTAS OBRIGATÓRIO ATIVO — APLICAÇÃO INTEGRAL:
+${(req as any)?.body?.fruitProtocolText || ""}
+
+REGRAS DE EXECUÇÃO PARA O JSON:
+- Inserir, em CADA refeição correspondente, uma fruta da lista com a quantidade padrão prescrita (ex.: "Banana madura — 1 unidade média (100g)" com "quantidade_g": "100g").
+- O plano DEVE conter no MÍNIMO 2 porções de fruta no dia.
+- O plano DEVE incluir AO MENOS 5 espécies distintas ao longo da semana (registrar em "frutas_semana": [array de espécies]).
+- Café da manhã: 1 fruta obrigatória (banana madura OU abacaxi OU manga).
+- Lanche da manhã OU tarde: 1 fruta obrigatória (maçã / pera / goiaba / frutas vermelhas).
+- Pós-treino sólido: incluir abacaxi OU mamão (enzimáticas) quando houver treino.
+- Ceia: kiwi 2un OU cereja ácida 100g — APENAS se NÃO houver protocolo GH secretagogo ativo.
+- Se protocolo farmacológico contiver GH/secretagogo (MK-677, ipamorelina, sermorelina, GHRP, tesamorelina): PROIBIR banana, manga e mel à noite/ceia.
+- Anti-inflamatórias (frutas vermelhas/roxas/romã) ≥3x/semana.
+- Enzimáticas (abacaxi/mamão) 2–3x/semana.
+- NUNCA repetir a mesma fruta em mais de 1 refeição/dia.
+- NUNCA substituir fruta por suco.
+- Adicionar no resumo: "fruit_protocol_aplicado": true e "frutas_dia": [lista por refeição].
+` : ""}
 - Modo Econômico: ${perfilFisiologico?.modo_economico ? "true" : "false"}
 - Perfil econômico do plano: ${perfilFisiologico?.perfil_economico || "intermediario"}
 - Alimentos disponíveis/preferidos do paciente: ${(perfilFisiologico?.alimentos_disponiveis || []).join(", ") || "Nenhum informado"}
