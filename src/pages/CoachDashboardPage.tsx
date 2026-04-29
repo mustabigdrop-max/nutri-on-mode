@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import SendProtocolModule from "@/components/coach/SendProtocolModule";
+import AthleteRoster from "@/components/coach/AthleteRoster";
 
 interface PatientRow {
   id: string;
