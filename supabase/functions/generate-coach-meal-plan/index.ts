@@ -784,6 +784,10 @@ serve(async (req) => {
       protocoloFarmacologico, atletaCompetitivo, federacaoCategoria,
       // Rotina de treino semanal
       trainingSchedulePrompt,
+      // Sincronização TrainingON ↔ NutriON (Protocolo Elite)
+      trainingOnSync,         // objeto opcional vindo do TrainingON
+      trainingOn,             // alias
+      training_on,            // alias snake_case
       // GLUT-4 (pós-treino imediato prescrito pelo coach)
       glut4Config,
       glut4Text,
