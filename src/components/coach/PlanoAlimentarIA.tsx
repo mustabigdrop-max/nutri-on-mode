@@ -1216,7 +1216,29 @@ export default function PlanoAlimentarIA() {
     }
   };
 
-  const tentarNovamente = async () => {
+  // Regera o plano forçando ↑ densidade nutricional + variedade,
+  // preservando preferências, restrições e orçamento.
+  const [densityRegenLoading, setDensityRegenLoading] = useState(false);
+  const regerarComMaisDensidade = async () => {
+    setDensityRegenLoading(true);
+    setLoadingMsg("Recalculando com mais densidade nutricional...");
+    try {
+      const novo = await gerarPlanoCore(undefined, true);
+      if (novo) {
+        setPlano(novo);
+        setPlanoComparativo(null);
+        setShowCompare(false);
+        toast({ title: "Plano regenerado", description: "Densidade nutricional reforçada — preferências e orçamento preservados." });
+        setTimeout(() => resultRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
+      }
+    } catch (e: any) {
+      console.error("[densityBoost] erro:", e);
+      toast({ title: "Erro ao regenerar", description: e?.message || "Tente novamente.", variant: "destructive" });
+    } finally {
+      setDensityRegenLoading(false);
+    }
+  };
+
     setRetrying(true);
     await gerar();
   };
