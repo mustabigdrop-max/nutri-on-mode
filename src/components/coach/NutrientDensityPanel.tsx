@@ -287,7 +287,41 @@ export default function NutrientDensityPanel({ refeicoes, fibraDeclarada, onRege
               <>⏳ Recalculando com mais densidade...</>
             ) : (
               <>🧬 Regerar com mais densidade nutricional</>
+        )}
+
+        {/* Botão Protocolo de Frutas Obrigatório */}
+        {onFruitProtocol && (
+          <button
+            onClick={onFruitProtocol}
+            disabled={fruitLoading}
+            title="Força mínimo 2 porções/dia, ≥5 espécies/semana, posicionamento circadiano (manhã/pós-treino/tarde/ceia), enzimáticas 2–3x/sem, anti-inflamatórias 3x/sem. Bloqueia banana/manga/mel se GH ativo."
+            style={{
+              marginTop: 10,
+              width: "100%",
+              background: fruitLoading ? T.bg3 : `linear-gradient(135deg, ${T.amber}, #f59e0b)`,
+              color: fruitLoading ? T.muted : "#0a0f0a",
+              border: `1px solid ${T.amber}`,
+              borderRadius: 8,
+              padding: "12px 16px",
+              fontSize: 13,
+              fontWeight: 700,
+              letterSpacing: "0.03em",
+              cursor: fruitLoading ? "not-allowed" : "pointer",
+              transition: "all .2s",
+              boxShadow: fruitLoading ? "none" : `0 0 24px ${T.amber}33`,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 8,
+            }}
+          >
+            {fruitLoading ? (
+              <>⏳ Aplicando protocolo de frutas...</>
+            ) : (
+              <>🍎 Aplicar Protocolo de Frutas Obrigatório (mín. 2/dia · 5 espécies/sem)</>
             )}
+          </button>
+        )}
           </button>
         )}
 
