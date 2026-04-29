@@ -972,7 +972,7 @@ export default function PlanoAlimentarIA() {
   };
 
   // Núcleo reutilizável: gera plano forçando modo econômico ON/OFF (default = valor do form).
-  const gerarPlanoCore = async (overrideModoEconomico?: boolean): Promise<PlanoData | null> => {
+  const gerarPlanoCore = async (overrideModoEconomico?: boolean, densityBoost?: boolean): Promise<PlanoData | null> => {
     const restricoesStr = [...form.restricoes, form.outraRestricao].filter(Boolean).join(", ") || "Nenhuma";
     const protocStr = protocolos.find(p => p.v === form.protocolo)?.l || "Nenhum";
     const trainingSchedulePrompt = buildTrainingSchedulePrompt(
@@ -1037,7 +1037,9 @@ export default function PlanoAlimentarIA() {
           neat: form.neat,
           qualidade_sono: form.qualidadeSono,
           semanas_em_deficit: form.semanasEmDeficit ? Number(form.semanasEmDeficit) : 0,
+          density_boost: densityBoost === true,
         },
+        densityBoost: densityBoost === true,
       },
     });
     if (fnError) throw fnError;
