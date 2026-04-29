@@ -2303,33 +2303,122 @@ ${perfilFisiologico?.modo_economico ? `
           const protRef = Math.round(prot * r);
           const carbRef = Math.round(carb * r);
           const fatRef = Math.round(fat * r);
+          const usarCaseiras = !!perfilFisiologico?.medidas_caseiras;
+          const mp = perfilFisiologico?.medidas_preferencias || {};
+          // Helper: gera medida caseira amigável + gramatura técnica entre parênteses.
           const gramasFor = (nome: string): string => {
             const n = nome.toLowerCase();
-            if (/(frango|peito|peixe|tilapia|tilápia|patinho|carne|atum|salm|ovo|clara|whey|albumina|iogurte|queijo|cottage)/.test(n)) {
-              if (/whey|albumina/.test(n)) return `${Math.max(20, Math.round(protRef / 0.8))}g`;
-              if (/ovo/.test(n) && !/clara/.test(n)) return `${Math.max(1, Math.round(protRef / 6))} unidade(s)`;
-              if (/iogurte|queijo|cottage/.test(n)) return `${Math.max(80, Math.round(protRef / 0.11))}g`;
-              return `${Math.max(60, Math.round(protRef / 0.22))}g`;
+            // PROTEÍNAS
+            if (/(frango|peito|peixe|tilapia|tilápia|patinho|carne|atum|salm)/.test(n)) {
+              const g = Math.max(60, Math.round(protRef / 0.22));
+              if (usarCaseiras) {
+                if (mp.proteinaUnidade === "filé_tamanho") {
+                  const tam = g < 100 ? "pequeno" : g < 140 ? "médio" : "grande";
+                  return `1 filé ${tam} (~${g}g)`;
+                }
+                if (mp.proteinaUnidade === "gramas_visuais") return `1 porção do tamanho de um baralho (~${g}g)`;
+                return `1 palma da mão (~${g}g)`;
+              }
+              return `${g}g`;
             }
-            if (/(arroz|batata|mandioca|macarr|pão|pao|aveia|tapioca|cuscuz|inhame|quinoa|granola)/.test(n)) {
-              if (/aveia|granola/.test(n)) return `${Math.max(20, Math.round(carbRef / 0.6))}g`;
-              if (/pão|pao/.test(n)) return `${Math.max(1, Math.round(carbRef / 25))} fatia(s)`;
-              return `${Math.max(50, Math.round(carbRef / 0.25))}g`;
+            if (/whey|albumina/.test(n)) {
+              const g = Math.max(20, Math.round(protRef / 0.8));
+              return usarCaseiras ? `${Math.max(1, Math.round(g / 30))} scoop(s) (~${g}g)` : `${g}g`;
             }
-            if (/(banana|maçã|maca|fruta|mam(ã|a)o|laranja|manga|abacaxi|morango)/.test(n)) {
-              return `1 unidade média (~${Math.max(80, Math.round(carbRef / 0.22))}g)`;
+            if (/ovo/.test(n) && !/clara/.test(n)) {
+              const u = Math.max(1, Math.round(protRef / 6));
+              return `${u} unidade${u > 1 ? "s" : ""}`;
             }
+            if (/clara/.test(n)) {
+              const g = Math.max(60, Math.round(protRef / 0.11));
+              return usarCaseiras ? `${Math.max(2, Math.round(g / 33))} claras (~${g}g)` : `${g}g`;
+            }
+            if (/iogurte/.test(n)) {
+              const g = Math.max(120, Math.round(protRef / 0.11));
+              if (usarCaseiras) {
+                const ml = mp.copo === "grande_300" ? 300 : 200;
+                const copos = Math.max(1, Math.round(g / ml));
+                return `${copos} copo${copos > 1 ? "s" : ""} ${ml === 300 ? "grande" : "americano"} (~${g}g)`;
+              }
+              return `${g}g`;
+            }
+            if (/queijo|cottage/.test(n)) {
+              const g = Math.max(30, Math.round(protRef / 0.18));
+              if (usarCaseiras && mp.usarFatias !== false && /queijo/.test(n)) {
+                const f = Math.max(1, Math.round(g / 20));
+                return `${f} fatia${f > 1 ? "s" : ""} (~${g}g)`;
+              }
+              return usarCaseiras ? `${Math.max(1, Math.round(g / 15))} colher(es) de sopa (~${g}g)` : `${g}g`;
+            }
+            // CARBOIDRATOS
+            if (/aveia|granola/.test(n)) {
+              const g = Math.max(20, Math.round(carbRef / 0.6));
+              if (usarCaseiras) {
+                const colher = mp.colher === "cha" ? 4 : 13;
+                const c = Math.max(1, Math.round(g / colher));
+                return `${c} colher(es) de ${mp.colher === "cha" ? "chá" : "sopa"} (~${g}g)`;
+              }
+              return `${g}g`;
+            }
+            if (/pão|pao/.test(n)) {
+              const f = Math.max(1, Math.round(carbRef / 25));
+              return `${f} fatia${f > 1 ? "s" : ""} (~${f * 25}g)`;
+            }
+            if (/arroz|cuscuz|quinoa|macarr/.test(n)) {
+              const g = Math.max(50, Math.round(carbRef / 0.28));
+              if (usarCaseiras) {
+                const ml = mp.xicara === "grande_300" ? 200 : 160;
+                const x = Math.max(0.5, Math.round((g / ml) * 2) / 2);
+                return `${x} xícara${x > 1 ? "s" : ""} de ${mp.xicara === "grande_300" ? "300ml" : "chá"} (~${g}g)`;
+              }
+              return `${g}g`;
+            }
+            if (/batata|mandioca|inhame|tapioca/.test(n)) {
+              const g = Math.max(50, Math.round(carbRef / 0.20));
+              if (usarCaseiras) return `1 porção do tamanho do punho (~${g}g)`;
+              return `${g}g`;
+            }
+            if (/feij(ã|a)o|lentilha|gr(ã|a)o/.test(n)) {
+              const g = Math.max(60, Math.round(carbRef / 0.20));
+              if (usarCaseiras) {
+                const ml = mp.concha === "pequena_50" ? 55 : mp.concha === "grande_120" ? 140 : 90;
+                const c = Math.max(1, Math.round(g / ml));
+                const tam = mp.concha === "pequena_50" ? "pequena" : mp.concha === "grande_120" ? "grande" : "média";
+                return `${c} concha${c > 1 ? "s" : ""} ${tam} (~${g}g)`;
+              }
+              return `${g}g`;
+            }
+            // FRUTAS
+            if (/(banana|maçã|maca|mam(ã|a)o|laranja|manga|abacaxi|morango|kiwi|pera|uva|melancia|goiaba)/.test(n)) {
+              const g = Math.max(80, Math.round(carbRef / 0.22));
+              return `1 unidade média (~${g}g)`;
+            }
+            // GORDURAS
             if (/(azeite|óleo|oleo|manteiga|ghee)/.test(n)) {
-              return `${Math.max(1, Math.round(fatRef / 13.5))} colher(es) de sopa (~${Math.max(5, Math.round(fatRef * 1.1))}g)`;
+              const ml = Math.max(5, Math.round(fatRef * 1.1));
+              if (usarCaseiras) {
+                const colher = mp.colher === "cha" ? 5 : 13;
+                const c = Math.max(1, Math.round(ml / colher));
+                return `${c} colher(es) de ${mp.colher === "cha" ? "chá" : "sopa"} (~${ml}ml)`;
+              }
+              return `${ml}g`;
             }
-            if (/(castanha|am(ê|e)ndoa|noz|amendoim|pasta|abacate)/.test(n)) {
-              if (/abacate/.test(n)) return `${Math.max(40, Math.round(fatRef / 0.15))}g`;
-              return `${Math.max(15, Math.round(fatRef / 0.5))}g`;
+            if (/abacate/.test(n)) {
+              const g = Math.max(40, Math.round(fatRef / 0.15));
+              if (usarCaseiras) return `${Math.max(1, Math.round(g / 15))} colher(es) de sopa (~${g}g)`;
+              return `${g}g`;
             }
+            if (/(castanha|am(ê|e)ndoa|noz|amendoim|pasta)/.test(n)) {
+              const g = Math.max(15, Math.round(fatRef / 0.5));
+              if (usarCaseiras && /pasta/.test(n)) return `${Math.max(1, Math.round(g / 13))} colher(es) de sopa (~${g}g)`;
+              if (usarCaseiras && mp.usarPunhado !== false) return `1 punhado fechado (~${g}g)`;
+              return usarCaseiras ? `${Math.max(3, Math.round(g / 5))} unidades (~${g}g)` : `${g}g`;
+            }
+            // VEGETAIS
             if (/(salada|legume|vegetal|br(ó|o)colis|couve|espinafre|alface|tomate|cenoura|abobrinha)/.test(n)) {
-              return "à vontade (~150g)";
+              return usarCaseiras ? "à vontade (~1 prato fundo / 150g)" : "à vontade (~150g)";
             }
-            return "1 porção (~100g)";
+            return usarCaseiras ? "1 porção média (~100g)" : "1 porção (~100g)";
           };
           return {
             refeicao: labels[i],
