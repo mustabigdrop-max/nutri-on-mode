@@ -395,6 +395,274 @@ export type Database = {
         }
         Relationships: []
       }
+      athlete_milestones: {
+        Row: {
+          athlete_id: string
+          created_at: string | null
+          data_marco: string | null
+          descricao: string | null
+          id: string
+          semana_numero: number | null
+          tipo: string
+          titulo: string
+          valor_numerico: number | null
+        }
+        Insert: {
+          athlete_id: string
+          created_at?: string | null
+          data_marco?: string | null
+          descricao?: string | null
+          id?: string
+          semana_numero?: number | null
+          tipo: string
+          titulo: string
+          valor_numerico?: number | null
+        }
+        Update: {
+          athlete_id?: string
+          created_at?: string | null
+          data_marco?: string | null
+          descricao?: string | null
+          id?: string
+          semana_numero?: number | null
+          tipo?: string
+          titulo?: string
+          valor_numerico?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "athlete_milestones_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "athlete_progress_summary"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "athlete_milestones_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "competition_athletes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      athlete_visual_assessments: {
+        Row: {
+          ajustes_plano: string | null
+          alertas: Json | null
+          analise_ia: Json | null
+          athlete_id: string
+          bf_estimado: number | null
+          coach_id: string
+          created_at: string | null
+          data_avaliacao: string
+          fase: string
+          foto_frontal_url: string | null
+          foto_lateral_url: string | null
+          foto_posterior_url: string | null
+          foto_url: string | null
+          id: string
+          massa_magra_kg: number | null
+          meta_proxima_semana: string | null
+          observacoes_coach: string | null
+          peso_kg: number | null
+          progresso_status: string | null
+          score_abdomen: number | null
+          score_bracos: number | null
+          score_cintura: number | null
+          score_condicionamento: number | null
+          score_costas_espessura: number | null
+          score_costas_largura: number | null
+          score_geral: number | null
+          score_ombros: number | null
+          score_peito: number | null
+          score_pernas: number | null
+          score_proporcoes: number | null
+          score_simetria: number | null
+          semana_numero: number
+          semanas_ate_palco: number | null
+        }
+        Insert: {
+          ajustes_plano?: string | null
+          alertas?: Json | null
+          analise_ia?: Json | null
+          athlete_id: string
+          bf_estimado?: number | null
+          coach_id: string
+          created_at?: string | null
+          data_avaliacao?: string
+          fase: string
+          foto_frontal_url?: string | null
+          foto_lateral_url?: string | null
+          foto_posterior_url?: string | null
+          foto_url?: string | null
+          id?: string
+          massa_magra_kg?: number | null
+          meta_proxima_semana?: string | null
+          observacoes_coach?: string | null
+          peso_kg?: number | null
+          progresso_status?: string | null
+          score_abdomen?: number | null
+          score_bracos?: number | null
+          score_cintura?: number | null
+          score_condicionamento?: number | null
+          score_costas_espessura?: number | null
+          score_costas_largura?: number | null
+          score_geral?: number | null
+          score_ombros?: number | null
+          score_peito?: number | null
+          score_pernas?: number | null
+          score_proporcoes?: number | null
+          score_simetria?: number | null
+          semana_numero: number
+          semanas_ate_palco?: number | null
+        }
+        Update: {
+          ajustes_plano?: string | null
+          alertas?: Json | null
+          analise_ia?: Json | null
+          athlete_id?: string
+          bf_estimado?: number | null
+          coach_id?: string
+          created_at?: string | null
+          data_avaliacao?: string
+          fase?: string
+          foto_frontal_url?: string | null
+          foto_lateral_url?: string | null
+          foto_posterior_url?: string | null
+          foto_url?: string | null
+          id?: string
+          massa_magra_kg?: number | null
+          meta_proxima_semana?: string | null
+          observacoes_coach?: string | null
+          peso_kg?: number | null
+          progresso_status?: string | null
+          score_abdomen?: number | null
+          score_bracos?: number | null
+          score_cintura?: number | null
+          score_condicionamento?: number | null
+          score_costas_espessura?: number | null
+          score_costas_largura?: number | null
+          score_geral?: number | null
+          score_ombros?: number | null
+          score_peito?: number | null
+          score_pernas?: number | null
+          score_proporcoes?: number | null
+          score_simetria?: number | null
+          semana_numero?: number
+          semanas_ate_palco?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "athlete_visual_assessments_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "athlete_progress_summary"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "athlete_visual_assessments_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "competition_athletes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      athlete_weekly_reports: {
+        Row: {
+          ajustes_nutricao: string | null
+          ajustes_treino: string | null
+          assessment_id: string | null
+          athlete_id: string
+          coach_id: string
+          created_at: string | null
+          data_envio: string | null
+          enviado_email: boolean | null
+          enviado_whatsapp: boolean | null
+          id: string
+          mensagem_motivacional: string | null
+          meta_proxima_semana: string | null
+          pontos_atencao: Json | null
+          pontos_positivos: Json | null
+          resumo_executivo: string | null
+          semana_numero: number
+          titulo: string | null
+          variacao_bf: number | null
+          variacao_peso: number | null
+          variacao_score: number | null
+          visualizado: boolean | null
+        }
+        Insert: {
+          ajustes_nutricao?: string | null
+          ajustes_treino?: string | null
+          assessment_id?: string | null
+          athlete_id: string
+          coach_id: string
+          created_at?: string | null
+          data_envio?: string | null
+          enviado_email?: boolean | null
+          enviado_whatsapp?: boolean | null
+          id?: string
+          mensagem_motivacional?: string | null
+          meta_proxima_semana?: string | null
+          pontos_atencao?: Json | null
+          pontos_positivos?: Json | null
+          resumo_executivo?: string | null
+          semana_numero: number
+          titulo?: string | null
+          variacao_bf?: number | null
+          variacao_peso?: number | null
+          variacao_score?: number | null
+          visualizado?: boolean | null
+        }
+        Update: {
+          ajustes_nutricao?: string | null
+          ajustes_treino?: string | null
+          assessment_id?: string | null
+          athlete_id?: string
+          coach_id?: string
+          created_at?: string | null
+          data_envio?: string | null
+          enviado_email?: boolean | null
+          enviado_whatsapp?: boolean | null
+          id?: string
+          mensagem_motivacional?: string | null
+          meta_proxima_semana?: string | null
+          pontos_atencao?: Json | null
+          pontos_positivos?: Json | null
+          resumo_executivo?: string | null
+          semana_numero?: number
+          titulo?: string | null
+          variacao_bf?: number | null
+          variacao_peso?: number | null
+          variacao_score?: number | null
+          visualizado?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "athlete_weekly_reports_assessment_id_fkey"
+            columns: ["assessment_id"]
+            isOneToOne: false
+            referencedRelation: "athlete_visual_assessments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "athlete_weekly_reports_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "athlete_progress_summary"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "athlete_weekly_reports_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "competition_athletes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       badges: {
         Row: {
           category: string
@@ -1833,6 +2101,87 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      competition_athletes: {
+        Row: {
+          altura_cm: number | null
+          ativo: boolean | null
+          bf_atual: number | null
+          bf_meta_palco: number | null
+          categoria: string
+          coach_id: string
+          created_at: string | null
+          data_competicao: string | null
+          data_nascimento: string | null
+          fase_atual: string | null
+          federacao: string | null
+          historico_lesoes: string | null
+          id: string
+          massa_magra_kg: number | null
+          nivel: string | null
+          nome: string
+          nome_competicao: string | null
+          patient_user_id: string | null
+          peso_kg: number | null
+          peso_palco_meta: number | null
+          pontos_fracos_conhecidos: string | null
+          protocolo_farmacologico: string | null
+          sexo: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          altura_cm?: number | null
+          ativo?: boolean | null
+          bf_atual?: number | null
+          bf_meta_palco?: number | null
+          categoria: string
+          coach_id: string
+          created_at?: string | null
+          data_competicao?: string | null
+          data_nascimento?: string | null
+          fase_atual?: string | null
+          federacao?: string | null
+          historico_lesoes?: string | null
+          id?: string
+          massa_magra_kg?: number | null
+          nivel?: string | null
+          nome: string
+          nome_competicao?: string | null
+          patient_user_id?: string | null
+          peso_kg?: number | null
+          peso_palco_meta?: number | null
+          pontos_fracos_conhecidos?: string | null
+          protocolo_farmacologico?: string | null
+          sexo?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          altura_cm?: number | null
+          ativo?: boolean | null
+          bf_atual?: number | null
+          bf_meta_palco?: number | null
+          categoria?: string
+          coach_id?: string
+          created_at?: string | null
+          data_competicao?: string | null
+          data_nascimento?: string | null
+          fase_atual?: string | null
+          federacao?: string | null
+          historico_lesoes?: string | null
+          id?: string
+          massa_magra_kg?: number | null
+          nivel?: string | null
+          nome?: string
+          nome_competicao?: string | null
+          patient_user_id?: string | null
+          peso_kg?: number | null
+          peso_palco_meta?: number | null
+          pontos_fracos_conhecidos?: string | null
+          protocolo_farmacologico?: string | null
+          sexo?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       competition_daily_logs: {
         Row: {
@@ -6933,6 +7282,27 @@ export type Database = {
       }
     }
     Views: {
+      athlete_progress_summary: {
+        Row: {
+          bf_atual: number | null
+          categoria: string | null
+          coach_id: string | null
+          data_competicao: string | null
+          dias_acompanhamento: number | null
+          dias_ate_palco: number | null
+          fase_atual: string | null
+          id: string | null
+          melhor_score: number | null
+          nome: string | null
+          peso_atual: number | null
+          semanas_ate_palco: number | null
+          total_avaliacoes: number | null
+          ultimo_bf: number | null
+          ultimo_peso: number | null
+          ultimo_score: number | null
+        }
+        Relationships: []
+      }
       my_subscription: {
         Row: {
           activated_at: string | null
