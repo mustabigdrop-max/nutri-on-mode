@@ -287,6 +287,8 @@ export default function NutrientDensityPanel({ refeicoes, fibraDeclarada, onRege
               <>⏳ Recalculando com mais densidade...</>
             ) : (
               <>🧬 Regerar com mais densidade nutricional</>
+            )}
+          </button>
         )}
 
         {/* Botão Protocolo de Frutas Obrigatório */}
@@ -320,8 +322,6 @@ export default function NutrientDensityPanel({ refeicoes, fibraDeclarada, onRege
             ) : (
               <>🍎 Aplicar Protocolo de Frutas Obrigatório (mín. 2/dia · 5 espécies/sem)</>
             )}
-          </button>
-        )}
           </button>
         )}
 
