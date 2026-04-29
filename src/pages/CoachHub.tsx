@@ -29,6 +29,10 @@ import {
 } from "@/components/ui/sidebar";
 import AthleteRoster from "@/components/coach/AthleteRoster";
 import PlanoAlimentarIA from "@/components/coach/PlanoAlimentarIA";
+import CoachApexVisualPage from "@/pages/coach/CoachApexVisualPage";
+import CoachTrainingOnPage from "@/pages/coach/CoachTrainingOnPage";
+import CoachLabExamsPage from "@/pages/coach/CoachLabExamsPage";
+import CoachReportsPage from "@/pages/coach/CoachReportsPage";
 
 type ModuleKey = "atletas" | "apex" | "plano" | "training" | "lab" | "relatorios";
 
