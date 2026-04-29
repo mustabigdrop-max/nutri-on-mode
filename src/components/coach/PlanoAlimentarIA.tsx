@@ -972,7 +972,7 @@ export default function PlanoAlimentarIA() {
   };
 
   // Núcleo reutilizável: gera plano forçando modo econômico ON/OFF (default = valor do form).
-  const gerarPlanoCore = async (overrideModoEconomico?: boolean): Promise<PlanoData | null> => {
+  const gerarPlanoCore = async (overrideModoEconomico?: boolean, densityBoost?: boolean): Promise<PlanoData | null> => {
     const restricoesStr = [...form.restricoes, form.outraRestricao].filter(Boolean).join(", ") || "Nenhuma";
     const protocStr = protocolos.find(p => p.v === form.protocolo)?.l || "Nenhum";
     const trainingSchedulePrompt = buildTrainingSchedulePrompt(
@@ -1037,7 +1037,9 @@ export default function PlanoAlimentarIA() {
           neat: form.neat,
           qualidade_sono: form.qualidadeSono,
           semanas_em_deficit: form.semanasEmDeficit ? Number(form.semanasEmDeficit) : 0,
+          density_boost: densityBoost === true,
         },
+        densityBoost: densityBoost === true,
       },
     });
     if (fnError) throw fnError;
@@ -1211,6 +1213,29 @@ export default function PlanoAlimentarIA() {
       setStep("form");
     } finally {
       setRetrying(false);
+    }
+  };
+
+  // Regera o plano forçando ↑ densidade nutricional + variedade,
+  // preservando preferências, restrições e orçamento.
+  const [densityRegenLoading, setDensityRegenLoading] = useState(false);
+  const regerarComMaisDensidade = async () => {
+    setDensityRegenLoading(true);
+    setLoadingMsg("Recalculando com mais densidade nutricional...");
+    try {
+      const novo = await gerarPlanoCore(undefined, true);
+      if (novo) {
+        setPlano(novo);
+        setPlanoComparativo(null);
+        setShowCompare(false);
+        toast({ title: "Plano regenerado", description: "Densidade nutricional reforçada — preferências e orçamento preservados." });
+        setTimeout(() => resultRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
+      }
+    } catch (e: any) {
+      console.error("[densityBoost] erro:", e);
+      toast({ title: "Erro ao regenerar", description: e?.message || "Tente novamente.", variant: "destructive" });
+    } finally {
+      setDensityRegenLoading(false);
     }
   };
 
@@ -3356,7 +3381,11 @@ export default function PlanoAlimentarIA() {
 
           {/* Painel de Densidade Nutricional */}
           {plano.refeicoes && plano.refeicoes.length > 0 && (
-            <NutrientDensityPanel refeicoes={plano.refeicoes as any} />
+            <NutrientDensityPanel
+              refeicoes={plano.refeicoes as any}
+              onRegenerate={regerarComMaisDensidade}
+              regenerating={densityRegenLoading}
+            />
           )}
 
           {/* Refeições */}

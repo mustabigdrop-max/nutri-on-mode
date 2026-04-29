@@ -1900,6 +1900,26 @@ PERFIL FISIOLÓGICO AVANÇADO (aplicar protocolos do system prompt conforme flag
 - Diversidade Alimentar Elite: ${perfilFisiologico?.diversidade_alimentar_elite ? "true" : "false"}
 - Cronobiologia Nutricional aplicada: ${perfilFisiologico?.cronobiologia_aplicada ? "true" : "false"}
 - Hidratação Farmacológica Inteligente: ${perfilFisiologico?.hidratacao_farmacologica ? "true" : "false"}
+- DENSITY BOOST (regerar com mais densidade): ${perfilFisiologico?.density_boost ? "true" : "false"}
+
+${perfilFisiologico?.density_boost ? `
+🧬🔥 MODO DENSITY BOOST ATIVO — REGERAÇÃO COM MAIS DENSIDADE NUTRICIONAL (PRIORIDADE MÁXIMA):
+O coach considerou o plano anterior pobre em micronutrientes. Você DEVE:
+1. PRESERVAR rigorosamente: meta calórica (±3%), macros prescritos, restrições alimentares, alimentos disponíveis informados, perfil econômico/orçamento e protocolo farmacológico.
+2. AUMENTAR obrigatoriamente a densidade nutricional aplicando TODAS estas regras (mesmo que toggles individuais não estejam ativos):
+   • Incluir AO MENOS 1 alimento ultradenso por dia: fígado bovino (1x/sem), sardinha em conserva, castanha-do-pará (1-2 unidades/dia, selênio), gema de ovo, vísceras leves.
+   • OBRIGATÓRIO ≥3 cores diferentes de vegetais por refeição principal (matriz fitoquímica).
+   • Rotacionar proteínas: NUNCA repetir a mesma proteína em refeições consecutivas do dia.
+   • Trocar carboidratos refinados por integrais sempre que viável dentro do orçamento (arroz integral, aveia, batata-doce, quinoa).
+   • Adicionar fonte de ômega-3 vegetal OU animal em ≥1 refeição/dia (chia, linhaça moída, sardinha, salmão).
+   • Incluir folhas verde-escuras (couve, espinafre, rúcula) em ≥2 refeições/dia (folato, magnésio, vit K).
+   • Incluir frutas cítricas OU vermelhas em ≥1 refeição/dia (vit C, antioxidantes).
+   • Adicionar 1 fermentado/dia se viável (kefir, iogurte natural, chucrute) — preserva orçamento.
+   • Temperos funcionais obrigatórios: cúrcuma+pimenta, alho, gengibre, ervas frescas (1 combo/refeição salgada).
+3. Se houver conflito entre orçamento e densidade: priorizar alimentos baratos E densos (ovos inteiros, fígado, sardinha em lata, banana, batata-doce, feijão preto, couve, cenoura, beterraba, aveia, repolho roxo, semente de abóbora).
+4. NÃO aumentar gramaturas além do necessário para manter macros — a estratégia é SUBSTITUIR alimentos pobres por densos, não ampliar porções.
+5. Adicionar campo "density_boost_aplicado": true no resumo do plano e listar em "alimentos_densos_adicionados": [array com 5-10 alimentos novos densos incluídos vs versão anterior].
+` : ""}
 - Modo Econômico: ${perfilFisiologico?.modo_economico ? "true" : "false"}
 - Perfil econômico do plano: ${perfilFisiologico?.perfil_economico || "intermediario"}
 - Alimentos disponíveis/preferidos do paciente: ${(perfilFisiologico?.alimentos_disponiveis || []).join(", ") || "Nenhum informado"}
