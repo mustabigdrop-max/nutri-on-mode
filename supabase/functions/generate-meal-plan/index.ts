@@ -186,6 +186,7 @@ ${stratum_fase ? `5) STRATUM ATIVO (${stratum_fase}) — sobrescrever fase nutri
 ═══════════════════════════════════════════════════════
 ` : "";
 
+    const systemPrompt = `Você é um nutricionista IA especialista em planejamento alimentar brasileiro.
 Gere um plano semanal de refeições (7 dias, 6 refeições/dia) RIGOROSAMENTE PERSONALIZADO.
 
 ═══════════════════════════════════════════
