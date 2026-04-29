@@ -40,6 +40,9 @@ export default function AthleteProgressTracker() {
   const [generatingReport, setGeneratingReport] = useState(false);
   const [compareA, setCompareA] = useState<string | null>(null);
   const [compareB, setCompareB] = useState<string | null>(null);
+  const [reportA, setReportA] = useState<string | null>(null);
+  const [reportB, setReportB] = useState<string | null>(null);
+  const [reportFocus, setReportFocus] = useState<string>("");
   const [report, setReport] = useState<string>("");
 
   // novo check-in
@@ -112,20 +115,53 @@ export default function AthleteProgressTracker() {
       toast.error("Sem dados suficientes");
       return;
     }
+    if (!reportA || !reportB) {
+      toast.error("Selecione as duas semanas para o relatório");
+      return;
+    }
+    if (reportA === reportB) {
+      toast.error("Selecione semanas diferentes");
+      return;
+    }
+    const semA = assessments.find((a) => a.id === reportA);
+    const semB = assessments.find((a) => a.id === reportB);
+    if (!semA || !semB) {
+      toast.error("Semanas inválidas");
+      return;
+    }
+    // ordena: anterior → mais recente
+    const [ant, rec] = new Date(semA.data_avaliacao) <= new Date(semB.data_avaliacao)
+      ? [semA, semB]
+      : [semB, semA];
+
     setGeneratingReport(true);
     try {
-      const ultimas = assessments.slice(0, 4).reverse();
-      const prompt = `Você é um coach de competição elite. Gere um relatório semanal completo para o atleta:
-Nome: ${athlete.nome}
+      const deltaPeso = ((rec.peso_kg || 0) - (ant.peso_kg || 0)).toFixed(1);
+      const deltaBf = ((rec.bf_estimado || 0) - (ant.bf_estimado || 0)).toFixed(1);
+      const deltaScore = (rec.score_geral || 0) - (ant.score_geral || 0);
+
+      const prompt = `Você é um coach de competição elite. Gere um relatório semanal completo comparando DUAS semanas específicas do atleta:
+
+Atleta: ${athlete.nome}
 Categoria: ${athlete.categoria || "—"}
 Data competição: ${athlete.data_competicao || "—"}
 Fase: ${athlete.fase_atual || "—"}
+${reportFocus ? `Foco solicitado pelo coach: ${reportFocus}` : ""}
 
-Últimas avaliações (mais antiga → mais recente):
-${ultimas.map(a => `- ${a.data_avaliacao}: ${a.peso_kg}kg, BF ${a.bf_estimado}%, score ${a.score_geral}, obs: ${a.observacoes_coach || "—"}`).join("\n")}
+📅 Semana ANTERIOR (${ant.data_avaliacao} • Sem ${ant.semana ?? "?"}):
+- Peso: ${ant.peso_kg ?? "—"}kg | BF: ${ant.bf_estimado ?? "—"}% | Score: ${ant.score_geral ?? "—"}
+- Meta: ${ant.meta_semana || "—"}
+- Observações: ${ant.observacoes_coach || "—"}
+
+📅 Semana ATUAL (${rec.data_avaliacao} • Sem ${rec.semana ?? "?"}):
+- Peso: ${rec.peso_kg ?? "—"}kg | BF: ${rec.bf_estimado ?? "—"}% | Score: ${rec.score_geral ?? "—"}
+- Meta: ${rec.meta_semana || "—"}
+- Observações: ${rec.observacoes_coach || "—"}
+
+Δ DELTA: Peso ${deltaPeso}kg • BF ${deltaBf}% • Score ${deltaScore}
 
 Gere relatório em markdown com:
-1. ✅ Pontos positivos
+1. ✅ Pontos positivos (com base no delta)
 2. ⚠️ Pontos de atenção
 3. 🏋️ Ajustes de treino sugeridos
 4. 🍽️ Ajustes nutricionais
@@ -143,10 +179,10 @@ Gere relatório em markdown com:
       await supabase.from("athlete_weekly_reports" as any).insert({
         athlete_id: athleteId,
         coach_id: user!.id,
-        semana_referencia: assessments.length,
+        semana_referencia: rec.semana ?? assessments.length,
         relatorio_completo: texto,
       });
-      toast.success("Relatório gerado e salvo");
+      toast.success("Relatório gerado e salvo no histórico");
     } catch (e: any) {
       toast.error("Falha ao gerar: " + e.message);
     } finally {
@@ -271,10 +307,55 @@ Gere relatório em markdown com:
           </TabsContent>
 
           <TabsContent value="relatorio" className="space-y-4">
-            <Button onClick={gerarRelatorio} disabled={generatingReport} className="bg-primary">
-              {generatingReport ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Sparkles className="w-4 h-4 mr-2" />}
-              Gerar relatório semanal IA
-            </Button>
+            <Card className="p-5 space-y-4">
+              <h3 className="font-bold flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-primary" /> Selecionar semanas para o relatório
+              </h3>
+              <div className="grid md:grid-cols-2 gap-3">
+                <div>
+                  <Label>Semana anterior</Label>
+                  <select
+                    className="w-full bg-background border border-border rounded px-3 py-2"
+                    value={reportA || ""}
+                    onChange={(e) => setReportA(e.target.value || null)}
+                  >
+                    <option value="">Selecione...</option>
+                    {assessments.map((a) => (
+                      <option key={a.id} value={a.id}>
+                        Sem {a.semana} - {a.data_avaliacao}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <Label>Semana atual</Label>
+                  <select
+                    className="w-full bg-background border border-border rounded px-3 py-2"
+                    value={reportB || ""}
+                    onChange={(e) => setReportB(e.target.value || null)}
+                  >
+                    <option value="">Selecione...</option>
+                    {assessments.map((a) => (
+                      <option key={a.id} value={a.id}>
+                        Sem {a.semana} - {a.data_avaliacao}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div>
+                <Label>Foco do relatório (opcional)</Label>
+                <Textarea
+                  placeholder="Ex: priorizar perda de BF mantendo massa, ajustar peak week..."
+                  value={reportFocus}
+                  onChange={(e) => setReportFocus(e.target.value)}
+                />
+              </div>
+              <Button onClick={gerarRelatorio} disabled={generatingReport || !reportA || !reportB} className="bg-primary">
+                {generatingReport ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Sparkles className="w-4 h-4 mr-2" />}
+                Gerar relatório semanal IA
+              </Button>
+            </Card>
             {report && (
               <Card className="p-6">
                 <div className="flex items-center gap-2 mb-3">
