@@ -2296,7 +2296,15 @@ AEJ não é refeição e nunca deve aparecer em refeicoes. Pós-Treino Imediato 
     const activeSystemPrompt = perfilFisiologico?.variedade_funcional || perfilFisiologico?.protocolo_microbiota || perfilFisiologico?.medidas_caseiras
       ? COMPACT_SYSTEM_PROMPT
       : SYSTEM_PROMPT;
-    const MODELS_FALLBACK = ["google/gemini-3-flash-preview", "google/gemini-2.5-flash-lite"];
+    // Quando density_boost está ativo, usar modelo mais forte (Gemini 2.5 Pro)
+    // como primário e temperature mais alta para forçar variedade real de alimentos.
+    // Fallback continua nos modelos rápidos para garantir resiliência.
+    const densityBoostOn = perfilFisiologico?.density_boost === true;
+    const MODELS_FALLBACK = densityBoostOn
+      ? ["google/gemini-2.5-pro", "google/gemini-3-flash-preview", "google/gemini-2.5-flash-lite"]
+      : ["google/gemini-3-flash-preview", "google/gemini-2.5-flash-lite"];
+    const boostedTemperature = densityBoostOn ? 0.95 : 0.7;
+    const boostedTopP = densityBoostOn ? 0.95 : undefined;
     let response: Response | null = null;
     let lastErrorStatus = 0;
     let lastErrorBody = "";
@@ -2304,22 +2312,27 @@ AEJ não é refeição e nunca deve aparecer em refeicoes. Pós-Treino Imediato 
     outer: for (const model of MODELS_FALLBACK) {
       for (let attempt = 0; attempt < 2; attempt++) {
         try {
+          // Pro tem latência maior — ampliar timeout quando ele for usado
+          const timeoutMs = model.includes("2.5-pro") ? 45_000 : 28_000;
+          const reqBody: Record<string, unknown> = {
+            model,
+            messages: [
+              { role: "system", content: activeSystemPrompt },
+              { role: "user", content: userPrompt },
+            ],
+            max_tokens: perfilFisiologico?.variedade_funcional ? 9000 : 14000,
+            response_format: { type: "json_object" },
+            temperature: boostedTemperature,
+          };
+          if (boostedTopP !== undefined) reqBody.top_p = boostedTopP;
           response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
             method: "POST",
-            signal: AbortSignal.timeout(28_000),
+            signal: AbortSignal.timeout(timeoutMs),
             headers: {
               Authorization: `Bearer ${LOVABLE_API_KEY}`,
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({
-              model,
-              messages: [
-                { role: "system", content: activeSystemPrompt },
-                { role: "user", content: userPrompt },
-              ],
-              max_tokens: perfilFisiologico?.variedade_funcional ? 9000 : 14000,
-              response_format: { type: "json_object" },
-            }),
+            body: JSON.stringify(reqBody),
           });
 
           if (response.ok) {
