@@ -895,6 +895,9 @@ export default function PlanoAlimentarIA() {
     perfilEconomico: "intermediario" as "economico" | "intermediario" | "premium",
     alimentosDisponiveis: [] as string[],
     outrosAlimentos: "",
+    // Frutas que o paciente tem em casa (prioridade no plano + sugestão de upgrade)
+    frutasEmCasa: [] as string[],
+    outrasFrutas: "",
     // BLOCO 11 — campos para cálculo determinístico expandido
     neat: "medio" as "baixo" | "medio" | "alto",
     qualidadeSono: "boa" as "boa" | "regular" | "ruim",
