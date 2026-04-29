@@ -153,9 +153,11 @@ interface Props {
   fibraDeclarada?: number; // se o plano já trouxer fibra total
   onRegenerate?: () => void;
   regenerating?: boolean;
+  onFruitProtocol?: () => void;
+  fruitLoading?: boolean;
 }
 
-export default function NutrientDensityPanel({ refeicoes, fibraDeclarada, onRegenerate, regenerating }: Props) {
+export default function NutrientDensityPanel({ refeicoes, fibraDeclarada, onRegenerate, regenerating, onFruitProtocol, fruitLoading }: Props) {
   const { totals, matched, unmatched } = useMemo(() => {
     const totals: Record<string, number> = {};
     const matched: string[] = [];
