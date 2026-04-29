@@ -1718,7 +1718,61 @@ INSTRUÇÕES FINAIS:
 ${stratumFase ? `9) STRATUM ATIVO (${stratumFase}) — sobrescrever fase nutricional e seguir rigorosamente a demanda da fase.` : ""}
 ═══════════════════════════════════════════════════════
 `;
-    })();
+        })();
+
+      // ── INJEÇÃO DETERMINÍSTICA: garante que existe refeição "Pós-Treino Imediato" ──
+      // Necessário quando a IA é truncada / cai em fallback determinístico e não cria a refeição.
+      const jaTemPos = (parsed.refeicoes as any[]).some((m) => isPosImediato(m?.refeicao || ""));
+      if (!jaTemPos) {
+        let horarioPos = "17:30";
+        try {
+          const treinoTimeMatch = String(trainingSchedulePrompt || "").match(/time\s*=\s*(\d{1,2}:\d{2})/i);
+          const durMatch = String(trainingSchedulePrompt || "").match(/duration_min\s*=\s*(\d+)/i);
+          if (treinoTimeMatch) {
+            const [hh, mm] = treinoTimeMatch[1].split(":").map(Number);
+            const dur = durMatch ? Number(durMatch[1]) : 60;
+            const total = hh * 60 + mm + dur + (Number(glut4Config.timing_minutes) || 30);
+            const h2 = Math.floor(total / 60) % 24;
+            const m2 = total % 60;
+            horarioPos = `${String(h2).padStart(2, "0")}:${String(m2).padStart(2, "0")}`;
+          }
+        } catch (_e) { /* mantém default */ }
+
+        const itensPos: any[] = [{
+          alimento: carbLabel || "Tapioca pura",
+          quantidade: `${Math.round(carbGrams)}g`,
+          quantidade_g: `${Math.round(carbGrams)}g`,
+          observacao: `Fonte de carboidrato sólido prescrita pelo coach — janela GLUT-4 (${glut4Config.timing_minutes || 30}min pós-treino). Sem proteína nem gordura.`,
+          cho: carbGrams,
+          substituicoes: [
+            { alimento: "Banana madura + 1 col sopa de mel", quantidade: `~${carbGrams}g CHO`, quantidade_g: `${Math.round(carbGrams)}g`, observacao: "Frutose + glicose, absorção rápida.", grupo: "carbo" },
+            { alimento: "Pão francês + geleia", quantidade: `~${carbGrams}g CHO`, quantidade_g: `${Math.round(carbGrams)}g`, observacao: "Amido refinado + sacarose, absorção rápida.", grupo: "carbo" },
+            { alimento: "Batata-doce cozida", quantidade: `${Math.round(carbGrams * 4)}g`, quantidade_g: `${Math.round(carbGrams * 4)}g`, observacao: "Alternativa de IG médio.", grupo: "carbo" },
+          ],
+        }];
+        if (glut4Config.add_leucine) {
+          itensPos.push({
+            alimento: "L-Leucina isolada",
+            quantidade: "2g",
+            quantidade_g: "2g",
+            observacao: "Trigger anabólico isolado — não conta como proteína inteira na janela GLUT-4.",
+            substituicoes: [],
+          });
+        }
+
+        const refeicaoPos = {
+          refeicao: `Pós-Treino Imediato (Janela GLUT-4 — ${horarioPos})`,
+          horario: horarioPos,
+          alimentos: itensPos,
+          calorias: Math.round(carbGrams * 4) + (glut4Config.add_leucine ? 8 : 0),
+          macros: { proteina: glut4Config.add_leucine ? 2 : 0, carboidrato: Math.round(carbGrams), gordura: 0 },
+          modo_preparo: "Consumir até 30min após o treino. Sem proteína sólida, sem gordura — apenas carboidrato de absorção rápida para reposição de glicogênio via GLUT-4.",
+          observacao_clinica: "Janela GLUT-4: absorção de glicose ~3x maior nos primeiros 30min pós-treino, independente de insulina.",
+        };
+
+        parsed.refeicoes.push(refeicaoPos);
+        console.log(`[POS-IMEDIATO-INJECT] criado pós-treino imediato | ${horarioPos} | ${carbGrams}g CHO (${carbLabel})`);
+      }
 
 
     const userPrompt = `${calcBlock}DADOS DO PACIENTE:
