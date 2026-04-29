@@ -804,6 +804,19 @@ serve(async (req) => {
     const _semanasDef = Number(semanasEmDeficit ?? perfilFisiologico?.semanas_em_deficit ?? 0);
     const _cyclingCarbo = cyclingCarbo ?? perfilFisiologico?.cycling_carbo ?? false;
 
+    // ═══════════════════════════════════════════════════════════════
+    // SINCRONIZAÇÃO TRAININGON ↔ NUTRION — normalização do payload
+    // ═══════════════════════════════════════════════════════════════
+    const _trainingOn: any = trainingOnSync ?? trainingOn ?? training_on ?? null;
+    const _hasTrainingOn = !!(
+      _trainingOn && typeof _trainingOn === "object" && (
+        _trainingOn.training_phase || _trainingOn.sistema_treino ||
+        _trainingOn.volume_sets_semana || _trainingOn.musculos_prioritarios ||
+        _trainingOn.tipo_fibra || _trainingOn.tempo_sessao_min ||
+        _trainingOn.training_days || _trainingOn.stratum_fase
+      )
+    );
+
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
