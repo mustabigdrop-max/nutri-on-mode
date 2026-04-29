@@ -150,67 +150,15 @@ const CoachHub = () => {
       case "atletas":
         return <AthleteRoster />;
       case "apex":
-        return (
-          <PlaceholderModule
-            title="APEX Visual"
-            description="Upload de fotos e análise por IA dos atletas."
-            ctaLabel="Ir para Roster de Atletas"
-            onCta={() => setActive("atletas")}
-            bullets={[
-              "Upload de foto direto no hub",
-              "Scores da última análise (simetria, condição, separação)",
-              "Pontos fortes/fracos identificados pela IA",
-              "Comparação semana a semana",
-            ]}
-          />
-        );
+        return <CoachApexVisualPage />;
       case "plano":
         return <PlanoAlimentarIA />;
       case "training":
-        return (
-          <PlaceholderModule
-            title="TrainingON · Sync"
-            description="Dados sincronizados entre treino e nutrição."
-            ctaLabel="Abrir TrainingON"
-            onCta={() => navigate("/training")}
-            bullets={[
-              "Sistema de treino, tipo de fibra e volume/semana",
-              "Fase STRATUM atual",
-              "TDEE ajustado automaticamente conforme volume",
-              "Conflitos detectados (ex.: low-carb + alto volume pernas)",
-            ]}
-          />
-        );
+        return <CoachTrainingOnPage />;
       case "lab":
-        return (
-          <PlaceholderModule
-            title="Exames Lab"
-            description="Score metabólico e alertas críticos."
-            ctaLabel="Abrir Lab"
-            onCta={() => navigate("/lab")}
-            bullets={[
-              "Score metabólico consolidado",
-              "Alertas por exame (ALT elevado, B12 baixo, ferritina)",
-              "Interpretação automática por IA",
-              "Sugestões de ajuste nutricional",
-            ]}
-          />
-        );
+        return <CoachLabExamsPage />;
       case "relatorios":
-        return (
-          <PlaceholderModule
-            title="Relatórios Semanais"
-            description="Relatório IA com positivos, atenção, meta e envio ao atleta."
-            ctaLabel="Selecionar atleta"
-            onCta={() => setActive("atletas")}
-            bullets={[
-              "Comparação entre duas semanas escolhidas",
-              "Pontos positivos e pontos de atenção",
-              "Ajustes de treino e nutrição sugeridos",
-              "Mensagem motivacional + envio direto ao atleta",
-            ]}
-          />
-        );
+        return <CoachReportsPage />;
     }
   };
 
