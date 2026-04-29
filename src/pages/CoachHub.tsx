@@ -11,8 +11,6 @@ import {
   ArrowLeft,
   Home,
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   Sidebar,
@@ -29,6 +27,10 @@ import {
 } from "@/components/ui/sidebar";
 import AthleteRoster from "@/components/coach/AthleteRoster";
 import PlanoAlimentarIA from "@/components/coach/PlanoAlimentarIA";
+import CoachApexVisualPage from "@/pages/coach/CoachApexVisualPage";
+import CoachTrainingOnPage from "@/pages/coach/CoachTrainingOnPage";
+import CoachLabExamsPage from "@/pages/coach/CoachLabExamsPage";
+import CoachReportsPage from "@/pages/coach/CoachReportsPage";
 
 type ModuleKey = "atletas" | "apex" | "plano" | "training" | "lab" | "relatorios";
 
@@ -99,43 +101,6 @@ function CoachHubSidebar({ active, setActive }: { active: ModuleKey; setActive: 
   );
 }
 
-const PlaceholderModule = ({
-  title,
-  description,
-  ctaLabel,
-  onCta,
-  bullets,
-}: {
-  title: string;
-  description: string;
-  ctaLabel?: string;
-  onCta?: () => void;
-  bullets?: string[];
-}) => (
-  <Card className="border-amber-500/20 bg-card">
-    <CardHeader>
-      <CardTitle className="text-xl">{title}</CardTitle>
-      <p className="text-sm text-muted-foreground">{description}</p>
-    </CardHeader>
-    <CardContent className="space-y-4">
-      {bullets && (
-        <ul className="space-y-2 text-sm">
-          {bullets.map((b, i) => (
-            <li key={i} className="flex items-start gap-2">
-              <span className="mt-1 h-1.5 w-1.5 rounded-full bg-amber-500" />
-              <span>{b}</span>
-            </li>
-          ))}
-        </ul>
-      )}
-      {ctaLabel && onCta && (
-        <Button onClick={onCta} className="bg-amber-500 hover:bg-amber-600 text-black">
-          {ctaLabel}
-        </Button>
-      )}
-    </CardContent>
-  </Card>
-);
 
 const CoachHub = () => {
   const [active, setActive] = useState<ModuleKey>("atletas");
@@ -146,67 +111,15 @@ const CoachHub = () => {
       case "atletas":
         return <AthleteRoster />;
       case "apex":
-        return (
-          <PlaceholderModule
-            title="APEX Visual"
-            description="Upload de fotos e análise por IA dos atletas."
-            ctaLabel="Ir para Roster de Atletas"
-            onCta={() => setActive("atletas")}
-            bullets={[
-              "Upload de foto direto no hub",
-              "Scores da última análise (simetria, condição, separação)",
-              "Pontos fortes/fracos identificados pela IA",
-              "Comparação semana a semana",
-            ]}
-          />
-        );
+        return <CoachApexVisualPage />;
       case "plano":
         return <PlanoAlimentarIA />;
       case "training":
-        return (
-          <PlaceholderModule
-            title="TrainingON · Sync"
-            description="Dados sincronizados entre treino e nutrição."
-            ctaLabel="Abrir TrainingON"
-            onCta={() => navigate("/training")}
-            bullets={[
-              "Sistema de treino, tipo de fibra e volume/semana",
-              "Fase STRATUM atual",
-              "TDEE ajustado automaticamente conforme volume",
-              "Conflitos detectados (ex.: low-carb + alto volume pernas)",
-            ]}
-          />
-        );
+        return <CoachTrainingOnPage />;
       case "lab":
-        return (
-          <PlaceholderModule
-            title="Exames Lab"
-            description="Score metabólico e alertas críticos."
-            ctaLabel="Abrir Lab"
-            onCta={() => navigate("/lab")}
-            bullets={[
-              "Score metabólico consolidado",
-              "Alertas por exame (ALT elevado, B12 baixo, ferritina)",
-              "Interpretação automática por IA",
-              "Sugestões de ajuste nutricional",
-            ]}
-          />
-        );
+        return <CoachLabExamsPage />;
       case "relatorios":
-        return (
-          <PlaceholderModule
-            title="Relatórios Semanais"
-            description="Relatório IA com positivos, atenção, meta e envio ao atleta."
-            ctaLabel="Selecionar atleta"
-            onCta={() => setActive("atletas")}
-            bullets={[
-              "Comparação entre duas semanas escolhidas",
-              "Pontos positivos e pontos de atenção",
-              "Ajustes de treino e nutrição sugeridos",
-              "Mensagem motivacional + envio direto ao atleta",
-            ]}
-          />
-        );
+        return <CoachReportsPage />;
     }
   };
 
