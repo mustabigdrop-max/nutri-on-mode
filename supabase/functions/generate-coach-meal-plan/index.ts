@@ -1926,6 +1926,42 @@ FERMENTADOS: ≥1 item/dia quando viável; lactose-restrita → kefir de água, 
 METADADOS: "variedade_aplicada": { "frutas_distintas": N, "vegetais_distintos": N, "proteinas_distintas": N, "carbos_distintos": N, "temperos_funcionais": true, "fermentados_com_substitutos": true }.
 ` : ""}
 
+${perfilFisiologico?.diversidade_alimentar_elite ? `
+🧬 DIVERSIDADE ALIMENTAR ELITE — PROTOCOLO SURREAL (OBRIGATÓRIO):
+Meta: ≥40 espécies alimentares distintas na semana (microbioma de atleta de elite — Sonnenburg/Stanford).
+PROTEÍNAS (mínimo 7 fontes/semana, NUNCA repetir em dias consecutivos): frango, peixe branco (tilápia/pescada), peixe gordo (salmão/sardinha), carne vermelha magra, ovos inteiros, vísceras (fígado 1x/sem), proteína vegetal (lentilha/grão-bico/tofu).
+CARBOIDRATOS (mínimo 6 fontes funcionais/semana): arroz integral/parboilizado, batata-doce, batata inglesa, mandioca/macaxeira, inhame, aveia, quinoa, cuscuz, tapioca — rotacionar.
+VEGETAIS (mínimo 8 espécies/semana, MATRIZ DE CORES): verde-escuro (couve, espinafre, rúcula), vermelho (tomate, pimentão), laranja (cenoura, abóbora), roxo (repolho roxo, beterraba), branco (couve-flor, alho), amarelo (pimentão, abobrinha amarela).
+FRUTAS (mínimo 6/semana, por janela circadiana): vermelhas/berries (manhã), cítricas (manhã/pré-treino), enzimáticas (mamão/abacaxi pós-refeição), tropicais (manga/banana pré-treino), prebióticas (banana verde/maçã), secas (tâmara/uva-passa pré-treino).
+GORDURAS (mínimo 4 perfis/semana): MUFA (azeite extravirgem, abacate), PUFA-3 (chia, linhaça, sardinha), MUFA+vitE (oleaginosas variadas — castanha-do-pará, amêndoa, noz), saturada estratégica (ovo inteiro, coco). NUNCA usar APENAS azeite como fonte do dia.
+FERMENTADOS (≥5x/semana, rotacionar): kefir leite, iogurte grego natural, kombucha, chucrute, kimchi, missô, kefir água — sempre combinar com prebiótico (simbiótico).
+REGRA ANTI-MONOTONIA: proibido repetir combo proteína+carbo em dias consecutivos. Proibido repetir mesma proteína 2 dias seguidos.
+METADADOS OBRIGATÓRIOS: "diversidade_elite": { "especies_distintas_semana": N, "proteinas_distintas": N, "vegetais_por_cor": {...}, "fermentados_dias": N, "perfis_lipidicos": N }.
+` : ""}
+
+${perfilFisiologico?.cronobiologia_aplicada ? `
+🕐 CRONOBIOLOGIA NUTRICIONAL — RELÓGIO CIRCADIANO APLICADO (OBRIGATÓRIO):
+Distribua macros conforme janelas circadianas e cronotipo:
+- MANHÃ (06h–10h, pico cortisol + sensibilidade insulínica alta): CHO complexos preferenciais (aveia, batata-doce, frutas vermelhas/cítricas), proteína moderada, gordura baixa-moderada. Evitar açúcar simples isolado.
+- MEIO-DIA (12h–14h, PICO METABÓLICO): refeição MAIOR do dia em kcal — proteína completa + CHO complexo + vegetais densos + gordura funcional. Melhor janela para vísceras e refeições densas.
+- TARDE (15h–18h, declínio insulínico, pico de força): CHO funcional pré-treino (banana, tâmara, batata-doce) + proteína de absorção média. Pós-treino: CHO rápido + whey/proteína magra.
+- NOITE (19h–22h, melatonina subindo): proteína de absorção LENTA (caseína, ovos, queijo cottage, iogurte grego) + triptofano (aveia, banana, oleaginosas, leite morno) para precursor de serotonina/melatonina. CHO baixo-moderado, evitar refeição pesada <2h do sono. Magnésio glicinato preferencial.
+- Sincronizar JEJUM noturno mínimo de 12h quando possível (cronoalimentação).
+METADADOS OBRIGATÓRIOS: "cronobiologia": { "janela_alimentar_h": N, "refeicao_pico_kcal": "12h-14h", "kcal_por_janela": { "manha": N, "meio_dia": N, "tarde": N, "noite": N }, "triptofano_noturno": true }.
+` : ""}
+
+${perfilFisiologico?.hidratacao_farmacologica ? `
+💧 HIDRATAÇÃO FARMACOLÓGICA INTELIGENTE (OBRIGATÓRIO):
+Calcule meta hídrica + eletrólitos ajustados ao protocolo farmacológico, diuréticos, GLP-1, cardio e clima.
+- BASE: 35–45 ml/kg/dia. Ajustar +500ml por hora de cardio, +500ml em clima quente.
+- GLP-1 (semaglutida/tirzepatida/retatrutida): +750ml/dia (risco desidratação por saciedade), Na⁺ 2.5–3g/dia, K⁺ 3.5g/dia, Mg²⁺ 400mg (preferir glicinato — evita diarreia).
+- Diuréticos/Stack PED com retenção: K⁺ 4g/dia, Mg²⁺ 500mg, monitorar Na⁺.
+- TIMING: 500ml ao acordar (com pitada de sal marinho + limão), 500ml pré-treino (com eletrólitos se >60min), 250–500ml a cada 20min intra-treino, 500–750ml pós-treino com Na+K, 250ml pré-bed (não mais — evitar nictúria).
+- PEAK WEEK: janela de DEPLEÇÃO (D-3 a D-1: corte gradual Na, água alta) → RETENÇÃO (D-day: água baixa, Na controlado, CHO loading puxa água intramuscular).
+- FONTES DE ELETRÓLITOS NO PLANO: água de coco (K⁺), sal rosa/marinho (Na⁺), sementes de abóbora/amêndoas (Mg²⁺), banana/batata-doce (K⁺), folhas verde-escuras (Mg²⁺).
+METADADOS OBRIGATÓRIOS: "hidratacao_farmacologica": { "meta_agua_ml": N, "sodio_mg": N, "potassio_mg": N, "magnesio_mg": N, "timing": [...], "ajuste_farmacologico": "string explicando" }.
+` : ""}
+
 
 ${perfilFisiologico?.medidas_caseiras ? (() => {
   const mp = perfilFisiologico?.medidas_preferencias || {};
