@@ -328,10 +328,17 @@ const CoachDashboardPage = () => {
         <Tabs defaultValue="overview" className="w-full">
           <TabsList>
             <TabsTrigger value="overview">Visão Geral</TabsTrigger>
+            <TabsTrigger value="athletes">
+              <Trophy className="w-4 h-4 mr-1" /> Atletas
+            </TabsTrigger>
             <TabsTrigger value="send">
               <Send className="w-4 h-4 mr-1" /> Enviar Protocolo
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="athletes" className="mt-4">
+            <AthleteRoster />
+          </TabsContent>
 
           <TabsContent value="send" className="mt-4">
             <SendProtocolModule coachProfileId={profile.id} coachUserId={user?.id || ""} />
