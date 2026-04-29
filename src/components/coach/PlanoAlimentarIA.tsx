@@ -1048,6 +1048,8 @@ export default function PlanoAlimentarIA() {
           perfil_economico: form.perfilEconomico,
           alimentos_disponiveis: form.alimentosDisponiveis,
           outros_alimentos: form.outrosAlimentos || null,
+          frutas_em_casa: form.frutasEmCasa,
+          outras_frutas: form.outrasFrutas || null,
           neat: form.neat,
           qualidade_sono: form.qualidadeSono,
           semanas_em_deficit: form.semanasEmDeficit ? Number(form.semanasEmDeficit) : 0,
