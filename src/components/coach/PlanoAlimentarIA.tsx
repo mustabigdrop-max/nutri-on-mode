@@ -1239,6 +1239,7 @@ export default function PlanoAlimentarIA() {
     }
   };
 
+  const tentarNovamente = async () => {
     setRetrying(true);
     await gerar();
   };
