@@ -1925,9 +1925,9 @@ O coach considerou o plano anterior pobre em micronutrientes. Você DEVE:
 5. Adicionar campo "density_boost_aplicado": true no resumo do plano e listar em "alimentos_densos_adicionados": [array com 5-10 alimentos novos densos incluídos vs versão anterior].
 ` : ""}
 
-${perfilFisiologico?.fruit_protocol || (req as any)?.body?.fruitProtocol ? `
+${(perfilFisiologico?.fruit_protocol || fruitProtocol) ? `
 🍎🔥 PROTOCOLO DE FRUTAS OBRIGATÓRIO ATIVO — APLICAÇÃO INTEGRAL:
-${(req as any)?.body?.fruitProtocolText || ""}
+${fruitProtocolText || ""}
 
 REGRAS DE EXECUÇÃO PARA O JSON:
 - Inserir, em CADA refeição correspondente, uma fruta da lista com a quantidade padrão prescrita (ex.: "Banana madura — 1 unidade média (100g)" com "quantidade_g": "100g").
