@@ -1255,6 +1255,29 @@ export default function PlanoAlimentarIA() {
     }
   };
 
+  // Aplica Protocolo de Frutas Obrigatório (mín. 2/dia, 5 espécies/sem,
+  // posicionamento circadiano, enzimáticas + anti-inflamatórias).
+  const [fruitProtocolLoading, setFruitProtocolLoading] = useState(false);
+  const aplicarProtocoloFrutas = async () => {
+    setFruitProtocolLoading(true);
+    setLoadingMsg("Aplicando Protocolo de Frutas Obrigatório...");
+    try {
+      const novo = await gerarPlanoCore(undefined, true, true);
+      if (novo) {
+        setPlano(novo);
+        setPlanoComparativo(null);
+        setShowCompare(false);
+        toast({ title: "Protocolo de frutas aplicado", description: "Mín. 2 porções/dia · 5 espécies/sem · posicionamento circadiano." });
+        setTimeout(() => resultRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
+      }
+    } catch (e: any) {
+      console.error("[fruitProtocol] erro:", e);
+      toast({ title: "Erro ao aplicar protocolo", description: e?.message || "Tente novamente.", variant: "destructive" });
+    } finally {
+      setFruitProtocolLoading(false);
+    }
+  };
+
   const tentarNovamente = async () => {
     setRetrying(true);
     await gerar();
