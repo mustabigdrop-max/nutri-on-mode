@@ -239,6 +239,7 @@ SAÚDE/MANUTENÇÃO:
 - Minimizar ultra-processados
  ` : ""}
 ${workoutContext}
+${trainingOnPrompt}
 ═══════════════════════════════════════════
 MICRONUTRIENTES OBRIGATÓRIOS
 ═══════════════════════════════════════════
