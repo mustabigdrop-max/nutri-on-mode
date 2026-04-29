@@ -307,10 +307,55 @@ Gere relatório em markdown com:
           </TabsContent>
 
           <TabsContent value="relatorio" className="space-y-4">
-            <Button onClick={gerarRelatorio} disabled={generatingReport} className="bg-primary">
-              {generatingReport ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Sparkles className="w-4 h-4 mr-2" />}
-              Gerar relatório semanal IA
-            </Button>
+            <Card className="p-5 space-y-4">
+              <h3 className="font-bold flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-primary" /> Selecionar semanas para o relatório
+              </h3>
+              <div className="grid md:grid-cols-2 gap-3">
+                <div>
+                  <Label>Semana anterior</Label>
+                  <select
+                    className="w-full bg-background border border-border rounded px-3 py-2"
+                    value={reportA || ""}
+                    onChange={(e) => setReportA(e.target.value || null)}
+                  >
+                    <option value="">Selecione...</option>
+                    {assessments.map((a) => (
+                      <option key={a.id} value={a.id}>
+                        Sem {a.semana} - {a.data_avaliacao}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <Label>Semana atual</Label>
+                  <select
+                    className="w-full bg-background border border-border rounded px-3 py-2"
+                    value={reportB || ""}
+                    onChange={(e) => setReportB(e.target.value || null)}
+                  >
+                    <option value="">Selecione...</option>
+                    {assessments.map((a) => (
+                      <option key={a.id} value={a.id}>
+                        Sem {a.semana} - {a.data_avaliacao}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div>
+                <Label>Foco do relatório (opcional)</Label>
+                <Textarea
+                  placeholder="Ex: priorizar perda de BF mantendo massa, ajustar peak week..."
+                  value={reportFocus}
+                  onChange={(e) => setReportFocus(e.target.value)}
+                />
+              </div>
+              <Button onClick={gerarRelatorio} disabled={generatingReport || !reportA || !reportB} className="bg-primary">
+                {generatingReport ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Sparkles className="w-4 h-4 mr-2" />}
+                Gerar relatório semanal IA
+              </Button>
+            </Card>
             {report && (
               <Card className="p-6">
                 <div className="flex items-center gap-2 mb-3">
