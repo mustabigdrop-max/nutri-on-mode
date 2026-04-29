@@ -864,6 +864,7 @@ export default function PlanoAlimentarIA() {
     protocoloMicrobiota: false,
     cyclingCarbo: false,
     cronobiologiaAtiva: false,
+    hidratacaoFarmacologica: false,
     modoEconomico: false,
     medidasCaseiras: false,
     // Preferências de unidades caseiras (usadas quando medidasCaseiras = true)
@@ -1023,6 +1024,7 @@ export default function PlanoAlimentarIA() {
           protocolo_microbiota: form.protocoloMicrobiota,
           cycling_carbo: form.cyclingCarbo,
           cronobiologia_aplicada: form.cronobiologiaAtiva,
+          hidratacao_farmacologica: form.hidratacaoFarmacologica,
           modo_economico: modoEcon,
           medidas_caseiras: form.medidasCaseiras,
           medidas_preferencias: form.medidasCaseiras ? form.medidasPrefs : null,
@@ -4375,6 +4377,37 @@ export default function PlanoAlimentarIA() {
               width: 18, height: 18, borderRadius: "50%",
               background: form.cronobiologiaAtiva ? "#0a0f0a" : T.muted,
               position: "absolute", top: 2, left: form.cronobiologiaAtiva ? 22 : 2, transition: "left .2s",
+            }} />
+          </div>
+        </div>
+
+        {/* Toggle: Hidratação Farmacológica Inteligente */}
+        <div style={{
+          background: T.card, border: `1px solid ${form.hidratacaoFarmacologica ? "#B8922A" : T.border}`,
+          borderRadius: 12, padding: 18, marginBottom: 18,
+          display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12,
+        }}>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: T.text, display: "flex", alignItems: "center", gap: 8 }}>
+              💧 Hidratação Farmacológica Inteligente
+            </div>
+            <div style={{ fontSize: 11, color: T.muted, marginTop: 4, lineHeight: 1.5 }}>
+              Calcula meta hídrica + eletrólitos (Na⁺, K⁺, Mg²⁺) ajustada ao protocolo farmacológico, diuréticos, GLP-1, cardio e clima. Distribui timing intra-treino, pré-bed e janelas de retenção/depleção em peak week.
+            </div>
+          </div>
+          <div
+            onClick={() => set("hidratacaoFarmacologica", !form.hidratacaoFarmacologica)}
+            style={{
+              width: 44, height: 24, borderRadius: 999,
+              background: form.hidratacaoFarmacologica ? "#B8922A" : T.bg3,
+              border: `1px solid ${form.hidratacaoFarmacologica ? "#B8922A" : T.border2}`,
+              position: "relative", cursor: "pointer", transition: "all .2s", flexShrink: 0,
+            }}
+          >
+            <div style={{
+              width: 18, height: 18, borderRadius: "50%",
+              background: form.hidratacaoFarmacologica ? "#0a0f0a" : T.muted,
+              position: "absolute", top: 2, left: form.hidratacaoFarmacologica ? 22 : 2, transition: "left .2s",
             }} />
           </div>
         </div>
