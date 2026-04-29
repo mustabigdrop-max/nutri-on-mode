@@ -3469,6 +3469,174 @@ AEJ não é refeição e nunca deve aparecer em refeicoes. Pós-Treino Imediato 
       console.warn("[validacao_frutas] falha ao auditar frutas:", e);
     }
 
+    // ═══════════════════════════════════════════════════════════════
+    // SINCRONIZAÇÃO TRAININGON ↔ NUTRION — pós-processamento determinístico
+    // Garante que sincronizacao_trainingon SEMPRE saia completo quando o
+    // payload do TrainingON estiver presente, mesmo que a IA omita.
+    // Detecta conflitos e propaga alertas para resumo.alertas_nutricionais.
+    // ═══════════════════════════════════════════════════════════════
+    try {
+      if (_hasTrainingOn) {
+        const t = _trainingOn || {};
+        const fase = String(t.training_phase || t.fase_treino || "não informada");
+        const sistema = String(t.sistema_treino || t.system || "não informado");
+        const volume = Number(t.volume_sets_semana || t.volume_semanal_sets || 0);
+        const musculos: string[] = Array.isArray(t.musculos_prioritarios)
+          ? t.musculos_prioritarios.map((m: any) => String(m))
+          : (t.musculos_prioritarios ? [String(t.musculos_prioritarios)] : []);
+        const fibra = String(t.tipo_fibra || t.fiber_type || "misto");
+        const tempoSessao = Number(t.tempo_sessao_min || t.session_time_min || 0);
+        const intensidadeRaw = String(t.intensidade_treino || t.training_intensity || "Alta").toLowerCase();
+        const cardioMesmoDia = !!(t.cardio_mesmo_dia ?? t.cardio_same_day);
+        const semAnabolizante = !!(t.sem_anabolizante ?? t.no_anabolic);
+        const stratumFase = t.stratum_fase || t.stratum_phase || null;
+
+        let fatorAtividade = 1.55;
+        if (volume > 200) fatorAtividade = 1.90;
+        else if (volume > 160) fatorAtividade = 1.80;
+        else if (volume >= 120) fatorAtividade = 1.725;
+        else if (volume >= 80) fatorAtividade = 1.65;
+
+        const fatorIntensidade = intensidadeRaw.includes("muito") ? 1.4
+          : intensidadeRaw.includes("alta") ? 1.2
+          : intensidadeRaw.includes("mod") ? 1.0
+          : intensidadeRaw.includes("leve") ? 0.7
+          : 1.2;
+        const gastoKcalTreino = tempoSessao > 0
+          ? Math.round((tempoSessao / 60) * 400 * fatorIntensidade)
+          : 0;
+
+        const cycleMap: Record<string, { pct: number; just: string }> = {
+          pernas: { pct: 30, just: "Maior massa muscular → +glicogênio. Intra-treino + CHO rápido pós em ≤30min." },
+          quadriceps: { pct: 30, just: "Quadríceps demanda glicogênio elevado." },
+          posterior: { pct: 30, just: "Cadeia posterior demanda glicogênio elevado." },
+          gluteos: { pct: 30, just: "Glúteos: síntese lenta — CHO alto + colágeno + PTN ≥2,5 g/kg." },
+          costas: { pct: 25, just: "Volume alto de sets → glutamina 10g pós." },
+          peito: { pct: 20, just: "Push de alto volume — creatina pré." },
+          triceps: { pct: 20, just: "Push acessório." },
+          ombros: { pct: 15, just: "Volume moderado — gordura boa para articulação." },
+          deltoide: { pct: 15, just: "Volume moderado." },
+          biceps: { pct: 10, just: "Menor massa — BCAAs intra se déficit." },
+          core: { pct: 0, just: "Baixa demanda — sem ajuste." },
+          abdomen: { pct: 0, just: "Baixa demanda — sem ajuste." },
+        };
+        const norm = (s: string) => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        const cyclingPorMusculo = musculos.map((m) => {
+          const k = norm(m);
+          const found = Object.keys(cycleMap).find((kk) => k.includes(kk)) || "core";
+          return {
+            dia: `Dia de ${m}`,
+            musculo: m,
+            cho_ajuste_pct: cycleMap[found].pct,
+            justificativa: cycleMap[found].just,
+          };
+        });
+
+        const supSync: Array<{ suplemento: string; dose: string; timing: string; justificativa_treino: string }> = [];
+        const sistemaLow = norm(sistema);
+        const fibraLow = norm(fibra);
+        const stratumLow = stratumFase ? norm(String(stratumFase)) : "";
+
+        const creatinaDose = (sistemaLow.includes("heavy") || sistemaLow.includes("dc") || stratumLow.includes("3") || stratumLow.includes("realiza"))
+          ? "10g/dia bipartida (pré + pós)"
+          : "5g/dia pós-treino";
+        supSync.push({ suplemento: "Creatina monohidratada", dose: creatinaDose, timing: "Pós-treino (e pré se bipartida)", justificativa_treino: "Suporte ATP-CP universal." });
+        supSync.push({ suplemento: "Magnésio quelato", dose: "400mg", timing: "Noite", justificativa_treino: "Contração muscular e sono." });
+        supSync.push({ suplemento: "Zinco", dose: "25mg", timing: "Noite", justificativa_treino: "Testosterona e recuperação." });
+        supSync.push({ suplemento: "Vitamina D3", dose: "5000 UI", timing: "Manhã com gordura", justificativa_treino: "Função neuromuscular." });
+
+        if (sistemaLow.includes("5/3/1") || sistemaLow.includes("531") || sistemaLow.includes("wendler")) supSync.push({ suplemento: "Beta-alanina", dose: "3,2g/dia bipartida", timing: "Manhã + pré-treino", justificativa_treino: "Tampona lactato (5/3/1 pesado)." });
+        if (sistemaLow.includes("fst")) { supSync.push({ suplemento: "Glutamina", dose: "10g", timing: "Pós-treino", justificativa_treino: "Recuperação fascial (FST-7)." }); supSync.push({ suplemento: "Citrulina malato", dose: "6g", timing: "Pré-treino", justificativa_treino: "Pump fascial (FST-7)." }); }
+        if (sistemaLow.includes("y3t")) supSync.push({ suplemento: "EAA + eletrólitos", dose: "10g + 600mg sódio/L", timing: "Intra (Y3T sem 3)", justificativa_treino: "Volume extremo na sem 3." });
+        if (sistemaLow.includes("heavy")) { supSync.push({ suplemento: "EAA", dose: "10g", timing: "Pré-treino", justificativa_treino: "Falha absoluta (Heavy Duty)." }); supSync.push({ suplemento: "Citrulina malato", dose: "8g", timing: "Pré-treino", justificativa_treino: "Vasodilatação." }); }
+        if (sistemaLow.includes("gvt") || sistemaLow.includes("german")) { supSync.push({ suplemento: "Glutamina", dose: "15g/dia", timing: "Distribuída", justificativa_treino: "Volume 10×10 (GVT)." }); supSync.push({ suplemento: "Vitamina C", dose: "2g/dia", timing: "Distribuída", justificativa_treino: "Antioxidante para volume extremo." }); supSync.push({ suplemento: "Taurina", dose: "3g/dia", timing: "Pré-treino", justificativa_treino: "Tampão de cálcio em GVT." }); }
+        if (sistemaLow.includes(" dc") || sistemaLow.startsWith("dc") || sistemaLow.includes("dctraining") || sistemaLow.includes("dante")) { supSync.push({ suplemento: "Colágeno hidrolisado", dose: "10g/dia", timing: "Manhã", justificativa_treino: "Suporte tendíneo (DC Training)." }); supSync.push({ suplemento: "Glucosamina", dose: "1,5g/dia", timing: "Almoço", justificativa_treino: "Suporte articular." }); }
+        if (sistemaLow.includes("arnold")) { supSync.push({ suplemento: "EAA", dose: "10g", timing: "Intra-treino", justificativa_treino: "Volume altíssimo (Arnold)." }); supSync.push({ suplemento: "Glutamina", dose: "15g/dia", timing: "Distribuída", justificativa_treino: "Recuperação 6x/sem." }); }
+
+        if (fibraLow === "i" || /\bi\b/.test(fibraLow) && !fibraLow.includes("ii")) { supSync.push({ suplemento: "Ômega-3 EPA+DHA", dose: "4g/dia", timing: "Refeições", justificativa_treino: "Eficiência mitocondrial (Tipo I)." }); supSync.push({ suplemento: "CoQ10", dose: "200mg/dia", timing: "Manhã", justificativa_treino: "Bioenergética (Tipo I)." }); }
+        if (fibraLow.includes("iix") || fibraLow.includes("iib")) { supSync.push({ suplemento: "Beta-alanina", dose: "3,2g/dia", timing: "Bipartida", justificativa_treino: "Tampona lactato (Tipo IIX)." }); supSync.push({ suplemento: "Cafeína", dose: "200mg", timing: "30–45min pré-treino", justificativa_treino: "CNS para fibras explosivas." }); }
+
+        for (const m of musculos) {
+          const k = norm(m);
+          if (k.includes("perna") || k.includes("quad") || k.includes("posterior")) { supSync.push({ suplemento: "Glutamina", dose: "10g", timing: "Pós dia de pernas", justificativa_treino: "Recuperação de grupo de alta demanda." }); supSync.push({ suplemento: "Arginina", dose: "6g", timing: "Pré dia de pernas", justificativa_treino: "Vasodilatação para pernas." }); }
+          if (k.includes("gluteo")) { supSync.push({ suplemento: "Colágeno hidrolisado", dose: "10g/dia", timing: "Manhã", justificativa_treino: "Tendões/fascia (foco glúteos)." }); supSync.push({ suplemento: "Vitamina C", dose: "1g/dia", timing: "Manhã com colágeno", justificativa_treino: "Cofator de síntese de colágeno." }); }
+          if (k.includes("ombro") || k.includes("deltoide")) supSync.push({ suplemento: "Ômega-3", dose: "4g/dia", timing: "Refeições", justificativa_treino: "Saúde articular do deltóide." });
+          if (k.includes("costa")) supSync.push({ suplemento: "Citrulina malato", dose: "8g", timing: "Pré dia de costas", justificativa_treino: "Pump e endurance em costas." });
+        }
+
+        const conflitosDetectados: string[] = [];
+        const alertasSync: string[] = [];
+
+        const faseNutAtual = String(fasePeriodizacao || "").toLowerCase();
+        const faseTreinoLow = fase.toLowerCase();
+        const isBulk = faseTreinoLow.includes("bulk");
+        const isCut = faseTreinoLow.includes("cut") || faseTreinoLow.includes("emagrec");
+        if ((isBulk && faseNutAtual.includes("cut")) || (isCut && faseNutAtual.includes("bulk"))) {
+          conflitosDetectados.push(`Conflito de fase: TrainingON em "${fase}" mas nutrição em "${fasePeriodizacao}". Usando fase do TrainingON como base.`);
+          alertasSync.push(`⚠️ Ajuste a fase nutricional para coerência com TrainingON (${fase}).`);
+        }
+
+        const kcalAlvo = Number(calorias) || 0;
+        const pesoN = Number(peso) || 0;
+        const tdeeEstimado = pesoN > 0 ? Math.round(pesoN * 22 * fatorAtividade) : 0;
+        if (volume > 160 && kcalAlvo > 0 && tdeeEstimado > 0 && kcalAlvo < tdeeEstimado * 0.90) {
+          conflitosDetectados.push(`Volume alto (${volume} sets) com déficit > 10% (alvo ${kcalAlvo} kcal vs TDEE ~${tdeeEstimado}).`);
+          alertasSync.push(`⚠️ Risco de catabolismo: aumentar kcal em ≥${Math.round(tdeeEstimado * 0.90 - kcalAlvo)} ou reduzir volume para <120 sets/sem.`);
+        }
+        if (tempoSessao > 90) {
+          alertasSync.push(`⚠️ Sessão > ${tempoSessao}min: prescrever maltodextrina 40g (ou dextrose 30g) intra-treino.`);
+        }
+        if (sistemaLow.includes("heavy") && semAnabolizante) {
+          alertasSync.push("⚠️ Heavy Duty sem protocolo anabólico: descanso 48–72h, sono ≥9h, magnésio 400mg/dia.");
+        }
+        if ((sistemaLow.includes("gvt") || sistemaLow.includes("german")) && faseTreinoLow.includes("cut")) {
+          conflitosDetectados.push("GVT em cutting é alto risco.");
+          alertasSync.push("⚠️ Considere migrar para EDT ou Y3T sem 2. Se mantiver GVT: déficit máx -10% e PTN ≥3,0 g/kg.");
+        }
+        if (cardioMesmoDia && intensidadeRaw.includes("alta")) {
+          alertasSync.push("⚠️ Cardio + força alta no mesmo dia: separar ≥6h ou cardio APÓS força. Adicionar 200–400 kcal extras.");
+        }
+
+        const recomendacoes: string[] = [];
+        recomendacoes.push(`Aplicar fator de atividade ${fatorAtividade} sobre o TMB para refletir o volume de ${volume || "?"} sets/sem.`);
+        if (gastoKcalTreino > 0) recomendacoes.push(`Somar ~${gastoKcalTreino} kcal nos dias de treino (sessão ${tempoSessao}min, intensidade ${intensidadeRaw}).`);
+        if (cyclingPorMusculo.length > 0) recomendacoes.push(`Aplicar cycling de CHO nos dias de ${musculos.join(", ")} conforme tabela do bloco 4.`);
+        if (stratumFase) recomendacoes.push(`STRATUM ATIVO (${stratumFase}): sobrescrever fase nutricional pela demanda da fase do sistema.`);
+
+        const existente: any = (parsed as any).sincronizacao_trainingon && typeof (parsed as any).sincronizacao_trainingon === "object"
+          ? (parsed as any).sincronizacao_trainingon
+          : {};
+
+        (parsed as any).sincronizacao_trainingon = {
+          fase_treino: existente.fase_treino || fase,
+          sistema_treino: existente.sistema_treino || sistema,
+          volume_semanal_sets: Number.isFinite(existente.volume_semanal_sets) ? existente.volume_semanal_sets : volume,
+          gasto_kcal_treino_dia: Number.isFinite(existente.gasto_kcal_treino_dia) ? existente.gasto_kcal_treino_dia : gastoKcalTreino,
+          musculos_prioritarios: Array.isArray(existente.musculos_prioritarios) && existente.musculos_prioritarios.length ? existente.musculos_prioritarios : musculos,
+          tipo_fibra: existente.tipo_fibra || fibra,
+          ajuste_tdee_volume: Number.isFinite(existente.ajuste_tdee_volume) ? existente.ajuste_tdee_volume : fatorAtividade,
+          cycling_por_musculo: Array.isArray(existente.cycling_por_musculo) && existente.cycling_por_musculo.length ? existente.cycling_por_musculo : cyclingPorMusculo,
+          suplementacao_sincronizada: Array.isArray(existente.suplementacao_sincronizada) && existente.suplementacao_sincronizada.length ? existente.suplementacao_sincronizada : supSync,
+          conflitos_detectados: Array.from(new Set([...(Array.isArray(existente.conflitos_detectados) ? existente.conflitos_detectados : []), ...conflitosDetectados])),
+          alertas_sincronizacao: Array.from(new Set([...(Array.isArray(existente.alertas_sincronizacao) ? existente.alertas_sincronizacao : []), ...alertasSync])),
+          recomendacoes_integracao: Array.from(new Set([...(Array.isArray(existente.recomendacoes_integracao) ? existente.recomendacoes_integracao : []), ...recomendacoes])),
+          stratum_fase: stratumFase || null,
+        };
+
+        const alertasParaResumo = [...alertasSync, ...conflitosDetectados.map((c) => `⚠️ ${c}`)];
+        if (alertasParaResumo.length > 0) {
+          if (!(parsed as any).resumo) (parsed as any).resumo = {};
+          const arr = Array.isArray((parsed as any).resumo.alertas_nutricionais)
+            ? (parsed as any).resumo.alertas_nutricionais
+            : [];
+          (parsed as any).resumo.alertas_nutricionais = [...arr, ...alertasParaResumo];
+        }
+      }
+    } catch (e) {
+      console.warn("[sincronizacao_trainingon] falha ao montar bloco:", e);
+    }
+
+
     // ── PERSISTÊNCIA DO HISTÓRICO DE AJUSTES CALÓRICOS ──
     // Grava cada ajuste aplicado para que o coach possa comparar versões posteriormente.
     let adjustmentId: string | null = null;
