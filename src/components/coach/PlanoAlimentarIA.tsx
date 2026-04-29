@@ -3381,7 +3381,11 @@ export default function PlanoAlimentarIA() {
 
           {/* Painel de Densidade Nutricional */}
           {plano.refeicoes && plano.refeicoes.length > 0 && (
-            <NutrientDensityPanel refeicoes={plano.refeicoes as any} />
+            <NutrientDensityPanel
+              refeicoes={plano.refeicoes as any}
+              onRegenerate={regerarComMaisDensidade}
+              regenerating={densityRegenLoading}
+            />
           )}
 
           {/* Refeições */}
