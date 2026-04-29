@@ -556,11 +556,15 @@ const MealCard = ({ meal, index, onSwap }: MealCardProps) => {
                   // Sanitiza: se a IA mandou texto placeholder ("ajustar pela meta", "a definir", etc.)
                   // ou veio vazio, fazemos fallback usando quantidade_g ou um valor padrão visível.
                   const raw = (a.quantidade || "").toString().trim();
-                  const isPlaceholder = !raw || /ajustar|definir|meta|conforme|porç(ã|a)o|a gosto|n\/a|--+/i.test(raw) || !/\d/.test(raw);
+                  // "1 porção" sozinho é placeholder; mas "1 porção média (~100g)" não é.
+                  const hasNumber = /\d/.test(raw);
+                  const looksLikePlaceholder = !raw || /^(ajustar|definir|a definir|meta|conforme|porç(ã|a)o|a gosto|n\/a|--+)/i.test(raw) || (!hasNumber);
+                  const isJust1Porcao = /^1\s*porç(ã|a)o\s*$/i.test(raw);
+                  const isPlaceholder = looksLikePlaceholder || isJust1Porcao;
                   const qtdG = (a.quantidade_g || "").toString().trim();
                   const display = !isPlaceholder
                     ? raw
-                    : (qtdG && /\d/.test(qtdG) ? qtdG : "1 porção");
+                    : (qtdG && /\d/.test(qtdG) ? qtdG : "1 porção média");
                   const showApprox = qtdG && /\d/.test(qtdG) && qtdG.replace(/\s/g, "").toLowerCase() !== display.replace(/\s/g, "").toLowerCase();
                   return (
                     <span style={{ fontSize: 12, color: T.text, whiteSpace: "nowrap", textAlign: "right", fontWeight: 600 }}>
