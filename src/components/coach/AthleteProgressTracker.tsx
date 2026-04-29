@@ -40,6 +40,9 @@ export default function AthleteProgressTracker() {
   const [generatingReport, setGeneratingReport] = useState(false);
   const [compareA, setCompareA] = useState<string | null>(null);
   const [compareB, setCompareB] = useState<string | null>(null);
+  const [reportA, setReportA] = useState<string | null>(null);
+  const [reportB, setReportB] = useState<string | null>(null);
+  const [reportFocus, setReportFocus] = useState<string>("");
   const [report, setReport] = useState<string>("");
 
   // novo check-in
