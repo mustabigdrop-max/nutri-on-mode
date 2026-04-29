@@ -256,9 +256,42 @@ export default function NutrientDensityPanel({ refeicoes, fibraDeclarada, onRege
           </div>
         )}
 
+        {/* Botão Regerar com mais densidade */}
+        {onRegenerate && cobertura < 95 && (
+          <button
+            onClick={onRegenerate}
+            disabled={regenerating}
+            style={{
+              marginTop: 14,
+              width: "100%",
+              background: regenerating ? T.bg3 : `linear-gradient(135deg, ${T.green}, #22c55e)`,
+              color: regenerating ? T.muted : "#0a0f0a",
+              border: `1px solid ${T.green}`,
+              borderRadius: 8,
+              padding: "12px 16px",
+              fontSize: 13,
+              fontWeight: 700,
+              letterSpacing: "0.03em",
+              cursor: regenerating ? "not-allowed" : "pointer",
+              transition: "all .2s",
+              boxShadow: regenerating ? "none" : `0 0 24px ${T.green}33`,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 8,
+            }}
+          >
+            {regenerating ? (
+              <>⏳ Recalculando com mais densidade...</>
+            ) : (
+              <>🧬 Regerar com mais densidade nutricional</>
+            )}
+          </button>
+        )}
+
         <div style={{ fontSize: 9, color: T.muted, marginTop: 10, opacity: 0.7 }}>
           Reconhecidos: {matched.length} alimentos · Não mapeados: {unmatched.length} (não entram no cálculo).
-          Estimativa indicativa — não substitui análise laboratorial.
+          Preserva preferências, restrições e orçamento — apenas força ↑ variedade e ↑ micronutrientes.
         </div>
       </div>
     </div>
