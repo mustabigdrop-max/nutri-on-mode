@@ -115,20 +115,53 @@ export default function AthleteProgressTracker() {
       toast.error("Sem dados suficientes");
       return;
     }
+    if (!reportA || !reportB) {
+      toast.error("Selecione as duas semanas para o relatório");
+      return;
+    }
+    if (reportA === reportB) {
+      toast.error("Selecione semanas diferentes");
+      return;
+    }
+    const semA = assessments.find((a) => a.id === reportA);
+    const semB = assessments.find((a) => a.id === reportB);
+    if (!semA || !semB) {
+      toast.error("Semanas inválidas");
+      return;
+    }
+    // ordena: anterior → mais recente
+    const [ant, rec] = new Date(semA.data_avaliacao) <= new Date(semB.data_avaliacao)
+      ? [semA, semB]
+      : [semB, semA];
+
     setGeneratingReport(true);
     try {
-      const ultimas = assessments.slice(0, 4).reverse();
-      const prompt = `Você é um coach de competição elite. Gere um relatório semanal completo para o atleta:
-Nome: ${athlete.nome}
+      const deltaPeso = ((rec.peso_kg || 0) - (ant.peso_kg || 0)).toFixed(1);
+      const deltaBf = ((rec.bf_estimado || 0) - (ant.bf_estimado || 0)).toFixed(1);
+      const deltaScore = (rec.score_geral || 0) - (ant.score_geral || 0);
+
+      const prompt = `Você é um coach de competição elite. Gere um relatório semanal completo comparando DUAS semanas específicas do atleta:
+
+Atleta: ${athlete.nome}
 Categoria: ${athlete.categoria || "—"}
 Data competição: ${athlete.data_competicao || "—"}
 Fase: ${athlete.fase_atual || "—"}
+${reportFocus ? `Foco solicitado pelo coach: ${reportFocus}` : ""}
 
-Últimas avaliações (mais antiga → mais recente):
-${ultimas.map(a => `- ${a.data_avaliacao}: ${a.peso_kg}kg, BF ${a.bf_estimado}%, score ${a.score_geral}, obs: ${a.observacoes_coach || "—"}`).join("\n")}
+📅 Semana ANTERIOR (${ant.data_avaliacao} • Sem ${ant.semana ?? "?"}):
+- Peso: ${ant.peso_kg ?? "—"}kg | BF: ${ant.bf_estimado ?? "—"}% | Score: ${ant.score_geral ?? "—"}
+- Meta: ${ant.meta_semana || "—"}
+- Observações: ${ant.observacoes_coach || "—"}
+
+📅 Semana ATUAL (${rec.data_avaliacao} • Sem ${rec.semana ?? "?"}):
+- Peso: ${rec.peso_kg ?? "—"}kg | BF: ${rec.bf_estimado ?? "—"}% | Score: ${rec.score_geral ?? "—"}
+- Meta: ${rec.meta_semana || "—"}
+- Observações: ${rec.observacoes_coach || "—"}
+
+Δ DELTA: Peso ${deltaPeso}kg • BF ${deltaBf}% • Score ${deltaScore}
 
 Gere relatório em markdown com:
-1. ✅ Pontos positivos
+1. ✅ Pontos positivos (com base no delta)
 2. ⚠️ Pontos de atenção
 3. 🏋️ Ajustes de treino sugeridos
 4. 🍽️ Ajustes nutricionais
@@ -146,10 +179,10 @@ Gere relatório em markdown com:
       await supabase.from("athlete_weekly_reports" as any).insert({
         athlete_id: athleteId,
         coach_id: user!.id,
-        semana_referencia: assessments.length,
+        semana_referencia: rec.semana ?? assessments.length,
         relatorio_completo: texto,
       });
-      toast.success("Relatório gerado e salvo");
+      toast.success("Relatório gerado e salvo no histórico");
     } catch (e: any) {
       toast.error("Falha ao gerar: " + e.message);
     } finally {
