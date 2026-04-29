@@ -895,6 +895,9 @@ export default function PlanoAlimentarIA() {
     perfilEconomico: "intermediario" as "economico" | "intermediario" | "premium",
     alimentosDisponiveis: [] as string[],
     outrosAlimentos: "",
+    // Frutas que o paciente tem em casa (prioridade no plano + sugestão de upgrade)
+    frutasEmCasa: [] as string[],
+    outrasFrutas: "",
     // BLOCO 11 — campos para cálculo determinístico expandido
     neat: "medio" as "baixo" | "medio" | "alto",
     qualidadeSono: "boa" as "boa" | "regular" | "ruim",
@@ -1045,6 +1048,8 @@ export default function PlanoAlimentarIA() {
           perfil_economico: form.perfilEconomico,
           alimentos_disponiveis: form.alimentosDisponiveis,
           outros_alimentos: form.outrosAlimentos || null,
+          frutas_em_casa: form.frutasEmCasa,
+          outras_frutas: form.outrasFrutas || null,
           neat: form.neat,
           qualidade_sono: form.qualidadeSono,
           semanas_em_deficit: form.semanasEmDeficit ? Number(form.semanasEmDeficit) : 0,
@@ -4251,6 +4256,34 @@ export default function PlanoAlimentarIA() {
               placeholder="Ex: tapioca, cuscuz, feijão preto, macaxeira..."
               value={form.outrosAlimentos}
               onChange={e => set("outrosAlimentos", e.target.value)}
+            />
+          </div>
+
+          {/* 🍎 FRUTAS EM CASA — prioridade no plano + sugestão de upgrade */}
+          <div style={{ marginTop: 18, padding: 14, background: "#0f1410", border: `1px solid ${T.amber}44`, borderRadius: 10 }}>
+            <Label>🍎 Frutas que tenho em casa</Label>
+            <div style={{ fontSize: 11, color: T.muted, marginBottom: 10 }}>
+              A IA usa estas frutas como base do <strong>Protocolo de Frutas Obrigatório</strong> e sugere upgrades se faltar uma fruta funcional importante (ex.: enzimática, anti-inflamatória, cronobiológica).
+            </div>
+            <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 6, marginBottom: 10 }}>
+              {[
+                "Banana","Maçã","Pera","Mamão","Abacaxi","Manga","Goiaba","Laranja","Tangerina","Limão",
+                "Kiwi","Abacate","Melancia","Melão","Uva","Morango","Mirtilo","Framboesa","Amora","Cereja",
+                "Romã","Coco","Pêssego","Ameixa","Caqui","Maracujá","Açaí",
+              ].map(item => (
+                <Tag
+                  key={item}
+                  label={item}
+                  active={form.frutasEmCasa.includes(item)}
+                  onClick={() => toggleArr("frutasEmCasa", item)}
+                />
+              ))}
+            </div>
+            <Label>Outras frutas (separadas por vírgula)</Label>
+            <InputField
+              placeholder="Ex: jabuticaba, pitaya, graviola, fruta-do-conde..."
+              value={form.outrasFrutas}
+              onChange={e => set("outrasFrutas", e.target.value)}
             />
           </div>
         </Section>

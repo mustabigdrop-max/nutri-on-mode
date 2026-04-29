@@ -1943,6 +1943,25 @@ REGRAS DE EXECUÇÃO PARA O JSON:
 - NUNCA repetir a mesma fruta em mais de 1 refeição/dia.
 - NUNCA substituir fruta por suco.
 - Adicionar no resumo: "fruit_protocol_aplicado": true e "frutas_dia": [lista por refeição].
+
+🍎 FRUTAS DISPONÍVEIS EM CASA (PRIORIDADE MÁXIMA — usar essas antes de sugerir compras):
+${(() => {
+  const lista = [
+    ...((perfilFisiologico?.frutas_em_casa as string[]) || []),
+    ...((perfilFisiologico?.outras_frutas || "").split(",").map((s: string) => s.trim()).filter(Boolean)),
+  ];
+  return lista.length > 0
+    ? `Lista informada pelo paciente: ${lista.join(", ")}.
+- Construir o plano usando PRIORITARIAMENTE estas frutas (≥80% das porções devem vir desta lista).
+- Se a lista cobrir bem as funções (matinal energética + enzimática + anti-inflamatória + cronobiológica para ceia): seguir só com elas.
+- Se faltar função crítica, ADICIONAR no resumo do plano um campo "frutas_sugeridas_compra": [{nome, motivo_funcional, refeicao_alvo, prioridade: "alta"|"media"}] com até 5 sugestões. Exemplos de gaps:
+  • Sem fruta enzimática (abacaxi/mamão) → sugerir para pós-treino.
+  • Sem fruta cronobiológica de ceia (kiwi/cereja ácida) → sugerir para sono (se não houver GH ativo).
+  • Sem fruta anti-inflamatória (vermelhas/roxas/romã) → sugerir para 3x/sem.
+  • Sem cítrica → sugerir para Vit C matinal.
+- NUNCA prescrever fruta que não esteja na lista SEM marcá-la em "frutas_sugeridas_compra".`
+    : `Paciente NÃO informou frutas em casa — o coach deve sugerir uma cesta semanal completa em "frutas_sugeridas_compra" cobrindo as 5 funções (matinal/enzimática/tarde/anti-inflamatória/ceia).`;
+})()}
 ` : ""}
 - Modo Econômico: ${perfilFisiologico?.modo_economico ? "true" : "false"}
 - Perfil econômico do plano: ${perfilFisiologico?.perfil_economico || "intermediario"}
