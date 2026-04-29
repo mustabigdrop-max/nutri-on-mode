@@ -6093,6 +6093,57 @@ export type Database = {
         }
         Relationships: []
       }
+      training_nutrition_sync: {
+        Row: {
+          cardio_mesmo_dia: boolean | null
+          created_at: string
+          id: string
+          intensidade_treino: string | null
+          musculos_prioritarios: string[] | null
+          sistema_treino: string | null
+          stratum_fase: string | null
+          tempo_sessao_min: number | null
+          tipo_fibra: string | null
+          training_days: Json | null
+          training_phase: string | null
+          updated_at: string
+          user_id: string
+          volume_sets_semana: number | null
+        }
+        Insert: {
+          cardio_mesmo_dia?: boolean | null
+          created_at?: string
+          id?: string
+          intensidade_treino?: string | null
+          musculos_prioritarios?: string[] | null
+          sistema_treino?: string | null
+          stratum_fase?: string | null
+          tempo_sessao_min?: number | null
+          tipo_fibra?: string | null
+          training_days?: Json | null
+          training_phase?: string | null
+          updated_at?: string
+          user_id: string
+          volume_sets_semana?: number | null
+        }
+        Update: {
+          cardio_mesmo_dia?: boolean | null
+          created_at?: string
+          id?: string
+          intensidade_treino?: string | null
+          musculos_prioritarios?: string[] | null
+          sistema_treino?: string | null
+          stratum_fase?: string | null
+          tempo_sessao_min?: number | null
+          tipo_fibra?: string | null
+          training_days?: Json | null
+          training_phase?: string | null
+          updated_at?: string
+          user_id?: string
+          volume_sets_semana?: number | null
+        }
+        Relationships: []
+      }
       training_progress: {
         Row: {
           client_name: string | null
