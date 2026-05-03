@@ -74,51 +74,44 @@ export default function TrainingPage() {
   const visibleNav = sectionNav.filter((s) => !s.adminOnly || isAdmin);
 
   return (
-    <div className="min-h-screen" style={{ background: BG }}>
-      {/* ── Header ── */}
-      <div className="px-4 pt-5 pb-3">
-        <div className="flex items-center gap-3 mb-4">
-          <button onClick={() => navigate(-1)} className="w-10 h-10 rounded-xl flex items-center justify-center transition-all hover:scale-105" style={{ background: SURFACE2, border: `1px solid ${BORDER}` }}>
-            <ArrowLeft className="w-4 h-4" style={{ color: TEXT_DIM }} />
-          </button>
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "rgba(74,222,128,0.12)", border: `1px solid ${BORDER_ACTIVE}` }}>
-            <Dumbbell className="w-5 h-5" style={{ color: GREEN }} />
-          </div>
-          <div className="flex-1">
-            <h1 className="text-lg font-black tracking-tight" style={{ color: TEXT, fontFamily: FONT }}>
-              Training<span style={{ color: GREEN }}>ON</span>
-            </h1>
-            <p className="text-[10px] font-medium tracking-wider uppercase" style={{ color: TEXT_MUTED }}>Motor de Prescrição de Elite</p>
-          </div>
-          <div className="flex items-center gap-1 px-2 py-1 rounded-full" style={{ background: GREEN_DIM, border: `1px solid ${BORDER}` }}>
-            <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: GREEN }} />
-            <span className="text-[9px] font-bold" style={{ color: GREEN }}>AI LIVE</span>
-          </div>
-        </div>
+    <div className="ton-root min-h-screen">
+      <TrainingHUDBackground />
 
-        {/* Section Nav */}
-        <div className="flex gap-1.5 overflow-x-auto pb-1 no-scrollbar">
-            {visibleNav.map((s) => (
-            <button key={s.id} onClick={() => {
-              if (s.id === "sistemas") { navigate("/training/systems"); return; }
-              setSection(s.id);
-            }}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-[11px] font-semibold whitespace-nowrap transition-all"
-              style={{
-                background: section === s.id ? GREEN_DIM : "transparent",
-                color: section === s.id ? GREEN : TEXT_MUTED,
-                border: `1px solid ${section === s.id ? BORDER_ACTIVE : "transparent"}`,
-              }}>
-              <s.icon className="w-3.5 h-3.5" />
-              {s.label}
-              {s.adminOnly && <span className="text-[8px] px-1 rounded" style={{ background: GREEN_DIM, color: GREEN }}>ADM</span>}
-            </button>
-          ))}
+      {/* ── HUD Header ── */}
+      <div className="ton-header">
+        <button onClick={() => navigate(-1)} className="ton-back" aria-label="Voltar">
+          <ArrowLeft className="w-4 h-4" />
+        </button>
+        <div className="ton-logo">T↑N</div>
+        <div className="flex-1 min-w-0">
+          <div className="ton-header-sub">// MOTOR DE PRESCRIÇÃO DE ELITE v2.4</div>
+          <div className="ton-header-title">TRAINING<span>ON</span></div>
+        </div>
+        <div className="ton-live-badge">
+          <span className="ton-live-dot" /> AI LIVE
         </div>
       </div>
 
+      {/* ── HUD Tabs ── */}
+      <div className="ton-nav">
+        {visibleNav.map((s) => (
+          <button
+            key={s.id}
+            onClick={() => {
+              if (s.id === "sistemas") { navigate("/training/systems"); return; }
+              setSection(s.id);
+            }}
+            className={`ton-tab ${section === s.id ? "active" : ""}`}
+          >
+            <s.icon className="w-3.5 h-3.5" />
+            {s.label}
+            {s.adminOnly && <span className="ton-tab-badge">ADM</span>}
+          </button>
+        ))}
+      </div>
+
       {/* ── Content ── */}
-      <div className="px-4 pb-24">
+      <div className="ton-content">
         <AnimatePresence mode="wait">
           <motion.div key={section} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
             {section === "gerar" && <EliteGenerateSection userId={user?.id} />}
@@ -150,6 +143,18 @@ export default function TrainingPage() {
             )}
           </motion.div>
         </AnimatePresence>
+      </div>
+
+      {/* ── Status Bar ── */}
+      <div className="ton-status-bar">
+        <div className="ton-status-item"><span className="ton-status-dot" /> SISTEMA ATIVO</div>
+        <div className="ton-status-item">MPS OTIMIZADO</div>
+        <div className="ton-status-item">mTOR: ON</div>
+        <div className="ton-ticker">
+          <div className="ton-ticker-inner">
+            STRATUM LAYER 7 ACTIVE — FIBER IIA HYPERTROPHY WINDOW: 6-12 REPS — VOLUME PROGRESSIVO — FST-7 INTEGRATION READY — PEAK PROTOCOL STANDBY — NEXUS-BIO SYNC — NUTRION AI ENGINE v3.1
+          </div>
+        </div>
       </div>
 
       <BottomNav />
