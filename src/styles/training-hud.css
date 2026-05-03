@@ -1,0 +1,182 @@
+/* ── BASE ── */
+.ton-root {
+  background: #070A0E;
+  color: #E8F4E8;
+  font-family: 'Barlow Condensed', sans-serif;
+  position: relative;
+  overflow: hidden;
+  min-height: 100vh;
+}
+
+/* ── GRID ── */
+.ton-grid-bg {
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(0,255,120,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,255,120,0.04) 1px, transparent 1px);
+  background-size: 32px 32px;
+  animation: tonGridPulse 4s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+@keyframes tonGridPulse {
+  0%, 100% { opacity: 0.6; }
+  50%       { opacity: 1; }
+}
+
+/* ── SCAN LINE ── */
+.ton-scan-line {
+  position: absolute; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(0,255,120,0.6), transparent);
+  animation: tonScan 3s linear infinite;
+  pointer-events: none; z-index: 1;
+}
+@keyframes tonScan {
+  0%   { top: 0;    opacity: 1; }
+  100% { top: 100%; opacity: 0.3; }
+}
+
+/* ── PARTICLES ── */
+.ton-particles { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; }
+@keyframes particleFly {
+  0%   { transform: translateY(600px) translateX(0);           opacity: 0; }
+  10%  { opacity: 0.6; }
+  90%  { opacity: 0.3; }
+  100% { transform: translateY(-20px) translateX(var(--drift)); opacity: 0; }
+}
+
+/* ── CORNERS ── */
+.ton-corner {
+  position: absolute; width: 24px; height: 24px;
+  border-color: #00FF78; border-style: solid; z-index: 10;
+  pointer-events: none;
+}
+.ton-corner-tl { top:12px;    left:12px;  border-width: 2px 0 0 2px; }
+.ton-corner-tr { top:12px;    right:12px; border-width: 2px 2px 0 0; }
+.ton-corner-bl { bottom:12px; left:12px;  border-width: 0 0 2px 2px; }
+.ton-corner-br { bottom:12px; right:12px; border-width: 0 2px 2px 0; }
+
+/* ── HEADER ── */
+.ton-header {
+  position: relative; z-index: 5;
+  padding: 20px 24px 12px;
+  border-bottom: 1px solid rgba(0,255,120,0.2);
+  display: flex; align-items: center; gap: 16px;
+}
+.ton-logo {
+  width: 44px; height: 44px;
+  border: 2px solid #00FF78; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 14px; color: #00FF78; letter-spacing: 1px;
+  animation: tonLogoBeat 1.2s ease-in-out infinite;
+  flex-shrink: 0;
+}
+@keyframes tonLogoBeat {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(0,255,120,0.4), 0 0 12px rgba(0,255,120,0.2); }
+  50%       { box-shadow: 0 0 0 8px rgba(0,255,120,0), 0 0 24px rgba(0,255,120,0.4); }
+}
+.ton-header-sub {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px; color: #00FF78; letter-spacing: 3px; opacity: 0.8;
+}
+.ton-header-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 26px; letter-spacing: 4px; color: #FFFFFF;
+  text-shadow: 0 0 20px rgba(0,255,120,0.5);
+  line-height: 1;
+}
+.ton-header-title span { color: #00FF78; }
+.ton-live-badge {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px; color: #00FF78; letter-spacing: 2px;
+  border: 1px solid #00FF78; padding: 4px 10px; border-radius: 2px;
+  display: flex; align-items: center; gap: 6px;
+  animation: tonBadgePulse 1s ease-in-out infinite;
+  flex-shrink: 0;
+}
+@keyframes tonBadgePulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.6; }
+}
+.ton-live-dot {
+  width: 6px; height: 6px; border-radius: 50%; background: #00FF78;
+}
+
+/* ── TABS ── */
+.ton-nav {
+  position: relative; z-index: 5;
+  display: flex; padding: 0 24px;
+  border-bottom: 1px solid rgba(0,255,120,0.15);
+  overflow-x: auto;
+  gap: 4px;
+}
+.ton-nav::-webkit-scrollbar { display: none; }
+.ton-tab {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 12px; font-weight: 600; letter-spacing: 2px;
+  color: rgba(255,255,255,0.4);
+  padding: 10px 14px; cursor: pointer;
+  border-bottom: 2px solid transparent;
+  white-space: nowrap; transition: all 0.2s;
+  text-transform: uppercase; background: none;
+  border-top: none; border-left: none; border-right: none;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.ton-tab:hover  { color: rgba(0,255,120,0.8); }
+.ton-tab.active {
+  color: #00FF78; border-bottom-color: #00FF78;
+  text-shadow: 0 0 10px rgba(0,255,120,0.5);
+}
+.ton-tab-badge {
+  font-size: 9px; background: rgba(0,255,120,0.2);
+  color: #00FF78; padding: 1px 5px; border-radius: 2px;
+  letter-spacing: 1px;
+}
+
+/* ── CONTENT WRAPPER ── */
+.ton-content {
+  position: relative; z-index: 5;
+  padding: 20px 24px 80px;
+}
+
+/* ── STATUS BAR ── */
+.ton-status-bar {
+  position: relative; z-index: 5;
+  display: flex; align-items: center; gap: 16px;
+  padding: 8px 24px;
+  border-top: 1px solid rgba(0,255,120,0.1);
+  background: rgba(0,0,0,0.3);
+}
+.ton-status-item {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px; letter-spacing: 2px;
+  color: rgba(0,255,120,0.5);
+  display: flex; align-items: center; gap: 6px;
+  white-space: nowrap;
+}
+.ton-status-dot {
+  width: 4px; height: 4px; border-radius: 50%; background: #00FF78;
+  animation: tonStatusBlink 2s ease-in-out infinite;
+}
+@keyframes tonStatusBlink {
+  0%,100% { opacity:1; }
+  50%      { opacity:0.2; }
+}
+.ton-ticker { flex:1; overflow:hidden; font-family:'Share Tech Mono',monospace; font-size:9px; letter-spacing:1px; color:rgba(0,255,120,0.3); }
+.ton-ticker-inner { animation: tonTickerScroll 28s linear infinite; white-space:nowrap; display: inline-block; }
+@keyframes tonTickerScroll {
+  0%   { transform: translateX(100%); }
+  100% { transform: translateX(-100%); }
+}
+
+/* ── BACK BUTTON ── */
+.ton-back {
+  width: 36px; height: 36px; border-radius: 4px;
+  border: 1px solid rgba(0,255,120,0.3);
+  background: rgba(0,255,120,0.05);
+  color: #00FF78;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: all 0.2s; flex-shrink: 0;
+}
+.ton-back:hover { background: rgba(0,255,120,0.15); }
