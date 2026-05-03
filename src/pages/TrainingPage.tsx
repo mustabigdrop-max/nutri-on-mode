@@ -12,6 +12,8 @@ import {
   Trash2, Edit3, Users, X, Check, FileDown, RotateCcw,
   Microscope, Scan, HeartPulse, BookOpen, TrendingDown, Layers,
 } from "lucide-react";
+import "@/styles/training-hud.css";
+import { TrainingHUDBackground } from "@/components/training/TrainingHUDBackground";
 import { exportTrainingPDF } from "@/lib/trainingPdfExport";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
