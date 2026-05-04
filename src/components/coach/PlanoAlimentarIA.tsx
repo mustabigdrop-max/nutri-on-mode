@@ -2089,7 +2089,7 @@ export default function PlanoAlimentarIA() {
             const pReal = Math.round(meals.reduce((a, m) => a + (Number(m?.macros?.proteina) || 0), 0) * 10) / 10;
             const cReal = Math.round(meals.reduce((a, m) => a + (Number(m?.macros?.carboidrato) || 0), 0) * 10) / 10;
             const gReal = Math.round(meals.reduce((a, m) => a + (Number(m?.macros?.gordura) || 0), 0) * 10) / 10;
-            const meta = Number(r.calorias_totais) || 0;
+            const meta = getResumoKcal(r);
             const diff = meta - kcalReal;
             const divergente = meta && Math.abs(diff) > 50;
             return (
