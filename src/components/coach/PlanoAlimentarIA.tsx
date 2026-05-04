@@ -1824,16 +1824,14 @@ export default function PlanoAlimentarIA() {
   // ── RESULT ──
   if (step === "result" && plano) {
     const r = plano.resumo;
-    // Atwater: kcal sempre derivada dos macros. Se diferença vs declarado > 50 kcal,
-    // usar o calculado como verdade para totais e percentuais.
+    // Fonte única: kcalFromMacros aplica tolerância ±50 kcal e retorna o valor correto.
     const kcalAtwaterTotal = calcKcalAtwater(r.proteina_total, r.carboidrato_total, r.gordura_total);
     const kcalDeclTotal = Number(r.calorias_totais) || 0;
-    const kcalTotaisExibicao = (!kcalDeclTotal || Math.abs(kcalDeclTotal - kcalAtwaterTotal) > 50)
-      ? kcalAtwaterTotal
-      : kcalDeclTotal;
-    const macroP = r.proteina_total && kcalAtwaterTotal ? Math.round((r.proteina_total * 4 / kcalAtwaterTotal) * 100) : 0;
-    const macroC = r.carboidrato_total && kcalAtwaterTotal ? Math.round((r.carboidrato_total * 4 / kcalAtwaterTotal) * 100) : 0;
-    const macroG = r.gordura_total && kcalAtwaterTotal ? Math.round((r.gordura_total * 9 / kcalAtwaterTotal) * 100) : 0;
+    const kcalTotaisExibicao = getResumoKcal(r);
+    // Percentuais sempre relativos ao total exibido (consistência visual).
+    const macroP = r.proteina_total && kcalTotaisExibicao ? Math.round((r.proteina_total * 4 / kcalTotaisExibicao) * 100) : 0;
+    const macroC = r.carboidrato_total && kcalTotaisExibicao ? Math.round((r.carboidrato_total * 4 / kcalTotaisExibicao) * 100) : 0;
+    const macroG = r.gordura_total && kcalTotaisExibicao ? Math.round((r.gordura_total * 9 / kcalTotaisExibicao) * 100) : 0;
 
     return (
       <div ref={resultRef} style={{ minHeight: "100vh", background: T.bg, fontFamily: "'DM Sans', sans-serif", color: T.text }}>
