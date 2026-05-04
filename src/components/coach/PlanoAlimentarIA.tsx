@@ -1064,6 +1064,29 @@ export default function PlanoAlimentarIA() {
     }
   }, [form.fasePeriodizacao]);
 
+  // Auditoria kcal: zera contador a cada novo plano e emite sumário consolidado.
+  useEffect(() => {
+    if (!plano) return;
+    kcalAudit.reset();
+    // Força recálculo (que vai popular kcalAudit via getMealKcal/getResumoKcal).
+    (plano.refeicoes || []).forEach((m) => getMealKcal(m as Meal));
+    getResumoKcal(plano.resumo);
+    const s = kcalAudit.summary();
+    if (s.total > 0) {
+      console.group(`%c[KCAL-AUDIT] ${s.total} divergência(s) detectada(s) no plano "${plano.resumo?.nome ?? "?"}"`, "color:#f59e0b;font-weight:bold");
+      console.log("Por escopo:", s.porEscopo);
+      if (s.maiorGap) console.log("Maior gap:", s.maiorGap);
+      console.table(s.divergencias.map(d => ({
+        escopo: d.scope, declarado: d.declarado, atwater: d.calculado, delta: d.delta,
+        P: d.proteina, C: d.carboidrato, G: d.gordura,
+      })));
+      console.log("Inspecione manualmente: window.__kcalAudit.summary()");
+      console.groupEnd();
+    } else {
+      console.info(`[KCAL-AUDIT] ✓ Plano "${plano.resumo?.nome ?? "?"}" consistente (0 divergências > ±${KCAL_TOLERANCIA} kcal).`);
+    }
+  }, [plano]);
+
   const set = (k: string, v: any) => setForm(f => ({ ...f, [k]: v }));
   const toggleArr = (k: string, v: string) => {
     const arr = (form as any)[k] as string[];
