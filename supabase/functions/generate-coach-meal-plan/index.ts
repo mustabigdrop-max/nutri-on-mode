@@ -2461,7 +2461,7 @@ ${perfilFisiologico?.modo_economico ? `
 Responda APENAS com um único JSON válido, sem markdown.
 Siga rigorosamente horários reais do treino, macros/calorias calculados, restrições, medidas caseiras e regras peri-workout do prompt do usuário.
 AEJ não é refeição e nunca deve aparecer em refeicoes. Pós-Treino Imediato deve ser único.`;
-    const activeSystemPrompt = perfilFisiologico?.variedade_funcional || perfilFisiologico?.protocolo_microbiota || perfilFisiologico?.medidas_caseiras
+    const activeSystemPrompt = perfilFisiologico?.variedade_funcional || perfilFisiologico?.diversidade_alimentar_elite || perfilFisiologico?.protocolo_microbiota || perfilFisiologico?.medidas_caseiras
       ? COMPACT_SYSTEM_PROMPT
       : SYSTEM_PROMPT;
     // Quando density_boost está ativo, usar modelo mais forte (Gemini 2.5 Pro)
@@ -2488,7 +2488,7 @@ AEJ não é refeição e nunca deve aparecer em refeicoes. Pós-Treino Imediato 
               { role: "system", content: activeSystemPrompt },
               { role: "user", content: userPrompt },
             ],
-            max_tokens: perfilFisiologico?.variedade_funcional ? 9000 : 14000,
+            max_tokens: (perfilFisiologico?.variedade_funcional || perfilFisiologico?.diversidade_alimentar_elite) ? 9000 : 14000,
             response_format: { type: "json_object" },
             temperature: boostedTemperature,
           };
