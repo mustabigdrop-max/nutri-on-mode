@@ -2819,6 +2819,42 @@ AEJ não é refeição e nunca deve aparecer em refeicoes. Pós-Treino Imediato 
         if (injecoes > 0) console.warn(`[sanitizer-qty] ${injecoes} quantidade(s) injetada(s) por placeholder/ausência`);
       }
 
+      // ── Recálculo determinístico de kcal a partir dos macros (Atwater 4/4/9) ──
+      // kcal = (P × 4) + (C × 4) + (G × 9). Sempre derivado dos macros.
+      if (Array.isArray(parsed?.refeicoes)) {
+        const calcKcalAtwater = (p?: number, c?: number, g?: number) =>
+          Math.round((Number(p) || 0) * 4 + (Number(c) || 0) * 4 + (Number(g) || 0) * 9);
+
+        let totP = 0, totC = 0, totG = 0, totK = 0;
+        parsed.refeicoes.forEach((r: any) => {
+          const p = Number(r?.macros?.proteina) || 0;
+          const c = Number(r?.macros?.carboidrato) || 0;
+          const g = Number(r?.macros?.gordura) || 0;
+          const kcalDeclarada = Number(r?.calorias) || 0;
+          const kcalCalc = calcKcalAtwater(p, c, g);
+          if (kcalDeclarada && Math.abs(kcalDeclarada - kcalCalc) > 50) {
+            console.warn(`[kcal-recalc] ${r?.refeicao}: declarado=${kcalDeclarada} vs calculado=${kcalCalc} (delta=${kcalDeclarada - kcalCalc})`);
+          }
+          r.kcal_declarada = kcalDeclarada || null;
+          r.kcal_calculada = kcalCalc;
+          r.calorias = kcalCalc; // sobrescreve para garantir consistência exibida
+          totP += p; totC += c; totG += g; totK += kcalCalc;
+        });
+
+        // Atualiza resumo do dia com totais derivados
+        if (parsed.resumo) {
+          const kcalResumoDeclarado = Number(parsed.resumo.calorias_totais) || 0;
+          parsed.resumo.kcal_declarada_total = kcalResumoDeclarado || null;
+          parsed.resumo.calorias_totais = totK;
+          parsed.resumo.proteina_total = Math.round(totP * 10) / 10;
+          parsed.resumo.carboidrato_total = Math.round(totC * 10) / 10;
+          parsed.resumo.gordura_total = Math.round(totG * 10) / 10;
+          if (kcalResumoDeclarado && Math.abs(kcalResumoDeclarado - totK) > 50) {
+            console.warn(`[kcal-recalc-total] resumo declarado=${kcalResumoDeclarado} vs soma calculada=${totK}`);
+          }
+        }
+      }
+
       // Garantir que primeira refeição não comece antes das 08:30
       if (parsed.refeicoes.length > 0) {
         const primeira = parsed.refeicoes[0];

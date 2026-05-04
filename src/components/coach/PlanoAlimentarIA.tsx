@@ -278,9 +278,21 @@ interface Meal {
   refeicao: string;
   horario?: string;
   calorias?: number;
+  kcal_declarada?: number | null;
+  kcal_calculada?: number;
   alimentos?: MealAlimento[];
   macros?: { proteina?: number; carboidrato?: number; gordura?: number };
 }
+
+// Atwater 4/4/9 — kcal sempre derivada dos macros
+const calcKcalAtwater = (p?: number, c?: number, g?: number) =>
+  Math.round((Number(p) || 0) * 4 + (Number(c) || 0) * 4 + (Number(g) || 0) * 9);
+
+const getMealKcal = (m: Meal): number => {
+  if (typeof m?.kcal_calculada === "number") return m.kcal_calculada;
+  if (m?.macros) return calcKcalAtwater(m.macros.proteina, m.macros.carboidrato, m.macros.gordura);
+  return Number(m?.calorias) || 0;
+};
 
 interface Suplemento {
   suplemento: string;
@@ -515,9 +527,25 @@ const MealCard = ({ meal, index, onSwap }: MealCardProps) => {
           <span style={{ fontSize: 14, fontWeight: 600, color: T.text }}>{stripHorarioFromTitle(meal.refeicao, meal.horario)}</span>
           {meal.horario && <span style={{ fontSize: 11, color: T.muted, background: T.bg3, padding: "2px 8px", borderRadius: 999 }}>{meal.horario}</span>}
         </div>
-        {meal.calorias && (
-          <span style={{ fontSize: 12, color, fontWeight: 600 }}>{meal.calorias} kcal</span>
-        )}
+        {(() => {
+          const kcalCalc = getMealKcal(meal);
+          const kcalDecl = typeof meal.kcal_declarada === "number" ? meal.kcal_declarada : (typeof meal.calorias === "number" && meal.kcal_calculada == null ? meal.calorias : null);
+          const divergente = kcalDecl != null && Math.abs(kcalDecl - kcalCalc) > 50;
+          if (!kcalCalc) return null;
+          return (
+            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <span style={{ fontSize: 12, color, fontWeight: 600 }}>{kcalCalc} kcal</span>
+              {divergente && (
+                <span
+                  title={`Valor declarado pela IA: ${kcalDecl} kcal — recalculado pela fórmula Atwater (P×4 + C×4 + G×9): ${kcalCalc} kcal`}
+                  style={{ fontSize: 9, fontWeight: 700, color: "#f59e0b", background: "rgba(245,158,11,0.12)", border: "1px solid rgba(245,158,11,0.4)", padding: "1px 6px", borderRadius: 999 }}
+                >
+                  ⚠ Δ{Math.abs((kcalDecl as number) - kcalCalc)}
+                </span>
+              )}
+            </div>
+          );
+        })()}
       </div>
       <div style={{ padding: "12px 16px" }}>
         {meal.alimentos?.map((a, i) => {
@@ -1295,7 +1323,7 @@ export default function PlanoAlimentarIA() {
   // Soma calórica total das refeições do plano (fallback caso ajuste_calorico não esteja disponível)
   const sumKcalRefeicoes = (refs: any[] | undefined): number => {
     if (!Array.isArray(refs)) return 0;
-    return refs.reduce((acc, r) => acc + (Number(r?.calorias) || 0), 0);
+    return refs.reduce((acc, r) => acc + getMealKcal(r as Meal), 0);
   };
 
   // Regera o plano múltiplas vezes até o ajuste calórico cair dentro da banda ±3% (ou atingir limite)
@@ -1725,7 +1753,7 @@ export default function PlanoAlimentarIA() {
               ` : ""}
             </div>
           `;}).join("") || ""}
-          <div class="macros">🔥 ${m.calorias || 0} kcal | P: ${m.macros?.proteina || 0}g | C: ${m.macros?.carboidrato || 0}g | G: ${m.macros?.gordura || 0}g</div>
+          <div class="macros">🔥 ${getMealKcal(m as Meal) || 0} kcal | P: ${m.macros?.proteina || 0}g | C: ${m.macros?.carboidrato || 0}g | G: ${m.macros?.gordura || 0}g</div>
         </div>
       `).join("")}
       ${plano.suplementacao?.length ? `<h2>Suplementação</h2>${plano.suplementacao.map(s => `<div class="meal"><h3>${s.suplemento}</h3><p>Dose: ${s.dose} | Timing: ${s.timing}</p><p class="tip">${s.justificativa}</p></div>`).join("")}` : ""}
@@ -2036,6 +2064,33 @@ export default function PlanoAlimentarIA() {
 
 
         <div style={{ maxWidth: 800, margin: "0 auto", padding: "32px 24px" }} className="fade-up">
+          {/* Total real do dia (Atwater) vs meta */}
+          {(() => {
+            const meals = (plano?.refeicoes || []) as Meal[];
+            const kcalReal = meals.reduce((acc, m) => acc + getMealKcal(m), 0);
+            const pReal = Math.round(meals.reduce((a, m) => a + (Number(m?.macros?.proteina) || 0), 0) * 10) / 10;
+            const cReal = Math.round(meals.reduce((a, m) => a + (Number(m?.macros?.carboidrato) || 0), 0) * 10) / 10;
+            const gReal = Math.round(meals.reduce((a, m) => a + (Number(m?.macros?.gordura) || 0), 0) * 10) / 10;
+            const meta = Number(r.calorias_totais) || 0;
+            const diff = meta - kcalReal;
+            const divergente = meta && Math.abs(diff) > 50;
+            return (
+              <div style={{ background: T.card, border: `1px solid ${divergente ? "rgba(245,158,11,0.5)" : T.border}`, borderRadius: 12, padding: "14px 16px", marginBottom: 16 }}>
+                <div style={{ fontSize: 10, color: T.muted, textTransform: "uppercase", marginBottom: 8, letterSpacing: 0.5 }}>Realizado vs Meta (Atwater 4/4/9)</div>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(110px, 1fr))", gap: 10, fontSize: 12 }}>
+                  <div><div style={{ color: T.muted, fontSize: 10 }}>Realizado</div><div style={{ color: T.green, fontWeight: 700, fontSize: 14 }}>{kcalReal} kcal</div><div style={{ color: T.muted, fontSize: 10 }}>P {pReal} · C {cReal} · G {gReal}</div></div>
+                  <div><div style={{ color: T.muted, fontSize: 10 }}>Meta</div><div style={{ color: T.text, fontWeight: 700, fontSize: 14 }}>{meta} kcal</div></div>
+                  <div><div style={{ color: T.muted, fontSize: 10 }}>Diferença</div><div style={{ color: divergente ? "#f59e0b" : T.muted, fontWeight: 700, fontSize: 14 }}>{diff > 0 ? "+" : ""}{diff} kcal</div></div>
+                </div>
+                {divergente && (
+                  <div style={{ marginTop: 8, fontSize: 10, color: "#f59e0b" }}>
+                    ⚠ Gap &gt; 50 kcal entre meta e soma dos macros das refeições. Revise as gramaturas dos alimentos proteicos.
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+
           {/* Resumo cards */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(100px, 1fr))", gap: 10, marginBottom: 24 }}>
             {[
