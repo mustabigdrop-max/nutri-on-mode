@@ -530,7 +530,7 @@ const MealCard = ({ meal, index, onSwap }: MealCardProps) => {
         {(() => {
           const kcalCalc = getMealKcal(meal);
           const kcalDecl = typeof meal.kcal_declarada === "number" ? meal.kcal_declarada : (typeof meal.calorias === "number" && meal.kcal_calculada == null ? meal.calorias : null);
-          const divergente = kcalDecl != null && Math.abs(kcalDecl - kcalCalc) > 50;
+          const divergente = kcalDecl != null && Math.abs(kcalDecl - kcalCalc) > 30;
           if (!kcalCalc) return null;
           return (
             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
