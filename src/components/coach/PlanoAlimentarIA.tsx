@@ -384,7 +384,7 @@ const kcalFromMacros = (
 const getMealKcal = (m: Meal): number => {
   const declarado =
     typeof m?.kcal_calculada === "number" ? m.kcal_calculada : Number(m?.calorias) || 0;
-  const scope = `meal:${m?.refeicao || m?.nome || "sem-nome"}`;
+  const scope = `meal:${m?.refeicao || "sem-nome"}`;
   return kcalFromMacros(m?.macros?.proteina, m?.macros?.carboidrato, m?.macros?.gordura, declarado, scope);
 };
 
