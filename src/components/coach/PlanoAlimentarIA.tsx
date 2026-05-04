@@ -2064,6 +2064,33 @@ export default function PlanoAlimentarIA() {
 
 
         <div style={{ maxWidth: 800, margin: "0 auto", padding: "32px 24px" }} className="fade-up">
+          {/* Total real do dia (Atwater) vs meta */}
+          {(() => {
+            const meals = (plano?.refeicoes || []) as Meal[];
+            const kcalReal = meals.reduce((acc, m) => acc + getMealKcal(m), 0);
+            const pReal = Math.round(meals.reduce((a, m) => a + (Number(m?.macros?.proteina) || 0), 0) * 10) / 10;
+            const cReal = Math.round(meals.reduce((a, m) => a + (Number(m?.macros?.carboidrato) || 0), 0) * 10) / 10;
+            const gReal = Math.round(meals.reduce((a, m) => a + (Number(m?.macros?.gordura) || 0), 0) * 10) / 10;
+            const meta = Number(r.calorias_totais) || 0;
+            const diff = meta - kcalReal;
+            const divergente = meta && Math.abs(diff) > 50;
+            return (
+              <div style={{ background: T.card, border: `1px solid ${divergente ? "rgba(245,158,11,0.5)" : T.border}`, borderRadius: 12, padding: "14px 16px", marginBottom: 16 }}>
+                <div style={{ fontSize: 10, color: T.muted, textTransform: "uppercase", marginBottom: 8, letterSpacing: 0.5 }}>Realizado vs Meta (Atwater 4/4/9)</div>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(110px, 1fr))", gap: 10, fontSize: 12 }}>
+                  <div><div style={{ color: T.muted, fontSize: 10 }}>Realizado</div><div style={{ color: T.green, fontWeight: 700, fontSize: 14 }}>{kcalReal} kcal</div><div style={{ color: T.muted, fontSize: 10 }}>P {pReal} · C {cReal} · G {gReal}</div></div>
+                  <div><div style={{ color: T.muted, fontSize: 10 }}>Meta</div><div style={{ color: T.text, fontWeight: 700, fontSize: 14 }}>{meta} kcal</div></div>
+                  <div><div style={{ color: T.muted, fontSize: 10 }}>Diferença</div><div style={{ color: divergente ? "#f59e0b" : T.muted, fontWeight: 700, fontSize: 14 }}>{diff > 0 ? "+" : ""}{diff} kcal</div></div>
+                </div>
+                {divergente && (
+                  <div style={{ marginTop: 8, fontSize: 10, color: "#f59e0b" }}>
+                    ⚠ Gap &gt; 50 kcal entre meta e soma dos macros das refeições. Revise as gramaturas dos alimentos proteicos.
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+
           {/* Resumo cards */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(100px, 1fr))", gap: 10, marginBottom: 24 }}>
             {[
