@@ -780,14 +780,19 @@ const MealCard = ({ meal, index, onSwap }: MealCardProps) => {
                               textTransform: "uppercase", letterSpacing: "0.05em",
                             }}>{meta.emoji} {meta.label}</span>
                             <div style={{ fontSize: 12, color: T.text, fontWeight: 600, lineHeight: 1.3 }}>{sub.alimento}</div>
-                            {sub.quantidade && (
-                              <div style={{ fontSize: 11, color: T.muted }}>
-                                {sub.quantidade}
-                                {sub.quantidade_g && sub.quantidade_g.replace(/\s/g, "").toLowerCase() !== sub.quantidade.replace(/\s/g, "").toLowerCase() && (
-                                  <span style={{ marginLeft: 6, fontSize: 10, color: T.muted2 }}>≈ {sub.quantidade_g}</span>
-                                )}
-                              </div>
-                            )}
+                            {(() => {
+                              const qtd = (sub.quantidade && sub.quantidade.toString().trim()) || (sub.quantidade_g && sub.quantidade_g.toString().trim()) || null;
+                              const qtdG = (sub.quantidade_g && sub.quantidade_g.toString().trim()) || null;
+                              const showApprox = qtd && qtdG && qtdG.replace(/\s/g, "").toLowerCase() !== qtd.replace(/\s/g, "").toLowerCase();
+                              return (
+                                <div style={{ fontSize: 11, color: T.muted }}>
+                                  {qtd || "—"}
+                                  {showApprox && (
+                                    <span style={{ marginLeft: 6, fontSize: 10, color: T.muted2 }}>≈ {qtdG}</span>
+                                  )}
+                                </div>
+                              );
+                            })()}
                             {sub.observacao && <div style={{ fontSize: 10, color: T.muted2, fontStyle: "italic" }}>{sub.observacao}</div>}
                             <button
                               onClick={() => onSwap(i, sub)}
@@ -3664,12 +3669,14 @@ export default function PlanoAlimentarIA() {
                     const otherSubs = (original.substituicoes || []).filter(
                       (s) => s.alimento !== sub.alimento
                     );
+                    const subQtd = sub.quantidade || sub.quantidade_g || undefined;
                     meal.alimentos[alimentoIdx] = {
                       alimento: sub.alimento,
-                      quantidade: sub.quantidade,
+                      quantidade: subQtd,
+                      quantidade_g: sub.quantidade_g,
                       observacao: sub.observacao,
                       substituicoes: [
-                        { alimento: original.alimento, quantidade: original.quantidade, observacao: original.observacao, grupo: (sub as any).grupo },
+                        { alimento: original.alimento, quantidade: original.quantidade || original.quantidade_g, quantidade_g: original.quantidade_g, observacao: original.observacao, grupo: (sub as any).grupo },
                         ...otherSubs,
                       ],
                     };
