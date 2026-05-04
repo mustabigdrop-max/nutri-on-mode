@@ -323,11 +323,11 @@ const kcalAudit = {
   summary() {
     return {
       total: this.total,
-      porEscopo: this.divergencias.reduce<Record<string, number>>((acc, d) => {
+      porEscopo: this.divergencias.reduce((acc: Record<string, number>, d) => {
         const key = d.scope.split(":")[0];
         acc[key] = (acc[key] || 0) + 1;
         return acc;
-      }, {}),
+      }, {} as Record<string, number>),
       maiorGap: this.divergencias.reduce(
         (max, d) => (Math.abs(d.delta) > Math.abs(max?.delta ?? 0) ? d : max),
         null as KcalDivergence | null,
