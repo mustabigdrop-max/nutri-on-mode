@@ -1724,11 +1724,11 @@ export default function PlanoAlimentarIA() {
       .footer{margin-top:32px;text-align:center;color:#9ca3af;font-size:11px}
     </style></head><body>
       <h1>🥗 Plano Alimentar — ${r.nome}</h1>
-      <p>Objetivo: ${r.objetivo} | Calorias: ${r.calorias_totais} kcal | P: ${r.proteina_total}g | C: ${r.carboidrato_total}g | G: ${r.gordura_total}g</p>
+      <p>Objetivo: ${r.objetivo} | Calorias: ${kcalUI} kcal | P: ${r.proteina_total}g | C: ${r.carboidrato_total}g | G: ${r.gordura_total}g</p>
       <div class="meta">
         <div class="meta-box"><span>${r.tmb}</span>TMB (kcal)</div>
         <div class="meta-box"><span>${r.get}</span>GET (kcal)</div>
-        <div class="meta-box"><span>${r.calorias_totais}</span>VET (kcal)</div>
+        <div class="meta-box"><span>${kcalUI}</span>VET (kcal)</div>
         <div class="meta-box"><span>${r.imc}</span>IMC</div>
       </div>
       ${glut4Text ? `
