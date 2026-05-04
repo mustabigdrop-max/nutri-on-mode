@@ -1076,7 +1076,7 @@ export default function PlanoAlimentarIA() {
       console.group(`%c[KCAL-AUDIT] ${s.total} divergência(s) detectada(s) no plano "${plano.resumo?.nome ?? "?"}"`, "color:#f59e0b;font-weight:bold");
       console.log("Por escopo:", s.porEscopo);
       if (s.maiorGap) console.log("Maior gap:", s.maiorGap);
-      console.table(s.divergencias.map(d => ({
+      console.table(s.ultimas.map(d => ({
         escopo: d.scope, declarado: d.declarado, atwater: d.calculado, delta: d.delta,
         P: d.proteina, C: d.carboidrato, G: d.gordura,
       })));
