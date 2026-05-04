@@ -284,24 +284,54 @@ interface Meal {
   macros?: { proteina?: number; carboidrato?: number; gordura?: number };
 }
 
-// Atwater 4/4/9 — kcal sempre derivada dos macros
+// ============================================================
+// FONTE ÚNICA DA VERDADE — kcal por Atwater (4/4/9)
+// Toda a UI e exportações DEVEM passar por este helper.
+// ============================================================
+const KCAL_TOLERANCIA = 50;
+
+/** Atwater puro: kcal derivada exclusivamente dos macros (P*4 + C*4 + G*9). */
 const calcKcalAtwater = (p?: number, c?: number, g?: number) =>
   Math.round((Number(p) || 0) * 4 + (Number(c) || 0) * 4 + (Number(g) || 0) * 9);
 
-const getMealKcal = (m: Meal): number => {
-  if (typeof m?.kcal_calculada === "number") return m.kcal_calculada;
-  if (m?.macros) return calcKcalAtwater(m.macros.proteina, m.macros.carboidrato, m.macros.gordura);
-  return Number(m?.calorias) || 0;
+/**
+ * Helper unificado. Recebe os macros e (opcionalmente) o valor declarado.
+ * Retorna o declarado APENAS se a divergência ≤ ±50 kcal; caso contrário,
+ * retorna o calculado por Atwater. Também usado para refeições e totais.
+ */
+const kcalFromMacros = (
+  proteina?: number,
+  carboidrato?: number,
+  gordura?: number,
+  declarado?: number,
+): number => {
+  const calc = calcKcalAtwater(proteina, carboidrato, gordura);
+  const decl = Number(declarado) || 0;
+  if (!decl) return calc;
+  return Math.abs(decl - calc) > KCAL_TOLERANCIA ? calc : decl;
 };
 
-// kcal total do dia (Atwater) com tolerância de 50 kcal vs valor declarado.
-// Aceita o declarado SOMENTE se diferir do calculado em ≤ 50 kcal; senão usa calculado.
-const getResumoKcal = (resumo: { calorias_totais?: number; proteina_total?: number; carboidrato_total?: number; gordura_total?: number } | null | undefined): number => {
+/** kcal de uma refeição — sempre via fonte única (kcal_calculada e calorias só são aceitos se baterem com Atwater). */
+const getMealKcal = (m: Meal): number => {
+  const declarado =
+    typeof m?.kcal_calculada === "number" ? m.kcal_calculada : Number(m?.calorias) || 0;
+  return kcalFromMacros(m?.macros?.proteina, m?.macros?.carboidrato, m?.macros?.gordura, declarado);
+};
+
+/** kcal total do dia — sempre via fonte única. */
+const getResumoKcal = (
+  resumo:
+    | { calorias_totais?: number; proteina_total?: number; carboidrato_total?: number; gordura_total?: number }
+    | null
+    | undefined,
+): number => {
   if (!resumo) return 0;
-  const calc = calcKcalAtwater(resumo.proteina_total, resumo.carboidrato_total, resumo.gordura_total);
-  const decl = Number(resumo.calorias_totais) || 0;
-  if (!decl) return calc;
-  return Math.abs(decl - calc) > 50 ? calc : decl;
+  return kcalFromMacros(
+    resumo.proteina_total,
+    resumo.carboidrato_total,
+    resumo.gordura_total,
+    resumo.calorias_totais,
+  );
 };
 
 interface Suplemento {
