@@ -278,9 +278,21 @@ interface Meal {
   refeicao: string;
   horario?: string;
   calorias?: number;
+  kcal_declarada?: number | null;
+  kcal_calculada?: number;
   alimentos?: MealAlimento[];
   macros?: { proteina?: number; carboidrato?: number; gordura?: number };
 }
+
+// Atwater 4/4/9 — kcal sempre derivada dos macros
+const calcKcalAtwater = (p?: number, c?: number, g?: number) =>
+  Math.round((Number(p) || 0) * 4 + (Number(c) || 0) * 4 + (Number(g) || 0) * 9);
+
+const getMealKcal = (m: Meal): number => {
+  if (typeof m?.kcal_calculada === "number") return m.kcal_calculada;
+  if (m?.macros) return calcKcalAtwater(m.macros.proteina, m.macros.carboidrato, m.macros.gordura);
+  return Number(m?.calorias) || 0;
+};
 
 interface Suplemento {
   suplemento: string;
