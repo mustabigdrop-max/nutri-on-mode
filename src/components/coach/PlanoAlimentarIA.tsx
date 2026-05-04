@@ -3201,7 +3201,7 @@ export default function PlanoAlimentarIA() {
             // Macros
             const rA = A.resumo, rB = B.resumo;
             const macroRows: { l: string; a: number; b: number; unit: string }[] = [
-              { l: "Calorias", a: rA.calorias_totais, b: rB.calorias_totais, unit: "kcal" },
+              { l: "Calorias", a: getResumoKcal(rA), b: getResumoKcal(rB), unit: "kcal" },
               { l: "Proteína", a: rA.proteina_total, b: rB.proteina_total, unit: "g" },
               { l: "Carboidrato", a: rA.carboidrato_total, b: rB.carboidrato_total, unit: "g" },
               { l: "Gordura", a: rA.gordura_total, b: rB.gordura_total, unit: "g" },
