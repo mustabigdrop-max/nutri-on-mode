@@ -1697,6 +1697,7 @@ export default function PlanoAlimentarIA() {
   const exportPDF = () => {
     if (!plano) return;
     const r = plano.resumo;
+    const kcalUI = getResumoKcal(r);
     const w = window.open("", "_blank");
     if (!w) return;
     w.document.write(`<html><head><title>Plano Alimentar - ${r.nome}</title>
