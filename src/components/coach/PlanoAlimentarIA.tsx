@@ -3682,7 +3682,7 @@ export default function PlanoAlimentarIA() {
                   .map((h) => {
                     const isSent = h.status === "sent";
                     const dt = new Date(h.created_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "2-digit", hour: "2-digit", minute: "2-digit" });
-                    const kcal = h.plano?.resumo?.calorias_totais;
+                    const kcal = getResumoKcal(h.plano?.resumo);
                     return (
                       <div key={h.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, padding: "12px 14px", border: `1px solid ${T.border}`, borderRadius: 10, background: T.card, marginBottom: 8 }}>
                         <div style={{ flex: 1, minWidth: 0 }}>
