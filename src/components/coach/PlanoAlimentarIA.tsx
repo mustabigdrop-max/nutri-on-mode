@@ -1323,7 +1323,7 @@ export default function PlanoAlimentarIA() {
   // Soma calórica total das refeições do plano (fallback caso ajuste_calorico não esteja disponível)
   const sumKcalRefeicoes = (refs: any[] | undefined): number => {
     if (!Array.isArray(refs)) return 0;
-    return refs.reduce((acc, r) => acc + (Number(r?.calorias) || 0), 0);
+    return refs.reduce((acc, r) => acc + getMealKcal(r as Meal), 0);
   };
 
   // Regera o plano múltiplas vezes até o ajuste calórico cair dentro da banda ±3% (ou atingir limite)
