@@ -284,6 +284,20 @@ interface Meal {
   macros?: { proteina?: number; carboidrato?: number; gordura?: number };
 }
 
+const formatQuantidadeG = (value?: string | number | null) => {
+  const raw = value?.toString().trim();
+  if (!raw) return null;
+  return raw.toLowerCase().includes("g") ? raw : `${raw}g`;
+};
+
+const getSubstitutionQuantityDisplay = (substituto: Pick<SubstituicaoItem, "quantidade" | "quantidade_g">) => {
+  const quantidade = substituto.quantidade?.toString().trim();
+  if (quantidade) return quantidade;
+
+  const quantidadeG = formatQuantidadeG(substituto.quantidade_g);
+  return quantidadeG ? `≈ ${quantidadeG}` : "—";
+};
+
 // ============================================================
 // FONTE ÚNICA DA VERDADE — kcal por Atwater (4/4/9)
 // Toda a UI e exportações DEVEM passar por este helper.
@@ -781,12 +795,12 @@ const MealCard = ({ meal, index, onSwap }: MealCardProps) => {
                             }}>{meta.emoji} {meta.label}</span>
                             <div style={{ fontSize: 12, color: T.text, fontWeight: 600, lineHeight: 1.3 }}>{sub.alimento}</div>
                             {(() => {
-                              const qtd = (sub.quantidade && sub.quantidade.toString().trim()) || (sub.quantidade_g && sub.quantidade_g.toString().trim()) || null;
-                              const qtdG = (sub.quantidade_g && sub.quantidade_g.toString().trim()) || null;
-                              const showApprox = qtd && qtdG && qtdG.replace(/\s/g, "").toLowerCase() !== qtd.replace(/\s/g, "").toLowerCase();
+                              const qtd = getSubstitutionQuantityDisplay(sub);
+                              const qtdG = formatQuantidadeG(sub.quantidade_g);
+                              const showApprox = sub.quantidade?.toString().trim() && qtdG && qtdG.replace(/\s/g, "").toLowerCase() !== sub.quantidade.toString().trim().replace(/\s/g, "").toLowerCase();
                               return (
                                 <div style={{ fontSize: 11, color: T.muted }}>
-                                  {qtd || "—"}
+                                  {qtd}
                                   {showApprox && (
                                     <span style={{ marginLeft: 6, fontSize: 10, color: T.muted2 }}>≈ {qtdG}</span>
                                   )}
@@ -3669,7 +3683,7 @@ export default function PlanoAlimentarIA() {
                     const otherSubs = (original.substituicoes || []).filter(
                       (s) => s.alimento !== sub.alimento
                     );
-                    const subQtd = sub.quantidade || sub.quantidade_g || undefined;
+                    const subQtd = getSubstitutionQuantityDisplay(sub);
                     meal.alimentos[alimentoIdx] = {
                       alimento: sub.alimento,
                       quantidade: subQtd,
