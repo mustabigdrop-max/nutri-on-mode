@@ -527,9 +527,25 @@ const MealCard = ({ meal, index, onSwap }: MealCardProps) => {
           <span style={{ fontSize: 14, fontWeight: 600, color: T.text }}>{stripHorarioFromTitle(meal.refeicao, meal.horario)}</span>
           {meal.horario && <span style={{ fontSize: 11, color: T.muted, background: T.bg3, padding: "2px 8px", borderRadius: 999 }}>{meal.horario}</span>}
         </div>
-        {meal.calorias && (
-          <span style={{ fontSize: 12, color, fontWeight: 600 }}>{meal.calorias} kcal</span>
-        )}
+        {(() => {
+          const kcalCalc = getMealKcal(meal);
+          const kcalDecl = typeof meal.kcal_declarada === "number" ? meal.kcal_declarada : (typeof meal.calorias === "number" && meal.kcal_calculada == null ? meal.calorias : null);
+          const divergente = kcalDecl != null && Math.abs(kcalDecl - kcalCalc) > 50;
+          if (!kcalCalc) return null;
+          return (
+            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <span style={{ fontSize: 12, color, fontWeight: 600 }}>{kcalCalc} kcal</span>
+              {divergente && (
+                <span
+                  title={`Valor declarado pela IA: ${kcalDecl} kcal — recalculado pela fórmula Atwater (P×4 + C×4 + G×9): ${kcalCalc} kcal`}
+                  style={{ fontSize: 9, fontWeight: 700, color: "#f59e0b", background: "rgba(245,158,11,0.12)", border: "1px solid rgba(245,158,11,0.4)", padding: "1px 6px", borderRadius: 999 }}
+                >
+                  ⚠ Δ{Math.abs((kcalDecl as number) - kcalCalc)}
+                </span>
+              )}
+            </div>
+          );
+        })()}
       </div>
       <div style={{ padding: "12px 16px" }}>
         {meal.alimentos?.map((a, i) => {
