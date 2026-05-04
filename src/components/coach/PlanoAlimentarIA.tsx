@@ -3669,12 +3669,14 @@ export default function PlanoAlimentarIA() {
                     const otherSubs = (original.substituicoes || []).filter(
                       (s) => s.alimento !== sub.alimento
                     );
+                    const subQtd = sub.quantidade || sub.quantidade_g || undefined;
                     meal.alimentos[alimentoIdx] = {
                       alimento: sub.alimento,
-                      quantidade: sub.quantidade,
+                      quantidade: subQtd,
+                      quantidade_g: sub.quantidade_g,
                       observacao: sub.observacao,
                       substituicoes: [
-                        { alimento: original.alimento, quantidade: original.quantidade, observacao: original.observacao, grupo: (sub as any).grupo },
+                        { alimento: original.alimento, quantidade: original.quantidade || original.quantidade_g, quantidade_g: original.quantidade_g, observacao: original.observacao, grupo: (sub as any).grupo },
                         ...otherSubs,
                       ],
                     };
