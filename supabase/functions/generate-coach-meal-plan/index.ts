@@ -3405,6 +3405,40 @@ AEJ não é refeição e nunca deve aparecer em refeicoes. Pós-Treino Imediato 
       }
     }
 
+    // ── RECÁLCULO DETERMINÍSTICO DE KCAL POR MACROS (Atwater 4/4/9) ──
+    // Garante consistência: kcal de cada refeição é SEMPRE derivada dos macros reais.
+    // Recalcula totais do resumo a partir da soma das refeições. NÃO toca em tmb/get.
+    if (Array.isArray(parsed?.refeicoes)) {
+      let somaP = 0, somaC = 0, somaG = 0, somaKcal = 0;
+      parsed.refeicoes.forEach((r: any) => {
+        const p = Number(r?.macros?.proteina) || 0;
+        const c = Number(r?.macros?.carboidrato) || 0;
+        const g = Number(r?.macros?.gordura) || 0;
+        const kcal = Math.round(p * 4 + c * 4 + g * 9);
+        r.calorias = kcal;
+        somaP += p;
+        somaC += c;
+        somaG += g;
+        somaKcal += kcal;
+      });
+
+      if (parsed.resumo && typeof parsed.resumo === "object") {
+        parsed.resumo.proteina_total = Math.round(somaP * 10) / 10;
+        parsed.resumo.carboidrato_total = Math.round(somaC * 10) / 10;
+        parsed.resumo.gordura_total = Math.round(somaG * 10) / 10;
+        parsed.resumo.calorias_totais = somaKcal;
+
+        // Auditoria
+        parsed.resumo.kcal_por_macros = somaKcal;
+        const metaCoach = Number(calorias);
+        if (Number.isFinite(metaCoach) && metaCoach > 0) {
+          parsed.resumo.gap_kcal = somaKcal - metaCoach;
+        }
+        // tmb e get permanecem intactos (cálculo determinístico)
+      }
+      console.log(`[kcal-recalc] refeicoes=${parsed.refeicoes.length} P=${somaP.toFixed(1)} C=${somaC.toFixed(1)} G=${somaG.toFixed(1)} kcal=${somaKcal}${parsed.resumo?.gap_kcal != null ? ` gap=${parsed.resumo.gap_kcal}` : ""}`);
+    }
+
     // ── AJUSTE PÓS-PROCESSAMENTO: escala gramaturas para bater alvo calórico ±3% ──
     // Se o coach definiu meta calórica e o total da IA ficou abaixo da banda inferior,
     // multiplica proporcionalmente todas as gramaturas (exceto pós-treino imediato, já validado)
