@@ -530,7 +530,7 @@ const MealCard = ({ meal, index, onSwap }: MealCardProps) => {
         {(() => {
           const kcalCalc = getMealKcal(meal);
           const kcalDecl = typeof meal.kcal_declarada === "number" ? meal.kcal_declarada : (typeof meal.calorias === "number" && meal.kcal_calculada == null ? meal.calorias : null);
-          const divergente = kcalDecl != null && Math.abs(kcalDecl - kcalCalc) > 50;
+          const divergente = kcalDecl != null && Math.abs(kcalDecl - kcalCalc) > 30;
           if (!kcalCalc) return null;
           return (
             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
@@ -1783,9 +1783,16 @@ export default function PlanoAlimentarIA() {
   // ── RESULT ──
   if (step === "result" && plano) {
     const r = plano.resumo;
-    const macroP = r.proteina_total && r.calorias_totais ? Math.round((r.proteina_total * 4 / r.calorias_totais) * 100) : 0;
-    const macroC = r.carboidrato_total && r.calorias_totais ? Math.round((r.carboidrato_total * 4 / r.calorias_totais) * 100) : 0;
-    const macroG = r.gordura_total && r.calorias_totais ? Math.round((r.gordura_total * 9 / r.calorias_totais) * 100) : 0;
+    // Atwater: kcal sempre derivada dos macros. Se diferença vs declarado > 50 kcal,
+    // usar o calculado como verdade para totais e percentuais.
+    const kcalAtwaterTotal = calcKcalAtwater(r.proteina_total, r.carboidrato_total, r.gordura_total);
+    const kcalDeclTotal = Number(r.calorias_totais) || 0;
+    const kcalTotaisExibicao = (!kcalDeclTotal || Math.abs(kcalDeclTotal - kcalAtwaterTotal) > 50)
+      ? kcalAtwaterTotal
+      : kcalDeclTotal;
+    const macroP = r.proteina_total && kcalAtwaterTotal ? Math.round((r.proteina_total * 4 / kcalAtwaterTotal) * 100) : 0;
+    const macroC = r.carboidrato_total && kcalAtwaterTotal ? Math.round((r.carboidrato_total * 4 / kcalAtwaterTotal) * 100) : 0;
+    const macroG = r.gordura_total && kcalAtwaterTotal ? Math.round((r.gordura_total * 9 / kcalAtwaterTotal) * 100) : 0;
 
     return (
       <div ref={resultRef} style={{ minHeight: "100vh", background: T.bg, fontFamily: "'DM Sans', sans-serif", color: T.text }}>
@@ -2094,7 +2101,7 @@ export default function PlanoAlimentarIA() {
           {/* Resumo cards */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(100px, 1fr))", gap: 10, marginBottom: 24 }}>
             {[
-              { l: "Calorias", v: `${r.calorias_totais} kcal`, c: T.green },
+              { l: "Calorias", v: `${kcalTotaisExibicao} kcal`, c: T.green },
               { l: "Proteína", v: `${r.proteina_total}g (${macroP}%)`, c: T.blue },
               { l: "Carboidrato", v: `${r.carboidrato_total}g (${macroC}%)`, c: T.amber },
               { l: "Gordura", v: `${r.gordura_total}g (${macroG}%)`, c: "#f472b6" },
