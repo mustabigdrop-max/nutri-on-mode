@@ -294,6 +294,16 @@ const getMealKcal = (m: Meal): number => {
   return Number(m?.calorias) || 0;
 };
 
+// kcal total do dia (Atwater) com tolerância de 50 kcal vs valor declarado.
+// Aceita o declarado SOMENTE se diferir do calculado em ≤ 50 kcal; senão usa calculado.
+const getResumoKcal = (resumo: { calorias_totais?: number; proteina_total?: number; carboidrato_total?: number; gordura_total?: number } | null | undefined): number => {
+  if (!resumo) return 0;
+  const calc = calcKcalAtwater(resumo.proteina_total, resumo.carboidrato_total, resumo.gordura_total);
+  const decl = Number(resumo.calorias_totais) || 0;
+  if (!decl) return calc;
+  return Math.abs(decl - calc) > 50 ? calc : decl;
+};
+
 interface Suplemento {
   suplemento: string;
   dose: string;
