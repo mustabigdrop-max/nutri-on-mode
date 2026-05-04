@@ -2101,7 +2101,7 @@ export default function PlanoAlimentarIA() {
           {/* Resumo cards */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(100px, 1fr))", gap: 10, marginBottom: 24 }}>
             {[
-              { l: "Calorias", v: `${r.calorias_totais} kcal`, c: T.green },
+              { l: "Calorias", v: `${kcalTotaisExibicao} kcal`, c: T.green },
               { l: "Proteína", v: `${r.proteina_total}g (${macroP}%)`, c: T.blue },
               { l: "Carboidrato", v: `${r.carboidrato_total}g (${macroC}%)`, c: T.amber },
               { l: "Gordura", v: `${r.gordura_total}g (${macroG}%)`, c: "#f472b6" },
