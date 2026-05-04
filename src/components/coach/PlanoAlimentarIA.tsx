@@ -2109,6 +2109,16 @@ export default function PlanoAlimentarIA() {
             );
           })()}
 
+          {/* Alerta de divergência kcal bruto vs Atwater */}
+          {kcalDeclTotal > 0 && Math.abs(kcalDeclTotal - kcalAtwaterTotal) > 50 && (
+            <div style={{ background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.45)", borderRadius: 10, padding: "10px 14px", marginBottom: 12, display: "flex", alignItems: "center", gap: 10, fontSize: 12, color: "#f59e0b" }}>
+              <span style={{ fontSize: 14 }}>⚠</span>
+              <div style={{ lineHeight: 1.5 }}>
+                <strong>Inconsistência calórica:</strong> a IA declarou <strong>{kcalDeclTotal} kcal</strong>, mas os macros (P {r.proteina_total}g · C {r.carboidrato_total}g · G {r.gordura_total}g) somam <strong>{kcalAtwaterTotal} kcal</strong> pela fórmula Atwater (4/4/9). Diferença de <strong>{Math.abs(kcalDeclTotal - kcalAtwaterTotal)} kcal</strong>. Exibindo o valor calculado.
+              </div>
+            </div>
+          )}
+
           {/* Resumo cards */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(100px, 1fr))", gap: 10, marginBottom: 24 }}>
             {[
