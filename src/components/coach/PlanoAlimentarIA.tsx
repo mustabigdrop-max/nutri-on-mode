@@ -290,6 +290,58 @@ interface Meal {
 // ============================================================
 const KCAL_TOLERANCIA = 50;
 
+/** Registro de uma divergência kcal para auditoria. */
+type KcalDivergence = {
+  scope: string;          // ex: "meal:R3 — Almoço" | "resumo"
+  declarado: number;
+  calculado: number;
+  delta: number;          // declarado - calculado (com sinal)
+  proteina: number;
+  carboidrato: number;
+  gordura: number;
+  ts: number;
+};
+
+/** Auditor global de divergências (acumula durante a sessão). */
+const kcalAudit = {
+  total: 0,
+  divergencias: [] as KcalDivergence[],
+  reset() {
+    this.total = 0;
+    this.divergencias = [];
+  },
+  push(d: KcalDivergence) {
+    this.total += 1;
+    this.divergencias.push(d);
+    // Mantém últimos 200 para evitar leak.
+    if (this.divergencias.length > 200) this.divergencias.shift();
+    // Log estruturado individual.
+    console.warn(
+      `[KCAL-AUDIT] divergência #${this.total} em "${d.scope}": declarado=${d.declarado} kcal vs Atwater=${d.calculado} kcal (Δ=${d.delta > 0 ? "+" : ""}${d.delta}) | macros: P${d.proteina} C${d.carboidrato} G${d.gordura}`,
+    );
+  },
+  summary() {
+    return {
+      total: this.total,
+      porEscopo: this.divergencias.reduce((acc: Record<string, number>, d) => {
+        const key = d.scope.split(":")[0];
+        acc[key] = (acc[key] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>),
+      maiorGap: this.divergencias.reduce(
+        (max, d) => (Math.abs(d.delta) > Math.abs(max?.delta ?? 0) ? d : max),
+        null as KcalDivergence | null,
+      ),
+      ultimas: this.divergencias.slice(-10),
+    };
+  },
+};
+
+// Expõe no window para inspeção manual via DevTools: `__kcalAudit.summary()`
+if (typeof window !== "undefined") {
+  (window as unknown as { __kcalAudit?: typeof kcalAudit }).__kcalAudit = kcalAudit;
+}
+
 /** Atwater puro: kcal derivada exclusivamente dos macros (P*4 + C*4 + G*9). */
 const calcKcalAtwater = (p?: number, c?: number, g?: number) =>
   Math.round((Number(p) || 0) * 4 + (Number(c) || 0) * 4 + (Number(g) || 0) * 9);
@@ -298,24 +350,42 @@ const calcKcalAtwater = (p?: number, c?: number, g?: number) =>
  * Helper unificado. Recebe os macros e (opcionalmente) o valor declarado.
  * Retorna o declarado APENAS se a divergência ≤ ±50 kcal; caso contrário,
  * retorna o calculado por Atwater. Também usado para refeições e totais.
+ *
+ * Quando há divergência > tolerância, registra em `kcalAudit` para auditoria.
  */
 const kcalFromMacros = (
   proteina?: number,
   carboidrato?: number,
   gordura?: number,
   declarado?: number,
+  scope: string = "anonimo",
 ): number => {
   const calc = calcKcalAtwater(proteina, carboidrato, gordura);
   const decl = Number(declarado) || 0;
   if (!decl) return calc;
-  return Math.abs(decl - calc) > KCAL_TOLERANCIA ? calc : decl;
+  const delta = decl - calc;
+  if (Math.abs(delta) > KCAL_TOLERANCIA) {
+    kcalAudit.push({
+      scope,
+      declarado: decl,
+      calculado: calc,
+      delta,
+      proteina: Number(proteina) || 0,
+      carboidrato: Number(carboidrato) || 0,
+      gordura: Number(gordura) || 0,
+      ts: Date.now(),
+    });
+    return calc;
+  }
+  return decl;
 };
 
 /** kcal de uma refeição — sempre via fonte única (kcal_calculada e calorias só são aceitos se baterem com Atwater). */
 const getMealKcal = (m: Meal): number => {
   const declarado =
     typeof m?.kcal_calculada === "number" ? m.kcal_calculada : Number(m?.calorias) || 0;
-  return kcalFromMacros(m?.macros?.proteina, m?.macros?.carboidrato, m?.macros?.gordura, declarado);
+  const scope = `meal:${m?.refeicao || "sem-nome"}`;
+  return kcalFromMacros(m?.macros?.proteina, m?.macros?.carboidrato, m?.macros?.gordura, declarado, scope);
 };
 
 /** kcal total do dia — sempre via fonte única. */
@@ -331,6 +401,7 @@ const getResumoKcal = (
     resumo.carboidrato_total,
     resumo.gordura_total,
     resumo.calorias_totais,
+    "resumo",
   );
 };
 
@@ -992,6 +1063,29 @@ export default function PlanoAlimentarIA() {
       setForm(f => f.cyclingCarbo ? f : { ...f, cyclingCarbo: true });
     }
   }, [form.fasePeriodizacao]);
+
+  // Auditoria kcal: zera contador a cada novo plano e emite sumário consolidado.
+  useEffect(() => {
+    if (!plano) return;
+    kcalAudit.reset();
+    // Força recálculo (que vai popular kcalAudit via getMealKcal/getResumoKcal).
+    (plano.refeicoes || []).forEach((m) => getMealKcal(m as Meal));
+    getResumoKcal(plano.resumo);
+    const s = kcalAudit.summary();
+    if (s.total > 0) {
+      console.group(`%c[KCAL-AUDIT] ${s.total} divergência(s) detectada(s) no plano "${plano.resumo?.nome ?? "?"}"`, "color:#f59e0b;font-weight:bold");
+      console.log("Por escopo:", s.porEscopo);
+      if (s.maiorGap) console.log("Maior gap:", s.maiorGap);
+      console.table(s.ultimas.map(d => ({
+        escopo: d.scope, declarado: d.declarado, atwater: d.calculado, delta: d.delta,
+        P: d.proteina, C: d.carboidrato, G: d.gordura,
+      })));
+      console.log("Inspecione manualmente: window.__kcalAudit.summary()");
+      console.groupEnd();
+    } else {
+      console.info(`[KCAL-AUDIT] ✓ Plano "${plano.resumo?.nome ?? "?"}" consistente (0 divergências > ±${KCAL_TOLERANCIA} kcal).`);
+    }
+  }, [plano]);
 
   const set = (k: string, v: any) => setForm(f => ({ ...f, [k]: v }));
   const toggleArr = (k: string, v: string) => {
