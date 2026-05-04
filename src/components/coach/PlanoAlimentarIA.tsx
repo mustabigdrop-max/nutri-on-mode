@@ -294,6 +294,16 @@ const getMealKcal = (m: Meal): number => {
   return Number(m?.calorias) || 0;
 };
 
+// kcal total do dia (Atwater) com tolerância de 50 kcal vs valor declarado.
+// Aceita o declarado SOMENTE se diferir do calculado em ≤ 50 kcal; senão usa calculado.
+const getResumoKcal = (resumo: { calorias_totais?: number; proteina_total?: number; carboidrato_total?: number; gordura_total?: number } | null | undefined): number => {
+  if (!resumo) return 0;
+  const calc = calcKcalAtwater(resumo.proteina_total, resumo.carboidrato_total, resumo.gordura_total);
+  const decl = Number(resumo.calorias_totais) || 0;
+  if (!decl) return calc;
+  return Math.abs(decl - calc) > 50 ? calc : decl;
+};
+
 interface Suplemento {
   suplemento: string;
   dose: string;
@@ -1687,6 +1697,7 @@ export default function PlanoAlimentarIA() {
   const exportPDF = () => {
     if (!plano) return;
     const r = plano.resumo;
+    const kcalUI = getResumoKcal(r);
     const w = window.open("", "_blank");
     if (!w) return;
     w.document.write(`<html><head><title>Plano Alimentar - ${r.nome}</title>
@@ -1713,11 +1724,11 @@ export default function PlanoAlimentarIA() {
       .footer{margin-top:32px;text-align:center;color:#9ca3af;font-size:11px}
     </style></head><body>
       <h1>🥗 Plano Alimentar — ${r.nome}</h1>
-      <p>Objetivo: ${r.objetivo} | Calorias: ${r.calorias_totais} kcal | P: ${r.proteina_total}g | C: ${r.carboidrato_total}g | G: ${r.gordura_total}g</p>
+      <p>Objetivo: ${r.objetivo} | Calorias: ${kcalUI} kcal | P: ${r.proteina_total}g | C: ${r.carboidrato_total}g | G: ${r.gordura_total}g</p>
       <div class="meta">
         <div class="meta-box"><span>${r.tmb}</span>TMB (kcal)</div>
         <div class="meta-box"><span>${r.get}</span>GET (kcal)</div>
-        <div class="meta-box"><span>${r.calorias_totais}</span>VET (kcal)</div>
+        <div class="meta-box"><span>${kcalUI}</span>VET (kcal)</div>
         <div class="meta-box"><span>${r.imc}</span>IMC</div>
       </div>
       ${glut4Text ? `
@@ -2029,7 +2040,7 @@ export default function PlanoAlimentarIA() {
                     .map((h) => {
                       const isSent = h.status === "sent";
                       const dt = new Date(h.created_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "2-digit", hour: "2-digit", minute: "2-digit" });
-                      const kcal = h.plano?.resumo?.calorias_totais;
+                      const kcal = getResumoKcal(h.plano?.resumo);
                       return (
                         <div key={h.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, padding: "12px 14px", border: `1px solid ${T.border}`, borderRadius: 10, background: T.card, marginBottom: 8 }}>
                           <div style={{ flex: 1, minWidth: 0 }}>
@@ -2078,7 +2089,7 @@ export default function PlanoAlimentarIA() {
             const pReal = Math.round(meals.reduce((a, m) => a + (Number(m?.macros?.proteina) || 0), 0) * 10) / 10;
             const cReal = Math.round(meals.reduce((a, m) => a + (Number(m?.macros?.carboidrato) || 0), 0) * 10) / 10;
             const gReal = Math.round(meals.reduce((a, m) => a + (Number(m?.macros?.gordura) || 0), 0) * 10) / 10;
-            const meta = Number(r.calorias_totais) || 0;
+            const meta = getResumoKcal(r);
             const diff = meta - kcalReal;
             const divergente = meta && Math.abs(diff) > 50;
             return (
@@ -3190,7 +3201,7 @@ export default function PlanoAlimentarIA() {
             // Macros
             const rA = A.resumo, rB = B.resumo;
             const macroRows: { l: string; a: number; b: number; unit: string }[] = [
-              { l: "Calorias", a: rA.calorias_totais, b: rB.calorias_totais, unit: "kcal" },
+              { l: "Calorias", a: getResumoKcal(rA), b: getResumoKcal(rB), unit: "kcal" },
               { l: "Proteína", a: rA.proteina_total, b: rB.proteina_total, unit: "g" },
               { l: "Carboidrato", a: rA.carboidrato_total, b: rB.carboidrato_total, unit: "g" },
               { l: "Gordura", a: rA.gordura_total, b: rB.gordura_total, unit: "g" },
@@ -3671,7 +3682,7 @@ export default function PlanoAlimentarIA() {
                   .map((h) => {
                     const isSent = h.status === "sent";
                     const dt = new Date(h.created_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "2-digit", hour: "2-digit", minute: "2-digit" });
-                    const kcal = h.plano?.resumo?.calorias_totais;
+                    const kcal = getResumoKcal(h.plano?.resumo);
                     return (
                       <div key={h.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, padding: "12px 14px", border: `1px solid ${T.border}`, borderRadius: 10, background: T.card, marginBottom: 8 }}>
                         <div style={{ flex: 1, minWidth: 0 }}>
