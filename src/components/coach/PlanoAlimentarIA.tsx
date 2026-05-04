@@ -1783,9 +1783,16 @@ export default function PlanoAlimentarIA() {
   // ── RESULT ──
   if (step === "result" && plano) {
     const r = plano.resumo;
-    const macroP = r.proteina_total && r.calorias_totais ? Math.round((r.proteina_total * 4 / r.calorias_totais) * 100) : 0;
-    const macroC = r.carboidrato_total && r.calorias_totais ? Math.round((r.carboidrato_total * 4 / r.calorias_totais) * 100) : 0;
-    const macroG = r.gordura_total && r.calorias_totais ? Math.round((r.gordura_total * 9 / r.calorias_totais) * 100) : 0;
+    // Atwater: kcal sempre derivada dos macros. Se diferença vs declarado > 50 kcal,
+    // usar o calculado como verdade para totais e percentuais.
+    const kcalAtwaterTotal = calcKcalAtwater(r.proteina_total, r.carboidrato_total, r.gordura_total);
+    const kcalDeclTotal = Number(r.calorias_totais) || 0;
+    const kcalTotaisExibicao = (!kcalDeclTotal || Math.abs(kcalDeclTotal - kcalAtwaterTotal) > 50)
+      ? kcalAtwaterTotal
+      : kcalDeclTotal;
+    const macroP = r.proteina_total && kcalAtwaterTotal ? Math.round((r.proteina_total * 4 / kcalAtwaterTotal) * 100) : 0;
+    const macroC = r.carboidrato_total && kcalAtwaterTotal ? Math.round((r.carboidrato_total * 4 / kcalAtwaterTotal) * 100) : 0;
+    const macroG = r.gordura_total && kcalAtwaterTotal ? Math.round((r.gordura_total * 9 / kcalAtwaterTotal) * 100) : 0;
 
     return (
       <div ref={resultRef} style={{ minHeight: "100vh", background: T.bg, fontFamily: "'DM Sans', sans-serif", color: T.text }}>
