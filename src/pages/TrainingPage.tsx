@@ -411,6 +411,7 @@ Português. Específico. Científico. Zero genérico.`;
       patient_user_id: patientId || null,
     }).select("id").single();
     if (error) { toast.error("Erro ao salvar"); setShowSaveModal(false); return; }
+    if (inserted?.id) setSavedProtocolId(inserted.id);
 
     // Se enviou para um aluno, dispara notificação
     if (patientId && inserted?.id) {
