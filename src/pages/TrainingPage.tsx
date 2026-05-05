@@ -843,9 +843,22 @@ Português. Específico. Científico. Zero genérico.`;
             {/* ── Training Days Tab ── */}
             {activeResultTab === "treino" && protocol?.training_days && (
               <div className="space-y-3">
+                {isMello16 && (
+                  <WeekNavigator onWeekChange={setWeekPhase} />
+                )}
                 {protocol.training_days.map((day: any, idx: number) => (
-                  <TrainingDayCard key={idx} day={day} index={idx} expanded={expandedDay === idx} onToggle={() => setExpandedDay(expandedDay === idx ? null : idx)}
-                    expandedExercise={expandedExercise} setExpandedExercise={setExpandedExercise} />
+                  <TrainingDayCard
+                    key={idx}
+                    day={day}
+                    index={idx}
+                    expanded={expandedDay === idx}
+                    onToggle={() => setExpandedDay(expandedDay === idx ? null : idx)}
+                    expandedExercise={expandedExercise}
+                    setExpandedExercise={setExpandedExercise}
+                    weekPhase={isMello16 ? weekPhase : null}
+                    athleteId={userId}
+                    protocolId={savedProtocolId}
+                  />
                 ))}
               </div>
             )}
