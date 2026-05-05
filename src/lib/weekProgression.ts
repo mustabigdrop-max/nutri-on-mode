@@ -52,10 +52,20 @@ export const MESOCYCLE_BLOCKS: { label: string; weeks: number[] }[] = [
   { label: "Mesociclo 3", weeks: [11, 12, 13, 14, 15, 16] },
 ];
 
-export const PROTOCOL_START_DATE = new Date(2026, 4, 3); // 03/05/2026 (mês 0-indexed)
+export const PROTOCOL_START_DATE = new Date(2026, 4, 3); // 03/05/2026 (mês 0-indexed, meia-noite local)
+
+// Conta a diferença em DIAS CIVIS LOCAIS (Y/M/D), independente de fuso/DST.
+// Ex.: 03/05 23:59 → 04/05 00:01 = 1 dia, mesmo com offsets diferentes.
+function diffLocalDays(from: Date, to: Date): number {
+  const a = new Date(from.getFullYear(), from.getMonth(), from.getDate());
+  const b = new Date(to.getFullYear(), to.getMonth(), to.getDate());
+  // 86_400_000 é seguro porque ambas datas estão à 00:00 local;
+  // arredondamos para neutralizar variação de DST (±1h).
+  return Math.round((b.getTime() - a.getTime()) / 86_400_000);
+}
 
 export function getCurrentWeekFromDate(start: Date = PROTOCOL_START_DATE, now: Date = new Date()): number {
-  const diffDays = Math.floor((now.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+  const diffDays = diffLocalDays(start, now);
   const week = Math.floor(diffDays / 7) + 1;
   return Math.min(Math.max(week, 1), 16);
 }
@@ -64,10 +74,12 @@ export function nextDeloadInDays(currentWeek: number, start: Date = PROTOCOL_STA
   const deloadWeeks = [5, 10, 15];
   const next = deloadWeeks.find((w) => w > currentWeek);
   if (!next) return null;
-  const targetStart = new Date(start.getTime() + (next - 1) * 7 * 24 * 60 * 60 * 1000);
-  const diff = Math.ceil((targetStart.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+  // Início da semana de deload no calendário local
+  const targetStart = new Date(start.getFullYear(), start.getMonth(), start.getDate() + (next - 1) * 7);
+  const diff = diffLocalDays(now, targetStart);
   return Math.max(diff, 0);
 }
+
 
 // Aplica progressão dinâmica em uma estrutura de exercício original
 export interface ExerciseStructure {
