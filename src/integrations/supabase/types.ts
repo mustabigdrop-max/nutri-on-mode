@@ -7136,6 +7136,56 @@ export type Database = {
           },
         ]
       }
+      workout_logs: {
+        Row: {
+          athlete_id: string
+          created_at: string
+          day_number: number
+          exercise_name: string
+          id: string
+          logged_at: string
+          notes: string | null
+          protocol_id: string | null
+          rpe_felt: number | null
+          top_set_kg: number | null
+          week_number: number
+        }
+        Insert: {
+          athlete_id: string
+          created_at?: string
+          day_number: number
+          exercise_name: string
+          id?: string
+          logged_at?: string
+          notes?: string | null
+          protocol_id?: string | null
+          rpe_felt?: number | null
+          top_set_kg?: number | null
+          week_number: number
+        }
+        Update: {
+          athlete_id?: string
+          created_at?: string
+          day_number?: number
+          exercise_name?: string
+          id?: string
+          logged_at?: string
+          notes?: string | null
+          protocol_id?: string | null
+          rpe_felt?: number | null
+          top_set_kg?: number | null
+          week_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workout_logs_protocol_id_fkey"
+            columns: ["protocol_id"]
+            isOneToOne: false
+            referencedRelation: "training_protocols"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       workout_schedule: {
         Row: {
           created_at: string | null
