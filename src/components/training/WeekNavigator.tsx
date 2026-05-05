@@ -13,15 +13,24 @@ import {
 const FONT = "'Space Grotesk', sans-serif";
 const STORAGE_KEY = "trainingon:mello16:selectedWeek";
 
+export interface WeekSummary {
+  count: number;
+  avgTop: number | null;
+  avgRpe: number | null;
+}
+
 interface Props {
   protocolKey?: string; // identifica o protocolo (default: mello-bulking-16)
   onWeekChange: (week: WeekPhase) => void;
+  initialWeek?: number; // sobrescreve localStorage se fornecido
+  weekSummaries?: Record<number, WeekSummary>;
 }
 
-export default function WeekNavigator({ protocolKey = "mello-bulking-16", onWeekChange }: Props) {
+export default function WeekNavigator({ protocolKey = "mello-bulking-16", onWeekChange, initialWeek, weekSummaries }: Props) {
   const storageKey = `${STORAGE_KEY}:${protocolKey}`;
   const currentRealWeek = useMemo(() => getCurrentWeekFromDate(), []);
   const [selected, setSelected] = useState<number>(() => {
+    if (initialWeek && initialWeek >= 1 && initialWeek <= 16) return initialWeek;
     try {
       const raw = localStorage.getItem(storageKey);
       const n = raw ? parseInt(raw, 10) : NaN;
@@ -35,6 +44,9 @@ export default function WeekNavigator({ protocolKey = "mello-bulking-16", onWeek
     const wp = WEEK_PLAN[selected - 1];
     if (wp) onWeekChange(wp);
   }, [selected, storageKey, onWeekChange]);
+
+  const summaryFor = (w: number) => weekSummaries?.[w];
+  const currentSummary = summaryFor(selected);
 
   const wp = WEEK_PLAN[selected - 1];
   const deloadIn = nextDeloadInDays(currentRealWeek);
