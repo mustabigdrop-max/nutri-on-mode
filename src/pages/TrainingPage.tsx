@@ -196,6 +196,11 @@ function EliteGenerateSection({ userId }: { userId?: string }) {
   const [activeResultTab, setActiveResultTab] = useState<string>("overview");
   const [expandedDay, setExpandedDay] = useState<number | null>(0);
   const [expandedExercise, setExpandedExercise] = useState<string | null>(null);
+  const [weekPhase, setWeekPhase] = useState<WeekPhase>(WEEK_PLAN[0]);
+  const [savedProtocolId, setSavedProtocolId] = useState<string | null>(null);
+
+  // Detecta se o protocolo é o "Mello — Bulking 16 semanas" (16 semanas + bulking)
+  const isMello16 = String(weeks) === "16" && (phase || "").toLowerCase().includes("bulk");
 
   // Sync sources: STRATUM Ready + Fibras IA
   const [readyCheckin, setReadyCheckin] = useState<{
