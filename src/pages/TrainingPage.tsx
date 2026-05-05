@@ -2036,6 +2036,49 @@ function HistoryViewModal({ protocol: p, onClose, userId, onUpdate }: { protocol
     parsed = typeof p.protocol_text === "string" ? JSON.parse(p.protocol_text) : p.protocol_text;
   } catch { parsed = null; }
 
+  // ── Mello 16 wk navigator (apenas se 16 semanas + bulking) ──
+  const isMello16 = String(p.weeks) === "16" && String(p.phase || "").toLowerCase().includes("bulk");
+  const initialWeek = (typeof p.last_viewed_week === "number" && p.last_viewed_week >= 1 && p.last_viewed_week <= 16) ? p.last_viewed_week : undefined;
+  const [weekPhase, setWeekPhase] = useState<WeekPhase>(WEEK_PLAN[(initialWeek ?? 1) - 1]);
+  const [weekSummaries, setWeekSummaries] = useState<Record<number, { count: number; avgTop: number | null; avgRpe: number | null }>>({});
+
+  // Carrega resumos por semana (workout_logs) para exibir badges "Concluída"
+  useEffect(() => {
+    if (!isMello16 || !p.id) return;
+    (async () => {
+      const { data } = await (supabase.from as any)("workout_logs")
+        .select("week_number, top_set_kg, rpe_felt")
+        .eq("protocol_id", p.id);
+      if (!data) return;
+      const map: Record<number, { count: number; sumTop: number; sumRpe: number; nTop: number; nRpe: number }> = {};
+      for (const r of data as any[]) {
+        const w = Number(r.week_number);
+        if (!w) continue;
+        if (!map[w]) map[w] = { count: 0, sumTop: 0, sumRpe: 0, nTop: 0, nRpe: 0 };
+        map[w].count++;
+        if (typeof r.top_set_kg === "number") { map[w].sumTop += r.top_set_kg; map[w].nTop++; }
+        if (typeof r.rpe_felt === "number") { map[w].sumRpe += r.rpe_felt; map[w].nRpe++; }
+      }
+      const summary: Record<number, { count: number; avgTop: number | null; avgRpe: number | null }> = {};
+      Object.entries(map).forEach(([w, v]) => {
+        summary[Number(w)] = {
+          count: v.count,
+          avgTop: v.nTop ? v.sumTop / v.nTop : null,
+          avgRpe: v.nRpe ? v.sumRpe / v.nRpe : null,
+        };
+      });
+      setWeekSummaries(summary);
+    })();
+  }, [isMello16, p.id]);
+
+  // Persiste última semana visualizada
+  const handleWeekChange = useCallback((wp: WeekPhase) => {
+    setWeekPhase(wp);
+    if (isMello16 && p.id) {
+      (supabase.from("training_protocols") as any).update({ last_viewed_week: wp.week }).eq("id", p.id).then(() => {});
+    }
+  }, [isMello16, p.id]);
+
   const updateProtocol = async () => {
     const { error } = await supabase.from("training_protocols").update({ client_name: editName }).eq("id", p.id);
     if (error) toast.error("Erro ao atualizar");
@@ -2111,6 +2154,9 @@ function HistoryViewModal({ protocol: p, onClose, userId, onUpdate }: { protocol
               )}
               <p className="text-[10px]" style={{ color: TEXT_MUTED }}>
                 {PHASES.find((ph: any) => ph.id === p.phase)?.name || p.phase} · {p.weeks} sem · {new Date(p.created_at).toLocaleDateString("pt-BR")}
+                {isMello16 && (
+                  <> · <span style={{ color: weekPhase.color, fontWeight: 700 }}>Semana {weekPhase.week} de 16 — {weekPhase.label}</span></>
+                )}
               </p>
             </div>
             <button onClick={onClose} className="text-[10px] px-2 py-1 rounded-lg" style={{ background: SURFACE2, color: TEXT_MUTED }}>✕</button>
@@ -2145,9 +2191,20 @@ function HistoryViewModal({ protocol: p, onClose, userId, onUpdate }: { protocol
           {parsed?.block_overview ? (
             <>
               <BlockOverviewCard overview={parsed.block_overview} alerts={parsed.improvement_alerts} clientName={p.client_name} />
+              {isMello16 && (
+                <WeekNavigator
+                  protocolKey={`history-${p.id}`}
+                  initialWeek={initialWeek}
+                  weekSummaries={weekSummaries}
+                  onWeekChange={handleWeekChange}
+                />
+              )}
               {parsed.training_days?.map((day: any, idx: number) => (
                 <TrainingDayCard key={idx} day={day} index={idx} expanded={expandedDay === idx} onToggle={() => setExpandedDay(expandedDay === idx ? null : idx)}
-                  expandedExercise={expandedExercise} setExpandedExercise={setExpandedExercise} />
+                  expandedExercise={expandedExercise} setExpandedExercise={setExpandedExercise}
+                  weekPhase={isMello16 ? weekPhase : null}
+                  athleteId={userId}
+                  protocolId={p.id} />
               ))}
             </>
           ) : p.protocol_text ? (

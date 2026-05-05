@@ -6555,6 +6555,7 @@ export type Database = {
           equipment: string | null
           id: string
           injuries: string | null
+          last_viewed_week: number | null
           level: string | null
           muscles: string[] | null
           patient_user_id: string | null
@@ -6575,6 +6576,7 @@ export type Database = {
           equipment?: string | null
           id?: string
           injuries?: string | null
+          last_viewed_week?: number | null
           level?: string | null
           muscles?: string[] | null
           patient_user_id?: string | null
@@ -6595,6 +6597,7 @@ export type Database = {
           equipment?: string | null
           id?: string
           injuries?: string | null
+          last_viewed_week?: number | null
           level?: string | null
           muscles?: string[] | null
           patient_user_id?: string | null
