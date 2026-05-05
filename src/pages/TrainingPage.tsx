@@ -1557,6 +1557,34 @@ function ExerciseCard({
                 </div>
               )}
 
+              {/* Chip da semana atual */}
+              {weekPhase && (
+                <div className="flex items-center gap-1.5 mt-1">
+                  <span
+                    className="text-[8px] px-2 py-0.5 rounded-full font-bold"
+                    style={{ background: weekPhase.bg, color: weekPhase.color, border: `1px solid ${weekPhase.color}40` }}
+                  >
+                    SEMANA {weekPhase.week} — {weekPhase.phase}
+                  </span>
+                  {weekPhase.isDeload && (
+                    <span className="text-[9px]" style={{ color: TEXT_MUTED }}>
+                      Foco em técnica e mobilidade · sem falha
+                    </span>
+                  )}
+                </div>
+              )}
+
+              {/* Registro de carga */}
+              {weekPhase && athleteId && (
+                <ExerciseLogPanel
+                  athleteId={athleteId}
+                  protocolId={protocolId || null}
+                  exerciseName={safeExerciseName}
+                  weekNumber={weekPhase.week}
+                  dayNumber={dayNumber || 1}
+                />
+              )}
+
               {/* Execution Cues */}
               {safeExecutionCues && (
                 <div className="rounded-lg p-2.5 mt-1" style={{ background: "rgba(74,222,128,0.04)" }}>
