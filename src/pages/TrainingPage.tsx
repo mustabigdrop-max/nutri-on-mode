@@ -1361,12 +1361,29 @@ const joinDefinedParts = (parts: Array<string | false | null | undefined>, separ
   parts.filter(Boolean).join(separator)
 );
 
-function ExerciseCard({ exercise, expanded, onToggle }: { exercise: any; expanded: boolean; onToggle: () => void }) {
+function ExerciseCard({
+  exercise,
+  expanded,
+  onToggle,
+  weekPhase,
+  athleteId,
+  protocolId,
+  dayNumber,
+}: {
+  exercise: any;
+  expanded: boolean;
+  onToggle: () => void;
+  weekPhase?: WeekPhase | null;
+  athleteId?: string | null;
+  protocolId?: string | null;
+  dayNumber?: number;
+}) {
   const [showSubs, setShowSubs] = useState(false);
   const [currentExercise, setCurrentExercise] = useState(exercise);
   const [swapHistory, setSwapHistory] = useState<string[]>([]);
 
-  const struct = currentExercise.structure || {};
+  const baseStruct = currentExercise.structure || {};
+  const struct = weekPhase ? applyWeekProgression(baseStruct, weekPhase) : baseStruct;
   const hasTopSet = !!struct.top_set;
   const safeExerciseName = sanitizeRenderedText(currentExercise.name, "Exercício prescrito");
   const safeMuscleTarget = sanitizeRenderedText(currentExercise.muscle_target, "Alvo muscular ajustado");
