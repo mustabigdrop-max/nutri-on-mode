@@ -2191,9 +2191,20 @@ function HistoryViewModal({ protocol: p, onClose, userId, onUpdate }: { protocol
           {parsed?.block_overview ? (
             <>
               <BlockOverviewCard overview={parsed.block_overview} alerts={parsed.improvement_alerts} clientName={p.client_name} />
+              {isMello16 && (
+                <WeekNavigator
+                  protocolKey={`history-${p.id}`}
+                  initialWeek={initialWeek}
+                  weekSummaries={weekSummaries}
+                  onWeekChange={handleWeekChange}
+                />
+              )}
               {parsed.training_days?.map((day: any, idx: number) => (
                 <TrainingDayCard key={idx} day={day} index={idx} expanded={expandedDay === idx} onToggle={() => setExpandedDay(expandedDay === idx ? null : idx)}
-                  expandedExercise={expandedExercise} setExpandedExercise={setExpandedExercise} />
+                  expandedExercise={expandedExercise} setExpandedExercise={setExpandedExercise}
+                  weekPhase={isMello16 ? weekPhase : null}
+                  athleteId={userId}
+                  protocolId={p.id} />
               ))}
             </>
           ) : p.protocol_text ? (
