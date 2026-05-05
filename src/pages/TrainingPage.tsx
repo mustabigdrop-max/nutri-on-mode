@@ -24,6 +24,9 @@ import BottomNav from "@/components/BottomNav";
 import StratumModule from "@/components/training/StratumModule";
 import StratumProtocolHub from "@/components/training/StratumProtocolHub";
 import TrainingOnFibrasChat from "@/components/training/TrainingOnFibrasChat";
+import WeekNavigator from "@/components/training/WeekNavigator";
+import ExerciseLogPanel from "@/components/training/ExerciseLogPanel";
+import { applyWeekProgression, WEEK_PLAN, WeekPhase } from "@/lib/weekProgression";
 import {
   PHASES, MUSCLES, LEVELS, WEEKS_OPTIONS, DAYS_OPTIONS,
   SESSION_DURATIONS, CARDIO_OPTIONS, STRESS_OPTIONS, EQUIPMENT_OPTIONS,
@@ -193,6 +196,11 @@ function EliteGenerateSection({ userId }: { userId?: string }) {
   const [activeResultTab, setActiveResultTab] = useState<string>("overview");
   const [expandedDay, setExpandedDay] = useState<number | null>(0);
   const [expandedExercise, setExpandedExercise] = useState<string | null>(null);
+  const [weekPhase, setWeekPhase] = useState<WeekPhase>(WEEK_PLAN[0]);
+  const [savedProtocolId, setSavedProtocolId] = useState<string | null>(null);
+
+  // Detecta se o protocolo é o "Mello — Bulking 16 semanas" (16 semanas + bulking)
+  const isMello16 = String(weeks) === "16" && (phase || "").toLowerCase().includes("bulk");
 
   // Sync sources: STRATUM Ready + Fibras IA
   const [readyCheckin, setReadyCheckin] = useState<{
@@ -403,6 +411,7 @@ Português. Específico. Científico. Zero genérico.`;
       patient_user_id: patientId || null,
     }).select("id").single();
     if (error) { toast.error("Erro ao salvar"); setShowSaveModal(false); return; }
+    if (inserted?.id) setSavedProtocolId(inserted.id);
 
     // Se enviou para um aluno, dispara notificação
     if (patientId && inserted?.id) {
@@ -834,9 +843,22 @@ Português. Específico. Científico. Zero genérico.`;
             {/* ── Training Days Tab ── */}
             {activeResultTab === "treino" && protocol?.training_days && (
               <div className="space-y-3">
+                {isMello16 && (
+                  <WeekNavigator onWeekChange={setWeekPhase} />
+                )}
                 {protocol.training_days.map((day: any, idx: number) => (
-                  <TrainingDayCard key={idx} day={day} index={idx} expanded={expandedDay === idx} onToggle={() => setExpandedDay(expandedDay === idx ? null : idx)}
-                    expandedExercise={expandedExercise} setExpandedExercise={setExpandedExercise} />
+                  <TrainingDayCard
+                    key={idx}
+                    day={day}
+                    index={idx}
+                    expanded={expandedDay === idx}
+                    onToggle={() => setExpandedDay(expandedDay === idx ? null : idx)}
+                    expandedExercise={expandedExercise}
+                    setExpandedExercise={setExpandedExercise}
+                    weekPhase={isMello16 ? weekPhase : null}
+                    athleteId={userId}
+                    protocolId={savedProtocolId}
+                  />
                 ))}
               </div>
             )}
@@ -1233,7 +1255,7 @@ function BlockOverviewCard({ overview, alerts, clientName }: { overview: any; al
 }
 
 /* ── Training Day Card ── */
-function TrainingDayCard({ day, index, expanded, onToggle, expandedExercise, setExpandedExercise }: any) {
+function TrainingDayCard({ day, index, expanded, onToggle, expandedExercise, setExpandedExercise, weekPhase, athleteId, protocolId }: any) {
   return (
     <div className="rounded-2xl overflow-hidden" style={{ background: SURFACE, border: `1px solid ${expanded ? BORDER_ACTIVE : BORDER}` }}>
       <button onClick={onToggle} className="w-full p-4 flex items-center justify-between">
@@ -1279,8 +1301,16 @@ function TrainingDayCard({ day, index, expanded, onToggle, expandedExercise, set
 
               {/* Exercises */}
               {day.exercises?.map((ex: any, i: number) => (
-                <ExerciseCard key={i} exercise={ex} expanded={expandedExercise === `${index}-${i}`}
-                  onToggle={() => setExpandedExercise(expandedExercise === `${index}-${i}` ? null : `${index}-${i}`)} />
+                <ExerciseCard
+                  key={i}
+                  exercise={ex}
+                  expanded={expandedExercise === `${index}-${i}`}
+                  onToggle={() => setExpandedExercise(expandedExercise === `${index}-${i}` ? null : `${index}-${i}`)}
+                  weekPhase={weekPhase}
+                  athleteId={athleteId}
+                  protocolId={protocolId}
+                  dayNumber={day.day_number || index + 1}
+                />
               ))}
 
               {/* Session Notes */}
@@ -1331,12 +1361,29 @@ const joinDefinedParts = (parts: Array<string | false | null | undefined>, separ
   parts.filter(Boolean).join(separator)
 );
 
-function ExerciseCard({ exercise, expanded, onToggle }: { exercise: any; expanded: boolean; onToggle: () => void }) {
+function ExerciseCard({
+  exercise,
+  expanded,
+  onToggle,
+  weekPhase,
+  athleteId,
+  protocolId,
+  dayNumber,
+}: {
+  exercise: any;
+  expanded: boolean;
+  onToggle: () => void;
+  weekPhase?: WeekPhase | null;
+  athleteId?: string | null;
+  protocolId?: string | null;
+  dayNumber?: number;
+}) {
   const [showSubs, setShowSubs] = useState(false);
   const [currentExercise, setCurrentExercise] = useState(exercise);
   const [swapHistory, setSwapHistory] = useState<string[]>([]);
 
-  const struct = currentExercise.structure || {};
+  const baseStruct = currentExercise.structure || {};
+  const struct = weekPhase ? applyWeekProgression(baseStruct, weekPhase) : baseStruct;
   const hasTopSet = !!struct.top_set;
   const safeExerciseName = sanitizeRenderedText(currentExercise.name, "Exercício prescrito");
   const safeMuscleTarget = sanitizeRenderedText(currentExercise.muscle_target, "Alvo muscular ajustado");
@@ -1508,6 +1555,34 @@ function ExerciseCard({ exercise, expanded, onToggle }: { exercise: any; expande
                     rest={struct.work_sets.rest}
                   />
                 </div>
+              )}
+
+              {/* Chip da semana atual */}
+              {weekPhase && (
+                <div className="flex items-center gap-1.5 mt-1">
+                  <span
+                    className="text-[8px] px-2 py-0.5 rounded-full font-bold"
+                    style={{ background: weekPhase.bg, color: weekPhase.color, border: `1px solid ${weekPhase.color}40` }}
+                  >
+                    SEMANA {weekPhase.week} — {weekPhase.phase}
+                  </span>
+                  {weekPhase.isDeload && (
+                    <span className="text-[9px]" style={{ color: TEXT_MUTED }}>
+                      Foco em técnica e mobilidade · sem falha
+                    </span>
+                  )}
+                </div>
+              )}
+
+              {/* Registro de carga */}
+              {weekPhase && athleteId && (
+                <ExerciseLogPanel
+                  athleteId={athleteId}
+                  protocolId={protocolId || null}
+                  exerciseName={safeExerciseName}
+                  weekNumber={weekPhase.week}
+                  dayNumber={dayNumber || 1}
+                />
               )}
 
               {/* Execution Cues */}
