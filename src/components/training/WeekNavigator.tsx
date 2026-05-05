@@ -117,13 +117,25 @@ export default function WeekNavigator({ protocolKey = "mello-bulking-16", onWeek
             fontFamily: FONT,
           }}
         >
-          {WEEK_PLAN.map((w) => (
-            <option key={w.week} value={w.week}>
-              Sem {w.week} — {w.label}
-            </option>
-          ))}
+          {WEEK_PLAN.map((w) => {
+            const s = summaryFor(w.week);
+            return (
+              <option key={w.week} value={w.week}>
+                Sem {w.week} — {w.label}{s ? " ✓" : ""}
+              </option>
+            );
+          })}
         </select>
       </div>
+
+      {currentSummary && (
+        <div
+          className="mb-2 text-[10px] px-2 py-1 rounded-md inline-block"
+          style={{ background: "rgba(74,222,128,0.08)", color: "#4ade80", border: "1px solid rgba(74,222,128,0.2)" }}
+        >
+          ✓ Concluída · Top Set médio: {currentSummary.avgTop?.toFixed(1) ?? "—"}kg · RPE médio: {currentSummary.avgRpe?.toFixed(1) ?? "—"}
+        </div>
+      )}
 
       {/* Barra de progresso por mesociclo */}
       <div className="relative">
