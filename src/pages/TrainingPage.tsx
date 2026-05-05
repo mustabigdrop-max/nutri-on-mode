@@ -1301,8 +1301,16 @@ function TrainingDayCard({ day, index, expanded, onToggle, expandedExercise, set
 
               {/* Exercises */}
               {day.exercises?.map((ex: any, i: number) => (
-                <ExerciseCard key={i} exercise={ex} expanded={expandedExercise === `${index}-${i}`}
-                  onToggle={() => setExpandedExercise(expandedExercise === `${index}-${i}` ? null : `${index}-${i}`)} />
+                <ExerciseCard
+                  key={i}
+                  exercise={ex}
+                  expanded={expandedExercise === `${index}-${i}`}
+                  onToggle={() => setExpandedExercise(expandedExercise === `${index}-${i}` ? null : `${index}-${i}`)}
+                  weekPhase={weekPhase}
+                  athleteId={athleteId}
+                  protocolId={protocolId}
+                  dayNumber={day.day_number || index + 1}
+                />
               ))}
 
               {/* Session Notes */}
