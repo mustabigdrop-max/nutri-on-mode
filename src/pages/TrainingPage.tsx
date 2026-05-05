@@ -1255,7 +1255,7 @@ function BlockOverviewCard({ overview, alerts, clientName }: { overview: any; al
 }
 
 /* ── Training Day Card ── */
-function TrainingDayCard({ day, index, expanded, onToggle, expandedExercise, setExpandedExercise }: any) {
+function TrainingDayCard({ day, index, expanded, onToggle, expandedExercise, setExpandedExercise, weekPhase, athleteId, protocolId }: any) {
   return (
     <div className="rounded-2xl overflow-hidden" style={{ background: SURFACE, border: `1px solid ${expanded ? BORDER_ACTIVE : BORDER}` }}>
       <button onClick={onToggle} className="w-full p-4 flex items-center justify-between">
