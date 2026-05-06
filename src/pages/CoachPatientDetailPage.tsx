@@ -12,6 +12,7 @@ import { ArrowLeft, Send, Check, Brain, FileText, AlertTriangle, MessageSquare, 
 import { toast } from "@/hooks/use-toast";
 import CoachAccessManager from "@/components/acompanhado/CoachAccessManager";
 import CoachCompetitionWizard from "@/components/coach/CoachCompetitionWizard";
+import CoachWeekMealGrid from "@/components/coach/CoachWeekMealGrid";
 
 const MEAL_TYPES = [
   { key: "cafe_manha", label: "☕ Café" },
