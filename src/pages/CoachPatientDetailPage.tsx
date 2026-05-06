@@ -207,6 +207,88 @@ const CoachPatientDetailPage = () => {
     setGenerating(false);
   };
 
+  const startEdit = (item: PlanItem) => {
+    setEditingId(item.id);
+    setDraft({
+      food_name: item.food_name,
+      portion: item.portion,
+      kcal: item.kcal,
+      protein_g: item.protein_g,
+      carbs_g: item.carbs_g,
+      fat_g: item.fat_g,
+      coach_note: item.coach_note ?? "",
+    });
+  };
+
+  const saveEdit = async (id: string) => {
+    const payload: any = {
+      food_name: draft.food_name,
+      portion: draft.portion,
+      kcal: Number(draft.kcal) || 0,
+      protein_g: Number(draft.protein_g) || 0,
+      carbs_g: Number(draft.carbs_g) || 0,
+      fat_g: Number(draft.fat_g) || 0,
+      coach_note: draft.coach_note || null,
+      coach_edited: true,
+    };
+    const { error } = await supabase.from("meal_plan_items").update(payload).eq("id", id);
+    if (error) {
+      toast({ title: "Erro ao salvar", description: error.message, variant: "destructive" });
+      return;
+    }
+    setEditingId(null);
+    setDraft({});
+    await fetchMealPlan();
+    toast({ title: "Item atualizado ✏️" });
+  };
+
+  const removeItem = async (id: string) => {
+    const { error } = await supabase.from("meal_plan_items").delete().eq("id", id);
+    if (error) {
+      toast({ title: "Erro ao remover", description: error.message, variant: "destructive" });
+      return;
+    }
+    await fetchMealPlan();
+  };
+
+  const addItem = async (mealType: string) => {
+    if (!patientId) return;
+    const { error } = await supabase.from("meal_plan_items").insert({
+      user_id: patientId,
+      week_start: weekStart,
+      day_index: selectedDay,
+      meal_type: mealType,
+      food_name: "Novo alimento",
+      portion: "100g",
+      kcal: 0,
+      protein_g: 0,
+      carbs_g: 0,
+      fat_g: 0,
+      coach_edited: true,
+    } as any);
+    if (error) {
+      toast({ title: "Erro ao adicionar", description: error.message, variant: "destructive" });
+      return;
+    }
+    await fetchMealPlan();
+  };
+
+  const saveAndNotify = async () => {
+    if (!profile || !patientId) return;
+    setSavingNotify(true);
+    const { error } = await supabase.from("coach_messages").insert({
+      coach_id: profile.id,
+      patient_user_id: patientId,
+      sender: "coach",
+      message: "Seu plano da semana foi atualizado. Confira as novidades! 🍽️",
+    });
+    setSavingNotify(false);
+    if (error) {
+      toast({ title: "Erro ao notificar", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: "Paciente notificado ✅" });
+  };
   const sendMessage = async () => {
     if (!newMessage.trim() || !profile || !patientId) return;
     setSending(true);
