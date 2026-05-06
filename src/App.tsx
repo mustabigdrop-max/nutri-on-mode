@@ -102,6 +102,7 @@ import VideoFormPage from "./pages/VideoFormPage";
 import MeusProtocolosPage from "./pages/MeusProtocolosPage";
 import ErgoVaultPage from "./pages/ErgoVaultPage";
 import ErgoDiaryPage from "./pages/ErgoDiaryPage";
+import WeeklyCheckinPage from "./pages/WeeklyCheckinPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
