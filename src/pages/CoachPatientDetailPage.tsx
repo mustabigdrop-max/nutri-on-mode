@@ -652,6 +652,11 @@ const CoachPatientDetailPage = () => {
             )}
           </TabsContent>
 
+          {/* CHECK-INS */}
+          <TabsContent value="checkins" className="space-y-4">
+            {patientId && <CoachCheckinsTab patientId={patientId} />}
+          </TabsContent>
+
           {/* ACCESS MANAGEMENT */}
           <TabsContent value="access" className="space-y-4">
             {profile && patientId && (
