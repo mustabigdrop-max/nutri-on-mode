@@ -14,6 +14,7 @@ import CoachAccessManager from "@/components/acompanhado/CoachAccessManager";
 import CoachCompetitionWizard from "@/components/coach/CoachCompetitionWizard";
 import CoachWeekMealGrid from "@/components/coach/CoachWeekMealGrid";
 import CoachCheckinsTab from "@/components/coach/CoachCheckinsTab";
+import ProtocolGanttChart from "@/components/coach/ProtocolGanttChart";
 
 const MEAL_TYPES = [
   { key: "cafe_manha", label: "☕ Café" },
