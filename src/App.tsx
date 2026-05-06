@@ -49,6 +49,7 @@ import MentalPerformancePage from "./pages/MentalPerformancePage";
 import CoachLandingPage from "./pages/CoachLandingPage";
 import CoachOnboardingPage from "./pages/CoachOnboardingPage";
 import CoachDashboardPage from "./pages/CoachDashboardPage";
+import CoachTemplatesPage from "./pages/CoachTemplatesPage";
 import CoachPatientDetailPage from "./pages/CoachPatientDetailPage";
 import CoachAddPatientPage from "./pages/CoachAddPatientPage";
 import CoachSettingsPage from "./pages/CoachSettingsPage";
