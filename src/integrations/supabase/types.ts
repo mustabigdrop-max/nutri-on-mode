@@ -4280,6 +4280,8 @@ export type Database = {
       meal_plan_items: {
         Row: {
           carbs_g: number | null
+          coach_edited: boolean | null
+          coach_note: string | null
           confirmed: boolean | null
           created_at: string
           day_index: number
@@ -4297,6 +4299,8 @@ export type Database = {
         }
         Insert: {
           carbs_g?: number | null
+          coach_edited?: boolean | null
+          coach_note?: string | null
           confirmed?: boolean | null
           created_at?: string
           day_index: number
@@ -4314,6 +4318,8 @@ export type Database = {
         }
         Update: {
           carbs_g?: number | null
+          coach_edited?: boolean | null
+          coach_note?: string | null
           confirmed?: boolean | null
           created_at?: string
           day_index?: number
