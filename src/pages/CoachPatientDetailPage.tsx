@@ -643,6 +643,13 @@ const CoachPatientDetailPage = () => {
             )}
           </TabsContent>
 
+          {/* GRADE SEMANAL (7 dias x refeições) */}
+          <TabsContent value="grade" className="space-y-4">
+            {patientId && (
+              <CoachWeekMealGrid patientId={patientId} patient={patient} />
+            )}
+          </TabsContent>
+
           {/* ACCESS MANAGEMENT */}
           <TabsContent value="access" className="space-y-4">
             {profile && patientId && (
