@@ -610,29 +610,59 @@ const MealPlanPage = () => {
           </button>
         </div>
 
+        {/* Legend */}
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] text-muted-foreground bg-card/60 border border-border rounded-lg px-3 py-1.5 mb-3">
+          <span>⚡ Pré-treino</span>
+          <span>💪 Pós-treino</span>
+          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-primary inline-block" /> Treino</span>
+          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-muted-foreground/50 inline-block" /> Descanso</span>
+        </div>
+
         {/* Day tabs */}
         <div className="flex gap-1.5 mb-4 overflow-x-auto pb-1">
           {DAY_LABELS.map((label, i) => {
             const dayConfirmed = items.filter(it => it.day_index === i && it.confirmed).length;
             const dayTotal = items.filter(it => it.day_index === i).length;
             const isToday = i === selectedDay;
+            const info = trainingMap[i];
             return (
-              <button
+              <motion.button
                 key={i}
+                initial={{ opacity: 0, y: -6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.04 }}
                 onClick={() => setSelectedDay(i)}
-                className={`flex-1 min-w-[44px] py-2 rounded-xl text-center transition-all ${
+                className={`flex-1 min-w-[56px] py-2 rounded-xl text-center transition-all ${
                   isToday
                     ? "bg-primary text-primary-foreground"
                     : "bg-card border border-border text-muted-foreground hover:text-foreground"
                 }`}
               >
                 <span className="text-xs font-mono font-semibold block">{label}</span>
+                <span
+                  className={`mt-1 inline-flex items-center gap-0.5 px-1 py-0.5 rounded text-[8px] font-mono ${
+                    info?.isTraining
+                      ? isToday
+                        ? "bg-primary-foreground/20 text-primary-foreground"
+                        : "bg-primary/20 text-primary border border-primary/30"
+                      : isToday
+                        ? "bg-primary-foreground/10 text-primary-foreground/80"
+                        : "bg-muted/40 text-muted-foreground"
+                  }`}
+                >
+                  {info?.isTraining ? <><Dumbbell className="w-2 h-2" />TREINO</> : <><Bed className="w-2 h-2" />OFF</>}
+                </span>
+                {info?.isTraining && info.muscleGroup && (
+                  <span className={`block text-[7px] font-mono mt-0.5 truncate ${isToday ? "text-primary-foreground/70" : "text-primary/70"}`}>
+                    {info.muscleGroup}
+                  </span>
+                )}
                 {dayTotal > 0 && (
                   <span className={`text-[9px] font-mono block mt-0.5 ${isToday ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
                     {dayConfirmed}/{dayTotal}
                   </span>
                 )}
-              </button>
+              </motion.button>
             );
           })}
         </div>
