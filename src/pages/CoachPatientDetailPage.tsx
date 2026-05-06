@@ -12,6 +12,7 @@ import { ArrowLeft, Send, Check, Brain, FileText, AlertTriangle, MessageSquare, 
 import { toast } from "@/hooks/use-toast";
 import CoachAccessManager from "@/components/acompanhado/CoachAccessManager";
 import CoachCompetitionWizard from "@/components/coach/CoachCompetitionWizard";
+import CoachWeekMealGrid from "@/components/coach/CoachWeekMealGrid";
 
 const MEAL_TYPES = [
   { key: "cafe_manha", label: "☕ Café" },
@@ -349,9 +350,10 @@ const CoachPatientDetailPage = () => {
 
       <main className="max-w-5xl mx-auto p-4">
         <Tabs defaultValue="overview" className="space-y-4">
-          <TabsList className="w-full grid grid-cols-7">
+          <TabsList className="w-full grid grid-cols-8">
             <TabsTrigger value="overview" className="text-xs"><User className="w-3 h-3 mr-1" />Geral</TabsTrigger>
             <TabsTrigger value="mealplan" className="text-xs"><Utensils className="w-3 h-3 mr-1" />Plano</TabsTrigger>
+            <TabsTrigger value="grade" className="text-xs"><Utensils className="w-3 h-3 mr-1" />Grade</TabsTrigger>
             <TabsTrigger value="access" className="text-xs"><Shield className="w-3 h-3 mr-1" />Acesso</TabsTrigger>
             <TabsTrigger value="protocol" className="text-xs"><Brain className="w-3 h-3 mr-1" />Protocolo</TabsTrigger>
             <TabsTrigger value="exams" className="text-xs"><FileText className="w-3 h-3 mr-1" />Exames</TabsTrigger>
@@ -638,6 +640,13 @@ const CoachPatientDetailPage = () => {
                   })}
                 </div>
               </>
+            )}
+          </TabsContent>
+
+          {/* GRADE SEMANAL (7 dias x refeições) */}
+          <TabsContent value="grade" className="space-y-4">
+            {patientId && (
+              <CoachWeekMealGrid patientId={patientId} patient={patient} />
             )}
           </TabsContent>
 
