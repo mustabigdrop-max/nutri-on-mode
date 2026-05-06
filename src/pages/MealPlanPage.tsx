@@ -9,9 +9,10 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   ChevronLeft, ChevronRight, Check, RefreshCw, Utensils,
   BarChart3, Plus, MessageSquare, User, ArrowLeft, ShoppingCart,
-  Sparkles, Wallet, GripVertical, Send, X, Loader2
+  Sparkles, Wallet, GripVertical, Send, X, Loader2, Dumbbell, Bed
 } from "lucide-react";
 import { toast } from "sonner";
+import { buildTrainingDayMap, classifyMealVsWorkout, splitWeeklyAverages, type TrainingDayInfo } from "@/lib/trainingDayMap";
 import SubstitutionModal from "@/components/meal/SubstitutionModal";
 import type { SubOption } from "@/components/meal/substitutionDb";
 
@@ -138,6 +139,11 @@ const MealPlanPage = () => {
   const [budgetMode, setBudgetMode] = useState(false);
   const [dragItem, setDragItem] = useState<PlanItem | null>(null);
   const [subModalItem, setSubModalItem] = useState<PlanItem | null>(null);
+  const [trainingMap, setTrainingMap] = useState<Record<number, TrainingDayInfo>>(() => {
+    const m: Record<number, TrainingDayInfo> = {};
+    for (let d = 0; d < 7; d++) m[d] = { isTraining: false };
+    return m;
+  });
 
   // Send to client state
   const [showSendModal, setShowSendModal] = useState(false);
@@ -513,6 +519,17 @@ const MealPlanPage = () => {
     fetchPlan();
   }, [user, weekStart]);
 
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      const { data } = await supabase
+        .from("workout_schedule")
+        .select("day_of_week, workout_type, workout_time, duration_minutes, slot")
+        .eq("user_id", user.id);
+      setTrainingMap(buildTrainingDayMap(data as any));
+    })();
+  }, [user]);
+
   const dayItems = useMemo(() =>
     items.filter(i => i.day_index === selectedDay)
       .sort((a, b) => MEAL_TYPES.findIndex(m => m.key === a.meal_type) - MEAL_TYPES.findIndex(m => m.key === b.meal_type)),
@@ -527,6 +544,23 @@ const MealPlanPage = () => {
     confirmed: dayItems.filter(i => i.confirmed).length,
     total: dayItems.length,
   }), [dayItems]);
+
+  const weeklyTotals = useMemo(() => {
+    const t: Record<number, { kcal: number; p: number; c: number; g: number }> = {};
+    for (let d = 0; d < 7; d++) t[d] = { kcal: 0, p: 0, c: 0, g: 0 };
+    items.forEach(i => {
+      t[i.day_index].kcal += i.kcal || 0;
+      t[i.day_index].p += i.protein_g || 0;
+      t[i.day_index].c += i.carbs_g || 0;
+      t[i.day_index].g += i.fat_g || 0;
+    });
+    return t;
+  }, [items]);
+
+  const weeklySplit = useMemo(
+    () => splitWeeklyAverages(weeklyTotals, trainingMap),
+    [weeklyTotals, trainingMap]
+  );
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -576,29 +610,59 @@ const MealPlanPage = () => {
           </button>
         </div>
 
+        {/* Legend */}
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] text-muted-foreground bg-card/60 border border-border rounded-lg px-3 py-1.5 mb-3">
+          <span>⚡ Pré-treino</span>
+          <span>💪 Pós-treino</span>
+          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-primary inline-block" /> Treino</span>
+          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-muted-foreground/50 inline-block" /> Descanso</span>
+        </div>
+
         {/* Day tabs */}
         <div className="flex gap-1.5 mb-4 overflow-x-auto pb-1">
           {DAY_LABELS.map((label, i) => {
             const dayConfirmed = items.filter(it => it.day_index === i && it.confirmed).length;
             const dayTotal = items.filter(it => it.day_index === i).length;
             const isToday = i === selectedDay;
+            const info = trainingMap[i];
             return (
-              <button
+              <motion.button
                 key={i}
+                initial={{ opacity: 0, y: -6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.04 }}
                 onClick={() => setSelectedDay(i)}
-                className={`flex-1 min-w-[44px] py-2 rounded-xl text-center transition-all ${
+                className={`flex-1 min-w-[56px] py-2 rounded-xl text-center transition-all ${
                   isToday
                     ? "bg-primary text-primary-foreground"
                     : "bg-card border border-border text-muted-foreground hover:text-foreground"
                 }`}
               >
                 <span className="text-xs font-mono font-semibold block">{label}</span>
+                <span
+                  className={`mt-1 inline-flex items-center gap-0.5 px-1 py-0.5 rounded text-[8px] font-mono ${
+                    info?.isTraining
+                      ? isToday
+                        ? "bg-primary-foreground/20 text-primary-foreground"
+                        : "bg-primary/20 text-primary border border-primary/30"
+                      : isToday
+                        ? "bg-primary-foreground/10 text-primary-foreground/80"
+                        : "bg-muted/40 text-muted-foreground"
+                  }`}
+                >
+                  {info?.isTraining ? <><Dumbbell className="w-2 h-2" />TREINO</> : <><Bed className="w-2 h-2" />OFF</>}
+                </span>
+                {info?.isTraining && info.muscleGroup && (
+                  <span className={`block text-[7px] font-mono mt-0.5 truncate ${isToday ? "text-primary-foreground/70" : "text-primary/70"}`}>
+                    {info.muscleGroup}
+                  </span>
+                )}
                 {dayTotal > 0 && (
                   <span className={`text-[9px] font-mono block mt-0.5 ${isToday ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
                     {dayConfirmed}/{dayTotal}
                   </span>
                 )}
-              </button>
+              </motion.button>
             );
           })}
         </div>
@@ -669,6 +733,8 @@ const MealPlanPage = () => {
             <AnimatePresence mode="popLayout">
               {dayItems.map((item, i) => {
                 const mealLabel = MEAL_TYPES.find(m => m.key === item.meal_type)?.label || item.meal_type;
+                const dayInfo = trainingMap[item.day_index];
+                const tag = dayInfo?.isTraining ? classifyMealVsWorkout(item.meal_type, dayInfo.workoutTime) : null;
                 return (
                   <motion.div
                     key={item.id}
@@ -680,7 +746,9 @@ const MealPlanPage = () => {
                     onDragStart={() => handleDragStart(item)}
                     onDragOver={(e) => e.preventDefault()}
                     onDrop={() => handleDrop(item)}
-                    className={`rounded-xl border p-3 transition-all cursor-grab active:cursor-grabbing ${
+                    className={`relative rounded-xl border p-3 transition-all cursor-grab active:cursor-grabbing ${
+                      tag === "pre" ? "border-l-2 border-l-accent " : tag === "post" ? "border-l-2 border-l-primary " : ""
+                    }${
                       item.confirmed
                         ? "bg-primary/10 border-primary/20"
                         : dragItem?.id === item.id
@@ -688,6 +756,15 @@ const MealPlanPage = () => {
                         : "bg-card border-border"
                     }`}
                   >
+                    {tag && (
+                      <span
+                        className={`absolute top-1.5 right-2 text-[9px] font-mono px-1.5 py-0.5 rounded ${
+                          tag === "pre" ? "bg-accent/20 text-accent" : "bg-primary/20 text-primary"
+                        }`}
+                      >
+                        {tag === "pre" ? "Pré ⚡" : "Pós 💪"}
+                      </span>
+                    )}
                     <div className="flex items-start gap-2">
                       {/* Drag handle */}
                       <div className="mt-1.5 text-muted-foreground/40">
@@ -717,7 +794,7 @@ const MealPlanPage = () => {
                         <p className={`text-sm font-semibold truncate ${item.confirmed ? "text-primary" : "text-foreground"}`}>
                           {item.food_name}
                         </p>
-                        <p className="text-xs text-muted-foreground font-mono">
+                        <p className={`text-xs font-mono ${dayInfo?.isTraining ? "text-foreground font-bold" : "text-muted-foreground"}`}>
                           {item.portion} · {item.kcal}kcal · {item.protein_g}g prot
                         </p>
                       </div>
@@ -780,6 +857,40 @@ const MealPlanPage = () => {
                 <Send className="w-3.5 h-3.5" />
                 Enviar plano para cliente
               </button>
+            )}
+
+            {/* Weekly training vs rest summary */}
+            {(weeklySplit.training.count > 0 || weeklySplit.rest.count > 0) && (
+              <div className="rounded-xl border border-border bg-card p-3 mt-3">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-bold text-foreground">Médias semanais</span>
+                  {weeklySplit.training.count > 0 && weeklySplit.rest.count > 0 && (
+                    <span className={`text-[10px] font-mono ${weeklySplit.carbDeltaPct >= 0 ? "text-primary" : "text-accent"}`}>
+                      {weeklySplit.carbDeltaPct >= 0 ? "+" : ""}{weeklySplit.carbDeltaPct}% carbos no treino
+                    </span>
+                  )}
+                </div>
+                <div className="grid grid-cols-2 gap-2 text-[11px]">
+                  <div className="rounded-lg border border-primary/30 bg-primary/5 p-2">
+                    <div className="flex items-center gap-1 text-primary font-bold mb-1">
+                      <Dumbbell className="w-3 h-3" /> Treino ({weeklySplit.training.count}d)
+                    </div>
+                    <div className="text-foreground font-bold">{Math.round(weeklySplit.training.kcal)} kcal</div>
+                    <div className="text-muted-foreground font-mono">
+                      P{Math.round(weeklySplit.training.p)} · C{Math.round(weeklySplit.training.c)} · G{Math.round(weeklySplit.training.g)}
+                    </div>
+                  </div>
+                  <div className="rounded-lg border border-border bg-muted/20 p-2">
+                    <div className="flex items-center gap-1 text-muted-foreground font-bold mb-1">
+                      <Bed className="w-3 h-3" /> Descanso ({weeklySplit.rest.count}d)
+                    </div>
+                    <div className="text-foreground">{Math.round(weeklySplit.rest.kcal)} kcal</div>
+                    <div className="text-muted-foreground font-mono">
+                      P{Math.round(weeklySplit.rest.p)} · C{Math.round(weeklySplit.rest.c)} · G{Math.round(weeklySplit.rest.g)}
+                    </div>
+                  </div>
+                </div>
+              </div>
             )}
           </div>
         )}

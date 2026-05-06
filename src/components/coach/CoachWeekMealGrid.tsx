@@ -8,8 +8,9 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Save, Sparkles, Loader2, Search, ChevronLeft, ChevronRight } from "lucide-react";
+import { Save, Sparkles, Loader2, Search, ChevronLeft, ChevronRight, Dumbbell, Bed } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { buildTrainingDayMap, classifyMealVsWorkout, splitWeeklyAverages, type TrainingDayInfo } from "@/lib/trainingDayMap";
 
 const MEAL_TYPES = [
   { key: "cafe_manha", label: "☕ Café" },
@@ -65,6 +66,11 @@ export default function CoachWeekMealGrid({ patientId, patient }: Props) {
   const { foods } = useFoods();
   const [weekStart, setWeekStart] = useState(getWeekStart(new Date()));
   const [items, setItems] = useState<PlanItem[]>([]);
+  const [trainingMap, setTrainingMap] = useState<Record<number, TrainingDayInfo>>(() => {
+    const m: Record<number, TrainingDayInfo> = {};
+    for (let d = 0; d < 7; d++) m[d] = { isTraining: false };
+    return m;
+  });
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [aiOpen, setAiOpen] = useState(false);
@@ -105,6 +111,13 @@ export default function CoachWeekMealGrid({ patientId, patient }: Props) {
 
   useEffect(() => {
     fetchItems();
+    (async () => {
+      const { data } = await supabase
+        .from("workout_schedule")
+        .select("day_of_week, workout_type, workout_time, duration_minutes, slot")
+        .eq("user_id", patientId);
+      setTrainingMap(buildTrainingDayMap(data as any));
+    })();
   }, [patientId, weekStart]);
 
   const getCell = (day: number, meal: string) =>
@@ -267,54 +280,140 @@ export default function CoachWeekMealGrid({ patientId, patient }: Props) {
           <Loader2 className="w-6 h-6 animate-spin text-primary" />
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-border bg-card">
-          <table className="w-full text-xs min-w-[900px]">
-            <thead>
-              <tr className="bg-muted/40">
-                <th className="p-2 text-left font-bold text-foreground sticky left-0 bg-muted/40 z-10">Refeição</th>
-                {DAY_LABELS.map((d, i) => (
-                  <th key={i} className="p-2 text-center font-bold text-foreground border-l border-border">
-                    {d}
-                  </th>
-                ))}
-              </tr>
-              <tr className="bg-amber-500/5 border-t border-border">
-                <th className="p-1 text-left text-[10px] text-muted-foreground sticky left-0 bg-amber-500/5 z-10">
-                  Totais
-                </th>
-                {DAY_LABELS.map((_, i) => (
-                  <th key={i} className="p-1 text-center text-[10px] border-l border-border">
-                    <div className="text-amber-400 font-bold">{Math.round(dayTotals[i].kcal)}kcal</div>
-                    <div className="text-muted-foreground font-normal">
-                      P{Math.round(dayTotals[i].p)} C{Math.round(dayTotals[i].c)} G{Math.round(dayTotals[i].g)}
-                    </div>
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {MEAL_TYPES.map(({ key, label }) => (
-                <tr key={key} className="border-t border-border">
-                  <td className="p-2 font-medium text-foreground sticky left-0 bg-card z-10 whitespace-nowrap">
-                    {label}
-                  </td>
-                  {DAY_LABELS.map((_, dayIdx) => {
-                    const cell = getCell(dayIdx, key);
+        <>
+          {/* Legend */}
+          <div className="flex flex-wrap items-center gap-3 text-[10px] text-muted-foreground bg-muted/20 border border-border rounded-md px-3 py-2">
+            <span>⚡ Pré-treino</span>
+            <span>💪 Pós-treino</span>
+            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-primary" /> Treino</span>
+            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-muted-foreground/50" /> Descanso</span>
+          </div>
+
+          <div className="overflow-x-auto rounded-lg border border-border bg-card">
+            <table className="w-full text-xs min-w-[900px]">
+              <thead>
+                <tr className="bg-muted/40">
+                  <th className="p-2 text-left font-bold text-foreground sticky left-0 bg-muted/40 z-10">Refeição</th>
+                  {DAY_LABELS.map((d, i) => {
+                    const info = trainingMap[i];
                     return (
-                      <td key={dayIdx} className="border-l border-border p-1 align-top">
-                        <CellEditor
-                          cell={cell}
-                          foods={foods}
-                          onReplace={(food, grams) => replaceCell(dayIdx, key, food, grams, cell)}
-                        />
-                      </td>
+                      <th key={i} className="p-2 text-center font-bold text-foreground border-l border-border">
+                        <motion.div
+                          initial={{ opacity: 0, y: -4 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: i * 0.04 }}
+                          className="flex flex-col items-center gap-1"
+                        >
+                          <span>{d}</span>
+                          {info?.isTraining ? (
+                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-mono bg-primary/20 text-primary border border-primary/30">
+                              <Dumbbell className="w-2.5 h-2.5" /> TREINO
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-mono bg-muted/40 text-muted-foreground">
+                              <Bed className="w-2.5 h-2.5" /> DESCANSO
+                            </span>
+                          )}
+                          {info?.isTraining && info.muscleGroup && (
+                            <span className="text-[8px] font-mono text-primary/80 truncate max-w-[80px]">{info.muscleGroup}</span>
+                          )}
+                        </motion.div>
+                      </th>
                     );
                   })}
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                <tr className="bg-amber-500/5 border-t border-border">
+                  <th className="p-1 text-left text-[10px] text-muted-foreground sticky left-0 bg-amber-500/5 z-10">
+                    Totais
+                  </th>
+                  {DAY_LABELS.map((_, i) => {
+                    const isTr = trainingMap[i]?.isTraining;
+                    return (
+                      <th key={i} className="p-1 text-center text-[10px] border-l border-border">
+                        <div className="text-amber-400 font-bold">{Math.round(dayTotals[i].kcal)}kcal</div>
+                        <div className={`${isTr ? "text-foreground font-bold" : "text-muted-foreground font-normal"}`}>
+                          P{Math.round(dayTotals[i].p)} C{Math.round(dayTotals[i].c)} G{Math.round(dayTotals[i].g)}
+                        </div>
+                      </th>
+                    );
+                  })}
+                </tr>
+              </thead>
+              <tbody>
+                {MEAL_TYPES.map(({ key, label }) => (
+                  <tr key={key} className="border-t border-border">
+                    <td className="p-2 font-medium text-foreground sticky left-0 bg-card z-10 whitespace-nowrap">
+                      {label}
+                    </td>
+                    {DAY_LABELS.map((_, dayIdx) => {
+                      const cell = getCell(dayIdx, key);
+                      const info = trainingMap[dayIdx];
+                      const tag = info?.isTraining ? classifyMealVsWorkout(key, info.workoutTime) : null;
+                      return (
+                        <td
+                          key={dayIdx}
+                          className={`border-l border-border p-1 align-top relative ${
+                            tag === "pre" ? "border-l-2 border-l-accent" : tag === "post" ? "border-l-2 border-l-primary" : ""
+                          }`}
+                        >
+                          {tag && (
+                            <span
+                              className={`absolute top-0.5 right-0.5 text-[8px] font-mono px-1 rounded ${
+                                tag === "pre" ? "bg-accent/20 text-accent" : "bg-primary/20 text-primary"
+                              }`}
+                            >
+                              {tag === "pre" ? "Pré ⚡" : "Pós 💪"}
+                            </span>
+                          )}
+                          <CellEditor
+                            cell={cell}
+                            foods={foods}
+                            onReplace={(food, grams) => replaceCell(dayIdx, key, food, grams, cell)}
+                          />
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Weekly training vs rest summary */}
+          {(() => {
+            const { training, rest, carbDeltaPct } = splitWeeklyAverages(dayTotals, trainingMap);
+            if (training.count === 0 && rest.count === 0) return null;
+            const fmt = (v: number) => Math.round(v);
+            return (
+              <div className="rounded-lg border border-border bg-card p-3">
+                <div className="text-xs font-bold text-foreground mb-2 flex items-center gap-2">
+                  Médias semanais
+                  {training.count > 0 && rest.count > 0 && (
+                    <span className={`text-[10px] font-mono ${carbDeltaPct >= 0 ? "text-primary" : "text-accent"}`}>
+                      {carbDeltaPct >= 0 ? "+" : ""}{carbDeltaPct}% carbos no treino
+                    </span>
+                  )}
+                </div>
+                <div className="grid grid-cols-2 gap-2 text-[11px]">
+                  <div className="rounded border border-primary/30 bg-primary/5 p-2">
+                    <div className="flex items-center gap-1 text-primary font-bold mb-1">
+                      <Dumbbell className="w-3 h-3" /> Treino ({training.count}d)
+                    </div>
+                    <div className="text-foreground font-bold">{fmt(training.kcal)} kcal</div>
+                    <div className="text-muted-foreground">P{fmt(training.p)}g · C{fmt(training.c)}g · G{fmt(training.g)}g</div>
+                  </div>
+                  <div className="rounded border border-border bg-muted/20 p-2">
+                    <div className="flex items-center gap-1 text-muted-foreground font-bold mb-1">
+                      <Bed className="w-3 h-3" /> Descanso ({rest.count}d)
+                    </div>
+                    <div className="text-foreground">{fmt(rest.kcal)} kcal</div>
+                    <div className="text-muted-foreground">P{fmt(rest.p)}g · C{fmt(rest.c)}g · G{fmt(rest.g)}g</div>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+        </>
       )}
 
       {/* AI Dialog */}
