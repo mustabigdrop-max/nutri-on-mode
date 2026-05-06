@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Send, Check, Brain, FileText, AlertTriangle, MessageSquare, User, Activity, Shield, Utensils, RefreshCw, Loader2, ChevronLeft, ChevronRight, Trophy, Plus, Pencil, Trash2, X, Save, Bell, BarChart3 } from "lucide-react";
+import { ArrowLeft, Send, Check, Brain, FileText, AlertTriangle, MessageSquare, User, Activity, Shield, Utensils, RefreshCw, Loader2, ChevronLeft, ChevronRight, Trophy, Plus, Pencil, Trash2, X, Save, Bell, BarChart3, FileDown } from "lucide-react";
+import { exportMealPlanPDF } from "@/utils/exportMealPlanPDF";
 import { toast } from "@/hooks/use-toast";
 import CoachAccessManager from "@/components/acompanhado/CoachAccessManager";
 import CoachCompetitionWizard from "@/components/coach/CoachCompetitionWizard";
@@ -436,7 +437,7 @@ const CoachPatientDetailPage = () => {
             </div>
 
             {/* Action buttons */}
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-3 gap-2">
               <Button
                 variant="outline"
                 onClick={generateMealPlanForPatient}
@@ -447,6 +448,36 @@ const CoachPatientDetailPage = () => {
                 ) : (
                   <><Brain className="w-4 h-4 mr-2" /> Gerar com IA</>
                 )}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={async () => {
+                  if (!patient) return;
+                  try {
+                    const [{ data: phasesData }, { data: workoutData }] = await Promise.all([
+                      supabase.from("protocol_phases").select("*").eq("patient_user_id", patientId).order("start_date", { ascending: true }),
+                      supabase.from("workout_schedule").select("day_of_week").eq("user_id", patientId),
+                    ]);
+                    const trainingDays = Array.from(new Set((workoutData || []).map((w: any) => {
+                      // day_of_week: 0=sun..6=sat; convert to Mon=0..Sun=6
+                      const d = w.day_of_week;
+                      return d === 0 ? 6 : d - 1;
+                    })));
+                    const fileName = await exportMealPlanPDF(
+                      patient,
+                      planItems as any,
+                      profile || {},
+                      (phasesData as any) || [],
+                      trainingDays
+                    );
+                    toast({ title: "PDF exportado", description: fileName });
+                  } catch (e: any) {
+                    toast({ title: "Erro ao exportar", description: e.message, variant: "destructive" });
+                  }
+                }}
+                disabled={planItems.length === 0}
+              >
+                <FileDown className="w-4 h-4 mr-2" /> Exportar PDF
               </Button>
               <Button
                 onClick={saveAndNotify}
