@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Users, AlertTriangle, TrendingUp, Search, Bell, Settings, UserPlus, ArrowUpRight, Link2, Copy, Loader2, Trash2, Zap, Dumbbell, FlaskConical, Bone, Flame, ArrowLeft, Handshake, Send, Trophy } from "lucide-react";
+import { Users, AlertTriangle, TrendingUp, Search, Bell, Settings, UserPlus, ArrowUpRight, Link2, Copy, Loader2, Trash2, Zap, Dumbbell, FlaskConical, Bone, Flame, ArrowLeft, Handshake, Send, Trophy, Library } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "@/hooks/use-toast";
 import {
@@ -255,6 +255,9 @@ const CoachDashboardPage = () => {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={() => navigate("/coach/templates")} className="gap-2">
+              <Library className="w-4 h-4" /> Biblioteca
+            </Button>
             <Button variant="outline" size="icon" onClick={() => navigate("/coach/settings")}>
               <Settings className="w-4 h-4" />
             </Button>
