@@ -66,6 +66,11 @@ export default function CoachWeekMealGrid({ patientId, patient }: Props) {
   const { foods } = useFoods();
   const [weekStart, setWeekStart] = useState(getWeekStart(new Date()));
   const [items, setItems] = useState<PlanItem[]>([]);
+  const [trainingMap, setTrainingMap] = useState<Record<number, TrainingDayInfo>>(() => {
+    const m: Record<number, TrainingDayInfo> = {};
+    for (let d = 0; d < 7; d++) m[d] = { isTraining: false };
+    return m;
+  });
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [aiOpen, setAiOpen] = useState(false);
