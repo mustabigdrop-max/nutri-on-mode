@@ -5566,6 +5566,90 @@ export type Database = {
           },
         ]
       }
+      protocol_phases: {
+        Row: {
+          carb_cycling: boolean | null
+          carbs_g: number | null
+          cardio_protocol: string | null
+          coach_id: string
+          color: string | null
+          completion_notes: string | null
+          completion_rating: number | null
+          created_at: string
+          emoji: string | null
+          end_date: string
+          fat_g: number | null
+          id: string
+          kcal: number | null
+          name: string
+          patient_user_id: string
+          phase_type: string
+          protein_g: number | null
+          refeed_protocol: string | null
+          start_date: string
+          status: string
+          target_body_fat: number | null
+          target_weight_kg: number | null
+          template_id: string | null
+          updated_at: string
+          visible_to_patient: boolean | null
+        }
+        Insert: {
+          carb_cycling?: boolean | null
+          carbs_g?: number | null
+          cardio_protocol?: string | null
+          coach_id: string
+          color?: string | null
+          completion_notes?: string | null
+          completion_rating?: number | null
+          created_at?: string
+          emoji?: string | null
+          end_date: string
+          fat_g?: number | null
+          id?: string
+          kcal?: number | null
+          name: string
+          patient_user_id: string
+          phase_type?: string
+          protein_g?: number | null
+          refeed_protocol?: string | null
+          start_date: string
+          status?: string
+          target_body_fat?: number | null
+          target_weight_kg?: number | null
+          template_id?: string | null
+          updated_at?: string
+          visible_to_patient?: boolean | null
+        }
+        Update: {
+          carb_cycling?: boolean | null
+          carbs_g?: number | null
+          cardio_protocol?: string | null
+          coach_id?: string
+          color?: string | null
+          completion_notes?: string | null
+          completion_rating?: number | null
+          created_at?: string
+          emoji?: string | null
+          end_date?: string
+          fat_g?: number | null
+          id?: string
+          kcal?: number | null
+          name?: string
+          patient_user_id?: string
+          phase_type?: string
+          protein_g?: number | null
+          refeed_protocol?: string | null
+          start_date?: string
+          status?: string
+          target_body_fat?: number | null
+          target_weight_kg?: number | null
+          template_id?: string | null
+          updated_at?: string
+          visible_to_patient?: boolean | null
+        }
+        Relationships: []
+      }
       protocolo_envios: {
         Row: {
           coach_id: string
