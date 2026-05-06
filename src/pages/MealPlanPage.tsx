@@ -139,6 +139,11 @@ const MealPlanPage = () => {
   const [budgetMode, setBudgetMode] = useState(false);
   const [dragItem, setDragItem] = useState<PlanItem | null>(null);
   const [subModalItem, setSubModalItem] = useState<PlanItem | null>(null);
+  const [trainingMap, setTrainingMap] = useState<Record<number, TrainingDayInfo>>(() => {
+    const m: Record<number, TrainingDayInfo> = {};
+    for (let d = 0; d < 7; d++) m[d] = { isTraining: false };
+    return m;
+  });
 
   // Send to client state
   const [showSendModal, setShowSendModal] = useState(false);
