@@ -111,6 +111,13 @@ export default function CoachWeekMealGrid({ patientId, patient }: Props) {
 
   useEffect(() => {
     fetchItems();
+    (async () => {
+      const { data } = await supabase
+        .from("workout_schedule")
+        .select("day_of_week, workout_type, workout_time, duration_minutes, slot")
+        .eq("user_id", patientId);
+      setTrainingMap(buildTrainingDayMap(data as any));
+    })();
   }, [patientId, weekStart]);
 
   const getCell = (day: number, meal: string) =>
