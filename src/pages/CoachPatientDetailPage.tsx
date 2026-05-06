@@ -429,18 +429,31 @@ const CoachPatientDetailPage = () => {
               </Button>
             </div>
 
-            {/* Generate button */}
-            <Button
-              className="w-full"
-              onClick={generateMealPlanForPatient}
-              disabled={generating}
-            >
-              {generating ? (
-                <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Gerando plano com IA...</>
-              ) : (
-                <><Brain className="w-4 h-4 mr-2" /> Gerar Plano Alimentar com IA</>
-              )}
-            </Button>
+            {/* Action buttons */}
+            <div className="grid grid-cols-2 gap-2">
+              <Button
+                variant="outline"
+                onClick={generateMealPlanForPatient}
+                disabled={generating}
+              >
+                {generating ? (
+                  <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Gerando...</>
+                ) : (
+                  <><Brain className="w-4 h-4 mr-2" /> Gerar com IA</>
+                )}
+              </Button>
+              <Button
+                onClick={saveAndNotify}
+                disabled={savingNotify || planItems.length === 0}
+                className="bg-amber-500 hover:bg-amber-600 text-black"
+              >
+                {savingNotify ? (
+                  <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Notificando...</>
+                ) : (
+                  <><Bell className="w-4 h-4 mr-2" /> Salvar e notificar</>
+                )}
+              </Button>
+            </div>
 
             {/* Patient macro targets */}
             {patient && (
