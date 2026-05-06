@@ -13,6 +13,7 @@ import { toast } from "@/hooks/use-toast";
 import CoachAccessManager from "@/components/acompanhado/CoachAccessManager";
 import CoachCompetitionWizard from "@/components/coach/CoachCompetitionWizard";
 import CoachWeekMealGrid from "@/components/coach/CoachWeekMealGrid";
+import CoachCheckinsTab from "@/components/coach/CoachCheckinsTab";
 
 const MEAL_TYPES = [
   { key: "cafe_manha", label: "☕ Café" },
