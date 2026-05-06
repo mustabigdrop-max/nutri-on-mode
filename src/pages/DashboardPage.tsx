@@ -682,6 +682,20 @@ const DashboardPage = () => {
       <div className="relative z-10 max-w-lg mx-auto px-4 pt-4">
         <TrialBanner />
         <CoachNotificationsCard />
+        {hasCoachAccess && new Date().getDay() === 1 && (
+          <button
+            onClick={() => navigate("/weekly-checkin")}
+            className="w-full mb-3 flex items-center gap-3 p-3 rounded-xl border border-primary/40 bg-gradient-to-r from-primary/20 to-primary/5 hover:from-primary/30 transition-all text-left"
+          >
+            <div className="w-10 h-10 rounded-full bg-primary/25 flex items-center justify-center shrink-0">
+              <span className="text-lg">📋</span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="font-semibold">Check-in da Semana</div>
+              <div className="text-xs text-muted-foreground">Envie seu progresso para o coach responder</div>
+            </div>
+          </button>
+        )}
         <AthleteCompetitionCard />
         <div className="mb-3"><CoachCompetitionShortcut /></div>
         {hasCoachAccess && protocolosInfo.total === 0 && (
