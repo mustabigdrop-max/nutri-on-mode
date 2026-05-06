@@ -858,6 +858,40 @@ const MealPlanPage = () => {
                 Enviar plano para cliente
               </button>
             )}
+
+            {/* Weekly training vs rest summary */}
+            {(weeklySplit.training.count > 0 || weeklySplit.rest.count > 0) && (
+              <div className="rounded-xl border border-border bg-card p-3 mt-3">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-bold text-foreground">Médias semanais</span>
+                  {weeklySplit.training.count > 0 && weeklySplit.rest.count > 0 && (
+                    <span className={`text-[10px] font-mono ${weeklySplit.carbDeltaPct >= 0 ? "text-primary" : "text-accent"}`}>
+                      {weeklySplit.carbDeltaPct >= 0 ? "+" : ""}{weeklySplit.carbDeltaPct}% carbos no treino
+                    </span>
+                  )}
+                </div>
+                <div className="grid grid-cols-2 gap-2 text-[11px]">
+                  <div className="rounded-lg border border-primary/30 bg-primary/5 p-2">
+                    <div className="flex items-center gap-1 text-primary font-bold mb-1">
+                      <Dumbbell className="w-3 h-3" /> Treino ({weeklySplit.training.count}d)
+                    </div>
+                    <div className="text-foreground font-bold">{Math.round(weeklySplit.training.kcal)} kcal</div>
+                    <div className="text-muted-foreground font-mono">
+                      P{Math.round(weeklySplit.training.p)} · C{Math.round(weeklySplit.training.c)} · G{Math.round(weeklySplit.training.g)}
+                    </div>
+                  </div>
+                  <div className="rounded-lg border border-border bg-muted/20 p-2">
+                    <div className="flex items-center gap-1 text-muted-foreground font-bold mb-1">
+                      <Bed className="w-3 h-3" /> Descanso ({weeklySplit.rest.count}d)
+                    </div>
+                    <div className="text-foreground">{Math.round(weeklySplit.rest.kcal)} kcal</div>
+                    <div className="text-muted-foreground font-mono">
+                      P{Math.round(weeklySplit.rest.p)} · C{Math.round(weeklySplit.rest.c)} · G{Math.round(weeklySplit.rest.g)}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
