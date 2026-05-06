@@ -58,6 +58,8 @@ interface PlanItem {
   confirmed: boolean;
   swapped: boolean;
   original_food_name: string | null;
+  coach_edited?: boolean;
+  coach_note?: string | null;
 }
 
 const CoachPatientDetailPage = () => {
