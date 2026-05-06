@@ -8,8 +8,9 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Save, Sparkles, Loader2, Search, ChevronLeft, ChevronRight } from "lucide-react";
+import { Save, Sparkles, Loader2, Search, ChevronLeft, ChevronRight, Dumbbell, Bed } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { buildTrainingDayMap, classifyMealVsWorkout, splitWeeklyAverages, type TrainingDayInfo } from "@/lib/trainingDayMap";
 
 const MEAL_TYPES = [
   { key: "cafe_manha", label: "☕ Café" },
