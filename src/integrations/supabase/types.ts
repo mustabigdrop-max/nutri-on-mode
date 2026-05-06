@@ -6958,6 +6958,87 @@ export type Database = {
         }
         Relationships: []
       }
+      weekly_checkins: {
+        Row: {
+          adherence_diet: number | null
+          adherence_energy: number | null
+          adherence_hunger: number | null
+          adherence_sleep: number | null
+          adherence_stress: number | null
+          adherence_training: number | null
+          arm_cm: number | null
+          bloating_days: number | null
+          bristol_scale: number | null
+          coach_feedback: string | null
+          coach_macro_adjustment: Json | null
+          coach_responded_at: string | null
+          created_at: string
+          hip_cm: number | null
+          id: string
+          notes: string | null
+          photo_front_url: string | null
+          symptoms: string[] | null
+          updated_at: string
+          user_id: string
+          waist_cm: number | null
+          week_start: string
+          weight_delta_kg: number | null
+          weight_kg: number | null
+        }
+        Insert: {
+          adherence_diet?: number | null
+          adherence_energy?: number | null
+          adherence_hunger?: number | null
+          adherence_sleep?: number | null
+          adherence_stress?: number | null
+          adherence_training?: number | null
+          arm_cm?: number | null
+          bloating_days?: number | null
+          bristol_scale?: number | null
+          coach_feedback?: string | null
+          coach_macro_adjustment?: Json | null
+          coach_responded_at?: string | null
+          created_at?: string
+          hip_cm?: number | null
+          id?: string
+          notes?: string | null
+          photo_front_url?: string | null
+          symptoms?: string[] | null
+          updated_at?: string
+          user_id: string
+          waist_cm?: number | null
+          week_start: string
+          weight_delta_kg?: number | null
+          weight_kg?: number | null
+        }
+        Update: {
+          adherence_diet?: number | null
+          adherence_energy?: number | null
+          adherence_hunger?: number | null
+          adherence_sleep?: number | null
+          adherence_stress?: number | null
+          adherence_training?: number | null
+          arm_cm?: number | null
+          bloating_days?: number | null
+          bristol_scale?: number | null
+          coach_feedback?: string | null
+          coach_macro_adjustment?: Json | null
+          coach_responded_at?: string | null
+          created_at?: string
+          hip_cm?: number | null
+          id?: string
+          notes?: string | null
+          photo_front_url?: string | null
+          symptoms?: string[] | null
+          updated_at?: string
+          user_id?: string
+          waist_cm?: number | null
+          week_start?: string
+          weight_delta_kg?: number | null
+          weight_kg?: number | null
+        }
+        Relationships: []
+      }
       weekly_sabotage_reports: {
         Row: {
           ai_suggestion: string | null
