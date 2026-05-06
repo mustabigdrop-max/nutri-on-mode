@@ -519,6 +519,17 @@ const MealPlanPage = () => {
     fetchPlan();
   }, [user, weekStart]);
 
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      const { data } = await supabase
+        .from("workout_schedule")
+        .select("day_of_week, workout_type, workout_time, duration_minutes, slot")
+        .eq("user_id", user.id);
+      setTrainingMap(buildTrainingDayMap(data as any));
+    })();
+  }, [user]);
+
   const dayItems = useMemo(() =>
     items.filter(i => i.day_index === selectedDay)
       .sort((a, b) => MEAL_TYPES.findIndex(m => m.key === a.meal_type) - MEAL_TYPES.findIndex(m => m.key === b.meal_type)),
