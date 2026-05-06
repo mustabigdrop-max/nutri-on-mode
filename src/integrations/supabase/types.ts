@@ -1911,6 +1911,72 @@ export type Database = {
         }
         Relationships: []
       }
+      coach_protocol_templates: {
+        Row: {
+          carbs_per_kg: number
+          category: string
+          coach_id: string
+          created_at: string
+          description: string | null
+          fat_per_kg: number
+          id: string
+          name: string
+          pharma_notes: string | null
+          protein_per_kg: number
+          rest_day_carb_mult: number
+          tags: string[] | null
+          training_day_carb_mult: number
+          updated_at: string
+          use_carb_cycling: boolean
+          use_chronobiology: boolean
+          use_glut4_post_workout: boolean
+          use_microbiota_protocol: boolean
+          used_count: number
+        }
+        Insert: {
+          carbs_per_kg?: number
+          category?: string
+          coach_id: string
+          created_at?: string
+          description?: string | null
+          fat_per_kg?: number
+          id?: string
+          name: string
+          pharma_notes?: string | null
+          protein_per_kg?: number
+          rest_day_carb_mult?: number
+          tags?: string[] | null
+          training_day_carb_mult?: number
+          updated_at?: string
+          use_carb_cycling?: boolean
+          use_chronobiology?: boolean
+          use_glut4_post_workout?: boolean
+          use_microbiota_protocol?: boolean
+          used_count?: number
+        }
+        Update: {
+          carbs_per_kg?: number
+          category?: string
+          coach_id?: string
+          created_at?: string
+          description?: string | null
+          fat_per_kg?: number
+          id?: string
+          name?: string
+          pharma_notes?: string | null
+          protein_per_kg?: number
+          rest_day_carb_mult?: number
+          tags?: string[] | null
+          training_day_carb_mult?: number
+          updated_at?: string
+          use_carb_cycling?: boolean
+          use_chronobiology?: boolean
+          use_glut4_post_workout?: boolean
+          use_microbiota_protocol?: boolean
+          used_count?: number
+        }
+        Relationships: []
+      }
       coach_reports: {
         Row: {
           ai_summary: string | null
