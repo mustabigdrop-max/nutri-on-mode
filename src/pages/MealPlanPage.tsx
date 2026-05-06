@@ -545,6 +545,23 @@ const MealPlanPage = () => {
     total: dayItems.length,
   }), [dayItems]);
 
+  const weeklyTotals = useMemo(() => {
+    const t: Record<number, { kcal: number; p: number; c: number; g: number }> = {};
+    for (let d = 0; d < 7; d++) t[d] = { kcal: 0, p: 0, c: 0, g: 0 };
+    items.forEach(i => {
+      t[i.day_index].kcal += i.kcal || 0;
+      t[i.day_index].p += i.protein_g || 0;
+      t[i.day_index].c += i.carbs_g || 0;
+      t[i.day_index].g += i.fat_g || 0;
+    });
+    return t;
+  }, [items]);
+
+  const weeklySplit = useMemo(
+    () => splitWeeklyAverages(weeklyTotals, trainingMap),
+    [weeklyTotals, trainingMap]
+  );
+
   return (
     <div className="min-h-screen bg-background pb-20">
       <div className="absolute inset-0 bg-grid opacity-10" />
