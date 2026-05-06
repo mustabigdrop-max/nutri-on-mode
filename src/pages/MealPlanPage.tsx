@@ -9,9 +9,10 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   ChevronLeft, ChevronRight, Check, RefreshCw, Utensils,
   BarChart3, Plus, MessageSquare, User, ArrowLeft, ShoppingCart,
-  Sparkles, Wallet, GripVertical, Send, X, Loader2
+  Sparkles, Wallet, GripVertical, Send, X, Loader2, Dumbbell, Bed
 } from "lucide-react";
 import { toast } from "sonner";
+import { buildTrainingDayMap, classifyMealVsWorkout, splitWeeklyAverages, type TrainingDayInfo } from "@/lib/trainingDayMap";
 import SubstitutionModal from "@/components/meal/SubstitutionModal";
 import type { SubOption } from "@/components/meal/substitutionDb";
 
