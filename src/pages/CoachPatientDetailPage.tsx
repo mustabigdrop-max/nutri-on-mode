@@ -86,6 +86,10 @@ const CoachPatientDetailPage = () => {
   });
   const [planLoading, setPlanLoading] = useState(false);
   const [generating, setGenerating] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [draft, setDraft] = useState<Partial<PlanItem>>({});
+  const [dayNotes, setDayNotes] = useState<Record<number, string>>({});
+  const [savingNotify, setSavingNotify] = useState(false);
 
   // Competition Mode state
   const [competitionPlans, setCompetitionPlans] = useState<any[]>([]);
