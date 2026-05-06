@@ -255,6 +255,9 @@ const CoachDashboardPage = () => {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={() => navigate("/coach/templates")} className="gap-2">
+              <Library className="w-4 h-4" /> Biblioteca
+            </Button>
             <Button variant="outline" size="icon" onClick={() => navigate("/coach/settings")}>
               <Settings className="w-4 h-4" />
             </Button>
