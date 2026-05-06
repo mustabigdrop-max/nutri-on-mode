@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Send, Check, Brain, FileText, AlertTriangle, MessageSquare, User, Activity, Shield, Utensils, RefreshCw, Loader2, ChevronLeft, ChevronRight, Trophy, Plus } from "lucide-react";
+import { ArrowLeft, Send, Check, Brain, FileText, AlertTriangle, MessageSquare, User, Activity, Shield, Utensils, RefreshCw, Loader2, ChevronLeft, ChevronRight, Trophy, Plus, Pencil, Trash2, X, Save, Bell } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import CoachAccessManager from "@/components/acompanhado/CoachAccessManager";
 import CoachCompetitionWizard from "@/components/coach/CoachCompetitionWizard";
@@ -58,6 +58,8 @@ interface PlanItem {
   confirmed: boolean;
   swapped: boolean;
   original_food_name: string | null;
+  coach_edited?: boolean;
+  coach_note?: string | null;
 }
 
 const CoachPatientDetailPage = () => {
@@ -84,6 +86,10 @@ const CoachPatientDetailPage = () => {
   });
   const [planLoading, setPlanLoading] = useState(false);
   const [generating, setGenerating] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [draft, setDraft] = useState<Partial<PlanItem>>({});
+  const [dayNotes, setDayNotes] = useState<Record<number, string>>({});
+  const [savingNotify, setSavingNotify] = useState(false);
 
   // Competition Mode state
   const [competitionPlans, setCompetitionPlans] = useState<any[]>([]);
@@ -201,6 +207,88 @@ const CoachPatientDetailPage = () => {
     setGenerating(false);
   };
 
+  const startEdit = (item: PlanItem) => {
+    setEditingId(item.id);
+    setDraft({
+      food_name: item.food_name,
+      portion: item.portion,
+      kcal: item.kcal,
+      protein_g: item.protein_g,
+      carbs_g: item.carbs_g,
+      fat_g: item.fat_g,
+      coach_note: item.coach_note ?? "",
+    });
+  };
+
+  const saveEdit = async (id: string) => {
+    const payload: any = {
+      food_name: draft.food_name,
+      portion: draft.portion,
+      kcal: Number(draft.kcal) || 0,
+      protein_g: Number(draft.protein_g) || 0,
+      carbs_g: Number(draft.carbs_g) || 0,
+      fat_g: Number(draft.fat_g) || 0,
+      coach_note: draft.coach_note || null,
+      coach_edited: true,
+    };
+    const { error } = await supabase.from("meal_plan_items").update(payload).eq("id", id);
+    if (error) {
+      toast({ title: "Erro ao salvar", description: error.message, variant: "destructive" });
+      return;
+    }
+    setEditingId(null);
+    setDraft({});
+    await fetchMealPlan();
+    toast({ title: "Item atualizado ✏️" });
+  };
+
+  const removeItem = async (id: string) => {
+    const { error } = await supabase.from("meal_plan_items").delete().eq("id", id);
+    if (error) {
+      toast({ title: "Erro ao remover", description: error.message, variant: "destructive" });
+      return;
+    }
+    await fetchMealPlan();
+  };
+
+  const addItem = async (mealType: string) => {
+    if (!patientId) return;
+    const { error } = await supabase.from("meal_plan_items").insert({
+      user_id: patientId,
+      week_start: weekStart,
+      day_index: selectedDay,
+      meal_type: mealType,
+      food_name: "Novo alimento",
+      portion: "100g",
+      kcal: 0,
+      protein_g: 0,
+      carbs_g: 0,
+      fat_g: 0,
+      coach_edited: true,
+    } as any);
+    if (error) {
+      toast({ title: "Erro ao adicionar", description: error.message, variant: "destructive" });
+      return;
+    }
+    await fetchMealPlan();
+  };
+
+  const saveAndNotify = async () => {
+    if (!profile || !patientId) return;
+    setSavingNotify(true);
+    const { error } = await supabase.from("coach_messages").insert({
+      coach_id: profile.id,
+      patient_user_id: patientId,
+      sender: "coach",
+      message: "Seu plano da semana foi atualizado. Confira as novidades! 🍽️",
+    });
+    setSavingNotify(false);
+    if (error) {
+      toast({ title: "Erro ao notificar", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: "Paciente notificado ✅" });
+  };
   const sendMessage = async () => {
     if (!newMessage.trim() || !profile || !patientId) return;
     setSending(true);
@@ -341,18 +429,31 @@ const CoachPatientDetailPage = () => {
               </Button>
             </div>
 
-            {/* Generate button */}
-            <Button
-              className="w-full"
-              onClick={generateMealPlanForPatient}
-              disabled={generating}
-            >
-              {generating ? (
-                <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Gerando plano com IA...</>
-              ) : (
-                <><Brain className="w-4 h-4 mr-2" /> Gerar Plano Alimentar com IA</>
-              )}
-            </Button>
+            {/* Action buttons */}
+            <div className="grid grid-cols-2 gap-2">
+              <Button
+                variant="outline"
+                onClick={generateMealPlanForPatient}
+                disabled={generating}
+              >
+                {generating ? (
+                  <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Gerando...</>
+                ) : (
+                  <><Brain className="w-4 h-4 mr-2" /> Gerar com IA</>
+                )}
+              </Button>
+              <Button
+                onClick={saveAndNotify}
+                disabled={savingNotify || planItems.length === 0}
+                className="bg-amber-500 hover:bg-amber-600 text-black"
+              >
+                {savingNotify ? (
+                  <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Notificando...</>
+                ) : (
+                  <><Bell className="w-4 h-4 mr-2" /> Salvar e notificar</>
+                )}
+              </Button>
+            </div>
 
             {/* Patient macro targets */}
             {patient && (
@@ -402,12 +503,6 @@ const CoachPatientDetailPage = () => {
               <div className="flex justify-center py-10">
                 <Loader2 className="w-6 h-6 animate-spin text-primary" />
               </div>
-            ) : dayItems.length === 0 ? (
-              <Card>
-                <CardContent className="p-8 text-center text-muted-foreground text-sm">
-                  Nenhum plano para esta semana. Clique em "Gerar Plano Alimentar com IA" para criar.
-                </CardContent>
-              </Card>
             ) : (
               <>
                 {/* Day totals */}
@@ -430,27 +525,113 @@ const CoachPatientDetailPage = () => {
                   </div>
                 </div>
 
-                {/* Meals list */}
+                {dayItems.length === 0 && (
+                  <Card>
+                    <CardContent className="p-6 text-center text-muted-foreground text-sm">
+                      Nenhum item neste dia. Adicione manualmente abaixo ou gere com IA.
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Meals list (editable) */}
                 <div className="space-y-2">
                   {MEAL_TYPES.map(({ key, label }) => {
                     const mealItems = dayItems.filter(i => i.meal_type === key);
-                    if (mealItems.length === 0) return null;
                     return (
                       <Card key={key}>
                         <CardContent className="p-3">
-                          <p className="text-xs font-bold text-foreground mb-2">{label}</p>
-                          {mealItems.map(item => (
-                            <div key={item.id} className="flex items-center justify-between py-1 border-b border-border last:border-0">
-                              <div>
-                                <p className="text-sm text-foreground">{item.food_name}</p>
-                                <p className="text-[10px] text-muted-foreground">{item.portion}</p>
+                          <div className="flex items-center justify-between mb-2">
+                            <p className="text-xs font-bold text-foreground">{label}</p>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-6 px-2 text-[10px]"
+                              onClick={() => addItem(key)}
+                            >
+                              <Plus className="w-3 h-3 mr-1" /> Adicionar
+                            </Button>
+                          </div>
+                          {mealItems.length === 0 && (
+                            <p className="text-[10px] text-muted-foreground italic">— sem itens —</p>
+                          )}
+                          {mealItems.map(item => {
+                            const isEditing = editingId === item.id;
+                            const edited = !!item.coach_edited;
+                            return (
+                              <div
+                                key={item.id}
+                                className={`py-2 border-b border-border last:border-0 ${edited ? "bg-amber-500/5 -mx-3 px-3 rounded" : ""}`}
+                              >
+                                {!isEditing ? (
+                                  <div className="flex items-start justify-between gap-2">
+                                    <div className="flex-1 min-w-0">
+                                      <div className="flex items-center gap-2 flex-wrap">
+                                        <p className="text-sm text-foreground">{item.food_name}</p>
+                                        {edited && (
+                                          <Badge className="bg-amber-500/20 text-amber-400 text-[9px] h-4 px-1">
+                                            ✏️ Coach
+                                          </Badge>
+                                        )}
+                                      </div>
+                                      <p className="text-[10px] text-muted-foreground">{item.portion}</p>
+                                      {item.coach_note && (
+                                        <p className="text-[10px] text-amber-400 italic mt-1">
+                                          📝 {item.coach_note}
+                                        </p>
+                                      )}
+                                    </div>
+                                    <div className="text-right text-[10px] text-muted-foreground shrink-0">
+                                      <p>{Math.round(item.kcal)} kcal</p>
+                                      <p>P{item.protein_g}g C{item.carbs_g}g G{item.fat_g}g</p>
+                                    </div>
+                                    <div className="flex flex-col gap-1">
+                                      <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => startEdit(item)}>
+                                        <Pencil className="w-3 h-3" />
+                                      </Button>
+                                      <Button size="icon" variant="ghost" className="h-6 w-6 text-red-400" onClick={() => removeItem(item.id)}>
+                                        <Trash2 className="w-3 h-3" />
+                                      </Button>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <div className="space-y-2 bg-muted/40 p-2 rounded">
+                                    <Input
+                                      placeholder="Alimento"
+                                      value={draft.food_name ?? ""}
+                                      onChange={e => setDraft(d => ({ ...d, food_name: e.target.value }))}
+                                      className="h-8 text-sm"
+                                    />
+                                    <Input
+                                      placeholder="Porção (ex: 100g)"
+                                      value={draft.portion ?? ""}
+                                      onChange={e => setDraft(d => ({ ...d, portion: e.target.value }))}
+                                      className="h-8 text-xs"
+                                    />
+                                    <div className="grid grid-cols-4 gap-1">
+                                      <Input type="number" placeholder="kcal" value={draft.kcal ?? ""} onChange={e => setDraft(d => ({ ...d, kcal: Number(e.target.value) }))} className="h-8 text-xs" />
+                                      <Input type="number" placeholder="P" value={draft.protein_g ?? ""} onChange={e => setDraft(d => ({ ...d, protein_g: Number(e.target.value) }))} className="h-8 text-xs" />
+                                      <Input type="number" placeholder="C" value={draft.carbs_g ?? ""} onChange={e => setDraft(d => ({ ...d, carbs_g: Number(e.target.value) }))} className="h-8 text-xs" />
+                                      <Input type="number" placeholder="G" value={draft.fat_g ?? ""} onChange={e => setDraft(d => ({ ...d, fat_g: Number(e.target.value) }))} className="h-8 text-xs" />
+                                    </div>
+                                    <Textarea
+                                      placeholder="Nota do coach (opcional)"
+                                      value={draft.coach_note ?? ""}
+                                      onChange={e => setDraft(d => ({ ...d, coach_note: e.target.value }))}
+                                      className="text-xs min-h-[50px]"
+                                    />
+                                    <div className="flex gap-1">
+                                      <Button size="sm" className="h-7 flex-1 bg-amber-500 hover:bg-amber-600 text-black" onClick={() => saveEdit(item.id)}>
+                                        <Save className="w-3 h-3 mr-1" /> Salvar
+                                      </Button>
+                                      <Button size="sm" variant="ghost" className="h-7" onClick={() => { setEditingId(null); setDraft({}); }}>
+                                        <X className="w-3 h-3" />
+                                      </Button>
+                                    </div>
+                                  </div>
+                                )}
                               </div>
-                              <div className="text-right text-[10px] text-muted-foreground">
-                                <p>{item.kcal} kcal</p>
-                                <p>P{item.protein_g}g C{item.carbs_g}g G{item.fat_g}g</p>
-                              </div>
-                            </div>
-                          ))}
+                            );
+                          })}
                         </CardContent>
                       </Card>
                     );
