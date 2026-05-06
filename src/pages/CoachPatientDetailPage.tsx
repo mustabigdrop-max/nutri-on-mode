@@ -8,12 +8,13 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Send, Check, Brain, FileText, AlertTriangle, MessageSquare, User, Activity, Shield, Utensils, RefreshCw, Loader2, ChevronLeft, ChevronRight, Trophy, Plus, Pencil, Trash2, X, Save, Bell } from "lucide-react";
+import { ArrowLeft, Send, Check, Brain, FileText, AlertTriangle, MessageSquare, User, Activity, Shield, Utensils, RefreshCw, Loader2, ChevronLeft, ChevronRight, Trophy, Plus, Pencil, Trash2, X, Save, Bell, BarChart3 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import CoachAccessManager from "@/components/acompanhado/CoachAccessManager";
 import CoachCompetitionWizard from "@/components/coach/CoachCompetitionWizard";
 import CoachWeekMealGrid from "@/components/coach/CoachWeekMealGrid";
 import CoachCheckinsTab from "@/components/coach/CoachCheckinsTab";
+import ProtocolGanttChart from "@/components/coach/ProtocolGanttChart";
 
 const MEAL_TYPES = [
   { key: "cafe_manha", label: "☕ Café" },
@@ -351,11 +352,12 @@ const CoachPatientDetailPage = () => {
 
       <main className="max-w-5xl mx-auto p-4">
         <Tabs defaultValue="overview" className="space-y-4">
-          <TabsList className="w-full grid grid-cols-9">
+          <TabsList className="w-full grid grid-cols-10">
             <TabsTrigger value="overview" className="text-xs"><User className="w-3 h-3 mr-1" />Geral</TabsTrigger>
             <TabsTrigger value="mealplan" className="text-xs"><Utensils className="w-3 h-3 mr-1" />Plano</TabsTrigger>
             <TabsTrigger value="grade" className="text-xs"><Utensils className="w-3 h-3 mr-1" />Grade</TabsTrigger>
             <TabsTrigger value="checkins" className="text-xs"><Activity className="w-3 h-3 mr-1" />Check-ins</TabsTrigger>
+            <TabsTrigger value="periodization" className="text-xs"><BarChart3 className="w-3 h-3 mr-1" />Periodização</TabsTrigger>
             <TabsTrigger value="access" className="text-xs"><Shield className="w-3 h-3 mr-1" />Acesso</TabsTrigger>
             <TabsTrigger value="protocol" className="text-xs"><Brain className="w-3 h-3 mr-1" />Protocolo</TabsTrigger>
             <TabsTrigger value="exams" className="text-xs"><FileText className="w-3 h-3 mr-1" />Exames</TabsTrigger>
@@ -655,6 +657,11 @@ const CoachPatientDetailPage = () => {
           {/* CHECK-INS */}
           <TabsContent value="checkins" className="space-y-4">
             {patientId && <CoachCheckinsTab patientId={patientId} />}
+          </TabsContent>
+
+          {/* PERIODIZATION */}
+          <TabsContent value="periodization" className="space-y-4">
+            {patientId && <ProtocolGanttChart patientId={patientId} />}
           </TabsContent>
 
           {/* ACCESS MANAGEMENT */}
