@@ -733,6 +733,8 @@ const MealPlanPage = () => {
             <AnimatePresence mode="popLayout">
               {dayItems.map((item, i) => {
                 const mealLabel = MEAL_TYPES.find(m => m.key === item.meal_type)?.label || item.meal_type;
+                const dayInfo = trainingMap[item.day_index];
+                const tag = dayInfo?.isTraining ? classifyMealVsWorkout(item.meal_type, dayInfo.workoutTime) : null;
                 return (
                   <motion.div
                     key={item.id}
@@ -744,7 +746,9 @@ const MealPlanPage = () => {
                     onDragStart={() => handleDragStart(item)}
                     onDragOver={(e) => e.preventDefault()}
                     onDrop={() => handleDrop(item)}
-                    className={`rounded-xl border p-3 transition-all cursor-grab active:cursor-grabbing ${
+                    className={`relative rounded-xl border p-3 transition-all cursor-grab active:cursor-grabbing ${
+                      tag === "pre" ? "border-l-2 border-l-accent " : tag === "post" ? "border-l-2 border-l-primary " : ""
+                    }${
                       item.confirmed
                         ? "bg-primary/10 border-primary/20"
                         : dragItem?.id === item.id
@@ -752,6 +756,15 @@ const MealPlanPage = () => {
                         : "bg-card border-border"
                     }`}
                   >
+                    {tag && (
+                      <span
+                        className={`absolute top-1.5 right-2 text-[9px] font-mono px-1.5 py-0.5 rounded ${
+                          tag === "pre" ? "bg-accent/20 text-accent" : "bg-primary/20 text-primary"
+                        }`}
+                      >
+                        {tag === "pre" ? "Pré ⚡" : "Pós 💪"}
+                      </span>
+                    )}
                     <div className="flex items-start gap-2">
                       {/* Drag handle */}
                       <div className="mt-1.5 text-muted-foreground/40">
@@ -781,7 +794,7 @@ const MealPlanPage = () => {
                         <p className={`text-sm font-semibold truncate ${item.confirmed ? "text-primary" : "text-foreground"}`}>
                           {item.food_name}
                         </p>
-                        <p className="text-xs text-muted-foreground font-mono">
+                        <p className={`text-xs font-mono ${dayInfo?.isTraining ? "text-foreground font-bold" : "text-muted-foreground"}`}>
                           {item.portion} · {item.kcal}kcal · {item.protein_g}g prot
                         </p>
                       </div>
