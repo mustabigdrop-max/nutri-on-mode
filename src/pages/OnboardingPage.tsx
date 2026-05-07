@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useProfile } from "@/hooks/useProfile";
-import { Send, Zap, Bot, User, Loader2, Flame, Dumbbell, Leaf, Baby, ChevronRight, Sparkles, Syringe } from "lucide-react";
+import { Send, Zap, Bot, User, Loader2, Flame, Dumbbell, Leaf, Baby, ChevronRight, Sparkles, Syringe, Trophy, Heart, Activity } from "lucide-react";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
 import { Progress } from "@/components/ui/progress";
@@ -10,32 +10,59 @@ import Glp1UpsellModal from "@/components/glp1/Glp1UpsellModal";
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/onboarding-chat`;
 
-type Objetivo = "emagrecimento" | "hipertrofia" | "saude_geral" | "infantil";
+type Objetivo = "emagrecimento" | "hipertrofia" | "saude_geral" | "infantil" | "competir" | "performance" | "longevidade";
 
 const GOALS = [
   {
-    id: "emagrecimento" as Objetivo,
-    icon: Flame,
-    label: "EMAGRECER",
-    desc: "Perder gordura com inteligência e sem sofrimento",
-    color: "from-orange-500 to-red-500",
-    bg: "bg-orange-500/10 border-orange-500/30",
-    iconColor: "text-orange-400",
+    id: "competir" as Objetivo,
+    icon: Trophy,
+    label: "COMPETIR",
+    desc: "Stage prep para todas as categorias: Men's Physique, Classic, Bikini, Wellness, Figure, BB",
+    color: "from-yellow-500 to-amber-500",
+    bg: "bg-yellow-500/10 border-yellow-500/30",
+    iconColor: "text-yellow-400",
+  },
+  {
+    id: "performance" as Objetivo,
+    icon: Activity,
+    label: "PERFORMANCE",
+    desc: "Nutrição esportiva para MMA, Crossfit, Running, Natação, Futebol e qualquer esporte",
+    color: "from-cyan-500 to-blue-500",
+    bg: "bg-cyan-500/10 border-cyan-500/30",
+    iconColor: "text-cyan-400",
   },
   {
     id: "hipertrofia" as Objetivo,
     icon: Dumbbell,
     label: "HIPERTROFIAR",
-    desc: "Ganhar massa muscular com nutrição de precisão",
-    color: "from-blue-500 to-cyan-500",
+    desc: "Ganhar massa muscular com nutrição de precisão e periodização inteligente",
+    color: "from-blue-500 to-indigo-500",
     bg: "bg-blue-500/10 border-blue-500/30",
     iconColor: "text-blue-400",
   },
   {
+    id: "emagrecimento" as Objetivo,
+    icon: Flame,
+    label: "EMAGRECER",
+    desc: "Perder gordura com inteligência, sistema comportamental e sem sofrimento",
+    color: "from-orange-500 to-red-500",
+    bg: "bg-orange-500/10 border-orange-500/30",
+    iconColor: "text-orange-400",
+  },
+  {
+    id: "longevidade" as Objetivo,
+    icon: Heart,
+    label: "LONGEVIDADE",
+    desc: "Otimização hormonal, anti-aging, marcadores biológicos e healthspan",
+    color: "from-rose-500 to-pink-500",
+    bg: "bg-rose-500/10 border-rose-500/30",
+    iconColor: "text-rose-400",
+  },
+  {
     id: "saude_geral" as Objetivo,
     icon: Leaf,
-    label: "SAÚDE GERAL",
-    desc: "Comer melhor, ter mais energia e viver com equilíbrio",
+    label: "SAÚDE & BEM-ESTAR",
+    desc: "Comer melhor, ter mais energia, equilibrar mente e corpo",
     color: "from-emerald-500 to-green-500",
     bg: "bg-emerald-500/10 border-emerald-500/30",
     iconColor: "text-emerald-400",
@@ -44,7 +71,7 @@ const GOALS = [
     id: "infantil" as Objetivo,
     icon: Baby,
     label: "MEU FILHO",
-    desc: "Nutrição infantil saudável e gostosa para cada fase",
+    desc: "Nutrição infantil saudável e gostosa para cada fase do desenvolvimento",
     color: "from-violet-500 to-pink-500",
     bg: "bg-violet-500/10 border-violet-500/30",
     iconColor: "text-violet-400",
@@ -77,6 +104,12 @@ const calcMacros = (get: number, objetivo: Objetivo, weight: number) => {
     case "hipertrofia": vet = get + 350; proteinPerKg = 2.2; break;
     case "saude_geral": vet = get; proteinPerKg = 1.6; break;
     case "infantil": vet = get; proteinPerKg = 1.2; break;
+    // Cutting phase as starting point for competitors (adjusted by coach/phases later)
+    case "competir": vet = get - 400; proteinPerKg = 2.4; break;
+    // Performance: slight surplus + high carbs for sport fuel
+    case "performance": vet = get + 200; proteinPerKg = 2.0; break;
+    // Longevity: maintenance with anti-inflammatory emphasis
+    case "longevidade": vet = get; proteinPerKg = 1.8; break;
   }
   const protein = weight * proteinPerKg;
   const fatKcal = vet * 0.25;
@@ -287,6 +320,9 @@ const OnboardingPage = () => {
       hipertrofia: "gain_muscle",
       saude_geral: "health",
       infantil: "health",
+      competir: "competition",
+      performance: "performance",
+      longevidade: "longevity",
     };
 
     const geb = calcGEB(weight, height, age, sex);
@@ -349,10 +385,10 @@ const OnboardingPage = () => {
               <Sparkles className="w-6 h-6 text-primary" />
             </div>
             <h1 className="text-2xl font-bold text-foreground font-[family-name:var(--font-display)] mb-2">
-              Qual é o seu objetivo?
+              Qual é a sua jornada?
             </h1>
             <p className="text-sm text-muted-foreground">
-              Toda a sua experiência será personalizada com base nessa escolha.
+              Do palco ao bem-estar. Seu protocolo começa aqui.
             </p>
           </div>
 

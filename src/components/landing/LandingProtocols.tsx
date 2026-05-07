@@ -2,11 +2,56 @@ import { useState, useRef } from "react";
 import { motion, useInView } from "framer-motion";
 
 const protos = [
-  { icon: "🔥", name: "Low Carb", kcalLabel: "15–25% carbo", desc: "Resistência insulínica, emagrecimento acelerado, SOP", p: 35, c: 20, f: 45, kcal: "GET − 300–500", sub: "Déficit moderado, perda consistente", forText: "Resistência insulínica · SOP · Diabetes tipo 2 · Emagrecimento acelerado" },
-  { icon: "⚡", name: "Cetogênica", kcalLabel: "menos 50g carbo/dia", desc: "Cetose metabólica, queima máxima de gordura", p: 25, c: 5, f: 70, kcal: "GET − 200–400", sub: "Cetose induz déficit natural", forText: "Emagrecimento intenso · Epilepsia · Resistência severa à insulina" },
-  { icon: "⏱", name: "Jejum JI", kcalLabel: "12/8 · 16/8 · 18/6 · OMAD", desc: "Autofagia, saúde metabólica, praticidade", p: 30, c: 45, f: 25, kcal: "VET ajustado à janela", sub: "Todas as kcal dentro da janela alimentar", forText: "Saúde metabólica · Autofagia · Praticidade · Perda de gordura" },
-  { icon: "💪", name: "Atleta / BB", kcalLabel: "40–56 kcal/kg", desc: "Bulk · Cutting · Recomp · Peak Week", p: 30, c: 50, f: 20, kcal: "40–56 kcal/kg", sub: "Bulk +300–600 / Cutting −500 / Recomp", forText: "Hipertrofia · Definição · Peak Week · Bodybuilders · Atletas" },
-  { icon: "🌿", name: "Vegano", kcalLabel: "Plant-Based completo", desc: "Proteína completa, suplementação automática", p: 28, c: 57, f: 15, kcal: "GET calculado", sub: "Mesma lógica, fontes 100% vegetais", forText: "Veganos · Vegetarianos · Saúde ambiental · Ética animal" },
+  {
+    icon: "🏆",
+    name: "Stage Prep",
+    kcalLabel: "Cutting · Bulk · Peak Week",
+    desc: "Todos os palcos: Bodybuilding, Men's Physique, Classic, Bikini, Wellness, Figure",
+    p: 35, c: 45, f: 20,
+    kcal: "VET ± fase",
+    sub: "Periodização de fases · Depleção · Carb Load · Flat/Full/Spilled",
+    forText: "Bodybuilding · Men's Physique · Classic Physique · Bikini · Wellness · Figure · Women's Physique — masculino e feminino",
+  },
+  {
+    icon: "⚡",
+    name: "Performance",
+    kcalLabel: "Sport-specific protocol",
+    desc: "Nutrição para rendimento esportivo: força, resistência, velocidade, explosão",
+    p: 28, c: 55, f: 17,
+    kcal: "GET + demanda",
+    sub: "Carb loading · Hidratação · Recuperação muscular · VO2 max",
+    forText: "MMA · Crossfit · Running · Natação · Futebol · Ciclismo · Tênis · Artes Marciais · Qualquer esporte",
+  },
+  {
+    icon: "🧬",
+    name: "Longevidade",
+    kcalLabel: "Healthspan protocol",
+    desc: "Nutrição anti-aging, marcadores biológicos e otimização hormonal para viver mais e melhor",
+    p: 25, c: 45, f: 30,
+    kcal: "VET neutro",
+    sub: "Anti-inflamatório · Microbioma · Hormônios aging · Telômeros",
+    forText: "Longevidade · Otimização hormonal · Anti-aging · Saúde metabólica · Prevenção de doenças",
+  },
+  {
+    icon: "🔥",
+    name: "Transformação",
+    kcalLabel: "Low Carb · Cetogênica · JI",
+    desc: "Emagrecimento inteligente com protocolos baseados em evidência. Sem sofrimento, com sistema.",
+    p: 35, c: 20, f: 45,
+    kcal: "GET − 300–600",
+    sub: "Low Carb · Cetogênica · Jejum 16/8 · OMAD",
+    forText: "Resistência insulínica · SOP · Diabetes · Obesidade · Quem quer emagrecer de vez",
+  },
+  {
+    icon: "🌿",
+    name: "Saúde & Bem-estar",
+    kcalLabel: "Equilibrado · Mediterrâneo",
+    desc: "Nutrição para qualidade de vida, energia, sono e saúde intestinal. Plant-based disponível.",
+    p: 22, c: 55, f: 23,
+    kcal: "GET neutro",
+    sub: "Mediterrâneo · DASH · Plant-Based · Microbiota",
+    forText: "Saúde geral · Bem-estar · Plant-Based · Veganos · Quem quer uma vida mais saudável",
+  },
 ];
 
 const LandingProtocols = () => {
@@ -22,12 +67,12 @@ const LandingProtocols = () => {
           <span className="w-4 h-px bg-primary" />Motor de protocolos
         </div>
         <h2 className="font-heading leading-[.92] mb-6" style={{ fontSize: "clamp(2.5rem, 6vw, 6rem)" }}>
-          10 DIETAS.<br /><span className="text-primary">1 MOTOR.</span><br />
-          <span style={{ WebkitTextStroke: "1px rgba(255,255,255,.12)", color: "transparent" }}>INFINITAS PESSOAS.</span>
+          UM MOTOR.<br /><span className="text-primary">TODOS OS</span><br />
+          <span style={{ WebkitTextStroke: "1px rgba(255,255,255,.12)", color: "transparent" }}>OBJETIVOS.</span>
         </h2>
       </motion.div>
       <div className="max-w-[600px] mb-[72px]">
-        <p className="text-[#7070a0] text-[1rem] leading-[1.7] font-landing">Cada protocolo tem distribuição de macros calibrada, faixa de kcal por objetivo e plano alimentar gerado por IA. Troca de protocolo em 1 toque — o app recalcula tudo automaticamente.</p>
+        <p className="text-[#7070a0] text-[1rem] leading-[1.7] font-landing">Do palco ao bem-estar. Do MMA à longevidade. Cada protocolo tem distribuição de macros calibrada, faixa de kcal por objetivo e plano alimentar gerado por IA. Troca de protocolo em 1 toque — o app recalcula tudo automaticamente.</p>
       </div>
 
       {/* Protocol cards grid */}

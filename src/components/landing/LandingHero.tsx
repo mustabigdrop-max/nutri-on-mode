@@ -335,14 +335,12 @@ const LandingHero = () => {
             className="max-w-[500px] mb-8"
           >
             <p className="text-[1rem] leading-[1.9] text-[#f0edf8]/55 font-landing mb-3">
-              Não importa se você está subindo no palco de{" "}
-              <span className="text-[#f0edf8]/75">Men's Physique</span>{" "}
-              ou descendo da balança pela última vez.{" "}
-              <span className="text-[#f0edf8]/75">O NutriON fala a língua do seu corpo.</span>
+              Do palco de Men's Physique ao MMA, do Bikini ao running, da longevidade a quem quer mudar de vida —{" "}
+              <span className="text-[#f0edf8]/75">o NutriON é o único sistema que abraça todos os públicos com a mesma ciência e o mesmo protocolo individual.</span>
             </p>
             <p className="text-[1rem] leading-[1.9] text-[#f0edf8]/70 font-landing font-semibold mb-4">
-              Ciência real. Protocolo individual.{" "}
-              <span className="text-[#e8a020]">O único sistema que trata atleta e não-atleta com a mesma precisão.</span>
+              Bem-vindo ao time.{" "}
+              <span className="text-[#e8a020]">Aqui, seu objetivo tem protocolo. Não dieta.</span>
             </p>
 
             {/* Live activity + badge row */}
