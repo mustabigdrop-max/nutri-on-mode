@@ -3994,6 +3994,9 @@ export default function PlanoAlimentarIA() {
           </div>
         </div>
       )}
+
+      {/* Overlay: Módulo Substituições NUTRION */}
+      {showSubstitutions && (
         <div style={{ position: "fixed", inset: 0, background: T.bg, zIndex: 60, overflow: "auto" }}>
           <div style={{ position: "sticky", top: 0, zIndex: 61, padding: "12px 24px", borderBottom: `1px solid ${T.border}`, display: "flex", alignItems: "center", gap: 12, background: T.bg2 }}>
             <button
