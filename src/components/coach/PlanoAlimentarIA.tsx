@@ -3671,43 +3671,76 @@ export default function PlanoAlimentarIA() {
 
           {/* Refeições */}
           <div style={{ marginBottom: 24 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: T.green, textTransform: "uppercase" as const, letterSpacing: "0.1em", marginBottom: 16, display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: T.green, textTransform: "uppercase" as const, letterSpacing: "0.1em", marginBottom: 10, display: "flex", alignItems: "center", gap: 8 }}>
               <div style={{ width: 16, height: 1, background: T.green }} />
               Refeições do dia
             </div>
-            {plano.refeicoes?.map((m, i) => (
-              <MealCard
-                key={i}
-                meal={m}
-                index={i}
-                onSwap={(alimentoIdx, sub) => {
-                  setPlano((prev) => {
-                    if (!prev) return prev;
-                    const next = JSON.parse(JSON.stringify(prev)) as PlanoData;
-                    const meal = next.refeicoes[i];
-                    const original = meal.alimentos?.[alimentoIdx];
-                    if (!meal.alimentos || !original) return prev;
-                    const otherSubs = (original.substituicoes || []).filter(
-                      (s) => s.alimento !== sub.alimento
-                    );
-                    const subQtd = getSubstitutionQuantityDisplay(sub);
-                    meal.alimentos[alimentoIdx] = {
-                      alimento: sub.alimento,
-                      quantidade: subQtd,
-                      quantidade_g: sub.quantidade_g,
-                      observacao: sub.observacao,
-                      substituicoes: [
-                        { alimento: original.alimento, quantidade: original.quantidade || original.quantidade_g, quantidade_g: original.quantidade_g, observacao: original.observacao, grupo: (sub as any).grupo },
-                        ...otherSubs,
-                      ],
-                    };
-                    return next;
-                  });
-                  setSavedId(null);
-                  toast({ title: "Alimento trocado ✅", description: `${sub.alimento} aplicado ao plano.` });
-                }}
-              />
-            ))}
+
+            {/* Legenda Treino/Descanso · Pré/Pós */}
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "center", padding: "8px 12px", marginBottom: 12, background: T.bg2, border: `1px dashed ${T.border2}`, borderRadius: 10, fontSize: 11, color: T.muted }}>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}><span style={{ color: T.amber }}>⚡</span> Pré-treino</span>
+              <span style={{ opacity: 0.4 }}>|</span>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}><span style={{ color: T.green }}>💪</span> Pós-treino</span>
+              <span style={{ opacity: 0.4 }}>|</span>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}><span style={{ width: 8, height: 8, borderRadius: 999, background: T.blue, display: "inline-block" }} /> Treino</span>
+              <span style={{ opacity: 0.4 }}>|</span>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}><span style={{ width: 8, height: 8, borderRadius: 999, background: T.muted2 || T.muted, display: "inline-block", opacity: 0.6 }} /> Descanso</span>
+            </div>
+
+            {(() => {
+              // Horário de treino "âncora": primeiro horário distinto entre os dias de treino do schedule.
+              const trainingTimes = (["seg","ter","qua","qui","sex","sab","dom"] as const)
+                .map((d) => trainingSchedule.base[d])
+                .filter((d) => d.is_training_day && d.time)
+                .map((d) => d.time as string);
+              const anchor = trainingTimes[0];
+              const anchorMin = anchor ? parseHHmm(anchor) : null;
+
+              const classify = (horario?: string): "pre" | "post" | null => {
+                if (anchorMin === null) return null;
+                const m = parseHHmm(horario);
+                if (m === null) return null;
+                const diff = m - anchorMin; // min
+                if (diff < 0 && diff >= -180) return "pre";
+                if (diff > 0 && diff <= 180) return "post";
+                return null;
+              };
+
+              return plano.refeicoes?.map((m, i) => (
+                <MealCard
+                  key={i}
+                  meal={m}
+                  index={i}
+                  workoutTag={classify(m.horario)}
+                  onSwap={(alimentoIdx, sub) => {
+                    setPlano((prev) => {
+                      if (!prev) return prev;
+                      const next = JSON.parse(JSON.stringify(prev)) as PlanoData;
+                      const meal = next.refeicoes[i];
+                      const original = meal.alimentos?.[alimentoIdx];
+                      if (!meal.alimentos || !original) return prev;
+                      const otherSubs = (original.substituicoes || []).filter(
+                        (s) => s.alimento !== sub.alimento
+                      );
+                      const subQtd = getSubstitutionQuantityDisplay(sub);
+                      meal.alimentos[alimentoIdx] = {
+                        alimento: sub.alimento,
+                        quantidade: subQtd,
+                        quantidade_g: sub.quantidade_g,
+                        observacao: sub.observacao,
+                        substituicoes: [
+                          { alimento: original.alimento, quantidade: original.quantidade || original.quantidade_g, quantidade_g: original.quantidade_g, observacao: original.observacao, grupo: (sub as any).grupo },
+                          ...otherSubs,
+                        ],
+                      };
+                      return next;
+                    });
+                    setSavedId(null);
+                    toast({ title: "Alimento trocado ✅", description: `${sub.alimento} aplicado ao plano.` });
+                  }}
+                />
+              ));
+            })()}
           </div>
 
           {/* Suplementação */}
