@@ -3854,6 +3854,19 @@ export default function PlanoAlimentarIA() {
           📋 Check-ins
         </button>
         <button
+          onClick={() => setShowWeekGrid(true)}
+          style={{ padding: "8px 14px", borderRadius: 8, background: T.bg3, border: `1px solid ${T.border2}`, color: T.text, fontSize: 12, cursor: "pointer", fontFamily: "inherit", fontWeight: 600 }}
+          title="Grade semanal — 6 refeições × 7 dias com substituições"
+        >
+          🗓️ Grade Semanal
+        </button>
+        <button
+          onClick={() => navigate("/coach/templates")}
+          style={{ padding: "8px 14px", borderRadius: 8, background: T.bg3, border: `1px solid ${T.border2}`, color: T.text, fontSize: 12, cursor: "pointer", fontFamily: "inherit", fontWeight: 600 }}
+          title="Modelos de plano reutilizáveis"
+        >
+          📚 Biblioteca
+        <button
           onClick={() => { setShowHistory(true); loadHistory(); }}
           style={{ padding: "8px 16px", borderRadius: 8, background: T.bg3, border: `1px solid ${T.border2}`, color: T.text, fontSize: 12, cursor: "pointer", fontFamily: "inherit", fontWeight: 600 }}
         >
