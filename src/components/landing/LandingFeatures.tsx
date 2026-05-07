@@ -2,15 +2,15 @@ import { useRef } from "react";
 import { motion, useInView } from "framer-motion";
 
 const features = [
-  { icon: "🩸", title: "IA lê seus exames", desc: 'Faz upload do exame de sangue. <strong>IA interpreta ferro, vitamina D, colesterol, TSH, glicemia</strong> e ajusta seu plano alimentar automaticamente.' },
-  { icon: "🕐", title: "Cronobiologia", desc: '<strong>Janelas de macros por horário</strong> baseadas no ritmo circadiano. Carbo de manhã, gordura à noite. Jejum noturno calculado pelo app.' },
-  { icon: "😴", title: "Sono + Recuperação", desc: 'Dormiu mal → app <strong>aumenta proteína e magnésio</strong> do dia seguinte automaticamente. Correlação sono × comportamento alimentar.' },
-  { icon: "🧠", title: "Nutrição Comportamental", desc: 'Escala de fome, diário emocional, <strong>Mindful Eating, desafios de TCC</strong>, entrevista motivacional. A ciência por trás da mudança real.' },
-  { icon: "💊", title: "Stack de Suplementação", desc: 'IA monta seu <strong>stack personalizado por objetivo + exames</strong>. Dose certa, horário certo, evidência científica de cada suplemento.' },
-  { icon: "🦠", title: "Perfil de Microbioma", desc: 'Questionário científico gera <strong>4 dimensões do seu intestino</strong>. Plano ajustado com prebióticos, probióticos e alimentos específicos.' },
-  { icon: "📸", title: "Diário Fotográfico", desc: '<strong>Slider antes × depois</strong> em tempo real. IA analisa sequência de fotos e gera relatório de evolução visual. Card compartilhável para Instagram.' },
-  { icon: "🎮", title: "Gamificação Real", desc: 'XP por refeição, <strong>streak de dias consecutivos</strong>, níveis (Iniciante → Lenda), badges, ranking semanal. Engajamento que funciona.' },
-  { icon: "🛒", title: "Lista + Custo da Dieta", desc: '<strong>Lista de compras automática</strong> pelo plano semanal. Calculadora de custo por refeição. Substitutos mais baratos com mesmo macro.' },
+  { icon: "💪", title: "Muscle State Diário", desc: '<strong>Flat · Full · Spilled.</strong> Avaliação visual do glicogênio muscular. Ajuste automático de ±15% nos carbos do dia baseado no estado real do músculo.' },
+  { icon: "🏆", title: "Peak Week Planner", desc: 'Depleção, carb load, sódio e hidratação <strong>calculados por dia</strong>. Para subir no palco de Men\'s Physique, Bodybuilding ou Fitness no pico da forma.' },
+  { icon: "💊", title: "Protocolo Farmacológico", desc: 'A IA interpreta seu stack — <strong>testosterona, peptídeos, GLP-1</strong> — e recalcula TDEE e macros automaticamente. Sem julgamento. Com ciência.' },
+  { icon: "🧠", title: "Fome que Não É de Comida", desc: '"Sua fome nunca foi de comida." IA comportamental identifica <strong>fome emocional, habitual, por tédio e social</strong>. Age antes do deslize com TCC e mindful eating.' },
+  { icon: "🩸", title: "IA lê seus exames", desc: 'Faz upload do exame de sangue. <strong>IA interpreta testosterona, GH, insulina, vitamina D, TSH</strong> e ajusta o plano automaticamente.' },
+  { icon: "🕐", title: "Nutrient Timing + Cronobiologia", desc: '<strong>Janela anabólica calculada</strong>, macros pré/pós treino por refeição, ritmo circadiano aplicado. Carbo quando o músculo absorve mais. Gordura quando o cortisol cai.' },
+  { icon: "😴", title: "Sono + Recuperação", desc: 'Dormiu mal → app <strong>ajusta proteína, carbos e magnésio</strong> do dia seguinte. Correlação direta entre qualidade de sono e performance muscular.' },
+  { icon: "📅", title: "Periodização de Fases", desc: '<strong>Bulk · Cutting · Recomp · Peak.</strong> Gantt visual com datas, metas por fase e protocolo ajustado automaticamente à fase atual. Visível para você e seu coach.' },
+  { icon: "🎮", title: "Gamificação Real", desc: 'XP por refeição, <strong>streak de dias consecutivos</strong>, níveis (Iniciante → Lenda), badges, ranking semanal. Sistema que cria hábito de verdade.' },
 ];
 
 const LandingFeatures = () => {
@@ -24,7 +24,7 @@ const LandingFeatures = () => {
           <span className="w-4 h-px bg-primary" />O que o NutriON entrega
         </div>
         <h2 className="font-heading leading-[.92] mb-6" style={{ fontSize: "clamp(2.5rem, 6vw, 6rem)" }}>
-          FUNCIONA<br /><span className="text-primary">DE VERDADE.</span>
+          ATLETA.<br />HUMANO.<br /><span className="text-primary">UM PROTOCOLO.</span>
         </h2>
       </motion.div>
 

@@ -3,11 +3,13 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
 
 const PROVOCATIONS = [
-  "Você já tentou emagrecer 3 vezes este ano.",
-  "Seu app atual sabe o que você comeu. Não sabe por que você desistiu.",
+  "4 dias antes da prova e você não sabe se tá flat, full ou spilled.",
   "Motivação dura 2 semanas. Protocolo dura a vida.",
+  "Seu app sabe o que você comeu. Não sabe por que você desistiu.",
+  "Protocolo farmacológico ativo. Nenhum app calculava seu TDEE real. Até agora.",
+  "Sua fome nunca foi de comida.",
   "Cardápio é intenção. Protocolo é resultado.",
-  "99% dos apps te pedem para contar caloria. 0% te explicam por que você errou.",
+  "Peak week chegando. O plano de depleção e carb load já está pronto?",
 ];
 
 const RotatingProvocation = () => {
@@ -310,7 +312,7 @@ const LandingHero = () => {
             className="font-heading text-[#f0edf8]/05 select-none leading-none mb-8"
             style={{ fontSize: "clamp(1rem, 3vw, 2.2rem)", letterSpacing: ".32em" }}
           >
-            SEU CORPO. SEU PROTOCOLO.
+            PALCO. SAÚDE. PERFORMANCE.
           </motion.div>
 
           {/* Separator */}
@@ -333,13 +335,14 @@ const LandingHero = () => {
             className="max-w-[500px] mb-8"
           >
             <p className="text-[1rem] leading-[1.9] text-[#f0edf8]/55 font-landing mb-3">
-              Você não chegou até aqui por acidente.{" "}
-              <span className="text-[#f0edf8]/75">Quem chega aqui já tentou de tudo.</span>{" "}
-              App genérico. Cardápio pronto. Motivação que durou 2 semanas.
+              Não importa se você está subindo no palco de{" "}
+              <span className="text-[#f0edf8]/75">Men's Physique</span>{" "}
+              ou descendo da balança pela última vez.{" "}
+              <span className="text-[#f0edf8]/75">O NutriON fala a língua do seu corpo.</span>
             </p>
             <p className="text-[1rem] leading-[1.9] text-[#f0edf8]/70 font-landing font-semibold mb-4">
-              O NUTRION não é mais uma tentativa.{" "}
-              <span className="text-[#e8a020]">É o sistema que substitui todas elas.</span>
+              Ciência real. Protocolo individual.{" "}
+              <span className="text-[#e8a020]">O único sistema que trata atleta e não-atleta com a mesma precisão.</span>
             </p>
 
             {/* Live activity + badge row */}
@@ -347,12 +350,12 @@ const LandingHero = () => {
               {/* Live counter */}
               <div className="inline-flex items-center gap-2 border border-[#00f0b4]/15 bg-[#00f0b4]/[.03] px-3 py-1.5 rounded-full">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#00f0b4]" style={{ boxShadow: "0 0 6px rgba(0,240,180,.9)", animation: "pulse 1.5s ease-in-out infinite" }} />
-                <span className="font-mono text-[.56rem] text-[#00f0b4]/70 tracking-[.08em]">23 pessoas ativas agora</span>
+                <span className="font-mono text-[.56rem] text-[#00f0b4]/70 tracking-[.08em]">protocolos executados hoje</span>
               </div>
-              {/* US badge */}
+              {/* BB badge */}
               <div className="inline-flex items-center gap-2 border border-[#e8a020]/10 bg-[#e8a020]/[.03] px-3 py-1.5 rounded-full">
-                <span className="text-[11px]">🇺🇸</span>
-                <span className="font-mono text-[.55rem] text-[#8888b0] tracking-[.06em]">Formação americana em nutrição</span>
+                <span className="text-[11px]">🏆</span>
+                <span className="font-mono text-[.55rem] text-[#8888b0] tracking-[.06em]">Stage prep · Flat/Full/Spilled · Peak Week</span>
               </div>
             </div>
           </motion.div>
@@ -365,9 +368,9 @@ const LandingHero = () => {
             className="flex flex-wrap mb-9 border border-[#e8a020]/08 w-fit"
           >
             {[
-              { val: "MCE", label: "Metodologia", sub: "Mindset · Comportamento · Execução" },
-              { val: "24H", label: "Sempre ON", sub: "Planejamento nativo a qualquer hora" },
-              { val: "0", label: "Apps iguais", sub: "Nada como isso no Brasil" },
+              { val: "BB", label: "Stage Ready", sub: "Flat/Full/Spilled · Peak Week · Janela Anabólica" },
+              { val: "24H", label: "Sempre ON", sub: "Protocolo adaptativo em tempo real" },
+              { val: "0", label: "Apps iguais", sub: "Nada como isso no mundo" },
             ].map((m, i) => (
               <div key={m.val} className="px-5 py-4 border-r border-[#e8a020]/08 last:border-r-0 relative">
                 <div

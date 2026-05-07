@@ -6,28 +6,28 @@ const PILLARS = [
     num: "01",
     tag: "NUTRI = CIÊNCIA",
     headline: "Precisão que os outros apps fingem ter.",
-    desc: "GEB/GET/VET calculados com Harris-Benedict e Katch-McArdle. Banco TACO/IBGE completo. 10 protocolos baseados em evidência — do jejum circadiano ao Peak Week de bodybuilder.",
+    desc: "GEB/GET/VET calculados por Harris-Benedict e Katch-McArdle. Protocolo farmacológico interpretado por IA. 10 protocolos científicos — do jejum circadiano ao Peak Week.",
     accent: "#e8a020",
     glow: "rgba(232,160,32,.12)",
-    items: ["GEB · GET · VET", "Harris-Benedict", "Katch-McArdle", "10 protocolos", "Análise de exames"],
+    items: ["GEB · GET · VET", "Peak Week nativo", "Protocolo farma", "10 protocolos", "Análise de exames"],
   },
   {
     num: "02",
-    tag: "ON = EXECUÇÃO",
-    headline: "De nada adianta saber. Tem que fazer.",
-    desc: "Notificação às 7h com o plano completo do dia. Refeições em 1 toque. Gamificação que gera hábito real. IA comportamental que age antes do deslize. Coach humano integrado.",
+    tag: "BB = PROTOCOLO",
+    headline: "O único app que fala a língua do atleta.",
+    desc: "Flat/Full/Spilled — estado de glicogênio muscular. Nutrient Timing com macros pré/pós treino. Periodização em fases (Bulk · Cutting · Peak). O palco tem data. O protocolo também.",
     accent: "#00f0b4",
     glow: "rgba(0,240,180,.1)",
-    items: ["Plano diário 7h", "1-tap refeições", "Gamificação real", "IA comportamental", "Coach integrado"],
+    items: ["Flat/Full/Spilled", "Nutrient Timing", "Gantt de fases", "Janela anabólica", "Stage prep"],
   },
   {
     num: "03",
-    tag: "24H = RESULTADO",
-    headline: "Seu metabolismo não para. Seu app também não.",
-    desc: "Cronobiologia ajusta macros por horário. Wearables sincronizam o gasto real. Sono recalibra o plano da manhã. Termômetro emocional monitora o comportamento à noite.",
+    tag: "FOME = COMPORTAMENTO",
+    headline: "Sua fome nunca foi de comida.",
+    desc: "IA comportamental identifica fome emocional, habitual, por tédio e social. Age antes do deslize com TCC aplicada. Mapa de vulnerabilidade. Win rate semanal. A mudança real começa aqui.",
     accent: "#e8a020",
     glow: "rgba(232,160,32,.12)",
-    items: ["Cronobiologia", "Wearable sync", "Sono → macros", "Mood tracking", "24/7 adaptativo"],
+    items: ["Fome emocional", "TCC nutricional", "Mapa vulnerab.", "Win rate semanal", "24/7 adaptativo"],
   },
 ];
 
@@ -81,18 +81,19 @@ const LandingManifesto = () => {
             className="font-heading leading-[.9] mb-5"
             style={{ fontSize: "clamp(2rem, 5.5vw, 5rem)" }}
           >
-            <span className="text-[#f0edf8]">NUTRI É A </span>
-            <span style={{ color: "#e8a020", textShadow: "0 0 40px rgba(232,160,32,.4)" }}>CIÊNCIA.</span>
+            <span className="text-[#f0edf8]">PALCO OU </span>
+            <span style={{ color: "#e8a020", textShadow: "0 0 40px rgba(232,160,32,.4)" }}>BALANÇA.</span>
             <br />
-            <span className="text-[#f0edf8]">ON É A </span>
-            <span style={{ color: "#00f0b4", textShadow: "0 0 40px rgba(0,240,180,.35)" }}>ATITUDE.</span>
+            <span className="text-[#f0edf8]">MÚSCULO OU </span>
+            <span style={{ color: "#00f0b4", textShadow: "0 0 40px rgba(0,240,180,.35)" }}>SAÚDE.</span>
             <br />
-            <span className="text-[#f0edf8]/50">JUNTOS SÃO UM </span>
-            <span style={{ color: "#e8a020", textShadow: "0 0 40px rgba(232,160,32,.4)" }}>RESULTADO.</span>
+            <span className="text-[#f0edf8]/50">UM SISTEMA. </span>
+            <span style={{ color: "#e8a020", textShadow: "0 0 40px rgba(232,160,32,.4)" }}>RESULTADO REAL.</span>
           </h2>
           <p className="text-[#8888b0] font-landing text-[.95rem] leading-[1.75] max-w-[520px]">
-            Motivação vai embora. <strong className="text-[#f0edf8]/70">Estrutura fica.</strong>{" "}
-            O nutriON não é mais um app de dieta — é o sistema que faltava.
+            Seja você um atleta de Men's Physique preparando o palco ou alguém cansado de recomeçar do zero —{" "}
+            <strong className="text-[#f0edf8]/70">o NutriON trata seu corpo com a mesma ciência.</strong>{" "}
+            Sem dieta genérica. Com protocolo individual.
           </p>
         </motion.div>
 

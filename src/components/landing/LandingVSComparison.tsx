@@ -7,24 +7,28 @@ const ROWS = [
     us: "Protocolo gerado em 7 minutos com IA + ciência",
   },
   {
-    them: "Notificação às 18h: \"O que você comeu hoje?\"",
-    us: "Às 7h: plano completo do dia já na tela",
+    them: "Peak week? Boa sorte. Você que se vira.",
+    us: "Peak Week nativo — depleção, carb load, sódio e água por dia",
   },
   {
-    them: "Mesmo cardápio para qualquer pessoa",
-    us: "Ajusta por exames, treino, sono e humor",
+    them: "Mesmo cardápio para atleta e sedentário",
+    us: "Ajusta por Muscle State, treino, sono, humor e exames",
+  },
+  {
+    them: "Não entende protocolo farmacológico",
+    us: "Interpreta testosterona, peptídeos e GLP-1 — recalcula TDEE real",
   },
   {
     them: "Não sabe por que você desistiu",
-    us: "IA comportamental age antes do deslize",
+    us: "IA comportamental age antes do deslize — \"Sua fome nunca foi de comida\"",
   },
   {
-    them: "Funcionalidades decorativas sem protocolo",
-    us: "10 dietas científicas · cronobiologia · gamificação real",
+    them: "Flat, full ou spilled? Não tem a menor ideia.",
+    us: "Muscle State Flat/Full/Spilled — ajuste de ±15% de carbos em tempo real",
   },
   {
     them: "Você some do app → o app te ignora",
-    us: "Coach IA pergunta, recalibra e te reativa",
+    us: "Coach + IA pergunta, recalibra e te reativa",
   },
 ];
 
@@ -168,10 +172,10 @@ const LandingVSComparison = () => {
           className="text-center mt-14"
         >
           <p className="font-heading text-[1.4rem] text-[#f0edf8]/55 mb-2">
-            A diferença não está no app.
+            A diferença não está nas features.
           </p>
           <p className="font-heading text-[1.4rem]" style={{ color: "#e8a020", textShadow: "0 0 30px rgba(232,160,32,.3)" }}>
-            Está na filosofia por trás dele.
+            Está em saber que sua fome nunca foi de comida.
           </p>
         </motion.div>
       </div>

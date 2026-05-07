@@ -3,40 +3,40 @@ import { motion, useInView } from "framer-motion";
 
 const patients = [
   {
-    name: "Marcos Silva",
-    age: 34,
-    program: "Cutting",
-    week: "Semana 4 de 12",
-    delta: "−2.8kg",
-    goal: "Meta: −8kg",
-    adherence: 87,
-    alert: "⚠ Abaixo da meta semanal",
-    alertType: "warning",
-    dot: "bg-[#ffcc00]",
+    name: "Gabriel Torres",
+    age: 24,
+    program: "Men's Physique — Peak Week",
+    week: "Dia 5 de 7",
+    delta: "Muscle: FULL 💪",
+    goal: "Competição: sáb",
+    adherence: 96,
+    alert: "✓ Carb load no alvo — pronto pro palco",
+    alertType: "success",
+    dot: "bg-[#00c896]",
   },
   {
     name: "Juliana Costa",
     age: 29,
-    program: "Emagrecimento",
+    program: "Cutting Lean",
     week: "Semana 7 de 16",
     delta: "−4.1kg",
     goal: "Meta: −10kg",
     adherence: 62,
-    alert: "⚠ Registros irregulares esta semana",
+    alert: "⚠ Fome emocional detectada — TCC ativada",
     alertType: "warning",
     dot: "bg-[#ff2d55]",
   },
   {
-    name: "Rafael Moura",
-    age: 27,
-    program: "Hipertrofia",
-    week: "Semana 2 de 20",
+    name: "Marcos Lima",
+    age: 31,
+    program: "Lean Bulk",
+    week: "Semana 4 de 20",
     delta: "+0.9kg",
-    goal: "Meta: +6kg",
-    adherence: 91,
-    alert: "✓ Evoluindo dentro do esperado",
+    goal: "+6kg muscle",
+    adherence: 89,
+    alert: "✓ Janela anabólica respeitada 6/7 dias",
     alertType: "success",
-    dot: "bg-[#00c896]",
+    dot: "bg-[#ffcc00]",
   },
 ];
 
@@ -52,14 +52,14 @@ const LandingCoach = () => {
             <span className="w-4 h-px bg-primary" />Painel Profissional
           </div>
           <h2 className="font-heading leading-[.92] mb-6" style={{ fontSize: "clamp(2.5rem, 6vw, 6rem)" }}>
-            PARA<br /><span className="text-primary">PROFISSIONAIS</span><br />
-            <span style={{ WebkitTextStroke: "1px rgba(255,255,255,.12)", color: "transparent" }}>DA ÁREA.</span>
+            PARA<br /><span className="text-primary">COACHES</span><br />
+            <span style={{ WebkitTextStroke: "1px rgba(255,255,255,.12)", color: "transparent" }}>DE ELITE.</span>
           </h2>
           <p className="text-[#7070a0] text-[.95rem] leading-[1.7] mt-5 max-w-[460px] font-landing">
-            Um painel B2B completo para <strong className="text-[#f0edf8]">Nutrition Coaches, Nutricionistas e profissionais de saúde</strong> que acompanham pacientes e alunos. Gerencie até 30 pessoas, receba alertas automáticos, use IA para acelerar seus atendimentos e entregue resultados que falam por si.
+            <strong className="text-[#f0edf8]">Men's Physique, Bodybuilding, Fitness ou emagrecimento</strong> — a plataforma que profissionaliza seu atendimento. Crie protocolos de palco, acompanhe check-ins semanais, periodize fases com Gantt, exporte PDF com branding e use IA para acelerar cada decisão.
           </p>
           <div className="mt-8 flex flex-col gap-2.5">
-            {["✦ Alertas automáticos de risco", "✦ IA sugere texto de feedback", "✦ Diário fotográfico do aluno", "✦ Relatório PDF em 1 clique", "✦ White label disponível"].map((f) => (
+            {["✦ Protocolos Peak Week + Stage Prep", "✦ Check-in semanal estruturado", "✦ Gantt de fases (Bulk · Cutting · Peak)", "✦ PDF com branding do coach", "✦ IA interpreta protocolo farmacológico"].map((f) => (
               <span key={f} className="font-mono text-[.65rem] bg-primary/[.06] border border-primary/[.12] text-primary px-2.5 py-1.5 rounded inline-flex items-center gap-1.5 w-fit">{f}</span>
             ))}
           </div>
