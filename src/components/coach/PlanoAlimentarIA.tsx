@@ -646,12 +646,18 @@ const MealCard = ({ meal, index, onSwap, workoutTag }: MealCardProps) => {
   const [search, setSearch] = useState<Record<number, string>>({});
 
   return (
-    <div style={{ border: `1px solid ${T.border}`, borderRadius: 12, overflow: "hidden", marginBottom: 12, background: T.card }}>
+    <div style={{ border: `1px solid ${T.border}`, borderLeft: workoutTag ? `3px solid ${workoutTag === "pre" ? T.amber : T.green}` : `1px solid ${T.border}`, borderRadius: 12, overflow: "hidden", marginBottom: 12, background: T.card }}>
       <div style={{ padding: "12px 16px", borderBottom: `1px solid ${T.border}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
           <div style={{ width: 3, height: 20, background: color, borderRadius: 2 }} />
           <span style={{ fontSize: 14, fontWeight: 600, color: T.text }}>{stripHorarioFromTitle(meal.refeicao, meal.horario)}</span>
           {meal.horario && <span style={{ fontSize: 11, color: T.muted, background: T.bg3, padding: "2px 8px", borderRadius: 999 }}>{meal.horario}</span>}
+          {workoutTag === "pre" && (
+            <span style={{ fontSize: 10, fontWeight: 700, color: T.amber, background: `${T.amber}1f`, border: `1px solid ${T.amber}55`, padding: "2px 8px", borderRadius: 999, letterSpacing: "0.04em" }}>⚡ PRÉ-TREINO</span>
+          )}
+          {workoutTag === "post" && (
+            <span style={{ fontSize: 10, fontWeight: 700, color: T.green, background: `${T.green}1f`, border: `1px solid ${T.green}55`, padding: "2px 8px", borderRadius: 999, letterSpacing: "0.04em" }}>💪 PÓS-TREINO</span>
+          )}
         </div>
         {(() => {
           const kcalCalc = getMealKcal(meal);
