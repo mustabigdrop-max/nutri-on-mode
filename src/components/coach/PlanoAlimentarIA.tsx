@@ -895,6 +895,9 @@ export default function PlanoAlimentarIA() {
   const [showHistory, setShowHistory] = useState(false);
   // Substituições NUTRION (módulo embutido)
   const [showSubstitutions, setShowSubstitutions] = useState(false);
+  // Periodização (Gantt)
+  const [showGantt, setShowGantt] = useState(false);
+  const [ganttPatientId, setGanttPatientId] = useState<string>("");
   const [history, setHistory] = useState<any[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [historySearch, setHistorySearch] = useState("");
