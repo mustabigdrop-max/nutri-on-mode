@@ -3866,6 +3866,7 @@ export default function PlanoAlimentarIA() {
           title="Modelos de plano reutilizáveis"
         >
           📚 Biblioteca
+        </button>
         <button
           onClick={() => { setShowHistory(true); loadHistory(); }}
           style={{ padding: "8px 16px", borderRadius: 8, background: T.bg3, border: `1px solid ${T.border2}`, color: T.text, fontSize: 12, cursor: "pointer", fontFamily: "inherit", fontWeight: 600 }}
