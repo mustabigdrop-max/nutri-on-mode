@@ -635,9 +635,10 @@ interface MealCardProps {
   meal: Meal;
   index: number;
   onSwap: (alimentoIdx: number, sub: SubstituicaoItem) => void;
+  workoutTag?: "pre" | "post" | null;
 }
 
-const MealCard = ({ meal, index, onSwap }: MealCardProps) => {
+const MealCard = ({ meal, index, onSwap, workoutTag }: MealCardProps) => {
   const colors = [T.green, T.blue, T.amber, "#a78bfa", "#f472b6", "#34d399", "#fb923c"];
   const color = colors[index % colors.length];
   const [openSubs, setOpenSubs] = useState<Record<number, boolean>>({});
