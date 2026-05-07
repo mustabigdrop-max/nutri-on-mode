@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { exportMealPlanPDF } from "@/utils/exportMealPlanPDF";
 import ProtocolGanttChart from "@/components/coach/ProtocolGanttChart";
+import CoachCheckinsTab from "@/components/coach/CoachCheckinsTab";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -897,6 +898,9 @@ export default function PlanoAlimentarIA() {
   const [showSubstitutions, setShowSubstitutions] = useState(false);
   // Periodização (Gantt)
   const [showGantt, setShowGantt] = useState(false);
+  // Check-ins semanais
+  const [showCheckins, setShowCheckins] = useState(false);
+  const [checkinsPatientId, setCheckinsPatientId] = useState("");
   const [ganttPatientId, setGanttPatientId] = useState<string>("");
   const [history, setHistory] = useState<any[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
@@ -3839,6 +3843,13 @@ export default function PlanoAlimentarIA() {
           📈 Periodização
         </button>
         <button
+          onClick={() => setShowCheckins(true)}
+          style={{ padding: "8px 14px", borderRadius: 8, background: T.bg3, border: `1px solid ${T.border2}`, color: T.text, fontSize: 12, cursor: "pointer", fontFamily: "inherit", fontWeight: 600 }}
+          title="Check-ins semanais do paciente — peso, fotos e ajustes"
+        >
+          📋 Check-ins
+        </button>
+        <button
           onClick={() => { setShowHistory(true); loadHistory(); }}
           style={{ padding: "8px 16px", borderRadius: 8, background: T.bg3, border: `1px solid ${T.border2}`, color: T.text, fontSize: 12, cursor: "pointer", fontFamily: "inherit", fontWeight: 600 }}
         >
@@ -3885,7 +3896,44 @@ export default function PlanoAlimentarIA() {
         </div>
       )}
 
-      {/* Overlay: Módulo Substituições NUTRION */}
+      {/* Overlay: Check-ins semanais */}
+      {showCheckins && (
+        <div onClick={() => setShowCheckins(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", zIndex: 70, display: "flex", alignItems: "flex-start", justifyContent: "center", padding: 20, overflow: "auto" }}>
+          <div onClick={(e) => e.stopPropagation()} style={{ background: T.bg2, border: `1px solid ${T.border2}`, borderRadius: 14, padding: 20, maxWidth: 1200, width: "100%", marginTop: 20 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, gap: 12, flexWrap: "wrap" }}>
+              <div>
+                <div style={{ fontSize: 11, color: T.muted, textTransform: "uppercase", letterSpacing: "0.1em" }}>Check-ins semanais</div>
+                <div style={{ fontSize: 16, fontWeight: 700, color: T.text }}>📋 Acompanhamento semanal do paciente</div>
+              </div>
+              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                <select
+                  value={checkinsPatientId}
+                  onChange={(e) => setCheckinsPatientId(e.target.value)}
+                  style={{ background: T.bg3, border: `1px solid ${T.border2}`, color: T.text, fontSize: 12, padding: "8px 12px", borderRadius: 8, fontFamily: "inherit", minWidth: 220 }}
+                >
+                  <option value="">Selecione um paciente...</option>
+                  {patients.map((p) => (
+                    <option key={p.user_id} value={p.user_id}>{p.name}</option>
+                  ))}
+                </select>
+                <button
+                  onClick={() => setShowCheckins(false)}
+                  style={{ padding: "8px 14px", borderRadius: 8, background: T.bg3, border: `1px solid ${T.border2}`, color: T.muted, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}
+                >
+                  Fechar
+                </button>
+              </div>
+            </div>
+            {checkinsPatientId ? (
+              <CoachCheckinsTab patientId={checkinsPatientId} />
+            ) : (
+              <div style={{ padding: 40, textAlign: "center", color: T.muted, fontSize: 13, border: `1px dashed ${T.border2}`, borderRadius: 10 }}>
+                Selecione um paciente acima para visualizar os check-ins semanais.
+              </div>
+            )}
+          </div>
+        </div>
+      )}
       {showSubstitutions && (
         <div style={{ position: "fixed", inset: 0, background: T.bg, zIndex: 60, overflow: "auto" }}>
           <div style={{ position: "sticky", top: 0, zIndex: 61, padding: "12px 24px", borderBottom: `1px solid ${T.border}`, display: "flex", alignItems: "center", gap: 12, background: T.bg2 }}>
