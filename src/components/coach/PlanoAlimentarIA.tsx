@@ -897,6 +897,9 @@ export default function PlanoAlimentarIA() {
   const [showSubstitutions, setShowSubstitutions] = useState(false);
   // Periodização (Gantt)
   const [showGantt, setShowGantt] = useState(false);
+  // Check-ins semanais
+  const [showCheckins, setShowCheckins] = useState(false);
+  const [checkinsPatientId, setCheckinsPatientId] = useState("");
   const [ganttPatientId, setGanttPatientId] = useState<string>("");
   const [history, setHistory] = useState<any[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
