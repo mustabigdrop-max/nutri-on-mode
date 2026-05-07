@@ -902,6 +902,9 @@ export default function PlanoAlimentarIA() {
   // Check-ins semanais
   const [showCheckins, setShowCheckins] = useState(false);
   const [checkinsPatientId, setCheckinsPatientId] = useState("");
+  // Grade semanal de refeições
+  const [showWeekGrid, setShowWeekGrid] = useState(false);
+  const [weekGridPatientId, setWeekGridPatientId] = useState("");
   const [ganttPatientId, setGanttPatientId] = useState<string>("");
   const [history, setHistory] = useState<any[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
