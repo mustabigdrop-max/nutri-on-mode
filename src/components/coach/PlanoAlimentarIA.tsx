@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { exportMealPlanPDF } from "@/utils/exportMealPlanPDF";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -1844,85 +1845,92 @@ export default function PlanoAlimentarIA() {
     }
   };
 
-  const exportPDF = () => {
+  const exportPDF = async () => {
     if (!plano) return;
     const r = plano.resumo;
     const kcalUI = getResumoKcal(r);
-    const w = window.open("", "_blank");
-    if (!w) return;
-    w.document.write(`<html><head><title>Plano Alimentar - ${r.nome}</title>
-    <style>
-      body{font-family:'Segoe UI',sans-serif;padding:40px;color:#1a1a1a}
-      h1{color:#10b981;border-bottom:2px solid #10b981;padding-bottom:8px}
-      .meta{display:flex;gap:24px;margin:16px 0;flex-wrap:wrap}
-      .meta-box{background:#f0fdf4;padding:12px 20px;border-radius:8px;text-align:center}
-      .meta-box span{font-size:24px;font-weight:bold;color:#059669;display:block}
-      .meal{background:#fafafa;border:1px solid #e5e7eb;border-radius:8px;padding:16px;margin:12px 0}
-      .meal h3{margin:0 0 8px;color:#065f46}
-      .alimento{padding:6px 0;border-bottom:1px dashed #e5e7eb}
-      .alimento:last-child{border-bottom:none}
-      .subs{margin:6px 0 4px 14px;padding:8px;background:#ecfdf5;border:1px dashed #10b98155;border-radius:6px}
-      .subs-title{font-size:10px;color:#059669;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
-      .subs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:6px}
-      .sub-card{background:#fff;border:1px solid #d1fae5;border-radius:6px;padding:6px 8px;font-size:11px}
-      .sub-badge{display:inline-block;font-size:9px;padding:1px 6px;border-radius:999px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px}
-      .sub-name{font-weight:600;color:#1f2937}
-      .sub-qty{color:#6b7280;font-size:10px}
-      .sub-obs{color:#9ca3af;font-size:9px;font-style:italic;margin-top:2px}
-      .macros{display:flex;gap:16px;margin-top:8px;font-size:13px;color:#6b7280}
-      .tip{font-style:italic;color:#059669;font-size:12px;margin-top:6px}
-      .footer{margin-top:32px;text-align:center;color:#9ca3af;font-size:11px}
-    </style></head><body>
-      <h1>🥗 Plano Alimentar — ${r.nome}</h1>
-      <p>Objetivo: ${r.objetivo} | Calorias: ${kcalUI} kcal | P: ${r.proteina_total}g | C: ${r.carboidrato_total}g | G: ${r.gordura_total}g</p>
-      <div class="meta">
-        <div class="meta-box"><span>${r.tmb}</span>TMB (kcal)</div>
-        <div class="meta-box"><span>${r.get}</span>GET (kcal)</div>
-        <div class="meta-box"><span>${kcalUI}</span>VET (kcal)</div>
-        <div class="meta-box"><span>${r.imc}</span>IMC</div>
-      </div>
-      ${glut4Text ? `
-        <div style="background:#f0fdf4;border:2px solid #4ade80;border-radius:10px;padding:16px;margin:16px 0;">
-          <h3 style="color:#166534;margin:0 0 4px 0;">⚡ Pós-Treino Imediato — Janela GLUT-4</h3>
-          <div style="font-size:11px;color:#166534;margin:0 0 10px 0;font-weight:600;">📌 Referência prescrita pelo coach: ${({dextrose:"Dextrose pura",tamaras:"Tâmaras Medjool",pao_frances:"Pão francês",pao_branco:"Pão de forma branco",doce_de_leite:"Doce de leite light",mel:"Mel puro",geleia:"Geleia açucarada com pão",leite_condensado:"Leite condensado desnatado",banana:"Banana bem madura",coca:"Coca-Cola (competição)",maltodextrina:"Maltodextrina"} as Record<string,string>)[form.glut4CarbSource] || form.glut4CarbSource}</div>
-          <pre style="white-space:pre-wrap;font-family:inherit;font-size:12px;color:#1f2937;margin:0;line-height:1.6;">${glut4Text.replace(/</g, "&lt;")}</pre>
-        </div>
-      ` : ""}
-      ${plano.refeicoes.map(m => `
-        <div class="meal">
-          <h3>${m.refeicao} — ${m.horario || ""}</h3>
-          ${m.alimentos?.map(a => {
-            const subs = (a.substituicoes || []).map(s => ({ ...s, grupo: inferGrupo(s) }));
-            return `
-            <div class="alimento">
-              <div><b>${a.alimento}</b> — ${a.quantidade || ""}${a.observacao ? ` <i style="color:#6b7280">(${a.observacao})</i>` : ""}</div>
-              ${subs.length ? `
-                <div class="subs">
-                  <div class="subs-title">⇄ Substitutos isocalóricos</div>
-                  <div class="subs-grid">
-                    ${subs.map(s => {
-                      const meta = GRUPO_META[(s.grupo as GrupoSub) || "outro"];
-                      return `<div class="sub-card">
-                        <span class="sub-badge" style="background:${meta.color}22;color:${meta.color}">${meta.emoji} ${meta.label}</span>
-                        <div class="sub-name">${s.alimento}</div>
-                        ${s.quantidade ? `<div class="sub-qty">${s.quantidade}</div>` : ""}
-                        ${s.observacao ? `<div class="sub-obs">${s.observacao}</div>` : ""}
-                      </div>`;
-                    }).join("")}
-                  </div>
-                </div>
-              ` : ""}
-            </div>
-          `;}).join("") || ""}
-          <div class="macros">🔥 ${getMealKcal(m as Meal) || 0} kcal | P: ${m.macros?.proteina || 0}g | C: ${m.macros?.carboidrato || 0}g | G: ${m.macros?.gordura || 0}g</div>
-        </div>
-      `).join("")}
-      ${plano.suplementacao?.length ? `<h2>Suplementação</h2>${plano.suplementacao.map(s => `<div class="meal"><h3>${s.suplemento}</h3><p>Dose: ${s.dose} | Timing: ${s.timing}</p><p class="tip">${s.justificativa}</p></div>`).join("")}` : ""}
-      ${plano.dica_mce ? `<h2>Método MCE</h2><p><b>Mindset:</b> ${plano.dica_mce.mindset}</p><p><b>Comportamento:</b> ${plano.dica_mce.comportamento}</p><p><b>Execução:</b> ${plano.dica_mce.execucao}</p>` : ""}
-      <div class="footer">Gerado por NUTRION — Plataforma de Nutrição Inteligente</div>
-    </body></html>`);
-    w.document.close();
-    w.print();
+
+    // Mapeia tipo de refeição (cafe_manha, almoco, etc) a partir do título da refeição.
+    const inferMealType = (titulo: string): string => {
+      const t = (titulo || "").toLowerCase();
+      if (/caf[eé]|desjejum/.test(t)) return "cafe_manha";
+      if (/lanche.*(manh[ãa]|meio)/.test(t)) return "lanche_manha";
+      if (/almo[cç]o/.test(t)) return "almoco";
+      if (/lanche.*tarde|p[óo]s.*treino|pr[éeè].*treino/.test(t)) return "lanche_tarde";
+      if (/jantar/.test(t)) return "jantar";
+      if (/ceia|noturna/.test(t)) return "ceia";
+      return "lanche_tarde";
+    };
+
+    // Gera items semanais replicando o template em todos os 7 dias (0=Seg..6=Dom).
+    const items = [] as any[];
+    for (let day = 0; day < 7; day++) {
+      (plano.refeicoes || []).forEach((m) => {
+        const tipo = inferMealType(m.refeicao || "");
+        const alimentos = m.alimentos || [];
+        if (!alimentos.length) {
+          items.push({
+            day_index: day,
+            meal_type: tipo,
+            food_name: m.refeicao || "Refeição",
+            portion: m.horario || "",
+            kcal: getMealKcal(m as Meal),
+            protein_g: m.macros?.proteina || 0,
+            carbs_g: m.macros?.carboidrato || 0,
+            fat_g: m.macros?.gordura || 0,
+          });
+        } else {
+          alimentos.forEach((a, idx) => {
+            items.push({
+              day_index: day,
+              meal_type: tipo,
+              food_name: a.alimento,
+              portion: (a.quantidade || a.quantidade_g || "") as string,
+              // Distribui kcal/macros da refeição apenas no primeiro item para evitar duplicar totais.
+              kcal: idx === 0 ? getMealKcal(m as Meal) : 0,
+              protein_g: idx === 0 ? (m.macros?.proteina || 0) : 0,
+              carbs_g: idx === 0 ? (m.macros?.carboidrato || 0) : 0,
+              fat_g: idx === 0 ? (m.macros?.gordura || 0) : 0,
+            });
+          });
+        }
+      });
+    }
+
+    // Dias de treino (Seg=0..Dom=6) extraídos do TrainingSchedule.
+    const dayOrder: Array<"seg"|"ter"|"qua"|"qui"|"sex"|"sab"|"dom"> = ["seg","ter","qua","qui","sex","sab","dom"];
+    const trainingDayIndices = dayOrder
+      .map((d, i) => (trainingSchedule.base[d]?.is_training_day ? i : -1))
+      .filter((i) => i >= 0);
+
+    // Busca dados do coach (avatar, nome, registro) se disponível.
+    let coachProfile: any = { professional_name: "", crn: "", avatar_url: "" };
+    if (coachProfileId) {
+      const { data: cp } = await supabase
+        .from("coach_profiles")
+        .select("professional_name, crn, avatar_url")
+        .eq("id", coachProfileId)
+        .maybeSingle();
+      if (cp) coachProfile = cp;
+    }
+
+    const patient = {
+      display_name: r.nome || form.nome || "Paciente",
+      full_name: r.nome || form.nome || "Paciente",
+      goal: r.objetivo || form.objetivo,
+      weight_kg: Number(form.peso) || undefined,
+      target_kcal: kcalUI,
+      target_protein_g: r.proteina_total,
+      target_carbs_g: r.carboidrato_total,
+      target_fat_g: r.gordura_total,
+    };
+
+    try {
+      await exportMealPlanPDF(patient, items, coachProfile, [], trainingDayIndices);
+      toast({ title: "PDF gerado ✅", description: "Download iniciado." });
+    } catch (e: any) {
+      toast({ title: "Erro ao gerar PDF", description: e?.message || "Tente novamente.", variant: "destructive" });
+    }
   };
 
   // ── LOADING ──
