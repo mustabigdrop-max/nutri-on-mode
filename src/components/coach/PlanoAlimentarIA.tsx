@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { exportMealPlanPDF } from "@/utils/exportMealPlanPDF";
 import ProtocolGanttChart from "@/components/coach/ProtocolGanttChart";
 import CoachCheckinsTab from "@/components/coach/CoachCheckinsTab";
+import CoachWeekMealGrid from "@/components/coach/CoachWeekMealGrid";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -901,6 +902,9 @@ export default function PlanoAlimentarIA() {
   // Check-ins semanais
   const [showCheckins, setShowCheckins] = useState(false);
   const [checkinsPatientId, setCheckinsPatientId] = useState("");
+  // Grade semanal de refeições
+  const [showWeekGrid, setShowWeekGrid] = useState(false);
+  const [weekGridPatientId, setWeekGridPatientId] = useState("");
   const [ganttPatientId, setGanttPatientId] = useState<string>("");
   const [history, setHistory] = useState<any[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
@@ -3850,6 +3854,20 @@ export default function PlanoAlimentarIA() {
           📋 Check-ins
         </button>
         <button
+          onClick={() => setShowWeekGrid(true)}
+          style={{ padding: "8px 14px", borderRadius: 8, background: T.bg3, border: `1px solid ${T.border2}`, color: T.text, fontSize: 12, cursor: "pointer", fontFamily: "inherit", fontWeight: 600 }}
+          title="Grade semanal — 6 refeições × 7 dias com substituições"
+        >
+          🗓️ Grade Semanal
+        </button>
+        <button
+          onClick={() => navigate("/coach/templates")}
+          style={{ padding: "8px 14px", borderRadius: 8, background: T.bg3, border: `1px solid ${T.border2}`, color: T.text, fontSize: 12, cursor: "pointer", fontFamily: "inherit", fontWeight: 600 }}
+          title="Modelos de plano reutilizáveis"
+        >
+          📚 Biblioteca
+        </button>
+        <button
           onClick={() => { setShowHistory(true); loadHistory(); }}
           style={{ padding: "8px 16px", borderRadius: 8, background: T.bg3, border: `1px solid ${T.border2}`, color: T.text, fontSize: 12, cursor: "pointer", fontFamily: "inherit", fontWeight: 600 }}
         >
@@ -3934,6 +3952,50 @@ export default function PlanoAlimentarIA() {
           </div>
         </div>
       )}
+
+      {/* Overlay: Grade Semanal de refeições */}
+      {showWeekGrid && (
+        <div onClick={() => setShowWeekGrid(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", zIndex: 70, display: "flex", alignItems: "flex-start", justifyContent: "center", padding: 20, overflow: "auto" }}>
+          <div onClick={(e) => e.stopPropagation()} style={{ background: T.bg2, border: `1px solid ${T.border2}`, borderRadius: 14, padding: 20, maxWidth: 1400, width: "100%", marginTop: 20 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, gap: 12, flexWrap: "wrap" }}>
+              <div>
+                <div style={{ fontSize: 11, color: T.muted, textTransform: "uppercase", letterSpacing: "0.1em" }}>Grade Semanal</div>
+                <div style={{ fontSize: 16, fontWeight: 700, color: T.text }}>🗓️ 6 refeições × 7 dias</div>
+              </div>
+              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                <select
+                  value={weekGridPatientId}
+                  onChange={(e) => setWeekGridPatientId(e.target.value)}
+                  style={{ background: T.bg3, border: `1px solid ${T.border2}`, color: T.text, fontSize: 12, padding: "8px 12px", borderRadius: 8, fontFamily: "inherit", minWidth: 220 }}
+                >
+                  <option value="">Selecione um paciente...</option>
+                  {patients.map((p) => (
+                    <option key={p.user_id} value={p.user_id}>{p.name}</option>
+                  ))}
+                </select>
+                <button
+                  onClick={() => setShowWeekGrid(false)}
+                  style={{ padding: "8px 14px", borderRadius: 8, background: T.bg3, border: `1px solid ${T.border2}`, color: T.muted, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}
+                >
+                  Fechar
+                </button>
+              </div>
+            </div>
+            {weekGridPatientId ? (
+              <CoachWeekMealGrid
+                patientId={weekGridPatientId}
+                patient={patients.find((p) => p.user_id === weekGridPatientId) || { user_id: weekGridPatientId }}
+              />
+            ) : (
+              <div style={{ padding: 40, textAlign: "center", color: T.muted, fontSize: 13, border: `1px dashed ${T.border2}`, borderRadius: 10 }}>
+                Selecione um paciente acima para abrir a grade semanal.
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Overlay: Módulo Substituições NUTRION */}
       {showSubstitutions && (
         <div style={{ position: "fixed", inset: 0, background: T.bg, zIndex: 60, overflow: "auto" }}>
           <div style={{ position: "sticky", top: 0, zIndex: 61, padding: "12px 24px", borderBottom: `1px solid ${T.border}`, display: "flex", alignItems: "center", gap: 12, background: T.bg2 }}>
