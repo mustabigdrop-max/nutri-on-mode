@@ -3843,6 +3843,13 @@ export default function PlanoAlimentarIA() {
           📈 Periodização
         </button>
         <button
+          onClick={() => setShowCheckins(true)}
+          style={{ padding: "8px 14px", borderRadius: 8, background: T.bg3, border: `1px solid ${T.border2}`, color: T.text, fontSize: 12, cursor: "pointer", fontFamily: "inherit", fontWeight: 600 }}
+          title="Check-ins semanais do paciente — peso, fotos e ajustes"
+        >
+          📋 Check-ins
+        </button>
+        <button
           onClick={() => { setShowHistory(true); loadHistory(); }}
           style={{ padding: "8px 16px", borderRadius: 8, background: T.bg3, border: `1px solid ${T.border2}`, color: T.text, fontSize: 12, cursor: "pointer", fontFamily: "inherit", fontWeight: 600 }}
         >
