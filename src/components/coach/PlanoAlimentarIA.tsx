@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { exportMealPlanPDF } from "@/utils/exportMealPlanPDF";
+import ProtocolGanttChart from "@/components/coach/ProtocolGanttChart";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
