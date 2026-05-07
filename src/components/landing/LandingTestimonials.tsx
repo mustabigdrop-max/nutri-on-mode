@@ -3,72 +3,72 @@ import { motion, useInView } from "framer-motion";
 
 const CASES = [
   {
-    id: "M.S.",
-    age: 34,
+    id: "G.T.",
+    age: 24,
     city: "São Paulo",
-    protocol: "Cutting · Hipertrofia",
-    weeks: 8,
+    protocol: "Men's Physique · Stage Prep · Peak Week",
+    weeks: 16,
     before: {
-      weight: "91kg",
-      adherence: "28%",
-      streak: "2 dias",
-      score: "31/100",
-      note: "Usava MyFitnessPal. Abandonava na semana 3. Sempre.",
+      weight: "86kg · 14% BF",
+      adherence: "52%",
+      streak: "5 dias",
+      score: "48/100",
+      note: "Preparação sem sistema. Flat na semana do palco. Perdeu pontos por retenção.",
     },
     after: {
-      weight: "85.4kg",
-      adherence: "93%",
-      streak: "54 dias",
-      score: "96/100",
-      note: "−5.6kg reais. Sem passar fome. Sem fórmula mágica.",
+      weight: "79.2kg · 6.8% BF",
+      adherence: "97%",
+      streak: "98 dias",
+      score: "99/100",
+      note: "Top 3 na categoria. Muscle State FULL no dia da prova. Peak Week executado com precisão.",
     },
-    quote: "O NUTRION não me deu motivação. Me deu sistema. É diferente.",
+    quote: "Pela primeira vez subi no palco sabendo exatamente o que estava fazendo. O app calculou cada dia.",
     color: "#e8a020",
   },
   {
     id: "J.C.",
     age: 29,
     city: "Belo Horizonte",
-    protocol: "Cetogênica · TCC Nutricional",
-    weeks: 6,
+    protocol: "TCC Nutricional · Comportamento · Cutting",
+    weeks: 8,
     before: {
       weight: "78kg",
       adherence: "41%",
       streak: "4 dias",
       score: "44/100",
-      note: "Compulsão alimentar noturna. Já tentou 4 dietas diferentes.",
+      note: "Compulsão noturna. Tentou 4 dietas diferentes. Sabia o que comer. Não conseguia.",
     },
     after: {
-      weight: "73.2kg",
-      adherence: "88%",
-      streak: "38 dias",
-      score: "91/100",
-      note: "−4.8kg. Termômetro emocional + TCC = mudou o comportamento.",
+      weight: "71.6kg",
+      adherence: "91%",
+      streak: "52 dias",
+      score: "94/100",
+      note: "−6.4kg. Termômetro emocional + TCC identificou o gatilho. Fome noturna resolvida.",
     },
-    quote: "Pela primeira vez entendi por que eu sabotava. O app me mostrou.",
+    quote: "Sua fome nunca foi de comida. Quando li isso no app, entendi tudo que estava errado.",
     color: "#00f0b4",
   },
   {
     id: "R.M.",
-    age: 27,
-    city: "Rio de Janeiro",
-    protocol: "Atleta · Bulk · Peak Week",
+    age: 31,
+    city: "Curitiba",
+    protocol: "Performance · Corrida · Nutrição Esportiva",
     weeks: 12,
     before: {
       weight: "74kg",
       adherence: "55%",
       streak: "6 dias",
-      score: "58/100",
-      note: "Calculava macros no papel. Perdia dados. Sem consistência.",
+      score: "57/100",
+      note: "Corredor de meia-maratona. Batia plateau de performance. Sem periodização nutricional.",
     },
     after: {
-      weight: "80.8kg",
-      adherence: "96%",
-      streak: "82 dias",
-      score: "99/100",
-      note: "+6.8kg massa. NutriSync sincronizando treinos em tempo real.",
+      weight: "71.2kg",
+      adherence: "94%",
+      streak: "78 dias",
+      score: "97/100",
+      note: "PR na São Silvestre. −2.8kg com manutenção de VO2. Carb loading calculado pelo NutriON.",
     },
-    quote: "Nunca vi um app que entende de bodybuilding de verdade. Esse entende.",
+    quote: "Nunca imaginei que a nutrição era o que faltava no meu treino. O NutriON me provou errado.",
     color: "#7890ff",
   },
 ];
@@ -125,13 +125,14 @@ const LandingTestimonials = () => {
             className="font-heading leading-[.9] mb-4"
             style={{ fontSize: "clamp(2rem, 5vw, 4.5rem)" }}
           >
-            <span className="text-[#f0edf8]">QUEM ATIVOU O </span>
-            <span style={{ color: "#e8a020", textShadow: "0 0 35px rgba(232,160,32,.4)" }}>PROTOCOLO.</span>
+            <span className="text-[#f0edf8]">PALCO. CORRIDA.</span>
             <br />
-            <span className="text-[#f0edf8]/30">O QUE ACONTECEU.</span>
+            <span style={{ color: "#e8a020", textShadow: "0 0 35px rgba(232,160,32,.4)" }}>COMPORTAMENTO.</span>
+            <br />
+            <span className="text-[#f0edf8]/30">RESULTADO REAL.</span>
           </h2>
-          <p className="text-[#60607a] font-landing text-[.9rem] max-w-[440px]">
-            Não são fotos antes/depois. São dados. Aderência, streak, score, peso — tudo rastreado.
+          <p className="text-[#60607a] font-landing text-[.9rem] max-w-[480px]">
+            Não são fotos antes/depois. São dados reais — atleta de palco, corredor de performance e quem transformou a relação com a comida. Aderência, streak, score, composição corporal — tudo rastreado.
           </p>
         </motion.div>
 

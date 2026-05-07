@@ -46,8 +46,11 @@ const LandingCTA = () => {
           transition={{ duration: 0.6 }}
           className="mb-6"
         >
+          <p className="font-mono text-[.62rem] text-[#e8a020]/40 tracking-[.28em] uppercase mb-3">
+            Palco · Esporte · Transformação · Longevidade
+          </p>
           <p className="font-heading text-[#f0edf8]/25 mb-1" style={{ fontSize: "clamp(1rem, 2.5vw, 1.6rem)" }}>
-            Você ainda vai usar aquele app?
+            Qual é a sua jornada?
           </p>
           <div className="h-px max-w-[120px] mx-auto" style={{ background: "linear-gradient(90deg, transparent, rgba(232,160,32,.4), transparent)" }} />
         </motion.div>
@@ -61,13 +64,13 @@ const LandingCTA = () => {
           style={{ fontSize: "clamp(3rem, 10vw, 9rem)" }}
         >
           <span style={{ WebkitTextStroke: "1px rgba(232,160,32,.3)", color: "transparent" }}>
-            VOCÊ
+            SEU
           </span>
           <br />
-          <span style={{ color: "#f0edf8" }}>ESTÁ</span>
+          <span style={{ color: "#f0edf8" }}>CORPO.</span>
           <br />
           <span style={{ color: "#e8a020", textShadow: "0 0 60px rgba(232,160,32,.5), 0 0 120px rgba(232,160,32,.2)" }}>
-            NUTRI<span style={{ WebkitTextStroke: "2px #e8a020", color: "transparent" }}>ON</span>?
+            SEU <span style={{ WebkitTextStroke: "2px #e8a020", color: "transparent" }}>TEMPO.</span>
           </span>
         </motion.h2>
 
@@ -78,16 +81,16 @@ const LandingCTA = () => {
           transition={{ duration: 0.7, delay: 0.2 }}
           className="mb-10"
         >
-          <p className="font-landing text-[1rem] text-[#8888b0] leading-[1.8] mb-3 max-w-[520px] mx-auto">
-            Cada semana sem sistema é uma semana de resultado que não vai acontecer.
-            Resultado não espera motivação. Resultado espera estrutura.
+          <p className="font-landing text-[1rem] text-[#8888b0] leading-[1.8] mb-3 max-w-[560px] mx-auto">
+            Todo mundo que chegou ao resultado que queria tem uma coisa em comum:{" "}
+            <span className="text-[#f0edf8]/70">parou de tentar e começou a executar protocolo.</span>
           </p>
           <p className="font-landing text-[1rem] text-[#f0edf8]/60 font-semibold">
-            Entra no modo ON agora.
+            O NutriON é o sistema. Você só precisa ativar.
           </p>
         </motion.div>
 
-        {/* Risk reversal + social proof */}
+        {/* Trust signals for all audiences */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
@@ -95,9 +98,9 @@ const LandingCTA = () => {
           className="flex items-center justify-center gap-6 flex-wrap mb-10"
         >
           {[
-            { icon: "🔓", text: "Cancele quando quiser" },
+            { icon: "🏆", text: "Stage prep · todos os palcos" },
             { icon: "⚡", text: "Protocolo em 7 minutos" },
-            { icon: "🛡️", text: "Sem pegadinha" },
+            { icon: "🛡️", text: "7 dias grátis · cancele fácil" },
           ].map(({ icon, text }) => (
             <div key={text} className="flex items-center gap-2">
               <span className="text-[.8rem]">{icon}</span>

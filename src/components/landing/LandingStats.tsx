@@ -22,34 +22,35 @@ function useCountUp(target: number, inView: boolean, duration = 1800) {
 
 const PROOF = [
   {
-    target: 3847,
-    suffix: "+",
-    label: "Protocolos ativados",
-    sub: "e crescendo todo dia",
+    target: 7,
+    suffix: "",
+    label: "Jornadas atendidas",
+    sub: "Palco · Esporte · Saúde · Longevidade",
     color: "#e8a020",
     highlight: true,
+    special: "7",
   },
   {
     target: 94,
     suffix: "%",
     label: "Taxa de aderência",
-    sub: "média dos usuários ON",
+    sub: "média dos usuários com protocolo ativo",
     color: "#00f0b4",
     highlight: false,
   },
   {
-    target: 10,
-    suffix: "",
-    label: "Protocolos científicos",
-    sub: "de Low Carb a Peak Week",
+    target: 24,
+    suffix: "h",
+    label: "Sistema sempre ON",
+    sub: "Adaptação em tempo real · nunca para",
     color: "#7890ff",
     highlight: false,
   },
   {
     target: 0,
     suffix: "",
-    label: "Apps iguais no Brasil",
-    sub: "e no mundo",
+    label: "Apps iguais no mundo",
+    sub: "Stage prep + comportamento + longevidade",
     color: "#e8a020",
     highlight: true,
     special: "NENHUM",
@@ -143,7 +144,7 @@ const LandingStats = () => {
             textShadow: "0 0 30px rgba(232,160,32,.3)",
           }}
         >
-          alguém está ativando o protocolo.
+          alguém está subindo de nível.
         </p>
       </motion.div>
 
