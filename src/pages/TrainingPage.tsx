@@ -1630,7 +1630,76 @@ function SetRow({ label, detail, note, color, rest }: { label: string; detail: s
 }
 
 /* ── Text Card ── */
+function tryParseJson(raw: string): any | null {
+  if (!raw) return null;
+  let s = raw.trim();
+  // strip ```json ... ``` fences
+  const fence = s.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/i);
+  if (fence) s = fence[1].trim();
+  if (!(s.startsWith("{") || s.startsWith("["))) return null;
+  try { return JSON.parse(s); } catch { return null; }
+}
+
+function humanizeKey(k: string) {
+  return k.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+}
+
+function JsonRender({ data, level = 0 }: { data: any; level?: number }) {
+  if (data === null || data === undefined) return null;
+  if (typeof data === "string" || typeof data === "number" || typeof data === "boolean") {
+    return <p className="text-[11px] leading-relaxed" style={{ color: TEXT_DIM }}>{String(data)}</p>;
+  }
+  if (Array.isArray(data)) {
+    const allPrimitive = data.every(d => typeof d !== "object" || d === null);
+    if (allPrimitive) {
+      return (
+        <ul className="space-y-1">
+          {data.map((v, i) => (
+            <li key={i} className="text-[11px] ml-3" style={{ color: TEXT_DIM }}>• {String(v)}</li>
+          ))}
+        </ul>
+      );
+    }
+    return (
+      <div className="space-y-3">
+        {data.map((v, i) => (
+          <div key={i} className="rounded-xl p-3" style={{ background: SURFACE2, border: `1px solid ${BORDER}` }}>
+            <JsonRender data={v} level={level + 1} />
+          </div>
+        ))}
+      </div>
+    );
+  }
+  // object
+  return (
+    <div className="space-y-3">
+      {Object.entries(data).map(([k, v]) => {
+        const HeadingTag = level === 0 ? "h3" : "h4";
+        const headingSize = level === 0 ? "text-[13px]" : "text-[11px]";
+        return (
+          <div key={k} className="space-y-1.5">
+            <HeadingTag className={`${headingSize} font-black uppercase tracking-wide`} style={{ color: GREEN, fontFamily: FONT }}>
+              {humanizeKey(k)}
+            </HeadingTag>
+            <div className="ml-1">
+              <JsonRender data={v} level={level + 1} />
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 function TextCard({ content }: { content: string }) {
+  const parsed = tryParseJson(content);
+  if (parsed) {
+    return (
+      <div className="rounded-2xl p-4" style={{ background: SURFACE, border: `1px solid ${BORDER}` }}>
+        <JsonRender data={parsed} />
+      </div>
+    );
+  }
   const lines = content.split("\n");
   return (
     <div className="rounded-2xl p-4 space-y-1" style={{ background: SURFACE, border: `1px solid ${BORDER}` }}>
