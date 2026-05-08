@@ -8,6 +8,7 @@ import LandingTeamSection from "@/components/landing/LandingTeamSection";
 import LandingInteractiveQuiz from "@/components/landing/LandingInteractiveQuiz";
 import LandingTransformTimeline from "@/components/landing/LandingTransformTimeline";
 import LandingVSComparison from "@/components/landing/LandingVSComparison";
+import LandingPitch from "@/components/landing/LandingPitch";
 import LandingManifesto from "@/components/landing/LandingManifesto";
 import LandingProtocols from "@/components/landing/LandingProtocols";
 import LandingDayTimeline from "@/components/landing/LandingDayTimeline";
@@ -36,6 +37,7 @@ const Index = () => (
       <LandingInteractiveQuiz />
       <LandingTransformTimeline />
       <LandingVSComparison />
+      <LandingPitch />
       <LandingManifesto />
       <LandingProtocols />
       <LandingDayTimeline />
