@@ -13,6 +13,7 @@ import LandingDayTimeline from "@/components/landing/LandingDayTimeline";
 import LandingAppDemo from "@/components/landing/LandingAppDemo";
 import LandingKcalEngine from "@/components/landing/LandingKcalEngine";
 import LandingFeatures from "@/components/landing/LandingFeatures";
+import LandingLiveSystem from "@/components/landing/LandingLiveSystem";
 import LandingStats from "@/components/landing/LandingStats";
 import LandingTestimonials from "@/components/landing/LandingTestimonials";
 import LandingCoach from "@/components/landing/LandingCoach";
@@ -39,6 +40,7 @@ const Index = () => (
       <LandingAppDemo />
       <LandingKcalEngine />
       <LandingFeatures />
+      <LandingLiveSystem />
       <LandingStats />
       <LandingTestimonials />
       <LandingCoach />
