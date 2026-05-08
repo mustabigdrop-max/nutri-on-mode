@@ -263,10 +263,9 @@ const LandingHero = () => {
               className="text-[.95rem] leading-[1.9] mb-3"
               style={{ color: "rgba(240,237,248,.55)" }}
             >
-              Do palco de Men's Physique ao MMA, do Bikini ao running, da longevidade a quem
-              quer mudar de vida —{" "}
+              Nutrição de precisão, prescrição de treino e metodologia comportamental — integrados num único sistema.{" "}
               <span style={{ color: "rgba(240,237,248,.75)" }}>
-                o NutriON é o único sistema que abraça todos com a mesma ciência e protocolo individual.
+                Criado por atleta, para quem leva resultado a sério.
               </span>
             </p>
             <p
