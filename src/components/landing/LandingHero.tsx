@@ -240,7 +240,19 @@ const LandingHero = () => {
             <motion.p
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 1.45 }}
+              transition={{ duration: 0.7, delay: 1.4 }}
+              className="font-heading leading-tight"
+              style={{
+                fontSize: "clamp(1.1rem, 2.8vw, 1.9rem)",
+                color: "rgba(240,237,248,.55)",
+              }}
+            >
+              TODO PERSONAL TE DIZ COMO TREINAR.
+            </motion.p>
+            <motion.p
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 1.55 }}
               className="font-heading leading-tight"
               style={{
                 fontSize: "clamp(1.1rem, 2.8vw, 1.9rem)",
@@ -248,7 +260,7 @@ const LandingHero = () => {
                 textShadow: "0 0 30px rgba(232,160,32,.35)",
               }}
             >
-              O NUTRION DESCOBRE POR QUE VOCÊ PARA DE COMER CERTO.
+              O NUTRION DESCOBRE POR QUE VOCÊ PARA DE EVOLUIR.
             </motion.p>
           </div>
 
@@ -263,9 +275,9 @@ const LandingHero = () => {
               className="text-[.95rem] leading-[1.9] mb-3"
               style={{ color: "rgba(240,237,248,.55)" }}
             >
-              Nutrição de precisão, prescrição de treino e metodologia comportamental — integrados num único sistema.{" "}
+              Análise comportamental + nutrição de precisão + prescrição de treino — integrados num único sistema.{" "}
               <span style={{ color: "rgba(240,237,248,.75)" }}>
-                Criado por atleta, para quem leva resultado a sério.
+                Feito por quem usa os mesmos protocolos que prescreve.
               </span>
             </p>
             <p
