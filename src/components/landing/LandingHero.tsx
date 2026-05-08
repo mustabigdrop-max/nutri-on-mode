@@ -365,6 +365,27 @@ const LandingHero = () => {
             transition={{ duration: 0.7, delay: 1.9 }}
             className="flex gap-3 flex-wrap"
           >
+            <button
+              type="button"
+              onClick={() => {
+                const el = document.getElementById("plans");
+                if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+              }}
+              className="group relative font-heading text-[.95rem] tracking-[.07em] px-9 py-4 transition-transform hover:scale-[1.02]"
+              style={{
+                background: "hsl(38 80% 52%)",
+                color: "#030310",
+                clipPath:
+                  "polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px))",
+                boxShadow: "0 0 35px rgba(232,160,32,.35)",
+              }}
+            >
+              <span
+                className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                style={{ background: "rgba(255,255,255,.12)" }}
+              />
+              <span className="relative">COMEÇAR PROTOCOLO ON →</span>
+            </button>
             <a
               href="/auth"
               className="group relative font-heading text-[.95rem] tracking-[.07em] px-9 py-4 transition-transform hover:scale-[1.02]"
