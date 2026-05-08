@@ -17,29 +17,49 @@ const AuthPage = () => {
     e.preventDefault();
     setLoading(true);
 
-    if (isLogin) {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) {
-        toast.error(error.message);
+    // Safety timeout — evita que o botão fique travado em "Carregando..."
+    // se a requisição de auth ficar pendente (proxy do preview, rede instável, etc.)
+    const timeoutId = window.setTimeout(() => {
+      setLoading(false);
+      toast.error(
+        "A conexão demorou demais. Verifique sua internet ou tente novamente em instantes."
+      );
+    }, 15000);
+
+    try {
+      if (isLogin) {
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) {
+          toast.error(error.message);
+        } else {
+          navigate("/dashboard");
+        }
       } else {
-        navigate("/dashboard");
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: { full_name: fullName },
+            emailRedirectTo: window.location.origin,
+          },
+        });
+        if (error) {
+          toast.error(error.message);
+        } else {
+          toast.success("Conta criada! Verifique seu email para confirmar.");
+        }
       }
-    } else {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: { full_name: fullName },
-          emailRedirectTo: window.location.origin,
-        },
-      });
-      if (error) {
-        toast.error(error.message);
-      } else {
-        toast.success("Conta criada! Verifique seu email para confirmar.");
-      }
+    } catch (err: any) {
+      console.error("[AuthPage] erro de rede no login:", err);
+      toast.error(
+        err?.message?.includes("Failed to fetch")
+          ? "Falha de conexão com o servidor. Tente novamente — se persistir, abra em outra aba (sem o preview do Lovable)."
+          : err?.message ?? "Erro inesperado ao autenticar."
+      );
+    } finally {
+      window.clearTimeout(timeoutId);
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
