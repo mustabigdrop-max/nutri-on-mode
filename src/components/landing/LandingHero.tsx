@@ -334,13 +334,16 @@ const LandingHero = () => {
             transition={{ duration: 0.7, delay: 1.3 }}
             className="max-w-[500px] mb-8"
           >
-            <p className="text-[1rem] leading-[1.9] text-[#f0edf8]/55 font-landing mb-3">
-              Do palco de Men's Physique ao MMA, do Bikini ao running, da longevidade a quem quer mudar de vida —{" "}
-              <span className="text-[#f0edf8]/75">o NutriON é o único sistema que abraça todos os públicos com a mesma ciência e o mesmo protocolo individual.</span>
+            <p className="text-[1rem] leading-[1.9] text-[#f0edf8]/55 font-landing mb-1">
+              Todo app te diz o que comer.
             </p>
-            <p className="text-[1rem] leading-[1.9] text-[#f0edf8]/70 font-landing font-semibold mb-4">
-              Bem-vindo ao time.{" "}
-              <span className="text-[#e8a020]">Aqui, seu objetivo tem protocolo. Não dieta.</span>
+            <p className="text-[1rem] leading-[1.9] text-[#f0edf8]/75 font-landing font-semibold mb-3">
+              O NutriON descobre{" "}
+              <span className="text-[#e8a020]">por que você para de comer certo.</span>
+            </p>
+            <p className="text-[.92rem] leading-[1.85] text-[#8888b0] font-landing mb-4">
+              Porque resultado não é saber o que fazer.{" "}
+              <span className="text-[#f0edf8]/55">É não parar de fazer.</span>
             </p>
 
             {/* Live activity + badge row */}
