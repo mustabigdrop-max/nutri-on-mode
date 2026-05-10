@@ -18,6 +18,7 @@ interface DailyLog {
   calories_adjusted: number | null;
   protein_adjusted: number | null;
   hydration_adjusted: number | null;
+  notes: string | null;
 }
 
 const WorkoutHistoryPage = () => {
@@ -81,6 +82,10 @@ const WorkoutHistoryPage = () => {
       const adjustedKcal = Math.round(baseKcal * adj.kcalMultiplier);
       const wInfo = WORKOUT_TYPES[wType];
 
+      const rpe = (() => {
+        try { return log?.notes ? (JSON.parse(log.notes)?.rpe ?? null) : null; } catch { return null; }
+      })();
+
       days.push({
         day: DAY_NAMES[dayOfWeek],
         date: dateStr,
@@ -96,6 +101,9 @@ const WorkoutHistoryPage = () => {
         protein: Math.round(adj.proteinPerKg * weightKg),
         hydration: adj.hydrationLiters,
         isPast: date <= new Date(),
+        rpe,
+        muscleGroups: wInfo?.muscleGroups ?? [],
+        volumeScore: wInfo?.volumeScore ?? 0,
       });
     }
     return days;
@@ -109,7 +117,12 @@ const WorkoutHistoryPage = () => {
     const totalKcalAdj = weekData.reduce((s, d) => s + d.kcalDiff, 0);
     const avgHydration = weekData.reduce((s, d) => s + d.hydration, 0) / 7;
 
-    return { planned: planned.length, completed: completed.length, consistency, totalKcalAdj, avgHydration };
+    const rpeValues = weekData.filter(d => d.completed && d.rpe !== null).map(d => d.rpe as number);
+    const avgRpe = rpeValues.length > 0 ? rpeValues.reduce((a, b) => a + b, 0) / rpeValues.length : null;
+    const highRpeCount = rpeValues.filter(r => r >= 8).length;
+    const deloadRecommended = rpeValues.length >= 3 && highRpeCount >= 3;
+
+    return { planned: planned.length, completed: completed.length, consistency, totalKcalAdj, avgHydration, avgRpe, highRpeCount, deloadRecommended };
   }, [weekData]);
 
   // Chart data for kcal comparison
@@ -198,6 +211,59 @@ const WorkoutHistoryPage = () => {
             <p className="text-[9px] font-mono text-muted-foreground">Água/dia média</p>
           </div>
         </motion.div>
+
+        {/* Deload Recommendation */}
+        {(stats.deloadRecommended || stats.avgRpe !== null) && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.22 }}
+            className="rounded-xl p-4 mb-5"
+            style={stats.deloadRecommended
+              ? { background: "rgba(255,68,68,.06)", border: "1px solid rgba(255,68,68,.2)" }
+              : { background: "rgba(232,160,32,.05)", border: "1px solid rgba(232,160,32,.15)" }}
+          >
+            <div className="flex items-start gap-3">
+              <div
+                className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                style={stats.deloadRecommended
+                  ? { background: "rgba(255,68,68,.1)" }
+                  : { background: "rgba(232,160,32,.1)" }}
+              >
+                <TrendingUp className="w-4 h-4" style={{ color: stats.deloadRecommended ? "#ff4444" : "#e8a020" }} />
+              </div>
+              <div className="flex-1">
+                {stats.deloadRecommended ? (
+                  <>
+                    <p className="font-mono text-[.62rem] font-bold mb-1" style={{ color: "#ff4444" }}>
+                      ⚠️ Deload Recomendado
+                    </p>
+                    <p className="font-mono text-[.56rem] leading-relaxed" style={{ color: "#ff8888" }}>
+                      {stats.highRpeCount} treinos com RPE ≥ 8 esta semana. Fadiga acumulada alta.
+                      Reduza volume em 40–50% por 5–7 dias para supercompensação.
+                    </p>
+                    <div className="mt-2 font-mono text-[.52rem]" style={{ color: "rgba(255,68,68,.6)" }}>
+                      Protocolo de deload: peso 60%, séries 50%, mesmos exercícios. Sem falha muscular.
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <p className="font-mono text-[.62rem] font-bold mb-1" style={{ color: "#e8a020" }}>
+                      RPE Médio da Semana
+                    </p>
+                    <p className="font-mono text-[.56rem]" style={{ color: "#a08040" }}>
+                      {stats.avgRpe?.toFixed(1)} / 10 — {
+                        (stats.avgRpe ?? 0) >= 8 ? "Intensidade alta. Monitore a recuperação."
+                        : (stats.avgRpe ?? 0) >= 6 ? "Intensidade moderada-alta. Bom equilíbrio."
+                        : "Intensidade moderada. Pode aumentar carga progressivamente."
+                      }
+                    </p>
+                  </>
+                )}
+              </div>
+            </div>
+          </motion.div>
+        )}
 
         {/* Weekly consistency grid */}
         <motion.div
@@ -374,7 +440,7 @@ const WorkoutHistoryPage = () => {
                     {isToday && <span className="text-[8px] font-mono text-primary px-1.5 py-0.5 bg-primary/10 rounded-full">HOJE</span>}
                     <span className="text-[9px] font-mono text-muted-foreground">· {d.label}</span>
                   </div>
-                  <div className="flex items-center gap-2 mt-0.5">
+                  <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                     <span className="text-[9px] font-mono text-muted-foreground">
                       {d.adjustedKcal} kcal
                       {d.kcalDiff !== 0 && (
@@ -385,6 +451,17 @@ const WorkoutHistoryPage = () => {
                     </span>
                     <span className="text-[9px] font-mono text-muted-foreground">· {d.protein}g prot</span>
                     <span className="text-[9px] font-mono text-muted-foreground">· {d.hydration}L</span>
+                    {d.rpe !== null && d.rpe !== undefined && (
+                      <span
+                        className="text-[9px] font-mono px-1.5 py-0.5 rounded-full"
+                        style={{
+                          color: d.rpe >= 9 ? "#ff4444" : d.rpe >= 7 ? "#e8a020" : "#00f0b4",
+                          background: d.rpe >= 9 ? "rgba(255,68,68,.08)" : d.rpe >= 7 ? "rgba(232,160,32,.08)" : "rgba(0,240,180,.08)",
+                        }}
+                      >
+                        RPE {d.rpe}
+                      </span>
+                    )}
                   </div>
                 </div>
                 {d.planned && (

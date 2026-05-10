@@ -527,25 +527,115 @@ const DashboardPage = () => {
           </motion.div>
         )}
 
-        {/* NutriSync workout banner */}
+        {/* TrainingON workout card */}
         {todayWorkout && todayWorkout.workout_type !== "rest" && (() => {
-          const wInfo = WORKOUT_TYPES[todayWorkout.workout_type as WorkoutType];
+          const wType = todayWorkout.workout_type as WorkoutType;
+          const wInfo = WORKOUT_TYPES[wType];
+          const isCompleted = workoutLog?.completed;
+          const todayRpe = (() => { try { return workoutLog?.notes ? JSON.parse(workoutLog.notes)?.rpe ?? null : null; } catch { return null; } })();
+
           return (
             <motion.button
               initial={{ opacity: 0, y: -5 }}
               animate={{ opacity: 1, y: 0 }}
               onClick={() => navigate("/nutrisync")}
-              className="w-full rounded-xl border border-primary/20 bg-primary/5 p-3 mb-4 flex items-center gap-3 text-left hover:border-primary/30 transition-all"
+              className="w-full rounded-xl p-4 mb-4 text-left transition-all relative overflow-hidden"
+              style={{
+                background: "#06060e",
+                border: `1px solid ${isCompleted ? "rgba(0,240,180,.22)" : "rgba(232,160,32,.2)"}`,
+              }}
             >
-              <span className="text-2xl">{wInfo?.emoji}</span>
-              <div className="flex-1 min-w-0">
-                <p className="text-[10px] font-mono text-primary uppercase tracking-widest">⚡ NutriSync Ativo</p>
-                <p className="text-xs font-bold text-foreground truncate">{wInfo?.label}</p>
+              {/* Top accent */}
+              <div
+                className="absolute top-0 left-0 right-0 h-[2px]"
+                style={{ background: isCompleted
+                  ? "linear-gradient(90deg, transparent, rgba(0,240,180,.5), transparent)"
+                  : "linear-gradient(90deg, transparent, rgba(232,160,32,.5), transparent)" }}
+              />
+
+              {/* Header row */}
+              <div className="flex items-start justify-between mb-2">
+                <div className="flex items-center gap-2.5">
+                  <span className="text-xl">{wInfo?.emoji}</span>
+                  <div>
+                    <p className="font-mono text-[.5rem] tracking-[.22em] uppercase mb-0.5" style={{ color: "#e8a020" }}>
+                      ⚡ TRAINING ON
+                    </p>
+                    <p className="font-heading text-[.9rem] leading-none" style={{ color: "#f0edf8" }}>
+                      {wInfo?.shortLabel}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  {isCompleted && todayRpe && (
+                    <span
+                      className="font-mono text-[.5rem] px-2 py-0.5 rounded-full"
+                      style={{ background: "rgba(0,240,180,.08)", color: "#00f0b4", border: "1px solid rgba(0,240,180,.2)" }}
+                    >
+                      RPE {todayRpe}
+                    </span>
+                  )}
+                  {isCompleted ? (
+                    <span
+                      className="font-mono text-[.48rem] px-2 py-0.5 rounded-full"
+                      style={{ color: "#00f0b4", border: "1px solid rgba(0,240,180,.25)" }}
+                    >
+                      ✓ FEITO
+                    </span>
+                  ) : (
+                    <ChevronRight className="w-4 h-4" style={{ color: "#e8a020" }} />
+                  )}
+                </div>
+              </div>
+
+              {/* Muscle groups */}
+              {wInfo?.muscleGroups && wInfo.muscleGroups.length > 0 && (
+                <div className="flex flex-wrap gap-1 mb-2.5">
+                  {wInfo.muscleGroups.map(mg => (
+                    <span
+                      key={mg}
+                      className="font-mono text-[.44rem] px-1.5 py-0.5 rounded-full"
+                      style={{ background: "rgba(232,160,32,.06)", color: "#a08040", border: "1px solid rgba(232,160,32,.12)" }}
+                    >
+                      {mg}
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              {/* Stats row */}
+              <div className="flex items-center gap-3 flex-wrap">
+                {/* Volume score */}
+                {wInfo && (
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-mono text-[.44rem]" style={{ color: "#30306a" }}>VOL</span>
+                    <div className="flex gap-0.5">
+                      {[1,2,3,4,5].map(i => (
+                        <div
+                          key={i}
+                          className="w-3.5 h-1 rounded-full"
+                          style={{ background: i <= wInfo.volumeScore
+                            ? wInfo.volumeScore >= 5 ? "#ff4444"
+                              : wInfo.volumeScore >= 4 ? "#e8a020"
+                              : "#00f0b4"
+                            : "rgba(255,255,255,.05)" }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
                 {kcalDiff > 0 && (
-                  <p className="text-[10px] font-mono text-primary">+{kcalDiff} kcal ajustado para hoje</p>
+                  <span className="font-mono text-[.52rem]" style={{ color: "#e8a020" }}>
+                    +{kcalDiff} kcal
+                  </span>
+                )}
+                {workoutAdj.intraMeal && (
+                  <span className="font-mono text-[.46rem]" style={{ color: "#7890ff" }}>⚡ intra-treino</span>
+                )}
+                {workoutAdj.electrolytes && (
+                  <span className="font-mono text-[.46rem]" style={{ color: "#00f0b4" }}>🧂 eletrólitos</span>
                 )}
               </div>
-              <Zap className="w-4 h-4 text-primary flex-shrink-0" />
             </motion.button>
           );
         })()}
