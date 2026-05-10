@@ -139,6 +139,13 @@ const MealPlanPage = () => {
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [budgetMode, setBudgetMode] = useState(false);
+  const [viewMode, setViewMode] = useState<"list" | "timeline">(() => {
+    return (localStorage.getItem("nutriplan_view_mode") as "list" | "timeline") || "list";
+  });
+  const switchView = (m: "list" | "timeline") => {
+    setViewMode(m);
+    localStorage.setItem("nutriplan_view_mode", m);
+  };
   // ═══ NutriPlan Elite — Dimensão 1: TDEE Farmacológico ═══
   const COMPOSTOS_VERTEX = [
     "Ipamorelin", "CJC-1295", "MK-677 (Ibutamoren)", "Tesamorelin",
