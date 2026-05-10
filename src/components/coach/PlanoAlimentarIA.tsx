@@ -1321,6 +1321,7 @@ export default function PlanoAlimentarIA() {
         modo_especial: modoEspecial,
         fase_ciclo: modoEspecial === "feminino" ? faseCiclo : undefined,
         dias_para_competicao: modoEspecial === "competicao" ? diasComp : undefined,
+        crononutricao_circadiana: cronoCircadiano,
         modoEconomico: modoEcon,
         restricoesStr,
         protocStr,
