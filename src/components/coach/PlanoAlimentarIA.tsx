@@ -5712,6 +5712,114 @@ export default function PlanoAlimentarIA() {
           );
         })()}
 
+        {/* ========== MODO ESPECIAL (pré-geração) — Fase G ========== */}
+        <div id="modo-especial-form" style={{ marginBottom: 18, padding: 16, borderRadius: 12, background: T.bg2, border: `1px solid ${T.border2}` }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+            <span style={{ fontSize: 16 }}>⚙️</span>
+            <div style={{ fontSize: 13, fontWeight: 700, color: T.text }}>Modo Especial</div>
+            <span style={{ fontSize: 10, color: T.muted, fontStyle: "italic" }}>(aplicado ao gerar o plano)</span>
+          </div>
+          <div style={{ fontSize: 11, color: T.muted, marginBottom: 12, lineHeight: 1.5 }}>
+            Ative um protocolo específico para que a IA aplique macros, timing, suplementação e alertas adequados.
+          </div>
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+            {([
+              { k: "normal", l: "Padrão" },
+              { k: "competicao", l: "🏆 Competição (Peak Week)" },
+              { k: "glp1", l: "💉 GLP-1" },
+              { k: "feminino", l: "🌸 Feminino (Ciclo)" },
+              { k: "vegano", l: "🌱 Vegano" },
+              { k: "low_fodmap", l: "🌾 Low-FODMAP" },
+              { k: "longevidade", l: "🧬 Longevidade" },
+            ] as const).map(opt => {
+              const active = modoEspecial === opt.k;
+              return (
+                <button key={opt.k} type="button" onClick={() => setModoEspecial(opt.k as any)}
+                  style={{ padding: "6px 12px", borderRadius: 16, fontSize: 11, fontFamily: "inherit", cursor: "pointer",
+                    border: `1px solid ${active ? T.green : T.border2}`, background: active ? T.greenBg : T.bg3,
+                    color: active ? T.green : T.muted, fontWeight: active ? 600 : 400 }}>
+                  {opt.l}
+                </button>
+              );
+            })}
+          </div>
+          {modoEspecial === "competicao" && (
+            <div style={{ marginTop: 12, display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontSize: 11, color: T.muted }}>Dias até a competição:</span>
+              <input type="number" min={1} max={14} value={diasComp} onChange={e => setDiasComp(Number(e.target.value) || 7)}
+                style={{ width: 60, padding: "4px 8px", borderRadius: 6, background: T.bg3, border: `1px solid ${T.border2}`, color: T.text, fontSize: 12 }} />
+            </div>
+          )}
+          {modoEspecial === "feminino" && (
+            <div style={{ marginTop: 12, display: "flex", gap: 6, flexWrap: "wrap" }}>
+              {(["folicular", "ovulatoria", "lutea", "menstrual"] as const).map(f => (
+                <button key={f} type="button" onClick={() => setFaseCiclo(f)}
+                  style={{ padding: "4px 10px", borderRadius: 12, fontSize: 10, fontFamily: "inherit", cursor: "pointer",
+                    border: `1px solid ${faseCiclo === f ? T.green : T.border2}`, background: faseCiclo === f ? T.greenBg : T.bg3,
+                    color: faseCiclo === f ? T.green : T.muted }}>
+                  {f}
+                </button>
+              ))}
+            </div>
+          )}
+          {modoEspecial !== "normal" && (() => {
+            const RULES: Record<string, { titulo: string; cor: string; bullets: string[] }> = {
+              competicao: { titulo: "🏆 PEAK WEEK", cor: T.amber, bullets: [
+                "Proteína 2,2–2,8 g/kg para preservar massa magra.",
+                diasComp <= 3 ? `D-${diasComp}: carb load 6–8 g/kg + sódio 1,5–2 g + água em rampa descendente 48h.` :
+                diasComp <= 7 ? `D-${diasComp}: depleção controlada (2–3 g/kg) → load começa D-3.` :
+                `D-${diasComp}: manter densidade nutricional + cortar fibras insolúveis nos 5 dias finais.`,
+                "ZERO fibra insolúvel, crucíferas e lácteos nas últimas 72h.",
+                "Creatina 5g/dia + eletrólitos peri-treino. Monitorar peso/visual diário.",
+              ]},
+              glp1: { titulo: "💉 GLP-1 · Anti-sarcopenia", cor: T.blue, bullets: [
+                "Proteína 1,8–2,2 g/kg em ≥5 refeições · proteína listada PRIMEIRO.",
+                "Refeições pequenas 200–350 kcal · ZERO frituras · reduzir gordura saturada.",
+                "Hidratação +400 ml/dia + eletrólitos · creatina 3–5g + B12 + multi.",
+                "Risco: déficit proteico e perda de massa magra. Comer por horário.",
+              ]},
+              feminino: { titulo: `🌸 FEMININO · Fase ${faseCiclo.toUpperCase()}`, cor: "#f472b6", bullets: [
+                faseCiclo === "folicular" ? "Sensibilidade insulínica alta · carbo 50–55% pré/pós-treino · janela ideal de força." :
+                faseCiclo === "ovulatoria" ? "Pico estrogênico · performance máxima · antioxidantes (vit C 500mg) · carbo 45–50%." :
+                faseCiclo === "lutea" ? "TDEE +5–10% · +100–150 kcal · magnésio 300mg + B6 50mg · carbo complexo no jantar · reduzir cafeína." :
+                "Menstrual · ferro heme + vit C · ômega-3 2g · reduzir volume de treino.",
+                "ALERTA RED-S se kcal/kg de massa magra <30 → revisar antes de prescrever.",
+                "Jamais déficit agressivo (>20%) em fase lútea ou menstrual.",
+              ]},
+              vegano: { titulo: "🌱 VEGANO", cor: "#4ade80", bullets: [
+                "Proteína 1,6–2,0 g/kg combinando leguminosas+cereais OU soja/seitan a cada refeição (PDCAAS ≥0,9).",
+                "Leucina ≥2,5g/refeição (soja, ervilha isolada, lentilha) ou EAA suplementar.",
+                "Suplementar: B12, D3 vegana, ômega-3 algas, creatina 5g, ferro+vit C, zinco, iodo, cálcio.",
+                "ZERO origem animal (incl. mel, gelatina, whey, caseína).",
+              ]},
+              low_fodmap: { titulo: "🌾 LOW-FODMAP · GutON", cor: "#fbbf24", bullets: [
+                "Fase 1 (2–6 sem): cortar trigo, lactose, alho, cebola, leguminosas, polióis, frutas FODMAP.",
+                "Permitidos: arroz, aveia, quinoa, batata, banana madura, kiwi, frango, peixe, tofu firme, leite zero lactose.",
+                "Proteína 1,4–1,8 g/kg + fibra solúvel tolerada (aveia, chia, kiwi).",
+                "Fase 2: reintrodução por grupos (3–4 dias) com diário de sintomas. NÃO é dieta permanente.",
+              ]},
+              longevidade: { titulo: "🧬 LONGEVIDADE", cor: "#a78bfa", bullets: [
+                "Mediterrâneo: ≥30g fibra/dia · azeite extravirgem 30–45 ml · ≥5 porções vegetais coloridos.",
+                "Proteína 1,2–1,6 g/kg priorizando peixes gordos 2–3x/sem · carne vermelha ≤2x/sem · ZERO processada.",
+                "Ômega-3 EPA+DHA 1–2g · polifenóis (chá verde, cacau ≥70%, cúrcuma+pimenta).",
+                "TRE 10–12h · última refeição ≥3h antes de dormir · ZERO ultraprocessados/açúcar adicionado.",
+              ]},
+            };
+            const r = RULES[modoEspecial as string];
+            if (!r) return null;
+            return (
+              <div style={{ marginTop: 14, padding: 12, borderRadius: 10, background: T.bg3, borderLeft: `3px solid ${r.cor}` }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: r.cor, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>
+                  {r.titulo} · regras aplicadas
+                </div>
+                {r.bullets.map((b, i) => (
+                  <div key={i} style={{ fontSize: 11.5, color: T.text, lineHeight: 1.55, marginBottom: 4 }}>• {b}</div>
+                ))}
+              </div>
+            );
+          })()}
+        </div>
+
         <button onClick={gerar} style={{
           width: "100%", padding: 15, borderRadius: 10,
           background: T.green, border: "none", color: "#0a0f0a",
