@@ -801,7 +801,16 @@ serve(async (req) => {
       densityBoost,
       fruitProtocol,
       fruitProtocolText,
+      // NutriPlan Elite — compostos ativos estruturados (multi-select do form)
+      compostos_ativos,
+      compostosAtivos,
     } = body;
+    // NutriPlan Elite — lista normalizada de compostos vindos do multi-select
+    const _compostosAtivos: string[] = Array.isArray(compostos_ativos)
+      ? compostos_ativos
+      : Array.isArray(compostosAtivos)
+        ? compostosAtivos
+        : [];
     // Fallbacks para suportar payload antigo
     const _neat = neat ?? perfilFisiologico?.neat ?? "medio";
     const _qualidadeSono = qualidadeSono ?? perfilFisiologico?.qualidade_sono ?? "boa";
@@ -1011,7 +1020,8 @@ serve(async (req) => {
 
       // ── BLOCO 6: Protocolo farmacológico — DETECTOR COMPLETO COMPOSTOS ──
       // Normaliza o texto: lowercase, sem acentos
-      const protoRaw = String(protocoloFarmacologico || protocStr || "");
+      const protoRaw = String(protocoloFarmacologico || protocStr || "")
+        + (_compostosAtivos.length ? " " + _compostosAtivos.join(" ") : "");
       const protoStr = protoRaw
         .toLowerCase()
         .normalize("NFD")
@@ -4127,6 +4137,36 @@ AEJ não é refeição e nunca deve aparecer em refeicoes. Pós-Treino Imediato 
       }
     } catch (logErr) {
       console.error("[adjust-history] error:", logErr);
+    }
+
+    // ── NutriPlan Elite — bloco canônico anexado ao plan para a UI Elite ──
+    try {
+      const tdeeBruto = Number(calc?.getBase) || 0;            // TMB × atividade + cardio + NEAT (sem farma)
+      const tdeeAjustado = Number(calc?.getFarma) || tdeeBruto; // após multiplicador farmacológico aplicado
+      const breakdown = Array.isArray(calc?.fatorFarmaDetalhado)
+        ? calc.fatorFarmaDetalhado.map((c: any) => ({
+            composto: c.composto,
+            fator: c.fator,
+            delta_pct: Math.round(((c.fator ?? 1) - 1) * 1000) / 10,
+          }))
+        : [];
+      (parsed as any).nutriplan_elite = {
+        tdee_bruto: Math.round(tdeeBruto),
+        tdee_ajustado: Math.round(tdeeAjustado),
+        ajuste_farmacologico_breakdown: breakdown,
+        compostos_ativos: _compostosAtivos,
+        compostos_detectados: calc?.compostosDetectados || [],
+        fator_farma_aplicado: calc?.fatorFarmaCapAplicado ?? null,
+        nota_fator_farma: calc?.notaFatorFarma ?? null,
+        macros_diarios: {
+          proteina_g: calc?.proteinaG ?? null,
+          carbo_g: calc?.carboG ?? null,
+          gordura_g: calc?.gorduraG ?? null,
+          kcal: calc?.metaKcal ?? null,
+        },
+      };
+    } catch (e) {
+      console.warn("[nutriplan_elite] falha ao montar bloco:", e);
     }
 
     console.log(`[generate-coach-meal-plan] retornando plan: refeicoes=${Array.isArray((parsed as any)?.refeicoes) ? (parsed as any).refeicoes.length : "N/A"}, suplementacao=${Array.isArray((parsed as any)?.suplementacao) ? (parsed as any).suplementacao.length : 0}`);

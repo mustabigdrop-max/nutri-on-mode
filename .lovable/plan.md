@@ -1,50 +1,49 @@
-## NutriPlan Elite — Plano de execução em 4 fases
+## Portar NutriPlan Elite → Painel do Coach (`/coach/plano-alimentar`)
 
-Sistema atual: `supabase/functions/generate-meal-plan/index.ts` (507 linhas) já recebe contexto do TrainingON (fase, sistema, volume, fibras, deload). Frontend: `src/pages/MealPlanPage.tsx` (1014 linhas) renderiza lista de refeições por dia. Falta as 6 dimensões NutriPlan Elite.
+### Contexto
+- A página do coach usa `src/components/coach/PlanoAlimentarIA.tsx` (5299 linhas) chamando a edge function `generate-coach-meal-plan` (4142 linhas) — totalmente separada do `MealPlanPage.tsx` do paciente.
+- Nada do NutriPlan Elite (Fases 1–5) foi portado para o lado do coach.
 
----
+### Escopo (5 fases espelhando o paciente)
 
-### FASE 1 — Núcleo de inteligência (executar AGORA)
+**Fase A — Backend `generate-coach-meal-plan`**
+1. Aceitar `compostos_ativos[]` + `perfil_pca` + `workout_schedule` no payload (vindos do form do coach).
+2. Calcular `tdee_bruto` (Katch-McArdle se `body_fat_pct`, senão Mifflin) e aplicar multiplicadores farmacológicos (GH-secretagogos, GLP-1, AAS, SLU-PP-332, Cardarine, BPC/TB-500) — mesma tabela da Fase 1 do paciente.
+3. Reescrever system prompt para o PhD NutriPlan Elite (6 dimensões + crononutrição + alimentos brasileiros + medidas caseiras).
+4. Enriquecer cada refeição com `funcao_metabolica`, `janela_metabolica`, `medida_caseira`, `protocolo_peri_workout`, `mensagem_mce`, `insights_ia`.
+5. Manter retrocompatibilidade do shape antigo para não quebrar o que já renderiza.
 
-**Backend (`generate-meal-plan/index.ts`):**
-1. Adicionar bloco **TDEE Farmacológico**: ler `profile.active_protocol` + nova lista `compostos_ativos[]` no payload. Aplicar multiplicadores:
-   - GH-secretagogos (Ipamorelin/CJC/MK-677): TDEE × 1.12–1.18
-   - GLP-1 (Sema/Tirzepa/Reta): TDEE × 1.20 + flag de supressão de apetite (fracionar 6x)
-   - AAS (Testo/Nandro/Oxa): proteína mínima 2.8g/kg MM
-   - SLU-PP-332: TDEE × 1.35
-   - Cardarine: gordura 25–30%, +10% oxidação
-   - BPC-157/TB-500: +15g glutamina+glicina
-2. Calcular `tdee_bruto` (Katch-McArdle se `body_fat_pct` existe, senão Mifflin) e `tdee_ajustado` com breakdown por composto.
-3. Reescrever **system prompt** para o PhD NutriPlan Elite (6 dimensões, perfil PCA, crononutrição, GLUT-4 sync, alimentos brasileiros com medidas caseiras).
-4. Mudar contrato JSON de retorno: `tdee_bruto`, `tdee_ajustado`, `ajuste_farmacologico_breakdown[]`, `macros_diarios`, `dias[].refeicoes[]` enriquecidas com `funcao_metabolica`, `janela_metabolica` (cortisol/insulina/gh), `medida_caseira`, `substituicoes[]`, `protocolo_peri_workout`, `mensagem_mce`, `insights_ia`.
-5. Manter retrocompatibilidade: continuar emitindo o shape antigo em paralelo para não quebrar a UI atual.
+**Fase B — Form do coach (`PlanoAlimentarIA.tsx`)**
+- Novo bloco "Compostos Ativos" (multi-select Dr. VERTEX) já mapeado para o paciente quando o coach gera o plano.
+- Header do plano: `TDEE Bruto X → Ajustado Y (+Z% por [composto])` + breakdown.
 
-**Frontend mínimo:**
-- Adicionar campo "Compostos Ativos" no formulário de geração (multi-select com lista do Dr. VERTEX).
-- Header do plano exibe: `TDEE Bruto X → Ajustado Y (+Z% por [composto])` quando vier no JSON novo.
+**Fase C — Visualização**
+- Reusar componentes já criados: `<CircadianTimeline>`, `<ExpandableMealCard>`, `<Glut4SyncCard>` na renderização do plano gerado.
+- Selector de dia + injeção de `trainingMap` a partir do `workout_schedule` do paciente.
 
-### FASE 2 — Timeline circadiana + cards expandíveis (próxima msg)
-- Componente `<CircadianTimeline>` horizontal 06:00–23:00 com badges metabólicos (cortisol/insulina/GH).
-- Refatorar lista de refeições para cards expandíveis com função fisiológica + medida caseira.
+**Fase D — Modos especiais + Aderência + PDF**
+- Toolbar com seletor de modo (Competição peak week / GLP-1 / Feminino com fase do ciclo + RED-S alerts).
+- Botão **📊 Aderência** abrindo `<AdherenceModal>` com dados do paciente selecionado (não do coach logado).
+- Botão **📄 PDF** usando `mealPlanPdf.ts` com header "Prescrito por [Coach] para [Paciente]".
 
-### FASE 3 — GLUT-4 Sync + perfil PCA
-- Card destacado dourado com pré/intra/pós calculado do `workout_schedule`.
-- Adaptação de tom/estrutura por perfil PCA (AM/EI/SE/PP) lido do `profiles.perfil_comportamental`.
-- Suplementação peri-workout integrada por composto ativo.
+**Fase E — GLUT-4 + adaptação PCA**
+- `Glut4SyncCard` montado quando o paciente tem treino no dia.
+- Tom/densidade/CTAs adaptados ao `perfil_pca` selecionado no form do coach.
 
-### FASE 4 — Dashboard de aderência + roadmap
-- Aba "Evolução": gauge semanal, gráfico macros realizado vs prescrito, insights IA.
-- Modos especiais: Competição (peak week), GLP-1, Feminino (ciclo).
-- Export PDF premium para coach.
+### Arquivos impactados
+- `supabase/functions/generate-coach-meal-plan/index.ts` (Fase A)
+- `src/components/coach/PlanoAlimentarIA.tsx` (Fases B–E)
+- Reuso direto: `CircadianTimeline.tsx`, `ExpandableMealCard.tsx`, `Glut4SyncCard.tsx`, `AdherenceModal.tsx`, `mealPlanPdf.ts`, `trainingDayMap.ts`
 
----
+### Detalhes técnicos
+- Modelo IA: `google/gemini-2.5-pro` via Lovable AI Gateway (mantém atual).
+- Sem migração de DB nesta fase.
+- Coach passa `patient_user_id` para que `AdherenceModal` e `workout_schedule` consultem o usuário correto (RLS já permite via `coach_profile_id`).
+- Fallbacks: se a IA não retornar campos novos, derivar `tdee_ajustado = tdee_bruto` e `breakdown = []` (igual ao paciente).
 
-### Detalhes técnicos da Fase 1
+### Como executar
+Vou implementar em **2 entregas grandes**:
+1. **Entrega 1**: Fases A + B (backend completo + form com Compostos Ativos + header TDEE).
+2. **Entrega 2**: Fases C + D + E (UI Elite, modos especiais, aderência, PDF, GLUT-4, PCA).
 
-- **Edge function**: editar in-place, sem nova função.
-- **Modelo**: manter `google/gemini-2.5-pro` via Lovable AI Gateway (já configurado).
-- **Banco**: nenhuma migração necessária na Fase 1 — `compostos_ativos` vai no payload da chamada (vindo do estado do form). DB schema só vira na Fase 4 (tabela de aderência se ainda não existir).
-- **Token budget**: aumentar `max_tokens` do prompt; JSON retornado fica maior — usar `response_format: json_object` se possível ou fence parsing robusto já existente.
-- **Fallbacks**: se IA não retornar campo novo, derivar `tdee_ajustado = tdee_bruto` e `breakdown = []` para não quebrar UI.
-
-Pronto para executar a Fase 1?
+Confirma para começar pela Entrega 1?
