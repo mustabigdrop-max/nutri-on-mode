@@ -17,6 +17,8 @@ import SubstitutionModal from "@/components/meal/SubstitutionModal";
 import type { SubOption } from "@/components/meal/substitutionDb";
 import CircadianTimeline from "@/components/meal/CircadianTimeline";
 import ExpandableMealCard from "@/components/meal/ExpandableMealCard";
+import AdherenceModal from "@/components/meal/AdherenceModal";
+import { exportMealPlanPDF } from "@/lib/mealPlanPdf";
 
 const MEAL_TYPES = [
   { key: "cafe_manha", label: "Café" },
