@@ -1915,6 +1915,7 @@ export default function PlanoAlimentarIA() {
         if (upErr) throw upErr;
       }
       setSavedId(planId);
+      try { exportPDFElite(); } catch {}
 
       await supabase.from("protocolo_envios").insert({
         coach_id: coachProfileId,
