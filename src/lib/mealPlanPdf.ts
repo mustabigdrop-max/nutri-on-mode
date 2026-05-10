@@ -141,6 +141,27 @@ export function exportMealPlanPDF(opts: {
           : "";
       doc.text(`Modo: ${modoLabel}${sufixo}`, M, y); y += 14;
       doc.setFont("helvetica", "normal");
+      // Fase G — bloco de regras condensadas do modo ativo
+      const rules = MODE_RULES[String(nutriEliteMeta.modo_especial)];
+      if (rules) {
+        if (y > H - 120) { doc.addPage(); y = M; }
+        doc.setFillColor(248, 244, 230);
+        const rulesH = 16 + rules.bullets.length * 11 + 8;
+        doc.rect(M, y, W - 2 * M, rulesH, "F");
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(9);
+        doc.setTextColor(140, 90, 10);
+        doc.text(rules.titulo, M + 8, y + 12);
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(8);
+        doc.setTextColor(50, 50, 50);
+        let ry = y + 24;
+        for (const b of rules.bullets) {
+          doc.text(`• ${b}`, M + 10, ry, { maxWidth: W - 2 * M - 16 }); ry += 11;
+        }
+        y += rulesH + 6;
+        doc.setTextColor(40, 40, 40);
+      }
     }
     if (nutriEliteMeta.alerta_coach) {
       doc.setFont("helvetica", "bold");
