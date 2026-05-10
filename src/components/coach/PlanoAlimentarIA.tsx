@@ -897,6 +897,8 @@ export default function PlanoAlimentarIA() {
   const [modoEspecial, setModoEspecial] = useState<"normal" | "competicao" | "glp1" | "feminino" | "vegano" | "low_fodmap" | "longevidade">("normal");
   const [faseCiclo, setFaseCiclo] = useState<"folicular" | "ovulatoria" | "lutea" | "menstrual">("folicular");
   const [diasComp, setDiasComp] = useState<number>(7);
+  // Dimensão 2 — Crononutrição Circadiana Avançada (cortisol/insulina/GH)
+  const [cronoCircadiano, setCronoCircadiano] = useState<boolean>(false);
   const [showAdherence, setShowAdherence] = useState(false);
   const [adherenceItems, setAdherenceItems] = useState<any[]>([]);
   const [adherenceLoading, setAdherenceLoading] = useState(false);
