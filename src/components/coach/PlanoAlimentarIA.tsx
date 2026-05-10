@@ -2076,16 +2076,24 @@ export default function PlanoAlimentarIA() {
           carbs_g: m.macros?.carboidrato || 0,
           fat_g: m.macros?.gordura || 0,
         });
-        if (m.funcao_metabolica || m.janela_metabolica || m.protocolo_peri_workout || m.mensagem_mce) {
+        if (m.funcao_metabolica || m.janela_metabolica || m.protocolo_peri_workout || m.mensagem_mce || (Array.isArray((m as any).insights_ia) && (m as any).insights_ia.length)) {
           enrichment[`0-${tipo}`] = {
             funcao_metabolica: m.funcao_metabolica,
             janela_metabolica: m.janela_metabolica,
             protocolo_peri_workout: m.protocolo_peri_workout,
             mensagem_mce: m.mensagem_mce,
+            insights_ia: (m as any).insights_ia,
           };
         }
       });
-      const ne: any = (plano as any)?.nutriplan_elite || null;
+      const baseNe: any = (plano as any)?.nutriplan_elite || {};
+      const ne: any = {
+        ...baseNe,
+        modo_especial: baseNe.modo_especial || modoEspecial,
+        fase_ciclo: modoEspecial === "feminino" ? faseCiclo : baseNe.fase_ciclo,
+        dias_para_competicao: modoEspecial === "competicao" ? diasComp : baseNe.dias_para_competicao,
+        alerta_coach: baseNe.alerta_coach || (plano as any)?.alerta_coach,
+      };
       const patientName = plano.resumo?.nome || (form as any)?.nome || "Paciente";
       const today = new Date().toLocaleDateString("pt-BR");
       exportMealPlanPDFElite({
