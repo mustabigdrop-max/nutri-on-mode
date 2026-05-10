@@ -17,6 +17,8 @@ import { validateMedidasCaseiras } from "@/lib/medidasCaseirasValidator";
 import SubstitutionsAgentPage from "@/pages/SubstitutionsAgentPage";
 import { SUBSTITUTION_BANK_V2, type FoodCategoryV2 } from "@/data/substitutionBank";
 import NutrientDensityPanel from "@/components/coach/NutrientDensityPanel";
+import Glut4SyncCard from "@/components/meal/Glut4SyncCard";
+import AdherenceModal from "@/components/meal/AdherenceModal";
 
 // ─── Design tokens (alinhados ao nutriON: dark bg, green accent) ──────────────
 const T = {
