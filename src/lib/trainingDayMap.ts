@@ -12,6 +12,7 @@ export interface TrainingDayInfo {
   isTraining: boolean;
   muscleGroup?: string;
   workoutTime?: string | null; // "HH:MM"
+  durationMin?: number;
 }
 
 const DEFAULT_MEAL_HOUR: Record<string, number> = {
@@ -37,6 +38,7 @@ export function buildTrainingDayMap(workouts: WorkoutRow[] | null | undefined): 
       isTraining: true,
       muscleGroup: (w.workout_type || "").toUpperCase() || map[idx].muscleGroup,
       workoutTime: (w.workout_time || "").slice(0, 5) || map[idx].workoutTime,
+      durationMin: w.duration_minutes ?? map[idx].durationMin ?? 60,
     };
   });
   return map;
