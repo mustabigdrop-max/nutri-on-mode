@@ -3974,6 +3974,9 @@ export default function PlanoAlimentarIA() {
                 { k: "competicao", l: "🏆 Competição (Peak Week)" },
                 { k: "glp1", l: "💉 GLP-1" },
                 { k: "feminino", l: "🌸 Feminino (Ciclo)" },
+                { k: "vegano", l: "🌱 Vegano" },
+                { k: "low_fodmap", l: "🌾 Low-FODMAP" },
+                { k: "longevidade", l: "🧬 Longevidade" },
               ] as const).map(opt => {
                 const active = modoEspecial === opt.k;
                 return (
