@@ -2026,7 +2026,53 @@ export default function PlanoAlimentarIA() {
           </div>
         </div>
 
-        {/* Modal: Revisão do protocolo farmacológico — recalcula tudo */}
+        {/* NutriPlan Elite — TDEE Bruto → Ajustado + breakdown farmacológico */}
+        {(() => {
+          const ne: any = (plano as any)?.nutriplan_elite;
+          if (!ne) return null;
+          const bruto = Number(ne.tdee_bruto) || 0;
+          const ajust = Number(ne.tdee_ajustado) || bruto;
+          const deltaPct = bruto > 0 ? Math.round(((ajust - bruto) / bruto) * 1000) / 10 : 0;
+          const breakdown: any[] = Array.isArray(ne.ajuste_farmacologico_breakdown) ? ne.ajuste_farmacologico_breakdown : [];
+          return (
+            <div className="fade-up" style={{ margin: "16px 24px", padding: 18, borderRadius: 12, background: `linear-gradient(135deg, ${T.greenBg}, ${T.bg2})`, border: `1px solid ${T.green}`, boxShadow: `0 0 24px -8px ${T.green}` }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 12 }}>
+                <div>
+                  <div style={{ fontSize: 10, color: T.green, textTransform: "uppercase", letterSpacing: "0.12em", fontWeight: 700 }}>NutriPlan Elite · TDEE Farmacológico</div>
+                  <div style={{ fontSize: 22, fontWeight: 700, color: T.text, marginTop: 6, fontFamily: "'Space Grotesk', sans-serif" }}>
+                    {bruto.toLocaleString("pt-BR")} <span style={{ color: T.muted, fontSize: 16, margin: "0 6px" }}>→</span> {ajust.toLocaleString("pt-BR")} <span style={{ color: T.muted, fontSize: 13, fontWeight: 400 }}>kcal</span>
+                    {deltaPct !== 0 && (
+                      <span style={{ marginLeft: 10, fontSize: 13, color: deltaPct > 0 ? T.green : T.muted, fontWeight: 600 }}>
+                        ({deltaPct > 0 ? "+" : ""}{deltaPct}%)
+                      </span>
+                    )}
+                  </div>
+                </div>
+                {Array.isArray(ne.compostos_ativos) && ne.compostos_ativos.length > 0 && (
+                  <div style={{ fontSize: 11, color: T.muted, maxWidth: 260, textAlign: "right" }}>
+                    <div style={{ color: T.green, fontWeight: 600, marginBottom: 2 }}>Compostos ativos</div>
+                    {ne.compostos_ativos.join(" · ")}
+                  </div>
+                )}
+              </div>
+              {breakdown.length > 0 && (
+                <div style={{ marginTop: 12, display: "flex", flexWrap: "wrap", gap: 6 }}>
+                  {breakdown.map((b, i) => (
+                    <span key={i} style={{ padding: "4px 10px", borderRadius: 12, background: T.bg3, border: `1px solid ${T.border2}`, fontSize: 10, color: T.text, fontFamily: "'Space Grotesk', monospace" }}>
+                      {b.composto} <span style={{ color: T.green }}>×{Number(b.fator).toFixed(2)}</span>
+                    </span>
+                  ))}
+                </div>
+              )}
+              {ne.nota_fator_farma && (
+                <div style={{ marginTop: 10, fontSize: 10, color: T.muted, lineHeight: 1.5, fontStyle: "italic" }}>
+                  {ne.nota_fator_farma}
+                </div>
+              )}
+            </div>
+          );
+        })()}
+
         {showProtocoloModal && (
           <div onClick={() => !protocoloRecalc && setShowProtocoloModal(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", zIndex: 60, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
             <div onClick={(e) => e.stopPropagation()} style={{ background: T.bg2, border: `1px solid ${T.border2}`, borderRadius: 14, padding: 24, maxWidth: 600, width: "100%", maxHeight: "90vh", overflow: "auto" as const }}>
