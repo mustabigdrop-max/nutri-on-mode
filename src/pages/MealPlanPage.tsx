@@ -646,6 +646,26 @@ const MealPlanPage = () => {
           >
             💊 Compostos {compostosAtivos.length > 0 ? `(${compostosAtivos.length})` : "Ativos"}
           </button>
+
+          {/* View mode toggle (Phase 2) */}
+          <div className="ml-auto flex items-center rounded-lg border border-border overflow-hidden">
+            <button
+              onClick={() => switchView("list")}
+              className={`px-2.5 py-1.5 text-[11px] font-mono transition-all ${
+                viewMode === "list" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Lista
+            </button>
+            <button
+              onClick={() => switchView("timeline")}
+              className={`px-2.5 py-1.5 text-[11px] font-mono transition-all ${
+                viewMode === "timeline" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Timeline ⏱
+            </button>
+          </div>
         </div>
 
         {/* Compostos picker (NutriPlan Elite — Dimensão 1) */}
