@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { exportMealPlanPDF } from "@/utils/exportMealPlanPDF";
+import { exportMealPlanPDF as exportMealPlanPDFElite } from "@/lib/mealPlanPdf";
 import ProtocolGanttChart from "@/components/coach/ProtocolGanttChart";
 import CoachCheckinsTab from "@/components/coach/CoachCheckinsTab";
 import CoachWeekMealGrid from "@/components/coach/CoachWeekMealGrid";
