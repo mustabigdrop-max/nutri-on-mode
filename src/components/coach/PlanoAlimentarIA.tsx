@@ -1858,7 +1858,8 @@ export default function PlanoAlimentarIA() {
         .single();
       if (insErr) throw insErr;
       setSavedId(data.id);
-      toast({ title: "Plano salvo ✅", description: "Disponível no histórico do coach." });
+      toast({ title: "Plano salvo ✅", description: "Disponível no histórico do coach. Gerando PDF Elite..." });
+      try { exportPDFElite(); } catch {}
       return data.id;
     } catch (e: any) {
       toast({ title: "Erro ao salvar", description: e.message, variant: "destructive" });
