@@ -977,6 +977,14 @@ const MealPlanPage = () => {
           </motion.div>
         ) : (
           <div className="space-y-2">
+            {trainingMap[selectedDay]?.isTraining && (
+              <Glut4SyncCard
+                workoutTime={trainingMap[selectedDay]?.workoutTime}
+                workoutType={trainingMap[selectedDay]?.muscleGroup}
+                durationMin={trainingMap[selectedDay]?.durationMin}
+                compostosAtivos={compostosAtivos}
+              />
+            )}
             {viewMode === "timeline" ? (
               <CircadianTimeline
                 items={dayItems}
