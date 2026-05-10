@@ -2042,7 +2042,64 @@ export default function PlanoAlimentarIA() {
     }
   };
 
-  // ── LOADING ──
+  // NutriPlan Elite PDF — usa lib/mealPlanPdf.ts com TDEE breakdown + enrichment por refeição
+  const exportPDFElite = () => {
+    if (!plano) return;
+    try {
+      const inferMealType = (titulo: string): string => {
+        const t = (titulo || "").toLowerCase();
+        if (/caf[eé]|desjejum/.test(t)) return "cafe_manha";
+        if (/lanche.*(manh[ãa]|meio)/.test(t)) return "lanche_manha";
+        if (/almo[cç]o/.test(t)) return "almoco";
+        if (/lanche.*tarde|p[óo]s.*treino|pr[éeè].*treino/.test(t)) return "lanche_tarde";
+        if (/jantar/.test(t)) return "jantar";
+        if (/ceia|noturna/.test(t)) return "ceia";
+        return "lanche_tarde";
+      };
+      const items: any[] = [];
+      const enrichment: Record<string, any> = {};
+      (plano.refeicoes || []).forEach((m) => {
+        const tipo = inferMealType(m.refeicao || "");
+        const foodLine =
+          (m.alimentos || [])
+            .map((a) => `${a.alimento}${a.quantidade ? ` (${a.quantidade})` : ""}`)
+            .join(" + ") || (m.refeicao || "Refeição");
+        items.push({
+          day_index: 0,
+          meal_type: tipo,
+          food_name: foodLine,
+          portion: m.horario || "",
+          kcal: getMealKcal(m as Meal),
+          protein_g: m.macros?.proteina || 0,
+          carbs_g: m.macros?.carboidrato || 0,
+          fat_g: m.macros?.gordura || 0,
+        });
+        if (m.funcao_metabolica || m.janela_metabolica || m.protocolo_peri_workout || m.mensagem_mce) {
+          enrichment[`0-${tipo}`] = {
+            funcao_metabolica: m.funcao_metabolica,
+            janela_metabolica: m.janela_metabolica,
+            protocolo_peri_workout: m.protocolo_peri_workout,
+            mensagem_mce: m.mensagem_mce,
+          };
+        }
+      });
+      const ne: any = (plano as any)?.nutriplan_elite || null;
+      const patientName = plano.resumo?.nome || (form as any)?.nome || "Paciente";
+      const today = new Date().toLocaleDateString("pt-BR");
+      exportMealPlanPDFElite({
+        items,
+        weekRange: `Plano Elite · ${today}`,
+        patientName,
+        nutriEliteMeta: ne,
+        enrichment,
+      });
+      toast({ title: "PDF Elite gerado ✅", description: "Download iniciado." });
+    } catch (e: any) {
+      toast({ title: "Erro ao gerar PDF Elite", description: e?.message || "Tente novamente.", variant: "destructive" });
+    }
+  };
+
+
   if (step === "loading") return (
     <div style={{ minHeight: "100vh", background: T.bg, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", fontFamily: "'DM Sans', sans-serif" }}>
       <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
