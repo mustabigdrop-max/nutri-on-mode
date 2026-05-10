@@ -3912,8 +3912,8 @@ export default function PlanoAlimentarIA() {
               <div style={{ marginBottom: 18 }}>
                 <Glut4SyncCard
                   workoutTime={first.time}
-                  workoutType={(first as any).workout_type || "Musculação"}
-                  durationMin={Number((first as any).duration_minutes) || 60}
+                  workoutType={(first as any).modality || "Musculação"}
+                  durationMin={Number((first as any).duration_min) || 60}
                   compostosAtivos={form.compostosAtivos || []}
                 />
               </div>
