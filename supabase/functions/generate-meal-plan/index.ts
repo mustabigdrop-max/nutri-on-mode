@@ -611,9 +611,24 @@ RETORNE usando a ferramenta generate_plan.`;
       console.warn("[sincronizacao_trainingon] falha ao montar bloco:", e);
     }
 
+    // ═══════════════════════════════════════════════════════════════
+    // NutriPlan Elite — anexar metadados ao response (não-destrutivo)
+    // ═══════════════════════════════════════════════════════════════
+    (plan as any).nutriplan_elite = {
+      tdee_bruto: _tdeeBruto,
+      tdee_ajustado: _tdeeAjustado,
+      formula_tmb: _formulaUsada,
+      tmb: _tmb,
+      fator_atividade: _fatorAtividade,
+      multiplicador_farmacologico: Number(_multFinal.toFixed(3)),
+      compostos_ativos: _compostos,
+      ajuste_farmacologico_breakdown: _ajusteBreakdown,
+      perfil_pca: _perfilPca || null,
+      kcal_meta_efetiva: _tdeeAjustado || kcalAlvo,
+      versao: "elite-v1",
+    };
+
     return new Response(JSON.stringify(plan), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
   } catch (e) {
     console.error("generate-meal-plan error:", e);
     return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }), {
