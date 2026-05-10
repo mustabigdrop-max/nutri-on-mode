@@ -148,6 +148,19 @@ const MealPlanPage = () => {
     setViewMode(m);
     localStorage.setItem("nutriplan_view_mode", m);
   };
+  // Phase 4: Special modes + adherence
+  const [modoEspecial, setModoEspecial] = useState<"padrao" | "competicao" | "glp1" | "feminino">(
+    () => (localStorage.getItem("nutriplan_modo_especial") as any) || "padrao"
+  );
+  const [faseCiclo, setFaseCiclo] = useState<"folicular" | "ovulatoria" | "lutea" | "menstrual">(
+    () => (localStorage.getItem("nutriplan_fase_ciclo") as any) || "folicular"
+  );
+  const [diasComp, setDiasComp] = useState<number>(
+    () => Number(localStorage.getItem("nutriplan_dias_comp")) || 14
+  );
+  const [showModoMenu, setShowModoMenu] = useState(false);
+  const [showAdherence, setShowAdherence] = useState(false);
+  const setModoSticky = (m: typeof modoEspecial) => { setModoEspecial(m); localStorage.setItem("nutriplan_modo_especial", m); };
   // ═══ NutriPlan Elite — Dimensão 1: TDEE Farmacológico ═══
   const COMPOSTOS_VERTEX = [
     "Ipamorelin", "CJC-1295", "MK-677 (Ibutamoren)", "Tesamorelin",
