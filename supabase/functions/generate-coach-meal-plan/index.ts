@@ -801,7 +801,16 @@ serve(async (req) => {
       densityBoost,
       fruitProtocol,
       fruitProtocolText,
+      // NutriPlan Elite — compostos ativos estruturados (multi-select do form)
+      compostos_ativos,
+      compostosAtivos,
     } = body;
+    // NutriPlan Elite — lista normalizada de compostos vindos do multi-select
+    const _compostosAtivos: string[] = Array.isArray(compostos_ativos)
+      ? compostos_ativos
+      : Array.isArray(compostosAtivos)
+        ? compostosAtivos
+        : [];
     // Fallbacks para suportar payload antigo
     const _neat = neat ?? perfilFisiologico?.neat ?? "medio";
     const _qualidadeSono = qualidadeSono ?? perfilFisiologico?.qualidade_sono ?? "boa";
