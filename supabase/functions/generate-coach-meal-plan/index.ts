@@ -2206,6 +2206,11 @@ Responda APENAS com UM ÚNICO objeto JSON válido (root é um único "{...}"). N
       "calorias": number,
       "macros": { "proteina": number, "carboidrato": number, "gordura": number },
       "modo_preparo": "string curto quando variedade_funcional estiver ativo; null nos demais casos",
+      "funcao_metabolica": "string curta (1 linha) — qual o papel desta refeição no dia (ex: 'Pico insulínico para repleção de glicogênio pós-treino', 'Janela anabólica MPS via leucina threshold', 'Cortisol matinal + carbo de baixo IG para glicemia estável')",
+      "janela_metabolica": "string curta — janela cronobiológica (ex: 'Pré-treino 60–90min', 'Pós-treino 0–45min', 'Pico de cortisol 06–09h', 'Pré-sono — GH noturno')",
+      "protocolo_peri_workout": "string ou null — APENAS para refeições peri-treino (pré/intra/pós), descreva timing+composição (ex: 'Carbo rápido 0,8g/kg + 25g whey 30min antes', 'BCAA 10g + 30g whey isolado imediato pós'). null para refeições não-peri.",
+      "mensagem_mce": "string curta motivacional/comportamental adaptada ao perfil PCA do paciente (1 frase, tom conforme perfil)",
+      "insights_ia": ["string", "string"],
       "alimentos": [
         {
           "alimento": "string",
