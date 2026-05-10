@@ -268,7 +268,7 @@ const MealPlanPage = () => {
           .eq("user_id", clientUserId);
 
         const { data, error } = await supabase.functions.invoke("generate-meal-plan", {
-          body: { profile: clientProfile, weekStart, budgetMode, workoutSchedule: clientWorkouts || [] },
+          body: { profile: clientProfile, weekStart, budgetMode, workoutSchedule: clientWorkouts || [], compostos_ativos: compostosAtivos, perfil_pca: client.perfil_comportamental || profile?.perfil_comportamental, body_fat_pct: client.body_fat_pct },
         });
 
         if (error) throw error;
