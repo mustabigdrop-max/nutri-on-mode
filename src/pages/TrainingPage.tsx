@@ -24,6 +24,7 @@ import BottomNav from "@/components/BottomNav";
 import StratumModule from "@/components/training/StratumModule";
 import StratumProtocolHub from "@/components/training/StratumProtocolHub";
 import TrainingOnFibrasChat from "@/components/training/TrainingOnFibrasChat";
+import TrainingReadinessSection from "@/components/training/TrainingReadinessSection";
 import WeekNavigator from "@/components/training/WeekNavigator";
 import ExerciseLogPanel from "@/components/training/ExerciseLogPanel";
 import { applyWeekProgression, WEEK_PLAN, WeekPhase } from "@/lib/weekProgression";
