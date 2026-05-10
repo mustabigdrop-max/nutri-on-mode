@@ -1115,6 +1115,17 @@ const MealPlanPage = () => {
         )}
       </AnimatePresence>
 
+      {/* Adherence Modal (Phase 4) */}
+      <AnimatePresence>
+        {showAdherence && (
+          <AdherenceModal
+            items={items}
+            profile={profile as any}
+            onClose={() => setShowAdherence(false)}
+          />
+        )}
+      </AnimatePresence>
+
       {/* Send to Client Modal */}
       <AnimatePresence>
         {showSendModal && (
