@@ -88,11 +88,24 @@ export const WORKOUT_TYPES: Record<WorkoutType, WorkoutTypeMeta> = {
   arms:          { emoji: "⚡", label: "Braços (Bíceps/Tríceps)", shortLabel: "Braços", category: "musculacao", muscleGroups: ["Bíceps", "Tríceps"], volumeScore: 2 },
   mma:           { emoji: "🥊", label: "MMA / Lutas", shortLabel: "MMA", category: "cardio", muscleGroups: ["Sistema cardio", "Core"], volumeScore: 4 },
   running:       { emoji: "🏃", label: "Corrida", shortLabel: "Corrida", category: "cardio", muscleGroups: ["Sistema cardio", "Pernas"], volumeScore: 3 },
-  cardio_z1:     { emoji: "🚶", label: "Cardio Z1 (Caminhada leve)", shortLabel: "Cardio Z1", category: "cardio", muscleGroups: ["Sistema cardio"], volumeScore: 1 },
-  cardio_z2:     { emoji: "🏃", label: "Cardio Z2 (Moderado/AEJ)", shortLabel: "Cardio Z2", category: "cardio", muscleGroups: ["Sistema cardio"], volumeScore: 2 },
-  cardio_z3:     { emoji: "🏃‍♂️", label: "Cardio Z3 (Limiar)", shortLabel: "Cardio Z3", category: "cardio", muscleGroups: ["Sistema cardio"], volumeScore: 3 },
-  cardio_hiit:   { emoji: "🔥", label: "HIIT (Alta Intensidade)", shortLabel: "HIIT", category: "cardio", muscleGroups: ["Sistema cardio"], volumeScore: 3 },
-  cardio_light:  { emoji: "🚶", label: "Cardio leve (bike/caminhada)", shortLabel: "Cardio leve", category: "cardio", muscleGroups: ["Sistema cardio"], volumeScore: 1 },
+  cardio_z1:     { emoji: "🚶", label: "Z1 — 50–60% FCmax (Recovery)", shortLabel: "Z1", category: "cardio", muscleGroups: ["Sistema cardio"], volumeScore: 1 },
+  cardio_z2:     { emoji: "🚴", label: "Z2 — 60–70% FCmax (Aeróbio base)", shortLabel: "Z2", category: "cardio", muscleGroups: ["Sistema cardio"], volumeScore: 2 },
+  cardio_z3:     { emoji: "🏃‍♂️", label: "Z3 — 70–80% FCmax (Tempo/Limiar)", shortLabel: "Z3", category: "cardio", muscleGroups: ["Sistema cardio"], volumeScore: 3 },
+  cardio_z4:     { emoji: "⚡", label: "Z4 — 80–90% FCmax (VO2)", shortLabel: "Z4", category: "cardio", muscleGroups: ["Sistema cardio"], volumeScore: 4 },
+  cardio_liss:   { emoji: "🚶‍♂️", label: "LISS — Steady State longo", shortLabel: "LISS", category: "cardio", muscleGroups: ["Sistema cardio"], volumeScore: 2 },
+  cardio_hiit:   { emoji: "🔥", label: "HIIT — Intervalado de alta intensidade", shortLabel: "HIIT", category: "cardio", muscleGroups: ["Sistema cardio"], volumeScore: 3 },
+  cardio_aej:    { emoji: "🌅", label: "AEJ — Aeróbico em Jejum", shortLabel: "AEJ", category: "cardio", muscleGroups: ["Sistema cardio"], volumeScore: 2 },
+  cardio_neat:   { emoji: "👣", label: "NEAT — Caminhada / passos diários", shortLabel: "NEAT", category: "cardio", muscleGroups: ["Sistema cardio"], volumeScore: 1 },
+  cardio_light:  { emoji: "🧘‍♂️", label: "Cardio leve (recuperativo)", shortLabel: "Cardio leve", category: "cardio", muscleGroups: ["Sistema cardio"], volumeScore: 1 },
+  cycling:       { emoji: "🚴‍♂️", label: "Ciclismo / Bike", shortLabel: "Bike", category: "cardio", muscleGroups: ["Pernas", "Sistema cardio"], volumeScore: 3 },
+  swimming:      { emoji: "🏊", label: "Natação", shortLabel: "Natação", category: "cardio", muscleGroups: ["Corpo todo"], volumeScore: 3 },
+  rowing:        { emoji: "🚣", label: "Remo / Ergômetro", shortLabel: "Remo", category: "cardio", muscleGroups: ["Costas", "Pernas"], volumeScore: 3 },
+  jump_rope:     { emoji: "🪢", label: "Pular corda", shortLabel: "Corda", category: "cardio", muscleGroups: ["Panturrilhas"], volumeScore: 3 },
+  sprints:       { emoji: "💨", label: "Sprints / Tiros", shortLabel: "Sprints", category: "cardio", muscleGroups: ["Pernas"], volumeScore: 4 },
+  stair_climber: { emoji: "🪜", label: "Escada / Stair Climber", shortLabel: "Escada", category: "cardio", muscleGroups: ["Pernas", "Glúteos"], volumeScore: 3 },
+  elliptical:    { emoji: "🌀", label: "Elíptico / Transport", shortLabel: "Elíptico", category: "cardio", muscleGroups: ["Corpo todo"], volumeScore: 2 },
+  crossfit:      { emoji: "🏋️‍♀️", label: "CrossFit / WOD", shortLabel: "CrossFit", category: "cardio", muscleGroups: ["Corpo todo"], volumeScore: 4 },
+  functional:    { emoji: "🤸", label: "Funcional / Circuito", shortLabel: "Funcional", category: "cardio", muscleGroups: ["Corpo todo"], volumeScore: 3 },
   active_rest:   { emoji: "🧘", label: "Descanso ativo (alongamento)", shortLabel: "Desc. ativo", category: "descanso", muscleGroups: [], volumeScore: 0 },
   rest:          { emoji: "😴", label: "Dia de descanso total", shortLabel: "Descanso", category: "descanso", muscleGroups: [], volumeScore: 0 },
 };
@@ -103,7 +116,10 @@ export const DAY_NAMES_FULL = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta
 /** Estimated cardio calorie burn by type and duration */
 function getCardioCalsBurned(type: WorkoutType, durationMin: number): number {
   const perMin: Record<string, number> = {
-    cardio_z1: 5, cardio_z2: 8, cardio_z3: 10, cardio_hiit: 14, cardio_light: 5,
+    cardio_z1: 5, cardio_z2: 8, cardio_z3: 10, cardio_z4: 12, cardio_hiit: 14,
+    cardio_liss: 6, cardio_aej: 7, cardio_neat: 4, cardio_light: 5,
+    cycling: 9, swimming: 11, rowing: 11, jump_rope: 13, sprints: 15,
+    stair_climber: 10, elliptical: 8, crossfit: 13, functional: 10,
   };
   return Math.round((perMin[type] || 0) * durationMin);
 }
