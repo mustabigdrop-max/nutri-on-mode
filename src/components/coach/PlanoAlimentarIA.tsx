@@ -867,6 +867,13 @@ export default function PlanoAlimentarIA() {
   const [planoComparativo, setPlanoComparativo] = useState<PlanoData | null>(null);
   const [showCompare, setShowCompare] = useState(false);
   const [comparing, setComparing] = useState(false);
+  // NutriPlan Elite — Modo especial + Aderência
+  const [modoEspecial, setModoEspecial] = useState<"normal" | "competicao" | "glp1" | "feminino">("normal");
+  const [faseCiclo, setFaseCiclo] = useState<"folicular" | "ovulatoria" | "lutea" | "menstrual">("folicular");
+  const [diasComp, setDiasComp] = useState<number>(7);
+  const [showAdherence, setShowAdherence] = useState(false);
+  const [adherenceItems, setAdherenceItems] = useState<any[]>([]);
+  const [adherenceLoading, setAdherenceLoading] = useState(false);
   // Modal de revisão do protocolo farmacológico (recálculo determinístico)
   const [showProtocoloModal, setShowProtocoloModal] = useState(false);
   const [protocoloDraft, setProtocoloDraft] = useState("");
