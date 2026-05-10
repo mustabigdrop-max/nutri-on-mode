@@ -614,8 +614,8 @@ const MealPlanPage = () => {
           </button>
         </div>
 
-        {/* Budget mode toggle */}
-        <div className="flex items-center gap-2 mb-4">
+        {/* Budget + NutriPlan Elite toggles */}
+        <div className="flex items-center gap-2 mb-4 flex-wrap">
           <button
             onClick={() => setBudgetMode(!budgetMode)}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono transition-all ${
@@ -627,7 +627,86 @@ const MealPlanPage = () => {
             <Wallet className="w-3.5 h-3.5" />
             {budgetMode ? "Orçamento ON" : "Modo Orçamento"}
           </button>
+          <button
+            onClick={() => setShowCompostos(v => !v)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono transition-all ${
+              compostosAtivos.length > 0
+                ? "bg-primary/15 text-primary border border-primary/40"
+                : "border border-border text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            💊 Compostos {compostosAtivos.length > 0 ? `(${compostosAtivos.length})` : "Ativos"}
+          </button>
         </div>
+
+        {/* Compostos picker (NutriPlan Elite — Dimensão 1) */}
+        <AnimatePresence>
+          {showCompostos && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="mb-4 overflow-hidden"
+            >
+              <div className="rounded-xl border border-primary/30 bg-card p-3">
+                <p className="text-xs text-muted-foreground mb-2 font-mono">
+                  Selecione os compostos ativos do seu protocolo (Dr. VERTEX) — o TDEE será ajustado farmacologicamente.
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {COMPOSTOS_VERTEX.map(c => {
+                    const active = compostosAtivos.includes(c);
+                    return (
+                      <button
+                        key={c}
+                        onClick={() => toggleComposto(c)}
+                        className={`text-[11px] px-2 py-1 rounded-md border transition-all ${
+                          active
+                            ? "bg-primary text-primary-foreground border-primary"
+                            : "border-border text-muted-foreground hover:text-foreground hover:border-primary/40"
+                        }`}
+                      >
+                        {c}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* NutriPlan Elite — Header de TDEE Farmacológico */}
+        {nutriEliteMeta && (nutriEliteMeta.tdee_bruto > 0 || (nutriEliteMeta.ajuste_farmacologico_breakdown?.length > 0)) && (
+          <div className="mb-4 rounded-xl border border-primary/40 bg-gradient-to-br from-primary/10 via-card to-card p-4">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] font-mono uppercase tracking-widest text-primary">NutriPlan Elite · TDEE Farmacológico</span>
+              <span className="text-[10px] font-mono text-muted-foreground">{nutriEliteMeta.formula_tmb}</span>
+            </div>
+            <div className="flex items-baseline gap-2 flex-wrap">
+              <span className="text-xs text-muted-foreground line-through">{nutriEliteMeta.tdee_bruto} kcal</span>
+              <span className="text-2xl font-bold text-primary">→ {nutriEliteMeta.tdee_ajustado} kcal</span>
+              {nutriEliteMeta.multiplicador_farmacologico > 1.001 && (
+                <span className="text-xs font-mono text-primary/80">
+                  ×{nutriEliteMeta.multiplicador_farmacologico.toFixed(2)} (+{Math.round((nutriEliteMeta.multiplicador_farmacologico - 1) * 100)}%)
+                </span>
+              )}
+            </div>
+            {nutriEliteMeta.ajuste_farmacologico_breakdown?.length > 0 && (
+              <div className="mt-2 space-y-1">
+                {nutriEliteMeta.ajuste_farmacologico_breakdown.map((b: any, i: number) => (
+                  <div key={i} className="text-[11px] text-foreground/80">
+                    <span className="font-semibold text-primary">{b.composto}</span>
+                    <span className="text-muted-foreground"> [{b.categoria}] · ×{b.multiplicador} </span>
+                    <span className={b.impacto_kcal >= 0 ? "text-emerald-400" : "text-red-400"}>
+                      {b.impacto_kcal >= 0 ? "+" : ""}{b.impacto_kcal} kcal
+                    </span>
+                    <div className="text-[10px] text-muted-foreground pl-2">↳ {b.nota}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Week selector */}
         <div className="flex items-center justify-between mb-4 rounded-xl border border-border bg-card p-3">
