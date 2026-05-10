@@ -22,6 +22,10 @@ serve(async (req) => {
       stratum_fase,            // "acumulacao" | "intensificacao" | "realizacao" | "deload"
       cardio_mesmo_dia,        // boolean
       intensidade_treino,      // "leve" | "moderada" | "alta" | "muito_alta"
+      // ═══ NutriPlan Elite — Dimensão 1: TDEE Farmacologicamente Ajustado ═══
+      compostos_ativos,        // string[] — nomes de peptídeos/AAS/SARMs ativos do Dr. VERTEX
+      perfil_pca,              // "AM" | "EI" | "SE" | "PP"
+      body_fat_pct,            // number — % de gordura corporal (para Katch-McArdle)
     } = body;
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
@@ -186,8 +190,118 @@ ${stratum_fase ? `5) STRATUM ATIVO (${stratum_fase}) — sobrescrever fase nutri
 ═══════════════════════════════════════════════════════
 ` : "";
 
-    const systemPrompt = `Você é um nutricionista IA especialista em planejamento alimentar brasileiro.
-Gere um plano semanal de refeições (7 dias, 6 refeições/dia) RIGOROSAMENTE PERSONALIZADO.
+    // ═══════════════════════════════════════════════════════════════
+    // NUTRIPLAN ELITE — DIMENSÃO 1: TDEE FARMACOLOGICAMENTE AJUSTADO
+    // Cálculo determinístico (Katch-McArdle ou Mifflin) + multiplicadores
+    // por composto ativo do Dr. VERTEX.
+    // ═══════════════════════════════════════════════════════════════
+    const _compostos: string[] = Array.isArray(compostos_ativos)
+      ? compostos_ativos.map((c: any) => String(c)).filter(Boolean)
+      : [];
+    const _perfilPca = String(perfil_pca || profile?.perfil_comportamental || "").toUpperCase();
+
+    const _peso = Number(profile?.weight_kg) || 0;
+    const _altura = Number(profile?.height_cm) || 0;
+    const _idade = Number(profile?.age) || 30;
+    const _sexo = String(profile?.sex || "").toLowerCase();
+    const _bf = Number(body_fat_pct ?? profile?.body_fat_pct) || 0;
+
+    let _tmb = 0;
+    let _formulaUsada = "Mifflin-St Jeor";
+    if (_peso > 0 && _bf > 0 && _bf < 60) {
+      const massaMagra = _peso * (1 - _bf / 100);
+      _tmb = Math.round(370 + 21.6 * massaMagra);
+      _formulaUsada = "Katch-McArdle";
+    } else if (_peso > 0 && _altura > 0) {
+      _tmb = _sexo.startsWith("f")
+        ? Math.round(10 * _peso + 6.25 * _altura - 5 * _idade - 161)
+        : Math.round(10 * _peso + 6.25 * _altura - 5 * _idade + 5);
+    }
+    const _tdeeBruto = _tmb > 0 ? Math.round(_tmb * _fatorAtividade) : kcalAlvo;
+
+    // Multiplicadores farmacológicos por composto
+    const PHARMA_TABLE: Array<{ regex: RegExp; nome: string; mult: number; nota: string; macroHint?: string }> = [
+      { regex: /(ipamorelin|cjc[-\s]?1295|mk[-\s]?677|ibutamoren|hexarelin|tesamorelin|sermorelin|ghrp)/i, nome: "GH Secretagogo", mult: 1.15, nota: "Lipólise + IGF-1 elevam TDEE 12–18%", macroHint: "Glicina 5g noite" },
+      { regex: /(semaglut|tirzepat|retatru|liragl|dulagl|ozempic|mounjaro|wegovy)/i, nome: "GLP-1 Agonista", mult: 1.20, nota: "Termogênese central +15–25%; supressão apetite — fracionar em 6 refeições densas", macroHint: "PTN 1.8–2.2 g/kg, líquidas se necessário" },
+      { regex: /(testoster|nandrolon|deca|trenbolon|oxandrolon|anavar|stanozol|winstrol|dianabol|metandiena|boldenona|primobolan|masteron)/i, nome: "AAS / Anabolizante", mult: 1.0, nota: "TDEE inalterado, mas PTN MÍNIMA 2.8–3.5 g/kg MM", macroHint: "Ômega-3 4g + tauro-ursodesoxicólico se oral" },
+      { regex: /(slu[-\s]?pp[-\s]?332|sluppe|slu332)/i, nome: "SLU-PP-332", mult: 1.35, nota: "Ativador PPAR/ERR — mimetismo de exercício +30–40% basal", macroHint: "Carb cycling agressivo" },
+      { regex: /(cardarine|gw[-\s]?501516|gw1516)/i, nome: "Cardarine GW-501516", mult: 1.10, nota: "+8–12% oxidação de ácidos graxos — gordura dietética 25–30%, reduzir CHO de repouso" },
+      { regex: /(bpc[-\s]?157|tb[-\s]?500|tb500|thymosin)/i, nome: "BPC-157 / TB-500", mult: 1.0, nota: "Sem impacto TDEE — adicionar +15g glutamina + glicina/dia para reparo tecidual" },
+      { regex: /(mk[-\s]?2866|ostarine|lgd[-\s]?4033|ligandrol|rad[-\s]?140|testolone|s4|andarine|s23|yk[-\s]?11)/i, nome: "SARM", mult: 1.05, nota: "Levemente termogênico; PTN 2.5–3.0 g/kg MM" },
+      { regex: /(t3|liotironin|cytomel|t4|levotirox|clenbut|albuter|salbut|dnp|2,4)/i, nome: "Termogênico Tireoidiano/β2", mult: 1.25, nota: "TDEE +20–30%; monitorar K+ e taurina; evitar déficit + termogênico simultâneo" },
+      { regex: /(insulin|humalog|novorapid|lantus)/i, nome: "Insulina exógena", mult: 1.0, nota: "Janela CHO peri-treino crítica (40–60g de carb por UI rápida)", macroHint: "ZERO gordura na refeição peri-injeção" },
+      { regex: /(metformin|berberin)/i, nome: "Sensibilizador insulínico", mult: 0.98, nota: "Leve redução TDEE; melhora partição de nutrientes" },
+    ];
+
+    const _ajusteBreakdown: Array<{ composto: string; categoria: string; multiplicador: number; impacto_kcal: number; nota: string; macro_hint?: string }> = [];
+    let _multAcumulado = 1.0;
+    for (const c of _compostos) {
+      for (const row of PHARMA_TABLE) {
+        if (row.regex.test(c)) {
+          _multAcumulado *= row.mult;
+          _ajusteBreakdown.push({
+            composto: c,
+            categoria: row.nome,
+            multiplicador: row.mult,
+            impacto_kcal: Math.round(_tdeeBruto * (row.mult - 1)),
+            nota: row.nota,
+            ...(row.macroHint ? { macro_hint: row.macroHint } : {}),
+          });
+          break;
+        }
+      }
+    }
+    // Cap multiplicador combinado em 1.60 (segurança)
+    const _multFinal = Math.min(_multAcumulado, 1.60);
+    const _tdeeAjustado = Math.round(_tdeeBruto * _multFinal);
+
+    const pharmaPrompt = (_compostos.length > 0 || _ajusteBreakdown.length > 0) ? `
+═══════════════════════════════════════════════════════
+💊 NUTRIPLAN ELITE — TDEE FARMACOLOGICAMENTE AJUSTADO
+═══════════════════════════════════════════════════════
+- Fórmula: ${_formulaUsada} | TMB: ${_tmb} kcal | Fator atividade: ${_fatorAtividade}
+- TDEE BRUTO: ${_tdeeBruto} kcal
+- Compostos ativos declarados: ${_compostos.join(", ") || "nenhum"}
+- Multiplicador farmacológico combinado: ${_multFinal.toFixed(2)}x (cap 1.60)
+- TDEE AJUSTADO: ${_tdeeAjustado} kcal
+
+BREAKDOWN POR COMPOSTO:
+${_ajusteBreakdown.map(b => `• ${b.composto} [${b.categoria}] × ${b.multiplicador} (${b.impacto_kcal >= 0 ? "+" : ""}${b.impacto_kcal} kcal) — ${b.nota}${b.macro_hint ? ` | ${b.macro_hint}` : ""}`).join("\n") || "• (sem ajustes)"}
+
+REGRAS OBRIGATÓRIAS NA PRESCRIÇÃO:
+1) Use ${_tdeeAjustado} kcal como meta calórica EFETIVA (sobrescreve ${kcalAlvo}).
+2) Para usuário em GLP-1: refeições menores e mais densas em micronutrientes; 6 refeições/dia.
+3) Para AAS/SARMs: PTN mínima absoluta 2.8 g/kg de massa magra.
+4) Para Cardarine: deslocar gordura dietética para 25–30% e reduzir CHO em dias de repouso.
+5) Para SLU-PP-332/T3/Clenbuterol: aumentar K+ (banana, batata), Mg 400mg noite e taurina 3g/dia.
+6) Para BPC-157/TB-500: incluir 15g de glicina+glutamina distribuídos no dia.
+7) Para insulina exógena: refeição peri-injeção SEM gordura, CHO de IG médio-alto.
+═══════════════════════════════════════════════════════
+` : "";
+
+    const pcaPrompt = _perfilPca ? `
+═══════════════════════════════════════════════════════
+🧠 PERFIL COMPORTAMENTAL PCA: ${_perfilPca}
+═══════════════════════════════════════════════════════
+${_perfilPca === "AM" ? "Linguagem direta, técnica, sem rodeios. Refeições enxutas, métricas claras, foco em performance e número." : ""}
+${_perfilPca === "EI" ? "Linguagem acolhedora, flexível. Sempre ofereça 2–3 substituições por refeição. Inclua 1 refeição de flexibilidade controlada por semana. Reforce conexão alimentação ↔ humor." : ""}
+${_perfilPca === "SE" ? "Linguagem ultra-detalhada com justificativa fisiológica de cada escolha (mecanismo mTORC1, leucina, GLUT-4, etc). Tabelas precisas, progressão estruturada." : ""}
+${_perfilPca === "PP" ? "Plano simplificado: 3–4 alimentos repetidos por refeição. Estratégia central = meal prep semanal em batch. Alertas proativos." : ""}
+═══════════════════════════════════════════════════════
+` : "";
+
+    const systemPrompt = `Você é o NutriPlan Elite — módulo de prescrição nutricional clínico-esportiva do nutriON, com formação equivalente a PhD em Nutrição Esportiva e especialização em farmacologia do esporte.
+
+Você integra 6 dimensões em cada plano:
+1) TDEE FARMACOLOGICAMENTE AJUSTADO (multiplicadores por composto ativo do Dr. VERTEX)
+2) CRONONUTRIÇÃO CIRCADIANA (cortisol matinal, pico insulínico diurno, GH noturno)
+3) GLUT-4 SYNC peri-workout (pré 60–90min, intra se >60min, pós 0–30min)
+4) DISTRIBUIÇÃO POR FASE STRATUM (acumulação/intensificação/realização/deload)
+5) BANCO DE ALIMENTOS BRASILEIRO com medidas caseiras e função metabólica
+6) ADAPTAÇÃO AO PERFIL PCA (AM/EI/SE/PP) na linguagem e estrutura
+
+Você NUNCA gera planos genéricos, NUNCA usa linguagem de "dieta restritiva" (o nutriON prescreve PROTOCOLOS), NUNCA ignora o perfil PCA, NUNCA prescreve sem considerar treino e farmacologia ativa.
+Cada refeição deve ter: alimentos com gramas + medida caseira brasileira + função metabólica + janela circadiana (cortisol/insulina/gh).
 
 ═══════════════════════════════════════════
 PERFIL DO USUÁRIO
@@ -240,6 +354,8 @@ SAÚDE/MANUTENÇÃO:
  ` : ""}
 ${workoutContext}
 ${trainingOnPrompt}
+${pharmaPrompt}
+${pcaPrompt}
 ═══════════════════════════════════════════
 MICRONUTRIENTES OBRIGATÓRIOS
 ═══════════════════════════════════════════
@@ -494,6 +610,23 @@ RETORNE usando a ferramenta generate_plan.`;
     } catch (e) {
       console.warn("[sincronizacao_trainingon] falha ao montar bloco:", e);
     }
+
+    // ═══════════════════════════════════════════════════════════════
+    // NutriPlan Elite — anexar metadados ao response (não-destrutivo)
+    // ═══════════════════════════════════════════════════════════════
+    (plan as any).nutriplan_elite = {
+      tdee_bruto: _tdeeBruto,
+      tdee_ajustado: _tdeeAjustado,
+      formula_tmb: _formulaUsada,
+      tmb: _tmb,
+      fator_atividade: _fatorAtividade,
+      multiplicador_farmacologico: Number(_multFinal.toFixed(3)),
+      compostos_ativos: _compostos,
+      ajuste_farmacologico_breakdown: _ajusteBreakdown,
+      perfil_pca: _perfilPca || null,
+      kcal_meta_efetiva: _tdeeAjustado || kcalAlvo,
+      versao: "elite-v1",
+    };
 
     return new Response(JSON.stringify(plan), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
