@@ -1252,6 +1252,9 @@ export default function PlanoAlimentarIA() {
       body: {
         ...form,
         compostos_ativos: form.compostosAtivos || [],
+        modo_especial: modoEspecial,
+        fase_ciclo: modoEspecial === "feminino" ? faseCiclo : undefined,
+        dias_para_competicao: modoEspecial === "competicao" ? diasComp : undefined,
         modoEconomico: modoEcon,
         restricoesStr,
         protocStr,
