@@ -804,6 +804,10 @@ serve(async (req) => {
       // NutriPlan Elite — compostos ativos estruturados (multi-select do form)
       compostos_ativos,
       compostosAtivos,
+      // NutriPlan Elite — modo especial (competicao | glp1 | feminino)
+      modo_especial,
+      fase_ciclo,
+      dias_para_competicao,
     } = body;
     // NutriPlan Elite — lista normalizada de compostos vindos do multi-select
     const _compostosAtivos: string[] = Array.isArray(compostos_ativos)
@@ -811,6 +815,9 @@ serve(async (req) => {
       : Array.isArray(compostosAtivos)
         ? compostosAtivos
         : [];
+    const _modoEspecial: string = (typeof modo_especial === "string" ? modo_especial : "normal").toLowerCase();
+    const _faseCiclo: string = (typeof fase_ciclo === "string" ? fase_ciclo : "folicular").toLowerCase();
+    const _diasComp: number = Math.max(1, Math.min(60, Number(dias_para_competicao) || 7));
     // Fallbacks para suportar payload antigo
     const _neat = neat ?? perfilFisiologico?.neat ?? "medio";
     const _qualidadeSono = qualidadeSono ?? perfilFisiologico?.qualidade_sono ?? "boa";
