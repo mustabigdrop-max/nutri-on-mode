@@ -17,6 +17,8 @@ import { validateMedidasCaseiras } from "@/lib/medidasCaseirasValidator";
 import SubstitutionsAgentPage from "@/pages/SubstitutionsAgentPage";
 import { SUBSTITUTION_BANK_V2, type FoodCategoryV2 } from "@/data/substitutionBank";
 import NutrientDensityPanel from "@/components/coach/NutrientDensityPanel";
+import Glut4SyncCard from "@/components/meal/Glut4SyncCard";
+import AdherenceModal from "@/components/meal/AdherenceModal";
 
 // ─── Design tokens (alinhados ao nutriON: dark bg, green accent) ──────────────
 const T = {
@@ -865,6 +867,13 @@ export default function PlanoAlimentarIA() {
   const [planoComparativo, setPlanoComparativo] = useState<PlanoData | null>(null);
   const [showCompare, setShowCompare] = useState(false);
   const [comparing, setComparing] = useState(false);
+  // NutriPlan Elite — Modo especial + Aderência
+  const [modoEspecial, setModoEspecial] = useState<"normal" | "competicao" | "glp1" | "feminino">("normal");
+  const [faseCiclo, setFaseCiclo] = useState<"folicular" | "ovulatoria" | "lutea" | "menstrual">("folicular");
+  const [diasComp, setDiasComp] = useState<number>(7);
+  const [showAdherence, setShowAdherence] = useState(false);
+  const [adherenceItems, setAdherenceItems] = useState<any[]>([]);
+  const [adherenceLoading, setAdherenceLoading] = useState(false);
   // Modal de revisão do protocolo farmacológico (recálculo determinístico)
   const [showProtocoloModal, setShowProtocoloModal] = useState(false);
   const [protocoloDraft, setProtocoloDraft] = useState("");
@@ -961,6 +970,44 @@ export default function PlanoAlimentarIA() {
       .limit(100);
     setHistory(data || []);
     setLoadingHistory(false);
+  };
+
+  // NutriPlan Elite — Aderência: carrega meals_saved do paciente vinculado
+  const openAdherence = async () => {
+    const patientId = (form as any)?.patientUserId;
+    if (!patientId) {
+      toast({ title: "Selecione um paciente vinculado", description: "A aderência é calculada a partir do diário do paciente.", variant: "destructive" });
+      return;
+    }
+    setShowAdherence(true);
+    setAdherenceLoading(true);
+    try {
+      const since = new Date(); since.setDate(since.getDate() - 14);
+      const { data } = await supabase
+        .from("meals_saved")
+        .select("meal_type, kcal, protein_g, carbs_g, fat_g, confirmed, eaten_at")
+        .eq("user_id", patientId)
+        .gte("eaten_at", since.toISOString())
+        .order("eaten_at", { ascending: false })
+        .limit(500);
+      const items = (data || []).map((m: any) => {
+        const dt = new Date(m.eaten_at);
+        // 0=Mon ... 6=Sun (semana ISO)
+        const dow = (dt.getDay() + 6) % 7;
+        return {
+          day_index: dow,
+          meal_type: m.meal_type,
+          kcal: Number(m.kcal) || 0,
+          protein_g: Number(m.protein_g) || 0,
+          carbs_g: Number(m.carbs_g) || 0,
+          fat_g: Number(m.fat_g) || 0,
+          confirmed: !!m.confirmed,
+        };
+      });
+      setAdherenceItems(items);
+    } finally {
+      setAdherenceLoading(false);
+    }
   };
 
   // Load coach profile + patients
@@ -1243,6 +1290,9 @@ export default function PlanoAlimentarIA() {
       body: {
         ...form,
         compostos_ativos: form.compostosAtivos || [],
+        modo_especial: modoEspecial,
+        fase_ciclo: modoEspecial === "feminino" ? faseCiclo : undefined,
+        dias_para_competicao: modoEspecial === "competicao" ? diasComp : undefined,
         modoEconomico: modoEcon,
         restricoesStr,
         protocStr,
@@ -2010,6 +2060,9 @@ export default function PlanoAlimentarIA() {
             </button>
             <button onClick={exportPDF} style={{ padding: "8px 16px", borderRadius: 8, background: T.bg3, border: `1px solid ${T.border2}`, color: T.muted, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>
               📄 PDF
+            </button>
+            <button onClick={openAdherence} style={{ padding: "8px 16px", borderRadius: 8, background: T.bg3, border: `1px solid ${T.border2}`, color: T.muted, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>
+              📊 Aderência
             </button>
             <button onClick={() => salvarPlano()} disabled={saving || !!savedId} style={{ padding: "8px 16px", borderRadius: 8, background: savedId ? T.greenBg : T.bg3, border: `1px solid ${savedId ? T.green : T.border2}`, color: savedId ? T.green : T.text, fontSize: 12, cursor: saving ? "wait" : "pointer", fontFamily: "inherit", fontWeight: 600, opacity: saving ? 0.6 : 1 }}>
               {saving ? "Salvando..." : savedId ? "✓ Salvo" : "💾 Salvar"}
@@ -3756,6 +3809,117 @@ export default function PlanoAlimentarIA() {
             />
           )}
 
+          {/* NutriPlan Elite — Modo Especial selector */}
+          <div style={{ marginBottom: 14, padding: 14, borderRadius: 10, background: T.bg2, border: `1px solid ${T.border2}` }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: T.muted, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 10 }}>
+              ⚙️ Modo Especial
+            </div>
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+              {([
+                { k: "normal", l: "Padrão" },
+                { k: "competicao", l: "🏆 Competição (Peak Week)" },
+                { k: "glp1", l: "💉 GLP-1" },
+                { k: "feminino", l: "🌸 Feminino (Ciclo)" },
+              ] as const).map(opt => {
+                const active = modoEspecial === opt.k;
+                return (
+                  <button key={opt.k} type="button" onClick={() => setModoEspecial(opt.k as any)}
+                    style={{ padding: "6px 12px", borderRadius: 16, fontSize: 11, fontFamily: "inherit", cursor: "pointer",
+                      border: `1px solid ${active ? T.green : T.border2}`, background: active ? T.greenBg : T.bg3,
+                      color: active ? T.green : T.muted, fontWeight: active ? 600 : 400 }}>
+                    {opt.l}
+                  </button>
+                );
+              })}
+            </div>
+            {modoEspecial === "competicao" && (
+              <div style={{ marginTop: 10, display: "flex", alignItems: "center", gap: 8 }}>
+                <span style={{ fontSize: 11, color: T.muted }}>Dias até a competição:</span>
+                <input type="number" min={1} max={14} value={diasComp} onChange={e => setDiasComp(Number(e.target.value) || 7)}
+                  style={{ width: 60, padding: "4px 8px", borderRadius: 6, background: T.bg3, border: `1px solid ${T.border2}`, color: T.text, fontSize: 12 }} />
+              </div>
+            )}
+            {modoEspecial === "feminino" && (
+              <div style={{ marginTop: 10, display: "flex", gap: 6, flexWrap: "wrap" }}>
+                {(["folicular", "ovulatoria", "lutea", "menstrual"] as const).map(f => (
+                  <button key={f} type="button" onClick={() => setFaseCiclo(f)}
+                    style={{ padding: "4px 10px", borderRadius: 12, fontSize: 10, fontFamily: "inherit", cursor: "pointer",
+                      border: `1px solid ${faseCiclo === f ? T.green : T.border2}`, background: faseCiclo === f ? T.greenBg : T.bg3,
+                      color: faseCiclo === f ? T.green : T.muted }}>
+                    {f}
+                  </button>
+                ))}
+              </div>
+            )}
+            {modoEspecial !== "normal" && (
+              <div style={{ marginTop: 8, fontSize: 10, color: T.amber, fontStyle: "italic" }}>
+                Aplica-se na próxima geração / regeração do plano.
+              </div>
+            )}
+          </div>
+
+          {/* NutriPlan Elite — Mini Timeline Circadiana (horários do plano) */}
+          {plano.refeicoes && plano.refeicoes.length > 0 && (() => {
+            const trainingTimes = (["seg","ter","qua","qui","sex","sab","dom"] as const)
+              .map((d) => trainingSchedule.base[d])
+              .filter((d) => d.is_training_day && d.time)
+              .map((d) => d.time as string);
+            const workout = trainingTimes[0];
+            const parseH = (t?: string) => { if (!t) return null; const [h, m] = t.split(":").map(Number); return Number.isNaN(h) ? null : h + (m || 0) / 60; };
+            const HMIN = 6, HMAX = 24, RANGE = HMAX - HMIN;
+            const pct = (h: number) => Math.max(0, Math.min(100, ((h - HMIN) / RANGE) * 100));
+            const wH = parseH(workout);
+            return (
+              <div style={{ marginBottom: 18, padding: 16, borderRadius: 10, background: T.bg2, border: `1px solid ${T.border2}` }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: T.green, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 12 }}>
+                  🕐 Timeline Circadiana
+                </div>
+                <div style={{ position: "relative", height: 56, background: `linear-gradient(90deg, rgba(255,180,80,0.10) 0%, rgba(255,220,120,0.18) 30%, rgba(120,200,255,0.10) 60%, rgba(80,80,180,0.18) 100%)`, borderRadius: 8, border: `1px solid ${T.border2}` }}>
+                  {wH !== null && (
+                    <div style={{ position: "absolute", left: `${pct(wH)}%`, top: -2, bottom: -2, width: 2, background: T.amber, boxShadow: `0 0 8px ${T.amber}` }} title={`Treino ${workout}`}>
+                      <div style={{ position: "absolute", top: -16, left: -16, fontSize: 9, color: T.amber, fontWeight: 700, whiteSpace: "nowrap" }}>🏋️ {workout}</div>
+                    </div>
+                  )}
+                  {plano.refeicoes!.map((m: any, i: number) => {
+                    const h = parseH(m.horario);
+                    if (h === null) return null;
+                    return (
+                      <div key={i} style={{ position: "absolute", left: `${pct(h)}%`, top: 8, transform: "translateX(-50%)" }}>
+                        <div style={{ width: 10, height: 10, borderRadius: 999, background: T.green, border: `2px solid ${T.bg2}` }} title={`${m.refeicao} · ${m.horario}`} />
+                        <div style={{ fontSize: 9, color: T.muted, marginTop: 4, whiteSpace: "nowrap", transform: "translateX(-30%)" }}>{m.horario}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+                <div style={{ display: "flex", justifyContent: "space-between", marginTop: 6, fontSize: 9, color: T.muted }}>
+                  <span>06:00 · Cortisol ↑</span>
+                  <span>12:00 · Insulina pico</span>
+                  <span>20:00 · GH ↑</span>
+                  <span>24:00</span>
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* NutriPlan Elite — GLUT-4 Sync Card (peri-workout dourado) */}
+          {(() => {
+            const trainingDays = (["seg","ter","qua","qui","sex","sab","dom"] as const)
+              .map((d) => trainingSchedule.base[d])
+              .filter((d) => d.is_training_day && d.time);
+            if (!trainingDays.length) return null;
+            const first = trainingDays[0];
+            return (
+              <div style={{ marginBottom: 18 }}>
+                <Glut4SyncCard
+                  workoutTime={first.time}
+                  workoutType={(first as any).modality || "Musculação"}
+                  durationMin={Number((first as any).duration_min) || 60}
+                  compostosAtivos={form.compostosAtivos || []}
+                />
+              </div>
+            );
+          })()}
+
           {/* Refeições */}
           <div style={{ marginBottom: 24 }}>
             <div style={{ fontSize: 11, fontWeight: 700, color: T.green, textTransform: "uppercase" as const, letterSpacing: "0.1em", marginBottom: 10, display: "flex", alignItems: "center", gap: 8 }}>
@@ -3872,11 +4036,24 @@ export default function PlanoAlimentarIA() {
             ← Voltar ao Dashboard
           </button>
         </div>
+
+        {/* NutriPlan Elite — Adherence Modal (paciente vinculado) */}
+        {showAdherence && (
+          <AdherenceModal
+            items={adherenceItems}
+            profile={{
+              vet_kcal: Number(form.calorias) || null,
+              protein_g: (plano as any)?.resumo?.proteina_total ?? null,
+              carbs_g: (plano as any)?.resumo?.carboidrato_total ?? null,
+              fat_g: (plano as any)?.resumo?.gordura_total ?? null,
+            }}
+            onClose={() => setShowAdherence(false)}
+          />
+        )}
       </div>
     );
   }
 
-  // ── FORM ──
   return (
     <div style={{ minHeight: "100vh", background: T.bg, fontFamily: "'DM Sans', sans-serif" }}>
       <style>{`*{box-sizing:border-box}`}</style>
