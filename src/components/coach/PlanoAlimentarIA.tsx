@@ -849,6 +849,26 @@ const MealCard = ({ meal, index, onSwap, workoutTag }: MealCardProps) => {
             </div>
           );
         })}
+        {(meal.funcao_metabolica || meal.janela_metabolica || meal.protocolo_peri_workout || meal.mensagem_mce || (meal.insights_ia && meal.insights_ia.length)) && (
+          <div style={{ marginTop: 12, padding: 10, borderRadius: 10, background: T.bg2, border: `1px dashed ${T.green}55`, display: "flex", flexDirection: "column", gap: 6 }}>
+            <div style={{ fontSize: 9, color: T.green, textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 700 }}>NutriPlan Elite</div>
+            {meal.funcao_metabolica && (
+              <div style={{ fontSize: 11, color: T.text }}><span style={{ color: T.green, fontWeight: 700 }}>◆ Função:</span> {meal.funcao_metabolica}</div>
+            )}
+            {meal.janela_metabolica && (
+              <div style={{ fontSize: 11, color: T.text }}><span style={{ color: T.amber, fontWeight: 700 }}>◷ Janela:</span> {meal.janela_metabolica}</div>
+            )}
+            {meal.protocolo_peri_workout && (
+              <div style={{ fontSize: 11, color: T.text }}><span style={{ color: T.blue, fontWeight: 700 }}>⚡ Peri-treino:</span> {meal.protocolo_peri_workout}</div>
+            )}
+            {meal.mensagem_mce && (
+              <div style={{ fontSize: 11, color: T.text, fontStyle: "italic" }}><span style={{ color: T.green, fontWeight: 700 }}>MCE:</span> {meal.mensagem_mce}</div>
+            )}
+            {meal.insights_ia?.map((ins, ii) => (
+              <div key={ii} style={{ fontSize: 11, color: T.muted }}>💡 {ins}</div>
+            ))}
+          </div>
+        )}
         {meal.macros && (
           <div style={{ display: "flex", gap: 12, marginTop: 10, paddingTop: 10, borderTop: `1px solid ${T.border}` }}>
             {([["P", meal.macros.proteina, T.blue], ["C", meal.macros.carboidrato, T.amber], ["G", meal.macros.gordura, "#f472b6"]] as [string, number | undefined, string][]).map(([l, v, c]) => v != null && (
