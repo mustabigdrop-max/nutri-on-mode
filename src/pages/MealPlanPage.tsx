@@ -137,6 +137,30 @@ const MealPlanPage = () => {
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [budgetMode, setBudgetMode] = useState(false);
+  // ═══ NutriPlan Elite — Dimensão 1: TDEE Farmacológico ═══
+  const COMPOSTOS_VERTEX = [
+    "Ipamorelin", "CJC-1295", "MK-677 (Ibutamoren)", "Tesamorelin",
+    "Semaglutida", "Tirzepatida", "Retatrutide",
+    "Testosterona", "Nandrolona (Deca)", "Oxandrolona (Anavar)", "Trembolona", "Boldenona",
+    "MK-2866 (Ostarine)", "LGD-4033", "RAD-140",
+    "SLU-PP-332", "Cardarine (GW-501516)",
+    "BPC-157", "TB-500",
+    "T3 (Liotironina)", "Clenbuterol", "Insulina",
+  ];
+  const [compostosAtivos, setCompostosAtivos] = useState<string[]>(() => {
+    try { return JSON.parse(localStorage.getItem("nutriplan_compostos") || "[]"); } catch { return []; }
+  });
+  const [showCompostos, setShowCompostos] = useState(false);
+  const [nutriEliteMeta, setNutriEliteMeta] = useState<any>(() => {
+    try { return JSON.parse(localStorage.getItem("nutriplan_elite_meta") || "null"); } catch { return null; }
+  });
+  const toggleComposto = (c: string) => {
+    setCompostosAtivos(prev => {
+      const next = prev.includes(c) ? prev.filter(x => x !== c) : [...prev, c];
+      localStorage.setItem("nutriplan_compostos", JSON.stringify(next));
+      return next;
+    });
+  };
   const [dragItem, setDragItem] = useState<PlanItem | null>(null);
   const [subModalItem, setSubModalItem] = useState<PlanItem | null>(null);
   const [trainingMap, setTrainingMap] = useState<Record<number, TrainingDayInfo>>(() => {
