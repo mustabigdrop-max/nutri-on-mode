@@ -24,6 +24,7 @@ import BottomNav from "@/components/BottomNav";
 import StratumModule from "@/components/training/StratumModule";
 import StratumProtocolHub from "@/components/training/StratumProtocolHub";
 import TrainingOnFibrasChat from "@/components/training/TrainingOnFibrasChat";
+import TrainingReadinessSection from "@/components/training/TrainingReadinessSection";
 import WeekNavigator from "@/components/training/WeekNavigator";
 import ExerciseLogPanel from "@/components/training/ExerciseLogPanel";
 import { applyWeekProgression, WEEK_PLAN, WeekPhase } from "@/lib/weekProgression";
@@ -42,10 +43,11 @@ import CompetitionModeBlocks from "@/components/training/systems/CompetitionMode
 
 const ADMIN_UID = "70e51469-1acf-4df6-afe6-f094d21db122";
 
-type Section = "gerar" | "fibras" | "sistemas" | "stratum" | "competicao" | "progressao" | "volume" | "historico" | "config";
+type Section = "gerar" | "readiness" | "fibras" | "sistemas" | "stratum" | "competicao" | "progressao" | "volume" | "historico" | "config";
 
 const sectionNav: { id: Section; label: string; icon: any; adminOnly?: boolean }[] = [
   { id: "gerar", label: "Prescrição", icon: Brain },
+  { id: "readiness", label: "Readiness", icon: HeartPulse },
   { id: "fibras", label: "Fibras IA", icon: Activity },
   { id: "sistemas", label: "Sistemas", icon: Layers, adminOnly: true },
   { id: "stratum", label: "STRATUM", icon: Microscope, adminOnly: true },
@@ -118,6 +120,7 @@ export default function TrainingPage() {
         <AnimatePresence mode="wait">
           <motion.div key={section} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
             {section === "gerar" && <EliteGenerateSection userId={user?.id} />}
+            {section === "readiness" && <TrainingReadinessSection />}
             {section === "fibras" && <TrainingOnFibrasChat />}
             {section === "stratum" && isAdmin && (
               <div className="space-y-6">
