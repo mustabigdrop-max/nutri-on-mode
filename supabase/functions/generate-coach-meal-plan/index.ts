@@ -2185,7 +2185,18 @@ OUTROS DADOS:
 Aplique TODAS as regras de cálculo (Mifflin-St Jeor — valores já pré-calculados no bloco determinístico, ajustes farmacológicos por composto, integração de cardio, fase de periodização). Use alimentos brasileiros acessíveis com gramagem precisa. Linguagem técnica de coach de competição.
 
 🚨 REGRA CRÍTICA DE FORMATO 🚨
-Responda APENAS com UM ÚNICO objeto JSON válido (root é um único "{...}"). NÃO retorne múltiplos objetos concatenados, NÃO retorne array no nível raiz, NÃO retorne "PLANO 1 / PLANO 2", NÃO repita o objeto para diferentes dias da semana. Gere UM plano único representativo. Estrutura exata:
+Responda APENAS com UM ÚNICO objeto JSON válido (root é um único "{...}"). NÃO retorne múltiplos objetos concatenados, NÃO retorne array no nível raiz, NÃO retorne "PLANO 1 / PLANO 2", NÃO repita o objeto para diferentes dias da semana. Gere UM plano único representativo.
+
+🧠 NUTRIPLAN ELITE — ENRIQUECIMENTO OBRIGATÓRIO POR REFEIÇÃO:
+Para CADA item do array "refeicoes", PREENCHA SEMPRE os campos:
+- "funcao_metabolica" (1 linha — papel metabólico/hormonal: cortisol matinal, leucina threshold/MPS, repleção glicogênio, GH noturno, insulina, etc.)
+- "janela_metabolica" (1 linha — janela cronobiológica e timing relativo ao treino se aplicável)
+- "protocolo_peri_workout" (string SOMENTE para refeições pré/intra/pós-treino com timing+composição quantificada; null nas demais)
+- "mensagem_mce" (1 frase comportamental adaptada ao perfil PCA do paciente)
+- "insights_ia" (array com 1–3 strings curtas: justificativa científica, ajuste farmacológico, alerta clínico)
+JAMAIS omita esses campos. Use "null" só onde explicitamente permitido.
+
+Estrutura exata:
 {
   "resumo": {
     "nome": "string",
