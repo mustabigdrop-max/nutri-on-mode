@@ -1242,6 +1242,7 @@ export default function PlanoAlimentarIA() {
     const { data, error: fnError } = await supabase.functions.invoke("generate-coach-meal-plan", {
       body: {
         ...form,
+        compostos_ativos: form.compostosAtivos || [],
         modoEconomico: modoEcon,
         restricoesStr,
         protocStr,
