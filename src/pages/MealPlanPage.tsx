@@ -990,6 +990,7 @@ const MealPlanPage = () => {
                   const mealLabel = MEAL_TYPES.find(m => m.key === item.meal_type)?.label || item.meal_type;
                   const dayInfo = trainingMap[item.day_index];
                   const tag = dayInfo?.isTraining ? classifyMealVsWorkout(item.meal_type, dayInfo.workoutTime) : null;
+                  const enr = nutriEliteMeta?.enrichment?.[`${item.day_index}-${item.meal_type}`] || {};
                   return (
                     <ExpandableMealCard
                       key={item.id}
@@ -1001,6 +1002,11 @@ const MealPlanPage = () => {
                       onSwap={() => setSubModalItem(item)}
                       onDragStart={() => handleDragStart(item)}
                       onDrop={() => handleDrop(item)}
+                      funcao_metabolica={enr.funcao_metabolica}
+                      janela_metabolica={enr.janela_metabolica}
+                      protocolo_peri_workout={enr.protocolo_peri_workout}
+                      mensagem_mce={enr.mensagem_mce}
+                      insights_ia={enr.insights_ia}
                     />
                   );
                 })}
