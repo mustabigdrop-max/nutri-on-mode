@@ -1,9 +1,8 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Zap, Check, ChevronRight, Dumbbell, Clock, Droplets, Trophy, Calendar, History, Plus, Trash2, Target, Pill, AlertTriangle, ChevronDown, ChevronUp, BarChart3 } from "lucide-react";
+import { ArrowLeft, History, ChevronRight, Plus, Trash2, Check, Zap } from "lucide-react";
 import PeakWeekManager from "@/components/nutrisync/PeakWeekManager";
-import NutriSyncAnalysisTab from "@/components/nutrisync/NutriSyncAnalysisTab";
 import BottomNav from "@/components/BottomNav";
 import { useProfile } from "@/hooks/useProfile";
 import {
@@ -13,837 +12,660 @@ import {
   DAY_NAMES_FULL,
   getWorkoutAdjustment,
   combineAdjustments,
-  getMealSuggestionsMultiWorkout,
-  generateDayTimeline,
-  isDuploTreino,
+  getMealSuggestionsByTime,
   type WorkoutType,
   type WorkoutTime,
   type WorkoutScheduleEntry,
 } from "@/hooks/useWorkoutSchedule";
 
-const WORKOUT_TIME_LABELS: Record<WorkoutTime, { label: string; emoji: string; hour: string }> = {
-  morning: { label: "Manhã", emoji: "🌅", hour: "6h–10h" },
-  afternoon: { label: "Tarde", emoji: "☀️", hour: "11h–16h" },
-  night: { label: "Noite", emoji: "🌙", hour: "17h–22h" },
+// ──────────────────────────────────────────
+// NutriON brand palette
+// ──────────────────────────────────────────
+const C = {
+  bg: "#03030a",
+  card: "#06060e",
+  card2: "#0a0a14",
+  border: "#1a1a28",
+  gold: "#e8a020",
+  goldDim: "rgba(232,160,32,.2)",
+  goldBg: "rgba(232,160,32,.08)",
+  teal: "#00f0b4",
+  tealDim: "rgba(0,240,180,.22)",
+  tealBg: "rgba(0,240,180,.08)",
+  purple: "#7890ff",
+  purpleBg: "rgba(120,144,255,.10)",
+  text: "#f0edf8",
+  muted: "#5a5a78",
+  dim: "#40406a",
+  red: "#ff4444",
+  orange: "#ff8c00",
 };
 
-const DURATION_OPTIONS = [20, 30, 45, 60, 75, 90, 120];
+const RPE_COLORS: Record<number, string> = {
+  1: "#00f0b4", 2: "#00f0b4", 3: "#7890ff", 4: "#7890ff", 5: "#7890ff",
+  6: "#e8a020", 7: "#e8a020", 8: "#ff8c00", 9: "#ff4444", 10: "#ff0000",
+};
+const RPE_LABELS: Record<number, string> = {
+  1: "Muito fácil", 2: "Fácil", 3: "Moderado", 4: "Moderado+", 5: "Intenso",
+  6: "Intenso+", 7: "Muito intenso", 8: "Máximo −1", 9: "Máximo −0", 10: "Falha total",
+};
 
-const OBJETIVO_OPTIONS = [
-  { key: "bulking", label: "Bulking", emoji: "🍗" },
-  { key: "cutting", label: "Cutting", emoji: "✂️" },
-  { key: "manutencao", label: "Manutenção", emoji: "⚖️" },
-] as const;
+const MAJOR_MUSCLES = ["Peito", "Costas", "Ombros", "Bíceps", "Tríceps", "Quadríceps", "Posterior", "Glúteos"] as const;
 
+const WORKOUT_TIME_LABELS: Record<WorkoutTime, { label: string; emoji: string }> = {
+  morning:   { label: "Manhã", emoji: "🌅" },
+  afternoon: { label: "Tarde", emoji: "☀️" },
+  night:     { label: "Noite", emoji: "🌙" },
+};
+const DURATION_OPTIONS = [30, 45, 60, 75, 90, 120];
+
+// ──────────────────────────────────────────
+// Recovery / Readiness
+// ──────────────────────────────────────────
+function computeMuscleRecovery(schedule: WorkoutScheduleEntry[]) {
+  const today = new Date();
+  const todayDow = today.getDay();
+  return MAJOR_MUSCLES.map((muscle) => {
+    let lastDays: number | null = null;
+    for (let back = 0; back <= 14; back++) {
+      const dow = ((todayDow - back) % 7 + 7) % 7;
+      const entries = schedule.filter(s => s.day_of_week === dow);
+      const trained = entries.some(e => {
+        const meta = WORKOUT_TYPES[e.workout_type as WorkoutType];
+        return meta?.muscleGroups?.includes(muscle);
+      });
+      if (trained) { lastDays = back; break; }
+    }
+    const hours = lastDays === null ? 999 : lastDays * 24;
+    let status: "Fatigado" | "Recuperando" | "Descansando" | "Pronto";
+    let color: string;
+    if (hours < 24) { status = "Fatigado"; color = C.red; }
+    else if (hours < 48) { status = "Recuperando"; color = C.orange; }
+    else if (hours < 72) { status = "Descansando"; color = C.gold; }
+    else { status = "Pronto"; color = C.teal; }
+    return { muscle, days: lastDays, hours, status, color };
+  });
+}
+
+function computeReadiness(recovery: ReturnType<typeof computeMuscleRecovery>) {
+  const ready = recovery.filter(r => r.status === "Pronto" || r.days === null).length;
+  const score = Math.round((ready / MAJOR_MUSCLES.length) * 10);
+  const color = score >= 7 ? C.teal : score >= 4 ? C.gold : C.red;
+  const desc = score >= 7 ? "Pronto para treino pesado"
+            : score >= 4 ? "Recuperação parcial — modere intensidade"
+            : "Fadiga acumulada — considere deload";
+  return { score, color, desc };
+}
+
+// ──────────────────────────────────────────
+// Visuals — clip path & volume bar
+// ──────────────────────────────────────────
+const clipBtn = "polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px))";
+
+const VolumeBar = ({ score, size = "sm" }: { score: number; size?: "sm" | "md" }) => {
+  const h = size === "md" ? 6 : 4;
+  return (
+    <div style={{ display: "flex", gap: 2 }}>
+      {[1, 2, 3, 4, 5].map(i => {
+        const active = i <= score;
+        const color = score >= 5 ? C.red : score >= 4 ? C.gold : C.teal;
+        return <div key={i} style={{ width: size === "md" ? 14 : 10, height: h, borderRadius: 1, background: active ? color : C.border, boxShadow: active ? `0 0 6px ${color}66` : "none" }} />;
+      })}
+    </div>
+  );
+};
+
+const RPEBadge = ({ rpe }: { rpe: number }) => (
+  <span style={{
+    display: "inline-flex", alignItems: "center", gap: 4, padding: "3px 8px", borderRadius: 999,
+    background: `${RPE_COLORS[rpe]}22`, border: `1px solid ${RPE_COLORS[rpe]}66`, color: RPE_COLORS[rpe],
+    fontSize: 10, fontFamily: "monospace", fontWeight: 700,
+  }}>
+    RPE {rpe}
+  </span>
+);
+
+// ──────────────────────────────────────────
+// Page
+// ──────────────────────────────────────────
 const NutriSyncPage = () => {
   const navigate = useNavigate();
   const { profile } = useProfile();
-  const { schedule, todayLog, loading, saveDay, removeSlot, completeWorkout, getTodayWorkouts, getWorkoutsForDay, getWeeklyKcalPlan, getNextRestDay } = useWorkoutSchedule();
-  const [activeTab, setActiveTab] = useState<"today" | "timeline" | "schedule" | "analysis" | "peak">("today");
+  const { schedule, todayLog, loading, saveDay, removeSlot, completeWorkout, getTodayWorkouts, getWorkoutsForDay } = useWorkoutSchedule();
+
+  const [activeTab, setActiveTab] = useState<"today" | "schedule" | "peak">("today");
   const [editingDay, setEditingDay] = useState<number | null>(null);
   const [editingSlot, setEditingSlot] = useState<number | null>(null);
   const [editForm, setEditForm] = useState<Partial<WorkoutScheduleEntry>>({});
   const [saving, setSaving] = useState(false);
-  const [objetivo, setObjetivo] = useState<"bulking" | "cutting" | "manutencao">(
-    (profile?.goal === "emagrecer" ? "cutting" : profile?.goal === "ganhar_massa" ? "bulking" : "manutencao") as any
-  );
-  const [expandedTimeline, setExpandedTimeline] = useState<string | null>(null);
-  const [preWorkoutDone, setPreWorkoutDone] = useState(false);
-  const [postWorkoutDone, setPostWorkoutDone] = useState(false);
-  const [nextMealCountdown, setNextMealCountdown] = useState("");
+  const [showRpe, setShowRpe] = useState(false);
+  const [selectedRpe, setSelectedRpe] = useState<number | null>(null);
 
   const todayWorkouts = getTodayWorkouts();
   const todayDow = new Date().getDay();
   const weightKg = profile?.weight_kg || 70;
 
   const adjustment = useMemo(() => combineAdjustments(todayWorkouts, weightKg), [todayWorkouts, weightKg]);
-
   const baseKcal = profile?.vet_kcal || profile?.get_kcal || 2000;
   const baseProtein = profile?.protein_g || 150;
   const baseCarbs = profile?.carbs_g || 250;
   const baseFat = profile?.fat_g || 65;
 
-  const dayTimeline = useMemo(() => generateDayTimeline(todayWorkouts, weightKg, objetivo, baseKcal), [todayWorkouts, weightKg, objetivo, baseKcal]);
-
-  const adjustedKcal = dayTimeline.macros.kcal;
-  const adjustedProtein = dayTimeline.macros.protein;
-  const adjustedCarbs = dayTimeline.macros.carbs;
-  const adjustedFat = dayTimeline.macros.fat;
+  const adjustedKcal = Math.round(baseKcal * adjustment.kcalMultiplier);
+  const adjustedProtein = Math.round(weightKg * adjustment.proteinPerKg);
+  const adjustedCarbs = Math.round(baseCarbs * adjustment.carbsMultiplier);
+  const adjustedFat = Math.round(baseFat * adjustment.fatMultiplier);
   const kcalDiff = adjustedKcal - baseKcal;
 
-  const weeklyPlan = useMemo(() => getWeeklyKcalPlan(baseKcal, weightKg, objetivo), [schedule, baseKcal, weightKg, objetivo]);
+  const recovery = useMemo(() => computeMuscleRecovery(schedule), [schedule]);
+  const readiness = useMemo(() => computeReadiness(recovery), [recovery]);
 
-  // Next meal countdown timer
-  useEffect(() => {
-    if (dayTimeline.items.length === 0) return;
-    const updateCountdown = () => {
-      const now = new Date();
-      const nowMinutes = now.getHours() * 60 + now.getMinutes();
-      const mealItems = dayTimeline.items.filter(i => i.type === "meal");
-      const next = mealItems.find(i => {
-        const [h, m] = i.time.split(":").map(Number);
-        return h * 60 + m > nowMinutes;
-      });
-      if (next) {
-        const [h, m] = next.time.split(":").map(Number);
-        const diff = (h * 60 + m) - nowMinutes;
-        const hrs = Math.floor(diff / 60);
-        const mins = diff % 60;
-        setNextMealCountdown(hrs > 0 ? `${hrs}h ${mins}min` : `${mins}min`);
-      } else {
-        setNextMealCountdown("");
-      }
-    };
-    updateCountdown();
-    const interval = setInterval(updateCountdown, 60000);
-    return () => clearInterval(interval);
-  }, [dayTimeline]);
+  const isTrainingDay = todayWorkouts.some(w => w.workout_type !== "rest" && w.workout_type !== "active_rest");
+  const primaryWorkout = todayWorkouts[0];
+  const primaryMeta = primaryWorkout ? WORKOUT_TYPES[primaryWorkout.workout_type as WorkoutType] : null;
+  const loggedRpe = useMemo(() => {
+    try { return todayLog?.notes ? JSON.parse(todayLog.notes)?.rpe ?? null : null; } catch { return null; }
+  }, [todayLog]);
 
-  const handleStartEdit = (dayOfWeek: number, slot: number, existing?: WorkoutScheduleEntry) => {
+  const mealSuggestions = useMemo(() => {
+    if (!primaryWorkout) return getMealSuggestionsByTime("morning", "rest");
+    return getMealSuggestionsByTime(primaryWorkout.workout_time as WorkoutTime, primaryWorkout.workout_type as WorkoutType);
+  }, [primaryWorkout]);
+
+  // Schedule edit
+  const handleStartEdit = (dow: number, slot: number, existing?: WorkoutScheduleEntry) => {
     setEditForm({
-      day_of_week: dayOfWeek,
+      day_of_week: dow,
       workout_type: existing?.workout_type || "rest",
       workout_time: existing?.workout_time || "morning",
       duration_minutes: existing?.duration_minutes || 60,
       slot,
     });
-    setEditingDay(dayOfWeek);
+    setEditingDay(dow);
     setEditingSlot(slot);
   };
-
-  const handleAddSlot = (dayOfWeek: number) => {
-    const dayEntries = getWorkoutsForDay(dayOfWeek);
+  const handleAddSlot = (dow: number) => {
+    const dayEntries = getWorkoutsForDay(dow);
     const nextSlot = dayEntries.length > 0 ? Math.max(...dayEntries.map(e => e.slot || 1)) + 1 : 1;
-    handleStartEdit(dayOfWeek, nextSlot);
+    handleStartEdit(dow, nextSlot);
   };
-
-  const handleQuickAddCardio = async (
-    dayOfWeek: number,
-    cardioType: WorkoutType,
-    cardioTime: WorkoutTime,
-    durationMinutes: number = 30,
-  ) => {
-    const dayEntries = getWorkoutsForDay(dayOfWeek);
-    const nextSlot = dayEntries.length > 0 ? Math.max(...dayEntries.map(e => e.slot || 1)) + 1 : 1;
-    setSaving(true);
-    await saveDay({
-      day_of_week: dayOfWeek,
-      workout_type: cardioType,
-      workout_time: cardioTime,
-      duration_minutes: durationMinutes,
-      slot: nextSlot,
-    } as WorkoutScheduleEntry);
-    setSaving(false);
-  };
-
-  const handleRemoveSlot = async (dayOfWeek: number, slot: number) => {
-    await removeSlot(dayOfWeek, slot);
-    setEditingDay(null);
-    setEditingSlot(null);
-  };
-
   const handleSave = async () => {
     if (editingDay === null || editingSlot === null) return;
     setSaving(true);
     await saveDay({ ...editForm, slot: editingSlot } as WorkoutScheduleEntry);
     setSaving(false);
-    setEditingDay(null);
-    setEditingSlot(null);
+    setEditingDay(null); setEditingSlot(null);
+  };
+  const handleRemove = async () => {
+    if (editingDay === null || editingSlot === null) return;
+    await removeSlot(editingDay, editingSlot);
+    setEditingDay(null); setEditingSlot(null);
+  };
+
+  const handleConfirmRpe = async () => {
+    if (selectedRpe === null) return;
+    await completeWorkout(selectedRpe);
+    setShowRpe(false); setSelectedRpe(null);
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      <div style={{ minHeight: "100vh", background: C.bg, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ width: 32, height: 32, border: `2px solid ${C.gold}`, borderTopColor: "transparent", borderRadius: "50%", animation: "spin 1s linear infinite" }} />
       </div>
     );
   }
 
   const typeEntries = Object.entries(WORKOUT_TYPES) as [WorkoutType, typeof WORKOUT_TYPES[WorkoutType]][];
+  // Filtra cardio_z* legados do grid (mantém running, mma, cardio_hiit, cardio_light)
   const muscEntries = typeEntries.filter(([, v]) => v.category === "musculacao");
-  const cardioEntries = typeEntries.filter(([, v]) => v.category === "cardio");
+  const cardioEntries = typeEntries.filter(([k, v]) => v.category === "cardio" && !k.startsWith("cardio_z"));
   const restEntries = typeEntries.filter(([, v]) => v.category === "descanso");
 
   return (
-    <div className="min-h-screen bg-background pb-24">
-      <div className="relative z-10 max-w-lg mx-auto px-4 pt-4">
-        {/* Header */}
-        <div className="flex items-center gap-3 mb-4">
-          <button onClick={() => navigate("/dashboard")} className="p-2 rounded-lg text-muted-foreground hover:text-foreground">
-            <ArrowLeft className="w-5 h-5" />
+    <div style={{ minHeight: "100vh", background: C.bg, color: C.text, paddingBottom: 96, fontFamily: "ui-sans-serif, system-ui" }}>
+      <div style={{ maxWidth: 560, margin: "0 auto", padding: "16px 16px 0" }}>
+        {/* HEADER */}
+        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
+          <button onClick={() => navigate("/dashboard")} style={{ padding: 8, border: "none", background: "transparent", color: C.muted, cursor: "pointer" }}>
+            <ArrowLeft style={{ width: 20, height: 20 }} />
           </button>
-          <div className="flex-1">
-            <div className="flex items-center gap-2">
-              <Zap className="w-5 h-5 text-primary" />
-              <h1 className="text-lg font-bold text-foreground">NutriSync <span className="text-primary">V2</span></h1>
-            </div>
-            <p className="text-[10px] font-mono text-muted-foreground tracking-widest uppercase">Nutrição sincronizada com seu treino</p>
+          <div style={{ flex: 1 }}>
+            <h1 style={{ fontSize: 22, fontWeight: 900, letterSpacing: "0.02em", lineHeight: 1, margin: 0 }}>
+              <span style={{ color: C.text }}>TRAINING</span>
+              <span style={{ marginLeft: 4, color: "transparent", WebkitTextStroke: `1.2px ${C.gold}` as any, fontWeight: 900 }}>ON</span>
+            </h1>
+            <p style={{ fontSize: 9, color: C.muted, fontFamily: "monospace", letterSpacing: "0.18em", textTransform: "uppercase", margin: "4px 0 0" }}>
+              Nutrição adaptativa · nível elite
+            </p>
           </div>
-          <button onClick={() => navigate("/workout-history")} className="p-2 rounded-lg border border-border bg-card hover:border-primary/30">
-            <History className="w-4 h-4 text-muted-foreground" />
+          <button onClick={() => navigate("/workout-history")} style={{ padding: 8, borderRadius: 8, border: `1px solid ${C.border}`, background: C.card, color: C.muted, cursor: "pointer" }}>
+            <History style={{ width: 16, height: 16 }} />
           </button>
         </div>
 
-        {/* Objetivo Selector */}
-        <div className="flex gap-1 mb-3">
-          {OBJETIVO_OPTIONS.map(o => (
-            <button
-              key={o.key}
-              onClick={() => setObjetivo(o.key)}
-              className={`flex-1 py-2 rounded-lg text-xs font-mono transition-all border ${
-                objetivo === o.key ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground"
-              }`}
-            >
-              {o.emoji} {o.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Tabs */}
-        <div className="flex gap-1 mb-5 bg-card rounded-xl p-1 border border-border">
+        {/* TABS */}
+        <div style={{ display: "flex", gap: 6, marginBottom: 20 }}>
           {([
-            { key: "today", label: "Hoje", icon: Zap },
-            { key: "timeline", label: "Timeline", icon: Clock },
-            { key: "schedule", label: "Rotina", icon: Calendar },
-            { key: "analysis", label: "Análise", icon: BarChart3 },
-            { key: "peak", label: "Peak Week", icon: Trophy },
-          ] as const).map(tab => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-xs font-mono transition-all ${
-                activeTab === tab.key ? "bg-primary/10 text-primary border border-primary/20" : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <tab.icon className="w-3.5 h-3.5" />
-              {tab.label}
-            </button>
-          ))}
+            { k: "today", l: "Hoje" },
+            { k: "schedule", l: "Rotina" },
+            { k: "peak", l: "Peak Week" },
+          ] as const).map(t => {
+            const active = activeTab === t.k;
+            return (
+              <button key={t.k} onClick={() => setActiveTab(t.k)}
+                style={{
+                  flex: 1, padding: "10px 0", borderRadius: 8, cursor: "pointer",
+                  background: active ? C.goldBg : "transparent",
+                  border: `1px solid ${active ? C.gold : C.border}`,
+                  color: active ? C.gold : C.dim,
+                  fontSize: 12, fontWeight: 700, fontFamily: "monospace", letterSpacing: "0.05em", textTransform: "uppercase",
+                }}>
+                {t.l}
+              </button>
+            );
+          })}
         </div>
 
-        {/* TODAY TAB */}
+        {/* ─────────────── TODAY ─────────────── */}
         {activeTab === "today" && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
-            {/* Today's workout cards */}
-            <div className="rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10 p-5 relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2" />
-              <div className="relative z-10">
-                <p className="text-[10px] font-mono text-primary uppercase tracking-widest mb-2">⚡ Treino de Hoje — {DAY_NAMES_FULL[todayDow]}</p>
-                {todayWorkouts.length > 0 ? (
-                  <>
-                    {todayWorkouts.map((w, i) => {
-                      const wt = WORKOUT_TYPES[w.workout_type as WorkoutType];
-                      const wTime = WORKOUT_TIME_LABELS[w.workout_time as WorkoutTime];
-                      return (
-                        <div key={i} className={`${i > 0 ? "mt-3 pt-3 border-t border-primary/10" : ""}`}>
-                          <h2 className="text-lg font-bold text-foreground">{wt.emoji} {wt.label}</h2>
-                          <div className="flex items-center gap-3 text-xs font-mono text-muted-foreground">
-                            <span>{wTime?.emoji} {wTime?.label}</span>
-                            <span>·</span>
-                            <span><Clock className="w-3 h-3 inline mr-1" />{w.duration_minutes} min</span>
-                            {wt.category === "cardio" && (
-                              <>
-                                <span>·</span>
-                                <span className="text-primary">~{getWorkoutAdjustment(w.workout_type as WorkoutType, weightKg, w.duration_minutes).cardioCalsBurned || 0}kcal</span>
-                              </>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
 
-                    {dayTimeline.isDoubleDay && (
-                      <div className="mt-3 rounded-lg bg-primary/10 border border-primary/20 p-2 text-center">
-                        <span className="text-[10px] font-mono text-primary font-bold">
-                          🔄 DUPLO TREINO ATIVO — Cardio + Musculação
-                        </span>
-                      </div>
-                    )}
-
-                    {todayWorkouts.length > 1 && !dayTimeline.isDoubleDay && (
-                      <div className="mt-3 rounded-lg bg-primary/10 border border-primary/20 p-2 text-center">
-                        <span className="text-[10px] font-mono text-primary font-bold">
-                          🔥 {todayWorkouts.length} atividades — gasto energético combinado
-                        </span>
-                      </div>
-                    )}
-
-                    <p className="text-xs text-primary/80 font-mono mt-3 leading-relaxed">{adjustment.tip}</p>
-
-                    {!todayLog?.completed && (
-                      <button
-                        onClick={completeWorkout}
-                        className="mt-4 w-full py-3 rounded-xl bg-primary text-primary-foreground font-bold text-sm flex items-center justify-center gap-2 hover:bg-primary/90"
-                      >
-                        <Check className="w-4 h-4" /> Marcar treino como concluído
-                      </button>
-                    )}
-                    {todayLog?.completed && (
-                      <div className="mt-4 py-3 rounded-xl bg-primary/10 border border-primary/20 text-center">
-                        <span className="text-sm font-mono text-primary font-bold">✅ Treino concluído!</span>
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <div>
-                    <h2 className="text-xl font-bold text-foreground mb-1">😴 Dia de Descanso</h2>
-                    <p className="text-xs text-muted-foreground font-mono">{adjustment.tip}</p>
-                    <button onClick={() => setActiveTab("schedule")} className="mt-3 text-xs text-primary font-mono underline">
-                      Configurar rotina de treino →
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Adjusted Macros */}
-            <div className="rounded-2xl border border-border bg-card p-5">
-              <div className="flex items-center gap-2 mb-3">
-                <Target className="w-4 h-4 text-primary" />
-                <h3 className="text-sm font-bold text-foreground">Meta Nutricional — {objetivo.charAt(0).toUpperCase() + objetivo.slice(1)}</h3>
-              </div>
-              {kcalDiff !== 0 && (
-                <div className={`rounded-lg ${kcalDiff > 0 ? "bg-primary/5 border-primary/10" : "bg-destructive/5 border-destructive/10"} border p-2 mb-3 text-center`}>
-                  <span className={`text-xs font-mono ${kcalDiff > 0 ? "text-primary" : "text-destructive"}`}>
-                    {kcalDiff > 0 ? "+" : ""}{kcalDiff} kcal vs base ({dayTimeline.isDoubleDay ? "duplo treino" : "treino do dia"})
-                  </span>
+            {/* CARD 1 — READINESS */}
+            <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 16, padding: 18 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14 }}>
+                <div>
+                  <p style={{ fontSize: 9, color: C.gold, fontFamily: "monospace", letterSpacing: "0.14em", textTransform: "uppercase", margin: 0 }}>
+                    Training Readiness
+                  </p>
+                  <p style={{ fontSize: 11, color: C.muted, margin: "6px 0 0" }}>{readiness.desc}</p>
                 </div>
-              )}
-              <div className="grid grid-cols-2 gap-3">
-                {[
-                  { label: "Calorias", value: adjustedKcal, unit: "kcal", emoji: "🔥", diff: kcalDiff !== 0 ? `${kcalDiff > 0 ? "+" : ""}${kcalDiff}` : null },
-                  { label: "Proteína", value: adjustedProtein, unit: "g", emoji: "🥩", diff: adjustedProtein !== baseProtein ? `${adjustedProtein > baseProtein ? "+" : ""}${adjustedProtein - baseProtein}g` : null },
-                  { label: "Carboidrato", value: adjustedCarbs, unit: "g", emoji: "🍚", diff: adjustedCarbs !== baseCarbs ? `${adjustedCarbs > baseCarbs ? "+" : ""}${adjustedCarbs - baseCarbs}g` : null },
-                  { label: "Gordura", value: adjustedFat, unit: "g", emoji: "🥑", diff: adjustedFat !== baseFat ? `${adjustedFat > baseFat ? "+" : ""}${adjustedFat - baseFat}g` : null },
-                ].map(m => (
-                  <div key={m.label} className="rounded-xl border border-border bg-background p-3 text-center">
-                    <span className="text-lg">{m.emoji}</span>
-                    <p className="text-xl font-bold font-mono text-foreground">{m.value}<span className="text-xs text-muted-foreground">{m.unit}</span></p>
-                    <p className="text-[10px] font-mono text-muted-foreground">{m.label}</p>
-                    {m.diff && <p className="text-[9px] font-mono text-primary mt-0.5">{m.diff}</p>}
+                <div style={{ textAlign: "right" }}>
+                  <span style={{ fontSize: 44, fontWeight: 900, color: readiness.color, lineHeight: 1, fontFamily: "monospace", textShadow: `0 0 18px ${readiness.color}55` }}>
+                    {readiness.score}
+                  </span>
+                  <span style={{ fontSize: 14, color: C.muted, fontFamily: "monospace", marginLeft: 2 }}>/10</span>
+                </div>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6 }}>
+                {recovery.map(r => (
+                  <div key={r.muscle} style={{
+                    padding: "8px 6px", borderRadius: 8, background: C.card2, border: `1px solid ${r.color}33`,
+                    textAlign: "center",
+                  }}>
+                    <p style={{ fontSize: 9, color: C.text, fontWeight: 700, margin: 0, lineHeight: 1.2 }}>{r.muscle}</p>
+                    <p style={{ fontSize: 14, color: r.color, fontWeight: 900, fontFamily: "monospace", margin: "4px 0 2px", lineHeight: 1 }}>
+                      {r.days === null ? "—" : `${r.days}d`}
+                    </p>
+                    <p style={{ fontSize: 8, color: r.color, fontFamily: "monospace", margin: 0, textTransform: "uppercase" }}>{r.status}</p>
                   </div>
                 ))}
               </div>
-              <div className="mt-3 flex items-center gap-2 rounded-lg bg-accent/5 border border-accent/10 p-2">
-                <Droplets className="w-4 h-4 text-accent" />
-                <span className="text-xs font-mono text-foreground">Hidratação: <strong>{adjustment.hydrationLiters}L</strong></span>
-              </div>
             </div>
 
-            {/* Quick Add Cardio Extra */}
-            {(() => {
-              const hasMusc = todayWorkouts.some(w => WORKOUT_TYPES[w.workout_type as WorkoutType]?.category === "musculacao");
-              const hasCardio = todayWorkouts.some(w => WORKOUT_TYPES[w.workout_type as WorkoutType]?.category === "cardio");
-              if (hasCardio) return null;
-              const muscW = todayWorkouts.find(w => WORKOUT_TYPES[w.workout_type as WorkoutType]?.category === "musculacao");
-              const muscTime = muscW?.workout_time;
-              // Post-workout slot: same time slot as musc (treina manhã = cardio manhã pós; tarde = tarde; noite = noite)
-              const postSlot: WorkoutTime = muscTime || "afternoon";
-              // Outro horário = oposto: se musc é manhã, sugerir noite; se é tarde, sugerir manhã (AEJ); se é noite, sugerir manhã
-              const otherSlot: WorkoutTime = muscTime === "morning" ? "night" : "morning";
-              const otherEmoji = otherSlot === "morning" ? "🌅" : "🌙";
-              const otherLabel = otherSlot === "morning" ? "AEJ Manhã" : "Cardio Noite";
-
-              return (
-                <div className="rounded-2xl border border-border bg-card p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Plus className="w-4 h-4 text-primary" />
-                    <h3 className="text-sm font-bold text-foreground">Adicionar Cardio Extra</h3>
-                  </div>
-                  <p className="text-[10px] font-mono text-muted-foreground mb-3">
-                    {hasMusc
-                      ? "Inclua cardio pós-treino ou em outro horário do dia. Recalcula kcal automaticamente."
-                      : "Adicione uma sessão de cardio no horário desejado."}
-                  </p>
-                  <div className="grid grid-cols-3 gap-1.5">
-                    {hasMusc && (
-                      <button
-                        onClick={() => handleQuickAddCardio(todayDow, "cardio_z2", postSlot, 30)}
-                        disabled={saving}
-                        className="rounded-lg border border-primary/20 bg-primary/5 p-2.5 text-center hover:border-primary/40 transition-all disabled:opacity-50"
-                      >
-                        <p className="text-base">🏃</p>
-                        <p className="text-[10px] font-mono font-bold text-primary mt-0.5">Pós-treino</p>
-                        <p className="text-[8px] font-mono text-muted-foreground">Z2 · 30min</p>
-                      </button>
-                    )}
-                    <button
-                      onClick={() => handleQuickAddCardio(todayDow, "cardio_z2", otherSlot, otherSlot === "morning" ? 40 : 30)}
-                      disabled={saving}
-                      className="rounded-lg border border-border bg-background/50 p-2.5 text-center hover:border-primary/30 transition-all disabled:opacity-50"
-                    >
-                      <p className="text-base">{otherEmoji}</p>
-                      <p className="text-[10px] font-mono font-bold text-foreground mt-0.5">{otherLabel}</p>
-                      <p className="text-[8px] font-mono text-muted-foreground">Z2 · {otherSlot === "morning" ? "40" : "30"}min</p>
-                    </button>
-                    <button
-                      onClick={() => handleAddSlot(todayDow)}
-                      disabled={saving}
-                      className="rounded-lg border border-dashed border-border p-2.5 text-center hover:border-primary/30 transition-all disabled:opacity-50"
-                    >
-                      <p className="text-base">⚙️</p>
-                      <p className="text-[10px] font-mono font-bold text-foreground mt-0.5">Personalizar</p>
-                      <p className="text-[8px] font-mono text-muted-foreground">tipo + horário</p>
-                    </button>
-                  </div>
-                </div>
-              );
-            })()}
-
-            {/* Quick Alerts */}
-            <div className="space-y-2">
-              <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">🔔 Alertas Proativos</p>
-              {dayTimeline.isDoubleDay && (
-                <div className="rounded-xl border border-primary/20 bg-primary/5 p-3 flex items-start gap-3">
-                  <span className="text-lg">🔄</span>
-                  <div>
-                    <p className="text-xs font-bold text-foreground">Protocolo Duplo Treino</p>
-                    <p className="text-[11px] text-muted-foreground font-mono">
-                      Carb focado no peri-treino da tarde. Manhã mais leve. Hidratação reforçada {adjustment.hydrationLiters}L.
-                    </p>
-                  </div>
-                </div>
+            {/* CARD 2 — TODAY'S WORKOUT */}
+            <div style={{ background: C.card, border: `1px solid ${isTrainingDay ? C.goldDim : C.border}`, borderRadius: 16, padding: 18, position: "relative", overflow: "hidden" }}>
+              {isTrainingDay && (
+                <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg, ${C.gold}, transparent)` }} />
               )}
-              {todayWorkouts.some(w => w.workout_type === "legs" || w.workout_type === "lower") && (
-                <div className="rounded-xl border border-primary/20 bg-primary/5 p-3 flex items-start gap-3">
-                  <span className="text-lg">🦵</span>
-                  <div>
-                    <p className="text-xs font-bold text-foreground">LEG DAY — Máximo carboidrato!</p>
-                    <p className="text-[11px] text-muted-foreground font-mono">
-                      Beterraba 2-3h antes. Intra-treino: 50-60g carb. Pós: 60-80g carb rápido.
-                    </p>
-                  </div>
-                </div>
-              )}
-              {todayWorkouts.some(w => w.workout_type === "cardio_hiit") && todayWorkouts.some(w => (w.workout_type === "legs" || w.workout_type === "lower")) && (
-                <div className="rounded-xl border border-destructive/20 bg-destructive/5 p-3 flex items-start gap-3">
-                  <AlertTriangle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-xs font-bold text-destructive">⚠️ HIIT + Legs no mesmo dia</p>
-                    <p className="text-[11px] text-muted-foreground font-mono">
-                      Alto stress de SNC. Considere trocar HIIT por Z2 neste dia.
-                    </p>
-                  </div>
-                </div>
-              )}
-              <div className="rounded-xl border border-border bg-card p-3 flex items-start gap-3">
-                <span className="text-lg">🌙</span>
-                <div>
-                  <p className="text-xs font-bold text-foreground">Ao fim do dia</p>
-                  <p className="text-[11px] text-muted-foreground font-mono">
-                    Bata sua meta de {adjustedProtein}g proteína. Caseína antes de dormir se déficit.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Next Meal Countdown */}
-            {nextMealCountdown && (
-              <div className="rounded-2xl border border-accent/20 bg-accent/5 p-4 flex items-center gap-3">
-                <Clock className="w-5 h-5 text-accent" />
-                <div>
-                  <p className="text-xs font-bold text-foreground">Próxima refeição em</p>
-                  <p className="text-lg font-bold font-mono text-accent">{nextMealCountdown}</p>
-                </div>
-              </div>
-            )}
-
-            {/* Pre/Post Workout Checklist */}
-            {todayWorkouts.length > 0 && (
-              <div className="rounded-2xl border border-border bg-card p-4">
-                <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest mb-3">✅ Checklist Nutricional</p>
-                <div className="space-y-2">
-                  <label className="flex items-center gap-3 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={preWorkoutDone}
-                      onChange={e => setPreWorkoutDone(e.target.checked)}
-                      className="w-4 h-4 rounded border-border accent-primary"
-                    />
-                    <span className={`text-xs font-mono ${preWorkoutDone ? "text-accent line-through" : "text-foreground"}`}>
-                      Completei o pré-treino ⚡
-                    </span>
-                  </label>
-                  <label className="flex items-center gap-3 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={postWorkoutDone}
-                      onChange={e => setPostWorkoutDone(e.target.checked)}
-                      className="w-4 h-4 rounded border-border accent-primary"
-                    />
-                    <span className={`text-xs font-mono ${postWorkoutDone ? "text-accent line-through" : "text-foreground"}`}>
-                      Completei o pós-treino 🚀
-                    </span>
-                  </label>
-                </div>
-              </div>
-            )}
-
-            {/* Recovery Card */}
-            {todayLog?.completed && (
-              <div className="rounded-2xl border border-accent/20 bg-gradient-to-br from-accent/5 to-accent/10 p-4">
-                <p className="text-[10px] font-mono text-accent uppercase tracking-widest mb-2">🌙 Recuperação Ativa</p>
-                <p className="text-xs font-bold text-foreground mb-2">Sugestões para recuperação noturna</p>
-                <div className="space-y-1.5 text-[11px] font-mono text-muted-foreground">
-                  {todayWorkouts.some(w => w.workout_type === "legs" || w.workout_type === "lower") ? (
-                    <>
-                      <p>🥩 Caseína 40g ou cottage 200g (síntese proteica noturna)</p>
-                      <p>🍠 Carb complexo leve: batata doce ou aveia (repor glicogênio)</p>
-                      <p>💊 Magnésio glicinato 400mg + Glicina 3g (relaxamento muscular)</p>
-                      <p>🧊 Crioterapia local ou banho de contraste nas pernas</p>
-                    </>
-                  ) : todayWorkouts.some(w => WORKOUT_TYPES[w.workout_type as WorkoutType]?.category === "cardio") ? (
-                    <>
-                      <p>🥛 Whey + banana ou leite com mel (reposição rápida)</p>
-                      <p>💧 Eletrólitos: sódio + potássio + magnésio</p>
-                      <p>💊 Ômega-3 3g (anti-inflamatório)</p>
-                    </>
-                  ) : (
-                    <>
-                      <p>🥩 Caseína 30-40g ou 200g de cottage (proteína lenta)</p>
-                      <p>🥑 Gordura boa: abacate ou castanhas (hormonal recovery)</p>
-                      <p>💊 ZMA: Zinco 30mg + Magnésio 450mg + B6 10mg</p>
-                    </>
-                  )}
-                </div>
-              </div>
-            )}
-          </motion.div>
-        )}
-
-        {/* TIMELINE TAB */}
-        {activeTab === "timeline" && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-2">
-            {/* Day Summary */}
-            <div className="rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10 p-4 mb-3">
-              <p className="text-[10px] font-mono text-primary uppercase tracking-widest mb-1">
-                {DAY_NAMES_FULL[todayDow]} — {dayTimeline.isDoubleDay ? "🔄 DUPLO TREINO" : todayWorkouts.length > 0 ? WORKOUT_TYPES[todayWorkouts[0].workout_type as WorkoutType]?.label : "😴 Descanso"}
+              <p style={{ fontSize: 9, color: C.gold, fontFamily: "monospace", letterSpacing: "0.14em", textTransform: "uppercase", margin: "0 0 8px" }}>
+                Treino de hoje · {DAY_NAMES_FULL[todayDow]}
               </p>
-              <div className="flex items-center gap-4 text-xs font-mono text-foreground mt-2">
-                <span>🔥 {adjustedKcal}kcal</span>
-                <span>🥩 {adjustedProtein}g</span>
-                <span>🍚 {adjustedCarbs}g</span>
-                <span>🥑 {adjustedFat}g</span>
-              </div>
-            </div>
 
-            {/* Timeline Items */}
-            <div className="relative">
-              <div className="absolute left-5 top-4 bottom-4 w-px bg-border" />
-              {dayTimeline.items.map((item, i) => {
-                const isExpanded = expandedTimeline === `${i}`;
-                const typeColors = {
-                  meal: "border-primary/20 bg-primary/5",
-                  training: "border-accent/30 bg-accent/10",
-                  supplement: "border-muted-foreground/20 bg-muted/10",
-                  alert: "border-border bg-card",
-                };
-                const typeIcons = { meal: "🍽️", training: "🏋️", supplement: "💊", alert: "🔔" };
-
-                return (
-                  <motion.div
-                    key={i}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.03 }}
-                    className="relative pl-12 mb-2"
-                  >
-                    {/* Time dot */}
-                    <div className={`absolute left-3.5 top-3 w-3 h-3 rounded-full border-2 ${
-                      item.highlight ? "border-primary bg-primary" : "border-muted-foreground/30 bg-background"
-                    }`} />
-
-                    <button
-                      onClick={() => setExpandedTimeline(isExpanded ? null : `${i}`)}
-                      className={`w-full text-left rounded-xl border p-3 transition-all ${typeColors[item.type]} ${
-                        item.highlight ? "ring-1 ring-primary/20" : ""
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2 min-w-0">
-                          <span className="text-xs font-mono font-bold text-primary w-12 flex-shrink-0">{item.time}</span>
-                          <span className="text-sm">{item.emoji}</span>
-                          <span className="text-xs font-mono text-foreground font-medium truncate">{item.title}</span>
-                        </div>
-                        {item.macros && (
-                          isExpanded
-                            ? <ChevronUp className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
-                            : <ChevronDown className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
-                        )}
-                      </div>
-                      <p className="text-[11px] font-mono text-muted-foreground mt-1 ml-14">{item.description}</p>
-
-                      <AnimatePresence>
-                        {isExpanded && item.macros && (
-                          <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: "auto", opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            className="overflow-hidden"
-                          >
-                            <div className="grid grid-cols-4 gap-2 mt-3 ml-14">
-                              {[
-                                { label: "Kcal", value: item.macros.kcal, color: "text-primary" },
-                                { label: "Prot", value: `${item.macros.protein}g`, color: "text-foreground" },
-                                { label: "Carb", value: `${item.macros.carbs}g`, color: "text-foreground" },
-                                { label: "Gord", value: `${item.macros.fat}g`, color: "text-foreground" },
-                              ].map(m => (
-                                <div key={m.label} className="text-center rounded-lg bg-background/50 border border-border p-1.5">
-                                  <p className={`text-xs font-bold font-mono ${m.color}`}>{m.value}</p>
-                                  <p className="text-[8px] font-mono text-muted-foreground">{m.label}</p>
-                                </div>
-                              ))}
-                            </div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </button>
-                  </motion.div>
-                );
-              })}
-            </div>
-
-            {/* Supplement Schedule Summary */}
-            {dayTimeline.isDoubleDay && (
-              <div className="rounded-2xl border border-muted-foreground/20 bg-card p-4 mt-4">
-                <div className="flex items-center gap-2 mb-3">
-                  <Pill className="w-4 h-4 text-muted-foreground" />
-                  <h3 className="text-sm font-bold text-foreground">Suplementação Sincronizada</h3>
-                </div>
-                <div className="space-y-1.5 text-[11px] font-mono text-muted-foreground">
-                  <p>06:00 — ☕ Cafeína 200mg + L-Carnitina 1g + Eletrólitos</p>
-                  <p>07:30 — 💊 Vit D3 + Ômega-3 + Zinco + Magnésio</p>
-                  <p>14:30 — ⚡ Citrulina 6-8g + Cafeína 100mg + Creatina 5g</p>
-                  <p>15:30 — 🧃 EAA 10-12g + Carb intra + Taurina 3g</p>
-                  <p>17:00 — 💪 Vitamina C 500mg (reduz cortisol pós)</p>
-                  <p>21:00 — 🌙 Magnésio 400mg + Ashwagandha + L-Teanina + Glicina</p>
-                </div>
-              </div>
-            )}
-
-            {/* Weekly Overview */}
-            <div className="rounded-2xl border border-border bg-card p-4 mt-2">
-              <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest mb-3">📊 Visão Semanal</p>
-              <div className="grid grid-cols-7 gap-1">
-                {[0, 1, 2, 3, 4, 5, 6].map(dow => {
-                  const dayW = getWorkoutsForDay(dow);
-                  const isToday = dow === todayDow;
-                  const hasDouble = isDuploTreino(dayW);
-                  return (
-                    <div
-                      key={dow}
-                      className={`text-center rounded-lg p-2 border ${
-                        isToday ? "border-primary bg-primary/10" : "border-border bg-background/50"
-                      }`}
-                    >
-                      <p className={`text-[9px] font-mono font-bold ${isToday ? "text-primary" : "text-muted-foreground"}`}>
-                        {DAY_NAMES[dow]}
+              {primaryMeta ? (
+                <>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+                    <span style={{ fontSize: 28 }}>{primaryMeta.emoji}</span>
+                    <div style={{ flex: 1 }}>
+                      <h2 style={{ fontSize: 17, fontWeight: 800, color: C.text, margin: 0 }}>{primaryMeta.label}</h2>
+                      <p style={{ fontSize: 11, color: C.muted, fontFamily: "monospace", margin: "2px 0 0" }}>
+                        {WORKOUT_TIME_LABELS[primaryWorkout.workout_time as WorkoutTime]?.emoji} {WORKOUT_TIME_LABELS[primaryWorkout.workout_time as WorkoutTime]?.label} · {primaryWorkout.duration_minutes}min · recup. {adjustment.recoveryHours}h
                       </p>
-                      {dayW.length > 0 ? (
-                        <div className="mt-1 space-y-0.5">
-                          {dayW.map((w, wi) => (
-                            <p key={wi} className="text-[8px]">{WORKOUT_TYPES[w.workout_type as WorkoutType]?.emoji}</p>
-                          ))}
-                          {hasDouble && <p className="text-[7px] text-primary font-bold">2x</p>}
-                        </div>
-                      ) : (
-                        <p className="text-[10px] mt-1">😴</p>
-                      )}
                     </div>
-                  );
-                })}
-              </div>
-            </div>
-          </motion.div>
-        )}
+                  </div>
 
-        {/* SCHEDULE TAB */}
-        {activeTab === "schedule" && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3">
-            <p className="text-xs text-muted-foreground font-mono mb-2">Configure treinos + cardio de cada dia. Adicione múltiplas atividades para duplo treino.</p>
-            {[0, 1, 2, 3, 4, 5, 6].map(dow => {
-              const dayEntries = getWorkoutsForDay(dow);
-              const isToday = dow === todayDow;
-              const hasDouble = isDuploTreino(dayEntries);
-
-              return (
-                <div key={dow}>
-                  <div className={`rounded-xl border p-4 transition-all ${isToday ? "border-primary/30 bg-primary/5" : "border-border bg-card"}`}>
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <span className={`text-xs font-mono font-bold w-8 ${isToday ? "text-primary" : "text-muted-foreground"}`}>
-                          {DAY_NAMES[dow]}
+                  {primaryMeta.muscleGroups.length > 0 && (
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginBottom: 12 }}>
+                      {primaryMeta.muscleGroups.map(m => (
+                        <span key={m} style={{ padding: "3px 8px", borderRadius: 999, background: C.goldBg, color: C.gold, fontSize: 10, fontFamily: "monospace", border: `1px solid ${C.goldDim}` }}>
+                          {m}
                         </span>
-                        {isToday && <span className="text-[9px] font-mono text-primary bg-primary/10 px-2 py-0.5 rounded-full">HOJE</span>}
-                        {hasDouble && <span className="text-[9px] font-mono text-primary bg-primary/10 px-2 py-0.5 rounded-full">🔄 DUPLO</span>}
-                      </div>
-                      <button
-                        onClick={() => handleAddSlot(dow)}
-                        className="flex items-center gap-1 text-[10px] font-mono text-primary hover:text-primary/80"
-                      >
-                        <Plus className="w-3.5 h-3.5" /> Adicionar
-                      </button>
+                      ))}
                     </div>
+                  )}
 
-                    {dayEntries.length === 0 ? (
-                      <button onClick={() => handleStartEdit(dow, 1)} className="w-full flex items-center gap-3 py-2 text-left hover:opacity-80">
-                        <span className="text-lg">😴</span>
-                        <p className="text-sm font-mono text-muted-foreground">Dia de descanso — toque para configurar</p>
-                        <ChevronRight className="w-4 h-4 text-muted-foreground ml-auto" />
-                      </button>
-                    ) : (
-                      <div className="space-y-1.5">
-                        {dayEntries.map((entry, i) => {
-                          const wt = WORKOUT_TYPES[entry.workout_type as WorkoutType];
-                          const wTime = WORKOUT_TIME_LABELS[entry.workout_time as WorkoutTime];
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+                    <span style={{ fontSize: 9, color: C.muted, fontFamily: "monospace", letterSpacing: "0.1em" }}>VOL</span>
+                    <VolumeBar score={primaryMeta.volumeScore} size="md" />
+                    <span style={{ fontSize: 10, color: C.muted, fontFamily: "monospace" }}>{primaryMeta.volumeScore}/5</span>
+                  </div>
+
+                  <div style={{ padding: 10, borderRadius: 8, background: C.goldBg, border: `1px solid ${C.goldDim}`, marginBottom: 12 }}>
+                    <p style={{ fontSize: 11, color: C.text, fontFamily: "monospace", lineHeight: 1.5, margin: 0 }}>{adjustment.tip}</p>
+                  </div>
+
+                  {!todayLog?.completed && !showRpe && (
+                    <button onClick={() => setShowRpe(true)} style={{
+                      width: "100%", padding: "14px 16px", border: "none", cursor: "pointer",
+                      background: C.gold, color: C.bg, fontWeight: 900, fontSize: 12,
+                      letterSpacing: "0.12em", textTransform: "uppercase", fontFamily: "monospace",
+                      clipPath: clipBtn,
+                    }}>
+                      Marcar como concluído
+                    </button>
+                  )}
+
+                  {showRpe && (
+                    <div style={{ padding: 14, background: C.card2, borderRadius: 10, border: `1px solid ${C.border}` }}>
+                      <p style={{ fontSize: 10, color: C.gold, fontFamily: "monospace", letterSpacing: "0.12em", textTransform: "uppercase", margin: "0 0 10px" }}>
+                        RPE da sessão (1–10)
+                      </p>
+                      <div style={{ display: "flex", gap: 4, marginBottom: 10 }}>
+                        {[1,2,3,4,5,6,7,8,9,10].map(n => {
+                          const sel = selectedRpe === n;
+                          const color = RPE_COLORS[n];
                           return (
-                            <button
-                              key={`${dow}-${entry.slot || i}`}
-                              onClick={() => handleStartEdit(dow, entry.slot || i + 1, entry)}
-                              className="w-full flex items-center gap-3 py-2 text-left hover:opacity-80 rounded-lg"
-                            >
-                              <span className="text-lg">{wt.emoji}</span>
-                              <div className="flex-1 min-w-0">
-                                <p className="text-sm font-mono text-foreground truncate">{wt.shortLabel}</p>
-                                <p className="text-[10px] font-mono text-muted-foreground">
-                                  {wTime?.emoji} {wTime?.label} · {entry.duration_minutes} min
-                                  {wt.category === "cardio" && <span className="text-primary"> · ~{getWorkoutAdjustment(entry.workout_type as WorkoutType, weightKg, entry.duration_minutes).cardioCalsBurned}kcal</span>}
-                                </p>
-                              </div>
-                              <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                            <button key={n} onClick={() => setSelectedRpe(n)} style={{
+                              flex: 1, padding: "10px 0", borderRadius: 6, cursor: "pointer",
+                              background: sel ? color : C.bg,
+                              border: `1px solid ${sel ? color : C.border}`,
+                              color: sel ? C.bg : color,
+                              fontWeight: 800, fontSize: 13, fontFamily: "monospace",
+                              boxShadow: sel ? `0 0 12px ${color}77` : "none",
+                            }}>
+                              {n}
                             </button>
                           );
                         })}
                       </div>
-                    )}
-
-                    {dayEntries.length > 1 && (
-                      <div className="mt-2 rounded-lg bg-primary/5 border border-primary/10 p-2 text-center">
-                        <span className="text-[10px] font-mono text-primary">
-                          {hasDouble ? "🔄 Duplo treino — nutrição sincronizada" : `🔥 ${dayEntries.length} atividades — nutrição combinada`}
-                        </span>
+                      {selectedRpe !== null && (
+                        <p style={{ fontSize: 11, color: RPE_COLORS[selectedRpe], fontFamily: "monospace", textAlign: "center", margin: "0 0 12px", fontWeight: 700 }}>
+                          RPE {selectedRpe} · {RPE_LABELS[selectedRpe]}
+                        </p>
+                      )}
+                      <div style={{ display: "flex", gap: 8 }}>
+                        <button onClick={() => { setShowRpe(false); setSelectedRpe(null); }}
+                          style={{ flex: 1, padding: 10, border: `1px solid ${C.border}`, background: "transparent", color: C.muted, fontFamily: "monospace", fontSize: 11, cursor: "pointer", borderRadius: 6 }}>
+                          Cancelar
+                        </button>
+                        <button onClick={handleConfirmRpe} disabled={selectedRpe === null}
+                          style={{ flex: 1, padding: 10, border: "none", background: selectedRpe !== null ? C.gold : C.border, color: C.bg, fontFamily: "monospace", fontWeight: 800, fontSize: 11, cursor: selectedRpe !== null ? "pointer" : "not-allowed", borderRadius: 6, opacity: selectedRpe === null ? 0.5 : 1 }}>
+                          CONFIRMAR
+                        </button>
                       </div>
+                    </div>
+                  )}
+
+                  {todayLog?.completed && (
+                    <div style={{ padding: 12, borderRadius: 10, background: C.tealBg, border: `1px solid ${C.tealDim}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                      <span style={{ fontSize: 12, color: C.teal, fontFamily: "monospace", fontWeight: 700 }}>
+                        ✓ Treino concluído
+                      </span>
+                      {loggedRpe !== null && <RPEBadge rpe={loggedRpe} />}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div>
+                  <h2 style={{ fontSize: 18, fontWeight: 800, color: C.text, margin: "0 0 4px" }}>😴 Dia de descanso</h2>
+                  <p style={{ fontSize: 11, color: C.muted, fontFamily: "monospace", margin: 0 }}>{adjustment.tip}</p>
+                </div>
+              )}
+            </div>
+
+            {/* CARD 3 — MACROS */}
+            <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 16, padding: 18 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+                <p style={{ fontSize: 9, color: C.gold, fontFamily: "monospace", letterSpacing: "0.14em", textTransform: "uppercase", margin: 0 }}>
+                  Macro Protocol Ajustado
+                </p>
+                {kcalDiff !== 0 && (
+                  <span style={{ fontSize: 10, color: kcalDiff > 0 ? C.gold : C.teal, fontFamily: "monospace", fontWeight: 700 }}>
+                    {kcalDiff > 0 ? "+" : ""}{kcalDiff} kcal vs base
+                  </span>
+                )}
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 8 }}>
+                {[
+                  { l: "Calorias", v: adjustedKcal, u: "kcal", c: C.gold, d: kcalDiff },
+                  { l: "Proteína", v: adjustedProtein, u: "g", c: C.teal, d: adjustedProtein - baseProtein },
+                  { l: "Carboidrato", v: adjustedCarbs, u: "g", c: C.purple, d: adjustedCarbs - baseCarbs },
+                  { l: "Gordura", v: adjustedFat, u: "g", c: "#facc15", d: adjustedFat - baseFat },
+                ].map(m => (
+                  <div key={m.l} style={{ background: C.card2, border: `1px solid ${m.c}33`, borderRadius: 10, padding: 12, textAlign: "center" }}>
+                    <p style={{ fontSize: 22, fontWeight: 900, color: m.c, fontFamily: "monospace", margin: 0, lineHeight: 1 }}>
+                      {m.v}<span style={{ fontSize: 10, color: C.muted, marginLeft: 2 }}>{m.u}</span>
+                    </p>
+                    <p style={{ fontSize: 10, color: C.muted, fontFamily: "monospace", margin: "4px 0 0", textTransform: "uppercase", letterSpacing: "0.08em" }}>{m.l}</p>
+                    {m.d !== 0 && (
+                      <p style={{ fontSize: 9, color: m.d > 0 ? m.c : C.muted, fontFamily: "monospace", margin: "2px 0 0" }}>
+                        {m.d > 0 ? "+" : ""}{m.d}{m.u}
+                      </p>
                     )}
                   </div>
+                ))}
+              </div>
 
-                  {/* Edit Panel */}
+              <div style={{ marginTop: 12, padding: "8px 12px", borderRadius: 8, background: C.card2, border: `1px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <span style={{ fontSize: 11, color: C.text, fontFamily: "monospace" }}>💧 Hidratação</span>
+                <span style={{ fontSize: 12, color: C.purple, fontFamily: "monospace", fontWeight: 700 }}>
+                  {adjustment.hydrationLiters}L · {Math.round(adjustment.hydrationLiters / 0.25)} copos
+                </span>
+              </div>
+
+              {adjustment.electrolytes && (
+                <div style={{ marginTop: 8, padding: 10, borderRadius: 8, background: C.purpleBg, border: `1px solid ${C.purple}33` }}>
+                  <p style={{ fontSize: 9, color: C.purple, fontFamily: "monospace", letterSpacing: "0.12em", textTransform: "uppercase", margin: "0 0 4px" }}>
+                    🧂 Eletrólitos
+                  </p>
+                  <p style={{ fontSize: 11, color: C.text, fontFamily: "monospace", lineHeight: 1.5, margin: 0 }}>{adjustment.electrolytes}</p>
+                </div>
+              )}
+            </div>
+
+            {/* CARD 4 — TIMELINE */}
+            {isTrainingDay && (
+              <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 16, padding: 18 }}>
+                <p style={{ fontSize: 9, color: C.gold, fontFamily: "monospace", letterSpacing: "0.14em", textTransform: "uppercase", margin: "0 0 12px" }}>
+                  Nutrition Timeline
+                </p>
+
+                <div style={{ padding: 12, borderRadius: 10, background: C.goldBg, border: `1px solid ${C.goldDim}`, marginBottom: 8 }}>
+                  <p style={{ fontSize: 10, color: C.gold, fontFamily: "monospace", fontWeight: 700, margin: "0 0 4px" }}>⚡ PRÉ-TREINO</p>
+                  <p style={{ fontSize: 11, color: C.text, lineHeight: 1.5, margin: 0 }}>{adjustment.preMeal}</p>
+                </div>
+
+                {adjustment.intraMeal && (
+                  <div style={{ padding: 12, borderRadius: 10, background: C.purpleBg, border: `1px solid ${C.purple}33`, marginBottom: 8 }}>
+                    <p style={{ fontSize: 10, color: C.purple, fontFamily: "monospace", fontWeight: 700, margin: "0 0 4px" }}>🧃 INTRA-TREINO</p>
+                    <p style={{ fontSize: 11, color: C.text, lineHeight: 1.5, margin: 0 }}>{adjustment.intraMeal}</p>
+                  </div>
+                )}
+
+                <div style={{ padding: 12, borderRadius: 10, background: C.tealBg, border: `1px solid ${C.tealDim}`, marginBottom: 12 }}>
+                  <p style={{ fontSize: 10, color: C.teal, fontFamily: "monospace", fontWeight: 700, margin: "0 0 4px" }}>🚀 PÓS-TREINO</p>
+                  <p style={{ fontSize: 11, color: C.text, lineHeight: 1.5, margin: 0 }}>{adjustment.postMeal}</p>
+                </div>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                  {mealSuggestions.map((m, i) => (
+                    <div key={i} style={{
+                      display: "flex", gap: 10, padding: "8px 10px", borderRadius: 6,
+                      background: m.highlight ? C.goldBg : "transparent",
+                      border: `1px solid ${m.highlight ? C.goldDim : C.border}`,
+                    }}>
+                      {m.highlight && <Zap style={{ width: 12, height: 12, color: C.gold, flexShrink: 0, marginTop: 2 }} />}
+                      <span style={{ fontSize: 10, color: C.gold, fontFamily: "monospace", fontWeight: 700, minWidth: 38 }}>{m.time}</span>
+                      <span style={{ fontSize: 11, color: C.text, fontFamily: "monospace", lineHeight: 1.4 }}>{m.meal}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* CARD 5 — ALERTS */}
+            <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 16, padding: 18 }}>
+              <p style={{ fontSize: 9, color: C.gold, fontFamily: "monospace", letterSpacing: "0.14em", textTransform: "uppercase", margin: "0 0 12px" }}>
+                Alertas do dia
+              </p>
+              {isTrainingDay ? (
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  <div style={{ padding: 10, borderRadius: 8, background: C.goldBg, border: `1px solid ${C.goldDim}` }}>
+                    <p style={{ fontSize: 11, color: C.text, fontFamily: "monospace", margin: 0 }}>
+                      ⏰ <strong style={{ color: C.gold }}>90min antes do treino:</strong> última refeição sólida com carb+ptn.
+                    </p>
+                  </div>
+                  <div style={{ padding: 10, borderRadius: 8, background: C.tealBg, border: `1px solid ${C.tealDim}` }}>
+                    <p style={{ fontSize: 11, color: C.text, fontFamily: "monospace", margin: 0 }}>
+                      💪 <strong style={{ color: C.teal }}>Janela anabólica:</strong> 30–60min pós-treino para whey + carb rápido.
+                    </p>
+                  </div>
+                  <div style={{ padding: 10, borderRadius: 8, background: C.card2, border: `1px solid ${C.border}` }}>
+                    <p style={{ fontSize: 11, color: C.text, fontFamily: "monospace", margin: 0 }}>
+                      🎯 <strong style={{ color: C.purple }}>Meta do dia:</strong> {adjustedProtein}g proteína · {adjustment.hydrationLiters}L água.
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div style={{ padding: 10, borderRadius: 8, background: C.tealBg, border: `1px solid ${C.tealDim}` }}>
+                  <p style={{ fontSize: 11, color: C.text, fontFamily: "monospace", lineHeight: 1.5, margin: 0 }}>
+                    🌙 <strong style={{ color: C.teal }}>Recuperação:</strong> magnésio 300mg + 8h sono. Músculo cresce no descanso.
+                  </p>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+
+        {/* ─────────────── SCHEDULE ─────────────── */}
+        {activeTab === "schedule" && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {[0,1,2,3,4,5,6].map(dow => {
+              const entries = getWorkoutsForDay(dow);
+              const isToday = dow === todayDow;
+              return (
+                <div key={dow}>
+                  <div style={{ background: C.card, border: `1px solid ${isToday ? C.goldDim : C.border}`, borderRadius: 12, padding: 14 }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: entries.length ? 10 : 0 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <span style={{ fontSize: 12, fontFamily: "monospace", fontWeight: 800, color: isToday ? C.gold : C.muted, minWidth: 32 }}>{DAY_NAMES[dow]}</span>
+                        {isToday && <span style={{ fontSize: 8, color: C.gold, fontFamily: "monospace", padding: "2px 6px", borderRadius: 4, background: C.goldBg }}>HOJE</span>}
+                      </div>
+                      <button onClick={() => handleAddSlot(dow)} style={{ display: "flex", alignItems: "center", gap: 4, padding: "4px 8px", border: `1px solid ${C.border}`, background: "transparent", color: C.gold, fontSize: 10, fontFamily: "monospace", cursor: "pointer", borderRadius: 6 }}>
+                        <Plus style={{ width: 12, height: 12 }} /> Adicionar
+                      </button>
+                    </div>
+
+                    {entries.length === 0 ? (
+                      <button onClick={() => handleStartEdit(dow, 1)} style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "8px 0", border: "none", background: "transparent", color: C.muted, cursor: "pointer", textAlign: "left" }}>
+                        <span style={{ fontSize: 18 }}>😴</span>
+                        <span style={{ fontSize: 12, fontFamily: "monospace", flex: 1 }}>Descanso — toque para configurar</span>
+                        <ChevronRight style={{ width: 14, height: 14 }} />
+                      </button>
+                    ) : entries.map((e, i) => {
+                      const meta = WORKOUT_TYPES[e.workout_type as WorkoutType];
+                      return (
+                        <button key={i} onClick={() => handleStartEdit(dow, e.slot || i + 1, e)}
+                          style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "8px 0", border: "none", background: "transparent", color: C.text, cursor: "pointer", textAlign: "left" }}>
+                          <span style={{ fontSize: 22 }}>{meta?.emoji}</span>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <p style={{ fontSize: 13, fontFamily: "monospace", fontWeight: 700, margin: 0, color: C.text }}>{meta?.shortLabel}</p>
+                            <p style={{ fontSize: 10, fontFamily: "monospace", color: C.muted, margin: "2px 0 0" }}>
+                              {WORKOUT_TIME_LABELS[e.workout_time as WorkoutTime]?.emoji} {WORKOUT_TIME_LABELS[e.workout_time as WorkoutTime]?.label} · {e.duration_minutes}min
+                              {meta?.muscleGroups.length ? ` · ${meta.muscleGroups.join(", ")}` : ""}
+                            </p>
+                          </div>
+                          <VolumeBar score={meta?.volumeScore || 0} />
+                          <ChevronRight style={{ width: 14, height: 14, color: C.muted, marginLeft: 4 }} />
+                        </button>
+                      );
+                    })}
+                  </div>
+
                   <AnimatePresence>
                     {editingDay === dow && editingSlot !== null && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        className="overflow-hidden"
-                      >
-                        <div className="rounded-xl border border-primary/20 bg-card p-4 mt-2 space-y-4">
-                          <div className="flex items-center justify-between">
-                            <p className="text-[10px] font-mono text-primary uppercase tracking-wider">
-                              Atividade {editingSlot} — {DAY_NAMES_FULL[dow]}
+                      <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} style={{ overflow: "hidden" }}>
+                        <div style={{ background: C.card, border: `1px solid ${C.goldDim}`, borderRadius: 12, padding: 14, marginTop: 6, display: "flex", flexDirection: "column", gap: 14 }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                            <p style={{ fontSize: 9, color: C.gold, fontFamily: "monospace", letterSpacing: "0.12em", textTransform: "uppercase", margin: 0 }}>
+                              Editar atividade {editingSlot}
                             </p>
-                            {dayEntries.length > 0 && editingSlot > 0 && (
-                              <button onClick={() => handleRemoveSlot(dow, editingSlot)} className="flex items-center gap-1 text-[10px] font-mono text-destructive hover:text-destructive/80">
-                                <Trash2 className="w-3 h-3" /> Remover
+                            {entries.length > 0 && (
+                              <button onClick={handleRemove} style={{ display: "flex", alignItems: "center", gap: 4, color: C.red, fontSize: 10, fontFamily: "monospace", border: "none", background: "transparent", cursor: "pointer" }}>
+                                <Trash2 style={{ width: 12, height: 12 }} /> Remover
                               </button>
                             )}
                           </div>
 
-                          {/* Musculação */}
-                          <div>
-                            <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider mb-2">💪 Musculação</p>
-                            <div className="grid grid-cols-2 gap-1.5">
-                              {muscEntries.map(([key, val]) => (
-                                <button
-                                  key={key}
-                                  onClick={() => setEditForm(f => ({ ...f, workout_type: key }))}
-                                  className={`text-left p-2 rounded-lg border text-xs font-mono transition-all ${
-                                    editForm.workout_type === key ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:border-primary/20"
-                                  }`}
-                                >
-                                  {val.emoji} {val.shortLabel}
-                                </button>
-                              ))}
+                          {[
+                            { title: "💪 Musculação", items: muscEntries },
+                            { title: "🏃 Cardio / Combate", items: cardioEntries },
+                            { title: "🧘 Descanso", items: restEntries },
+                          ].map(group => (
+                            <div key={group.title}>
+                              <p style={{ fontSize: 9, color: C.muted, fontFamily: "monospace", letterSpacing: "0.1em", textTransform: "uppercase", margin: "0 0 6px" }}>{group.title}</p>
+                              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+                                {group.items.map(([key, val]) => {
+                                  const sel = editForm.workout_type === key;
+                                  return (
+                                    <button key={key} onClick={() => setEditForm(f => ({ ...f, workout_type: key }))} style={{
+                                      padding: "8px 10px", border: `1px solid ${sel ? C.gold : C.border}`,
+                                      background: sel ? C.goldBg : C.card2, color: sel ? C.gold : C.text,
+                                      fontSize: 11, fontFamily: "monospace", textAlign: "left", cursor: "pointer", borderRadius: 6,
+                                    }}>
+                                      {val.emoji} {val.shortLabel}
+                                    </button>
+                                  );
+                                })}
+                              </div>
                             </div>
-                          </div>
-
-                          {/* Cardio */}
-                          <div>
-                            <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider mb-2">🏃 Cardio</p>
-                            <div className="grid grid-cols-2 gap-1.5">
-                              {cardioEntries.map(([key, val]) => (
-                                <button
-                                  key={key}
-                                  onClick={() => setEditForm(f => ({ ...f, workout_type: key }))}
-                                  className={`text-left p-2 rounded-lg border text-xs font-mono transition-all ${
-                                    editForm.workout_type === key ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:border-primary/20"
-                                  }`}
-                                >
-                                  {val.emoji} {val.shortLabel}
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-
-                          {/* Descanso */}
-                          <div>
-                            <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider mb-2">🧘 Descanso</p>
-                            <div className="grid grid-cols-2 gap-1.5">
-                              {restEntries.map(([key, val]) => (
-                                <button
-                                  key={key}
-                                  onClick={() => setEditForm(f => ({ ...f, workout_type: key }))}
-                                  className={`text-left p-2 rounded-lg border text-xs font-mono transition-all ${
-                                    editForm.workout_type === key ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:border-primary/20"
-                                  }`}
-                                >
-                                  {val.emoji} {val.shortLabel}
-                                </button>
-                              ))}
-                            </div>
-                          </div>
+                          ))}
 
                           {editForm.workout_type !== "rest" && (
                             <>
                               <div>
-                                <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider mb-2">Horário</p>
-                                <div className="flex gap-2">
-                                  {(Object.entries(WORKOUT_TIME_LABELS) as [WorkoutTime, typeof WORKOUT_TIME_LABELS[WorkoutTime]][]).map(([key, val]) => (
-                                    <button
-                                      key={key}
-                                      onClick={() => setEditForm(f => ({ ...f, workout_time: key }))}
-                                      className={`flex-1 py-2 rounded-lg border text-xs font-mono text-center transition-all ${
-                                        editForm.workout_time === key ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground"
-                                      }`}
-                                    >
-                                      {val.emoji} {val.label}
-                                    </button>
-                                  ))}
+                                <p style={{ fontSize: 9, color: C.muted, fontFamily: "monospace", letterSpacing: "0.1em", textTransform: "uppercase", margin: "0 0 6px" }}>Horário</p>
+                                <div style={{ display: "flex", gap: 6 }}>
+                                  {(Object.entries(WORKOUT_TIME_LABELS) as [WorkoutTime, typeof WORKOUT_TIME_LABELS[WorkoutTime]][]).map(([k, v]) => {
+                                    const sel = editForm.workout_time === k;
+                                    return (
+                                      <button key={k} onClick={() => setEditForm(f => ({ ...f, workout_time: k }))} style={{
+                                        flex: 1, padding: 8, border: `1px solid ${sel ? C.gold : C.border}`,
+                                        background: sel ? C.goldBg : C.card2, color: sel ? C.gold : C.text,
+                                        fontSize: 11, fontFamily: "monospace", cursor: "pointer", borderRadius: 6,
+                                      }}>
+                                        {v.emoji} {v.label}
+                                      </button>
+                                    );
+                                  })}
                                 </div>
                               </div>
                               <div>
-                                <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider mb-2">Duração (min)</p>
-                                <div className="flex gap-1.5 flex-wrap">
-                                  {DURATION_OPTIONS.map(d => (
-                                    <button
-                                      key={d}
-                                      onClick={() => setEditForm(f => ({ ...f, duration_minutes: d }))}
-                                      className={`px-3 py-1.5 rounded-lg border text-xs font-mono transition-all ${
-                                        editForm.duration_minutes === d ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground"
-                                      }`}
-                                    >
-                                      {d}
-                                    </button>
-                                  ))}
+                                <p style={{ fontSize: 9, color: C.muted, fontFamily: "monospace", letterSpacing: "0.1em", textTransform: "uppercase", margin: "0 0 6px" }}>Duração (min)</p>
+                                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                                  {DURATION_OPTIONS.map(d => {
+                                    const sel = editForm.duration_minutes === d;
+                                    return (
+                                      <button key={d} onClick={() => setEditForm(f => ({ ...f, duration_minutes: d }))} style={{
+                                        padding: "6px 12px", border: `1px solid ${sel ? C.gold : C.border}`,
+                                        background: sel ? C.goldBg : C.card2, color: sel ? C.gold : C.text,
+                                        fontSize: 11, fontFamily: "monospace", cursor: "pointer", borderRadius: 6,
+                                      }}>{d}</button>
+                                    );
+                                  })}
                                 </div>
                               </div>
                             </>
                           )}
 
-                          <div className="flex gap-2">
-                            <button onClick={() => { setEditingDay(null); setEditingSlot(null); }} className="flex-1 py-2.5 rounded-xl border border-border text-xs font-mono text-muted-foreground">
+                          <div style={{ display: "flex", gap: 8 }}>
+                            <button onClick={() => { setEditingDay(null); setEditingSlot(null); }} style={{ flex: 1, padding: 10, border: `1px solid ${C.border}`, background: "transparent", color: C.muted, fontFamily: "monospace", fontSize: 11, cursor: "pointer", borderRadius: 6 }}>
                               Cancelar
                             </button>
-                            <button onClick={handleSave} disabled={saving} className="flex-1 py-2.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold disabled:opacity-50">
-                              {saving ? "Salvando..." : "Salvar"}
+                            <button onClick={handleSave} disabled={saving} style={{ flex: 1, padding: 10, border: "none", background: C.gold, color: C.bg, fontFamily: "monospace", fontWeight: 800, fontSize: 11, cursor: "pointer", borderRadius: 6, opacity: saving ? 0.6 : 1 }}>
+                              {saving ? "Salvando..." : "SALVAR"}
                             </button>
                           </div>
                         </div>
@@ -856,10 +678,7 @@ const NutriSyncPage = () => {
           </motion.div>
         )}
 
-        {/* ANALYSIS TAB */}
-        {activeTab === "analysis" && <NutriSyncAnalysisTab weeklyPlan={weeklyPlan} />}
-
-        {/* PEAK WEEK TAB */}
+        {/* ─────────────── PEAK WEEK ─────────────── */}
         {activeTab === "peak" && <PeakWeekManager />}
       </div>
       <BottomNav />
