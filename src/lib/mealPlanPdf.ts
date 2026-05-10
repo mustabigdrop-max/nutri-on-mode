@@ -22,6 +22,66 @@ const MEAL_LABELS: Record<string, string> = {
 };
 const MEAL_ORDER = ["cafe_manha", "lanche_manha", "almoco", "lanche_tarde", "jantar", "ceia"];
 
+// Fase G — regras condensadas por modo especial (rendered no topo do PDF Elite)
+const MODE_RULES: Record<string, { titulo: string; bullets: string[] }> = {
+  competicao: {
+    titulo: "🏆 PEAK WEEK — Regras críticas",
+    bullets: [
+      "Proteína 2,2–2,8 g/kg para preservar massa magra em depleção.",
+      "≤3d: carb load 6–8 g/kg + sódio 1,5–2 g + água em rampa descendente 48h.",
+      "ZERO fibra insolúvel, crucíferas e lácteos nas últimas 72h.",
+      "Creatina 5 g/dia + eletrólitos peri-treino. Monitorar peso/visual diário.",
+    ],
+  },
+  glp1: {
+    titulo: "💉 GLP-1 — Anti-sarcopenia",
+    bullets: [
+      "Proteína 1,8–2,2 g/kg distribuída em ≥5 refeições (proteína listada PRIMEIRO).",
+      "Refeições pequenas 200–350 kcal; ZERO frituras; reduzir gordura saturada.",
+      "Hidratação +400 ml/dia + eletrólitos; creatina 3–5 g + B12 + multi.",
+      "Risco: déficit proteico e perda de massa magra. Comer por horário.",
+    ],
+  },
+  feminino: {
+    titulo: "🌸 PROTOCOLO FEMININO — Regras por fase",
+    bullets: [
+      "Folicular: sensibilidade insulínica alta · carbo 50–55% pré/pós-treino.",
+      "Ovulatória: pico estrogênico · antioxidantes · carbo 45–50%.",
+      "Lútea: TDEE +5–10% · +100–150 kcal · magnésio 300mg + B6 50mg · reduzir cafeína.",
+      "Menstrual: ferro heme + vit C · ômega-3 2g · reduzir volume de treino.",
+      "ALERTA RED-S se kcal/kg de massa magra < 30 → revisar antes de prescrever.",
+    ],
+  },
+  vegano: {
+    titulo: "🌱 VEGANO — Plant-based completo",
+    bullets: [
+      "Proteína 1,6–2,0 g/kg combinando leguminosas + cereais OU soja/seitan a cada refeição (PDCAAS ≥0,9).",
+      "Leucina ≥2,5 g/refeição (soja, ervilha isolada, lentilha) ou suplementar EAA.",
+      "Suplementar: B12 1000mcg/sem, D3 vegana 2000UI, ômega-3 algas 500mg, creatina 5g, ferro+vit C, zinco 15mg, iodo 150mcg, cálcio 1000mg.",
+      "ZERO origem animal (incl. mel, gelatina, whey, caseína).",
+    ],
+  },
+  low_fodmap: {
+    titulo: "🌾 LOW-FODMAP — GutON 3 fases",
+    bullets: [
+      "Fase 1 (2–6 sem): cortar trigo, lactose, alho, cebola, leguminosas, polióis, frutas FODMAP.",
+      "Permitidos: arroz, aveia, quinoa, batata, banana madura, kiwi, frango, peixe, ovo, tofu firme, leite sem lactose.",
+      "Proteína 1,4–1,8 g/kg + fibra solúvel tolerada (aveia, chia, kiwi).",
+      "Fase 2: reintrodução por grupos (3–4 dias cada) com diário de sintomas. NÃO é dieta permanente.",
+    ],
+  },
+  longevidade: {
+    titulo: "🧬 LONGEVIDADE — Densidade × baixa inflamação",
+    bullets: [
+      "Padrão mediterrâneo: ≥30g fibra/dia · azeite extravirgem 30–45 ml · ≥5 porções vegetais coloridos.",
+      "Proteína 1,2–1,6 g/kg priorizando peixes gordos 2–3x/sem; carne vermelha ≤2x/sem; ZERO processada.",
+      "Ômega-3 EPA+DHA 1–2g · polifenóis (chá verde, cacau ≥70%, cúrcuma+pimenta).",
+      "TRE 10–12h · última refeição ≥3h antes de dormir · ZERO ultraprocessados/açúcar adicionado.",
+      "Suplementar: D3 2000UI, magnésio 300mg, creatina 5g, B12 se >50 anos.",
+    ],
+  },
+};
+
 export function exportMealPlanPDF(opts: {
   items: PlanItem[];
   weekRange: string;
