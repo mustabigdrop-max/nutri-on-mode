@@ -2214,7 +2214,50 @@ export default function PlanoAlimentarIA() {
           );
         })()}
 
-        {showProtocoloModal && (
+        {/* NutriPlan Elite — Banner de Modo Especial (Competição / GLP-1 / Feminino + RED-S) */}
+        {modoEspecial !== "normal" && (() => {
+          const r = plano.resumo;
+          const kcalUI = getResumoKcal(r);
+          const peso = Number(form.peso) || 0;
+          const kcalPorKg = peso > 0 ? kcalUI / peso : 0;
+          const isRedSRisk = modoEspecial === "feminino" && peso > 0 && kcalPorKg < 30;
+          const cfg: any = {
+            competicao: { icon: "🏆", title: "MODO COMPETIÇÃO · Peak Week", color: T.amber, lines: [
+              `Faltam ${diasComp} dia${diasComp > 1 ? "s" : ""} para a competição.`,
+              diasComp <= 3 ? "Carb load + sódio controlado · cortar fibras insolúveis · hidratação ativa." : "Manter densidade nutricional · ajuste fino de sódio/água nas últimas 72h.",
+            ]},
+            glp1: { icon: "💉", title: "MODO GLP-1 · Anti-sarcopenia", color: T.blue, lines: [
+              "Proteína 1,8–2,2g/kg/dia distribuída ≥5 refeições — priorizar proteína primeiro em cada refeição.",
+              "Monitorar saciedade precoce, náusea e déficit calórico não intencional.",
+            ]},
+            feminino: { icon: "🌸", title: `MODO FEMININO · Fase ${faseCiclo.toUpperCase()}`, color: "#f472b6", lines: [
+              faseCiclo === "folicular" ? "Sensibilidade insulínica alta · janela ideal para carbo e força." :
+              faseCiclo === "ovulatoria" ? "Pico estrogênico · performance máxima · suporte antioxidante." :
+              faseCiclo === "lutea" ? "Termogênese ↑ (+5–10% TDEE) · craving carbo · magnésio + B6 ajudam TPM." :
+              "Menstrual · ferro + vit C · evitar restrição agressiva.",
+              "Monitorar ciclo. Amenorreia >2 meses = STOP restrição (RED-S).",
+            ]},
+          }[modoEspecial];
+          if (!cfg) return null;
+          return (
+            <div className="fade-up" style={{ margin: "0 24px 16px", padding: 14, borderRadius: 12, background: T.bg2, border: `1px solid ${cfg.color}`, borderLeft: `4px solid ${cfg.color}` }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                <span style={{ fontSize: 16 }}>{cfg.icon}</span>
+                <div style={{ fontSize: 11, color: cfg.color, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em" }}>{cfg.title}</div>
+              </div>
+              {cfg.lines.map((l: string, i: number) => (
+                <div key={i} style={{ fontSize: 12, color: T.text, lineHeight: 1.5, marginBottom: 3 }}>• {l}</div>
+              ))}
+              {isRedSRisk && (
+                <div style={{ marginTop: 10, padding: 10, borderRadius: 8, background: "#7f1d1d22", border: "1px solid #ef4444", fontSize: 11, color: "#fca5a5", fontWeight: 600 }}>
+                  ⚠ ALERTA RED-S — Plano em {kcalPorKg.toFixed(1)} kcal/kg (&lt;30). Revisar disponibilidade energética antes de prescrever.
+                </div>
+              )}
+            </div>
+          );
+        })()}
+
+
           <div onClick={() => !protocoloRecalc && setShowProtocoloModal(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", zIndex: 60, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
             <div onClick={(e) => e.stopPropagation()} style={{ background: T.bg2, border: `1px solid ${T.border2}`, borderRadius: 14, padding: 24, maxWidth: 600, width: "100%", maxHeight: "90vh", overflow: "auto" as const }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
