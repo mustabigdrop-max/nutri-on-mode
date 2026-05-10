@@ -251,6 +251,84 @@ export function getWorkoutAdjustment(type: WorkoutType, weightKg: number, durati
         preMeal: "Snack leve: frutas + castanhas", postMeal: "Refeição normal",
         electrolytes: "Magnésio 300mg à noite potencializa recuperação e qualidade do sono.",
       };
+    case "cardio_z4":
+      return {
+        ...baseExtras, recoveryHours: 36,
+        kcalMultiplier: 1.15, proteinPerKg: 1.9, carbsMultiplier: 1.25, fatMultiplier: 0.90, hydrationLiters: 3.5,
+        label: "Z4 — VO2max / Alta intensidade aeróbia",
+        tip: "Glicogênio depleta rápido. Carb pré obrigatório, repor agressivo no pós.",
+        preMeal: "60min antes: aveia 50g + banana + whey 20g.",
+        postMeal: "Whey 30g + carb rápido 60g + eletrólitos.",
+        intraMeal: "Se >45min: gel ou maltodextrina 30g a cada 30min.",
+        electrolytes: "Sódio 400–600mg + potássio 300mg pós-sessão.",
+        cardioCalsBurned: getCardioCalsBurned("cardio_z4", durationMin),
+      };
+    case "cardio_liss":
+      return {
+        ...baseExtras, recoveryHours: 18,
+        kcalMultiplier: 1.08, proteinPerKg: 1.8, carbsMultiplier: 1.05, fatMultiplier: 1.05, hydrationLiters: 3.0,
+        label: "LISS — Steady State",
+        tip: "Oxidação lipídica máxima. Ideal para cutting. Não compensar com excesso calórico.",
+        preMeal: "Opcional: café preto + 10g EAA se >60min.",
+        postMeal: "Refeição normal balanceada (proteína + carb complexo).",
+        cardioCalsBurned: getCardioCalsBurned("cardio_liss", durationMin),
+      };
+    case "cardio_aej":
+      return {
+        ...baseExtras, recoveryHours: 12,
+        kcalMultiplier: 1.05, proteinPerKg: 1.9, carbsMultiplier: 1.0, fatMultiplier: 1.0, hydrationLiters: 3.0,
+        label: "AEJ — Aeróbico em Jejum",
+        tip: "Mobilização de gordura periférica. Limite 45min para preservar massa magra.",
+        preMeal: "JEJUM: água + cafeína 200mg + 5g creatina + eletrólitos. EAA 10g se >40min.",
+        postMeal: "30min pós: whey 30g + fruta. Refeição completa em 60min.",
+        electrolytes: "Sódio + potássio essencial em jejum (perda por suor sem reposição alimentar).",
+        cardioCalsBurned: getCardioCalsBurned("cardio_aej", durationMin),
+      };
+    case "cardio_neat":
+      return {
+        ...baseExtras, recoveryHours: 0,
+        kcalMultiplier: 1.03, proteinPerKg: 1.8, carbsMultiplier: 1.0, fatMultiplier: 1.0, hydrationLiters: 2.8,
+        label: "NEAT — Caminhada / atividade não-exercício",
+        tip: "Aumenta gasto calórico diário sem afetar recuperação. Meta: 8–12k passos.",
+        preMeal: "Sem ajuste — refeições normais.",
+        postMeal: "Sem ajuste — refeições normais.",
+        cardioCalsBurned: getCardioCalsBurned("cardio_neat", durationMin),
+      };
+    case "cycling": case "swimming": case "rowing": case "elliptical":
+      return {
+        ...baseExtras, recoveryHours: 24,
+        kcalMultiplier: 1.12, proteinPerKg: 1.9, carbsMultiplier: 1.20, fatMultiplier: 0.95, hydrationLiters: 3.5,
+        label: meta.label + " — Endurance modal",
+        tip: "Modal de baixo impacto. Carb sustentado para sessões longas.",
+        preMeal: "60min antes: arroz/aveia + proteína magra. 20min antes: banana.",
+        postMeal: "Whey 30g + carb 60g + eletrólitos.",
+        intraMeal: "Se >75min: 30–40g carb/h (gel, isotônico, fruta).",
+        electrolytes: "Sódio 300–500mg + magnésio se >60min.",
+        cardioCalsBurned: getCardioCalsBurned(type, durationMin),
+      };
+    case "jump_rope": case "sprints": case "stair_climber":
+      return {
+        ...baseExtras, recoveryHours: 24,
+        kcalMultiplier: 1.10, proteinPerKg: 1.9, carbsMultiplier: 1.15, fatMultiplier: 0.95, hydrationLiters: 3.2,
+        label: meta.label + " — Alta intensidade explosiva",
+        tip: "Sistema ATP-CP + glicolítico. Creatina + carb pré melhoram performance.",
+        preMeal: "45min antes: banana + whey 20g + 5g creatina.",
+        postMeal: "Whey 30g + carb rápido 50g + eletrólitos.",
+        electrolytes: "Sódio 400mg + potássio 300mg pós-sessão intensa.",
+        cardioCalsBurned: getCardioCalsBurned(type, durationMin),
+      };
+    case "crossfit": case "functional":
+      return {
+        ...baseExtras, recoveryHours: 36,
+        kcalMultiplier: 1.15, proteinPerKg: 2.0, carbsMultiplier: 1.22, fatMultiplier: 1.0, hydrationLiters: 3.5,
+        label: meta.label + " — Híbrido força+cardio",
+        tip: "Alta demanda metabólica e neuromuscular. Carb e proteína altos.",
+        preMeal: "90min antes: refeição completa. 30min antes: banana + cafeína.",
+        postMeal: "Whey 35g + carb 60g. Refeição sólida em 60min.",
+        intraMeal: "Se >60min: EAA 10g + carb intra.",
+        electrolytes: "Sódio + potássio + magnésio. Sal rosa do himalaia pós.",
+        cardioCalsBurned: getCardioCalsBurned(type, durationMin),
+      };
     case "rest": default:
       return {
         ...baseExtras, recoveryHours: 0,
