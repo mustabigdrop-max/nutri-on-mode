@@ -43,10 +43,11 @@ import CompetitionModeBlocks from "@/components/training/systems/CompetitionMode
 
 const ADMIN_UID = "70e51469-1acf-4df6-afe6-f094d21db122";
 
-type Section = "gerar" | "fibras" | "sistemas" | "stratum" | "competicao" | "progressao" | "volume" | "historico" | "config";
+type Section = "gerar" | "readiness" | "fibras" | "sistemas" | "stratum" | "competicao" | "progressao" | "volume" | "historico" | "config";
 
 const sectionNav: { id: Section; label: string; icon: any; adminOnly?: boolean }[] = [
   { id: "gerar", label: "Prescrição", icon: Brain },
+  { id: "readiness", label: "Readiness", icon: HeartPulse },
   { id: "fibras", label: "Fibras IA", icon: Activity },
   { id: "sistemas", label: "Sistemas", icon: Layers, adminOnly: true },
   { id: "stratum", label: "STRATUM", icon: Microscope, adminOnly: true },
