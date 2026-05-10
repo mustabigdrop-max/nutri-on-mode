@@ -409,6 +409,7 @@ ${workoutContext}
 ${trainingOnPrompt}
 ${pharmaPrompt}
 ${pcaPrompt}
+${modoEspecialPrompt}
 ═══════════════════════════════════════════
 MICRONUTRIENTES OBRIGATÓRIOS
 ═══════════════════════════════════════════
