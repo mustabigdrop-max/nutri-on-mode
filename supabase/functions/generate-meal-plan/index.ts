@@ -22,6 +22,10 @@ serve(async (req) => {
       stratum_fase,            // "acumulacao" | "intensificacao" | "realizacao" | "deload"
       cardio_mesmo_dia,        // boolean
       intensidade_treino,      // "leve" | "moderada" | "alta" | "muito_alta"
+      // ═══ NutriPlan Elite — Dimensão 1: TDEE Farmacologicamente Ajustado ═══
+      compostos_ativos,        // string[] — nomes de peptídeos/AAS/SARMs ativos do Dr. VERTEX
+      perfil_pca,              // "AM" | "EI" | "SE" | "PP"
+      body_fat_pct,            // number — % de gordura corporal (para Katch-McArdle)
     } = body;
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
