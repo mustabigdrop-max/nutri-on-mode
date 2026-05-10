@@ -2257,7 +2257,7 @@ export default function PlanoAlimentarIA() {
           );
         })()}
 
-
+        {showProtocoloModal && (
           <div onClick={() => !protocoloRecalc && setShowProtocoloModal(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", zIndex: 60, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
             <div onClick={(e) => e.stopPropagation()} style={{ background: T.bg2, border: `1px solid ${T.border2}`, borderRadius: 14, padding: 24, maxWidth: 600, width: "100%", maxHeight: "90vh", overflow: "auto" as const }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
