@@ -288,6 +288,12 @@ interface Meal {
   kcal_calculada?: number;
   alimentos?: MealAlimento[];
   macros?: { proteina?: number; carboidrato?: number; gordura?: number };
+  // NutriPlan Elite — enriquecimento por refeição (opcional)
+  funcao_metabolica?: string;
+  janela_metabolica?: string;
+  protocolo_peri_workout?: string;
+  mensagem_mce?: string;
+  insights_ia?: string[];
 }
 
 const formatQuantidadeG = (value?: string | number | null) => {
