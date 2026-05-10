@@ -972,6 +972,44 @@ export default function PlanoAlimentarIA() {
     setLoadingHistory(false);
   };
 
+  // NutriPlan Elite — Aderência: carrega meals_saved do paciente vinculado
+  const openAdherence = async () => {
+    const patientId = (form as any)?.patientUserId;
+    if (!patientId) {
+      toast({ title: "Selecione um paciente vinculado", description: "A aderência é calculada a partir do diário do paciente.", variant: "destructive" });
+      return;
+    }
+    setShowAdherence(true);
+    setAdherenceLoading(true);
+    try {
+      const since = new Date(); since.setDate(since.getDate() - 14);
+      const { data } = await supabase
+        .from("meals_saved")
+        .select("meal_type, kcal, protein_g, carbs_g, fat_g, confirmed, eaten_at")
+        .eq("user_id", patientId)
+        .gte("eaten_at", since.toISOString())
+        .order("eaten_at", { ascending: false })
+        .limit(500);
+      const items = (data || []).map((m: any) => {
+        const dt = new Date(m.eaten_at);
+        // 0=Mon ... 6=Sun (semana ISO)
+        const dow = (dt.getDay() + 6) % 7;
+        return {
+          day_index: dow,
+          meal_type: m.meal_type,
+          kcal: Number(m.kcal) || 0,
+          protein_g: Number(m.protein_g) || 0,
+          carbs_g: Number(m.carbs_g) || 0,
+          fat_g: Number(m.fat_g) || 0,
+          confirmed: !!m.confirmed,
+        };
+      });
+      setAdherenceItems(items);
+    } finally {
+      setAdherenceLoading(false);
+    }
+  };
+
   // Load coach profile + patients
   useEffect(() => {
     if (!user?.id) return;
