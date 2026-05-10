@@ -148,6 +148,12 @@ export function exportMealPlanPDF(opts: {
         if (enr.janela_metabolica) { doc.text(`◷ ${enr.janela_metabolica}`, M + 6, y, { maxWidth: W - 2 * M - 6 }); y += 9; }
         if (enr.protocolo_peri_workout) { doc.text(`⚡ ${enr.protocolo_peri_workout}`, M + 6, y, { maxWidth: W - 2 * M - 6 }); y += 9; }
         if (enr.mensagem_mce) { doc.text(`MCE: ${enr.mensagem_mce}`, M + 6, y, { maxWidth: W - 2 * M - 6 }); y += 9; }
+        if (Array.isArray(enr.insights_ia) && enr.insights_ia.length) {
+          for (const ins of enr.insights_ia.slice(0, 3)) {
+            if (!ins) continue;
+            doc.text(`• ${String(ins)}`, M + 6, y, { maxWidth: W - 2 * M - 6 }); y += 9;
+          }
+        }
         doc.setTextColor(20, 20, 20);
       }
       y += 4;
