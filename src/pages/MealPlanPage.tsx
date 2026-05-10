@@ -17,6 +17,7 @@ import SubstitutionModal from "@/components/meal/SubstitutionModal";
 import type { SubOption } from "@/components/meal/substitutionDb";
 import CircadianTimeline from "@/components/meal/CircadianTimeline";
 import ExpandableMealCard from "@/components/meal/ExpandableMealCard";
+import Glut4SyncCard from "@/components/meal/Glut4SyncCard";
 import AdherenceModal from "@/components/meal/AdherenceModal";
 import { exportMealPlanPDF } from "@/lib/mealPlanPdf";
 
