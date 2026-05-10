@@ -217,9 +217,8 @@ const NutriSyncPage = () => {
   }
 
   const typeEntries = Object.entries(WORKOUT_TYPES) as [WorkoutType, typeof WORKOUT_TYPES[WorkoutType]][];
-  // Filtra cardio_z* legados do grid (mantém running, mma, cardio_hiit, cardio_light)
   const muscEntries = typeEntries.filter(([, v]) => v.category === "musculacao");
-  const cardioEntries = typeEntries.filter(([k, v]) => v.category === "cardio" && !k.startsWith("cardio_z"));
+  const cardioEntries = typeEntries.filter(([, v]) => v.category === "cardio");
   const restEntries = typeEntries.filter(([, v]) => v.category === "descanso");
 
   return (
