@@ -13,6 +13,8 @@ export type WorkoutType =
   | "back_biceps"
   | "shoulders"
   | "arms"
+  | "mma"
+  | "running"
   | "cardio_z1"
   | "cardio_z2"
   | "cardio_z3"
@@ -43,27 +45,43 @@ export interface NutritionAdjustment {
   tip: string;
   preMeal: string;
   postMeal: string;
+  intraMeal?: string;
+  electrolytes?: string;
+  volumeScore: number;
+  muscleGroups: string[];
+  recoveryHours: number;
   cardioCalsBurned?: number;
 }
 
-export const WORKOUT_TYPES: Record<WorkoutType, { emoji: string; label: string; shortLabel: string; category: "musculacao" | "cardio" | "descanso" }> = {
-  push: { emoji: "💪", label: "Push (Peito/Ombro/Tríceps)", shortLabel: "Push", category: "musculacao" },
-  pull: { emoji: "💪", label: "Pull (Costas/Bíceps)", shortLabel: "Pull", category: "musculacao" },
-  legs: { emoji: "🦵", label: "Legs (Pernas/Glúteo)", shortLabel: "Legs", category: "musculacao" },
-  upper: { emoji: "💪", label: "Upper Body", shortLabel: "Upper", category: "musculacao" },
-  lower: { emoji: "🦵", label: "Lower Body", shortLabel: "Lower", category: "musculacao" },
-  full_body: { emoji: "🏋️", label: "Full Body", shortLabel: "Full Body", category: "musculacao" },
-  chest_triceps: { emoji: "💪", label: "Peito/Tríceps", shortLabel: "Peito/Trí", category: "musculacao" },
-  back_biceps: { emoji: "💪", label: "Costas/Bíceps", shortLabel: "Costas/Bí", category: "musculacao" },
-  shoulders: { emoji: "💪", label: "Ombro/Trapézio", shortLabel: "Ombro/Trap", category: "musculacao" },
-  arms: { emoji: "💪", label: "Braços", shortLabel: "Braços", category: "musculacao" },
-  cardio_z1: { emoji: "🚶", label: "Cardio Z1 (Caminhada leve)", shortLabel: "Cardio Z1", category: "cardio" },
-  cardio_z2: { emoji: "🏃", label: "Cardio Z2 (Moderado/AEJ)", shortLabel: "Cardio Z2", category: "cardio" },
-  cardio_z3: { emoji: "🏃‍♂️", label: "Cardio Z3 (Limiar)", shortLabel: "Cardio Z3", category: "cardio" },
-  cardio_hiit: { emoji: "🔥", label: "HIIT (Alta Intensidade)", shortLabel: "HIIT", category: "cardio" },
-  cardio_light: { emoji: "🚴", label: "Cardio leve (bike/caminhada)", shortLabel: "Cardio leve", category: "cardio" },
-  active_rest: { emoji: "🧘", label: "Descanso ativo (alongamento)", shortLabel: "Descanso ativo", category: "descanso" },
-  rest: { emoji: "😴", label: "Dia de descanso total", shortLabel: "Descanso", category: "descanso" },
+export interface WorkoutTypeMeta {
+  emoji: string;
+  label: string;
+  shortLabel: string;
+  category: "musculacao" | "cardio" | "descanso";
+  muscleGroups: string[];
+  volumeScore: number;
+}
+
+export const WORKOUT_TYPES: Record<WorkoutType, WorkoutTypeMeta> = {
+  push:          { emoji: "📤", label: "Push (Peito/Ombro/Tríceps)", shortLabel: "Push", category: "musculacao", muscleGroups: ["Peito", "Ombros", "Tríceps"], volumeScore: 4 },
+  pull:          { emoji: "📥", label: "Pull (Costas/Bíceps)", shortLabel: "Pull", category: "musculacao", muscleGroups: ["Costas", "Bíceps"], volumeScore: 4 },
+  legs:          { emoji: "🦵", label: "Legs (Pernas/Glúteo)", shortLabel: "Legs", category: "musculacao", muscleGroups: ["Quadríceps", "Posterior", "Glúteos"], volumeScore: 5 },
+  upper:         { emoji: "🔼", label: "Upper Body", shortLabel: "Upper", category: "musculacao", muscleGroups: ["Peito", "Costas", "Ombros", "Bíceps", "Tríceps"], volumeScore: 4 },
+  lower:         { emoji: "🔽", label: "Lower Body", shortLabel: "Lower", category: "musculacao", muscleGroups: ["Quadríceps", "Posterior", "Glúteos"], volumeScore: 5 },
+  full_body:     { emoji: "🌀", label: "Full Body", shortLabel: "Full Body", category: "musculacao", muscleGroups: ["Peito", "Costas", "Ombros", "Bíceps", "Tríceps", "Quadríceps", "Posterior", "Glúteos"], volumeScore: 4 },
+  chest_triceps: { emoji: "🏋️", label: "Peito/Tríceps", shortLabel: "Peito/Trí", category: "musculacao", muscleGroups: ["Peito", "Tríceps"], volumeScore: 3 },
+  back_biceps:   { emoji: "💪", label: "Costas/Bíceps", shortLabel: "Costas/Bí", category: "musculacao", muscleGroups: ["Costas", "Bíceps"], volumeScore: 3 },
+  shoulders:     { emoji: "🎯", label: "Ombros/Trapézio", shortLabel: "Ombros", category: "musculacao", muscleGroups: ["Ombros"], volumeScore: 2 },
+  arms:          { emoji: "⚡", label: "Braços (Bíceps/Tríceps)", shortLabel: "Braços", category: "musculacao", muscleGroups: ["Bíceps", "Tríceps"], volumeScore: 2 },
+  mma:           { emoji: "🥊", label: "MMA / Lutas", shortLabel: "MMA", category: "cardio", muscleGroups: ["Sistema cardio", "Core"], volumeScore: 4 },
+  running:       { emoji: "🏃", label: "Corrida", shortLabel: "Corrida", category: "cardio", muscleGroups: ["Sistema cardio", "Pernas"], volumeScore: 3 },
+  cardio_z1:     { emoji: "🚶", label: "Cardio Z1 (Caminhada leve)", shortLabel: "Cardio Z1", category: "cardio", muscleGroups: ["Sistema cardio"], volumeScore: 1 },
+  cardio_z2:     { emoji: "🏃", label: "Cardio Z2 (Moderado/AEJ)", shortLabel: "Cardio Z2", category: "cardio", muscleGroups: ["Sistema cardio"], volumeScore: 2 },
+  cardio_z3:     { emoji: "🏃‍♂️", label: "Cardio Z3 (Limiar)", shortLabel: "Cardio Z3", category: "cardio", muscleGroups: ["Sistema cardio"], volumeScore: 3 },
+  cardio_hiit:   { emoji: "🔥", label: "HIIT (Alta Intensidade)", shortLabel: "HIIT", category: "cardio", muscleGroups: ["Sistema cardio"], volumeScore: 3 },
+  cardio_light:  { emoji: "🚶", label: "Cardio leve (bike/caminhada)", shortLabel: "Cardio leve", category: "cardio", muscleGroups: ["Sistema cardio"], volumeScore: 1 },
+  active_rest:   { emoji: "🧘", label: "Descanso ativo (alongamento)", shortLabel: "Desc. ativo", category: "descanso", muscleGroups: [], volumeScore: 0 },
+  rest:          { emoji: "😴", label: "Dia de descanso total", shortLabel: "Descanso", category: "descanso", muscleGroups: [], volumeScore: 0 },
 };
 
 export const DAY_NAMES = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
