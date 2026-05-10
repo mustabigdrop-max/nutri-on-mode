@@ -2144,6 +2144,9 @@ export default function PlanoAlimentarIA() {
             <button onClick={exportPDF} style={{ padding: "8px 16px", borderRadius: 8, background: T.bg3, border: `1px solid ${T.border2}`, color: T.muted, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>
               📄 PDF
             </button>
+            <button onClick={exportPDFElite} title="PDF Elite com TDEE breakdown e enriquecimento metabólico" style={{ padding: "8px 16px", borderRadius: 8, background: T.greenBg, border: `1px solid ${T.green}`, color: T.green, fontSize: 12, cursor: "pointer", fontFamily: "inherit", fontWeight: 700 }}>
+              📄 PDF Elite
+            </button>
             <button onClick={openAdherence} style={{ padding: "8px 16px", borderRadius: 8, background: T.bg3, border: `1px solid ${T.border2}`, color: T.muted, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>
               📊 Aderência
             </button>
