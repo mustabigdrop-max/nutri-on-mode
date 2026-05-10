@@ -96,61 +96,88 @@ function getCardioCalsBurned(type: WorkoutType, durationMin: number): number {
 }
 
 export function getWorkoutAdjustment(type: WorkoutType, weightKg: number, durationMin = 60): NutritionAdjustment {
+  const meta = WORKOUT_TYPES[type] || WORKOUT_TYPES.rest;
+  const baseExtras = { volumeScore: meta.volumeScore, muscleGroups: meta.muscleGroups };
+
   switch (type) {
     case "legs": case "lower":
       return {
-        kcalMultiplier: 1.20, proteinPerKg: 2.4, carbsMultiplier: 1.30, fatMultiplier: 1.0, hydrationLiters: 3.2,
-        label: "Dia de Perna — Performance máxima",
-        tip: "🦵 LEG DAY! Maior carb da semana. Beterraba 2-3h antes. Intra: 50-60g carb.",
-        preMeal: "Carb alto: batata doce + frango + suco de beterraba",
-        postMeal: "Whey 40g + Dextrose 60-80g + Creatina 5g",
+        ...baseExtras, recoveryHours: 72,
+        kcalMultiplier: 1.18, proteinPerKg: 2.4, carbsMultiplier: 1.30, fatMultiplier: 1.0, hydrationLiters: 3.5,
+        label: "Leg/Lower Day — Performance máxima",
+        tip: "🦵 LEG DAY! Maior carb da semana. Beterraba 2-3h antes. 8h+ sono para GH.",
+        preMeal: "60–90min antes: batata-doce 150g + frango 150g. 30min antes: banana.",
+        postMeal: "Imediato: whey 40g + maltodextrina 60g. 1h depois: refeição completa.",
+        intraMeal: "Se >75min: gel de carbo ou banana a cada 45min de trabalho pesado.",
+        electrolytes: "Sódio + potássio. Água de coco ou isotônico natural após treino.",
       };
-    case "push": case "chest_triceps":
+    case "push": case "upper":
       return {
-        kcalMultiplier: 1.12, proteinPerKg: 2.2, carbsMultiplier: 1.15, fatMultiplier: 1.0, hydrationLiters: 3.0,
-        label: "Push Day — Peito/Ombro/Tríceps",
-        tip: "Carb moderado no pré-treino para séries pesadas de supino.",
-        preMeal: "Arroz + frango + salada (2-3h antes)",
-        postMeal: "Whey 40g + banana + creatina 5g",
+        ...baseExtras, recoveryHours: 48,
+        kcalMultiplier: 1.12, proteinPerKg: 2.2, carbsMultiplier: 1.18, fatMultiplier: 1.0, hydrationLiters: 3.2,
+        label: type === "upper" ? "Upper Day — Tronco completo" : "Push Day — Peito/Ombro/Tríceps",
+        tip: "Carb moderado-alto no pré para séries pesadas. Proteína distribuída em 4–5 refeições.",
+        preMeal: "90min antes: arroz + frango + salada. 30min antes: banana + 5g creatina.",
+        postMeal: "30min pós: whey 35g + aveia 50g. 1h depois: refeição sólida.",
+        intraMeal: "Se >90min: EAA 10g + carb simples a cada 60min.",
+        electrolytes: "Sódio leve pós-treino se sudorese alta.",
       };
-    case "pull": case "back_biceps":
+    case "pull":
       return {
+        ...baseExtras, recoveryHours: 48,
         kcalMultiplier: 1.12, proteinPerKg: 2.2, carbsMultiplier: 1.15, fatMultiplier: 1.0, hydrationLiters: 3.0,
         label: "Pull Day — Costas/Bíceps",
-        tip: "Costas = grupo grande. Proteína pós mínimo 45g para síntese ótima.",
-        preMeal: "Refeição balanceada: arroz + proteína + salada",
-        postMeal: "Whey 40g + aveia ou refeição completa",
+        tip: "Costas = grupo grande. Leucina mínima 3g/refeição para síntese ótima.",
+        preMeal: "90min antes: refeição completa. 20min antes: cafeína 200mg se habitual.",
+        postMeal: "Whey 35g + carb complexo. Leucina mínima 3g total no dia.",
+        intraMeal: "Se >90min: EAA 10g ou BCAA intra-workout.",
       };
-    case "upper":
+    case "chest_triceps": case "back_biceps": case "shoulders": case "arms": case "full_body":
       return {
-        kcalMultiplier: 1.15, proteinPerKg: 2.2, carbsMultiplier: 1.15, fatMultiplier: 1.0, hydrationLiters: 3.0,
-        label: "Upper Day — Tronco completo",
-        tip: "Carb moderado. Proteína distribuída ao longo do dia.",
-        preMeal: "Refeição completa 2-3h antes", postMeal: "Whey + carb moderado",
+        ...baseExtras, recoveryHours: 48,
+        kcalMultiplier: 1.10, proteinPerKg: 2.0, carbsMultiplier: 1.12, fatMultiplier: 1.0, hydrationLiters: 3.0,
+        label: meta.label,
+        tip: "Proteína distribuída (3–4 refeições + pré/pós). Mínimo 8h sono para GH.",
+        preMeal: "60–90min antes: refeição completa moderada. 20min antes: fruta opcional.",
+        postMeal: "Whey 30–40g + carb complexo. Refeição sólida em 1h.",
+        intraMeal: type === "full_body" ? "Se >90min: EAA 10g + carb intra." : undefined,
       };
-    case "full_body":
+    case "cardio_hiit":
       return {
-        kcalMultiplier: 1.18, proteinPerKg: 2.4, carbsMultiplier: 1.20, fatMultiplier: 1.0, hydrationLiters: 3.2,
-        label: "Full Body — Todos os grupos",
-        tip: "Volume grande. Proteína máxima + carb intra-treino recomendado.",
-        preMeal: "Carb complexo + proteína (refeição grande)", postMeal: "Whey 40g + carb 60g",
+        ...baseExtras, recoveryHours: 24,
+        kcalMultiplier: 1.10, proteinPerKg: 1.8, carbsMultiplier: 1.20, fatMultiplier: 0.90, hydrationLiters: 3.8,
+        label: "HIIT — Queima e resistência",
+        tip: "Carb pré para sustentar intensidade. EPOC +100–200kcal pós.",
+        preMeal: "45min antes: banana + mel. Evite gordura pré-treino.",
+        postMeal: "Eletrólitos + whey 30g. Água de coco.",
+        electrolytes: "CRÍTICO: sódio 300–500mg, potássio 200–400mg, magnésio 100–200mg pós-HIIT.",
+        cardioCalsBurned: getCardioCalsBurned("cardio_hiit", durationMin),
       };
-    case "shoulders":
+    case "mma":
       return {
-        kcalMultiplier: 1.10, proteinPerKg: 2.0, carbsMultiplier: 1.10, fatMultiplier: 1.0, hydrationLiters: 3.0,
-        label: "Ombros — Volume e definição",
-        tip: "Grupo menor. Carb moderado. Face pull preventivo.",
-        preMeal: "Refeição leve-moderada", postMeal: "Whey + refeição normal",
+        ...baseExtras, recoveryHours: 48,
+        kcalMultiplier: 1.15, proteinPerKg: 2.2, carbsMultiplier: 1.25, fatMultiplier: 1.0, hydrationLiters: 4.0,
+        label: "MMA / Lutas — Combat sport",
+        tip: "Combina força + cardio + impacto. Anti-inflamatório obrigatório no pós.",
+        preMeal: "2h antes: refeição completa. 30min antes: carb simples.",
+        postMeal: "40g proteína + 60g carb rápido. Depois: refeição anti-inflamatória (cúrcuma, ômega-3).",
+        intraMeal: "Se >90min: gel ou banana a cada 45–60min.",
+        electrolytes: "Alto: sódio, potássio, magnésio. Sal rosa do himalaia.",
       };
-    case "arms":
+    case "running":
       return {
-        kcalMultiplier: 1.08, proteinPerKg: 2.0, carbsMultiplier: 1.05, fatMultiplier: 1.0, hydrationLiters: 2.8,
-        label: "Braços — Bíceps/Tríceps",
-        tip: "Menor demanda energética. Carb reduzido vs dias de compostos.",
-        preMeal: "Lanche leve: fruta + whey", postMeal: "Whey + refeição normal",
+        ...baseExtras, recoveryHours: 36,
+        kcalMultiplier: 1.12, proteinPerKg: 1.8, carbsMultiplier: 1.30, fatMultiplier: 1.0, hydrationLiters: 3.5,
+        label: "Corrida — Endurance",
+        tip: "Carb-loading nas 24h anteriores a provas longas. Cafeína melhora performance 3–5%.",
+        preMeal: "2h antes: arroz/macarrão + proteína magra. 30–45min antes: gel ou banana.",
+        postMeal: "Whey 30g + carb 60g + eletrólitos. Refeição em 1h.",
+        intraMeal: "Se >60min: 30–45g carb por hora (gel, isotônico, tâmara).",
+        electrolytes: "Corrida >60min: sódio obrigatório. Cãibra = déficit sódio+magnésio.",
       };
     case "cardio_z1":
       return {
+        ...baseExtras, recoveryHours: 12,
         kcalMultiplier: 1.05, proteinPerKg: 1.8, carbsMultiplier: 1.0, fatMultiplier: 1.0, hydrationLiters: 2.8,
         label: "Cardio Z1 — Caminhada leve",
         tip: "Sem ajuste significativo. Manutenção normal.",
@@ -159,6 +186,7 @@ export function getWorkoutAdjustment(type: WorkoutType, weightKg: number, durati
       };
     case "cardio_z2":
       return {
+        ...baseExtras, recoveryHours: 12,
         kcalMultiplier: 1.10, proteinPerKg: 1.8, carbsMultiplier: 1.05, fatMultiplier: 1.0, hydrationLiters: 3.0,
         label: "Cardio Z2 — Aeróbio moderado/AEJ",
         tip: "Fat adaptation. Repor carb pós. EAA se > 45min.",
@@ -168,6 +196,7 @@ export function getWorkoutAdjustment(type: WorkoutType, weightKg: number, durati
       };
     case "cardio_z3":
       return {
+        ...baseExtras, recoveryHours: 24,
         kcalMultiplier: 1.12, proteinPerKg: 1.8, carbsMultiplier: 1.15, fatMultiplier: 0.95, hydrationLiters: 3.2,
         label: "Cardio Z3 — Limiar",
         tip: "Carb pré obrigatório. Maior depleção de glicogênio.",
@@ -175,17 +204,9 @@ export function getWorkoutAdjustment(type: WorkoutType, weightKg: number, durati
         postMeal: "Whey + carb simples + eletrólitos",
         cardioCalsBurned: getCardioCalsBurned("cardio_z3", durationMin),
       };
-    case "cardio_hiit":
-      return {
-        kcalMultiplier: 1.12, proteinPerKg: 1.8, carbsMultiplier: 1.15, fatMultiplier: 0.95, hydrationLiters: 3.5,
-        label: "HIIT — Queima e resistência",
-        tip: "Carb pré para sustentar intensidade. EPOC +100-200kcal pós.",
-        preMeal: "Banana + whey ou gel de carb (30min antes)",
-        postMeal: "Eletrólitos + whey + carb rápido",
-        cardioCalsBurned: getCardioCalsBurned("cardio_hiit", durationMin),
-      };
     case "cardio_light":
       return {
+        ...baseExtras, recoveryHours: 12,
         kcalMultiplier: 1.05, proteinPerKg: 1.8, carbsMultiplier: 1.05, fatMultiplier: 1.0, hydrationLiters: 2.8,
         label: "Cardio leve — Recuperação ativa",
         tip: "Manutenção calórica com foco em micronutrientes.",
@@ -194,17 +215,21 @@ export function getWorkoutAdjustment(type: WorkoutType, weightKg: number, durati
       };
     case "active_rest":
       return {
+        ...baseExtras, recoveryHours: 0,
         kcalMultiplier: 1.0, proteinPerKg: 1.8, carbsMultiplier: 0.90, fatMultiplier: 1.10, hydrationLiters: 2.5,
         label: "Descanso ativo — Mobilidade e flexibilidade",
-        tip: "Reduzir carb, aumentar gordura boa para recuperação.",
+        tip: "Colágeno hidrolisado 10g + vitamina C para recuperação de tecido conjuntivo.",
         preMeal: "Snack leve: frutas + castanhas", postMeal: "Refeição normal",
+        electrolytes: "Magnésio 300mg à noite potencializa recuperação e qualidade do sono.",
       };
     case "rest": default:
       return {
+        ...baseExtras, recoveryHours: 0,
         kcalMultiplier: 0.90, proteinPerKg: 2.0, carbsMultiplier: 0.80, fatMultiplier: 1.15, hydrationLiters: 2.5,
         label: "Dia de descanso — Recuperação total",
-        tip: "Carb reduzido. Gordura aumentada. Proteína alta para síntese 24-48h.",
+        tip: "Músculo cresce no descanso. Proteína distribuída + carboidrato reduzido + 8h+ sono.",
         preMeal: "—", postMeal: "—",
+        electrolytes: "Magnésio 300mg + zinco à noite para recuperação e testosterona endógena.",
       };
   }
 }
@@ -222,6 +247,12 @@ export function combineAdjustments(workouts: WorkoutScheduleEntry[], weightKg: n
   const totalFatExtra = adjustments.reduce((sum, a) => sum + (a.fatMultiplier - 1.0), 0);
   const maxHydration = Math.max(...adjustments.map(a => a.hydrationLiters)) + (workouts.length > 1 ? 0.3 : 0);
   const totalCardioCals = adjustments.reduce((sum, a) => sum + (a.cardioCalsBurned || 0), 0);
+  const maxVolume = Math.max(...adjustments.map(a => a.volumeScore));
+  const muscleSet = new Set<string>();
+  adjustments.forEach(a => a.muscleGroups.forEach(m => muscleSet.add(m)));
+  const maxRecovery = Math.max(...adjustments.map(a => a.recoveryHours));
+  const intra = adjustments.find(a => a.intraMeal)?.intraMeal;
+  const elec = adjustments.find(a => a.electrolytes)?.electrolytes;
 
   const labels = workouts.map(w => WORKOUT_TYPES[w.workout_type as WorkoutType]?.shortLabel).join(" + ");
   const tips = adjustments.map(a => a.tip);
@@ -242,6 +273,11 @@ export function combineAdjustments(workouts: WorkoutScheduleEntry[], weightKg: n
       : tips.join(" | "),
     preMeal: adjustments[0].preMeal,
     postMeal: adjustments[adjustments.length - 1].postMeal,
+    intraMeal: intra,
+    electrolytes: elec,
+    volumeScore: maxVolume,
+    muscleGroups: Array.from(muscleSet),
+    recoveryHours: maxRecovery,
     cardioCalsBurned: totalCardioCals,
   };
 }
