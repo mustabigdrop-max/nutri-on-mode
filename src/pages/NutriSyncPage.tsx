@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, History, ChevronRight, Plus, Trash2, Check, Zap } from "lucide-react";
@@ -140,6 +140,15 @@ const NutriSyncPage = () => {
   const [saving, setSaving] = useState(false);
   const [showRpe, setShowRpe] = useState(false);
   const [selectedRpe, setSelectedRpe] = useState<number | null>(null);
+  const [objetivo, setObjetivo] = useState<"bulking" | "cutting" | "manutencao">(() => {
+    if (typeof window === "undefined") return "manutencao";
+    return (localStorage.getItem("nutrisync_objetivo") as any) || "manutencao";
+  });
+  useEffect(() => {
+    try { localStorage.setItem("nutrisync_objetivo", objetivo); } catch {}
+  }, [objetivo]);
+  const goalMult = objetivo === "bulking" ? 1.12 : objetivo === "cutting" ? 0.82 : 1.0;
+  const proteinPerKgGoal = objetivo === "cutting" ? 2.4 : objetivo === "bulking" ? 2.0 : 1.8;
 
   const todayWorkouts = getTodayWorkouts();
   const todayDow = new Date().getDay();
@@ -151,10 +160,10 @@ const NutriSyncPage = () => {
   const baseCarbs = profile?.carbs_g || 250;
   const baseFat = profile?.fat_g || 65;
 
-  const adjustedKcal = Math.round(baseKcal * adjustment.kcalMultiplier);
-  const adjustedProtein = Math.round(weightKg * adjustment.proteinPerKg);
-  const adjustedCarbs = Math.round(baseCarbs * adjustment.carbsMultiplier);
-  const adjustedFat = Math.round(baseFat * adjustment.fatMultiplier);
+  const adjustedKcal = Math.round(baseKcal * adjustment.kcalMultiplier * goalMult);
+  const adjustedProtein = Math.round(weightKg * Math.max(adjustment.proteinPerKg, proteinPerKgGoal));
+  const adjustedCarbs = Math.round(baseCarbs * adjustment.carbsMultiplier * goalMult);
+  const adjustedFat = Math.round(baseFat * adjustment.fatMultiplier * (objetivo === "cutting" ? 0.85 : objetivo === "bulking" ? 1.05 : 1.0));
   const kcalDiff = adjustedKcal - baseKcal;
 
   const recovery = useMemo(() => computeMuscleRecovery(schedule), [schedule]);
@@ -411,6 +420,41 @@ const NutriSyncPage = () => {
                   <p style={{ fontSize: 11, color: C.muted, fontFamily: "monospace", margin: 0 }}>{adjustment.tip}</p>
                 </div>
               )}
+            </div>
+
+            {/* CARD OBJETIVO — Bulking / Cutting / Manutenção */}
+            <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 16, padding: 16 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                <p style={{ fontSize: 9, color: C.gold, fontFamily: "monospace", letterSpacing: "0.14em", textTransform: "uppercase", margin: 0 }}>
+                  Objetivo Nutricional
+                </p>
+                <span style={{ fontSize: 10, color: C.muted, fontFamily: "monospace" }}>
+                  {goalMult > 1 ? `+${Math.round((goalMult - 1) * 100)}%` : goalMult < 1 ? `${Math.round((goalMult - 1) * 100)}%` : "base"} kcal
+                </span>
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 6 }}>
+                {([
+                  { k: "cutting", l: "Cutting", emoji: "🔥", desc: "Déficit −18%" },
+                  { k: "manutencao", l: "Manutenção", emoji: "⚖️", desc: "Equilíbrio" },
+                  { k: "bulking", l: "Bulking", emoji: "💪", desc: "Superávit +12%" },
+                ] as const).map(g => {
+                  const active = objetivo === g.k;
+                  return (
+                    <button key={g.k} onClick={() => setObjetivo(g.k)} style={{
+                      padding: "10px 6px", borderRadius: 10, cursor: "pointer",
+                      background: active ? C.goldBg : C.card2,
+                      border: `1px solid ${active ? C.gold : C.border}`,
+                      color: active ? C.gold : C.text,
+                      display: "flex", flexDirection: "column", alignItems: "center", gap: 2,
+                      boxShadow: active ? `0 0 14px ${C.gold}33` : "none",
+                    }}>
+                      <span style={{ fontSize: 18 }}>{g.emoji}</span>
+                      <span style={{ fontSize: 11, fontWeight: 800, fontFamily: "monospace", textTransform: "uppercase", letterSpacing: "0.04em" }}>{g.l}</span>
+                      <span style={{ fontSize: 9, color: active ? C.gold : C.muted, fontFamily: "monospace" }}>{g.desc}</span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
             {/* CARD 3 — MACROS */}
