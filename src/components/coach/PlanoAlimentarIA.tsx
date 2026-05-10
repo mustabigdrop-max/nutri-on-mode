@@ -4598,6 +4598,40 @@ export default function PlanoAlimentarIA() {
             </div>
           </div>
 
+          {/* NutriPlan Elite — Compostos Ativos (multi-select estruturado) */}
+          <div style={{ marginBottom: 14 }}>
+            <Label>💊 Compostos Ativos {form.compostosAtivos?.length > 0 && <span style={{ color: T.green, marginLeft: 6 }}>({form.compostosAtivos.length})</span>}</Label>
+            <div style={{ fontSize: 11, color: T.muted, marginBottom: 10, lineHeight: 1.4 }}>
+              Marque os compostos do paciente para ativar multiplicadores farmacológicos no TDEE e enriquecimento NutriPlan Elite.
+            </div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+              {COMPOSTOS_VERTEX.map(c => {
+                const active = (form.compostosAtivos || []).includes(c);
+                return (
+                  <button
+                    key={c}
+                    type="button"
+                    onClick={() => toggleComposto(c)}
+                    style={{
+                      padding: "6px 12px",
+                      borderRadius: 16,
+                      fontSize: 11,
+                      fontFamily: "inherit",
+                      cursor: "pointer",
+                      border: `1px solid ${active ? T.green : T.border2}`,
+                      background: active ? T.greenBg : T.bg3,
+                      color: active ? T.green : T.muted,
+                      fontWeight: active ? 600 : 400,
+                      transition: "all .15s",
+                    }}
+                  >
+                    {active ? "✓ " : ""}{c}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: form.atletaCompetitivo ? 14 : 0 }}>
             <Label>É atleta competitivo?</Label>
             <button
