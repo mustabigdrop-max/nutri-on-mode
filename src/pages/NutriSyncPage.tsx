@@ -422,6 +422,41 @@ const NutriSyncPage = () => {
               )}
             </div>
 
+            {/* CARD OBJETIVO — Bulking / Cutting / Manutenção */}
+            <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 16, padding: 16 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                <p style={{ fontSize: 9, color: C.gold, fontFamily: "monospace", letterSpacing: "0.14em", textTransform: "uppercase", margin: 0 }}>
+                  Objetivo Nutricional
+                </p>
+                <span style={{ fontSize: 10, color: C.muted, fontFamily: "monospace" }}>
+                  {goalMult > 1 ? `+${Math.round((goalMult - 1) * 100)}%` : goalMult < 1 ? `${Math.round((goalMult - 1) * 100)}%` : "base"} kcal
+                </span>
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 6 }}>
+                {([
+                  { k: "cutting", l: "Cutting", emoji: "🔥", desc: "Déficit −18%" },
+                  { k: "manutencao", l: "Manutenção", emoji: "⚖️", desc: "Equilíbrio" },
+                  { k: "bulking", l: "Bulking", emoji: "💪", desc: "Superávit +12%" },
+                ] as const).map(g => {
+                  const active = objetivo === g.k;
+                  return (
+                    <button key={g.k} onClick={() => setObjetivo(g.k)} style={{
+                      padding: "10px 6px", borderRadius: 10, cursor: "pointer",
+                      background: active ? C.goldBg : C.card2,
+                      border: `1px solid ${active ? C.gold : C.border}`,
+                      color: active ? C.gold : C.text,
+                      display: "flex", flexDirection: "column", alignItems: "center", gap: 2,
+                      boxShadow: active ? `0 0 14px ${C.gold}33` : "none",
+                    }}>
+                      <span style={{ fontSize: 18 }}>{g.emoji}</span>
+                      <span style={{ fontSize: 11, fontWeight: 800, fontFamily: "monospace", textTransform: "uppercase", letterSpacing: "0.04em" }}>{g.l}</span>
+                      <span style={{ fontSize: 9, color: active ? C.gold : C.muted, fontFamily: "monospace" }}>{g.desc}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
             {/* CARD 3 — MACROS */}
             <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 16, padding: 18 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
