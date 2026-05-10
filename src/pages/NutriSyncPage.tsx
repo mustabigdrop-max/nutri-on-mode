@@ -160,10 +160,10 @@ const NutriSyncPage = () => {
   const baseCarbs = profile?.carbs_g || 250;
   const baseFat = profile?.fat_g || 65;
 
-  const adjustedKcal = Math.round(baseKcal * adjustment.kcalMultiplier);
-  const adjustedProtein = Math.round(weightKg * adjustment.proteinPerKg);
-  const adjustedCarbs = Math.round(baseCarbs * adjustment.carbsMultiplier);
-  const adjustedFat = Math.round(baseFat * adjustment.fatMultiplier);
+  const adjustedKcal = Math.round(baseKcal * adjustment.kcalMultiplier * goalMult);
+  const adjustedProtein = Math.round(weightKg * Math.max(adjustment.proteinPerKg, proteinPerKgGoal));
+  const adjustedCarbs = Math.round(baseCarbs * adjustment.carbsMultiplier * goalMult);
+  const adjustedFat = Math.round(baseFat * adjustment.fatMultiplier * (objetivo === "cutting" ? 0.85 : objetivo === "bulking" ? 1.05 : 1.0));
   const kcalDiff = adjustedKcal - baseKcal;
 
   const recovery = useMemo(() => computeMuscleRecovery(schedule), [schedule]);
