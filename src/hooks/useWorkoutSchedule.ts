@@ -18,8 +18,21 @@ export type WorkoutType =
   | "cardio_z1"
   | "cardio_z2"
   | "cardio_z3"
+  | "cardio_z4"
+  | "cardio_liss"
   | "cardio_hiit"
+  | "cardio_aej"
+  | "cardio_neat"
   | "cardio_light"
+  | "cycling"
+  | "swimming"
+  | "rowing"
+  | "jump_rope"
+  | "sprints"
+  | "stair_climber"
+  | "elliptical"
+  | "crossfit"
+  | "functional"
   | "active_rest"
   | "rest";
 
@@ -75,11 +88,24 @@ export const WORKOUT_TYPES: Record<WorkoutType, WorkoutTypeMeta> = {
   arms:          { emoji: "⚡", label: "Braços (Bíceps/Tríceps)", shortLabel: "Braços", category: "musculacao", muscleGroups: ["Bíceps", "Tríceps"], volumeScore: 2 },
   mma:           { emoji: "🥊", label: "MMA / Lutas", shortLabel: "MMA", category: "cardio", muscleGroups: ["Sistema cardio", "Core"], volumeScore: 4 },
   running:       { emoji: "🏃", label: "Corrida", shortLabel: "Corrida", category: "cardio", muscleGroups: ["Sistema cardio", "Pernas"], volumeScore: 3 },
-  cardio_z1:     { emoji: "🚶", label: "Cardio Z1 (Caminhada leve)", shortLabel: "Cardio Z1", category: "cardio", muscleGroups: ["Sistema cardio"], volumeScore: 1 },
-  cardio_z2:     { emoji: "🏃", label: "Cardio Z2 (Moderado/AEJ)", shortLabel: "Cardio Z2", category: "cardio", muscleGroups: ["Sistema cardio"], volumeScore: 2 },
-  cardio_z3:     { emoji: "🏃‍♂️", label: "Cardio Z3 (Limiar)", shortLabel: "Cardio Z3", category: "cardio", muscleGroups: ["Sistema cardio"], volumeScore: 3 },
-  cardio_hiit:   { emoji: "🔥", label: "HIIT (Alta Intensidade)", shortLabel: "HIIT", category: "cardio", muscleGroups: ["Sistema cardio"], volumeScore: 3 },
-  cardio_light:  { emoji: "🚶", label: "Cardio leve (bike/caminhada)", shortLabel: "Cardio leve", category: "cardio", muscleGroups: ["Sistema cardio"], volumeScore: 1 },
+  cardio_z1:     { emoji: "🚶", label: "Z1 — 50–60% FCmax (Recovery)", shortLabel: "Z1", category: "cardio", muscleGroups: ["Sistema cardio"], volumeScore: 1 },
+  cardio_z2:     { emoji: "🚴", label: "Z2 — 60–70% FCmax (Aeróbio base)", shortLabel: "Z2", category: "cardio", muscleGroups: ["Sistema cardio"], volumeScore: 2 },
+  cardio_z3:     { emoji: "🏃‍♂️", label: "Z3 — 70–80% FCmax (Tempo/Limiar)", shortLabel: "Z3", category: "cardio", muscleGroups: ["Sistema cardio"], volumeScore: 3 },
+  cardio_z4:     { emoji: "⚡", label: "Z4 — 80–90% FCmax (VO2)", shortLabel: "Z4", category: "cardio", muscleGroups: ["Sistema cardio"], volumeScore: 4 },
+  cardio_liss:   { emoji: "🚶‍♂️", label: "LISS — Steady State longo", shortLabel: "LISS", category: "cardio", muscleGroups: ["Sistema cardio"], volumeScore: 2 },
+  cardio_hiit:   { emoji: "🔥", label: "HIIT — Intervalado de alta intensidade", shortLabel: "HIIT", category: "cardio", muscleGroups: ["Sistema cardio"], volumeScore: 3 },
+  cardio_aej:    { emoji: "🌅", label: "AEJ — Aeróbico em Jejum", shortLabel: "AEJ", category: "cardio", muscleGroups: ["Sistema cardio"], volumeScore: 2 },
+  cardio_neat:   { emoji: "👣", label: "NEAT — Caminhada / passos diários", shortLabel: "NEAT", category: "cardio", muscleGroups: ["Sistema cardio"], volumeScore: 1 },
+  cardio_light:  { emoji: "🧘‍♂️", label: "Cardio leve (recuperativo)", shortLabel: "Cardio leve", category: "cardio", muscleGroups: ["Sistema cardio"], volumeScore: 1 },
+  cycling:       { emoji: "🚴‍♂️", label: "Ciclismo / Bike", shortLabel: "Bike", category: "cardio", muscleGroups: ["Pernas", "Sistema cardio"], volumeScore: 3 },
+  swimming:      { emoji: "🏊", label: "Natação", shortLabel: "Natação", category: "cardio", muscleGroups: ["Corpo todo"], volumeScore: 3 },
+  rowing:        { emoji: "🚣", label: "Remo / Ergômetro", shortLabel: "Remo", category: "cardio", muscleGroups: ["Costas", "Pernas"], volumeScore: 3 },
+  jump_rope:     { emoji: "🪢", label: "Pular corda", shortLabel: "Corda", category: "cardio", muscleGroups: ["Panturrilhas"], volumeScore: 3 },
+  sprints:       { emoji: "💨", label: "Sprints / Tiros", shortLabel: "Sprints", category: "cardio", muscleGroups: ["Pernas"], volumeScore: 4 },
+  stair_climber: { emoji: "🪜", label: "Escada / Stair Climber", shortLabel: "Escada", category: "cardio", muscleGroups: ["Pernas", "Glúteos"], volumeScore: 3 },
+  elliptical:    { emoji: "🌀", label: "Elíptico / Transport", shortLabel: "Elíptico", category: "cardio", muscleGroups: ["Corpo todo"], volumeScore: 2 },
+  crossfit:      { emoji: "🏋️‍♀️", label: "CrossFit / WOD", shortLabel: "CrossFit", category: "cardio", muscleGroups: ["Corpo todo"], volumeScore: 4 },
+  functional:    { emoji: "🤸", label: "Funcional / Circuito", shortLabel: "Funcional", category: "cardio", muscleGroups: ["Corpo todo"], volumeScore: 3 },
   active_rest:   { emoji: "🧘", label: "Descanso ativo (alongamento)", shortLabel: "Desc. ativo", category: "descanso", muscleGroups: [], volumeScore: 0 },
   rest:          { emoji: "😴", label: "Dia de descanso total", shortLabel: "Descanso", category: "descanso", muscleGroups: [], volumeScore: 0 },
 };
@@ -90,7 +116,10 @@ export const DAY_NAMES_FULL = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta
 /** Estimated cardio calorie burn by type and duration */
 function getCardioCalsBurned(type: WorkoutType, durationMin: number): number {
   const perMin: Record<string, number> = {
-    cardio_z1: 5, cardio_z2: 8, cardio_z3: 10, cardio_hiit: 14, cardio_light: 5,
+    cardio_z1: 5, cardio_z2: 8, cardio_z3: 10, cardio_z4: 12, cardio_hiit: 14,
+    cardio_liss: 6, cardio_aej: 7, cardio_neat: 4, cardio_light: 5,
+    cycling: 9, swimming: 11, rowing: 11, jump_rope: 13, sprints: 15,
+    stair_climber: 10, elliptical: 8, crossfit: 13, functional: 10,
   };
   return Math.round((perMin[type] || 0) * durationMin);
 }
@@ -221,6 +250,84 @@ export function getWorkoutAdjustment(type: WorkoutType, weightKg: number, durati
         tip: "Colágeno hidrolisado 10g + vitamina C para recuperação de tecido conjuntivo.",
         preMeal: "Snack leve: frutas + castanhas", postMeal: "Refeição normal",
         electrolytes: "Magnésio 300mg à noite potencializa recuperação e qualidade do sono.",
+      };
+    case "cardio_z4":
+      return {
+        ...baseExtras, recoveryHours: 36,
+        kcalMultiplier: 1.15, proteinPerKg: 1.9, carbsMultiplier: 1.25, fatMultiplier: 0.90, hydrationLiters: 3.5,
+        label: "Z4 — VO2max / Alta intensidade aeróbia",
+        tip: "Glicogênio depleta rápido. Carb pré obrigatório, repor agressivo no pós.",
+        preMeal: "60min antes: aveia 50g + banana + whey 20g.",
+        postMeal: "Whey 30g + carb rápido 60g + eletrólitos.",
+        intraMeal: "Se >45min: gel ou maltodextrina 30g a cada 30min.",
+        electrolytes: "Sódio 400–600mg + potássio 300mg pós-sessão.",
+        cardioCalsBurned: getCardioCalsBurned("cardio_z4", durationMin),
+      };
+    case "cardio_liss":
+      return {
+        ...baseExtras, recoveryHours: 18,
+        kcalMultiplier: 1.08, proteinPerKg: 1.8, carbsMultiplier: 1.05, fatMultiplier: 1.05, hydrationLiters: 3.0,
+        label: "LISS — Steady State",
+        tip: "Oxidação lipídica máxima. Ideal para cutting. Não compensar com excesso calórico.",
+        preMeal: "Opcional: café preto + 10g EAA se >60min.",
+        postMeal: "Refeição normal balanceada (proteína + carb complexo).",
+        cardioCalsBurned: getCardioCalsBurned("cardio_liss", durationMin),
+      };
+    case "cardio_aej":
+      return {
+        ...baseExtras, recoveryHours: 12,
+        kcalMultiplier: 1.05, proteinPerKg: 1.9, carbsMultiplier: 1.0, fatMultiplier: 1.0, hydrationLiters: 3.0,
+        label: "AEJ — Aeróbico em Jejum",
+        tip: "Mobilização de gordura periférica. Limite 45min para preservar massa magra.",
+        preMeal: "JEJUM: água + cafeína 200mg + 5g creatina + eletrólitos. EAA 10g se >40min.",
+        postMeal: "30min pós: whey 30g + fruta. Refeição completa em 60min.",
+        electrolytes: "Sódio + potássio essencial em jejum (perda por suor sem reposição alimentar).",
+        cardioCalsBurned: getCardioCalsBurned("cardio_aej", durationMin),
+      };
+    case "cardio_neat":
+      return {
+        ...baseExtras, recoveryHours: 0,
+        kcalMultiplier: 1.03, proteinPerKg: 1.8, carbsMultiplier: 1.0, fatMultiplier: 1.0, hydrationLiters: 2.8,
+        label: "NEAT — Caminhada / atividade não-exercício",
+        tip: "Aumenta gasto calórico diário sem afetar recuperação. Meta: 8–12k passos.",
+        preMeal: "Sem ajuste — refeições normais.",
+        postMeal: "Sem ajuste — refeições normais.",
+        cardioCalsBurned: getCardioCalsBurned("cardio_neat", durationMin),
+      };
+    case "cycling": case "swimming": case "rowing": case "elliptical":
+      return {
+        ...baseExtras, recoveryHours: 24,
+        kcalMultiplier: 1.12, proteinPerKg: 1.9, carbsMultiplier: 1.20, fatMultiplier: 0.95, hydrationLiters: 3.5,
+        label: meta.label + " — Endurance modal",
+        tip: "Modal de baixo impacto. Carb sustentado para sessões longas.",
+        preMeal: "60min antes: arroz/aveia + proteína magra. 20min antes: banana.",
+        postMeal: "Whey 30g + carb 60g + eletrólitos.",
+        intraMeal: "Se >75min: 30–40g carb/h (gel, isotônico, fruta).",
+        electrolytes: "Sódio 300–500mg + magnésio se >60min.",
+        cardioCalsBurned: getCardioCalsBurned(type, durationMin),
+      };
+    case "jump_rope": case "sprints": case "stair_climber":
+      return {
+        ...baseExtras, recoveryHours: 24,
+        kcalMultiplier: 1.10, proteinPerKg: 1.9, carbsMultiplier: 1.15, fatMultiplier: 0.95, hydrationLiters: 3.2,
+        label: meta.label + " — Alta intensidade explosiva",
+        tip: "Sistema ATP-CP + glicolítico. Creatina + carb pré melhoram performance.",
+        preMeal: "45min antes: banana + whey 20g + 5g creatina.",
+        postMeal: "Whey 30g + carb rápido 50g + eletrólitos.",
+        electrolytes: "Sódio 400mg + potássio 300mg pós-sessão intensa.",
+        cardioCalsBurned: getCardioCalsBurned(type, durationMin),
+      };
+    case "crossfit": case "functional":
+      return {
+        ...baseExtras, recoveryHours: 36,
+        kcalMultiplier: 1.15, proteinPerKg: 2.0, carbsMultiplier: 1.22, fatMultiplier: 1.0, hydrationLiters: 3.5,
+        label: meta.label + " — Híbrido força+cardio",
+        tip: "Alta demanda metabólica e neuromuscular. Carb e proteína altos.",
+        preMeal: "90min antes: refeição completa. 30min antes: banana + cafeína.",
+        postMeal: "Whey 35g + carb 60g. Refeição sólida em 60min.",
+        intraMeal: "Se >60min: EAA 10g + carb intra.",
+        electrolytes: "Sódio + potássio + magnésio. Sal rosa do himalaia pós.",
+        cardioCalsBurned: getCardioCalsBurned(type, durationMin),
       };
     case "rest": default:
       return {
