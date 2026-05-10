@@ -294,6 +294,55 @@ ${_perfilPca === "PP" ? "Plano simplificado: 3–4 alimentos repetidos por refei
 ═══════════════════════════════════════════════════════
 ` : "";
 
+    // ═══════════════════════════════════════════════════════════════
+    // NUTRIPLAN ELITE — Fase 4: MODOS ESPECIAIS
+    // ═══════════════════════════════════════════════════════════════
+    const _modo = String(modo_especial || "padrao").toLowerCase();
+    const modoEspecialPrompt = (() => {
+      if (_modo === "competicao") {
+        const dc = Number(dias_para_competicao) || 14;
+        return `
+═══════════════════════════════════════════════════════
+🏆 MODO COMPETIÇÃO ATIVO (peak week — ${dc} dias até show)
+═══════════════════════════════════════════════════════
+- Cronograma de carb/sódio/água em peak week (D-7 → D-1).
+- Cortar fibra insolúvel a partir de D-3, manter PTN ≥3 g/kg, gordura 0,8 g/kg.
+- D-2/D-1: depleção controlada → super-compensação CHO (8–10 g/kg de massa magra).
+- Sódio: alto até D-2, corte D-1, normaliza no show day; potássio +30%.
+- Água: 5–7L até D-2, reduz progressivo, 250–500ml no show day.
+- Refeições: 5–6 sólidas, evitar lactose/cruciferas/legumes na última semana.
+` ;
+      }
+      if (_modo === "glp1") {
+        return `
+═══════════════════════════════════════════════════════
+💉 MODO GLP-1 ATIVO (Semaglutida/Tirzepatida/Retatrutide)
+═══════════════════════════════════════════════════════
+- Apetite suprimido: priorizar densidade nutricional + refeições FRACIONADAS (6/dia, porções menores).
+- Proteína OBRIGATÓRIA 1.8–2.2 g/kg (preservar massa magra).
+- Hipoglicemia: alertar quando refeição >5h sem CHO; sugerir snack proteico+CHO médio IG.
+- Líquidos calóricos (whey + leite + fruta) quando saciedade extrema.
+- Náusea: evitar fritos, gordura alta concentrada e refeições muito grandes.
+- Reforçar fibras solúveis suaves (aveia, chia hidratada) e água 35ml/kg.
+`;
+      }
+      if (_modo === "feminino") {
+        const f = String(fase_ciclo || "folicular").toLowerCase();
+        return `
+═══════════════════════════════════════════════════════
+🌸 MODO FEMININO ATIVO (ciclagem por fase: ${f})
+═══════════════════════════════════════════════════════
+${f === "folicular" ? "- Folicular: sensibilidade insulínica ALTA — CHO mais alto (5 g/kg em treino), foco força/hipertrofia." : ""}
+${f === "ovulatoria" ? "- Ovulatória: pico estrogênio — performance máxima, manter CHO alto, hidratação +20%." : ""}
+${f === "lutea" ? "- Lútea: TDEE +5–10% — aumentar kcal +150–250, magnésio 400mg, B6 50mg, triptofano (peru, banana) à noite, gordura mod-alta." : ""}
+${f === "menstrual" ? "- Menstrual: ferro heme (carne vermelha 2x/sem), vitamina C com ferro, foco anti-inflamatório (cúrcuma, ômega-3 4g)." : ""}
+- Alerta RED-S: se kcal < 30 kcal/kg de massa magra → BLOQUEAR plano e exigir ajuste.
+- NUNCA prescrever plano restritivo se houver sinal de amenorreia (>2 meses sem ciclo).
+`;
+      }
+      return "";
+    })();
+
     const systemPrompt = `Você é o NutriPlan Elite — módulo de prescrição nutricional clínico-esportiva do nutriON, com formação equivalente a PhD em Nutrição Esportiva e especialização em farmacologia do esporte.
 
 Você integra 6 dimensões em cada plano:
