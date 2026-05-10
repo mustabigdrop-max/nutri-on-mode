@@ -292,7 +292,7 @@ const MealPlanPage = () => {
           .eq("user_id", clientUserId);
 
         const { data, error } = await supabase.functions.invoke("generate-meal-plan", {
-          body: { profile: clientProfile, weekStart, budgetMode, workoutSchedule: clientWorkouts || [], compostos_ativos: compostosAtivos, perfil_pca: client.perfil_comportamental || profile?.perfil_comportamental, body_fat_pct: client.body_fat_pct },
+          body: { profile: clientProfile, weekStart, budgetMode, workoutSchedule: clientWorkouts || [], compostos_ativos: compostosAtivos, perfil_pca: client.perfil_comportamental || profile?.perfil_comportamental, body_fat_pct: client.body_fat_pct, modo_especial: modoEspecial, fase_ciclo: faseCiclo, dias_para_competicao: diasComp },
         });
 
         if (error) throw error;
@@ -372,7 +372,7 @@ const MealPlanPage = () => {
         .eq("user_id", user.id);
 
       const { data, error } = await supabase.functions.invoke("generate-meal-plan", {
-        body: { profile, weekStart, budgetMode, workoutSchedule: workoutData || [], compostos_ativos: compostosAtivos, perfil_pca: profile?.perfil_comportamental, body_fat_pct: (profile as any)?.body_fat_pct },
+        body: { profile, weekStart, budgetMode, workoutSchedule: workoutData || [], compostos_ativos: compostosAtivos, perfil_pca: profile?.perfil_comportamental, body_fat_pct: (profile as any)?.body_fat_pct, modo_especial: modoEspecial, fase_ciclo: faseCiclo, dias_para_competicao: diasComp },
       });
 
       if (error) throw error;
