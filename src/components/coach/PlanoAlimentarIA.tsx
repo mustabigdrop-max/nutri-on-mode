@@ -4262,6 +4262,16 @@ export default function PlanoAlimentarIA() {
           🗓️ Grade Semanal
         </button>
         <button
+          onClick={() => {
+            const el = document.getElementById("modo-especial-form");
+            if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+          }}
+          style={{ padding: "8px 14px", borderRadius: 8, background: modoEspecial !== "normal" ? "#0d1f0d" : T.bg3, border: `1px solid ${modoEspecial !== "normal" ? T.green : T.border2}`, color: modoEspecial !== "normal" ? T.green : T.text, fontSize: 12, cursor: "pointer", fontFamily: "inherit", fontWeight: modoEspecial !== "normal" ? 700 : 600 }}
+          title="Selecionar modo especial (Competição, GLP-1, Feminino, Vegano, Low-FODMAP, Longevidade)"
+        >
+          ⚙️ Modo Especial{modoEspecial !== "normal" ? ` · ${modoEspecial === "competicao" ? "🏆" : modoEspecial === "glp1" ? "💉" : modoEspecial === "feminino" ? "🌸" : modoEspecial === "vegano" ? "🌱" : modoEspecial === "low_fodmap" ? "🌾" : "🧬"}` : ""}
+        </button>
+        <button
           onClick={() => navigate("/coach/templates")}
           style={{ padding: "8px 14px", borderRadius: 8, background: T.bg3, border: `1px solid ${T.border2}`, color: T.text, fontSize: 12, cursor: "pointer", fontFamily: "inherit", fontWeight: 600 }}
           title="Modelos de plano reutilizáveis"
