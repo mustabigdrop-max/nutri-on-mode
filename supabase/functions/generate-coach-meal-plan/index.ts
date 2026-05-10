@@ -2227,6 +2227,31 @@ ${_faseCiclo === "folicular" ? "- Sensibilidade insulínica ALTA → carbo até 
 - ALERTA RED-S OBRIGATÓRIO: se kcal < 30 kcal/kg de massa magra → INCLUIR no campo "alerta_coach" o aviso explícito: "RED-S — disponibilidade energética abaixo do mínimo. AUMENTAR kcal antes de prescrever."
 - JAMAIS prescrever déficit agressivo (>20%) em fase lútea ou menstrual.
 - Suplementação: ferro (se menstrual), magnésio bisglicinato 300mg, ômega-3 2g/dia.
+` : ""}${_modoEspecial === "vegano" ? `
+REGRAS VEGANO — Plant-based completo (OBRIGATÓRIAS):
+- Proteína 1,6–2,0 g/kg/dia combinando em CADA refeição leguminosas + cereais OU soja/seitan/tofu/tempeh (PDCAAS ≥0.9). NUNCA refeições só de fruta/cereal sem fonte proteica.
+- Atenção a leucina (≥2,5g/refeição) — priorizar soja, ervilha isolada, lentilha; suplementar leucina ou EAA se necessário.
+- Suplementação OBRIGATÓRIA no campo "alerta_coach": "VEGANO — checar B12 (1000mcg/sem ou 250mcg/dia), D3 vegana 2000UI, ômega-3 algas (EPA+DHA 500mg), creatina 5g, ferro + vit C juntos, zinco 15mg, iodo 150mcg, cálcio 1000mg/dia."
+- ZERO produtos de origem animal (incluindo mel, gelatina, whey, caseína).
+- Substituir whey por isolado de soja/ervilha/arroz (proteína 25–30g/dose).
+- Fibra ALTA → distribuir para evitar saciedade excessiva e malabsorção mineral.
+` : ""}${_modoEspecial === "low_fodmap" ? `
+REGRAS LOW-FODMAP — Protocolo GutON 3 fases (OBRIGATÓRIAS):
+- FASE 1 (eliminação 2–6 semanas): EXCLUIR trigo, centeio, lactose (leite/iogurte/queijos frescos), alho, cebola, alho-poró, leguminosas (feijão, grão-de-bico, lentilha), maçã, pera, manga, melancia, mel, adoçantes em -ol (sorbitol/xilitol/manitol), couve-flor, cogumelos.
+- PERMITIDOS: arroz, aveia, quinoa, batata, banana madura, kiwi, morango, laranja, espinafre, cenoura, abobrinha, proteínas magras (frango, peixe, ovo, carne magra), tofu firme, leite sem lactose, queijos curados.
+- Manter proteína 1,4–1,8 g/kg em CADA refeição + fibra solúvel tolerada (aveia, chia, kiwi).
+- Hidratação +500ml/dia; mastigação consciente; refeições menores e mais frequentes.
+- Alerta no campo "alerta_coach": "LOW-FODMAP FASE 1 — protocolo de 2–6 semanas. Reintrodução estruturada por grupos a cada 3–4 dias com diário de sintomas. NÃO é dieta permanente."
+- ZERO ultraprocessados, álcool, refrigerantes, café em excesso (>2 xícaras/dia).
+` : ""}${_modoEspecial === "longevidade" ? `
+REGRAS LONGEVIDADE — Densidade × baixa inflamação (OBRIGATÓRIAS):
+- Padrão mediterrâneo: ≥30g fibra/dia, azeite extravirgem 30–45ml/dia, ≥5 porções vegetais coloridos, frutas vermelhas diárias.
+- Proteína 1,2–1,6 g/kg priorizando peixes gordos (salmão, sardinha 2–3x/sem), leguminosas, ovos, frango; LIMITAR carne vermelha a ≤2x/sem; ZERO carne processada (embutidos, bacon).
+- Ômega-3 EPA+DHA 1–2g/dia; polifenóis (chá verde, cacau ≥70%, cúrcuma + pimenta preta).
+- Janela alimentar 10–12h (TRE leve) — última refeição ≥3h antes de dormir.
+- ZERO ultraprocessados, açúcar adicionado (<25g/dia), álcool ≤1 dose/dia, gordura trans.
+- Suplementação no campo "alerta_coach": "LONGEVIDADE — D3 2000UI, ômega-3 1–2g, magnésio 300mg, creatina 5g (cognição+massa magra), B12 se >50 anos."
+- Priorizar proteína no café da manhã (anti-sarcopenia) e carbo complexo no jantar (sono).
 ` : ""}` : ""}
 
 Estrutura exata:
