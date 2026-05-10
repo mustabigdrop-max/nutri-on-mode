@@ -629,6 +629,8 @@ RETORNE usando a ferramenta generate_plan.`;
     };
 
     return new Response(JSON.stringify(plan), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   } catch (e) {
     console.error("generate-meal-plan error:", e);
     return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }), {
