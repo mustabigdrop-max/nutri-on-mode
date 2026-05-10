@@ -1084,7 +1084,27 @@ export default function PlanoAlimentarIA() {
     neat: "medio" as "baixo" | "medio" | "alto",
     qualidadeSono: "boa" as "boa" | "regular" | "ruim",
     semanasEmDeficit: "" as string,
+    // NutriPlan Elite — multi-select de compostos farmacológicos ativos do paciente
+    compostosAtivos: [] as string[],
   });
+
+  // Lista canônica Dr. VERTEX para o multi-select de Compostos Ativos
+  const COMPOSTOS_VERTEX = [
+    "Ipamorelin", "CJC-1295", "MK-677 (Ibutamoren)", "Tesamorelin",
+    "Semaglutida", "Tirzepatida", "Retatrutide",
+    "Testosterona", "Nandrolona (Deca)", "Oxandrolona (Anavar)", "Trembolona", "Boldenona",
+    "MK-2866 (Ostarine)", "LGD-4033", "RAD-140",
+    "SLU-PP-332", "Cardarine (GW-501516)",
+    "BPC-157", "TB-500",
+    "T3 (Liotironina)", "Clenbuterol", "Insulina",
+  ];
+  const toggleComposto = (c: string) => {
+    setForm(f => {
+      const cur = f.compostosAtivos || [];
+      const next = cur.includes(c) ? cur.filter(x => x !== c) : [...cur, c];
+      return { ...f, compostosAtivos: next };
+    });
+  };
 
   // Estado de UI para a seção colapsável Elite
   const [perfilFisioOpen, setPerfilFisioOpen] = useState(false);
