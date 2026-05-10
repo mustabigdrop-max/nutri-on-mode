@@ -348,11 +348,17 @@ const MealPlanPage = () => {
         .eq("user_id", user.id);
 
       const { data, error } = await supabase.functions.invoke("generate-meal-plan", {
-        body: { profile, weekStart, budgetMode, workoutSchedule: workoutData || [] },
+        body: { profile, weekStart, budgetMode, workoutSchedule: workoutData || [], compostos_ativos: compostosAtivos, perfil_pca: profile?.perfil_comportamental, body_fat_pct: (profile as any)?.body_fat_pct },
       });
 
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
+
+      // ═══ NutriPlan Elite — capturar metadados ═══
+      if (data?.nutriplan_elite) {
+        setNutriEliteMeta(data.nutriplan_elite);
+        try { localStorage.setItem("nutriplan_elite_meta", JSON.stringify(data.nutriplan_elite)); } catch { /* noop */ }
+      }
 
       // Delete existing plan
       await supabase
