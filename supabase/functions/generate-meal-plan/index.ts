@@ -26,6 +26,10 @@ serve(async (req) => {
       compostos_ativos,        // string[] — nomes de peptídeos/AAS/SARMs ativos do Dr. VERTEX
       perfil_pca,              // "AM" | "EI" | "SE" | "PP"
       body_fat_pct,            // number — % de gordura corporal (para Katch-McArdle)
+      // ═══ NutriPlan Elite — Fase 4: Modos especiais ═══
+      modo_especial,           // "padrao" | "competicao" | "glp1" | "feminino"
+      fase_ciclo,              // (feminino) "folicular" | "ovulatoria" | "lutea" | "menstrual"
+      dias_para_competicao,    // (competicao) number
     } = body;
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
@@ -290,6 +294,55 @@ ${_perfilPca === "PP" ? "Plano simplificado: 3–4 alimentos repetidos por refei
 ═══════════════════════════════════════════════════════
 ` : "";
 
+    // ═══════════════════════════════════════════════════════════════
+    // NUTRIPLAN ELITE — Fase 4: MODOS ESPECIAIS
+    // ═══════════════════════════════════════════════════════════════
+    const _modo = String(modo_especial || "padrao").toLowerCase();
+    const modoEspecialPrompt = (() => {
+      if (_modo === "competicao") {
+        const dc = Number(dias_para_competicao) || 14;
+        return `
+═══════════════════════════════════════════════════════
+🏆 MODO COMPETIÇÃO ATIVO (peak week — ${dc} dias até show)
+═══════════════════════════════════════════════════════
+- Cronograma de carb/sódio/água em peak week (D-7 → D-1).
+- Cortar fibra insolúvel a partir de D-3, manter PTN ≥3 g/kg, gordura 0,8 g/kg.
+- D-2/D-1: depleção controlada → super-compensação CHO (8–10 g/kg de massa magra).
+- Sódio: alto até D-2, corte D-1, normaliza no show day; potássio +30%.
+- Água: 5–7L até D-2, reduz progressivo, 250–500ml no show day.
+- Refeições: 5–6 sólidas, evitar lactose/cruciferas/legumes na última semana.
+` ;
+      }
+      if (_modo === "glp1") {
+        return `
+═══════════════════════════════════════════════════════
+💉 MODO GLP-1 ATIVO (Semaglutida/Tirzepatida/Retatrutide)
+═══════════════════════════════════════════════════════
+- Apetite suprimido: priorizar densidade nutricional + refeições FRACIONADAS (6/dia, porções menores).
+- Proteína OBRIGATÓRIA 1.8–2.2 g/kg (preservar massa magra).
+- Hipoglicemia: alertar quando refeição >5h sem CHO; sugerir snack proteico+CHO médio IG.
+- Líquidos calóricos (whey + leite + fruta) quando saciedade extrema.
+- Náusea: evitar fritos, gordura alta concentrada e refeições muito grandes.
+- Reforçar fibras solúveis suaves (aveia, chia hidratada) e água 35ml/kg.
+`;
+      }
+      if (_modo === "feminino") {
+        const f = String(fase_ciclo || "folicular").toLowerCase();
+        return `
+═══════════════════════════════════════════════════════
+🌸 MODO FEMININO ATIVO (ciclagem por fase: ${f})
+═══════════════════════════════════════════════════════
+${f === "folicular" ? "- Folicular: sensibilidade insulínica ALTA — CHO mais alto (5 g/kg em treino), foco força/hipertrofia." : ""}
+${f === "ovulatoria" ? "- Ovulatória: pico estrogênio — performance máxima, manter CHO alto, hidratação +20%." : ""}
+${f === "lutea" ? "- Lútea: TDEE +5–10% — aumentar kcal +150–250, magnésio 400mg, B6 50mg, triptofano (peru, banana) à noite, gordura mod-alta." : ""}
+${f === "menstrual" ? "- Menstrual: ferro heme (carne vermelha 2x/sem), vitamina C com ferro, foco anti-inflamatório (cúrcuma, ômega-3 4g)." : ""}
+- Alerta RED-S: se kcal < 30 kcal/kg de massa magra → BLOQUEAR plano e exigir ajuste.
+- NUNCA prescrever plano restritivo se houver sinal de amenorreia (>2 meses sem ciclo).
+`;
+      }
+      return "";
+    })();
+
     const systemPrompt = `Você é o NutriPlan Elite — módulo de prescrição nutricional clínico-esportiva do nutriON, com formação equivalente a PhD em Nutrição Esportiva e especialização em farmacologia do esporte.
 
 Você integra 6 dimensões em cada plano:
@@ -356,6 +409,7 @@ ${workoutContext}
 ${trainingOnPrompt}
 ${pharmaPrompt}
 ${pcaPrompt}
+${modoEspecialPrompt}
 ═══════════════════════════════════════════
 MICRONUTRIENTES OBRIGATÓRIOS
 ═══════════════════════════════════════════
@@ -399,6 +453,17 @@ REGRAS TÉCNICAS
 7. Porções em medidas práticas (1 filé médio, 2 colheres de sopa, 1 xícara, etc)
 8. Os valores de kcal/macros devem ser REALISTAS e precisos
 
+═══════════════════════════════════════════
+ENRIQUECIMENTO POR REFEIÇÃO (OBRIGATÓRIO — Fase 3 NutriPlan Elite)
+═══════════════════════════════════════════
+PARA CADA refeição, preencha os campos opcionais com inteligência metabólica:
+- medida_caseira: ex. "1 filé médio (150g) + 4 col. sopa de arroz"
+- funcao_metabolica: ex. "Síntese proteica + reposição glicogênio muscular"
+- janela_metabolica: ex. "Pico cortisol matinal — CHO baixo IG + PTN alta"
+- protocolo_peri_workout: SOMENTE em refeições peri-treino, ex. "Pré 60min: CHO baixo IG + 30g whey"
+- mensagem_mce: 1 frase comportamental adaptada ao perfil PCA (${_perfilPca || "PADRAO"})
+- insights_ia: 1–3 bullets curtos com ciência aplicada (mecanismo mTORC1, GLUT-4, leucina, etc.)
+
 RETORNE usando a ferramenta generate_plan.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -440,6 +505,12 @@ RETORNE usando a ferramenta generate_plan.`;
                               protein_g: { type: "number" },
                               carbs_g: { type: "number" },
                               fat_g: { type: "number" },
+                              medida_caseira: { type: "string", description: "Medidas caseiras brasileiras detalhadas" },
+                              funcao_metabolica: { type: "string", description: "Função fisiológica desta refeição" },
+                              janela_metabolica: { type: "string", description: "Janela circadiana/hormonal" },
+                              protocolo_peri_workout: { type: "string", description: "Protocolo peri-treino se aplicável" },
+                              mensagem_mce: { type: "string", description: "Mensagem comportamental adaptada ao PCA" },
+                              insights_ia: { type: "array", items: { type: "string" }, description: "1–3 bullets de ciência aplicada" },
                             },
                             required: ["meal_type", "food_name", "portion", "kcal", "protein_g", "carbs_g", "fat_g"],
                             additionalProperties: false,
@@ -614,6 +685,26 @@ RETORNE usando a ferramenta generate_plan.`;
     // ═══════════════════════════════════════════════════════════════
     // NutriPlan Elite — anexar metadados ao response (não-destrutivo)
     // ═══════════════════════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════════════
+    // NutriPlan Elite — Fase 3: extrair enriquecimento por refeição
+    // ═══════════════════════════════════════════════════════════════
+    const _enrichment: Record<string, any> = {};
+    try {
+      for (const day of (plan.days || [])) {
+        for (const meal of (day.meals || [])) {
+          const k = `${day.day_index}-${meal.meal_type}`;
+          const e: any = {};
+          if (meal.medida_caseira) e.medida_caseira = meal.medida_caseira;
+          if (meal.funcao_metabolica) e.funcao_metabolica = meal.funcao_metabolica;
+          if (meal.janela_metabolica) e.janela_metabolica = meal.janela_metabolica;
+          if (meal.protocolo_peri_workout) e.protocolo_peri_workout = meal.protocolo_peri_workout;
+          if (meal.mensagem_mce) e.mensagem_mce = meal.mensagem_mce;
+          if (Array.isArray(meal.insights_ia) && meal.insights_ia.length) e.insights_ia = meal.insights_ia;
+          if (Object.keys(e).length) _enrichment[k] = e;
+        }
+      }
+    } catch (e) { console.warn("[enrichment] falha:", e); }
+
     (plan as any).nutriplan_elite = {
       tdee_bruto: _tdeeBruto,
       tdee_ajustado: _tdeeAjustado,
@@ -625,7 +716,9 @@ RETORNE usando a ferramenta generate_plan.`;
       ajuste_farmacologico_breakdown: _ajusteBreakdown,
       perfil_pca: _perfilPca || null,
       kcal_meta_efetiva: _tdeeAjustado || kcalAlvo,
-      versao: "elite-v1",
+      modo_especial: _modo,
+      enrichment: _enrichment,
+      versao: "elite-v3",
     };
 
     return new Response(JSON.stringify(plan), {

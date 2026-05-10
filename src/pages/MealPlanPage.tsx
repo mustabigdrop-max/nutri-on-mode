@@ -17,6 +17,8 @@ import SubstitutionModal from "@/components/meal/SubstitutionModal";
 import type { SubOption } from "@/components/meal/substitutionDb";
 import CircadianTimeline from "@/components/meal/CircadianTimeline";
 import ExpandableMealCard from "@/components/meal/ExpandableMealCard";
+import AdherenceModal from "@/components/meal/AdherenceModal";
+import { exportMealPlanPDF } from "@/lib/mealPlanPdf";
 
 const MEAL_TYPES = [
   { key: "cafe_manha", label: "Café" },
@@ -146,6 +148,19 @@ const MealPlanPage = () => {
     setViewMode(m);
     localStorage.setItem("nutriplan_view_mode", m);
   };
+  // Phase 4: Special modes + adherence
+  const [modoEspecial, setModoEspecial] = useState<"padrao" | "competicao" | "glp1" | "feminino">(
+    () => (localStorage.getItem("nutriplan_modo_especial") as any) || "padrao"
+  );
+  const [faseCiclo, setFaseCiclo] = useState<"folicular" | "ovulatoria" | "lutea" | "menstrual">(
+    () => (localStorage.getItem("nutriplan_fase_ciclo") as any) || "folicular"
+  );
+  const [diasComp, setDiasComp] = useState<number>(
+    () => Number(localStorage.getItem("nutriplan_dias_comp")) || 14
+  );
+  const [showModoMenu, setShowModoMenu] = useState(false);
+  const [showAdherence, setShowAdherence] = useState(false);
+  const setModoSticky = (m: typeof modoEspecial) => { setModoEspecial(m); localStorage.setItem("nutriplan_modo_especial", m); };
   // ═══ NutriPlan Elite — Dimensão 1: TDEE Farmacológico ═══
   const COMPOSTOS_VERTEX = [
     "Ipamorelin", "CJC-1295", "MK-677 (Ibutamoren)", "Tesamorelin",
@@ -277,7 +292,7 @@ const MealPlanPage = () => {
           .eq("user_id", clientUserId);
 
         const { data, error } = await supabase.functions.invoke("generate-meal-plan", {
-          body: { profile: clientProfile, weekStart, budgetMode, workoutSchedule: clientWorkouts || [], compostos_ativos: compostosAtivos, perfil_pca: client.perfil_comportamental || profile?.perfil_comportamental, body_fat_pct: client.body_fat_pct },
+          body: { profile: clientProfile, weekStart, budgetMode, workoutSchedule: clientWorkouts || [], compostos_ativos: compostosAtivos, perfil_pca: client.perfil_comportamental || profile?.perfil_comportamental, body_fat_pct: client.body_fat_pct, modo_especial: modoEspecial, fase_ciclo: faseCiclo, dias_para_competicao: diasComp },
         });
 
         if (error) throw error;
@@ -357,7 +372,7 @@ const MealPlanPage = () => {
         .eq("user_id", user.id);
 
       const { data, error } = await supabase.functions.invoke("generate-meal-plan", {
-        body: { profile, weekStart, budgetMode, workoutSchedule: workoutData || [], compostos_ativos: compostosAtivos, perfil_pca: profile?.perfil_comportamental, body_fat_pct: (profile as any)?.body_fat_pct },
+        body: { profile, weekStart, budgetMode, workoutSchedule: workoutData || [], compostos_ativos: compostosAtivos, perfil_pca: profile?.perfil_comportamental, body_fat_pct: (profile as any)?.body_fat_pct, modo_especial: modoEspecial, fase_ciclo: faseCiclo, dias_para_competicao: diasComp },
       });
 
       if (error) throw error;
@@ -668,6 +683,99 @@ const MealPlanPage = () => {
           </div>
         </div>
 
+        {/* Phase 4 controls: Modo Especial + Aderência + PDF */}
+        <div className="flex items-center gap-2 mb-4 flex-wrap">
+          <div className="relative">
+            <button
+              onClick={() => setShowModoMenu(v => !v)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono transition-all ${
+                modoEspecial !== "padrao"
+                  ? "bg-accent/15 text-accent border border-accent/40"
+                  : "border border-border text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {modoEspecial === "padrao" && "🎯 Modo: Padrão"}
+              {modoEspecial === "competicao" && `🏆 Competição (D-${diasComp})`}
+              {modoEspecial === "glp1" && "💉 GLP-1"}
+              {modoEspecial === "feminino" && `🌸 Feminino · ${faseCiclo}`}
+            </button>
+            <AnimatePresence>
+              {showModoMenu && (
+                <motion.div
+                  initial={{ opacity: 0, y: -8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  className="absolute z-40 mt-1 left-0 w-64 rounded-xl border border-border bg-popover p-2 shadow-xl"
+                >
+                  {(["padrao", "competicao", "glp1", "feminino"] as const).map(m => (
+                    <button
+                      key={m}
+                      onClick={() => { setModoSticky(m); if (m !== "competicao" && m !== "feminino") setShowModoMenu(false); }}
+                      className={`w-full text-left px-2 py-1.5 rounded-md text-xs font-mono transition-all ${
+                        modoEspecial === m ? "bg-accent/20 text-accent" : "text-foreground hover:bg-muted/50"
+                      }`}
+                    >
+                      {m === "padrao" && "🎯 Padrão"}
+                      {m === "competicao" && "🏆 Competição (peak week)"}
+                      {m === "glp1" && "💉 GLP-1"}
+                      {m === "feminino" && "🌸 Feminino periodizado"}
+                    </button>
+                  ))}
+                  {modoEspecial === "competicao" && (
+                    <div className="mt-2 pt-2 border-t border-border">
+                      <label className="text-[10px] font-mono text-muted-foreground">Dias até competição</label>
+                      <input
+                        type="number" min={1} max={60} value={diasComp}
+                        onChange={(e) => { const v = Number(e.target.value) || 14; setDiasComp(v); localStorage.setItem("nutriplan_dias_comp", String(v)); }}
+                        className="w-full mt-1 px-2 py-1 text-xs font-mono rounded-md bg-background border border-border text-foreground"
+                      />
+                    </div>
+                  )}
+                  {modoEspecial === "feminino" && (
+                    <div className="mt-2 pt-2 border-t border-border">
+                      <label className="text-[10px] font-mono text-muted-foreground">Fase do ciclo</label>
+                      <div className="grid grid-cols-2 gap-1 mt-1">
+                        {(["folicular", "ovulatoria", "lutea", "menstrual"] as const).map(f => (
+                          <button
+                            key={f}
+                            onClick={() => { setFaseCiclo(f); localStorage.setItem("nutriplan_fase_ciclo", f); }}
+                            className={`px-2 py-1 rounded-md text-[10px] font-mono transition-all ${
+                              faseCiclo === f ? "bg-primary text-primary-foreground" : "border border-border text-muted-foreground"
+                            }`}
+                          >
+                            {f}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          <button
+            onClick={() => setShowAdherence(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono border border-border text-muted-foreground hover:text-primary hover:border-primary/40 transition-all"
+          >
+            📊 Aderência
+          </button>
+
+          <button
+            onClick={() => exportMealPlanPDF({
+              items,
+              weekRange: formatWeekRange(weekStart),
+              patientName: profile?.full_name || undefined,
+              nutriEliteMeta,
+              enrichment: nutriEliteMeta?.enrichment,
+            })}
+            disabled={items.length === 0}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono border border-border text-muted-foreground hover:text-primary hover:border-primary/40 transition-all disabled:opacity-40"
+          >
+            📄 PDF
+          </button>
+        </div>
+
         {/* Compostos picker (NutriPlan Elite — Dimensão 1) */}
         <AnimatePresence>
           {showCompostos && (
@@ -882,6 +990,7 @@ const MealPlanPage = () => {
                   const mealLabel = MEAL_TYPES.find(m => m.key === item.meal_type)?.label || item.meal_type;
                   const dayInfo = trainingMap[item.day_index];
                   const tag = dayInfo?.isTraining ? classifyMealVsWorkout(item.meal_type, dayInfo.workoutTime) : null;
+                  const enr = nutriEliteMeta?.enrichment?.[`${item.day_index}-${item.meal_type}`] || {};
                   return (
                     <ExpandableMealCard
                       key={item.id}
@@ -893,6 +1002,11 @@ const MealPlanPage = () => {
                       onSwap={() => setSubModalItem(item)}
                       onDragStart={() => handleDragStart(item)}
                       onDrop={() => handleDrop(item)}
+                      funcao_metabolica={enr.funcao_metabolica}
+                      janela_metabolica={enr.janela_metabolica}
+                      protocolo_peri_workout={enr.protocolo_peri_workout}
+                      mensagem_mce={enr.mensagem_mce}
+                      insights_ia={enr.insights_ia}
                     />
                   );
                 })}
@@ -997,6 +1111,17 @@ const MealPlanPage = () => {
             dailyKcalConsumed={dayTotals.kcal}
             onSelect={(sub) => handleSmartSubstitution(subModalItem, sub)}
             onClose={() => setSubModalItem(null)}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Adherence Modal (Phase 4) */}
+      <AnimatePresence>
+        {showAdherence && (
+          <AdherenceModal
+            items={items}
+            profile={profile as any}
+            onClose={() => setShowAdherence(false)}
           />
         )}
       </AnimatePresence>
