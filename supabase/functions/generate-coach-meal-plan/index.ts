@@ -808,7 +808,9 @@ serve(async (req) => {
       modo_especial,
       fase_ciclo,
       dias_para_competicao,
+      crononutricao_circadiana,
     } = body;
+    const _cronoCircadiano: boolean = !!crononutricao_circadiana;
     // NutriPlan Elite — lista normalizada de compostos vindos do multi-select
     const _compostosAtivos: string[] = Array.isArray(compostos_ativos)
       ? compostos_ativos
