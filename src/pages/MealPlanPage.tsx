@@ -868,88 +868,36 @@ const MealPlanPage = () => {
           </motion.div>
         ) : (
           <div className="space-y-2">
-            <AnimatePresence mode="popLayout">
-              {dayItems.map((item, i) => {
-                const mealLabel = MEAL_TYPES.find(m => m.key === item.meal_type)?.label || item.meal_type;
-                const dayInfo = trainingMap[item.day_index];
-                const tag = dayInfo?.isTraining ? classifyMealVsWorkout(item.meal_type, dayInfo.workoutTime) : null;
-                return (
-                  <motion.div
-                    key={item.id}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 20 }}
-                    transition={{ delay: i * 0.05 }}
-                    draggable
-                    onDragStart={() => handleDragStart(item)}
-                    onDragOver={(e) => e.preventDefault()}
-                    onDrop={() => handleDrop(item)}
-                    className={`relative rounded-xl border p-3 transition-all cursor-grab active:cursor-grabbing ${
-                      tag === "pre" ? "border-l-2 border-l-accent " : tag === "post" ? "border-l-2 border-l-primary " : ""
-                    }${
-                      item.confirmed
-                        ? "bg-primary/10 border-primary/20"
-                        : dragItem?.id === item.id
-                        ? "bg-accent/10 border-accent/30 scale-[0.98]"
-                        : "bg-card border-border"
-                    }`}
-                  >
-                    {tag && (
-                      <span
-                        className={`absolute top-1.5 right-2 text-[9px] font-mono px-1.5 py-0.5 rounded ${
-                          tag === "pre" ? "bg-accent/20 text-accent" : "bg-primary/20 text-primary"
-                        }`}
-                      >
-                        {tag === "pre" ? "Pré ⚡" : "Pós 💪"}
-                      </span>
-                    )}
-                    <div className="flex items-start gap-2">
-                      {/* Drag handle */}
-                      <div className="mt-1.5 text-muted-foreground/40">
-                        <GripVertical className="w-3.5 h-3.5" />
-                      </div>
-
-                      {/* Confirm button */}
-                      <button
-                        onClick={() => confirmItem(item)}
-                        className={`mt-0.5 w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 transition-all ${
-                          item.confirmed
-                            ? "bg-primary text-primary-foreground"
-                            : "border border-border text-muted-foreground hover:border-primary hover:text-primary"
-                        }`}
-                      >
-                        <Check className="w-4 h-4" />
-                      </button>
-
-                      {/* Content */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-0.5">
-                          <span className="text-[10px] font-mono text-primary uppercase tracking-wider">{mealLabel}</span>
-                          {item.swapped && (
-                            <span className="text-[9px] font-mono text-accent px-1.5 py-0.5 rounded bg-accent/10">trocado</span>
-                          )}
-                        </div>
-                        <p className={`text-sm font-semibold truncate ${item.confirmed ? "text-primary" : "text-foreground"}`}>
-                          {item.food_name}
-                        </p>
-                        <p className={`text-xs font-mono ${dayInfo?.isTraining ? "text-foreground font-bold" : "text-muted-foreground"}`}>
-                          {item.portion} · {item.kcal}kcal · {item.protein_g}g prot
-                        </p>
-                      </div>
-
-                      {/* Swap button — opens smart substitution */}
-                      <button
-                        onClick={() => setSubModalItem(item)}
-                        className="mt-0.5 w-7 h-7 rounded-lg border border-border flex items-center justify-center text-muted-foreground hover:text-accent hover:border-accent transition-all flex-shrink-0"
-                        title="Substituir"
-                      >
-                        <RefreshCw className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  </motion.div>
-                );
-              })}
-            </AnimatePresence>
+            {viewMode === "timeline" ? (
+              <CircadianTimeline
+                items={dayItems}
+                dayInfo={trainingMap[selectedDay]}
+                onConfirm={(it) => confirmItem(it as PlanItem)}
+                onSwap={(it) => setSubModalItem(it as PlanItem)}
+                onSelect={(it) => setSubModalItem(it as PlanItem)}
+              />
+            ) : (
+              <AnimatePresence mode="popLayout">
+                {dayItems.map((item) => {
+                  const mealLabel = MEAL_TYPES.find(m => m.key === item.meal_type)?.label || item.meal_type;
+                  const dayInfo = trainingMap[item.day_index];
+                  const tag = dayInfo?.isTraining ? classifyMealVsWorkout(item.meal_type, dayInfo.workoutTime) : null;
+                  return (
+                    <ExpandableMealCard
+                      key={item.id}
+                      item={item}
+                      mealLabel={mealLabel}
+                      tag={tag as "pre" | "post" | null}
+                      isDragging={dragItem?.id === item.id}
+                      onConfirm={() => confirmItem(item)}
+                      onSwap={() => setSubModalItem(item)}
+                      onDragStart={() => handleDragStart(item)}
+                      onDrop={() => handleDrop(item)}
+                    />
+                  );
+                })}
+              </AnimatePresence>
+            )}
 
             {/* Day progress */}
             <div className="rounded-xl border border-border bg-card/50 p-3 mt-4">
