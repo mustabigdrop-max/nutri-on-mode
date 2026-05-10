@@ -5831,6 +5831,47 @@ export default function PlanoAlimentarIA() {
               </div>
             );
           })()}
+
+          {/* ========== DIMENSÃO 2 — CRONONUTRIÇÃO CIRCADIANA ========== */}
+          <div style={{ marginTop: 14, padding: 12, borderRadius: 10, background: cronoCircadiano ? "#0a1420" : T.bg3, border: `1px solid ${cronoCircadiano ? "#60a5fa" : T.border2}` }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+              <div style={{ flex: 1 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ fontSize: 14 }}>🕐</span>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: cronoCircadiano ? "#60a5fa" : T.text }}>
+                    Crononutrição Circadiana Avançada
+                  </div>
+                  <span style={{ fontSize: 9, padding: "2px 6px", borderRadius: 4, background: "#1e3a8a", color: "#bfdbfe", fontWeight: 700, letterSpacing: "0.05em" }}>DIMENSÃO 2</span>
+                </div>
+                <div style={{ fontSize: 10.5, color: T.muted, marginTop: 4, lineHeight: 1.5 }}>
+                  Sincroniza distribuição calórica com cortisol, insulina e GH. Peri-treino calculado dinamicamente do TrainingON.
+                </div>
+              </div>
+              <button type="button" onClick={() => setCronoCircadiano(v => !v)} aria-pressed={cronoCircadiano}
+                style={{ position: "relative", width: 44, height: 24, borderRadius: 12, border: "none", cursor: "pointer",
+                  background: cronoCircadiano ? "#3b82f6" : "#374151", transition: "background .2s", flexShrink: 0 }}>
+                <span style={{ position: "absolute", top: 2, left: cronoCircadiano ? 22 : 2, width: 20, height: 20, borderRadius: "50%", background: "#fff", transition: "left .2s", boxShadow: "0 1px 3px rgba(0,0,0,.4)" }} />
+              </button>
+            </div>
+            {cronoCircadiano && (
+              <div style={{ marginTop: 10, paddingTop: 10, borderTop: "1px solid #1e3a5f" }}>
+                {[
+                  { h: "06–09h", c: "#f87171", l: "Pico cortisol", d: "Proteína + gordura · carbo mínimo (evita lipogênese)" },
+                  { h: "10–13h", c: "#fbbf24", l: "Sensibilidade ↑", d: "Carboidratos complexos · janela ótima de treino matinal" },
+                  { h: "Peri-treino", c: "#a78bfa", l: "Sincronizado", d: "Calculado do horário no TrainingON" },
+                  { h: "14–17h", c: "#4ade80", l: "Sensibilidade pico", d: "Maior refeição do dia (não-atletas) ou pré-treino vespertino" },
+                  { h: "19–21h", c: "#60a5fa", l: "Pré-sono", d: "Proteína lenta + gordura · carbo reduzido (potencia GH)" },
+                  { h: "23–03h", c: "#c084fc", l: "GH peak", d: "Caseína micelar 90min antes de dormir (se usar secretagogos)" },
+                ].map((b, i) => (
+                  <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 8, marginBottom: 4, fontSize: 10.5, lineHeight: 1.45 }}>
+                    <span style={{ color: b.c, fontWeight: 700, minWidth: 78 }}>{b.h}</span>
+                    <span style={{ color: T.text, fontWeight: 600, minWidth: 110 }}>{b.l}</span>
+                    <span style={{ color: T.muted }}>{b.d}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         <button onClick={gerar} style={{
