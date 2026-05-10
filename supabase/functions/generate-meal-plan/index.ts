@@ -685,6 +685,26 @@ RETORNE usando a ferramenta generate_plan.`;
     // ═══════════════════════════════════════════════════════════════
     // NutriPlan Elite — anexar metadados ao response (não-destrutivo)
     // ═══════════════════════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════════════
+    // NutriPlan Elite — Fase 3: extrair enriquecimento por refeição
+    // ═══════════════════════════════════════════════════════════════
+    const _enrichment: Record<string, any> = {};
+    try {
+      for (const day of (plan.days || [])) {
+        for (const meal of (day.meals || [])) {
+          const k = `${day.day_index}-${meal.meal_type}`;
+          const e: any = {};
+          if (meal.medida_caseira) e.medida_caseira = meal.medida_caseira;
+          if (meal.funcao_metabolica) e.funcao_metabolica = meal.funcao_metabolica;
+          if (meal.janela_metabolica) e.janela_metabolica = meal.janela_metabolica;
+          if (meal.protocolo_peri_workout) e.protocolo_peri_workout = meal.protocolo_peri_workout;
+          if (meal.mensagem_mce) e.mensagem_mce = meal.mensagem_mce;
+          if (Array.isArray(meal.insights_ia) && meal.insights_ia.length) e.insights_ia = meal.insights_ia;
+          if (Object.keys(e).length) _enrichment[k] = e;
+        }
+      }
+    } catch (e) { console.warn("[enrichment] falha:", e); }
+
     (plan as any).nutriplan_elite = {
       tdee_bruto: _tdeeBruto,
       tdee_ajustado: _tdeeAjustado,
@@ -696,7 +716,9 @@ RETORNE usando a ferramenta generate_plan.`;
       ajuste_farmacologico_breakdown: _ajusteBreakdown,
       perfil_pca: _perfilPca || null,
       kcal_meta_efetiva: _tdeeAjustado || kcalAlvo,
-      versao: "elite-v1",
+      modo_especial: _modo,
+      enrichment: _enrichment,
+      versao: "elite-v3",
     };
 
     return new Response(JSON.stringify(plan), {
