@@ -2245,6 +2245,21 @@ export default function PlanoAlimentarIA() {
               "Menstrual · ferro + vit C · evitar restrição agressiva.",
               "Monitorar ciclo. Amenorreia >2 meses = STOP restrição (RED-S).",
             ]},
+            vegano: { icon: "🌱", title: "MODO VEGANO · Plant-based completo", color: "#4ade80", lines: [
+              "Proteína 1,6–2,0g/kg combinando leguminosas + cereais + soja/seitan a cada refeição (PDCAAS).",
+              "Suplementar B12 (1000mcg/sem), D3 vegana, ômega-3 (algas, EPA+DHA 500mg), creatina 5g, ferro + vit C.",
+              "Atenção a lisina, leucina, zinco, iodo e cálcio. Evitar refeições só de fruta/cereal sem proteína.",
+            ]},
+            low_fodmap: { icon: "🌾", title: "MODO LOW-FODMAP · GutON 3 fases", color: "#fbbf24", lines: [
+              "Fase 1 (eliminação 2–6 sem): cortar trigo, lactose, alho, cebola, leguminosas, polióis, frutas FODMAP.",
+              "Fase 2 (reintrodução): testar 1 grupo/3–4 dias com diário de sintomas. Fase 3: personalização final.",
+              "Garantir fibra solúvel tolerada (aveia, kiwi, chia), hidratação e proteína magra cada refeição.",
+            ]},
+            longevidade: { icon: "🧬", title: "MODO LONGEVIDADE · Densidade × inflamação", color: "#a78bfa", lines: [
+              "Padrão mediterrâneo: ≥30g fibra/dia, ômega-3 EPA+DHA 1–2g, polifenóis (azeite, frutas vermelhas, chá verde).",
+              "Proteína 1,2–1,6g/kg priorizando vegetal + peixe; reduzir carne vermelha processada e ultraprocessados.",
+              "Janela alimentar 10–12h (TRE leve), evitar comer 3h antes de dormir, sono e força como pilares.",
+            ]},
           }[modoEspecial];
           if (!cfg) return null;
           return (
