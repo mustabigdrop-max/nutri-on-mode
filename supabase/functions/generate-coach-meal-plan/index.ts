@@ -2203,6 +2203,32 @@ Para CADA item do array "refeicoes", PREENCHA SEMPRE os campos:
 - "insights_ia" (array com 1–3 strings curtas: justificativa científica, ajuste farmacológico, alerta clínico)
 JAMAIS omita esses campos. Use "null" só onde explicitamente permitido.
 
+${_modoEspecial && _modoEspecial !== "normal" ? `
+🎯 MODO ESPECIAL ATIVO: ${_modoEspecial.toUpperCase()}${_modoEspecial === "feminino" ? ` · Fase ${_faseCiclo.toUpperCase()}` : ""}${_modoEspecial === "competicao" ? ` · ${_diasComp} dia(s) para competição` : ""}
+${_modoEspecial === "competicao" ? `
+REGRAS PEAK WEEK (OBRIGATÓRIAS):
+- Proteína 2,2–2,8 g/kg (preservar massa magra em depleção).
+- ${_diasComp <= 3 ? "Carb LOAD: 6–8 g/kg/dia distribuído em refeições pequenas; sódio reduzido (1,5–2g/dia); água em rampa descendente nas últimas 48h." : _diasComp <= 7 ? "Carb depleção controlada (2–3 g/kg) D-7 a D-4; iniciar load D-3." : "Manter densidade nutricional; calibrar sódio/água; cortar fibras insolúveis nos últimos 5 dias."}
+- ZERO fibra insolúvel + ZERO crucíferas + ZERO lácteos nas últimas 72h.
+- Suplementação: creatina 5g/dia (carregar glicogênio), eletrólitos peri-treino.
+- Alerta obrigatório no campo "alerta_coach": "PEAK WEEK D-${_diasComp} — monitorar peso/visual diário."
+` : ""}${_modoEspecial === "glp1" ? `
+REGRAS GLP-1 (OBRIGATÓRIAS):
+- Proteína 1,8–2,2 g/kg/dia distribuída em ≥5 refeições.
+- Em CADA refeição, "alimentos" deve listar a fonte proteica PRIMEIRO (ordem importa para saciedade precoce).
+- Refeições pequenas (200–350 kcal) — evitar náusea pela distensão gástrica.
+- ZERO frituras + reduzir gordura saturada (atrasa esvaziamento gástrico já lento).
+- Hidratação +400 ml/dia; eletrólitos.
+- Suplementação obrigatória: creatina 3–5g (anti-sarcopenia), B12 + multi.
+- Alerta no campo "alerta_coach": "GLP-1 ATIVO — risco de déficit proteico e perda de massa magra. Reforçar proteína em cada refeição."
+` : ""}${_modoEspecial === "feminino" ? `
+REGRAS PROTOCOLO FEMININO — Fase ${_faseCiclo.toUpperCase()}:
+${_faseCiclo === "folicular" ? "- Sensibilidade insulínica ALTA → carbo até 50–55% kcal, prioridade em pré/pós-treino. Janela ideal para força e hipertrofia." : ""}${_faseCiclo === "ovulatoria" ? "- Pico estrogênico → performance máxima. Antioxidantes (frutas vermelhas, vit C 500mg). Carbo 45–50%." : ""}${_faseCiclo === "lutea" ? "- TDEE +5–10% (termogênese pós-ovulatória). Adicionar 100–150 kcal. Magnésio 300mg + B6 50mg/dia (TPM). Carbo complexo no jantar (serotonina/sono). Reduzir cafeína." : ""}${_faseCiclo === "menstrual" ? "- Ferro heme em destaque (carne vermelha 2x/sem, fígado). Vit C junto para absorção. Anti-inflamatório: ômega-3 2g, gengibre, cúrcuma. Reduzir treinos de alto volume." : ""}
+- ALERTA RED-S OBRIGATÓRIO: se kcal < 30 kcal/kg de massa magra → INCLUIR no campo "alerta_coach" o aviso explícito: "RED-S — disponibilidade energética abaixo do mínimo. AUMENTAR kcal antes de prescrever."
+- JAMAIS prescrever déficit agressivo (>20%) em fase lútea ou menstrual.
+- Suplementação: ferro (se menstrual), magnésio bisglicinato 300mg, ômega-3 2g/dia.
+` : ""}` : ""}
+
 Estrutura exata:
 {
   "resumo": {
