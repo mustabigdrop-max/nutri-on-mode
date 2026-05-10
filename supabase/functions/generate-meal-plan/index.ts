@@ -354,6 +354,8 @@ SAÚDE/MANUTENÇÃO:
  ` : ""}
 ${workoutContext}
 ${trainingOnPrompt}
+${pharmaPrompt}
+${pcaPrompt}
 ═══════════════════════════════════════════
 MICRONUTRIENTES OBRIGATÓRIOS
 ═══════════════════════════════════════════
