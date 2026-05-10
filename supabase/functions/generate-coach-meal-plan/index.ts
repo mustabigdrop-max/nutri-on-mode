@@ -808,7 +808,9 @@ serve(async (req) => {
       modo_especial,
       fase_ciclo,
       dias_para_competicao,
+      crononutricao_circadiana,
     } = body;
+    const _cronoCircadiano: boolean = !!crononutricao_circadiana;
     // NutriPlan Elite — lista normalizada de compostos vindos do multi-select
     const _compostosAtivos: string[] = Array.isArray(compostos_ativos)
       ? compostos_ativos
@@ -2253,6 +2255,23 @@ REGRAS LONGEVIDADE — Densidade × baixa inflamação (OBRIGATÓRIAS):
 - Suplementação no campo "alerta_coach": "LONGEVIDADE — D3 2000UI, ômega-3 1–2g, magnésio 300mg, creatina 5g (cognição+massa magra), B12 se >50 anos."
 - Priorizar proteína no café da manhã (anti-sarcopenia) e carbo complexo no jantar (sono).
 ` : ""}` : ""}
+
+${_cronoCircadiano ? `
+🕐 DIMENSÃO 2 — CRONONUTRIÇÃO CIRCADIANA AVANÇADA (OBRIGATÓRIA)
+Distribua a kcal sincronizada com cortisol/insulina/GH. Cada refeição DEVE ter "janela_metabolica" = uma de:
+"Pico Cortisol (06–09h)" | "Sensibilidade Ascendente (10–13h)" | "Pré-Treino" | "Pós-Treino" | "Pico Insulínico (14–17h)" | "Pré-Sono (19–21h)" | "GH Peak (23–03h)".
+
+PROTOCOLO OBRIGATÓRIO:
+- 06:00–09:00 (Pico cortisol): Refeição PROTEICA + GORDURA · carboidrato MÍNIMO (≤15g). Razão: cortisol já eleva glicemia endogenamente — carbo exógeno gera pico insulínico desnecessário e lipogênese preferencial.
+- 10:00–13:00 (Sensibilidade insulínica ascendente): Introduzir carboidratos COMPLEXOS. Janela ótima para carbo de treino matutino.
+- PERI-TREINO (calculado do horário do TrainingON acima): pré 1–2h carbo+ptn; intra opcional; pós 30–60min carbo rápido + whey. Se não houver horário de treino, OMITIR janela peri.
+- 14:00–17:00 (Pico de sensibilidade insulínica periférica): MAIOR refeição calórica do dia para não-atletas. Para atletas com treino vespertino, refeição PRÉ-TREINO estruturada aqui.
+- 19:00–21:00: Proteína LENTA (caseína, ovo cozido) + gordura. Carbo REDUZIDO mas não eliminado (insulina leve potencializa pulso de GH noturno).
+- 23:00–03:00 (GH peak): Se atleta usa secretagogos de GH (CJC/Ipamorelin/MK-677/GHRP), prescrever caseína micelar 30g ou clara de ovo cozida 90min antes de dormir como refeição/ceia adicional. Caso contrário, omitir.
+
+NUNCA inverter: jamais "carb load matinal" + "ptn-only à noite" — viola fisiologia circadiana.
+Inserir em "insights_ia" pelo menos 1 string explicando a janela cronobiológica de cada refeição-chave (manhã, peri-treino e ceia).
+` : ""}
 
 Estrutura exata:
 {
