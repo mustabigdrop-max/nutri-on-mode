@@ -26,6 +26,10 @@ serve(async (req) => {
       compostos_ativos,        // string[] — nomes de peptídeos/AAS/SARMs ativos do Dr. VERTEX
       perfil_pca,              // "AM" | "EI" | "SE" | "PP"
       body_fat_pct,            // number — % de gordura corporal (para Katch-McArdle)
+      // ═══ NutriPlan Elite — Fase 4: Modos especiais ═══
+      modo_especial,           // "padrao" | "competicao" | "glp1" | "feminino"
+      fase_ciclo,              // (feminino) "folicular" | "ovulatoria" | "lutea" | "menstrual"
+      dias_para_competicao,    // (competicao) number
     } = body;
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
