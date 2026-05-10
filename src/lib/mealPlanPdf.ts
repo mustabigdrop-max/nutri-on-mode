@@ -70,10 +70,25 @@ export function exportMealPlanPDF(opts: {
     if (nutriEliteMeta.compostos_ativos?.length) {
       doc.text(`Compostos: ${nutriEliteMeta.compostos_ativos.join(", ")}`, M, y, { maxWidth: W - 2 * M }); y += 14;
     }
-    if (nutriEliteMeta.modo_especial && nutriEliteMeta.modo_especial !== "padrao") {
+    if (nutriEliteMeta.modo_especial && nutriEliteMeta.modo_especial !== "padrao" && nutriEliteMeta.modo_especial !== "normal") {
       doc.setFont("helvetica", "bold");
-      doc.text(`Modo: ${String(nutriEliteMeta.modo_especial).toUpperCase()}`, M, y); y += 14;
+      const modoLabel = String(nutriEliteMeta.modo_especial).toUpperCase();
+      const sufixo =
+        nutriEliteMeta.modo_especial === "competicao" && nutriEliteMeta.dias_para_competicao != null
+          ? ` · D-${nutriEliteMeta.dias_para_competicao}`
+          : nutriEliteMeta.modo_especial === "feminino" && nutriEliteMeta.fase_ciclo
+          ? ` · Fase ${String(nutriEliteMeta.fase_ciclo).toUpperCase()}`
+          : "";
+      doc.text(`Modo: ${modoLabel}${sufixo}`, M, y); y += 14;
       doc.setFont("helvetica", "normal");
+    }
+    if (nutriEliteMeta.alerta_coach) {
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(180, 60, 60);
+      doc.text("⚠ Alerta Coach:", M, y); y += 11;
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(40, 40, 40);
+      doc.text(String(nutriEliteMeta.alerta_coach), M, y, { maxWidth: W - 2 * M }); y += 14;
     }
     y += 4;
   }
