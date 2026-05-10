@@ -4036,11 +4036,24 @@ export default function PlanoAlimentarIA() {
             ← Voltar ao Dashboard
           </button>
         </div>
+
+        {/* NutriPlan Elite — Adherence Modal (paciente vinculado) */}
+        {showAdherence && (
+          <AdherenceModal
+            items={adherenceItems}
+            profile={{
+              vet_kcal: Number(form.calorias) || null,
+              protein_g: (plano as any)?.resumo?.proteina_total ?? null,
+              carbs_g: (plano as any)?.resumo?.carboidrato_total ?? null,
+              fat_g: (plano as any)?.resumo?.gordura_total ?? null,
+            }}
+            onClose={() => setShowAdherence(false)}
+          />
+        )}
       </div>
     );
   }
 
-  // ── FORM ──
   return (
     <div style={{ minHeight: "100vh", background: T.bg, fontFamily: "'DM Sans', sans-serif" }}>
       <style>{`*{box-sizing:border-box}`}</style>
