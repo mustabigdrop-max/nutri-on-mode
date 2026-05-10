@@ -453,6 +453,17 @@ REGRAS TÉCNICAS
 7. Porções em medidas práticas (1 filé médio, 2 colheres de sopa, 1 xícara, etc)
 8. Os valores de kcal/macros devem ser REALISTAS e precisos
 
+═══════════════════════════════════════════
+ENRIQUECIMENTO POR REFEIÇÃO (OBRIGATÓRIO — Fase 3 NutriPlan Elite)
+═══════════════════════════════════════════
+PARA CADA refeição, preencha os campos opcionais com inteligência metabólica:
+- medida_caseira: ex. "1 filé médio (150g) + 4 col. sopa de arroz"
+- funcao_metabolica: ex. "Síntese proteica + reposição glicogênio muscular"
+- janela_metabolica: ex. "Pico cortisol matinal — CHO baixo IG + PTN alta"
+- protocolo_peri_workout: SOMENTE em refeições peri-treino, ex. "Pré 60min: CHO baixo IG + 30g whey"
+- mensagem_mce: 1 frase comportamental adaptada ao perfil PCA (${_perfilPca || "PADRAO"})
+- insights_ia: 1–3 bullets curtos com ciência aplicada (mecanismo mTORC1, GLUT-4, leucina, etc.)
+
 RETORNE usando a ferramenta generate_plan.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
