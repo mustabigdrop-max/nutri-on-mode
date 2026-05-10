@@ -15,6 +15,8 @@ import { toast } from "sonner";
 import { buildTrainingDayMap, classifyMealVsWorkout, splitWeeklyAverages, type TrainingDayInfo } from "@/lib/trainingDayMap";
 import SubstitutionModal from "@/components/meal/SubstitutionModal";
 import type { SubOption } from "@/components/meal/substitutionDb";
+import CircadianTimeline from "@/components/meal/CircadianTimeline";
+import ExpandableMealCard from "@/components/meal/ExpandableMealCard";
 
 const MEAL_TYPES = [
   { key: "cafe_manha", label: "Café" },
