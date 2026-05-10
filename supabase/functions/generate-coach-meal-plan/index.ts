@@ -2185,7 +2185,18 @@ OUTROS DADOS:
 Aplique TODAS as regras de cálculo (Mifflin-St Jeor — valores já pré-calculados no bloco determinístico, ajustes farmacológicos por composto, integração de cardio, fase de periodização). Use alimentos brasileiros acessíveis com gramagem precisa. Linguagem técnica de coach de competição.
 
 🚨 REGRA CRÍTICA DE FORMATO 🚨
-Responda APENAS com UM ÚNICO objeto JSON válido (root é um único "{...}"). NÃO retorne múltiplos objetos concatenados, NÃO retorne array no nível raiz, NÃO retorne "PLANO 1 / PLANO 2", NÃO repita o objeto para diferentes dias da semana. Gere UM plano único representativo. Estrutura exata:
+Responda APENAS com UM ÚNICO objeto JSON válido (root é um único "{...}"). NÃO retorne múltiplos objetos concatenados, NÃO retorne array no nível raiz, NÃO retorne "PLANO 1 / PLANO 2", NÃO repita o objeto para diferentes dias da semana. Gere UM plano único representativo.
+
+🧠 NUTRIPLAN ELITE — ENRIQUECIMENTO OBRIGATÓRIO POR REFEIÇÃO:
+Para CADA item do array "refeicoes", PREENCHA SEMPRE os campos:
+- "funcao_metabolica" (1 linha — papel metabólico/hormonal: cortisol matinal, leucina threshold/MPS, repleção glicogênio, GH noturno, insulina, etc.)
+- "janela_metabolica" (1 linha — janela cronobiológica e timing relativo ao treino se aplicável)
+- "protocolo_peri_workout" (string SOMENTE para refeições pré/intra/pós-treino com timing+composição quantificada; null nas demais)
+- "mensagem_mce" (1 frase comportamental adaptada ao perfil PCA do paciente)
+- "insights_ia" (array com 1–3 strings curtas: justificativa científica, ajuste farmacológico, alerta clínico)
+JAMAIS omita esses campos. Use "null" só onde explicitamente permitido.
+
+Estrutura exata:
 {
   "resumo": {
     "nome": "string",
@@ -2206,6 +2217,11 @@ Responda APENAS com UM ÚNICO objeto JSON válido (root é um único "{...}"). N
       "calorias": number,
       "macros": { "proteina": number, "carboidrato": number, "gordura": number },
       "modo_preparo": "string curto quando variedade_funcional estiver ativo; null nos demais casos",
+      "funcao_metabolica": "string curta (1 linha) — qual o papel desta refeição no dia (ex: 'Pico insulínico para repleção de glicogênio pós-treino', 'Janela anabólica MPS via leucina threshold', 'Cortisol matinal + carbo de baixo IG para glicemia estável')",
+      "janela_metabolica": "string curta — janela cronobiológica (ex: 'Pré-treino 60–90min', 'Pós-treino 0–45min', 'Pico de cortisol 06–09h', 'Pré-sono — GH noturno')",
+      "protocolo_peri_workout": "string ou null — APENAS para refeições peri-treino (pré/intra/pós), descreva timing+composição (ex: 'Carbo rápido 0,8g/kg + 25g whey 30min antes', 'BCAA 10g + 30g whey isolado imediato pós'). null para refeições não-peri.",
+      "mensagem_mce": "string curta motivacional/comportamental adaptada ao perfil PCA do paciente (1 frase, tom conforme perfil)",
+      "insights_ia": ["string", "string"],
       "alimentos": [
         {
           "alimento": "string",
