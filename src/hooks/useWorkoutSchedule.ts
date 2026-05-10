@@ -637,21 +637,26 @@ export const useWorkoutSchedule = () => {
     await fetchSchedule();
   };
 
-  const completeWorkout = async () => {
+  const completeWorkout = async (rpe?: number) => {
     if (!user) return;
     const today = new Date().toISOString().split("T")[0];
     const dayOfWeek = new Date().getDay();
     const todayEntries = schedule.filter(s => s.day_of_week === dayOfWeek);
     if (todayEntries.length === 0) return;
 
+    const payload: any = {
+      user_id: user.id,
+      log_date: today,
+      workout_type: todayEntries[0].workout_type,
+      completed: true,
+    };
+    if (typeof rpe === "number") {
+      payload.notes = JSON.stringify({ rpe });
+    }
+
     await supabase
       .from("workout_daily_logs")
-      .upsert({
-        user_id: user.id,
-        log_date: today,
-        workout_type: todayEntries[0].workout_type,
-        completed: true,
-      }, { onConflict: "user_id,log_date" });
+      .upsert(payload, { onConflict: "user_id,log_date" });
     await fetchTodayLog();
   };
 
