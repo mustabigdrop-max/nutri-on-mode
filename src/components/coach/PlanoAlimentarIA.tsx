@@ -4061,6 +4061,118 @@ export default function PlanoAlimentarIA() {
             );
           })()}
 
+          {/* ========== DIMENSÃO 2 — PERI-TREINO CIRCADIANO (toggle ativo) ========== */}
+          {cronoCircadiano && (() => {
+            const trainingDays = (["seg","ter","qua","qui","sex","sab","dom"] as const)
+              .map((d) => trainingSchedule.base[d])
+              .filter((d) => d.is_training_day && d.time);
+            if (!trainingDays.length) {
+              return (
+                <div style={{ marginBottom: 18, padding: 14, borderRadius: 10, background: "#0a1420", border: "1px dashed #60a5fa" }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: "#60a5fa", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>
+                    🕐 Crononutrição Circadiana · Peri-Treino
+                  </div>
+                  <div style={{ fontSize: 11.5, color: T.muted, lineHeight: 1.5 }}>
+                    Nenhum horário de treino encontrado no <strong style={{ color: T.text }}>TrainingON</strong>. Defina ao menos um dia com horário na <em>Grade Semanal</em> para que o peri-treino seja calculado dinamicamente.
+                  </div>
+                </div>
+              );
+            }
+            const first = trainingDays[0];
+            const wkTime = first.time as string;
+            const dur = Number((first as any).duration_min) || 60;
+            const [wh, wm] = wkTime.split(":").map(Number);
+            const totalMin = wh * 60 + (wm || 0);
+            const fmt = (mins: number) => {
+              const v = ((mins % 1440) + 1440) % 1440;
+              const h = Math.floor(v / 60);
+              const m = v % 60;
+              return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+            };
+            const preTime = fmt(totalMin - 90);
+            const intraStart = fmt(totalMin);
+            const intraEnd = fmt(totalMin + dur);
+            const postTime = fmt(totalMin + dur + 30);
+
+            // Janela circadiana do treino
+            const wkBand =
+              wh >= 5 && wh < 10 ? { l: "Pico Cortisol (06–09h)", c: "#f87171", note: "Carbo pré reduzido — cortisol já mobiliza glicogênio. Priorize ptn+gordura." } :
+              wh >= 10 && wh < 14 ? { l: "Sensibilidade Ascendente (10–13h)", c: "#fbbf24", note: "Janela ÓTIMA — carbo complexo no pré + carbo rápido no pós." } :
+              wh >= 14 && wh < 18 ? { l: "Pico Insulínico Periférico (14–17h)", c: "#4ade80", note: "Maior absorção de nutrientes. Refeição pré-treino ESTRUTURADA aqui." } :
+              wh >= 18 && wh < 22 ? { l: "Pré-Sono (19–21h)", c: "#60a5fa", note: "Pós-treino: priorize ptn+carbo MODERADO. Evita interferir no GH peak." } :
+              { l: "Madrugada / GH Peak", c: "#c084fc", note: "Atípico — minimizar carbo pós para preservar pulso de GH." };
+
+            const periRows = [
+              { tag: "PRÉ", time: preTime, off: "−90 min", color: T.amber, desc: "Carbo complexo 0,8–1,2 g/kg + ptn 30g + gordura mínima" },
+              { tag: "INTRA", time: `${intraStart}–${intraEnd}`, off: `${dur} min`, color: "#a78bfa", desc: "Eletrólitos · BCAA/EAA opcional · 30–60g carbo se >75 min" },
+              { tag: "PÓS", time: postTime, off: `+${30} min`, color: T.green, desc: "Carbo rápido 1,0–1,5 g/kg + whey 30–40g · janela GLUT-4 aberta" },
+            ];
+
+            // Como as refeições ao redor mudam
+            const surroundingChanges = [
+              wh < 12
+                ? { icon: "🌅", t: "Café (06–09h)", d: "Movido para pré-treino: ptn+gordura → carbo deslocado para o pré." }
+                : { icon: "🌅", t: "Café (06–09h)", d: "Mantém perfil cortisol: ptn+gordura, carbo MÍNIMO (≤15g)." },
+              wh >= 12 && wh < 16
+                ? { icon: "☀️", t: "Almoço (12–14h)", d: "Funciona como PRÉ-TREINO estruturado — carbo complexo principal." }
+                : { icon: "☀️", t: "Almoço (12–14h)", d: "Refeição principal mantida na janela de pico insulínico." },
+              wh >= 16
+                ? { icon: "🍎", t: "Lanche tarde", d: "Reposicionado como pré-treino (−90min do horário)." }
+                : { icon: "🍎", t: "Lanche tarde", d: "Funciona como pós-treino tardio se treino foi até 17h." },
+              { icon: "🌙", t: "Jantar (19–21h)", d: wh >= 18 ? "Sobreposto ao pós-treino: caseína + carbo moderado." : "Ptn lenta + gordura · carbo reduzido (potencia GH noturno)." },
+              { icon: "🌌", t: "Ceia (23h)", d: "Caseína micelar 30g 90min antes de dormir SE houver secretagogos de GH ativos." },
+            ];
+
+            return (
+              <div style={{ marginBottom: 18, padding: 16, borderRadius: 12, background: "linear-gradient(180deg, #0a1420 0%, #0d1a2a 100%)", border: "1px solid #3b82f6", boxShadow: "0 0 24px rgba(59,130,246,0.15)" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4, flexWrap: "wrap" }}>
+                  <span style={{ fontSize: 16 }}>🕐</span>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: "#60a5fa", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                    Crononutrição · Peri-Treino Sincronizado
+                  </div>
+                  <span style={{ fontSize: 9, padding: "2px 6px", borderRadius: 4, background: "#1e3a8a", color: "#bfdbfe", fontWeight: 700 }}>DIMENSÃO 2 ATIVA</span>
+                </div>
+                <div style={{ fontSize: 11, color: T.muted, marginBottom: 12, lineHeight: 1.5 }}>
+                  Calculado a partir do horário do <strong style={{ color: "#60a5fa" }}>TrainingON</strong>:&nbsp;
+                  <strong style={{ color: T.text }}>🏋️ {wkTime}</strong> · {dur} min · janela <span style={{ color: wkBand.c, fontWeight: 700 }}>{wkBand.l}</span>
+                </div>
+
+                <div style={{ padding: "8px 12px", borderRadius: 8, background: "rgba(96,165,250,0.06)", borderLeft: `3px solid ${wkBand.c}`, fontSize: 11, color: T.text, marginBottom: 14, lineHeight: 1.5 }}>
+                  <strong style={{ color: wkBand.c }}>Razão fisiológica:</strong> {wkBand.note}
+                </div>
+
+                {/* Linha do tempo PRÉ / INTRA / PÓS */}
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))", gap: 10, marginBottom: 14 }}>
+                  {periRows.map((r) => (
+                    <div key={r.tag} style={{ padding: 12, borderRadius: 10, background: T.bg2, border: `1px solid ${r.color}55`, borderLeft: `3px solid ${r.color}` }}>
+                      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 6 }}>
+                        <span style={{ fontSize: 10, fontWeight: 700, color: r.color, letterSpacing: "0.08em" }}>{r.tag}</span>
+                        <span style={{ fontSize: 9, color: T.muted }}>{r.off}</span>
+                      </div>
+                      <div style={{ fontSize: 15, fontWeight: 700, color: T.text, marginBottom: 6, fontVariantNumeric: "tabular-nums" }}>{r.time}</div>
+                      <div style={{ fontSize: 10.5, color: T.muted, lineHeight: 1.45 }}>{r.desc}</div>
+                    </div>
+                  ))}
+                </div>
+
+                <div style={{ fontSize: 10, fontWeight: 700, color: "#60a5fa", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>
+                  Como as refeições ao redor mudam
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 6 }}>
+                  {surroundingChanges.map((c, i) => (
+                    <div key={i} style={{ display: "flex", gap: 8, padding: "8px 10px", borderRadius: 8, background: "rgba(255,255,255,0.02)", border: "1px solid rgba(96,165,250,0.15)" }}>
+                      <span style={{ fontSize: 14, lineHeight: 1 }}>{c.icon}</span>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: 11, fontWeight: 700, color: T.text }}>{c.t}</div>
+                        <div style={{ fontSize: 10.5, color: T.muted, lineHeight: 1.45, marginTop: 2 }}>{c.d}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
+
           {/* NutriPlan Elite — GLUT-4 Sync Card (peri-workout dourado) */}
           {(() => {
             const trainingDays = (["seg","ter","qua","qui","sex","sab","dom"] as const)
