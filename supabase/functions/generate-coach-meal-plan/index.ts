@@ -1020,7 +1020,8 @@ serve(async (req) => {
 
       // ── BLOCO 6: Protocolo farmacológico — DETECTOR COMPLETO COMPOSTOS ──
       // Normaliza o texto: lowercase, sem acentos
-      const protoRaw = String(protocoloFarmacologico || protocStr || "");
+      const protoRaw = String(protocoloFarmacologico || protocStr || "")
+        + (_compostosAtivos.length ? " " + _compostosAtivos.join(" ") : "");
       const protoStr = protoRaw
         .toLowerCase()
         .normalize("NFD")
