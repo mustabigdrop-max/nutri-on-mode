@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { exportMealPlanPDF } from "@/utils/exportMealPlanPDF";
+import { exportMealPlanPDF as exportMealPlanPDFElite } from "@/lib/mealPlanPdf";
 import ProtocolGanttChart from "@/components/coach/ProtocolGanttChart";
 import CoachCheckinsTab from "@/components/coach/CoachCheckinsTab";
 import CoachWeekMealGrid from "@/components/coach/CoachWeekMealGrid";
@@ -288,6 +289,12 @@ interface Meal {
   kcal_calculada?: number;
   alimentos?: MealAlimento[];
   macros?: { proteina?: number; carboidrato?: number; gordura?: number };
+  // NutriPlan Elite — enriquecimento por refeição (opcional)
+  funcao_metabolica?: string;
+  janela_metabolica?: string;
+  protocolo_peri_workout?: string;
+  mensagem_mce?: string;
+  insights_ia?: string[];
 }
 
 const formatQuantidadeG = (value?: string | number | null) => {
@@ -634,8 +641,7 @@ const stripHorarioFromTitle = (titulo: string, horario?: string): string => {
   // fallback: remove qualquer "(HH:MM ...)" no fim
   t = t.replace(/\s*\(\s*\d{1,2}:\d{2}\s*[-–—]?\s*([^)]*)\)\s*$/, (_m, resto) => (resto && resto.trim() ? ` — ${resto.trim()}` : ""));
   return t.trim();
-};
-
+  };
 
 interface MealCardProps {
   meal: Meal;
@@ -843,6 +849,26 @@ const MealCard = ({ meal, index, onSwap, workoutTag }: MealCardProps) => {
             </div>
           );
         })}
+        {(meal.funcao_metabolica || meal.janela_metabolica || meal.protocolo_peri_workout || meal.mensagem_mce || (meal.insights_ia && meal.insights_ia.length)) && (
+          <div style={{ marginTop: 12, padding: 10, borderRadius: 10, background: T.bg2, border: `1px dashed ${T.green}55`, display: "flex", flexDirection: "column", gap: 6 }}>
+            <div style={{ fontSize: 9, color: T.green, textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 700 }}>NutriPlan Elite</div>
+            {meal.funcao_metabolica && (
+              <div style={{ fontSize: 11, color: T.text }}><span style={{ color: T.green, fontWeight: 700 }}>◆ Função:</span> {meal.funcao_metabolica}</div>
+            )}
+            {meal.janela_metabolica && (
+              <div style={{ fontSize: 11, color: T.text }}><span style={{ color: T.amber, fontWeight: 700 }}>◷ Janela:</span> {meal.janela_metabolica}</div>
+            )}
+            {meal.protocolo_peri_workout && (
+              <div style={{ fontSize: 11, color: T.text }}><span style={{ color: T.blue, fontWeight: 700 }}>⚡ Peri-treino:</span> {meal.protocolo_peri_workout}</div>
+            )}
+            {meal.mensagem_mce && (
+              <div style={{ fontSize: 11, color: T.text, fontStyle: "italic" }}><span style={{ color: T.green, fontWeight: 700 }}>MCE:</span> {meal.mensagem_mce}</div>
+            )}
+            {meal.insights_ia?.map((ins, ii) => (
+              <div key={ii} style={{ fontSize: 11, color: T.muted }}>💡 {ins}</div>
+            ))}
+          </div>
+        )}
         {meal.macros && (
           <div style={{ display: "flex", gap: 12, marginTop: 10, paddingTop: 10, borderTop: `1px solid ${T.border}` }}>
             {([["P", meal.macros.proteina, T.blue], ["C", meal.macros.carboidrato, T.amber], ["G", meal.macros.gordura, "#f472b6"]] as [string, number | undefined, string][]).map(([l, v, c]) => v != null && (
@@ -2016,7 +2042,64 @@ export default function PlanoAlimentarIA() {
     }
   };
 
-  // ── LOADING ──
+  // NutriPlan Elite PDF — usa lib/mealPlanPdf.ts com TDEE breakdown + enrichment por refeição
+  const exportPDFElite = () => {
+    if (!plano) return;
+    try {
+      const inferMealType = (titulo: string): string => {
+        const t = (titulo || "").toLowerCase();
+        if (/caf[eé]|desjejum/.test(t)) return "cafe_manha";
+        if (/lanche.*(manh[ãa]|meio)/.test(t)) return "lanche_manha";
+        if (/almo[cç]o/.test(t)) return "almoco";
+        if (/lanche.*tarde|p[óo]s.*treino|pr[éeè].*treino/.test(t)) return "lanche_tarde";
+        if (/jantar/.test(t)) return "jantar";
+        if (/ceia|noturna/.test(t)) return "ceia";
+        return "lanche_tarde";
+      };
+      const items: any[] = [];
+      const enrichment: Record<string, any> = {};
+      (plano.refeicoes || []).forEach((m) => {
+        const tipo = inferMealType(m.refeicao || "");
+        const foodLine =
+          (m.alimentos || [])
+            .map((a) => `${a.alimento}${a.quantidade ? ` (${a.quantidade})` : ""}`)
+            .join(" + ") || (m.refeicao || "Refeição");
+        items.push({
+          day_index: 0,
+          meal_type: tipo,
+          food_name: foodLine,
+          portion: m.horario || "",
+          kcal: getMealKcal(m as Meal),
+          protein_g: m.macros?.proteina || 0,
+          carbs_g: m.macros?.carboidrato || 0,
+          fat_g: m.macros?.gordura || 0,
+        });
+        if (m.funcao_metabolica || m.janela_metabolica || m.protocolo_peri_workout || m.mensagem_mce) {
+          enrichment[`0-${tipo}`] = {
+            funcao_metabolica: m.funcao_metabolica,
+            janela_metabolica: m.janela_metabolica,
+            protocolo_peri_workout: m.protocolo_peri_workout,
+            mensagem_mce: m.mensagem_mce,
+          };
+        }
+      });
+      const ne: any = (plano as any)?.nutriplan_elite || null;
+      const patientName = plano.resumo?.nome || (form as any)?.nome || "Paciente";
+      const today = new Date().toLocaleDateString("pt-BR");
+      exportMealPlanPDFElite({
+        items,
+        weekRange: `Plano Elite · ${today}`,
+        patientName,
+        nutriEliteMeta: ne,
+        enrichment,
+      });
+      toast({ title: "PDF Elite gerado ✅", description: "Download iniciado." });
+    } catch (e: any) {
+      toast({ title: "Erro ao gerar PDF Elite", description: e?.message || "Tente novamente.", variant: "destructive" });
+    }
+  };
+
+
   if (step === "loading") return (
     <div style={{ minHeight: "100vh", background: T.bg, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", fontFamily: "'DM Sans', sans-serif" }}>
       <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
@@ -2060,6 +2143,9 @@ export default function PlanoAlimentarIA() {
             </button>
             <button onClick={exportPDF} style={{ padding: "8px 16px", borderRadius: 8, background: T.bg3, border: `1px solid ${T.border2}`, color: T.muted, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>
               📄 PDF
+            </button>
+            <button onClick={exportPDFElite} title="PDF Elite com TDEE breakdown e enriquecimento metabólico" style={{ padding: "8px 16px", borderRadius: 8, background: T.greenBg, border: `1px solid ${T.green}`, color: T.green, fontSize: 12, cursor: "pointer", fontFamily: "inherit", fontWeight: 700 }}>
+              📄 PDF Elite
             </button>
             <button onClick={openAdherence} style={{ padding: "8px 16px", borderRadius: 8, background: T.bg3, border: `1px solid ${T.border2}`, color: T.muted, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>
               📊 Aderência
