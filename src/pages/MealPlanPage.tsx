@@ -683,6 +683,99 @@ const MealPlanPage = () => {
           </div>
         </div>
 
+        {/* Phase 4 controls: Modo Especial + Aderência + PDF */}
+        <div className="flex items-center gap-2 mb-4 flex-wrap">
+          <div className="relative">
+            <button
+              onClick={() => setShowModoMenu(v => !v)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono transition-all ${
+                modoEspecial !== "padrao"
+                  ? "bg-accent/15 text-accent border border-accent/40"
+                  : "border border-border text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {modoEspecial === "padrao" && "🎯 Modo: Padrão"}
+              {modoEspecial === "competicao" && `🏆 Competição (D-${diasComp})`}
+              {modoEspecial === "glp1" && "💉 GLP-1"}
+              {modoEspecial === "feminino" && `🌸 Feminino · ${faseCiclo}`}
+            </button>
+            <AnimatePresence>
+              {showModoMenu && (
+                <motion.div
+                  initial={{ opacity: 0, y: -8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  className="absolute z-40 mt-1 left-0 w-64 rounded-xl border border-border bg-popover p-2 shadow-xl"
+                >
+                  {(["padrao", "competicao", "glp1", "feminino"] as const).map(m => (
+                    <button
+                      key={m}
+                      onClick={() => { setModoSticky(m); if (m !== "competicao" && m !== "feminino") setShowModoMenu(false); }}
+                      className={`w-full text-left px-2 py-1.5 rounded-md text-xs font-mono transition-all ${
+                        modoEspecial === m ? "bg-accent/20 text-accent" : "text-foreground hover:bg-muted/50"
+                      }`}
+                    >
+                      {m === "padrao" && "🎯 Padrão"}
+                      {m === "competicao" && "🏆 Competição (peak week)"}
+                      {m === "glp1" && "💉 GLP-1"}
+                      {m === "feminino" && "🌸 Feminino periodizado"}
+                    </button>
+                  ))}
+                  {modoEspecial === "competicao" && (
+                    <div className="mt-2 pt-2 border-t border-border">
+                      <label className="text-[10px] font-mono text-muted-foreground">Dias até competição</label>
+                      <input
+                        type="number" min={1} max={60} value={diasComp}
+                        onChange={(e) => { const v = Number(e.target.value) || 14; setDiasComp(v); localStorage.setItem("nutriplan_dias_comp", String(v)); }}
+                        className="w-full mt-1 px-2 py-1 text-xs font-mono rounded-md bg-background border border-border text-foreground"
+                      />
+                    </div>
+                  )}
+                  {modoEspecial === "feminino" && (
+                    <div className="mt-2 pt-2 border-t border-border">
+                      <label className="text-[10px] font-mono text-muted-foreground">Fase do ciclo</label>
+                      <div className="grid grid-cols-2 gap-1 mt-1">
+                        {(["folicular", "ovulatoria", "lutea", "menstrual"] as const).map(f => (
+                          <button
+                            key={f}
+                            onClick={() => { setFaseCiclo(f); localStorage.setItem("nutriplan_fase_ciclo", f); }}
+                            className={`px-2 py-1 rounded-md text-[10px] font-mono transition-all ${
+                              faseCiclo === f ? "bg-primary text-primary-foreground" : "border border-border text-muted-foreground"
+                            }`}
+                          >
+                            {f}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          <button
+            onClick={() => setShowAdherence(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono border border-border text-muted-foreground hover:text-primary hover:border-primary/40 transition-all"
+          >
+            📊 Aderência
+          </button>
+
+          <button
+            onClick={() => exportMealPlanPDF({
+              items,
+              weekRange: formatWeekRange(weekStart),
+              patientName: profile?.full_name || undefined,
+              nutriEliteMeta,
+              enrichment: nutriEliteMeta?.enrichment,
+            })}
+            disabled={items.length === 0}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono border border-border text-muted-foreground hover:text-primary hover:border-primary/40 transition-all disabled:opacity-40"
+          >
+            📄 PDF
+          </button>
+        </div>
+
         {/* Compostos picker (NutriPlan Elite — Dimensão 1) */}
         <AnimatePresence>
           {showCompostos && (
