@@ -2304,7 +2304,7 @@ export default function PlanoAlimentarIA() {
             },
           };
           const elet = ne.eletrolitos_por_fase || ne.eletrolitos || {
-            fase: form.fasePeriodizacao?.replaceAll("_", " ") || "base",
+            fase: form.fasePeriodizacao?.replace(/_/g, " ") || "base",
             agua_ml: pesoKg ? Math.round(pesoKg * 42) : "—",
             sodio_mg: form.fazCardio || treinoDias.length >= 5 ? 3500 : 2800,
             potassio_mg: 3500,
@@ -2343,7 +2343,7 @@ export default function PlanoAlimentarIA() {
             justificativa: "Fallback calculado a partir do resumo do plano e dados do formulário; edite se necessário.",
           };
           const timeline = ne.timeline_semanas || {
-            fase_atual: form.fasePeriodizacao?.replaceAll("_", " ") || form.objetivo,
+            fase_atual: form.fasePeriodizacao?.replace(/_/g, " ") || form.objetivo,
             ajustes_por_shape: [
               `Semana atual: ${fmtN(kcalTotaisExibicao, " kcal")} com ${fmtN(r.proteina_total, "g")} proteína, ${fmtN(r.carboidrato_total, "g")} carbo e ${fmtN(r.gordura_total, "g")} gordura.`,
               treinoDias.length ? `Treino mapeado em ${treinoDias.length} dias/semana; carbo maior nos dias de ${treinoPrincipal?.muscle_group || treinoPrincipal?.modality || "treino"}.` : "Sem treino semanal marcado; manter distribuição linear de macros.",
