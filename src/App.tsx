@@ -104,6 +104,7 @@ import ErgoVaultPage from "./pages/ErgoVaultPage";
 import ErgoDiaryPage from "./pages/ErgoDiaryPage";
 import WeeklyCheckinPage from "./pages/WeeklyCheckinPage";
 import NotFound from "./pages/NotFound";
+import NutriPlanElitePage from "./pages/NutriPlanElitePage";
 
 const queryClient = new QueryClient();
 
@@ -221,6 +222,8 @@ const App = () => (
             <Route path="/coach/relatorios" element={<ProtectedRoute><CoachReportsPage /></ProtectedRoute>} />
             <Route path="/coach/atletas" element={<ProtectedRoute><AthleteRoster /></ProtectedRoute>} />
             <Route path="/coach/atletas/:id" element={<ProtectedRoute><AthleteProgressTracker /></ProtectedRoute>} />
+
+            <Route path="/nutriplan-elite" element={<ProtectedRoute><NutriPlanElitePage /></ProtectedRoute>} />
 
             <Route path="*" element={<NotFound />} />
           </Routes>
