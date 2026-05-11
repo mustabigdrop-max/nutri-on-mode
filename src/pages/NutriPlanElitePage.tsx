@@ -92,7 +92,28 @@ export default function NutriPlanElitePage() {
     }
   };
 
-  const elite = result?.nutriplan_elite || result?.plano?.nutriplan_elite || null;
+  const elite = result ? (() => {
+    const plano = result?.plano || result;
+    const resumo = plano?.resumo || {};
+    const raw = result?.nutriplan_elite || result?.plano?.nutriplan_elite || {};
+    const kcal = Number(resumo.calorias_totais || raw.tdee_ajustado || 0);
+    const ptn = Number(resumo.proteina_total || Math.round(form.peso * (form.objetivo === "cutting" ? 2.4 : 2.1)));
+    const cho = Number(resumo.carboidrato_total || Math.round((kcal * 0.45) / 4));
+    const fat = Number(resumo.gordura_total || Math.round((kcal * 0.25) / 9));
+    return {
+      ...raw,
+      tdee_breakdown: raw.tdee_breakdown || { tmb: resumo.tmb, get_natural: resumo.get || kcal, get_farmaco: raw.tdee_ajustado || kcal, meta_final: kcal, buffer_anticatabolico_pct: form.objetivo === "cutting" ? 8 : 0, fator_farmacologico: raw.fator_farmacologico || (form.compostos.length ? 1.08 : 1), justificativa: "Bloco preenchido automaticamente com dados do plano para não ficar em branco; edite se necessário." },
+      hierarquia_macros: raw.hierarquia_macros || { ptn_g_kg: form.peso ? Math.round((ptn / form.peso) * 10) / 10 : 2.2, gordura_g_kg: form.peso ? Math.round((fat / form.peso) * 10) / 10 : 0.8, cho_cycling: { treino_pesado: Math.round(cho * 1.12), treino_leve: Math.round(cho * 0.9), off: Math.round(cho * 0.68) } },
+      cronobiologia: Array.isArray(raw.cronobiologia) && raw.cronobiologia.length ? raw.cronobiologia : [{ horario: form.horario_treino, janela: "Pré / Pós-treino", regra: "Concentrar carboidratos ao redor do treino e distribuir proteína ao longo do dia." }, { horario: "manhã", janela: "Cortisol alto", regra: "Proteína, fruta/fibra e hidratação para estabilidade glicêmica." }, { horario: "noite", janela: "Sono e recuperação", regra: "Ceia leve com proteína se houver longo intervalo até o café." }],
+      eletrolitos_por_fase: raw.eletrolitos_por_fase || { fase: form.objetivo, agua_ml: Math.round(form.peso * 42), sodio_mg: form.cardioFreq > 0 ? 3500 : 2800, potassio_mg: 3500, magnesio_mg: 350, ratio_na_k: "~1:1" },
+      micronutrientes_criticos: Array.isArray(raw.micronutrientes_criticos) && raw.micronutrientes_criticos.length ? raw.micronutrientes_criticos : [{ nutriente: "Magnésio", dose: "300–400 mg/d", fonte_alimentar_ou_supl: "Folhas verdes, cacau, sementes ou suplemento conforme avaliação", justificativa: "Sono e contração muscular." }, { nutriente: "Potássio", dose: "3–4 g/d", fonte_alimentar_ou_supl: "Banana, batata, feijão, água de coco", justificativa: "Hidratação celular e performance." }, { nutriente: "Ômega-3", dose: "2–3x/semana", fonte_alimentar_ou_supl: "Sardinha, salmão, chia/linhaça", justificativa: "Suporte anti-inflamatório nutricional." }],
+      timeline_semanas: raw.timeline_semanas || { fase_atual: form.objetivo, ajustes_por_shape: [`${form.semanas} semanas até o alvo: revisar peso, aderência e performance semanalmente.`, `Base atual: ${fmt(kcal, " kcal")}, ${fmt(ptn, "g")} proteína, ${fmt(cho, "g")} carbo e ${fmt(fat, "g")} gordura.`] },
+      peak_week: raw.peak_week || { ativo: form.semanas <= 1, dias_protocolo: [] },
+      masters_50: raw.masters_50 || { ativo: form.idade >= 50, regras_aplicadas: form.idade >= 50 ? ["Distribuir proteína em 4–5 pulsos/dia.", "Priorizar cálcio, vitamina D alimentar e força para massa magra."] : [] },
+      monitoramento_saude: Array.isArray(raw.monitoramento_saude) && raw.monitoramento_saude.length ? raw.monitoramento_saude : [{ exame: "Peso, cintura e performance", frequencia: "semanal", alerta_clinico: "Ajustar kcal se queda de performance ou perda >1%/semana." }, { exame: "Sono, fome e digestão", frequencia: "diário", alerta_clinico: "Revisar fibras, eletrólitos e timing se aderência cair." }, { exame: "Exames laboratoriais com profissional", frequencia: "8–12 semanas", alerta_clinico: "Obrigatório se houver compostos ativos ou preparação competitiva." }],
+      mce_comportamental: raw.mce_comportamental || plano?.dica_mce || { mindset: "Foco em bater proteína, água e primeira refeição planejada.", comportamento: "Corrigir no próximo bloco alimentar, não no dia seguinte.", execucao: "Deixar 2 proteínas e 2 carboidratos base preparados." },
+    };
+  })() : null;
 
   return (
     <div className="min-h-screen bg-[#03030a] text-foreground">

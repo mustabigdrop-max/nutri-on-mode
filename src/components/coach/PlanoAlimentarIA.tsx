@@ -2285,16 +2285,71 @@ export default function PlanoAlimentarIA() {
             );
           };
           const Empty = () => <div style={{ fontSize: 11, color: T.muted2, fontStyle: "italic" }}>Sem dados retornados pela IA.</div>;
-          const macros = ne.hierarquia_macros;
-          const elet = ne.eletrolitos_por_fase || ne.eletrolitos;
-          const crono = Array.isArray(ne.cronobiologia) ? ne.cronobiologia : [];
-          const micros = Array.isArray(ne.micronutrientes_criticos) ? ne.micronutrientes_criticos : [];
-          const peak = ne.peak_week;
-          const masters = ne.masters_50;
-          const saude = Array.isArray(ne.monitoramento_saude) ? ne.monitoramento_saude : [];
-          const mce = ne.mce_comportamental;
-          const tdee = ne.tdee_breakdown;
-          const timeline = ne.timeline_semanas;
+          const pesoKg = Number(form.peso) || 0;
+          const idadePaciente = Number(form.idade) || 0;
+          const treinoDias = Object.entries(trainingSchedule.base || {})
+            .filter(([, d]: any) => d?.is_training_day)
+            .map(([dia, d]: any) => ({ dia, ...d }));
+          const treinoPrincipal = treinoDias[0];
+          const tdeeBruto = Number(ne.tdee_bruto || r.get || r.tmb || kcalTotaisExibicao) || 0;
+          const fatorFarma = Number(ne.fator_farmacologico || (Array.isArray(ne.compostos_ativos) && ne.compostos_ativos.length ? 1.08 : 1)) || 1;
+          const tdeeAjustado = Number(ne.tdee_ajustado || tdeeBruto * fatorFarma || kcalTotaisExibicao) || 0;
+          const macros = ne.hierarquia_macros || {
+            ptn_g_kg: pesoKg ? Math.round((Number(r.proteina_total || 0) / pesoKg) * 10) / 10 : (form.objetivo === "emagrecimento" ? 2.4 : 2.1),
+            gordura_g_kg: pesoKg ? Math.round((Number(r.gordura_total || 0) / pesoKg) * 10) / 10 : 0.8,
+            cho_cycling: {
+              treino_pesado: Math.round(Number(r.carboidrato_total || 0) * 1.12),
+              treino_leve: Math.round(Number(r.carboidrato_total || 0) * 0.9),
+              off: Math.round(Number(r.carboidrato_total || 0) * 0.68),
+            },
+          };
+          const elet = ne.eletrolitos_por_fase || ne.eletrolitos || {
+            fase: form.fasePeriodizacao?.replace(/_/g, " ") || "base",
+            agua_ml: pesoKg ? Math.round(pesoKg * 42) : "—",
+            sodio_mg: form.fazCardio || treinoDias.length >= 5 ? 3500 : 2800,
+            potassio_mg: 3500,
+            magnesio_mg: 350,
+            ratio_na_k: "~1:1",
+          };
+          const crono = (Array.isArray(ne.cronobiologia) && ne.cronobiologia.length ? ne.cronobiologia : [
+            { horario: treinoPrincipal?.time || "07:00", janela: "Pré / Pós-treino", regra: "Concentrar carboidratos ao redor do treino e manter proteína distribuída nas refeições." },
+            { horario: "manhã", janela: "Cortisol alto", regra: "Priorizar proteína, fruta/fibra e hidratação para estabilidade glicêmica." },
+            { horario: "noite", janela: "Sono e recuperação", regra: "Ceia leve com proteína de digestão lenta se houver intervalo longo até o café." },
+          ]);
+          const micros = (Array.isArray(ne.micronutrientes_criticos) && ne.micronutrientes_criticos.length ? ne.micronutrientes_criticos : [
+            { nutriente: "Magnésio", dose: "300–400 mg/d", fonte_alimentar_ou_supl: "Folhas verdes, cacau, sementes ou suplemento conforme avaliação", justificativa: "Sono, contração muscular e controle de câimbras." },
+            { nutriente: "Potássio", dose: "3–4 g/d", fonte_alimentar_ou_supl: "Banana, batata, feijão, água de coco", justificativa: "Performance, hidratação celular e pressão osmótica." },
+            { nutriente: "Ômega-3", dose: "2–3x/semana via alimento", fonte_alimentar_ou_supl: "Sardinha, salmão, chia/linhaça", justificativa: "Suporte anti-inflamatório nutricional." },
+          ]);
+          const peak = ne.peak_week || { ativo: modoEspecial === "competicao" || form.fasePeriodizacao?.includes("peak"), dias_protocolo: [] };
+          const masters = ne.masters_50 || { ativo: idadePaciente >= 50, regras_aplicadas: idadePaciente >= 50 ? ["Distribuir proteína em 4–5 pulsos/dia.", "Priorizar cálcio, vitamina D alimentar e força para massa magra.", "Evitar cortes agressivos sem monitoramento profissional."] : [] };
+          const saude = (Array.isArray(ne.monitoramento_saude) && ne.monitoramento_saude.length ? ne.monitoramento_saude : [
+            { exame: "Peso, cintura e performance", frequencia: "semanal", alerta_clinico: "Ajustar kcal se queda de performance ou perda >1%/semana." },
+            { exame: "Sono, fome e digestão", frequencia: "diário", alerta_clinico: "Revisar fibras, eletrólitos e timing se aderência cair." },
+            { exame: "Exames laboratoriais com profissional", frequencia: "8–12 semanas", alerta_clinico: "Obrigatório se houver compostos ativos ou preparação competitiva." },
+          ]);
+          const mce = ne.mce_comportamental || (plano as any).dica_mce || {
+            mindset: "Foco em execução mínima diária: bater proteína, água e primeira refeição planejada.",
+            comportamento: "Usar checklist simples por refeição e corrigir no próximo bloco, não no dia seguinte.",
+            execucao: "Preparar 2 fontes de proteína e 2 carboidratos base para reduzir fricção da dieta.",
+          };
+          const tdee = ne.tdee_breakdown || {
+            tmb: r.tmb,
+            get_natural: r.get || tdeeBruto,
+            get_farmaco: tdeeAjustado,
+            meta_final: kcalTotaisExibicao,
+            buffer_anticatabolico_pct: form.objetivo === "emagrecimento" ? 8 : 0,
+            fator_farmacologico: fatorFarma,
+            justificativa: "Fallback calculado a partir do resumo do plano e dados do formulário; edite se necessário.",
+          };
+          const timeline = ne.timeline_semanas || {
+            fase_atual: form.fasePeriodizacao?.replace(/_/g, " ") || form.objetivo,
+            ajustes_por_shape: [
+              `Semana atual: ${fmtN(kcalTotaisExibicao, " kcal")} com ${fmtN(r.proteina_total, "g")} proteína, ${fmtN(r.carboidrato_total, "g")} carbo e ${fmtN(r.gordura_total, "g")} gordura.`,
+              treinoDias.length ? `Treino mapeado em ${treinoDias.length} dias/semana; carbo maior nos dias de ${treinoPrincipal?.muscle_group || treinoPrincipal?.modality || "treino"}.` : "Sem treino semanal marcado; manter distribuição linear de macros.",
+              "Reavaliar peso, aderência e performance a cada 7 dias antes de novo ajuste calórico.",
+            ],
+          };
           return (
             <div className="fade-up" style={{ margin: "0 24px 16px", display: "grid", gap: 10 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 0", flexWrap: "wrap" }}>
