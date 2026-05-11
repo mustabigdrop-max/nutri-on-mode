@@ -893,6 +893,8 @@ export default function PlanoAlimentarIA() {
   const [planoComparativo, setPlanoComparativo] = useState<PlanoData | null>(null);
   const [showCompare, setShowCompare] = useState(false);
   const [comparing, setComparing] = useState(false);
+  const [eliteEdit, setEliteEdit] = useState(false);
+  const [eliteAllOpen, setEliteAllOpen] = useState(false);
   // NutriPlan Elite — Modo especial + Aderência
   const [modoEspecial, setModoEspecial] = useState<"normal" | "competicao" | "glp1" | "feminino" | "vegano" | "low_fodmap" | "longevidade">("normal");
   const [faseCiclo, setFaseCiclo] = useState<"folicular" | "ovulatoria" | "lutea" | "menstrual">("folicular");
