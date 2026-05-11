@@ -104,6 +104,7 @@ import ErgoVaultPage from "./pages/ErgoVaultPage";
 import ErgoDiaryPage from "./pages/ErgoDiaryPage";
 import WeeklyCheckinPage from "./pages/WeeklyCheckinPage";
 import NotFound from "./pages/NotFound";
+import NutriPlanElitePage from "./pages/NutriPlanElitePage";
 
 const queryClient = new QueryClient();
 
