@@ -2229,8 +2229,8 @@ export default function PlanoAlimentarIA() {
 
         {/* NutriPlan Elite — 11 BLOCOS COMPLETOS (cards visuais) */}
         {(() => {
-          const ne: any = (plano as any)?.nutriplan_elite;
-          if (!ne) return null;
+          const ne: any = (plano as any)?.nutriplan_elite || {};
+          const eliteVazio = !((plano as any)?.nutriplan_elite);
           const fmtN = (n: any, suf = "") => (n == null || isNaN(Number(n)) ? "—" : `${Math.round(Number(n))}${suf}`);
           const Section = ({ icon, title, children, defaultOpen }: any) => (
             <details key={`${eliteAllOpen}-${title}`} open={eliteAllOpen || !!defaultOpen} style={{ borderRadius: 10, background: T.bg2, border: `1px solid ${T.border2}`, borderLeft: `3px solid ${T.green}`, overflow: "hidden" }}>
