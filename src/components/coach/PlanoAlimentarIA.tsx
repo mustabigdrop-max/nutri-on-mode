@@ -2230,14 +2230,15 @@ export default function PlanoAlimentarIA() {
           const ne: any = (plano as any)?.nutriplan_elite;
           if (!ne) return null;
           const fmtN = (n: any, suf = "") => (n == null || isNaN(Number(n)) ? "—" : `${Math.round(Number(n))}${suf}`);
-          const Section = ({ icon, title, children }: any) => (
-            <div style={{ padding: 14, borderRadius: 10, background: T.bg2, border: `1px solid ${T.border2}`, borderLeft: `3px solid ${T.green}` }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+          const Section = ({ icon, title, children, defaultOpen }: any) => (
+            <details open={!!defaultOpen} style={{ borderRadius: 10, background: T.bg2, border: `1px solid ${T.border2}`, borderLeft: `3px solid ${T.green}`, overflow: "hidden" }}>
+              <summary style={{ listStyle: "none", cursor: "pointer", padding: "12px 14px", display: "flex", alignItems: "center", gap: 8, userSelect: "none" }}>
                 <span style={{ fontSize: 16 }}>{icon}</span>
-                <span style={{ fontSize: 11, fontWeight: 700, color: T.green, textTransform: "uppercase", letterSpacing: "0.1em" }}>{title}</span>
-              </div>
-              {children}
-            </div>
+                <span style={{ fontSize: 11, fontWeight: 700, color: T.green, textTransform: "uppercase", letterSpacing: "0.1em", flex: 1 }}>{title}</span>
+                <span style={{ fontSize: 10, color: T.muted, fontFamily: "monospace" }}>▾</span>
+              </summary>
+              <div style={{ padding: "0 14px 14px" }}>{children}</div>
+            </details>
           );
           const Stat = ({ label, value, hl }: any) => (
             <div style={{ padding: 8, borderRadius: 6, background: hl ? T.greenBg : T.bg3, border: `1px solid ${hl ? T.green : T.border}` }}>
