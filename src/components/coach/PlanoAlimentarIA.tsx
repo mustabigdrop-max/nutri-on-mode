@@ -2317,14 +2317,14 @@ export default function PlanoAlimentarIA() {
               {(tdee || eliteVazio) && (
                 <Section icon="🔥" title="BLOCO 1 · TDEE Farmacológico (detalhe)" defaultOpen={!!tdee}>
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: 8 }}>
-                    <Stat label="TMB" value={fmtN(tdee.tmb, " kcal")} />
-                    <Stat label="GET natural" value={fmtN(tdee.get_natural, " kcal")} />
-                    <Stat label="GET farmaco" value={fmtN(tdee.get_farmaco, " kcal")} />
-                    <Stat label="Meta final" value={fmtN(tdee.meta_final, " kcal")} hl />
-                    <Stat label="Buffer anti-cat" value={`+${tdee.buffer_anticatabolico_pct ?? "—"}%`} />
-                    <Stat label="Fator farmaco" value={`×${Number(tdee.fator_farmacologico ?? 1).toFixed(2)}`} />
+                    <Stat label="TMB" value={fmtN(tdee?.tmb, " kcal")} />
+                    <Stat label="GET natural" value={fmtN(tdee?.get_natural, " kcal")} />
+                    <Stat label="GET farmaco" value={fmtN(tdee?.get_farmaco, " kcal")} />
+                    <Stat label="Meta final" value={fmtN(tdee?.meta_final, " kcal")} hl />
+                    <Stat label="Buffer anti-cat" value={`+${tdee?.buffer_anticatabolico_pct ?? "—"}%`} />
+                    <Stat label="Fator farmaco" value={`×${Number(tdee?.fator_farmacologico ?? 1).toFixed(2)}`} />
                   </div>
-                  {tdee.justificativa && <div style={{ marginTop: 8, fontSize: 11, color: T.muted, fontStyle: "italic" }}>{tdee.justificativa}</div>}
+                  {tdee?.justificativa && <div style={{ marginTop: 8, fontSize: 11, color: T.muted, fontStyle: "italic" }}>{tdee.justificativa}</div>}
                 </Section>
               )}
 
