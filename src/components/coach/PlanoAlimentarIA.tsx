@@ -2395,16 +2395,16 @@ export default function PlanoAlimentarIA() {
                 ) : <Empty />}
               </Section>
 
-              {timeline && (
-                <Section icon="📅" title="BLOCO 6 · Timeline até o Campeonato">
+              <Section icon="📅" title="BLOCO 6 · Timeline até o Campeonato">
+                {timeline ? (
                   <div style={{ display: "grid", gap: 6 }}>
                     <Stat label="Fase atual" value={timeline.fase_atual || "—"} hl />
                     {Array.isArray(timeline.ajustes_por_shape) && timeline.ajustes_por_shape.map((a: string, i: number) => (
                       <div key={i} style={{ fontSize: 11, color: T.text, paddingLeft: 10, borderLeft: `2px solid ${T.green}` }}>{a}</div>
                     ))}
                   </div>
-                </Section>
-              )}
+                ) : <Empty />}
+              </Section>
 
               <Section icon="🏆" title="BLOCO 7 · Peak Week">
                 {peak?.ativo ? (
