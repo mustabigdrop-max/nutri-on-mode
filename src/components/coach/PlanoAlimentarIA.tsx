@@ -2308,8 +2308,14 @@ export default function PlanoAlimentarIA() {
                 </button>
               </div>
 
-              {tdee && (
-                <Section icon="🔥" title="BLOCO 1 · TDEE Farmacológico (detalhe)">
+              {eliteVazio && (
+                <div style={{ padding: 12, borderRadius: 8, background: T.greenBg, border: `1px dashed ${T.green}`, fontSize: 11, color: T.text, lineHeight: 1.6 }}>
+                  💡 Os 11 blocos abaixo são preenchidos automaticamente após gerar o plano. Para ativar TDEE Farmacológico, Peak Week e Masters 50+, marque <strong>compostos ativos</strong> no formulário e/ou selecione objetivo <strong>Peak Week / competição</strong>. Você pode abrir cada bloco para ver o conteúdo previsto e editar manualmente após a geração.
+                </div>
+              )}
+
+              {(tdee || eliteVazio) && (
+                <Section icon="🔥" title="BLOCO 1 · TDEE Farmacológico (detalhe)" defaultOpen={!!tdee}>
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: 8 }}>
                     <Stat label="TMB" value={fmtN(tdee.tmb, " kcal")} />
                     <Stat label="GET natural" value={fmtN(tdee.get_natural, " kcal")} />
