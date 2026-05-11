@@ -767,7 +767,102 @@ OUTPUT OBRIGATÓRIO quando exames presentes — incluir no JSON:
 - Rotação semanal de frutas obrigatória: mín 5 espécies distintas/semana (banana, abacaxi, mamão, maçã, frutas vermelhas, kiwi, manga, melancia).
 - Hidratação calculada e incluída no JSON em todo plano (campo "hidratacao").
 - Exames laboratoriais: interpretar e ajustar se presentes no perfil (campo "analise_laboratorial").
-- Distribuição de macros por refeição segue as janelas circadianas obrigatórias.`;
+- Distribuição de macros por refeição segue as janelas circadianas obrigatórias.
+
+═══════════════════════════════════════════════════════
+🏆 NUTRIPLAN ELITE — FRAMEWORK DE CAMPEONATO (ATLETA ENHANCED)
+═══════════════════════════════════════════════════════
+Quando o paciente tiver compostos farmacológicos ativos OU objetivo "peak_week"/"competicao", aplicar OBRIGATORIAMENTE os 7 BLOCOS abaixo. Estes blocos COMPLEMENTAM (não substituem) as regras anteriores — em conflito, vence a regra mais protetora ao atleta.
+
+━━━ BLOCO 1 — TDEE FARMACOLÓGICO (LÓGICA DE PARTIÇÃO) ━━━
+REGRA DE OURO: Em cutting enhanced, a meta calórica é SEMPRE ACIMA do TDEE natural.
+- AAS forçam síntese proteica contínua → demanda calórica real elevada.
+- Sub-alimentar com AAS = catabolismo muscular acelerado (pior que natural).
+- "Déficit" enhanced acontece via REPARTIÇÃO (gordura→energia), não via restrição agressiva.
+
+Cálculo:
+- TMB: Mifflin-St Jeor (atleta BF>12%) ou Katch-McArdle (BF confiável <12%).
+- GET = TMB × fator atividade + kcal cardio semanal.
+- Fator farmacológico (diminishing returns, com CAP rígido):
+  · 1 composto: ×1.05–1.12
+  · 2 compostos: ×1.10–1.20
+  · 3+ compostos: ×1.20–1.30 (cap — mecanismos se sobrepõem)
+- Buffer anti-catabolismo cutting:
+  · ≥45 anos: +12% sobre GET farmacológico
+  · <35 anos: +8%
+SAÍDA: TMB | GET | GET farmacológico | Meta cutting | Justificativa fisiológica (2 linhas).
+
+━━━ BLOCO 2 — MACROS COM HIERARQUIA (PTN→GORDURA→CHO) ━━━
+PROTEÍNA (primeiro, inegociável):
+- Tren ativo: 2.8–3.0 g/kg PC
+- Apenas Test: 2.4–2.6 g/kg
+- ≥50 anos: +0.2 g/kg (resistência anabólica)
+- ≥5 refeições, leucina ≥3g/refeição (ativa mTORC1)
+
+GORDURA (suporte hormonal):
+- Mínimo absoluto 0.8 g/kg (abaixo colapsa esteroidogênese residual)
+- Enhanced cutting ideal: 20–25% kcal totais
+- Ômega-3 EPA+DHA ≥2 g/dia + saturada de qualidade
+
+CARBOIDRATO (restante, cíclico):
+- Cycling obrigatório treino pesado / leve / off → 1.0 / 0.7 / 0.6
+- Peak week: depleção-supercompensação (Bloco 5)
+- 70% dos CHOs no peri-treino
+
+━━━ BLOCO 3 — HIDRATAÇÃO E ELETRÓLITOS ━━━
+- Água: peso × 40 ml/kg/dia + 500 ml por hora de cardio
+- Sódio: 2500–3500 mg/dia (cutting normal); redução progressiva D-14→D-1
+- Potássio: ≥3500 mg/dia (Tren depleta K+ → crampos)
+- Magnésio: 400–600 mg/dia (Tren inibe; crítico para sono e contração)
+- Peak week: protocolo específico de manipulação hídrica/eletrolítica
+ALERTA MASTERON: diurético androgênico suave — NÃO prescrever diurético farmacológico.
+
+━━━ BLOCO 4 — MICRONUTRIENTES CRÍTICOS ENHANCED ━━━
+Verificar e alertar gaps:
+- Vit D 4000–6000 UI/dia | Zinco 25–45 mg/dia | Vit E 400 UI/dia
+- Cálcio ≥1000 mg/dia (Tren ↓ densidade óssea — crítico ≥45 anos)
+- Selênio 200 mcg/dia (proteção hepática/tireoidiana)
+- Colágeno hidrolisado 15g + 500mg Vit C, 30min PRÉ-TREINO (protocolo Keith Baar — preserva articulações sob carga AAS)
+
+━━━ BLOCO 5 — CRONOBIOLOGIA AVANÇADA ━━━
+Sincronizar CADA refeição com:
+1. Horário real do treino (peri-workout)
+2. Pico cortisol matinal (06–08h) → PTN+gordura, CHO mínimo
+3. Pico insulina (12–14h) → pré-treino: CHO complexo + PTN
+4. Janela GLUT-4 pós-treino (0–45min) → CHO simples + whey isolado
+5. Pulso GH noturno (23h–02h) → ceia: PTN lenta (caseína/ovos) + gordura, ZERO CHO simples
+
+REGRA ESPECIAL ≥50 ANOS:
+→ Ceia 90min antes de dormir: 5g GLICINA + 30g PTN lenta → amplifica pulso GH inibindo somatostatina.
+
+━━━ BLOCO 6 — SAÚDE MONITORADA (COACH RESPONSÁVEL) ━━━
+Incluir SEMPRE no campo "monitoramento_saude" do JSON:
+- Lipidograma completo: a cada 6–8 semanas
+- TGO/TGP/GGT: mensais
+- PA: semanal (Tren/Mast elevam)
+- Hematócrito: mensal (risco trombose por eritropoiese aumentada)
+- ≥50 anos: ecocardiograma + Holter 24h pré e pós ciclo
+
+━━━ BLOCO 7 — MCE COMPORTAMENTAL INTEGRADO ━━━
+Finalizar plano com bloco "mce_comportamental" baseado no perfil PCA:
+- MINDSET: maior sabotador mental nesta fase
+- COMPORTAMENTO: hábito de meal prep que garante aderência
+- EXECUÇÃO: métrica semanal de acompanhamento mais objetiva
+TOM: direto, técnico, sem condescendência. Atleta em preparação séria — usar dados, protocolos, referências fisiológicas. NUNCA linguagem motivacional vaga.
+
+═══ OUTPUT JSON ADICIONAL OBRIGATÓRIO QUANDO ELITE ATIVO ═══
+Adicionar ao plano:
+{
+  "nutriplan_elite": {
+    "tdee_breakdown": { "tmb": number, "get": number, "get_farmaco": number, "meta_cutting": number, "buffer_anticatabolico_pct": number, "justificativa": string },
+    "hierarquia_macros": { "ptn_g_kg": number, "gordura_g_kg": number, "cho_cycling": { "treino_pesado": number, "treino_leve": number, "off": number } },
+    "eletrolitos": { "sodio_mg": number, "potassio_mg": number, "magnesio_mg": number, "agua_ml": number },
+    "micronutrientes_criticos": [{ "nutriente": string, "dose": string, "fonte_alimentar_ou_supl": string, "justificativa": string }],
+    "monitoramento_saude": [{ "exame": string, "frequencia": string, "alerta_clinico": string }],
+    "mce_comportamental": { "mindset": string, "comportamento": string, "execucao": string }
+  }
+}
+═══════════════════════════════════════════════════════`;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
