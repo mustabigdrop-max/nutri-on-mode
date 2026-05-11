@@ -2229,8 +2229,8 @@ export default function PlanoAlimentarIA() {
 
         {/* NutriPlan Elite — 11 BLOCOS COMPLETOS (cards visuais) */}
         {(() => {
-          const ne: any = (plano as any)?.nutriplan_elite;
-          if (!ne) return null;
+          const ne: any = (plano as any)?.nutriplan_elite || {};
+          const eliteVazio = !((plano as any)?.nutriplan_elite);
           const fmtN = (n: any, suf = "") => (n == null || isNaN(Number(n)) ? "—" : `${Math.round(Number(n))}${suf}`);
           const Section = ({ icon, title, children, defaultOpen }: any) => (
             <details key={`${eliteAllOpen}-${title}`} open={eliteAllOpen || !!defaultOpen} style={{ borderRadius: 10, background: T.bg2, border: `1px solid ${T.border2}`, borderLeft: `3px solid ${T.green}`, overflow: "hidden" }}>
@@ -2308,8 +2308,14 @@ export default function PlanoAlimentarIA() {
                 </button>
               </div>
 
-              {tdee && (
-                <Section icon="🔥" title="BLOCO 1 · TDEE Farmacológico (detalhe)">
+              {eliteVazio && (
+                <div style={{ padding: 12, borderRadius: 8, background: T.greenBg, border: `1px dashed ${T.green}`, fontSize: 11, color: T.text, lineHeight: 1.6 }}>
+                  💡 Os 11 blocos abaixo são preenchidos automaticamente após gerar o plano. Para ativar TDEE Farmacológico, Peak Week e Masters 50+, marque <strong>compostos ativos</strong> no formulário e/ou selecione objetivo <strong>Peak Week / competição</strong>. Você pode abrir cada bloco para ver o conteúdo previsto e editar manualmente após a geração.
+                </div>
+              )}
+
+              {(tdee || eliteVazio) && (
+                <Section icon="🔥" title="BLOCO 1 · TDEE Farmacológico (detalhe)" defaultOpen={!!tdee}>
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: 8 }}>
                     <Stat label="TMB" value={fmtN(tdee.tmb, " kcal")} />
                     <Stat label="GET natural" value={fmtN(tdee.get_natural, " kcal")} />
@@ -2389,16 +2395,16 @@ export default function PlanoAlimentarIA() {
                 ) : <Empty />}
               </Section>
 
-              {timeline && (
-                <Section icon="📅" title="BLOCO 6 · Timeline até o Campeonato">
+              <Section icon="📅" title="BLOCO 6 · Timeline até o Campeonato">
+                {timeline ? (
                   <div style={{ display: "grid", gap: 6 }}>
                     <Stat label="Fase atual" value={timeline.fase_atual || "—"} hl />
                     {Array.isArray(timeline.ajustes_por_shape) && timeline.ajustes_por_shape.map((a: string, i: number) => (
                       <div key={i} style={{ fontSize: 11, color: T.text, paddingLeft: 10, borderLeft: `2px solid ${T.green}` }}>{a}</div>
                     ))}
                   </div>
-                </Section>
-              )}
+                ) : <Empty />}
+              </Section>
 
               <Section icon="🏆" title="BLOCO 7 · Peak Week">
                 {peak?.ativo ? (
