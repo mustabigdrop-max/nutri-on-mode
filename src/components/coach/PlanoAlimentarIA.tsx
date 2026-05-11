@@ -2284,6 +2284,17 @@ export default function PlanoAlimentarIA() {
                 style={{ width: "100%", background: "transparent", border: `1px dashed ${T.green}`, borderRadius: 4, padding: "2px 6px", color: T.text, fontSize: 12, fontFamily: "inherit", outline: "none" }} />
             );
           };
+          const Empty = () => <div style={{ fontSize: 11, color: T.muted2, fontStyle: "italic" }}>Sem dados retornados pela IA.</div>;
+          const macros = ne.hierarquia_macros;
+          const elet = ne.eletrolitos_por_fase || ne.eletrolitos;
+          const crono = Array.isArray(ne.cronobiologia) ? ne.cronobiologia : [];
+          const micros = Array.isArray(ne.micronutrientes_criticos) ? ne.micronutrientes_criticos : [];
+          const peak = ne.peak_week;
+          const masters = ne.masters_50;
+          const saude = Array.isArray(ne.monitoramento_saude) ? ne.monitoramento_saude : [];
+          const mce = ne.mce_comportamental;
+          const tdee = ne.tdee_breakdown;
+          const timeline = ne.timeline_semanas;
           return (
             <div className="fade-up" style={{ margin: "0 24px 16px", display: "grid", gap: 10 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 0", flexWrap: "wrap" }}>
