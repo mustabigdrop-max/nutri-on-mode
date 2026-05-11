@@ -422,12 +422,15 @@ function McItem({ label, value }: { label: string; value: string }) {
 
 function BlockCard({ icon: Icon, title, children }: { icon: any; title: string; color?: string; children: React.ReactNode }) {
   return (
-    <Card className="p-4 bg-zinc-950 border-amber-500/20">
-      <div className="flex items-center gap-2 mb-3">
-        <Icon className="w-4 h-4 text-amber-400" />
-        <h3 className="font-semibold text-amber-400 text-sm">{title}</h3>
-      </div>
-      {children}
+    <Card className="bg-zinc-950 border-amber-500/20 overflow-hidden">
+      <details className="group">
+        <summary className="cursor-pointer list-none p-4 flex items-center gap-2 hover:bg-amber-500/5 transition">
+          <Icon className="w-4 h-4 text-amber-400" />
+          <h3 className="font-semibold text-amber-400 text-sm flex-1">{title}</h3>
+          <span className="text-xs text-amber-400/60 font-mono group-open:rotate-180 transition-transform">▾</span>
+        </summary>
+        <div className="px-4 pb-4">{children}</div>
+      </details>
     </Card>
   );
 }
