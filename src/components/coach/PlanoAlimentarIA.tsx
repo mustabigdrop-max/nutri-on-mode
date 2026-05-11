@@ -2225,6 +2225,217 @@ export default function PlanoAlimentarIA() {
           );
         })()}
 
+        {/* NutriPlan Elite — 11 BLOCOS COMPLETOS (cards visuais) */}
+        {(() => {
+          const ne: any = (plano as any)?.nutriplan_elite;
+          if (!ne) return null;
+          const fmtN = (n: any, suf = "") => (n == null || isNaN(Number(n)) ? "—" : `${Math.round(Number(n))}${suf}`);
+          const Section = ({ icon, title, children }: any) => (
+            <div style={{ padding: 14, borderRadius: 10, background: T.bg2, border: `1px solid ${T.border2}`, borderLeft: `3px solid ${T.green}` }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+                <span style={{ fontSize: 16 }}>{icon}</span>
+                <span style={{ fontSize: 11, fontWeight: 700, color: T.green, textTransform: "uppercase", letterSpacing: "0.1em" }}>{title}</span>
+              </div>
+              {children}
+            </div>
+          );
+          const Stat = ({ label, value, hl }: any) => (
+            <div style={{ padding: 8, borderRadius: 6, background: hl ? T.greenBg : T.bg3, border: `1px solid ${hl ? T.green : T.border}` }}>
+              <div style={{ fontSize: 9, color: T.muted2, textTransform: "uppercase", letterSpacing: "0.08em" }}>{label}</div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: hl ? T.green : T.text, fontFamily: "'Space Grotesk', sans-serif", marginTop: 2 }}>{value}</div>
+            </div>
+          );
+          const Empty = () => <div style={{ fontSize: 11, color: T.muted2, fontStyle: "italic" }}>Sem dados retornados pela IA.</div>;
+          const macros = ne.hierarquia_macros;
+          const elet = ne.eletrolitos_por_fase || ne.eletrolitos;
+          const crono = Array.isArray(ne.cronobiologia) ? ne.cronobiologia : [];
+          const micros = Array.isArray(ne.micronutrientes_criticos) ? ne.micronutrientes_criticos : [];
+          const peak = ne.peak_week;
+          const masters = ne.masters_50;
+          const saude = Array.isArray(ne.monitoramento_saude) ? ne.monitoramento_saude : [];
+          const mce = ne.mce_comportamental;
+          const tdee = ne.tdee_breakdown;
+          const timeline = ne.timeline_semanas;
+          return (
+            <div className="fade-up" style={{ margin: "0 24px 16px", display: "grid", gap: 10 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 0" }}>
+                <span style={{ fontSize: 18 }}>🏆</span>
+                <span style={{ fontSize: 14, fontWeight: 700, color: T.green, fontFamily: "'Space Grotesk', sans-serif" }}>NutriPlan Elite · 11 Blocos</span>
+              </div>
+
+              {tdee && (
+                <Section icon="🔥" title="BLOCO 1 · TDEE Farmacológico (detalhe)">
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: 8 }}>
+                    <Stat label="TMB" value={fmtN(tdee.tmb, " kcal")} />
+                    <Stat label="GET natural" value={fmtN(tdee.get_natural, " kcal")} />
+                    <Stat label="GET farmaco" value={fmtN(tdee.get_farmaco, " kcal")} />
+                    <Stat label="Meta final" value={fmtN(tdee.meta_final, " kcal")} hl />
+                    <Stat label="Buffer anti-cat" value={`+${tdee.buffer_anticatabolico_pct ?? "—"}%`} />
+                    <Stat label="Fator farmaco" value={`×${Number(tdee.fator_farmacologico ?? 1).toFixed(2)}`} />
+                  </div>
+                  {tdee.justificativa && <div style={{ marginTop: 8, fontSize: 11, color: T.muted, fontStyle: "italic" }}>{tdee.justificativa}</div>}
+                </Section>
+              )}
+
+              <Section icon="🥩" title="BLOCO 2 · Macros Hierárquicos">
+                {macros ? (
+                  <div style={{ display: "grid", gap: 10 }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: 8 }}>
+                      <Stat label="Proteína" value={`${macros.ptn_g_kg ?? "—"} g/kg`} hl />
+                      <Stat label="Gordura" value={`${macros.gordura_g_kg ?? "—"} g/kg`} />
+                    </div>
+                    {macros.cho_cycling && (
+                      <div>
+                        <div style={{ fontSize: 10, color: T.green, marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.08em" }}>CHO Cycling</div>
+                        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
+                          <Stat label="Treino pesado" value={fmtN(macros.cho_cycling.treino_pesado, " g")} />
+                          <Stat label="Treino leve" value={fmtN(macros.cho_cycling.treino_leve, " g")} />
+                          <Stat label="Off" value={fmtN(macros.cho_cycling.off, " g")} />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ) : <Empty />}
+              </Section>
+
+              <Section icon="⏰" title="BLOCO 3 · Crononutrição">
+                {crono.length ? (
+                  <div style={{ display: "grid", gap: 6 }}>
+                    {crono.map((c: any, i: number) => (
+                      <div key={i} style={{ display: "flex", gap: 10, padding: 8, background: T.bg3, borderRadius: 6, border: `1px solid ${T.border}` }}>
+                        <span style={{ color: T.green, fontFamily: "monospace", fontSize: 12, fontWeight: 700, minWidth: 50 }}>{c.horario}</span>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontSize: 12, color: T.text, fontWeight: 600 }}>{c.janela}</div>
+                          <div style={{ fontSize: 11, color: T.muted, marginTop: 2 }}>{c.regra}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : <Empty />}
+              </Section>
+
+              <Section icon="💧" title="BLOCO 4 · Hidratação & Eletrólitos">
+                {elet ? (
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(110px, 1fr))", gap: 8 }}>
+                    <Stat label="Fase" value={elet.fase || "—"} />
+                    <Stat label="Água" value={`${elet.agua_ml ?? elet.agua_l ?? "—"} ${elet.agua_ml ? "ml" : "L"}`} />
+                    <Stat label="Sódio" value={`${elet.sodio_mg ?? "—"} mg`} />
+                    <Stat label="Potássio" value={`${elet.potassio_mg ?? "—"} mg`} />
+                    <Stat label="Magnésio" value={`${elet.magnesio_mg ?? "—"} mg`} />
+                    <Stat label="Na:K" value={elet.ratio_na_k ?? "—"} hl />
+                  </div>
+                ) : <Empty />}
+              </Section>
+
+              <Section icon="💊" title="BLOCO 5 · Micronutrientes Críticos">
+                {micros.length ? (
+                  <div style={{ display: "grid", gap: 6 }}>
+                    {micros.map((m: any, i: number) => (
+                      <div key={i} style={{ padding: 8, background: T.bg3, borderRadius: 6, border: `1px solid ${T.border}` }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
+                          <span style={{ fontWeight: 700, color: T.green, fontSize: 12 }}>{m.nutriente}</span>
+                          <span style={{ fontSize: 11, color: T.amber, fontFamily: "monospace" }}>{m.dose}</span>
+                        </div>
+                        {m.fonte_alimentar_ou_supl && <div style={{ fontSize: 11, color: T.muted, marginTop: 3 }}>{m.fonte_alimentar_ou_supl}</div>}
+                        {m.justificativa && <div style={{ fontSize: 10, color: T.muted2, fontStyle: "italic", marginTop: 2 }}>{m.justificativa}</div>}
+                      </div>
+                    ))}
+                  </div>
+                ) : <Empty />}
+              </Section>
+
+              {timeline && (
+                <Section icon="📅" title="BLOCO 6 · Timeline até o Campeonato">
+                  <div style={{ display: "grid", gap: 6 }}>
+                    <Stat label="Fase atual" value={timeline.fase_atual || "—"} hl />
+                    {Array.isArray(timeline.ajustes_por_shape) && timeline.ajustes_por_shape.map((a: string, i: number) => (
+                      <div key={i} style={{ fontSize: 11, color: T.text, paddingLeft: 10, borderLeft: `2px solid ${T.green}` }}>{a}</div>
+                    ))}
+                  </div>
+                </Section>
+              )}
+
+              <Section icon="🏆" title="BLOCO 7 · Peak Week">
+                {peak?.ativo ? (
+                  <div style={{ display: "grid", gap: 8 }}>
+                    {Array.isArray(peak.dias_protocolo) && peak.dias_protocolo.map((d: any, i: number) => (
+                      <div key={i} style={{ padding: 8, background: T.bg3, borderRadius: 6, border: `1px solid ${T.border}`, fontSize: 11 }}>
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "center" }}>
+                          <span style={{ color: T.green, fontWeight: 700 }}>{d.dia}</span>
+                          <span style={{ color: T.text }}>CHO {d.cho_g}g</span>
+                          <span style={{ color: T.text }}>Na {d.sodio_mg}mg</span>
+                          <span style={{ color: T.text }}>Água {d.agua_l}L</span>
+                          {d.treino && <span style={{ color: T.muted }}>· {d.treino}</span>}
+                        </div>
+                        {d.observacao && <div style={{ marginTop: 4, fontSize: 10, color: T.muted2, fontStyle: "italic" }}>{d.observacao}</div>}
+                      </div>
+                    ))}
+                    {Array.isArray(peak.indicadores_backstage) && peak.indicadores_backstage.length > 0 && (
+                      <div>
+                        <div style={{ fontSize: 10, color: T.green, marginBottom: 4, textTransform: "uppercase", letterSpacing: "0.08em" }}>Indicadores Backstage</div>
+                        {peak.indicadores_backstage.map((b: string, i: number) => (
+                          <div key={i} style={{ fontSize: 11, color: T.text }}>• {b}</div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ) : <div style={{ fontSize: 11, color: T.muted2 }}>Não ativo (semanas até competição &gt; 1).</div>}
+              </Section>
+
+              <Section icon="🛡️" title="BLOCO 8 · Masters 50+">
+                {masters?.ativo ? (
+                  <div style={{ display: "grid", gap: 4 }}>
+                    {(masters.regras_aplicadas || []).map((r: string, i: number) => (
+                      <div key={i} style={{ fontSize: 11, color: T.text, paddingLeft: 10, borderLeft: `2px solid ${T.amber}` }}>{r}</div>
+                    ))}
+                  </div>
+                ) : <div style={{ fontSize: 11, color: T.muted2 }}>Não ativo (idade &lt; 50).</div>}
+              </Section>
+
+              <Section icon="🍽️" title="BLOCO 9 · Edição & Personalização">
+                <div style={{ fontSize: 11, color: T.muted, lineHeight: 1.6 }}>
+                  Substituições respeitam macro principal (±10% kcal), timing fisiológico e restrições.
+                  Alimentos travados permanecem inalterados; gap &gt; 50 kcal gera alerta de compensação.
+                  Bloqueio automático se PTN &lt; 2 g/kg ou gordura &lt; 0.8 g/kg.
+                </div>
+              </Section>
+
+              <Section icon="🩺" title="BLOCO 10 · Saúde Monitorada">
+                {saude.length ? (
+                  <div style={{ display: "grid", gap: 6 }}>
+                    {saude.map((m: any, i: number) => (
+                      <div key={i} style={{ padding: 8, background: T.bg3, borderRadius: 6, border: `1px solid ${T.border}`, display: "flex", justifyContent: "space-between", gap: 10 }}>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontSize: 12, color: T.text, fontWeight: 600 }}>{m.exame}</div>
+                          {m.alerta_clinico && <div style={{ fontSize: 10, color: T.red, marginTop: 2 }}>⚠ {m.alerta_clinico}</div>}
+                        </div>
+                        <span style={{ fontSize: 10, color: T.amber, fontFamily: "monospace", whiteSpace: "nowrap" }}>{m.frequencia}</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : <Empty />}
+              </Section>
+
+              <Section icon="🧠" title="BLOCO 11 · MCE Comportamental">
+                {mce ? (
+                  <div style={{ display: "grid", gap: 6 }}>
+                    {[
+                      { l: "Mindset", v: mce.mindset },
+                      { l: "Comportamento", v: mce.comportamento },
+                      { l: "Execução", v: mce.execucao },
+                    ].map((item, i) => (
+                      <div key={i} style={{ padding: 8, background: T.bg3, borderRadius: 6, border: `1px solid ${T.border}` }}>
+                        <div style={{ fontSize: 10, color: T.green, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em" }}>{item.l}</div>
+                        <div style={{ fontSize: 12, color: T.text, marginTop: 3 }}>{item.v || "—"}</div>
+                      </div>
+                    ))}
+                  </div>
+                ) : <Empty />}
+              </Section>
+            </div>
+          );
+        })()}
+
         {/* NutriPlan Elite — Banner de Modo Especial (Competição / GLP-1 / Feminino + RED-S) */}
         {modoEspecial !== "normal" && (() => {
           const r = plano.resumo;
