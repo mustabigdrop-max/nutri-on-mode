@@ -2233,7 +2233,7 @@ export default function PlanoAlimentarIA() {
           if (!ne) return null;
           const fmtN = (n: any, suf = "") => (n == null || isNaN(Number(n)) ? "—" : `${Math.round(Number(n))}${suf}`);
           const Section = ({ icon, title, children, defaultOpen }: any) => (
-            <details open={!!defaultOpen} style={{ borderRadius: 10, background: T.bg2, border: `1px solid ${T.border2}`, borderLeft: `3px solid ${T.green}`, overflow: "hidden" }}>
+            <details key={`${eliteAllOpen}-${title}`} open={eliteAllOpen || !!defaultOpen} style={{ borderRadius: 10, background: T.bg2, border: `1px solid ${T.border2}`, borderLeft: `3px solid ${T.green}`, overflow: "hidden" }}>
               <summary style={{ listStyle: "none", cursor: "pointer", padding: "12px 14px", display: "flex", alignItems: "center", gap: 8, userSelect: "none" }}>
                 <span style={{ fontSize: 16 }}>{icon}</span>
                 <span style={{ fontSize: 11, fontWeight: 700, color: T.green, textTransform: "uppercase", letterSpacing: "0.1em", flex: 1 }}>{title}</span>
@@ -2242,28 +2242,59 @@ export default function PlanoAlimentarIA() {
               <div style={{ padding: "0 14px 14px" }}>{children}</div>
             </details>
           );
-          const Stat = ({ label, value, hl }: any) => (
-            <div style={{ padding: 8, borderRadius: 6, background: hl ? T.greenBg : T.bg3, border: `1px solid ${hl ? T.green : T.border}` }}>
-              <div style={{ fontSize: 9, color: T.muted2, textTransform: "uppercase", letterSpacing: "0.08em" }}>{label}</div>
-              <div style={{ fontSize: 13, fontWeight: 700, color: hl ? T.green : T.text, fontFamily: "'Space Grotesk', sans-serif", marginTop: 2 }}>{value}</div>
-            </div>
-          );
-          const Empty = () => <div style={{ fontSize: 11, color: T.muted2, fontStyle: "italic" }}>Sem dados retornados pela IA.</div>;
-          const macros = ne.hierarquia_macros;
-          const elet = ne.eletrolitos_por_fase || ne.eletrolitos;
-          const crono = Array.isArray(ne.cronobiologia) ? ne.cronobiologia : [];
-          const micros = Array.isArray(ne.micronutrientes_criticos) ? ne.micronutrientes_criticos : [];
-          const peak = ne.peak_week;
-          const masters = ne.masters_50;
-          const saude = Array.isArray(ne.monitoramento_saude) ? ne.monitoramento_saude : [];
-          const mce = ne.mce_comportamental;
-          const tdee = ne.tdee_breakdown;
-          const timeline = ne.timeline_semanas;
+          // setter helper para edição inline em ne.*
+          const updateNe = (path: string[], value: any) => {
+            setPlano((prev: any) => {
+              if (!prev) return prev;
+              const clone = JSON.parse(JSON.stringify(prev));
+              let obj = clone.nutriplan_elite = clone.nutriplan_elite || {};
+              for (let i = 0; i < path.length - 1; i++) {
+                obj[path[i]] = obj[path[i]] ?? (typeof path[i + 1] === "number" ? [] : {});
+                obj = obj[path[i]];
+              }
+              obj[path[path.length - 1]] = value;
+              return clone;
+            });
+          };
+          const Stat = ({ label, value, hl, path, type = "text", suffix = "" }: any) => {
+            const editable = eliteEdit && path;
+            return (
+              <div style={{ padding: 8, borderRadius: 6, background: hl ? T.greenBg : T.bg3, border: `1px solid ${hl ? T.green : T.border}` }}>
+                <div style={{ fontSize: 9, color: T.muted2, textTransform: "uppercase", letterSpacing: "0.08em" }}>{label}</div>
+                {editable ? (
+                  <input
+                    type={type}
+                    defaultValue={String(value ?? "").replace(/[^\d.,\-a-zA-Z×% ]/g, "").trim()}
+                    onBlur={(e) => updateNe(path, type === "number" ? Number(e.target.value) : e.target.value)}
+                    style={{ width: "100%", marginTop: 2, background: "transparent", border: `1px dashed ${T.green}`, borderRadius: 4, padding: "2px 4px", color: hl ? T.green : T.text, fontSize: 13, fontWeight: 700, fontFamily: "'Space Grotesk', sans-serif", outline: "none" }}
+                  />
+                ) : (
+                  <div style={{ fontSize: 13, fontWeight: 700, color: hl ? T.green : T.text, fontFamily: "'Space Grotesk', sans-serif", marginTop: 2 }}>{value}{suffix}</div>
+                )}
+              </div>
+            );
+          };
+          const EditText = ({ value, path, multi }: any) => {
+            if (!eliteEdit || !path) return <span>{value || "—"}</span>;
+            return multi ? (
+              <textarea defaultValue={value || ""} onBlur={(e) => updateNe(path, e.target.value)} rows={2}
+                style={{ width: "100%", background: "transparent", border: `1px dashed ${T.green}`, borderRadius: 4, padding: "4px 6px", color: T.text, fontSize: 12, fontFamily: "inherit", outline: "none", resize: "vertical" }} />
+            ) : (
+              <input defaultValue={value || ""} onBlur={(e) => updateNe(path, e.target.value)}
+                style={{ width: "100%", background: "transparent", border: `1px dashed ${T.green}`, borderRadius: 4, padding: "2px 6px", color: T.text, fontSize: 12, fontFamily: "inherit", outline: "none" }} />
+            );
+          };
           return (
             <div className="fade-up" style={{ margin: "0 24px 16px", display: "grid", gap: 10 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 0" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 0", flexWrap: "wrap" }}>
                 <span style={{ fontSize: 18 }}>🏆</span>
-                <span style={{ fontSize: 14, fontWeight: 700, color: T.green, fontFamily: "'Space Grotesk', sans-serif" }}>NutriPlan Elite · 11 Blocos</span>
+                <span style={{ fontSize: 14, fontWeight: 700, color: T.green, fontFamily: "'Space Grotesk', sans-serif", flex: 1 }}>NutriPlan Elite · 11 Blocos</span>
+                <button onClick={() => setEliteAllOpen(o => !o)} style={{ padding: "6px 12px", borderRadius: 6, background: T.bg3, border: `1px solid ${T.border2}`, color: T.text, fontSize: 11, cursor: "pointer", fontWeight: 600 }}>
+                  {eliteAllOpen ? "▴ Recolher tudo" : "▾ Expandir tudo"}
+                </button>
+                <button onClick={() => setEliteEdit(e => !e)} style={{ padding: "6px 12px", borderRadius: 6, background: eliteEdit ? T.green : T.bg3, border: `1px solid ${eliteEdit ? T.green : T.border2}`, color: eliteEdit ? "#000" : T.text, fontSize: 11, cursor: "pointer", fontWeight: 700 }}>
+                  {eliteEdit ? "✓ Salvar edição" : "✎ Editar"}
+                </button>
               </div>
 
               {tdee && (
