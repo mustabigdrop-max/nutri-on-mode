@@ -217,6 +217,7 @@ const App = () => (
             <Route path="/athlete/competition/:planId/check-in" element={<ProtectedRoute><AthleteCompetitionCheckInPage /></ProtectedRoute>} />
             <Route path="/coach/hub" element={<ProtectedRoute><CoachHub /></ProtectedRoute>} />
             <Route path="/coach/apex-visual" element={<ProtectedRoute><CoachApexVisualPage /></ProtectedRoute>} />
+            <Route path="/coach/apex-checkin" element={<ProtectedRoute><ApexCheckinPage /></ProtectedRoute>} />
             <Route path="/coach/trainingon" element={<ProtectedRoute><CoachTrainingOnPage /></ProtectedRoute>} />
             <Route path="/coach/lab-exams" element={<ProtectedRoute><CoachLabExamsPage /></ProtectedRoute>} />
             <Route path="/coach/relatorios" element={<ProtectedRoute><CoachReportsPage /></ProtectedRoute>} />
