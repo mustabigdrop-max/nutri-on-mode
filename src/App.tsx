@@ -94,6 +94,7 @@ import AthleteRoster from "./components/coach/AthleteRoster";
 import AthleteProgressTracker from "./components/coach/AthleteProgressTracker";
 import CoachHub from "./pages/CoachHub";
 import CoachApexVisualPage from "./pages/coach/CoachApexVisualPage";
+import ApexCheckinPage from "./pages/coach/ApexCheckinPage";
 import CoachTrainingOnPage from "./pages/coach/CoachTrainingOnPage";
 import CoachLabExamsPage from "./pages/coach/CoachLabExamsPage";
 import CoachReportsPage from "./pages/coach/CoachReportsPage";
@@ -217,6 +218,7 @@ const App = () => (
             <Route path="/athlete/competition/:planId/check-in" element={<ProtectedRoute><AthleteCompetitionCheckInPage /></ProtectedRoute>} />
             <Route path="/coach/hub" element={<ProtectedRoute><CoachHub /></ProtectedRoute>} />
             <Route path="/coach/apex-visual" element={<ProtectedRoute><CoachApexVisualPage /></ProtectedRoute>} />
+            <Route path="/coach/apex-checkin" element={<ProtectedRoute><ApexCheckinPage /></ProtectedRoute>} />
             <Route path="/coach/trainingon" element={<ProtectedRoute><CoachTrainingOnPage /></ProtectedRoute>} />
             <Route path="/coach/lab-exams" element={<ProtectedRoute><CoachLabExamsPage /></ProtectedRoute>} />
             <Route path="/coach/relatorios" element={<ProtectedRoute><CoachReportsPage /></ProtectedRoute>} />
