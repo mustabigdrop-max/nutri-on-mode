@@ -94,6 +94,7 @@ import AthleteRoster from "./components/coach/AthleteRoster";
 import AthleteProgressTracker from "./components/coach/AthleteProgressTracker";
 import CoachHub from "./pages/CoachHub";
 import CoachApexVisualPage from "./pages/coach/CoachApexVisualPage";
+import ApexCheckinPage from "./pages/coach/ApexCheckinPage";
 import CoachTrainingOnPage from "./pages/coach/CoachTrainingOnPage";
 import CoachLabExamsPage from "./pages/coach/CoachLabExamsPage";
 import CoachReportsPage from "./pages/coach/CoachReportsPage";
