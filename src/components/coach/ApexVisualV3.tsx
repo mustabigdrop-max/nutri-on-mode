@@ -874,6 +874,39 @@ export default function ApexVisualV3() {
               </div>
             </div>
 
+            {done && (() => {
+              const missing = SECTION_CHECK.filter(sc => {
+                if (sc.key === "farma" && !temProtocolo) return false;
+                return !((S as any)[sc.key] || "").trim();
+              });
+              if (missing.length === 0) return null;
+              const critico = missing.length >= 6;
+              const accent = critico ? C.red : C.amber;
+              return (
+                <div style={{ background:accent+"15", border:`1.5px solid ${accent}55`, borderRadius:12, padding:"14px 18px", marginBottom:16 }}>
+                  <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:8, flexWrap:"wrap" }}>
+                    <span style={{ fontSize:18 }}>{critico ? "⚠️" : "ℹ️"}</span>
+                    <div style={{ flex:1, minWidth:200 }}>
+                      <div style={{ fontSize:12, fontWeight:800, color:accent, letterSpacing:".06em", textTransform:"uppercase" }}>
+                        Análise {critico ? "muito incompleta" : "parcialmente incompleta"} — {missing.length} de {SECTION_CHECK.length} seção(ões) faltando
+                      </div>
+                      <div style={{ fontSize:11, color:C.textSec, marginTop:3 }}>
+                        A IA não retornou os blocos abaixo. Você pode usar o que veio ou refazer a análise.
+                      </div>
+                    </div>
+                    <button onClick={analisar} style={{ padding:"8px 14px", background:accent, border:"none", borderRadius:8, color:"#000", fontSize:11, fontWeight:700, cursor:"pointer", fontFamily:"inherit", letterSpacing:".05em" }}>↻ RE-ANALISAR</button>
+                  </div>
+                  <div style={{ display:"flex", gap:6, flexWrap:"wrap", marginTop:6 }}>
+                    {missing.map(m => (
+                      <span key={m.key} style={{ fontSize:10, padding:"4px 10px", borderRadius:6, background:C.card, color:accent, border:`1px solid ${accent}44`, fontWeight:600, letterSpacing:".03em" }}>
+                        {m.label}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
+
             {meta.manobraPrincipal && done && (
               <ManeuverCard manobra={(meta.manobraPrincipal||"").toLowerCase().replace(/ /g,"_")} urgencia={(meta.urgencia||"").toLowerCase().replace(/ /g,"_")} />
             )}
