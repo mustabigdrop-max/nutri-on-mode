@@ -342,9 +342,6 @@ const CoachDashboardPage = () => {
             <TabsTrigger value="send">
               <Send className="w-4 h-4 mr-1" /> Enviar Protocolo
             </TabsTrigger>
-            <TabsTrigger value="apex-visual">
-              <Scan className="w-4 h-4 mr-1" /> APEX Visual
-            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="athletes" className="mt-4">
