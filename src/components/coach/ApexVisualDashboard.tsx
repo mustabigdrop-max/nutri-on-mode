@@ -432,7 +432,64 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
     } finally {
       setLoading(false);
     }
-  }, [athlete, cat, formData, photos, coachId, selectedCategory, fetchHistory]);
+  }, [athlete, cat, formData, photos, coachId, selectedCategory, fetchHistory, fetchSyncStatus]);
+
+  // ─── Generate corrective training ────────────────────
+  const buildSyncPayload = useCallback(() => {
+    const meta = parseMeta(analysisResult);
+    const segments = parseSegments(analysisResult);
+    const weakPoints = segments
+      .filter((s) => s.score < 6)
+      .sort((a, b) => a.score - b.score)
+      .map((s) => ({ muscle: s.label, score: s.score, diagnosis: (s as any).diag || "" }));
+    return {
+      meta,
+      weakPoints,
+      posturalDeviations: parseSection(analysisResult, "POSTURA_DESVIOS", "CORRECOES_POSTURAIS"),
+      correctiveProtocol: parseSection(analysisResult, "PONTOS_FRACOS_PROTOCOLO", "CONDICIONAMENTO"),
+      posturalCorrections: parseSection(analysisResult, "CORRECOES_POSTURAIS", "PONTOS_FRACOS_PROTOCOLO"),
+      priorities: { p1: meta.p1, p2: meta.p2, p3: meta.p3 },
+    };
+  }, [analysisResult]);
+
+  const handleGenerateTraining = useCallback(async () => {
+    if (!athlete?.id || !coachId) {
+      toast({ title: "Selecione um atleta antes de gerar o treino", variant: "destructive" });
+      return;
+    }
+    setGeneratingTraining(true);
+    try {
+      const p = buildSyncPayload();
+      const { error } = await supabase.from("apex_training_sync" as any).upsert({
+        athlete_id: athlete.id,
+        coach_id: coachId,
+        category: selectedCategory,
+        weak_points: p.weakPoints,
+        postural_deviations: p.posturalDeviations,
+        corrective_protocol: p.correctiveProtocol,
+        postural_corrections: p.posturalCorrections,
+        priorities: p.priorities,
+        bf_estimated: p.meta.bfEst ? parseFloat(p.meta.bfEst) : null,
+        bf_target: p.meta.bfMeta ? parseFloat(p.meta.bfMeta) : null,
+        apex_analysis_id: savedAnalysisId,
+        sync_status: "pending",
+        updated_at: new Date().toISOString(),
+      }, { onConflict: "athlete_id" });
+      if (error) throw error;
+      setSyncStatus("pending");
+      setShowTrainingModal(true);
+    } catch (e: any) {
+      toast({ title: "Erro ao sincronizar com TrainingON", description: e?.message, variant: "destructive" });
+    } finally {
+      setGeneratingTraining(false);
+    }
+  }, [athlete, coachId, selectedCategory, savedAnalysisId, buildSyncPayload]);
+
+  const goToTrainingOn = () => {
+    if (!athlete?.id) return;
+    setShowTrainingModal(false);
+    navigate(`/coach-dashboard?tab=training&athlete=${athlete.id}&mode=corrective`);
+  };
 
   // ─── RENDER: LOADING ─────────────────────────────────
   if (loading) {
