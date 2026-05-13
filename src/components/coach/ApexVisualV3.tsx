@@ -1358,15 +1358,21 @@ export default function ApexVisualV3() {
                   )}
                 </div>
               )}
-              {activeTab === "pose" && (
-                <div style={{ margin: "-16px -16px 0", borderTop: `1px solid ${C.border}` }}>
-                  <APEXPoseAnalysisPage />
-                </div>
-              )}
             </div>
           </div>
         )}
       </div>
+      {activeTab === "pose" && (
+        <div style={{ position:"fixed", inset:0, zIndex:9999, background:C.void, overflow:"auto", WebkitOverflowScrolling:"touch" }}>
+          <button
+            onClick={() => setActiveTab("overview")}
+            style={{ position:"fixed", top:12, right:12, zIndex:10000, padding:"8px 14px", borderRadius:10, background:C.surface, border:`1px solid ${C.border}`, color:C.text, fontSize:12, fontWeight:700, cursor:"pointer", fontFamily:"inherit" }}
+          >
+            ✕ Fechar
+          </button>
+          <APEXPoseAnalysisPage />
+        </div>
+      )}
     </div>
   );
 }
