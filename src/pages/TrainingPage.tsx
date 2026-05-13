@@ -1708,9 +1708,23 @@ function tryParseJson(raw: string): any | null {
     if (m) s = m[0];
   }
   if (!(s.startsWith("{") || s.startsWith("["))) return null;
-  try { return JSON.parse(s); } catch {}
-  const last = Math.max(s.lastIndexOf("}"), s.lastIndexOf("]"));
-  if (last > 0) { try { return JSON.parse(s.slice(0, last + 1)); } catch {} }
+
+  const attempts = [
+    s,
+    // truncate to last closing bracket
+    (() => {
+      const last = Math.max(s.lastIndexOf("}"), s.lastIndexOf("]"));
+      return last > 0 ? s.slice(0, last + 1) : s;
+    })(),
+    // permissive: strip // and /* */ comments + trailing commas
+    s
+      .replace(/\/\*[\s\S]*?\*\//g, "")
+      .replace(/(^|[^:"'])\/\/[^\n]*/g, "$1")
+      .replace(/,(\s*[}\]])/g, "$1"),
+  ];
+  for (const a of attempts) {
+    try { const o = JSON.parse(a); if (o && typeof o === "object") return o; } catch {}
+  }
   return null;
 }
 
