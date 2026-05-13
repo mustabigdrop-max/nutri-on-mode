@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Dumbbell, AlertTriangle, ArrowRight, FlaskConical, Sparkles, CheckCircle2 } from "lucide-react";
+import { Dumbbell, AlertTriangle, ArrowRight, FlaskConical, Sparkles, CheckCircle2, Download } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import AthleteSelector, { AthleteOption } from "@/components/coach/AthleteSelector";
 import CorrectivePlanViewer from "@/components/coach/CorrectivePlanViewer";
@@ -184,6 +184,73 @@ export default function CoachTrainingOnPage() {
     }
   };
 
+  const [exportingToTrainingOn, setExportingToTrainingOn] = useState(false);
+
+  const handleExportToTrainingOn = async () => {
+    if (!correctiveTraining || !coachId || !athlete) {
+      toast({ title: "Nada para exportar", description: "Gere o protocolo corretivo primeiro.", variant: "destructive" });
+      return;
+    }
+    setExportingToTrainingOn(true);
+    try {
+      const weakPoints: string[] = (apexSyncData?.weak_points || []).map((w: any) =>
+        typeof w === "string" ? w : (w?.muscle || w?.name || "")
+      ).filter(Boolean);
+      const phase = sync?.training_phase || apexSyncData?.category || "Corretivo APEX";
+      const clientName = `${athlete.nome} — Corretivo APEX`;
+
+      const header = [
+        `# ${clientName}`,
+        `Fase: ${phase}`,
+        weakPoints.length ? `Pontos fracos: ${weakPoints.join(", ")}` : null,
+        `Gerado a partir do APEX em ${new Date().toLocaleDateString("pt-BR")}`,
+        "",
+        "---",
+        "",
+      ].filter(Boolean).join("\n");
+
+      const protocolText = header + correctiveTraining;
+
+      const { data: inserted, error } = await supabase
+        .from("training_protocols")
+        .insert({
+          user_id: coachId,
+          patient_user_id: athlete.patient_user_id || null,
+          client_name: clientName,
+          phase,
+          muscles: weakPoints.length ? weakPoints : null,
+          level: "intermediário",
+          weeks: "4",
+          days_per_week: sync?.dias_treino_semana ? String(sync.dias_treino_semana) : "4",
+          equipment: "academia completa",
+          session_duration: sync?.tempo_sessao_min ? String(sync.tempo_sessao_min) : "60",
+          protocol_text: protocolText,
+        })
+        .select("id")
+        .single();
+
+      if (error) throw error;
+
+      if (athlete.patient_user_id && inserted?.id) {
+        await supabase.from("coach_notifications").insert({
+          recipient_user_id: athlete.patient_user_id,
+          sender_user_id: coachId,
+          notification_type: "training_plan",
+          title: "Novo treino corretivo APEX",
+          message: `${clientName} — ${phase}`,
+          action_url: "/training",
+          reference_id: inserted.id,
+        });
+      }
+
+      toast({ title: "✓ Exportado para TrainingON", description: "Disponível em Meus Protocolos." });
+    } catch (e: any) {
+      toast({ title: "Erro ao exportar", description: e?.message || "Falha ao salvar protocolo", variant: "destructive" });
+    } finally {
+      setExportingToTrainingOn(false);
+    }
+  };
+
   const conflitos: string[] = [];
   if (sync?.volume_sets_semana > 18 && sync?.tempo_sessao_min > 75) conflitos.push("Volume alto + sessão longa: risco de overreach");
   if (sync?.musculos_prioritarios?.includes("pernas") && !sync?.training_phase?.toLowerCase().includes("bulk")) {
@@ -306,10 +373,19 @@ export default function CoachTrainingOnPage() {
           {/* Corrective training plan output (parsed) */}
           {correctiveTraining && (
             <Card className="border-blue-500/30 bg-blue-500/5">
-              <CardHeader>
+              <CardHeader className="flex flex-row items-center justify-between gap-3 space-y-0">
                 <CardTitle className="text-sm flex items-center gap-2 text-blue-300">
                   <Sparkles className="h-4 w-4" /> Protocolo de treino corretivo (APEX)
                 </CardTitle>
+                <Button
+                  size="sm"
+                  onClick={handleExportToTrainingOn}
+                  disabled={exportingToTrainingOn}
+                  className="bg-blue-500 hover:bg-blue-600 text-white gap-2"
+                >
+                  <Download className="h-3.5 w-3.5" />
+                  {exportingToTrainingOn ? "Exportando..." : "Exportar para TrainingON"}
+                </Button>
               </CardHeader>
               <CardContent>
                 <CorrectivePlanViewer text={correctiveTraining} apexScores={apexScores} />
