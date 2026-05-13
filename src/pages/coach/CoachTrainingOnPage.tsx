@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Dumbbell, AlertTriangle, ArrowRight, FlaskConical, Sparkles, CheckCircle2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import AthleteSelector, { AthleteOption } from "@/components/coach/AthleteSelector";
+import CorrectivePlanViewer from "@/components/coach/CorrectivePlanViewer";
+import TrainingFeedbackForm from "@/components/coach/TrainingFeedbackForm";
 
 export default function CoachTrainingOnPage() {
   const navigate = useNavigate();
