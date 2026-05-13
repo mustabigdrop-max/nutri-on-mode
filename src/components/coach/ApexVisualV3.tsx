@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import AthleteSelector, { AthleteOption } from "@/components/coach/AthleteSelector";
 import jsPDF from "jspdf";
 
 // ─── PALETA APEX v3 ───────────────────────────────────────────────
