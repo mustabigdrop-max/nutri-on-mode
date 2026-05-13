@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import AthleteSelector, { AthleteOption } from "@/components/coach/AthleteSelector";
 import jsPDF from "jspdf";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend, BarChart, Bar, Cell } from "recharts";
+import APEXPoseAnalysisPage from "@/pages/coach/APEXPoseAnalysisPage";
 
 function EvolutionCharts({ history, cat, C }: { history: any[]; cat: any; C: any }) {
   // Order chronologically (history is desc)
@@ -557,6 +558,7 @@ export default function ApexVisualV3() {
     { id:"farmacologia", label:"💉 Farmacologia", show: temProtocolo && !!S.farma },
     { id:"palco",        label:"🎭 Palco",        show: !!S.ganha || !!S.posing },
     { id:"plano",        label:"🗺 Plano",        show: !!meta.p1 || !!S.plano || !!S.veredicto },
+    { id:"pose",         label:"🤖 Pose AI",      show: true },
   ].filter(t => t.show || !done);
 
   const analisar = async () => {
@@ -1228,7 +1230,7 @@ export default function ApexVisualV3() {
               </div>
             )}
 
-            {done && (
+            {(done || RESULT_TABS.some(t => t.id === "pose")) && (
               <div style={{ display:"flex", gap:0, borderBottom:`1px solid ${C.border}`, marginBottom:16, overflowX:"auto" }}>
                 {RESULT_TABS.map(t => (
                   <button key={t.id} onClick={() => setActiveTab(t.id)} style={{ fontSize:10, padding:"9px 12px", background:"none", border:"none", cursor:"pointer", color:activeTab===t.id?cat.c:C.textSec, borderBottom:`2px solid ${activeTab===t.id?cat.c:"transparent"}`, fontWeight:activeTab===t.id?700:400, whiteSpace:"nowrap", transition:"all .15s", fontFamily:"inherit", letterSpacing:".03em" }}>
@@ -1239,7 +1241,7 @@ export default function ApexVisualV3() {
             )}
 
             <div>
-              {(!done || activeTab === "overview") && (
+              {((!done && activeTab !== "pose") || activeTab === "overview") && (
                 <div style={{ display: done && activeTab !== "overview" ? "none" : "block" }}>
                   {segs.length > 0 && (
                     <Panel icon="📊" title="SCORES POR SEGMENTO" accent={cat.c}>
@@ -1354,6 +1356,11 @@ export default function ApexVisualV3() {
                       <div style={{ padding:"14px 16px", background:C.goldDim, border:`1px solid ${C.gold}33`, borderRadius:10 }}><ProseText tone="primary" emphasis>{S.veredicto}</ProseText></div>
                     </Panel>
                   )}
+                </div>
+              )}
+              {activeTab === "pose" && (
+                <div style={{ margin: "-16px -16px 0", borderTop: `1px solid ${C.border}` }}>
+                  <APEXPoseAnalysisPage />
                 </div>
               )}
             </div>
