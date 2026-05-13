@@ -5,6 +5,7 @@ import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import AthleteSelector, { AthleteOption } from "@/components/coach/AthleteSelector";
 import { Upload, X, FlaskConical, RotateCcw, History, Eye, Dumbbell, CheckCircle2, Clock, FileText, Copy, Crosshair, ScanLine, Target, Activity, Zap, AlertTriangle, TrendingUp, ChevronRight } from "lucide-react";
+import { ApexSymbol } from "@/components/coach/ApexSymbol";
 
 // ─── APEX Elite design tokens ───────────────────────────────────
 const APEX = {
@@ -644,7 +645,7 @@ Suporte em uso: ${suporte || "não informado"}` : "";
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center py-20 gap-6">
-        <div className="text-6xl animate-pulse">◈</div>
+        <ApexSymbol size={96} color={cat.color} animated />
         <div className="text-lg font-bold text-foreground">APEX Intelligence analisando...</div>
         <div className="space-y-1.5 w-full max-w-md">
           {STEPS.map((s, i) => (
@@ -820,8 +821,9 @@ Suporte em uso: ${suporte || "não informado"}` : "";
           className="rounded-xl p-4"
           style={{ background: `linear-gradient(135deg, ${cat.color}33, ${cat.color}11)`, border: `1px solid ${cat.color}66` }}
         >
-          <div className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: cat.color }}>
-            Veredicto APEX
+          <div className="flex items-center gap-2 mb-1" style={{ color: cat.color }}>
+            <ApexSymbol size={20} color={cat.color} animated />
+            <span className="text-[10px] font-bold uppercase tracking-wider">Veredicto APEX — O que falta para Top 5</span>
           </div>
           <div className="text-sm italic text-foreground whitespace-pre-wrap">
             {parseSection(analysisResult, "VEREDICTO") || "—"}
@@ -929,12 +931,7 @@ Suporte em uso: ${suporte || "não informado"}` : "";
               display: "flex", alignItems: "center", justifyContent: "center",
               boxShadow: `0 0 30px ${APEX.electricGlow}`,
             }}>
-              <div style={{
-                position: "absolute", left: 0, right: 0, height: 2,
-                background: `linear-gradient(90deg, transparent, ${APEX.electric}, transparent)`,
-                animation: "apex-scanLine 2.5s ease-in-out infinite", boxShadow: `0 0 10px ${APEX.electric}`,
-              }} />
-              <ScanLine size={28} color={APEX.electric} strokeWidth={2} />
+              <ApexSymbol size={44} color={APEX.electric} animated />
             </div>
 
             <div>
@@ -1263,7 +1260,7 @@ Suporte em uso: ${suporte || "não informado"}` : "";
               </>
             ) : (
               <>
-                <span>◈</span>
+                <ApexSymbol size={18} color={APEX.textMuted} animated={false} />
                 <span>ADICIONE AO MENOS 1 FOTO PARA INICIAR</span>
               </>
             )}
