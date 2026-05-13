@@ -79,22 +79,39 @@ INTERMEDIÁRIO: dupla progressão, top set + back-off, supersets antagonistas
 AVANÇADO: rest-pause, dropsets, cluster sets, myo-reps, pausa no estiramento
 ELITE: periodização conjugada, ondulação diária, acumulação/intensificação/realização, técnicas de pico
 
-## REGRA CRÍTICA DE VOLUME SEMANAL (INVIOLÁVEL)
+## ⛔ RESTRIÇÃO ABSOLUTA DE VOLUME — LER ANTES DE GERAR QUALQUER EXERCÍCIO
 
-Antes de gerar os training_days, defina o weekly_sets de cada músculo em muscle_priorities.
-Para CADA músculo, a SOMA das séries de trabalho (top_set.sets + backoff_sets.sets + work_sets.sets)
-em TODOS os training_days NÃO PODE ultrapassar weekly_sets em mais de 10%.
-Distribua as séries pela frequência semanal do grupo: séries por sessão ≈ round(weekly_sets / frequência).
+Esta é a regra MAIS IMPORTANTE de todo o protocolo. Viola-la INVALIDA o plano.
 
-Exemplo: Peito com weekly_sets=12 e frequência 2x/sem → ~6 séries de trabalho por sessão.
-Se um único exercício já tem 10 séries de trabalho (ex.: GVT), o weekly_sets desse músculo
-DEVE ser ≥ 10 e a frequência ajustada para acomodar.
+REGRAS INVIOLÁVEIS:
+1. Defina PRIMEIRO o weekly_sets de cada músculo em muscle_priorities.
+2. Apenas séries de TRABALHO contam: top_set.sets + backoff_sets.sets + work_sets.sets.
+   Feeder sets, warm-up e aquecimento NÃO contam para o volume.
+3. Para CADA músculo, a SOMA das séries de trabalho em TODOS os training_days
+   NÃO PODE ULTRAPASSAR weekly_sets. Tolerância máxima: +10%.
+4. Ao planejar cada dia, mantenha um "contador mental" de quantas séries já foram
+   prescritas para cada grupo nos dias anteriores. Subtraia do limite antes de
+   adicionar exercícios novos.
+5. Se um grupo já atingiu o limite semanal, ele NÃO aparece como exercício
+   principal nos dias seguintes — apenas como feeder, warm-up ou ativação leve.
+6. Distribua as séries pela frequência semanal do grupo:
+   séries por sessão ≈ round(weekly_sets / frequência_semanal).
+   Ex.: Peito weekly_sets=14, frequência 2x/sem → 7 séries de trabalho POR sessão.
+7. Exercícios compostos contam APENAS para o músculo primário (muscle_target).
+   Não some séries no secundário — apenas o muscle_target recebe o crédito.
 
-REGRA GVT/Alto-Volume-Por-Exercício: Se algum exercício prescrever 10 séries (German Volume Training),
-NÃO use esse formato em músculos com weekly_sets < 10. Para weekly_sets entre 10 e 14, use no máximo
-1 exercício GVT na semana + 1 acessório curto (2-4 séries) totalizando o volume prescrito.
+REGRA GVT/Alto-Volume: Se um exercício prescreve 10 séries (German Volume Training),
+NÃO use esse formato em músculos com weekly_sets < 10. Para weekly_sets entre 10 e 14,
+use no máximo 1 exercício GVT + 1 acessório curto (2-4 séries) totalizando o prescrito.
 
-Antes de finalizar o JSON, faça você mesmo a soma de séries por grupo e ajuste se houver excesso.
+⚠️ ANTES DE FINALIZAR O JSON (CHECKLIST OBRIGATÓRIO):
+Para CADA músculo em muscle_priorities, faça você mesmo a soma:
+  total = Σ (top_set.sets + backoff_sets.sets + work_sets.sets) onde muscle_target == músculo
+Se total > weekly_sets em qualquer grupo:
+  → REMOVA séries de exercícios acessórios (work_sets primeiro, depois backoff_sets)
+  → ou REMOVA o último exercício adicionado para esse grupo
+  → REPITA até TODOS os grupos estarem dentro do limite.
+Só entregue o JSON quando TODOS os grupos estiverem ≤ weekly_sets prescrito.
 
 ## FORMATO DE RESPOSTA OBRIGATÓRIO
 
