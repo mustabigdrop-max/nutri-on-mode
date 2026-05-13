@@ -312,6 +312,7 @@ Integre QUATRO fontes de inteligência em UM protocolo definitivo:
 ${prontidaoBloco}
 ${fibrasBloco}
 ${sistemaBloco}
+${correctivePrompt ? `\n━━━ PROTOCOLO CORRETIVO APEX (colado pelo coach) ━━━\nUse as recomendações abaixo como BASE para os exercícios corretivos, ativações, finalizadores e ajustes de volume por grupo. Integre ao protocolo principal sem duplicar exercícios.\n\n${correctivePrompt}\n━━━ FIM PROTOCOLO CORRETIVO ━━━` : ""}
 
 ━━━ OUTPUT OBRIGATÓRIO ━━━
 1. AQUECIMENTO específico (considera lesões e grupo muscular)
