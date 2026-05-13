@@ -821,8 +821,9 @@ Suporte em uso: ${suporte || "não informado"}` : "";
           className="rounded-xl p-4"
           style={{ background: `linear-gradient(135deg, ${cat.color}33, ${cat.color}11)`, border: `1px solid ${cat.color}66` }}
         >
-          <div className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: cat.color }}>
-            Veredicto APEX
+          <div className="flex items-center gap-2 mb-1" style={{ color: cat.color }}>
+            <ApexSymbol size={20} color={cat.color} animated />
+            <span className="text-[10px] font-bold uppercase tracking-wider">Veredicto APEX — O que falta para Top 5</span>
           </div>
           <div className="text-sm italic text-foreground whitespace-pre-wrap">
             {parseSection(analysisResult, "VEREDICTO") || "—"}
