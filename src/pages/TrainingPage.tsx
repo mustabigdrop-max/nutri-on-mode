@@ -354,14 +354,8 @@ Português. Específico. Científico. Zero genérico.`;
         },
       });
       if (error) throw error;
-      const maybeParseJson = (txt: string): any | null => {
-        if (!txt || typeof txt !== "string") return null;
-        const fence = txt.match(/```(?:json)?\s*([\s\S]*?)```/i);
-        const raw = (fence ? fence[1] : txt).trim();
-        try { const o = JSON.parse(raw); return (o && typeof o === "object") ? o : null; } catch { return null; }
-      };
       let proto = data.protocol;
-      if (!proto && data.content) proto = maybeParseJson(data.content);
+      if (!proto && data.content) proto = tryParseJson(data.content);
       if (proto && (proto.block_overview || proto.training_days || proto.phase_plan)) {
         setProtocol(proto);
         const sysName = TRAINING_SYSTEMS.find(s => s.id === trainingSystem)?.nome;
