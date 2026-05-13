@@ -693,7 +693,7 @@ export default function ApexVisualV3() {
 
     // Scores tabela
     if (segs.length) {
-      text("Scores por segmento", { size: 10, bold: true, color: RGB.ink });
+      text("Scores por segmento", { size: PT.h3, bold: true, color: RGB.ink, lh: PT.lhTight });
       y += 1;
       const rowH = 6.5;
       segs.forEach(s => {
