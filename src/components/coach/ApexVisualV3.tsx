@@ -524,14 +524,25 @@ export default function ApexVisualV3() {
 
   const reset = () => { setRaw(""); setDone(false); setError(null); setFotoF(null); setFotoC(null); setFotoL(null); setStreaming(false); };
 
-  const exportarPDF = () => {
+  const exportarPDF = (accessible: boolean = false) => {
     const pdf = new jsPDF({ unit: "mm", format: "a4" });
-    const W = 210, H = 297, M = 15;
+    const W = 210, H = 297, M = accessible ? 18 : 15;
     const maxW = W - M * 2;
     let y = M;
 
-    // Cores (RGB)
-    const RGB = {
+    // Cores (RGB) — modo acessível usa contraste ≥ WCAG AA (preto puro + acentos escuros)
+    const RGB = accessible ? {
+      ink:    [0, 0, 0]       as [number, number, number],
+      sub:    [40, 40, 40]    as [number, number, number],
+      mute:   [70, 70, 70]    as [number, number, number],
+      line:   [120, 120, 120] as [number, number, number],
+      brand:  [0, 80, 110]    as [number, number, number],
+      gold:   [120, 75, 0]    as [number, number, number],
+      green:  [0, 95, 40]     as [number, number, number],
+      red:    [150, 20, 35]   as [number, number, number],
+      purple: [70, 35, 140]   as [number, number, number],
+      bgSoft: [240, 240, 240] as [number, number, number],
+    } : {
       ink: [22, 26, 38] as [number, number, number],
       sub: [95, 105, 125] as [number, number, number],
       mute: [140, 150, 170] as [number, number, number],
@@ -544,27 +555,20 @@ export default function ApexVisualV3() {
       bgSoft: [245, 247, 252] as [number, number, number],
     };
 
-    // ===== ESCALA TIPOGRÁFICA PDF (espelha tokens T do componente) =====
-    // body 13.5px web ≈ 10pt PDF · lh 1.7 web → 1.5 PDF · prose 760px ≈ 175mm
-    const PT = {
-      h1: 18,        // título da capa
-      h2: 11,        // títulos de seção
-      h3: 10,        // sub-cabeçalhos / labels
-      body: 10,      // texto corrido
-      small: 8.5,    // anotações / diag
-      caption: 7.5,  // rodapé / pílulas label
-      lhBody: 1.5,
-      lhTight: 1.35,
-      lhHeading: 1.2,
-      // espaçamentos em mm
-      spXS: 1.5,
-      spSM: 3,
-      spMD: 5,
-      spLG: 8,
-      spXL: 11,
-      // largura de prosa (clamped a maxW)
+    // ===== ESCALA TIPOGRÁFICA PDF =====
+    // Modo acessível: tamanhos mínimos para leitura em tela e impressão (body ≥ 12pt, caption ≥ 10pt)
+    const PT = accessible ? {
+      h1: 22, h2: 14, h3: 12, body: 12, small: 11, caption: 10,
+      lhBody: 1.6, lhTight: 1.45, lhHeading: 1.25,
+      spXS: 2, spSM: 4, spMD: 6, spLG: 10, spXL: 13,
+      proseW: Math.min(maxW, 170),
+      trackTitle: 0.2,
+    } : {
+      h1: 18, h2: 11, h3: 10, body: 10, small: 8.5, caption: 7.5,
+      lhBody: 1.5, lhTight: 1.35, lhHeading: 1.2,
+      spXS: 1.5, spSM: 3, spMD: 5, spLG: 8, spXL: 11,
       proseW: Math.min(maxW, 175),
-      trackTitle: 0.25,  // letter-spacing aproximado em pt
+      trackTitle: 0.25,
     };
 
     const need = (h: number) => { if (y + h > H - M) { pdf.addPage(); y = M; } };
@@ -635,13 +639,21 @@ export default function ApexVisualV3() {
     const hr = () => { need(4); pdf.setDrawColor(...RGB.line); pdf.setLineWidth(0.2); pdf.line(M, y, W - M, y); y += 4; };
 
     // ===== CAPA =====
-    pdf.setFillColor(8, 12, 24);
-    pdf.rect(0, 0, W, 50, "F");
-    pdf.setTextColor(255, 255, 255);
+    if (accessible) {
+      pdf.setFillColor(255, 255, 255);
+      pdf.rect(0, 0, W, 50, "F");
+      pdf.setDrawColor(0, 0, 0); pdf.setLineWidth(0.5);
+      pdf.line(M, 48, W - M, 48);
+      pdf.setTextColor(0, 0, 0);
+    } else {
+      pdf.setFillColor(8, 12, 24);
+      pdf.rect(0, 0, W, 50, "F");
+      pdf.setTextColor(255, 255, 255);
+    }
     pdf.setFont("helvetica", "bold"); pdf.setFontSize(PT.h1);
     pdf.text("APEX VISUAL v3", M, 22);
     pdf.setFont("helvetica", "normal"); pdf.setFontSize(PT.body);
-    pdf.setTextColor(180, 200, 230);
+    if (!accessible) pdf.setTextColor(180, 200, 230);
     pdf.text("Análise Visual + Postura + Farmacologia + Manobras de Elite", M, 30);
     pdf.setFontSize(PT.small);
     pdf.text(`Categoria: ${cat.l}  ·  Atleta: ${nome || "—"}  ·  ${idade ? idade + " anos · " : ""}${peso ? peso + "kg · " : ""}${altura ? altura + "cm" : ""}`, M, 38);
@@ -779,7 +791,7 @@ export default function ApexVisualV3() {
     }
 
     const safe = (nome || "atleta").replace(/[^a-z0-9]+/gi, "_").toLowerCase();
-    pdf.save(`apex-visual-v3-${safe}-${new Date().toISOString().slice(0, 10)}.pdf`);
+    pdf.save(`apex-visual-v3${accessible ? "-acessivel" : ""}-${safe}-${new Date().toISOString().slice(0, 10)}.pdf`);
   };
 
   return (
@@ -801,7 +813,8 @@ export default function ApexVisualV3() {
           {(done || streaming) && (
             <div style={{ display:"flex", gap:8 }}>
               {streaming && <div style={{ padding:"6px 12px", borderRadius:8, background:cat.c+"22", border:`1px solid ${cat.c}55`, fontSize:10, color:cat.c, fontWeight:700, letterSpacing:".1em" }}>● ANALISANDO</div>}
-              {done && <button onClick={exportarPDF} style={{ padding:"6px 14px", borderRadius:8, background:cat.c+"22", border:`1px solid ${cat.c}66`, color:cat.c, fontSize:11, cursor:"pointer", fontFamily:"inherit", letterSpacing:".05em", fontWeight:700 }}>⬇ EXPORTAR PDF</button>}
+              {done && <button onClick={() => exportarPDF(false)} style={{ padding:"6px 14px", borderRadius:8, background:cat.c+"22", border:`1px solid ${cat.c}66`, color:cat.c, fontSize:11, cursor:"pointer", fontFamily:"inherit", letterSpacing:".05em", fontWeight:700 }}>⬇ EXPORTAR PDF</button>}
+              {done && <button onClick={() => exportarPDF(true)} title="Versão com fontes maiores e contraste alto (WCAG AA)" style={{ padding:"6px 14px", borderRadius:8, background:"#ffffff", border:`1px solid #000`, color:"#000", fontSize:11, cursor:"pointer", fontFamily:"inherit", letterSpacing:".05em", fontWeight:700 }}>♿ PDF ACESSÍVEL</button>}
               {done && <button onClick={reset} style={{ padding:"6px 14px", borderRadius:8, background:C.card, border:`1px solid ${C.border}`, color:C.text, fontSize:11, cursor:"pointer", fontFamily:"inherit", letterSpacing:".05em" }}>+ NOVA ANÁLISE</button>}
             </div>
           )}
