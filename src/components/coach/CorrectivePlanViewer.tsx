@@ -6,10 +6,18 @@ import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 
 // ─── Parsing helpers ────────────────────────────────────────────
-function section(text: string, header: string, nextHeaders: string[] = []): string {
-  const re = new RegExp(`##\\s*${header}\\s*\\n([\\s\\S]*?)(?=\\n##\\s*(?:${nextHeaders.join("|")})\\s*\\n|$)`, "i");
-  const m = text.match(re);
-  return m ? m[1].trim() : "";
+function section(text: string, header: string | string[], nextHeaders: string[] = []): string {
+  const headers = Array.isArray(header) ? header : [header];
+  for (const h of headers) {
+    // Accept ##, ###, **, or bare header lines (with optional emoji/markdown decoration)
+    const re = new RegExp(
+      `(?:^|\\n)\\s*(?:#{1,4}\\s*|\\*\\*\\s*)?${h}\\s*(?:\\*\\*)?\\s*:?\\s*\\n([\\s\\S]*?)(?=\\n\\s*(?:#{1,4}\\s*|\\*\\*\\s*)?(?:${nextHeaders.join("|")})\\s*(?:\\*\\*)?\\s*:?\\s*\\n|$)`,
+      "i"
+    );
+    const m = text.match(re);
+    if (m && m[1].trim()) return m[1].trim();
+  }
+  return "";
 }
 
 export interface ParsedExercise {
