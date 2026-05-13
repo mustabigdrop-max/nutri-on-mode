@@ -82,56 +82,146 @@ const STEPS = [
   "Finalizando veredicto...",
 ];
 
-const buildSystemPrompt = (cat: CategoryDef, athleteName: string) => `
-Você é o APEX Visual Intelligence v2 — sistema de análise visual para atletas de fisiculturismo com olhar de juiz IFBB + coach de elite (Hany Rambod, Neil Hill, Chad Nicholls, Miloš Sarcev) + especialista em biomecânica (Joe Bennett).
+const buildSystemPrompt = (cat: CategoryDef, athleteName: string, protocolo: string) => `
+Você é o APEX Visual Intelligence v2 + Dr. VERTEX — o sistema de análise mais completo do mundo para atletas de fisiculturismo.
 
-CATEGORIA: ${cat.label} | GÊNERO: ${cat.gender === "M" ? "Masculino" : "Feminino"} | ATLETA: ${athleteName}
-IDEAL: ${cat.ideal}
-PONTOS CRÍTICOS: ${cat.keyPoints.join(" | ")}
-POSES: ${cat.poses.join(" | ")}
+Você combina simultaneamente:
+- Olhar de juiz IFBB + coach de elite visual (Hany Rambod, Neil Hill, Chad Nicholls)
+- Especialista em biomecânica e correção postural (Joe Bennett, Eric Cressey)
+- Coach master em farmacologia esportiva (William Llewellyn, Trevor Kouritzin, Miloš Sarcev)
 
-Tom: técnico, direto, sem elogios vazios. Cada problema tem causa E solução específica.
+Quando há protocolo farmacológico informado, TODA a análise é contextualizada por ele:
+os pontos fracos, o condicionamento, as estratégias de melhoria e as prescrições de treino
+levam em conta o ambiente hormonal criado pelos compostos ativos.
 
-Use EXATAMENTE estes headers:
+━━━ DADOS DO ATLETA ━━━
+Nome: ${athleteName}
+Categoria: ${cat.label} | Gênero: ${cat.gender === "M" ? "Masculino" : "Feminino"}
+Ideal da categoria: ${cat.ideal}
+Pontos críticos: ${cat.keyPoints.join(" | ")}
+Poses: ${cat.poses.join(" | ")}
+
+${protocolo ? `━━━ PROTOCOLO FARMACOLÓGICO ATIVO ━━━
+${protocolo}
+
+INSTRUÇÃO CRÍTICA: Com o protocolo farmacológico acima, a análise muda completamente.
+Cada seção deve considerar:
+- Como os compostos ativos afetam o shape atual (retenção, dureza, vascularidade, fullness)
+- O que é esperado visualmente nesta semana do ciclo com estes compostos
+- Quais pontos fracos são limitados pela farmacologia vs por treino/volume insuficiente
+- Como o protocolo potencializa ou limita a resposta às correções prescritas
+- Quais ajustes de dieta, treino e suporte maximizam os compostos em uso
+` : `Nenhum protocolo farmacológico informado — análise como atleta natural.`}
+
+━━━ PROTOCOLO DE ANÁLISE INTEGRADO ━━━
+Tom: técnico, direto, sem julgamento. Cada prescrição tem mecanismo fisiológico.
+O atleta é um adulto consciente. O coach é um profissional sério.
+
+Use EXATAMENTE estes headers na resposta:
 
 ## IMPACTO_VISUAL
-[Análise imediata em 2 parágrafos]
+[Análise imediata do shape — 2 parágrafos.
+${protocolo ? "Contextualizar com o protocolo: o que é efeito dos compostos vs o que é shape real." : ""}]
 
 ## SCORES_SEGMENTOS
-[Uma linha por segmento no formato: NOME: X/10 — diagnóstico]
+[Uma linha por segmento: NOME: X/10 — diagnóstico.
+${protocolo ? "Indicar se score é limitado pela farmacologia ou por gap de treino/volume." : ""}]
 
 ## POSTURA_DESVIOS
-[Desvios posturais: músculo dominante vs inibido + impacto no palco]
+[Desvios posturais visíveis: músculo dominante vs inibido + impacto no palco.
+${protocolo ? "Indicar se desvio é agravado por algum composto (ex: retenção de Tren, pump de Test)." : ""}]
 
 ## CORRECOES_POSTURAIS
-[Para cada desvio: a) Alongamento b) Ativação c) Cue de postura para o palco]
+[Para cada desvio:
+a) Alongamento do músculo dominante — exercício + duração + frequência
+b) Ativação do músculo inibido — exercício + séries + reps + cue
+c) Cue de postura corrigida para o palco]
 
 ## PONTOS_FRACOS_PROTOCOLO
-[Para cada ponto fraco: Diagnóstico + Causa + Exercício 1 + Exercício 2 + Exercício 3 + Frequência + Tempo de resposta]
+[Para cada grupo fraco:
+- Diagnóstico + causa (treino vs farmacologia vs genética)
+- Exercício 1 (ativação/isolamento): nome + ângulo + grip + cue + séries×reps
+- Exercício 2 (sobrecarga): nome + variação + cue + séries×reps
+- Exercício 3 (pump/finalizador): nome + técnica + séries×reps
+- Frequência semanal + tempo de resposta visual
+${protocolo ? "- Como os compostos ativos afetam a velocidade de resposta deste grupo" : ""}]
 
 ## CONDICIONAMENTO
 BF_ESTIMADO: XX%
 BF_META: XX%
 SEMANAS_ESTIMADAS: X
-[Análise detalhada]
+[Análise de condicionamento.
+${protocolo ? `Com o protocolo ativo:
+- O que é gordura real vs retenção dos compostos
+- BF real estimado vs BF aparente na foto
+- Como os compostos afetam o caminho até o BF meta
+- Ajustes de cardio e dieta específicos para este stack` : ""}]
+
+## FARMACOLOGIA_SHAPE
+${protocolo ? `[SEÇÃO EXCLUSIVA — só aparece quando há protocolo informado]
+
+ANÁLISE DR. VERTEX INTEGRADA:
+
+COMPOSTOS E IMPACTO VISUAL:
+[Para cada composto identificado: como ele afeta especificamente o shape desta semana]
+
+SINERGIA DO STACK PARA O OBJETIVO:
+[Como os compostos trabalham juntos para o objetivo declarado — cutting/bulk/peak]
+
+O QUE O PROTOCOLO ESTÁ FAZENDO PELO SHAPE AGORA:
+[Efeitos positivos visíveis nas fotos atribuíveis aos compostos]
+
+O QUE O PROTOCOLO NÃO CONSEGUE RESOLVER:
+[Pontos fracos que são limitação de treino/volume, não de farmacologia]
+
+ESTRATÉGIAS PARA MAXIMIZAR ESTE STACK:
+- Timing de aplicação em relação ao treino
+- Nutrição específica para este stack (TDEE, proteína, CHO timing)
+- Ajustes de treino para potencializar os compostos
+- O que os coaches de elite fazem diferente com este tipo de protocolo
+
+TDEE_FATOR: X.XX
+PROTEINA_IDEAL: Xg/kg
+CHO_ESTRATEGIA: [cycling recomendado para este stack]
+
+SUPORTE E SAÚDE:
+- Avaliação do suporte atual
+- O que está faltando
+- Alertas específicos para este stack nesta fase
+- Exames prioritários agora
+
+GESTAO_E2: [risco de aromatização + manejo]
+ALERTA_CARDIO: [risco cardiovascular + protocolo]
+` : "[Nenhum protocolo informado]"}
 
 ## GANHA_PONTOS
-[Máx 4 — o que o juiz vai valorizar]
+[Máx 4 — o que o juiz vai valorizar no palco]
 
 ## PERDE_PONTOS
 [Máx 4 — o que o juiz vai penalizar]
 
 ## PLANO_ATAQUE
-PRIORIDADE_1: [texto]
-PRIORIDADE_2: [texto]
-PRIORIDADE_3: [texto]
+PRIORIDADE_1: [grupo/ajuste + prescrição]
+PRIORIDADE_2: [grupo/ajuste + prescrição]
+PRIORIDADE_3: [grupo/ajuste + prescrição]
+[Detalhamento considerando o protocolo farmacológico ativo]
 
 ## POSING_CORRETIVO
-[Cues por pose mandatória]
+[Cues por pose mandatória — como compensar desvios e vender pontos fortes
+${protocolo ? "Considerar efeitos dos compostos na aparência durante a pose (pump, vascularidade, fullness)" : ""}]
 
 ## VEREDICTO
-[3 frases — o que falta para top 5]
+[3 frases diretas — o que falta para top 5.
+${protocolo ? "Separar o que é resolvível com ajuste de treino/dieta vs o que depende de ajuste farmacológico." : ""}]
 `;
+
+const parseFarmMeta = (text: string) => ({
+  tdeeFator: text.match(/TDEE_FATOR:\s*([\d.]+)/i)?.[1],
+  proteinaIdeal: text.match(/PROTEINA_IDEAL:\s*([^\n]+)/i)?.[1]?.trim(),
+  choEstrategia: text.match(/CHO_ESTRATEGIA:\s*([^\n]+)/i)?.[1]?.trim(),
+  gestaoE2: text.match(/GESTAO_E2:\s*([^\n]+)/i)?.[1]?.trim(),
+  alertaCardio: text.match(/ALERTA_CARDIO:\s*([^\n]+)/i)?.[1]?.trim(),
+});
 
 // ─── Parsers ─────────────────────────────────────────────────────
 const parseSection = (text: string, key: string, nextKey?: string): string => {
@@ -281,6 +371,10 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
     front: null, back: null, side: null,
   });
   const [formData, setFormData] = useState({ semanas: "", compostos: "", obs: "" });
+  const [objetivoCiclo, setObjetivoCiclo] = useState("cutting");
+  const [semanaCiclo, setSemanaCiclo] = useState("");
+  const [duracaoCiclo, setDuracaoCiclo] = useState("");
+  const [suporte, setSuporte] = useState("");
   const [loading, setLoading] = useState(false);
   const [analysisResult, setAnalysisResult] = useState("");
   const [activeResultTab, setActiveResultTab] = useState("scores");
@@ -328,6 +422,10 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
     setAnalysisResult("");
     setPhotos({ front: null, back: null, side: null });
     setFormData({ semanas: "", compostos: "", obs: "" });
+    setObjetivoCiclo("cutting");
+    setSemanaCiclo("");
+    setDuracaoCiclo("");
+    setSuporte("");
     setActiveResultTab("scores");
     setSavedAnalysisId(null);
     setSyncStatus(null);
@@ -371,8 +469,12 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
       }
 
       const athleteName = athlete?.nome || "atleta";
+      const protocoloCompleto = formData.compostos ? `Compostos: ${formData.compostos}
+Objetivo do ciclo: ${objetivoCiclo}
+Semana ${semanaCiclo || "não informada"} de ${duracaoCiclo || "não informada"} semanas
+Suporte em uso: ${suporte || "não informado"}` : "";
       const contexto = `Atleta: ${athleteName} | Semanas para o show: ${formData.semanas || "n/d"} | Protocolo: ${formData.compostos || "não informado"} | Obs: ${formData.obs || "nenhuma"}\n\nGere a análise APEX v2 completa.`;
-      const system = buildSystemPrompt(cat, athleteName);
+      const system = buildSystemPrompt(cat, athleteName, protocoloCompleto);
 
       const { data, error } = await supabase.functions.invoke("apex-visual-analyze", {
         body: { fotos, contexto, system },
@@ -390,6 +492,7 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
       // Persist to Supabase
       try {
         const meta = parseMeta(text);
+        const farmMeta = parseFarmMeta(text);
         const segments = parseSegments(text);
         const scoresJson = segments.reduce((acc, s) => {
           acc[s.label] = s.score;
@@ -409,6 +512,13 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
           priority_2: meta.p2 || null,
           priority_3: meta.p3 || null,
           scores: scoresJson,
+          protocol: formData.compostos || null,
+          cycle_goal: formData.compostos ? objetivoCiclo : null,
+          cycle_week: semanaCiclo ? parseInt(semanaCiclo, 10) : null,
+          cycle_duration: duracaoCiclo ? parseInt(duracaoCiclo, 10) : null,
+          support: suporte || null,
+          tdee_factor: farmMeta.tdeeFator ? parseFloat(farmMeta.tdeeFator) : null,
+          protein_ideal: farmMeta.proteinaIdeal || null,
         }).select("id").single();
         if (insErr) throw insErr;
         setSavedAnalysisId((inserted as any)?.id || null);
@@ -432,7 +542,7 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
     } finally {
       setLoading(false);
     }
-  }, [athlete, cat, formData, photos, coachId, selectedCategory, fetchHistory, fetchSyncStatus]);
+  }, [athlete, cat, formData, photos, coachId, selectedCategory, fetchHistory, fetchSyncStatus, objetivoCiclo, semanaCiclo, duracaoCiclo, suporte]);
 
   // ─── Generate corrective training ────────────────────
   const buildSyncPayload = useCallback(() => {
@@ -519,12 +629,16 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
   // ─── RENDER: RESULT ──────────────────────────────────
   if (isDone) {
     const meta = parseMeta(analysisResult);
+    const farmMeta = parseFarmMeta(analysisResult);
+    const farmacologiaSection = parseSection(analysisResult, "FARMACOLOGIA_SHAPE", "GANHA_PONTOS");
+    const hasFarmacologia = !!farmacologiaSection && !/nenhum protocolo informado/i.test(farmacologiaSection);
     const segments = parseSegments(analysisResult);
     const tabs = [
       { key: "scores", label: "Scores" },
       { key: "postura", label: "Postura" },
       { key: "correcoes", label: "Correções" },
       { key: "protocolo", label: "Protocolo" },
+      ...(hasFarmacologia ? [{ key: "farmacologia", label: "💉 Farmacologia" }] : []),
       { key: "palco", label: "Palco" },
       { key: "plano", label: "Plano" },
     ];
@@ -604,6 +718,19 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
               <GenerateTrainingButton onClick={handleGenerateTraining} loading={generatingTraining} />
             </div>
           )}
+          {activeResultTab === "farmacologia" && hasFarmacologia && (
+            <div className="space-y-3">
+              <InfoBox color="#534AB7" text="💉 Análise Dr. VERTEX integrada — shape contextualizado pelo protocolo farmacológico ativo." />
+              <div className="flex flex-wrap gap-2">
+                {farmMeta.tdeeFator && <Pill label="TDEE fator" value={`×${farmMeta.tdeeFator}`} color="#534AB7" />}
+                {farmMeta.proteinaIdeal && <Pill label="Proteína" value={farmMeta.proteinaIdeal} color="#1DB87A" />}
+                {farmMeta.choEstrategia && <Pill label="CHO" value={farmMeta.choEstrategia} color="#C47A15" />}
+                {farmMeta.gestaoE2 && <Pill label="E2" value={farmMeta.gestaoE2} color="#E07030" />}
+                {farmMeta.alertaCardio && <Pill label="Cardio" value={farmMeta.alertaCardio} color="#D94040" />}
+              </div>
+              <Pre body={farmacologiaSection} />
+            </div>
+          )}
           {activeResultTab === "palco" && (
             <div className="space-y-3">
               <div className="grid md:grid-cols-2 gap-3">
@@ -625,7 +752,7 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
                 {meta.bfMeta && <Pill label="BF meta" value={`${meta.bfMeta}%`} color="#1DB87A" />}
                 {meta.semEst && <Pill label="Semanas" value={meta.semEst} color={cat.color} />}
               </div>
-              <InfoBlock title="Condicionamento" body={parseSection(analysisResult, "CONDICIONAMENTO", "GANHA_PONTOS")} accent={cat.color} />
+              <InfoBlock title="Condicionamento" body={parseSection(analysisResult, "CONDICIONAMENTO", "FARMACOLOGIA_SHAPE")} accent={cat.color} />
               <GenerateTrainingButton onClick={handleGenerateTraining} loading={generatingTraining} />
             </div>
           )}
@@ -788,16 +915,70 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
             className="w-full px-3 py-2 rounded-lg bg-muted border border-border text-sm text-foreground"
           />
         </Field>
-        <Field label="Protocolo / compostos">
-          <input
-            type="text"
-            value={formData.compostos}
-            onChange={(e) => setFormData({ ...formData, compostos: e.target.value })}
-            placeholder="ex: TRT 200mg + Anavar 40mg"
-            className="w-full px-3 py-2 rounded-lg bg-muted border border-border text-sm text-foreground"
-          />
-        </Field>
+        <div>
+          <Field label="💉 Protocolo farmacológico (opcional)">
+            <textarea
+              value={formData.compostos}
+              onChange={(e) => setFormData({ ...formData, compostos: e.target.value })}
+              placeholder="Ex: Testosterona Enantato 300mg/sem, Trembolona Acetato 200mg/sem, Masteron 200mg/sem, HGH 2UI/dia"
+              rows={2}
+              className="w-full px-3 py-2 rounded-lg bg-muted border border-border text-sm text-foreground"
+            />
+          </Field>
+          {formData.compostos && (
+            <div className="flex items-center gap-1.5 mt-2 text-[11px]" style={{ color: "#534AB7" }}>
+              <span>💉</span>
+              <span>Dr. VERTEX integrado — a análise considerará o protocolo farmacológico</span>
+            </div>
+          )}
+        </div>
       </div>
+
+      {/* Campos expandidos do protocolo */}
+      {formData.compostos && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <Field label="Objetivo do ciclo">
+            <select
+              value={objetivoCiclo}
+              onChange={(e) => setObjetivoCiclo(e.target.value)}
+              className="w-full px-3 py-2 rounded-lg bg-muted border border-border text-sm text-foreground"
+            >
+              <option value="cutting">Cutting</option>
+              <option value="bulk">Bulk</option>
+              <option value="recomp">Recomposição</option>
+              <option value="peak">Peak Week</option>
+              <option value="manutencao">Manutenção</option>
+            </select>
+          </Field>
+          <Field label="Semana do ciclo">
+            <input
+              type="number"
+              value={semanaCiclo}
+              onChange={(e) => setSemanaCiclo(e.target.value)}
+              placeholder="Ex: 6"
+              className="w-full px-3 py-2 rounded-lg bg-muted border border-border text-sm text-foreground"
+            />
+          </Field>
+          <Field label="Duração total (sem)">
+            <input
+              type="number"
+              value={duracaoCiclo}
+              onChange={(e) => setDuracaoCiclo(e.target.value)}
+              placeholder="Ex: 16"
+              className="w-full px-3 py-2 rounded-lg bg-muted border border-border text-sm text-foreground"
+            />
+          </Field>
+          <Field label="Suporte em uso">
+            <input
+              type="text"
+              value={suporte}
+              onChange={(e) => setSuporte(e.target.value)}
+              placeholder="Ex: Anastrozol 0.5mg, TUDCA 500mg"
+              className="w-full px-3 py-2 rounded-lg bg-muted border border-border text-sm text-foreground"
+            />
+          </Field>
+        </div>
+      )}
       <Field label="Observações">
         <textarea
           value={formData.obs}
