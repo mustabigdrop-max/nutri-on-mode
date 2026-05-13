@@ -100,6 +100,7 @@ import ApexVisualIAPage from "./pages/coach/ApexVisualIAPage";
 import CoachTrainingOnPage from "./pages/coach/CoachTrainingOnPage";
 import CoachLabExamsPage from "./pages/coach/CoachLabExamsPage";
 import CoachReportsPage from "./pages/coach/CoachReportsPage";
+import APEXPoseAnalysisPage from "./pages/coach/APEXPoseAnalysisPage";
 import DrNexusPage from "./pages/DrNexusPage";
 import VideoFormPage from "./pages/VideoFormPage";
 import MeusProtocolosPage from "./pages/MeusProtocolosPage";
