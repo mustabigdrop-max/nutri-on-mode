@@ -1229,7 +1229,7 @@ export default function ApexVisualV3() {
               </div>
             )}
 
-            {(done || activeTab === "pose") && (
+            {(done || RESULT_TABS.some(t => t.id === "pose")) && (
               <div style={{ display:"flex", gap:0, borderBottom:`1px solid ${C.border}`, marginBottom:16, overflowX:"auto" }}>
                 {RESULT_TABS.map(t => (
                   <button key={t.id} onClick={() => setActiveTab(t.id)} style={{ fontSize:10, padding:"9px 12px", background:"none", border:"none", cursor:"pointer", color:activeTab===t.id?cat.c:C.textSec, borderBottom:`2px solid ${activeTab===t.id?cat.c:"transparent"}`, fontWeight:activeTab===t.id?700:400, whiteSpace:"nowrap", transition:"all .15s", fontFamily:"inherit", letterSpacing:".03em" }}>
