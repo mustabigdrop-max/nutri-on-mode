@@ -21,7 +21,7 @@ interface Props {
 }
 
 const FEDERACOES = ["IFBB Pro", "IFBB Elite", "NPC", "NABBA", "WFF", "WBPF", "Outra"];
-const CATEGORIAS = ["Classic Physique", "Men's Physique", "Bodybuilding", "212", "Wellness", "Bikini", "Figure", "Women's Physique", "Outra"];
+const CATEGORIAS = ["Shape Lifestyle", "Classic Physique", "Men's Physique", "Bodybuilding", "212", "Wellness", "Bikini", "Figure", "Women's Physique", "Outra"];
 
 const CoachCompetitionWizard = ({ open, onOpenChange, coachId, athleteId, athleteName, onCreated }: Props) => {
   const navigate = useNavigate();
