@@ -791,7 +791,7 @@ export default function ApexVisualV3() {
     }
 
     const safe = (nome || "atleta").replace(/[^a-z0-9]+/gi, "_").toLowerCase();
-    pdf.save(`apex-visual-v3-${safe}-${new Date().toISOString().slice(0, 10)}.pdf`);
+    pdf.save(`apex-visual-v3${accessible ? "-acessivel" : ""}-${safe}-${new Date().toISOString().slice(0, 10)}.pdf`);
   };
 
   return (
