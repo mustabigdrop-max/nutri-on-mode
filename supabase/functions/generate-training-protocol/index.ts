@@ -79,22 +79,39 @@ INTERMEDIÁRIO: dupla progressão, top set + back-off, supersets antagonistas
 AVANÇADO: rest-pause, dropsets, cluster sets, myo-reps, pausa no estiramento
 ELITE: periodização conjugada, ondulação diária, acumulação/intensificação/realização, técnicas de pico
 
-## REGRA CRÍTICA DE VOLUME SEMANAL (INVIOLÁVEL)
+## ⛔ RESTRIÇÃO ABSOLUTA DE VOLUME — LER ANTES DE GERAR QUALQUER EXERCÍCIO
 
-Antes de gerar os training_days, defina o weekly_sets de cada músculo em muscle_priorities.
-Para CADA músculo, a SOMA das séries de trabalho (top_set.sets + backoff_sets.sets + work_sets.sets)
-em TODOS os training_days NÃO PODE ultrapassar weekly_sets em mais de 10%.
-Distribua as séries pela frequência semanal do grupo: séries por sessão ≈ round(weekly_sets / frequência).
+Esta é a regra MAIS IMPORTANTE de todo o protocolo. Viola-la INVALIDA o plano.
 
-Exemplo: Peito com weekly_sets=12 e frequência 2x/sem → ~6 séries de trabalho por sessão.
-Se um único exercício já tem 10 séries de trabalho (ex.: GVT), o weekly_sets desse músculo
-DEVE ser ≥ 10 e a frequência ajustada para acomodar.
+REGRAS INVIOLÁVEIS:
+1. Defina PRIMEIRO o weekly_sets de cada músculo em muscle_priorities.
+2. Apenas séries de TRABALHO contam: top_set.sets + backoff_sets.sets + work_sets.sets.
+   Feeder sets, warm-up e aquecimento NÃO contam para o volume.
+3. Para CADA músculo, a SOMA das séries de trabalho em TODOS os training_days
+   NÃO PODE ULTRAPASSAR weekly_sets. Tolerância máxima: +10%.
+4. Ao planejar cada dia, mantenha um "contador mental" de quantas séries já foram
+   prescritas para cada grupo nos dias anteriores. Subtraia do limite antes de
+   adicionar exercícios novos.
+5. Se um grupo já atingiu o limite semanal, ele NÃO aparece como exercício
+   principal nos dias seguintes — apenas como feeder, warm-up ou ativação leve.
+6. Distribua as séries pela frequência semanal do grupo:
+   séries por sessão ≈ round(weekly_sets / frequência_semanal).
+   Ex.: Peito weekly_sets=14, frequência 2x/sem → 7 séries de trabalho POR sessão.
+7. Exercícios compostos contam APENAS para o músculo primário (muscle_target).
+   Não some séries no secundário — apenas o muscle_target recebe o crédito.
 
-REGRA GVT/Alto-Volume-Por-Exercício: Se algum exercício prescrever 10 séries (German Volume Training),
-NÃO use esse formato em músculos com weekly_sets < 10. Para weekly_sets entre 10 e 14, use no máximo
-1 exercício GVT na semana + 1 acessório curto (2-4 séries) totalizando o volume prescrito.
+REGRA GVT/Alto-Volume: Se um exercício prescreve 10 séries (German Volume Training),
+NÃO use esse formato em músculos com weekly_sets < 10. Para weekly_sets entre 10 e 14,
+use no máximo 1 exercício GVT + 1 acessório curto (2-4 séries) totalizando o prescrito.
 
-Antes de finalizar o JSON, faça você mesmo a soma de séries por grupo e ajuste se houver excesso.
+⚠️ ANTES DE FINALIZAR O JSON (CHECKLIST OBRIGATÓRIO):
+Para CADA músculo em muscle_priorities, faça você mesmo a soma:
+  total = Σ (top_set.sets + backoff_sets.sets + work_sets.sets) onde muscle_target == músculo
+Se total > weekly_sets em qualquer grupo:
+  → REMOVA séries de exercícios acessórios (work_sets primeiro, depois backoff_sets)
+  → ou REMOVA o último exercício adicionado para esse grupo
+  → REPITA até TODOS os grupos estarem dentro do limite.
+Só entregue o JSON quando TODOS os grupos estiverem ≤ weekly_sets prescrito.
 
 ## FORMATO DE RESPOSTA OBRIGATÓRIO
 
@@ -282,6 +299,159 @@ function sanitizeProtocol(protocol: any): any {
     }));
   }
   return protocol;
+}
+
+// =====================================================================
+// VOLUME ENFORCER — corrige determinísticamente excessos pós-geração.
+// Mirror simplificado de src/lib/trainingVolume.ts (canonicalize + countWorkingSets).
+// =====================================================================
+const _norm = (s: string) =>
+  (s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/\(.*?\)/g, " ").replace(/[^a-z0-9]+/g, " ").trim();
+
+const _SYNS: Array<{ canon: string; tokens: string[] }> = [
+  { canon: "deltoides", tokens: ["deltoide", "deltoides", "ombro", "ombros"] },
+  { canon: "costas", tokens: ["costas", "dorsal", "dorsais", "latissimo", "trapezio", "romboide", "lats"] },
+  { canon: "biceps", tokens: ["biceps", "braquial", "braquiorradial"] },
+  { canon: "triceps", tokens: ["triceps"] },
+  { canon: "peito", tokens: ["peito", "peitoral", "peitorais"] },
+  { canon: "quadriceps", tokens: ["quadriceps", "vasto", "reto femoral"] },
+  { canon: "gluteos", tokens: ["gluteo", "gluteos"] },
+  { canon: "posteriordecoxa", tokens: ["posterior", "isquiotibiais", "isquios", "femoral", "hamstring"] },
+  { canon: "panturrilha", tokens: ["panturrilha", "gastrocnemio", "soleo"] },
+  { canon: "abdomenobliquos", tokens: ["abdomen", "abdominal", "obliquo", "core"] },
+  { canon: "lombar", tokens: ["lombar", "eretor"] },
+  { canon: "antebraco", tokens: ["antebraco"] },
+];
+function _canon(raw: string): string[] {
+  const n = _norm(raw); if (!n) return [];
+  const out = new Set<string>();
+  for (const { canon, tokens } of _SYNS) {
+    if (tokens.some((t) => n.includes(t.replace(/\s+/g, "")))) out.add(canon);
+  }
+  if (out.size === 0) out.add(n.replace(/\s+/g, ""));
+  return Array.from(out);
+}
+function _toInt(v: any): number {
+  if (v == null) return 0;
+  const m = String(v).match(/\d+/); return m ? parseInt(m[0], 10) : 0;
+}
+function _setsOf(ex: any): { top: number; back: number; work: number; total: number } {
+  const s = ex?.structure || {};
+  const top = s.top_set ? _toInt(s.top_set.sets) : 0;
+  const back = s.backoff_sets ? _toInt(s.backoff_sets.sets) : 0;
+  const work = s.work_sets ? _toInt(s.work_sets.sets) : 0;
+  return { top, back, work, total: top + back + work };
+}
+function _exPrimary(ex: any): string[] {
+  const raw = ex?.muscle_target || ex?.primaryMuscle ||
+    (Array.isArray(ex?.muscles) && ex.muscles.length ? ex.muscles[0] : null);
+  return raw ? _canon(String(raw)) : [];
+}
+function _aggregate(days: any[]): Record<string, number> {
+  const out: Record<string, number> = {};
+  (days || []).forEach((d) => (d.exercises || []).forEach((ex: any) => {
+    const sets = _setsOf(ex).total; if (sets <= 0) return;
+    new Set(_exPrimary(ex)).forEach((c) => { out[c] = (out[c] || 0) + sets; });
+  }));
+  return out;
+}
+
+/**
+ * Apara séries determinísticamente até cada músculo ficar dentro de weekly_sets * 1.10.
+ * Ordem de redução: work_sets → backoff_sets → top_set (último a ser tocado).
+ * Retorna { protocol, fixes: [{muscle, before, after, prescribed}], anyFixed }.
+ */
+function enforceVolumeLimits(protocol: any, toleranceFactor = 1.10): { protocol: any; fixes: any[]; anyFixed: boolean } {
+  const fixes: any[] = [];
+  const priorities: any[] = protocol?.block_overview?.muscle_priorities || [];
+  const days: any[] = protocol?.training_days || [];
+  if (!priorities.length || !days.length) return { protocol, fixes, anyFixed: false };
+
+  const limits: Record<string, { prescribed: number; max: number; muscleLabel: string }> = {};
+  for (const mp of priorities) {
+    const prescribed = Number(mp.weekly_sets) || 0; if (prescribed <= 0) continue;
+    const max = Math.floor(prescribed * toleranceFactor);
+    _canon(mp.muscle).forEach((c) => { limits[c] = { prescribed, max, muscleLabel: mp.muscle }; });
+  }
+
+  // Itera até estabilizar (ou até 50 passes de segurança)
+  for (let pass = 0; pass < 50; pass++) {
+    const totals = _aggregate(days);
+    let trimmed = false;
+    for (const [canon, info] of Object.entries(limits)) {
+      const cur = totals[canon] || 0;
+      if (cur <= info.max) continue;
+      const excess = cur - info.max;
+
+      // Acha exercícios que somam para esse canon, ordenados por total de séries DESC.
+      const candidates: Array<{ ex: any; dayIdx: number; exIdx: number; total: number }> = [];
+      days.forEach((d, di) => (d.exercises || []).forEach((ex: any, ei: number) => {
+        if (_exPrimary(ex).includes(canon)) {
+          const t = _setsOf(ex).total;
+          if (t > 0) candidates.push({ ex, dayIdx: di, exIdx: ei, total: t });
+        }
+      }));
+      if (!candidates.length) continue;
+      candidates.sort((a, b) => b.total - a.total);
+
+      let toRemove = excess;
+      for (const c of candidates) {
+        if (toRemove <= 0) break;
+        const s = c.ex.structure || (c.ex.structure = {});
+        // 1) work_sets
+        if (s.work_sets && _toInt(s.work_sets.sets) > 0 && toRemove > 0) {
+          const cur2 = _toInt(s.work_sets.sets);
+          const cut = Math.min(cur2, toRemove);
+          const next = cur2 - cut;
+          if (next <= 0) delete s.work_sets;
+          else s.work_sets.sets = String(next);
+          toRemove -= cut; trimmed = true;
+        }
+        // 2) backoff_sets
+        if (toRemove > 0 && s.backoff_sets && _toInt(s.backoff_sets.sets) > 0) {
+          const cur2 = _toInt(s.backoff_sets.sets);
+          const cut = Math.min(cur2, toRemove);
+          const next = cur2 - cut;
+          if (next <= 0) delete s.backoff_sets;
+          else s.backoff_sets.sets = String(next);
+          toRemove -= cut; trimmed = true;
+        }
+        // 3) top_set (último recurso, preserva pelo menos 1)
+        if (toRemove > 0 && s.top_set && _toInt(s.top_set.sets) > 1) {
+          const cur2 = _toInt(s.top_set.sets);
+          const cut = Math.min(cur2 - 1, toRemove);
+          s.top_set.sets = String(cur2 - cut);
+          toRemove -= cut; trimmed = true;
+        }
+      }
+
+      // Remove exercícios que ficaram totalmente sem séries de trabalho
+      days.forEach((d) => {
+        d.exercises = (d.exercises || []).filter((ex: any) => {
+          if (!_exPrimary(ex).includes(canon)) return true;
+          return _setsOf(ex).total > 0;
+        });
+      });
+
+      if (trimmed) {
+        fixes.push({ muscle: info.muscleLabel, before: cur, after: cur - (excess - toRemove), prescribed: info.prescribed });
+      }
+    }
+    if (!trimmed) break;
+  }
+
+  // Consolida fixes (último valor por músculo)
+  const finalTotals = _aggregate(days);
+  const dedup = new Map<string, any>();
+  fixes.forEach((f) => dedup.set(f.muscle, f));
+  const finalFixes = Array.from(dedup.values()).map((f) => {
+    const canons = _canon(f.muscle);
+    const after = canons.reduce((s, c) => s + (finalTotals[c] || 0), 0);
+    return { ...f, after };
+  });
+
+  return { protocol, fixes: finalFixes, anyFixed: finalFixes.length > 0 };
 }
 
 function buildStructuredPrompt(data: any): string {
@@ -791,7 +961,16 @@ serve(async (req) => {
         if (jsonMatch) {
           let parsed = JSON.parse(jsonMatch[0]);
           parsed = sanitizeProtocol(parsed);
-          return new Response(JSON.stringify({ protocol: parsed, citations: scienceCitations }), {
+          // Camada 3: enforcer determinístico de volume semanal.
+          const enforced = enforceVolumeLimits(parsed, 1.10);
+          if (enforced.anyFixed) {
+            console.log("[volume-enforcer] aplicado:", JSON.stringify(enforced.fixes));
+          }
+          return new Response(JSON.stringify({
+            protocol: enforced.protocol,
+            volume_fixes: enforced.fixes,
+            citations: scienceCitations,
+          }), {
             headers: { ...corsHeaders, "Content-Type": "application/json" },
           });
         }
