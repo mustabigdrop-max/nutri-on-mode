@@ -399,16 +399,36 @@ export default function ApexVisualV3() {
       const athlete: Athlete = { nome, idade, peso, altura, semanas, fase };
       const protocol: Protocol = { compostos, objetivo: objetivoCiclo, semana: semanaCiclo, duracao: duracaoCiclo, suporte, faseCorpo, pesoAtual, pesoPico };
 
-      const { data, error: fnErr } = await supabase.functions.invoke("apex-visual-analyze", {
+      // Timeout de 90s
+      const timeoutPromise = new Promise<never>((_, rej) =>
+        setTimeout(() => rej(new Error("Tempo esgotado (90s). A IA demorou demais para responder — tente novamente.")), 90000)
+      );
+
+      const invokePromise = supabase.functions.invoke("apex-visual-analyze", {
         body: {
           fotos,
           contexto: `Fase corporal declarada: ${fase}. Observação do coach: ${obs || "nenhuma"}. Gere análise APEX v3 completa.`,
           system: buildSystem(cat, athlete, protocol),
         },
       });
-      if (fnErr) throw fnErr;
+
+      const { data, error: fnErr } = await Promise.race([invokePromise, timeoutPromise]) as any;
+      if (fnErr) {
+        const msg = (fnErr as any)?.message || "";
+        if (msg.includes("429") || msg.toLowerCase().includes("rate")) throw new Error("Limite de requisições atingido. Aguarde alguns instantes e tente novamente.");
+        if (msg.includes("402")) throw new Error("Créditos da IA esgotados. Adicione em Settings → Workspace → Usage.");
+        if (msg.toLowerCase().includes("network") || msg.toLowerCase().includes("failed to fetch")) throw new Error("Falha de conexão. Verifique sua internet e tente novamente.");
+        throw new Error(msg || "Falha ao chamar a análise APEX.");
+      }
       if ((data as any)?.error) throw new Error((data as any).error);
       const text: string = (data as any)?.text || "";
+
+      if (!text || text.trim().length < 100) {
+        throw new Error("Resposta vazia ou muito curta da IA. Tente novamente — se persistir, troque/recoloque as fotos.");
+      }
+      if (!/##\s*(IMPACTO_VISUAL|SCORES_SEGMENTOS|VEREDICTO)/i.test(text)) {
+        throw new Error("A IA respondeu fora do formato esperado (sem cabeçalhos ##). Clique em tentar novamente.");
+      }
 
       setStreaming(true); setLoading(false);
       let idx = 0;
@@ -418,10 +438,29 @@ export default function ApexVisualV3() {
         if (idx >= text.length) { clearInterval(iv); setStreaming(false); setDone(true); setActiveTab("overview"); }
       }, 16);
     } catch (e: any) {
-      setError(e?.message || "Erro na análise.");
+      setError(e?.message || "Erro desconhecido na análise.");
       setLoading(false);
+      setStreaming(false);
     }
   };
+
+  // Mapa das 13+1 seções esperadas → checagem de completude
+  const SECTION_CHECK: { key: string; label: string }[] = [
+    { key: "impacto",    label: "Impacto visual" },
+    { key: "composicao", label: "Composição corporal" },
+    { key: "manobra",    label: "Decisão de manobra" },
+    { key: "postura",    label: "Postura · desvios" },
+    { key: "correcoes",  label: "Correções posturais" },
+    { key: "fracos",     label: "Pontos fracos · protocolo" },
+    { key: "farma",      label: "Farmacologia integrada" },
+    { key: "nutricao",   label: "Nutrição da fase" },
+    { key: "ganha",      label: "Ganha pontos" },
+    { key: "perde",      label: "Perde pontos" },
+    { key: "plano",      label: "Plano de ataque" },
+    { key: "posing",     label: "Posing corretivo" },
+    { key: "veredicto",  label: "Veredicto master" },
+  ];
+
 
   const reset = () => { setRaw(""); setDone(false); setError(null); setFotoF(null); setFotoC(null); setFotoL(null); setStreaming(false); };
 
@@ -801,7 +840,22 @@ export default function ApexVisualV3() {
               {temFoto ? <>{cat.i} ANALISAR COM APEX v3 {temProtocolo?"+ DR. VERTEX":""}</> : <>◈ ADICIONE AO MENOS 1 FOTO</>}
             </button>
 
-            {error && <div style={{ marginTop:12, background:C.redDim, border:`1px solid ${C.red}44`, borderRadius:10, padding:"12px 16px", color:C.red, fontSize:12 }}>⚠ {error}</div>}
+            {error && (
+              <div style={{ marginTop:14, background:C.redDim, border:`1.5px solid ${C.red}55`, borderRadius:12, padding:"16px 18px" }}>
+                <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:8 }}>
+                  <span style={{ fontSize:20 }}>⚠️</span>
+                  <div style={{ fontSize:12, fontWeight:800, color:C.red, letterSpacing:".08em", textTransform:"uppercase" }}>Falha na análise APEX</div>
+                </div>
+                <div style={{ fontSize:13, color:C.text, lineHeight:1.6, marginBottom:12 }}>{error}</div>
+                <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
+                  <button onClick={analisar} disabled={!temFoto} style={{ padding:"10px 18px", background:cat.c, border:"none", borderRadius:10, color:"#000", fontSize:12, fontWeight:700, cursor:temFoto?"pointer":"not-allowed", fontFamily:"inherit", letterSpacing:".05em", opacity:temFoto?1:.5 }}>↻ TENTAR NOVAMENTE</button>
+                  <button onClick={() => setError(null)} style={{ padding:"10px 18px", background:C.card, border:`1px solid ${C.border}`, borderRadius:10, color:C.text, fontSize:12, cursor:"pointer", fontFamily:"inherit", letterSpacing:".05em" }}>Fechar</button>
+                </div>
+                <div style={{ fontSize:10, color:C.textSec, marginTop:10, lineHeight:1.5 }}>
+                  Dicas: verifique sua conexão · use fotos nítidas em boa luz · se o erro for de limite, aguarde alguns minutos.
+                </div>
+              </div>
+            )}
           </>
         )}
 
@@ -819,6 +873,39 @@ export default function ApexVisualV3() {
                 </div>
               </div>
             </div>
+
+            {done && (() => {
+              const missing = SECTION_CHECK.filter(sc => {
+                if (sc.key === "farma" && !temProtocolo) return false;
+                return !((S as any)[sc.key] || "").trim();
+              });
+              if (missing.length === 0) return null;
+              const critico = missing.length >= 6;
+              const accent = critico ? C.red : C.amber;
+              return (
+                <div style={{ background:accent+"15", border:`1.5px solid ${accent}55`, borderRadius:12, padding:"14px 18px", marginBottom:16 }}>
+                  <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:8, flexWrap:"wrap" }}>
+                    <span style={{ fontSize:18 }}>{critico ? "⚠️" : "ℹ️"}</span>
+                    <div style={{ flex:1, minWidth:200 }}>
+                      <div style={{ fontSize:12, fontWeight:800, color:accent, letterSpacing:".06em", textTransform:"uppercase" }}>
+                        Análise {critico ? "muito incompleta" : "parcialmente incompleta"} — {missing.length} de {SECTION_CHECK.length} seção(ões) faltando
+                      </div>
+                      <div style={{ fontSize:11, color:C.textSec, marginTop:3 }}>
+                        A IA não retornou os blocos abaixo. Você pode usar o que veio ou refazer a análise.
+                      </div>
+                    </div>
+                    <button onClick={analisar} style={{ padding:"8px 14px", background:accent, border:"none", borderRadius:8, color:"#000", fontSize:11, fontWeight:700, cursor:"pointer", fontFamily:"inherit", letterSpacing:".05em" }}>↻ RE-ANALISAR</button>
+                  </div>
+                  <div style={{ display:"flex", gap:6, flexWrap:"wrap", marginTop:6 }}>
+                    {missing.map(m => (
+                      <span key={m.key} style={{ fontSize:10, padding:"4px 10px", borderRadius:6, background:C.card, color:accent, border:`1px solid ${accent}44`, fontWeight:600, letterSpacing:".03em" }}>
+                        {m.label}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
 
             {meta.manobraPrincipal && done && (
               <ManeuverCard manobra={(meta.manobraPrincipal||"").toLowerCase().replace(/ /g,"_")} urgencia={(meta.urgencia||"").toLowerCase().replace(/ /g,"_")} />
