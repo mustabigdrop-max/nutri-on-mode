@@ -105,7 +105,8 @@ export function buildVolumeReport(
   const actuals = aggregateWeeklyVolume(trainingDays);
   return (musclePriorities || []).map((mp) => {
     const prescribed = Number(mp.weekly_sets) || 0;
-    const actual = actuals[norm(mp.muscle)] || 0;
+    const canons = canonicalize(mp.muscle);
+    const actual = canons.reduce((sum, c) => sum + (actuals[c] || 0), 0);
     let status: MuscleVolumeReport["status"] = "ok";
     let color = COLOR_OK;
     if (prescribed > 0) {
