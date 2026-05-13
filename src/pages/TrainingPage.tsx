@@ -222,6 +222,35 @@ function EliteGenerateSection({ userId }: { userId?: string }) {
   const toggleEquipment = (e: string) => setEquipment(prev => prev.includes(e) ? prev.filter(x => x !== e) : [...prev, e]);
   const toggleMuscle = (m: string) => setMuscles(prev => prev.includes(m) ? prev.filter(x => x !== m) : [...prev, m]);
 
+  // Auto-preenche músculos a partir do texto do prompt (objetivo + pontos fracos + corretivo)
+  const [musclesAutoFilled, setMusclesAutoFilled] = useState(false);
+  useEffect(() => {
+    if (musclesAutoFilled) return;
+    const haystack = `${specificGoal} ${weakPoints} ${correctivePrompt}`.toLowerCase();
+    if (!haystack.trim()) return;
+    const aliases: Record<string, string[]> = {
+      "Peitoral": ["peito", "peitor", "chest", "pec"],
+      "Costas (Lat)": ["costas", "dorsal", "lat", "back", "puxada"],
+      "Deltoides": ["ombro", "delt", "shoulder"],
+      "Bíceps": ["biceps", "bíceps", "biceip"],
+      "Tríceps": ["triceps", "tríceps"],
+      "Quadríceps": ["quadr", "quad", "coxa anterior"],
+      "Posterior de Coxa": ["posterior", "isquio", "ísquio", "hamstring", "femoral"],
+      "Glúteos": ["glut", "glúte", "bumbum"],
+      "Panturrilha": ["panturr", "calf", "gemeo", "gêmeo"],
+      "Core/Abdômen": ["core", "abdom", "abs", "lombar"],
+      "Trapézio": ["trapez", "trapéz", "traps"],
+      "Antebraço": ["antebra", "forearm", "grip"],
+    };
+    const detected = Object.entries(aliases)
+      .filter(([_, keys]) => keys.some(k => haystack.includes(k)))
+      .map(([m]) => m);
+    if (detected.length) {
+      setMuscles(detected);
+      setMusclesAutoFilled(true);
+    }
+  }, [specificGoal, weakPoints, correctivePrompt, musclesAutoFilled]);
+
   const bodyData = useMemo(() => ({
     phase, muscles, level, weeks, days, clientName,
     equipment: equipment.join(", "), injuries, sessionDuration,
@@ -337,7 +366,6 @@ Português. Específico. Científico. Zero genérico.`;
     }
     const missing: string[] = [];
     if (!phase) missing.push("fase");
-    if (muscles.length === 0) missing.push("músculos");
     if (!level) missing.push("nível");
     if (missing.length) {
       toast.message(`Usando padrões para: ${missing.join(", ")} (a IA inferirá pelo prompt elite)`);
