@@ -555,7 +555,52 @@ export default function ApexVisualV3() {
   ];
 
 
-  const reset = () => { setRaw(""); setDone(false); setError(null); setFotoF(null); setFotoC(null); setFotoL(null); setStreaming(false); };
+  const reset = () => { setRaw(""); setDone(false); setError(null); setFotoF(null); setFotoC(null); setFotoL(null); setStreaming(false); setSavedId(null); setSavingState("idle"); };
+
+  const saveAssessment = async (fullText: string) => {
+    if (!user || !selectedAthlete) {
+      setSavingState("idle");
+      return;
+    }
+    setSavingState("saving");
+    const m = parseMeta(fullText);
+    const veredicto = secParse(fullText, "VEREDICTO", null) || "";
+    const composicao = secParse(fullText, "COMPOSICAO_CORPORAL", "DECISAO_MANOBRA") || "";
+    const ajustes = secParse(fullText, "PLANO_ATAQUE", "POSING_CORRETIVO") || "";
+    const meta_proxima = secParse(fullText, "DECISAO_MANOBRA", "POSTURA_DESVIOS") || "";
+    const semanaNum = Math.max(1, (history?.[0]?.semana_numero || 0) + 1);
+
+    const payload: any = {
+      athlete_id: selectedAthlete.id,
+      coach_id: user.id,
+      semana_numero: semanaNum,
+      semanas_ate_palco: parseInt(semanas) || null,
+      fase,
+      peso_kg: peso ? parseFloat(peso) : null,
+      bf_estimado: m.bfEst ? parseFloat(m.bfEst) : null,
+      massa_magra_kg: m.massaMagra ? parseFloat(m.massaMagra) : null,
+      analise_ia: { raw: fullText, meta: m, categoria: catKey, protocolo: { compostos, objetivoCiclo, semanaCiclo, duracaoCiclo, faseCorpo, pesoAtual, pesoPico } },
+      observacoes_coach: obs || veredicto.slice(0, 1000) || null,
+      ajustes_plano: ajustes ? ajustes.slice(0, 2000) : null,
+      meta_proxima_semana: meta_proxima ? meta_proxima.slice(0, 1000) : null,
+    };
+
+    const { data, error: e } = await supabase
+      .from("athlete_visual_assessments" as any)
+      .insert(payload)
+      .select("id")
+      .maybeSingle();
+
+    if (e) {
+      console.error("[APEX] insert error:", e);
+      setSavingState("error");
+      return;
+    }
+    setSavedId((data as any)?.id || null);
+    setSavingState("saved");
+    await loadHistory(selectedAthlete.id);
+  };
+
 
   const exportarPDF = (accessible: boolean = false) => {
     const pdf = new jsPDF({ unit: "mm", format: "a4" });
