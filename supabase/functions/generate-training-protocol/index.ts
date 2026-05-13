@@ -452,6 +452,9 @@ function enforceVolumeLimits(protocol: any, toleranceFactor = 1.10): { protocol:
   });
 
   return { protocol, fixes: finalFixes, anyFixed: finalFixes.length > 0 };
+}
+
+function buildStructuredPrompt(data: any): string {
   const { phase, muscles, level, weeks, days, clientName, equipment, injuries, sessionDuration, stressLevel, supplements, weakPoints, specificGoal, cardio, tab } = data;
   const muscleList = Array.isArray(muscles) ? muscles.join(", ") : muscles;
 
