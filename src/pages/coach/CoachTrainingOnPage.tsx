@@ -99,6 +99,28 @@ export default function CoachTrainingOnPage() {
 
   useEffect(() => { loadApexSync(); }, [loadApexSync]);
 
+  // Auto-trigger corrective training generation when navigated with ?mode=corrective
+  useEffect(() => {
+    const mode = searchParams.get("mode");
+    if (
+      mode === "corrective" &&
+      apexSyncData &&
+      coachId &&
+      athlete?.id &&
+      !correctiveTraining &&
+      !generatingTraining &&
+      !autoTriggeredRef.current
+    ) {
+      autoTriggeredRef.current = true;
+      handleGenerateCorrectiveTraining();
+      // clear the param so it doesn't retrigger on reload
+      const next = new URLSearchParams(searchParams);
+      next.delete("mode");
+      setSearchParams(next, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [apexSyncData, coachId, athlete?.id, correctiveTraining, generatingTraining]);
+
   const handleGenerateCorrectiveTraining = async () => {
     if (!apexSyncData || !athlete?.id || !coachId) return;
     setGeneratingTraining(true);
