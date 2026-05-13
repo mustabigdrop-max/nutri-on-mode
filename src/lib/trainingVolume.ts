@@ -62,25 +62,57 @@ function canonicalize(raw: string): string[] {
   return Array.from(matches);
 }
 
+/**
+ * Modo de contagem de volume:
+ * - "primary": apenas o músculo primário soma 1.0 série por set (recomendado, padrão científico).
+ * - "synergy": primário soma 1.0 e cada secundário soma `synergyFactor` (default 0.5).
+ */
+export type VolumeCountMode = "primary" | "synergy";
+
+export interface VolumeOptions {
+  mode?: VolumeCountMode;
+  synergyFactor?: number; // usado apenas em "synergy"
+}
+
 /** Soma as séries de trabalho de cada grupo muscular ao longo de toda a semana. */
-export function aggregateWeeklyVolume(trainingDays: any[]): Record<string, number> {
+export function aggregateWeeklyVolume(
+  trainingDays: any[],
+  options: VolumeOptions = {},
+): Record<string, number> {
+  const mode: VolumeCountMode = options.mode ?? "primary";
+  const synergyFactor = options.synergyFactor ?? 0.5;
   const out: Record<string, number> = {};
+
   (trainingDays || []).forEach((day) => {
     (day.exercises || []).forEach((ex: any) => {
-      // Apenas o músculo PRIMÁRIO conta como série de trabalho completa.
-      // Secundários (sinergistas) inflariam o volume — ignorados aqui.
-      const targets: string[] = [];
-      if (ex.muscle_target) targets.push(ex.muscle_target);
-      else if (ex.primaryMuscle) targets.push(ex.primaryMuscle);
-      else if (Array.isArray(ex.muscles) && ex.muscles.length) targets.push(ex.muscles[0]);
-      if (targets.length === 0) return;
       const sets = countWorkingSets(ex);
       if (sets <= 0) return;
-      const canons = new Set<string>();
-      targets.forEach((t) => canonicalize(String(t)).forEach((c) => canons.add(c)));
-      canons.forEach((c) => {
+
+      // Primário
+      const primaryRaw =
+        ex.muscle_target ||
+        ex.primaryMuscle ||
+        (Array.isArray(ex.muscles) && ex.muscles.length ? ex.muscles[0] : null);
+      if (!primaryRaw) return;
+      const primaryCanons = new Set<string>();
+      canonicalize(String(primaryRaw)).forEach((c) => primaryCanons.add(c));
+      primaryCanons.forEach((c) => {
         out[c] = (out[c] || 0) + sets;
       });
+
+      // Secundários (apenas em modo synergy)
+      if (mode === "synergy") {
+        const secondaryRaw: string[] = [];
+        if (Array.isArray(ex.secondary_muscles)) secondaryRaw.push(...ex.secondary_muscles);
+        if (Array.isArray(ex.muscles) && ex.muscles.length > 1) secondaryRaw.push(...ex.muscles.slice(1));
+        const secCanons = new Set<string>();
+        secondaryRaw.forEach((t) => canonicalize(String(t)).forEach((c) => secCanons.add(c)));
+        // não dobra contagem se já estiver no primário
+        primaryCanons.forEach((c) => secCanons.delete(c));
+        secCanons.forEach((c) => {
+          out[c] = (out[c] || 0) + sets * synergyFactor;
+        });
+      }
     });
   });
   return out;
@@ -102,12 +134,15 @@ const COLOR_HIGH = "#FF3366";
 export function buildVolumeReport(
   musclePriorities: Array<{ muscle: string; weekly_sets: number }>,
   trainingDays: any[],
+  options: VolumeOptions = {},
 ): MuscleVolumeReport[] {
-  const actuals = aggregateWeeklyVolume(trainingDays);
+  const actuals = aggregateWeeklyVolume(trainingDays, options);
   return (musclePriorities || []).map((mp) => {
     const prescribed = Number(mp.weekly_sets) || 0;
     const canons = canonicalize(mp.muscle);
-    const actual = canons.reduce((sum, c) => sum + (actuals[c] || 0), 0);
+    const rawActual = canons.reduce((sum, c) => sum + (actuals[c] || 0), 0);
+    // arredondamento amigável (1 casa) para não exibir 7.5 como 7
+    const actual = Math.round(rawActual * 10) / 10;
     let status: MuscleVolumeReport["status"] = "ok";
     let color = COLOR_OK;
     if (prescribed > 0) {
@@ -117,6 +152,7 @@ export function buildVolumeReport(
     return { muscle: mp.muscle, prescribed, actual, status, color };
   });
 }
+
 
 /** Detecta inconsistência GVT: método com 10 séries/exercício mas volume prescrito baixo. */
 export function detectGvtMismatch(
