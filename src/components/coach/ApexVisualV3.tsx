@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import AthleteSelector, { AthleteOption } from "@/components/coach/AthleteSelector";
 import jsPDF from "jspdf";
 
 // ─── PALETA APEX v3 ───────────────────────────────────────────────
@@ -412,6 +414,33 @@ export default function ApexVisualV3() {
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("overview");
 
+  // ─── Vinculação ao atleta cadastrado + histórico ─────────────────
+  const { user } = useAuth();
+  const [selectedAthlete, setSelectedAthlete] = useState<AthleteOption | null>(null);
+  const [history, setHistory] = useState<any[]>([]);
+  const [savedId, setSavedId] = useState<string | null>(null);
+  const [savingState, setSavingState] = useState<"idle"|"saving"|"saved"|"error">("idle");
+
+  const loadHistory = async (athleteId: string) => {
+    const { data } = await supabase
+      .from("athlete_visual_assessments" as any)
+      .select("id,data_avaliacao,semana_numero,fase,peso_kg,bf_estimado,score_geral,observacoes_coach")
+      .eq("athlete_id", athleteId)
+      .order("data_avaliacao", { ascending: false })
+      .limit(20);
+    setHistory((data as any) || []);
+  };
+
+  useEffect(() => {
+    if (selectedAthlete) {
+      setNome(selectedAthlete.nome || "");
+      if (selectedAthlete.fase_atual) setFase(selectedAthlete.fase_atual);
+      loadHistory(selectedAthlete.id);
+    } else {
+      setHistory([]);
+    }
+  }, [selectedAthlete?.id]);
+
   const cat = CATS[catKey];
   const temFoto = !!(fotoF || fotoC || fotoL);
   const temProtocolo = compostos.trim().length > 0;
@@ -495,7 +524,11 @@ export default function ApexVisualV3() {
       const iv = setInterval(() => {
         idx = Math.min(idx + 24, text.length);
         setRaw(text.slice(0, idx));
-        if (idx >= text.length) { clearInterval(iv); setStreaming(false); setDone(true); setActiveTab("overview"); }
+        if (idx >= text.length) {
+          clearInterval(iv); setStreaming(false); setDone(true); setActiveTab("overview");
+          // Auto-salva no histórico do atleta selecionado
+          saveAssessment(text).catch((e) => console.error("[APEX] save failed:", e));
+        }
       }, 16);
     } catch (e: any) {
       setError(e?.message || "Erro desconhecido na análise.");
@@ -522,7 +555,52 @@ export default function ApexVisualV3() {
   ];
 
 
-  const reset = () => { setRaw(""); setDone(false); setError(null); setFotoF(null); setFotoC(null); setFotoL(null); setStreaming(false); };
+  const reset = () => { setRaw(""); setDone(false); setError(null); setFotoF(null); setFotoC(null); setFotoL(null); setStreaming(false); setSavedId(null); setSavingState("idle"); };
+
+  const saveAssessment = async (fullText: string) => {
+    if (!user || !selectedAthlete) {
+      setSavingState("idle");
+      return;
+    }
+    setSavingState("saving");
+    const m = parseMeta(fullText);
+    const veredicto = secParse(fullText, "VEREDICTO", null) || "";
+    const composicao = secParse(fullText, "COMPOSICAO_CORPORAL", "DECISAO_MANOBRA") || "";
+    const ajustes = secParse(fullText, "PLANO_ATAQUE", "POSING_CORRETIVO") || "";
+    const meta_proxima = secParse(fullText, "DECISAO_MANOBRA", "POSTURA_DESVIOS") || "";
+    const semanaNum = Math.max(1, (history?.[0]?.semana_numero || 0) + 1);
+
+    const payload: any = {
+      athlete_id: selectedAthlete.id,
+      coach_id: user.id,
+      semana_numero: semanaNum,
+      semanas_ate_palco: parseInt(semanas) || null,
+      fase,
+      peso_kg: peso ? parseFloat(peso) : null,
+      bf_estimado: m.bfEst ? parseFloat(m.bfEst) : null,
+      massa_magra_kg: m.massaMagra ? parseFloat(m.massaMagra) : null,
+      analise_ia: { raw: fullText, meta: m, categoria: catKey, protocolo: { compostos, objetivoCiclo, semanaCiclo, duracaoCiclo, faseCorpo, pesoAtual, pesoPico } },
+      observacoes_coach: obs || veredicto.slice(0, 1000) || null,
+      ajustes_plano: ajustes ? ajustes.slice(0, 2000) : null,
+      meta_proxima_semana: meta_proxima ? meta_proxima.slice(0, 1000) : null,
+    };
+
+    const { data, error: e } = await supabase
+      .from("athlete_visual_assessments" as any)
+      .insert(payload)
+      .select("id")
+      .maybeSingle();
+
+    if (e) {
+      console.error("[APEX] insert error:", e);
+      setSavingState("error");
+      return;
+    }
+    setSavedId((data as any)?.id || null);
+    setSavingState("saved");
+    await loadHistory(selectedAthlete.id);
+  };
+
 
   const exportarPDF = (accessible: boolean = false) => {
     const pdf = new jsPDF({ unit: "mm", format: "a4" });
@@ -825,6 +903,34 @@ export default function ApexVisualV3() {
         {/* FORMULÁRIO */}
         {!done && !loading && !streaming && (
           <>
+            {/* SELEÇÃO DE ATLETA + HISTÓRICO */}
+            <div style={{ marginBottom:20, padding:16, background:C.card, border:`1px solid ${C.border}`, borderRadius:12 }}>
+              <div style={{ fontSize:10, color:C.textSec, marginBottom:10, letterSpacing:".1em", textTransform:"uppercase" }}>Atleta vinculado · histórico salvo automaticamente</div>
+              <AthleteSelector value={selectedAthlete?.id ?? null} onChange={setSelectedAthlete} label="Selecionar atleta cadastrado" />
+              {!selectedAthlete && (
+                <div style={{ marginTop:10, fontSize:11, color:C.amber }}>
+                  ⚠ Sem atleta selecionado, esta análise <b>não será salva</b> no histórico. Cadastre em <i>Atletas</i> para monitorar evolução.
+                </div>
+              )}
+              {selectedAthlete && history.length > 0 && (
+                <div style={{ marginTop:14 }}>
+                  <div style={{ fontSize:10, color:C.textSec, marginBottom:8, letterSpacing:".1em", textTransform:"uppercase" }}>Últimas avaliações ({history.length})</div>
+                  <div style={{ display:"flex", flexDirection:"column", gap:6, maxHeight:220, overflowY:"auto" }}>
+                    {history.map((h: any) => (
+                      <div key={h.id} style={{ display:"flex", alignItems:"center", gap:10, padding:"8px 12px", background:C.cardHi, border:`1px solid ${C.border}`, borderRadius:8, fontSize:11, flexWrap:"wrap" }}>
+                        <div style={{ minWidth:90, color:C.textSec }}>{new Date(h.data_avaliacao).toLocaleDateString("pt-BR")}</div>
+                        <div style={{ minWidth:40, color:cat.c, fontWeight:700 }}>S{h.semana_numero}</div>
+                        <div style={{ minWidth:80, color:C.text }}>{h.fase}</div>
+                        <div style={{ minWidth:60, color:C.text }}>{h.peso_kg ? `${h.peso_kg}kg` : "—"}</div>
+                        <div style={{ minWidth:70, color:C.text }}>{h.bf_estimado ? `${h.bf_estimado}% BF` : "—"}</div>
+                        <div style={{ flex:1, minWidth:120, color:C.textSec, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{h.observacoes_coach || ""}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
             {/* CATEGORIAS */}
             <div style={{ marginBottom:20 }}>
               <div style={{ fontSize:10, color:C.textSec, marginBottom:8, letterSpacing:".1em", textTransform:"uppercase" }}>Categoria IFBB</div>
@@ -874,6 +980,7 @@ export default function ApexVisualV3() {
                 <DropZone angle="Lateral" file={fotoL} onFile={setFotoL} onClear={() => setFotoL(null)} />
               </div>
             </div>
+
 
             {/* PROTOCOLO FARMACOLÓGICO */}
             <div style={{ marginBottom:20, padding:16, background:temProtocolo?C.purpleDim:C.card, border:`1px solid ${temProtocolo?C.purple+"55":C.border}`, borderRadius:12, transition:"all .2s" }}>
@@ -971,6 +1078,23 @@ export default function ApexVisualV3() {
                 </div>
               </div>
             </div>
+
+            {done && selectedAthlete && (
+              <div style={{ marginBottom:12, padding:"10px 14px", borderRadius:10, fontSize:11, fontWeight:600, letterSpacing:".05em",
+                background: savingState==="saved"?C.greenDim:savingState==="error"?C.redDim:savingState==="saving"?C.apexDim:C.card,
+                border:`1px solid ${savingState==="saved"?C.green+"66":savingState==="error"?C.red+"66":savingState==="saving"?C.apex+"66":C.border}`,
+                color: savingState==="saved"?C.green:savingState==="error"?C.red:savingState==="saving"?C.apex:C.textSec }}>
+                {savingState==="saving" && "💾 Salvando avaliação no histórico do atleta…"}
+                {savingState==="saved" && `✔ Avaliação salva no histórico de ${selectedAthlete.nome} (semana ${(history?.[0]?.semana_numero) || "?"}).`}
+                {savingState==="error" && "✖ Falha ao salvar histórico. Tente novamente."}
+                {savingState==="idle" && "💾 Aguardando salvamento…"}
+              </div>
+            )}
+            {done && !selectedAthlete && (
+              <div style={{ marginBottom:12, padding:"10px 14px", borderRadius:10, fontSize:11, color:C.amber, background:C.amber+"15", border:`1px solid ${C.amber}55` }}>
+                ⚠ Esta análise não foi salva no histórico — nenhum atleta cadastrado foi vinculado antes da análise.
+              </div>
+            )}
 
             {done && (() => {
               const missing = SECTION_CHECK.filter(sc => {
