@@ -752,7 +752,7 @@ Suporte em uso: ${suporte || "não informado"}` : "";
                 {meta.bfMeta && <Pill label="BF meta" value={`${meta.bfMeta}%`} color="#1DB87A" />}
                 {meta.semEst && <Pill label="Semanas" value={meta.semEst} color={cat.color} />}
               </div>
-              <InfoBlock title="Condicionamento" body={parseSection(analysisResult, "CONDICIONAMENTO", "GANHA_PONTOS")} accent={cat.color} />
+              <InfoBlock title="Condicionamento" body={parseSection(analysisResult, "CONDICIONAMENTO", "FARMACOLOGIA_SHAPE")} accent={cat.color} />
               <GenerateTrainingButton onClick={handleGenerateTraining} loading={generatingTraining} />
             </div>
           )}
