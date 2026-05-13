@@ -1261,6 +1261,26 @@ function BlockOverviewCard({ overview, alerts, clientName, trainingDays, systemI
               <span className="text-[8px] font-medium ml-auto" style={{ color: TEXT_MUTED }}>realizado / prescrito</span>
             )}
           </div>
+          {trainingDays && (
+            <div className="flex items-center gap-1 mb-2 p-0.5 rounded-lg" style={{ background: "rgba(255,255,255,0.04)", border: `1px solid ${BORDER}` }}>
+              <button
+                onClick={() => setVolumeMode("primary")}
+                className="flex-1 text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded-md transition-all"
+                style={{ background: volumeMode === "primary" ? GREEN : "transparent", color: volumeMode === "primary" ? "#000" : TEXT_DIM }}
+                title="Conta apenas o músculo primário (padrão científico)"
+              >
+                Só primário
+              </button>
+              <button
+                onClick={() => setVolumeMode("synergy")}
+                className="flex-1 text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded-md transition-all"
+                style={{ background: volumeMode === "synergy" ? GREEN : "transparent", color: volumeMode === "synergy" ? "#000" : TEXT_DIM }}
+                title="Primário 1.0 + secundários 0.5"
+              >
+                + Sinergistas (0.5)
+              </button>
+            </div>
+          )}
           <div className="space-y-2">
             {overview.muscle_priorities.map((mp: any, i: number) => {
               const rep = volumeReport.find((r) => r.muscle === mp.muscle);
