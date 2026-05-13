@@ -241,6 +241,20 @@ export default function CorrectivePlanViewer({
           )}
         </div>
       )}
+
+      {tab === "raw" && (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between gap-2">
+            <div className="text-xs text-muted-foreground">
+              Resposta completa da IA — use como guia para montar o treino no TrainingON e o plano alimentar.
+            </div>
+            <CopyButton text={text} />
+          </div>
+          <pre className="text-xs whitespace-pre-wrap font-mono text-foreground/90 max-h-[700px] overflow-y-auto p-3 rounded-lg border border-border bg-card/60">
+            {text || "—"}
+          </pre>
+        </div>
+      )}
     </div>
   );
 }
