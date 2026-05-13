@@ -488,7 +488,7 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
   const goToTrainingOn = () => {
     if (!athlete?.id) return;
     setShowTrainingModal(false);
-    navigate(`/coach-dashboard?tab=training&athlete=${athlete.id}&mode=corrective`);
+    navigate(`/coach/trainingon?athlete=${athlete.id}&mode=corrective`);
   };
 
   // ─── RENDER: LOADING ─────────────────────────────────
