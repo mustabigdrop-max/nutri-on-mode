@@ -672,6 +672,78 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
         </div>
       </div>
 
+      {/* History */}
+      {athlete && (
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <History className="w-4 h-4 text-muted-foreground" />
+            <div className="text-xs font-semibold text-foreground">Análises anteriores</div>
+            <div className="text-[10px] text-muted-foreground">· {athlete.nome}</div>
+          </div>
+          {historyLoading ? (
+            <div className="space-y-2">
+              {[0, 1, 2].map((i) => (
+                <div key={i} className="h-16 rounded-lg bg-muted animate-pulse" />
+              ))}
+            </div>
+          ) : history.length === 0 ? (
+            <div className="text-xs text-muted-foreground italic px-3 py-4 text-center border border-dashed border-border rounded-lg">
+              Nenhuma análise anterior para este atleta.
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {history.map((item) => {
+                const itemCat = (CATEGORIES as any)[item.category] || cat;
+                return (
+                  <div
+                    key={item.id}
+                    className="rounded-lg border bg-card p-3 flex items-center gap-3"
+                    style={{ borderColor: itemCat.color + "44" }}
+                  >
+                    <div className="text-2xl">{itemCat.icon}</div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <span className="text-xs font-bold text-foreground">{item.category_label || itemCat.label}</span>
+                        <span className="text-[10px] text-muted-foreground">{formatRelative(item.created_at)}</span>
+                      </div>
+                      <div className="flex flex-wrap gap-1.5 mb-1">
+                        {item.bf_estimated != null && (
+                          <span className="text-[10px] px-1.5 py-0.5 rounded font-semibold" style={{ background: "#E0703022", color: "#E07030" }}>
+                            BF est {item.bf_estimated}%
+                          </span>
+                        )}
+                        {item.bf_target != null && (
+                          <span className="text-[10px] px-1.5 py-0.5 rounded font-semibold" style={{ background: "#1DB87A22", color: "#1DB87A" }}>
+                            Meta {item.bf_target}%
+                          </span>
+                        )}
+                        {item.weeks_estimated != null && (
+                          <span className="text-[10px] px-1.5 py-0.5 rounded font-semibold" style={{ background: itemCat.color + "22", color: itemCat.color }}>
+                            {item.weeks_estimated} sem
+                          </span>
+                        )}
+                      </div>
+                      {item.priority_1 && (
+                        <div className="text-[11px] text-muted-foreground line-clamp-1">
+                          <span className="font-semibold text-foreground/80">P1:</span> {item.priority_1}
+                        </div>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => openHistoryItem(item)}
+                      className="shrink-0 text-[11px] px-2.5 py-1.5 rounded-lg border hover:bg-muted flex items-center gap-1 font-semibold"
+                      style={{ borderColor: itemCat.color + "55", color: itemCat.color }}
+                    >
+                      <Eye className="w-3 h-3" /> Ver
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Submit */}
       <button
         onClick={analyzeWithAI}
@@ -685,10 +757,21 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
       >
         🔬 Analisar com APEX v2
       </button>
-
-      {coachId && <div className="text-[10px] text-muted-foreground/60 text-center">Coach ID: {coachId}</div>}
     </div>
   );
+}
+
+function formatRelative(iso: string) {
+  const d = new Date(iso);
+  const diffMs = Date.now() - d.getTime();
+  const days = Math.floor(diffMs / 86400000);
+  if (days < 1) {
+    const h = Math.floor(diffMs / 3600000);
+    return h < 1 ? "agora" : `há ${h}h`;
+  }
+  if (days === 1) return "ontem";
+  if (days < 7) return `há ${days} dias`;
+  return d.toLocaleDateString("pt-BR");
 }
 
 // ─── Small helpers ───────────────────────────────────────────────
