@@ -342,6 +342,9 @@ const CoachDashboardPage = () => {
             <TabsTrigger value="send">
               <Send className="w-4 h-4 mr-1" /> Enviar Protocolo
             </TabsTrigger>
+            <TabsTrigger value="apex-visual">
+              <Scan className="w-4 h-4 mr-1" /> APEX Visual
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="hub" className="mt-4 -mx-4 md:-mx-6">
@@ -356,6 +359,10 @@ const CoachDashboardPage = () => {
 
           <TabsContent value="send" className="mt-4">
             <SendProtocolModule coachProfileId={profile.id} coachUserId={user?.id || ""} />
+          </TabsContent>
+
+          <TabsContent value="apex-visual" className="mt-4">
+            <ApexVisualDashboard coachId={profile.id} />
           </TabsContent>
 
           <TabsContent value="overview" className="mt-4">
