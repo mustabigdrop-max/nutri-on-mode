@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 import AthleteSelector, { AthleteOption } from "@/components/coach/AthleteSelector";
-import { Upload, X, FlaskConical, RotateCcw } from "lucide-react";
+import { Upload, X, FlaskConical, RotateCcw, History, Eye } from "lucide-react";
 
 // ─── Categorias ──────────────────────────────────────────────────
 type CategoryKey =
