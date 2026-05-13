@@ -601,6 +601,7 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
             <div className="space-y-3">
               <InfoBox color="#C47A15" text="Diagnóstico + causa + exercícios + frequência + tempo de resposta." />
               <Pre body={parseSection(analysisResult, "PONTOS_FRACOS_PROTOCOLO", "CONDICIONAMENTO")} />
+              <GenerateTrainingButton onClick={handleGenerateTraining} loading={generatingTraining} />
             </div>
           )}
           {activeResultTab === "palco" && (
@@ -625,9 +626,28 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
                 {meta.semEst && <Pill label="Semanas" value={meta.semEst} color={cat.color} />}
               </div>
               <InfoBlock title="Condicionamento" body={parseSection(analysisResult, "CONDICIONAMENTO", "GANHA_PONTOS")} accent={cat.color} />
+              <GenerateTrainingButton onClick={handleGenerateTraining} loading={generatingTraining} />
             </div>
           )}
         </div>
+
+        {/* Sync status badge */}
+        {syncStatus && (
+          <div
+            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold"
+            style={{
+              background: syncStatus === "applied" ? "#1DB87A22" : "#C47A1522",
+              color: syncStatus === "applied" ? "#1DB87A" : "#C47A15",
+              border: `1px solid ${syncStatus === "applied" ? "#1DB87A55" : "#C47A1555"}`,
+            }}
+          >
+            {syncStatus === "applied" ? (
+              <><CheckCircle2 className="w-3.5 h-3.5" /> Treino Corretivo Ativo no TrainingON</>
+            ) : (
+              <><Clock className="w-3.5 h-3.5" /> Aguardando TrainingON</>
+            )}
+          </div>
+        )}
 
         {/* Veredicto sempre visível */}
         <div
@@ -641,6 +661,56 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
             {parseSection(analysisResult, "VEREDICTO") || "—"}
           </div>
         </div>
+
+        {/* Modal de confirmação */}
+        <Dialog open={showTrainingModal} onOpenChange={setShowTrainingModal}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Dumbbell className="w-5 h-5" style={{ color: cat.color }} />
+                Treino Corretivo Pronto para Gerar
+              </DialogTitle>
+              <DialogDescription>
+                Os dados da análise APEX foram sincronizados. O TrainingON vai gerar treino específico para os pontos fracos + exercícios de ativação pré-treino.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-2 text-sm">
+              <div><span className="text-muted-foreground">Atleta:</span> <span className="font-semibold">{athlete?.nome || "—"}</span></div>
+              <div><span className="text-muted-foreground">Categoria:</span> <span className="font-semibold">{cat.label}</span></div>
+              <div>
+                <div className="text-muted-foreground mb-1">Pontos fracos identificados:</div>
+                <div className="flex flex-wrap gap-1.5">
+                  {buildSyncPayload().weakPoints.length === 0 && (
+                    <span className="text-xs text-muted-foreground italic">Nenhum grupo com score &lt; 6.</span>
+                  )}
+                  {buildSyncPayload().weakPoints.map((w, i) => (
+                    <span key={i} className="text-[11px] px-2 py-0.5 rounded-full bg-muted font-semibold">
+                      {w.muscle} ({w.score})
+                    </span>
+                  ))}
+                </div>
+              </div>
+              {meta.p1 && (
+                <div><span className="text-muted-foreground">Prioridade 1:</span> <span className="font-semibold">{meta.p1}</span></div>
+              )}
+            </div>
+            <DialogFooter>
+              <button
+                onClick={() => setShowTrainingModal(false)}
+                className="px-4 py-2 text-sm rounded-lg border hover:bg-muted"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={goToTrainingOn}
+                className="px-4 py-2 text-sm rounded-lg font-bold text-white"
+                style={{ background: "linear-gradient(135deg, #1A6AB5, #2A8AE5)" }}
+              >
+                Ir para o TrainingON
+              </button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     );
   }
