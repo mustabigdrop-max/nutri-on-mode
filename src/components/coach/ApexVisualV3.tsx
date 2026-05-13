@@ -981,6 +981,23 @@ export default function ApexVisualV3() {
               </div>
             </div>
 
+            {done && selectedAthlete && (
+              <div style={{ marginBottom:12, padding:"10px 14px", borderRadius:10, fontSize:11, fontWeight:600, letterSpacing:".05em",
+                background: savingState==="saved"?C.greenDim:savingState==="error"?C.redDim:savingState==="saving"?C.apexDim:C.card,
+                border:`1px solid ${savingState==="saved"?C.green+"66":savingState==="error"?C.red+"66":savingState==="saving"?C.apex+"66":C.border}`,
+                color: savingState==="saved"?C.green:savingState==="error"?C.red:savingState==="saving"?C.apex:C.textSec }}>
+                {savingState==="saving" && "💾 Salvando avaliação no histórico do atleta…"}
+                {savingState==="saved" && `✔ Avaliação salva no histórico de ${selectedAthlete.nome}.`}
+                {savingState==="error" && "✖ Falha ao salvar histórico. Verifique permissões e tente novamente."}
+                {savingState==="idle" && "Aguardando salvamento…"}
+              </div>
+            )}
+            {done && !selectedAthlete && (
+              <div style={{ marginBottom:12, padding:"10px 14px", borderRadius:10, fontSize:11, color:C.amber, background:C.amber+"15", border:`1px solid ${C.amber}55` }}>
+                ⚠ Esta análise não foi salva — nenhum atleta foi vinculado.
+              </div>
+            )}
+
             {/* PROTOCOLO FARMACOLÓGICO */}
             <div style={{ marginBottom:20, padding:16, background:temProtocolo?C.purpleDim:C.card, border:`1px solid ${temProtocolo?C.purple+"55":C.border}`, borderRadius:12, transition:"all .2s" }}>
               <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:12, flexWrap:"wrap" }}>
