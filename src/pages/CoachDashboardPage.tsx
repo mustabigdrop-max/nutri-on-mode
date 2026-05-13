@@ -21,6 +21,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import SendProtocolModule from "@/components/coach/SendProtocolModule";
 import AthleteRoster from "@/components/coach/AthleteRoster";
 import CoachHub from "@/pages/CoachHub";
+import ApexVisualDashboard from "@/components/coach/ApexVisualDashboard";
 
 interface PatientRow {
   id: string;
