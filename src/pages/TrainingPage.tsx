@@ -1214,8 +1214,9 @@ function PostDeloadScenario({ scenario, color, icon, index }: { scenario: any; c
 
 /* ── Block Overview Card ── */
 function BlockOverviewCard({ overview, alerts, clientName, trainingDays, systemId }: { overview: any; alerts?: any[]; clientName: string; trainingDays?: any[]; systemId?: string }) {
+  const [volumeMode, setVolumeMode] = useState<"primary" | "synergy">("primary");
   const volumeReport = trainingDays && overview.muscle_priorities
-    ? buildVolumeReport(overview.muscle_priorities, trainingDays)
+    ? buildVolumeReport(overview.muscle_priorities, trainingDays, { mode: volumeMode, synergyFactor: 0.5 })
     : [];
   const gvtWarnings = detectGvtMismatch(systemId, overview.muscle_priorities || []);
   return (
