@@ -638,12 +638,12 @@ export default function ApexVisualV3() {
     pdf.setFillColor(8, 12, 24);
     pdf.rect(0, 0, W, 50, "F");
     pdf.setTextColor(255, 255, 255);
-    pdf.setFont("helvetica", "bold"); pdf.setFontSize(22);
+    pdf.setFont("helvetica", "bold"); pdf.setFontSize(PT.h1);
     pdf.text("APEX VISUAL v3", M, 22);
-    pdf.setFont("helvetica", "normal"); pdf.setFontSize(10);
+    pdf.setFont("helvetica", "normal"); pdf.setFontSize(PT.body);
     pdf.setTextColor(180, 200, 230);
     pdf.text("Análise Visual + Postura + Farmacologia + Manobras de Elite", M, 30);
-    pdf.setFontSize(9);
+    pdf.setFontSize(PT.small);
     pdf.text(`Categoria: ${cat.l}  ·  Atleta: ${nome || "—"}  ·  ${idade ? idade + " anos · " : ""}${peso ? peso + "kg · " : ""}${altura ? altura + "cm" : ""}`, M, 38);
     pdf.text(`Semanas para o show: ${semanas || "—"}  ·  Fase: ${fase}  ·  Emitido: ${new Date().toLocaleDateString("pt-BR")}`, M, 44);
     y = 60;
