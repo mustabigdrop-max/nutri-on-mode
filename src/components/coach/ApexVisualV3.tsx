@@ -3,6 +3,90 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import AthleteSelector, { AthleteOption } from "@/components/coach/AthleteSelector";
 import jsPDF from "jspdf";
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend, BarChart, Bar, Cell } from "recharts";
+
+function EvolutionCharts({ history, cat, C }: { history: any[]; cat: any; C: any }) {
+  // Order chronologically (history is desc)
+  const data = [...history].reverse().map((h: any) => ({
+    semana: `S${h.semana_numero}`,
+    data: new Date(h.data_avaliacao).toLocaleDateString("pt-BR", { day:"2-digit", month:"2-digit" }),
+    peso: h.peso_kg ? Number(h.peso_kg) : null,
+    bf: h.bf_estimado ? Number(h.bf_estimado) : null,
+    fase: h.fase || "—",
+  }));
+
+  const FASE_COLORS: Record<string, string> = {
+    "OFF-SEASON": C.green, "BULKING": C.green,
+    "PRÉ-CONTEST": C.amber, "PRE-CONTEST": C.amber, "CUTTING": C.amber,
+    "PEAK WEEK": C.red, "PEAK-WEEK": C.red,
+    "RECOMP": C.purple, "MANUTENÇÃO": C.apex,
+  };
+  const fases = Array.from(new Set(data.map(d => d.fase))).filter(f => f && f !== "—");
+  const faseData = data.map((d, i) => ({ semana: d.semana, idx: i+1, fase: d.fase, color: FASE_COLORS[d.fase?.toUpperCase()] || C.apex }));
+
+  const cardStyle: React.CSSProperties = { background: C.cardHi, border:`1px solid ${C.border}`, borderRadius:10, padding:12 };
+  const titleStyle: React.CSSProperties = { fontSize:10, color:C.textSec, marginBottom:8, letterSpacing:".1em", textTransform:"uppercase", fontWeight:600 };
+  const tooltipStyle = { background: C.card, border:`1px solid ${C.borderHi}`, borderRadius:6, fontSize:11, color:C.text };
+  const axisProps = { stroke: C.textSec, fontSize: 10, tick: { fill: C.textSec } };
+
+  return (
+    <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(280px, 1fr))", gap:12, marginBottom:14 }}>
+      <div style={cardStyle}>
+        <div style={titleStyle}>📊 Peso (kg) · semana a semana</div>
+        <div style={{ width:"100%", height:160 }}>
+          <ResponsiveContainer>
+            <LineChart data={data} margin={{ top:5, right:8, left:-15, bottom:0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke={C.border} />
+              <XAxis dataKey="semana" {...axisProps} />
+              <YAxis {...axisProps} domain={["auto","auto"]} />
+              <Tooltip contentStyle={tooltipStyle as any} labelStyle={{ color: C.text }} />
+              <Line type="monotone" dataKey="peso" stroke={cat.c} strokeWidth={2} dot={{ r:3, fill: cat.c }} connectNulls name="Peso (kg)" />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      <div style={cardStyle}>
+        <div style={titleStyle}>🔥 BF estimado (%) · evolução</div>
+        <div style={{ width:"100%", height:160 }}>
+          <ResponsiveContainer>
+            <LineChart data={data} margin={{ top:5, right:8, left:-15, bottom:0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke={C.border} />
+              <XAxis dataKey="semana" {...axisProps} />
+              <YAxis {...axisProps} domain={["auto","auto"]} />
+              <Tooltip contentStyle={tooltipStyle as any} labelStyle={{ color: C.text }} />
+              <Line type="monotone" dataKey="bf" stroke={C.amber} strokeWidth={2} dot={{ r:3, fill: C.amber }} connectNulls name="BF (%)" />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      <div style={cardStyle}>
+        <div style={titleStyle}>🎯 Fase · linha do tempo</div>
+        <div style={{ width:"100%", height:160 }}>
+          <ResponsiveContainer>
+            <BarChart data={faseData} margin={{ top:5, right:8, left:-15, bottom:0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke={C.border} />
+              <XAxis dataKey="semana" {...axisProps} />
+              <YAxis hide domain={[0, 1]} />
+              <Tooltip contentStyle={tooltipStyle as any} labelStyle={{ color: C.text }} formatter={(_v:any, _n:any, p:any) => [p.payload.fase, "Fase"]} />
+              <Bar dataKey={() => 1} radius={[4,4,0,0]}>
+                {faseData.map((d, i) => <Cell key={i} fill={d.color} />)}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+        <div style={{ display:"flex", flexWrap:"wrap", gap:8, marginTop:6 }}>
+          {fases.map(f => (
+            <div key={f} style={{ display:"flex", alignItems:"center", gap:4, fontSize:10, color:C.textSec }}>
+              <span style={{ width:8, height:8, borderRadius:2, background: FASE_COLORS[f.toUpperCase()] || C.apex, display:"inline-block" }} />{f}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 // ─── PALETA APEX v3 ───────────────────────────────────────────────
 const C = {
