@@ -1080,18 +1080,74 @@ Suporte em uso: ${suporte || "não informado"}` : "";
       )}
 
       {/* Submit */}
-      <button
-        onClick={analyzeWithAI}
-        disabled={!hasAnyPhoto}
-        className="w-full py-3 rounded-xl text-sm font-black transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-        style={{
-          background: hasAnyPhoto ? cat.color : "hsl(var(--muted))",
-          color: hasAnyPhoto ? "#fff" : "hsl(var(--muted-foreground))",
-          boxShadow: hasAnyPhoto ? `0 8px 24px -8px ${cat.color}99` : "none",
-        }}
-      >
-        🔬 Analisar com APEX v2
-      </button>
+      <div className="space-y-2">
+        <button
+          onClick={() => setShowPromptPreview(true)}
+          className="w-full py-2 rounded-xl text-xs font-bold border border-border bg-muted/40 hover:bg-muted transition-colors flex items-center justify-center gap-2 text-foreground"
+        >
+          <FileText className="w-3.5 h-3.5" />
+          Pré-visualizar prompt enviado à IA (APEX + Dr. VERTEX)
+        </button>
+        <button
+          onClick={analyzeWithAI}
+          disabled={!hasAnyPhoto}
+          className="w-full py-3 rounded-xl text-sm font-black transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+          style={{
+            background: hasAnyPhoto ? cat.color : "hsl(var(--muted))",
+            color: hasAnyPhoto ? "#fff" : "hsl(var(--muted-foreground))",
+            boxShadow: hasAnyPhoto ? `0 8px 24px -8px ${cat.color}99` : "none",
+          }}
+        >
+          🔬 Analisar com APEX v2
+        </button>
+      </div>
+
+      {/* Modal: prompt preview */}
+      <Dialog open={showPromptPreview} onOpenChange={setShowPromptPreview}>
+        <DialogContent className="max-w-3xl max-h-[85vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FileText className="w-4 h-4" /> Prompt completo enviado à IA
+            </DialogTitle>
+            <DialogDescription>
+              Análise APEX v2 {formData.compostos ? "+ Dr. VERTEX (farmacologia ativa)" : "(sem protocolo farmacológico)"} — {athlete?.nome || "atleta"} · {cat.label}
+            </DialogDescription>
+          </DialogHeader>
+          {(() => {
+            const athleteName = athlete?.nome || "atleta";
+            const protocoloCompleto = formData.compostos ? `Compostos: ${formData.compostos}
+Objetivo do ciclo: ${objetivoCiclo}
+Semana ${semanaCiclo || "não informada"} de ${duracaoCiclo || "não informada"} semanas
+Suporte em uso: ${suporte || "não informado"}` : "";
+            const system = buildSystemPrompt(cat, athleteName, protocoloCompleto);
+            const contexto = `Atleta: ${athleteName} | Semanas para o show: ${formData.semanas || "n/d"} | Protocolo: ${formData.compostos || "não informado"} | Obs: ${formData.obs || "nenhuma"}\n\nGere a análise APEX v2 completa.`;
+            const fullPrompt = `━━━━━ SYSTEM PROMPT ━━━━━\n\n${system}\n\n━━━━━ USER CONTEXT ━━━━━\n\n${contexto}`;
+            return (
+              <>
+                <div className="flex-1 overflow-auto rounded-lg border border-border bg-muted/30 p-3">
+                  <pre className="text-[11px] leading-relaxed whitespace-pre-wrap font-mono text-foreground">{fullPrompt}</pre>
+                </div>
+                <DialogFooter className="gap-2">
+                  <div className="text-xs text-muted-foreground mr-auto self-center">{fullPrompt.length.toLocaleString()} caracteres</div>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(fullPrompt).then(() => {
+                        setPromptCopied(true);
+                        toast({ title: "Prompt copiado", description: "Conteúdo enviado à IA copiado para a área de transferência." });
+                        setTimeout(() => setPromptCopied(false), 2000);
+                      });
+                    }}
+                    className="px-4 py-2 rounded-md text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 flex items-center gap-2"
+                  >
+                    <Copy className="w-3.5 h-3.5" />
+                    {promptCopied ? "✓ Copiado" : "Copiar prompt completo"}
+                  </button>
+                </DialogFooter>
+              </>
+            );
+          })()}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
