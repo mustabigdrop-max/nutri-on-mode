@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import jsPDF from "jspdf";
 
 // ─── PALETA APEX v3 ───────────────────────────────────────────────
 const C = {
@@ -424,6 +425,239 @@ export default function ApexVisualV3() {
 
   const reset = () => { setRaw(""); setDone(false); setError(null); setFotoF(null); setFotoC(null); setFotoL(null); setStreaming(false); };
 
+  const exportarPDF = () => {
+    const pdf = new jsPDF({ unit: "mm", format: "a4" });
+    const W = 210, H = 297, M = 15;
+    const maxW = W - M * 2;
+    let y = M;
+
+    // Cores (RGB)
+    const RGB = {
+      ink: [22, 26, 38] as [number, number, number],
+      sub: [95, 105, 125] as [number, number, number],
+      mute: [140, 150, 170] as [number, number, number],
+      line: [220, 224, 232] as [number, number, number],
+      brand: [0, 130, 160] as [number, number, number],
+      gold: [200, 140, 20] as [number, number, number],
+      green: [20, 140, 70] as [number, number, number],
+      red: [200, 50, 70] as [number, number, number],
+      purple: [110, 70, 200] as [number, number, number],
+      bgSoft: [245, 247, 252] as [number, number, number],
+    };
+
+    const need = (h: number) => { if (y + h > H - M) { pdf.addPage(); y = M; } };
+
+    const text = (txt: string, opts: { size?: number; bold?: boolean; color?: [number, number, number]; indent?: number; lh?: number } = {}) => {
+      const { size = 10, bold = false, color = RGB.ink, indent = 0, lh = 1.35 } = opts;
+      pdf.setFont("helvetica", bold ? "bold" : "normal");
+      pdf.setFontSize(size);
+      pdf.setTextColor(...color);
+      const lines = pdf.splitTextToSize(txt, maxW - indent);
+      const lineH = size * 0.3528 * lh;
+      for (const ln of lines) {
+        need(lineH);
+        pdf.text(ln, M + indent, y);
+        y += lineH;
+      }
+    };
+
+    const sectionHeader = (num: number, title: string, accent: [number, number, number]) => {
+      need(14);
+      y += 2;
+      pdf.setFillColor(...accent);
+      pdf.rect(M, y, 3, 8, "F");
+      pdf.setFillColor(...RGB.bgSoft);
+      pdf.rect(M + 3, y, maxW - 3, 8, "F");
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(10);
+      pdf.setTextColor(...accent);
+      pdf.text(`${String(num).padStart(2, "0")}`, M + 6, y + 5.5);
+      pdf.setTextColor(...RGB.ink);
+      pdf.text(title, M + 14, y + 5.5);
+      y += 11;
+    };
+
+    const sectionBody = (body: string) => {
+      const cleaned = (body || "").trim();
+      if (!cleaned) {
+        text("— sem conteúdo gerado —", { size: 9, color: RGB.mute });
+        y += 2;
+        return;
+      }
+      const paragraphs = cleaned.split(/\n+/).map(p => p.trim()).filter(Boolean);
+      for (const p of paragraphs) {
+        // bullet?
+        if (/^[-•*]\s+/.test(p)) {
+          const t = p.replace(/^[-•*]\s+/, "");
+          need(5);
+          pdf.setFillColor(...RGB.brand);
+          pdf.circle(M + 2, y - 1.2, 0.7, "F");
+          text(t, { size: 9.5, color: RGB.ink, indent: 5 });
+        } else if (/^[A-Z_ ]{3,}:/.test(p)) {
+          // KEY: value
+          const idx = p.indexOf(":");
+          const k = p.slice(0, idx);
+          const v = p.slice(idx + 1).trim();
+          text(k + ":", { size: 9.5, bold: true, color: RGB.brand });
+          if (v) text(v, { size: 9.5, color: RGB.ink, indent: 4 });
+        } else {
+          text(p, { size: 9.5, color: RGB.ink });
+        }
+        y += 1.5;
+      }
+      y += 2;
+    };
+
+    const hr = () => { need(4); pdf.setDrawColor(...RGB.line); pdf.setLineWidth(0.2); pdf.line(M, y, W - M, y); y += 4; };
+
+    // ===== CAPA =====
+    pdf.setFillColor(8, 12, 24);
+    pdf.rect(0, 0, W, 50, "F");
+    pdf.setTextColor(255, 255, 255);
+    pdf.setFont("helvetica", "bold"); pdf.setFontSize(22);
+    pdf.text("APEX VISUAL v3", M, 22);
+    pdf.setFont("helvetica", "normal"); pdf.setFontSize(10);
+    pdf.setTextColor(180, 200, 230);
+    pdf.text("Análise Visual + Postura + Farmacologia + Manobras de Elite", M, 30);
+    pdf.setFontSize(9);
+    pdf.text(`Categoria: ${cat.l}  ·  Atleta: ${nome || "—"}  ·  ${idade ? idade + " anos · " : ""}${peso ? peso + "kg · " : ""}${altura ? altura + "cm" : ""}`, M, 38);
+    pdf.text(`Semanas para o show: ${semanas || "—"}  ·  Fase: ${fase}  ·  Emitido: ${new Date().toLocaleDateString("pt-BR")}`, M, 44);
+    y = 60;
+
+    // ===== SUMÁRIO EXECUTIVO =====
+    sectionHeader(0, "SUMÁRIO EXECUTIVO", RGB.brand);
+
+    if (meta.manobraPrincipal) {
+      const fc = FASE_CONFIG[(meta.manobraPrincipal || "").toLowerCase().replace(/ /g, "_")] || FASE_CONFIG.manter;
+      const uc = URGENCIA_CONFIG[(meta.urgencia || "").toLowerCase().replace(/ /g, "_")] || URGENCIA_CONFIG.sem_pressa;
+      need(16);
+      pdf.setFillColor(245, 247, 252);
+      pdf.rect(M, y, maxW, 14, "F");
+      pdf.setFont("helvetica", "bold"); pdf.setFontSize(10); pdf.setTextColor(...RGB.ink);
+      pdf.text("Manobra principal:", M + 3, y + 5.5);
+      pdf.setFont("helvetica", "normal");
+      pdf.text(fc.label, M + 42, y + 5.5);
+      pdf.setFont("helvetica", "bold"); pdf.text("Urgência:", M + 3, y + 11);
+      pdf.setFont("helvetica", "normal"); pdf.text(uc.label, M + 42, y + 11);
+      y += 18;
+    }
+
+    // Pílulas de métricas
+    const pills: { label: string; value: string }[] = [];
+    if (meta.bfEst) pills.push({ label: "BF atual", value: meta.bfEst + "%" });
+    if (meta.bfMeta) pills.push({ label: "BF meta", value: meta.bfMeta + "%" });
+    if (meta.massaMagra) pills.push({ label: "Massa magra", value: meta.massaMagra + "kg" });
+    if (meta.semMeta) pills.push({ label: "Semanas meta", value: meta.semMeta });
+    if (meta.tdeeFator) pills.push({ label: "TDEE fator", value: "×" + meta.tdeeFator });
+    if (meta.proteinaIdeal) pills.push({ label: "Proteína", value: meta.proteinaIdeal });
+    if (pills.length) {
+      need(14);
+      let px = M;
+      const pw = (maxW - 4 * 2) / 3;
+      pills.forEach((p, i) => {
+        if (i > 0 && i % 3 === 0) { y += 14; px = M; need(14); }
+        pdf.setDrawColor(...RGB.line); pdf.setLineWidth(0.3);
+        pdf.roundedRect(px, y, pw, 12, 1.5, 1.5, "S");
+        pdf.setFont("helvetica", "normal"); pdf.setFontSize(7); pdf.setTextColor(...RGB.mute);
+        pdf.text(p.label.toUpperCase(), px + 2.5, y + 4);
+        pdf.setFont("helvetica", "bold"); pdf.setFontSize(11); pdf.setTextColor(...RGB.ink);
+        pdf.text(p.value, px + 2.5, y + 9.5);
+        px += pw + 4;
+      });
+      y += 16;
+    }
+
+    // Scores tabela
+    if (segs.length) {
+      text("Scores por segmento", { size: 10, bold: true, color: RGB.ink });
+      y += 1;
+      const rowH = 6.5;
+      segs.forEach(s => {
+        need(rowH + 1);
+        const col = s.score >= 8 ? RGB.green : s.score >= 6 ? RGB.gold : RGB.red;
+        // label
+        pdf.setFont("helvetica", "normal"); pdf.setFontSize(9); pdf.setTextColor(...RGB.ink);
+        pdf.text(s.label, M, y + 4);
+        // bar
+        const barX = M + 60, barW = maxW - 60 - 18;
+        pdf.setFillColor(235, 238, 244); pdf.rect(barX, y + 1.5, barW, 4, "F");
+        pdf.setFillColor(...col); pdf.rect(barX, y + 1.5, (barW * s.score) / 10, 4, "F");
+        // score
+        pdf.setFont("helvetica", "bold"); pdf.setTextColor(...col);
+        pdf.text(`${s.score}/10`, W - M - 14, y + 4);
+        y += rowH;
+        if (s.diag) {
+          pdf.setFont("helvetica", "italic"); pdf.setFontSize(8); pdf.setTextColor(...RGB.sub);
+          const lns = pdf.splitTextToSize(s.diag, maxW - 4);
+          for (const ln of lns) { need(3.5); pdf.text(ln, M + 2, y + 2.5); y += 3.5; }
+          y += 1;
+        }
+      });
+      y += 3;
+    }
+
+    // Plano de ataque resumo
+    if (meta.p1 || meta.p2 || meta.p3) {
+      text("Plano de ataque", { size: 10, bold: true, color: RGB.ink });
+      y += 1;
+      const items: { n: number; v?: string; c: [number, number, number] }[] = [
+        { n: 1, v: meta.p1, c: RGB.red },
+        { n: 2, v: meta.p2, c: RGB.gold },
+        { n: 3, v: meta.p3, c: RGB.green },
+      ];
+      items.filter(i => i.v).forEach(i => {
+        const lns = pdf.splitTextToSize(i.v!, maxW - 14);
+        const blockH = lns.length * 4.2 + 4;
+        need(blockH);
+        pdf.setFillColor(248, 249, 252); pdf.rect(M, y, maxW, blockH, "F");
+        pdf.setFillColor(...i.c); pdf.rect(M, y, 2, blockH, "F");
+        pdf.setFont("helvetica", "bold"); pdf.setFontSize(10); pdf.setTextColor(...i.c);
+        pdf.text(`P${i.n}`, M + 4, y + 6);
+        pdf.setFont("helvetica", "normal"); pdf.setFontSize(9.5); pdf.setTextColor(...RGB.ink);
+        let yy = y + 6;
+        lns.forEach((ln: string) => { pdf.text(ln, M + 12, yy); yy += 4.2; });
+        y += blockH + 2;
+      });
+    }
+
+    hr();
+
+    // ===== 13 SEÇÕES =====
+    const sections: { title: string; body: string; color: [number, number, number] }[] = [
+      { title: "IMPACTO VISUAL",            body: S.impacto,    color: RGB.brand },
+      { title: "SCORES POR SEGMENTO",       body: secParse(raw, "SCORES_SEGMENTOS", "COMPOSICAO_CORPORAL"), color: RGB.brand },
+      { title: "COMPOSIÇÃO CORPORAL",       body: S.composicao, color: RGB.gold },
+      { title: "DECISÃO DE MANOBRA",        body: S.manobra,    color: RGB.red },
+      { title: "POSTURA · DESVIOS",         body: S.postura,    color: RGB.red },
+      { title: "CORREÇÕES POSTURAIS",       body: S.correcoes,  color: RGB.brand },
+      { title: "PONTOS FRACOS · PROTOCOLO", body: S.fracos,     color: RGB.gold },
+      { title: "FARMACOLOGIA INTEGRADA",    body: S.farma,      color: RGB.purple },
+      { title: "NUTRIÇÃO DA FASE",          body: S.nutricao,   color: RGB.green },
+      { title: "GANHA PONTOS",              body: S.ganha,      color: RGB.green },
+      { title: "PERDE PONTOS",              body: S.perde,      color: RGB.red },
+      { title: "PLANO DE ATAQUE",           body: S.plano,      color: RGB.brand },
+      { title: "POSING CORRETIVO",          body: S.posing,     color: RGB.gold },
+      { title: "VEREDICTO MASTER",          body: S.veredicto,  color: RGB.gold },
+    ];
+
+    sections.forEach((s, i) => {
+      sectionHeader(i + 1, s.title, s.color);
+      sectionBody(s.body);
+    });
+
+    // ===== RODAPÉ =====
+    const total = (pdf as any).internal.getNumberOfPages();
+    for (let i = 1; i <= total; i++) {
+      pdf.setPage(i);
+      pdf.setFont("helvetica", "normal"); pdf.setFontSize(7); pdf.setTextColor(...RGB.mute);
+      pdf.text(`APEX Visual v3 · ${cat.l} · ${nome || "Atleta"}`, M, H - 6);
+      pdf.text(`Página ${i}/${total}`, W - M, H - 6, { align: "right" });
+    }
+
+    const safe = (nome || "atleta").replace(/[^a-z0-9]+/gi, "_").toLowerCase();
+    pdf.save(`apex-visual-v3-${safe}-${new Date().toISOString().slice(0, 10)}.pdf`);
+  };
+
   return (
     <div style={{ minHeight:"100vh", background:`radial-gradient(ellipse at top,${C.deep},${C.void})`, color:C.text, fontFamily:"'Space Grotesk',-apple-system,sans-serif", padding:"20px 16px" }}>
       {/* HEADER */}
@@ -443,6 +677,7 @@ export default function ApexVisualV3() {
           {(done || streaming) && (
             <div style={{ display:"flex", gap:8 }}>
               {streaming && <div style={{ padding:"6px 12px", borderRadius:8, background:cat.c+"22", border:`1px solid ${cat.c}55`, fontSize:10, color:cat.c, fontWeight:700, letterSpacing:".1em" }}>● ANALISANDO</div>}
+              {done && <button onClick={exportarPDF} style={{ padding:"6px 14px", borderRadius:8, background:cat.c+"22", border:`1px solid ${cat.c}66`, color:cat.c, fontSize:11, cursor:"pointer", fontFamily:"inherit", letterSpacing:".05em", fontWeight:700 }}>⬇ EXPORTAR PDF</button>}
               {done && <button onClick={reset} style={{ padding:"6px 14px", borderRadius:8, background:C.card, border:`1px solid ${C.border}`, color:C.text, fontSize:11, cursor:"pointer", fontFamily:"inherit", letterSpacing:".05em" }}>+ NOVA ANÁLISE</button>}
             </div>
           )}
