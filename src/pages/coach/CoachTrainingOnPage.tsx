@@ -36,6 +36,63 @@ export default function CoachTrainingOnPage() {
   const suggestedSets = (score: number) =>
     score <= 3 ? "20–24" : score <= 5 ? "16–20" : "12–16";
 
+  // Volume semanal por músculo (manual ou calculado pelo APEX)
+  const [weeklyVolume, setWeeklyVolume] = useState<Record<string, number>>({});
+  const [methodConflicts, setMethodConflicts] = useState<
+    Array<{ muscle: string; currentVolume: number; issue: string; fix: string; suggestedVolume: number; suggestion: string }>
+  >([]);
+
+  // Volume semanal ideal baseado em score APEX + método
+  const getVolumeFromApexScore = (score: number, method: string) => {
+    const isGVT = /gvt/.test(method);
+    const isHighVolume = /fst.?7|y3t/.test(method);
+    if (isGVT) {
+      if (score <= 5) return { setsPerWeek: 20, setsPerSession: 10, sessionsPerWeek: 2 };
+      return { setsPerWeek: 10, setsPerSession: 10, sessionsPerWeek: 1 };
+    }
+    if (isHighVolume) {
+      if (score <= 3) return { setsPerWeek: 24, setsPerSession: 6, sessionsPerWeek: 2 };
+      if (score <= 5) return { setsPerWeek: 20, setsPerSession: 5, sessionsPerWeek: 2 };
+      return { setsPerWeek: 16, setsPerSession: 4, sessionsPerWeek: 2 };
+    }
+    if (score <= 3) return { setsPerWeek: 22, setsPerSession: 4, sessionsPerWeek: 3 };
+    if (score <= 5) return { setsPerWeek: 18, setsPerSession: 4, sessionsPerWeek: 2 };
+    return { setsPerWeek: 14, setsPerSession: 3, sessionsPerWeek: 2 };
+  };
+
+  const checkMethodCompatibility = (
+    weakPoints: Array<{ muscle: string; score: number }>,
+    method: string,
+    volumeMap: Record<string, number>,
+  ) => {
+    const conflicts: Array<{ muscle: string; currentVolume: number; issue: string; fix: string; suggestedVolume: number; suggestion: string }> = [];
+    const isGVT = /gvt/.test(method);
+    weakPoints.forEach((point) => {
+      const volume = volumeMap[point.muscle] || 0;
+      if (isGVT && volume < 10) {
+        conflicts.push({
+          muscle: point.muscle,
+          currentVolume: volume,
+          issue: `Volume (${volume} sér/sem) incompatível com GVT — mínimo 10 sér/sessão`,
+          fix: "increase_volume",
+          suggestedVolume: 20,
+          suggestion: "Aumentar para 20 sér/sem (2 sessões GVT) ou trocar para método convencional",
+        });
+      }
+      if (volume > 0 && volume < 6) {
+        conflicts.push({
+          muscle: point.muscle,
+          currentVolume: volume,
+          issue: `Volume muito baixo (${volume} sér/sem) — insuficiente para hipertrofia`,
+          fix: "increase_volume",
+          suggestedVolume: 12,
+          suggestion: "Volume mínimo para hipertrofia: 10–12 sér/sem",
+        });
+      }
+    });
+    return conflicts;
+  };
+
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setCoachId(data.user?.id ?? null));
   }, []);
