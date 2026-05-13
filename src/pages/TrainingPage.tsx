@@ -354,7 +354,9 @@ ${correctivePrompt ? `\n━━━ PROTOCOLO CORRETIVO APEX (colado pelo coach) �
 7. NOTA DE INTEGRAÇÃO — 4 linhas explicando como o sistema, fibras, prontidão e fase se combinam
 8. ALERTA DE LESÃO se houver restrição
 
-REGRA ABSOLUTA: Os parâmetros do SISTEMA DE TREINAMENTO BASE são INVIOLÁVEIS. Sets, reps, RIR, descanso, cadência e técnicas devem refletir EXATAMENTE o que está prescrito no bloco de sistema. Você adapta apenas o exercício ao equipamento e lesão.
+REGRA ABSOLUTA #1 — FREQUÊNCIA: o array training_days DEVE conter EXATAMENTE ${days} sessões (rótulos D1 até D${days}). NUNCA gere menos, NUNCA gere mais. Se o sistema base sugerir frequência diferente, ADAPTE a divisão (push/pull/legs, upper/lower, bro split, full body) para encaixar exatamente em ${days} dias/sem — distribuindo grupos musculares de forma coerente. Repetir sessões idênticas é proibido; cada dia deve ter foco distinto ou rotação clara (ex.: PPL×2 para 6 dias).
+
+REGRA ABSOLUTA #2 — SISTEMA: Os parâmetros do SISTEMA DE TREINAMENTO BASE são INVIOLÁVEIS. Sets, reps, RIR, descanso, cadência e técnicas devem refletir EXATAMENTE o que está prescrito no bloco de sistema. Você adapta apenas o exercício ao equipamento, lesão e à frequência exigida acima.
 
 Português. Específico. Científico. Zero genérico.`;
   };
