@@ -250,20 +250,80 @@ function ManeuverCard({ manobra, urgencia }: { manobra: string; urgencia: string
   );
 }
 
+// ─── TIPOGRAFIA · TOKENS ─────────────────────────────────────────
+// Escala única para garantir hierarquia consistente em qualquer seção
+const T = {
+  // tamanhos
+  micro: 10,        // labels, chips, hints fortes
+  caption: 11,      // legendas, hints, meta
+  small: 12,        // controles, pills
+  body: 13.5,       // corpo principal — leitura confortável
+  bodyStrong: 14,
+  h3: 13,           // títulos de panel
+  h2: 16,
+  h1: 22,
+  // line-heights
+  lhTight: 1.4,
+  lhBody: 1.7,      // texto longo
+  lhRelaxed: 1.85,
+  // tracking
+  trackTitle: ".08em",
+  trackLabel: ".1em",
+  // largura máxima (~72ch) p/ legibilidade de prosa longa
+  proseMaxWidth: 760,
+  // espaçamentos verticais
+  spXS: 6, spSM: 10, spMD: 14, spLG: 20, spXL: 28,
+};
+
+// ─── PROSE TEXT ──────────────────────────────────────────────────
+// Wrapper único para todo conteúdo textual longo das seções
+function ProseText({ children, tone = "secondary", emphasis = false }: { children: React.ReactNode; tone?: "primary" | "secondary"; emphasis?: boolean }) {
+  const color = tone === "primary" ? C.text : C.textSec;
+  return (
+    <div style={{
+      fontSize: T.body,
+      color,
+      lineHeight: T.lhBody,
+      whiteSpace: "pre-wrap",
+      maxWidth: T.proseMaxWidth,
+      letterSpacing: ".005em",
+      fontWeight: emphasis ? 500 : 400,
+      wordBreak: "break-word",
+    }}>{children}</div>
+  );
+}
+
+// ─── HINT ────────────────────────────────────────────────────────
+// Banner discreto acima do conteúdo, com acento configurável
+function Hint({ accent, children }: { accent: string; children: React.ReactNode }) {
+  return (
+    <div style={{
+      fontSize: T.caption,
+      color: C.textSec,
+      background: accent + "12",
+      border: `1px solid ${accent}33`,
+      borderRadius: 8,
+      padding: "9px 13px",
+      marginBottom: T.spMD,
+      lineHeight: T.lhTight,
+    }}>{children}</div>
+  );
+}
+
 // ─── PANEL ───────────────────────────────────────────────────────
 function Panel({ icon, title, children, accent = C.apex, defaultOpen = true }: { icon: string; title: string; children: React.ReactNode; accent?: string; defaultOpen?: boolean }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div style={{ background:C.card, border:`1px solid ${C.border}`, borderRadius:12, marginBottom:12, overflow:"hidden" }}>
-      <button onClick={() => setOpen(o => !o)} style={{ width:"100%", background:"none", border:"none", cursor:"pointer", padding:"13px 18px", display:"flex", alignItems:"center", justifyContent:"space-between", fontFamily:"inherit" }}>
+    <div style={{ background:C.card, border:`1px solid ${C.border}`, borderRadius:12, marginBottom:T.spMD, overflow:"hidden" }}>
+      <button onClick={() => setOpen(o => !o)} style={{ width:"100%", background:"none", border:"none", cursor:"pointer", padding:"14px 18px", display:"flex", alignItems:"center", justifyContent:"space-between", fontFamily:"inherit" }}>
         <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-          <span style={{ fontSize:16 }}>{icon}</span>
-          <span style={{ fontSize:11, color:accent, fontWeight:700, letterSpacing:".08em", textTransform:"uppercase" }}>{title}</span>
+          <span style={{ fontSize:T.h2 }}>{icon}</span>
+          <span style={{ fontSize:T.h3, color:accent, fontWeight:700, letterSpacing:T.trackTitle, textTransform:"uppercase" }}>{title}</span>
         </div>
         <span style={{ color:accent, transform:open?"rotate(0)":"rotate(-90deg)", transition:"transform .2s" }}>▾</span>
       </button>
       {open && (
-        <div style={{ padding:"0 18px 16px" }}>
+        <div style={{ padding:"0 18px 18px" }}>
           <div style={{ height:1, background:C.border, marginBottom:14 }} />
           {children}
         </div>
@@ -941,7 +1001,7 @@ export default function ApexVisualV3() {
                   )}
                   {S.impacto && (
                     <Panel icon="👁" title="IMPACTO VISUAL" accent={C.apex} defaultOpen={false}>
-                      <div style={{ fontSize:13, color:C.textSec, lineHeight:1.8, whiteSpace:"pre-wrap" }}>{S.impacto}</div>
+                      <ProseText>{S.impacto}</ProseText>
                     </Panel>
                   )}
                 </div>
@@ -951,13 +1011,13 @@ export default function ApexVisualV3() {
                 <div>
                   {S.composicao && (
                     <Panel icon="⚖️" title="COMPOSIÇÃO CORPORAL" accent={C.amber}>
-                      <div style={{ fontSize:13, color:C.textSec, lineHeight:1.8, whiteSpace:"pre-wrap" }}>{S.composicao.replace(/BF_ESTIMADO:[^\n]*/i,"").replace(/BF_META:[^\n]*/i,"").replace(/MASSA_MAGRA_EST:[^\n]*/i,"").replace(/SEMANAS_META:[^\n]*/i,"").replace(/VEREDICTO_FASE:[^\n]*/i,"").trim()}</div>
+                      <ProseText>{S.composicao.replace(/BF_ESTIMADO:[^\n]*/i,"").replace(/BF_META:[^\n]*/i,"").replace(/MASSA_MAGRA_EST:[^\n]*/i,"").replace(/SEMANAS_META:[^\n]*/i,"").replace(/VEREDICTO_FASE:[^\n]*/i,"").trim()}</ProseText>
                     </Panel>
                   )}
                   {S.manobra && (
                     <Panel icon="🎯" title="DECISÃO DE MANOBRA" accent={C.red}>
-                      <div style={{ fontSize:11, color:C.textSec, background:C.redDim, border:`1px solid ${C.red}33`, borderRadius:8, padding:"8px 12px", marginBottom:12 }}>Manobras disponíveis com ajuste calórico, cardio e protocolo específico.</div>
-                      <div style={{ fontSize:13, color:C.textSec, lineHeight:1.8, whiteSpace:"pre-wrap" }}>{S.manobra.replace(/MANOBRA_PRINCIPAL:[^\n]*/i,"").replace(/URGENCIA:[^\n]*/i,"").trim()}</div>
+                      <Hint accent={C.red}>Manobras disponíveis com ajuste calórico, cardio e protocolo específico.</Hint>
+                      <ProseText>{S.manobra.replace(/MANOBRA_PRINCIPAL:[^\n]*/i,"").replace(/URGENCIA:[^\n]*/i,"").trim()}</ProseText>
                     </Panel>
                   )}
                 </div>
@@ -965,22 +1025,22 @@ export default function ApexVisualV3() {
 
               {done && activeTab === "postura" && S.postura && (
                 <Panel icon="🦴" title="DESVIOS POSTURAIS" accent={C.red}>
-                  <div style={{ fontSize:11, color:C.textSec, background:C.redDim, border:`1px solid ${C.red}33`, borderRadius:8, padding:"8px 12px", marginBottom:12 }}>Cada desvio afeta o visual no palco e indica desequilíbrios musculares corrigíveis.</div>
-                  <div style={{ fontSize:13, color:C.textSec, lineHeight:1.8, whiteSpace:"pre-wrap" }}>{S.postura}</div>
+                  <Hint accent={C.red}>Cada desvio afeta o visual no palco e indica desequilíbrios musculares corrigíveis.</Hint>
+                  <ProseText>{S.postura}</ProseText>
                 </Panel>
               )}
 
               {done && activeTab === "correcoes" && S.correcoes && (
                 <Panel icon="🔧" title="CORREÇÕES POSTURAIS" accent={C.apex}>
-                  <div style={{ fontSize:11, color:C.textSec, background:C.apexDim, border:`1px solid ${C.apex}33`, borderRadius:8, padding:"8px 12px", marginBottom:12 }}>Execute antes de cada sessão do grupo afetado.</div>
-                  <div style={{ fontSize:13, color:C.textSec, lineHeight:1.8, whiteSpace:"pre-wrap" }}>{S.correcoes}</div>
+                  <Hint accent={C.apex}>Execute antes de cada sessão do grupo afetado.</Hint>
+                  <ProseText>{S.correcoes}</ProseText>
                 </Panel>
               )}
 
               {done && activeTab === "protocolo" && S.fracos && (
                 <Panel icon="⚡" title="PROTOCOLO DE EXERCÍCIOS CORRETIVOS" accent={C.amber}>
-                  <div style={{ fontSize:11, color:C.textSec, background:C.goldDim, border:`1px solid ${C.gold}33`, borderRadius:8, padding:"8px 12px", marginBottom:12 }}>Para cada ponto fraco: 3 exercícios (ativação/sobrecarga/pump), frequência e tempo de resposta.</div>
-                  <div style={{ fontSize:13, color:C.textSec, lineHeight:1.8, whiteSpace:"pre-wrap" }}>{S.fracos}</div>
+                  <Hint accent={C.gold}>Para cada ponto fraco: 3 exercícios (ativação/sobrecarga/pump), frequência e tempo de resposta.</Hint>
+                  <ProseText>{S.fracos}</ProseText>
                 </Panel>
               )}
 
@@ -993,12 +1053,12 @@ export default function ApexVisualV3() {
                     </div>
                   )}
                   <Panel icon="💉" title="DR. VERTEX — ANÁLISE FARMACOLÓGICA INTEGRADA" accent={C.purple}>
-                    <div style={{ fontSize:11, color:C.textSec, background:C.purpleDim, border:`1px solid ${C.purple}33`, borderRadius:8, padding:"8px 12px", marginBottom:12 }}>Composto a composto · sinergias · próximo nível · fitoterápicos · gestão E2 · cardiovascular · recuperação do eixo.</div>
-                    <div style={{ fontSize:13, color:C.textSec, lineHeight:1.8, whiteSpace:"pre-wrap" }}>{S.farma}</div>
+                    <Hint accent={C.purple}>Composto a composto · sinergias · próximo nível · fitoterápicos · gestão E2 · cardiovascular · recuperação do eixo.</Hint>
+                    <ProseText>{S.farma}</ProseText>
                   </Panel>
                   {S.nutricao && (
                     <Panel icon="🥗" title="NUTRIÇÃO INTEGRADA AO PROTOCOLO" accent={C.green} defaultOpen={false}>
-                      <div style={{ fontSize:13, color:C.textSec, lineHeight:1.8, whiteSpace:"pre-wrap" }}>{S.nutricao}</div>
+                      <ProseText>{S.nutricao}</ProseText>
                     </Panel>
                   )}
                 </div>
@@ -1008,18 +1068,18 @@ export default function ApexVisualV3() {
                 <div>
                   {S.ganha && (
                     <Panel icon="✅" title="GANHA PONTOS" accent={C.green}>
-                      <div style={{ fontSize:13, color:C.textSec, lineHeight:1.8, whiteSpace:"pre-wrap" }}>{S.ganha}</div>
+                      <ProseText>{S.ganha}</ProseText>
                     </Panel>
                   )}
                   {S.perde && (
                     <Panel icon="⚠️" title="PERDE PONTOS" accent={C.red}>
-                      <div style={{ fontSize:13, color:C.textSec, lineHeight:1.8, whiteSpace:"pre-wrap" }}>{S.perde}</div>
+                      <ProseText>{S.perde}</ProseText>
                     </Panel>
                   )}
                   {S.posing && (
                     <Panel icon="🎭" title="POSING CORRETIVO" accent={C.gold}>
-                      <div style={{ fontSize:11, color:C.textSec, background:C.goldDim, border:`1px solid ${C.gold}33`, borderRadius:8, padding:"8px 12px", marginBottom:12 }}>Cues por pose mandatória — compensar fraquezas + vender pontos fortes.</div>
-                      <div style={{ fontSize:13, color:C.textSec, lineHeight:1.8, whiteSpace:"pre-wrap" }}>{S.posing}</div>
+                      <Hint accent={C.gold}>Cues por pose mandatória — compensar fraquezas + vender pontos fortes.</Hint>
+                      <ProseText>{S.posing}</ProseText>
                     </Panel>
                   )}
                 </div>
@@ -1039,12 +1099,12 @@ export default function ApexVisualV3() {
                   )}
                   {S.plano && (
                     <Panel icon="📋" title="DETALHAMENTO" accent={C.apex} defaultOpen={false}>
-                      <div style={{ fontSize:13, color:C.textSec, lineHeight:1.8, whiteSpace:"pre-wrap" }}>{S.plano.replace(/PRIORIDADE_[123]:[^\n]*/gi,"").trim()}</div>
+                      <ProseText>{S.plano.replace(/PRIORIDADE_[123]:[^\n]*/gi,"").trim()}</ProseText>
                     </Panel>
                   )}
                   {S.veredicto && (
                     <Panel icon="🏆" title="VEREDICTO MASTER" accent={C.gold}>
-                      <div style={{ fontSize:13, color:C.text, lineHeight:1.8, whiteSpace:"pre-wrap", padding:"12px 14px", background:C.goldDim, border:`1px solid ${C.gold}33`, borderRadius:10 }}>{S.veredicto}</div>
+                      <div style={{ padding:"14px 16px", background:C.goldDim, border:`1px solid ${C.gold}33`, borderRadius:10 }}><ProseText tone="primary" emphasis>{S.veredicto}</ProseText></div>
                     </Panel>
                   )}
                 </div>
