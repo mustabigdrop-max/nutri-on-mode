@@ -260,6 +260,72 @@ export type Database = {
           },
         ]
       }
+      apex_reports: {
+        Row: {
+          angles: Json
+          apex_score: number
+          assessment_date: string
+          athlete_age: number | null
+          athlete_height: number | null
+          athlete_name: string
+          athlete_weight: number | null
+          created_at: string
+          cueing: Json | null
+          findings: Json
+          id: string
+          image_url: string | null
+          landmarks: Json | null
+          muscle_status: Json | null
+          notes: string | null
+          phase: string | null
+          protocol: Json | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          angles: Json
+          apex_score: number
+          assessment_date?: string
+          athlete_age?: number | null
+          athlete_height?: number | null
+          athlete_name: string
+          athlete_weight?: number | null
+          created_at?: string
+          cueing?: Json | null
+          findings: Json
+          id?: string
+          image_url?: string | null
+          landmarks?: Json | null
+          muscle_status?: Json | null
+          notes?: string | null
+          phase?: string | null
+          protocol?: Json | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          angles?: Json
+          apex_score?: number
+          assessment_date?: string
+          athlete_age?: number | null
+          athlete_height?: number | null
+          athlete_name?: string
+          athlete_weight?: number | null
+          created_at?: string
+          cueing?: Json | null
+          findings?: Json
+          id?: string
+          image_url?: string | null
+          landmarks?: Json | null
+          muscle_status?: Json | null
+          notes?: string | null
+          phase?: string | null
+          protocol?: Json | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       apex_training_sync: {
         Row: {
           apex_analysis_id: string | null
