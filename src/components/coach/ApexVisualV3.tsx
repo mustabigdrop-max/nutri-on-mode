@@ -524,7 +524,11 @@ export default function ApexVisualV3() {
       const iv = setInterval(() => {
         idx = Math.min(idx + 24, text.length);
         setRaw(text.slice(0, idx));
-        if (idx >= text.length) { clearInterval(iv); setStreaming(false); setDone(true); setActiveTab("overview"); }
+        if (idx >= text.length) {
+          clearInterval(iv); setStreaming(false); setDone(true); setActiveTab("overview");
+          // Auto-salva no histórico do atleta selecionado
+          saveAssessment(text).catch((e) => console.error("[APEX] save failed:", e));
+        }
       }, 16);
     } catch (e: any) {
       setError(e?.message || "Erro desconhecido na análise.");
