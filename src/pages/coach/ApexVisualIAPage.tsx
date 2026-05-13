@@ -1,9 +1,5 @@
-import ApexVisualIA from "@/components/coach/ApexVisualIA";
+import ApexVisualV3 from "@/components/coach/ApexVisualV3";
 
 export default function ApexVisualIAPage() {
-  return (
-    <div className="min-h-screen bg-background py-6 px-4">
-      <ApexVisualIA />
-    </div>
-  );
+  return <ApexVisualV3 />;
 }
