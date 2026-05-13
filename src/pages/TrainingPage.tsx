@@ -364,12 +364,7 @@ Português. Específico. Científico. Zero genérico.`;
       toast.error("Informe o nome do cliente para gerar o protocolo");
       return;
     }
-    const missing: string[] = [];
-    if (!phase) missing.push("fase");
-    if (!level) missing.push("nível");
-    if (missing.length) {
-      toast.message(`Usando padrões para: ${missing.join(", ")} (a IA inferirá pelo prompt elite)`);
-    }
+    // Fase, músculos e nível são opcionais — a IA infere pelo prompt elite
     // Bloqueio por tempo: protocolo não cabe na sessão (margem severa de 15min)
     const est = estimateProtocolDuration({ systemId: trainingSystem, muscles, level, sessionDuration, cardio });
     if (est.diff <= -15) {
