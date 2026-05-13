@@ -366,7 +366,6 @@ Português. Específico. Científico. Zero genérico.`;
     }
     const missing: string[] = [];
     if (!phase) missing.push("fase");
-    if (muscles.length === 0) missing.push("músculos");
     if (!level) missing.push("nível");
     if (missing.length) {
       toast.message(`Usando padrões para: ${missing.join(", ")} (a IA inferirá pelo prompt elite)`);
