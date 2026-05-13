@@ -1356,12 +1356,6 @@ export default function ApexVisualV3() {
                   )}
                 </div>
               )}
-
-              {activeTab === "pose" && (
-                <div style={{ margin:"-16px", borderRadius:12, overflow:"hidden", border:`1px solid ${C.border}` }}>
-                  <APEXPoseAnalysisPage />
-                </div>
-              )}
             </div>
           </div>
         )}
