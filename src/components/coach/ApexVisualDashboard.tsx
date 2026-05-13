@@ -4,7 +4,44 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import AthleteSelector, { AthleteOption } from "@/components/coach/AthleteSelector";
-import { Upload, X, FlaskConical, RotateCcw, History, Eye, Dumbbell, CheckCircle2, Clock, FileText, Copy } from "lucide-react";
+import { Upload, X, FlaskConical, RotateCcw, History, Eye, Dumbbell, CheckCircle2, Clock, FileText, Copy, Crosshair, ScanLine, Target, Activity, Zap, AlertTriangle, TrendingUp, ChevronRight } from "lucide-react";
+
+// ─── APEX Elite design tokens ───────────────────────────────────
+const APEX = {
+  void: "#03040A",
+  deep: "#060810",
+  surface: "#0A0D16",
+  elevated: "#0E1220",
+  border: "#161D2E",
+  borderHi: "#1E2A42",
+  electric: "#00D4FF",
+  electricDim: "#00D4FF15",
+  electricGlow: "#00D4FF30",
+  gold: "#FFB800",
+  goldDim: "#FFB80015",
+  emerald: "#00E676",
+  amber: "#FFB300",
+  crimson: "#FF3366",
+  violet: "#9C27B0",
+  violet2: "#7B1FA2",
+  textPrimary: "#EDF2FF",
+  textSecondary: "#7A8AAA",
+  textMuted: "#3F4A66",
+  fontDisplay: "'Syne', 'Space Grotesk', sans-serif",
+  fontBody: "'DM Sans', 'Inter', sans-serif",
+  fontMono: "'JetBrains Mono', monospace",
+};
+
+const ApexFontsAndAnimations = () => (
+  <style>{`
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+    @keyframes apex-scanLine { 0%{top:0%;opacity:0} 10%{opacity:1} 90%{opacity:1} 100%{top:100%;opacity:0} }
+    @keyframes apex-shimmer { 0%{left:-100%} 100%{left:200%} }
+    @keyframes apex-pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(.85)} }
+    @keyframes apex-spin { from{transform:rotate(0)} to{transform:rotate(360deg)} }
+    @keyframes apex-fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+  `}</style>
+);
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from "@/components/ui/dialog";
@@ -607,8 +644,8 @@ Suporte em uso: ${suporte || "não informado"}` : "";
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center py-20 gap-6">
-        <div className="text-6xl animate-pulse">🔬</div>
-        <div className="text-lg font-bold text-foreground">APEX v2 analisando...</div>
+        <div className="text-6xl animate-pulse">◈</div>
+        <div className="text-lg font-bold text-foreground">APEX Intelligence analisando...</div>
         <div className="space-y-1.5 w-full max-w-md">
           {STEPS.map((s, i) => (
             <div
@@ -656,7 +693,7 @@ Suporte em uso: ${suporte || "não informado"}` : "";
           <div className="flex-1">
             <div className="flex items-center gap-2">
               <span className="text-base font-black text-foreground">{cat.label}</span>
-              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded" style={{ background: cat.color, color: "#fff" }}>v2</span>
+              <span className="text-[10px] font-extrabold px-1.5 py-0.5 rounded tracking-widest" style={{ background: "linear-gradient(135deg,#FFB800,#E0A000)", color: "#1A1100" }}>ELITE</span>
             </div>
             <div className="text-xs text-muted-foreground">{athlete?.nome || "Atleta"} · Análise APEX Visual Intelligence</div>
           </div>
@@ -845,231 +882,333 @@ Suporte em uso: ${suporte || "não informado"}` : "";
   }
 
   // ─── RENDER: FORM ────────────────────────────────────
+  const accent = cat.color;
+  const sysFont = APEX.fontBody;
+  const labelStyle: React.CSSProperties = {
+    fontFamily: APEX.fontBody, fontSize: 10, fontWeight: 700,
+    color: APEX.textSecondary, letterSpacing: ".12em", textTransform: "uppercase",
+  };
+  const cardStyle: React.CSSProperties = {
+    background: APEX.surface, border: `1px solid ${APEX.border}`,
+    borderRadius: 16, padding: "18px 20px",
+  };
+  const inputBase: React.CSSProperties = {
+    width: "100%", padding: "12px 14px", background: APEX.deep,
+    border: `1px solid ${APEX.border}`, borderRadius: 10,
+    color: APEX.textPrimary, fontSize: 13, fontFamily: APEX.fontBody,
+    lineHeight: 1.55, outline: "none", boxSizing: "border-box", transition: "border .2s",
+  };
+  const sectionTick = (color: string) => (
+    <div style={{ width: 3, height: 14, background: color, borderRadius: 2 }} />
+  );
+
   return (
-    <div className="space-y-5">
-      <div className="flex items-center gap-2">
-        <FlaskConical className="w-5 h-5 text-amber-500" />
-        <div>
-          <div className="text-base font-black text-foreground">🔬 APEX Visual Intelligence v2</div>
-          <div className="text-xs text-muted-foreground">Análise visual por IA · Padrão IFBB · Postura + protocolo corretivo</div>
+    <div style={{ background: APEX.void, color: APEX.textPrimary, fontFamily: sysFont, padding: 4 }}>
+      <ApexFontsAndAnimations />
+
+      {/* ━━━ HEADER ━━━ */}
+      <div style={{
+        background: `linear-gradient(180deg, ${APEX.deep}, ${APEX.void})`,
+        border: `1px solid ${APEX.border}`, borderRadius: 18,
+        padding: "20px 24px", marginBottom: 20, position: "relative", overflow: "hidden",
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 10, color: APEX.textMuted, fontFamily: APEX.fontMono, letterSpacing: ".08em", marginBottom: 14 }}>
+          <span>nutriON</span>
+          <ChevronRight size={10} />
+          <span>Coach Hub</span>
+          <ChevronRight size={10} />
+          <span style={{ color: APEX.electric }}>APEX Intelligence</span>
         </div>
+
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+            <div style={{
+              width: 56, height: 56, borderRadius: 14,
+              background: `linear-gradient(135deg, ${APEX.electricDim}, ${APEX.deep})`,
+              border: `1px solid ${APEX.electric}55`, position: "relative", overflow: "hidden",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              boxShadow: `0 0 30px ${APEX.electricGlow}`,
+            }}>
+              <div style={{
+                position: "absolute", left: 0, right: 0, height: 2,
+                background: `linear-gradient(90deg, transparent, ${APEX.electric}, transparent)`,
+                animation: "apex-scanLine 2.5s ease-in-out infinite", boxShadow: `0 0 10px ${APEX.electric}`,
+              }} />
+              <ScanLine size={28} color={APEX.electric} strokeWidth={2} />
+            </div>
+
+            <div>
+              <div style={{ display: "flex", alignItems: "baseline", gap: 8, flexWrap: "wrap" }}>
+                <span style={{ fontFamily: APEX.fontDisplay, fontSize: 24, fontWeight: 800, color: APEX.textPrimary, letterSpacing: ".02em" }}>APEX</span>
+                <span style={{ fontFamily: APEX.fontDisplay, fontSize: 24, fontWeight: 800, color: APEX.electric, letterSpacing: ".02em" }}>INTELLIGENCE</span>
+                <span style={{ fontFamily: APEX.fontDisplay, fontSize: 24, fontWeight: 400, color: APEX.textSecondary, letterSpacing: ".02em" }}>SYSTEM</span>
+                <span style={{
+                  fontFamily: APEX.fontDisplay, fontSize: 10, fontWeight: 800, letterSpacing: ".15em",
+                  padding: "3px 8px", borderRadius: 4, color: "#1A1100",
+                  background: `linear-gradient(135deg, ${APEX.gold}, #E0A000)`,
+                  boxShadow: `0 0 12px ${APEX.gold}55`,
+                }}>ELITE</span>
+              </div>
+              <div style={{ marginTop: 6, fontSize: 11, color: APEX.textSecondary, fontFamily: APEX.fontBody, letterSpacing: ".02em" }}>
+                Motor de Diagnóstico Visual <span style={{ color: APEX.textMuted, margin: "0 6px" }}>·</span>
+                Padrão IFBB <span style={{ color: APEX.textMuted, margin: "0 6px" }}>·</span>
+                Biomecânica <span style={{ color: APEX.textMuted, margin: "0 6px" }}>·</span>
+                Farmacologia Integrada
+              </div>
+            </div>
+          </div>
+
+          <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", background: APEX.deep, border: `1px solid ${APEX.emerald}44`, borderRadius: 999 }}>
+            <div style={{ width: 8, height: 8, borderRadius: "50%", background: APEX.emerald, boxShadow: `0 0 8px ${APEX.emerald}`, animation: "apex-pulse 2s ease-in-out infinite" }} />
+            <span style={{ fontFamily: APEX.fontMono, fontSize: 10, fontWeight: 700, color: APEX.emerald, letterSpacing: ".1em" }}>SISTEMA ATIVO</span>
+          </div>
+        </div>
+
+        <div style={{ marginTop: 16, height: 2, borderRadius: 2, background: `linear-gradient(90deg, ${APEX.electric}, transparent 60%)` }} />
       </div>
 
-      {/* Athlete */}
-      <AthleteSelector value={athlete?.id ?? null} onChange={setAthlete} />
+      {/* ━━━ ATLETA ━━━ */}
+      <div style={{ ...cardStyle, marginBottom: 16 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+          {sectionTick(APEX.electric)}
+          <span style={labelStyle}>Atleta em Análise</span>
+        </div>
+        <AthleteSelector value={athlete?.id ?? null} onChange={setAthlete} />
+      </div>
 
-      {/* Category grid */}
-      <div>
-        <div className="text-xs font-semibold mb-2 text-foreground">Categoria</div>
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2">
+      {/* ━━━ CATEGORIA ━━━ */}
+      <div style={{ ...cardStyle, marginBottom: 16 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+          {sectionTick(APEX.gold)}
+          <span style={labelStyle}>Categoria de Competição</span>
+        </div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
           {(Object.keys(CATEGORIES) as CategoryKey[]).map((key) => {
             const c = CATEGORIES[key];
-            const active = selectedCategory === key;
+            const isActive = selectedCategory === key;
             return (
               <button
                 key={key}
                 onClick={() => setSelectedCategory(key)}
-                className="rounded-lg p-3 text-left transition-all border-2"
                 style={{
-                  borderColor: active ? c.color : "hsl(var(--border))",
-                  background: active ? `${c.color}1A` : "transparent",
-                  color: active ? c.color : "hsl(var(--foreground))",
+                  padding: "10px 14px", borderRadius: 10, cursor: "pointer",
+                  fontFamily: APEX.fontBody, transition: "all .2s",
+                  background: isActive ? `linear-gradient(135deg, ${c.color}25, ${c.color}10)` : APEX.deep,
+                  border: `1px solid ${isActive ? c.color : APEX.border}`,
+                  color: isActive ? c.color : APEX.textSecondary,
+                  fontSize: 12, fontWeight: isActive ? 700 : 500,
+                  display: "flex", alignItems: "center", gap: 8, letterSpacing: ".01em",
+                  boxShadow: isActive ? `0 0 20px ${c.color}30` : "none",
                 }}
               >
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-xl">{c.icon}</span>
-                  <span className="text-[9px] font-bold px-1 py-0.5 rounded" style={{ background: c.color + "33", color: c.color }}>
-                    {c.gender === "M" ? "♂" : "♀"}
-                  </span>
-                </div>
-                <div className="text-[11px] font-bold leading-tight">{c.label}</div>
+                <span style={{ fontSize: 14 }}>{c.icon}</span>
+                <span>{c.label}</span>
+                <span style={{ fontSize: 11, opacity: .7 }}>{c.gender === "M" ? "♂" : "♀"}</span>
               </button>
             );
           })}
         </div>
+
+        <div style={{
+          marginTop: 14, padding: "12px 14px", borderRadius: 10,
+          background: `linear-gradient(135deg, ${accent}10, transparent)`,
+          border: `1px solid ${accent}44`,
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
+            <Target size={11} color={accent} />
+            <span style={{ fontFamily: APEX.fontMono, fontSize: 9, fontWeight: 700, color: accent, letterSpacing: ".15em" }}>
+              PADRÃO DE JULGAMENTO IFBB
+            </span>
+          </div>
+          <div style={{ fontSize: 12, color: APEX.textPrimary, lineHeight: 1.55, marginBottom: 8 }}>{cat.ideal}</div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+            {cat.keyPoints.map((k) => (
+              <span key={k} style={{
+                fontSize: 10, fontFamily: APEX.fontMono, padding: "3px 8px", borderRadius: 4,
+                background: `${accent}1A`, color: accent, border: `1px solid ${accent}33`,
+              }}>{k}</span>
+            ))}
+          </div>
+        </div>
       </div>
 
-      {/* Ideal box */}
-      <div className="rounded-lg p-3 border" style={{ borderColor: cat.color + "55", background: cat.color + "0A" }}>
-        <div className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: cat.color }}>
-          Ideal · {cat.label}
+      {/* ━━━ FOTOS ━━━ */}
+      <div style={{ ...cardStyle, marginBottom: 16 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14, flexWrap: "wrap", gap: 8 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            {sectionTick(APEX.electric)}
+            <span style={labelStyle}>Fotos para Análise</span>
+          </div>
+          <span style={{ fontSize: 10, color: APEX.textMuted }}>
+            mín. 1 obrigatória · mais ângulos = diagnóstico mais preciso
+          </span>
         </div>
-        <div className="text-xs text-foreground/90 leading-snug mb-2">{cat.ideal}</div>
-        <div className="flex flex-wrap gap-1">
-          {cat.keyPoints.map((k) => (
-            <span key={k} className="text-[10px] px-2 py-0.5 rounded-full font-semibold"
-              style={{ background: cat.color + "22", color: cat.color }}>
-              {k}
-            </span>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12 }}>
+          {[
+            { key: "front" as const, label: "FRENTE", num: "01", instruction: "Relaxado, braços ao lado" },
+            { key: "back" as const, label: "COSTAS", num: "02", instruction: "Dorsal visível" },
+            { key: "side" as const, label: "LATERAL", num: "03", instruction: "Perfil direito ou esquerdo" },
+          ].map(({ key, label, num, instruction }) => (
+            <div key={key}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                <span style={{ fontFamily: APEX.fontMono, fontSize: 11, fontWeight: 700, color: APEX.electric }}>{num}</span>
+                <span style={{ fontFamily: APEX.fontDisplay, fontSize: 11, fontWeight: 700, color: APEX.textPrimary, letterSpacing: ".1em" }}>{label}</span>
+              </div>
+              <PhotoZone
+                label={instruction}
+                file={photos[key]}
+                accent={APEX.electric}
+                onPick={(f) => setPhotos((p) => ({ ...p, [key]: f }))}
+                onClear={() => setPhotos((p) => ({ ...p, [key]: null }))}
+              />
+            </div>
           ))}
         </div>
       </div>
 
-      {/* Form fields */}
-      <div className="grid md:grid-cols-2 gap-3">
-        <Field label="Semanas para o show">
+      {/* ━━━ SEMANAS + PROTOCOLO ━━━ */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: 12, marginBottom: 16 }}>
+        <div style={cardStyle}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+            {sectionTick(APEX.amber)}
+            <span style={labelStyle}>Semanas para o Show</span>
+          </div>
           <input
-            type="number"
-            min={0}
+            type="number" min={0}
             value={formData.semanas}
             onChange={(e) => setFormData({ ...formData, semanas: e.target.value })}
-            placeholder="ex: 12"
-            className="w-full px-3 py-2 rounded-lg bg-muted border border-border text-sm text-foreground"
+            placeholder="Ex: 12"
+            style={{ ...inputBase, fontFamily: APEX.fontMono, fontSize: 15, fontWeight: 500 }}
+            onFocus={(e) => (e.target.style.borderColor = APEX.electric)}
+            onBlur={(e) => (e.target.style.borderColor = APEX.border)}
           />
-        </Field>
-        <div>
-          <Field label="💉 Protocolo farmacológico (opcional)">
-            <textarea
-              value={formData.compostos}
-              onChange={(e) => setFormData({ ...formData, compostos: e.target.value })}
-              placeholder="Ex: Testosterona Enantato 300mg/sem, Trembolona Acetato 200mg/sem, Masteron 200mg/sem, HGH 2UI/dia"
-              rows={2}
-              className="w-full px-3 py-2 rounded-lg bg-muted border border-border text-sm text-foreground"
-            />
-          </Field>
+        </div>
+
+        <div style={cardStyle}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              {sectionTick(APEX.violet)}
+              <span style={labelStyle}>Protocolo Farmacológico</span>
+            </div>
+            {formData.compostos && (
+              <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "4px 10px", background: `${APEX.violet}15`, border: `1px solid ${APEX.violet}55`, borderRadius: 999 }}>
+                <Zap size={10} color={APEX.violet} />
+                <span style={{ fontFamily: APEX.fontMono, fontSize: 9, fontWeight: 700, color: APEX.violet, letterSpacing: ".1em" }}>DR. VERTEX ATIVO</span>
+              </div>
+            )}
+          </div>
+          <textarea
+            value={formData.compostos}
+            onChange={(e) => setFormData({ ...formData, compostos: e.target.value })}
+            placeholder="Ex: Testosterona Enantato 300mg/sem, Trembolona 200mg/sem, Masteron 200mg/sem, HGH 2UI/dia..."
+            rows={3}
+            style={{ ...inputBase, border: `1px solid ${formData.compostos ? `${APEX.violet}44` : APEX.border}`, fontSize: 12, lineHeight: 1.65, resize: "vertical" }}
+            onFocus={(e) => (e.target.style.borderColor = APEX.violet)}
+            onBlur={(e) => (e.target.style.borderColor = formData.compostos ? `${APEX.violet}44` : APEX.border)}
+          />
           {formData.compostos && (
-            <div className="flex items-center gap-1.5 mt-2 text-[11px]" style={{ color: "#534AB7" }}>
-              <span>💉</span>
-              <span>Dr. VERTEX integrado — a análise considerará o protocolo farmacológico</span>
+            <div style={{ marginTop: 8, fontSize: 10, color: APEX.textSecondary, lineHeight: 1.5 }}>
+              ✦ A análise incluirá: impacto dos compostos no shape · sinergias do stack · próximo nível do protocolo · fitoterápicos e suporte · gestão de estrogênio
             </div>
           )}
         </div>
       </div>
 
-      {/* Campos expandidos do protocolo */}
+      {/* ━━━ CICLO DETALHES ━━━ */}
       {formData.compostos && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <Field label="Objetivo do ciclo">
-            <select
-              value={objetivoCiclo}
-              onChange={(e) => setObjetivoCiclo(e.target.value)}
-              className="w-full px-3 py-2 rounded-lg bg-muted border border-border text-sm text-foreground"
-            >
-              <option value="cutting">Cutting</option>
-              <option value="bulk">Bulk</option>
-              <option value="recomp">Recomposição</option>
-              <option value="peak">Peak Week</option>
-              <option value="manutencao">Manutenção</option>
-            </select>
-          </Field>
-          <Field label="Semana do ciclo">
-            <input
-              type="number"
-              value={semanaCiclo}
-              onChange={(e) => setSemanaCiclo(e.target.value)}
-              placeholder="Ex: 6"
-              className="w-full px-3 py-2 rounded-lg bg-muted border border-border text-sm text-foreground"
-            />
-          </Field>
-          <Field label="Duração total (sem)">
-            <input
-              type="number"
-              value={duracaoCiclo}
-              onChange={(e) => setDuracaoCiclo(e.target.value)}
-              placeholder="Ex: 16"
-              className="w-full px-3 py-2 rounded-lg bg-muted border border-border text-sm text-foreground"
-            />
-          </Field>
-          <Field label="Suporte em uso">
-            <input
-              type="text"
-              value={suporte}
-              onChange={(e) => setSuporte(e.target.value)}
-              placeholder="Ex: Anastrozol 0.5mg, TUDCA 500mg"
-              className="w-full px-3 py-2 rounded-lg bg-muted border border-border text-sm text-foreground"
-            />
-          </Field>
+        <div style={{ ...cardStyle, marginBottom: 16, borderColor: `${APEX.violet}44` }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+            {sectionTick(APEX.violet)}
+            <span style={labelStyle}>Detalhes do Ciclo</span>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 10 }}>
+            <div>
+              <div style={{ ...labelStyle, fontSize: 9, marginBottom: 6 }}>Objetivo</div>
+              <select value={objetivoCiclo} onChange={(e) => setObjetivoCiclo(e.target.value)} style={inputBase}>
+                <option value="cutting">Cutting</option>
+                <option value="bulk">Bulk</option>
+                <option value="recomp">Recomposição</option>
+                <option value="peak">Peak Week</option>
+                <option value="manutencao">Manutenção</option>
+              </select>
+            </div>
+            <div>
+              <div style={{ ...labelStyle, fontSize: 9, marginBottom: 6 }}>Semana do ciclo</div>
+              <input type="number" value={semanaCiclo} onChange={(e) => setSemanaCiclo(e.target.value)} placeholder="Ex: 6" style={{ ...inputBase, fontFamily: APEX.fontMono }} />
+            </div>
+            <div>
+              <div style={{ ...labelStyle, fontSize: 9, marginBottom: 6 }}>Duração total (sem)</div>
+              <input type="number" value={duracaoCiclo} onChange={(e) => setDuracaoCiclo(e.target.value)} placeholder="Ex: 16" style={{ ...inputBase, fontFamily: APEX.fontMono }} />
+            </div>
+            <div>
+              <div style={{ ...labelStyle, fontSize: 9, marginBottom: 6 }}>Suporte em uso</div>
+              <input type="text" value={suporte} onChange={(e) => setSuporte(e.target.value)} placeholder="Ex: Anastrozol 0.5mg, TUDCA" style={inputBase} />
+            </div>
+          </div>
         </div>
       )}
-      <Field label="Observações">
+
+      {/* ━━━ OBSERVAÇÕES ━━━ */}
+      <div style={{ ...cardStyle, marginBottom: 16 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+          {sectionTick(APEX.electric)}
+          <span style={labelStyle}>Observações do Coach</span>
+        </div>
         <textarea
           value={formData.obs}
           onChange={(e) => setFormData({ ...formData, obs: e.target.value })}
-          rows={2}
-          placeholder="contexto extra: lesões, deload, dieta atual..."
-          className="w-full px-3 py-2 rounded-lg bg-muted border border-border text-sm text-foreground"
+          placeholder="Contexto adicional: lesões, deload, dieta atual, queixas do atleta, pontos específicos para avaliar..."
+          rows={3}
+          style={{ ...inputBase, fontSize: 12, lineHeight: 1.65, resize: "vertical" }}
+          onFocus={(e) => (e.target.style.borderColor = APEX.electric)}
+          onBlur={(e) => (e.target.style.borderColor = APEX.border)}
         />
-      </Field>
-
-      {/* Photos */}
-      <div>
-        <div className="text-xs font-semibold mb-2 text-foreground">Fotos (mínimo 1)</div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          <PhotoZone label="Frente" file={photos.front} accent={cat.color}
-            onPick={(f) => setPhotos((p) => ({ ...p, front: f }))}
-            onClear={() => setPhotos((p) => ({ ...p, front: null }))} />
-          <PhotoZone label="Costas" file={photos.back} accent={cat.color}
-            onPick={(f) => setPhotos((p) => ({ ...p, back: f }))}
-            onClear={() => setPhotos((p) => ({ ...p, back: null }))} />
-          <PhotoZone label="Lateral" file={photos.side} accent={cat.color}
-            onPick={(f) => setPhotos((p) => ({ ...p, side: f }))}
-            onClear={() => setPhotos((p) => ({ ...p, side: null }))} />
-        </div>
       </div>
 
-      {/* History */}
+      {/* ━━━ HISTÓRICO ━━━ */}
       {athlete && (
-        <div>
-          <div className="flex items-center gap-2 mb-2">
-            <History className="w-4 h-4 text-muted-foreground" />
-            <div className="text-xs font-semibold text-foreground">Análises anteriores</div>
-            <div className="text-[10px] text-muted-foreground">· {athlete.nome}</div>
+        <div style={{ ...cardStyle, marginBottom: 16 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+            {sectionTick(APEX.textSecondary)}
+            <span style={labelStyle}>Análises anteriores</span>
+            <span style={{ fontSize: 10, color: APEX.textMuted, marginLeft: 4 }}>· {athlete.nome}</span>
           </div>
           {historyLoading ? (
-            <div className="space-y-2">
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {[0, 1, 2].map((i) => (
-                <div key={i} className="h-16 rounded-lg bg-muted animate-pulse" />
+                <div key={i} style={{ height: 56, borderRadius: 10, background: APEX.deep, opacity: .5 }} />
               ))}
             </div>
           ) : history.length === 0 ? (
-            <div className="text-xs text-muted-foreground italic px-3 py-4 text-center border border-dashed border-border rounded-lg">
+            <div style={{ fontSize: 11, color: APEX.textMuted, fontStyle: "italic", padding: "16px", textAlign: "center", border: `1px dashed ${APEX.border}`, borderRadius: 10 }}>
               Nenhuma análise anterior para este atleta.
             </div>
           ) : (
-            <div className="space-y-2">
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {history.map((item) => {
                 const itemCat = (CATEGORIES as any)[item.category] || cat;
                 return (
-                  <div
-                    key={item.id}
-                    className="rounded-lg border bg-card p-3 flex items-center gap-3"
-                    style={{ borderColor: itemCat.color + "44" }}
-                  >
-                    <div className="text-2xl">{itemCat.icon}</div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-0.5">
-                        <span className="text-xs font-bold text-foreground">{item.category_label || itemCat.label}</span>
-                        <span className="text-[10px] text-muted-foreground">{formatRelative(item.created_at)}</span>
+                  <div key={item.id} style={{
+                    display: "flex", alignItems: "center", gap: 12, padding: "10px 12px",
+                    background: APEX.deep, border: `1px solid ${itemCat.color}33`, borderRadius: 10,
+                  }}>
+                    <div style={{ fontSize: 22 }}>{itemCat.icon}</div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 2 }}>
+                        <span style={{ fontSize: 12, fontWeight: 700, color: APEX.textPrimary }}>{item.category_label || itemCat.label}</span>
+                        <span style={{ fontSize: 10, color: APEX.textMuted, fontFamily: APEX.fontMono }}>{formatRelative(item.created_at)}</span>
                       </div>
-                      <div className="flex flex-wrap gap-1.5 mb-1">
-                        {item.bf_estimated != null && (
-                          <span className="text-[10px] px-1.5 py-0.5 rounded font-semibold" style={{ background: "#E0703022", color: "#E07030" }}>
-                            BF est {item.bf_estimated}%
-                          </span>
-                        )}
-                        {item.bf_target != null && (
-                          <span className="text-[10px] px-1.5 py-0.5 rounded font-semibold" style={{ background: "#1DB87A22", color: "#1DB87A" }}>
-                            Meta {item.bf_target}%
-                          </span>
-                        )}
-                        {item.weeks_estimated != null && (
-                          <span className="text-[10px] px-1.5 py-0.5 rounded font-semibold" style={{ background: itemCat.color + "22", color: itemCat.color }}>
-                            {item.weeks_estimated} sem
-                          </span>
-                        )}
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                        {item.bf_estimated != null && <span style={{ fontSize: 9, padding: "2px 6px", borderRadius: 3, background: `${APEX.amber}22`, color: APEX.amber, fontFamily: APEX.fontMono }}>BF est {item.bf_estimated}%</span>}
+                        {item.bf_target != null && <span style={{ fontSize: 9, padding: "2px 6px", borderRadius: 3, background: `${APEX.emerald}22`, color: APEX.emerald, fontFamily: APEX.fontMono }}>Meta {item.bf_target}%</span>}
+                        {item.weeks_estimated != null && <span style={{ fontSize: 9, padding: "2px 6px", borderRadius: 3, background: `${itemCat.color}22`, color: itemCat.color, fontFamily: APEX.fontMono }}>{item.weeks_estimated} sem</span>}
                       </div>
-                      {item.priority_1 && (
-                        <div className="text-[11px] text-muted-foreground line-clamp-1">
-                          <span className="font-semibold text-foreground/80">P1:</span> {item.priority_1}
-                        </div>
-                      )}
                     </div>
                     <button
                       onClick={() => openHistoryItem(item)}
-                      className="shrink-0 text-[11px] px-2.5 py-1.5 rounded-lg border hover:bg-muted flex items-center gap-1 font-semibold"
-                      style={{ borderColor: itemCat.color + "55", color: itemCat.color }}
+                      style={{ fontSize: 10, padding: "6px 10px", borderRadius: 6, background: "transparent", color: itemCat.color, border: `1px solid ${itemCat.color}55`, cursor: "pointer", display: "flex", alignItems: "center", gap: 4, fontWeight: 700 }}
                     >
-                      <Eye className="w-3 h-3" /> Ver
+                      <Eye size={11} /> Ver
                     </button>
                   </div>
                 );
@@ -1079,26 +1218,56 @@ Suporte em uso: ${suporte || "não informado"}` : "";
         </div>
       )}
 
-      {/* Submit */}
-      <div className="space-y-2">
+      {/* ━━━ AÇÕES ━━━ */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
         <button
           onClick={() => setShowPromptPreview(true)}
-          className="w-full py-2 rounded-xl text-xs font-bold border border-border bg-muted/40 hover:bg-muted transition-colors flex items-center justify-center gap-2 text-foreground"
+          style={{
+            width: "100%", padding: "10px 16px", borderRadius: 10, cursor: "pointer",
+            background: APEX.deep, border: `1px solid ${APEX.border}`,
+            color: APEX.textSecondary, fontSize: 11, fontFamily: APEX.fontBody, fontWeight: 600,
+            display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+            letterSpacing: ".05em",
+          }}
         >
-          <FileText className="w-3.5 h-3.5" />
+          <FileText size={12} />
           Pré-visualizar prompt enviado à IA (APEX + Dr. VERTEX)
         </button>
+
         <button
           onClick={analyzeWithAI}
           disabled={!hasAnyPhoto}
-          className="w-full py-3 rounded-xl text-sm font-black transition-all disabled:opacity-40 disabled:cursor-not-allowed"
           style={{
-            background: hasAnyPhoto ? cat.color : "hsl(var(--muted))",
-            color: hasAnyPhoto ? "#fff" : "hsl(var(--muted-foreground))",
-            boxShadow: hasAnyPhoto ? `0 8px 24px -8px ${cat.color}99` : "none",
+            width: "100%", padding: "18px 24px", borderRadius: 14, border: "none",
+            cursor: hasAnyPhoto ? "pointer" : "not-allowed",
+            fontFamily: APEX.fontDisplay, fontSize: 14, fontWeight: 800,
+            letterSpacing: ".1em", textTransform: "uppercase",
+            transition: "all .3s", position: "relative", overflow: "hidden",
+            background: hasAnyPhoto ? `linear-gradient(135deg, ${accent}, ${accent}AA)` : APEX.deep,
+            color: hasAnyPhoto ? "#000" : APEX.textMuted,
+            boxShadow: hasAnyPhoto ? `0 0 40px ${accent}40, 0 4px 20px ${accent}30` : "none",
           }}
         >
-          🔬 Analisar com APEX v2
+          {hasAnyPhoto && (
+            <div style={{
+              position: "absolute", top: 0, left: "-100%", width: "60%", height: "100%",
+              background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)",
+              animation: "apex-shimmer 2.5s ease-in-out infinite",
+            }} />
+          )}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 12, position: "relative" }}>
+            {hasAnyPhoto ? (
+              <>
+                <Crosshair size={18} strokeWidth={2.5} />
+                <span>INICIAR DIAGNÓSTICO APEX{formData.compostos ? " + DR. VERTEX" : ""}</span>
+              </>
+            ) : (
+              <>
+                <span>◈</span>
+                <span>ADICIONE AO MENOS 1 FOTO PARA INICIAR</span>
+              </>
+            )}
+          </div>
         </button>
       </div>
 
@@ -1110,7 +1279,7 @@ Suporte em uso: ${suporte || "não informado"}` : "";
               <FileText className="w-4 h-4" /> Prompt completo enviado à IA
             </DialogTitle>
             <DialogDescription>
-              Análise APEX v2 {formData.compostos ? "+ Dr. VERTEX (farmacologia ativa)" : "(sem protocolo farmacológico)"} — {athlete?.nome || "atleta"} · {cat.label}
+              Análise APEX {formData.compostos ? "+ Dr. VERTEX (farmacologia ativa)" : "(sem protocolo farmacológico)"} — {athlete?.nome || "atleta"} · {cat.label}
             </DialogDescription>
           </DialogHeader>
           {(() => {
@@ -1120,7 +1289,7 @@ Objetivo do ciclo: ${objetivoCiclo}
 Semana ${semanaCiclo || "não informada"} de ${duracaoCiclo || "não informada"} semanas
 Suporte em uso: ${suporte || "não informado"}` : "";
             const system = buildSystemPrompt(cat, athleteName, protocoloCompleto);
-            const contexto = `Atleta: ${athleteName} | Semanas para o show: ${formData.semanas || "n/d"} | Protocolo: ${formData.compostos || "não informado"} | Obs: ${formData.obs || "nenhuma"}\n\nGere a análise APEX v2 completa.`;
+            const contexto = `Atleta: ${athleteName} | Semanas para o show: ${formData.semanas || "n/d"} | Protocolo: ${formData.compostos || "não informado"} | Obs: ${formData.obs || "nenhuma"}\n\nGere a análise APEX completa.`;
             const fullPrompt = `━━━━━ SYSTEM PROMPT ━━━━━\n\n${system}\n\n━━━━━ USER CONTEXT ━━━━━\n\n${contexto}`;
             return (
               <>
