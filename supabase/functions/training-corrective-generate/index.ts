@@ -8,6 +8,135 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
+function parseApexSection(text: string, key: string, nextKey?: string): string {
+  if (!text) return "";
+  const pattern = nextKey
+    ? new RegExp(`##\\s*${key}([\\s\\S]*?)##\\s*${nextKey}`, "i")
+    : new RegExp(`##\\s*${key}([\\s\\S]*)`, "i");
+  return text.match(pattern)?.[1]?.trim() || "";
+}
+
+function extractApexTrainingData(analysisText: string) {
+  return {
+    correctiveProtocol: parseApexSection(analysisText, "PONTOS_FRACOS_PROTOCOLO", "CONDICIONAMENTO"),
+    posturalCorrections: parseApexSection(analysisText, "CORRECOES_POSTURAIS", "PONTOS_FRACOS_PROTOCOLO"),
+    posturalDeviations: parseApexSection(analysisText, "POSTURA_DESVIOS", "CORRECOES_POSTURAIS"),
+    priority1: analysisText?.match(/PRIORIDADE_1:\s*([^\n]+)/i)?.[1]?.trim() || "",
+    priority2: analysisText?.match(/PRIORIDADE_2:\s*([^\n]+)/i)?.[1]?.trim() || "",
+    priority3: analysisText?.match(/PRIORIDADE_3:\s*([^\n]+)/i)?.[1]?.trim() || "",
+  };
+}
+
+function buildIntegratedApexPrompt(opts: {
+  athlete: any;
+  apexWeakPoints: Array<{ muscle: string; score: number; priority?: string }>;
+  apexData: ReturnType<typeof extractApexTrainingData>;
+  trainingMethod: string;
+  weeklyVolume: Record<string, number>;
+  currentWeek: number;
+  splitType: string;
+  frequency: number;
+}) {
+  const { athlete, apexWeakPoints, apexData, trainingMethod, weeklyVolume, currentWeek, splitType, frequency } = opts;
+  const tm = (trainingMethod || "").toLowerCase();
+  const isGVT = /gvt/.test(tm);
+  const isFST7 = /fst.?7/.test(tm);
+
+  const weakLines = apexWeakPoints.map((p) => `• ${p.muscle}: ${p.score}/10 — prioridade ${p.priority || (p.score <= 3 ? "CRÍTICA" : p.score <= 5 ? "ALTA" : "MODERADA")}`).join("\n");
+  const volumeLines = Object.entries(weeklyVolume).map(([m, s]) => {
+    const perSession = Math.ceil((s as number) / Math.max(frequency, 1));
+    return `${m}: ${s} séries/semana → ${perSession} séries/sessão (${frequency}× por sem)`;
+  }).join("\n");
+
+  const methodBlock = isGVT
+    ? `GVT ATIVO — 10 séries × 1 exercício principal por grupo. Volume mínimo GVT = 10 séries/sessão.
+Para grupos com volume prescrito < 10 séries/sem: usar método convencional (3-4×8-12) nesse grupo.
+Para grupos com 20 séries/sem: 2 sessões GVT (10 cada).`
+    : isFST7
+    ? `FST-7 ATIVO — última série de isolamento: 7×8-12 com 30-45s descanso. Aplicar FST-7 preferencialmente nos grupos identificados como fracos pelo APEX.`
+    : `Distribuir séries entre 2-4 exercícios por grupo. Compostos multi-articulares para grupos fracos. Exercícios corretivos do APEX entram como acessórios/finalizadores.`;
+
+  return `Você é o TrainingON — módulo de prescrição de treino do nutriON.
+Você integra os exercícios corretivos do APEX Visual ao treino principal sem ultrapassar o volume semanal prescrito.
+
+━━━ PERFIL DO ATLETA ━━━
+Nome: ${athlete?.name || "atleta"}
+Objetivo: ${athlete?.goal || "n/d"}
+Fase: ${athlete?.phase || "n/d"}
+Protocolo farmacológico: ${athlete?.protocol || "não informado"}
+Semana do mesociclo: ${currentWeek}
+Split: ${splitType}
+Método principal: ${trainingMethod}
+Frequência: ${frequency}× por semana
+
+━━━ PONTOS FRACOS DO APEX ━━━
+${weakLines || "—"}
+
+━━━ VOLUME SEMANAL PRESCRITO (RESPEITAR OBRIGATORIAMENTE) ━━━
+${volumeLines || "—"}
+
+REGRA CRÍTICA: total de séries de TRABALHO de cada grupo na semana NÃO pode ultrapassar o prescrito em mais de 10%.
+Feeder sets NÃO contam. Distribua entre os dias do split.
+
+━━━ PRIORIDADES APEX ━━━
+1. ${apexData.priority1 || "—"}
+2. ${apexData.priority2 || "—"}
+3. ${apexData.priority3 || "—"}
+
+━━━ DESVIOS POSTURAIS ━━━
+${apexData.posturalDeviations || "Nenhum informado"}
+
+━━━ CORREÇÕES POSTURAIS (warm-up) ━━━
+${apexData.posturalCorrections || "Nenhum informado"}
+
+━━━ EXERCÍCIOS CORRETIVOS APEX ━━━
+${apexData.correctiveProtocol || "Nenhum informado"}
+
+━━━ INTEGRAÇÃO OBRIGATÓRIA ━━━
+1. WARM-UP de cada sessão: incluir correções posturais APEX dos grupos do dia (NÃO conta para volume). Formato: exercício + séries + reps + cue.
+2. EXERCÍCIOS PRINCIPAIS: respeitar ${trainingMethod}. Em grupos fracos, adicionar cue de ativação APEX e marcar [APEX] no nome quando vier diretamente do APEX.
+3. EXERCÍCIOS CORRETIVOS APEX: aparecem como ACESSÓRIOS/FINALIZADORES, SUBSTITUINDO (não somando) um acessório existente do grupo, para não ultrapassar volume.
+4. COMPATIBILIDADE COM MÉTODO:
+${methodBlock}
+5. VALIDAÇÃO FINAL OBRIGATÓRIA: ao terminar o plano, declarar a seção VALIDAÇÃO DE VOLUME SEMANAL no formato exato: "• grupo: X sér / Y sér — OK|REVISAR". Se algum grupo > 110% do prescrito, redistribua antes de finalizar.
+
+━━━ FORMATO DE SAÍDA ━━━
+Para cada dia do split:
+
+DIA X — [NOME DA SESSÃO] — [GRUPOS PRINCIPAIS]
+
+WARM-UP APEX (não conta para volume):
+• [exercício] — [séries×reps] — [cue]
+
+FEEDER SETS [exercício principal]:
+• Feeder 1: [%] × [reps] — [cue]
+• Feeder 2: [%] × [reps] — [cue]
+
+SÉRIES DE TRABALHO:
+1. [exercício] [APEX se corretivo]
+   Grupo: [grupo]
+   [N] × [reps] — RPE [X] — [descanso]
+   Cue: [instrução]
+   Conta para volume: [N] séries de [grupo]
+
+VOLUME DO DIA:
+• [grupo]: [N] séries (acumulado semana: [N]/[prescrito])
+
+---
+
+Ao final:
+
+VALIDAÇÃO DE VOLUME SEMANAL:
+• [grupo]: [realizado] sér / [prescrito] sér — [OK|REVISAR]
+
+EXERCÍCIOS CORRETIVOS APEX INTEGRADOS:
+• [lista — qual exercício e em qual dia]
+
+WARM-UPS POSTURAIS INCLUÍDOS:
+• [lista — exercício + dia]
+`;
+}
+
 function buildSystemPrompt(syncData: any, athlete: any, apexScores: Record<string, number> = {}) {
   const scoresLine = Object.entries(apexScores)
     .map(([k, v]) => {
