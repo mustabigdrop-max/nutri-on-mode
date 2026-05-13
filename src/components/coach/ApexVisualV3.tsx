@@ -903,6 +903,34 @@ export default function ApexVisualV3() {
         {/* FORMULÁRIO */}
         {!done && !loading && !streaming && (
           <>
+            {/* SELEÇÃO DE ATLETA + HISTÓRICO */}
+            <div style={{ marginBottom:20, padding:16, background:C.card, border:`1px solid ${C.border}`, borderRadius:12 }}>
+              <div style={{ fontSize:10, color:C.textSec, marginBottom:10, letterSpacing:".1em", textTransform:"uppercase" }}>Atleta vinculado · histórico salvo automaticamente</div>
+              <AthleteSelector value={selectedAthlete?.id ?? null} onChange={setSelectedAthlete} label="Selecionar atleta cadastrado" />
+              {!selectedAthlete && (
+                <div style={{ marginTop:10, fontSize:11, color:C.amber }}>
+                  ⚠ Sem atleta selecionado, esta análise <b>não será salva</b> no histórico. Cadastre em <i>Atletas</i> para monitorar evolução.
+                </div>
+              )}
+              {selectedAthlete && history.length > 0 && (
+                <div style={{ marginTop:14 }}>
+                  <div style={{ fontSize:10, color:C.textSec, marginBottom:8, letterSpacing:".1em", textTransform:"uppercase" }}>Últimas avaliações ({history.length})</div>
+                  <div style={{ display:"flex", flexDirection:"column", gap:6, maxHeight:220, overflowY:"auto" }}>
+                    {history.map((h: any) => (
+                      <div key={h.id} style={{ display:"flex", alignItems:"center", gap:10, padding:"8px 12px", background:C.cardHi, border:`1px solid ${C.border}`, borderRadius:8, fontSize:11, flexWrap:"wrap" }}>
+                        <div style={{ minWidth:90, color:C.textSec }}>{new Date(h.data_avaliacao).toLocaleDateString("pt-BR")}</div>
+                        <div style={{ minWidth:40, color:cat.c, fontWeight:700 }}>S{h.semana_numero}</div>
+                        <div style={{ minWidth:80, color:C.text }}>{h.fase}</div>
+                        <div style={{ minWidth:60, color:C.text }}>{h.peso_kg ? `${h.peso_kg}kg` : "—"}</div>
+                        <div style={{ minWidth:70, color:C.text }}>{h.bf_estimado ? `${h.bf_estimado}% BF` : "—"}</div>
+                        <div style={{ flex:1, minWidth:120, color:C.textSec, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{h.observacoes_coach || ""}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
             {/* CATEGORIAS */}
             <div style={{ marginBottom:20 }}>
               <div style={{ fontSize:10, color:C.textSec, marginBottom:8, letterSpacing:".1em", textTransform:"uppercase" }}>Categoria IFBB</div>
