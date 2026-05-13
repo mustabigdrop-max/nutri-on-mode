@@ -999,3 +999,17 @@ function PrioCard({ n, color, text }: { n: number; color: string; text?: string 
 function EmptyMsg({ text }: { text: string }) {
   return <div className="text-xs text-muted-foreground italic px-3 py-4 text-center">{text}</div>;
 }
+
+function GenerateTrainingButton({ onClick, loading }: { onClick: () => void; loading?: boolean }) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={loading}
+      className="w-full mt-4 p-4 rounded-xl font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-60"
+      style={{ background: "linear-gradient(135deg, #1A6AB5, #2A8AE5)", color: "#fff" }}
+    >
+      <Dumbbell className="w-4 h-4" />
+      {loading ? "Sincronizando..." : "Gerar Treino Corretivo no TrainingON"}
+    </button>
+  );
+}
