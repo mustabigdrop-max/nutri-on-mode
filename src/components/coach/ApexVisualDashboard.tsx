@@ -107,6 +107,13 @@ const CATEGORIES: Record<CategoryKey, CategoryDef> = {
     keyPoints: ["separação muscular","condicionamento","dorsais","simetria"],
     poses: ["Front double biceps","Front lat spread","Side chest","Side triceps","Back double biceps","Back lat spread","Abdominals"],
   },
+  shape_lifestyle: {
+    label: "Shape Lifestyle", icon: "🏋", gender: "M", color: "#0F8A63",
+    ideal: "Praticante de musculação não-competidor buscando shape estético top — simetria, proporção, postura corrigida e correção de pontos fracos. Mesma profundidade de avaliação da competição, sem exigência de palco.",
+    criteria: ["Simetria geral","Proporção ombro-cintura","Postura e alinhamento","Pontos fracos visuais","Condicionamento estético","Densidade muscular","Definição abdominal","Vascularidade saudável","Equilíbrio MMSS/MMII","Apresentação geral"],
+    keyPoints: ["simetria","proporção","postura","pontos fracos","estética geral"],
+    poses: ["Frente relaxada","Costas relaxada","Lateral","Pose livre"],
+  },
 };
 
 const STEPS = [
