@@ -116,7 +116,28 @@ const TABS = [
   { key: "finalizadores", label: "⚡ Finalizadores", icon: Zap },
   { key: "progressao", label: "📈 Progressão", icon: TrendingUp },
   { key: "integracao", label: "🔗 Integração APEX", icon: Link2 },
+  { key: "raw", label: "📄 Recomendações (texto completo)", icon: FileText },
 ] as const;
+
+function CopyButton({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false);
+  useEffect(() => {
+    if (!copied) return;
+    const t = setTimeout(() => setCopied(false), 1500);
+    return () => clearTimeout(t);
+  }, [copied]);
+  return (
+    <Button
+      size="sm"
+      variant="outline"
+      onClick={() => { navigator.clipboard.writeText(text); setCopied(true); }}
+      className="gap-2"
+    >
+      {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+      {copied ? "Copiado" : "Copiar tudo"}
+    </Button>
+  );
+}
 
 export default function CorrectivePlanViewer({
   text,
