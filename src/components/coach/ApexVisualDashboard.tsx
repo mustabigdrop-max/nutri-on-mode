@@ -644,8 +644,8 @@ Suporte em uso: ${suporte || "não informado"}` : "";
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center py-20 gap-6">
-        <div className="text-6xl animate-pulse">🔬</div>
-        <div className="text-lg font-bold text-foreground">APEX v2 analisando...</div>
+        <div className="text-6xl animate-pulse">◈</div>
+        <div className="text-lg font-bold text-foreground">APEX Intelligence analisando...</div>
         <div className="space-y-1.5 w-full max-w-md">
           {STEPS.map((s, i) => (
             <div
