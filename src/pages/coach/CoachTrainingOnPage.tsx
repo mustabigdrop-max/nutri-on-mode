@@ -1,5 +1,5 @@
-import { useEffect, useState, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState, useCallback, useRef } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,9 @@ import TrainingFeedbackForm from "@/components/coach/TrainingFeedbackForm";
 
 export default function CoachTrainingOnPage() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [athlete, setAthlete] = useState<AthleteOption | null>(null);
+  const autoTriggeredRef = useRef(false);
   const [sync, setSync] = useState<any>(null);
 
   // APEX corrective flow
@@ -25,6 +27,20 @@ export default function CoachTrainingOnPage() {
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setCoachId(data.user?.id ?? null));
   }, []);
+
+  // Auto-load athlete from URL (?athlete=<id>)
+  useEffect(() => {
+    const aid = searchParams.get("athlete");
+    if (!aid || athlete?.id === aid) return;
+    (async () => {
+      const { data } = await supabase
+        .from("competition_athletes")
+        .select("id,nome,patient_user_id,fase_atual,data_competicao")
+        .eq("id", aid)
+        .maybeSingle();
+      if (data) setAthlete(data as AthleteOption);
+    })();
+  }, [searchParams, athlete?.id]);
 
   useEffect(() => {
     if (!athlete?.patient_user_id) { setSync(null); return; }
@@ -82,6 +98,28 @@ export default function CoachTrainingOnPage() {
   }, [athlete?.id]);
 
   useEffect(() => { loadApexSync(); }, [loadApexSync]);
+
+  // Auto-trigger corrective training generation when navigated with ?mode=corrective
+  useEffect(() => {
+    const mode = searchParams.get("mode");
+    if (
+      mode === "corrective" &&
+      apexSyncData &&
+      coachId &&
+      athlete?.id &&
+      !correctiveTraining &&
+      !generatingTraining &&
+      !autoTriggeredRef.current
+    ) {
+      autoTriggeredRef.current = true;
+      handleGenerateCorrectiveTraining();
+      // clear the param so it doesn't retrigger on reload
+      const next = new URLSearchParams(searchParams);
+      next.delete("mode");
+      setSearchParams(next, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [apexSyncData, coachId, athlete?.id, correctiveTraining, generatingTraining]);
 
   const handleGenerateCorrectiveTraining = async () => {
     if (!apexSyncData || !athlete?.id || !coachId) return;
