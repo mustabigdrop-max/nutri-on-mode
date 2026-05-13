@@ -100,6 +100,7 @@ import ApexVisualIAPage from "./pages/coach/ApexVisualIAPage";
 import CoachTrainingOnPage from "./pages/coach/CoachTrainingOnPage";
 import CoachLabExamsPage from "./pages/coach/CoachLabExamsPage";
 import CoachReportsPage from "./pages/coach/CoachReportsPage";
+import APEXPoseAnalysisPage from "./pages/coach/APEXPoseAnalysisPage";
 import DrNexusPage from "./pages/DrNexusPage";
 import VideoFormPage from "./pages/VideoFormPage";
 import MeusProtocolosPage from "./pages/MeusProtocolosPage";
@@ -228,6 +229,7 @@ const App = () => (
             <Route path="/coach/relatorios" element={<ProtectedRoute><CoachReportsPage /></ProtectedRoute>} />
             <Route path="/coach/atletas" element={<ProtectedRoute><AthleteRoster /></ProtectedRoute>} />
             <Route path="/coach/atletas/:id" element={<ProtectedRoute><AthleteProgressTracker /></ProtectedRoute>} />
+            <Route path="/coach/apex-pose" element={<ProtectedRoute><APEXPoseAnalysisPage /></ProtectedRoute>} />
 
             <Route path="/nutriplan-elite" element={<ProtectedRoute><NutriPlanElitePage /></ProtectedRoute>} />
 
