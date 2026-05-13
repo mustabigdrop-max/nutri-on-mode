@@ -244,9 +244,9 @@ export default function CorrectivePlanViewer({
         </div>
       )}
 
-      {tab === "ativacao" && <Pre text={parsed.ativacao} />}
-      {tab === "finalizadores" && <Pre text={parsed.finalizadores} />}
-      {tab === "progressao" && <Pre text={parsed.progressao} />}
+      {tab === "ativacao" && <PreOrEmpty text={parsed.ativacao} hint="ativação pré-treino" onOpenRaw={() => setTab("raw")} />}
+      {tab === "finalizadores" && <PreOrEmpty text={parsed.finalizadores} hint="finalizadores / exercícios corretivos pós" onOpenRaw={() => setTab("raw")} />}
+      {tab === "progressao" && <PreOrEmpty text={parsed.progressao} hint="progressão 4 semanas" onOpenRaw={() => setTab("raw")} />}
       {tab === "integracao" && (
         <div className="space-y-3">
           <Pre text={parsed.integracao} />
