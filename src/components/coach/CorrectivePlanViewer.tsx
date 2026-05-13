@@ -297,3 +297,18 @@ function Empty({ text, raw }: { text: string; raw?: string }) {
     </div>
   );
 }
+
+function PreOrEmpty({ text, hint, onOpenRaw }: { text: string; hint: string; onOpenRaw: () => void }) {
+  if (text && text.trim()) return <Pre text={text} />;
+  return (
+    <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-4 text-xs text-amber-100/90 space-y-2">
+      <div className="font-bold text-amber-400">Sem seção dedicada de {hint} na resposta da IA.</div>
+      <div className="text-muted-foreground">
+        A IA pode ter incluído essas informações dentro da Semana Tipo ou de forma livre.
+      </div>
+      <Button size="sm" variant="outline" onClick={onOpenRaw} className="mt-2">
+        Abrir texto completo
+      </Button>
+    </div>
+  );
+}
