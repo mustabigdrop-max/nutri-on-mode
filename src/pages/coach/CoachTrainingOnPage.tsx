@@ -680,6 +680,111 @@ export default function CoachTrainingOnPage() {
             </Card>
           )}
 
+          {/* Geração de treino com integração APEX completa */}
+          {athlete && apexImported && hasApexAnalysis && (
+            <Card className="border-amber-500/30 bg-gradient-to-br from-amber-500/5 to-blue-500/5">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm flex items-center gap-2 text-amber-300">
+                  <Crosshair className="h-4 w-4" /> Gerar treino com APEX integrado
+                </CardTitle>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Warm-up postural + exercícios corretivos do APEX integrados ao método principal sem ultrapassar o volume prescrito.
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="grid grid-cols-3 gap-2">
+                  <div>
+                    <label className="text-[10px] text-muted-foreground uppercase tracking-wide">Split</label>
+                    <select
+                      value={splitType}
+                      onChange={(e) => setSplitType(e.target.value)}
+                      className="w-full bg-background border border-border rounded-md px-2 py-1.5 text-xs"
+                    >
+                      <option value="ABCD">ABCD</option>
+                      <option value="ABCDE">ABCDE</option>
+                      <option value="PPL">Push/Pull/Legs</option>
+                      <option value="UpperLower">Upper/Lower</option>
+                      <option value="FullBody">Full Body</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-[10px] text-muted-foreground uppercase tracking-wide">Frequência</label>
+                    <select
+                      value={frequency}
+                      onChange={(e) => setFrequency(Number(e.target.value))}
+                      className="w-full bg-background border border-border rounded-md px-2 py-1.5 text-xs"
+                    >
+                      {[3, 4, 5, 6].map((n) => <option key={n} value={n}>{n}× / sem</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-[10px] text-muted-foreground uppercase tracking-wide">Semana</label>
+                    <select
+                      value={currentWeek}
+                      onChange={(e) => setCurrentWeek(Number(e.target.value))}
+                      className="w-full bg-background border border-border rounded-md px-2 py-1.5 text-xs"
+                    >
+                      {[1, 2, 3, 4, 5].map((n) => <option key={n} value={n}>Semana {n}</option>)}
+                    </select>
+                  </div>
+                </div>
+
+                <Button
+                  onClick={handleGenerateWithApexIntegration}
+                  disabled={generatingTraining || methodConflicts.length > 0}
+                  className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:opacity-90 text-black gap-2"
+                >
+                  {generatingTraining ? (
+                    <>
+                      <Sparkles className="h-4 w-4 animate-pulse" />
+                      Gerando treino integrado...
+                    </>
+                  ) : (
+                    <>
+                      <Dumbbell className="h-4 w-4" />
+                      Gerar Treino com APEX Integrado
+                      <span className="text-[10px] opacity-80">· {apexWeakPoints.length} grupos corretivos</span>
+                    </>
+                  )}
+                </Button>
+
+                {methodConflicts.length > 0 && (
+                  <p className="text-[10px] text-destructive text-center">
+                    Resolva os conflitos de método × volume antes de gerar.
+                  </p>
+                )}
+
+                {correctiveTraining && (
+                  <div className="flex items-center gap-2 px-3 py-2 rounded-md border border-emerald-500/30 bg-emerald-500/5 text-emerald-300 text-xs">
+                    <CheckCircle2 className="h-3.5 w-3.5" />
+                    <span className="flex-1">
+                      <span className="font-bold">Protocolo gerado com integração APEX Visual</span>
+                      {apexAnalysisDate && <span className="text-muted-foreground"> · {apexAnalysisDate}</span>}
+                    </span>
+                    <span className="text-[10px] opacity-80">{apexWeakPoints.length} grupos corretivos integrados</span>
+                  </div>
+                )}
+
+                {volumeWarnings.length > 0 && (
+                  <div className="rounded-md border border-destructive/40 bg-destructive/10 p-3 space-y-1.5">
+                    <div className="flex items-center gap-2 text-xs font-bold text-destructive">
+                      <AlertTriangle className="h-3.5 w-3.5" />
+                      Volume acima do prescrito em {volumeWarnings.length} grupo(s)
+                    </div>
+                    <ul className="text-[11px] space-y-0.5 text-destructive-foreground/90">
+                      {volumeWarnings.map((w, i) => (
+                        <li key={i}>
+                          <span className="font-semibold capitalize">{w.muscle}:</span>{" "}
+                          {w.actual} séries geradas vs {w.prescribed} prescritas
+                          <span className="text-destructive"> (+{w.excess} excesso)</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
 
           {Object.keys(apexScores).length > 0 && (
             <Card className="border-border bg-card/60">
