@@ -492,6 +492,7 @@ Suporte em uso: ${suporte || "não informado"}` : "";
       // Persist to Supabase
       try {
         const meta = parseMeta(text);
+        const farmMeta = parseFarmMeta(text);
         const segments = parseSegments(text);
         const scoresJson = segments.reduce((acc, s) => {
           acc[s.label] = s.score;
@@ -511,6 +512,13 @@ Suporte em uso: ${suporte || "não informado"}` : "";
           priority_2: meta.p2 || null,
           priority_3: meta.p3 || null,
           scores: scoresJson,
+          protocol: formData.compostos || null,
+          cycle_goal: formData.compostos ? objetivoCiclo : null,
+          cycle_week: semanaCiclo ? parseInt(semanaCiclo, 10) : null,
+          cycle_duration: duracaoCiclo ? parseInt(duracaoCiclo, 10) : null,
+          support: suporte || null,
+          tdee_factor: farmMeta.tdeeFator ? parseFloat(farmMeta.tdeeFator) : null,
+          protein_ideal: farmMeta.proteinaIdeal || null,
         }).select("id").single();
         if (insErr) throw insErr;
         setSavedAnalysisId((inserted as any)?.id || null);
