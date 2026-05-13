@@ -58,6 +58,8 @@ const CoachHub = () => {
         return <PlanoAlimentarIA />;
       case "training":
         return <CoachTrainingOnPage />;
+      case "pose":
+        return <APEXPoseAnalysisPage />;
       case "lab":
         return <CoachLabExamsPage />;
       case "relatorios":
