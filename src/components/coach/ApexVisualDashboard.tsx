@@ -384,6 +384,8 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
   const [syncStatus, setSyncStatus] = useState<"pending" | "applied" | null>(null);
   const [showTrainingModal, setShowTrainingModal] = useState(false);
   const [generatingTraining, setGeneratingTraining] = useState(false);
+  const [showPromptPreview, setShowPromptPreview] = useState(false);
+  const [promptCopied, setPromptCopied] = useState(false);
   const navigate = useNavigate();
 
   // History
