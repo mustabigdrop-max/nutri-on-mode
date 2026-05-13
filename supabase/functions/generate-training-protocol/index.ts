@@ -961,7 +961,16 @@ serve(async (req) => {
         if (jsonMatch) {
           let parsed = JSON.parse(jsonMatch[0]);
           parsed = sanitizeProtocol(parsed);
-          return new Response(JSON.stringify({ protocol: parsed, citations: scienceCitations }), {
+          // Camada 3: enforcer determinístico de volume semanal.
+          const enforced = enforceVolumeLimits(parsed, 1.10);
+          if (enforced.anyFixed) {
+            console.log("[volume-enforcer] aplicado:", JSON.stringify(enforced.fixes));
+          }
+          return new Response(JSON.stringify({
+            protocol: enforced.protocol,
+            volume_fixes: enforced.fixes,
+            citations: scienceCitations,
+          }), {
             headers: { ...corsHeaders, "Content-Type": "application/json" },
           });
         }
