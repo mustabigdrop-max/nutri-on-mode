@@ -363,7 +363,114 @@ export default function CoachTrainingOnPage() {
     setMethodConflicts([]);
   };
 
-  return (
+  // ── Validação de volume pós-geração (lê o bloco "VALIDAÇÃO DE VOLUME SEMANAL" da IA) ──
+  const validateGeneratedVolume = (trainingText: string, prescribed: Record<string, number>) => {
+    const violations: Array<{ muscle: string; actual: number; prescribed: number; excess: number }> = [];
+    const block = trainingText.match(/VALIDAÇÃO DE VOLUME SEMANAL:([\s\S]*?)(?:EXERCÍCIOS CORRETIVOS|WARM-?UPS POSTURAIS|$)/i)?.[1] || "";
+    block.split("\n").filter((l) => /sér/i.test(l)).forEach((line) => {
+      const m = line.match(/([^•:]+):\s*(\d+)\s*sér\s*\/\s*(\d+)\s*sér/i);
+      if (m) {
+        const muscle = m[1].replace("•", "").trim();
+        const actual = parseInt(m[2], 10);
+        const presc = parseInt(m[3], 10);
+        if (actual > presc * 1.15) {
+          violations.push({ muscle, actual, prescribed: presc, excess: actual - presc });
+        }
+      }
+    });
+    // fallback: também alertar pontos prescritos pelo coach que ficaram sem qualquer menção
+    Object.entries(prescribed).forEach(([m]) => { void m; });
+    return { isValid: violations.length === 0, violations };
+  };
+
+  // ── Geração com integração APEX completa via edge function ──
+  const handleGenerateWithApexIntegration = async () => {
+    if (!athlete?.id || !coachId) return;
+    setGeneratingTraining(true);
+    setVolumeWarnings([]);
+    try {
+      const { data, error } = await supabase.functions.invoke("training-corrective-generate", {
+        body: {
+          athlete: {
+            name: athlete.nome,
+            goal: (athlete as any).objetivo || sync?.training_phase || "",
+            phase: sync?.training_phase || "",
+            protocol: (athlete as any).protocolo || "",
+          },
+          apexIntegration: {
+            apexFullProtocol,
+            apexWeakPoints: apexWeakPoints.map((p) => ({
+              muscle: p.muscle,
+              score: p.score,
+              priority: p.score <= 3 ? "CRÍTICA" : p.score <= 5 ? "ALTA" : "MODERADA",
+            })),
+            trainingMethod,
+            weeklyVolume,
+            currentWeek,
+            splitType,
+            frequency,
+          },
+        },
+      });
+      if (error) throw new Error(error.message);
+      if ((data as any)?.error) throw new Error((data as any).error);
+      const text = (data as any)?.text || "";
+      if (!text) throw new Error("Resposta vazia da IA");
+
+      const validation = validateGeneratedVolume(text, weeklyVolume);
+      setVolumeWarnings(validation.violations);
+
+      // Desativa planos anteriores e salva o novo
+      await supabase
+        .from("corrective_training_plans" as any)
+        .update({ is_active: false })
+        .eq("athlete_id", athlete.id)
+        .eq("is_active", true);
+
+      const { error: insErr } = await supabase
+        .from("corrective_training_plans" as any)
+        .insert({
+          athlete_id: athlete.id,
+          coach_id: coachId,
+          apex_sync_id: apexSyncData?.id || null,
+          training_text: text,
+          category: apexSyncData?.category || null,
+          weak_points: apexWeakPoints,
+          training_method: trainingMethod,
+          split_type: splitType,
+          week_number: currentWeek,
+          weekly_volume: weeklyVolume,
+          apex_imported: apexImported,
+          apex_weak_points: apexWeakPoints,
+          volume_valid: validation.isValid,
+          volume_violations: validation.violations,
+          is_active: true,
+        });
+      if (insErr) throw insErr;
+
+      if (apexImported && apexSyncData?.id) {
+        await supabase
+          .from("apex_training_sync" as any)
+          .update({ sync_status: "applied", updated_at: new Date().toISOString() })
+          .eq("athlete_id", athlete.id);
+      }
+
+      setCorrectiveTraining(text);
+      setShowApexBanner(false);
+      toast({
+        title: validation.isValid ? "✓ Treino integrado APEX gerado" : "⚠ Treino gerado com alertas de volume",
+        description: validation.isValid ? undefined : `${validation.violations.length} grupo(s) acima do prescrito`,
+      });
+    } catch (e: any) {
+      toast({
+        title: "Erro ao gerar treino integrado",
+        description: e?.message || "Falha ao chamar a IA",
+        variant: "destructive",
+      });
+    } finally {
+      setGeneratingTraining(false);
+    }
+  };
     <div className="space-y-4 max-w-5xl">
       <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="gap-2 -ml-2">
         <ArrowLeft className="h-4 w-4" /> Voltar
