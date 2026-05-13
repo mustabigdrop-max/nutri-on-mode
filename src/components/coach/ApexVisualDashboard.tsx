@@ -329,7 +329,19 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
     setPhotos({ front: null, back: null, side: null });
     setFormData({ semanas: "", compostos: "", obs: "" });
     setActiveResultTab("scores");
+    setSavedAnalysisId(null);
+    setSyncStatus(null);
   };
+
+  const fetchSyncStatus = useCallback(async (athleteId: string | null) => {
+    if (!athleteId) { setSyncStatus(null); return; }
+    const { data } = await supabase
+      .from("apex_training_sync" as any)
+      .select("sync_status")
+      .eq("athlete_id", athleteId)
+      .maybeSingle();
+    setSyncStatus(((data as any)?.sync_status as any) || null);
+  }, []);
 
   const openHistoryItem = (item: any) => {
     const cat = (Object.keys(CATEGORIES) as CategoryKey[]).find(
@@ -339,6 +351,8 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
     setAnalysisResult(item.analysis_text || "");
     setIsDone(true);
     setActiveResultTab("scores");
+    setSavedAnalysisId(item.id || null);
+    fetchSyncStatus(item.athlete_id || athlete?.id || null);
   };
 
   const analyzeWithAI = useCallback(async () => {
