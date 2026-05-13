@@ -107,6 +107,13 @@ export default function CoachTrainingOnPage() {
       .limit(1)
       .maybeSingle();
     setApexScores(((latestAnalysis as any)?.scores as Record<string, number>) || {});
+    if ((latestAnalysis as any)?.created_at) {
+      const d = new Date((latestAnalysis as any).created_at);
+      setApexAnalysisDate(`${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`);
+    } else {
+      setApexAnalysisDate("");
+    }
+    setApexImported(false);
   }, [athlete?.id]);
 
   useEffect(() => { loadApexSync(); }, [loadApexSync]);
