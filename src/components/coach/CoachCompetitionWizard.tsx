@@ -31,7 +31,7 @@ const CoachCompetitionWizard = ({ open, onOpenChange, coachId, athleteId, athlet
   // Step 1 — Competição
   const [nomeCompeticao, setNomeCompeticao] = useState("");
   const [federacao, setFederacao] = useState("IFBB Pro");
-  const [categoria, setCategoria] = useState("Classic Physique");
+  const [categoria, setCategoria] = useState("");
   const [dataCompeticao, setDataCompeticao] = useState("");
   const [localCompeticao, setLocalCompeticao] = useState("");
 
