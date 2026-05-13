@@ -1358,11 +1358,6 @@ export default function ApexVisualV3() {
                   )}
                 </div>
               )}
-              {activeTab === "pose" && (
-                <div style={{ margin: "-16px -16px 0", borderTop: `1px solid ${C.border}` }}>
-                  <APEXPoseAnalysisPage />
-                </div>
-              )}
             </div>
           </div>
         )}
@@ -1378,3 +1373,6 @@ export default function ApexVisualV3() {
           <APEXPoseAnalysisPage />
         </div>
       )}
+    </div>
+  );
+}
