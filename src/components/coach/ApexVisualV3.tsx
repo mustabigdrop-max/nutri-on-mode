@@ -1,0 +1,736 @@
+import { useState, useRef, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+
+// ─── PALETA APEX v3 ───────────────────────────────────────────────
+const C = {
+  void: "#04050A", deep: "#080B12", surface: "#0C1018",
+  card: "#101520", cardHi: "#141A26",
+  border: "#1C2333", borderHi: "#28344A",
+  apex: "#00E5FF", apexDim: "#00E5FF22", apexGlow: "#00E5FF44",
+  gold: "#FFB800", goldDim: "#FFB80022",
+  green: "#00E676", greenDim: "#00E67622",
+  amber: "#FFB300",
+  red: "#FF3D57", redDim: "#FF3D5722",
+  purple: "#7C4DFF", purpleDim: "#7C4DFF22",
+  pink: "#FF4081", pinkDim: "#FF408122",
+  text: "#F0F4FF", textSec: "#5A6A88", textDim: "#2A3348",
+};
+
+type Cat = { l: string; i: string; g: "M" | "F"; c: string; ideal: string; pts: string[] };
+const CATS: Record<string, Cat> = {
+  mens_physique:    { l:"Men's Physique",   i:"🏄", g:"M", c:C.apex,   ideal:"Shape atlético, cintura estreita, ombros largos, condicionamento sem estriação excessiva.", pts:["deltoide lateral","inserção lat","cintura","abdômen"] },
+  classic_physique: { l:"Classic Physique", i:"🏛", g:"M", c:C.gold,   ideal:"Golden Era — Zane, Reeves. Cintura tiny, ombros e peitoral dominantes, proporção peso/altura.", pts:["proporção peso/altura","cintura","peitoral","simetria"] },
+  bodybuilding:     { l:"Bodybuilding",     i:"💪", g:"M", c:C.red,    ideal:"Máximo tamanho + máximo condicionamento. Sem pontos fracos.", pts:["quadríceps","panturrilha","dorsal inferior","condicionamento"] },
+  bikini:           { l:"Bikini",           i:"👙", g:"F", c:C.pink,   ideal:"Glúteos centrais, cintura estreita, fitness saudável com feminilidade.", pts:["glúteos","cintura","proporção","condicionamento moderado"] },
+  wellness:         { l:"Wellness",         i:"🌸", g:"F", c:C.purple, ideal:"MMII dominantes. Glúteos e pernas em destaque. Contraste cintura-quadril máximo.", pts:["glúteos","coxas posteriores","contraste cintura-quadril"] },
+  figure:           { l:"Figure",           i:"⚡", g:"F", c:C.green,  ideal:"Forma X perfeita. Músculo visível com feminilidade.", pts:["ombros","simetria topo-base","definição","cintura"] },
+  womens_physique:  { l:"Women's Physique", i:"🔥", g:"F", c:C.amber,  ideal:"Máximo desenvolvimento mantendo forma feminina.", pts:["separação","condicionamento","dorsais","simetria"] },
+};
+
+type Athlete = { nome: string; idade: string; peso: string; altura: string; semanas: string; fase: string };
+type Protocol = { compostos: string; objetivo: string; semana: string; duracao: string; suporte: string; faseCorpo: string; pesoAtual: string; pesoPico: string };
+
+// ─── SYSTEM PROMPT MASTER ─────────────────────────────────────────
+const buildSystem = (cat: Cat, athlete: Athlete, protocol: Protocol) => `Você é o APEX Visual Intelligence v3 — o sistema de análise mais avançado para atletas de fisiculturismo enhanced e natty.
+
+Você é simultaneamente:
+▸ Juiz IFBB com 20+ anos de experiência
+▸ Coach master visual (Hany Rambod, Neil Hill, Chad Nicholls, Miloš Sarcev)
+▸ Especialista em biomecânica e correção postural (Joe Bennett, Eric Cressey)
+▸ Químico/farmacologista esportivo (William Llewellyn, Trevor Kouritzin, Dr. Michael Scally)
+▸ Nutricionista de alto rendimento integrado à farmacologia
+
+ATLETA: ${athlete.nome || "não informado"} | ${athlete.idade ? athlete.idade + " anos" : ""} | ${athlete.peso ? athlete.peso + "kg" : ""} | ${athlete.altura ? athlete.altura + "cm" : ""}
+CATEGORIA: ${cat.l} | ${cat.g === "M" ? "Masculino" : "Feminino"}
+IDEAL: ${cat.ideal}
+PONTOS CRÍTICOS: ${cat.pts.join(" | ")}
+SEMANAS PARA O SHOW: ${athlete.semanas || "não informado"}
+FASE ATUAL: ${athlete.fase || "não informada"}
+
+${protocol.compostos ? `
+━━━ PROTOCOLO FARMACOLÓGICO ATIVO ━━━
+Compostos: ${protocol.compostos}
+Objetivo do ciclo: ${protocol.objetivo || "não informado"}
+Semana do ciclo: ${protocol.semana || "não informada"} de ${protocol.duracao || "?"} semanas
+Suporte: ${protocol.suporte || "não informado"}
+Fase corporal: ${protocol.faseCorpo || "não informada"} ${protocol.pesoAtual && protocol.pesoPico ? `(${protocol.pesoAtual}kg atual / ${protocol.pesoPico}kg pico bulk)` : ""}
+
+INSTRUÇÃO CRÍTICA: toda análise contextualizada pelo protocolo. Cada seção considera como os compostos afetam shape, velocidade de resposta, retenção, dureza.
+` : "Nenhum protocolo informado — análise como atleta natural."}
+
+━━━ PROTOCOLO DE ANÁLISE APEX v3 ━━━
+Tom: técnico, direto, sem alarmismo. Cada prescrição com mecanismo fisiológico.
+
+Use EXATAMENTE estes headers:
+
+## IMPACTO_VISUAL
+[O que as fotos comunicam em 3 segundos como juiz IFBB]
+
+## SCORES_SEGMENTOS
+[SEGMENTO: X/10 — diagnóstico em 1 linha. Para cada grupo muscular visível.]
+
+## COMPOSICAO_CORPORAL
+BF_ESTIMADO: XX%
+BF_META: XX%
+MASSA_MAGRA_EST: XXkg
+SEMANAS_META: X
+VEREDICTO_FASE: [continuar_bulk | reduzir_bulk | iniciar_cutting | aprofundar_cutting | manter | peak_week]
+[Análise detalhada. ${protocol.compostos ? "Diferenciar gordura real vs retenção dos compostos." : ""}]
+
+## DECISAO_MANOBRA
+MANOBRA_PRINCIPAL: [nome]
+URGENCIA: [imediata | proxima_semana | proximas_2_semanas | sem_pressa]
+[Manobras A/B/C/D com ajustes calóricos, cardio, transição de protocolo.]
+
+## POSTURA_DESVIOS
+[Desvios visíveis: dominante vs inibido + impacto no palco]
+
+## CORRECOES_POSTURAIS
+[Para cada desvio: a) Alongamento b) Ativação c) Cue de palco]
+
+## PONTOS_FRACOS_PROTOCOLO
+[Para cada grupo fraco: diagnóstico + 3 exercícios (ativação/sobrecarga/pump) + frequência + tempo de resposta${protocol.compostos ? " + impacto dos compostos" : ""}]
+
+## FARMACOLOGIA_INTEGRADA
+${protocol.compostos ? `[COMPOSTOS_ATIVOS, SINERGIA_STACK, O_QUE_ESTA_FAZENDO, O_QUE_NAO_RESOLVE, PROXIMO_NIVEL, FITOTERÁPICOS_PROBIÓTICOS, TDEE_FATOR: X.XX, PROTEINA_IDEAL: Xg/kg, CHO_ESTRATEGIA, GESTAO_E2, ALERTA_CARDIOVASCULAR, RECUPERACAO_EIXO, EXAMES_PRIORITARIOS]` : "[Sem protocolo — análise natty]"}
+
+## NUTRICAO_FASE
+[Calorias, macros, timing, alimentos estratégicos para a fase]
+
+## GANHA_PONTOS
+[Máx 4 — o que vai pontuar]
+
+## PERDE_PONTOS
+[Máx 4 — o que vai perder pontos]
+
+## PLANO_ATAQUE
+PRIORIDADE_1: [grupo + prescrição]
+PRIORIDADE_2: [grupo + prescrição]
+PRIORIDADE_3: [grupo + prescrição]
+
+## POSING_CORRETIVO
+[Cues por pose mandatória — compensar fraquezas + vender pontos fortes]
+
+## VEREDICTO
+[3 frases — o que falta para top 5. Resolvível agora vs requer tempo.]`;
+
+// ─── HELPERS ─────────────────────────────────────────────────────
+const toB64 = (f: File): Promise<string> => new Promise((res, rej) => {
+  const r = new FileReader();
+  r.onload = () => res((r.result as string).split(",")[1]);
+  r.onerror = rej;
+  r.readAsDataURL(f);
+});
+
+const secParse = (t: string, k: string, n: string | null) => {
+  const p = n ? new RegExp(`##\\s*${k}([\\s\\S]*?)##\\s*${n}`, "i") : new RegExp(`##\\s*${k}([\\s\\S]*)`, "i");
+  return t.match(p)?.[1]?.trim() || "";
+};
+
+const parseSegs = (t: string) => {
+  const b = secParse(t, "SCORES_SEGMENTOS", "COMPOSICAO_CORPORAL");
+  return b.split("\n").map(l => l.trim()).filter(l => l.includes(":") && l.includes("/10")).map(l => {
+    const [a, b2] = l.split(":");
+    const s = parseInt(b2?.match(/(\d+)\/10/)?.[1] || "0");
+    const d = b2?.replace(/\d+\/10/, "").replace(/^[\s—\-]+/, "").trim() || "";
+    return { label: a.trim(), score: s, diag: d };
+  }).filter(s => s.label && s.score > 0);
+};
+
+const parseMeta = (t: string) => ({
+  bfEst: t.match(/BF_ESTIMADO:\s*([\d.]+)/i)?.[1],
+  bfMeta: t.match(/BF_META:\s*([\d.]+)/i)?.[1],
+  massaMagra: t.match(/MASSA_MAGRA_EST:\s*([\d.]+)/i)?.[1],
+  semMeta: t.match(/SEMANAS_META:\s*(\d+)/i)?.[1],
+  veredictoFase: t.match(/VEREDICTO_FASE:\s*([^\n]+)/i)?.[1]?.trim(),
+  manobraPrincipal: t.match(/MANOBRA_PRINCIPAL:\s*([^\n]+)/i)?.[1]?.trim(),
+  urgencia: t.match(/URGENCIA:\s*([^\n]+)/i)?.[1]?.trim(),
+  tdeeFator: t.match(/TDEE_FATOR:\s*([\d.]+)/i)?.[1],
+  proteinaIdeal: t.match(/PROTEINA_IDEAL:\s*([^\n]+)/i)?.[1],
+  gestaoE2: t.match(/GESTAO_E2:\s*([^\n]+)/i)?.[1],
+  alertaCardio: t.match(/ALERTA_CARDIOVASCULAR:\s*([^\n]+)/i)?.[1],
+  p1: t.match(/PRIORIDADE_1:\s*([^\n]+)/i)?.[1],
+  p2: t.match(/PRIORIDADE_2:\s*([^\n]+)/i)?.[1],
+  p3: t.match(/PRIORIDADE_3:\s*([^\n]+)/i)?.[1],
+});
+
+const scCol = (v: number) => v >= 8 ? C.green : v >= 6 ? C.amber : v >= 4 ? "#FF8C00" : C.red;
+const scLbl = (v: number) => v >= 8 ? "Elite" : v >= 6 ? "Bom" : v >= 4 ? "Regular" : "Crítico";
+
+const FASE_CONFIG: Record<string, { label: string; col: string; icon: string; desc: string }> = {
+  continuar_bulk:     { label:"Continuar Bulk",    col:C.green, icon:"📈", desc:"Shape evoluindo bem. Manter protocolo atual." },
+  reduzir_bulk:       { label:"Reduzir Bulk",      col:C.amber, icon:"⚠️", desc:"BF acumulando. Reduzir surplus e adicionar cardio." },
+  iniciar_cutting:    { label:"Iniciar Cutting",   col:C.red,   icon:"🔥", desc:"Hora de virar. Ajustar protocolo e dieta." },
+  aprofundar_cutting: { label:"Aprofundar Cutting",col:C.red,   icon:"💧", desc:"Intensificar déficit. Cardio obrigatório." },
+  manter:             { label:"Manutenção",        col:C.apex,  icon:"⚖️", desc:"Shape estável. Refinar sem perder massa." },
+  peak_week:          { label:"Peak Week",         col:C.gold,  icon:"🏆", desc:"Protocolo de palco ativado." },
+};
+
+const URGENCIA_CONFIG: Record<string, { col: string; label: string }> = {
+  imediata:           { col:C.red,   label:"Ação imediata" },
+  proxima_semana:     { col:C.amber, label:"Esta semana" },
+  proximas_2_semanas: { col:C.apex,  label:"Nas próximas 2 semanas" },
+  sem_pressa:         { col:C.green, label:"Sem urgência" },
+};
+
+const inputStyle: React.CSSProperties = { width:"100%", padding:"10px 12px", background:C.card, border:`1px solid ${C.border}`, borderRadius:10, color:C.text, fontSize:13, outline:"none", boxSizing:"border-box", fontFamily:"inherit", transition:"border .2s" };
+const selectStyle: React.CSSProperties = { ...inputStyle, cursor:"pointer" };
+
+// ─── DROPZONE ────────────────────────────────────────────────────
+function DropZone({ angle, file, onFile, onClear }: { angle: string; file: File | null; onFile: (f: File) => void; onClear: () => void }) {
+  const ref = useRef<HTMLInputElement>(null);
+  const [drag, setDrag] = useState(false);
+  const prev = file ? URL.createObjectURL(file) : null;
+  return (
+    <div>
+      <div style={{ fontSize:10, color:C.textSec, marginBottom:6, letterSpacing:".1em", textTransform:"uppercase" }}>{angle}</div>
+      <div
+        onClick={() => !file && ref.current?.click()}
+        onDragOver={e => { e.preventDefault(); setDrag(true); }}
+        onDragLeave={() => setDrag(false)}
+        onDrop={e => { e.preventDefault(); setDrag(false); const f = e.dataTransfer.files[0]; if (f?.type.startsWith("image/")) onFile(f); }}
+        style={{ height:160, borderRadius:12, position:"relative", overflow:"hidden", border:`1.5px dashed ${drag?C.apex:file?C.green:C.border}`, background:file?"transparent":C.card, cursor:file?"default":"pointer", transition:"all .2s", display:"flex", alignItems:"center", justifyContent:"center" }}>
+        {file && prev ? (
+          <>
+            <img src={prev} alt={angle} style={{ width:"100%", height:"100%", objectFit:"cover" }} />
+            <button onClick={e => { e.stopPropagation(); onClear(); }} style={{ position:"absolute", top:6, right:6, width:24, height:24, borderRadius:"50%", background:"#000000CC", border:"none", cursor:"pointer", color:"#fff", fontSize:12 }}>✕</button>
+            <div style={{ position:"absolute", bottom:0, left:0, right:0, padding:"4px 8px", background:"linear-gradient(transparent,#000C)", color:C.green, fontSize:9, fontWeight:600 }}>✓ foto carregada</div>
+          </>
+        ) : (
+          <div style={{ textAlign:"center", color:C.textSec }}>
+            <div style={{ fontSize:24, marginBottom:4 }}>◈</div>
+            <div style={{ fontSize:10, letterSpacing:".1em" }}>+ FOTO</div>
+          </div>
+        )}
+        <input ref={ref} type="file" accept="image/*" hidden onChange={e => { const f = e.target.files?.[0]; if (f) onFile(f); }} />
+      </div>
+    </div>
+  );
+}
+
+// ─── SCORE BAR ───────────────────────────────────────────────────
+function ScoreBar({ label, score, diag, hasFarma }: { label: string; score: number; diag: string; hasFarma: boolean }) {
+  const col = scCol(score);
+  return (
+    <div style={{ marginBottom:12 }}>
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:4 }}>
+        <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+          <span style={{ fontSize:12, color:C.text, fontWeight:600 }}>{label}</span>
+          {hasFarma && score < 6 && <span style={{ fontSize:8, padding:"2px 6px", borderRadius:4, background:C.purpleDim, color:C.purple, fontWeight:700, letterSpacing:".05em" }}>APEX+FARMA</span>}
+        </div>
+        <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+          <span style={{ fontSize:9, color:col, fontWeight:700, textTransform:"uppercase", letterSpacing:".05em" }}>{scLbl(score)}</span>
+          <span style={{ fontSize:13, color:col, fontWeight:800 }}>{score}/10</span>
+        </div>
+      </div>
+      <div style={{ height:6, background:C.card, borderRadius:3, overflow:"hidden" }}>
+        <div style={{ height:"100%", width:`${score*10}%`, background:col, transition:"width .6s" }} />
+      </div>
+      {diag && <div style={{ fontSize:11, color:C.textSec, marginTop:4, fontStyle:"italic" }}>{diag}</div>}
+    </div>
+  );
+}
+
+// ─── MANEUVER CARD ───────────────────────────────────────────────
+function ManeuverCard({ manobra, urgencia }: { manobra: string; urgencia: string }) {
+  const fc = FASE_CONFIG[manobra] || FASE_CONFIG.manter;
+  const uc = URGENCIA_CONFIG[urgencia] || URGENCIA_CONFIG.sem_pressa;
+  return (
+    <div style={{ background:`linear-gradient(135deg,${fc.col}22,${fc.col}05)`, border:`1.5px solid ${fc.col}55`, borderRadius:14, padding:"14px 18px", marginBottom:16 }}>
+      <div style={{ display:"flex", alignItems:"center", gap:14, flexWrap:"wrap" }}>
+        <div style={{ fontSize:32 }}>{fc.icon}</div>
+        <div style={{ flex:1, minWidth:180 }}>
+          <div style={{ fontSize:14, fontWeight:800, color:fc.col, letterSpacing:".05em" }}>{fc.label}</div>
+          <div style={{ fontSize:11, color:C.textSec, marginTop:2 }}>{fc.desc}</div>
+        </div>
+        <div style={{ padding:"6px 12px", borderRadius:8, background:uc.col+"22", border:`1px solid ${uc.col}55`, fontSize:10, color:uc.col, fontWeight:700, letterSpacing:".05em", textTransform:"uppercase" }}>⚡ {uc.label}</div>
+      </div>
+    </div>
+  );
+}
+
+// ─── PANEL ───────────────────────────────────────────────────────
+function Panel({ icon, title, children, accent = C.apex, defaultOpen = true }: { icon: string; title: string; children: React.ReactNode; accent?: string; defaultOpen?: boolean }) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <div style={{ background:C.card, border:`1px solid ${C.border}`, borderRadius:12, marginBottom:12, overflow:"hidden" }}>
+      <button onClick={() => setOpen(o => !o)} style={{ width:"100%", background:"none", border:"none", cursor:"pointer", padding:"13px 18px", display:"flex", alignItems:"center", justifyContent:"space-between", fontFamily:"inherit" }}>
+        <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+          <span style={{ fontSize:16 }}>{icon}</span>
+          <span style={{ fontSize:11, color:accent, fontWeight:700, letterSpacing:".08em", textTransform:"uppercase" }}>{title}</span>
+        </div>
+        <span style={{ color:accent, transform:open?"rotate(0)":"rotate(-90deg)", transition:"transform .2s" }}>▾</span>
+      </button>
+      {open && (
+        <div style={{ padding:"0 18px 16px" }}>
+          <div style={{ height:1, background:C.border, marginBottom:14 }} />
+          {children}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── LOADING ─────────────────────────────────────────────────────
+function Loading({ catColor }: { catColor: string }) {
+  const steps = ["Carregando protocolo APEX v3...", "Analisando estrutura corporal...", "Lendo composição corporal...", "Detectando desvios posturais...", "Avaliando pontos fracos...", "Analisando protocolo farmacológico...", "Calculando manobras disponíveis...", "Prescrevendo exercícios corretivos...", "Consultando estratégias de elite...", "Gerando veredicto master..."];
+  const [step, setStep] = useState(0);
+  useEffect(() => { const t = setInterval(() => setStep(s => Math.min(s+1, steps.length-1)), 900); return () => clearInterval(t); }, []);
+  return (
+    <div style={{ padding:"40px 20px", textAlign:"center" }}>
+      <div style={{ width:80, height:80, margin:"0 auto 20px", position:"relative" }}>
+        <div style={{ position:"absolute", inset:0, border:`3px solid ${C.border}`, borderTopColor:catColor, borderRadius:"50%", animation:"spin 1s linear infinite" }} />
+        <div style={{ position:"absolute", inset:0, display:"flex", alignItems:"center", justifyContent:"center", fontSize:28 }}>🔬</div>
+      </div>
+      <div style={{ fontSize:14, fontWeight:800, color:catColor, letterSpacing:".1em", marginBottom:6 }}>APEX v3 ANALISANDO</div>
+      <div style={{ fontSize:11, color:C.textSec, marginBottom:24 }}>Visual + Postura + Farmacologia + Manobras de Elite</div>
+      <div style={{ maxWidth:380, margin:"0 auto", textAlign:"left" }}>
+        {steps.map((s, i) => (
+          <div key={i} style={{ display:"flex", alignItems:"center", gap:8, padding:"4px 0", fontSize:11, color:i<=step?C.text:C.textDim, transition:"color .3s" }}>
+            <span style={{ color:i<step?C.green:i===step?catColor:C.textDim }}>{i<step?"✓":i===step?"●":"○"}</span>
+            {s}
+          </div>
+        ))}
+      </div>
+      <style>{`@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}`}</style>
+    </div>
+  );
+}
+
+// ─── PILL ────────────────────────────────────────────────────────
+function Pill({ icon, label, value, color }: { icon: string; label: string; value: string; color: string }) {
+  return (
+    <div style={{ display:"flex", alignItems:"center", gap:8, padding:"8px 12px", background:color+"15", border:`1px solid ${color}44`, borderRadius:10 }}>
+      <span style={{ fontSize:14 }}>{icon}</span>
+      <div>
+        <div style={{ fontSize:13, color, fontWeight:700, lineHeight:1 }}>{value}</div>
+        <div style={{ fontSize:9, color:C.textSec, marginTop:2, letterSpacing:".05em", textTransform:"uppercase" }}>{label}</div>
+      </div>
+    </div>
+  );
+}
+
+// ─── INPUT FIELD ─────────────────────────────────────────────────
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <div style={{ fontSize:10, color:C.textSec, marginBottom:5, letterSpacing:".08em", textTransform:"uppercase" }}>{label}</div>
+      {children}
+    </div>
+  );
+}
+
+// ─── MAIN COMPONENT ──────────────────────────────────────────────
+export default function ApexVisualV3() {
+  const [catKey, setCatKey] = useState("mens_physique");
+  const [fotoF, setFotoF] = useState<File | null>(null);
+  const [fotoC, setFotoC] = useState<File | null>(null);
+  const [fotoL, setFotoL] = useState<File | null>(null);
+
+  const [nome, setNome] = useState("");
+  const [idade, setIdade] = useState("");
+  const [peso, setPeso] = useState("");
+  const [altura, setAltura] = useState("");
+  const [semanas, setSemanas] = useState("8");
+  const [fase, setFase] = useState("cutting");
+  const [obs, setObs] = useState("");
+
+  const [compostos, setCompostos] = useState("");
+  const [objetivoCiclo, setObjetivoCiclo] = useState("cutting");
+  const [semanaCiclo, setSemanaCiclo] = useState("");
+  const [duracaoCiclo, setDuracaoCiclo] = useState("");
+  const [suporte, setSuporte] = useState("");
+  const [faseCorpo, setFaseCorpo] = useState("bulk");
+  const [pesoAtual, setPesoAtual] = useState("");
+  const [pesoPico, setPesoPico] = useState("");
+
+  const [loading, setLoading] = useState(false);
+  const [raw, setRaw] = useState("");
+  const [streaming, setStreaming] = useState(false);
+  const [done, setDone] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState("overview");
+
+  const cat = CATS[catKey];
+  const temFoto = !!(fotoF || fotoC || fotoL);
+  const temProtocolo = compostos.trim().length > 0;
+
+  const meta = parseMeta(raw);
+  const segs = parseSegs(raw);
+
+  const S = {
+    impacto:    secParse(raw, "IMPACTO_VISUAL",          "SCORES_SEGMENTOS"),
+    composicao: secParse(raw, "COMPOSICAO_CORPORAL",     "DECISAO_MANOBRA"),
+    manobra:    secParse(raw, "DECISAO_MANOBRA",         "POSTURA_DESVIOS"),
+    postura:    secParse(raw, "POSTURA_DESVIOS",         "CORRECOES_POSTURAIS"),
+    correcoes:  secParse(raw, "CORRECOES_POSTURAIS",     "PONTOS_FRACOS_PROTOCOLO"),
+    fracos:     secParse(raw, "PONTOS_FRACOS_PROTOCOLO", "FARMACOLOGIA_INTEGRADA"),
+    farma:      secParse(raw, "FARMACOLOGIA_INTEGRADA",  "NUTRICAO_FASE"),
+    nutricao:   secParse(raw, "NUTRICAO_FASE",           "GANHA_PONTOS"),
+    ganha:      secParse(raw, "GANHA_PONTOS",            "PERDE_PONTOS"),
+    perde:      secParse(raw, "PERDE_PONTOS",            "PLANO_ATAQUE"),
+    plano:      secParse(raw, "PLANO_ATAQUE",            "POSING_CORRETIVO"),
+    posing:     secParse(raw, "POSING_CORRETIVO",        "VEREDICTO"),
+    veredicto:  secParse(raw, "VEREDICTO",               null),
+  };
+
+  const RESULT_TABS = [
+    { id:"overview",     label:"⚡ Overview",     show: segs.length > 0 || !!S.impacto },
+    { id:"manobra",      label:"🎯 Manobra",      show: !!meta.manobraPrincipal || !!S.manobra },
+    { id:"postura",      label:"🦴 Postura",      show: !!S.postura },
+    { id:"correcoes",    label:"🔧 Correções",    show: !!S.correcoes },
+    { id:"protocolo",    label:"⚡ Protocolo",    show: !!S.fracos },
+    { id:"farmacologia", label:"💉 Farmacologia", show: temProtocolo && !!S.farma },
+    { id:"palco",        label:"🎭 Palco",        show: !!S.ganha || !!S.posing },
+    { id:"plano",        label:"🗺 Plano",        show: !!meta.p1 || !!S.plano || !!S.veredicto },
+  ].filter(t => t.show || !done);
+
+  const analisar = async () => {
+    if (!temFoto) return;
+    setLoading(true); setRaw(""); setDone(false); setError(null); setStreaming(false);
+    try {
+      const fotos: { label: string; mime: string; data: string }[] = [];
+      for (const [ang, file] of [["Frente", fotoF], ["Costas", fotoC], ["Lateral", fotoL]] as const) {
+        if (!file) continue;
+        fotos.push({ label: ang, mime: file.type || "image/jpeg", data: await toB64(file) });
+      }
+
+      const athlete: Athlete = { nome, idade, peso, altura, semanas, fase };
+      const protocol: Protocol = { compostos, objetivo: objetivoCiclo, semana: semanaCiclo, duracao: duracaoCiclo, suporte, faseCorpo, pesoAtual, pesoPico };
+
+      const { data, error: fnErr } = await supabase.functions.invoke("apex-visual-analyze", {
+        body: {
+          fotos,
+          contexto: `Fase corporal declarada: ${fase}. Observação do coach: ${obs || "nenhuma"}. Gere análise APEX v3 completa.`,
+          system: buildSystem(cat, athlete, protocol),
+        },
+      });
+      if (fnErr) throw fnErr;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      const text: string = (data as any)?.text || "";
+
+      setStreaming(true); setLoading(false);
+      let idx = 0;
+      const iv = setInterval(() => {
+        idx = Math.min(idx + 24, text.length);
+        setRaw(text.slice(0, idx));
+        if (idx >= text.length) { clearInterval(iv); setStreaming(false); setDone(true); setActiveTab("overview"); }
+      }, 16);
+    } catch (e: any) {
+      setError(e?.message || "Erro na análise.");
+      setLoading(false);
+    }
+  };
+
+  const reset = () => { setRaw(""); setDone(false); setError(null); setFotoF(null); setFotoC(null); setFotoL(null); setStreaming(false); };
+
+  return (
+    <div style={{ minHeight:"100vh", background:`radial-gradient(ellipse at top,${C.deep},${C.void})`, color:C.text, fontFamily:"'Space Grotesk',-apple-system,sans-serif", padding:"20px 16px" }}>
+      {/* HEADER */}
+      <div style={{ maxWidth:1100, margin:"0 auto 20px" }}>
+        <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", flexWrap:"wrap", gap:12 }}>
+          <div style={{ display:"flex", alignItems:"center", gap:14 }}>
+            <div style={{ fontSize:36 }}>{cat.i}</div>
+            <div>
+              <div style={{ display:"flex", gap:6, alignItems:"baseline" }}>
+                <span style={{ fontSize:22, fontWeight:900, color:C.text, letterSpacing:".05em" }}>APEX</span>
+                <span style={{ fontSize:22, fontWeight:300, color:cat.c, letterSpacing:".05em" }}>VISUAL</span>
+                <span style={{ fontSize:11, fontWeight:700, color:cat.c, padding:"2px 6px", border:`1px solid ${cat.c}55`, borderRadius:4, letterSpacing:".1em" }}>v3</span>
+              </div>
+              <div style={{ fontSize:9, color:C.textSec, letterSpacing:".15em", marginTop:2 }}>VISUAL · POSTURA · FARMACOLOGIA · MANOBRAS · {cat.l.toUpperCase()}</div>
+            </div>
+          </div>
+          {(done || streaming) && (
+            <div style={{ display:"flex", gap:8 }}>
+              {streaming && <div style={{ padding:"6px 12px", borderRadius:8, background:cat.c+"22", border:`1px solid ${cat.c}55`, fontSize:10, color:cat.c, fontWeight:700, letterSpacing:".1em" }}>● ANALISANDO</div>}
+              {done && <button onClick={reset} style={{ padding:"6px 14px", borderRadius:8, background:C.card, border:`1px solid ${C.border}`, color:C.text, fontSize:11, cursor:"pointer", fontFamily:"inherit", letterSpacing:".05em" }}>+ NOVA ANÁLISE</button>}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div style={{ maxWidth:1100, margin:"0 auto" }}>
+        {/* FORMULÁRIO */}
+        {!done && !loading && !streaming && (
+          <>
+            {/* CATEGORIAS */}
+            <div style={{ marginBottom:20 }}>
+              <div style={{ fontSize:10, color:C.textSec, marginBottom:8, letterSpacing:".1em", textTransform:"uppercase" }}>Categoria IFBB</div>
+              <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
+                {Object.entries(CATS).map(([k, c]) => (
+                  <button key={k} onClick={() => setCatKey(k)} style={{ padding:"8px 14px", borderRadius:10, cursor:"pointer", fontFamily:"inherit", background:catKey===k?c.c+"22":C.card, border:`1.5px solid ${catKey===k?c.c:C.border}`, color:catKey===k?c.c:C.textSec, fontSize:11, fontWeight:catKey===k?700:400, display:"flex", alignItems:"center", gap:6, transition:"all .2s", letterSpacing:".02em" }}>
+                    <span>{c.i}</span><span>{c.l}</span><span style={{ opacity:.6 }}>{c.g==="M"?"♂":"♀"}</span>
+                  </button>
+                ))}
+              </div>
+              <div style={{ marginTop:10, padding:"10px 14px", background:cat.c+"10", border:`1px solid ${cat.c}33`, borderRadius:10 }}>
+                <div style={{ fontSize:9, color:cat.c, fontWeight:700, letterSpacing:".1em", textTransform:"uppercase", marginBottom:4 }}>Ideal da categoria</div>
+                <div style={{ fontSize:12, color:C.text, lineHeight:1.5 }}>{cat.ideal}</div>
+                <div style={{ display:"flex", gap:6, flexWrap:"wrap", marginTop:8 }}>
+                  {cat.pts.map(p => <span key={p} style={{ fontSize:9, padding:"3px 8px", borderRadius:4, background:C.card, color:C.textSec, letterSpacing:".05em" }}>{p}</span>)}
+                </div>
+              </div>
+            </div>
+
+            {/* DADOS DO ATLETA */}
+            <div style={{ marginBottom:20 }}>
+              <div style={{ fontSize:10, color:C.textSec, marginBottom:8, letterSpacing:".1em", textTransform:"uppercase" }}>Dados do atleta</div>
+              <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))", gap:10 }}>
+                <Field label="Nome"><input style={inputStyle} value={nome} onChange={e=>setNome(e.target.value)} placeholder="Nome do atleta"/></Field>
+                <Field label="Idade"><input style={inputStyle} type="number" value={idade} onChange={e=>setIdade(e.target.value)} placeholder="30"/></Field>
+                <Field label="Peso (kg)"><input style={inputStyle} type="number" value={peso} onChange={e=>setPeso(e.target.value)} placeholder="90"/></Field>
+                <Field label="Altura (cm)"><input style={inputStyle} type="number" value={altura} onChange={e=>setAltura(e.target.value)} placeholder="178"/></Field>
+                <Field label="Semanas show"><input style={inputStyle} type="number" value={semanas} onChange={e=>setSemanas(e.target.value)} placeholder="8"/></Field>
+                <Field label="Fase atual">
+                  <select style={selectStyle} value={fase} onChange={e=>setFase(e.target.value)}>
+                    <option value="bulk">Bulk</option>
+                    <option value="cutting">Cutting</option>
+                    <option value="recomp">Recomposição</option>
+                    <option value="manutencao">Manutenção</option>
+                    <option value="peak">Peak Week</option>
+                  </select>
+                </Field>
+              </div>
+            </div>
+
+            {/* FOTOS */}
+            <div style={{ marginBottom:20 }}>
+              <div style={{ fontSize:10, color:C.textSec, marginBottom:8, letterSpacing:".1em", textTransform:"uppercase" }}>Fotos — mín. 1 obrigatória · mais ângulos = análise mais precisa</div>
+              <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))", gap:12 }}>
+                <DropZone angle="Frente"  file={fotoF} onFile={setFotoF} onClear={() => setFotoF(null)} />
+                <DropZone angle="Costas"  file={fotoC} onFile={setFotoC} onClear={() => setFotoC(null)} />
+                <DropZone angle="Lateral" file={fotoL} onFile={setFotoL} onClear={() => setFotoL(null)} />
+              </div>
+            </div>
+
+            {/* PROTOCOLO FARMACOLÓGICO */}
+            <div style={{ marginBottom:20, padding:16, background:temProtocolo?C.purpleDim:C.card, border:`1px solid ${temProtocolo?C.purple+"55":C.border}`, borderRadius:12, transition:"all .2s" }}>
+              <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:12, flexWrap:"wrap" }}>
+                <span style={{ fontSize:20 }}>💉</span>
+                <div style={{ flex:1, minWidth:160 }}>
+                  <div style={{ fontSize:12, color:temProtocolo?C.purple:C.text, fontWeight:700, letterSpacing:".05em" }}>Protocolo farmacológico</div>
+                  <div style={{ fontSize:10, color:C.textSec, marginTop:2 }}>Opcional — quando preenchido ativa a análise Dr. VERTEX integrada</div>
+                </div>
+                {temProtocolo && <span style={{ fontSize:9, padding:"3px 8px", borderRadius:4, background:C.purple+"33", color:C.purple, fontWeight:700, letterSpacing:".05em" }}>DR. VERTEX ATIVO</span>}
+              </div>
+              <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+                <Field label="Compostos em uso">
+                  <textarea value={compostos} onChange={e=>setCompostos(e.target.value)} rows={2} placeholder="Ex: Testosterona Enantato 300mg/sem, Trembolona Acetato 200mg/sem, Masteron 200mg/sem, HGH 2UI/dia, BPC-157 500mcg/dia..." style={{ ...inputStyle, resize:"vertical", lineHeight:1.6 }} />
+                </Field>
+                {temProtocolo && (
+                  <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
+                    <div style={{ flex:1, minWidth:110 }}>
+                      <Field label="Objetivo do ciclo">
+                        <select style={selectStyle} value={objetivoCiclo} onChange={e=>setObjetivoCiclo(e.target.value)}>
+                          <option value="cutting">Cutting</option>
+                          <option value="bulk">Bulk limpo</option>
+                          <option value="recomp">Recomposição</option>
+                          <option value="peak">Peak Week</option>
+                          <option value="manutencao">Manutenção</option>
+                        </select>
+                      </Field>
+                    </div>
+                    <div style={{ flex:1, minWidth:80 }}><Field label="Semana do ciclo"><input style={inputStyle} type="number" value={semanaCiclo} onChange={e=>setSemanaCiclo(e.target.value)} placeholder="6"/></Field></div>
+                    <div style={{ flex:1, minWidth:80 }}><Field label="Duração total"><input style={inputStyle} type="number" value={duracaoCiclo} onChange={e=>setDuracaoCiclo(e.target.value)} placeholder="16 sem"/></Field></div>
+                    <div style={{ flex:1, minWidth:110 }}>
+                      <Field label="Fase corporal">
+                        <select style={selectStyle} value={faseCorpo} onChange={e=>setFaseCorpo(e.target.value)}>
+                          <option value="bulk">Bulk ativo</option>
+                          <option value="bulk_fim">Fim do bulk</option>
+                          <option value="cutting">Cutting</option>
+                          <option value="transicao">Transição</option>
+                          <option value="peak">Peak Week</option>
+                        </select>
+                      </Field>
+                    </div>
+                    {(faseCorpo === "bulk" || faseCorpo === "bulk_fim") && (
+                      <>
+                        <div style={{ flex:1, minWidth:80 }}><Field label="Peso atual (kg)"><input style={inputStyle} type="number" value={pesoAtual} onChange={e=>setPesoAtual(e.target.value)} placeholder="98"/></Field></div>
+                        <div style={{ flex:1, minWidth:80 }}><Field label="Peso pico bulk"><input style={inputStyle} type="number" value={pesoPico} onChange={e=>setPesoPico(e.target.value)} placeholder="Meta kg"/></Field></div>
+                      </>
+                    )}
+                    <div style={{ flex:2, minWidth:180 }}><Field label="Suporte em uso"><input style={inputStyle} value={suporte} onChange={e=>setSuporte(e.target.value)} placeholder="Ex: Anastrozol 0.5mg EOD, TUDCA 500mg, NAC 600mg 2x, Ômega-3 4g"/></Field></div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* OBSERVAÇÃO */}
+            <div style={{ marginBottom:20 }}>
+              <Field label="Observação do coach">
+                <textarea value={obs} onChange={e=>setObs(e.target.value)} rows={2} placeholder="Ex: atleta passou do ponto no bulk, ombro esquerdo caindo, insônia com tren, sensível à aromatização..." style={{ ...inputStyle, resize:"vertical", lineHeight:1.6 }} />
+              </Field>
+            </div>
+
+            <button onClick={analisar} disabled={!temFoto} style={{ width:"100%", padding:"18px 24px", background:temFoto?`linear-gradient(135deg,${cat.c},${cat.c}88)`:C.card, border:`1.5px solid ${temFoto?cat.c:C.border}`, borderRadius:14, cursor:temFoto?"pointer":"not-allowed", fontSize:14, fontWeight:700, color:temFoto?"#000":C.textDim, letterSpacing:".06em", transition:"all .25s", boxShadow:temFoto?`0 0 40px ${cat.c}44`:"none", display:"flex", alignItems:"center", justifyContent:"center", gap:10, fontFamily:"inherit", textTransform:"uppercase" }}>
+              {temFoto ? <>{cat.i} ANALISAR COM APEX v3 {temProtocolo?"+ DR. VERTEX":""}</> : <>◈ ADICIONE AO MENOS 1 FOTO</>}
+            </button>
+
+            {error && <div style={{ marginTop:12, background:C.redDim, border:`1px solid ${C.red}44`, borderRadius:10, padding:"12px 16px", color:C.red, fontSize:12 }}>⚠ {error}</div>}
+          </>
+        )}
+
+        {loading && <Loading catColor={cat.c} />}
+
+        {(streaming || done) && (
+          <div>
+            <div style={{ background:`linear-gradient(135deg,${cat.c}18,${cat.c}05)`, border:`1.5px solid ${cat.c}44`, borderRadius:16, padding:"16px 20px", marginBottom:16, display:"flex", alignItems:"center", gap:14, flexWrap:"wrap" }}>
+              <div style={{ fontSize:28 }}>{cat.i}</div>
+              <div style={{ flex:1 }}>
+                <div style={{ fontSize:14, fontWeight:800, color:cat.c, letterSpacing:".05em" }}>APEX v3 · {cat.l.toUpperCase()}</div>
+                <div style={{ fontSize:11, color:C.textSec, marginTop:2 }}>
+                  {nome||"Atleta"} {idade?`· ${idade} anos`:""} {peso?`· ${peso}kg`:""} · {semanas} semanas para o show
+                  {temProtocolo && <span style={{ color:C.purple, fontWeight:700 }}> · Dr. VERTEX ativo</span>}
+                </div>
+              </div>
+            </div>
+
+            {meta.manobraPrincipal && done && (
+              <ManeuverCard manobra={(meta.manobraPrincipal||"").toLowerCase().replace(/ /g,"_")} urgencia={(meta.urgencia||"").toLowerCase().replace(/ /g,"_")} />
+            )}
+
+            {done && (meta.bfEst || meta.bfMeta || meta.tdeeFator || meta.semMeta) && (
+              <div style={{ display:"flex", gap:10, marginBottom:16, flexWrap:"wrap" }}>
+                {meta.bfEst      && <Pill icon="📊" label="BF atual"     value={meta.bfEst+"%"}        color={C.amber} />}
+                {meta.bfMeta     && <Pill icon="🎯" label="BF meta"      value={meta.bfMeta+"%"}       color={C.green} />}
+                {meta.massaMagra && <Pill icon="💪" label="Massa magra"  value={meta.massaMagra+"kg"}  color={cat.c} />}
+                {meta.semMeta    && <Pill icon="📅" label="Semanas"      value={meta.semMeta}          color={C.apex} />}
+                {meta.tdeeFator  && <Pill icon="⚡" label="TDEE fator"   value={"×"+meta.tdeeFator}    color={C.purple} />}
+              </div>
+            )}
+
+            {done && (
+              <div style={{ display:"flex", gap:0, borderBottom:`1px solid ${C.border}`, marginBottom:16, overflowX:"auto" }}>
+                {RESULT_TABS.map(t => (
+                  <button key={t.id} onClick={() => setActiveTab(t.id)} style={{ fontSize:10, padding:"9px 12px", background:"none", border:"none", cursor:"pointer", color:activeTab===t.id?cat.c:C.textSec, borderBottom:`2px solid ${activeTab===t.id?cat.c:"transparent"}`, fontWeight:activeTab===t.id?700:400, whiteSpace:"nowrap", transition:"all .15s", fontFamily:"inherit", letterSpacing:".03em" }}>
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            <div>
+              {(!done || activeTab === "overview") && (
+                <div style={{ display: done && activeTab !== "overview" ? "none" : "block" }}>
+                  {segs.length > 0 && (
+                    <Panel icon="📊" title="SCORES POR SEGMENTO" accent={cat.c}>
+                      {segs.map(s => <ScoreBar key={s.label} label={s.label} score={s.score} diag={s.diag} hasFarma={temProtocolo} />)}
+                    </Panel>
+                  )}
+                  {S.impacto && (
+                    <Panel icon="👁" title="IMPACTO VISUAL" accent={C.apex} defaultOpen={false}>
+                      <div style={{ fontSize:13, color:C.textSec, lineHeight:1.8, whiteSpace:"pre-wrap" }}>{S.impacto}</div>
+                    </Panel>
+                  )}
+                </div>
+              )}
+
+              {done && activeTab === "manobra" && (
+                <div>
+                  {S.composicao && (
+                    <Panel icon="⚖️" title="COMPOSIÇÃO CORPORAL" accent={C.amber}>
+                      <div style={{ fontSize:13, color:C.textSec, lineHeight:1.8, whiteSpace:"pre-wrap" }}>{S.composicao.replace(/BF_ESTIMADO:[^\n]*/i,"").replace(/BF_META:[^\n]*/i,"").replace(/MASSA_MAGRA_EST:[^\n]*/i,"").replace(/SEMANAS_META:[^\n]*/i,"").replace(/VEREDICTO_FASE:[^\n]*/i,"").trim()}</div>
+                    </Panel>
+                  )}
+                  {S.manobra && (
+                    <Panel icon="🎯" title="DECISÃO DE MANOBRA" accent={C.red}>
+                      <div style={{ fontSize:11, color:C.textSec, background:C.redDim, border:`1px solid ${C.red}33`, borderRadius:8, padding:"8px 12px", marginBottom:12 }}>Manobras disponíveis com ajuste calórico, cardio e protocolo específico.</div>
+                      <div style={{ fontSize:13, color:C.textSec, lineHeight:1.8, whiteSpace:"pre-wrap" }}>{S.manobra.replace(/MANOBRA_PRINCIPAL:[^\n]*/i,"").replace(/URGENCIA:[^\n]*/i,"").trim()}</div>
+                    </Panel>
+                  )}
+                </div>
+              )}
+
+              {done && activeTab === "postura" && S.postura && (
+                <Panel icon="🦴" title="DESVIOS POSTURAIS" accent={C.red}>
+                  <div style={{ fontSize:11, color:C.textSec, background:C.redDim, border:`1px solid ${C.red}33`, borderRadius:8, padding:"8px 12px", marginBottom:12 }}>Cada desvio afeta o visual no palco e indica desequilíbrios musculares corrigíveis.</div>
+                  <div style={{ fontSize:13, color:C.textSec, lineHeight:1.8, whiteSpace:"pre-wrap" }}>{S.postura}</div>
+                </Panel>
+              )}
+
+              {done && activeTab === "correcoes" && S.correcoes && (
+                <Panel icon="🔧" title="CORREÇÕES POSTURAIS" accent={C.apex}>
+                  <div style={{ fontSize:11, color:C.textSec, background:C.apexDim, border:`1px solid ${C.apex}33`, borderRadius:8, padding:"8px 12px", marginBottom:12 }}>Execute antes de cada sessão do grupo afetado.</div>
+                  <div style={{ fontSize:13, color:C.textSec, lineHeight:1.8, whiteSpace:"pre-wrap" }}>{S.correcoes}</div>
+                </Panel>
+              )}
+
+              {done && activeTab === "protocolo" && S.fracos && (
+                <Panel icon="⚡" title="PROTOCOLO DE EXERCÍCIOS CORRETIVOS" accent={C.amber}>
+                  <div style={{ fontSize:11, color:C.textSec, background:C.goldDim, border:`1px solid ${C.gold}33`, borderRadius:8, padding:"8px 12px", marginBottom:12 }}>Para cada ponto fraco: 3 exercícios (ativação/sobrecarga/pump), frequência e tempo de resposta.</div>
+                  <div style={{ fontSize:13, color:C.textSec, lineHeight:1.8, whiteSpace:"pre-wrap" }}>{S.fracos}</div>
+                </Panel>
+              )}
+
+              {done && activeTab === "farmacologia" && temProtocolo && (
+                <div>
+                  {(meta.tdeeFator || meta.proteinaIdeal) && (
+                    <div style={{ display:"flex", gap:10, marginBottom:12, flexWrap:"wrap" }}>
+                      {meta.tdeeFator    && <Pill icon="⚡" label="TDEE fator" value={"×"+meta.tdeeFator}  color={C.purple} />}
+                      {meta.proteinaIdeal && <Pill icon="🥩" label="Proteína"  value={meta.proteinaIdeal} color={C.green} />}
+                    </div>
+                  )}
+                  <Panel icon="💉" title="DR. VERTEX — ANÁLISE FARMACOLÓGICA INTEGRADA" accent={C.purple}>
+                    <div style={{ fontSize:11, color:C.textSec, background:C.purpleDim, border:`1px solid ${C.purple}33`, borderRadius:8, padding:"8px 12px", marginBottom:12 }}>Composto a composto · sinergias · próximo nível · fitoterápicos · gestão E2 · cardiovascular · recuperação do eixo.</div>
+                    <div style={{ fontSize:13, color:C.textSec, lineHeight:1.8, whiteSpace:"pre-wrap" }}>{S.farma}</div>
+                  </Panel>
+                  {S.nutricao && (
+                    <Panel icon="🥗" title="NUTRIÇÃO INTEGRADA AO PROTOCOLO" accent={C.green} defaultOpen={false}>
+                      <div style={{ fontSize:13, color:C.textSec, lineHeight:1.8, whiteSpace:"pre-wrap" }}>{S.nutricao}</div>
+                    </Panel>
+                  )}
+                </div>
+              )}
+
+              {done && activeTab === "palco" && (
+                <div>
+                  {S.ganha && (
+                    <Panel icon="✅" title="GANHA PONTOS" accent={C.green}>
+                      <div style={{ fontSize:13, color:C.textSec, lineHeight:1.8, whiteSpace:"pre-wrap" }}>{S.ganha}</div>
+                    </Panel>
+                  )}
+                  {S.perde && (
+                    <Panel icon="⚠️" title="PERDE PONTOS" accent={C.red}>
+                      <div style={{ fontSize:13, color:C.textSec, lineHeight:1.8, whiteSpace:"pre-wrap" }}>{S.perde}</div>
+                    </Panel>
+                  )}
+                  {S.posing && (
+                    <Panel icon="🎭" title="POSING CORRETIVO" accent={C.gold}>
+                      <div style={{ fontSize:11, color:C.textSec, background:C.goldDim, border:`1px solid ${C.gold}33`, borderRadius:8, padding:"8px 12px", marginBottom:12 }}>Cues por pose mandatória — compensar fraquezas + vender pontos fortes.</div>
+                      <div style={{ fontSize:13, color:C.textSec, lineHeight:1.8, whiteSpace:"pre-wrap" }}>{S.posing}</div>
+                    </Panel>
+                  )}
+                </div>
+              )}
+
+              {done && activeTab === "plano" && (
+                <div>
+                  {(meta.p1 || meta.p2 || meta.p3) && (
+                    <Panel icon="🗺" title="PLANO DE ATAQUE" accent={cat.c}>
+                      {[{ n:1, v:meta.p1, c:C.red },{ n:2, v:meta.p2, c:C.amber },{ n:3, v:meta.p3, c:C.green }].filter(p=>p.v).map(p => (
+                        <div key={p.n} style={{ display:"flex", gap:12, padding:"10px 12px", marginBottom:8, background:p.c+"10", border:`1px solid ${p.c}33`, borderRadius:10 }}>
+                          <div style={{ fontSize:18, fontWeight:900, color:p.c, minWidth:24 }}>P{p.n}</div>
+                          <div style={{ fontSize:12, color:C.text, lineHeight:1.6 }}>{p.v}</div>
+                        </div>
+                      ))}
+                    </Panel>
+                  )}
+                  {S.plano && (
+                    <Panel icon="📋" title="DETALHAMENTO" accent={C.apex} defaultOpen={false}>
+                      <div style={{ fontSize:13, color:C.textSec, lineHeight:1.8, whiteSpace:"pre-wrap" }}>{S.plano.replace(/PRIORIDADE_[123]:[^\n]*/gi,"").trim()}</div>
+                    </Panel>
+                  )}
+                  {S.veredicto && (
+                    <Panel icon="🏆" title="VEREDICTO MASTER" accent={C.gold}>
+                      <div style={{ fontSize:13, color:C.text, lineHeight:1.8, whiteSpace:"pre-wrap", padding:"12px 14px", background:C.goldDim, border:`1px solid ${C.gold}33`, borderRadius:10 }}>{S.veredicto}</div>
+                    </Panel>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
