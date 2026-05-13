@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import AthleteSelector, { AthleteOption } from "@/components/coach/AthleteSelector";
 import jsPDF from "jspdf";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend, BarChart, Bar, Cell } from "recharts";
+import APEXPoseAnalysisPage from "@/pages/coach/APEXPoseAnalysisPage";
 
 function EvolutionCharts({ history, cat, C }: { history: any[]; cat: any; C: any }) {
   // Order chronologically (history is desc)
