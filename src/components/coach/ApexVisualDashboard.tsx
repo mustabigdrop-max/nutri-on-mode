@@ -638,8 +638,7 @@ Suporte em uso: ${suporte || "não informado"}` : "";
   const goToTrainingOn = () => {
     if (!athlete?.id) return;
     setShowTrainingModal(false);
-    // Abre em nova aba para não fechar o APEX Visual
-    window.open(`/coach/trainingon?athlete=${athlete.id}&mode=corrective`, "_blank", "noopener,noreferrer");
+    navigate(`/coach/trainingon?athlete=${athlete.id}&mode=corrective`);
   };
 
   // ─── RENDER: LOADING ─────────────────────────────────
