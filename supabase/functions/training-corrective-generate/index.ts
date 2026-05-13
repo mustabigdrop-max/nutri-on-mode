@@ -91,10 +91,10 @@ Deno.serve(async (req: Request) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY não configurada");
 
-    const { syncData, athlete } = await req.json();
+    const { syncData, athlete, apexScores } = await req.json();
     if (!syncData) throw new Error("syncData ausente");
 
-    const system = buildSystemPrompt(syncData, athlete || {});
+    const system = buildSystemPrompt(syncData, athlete || {}, apexScores || {});
 
     const r = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
