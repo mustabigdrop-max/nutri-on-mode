@@ -143,11 +143,14 @@ export function buildVolumeReport(
     const rawActual = canons.reduce((sum, c) => sum + (actuals[c] || 0), 0);
     // arredondamento amigável (1 casa) para não exibir 7.5 como 7
     const actual = Math.round(rawActual * 10) / 10;
+    // Tolerância ampliada: ok dentro de ±25% do prescrito.
+    // Acima disso só vira "above" (vermelho) se ultrapassar +40%; entre +25% e +40% mostra amarelo (mild).
     let status: MuscleVolumeReport["status"] = "ok";
     let color = COLOR_OK;
     if (prescribed > 0) {
-      if (actual > prescribed * 1.1) { status = "above"; color = COLOR_HIGH; }
-      else if (actual < prescribed * 0.9) { status = "below"; color = COLOR_LOW; }
+      if (actual > prescribed * 1.4) { status = "above"; color = COLOR_HIGH; }
+      else if (actual > prescribed * 1.25) { status = "ok"; color = COLOR_LOW; }
+      else if (actual < prescribed * 0.75) { status = "below"; color = COLOR_LOW; }
     }
     return { muscle: mp.muscle, prescribed, actual, status, color };
   });
