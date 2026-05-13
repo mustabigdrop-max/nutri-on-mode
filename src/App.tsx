@@ -85,6 +85,7 @@ import PartnerDashboardPage from "./pages/PartnerDashboardPage";
 import PartnerBlockedPage from "./pages/PartnerBlockedPage";
 import PeptideVaultPage from "./pages/PeptideVaultPage";
 import TrainingPage from "./pages/TrainingPage";
+import AthleteTodayTrainingPage from "./pages/AthleteTodayTrainingPage";
 import TrainingSystemsPage from "./pages/TrainingSystemsPage";
 import ScienceHubPage from "./pages/ScienceHubPage";
 import BiomechanicsVaultPage from "./pages/BiomechanicsVaultPage";
