@@ -373,10 +373,19 @@ export default function CoachTrainingOnPage() {
           {/* Corrective training plan output (parsed) */}
           {correctiveTraining && (
             <Card className="border-blue-500/30 bg-blue-500/5">
-              <CardHeader>
+              <CardHeader className="flex flex-row items-center justify-between gap-3 space-y-0">
                 <CardTitle className="text-sm flex items-center gap-2 text-blue-300">
                   <Sparkles className="h-4 w-4" /> Protocolo de treino corretivo (APEX)
                 </CardTitle>
+                <Button
+                  size="sm"
+                  onClick={handleExportToTrainingOn}
+                  disabled={exportingToTrainingOn}
+                  className="bg-blue-500 hover:bg-blue-600 text-white gap-2"
+                >
+                  <Download className="h-3.5 w-3.5" />
+                  {exportingToTrainingOn ? "Exportando..." : "Exportar para TrainingON"}
+                </Button>
               </CardHeader>
               <CardContent>
                 <CorrectivePlanViewer text={correctiveTraining} apexScores={apexScores} />
