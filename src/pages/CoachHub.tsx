@@ -6,6 +6,7 @@ import {
   Camera,
   UtensilsCrossed,
   Dumbbell,
+  ScanLine,
   FlaskConical,
   FileBarChart,
   ArrowLeft,
@@ -14,10 +15,11 @@ import AthleteRoster from "@/components/coach/AthleteRoster";
 import PlanoAlimentarIA from "@/components/coach/PlanoAlimentarIA";
 import CoachApexVisualPage from "@/pages/coach/CoachApexVisualPage";
 import CoachTrainingOnPage from "@/pages/coach/CoachTrainingOnPage";
+import APEXPoseAnalysisPage from "@/pages/coach/APEXPoseAnalysisPage";
 import CoachLabExamsPage from "@/pages/coach/CoachLabExamsPage";
 import CoachReportsPage from "@/pages/coach/CoachReportsPage";
 
-type ModuleKey = "atletas" | "apex" | "plano" | "training" | "lab" | "relatorios";
+type ModuleKey = "atletas" | "apex" | "plano" | "training" | "pose" | "lab" | "relatorios";
 
 // ── Design tokens (mesmo padrão do TrainingON, paleta Coach Amber) ──
 const BG = "#03030a";
@@ -36,6 +38,7 @@ const modules: { key: ModuleKey; label: string; icon: any; desc: string }[] = [
   { key: "apex", label: "APEX Visual", icon: Camera, desc: "Análise de fotos por IA" },
   { key: "plano", label: "Plano Alimentar", icon: UtensilsCrossed, desc: "Macros e carb cycling" },
   { key: "training", label: "TrainingON", icon: Dumbbell, desc: "Sistema, fibra e volume" },
+  { key: "pose", label: "Pose AI", icon: ScanLine, desc: "Análise postural MediaPipe" },
   { key: "lab", label: "Exames Lab", icon: FlaskConical, desc: "Score metabólico e alertas" },
   { key: "relatorios", label: "Relatórios", icon: FileBarChart, desc: "Relatório semanal IA" },
 ];
@@ -55,6 +58,8 @@ const CoachHub = () => {
         return <PlanoAlimentarIA />;
       case "training":
         return <CoachTrainingOnPage />;
+      case "pose":
+        return <APEXPoseAnalysisPage />;
       case "lab":
         return <CoachLabExamsPage />;
       case "relatorios":
