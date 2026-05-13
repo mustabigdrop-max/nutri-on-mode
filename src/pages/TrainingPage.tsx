@@ -12,6 +12,7 @@ import {
   Trash2, Edit3, Users, X, Check, FileDown, RotateCcw,
   Microscope, Scan, HeartPulse, BookOpen, TrendingDown, Layers,
 } from "lucide-react";
+import { buildVolumeReport, detectGvtMismatch } from "@/lib/trainingVolume";
 import "@/styles/training-hud.css";
 import { TrainingHUDBackground } from "@/components/training/TrainingHUDBackground";
 import { exportTrainingPDF } from "@/lib/trainingPdfExport";
@@ -852,7 +853,7 @@ Português. Específico. Científico. Zero genérico.`;
 
             {/* ── Overview Tab ── */}
             {activeResultTab === "overview" && protocol?.block_overview && (
-              <BlockOverviewCard overview={protocol.block_overview} alerts={protocol.improvement_alerts} clientName={clientName} />
+              <BlockOverviewCard overview={protocol.block_overview} alerts={protocol.improvement_alerts} clientName={clientName} trainingDays={protocol.training_days} systemId={trainingSystem} />
             )}
             {activeResultTab === "overview" && !protocol?.block_overview && textResults.protocolo && (
               <TextCard content={textResults.protocolo} />
@@ -1186,7 +1187,11 @@ function PostDeloadScenario({ scenario, color, icon, index }: { scenario: any; c
 }
 
 /* ── Block Overview Card ── */
-function BlockOverviewCard({ overview, alerts, clientName }: { overview: any; alerts?: any[]; clientName: string }) {
+function BlockOverviewCard({ overview, alerts, clientName, trainingDays, systemId }: { overview: any; alerts?: any[]; clientName: string; trainingDays?: any[]; systemId?: string }) {
+  const volumeReport = trainingDays && overview.muscle_priorities
+    ? buildVolumeReport(overview.muscle_priorities, trainingDays)
+    : [];
+  const gvtWarnings = detectGvtMismatch(systemId, overview.muscle_priorities || []);
   return (
     <div className="space-y-3">
       {/* Hero */}
@@ -1219,27 +1224,61 @@ function BlockOverviewCard({ overview, alerts, clientName }: { overview: any; al
         </div>
       )}
 
-      {/* Muscle Priorities */}
+      {/* Muscle Priorities — agora com volume realizado vs prescrito */}
       {overview.muscle_priorities?.length > 0 && (
         <div className="rounded-xl p-3" style={{ background: SURFACE, border: `1px solid ${BORDER}` }}>
           <div className="flex items-center gap-2 mb-2">
             <Flame className="w-3.5 h-3.5" style={{ color: "#f97316" }} />
             <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: TEXT }}>Prioridade Muscular</span>
+            {volumeReport.length > 0 && (
+              <span className="text-[8px] font-medium ml-auto" style={{ color: TEXT_MUTED }}>realizado / prescrito</span>
+            )}
           </div>
           <div className="space-y-2">
-            {overview.muscle_priorities.map((mp: any, i: number) => (
-              <div key={i} className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full" style={{ background: mp.priority === "alta" ? "#f97316" : mp.priority === "media" ? "#fbbf24" : GREEN }} />
-                <span className="text-[11px] font-semibold flex-1" style={{ color: TEXT }}>{mp.muscle}</span>
-                <span className="text-[10px] px-2 py-0.5 rounded-full font-bold" style={{ background: "rgba(74,222,128,0.08)", color: GREEN }}>{mp.weekly_sets} séries/sem</span>
-              </div>
-            ))}
+            {overview.muscle_priorities.map((mp: any, i: number) => {
+              const rep = volumeReport.find((r) => r.muscle === mp.muscle);
+              const prescribed = Number(mp.weekly_sets) || 0;
+              const actual = rep?.actual ?? 0;
+              const color = rep?.color ?? GREEN;
+              const pct = prescribed > 0 ? Math.min(150, (actual / prescribed) * 100) : 0;
+              return (
+                <div key={i}>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full" style={{ background: mp.priority === "alta" ? "#f97316" : mp.priority === "media" ? "#fbbf24" : GREEN }} />
+                    <span className="text-[11px] font-semibold flex-1" style={{ color: TEXT }}>{mp.muscle}</span>
+                    {trainingDays ? (
+                      <span className="text-[10px] px-2 py-0.5 rounded-full font-bold tabular-nums" style={{ background: `${color}1a`, color }}>
+                        {actual}/{prescribed} sér/sem
+                      </span>
+                    ) : (
+                      <span className="text-[10px] px-2 py-0.5 rounded-full font-bold" style={{ background: "rgba(74,222,128,0.08)", color: GREEN }}>{prescribed} séries/sem</span>
+                    )}
+                  </div>
+                  {trainingDays && prescribed > 0 && (
+                    <div className="ml-4 mt-1 h-1 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.06)" }}>
+                      <div className="h-full transition-all" style={{ width: `${pct}%`, background: color }} />
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
           {overview.maintenance_muscles?.length > 0 && (
             <div className="mt-2 pt-2" style={{ borderTop: `1px solid ${BORDER}` }}>
               <span className="text-[9px] font-medium" style={{ color: TEXT_MUTED }}>Manutenção: {overview.maintenance_muscles.join(", ")}</span>
             </div>
           )}
+          {/* Alertas automáticos de volume */}
+          {volumeReport.filter((r) => r.status === "above").map((r, i) => (
+            <div key={`above-${i}`} className="mt-2 rounded-lg p-2 text-[10px]" style={{ background: "rgba(255,51,102,0.08)", border: "1px solid rgba(255,51,102,0.25)", color: "#FF3366" }}>
+              ⚠️ {r.muscle}: {r.actual} séries excedem o volume prescrito ({r.prescribed}). Revise a distribuição semanal.
+            </div>
+          ))}
+          {gvtWarnings.map((msg, i) => (
+            <div key={`gvt-${i}`} className="mt-2 rounded-lg p-2 text-[10px]" style={{ background: "rgba(255,179,0,0.08)", border: "1px solid rgba(255,179,0,0.25)", color: "#FFB300" }}>
+              ⚠️ {msg}
+            </div>
+          ))}
         </div>
       )}
 
@@ -2294,7 +2333,7 @@ function HistoryViewModal({ protocol: p, onClose, userId, onUpdate }: { protocol
         <div className="px-5 py-4 space-y-3">
           {parsed?.block_overview ? (
             <>
-              <BlockOverviewCard overview={parsed.block_overview} alerts={parsed.improvement_alerts} clientName={p.client_name} />
+              <BlockOverviewCard overview={parsed.block_overview} alerts={parsed.improvement_alerts} clientName={p.client_name} trainingDays={parsed.training_days} />
               {isMello16 && (
                 <WeekNavigator
                   protocolKey={`history-${p.id}`}
