@@ -183,11 +183,18 @@ export type Database = {
           category_label: string | null
           coach_id: string
           created_at: string
+          cycle_duration: number | null
+          cycle_goal: string | null
+          cycle_week: number | null
           id: string
           priority_1: string | null
           priority_2: string | null
           priority_3: string | null
+          protein_ideal: string | null
+          protocol: string | null
           scores: Json | null
+          support: string | null
+          tdee_factor: number | null
           weeks_estimated: number | null
         }
         Insert: {
@@ -199,11 +206,18 @@ export type Database = {
           category_label?: string | null
           coach_id: string
           created_at?: string
+          cycle_duration?: number | null
+          cycle_goal?: string | null
+          cycle_week?: number | null
           id?: string
           priority_1?: string | null
           priority_2?: string | null
           priority_3?: string | null
+          protein_ideal?: string | null
+          protocol?: string | null
           scores?: Json | null
+          support?: string | null
+          tdee_factor?: number | null
           weeks_estimated?: number | null
         }
         Update: {
@@ -215,11 +229,18 @@ export type Database = {
           category_label?: string | null
           coach_id?: string
           created_at?: string
+          cycle_duration?: number | null
+          cycle_goal?: string | null
+          cycle_week?: number | null
           id?: string
           priority_1?: string | null
           priority_2?: string | null
           priority_3?: string | null
+          protein_ideal?: string | null
+          protocol?: string | null
           scores?: Json | null
+          support?: string | null
+          tdee_factor?: number | null
           weeks_estimated?: number | null
         }
         Relationships: [
