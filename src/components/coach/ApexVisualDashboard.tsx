@@ -693,7 +693,7 @@ Suporte em uso: ${suporte || "não informado"}` : "";
           <div className="flex-1">
             <div className="flex items-center gap-2">
               <span className="text-base font-black text-foreground">{cat.label}</span>
-              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded" style={{ background: cat.color, color: "#fff" }}>v2</span>
+              <span className="text-[10px] font-extrabold px-1.5 py-0.5 rounded tracking-widest" style={{ background: "linear-gradient(135deg,#FFB800,#E0A000)", color: "#1A1100" }}>ELITE</span>
             </div>
             <div className="text-xs text-muted-foreground">{athlete?.nome || "Atleta"} · Análise APEX Visual Intelligence</div>
           </div>
