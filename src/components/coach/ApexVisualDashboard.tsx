@@ -422,6 +422,10 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
     setAnalysisResult("");
     setPhotos({ front: null, back: null, side: null });
     setFormData({ semanas: "", compostos: "", obs: "" });
+    setObjetivoCiclo("cutting");
+    setSemanaCiclo("");
+    setDuracaoCiclo("");
+    setSuporte("");
     setActiveResultTab("scores");
     setSavedAnalysisId(null);
     setSyncStatus(null);
