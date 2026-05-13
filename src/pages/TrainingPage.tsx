@@ -395,6 +395,13 @@ Português. Específico. Científico. Zero genérico.`;
           `✅ Protocolo gerado${sysName ? ` · ${sysName}` : ""}${fiberProfile ? ` · Fibras ${fiberProfile.dominancia.toUpperCase()}` : ""}${readyCheckin ? ` · Ready ⚡` : ""}`,
           { duration: 4000 }
         );
+        // Camada 3 — informa ao usuário se o enforcer aparou séries excedentes.
+        if (Array.isArray(data.volume_fixes) && data.volume_fixes.length > 0) {
+          const summary = data.volume_fixes
+            .map((f: any) => `${f.muscle}: ${f.before}→${f.after} (max ${f.prescribed})`)
+            .join(" · ");
+          toast.info(`🛠 Volume redistribuído automaticamente — ${summary}`, { duration: 7000 });
+        }
       } else if (data.content) {
         setTextResults(prev => ({ ...prev, protocolo: data.content }));
       }
