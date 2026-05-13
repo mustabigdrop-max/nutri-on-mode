@@ -354,14 +354,8 @@ Português. Específico. Científico. Zero genérico.`;
         },
       });
       if (error) throw error;
-      const maybeParseJson = (txt: string): any | null => {
-        if (!txt || typeof txt !== "string") return null;
-        const fence = txt.match(/```(?:json)?\s*([\s\S]*?)```/i);
-        const raw = (fence ? fence[1] : txt).trim();
-        try { const o = JSON.parse(raw); return (o && typeof o === "object") ? o : null; } catch { return null; }
-      };
       let proto = data.protocol;
-      if (!proto && data.content) proto = maybeParseJson(data.content);
+      if (!proto && data.content) proto = tryParseJson(data.content);
       if (proto && (proto.block_overview || proto.training_days || proto.phase_plan)) {
         setProtocol(proto);
         const sysName = TRAINING_SYSTEMS.find(s => s.id === trainingSystem)?.nome;
@@ -1708,9 +1702,23 @@ function tryParseJson(raw: string): any | null {
     if (m) s = m[0];
   }
   if (!(s.startsWith("{") || s.startsWith("["))) return null;
-  try { return JSON.parse(s); } catch {}
-  const last = Math.max(s.lastIndexOf("}"), s.lastIndexOf("]"));
-  if (last > 0) { try { return JSON.parse(s.slice(0, last + 1)); } catch {} }
+
+  const attempts = [
+    s,
+    // truncate to last closing bracket
+    (() => {
+      const last = Math.max(s.lastIndexOf("}"), s.lastIndexOf("]"));
+      return last > 0 ? s.slice(0, last + 1) : s;
+    })(),
+    // permissive: strip // and /* */ comments + trailing commas
+    s
+      .replace(/\/\*[\s\S]*?\*\//g, "")
+      .replace(/(^|[^:"'])\/\/[^\n]*/g, "$1")
+      .replace(/,(\s*[}\]])/g, "$1"),
+  ];
+  for (const a of attempts) {
+    try { const o = JSON.parse(a); if (o && typeof o === "object") return o; } catch {}
+  }
   return null;
 }
 
