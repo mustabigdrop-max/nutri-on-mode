@@ -20,6 +20,7 @@ export default function CoachTrainingOnPage() {
   const [generatingTraining, setGeneratingTraining] = useState(false);
   const [correctiveTraining, setCorrectiveTraining] = useState<string>("");
   const [coachId, setCoachId] = useState<string | null>(null);
+  const [apexScores, setApexScores] = useState<Record<string, number>>({});
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setCoachId(data.user?.id ?? null));
