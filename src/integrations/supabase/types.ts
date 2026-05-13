@@ -2738,6 +2738,53 @@ export type Database = {
         }
         Relationships: []
       }
+      corrective_training_plans: {
+        Row: {
+          apex_sync_id: string | null
+          athlete_id: string
+          category: string | null
+          coach_id: string | null
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          training_text: string | null
+          updated_at: string | null
+          weak_points: Json | null
+        }
+        Insert: {
+          apex_sync_id?: string | null
+          athlete_id: string
+          category?: string | null
+          coach_id?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          training_text?: string | null
+          updated_at?: string | null
+          weak_points?: Json | null
+        }
+        Update: {
+          apex_sync_id?: string | null
+          athlete_id?: string
+          category?: string | null
+          coach_id?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          training_text?: string | null
+          updated_at?: string | null
+          weak_points?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "corrective_training_plans_apex_sync_id_fkey"
+            columns: ["apex_sync_id"]
+            isOneToOne: false
+            referencedRelation: "apex_training_sync"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cycle_tracking: {
         Row: {
           compostos: Json | null
