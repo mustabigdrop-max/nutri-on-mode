@@ -629,12 +629,16 @@ Suporte em uso: ${suporte || "não informado"}` : "";
   // ─── RENDER: RESULT ──────────────────────────────────
   if (isDone) {
     const meta = parseMeta(analysisResult);
+    const farmMeta = parseFarmMeta(analysisResult);
+    const farmacologiaSection = parseSection(analysisResult, "FARMACOLOGIA_SHAPE", "GANHA_PONTOS");
+    const hasFarmacologia = !!farmacologiaSection && !/nenhum protocolo informado/i.test(farmacologiaSection);
     const segments = parseSegments(analysisResult);
     const tabs = [
       { key: "scores", label: "Scores" },
       { key: "postura", label: "Postura" },
       { key: "correcoes", label: "Correções" },
       { key: "protocolo", label: "Protocolo" },
+      ...(hasFarmacologia ? [{ key: "farmacologia", label: "💉 Farmacologia" }] : []),
       { key: "palco", label: "Palco" },
       { key: "plano", label: "Plano" },
     ];
