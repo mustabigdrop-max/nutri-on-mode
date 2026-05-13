@@ -8,7 +8,14 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-function buildSystemPrompt(syncData: any, athlete: any) {
+function buildSystemPrompt(syncData: any, athlete: any, apexScores: Record<string, number> = {}) {
+  const scoresLine = Object.entries(apexScores)
+    .map(([k, v]) => {
+      const mult =
+        v < 5 ? "x1.4 (+40%)" : v < 7 ? "x1.2 (+20%)" : v >= 8 ? "x0.9 (-10%)" : "x1.0";
+      return `• ${k}: ${v}/10 → multiplicador de volume ${mult}`;
+    })
+    .join("\n");
   const wp = (syncData?.weak_points || [])
     .map((w: any) => `• ${w.muscle}: ${w.score}/10 — ${w.diagnosis || ""}`)
     .join("\n");
