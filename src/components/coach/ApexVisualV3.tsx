@@ -557,6 +557,7 @@ export default function ApexVisualV3() {
     { id:"farmacologia", label:"💉 Farmacologia", show: temProtocolo && !!S.farma },
     { id:"palco",        label:"🎭 Palco",        show: !!S.ganha || !!S.posing },
     { id:"plano",        label:"🗺 Plano",        show: !!meta.p1 || !!S.plano || !!S.veredicto },
+    { id:"pose",         label:"🤖 Pose AI",      show: true },
   ].filter(t => t.show || !done);
 
   const analisar = async () => {
