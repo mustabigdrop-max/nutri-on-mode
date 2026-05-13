@@ -239,6 +239,68 @@ export type Database = {
           },
         ]
       }
+      apex_training_sync: {
+        Row: {
+          apex_analysis_id: string | null
+          athlete_id: string
+          bf_estimated: number | null
+          bf_target: number | null
+          category: string | null
+          coach_id: string | null
+          corrective_protocol: string | null
+          created_at: string | null
+          id: string
+          postural_corrections: string | null
+          postural_deviations: string | null
+          priorities: Json | null
+          sync_status: string | null
+          updated_at: string | null
+          weak_points: Json | null
+        }
+        Insert: {
+          apex_analysis_id?: string | null
+          athlete_id: string
+          bf_estimated?: number | null
+          bf_target?: number | null
+          category?: string | null
+          coach_id?: string | null
+          corrective_protocol?: string | null
+          created_at?: string | null
+          id?: string
+          postural_corrections?: string | null
+          postural_deviations?: string | null
+          priorities?: Json | null
+          sync_status?: string | null
+          updated_at?: string | null
+          weak_points?: Json | null
+        }
+        Update: {
+          apex_analysis_id?: string | null
+          athlete_id?: string
+          bf_estimated?: number | null
+          bf_target?: number | null
+          category?: string | null
+          coach_id?: string | null
+          corrective_protocol?: string | null
+          created_at?: string | null
+          id?: string
+          postural_corrections?: string | null
+          postural_deviations?: string | null
+          priorities?: Json | null
+          sync_status?: string | null
+          updated_at?: string | null
+          weak_points?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "apex_training_sync_apex_analysis_id_fkey"
+            columns: ["apex_analysis_id"]
+            isOneToOne: false
+            referencedRelation: "apex_analyses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       athlete_exams: {
         Row: {
           acido_urico: number | null

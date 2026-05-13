@@ -1,9 +1,13 @@
 import { useState, useRef, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import AthleteSelector, { AthleteOption } from "@/components/coach/AthleteSelector";
-import { Upload, X, FlaskConical, RotateCcw, History, Eye } from "lucide-react";
+import { Upload, X, FlaskConical, RotateCcw, History, Eye, Dumbbell, CheckCircle2, Clock } from "lucide-react";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
+} from "@/components/ui/dialog";
 
 // ─── Categorias ──────────────────────────────────────────────────
 type CategoryKey =
@@ -282,6 +286,11 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
   const [activeResultTab, setActiveResultTab] = useState("scores");
   const [isDone, setIsDone] = useState(false);
   const [stepIdx, setStepIdx] = useState(0);
+  const [savedAnalysisId, setSavedAnalysisId] = useState<string | null>(null);
+  const [syncStatus, setSyncStatus] = useState<"pending" | "applied" | null>(null);
+  const [showTrainingModal, setShowTrainingModal] = useState(false);
+  const [generatingTraining, setGeneratingTraining] = useState(false);
+  const navigate = useNavigate();
 
   // History
   const [history, setHistory] = useState<any[]>([]);
@@ -320,7 +329,19 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
     setPhotos({ front: null, back: null, side: null });
     setFormData({ semanas: "", compostos: "", obs: "" });
     setActiveResultTab("scores");
+    setSavedAnalysisId(null);
+    setSyncStatus(null);
   };
+
+  const fetchSyncStatus = useCallback(async (athleteId: string | null) => {
+    if (!athleteId) { setSyncStatus(null); return; }
+    const { data } = await supabase
+      .from("apex_training_sync" as any)
+      .select("sync_status")
+      .eq("athlete_id", athleteId)
+      .maybeSingle();
+    setSyncStatus(((data as any)?.sync_status as any) || null);
+  }, []);
 
   const openHistoryItem = (item: any) => {
     const cat = (Object.keys(CATEGORIES) as CategoryKey[]).find(
@@ -330,6 +351,8 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
     setAnalysisResult(item.analysis_text || "");
     setIsDone(true);
     setActiveResultTab("scores");
+    setSavedAnalysisId(item.id || null);
+    fetchSyncStatus(item.athlete_id || athlete?.id || null);
   };
 
   const analyzeWithAI = useCallback(async () => {
@@ -373,7 +396,7 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
           return acc;
         }, {} as Record<string, number>);
 
-        const { error: insErr } = await supabase.from("apex_analyses" as any).insert({
+        const { data: inserted, error: insErr } = await supabase.from("apex_analyses" as any).insert({
           coach_id: coachId,
           athlete_id: athlete?.id || null,
           category: selectedCategory,
@@ -386,8 +409,10 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
           priority_2: meta.p2 || null,
           priority_3: meta.p3 || null,
           scores: scoresJson,
-        });
+        }).select("id").single();
         if (insErr) throw insErr;
+        setSavedAnalysisId((inserted as any)?.id || null);
+        await fetchSyncStatus(athlete?.id || null);
         toast({ title: "✓ Análise APEX salva com sucesso" });
         fetchHistory();
       } catch (saveErr: any) {
@@ -407,7 +432,64 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
     } finally {
       setLoading(false);
     }
-  }, [athlete, cat, formData, photos, coachId, selectedCategory, fetchHistory]);
+  }, [athlete, cat, formData, photos, coachId, selectedCategory, fetchHistory, fetchSyncStatus]);
+
+  // ─── Generate corrective training ────────────────────
+  const buildSyncPayload = useCallback(() => {
+    const meta = parseMeta(analysisResult);
+    const segments = parseSegments(analysisResult);
+    const weakPoints = segments
+      .filter((s) => s.score < 6)
+      .sort((a, b) => a.score - b.score)
+      .map((s) => ({ muscle: s.label, score: s.score, diagnosis: (s as any).diag || "" }));
+    return {
+      meta,
+      weakPoints,
+      posturalDeviations: parseSection(analysisResult, "POSTURA_DESVIOS", "CORRECOES_POSTURAIS"),
+      correctiveProtocol: parseSection(analysisResult, "PONTOS_FRACOS_PROTOCOLO", "CONDICIONAMENTO"),
+      posturalCorrections: parseSection(analysisResult, "CORRECOES_POSTURAIS", "PONTOS_FRACOS_PROTOCOLO"),
+      priorities: { p1: meta.p1, p2: meta.p2, p3: meta.p3 },
+    };
+  }, [analysisResult]);
+
+  const handleGenerateTraining = useCallback(async () => {
+    if (!athlete?.id || !coachId) {
+      toast({ title: "Selecione um atleta antes de gerar o treino", variant: "destructive" });
+      return;
+    }
+    setGeneratingTraining(true);
+    try {
+      const p = buildSyncPayload();
+      const { error } = await supabase.from("apex_training_sync" as any).upsert({
+        athlete_id: athlete.id,
+        coach_id: coachId,
+        category: selectedCategory,
+        weak_points: p.weakPoints,
+        postural_deviations: p.posturalDeviations,
+        corrective_protocol: p.correctiveProtocol,
+        postural_corrections: p.posturalCorrections,
+        priorities: p.priorities,
+        bf_estimated: p.meta.bfEst ? parseFloat(p.meta.bfEst) : null,
+        bf_target: p.meta.bfMeta ? parseFloat(p.meta.bfMeta) : null,
+        apex_analysis_id: savedAnalysisId,
+        sync_status: "pending",
+        updated_at: new Date().toISOString(),
+      }, { onConflict: "athlete_id" });
+      if (error) throw error;
+      setSyncStatus("pending");
+      setShowTrainingModal(true);
+    } catch (e: any) {
+      toast({ title: "Erro ao sincronizar com TrainingON", description: e?.message, variant: "destructive" });
+    } finally {
+      setGeneratingTraining(false);
+    }
+  }, [athlete, coachId, selectedCategory, savedAnalysisId, buildSyncPayload]);
+
+  const goToTrainingOn = () => {
+    if (!athlete?.id) return;
+    setShowTrainingModal(false);
+    navigate(`/coach-dashboard?tab=training&athlete=${athlete.id}&mode=corrective`);
+  };
 
   // ─── RENDER: LOADING ─────────────────────────────────
   if (loading) {
@@ -519,6 +601,7 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
             <div className="space-y-3">
               <InfoBox color="#C47A15" text="Diagnóstico + causa + exercícios + frequência + tempo de resposta." />
               <Pre body={parseSection(analysisResult, "PONTOS_FRACOS_PROTOCOLO", "CONDICIONAMENTO")} />
+              <GenerateTrainingButton onClick={handleGenerateTraining} loading={generatingTraining} />
             </div>
           )}
           {activeResultTab === "palco" && (
@@ -543,9 +626,28 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
                 {meta.semEst && <Pill label="Semanas" value={meta.semEst} color={cat.color} />}
               </div>
               <InfoBlock title="Condicionamento" body={parseSection(analysisResult, "CONDICIONAMENTO", "GANHA_PONTOS")} accent={cat.color} />
+              <GenerateTrainingButton onClick={handleGenerateTraining} loading={generatingTraining} />
             </div>
           )}
         </div>
+
+        {/* Sync status badge */}
+        {syncStatus && (
+          <div
+            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold"
+            style={{
+              background: syncStatus === "applied" ? "#1DB87A22" : "#C47A1522",
+              color: syncStatus === "applied" ? "#1DB87A" : "#C47A15",
+              border: `1px solid ${syncStatus === "applied" ? "#1DB87A55" : "#C47A1555"}`,
+            }}
+          >
+            {syncStatus === "applied" ? (
+              <><CheckCircle2 className="w-3.5 h-3.5" /> Treino Corretivo Ativo no TrainingON</>
+            ) : (
+              <><Clock className="w-3.5 h-3.5" /> Aguardando TrainingON</>
+            )}
+          </div>
+        )}
 
         {/* Veredicto sempre visível */}
         <div
@@ -559,6 +661,56 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
             {parseSection(analysisResult, "VEREDICTO") || "—"}
           </div>
         </div>
+
+        {/* Modal de confirmação */}
+        <Dialog open={showTrainingModal} onOpenChange={setShowTrainingModal}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Dumbbell className="w-5 h-5" style={{ color: cat.color }} />
+                Treino Corretivo Pronto para Gerar
+              </DialogTitle>
+              <DialogDescription>
+                Os dados da análise APEX foram sincronizados. O TrainingON vai gerar treino específico para os pontos fracos + exercícios de ativação pré-treino.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-2 text-sm">
+              <div><span className="text-muted-foreground">Atleta:</span> <span className="font-semibold">{athlete?.nome || "—"}</span></div>
+              <div><span className="text-muted-foreground">Categoria:</span> <span className="font-semibold">{cat.label}</span></div>
+              <div>
+                <div className="text-muted-foreground mb-1">Pontos fracos identificados:</div>
+                <div className="flex flex-wrap gap-1.5">
+                  {buildSyncPayload().weakPoints.length === 0 && (
+                    <span className="text-xs text-muted-foreground italic">Nenhum grupo com score &lt; 6.</span>
+                  )}
+                  {buildSyncPayload().weakPoints.map((w, i) => (
+                    <span key={i} className="text-[11px] px-2 py-0.5 rounded-full bg-muted font-semibold">
+                      {w.muscle} ({w.score})
+                    </span>
+                  ))}
+                </div>
+              </div>
+              {meta.p1 && (
+                <div><span className="text-muted-foreground">Prioridade 1:</span> <span className="font-semibold">{meta.p1}</span></div>
+              )}
+            </div>
+            <DialogFooter>
+              <button
+                onClick={() => setShowTrainingModal(false)}
+                className="px-4 py-2 text-sm rounded-lg border hover:bg-muted"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={goToTrainingOn}
+                className="px-4 py-2 text-sm rounded-lg font-bold text-white"
+                style={{ background: "linear-gradient(135deg, #1A6AB5, #2A8AE5)" }}
+              >
+                Ir para o TrainingON
+              </button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     );
   }
@@ -846,4 +998,18 @@ function PrioCard({ n, color, text }: { n: number; color: string; text?: string 
 
 function EmptyMsg({ text }: { text: string }) {
   return <div className="text-xs text-muted-foreground italic px-3 py-4 text-center">{text}</div>;
+}
+
+function GenerateTrainingButton({ onClick, loading }: { onClick: () => void; loading?: boolean }) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={loading}
+      className="w-full mt-4 p-4 rounded-xl font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-60"
+      style={{ background: "linear-gradient(135deg, #1A6AB5, #2A8AE5)", color: "#fff" }}
+    >
+      <Dumbbell className="w-4 h-4" />
+      {loading ? "Sincronizando..." : "Gerar Treino Corretivo no TrainingON"}
+    </button>
+  );
 }
