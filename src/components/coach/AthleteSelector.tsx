@@ -12,6 +12,7 @@ export interface AthleteOption {
   patient_user_id: string | null;
   fase_atual: string | null;
   data_competicao: string | null;
+  categoria?: string | null;
 }
 
 interface Props {
