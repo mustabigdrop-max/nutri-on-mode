@@ -1260,7 +1260,7 @@ Suporte em uso: ${suporte || "não informado"}` : "";
               </>
             ) : (
               <>
-                <span>◈</span>
+                <ApexSymbol size={18} color={APEX.textMuted} animated={false} />
                 <span>ADICIONE AO MENOS 1 FOTO PARA INICIAR</span>
               </>
             )}
