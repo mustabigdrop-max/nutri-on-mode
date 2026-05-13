@@ -25,6 +25,13 @@ export default function CoachTrainingOnPage() {
   const [apexScores, setApexScores] = useState<Record<string, number>>({});
   const [apexAnalysisDate, setApexAnalysisDate] = useState<string>("");
   const [apexImported, setApexImported] = useState(false);
+  const [apexFullProtocol, setApexFullProtocol] = useState<string>("");
+
+  // Parâmetros de geração com integração APEX
+  const [splitType, setSplitType] = useState<string>("ABCD");
+  const [frequency, setFrequency] = useState<number>(4);
+  const [currentWeek, setCurrentWeek] = useState<number>(1);
+  const [volumeWarnings, setVolumeWarnings] = useState<Array<{ muscle: string; actual: number; prescribed: number; excess: number }>>([]);
 
   // Pontos fracos derivados (score < 6, ordenados do mais fraco ao menos fraco)
   const apexWeakPoints = Object.entries(apexScores)
