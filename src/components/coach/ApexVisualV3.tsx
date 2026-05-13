@@ -639,13 +639,21 @@ export default function ApexVisualV3() {
     const hr = () => { need(4); pdf.setDrawColor(...RGB.line); pdf.setLineWidth(0.2); pdf.line(M, y, W - M, y); y += 4; };
 
     // ===== CAPA =====
-    pdf.setFillColor(8, 12, 24);
-    pdf.rect(0, 0, W, 50, "F");
-    pdf.setTextColor(255, 255, 255);
+    if (accessible) {
+      pdf.setFillColor(255, 255, 255);
+      pdf.rect(0, 0, W, 50, "F");
+      pdf.setDrawColor(0, 0, 0); pdf.setLineWidth(0.5);
+      pdf.line(M, 48, W - M, 48);
+      pdf.setTextColor(0, 0, 0);
+    } else {
+      pdf.setFillColor(8, 12, 24);
+      pdf.rect(0, 0, W, 50, "F");
+      pdf.setTextColor(255, 255, 255);
+    }
     pdf.setFont("helvetica", "bold"); pdf.setFontSize(PT.h1);
     pdf.text("APEX VISUAL v3", M, 22);
     pdf.setFont("helvetica", "normal"); pdf.setFontSize(PT.body);
-    pdf.setTextColor(180, 200, 230);
+    if (!accessible) pdf.setTextColor(180, 200, 230);
     pdf.text("Análise Visual + Postura + Farmacologia + Manobras de Elite", M, 30);
     pdf.setFontSize(PT.small);
     pdf.text(`Categoria: ${cat.l}  ·  Atleta: ${nome || "—"}  ·  ${idade ? idade + " anos · " : ""}${peso ? peso + "kg · " : ""}${altura ? altura + "cm" : ""}`, M, 38);
