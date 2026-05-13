@@ -718,6 +718,19 @@ Suporte em uso: ${suporte || "não informado"}` : "";
               <GenerateTrainingButton onClick={handleGenerateTraining} loading={generatingTraining} />
             </div>
           )}
+          {activeResultTab === "farmacologia" && hasFarmacologia && (
+            <div className="space-y-3">
+              <InfoBox color="#534AB7" text="💉 Análise Dr. VERTEX integrada — shape contextualizado pelo protocolo farmacológico ativo." />
+              <div className="flex flex-wrap gap-2">
+                {farmMeta.tdeeFator && <Pill label="TDEE fator" value={`×${farmMeta.tdeeFator}`} color="#534AB7" />}
+                {farmMeta.proteinaIdeal && <Pill label="Proteína" value={farmMeta.proteinaIdeal} color="#1DB87A" />}
+                {farmMeta.choEstrategia && <Pill label="CHO" value={farmMeta.choEstrategia} color="#C47A15" />}
+                {farmMeta.gestaoE2 && <Pill label="E2" value={farmMeta.gestaoE2} color="#E07030" />}
+                {farmMeta.alertaCardio && <Pill label="Cardio" value={farmMeta.alertaCardio} color="#D94040" />}
+              </div>
+              <Pre body={farmacologiaSection} />
+            </div>
+          )}
           {activeResultTab === "palco" && (
             <div className="space-y-3">
               <div className="grid md:grid-cols-2 gap-3">
