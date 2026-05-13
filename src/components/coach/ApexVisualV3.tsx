@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import AthleteSelector, { AthleteOption } from "@/components/coach/AthleteSelector";
+import APEXPoseAnalysisPage from "@/pages/coach/APEXPoseAnalysisPage";
 import jsPDF from "jspdf";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend, BarChart, Bar, Cell } from "recharts";
 
@@ -557,6 +558,7 @@ export default function ApexVisualV3() {
     { id:"farmacologia", label:"💉 Farmacologia", show: temProtocolo && !!S.farma },
     { id:"palco",        label:"🎭 Palco",        show: !!S.ganha || !!S.posing },
     { id:"plano",        label:"🗺 Plano",        show: !!meta.p1 || !!S.plano || !!S.veredicto },
+    { id:"pose",         label:"🤖 Pose AI",      show: true },
   ].filter(t => t.show || !done);
 
   const analisar = async () => {
@@ -1228,15 +1230,13 @@ export default function ApexVisualV3() {
               </div>
             )}
 
-            {done && (
-              <div style={{ display:"flex", gap:0, borderBottom:`1px solid ${C.border}`, marginBottom:16, overflowX:"auto" }}>
-                {RESULT_TABS.map(t => (
-                  <button key={t.id} onClick={() => setActiveTab(t.id)} style={{ fontSize:10, padding:"9px 12px", background:"none", border:"none", cursor:"pointer", color:activeTab===t.id?cat.c:C.textSec, borderBottom:`2px solid ${activeTab===t.id?cat.c:"transparent"}`, fontWeight:activeTab===t.id?700:400, whiteSpace:"nowrap", transition:"all .15s", fontFamily:"inherit", letterSpacing:".03em" }}>
-                    {t.label}
-                  </button>
-                ))}
-              </div>
-            )}
+            <div style={{ display:"flex", gap:0, borderBottom:`1px solid ${C.border}`, marginBottom:16, overflowX:"auto" }}>
+              {RESULT_TABS.map(t => (
+                <button key={t.id} onClick={() => setActiveTab(t.id)} style={{ fontSize:10, padding:"9px 12px", background:"none", border:"none", cursor:"pointer", color:activeTab===t.id?cat.c:C.textSec, borderBottom:`2px solid ${activeTab===t.id?cat.c:"transparent"}`, fontWeight:activeTab===t.id?700:400, whiteSpace:"nowrap", transition:"all .15s", fontFamily:"inherit", letterSpacing:".03em" }}>
+                  {t.label}
+                </button>
+              ))}
+            </div>
 
             <div>
               {(!done || activeTab === "overview") && (
@@ -1354,6 +1354,12 @@ export default function ApexVisualV3() {
                       <div style={{ padding:"14px 16px", background:C.goldDim, border:`1px solid ${C.gold}33`, borderRadius:10 }}><ProseText tone="primary" emphasis>{S.veredicto}</ProseText></div>
                     </Panel>
                   )}
+                </div>
+              )}
+
+              {activeTab === "pose" && (
+                <div style={{ margin:"-16px", borderRadius:12, overflow:"hidden", border:`1px solid ${C.border}` }}>
+                  <APEXPoseAnalysisPage />
                 </div>
               )}
             </div>
