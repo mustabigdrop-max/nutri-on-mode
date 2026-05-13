@@ -6,10 +6,18 @@ import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 
 // ─── Parsing helpers ────────────────────────────────────────────
-function section(text: string, header: string, nextHeaders: string[] = []): string {
-  const re = new RegExp(`##\\s*${header}\\s*\\n([\\s\\S]*?)(?=\\n##\\s*(?:${nextHeaders.join("|")})\\s*\\n|$)`, "i");
-  const m = text.match(re);
-  return m ? m[1].trim() : "";
+function section(text: string, header: string | string[], nextHeaders: string[] = []): string {
+  const headers = Array.isArray(header) ? header : [header];
+  for (const h of headers) {
+    // Accept ##, ###, **, or bare header lines (with optional emoji/markdown decoration)
+    const re = new RegExp(
+      `(?:^|\\n)\\s*(?:#{1,4}\\s*|\\*\\*\\s*)?${h}\\s*(?:\\*\\*)?\\s*:?\\s*\\n([\\s\\S]*?)(?=\\n\\s*(?:#{1,4}\\s*|\\*\\*\\s*)?(?:${nextHeaders.join("|")})\\s*(?:\\*\\*)?\\s*:?\\s*\\n|$)`,
+      "i"
+    );
+    const m = text.match(re);
+    if (m && m[1].trim()) return m[1].trim();
+  }
+  return "";
 }
 
 export interface ParsedExercise {
@@ -152,21 +160,32 @@ export default function CorrectivePlanViewer({
     const allHeaders = [
       "RESUMO_CORRETIVO",
       "ATIVACAO_PRE_TREINO",
+      "ATIVACAO",
       "SEMANA_TIPO",
       "FREQUENCIA_GRUPOS_FRACOS",
       "PROGRESSAO_4_SEMANAS",
+      "PROGRESSAO",
       "EXERCICIOS_CORRETIVOS_POS",
+      "FINALIZADORES",
+      "EXERCICIOS_FINALIZADORES",
+      "FINISHERS",
       "INTEGRACAO_APEX",
+      "INTEGRACAO",
+      "RECOMENDACOES",
     ];
-    const next = (h: string) => allHeaders.filter((x) => x !== h);
+    const next = (h: string | string[]) => {
+      const hs = Array.isArray(h) ? h : [h];
+      return allHeaders.filter((x) => !hs.includes(x));
+    };
+    const finalizadoresKeys = ["EXERCICIOS_CORRETIVOS_POS", "FINALIZADORES", "EXERCICIOS_FINALIZADORES", "FINISHERS"];
     return {
       resumo: section(text, "RESUMO_CORRETIVO", next("RESUMO_CORRETIVO")),
-      ativacao: section(text, "ATIVACAO_PRE_TREINO", next("ATIVACAO_PRE_TREINO")),
+      ativacao: section(text, ["ATIVACAO_PRE_TREINO", "ATIVACAO"], next(["ATIVACAO_PRE_TREINO", "ATIVACAO"])),
       semanaRaw: section(text, "SEMANA_TIPO", next("SEMANA_TIPO")),
       freq: section(text, "FREQUENCIA_GRUPOS_FRACOS", next("FREQUENCIA_GRUPOS_FRACOS")),
-      progressao: section(text, "PROGRESSAO_4_SEMANAS", next("PROGRESSAO_4_SEMANAS")),
-      finalizadores: section(text, "EXERCICIOS_CORRETIVOS_POS", next("EXERCICIOS_CORRETIVOS_POS")),
-      integracao: section(text, "INTEGRACAO_APEX", next("INTEGRACAO_APEX")),
+      progressao: section(text, ["PROGRESSAO_4_SEMANAS", "PROGRESSAO"], next(["PROGRESSAO_4_SEMANAS", "PROGRESSAO"])),
+      finalizadores: section(text, finalizadoresKeys, next(finalizadoresKeys)),
+      integracao: section(text, ["INTEGRACAO_APEX", "INTEGRACAO"], next(["INTEGRACAO_APEX", "INTEGRACAO"])),
     };
   }, [text]);
 
@@ -225,9 +244,9 @@ export default function CorrectivePlanViewer({
         </div>
       )}
 
-      {tab === "ativacao" && <Pre text={parsed.ativacao} />}
-      {tab === "finalizadores" && <Pre text={parsed.finalizadores} />}
-      {tab === "progressao" && <Pre text={parsed.progressao} />}
+      {tab === "ativacao" && <PreOrEmpty text={parsed.ativacao} hint="ativação pré-treino" onOpenRaw={() => setTab("raw")} />}
+      {tab === "finalizadores" && <PreOrEmpty text={parsed.finalizadores} hint="finalizadores / exercícios corretivos pós" onOpenRaw={() => setTab("raw")} />}
+      {tab === "progressao" && <PreOrEmpty text={parsed.progressao} hint="progressão 4 semanas" onOpenRaw={() => setTab("raw")} />}
       {tab === "integracao" && (
         <div className="space-y-3">
           <Pre text={parsed.integracao} />
@@ -275,6 +294,21 @@ function Empty({ text, raw }: { text: string; raw?: string }) {
       {raw && (
         <pre className="text-left mt-2 text-[11px] font-mono whitespace-pre-wrap">{raw}</pre>
       )}
+    </div>
+  );
+}
+
+function PreOrEmpty({ text, hint, onOpenRaw }: { text: string; hint: string; onOpenRaw: () => void }) {
+  if (text && text.trim()) return <Pre text={text} />;
+  return (
+    <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-4 text-xs text-amber-100/90 space-y-2">
+      <div className="font-bold text-amber-400">Sem seção dedicada de {hint} na resposta da IA.</div>
+      <div className="text-muted-foreground">
+        A IA pode ter incluído essas informações dentro da Semana Tipo ou de forma livre.
+      </div>
+      <Button size="sm" variant="outline" onClick={onOpenRaw} className="mt-2">
+        Abrir texto completo
+      </Button>
     </div>
   );
 }
