@@ -319,6 +319,9 @@ const CoachDashboardPage = () => {
           <Button onClick={() => navigate("/training")} variant="outline" className="flex items-center gap-2">
             <Dumbbell className="w-4 h-4" /> TrainingON
           </Button>
+          <Button onClick={() => navigate("/coach/apex-visual")} variant="outline" className="flex items-center gap-2">
+            <Scan className="w-4 h-4" /> APEX Visual
+          </Button>
           <Button onClick={() => navigate("/biomechanics")} variant="outline" className="flex items-center gap-2">
             <Bone className="w-4 h-4" /> Biomecânica
           </Button>
