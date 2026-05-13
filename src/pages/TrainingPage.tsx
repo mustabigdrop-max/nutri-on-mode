@@ -488,6 +488,21 @@ Português. Específico. Científico. Zero genérico.`;
           </Field>
         </div>
 
+        <Field label="🔬 Protocolo corretivo APEX (opcional — cole as recomendações)">
+          <Textarea
+            value={correctivePrompt}
+            onChange={e => setCorrectivePrompt(e.target.value)}
+            placeholder="Cole aqui o texto do protocolo corretivo gerado pelo APEX/TrainingON Sync. A IA vai integrar exercícios corretivos, ativações e ajustes de volume ao treino principal."
+            className="bg-transparent text-xs min-h-[120px] font-mono"
+            style={{ borderColor: BORDER, color: TEXT }}
+          />
+          {correctivePrompt && (
+            <div className="text-[10px] mt-1" style={{ color: GREEN }}>
+              ✓ {correctivePrompt.length} caracteres — será integrado ao protocolo
+            </div>
+          )}
+        </Field>
+
         <Button onClick={() => setStep(2)} className="w-full font-bold text-sm h-12 rounded-xl" style={{ background: GREEN, color: BG }}>
           Continuar para Protocolo <ChevronRight className="w-4 h-4 ml-1" />
         </Button>
