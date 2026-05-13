@@ -182,6 +182,7 @@ function EliteGenerateSection({ userId }: { userId?: string }) {
   const [cardio, setCardio] = useState("Não");
   const [stressLevel, setStressLevel] = useState("Bom");
   const [supplements, setSupplements] = useState("");
+  const [correctivePrompt, setCorrectivePrompt] = useState("");
   // Protocol
   const [phase, setPhase] = useState("");
   const [muscles, setMuscles] = useState<string[]>([]);
