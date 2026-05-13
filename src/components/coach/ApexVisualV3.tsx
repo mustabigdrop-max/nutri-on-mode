@@ -414,6 +414,33 @@ export default function ApexVisualV3() {
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("overview");
 
+  // ─── Vinculação ao atleta cadastrado + histórico ─────────────────
+  const { user } = useAuth();
+  const [selectedAthlete, setSelectedAthlete] = useState<AthleteOption | null>(null);
+  const [history, setHistory] = useState<any[]>([]);
+  const [savedId, setSavedId] = useState<string | null>(null);
+  const [savingState, setSavingState] = useState<"idle"|"saving"|"saved"|"error">("idle");
+
+  const loadHistory = async (athleteId: string) => {
+    const { data } = await supabase
+      .from("athlete_visual_assessments" as any)
+      .select("id,data_avaliacao,semana_numero,fase,peso_kg,bf_estimado,score_geral,observacoes_coach")
+      .eq("athlete_id", athleteId)
+      .order("data_avaliacao", { ascending: false })
+      .limit(20);
+    setHistory((data as any) || []);
+  };
+
+  useEffect(() => {
+    if (selectedAthlete) {
+      setNome(selectedAthlete.nome || "");
+      if (selectedAthlete.fase_atual) setFase(selectedAthlete.fase_atual);
+      loadHistory(selectedAthlete.id);
+    } else {
+      setHistory([]);
+    }
+  }, [selectedAthlete?.id]);
+
   const cat = CATS[catKey];
   const temFoto = !!(fotoF || fotoC || fotoL);
   const temProtocolo = compostos.trim().length > 0;
