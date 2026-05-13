@@ -250,20 +250,80 @@ function ManeuverCard({ manobra, urgencia }: { manobra: string; urgencia: string
   );
 }
 
+// ─── TIPOGRAFIA · TOKENS ─────────────────────────────────────────
+// Escala única para garantir hierarquia consistente em qualquer seção
+const T = {
+  // tamanhos
+  micro: 10,        // labels, chips, hints fortes
+  caption: 11,      // legendas, hints, meta
+  small: 12,        // controles, pills
+  body: 13.5,       // corpo principal — leitura confortável
+  bodyStrong: 14,
+  h3: 13,           // títulos de panel
+  h2: 16,
+  h1: 22,
+  // line-heights
+  lhTight: 1.4,
+  lhBody: 1.7,      // texto longo
+  lhRelaxed: 1.85,
+  // tracking
+  trackTitle: ".08em",
+  trackLabel: ".1em",
+  // largura máxima (~72ch) p/ legibilidade de prosa longa
+  proseMaxWidth: 760,
+  // espaçamentos verticais
+  spXS: 6, spSM: 10, spMD: 14, spLG: 20, spXL: 28,
+};
+
+// ─── PROSE TEXT ──────────────────────────────────────────────────
+// Wrapper único para todo conteúdo textual longo das seções
+function ProseText({ children, tone = "secondary", emphasis = false }: { children: React.ReactNode; tone?: "primary" | "secondary"; emphasis?: boolean }) {
+  const color = tone === "primary" ? C.text : C.textSec;
+  return (
+    <div style={{
+      fontSize: T.body,
+      color,
+      lineHeight: T.lhBody,
+      whiteSpace: "pre-wrap",
+      maxWidth: T.proseMaxWidth,
+      letterSpacing: ".005em",
+      fontWeight: emphasis ? 500 : 400,
+      wordBreak: "break-word",
+    }}>{children}</div>
+  );
+}
+
+// ─── HINT ────────────────────────────────────────────────────────
+// Banner discreto acima do conteúdo, com acento configurável
+function Hint({ accent, children }: { accent: string; children: React.ReactNode }) {
+  return (
+    <div style={{
+      fontSize: T.caption,
+      color: C.textSec,
+      background: accent + "12",
+      border: `1px solid ${accent}33`,
+      borderRadius: 8,
+      padding: "9px 13px",
+      marginBottom: T.spMD,
+      lineHeight: T.lhTight,
+    }}>{children}</div>
+  );
+}
+
 // ─── PANEL ───────────────────────────────────────────────────────
 function Panel({ icon, title, children, accent = C.apex, defaultOpen = true }: { icon: string; title: string; children: React.ReactNode; accent?: string; defaultOpen?: boolean }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div style={{ background:C.card, border:`1px solid ${C.border}`, borderRadius:12, marginBottom:12, overflow:"hidden" }}>
-      <button onClick={() => setOpen(o => !o)} style={{ width:"100%", background:"none", border:"none", cursor:"pointer", padding:"13px 18px", display:"flex", alignItems:"center", justifyContent:"space-between", fontFamily:"inherit" }}>
+    <div style={{ background:C.card, border:`1px solid ${C.border}`, borderRadius:12, marginBottom:T.spMD, overflow:"hidden" }}>
+      <button onClick={() => setOpen(o => !o)} style={{ width:"100%", background:"none", border:"none", cursor:"pointer", padding:"14px 18px", display:"flex", alignItems:"center", justifyContent:"space-between", fontFamily:"inherit" }}>
         <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-          <span style={{ fontSize:16 }}>{icon}</span>
-          <span style={{ fontSize:11, color:accent, fontWeight:700, letterSpacing:".08em", textTransform:"uppercase" }}>{title}</span>
+          <span style={{ fontSize:T.h2 }}>{icon}</span>
+          <span style={{ fontSize:T.h3, color:accent, fontWeight:700, letterSpacing:T.trackTitle, textTransform:"uppercase" }}>{title}</span>
         </div>
         <span style={{ color:accent, transform:open?"rotate(0)":"rotate(-90deg)", transition:"transform .2s" }}>▾</span>
       </button>
       {open && (
-        <div style={{ padding:"0 18px 16px" }}>
+        <div style={{ padding:"0 18px 18px" }}>
           <div style={{ height:1, background:C.border, marginBottom:14 }} />
           {children}
         </div>
