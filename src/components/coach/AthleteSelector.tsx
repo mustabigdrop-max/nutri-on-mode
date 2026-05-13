@@ -98,7 +98,7 @@ export default function AthleteSelector({ value, onChange, label = "Atleta / Cli
           coach_id: user.id,
           patient_user_id: patientId,
           nome: client.nome,
-          categoria: "cliente",
+          categoria: null,
           ativo: true,
         })
         .select("id,nome,patient_user_id,fase_atual,data_competicao")

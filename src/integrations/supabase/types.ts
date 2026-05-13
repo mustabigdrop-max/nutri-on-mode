@@ -2389,7 +2389,7 @@ export type Database = {
           ativo: boolean | null
           bf_atual: number | null
           bf_meta_palco: number | null
-          categoria: string
+          categoria: string | null
           coach_id: string
           created_at: string | null
           data_competicao: string | null
@@ -2415,7 +2415,7 @@ export type Database = {
           ativo?: boolean | null
           bf_atual?: number | null
           bf_meta_palco?: number | null
-          categoria: string
+          categoria?: string | null
           coach_id: string
           created_at?: string | null
           data_competicao?: string | null
@@ -2441,7 +2441,7 @@ export type Database = {
           ativo?: boolean | null
           bf_atual?: number | null
           bf_meta_palco?: number | null
-          categoria?: string
+          categoria?: string | null
           coach_id?: string
           created_at?: string | null
           data_competicao?: string | null
