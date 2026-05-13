@@ -722,7 +722,7 @@ export default function ApexVisualV3() {
 
     // Plano de ataque resumo
     if (meta.p1 || meta.p2 || meta.p3) {
-      text("Plano de ataque", { size: 10, bold: true, color: RGB.ink });
+      text("Plano de ataque", { size: PT.h3, bold: true, color: RGB.ink, lh: PT.lhTight });
       y += 1;
       const items: { n: number; v?: string; c: [number, number, number] }[] = [
         { n: 1, v: meta.p1, c: RGB.red },
