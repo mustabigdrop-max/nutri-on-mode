@@ -914,7 +914,8 @@ export default function ApexVisualV3() {
               )}
               {selectedAthlete && history.length > 0 && (
                 <div style={{ marginTop:14 }}>
-                  <div style={{ fontSize:10, color:C.textSec, marginBottom:8, letterSpacing:".1em", textTransform:"uppercase" }}>Últimas avaliações ({history.length})</div>
+                  <EvolutionCharts history={history} cat={cat} C={C} />
+                  <div style={{ fontSize:10, color:C.textSec, marginBottom:8, marginTop:16, letterSpacing:".1em", textTransform:"uppercase" }}>Últimas avaliações ({history.length})</div>
                   <div style={{ display:"flex", flexDirection:"column", gap:6, maxHeight:220, overflowY:"auto" }}>
                     {history.map((h: any) => (
                       <div key={h.id} style={{ display:"flex", alignItems:"center", gap:10, padding:"8px 12px", background:C.cardHi, border:`1px solid ${C.border}`, borderRadius:8, fontSize:11, flexWrap:"wrap" }}>
