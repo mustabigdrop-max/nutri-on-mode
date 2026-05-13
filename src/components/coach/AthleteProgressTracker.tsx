@@ -213,7 +213,7 @@ Gere relatório em markdown com:
           <div>
             <h1 className="text-3xl font-bold">{athlete.nome}</h1>
             <p className="text-muted-foreground">
-              {athlete.categoria} • Fase: {athlete.fase_atual || "—"}
+              {athlete.categoria || "Cliente (sem categoria)"} • Fase: {athlete.fase_atual || "—"}
             </p>
           </div>
           {athlete.data_competicao && <Badge className="text-lg">Palco: {athlete.data_competicao}</Badge>}
