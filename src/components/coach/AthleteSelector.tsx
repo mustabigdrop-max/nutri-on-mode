@@ -131,13 +131,16 @@ export default function AthleteSelector({ value, onChange, label = "Atleta / Cli
           {athletes.length > 0 && (
             <SelectGroup>
               <SelectLabel className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider">
-                <Trophy className="h-3 w-3 text-amber-500" /> Atletas de competição
+                <Trophy className="h-3 w-3 text-amber-500" /> Atletas / Clientes vinculados
               </SelectLabel>
-              {athletes.map((a) => (
-                <SelectItem key={a.id} value={a.id}>
-                  {a.nome} {a.fase_atual ? `· ${a.fase_atual}` : ""}
-                </SelectItem>
-              ))}
+              {athletes.map((a) => {
+                const tag = a.categoria || "Cliente";
+                return (
+                  <SelectItem key={a.id} value={a.id}>
+                    {a.nome} <span className="text-muted-foreground text-[11px]">· {tag}{a.fase_atual ? ` · ${a.fase_atual}` : ""}</span>
+                  </SelectItem>
+                );
+              })}
             </SelectGroup>
           )}
           {clients.filter(c => !c.athlete_id).length > 0 && (
