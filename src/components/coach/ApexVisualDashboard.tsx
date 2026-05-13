@@ -5,6 +5,7 @@ import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import AthleteSelector, { AthleteOption } from "@/components/coach/AthleteSelector";
 import { Upload, X, FlaskConical, RotateCcw, History, Eye, Dumbbell, CheckCircle2, Clock, FileText, Copy, Crosshair, ScanLine, Target, Activity, Zap, AlertTriangle, TrendingUp, ChevronRight } from "lucide-react";
+import { ApexSymbol } from "@/components/coach/ApexSymbol";
 
 // ─── APEX Elite design tokens ───────────────────────────────────
 const APEX = {
