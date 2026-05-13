@@ -1240,7 +1240,7 @@ export default function ApexVisualV3() {
             )}
 
             <div>
-              {(!done || activeTab === "overview") && (
+              {((!done && activeTab !== "pose") || activeTab === "overview") && (
                 <div style={{ display: done && activeTab !== "overview" ? "none" : "block" }}>
                   {segs.length > 0 && (
                     <Panel icon="📊" title="SCORES POR SEGMENTO" accent={cat.c}>
