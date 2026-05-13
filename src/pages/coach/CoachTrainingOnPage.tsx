@@ -69,6 +69,16 @@ export default function CoachTrainingOnPage() {
       .limit(1)
       .maybeSingle();
     setCorrectiveTraining((planRow as any)?.training_text || "");
+
+    // Latest APEX scores by muscle (used for badges + AI volume multiplier)
+    const { data: latestAnalysis } = await supabase
+      .from("apex_analyses" as any)
+      .select("scores, created_at")
+      .eq("athlete_id", athlete.id)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    setApexScores(((latestAnalysis as any)?.scores as Record<string, number>) || {});
   }, [athlete?.id]);
 
   useEffect(() => { loadApexSync(); }, [loadApexSync]);
