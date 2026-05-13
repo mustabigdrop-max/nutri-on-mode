@@ -46,6 +46,16 @@ PRIORIDADES DO APEX:
 2. ${syncData?.priorities?.p2 || "—"}
 3. ${syncData?.priorities?.p3 || "—"}
 
+SCORES APEX POR GRUPO MUSCULAR (aplicar multiplicador de volume automático):
+${scoresLine || "— sem dados de score por grupo —"}
+
+REGRA DE MULTIPLICADOR DE VOLUME (obrigatória):
+- score < 5  → +40% volume (séries x 1.4)
+- score < 7  → +20% volume (séries x 1.2)
+- score 7    → volume padrão (x 1.0)
+- score >= 8 → -10% volume (manutenção, x 0.9)
+Para CADA exercício no SEMANA_TIPO, aplique o multiplicador correto e mostre o ajuste no campo VOLUME_AJUSTE no formato: "12 → 17 séries (+40% · score APEX 4/10)".
+
 ━━━ INSTRUÇÕES DE GERAÇÃO ━━━
 Gere protocolo SEMANAL com:
 1. ATIVAÇÃO PRÉ-TREINO (10-15 min): mobilidade para desvios + ativação de inibidos.
