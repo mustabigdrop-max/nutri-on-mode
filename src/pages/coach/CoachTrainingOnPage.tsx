@@ -165,12 +165,13 @@ export default function CoachTrainingOnPage() {
     // Latest APEX scores by muscle (used for badges + AI volume multiplier)
     const { data: latestAnalysis } = await supabase
       .from("apex_analyses" as any)
-      .select("scores, created_at")
+      .select("scores, analysis_text, created_at")
       .eq("athlete_id", athlete.id)
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle();
     setApexScores(((latestAnalysis as any)?.scores as Record<string, number>) || {});
+    setApexFullProtocol((latestAnalysis as any)?.analysis_text || "");
     if ((latestAnalysis as any)?.created_at) {
       const d = new Date((latestAnalysis as any).created_at);
       setApexAnalysisDate(`${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`);
