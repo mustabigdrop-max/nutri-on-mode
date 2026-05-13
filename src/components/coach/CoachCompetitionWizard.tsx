@@ -102,7 +102,7 @@ const CoachCompetitionWizard = ({ open, onOpenChange, coachId, athleteId, athlet
           athlete_id: athleteId,
           nome_competicao: nomeCompeticao,
           federacao,
-          categoria,
+          categoria: categoria || null,
           data_competicao: dataCompeticao,
           local_competicao: localCompeticao || null,
           peso_atual: Number(pesoAtual),
