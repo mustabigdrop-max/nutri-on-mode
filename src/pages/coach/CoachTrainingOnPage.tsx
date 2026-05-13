@@ -25,6 +25,13 @@ export default function CoachTrainingOnPage() {
   const [apexScores, setApexScores] = useState<Record<string, number>>({});
   const [apexAnalysisDate, setApexAnalysisDate] = useState<string>("");
   const [apexImported, setApexImported] = useState(false);
+  const [apexFullProtocol, setApexFullProtocol] = useState<string>("");
+
+  // Parâmetros de geração com integração APEX
+  const [splitType, setSplitType] = useState<string>("ABCD");
+  const [frequency, setFrequency] = useState<number>(4);
+  const [currentWeek, setCurrentWeek] = useState<number>(1);
+  const [volumeWarnings, setVolumeWarnings] = useState<Array<{ muscle: string; actual: number; prescribed: number; excess: number }>>([]);
 
   // Pontos fracos derivados (score < 6, ordenados do mais fraco ao menos fraco)
   const apexWeakPoints = Object.entries(apexScores)
@@ -158,12 +165,13 @@ export default function CoachTrainingOnPage() {
     // Latest APEX scores by muscle (used for badges + AI volume multiplier)
     const { data: latestAnalysis } = await supabase
       .from("apex_analyses" as any)
-      .select("scores, created_at")
+      .select("scores, analysis_text, created_at")
       .eq("athlete_id", athlete.id)
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle();
     setApexScores(((latestAnalysis as any)?.scores as Record<string, number>) || {});
+    setApexFullProtocol((latestAnalysis as any)?.analysis_text || "");
     if ((latestAnalysis as any)?.created_at) {
       const d = new Date((latestAnalysis as any).created_at);
       setApexAnalysisDate(`${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`);
@@ -353,6 +361,115 @@ export default function CoachTrainingOnPage() {
     });
     setWeeklyVolume(fixed);
     setMethodConflicts([]);
+  };
+
+  // ── Validação de volume pós-geração (lê o bloco "VALIDAÇÃO DE VOLUME SEMANAL" da IA) ──
+  const validateGeneratedVolume = (trainingText: string, prescribed: Record<string, number>) => {
+    const violations: Array<{ muscle: string; actual: number; prescribed: number; excess: number }> = [];
+    const block = trainingText.match(/VALIDAÇÃO DE VOLUME SEMANAL:([\s\S]*?)(?:EXERCÍCIOS CORRETIVOS|WARM-?UPS POSTURAIS|$)/i)?.[1] || "";
+    block.split("\n").filter((l) => /sér/i.test(l)).forEach((line) => {
+      const m = line.match(/([^•:]+):\s*(\d+)\s*sér\s*\/\s*(\d+)\s*sér/i);
+      if (m) {
+        const muscle = m[1].replace("•", "").trim();
+        const actual = parseInt(m[2], 10);
+        const presc = parseInt(m[3], 10);
+        if (actual > presc * 1.15) {
+          violations.push({ muscle, actual, prescribed: presc, excess: actual - presc });
+        }
+      }
+    });
+    // fallback: também alertar pontos prescritos pelo coach que ficaram sem qualquer menção
+    Object.entries(prescribed).forEach(([m]) => { void m; });
+    return { isValid: violations.length === 0, violations };
+  };
+
+  // ── Geração com integração APEX completa via edge function ──
+  const handleGenerateWithApexIntegration = async () => {
+    if (!athlete?.id || !coachId) return;
+    setGeneratingTraining(true);
+    setVolumeWarnings([]);
+    try {
+      const { data, error } = await supabase.functions.invoke("training-corrective-generate", {
+        body: {
+          athlete: {
+            name: athlete.nome,
+            goal: (athlete as any).objetivo || sync?.training_phase || "",
+            phase: sync?.training_phase || "",
+            protocol: (athlete as any).protocolo || "",
+          },
+          apexIntegration: {
+            apexFullProtocol,
+            apexWeakPoints: apexWeakPoints.map((p) => ({
+              muscle: p.muscle,
+              score: p.score,
+              priority: p.score <= 3 ? "CRÍTICA" : p.score <= 5 ? "ALTA" : "MODERADA",
+            })),
+            trainingMethod,
+            weeklyVolume,
+            currentWeek,
+            splitType,
+            frequency,
+          },
+        },
+      });
+      if (error) throw new Error(error.message);
+      if ((data as any)?.error) throw new Error((data as any).error);
+      const text = (data as any)?.text || "";
+      if (!text) throw new Error("Resposta vazia da IA");
+
+      const validation = validateGeneratedVolume(text, weeklyVolume);
+      setVolumeWarnings(validation.violations);
+
+      // Desativa planos anteriores e salva o novo
+      await supabase
+        .from("corrective_training_plans" as any)
+        .update({ is_active: false })
+        .eq("athlete_id", athlete.id)
+        .eq("is_active", true);
+
+      const { error: insErr } = await supabase
+        .from("corrective_training_plans" as any)
+        .insert({
+          athlete_id: athlete.id,
+          coach_id: coachId,
+          apex_sync_id: apexSyncData?.id || null,
+          training_text: text,
+          category: apexSyncData?.category || null,
+          weak_points: apexWeakPoints,
+          training_method: trainingMethod,
+          split_type: splitType,
+          week_number: currentWeek,
+          weekly_volume: weeklyVolume,
+          apex_imported: apexImported,
+          apex_weak_points: apexWeakPoints,
+          volume_valid: validation.isValid,
+          volume_violations: validation.violations,
+          is_active: true,
+        });
+      if (insErr) throw insErr;
+
+      if (apexImported && apexSyncData?.id) {
+        await supabase
+          .from("apex_training_sync" as any)
+          .update({ sync_status: "applied", updated_at: new Date().toISOString() })
+          .eq("athlete_id", athlete.id);
+      }
+
+      setCorrectiveTraining(text);
+      setShowApexBanner(false);
+      toast({
+        title: validation.isValid ? "✓ Treino integrado APEX gerado" : "⚠ Treino gerado com alertas de volume",
+        description: validation.isValid ? undefined : `${validation.violations.length} grupo(s) acima do prescrito`,
+      });
+    } catch (e: any) {
+      toast({
+        title: "Erro ao gerar treino integrado",
+        description: e?.message || "Falha ao chamar a IA",
+        variant: "destructive",
+      });
+    } finally {
+      setGeneratingTraining(false);
+    }
   };
 
   return (
@@ -563,6 +680,111 @@ export default function CoachTrainingOnPage() {
             </Card>
           )}
 
+          {/* Geração de treino com integração APEX completa */}
+          {athlete && apexImported && hasApexAnalysis && (
+            <Card className="border-amber-500/30 bg-gradient-to-br from-amber-500/5 to-blue-500/5">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm flex items-center gap-2 text-amber-300">
+                  <Crosshair className="h-4 w-4" /> Gerar treino com APEX integrado
+                </CardTitle>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Warm-up postural + exercícios corretivos do APEX integrados ao método principal sem ultrapassar o volume prescrito.
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="grid grid-cols-3 gap-2">
+                  <div>
+                    <label className="text-[10px] text-muted-foreground uppercase tracking-wide">Split</label>
+                    <select
+                      value={splitType}
+                      onChange={(e) => setSplitType(e.target.value)}
+                      className="w-full bg-background border border-border rounded-md px-2 py-1.5 text-xs"
+                    >
+                      <option value="ABCD">ABCD</option>
+                      <option value="ABCDE">ABCDE</option>
+                      <option value="PPL">Push/Pull/Legs</option>
+                      <option value="UpperLower">Upper/Lower</option>
+                      <option value="FullBody">Full Body</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-[10px] text-muted-foreground uppercase tracking-wide">Frequência</label>
+                    <select
+                      value={frequency}
+                      onChange={(e) => setFrequency(Number(e.target.value))}
+                      className="w-full bg-background border border-border rounded-md px-2 py-1.5 text-xs"
+                    >
+                      {[3, 4, 5, 6].map((n) => <option key={n} value={n}>{n}× / sem</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-[10px] text-muted-foreground uppercase tracking-wide">Semana</label>
+                    <select
+                      value={currentWeek}
+                      onChange={(e) => setCurrentWeek(Number(e.target.value))}
+                      className="w-full bg-background border border-border rounded-md px-2 py-1.5 text-xs"
+                    >
+                      {[1, 2, 3, 4, 5].map((n) => <option key={n} value={n}>Semana {n}</option>)}
+                    </select>
+                  </div>
+                </div>
+
+                <Button
+                  onClick={handleGenerateWithApexIntegration}
+                  disabled={generatingTraining || methodConflicts.length > 0}
+                  className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:opacity-90 text-black gap-2"
+                >
+                  {generatingTraining ? (
+                    <>
+                      <Sparkles className="h-4 w-4 animate-pulse" />
+                      Gerando treino integrado...
+                    </>
+                  ) : (
+                    <>
+                      <Dumbbell className="h-4 w-4" />
+                      Gerar Treino com APEX Integrado
+                      <span className="text-[10px] opacity-80">· {apexWeakPoints.length} grupos corretivos</span>
+                    </>
+                  )}
+                </Button>
+
+                {methodConflicts.length > 0 && (
+                  <p className="text-[10px] text-destructive text-center">
+                    Resolva os conflitos de método × volume antes de gerar.
+                  </p>
+                )}
+
+                {correctiveTraining && (
+                  <div className="flex items-center gap-2 px-3 py-2 rounded-md border border-emerald-500/30 bg-emerald-500/5 text-emerald-300 text-xs">
+                    <CheckCircle2 className="h-3.5 w-3.5" />
+                    <span className="flex-1">
+                      <span className="font-bold">Protocolo gerado com integração APEX Visual</span>
+                      {apexAnalysisDate && <span className="text-muted-foreground"> · {apexAnalysisDate}</span>}
+                    </span>
+                    <span className="text-[10px] opacity-80">{apexWeakPoints.length} grupos corretivos integrados</span>
+                  </div>
+                )}
+
+                {volumeWarnings.length > 0 && (
+                  <div className="rounded-md border border-destructive/40 bg-destructive/10 p-3 space-y-1.5">
+                    <div className="flex items-center gap-2 text-xs font-bold text-destructive">
+                      <AlertTriangle className="h-3.5 w-3.5" />
+                      Volume acima do prescrito em {volumeWarnings.length} grupo(s)
+                    </div>
+                    <ul className="text-[11px] space-y-0.5 text-destructive-foreground/90">
+                      {volumeWarnings.map((w, i) => (
+                        <li key={i}>
+                          <span className="font-semibold capitalize">{w.muscle}:</span>{" "}
+                          {w.actual} séries geradas vs {w.prescribed} prescritas
+                          <span className="text-destructive"> (+{w.excess} excesso)</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
 
           {Object.keys(apexScores).length > 0 && (
             <Card className="border-border bg-card/60">

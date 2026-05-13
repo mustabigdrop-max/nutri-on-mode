@@ -2827,40 +2827,64 @@ export type Database = {
       }
       corrective_training_plans: {
         Row: {
+          apex_imported: boolean | null
           apex_sync_id: string | null
+          apex_weak_points: Json | null
           athlete_id: string
           category: string | null
           coach_id: string | null
           created_at: string | null
           id: string
           is_active: boolean | null
+          split_type: string | null
+          training_method: string | null
           training_text: string | null
           updated_at: string | null
+          volume_valid: boolean | null
+          volume_violations: Json | null
           weak_points: Json | null
+          week_number: number | null
+          weekly_volume: Json | null
         }
         Insert: {
+          apex_imported?: boolean | null
           apex_sync_id?: string | null
+          apex_weak_points?: Json | null
           athlete_id: string
           category?: string | null
           coach_id?: string | null
           created_at?: string | null
           id?: string
           is_active?: boolean | null
+          split_type?: string | null
+          training_method?: string | null
           training_text?: string | null
           updated_at?: string | null
+          volume_valid?: boolean | null
+          volume_violations?: Json | null
           weak_points?: Json | null
+          week_number?: number | null
+          weekly_volume?: Json | null
         }
         Update: {
+          apex_imported?: boolean | null
           apex_sync_id?: string | null
+          apex_weak_points?: Json | null
           athlete_id?: string
           category?: string | null
           coach_id?: string | null
           created_at?: string | null
           id?: string
           is_active?: boolean | null
+          split_type?: string | null
+          training_method?: string | null
           training_text?: string | null
           updated_at?: string | null
+          volume_valid?: boolean | null
+          volume_violations?: Json | null
           weak_points?: Json | null
+          week_number?: number | null
+          weekly_volume?: Json | null
         }
         Relationships: [
           {
