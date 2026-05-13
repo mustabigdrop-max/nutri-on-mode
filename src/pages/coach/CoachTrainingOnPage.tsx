@@ -331,6 +331,7 @@ export default function CoachTrainingOnPage() {
   if (sync?.volume_sets_semana > 18 && sync?.tempo_sessao_min > 75) conflitos.push("Volume alto + sessão longa: risco de overreach");
   if (sync?.musculos_prioritarios?.includes("pernas") && !sync?.training_phase?.toLowerCase().includes("bulk")) {
     conflitos.push("Prioridade em pernas fora de bulk: ajustar CHO no dia +30%");
+  }
 
   const trainingMethod = String(sync?.sistema_treino || "").toLowerCase();
 
