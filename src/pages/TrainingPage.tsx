@@ -331,9 +331,16 @@ Português. Específico. Científico. Zero genérico.`;
   };
 
   const generate = async () => {
-    if (!phase || muscles.length === 0 || !level || !clientName) {
-      toast.error("Preencha fase, músculos, nível e nome do cliente");
+    if (!clientName) {
+      toast.error("Informe o nome do cliente para gerar o protocolo");
       return;
+    }
+    const missing: string[] = [];
+    if (!phase) missing.push("fase");
+    if (muscles.length === 0) missing.push("músculos");
+    if (!level) missing.push("nível");
+    if (missing.length) {
+      toast.message(`Usando padrões para: ${missing.join(", ")} (a IA inferirá pelo prompt elite)`);
     }
     // Bloqueio por tempo: protocolo não cabe na sessão (margem severa de 15min)
     const est = estimateProtocolDuration({ systemId: trainingSystem, muscles, level, sessionDuration, cardio });
