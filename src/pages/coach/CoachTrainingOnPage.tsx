@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Dumbbell, AlertTriangle, ArrowRight, FlaskConical, Sparkles, CheckCircle2, Download } from "lucide-react";
+import { Dumbbell, AlertTriangle, ArrowRight, ArrowLeft, FlaskConical, Sparkles, CheckCircle2, Download } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import AthleteSelector, { AthleteOption } from "@/components/coach/AthleteSelector";
 import CorrectivePlanViewer from "@/components/coach/CorrectivePlanViewer";
