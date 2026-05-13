@@ -333,9 +333,6 @@ const CoachDashboardPage = () => {
         <Tabs defaultValue="overview" className="w-full">
           <TabsList>
             <TabsTrigger value="overview">Visão Geral</TabsTrigger>
-            <TabsTrigger value="hub">
-              <Zap className="w-4 h-4 mr-1" /> Coach Hub
-            </TabsTrigger>
             <TabsTrigger value="athletes">
               <Trophy className="w-4 h-4 mr-1" /> Atletas
             </TabsTrigger>
@@ -346,12 +343,6 @@ const CoachDashboardPage = () => {
               <Scan className="w-4 h-4 mr-1" /> APEX Visual
             </TabsTrigger>
           </TabsList>
-
-          <TabsContent value="hub" className="mt-4 -mx-4 md:-mx-6">
-            <div className="h-[calc(100vh-220px)] border border-border rounded-lg overflow-hidden">
-              <CoachHub />
-            </div>
-          </TabsContent>
 
           <TabsContent value="athletes" className="mt-4">
             <AthleteRoster />
