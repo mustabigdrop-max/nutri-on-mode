@@ -67,11 +67,12 @@ export function aggregateWeeklyVolume(trainingDays: any[]): Record<string, numbe
   const out: Record<string, number> = {};
   (trainingDays || []).forEach((day) => {
     (day.exercises || []).forEach((ex: any) => {
+      // Apenas o músculo PRIMÁRIO conta como série de trabalho completa.
+      // Secundários (sinergistas) inflariam o volume — ignorados aqui.
       const targets: string[] = [];
       if (ex.muscle_target) targets.push(ex.muscle_target);
-      if (ex.primaryMuscle) targets.push(ex.primaryMuscle);
-      if (Array.isArray(ex.muscles)) targets.push(...ex.muscles);
-      if (Array.isArray(ex.secondary_muscles)) targets.push(...ex.secondary_muscles);
+      else if (ex.primaryMuscle) targets.push(ex.primaryMuscle);
+      else if (Array.isArray(ex.muscles) && ex.muscles.length) targets.push(ex.muscles[0]);
       if (targets.length === 0) return;
       const sets = countWorkingSets(ex);
       if (sets <= 0) return;
