@@ -316,7 +316,7 @@ const CoachCompetitionWizard = ({ open, onOpenChange, coachId, athleteId, athlet
                 Resumo do plano
               </p>
               <div className="text-[11px] space-y-0.5 text-muted-foreground">
-                <p>▸ <span className="text-foreground">{nomeCompeticao || "—"}</span> ({federacao} / {categoria})</p>
+                <p>▸ <span className="text-foreground">{nomeCompeticao || "—"}</span> ({federacao} / {categoria || "sem categoria"})</p>
                 <p>▸ Data: {dataCompeticao || "—"} ({semanasAteComp} semanas)</p>
                 <p>▸ Peso: {pesoAtual} kg → {pesoAlvoPalco} kg (perda {perdaTotalKg} kg)</p>
                 {bfAtual && <p>▸ BF inicial: {bfAtual}%</p>}
