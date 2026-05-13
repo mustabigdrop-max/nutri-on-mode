@@ -173,6 +173,72 @@ export type Database = {
         }
         Relationships: []
       }
+      apex_analyses: {
+        Row: {
+          analysis_text: string | null
+          athlete_id: string | null
+          bf_estimated: number | null
+          bf_target: number | null
+          category: string
+          category_label: string | null
+          coach_id: string
+          created_at: string
+          id: string
+          priority_1: string | null
+          priority_2: string | null
+          priority_3: string | null
+          scores: Json | null
+          weeks_estimated: number | null
+        }
+        Insert: {
+          analysis_text?: string | null
+          athlete_id?: string | null
+          bf_estimated?: number | null
+          bf_target?: number | null
+          category: string
+          category_label?: string | null
+          coach_id: string
+          created_at?: string
+          id?: string
+          priority_1?: string | null
+          priority_2?: string | null
+          priority_3?: string | null
+          scores?: Json | null
+          weeks_estimated?: number | null
+        }
+        Update: {
+          analysis_text?: string | null
+          athlete_id?: string | null
+          bf_estimated?: number | null
+          bf_target?: number | null
+          category?: string
+          category_label?: string | null
+          coach_id?: string
+          created_at?: string
+          id?: string
+          priority_1?: string | null
+          priority_2?: string | null
+          priority_3?: string | null
+          scores?: Json | null
+          weeks_estimated?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "apex_analyses_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "athlete_progress_summary"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "apex_analyses_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "competition_athletes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       athlete_exams: {
         Row: {
           acido_urico: number | null

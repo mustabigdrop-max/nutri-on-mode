@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 import AthleteSelector, { AthleteOption } from "@/components/coach/AthleteSelector";
-import { Upload, X, FlaskConical, RotateCcw } from "lucide-react";
+import { Upload, X, FlaskConical, RotateCcw, History, Eye } from "lucide-react";
 
 // ─── Categorias ──────────────────────────────────────────────────
 type CategoryKey =
@@ -266,7 +267,10 @@ function SegmentBar({ label, score, diag }: { label: string; score: number; diag
 // ─── Main ────────────────────────────────────────────────────────
 interface Props { coachId?: string }
 
-export default function ApexVisualDashboard({ coachId }: Props) {
+export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
+  const { user } = useAuth();
+  const coachId = coachIdProp || user?.id || null;
+
   const [athlete, setAthlete] = useState<AthleteOption | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<CategoryKey>("mens_physique");
   const [photos, setPhotos] = useState<{ front: File | null; back: File | null; side: File | null }>({
@@ -279,6 +283,10 @@ export default function ApexVisualDashboard({ coachId }: Props) {
   const [isDone, setIsDone] = useState(false);
   const [stepIdx, setStepIdx] = useState(0);
 
+  // History
+  const [history, setHistory] = useState<any[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+
   // Loading step animation
   useEffect(() => {
     if (!loading) { setStepIdx(0); return; }
@@ -289,11 +297,38 @@ export default function ApexVisualDashboard({ coachId }: Props) {
   const cat = CATEGORIES[selectedCategory];
   const hasAnyPhoto = !!(photos.front || photos.back || photos.side);
 
+  // Fetch history for selected athlete
+  const fetchHistory = useCallback(async () => {
+    if (!coachId || !athlete?.id) { setHistory([]); return; }
+    setHistoryLoading(true);
+    const { data, error } = await supabase
+      .from("apex_analyses" as any)
+      .select("*")
+      .eq("coach_id", coachId)
+      .eq("athlete_id", athlete.id)
+      .order("created_at", { ascending: false })
+      .limit(5);
+    if (!error) setHistory((data as any[]) || []);
+    setHistoryLoading(false);
+  }, [coachId, athlete?.id]);
+
+  useEffect(() => { fetchHistory(); }, [fetchHistory]);
+
   const reset = () => {
     setIsDone(false);
     setAnalysisResult("");
     setPhotos({ front: null, back: null, side: null });
     setFormData({ semanas: "", compostos: "", obs: "" });
+    setActiveResultTab("scores");
+  };
+
+  const openHistoryItem = (item: any) => {
+    const cat = (Object.keys(CATEGORIES) as CategoryKey[]).find(
+      (k) => k === item.category
+    ) || "mens_physique";
+    setSelectedCategory(cat);
+    setAnalysisResult(item.analysis_text || "");
+    setIsDone(true);
     setActiveResultTab("scores");
   };
 
@@ -328,6 +363,41 @@ export default function ApexVisualDashboard({ coachId }: Props) {
       setAnalysisResult(text);
       setIsDone(true);
       setActiveResultTab("scores");
+
+      // Persist to Supabase
+      try {
+        const meta = parseMeta(text);
+        const segments = parseSegments(text);
+        const scoresJson = segments.reduce((acc, s) => {
+          acc[s.label] = s.score;
+          return acc;
+        }, {} as Record<string, number>);
+
+        const { error: insErr } = await supabase.from("apex_analyses" as any).insert({
+          coach_id: coachId,
+          athlete_id: athlete?.id || null,
+          category: selectedCategory,
+          category_label: cat.label,
+          analysis_text: text,
+          bf_estimated: meta.bfEst ? parseFloat(meta.bfEst) : null,
+          bf_target: meta.bfMeta ? parseFloat(meta.bfMeta) : null,
+          weeks_estimated: meta.semEst ? parseInt(meta.semEst, 10) : null,
+          priority_1: meta.p1 || null,
+          priority_2: meta.p2 || null,
+          priority_3: meta.p3 || null,
+          scores: scoresJson,
+        });
+        if (insErr) throw insErr;
+        toast({ title: "✓ Análise APEX salva com sucesso" });
+        fetchHistory();
+      } catch (saveErr: any) {
+        console.error("apex save error", saveErr);
+        toast({
+          title: "Análise gerada",
+          description: "Erro ao salvar histórico — verifique a conexão.",
+          variant: "destructive",
+        });
+      }
     } catch (e: any) {
       toast({
         title: "Erro na análise",
@@ -337,7 +407,7 @@ export default function ApexVisualDashboard({ coachId }: Props) {
     } finally {
       setLoading(false);
     }
-  }, [athlete, cat, formData, photos]);
+  }, [athlete, cat, formData, photos, coachId, selectedCategory, fetchHistory]);
 
   // ─── RENDER: LOADING ─────────────────────────────────
   if (loading) {
@@ -602,6 +672,78 @@ export default function ApexVisualDashboard({ coachId }: Props) {
         </div>
       </div>
 
+      {/* History */}
+      {athlete && (
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <History className="w-4 h-4 text-muted-foreground" />
+            <div className="text-xs font-semibold text-foreground">Análises anteriores</div>
+            <div className="text-[10px] text-muted-foreground">· {athlete.nome}</div>
+          </div>
+          {historyLoading ? (
+            <div className="space-y-2">
+              {[0, 1, 2].map((i) => (
+                <div key={i} className="h-16 rounded-lg bg-muted animate-pulse" />
+              ))}
+            </div>
+          ) : history.length === 0 ? (
+            <div className="text-xs text-muted-foreground italic px-3 py-4 text-center border border-dashed border-border rounded-lg">
+              Nenhuma análise anterior para este atleta.
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {history.map((item) => {
+                const itemCat = (CATEGORIES as any)[item.category] || cat;
+                return (
+                  <div
+                    key={item.id}
+                    className="rounded-lg border bg-card p-3 flex items-center gap-3"
+                    style={{ borderColor: itemCat.color + "44" }}
+                  >
+                    <div className="text-2xl">{itemCat.icon}</div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <span className="text-xs font-bold text-foreground">{item.category_label || itemCat.label}</span>
+                        <span className="text-[10px] text-muted-foreground">{formatRelative(item.created_at)}</span>
+                      </div>
+                      <div className="flex flex-wrap gap-1.5 mb-1">
+                        {item.bf_estimated != null && (
+                          <span className="text-[10px] px-1.5 py-0.5 rounded font-semibold" style={{ background: "#E0703022", color: "#E07030" }}>
+                            BF est {item.bf_estimated}%
+                          </span>
+                        )}
+                        {item.bf_target != null && (
+                          <span className="text-[10px] px-1.5 py-0.5 rounded font-semibold" style={{ background: "#1DB87A22", color: "#1DB87A" }}>
+                            Meta {item.bf_target}%
+                          </span>
+                        )}
+                        {item.weeks_estimated != null && (
+                          <span className="text-[10px] px-1.5 py-0.5 rounded font-semibold" style={{ background: itemCat.color + "22", color: itemCat.color }}>
+                            {item.weeks_estimated} sem
+                          </span>
+                        )}
+                      </div>
+                      {item.priority_1 && (
+                        <div className="text-[11px] text-muted-foreground line-clamp-1">
+                          <span className="font-semibold text-foreground/80">P1:</span> {item.priority_1}
+                        </div>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => openHistoryItem(item)}
+                      className="shrink-0 text-[11px] px-2.5 py-1.5 rounded-lg border hover:bg-muted flex items-center gap-1 font-semibold"
+                      style={{ borderColor: itemCat.color + "55", color: itemCat.color }}
+                    >
+                      <Eye className="w-3 h-3" /> Ver
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Submit */}
       <button
         onClick={analyzeWithAI}
@@ -615,10 +757,21 @@ export default function ApexVisualDashboard({ coachId }: Props) {
       >
         🔬 Analisar com APEX v2
       </button>
-
-      {coachId && <div className="text-[10px] text-muted-foreground/60 text-center">Coach ID: {coachId}</div>}
     </div>
   );
+}
+
+function formatRelative(iso: string) {
+  const d = new Date(iso);
+  const diffMs = Date.now() - d.getTime();
+  const days = Math.floor(diffMs / 86400000);
+  if (days < 1) {
+    const h = Math.floor(diffMs / 3600000);
+    return h < 1 ? "agora" : `há ${h}h`;
+  }
+  if (days === 1) return "ontem";
+  if (days < 7) return `há ${days} dias`;
+  return d.toLocaleDateString("pt-BR");
 }
 
 // ─── Small helpers ───────────────────────────────────────────────
