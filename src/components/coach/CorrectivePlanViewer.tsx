@@ -1,7 +1,9 @@
 import { useMemo, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ClipboardList, Flame, Zap, TrendingUp, Link2 } from "lucide-react";
+import { ClipboardList, Flame, Zap, TrendingUp, Link2, FileText, Copy, Check } from "lucide-react";
+import { useEffect } from "react";
+import { Button } from "@/components/ui/button";
 
 // ─── Parsing helpers ────────────────────────────────────────────
 function section(text: string, header: string, nextHeaders: string[] = []): string {
@@ -114,7 +116,28 @@ const TABS = [
   { key: "finalizadores", label: "⚡ Finalizadores", icon: Zap },
   { key: "progressao", label: "📈 Progressão", icon: TrendingUp },
   { key: "integracao", label: "🔗 Integração APEX", icon: Link2 },
+  { key: "raw", label: "📄 Recomendações (texto completo)", icon: FileText },
 ] as const;
+
+function CopyButton({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false);
+  useEffect(() => {
+    if (!copied) return;
+    const t = setTimeout(() => setCopied(false), 1500);
+    return () => clearTimeout(t);
+  }, [copied]);
+  return (
+    <Button
+      size="sm"
+      variant="outline"
+      onClick={() => { navigator.clipboard.writeText(text); setCopied(true); }}
+      className="gap-2"
+    >
+      {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+      {copied ? "Copiado" : "Copiar tudo"}
+    </Button>
+  );
+}
 
 export default function CorrectivePlanViewer({
   text,
@@ -176,7 +199,14 @@ export default function CorrectivePlanViewer({
 
       {tab === "semana" && (
         <div className="space-y-4">
-          {days.length === 0 && <Empty text="Sem dias detectados na resposta." raw={parsed.semanaRaw} />}
+          {days.length === 0 && (
+            <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 text-xs text-amber-100/90">
+              <div className="font-bold text-amber-400 mb-1">Sem dias detectados na estrutura padrão.</div>
+              Abra a aba <span className="font-semibold">"📄 Recomendações (texto completo)"</span> para ler tudo
+              que a IA retornou e usar como base para montar o treino no TrainingON e o plano alimentar
+              manualmente.
+            </div>
+          )}
           {days.map((d, i) => {
             const exs = parseExercises(d.body);
             return (
@@ -209,6 +239,20 @@ export default function CorrectivePlanViewer({
               <pre className="text-xs whitespace-pre-wrap font-mono text-foreground/90">{parsed.freq}</pre>
             </div>
           )}
+        </div>
+      )}
+
+      {tab === "raw" && (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between gap-2">
+            <div className="text-xs text-muted-foreground">
+              Resposta completa da IA — use como guia para montar o treino no TrainingON e o plano alimentar.
+            </div>
+            <CopyButton text={text} />
+          </div>
+          <pre className="text-xs whitespace-pre-wrap font-mono text-foreground/90 max-h-[700px] overflow-y-auto p-3 rounded-lg border border-border bg-card/60">
+            {text || "—"}
+          </pre>
         </div>
       )}
     </div>
