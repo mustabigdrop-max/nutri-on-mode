@@ -202,10 +202,13 @@ const CoachCompetitionWizard = ({ open, onOpenChange, coachId, athleteId, athlet
                 </Select>
               </div>
               <div>
-                <Label className="text-xs">Categoria</Label>
-                <Select value={categoria} onValueChange={setCategoria}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>{CATEGORIAS.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+                <Label className="text-xs">Categoria (opcional)</Label>
+                <Select value={categoria || "__none__"} onValueChange={(v) => setCategoria(v === "__none__" ? "" : v)}>
+                  <SelectTrigger><SelectValue placeholder="— Sem categoria —" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none__">— Sem categoria (cliente) —</SelectItem>
+                    {CATEGORIAS.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                  </SelectContent>
                 </Select>
               </div>
             </div>
