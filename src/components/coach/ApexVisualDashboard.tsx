@@ -286,6 +286,11 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
   const [activeResultTab, setActiveResultTab] = useState("scores");
   const [isDone, setIsDone] = useState(false);
   const [stepIdx, setStepIdx] = useState(0);
+  const [savedAnalysisId, setSavedAnalysisId] = useState<string | null>(null);
+  const [syncStatus, setSyncStatus] = useState<"pending" | "applied" | null>(null);
+  const [showTrainingModal, setShowTrainingModal] = useState(false);
+  const [generatingTraining, setGeneratingTraining] = useState(false);
+  const navigate = useNavigate();
 
   // History
   const [history, setHistory] = useState<any[]>([]);
