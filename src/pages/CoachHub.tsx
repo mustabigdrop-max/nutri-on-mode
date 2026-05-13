@@ -6,6 +6,7 @@ import {
   Camera,
   UtensilsCrossed,
   Dumbbell,
+  ScanLine,
   FlaskConical,
   FileBarChart,
   ArrowLeft,
@@ -14,10 +15,11 @@ import AthleteRoster from "@/components/coach/AthleteRoster";
 import PlanoAlimentarIA from "@/components/coach/PlanoAlimentarIA";
 import CoachApexVisualPage from "@/pages/coach/CoachApexVisualPage";
 import CoachTrainingOnPage from "@/pages/coach/CoachTrainingOnPage";
+import APEXPoseAnalysisPage from "@/pages/coach/APEXPoseAnalysisPage";
 import CoachLabExamsPage from "@/pages/coach/CoachLabExamsPage";
 import CoachReportsPage from "@/pages/coach/CoachReportsPage";
 
-type ModuleKey = "atletas" | "apex" | "plano" | "training" | "lab" | "relatorios";
+type ModuleKey = "atletas" | "apex" | "plano" | "training" | "pose" | "lab" | "relatorios";
 
 // ── Design tokens (mesmo padrão do TrainingON, paleta Coach Amber) ──
 const BG = "#03030a";
