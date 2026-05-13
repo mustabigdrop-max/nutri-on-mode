@@ -25,20 +25,61 @@ const norm = (s: string) =>
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
-    .replace(/\(.*?\)/g, "")
-    .replace(/[^a-z0-9]+/g, "")
+    .replace(/\(.*?\)/g, " ")
+    .replace(/[^a-z0-9]+/g, " ")
     .trim();
+
+/**
+ * Mapa de sinônimos → grupo canônico.
+ * Permite que "deltoide anterior", "ombro", "deltóides posteriores" todos
+ * contem para "deltoides", e que "dorsal", "latíssimo", "trapézio" contem
+ * para "costas", etc.
+ */
+const SYNONYMS: Array<{ canon: string; tokens: string[] }> = [
+  { canon: "deltoides", tokens: ["deltoide", "deltoides", "ombro", "ombros"] },
+  { canon: "costas", tokens: ["costas", "dorsal", "dorsais", "latissimo", "trapezio", "trapezios", "romboide", "romboides", "lats"] },
+  { canon: "biceps", tokens: ["biceps", "braquial", "braquiorradial"] },
+  { canon: "triceps", tokens: ["triceps"] },
+  { canon: "peito", tokens: ["peito", "peitoral", "peitorais"] },
+  { canon: "quadriceps", tokens: ["quadriceps", "quadricipital", "vasto", "reto femoral"] },
+  { canon: "gluteos", tokens: ["gluteo", "gluteos"] },
+  { canon: "posteriordecoxa", tokens: ["posterior", "isquiotibiais", "isquios", "femoral", "biceps femoral", "hamstring", "hamstrings"] },
+  { canon: "panturrilha", tokens: ["panturrilha", "panturrilhas", "gastrocnemio", "soleo"] },
+  { canon: "abdomenobliquos", tokens: ["abdomen", "abdominal", "abdominais", "obliquo", "obliquos", "core"] },
+  { canon: "lombar", tokens: ["lombar", "lombares", "eretor", "eretores"] },
+  { canon: "antebraco", tokens: ["antebraco", "antebracos"] },
+];
+
+/** Reduz qualquer nome de grupo muscular a uma chave canônica (ou ao próprio nome se desconhecido). */
+function canonicalize(raw: string): string[] {
+  const n = norm(raw);
+  if (!n) return [];
+  const matches = new Set<string>();
+  for (const { canon, tokens } of SYNONYMS) {
+    if (tokens.some((t) => n.includes(t.replace(/\s+/g, "")))) matches.add(canon);
+  }
+  if (matches.size === 0) matches.add(n.replace(/\s+/g, ""));
+  return Array.from(matches);
+}
 
 /** Soma as séries de trabalho de cada grupo muscular ao longo de toda a semana. */
 export function aggregateWeeklyVolume(trainingDays: any[]): Record<string, number> {
   const out: Record<string, number> = {};
   (trainingDays || []).forEach((day) => {
     (day.exercises || []).forEach((ex: any) => {
-      const target = ex.muscle_target || ex.primaryMuscle || "";
-      if (!target) return;
+      const targets: string[] = [];
+      if (ex.muscle_target) targets.push(ex.muscle_target);
+      if (ex.primaryMuscle) targets.push(ex.primaryMuscle);
+      if (Array.isArray(ex.muscles)) targets.push(...ex.muscles);
+      if (Array.isArray(ex.secondary_muscles)) targets.push(...ex.secondary_muscles);
+      if (targets.length === 0) return;
       const sets = countWorkingSets(ex);
-      const key = norm(target);
-      out[key] = (out[key] || 0) + sets;
+      if (sets <= 0) return;
+      const canons = new Set<string>();
+      targets.forEach((t) => canonicalize(String(t)).forEach((c) => canons.add(c)));
+      canons.forEach((c) => {
+        out[c] = (out[c] || 0) + sets;
+      });
     });
   });
   return out;
