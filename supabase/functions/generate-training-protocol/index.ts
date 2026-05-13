@@ -79,6 +79,23 @@ INTERMEDIÁRIO: dupla progressão, top set + back-off, supersets antagonistas
 AVANÇADO: rest-pause, dropsets, cluster sets, myo-reps, pausa no estiramento
 ELITE: periodização conjugada, ondulação diária, acumulação/intensificação/realização, técnicas de pico
 
+## REGRA CRÍTICA DE VOLUME SEMANAL (INVIOLÁVEL)
+
+Antes de gerar os training_days, defina o weekly_sets de cada músculo em muscle_priorities.
+Para CADA músculo, a SOMA das séries de trabalho (top_set.sets + backoff_sets.sets + work_sets.sets)
+em TODOS os training_days NÃO PODE ultrapassar weekly_sets em mais de 10%.
+Distribua as séries pela frequência semanal do grupo: séries por sessão ≈ round(weekly_sets / frequência).
+
+Exemplo: Peito com weekly_sets=12 e frequência 2x/sem → ~6 séries de trabalho por sessão.
+Se um único exercício já tem 10 séries de trabalho (ex.: GVT), o weekly_sets desse músculo
+DEVE ser ≥ 10 e a frequência ajustada para acomodar.
+
+REGRA GVT/Alto-Volume-Por-Exercício: Se algum exercício prescrever 10 séries (German Volume Training),
+NÃO use esse formato em músculos com weekly_sets < 10. Para weekly_sets entre 10 e 14, use no máximo
+1 exercício GVT na semana + 1 acessório curto (2-4 séries) totalizando o volume prescrito.
+
+Antes de finalizar o JSON, faça você mesmo a soma de séries por grupo e ajuste se houver excesso.
+
 ## FORMATO DE RESPOSTA OBRIGATÓRIO
 
 Responda SEMPRE em JSON válido com esta estrutura exata:
