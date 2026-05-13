@@ -4,7 +4,44 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import AthleteSelector, { AthleteOption } from "@/components/coach/AthleteSelector";
-import { Upload, X, FlaskConical, RotateCcw, History, Eye, Dumbbell, CheckCircle2, Clock, FileText, Copy } from "lucide-react";
+import { Upload, X, FlaskConical, RotateCcw, History, Eye, Dumbbell, CheckCircle2, Clock, FileText, Copy, Crosshair, ScanLine, Target, Activity, Zap, AlertTriangle, TrendingUp, ChevronRight } from "lucide-react";
+
+// ─── APEX Elite design tokens ───────────────────────────────────
+const APEX = {
+  void: "#03040A",
+  deep: "#060810",
+  surface: "#0A0D16",
+  elevated: "#0E1220",
+  border: "#161D2E",
+  borderHi: "#1E2A42",
+  electric: "#00D4FF",
+  electricDim: "#00D4FF15",
+  electricGlow: "#00D4FF30",
+  gold: "#FFB800",
+  goldDim: "#FFB80015",
+  emerald: "#00E676",
+  amber: "#FFB300",
+  crimson: "#FF3366",
+  violet: "#9C27B0",
+  violet2: "#7B1FA2",
+  textPrimary: "#EDF2FF",
+  textSecondary: "#7A8AAA",
+  textMuted: "#3F4A66",
+  fontDisplay: "'Syne', 'Space Grotesk', sans-serif",
+  fontBody: "'DM Sans', 'Inter', sans-serif",
+  fontMono: "'JetBrains Mono', monospace",
+};
+
+const ApexFontsAndAnimations = () => (
+  <style>{`
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+    @keyframes apex-scanLine { 0%{top:0%;opacity:0} 10%{opacity:1} 90%{opacity:1} 100%{top:100%;opacity:0} }
+    @keyframes apex-shimmer { 0%{left:-100%} 100%{left:200%} }
+    @keyframes apex-pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(.85)} }
+    @keyframes apex-spin { from{transform:rotate(0)} to{transform:rotate(360deg)} }
+    @keyframes apex-fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+  `}</style>
+);
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from "@/components/ui/dialog";
