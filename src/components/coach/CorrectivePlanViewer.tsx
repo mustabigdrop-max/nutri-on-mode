@@ -160,21 +160,32 @@ export default function CorrectivePlanViewer({
     const allHeaders = [
       "RESUMO_CORRETIVO",
       "ATIVACAO_PRE_TREINO",
+      "ATIVACAO",
       "SEMANA_TIPO",
       "FREQUENCIA_GRUPOS_FRACOS",
       "PROGRESSAO_4_SEMANAS",
+      "PROGRESSAO",
       "EXERCICIOS_CORRETIVOS_POS",
+      "FINALIZADORES",
+      "EXERCICIOS_FINALIZADORES",
+      "FINISHERS",
       "INTEGRACAO_APEX",
+      "INTEGRACAO",
+      "RECOMENDACOES",
     ];
-    const next = (h: string) => allHeaders.filter((x) => x !== h);
+    const next = (h: string | string[]) => {
+      const hs = Array.isArray(h) ? h : [h];
+      return allHeaders.filter((x) => !hs.includes(x));
+    };
+    const finalizadoresKeys = ["EXERCICIOS_CORRETIVOS_POS", "FINALIZADORES", "EXERCICIOS_FINALIZADORES", "FINISHERS"];
     return {
       resumo: section(text, "RESUMO_CORRETIVO", next("RESUMO_CORRETIVO")),
-      ativacao: section(text, "ATIVACAO_PRE_TREINO", next("ATIVACAO_PRE_TREINO")),
+      ativacao: section(text, ["ATIVACAO_PRE_TREINO", "ATIVACAO"], next(["ATIVACAO_PRE_TREINO", "ATIVACAO"])),
       semanaRaw: section(text, "SEMANA_TIPO", next("SEMANA_TIPO")),
       freq: section(text, "FREQUENCIA_GRUPOS_FRACOS", next("FREQUENCIA_GRUPOS_FRACOS")),
-      progressao: section(text, "PROGRESSAO_4_SEMANAS", next("PROGRESSAO_4_SEMANAS")),
-      finalizadores: section(text, "EXERCICIOS_CORRETIVOS_POS", next("EXERCICIOS_CORRETIVOS_POS")),
-      integracao: section(text, "INTEGRACAO_APEX", next("INTEGRACAO_APEX")),
+      progressao: section(text, ["PROGRESSAO_4_SEMANAS", "PROGRESSAO"], next(["PROGRESSAO_4_SEMANAS", "PROGRESSAO"])),
+      finalizadores: section(text, finalizadoresKeys, next(finalizadoresKeys)),
+      integracao: section(text, ["INTEGRACAO_APEX", "INTEGRACAO"], next(["INTEGRACAO_APEX", "INTEGRACAO"])),
     };
   }, [text]);
 
