@@ -220,10 +220,32 @@ Deno.serve(async (req: Request) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY não configurada");
 
-    const { syncData, athlete, apexScores } = await req.json();
-    if (!syncData) throw new Error("syncData ausente");
+    const body = await req.json();
+    const { syncData, athlete, apexScores, apexIntegration } = body || {};
+    if (!syncData && !apexIntegration) throw new Error("syncData ou apexIntegration ausente");
 
-    const system = buildSystemPrompt(syncData, athlete || {}, apexScores || {});
+    let system: string;
+    let userMessage: string;
+
+    if (apexIntegration?.apexFullProtocol && Array.isArray(apexIntegration.apexWeakPoints)) {
+      const apexData = extractApexTrainingData(apexIntegration.apexFullProtocol);
+      system = buildIntegratedApexPrompt({
+        athlete: athlete || {},
+        apexWeakPoints: apexIntegration.apexWeakPoints,
+        apexData,
+        trainingMethod: apexIntegration.trainingMethod || "convencional",
+        weeklyVolume: apexIntegration.weeklyVolume || {},
+        currentWeek: Number(apexIntegration.currentWeek) || 1,
+        splitType: apexIntegration.splitType || "ABCD",
+        frequency: Number(apexIntegration.frequency) || 4,
+      });
+      userMessage = `Gere o plano de treino semanal completo com integração APEX Visual para ${athlete?.name || "o atleta"}.
+Método: ${apexIntegration.trainingMethod} | Split: ${apexIntegration.splitType} | Semana ${apexIntegration.currentWeek} do mesociclo.
+Integrar exercícios corretivos e posturais do APEX sem ultrapassar o volume prescrito.`;
+    } else {
+      system = buildSystemPrompt(syncData, athlete || {}, apexScores || {});
+      userMessage = `Gere o protocolo de treino corretivo completo para ${athlete?.name || "o atleta"} baseado na análise APEX Visual.`;
+    }
 
     const r = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -235,12 +257,7 @@ Deno.serve(async (req: Request) => {
         model: "google/gemini-2.5-flash",
         messages: [
           { role: "system", content: system },
-          {
-            role: "user",
-            content: `Gere o protocolo de treino corretivo completo para ${
-              athlete?.name || "o atleta"
-            } baseado na análise APEX Visual.`,
-          },
+          { role: "user", content: userMessage },
         ],
       }),
     });
