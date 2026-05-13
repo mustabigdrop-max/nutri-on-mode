@@ -23,6 +23,18 @@ export default function CoachTrainingOnPage() {
   const [correctiveTraining, setCorrectiveTraining] = useState<string>("");
   const [coachId, setCoachId] = useState<string | null>(null);
   const [apexScores, setApexScores] = useState<Record<string, number>>({});
+  const [apexAnalysisDate, setApexAnalysisDate] = useState<string>("");
+  const [apexImported, setApexImported] = useState(false);
+
+  // Pontos fracos derivados (score < 6, ordenados do mais fraco ao menos fraco)
+  const apexWeakPoints = Object.entries(apexScores)
+    .filter(([, s]) => Number(s) < 6)
+    .sort(([, a], [, b]) => Number(a) - Number(b))
+    .map(([muscle, score]) => ({ muscle, score: Number(score) }));
+  const hasApexAnalysis = apexWeakPoints.length > 0;
+
+  const suggestedSets = (score: number) =>
+    score <= 3 ? "20–24" : score <= 5 ? "16–20" : "12–16";
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setCoachId(data.user?.id ?? null));
