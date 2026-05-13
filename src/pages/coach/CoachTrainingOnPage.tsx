@@ -23,6 +23,18 @@ export default function CoachTrainingOnPage() {
   const [correctiveTraining, setCorrectiveTraining] = useState<string>("");
   const [coachId, setCoachId] = useState<string | null>(null);
   const [apexScores, setApexScores] = useState<Record<string, number>>({});
+  const [apexAnalysisDate, setApexAnalysisDate] = useState<string>("");
+  const [apexImported, setApexImported] = useState(false);
+
+  // Pontos fracos derivados (score < 6, ordenados do mais fraco ao menos fraco)
+  const apexWeakPoints = Object.entries(apexScores)
+    .filter(([, s]) => Number(s) < 6)
+    .sort(([, a], [, b]) => Number(a) - Number(b))
+    .map(([muscle, score]) => ({ muscle, score: Number(score) }));
+  const hasApexAnalysis = apexWeakPoints.length > 0;
+
+  const suggestedSets = (score: number) =>
+    score <= 3 ? "20–24" : score <= 5 ? "16–20" : "12–16";
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setCoachId(data.user?.id ?? null));
@@ -95,6 +107,13 @@ export default function CoachTrainingOnPage() {
       .limit(1)
       .maybeSingle();
     setApexScores(((latestAnalysis as any)?.scores as Record<string, number>) || {});
+    if ((latestAnalysis as any)?.created_at) {
+      const d = new Date((latestAnalysis as any).created_at);
+      setApexAnalysisDate(`${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`);
+    } else {
+      setApexAnalysisDate("");
+    }
+    setApexImported(false);
   }, [athlete?.id]);
 
   useEffect(() => { loadApexSync(); }, [loadApexSync]);
@@ -337,7 +356,88 @@ export default function CoachTrainingOnPage() {
             </>
           )}
 
-          {/* APEX volume adjustment summary */}
+          {/* 🎯 Prioridade Muscular — manual ou importada do APEX Visual */}
+          {athlete && (
+            <Card className="border-border bg-card/60">
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between gap-3 flex-wrap">
+                  <div>
+                    <CardTitle className="text-sm flex items-center gap-2">
+                      🎯 Prioridade Muscular
+                    </CardTitle>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Defina manualmente ou importe automaticamente do APEX Visual
+                    </p>
+                  </div>
+                  {hasApexAnalysis && !apexImported && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setApexImported(true)}
+                      className="gap-2 border-amber-500/40 text-amber-300 hover:bg-amber-500/10"
+                    >
+                      <FlaskConical className="h-3.5 w-3.5" />
+                      Importar do APEX Visual
+                      {apexAnalysisDate && (
+                        <span className="text-[10px] text-muted-foreground">· {apexAnalysisDate}</span>
+                      )}
+                    </Button>
+                  )}
+                </div>
+              </CardHeader>
+
+              {apexImported && (
+                <CardContent className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-xs font-bold text-amber-300">
+                      <FlaskConical className="h-3.5 w-3.5" />
+                      Prioridade importada do APEX Visual
+                    </div>
+                    <button
+                      onClick={() => setApexImported(false)}
+                      className="text-[10px] text-muted-foreground hover:text-foreground px-2 py-1"
+                    >
+                      usar manual
+                    </button>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    {apexWeakPoints.map((point, i) => {
+                      const tone =
+                        point.score <= 3
+                          ? "text-red-400 border-red-500/40 bg-red-500/5"
+                          : point.score <= 5
+                          ? "text-amber-300 border-amber-500/40 bg-amber-500/5"
+                          : "text-emerald-300 border-emerald-500/30 bg-emerald-500/5";
+                      return (
+                        <div
+                          key={i}
+                          className={`flex items-center justify-between gap-2 px-3 py-2 rounded-md border text-xs ${tone}`}
+                        >
+                          <div className="flex items-center gap-2">
+                            <span className="capitalize font-semibold">{point.muscle}</span>
+                            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-background/40 border border-current/20">
+                              APEX {point.score}/10
+                            </span>
+                          </div>
+                          <span className="text-[10px] font-bold tabular-nums">
+                            {suggestedSets(point.score)} sér/sem
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <p className="text-[10px] text-muted-foreground leading-relaxed">
+                    ✦ Exercícios corretivos, cues e frequência já incluídos no protocolo APEX —
+                    o TrainingON vai integrar automaticamente ao gerar o treino.
+                  </p>
+                </CardContent>
+              )}
+            </Card>
+          )}
+
+
           {Object.keys(apexScores).length > 0 && (
             <Card className="border-border bg-card/60">
               <CardHeader>
