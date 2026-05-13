@@ -113,6 +113,7 @@ const CATS: Record<string, Cat> = {
   wellness:         { l:"Wellness",         i:"🌸", g:"F", c:C.purple, ideal:"MMII dominantes. Glúteos e pernas em destaque. Contraste cintura-quadril máximo.", pts:["glúteos","coxas posteriores","contraste cintura-quadril"] },
   figure:           { l:"Figure",           i:"⚡", g:"F", c:C.green,  ideal:"Forma X perfeita. Músculo visível com feminilidade.", pts:["ombros","simetria topo-base","definição","cintura"] },
   womens_physique:  { l:"Women's Physique", i:"🔥", g:"F", c:C.amber,  ideal:"Máximo desenvolvimento mantendo forma feminina.", pts:["separação","condicionamento","dorsais","simetria"] },
+  shape_lifestyle:  { l:"Shape Lifestyle",  i:"🏋", g:"M", c:C.green,  ideal:"Praticante de musculação não-competidor buscando shape estético top, simetria, proporção e correções posturais. Avaliação completa (mesma profundidade da competição) sem exigência de palco.", pts:["simetria","proporção","postura","pontos fracos","estética geral"] },
 };
 
 type Athlete = { nome: string; idade: string; peso: string; altura: string; semanas: string; fase: string };
