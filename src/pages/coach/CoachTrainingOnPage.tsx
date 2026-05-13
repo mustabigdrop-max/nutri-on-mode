@@ -11,7 +11,9 @@ import TrainingFeedbackForm from "@/components/coach/TrainingFeedbackForm";
 
 export default function CoachTrainingOnPage() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [athlete, setAthlete] = useState<AthleteOption | null>(null);
+  const autoTriggeredRef = useRef(false);
   const [sync, setSync] = useState<any>(null);
 
   // APEX corrective flow
