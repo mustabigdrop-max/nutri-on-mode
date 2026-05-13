@@ -199,7 +199,14 @@ export default function CorrectivePlanViewer({
 
       {tab === "semana" && (
         <div className="space-y-4">
-          {days.length === 0 && <Empty text="Sem dias detectados na resposta." raw={parsed.semanaRaw} />}
+          {days.length === 0 && (
+            <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 text-xs text-amber-100/90">
+              <div className="font-bold text-amber-400 mb-1">Sem dias detectados na estrutura padrão.</div>
+              Abra a aba <span className="font-semibold">"📄 Recomendações (texto completo)"</span> para ler tudo
+              que a IA retornou e usar como base para montar o treino no TrainingON e o plano alimentar
+              manualmente.
+            </div>
+          )}
           {days.map((d, i) => {
             const exs = parseExercises(d.body);
             return (
