@@ -1079,7 +1079,23 @@ export default function ApexVisualV3() {
               </div>
             </div>
 
-            {done && (() => {
+            {done && selectedAthlete && (
+              <div style={{ marginBottom:12, padding:"10px 14px", borderRadius:10, fontSize:11, fontWeight:600, letterSpacing:".05em",
+                background: savingState==="saved"?C.greenDim:savingState==="error"?C.redDim:savingState==="saving"?C.apexDim:C.card,
+                border:`1px solid ${savingState==="saved"?C.green+"66":savingState==="error"?C.red+"66":savingState==="saving"?C.apex+"66":C.border}`,
+                color: savingState==="saved"?C.green:savingState==="error"?C.red:savingState==="saving"?C.apex:C.textSec }}>
+                {savingState==="saving" && "💾 Salvando avaliação no histórico do atleta…"}
+                {savingState==="saved" && `✔ Avaliação salva no histórico de ${selectedAthlete.nome} (semana ${(history?.[0]?.semana_numero) || "?"}).`}
+                {savingState==="error" && "✖ Falha ao salvar histórico. Tente novamente."}
+                {savingState==="idle" && "💾 Aguardando salvamento…"}
+              </div>
+            )}
+            {done && !selectedAthlete && (
+              <div style={{ marginBottom:12, padding:"10px 14px", borderRadius:10, fontSize:11, color:C.amber, background:C.amber+"15", border:`1px solid ${C.amber}55` }}>
+                ⚠ Esta análise não foi salva no histórico — nenhum atleta cadastrado foi vinculado antes da análise.
+              </div>
+            )}
+
               const missing = SECTION_CHECK.filter(sc => {
                 if (sc.key === "farma" && !temProtocolo) return false;
                 return !((S as any)[sc.key] || "").trim();
