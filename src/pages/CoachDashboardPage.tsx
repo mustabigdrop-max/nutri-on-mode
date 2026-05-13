@@ -352,9 +352,6 @@ const CoachDashboardPage = () => {
             <SendProtocolModule coachProfileId={profile.id} coachUserId={user?.id || ""} />
           </TabsContent>
 
-          <TabsContent value="apex-visual" className="mt-4">
-            <ApexVisualDashboard coachId={profile.id} />
-          </TabsContent>
 
           <TabsContent value="overview" className="mt-4">
         <div className="grid md:grid-cols-3 gap-6">
