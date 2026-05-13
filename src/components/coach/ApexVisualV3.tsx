@@ -544,14 +544,38 @@ export default function ApexVisualV3() {
       bgSoft: [245, 247, 252] as [number, number, number],
     };
 
+    // ===== ESCALA TIPOGRÁFICA PDF (espelha tokens T do componente) =====
+    // body 13.5px web ≈ 10pt PDF · lh 1.7 web → 1.5 PDF · prose 760px ≈ 175mm
+    const PT = {
+      h1: 18,        // título da capa
+      h2: 11,        // títulos de seção
+      h3: 10,        // sub-cabeçalhos / labels
+      body: 10,      // texto corrido
+      small: 8.5,    // anotações / diag
+      caption: 7.5,  // rodapé / pílulas label
+      lhBody: 1.5,
+      lhTight: 1.35,
+      lhHeading: 1.2,
+      // espaçamentos em mm
+      spXS: 1.5,
+      spSM: 3,
+      spMD: 5,
+      spLG: 8,
+      spXL: 11,
+      // largura de prosa (clamped a maxW)
+      proseW: Math.min(maxW, 175),
+      trackTitle: 0.25,  // letter-spacing aproximado em pt
+    };
+
     const need = (h: number) => { if (y + h > H - M) { pdf.addPage(); y = M; } };
 
-    const text = (txt: string, opts: { size?: number; bold?: boolean; color?: [number, number, number]; indent?: number; lh?: number } = {}) => {
-      const { size = 10, bold = false, color = RGB.ink, indent = 0, lh = 1.35 } = opts;
+    const text = (txt: string, opts: { size?: number; bold?: boolean; color?: [number, number, number]; indent?: number; lh?: number; width?: number } = {}) => {
+      const { size = PT.body, bold = false, color = RGB.ink, indent = 0, lh = PT.lhBody, width } = opts;
       pdf.setFont("helvetica", bold ? "bold" : "normal");
       pdf.setFontSize(size);
       pdf.setTextColor(...color);
-      const lines = pdf.splitTextToSize(txt, maxW - indent);
+      const w = (width ?? PT.proseW) - indent;
+      const lines = pdf.splitTextToSize(txt, w);
       const lineH = size * 0.3528 * lh;
       for (const ln of lines) {
         need(lineH);
@@ -561,50 +585,51 @@ export default function ApexVisualV3() {
     };
 
     const sectionHeader = (num: number, title: string, accent: [number, number, number]) => {
-      need(14);
-      y += 2;
+      need(PT.spLG + PT.spMD);
+      y += PT.spSM;
+      const barH = 9;
       pdf.setFillColor(...accent);
-      pdf.rect(M, y, 3, 8, "F");
+      pdf.rect(M, y, 3, barH, "F");
       pdf.setFillColor(...RGB.bgSoft);
-      pdf.rect(M + 3, y, maxW - 3, 8, "F");
+      pdf.rect(M + 3, y, maxW - 3, barH, "F");
       pdf.setFont("helvetica", "bold");
-      pdf.setFontSize(10);
+      pdf.setFontSize(PT.h2);
       pdf.setTextColor(...accent);
-      pdf.text(`${String(num).padStart(2, "0")}`, M + 6, y + 5.5);
+      pdf.text(`${String(num).padStart(2, "0")}`, M + 6, y + 6.2);
       pdf.setTextColor(...RGB.ink);
-      pdf.text(title, M + 14, y + 5.5);
-      y += 11;
+      pdf.setCharSpace(PT.trackTitle);
+      pdf.text(title.toUpperCase(), M + 16, y + 6.2);
+      pdf.setCharSpace(0);
+      y += barH + PT.spMD;
     };
 
     const sectionBody = (body: string) => {
       const cleaned = (body || "").trim();
       if (!cleaned) {
-        text("— sem conteúdo gerado —", { size: 9, color: RGB.mute });
-        y += 2;
+        text("— sem conteúdo gerado —", { size: PT.small, color: RGB.mute });
+        y += PT.spSM;
         return;
       }
       const paragraphs = cleaned.split(/\n+/).map(p => p.trim()).filter(Boolean);
       for (const p of paragraphs) {
-        // bullet?
         if (/^[-•*]\s+/.test(p)) {
           const t = p.replace(/^[-•*]\s+/, "");
-          need(5);
+          need(PT.body * 0.3528 * PT.lhBody);
           pdf.setFillColor(...RGB.brand);
-          pdf.circle(M + 2, y - 1.2, 0.7, "F");
-          text(t, { size: 9.5, color: RGB.ink, indent: 5 });
+          pdf.circle(M + 2, y - 1.4, 0.8, "F");
+          text(t, { size: PT.body, color: RGB.ink, indent: 6 });
         } else if (/^[A-Z_ ]{3,}:/.test(p)) {
-          // KEY: value
           const idx = p.indexOf(":");
           const k = p.slice(0, idx);
           const v = p.slice(idx + 1).trim();
-          text(k + ":", { size: 9.5, bold: true, color: RGB.brand });
-          if (v) text(v, { size: 9.5, color: RGB.ink, indent: 4 });
+          text(k + ":", { size: PT.h3, bold: true, color: RGB.brand, lh: PT.lhTight });
+          if (v) text(v, { size: PT.body, color: RGB.ink, indent: 4 });
         } else {
-          text(p, { size: 9.5, color: RGB.ink });
+          text(p, { size: PT.body, color: RGB.ink, lh: PT.lhBody });
         }
-        y += 1.5;
+        y += PT.spSM;
       }
-      y += 2;
+      y += PT.spMD;
     };
 
     const hr = () => { need(4); pdf.setDrawColor(...RGB.line); pdf.setLineWidth(0.2); pdf.line(M, y, W - M, y); y += 4; };
@@ -613,12 +638,12 @@ export default function ApexVisualV3() {
     pdf.setFillColor(8, 12, 24);
     pdf.rect(0, 0, W, 50, "F");
     pdf.setTextColor(255, 255, 255);
-    pdf.setFont("helvetica", "bold"); pdf.setFontSize(22);
+    pdf.setFont("helvetica", "bold"); pdf.setFontSize(PT.h1);
     pdf.text("APEX VISUAL v3", M, 22);
-    pdf.setFont("helvetica", "normal"); pdf.setFontSize(10);
+    pdf.setFont("helvetica", "normal"); pdf.setFontSize(PT.body);
     pdf.setTextColor(180, 200, 230);
     pdf.text("Análise Visual + Postura + Farmacologia + Manobras de Elite", M, 30);
-    pdf.setFontSize(9);
+    pdf.setFontSize(PT.small);
     pdf.text(`Categoria: ${cat.l}  ·  Atleta: ${nome || "—"}  ·  ${idade ? idade + " anos · " : ""}${peso ? peso + "kg · " : ""}${altura ? altura + "cm" : ""}`, M, 38);
     pdf.text(`Semanas para o show: ${semanas || "—"}  ·  Fase: ${fase}  ·  Emitido: ${new Date().toLocaleDateString("pt-BR")}`, M, 44);
     y = 60;
@@ -668,7 +693,7 @@ export default function ApexVisualV3() {
 
     // Scores tabela
     if (segs.length) {
-      text("Scores por segmento", { size: 10, bold: true, color: RGB.ink });
+      text("Scores por segmento", { size: PT.h3, bold: true, color: RGB.ink, lh: PT.lhTight });
       y += 1;
       const rowH = 6.5;
       segs.forEach(s => {
@@ -697,7 +722,7 @@ export default function ApexVisualV3() {
 
     // Plano de ataque resumo
     if (meta.p1 || meta.p2 || meta.p3) {
-      text("Plano de ataque", { size: 10, bold: true, color: RGB.ink });
+      text("Plano de ataque", { size: PT.h3, bold: true, color: RGB.ink, lh: PT.lhTight });
       y += 1;
       const items: { n: number; v?: string; c: [number, number, number] }[] = [
         { n: 1, v: meta.p1, c: RGB.red },
