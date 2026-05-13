@@ -50,7 +50,7 @@ import {
 // ─── Categorias ──────────────────────────────────────────────────
 type CategoryKey =
   | "mens_physique" | "classic_physique" | "bodybuilding"
-  | "bikini" | "wellness" | "figure" | "womens_physique";
+  | "bikini" | "wellness" | "figure" | "womens_physique" | "shape_lifestyle";
 
 interface CategoryDef {
   label: string; icon: string; gender: "M" | "F"; color: string;
@@ -106,6 +106,13 @@ const CATEGORIES: Record<CategoryKey, CategoryDef> = {
     criteria: ["Desenvolvimento alto","Definição clara","Simetria","Condicionamento alto","Pernas desenvolvidas","Dorsal completo","Peitoral visível","Deltoides 3D","Cintura fina","Posing técnico"],
     keyPoints: ["separação muscular","condicionamento","dorsais","simetria"],
     poses: ["Front double biceps","Front lat spread","Side chest","Side triceps","Back double biceps","Back lat spread","Abdominals"],
+  },
+  shape_lifestyle: {
+    label: "Shape Lifestyle", icon: "🏋", gender: "M", color: "#0F8A63",
+    ideal: "Praticante de musculação não-competidor buscando shape estético top — simetria, proporção, postura corrigida e correção de pontos fracos. Mesma profundidade de avaliação da competição, sem exigência de palco.",
+    criteria: ["Simetria geral","Proporção ombro-cintura","Postura e alinhamento","Pontos fracos visuais","Condicionamento estético","Densidade muscular","Definição abdominal","Vascularidade saudável","Equilíbrio MMSS/MMII","Apresentação geral"],
+    keyPoints: ["simetria","proporção","postura","pontos fracos","estética geral"],
+    poses: ["Frente relaxada","Costas relaxada","Lateral","Pose livre"],
   },
 };
 
