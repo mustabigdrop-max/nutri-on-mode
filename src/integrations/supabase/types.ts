@@ -6773,6 +6773,39 @@ export type Database = {
         }
         Relationships: []
       }
+      training_feedback: {
+        Row: {
+          athlete_id: string
+          coach_id: string | null
+          created_at: string | null
+          id: string
+          muscle_connections: Json | null
+          notes: string | null
+          pump_scores: Json | null
+          session_date: string
+        }
+        Insert: {
+          athlete_id: string
+          coach_id?: string | null
+          created_at?: string | null
+          id?: string
+          muscle_connections?: Json | null
+          notes?: string | null
+          pump_scores?: Json | null
+          session_date?: string
+        }
+        Update: {
+          athlete_id?: string
+          coach_id?: string | null
+          created_at?: string | null
+          id?: string
+          muscle_connections?: Json | null
+          notes?: string | null
+          pump_scores?: Json | null
+          session_date?: string
+        }
+        Relationships: []
+      }
       training_nutrition_sync: {
         Row: {
           cardio_mesmo_dia: boolean | null
