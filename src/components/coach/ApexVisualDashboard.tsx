@@ -930,12 +930,7 @@ Suporte em uso: ${suporte || "não informado"}` : "";
               display: "flex", alignItems: "center", justifyContent: "center",
               boxShadow: `0 0 30px ${APEX.electricGlow}`,
             }}>
-              <div style={{
-                position: "absolute", left: 0, right: 0, height: 2,
-                background: `linear-gradient(90deg, transparent, ${APEX.electric}, transparent)`,
-                animation: "apex-scanLine 2.5s ease-in-out infinite", boxShadow: `0 0 10px ${APEX.electric}`,
-              }} />
-              <ScanLine size={28} color={APEX.electric} strokeWidth={2} />
+              <ApexSymbol size={44} color={APEX.electric} animated />
             </div>
 
             <div>
