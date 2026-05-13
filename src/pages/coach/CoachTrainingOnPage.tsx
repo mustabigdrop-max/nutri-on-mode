@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Dumbbell, AlertTriangle, ArrowRight, FlaskConical, Sparkles, CheckCircle2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import AthleteSelector, { AthleteOption } from "@/components/coach/AthleteSelector";
+import CorrectivePlanViewer from "@/components/coach/CorrectivePlanViewer";
+import TrainingFeedbackForm from "@/components/coach/TrainingFeedbackForm";
 
 export default function CoachTrainingOnPage() {
   const navigate = useNavigate();
@@ -18,6 +20,7 @@ export default function CoachTrainingOnPage() {
   const [generatingTraining, setGeneratingTraining] = useState(false);
   const [correctiveTraining, setCorrectiveTraining] = useState<string>("");
   const [coachId, setCoachId] = useState<string | null>(null);
+  const [apexScores, setApexScores] = useState<Record<string, number>>({});
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setCoachId(data.user?.id ?? null));
@@ -66,6 +69,16 @@ export default function CoachTrainingOnPage() {
       .limit(1)
       .maybeSingle();
     setCorrectiveTraining((planRow as any)?.training_text || "");
+
+    // Latest APEX scores by muscle (used for badges + AI volume multiplier)
+    const { data: latestAnalysis } = await supabase
+      .from("apex_analyses" as any)
+      .select("scores, created_at")
+      .eq("athlete_id", athlete.id)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    setApexScores(((latestAnalysis as any)?.scores as Record<string, number>) || {});
   }, [athlete?.id]);
 
   useEffect(() => { loadApexSync(); }, [loadApexSync]);
@@ -77,6 +90,7 @@ export default function CoachTrainingOnPage() {
       const { data, error } = await supabase.functions.invoke("training-corrective-generate", {
         body: {
           syncData: apexSyncData,
+          apexScores,
           athlete: {
             name: athlete.nome,
             goal: (athlete as any).objetivo || sync?.training_phase || "",
@@ -215,7 +229,43 @@ export default function CoachTrainingOnPage() {
             </>
           )}
 
-          {/* Corrective training plan output */}
+          {/* APEX volume adjustment summary */}
+          {Object.keys(apexScores).length > 0 && (
+            <Card className="border-border bg-card/60">
+              <CardHeader>
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <FlaskConical className="h-4 w-4 text-amber-400" /> Ajustes de volume por score APEX
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                  {Object.entries(apexScores).map(([m, s]) => {
+                    const mult = s < 5 ? 1.4 : s < 7 ? 1.2 : s >= 8 ? 0.9 : 1.0;
+                    const baseSets = 12;
+                    const adj = Math.round(baseSets * mult);
+                    const tone =
+                      mult > 1.2 ? "text-red-400 border-red-500/40 bg-red-500/5"
+                      : mult > 1.0 ? "text-amber-400 border-amber-500/40 bg-amber-500/5"
+                      : mult < 1.0 ? "text-emerald-400 border-emerald-500/40 bg-emerald-500/5"
+                      : "text-muted-foreground border-border bg-muted/30";
+                    return (
+                      <div key={m} className={`px-3 py-2 rounded-md border text-xs ${tone}`}>
+                        <div className="font-bold capitalize">{m}</div>
+                        <div className="opacity-90">
+                          {baseSets} → {adj} séries ({mult >= 1 ? "+" : ""}{Math.round((mult - 1) * 100)}% · score {s}/10)
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className="text-[10px] text-muted-foreground mt-2">
+                  Multiplicador aplicado automaticamente no protocolo gerado pela IA. Base = 12 séries/grupo.
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Corrective training plan output (parsed) */}
           {correctiveTraining && (
             <Card className="border-blue-500/30 bg-blue-500/5">
               <CardHeader>
@@ -224,11 +274,14 @@ export default function CoachTrainingOnPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <pre className="text-xs whitespace-pre-wrap font-mono text-foreground/90 max-h-[500px] overflow-y-auto">
-                  {correctiveTraining}
-                </pre>
+                <CorrectivePlanViewer text={correctiveTraining} apexScores={apexScores} />
               </CardContent>
             </Card>
+          )}
+
+          {/* Feedback de sessão */}
+          {athlete?.id && coachId && (
+            <TrainingFeedbackForm athleteId={athlete.id} coachId={coachId} apexScores={apexScores} />
           )}
 
           <div className="flex flex-wrap gap-2">

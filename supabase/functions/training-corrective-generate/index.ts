@@ -8,7 +8,14 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-function buildSystemPrompt(syncData: any, athlete: any) {
+function buildSystemPrompt(syncData: any, athlete: any, apexScores: Record<string, number> = {}) {
+  const scoresLine = Object.entries(apexScores)
+    .map(([k, v]) => {
+      const mult =
+        v < 5 ? "x1.4 (+40%)" : v < 7 ? "x1.2 (+20%)" : v >= 8 ? "x0.9 (-10%)" : "x1.0";
+      return `• ${k}: ${v}/10 → multiplicador de volume ${mult}`;
+    })
+    .join("\n");
   const wp = (syncData?.weak_points || [])
     .map((w: any) => `• ${w.muscle}: ${w.score}/10 — ${w.diagnosis || ""}`)
     .join("\n");
@@ -39,6 +46,16 @@ PRIORIDADES DO APEX:
 2. ${syncData?.priorities?.p2 || "—"}
 3. ${syncData?.priorities?.p3 || "—"}
 
+SCORES APEX POR GRUPO MUSCULAR (aplicar multiplicador de volume automático):
+${scoresLine || "— sem dados de score por grupo —"}
+
+REGRA DE MULTIPLICADOR DE VOLUME (obrigatória):
+- score < 5  → +40% volume (séries x 1.4)
+- score < 7  → +20% volume (séries x 1.2)
+- score 7    → volume padrão (x 1.0)
+- score >= 8 → -10% volume (manutenção, x 0.9)
+Para CADA exercício no SEMANA_TIPO, aplique o multiplicador correto e mostre o ajuste no campo VOLUME_AJUSTE no formato: "12 → 17 séries (+40% · score APEX 4/10)".
+
 ━━━ INSTRUÇÕES DE GERAÇÃO ━━━
 Gere protocolo SEMANAL com:
 1. ATIVAÇÃO PRÉ-TREINO (10-15 min): mobilidade para desvios + ativação de inibidos.
@@ -54,7 +71,9 @@ Use EXATAMENTE estes headers (markdown ##):
 Para cada exercício use:
 EXERCICIO: nome
 VARIACAO: variação
+GRUPO: grupo muscular alvo (em minúsculas, ex: deltoides, dorsais, peitoral, quadriceps, posterior, panturrilha, biceps, triceps, gluteos, abdomen)
 SERIES: X × Y reps
+VOLUME_AJUSTE: ajuste aplicado segundo score APEX (ex: "12 → 17 séries (+40% · score 4/10)") ou "padrão"
 RPE: X
 CUE: instrução
 FOCO_CORRETIVO: sim/não + qual ponto fraco do APEX
@@ -72,10 +91,10 @@ Deno.serve(async (req: Request) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY não configurada");
 
-    const { syncData, athlete } = await req.json();
+    const { syncData, athlete, apexScores } = await req.json();
     if (!syncData) throw new Error("syncData ausente");
 
-    const system = buildSystemPrompt(syncData, athlete || {});
+    const system = buildSystemPrompt(syncData, athlete || {}, apexScores || {});
 
     const r = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
