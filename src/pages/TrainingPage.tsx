@@ -353,8 +353,16 @@ Português. Específico. Científico. Zero genérico.`;
         },
       });
       if (error) throw error;
-      if (data.protocol) {
-        setProtocol(data.protocol);
+      const maybeParseJson = (txt: string): any | null => {
+        if (!txt || typeof txt !== "string") return null;
+        const fence = txt.match(/```(?:json)?\s*([\s\S]*?)```/i);
+        const raw = (fence ? fence[1] : txt).trim();
+        try { const o = JSON.parse(raw); return (o && typeof o === "object") ? o : null; } catch { return null; }
+      };
+      let proto = data.protocol;
+      if (!proto && data.content) proto = maybeParseJson(data.content);
+      if (proto && (proto.block_overview || proto.training_days || proto.phase_plan)) {
+        setProtocol(proto);
         const sysName = TRAINING_SYSTEMS.find(s => s.id === trainingSystem)?.nome;
         toast.success(
           `✅ Protocolo gerado${sysName ? ` · ${sysName}` : ""}${fiberProfile ? ` · Fibras ${fiberProfile.dominancia.toUpperCase()}` : ""}${readyCheckin ? ` · Ready ⚡` : ""}`,
@@ -1653,11 +1661,18 @@ function SetRow({ label, detail, note, color, rest }: { label: string; detail: s
 function tryParseJson(raw: string): any | null {
   if (!raw) return null;
   let s = raw.trim();
-  // strip ```json ... ``` fences
-  const fence = s.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/i);
+  // strip ```json ... ``` fences anywhere in the string
+  const fence = s.match(/```(?:json)?\s*([\s\S]*?)```/i);
   if (fence) s = fence[1].trim();
+  if (!(s.startsWith("{") || s.startsWith("["))) {
+    const m = s.match(/[{\[][\s\S]*[}\]]/);
+    if (m) s = m[0];
+  }
   if (!(s.startsWith("{") || s.startsWith("["))) return null;
-  try { return JSON.parse(s); } catch { return null; }
+  try { return JSON.parse(s); } catch {}
+  const last = Math.max(s.lastIndexOf("}"), s.lastIndexOf("]"));
+  if (last > 0) { try { return JSON.parse(s.slice(0, last + 1)); } catch {} }
+  return null;
 }
 
 function humanizeKey(k: string) {
