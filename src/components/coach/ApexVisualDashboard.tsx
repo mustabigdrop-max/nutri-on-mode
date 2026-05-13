@@ -267,7 +267,10 @@ function SegmentBar({ label, score, diag }: { label: string; score: number; diag
 // ─── Main ────────────────────────────────────────────────────────
 interface Props { coachId?: string }
 
-export default function ApexVisualDashboard({ coachId }: Props) {
+export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
+  const { user } = useAuth();
+  const coachId = coachIdProp || user?.id || null;
+
   const [athlete, setAthlete] = useState<AthleteOption | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<CategoryKey>("mens_physique");
   const [photos, setPhotos] = useState<{ front: File | null; back: File | null; side: File | null }>({
@@ -280,6 +283,10 @@ export default function ApexVisualDashboard({ coachId }: Props) {
   const [isDone, setIsDone] = useState(false);
   const [stepIdx, setStepIdx] = useState(0);
 
+  // History
+  const [history, setHistory] = useState<any[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+
   // Loading step animation
   useEffect(() => {
     if (!loading) { setStepIdx(0); return; }
@@ -290,11 +297,38 @@ export default function ApexVisualDashboard({ coachId }: Props) {
   const cat = CATEGORIES[selectedCategory];
   const hasAnyPhoto = !!(photos.front || photos.back || photos.side);
 
+  // Fetch history for selected athlete
+  const fetchHistory = useCallback(async () => {
+    if (!coachId || !athlete?.id) { setHistory([]); return; }
+    setHistoryLoading(true);
+    const { data, error } = await supabase
+      .from("apex_analyses" as any)
+      .select("*")
+      .eq("coach_id", coachId)
+      .eq("athlete_id", athlete.id)
+      .order("created_at", { ascending: false })
+      .limit(5);
+    if (!error) setHistory((data as any[]) || []);
+    setHistoryLoading(false);
+  }, [coachId, athlete?.id]);
+
+  useEffect(() => { fetchHistory(); }, [fetchHistory]);
+
   const reset = () => {
     setIsDone(false);
     setAnalysisResult("");
     setPhotos({ front: null, back: null, side: null });
     setFormData({ semanas: "", compostos: "", obs: "" });
+    setActiveResultTab("scores");
+  };
+
+  const openHistoryItem = (item: any) => {
+    const cat = (Object.keys(CATEGORIES) as CategoryKey[]).find(
+      (k) => k === item.category
+    ) || "mens_physique";
+    setSelectedCategory(cat);
+    setAnalysisResult(item.analysis_text || "");
+    setIsDone(true);
     setActiveResultTab("scores");
   };
 
