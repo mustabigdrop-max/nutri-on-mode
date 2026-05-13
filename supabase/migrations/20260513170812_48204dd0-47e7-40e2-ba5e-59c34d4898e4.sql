@@ -1,0 +1,1 @@
+ALTER TABLE public.competition_athletes ALTER COLUMN categoria DROP NOT NULL;
