@@ -301,7 +301,157 @@ function sanitizeProtocol(protocol: any): any {
   return protocol;
 }
 
-function buildStructuredPrompt(data: any): string {
+// =====================================================================
+// VOLUME ENFORCER — corrige determinísticamente excessos pós-geração.
+// Mirror simplificado de src/lib/trainingVolume.ts (canonicalize + countWorkingSets).
+// =====================================================================
+const _norm = (s: string) =>
+  (s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/\(.*?\)/g, " ").replace(/[^a-z0-9]+/g, " ").trim();
+
+const _SYNS: Array<{ canon: string; tokens: string[] }> = [
+  { canon: "deltoides", tokens: ["deltoide", "deltoides", "ombro", "ombros"] },
+  { canon: "costas", tokens: ["costas", "dorsal", "dorsais", "latissimo", "trapezio", "romboide", "lats"] },
+  { canon: "biceps", tokens: ["biceps", "braquial", "braquiorradial"] },
+  { canon: "triceps", tokens: ["triceps"] },
+  { canon: "peito", tokens: ["peito", "peitoral", "peitorais"] },
+  { canon: "quadriceps", tokens: ["quadriceps", "vasto", "reto femoral"] },
+  { canon: "gluteos", tokens: ["gluteo", "gluteos"] },
+  { canon: "posteriordecoxa", tokens: ["posterior", "isquiotibiais", "isquios", "femoral", "hamstring"] },
+  { canon: "panturrilha", tokens: ["panturrilha", "gastrocnemio", "soleo"] },
+  { canon: "abdomenobliquos", tokens: ["abdomen", "abdominal", "obliquo", "core"] },
+  { canon: "lombar", tokens: ["lombar", "eretor"] },
+  { canon: "antebraco", tokens: ["antebraco"] },
+];
+function _canon(raw: string): string[] {
+  const n = _norm(raw); if (!n) return [];
+  const out = new Set<string>();
+  for (const { canon, tokens } of _SYNS) {
+    if (tokens.some((t) => n.includes(t.replace(/\s+/g, "")))) out.add(canon);
+  }
+  if (out.size === 0) out.add(n.replace(/\s+/g, ""));
+  return Array.from(out);
+}
+function _toInt(v: any): number {
+  if (v == null) return 0;
+  const m = String(v).match(/\d+/); return m ? parseInt(m[0], 10) : 0;
+}
+function _setsOf(ex: any): { top: number; back: number; work: number; total: number } {
+  const s = ex?.structure || {};
+  const top = s.top_set ? _toInt(s.top_set.sets) : 0;
+  const back = s.backoff_sets ? _toInt(s.backoff_sets.sets) : 0;
+  const work = s.work_sets ? _toInt(s.work_sets.sets) : 0;
+  return { top, back, work, total: top + back + work };
+}
+function _exPrimary(ex: any): string[] {
+  const raw = ex?.muscle_target || ex?.primaryMuscle ||
+    (Array.isArray(ex?.muscles) && ex.muscles.length ? ex.muscles[0] : null);
+  return raw ? _canon(String(raw)) : [];
+}
+function _aggregate(days: any[]): Record<string, number> {
+  const out: Record<string, number> = {};
+  (days || []).forEach((d) => (d.exercises || []).forEach((ex: any) => {
+    const sets = _setsOf(ex).total; if (sets <= 0) return;
+    new Set(_exPrimary(ex)).forEach((c) => { out[c] = (out[c] || 0) + sets; });
+  }));
+  return out;
+}
+
+/**
+ * Apara séries determinísticamente até cada músculo ficar dentro de weekly_sets * 1.10.
+ * Ordem de redução: work_sets → backoff_sets → top_set (último a ser tocado).
+ * Retorna { protocol, fixes: [{muscle, before, after, prescribed}], anyFixed }.
+ */
+function enforceVolumeLimits(protocol: any, toleranceFactor = 1.10): { protocol: any; fixes: any[]; anyFixed: boolean } {
+  const fixes: any[] = [];
+  const priorities: any[] = protocol?.block_overview?.muscle_priorities || [];
+  const days: any[] = protocol?.training_days || [];
+  if (!priorities.length || !days.length) return { protocol, fixes, anyFixed: false };
+
+  const limits: Record<string, { prescribed: number; max: number; muscleLabel: string }> = {};
+  for (const mp of priorities) {
+    const prescribed = Number(mp.weekly_sets) || 0; if (prescribed <= 0) continue;
+    const max = Math.floor(prescribed * toleranceFactor);
+    _canon(mp.muscle).forEach((c) => { limits[c] = { prescribed, max, muscleLabel: mp.muscle }; });
+  }
+
+  // Itera até estabilizar (ou até 50 passes de segurança)
+  for (let pass = 0; pass < 50; pass++) {
+    const totals = _aggregate(days);
+    let trimmed = false;
+    for (const [canon, info] of Object.entries(limits)) {
+      const cur = totals[canon] || 0;
+      if (cur <= info.max) continue;
+      const excess = cur - info.max;
+
+      // Acha exercícios que somam para esse canon, ordenados por total de séries DESC.
+      const candidates: Array<{ ex: any; dayIdx: number; exIdx: number; total: number }> = [];
+      days.forEach((d, di) => (d.exercises || []).forEach((ex: any, ei: number) => {
+        if (_exPrimary(ex).includes(canon)) {
+          const t = _setsOf(ex).total;
+          if (t > 0) candidates.push({ ex, dayIdx: di, exIdx: ei, total: t });
+        }
+      }));
+      if (!candidates.length) continue;
+      candidates.sort((a, b) => b.total - a.total);
+
+      let toRemove = excess;
+      for (const c of candidates) {
+        if (toRemove <= 0) break;
+        const s = c.ex.structure || (c.ex.structure = {});
+        // 1) work_sets
+        if (s.work_sets && _toInt(s.work_sets.sets) > 0 && toRemove > 0) {
+          const cur2 = _toInt(s.work_sets.sets);
+          const cut = Math.min(cur2, toRemove);
+          const next = cur2 - cut;
+          if (next <= 0) delete s.work_sets;
+          else s.work_sets.sets = String(next);
+          toRemove -= cut; trimmed = true;
+        }
+        // 2) backoff_sets
+        if (toRemove > 0 && s.backoff_sets && _toInt(s.backoff_sets.sets) > 0) {
+          const cur2 = _toInt(s.backoff_sets.sets);
+          const cut = Math.min(cur2, toRemove);
+          const next = cur2 - cut;
+          if (next <= 0) delete s.backoff_sets;
+          else s.backoff_sets.sets = String(next);
+          toRemove -= cut; trimmed = true;
+        }
+        // 3) top_set (último recurso, preserva pelo menos 1)
+        if (toRemove > 0 && s.top_set && _toInt(s.top_set.sets) > 1) {
+          const cur2 = _toInt(s.top_set.sets);
+          const cut = Math.min(cur2 - 1, toRemove);
+          s.top_set.sets = String(cur2 - cut);
+          toRemove -= cut; trimmed = true;
+        }
+      }
+
+      // Remove exercícios que ficaram totalmente sem séries de trabalho
+      days.forEach((d) => {
+        d.exercises = (d.exercises || []).filter((ex: any) => {
+          if (!_exPrimary(ex).includes(canon)) return true;
+          return _setsOf(ex).total > 0;
+        });
+      });
+
+      if (trimmed) {
+        fixes.push({ muscle: info.muscleLabel, before: cur, after: cur - (excess - toRemove), prescribed: info.prescribed });
+      }
+    }
+    if (!trimmed) break;
+  }
+
+  // Consolida fixes (último valor por músculo)
+  const finalTotals = _aggregate(days);
+  const dedup = new Map<string, any>();
+  fixes.forEach((f) => dedup.set(f.muscle, f));
+  const finalFixes = Array.from(dedup.values()).map((f) => {
+    const canons = _canon(f.muscle);
+    const after = canons.reduce((s, c) => s + (finalTotals[c] || 0), 0);
+    return { ...f, after };
+  });
+
+  return { protocol, fixes: finalFixes, anyFixed: finalFixes.length > 0 };
   const { phase, muscles, level, weeks, days, clientName, equipment, injuries, sessionDuration, stressLevel, supplements, weakPoints, specificGoal, cardio, tab } = data;
   const muscleList = Array.isArray(muscles) ? muscles.join(", ") : muscles;
 
