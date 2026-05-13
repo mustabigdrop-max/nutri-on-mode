@@ -259,6 +259,9 @@ export default function CoachTrainingOnPage() {
 
   return (
     <div className="space-y-4 max-w-5xl">
+      <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="gap-2 -ml-2">
+        <ArrowLeft className="h-4 w-4" /> Voltar
+      </Button>
       <Card className="border-blue-500/20">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
