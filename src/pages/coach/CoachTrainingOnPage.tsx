@@ -28,6 +28,20 @@ export default function CoachTrainingOnPage() {
     supabase.auth.getUser().then(({ data }) => setCoachId(data.user?.id ?? null));
   }, []);
 
+  // Auto-load athlete from URL (?athlete=<id>)
+  useEffect(() => {
+    const aid = searchParams.get("athlete");
+    if (!aid || athlete?.id === aid) return;
+    (async () => {
+      const { data } = await supabase
+        .from("competition_athletes")
+        .select("id,nome,patient_user_id,fase_atual,data_competicao")
+        .eq("id", aid)
+        .maybeSingle();
+      if (data) setAthlete(data as AthleteOption);
+    })();
+  }, [searchParams, athlete?.id]);
+
   useEffect(() => {
     if (!athlete?.patient_user_id) { setSync(null); return; }
     (async () => {
