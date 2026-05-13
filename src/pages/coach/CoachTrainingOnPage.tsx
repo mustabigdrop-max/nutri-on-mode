@@ -471,6 +471,8 @@ export default function CoachTrainingOnPage() {
       setGeneratingTraining(false);
     }
   };
+
+  return (
     <div className="space-y-4 max-w-5xl">
       <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="gap-2 -ml-2">
         <ArrowLeft className="h-4 w-4" /> Voltar
