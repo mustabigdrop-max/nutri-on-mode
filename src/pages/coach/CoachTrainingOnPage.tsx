@@ -90,6 +90,7 @@ export default function CoachTrainingOnPage() {
       const { data, error } = await supabase.functions.invoke("training-corrective-generate", {
         body: {
           syncData: apexSyncData,
+          apexScores,
           athlete: {
             name: athlete.nome,
             goal: (athlete as any).objetivo || sync?.training_phase || "",
