@@ -813,7 +813,8 @@ export default function ApexVisualV3() {
           {(done || streaming) && (
             <div style={{ display:"flex", gap:8 }}>
               {streaming && <div style={{ padding:"6px 12px", borderRadius:8, background:cat.c+"22", border:`1px solid ${cat.c}55`, fontSize:10, color:cat.c, fontWeight:700, letterSpacing:".1em" }}>● ANALISANDO</div>}
-              {done && <button onClick={exportarPDF} style={{ padding:"6px 14px", borderRadius:8, background:cat.c+"22", border:`1px solid ${cat.c}66`, color:cat.c, fontSize:11, cursor:"pointer", fontFamily:"inherit", letterSpacing:".05em", fontWeight:700 }}>⬇ EXPORTAR PDF</button>}
+              {done && <button onClick={() => exportarPDF(false)} style={{ padding:"6px 14px", borderRadius:8, background:cat.c+"22", border:`1px solid ${cat.c}66`, color:cat.c, fontSize:11, cursor:"pointer", fontFamily:"inherit", letterSpacing:".05em", fontWeight:700 }}>⬇ EXPORTAR PDF</button>}
+              {done && <button onClick={() => exportarPDF(true)} title="Versão com fontes maiores e contraste alto (WCAG AA)" style={{ padding:"6px 14px", borderRadius:8, background:"#ffffff", border:`1px solid #000`, color:"#000", fontSize:11, cursor:"pointer", fontFamily:"inherit", letterSpacing:".05em", fontWeight:700 }}>♿ PDF ACESSÍVEL</button>}
               {done && <button onClick={reset} style={{ padding:"6px 14px", borderRadius:8, background:C.card, border:`1px solid ${C.border}`, color:C.text, fontSize:11, cursor:"pointer", fontFamily:"inherit", letterSpacing:".05em" }}>+ NOVA ANÁLISE</button>}
             </div>
           )}
