@@ -1096,6 +1096,7 @@ export default function ApexVisualV3() {
               </div>
             )}
 
+            {done && (() => {
               const missing = SECTION_CHECK.filter(sc => {
                 if (sc.key === "farma" && !temProtocolo) return false;
                 return !((S as any)[sc.key] || "").trim();
