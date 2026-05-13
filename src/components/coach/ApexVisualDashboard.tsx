@@ -363,6 +363,41 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
       setAnalysisResult(text);
       setIsDone(true);
       setActiveResultTab("scores");
+
+      // Persist to Supabase
+      try {
+        const meta = parseMeta(text);
+        const segments = parseSegments(text);
+        const scoresJson = segments.reduce((acc, s) => {
+          acc[s.label] = s.score;
+          return acc;
+        }, {} as Record<string, number>);
+
+        const { error: insErr } = await supabase.from("apex_analyses" as any).insert({
+          coach_id: coachId,
+          athlete_id: athlete?.id || null,
+          category: selectedCategory,
+          category_label: cat.label,
+          analysis_text: text,
+          bf_estimated: meta.bfEst ? parseFloat(meta.bfEst) : null,
+          bf_target: meta.bfMeta ? parseFloat(meta.bfMeta) : null,
+          weeks_estimated: meta.semEst ? parseInt(meta.semEst, 10) : null,
+          priority_1: meta.p1 || null,
+          priority_2: meta.p2 || null,
+          priority_3: meta.p3 || null,
+          scores: scoresJson,
+        });
+        if (insErr) throw insErr;
+        toast({ title: "✓ Análise APEX salva com sucesso" });
+        fetchHistory();
+      } catch (saveErr: any) {
+        console.error("apex save error", saveErr);
+        toast({
+          title: "Análise gerada",
+          description: "Erro ao salvar histórico — verifique a conexão.",
+          variant: "destructive",
+        });
+      }
     } catch (e: any) {
       toast({
         title: "Erro na análise",
@@ -372,7 +407,7 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
     } finally {
       setLoading(false);
     }
-  }, [athlete, cat, formData, photos]);
+  }, [athlete, cat, formData, photos, coachId, selectedCategory, fetchHistory]);
 
   // ─── RENDER: LOADING ─────────────────────────────────
   if (loading) {
