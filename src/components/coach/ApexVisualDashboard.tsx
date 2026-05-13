@@ -898,16 +898,70 @@ Suporte em uso: ${suporte || "não informado"}` : "";
             className="w-full px-3 py-2 rounded-lg bg-muted border border-border text-sm text-foreground"
           />
         </Field>
-        <Field label="Protocolo / compostos">
-          <input
-            type="text"
-            value={formData.compostos}
-            onChange={(e) => setFormData({ ...formData, compostos: e.target.value })}
-            placeholder="ex: TRT 200mg + Anavar 40mg"
-            className="w-full px-3 py-2 rounded-lg bg-muted border border-border text-sm text-foreground"
-          />
-        </Field>
+        <div>
+          <Field label="💉 Protocolo farmacológico (opcional)">
+            <textarea
+              value={formData.compostos}
+              onChange={(e) => setFormData({ ...formData, compostos: e.target.value })}
+              placeholder="Ex: Testosterona Enantato 300mg/sem, Trembolona Acetato 200mg/sem, Masteron 200mg/sem, HGH 2UI/dia"
+              rows={2}
+              className="w-full px-3 py-2 rounded-lg bg-muted border border-border text-sm text-foreground"
+            />
+          </Field>
+          {formData.compostos && (
+            <div className="flex items-center gap-1.5 mt-2 text-[11px]" style={{ color: "#534AB7" }}>
+              <span>💉</span>
+              <span>Dr. VERTEX integrado — a análise considerará o protocolo farmacológico</span>
+            </div>
+          )}
+        </div>
       </div>
+
+      {/* Campos expandidos do protocolo */}
+      {formData.compostos && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <Field label="Objetivo do ciclo">
+            <select
+              value={objetivoCiclo}
+              onChange={(e) => setObjetivoCiclo(e.target.value)}
+              className="w-full px-3 py-2 rounded-lg bg-muted border border-border text-sm text-foreground"
+            >
+              <option value="cutting">Cutting</option>
+              <option value="bulk">Bulk</option>
+              <option value="recomp">Recomposição</option>
+              <option value="peak">Peak Week</option>
+              <option value="manutencao">Manutenção</option>
+            </select>
+          </Field>
+          <Field label="Semana do ciclo">
+            <input
+              type="number"
+              value={semanaCiclo}
+              onChange={(e) => setSemanaCiclo(e.target.value)}
+              placeholder="Ex: 6"
+              className="w-full px-3 py-2 rounded-lg bg-muted border border-border text-sm text-foreground"
+            />
+          </Field>
+          <Field label="Duração total (sem)">
+            <input
+              type="number"
+              value={duracaoCiclo}
+              onChange={(e) => setDuracaoCiclo(e.target.value)}
+              placeholder="Ex: 16"
+              className="w-full px-3 py-2 rounded-lg bg-muted border border-border text-sm text-foreground"
+            />
+          </Field>
+          <Field label="Suporte em uso">
+            <input
+              type="text"
+              value={suporte}
+              onChange={(e) => setSuporte(e.target.value)}
+              placeholder="Ex: Anastrozol 0.5mg, TUDCA 500mg"
+              className="w-full px-3 py-2 rounded-lg bg-muted border border-border text-sm text-foreground"
+            />
+          </Field>
+        </div>
+      )}
       <Field label="Observações">
         <textarea
           value={formData.obs}
