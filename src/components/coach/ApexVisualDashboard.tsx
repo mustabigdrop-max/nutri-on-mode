@@ -50,7 +50,7 @@ import {
 // ─── Categorias ──────────────────────────────────────────────────
 type CategoryKey =
   | "mens_physique" | "classic_physique" | "bodybuilding"
-  | "bikini" | "wellness" | "figure" | "womens_physique";
+  | "bikini" | "wellness" | "figure" | "womens_physique" | "shape_lifestyle";
 
 interface CategoryDef {
   label: string; icon: string; gender: "M" | "F"; color: string;
