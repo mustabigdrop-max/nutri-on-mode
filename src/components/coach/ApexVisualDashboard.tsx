@@ -396,7 +396,7 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
           return acc;
         }, {} as Record<string, number>);
 
-        const { error: insErr } = await supabase.from("apex_analyses" as any).insert({
+        const { data: inserted, error: insErr } = await supabase.from("apex_analyses" as any).insert({
           coach_id: coachId,
           athlete_id: athlete?.id || null,
           category: selectedCategory,
@@ -409,8 +409,10 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
           priority_2: meta.p2 || null,
           priority_3: meta.p3 || null,
           scores: scoresJson,
-        });
+        }).select("id").single();
         if (insErr) throw insErr;
+        setSavedAnalysisId((inserted as any)?.id || null);
+        await fetchSyncStatus(athlete?.id || null);
         toast({ title: "✓ Análise APEX salva com sucesso" });
         fetchHistory();
       } catch (saveErr: any) {
