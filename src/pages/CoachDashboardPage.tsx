@@ -319,6 +319,9 @@ const CoachDashboardPage = () => {
           <Button onClick={() => navigate("/training")} variant="outline" className="flex items-center gap-2">
             <Dumbbell className="w-4 h-4" /> TrainingON
           </Button>
+          <Button onClick={() => navigate("/coach/apex-visual")} variant="outline" className="flex items-center gap-2">
+            <Scan className="w-4 h-4" /> APEX Visual
+          </Button>
           <Button onClick={() => navigate("/biomechanics")} variant="outline" className="flex items-center gap-2">
             <Bone className="w-4 h-4" /> Biomecânica
           </Button>
@@ -339,9 +342,6 @@ const CoachDashboardPage = () => {
             <TabsTrigger value="send">
               <Send className="w-4 h-4 mr-1" /> Enviar Protocolo
             </TabsTrigger>
-            <TabsTrigger value="apex-visual">
-              <Scan className="w-4 h-4 mr-1" /> APEX Visual
-            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="athletes" className="mt-4">
@@ -352,9 +352,6 @@ const CoachDashboardPage = () => {
             <SendProtocolModule coachProfileId={profile.id} coachUserId={user?.id || ""} />
           </TabsContent>
 
-          <TabsContent value="apex-visual" className="mt-4">
-            <ApexVisualDashboard coachId={profile.id} />
-          </TabsContent>
 
           <TabsContent value="overview" className="mt-4">
         <div className="grid md:grid-cols-3 gap-6">
