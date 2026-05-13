@@ -483,7 +483,7 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
     } finally {
       setGeneratingTraining(false);
     }
-  }, [athlete, coachId, selectedCategory, savedAnalysisId, buildSyncPayload]);
+  }, [athlete, coachId, user?.id, selectedCategory, savedAnalysisId, buildSyncPayload]);
 
   const goToTrainingOn = () => {
     if (!athlete?.id) return;
