@@ -71,7 +71,9 @@ Use EXATAMENTE estes headers (markdown ##):
 Para cada exercício use:
 EXERCICIO: nome
 VARIACAO: variação
+GRUPO: grupo muscular alvo (em minúsculas, ex: deltoides, dorsais, peitoral, quadriceps, posterior, panturrilha, biceps, triceps, gluteos, abdomen)
 SERIES: X × Y reps
+VOLUME_AJUSTE: ajuste aplicado segundo score APEX (ex: "12 → 17 séries (+40% · score 4/10)") ou "padrão"
 RPE: X
 CUE: instrução
 FOCO_CORRETIVO: sim/não + qual ponto fraco do APEX
