@@ -1001,7 +1001,7 @@ export default function ApexVisualV3() {
                   )}
                   {S.impacto && (
                     <Panel icon="👁" title="IMPACTO VISUAL" accent={C.apex} defaultOpen={false}>
-                      <div style={{ fontSize:13, color:C.textSec, lineHeight:1.8, whiteSpace:"pre-wrap" }}>{S.impacto}</div>
+                      <ProseText>{S.impacto}</ProseText>
                     </Panel>
                   )}
                 </div>
@@ -1011,13 +1011,13 @@ export default function ApexVisualV3() {
                 <div>
                   {S.composicao && (
                     <Panel icon="⚖️" title="COMPOSIÇÃO CORPORAL" accent={C.amber}>
-                      <div style={{ fontSize:13, color:C.textSec, lineHeight:1.8, whiteSpace:"pre-wrap" }}>{S.composicao.replace(/BF_ESTIMADO:[^\n]*/i,"").replace(/BF_META:[^\n]*/i,"").replace(/MASSA_MAGRA_EST:[^\n]*/i,"").replace(/SEMANAS_META:[^\n]*/i,"").replace(/VEREDICTO_FASE:[^\n]*/i,"").trim()}</div>
+                      <ProseText>{S.composicao.replace(/BF_ESTIMADO:[^\n]*/i,"").replace(/BF_META:[^\n]*/i,"").replace(/MASSA_MAGRA_EST:[^\n]*/i,"").replace(/SEMANAS_META:[^\n]*/i,"").replace(/VEREDICTO_FASE:[^\n]*/i,"").trim()}</ProseText>
                     </Panel>
                   )}
                   {S.manobra && (
                     <Panel icon="🎯" title="DECISÃO DE MANOBRA" accent={C.red}>
-                      <div style={{ fontSize:11, color:C.textSec, background:C.redDim, border:`1px solid ${C.red}33`, borderRadius:8, padding:"8px 12px", marginBottom:12 }}>Manobras disponíveis com ajuste calórico, cardio e protocolo específico.</div>
-                      <div style={{ fontSize:13, color:C.textSec, lineHeight:1.8, whiteSpace:"pre-wrap" }}>{S.manobra.replace(/MANOBRA_PRINCIPAL:[^\n]*/i,"").replace(/URGENCIA:[^\n]*/i,"").trim()}</div>
+                      <Hint accent={C.red}>Manobras disponíveis com ajuste calórico, cardio e protocolo específico.</Hint>
+                      <ProseText>{S.manobra.replace(/MANOBRA_PRINCIPAL:[^\n]*/i,"").replace(/URGENCIA:[^\n]*/i,"").trim()}</ProseText>
                     </Panel>
                   )}
                 </div>
@@ -1025,22 +1025,22 @@ export default function ApexVisualV3() {
 
               {done && activeTab === "postura" && S.postura && (
                 <Panel icon="🦴" title="DESVIOS POSTURAIS" accent={C.red}>
-                  <div style={{ fontSize:11, color:C.textSec, background:C.redDim, border:`1px solid ${C.red}33`, borderRadius:8, padding:"8px 12px", marginBottom:12 }}>Cada desvio afeta o visual no palco e indica desequilíbrios musculares corrigíveis.</div>
-                  <div style={{ fontSize:13, color:C.textSec, lineHeight:1.8, whiteSpace:"pre-wrap" }}>{S.postura}</div>
+                  <Hint accent={C.red}>Cada desvio afeta o visual no palco e indica desequilíbrios musculares corrigíveis.</Hint>
+                  <ProseText>{S.postura}</ProseText>
                 </Panel>
               )}
 
               {done && activeTab === "correcoes" && S.correcoes && (
                 <Panel icon="🔧" title="CORREÇÕES POSTURAIS" accent={C.apex}>
-                  <div style={{ fontSize:11, color:C.textSec, background:C.apexDim, border:`1px solid ${C.apex}33`, borderRadius:8, padding:"8px 12px", marginBottom:12 }}>Execute antes de cada sessão do grupo afetado.</div>
-                  <div style={{ fontSize:13, color:C.textSec, lineHeight:1.8, whiteSpace:"pre-wrap" }}>{S.correcoes}</div>
+                  <Hint accent={C.apex}>Execute antes de cada sessão do grupo afetado.</Hint>
+                  <ProseText>{S.correcoes}</ProseText>
                 </Panel>
               )}
 
               {done && activeTab === "protocolo" && S.fracos && (
                 <Panel icon="⚡" title="PROTOCOLO DE EXERCÍCIOS CORRETIVOS" accent={C.amber}>
-                  <div style={{ fontSize:11, color:C.textSec, background:C.goldDim, border:`1px solid ${C.gold}33`, borderRadius:8, padding:"8px 12px", marginBottom:12 }}>Para cada ponto fraco: 3 exercícios (ativação/sobrecarga/pump), frequência e tempo de resposta.</div>
-                  <div style={{ fontSize:13, color:C.textSec, lineHeight:1.8, whiteSpace:"pre-wrap" }}>{S.fracos}</div>
+                  <Hint accent={C.gold}>Para cada ponto fraco: 3 exercícios (ativação/sobrecarga/pump), frequência e tempo de resposta.</Hint>
+                  <ProseText>{S.fracos}</ProseText>
                 </Panel>
               )}
 
@@ -1053,12 +1053,12 @@ export default function ApexVisualV3() {
                     </div>
                   )}
                   <Panel icon="💉" title="DR. VERTEX — ANÁLISE FARMACOLÓGICA INTEGRADA" accent={C.purple}>
-                    <div style={{ fontSize:11, color:C.textSec, background:C.purpleDim, border:`1px solid ${C.purple}33`, borderRadius:8, padding:"8px 12px", marginBottom:12 }}>Composto a composto · sinergias · próximo nível · fitoterápicos · gestão E2 · cardiovascular · recuperação do eixo.</div>
-                    <div style={{ fontSize:13, color:C.textSec, lineHeight:1.8, whiteSpace:"pre-wrap" }}>{S.farma}</div>
+                    <Hint accent={C.purple}>Composto a composto · sinergias · próximo nível · fitoterápicos · gestão E2 · cardiovascular · recuperação do eixo.</Hint>
+                    <ProseText>{S.farma}</ProseText>
                   </Panel>
                   {S.nutricao && (
                     <Panel icon="🥗" title="NUTRIÇÃO INTEGRADA AO PROTOCOLO" accent={C.green} defaultOpen={false}>
-                      <div style={{ fontSize:13, color:C.textSec, lineHeight:1.8, whiteSpace:"pre-wrap" }}>{S.nutricao}</div>
+                      <ProseText>{S.nutricao}</ProseText>
                     </Panel>
                   )}
                 </div>
@@ -1068,18 +1068,18 @@ export default function ApexVisualV3() {
                 <div>
                   {S.ganha && (
                     <Panel icon="✅" title="GANHA PONTOS" accent={C.green}>
-                      <div style={{ fontSize:13, color:C.textSec, lineHeight:1.8, whiteSpace:"pre-wrap" }}>{S.ganha}</div>
+                      <ProseText>{S.ganha}</ProseText>
                     </Panel>
                   )}
                   {S.perde && (
                     <Panel icon="⚠️" title="PERDE PONTOS" accent={C.red}>
-                      <div style={{ fontSize:13, color:C.textSec, lineHeight:1.8, whiteSpace:"pre-wrap" }}>{S.perde}</div>
+                      <ProseText>{S.perde}</ProseText>
                     </Panel>
                   )}
                   {S.posing && (
                     <Panel icon="🎭" title="POSING CORRETIVO" accent={C.gold}>
-                      <div style={{ fontSize:11, color:C.textSec, background:C.goldDim, border:`1px solid ${C.gold}33`, borderRadius:8, padding:"8px 12px", marginBottom:12 }}>Cues por pose mandatória — compensar fraquezas + vender pontos fortes.</div>
-                      <div style={{ fontSize:13, color:C.textSec, lineHeight:1.8, whiteSpace:"pre-wrap" }}>{S.posing}</div>
+                      <Hint accent={C.gold}>Cues por pose mandatória — compensar fraquezas + vender pontos fortes.</Hint>
+                      <ProseText>{S.posing}</ProseText>
                     </Panel>
                   )}
                 </div>
@@ -1099,12 +1099,12 @@ export default function ApexVisualV3() {
                   )}
                   {S.plano && (
                     <Panel icon="📋" title="DETALHAMENTO" accent={C.apex} defaultOpen={false}>
-                      <div style={{ fontSize:13, color:C.textSec, lineHeight:1.8, whiteSpace:"pre-wrap" }}>{S.plano.replace(/PRIORIDADE_[123]:[^\n]*/gi,"").trim()}</div>
+                      <ProseText>{S.plano.replace(/PRIORIDADE_[123]:[^\n]*/gi,"").trim()}</ProseText>
                     </Panel>
                   )}
                   {S.veredicto && (
                     <Panel icon="🏆" title="VEREDICTO MASTER" accent={C.gold}>
-                      <div style={{ fontSize:13, color:C.text, lineHeight:1.8, whiteSpace:"pre-wrap", padding:"12px 14px", background:C.goldDim, border:`1px solid ${C.gold}33`, borderRadius:10 }}>{S.veredicto}</div>
+                      <div style={{ padding:"14px 16px", background:C.goldDim, border:`1px solid ${C.gold}33`, borderRadius:10 }}><ProseText tone="primary" emphasis>{S.veredicto}</ProseText></div>
                     </Panel>
                   )}
                 </div>
