@@ -462,7 +462,7 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
       const p = buildSyncPayload();
       const { error } = await supabase.from("apex_training_sync" as any).upsert({
         athlete_id: athlete.id,
-        coach_id: coachId,
+        coach_id: user?.id,
         category: selectedCategory,
         weak_points: p.weakPoints,
         postural_deviations: p.posturalDeviations,
