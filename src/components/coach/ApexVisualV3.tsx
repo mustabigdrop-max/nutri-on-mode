@@ -399,16 +399,36 @@ export default function ApexVisualV3() {
       const athlete: Athlete = { nome, idade, peso, altura, semanas, fase };
       const protocol: Protocol = { compostos, objetivo: objetivoCiclo, semana: semanaCiclo, duracao: duracaoCiclo, suporte, faseCorpo, pesoAtual, pesoPico };
 
-      const { data, error: fnErr } = await supabase.functions.invoke("apex-visual-analyze", {
+      // Timeout de 90s
+      const timeoutPromise = new Promise<never>((_, rej) =>
+        setTimeout(() => rej(new Error("Tempo esgotado (90s). A IA demorou demais para responder — tente novamente.")), 90000)
+      );
+
+      const invokePromise = supabase.functions.invoke("apex-visual-analyze", {
         body: {
           fotos,
           contexto: `Fase corporal declarada: ${fase}. Observação do coach: ${obs || "nenhuma"}. Gere análise APEX v3 completa.`,
           system: buildSystem(cat, athlete, protocol),
         },
       });
-      if (fnErr) throw fnErr;
+
+      const { data, error: fnErr } = await Promise.race([invokePromise, timeoutPromise]) as any;
+      if (fnErr) {
+        const msg = (fnErr as any)?.message || "";
+        if (msg.includes("429") || msg.toLowerCase().includes("rate")) throw new Error("Limite de requisições atingido. Aguarde alguns instantes e tente novamente.");
+        if (msg.includes("402")) throw new Error("Créditos da IA esgotados. Adicione em Settings → Workspace → Usage.");
+        if (msg.toLowerCase().includes("network") || msg.toLowerCase().includes("failed to fetch")) throw new Error("Falha de conexão. Verifique sua internet e tente novamente.");
+        throw new Error(msg || "Falha ao chamar a análise APEX.");
+      }
       if ((data as any)?.error) throw new Error((data as any).error);
       const text: string = (data as any)?.text || "";
+
+      if (!text || text.trim().length < 100) {
+        throw new Error("Resposta vazia ou muito curta da IA. Tente novamente — se persistir, troque/recoloque as fotos.");
+      }
+      if (!/##\s*(IMPACTO_VISUAL|SCORES_SEGMENTOS|VEREDICTO)/i.test(text)) {
+        throw new Error("A IA respondeu fora do formato esperado (sem cabeçalhos ##). Clique em tentar novamente.");
+      }
 
       setStreaming(true); setLoading(false);
       let idx = 0;
@@ -418,10 +438,29 @@ export default function ApexVisualV3() {
         if (idx >= text.length) { clearInterval(iv); setStreaming(false); setDone(true); setActiveTab("overview"); }
       }, 16);
     } catch (e: any) {
-      setError(e?.message || "Erro na análise.");
+      setError(e?.message || "Erro desconhecido na análise.");
       setLoading(false);
+      setStreaming(false);
     }
   };
+
+  // Mapa das 13+1 seções esperadas → checagem de completude
+  const SECTION_CHECK: { key: string; label: string }[] = [
+    { key: "impacto",    label: "Impacto visual" },
+    { key: "composicao", label: "Composição corporal" },
+    { key: "manobra",    label: "Decisão de manobra" },
+    { key: "postura",    label: "Postura · desvios" },
+    { key: "correcoes",  label: "Correções posturais" },
+    { key: "fracos",     label: "Pontos fracos · protocolo" },
+    { key: "farma",      label: "Farmacologia integrada" },
+    { key: "nutricao",   label: "Nutrição da fase" },
+    { key: "ganha",      label: "Ganha pontos" },
+    { key: "perde",      label: "Perde pontos" },
+    { key: "plano",      label: "Plano de ataque" },
+    { key: "posing",     label: "Posing corretivo" },
+    { key: "veredicto",  label: "Veredicto master" },
+  ];
+
 
   const reset = () => { setRaw(""); setDone(false); setError(null); setFotoF(null); setFotoC(null); setFotoL(null); setStreaming(false); };
 
