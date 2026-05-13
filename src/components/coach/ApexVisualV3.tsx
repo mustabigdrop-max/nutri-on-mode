@@ -840,7 +840,22 @@ export default function ApexVisualV3() {
               {temFoto ? <>{cat.i} ANALISAR COM APEX v3 {temProtocolo?"+ DR. VERTEX":""}</> : <>◈ ADICIONE AO MENOS 1 FOTO</>}
             </button>
 
-            {error && <div style={{ marginTop:12, background:C.redDim, border:`1px solid ${C.red}44`, borderRadius:10, padding:"12px 16px", color:C.red, fontSize:12 }}>⚠ {error}</div>}
+            {error && (
+              <div style={{ marginTop:14, background:C.redDim, border:`1.5px solid ${C.red}55`, borderRadius:12, padding:"16px 18px" }}>
+                <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:8 }}>
+                  <span style={{ fontSize:20 }}>⚠️</span>
+                  <div style={{ fontSize:12, fontWeight:800, color:C.red, letterSpacing:".08em", textTransform:"uppercase" }}>Falha na análise APEX</div>
+                </div>
+                <div style={{ fontSize:13, color:C.text, lineHeight:1.6, marginBottom:12 }}>{error}</div>
+                <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
+                  <button onClick={analisar} disabled={!temFoto} style={{ padding:"10px 18px", background:cat.c, border:"none", borderRadius:10, color:"#000", fontSize:12, fontWeight:700, cursor:temFoto?"pointer":"not-allowed", fontFamily:"inherit", letterSpacing:".05em", opacity:temFoto?1:.5 }}>↻ TENTAR NOVAMENTE</button>
+                  <button onClick={() => setError(null)} style={{ padding:"10px 18px", background:C.card, border:`1px solid ${C.border}`, borderRadius:10, color:C.text, fontSize:12, cursor:"pointer", fontFamily:"inherit", letterSpacing:".05em" }}>Fechar</button>
+                </div>
+                <div style={{ fontSize:10, color:C.textSec, marginTop:10, lineHeight:1.5 }}>
+                  Dicas: verifique sua conexão · use fotos nítidas em boa luz · se o erro for de limite, aguarde alguns minutos.
+                </div>
+              </div>
+            )}
           </>
         )}
 
