@@ -38,6 +38,7 @@ const modules: { key: ModuleKey; label: string; icon: any; desc: string }[] = [
   { key: "apex", label: "APEX Visual", icon: Camera, desc: "Análise de fotos por IA" },
   { key: "plano", label: "Plano Alimentar", icon: UtensilsCrossed, desc: "Macros e carb cycling" },
   { key: "training", label: "TrainingON", icon: Dumbbell, desc: "Sistema, fibra e volume" },
+  { key: "pose", label: "Pose AI", icon: ScanLine, desc: "Análise postural MediaPipe" },
   { key: "lab", label: "Exames Lab", icon: FlaskConical, desc: "Score metabólico e alertas" },
   { key: "relatorios", label: "Relatórios", icon: FileBarChart, desc: "Relatório semanal IA" },
 ];
