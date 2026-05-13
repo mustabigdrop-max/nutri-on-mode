@@ -182,6 +182,7 @@ function EliteGenerateSection({ userId }: { userId?: string }) {
   const [cardio, setCardio] = useState("Não");
   const [stressLevel, setStressLevel] = useState("Bom");
   const [supplements, setSupplements] = useState("");
+  const [correctivePrompt, setCorrectivePrompt] = useState("");
   // Protocol
   const [phase, setPhase] = useState("");
   const [muscles, setMuscles] = useState<string[]>([]);
@@ -311,6 +312,7 @@ Integre QUATRO fontes de inteligência em UM protocolo definitivo:
 ${prontidaoBloco}
 ${fibrasBloco}
 ${sistemaBloco}
+${correctivePrompt ? `\n━━━ PROTOCOLO CORRETIVO APEX (colado pelo coach) ━━━\nUse as recomendações abaixo como BASE para os exercícios corretivos, ativações, finalizadores e ajustes de volume por grupo. Integre ao protocolo principal sem duplicar exercícios.\n\n${correctivePrompt}\n━━━ FIM PROTOCOLO CORRETIVO ━━━` : ""}
 
 ━━━ OUTPUT OBRIGATÓRIO ━━━
 1. AQUECIMENTO específico (considera lesões e grupo muscular)
@@ -485,6 +487,21 @@ Português. Específico. Científico. Zero genérico.`;
             <Input value={supplements} onChange={e => setSupplements(e.target.value)} placeholder="creatina, whey..." className="bg-transparent text-sm" style={{ borderColor: BORDER, color: TEXT }} />
           </Field>
         </div>
+
+        <Field label="🔬 Protocolo corretivo APEX (opcional — cole as recomendações)">
+          <Textarea
+            value={correctivePrompt}
+            onChange={e => setCorrectivePrompt(e.target.value)}
+            placeholder="Cole aqui o texto do protocolo corretivo gerado pelo APEX/TrainingON Sync. A IA vai integrar exercícios corretivos, ativações e ajustes de volume ao treino principal."
+            className="bg-transparent text-xs min-h-[120px] font-mono"
+            style={{ borderColor: BORDER, color: TEXT }}
+          />
+          {correctivePrompt && (
+            <div className="text-[10px] mt-1" style={{ color: GREEN }}>
+              ✓ {correctivePrompt.length} caracteres — será integrado ao protocolo
+            </div>
+          )}
+        </Field>
 
         <Button onClick={() => setStep(2)} className="w-full font-bold text-sm h-12 rounded-xl" style={{ background: GREEN, color: BG }}>
           Continuar para Protocolo <ChevronRight className="w-4 h-4 ml-1" />
