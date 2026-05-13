@@ -331,7 +331,28 @@ export default function CoachTrainingOnPage() {
   if (sync?.volume_sets_semana > 18 && sync?.tempo_sessao_min > 75) conflitos.push("Volume alto + sessão longa: risco de overreach");
   if (sync?.musculos_prioritarios?.includes("pernas") && !sync?.training_phase?.toLowerCase().includes("bulk")) {
     conflitos.push("Prioridade em pernas fora de bulk: ajustar CHO no dia +30%");
-  }
+
+  const trainingMethod = String(sync?.sistema_treino || "").toLowerCase();
+
+  const handleImportFromApex = () => {
+    const newVolumeMap: Record<string, number> = {};
+    apexWeakPoints.forEach((point) => {
+      const cfg = getVolumeFromApexScore(point.score, trainingMethod);
+      newVolumeMap[point.muscle] = cfg.setsPerWeek;
+    });
+    setWeeklyVolume(newVolumeMap);
+    setApexImported(true);
+    setMethodConflicts(checkMethodCompatibility(apexWeakPoints, trainingMethod, newVolumeMap));
+  };
+
+  const autoFixConflicts = () => {
+    const fixed = { ...weeklyVolume };
+    methodConflicts.forEach((c) => {
+      if (c.fix === "increase_volume") fixed[c.muscle] = c.suggestedVolume;
+    });
+    setWeeklyVolume(fixed);
+    setMethodConflicts([]);
+  };
 
   return (
     <div className="space-y-4 max-w-5xl">
