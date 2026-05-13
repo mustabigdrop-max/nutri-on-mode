@@ -127,10 +127,31 @@ export default function AthleteTodayTrainingPage() {
   const today = new Date();
   const todayKey = DAY_NAMES[today.getDay()];
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(true); }, []);
 
-  const load = async () => {
-    setLoading(true);
+  // Realtime: refetch automatically when APEX/coach data changes
+  useEffect(() => {
+    if (!athleteRecord?.id) return;
+    const filter = `athlete_id=eq.${athleteRecord.id}`;
+    const channel = supabase
+      .channel(`athlete-today-${athleteRecord.id}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "corrective_training_plans", filter }, () => {
+        toast.info("🔄 Treino atualizado pelo coach");
+        load(false);
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "apex_training_sync", filter }, () => {
+        load(false);
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "apex_analyses", filter }, () => {
+        toast.info("🔬 Nova análise APEX recebida");
+        load(false);
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [athleteRecord?.id]);
+
+  const load = async (showSpinner = true) => {
+    if (showSpinner) setLoading(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { setLoading(false); return; }
@@ -176,7 +197,7 @@ export default function AthleteTodayTrainingPage() {
       setScores(lastApex?.scores ?? null);
     } catch (e) {
       console.error(e);
-      toast.error("Erro ao carregar treino do dia");
+      if (showSpinner) toast.error("Erro ao carregar treino do dia");
     } finally {
       setLoading(false);
     }
