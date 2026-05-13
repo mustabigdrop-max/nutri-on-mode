@@ -1,7 +1,9 @@
 import { useMemo, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ClipboardList, Flame, Zap, TrendingUp, Link2 } from "lucide-react";
+import { ClipboardList, Flame, Zap, TrendingUp, Link2, FileText, Copy, Check } from "lucide-react";
+import { useEffect } from "react";
+import { Button } from "@/components/ui/button";
 
 // ─── Parsing helpers ────────────────────────────────────────────
 function section(text: string, header: string, nextHeaders: string[] = []): string {
