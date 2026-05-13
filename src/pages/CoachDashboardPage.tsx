@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Users, AlertTriangle, TrendingUp, Search, Bell, Settings, UserPlus, ArrowUpRight, Link2, Copy, Loader2, Trash2, Zap, Dumbbell, FlaskConical, Bone, Flame, ArrowLeft, Handshake, Send, Trophy, Library } from "lucide-react";
+import { Users, AlertTriangle, TrendingUp, Search, Bell, Settings, UserPlus, ArrowUpRight, Link2, Copy, Loader2, Trash2, Zap, Dumbbell, FlaskConical, Bone, Flame, ArrowLeft, Handshake, Send, Trophy, Library, Scan } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "@/hooks/use-toast";
 import {
@@ -21,6 +21,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import SendProtocolModule from "@/components/coach/SendProtocolModule";
 import AthleteRoster from "@/components/coach/AthleteRoster";
 import CoachHub from "@/pages/CoachHub";
+import ApexVisualDashboard from "@/components/coach/ApexVisualDashboard";
 
 interface PatientRow {
   id: string;
@@ -341,6 +342,9 @@ const CoachDashboardPage = () => {
             <TabsTrigger value="send">
               <Send className="w-4 h-4 mr-1" /> Enviar Protocolo
             </TabsTrigger>
+            <TabsTrigger value="apex-visual">
+              <Scan className="w-4 h-4 mr-1" /> APEX Visual
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="hub" className="mt-4 -mx-4 md:-mx-6">
@@ -355,6 +359,10 @@ const CoachDashboardPage = () => {
 
           <TabsContent value="send" className="mt-4">
             <SendProtocolModule coachProfileId={profile.id} coachUserId={user?.id || ""} />
+          </TabsContent>
+
+          <TabsContent value="apex-visual" className="mt-4">
+            <ApexVisualDashboard coachId={profile.id} />
           </TabsContent>
 
           <TabsContent value="overview" className="mt-4">
