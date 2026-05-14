@@ -1477,8 +1477,10 @@ Suporte em uso: ${suporte || "não informado"}` : "";
 Objetivo do ciclo: ${objetivoCiclo}
 Semana ${semanaCiclo || "não informada"} de ${duracaoCiclo || "não informada"} semanas
 Suporte em uso: ${suporte || "não informado"}` : "";
-            const system = buildSystemPrompt(cat, athleteName, protocoloCompleto);
-            const contexto = `Atleta: ${athleteName} | Semanas para o show: ${formData.semanas || "n/d"} | Protocolo: ${formData.compostos || "não informado"} | Obs: ${formData.obs || "nenhuma"}\n\nGere a análise APEX completa.`;
+            const clinicalBlock = buildClinicalBlock(clinical, posturalChecks, disfuncoesChecks);
+            const system = buildSystemPrompt(cat, athleteName, protocoloCompleto, clinicalBlock);
+            const contextoBase = `Atleta: ${athleteName} | Semanas para o show: ${formData.semanas || "n/d"} | Protocolo: ${formData.compostos || "não informado"} | Obs: ${formData.obs || "nenhuma"}`;
+            const contexto = `${contextoBase}${clinicalBlock ? `\n\n━━━ DADOS CLÍNICOS / POSTURAIS ━━━\n${clinicalBlock}` : ""}\n\nGere a análise APEX completa.`;
             const fullPrompt = `━━━━━ SYSTEM PROMPT ━━━━━\n\n${system}\n\n━━━━━ USER CONTEXT ━━━━━\n\n${contexto}`;
             return (
               <>
