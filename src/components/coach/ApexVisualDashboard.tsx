@@ -630,8 +630,10 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
 Objetivo do ciclo: ${objetivoCiclo}
 Semana ${semanaCiclo || "não informada"} de ${duracaoCiclo || "não informada"} semanas
 Suporte em uso: ${suporte || "não informado"}` : "";
-      const contexto = `Atleta: ${athleteName} | Semanas para o show: ${formData.semanas || "n/d"} | Protocolo: ${formData.compostos || "não informado"} | Obs: ${formData.obs || "nenhuma"}\n\nGere a análise APEX v2 completa.`;
-      const system = buildSystemPrompt(cat, athleteName, protocoloCompleto);
+      const clinicalBlock = buildClinicalBlock(clinical, posturalChecks, disfuncoesChecks);
+      const contextoBase = `Atleta: ${athleteName} | Semanas para o show: ${formData.semanas || "n/d"} | Protocolo: ${formData.compostos || "não informado"} | Obs: ${formData.obs || "nenhuma"}`;
+      const contexto = `${contextoBase}${clinicalBlock ? `\n\n━━━ DADOS CLÍNICOS / POSTURAIS ━━━\n${clinicalBlock}` : ""}\n\nGere a análise APEX v2 completa.`;
+      const system = buildSystemPrompt(cat, athleteName, protocoloCompleto, clinicalBlock);
 
       const { data, error } = await supabase.functions.invoke("apex-visual-analyze", {
         body: { fotos, contexto, system },
