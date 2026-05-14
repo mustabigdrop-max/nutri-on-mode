@@ -1488,6 +1488,7 @@ function TrainingDayCard({ day, index, expanded, onToggle, expandedExercise, set
                 <ExerciseCard
                   key={i}
                   exercise={ex}
+                  displayOrder={i + 1}
                   expanded={expandedExercise === `${index}-${i}`}
                   onToggle={() => setExpandedExercise(expandedExercise === `${index}-${i}` ? null : `${index}-${i}`)}
                   weekPhase={weekPhase}
