@@ -356,6 +356,22 @@ const parseFarmMeta = (text: string) => ({
   alertaCardio: text.match(/ALERTA_CARDIO:\s*([^\n]+)/i)?.[1]?.trim(),
 });
 
+
+const buildClinicalBlock = (
+  clinical: { lesoes: string; doresArticulares: string; limitacoesADM: string; queixasFuncionais: string },
+  posturalChecks: string[],
+  disfuncoesChecks: string[],
+): string => {
+  const parts: string[] = [];
+  if (clinical.lesoes.trim()) parts.push(`LESÕES ATUAIS/PASSADAS: ${clinical.lesoes.trim()}`);
+  if (clinical.doresArticulares.trim()) parts.push(`DORES ARTICULARES RECORRENTES: ${clinical.doresArticulares.trim()}`);
+  if (clinical.limitacoesADM.trim()) parts.push(`LIMITAÇÕES DE AMPLITUDE DE MOVIMENTO: ${clinical.limitacoesADM.trim()}`);
+  if (posturalChecks.length) parts.push(`PADRÕES POSTURAIS OBSERVADOS: ${posturalChecks.join(" · ")}`);
+  if (disfuncoesChecks.length) parts.push(`DISFUNÇÕES DE MOVIMENTO: ${disfuncoesChecks.join(" · ")}`);
+  if (clinical.queixasFuncionais.trim()) parts.push(`QUEIXAS FUNCIONAIS DO ATLETA: ${clinical.queixasFuncionais.trim()}`);
+  return parts.join("\n");
+};
+
 // ─── Parsers ─────────────────────────────────────────────────────
 const parseSection = (text: string, key: string, nextKey?: string): string => {
   const pattern = nextKey
