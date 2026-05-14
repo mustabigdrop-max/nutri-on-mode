@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import AthleteSelector, { AthleteOption } from "@/components/coach/AthleteSelector";
-import { Upload, X, FlaskConical, RotateCcw, History, Eye, Dumbbell, CheckCircle2, Clock, FileText, Copy, Crosshair, ScanLine, Target, Activity, Zap, AlertTriangle, TrendingUp, ChevronRight } from "lucide-react";
+import { Upload, X, FlaskConical, RotateCcw, History, Eye, Dumbbell, CheckCircle2, Clock, FileText, Copy, Crosshair, ScanLine, Target, Activity, Zap, AlertTriangle, TrendingUp, ChevronRight, Trash2 } from "lucide-react";
 import { ApexSymbol } from "@/components/coach/ApexSymbol";
 import ApexEvolucao from "@/components/apex/ApexEvolucao";
 
@@ -47,6 +47,9 @@ const ApexFontsAndAnimations = () => (
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 // ─── Categorias ──────────────────────────────────────────────────
 type CategoryKey =
@@ -438,6 +441,7 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
   // History
   const [history, setHistory] = useState<any[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<any | null>(null);
 
   // Loading step animation
   useEffect(() => {
@@ -500,6 +504,20 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
     setActiveResultTab("scores");
     setSavedAnalysisId(item.id || null);
     fetchSyncStatus(item.athlete_id || athlete?.id || null);
+  };
+
+  const handleDelete = async (item: any) => {
+    const { error } = await supabase
+      .from("apex_analyses" as any)
+      .delete()
+      .eq("id", item.id);
+    if (error) {
+      toast({ title: "Erro ao excluir", description: error.message, variant: "destructive" });
+      return;
+    }
+    setHistory((prev) => prev.filter((h) => h.id !== item.id));
+    setItemToDelete(null);
+    toast({ title: "Análise excluída" });
   };
 
   const analyzeWithAI = useCallback(async () => {
@@ -1264,6 +1282,15 @@ Suporte em uso: ${suporte || "não informado"}` : "";
                     >
                       <Eye size={11} /> Ver
                     </button>
+                    <button
+                      onClick={() => setItemToDelete(item)}
+                      title="Excluir análise"
+                      style={{ fontSize: 10, padding: "6px 10px", borderRadius: 6, background: "transparent", color: APEX.textMuted, border: `1px solid ${APEX.border}`, cursor: "pointer", display: "flex", alignItems: "center", gap: 4, fontWeight: 700, transition: "color 0.2s, border-color 0.2s" }}
+                      onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = APEX.crimson; (e.currentTarget as HTMLButtonElement).style.borderColor = `${APEX.crimson}55`; }}
+                      onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = APEX.textMuted; (e.currentTarget as HTMLButtonElement).style.borderColor = APEX.border; }}
+                    >
+                      <Trash2 size={11} />
+                    </button>
                   </div>
                 );
               })}
@@ -1372,6 +1399,32 @@ Suporte em uso: ${suporte || "não informado"}` : "";
         </DialogContent>
       </Dialog>
       </>)}
+
+      {/* ━━━ DELETE CONFIRMATION DIALOG ━━━ */}
+      <AlertDialog open={!!itemToDelete} onOpenChange={(open) => !open && setItemToDelete(null)}>
+        <AlertDialogContent style={{ background: APEX.surface, border: `1px solid ${APEX.border}`, color: APEX.textPrimary }}>
+          <AlertDialogHeader>
+            <AlertDialogTitle style={{ color: APEX.textPrimary }}>Deseja excluir esta análise?</AlertDialogTitle>
+            <AlertDialogDescription style={{ color: APEX.textSecondary }}>
+              Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              onClick={() => setItemToDelete(null)}
+              style={{ background: "transparent", border: `1px solid ${APEX.border}`, color: APEX.textSecondary }}
+            >
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => itemToDelete && handleDelete(itemToDelete)}
+              style={{ background: APEX.crimson, color: "#fff", border: "none" }}
+            >
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
