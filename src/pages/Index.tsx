@@ -4,6 +4,8 @@ import LandingAudio from "@/components/landing/LandingAudio";
 import LandingHero from "@/components/landing/LandingHero";
 import LandingVideoVSL from "@/components/landing/LandingVideoVSL";
 import LandingTicker from "@/components/landing/LandingTicker";
+import LandingActivityFeed from "@/components/landing/LandingActivityFeed";
+import LandingSystemPreview from "@/components/landing/LandingSystemPreview";
 import LandingTeamSection from "@/components/landing/LandingTeamSection";
 import LandingInteractiveQuiz from "@/components/landing/LandingInteractiveQuiz";
 import LandingTransformTimeline from "@/components/landing/LandingTransformTimeline";
@@ -32,11 +34,13 @@ const Index = () => (
       <LandingNav />
       <LandingHero />
       <LandingTicker />
+      <LandingActivityFeed />
       <LandingTeamSection />
       <LandingVideoVSL />
       <LandingInteractiveQuiz />
       <LandingTransformTimeline />
       <LandingVSComparison />
+      <LandingSystemPreview />
       <LandingPitch />
       <LandingManifesto />
       <LandingProtocols />

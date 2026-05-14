@@ -7,6 +7,8 @@ const rows = [
   { other: "Ignora por que você desistiu", nutrion: "Analisa padrões de sabotagem com IA" },
   { other: "Funciona por 2 semanas", nutrion: "Adapta o plano a cada ciclo de 7 dias" },
   { other: "Motivação genérica", nutrion: "Protocolo MCE: Mindset → Comportamento → Execução" },
+  { other: "Nenhum tracking de RPE ou acúmulo de fadiga", nutrion: "RPE 1–10 por sessão + deload automático quando RPE≥8 por 3x" },
+  { other: "Zero mapa de recuperação muscular", nutrion: "8 grupos musculares rastreados — Pronto · Descansando · Fatigado" },
   { other: "Você é um usuário", nutrion: "Você é um paciente com acompanhamento real" },
 ];
 
