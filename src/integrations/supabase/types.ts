@@ -321,15 +321,7 @@ export type Database = {
           semana?: number
           semanas_faltam?: number | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "apex_checkins_atleta_id_fkey"
-            columns: ["atleta_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       apex_reports: {
         Row: {
