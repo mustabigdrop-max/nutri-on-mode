@@ -1375,8 +1375,71 @@ function BlockOverviewCard({ overview, alerts, clientName, trainingDays, systemI
   );
 }
 
+/* ── Helpers de extração de tags de músculo (inclui pares de super-set) ── */
+const _normMuscle = (s: string) =>
+  (s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+
+// Mapeia pistas no nome do exercício → label de músculo exibido como tag.
+const NAME_TO_MUSCLE: Array<{ keys: string[]; label: string }> = [
+  { keys: ["panturrilha", "calf", "gastrocn", "soleo", "gemeo"], label: "Panturrilha" },
+  { keys: ["extensora", "agachamento", "leg press", "hack", "sissy", "afundo", "bulgaro", "lunge"], label: "Quadríceps" },
+  { keys: ["stiff", "mesa flexora", "flexora", "rdl", "good morning", "nordic"], label: "Posterior de Coxa" },
+  { keys: ["gluteo", "hip thrust", "elevacao pelvica", "pelvica", "abducao", "abdutor", "kickback"], label: "Glúteos" },
+  { keys: ["adutor", "aducao"], label: "Adutores" },
+  { keys: ["supino", "crossover", "crucifixo", "peck deck", "peck-deck", "voador", "flexao"], label: "Peito" },
+  { keys: ["remada", "puxada", "barra fixa", "pulldown", "pull down", "pullover"], label: "Costas" },
+  { keys: ["desenvolvimento", "elevacao lateral", "elevacao frontal", "arnold", "facepull", "face pull", "encolhimento", "shrug"], label: "Deltoides" },
+  { keys: ["rosca", "scott", "martelo", "biceps"], label: "Bíceps" },
+  { keys: ["triceps", "frances", "francesa", "testa", "tricep"], label: "Tríceps" },
+  { keys: ["abdom", "prancha", "cable crunch", "obliquo"], label: "Abdômen" },
+  { keys: ["lombar", "hiperextensao", "extensao lombar"], label: "Lombar" },
+  { keys: ["antebraco", "punho"], label: "Antebraço" },
+];
+
+function inferMuscleFromName(name: string): string[] {
+  const n = _normMuscle(name);
+  if (!n) return [];
+  const out: string[] = [];
+  for (const { keys, label } of NAME_TO_MUSCLE) {
+    if (keys.some((k) => n.includes(k))) out.push(label);
+  }
+  return out;
+}
+
+/**
+ * Extrai todas as tags de músculo de um dia de treino, iterando sobre TODOS
+ * os exercícios — incluindo os pares de super-set codificados no nome
+ * (ex: "Cadeira Extensora + Panturrilha em Pé"). Mantém deduplicação.
+ */
+function extractDayMuscleTags(day: any): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  const push = (label: string) => {
+    if (!label) return;
+    const key = _normMuscle(label);
+    if (!key || seen.has(key)) return;
+    seen.add(key);
+    out.push(label);
+  };
+
+  (day?.focus_muscles || []).forEach((m: string) => push(String(m).trim()));
+
+  (day?.exercises || []).forEach((ex: any) => {
+    if (ex?.muscle_target) push(String(ex.muscle_target).trim());
+    if (Array.isArray(ex?.secondary_muscles)) {
+      ex.secondary_muscles.forEach((m: string) => push(String(m).trim()));
+    }
+    // Quebra o nome em segmentos de super-set (separadores comuns: + / & , • · "e ")
+    const parts = String(ex?.name || "").split(/\s*(?:\+|\/|&|,|•|·|\be\b)\s*/i);
+    parts.forEach((p) => inferMuscleFromName(p).forEach(push));
+  });
+
+  return out;
+}
+
 /* ── Training Day Card ── */
 function TrainingDayCard({ day, index, expanded, onToggle, expandedExercise, setExpandedExercise, weekPhase, athleteId, protocolId }: any) {
+  const muscleTags = extractDayMuscleTags(day);
   return (
     <div className="rounded-2xl overflow-hidden" style={{ background: SURFACE, border: `1px solid ${expanded ? BORDER_ACTIVE : BORDER}` }}>
       <button onClick={onToggle} className="w-full p-4 flex items-center justify-between">
@@ -1392,7 +1455,7 @@ function TrainingDayCard({ day, index, expanded, onToggle, expandedExercise, set
                   <Clock className="w-2.5 h-2.5" />{day.estimated_duration}
                 </span>
               )}
-              {day.focus_muscles?.map((m: string, i: number) => (
+              {muscleTags.map((m: string, i: number) => (
                 <span key={i} className="text-[8px] px-1.5 py-0.5 rounded-full" style={{ background: GREEN_DIM, color: GREEN }}>{m}</span>
               ))}
             </div>
@@ -1425,6 +1488,7 @@ function TrainingDayCard({ day, index, expanded, onToggle, expandedExercise, set
                 <ExerciseCard
                   key={i}
                   exercise={ex}
+                  displayOrder={i + 1}
                   expanded={expandedExercise === `${index}-${i}`}
                   onToggle={() => setExpandedExercise(expandedExercise === `${index}-${i}` ? null : `${index}-${i}`)}
                   weekPhase={weekPhase}
@@ -1484,6 +1548,7 @@ const joinDefinedParts = (parts: Array<string | false | null | undefined>, separ
 
 function ExerciseCard({
   exercise,
+  displayOrder,
   expanded,
   onToggle,
   weekPhase,
@@ -1492,6 +1557,7 @@ function ExerciseCard({
   dayNumber,
 }: {
   exercise: any;
+  displayOrder?: number;
   expanded: boolean;
   onToggle: () => void;
   weekPhase?: WeekPhase | null;
@@ -1539,7 +1605,7 @@ function ExerciseCard({
     <div className="rounded-xl overflow-hidden" style={{ background: SURFACE2, border: `1px solid ${isSwapped ? "rgba(59,130,246,0.3)" : BORDER}` }}>
       <button onClick={onToggle} className="w-full p-3 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <div className="w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-black" style={{ background: GREEN_DIM, color: GREEN }}>{exercise.order}</div>
+          <div className="w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-black" style={{ background: GREEN_DIM, color: GREEN }}>{displayOrder ?? exercise.order}</div>
           <div className="text-left">
             <div className="flex items-center gap-1.5">
               <p className="text-[11px] font-bold" style={{ color: TEXT }}>{safeExerciseName}</p>
