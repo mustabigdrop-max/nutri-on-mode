@@ -746,6 +746,26 @@ Suporte em uso: ${suporte || "não informado"}` : "";
           return acc;
         }, {} as Record<string, number>);
 
+        // Upload photos to apex-visual-photos bucket for evolution comparison
+        const photosPaths: { front?: string; back?: string; side?: string } = {};
+        if (coachId && athlete?.id) {
+          const ts = Date.now();
+          const uploadAngle = async (angle: "front" | "back" | "side", file: File | null) => {
+            if (!file) return;
+            const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
+            const path = `${coachId}/${athlete.id}/${ts}-${angle}.${ext}`;
+            const { error: upErr } = await supabase.storage
+              .from("apex-visual-photos")
+              .upload(path, file, { upsert: false, contentType: file.type || "image/jpeg" });
+            if (!upErr) photosPaths[angle] = path;
+          };
+          await Promise.all([
+            uploadAngle("front", photos.front),
+            uploadAngle("back", photos.back),
+            uploadAngle("side", photos.side),
+          ]);
+        }
+
         const { data: inserted, error: insErr } = await supabase.from("apex_analyses" as any).insert({
           coach_id: coachId,
           athlete_id: athlete?.id || null,
