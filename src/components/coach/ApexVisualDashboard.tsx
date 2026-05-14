@@ -786,6 +786,7 @@ Suporte em uso: ${suporte || "não informado"}` : "";
           support: suporte || null,
           tdee_factor: farmMeta.tdeeFator ? parseFloat(farmMeta.tdeeFator) : null,
           protein_ideal: farmMeta.proteinaIdeal || null,
+          photos: photosPaths,
         }).select("id").single();
         if (insErr) throw insErr;
         setSavedAnalysisId((inserted as any)?.id || null);
