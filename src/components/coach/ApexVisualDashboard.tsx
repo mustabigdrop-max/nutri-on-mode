@@ -506,6 +506,20 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
     fetchSyncStatus(item.athlete_id || athlete?.id || null);
   };
 
+  const handleDelete = async (item: any) => {
+    const { error } = await supabase
+      .from("apex_analyses" as any)
+      .delete()
+      .eq("id", item.id);
+    if (error) {
+      toast({ title: "Erro ao excluir", description: error.message, variant: "destructive" });
+      return;
+    }
+    setHistory((prev) => prev.filter((h) => h.id !== item.id));
+    setItemToDelete(null);
+    toast({ title: "Análise excluída" });
+  };
+
   const analyzeWithAI = useCallback(async () => {
     setLoading(true);
     try {
