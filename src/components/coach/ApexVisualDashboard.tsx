@@ -441,6 +441,7 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
   // History
   const [history, setHistory] = useState<any[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<any | null>(null);
 
   // Loading step animation
   useEffect(() => {
