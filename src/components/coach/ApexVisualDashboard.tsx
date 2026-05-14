@@ -1282,6 +1282,15 @@ Suporte em uso: ${suporte || "não informado"}` : "";
                     >
                       <Eye size={11} /> Ver
                     </button>
+                    <button
+                      onClick={() => setItemToDelete(item)}
+                      title="Excluir análise"
+                      style={{ fontSize: 10, padding: "6px 10px", borderRadius: 6, background: "transparent", color: APEX.textMuted, border: `1px solid ${APEX.border}`, cursor: "pointer", display: "flex", alignItems: "center", gap: 4, fontWeight: 700, transition: "color 0.2s, border-color 0.2s" }}
+                      onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = APEX.crimson; (e.currentTarget as HTMLButtonElement).style.borderColor = `${APEX.crimson}55`; }}
+                      onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = APEX.textMuted; (e.currentTarget as HTMLButtonElement).style.borderColor = APEX.border; }}
+                    >
+                      <Trash2 size={11} />
+                    </button>
                   </div>
                 );
               })}
