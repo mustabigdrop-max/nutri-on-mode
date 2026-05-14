@@ -1605,7 +1605,7 @@ function ExerciseCard({
     <div className="rounded-xl overflow-hidden" style={{ background: SURFACE2, border: `1px solid ${isSwapped ? "rgba(59,130,246,0.3)" : BORDER}` }}>
       <button onClick={onToggle} className="w-full p-3 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <div className="w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-black" style={{ background: GREEN_DIM, color: GREEN }}>{exercise.order}</div>
+          <div className="w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-black" style={{ background: GREEN_DIM, color: GREEN }}>{displayOrder ?? exercise.order}</div>
           <div className="text-left">
             <div className="flex items-center gap-1.5">
               <p className="text-[11px] font-bold" style={{ color: TEXT }}>{safeExerciseName}</p>
