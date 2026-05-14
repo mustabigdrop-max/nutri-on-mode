@@ -479,9 +479,22 @@ INSTRUÇÕES DE PRESCRIÇÃO:
 3. ESCOLHA o modelo de periodização. Justifique.
 4. DETERMINE duração do bloco e quando fazer deload.
 5. Para cada sessão:
-   - Warm-up geral + específico
+   - Warm-up ESPECÍFICO ao grupo muscular do dia (regra obrigatória abaixo)
    - Feeder sets → Top set → Back-off sets (compostos)
    - Séries de trabalho (acessórios)
+   - Bloco "Corretivos Pós-Treino" ao final, quando aplicável (regra abaixo)
+
+REGRA DE WARM-UP POR GRUPO MUSCULAR DO DIA (OBRIGATÓRIA):
+- Identifique focus_muscles do dia ANTES de gerar o warm-up.
+- Dia de INFERIORES (pernas, glúteos, quadríceps, posterior, panturrilha, adutores): warm-up APENAS de membros inferiores — ativação de glúteo (clamshell, glute bridge, monster walk), mobilidade de quadril (90/90, frog stretch), foam roller de adutores/quadrado lombar/IT band, agachamento livre/goblet leve, world's greatest stretch focado em quadril. PROIBIDO incluir mobilidade de ombro, band pull-apart, rotadores externos ou alongamento de peitoral.
+- Dia de SUPERIORES (peito, costas, ombro, bíceps, tríceps, trapézio): warm-up APENAS de membros superiores — mobilidade de ombro (CARs, wall slides), band pull-apart, rotadores externos com mini-band, face pull leve, scapular push-up, alongamento de peitoral/subescapular, foam roller torácico. PROIBIDO incluir ativação de glúteo, mobilidade de quadril, agachamento ou foam roller de pernas.
+- Dia FULL BODY ou HÍBRIDO (upper+lower no mesmo dia): warm-up completo cobrindo ambos.
+- NUNCA misture exercícios de upper em dia de lower nem vice-versa.
+
+REGRA DE CORRETIVOS PÓS-TREINO (OBRIGATÓRIA quando houver pontos fracos/posturais):
+- Se "Pontos fracos" ou "Lesões/restrições" indicar desvio postural/desequilíbrio (ou se vier seção ## EXERCICIOS_CORRETIVOS_POS no contexto APEX), adicione ao final de cada sessão um bloco "corrective_post" com 2-4 exercícios corretivos relevantes ao grupo do dia.
+- Exibir como bloco separado ao final do treino, logo acima ou abaixo de session_notes, com mesmo padrão visual: nome, séries, reps, RPE, cue de execução.
+- Esses exercícios NÃO contam para o volume principal.
 6. Cadência (tempo) para cada exercício
 7. Descanso específico por tipo
 8. Progressão definida (Double Progression, Linear, Ondulatória)
@@ -538,7 +551,8 @@ FORMATO JSON OBRIGATÓRIO:
       "substitutes": [{ "name": "string", "reason": "string", "equipment": "string" }]
     }],
     "session_notes": "string",
-    "nutrition_notes": "string"
+    "nutrition_notes": "string",
+    "corrective_post": [{ "name": "string", "sets": "string", "reps": "string", "rpe": "string", "cue": "string", "target": "string" }]
   }]
 }
 

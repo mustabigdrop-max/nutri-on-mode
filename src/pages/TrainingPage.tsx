@@ -1523,6 +1523,25 @@ function TrainingDayCard({ day, index, expanded, onToggle, expandedExercise, set
                 />
               ))}
 
+              {/* Corrective Post-Workout */}
+              {day.corrective_post?.length > 0 && (
+                <div className="rounded-xl p-3" style={{ background: "rgba(244,114,182,0.06)", border: "1px solid rgba(244,114,182,0.18)" }}>
+                  <span className="text-[9px] font-bold tracking-widest uppercase" style={{ color: "#f472b6" }}>🩺 CORRETIVOS PÓS-TREINO</span>
+                  <div className="mt-2 space-y-2">
+                    {day.corrective_post.map((c: any, i: number) => (
+                      <div key={i} className="rounded-lg p-2" style={{ background: "rgba(0,0,0,0.25)" }}>
+                        <div className="flex items-center justify-between">
+                          <span className="text-[11px] font-semibold" style={{ color: TEXT }}>{c.name}</span>
+                          <span className="text-[10px]" style={{ color: TEXT_DIM }}>{c.sets}×{c.reps}{c.rpe ? ` · RPE ${c.rpe}` : ""}</span>
+                        </div>
+                        {c.cue && <p className="text-[10px] mt-1" style={{ color: TEXT_DIM }}>💡 {c.cue}</p>}
+                        {c.target && <p className="text-[10px] mt-0.5" style={{ color: TEXT_DIM }}>🎯 {c.target}</p>}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Session Notes */}
               {day.session_notes && (
                 <div className="rounded-xl p-3" style={{ background: "rgba(74,222,128,0.04)", borderLeft: `3px solid ${GREEN}` }}>
