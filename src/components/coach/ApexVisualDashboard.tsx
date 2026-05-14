@@ -611,6 +611,7 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
   const [generatingTraining, setGeneratingTraining] = useState(false);
   const [showPromptPreview, setShowPromptPreview] = useState(false);
   const [apexMode, setApexMode] = useState<"analise" | "evolucao">("analise");
+  const [evolucaoModalOpen, setEvolucaoModalOpen] = useState(false);
   const [promptCopied, setPromptCopied] = useState(false);
   const navigate = useNavigate();
 
