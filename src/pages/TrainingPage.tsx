@@ -1548,6 +1548,7 @@ const joinDefinedParts = (parts: Array<string | false | null | undefined>, separ
 
 function ExerciseCard({
   exercise,
+  displayOrder,
   expanded,
   onToggle,
   weekPhase,
@@ -1556,6 +1557,7 @@ function ExerciseCard({
   dayNumber,
 }: {
   exercise: any;
+  displayOrder?: number;
   expanded: boolean;
   onToggle: () => void;
   weekPhase?: WeekPhase | null;
