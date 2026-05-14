@@ -6,6 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import AthleteSelector, { AthleteOption } from "@/components/coach/AthleteSelector";
 import { Upload, X, FlaskConical, RotateCcw, History, Eye, Dumbbell, CheckCircle2, Clock, FileText, Copy, Crosshair, ScanLine, Target, Activity, Zap, AlertTriangle, TrendingUp, ChevronRight } from "lucide-react";
 import { ApexSymbol } from "@/components/coach/ApexSymbol";
+import ApexEvolucao from "@/components/apex/ApexEvolucao";
 
 // ─── APEX Elite design tokens ───────────────────────────────────
 const APEX = {
@@ -430,6 +431,7 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
   const [showTrainingModal, setShowTrainingModal] = useState(false);
   const [generatingTraining, setGeneratingTraining] = useState(false);
   const [showPromptPreview, setShowPromptPreview] = useState(false);
+  const [apexMode, setApexMode] = useState<"analise" | "evolucao">("analise");
   const [promptCopied, setPromptCopied] = useState(false);
   const navigate = useNavigate();
 
@@ -980,6 +982,54 @@ Suporte em uso: ${suporte || "não informado"}` : "";
         <AthleteSelector value={athlete?.id ?? null} onChange={setAthlete} />
       </div>
 
+      {/* ━━━ MODE TOGGLE: Análise IA vs Evolução Fotográfica ━━━ */}
+      <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+        {([
+          { k: "analise" as const,  l: "Análise IA",            icon: ScanLine },
+          { k: "evolucao" as const, l: "Evolução Fotográfica",  icon: TrendingUp },
+        ]).map(({ k, l, icon: Ic }) => {
+          const active = apexMode === k;
+          return (
+            <button
+              key={k}
+              onClick={() => setApexMode(k)}
+              style={{
+                flex: 1, padding: "12px 16px", borderRadius: 12, cursor: "pointer",
+                background: active ? `linear-gradient(135deg, ${APEX.electricDim}, ${APEX.deep})` : APEX.deep,
+                border: `1px solid ${active ? APEX.electric : APEX.border}`,
+                color: active ? APEX.electric : APEX.textSecondary,
+                fontFamily: APEX.fontDisplay, fontSize: 12, fontWeight: 700,
+                letterSpacing: ".08em", textTransform: "uppercase",
+                display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                boxShadow: active ? `0 0 18px ${APEX.electricGlow}` : "none",
+              }}
+            >
+              <Ic size={14} /> {l}
+            </button>
+          );
+        })}
+      </div>
+
+      {apexMode === "evolucao" && (
+        <div style={{ marginBottom: 16 }}>
+          {athlete ? (
+            <ApexEvolucao
+              atletaId={athlete.id}
+              atletaNome={athlete.nome}
+              dataCompeticao={athlete.data_competicao}
+              categoriaAtleta={athlete.categoria ?? selectedCategory}
+            />
+          ) : (
+            <div style={{ ...cardStyle, textAlign: "center", color: APEX.textSecondary, padding: 32 }}>
+              Selecione um atleta para acessar a evolução fotográfica.
+            </div>
+          )}
+        </div>
+      )}
+
+      {apexMode === "analise" && (<>
+
+
       {/* ━━━ CATEGORIA ━━━ */}
       <div style={{ ...cardStyle, marginBottom: 16 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
@@ -1321,6 +1371,7 @@ Suporte em uso: ${suporte || "não informado"}` : "";
           })()}
         </DialogContent>
       </Dialog>
+      </>)}
     </div>
   );
 }
