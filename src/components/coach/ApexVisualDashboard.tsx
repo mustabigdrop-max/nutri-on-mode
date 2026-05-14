@@ -562,6 +562,9 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
     setAnalysisResult("");
     setPhotos({ front: null, back: null, side: null });
     setFormData({ semanas: "", compostos: "", obs: "" });
+    setClinical({ lesoes: "", doresArticulares: "", limitacoesADM: "", queixasFuncionais: "" });
+    setPosturalChecks([]);
+    setDisfuncoesChecks([]);
     setObjetivoCiclo("cutting");
     setSemanaCiclo("");
     setDuracaoCiclo("");
