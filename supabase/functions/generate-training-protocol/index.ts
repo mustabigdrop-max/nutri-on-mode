@@ -551,7 +551,8 @@ FORMATO JSON OBRIGATÓRIO:
       "substitutes": [{ "name": "string", "reason": "string", "equipment": "string" }]
     }],
     "session_notes": "string",
-    "nutrition_notes": "string"
+    "nutrition_notes": "string",
+    "corrective_post": [{ "name": "string", "sets": "string", "reps": "string", "rpe": "string", "cue": "string", "target": "string" }]
   }]
 }
 
