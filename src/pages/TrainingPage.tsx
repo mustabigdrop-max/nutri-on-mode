@@ -1381,7 +1381,9 @@ const _normMuscle = (s: string) =>
 
 // Mapeia pistas no nome do exercício → label de músculo exibido como tag.
 const NAME_TO_MUSCLE: Array<{ keys: string[]; label: string }> = [
-  { keys: ["panturrilha", "calf", "gastrocn", "soleo", "gemeo"], label: "Panturrilha" },
+  { keys: ["gastrocn"], label: "Gastrocnêmio" },
+  { keys: ["soleo"], label: "Sóleo" },
+  { keys: ["panturrilha", "calf", "gemeo"], label: "Panturrilha" },
   { keys: ["extensora", "agachamento", "leg press", "hack", "sissy", "afundo", "bulgaro", "lunge"], label: "Quadríceps" },
   { keys: ["stiff", "mesa flexora", "flexora", "rdl", "good morning", "nordic"], label: "Posterior de Coxa" },
   { keys: ["gluteo", "hip thrust", "elevacao pelvica", "pelvica", "abducao", "abdutor", "kickback"], label: "Glúteos" },
