@@ -1003,7 +1003,7 @@ Suporte em uso: ${suporte || "não informado"}` : "";
       {/* ━━━ MODE TOGGLE: Análise IA vs Evolução Fotográfica ━━━ */}
       <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
         {([
-          { k: "analise" as const,  l: "Análise IA",            icon: ScanLine },
+          { k: "analise" as const,  l: "DIAGNÓSTICO APEX",     icon: ScanLine },
           { k: "evolucao" as const, l: "Evolução Fotográfica",  icon: TrendingUp },
         ]).map(({ k, l, icon: Ic }) => {
           const active = apexMode === k;
