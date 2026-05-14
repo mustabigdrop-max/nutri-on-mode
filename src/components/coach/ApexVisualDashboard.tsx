@@ -158,7 +158,7 @@ const STEPS = [
   "Finalizando veredicto...",
 ];
 
-const buildSystemPrompt = (cat: CategoryDef, athleteName: string, protocolo: string) => `
+const buildSystemPrompt = (cat: CategoryDef, athleteName: string, protocolo: string, clinicalBlock: string = "") => `
 Você é o APEX Visual Intelligence v2 + Dr. VERTEX — o sistema de análise mais completo do mundo para atletas de fisiculturismo.
 
 Você combina simultaneamente:
