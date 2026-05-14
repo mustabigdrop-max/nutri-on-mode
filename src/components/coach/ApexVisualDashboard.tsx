@@ -1328,7 +1328,144 @@ Suporte em uso: ${suporte || "não informado"}` : "";
         </div>
       )}
 
-      {/* ━━━ OBSERVAÇÕES ━━━ */}
+      {/* ━━━ HISTÓRICO CLÍNICO E LIMITAÇÕES ━━━ */}
+      <div style={{ ...cardStyle, marginBottom: 16 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+          {sectionTick(APEX.crimson)}
+          <span style={labelStyle}>🩻 Histórico Clínico e Limitações</span>
+        </div>
+        <div style={{ display: "grid", gap: 10 }}>
+          <div>
+            <div style={{ ...labelStyle, fontSize: 9, marginBottom: 6 }}>Lesões atuais ou passadas</div>
+            <textarea
+              value={clinical.lesoes}
+              onChange={(e) => setClinical({ ...clinical, lesoes: e.target.value })}
+              placeholder="Ex: ombro operado, hérnia L4-L5, tendinite patelar..."
+              rows={2}
+              style={{ ...inputBase, fontSize: 12, lineHeight: 1.5, resize: "vertical" }}
+            />
+          </div>
+          <div>
+            <div style={{ ...labelStyle, fontSize: 9, marginBottom: 6 }}>Dores articulares recorrentes</div>
+            <textarea
+              value={clinical.doresArticulares}
+              onChange={(e) => setClinical({ ...clinical, doresArticulares: e.target.value })}
+              placeholder="Ex: joelho direito no agachamento, lombar no peso morto..."
+              rows={2}
+              style={{ ...inputBase, fontSize: 12, lineHeight: 1.5, resize: "vertical" }}
+            />
+          </div>
+          <div>
+            <div style={{ ...labelStyle, fontSize: 9, marginBottom: 6 }}>Limitações de amplitude de movimento</div>
+            <textarea
+              value={clinical.limitacoesADM}
+              onChange={(e) => setClinical({ ...clinical, limitacoesADM: e.target.value })}
+              placeholder="Ex: não consegue agachar abaixo do paralelo, rotação interna de ombro limitada..."
+              rows={2}
+              style={{ ...inputBase, fontSize: 12, lineHeight: 1.5, resize: "vertical" }}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* ━━━ AVALIAÇÃO POSTURAL ━━━ */}
+      <div style={{ ...cardStyle, marginBottom: 16 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+          {sectionTick(APEX.amber)}
+          <span style={labelStyle}>📐 Padrões Posturais Observados</span>
+          {posturalChecks.length > 0 && (
+            <span style={{ fontSize: 10, color: APEX.amber, fontFamily: APEX.fontMono, marginLeft: 4 }}>· {posturalChecks.length}</span>
+          )}
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 8 }}>
+          {POSTURAL_OPTIONS.map((opt) => {
+            const checked = posturalChecks.includes(opt);
+            return (
+              <label
+                key={opt}
+                style={{
+                  display: "flex", alignItems: "center", gap: 8, cursor: "pointer",
+                  padding: "8px 10px", borderRadius: 8,
+                  border: `1px solid ${checked ? APEX.amber : APEX.border}`,
+                  background: checked ? `${APEX.amber}15` : "transparent",
+                  fontSize: 12, color: checked ? APEX.textPrimary : APEX.textSecondary,
+                  transition: "all .15s",
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={checked}
+                  onChange={(e) => {
+                    setPosturalChecks(e.target.checked
+                      ? [...posturalChecks, opt]
+                      : posturalChecks.filter((o) => o !== opt));
+                  }}
+                  style={{ accentColor: APEX.amber }}
+                />
+                <span>{opt}</span>
+              </label>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ━━━ DISFUNÇÕES DE MOVIMENTO ━━━ */}
+      <div style={{ ...cardStyle, marginBottom: 16 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+          {sectionTick(APEX.violet)}
+          <span style={labelStyle}>⚙️ Disfunções de Movimento</span>
+          {disfuncoesChecks.length > 0 && (
+            <span style={{ fontSize: 10, color: APEX.violet, fontFamily: APEX.fontMono, marginLeft: 4 }}>· {disfuncoesChecks.length}</span>
+          )}
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 8 }}>
+          {DISFUNCAO_OPTIONS.map((opt) => {
+            const checked = disfuncoesChecks.includes(opt);
+            return (
+              <label
+                key={opt}
+                style={{
+                  display: "flex", alignItems: "center", gap: 8, cursor: "pointer",
+                  padding: "8px 10px", borderRadius: 8,
+                  border: `1px solid ${checked ? APEX.violet : APEX.border}`,
+                  background: checked ? `${APEX.violet}15` : "transparent",
+                  fontSize: 12, color: checked ? APEX.textPrimary : APEX.textSecondary,
+                  transition: "all .15s",
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={checked}
+                  onChange={(e) => {
+                    setDisfuncoesChecks(e.target.checked
+                      ? [...disfuncoesChecks, opt]
+                      : disfuncoesChecks.filter((o) => o !== opt));
+                  }}
+                  style={{ accentColor: APEX.violet }}
+                />
+                <span>{opt}</span>
+              </label>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ━━━ QUEIXAS DO ATLETA ━━━ */}
+      <div style={{ ...cardStyle, marginBottom: 16 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+          {sectionTick(APEX.emerald)}
+          <span style={labelStyle}>💬 Queixas do Atleta</span>
+        </div>
+        <textarea
+          value={clinical.queixasFuncionais}
+          onChange={(e) => setClinical({ ...clinical, queixasFuncionais: e.target.value })}
+          placeholder="O que o atleta relata sentir durante os treinos (dores, fraquezas, compensações percebidas...)"
+          rows={3}
+          style={{ ...inputBase, fontSize: 12, lineHeight: 1.65, resize: "vertical" }}
+        />
+      </div>
+
+
       <div style={{ ...cardStyle, marginBottom: 16 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
           {sectionTick(APEX.electric)}
