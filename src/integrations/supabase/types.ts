@@ -187,6 +187,7 @@ export type Database = {
           cycle_goal: string | null
           cycle_week: number | null
           id: string
+          photos: Json | null
           priority_1: string | null
           priority_2: string | null
           priority_3: string | null
@@ -210,6 +211,7 @@ export type Database = {
           cycle_goal?: string | null
           cycle_week?: number | null
           id?: string
+          photos?: Json | null
           priority_1?: string | null
           priority_2?: string | null
           priority_3?: string | null
@@ -233,6 +235,7 @@ export type Database = {
           cycle_goal?: string | null
           cycle_week?: number | null
           id?: string
+          photos?: Json | null
           priority_1?: string | null
           priority_2?: string | null
           priority_3?: string | null
