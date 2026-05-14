@@ -1399,6 +1399,32 @@ Suporte em uso: ${suporte || "não informado"}` : "";
         </DialogContent>
       </Dialog>
       </>)}
+
+      {/* ━━━ DELETE CONFIRMATION DIALOG ━━━ */}
+      <AlertDialog open={!!itemToDelete} onOpenChange={(open) => !open && setItemToDelete(null)}>
+        <AlertDialogContent style={{ background: APEX.surface, border: `1px solid ${APEX.border}`, color: APEX.textPrimary }}>
+          <AlertDialogHeader>
+            <AlertDialogTitle style={{ color: APEX.textPrimary }}>Deseja excluir esta análise?</AlertDialogTitle>
+            <AlertDialogDescription style={{ color: APEX.textSecondary }}>
+              Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              onClick={() => setItemToDelete(null)}
+              style={{ background: "transparent", border: `1px solid ${APEX.border}`, color: APEX.textSecondary }}
+            >
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => itemToDelete && handleDelete(itemToDelete)}
+              style={{ background: APEX.crimson, color: "#fff", border: "none" }}
+            >
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
