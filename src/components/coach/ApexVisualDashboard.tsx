@@ -7,6 +7,7 @@ import AthleteSelector, { AthleteOption } from "@/components/coach/AthleteSelect
 import { Upload, X, FlaskConical, RotateCcw, History, Eye, Dumbbell, CheckCircle2, Clock, FileText, Copy, Crosshair, ScanLine, Target, Activity, Zap, AlertTriangle, TrendingUp, ChevronRight, Trash2 } from "lucide-react";
 import { ApexSymbol } from "@/components/coach/ApexSymbol";
 import ApexEvolucao from "@/components/apex/ApexEvolucao";
+import ApexEvolucaoFotografica from "@/components/coach/ApexEvolucaoFotografica";
 
 // ─── APEX Elite design tokens ───────────────────────────────────
 const APEX = {
@@ -610,6 +611,7 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
   const [generatingTraining, setGeneratingTraining] = useState(false);
   const [showPromptPreview, setShowPromptPreview] = useState(false);
   const [apexMode, setApexMode] = useState<"analise" | "evolucao">("analise");
+  const [evolucaoModalOpen, setEvolucaoModalOpen] = useState(false);
   const [promptCopied, setPromptCopied] = useState(false);
   const navigate = useNavigate();
 
@@ -746,6 +748,26 @@ Suporte em uso: ${suporte || "não informado"}` : "";
           return acc;
         }, {} as Record<string, number>);
 
+        // Upload photos to apex-visual-photos bucket for evolution comparison
+        const photosPaths: { front?: string; back?: string; side?: string } = {};
+        if (coachId && athlete?.id) {
+          const ts = Date.now();
+          const uploadAngle = async (angle: "front" | "back" | "side", file: File | null) => {
+            if (!file) return;
+            const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
+            const path = `${coachId}/${athlete.id}/${ts}-${angle}.${ext}`;
+            const { error: upErr } = await supabase.storage
+              .from("apex-visual-photos")
+              .upload(path, file, { upsert: false, contentType: file.type || "image/jpeg" });
+            if (!upErr) photosPaths[angle] = path;
+          };
+          await Promise.all([
+            uploadAngle("front", photos.front),
+            uploadAngle("back", photos.back),
+            uploadAngle("side", photos.side),
+          ]);
+        }
+
         const { data: inserted, error: insErr } = await supabase.from("apex_analyses" as any).insert({
           coach_id: coachId,
           athlete_id: athlete?.id || null,
@@ -766,6 +788,7 @@ Suporte em uso: ${suporte || "não informado"}` : "";
           support: suporte || null,
           tdee_factor: farmMeta.tdeeFator ? parseFloat(farmMeta.tdeeFator) : null,
           protein_ideal: farmMeta.proteinaIdeal || null,
+          photos: photosPaths,
         }).select("id").single();
         if (insErr) throw insErr;
         setSavedAnalysisId((inserted as any)?.id || null);
@@ -1183,14 +1206,24 @@ Suporte em uso: ${suporte || "não informado"}` : "";
       {/* ━━━ MODE TOGGLE: Análise IA vs Evolução Fotográfica ━━━ */}
       <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
         {([
-          { k: "analise" as const,  l: "DIAGNÓSTICO APEX",     icon: ScanLine },
-          { k: "evolucao" as const, l: "Evolução Fotográfica",  icon: TrendingUp },
-        ]).map(({ k, l, icon: Ic }) => {
-          const active = apexMode === k;
+          { k: "analise" as const,  l: "DIAGNÓSTICO APEX",     icon: ScanLine, isModal: false },
+          { k: "evolucao" as const, l: "Evolução Fotográfica",  icon: TrendingUp, isModal: true },
+        ]).map(({ k, l, icon: Ic, isModal }) => {
+          const active = !isModal && apexMode === "analise" && k === "analise";
           return (
             <button
               key={k}
-              onClick={() => setApexMode(k)}
+              onClick={() => {
+                if (isModal) {
+                  if (!athlete) {
+                    toast({ title: "Selecione um atleta antes", variant: "destructive" });
+                    return;
+                  }
+                  setEvolucaoModalOpen(true);
+                } else {
+                  setApexMode("analise");
+                }
+              }}
               style={{
                 flex: 1, padding: "12px 16px", borderRadius: 12, cursor: "pointer",
                 background: active ? `linear-gradient(135deg, ${APEX.electricDim}, ${APEX.deep})` : APEX.deep,
@@ -1208,21 +1241,14 @@ Suporte em uso: ${suporte || "não informado"}` : "";
         })}
       </div>
 
-      {apexMode === "evolucao" && (
-        <div style={{ marginBottom: 16 }}>
-          {athlete ? (
-            <ApexEvolucao
-              atletaId={athlete.id}
-              atletaNome={athlete.nome}
-              dataCompeticao={athlete.data_competicao}
-              categoriaAtleta={athlete.categoria ?? selectedCategory}
-            />
-          ) : (
-            <div style={{ ...cardStyle, textAlign: "center", color: APEX.textSecondary, padding: 32 }}>
-              Selecione um atleta para acessar a evolução fotográfica.
-            </div>
-          )}
-        </div>
+      {athlete && (
+        <ApexEvolucaoFotografica
+          open={evolucaoModalOpen}
+          onOpenChange={setEvolucaoModalOpen}
+          athleteId={athlete.id}
+          athleteName={athlete.nome}
+          athleteCategory={athlete.categoria ?? cat.label}
+        />
       )}
 
       {apexMode === "analise" && (<>
