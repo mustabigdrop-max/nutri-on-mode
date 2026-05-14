@@ -717,7 +717,7 @@ Suporte em uso: ${suporte || "não informado"}` : "";
     } finally {
       setLoading(false);
     }
-  }, [athlete, cat, formData, photos, coachId, selectedCategory, fetchHistory, fetchSyncStatus, objetivoCiclo, semanaCiclo, duracaoCiclo, suporte]);
+  }, [athlete, cat, formData, photos, coachId, selectedCategory, fetchHistory, fetchSyncStatus, objetivoCiclo, semanaCiclo, duracaoCiclo, suporte, clinical, posturalChecks, disfuncoesChecks]);
 
   // ─── Generate corrective training ────────────────────
   const buildSyncPayload = useCallback(() => {
