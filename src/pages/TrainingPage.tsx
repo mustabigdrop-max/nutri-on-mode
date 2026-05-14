@@ -1424,15 +1424,38 @@ function extractDayMuscleTags(day: any): string[] {
 
   (day?.focus_muscles || []).forEach((m: string) => push(String(m).trim()));
 
-  (day?.exercises || []).forEach((ex: any) => {
-    if (ex?.muscle_target) push(String(ex.muscle_target).trim());
-    if (Array.isArray(ex?.secondary_muscles)) {
+  // Itera sobre TODOS os exercícios — incluindo pares de super-set, seja por
+  // separador no nome (ex: "Cadeira Extensora + Panturrilha em Pé") ou por
+  // campo aninhado (ex.super_set / superset / paired / pair_exercise / pair).
+  const visit = (ex: any) => {
+    if (!ex || typeof ex !== "object") return;
+    if (ex.muscle_target) push(String(ex.muscle_target).trim());
+    if (Array.isArray(ex.secondary_muscles)) {
       ex.secondary_muscles.forEach((m: string) => push(String(m).trim()));
     }
-    // Quebra o nome em segmentos de super-set (separadores comuns: + / & , • · "e ")
-    const parts = String(ex?.name || "").split(/\s*(?:\+|\/|&|,|•|·|\be\b)\s*/i);
+    // Quebra o nome por TODOS os separadores comuns de super-set.
+    const parts = String(ex.name || "").split(
+      /\s*(?:\+|\/|&|,|;|\||•|·|–|—|-|\bcom\b|\be\b)\s*/i
+    );
     parts.forEach((p) => inferMuscleFromName(p).forEach(push));
-  });
+
+    // Pares aninhados de super-set podem vir em diversos formatos.
+    const nested = [
+      ex.super_set, ex.superset, ex.paired, ex.pair, ex.pair_exercise,
+      ex.partner, ex.combo, ex.group,
+    ];
+    nested.forEach((n) => {
+      if (!n) return;
+      if (Array.isArray(n)) n.forEach(visit);
+      else if (typeof n === "object") visit(n);
+      else if (typeof n === "string") {
+        n.split(/\s*(?:\+|\/|&|,|;|\||•|·|–|—|-|\bcom\b|\be\b)\s*/i)
+          .forEach((p) => inferMuscleFromName(p).forEach(push));
+      }
+    });
+  };
+
+  (day?.exercises || []).forEach(visit);
 
   return out;
 }
