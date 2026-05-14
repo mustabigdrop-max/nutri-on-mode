@@ -426,13 +426,9 @@ function enforceVolumeLimits(protocol: any, toleranceFactor = 1.10): { protocol:
         }
       }
 
-      // Remove exercícios que ficaram totalmente sem séries de trabalho
-      days.forEach((d) => {
-        d.exercises = (d.exercises || []).filter((ex: any) => {
-          if (!_exPrimary(ex).includes(canon)) return true;
-          return _setsOf(ex).total > 0;
-        });
-      });
+      // NOTA: NÃO removemos exercícios sem séries de trabalho.
+      // Exercícios de ativação / feeder-only / super-set continuam visíveis
+      // para que o atleta nunca perca o exercício 1 da renderização.
 
       if (trimmed) {
         fixes.push({ muscle: info.muscleLabel, before: cur, after: cur - (excess - toRemove), prescribed: info.prescribed });
