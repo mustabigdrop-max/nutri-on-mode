@@ -317,7 +317,32 @@ PRIORIDADE_3: [grupo/ajuste + prescrição]
 [Cues por pose mandatória — como compensar desvios e vender pontos fortes
 ${protocolo ? "Considerar efeitos dos compostos na aparência durante a pose (pump, vascularidade, fullness)" : ""}]
 
-## VEREDICTO
+${clinicalBlock ? `## SINDROMES_POSTURAIS
+[Identificar síndromes a partir dos checkboxes posturais e disfuncionais marcados.
+Para cada síndrome: nome técnico + músculos hiperativos/encurtados + músculos inibidos + impacto biomecânico.]
+
+## CONTRAINDICACOES_E_ADAPTACOES
+[Lista por exercício clássico afetado pelas lesões/limitações relatadas:
+- Exercício original → CONTRAINDICADO se aplicável (com motivo fisiológico)
+- Adaptação biomecânica recomendada (variação, ângulo, ADM, pegada, stance, tempo)
+- Cue específico para proteger a estrutura comprometida.]
+
+## ATIVACAO_PRE_TREINO
+[Protocolo de ativação neuromuscular pré-sessão para os músculos inibidos identificados.
+Exercício + séries × reps/tempo + cue + tempo total da rotina.]
+
+## EXERCICIOS_CORRETIVOS_DISFUNCOES
+[Para cada disfunção de movimento marcada:
+1) Inibição/mobilidade do hiperativo — técnica + duração
+2) Ativação isolada do inibido — exercício + séries × reps + cue
+3) Reintegração no padrão funcional — exercício + carga/intensidade + critério de progressão.]
+
+## PROGRESSAO_CORRETIVA_FASES
+FASE_1 (sem 1–3 — Inibição + Ativação): [exercícios + frequência semanal]
+FASE_2 (sem 4–6 — Fortalecimento isolado sob carga): [exercícios + progressão]
+FASE_3 (sem 7+ — Integração funcional): [exercícios + critério de alta corretiva]
+` : ""}
+
 [3 frases diretas — o que falta para top 5.
 ${protocolo ? "Separar o que é resolvível com ajuste de treino/dieta vs o que depende de ajuste farmacológico." : ""}]
 `;
