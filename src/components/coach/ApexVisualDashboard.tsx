@@ -7,6 +7,7 @@ import AthleteSelector, { AthleteOption } from "@/components/coach/AthleteSelect
 import { Upload, X, FlaskConical, RotateCcw, History, Eye, Dumbbell, CheckCircle2, Clock, FileText, Copy, Crosshair, ScanLine, Target, Activity, Zap, AlertTriangle, TrendingUp, ChevronRight, Trash2 } from "lucide-react";
 import { ApexSymbol } from "@/components/coach/ApexSymbol";
 import ApexEvolucao from "@/components/apex/ApexEvolucao";
+import ApexEvolucaoFotografica from "@/components/coach/ApexEvolucaoFotografica";
 
 // ─── APEX Elite design tokens ───────────────────────────────────
 const APEX = {
