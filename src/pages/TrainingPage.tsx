@@ -1455,7 +1455,7 @@ function TrainingDayCard({ day, index, expanded, onToggle, expandedExercise, set
                   <Clock className="w-2.5 h-2.5" />{day.estimated_duration}
                 </span>
               )}
-              {day.focus_muscles?.map((m: string, i: number) => (
+              {muscleTags.map((m: string, i: number) => (
                 <span key={i} className="text-[8px] px-1.5 py-0.5 rounded-full" style={{ background: GREEN_DIM, color: GREEN }}>{m}</span>
               ))}
             </div>
