@@ -343,6 +343,7 @@ FASE_2 (sem 4–6 — Fortalecimento isolado sob carga): [exercícios + progress
 FASE_3 (sem 7+ — Integração funcional): [exercícios + critério de alta corretiva]
 ` : ""}
 
+## VEREDICTO
 [3 frases diretas — o que falta para top 5.
 ${protocolo ? "Separar o que é resolvível com ajuste de treino/dieta vs o que depende de ajuste farmacológico." : ""}]
 `;
