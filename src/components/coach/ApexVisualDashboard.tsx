@@ -120,6 +120,33 @@ const CATEGORIES: Record<CategoryKey, CategoryDef> = {
   },
 };
 
+const POSTURAL_OPTIONS = [
+  "Hiperlordose lombar",
+  "Cifose torácica",
+  "Anteriorização da cabeça",
+  "Ombro protraído (esquerdo)",
+  "Ombro protraído (direito)",
+  "Ombro protraído (ambos)",
+  "Inclinação pélvica anterior",
+  "Inclinação pélvica posterior",
+  "Joelho valgo",
+  "Joelho varo",
+  "Rotação de tronco",
+  "Assimetria de ombros",
+  "Assimetria de quadril",
+  "Escápula alada",
+];
+
+const DISFUNCAO_OPTIONS = [
+  "Dominância de joelho no agachamento",
+  "Shift lateral no agachamento",
+  "Hiperextensão lombar no press",
+  "Elevação de ombro no pull",
+  "Anteriorização no hip hinge",
+  "Dissociação escapular ausente",
+  "Respiração disfuncional (apical)",
+];
+
 const STEPS = [
   "Carregando protocolo APEX v2...",
   "Lendo estrutura corporal...",
@@ -131,7 +158,7 @@ const STEPS = [
   "Finalizando veredicto...",
 ];
 
-const buildSystemPrompt = (cat: CategoryDef, athleteName: string, protocolo: string) => `
+const buildSystemPrompt = (cat: CategoryDef, athleteName: string, protocolo: string, clinicalBlock: string = "") => `
 Você é o APEX Visual Intelligence v2 + Dr. VERTEX — o sistema de análise mais completo do mundo para atletas de fisiculturismo.
 
 Você combina simultaneamente:
@@ -161,6 +188,37 @@ Cada seção deve considerar:
 - Como o protocolo potencializa ou limita a resposta às correções prescritas
 - Quais ajustes de dieta, treino e suporte maximizam os compostos em uso
 ` : `Nenhum protocolo farmacológico informado — análise como atleta natural.`}
+
+${clinicalBlock ? `━━━ HISTÓRICO CLÍNICO, POSTURA E DISFUNÇÕES (DADOS DO COACH) ━━━
+${clinicalBlock}
+
+INSTRUÇÃO CRÍTICA — MODO CINESIOLOGIA / FISIOTERAPIA ESPORTIVA ATIVO:
+Você incorpora agora também o papel de FISIOTERAPEUTA ESPORTIVO especialista em
+cinesiologia, biomecânica e reabilitação funcional de alto rendimento (referências:
+Shirley Sahrmann, Stuart McGill, Gray Cook/FMS, Mike Reinold, Kelly Starrett).
+
+A análise deve OBRIGATORIAMENTE integrar os dados clínicos acima com as fotos:
+- Identificar SÍNDROMES POSTURAIS a partir da combinação de checkboxes
+  (ex.: cifose torácica + ombro protraído + anteriorização da cabeça = Síndrome Cruzada Superior;
+  hiperlordose + inclinação pélvica anterior + dominância de joelho = Síndrome Cruzada Inferior).
+- Correlacionar cada disfunção de movimento marcada com músculos INIBIDOS e
+  músculos ENCURTADOS/HIPERATIVOS responsáveis pelo padrão.
+- Prescrever exercícios CORRETIVOS ESPECÍFICOS para cada disfunção (NUNCA genéricos):
+  inibir hiperativo (SMR/alongamento direcionado) → ativar inibido (isolamento neuromuscular)
+  → integrar no padrão funcional.
+- Sinalizar CONTRAINDICAÇÕES de exercícios em função das lesões e dores relatadas.
+- Propor ADAPTAÇÕES BIOMECÂNICAS dos exercícios principais (variação, ângulo, ADM,
+  pegada, stance) que respeitem as limitações sem perder estímulo.
+- Definir PROTOCOLO DE ATIVAÇÃO PRÉ-TREINO específico para os músculos inibidos.
+- Estruturar PLANO DE PROGRESSÃO CORRETIVA EM 3 FASES:
+  FASE 1 — Inibição/Mobilidade + Ativação neuromuscular (semanas 1–3)
+  FASE 2 — Fortalecimento isolado e padrões corretivos sob carga (semanas 4–6)
+  FASE 3 — Integração no treino principal e padrões funcionais complexos (semanas 7+).
+
+Use rigor técnico de fisioterapeuta esportivo de alto rendimento — nomenclatura
+anatômica correta, mecanismo fisiológico, dosagem (séries/reps/tempo), cue de execução
+e critério de progressão para cada prescrição.
+` : ""}
 
 ━━━ PROTOCOLO DE ANÁLISE INTEGRADO ━━━
 Tom: técnico, direto, sem julgamento. Cada prescrição tem mecanismo fisiológico.
@@ -259,6 +317,32 @@ PRIORIDADE_3: [grupo/ajuste + prescrição]
 [Cues por pose mandatória — como compensar desvios e vender pontos fortes
 ${protocolo ? "Considerar efeitos dos compostos na aparência durante a pose (pump, vascularidade, fullness)" : ""}]
 
+${clinicalBlock ? `## SINDROMES_POSTURAIS
+[Identificar síndromes a partir dos checkboxes posturais e disfuncionais marcados.
+Para cada síndrome: nome técnico + músculos hiperativos/encurtados + músculos inibidos + impacto biomecânico.]
+
+## CONTRAINDICACOES_E_ADAPTACOES
+[Lista por exercício clássico afetado pelas lesões/limitações relatadas:
+- Exercício original → CONTRAINDICADO se aplicável (com motivo fisiológico)
+- Adaptação biomecânica recomendada (variação, ângulo, ADM, pegada, stance, tempo)
+- Cue específico para proteger a estrutura comprometida.]
+
+## ATIVACAO_PRE_TREINO
+[Protocolo de ativação neuromuscular pré-sessão para os músculos inibidos identificados.
+Exercício + séries × reps/tempo + cue + tempo total da rotina.]
+
+## EXERCICIOS_CORRETIVOS_DISFUNCOES
+[Para cada disfunção de movimento marcada:
+1) Inibição/mobilidade do hiperativo — técnica + duração
+2) Ativação isolada do inibido — exercício + séries × reps + cue
+3) Reintegração no padrão funcional — exercício + carga/intensidade + critério de progressão.]
+
+## PROGRESSAO_CORRETIVA_FASES
+FASE_1 (sem 1–3 — Inibição + Ativação): [exercícios + frequência semanal]
+FASE_2 (sem 4–6 — Fortalecimento isolado sob carga): [exercícios + progressão]
+FASE_3 (sem 7+ — Integração funcional): [exercícios + critério de alta corretiva]
+` : ""}
+
 ## VEREDICTO
 [3 frases diretas — o que falta para top 5.
 ${protocolo ? "Separar o que é resolvível com ajuste de treino/dieta vs o que depende de ajuste farmacológico." : ""}]
@@ -271,6 +355,22 @@ const parseFarmMeta = (text: string) => ({
   gestaoE2: text.match(/GESTAO_E2:\s*([^\n]+)/i)?.[1]?.trim(),
   alertaCardio: text.match(/ALERTA_CARDIO:\s*([^\n]+)/i)?.[1]?.trim(),
 });
+
+
+const buildClinicalBlock = (
+  clinical: { lesoes: string; doresArticulares: string; limitacoesADM: string; queixasFuncionais: string },
+  posturalChecks: string[],
+  disfuncoesChecks: string[],
+): string => {
+  const parts: string[] = [];
+  if (clinical.lesoes.trim()) parts.push(`LESÕES ATUAIS/PASSADAS: ${clinical.lesoes.trim()}`);
+  if (clinical.doresArticulares.trim()) parts.push(`DORES ARTICULARES RECORRENTES: ${clinical.doresArticulares.trim()}`);
+  if (clinical.limitacoesADM.trim()) parts.push(`LIMITAÇÕES DE AMPLITUDE DE MOVIMENTO: ${clinical.limitacoesADM.trim()}`);
+  if (posturalChecks.length) parts.push(`PADRÕES POSTURAIS OBSERVADOS: ${posturalChecks.join(" · ")}`);
+  if (disfuncoesChecks.length) parts.push(`DISFUNÇÕES DE MOVIMENTO: ${disfuncoesChecks.join(" · ")}`);
+  if (clinical.queixasFuncionais.trim()) parts.push(`QUEIXAS FUNCIONAIS DO ATLETA: ${clinical.queixasFuncionais.trim()}`);
+  return parts.join("\n");
+};
 
 // ─── Parsers ─────────────────────────────────────────────────────
 const parseSection = (text: string, key: string, nextKey?: string): string => {
@@ -420,6 +520,9 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
     front: null, back: null, side: null,
   });
   const [formData, setFormData] = useState({ semanas: "", compostos: "", obs: "" });
+  const [clinical, setClinical] = useState({ lesoes: "", doresArticulares: "", limitacoesADM: "", queixasFuncionais: "" });
+  const [posturalChecks, setPosturalChecks] = useState<string[]>([]);
+  const [disfuncoesChecks, setDisfuncoesChecks] = useState<string[]>([]);
   const [objetivoCiclo, setObjetivoCiclo] = useState("cutting");
   const [semanaCiclo, setSemanaCiclo] = useState("");
   const [duracaoCiclo, setDuracaoCiclo] = useState("");
@@ -475,6 +578,9 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
     setAnalysisResult("");
     setPhotos({ front: null, back: null, side: null });
     setFormData({ semanas: "", compostos: "", obs: "" });
+    setClinical({ lesoes: "", doresArticulares: "", limitacoesADM: "", queixasFuncionais: "" });
+    setPosturalChecks([]);
+    setDisfuncoesChecks([]);
     setObjetivoCiclo("cutting");
     setSemanaCiclo("");
     setDuracaoCiclo("");
@@ -540,8 +646,10 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
 Objetivo do ciclo: ${objetivoCiclo}
 Semana ${semanaCiclo || "não informada"} de ${duracaoCiclo || "não informada"} semanas
 Suporte em uso: ${suporte || "não informado"}` : "";
-      const contexto = `Atleta: ${athleteName} | Semanas para o show: ${formData.semanas || "n/d"} | Protocolo: ${formData.compostos || "não informado"} | Obs: ${formData.obs || "nenhuma"}\n\nGere a análise APEX v2 completa.`;
-      const system = buildSystemPrompt(cat, athleteName, protocoloCompleto);
+      const clinicalBlock = buildClinicalBlock(clinical, posturalChecks, disfuncoesChecks);
+      const contextoBase = `Atleta: ${athleteName} | Semanas para o show: ${formData.semanas || "n/d"} | Protocolo: ${formData.compostos || "não informado"} | Obs: ${formData.obs || "nenhuma"}`;
+      const contexto = `${contextoBase}${clinicalBlock ? `\n\n━━━ DADOS CLÍNICOS / POSTURAIS ━━━\n${clinicalBlock}` : ""}\n\nGere a análise APEX v2 completa.`;
+      const system = buildSystemPrompt(cat, athleteName, protocoloCompleto, clinicalBlock);
 
       const { data, error } = await supabase.functions.invoke("apex-visual-analyze", {
         body: { fotos, contexto, system },
@@ -609,7 +717,7 @@ Suporte em uso: ${suporte || "não informado"}` : "";
     } finally {
       setLoading(false);
     }
-  }, [athlete, cat, formData, photos, coachId, selectedCategory, fetchHistory, fetchSyncStatus, objetivoCiclo, semanaCiclo, duracaoCiclo, suporte]);
+  }, [athlete, cat, formData, photos, coachId, selectedCategory, fetchHistory, fetchSyncStatus, objetivoCiclo, semanaCiclo, duracaoCiclo, suporte, clinical, posturalChecks, disfuncoesChecks]);
 
   // ─── Generate corrective training ────────────────────
   const buildSyncPayload = useCallback(() => {
@@ -1220,7 +1328,144 @@ Suporte em uso: ${suporte || "não informado"}` : "";
         </div>
       )}
 
-      {/* ━━━ OBSERVAÇÕES ━━━ */}
+      {/* ━━━ HISTÓRICO CLÍNICO E LIMITAÇÕES ━━━ */}
+      <div style={{ ...cardStyle, marginBottom: 16 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+          {sectionTick(APEX.crimson)}
+          <span style={labelStyle}>🩻 Histórico Clínico e Limitações</span>
+        </div>
+        <div style={{ display: "grid", gap: 10 }}>
+          <div>
+            <div style={{ ...labelStyle, fontSize: 9, marginBottom: 6 }}>Lesões atuais ou passadas</div>
+            <textarea
+              value={clinical.lesoes}
+              onChange={(e) => setClinical({ ...clinical, lesoes: e.target.value })}
+              placeholder="Ex: ombro operado, hérnia L4-L5, tendinite patelar..."
+              rows={2}
+              style={{ ...inputBase, fontSize: 12, lineHeight: 1.5, resize: "vertical" }}
+            />
+          </div>
+          <div>
+            <div style={{ ...labelStyle, fontSize: 9, marginBottom: 6 }}>Dores articulares recorrentes</div>
+            <textarea
+              value={clinical.doresArticulares}
+              onChange={(e) => setClinical({ ...clinical, doresArticulares: e.target.value })}
+              placeholder="Ex: joelho direito no agachamento, lombar no peso morto..."
+              rows={2}
+              style={{ ...inputBase, fontSize: 12, lineHeight: 1.5, resize: "vertical" }}
+            />
+          </div>
+          <div>
+            <div style={{ ...labelStyle, fontSize: 9, marginBottom: 6 }}>Limitações de amplitude de movimento</div>
+            <textarea
+              value={clinical.limitacoesADM}
+              onChange={(e) => setClinical({ ...clinical, limitacoesADM: e.target.value })}
+              placeholder="Ex: não consegue agachar abaixo do paralelo, rotação interna de ombro limitada..."
+              rows={2}
+              style={{ ...inputBase, fontSize: 12, lineHeight: 1.5, resize: "vertical" }}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* ━━━ AVALIAÇÃO POSTURAL ━━━ */}
+      <div style={{ ...cardStyle, marginBottom: 16 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+          {sectionTick(APEX.amber)}
+          <span style={labelStyle}>📐 Padrões Posturais Observados</span>
+          {posturalChecks.length > 0 && (
+            <span style={{ fontSize: 10, color: APEX.amber, fontFamily: APEX.fontMono, marginLeft: 4 }}>· {posturalChecks.length}</span>
+          )}
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 8 }}>
+          {POSTURAL_OPTIONS.map((opt) => {
+            const checked = posturalChecks.includes(opt);
+            return (
+              <label
+                key={opt}
+                style={{
+                  display: "flex", alignItems: "center", gap: 8, cursor: "pointer",
+                  padding: "8px 10px", borderRadius: 8,
+                  border: `1px solid ${checked ? APEX.amber : APEX.border}`,
+                  background: checked ? `${APEX.amber}15` : "transparent",
+                  fontSize: 12, color: checked ? APEX.textPrimary : APEX.textSecondary,
+                  transition: "all .15s",
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={checked}
+                  onChange={(e) => {
+                    setPosturalChecks(e.target.checked
+                      ? [...posturalChecks, opt]
+                      : posturalChecks.filter((o) => o !== opt));
+                  }}
+                  style={{ accentColor: APEX.amber }}
+                />
+                <span>{opt}</span>
+              </label>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ━━━ DISFUNÇÕES DE MOVIMENTO ━━━ */}
+      <div style={{ ...cardStyle, marginBottom: 16 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+          {sectionTick(APEX.violet)}
+          <span style={labelStyle}>⚙️ Disfunções de Movimento</span>
+          {disfuncoesChecks.length > 0 && (
+            <span style={{ fontSize: 10, color: APEX.violet, fontFamily: APEX.fontMono, marginLeft: 4 }}>· {disfuncoesChecks.length}</span>
+          )}
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 8 }}>
+          {DISFUNCAO_OPTIONS.map((opt) => {
+            const checked = disfuncoesChecks.includes(opt);
+            return (
+              <label
+                key={opt}
+                style={{
+                  display: "flex", alignItems: "center", gap: 8, cursor: "pointer",
+                  padding: "8px 10px", borderRadius: 8,
+                  border: `1px solid ${checked ? APEX.violet : APEX.border}`,
+                  background: checked ? `${APEX.violet}15` : "transparent",
+                  fontSize: 12, color: checked ? APEX.textPrimary : APEX.textSecondary,
+                  transition: "all .15s",
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={checked}
+                  onChange={(e) => {
+                    setDisfuncoesChecks(e.target.checked
+                      ? [...disfuncoesChecks, opt]
+                      : disfuncoesChecks.filter((o) => o !== opt));
+                  }}
+                  style={{ accentColor: APEX.violet }}
+                />
+                <span>{opt}</span>
+              </label>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ━━━ QUEIXAS DO ATLETA ━━━ */}
+      <div style={{ ...cardStyle, marginBottom: 16 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+          {sectionTick(APEX.emerald)}
+          <span style={labelStyle}>💬 Queixas do Atleta</span>
+        </div>
+        <textarea
+          value={clinical.queixasFuncionais}
+          onChange={(e) => setClinical({ ...clinical, queixasFuncionais: e.target.value })}
+          placeholder="O que o atleta relata sentir durante os treinos (dores, fraquezas, compensações percebidas...)"
+          rows={3}
+          style={{ ...inputBase, fontSize: 12, lineHeight: 1.65, resize: "vertical" }}
+        />
+      </div>
+
+
       <div style={{ ...cardStyle, marginBottom: 16 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
           {sectionTick(APEX.electric)}
@@ -1369,8 +1614,10 @@ Suporte em uso: ${suporte || "não informado"}` : "";
 Objetivo do ciclo: ${objetivoCiclo}
 Semana ${semanaCiclo || "não informada"} de ${duracaoCiclo || "não informada"} semanas
 Suporte em uso: ${suporte || "não informado"}` : "";
-            const system = buildSystemPrompt(cat, athleteName, protocoloCompleto);
-            const contexto = `Atleta: ${athleteName} | Semanas para o show: ${formData.semanas || "n/d"} | Protocolo: ${formData.compostos || "não informado"} | Obs: ${formData.obs || "nenhuma"}\n\nGere a análise APEX completa.`;
+            const clinicalBlock = buildClinicalBlock(clinical, posturalChecks, disfuncoesChecks);
+            const system = buildSystemPrompt(cat, athleteName, protocoloCompleto, clinicalBlock);
+            const contextoBase = `Atleta: ${athleteName} | Semanas para o show: ${formData.semanas || "n/d"} | Protocolo: ${formData.compostos || "não informado"} | Obs: ${formData.obs || "nenhuma"}`;
+            const contexto = `${contextoBase}${clinicalBlock ? `\n\n━━━ DADOS CLÍNICOS / POSTURAIS ━━━\n${clinicalBlock}` : ""}\n\nGere a análise APEX completa.`;
             const fullPrompt = `━━━━━ SYSTEM PROMPT ━━━━━\n\n${system}\n\n━━━━━ USER CONTEXT ━━━━━\n\n${contexto}`;
             return (
               <>
