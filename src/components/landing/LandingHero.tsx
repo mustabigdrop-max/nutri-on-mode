@@ -2,6 +2,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 
 const ROTATING_LINES = [
+  "Você sabe qual grupo muscular está pronto para treinar hoje?",
+  "RPE 8 por 3 semanas seguidas. Seu corpo está pedindo deload — você ouviu?",
+  "Intra-workout nutrition para sessões de 90min+. Você tem protocolo?",
   "4 dias antes da prova e você não sabe se tá flat, full ou spilled.",
   "Motivação dura 2 semanas. Protocolo dura a vida.",
   "Protocolo farmacológico ativo. Nenhum app calculava seu TDEE real. Até agora.",
@@ -330,9 +333,9 @@ const LandingHero = () => {
             style={{ borderColor: "rgba(232,160,32,.08)" }}
           >
             {[
-              { v: "BB", l: "Stage Ready", s: "Flat/Full/Spilled · Peak Week · Janela Anabólica" },
-              { v: "24H", l: "Sempre ON", s: "Protocolo adaptativo em tempo real" },
-              { v: "0", l: "Apps iguais", s: "Nada como isso no mundo" },
+              { v: "16", l: "Splits de Treino", s: "PPL · Upper/Lower · MMA · Corrida · BB splits" },
+              { v: "RPE", l: "Tracking Nativo", s: "Deload automático por acúmulo de fadiga" },
+              { v: "8", l: "Grupos Musculares", s: "Heatmap de recuperação em tempo real" },
             ].map((c, i, arr) => (
               <div
                 key={i}
