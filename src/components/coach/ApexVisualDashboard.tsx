@@ -120,6 +120,33 @@ const CATEGORIES: Record<CategoryKey, CategoryDef> = {
   },
 };
 
+const POSTURAL_OPTIONS = [
+  "Hiperlordose lombar",
+  "Cifose torácica",
+  "Anteriorização da cabeça",
+  "Ombro protraído (esquerdo)",
+  "Ombro protraído (direito)",
+  "Ombro protraído (ambos)",
+  "Inclinação pélvica anterior",
+  "Inclinação pélvica posterior",
+  "Joelho valgo",
+  "Joelho varo",
+  "Rotação de tronco",
+  "Assimetria de ombros",
+  "Assimetria de quadril",
+  "Escápula alada",
+];
+
+const DISFUNCAO_OPTIONS = [
+  "Dominância de joelho no agachamento",
+  "Shift lateral no agachamento",
+  "Hiperextensão lombar no press",
+  "Elevação de ombro no pull",
+  "Anteriorização no hip hinge",
+  "Dissociação escapular ausente",
+  "Respiração disfuncional (apical)",
+];
+
 const STEPS = [
   "Carregando protocolo APEX v2...",
   "Lendo estrutura corporal...",
