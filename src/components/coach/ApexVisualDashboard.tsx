@@ -504,6 +504,9 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
     front: null, back: null, side: null,
   });
   const [formData, setFormData] = useState({ semanas: "", compostos: "", obs: "" });
+  const [clinical, setClinical] = useState({ lesoes: "", doresArticulares: "", limitacoesADM: "", queixasFuncionais: "" });
+  const [posturalChecks, setPosturalChecks] = useState<string[]>([]);
+  const [disfuncoesChecks, setDisfuncoesChecks] = useState<string[]>([]);
   const [objetivoCiclo, setObjetivoCiclo] = useState("cutting");
   const [semanaCiclo, setSemanaCiclo] = useState("");
   const [duracaoCiclo, setDuracaoCiclo] = useState("");
