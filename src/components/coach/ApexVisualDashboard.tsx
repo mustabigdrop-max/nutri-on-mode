@@ -1205,14 +1205,24 @@ Suporte em uso: ${suporte || "não informado"}` : "";
       {/* ━━━ MODE TOGGLE: Análise IA vs Evolução Fotográfica ━━━ */}
       <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
         {([
-          { k: "analise" as const,  l: "DIAGNÓSTICO APEX",     icon: ScanLine },
-          { k: "evolucao" as const, l: "Evolução Fotográfica",  icon: TrendingUp },
-        ]).map(({ k, l, icon: Ic }) => {
-          const active = apexMode === k;
+          { k: "analise" as const,  l: "DIAGNÓSTICO APEX",     icon: ScanLine, isModal: false },
+          { k: "evolucao" as const, l: "Evolução Fotográfica",  icon: TrendingUp, isModal: true },
+        ]).map(({ k, l, icon: Ic, isModal }) => {
+          const active = !isModal && apexMode === "analise" && k === "analise";
           return (
             <button
               key={k}
-              onClick={() => setApexMode(k)}
+              onClick={() => {
+                if (isModal) {
+                  if (!athlete) {
+                    toast({ title: "Selecione um atleta antes", variant: "destructive" });
+                    return;
+                  }
+                  setEvolucaoModalOpen(true);
+                } else {
+                  setApexMode("analise");
+                }
+              }}
               style={{
                 flex: 1, padding: "12px 16px", borderRadius: 12, cursor: "pointer",
                 background: active ? `linear-gradient(135deg, ${APEX.electricDim}, ${APEX.deep})` : APEX.deep,
@@ -1230,21 +1240,14 @@ Suporte em uso: ${suporte || "não informado"}` : "";
         })}
       </div>
 
-      {apexMode === "evolucao" && (
-        <div style={{ marginBottom: 16 }}>
-          {athlete ? (
-            <ApexEvolucao
-              atletaId={athlete.id}
-              atletaNome={athlete.nome}
-              dataCompeticao={athlete.data_competicao}
-              categoriaAtleta={athlete.categoria ?? selectedCategory}
-            />
-          ) : (
-            <div style={{ ...cardStyle, textAlign: "center", color: APEX.textSecondary, padding: 32 }}>
-              Selecione um atleta para acessar a evolução fotográfica.
-            </div>
-          )}
-        </div>
+      {athlete && (
+        <ApexEvolucaoFotografica
+          open={evolucaoModalOpen}
+          onOpenChange={setEvolucaoModalOpen}
+          athleteId={athlete.id}
+          athleteName={athlete.nome}
+          athleteCategory={athlete.categoria ?? cat.label}
+        />
       )}
 
       {apexMode === "analise" && (<>
