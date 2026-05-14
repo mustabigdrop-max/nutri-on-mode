@@ -260,6 +260,77 @@ export type Database = {
           },
         ]
       }
+      apex_checkins: {
+        Row: {
+          admin_id: string | null
+          analise_ia: Json | null
+          atleta_id: string
+          bf_percent: number | null
+          created_at: string
+          delta_analise: string | null
+          delta_score: number | null
+          fase: string | null
+          foto_url: string
+          id: string
+          peso_kg: number | null
+          score_dureza: number | null
+          score_geral: number | null
+          score_proporcao: number | null
+          score_separacao: number | null
+          score_textura: number | null
+          semana: number
+          semanas_faltam: number | null
+        }
+        Insert: {
+          admin_id?: string | null
+          analise_ia?: Json | null
+          atleta_id: string
+          bf_percent?: number | null
+          created_at?: string
+          delta_analise?: string | null
+          delta_score?: number | null
+          fase?: string | null
+          foto_url: string
+          id?: string
+          peso_kg?: number | null
+          score_dureza?: number | null
+          score_geral?: number | null
+          score_proporcao?: number | null
+          score_separacao?: number | null
+          score_textura?: number | null
+          semana: number
+          semanas_faltam?: number | null
+        }
+        Update: {
+          admin_id?: string | null
+          analise_ia?: Json | null
+          atleta_id?: string
+          bf_percent?: number | null
+          created_at?: string
+          delta_analise?: string | null
+          delta_score?: number | null
+          fase?: string | null
+          foto_url?: string
+          id?: string
+          peso_kg?: number | null
+          score_dureza?: number | null
+          score_geral?: number | null
+          score_proporcao?: number | null
+          score_separacao?: number | null
+          score_textura?: number | null
+          semana?: number
+          semanas_faltam?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "apex_checkins_atleta_id_fkey"
+            columns: ["atleta_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       apex_reports: {
         Row: {
           angles: Json
