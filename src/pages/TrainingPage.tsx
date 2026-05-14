@@ -1523,7 +1523,15 @@ function TrainingDayCard({ day, index, expanded, onToggle, expandedExercise, set
                 />
               ))}
 
-              {/* Corrective Post-Workout */}
+              {/* Session Notes */}
+              {day.session_notes && (
+                <div className="rounded-xl p-3" style={{ background: "rgba(74,222,128,0.04)", borderLeft: `3px solid ${GREEN}` }}>
+                  <span className="text-[9px] font-bold" style={{ color: GREEN }}>📝 NOTA DA SESSÃO</span>
+                  <p className="text-[11px] mt-1" style={{ color: TEXT_DIM }}>{day.session_notes}</p>
+                </div>
+              )}
+
+              {/* Corrective Post-Workout — sempre no final do dia */}
               {day.corrective_post?.length > 0 && (
                 <div className="rounded-xl p-3" style={{ background: "rgba(244,114,182,0.06)", border: "1px solid rgba(244,114,182,0.18)" }}>
                   <span className="text-[9px] font-bold tracking-widest uppercase" style={{ color: "#f472b6" }}>🩺 CORRETIVOS PÓS-TREINO</span>
@@ -1539,14 +1547,6 @@ function TrainingDayCard({ day, index, expanded, onToggle, expandedExercise, set
                       </div>
                     ))}
                   </div>
-                </div>
-              )}
-
-              {/* Session Notes */}
-              {day.session_notes && (
-                <div className="rounded-xl p-3" style={{ background: "rgba(74,222,128,0.04)", borderLeft: `3px solid ${GREEN}` }}>
-                  <span className="text-[9px] font-bold" style={{ color: GREEN }}>📝 NOTA DA SESSÃO</span>
-                  <p className="text-[11px] mt-1" style={{ color: TEXT_DIM }}>{day.session_notes}</p>
                 </div>
               )}
             </div>
