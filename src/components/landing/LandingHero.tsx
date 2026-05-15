@@ -202,7 +202,7 @@ const LandingHero = () => {
               fontSize: "clamp(1rem,3vw,2.2rem)",
             }}
           >
-            PALCO. SAÚDE. PERFORMANCE.
+            MINDSET · COMPORTAMENTO · EXECUÇÃO
           </motion.div>
 
           {/* [6] Animated separator */}
