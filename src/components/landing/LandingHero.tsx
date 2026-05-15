@@ -335,7 +335,7 @@ const LandingHero = () => {
             style={{ borderColor: "rgba(232,160,32,.08)" }}
           >
             {[
-              { v: "16", l: "Splits de Treino", s: "PPL · Upper/Lower · MMA · Corrida · BB splits" },
+              { v: "MCE", l: "Método Exclusivo", s: "Mindset · Comportamento · Execução" },
               { v: "RPE", l: "Tracking Nativo", s: "Deload automático por acúmulo de fadiga" },
               { v: "8", l: "Grupos Musculares", s: "Heatmap de recuperação em tempo real" },
             ].map((c, i, arr) => (
