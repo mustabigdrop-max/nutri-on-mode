@@ -436,24 +436,66 @@ const LandingHero = () => {
             <div className="w-6 h-px bg-[#e8a020]/15" />
           </motion.div>
 
-          {/* Body copy — identity-driven */}
+          {/* Body copy — three-line hero punch */}
           <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 1.3 }}
-            className="max-w-[500px] mb-8"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.3, delay: 1.25 }}
+            className="max-w-[540px] mb-8"
           >
-            <p className="text-[1rem] leading-[1.9] text-[#f0edf8]/55 font-landing mb-1">
-              Todo app te diz o que comer.
-            </p>
-            <p className="text-[1rem] leading-[1.9] text-[#f0edf8]/75 font-landing font-semibold mb-3">
-              O NutriON descobre{" "}
-              <span className="text-[#e8a020]">por que você para de comer certo.</span>
-            </p>
-            <p className="text-[.92rem] leading-[1.85] text-[#8888b0] font-landing mb-4">
-              Porque resultado não é saber o que fazer.{" "}
-              <span className="text-[#f0edf8]/55">É não parar de fazer.</span>
-            </p>
+            {/* Three-line statement — escalating reveal */}
+            <div className="mb-5">
+              <motion.p
+                initial={{ opacity: 0, x: -28 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.6, delay: 1.3 }}
+                className="font-heading leading-[1.2]"
+                style={{ fontSize: "clamp(1.05rem, 2.5vw, 1.8rem)", color: "rgba(240,237,248,.35)" }}
+              >
+                TODO APP TE DÁ UM PLANO.
+              </motion.p>
+
+              <motion.p
+                initial={{ opacity: 0, x: -28 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.6, delay: 1.52 }}
+                className="font-heading leading-[1.2]"
+                style={{ fontSize: "clamp(1.05rem, 2.5vw, 1.8rem)", color: "rgba(240,237,248,.72)" }}
+              >
+                TODO PERSONAL TE DÁ UM TREINO.
+              </motion.p>
+
+              <motion.p
+                initial={{ opacity: 0, scale: 0.95, filter: "blur(4px)" }}
+                animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+                transition={{ duration: 0.75, delay: 1.78 }}
+                className="font-heading leading-[1.2]"
+                style={{
+                  fontSize: "clamp(1.05rem, 2.5vw, 1.8rem)",
+                  color: "#e8a020",
+                  textShadow: "0 0 35px rgba(232,160,32,.5), 0 0 70px rgba(232,160,32,.2)",
+                }}
+              >
+                O NUTRION É O SISTEMA
+                <br />
+                QUE FAZ VOCÊ NÃO PARAR.
+              </motion.p>
+            </div>
+
+            {/* Supporting paragraph */}
+            <motion.p
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 2.1 }}
+              className="text-[.88rem] leading-[1.88] font-landing mb-4"
+              style={{ color: "#60607a" }}
+            >
+              Nutrição de precisão, prescrição de treino adaptativa e análise
+              comportamental — integrados num único protocolo que aprende com você e{" "}
+              <span style={{ color: "rgba(240,237,248,.62)" }}>
+                age antes de você parar.
+              </span>
+            </motion.p>
 
             {/* Live activity + badge row */}
             <div className="flex flex-wrap items-center gap-3">
