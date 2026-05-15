@@ -403,7 +403,7 @@ const LandingHero = () => {
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 1.7 }}
+            transition={{ duration: 0.7, delay: 2.5 }}
             className="flex flex-wrap mb-9 border w-fit"
             style={{ borderColor: "rgba(232,160,32,.08)" }}
           >
@@ -440,7 +440,7 @@ const LandingHero = () => {
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 1.9 }}
+            transition={{ duration: 0.7, delay: 2.7 }}
             className="flex gap-3 flex-wrap"
           >
             <button
