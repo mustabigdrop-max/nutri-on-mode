@@ -198,15 +198,15 @@ const LandingLiveSystem = () => {
                 strokeWidth={1.2}
                 style={{ filter: "drop-shadow(0 0 20px rgba(232,160,32,.5))" }}
               />
-              <text x={CENTER.x} y={CENTER.y - 4} textAnchor="middle" fill="#e8a020" fontSize="14" fontWeight="700">
+              <text x={CENTER.x} y={CENTER.y - 2} textAnchor="middle" fill="#e8a020" fontSize="22" fontWeight="700">
                 MCE
               </text>
               <text
                 x={CENTER.x}
-                y={CENTER.y + 12}
+                y={CENTER.y + 18}
                 textAnchor="middle"
                 fill="#e8a020"
-                fontSize="8"
+                fontSize="12"
                 letterSpacing="2"
                 style={{ fontFamily: "JetBrains Mono, monospace" }}
               >
@@ -231,11 +231,11 @@ const LandingLiveSystem = () => {
                   <motion.circle
                     cx={n.x}
                     cy={n.y}
-                    r={26}
+                    r={32}
                     fill="#0a0a14"
                     stroke={isActive ? activePulse!.color : "#e8a020"}
-                    strokeOpacity={isActive ? 1 : isHover ? 0.9 : 0.4}
-                    strokeWidth={1.2}
+                    strokeOpacity={isActive ? 1 : isHover ? 0.9 : 0.5}
+                    strokeWidth={1.4}
                     animate={{ scale: isHover ? 1.12 : isActive ? 1.06 : 1 }}
                     transition={{ duration: 0.3 }}
                     style={{
@@ -247,16 +247,16 @@ const LandingLiveSystem = () => {
                       transformOrigin: `${n.x}px ${n.y}px`,
                     }}
                   />
-                  <text x={n.x} y={n.y + 7} textAnchor="middle" fontSize="20" style={{ pointerEvents: "none" }}>
+                  <text x={n.x} y={n.y + 11} textAnchor="middle" fontSize="32" style={{ pointerEvents: "none" }}>
                     {n.emoji}
                   </text>
                   <text
                     x={n.x}
-                    y={n.y + 46}
+                    y={n.y + 56}
                     textAnchor="middle"
                     fill={isHover || isActive ? "#e8a020" : "#f0edf8"}
-                    fillOpacity={isHover || isActive ? 1 : 0.5}
-                    fontSize="7.5"
+                    fillOpacity={isHover || isActive ? 1 : 0.7}
+                    fontSize="13"
                     letterSpacing="1.5"
                     style={{ fontFamily: "JetBrains Mono, monospace", pointerEvents: "none" }}
                   >
