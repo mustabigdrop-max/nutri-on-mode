@@ -212,21 +212,38 @@ const LandingHero = () => {
         {/* LEFT COLUMN */}
         <div className="w-full lg:w-[55%] flex flex-col justify-center">
           {/* [1] Rotating micro-text */}
-          <div className="h-[1.3rem] overflow-hidden mb-5">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={lineIdx}
-                initial={{ y: 16, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                exit={{ y: -16, opacity: 0 }}
-                transition={{ duration: 0.4 }}
-                className="font-mono text-[.62rem] tracking-[.05em]"
-                style={{ color: "rgba(240,237,248,.28)" }}
+          <div className="flex items-center gap-2.5 mb-5">
+            <div
+              className="flex items-center gap-1.5 border px-2 py-[3px] rounded-sm shrink-0"
+              style={{ borderColor: "rgba(255,68,68,.22)", background: "rgba(255,68,68,.04)" }}
+            >
+              <span
+                className="w-1.5 h-1.5 rounded-full animate-pulse"
+                style={{ background: "#ff4444", boxShadow: "0 0 6px rgba(255,68,68,.9)" }}
+              />
+              <span
+                className="font-mono text-[.44rem] tracking-[.15em]"
+                style={{ color: "#ff4444" }}
               >
-                <span className="mr-2" style={{ color: "rgba(232,160,32,.4)" }}>›</span>
-                {ROTATING_LINES[lineIdx]}
-              </motion.div>
-            </AnimatePresence>
+                AO VIVO
+              </span>
+            </div>
+            <div className="h-[1.3rem] overflow-hidden flex-1">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={lineIdx}
+                  initial={{ y: 16, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  exit={{ y: -16, opacity: 0 }}
+                  transition={{ duration: 0.4 }}
+                  className="font-mono text-[.62rem] tracking-[.05em]"
+                  style={{ color: "rgba(240,237,248,.28)" }}
+                >
+                  <span className="mr-2" style={{ color: "rgba(232,160,32,.4)" }}>›</span>
+                  {ROTATING_LINES[lineIdx]}
+                </motion.div>
+              </AnimatePresence>
+            </div>
           </div>
 
           {/* [2] MCE badge */}
