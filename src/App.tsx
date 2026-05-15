@@ -59,6 +59,7 @@ import BehavioralTriggersPage from "./pages/BehavioralTriggersPage";
 import DietBreakPredictorPage from "./pages/DietBreakPredictorPage";
 import VulnerabilityMapPage from "./pages/VulnerabilityMapPage";
 import MetabolicReversionPage from "./pages/MetabolicReversionPage";
+import ApexPage from "./pages/ApexPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -139,6 +140,7 @@ const App = () => (
             <Route path="/diet-break-predictor" element={<ProtectedRoute><DietBreakPredictorPage /></ProtectedRoute>} />
             <Route path="/vulnerability-map" element={<ProtectedRoute><VulnerabilityMapPage /></ProtectedRoute>} />
             <Route path="/metabolic-reversion" element={<ProtectedRoute><MetabolicReversionPage /></ProtectedRoute>} />
+            <Route path="/apex" element={<ProtectedRoute><ApexPage /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
