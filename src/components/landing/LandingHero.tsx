@@ -1,6 +1,30 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 
+const BOOT_STEPS = [
+  "Conectando ao sistema...",
+  "Carregando protocolos MCE...",
+  "Verificando sincronização...",
+  "Sistema MCE · Ativo",
+];
+
+const useLiveCounter = (base: number) => {
+  const [count, setCount] = useState(base);
+  useEffect(() => {
+    let timeoutId: ReturnType<typeof setTimeout>;
+    const tick = () => {
+      const delay = 2400 + Math.random() * 2600;
+      timeoutId = setTimeout(() => {
+        setCount((c) => c + 1);
+        tick();
+      }, delay);
+    };
+    tick();
+    return () => clearTimeout(timeoutId);
+  }, []);
+  return count;
+};
+
 const ROTATING_LINES = [
   "Sua fome nunca foi de comida.",
   "Força de vontade não periodiza treino. Sistema sim.",
