@@ -29,9 +29,10 @@ import {
   Flame, TrendingUp, Droplets, Apple, BarChart3, MessageSquare,
   User, Plus, Utensils, LogOut, Zap, Brain, ChevronRight, Award,
   Camera, Users, Heart, Settings, HelpCircle, Leaf, Trophy, ShoppingCart, History, Dumbbell, FileText, Hammer,
-  Clock, Pill, Bug, Smile, CalendarDays, HelpingHand, BarChart, Lock, Sun, AlertTriangle, Scale
+  Clock, Pill, Bug, Smile, CalendarDays, HelpingHand, BarChart, Lock, Sun, AlertTriangle, Scale, Activity
 } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
+import { useApex } from "@/hooks/useApex";
 
 // SVG animated ring component — upgraded with dual rings, glow, status pulse
 const CalorieRing = ({ percent, kcal, target, objetivo }: { percent: number; kcal: number; target: number; objetivo?: string }) => {
@@ -320,6 +321,119 @@ const XPBar = ({ xp, level }: { xp: number; level: number }) => {
         <span className="text-[8px] font-mono text-primary/50">{xpPerLevel - currentLevelXP} XP para Lv.{level + 1}</span>
       </div>
     </div>
+  );
+};
+
+// Apex mini-card
+const ApexMiniCard = ({ onClick }: { onClick: () => void }) => {
+  const { latestAssessment, loading, activePain } = useApex();
+  const score = latestAssessment?.overall_score ?? null;
+  const color = score == null ? "#7890ff" : score >= 80 ? "#00f0b4" : score >= 55 ? "#e8a020" : "#ff4444";
+  const label = score == null ? "—" : score >= 80 ? "Elite" : score >= 65 ? "Bom" : score >= 50 ? "Regular" : "Atenção";
+  const bars = [
+    { k: "Postura",    v: latestAssessment?.posture_score   ?? null, c: "#7890ff" },
+    { k: "FMS",        v: latestAssessment?.fms_total != null ? Math.round((latestAssessment.fms_total / 21) * 100) : null, c: "#e8a020" },
+    { k: "Mobilidade", v: latestAssessment?.mobility_score  ?? null, c: "#00f0b4" },
+    { k: "Simetria",   v: latestAssessment?.symmetry_score  ?? null, c: "#ff4444" },
+  ];
+  const R = 30, C = 2 * Math.PI * R;
+
+  return (
+    <motion.button
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.83 }}
+      onClick={onClick}
+      className="w-full rounded-2xl mb-4 text-left overflow-hidden relative"
+      style={{ background: "#06060e", border: "1px solid rgba(120,144,255,.18)" }}
+    >
+      {/* top accent line */}
+      <div className="absolute top-0 left-0 right-0 h-[2px]"
+        style={{ background: "linear-gradient(90deg,transparent,rgba(120,144,255,.6),transparent)" }} />
+
+      <div className="p-4">
+        {/* header */}
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <Activity className="w-4 h-4" style={{ color: "#7890ff" }} />
+            <span className="font-mono text-[.48rem] tracking-[.22em] uppercase" style={{ color: "#7890ff" }}>
+              APEX VISUAL INTELLIGENCE
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            {activePain.length > 0 && (
+              <span className="font-mono text-[.45rem] px-1.5 py-0.5 rounded-full"
+                style={{ background: "rgba(255,68,68,.1)", color: "#ff4444", border: "1px solid rgba(255,68,68,.25)" }}>
+                {activePain.length} dor{activePain.length > 1 ? "es" : ""}
+              </span>
+            )}
+            <ChevronRight className="w-3.5 h-3.5" style={{ color: "#7890ff" }} />
+          </div>
+        </div>
+
+        <div className="flex items-center gap-4">
+          {/* Score ring */}
+          <div className="flex-shrink-0 relative w-20 h-20">
+            <svg viewBox="0 0 80 80" className="w-full h-full -rotate-90">
+              <circle cx="40" cy="40" r={R} fill="none" stroke="rgba(255,255,255,.05)" strokeWidth="7" />
+              {loading || score == null ? (
+                <circle cx="40" cy="40" r={R} fill="none" stroke="rgba(120,144,255,.2)" strokeWidth="7"
+                  strokeDasharray={C} strokeDashoffset={C * 0.4} strokeLinecap="round" />
+              ) : (
+                <motion.circle
+                  cx="40" cy="40" r={R} fill="none" stroke={color} strokeWidth="7"
+                  strokeLinecap="round" strokeDasharray={C}
+                  initial={{ strokeDashoffset: C }}
+                  animate={{ strokeDashoffset: C - (score / 100) * C }}
+                  transition={{ duration: 1.3, ease: "easeOut", delay: 0.9 }}
+                  style={{ filter: `drop-shadow(0 0 6px ${color}66)` }}
+                />
+              )}
+            </svg>
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <span className="font-mono font-bold text-base leading-none" style={{ color }}>
+                {loading ? "..." : score ?? "—"}
+              </span>
+              <span className="font-mono text-[.42rem] mt-0.5" style={{ color }}>
+                {loading ? "" : label}
+              </span>
+            </div>
+          </div>
+
+          {/* Sub-score bars */}
+          <div className="flex-1 space-y-1.5">
+            {bars.map(({ k, v, c }) => (
+              <div key={k}>
+                <div className="flex justify-between items-center mb-0.5">
+                  <span className="font-mono text-[.44rem]" style={{ color: "rgba(240,237,248,.45)" }}>{k}</span>
+                  <span className="font-mono text-[.44rem] font-bold" style={{ color: v == null ? "rgba(255,255,255,.2)" : c }}>
+                    {v == null ? "—" : v}
+                  </span>
+                </div>
+                <div className="h-1 rounded-full" style={{ background: "rgba(255,255,255,.05)" }}>
+                  {v != null && (
+                    <motion.div
+                      className="h-full rounded-full"
+                      style={{ background: c }}
+                      initial={{ width: 0 }}
+                      animate={{ width: `${v}%` }}
+                      transition={{ duration: 1, ease: "easeOut", delay: 1 }}
+                    />
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* CTA */}
+        <div className="mt-3 pt-3" style={{ borderTop: "1px solid rgba(120,144,255,.08)" }}>
+          <span className="font-mono text-[.48rem] tracking-wider" style={{ color: "rgba(120,144,255,.6)" }}>
+            {latestAssessment ? `Última avaliação: ${new Date(latestAssessment.assessment_date + "T12:00:00").toLocaleDateString("pt-BR")} · Toque para avaliar` : "Nenhuma avaliação · Toque para iniciar"}
+          </span>
+        </div>
+      </div>
+    </motion.button>
   );
 };
 
@@ -756,6 +870,9 @@ const DashboardPage = () => {
           <XPBar xp={profile.xp || 0} level={profile.level || 1} />
         </motion.div>
 
+        {/* APEX Visual Intelligence card */}
+        <ApexMiniCard onClick={() => navigate("/apex")} />
+
         {/* Gamification, Missions & Micronutrients */}
         <motion.div
           initial={{ opacity: 0 }}
@@ -977,6 +1094,7 @@ const DashboardPage = () => {
                 { icon: Apple,        label: "Receitas",            desc: "Filtradas por macros do dia",     path: "/recipes",                emoji: "🍳" },
                 { icon: MessageSquare,label: "Coach IA",            desc: "Chat nutricional inteligente",    path: "/chat",                   emoji: "🤖" },
                 { icon: Brain,        label: "Agentes IA",          desc: "7 especialistas MCE",             path: "/agents",                 emoji: "🧬" },
+                { icon: Activity,     label: "APEX Visual",         desc: "Cinesiologia PhD · Postura·FMS",  path: "/apex",                   emoji: "🧠" },
                 // ── MCE Adaptativo (nova feature) ─────────────────────────
                 { icon: Scale,        label: "MCE Adaptativo",     desc: "Peso real + calibração TDEE",     path: "/weight-adaptive",       emoji: "⚖️" },
                 // ── Acompanhamento ────────────────────────────────────────
