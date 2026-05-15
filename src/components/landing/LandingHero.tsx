@@ -2,14 +2,16 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 
 const ROTATING_LINES = [
-  "Você sabe qual grupo muscular está pronto para treinar hoje?",
-  "RPE 8 por 3 semanas seguidas. Seu corpo está pedindo deload — você ouviu?",
-  "Intra-workout nutrition para sessões de 90min+. Você tem protocolo?",
-  "4 dias antes da prova e você não sabe se tá flat, full ou spilled.",
-  "Motivação dura 2 semanas. Protocolo dura a vida.",
-  "Protocolo farmacológico ativo. Nenhum app calculava seu TDEE real. Até agora.",
   "Sua fome nunca foi de comida.",
-  "Peak week chegando. O plano de depleção e carb load já está pronto?",
+  "Força de vontade não periodiza treino. Sistema sim.",
+  "Você sabe o que fazer. O problema nunca foi esse.",
+  "Ninguém falhou na dieta. Falhou no diagnóstico.",
+  "Seu corpo responde ao padrão que você instalou. Não à sua intenção.",
+  "Não existe platô de resultado. Existe platô de padrão.",
+  "A fome que você sente às 23h não é física. É padrão sem protocolo.",
+  "Cardápio é intenção. Protocolo é resultado.",
+  "95% sabe o que comer. 5% tem estrutura pra não parar.",
+  "Transformação não é evento. É sistema que nunca para.",
 ];
 
 const PARTICLES = [
@@ -40,6 +42,85 @@ const CHIPS = [
   { pos: "bottom-[2%] left-[-6%]", label: "MUSCLE STATE", value: "FULL 💪", color: "#e8a020", x: -30, delay: 2.4 },
   { pos: "bottom-[2%] right-[-6%]", label: "SCORE MCE", value: "94 / 100", color: "#7890ff", x: 30, delay: 2.5 },
 ];
+
+const MCE_PILLARS = [
+  { letter: "M", label: "MINDSET", desc: "Padrão mental", color: "#7890ff", bars: [0.9, 0.6, 0.85, 0.7, 0.95] },
+  { letter: "C", label: "COMPORTAMENTO", desc: "Antes do prato", color: "#e8a020", bars: [0.7, 0.95, 0.75, 1.0, 0.8] },
+  { letter: "E", label: "EXECUÇÃO", desc: "Protocolo ativo", color: "#00f0b4", bars: [0.85, 0.65, 0.95, 0.7, 0.88] },
+];
+
+const MCESystemCard = () => (
+  <div className="lg:hidden w-full">
+    <div
+      className="relative border p-4 rounded-sm overflow-hidden"
+      style={{ borderColor: "rgba(232,160,32,.12)", background: "rgba(4,4,14,.85)" }}
+    >
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <span
+            className="w-1.5 h-1.5 rounded-full animate-pulse"
+            style={{ background: "#00f0b4", boxShadow: "0 0 8px rgba(0,240,180,.9)" }}
+          />
+          <span className="font-mono text-[.5rem] tracking-[.22em] uppercase" style={{ color: "rgba(0,240,180,.7)" }}>
+            MCE · SISTEMA ATIVO
+          </span>
+        </div>
+        <span className="font-mono text-[.5rem]" style={{ color: "#50507a" }}>NUTRI·ON v2.4</span>
+      </div>
+
+      <div className="grid grid-cols-3 gap-2">
+        {MCE_PILLARS.map((p, i) => (
+          <motion.div
+            key={p.letter}
+            initial={{ opacity: 0, scale: 0.88 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5, delay: 1.5 + i * 0.15 }}
+            className="relative border p-2.5 rounded-sm overflow-hidden"
+            style={{ borderColor: `${p.color}18`, background: "rgba(4,4,14,.85)" }}
+          >
+            <div
+              className="font-heading text-[2.1rem] leading-none mb-1"
+              style={{
+                color: "transparent",
+                WebkitTextStroke: `1px ${p.color}`,
+                textShadow: `0 0 18px ${p.color}66`,
+              }}
+            >
+              {p.letter}
+            </div>
+            <div className="font-mono text-[.44rem] tracking-[.16em] uppercase mb-0.5" style={{ color: p.color }}>
+              {p.label}
+            </div>
+            <div className="font-mono text-[.42rem] mb-2" style={{ color: "#404060" }}>
+              {p.desc}
+            </div>
+            <div className="flex items-end gap-[2px] h-4">
+              {p.bars.map((b, bi) => (
+                <motion.div
+                  key={bi}
+                  className="flex-1 rounded-[1px]"
+                  style={{ background: p.color, opacity: 0.7 }}
+                  animate={{ height: [`${b * 40}%`, `${b * 100}%`, `${b * 55}%`] }}
+                  transition={{ duration: 1.4 + bi * 0.18, repeat: Infinity, ease: "easeInOut" }}
+                />
+              ))}
+            </div>
+          </motion.div>
+        ))}
+      </div>
+
+      <motion.div
+        className="absolute bottom-0 left-0 right-0 h-px"
+        style={{
+          originX: 0.5,
+          background: "linear-gradient(90deg, transparent, #7890ff, #e8a020, #00f0b4, transparent)",
+        }}
+        animate={{ opacity: [0.35, 1, 0.35], scaleX: [0.85, 1, 0.85] }}
+        transition={{ duration: 2.8, repeat: Infinity, ease: "easeInOut" }}
+      />
+    </div>
+  </div>
+);
 
 const LandingHero = () => {
   const [lineIdx, setLineIdx] = useState(0);
@@ -200,7 +281,7 @@ const LandingHero = () => {
               fontSize: "clamp(1rem,3vw,2.2rem)",
             }}
           >
-            PALCO. SAÚDE. PERFORMANCE.
+            MINDSET · COMPORTAMENTO · EXECUÇÃO
           </motion.div>
 
           {/* [6] Animated separator */}
@@ -319,7 +400,7 @@ const LandingHero = () => {
             >
               <span>🏆</span>
               <span className="font-mono text-[.55rem]" style={{ color: "#8888b0" }}>
-                Stage prep · Flat/Full/Spilled · Peak Week
+                ⚡  Treino · Nutrição · Comportamento · Performance
               </span>
             </div>
           </motion.div>
@@ -333,7 +414,7 @@ const LandingHero = () => {
             style={{ borderColor: "rgba(232,160,32,.08)" }}
           >
             {[
-              { v: "16", l: "Splits de Treino", s: "PPL · Upper/Lower · MMA · Corrida · BB splits" },
+              { v: "MCE", l: "Método Exclusivo", s: "Mindset · Comportamento · Execução" },
               { v: "RPE", l: "Tracking Nativo", s: "Deload automático por acúmulo de fadiga" },
               { v: "8", l: "Grupos Musculares", s: "Heatmap de recuperação em tempo real" },
             ].map((c, i, arr) => (
@@ -424,6 +505,9 @@ const LandingHero = () => {
             </a>
           </motion.div>
         </div>
+
+        {/* MCE System Card — mobile only */}
+        <MCESystemCard />
 
         {/* RIGHT COLUMN — visualization */}
         <motion.div
