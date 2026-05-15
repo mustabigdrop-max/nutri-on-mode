@@ -2,14 +2,16 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 
 const ROTATING_LINES = [
-  "Você sabe qual grupo muscular está pronto para treinar hoje?",
-  "RPE 8 por 3 semanas seguidas. Seu corpo está pedindo deload — você ouviu?",
-  "Intra-workout nutrition para sessões de 90min+. Você tem protocolo?",
-  "4 dias antes da prova e você não sabe se tá flat, full ou spilled.",
-  "Motivação dura 2 semanas. Protocolo dura a vida.",
-  "Protocolo farmacológico ativo. Nenhum app calculava seu TDEE real. Até agora.",
   "Sua fome nunca foi de comida.",
-  "Peak week chegando. O plano de depleção e carb load já está pronto?",
+  "Força de vontade não periodiza treino. Sistema sim.",
+  "Você sabe o que fazer. O problema nunca foi esse.",
+  "Ninguém falhou na dieta. Falhou no diagnóstico.",
+  "Seu corpo responde ao padrão que você instalou. Não à sua intenção.",
+  "Não existe platô de resultado. Existe platô de padrão.",
+  "A fome que você sente às 23h não é física. É padrão sem protocolo.",
+  "Cardápio é intenção. Protocolo é resultado.",
+  "95% sabe o que comer. 5% tem estrutura pra não parar.",
+  "Transformação não é evento. É sistema que nunca para.",
 ];
 
 const PARTICLES = [
