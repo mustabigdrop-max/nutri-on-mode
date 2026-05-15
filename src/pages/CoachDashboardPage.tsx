@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Users, AlertTriangle, TrendingUp, Search, Bell, Settings, Plus, UserPlus, ArrowUpRight } from "lucide-react";
+import { Users, AlertTriangle, TrendingUp, Search, Bell, Settings, Plus, UserPlus, ArrowUpRight, Activity, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
 
 interface PatientRow {
@@ -188,6 +188,37 @@ const CoachDashboardPage = () => {
             </motion.div>
           ))}
         </div>
+
+        {/* APEX Visual Intelligence banner */}
+        <motion.div
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.25 }}
+          className="rounded-2xl overflow-hidden relative cursor-pointer group"
+          style={{ background: "#06060e", border: "1px solid rgba(120,144,255,.22)" }}
+          onClick={() => navigate("/apex")}
+        >
+          <div className="absolute top-0 left-0 right-0 h-[2px]"
+            style={{ background: "linear-gradient(90deg,transparent,rgba(120,144,255,.7),transparent)" }} />
+          <div className="p-4 flex items-center gap-4">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+              style={{ background: "rgba(120,144,255,.1)", border: "1px solid rgba(120,144,255,.2)" }}>
+              <Activity className="w-5 h-5" style={{ color: "#7890ff" }} />
+            </div>
+            <div className="flex-1">
+              <p className="font-mono text-[.5rem] tracking-[.22em] uppercase mb-0.5" style={{ color: "#7890ff" }}>
+                APEX VISUAL INTELLIGENCE
+              </p>
+              <p className="text-sm font-bold" style={{ color: "rgba(240,237,248,.85)" }}>
+                Cinesiologia PhD — avalie postura, FMS, ROM, dores e shape
+              </p>
+              <p className="text-[10px] font-mono mt-0.5" style={{ color: "rgba(120,144,255,.6)" }}>
+                Gera protocolo corretivo NASM CES automático · Veja a avaliação de cada paciente na aba Apex
+              </p>
+            </div>
+            <ChevronRight className="w-5 h-5 flex-shrink-0 group-hover:translate-x-1 transition-transform" style={{ color: "#7890ff" }} />
+          </div>
+        </motion.div>
 
         {/* Capacity warning */}
         {activePatients.length >= profile.max_patients - 2 && (

@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Send, Check, Brain, FileText, AlertTriangle, MessageSquare, User, Activity } from "lucide-react";
+import { ArrowLeft, Send, Check, Brain, FileText, AlertTriangle, MessageSquare, User, Activity, Zap } from "lucide-react";
+import { motion } from "framer-motion";
 import { toast } from "@/hooks/use-toast";
 
 const CoachPatientDetailPage = () => {
@@ -25,6 +26,10 @@ const CoachPatientDetailPage = () => {
   const [newMessage, setNewMessage] = useState("");
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  const [apexAssessment, setApexAssessment] = useState<any>(null);
+  const [apexPain, setApexPain] = useState<any[]>([]);
+  const [apexPosture, setApexPosture] = useState<any>(null);
+  const [apexFms, setApexFms] = useState<any>(null);
 
   useEffect(() => {
     if (!profile || !patientId) return;
@@ -34,13 +39,16 @@ const CoachPatientDetailPage = () => {
   const loadPatientData = async () => {
     if (!profile || !patientId) return;
 
-    const [profileRes, scoresRes, alertsRes, messagesRes, mealsRes, examsRes] = await Promise.all([
+    const [profileRes, scoresRes, alertsRes, messagesRes, mealsRes, examsRes,
+           apexAssessRes, apexPainRes] = await Promise.all([
       supabase.from("profiles").select("*").eq("user_id", patientId).maybeSingle(),
       supabase.from("consistency_scores").select("*").eq("user_id", patientId).order("created_at", { ascending: false }).limit(30),
       supabase.from("coach_alerts").select("*").eq("coach_id", profile.id).eq("patient_user_id", patientId).order("created_at", { ascending: false }),
       supabase.from("coach_messages").select("*").eq("coach_id", profile.id).eq("patient_user_id", patientId).order("created_at", { ascending: true }),
       supabase.from("meal_logs").select("*").eq("user_id", patientId).order("created_at", { ascending: false }).limit(14),
       supabase.from("blood_tests").select("*").eq("user_id", patientId).order("created_at", { ascending: false }),
+      supabase.from("apex_assessments").select("*").eq("user_id", patientId).order("assessment_date", { ascending: false }).limit(1).maybeSingle(),
+      supabase.from("apex_pain_entries").select("*").eq("user_id", patientId).is("resolved_at", null).order("created_at", { ascending: false }),
     ]);
 
     setPatient(profileRes.data);
@@ -49,6 +57,18 @@ const CoachPatientDetailPage = () => {
     setMessages(messagesRes.data || []);
     setMealLogs(mealsRes.data || []);
     setExams(examsRes.data || []);
+    setApexAssessment(apexAssessRes.data || null);
+    setApexPain(apexPainRes.data || []);
+
+    if (apexAssessRes.data?.id) {
+      const [postRes, fmsRes] = await Promise.all([
+        supabase.from("apex_posture_data").select("*").eq("assessment_id", apexAssessRes.data.id).maybeSingle(),
+        supabase.from("apex_fms_scores").select("*").eq("assessment_id", apexAssessRes.data.id).maybeSingle(),
+      ]);
+      setApexPosture(postRes.data || null);
+      setApexFms(fmsRes.data || null);
+    }
+
     setLoading(false);
   };
 
@@ -104,8 +124,17 @@ const CoachPatientDetailPage = () => {
 
       <main className="max-w-5xl mx-auto p-4">
         <Tabs defaultValue="overview" className="space-y-4">
-          <TabsList className="w-full grid grid-cols-5">
+          <TabsList className="w-full grid grid-cols-6">
             <TabsTrigger value="overview" className="text-xs"><User className="w-3 h-3 mr-1" />Visão Geral</TabsTrigger>
+            <TabsTrigger value="apex" className="text-xs relative">
+              <Activity className="w-3 h-3 mr-1" style={{ color: "#7890ff" }} />
+              <span style={{ color: "#7890ff" }}>Apex</span>
+              {apexPain.length > 0 && (
+                <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-red-500 rounded-full text-[8px] text-white flex items-center justify-center font-bold">
+                  {apexPain.length}
+                </span>
+              )}
+            </TabsTrigger>
             <TabsTrigger value="protocol" className="text-xs"><Brain className="w-3 h-3 mr-1" />Protocolo</TabsTrigger>
             <TabsTrigger value="exams" className="text-xs"><FileText className="w-3 h-3 mr-1" />Exames</TabsTrigger>
             <TabsTrigger value="alerts" className="text-xs"><AlertTriangle className="w-3 h-3 mr-1" />Alertas</TabsTrigger>
@@ -167,6 +196,139 @@ const CoachPatientDetailPage = () => {
                 <div><span className="text-muted-foreground">Streak:</span> <span className="text-foreground">{patient?.streak_days || 0} dias</span></div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* APEX */}
+          <TabsContent value="apex" className="space-y-4">
+            {!apexAssessment ? (
+              <Card style={{ border: "1px solid rgba(120,144,255,.2)", background: "#06060e" }}>
+                <CardContent className="p-8 text-center">
+                  <Activity className="w-10 h-10 mx-auto mb-3" style={{ color: "rgba(120,144,255,.4)" }} />
+                  <p className="text-sm font-mono" style={{ color: "rgba(240,237,248,.5)" }}>
+                    Paciente ainda não realizou nenhuma avaliação APEX.
+                  </p>
+                  <p className="text-xs font-mono mt-1" style={{ color: "rgba(120,144,255,.5)" }}>
+                    Peça ao paciente acessar APEX Visual Intelligence no app.
+                  </p>
+                </CardContent>
+              </Card>
+            ) : (
+              <>
+                {/* Score summary */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {[
+                    { label: "Overall", value: apexAssessment.overall_score, color: "#7890ff" },
+                    { label: "Postura", value: apexAssessment.posture_score, color: "#e8a020" },
+                    { label: "Mobilidade", value: apexAssessment.mobility_score, color: "#00f0b4" },
+                    { label: "Simetria", value: apexAssessment.symmetry_score, color: "#ff4444" },
+                  ].map(({ label, value, color }) => (
+                    <motion.div
+                      key={label}
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="rounded-xl p-4 text-center"
+                      style={{ background: "#06060e", border: `1px solid ${color}22` }}
+                    >
+                      <p className="text-[10px] font-mono mb-1" style={{ color: "rgba(240,237,248,.45)" }}>{label}</p>
+                      <p className="text-2xl font-bold font-mono" style={{ color: value == null ? "rgba(255,255,255,.2)" : color }}>
+                        {value ?? "—"}
+                      </p>
+                      <div className="mt-2 h-1.5 rounded-full" style={{ background: "rgba(255,255,255,.05)" }}>
+                        {value != null && (
+                          <motion.div className="h-full rounded-full" style={{ background: color, width: `${value}%` }}
+                            initial={{ width: 0 }} animate={{ width: `${value}%` }} transition={{ duration: 1 }} />
+                        )}
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+
+                {/* FMS */}
+                {apexFms && (
+                  <Card style={{ border: "1px solid rgba(232,160,32,.2)", background: "#06060e" }}>
+                    <CardHeader><CardTitle className="text-sm font-mono" style={{ color: "#e8a020" }}>FMS — Score {apexAssessment.fms_total}/21</CardTitle></CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-3 gap-2">
+                        {[
+                          ["Agachamento", apexFms.deep_squat],
+                          ["Passo L", apexFms.hurdle_step_l], ["Passo R", apexFms.hurdle_step_r],
+                          ["Avanço L", apexFms.inline_lunge_l], ["Avanço R", apexFms.inline_lunge_r],
+                          ["Ombro L", apexFms.shoulder_mob_l], ["Ombro R", apexFms.shoulder_mob_r],
+                          ["SLR L", apexFms.active_slr_l], ["SLR R", apexFms.active_slr_r],
+                          ["Tronco", apexFms.trunk_stability],
+                          ["Rotação L", apexFms.rotary_stab_l], ["Rotação R", apexFms.rotary_stab_r],
+                        ].map(([k, v]) => (
+                          <div key={String(k)} className="rounded-lg p-2 text-center" style={{ background: "rgba(255,255,255,.03)", border: "1px solid rgba(255,255,255,.06)" }}>
+                            <p className="text-[9px] font-mono" style={{ color: "rgba(240,237,248,.4)" }}>{k}</p>
+                            <p className="text-base font-bold font-mono" style={{ color: v === 3 ? "#00f0b4" : v === 2 ? "#e8a020" : v === 1 ? "#ff8844" : "#ff4444" }}>
+                              {v ?? "—"}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Posture */}
+                {apexPosture && (
+                  <Card style={{ border: "1px solid rgba(120,144,255,.2)", background: "#06060e" }}>
+                    <CardHeader><CardTitle className="text-sm font-mono" style={{ color: "#7890ff" }}>Postura — Score {apexAssessment.posture_score}/100</CardTitle></CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-2 gap-2 text-xs font-mono">
+                        {[
+                          ["Cabeça anteriorizada", apexPosture.forward_head],
+                          ["Cifose torácica", apexPosture.thoracic_kyphosis],
+                          ["Lordose lombar", apexPosture.lumbar_lordosis],
+                          ["Inclinação pélvica", apexPosture.pelvic_tilt],
+                          ["Assin. ombros", apexPosture.shoulder_asym],
+                          ["Upper Crossed", apexPosture.upper_crossed],
+                          ["Lower Crossed", apexPosture.lower_crossed],
+                          ["Pronação/distorção", apexPosture.pronation_dist],
+                        ].map(([label, val]) => (
+                          <div key={String(label)} className="flex justify-between items-center py-1" style={{ borderBottom: "1px solid rgba(255,255,255,.04)" }}>
+                            <span style={{ color: "rgba(240,237,248,.45)" }}>{label}</span>
+                            <span style={{ color: val === "none" || val === "normal" || val === "neutral" ? "#00f0b4" : val === "mild" || val === "increased" || val === "decreased" ? "#e8a020" : "#ff4444" }}>
+                              {val}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Pain entries */}
+                {apexPain.length > 0 && (
+                  <Card style={{ border: "1px solid rgba(255,68,68,.25)", background: "#06060e" }}>
+                    <CardHeader><CardTitle className="text-sm font-mono" style={{ color: "#ff4444" }}>Dores Ativas — {apexPain.length} entrada{apexPain.length > 1 ? "s" : ""}</CardTitle></CardHeader>
+                    <CardContent className="space-y-2">
+                      {apexPain.map(p => (
+                        <div key={p.id} className="rounded-lg p-3" style={{ background: "rgba(255,68,68,.05)", border: "1px solid rgba(255,68,68,.12)" }}>
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-xs font-mono font-bold" style={{ color: "#ff4444" }}>
+                              {p.red_flag && "🚨 "}
+                              {p.body_region} · {p.side}
+                            </span>
+                            <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-full" style={{ background: "rgba(255,68,68,.1)", color: "#ff4444" }}>
+                              Intensidade {p.intensity}/10
+                            </span>
+                          </div>
+                          <p className="text-[10px] font-mono" style={{ color: "rgba(240,237,248,.45)" }}>
+                            {p.pain_type} · {p.behavior} · {p.onset_pattern}
+                          </p>
+                          {p.notes && <p className="text-[10px] font-mono mt-1" style={{ color: "rgba(240,237,248,.3)" }}>{p.notes}</p>}
+                        </div>
+                      ))}
+                    </CardContent>
+                  </Card>
+                )}
+
+                <p className="text-[10px] font-mono text-center" style={{ color: "rgba(240,237,248,.25)" }}>
+                  Avaliação: {new Date(apexAssessment.assessment_date + "T12:00:00").toLocaleDateString("pt-BR")}
+                </p>
+              </>
+            )}
           </TabsContent>
 
           {/* PROTOCOL */}
