@@ -198,15 +198,15 @@ const LandingLiveSystem = () => {
                 strokeWidth={1.2}
                 style={{ filter: "drop-shadow(0 0 20px rgba(232,160,32,.5))" }}
               />
-              <text x={CENTER.x} y={CENTER.y - 4} textAnchor="middle" fill="#e8a020" fontSize="14" fontWeight="700">
+              <text x={CENTER.x} y={CENTER.y - 2} textAnchor="middle" fill="#e8a020" fontSize="22" fontWeight="700">
                 MCE
               </text>
               <text
                 x={CENTER.x}
-                y={CENTER.y + 12}
+                y={CENTER.y + 18}
                 textAnchor="middle"
                 fill="#e8a020"
-                fontSize="8"
+                fontSize="12"
                 letterSpacing="2"
                 style={{ fontFamily: "JetBrains Mono, monospace" }}
               >
