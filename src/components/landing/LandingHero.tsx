@@ -307,71 +307,65 @@ const LandingHero = () => {
             <div className="w-6 h-px" style={{ background: "rgba(232,160,32,.15)" }} />
           </motion.div>
 
-          {/* [7] Sub-headline */}
+          {/* [7] Three cascade lines */}
           <div className="max-w-[580px] mb-6">
             <motion.p
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0, x: -28 }}
+              animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.7, delay: 1.3 }}
               className="font-heading leading-tight"
               style={{
-                fontSize: "clamp(1.1rem, 2.8vw, 1.9rem)",
-                color: "rgba(240,237,248,.55)",
+                fontSize: "clamp(1.05rem, 2.5vw, 1.8rem)",
+                color: "rgba(240,237,248,.35)",
               }}
             >
-              TODO APP TE DIZ O QUE COMER.
+              TODO APP TE DÁ UM PLANO.
             </motion.p>
             <motion.p
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 1.4 }}
+              initial={{ opacity: 0, x: -28 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.7, delay: 1.52 }}
               className="font-heading leading-tight"
               style={{
-                fontSize: "clamp(1.1rem, 2.8vw, 1.9rem)",
-                color: "rgba(240,237,248,.55)",
+                fontSize: "clamp(1.05rem, 2.5vw, 1.8rem)",
+                color: "rgba(240,237,248,.72)",
               }}
             >
-              TODO PERSONAL TE DIZ COMO TREINAR.
+              TODO PERSONAL TE DÁ UM TREINO.
             </motion.p>
             <motion.p
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 1.55 }}
+              initial={{ opacity: 0, scale: 0.95, filter: "blur(4px)" }}
+              animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+              transition={{ duration: 0.75, delay: 1.78 }}
               className="font-heading leading-tight"
               style={{
-                fontSize: "clamp(1.1rem, 2.8vw, 1.9rem)",
+                fontSize: "clamp(1.05rem, 2.5vw, 1.8rem)",
                 color: "#e8a020",
-                textShadow: "0 0 30px rgba(232,160,32,.35)",
+                textShadow: "0 0 35px rgba(232,160,32,.5), 0 0 70px rgba(232,160,32,.2)",
               }}
             >
-              O NUTRION DESCOBRE POR QUE VOCÊ PARA DE EVOLUIR.
+              O NUTRION É O SISTEMA
+              <br />
+              QUE FAZ VOCÊ NÃO PARAR.
             </motion.p>
           </div>
 
-          {/* [8] Body copy */}
+          {/* [8] Support paragraph */}
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 1.5 }}
+            transition={{ duration: 0.7, delay: 2.1 }}
             className="max-w-[500px] mb-8"
           >
             <p
-              className="text-[.95rem] leading-[1.9] mb-3"
-              style={{ color: "rgba(240,237,248,.55)" }}
+              className="font-landing text-[.88rem] leading-[1.88]"
+              style={{ color: "#60607a" }}
             >
-              Análise comportamental + nutrição de precisão + prescrição de treino — integrados num único sistema.{" "}
-              <span style={{ color: "rgba(240,237,248,.75)" }}>
-                Feito por quem usa os mesmos protocolos que prescreve.
+              Nutrição de precisão, prescrição de treino adaptativa e análise comportamental — integrados num único protocolo que aprende com você e{" "}
+              <span style={{ color: "rgba(240,237,248,.62)" }}>
+                age antes de você parar
               </span>
-            </p>
-            <p
-              className="font-semibold text-[.95rem] leading-[1.9]"
-              style={{ color: "rgba(240,237,248,.7)" }}
-            >
-              Bem-vindo ao time.{" "}
-              <span style={{ color: "#e8a020" }}>
-                Aqui, seu objetivo tem protocolo. Não dieta.
-              </span>
+              .
             </p>
           </motion.div>
 
@@ -379,7 +373,7 @@ const LandingHero = () => {
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 1.6 }}
+            transition={{ duration: 0.7, delay: 2.3 }}
             className="flex flex-wrap items-center gap-3 mb-8"
           >
             <div
@@ -398,9 +392,9 @@ const LandingHero = () => {
               className="flex items-center gap-2 border px-3 py-1.5 rounded-full"
               style={{ borderColor: "rgba(232,160,32,.1)", background: "rgba(232,160,32,.03)" }}
             >
-              <span>🏆</span>
+              <span style={{ color: "#e8a020" }}>⚡</span>
               <span className="font-mono text-[.55rem]" style={{ color: "#8888b0" }}>
-                ⚡  Treino · Nutrição · Comportamento · Performance
+                Treino · Nutrição · Comportamento · Performance
               </span>
             </div>
           </motion.div>
