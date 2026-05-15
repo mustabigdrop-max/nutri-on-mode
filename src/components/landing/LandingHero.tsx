@@ -442,8 +442,23 @@ const LandingHero = () => {
                 className="w-1.5 h-1.5 rounded-full animate-pulse"
                 style={{ background: "#00f0b4", boxShadow: "0 0 6px rgba(0,240,180,.8)" }}
               />
-              <span className="font-mono text-[.56rem]" style={{ color: "rgba(0,240,180,.7)" }}>
-                protocolos executados hoje
+              <span className="font-mono text-[.56rem] flex items-center gap-1" style={{ color: "rgba(0,240,180,.7)" }}>
+                <span className="inline-block overflow-hidden h-[.85em] align-middle" style={{ minWidth: "3.2em", textAlign: "right" }}>
+                  <AnimatePresence mode="popLayout">
+                    <motion.span
+                      key={liveCount}
+                      initial={{ y: -5, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      exit={{ y: 5, opacity: 0 }}
+                      transition={{ duration: 0.28 }}
+                      className="inline-block tabular-nums"
+                      style={{ color: "#00f0b4" }}
+                    >
+                      {liveCount.toLocaleString("pt-BR")}
+                    </motion.span>
+                  </AnimatePresence>
+                </span>
+                <span>protocolos ativados hoje</span>
               </span>
             </div>
             <div
