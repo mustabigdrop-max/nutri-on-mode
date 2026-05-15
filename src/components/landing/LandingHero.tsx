@@ -3,13 +3,16 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
 
 const PROVOCATIONS = [
-  "4 dias antes da prova e você não sabe se tá flat, full ou spilled.",
-  "Motivação dura 2 semanas. Protocolo dura a vida.",
-  "Seu app sabe o que você comeu. Não sabe por que você desistiu.",
-  "Protocolo farmacológico ativo. Nenhum app calculava seu TDEE real. Até agora.",
+  "Comportamento vem antes do alimento. Sempre.",
+  "Motivação dura 2 semanas. Sistema não.",
+  "Você sabe o que fazer. O problema nunca foi esse.",
+  "Mindset. Comportamento. Execução. Nessa ordem.",
   "Sua fome nunca foi de comida.",
+  "Não existe platô de resultado. Existe platô de padrão.",
+  "Todo resultado começa no padrão — não no prato.",
   "Cardápio é intenção. Protocolo é resultado.",
-  "Peak week chegando. O plano de depleção e carb load já está pronto?",
+  "95% sabe o que comer. 5% tem estrutura pra não parar.",
+  "Transformação não é evento. É sistema que nunca para.",
 ];
 
 const RotatingProvocation = () => {
@@ -52,6 +55,112 @@ const ORBIT_DOTS = [
   { angle: 180, label: "GORDURA", value: "1.1g/kg", color: "#7890ff" },
   { angle: 270, label: "HIDRATAÇÃO", value: "38ml/kg", color: "#e8a020" },
 ];
+
+const MCE_PILLARS = [
+  {
+    letter: "M",
+    label: "MINDSET",
+    desc: "Padrão mental",
+    color: "#7890ff",
+    bars: [0.9, 0.6, 0.85, 0.7, 0.95],
+  },
+  {
+    letter: "C",
+    label: "COMPORTAMENTO",
+    desc: "Antes do prato",
+    color: "#e8a020",
+    bars: [0.7, 0.95, 0.75, 1.0, 0.8],
+  },
+  {
+    letter: "E",
+    label: "EXECUÇÃO",
+    desc: "Protocolo ativo",
+    color: "#00f0b4",
+    bars: [0.85, 0.65, 0.95, 0.7, 0.88],
+  },
+];
+
+const MCESystemCard = () => (
+  <motion.div
+    className="w-full lg:hidden mt-2 mb-2"
+    initial={{ opacity: 0, y: 28 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.7, delay: 1.4 }}
+  >
+    {/* Header */}
+    <div className="flex items-center justify-between mb-3 px-0.5">
+      <div className="flex items-center gap-2">
+        <span
+          className="w-1.5 h-1.5 rounded-full bg-[#00f0b4]"
+          style={{ boxShadow: "0 0 8px rgba(0,240,180,.9)", animation: "pulse 1.5s ease-in-out infinite" }}
+        />
+        <span className="font-mono text-[.5rem] text-[#00f0b4]/55 tracking-[.2em]">MCE · SISTEMA ATIVO</span>
+      </div>
+      <span className="font-mono text-[.45rem] text-[#30304a] tracking-[.1em]">NUTRI·ON v2.4</span>
+    </div>
+
+    {/* Three pillars */}
+    <div className="grid grid-cols-3 gap-2">
+      {MCE_PILLARS.map(({ letter, label, desc, color, bars }, pi) => (
+        <motion.div
+          key={letter}
+          initial={{ opacity: 0, scale: 0.88 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.55, delay: 1.5 + pi * 0.15 }}
+          className="relative border rounded-[3px] p-3 flex flex-col gap-2 overflow-hidden"
+          style={{ borderColor: `${color}18`, background: "rgba(4,4,14,.85)" }}
+        >
+          {/* Subtle top glow */}
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{ background: `radial-gradient(ellipse 80% 40% at 50% 0%, ${color}0a 0%, transparent 70%)` }}
+          />
+          {/* Big letter */}
+          <div
+            className="font-heading text-[2.1rem] leading-none relative z-10"
+            style={{ color: "transparent", WebkitTextStroke: `1.5px ${color}`, textShadow: `0 0 18px ${color}50` }}
+          >
+            {letter}
+          </div>
+          {/* Labels */}
+          <div className="relative z-10">
+            <div className="font-mono text-[.44rem] tracking-[.1em] leading-none mb-0.5" style={{ color }}>
+              {label}
+            </div>
+            <div className="font-mono text-[.42rem] text-[#404060] tracking-[.04em]">{desc}</div>
+          </div>
+          {/* Animated equaliser bars */}
+          <div className="flex items-end gap-[2px] h-4 relative z-10">
+            {bars.map((h, i) => (
+              <motion.div
+                key={i}
+                className="flex-1 rounded-[1px]"
+                style={{ background: color }}
+                initial={{ height: `${h * 100}%`, opacity: 0.45 }}
+                animate={{
+                  height: [`${h * 100}%`, `${bars[(i + 2) % bars.length] * 100}%`, `${h * 100}%`],
+                  opacity: [0.45, 0.8, 0.45],
+                }}
+                transition={{ duration: 1.8 + i * 0.25, repeat: Infinity, ease: "easeInOut", delay: pi * 0.3 + i * 0.15 }}
+              />
+            ))}
+          </div>
+        </motion.div>
+      ))}
+    </div>
+
+    {/* Pulse line */}
+    <motion.div
+      className="mt-3 h-px rounded-full"
+      style={{
+        background:
+          "linear-gradient(90deg, transparent, rgba(120,144,255,.45), rgba(232,160,32,.7), rgba(0,240,180,.45), transparent)",
+      }}
+      animate={{ opacity: [0.35, 1, 0.35], scaleX: [0.85, 1, 0.85] }}
+      transition={{ duration: 2.8, repeat: Infinity, ease: "easeInOut" }}
+    />
+  </motion.div>
+);
 
 const BodyScanViz = () => (
   <div className="relative w-[300px] h-[300px] md:w-[380px] md:h-[380px] flex-shrink-0">
@@ -312,7 +421,7 @@ const LandingHero = () => {
             className="font-heading text-[#f0edf8]/05 select-none leading-none mb-8"
             style={{ fontSize: "clamp(1rem, 3vw, 2.2rem)", letterSpacing: ".32em" }}
           >
-            PALCO. SAÚDE. PERFORMANCE.
+            MINDSET · COMPORTAMENTO · EXECUÇÃO
           </motion.div>
 
           {/* Separator */}
@@ -355,8 +464,8 @@ const LandingHero = () => {
               </div>
               {/* BB badge */}
               <div className="inline-flex items-center gap-2 border border-[#e8a020]/10 bg-[#e8a020]/[.03] px-3 py-1.5 rounded-full">
-                <span className="text-[11px]">🏆</span>
-                <span className="font-mono text-[.55rem] text-[#8888b0] tracking-[.06em]">Stage prep · Flat/Full/Spilled · Peak Week</span>
+                <span className="text-[11px]">⚡</span>
+                <span className="font-mono text-[.55rem] text-[#8888b0] tracking-[.06em]">Treino · Nutrição · Comportamento · Performance</span>
               </div>
             </div>
           </motion.div>
@@ -369,9 +478,9 @@ const LandingHero = () => {
             className="flex flex-wrap mb-9 border border-[#e8a020]/08 w-fit"
           >
             {[
-              { val: "BB", label: "Stage Ready", sub: "Flat/Full/Spilled · Peak Week · Janela Anabólica" },
+              { val: "MCE", label: "Método Exclusivo", sub: "Mindset · Comportamento · Execução" },
               { val: "24H", label: "Sempre ON", sub: "Protocolo adaptativo em tempo real" },
-              { val: "0", label: "Apps iguais", sub: "Nada como isso no mundo" },
+              { val: "0", label: "Apps iguais", sub: "Nada como isso no mercado" },
             ].map((m, i) => (
               <div key={m.val} className="px-5 py-4 border-r border-[#e8a020]/08 last:border-r-0 relative">
                 <div
@@ -418,6 +527,9 @@ const LandingHero = () => {
             </a>
           </motion.div>
         </div>
+
+        {/* ── MOBILE MCE SYSTEM CARD — visible only on phones/tablets ── */}
+        <MCESystemCard />
 
         {/* ── RIGHT COLUMN — Body Scan Viz ── */}
         <motion.div
