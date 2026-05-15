@@ -148,10 +148,19 @@ const MCESystemCard = () => (
 
 const LandingHero = () => {
   const [lineIdx, setLineIdx] = useState(0);
+  const [bootStep, setBootStep] = useState(0);
+  const liveCount = useLiveCounter(3847);
 
   useEffect(() => {
     const id = setInterval(() => setLineIdx((p) => (p + 1) % ROTATING_LINES.length), 3800);
     return () => clearInterval(id);
+  }, []);
+
+  useEffect(() => {
+    const timeouts = [350, 800, 1300, 1950].map((d, i) =>
+      setTimeout(() => setBootStep(i), d)
+    );
+    return () => timeouts.forEach(clearTimeout);
   }, []);
 
   return (
