@@ -581,6 +581,51 @@ const LandingHero = () => {
               VER PROTOCOLOS
             </a>
           </motion.div>
+
+          {/* [12] Social proof */}
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 2.95 }}
+            className="mt-6 flex flex-col gap-2"
+          >
+            <div className="flex items-center gap-3">
+              <div className="flex -space-x-1.5">
+                {["#1c1f3a", "#2a1c1c", "#1c2a22", "#241c2e"].map((bg, i) => (
+                  <div
+                    key={i}
+                    className="w-5 h-5 rounded-full border"
+                    style={{ background: bg, borderColor: "#03030a" }}
+                  />
+                ))}
+              </div>
+              <span className="font-mono text-[.6rem]" style={{ color: "rgba(240,237,248,.55)" }}>
+                <AnimatePresence mode="popLayout">
+                  <motion.span
+                    key={liveCount}
+                    initial={{ y: -5, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: 5, opacity: 0 }}
+                    transition={{ duration: 0.28 }}
+                    className="inline-block tabular-nums mr-1"
+                    style={{ color: "#00f0b4" }}
+                  >
+                    {liveCount.toLocaleString("pt-BR")}
+                  </motion.span>
+                </AnimatePresence>
+                protocolos ativados esta semana
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span
+                className="w-1.5 h-1.5 rounded-full animate-pulse"
+                style={{ background: "#00f0b4", boxShadow: "0 0 6px rgba(0,240,180,.8)" }}
+              />
+              <span className="font-mono text-[.52rem]" style={{ color: "#60607a" }}>
+                Acesso imediato · Sem cartão de crédito · Cancele quando quiser
+              </span>
+            </div>
+          </motion.div>
         </div>
 
         {/* MCE System Card — mobile only */}
