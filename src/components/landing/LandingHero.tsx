@@ -1,6 +1,30 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 
+const BOOT_STEPS = [
+  "Conectando ao sistema...",
+  "Carregando protocolos MCE...",
+  "Verificando sincronização...",
+  "Sistema MCE · Ativo",
+];
+
+const useLiveCounter = (base: number) => {
+  const [count, setCount] = useState(base);
+  useEffect(() => {
+    let timeoutId: ReturnType<typeof setTimeout>;
+    const tick = () => {
+      const delay = 2400 + Math.random() * 2600;
+      timeoutId = setTimeout(() => {
+        setCount((c) => c + 1);
+        tick();
+      }, delay);
+    };
+    tick();
+    return () => clearTimeout(timeoutId);
+  }, []);
+  return count;
+};
+
 const ROTATING_LINES = [
   "Sua fome nunca foi de comida.",
   "Força de vontade não periodiza treino. Sistema sim.",
@@ -124,10 +148,19 @@ const MCESystemCard = () => (
 
 const LandingHero = () => {
   const [lineIdx, setLineIdx] = useState(0);
+  const [bootStep, setBootStep] = useState(0);
+  const liveCount = useLiveCounter(3847);
 
   useEffect(() => {
     const id = setInterval(() => setLineIdx((p) => (p + 1) % ROTATING_LINES.length), 3800);
     return () => clearInterval(id);
+  }, []);
+
+  useEffect(() => {
+    const timeouts = [350, 800, 1300, 1950].map((d, i) =>
+      setTimeout(() => setBootStep(i), d)
+    );
+    return () => timeouts.forEach(clearTimeout);
   }, []);
 
   return (
@@ -179,21 +212,38 @@ const LandingHero = () => {
         {/* LEFT COLUMN */}
         <div className="w-full lg:w-[55%] flex flex-col justify-center">
           {/* [1] Rotating micro-text */}
-          <div className="h-[1.3rem] overflow-hidden mb-5">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={lineIdx}
-                initial={{ y: 16, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                exit={{ y: -16, opacity: 0 }}
-                transition={{ duration: 0.4 }}
-                className="font-mono text-[.62rem] tracking-[.05em]"
-                style={{ color: "rgba(240,237,248,.28)" }}
+          <div className="flex items-center gap-2.5 mb-5">
+            <div
+              className="flex items-center gap-1.5 border px-2 py-[3px] rounded-sm shrink-0"
+              style={{ borderColor: "rgba(255,68,68,.22)", background: "rgba(255,68,68,.04)" }}
+            >
+              <span
+                className="w-1.5 h-1.5 rounded-full animate-pulse"
+                style={{ background: "#ff4444", boxShadow: "0 0 6px rgba(255,68,68,.9)" }}
+              />
+              <span
+                className="font-mono text-[.44rem] tracking-[.15em]"
+                style={{ color: "#ff4444" }}
               >
-                <span className="mr-2" style={{ color: "rgba(232,160,32,.4)" }}>›</span>
-                {ROTATING_LINES[lineIdx]}
-              </motion.div>
-            </AnimatePresence>
+                AO VIVO
+              </span>
+            </div>
+            <div className="h-[1.3rem] overflow-hidden flex-1">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={lineIdx}
+                  initial={{ y: 16, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  exit={{ y: -16, opacity: 0 }}
+                  transition={{ duration: 0.4 }}
+                  className="font-mono text-[.62rem] tracking-[.05em]"
+                  style={{ color: "rgba(240,237,248,.28)" }}
+                >
+                  <span className="mr-2" style={{ color: "rgba(232,160,32,.4)" }}>›</span>
+                  {ROTATING_LINES[lineIdx]}
+                </motion.div>
+              </AnimatePresence>
+            </div>
           </div>
 
           {/* [2] MCE badge */}
@@ -208,11 +258,19 @@ const LandingHero = () => {
               className="w-1.5 h-1.5 rounded-full animate-pulse"
               style={{ background: "#00f0b4", boxShadow: "0 0 8px rgba(0,240,180,1)" }}
             />
-            <span
-              className="font-mono text-[.58rem] tracking-[.2em] uppercase"
-              style={{ color: "rgba(0,240,180,.8)" }}
-            >
-              Sistema MCE · Ativo
+            <span className="font-mono text-[.58rem] tracking-[.2em] uppercase overflow-hidden inline-block" style={{ color: "rgba(0,240,180,.8)" }}>
+              <AnimatePresence mode="wait">
+                <motion.span
+                  key={bootStep}
+                  initial={{ y: 4, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  exit={{ y: -4, opacity: 0 }}
+                  transition={{ duration: 0.28 }}
+                  className="inline-block"
+                >
+                  {BOOT_STEPS[bootStep]}
+                </motion.span>
+              </AnimatePresence>
             </span>
             <span className="font-mono text-[.58rem]" style={{ color: "#50507a" }}>v2.4.1</span>
           </motion.div>
@@ -384,8 +442,23 @@ const LandingHero = () => {
                 className="w-1.5 h-1.5 rounded-full animate-pulse"
                 style={{ background: "#00f0b4", boxShadow: "0 0 6px rgba(0,240,180,.8)" }}
               />
-              <span className="font-mono text-[.56rem]" style={{ color: "rgba(0,240,180,.7)" }}>
-                protocolos executados hoje
+              <span className="font-mono text-[.56rem] flex items-center gap-1" style={{ color: "rgba(0,240,180,.7)" }}>
+                <span className="inline-block overflow-hidden h-[.85em] align-middle" style={{ minWidth: "3.2em", textAlign: "right" }}>
+                  <AnimatePresence mode="popLayout">
+                    <motion.span
+                      key={liveCount}
+                      initial={{ y: -5, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      exit={{ y: 5, opacity: 0 }}
+                      transition={{ duration: 0.28 }}
+                      className="inline-block tabular-nums"
+                      style={{ color: "#00f0b4" }}
+                    >
+                      {liveCount.toLocaleString("pt-BR")}
+                    </motion.span>
+                  </AnimatePresence>
+                </span>
+                <span>protocolos ativados hoje</span>
               </span>
             </div>
             <div
@@ -462,7 +535,17 @@ const LandingHero = () => {
                 className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity"
                 style={{ background: "rgba(255,255,255,.12)" }}
               />
-              <span className="relative">COMEÇAR PROTOCOLO ON →</span>
+              <motion.span
+                aria-hidden
+                className="absolute inset-0 pointer-events-none"
+                style={{
+                  background:
+                    "linear-gradient(105deg, transparent 30%, rgba(255,255,255,.28) 50%, transparent 70%)",
+                }}
+                animate={{ x: ["-130%", "130%"] }}
+                transition={{ duration: 1.15, repeat: Infinity, repeatDelay: 3.2, ease: "easeInOut" }}
+              />
+              <span className="relative">QUERO O SISTEMA →</span>
             </button>
             <a
               href="/auth"
@@ -497,6 +580,51 @@ const LandingHero = () => {
               <span className="w-1 h-1 rounded-full" style={{ background: "currentColor" }} />
               VER PROTOCOLOS
             </a>
+          </motion.div>
+
+          {/* [12] Social proof */}
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 2.95 }}
+            className="mt-6 flex flex-col gap-2"
+          >
+            <div className="flex items-center gap-3">
+              <div className="flex -space-x-1.5">
+                {["#1c1f3a", "#2a1c1c", "#1c2a22", "#241c2e"].map((bg, i) => (
+                  <div
+                    key={i}
+                    className="w-5 h-5 rounded-full border"
+                    style={{ background: bg, borderColor: "#03030a" }}
+                  />
+                ))}
+              </div>
+              <span className="font-mono text-[.6rem]" style={{ color: "rgba(240,237,248,.55)" }}>
+                <AnimatePresence mode="popLayout">
+                  <motion.span
+                    key={liveCount}
+                    initial={{ y: -5, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: 5, opacity: 0 }}
+                    transition={{ duration: 0.28 }}
+                    className="inline-block tabular-nums mr-1"
+                    style={{ color: "#00f0b4" }}
+                  >
+                    {liveCount.toLocaleString("pt-BR")}
+                  </motion.span>
+                </AnimatePresence>
+                protocolos ativados esta semana
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span
+                className="w-1.5 h-1.5 rounded-full animate-pulse"
+                style={{ background: "#00f0b4", boxShadow: "0 0 6px rgba(0,240,180,.8)" }}
+              />
+              <span className="font-mono text-[.52rem]" style={{ color: "#60607a" }}>
+                Acesso imediato · Sem cartão de crédito · Cancele quando quiser
+              </span>
+            </div>
           </motion.div>
         </div>
 
