@@ -258,11 +258,19 @@ const LandingHero = () => {
               className="w-1.5 h-1.5 rounded-full animate-pulse"
               style={{ background: "#00f0b4", boxShadow: "0 0 8px rgba(0,240,180,1)" }}
             />
-            <span
-              className="font-mono text-[.58rem] tracking-[.2em] uppercase"
-              style={{ color: "rgba(0,240,180,.8)" }}
-            >
-              Sistema MCE · Ativo
+            <span className="font-mono text-[.58rem] tracking-[.2em] uppercase overflow-hidden inline-block" style={{ color: "rgba(0,240,180,.8)" }}>
+              <AnimatePresence mode="wait">
+                <motion.span
+                  key={bootStep}
+                  initial={{ y: 4, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  exit={{ y: -4, opacity: 0 }}
+                  transition={{ duration: 0.28 }}
+                  className="inline-block"
+                >
+                  {BOOT_STEPS[bootStep]}
+                </motion.span>
+              </AnimatePresence>
             </span>
             <span className="font-mono text-[.58rem]" style={{ color: "#50507a" }}>v2.4.1</span>
           </motion.div>
