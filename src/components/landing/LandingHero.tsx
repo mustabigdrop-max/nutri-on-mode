@@ -535,7 +535,17 @@ const LandingHero = () => {
                 className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity"
                 style={{ background: "rgba(255,255,255,.12)" }}
               />
-              <span className="relative">COMEÇAR PROTOCOLO ON →</span>
+              <motion.span
+                aria-hidden
+                className="absolute inset-0 pointer-events-none"
+                style={{
+                  background:
+                    "linear-gradient(105deg, transparent 30%, rgba(255,255,255,.28) 50%, transparent 70%)",
+                }}
+                animate={{ x: ["-130%", "130%"] }}
+                transition={{ duration: 1.15, repeat: Infinity, repeatDelay: 3.2, ease: "easeInOut" }}
+              />
+              <span className="relative">QUERO O SISTEMA →</span>
             </button>
             <a
               href="/auth"
