@@ -427,6 +427,9 @@ const LandingHero = () => {
           </motion.div>
         </div>
 
+        {/* MCE System Card — mobile only */}
+        <MCESystemCard />
+
         {/* RIGHT COLUMN — visualization */}
         <motion.div
           initial={{ opacity: 0, scale: 0.85 }}
