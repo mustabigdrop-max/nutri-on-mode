@@ -2,6 +2,28 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
 
+// Live counter — ticks up with irregular cadence (feels human, not bot)
+const useLiveCounter = (base: number) => {
+  const [count, setCount] = useState(base);
+  useEffect(() => {
+    let id: ReturnType<typeof setTimeout>;
+    const tick = () => {
+      setCount((c) => c + 1);
+      id = setTimeout(tick, 2400 + Math.floor(Math.random() * 2600));
+    };
+    id = setTimeout(tick, 3200 + Math.floor(Math.random() * 1800));
+    return () => clearTimeout(id);
+  }, []);
+  return count;
+};
+
+const BOOT_STEPS = [
+  "Conectando ao sistema...",
+  "Carregando protocolos MCE...",
+  "Verificando sincronização...",
+  "Sistema MCE · Ativo",
+];
+
 const PROVOCATIONS = [
   "Comportamento vem antes do alimento. Sempre.",
   "Motivação dura 2 semanas. Sistema não.",
@@ -22,20 +44,35 @@ const RotatingProvocation = () => {
     return () => clearInterval(t);
   }, []);
   return (
-    <div className="h-[1.4rem] overflow-hidden relative mb-10">
-      <AnimatePresence mode="wait">
-        <motion.p
-          key={index}
-          initial={{ y: 18, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          exit={{ y: -18, opacity: 0 }}
-          transition={{ duration: 0.45, ease: "easeInOut" }}
-          className="absolute inset-0 font-mono text-[.66rem] text-[#f0edf8]/32 tracking-[.05em]"
-        >
-          <span className="text-[#e8a020]/50 mr-2">›</span>
-          {PROVOCATIONS[index]}
-        </motion.p>
-      </AnimatePresence>
+    <div className="flex items-center gap-3 mb-10">
+      {/* AO VIVO badge — signals real-time system */}
+      <div
+        className="flex items-center gap-1.5 border border-[#ff4444]/22 bg-[#ff4444]/[.04] px-2.5 py-1 rounded-full flex-shrink-0"
+      >
+        <span
+          className="w-1 h-1 rounded-full bg-[#ff4444]"
+          style={{ boxShadow: "0 0 4px rgba(255,68,68,.9)", animation: "pulse 1s ease-in-out infinite" }}
+        />
+        <span className="font-mono text-[.44rem] text-[#ff4444]/65 tracking-[.15em]">AO VIVO</span>
+      </div>
+
+      {/* Provocation text */}
+      <div className="h-[1.6rem] flex-1 overflow-hidden relative">
+        <AnimatePresence mode="wait">
+          <motion.p
+            key={index}
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: -20, opacity: 0 }}
+            transition={{ duration: 0.4, ease: "easeInOut" }}
+            className="absolute inset-0 font-mono text-[.68rem] tracking-[.04em] flex items-center"
+            style={{ color: "rgba(240,237,248,.35)" }}
+          >
+            <span style={{ color: "rgba(232,160,32,.6)" }} className="mr-2">›</span>
+            {PROVOCATIONS[index]}
+          </motion.p>
+        </AnimatePresence>
+      </div>
     </div>
   );
 };
@@ -309,11 +346,15 @@ const BodyScanViz = () => (
 
 const LandingHero = () => {
   const navigate = useNavigate();
-  const [systemReady, setSystemReady] = useState(false);
+  const [bootStep, setBootStep] = useState(0);
+  const liveCount = useLiveCounter(3_847);
 
   useEffect(() => {
-    const t = setTimeout(() => setSystemReady(true), 800);
-    return () => clearTimeout(t);
+    const delays = [350, 800, 1300, 1950];
+    const timers = delays.map((delay, i) =>
+      setTimeout(() => setBootStep(i + 1), delay)
+    );
+    return () => timers.forEach(clearTimeout);
   }, []);
 
   return (
@@ -354,9 +395,18 @@ const LandingHero = () => {
                 animation: "pulse 1.5s ease-in-out infinite",
               }}
             />
-            <span className="font-mono text-[.58rem] text-[#00f0b4]/80 tracking-[.2em] uppercase">
-              {systemReady ? "Sistema MCE · Ativo" : "Inicializando..."}
-            </span>
+            <AnimatePresence mode="wait">
+              <motion.span
+                key={bootStep}
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -4 }}
+                transition={{ duration: 0.25 }}
+                className="font-mono text-[.58rem] text-[#00f0b4]/80 tracking-[.2em] uppercase"
+              >
+                {BOOT_STEPS[Math.min(bootStep, BOOT_STEPS.length - 1)]}
+              </motion.span>
+            </AnimatePresence>
             <span className="font-mono text-[.55rem] text-[#50507a] tracking-[.08em]">v2.4.1</span>
           </motion.div>
 
@@ -497,17 +547,34 @@ const LandingHero = () => {
               </span>
             </motion.p>
 
-            {/* Live activity + badge row */}
-            <div className="flex flex-wrap items-center gap-3">
-              {/* Live counter */}
-              <div className="inline-flex items-center gap-2 border border-[#00f0b4]/15 bg-[#00f0b4]/[.03] px-3 py-1.5 rounded-full">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#00f0b4]" style={{ boxShadow: "0 0 6px rgba(0,240,180,.9)", animation: "pulse 1.5s ease-in-out infinite" }} />
-                <span className="font-mono text-[.56rem] text-[#00f0b4]/70 tracking-[.08em]">protocolos executados hoje</span>
+            {/* Live social proof badge */}
+            <div className="flex flex-wrap items-center gap-2.5">
+              <div className="inline-flex items-center gap-2 border border-[#00f0b4]/18 bg-[#00f0b4]/[.035] px-3 py-1.5 rounded-full">
+                <span
+                  className="w-1.5 h-1.5 rounded-full bg-[#00f0b4] flex-shrink-0"
+                  style={{ boxShadow: "0 0 6px rgba(0,240,180,.9)", animation: "pulse 1.5s ease-in-out infinite" }}
+                />
+                <span className="font-mono text-[.56rem] text-[#00f0b4]/70 tracking-[.06em]">
+                  <AnimatePresence mode="wait">
+                    <motion.span
+                      key={liveCount}
+                      initial={{ opacity: 0, y: -5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 5 }}
+                      transition={{ duration: 0.28 }}
+                      className="inline-block tabular-nums"
+                    >
+                      {liveCount.toLocaleString("pt-BR")}
+                    </motion.span>
+                  </AnimatePresence>
+                  {" "}protocolos ativados hoje
+                </span>
               </div>
-              {/* BB badge */}
-              <div className="inline-flex items-center gap-2 border border-[#e8a020]/10 bg-[#e8a020]/[.03] px-3 py-1.5 rounded-full">
+              <div className="inline-flex items-center gap-2 border border-[#e8a020]/10 bg-[#e8a020]/[.025] px-3 py-1.5 rounded-full">
                 <span className="text-[11px]">⚡</span>
-                <span className="font-mono text-[.55rem] text-[#8888b0] tracking-[.06em]">Treino · Nutrição · Comportamento · Performance</span>
+                <span className="font-mono text-[.54rem] text-[#8888b0] tracking-[.05em]">
+                  Treino · Nutrição · Comportamento · IA
+                </span>
               </div>
             </div>
           </motion.div>
@@ -542,31 +609,99 @@ const LandingHero = () => {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 1.7 }}
-            className="flex gap-3 flex-wrap"
           >
-            {/* Primary — clipped corner button */}
-            <button
-              onClick={() => navigate("/auth")}
-              className="group relative font-heading text-[.95rem] tracking-[.07em] px-9 py-4 overflow-hidden transition-all duration-300 hover:scale-[1.02] active:scale-[.98]"
-              style={{
-                background: "hsl(38 80% 52%)",
-                color: "#030310",
-                clipPath: "polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px))",
-                boxShadow: "0 0 30px rgba(232,160,32,.25)",
-              }}
-            >
-              <span className="relative z-10">ATIVAR MEU PROTOCOLO →</span>
-              <span className="absolute inset-0 bg-white/0 group-hover:bg-white/12 transition-colors duration-300" />
-            </button>
+            <div className="flex gap-3 flex-wrap mb-5">
+              {/* Primary — clipped corner button + shimmer */}
+              <button
+                onClick={() => navigate("/auth")}
+                className="group relative font-heading text-[.95rem] tracking-[.07em] px-9 py-4 overflow-hidden transition-all duration-300 hover:scale-[1.02] active:scale-[.98]"
+                style={{
+                  background: "hsl(38 80% 52%)",
+                  color: "#030310",
+                  clipPath: "polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px))",
+                  boxShadow: "0 0 40px rgba(232,160,32,.35), 0 0 80px rgba(232,160,32,.12)",
+                }}
+              >
+                {/* Shimmer sweep — repeats every ~4.4s */}
+                <motion.div
+                  className="absolute inset-0 pointer-events-none"
+                  style={{
+                    background:
+                      "linear-gradient(105deg, transparent 30%, rgba(255,255,255,.28) 50%, transparent 70%)",
+                  }}
+                  animate={{ x: ["-130%", "130%"] }}
+                  transition={{ duration: 1.15, repeat: Infinity, repeatDelay: 3.2, ease: "easeInOut" }}
+                />
+                <span className="relative z-10">QUERO O SISTEMA →</span>
+                <span className="absolute inset-0 bg-white/0 group-hover:bg-white/12 transition-colors duration-300" />
+              </button>
 
-            {/* Secondary */}
-            <a
-              href="#protocols"
-              className="font-mono text-[.68rem] text-[#4a4a6a] tracking-[.12em] px-6 py-4 border border-[#1c1c32] hover:border-[#e8a020]/25 hover:text-[#e8a020]/70 transition-all duration-300 flex items-center gap-2.5"
+              {/* Secondary */}
+              <a
+                href="#protocols"
+                className="font-mono text-[.68rem] text-[#4a4a6a] tracking-[.12em] px-6 py-4 border border-[#1c1c32] hover:border-[#e8a020]/25 hover:text-[#e8a020]/70 transition-all duration-300 flex items-center gap-2.5"
+              >
+                <span className="w-1 h-1 rounded-full bg-current opacity-70" />
+                VER PROTOCOLOS
+              </a>
+            </div>
+
+            {/* Social proof row — avatar stack + live count */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 2.3, duration: 0.6 }}
+              className="flex flex-col gap-2"
             >
-              <span className="w-1 h-1 rounded-full bg-current opacity-70" />
-              VER PROTOCOLOS
-            </a>
+              <div className="flex items-center gap-2.5">
+                {/* Avatar stack */}
+                <div className="flex -space-x-1.5">
+                  {[
+                    { bg: "#1e2a52", border: "#3a4a88" },
+                    { bg: "#12383a", border: "#1e6060" },
+                    { bg: "#32183a", border: "#542860" },
+                    { bg: "#2a1a10", border: "#6a3a14" },
+                  ].map((s, i) => (
+                    <div
+                      key={i}
+                      className="w-5 h-5 rounded-full flex-shrink-0"
+                      style={{
+                        background: s.bg,
+                        border: `1px solid ${s.border}`,
+                        zIndex: 4 - i,
+                        boxShadow: "0 0 0 1px rgba(3,3,10,.6)",
+                      }}
+                    />
+                  ))}
+                </div>
+                <span className="font-mono text-[.54rem] tracking-[.05em]" style={{ color: "#404060" }}>
+                  <AnimatePresence mode="wait">
+                    <motion.span
+                      key={liveCount}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.4 }}
+                      className="inline-block tabular-nums"
+                      style={{ color: "#00f0b4" }}
+                    >
+                      {liveCount.toLocaleString("pt-BR")}
+                    </motion.span>
+                  </AnimatePresence>
+                  {" "}protocolos ativados esta semana
+                </span>
+              </div>
+
+              {/* Reassurance line */}
+              <div className="flex items-center gap-2">
+                <span
+                  className="w-1.5 h-1.5 rounded-full bg-[#00f0b4] flex-shrink-0"
+                  style={{ boxShadow: "0 0 5px rgba(0,240,180,.8)", animation: "pulse 1.5s ease-in-out infinite" }}
+                />
+                <span className="font-mono text-[.52rem] tracking-[.05em]" style={{ color: "#2e2e50" }}>
+                  Acesso imediato · Sem cartão de crédito · Cancele quando quiser
+                </span>
+              </div>
+            </motion.div>
           </motion.div>
         </div>
 
