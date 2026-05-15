@@ -321,7 +321,7 @@ const LandingHero = () => {
             >
               <span>🏆</span>
               <span className="font-mono text-[.55rem]" style={{ color: "#8888b0" }}>
-                Stage prep · Flat/Full/Spilled · Peak Week
+                ⚡  Treino · Nutrição · Comportamento · Performance
               </span>
             </div>
           </motion.div>
