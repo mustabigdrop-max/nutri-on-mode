@@ -449,17 +449,10 @@ type SegItem = { label: string; score: number; diag: string };
 
 const normTxt = (s: string) => (s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
-function isHighPriority(label: string, cat: CategoryDef): boolean {
-  const L = normTxt(stripMd(label));
-  return cat.keyPoints.some((kp) =>
-    normTxt(kp).split(/\s+/).some((w) => w.length > 3 && L.includes(w))
-  );
-}
-
-function computeApexGeneral(segments: SegItem[], cat: CategoryDef): number {
+function computeApexGeneral(segments: SegItem[], _cat: CategoryDef): number {
   let totalW = 0, totalS = 0;
   segments.forEach((s) => {
-    const w = isHighPriority(s.label, cat) ? 2 : 1;
+    const w = s.score <= 5 ? 2 : 1;
     totalW += w;
     totalS += w * s.score;
   });
