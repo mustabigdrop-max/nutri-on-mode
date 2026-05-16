@@ -745,6 +745,11 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
     setActiveResultTab("scores");
     setSavedAnalysisId(item.id || null);
     fetchSyncStatus(item.athlete_id || athlete?.id || null);
+    loadPhotoUrls({
+      front: item.photo_front_url,
+      back: item.photo_back_url,
+      side: item.photo_side_url,
+    });
   };
 
   const handleDelete = async (item: any) => {
