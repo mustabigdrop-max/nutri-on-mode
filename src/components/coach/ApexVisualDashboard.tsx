@@ -768,6 +768,28 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
   const [showTrainingModal, setShowTrainingModal] = useState(false);
   const [generatingTraining, setGeneratingTraining] = useState(false);
   const [showPromptPreview, setShowPromptPreview] = useState(false);
+  const [feminineProfile, setFeminineProfile] = useState<{ ultima_menstruacao: string | null; duracao_ciclo: number | null; fase_ciclo: string | null } | null>(null);
+
+  const isFemAthlete = isFeminine({ sexo: athlete?.sexo });
+  const cyclePhase = feminineProfile?.ultima_menstruacao
+    ? getCyclePhase(feminineProfile.ultima_menstruacao, feminineProfile.duracao_ciclo || 28)
+    : (feminineProfile?.fase_ciclo as any) || null;
+  const cycleDay = feminineProfile?.ultima_menstruacao
+    ? getCycleDayCount(feminineProfile.ultima_menstruacao, feminineProfile.duracao_ciclo || 28)
+    : null;
+  const femCategory = normalizeFeminineCategory(athlete?.categoria || null);
+
+  useEffect(() => {
+    (async () => {
+      if (!isFemAthlete || !athlete?.patient_user_id) { setFeminineProfile(null); return; }
+      const { data } = await supabase
+        .from("feminine_profiles" as any)
+        .select("ultima_menstruacao,duracao_ciclo,fase_ciclo")
+        .eq("user_id", athlete.patient_user_id)
+        .maybeSingle();
+      setFeminineProfile((data as any) || null);
+    })();
+  }, [isFemAthlete, athlete?.patient_user_id]);
   const [apexMode, setApexMode] = useState<"analise" | "evolucao">("analise");
   const [promptCopied, setPromptCopied] = useState(false);
   const navigate = useNavigate();
