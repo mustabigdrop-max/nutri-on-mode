@@ -143,7 +143,7 @@ LINGUAGEM OBRIGATÓRIA: tom empoderador. NUNCA "excesso de gordura" → usar "re
     }
     userContent.push({ type: "text", text: contexto || "" });
 
-    const systemFinal = (system || DEFAULT_SYSTEM) + LANDMARK_INSTRUCTIONS;
+    const systemFinal = (system || DEFAULT_SYSTEM) + FEMININE_PROMPT + LANDMARK_INSTRUCTIONS;
 
     const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
