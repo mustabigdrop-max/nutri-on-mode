@@ -929,6 +929,22 @@ Suporte em uso: ${suporte || "não informado"}` : "";
           {activeResultTab === "scores" && (
             <div className="space-y-3">
               {segments.length === 0 && <EmptyMsg text="Nenhum score retornado pela IA." />}
+              {segments.length > 0 && (
+                <>
+                  <ApexGeneralScoreCard segments={segments} cat={cat} />
+                  <InsightHighlights segments={segments} />
+                  <ScoresRadar
+                    segments={segments}
+                    prevSegments={(() => {
+                      const prev = history.find((h: any) => h && h.id !== savedAnalysisId && h.scores && Object.keys(h.scores).length);
+                      if (!prev) return null;
+                      return Object.entries(prev.scores as Record<string, number>).map(([label, score]) => ({
+                        label, score: Number(score) || 0, diag: "",
+                      }));
+                    })()}
+                  />
+                </>
+              )}
               {segments.map((s, i) => <SegmentBar key={i} {...s} />)}
               <InfoBlock title="Impacto visual" body={parseSection(analysisResult, "IMPACTO_VISUAL", "SCORES_SEGMENTOS")} accent={cat.color} />
             </div>
