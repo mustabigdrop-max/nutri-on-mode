@@ -337,6 +337,7 @@ const LabCoachPlanner = ({ onAskApex }: { onAskApex: (q: string) => void }) => {
     setGeneratingTraining(true);
     try {
       const c = selectedClient;
+      const femT = await buildFeminineContext(c.user_id, c.sex, (c as any)?.federacao_categoria);
       const { data, error } = await supabase.functions.invoke("generate-training-plan", {
         body: {
           profile: {
@@ -348,6 +349,9 @@ const LabCoachPlanner = ({ onAskApex }: { onAskApex: (q: string) => void }) => {
             training_frequency: c.training_frequency,
             activity_level: c.activity_level,
             nivel_treino: c.nivel_treino,
+            cyclePhase: femT.cyclePhase,
+            cycleDay: femT.cycleDay,
+            feminineCategory: femT.feminineCategoryLabel,
           },
           coachNotes,
         },
