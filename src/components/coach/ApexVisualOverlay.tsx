@@ -711,6 +711,43 @@ function OverlayLayer({
 
         {/* Plumb line label */}
         <text x={50.5} y={2.5} fontSize={2} fill={C.white} opacity={0.6}>Linha de Prumo</text>
+
+        {/* DEBUG: zona da silhueta (|x-50|<8) + caixas de colisão dos labels */}
+        {debugMode && (
+          <g>
+            {/* Faixa da silhueta = exclusion zone exterior */}
+            <rect
+              x={42} y={0} width={16} height={100}
+              fill="#FF00FF"
+              fillOpacity={0.08}
+              stroke="#FF00FF"
+              strokeOpacity={0.5}
+              strokeDasharray="1 1"
+              vectorEffect="non-scaling-stroke"
+              style={{ strokeWidth: 1 }}
+            />
+            <text x={50} y={99} fontSize={1.8} fill="#FF00FF" textAnchor="middle" opacity={0.9}>
+              SILHUETA (labels proibidos)
+            </text>
+            {/* Caixas de colisão de cada label (16% x 4.5%) */}
+            {labelPositions.map((q) => (
+              <g key={`dbg-${q.key}`}>
+                <rect
+                  x={q.lx - 8} y={q.ly - 2.25}
+                  width={16} height={4.5}
+                  fill="none"
+                  stroke="#00FFAA"
+                  strokeOpacity={0.85}
+                  strokeDasharray="0.6 0.6"
+                  vectorEffect="non-scaling-stroke"
+                  style={{ strokeWidth: 1 }}
+                />
+                {/* Anchor → label vector */}
+                <circle cx={q.lx} cy={q.ly} r={0.5} fill="#00FFAA" />
+              </g>
+            ))}
+          </g>
+        )}
       </svg>
 
       {/* HTML labels layer — crisp, with background */}
