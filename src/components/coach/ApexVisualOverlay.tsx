@@ -383,6 +383,7 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
                   onSelect={setSelected}
                   eduMode={eduMode}
                   chainMode={chainMode}
+                  debugMode={debugMode}
                   chains={chains}
                 />
               )}
