@@ -1170,19 +1170,64 @@ Suporte em uso: ${suporte || "não informado"}` : "";
               <GenerateTrainingButton onClick={handleGenerateTraining} loading={generatingTraining} />
             </div>
           )}
-          {activeResultTab === "farmacologia" && hasFarmacologia && (
-            <div className="space-y-3">
-              <InfoBox color="#534AB7" text="💉 Análise Dr. VERTEX integrada — shape contextualizado pelo protocolo farmacológico ativo." />
-              <div className="flex flex-wrap gap-2">
-                {farmMeta.tdeeFator && <Pill label="TDEE fator" value={`×${farmMeta.tdeeFator}`} color="#534AB7" />}
-                {farmMeta.proteinaIdeal && <Pill label="Proteína" value={farmMeta.proteinaIdeal} color="#1DB87A" />}
-                {farmMeta.choEstrategia && <Pill label="CHO" value={farmMeta.choEstrategia} color="#C47A15" />}
-                {farmMeta.gestaoE2 && <Pill label="E2" value={farmMeta.gestaoE2} color="#E07030" />}
-                {farmMeta.alertaCardio && <Pill label="Cardio" value={farmMeta.alertaCardio} color="#D94040" />}
+          {activeResultTab === "farmacologia" && hasFarmacologia && (() => {
+            const vertexTabs: { key: typeof activeVertexTab; label: string; section: string; next: string; color: string; intro: string }[] = [
+              { key: "auditoria",    label: "🧪 Auditoria",        section: "VERTEX_AUDITORIA",   next: "VERTEX_SINERGIA",     color: "#534AB7", intro: "Composto a composto — status, dose, timing, sinergia, impacto no shape e red flags." },
+              { key: "sinergia",     label: "🔗 Sinergia",         section: "VERTEX_SINERGIA",    next: "VERTEX_OTIMIZACAO",   color: "#3B82F6", intro: "Stack como um todo — interações, redundâncias, gaps, ratio androgênico, perfil estrogênico e impacto no HPTA." },
+              { key: "contencao",    label: "🛡️ Contenção de Danos", section: "VERTEX_CONTENCAO",   next: "VERTEX_PERIODIZACAO", color: "#D94040", intro: "Sistemas orgânicos com semáforo de risco + protocolos de suporte e exames recomendados." },
+              { key: "periodizacao", label: "📅 Periodização",      section: "VERTEX_PERIODIZACAO", next: "VERTEX_SHAPE",        color: "#C47A15", intro: "Cronograma farmacológico semana a semana até o show, incluindo peak week." },
+              { key: "veredicto",    label: "🏆 Veredicto",         section: "VERTEX_VEREDICTO",   next: "GANHA_PONTOS",        color: "#FFB800", intro: "Classificação do protocolo, score de otimização e mensagem do Dr. VERTEX." },
+            ];
+            const otimizacao = parseSection(analysisResult, "VERTEX_OTIMIZACAO", "VERTEX_CONTENCAO");
+            const shape = parseSection(analysisResult, "VERTEX_SHAPE", "VERTEX_VEREDICTO");
+            const current = vertexTabs.find(t => t.key === activeVertexTab)!;
+            const currentBody = parseSection(analysisResult, current.section, current.next);
+            return (
+              <div className="space-y-3">
+                <InfoBox color="#534AB7" text="💉 Dr. VERTEX — coach farmacológico de elite. Análise técnica, sem julgamento, orientada a resultado máximo com menor risco." />
+
+                {/* Meta pills */}
+                <div className="flex flex-wrap gap-2">
+                  {farmMeta.classificacao && <Pill label="Protocolo" value={farmMeta.classificacao} color="#FFB800" />}
+                  {farmMeta.scoreOtim && <Pill label="Otimização" value={farmMeta.scoreOtim.includes("/") ? farmMeta.scoreOtim : `${farmMeta.scoreOtim}/10`} color="#534AB7" />}
+                  {farmMeta.tdeeFator && <Pill label="TDEE fator" value={`×${farmMeta.tdeeFator}`} color="#534AB7" />}
+                  {farmMeta.proteinaIdeal && <Pill label="Proteína" value={farmMeta.proteinaIdeal} color="#1DB87A" />}
+                  {farmMeta.choEstrategia && <Pill label="CHO" value={farmMeta.choEstrategia} color="#C47A15" />}
+                  {farmMeta.gestaoE2 && <Pill label="E2" value={farmMeta.gestaoE2} color="#E07030" />}
+                  {farmMeta.alertaCardio && <Pill label="Cardio" value={farmMeta.alertaCardio} color="#D94040" />}
+                </div>
+
+                {/* Sub-tabs */}
+                <div className="flex gap-1.5 overflow-x-auto pb-1 border-b border-border">
+                  {vertexTabs.map(t => (
+                    <button
+                      key={t.key}
+                      onClick={() => setActiveVertexTab(t.key)}
+                      className="px-3 py-2 text-[11px] font-semibold whitespace-nowrap rounded-t-lg transition-all"
+                      style={{
+                        color: activeVertexTab === t.key ? t.color : "hsl(var(--muted-foreground))",
+                        borderBottom: `2px solid ${activeVertexTab === t.key ? t.color : "transparent"}`,
+                      }}
+                    >
+                      {t.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Sub-tab content */}
+                <InfoBox color={current.color} text={current.intro} />
+                <Pre body={currentBody || "—"} />
+
+                {/* Extras — Otimização e Shape contextualizado sempre visíveis no fim */}
+                {activeVertexTab === "sinergia" && otimizacao && (
+                  <InfoBlock title="Otimização sugerida" body={otimizacao} accent="#1DB87A" />
+                )}
+                {activeVertexTab === "veredicto" && shape && (
+                  <InfoBlock title="Shape contextualizado pelo protocolo" body={shape} accent={cat.color} />
+                )}
               </div>
-              <Pre body={farmacologiaSection} />
-            </div>
-          )}
+            );
+          })()}
           {activeResultTab === "palco" && (
             <div className="space-y-3">
               <div className="grid md:grid-cols-2 gap-3">
