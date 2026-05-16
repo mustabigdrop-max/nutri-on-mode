@@ -217,6 +217,39 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
     return c;
   }, [findings]);
 
+  // MELHORIA 2 — qualidade da análise da vista atual
+  const quality = useMemo(() => {
+    if (!data) return { total: 0, valid: 0, ratio: 0 };
+    const entries = Object.values(data.landmarks);
+    const total = entries.length;
+    const valid = entries.filter(isValidPoint).length;
+    return { total, valid, ratio: total > 0 ? valid / total : 0 };
+  }, [data]);
+
+  // MELHORIA 3 — severidade resumida por vista
+  const viewSeverity = useMemo(() => {
+    const out: Record<"front" | "lateral" | "back", { count: number; worst: "ok" | "alt" | "sev" }> = {
+      front: { count: 0, worst: "ok" },
+      lateral: { count: 0, worst: "ok" },
+      back: { count: 0, worst: "ok" },
+    };
+    (["front", "lateral", "back"] as const).forEach((v) => {
+      const d = landmarks[v];
+      if (!d) return;
+      const angs = Object.values(d.angles);
+      let worst: "ok" | "alt" | "sev" = "ok";
+      let count = 0;
+      angs.forEach((a) => {
+        const s = severityOf(a.value, a.normal);
+        if (s !== "ok") count++;
+        if (s === "sev") worst = "sev";
+        else if (s === "alt" && worst !== "sev") worst = "alt";
+      });
+      out[v] = { count, worst };
+    });
+    return out;
+  }, [landmarks]);
+
   // Detected kinetic chains (simple heuristic)
   const chains = useMemo(() => {
     const out: { name: string; nodes: string[]; description: string }[] = [];
