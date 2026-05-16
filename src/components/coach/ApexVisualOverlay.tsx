@@ -847,7 +847,7 @@ function OverlayLayer({
 }
 
 // ─── SVG helpers ─────────────────────────────────────────────────
-function SvgLine({ p1, p2, color, dashed }: { p1?: Landmark; p2?: Landmark; color: string; dashed?: boolean }) {
+function SvgLine({ p1, p2, color, dashed, thickness }: { p1?: Landmark; p2?: Landmark; color: string; dashed?: boolean; thickness?: number }) {
   if (!isValidPoint(p1) || !isValidPoint(p2)) return null;
   return (
     <line
@@ -855,7 +855,7 @@ function SvgLine({ p1, p2, color, dashed }: { p1?: Landmark; p2?: Landmark; colo
       stroke={color}
       strokeDasharray={dashed ? "2 1" : undefined}
       vectorEffect="non-scaling-stroke"
-      style={{ strokeWidth: 2 }}
+      style={{ strokeWidth: thickness ?? 2 }}
     />
   );
 }
