@@ -765,7 +765,7 @@ function OverlayLayer({
                 <circle cx={lm.spine_l5.x} cy={lm.spine_l5.y} r={1.6} fill="#FFD700" stroke="#000" vectorEffect="non-scaling-stroke" style={{ strokeWidth: 1 }} />
               </>
             )}
-            {/* MELHORIA 1 — Eixo escapular 2.5px ciano (vermelho se >2°), losango central */}
+            {/* MELHORIA 1 — Eixo escapular 2.5px ciano (vermelho se >2°), losango central, CLICÁVEL */}
             {isValidPoint(lm.scapula_left) && isValidPoint(lm.scapula_right) && (() => {
               const dx = lm.scapula_right.x - lm.scapula_left.x;
               const dy = lm.scapula_right.y - lm.scapula_left.y;
@@ -774,23 +774,59 @@ function OverlayLayer({
               const stroke = critical ? C.red : C.cyan;
               const mx = (lm.scapula_left.x + lm.scapula_right.x) / 2;
               const my = (lm.scapula_left.y + lm.scapula_right.y) / 2;
+              const isSel = selected === "scapular_axis_tilt";
               return (
-                <>
+                <g
+                  style={{ cursor: "pointer" }}
+                  onClick={(e) => { e.stopPropagation(); onSelect("scapular_axis_tilt"); }}
+                >
+                  {/* halo glow quando selecionado */}
+                  {isSel && (
+                    <line
+                      x1={lm.scapula_left.x} y1={lm.scapula_left.y}
+                      x2={lm.scapula_right.x} y2={lm.scapula_right.y}
+                      stroke={stroke}
+                      strokeOpacity={0.35}
+                      vectorEffect="non-scaling-stroke"
+                      style={{ strokeWidth: 7 }}
+                    />
+                  )}
+                  {/* hit area invisível larga para facilitar o clique */}
+                  <line
+                    x1={lm.scapula_left.x} y1={lm.scapula_left.y}
+                    x2={lm.scapula_right.x} y2={lm.scapula_right.y}
+                    stroke="transparent"
+                    vectorEffect="non-scaling-stroke"
+                    style={{ strokeWidth: 14 }}
+                  />
                   <line
                     x1={lm.scapula_left.x} y1={lm.scapula_left.y}
                     x2={lm.scapula_right.x} y2={lm.scapula_right.y}
                     stroke={stroke}
                     vectorEffect="non-scaling-stroke"
-                    style={{ strokeWidth: 2.5 }}
+                    style={{ strokeWidth: isSel ? 3.5 : 2.5 }}
                   />
                   <polygon
-                    points={`${mx},${my - 1.2} ${mx + 1.2},${my} ${mx},${my + 1.2} ${mx - 1.2},${my}`}
+                    points={`${mx},${my - 1.4} ${mx + 1.4},${my} ${mx},${my + 1.4} ${mx - 1.4},${my}`}
                     fill={stroke}
                     stroke="#000"
                     vectorEffect="non-scaling-stroke"
                     style={{ strokeWidth: 1 }}
                   />
-                </>
+                  {/* badge "clique" sutil acima do losango */}
+                  <text
+                    x={mx} y={my - 2.4}
+                    textAnchor="middle"
+                    fill={stroke}
+                    fontSize={1.8}
+                    fontWeight={700}
+                    style={{ pointerEvents: "none", paintOrder: "stroke" }}
+                    stroke="#000"
+                    strokeWidth={0.4}
+                  >
+                    {isSel ? "▼ aberto" : "▲ clique"}
+                  </text>
+                </g>
               );
             })()}
           </>
