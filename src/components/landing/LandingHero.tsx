@@ -1,607 +1,560 @@
-import { motion, AnimatePresence } from "framer-motion";
-import { useState, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 
-const ROTATING_LINES = [
-  "4 dias antes da prova e você não sabe se tá flat, full ou spilled.",
-  "Motivação dura 2 semanas. Protocolo dura a vida.",
-  "Protocolo farmacológico ativo. Nenhum app calculava seu TDEE real. Até agora.",
-  "Sua fome nunca foi de comida.",
-  "Peak week chegando. O plano de depleção e carb load já está pronto?",
+const GOLD = "#B8922A";
+const CYAN = "#00D4FF";
+const TEXT = "#F5F0E8";
+
+const STREAM_LABELS = ["TDEE","PCA","ROM","FMS","MCE","IGF-1","GH","RPE","mTOR","GLUT4","KAA","GUT","ATP","VO2","SLU","CJC"];
+
+const HUDS = [
+  { pos: "top-[6%] left-[3%]",     align: "left",  title: "TDEE CALCULADO",   value: 3240, suffix: " kcal", bar: GOLD, delay: 4700 },
+  { pos: "top-[6%] right-[3%]",    align: "right", title: "KAA™ SCORE",       value: 82,   suffix: "/100",  bar: CYAN, delay: 4800 },
+  { pos: "top-[44%] left-[3%]",    align: "left",  title: "PCA ACTIVE",       text: "PERFIL AM",          bar: GOLD, delay: 4900 },
+  { pos: "top-[44%] right-[3%]",   align: "right", title: "MICROBIOTA",       text: "GUT-BRAIN ON",       bar: CYAN, delay: 5000 },
+  { pos: "bottom-[10%] left-[3%]", align: "left",  title: "DR. VERTEX",       text: "85+ COMPOSTOS",      bar: CYAN, delay: 5100 },
+  { pos: "bottom-[10%] right-[3%]",align: "right", title: "STRATUM",          text: "7 CAMADAS",          bar: GOLD, delay: 5200 },
 ];
 
-const PARTICLES = [
-  { left: "8%", top: "12%", dur: 5 },
-  { left: "18%", top: "78%", dur: 6.5 },
-  { left: "27%", top: "32%", dur: 4.2 },
-  { left: "33%", top: "62%", dur: 7.1 },
-  { left: "41%", top: "18%", dur: 5.8 },
-  { left: "49%", top: "85%", dur: 4.6 },
-  { left: "58%", top: "42%", dur: 6.2 },
-  { left: "66%", top: "22%", dur: 5.1 },
-  { left: "74%", top: "68%", dur: 7.4 },
-  { left: "82%", top: "38%", dur: 4.9 },
-  { left: "90%", top: "75%", dur: 6.7 },
-  { left: "12%", top: "48%", dur: 5.5 },
+const NODES = [
+  { id: "n1", x: 18, y: 18, label: "PCA",        sub: "Comportamento",   color: GOLD },
+  { id: "n2", x: 50, y: 10, label: "NutriPlan",  sub: "Nutrição",        color: CYAN },
+  { id: "n3", x: 82, y: 18, label: "TrainingON", sub: "Treino",          color: GOLD },
+  { id: "n4", x: 82, y: 82, label: "VERTEX",     sub: "Farmacologia",    color: CYAN },
+  { id: "n5", x: 50, y: 90, label: "KAA™",       sub: "Kinetic Arch.",   color: GOLD },
+  { id: "n6", x: 18, y: 82, label: "Microbiota", sub: "Gut-Brain",       color: CYAN },
 ];
 
-const ORBIT_NODES = [
-  { angle: 0, label: "PROTEÍNA", color: "#e8a020" },
-  { angle: 90, label: "CARBOIDRATO", color: "#00f0b4" },
-  { angle: 180, label: "GORDURA", color: "#7890ff" },
-  { angle: 270, label: "HIDRATAÇÃO", color: "#e8a020" },
-];
+const TICKER = ["PCA","NutriPlan","TrainingON","VERTEX","KAA™","Microbiota"];
 
-const CHIPS = [
-  { pos: "top-[2%] left-[-6%]", label: "GEB CALCULADO", value: "1.847 kcal", color: "#e8a020", x: -30, delay: 2.2 },
-  { pos: "top-[2%] right-[-6%]", label: "PROTEÍNA ALVO", value: "2.2 g/kg", color: "#00f0b4", x: 30, delay: 2.3 },
-  { pos: "bottom-[2%] left-[-6%]", label: "MUSCLE STATE", value: "FULL 💪", color: "#e8a020", x: -30, delay: 2.4 },
-  { pos: "bottom-[2%] right-[-6%]", label: "SCORE MCE", value: "94 / 100", color: "#7890ff", x: 30, delay: 2.5 },
-];
+const useCount = (target: number, start: boolean, duration = 1600) => {
+  const [v, setV] = useState(0);
+  useEffect(() => {
+    if (!start) return;
+    const t0 = performance.now();
+    let raf = 0;
+    const step = (t: number) => {
+      const p = Math.min(1, (t - t0) / duration);
+      const eased = 1 - Math.pow(1 - p, 3);
+      setV(Math.round(target * eased));
+      if (p < 1) raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, [target, start, duration]);
+  return v;
+};
 
 const LandingHero = () => {
-  const [lineIdx, setLineIdx] = useState(0);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [phase, setPhase] = useState(0);
+  // phases: 0 init, 1 l1, 2 l2, 3 l3, 4 l4, 5 flash/jarvis, 6 huds, 7 nodes, 8 tagline, 9 status
 
   useEffect(() => {
-    const id = setInterval(() => setLineIdx((p) => (p + 1) % ROTATING_LINES.length), 3800);
-    return () => clearInterval(id);
+    const timers = [
+      setTimeout(() => setPhase(1), 400),
+      setTimeout(() => setPhase(2), 1150),
+      setTimeout(() => setPhase(3), 1900),
+      setTimeout(() => setPhase(4), 2800),
+      setTimeout(() => setPhase(5), 4100),
+      setTimeout(() => setPhase(6), 4700),
+      setTimeout(() => setPhase(7), 5300),
+      setTimeout(() => setPhase(8), 6200),
+      setTimeout(() => setPhase(9), 6700),
+    ];
+    return () => timers.forEach(clearTimeout);
   }, []);
+
+  // Canvas: hex grid + particles + data streams + scan line
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    let w = 0, h = 0, dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const resize = () => {
+      const r = canvas.getBoundingClientRect();
+      w = r.width; h = r.height;
+      canvas.width = w * dpr; canvas.height = h * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    };
+    resize();
+    window.addEventListener("resize", resize);
+
+    type P = { x:number; y:number; vx:number; vy:number; c:string; r:number };
+    const particles: P[] = [];
+    const PCOUNT = 160;
+    for (let i = 0; i < PCOUNT; i++) {
+      particles.push({
+        x: Math.random() * 1600, y: Math.random() * 900,
+        vx: (Math.random() - 0.5) * 0.25,
+        vy: (Math.random() - 0.5) * 0.25,
+        c: Math.random() < 0.75 ? GOLD : CYAN,
+        r: Math.random() * 1.2 + 0.4,
+      });
+    }
+
+    type S = { x:number; y:number; speed:number; label:string; trail:string[] };
+    const streams: S[] = [];
+    for (let i = 0; i < 28; i++) {
+      streams.push({
+        x: Math.random() * 1600,
+        y: Math.random() * 900,
+        speed: 0.6 + Math.random() * 1.4,
+        label: STREAM_LABELS[i % STREAM_LABELS.length],
+        trail: [],
+      });
+    }
+
+    const hex = 30;
+    let t0 = performance.now();
+    let raf = 0;
+
+    const draw = () => {
+      const t = (performance.now() - t0) / 1000;
+      ctx.clearRect(0, 0, w, h);
+
+      // Hex grid pulse
+      const cx = w / 2, cy = h / 2;
+      ctx.lineWidth = 1;
+      const hx = hex, hy = hex * 0.866;
+      for (let y = 0; y < h + hy; y += hy) {
+        for (let x = 0; x < w + hx; x += hx * 1.5) {
+          const ox = (Math.floor(y / hy) % 2) * hx * 0.75;
+          const px = x + ox, py = y;
+          const dist = Math.hypot(px - cx, py - cy);
+          const wave = Math.sin(t * 1.5 - dist / 80);
+          const a = 0.04 + Math.max(0, wave) * 0.08;
+          ctx.strokeStyle = `rgba(184,146,42,${a.toFixed(3)})`;
+          ctx.beginPath();
+          for (let i = 0; i < 6; i++) {
+            const ang = (Math.PI / 3) * i;
+            const xx = px + Math.cos(ang) * hx * 0.5;
+            const yy = py + Math.sin(ang) * hx * 0.5;
+            if (i === 0) ctx.moveTo(xx, yy); else ctx.lineTo(xx, yy);
+          }
+          ctx.closePath();
+          ctx.stroke();
+        }
+      }
+
+      // Particles + connections
+      for (const p of particles) {
+        p.x += p.vx; p.y += p.vy;
+        if (p.x < 0) p.x = w; else if (p.x > w) p.x = 0;
+        if (p.y < 0) p.y = h; else if (p.y > h) p.y = 0;
+      }
+      for (let i = 0; i < particles.length; i++) {
+        const a = particles[i];
+        for (let j = i + 1; j < Math.min(i + 6, particles.length); j++) {
+          const b = particles[j];
+          const dx = a.x - b.x, dy = a.y - b.y;
+          const d = Math.hypot(dx, dy);
+          if (d < 90) {
+            ctx.strokeStyle = `rgba(184,146,42,${(0.12 * (1 - d / 90)).toFixed(3)})`;
+            ctx.lineWidth = 0.5;
+            ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+          }
+        }
+        ctx.fillStyle = a.c;
+        ctx.globalAlpha = 0.85;
+        ctx.beginPath(); ctx.arc(a.x, a.y, a.r, 0, Math.PI * 2); ctx.fill();
+        ctx.globalAlpha = 1;
+      }
+
+      // Data streams
+      ctx.font = "9px 'Space Mono', monospace";
+      for (const s of streams) {
+        s.y += s.speed;
+        if (s.y > h + 20) { s.y = -20; s.x = Math.random() * w; s.trail = []; }
+        s.trail.unshift(`${s.label} ${(Math.random() * 100).toFixed(0)}`);
+        if (s.trail.length > 8) s.trail.pop();
+        for (let i = 0; i < s.trail.length; i++) {
+          const alpha = (1 - i / s.trail.length) * 0.35;
+          ctx.fillStyle = `rgba(184,146,42,${alpha.toFixed(3)})`;
+          ctx.fillText(s.trail[i], s.x, s.y - i * 12);
+        }
+      }
+
+      // Scan line
+      const sy = ((t * 60) % (h + 100)) - 50;
+      const grad = ctx.createLinearGradient(0, sy - 40, 0, sy + 40);
+      grad.addColorStop(0, "rgba(0,212,255,0)");
+      grad.addColorStop(0.5, "rgba(0,212,255,0.12)");
+      grad.addColorStop(1, "rgba(0,212,255,0)");
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, sy - 40, w, 80);
+
+      raf = requestAnimationFrame(draw);
+    };
+    raf = requestAnimationFrame(draw);
+    return () => { cancelAnimationFrame(raf); window.removeEventListener("resize", resize); };
+  }, []);
+
+  const tdee = useCount(3240, phase >= 6);
+  const kaa = useCount(82, phase >= 6);
 
   return (
     <section
-      className="relative min-h-screen w-full overflow-hidden flex flex-col"
-      style={{ background: "#03030a" }}
+      className="relative w-full h-screen min-h-[720px] overflow-hidden bg-black"
+      style={{ fontFamily: "'Space Mono', monospace", color: TEXT }}
     >
-      {/* Sweep line on load */}
-      <motion.div
-        initial={{ top: "0%", opacity: 0 }}
-        animate={{ top: "102%", opacity: [0, 1, 1, 0] }}
-        transition={{ duration: 2.8, ease: "easeInOut" }}
-        className="absolute left-0 right-0 z-[5] pointer-events-none"
+      <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />
+
+      {/* Vignette */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{ background: "radial-gradient(ellipse at center, rgba(0,0,0,0) 30%, rgba(0,0,0,0.85) 100%)" }}
+      />
+
+      {/* Gold flash */}
+      <div
+        className="absolute inset-0 pointer-events-none transition-opacity"
         style={{
-          height: "2px",
-          background:
-            "linear-gradient(90deg, transparent 0%, rgba(0,240,180,.4) 25%, rgba(232,160,32,.8) 50%, rgba(0,240,180,.4) 75%, transparent 100%)",
-          boxShadow: "0 0 20px rgba(0,240,180,.4)",
+          background: GOLD,
+          opacity: phase === 5 ? 0.85 : 0,
+          transition: "opacity 90ms linear",
+          mixBlendMode: "screen",
         }}
       />
 
-      {/* Ambient backgrounds */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background:
-            "radial-gradient(ellipse 60% 80% at 70% 50%, rgba(232,160,32,.07) 0%, rgba(120,144,255,.03) 40%, transparent 70%)",
-        }}
-      />
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          backgroundImage:
-            "linear-gradient(rgba(232,160,32,.012) 1px, transparent 1px), linear-gradient(90deg, rgba(232,160,32,.012) 1px, transparent 1px)",
-          backgroundSize: "48px 48px",
-        }}
-      />
-      {PARTICLES.map((p, i) => (
-        <motion.div
+      {/* L corners */}
+      {[
+        "top-5 left-5 border-t-2 border-l-2",
+        "top-5 right-5 border-t-2 border-r-2",
+        "bottom-5 left-5 border-b-2 border-l-2",
+        "bottom-5 right-5 border-b-2 border-r-2",
+      ].map((c, i) => (
+        <div
           key={i}
-          className="absolute w-[2px] h-[2px] rounded-full pointer-events-none"
-          style={{ left: p.left, top: p.top, background: "rgba(232,160,32,.4)" }}
-          animate={{ y: [-8, 8, -8], opacity: [0.2, 0.5, 0.2] }}
-          transition={{ duration: p.dur, repeat: Infinity, ease: "easeInOut" }}
+          className={`absolute ${c} pointer-events-none`}
+          style={{ width: 28, height: 28, borderColor: GOLD, animation: "lhPulse 2.4s ease-in-out infinite" }}
         />
       ))}
 
-      <div className="relative z-10 flex-1 flex flex-col lg:flex-row items-stretch px-6 md:px-12 pt-[120px] pb-20 gap-10">
-        {/* LEFT COLUMN */}
-        <div className="w-full lg:w-[55%] flex flex-col justify-center">
-          {/* [1] Rotating micro-text */}
-          <div className="h-[1.3rem] overflow-hidden mb-5">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={lineIdx}
-                initial={{ y: 16, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                exit={{ y: -16, opacity: 0 }}
-                transition={{ duration: 0.4 }}
-                className="font-mono text-[.62rem] tracking-[.05em]"
-                style={{ color: "rgba(240,237,248,.28)" }}
-              >
-                <span className="mr-2" style={{ color: "rgba(232,160,32,.4)" }}>›</span>
-                {ROTATING_LINES[lineIdx]}
-              </motion.div>
-            </AnimatePresence>
-          </div>
-
-          {/* [2] MCE badge */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-            className="inline-flex items-center gap-2.5 border px-4 py-2 rounded-full mb-8 w-fit"
-            style={{ borderColor: "rgba(0,240,180,.15)", background: "rgba(0,240,180,.03)" }}
-          >
-            <span
-              className="w-1.5 h-1.5 rounded-full animate-pulse"
-              style={{ background: "#00f0b4", boxShadow: "0 0 8px rgba(0,240,180,1)" }}
-            />
-            <span
-              className="font-mono text-[.58rem] tracking-[.2em] uppercase"
-              style={{ color: "rgba(0,240,180,.8)" }}
-            >
-              Sistema MCE · Ativo
-            </span>
-            <span className="font-mono text-[.58rem]" style={{ color: "#50507a" }}>v2.4.1</span>
-          </motion.div>
-
-          {/* [3] Ghost text above */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.6 }}
-            className="font-heading select-none mb-1"
-            style={{
-              color: "rgba(240,237,248,.05)",
-              letterSpacing: ".35em",
-              fontSize: "clamp(1rem,3vw,2.2rem)",
-            }}
-          >
-            TRANSFORME
-          </motion.div>
-
-          {/* [4] Headline */}
-          <h1
-            className="font-heading flex flex-wrap items-baseline"
-            style={{ fontSize: "clamp(4.5rem, 12vw, 11rem)", lineHeight: 0.82 }}
-          >
-            <motion.span
-              initial={{ opacity: 0, x: -50 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.9, delay: 0.7 }}
-              style={{ color: "#f0edf8", letterSpacing: "-.02em" }}
-            >
-              NUTRI
-            </motion.span>
-            <motion.span
-              initial={{ opacity: 0, scale: 1.4, filter: "blur(12px)" }}
-              animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-              transition={{ duration: 0.9, delay: 1.0 }}
-              className="relative inline-block"
-              style={{
-                color: "transparent",
-                WebkitTextStroke: "2px hsl(38 80% 52%)",
-                textShadow: "0 0 60px rgba(232,160,32,.6), 0 0 120px rgba(232,160,32,.25)",
-              }}
-            >
-              ON
-              <motion.span
-                className="absolute -top-1 -right-2 w-2.5 h-2.5 rounded-full"
-                style={{
-                  background: "#e8a020",
-                  boxShadow: "0 0 14px rgba(232,160,32,1), 0 0 28px rgba(232,160,32,.4)",
-                }}
-                animate={{ opacity: [1, 0.4, 1] }}
-                transition={{ duration: 1.2, repeat: Infinity }}
-              />
-            </motion.span>
-          </h1>
-
-          {/* [5] Ghost text below */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.8, delay: 1.1 }}
-            className="font-heading select-none mb-8 mt-2"
-            style={{
-              color: "rgba(240,237,248,.05)",
-              letterSpacing: ".32em",
-              fontSize: "clamp(1rem,3vw,2.2rem)",
-            }}
-          >
-            PALCO. SAÚDE. PERFORMANCE.
-          </motion.div>
-
-          {/* [6] Animated separator */}
-          <motion.div
-            initial={{ scaleX: 0 }}
-            animate={{ scaleX: 1 }}
-            transition={{ duration: 1.2, delay: 1.2 }}
-            style={{ originX: 0 }}
-            className="flex items-center gap-4 max-w-[520px] mb-6"
-          >
-            <div
-              className="h-px flex-1"
-              style={{
-                background: "linear-gradient(to right, rgba(232,160,32,.35), rgba(232,160,32,.08), transparent)",
-              }}
-            />
-            <span
-              className="font-mono text-[.55rem] tracking-[.25em]"
-              style={{ color: "rgba(232,160,32,.35)" }}
-            >
-              MCE.SYS.ONLINE
-            </span>
-            <div className="w-6 h-px" style={{ background: "rgba(232,160,32,.15)" }} />
-          </motion.div>
-
-          {/* [7] Sub-headline */}
-          <div className="max-w-[580px] mb-6">
-            <motion.p
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 1.3 }}
-              className="font-heading leading-tight"
-              style={{
-                fontSize: "clamp(1.1rem, 2.8vw, 1.9rem)",
-                color: "rgba(240,237,248,.55)",
-              }}
-            >
-              TODO APP TE DIZ O QUE COMER.
-            </motion.p>
-            <motion.p
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 1.4 }}
-              className="font-heading leading-tight"
-              style={{
-                fontSize: "clamp(1.1rem, 2.8vw, 1.9rem)",
-                color: "rgba(240,237,248,.55)",
-              }}
-            >
-              TODO PERSONAL TE DIZ COMO TREINAR.
-            </motion.p>
-            <motion.p
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 1.55 }}
-              className="font-heading leading-tight"
-              style={{
-                fontSize: "clamp(1.1rem, 2.8vw, 1.9rem)",
-                color: "#e8a020",
-                textShadow: "0 0 30px rgba(232,160,32,.35)",
-              }}
-            >
-              O NUTRION DESCOBRE POR QUE VOCÊ PARA DE EVOLUIR.
-            </motion.p>
-          </div>
-
-          {/* [8] Body copy */}
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 1.5 }}
-            className="max-w-[500px] mb-8"
-          >
-            <p
-              className="text-[.95rem] leading-[1.9] mb-3"
-              style={{ color: "rgba(240,237,248,.55)" }}
-            >
-              Análise comportamental + nutrição de precisão + prescrição de treino — integrados num único sistema.{" "}
-              <span style={{ color: "rgba(240,237,248,.75)" }}>
-                Feito por quem usa os mesmos protocolos que prescreve.
-              </span>
-            </p>
-            <p
-              className="font-semibold text-[.95rem] leading-[1.9]"
-              style={{ color: "rgba(240,237,248,.7)" }}
-            >
-              Bem-vindo ao time.{" "}
-              <span style={{ color: "#e8a020" }}>
-                Aqui, seu objetivo tem protocolo. Não dieta.
-              </span>
-            </p>
-          </motion.div>
-
-          {/* [9] Inline badges */}
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 1.6 }}
-            className="flex flex-wrap items-center gap-3 mb-8"
-          >
-            <div
-              className="flex items-center gap-2 border px-3 py-1.5 rounded-full"
-              style={{ borderColor: "rgba(0,240,180,.15)", background: "rgba(0,240,180,.03)" }}
-            >
-              <span
-                className="w-1.5 h-1.5 rounded-full animate-pulse"
-                style={{ background: "#00f0b4", boxShadow: "0 0 6px rgba(0,240,180,.8)" }}
-              />
-              <span className="font-mono text-[.56rem]" style={{ color: "rgba(0,240,180,.7)" }}>
-                protocolos executados hoje
-              </span>
-            </div>
-            <div
-              className="flex items-center gap-2 border px-3 py-1.5 rounded-full"
-              style={{ borderColor: "rgba(232,160,32,.1)", background: "rgba(232,160,32,.03)" }}
-            >
-              <span>🏆</span>
-              <span className="font-mono text-[.55rem]" style={{ color: "#8888b0" }}>
-                Stage prep · Flat/Full/Spilled · Peak Week
-              </span>
-            </div>
-          </motion.div>
-
-          {/* [10] Stats grid */}
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 1.7 }}
-            className="flex flex-wrap mb-9 border w-fit"
-            style={{ borderColor: "rgba(232,160,32,.08)" }}
-          >
-            {[
-              { v: "BB", l: "Stage Ready", s: "Flat/Full/Spilled · Peak Week · Janela Anabólica" },
-              { v: "24H", l: "Sempre ON", s: "Protocolo adaptativo em tempo real" },
-              { v: "0", l: "Apps iguais", s: "Nada como isso no mundo" },
-            ].map((c, i, arr) => (
-              <div
-                key={i}
-                className={`px-5 py-4 ${i < arr.length - 1 ? "border-r" : ""}`}
-                style={{ borderColor: "rgba(232,160,32,.08)" }}
-              >
-                <div
-                  className="font-heading text-[2.1rem] leading-none mb-2"
-                  style={{ color: "#e8a020", textShadow: "0 0 20px rgba(232,160,32,.4)" }}
-                >
-                  {c.v}
-                </div>
-                <div
-                  className="font-mono text-[.55rem] tracking-[.12em] uppercase mb-1"
-                  style={{ color: "rgba(240,237,248,.45)" }}
-                >
-                  {c.l}
-                </div>
-                <div className="font-mono text-[.5rem]" style={{ color: "#404060" }}>
-                  {c.s}
-                </div>
-              </div>
-            ))}
-          </motion.div>
-
-          {/* [11] CTAs */}
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 1.9 }}
-            className="flex gap-3 flex-wrap"
-          >
-            <button
-              type="button"
-              onClick={() => {
-                const el = document.getElementById("plans");
-                if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-              }}
-              className="group relative font-heading text-[.95rem] tracking-[.07em] px-9 py-4 transition-transform hover:scale-[1.02]"
-              style={{
-                background: "hsl(38 80% 52%)",
-                color: "#030310",
-                clipPath:
-                  "polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px))",
-                boxShadow: "0 0 35px rgba(232,160,32,.35)",
-              }}
-            >
-              <span
-                className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                style={{ background: "rgba(255,255,255,.12)" }}
-              />
-              <span className="relative">COMEÇAR PROTOCOLO ON →</span>
-            </button>
-            <a
-              href="/auth"
-              className="group relative font-heading text-[.95rem] tracking-[.07em] px-9 py-4 transition-transform hover:scale-[1.02]"
-              style={{
-                background: "hsl(38 80% 52%)",
-                color: "#030310",
-                clipPath:
-                  "polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px))",
-                boxShadow: "0 0 30px rgba(232,160,32,.25)",
-              }}
-            >
-              <span
-                className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                style={{ background: "rgba(255,255,255,.12)" }}
-              />
-              <span className="relative">ATIVAR MEU PROTOCOLO →</span>
-            </a>
-            <a
-              href="#protocols"
-              className="flex items-center gap-2 font-mono text-[.68rem] tracking-[.12em] px-6 py-4 border transition-colors"
-              style={{ color: "#4a4a6a", borderColor: "#1c1c32" }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = "rgba(232,160,32,.25)";
-                e.currentTarget.style.color = "rgba(232,160,32,.7)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = "#1c1c32";
-                e.currentTarget.style.color = "#4a4a6a";
-              }}
-            >
-              <span className="w-1 h-1 rounded-full" style={{ background: "currentColor" }} />
-              VER PROTOCOLOS
-            </a>
-          </motion.div>
-        </div>
-
-        {/* RIGHT COLUMN — visualization */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.85 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 1.2, delay: 1.0 }}
-          className="hidden lg:flex w-[480px] flex-shrink-0 relative items-center justify-center"
-        >
-          <div className="relative w-[340px] h-[340px] md:w-[420px] md:h-[420px]">
-            {/* Outer ring rotating */}
-            <motion.div
-              className="absolute inset-0 rounded-full border"
-              style={{ borderColor: "rgba(232,160,32,.1)" }}
-              animate={{ rotate: 360 }}
-              transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
-            >
-              {ORBIT_NODES.map((n, i) => {
-                const rad = (n.angle * Math.PI) / 180;
-                const cx = 50 + 50 * Math.cos(rad);
-                const cy = 50 + 50 * Math.sin(rad);
-                return (
-                  <div
-                    key={i}
-                    className="absolute w-2 h-2 rounded-full -translate-x-1/2 -translate-y-1/2"
-                    style={{
-                      left: `${cx}%`,
-                      top: `${cy}%`,
-                      background: n.color,
-                      boxShadow: `0 0 8px ${n.color}`,
-                    }}
-                    title={n.label}
-                  />
-                );
-              })}
-            </motion.div>
-
-            {/* Middle ring counter-rotating */}
-            <motion.div
-              className="absolute inset-[30px] rounded-full border border-dashed"
-              style={{ borderColor: "rgba(0,240,180,.08)" }}
-              animate={{ rotate: -360 }}
-              transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-            />
-
-            {/* Inner ring */}
-            <div
-              className="absolute inset-[60px] rounded-full border"
-              style={{ borderColor: "rgba(232,160,32,.12)" }}
-            />
-
-            {/* Wireframe body */}
-            <div className="absolute inset-[78px] flex flex-col items-center justify-start pt-2">
-              <div
-                className="w-7 h-7 rounded-full border mb-1"
-                style={{
-                  borderColor: "rgba(0,240,180,.35)",
-                  boxShadow: "0 0 10px rgba(0,240,180,.15)",
-                }}
-              />
-              <div
-                className="w-px h-3"
-                style={{
-                  background: "linear-gradient(to bottom, rgba(0,240,180,.3), rgba(232,160,32,.2))",
-                }}
-              />
-              <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
-                {/* shoulders */}
-                <path d="M10 12 Q18 8 28 8 L52 8 Q62 8 70 12" stroke="rgba(232,160,32,.3)" strokeWidth="1" fill="none" />
-                {/* clavicles */}
-                <line x1="28" y1="8" x2="40" y2="16" stroke="rgba(0,240,180,.2)" strokeWidth="1" />
-                <line x1="52" y1="8" x2="40" y2="16" stroke="rgba(0,240,180,.2)" strokeWidth="1" />
-                {/* sternum */}
-                <line x1="40" y1="16" x2="40" y2="46" stroke="rgba(232,160,32,.25)" strokeWidth="1" />
-                {/* ribs left */}
-                <path d="M40 22 Q28 24 22 28" stroke="rgba(0,240,180,.15)" strokeWidth="1" fill="none" opacity="0.9" />
-                <path d="M40 30 Q26 32 20 36" stroke="rgba(0,240,180,.13)" strokeWidth="1" fill="none" opacity="0.7" />
-                <path d="M40 38 Q26 40 22 44" stroke="rgba(0,240,180,.11)" strokeWidth="1" fill="none" opacity="0.5" />
-                {/* ribs right */}
-                <path d="M40 22 Q52 24 58 28" stroke="rgba(0,240,180,.15)" strokeWidth="1" fill="none" opacity="0.9" />
-                <path d="M40 30 Q54 32 60 36" stroke="rgba(0,240,180,.13)" strokeWidth="1" fill="none" opacity="0.7" />
-                <path d="M40 38 Q54 40 58 44" stroke="rgba(0,240,180,.11)" strokeWidth="1" fill="none" opacity="0.5" />
-                {/* pelvis */}
-                <path d="M22 56 Q40 64 58 56" stroke="rgba(232,160,32,.22)" strokeWidth="1" fill="none" />
-                <circle cx="28" cy="58" r="2.5" stroke="rgba(232,160,32,.3)" strokeWidth="1" fill="none" />
-                <circle cx="52" cy="58" r="2.5" stroke="rgba(232,160,32,.3)" strokeWidth="1" fill="none" />
-              </svg>
-            </div>
-
-            {/* Scan line */}
-            <motion.div
-              className="absolute left-[10%] right-[10%] pointer-events-none"
-              style={{
-                height: "1px",
-                background:
-                  "linear-gradient(90deg, transparent, rgba(0,240,180,.5), rgba(232,160,32,.7), transparent)",
-              }}
-              animate={{ top: ["8%", "92%", "8%"] }}
-              transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut", repeatDelay: 1 }}
-            />
-
-            {/* Pulse rings */}
-            {[0, 1, 2].map((i) => (
-              <motion.div
-                key={i}
-                className="absolute rounded-full border pointer-events-none"
-                style={{ borderColor: "rgba(0,240,180,.08)", left: "50%", top: "50%" }}
-                animate={{
-                  width: [0, 260],
-                  height: [0, 260],
-                  x: [0, -130],
-                  y: [0, -130],
-                  opacity: [0.5, 0],
-                }}
-                transition={{ duration: 3, delay: i * 1, repeat: Infinity, ease: "easeOut" }}
-              />
-            ))}
-
-            {/* Center dot */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div
-                className="w-4 h-4 rounded-full"
-                style={{
-                  background:
-                    "radial-gradient(circle, rgba(232,160,32,.8) 0%, rgba(232,160,32,.2) 50%, transparent 70%)",
-                  boxShadow: "0 0 20px rgba(232,160,32,.5), 0 0 40px rgba(232,160,32,.2)",
-                }}
-              />
-            </div>
-
-            {/* Floating chips */}
-            {CHIPS.map((c, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, x: c.x }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.6, delay: c.delay }}
-                className={`absolute ${c.pos} backdrop-blur-md border rounded-[2px] px-2.5 py-1.5`}
-                style={{
-                  borderColor: `${c.color}40`,
-                  background: "rgba(3,3,10,.7)",
-                }}
-              >
-                <div
-                  className="font-mono text-[.48rem] tracking-[.14em]"
-                  style={{ color: c.color }}
-                >
-                  {c.label}
-                </div>
-                <div className="font-heading text-[.85rem]" style={{ color: "rgba(255,255,255,.9)" }}>
-                  {c.value}
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
+      {/* Live badge */}
+      <div
+        className="absolute top-5 right-1/2 translate-x-1/2 sm:right-20 sm:translate-x-0 z-30 flex items-center gap-2 px-3 py-1.5 rounded-full border"
+        style={{ borderColor: "#00D4FF18", background: "rgba(0,0,0,0.4)" }}
+      >
+        <span
+          className="w-1.5 h-1.5 rounded-full"
+          style={{ background: "#ff3344", boxShadow: "0 0 8px #ff3344", animation: "lhBlink 1.2s ease-in-out infinite" }}
+        />
+        <span style={{ color: "#00D4FF33", fontSize: 9, letterSpacing: "0.3em" }}>SISTEMA AO VIVO</span>
       </div>
 
-      {/* Scroll indicator */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.8, delay: 2.5 }}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
+      {/* PHASE 1-4: Opening lines */}
+      {phase < 5 && (
+        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-6 px-4 text-center">
+          {[
+            { txt: "Você treinou.",        show: phase >= 1, gold: false },
+            { txt: "Você se alimentou.",   show: phase >= 2, gold: false },
+            { txt: "Você descansou.",      show: phase >= 3, gold: false },
+            { txt: "E mesmo assim parou.", show: phase >= 4, gold: true  },
+          ].map((l, i) => (
+            <div
+              key={i}
+              style={{
+                opacity: l.show ? 1 : 0,
+                filter: l.show ? "blur(0)" : "blur(12px)",
+                transform: l.show ? "translateY(0)" : "translateY(6px)",
+                transition: "opacity .6s ease, filter .6s ease, transform .6s ease",
+                color: l.gold ? GOLD : TEXT,
+                fontSize: l.gold ? 16 : 14,
+                letterSpacing: "0.28em",
+                textTransform: "uppercase",
+              }}
+            >
+              {l.txt}
+              {l.gold && l.show && (
+                <span style={{ display: "inline-block", width: 8, height: 16, marginLeft: 6, background: GOLD, verticalAlign: "middle", animation: "lhBlink 0.9s steps(2) infinite" }} />
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* PHASE 5+: Jarvis system */}
+      <div
+        className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none"
+        style={{
+          opacity: phase >= 5 ? 1 : 0,
+          transition: "opacity .8s ease",
+        }}
       >
-        <motion.div
-          animate={{ y: [0, 7, 0] }}
-          transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
-          className="flex flex-col items-center gap-2"
-        >
-          <span
-            className="font-mono text-[.52rem] tracking-[.3em]"
-            style={{ color: "#30305a" }}
-          >
-            SCROLL
-          </span>
+        {/* Orbital rings */}
+        <div className="relative" style={{ width: "min(86vmin, 720px)", height: "min(86vmin, 720px)" }}>
+          {[
+            { size: 100, speed: 38, dir: 1,  c: GOLD, d: "4 6" },
+            { size: 82,  speed: 28, dir: -1, c: CYAN, d: "2 5" },
+            { size: 64,  speed: 22, dir: 1,  c: GOLD, d: "6 4" },
+            { size: 48,  speed: 18, dir: -1, c: CYAN, d: "1 4" },
+            { size: 32,  speed: 14, dir: 1,  c: GOLD, d: "3 3" },
+          ].map((r, i) => (
+            <svg
+              key={i}
+              className="absolute inset-0 m-auto"
+              style={{
+                width: `${r.size}%`, height: `${r.size}%`, top: 0, bottom: 0, left: 0, right: 0,
+                animation: `lhSpin ${r.speed}s linear infinite ${r.dir < 0 ? "reverse" : ""}`,
+              }}
+              viewBox="0 0 100 100"
+            >
+              <circle cx="50" cy="50" r="48" fill="none" stroke={r.c} strokeOpacity="0.45" strokeWidth="0.4" strokeDasharray={r.d} />
+            </svg>
+          ))}
+
+          {/* 3D sphere ellipses */}
+          {[
+            { rx: 48, ry: 14, rot: 0 },
+            { rx: 48, ry: 14, rot: 60 },
+            { rx: 48, ry: 14, rot: 120 },
+          ].map((e, i) => (
+            <svg key={i} className="absolute inset-0" viewBox="0 0 100 100">
+              <ellipse cx="50" cy="50" rx={e.rx} ry={e.ry} fill="none" stroke={GOLD} strokeOpacity="0.25" strokeWidth="0.3" transform={`rotate(${e.rot} 50 50)`} />
+            </svg>
+          ))}
+
+          {/* Radar sweep */}
           <div
-            className="w-px h-10"
-            style={{ background: "linear-gradient(to bottom, rgba(232,160,32,.5), transparent)" }}
+            className="absolute inset-0"
+            style={{
+              borderRadius: "50%",
+              background: `conic-gradient(from 0deg, rgba(0,212,255,0) 0deg, rgba(0,212,255,0) 320deg, rgba(0,212,255,0.35) 358deg, rgba(0,212,255,0) 360deg)`,
+              animation: "lhSpin 4s linear infinite",
+              maskImage: "radial-gradient(circle, black 48%, transparent 50%)",
+              WebkitMaskImage: "radial-gradient(circle, black 48%, transparent 50%)",
+            }}
           />
-        </motion.div>
-      </motion.div>
+
+          {/* 24 radial lines */}
+          <svg className="absolute inset-0" viewBox="0 0 100 100">
+            {Array.from({ length: 24 }).map((_, i) => {
+              const ang = (Math.PI * 2 * i) / 24;
+              const x = 50 + Math.cos(ang) * 48;
+              const y = 50 + Math.sin(ang) * 48;
+              const x0 = 50 + Math.cos(ang) * 16;
+              const y0 = 50 + Math.sin(ang) * 16;
+              return (
+                <line
+                  key={i}
+                  x1={x0} y1={y0} x2={x} y2={y}
+                  stroke={i % 2 === 0 ? GOLD : CYAN}
+                  strokeOpacity="0.28"
+                  strokeWidth="0.2"
+                  style={{ animation: `lhRadialPulse 3s ease-in-out infinite ${(i * 0.08).toFixed(2)}s` }}
+                />
+              );
+            })}
+          </svg>
+
+          {/* Connections center → nodes */}
+          <svg className="absolute inset-0" viewBox="0 0 100 100">
+            {NODES.map((n, i) => (
+              <g key={n.id}>
+                <line
+                  x1="50" y1="50" x2={n.x} y2={n.y}
+                  stroke={CYAN} strokeOpacity="0.35"
+                  strokeWidth="0.25" strokeDasharray="1.2 1.2"
+                  style={{ opacity: phase >= 7 ? 1 : 0, transition: `opacity .6s ease ${i * 0.08}s` }}
+                />
+                <circle r="0.9" fill={CYAN} style={{ opacity: phase >= 7 ? 1 : 0 }}>
+                  <animateMotion dur={`${2.4 + i * 0.2}s`} repeatCount="indefinite" path={`M 50 50 L ${n.x} ${n.y}`} />
+                </circle>
+              </g>
+            ))}
+          </svg>
+
+          {/* Orbital nodes */}
+          {NODES.map((n, i) => (
+            <div
+              key={n.id}
+              className="absolute"
+              style={{
+                left: `${n.x}%`, top: `${n.y}%`,
+                transform: "translate(-50%, -50%)",
+                opacity: phase >= 7 ? 1 : 0,
+                transition: `opacity .6s ease ${i * 0.1}s, transform .6s ease ${i * 0.1}s`,
+              }}
+            >
+              <div className="relative flex flex-col items-center">
+                <div
+                  className="rounded-full flex items-center justify-center"
+                  style={{
+                    width: 54, height: 54,
+                    border: `1px solid ${n.color}66`,
+                    background: "rgba(0,0,0,0.7)",
+                    boxShadow: `0 0 18px ${n.color}55`,
+                  }}
+                >
+                  <div
+                    className="absolute inset-0 rounded-full"
+                    style={{ border: `1px dashed ${n.color}55`, animation: "lhSpin 12s linear infinite" }}
+                  />
+                  <span style={{ color: n.color, fontSize: 9, fontWeight: 700, letterSpacing: "0.1em" }}>
+                    {n.label.replace("™", "")}
+                  </span>
+                </div>
+                <span className="mt-2" style={{ fontSize: 8, letterSpacing: "0.25em", color: `${n.color}cc`, textTransform: "uppercase" }}>
+                  {n.sub}
+                </span>
+              </div>
+            </div>
+          ))}
+
+          {/* Center logo */}
+          <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <div className="relative">
+              {/* Nuclear point */}
+              <div
+                className="absolute left-1/2 -translate-x-1/2"
+                style={{ top: -28 }}
+              >
+                <div className="relative" style={{ width: 12, height: 12 }}>
+                  <div className="absolute inset-0 rounded-full" style={{ background: "#fff", boxShadow: "0 0 6px #fff, 0 0 18px #fff, 0 0 40px #ffffffcc" }} />
+                </div>
+              </div>
+
+              <h1
+                style={{
+                  fontFamily: "'Rajdhani', sans-serif",
+                  fontWeight: 700,
+                  fontSize: "clamp(56px, 11vw, 112px)",
+                  lineHeight: 1,
+                  letterSpacing: "0.02em",
+                  color: TEXT,
+                  transform: phase >= 5 ? "scale(1)" : "scale(1.25)",
+                  filter: phase >= 5 ? "blur(0)" : "blur(18px)",
+                  opacity: phase >= 5 ? 1 : 0,
+                  transition: "transform 1.1s cubic-bezier(.2,.7,.2,1), filter 1.1s ease, opacity 1.1s ease",
+                  textShadow: `0 0 24px ${GOLD}55`,
+                }}
+              >
+                NUTRI<span style={{ color: GOLD }}>ON</span>
+              </h1>
+              <div
+                className="text-center mt-2"
+                style={{
+                  fontSize: 8, letterSpacing: "0.45em",
+                  color: `${TEXT}99`, textTransform: "uppercase",
+                  opacity: phase >= 5 ? 1 : 0, transition: "opacity .8s ease .3s",
+                }}
+              >
+                Sistema Integrado de Performance Humana
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* HUDs */}
+      {HUDS.map((h, i) => {
+        const visible = phase >= 6;
+        return (
+          <div
+            key={i}
+            className={`absolute ${h.pos} z-20 pointer-events-none`}
+            style={{
+              minWidth: 150,
+              opacity: visible ? 1 : 0,
+              transform: visible ? "translateY(0)" : `translateY(${h.align === "left" ? "-6px" : "6px"})`,
+              transition: `opacity .6s ease ${i * 0.08}s, transform .6s ease ${i * 0.08}s`,
+              textAlign: h.align as "left" | "right",
+            }}
+          >
+            <div style={{ fontSize: 7, letterSpacing: "0.35em", color: `${h.bar}cc` }}>{h.title}</div>
+            <div style={{ fontSize: 13, color: TEXT, marginTop: 4, fontWeight: 700 }}>
+              {"value" in h && h.value !== undefined
+                ? `${(i === 0 ? tdee : i === 1 ? kaa : h.value).toLocaleString("pt-BR")}${h.suffix ?? ""}`
+                : h.text}
+            </div>
+            <div className="mt-2 h-px w-full" style={{ background: "rgba(255,255,255,0.08)" }}>
+              <div
+                style={{
+                  height: 1, background: h.bar,
+                  width: visible ? "100%" : "0%",
+                  transition: `width 1.4s ease ${0.2 + i * 0.08}s`,
+                  boxShadow: `0 0 6px ${h.bar}`,
+                }}
+              />
+            </div>
+          </div>
+        );
+      })}
+
+      {/* Tagline */}
+      <div
+        className="absolute left-0 right-0 z-20 text-center px-4"
+        style={{
+          bottom: 68,
+          fontSize: 10,
+          letterSpacing: "0.35em",
+          color: "#B8922A55",
+          textTransform: "uppercase",
+          opacity: phase >= 8 ? 1 : 0,
+          transition: "opacity .8s ease",
+        }}
+      >
+        O mercado tem apps. Você encontrou o sistema.
+      </div>
+
+      {/* Status bar */}
+      <div
+        className="absolute left-0 right-0 z-20 flex items-center justify-center gap-2"
+        style={{
+          bottom: 38,
+          opacity: phase >= 9 ? 1 : 0,
+          transition: "opacity .8s ease",
+        }}
+      >
+        <span
+          className="w-1.5 h-1.5 rounded-full"
+          style={{ background: CYAN, boxShadow: `0 0 10px ${CYAN}`, animation: "lhBlink 1.1s ease-in-out infinite" }}
+        />
+        <span style={{ fontSize: 9, letterSpacing: "0.32em", color: `${CYAN}aa` }}>
+          DIAGNÓSTICO INICIADO — AGUARDANDO SEU PERFIL
+        </span>
+      </div>
+
+      {/* Ticker */}
+      <div
+        className="absolute left-0 right-0 bottom-0 z-20 overflow-hidden border-t"
+        style={{
+          borderColor: "#B8922A22",
+          background: "rgba(0,0,0,0.55)",
+          height: 28,
+          opacity: phase >= 9 ? 1 : 0,
+          transition: "opacity .8s ease",
+        }}
+      >
+        <div className="flex whitespace-nowrap" style={{ animation: "lhTicker 28s linear infinite" }}>
+          {Array.from({ length: 8 }).flatMap((_, k) =>
+            TICKER.map((t, i) => (
+              <span
+                key={`${k}-${i}`}
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: 12, padding: "0 22px",
+                  fontSize: 10, letterSpacing: "0.32em",
+                  color: i % 2 === 0 ? GOLD : CYAN,
+                  lineHeight: "28px",
+                }}
+              >
+                <span style={{ width: 4, height: 4, borderRadius: 999, background: "currentColor" }} />
+                {t.toUpperCase()}
+              </span>
+            ))
+          )}
+        </div>
+      </div>
+
+      <style>{`
+        @keyframes lhPulse { 0%,100% { opacity: 0.4 } 50% { opacity: 1 } }
+        @keyframes lhBlink { 0%,100% { opacity: 1 } 50% { opacity: 0.2 } }
+        @keyframes lhSpin { from { transform: rotate(0) } to { transform: rotate(360deg) } }
+        @keyframes lhRadialPulse { 0%,100% { stroke-opacity: 0.1 } 50% { stroke-opacity: 0.55 } }
+        @keyframes lhTicker { from { transform: translateX(0) } to { transform: translateX(-50%) } }
+      `}</style>
     </section>
   );
 };
