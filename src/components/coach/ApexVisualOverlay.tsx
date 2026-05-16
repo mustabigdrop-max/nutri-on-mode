@@ -410,10 +410,20 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
       </div>
 
       {/* Counter strip */}
-      <div className="flex items-center gap-3 text-[11px] font-mono">
+      <div className="flex items-center gap-3 text-[11px] font-mono flex-wrap">
         <span style={{ color: C.red }}>● {counts.sev} críticos</span>
         <span style={{ color: C.yellow }}>● {counts.alt} limítrofes</span>
         <span style={{ color: C.green }}>● {counts.ok} normais</span>
+        {phaseInfo && (
+          <span
+            className="ml-auto inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-bold"
+            style={{ borderColor: `${phaseInfo.color}66`, color: phaseInfo.color, background: phaseInfo.bg }}
+            title={`Análise contextualizada para fase ${phaseInfo.label}${cycleDay ? ` (dia ${cycleDay})` : ""}${feminineCategory ? ` · ${feminineCategory}` : ""}`}
+          >
+            {phaseInfo.emoji} {phaseInfo.label}{cycleDay ? ` · d${cycleDay}` : ""}
+            {feminineCategory ? ` · ${feminineCategory}` : ""}
+          </span>
+        )}
       </div>
 
       {/* Main grid */}
