@@ -20,6 +20,12 @@ interface ExtractedMeal {
   feedback: string;
 }
 
+type NutritionRecord = Record<string, unknown>;
+
+const asNutritionRecord = (value: unknown): NutritionRecord | null => {
+  return typeof value === "object" && value !== null && !Array.isArray(value) ? value as NutritionRecord : null;
+};
+
 const parseNutritionNumber = (value: unknown): number => {
   if (typeof value === "number") return Number.isFinite(value) ? value : 0;
   if (typeof value === "string") {
@@ -29,10 +35,10 @@ const parseNutritionNumber = (value: unknown): number => {
   return 0;
 };
 
-const readNutritionValue = (food: Record<string, any>, keys: string[]) => {
-  const pools = [food, food.macros, food.nutrition, food.nutritional_values, food.valores_nutricionais];
+const readNutritionValue = (food: NutritionRecord, keys: string[]) => {
+  const pools = [food, asNutritionRecord(food.macros), asNutritionRecord(food.nutrition), asNutritionRecord(food.nutritional_values), asNutritionRecord(food.valores_nutricionais)];
   for (const pool of pools) {
-    if (!pool || typeof pool !== "object") continue;
+    if (!pool) continue;
     for (const key of keys) {
       if (pool[key] !== undefined && pool[key] !== null) return parseNutritionNumber(pool[key]);
     }
@@ -67,10 +73,10 @@ const FirstMealScreen = () => {
 
       const foods = data?.foods || [];
       const totals = {
-        total_kcal: foods.reduce((s: number, f: any) => s + readNutritionValue(f, ["kcal", "calories", "calorias", "energia_kcal", "energy_kcal"]), 0),
-        total_protein: foods.reduce((s: number, f: any) => s + readNutritionValue(f, ["protein", "proteins", "protein_g", "proteina", "proteína", "proteina_g"]), 0),
-        total_carbs: foods.reduce((s: number, f: any) => s + readNutritionValue(f, ["carbs", "carb", "carbohydrates", "carbohydrate", "carbs_g", "carboidratos", "carboidrato", "carboidratos_g"]), 0),
-        total_fat: foods.reduce((s: number, f: any) => s + readNutritionValue(f, ["fat", "fats", "fat_g", "gordura", "gorduras", "gordura_g", "lipidios", "lipídios"]), 0),
+        total_kcal: foods.reduce((s: number, f: NutritionRecord) => s + readNutritionValue(f, ["kcal", "calories", "calorias", "energia_kcal", "energy_kcal"]), 0),
+        total_protein: foods.reduce((s: number, f: NutritionRecord) => s + readNutritionValue(f, ["protein", "proteins", "protein_g", "proteina", "proteína", "proteina_g"]), 0),
+        total_carbs: foods.reduce((s: number, f: NutritionRecord) => s + readNutritionValue(f, ["carbs", "carb", "carbohydrates", "carbohydrate", "carbs_g", "carboidratos", "carboidrato", "carboidratos_g"]), 0),
+        total_fat: foods.reduce((s: number, f: NutritionRecord) => s + readNutritionValue(f, ["fat", "fats", "fat_g", "gordura", "gorduras", "gordura_g", "lipidios", "lipídios"]), 0),
       };
 
       // Save meal log
