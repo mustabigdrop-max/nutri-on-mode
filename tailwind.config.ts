@@ -14,8 +14,11 @@ export default {
     },
     extend: {
       fontFamily: {
-        display: ["Space Grotesk", "sans-serif"],
-        mono: ["JetBrains Mono", "monospace"],
+        display: ["Rajdhani", "sans-serif"],
+        heading: ["Rajdhani", "sans-serif"],
+        jarvis: ["Rajdhani", "sans-serif"],
+        tech: ["Space Mono", "monospace"],
+        mono: ["Space Mono", "monospace"],
         body: ["Space Grotesk", "sans-serif"],
       },
       colors: {
