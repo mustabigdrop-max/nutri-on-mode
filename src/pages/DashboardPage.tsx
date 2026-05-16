@@ -11,6 +11,7 @@ import { useWaterLogs } from "@/hooks/useWaterLogs";
 import { usePlanGate } from "@/hooks/usePlanGate";
 import { useWorkoutSchedule, getWorkoutAdjustment, combineAdjustments, WORKOUT_TYPES, type WorkoutType } from "@/hooks/useWorkoutSchedule";
 import TrialBanner from "@/components/dashboard/TrialBanner";
+import JarvisBackdrop from "@/components/dashboard/JarvisBackdrop";
 import CoachNotificationsCard from "@/components/dashboard/CoachNotificationsCard";
 import AthleteCompetitionCard from "@/components/dashboard/AthleteCompetitionCard";
 import CoachCompetitionShortcut from "@/components/dashboard/CoachCompetitionShortcut";
