@@ -122,13 +122,14 @@ const CoachPatientDetailPage = () => {
   const loadPatientData = async () => {
     if (!profile || !patientId) return;
 
-    const [profileRes, scoresRes, alertsRes, messagesRes, mealsRes, examsRes] = await Promise.all([
+    const [profileRes, scoresRes, alertsRes, messagesRes, mealsRes, examsRes, femRes] = await Promise.all([
       supabase.from("profiles").select("*").eq("user_id", patientId).maybeSingle(),
       supabase.from("consistency_scores").select("*").eq("user_id", patientId).order("created_at", { ascending: false }).limit(30),
       supabase.from("coach_alerts").select("*").eq("coach_id", profile.id).eq("patient_user_id", patientId).order("created_at", { ascending: false }),
       supabase.from("coach_messages").select("*").eq("coach_id", profile.id).eq("patient_user_id", patientId).order("created_at", { ascending: true }),
       supabase.from("meal_logs").select("*").eq("user_id", patientId).order("created_at", { ascending: false }).limit(14),
       supabase.from("blood_tests").select("*").eq("user_id", patientId).order("created_at", { ascending: false }),
+      supabase.from("feminine_profiles" as any).select("ultima_menstruacao,duracao_ciclo,fase_ciclo").eq("user_id", patientId).maybeSingle(),
     ]);
 
     setPatient(profileRes.data);
@@ -137,6 +138,7 @@ const CoachPatientDetailPage = () => {
     setMessages(messagesRes.data || []);
     setMealLogs(mealsRes.data || []);
     setExams(examsRes.data || []);
+    setFeminineProfile((femRes as any)?.data || null);
     setLoading(false);
     loadCompetitionPlans();
   };
