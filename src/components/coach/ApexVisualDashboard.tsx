@@ -1426,8 +1426,8 @@ Suporte em uso: ${suporte || "não informado"}` : "";
           onClick={() => navigate("/coach")}
           className="absolute top-4 right-4 inline-flex items-center gap-1.5 px-3 py-1.5 rounded border transition-all hover:brightness-110"
           style={{
-            borderColor: `${C.gold}44`,
-            color: C.gold,
+            borderColor: `${APEX.gold}44`,
+            color: APEX.gold,
             fontFamily: "'Space Mono', monospace",
             fontSize: 10,
             fontWeight: 700,
@@ -1436,11 +1436,11 @@ Suporte em uso: ${suporte || "não informado"}` : "";
             background: "transparent",
           }}
           onMouseEnter={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.borderColor = `${C.gold}88`;
-            (e.currentTarget as HTMLButtonElement).style.boxShadow = `0 0 12px ${C.gold}22`;
+            (e.currentTarget as HTMLButtonElement).style.borderColor = `${APEX.gold}88`;
+            (e.currentTarget as HTMLButtonElement).style.boxShadow = `0 0 12px ${APEX.gold}22`;
           }}
           onMouseLeave={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.borderColor = `${C.gold}44`;
+            (e.currentTarget as HTMLButtonElement).style.borderColor = `${APEX.gold}44`;
             (e.currentTarget as HTMLButtonElement).style.boxShadow = "none";
           }}
         >
