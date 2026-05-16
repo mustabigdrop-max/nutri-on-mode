@@ -1474,6 +1474,9 @@ Suporte em uso: ${suporte || "não informado"}` : "";
           <span style={labelStyle}>Atleta em Análise</span>
         </div>
         <AthleteSelector value={athlete?.id ?? null} onChange={setAthlete} />
+        {isFemAthlete && (
+          <FeminineCyclePhaseBanner phase={cyclePhase as any} cycleDay={cycleDay} />
+        )}
       </div>
 
       {/* ━━━ MODE TOGGLE: Análise IA vs Evolução Fotográfica ━━━ */}
