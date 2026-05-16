@@ -20,6 +20,26 @@ interface ExtractedMeal {
   feedback: string;
 }
 
+const parseNutritionNumber = (value: unknown): number => {
+  if (typeof value === "number") return Number.isFinite(value) ? value : 0;
+  if (typeof value === "string") {
+    const match = value.replace(",", ".").match(/-?\d+(\.\d+)?/);
+    return match ? Number(match[0]) : 0;
+  }
+  return 0;
+};
+
+const readNutritionValue = (food: Record<string, any>, keys: string[]) => {
+  const pools = [food, food.macros, food.nutrition, food.nutritional_values, food.valores_nutricionais];
+  for (const pool of pools) {
+    if (!pool || typeof pool !== "object") continue;
+    for (const key of keys) {
+      if (pool[key] !== undefined && pool[key] !== null) return parseNutritionNumber(pool[key]);
+    }
+  }
+  return 0;
+};
+
 const FirstMealScreen = () => {
   const { user } = useAuth();
   const { profile, updateProfile } = useProfile();
@@ -47,10 +67,10 @@ const FirstMealScreen = () => {
 
       const foods = data?.foods || [];
       const totals = {
-        total_kcal: foods.reduce((s: number, f: any) => s + (f.kcal || 0), 0),
-        total_protein: foods.reduce((s: number, f: any) => s + (f.protein || 0), 0),
-        total_carbs: foods.reduce((s: number, f: any) => s + (f.carbs || 0), 0),
-        total_fat: foods.reduce((s: number, f: any) => s + (f.fat || 0), 0),
+        total_kcal: foods.reduce((s: number, f: any) => s + readNutritionValue(f, ["kcal", "calories", "calorias", "energia_kcal", "energy_kcal"]), 0),
+        total_protein: foods.reduce((s: number, f: any) => s + readNutritionValue(f, ["protein", "proteins", "protein_g", "proteina", "proteína", "proteina_g"]), 0),
+        total_carbs: foods.reduce((s: number, f: any) => s + readNutritionValue(f, ["carbs", "carb", "carbohydrates", "carbohydrate", "carbs_g", "carboidratos", "carboidrato", "carboidratos_g"]), 0),
+        total_fat: foods.reduce((s: number, f: any) => s + readNutritionValue(f, ["fat", "fats", "fat_g", "gordura", "gorduras", "gordura_g", "lipidios", "lipídios"]), 0),
       };
 
       // Save meal log
