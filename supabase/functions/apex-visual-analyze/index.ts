@@ -115,9 +115,22 @@ serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
+    const systemFinal = (system || DEFAULT_SYSTEM) + LANDMARK_INSTRUCTIONS;
+
+    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
         model: "google/gemini-2.5-pro",
         messages: [
-          { role: "system", content: system || DEFAULT_SYSTEM },
+          { role: "system", content: systemFinal },
+          { role: "user", content: userContent },
+        ],
+      }),
+    });
           { role: "user", content: userContent },
         ],
       }),
