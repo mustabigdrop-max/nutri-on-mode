@@ -1684,6 +1684,24 @@ function ExerciseCard({
           </div>
         </div>
         <div className="flex items-center gap-1.5">
+          {currentExercise.apex_risk && currentExercise.apex_risk.level && (() => {
+            const lvl = currentExercise.apex_risk.level as "green" | "yellow" | "red";
+            const cfg = lvl === "green"
+              ? { dot: "#22c55e", bg: "rgba(34,197,94,.12)", color: "#22c55e", label: "APEX OK" }
+              : lvl === "yellow"
+              ? { dot: "#fbbf24", bg: "rgba(251,191,36,.12)", color: "#fbbf24", label: "APEX ATENÇÃO" }
+              : { dot: "#ef4444", bg: "rgba(239,68,68,.12)", color: "#ef4444", label: "APEX CONTRAINDICADO" };
+            const reason = currentExercise.apex_risk.reason || "";
+            return (
+              <span title={reason || cfg.label}
+                className="text-[8px] px-1.5 py-0.5 rounded-full font-bold flex items-center gap-1 cursor-help"
+                style={{ background: cfg.bg, color: cfg.color }}
+                onClick={(e) => { e.stopPropagation(); if (reason) toast.info(`${cfg.label}: ${reason}`, { duration: 6000 }); }}>
+                <span className="w-1.5 h-1.5 rounded-full" style={{ background: cfg.dot }} />
+                {cfg.label}
+              </span>
+            );
+          })()}
           {hasTopSet && <span className="text-[8px] px-1.5 py-0.5 rounded-full font-bold" style={{ background: "rgba(249,115,22,0.12)", color: "#f97316" }}>TOP SET</span>}
           {substitutes.length > 0 && (
             <button onClick={(e) => { e.stopPropagation(); setShowSubs(!showSubs); }}
