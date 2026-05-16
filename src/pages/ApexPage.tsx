@@ -749,6 +749,7 @@ const ApexPage = () => {
             {activeTab === "mobilidade" && <MobilidadeTab value={rom} onChange={setRom} />}
             {activeTab === "shape" && <ShapeTab value={muscles} onChange={setMuscles} />}
             {activeTab === "protocolo" && <ProtocoloTab posture={posture} fms={fms} pain={activePain} />}
+            {activeTab === "phd" && <ApexPhdAnalysis posture={posture} fms={fms} rom={rom} muscles={muscles} pain={activePain} />}
           </motion.div>
         </AnimatePresence>
       </div>
