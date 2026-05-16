@@ -4621,7 +4621,7 @@ export default function PlanoAlimentarIA() {
             </div>
           )}
 
-          <button onClick={() => navigate("/coach-dashboard")} style={{ width: "100%", padding: 14, borderRadius: 10, background: T.bg3, border: `1px solid ${T.border2}`, color: T.muted, fontSize: 13, cursor: "pointer", fontFamily: "inherit", marginTop: 16 }}>
+          <button onClick={() => navigate("/coach/dashboard")} style={{ width: "100%", padding: 14, borderRadius: 10, background: T.bg3, border: `1px solid ${T.border2}`, color: T.muted, fontSize: 13, cursor: "pointer", fontFamily: "inherit", marginTop: 16 }}>
             ← Voltar ao Dashboard
           </button>
         </div>
@@ -4649,7 +4649,7 @@ export default function PlanoAlimentarIA() {
 
       {/* Top bar */}
       <div style={{ padding: "16px 24px", borderBottom: `1px solid ${T.border}`, display: "flex", alignItems: "center", gap: 16, background: T.bg2 }}>
-        <button onClick={() => navigate("/coach-dashboard")} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}>
+        <button onClick={() => navigate("/coach/dashboard")} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={T.muted} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M19 12H5M12 19l-7-7 7-7" />
           </svg>
