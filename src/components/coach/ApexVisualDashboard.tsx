@@ -372,6 +372,8 @@ const parseFarmMeta = (text: string) => ({
   choEstrategia: text.match(/CHO_ESTRATEGIA:\s*([^\n]+)/i)?.[1]?.trim(),
   gestaoE2: text.match(/GESTAO_E2:\s*([^\n]+)/i)?.[1]?.trim(),
   alertaCardio: text.match(/ALERTA_CARDIO:\s*([^\n]+)/i)?.[1]?.trim(),
+  classificacao: text.match(/CLASSIFICACAO_PROTOCOLO:\s*([^\n]+)/i)?.[1]?.trim(),
+  scoreOtim: text.match(/SCORE_OTIMIZACAO:\s*([\d.]+\s*\/\s*10|[\d.]+)/i)?.[1]?.trim(),
 });
 
 // ─── Parsers ─────────────────────────────────────────────────────
