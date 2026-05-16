@@ -291,6 +291,9 @@ const LabCoachPlanner = ({ onAskApex }: { onAskApex: (q: string) => void }) => {
           // ── Coach ──
           coachNotes,
           weekStart,
+
+          // ── Feminino ──
+          ...(fem.isF ? { modo_especial: "feminino", fase_ciclo: fem.fase_ciclo || "folicular" } : {}),
         },
       });
 
