@@ -226,12 +226,19 @@ export default function CorrectivePlanViewer({
 
       {tab === "semana" && (
         <div className="space-y-4">
-          {days.length === 0 && (
-            <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 text-xs text-amber-100/90">
-              <div className="font-bold text-amber-400 mb-1">Sem dias detectados na estrutura padrão.</div>
-              Abra a aba <span className="font-semibold">"📄 Recomendações (texto completo)"</span> para ler tudo
-              que a IA retornou e usar como base para montar o treino no TrainingON e o plano alimentar
-              manualmente.
+          {days.length === 0 && (parsed.semanaRaw || text) && (
+            <>
+              <div className="rounded-lg border border-blue-500/30 bg-blue-500/5 p-3 text-[11px] text-blue-100/90">
+                Conteúdo retornado pela IA sem estrutura padrão de dias — exibindo na íntegra.
+              </div>
+              <pre className="text-xs whitespace-pre-wrap font-mono text-foreground/90 p-3 rounded-lg border border-border bg-card/60">
+                {parsed.semanaRaw || text}
+              </pre>
+            </>
+          )}
+          {days.length === 0 && !parsed.semanaRaw && !text && (
+            <div className="text-xs italic text-muted-foreground p-4 text-center">
+              A IA não retornou conteúdo para esta seção.
             </div>
           )}
           {days.map((d, i) => {
