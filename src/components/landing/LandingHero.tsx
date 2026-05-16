@@ -404,8 +404,8 @@ const LandingHero = () => {
           ))}
 
           {/* Center logo */}
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <div className="relative">
+          <div className="absolute inset-0 flex flex-col items-center justify-center px-4">
+            <div className="relative text-center">
               {/* Nuclear point */}
               <div
                 className="absolute left-1/2 -translate-x-1/2"
@@ -420,10 +420,13 @@ const LandingHero = () => {
                 style={{
                   fontFamily: "'Rajdhani', sans-serif",
                   fontWeight: 700,
-                  fontSize: "clamp(56px, 11vw, 112px)",
+                  fontSize: "clamp(48px, 11vw, 112px)",
                   lineHeight: 1,
                   letterSpacing: "0.02em",
                   color: TEXT,
+                  textAlign: "center",
+                  whiteSpace: "nowrap",
+                  margin: "0 auto",
                   transform: phase >= 5 ? "scale(1)" : "scale(1.25)",
                   filter: phase >= 5 ? "blur(0)" : "blur(18px)",
                   opacity: phase >= 5 ? 1 : 0,
