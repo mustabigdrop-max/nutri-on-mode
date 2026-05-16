@@ -17,7 +17,7 @@ const PANEL = "rgba(6,16,8,.9)";
 const MUTED = "#5a7a60";
 const TEXT = "#9ec5a6";
 
-type Tab = "overview" | "postura" | "fms" | "dor" | "mobilidade" | "shape" | "protocolo";
+type Tab = "overview" | "postura" | "fms" | "dor" | "mobilidade" | "shape" | "protocolo" | "phd";
 
 const TABS: [Tab, string][] = [
   ["overview", "Overview"],
@@ -27,6 +27,7 @@ const TABS: [Tab, string][] = [
   ["mobilidade", "Mobilidade"],
   ["shape", "Shape"],
   ["protocolo", "Protocolo"],
+  ["phd", "PhD ▸ IA"],
 ];
 
 // ─── DATA TABLES ──────────────────────────────────────────────────────────
