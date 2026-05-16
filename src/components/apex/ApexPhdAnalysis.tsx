@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import ReactMarkdown from "react-markdown";
+import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, Tooltip } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
 import {
   calcFmsTotal, calcPostureScore, calcRomScore, calcSymmetryScore,
@@ -12,56 +13,77 @@ const PANEL = "rgba(6,16,8,.9)";
 const MUTED = "#5a7a60";
 const TEXT = "#9ec5a6";
 
-const PHD_SYSTEM = `Você é o APEX Visual Intelligence PhD — o sistema de diagnóstico físico mais avançado do mercado brasileiro. Você integra cinesiologia clínica (Kendall, Sahrmann), avaliação funcional do movimento (FMS/SFMA de Gray Cook), mapeamento de desequilíbrios musculares (sistema de Janda), pain science, biomecânica de exercício, bodybuilding kinesiology e protocolo corretivo NASM CES.
+// ─── DETECÇÃO DE SÍNDROMES (Janda) ────────────────────────────────────────
+type Syndrome = { id: string; name: string; shortened: string[]; inhibited: string[] };
+const detectSyndromes = (p: PostureData): Syndrome[] => {
+  const out: Syndrome[] = [];
+  const has = (v: string) => v === "mild" || v === "moderate" || v === "severe";
+  if (has(p.upper_crossed) || (has(p.forward_head) && p.thoracic_kyphosis === "increased")) {
+    out.push({ id: "scs", name: "Síndrome Cruzada Superior",
+      shortened: ["Trapézio superior", "Peitoral maior/menor", "ECOM", "Elevador escápula"],
+      inhibited: ["Flexores cervicais profundos", "Serrátil anterior", "Trapézio médio/inferior", "Romboides"] });
+  }
+  if (has(p.lower_crossed) || (p.pelvic_tilt === "anterior" && p.lumbar_lordosis === "increased")) {
+    out.push({ id: "sci", name: "Síndrome Cruzada Inferior",
+      shortened: ["Iliopsoas", "Reto femoral", "TFL", "Eretores lombares"],
+      inhibited: ["Glúteo máximo", "Abdominais profundos", "Glúteo médio", "VMO"] });
+  }
+  if (has(p.pronation_dist)) {
+    out.push({ id: "spd", name: "Distorção de Pronação",
+      shortened: ["Gastrocnêmio/Sóleo", "Adutores", "TFL"],
+      inhibited: ["Tibial anterior/posterior", "Glúteo médio", "Glúteo máximo"] });
+  }
+  return out;
+};
 
-Sua análise é equivalente a uma avaliação presencial de 3 horas com um doutor em cinesiologia e fisioterapeuta esportivo. Cada palavra do output é baseada nas fotos fornecidas, nos dados do formulário e em evidência científica aplicada ao esporte de alto rendimento. Você nunca dá respostas genéricas.
+// ─── PROMPT PhD ───────────────────────────────────────────────────────────
+const PHD_SYSTEM = `Você é o APEX Visual Intelligence PhD — sistema de diagnóstico físico mais avançado do mercado brasileiro. Integra cinesiologia clínica (Kendall, Sahrmann), FMS/SFMA (Gray Cook), Janda, pain science, biomecânica, bodybuilding kinesiology e NASM CES.
 
-GERE O OUTPUT COMPLETO NAS SEGUINTES SEÇÕES OBRIGATÓRIAS:
+Sua análise equivale a avaliação presencial de 3h com PhD em cinesiologia e fisioterapeuta esportivo. Cada palavra baseada em dados e evidência. Nunca genérico.
+
+GERE OUTPUT COMPLETO COM SEÇÕES OBRIGATÓRIAS:
 
 ## DIAGNÓSTICO CINESIOLÓGICO PRIMÁRIO
-- Nome clínico da(s) síndrome(s) identificada(s) (Janda: SCS, SCI, Distorção de Pronação ou combinações)
-- Descrição mecanicista de como a síndrome se formou e padrões de treino que perpetuaram
-- Cadeia cinética completa afetada segmento por segmento
-- Severidade global: Grau I/II/III com critérios objetivos
-- Correlação com score FMS (interpretar testes de menor pontuação como evidência)
+Síndromes Janda · mecanismo de formação · cadeia cinética segmento a segmento · severidade Grau I/II/III · correlação com FMS
 
 ## MAPA MUSCULAR COMPLETO
-Tabela com mínimo 12 músculos | Estado (Dominante/Encurtado/Inibido/Alongado) | Impacto Funcional | Impacto Visual no Palco | Prioridade
+Tabela mínimo 12 músculos | Estado (Dominante/Encurtado/Inibido/Alongado) | Impacto Funcional | Impacto Visual Palco | Prioridade
 
 ## ANÁLISE BIOMECÂNICA POR SEGMENTO
-Para cada segmento disfuncional: desvio, dominante, inibido, padrão de compensação, exercícios CONTRAINDICADOS com justificativa, estruturas em risco, ROM comprometido vs norma AAOS
+Para cada segmento: desvio, dominante, inibido, compensação, exercícios CONTRAINDICADOS com justificativa, estruturas em risco, ROM vs AAOS
 
 ## ANÁLISE DE PALCO — POSE A POSE
-Para cada pose padrão da categoria: impacto do desvio, compensação visual, cueing exato, score antes/depois
+Para cada pose da categoria: impacto do desvio, compensação visual, cueing exato, score antes/depois
 
 ## MAPA DE DOR INTERPRETADO
-Correlacionar com dor referida (Travell), classificar (local/referida/irradiada/radiculopática), músculo gatilho provável, exercícios que agravam, red flags, manejo integrado
+Correlação Travell · classificação · músculo gatilho · exercícios que agravam · red flags · manejo integrado
 
 ## PROTOCOLO CORRETIVO EM 4 FASES (NASM CES)
-FASE 1 INIBIÇÃO (5-10min) · FASE 2 ALONGAMENTO (5-10min) · FASE 3 ATIVAÇÃO (5-10min) · FASE 4 INTEGRAÇÃO (durante treino)
-Cada técnica com: nome, área, duração, cue de execução, mecanismo, séries/reps quando aplicável
+FASE 1 INIBIÇÃO · FASE 2 ALONGAMENTO · FASE 3 ATIVAÇÃO · FASE 4 INTEGRAÇÃO
+Cada técnica: nome, área, duração, cue, mecanismo, séries/reps
 
 ## PROTOCOLO FARMACOLÓGICO INTEGRADO À BIOMECÂNICA
-Para cada composto: impacto no tecido conjuntivo, risco biomecânico, ajuste de treino, suplementação de suporte articular (colágeno II, glucosamina, EPA/DHA, vit C, MSM) com doses — apenas os relevantes
+Por composto: impacto tecido conjuntivo, risco biomecânico, ajuste de treino, suporte articular (colágeno II, glucosamina, EPA/DHA, vit C, MSM) com doses
 
 ## ANÁLISE DE SHAPE — BODYBUILDING KINESIOLOGY
-Lagging vs desenvolvidos, simetria E/D por grupo (alerta >15%), conexão postura-shape, padrão da categoria, Peak Week (Flat/Full/Spilled) se ≤16 semanas
+Lagging vs desenvolvidos, simetria E/D (alerta >15%), conexão postura-shape, padrão da categoria, Peak Week se ≤16 sem
 
 ## PLANO DE PERIODIZAÇÃO CORRETIVA
-Bloco 1 (sem 1-2 inibição/neuroeducação) · Bloco 2 (sem 3-6 ativação/isolamento) · Bloco 3 (sem 7+ integração/força)
-%corretivos vs hipertrofia por fase, reavaliação sem 4/8/12, KPIs (ROM, FMS, APEX, BF), sinais de alerta
+Bloco 1 (sem 1-2 inibição) · Bloco 2 (sem 3-6 ativação) · Bloco 3 (sem 7+ integração)
+%corretivos vs hipertrofia, reavaliação sem 4/8/12, KPIs (ROM, FMS, APEX, BF), sinais de alerta
 
 ## VEREDICTO APEX PHD
-Diagnóstico formal · Síndromes Janda + grau · Fator limitante primário · Conexões dor+postura+shape+farmacologia · Potencial de melhora % · Prognóstico timeline · Mensagem direta ao atleta
+Diagnóstico formal · síndromes Janda + grau · fator limitante primário · conexões dor+postura+shape+farmacologia · potencial % · prognóstico · mensagem direta
 
 REGRAS:
-- Nunca genérico — sempre nomenclatura anatômica completa
-- Toda recomendação com justificativa biomecânica/fisiológica
-- Citar mecanismos: inibição recíproca, lei de Sherrington, padrão de Janda, princípio SAID, teoria de pontos-gatilho de Travell
+- Nomenclatura anatômica completa sempre
+- Justificativa biomecânica/fisiológica para tudo
+- Cite mecanismos: inibição recíproca, lei de Sherrington, padrão de Janda, princípio SAID, pontos-gatilho de Travell
 - Mínimo 2000 palavras
-- Tom: especialista PhD de elite — técnico, direto, orientado a resultado, sem condescendência
-- Use markdown completo com headings ## e ###, tabelas e listas`;
+- Tom: PhD de elite — técnico, direto, sem condescendência
+- Markdown completo com ##, ###, tabelas, listas`;
 
+// ─── HELPERS ──────────────────────────────────────────────────────────────
 const fileToBase64 = (file: File): Promise<{ data: string; mime: string }> =>
   new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -75,6 +97,46 @@ const fileToBase64 = (file: File): Promise<{ data: string; mime: string }> =>
     reader.readAsDataURL(file);
   });
 
+const FMS_TEST_LABELS: Record<keyof FMSScores, string> = {
+  deep_squat: "Deep Squat", hurdle_step_l: "Hurdle Step E", hurdle_step_r: "Hurdle Step D",
+  inline_lunge_l: "Inline Lunge E", inline_lunge_r: "Inline Lunge D",
+  shoulder_mob_l: "Shoulder Mob E", shoulder_mob_r: "Shoulder Mob D",
+  active_slr_l: "Active SLR E", active_slr_r: "Active SLR D",
+  trunk_stability: "Trunk Stab Push-up", rotary_stab_l: "Rotary Stab E", rotary_stab_r: "Rotary Stab D",
+};
+
+const FMS_CLINICAL_NOTE: Record<keyof FMSScores, string> = {
+  deep_squat: "Mobilidade bilateral MMSS+MMII e estabilidade central — score baixo sugere encurtamento de cadeia posterior, dorsiflexão limitada ou peitoral curto.",
+  hurdle_step_l: "Estabilidade unipodal — score baixo aponta glúteo médio inibido e/ou padrão de Trendelenburg (lado avaliado).",
+  hurdle_step_r: "Estabilidade unipodal — score baixo aponta glúteo médio inibido e/ou padrão de Trendelenburg (lado avaliado).",
+  inline_lunge_l: "Mobilidade torácica, hip e tornozelo — score baixo correlaciona com SCI e dorsiflexão limitada.",
+  inline_lunge_r: "Mobilidade torácica, hip e tornozelo — score baixo correlaciona com SCI e dorsiflexão limitada.",
+  shoulder_mob_l: "Flex/RI/RE glenoumeral combinada — score baixo é marcador clássico de SCS.",
+  shoulder_mob_r: "Flex/RI/RE glenoumeral combinada — score baixo é marcador clássico de SCS.",
+  active_slr_l: "Comprimento de isquiotibiais + dissociação hip — score baixo indica isquio curto e/ou ativação pélvica deficiente.",
+  active_slr_r: "Comprimento de isquiotibiais + dissociação hip — score baixo indica isquio curto e/ou ativação pélvica deficiente.",
+  trunk_stability: "Estabilidade reflexiva sagital — score baixo aponta core fraco e risco lombar em compostos.",
+  rotary_stab_l: "Estabilidade multiplanar — score baixo é vermelho para deadlift/agachamento pesado.",
+  rotary_stab_r: "Estabilidade multiplanar — score baixo é vermelho para deadlift/agachamento pesado.",
+};
+
+const ROM_LIST: { key: keyof ROMData; label: string; normal: number; min: number }[] = [
+  { key: "ankle_df_l", label: "Tornozelo DF E", normal: 20, min: 15 },
+  { key: "ankle_df_r", label: "Tornozelo DF D", normal: 20, min: 15 },
+  { key: "hip_flex_l", label: "Quadril Flex E", normal: 120, min: 90 },
+  { key: "hip_flex_r", label: "Quadril Flex D", normal: 120, min: 90 },
+  { key: "hip_ext_l", label: "Quadril Ext E", normal: 20, min: 10 },
+  { key: "hip_ext_r", label: "Quadril Ext D", normal: 20, min: 10 },
+  { key: "hip_ir_l", label: "Quadril RI E", normal: 45, min: 30 },
+  { key: "hip_ir_r", label: "Quadril RI D", normal: 45, min: 30 },
+  { key: "shoulder_flex_l", label: "Ombro Flex E", normal: 180, min: 160 },
+  { key: "shoulder_flex_r", label: "Ombro Flex D", normal: 180, min: 160 },
+  { key: "shoulder_er_l", label: "Ombro RE E", normal: 90, min: 60 },
+  { key: "shoulder_er_r", label: "Ombro RE D", normal: 90, min: 60 },
+  { key: "thoracic_rot_l", label: "Torácica Rot E", normal: 45, min: 30 },
+  { key: "thoracic_rot_r", label: "Torácica Rot D", normal: 45, min: 30 },
+];
+
 interface Props {
   posture: PostureData;
   fms: FMSScores;
@@ -83,6 +145,160 @@ interface Props {
   pain: PainEntry[];
 }
 
+type ResultTab = "ia" | "fms" | "rom";
+
+const Panel = ({ children, title }: { children: React.ReactNode; title?: string }) => (
+  <div className="border rounded-[3px] p-4 mb-3" style={{ borderColor: BORDER, background: PANEL }}>
+    {title && <div className="font-mono text-[.55rem] tracking-[.18em] uppercase mb-3" style={{ color: EM }}>{title}</div>}
+    {children}
+  </div>
+);
+
+// ─── SUB-TAB: FMS ─────────────────────────────────────────────────────────
+const FmsResultView = ({ fms, posture }: { fms: FMSScores; posture: PostureData }) => {
+  const total = calcFmsTotal(fms);
+  const semaforo = total >= 17 ? { color: EM, label: "VERDE · pronto para carga" }
+    : total >= 14 ? { color: "#fbbf24", label: "AMARELO · cautela com compostos pesados" }
+    : { color: "#ef4444", label: "VERMELHO · risco 3× lesão (Cook 2006) — priorizar corretivos" };
+
+  const tests = (Object.keys(FMS_TEST_LABELS) as (keyof FMSScores)[])
+    .map((k) => ({ key: k, label: FMS_TEST_LABELS[k], score: fms[k] }));
+  const lowest = [...tests].sort((a, b) => a.score - b.score).slice(0, 3);
+  const syndromes = detectSyndromes(posture);
+
+  return (
+    <>
+      <Panel title="Score Total FMS">
+        <div className="flex items-baseline gap-3 mb-2">
+          <span className="font-heading text-[2rem]" style={{ color: semaforo.color }}>{total}</span>
+          <span className="font-mono text-[.65rem]" style={{ color: MUTED }}>/ 21</span>
+        </div>
+        <div className="font-mono text-[.6rem] tracking-[.1em] uppercase" style={{ color: semaforo.color }}>
+          {semaforo.label}
+        </div>
+      </Panel>
+
+      <Panel title="Score por Teste (0-3)">
+        {tests.map((t) => {
+          const color = t.score >= 3 ? EM : t.score >= 2 ? "#fbbf24" : "#ef4444";
+          return (
+            <div key={t.key} className="flex items-center gap-2 mb-1.5">
+              <span className="font-mono text-[.6rem] flex-1" style={{ color: TEXT }}>{t.label}</span>
+              <div className="flex gap-0.5">
+                {[1, 2, 3].map((n) => (
+                  <div key={n} className="w-4 h-3 rounded-[1px]"
+                    style={{ background: n <= t.score ? color : "rgba(74,222,128,.08)" }} />
+                ))}
+              </div>
+              <span className="font-mono text-[.55rem] w-4 text-right" style={{ color }}>{t.score}</span>
+            </div>
+          );
+        })}
+      </Panel>
+
+      <Panel title="Interpretação Clínica — Pontos Mais Baixos">
+        {lowest.map((t) => (
+          <div key={t.key} className="mb-2 pb-2 border-b last:border-b-0" style={{ borderColor: BORDER }}>
+            <div className="font-mono text-[.6rem] mb-0.5" style={{ color: t.score < 2 ? "#ef4444" : "#fbbf24" }}>
+              {t.label} · {t.score}/3
+            </div>
+            <div className="font-mono text-[.55rem]" style={{ color: TEXT }}>{FMS_CLINICAL_NOTE[t.key]}</div>
+          </div>
+        ))}
+      </Panel>
+
+      {syndromes.length > 0 && (
+        <Panel title="Correlação com Disfunções (Janda)">
+          {syndromes.map((s) => (
+            <div key={s.id} className="font-mono text-[.6rem] mb-1" style={{ color: TEXT }}>
+              · {s.name} → confirma achados de FMS (especialmente nos testes bilaterais e de mobilidade)
+            </div>
+          ))}
+        </Panel>
+      )}
+    </>
+  );
+};
+
+// ─── SUB-TAB: ROM ─────────────────────────────────────────────────────────
+const RomResultView = ({ rom }: { rom: ROMData }) => {
+  const radarData = useMemo(() => ROM_LIST.map((r) => {
+    const v = rom[r.key];
+    return {
+      joint: r.label,
+      atleta: v !== null ? Math.round((v / r.normal) * 100) : 0,
+      norma: 100,
+      raw: v,
+      normal: r.normal,
+      min: r.min,
+    };
+  }), [rom]);
+
+  const flagged = ROM_LIST.filter((r) => {
+    const v = rom[r.key];
+    return v !== null && v < r.min;
+  });
+
+  return (
+    <>
+      <Panel title="Radar ROM · % do Normal AAOS">
+        <div className="w-full h-72">
+          <ResponsiveContainer>
+            <RadarChart data={radarData} margin={{ top: 10, right: 30, bottom: 10, left: 30 }}>
+              <PolarGrid stroke="rgba(74,222,128,.15)" />
+              <PolarAngleAxis dataKey="joint" tick={{ fill: TEXT, fontSize: 8, fontFamily: "monospace" }} />
+              <PolarRadiusAxis angle={90} domain={[0, 120]} tick={{ fill: MUTED, fontSize: 8 }} stroke={MUTED} />
+              <Radar name="Norma AAOS" dataKey="norma" stroke="#fbbf24" fill="#fbbf24" fillOpacity={0.05} strokeDasharray="3 3" />
+              <Radar name="Atleta" dataKey="atleta" stroke={EM} fill={EM} fillOpacity={0.25} />
+              <Tooltip contentStyle={{ background: "#03030a", border: `1px solid ${BORDER}`, fontSize: 10, fontFamily: "monospace", color: TEXT }} />
+            </RadarChart>
+          </ResponsiveContainer>
+        </div>
+        <div className="font-mono text-[.5rem] mt-2" style={{ color: MUTED }}>
+          Linha tracejada = 100% norma · sombreado verde = ROM do atleta
+        </div>
+      </Panel>
+
+      <Panel title="Tabela ROM vs Norma">
+        {ROM_LIST.map((r) => {
+          const v = rom[r.key];
+          const status = v === null ? "—" : v < r.min ? "CRÍTICO" : v < r.normal * 0.9 ? "LIMITADO" : "OK";
+          const color = v === null ? MUTED : v < r.min ? "#ef4444" : v < r.normal * 0.9 ? "#fbbf24" : EM;
+          return (
+            <div key={r.key} className="flex items-center gap-2 mb-1 font-mono text-[.6rem]">
+              <span className="flex-1" style={{ color: TEXT }}>{r.label}</span>
+              <span style={{ color: MUTED }}>{r.normal}° (min {r.min}°)</span>
+              <span className="w-10 text-right" style={{ color }}>{v ?? "—"}°</span>
+              <span className="w-16 text-right" style={{ color }}>{status}</span>
+            </div>
+          );
+        })}
+      </Panel>
+
+      {flagged.length > 0 && (
+        <Panel title="Recomendações de Ganho de Amplitude">
+          {flagged.map((r) => {
+            const v = rom[r.key]!;
+            const deficit = r.min - v;
+            return (
+              <div key={r.key} className="mb-2 pb-2 border-b last:border-b-0" style={{ borderColor: BORDER }}>
+                <div className="font-mono text-[.6rem]" style={{ color: "#ef4444" }}>
+                  ⚠ {r.label} · {v}° (déficit {deficit}° abaixo do mínimo funcional)
+                </div>
+                <div className="font-mono text-[.55rem] mt-0.5" style={{ color: TEXT }}>
+                  Protocolo: PNF contrai-relaxa 3×30s + alongamento estático 2×60s diário · reavaliar em 3 semanas.
+                  Bloqueio temporário em compostos que exijam essa amplitude.
+                </div>
+              </div>
+            );
+          })}
+        </Panel>
+      )}
+    </>
+  );
+};
+
+// ─── COMPONENTE PRINCIPAL ─────────────────────────────────────────────────
 const ApexPhdAnalysis = ({ posture, fms, rom, muscles, pain }: Props) => {
   const [category, setCategory] = useState("");
   const [weeksToShow, setWeeksToShow] = useState("");
@@ -94,6 +310,7 @@ const ApexPhdAnalysis = ({ posture, fms, rom, muscles, pain }: Props) => {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState("");
   const [error, setError] = useState("");
+  const [resultTab, setResultTab] = useState<ResultTab>("ia");
 
   const onPhoto = async (e: React.ChangeEvent<HTMLInputElement>, label: string) => {
     const f = e.target.files?.[0];
@@ -106,8 +323,7 @@ const ApexPhdAnalysis = ({ posture, fms, rom, muscles, pain }: Props) => {
     setLoading(true); setError(""); setResult("");
     try {
       const fmsTotal = calcFmsTotal(fms);
-      const ctx = `
-=== DADOS DO ATLETA ===
+      const ctx = `=== DADOS DO ATLETA ===
 Categoria IFBB: ${category || "não informada"}
 Semanas para o show: ${weeksToShow || "não informado"}
 Protocolo farmacológico: ${pharma || "não informado"}
@@ -150,19 +366,13 @@ Execute a análise PhD completa agora.`;
       if (fnErr) throw fnErr;
       if (data?.error) throw new Error(data.error);
       setResult(data?.text || "Sem resposta.");
+      setResultTab("ia");
     } catch (e: any) {
       setError(e?.message || "Falha na análise");
     } finally {
       setLoading(false);
     }
   };
-
-  const Panel = ({ children, title }: { children: React.ReactNode; title?: string }) => (
-    <div className="border rounded-[3px] p-4 mb-3" style={{ borderColor: BORDER, background: PANEL }}>
-      {title && <div className="font-mono text-[.55rem] tracking-[.18em] uppercase mb-3" style={{ color: EM }}>{title}</div>}
-      {children}
-    </div>
-  );
 
   const inputStyle = "w-full bg-transparent border rounded-[3px] px-2 py-1.5 font-mono text-[.65rem] outline-none";
 
@@ -200,22 +410,17 @@ Execute a análise PhD completa agora.`;
             return (
               <label key={label} className="border rounded-[3px] p-2 text-center cursor-pointer block"
                 style={{ borderColor: p ? EM : BORDER }}>
-                <input type="file" accept="image/*" className="hidden"
-                  onChange={(e) => onPhoto(e, label)} />
+                <input type="file" accept="image/*" className="hidden" onChange={(e) => onPhoto(e, label)} />
                 {p ? (
                   <img src={`data:${p.mime};base64,${p.data}`} alt={label}
                     className="w-full h-20 object-cover rounded-[2px] mb-1" />
                 ) : (
-                  <div className="h-20 flex items-center justify-center font-mono text-[.55rem]"
-                    style={{ color: MUTED }}>+ upload</div>
+                  <div className="h-20 flex items-center justify-center font-mono text-[.55rem]" style={{ color: MUTED }}>+ upload</div>
                 )}
                 <div className="font-mono text-[.55rem]" style={{ color: p ? EM : TEXT }}>{label}</div>
               </label>
             );
           })}
-        </div>
-        <div className="font-mono text-[.5rem] mt-2" style={{ color: MUTED }}>
-          Análise funciona sem fotos, mas a precisão aumenta substancialmente com elas.
         </div>
       </Panel>
 
@@ -235,32 +440,51 @@ Execute a análise PhD completa agora.`;
         </Panel>
       )}
 
-      {result && (
-        <Panel title="Análise PhD · Output Completo">
-          <div className="apex-md font-mono text-[.7rem] leading-[1.6]" style={{ color: TEXT }}>
-            <ReactMarkdown
-              components={{
-                h1: (p) => <h1 className="font-heading text-[1rem] mt-4 mb-2" style={{ color: EM }} {...p} />,
-                h2: (p) => <h2 className="font-heading text-[.85rem] mt-4 mb-2 pb-1 border-b"
-                  style={{ color: EM, borderColor: BORDER }} {...p} />,
-                h3: (p) => <h3 className="font-mono text-[.7rem] tracking-[.1em] uppercase mt-3 mb-1"
-                  style={{ color: EM }} {...p} />,
-                p: (p) => <p className="mb-2" {...p} />,
-                ul: (p) => <ul className="mb-2 ml-4 list-disc" {...p} />,
-                ol: (p) => <ol className="mb-2 ml-4 list-decimal" {...p} />,
-                li: (p) => <li className="mb-0.5" {...p} />,
-                strong: (p) => <strong style={{ color: EM }} {...p} />,
-                table: (p) => <table className="w-full my-2 border-collapse text-[.6rem]" {...p} />,
-                th: (p) => <th className="border px-1.5 py-1 text-left font-mono"
-                  style={{ borderColor: BORDER, color: EM }} {...p} />,
-                td: (p) => <td className="border px-1.5 py-1 align-top"
-                  style={{ borderColor: BORDER }} {...p} />,
-                code: (p) => <code className="px-1 rounded"
-                  style={{ background: "rgba(74,222,128,.08)", color: EM }} {...p} />,
-              }}
-            >{result}</ReactMarkdown>
+      {(result || true) && (
+        <>
+          {/* Sub-tabs do resultado: IA · FMS · ROM */}
+          <div className="flex gap-1.5 mb-3">
+            {([
+              ["ia", "Análise IA", !!result],
+              ["fms", "FMS", true],
+              ["rom", "ROM", true],
+            ] as [ResultTab, string, boolean][]).map(([id, label, enabled]) => (
+              <button key={id} onClick={() => enabled && setResultTab(id)} disabled={!enabled}
+                className="px-3 py-1.5 rounded-[3px] font-mono text-[.6rem] tracking-[.15em] uppercase border transition-colors"
+                style={{
+                  borderColor: resultTab === id ? EM : BORDER,
+                  color: !enabled ? MUTED : resultTab === id ? EM : TEXT,
+                  background: resultTab === id ? "rgba(74,222,128,.1)" : "transparent",
+                  opacity: enabled ? 1 : 0.4,
+                  cursor: enabled ? "pointer" : "not-allowed",
+                }}>{label}</button>
+            ))}
           </div>
-        </Panel>
+
+          {resultTab === "ia" && result && (
+            <Panel title="Análise PhD · Output Completo">
+              <div className="apex-md font-mono text-[.7rem] leading-[1.6]" style={{ color: TEXT }}>
+                <ReactMarkdown
+                  components={{
+                    h1: (p) => <h1 className="font-heading text-[1rem] mt-4 mb-2" style={{ color: EM }} {...p} />,
+                    h2: (p) => <h2 className="font-heading text-[.85rem] mt-4 mb-2 pb-1 border-b" style={{ color: EM, borderColor: BORDER }} {...p} />,
+                    h3: (p) => <h3 className="font-mono text-[.7rem] tracking-[.1em] uppercase mt-3 mb-1" style={{ color: EM }} {...p} />,
+                    p: (p) => <p className="mb-2" {...p} />,
+                    ul: (p) => <ul className="mb-2 ml-4 list-disc" {...p} />,
+                    ol: (p) => <ol className="mb-2 ml-4 list-decimal" {...p} />,
+                    li: (p) => <li className="mb-0.5" {...p} />,
+                    strong: (p) => <strong style={{ color: EM }} {...p} />,
+                    table: (p) => <table className="w-full my-2 border-collapse text-[.6rem]" {...p} />,
+                    th: (p) => <th className="border px-1.5 py-1 text-left font-mono" style={{ borderColor: BORDER, color: EM }} {...p} />,
+                    td: (p) => <td className="border px-1.5 py-1 align-top" style={{ borderColor: BORDER }} {...p} />,
+                    code: (p) => <code className="px-1 rounded" style={{ background: "rgba(74,222,128,.08)", color: EM }} {...p} />,
+                  }}>{result}</ReactMarkdown>
+              </div>
+            </Panel>
+          )}
+          {resultTab === "fms" && <FmsResultView fms={fms} posture={posture} />}
+          {resultTab === "rom" && <RomResultView rom={rom} />}
+        </>
       )}
     </>
   );
