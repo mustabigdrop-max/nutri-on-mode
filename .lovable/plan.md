@@ -1,49 +1,70 @@
-## Portar NutriPlan Elite → Painel do Coach (`/coach/plano-alimentar`)
+## Apex Visual Intelligence PhD — Plano de Construção
 
-### Contexto
-- A página do coach usa `src/components/coach/PlanoAlimentarIA.tsx` (5299 linhas) chamando a edge function `generate-coach-meal-plan` (4142 linhas) — totalmente separada do `MealPlanPage.tsx` do paciente.
-- Nada do NutriPlan Elite (Fases 1–5) foi portado para o lado do coach.
+O `ApexPage.tsx` está hoje como placeholder ("módulo em construção"). O hook `useApex` e as tabelas (`apex_assessments`, `apex_posture_data`, `apex_fms_scores`, `apex_rom_measurements`, `apex_muscle_scores`, `apex_pain_entries`) já existem. Vou construir a página completa cobrindo os 8 pilares, na estética Lab (Emerald `#4ade80` / Pure Black `#03030a` / Space Grotesk), com navegação por abas e cálculos PhD-level rodando 100% no frontend (sem novas tabelas).
 
-### Escopo (5 fases espelhando o paciente)
+### Estrutura da página
 
-**Fase A — Backend `generate-coach-meal-plan`**
-1. Aceitar `compostos_ativos[]` + `perfil_pca` + `workout_schedule` no payload (vindos do form do coach).
-2. Calcular `tdee_bruto` (Katch-McArdle se `body_fat_pct`, senão Mifflin) e aplicar multiplicadores farmacológicos (GH-secretagogos, GLP-1, AAS, SLU-PP-332, Cardarine, BPC/TB-500) — mesma tabela da Fase 1 do paciente.
-3. Reescrever system prompt para o PhD NutriPlan Elite (6 dimensões + crononutrição + alimentos brasileiros + medidas caseiras).
-4. Enriquecer cada refeição com `funcao_metabolica`, `janela_metabolica`, `medida_caseira`, `protocolo_peri_workout`, `mensagem_mce`, `insights_ia`.
-5. Manter retrocompatibilidade do shape antigo para não quebrar o que já renderiza.
+Layout: header APEX + 7 abas horizontais scrolláveis + conteúdo animado (framer-motion AnimatePresence).
 
-**Fase B — Form do coach (`PlanoAlimentarIA.tsx`)**
-- Novo bloco "Compostos Ativos" (multi-select Dr. VERTEX) já mapeado para o paciente quando o coach gera o plano.
-- Header do plano: `TDEE Bruto X → Ajustado Y (+Z% por [composto])` + breakdown.
+```text
+[← voltar]   APEX · VISUAL INTELLIGENCE · CINESIOLOGIA PhD
 
-**Fase C — Visualização**
-- Reusar componentes já criados: `<CircadianTimeline>`, `<ExpandableMealCard>`, `<Glut4SyncCard>` na renderização do plano gerado.
-- Selector de dia + injeção de `trainingMap` a partir do `workout_schedule` do paciente.
+[Overview] [Postura] [FMS] [Dor] [Mobilidade] [Shape] [Protocolo]
 
-**Fase D — Modos especiais + Aderência + PDF**
-- Toolbar com seletor de modo (Competição peak week / GLP-1 / Feminino com fase do ciclo + RED-S alerts).
-- Botão **📊 Aderência** abrindo `<AdherenceModal>` com dados do paciente selecionado (não do coach logado).
-- Botão **📄 PDF** usando `mealPlanPdf.ts` com header "Prescrito por [Coach] para [Paciente]".
+┌──────────────────────────────────────┐
+│ conteúdo da aba ativa (motion)       │
+└──────────────────────────────────────┘
+```
 
-**Fase E — GLUT-4 + adaptação PCA**
-- `Glut4SyncCard` montado quando o paciente tem treino no dia.
-- Tom/densidade/CTAs adaptados ao `perfil_pca` selecionado no form do coach.
+### Abas e conteúdo
 
-### Arquivos impactados
-- `supabase/functions/generate-coach-meal-plan/index.ts` (Fase A)
-- `src/components/coach/PlanoAlimentarIA.tsx` (Fases B–E)
-- Reuso direto: `CircadianTimeline.tsx`, `ExpandableMealCard.tsx`, `Glut4SyncCard.tsx`, `AdherenceModal.tsx`, `mealPlanPdf.ts`, `trainingDayMap.ts`
+**1. Overview** — 4 ScoreRings (Postural, Mobilidade, Simetria, FMS) + score global 0-100 + CTA "iniciar nova avaliação" + lista de red flags ativos + síndrome de Janda detectada.
+
+**2. Postura (Pilar 1 + 3)** — formulário nos 3 planos (sagital/frontal/transversal) com selects de severidade (none/mild/moderate/severe). Detecção automática de:
+- Síndrome Cruzada Superior (SCS) — gatilho: forward_head + thoracic_kyphosis + protração de ombro
+- Síndrome Cruzada Inferior (SCI) — gatilho: anterior pelvic_tilt + hiperlordose
+- Síndrome de Distorção de Pronação — gatilho: pronation_dist
+Saída: card com músculos encurtados vs. inibidos por síndrome detectada (base Janda/Kendall).
+
+**3. FMS (Pilar 2)** — 7 testes com slider 0-3, bilateral pega o menor lado, score total /21. Alerta vermelho se < 14 ("risco de lesão 3x maior — Cook 2006"). Breakdown por padrão.
+
+**4. Dor (Pilar 4)** — lista de entradas ativas + formulário novo:
+- Região + lado + qualidade (multi: latejante/queimação/facada/peso/formigamento/irradiado)
+- Comportamento (mecânica vs. inflamatória), padrão (local/referido/irradiado/radiculopático), timing
+- Intensidade 0-10
+- Detecção de **red flags automáticos**: dor noturna intensa, perda de força progressiva, controle vesical, piora em repouso, febre → modal "encaminhar profissional"
+- Mapa de **dor referida**: ao selecionar região, sugere gatilhos miofasciais possíveis (trapézio→têmpora, piriforme→nádega+MMII, etc.)
+
+**5. Mobilidade (Pilar 6)** — inputs de ROM por articulação com normas AAOS embutidas. Cada linha mostra: medido / normal / mínimo funcional + badge (OK/Limitado/Crítico). Score global de mobilidade.
+
+**6. Shape (Pilar 7)** — 28 grupos musculares com slider 0-10 + objetivo (V-taper/X-frame/Physique/Power/Reabilitação). Cálculo de:
+- Score de simetria por par bilateral (alerta se assimetria > 15%)
+- Top 3 "lagging" (menores scores)
+- Recomendação visual de prioridade por objetivo
+
+**7. Protocolo (Pilar 8 — NASM CES)** — geração automática baseada em postura + FMS + dor. Cascata em 4 fases:
+- **INIBIR** (5-10 min) — foam roller nos músculos hiperativos detectados
+- **ALONGAR** (5-10 min) — static stretching 20-30s nos encurtados
+- **ATIVAR** (5-10 min) — exercícios de ativação isolada dos inibidos
+- **INTEGRAR** — padrões globais combinados
+
+Botão "salvar avaliação" persiste tudo via `saveFullAssessment` do hook.
 
 ### Detalhes técnicos
-- Modelo IA: `google/gemini-2.5-pro` via Lovable AI Gateway (mantém atual).
-- Sem migração de DB nesta fase.
-- Coach passa `patient_user_id` para que `AdherenceModal` e `workout_schedule` consultem o usuário correto (RLS já permite via `coach_profile_id`).
-- Fallbacks: se a IA não retornar campos novos, derivar `tdee_ajustado = tdee_bruto` e `breakdown = []` (igual ao paciente).
 
-### Como executar
-Vou implementar em **2 entregas grandes**:
-1. **Entrega 1**: Fases A + B (backend completo + form com Compostos Ativos + header TDEE).
-2. **Entrega 2**: Fases C + D + E (UI Elite, modos especiais, aderência, PDF, GLUT-4, PCA).
+- Sem migrations — uso o hook `useApex` existente; cálculos derivados (Janda, red flags, protocolo) ficam em helpers no próprio arquivo
+- Pilar 5 (Análise Biomecânica de Exercícios) integrado como link/CTA para TrainingON; aqui só registro cues genéricos por padrão (squat/deadlift/press/unipodal/supino) como referência consultável
+- Estética Lab: borders `rgba(74,222,128,.18)`, mono labels uppercase tracking, headings Space Grotesk emerald
+- Componentes inline no arquivo (ScoreRing, TabBtn, SevSelect, RomRow, MuscleSlider, PainCard, SyndromeCard, ProtocolPhase)
+- Tudo client-side, framer-motion para transições de aba
+- Mobile-first (max-w-lg)
+- Arquivo único `src/pages/ApexPage.tsx` (~900 linhas)
 
-Confirma para começar pela Entrega 1?
+### Fora de escopo desta entrega
+
+- Upload de foto/vídeo para análise por IA (Pilar 1 input "Foto/vídeo postural") — fica para fase 2 com Gemini Vision
+- Integração runtime com histórico TrainingON para badges biomecânicos por exercício específico — fase 2
+- Y-Balance Test e SFMA breakdown completo — fase 2
+- Peak Week visual integrado a NutriSync — fase 2
+
+Posso seguir e implementar?
