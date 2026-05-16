@@ -198,12 +198,14 @@ export default function CoachWeekMealGrid({ patientId, patient }: Props) {
         fat_g: aiForm.fat_g,
       };
 
+      const fem = await buildFeminineContext(patientId, patient?.sex, (patient as any)?.categoria_feminina);
       const { data, error } = await supabase.functions.invoke("generate-meal-plan", {
         body: {
-          profile: profilePayload,
+          profile: { ...profilePayload, cyclePhase: fem.cyclePhase, feminineCategory: fem.feminineCategoryLabel },
           weekStart,
           budgetMode: false,
           workoutSchedule: workoutData || [],
+          ...(fem.isF ? { modo_especial: "feminino", fase_ciclo: fem.fase_ciclo || "folicular" } : {}),
         },
       });
       if (error) throw error;
