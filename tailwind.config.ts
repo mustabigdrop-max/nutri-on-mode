@@ -58,10 +58,17 @@ export default {
         gold: {
           DEFAULT: "hsl(var(--gold))",
           glow: "hsl(var(--gold-glow))",
+          line: "hsl(var(--gold-line))",
+          soft: "hsl(var(--gold-soft))",
         },
         cyan: {
           DEFAULT: "hsl(var(--cyan))",
           glow: "hsl(var(--cyan-glow))",
+          line: "hsl(var(--cyan-line))",
+        },
+        ink: {
+          warm: "hsl(var(--ink-warm))",
+          dim: "hsl(var(--ink-dim))",
         },
         surface: {
           DEFAULT: "hsl(var(--surface))",
