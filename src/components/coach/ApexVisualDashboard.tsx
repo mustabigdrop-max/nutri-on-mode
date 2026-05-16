@@ -1187,6 +1187,11 @@ Suporte em uso: ${suporte || "não informado"}` : "";
               landmarks={parseLandmarks(analysisResult)}
               photos={photoUrls}
               athleteName={athlete?.nome}
+              category={cat.label}
+              sex={isFemAthlete ? "F" : (athlete?.sexo || null)}
+              cyclePhase={cyclePhase as any}
+              cycleDay={cycleDay}
+              feminineCategory={femCategory ? FEMININE_CATEGORIES[femCategory].label : null}
             />
           )}
           {activeResultTab === "postura" && (

@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Save, Sparkles, Loader2, Search, ChevronLeft, ChevronRight, Dumbbell, Bed } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { buildTrainingDayMap, classifyMealVsWorkout, splitWeeklyAverages, type TrainingDayInfo } from "@/lib/trainingDayMap";
+import { buildFeminineContext } from "@/lib/feminineContext";
 
 const MEAL_TYPES = [
   { key: "cafe_manha", label: "☕ Café" },
@@ -197,12 +198,14 @@ export default function CoachWeekMealGrid({ patientId, patient }: Props) {
         fat_g: aiForm.fat_g,
       };
 
+      const fem = await buildFeminineContext(patientId, patient?.sex, (patient as any)?.categoria_feminina);
       const { data, error } = await supabase.functions.invoke("generate-meal-plan", {
         body: {
-          profile: profilePayload,
+          profile: { ...profilePayload, cyclePhase: fem.cyclePhase, feminineCategory: fem.feminineCategoryLabel },
           weekStart,
           budgetMode: false,
           workoutSchedule: workoutData || [],
+          ...(fem.isF ? { modo_especial: "feminino", fase_ciclo: fem.fase_ciclo || "folicular" } : {}),
         },
       });
       if (error) throw error;

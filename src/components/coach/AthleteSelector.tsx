@@ -35,7 +35,7 @@ export default function AthleteSelector({ value, onChange, label = "Atleta / Cli
       // 1. Atletas de competição
       const { data: athData } = await supabase
         .from("competition_athletes" as any)
-        .select("id,nome,patient_user_id,fase_atual,data_competicao,categoria")
+        .select("id,nome,patient_user_id,fase_atual,data_competicao,categoria,sexo")
         .eq("coach_id", user.id)
         .eq("ativo", true)
         .order("nome", { ascending: true });

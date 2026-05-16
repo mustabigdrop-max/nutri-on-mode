@@ -11,6 +11,7 @@ import {
   ChevronLeft, ChevronRight, Check, RefreshCw, User
 } from "lucide-react";
 import { toast } from "sonner";
+import { buildFeminineContext } from "@/lib/feminineContext";
 
 const DAY_LABELS = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
 const MEAL_TYPES = [
@@ -213,6 +214,7 @@ const LabCoachPlanner = ({ onAskApex }: { onAskApex: (q: string) => void }) => {
         .select("day_of_week, workout_type, workout_time, duration_minutes, slot")
         .eq("user_id", c.user_id);
 
+      const fem = await buildFeminineContext(c.user_id, c.sex, (c as any)?.federacao_categoria);
       const { data, error } = await supabase.functions.invoke("generate-meal-plan", {
         body: {
           // ── Dados demográficos diretos (Edge Function espera no body raiz) ──
@@ -289,6 +291,9 @@ const LabCoachPlanner = ({ onAskApex }: { onAskApex: (q: string) => void }) => {
           // ── Coach ──
           coachNotes,
           weekStart,
+
+          // ── Feminino ──
+          ...(fem.isF ? { modo_especial: "feminino", fase_ciclo: fem.fase_ciclo || "folicular" } : {}),
         },
       });
 
@@ -332,6 +337,7 @@ const LabCoachPlanner = ({ onAskApex }: { onAskApex: (q: string) => void }) => {
     setGeneratingTraining(true);
     try {
       const c = selectedClient;
+      const femT = await buildFeminineContext(c.user_id, c.sex, (c as any)?.federacao_categoria);
       const { data, error } = await supabase.functions.invoke("generate-training-plan", {
         body: {
           profile: {
@@ -343,6 +349,9 @@ const LabCoachPlanner = ({ onAskApex }: { onAskApex: (q: string) => void }) => {
             training_frequency: c.training_frequency,
             activity_level: c.activity_level,
             nivel_treino: c.nivel_treino,
+            cyclePhase: femT.cyclePhase,
+            cycleDay: femT.cycleDay,
+            feminineCategory: femT.feminineCategoryLabel,
           },
           coachNotes,
         },

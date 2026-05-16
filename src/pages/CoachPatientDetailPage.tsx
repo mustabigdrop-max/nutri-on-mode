@@ -18,7 +18,7 @@ import CoachCheckinsTab from "@/components/coach/CoachCheckinsTab";
 import ProtocolGanttChart from "@/components/coach/ProtocolGanttChart";
 import FeminineCycleBadge from "@/components/coach/FeminineCycleBadge";
 import FeminineCyclePhaseBanner from "@/components/coach/FeminineCyclePhaseBanner";
-import { isFeminine, getCyclePhase, getCycleDayCount } from "@/lib/feminine";
+import { isFeminine, getCyclePhase, getCycleDayCount, mapCyclePhaseToFaseCiclo } from "@/lib/feminine";
 
 const MEAL_TYPES = [
   { key: "cafe_manha", label: "☕ Café" },
@@ -168,12 +168,19 @@ const CoachPatientDetailPage = () => {
         .select("day_of_week, workout_type, workout_time, duration_minutes, slot")
         .eq("user_id", patientId);
 
+      const isF = isFeminine(patient);
+      const phase = isF && feminineProfile?.ultima_menstruacao
+        ? getCyclePhase(feminineProfile.ultima_menstruacao, (feminineProfile as any).duracao_ciclo || 28)
+        : (isF ? ((feminineProfile?.fase_ciclo as any) || null) : null);
+      const fase_ciclo = mapCyclePhaseToFaseCiclo(phase);
+
       const { data, error } = await supabase.functions.invoke("generate-meal-plan", {
         body: {
-          profile: patient,
+          profile: { ...patient, cyclePhase: phase, feminineCategory: (patient as any)?.categoria_feminina || null },
           weekStart,
           budgetMode: false,
           workoutSchedule: workoutData || [],
+          ...(isF ? { modo_especial: "feminino", fase_ciclo: fase_ciclo || "folicular" } : {}),
         },
       });
 

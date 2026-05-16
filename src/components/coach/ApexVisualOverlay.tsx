@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import html2canvas from "html2canvas";
 import { Download, ChevronDown, BookOpen, Link2, Eye } from "lucide-react";
+import { CYCLE_PHASE_INFO, type CyclePhase } from "@/lib/feminine";
 
 // ─── Types ───────────────────────────────────────────────────────
 export type Landmark = { x: number; y: number; label: string };
@@ -127,9 +128,15 @@ interface Props {
   photos: PhotoBundle;
   athleteName?: string;
   category?: string;
+  sex?: string | null;
+  cyclePhase?: CyclePhase | null;
+  cycleDay?: number | null;
+  feminineCategory?: string | null;
 }
 
-export default function ApexVisualOverlay({ landmarks, photos, athleteName, category }: Props) {
+export default function ApexVisualOverlay({ landmarks, photos, athleteName, category, sex, cyclePhase, cycleDay, feminineCategory }: Props) {
+  const isF = String(sex || "").toLowerCase().match(/^(f|feminino|female)$/);
+  const phaseInfo = isF && cyclePhase ? CYCLE_PHASE_INFO[cyclePhase] : null;
   const availableViews = (["front", "lateral", "back"] as const).filter(
     (v) => landmarks[v] || photos[v]
   );
@@ -403,10 +410,20 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
       </div>
 
       {/* Counter strip */}
-      <div className="flex items-center gap-3 text-[11px] font-mono">
+      <div className="flex items-center gap-3 text-[11px] font-mono flex-wrap">
         <span style={{ color: C.red }}>● {counts.sev} críticos</span>
         <span style={{ color: C.yellow }}>● {counts.alt} limítrofes</span>
         <span style={{ color: C.green }}>● {counts.ok} normais</span>
+        {phaseInfo && (
+          <span
+            className="ml-auto inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-bold"
+            style={{ borderColor: `${phaseInfo.color}66`, color: phaseInfo.color, background: phaseInfo.bg }}
+            title={`Análise contextualizada para fase ${phaseInfo.label}${cycleDay ? ` (dia ${cycleDay})` : ""}${feminineCategory ? ` · ${feminineCategory}` : ""}`}
+          >
+            {phaseInfo.emoji} {phaseInfo.label}{cycleDay ? ` · d${cycleDay}` : ""}
+            {feminineCategory ? ` · ${feminineCategory}` : ""}
+          </span>
+        )}
       </div>
 
       {/* Main grid */}
@@ -464,7 +481,7 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
           )}
           {/* Footer caption (visible in export) */}
           <div className="absolute bottom-1 left-2 text-[10px] text-white/60 font-mono">
-            {athleteName || "Atleta"} · {category || "—"} · {new Date().toLocaleDateString("pt-BR")}
+            {athleteName || "Atleta"} · {category || "—"}{phaseInfo ? ` · ${phaseInfo.emoji} ${phaseInfo.label}${cycleDay ? ` d${cycleDay}` : ""}` : ""} · {new Date().toLocaleDateString("pt-BR")}
           </div>
         </div>
 

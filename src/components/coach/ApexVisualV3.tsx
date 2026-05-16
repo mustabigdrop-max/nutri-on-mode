@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import AthleteSelector, { AthleteOption } from "@/components/coach/AthleteSelector";
+import { buildFeminineContext, type FeminineContext } from "@/lib/feminineContext";
 import jsPDF from "jspdf";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend, BarChart, Bar, Cell } from "recharts";
 import APEXPoseAnalysisPage from "@/pages/coach/APEXPoseAnalysisPage";
@@ -517,15 +518,24 @@ export default function ApexVisualV3() {
     setHistory((data as any) || []);
   };
 
+  const [femCtx, setFemCtx] = useState<FeminineContext | null>(null);
+
   useEffect(() => {
     if (selectedAthlete) {
       setNome(selectedAthlete.nome || "");
       if (selectedAthlete.fase_atual) setFase(selectedAthlete.fase_atual);
       loadHistory(selectedAthlete.id);
+      const sexHint = (selectedAthlete as any).sexo ?? (CATS[catKey]?.g === "F" ? "F" : null);
+      buildFeminineContext(
+        selectedAthlete.patient_user_id,
+        sexHint,
+        selectedAthlete.categoria ?? CATS[catKey]?.l ?? null,
+      ).then(setFemCtx);
     } else {
       setHistory([]);
+      setFemCtx(null);
     }
-  }, [selectedAthlete?.id]);
+  }, [selectedAthlete?.id, catKey]);
 
   const cat = CATS[catKey];
   const temFoto = !!(fotoF || fotoC || fotoL);
@@ -585,8 +595,10 @@ export default function ApexVisualV3() {
           fotos,
           contexto: `Fase corporal declarada: ${fase}. Observação do coach: ${obs || "nenhuma"}. Gere análise APEX v3 completa.`,
           system: buildSystem(cat, athlete, protocol),
-          sex: cat.g === "F" ? "F" : "M",
-          category: cat.l,
+          sex: femCtx?.isF || cat.g === "F" ? "F" : "M",
+          category: femCtx?.feminineCategoryLabel || cat.l,
+          cyclePhase: femCtx?.cyclePhase || null,
+          cycleDay: femCtx?.cycleDay || null,
         },
       });
 
