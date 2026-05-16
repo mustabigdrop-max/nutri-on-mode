@@ -170,6 +170,24 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
             : "Eixo escapular dentro do normal.",
         };
       }
+      // FIX 3 — Spine deviation calculado de C7→L5
+      const c7 = data.landmarks.spine_c7;
+      const l5 = data.landmarks.spine_l5;
+      if (isValidPoint(c7) && isValidPoint(l5)) {
+        const dx = l5.x - c7.x;
+        const dy = l5.y - c7.y;
+        // ângulo em relação à vertical (linha perfeita = 0°)
+        const deg = Math.atan2(dx, dy) * (180 / Math.PI);
+        const v = Math.round(deg * 10) / 10;
+        out.spinal_lateral_deviation = {
+          value: v,
+          unit: "graus",
+          normal: "<1°",
+          finding: Math.abs(v) > 1
+            ? `Coluna desviada ${Math.abs(v)}° para ${v > 0 ? "direita" : "esquerda"}. Avaliar escoliose funcional vs estrutural.`
+            : "Coluna alinhada verticalmente. ✓",
+        };
+      }
     }
     return out;
   }, [data]);
@@ -198,6 +216,39 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
     findings.forEach((f) => c[f.sev]++);
     return c;
   }, [findings]);
+
+  // MELHORIA 2 — qualidade da análise da vista atual
+  const quality = useMemo(() => {
+    if (!data) return { total: 0, valid: 0, ratio: 0 };
+    const entries = Object.values(data.landmarks);
+    const total = entries.length;
+    const valid = entries.filter(isValidPoint).length;
+    return { total, valid, ratio: total > 0 ? valid / total : 0 };
+  }, [data]);
+
+  // MELHORIA 3 — severidade resumida por vista
+  const viewSeverity = useMemo(() => {
+    const out: Record<"front" | "lateral" | "back", { count: number; worst: "ok" | "alt" | "sev" }> = {
+      front: { count: 0, worst: "ok" },
+      lateral: { count: 0, worst: "ok" },
+      back: { count: 0, worst: "ok" },
+    };
+    (["front", "lateral", "back"] as const).forEach((v) => {
+      const d = landmarks[v];
+      if (!d) return;
+      const angs = Object.values(d.angles);
+      let worst: "ok" | "alt" | "sev" = "ok";
+      let count = 0;
+      angs.forEach((a) => {
+        const s = severityOf(a.value, a.normal);
+        if (s !== "ok") count++;
+        if (s === "sev") worst = "sev";
+        else if (s === "alt" && worst !== "sev") worst = "alt";
+      });
+      out[v] = { count, worst };
+    });
+    return out;
+  }, [landmarks]);
 
   // Detected kinetic chains (simple heuristic)
   const chains = useMemo(() => {
@@ -387,6 +438,24 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
                   chains={chains}
                 />
               )}
+              {/* MELHORIA 2 — Quality badge */}
+              {data && (
+                <div
+                  className="absolute top-2 left-2 text-[10px] font-mono font-bold rounded px-2 py-1 z-10"
+                  style={{
+                    background: "rgba(0,0,0,0.75)",
+                    border: `1px solid ${quality.ratio >= 0.8 ? C.green : quality.ratio >= 0.5 ? C.yellow : C.red}`,
+                    color: quality.ratio >= 0.8 ? C.green : quality.ratio >= 0.5 ? C.yellow : C.red,
+                  }}
+                >
+                  {quality.ratio >= 0.8 ? "🟢" : quality.ratio >= 0.5 ? "🟡" : "🔴"}{" "}
+                  {quality.ratio >= 0.8
+                    ? `Análise completa — ${quality.valid} landmarks`
+                    : quality.ratio >= 0.5
+                    ? `Análise parcial — ${quality.valid}/${quality.total}`
+                    : `Reprocessar — ${quality.valid}/${quality.total}`}
+                </div>
+              )}
             </div>
           ) : (
             <div className="text-xs text-muted-foreground p-6 text-center">
@@ -401,7 +470,47 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
 
         {/* Findings panel */}
         <div className="space-y-2 max-h-[640px] overflow-y-auto pr-1">
-          <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">
+          {/* MELHORIA 3 — Mini-mapa de severidade */}
+          <div className="flex items-center justify-around gap-2 p-2 rounded-lg border bg-background/30">
+            {(["front", "lateral", "back"] as const).map((v) => {
+              const s = viewSeverity[v];
+              const c = s.worst === "sev" ? C.red : s.worst === "alt" ? C.yellow : C.green;
+              const enabled = !!landmarks[v];
+              const labelMap = { front: "Frente", lateral: "Lateral", back: "Costas" };
+              return (
+                <button
+                  key={v}
+                  disabled={!enabled}
+                  onClick={() => { setView(v); setSelected(null); }}
+                  className="flex flex-col items-center gap-1 disabled:opacity-30"
+                  title={`${labelMap[v]}: ${s.count} achados`}
+                >
+                  <div
+                    className="w-10 h-10 rounded-full flex items-center justify-center font-mono font-bold text-sm transition-all"
+                    style={{
+                      background: `${c}22`,
+                      border: `2px solid ${c}`,
+                      color: c,
+                      boxShadow: view === v ? `0 0 0 2px ${C.gold}` : "none",
+                    }}
+                  >
+                    {s.count}
+                  </div>
+                  <div className="text-[9px] uppercase tracking-wider text-muted-foreground">{labelMap[v]}</div>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* FIX 5 — Debug raw JSON (dev only) */}
+          {import.meta.env.DEV && data && (
+            <details className="rounded border border-dashed border-muted-foreground/40 p-1.5">
+              <summary className="text-[9px] font-mono text-muted-foreground cursor-pointer">🐛 DEV: JSON bruto IA × parseado</summary>
+              <pre className="text-[8px] mt-1 max-h-40 overflow-auto opacity-80">{JSON.stringify({ raw_angles: data.angles, parsed_findings: findings.map(f => ({ key: f.key, value: f.value, normal: f.normal, sev: f.sev })) }, null, 2)}</pre>
+            </details>
+          )}
+
+          <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1 pt-1">
             Achados clínicos ({findings.length})
           </div>
           {findings.length === 0 && (
@@ -641,24 +750,49 @@ function OverlayLayer({
           <>
             <SvgLine p1={lm.shoulder_left} p2={lm.shoulder_right} color={colorBySev(lineSev("shoulder_asymmetry"))} />
             <SvgLine p1={lm.hip_left} p2={lm.hip_right} color={colorBySev(lineSev("hip_asymmetry"))} />
-            <SvgLine p1={lm.spine_c7} p2={lm.spine_l5} color={colorBySev(lineSev("spinal_lateral_deviation"))} dashed />
-            {/* Scapular axis */}
-            {isValidPoint(lm.scapula_left) && isValidPoint(lm.scapula_right) && (
+            {/* FIX 3 — C7→L5 sempre em amarelo, 2px */}
+            {isValidPoint(lm.spine_c7) && isValidPoint(lm.spine_l5) && (
               <>
-                <SvgLine
-                  p1={lm.scapula_left}
-                  p2={lm.scapula_right}
-                  color={colorBySev(lineSev("scapular_axis_tilt"))}
-                />
-                <circle
-                  cx={(lm.scapula_left.x + lm.scapula_right.x) / 2}
-                  cy={(lm.scapula_left.y + lm.scapula_right.y) / 2}
-                  r={0.6}
-                  fill={C.cyan}
+                <line
+                  x1={lm.spine_c7.x} y1={lm.spine_c7.y}
+                  x2={lm.spine_l5.x} y2={lm.spine_l5.y}
+                  stroke="#FFD700"
                   vectorEffect="non-scaling-stroke"
+                  style={{ strokeWidth: 2 }}
                 />
+                {/* Âncoras destacadas (círculo maior) */}
+                <circle cx={lm.spine_c7.x} cy={lm.spine_c7.y} r={1.6} fill="#FFD700" stroke="#000" vectorEffect="non-scaling-stroke" style={{ strokeWidth: 1 }} />
+                <circle cx={lm.spine_l5.x} cy={lm.spine_l5.y} r={1.6} fill="#FFD700" stroke="#000" vectorEffect="non-scaling-stroke" style={{ strokeWidth: 1 }} />
               </>
             )}
+            {/* MELHORIA 1 — Eixo escapular 2.5px ciano (vermelho se >2°), losango central */}
+            {isValidPoint(lm.scapula_left) && isValidPoint(lm.scapula_right) && (() => {
+              const dx = lm.scapula_right.x - lm.scapula_left.x;
+              const dy = lm.scapula_right.y - lm.scapula_left.y;
+              const ang2 = Math.atan2(dy, dx) * (180 / Math.PI);
+              const critical = Math.abs(ang2) > 2;
+              const stroke = critical ? C.red : C.cyan;
+              const mx = (lm.scapula_left.x + lm.scapula_right.x) / 2;
+              const my = (lm.scapula_left.y + lm.scapula_right.y) / 2;
+              return (
+                <>
+                  <line
+                    x1={lm.scapula_left.x} y1={lm.scapula_left.y}
+                    x2={lm.scapula_right.x} y2={lm.scapula_right.y}
+                    stroke={stroke}
+                    vectorEffect="non-scaling-stroke"
+                    style={{ strokeWidth: 2.5 }}
+                  />
+                  <polygon
+                    points={`${mx},${my - 1.2} ${mx + 1.2},${my} ${mx},${my + 1.2} ${mx - 1.2},${my}`}
+                    fill={stroke}
+                    stroke="#000"
+                    vectorEffect="non-scaling-stroke"
+                    style={{ strokeWidth: 1 }}
+                  />
+                </>
+              );
+            })()}
           </>
         )}
 
@@ -772,82 +906,205 @@ function OverlayLayer({
           </div>
         ))}
 
-        {/* Angle badges — positioned outside silhouette */}
-        {Object.entries(ang).map(([k, a]) => {
-          const anchor = anchorForAngle(data.view, k, lm);
-          if (!anchor) return null;
-          const sev = severityOf(a.value, a.normal);
-          const color = colorBySev(sev);
-          const unit = a.unit?.includes("graus") ? "°" : a.unit?.includes("cm") ? "cm" : "";
-          const arrow = directionArrow(k, a.value);
-          const active = selected === k;
-          // Push exterior
-          const exterior = anchor.x < 50 ? -1 : 1;
-          const bx = Math.max(2, Math.min(98, anchor.x + exterior * 8));
-          const by = Math.max(2, Math.min(98, anchor.y));
-          return (
-            <div key={`ang-${k}`} style={{ position: "absolute", left: `${bx}%`, top: `${by}%`, transform: exterior > 0 ? "translate(0,-50%)" : "translate(-100%,-50%)", pointerEvents: "auto" }}>
-              <button
-                onClick={() => onSelect(active ? "" : k)}
-                className="text-[10px] font-mono font-bold transition-all"
-                style={{
-                  background: "rgba(0,0,0,0.78)",
-                  color,
-                  border: `1.5px solid ${color}`,
-                  borderRadius: 4,
-                  padding: "2px 6px",
-                  boxShadow: active ? `0 0 8px ${color}` : "none",
-                }}
-              >
-                {a.value}{unit}{arrow}
-              </button>
-              {active && (
-                <div className="mt-1 text-[10px] rounded-md p-2 shadow-xl max-w-[220px]" style={{ background: C.dark, color: C.white, border: `1px solid ${color}` }}>
-                  <div className="font-bold mb-1" style={{ color }}>{FRIENDLY[k] || k}</div>
-                  <div className="opacity-70">Normal: {a.normal}</div>
-                  <div className="mt-1 opacity-90">{a.finding}</div>
-                </div>
-              )}
-            </div>
-          );
-        })}
+        {/* Angle badges — adaptativos com colisão + estilo 0° confirmado */}
+        {(() => {
+          const items = Object.entries(ang)
+            .map(([k, a]) => {
+              const anchor = anchorForAngle(data.view, k, lm);
+              if (!anchor) return null;
+              return { k, a, anchor };
+            })
+            .filter(Boolean) as { k: string; a: AngleData; anchor: { x: number; y: number } }[];
 
-        {/* Education Mode balloons */}
-        {eduMode && Object.entries(lm).filter(([k, p]) => PRIMARY.has(k) && isValidPoint(p) && EDU[k]).map(([k, p]) => {
-          const exterior = p.x < 50 ? -1 : 1;
-          const bx = Math.max(2, Math.min(98, p.x + exterior * 10));
-          const by = Math.max(2, Math.min(95, p.y + 4));
-          const edu = EDU[k];
-          return (
-            <div
-              key={`edu-${k}`}
-              className="absolute text-[10px] leading-tight"
-              style={{
-                left: `${bx}%`,
-                top: `${by}%`,
-                transform: exterior > 0 ? "translate(0,0)" : "translate(-100%,0)",
-                background: C.dark,
-                border: `1px solid ${C.cyan}`,
-                borderRadius: 6,
-                padding: "4px 6px",
-                maxWidth: 140,
-                color: C.white,
-              }}
-            >
-              <div className="font-bold mb-0.5" style={{ color: C.cyan }}>{lm[k].label}</div>
-              <div className="opacity-75">{edu.reveals}</div>
-              {edu.dom && <div className="mt-0.5">💪 <span className="opacity-90">{edu.dom}</span></div>}
-              {edu.inh && <div>⚠️ <span className="opacity-90">{edu.inh}</span></div>}
-            </div>
-          );
-        })}
+          const placed: { x: number; y: number }[] = [];
+          const BW = 14, BH = 4.5;
+
+          return items.map(({ k, a, anchor }, idx) => {
+            const isZeroConfirmed = a.value === 0 && (a.normal?.includes("0") || a.normal === "0°");
+            const isUnknown = !Number.isFinite(a.value);
+            const sev = severityOf(a.value, a.normal);
+            const color = isZeroConfirmed ? "#9CA3AF" : isUnknown ? "#6B7280" : colorBySev(sev);
+            const unit = a.unit?.includes("graus") ? "°" : a.unit?.includes("cm") ? "cm" : a.unit?.includes("mm") ? "mm" : "";
+            const arrow = isZeroConfirmed || isUnknown ? "" : directionArrow(k, a.value);
+            const active = selected === k;
+
+            // FIX 2 — direção adaptativa
+            let bx = anchor.x, by = anchor.y;
+            let transform = "translate(-50%, -50%)";
+            if (anchor.y > 70) { by = anchor.y - 7; transform = "translate(-50%, -100%)"; }
+            else if (anchor.y < 30) { by = anchor.y + 7; transform = "translate(-50%, 0)"; }
+            else if (anchor.x < 20) { bx = anchor.x + 9; transform = "translate(0, -50%)"; }
+            else if (anchor.x > 80) { bx = anchor.x - 9; transform = "translate(-100%, -50%)"; }
+            else {
+              const ext = anchor.x < 50 ? -1 : 1;
+              bx = anchor.x + ext * 9;
+              transform = ext > 0 ? "translate(0, -50%)" : "translate(-100%, -50%)";
+            }
+
+            // FIX 1 — offset progressivo de colisão
+            let attempts = 0;
+            while (placed.some((p) => Math.abs(p.x - bx) < BW && Math.abs(p.y - by) < BH) && attempts < 8) {
+              by += attempts % 2 === 0 ? BH + 0.5 : -(BH + 0.5);
+              attempts++;
+            }
+            bx = Math.max(2, Math.min(98, bx));
+            by = Math.max(3, Math.min(97, by));
+            placed.push({ x: bx, y: by });
+
+            const text = isUnknown ? "—" : isZeroConfirmed ? "0° ✓" : `${a.value}${unit}${arrow}`;
+            const borderStyle = isUnknown ? "dashed" : "solid";
+            const bg = isZeroConfirmed ? "#2A2A2A" : "rgba(0,0,0,0.78)";
+
+            return (
+              <div key={`ang-wrap-${k}`}>
+                {/* Linha conectora badge → âncora */}
+                <svg
+                  className="absolute inset-0 pointer-events-none"
+                  viewBox="0 0 100 100"
+                  preserveAspectRatio="none"
+                  style={{ overflow: "visible" }}
+                >
+                  <line
+                    x1={anchor.x} y1={anchor.y} x2={bx} y2={by}
+                    stroke={C.white} strokeOpacity={0.4}
+                    vectorEffect="non-scaling-stroke"
+                    style={{ strokeWidth: 1 }}
+                  />
+                </svg>
+                <div style={{ position: "absolute", left: `${bx}%`, top: `${by}%`, transform, pointerEvents: "auto" }}>
+                  <button
+                    onClick={() => onSelect(active ? "" : k)}
+                    className="text-[10px] font-mono font-bold transition-all"
+                    style={{
+                      background: bg,
+                      color,
+                      border: `1.5px ${borderStyle} ${color}`,
+                      borderRadius: 4,
+                      padding: "2px 6px",
+                      boxShadow: active ? `0 0 8px ${color}` : "none",
+                    }}
+                  >
+                    {text}
+                  </button>
+                  {active && (
+                    <div className="mt-1 text-[10px] rounded-md p-2 shadow-xl max-w-[220px]" style={{ background: C.dark, color: C.white, border: `1px solid ${color}` }}>
+                      <div className="font-bold mb-1" style={{ color }}>{FRIENDLY[k] || k}</div>
+                      <div className="opacity-70">Normal: {a.normal}</div>
+                      <div className="mt-1 opacity-90">{a.finding}</div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          });
+        })()}
+
+        {/* Education Mode balloons — FIX 1 (colisão + bilateral collapse) + FIX 2 (adaptativo) */}
+        {eduMode && (() => {
+          const eduItems = Object.entries(lm)
+            .filter(([k, p]) => PRIMARY.has(k) && isValidPoint(p) && EDU[k]);
+
+          // Collapse bilateral pairs (left/right < 10% distance)
+          type EduItem = { keys: string[]; anchors: Landmark[]; label: string; reveals: string; dom?: string; inh?: string };
+          const used = new Set<string>();
+          const items: EduItem[] = [];
+          for (const [k, p] of eduItems) {
+            if (used.has(k)) continue;
+            const baseKey = k.replace(/_left$|_right$/, "");
+            const otherKey = k.endsWith("_left") ? `${baseKey}_right` : k.endsWith("_right") ? `${baseKey}_left` : "";
+            const otherEntry = otherKey ? eduItems.find(([kk]) => kk === otherKey) : undefined;
+            if (otherEntry && Math.hypot(otherEntry[1].x - p.x, otherEntry[1].y - p.y) < 10) {
+              used.add(k); used.add(otherKey);
+              items.push({
+                keys: [k, otherKey],
+                anchors: [p, otherEntry[1]],
+                label: lm[baseKey + "_left"]?.label?.replace(/ E$| D$/, "") || baseKey,
+                reveals: EDU[k].reveals,
+                dom: EDU[k].dom,
+                inh: EDU[k].inh,
+              });
+            } else {
+              used.add(k);
+              items.push({ keys: [k], anchors: [p], label: lm[k].label, reveals: EDU[k].reveals, dom: EDU[k].dom, inh: EDU[k].inh });
+            }
+          }
+
+          const placedEdu: { x: number; y: number }[] = [];
+          const BW = 28, BH = 9;
+
+          return items.map((it, idx) => {
+            const cx = it.anchors.reduce((s, p) => s + p.x, 0) / it.anchors.length;
+            const cy = it.anchors.reduce((s, p) => s + p.y, 0) / it.anchors.length;
+
+            // FIX 2 — direção adaptativa baseada em posição
+            let bx = cx, by = cy;
+            let transform = "translate(-50%, -50%)";
+            if (cy > 70) { by = cy - 12; transform = "translate(-50%, -100%)"; }
+            else if (cy < 30) { by = cy + 12; transform = "translate(-50%, 0)"; }
+            else if (cx < 20) { bx = cx + 14; transform = "translate(0, -50%)"; }
+            else if (cx > 80) { bx = cx - 14; transform = "translate(-100%, -50%)"; }
+            else {
+              const ext = cx < 50 ? -1 : 1;
+              bx = cx + ext * 14;
+              transform = ext > 0 ? "translate(0, -50%)" : "translate(-100%, -50%)";
+            }
+
+            // FIX 1 — colisão progressiva (15% step)
+            let attempts = 0;
+            while (placedEdu.some((p) => Math.abs(p.x - bx) < BW && Math.abs(p.y - by) < BH) && attempts < 6) {
+              by += attempts % 2 === 0 ? BH + 1 : -(BH + 1);
+              attempts++;
+            }
+            bx = Math.max(2, Math.min(98, bx));
+            by = Math.max(4, Math.min(96, by));
+            placedEdu.push({ x: bx, y: by });
+
+            return (
+              <div key={`edu-${idx}`}>
+                {/* Linhas conectoras (uma por âncora) */}
+                <svg className="absolute inset-0 pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none" style={{ overflow: "visible" }}>
+                  {it.anchors.map((a, i) => (
+                    <line
+                      key={i}
+                      x1={a.x} y1={a.y} x2={bx} y2={by}
+                      stroke={C.white} strokeOpacity={0.4}
+                      vectorEffect="non-scaling-stroke"
+                      style={{ strokeWidth: 1 }}
+                    />
+                  ))}
+                </svg>
+                <div
+                  className="absolute text-[10px] leading-tight"
+                  style={{
+                    left: `${bx}%`,
+                    top: `${by}%`,
+                    transform,
+                    background: C.dark,
+                    border: `1px solid ${C.cyan}`,
+                    borderRadius: 6,
+                    padding: "4px 6px",
+                    maxWidth: 160,
+                    color: C.white,
+                  }}
+                >
+                  <div className="font-bold mb-0.5" style={{ color: C.cyan }}>
+                    {it.label}{it.keys.length > 1 ? " (E/D)" : ""}
+                  </div>
+                  <div className="opacity-75">{it.reveals}</div>
+                  {it.dom && <div className="mt-0.5">💪 <span className="opacity-90">{it.dom}</span></div>}
+                  {it.inh && <div>⚠️ <span className="opacity-90">{it.inh}</span></div>}
+                </div>
+              </div>
+            );
+          });
+        })()}
       </div>
     </>
   );
 }
 
 // ─── SVG helpers ─────────────────────────────────────────────────
-function SvgLine({ p1, p2, color, dashed }: { p1?: Landmark; p2?: Landmark; color: string; dashed?: boolean }) {
+function SvgLine({ p1, p2, color, dashed, thickness }: { p1?: Landmark; p2?: Landmark; color: string; dashed?: boolean; thickness?: number }) {
   if (!isValidPoint(p1) || !isValidPoint(p2)) return null;
   return (
     <line
@@ -855,7 +1112,7 @@ function SvgLine({ p1, p2, color, dashed }: { p1?: Landmark; p2?: Landmark; colo
       stroke={color}
       strokeDasharray={dashed ? "2 1" : undefined}
       vectorEffect="non-scaling-stroke"
-      style={{ strokeWidth: 2 }}
+      style={{ strokeWidth: thickness ?? 2 }}
     />
   );
 }
