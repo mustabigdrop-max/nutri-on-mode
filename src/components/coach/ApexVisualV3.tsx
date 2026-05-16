@@ -585,6 +585,8 @@ export default function ApexVisualV3() {
           fotos,
           contexto: `Fase corporal declarada: ${fase}. Observação do coach: ${obs || "nenhuma"}. Gere análise APEX v3 completa.`,
           system: buildSystem(cat, athlete, protocol),
+          sex: cat.g === "F" ? "F" : "M",
+          category: cat.l,
         },
       });
 
