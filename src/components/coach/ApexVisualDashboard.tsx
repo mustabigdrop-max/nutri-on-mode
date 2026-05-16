@@ -315,6 +315,45 @@ const toBase64 = (file: File): Promise<string> =>
     r.readAsDataURL(file);
   });
 
+// ─── Landmarks parser ───────────────────────────────────────────
+const parseLandmarks = (text: string): LandmarkBundle => {
+  const out: LandmarkBundle = {};
+  const re = /```json_landmarks_(front|lateral|back)\s*([\s\S]*?)```/gi;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(text)) !== null) {
+    const view = m[1].toLowerCase() as "front" | "lateral" | "back";
+    try {
+      const parsed = JSON.parse(m[2].trim());
+      if (parsed && parsed.landmarks && parsed.angles) {
+        out[view] = { view, landmarks: parsed.landmarks, angles: parsed.angles } as LandmarkView;
+      }
+    } catch (e) {
+      console.warn(`landmarks ${view} parse failed`, e);
+    }
+  }
+  return out;
+};
+
+const uploadApexPhoto = async (
+  file: File,
+  coachId: string | null,
+  athleteId: string | null,
+  slot: "front" | "back" | "side"
+): Promise<string | null> => {
+  if (!file || !coachId) return null;
+  const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
+  const ts = Date.now();
+  const path = `${coachId}/${athleteId || "noath"}/${ts}-${slot}.${ext}`;
+  const { error } = await supabase.storage.from("apex-visual-photos").upload(path, file, {
+    contentType: file.type || "image/jpeg",
+    upsert: false,
+  });
+  if (error) {
+    console.warn("apex photo upload failed", error);
+    return null;
+  }
+  return path;
+};
 const segColor = (s: number) =>
   s >= 8 ? "#1DB87A" : s >= 6 ? "#C47A15" : s >= 4 ? "#E07030" : "#D94040";
 const segBadge = (s: number) =>
