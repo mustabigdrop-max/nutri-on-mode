@@ -961,6 +961,7 @@ Suporte em uso: ${suporte || "não informado"}` : "";
     const segments = parseSegments(analysisResult);
     const tabs = [
       { key: "scores", label: "Scores" },
+      { key: "visual", label: "📐 Análise Visual" },
       { key: "postura", label: "Postura" },
       { key: "correcoes", label: "Correções" },
       { key: "protocolo", label: "Protocolo" },
