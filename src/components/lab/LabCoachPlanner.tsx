@@ -214,6 +214,7 @@ const LabCoachPlanner = ({ onAskApex }: { onAskApex: (q: string) => void }) => {
         .select("day_of_week, workout_type, workout_time, duration_minutes, slot")
         .eq("user_id", c.user_id);
 
+      const fem = await buildFeminineContext(c.user_id, c.sex, (c as any)?.federacao_categoria);
       const { data, error } = await supabase.functions.invoke("generate-meal-plan", {
         body: {
           // ── Dados demográficos diretos (Edge Function espera no body raiz) ──
