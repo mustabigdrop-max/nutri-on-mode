@@ -33,6 +33,10 @@ interface PatientRow {
   score?: number;
   last_activity?: string;
   created_at: string;
+  sex?: string | null;
+  ultima_menstruacao?: string | null;
+  duracao_ciclo?: number | null;
+  fase_ciclo?: string | null;
 }
 
 const CoachDashboardPage = () => {
@@ -75,7 +79,7 @@ const CoachDashboardPage = () => {
         for (const p of patientsData) {
           const { data: prof } = await supabase
             .from("profiles")
-            .select("full_name, updated_at")
+            .select("full_name, updated_at, sex")
             .eq("user_id", p.patient_user_id)
             .maybeSingle();
 
@@ -87,11 +91,25 @@ const CoachDashboardPage = () => {
             .limit(1)
             .maybeSingle();
 
+          let femP: any = null;
+          if ((prof as any)?.sex === "F") {
+            const { data } = await supabase
+              .from("feminine_profiles" as any)
+              .select("ultima_menstruacao,duracao_ciclo,fase_ciclo")
+              .eq("user_id", p.patient_user_id)
+              .maybeSingle();
+            femP = data;
+          }
+
           enriched.push({
             ...p,
             patient_name: prof?.full_name || "Paciente",
             score: scoreData?.total_score || 0,
             last_activity: prof?.updated_at || p.created_at,
+            sex: (prof as any)?.sex || null,
+            ultima_menstruacao: femP?.ultima_menstruacao || null,
+            duracao_ciclo: femP?.duracao_ciclo || null,
+            fase_ciclo: femP?.fase_ciclo || null,
           });
         }
       }
