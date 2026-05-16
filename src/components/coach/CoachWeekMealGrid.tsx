@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Save, Sparkles, Loader2, Search, ChevronLeft, ChevronRight, Dumbbell, Bed } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { buildTrainingDayMap, classifyMealVsWorkout, splitWeeklyAverages, type TrainingDayInfo } from "@/lib/trainingDayMap";
+import { buildFeminineContext } from "@/lib/feminineContext";
 
 const MEAL_TYPES = [
   { key: "cafe_manha", label: "☕ Café" },
