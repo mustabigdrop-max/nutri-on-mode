@@ -797,75 +797,198 @@ function OverlayLayer({
           </div>
         ))}
 
-        {/* Angle badges — positioned outside silhouette */}
-        {Object.entries(ang).map(([k, a]) => {
-          const anchor = anchorForAngle(data.view, k, lm);
-          if (!anchor) return null;
-          const sev = severityOf(a.value, a.normal);
-          const color = colorBySev(sev);
-          const unit = a.unit?.includes("graus") ? "°" : a.unit?.includes("cm") ? "cm" : "";
-          const arrow = directionArrow(k, a.value);
-          const active = selected === k;
-          // Push exterior
-          const exterior = anchor.x < 50 ? -1 : 1;
-          const bx = Math.max(2, Math.min(98, anchor.x + exterior * 8));
-          const by = Math.max(2, Math.min(98, anchor.y));
-          return (
-            <div key={`ang-${k}`} style={{ position: "absolute", left: `${bx}%`, top: `${by}%`, transform: exterior > 0 ? "translate(0,-50%)" : "translate(-100%,-50%)", pointerEvents: "auto" }}>
-              <button
-                onClick={() => onSelect(active ? "" : k)}
-                className="text-[10px] font-mono font-bold transition-all"
-                style={{
-                  background: "rgba(0,0,0,0.78)",
-                  color,
-                  border: `1.5px solid ${color}`,
-                  borderRadius: 4,
-                  padding: "2px 6px",
-                  boxShadow: active ? `0 0 8px ${color}` : "none",
-                }}
-              >
-                {a.value}{unit}{arrow}
-              </button>
-              {active && (
-                <div className="mt-1 text-[10px] rounded-md p-2 shadow-xl max-w-[220px]" style={{ background: C.dark, color: C.white, border: `1px solid ${color}` }}>
-                  <div className="font-bold mb-1" style={{ color }}>{FRIENDLY[k] || k}</div>
-                  <div className="opacity-70">Normal: {a.normal}</div>
-                  <div className="mt-1 opacity-90">{a.finding}</div>
-                </div>
-              )}
-            </div>
-          );
-        })}
+        {/* Angle badges — adaptativos com colisão + estilo 0° confirmado */}
+        {(() => {
+          const items = Object.entries(ang)
+            .map(([k, a]) => {
+              const anchor = anchorForAngle(data.view, k, lm);
+              if (!anchor) return null;
+              return { k, a, anchor };
+            })
+            .filter(Boolean) as { k: string; a: AngleData; anchor: { x: number; y: number } }[];
 
-        {/* Education Mode balloons */}
-        {eduMode && Object.entries(lm).filter(([k, p]) => PRIMARY.has(k) && isValidPoint(p) && EDU[k]).map(([k, p]) => {
-          const exterior = p.x < 50 ? -1 : 1;
-          const bx = Math.max(2, Math.min(98, p.x + exterior * 10));
-          const by = Math.max(2, Math.min(95, p.y + 4));
-          const edu = EDU[k];
-          return (
-            <div
-              key={`edu-${k}`}
-              className="absolute text-[10px] leading-tight"
-              style={{
-                left: `${bx}%`,
-                top: `${by}%`,
-                transform: exterior > 0 ? "translate(0,0)" : "translate(-100%,0)",
-                background: C.dark,
-                border: `1px solid ${C.cyan}`,
-                borderRadius: 6,
-                padding: "4px 6px",
-                maxWidth: 140,
-                color: C.white,
-              }}
-            >
-              <div className="font-bold mb-0.5" style={{ color: C.cyan }}>{lm[k].label}</div>
-              <div className="opacity-75">{edu.reveals}</div>
-              {edu.dom && <div className="mt-0.5">💪 <span className="opacity-90">{edu.dom}</span></div>}
-              {edu.inh && <div>⚠️ <span className="opacity-90">{edu.inh}</span></div>}
-            </div>
-          );
-        })}
+          const placed: { x: number; y: number }[] = [];
+          const BW = 14, BH = 4.5;
+
+          return items.map(({ k, a, anchor }, idx) => {
+            const isZeroConfirmed = a.value === 0 && (a.normal?.includes("0") || a.normal === "0°");
+            const isUnknown = !Number.isFinite(a.value);
+            const sev = severityOf(a.value, a.normal);
+            const color = isZeroConfirmed ? "#9CA3AF" : isUnknown ? "#6B7280" : colorBySev(sev);
+            const unit = a.unit?.includes("graus") ? "°" : a.unit?.includes("cm") ? "cm" : a.unit?.includes("mm") ? "mm" : "";
+            const arrow = isZeroConfirmed || isUnknown ? "" : directionArrow(k, a.value);
+            const active = selected === k;
+
+            // FIX 2 — direção adaptativa
+            let bx = anchor.x, by = anchor.y;
+            let transform = "translate(-50%, -50%)";
+            if (anchor.y > 70) { by = anchor.y - 7; transform = "translate(-50%, -100%)"; }
+            else if (anchor.y < 30) { by = anchor.y + 7; transform = "translate(-50%, 0)"; }
+            else if (anchor.x < 20) { bx = anchor.x + 9; transform = "translate(0, -50%)"; }
+            else if (anchor.x > 80) { bx = anchor.x - 9; transform = "translate(-100%, -50%)"; }
+            else {
+              const ext = anchor.x < 50 ? -1 : 1;
+              bx = anchor.x + ext * 9;
+              transform = ext > 0 ? "translate(0, -50%)" : "translate(-100%, -50%)";
+            }
+
+            // FIX 1 — offset progressivo de colisão
+            let attempts = 0;
+            while (placed.some((p) => Math.abs(p.x - bx) < BW && Math.abs(p.y - by) < BH) && attempts < 8) {
+              by += attempts % 2 === 0 ? BH + 0.5 : -(BH + 0.5);
+              attempts++;
+            }
+            bx = Math.max(2, Math.min(98, bx));
+            by = Math.max(3, Math.min(97, by));
+            placed.push({ x: bx, y: by });
+
+            const text = isUnknown ? "—" : isZeroConfirmed ? "0° ✓" : `${a.value}${unit}${arrow}`;
+            const borderStyle = isUnknown ? "dashed" : "solid";
+            const bg = isZeroConfirmed ? "#2A2A2A" : "rgba(0,0,0,0.78)";
+
+            return (
+              <div key={`ang-wrap-${k}`}>
+                {/* Linha conectora badge → âncora */}
+                <svg
+                  className="absolute inset-0 pointer-events-none"
+                  viewBox="0 0 100 100"
+                  preserveAspectRatio="none"
+                  style={{ overflow: "visible" }}
+                >
+                  <line
+                    x1={anchor.x} y1={anchor.y} x2={bx} y2={by}
+                    stroke={C.white} strokeOpacity={0.4}
+                    vectorEffect="non-scaling-stroke"
+                    style={{ strokeWidth: 1 }}
+                  />
+                </svg>
+                <div style={{ position: "absolute", left: `${bx}%`, top: `${by}%`, transform, pointerEvents: "auto" }}>
+                  <button
+                    onClick={() => onSelect(active ? "" : k)}
+                    className="text-[10px] font-mono font-bold transition-all"
+                    style={{
+                      background: bg,
+                      color,
+                      border: `1.5px ${borderStyle} ${color}`,
+                      borderRadius: 4,
+                      padding: "2px 6px",
+                      boxShadow: active ? `0 0 8px ${color}` : "none",
+                    }}
+                  >
+                    {text}
+                  </button>
+                  {active && (
+                    <div className="mt-1 text-[10px] rounded-md p-2 shadow-xl max-w-[220px]" style={{ background: C.dark, color: C.white, border: `1px solid ${color}` }}>
+                      <div className="font-bold mb-1" style={{ color }}>{FRIENDLY[k] || k}</div>
+                      <div className="opacity-70">Normal: {a.normal}</div>
+                      <div className="mt-1 opacity-90">{a.finding}</div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          });
+        })()}
+
+        {/* Education Mode balloons — FIX 1 (colisão + bilateral collapse) + FIX 2 (adaptativo) */}
+        {eduMode && (() => {
+          const eduItems = Object.entries(lm)
+            .filter(([k, p]) => PRIMARY.has(k) && isValidPoint(p) && EDU[k]);
+
+          // Collapse bilateral pairs (left/right < 10% distance)
+          type EduItem = { keys: string[]; anchors: Landmark[]; label: string; reveals: string; dom?: string; inh?: string };
+          const used = new Set<string>();
+          const items: EduItem[] = [];
+          for (const [k, p] of eduItems) {
+            if (used.has(k)) continue;
+            const baseKey = k.replace(/_left$|_right$/, "");
+            const otherKey = k.endsWith("_left") ? `${baseKey}_right` : k.endsWith("_right") ? `${baseKey}_left` : "";
+            const otherEntry = otherKey ? eduItems.find(([kk]) => kk === otherKey) : undefined;
+            if (otherEntry && Math.hypot(otherEntry[1].x - p.x, otherEntry[1].y - p.y) < 10) {
+              used.add(k); used.add(otherKey);
+              items.push({
+                keys: [k, otherKey],
+                anchors: [p, otherEntry[1]],
+                label: lm[baseKey + "_left"]?.label?.replace(/ E$| D$/, "") || baseKey,
+                reveals: EDU[k].reveals,
+                dom: EDU[k].dom,
+                inh: EDU[k].inh,
+              });
+            } else {
+              used.add(k);
+              items.push({ keys: [k], anchors: [p], label: lm[k].label, reveals: EDU[k].reveals, dom: EDU[k].dom, inh: EDU[k].inh });
+            }
+          }
+
+          const placedEdu: { x: number; y: number }[] = [];
+          const BW = 28, BH = 9;
+
+          return items.map((it, idx) => {
+            const cx = it.anchors.reduce((s, p) => s + p.x, 0) / it.anchors.length;
+            const cy = it.anchors.reduce((s, p) => s + p.y, 0) / it.anchors.length;
+
+            // FIX 2 — direção adaptativa baseada em posição
+            let bx = cx, by = cy;
+            let transform = "translate(-50%, -50%)";
+            if (cy > 70) { by = cy - 12; transform = "translate(-50%, -100%)"; }
+            else if (cy < 30) { by = cy + 12; transform = "translate(-50%, 0)"; }
+            else if (cx < 20) { bx = cx + 14; transform = "translate(0, -50%)"; }
+            else if (cx > 80) { bx = cx - 14; transform = "translate(-100%, -50%)"; }
+            else {
+              const ext = cx < 50 ? -1 : 1;
+              bx = cx + ext * 14;
+              transform = ext > 0 ? "translate(0, -50%)" : "translate(-100%, -50%)";
+            }
+
+            // FIX 1 — colisão progressiva (15% step)
+            let attempts = 0;
+            while (placedEdu.some((p) => Math.abs(p.x - bx) < BW && Math.abs(p.y - by) < BH) && attempts < 6) {
+              by += attempts % 2 === 0 ? BH + 1 : -(BH + 1);
+              attempts++;
+            }
+            bx = Math.max(2, Math.min(98, bx));
+            by = Math.max(4, Math.min(96, by));
+            placedEdu.push({ x: bx, y: by });
+
+            return (
+              <div key={`edu-${idx}`}>
+                {/* Linhas conectoras (uma por âncora) */}
+                <svg className="absolute inset-0 pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none" style={{ overflow: "visible" }}>
+                  {it.anchors.map((a, i) => (
+                    <line
+                      key={i}
+                      x1={a.x} y1={a.y} x2={bx} y2={by}
+                      stroke={C.white} strokeOpacity={0.4}
+                      vectorEffect="non-scaling-stroke"
+                      style={{ strokeWidth: 1 }}
+                    />
+                  ))}
+                </svg>
+                <div
+                  className="absolute text-[10px] leading-tight"
+                  style={{
+                    left: `${bx}%`,
+                    top: `${by}%`,
+                    transform,
+                    background: C.dark,
+                    border: `1px solid ${C.cyan}`,
+                    borderRadius: 6,
+                    padding: "4px 6px",
+                    maxWidth: 160,
+                    color: C.white,
+                  }}
+                >
+                  <div className="font-bold mb-0.5" style={{ color: C.cyan }}>
+                    {it.label}{it.keys.length > 1 ? " (E/D)" : ""}
+                  </div>
+                  <div className="opacity-75">{it.reveals}</div>
+                  {it.dom && <div className="mt-0.5">💪 <span className="opacity-90">{it.dom}</span></div>}
+                  {it.inh && <div>⚠️ <span className="opacity-90">{it.inh}</span></div>}
+                </div>
+              </div>
+            );
+          });
+        })()}
       </div>
     </>
   );
