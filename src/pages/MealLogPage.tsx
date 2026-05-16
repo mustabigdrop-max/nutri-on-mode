@@ -83,6 +83,46 @@ interface SelectedFood {
   quantity: number;
 }
 
+const parseNutritionNumber = (value: unknown): number => {
+  if (typeof value === "number") return Number.isFinite(value) ? value : 0;
+  if (typeof value === "string") {
+    const match = value.replace(",", ".").match(/-?\d+(\.\d+)?/);
+    return match ? Number(match[0]) : 0;
+  }
+  return 0;
+};
+
+const readNutritionValue = (food: Record<string, any>, keys: string[]) => {
+  const pools = [food, food.macros, food.nutrition, food.nutritional_values, food.valores_nutricionais];
+  for (const pool of pools) {
+    if (!pool || typeof pool !== "object") continue;
+    for (const key of keys) {
+      if (pool[key] !== undefined && pool[key] !== null) return parseNutritionNumber(pool[key]);
+    }
+  }
+  return 0;
+};
+
+const normalizeFoodFromAI = (food: Record<string, any>): FoodItem & { micronutrients?: Record<string, number> } => {
+  const protein = readNutritionValue(food, ["protein", "proteins", "protein_g", "proteina", "proteína", "proteina_g"]);
+  const carbs = readNutritionValue(food, ["carbs", "carb", "carbohydrates", "carbohydrate", "carbs_g", "carboidratos", "carboidrato", "carboidratos_g"]);
+  const fat = readNutritionValue(food, ["fat", "fats", "fat_g", "gordura", "gorduras", "gordura_g", "lipidios", "lipídios"]);
+  const kcal = readNutritionValue(food, ["kcal", "calories", "calorias", "energia_kcal", "energy_kcal"]) || Math.round(protein * 4 + carbs * 4 + fat * 9);
+
+  return {
+    id: String(food.id || `ai-${Date.now()}-${Math.random().toString(36).slice(2)}`),
+    name: String(food.name || food.nome || food.food || food.alimento || "Alimento"),
+    portion: String(food.portion || food.porcao || food.porção || food.serving || "porção estimada"),
+    portionGrams: parseNutritionNumber(food.portionGrams || food.grams || food.gramas) || 100,
+    kcal,
+    protein,
+    carbs,
+    fat,
+    category: "🤖 IA",
+    micronutrients: food.micronutrients || food.micronutrientes || {},
+  };
+};
+
 type InputMode = "manual" | "ai-text" | "ai-photo" | "voice" | "barcode" | "quick" | "visual";
 
 interface SavedMeal {
@@ -291,24 +331,18 @@ const MealLogPage = () => {
     setSelectedFoods(prev => prev.filter(sf => sf.food.id !== foodId));
   };
 
-  const addAiFoods = (foods: Array<{ name: string; portion: string; kcal: number; protein: number; carbs: number; fat: number; micronutrients?: Record<string, number> }>, qualityScore?: number) => {
-    const newFoods: SelectedFood[] = foods.map((f, i) => ({
+  const addAiFoods = (foods: Array<Record<string, any>>, qualityScore?: number) => {
+    const normalizedFoods = foods.map(normalizeFoodFromAI);
+    const newFoods: SelectedFood[] = normalizedFoods.map((food, i) => ({
       food: {
+        ...food,
         id: `ai-${Date.now()}-${i}`,
-        name: f.name,
-        portion: f.portion,
-        portionGrams: 100,
-        kcal: f.kcal,
-        protein: f.protein,
-        carbs: f.carbs,
-        fat: f.fat,
-        category: "🤖 IA",
       },
       quantity: 1,
     }));
     setSelectedFoods(prev => [...prev, ...newFoods]);
     // Store micronutrients for saving later
-    const micros = foods.map(f => f.micronutrients || {});
+    const micros = normalizedFoods.map(f => f.micronutrients || {});
     setAiMicronutrients(prev => [...prev, ...micros]);
     if (qualityScore != null) setAiQualityScore(qualityScore);
   };
