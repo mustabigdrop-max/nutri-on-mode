@@ -338,6 +338,7 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
             title="Mostra caixas de colisão e zona da silhueta"
           >
             🐛 Debug
+          </button>
           <button
             onClick={handleExport}
             disabled={exporting}
