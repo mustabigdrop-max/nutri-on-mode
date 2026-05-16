@@ -1042,6 +1042,13 @@ Suporte em uso: ${suporte || "não informado"}` : "";
               <InfoBlock title="Impacto visual" body={parseSection(analysisResult, "IMPACTO_VISUAL", "SCORES_SEGMENTOS")} accent={cat.color} />
             </div>
           )}
+          {activeResultTab === "visual" && (
+            <ApexVisualOverlay
+              landmarks={parseLandmarks(analysisResult)}
+              photos={photoUrls}
+              athleteName={athlete?.nome}
+            />
+          )}
           {activeResultTab === "postura" && (
             <div className="space-y-3">
               <InfoBox color="#D94040" text="Desvios posturais detectados — músculo dominante vs inibido e impacto no palco." />
