@@ -11,6 +11,7 @@ import {
   ChevronLeft, ChevronRight, Check, RefreshCw, User
 } from "lucide-react";
 import { toast } from "sonner";
+import { buildFeminineContext } from "@/lib/feminineContext";
 
 const DAY_LABELS = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
 const MEAL_TYPES = [
