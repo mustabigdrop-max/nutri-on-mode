@@ -552,34 +552,74 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
                       <span className="font-bold text-foreground">Desvio: </span>
                       <span className="text-muted-foreground">{f.finding}</span>
                     </div>
-                    {EDU[anchorLandmark(view, f.key)] && (
+                    {f.key === "scapular_axis_tilt" ? (() => {
+                      const side = f.value > 0 ? "D" : "E";
+                      const opp = side === "D" ? "E" : "D";
+                      return (
+                        <>
+                          <div>
+                            <span className="font-bold text-foreground">💪 Hiperativos: </span>
+                            <span className="text-muted-foreground">
+                              Trapézio superior {side}, elevador da escápula {side}, romboide {side} (encurtado).
+                            </span>
+                          </div>
+                          <div>
+                            <span className="font-bold text-foreground">⚠️ Inibidos: </span>
+                            <span className="text-muted-foreground">
+                              Serrátil anterior {opp}, trapézio inferior {opp}, manguito rotador {opp} (báscula superior comprometida).
+                            </span>
+                          </div>
+                          <div>
+                            <span className="font-bold text-foreground">🔗 Cadeia: </span>
+                            <span className="text-muted-foreground">
+                              Desbalanço no par de forças escapular → discinesia → impacto subacromial {opp} → compensação cervico-torácica.
+                            </span>
+                          </div>
+                          <div>
+                            <span className="font-bold text-foreground">🎯 Correção prescrita: </span>
+                            <span className="text-muted-foreground block mt-0.5 space-y-0.5">
+                              <span className="block">1. Liberação miofascial trapézio superior {side} (1–2 min).</span>
+                              <span className="block">2. Alongamento elevador da escápula {side}: 3×30s.</span>
+                              <span className="block">3. Wall slides + serrátil punch {opp}: 3×12 (báscula superior).</span>
+                              <span className="block">4. Y-T-W prone com foco em trapézio inferior {opp}: 3×10.</span>
+                              <span className="block">5. Face pull com rotação externa: 4×15 (reeducação do par de forças).</span>
+                              <span className="block">6. Reavaliar eixo em 4 semanas — alvo {"<"} 2°.</span>
+                            </span>
+                          </div>
+                        </>
+                      );
+                    })() : (
                       <>
-                        {EDU[anchorLandmark(view, f.key)].dom && (
-                          <div>
-                            <span className="font-bold text-foreground">💪 Dominante: </span>
-                            <span className="text-muted-foreground">{EDU[anchorLandmark(view, f.key)].dom}</span>
-                          </div>
+                        {EDU[anchorLandmark(view, f.key)] && (
+                          <>
+                            {EDU[anchorLandmark(view, f.key)].dom && (
+                              <div>
+                                <span className="font-bold text-foreground">💪 Dominante: </span>
+                                <span className="text-muted-foreground">{EDU[anchorLandmark(view, f.key)].dom}</span>
+                              </div>
+                            )}
+                            {EDU[anchorLandmark(view, f.key)].inh && (
+                              <div>
+                                <span className="font-bold text-foreground">⚠️ Inibido: </span>
+                                <span className="text-muted-foreground">{EDU[anchorLandmark(view, f.key)].inh}</span>
+                              </div>
+                            )}
+                          </>
                         )}
-                        {EDU[anchorLandmark(view, f.key)].inh && (
-                          <div>
-                            <span className="font-bold text-foreground">⚠️ Inibido: </span>
-                            <span className="text-muted-foreground">{EDU[anchorLandmark(view, f.key)].inh}</span>
-                          </div>
-                        )}
+                        <div>
+                          <span className="font-bold text-foreground">Cadeia: </span>
+                          <span className="text-muted-foreground">
+                            {chains[0]?.description || "Compensações em segmentos adjacentes — avaliar pelvi-tronco-ombro."}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="font-bold text-foreground">Correção: </span>
+                          <span className="text-muted-foreground">
+                            2-3 exercícios corretivos: ativação isolada do antagonista 3×15, alongamento do dominante 3×30s, integração funcional 3×10.
+                          </span>
+                        </div>
                       </>
                     )}
-                    <div>
-                      <span className="font-bold text-foreground">Cadeia: </span>
-                      <span className="text-muted-foreground">
-                        {chains[0]?.description || "Compensações em segmentos adjacentes — avaliar pelvi-tronco-ombro."}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="font-bold text-foreground">Correção: </span>
-                      <span className="text-muted-foreground">
-                        2-3 exercícios corretivos: ativação isolada do antagonista 3×15, alongamento do dominante 3×30s, integração funcional 3×10.
-                      </span>
-                    </div>
                   </div>
                 )}
               </div>
@@ -765,7 +805,7 @@ function OverlayLayer({
                 <circle cx={lm.spine_l5.x} cy={lm.spine_l5.y} r={1.6} fill="#FFD700" stroke="#000" vectorEffect="non-scaling-stroke" style={{ strokeWidth: 1 }} />
               </>
             )}
-            {/* MELHORIA 1 — Eixo escapular 2.5px ciano (vermelho se >2°), losango central */}
+            {/* MELHORIA 1 — Eixo escapular 2.5px ciano (vermelho se >2°), losango central, CLICÁVEL */}
             {isValidPoint(lm.scapula_left) && isValidPoint(lm.scapula_right) && (() => {
               const dx = lm.scapula_right.x - lm.scapula_left.x;
               const dy = lm.scapula_right.y - lm.scapula_left.y;
@@ -774,23 +814,59 @@ function OverlayLayer({
               const stroke = critical ? C.red : C.cyan;
               const mx = (lm.scapula_left.x + lm.scapula_right.x) / 2;
               const my = (lm.scapula_left.y + lm.scapula_right.y) / 2;
+              const isSel = selected === "scapular_axis_tilt";
               return (
-                <>
+                <g
+                  style={{ cursor: "pointer" }}
+                  onClick={(e) => { e.stopPropagation(); onSelect("scapular_axis_tilt"); }}
+                >
+                  {/* halo glow quando selecionado */}
+                  {isSel && (
+                    <line
+                      x1={lm.scapula_left.x} y1={lm.scapula_left.y}
+                      x2={lm.scapula_right.x} y2={lm.scapula_right.y}
+                      stroke={stroke}
+                      strokeOpacity={0.35}
+                      vectorEffect="non-scaling-stroke"
+                      style={{ strokeWidth: 7 }}
+                    />
+                  )}
+                  {/* hit area invisível larga para facilitar o clique */}
+                  <line
+                    x1={lm.scapula_left.x} y1={lm.scapula_left.y}
+                    x2={lm.scapula_right.x} y2={lm.scapula_right.y}
+                    stroke="transparent"
+                    vectorEffect="non-scaling-stroke"
+                    style={{ strokeWidth: 14 }}
+                  />
                   <line
                     x1={lm.scapula_left.x} y1={lm.scapula_left.y}
                     x2={lm.scapula_right.x} y2={lm.scapula_right.y}
                     stroke={stroke}
                     vectorEffect="non-scaling-stroke"
-                    style={{ strokeWidth: 2.5 }}
+                    style={{ strokeWidth: isSel ? 3.5 : 2.5 }}
                   />
                   <polygon
-                    points={`${mx},${my - 1.2} ${mx + 1.2},${my} ${mx},${my + 1.2} ${mx - 1.2},${my}`}
+                    points={`${mx},${my - 1.4} ${mx + 1.4},${my} ${mx},${my + 1.4} ${mx - 1.4},${my}`}
                     fill={stroke}
                     stroke="#000"
                     vectorEffect="non-scaling-stroke"
                     style={{ strokeWidth: 1 }}
                   />
-                </>
+                  {/* badge "clique" sutil acima do losango */}
+                  <text
+                    x={mx} y={my - 2.4}
+                    textAnchor="middle"
+                    fill={stroke}
+                    fontSize={1.8}
+                    fontWeight={700}
+                    style={{ pointerEvents: "none", paintOrder: "stroke" }}
+                    stroke="#000"
+                    strokeWidth={0.4}
+                  >
+                    {isSel ? "▼ aberto" : "▲ clique"}
+                  </text>
+                </g>
               );
             })()}
           </>
