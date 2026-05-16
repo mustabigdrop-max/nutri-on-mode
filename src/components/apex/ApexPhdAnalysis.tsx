@@ -245,7 +245,7 @@ const RomResultView = ({ rom }: { rom: ROMData }) => {
   return (
     <>
       <Panel title="Radar ROM · % do Normal AAOS">
-        <div className="w-full h-72">
+        <div className="apex-radar-print w-full h-72">
           <ResponsiveContainer>
             <RadarChart data={radarData} margin={{ top: 10, right: 30, bottom: 10, left: 30 }}>
               <PolarGrid stroke="rgba(74,222,128,.15)" />
