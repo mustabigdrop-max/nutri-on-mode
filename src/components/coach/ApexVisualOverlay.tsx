@@ -511,13 +511,14 @@ function anchorLandmark(view: string, key: string): string {
 
 // ─── Overlay (HTML + SVG hybrid for crisp labels) ────────────────
 function OverlayLayer({
-  data, selected, onSelect, eduMode, chainMode, chains,
+  data, selected, onSelect, eduMode, chainMode, debugMode, chains,
 }: {
   data: LandmarkView;
   selected: string | null;
   onSelect: (k: string) => void;
   eduMode: boolean;
   chainMode: boolean;
+  debugMode: boolean;
   chains: { name: string; nodes: string[]; description: string }[];
 }) {
   const lm = data.landmarks;
