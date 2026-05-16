@@ -462,7 +462,24 @@ const CoachDashboardPage = () => {
                               {p.patient_name?.charAt(0) || "A"}
                             </div>
                             <div>
-                              <p className="font-medium text-foreground text-sm">{p.patient_name}</p>
+                              <div className="flex items-center gap-2">
+                                <p className="font-medium text-foreground text-sm">{p.patient_name}</p>
+                                {isFeminine({ sex: p.sex }) && (
+                                  <FeminineCycleBadge
+                                    phase={
+                                      p.ultima_menstruacao
+                                        ? getCyclePhase(p.ultima_menstruacao, p.duracao_ciclo || 28)
+                                        : ((p.fase_ciclo as any) || null)
+                                    }
+                                    cycleDay={
+                                      p.ultima_menstruacao
+                                        ? getCycleDayCount(p.ultima_menstruacao, p.duracao_ciclo || 28)
+                                        : null
+                                    }
+                                    compact
+                                  />
+                                )}
+                              </div>
                               <p className="text-xs text-muted-foreground">
                                 {formatRelativeTime(p.last_activity || p.created_at)}
                                 {(p.score ?? 0) < 30 && " — risco"}
