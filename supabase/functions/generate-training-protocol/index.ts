@@ -670,7 +670,12 @@ IMPORTANTE:
 - JSON COMPLETO. ZERO campos undefined/vazios. Todos os dias, todos os exercícios.
 - Use feeder_sets + top_set + backoff_sets para compostos principais.
 - Use work_sets para acessórios e isoladores.
-- Inclua "nutrition_notes" por sessão com orientação peri-treino.`;
+- Inclua "nutrition_notes" por sessão com orientação peri-treino.
+- REGRA APEX (OBRIGATÓRIA SE houver "=== DIAGNÓSTICO APEX ATIVO ===" no contexto): para CADA exercício, classifique o campo "apex_risk" baseado nas síndromes Janda, FMS, ROM e dor relatados no diagnóstico:
+  · "green" = exercício compatível com o perfil biomecânico (sem reason)
+  · "yellow" = executar com modificação — reason descreve a modificação específica (ex: "Reduzir amplitude para 70° por dorsiflexão limitada", "Substituir barra por halteres para evitar compressão acromial")
+  · "red" = contraindicado — reason descreve o motivo biomecânico exato (ex: "SCS severa + impacto subacromial — contraindica overhead com carga", "VMO inibido + valgo dinâmico — leg press fechado contraindicado")
+  Seja específico: cite a síndrome/disfunção/teste FMS exato que justifica a classificação.`;
   }
 
   if (tab === "anatomia") {
