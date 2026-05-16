@@ -932,7 +932,13 @@ Suporte em uso: ${suporte || "não informado"}` : "";
       const system = buildSystemPrompt(cat, athleteName, protocoloCompleto);
 
       const { data, error } = await supabase.functions.invoke("apex-visual-analyze", {
-        body: { fotos, contexto, system },
+        body: {
+          fotos, contexto, system,
+          sex: isFemAthlete ? "F" : (athlete?.sexo || null),
+          category: femCategory ? FEMININE_CATEGORIES[femCategory].label : (athlete?.categoria || null),
+          cyclePhase: cyclePhase || null,
+          cycleDay: cycleDay || null,
+        },
       });
       if (error) throw new Error(error.message);
       if ((data as any)?.error) throw new Error((data as any).error);
