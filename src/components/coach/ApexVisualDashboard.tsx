@@ -1215,16 +1215,24 @@ Suporte em uso: ${suporte || "não informado"}` : "";
                   ))}
                 </div>
 
-                {/* Sub-tab content */}
+                {/* Sub-tab content — visualização estruturada */}
                 <InfoBox color={current.color} text={current.intro} />
-                <Pre body={currentBody || "—"} />
-
-                {/* Extras — Otimização e Shape contextualizado sempre visíveis no fim */}
-                {activeVertexTab === "sinergia" && otimizacao && (
-                  <InfoBlock title="Otimização sugerida" body={otimizacao} accent="#1DB87A" />
-                )}
-                {activeVertexTab === "veredicto" && shape && (
-                  <InfoBlock title="Shape contextualizado pelo protocolo" body={shape} accent={cat.color} />
+                <VertexEnhancedView
+                  activeTab={activeVertexTab}
+                  analysisResult={analysisResult}
+                  segments={segments}
+                  farmMeta={farmMeta}
+                  categoryColor={cat.color}
+                  parseSection={parseSection}
+                />
+                {/* Fallback raw markdown (colapsado) caso a IA não respeite o formato esperado */}
+                {currentBody && (
+                  <details className="rounded border border-border/50 p-2 bg-card/30">
+                    <summary className="cursor-pointer text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                      📄 Texto bruto da IA
+                    </summary>
+                    <div className="mt-2"><Pre body={currentBody} /></div>
+                  </details>
                 )}
               </div>
             );
