@@ -654,6 +654,7 @@ FORMATO JSON OBRIGATÓRIO:
         "work_sets": { "sets": "string", "reps": "string", "rpe": "string", "rest": "string", "notes": "string" }
       },
       "execution_cues": "string", "why_this_exercise": "string", "biomechanics_note": "string",
+      "apex_risk": { "level": "green|yellow|red", "reason": "string (motivo/modificação curta — só quando houver diagnóstico APEX no contexto; caso contrário use level=green e reason vazia)" },
       "substitutes": [{ "name": "string", "reason": "string", "equipment": "string" }]
     }],
     "session_notes": "string",
