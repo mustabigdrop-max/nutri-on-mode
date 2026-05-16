@@ -790,21 +790,108 @@ function OverlayLayer({
           <>
             <SvgLine p1={lm.shoulder_left} p2={lm.shoulder_right} color={colorBySev(lineSev("shoulder_asymmetry"))} />
             <SvgLine p1={lm.hip_left} p2={lm.hip_right} color={colorBySev(lineSev("hip_asymmetry"))} />
-            {/* FIX 3 — C7→L5 sempre em amarelo, 2px */}
-            {isValidPoint(lm.spine_c7) && isValidPoint(lm.spine_l5) && (
-              <>
-                <line
-                  x1={lm.spine_c7.x} y1={lm.spine_c7.y}
-                  x2={lm.spine_l5.x} y2={lm.spine_l5.y}
-                  stroke="#FFD700"
-                  vectorEffect="non-scaling-stroke"
-                  style={{ strokeWidth: 2 }}
-                />
-                {/* Âncoras destacadas (círculo maior) */}
-                <circle cx={lm.spine_c7.x} cy={lm.spine_c7.y} r={1.6} fill="#FFD700" stroke="#000" vectorEffect="non-scaling-stroke" style={{ strokeWidth: 1 }} />
-                <circle cx={lm.spine_l5.x} cy={lm.spine_l5.y} r={1.6} fill="#FFD700" stroke="#000" vectorEffect="non-scaling-stroke" style={{ strokeWidth: 1 }} />
-              </>
-            )}
+            {/* FIX 3 — C7→L5 sempre em amarelo, 2px, com badge de desvio CLICÁVEL */}
+            {isValidPoint(lm.spine_c7) && isValidPoint(lm.spine_l5) && (() => {
+              const c7 = lm.spine_c7;
+              const l5 = lm.spine_l5;
+              const dxS = l5.x - c7.x;
+              const dyS = l5.y - c7.y;
+              // ângulo em relação à vertical (perfeito = 0°)
+              const devDeg = Math.atan2(dxS, dyS) * (180 / Math.PI);
+              const devAbs = Math.abs(devDeg);
+              const devRounded = Math.round(devDeg * 10) / 10;
+              const aligned = devAbs <= 1;
+              const critical = devAbs > 3;
+              const badgeColor = aligned ? C.green : critical ? C.red : C.yellow;
+              const lineColor = aligned ? "#FFD700" : badgeColor;
+              const mxS = (c7.x + l5.x) / 2;
+              const myS = (c7.y + l5.y) / 2;
+              // posicionar badge à direita da linha (offset perpendicular)
+              const len = Math.hypot(dxS, dyS) || 1;
+              const nx = -dyS / len; // perpendicular normalizada
+              const ny = dxS / len;
+              const off = 6; // %
+              const bx = mxS + nx * off;
+              const by = myS + ny * off;
+              const isSelS = selected === "spinal_lateral_deviation";
+              const label = aligned
+                ? "Coluna: alinhada ✓"
+                : `Desvio lateral: ${devAbs.toFixed(1)}° ${devDeg > 0 ? "→D" : "→E"}`;
+              // dimensões do badge proporcionais ao texto
+              const bw = aligned ? 22 : 26;
+              const bh = 4.4;
+              return (
+                <g
+                  style={{ cursor: "pointer" }}
+                  onClick={(e) => { e.stopPropagation(); onSelect("spinal_lateral_deviation"); }}
+                >
+                  {/* halo se selecionado */}
+                  {isSelS && (
+                    <line
+                      x1={c7.x} y1={c7.y} x2={l5.x} y2={l5.y}
+                      stroke={badgeColor} strokeOpacity={0.35}
+                      vectorEffect="non-scaling-stroke"
+                      style={{ strokeWidth: 7 }}
+                    />
+                  )}
+                  {/* hit-area invisível */}
+                  <line
+                    x1={c7.x} y1={c7.y} x2={l5.x} y2={l5.y}
+                    stroke="transparent"
+                    vectorEffect="non-scaling-stroke"
+                    style={{ strokeWidth: 14 }}
+                  />
+                  <line
+                    x1={c7.x} y1={c7.y} x2={l5.x} y2={l5.y}
+                    stroke={lineColor}
+                    vectorEffect="non-scaling-stroke"
+                    style={{ strokeWidth: isSelS ? 3 : 2 }}
+                  />
+                  {/* Linha vertical de referência tracejada (vertical perfeita a partir de C7) */}
+                  {!aligned && (
+                    <line
+                      x1={c7.x} y1={c7.y} x2={c7.x} y2={l5.y}
+                      stroke={C.white} strokeOpacity={0.35}
+                      strokeDasharray="1 1"
+                      vectorEffect="non-scaling-stroke"
+                      style={{ strokeWidth: 0.8 }}
+                    />
+                  )}
+                  {/* Âncoras destacadas (círculo maior) */}
+                  <circle cx={c7.x} cy={c7.y} r={1.6} fill={lineColor} stroke="#000" vectorEffect="non-scaling-stroke" style={{ strokeWidth: 1 }} />
+                  <circle cx={l5.x} cy={l5.y} r={1.6} fill={lineColor} stroke="#000" vectorEffect="non-scaling-stroke" style={{ strokeWidth: 1 }} />
+                  {/* Conector do badge até a linha */}
+                  <line
+                    x1={mxS} y1={myS} x2={bx} y2={by}
+                    stroke={badgeColor} strokeOpacity={0.6}
+                    vectorEffect="non-scaling-stroke"
+                    style={{ strokeWidth: 0.8 }}
+                  />
+                  {/* Badge */}
+                  <rect
+                    x={bx - bw / 2} y={by - bh / 2}
+                    width={bw} height={bh} rx={1.2}
+                    fill="#000" fillOpacity={0.85}
+                    stroke={badgeColor}
+                    vectorEffect="non-scaling-stroke"
+                    style={{ strokeWidth: 1 }}
+                  />
+                  <text
+                    x={bx} y={by + 0.9}
+                    textAnchor="middle"
+                    fill={badgeColor}
+                    fontSize={2.2}
+                    fontWeight={700}
+                    style={{ pointerEvents: "none" }}
+                  >
+                    {label}
+                  </text>
+                  {/* mini-tag C7/L5 nas pontas */}
+                  <text x={c7.x + 2} y={c7.y + 0.6} fill={lineColor} fontSize={1.7} fontWeight={700} style={{ pointerEvents: "none", paintOrder: "stroke" }} stroke="#000" strokeWidth={0.4}>C7</text>
+                  <text x={l5.x + 2} y={l5.y + 0.6} fill={lineColor} fontSize={1.7} fontWeight={700} style={{ pointerEvents: "none", paintOrder: "stroke" }} stroke="#000" strokeWidth={0.4}>L5</text>
+                </g>
+              );
+            })()}
             {/* MELHORIA 1 — Eixo escapular 2.5px ciano (vermelho se >2°), losango central, CLICÁVEL */}
             {isValidPoint(lm.scapula_left) && isValidPoint(lm.scapula_right) && (() => {
               const dx = lm.scapula_right.x - lm.scapula_left.x;
