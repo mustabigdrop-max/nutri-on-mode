@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import AthleteSelector, { AthleteOption } from "@/components/coach/AthleteSelector";
-import { Upload, X, FlaskConical, RotateCcw, History, Eye, Dumbbell, CheckCircle2, Clock, FileText, Copy, Crosshair, ScanLine, Target, Activity, Zap, AlertTriangle, TrendingUp, ChevronRight, Trash2 } from "lucide-react";
+import { Upload, X, FlaskConical, RotateCcw, History, Eye, Dumbbell, CheckCircle2, Clock, FileText, Copy, Crosshair, ScanLine, Target, Activity, Zap, AlertTriangle, TrendingUp, ChevronRight, Trash2, ArrowLeft } from "lucide-react";
 import { ApexSymbol } from "@/components/coach/ApexSymbol";
 import ApexEvolucao from "@/components/apex/ApexEvolucao";
 import ApexVisualOverlay, { LandmarkBundle, PhotoBundle, LandmarkView } from "@/components/coach/ApexVisualOverlay";
@@ -1422,6 +1422,31 @@ Suporte em uso: ${suporte || "não informado"}` : "";
         border: `1px solid ${APEX.border}`, borderRadius: 18,
         padding: "20px 24px", marginBottom: 20, position: "relative", overflow: "hidden",
       }}>
+        <button
+          onClick={() => navigate("/coach")}
+          className="absolute top-4 right-4 inline-flex items-center gap-1.5 px-3 py-1.5 rounded border transition-all hover:brightness-110"
+          style={{
+            borderColor: `${APEX.gold}44`,
+            color: APEX.gold,
+            fontFamily: "'Space Mono', monospace",
+            fontSize: 10,
+            fontWeight: 700,
+            letterSpacing: ".15em",
+            textTransform: "uppercase" as const,
+            background: "transparent",
+          }}
+          onMouseEnter={(e) => {
+            (e.currentTarget as HTMLButtonElement).style.borderColor = `${APEX.gold}88`;
+            (e.currentTarget as HTMLButtonElement).style.boxShadow = `0 0 12px ${APEX.gold}22`;
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLButtonElement).style.borderColor = `${APEX.gold}44`;
+            (e.currentTarget as HTMLButtonElement).style.boxShadow = "none";
+          }}
+        >
+          <ArrowLeft size={12} />
+          Voltar
+        </button>
         <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 10, color: APEX.textMuted, fontFamily: APEX.fontMono, letterSpacing: ".08em", marginBottom: 14 }}>
           <span>nutriON</span>
           <ChevronRight size={10} />
