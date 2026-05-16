@@ -221,6 +221,7 @@ STRATUM Elite Engine v1.0 | nutrion.app.br | TrainingON`;
 
 function sanitizeExercise(ex: any): any {
   if (!ex || typeof ex !== 'object') return ex;
+  const ar = ex.apex_risk && typeof ex.apex_risk === 'object' ? ex.apex_risk : null;
   return {
     ...ex,
     name: ex.name || "Exercício",
@@ -230,6 +231,10 @@ function sanitizeExercise(ex: any): any {
     execution_cues: ex.execution_cues || "Execução controlada com foco na técnica.",
     why_this_exercise: ex.why_this_exercise || "Selecionado pela relação estímulo/fadiga.",
     biomechanics_note: ex.biomechanics_note || "",
+    apex_risk: ar ? {
+      level: ["green", "yellow", "red"].includes(ar.level) ? ar.level : "green",
+      reason: typeof ar.reason === "string" ? ar.reason : "",
+    } : null,
     structure: sanitizeStructure(ex.structure),
   };
 }
