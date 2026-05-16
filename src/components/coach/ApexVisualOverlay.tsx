@@ -641,24 +641,49 @@ function OverlayLayer({
           <>
             <SvgLine p1={lm.shoulder_left} p2={lm.shoulder_right} color={colorBySev(lineSev("shoulder_asymmetry"))} />
             <SvgLine p1={lm.hip_left} p2={lm.hip_right} color={colorBySev(lineSev("hip_asymmetry"))} />
-            <SvgLine p1={lm.spine_c7} p2={lm.spine_l5} color={colorBySev(lineSev("spinal_lateral_deviation"))} dashed />
-            {/* Scapular axis */}
-            {isValidPoint(lm.scapula_left) && isValidPoint(lm.scapula_right) && (
+            {/* FIX 3 — C7→L5 sempre em amarelo, 2px */}
+            {isValidPoint(lm.spine_c7) && isValidPoint(lm.spine_l5) && (
               <>
-                <SvgLine
-                  p1={lm.scapula_left}
-                  p2={lm.scapula_right}
-                  color={colorBySev(lineSev("scapular_axis_tilt"))}
-                />
-                <circle
-                  cx={(lm.scapula_left.x + lm.scapula_right.x) / 2}
-                  cy={(lm.scapula_left.y + lm.scapula_right.y) / 2}
-                  r={0.6}
-                  fill={C.cyan}
+                <line
+                  x1={lm.spine_c7.x} y1={lm.spine_c7.y}
+                  x2={lm.spine_l5.x} y2={lm.spine_l5.y}
+                  stroke="#FFD700"
                   vectorEffect="non-scaling-stroke"
+                  style={{ strokeWidth: 2 }}
                 />
+                {/* Âncoras destacadas (círculo maior) */}
+                <circle cx={lm.spine_c7.x} cy={lm.spine_c7.y} r={1.6} fill="#FFD700" stroke="#000" vectorEffect="non-scaling-stroke" style={{ strokeWidth: 1 }} />
+                <circle cx={lm.spine_l5.x} cy={lm.spine_l5.y} r={1.6} fill="#FFD700" stroke="#000" vectorEffect="non-scaling-stroke" style={{ strokeWidth: 1 }} />
               </>
             )}
+            {/* MELHORIA 1 — Eixo escapular 2.5px ciano (vermelho se >2°), losango central */}
+            {isValidPoint(lm.scapula_left) && isValidPoint(lm.scapula_right) && (() => {
+              const dx = lm.scapula_right.x - lm.scapula_left.x;
+              const dy = lm.scapula_right.y - lm.scapula_left.y;
+              const ang2 = Math.atan2(dy, dx) * (180 / Math.PI);
+              const critical = Math.abs(ang2) > 2;
+              const stroke = critical ? C.red : C.cyan;
+              const mx = (lm.scapula_left.x + lm.scapula_right.x) / 2;
+              const my = (lm.scapula_left.y + lm.scapula_right.y) / 2;
+              return (
+                <>
+                  <line
+                    x1={lm.scapula_left.x} y1={lm.scapula_left.y}
+                    x2={lm.scapula_right.x} y2={lm.scapula_right.y}
+                    stroke={stroke}
+                    vectorEffect="non-scaling-stroke"
+                    style={{ strokeWidth: 2.5 }}
+                  />
+                  <polygon
+                    points={`${mx},${my - 1.2} ${mx + 1.2},${my} ${mx},${my + 1.2} ${mx - 1.2},${my}`}
+                    fill={stroke}
+                    stroke="#000"
+                    vectorEffect="non-scaling-stroke"
+                    style={{ strokeWidth: 1 }}
+                  />
+                </>
+              );
+            })()}
           </>
         )}
 
