@@ -470,7 +470,47 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
 
         {/* Findings panel */}
         <div className="space-y-2 max-h-[640px] overflow-y-auto pr-1">
-          <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">
+          {/* MELHORIA 3 — Mini-mapa de severidade */}
+          <div className="flex items-center justify-around gap-2 p-2 rounded-lg border bg-background/30">
+            {(["front", "lateral", "back"] as const).map((v) => {
+              const s = viewSeverity[v];
+              const c = s.worst === "sev" ? C.red : s.worst === "alt" ? C.yellow : C.green;
+              const enabled = !!landmarks[v];
+              const labelMap = { front: "Frente", lateral: "Lateral", back: "Costas" };
+              return (
+                <button
+                  key={v}
+                  disabled={!enabled}
+                  onClick={() => { setView(v); setSelected(null); }}
+                  className="flex flex-col items-center gap-1 disabled:opacity-30"
+                  title={`${labelMap[v]}: ${s.count} achados`}
+                >
+                  <div
+                    className="w-10 h-10 rounded-full flex items-center justify-center font-mono font-bold text-sm transition-all"
+                    style={{
+                      background: `${c}22`,
+                      border: `2px solid ${c}`,
+                      color: c,
+                      boxShadow: view === v ? `0 0 0 2px ${C.gold}` : "none",
+                    }}
+                  >
+                    {s.count}
+                  </div>
+                  <div className="text-[9px] uppercase tracking-wider text-muted-foreground">{labelMap[v]}</div>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* FIX 5 — Debug raw JSON (dev only) */}
+          {import.meta.env.DEV && data && (
+            <details className="rounded border border-dashed border-muted-foreground/40 p-1.5">
+              <summary className="text-[9px] font-mono text-muted-foreground cursor-pointer">🐛 DEV: JSON bruto IA × parseado</summary>
+              <pre className="text-[8px] mt-1 max-h-40 overflow-auto opacity-80">{JSON.stringify({ raw_angles: data.angles, parsed_findings: findings.map(f => ({ key: f.key, value: f.value, normal: f.normal, sev: f.sev })) }, null, 2)}</pre>
+            </details>
+          )}
+
+          <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1 pt-1">
             Achados clínicos ({findings.length})
           </div>
           {findings.length === 0 && (
