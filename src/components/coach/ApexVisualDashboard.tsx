@@ -7,6 +7,8 @@ import AthleteSelector, { AthleteOption } from "@/components/coach/AthleteSelect
 import { Upload, X, FlaskConical, RotateCcw, History, Eye, Dumbbell, CheckCircle2, Clock, FileText, Copy, Crosshair, ScanLine, Target, Activity, Zap, AlertTriangle, TrendingUp, ChevronRight, Trash2 } from "lucide-react";
 import { ApexSymbol } from "@/components/coach/ApexSymbol";
 import ApexEvolucao from "@/components/apex/ApexEvolucao";
+import { ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Legend, Tooltip as RTooltip } from "recharts";
+import React from "react";
 
 // ─── APEX Elite design tokens ───────────────────────────────────
 const APEX = {
@@ -385,13 +387,48 @@ function PhotoZone({ label, file, onPick, onClear, accent }: {
   );
 }
 
+// ─── Markdown helpers ───────────────────────────────────────────
+const stripMd = (s: string): string =>
+  (s || "")
+    .replace(/^\s{0,3}#{1,6}\s*/gm, "")
+    .replace(/\*\*([^*]+)\*\*/g, "$1")
+    .replace(/__([^_]+)__/g, "$1")
+    .replace(/(^|[^*])\*([^*\n]+)\*/g, "$1$2")
+    .replace(/_([^_\n]+)_/g, "$1")
+    .replace(/`([^`]+)`/g, "$1")
+    .trim();
+
+function renderMd(text: string): React.ReactNode {
+  if (!text) return null;
+  // strip ATX headers but preserve newlines
+  const cleaned = text.replace(/^\s{0,3}#{1,6}\s*/gm, "");
+  const lines = cleaned.split("\n");
+  return lines.map((line, li) => {
+    const parts = line.split(/(\*\*[^*]+\*\*|__[^_]+__|\*[^*\n]+\*|_[^_\n]+_|`[^`]+`)/g);
+    return (
+      <React.Fragment key={li}>
+        {parts.map((p, i) => {
+          if (/^\*\*[^*]+\*\*$/.test(p)) return <strong key={i}>{p.slice(2, -2)}</strong>;
+          if (/^__[^_]+__$/.test(p)) return <strong key={i}>{p.slice(2, -2)}</strong>;
+          if (/^\*[^*\n]+\*$/.test(p)) return <em key={i}>{p.slice(1, -1)}</em>;
+          if (/^_[^_\n]+_$/.test(p)) return <em key={i}>{p.slice(1, -1)}</em>;
+          if (/^`[^`]+`$/.test(p)) return <code key={i} className="px-1 rounded bg-muted/60">{p.slice(1, -1)}</code>;
+          return <span key={i}>{p}</span>;
+        })}
+        {li < lines.length - 1 && "\n"}
+      </React.Fragment>
+    );
+  });
+}
+
 // ─── Segment bar ────────────────────────────────────────────────
 function SegmentBar({ label, score, diag }: { label: string; score: number; diag: string }) {
   const color = segColor(score);
+  const cleanLabel = stripMd(label);
   return (
     <div className="rounded-lg p-3 border bg-card">
       <div className="flex items-center justify-between mb-1">
-        <div className="text-sm font-semibold text-foreground">{label}</div>
+        <div className="text-sm font-semibold text-foreground">{cleanLabel}</div>
         <div className="flex items-center gap-2">
           <span className="text-xs px-2 py-0.5 rounded-full font-bold" style={{ background: `${color}22`, color }}>
             {segBadge(score)}
@@ -402,7 +439,137 @@ function SegmentBar({ label, score, diag }: { label: string; score: number; diag
       <div className="h-2 rounded-full bg-muted overflow-hidden mb-2">
         <div className="h-full rounded-full transition-all" style={{ width: `${score * 10}%`, background: color }} />
       </div>
-      {diag && <div className="text-xs text-muted-foreground leading-snug">{diag}</div>}
+      {diag && <div className="text-xs text-muted-foreground leading-snug whitespace-pre-wrap">{renderMd(diag)}</div>}
+    </div>
+  );
+}
+
+// ─── APEX general score / classification ────────────────────────
+type SegItem = { label: string; score: number; diag: string };
+
+const normTxt = (s: string) => (s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+function isHighPriority(label: string, cat: CategoryDef): boolean {
+  const L = normTxt(stripMd(label));
+  return cat.keyPoints.some((kp) =>
+    normTxt(kp).split(/\s+/).some((w) => w.length > 3 && L.includes(w))
+  );
+}
+
+function computeApexGeneral(segments: SegItem[], cat: CategoryDef): number {
+  let totalW = 0, totalS = 0;
+  segments.forEach((s) => {
+    const w = isHighPriority(s.label, cat) ? 2 : 1;
+    totalW += w;
+    totalS += w * s.score;
+  });
+  return totalW ? Math.round((totalS / totalW) * 10) : 0;
+}
+
+function apexBand(score: number): { label: string; color: string } {
+  if (score >= 90) return { label: "World Class", color: "#FFB800" };
+  if (score >= 80) return { label: "Elite", color: "#1A6AB5" };
+  if (score >= 65) return { label: "Bom", color: "#1DB87A" };
+  if (score >= 50) return { label: "Intermediário", color: "#C47A15" };
+  return { label: "Iniciante", color: "#D94040" };
+}
+
+function ApexGeneralScoreCard({ segments, cat }: { segments: SegItem[]; cat: CategoryDef }) {
+  if (!segments.length) return null;
+  const score = computeApexGeneral(segments, cat);
+  const band = apexBand(score);
+  // Semicircular arc using SVG
+  const r = 70, cx = 90, cy = 90;
+  const start = Math.PI, end = 0;
+  const t = end + (start - end) * (1 - score / 100);
+  const x1 = cx + r * Math.cos(start);
+  const y1 = cy + r * Math.sin(start);
+  const x2 = cx + r * Math.cos(t);
+  const y2 = cy + r * Math.sin(t);
+  const largeArc = score > 50 ? 1 : 0;
+  return (
+    <div
+      className="rounded-xl p-4 border flex items-center gap-5"
+      style={{ background: `linear-gradient(135deg, ${band.color}22, transparent)`, borderColor: `${band.color}55` }}
+    >
+      <svg width="180" height="100" viewBox="0 0 180 100" className="shrink-0">
+        <path d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`} fill="none" stroke="hsl(var(--muted))" strokeWidth="10" />
+        {score > 0 && (
+          <path d={`M ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2}`} fill="none" stroke={band.color} strokeWidth="10" strokeLinecap="round" />
+        )}
+        <text x={cx} y={cy - 6} textAnchor="middle" fontSize="28" fontWeight="900" fill="hsl(var(--foreground))">{score}</text>
+        <text x={cx} y={cy + 10} textAnchor="middle" fontSize="10" fill="hsl(var(--muted-foreground))">/100</text>
+      </svg>
+      <div className="flex-1 min-w-0">
+        <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">APEX Score Geral</div>
+        <div className="text-2xl font-black mt-1" style={{ color: band.color }}>{band.label}</div>
+        <div className="text-xs text-muted-foreground mt-1">
+          Média ponderada — grupos de alta prioridade pesam 2×.
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function InsightHighlights({ segments }: { segments: SegItem[] }) {
+  if (segments.length < 2) return null;
+  const sorted = [...segments].sort((a, b) => a.score - b.score);
+  const low = sorted[0];
+  const high = sorted[sorted.length - 1];
+  const firstSentence = (txt: string) => {
+    const t = stripMd(txt || "");
+    const m = t.match(/^([^.!?\n]+[.!?])/);
+    return (m ? m[1] : t).trim();
+  };
+  return (
+    <div className="grid md:grid-cols-2 gap-2">
+      <div className="rounded-lg p-3 border" style={{ borderColor: "#D9404055", background: "#D9404010" }}>
+        <div className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: "#D94040" }}>🔴 Ponto crítico</div>
+        <div className="text-sm font-bold text-foreground">{stripMd(low.label)} <span className="text-xs font-mono opacity-70">({low.score}/10)</span></div>
+        <div className="text-xs text-muted-foreground mt-1">{firstSentence(low.diag) || "—"}</div>
+      </div>
+      <div className="rounded-lg p-3 border" style={{ borderColor: "#1DB87A55", background: "#1DB87A10" }}>
+        <div className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: "#1DB87A" }}>🟢 Ponto forte</div>
+        <div className="text-sm font-bold text-foreground">{stripMd(high.label)} <span className="text-xs font-mono opacity-70">({high.score}/10)</span></div>
+        <div className="text-xs text-muted-foreground mt-1">{firstSentence(high.diag) || "—"}</div>
+      </div>
+    </div>
+  );
+}
+
+function ScoresRadar({ segments, prevSegments }: { segments: SegItem[]; prevSegments: SegItem[] | null }) {
+  if (segments.length < 3) return null;
+  const data = segments.map((s) => {
+    const label = stripMd(s.label);
+    const item: any = { subject: label.length > 16 ? label.slice(0, 14) + "…" : label, current: s.score, fullMark: 10 };
+    if (prevSegments) {
+      const norm = normTxt(label);
+      const match = prevSegments.find((p) => normTxt(stripMd(p.label)) === norm);
+      if (match) item.previous = match.score;
+    }
+    return item;
+  });
+  return (
+    <div className="rounded-xl p-3 border bg-card">
+      <div className="flex items-center justify-between mb-2">
+        <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Mapa de Scores</div>
+        {prevSegments && <div className="text-[10px] text-muted-foreground">vs análise anterior</div>}
+      </div>
+      <div style={{ width: "100%", height: 320 }}>
+        <ResponsiveContainer>
+          <RadarChart data={data} outerRadius="75%">
+            <PolarGrid stroke="hsl(var(--border))" />
+            <PolarAngleAxis dataKey="subject" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }} />
+            <PolarRadiusAxis angle={90} domain={[0, 10]} tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 9 }} stroke="hsl(var(--border))" />
+            {prevSegments && (
+              <Radar name="Anterior" dataKey="previous" stroke="#4A9EFF" fill="#4A9EFF" fillOpacity={0.18} />
+            )}
+            <Radar name="Atual" dataKey="current" stroke="#B8922A" fill="#B8922A" fillOpacity={0.45} />
+            <RTooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", fontSize: 11 }} />
+            <Legend wrapperStyle={{ fontSize: 10 }} />
+          </RadarChart>
+        </ResponsiveContainer>
+      </div>
     </div>
   );
 }
@@ -762,6 +929,22 @@ Suporte em uso: ${suporte || "não informado"}` : "";
           {activeResultTab === "scores" && (
             <div className="space-y-3">
               {segments.length === 0 && <EmptyMsg text="Nenhum score retornado pela IA." />}
+              {segments.length > 0 && (
+                <>
+                  <ApexGeneralScoreCard segments={segments} cat={cat} />
+                  <InsightHighlights segments={segments} />
+                  <ScoresRadar
+                    segments={segments}
+                    prevSegments={(() => {
+                      const prev = history.find((h: any) => h && h.id !== savedAnalysisId && h.scores && Object.keys(h.scores).length);
+                      if (!prev) return null;
+                      return Object.entries(prev.scores as Record<string, number>).map(([label, score]) => ({
+                        label, score: Number(score) || 0, diag: "",
+                      }));
+                    })()}
+                  />
+                </>
+              )}
               {segments.map((s, i) => <SegmentBar key={i} {...s} />)}
               <InfoBlock title="Impacto visual" body={parseSection(analysisResult, "IMPACTO_VISUAL", "SCORES_SEGMENTOS")} accent={cat.color} />
             </div>
@@ -853,7 +1036,7 @@ Suporte em uso: ${suporte || "não informado"}` : "";
             <span className="text-[10px] font-bold uppercase tracking-wider">Veredicto APEX — O que falta para Top 5</span>
           </div>
           <div className="text-sm italic text-foreground whitespace-pre-wrap">
-            {parseSection(analysisResult, "VEREDICTO") || "—"}
+            {parseSection(analysisResult, "VEREDICTO") ? renderMd(parseSection(analysisResult, "VEREDICTO")) : "—"}
           </div>
         </div>
 
@@ -1473,9 +1656,9 @@ function InfoBox({ color, text }: { color: string; text: string }) {
 function Pre({ body }: { body: string }) {
   if (!body) return <EmptyMsg text="Sem conteúdo nesta seção." />;
   return (
-    <pre className="text-xs font-mono text-foreground/90 whitespace-pre-wrap leading-relaxed bg-muted/30 rounded-lg p-3 border border-border">
-      {body}
-    </pre>
+    <div className="text-xs font-mono text-foreground/90 whitespace-pre-wrap leading-relaxed bg-muted/30 rounded-lg p-3 border border-border">
+      {renderMd(body)}
+    </div>
   );
 }
 
@@ -1483,8 +1666,8 @@ function InfoBlock({ title, body, accent }: { title: string; body: string; accen
   if (!body) return null;
   return (
     <div className="rounded-lg p-3 border bg-card">
-      <div className="text-[10px] font-bold uppercase tracking-wider mb-1.5" style={{ color: accent }}>{title}</div>
-      <div className="text-xs text-foreground/90 whitespace-pre-wrap leading-relaxed">{body}</div>
+      <div className="text-[10px] font-bold uppercase tracking-wider mb-1.5" style={{ color: accent }}>{stripMd(title)}</div>
+      <div className="text-xs text-foreground/90 whitespace-pre-wrap leading-relaxed">{renderMd(body)}</div>
     </div>
   );
 }
@@ -1492,8 +1675,8 @@ function InfoBlock({ title, body, accent }: { title: string; body: string; accen
 function ScoreSide({ title, color, body }: { title: string; color: string; body: string }) {
   return (
     <div className="rounded-lg p-3 border" style={{ borderColor: color + "66", background: color + "0A" }}>
-      <div className="text-xs font-bold mb-2" style={{ color }}>{title}</div>
-      <div className="text-xs text-foreground/90 whitespace-pre-wrap leading-relaxed">{body || "—"}</div>
+      <div className="text-xs font-bold mb-2" style={{ color }}>{stripMd(title)}</div>
+      <div className="text-xs text-foreground/90 whitespace-pre-wrap leading-relaxed">{body ? renderMd(body) : "—"}</div>
     </div>
   );
 }
@@ -1507,7 +1690,7 @@ function PrioCard({ n, color, text }: { n: number; color: string; text?: string 
         </div>
         <div className="text-[10px] font-bold uppercase tracking-wider" style={{ color }}>Prioridade {n}</div>
       </div>
-      <div className="text-xs text-foreground/90">{text || "—"}</div>
+      <div className="text-xs text-foreground/90">{text ? renderMd(text) : "—"}</div>
     </div>
   );
 }

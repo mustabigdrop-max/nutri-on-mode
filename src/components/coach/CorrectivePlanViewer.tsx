@@ -46,15 +46,23 @@ function parseExercises(block: string): ParsedExercise[] {
   });
 }
 
-// Split SEMANA_TIPO into per-day blocks. Days start with day name in Portuguese.
-const DAYS = ["Segunda", "Terça", "Terca", "Quarta", "Quinta", "Sexta", "Sábado", "Sabado", "Domingo"];
+// Split SEMANA_TIPO into per-day blocks. Accept many formats:
+// "Segunda", "Terça", "Dia 1", "Dia 1 -", "D1", "D1 - Push", "Day 1", etc.
+const DAY_NAMES = "Segunda|Ter[çc]a|Quarta|Quinta|Sexta|S[áa]bado|Domingo|Seg|Ter|Qua|Qui|Sex|S[áa]b|Dom|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday";
+const DAY_PREFIX = `(?:(?:Dia|Day|D|Treino|Sess[ãa]o)\\s*\\d+|${DAY_NAMES})`;
 function parseDays(block: string): { day: string; body: string }[] {
   if (!block) return [];
-  const re = new RegExp(`(?=^\\s*(?:${DAYS.join("|")})\\b)`, "im");
+  // Match lines that *start* with a day token (possibly preceded by markdown like **, ##, -, •)
+  const re = new RegExp(`(?=^[\\s\\-•*#]*(?:\\*\\*\\s*)?${DAY_PREFIX}\\b)`, "im");
   const parts = block.split(re).map((p) => p.trim()).filter(Boolean);
+  if (parts.length === 0) return [];
+  const headerRe = new RegExp(`^[\\s\\-•*#]*(?:\\*\\*\\s*)?(${DAY_PREFIX}[^\\n:*]*)`, "i");
+  // If the only part doesn't start with a day token, give up so caller can fallback to raw
+  if (parts.length === 1 && !headerRe.test(parts[0])) return [];
   return parts.map((p) => {
-    const m = p.match(/^\s*([^\n:•-]+)/);
-    return { day: m ? m[1].trim() : "Sessão", body: p };
+    const m = p.match(headerRe);
+    const day = m ? m[1].replace(/\*+/g, "").trim() : "Sessão";
+    return { day, body: p };
   });
 }
 
@@ -218,12 +226,19 @@ export default function CorrectivePlanViewer({
 
       {tab === "semana" && (
         <div className="space-y-4">
-          {days.length === 0 && (
-            <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 text-xs text-amber-100/90">
-              <div className="font-bold text-amber-400 mb-1">Sem dias detectados na estrutura padrão.</div>
-              Abra a aba <span className="font-semibold">"📄 Recomendações (texto completo)"</span> para ler tudo
-              que a IA retornou e usar como base para montar o treino no TrainingON e o plano alimentar
-              manualmente.
+          {days.length === 0 && (parsed.semanaRaw || text) && (
+            <>
+              <div className="rounded-lg border border-blue-500/30 bg-blue-500/5 p-3 text-[11px] text-blue-100/90">
+                Conteúdo retornado pela IA sem estrutura padrão de dias — exibindo na íntegra.
+              </div>
+              <pre className="text-xs whitespace-pre-wrap font-mono text-foreground/90 p-3 rounded-lg border border-border bg-card/60">
+                {parsed.semanaRaw || text}
+              </pre>
+            </>
+          )}
+          {days.length === 0 && !parsed.semanaRaw && !text && (
+            <div className="text-xs italic text-muted-foreground p-4 text-center">
+              A IA não retornou conteúdo para esta seção.
             </div>
           )}
           {days.map((d, i) => {
