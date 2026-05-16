@@ -84,7 +84,7 @@ const FirstMealScreen = () => {
         user_id: user.id,
         meal_type: data?.meal_type || "almoco",
         meal_date: getLocalDateStr(),
-        food_names: foods.map((f: any) => f.name),
+        food_names: foods.map((f: NutritionRecord) => String(f.name || f.nome || f.food || f.alimento || "Alimento")),
         total_kcal: totals.total_kcal,
         total_protein: totals.total_protein,
         total_carbs: totals.total_carbs,
