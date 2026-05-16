@@ -481,7 +481,7 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
           )}
           {/* Footer caption (visible in export) */}
           <div className="absolute bottom-1 left-2 text-[10px] text-white/60 font-mono">
-            {athleteName || "Atleta"} · {category || "—"} · {new Date().toLocaleDateString("pt-BR")}
+            {athleteName || "Atleta"} · {category || "—"}{phaseInfo ? ` · ${phaseInfo.emoji} ${phaseInfo.label}${cycleDay ? ` d${cycleDay}` : ""}` : ""} · {new Date().toLocaleDateString("pt-BR")}
           </div>
         </div>
 
