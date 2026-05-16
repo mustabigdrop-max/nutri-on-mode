@@ -485,7 +485,7 @@ Execute a análise PhD completa agora.`;
       {(result || true) && (
         <>
           {/* Sub-tabs do resultado: IA · FMS · ROM */}
-          <div className="flex gap-1.5 mb-3">
+          <div className="flex gap-1.5 mb-3 items-center">
             {([
               ["ia", "Análise IA", !!result],
               ["fms", "FMS", true],
@@ -501,6 +501,17 @@ Execute a análise PhD completa agora.`;
                   cursor: enabled ? "pointer" : "not-allowed",
                 }}>{label}</button>
             ))}
+            <button onClick={exportPdf} disabled={exporting}
+              className="ml-auto px-3 py-1.5 rounded-[3px] font-mono text-[.6rem] tracking-[.15em] uppercase border transition-colors"
+              style={{
+                borderColor: EM, color: EM,
+                background: "rgba(74,222,128,.08)",
+                opacity: exporting ? 0.5 : 1,
+                cursor: exporting ? "wait" : "pointer",
+              }}
+              title="Exporta FMS + ROM (semáforos, radar, recomendações) em PDF">
+              {exporting ? "gerando..." : "▼ Exportar PDF"}
+            </button>
           </div>
 
           {resultTab === "ia" && result && (
