@@ -119,6 +119,17 @@ export const FEMININE_CATEGORIES: Record<
   },
 };
 
+/** Mapeia fase interna para o literal aceito pelo edge function generate-meal-plan. */
+export function mapCyclePhaseToFaseCiclo(
+  phase: CyclePhase | null | undefined,
+): "menstrual" | "folicular" | "ovulatoria" | "lutea" | null {
+  if (!phase) return null;
+  if (phase === "menstrual") return "menstrual";
+  if (phase === "follicular") return "folicular";
+  if (phase === "ovulatory") return "ovulatoria";
+  return "lutea";
+}
+
 export function normalizeFeminineCategory(cat?: string | null): FeminineCategory | null {
   if (!cat) return null;
   const s = cat.toLowerCase();
