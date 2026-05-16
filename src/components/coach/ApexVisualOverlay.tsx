@@ -128,9 +128,15 @@ interface Props {
   photos: PhotoBundle;
   athleteName?: string;
   category?: string;
+  sex?: string | null;
+  cyclePhase?: CyclePhase | null;
+  cycleDay?: number | null;
+  feminineCategory?: string | null;
 }
 
-export default function ApexVisualOverlay({ landmarks, photos, athleteName, category }: Props) {
+export default function ApexVisualOverlay({ landmarks, photos, athleteName, category, sex, cyclePhase, cycleDay, feminineCategory }: Props) {
+  const isF = String(sex || "").toLowerCase().match(/^(f|feminino|female)$/);
+  const phaseInfo = isF && cyclePhase ? CYCLE_PHASE_INFO[cyclePhase] : null;
   const availableViews = (["front", "lateral", "back"] as const).filter(
     (v) => landmarks[v] || photos[v]
   );
