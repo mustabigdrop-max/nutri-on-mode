@@ -313,6 +313,46 @@ const ApexPhdAnalysis = ({ posture, fms, rom, muscles, pain }: Props) => {
   const [result, setResult] = useState("");
   const [error, setError] = useState("");
   const [resultTab, setResultTab] = useState<ResultTab>("ia");
+  const [exporting, setExporting] = useState(false);
+  const printRef = useRef<HTMLDivElement>(null);
+
+  const exportPdf = async () => {
+    if (!printRef.current) return;
+    setExporting(true);
+    try {
+      // Aguarda render do conteúdo offscreen
+      await new Promise((r) => setTimeout(r, 250));
+      const canvas = await html2canvas(printRef.current, {
+        backgroundColor: "#03030a",
+        scale: 2,
+        useCORS: true,
+        logging: false,
+      });
+      const imgData = canvas.toDataURL("image/jpeg", 0.92);
+      const pdf = new jsPDF("p", "mm", "a4");
+      const pageW = pdf.internal.pageSize.getWidth();
+      const pageH = pdf.internal.pageSize.getHeight();
+      const imgW = pageW;
+      const imgH = (canvas.height * imgW) / canvas.width;
+      let heightLeft = imgH;
+      let position = 0;
+      pdf.addImage(imgData, "JPEG", 0, position, imgW, imgH);
+      heightLeft -= pageH;
+      while (heightLeft > 0) {
+        position = heightLeft - imgH;
+        pdf.addPage();
+        pdf.addImage(imgData, "JPEG", 0, position, imgW, imgH);
+        heightLeft -= pageH;
+      }
+      const stamp = new Date().toISOString().slice(0, 10);
+      pdf.save(`apex-fms-rom-${stamp}.pdf`);
+    } catch (e) {
+      console.error("[APEX export PDF]", e);
+      setError("Falha ao gerar PDF");
+    } finally {
+      setExporting(false);
+    }
+  };
 
   const onPhoto = async (e: React.ChangeEvent<HTMLInputElement>, label: string) => {
     const f = e.target.files?.[0];
