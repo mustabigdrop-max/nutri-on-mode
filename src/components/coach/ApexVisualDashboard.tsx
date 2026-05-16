@@ -1656,9 +1656,9 @@ function InfoBox({ color, text }: { color: string; text: string }) {
 function Pre({ body }: { body: string }) {
   if (!body) return <EmptyMsg text="Sem conteúdo nesta seção." />;
   return (
-    <pre className="text-xs font-mono text-foreground/90 whitespace-pre-wrap leading-relaxed bg-muted/30 rounded-lg p-3 border border-border">
-      {body}
-    </pre>
+    <div className="text-xs font-mono text-foreground/90 whitespace-pre-wrap leading-relaxed bg-muted/30 rounded-lg p-3 border border-border">
+      {renderMd(body)}
+    </div>
   );
 }
 
@@ -1666,8 +1666,8 @@ function InfoBlock({ title, body, accent }: { title: string; body: string; accen
   if (!body) return null;
   return (
     <div className="rounded-lg p-3 border bg-card">
-      <div className="text-[10px] font-bold uppercase tracking-wider mb-1.5" style={{ color: accent }}>{title}</div>
-      <div className="text-xs text-foreground/90 whitespace-pre-wrap leading-relaxed">{body}</div>
+      <div className="text-[10px] font-bold uppercase tracking-wider mb-1.5" style={{ color: accent }}>{stripMd(title)}</div>
+      <div className="text-xs text-foreground/90 whitespace-pre-wrap leading-relaxed">{renderMd(body)}</div>
     </div>
   );
 }
@@ -1675,8 +1675,8 @@ function InfoBlock({ title, body, accent }: { title: string; body: string; accen
 function ScoreSide({ title, color, body }: { title: string; color: string; body: string }) {
   return (
     <div className="rounded-lg p-3 border" style={{ borderColor: color + "66", background: color + "0A" }}>
-      <div className="text-xs font-bold mb-2" style={{ color }}>{title}</div>
-      <div className="text-xs text-foreground/90 whitespace-pre-wrap leading-relaxed">{body || "—"}</div>
+      <div className="text-xs font-bold mb-2" style={{ color }}>{stripMd(title)}</div>
+      <div className="text-xs text-foreground/90 whitespace-pre-wrap leading-relaxed">{body ? renderMd(body) : "—"}</div>
     </div>
   );
 }
@@ -1690,7 +1690,7 @@ function PrioCard({ n, color, text }: { n: number; color: string; text?: string 
         </div>
         <div className="text-[10px] font-bold uppercase tracking-wider" style={{ color }}>Prioridade {n}</div>
       </div>
-      <div className="text-xs text-foreground/90">{text || "—"}</div>
+      <div className="text-xs text-foreground/90">{text ? renderMd(text) : "—"}</div>
     </div>
   );
 }
