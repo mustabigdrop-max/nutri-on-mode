@@ -80,6 +80,7 @@ const CoachPatientDetailPage = () => {
   const [newMessage, setNewMessage] = useState("");
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  const [feminineProfile, setFeminineProfile] = useState<any>(null);
 
   // Meal plan state
   const [weekStart, setWeekStart] = useState(getWeekStart(new Date()));
