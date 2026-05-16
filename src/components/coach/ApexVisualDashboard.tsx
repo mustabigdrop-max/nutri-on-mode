@@ -506,26 +506,48 @@ function ApexGeneralScoreCard({ segments, cat }: { segments: SegItem[]; cat: Cat
 
 function InsightHighlights({ segments }: { segments: SegItem[] }) {
   if (segments.length < 2) return null;
-  const sorted = [...segments].sort((a, b) => a.score - b.score);
-  const low = sorted[0];
-  const high = sorted[sorted.length - 1];
+  // Stable sort preserving IA order on ties: lowest first / highest last
+  let lowIdx = 0, highIdx = 0;
+  segments.forEach((s, i) => {
+    if (s.score < segments[lowIdx].score) lowIdx = i;
+    if (s.score > segments[highIdx].score) highIdx = i;
+  });
+  const low = segments[lowIdx];
+  const high = segments[highIdx];
   const firstSentence = (txt: string) => {
     const t = stripMd(txt || "");
     const m = t.match(/^([^.!?\n]+[.!?])/);
     return (m ? m[1] : t).trim();
   };
+  const RED = "#FF4444";
+  const GREEN = "#00FF88";
+  const Card = ({ icon, label, color, name, score, desc }: any) => (
+    <div
+      className="rounded-lg p-3 flex flex-col"
+      style={{
+        background: `${color}0D`, // ~5% opacity
+        borderLeft: `4px solid ${color}`,
+        border: `1px solid ${color}33`,
+        borderLeftWidth: 4,
+        maxHeight: 120,
+      }}
+    >
+      <div className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color }}>
+        {icon} {label}
+      </div>
+      <div className="flex items-baseline gap-2 leading-tight">
+        <div className="text-lg font-black truncate" style={{ color }}>{name}</div>
+        <div className="text-sm font-bold font-mono shrink-0" style={{ color }}>{score}/10</div>
+      </div>
+      <div className="text-[11px] text-muted-foreground mt-1 line-clamp-2 leading-snug">
+        {desc || "—"}
+      </div>
+    </div>
+  );
   return (
     <div className="grid md:grid-cols-2 gap-2">
-      <div className="rounded-lg p-3 border" style={{ borderColor: "#D9404055", background: "#D9404010" }}>
-        <div className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: "#D94040" }}>🔴 Ponto crítico</div>
-        <div className="text-sm font-bold text-foreground">{stripMd(low.label)} <span className="text-xs font-mono opacity-70">({low.score}/10)</span></div>
-        <div className="text-xs text-muted-foreground mt-1">{firstSentence(low.diag) || "—"}</div>
-      </div>
-      <div className="rounded-lg p-3 border" style={{ borderColor: "#1DB87A55", background: "#1DB87A10" }}>
-        <div className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: "#1DB87A" }}>🟢 Ponto forte</div>
-        <div className="text-sm font-bold text-foreground">{stripMd(high.label)} <span className="text-xs font-mono opacity-70">({high.score}/10)</span></div>
-        <div className="text-xs text-muted-foreground mt-1">{firstSentence(high.diag) || "—"}</div>
-      </div>
+      <Card icon="🔴" label="Ponto Crítico" color={RED} name={stripMd(low.label)} score={low.score} desc={firstSentence(low.diag)} />
+      <Card icon="🟢" label="Ponto Forte" color={GREEN} name={stripMd(high.label)} score={high.score} desc={firstSentence(high.diag)} />
     </div>
   );
 }
