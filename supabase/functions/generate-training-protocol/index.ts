@@ -221,7 +221,6 @@ STRATUM Elite Engine v1.0 | nutrion.app.br | TrainingON`;
 
 function sanitizeExercise(ex: any): any {
   if (!ex || typeof ex !== 'object') return ex;
-  const ar = ex.apex_risk && typeof ex.apex_risk === 'object' ? ex.apex_risk : null;
   return {
     ...ex,
     name: ex.name || "Exercício",
@@ -231,10 +230,6 @@ function sanitizeExercise(ex: any): any {
     execution_cues: ex.execution_cues || "Execução controlada com foco na técnica.",
     why_this_exercise: ex.why_this_exercise || "Selecionado pela relação estímulo/fadiga.",
     biomechanics_note: ex.biomechanics_note || "",
-    apex_risk: ar ? {
-      level: ["green", "yellow", "red"].includes(ar.level) ? ar.level : "green",
-      reason: typeof ar.reason === "string" ? ar.reason : "",
-    } : null,
     structure: sanitizeStructure(ex.structure),
   };
 }
@@ -559,10 +554,8 @@ function enforceVolumeLimits(protocol: any, toleranceFactor = 1.10): { protocol:
 }
 
 function buildStructuredPrompt(data: any): string {
-  const { phase, muscles, level, weeks, days, clientName, equipment, injuries, sessionDuration, stressLevel, supplements, weakPoints, specificGoal, cardio, tab, apexContext } = data;
+  const { phase, muscles, level, weeks, days, clientName, equipment, injuries, sessionDuration, stressLevel, supplements, weakPoints, specificGoal, cardio, tab } = data;
   const muscleList = Array.isArray(muscles) ? muscles.join(", ") : muscles;
-
-  const apexBlock = apexContext ? `\n\n=== DIAGNÓSTICO APEX ATIVO ===\n${apexContext}\n=== FIM DIAGNÓSTICO APEX ===\n` : "";
 
   if (tab === "protocolo") {
     return `Gere um PROTOCOLO DE TREINO DE ELITE para o cliente abaixo. Retorne EXCLUSIVAMENTE um JSON válido, sem markdown, sem texto antes ou depois.
@@ -582,7 +575,6 @@ PERFIL DO CLIENTE:
 - Suplementos: ${supplements || "Nenhum"}
 - Pontos fracos: ${weakPoints || "Nenhum especificado"}
 - Objetivo específico: ${specificGoal || phase}
-${apexBlock}
 
 INSTRUÇÕES DE PRESCRIÇÃO:
 1. ANALISE o perfil completo antes de decidir qualquer coisa.
@@ -659,7 +651,6 @@ FORMATO JSON OBRIGATÓRIO:
         "work_sets": { "sets": "string", "reps": "string", "rpe": "string", "rest": "string", "notes": "string" }
       },
       "execution_cues": "string", "why_this_exercise": "string", "biomechanics_note": "string",
-      "apex_risk": { "level": "green|yellow|red", "reason": "string (motivo/modificação curta — só quando houver diagnóstico APEX no contexto; caso contrário use level=green e reason vazia)" },
       "substitutes": [{ "name": "string", "reason": "string", "equipment": "string" }]
     }],
     "session_notes": "string",
@@ -675,12 +666,7 @@ IMPORTANTE:
 - JSON COMPLETO. ZERO campos undefined/vazios. Todos os dias, todos os exercícios.
 - Use feeder_sets + top_set + backoff_sets para compostos principais.
 - Use work_sets para acessórios e isoladores.
-- Inclua "nutrition_notes" por sessão com orientação peri-treino.
-- REGRA APEX (OBRIGATÓRIA SE houver "=== DIAGNÓSTICO APEX ATIVO ===" no contexto): para CADA exercício, classifique o campo "apex_risk" baseado nas síndromes Janda, FMS, ROM e dor relatados no diagnóstico:
-  · "green" = exercício compatível com o perfil biomecânico (sem reason)
-  · "yellow" = executar com modificação — reason descreve a modificação específica (ex: "Reduzir amplitude para 70° por dorsiflexão limitada", "Substituir barra por halteres para evitar compressão acromial")
-  · "red" = contraindicado — reason descreve o motivo biomecânico exato (ex: "SCS severa + impacto subacromial — contraindica overhead com carga", "VMO inibido + valgo dinâmico — leg press fechado contraindicado")
-  Seja específico: cite a síndrome/disfunção/teste FMS exato que justifica a classificação.`;
+- Inclua "nutrition_notes" por sessão com orientação peri-treino.`;
   }
 
   if (tab === "anatomia") {

@@ -3,7 +3,7 @@ import { motion, useInView } from "framer-motion";
 
 const stats = [
   { val: 10, label: "Protocolos de dieta", suffix: "" },
-  { val: 16, label: "Splits de treino · PPL · Upper/Lower · BB · MMA · Corrida", suffix: "" },
+  { val: 7, label: "Módulos de saúde", suffix: "" },
   { val: 22, label: "Telas e funcionalidades", suffix: "+" },
   { val: 0, label: "24h · 7 dias · Sempre ligado", suffix: "", display: "ON", glow: true },
 ];

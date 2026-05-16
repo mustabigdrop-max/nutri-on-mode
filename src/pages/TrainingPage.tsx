@@ -377,35 +377,12 @@ Português. Específico. Científico. Zero genérico.`;
     setGenerated(true);
     setActiveResultTab("overview");
     try {
-      // Buscar diagnóstico APEX ativo (última avaliação + síndromes detectadas)
-      let apexContext = "";
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user?.id) {
-          const { data: assess } = await (supabase as any).from("apex_assessments")
-            .select("*").eq("user_id", user.id).order("assessment_date", { ascending: false }).limit(1).maybeSingle();
-          if (assess) {
-            const [{ data: postRow }, { data: fmsRow }, { data: romRow }, { data: painRows }] = await Promise.all([
-              (supabase as any).from("apex_posture_data").select("*").eq("assessment_id", assess.id).maybeSingle(),
-              (supabase as any).from("apex_fms_scores").select("*").eq("assessment_id", assess.id).maybeSingle(),
-              (supabase as any).from("apex_rom_measurements").select("*").eq("assessment_id", assess.id).maybeSingle(),
-              (supabase as any).from("apex_pain_entries").select("*").eq("user_id", user.id).is("resolved_at", null),
-            ]);
-            apexContext = `Score Global APEX: ${assess.overall_score}/100 · Postura ${assess.posture_score}/100 · ROM ${assess.mobility_score}/100 · Simetria ${assess.symmetry_score}/100 · FMS ${assess.fms_total}/21
-Postura (3 planos): ${JSON.stringify(postRow || {})}
-FMS por teste: ${JSON.stringify(fmsRow || {})}
-ROM (graus): ${JSON.stringify(romRow || {})}
-Dor ativa: ${painRows?.length ? JSON.stringify(painRows.map((p: any) => ({ r: p.body_region, lado: p.side, int: p.intensity, comp: p.behavior, rf: p.red_flag }))) : "nenhuma"}`;
-          }
-        }
-      } catch (apexErr) { console.warn("APEX context fetch failed:", apexErr); }
-
       const { data, error } = await supabase.functions.invoke("generate-training-protocol", {
         body: {
           ...bodyData,
           tab: "protocolo",
+          // Sempre injetar elitePrompt (agora inclui sistema de treino)
           elitePrompt: buildElitePrompt(),
-          apexContext,
         },
       });
       if (error) throw error;
@@ -1684,24 +1661,6 @@ function ExerciseCard({
           </div>
         </div>
         <div className="flex items-center gap-1.5">
-          {currentExercise.apex_risk && currentExercise.apex_risk.level && (() => {
-            const lvl = currentExercise.apex_risk.level as "green" | "yellow" | "red";
-            const cfg = lvl === "green"
-              ? { dot: "#22c55e", bg: "rgba(34,197,94,.12)", color: "#22c55e", label: "APEX OK" }
-              : lvl === "yellow"
-              ? { dot: "#fbbf24", bg: "rgba(251,191,36,.12)", color: "#fbbf24", label: "APEX ATENÇÃO" }
-              : { dot: "#ef4444", bg: "rgba(239,68,68,.12)", color: "#ef4444", label: "APEX CONTRAINDICADO" };
-            const reason = currentExercise.apex_risk.reason || "";
-            return (
-              <span title={reason || cfg.label}
-                className="text-[8px] px-1.5 py-0.5 rounded-full font-bold flex items-center gap-1 cursor-help"
-                style={{ background: cfg.bg, color: cfg.color }}
-                onClick={(e) => { e.stopPropagation(); if (reason) toast.info(`${cfg.label}: ${reason}`, { duration: 6000 }); }}>
-                <span className="w-1.5 h-1.5 rounded-full" style={{ background: cfg.dot }} />
-                {cfg.label}
-              </span>
-            );
-          })()}
           {hasTopSet && <span className="text-[8px] px-1.5 py-0.5 rounded-full font-bold" style={{ background: "rgba(249,115,22,0.12)", color: "#f97316" }}>TOP SET</span>}
           {substitutes.length > 0 && (
             <button onClick={(e) => { e.stopPropagation(); setShowSubs(!showSubs); }}

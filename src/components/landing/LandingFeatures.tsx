@@ -2,8 +2,6 @@ import { useRef } from "react";
 import { motion, useInView } from "framer-motion";
 
 const features = [
-  { icon: "💪", title: "Prontidão Muscular · 8 Grupos", desc: '<strong>Mapa de recuperação em tempo real</strong>: Peito, Costas, Ombros, Bíceps, Tríceps, Quadríceps, Posterior, Glúteos. Score 1–10 calculado automaticamente. Nunca treine um músculo fatigado sem saber.' },
-  { icon: "📊", title: "RPE + Deload Automático", desc: 'Registre sua <strong>Percepção de Esforço (1–10)</strong> ao fim de cada treino. 3 sessões consecutivas com RPE ≥ 8 ativam o protocolo de deload: volume −40%, sem falha muscular. Como fazem os coaches de elite.' },
   { icon: "🩸", title: "IA lê seus exames", desc: 'Faz upload do exame de sangue. <strong>IA interpreta ferro, vitamina D, colesterol, TSH, glicemia</strong> e ajusta seu plano alimentar automaticamente.' },
   { icon: "🕐", title: "Cronobiologia", desc: '<strong>Janelas de macros por horário</strong> baseadas no ritmo circadiano. Carbo de manhã, gordura à noite. Jejum noturno calculado pelo app.' },
   { icon: "😴", title: "Sono + Recuperação", desc: 'Dormiu mal → app <strong>aumenta proteína e magnésio</strong> do dia seguinte automaticamente. Correlação sono × comportamento alimentar.' },

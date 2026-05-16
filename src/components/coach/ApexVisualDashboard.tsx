@@ -7,7 +7,6 @@ import AthleteSelector, { AthleteOption } from "@/components/coach/AthleteSelect
 import { Upload, X, FlaskConical, RotateCcw, History, Eye, Dumbbell, CheckCircle2, Clock, FileText, Copy, Crosshair, ScanLine, Target, Activity, Zap, AlertTriangle, TrendingUp, ChevronRight, Trash2 } from "lucide-react";
 import { ApexSymbol } from "@/components/coach/ApexSymbol";
 import ApexEvolucao from "@/components/apex/ApexEvolucao";
-import ApexEvolucaoFotografica from "@/components/coach/ApexEvolucaoFotografica";
 
 // ─── APEX Elite design tokens ───────────────────────────────────
 const APEX = {
@@ -121,33 +120,6 @@ const CATEGORIES: Record<CategoryKey, CategoryDef> = {
   },
 };
 
-const POSTURAL_OPTIONS = [
-  "Hiperlordose lombar",
-  "Cifose torácica",
-  "Anteriorização da cabeça",
-  "Ombro protraído (esquerdo)",
-  "Ombro protraído (direito)",
-  "Ombro protraído (ambos)",
-  "Inclinação pélvica anterior",
-  "Inclinação pélvica posterior",
-  "Joelho valgo",
-  "Joelho varo",
-  "Rotação de tronco",
-  "Assimetria de ombros",
-  "Assimetria de quadril",
-  "Escápula alada",
-];
-
-const DISFUNCAO_OPTIONS = [
-  "Dominância de joelho no agachamento",
-  "Shift lateral no agachamento",
-  "Hiperextensão lombar no press",
-  "Elevação de ombro no pull",
-  "Anteriorização no hip hinge",
-  "Dissociação escapular ausente",
-  "Respiração disfuncional (apical)",
-];
-
 const STEPS = [
   "Carregando protocolo APEX v2...",
   "Lendo estrutura corporal...",
@@ -159,20 +131,17 @@ const STEPS = [
   "Finalizando veredicto...",
 ];
 
-const buildSystemPrompt = (cat: CategoryDef, athleteName: string, protocolo: string, clinicalBlock: string = "") => `
-Você é o APEX INTELLIGENCE — sistema de diagnóstico visual e funcional de elite para atletas IFBB de alto rendimento.
+const buildSystemPrompt = (cat: CategoryDef, athleteName: string, protocolo: string) => `
+Você é o APEX Visual Intelligence v2 + Dr. VERTEX — o sistema de análise mais completo do mundo para atletas de fisiculturismo.
 
-PERSONA OBRIGATÓRIA:
-Doutorado em Cinesiologia e Biomecânica Esportiva, especialização em Fisioterapia Esportiva, certificação IFBB de preparação de atletas, 20 anos com atletas de elite. Referências obrigatórias de raciocínio: Shirley Sahrmann, Stuart McGill, Vladimir Janda, Florence Kendall, Gray Cook/FMS, Eric Cressey, Mike Reinold, Kelly Starrett, Phil Page, Hany Rambod, Neil Hill, Chad Nicholls, Milos Sarcev, William Llewellyn, Trevor Kouritzin.
+Você combina simultaneamente:
+- Olhar de juiz IFBB + coach de elite visual (Hany Rambod, Neil Hill, Chad Nicholls)
+- Especialista em biomecânica e correção postural (Joe Bennett, Eric Cressey)
+- Coach master em farmacologia esportiva (William Llewellyn, Trevor Kouritzin, Miloš Sarcev)
 
-REGRAS DE QUALIDADE — INEGOCIÁVEIS:
-- Análise cirúrgica, técnica, sem eufemismos. NUNCA respostas genéricas tipo "faça alongamentos", "trabalhe o core", "fortaleça o glúteo".
-- TODA recomendação tem justificativa biomecânica/fisiológica explícita (inibição recíproca, lei de Sherrington, padrão de Janda, princípio SAID, lei de Hilton, princípio de Davis/Wolff, órgão tendinoso de Golgi, fuso muscular, mecanorreceptores).
-- OBRIGATÓRIO usar nomenclatura anatômica completa (peitoral menor, subescapular, infraespinhal, redondo menor, supraespinhal, serrátil anterior, romboides maior/menor, trapézio inferior/médio/superior, iliopsoas, tensor da fáscia lata, glúteo médio/máximo/mínimo, eretor espinhal, multífidos, quadrado lombar, transverso do abdome, oblíquos, sóleo, gastrocnêmio, fibulares, tibial posterior/anterior, vasto medial oblíquo, etc.).
-- Output mínimo equivalente a 1500 palavras quando dados completos. Cada prescrição com dose (séries × reps × tempo × frequência), cue de execução, mecanismo fisiológico, critério de progressão.
-- Tom: doutor de elite — direto, preciso, orientado a resultado mensurável. Sem condescendência. Sem elogios vazios. O atleta é adulto consciente.
-
-Quando há protocolo farmacológico informado, TODA a análise é contextualizada por ele: pontos fracos, condicionamento, biomecânica do tecido conjuntivo, prescrições de treino e suporte consideram o ambiente hormonal criado pelos compostos.
+Quando há protocolo farmacológico informado, TODA a análise é contextualizada por ele:
+os pontos fracos, o condicionamento, as estratégias de melhoria e as prescrições de treino
+levam em conta o ambiente hormonal criado pelos compostos ativos.
 
 ━━━ DADOS DO ATLETA ━━━
 Nome: ${athleteName}
@@ -184,241 +153,115 @@ Poses: ${cat.poses.join(" | ")}
 ${protocolo ? `━━━ PROTOCOLO FARMACOLÓGICO ATIVO ━━━
 ${protocolo}
 
-INSTRUÇÃO CRÍTICA: Cada seção deve considerar:
-- Como os compostos ativos afetam shape (retenção, dureza, vascularidade, fullness) e tecido conjuntivo.
-- O que é esperado visualmente nesta semana do ciclo com estes compostos.
-- Quais pontos fracos são limitados pela farmacologia vs por treino/volume insuficiente vs por disfunção biomecânica.
-- Como o protocolo potencializa ou limita a resposta às correções prescritas.
-- Quais ajustes de dieta, treino e suporte maximizam os compostos em uso e protegem articulações/tendões.
+INSTRUÇÃO CRÍTICA: Com o protocolo farmacológico acima, a análise muda completamente.
+Cada seção deve considerar:
+- Como os compostos ativos afetam o shape atual (retenção, dureza, vascularidade, fullness)
+- O que é esperado visualmente nesta semana do ciclo com estes compostos
+- Quais pontos fracos são limitados pela farmacologia vs por treino/volume insuficiente
+- Como o protocolo potencializa ou limita a resposta às correções prescritas
+- Quais ajustes de dieta, treino e suporte maximizam os compostos em uso
 ` : `Nenhum protocolo farmacológico informado — análise como atleta natural.`}
 
-${clinicalBlock ? `━━━ HISTÓRICO CLÍNICO, POSTURA E DISFUNÇÕES (DADOS DO COACH) ━━━
-${clinicalBlock}
-
-INSTRUÇÃO CRÍTICA — MODO CINESIOLOGIA / FISIOTERAPIA ESPORTIVA ATIVO:
-A análise integra OBRIGATORIAMENTE os dados clínicos com as fotos. Diagnostique síndromes posturais formais
-(Síndrome Cruzada Superior/Inferior de Janda, Layered Syndrome, Pronation Distortion Syndrome, Síndrome
-do Impacto Subacromial, Instabilidade Lombopélvica, etc.). Para cada disfunção: músculos hiperativos/encurtados
-× músculos inibidos/alongados, mecanismo, contraindicações, adaptações biomecânicas, ativação pré-treino,
-e progressão corretiva em 3 fases.
-` : ""}
-
 ━━━ PROTOCOLO DE ANÁLISE INTEGRADO ━━━
-Use EXATAMENTE estes headers \`##\` na resposta (a UI depende deles):
+Tom: técnico, direto, sem julgamento. Cada prescrição tem mecanismo fisiológico.
+O atleta é um adulto consciente. O coach é um profissional sério.
+
+Use EXATAMENTE estes headers na resposta:
 
 ## IMPACTO_VISUAL
-[2 parágrafos. Análise imediata do shape com leitura de juiz IFBB de elite.
-${protocolo ? "Separar efeito agudo dos compostos vs shape real subjacente." : ""}]
+[Análise imediata do shape — 2 parágrafos.
+${protocolo ? "Contextualizar com o protocolo: o que é efeito dos compostos vs o que é shape real." : ""}]
 
 ## SCORES_SEGMENTOS
-[Uma linha por segmento: NOME: X/10 — diagnóstico técnico curto.
-${protocolo ? "Indicar se o teto do score é limitado por farmacologia, gap de volume ou disfunção biomecânica." : ""}]
+[Uma linha por segmento: NOME: X/10 — diagnóstico.
+${protocolo ? "Indicar se score é limitado pela farmacologia ou por gap de treino/volume." : ""}]
 
 ## POSTURA_DESVIOS
-[ABA POSTURA — análise nível doutor em cinesiologia. Estruture obrigatoriamente em 4 blocos:
-
-BLOCO A — DIAGNÓSTICO CINESIOLÓGICO PRIMÁRIO:
-- Nome clínico da(s) síndrome(s) postural(is) (Síndrome Cruzada Superior de Janda, Lower Crossed, Layered, Pronation Distortion, Impacto Subacromial, Instabilidade Lombopélvica, ou combinações).
-- Descrição mecanicista: como a síndrome se formou, quais padrões de treino/postura/farmacologia a perpetuaram.
-- Cadeia cinética completa afetada — segmento por segmento, descrevendo a propagação (ex.: rotação interna glenoumeral → hiperatividade de trapézio superior + inibição de serrátil anterior + romboides → anteriorização da cabeça → compressão suboccipital → disfunção respiratória).
-- Classificação de severidade global: Grau I / II / III com critérios objetivos (ângulo, ADM, dor, limitação funcional).
-
-BLOCO B — MAPA MUSCULAR COMPLETO (TABELA OBRIGATÓRIA, MÍNIMO 12 MÚSCULOS):
-Formato em texto tabular linha a linha:
-Músculo | Estado (Dominante/Encurtado/Inibido/Alongado/Hiperativo/Hipoativo) | Impacto Funcional | Impacto Visual no Palco | Prioridade (Alta/Média/Baixa)
-
-BLOCO C — ANÁLISE BIOMECÂNICA POR SEGMENTO:
-Para cada segmento com disfunção (cervical, escapulotorácico, glenoumeral, lombopélvico, coxofemoral, joelho, tornozelo) liste:
-- Desvio observado (terminologia anatômica precisa).
-- Músculo dominante + mecanismo de dominância.
-- Músculo inibido + consequência funcional/visual da inibição.
-- Padrão de compensação em outros segmentos.
-- Exercícios contraindicados com justificativa biomecânica.
-- Risco de lesão: estruturas em risco + mecanismo provável.
-
-BLOCO D — IMPACTO BIOMECÂNICO POR POSE:
-Para cada pose da categoria (${cat.poses.join(" | ")}): qual desvio fica visível e por quê.
-${protocolo ? "Sinalizar quando algum desvio é amplificado por composto ativo (ex.: retenção de Tren amplificando shift lateral; pump de Test mascarando inibição escapular; HGH agravando síndrome do túnel do carpo na execução de bíceps)." : ""}]
+[Desvios posturais visíveis: músculo dominante vs inibido + impacto no palco.
+${protocolo ? "Indicar se desvio é agravado por algum composto (ex: retenção de Tren, pump de Test)." : ""}]
 
 ## CORRECOES_POSTURAIS
-[ABA CORREÇÕES — protocolo OBRIGATÓRIO em 3 fases com dose completa:
-
-FASE 1 — INIBIÇÃO E NEUROREDUCAÇÃO (semanas 1–2):
-Objetivo: desligar padrões dominantes, restaurar comprimento muscular, normalizar tônus via inibição recíproca.
-Para cada músculo dominante/encurtado:
-- Técnica (alongamento estático prolongado 60–90s, contração-relaxamento PNF 6×6s, SMR foam roller/lacrosse ball release 90–120s, respiração diafragmática 360° 5min).
-- Dosagem: tempo × séries × frequência semanal.
-- Cue de execução + mecanismo (ex.: "redução do tônus via órgão tendinoso de Golgi e inibição autogênica").
-
-FASE 2 — ATIVAÇÃO E ISOLAMENTO (semanas 3–6):
-Objetivo: ativar músculos inibidos em isolamento, restaurar controle motor segmentar via padrão de Janda.
-Para cada músculo inibido:
-- Exercício de baixa carga e alta consciência (CARs articulares, scapular Y/T/W, glúteo médio em decúbito lateral com banda, rotadores externos com mini-band, dead bug, bird dog, wall slide, hip airplane, copenhagen plank).
-- Séries × reps × tempo sob tensão + RPE + cue + músculo-alvo + músculo inibido recrutado + critério de progressão + contraindicações.
-
-FASE 3 — INTEGRAÇÃO E FORÇA FUNCIONAL (semana 7+ / ongoing):
-Objetivo: reintegrar padrões corretivos nos compostos do TrainingON sem perder volume de hipertrofia.
-- Padrões compostos com cueing corretivo integrado (agachamento, hip hinge, push, pull, carry).
-- Para cada exercício: variação, ângulo, ADM, séries × reps, RPE, cue corretivo específico, critério de progressão.
-- Como integrar ao TrainingON mantendo volume de hipertrofia (substituições, supersets corretivos pré-fadiga).
-
-ALERTAS DE EXERCÍCIOS A EVITAR:
-Lista CONTRAINDICADOS com motivo fisiológico (ex.: "evitar supino declinado pesado — potencializa protração escapular e encurtamento de peitoral menor já hiperativo, agravando impacto subacromial").]
+[Para cada desvio:
+a) Alongamento do músculo dominante — exercício + duração + frequência
+b) Ativação do músculo inibido — exercício + séries + reps + cue
+c) Cue de postura corrigida para o palco]
 
 ## PONTOS_FRACOS_PROTOCOLO
 [Para cada grupo fraco:
-- Diagnóstico + causa hierarquizada (treino × farmacologia × genética × disfunção biomecânica × inervação).
-- Exercício 1 (ativação/isolamento): nome + ângulo + grip/stance + cue + séries×reps + RPE + mecanismo.
-- Exercício 2 (sobrecarga): nome + variação + cue + séries×reps + RPE + tempo sob tensão.
-- Exercício 3 (pump/finalizador): nome + técnica de intensidade + séries×reps.
-- Frequência semanal + tempo de resposta visual esperado em semanas.
-${protocolo ? "- Como os compostos ativos afetam a velocidade de resposta (síntese proteica, retenção de nitrogênio, IGF-1 local, sensibilidade androgênica do tecido, mTOR)." : ""}]
+- Diagnóstico + causa (treino vs farmacologia vs genética)
+- Exercício 1 (ativação/isolamento): nome + ângulo + grip + cue + séries×reps
+- Exercício 2 (sobrecarga): nome + variação + cue + séries×reps
+- Exercício 3 (pump/finalizador): nome + técnica + séries×reps
+- Frequência semanal + tempo de resposta visual
+${protocolo ? "- Como os compostos ativos afetam a velocidade de resposta deste grupo" : ""}]
 
 ## CONDICIONAMENTO
 BF_ESTIMADO: XX%
 BF_META: XX%
 SEMANAS_ESTIMADAS: X
-[Análise técnica de condicionamento.
+[Análise de condicionamento.
 ${protocolo ? `Com o protocolo ativo:
-- Gordura real vs retenção subcutânea/intramuscular dos compostos.
-- BF real estimado vs BF aparente na foto.
-- Como os compostos afetam o caminho até o BF meta.
-- Ajustes específicos de cardio (LISS vs HIIT, zona, duração) e dieta para este stack.` : ""}]
+- O que é gordura real vs retenção dos compostos
+- BF real estimado vs BF aparente na foto
+- Como os compostos afetam o caminho até o BF meta
+- Ajustes de cardio e dieta específicos para este stack` : ""}]
 
 ## FARMACOLOGIA_SHAPE
-${protocolo ? `[ABA PROTOCOLO — análise farmacológica INTEGRADA À BIOMECÂNICA. Nível doutor.]
+${protocolo ? `[SEÇÃO EXCLUSIVA — só aparece quando há protocolo informado]
+
+ANÁLISE DR. VERTEX INTEGRADA:
 
 COMPOSTOS E IMPACTO VISUAL:
-[Para cada composto: efeito específico no shape desta semana — fullness, dureza, vascularidade, retenção subcutânea/intramuscular, definição.]
-
-IMPACTO FARMACOLÓGICO NO TECIDO CONJUNTIVO E BIOMECÂNICA:
-[Para cada composto:
-- Efeito sobre tendões, ligamentos, fáscia, cartilagem e mobilidade articular.
-- Risco de lesão induzido (ex.: trembolona → ressecamento e rigidez tendínea + redução de hidratação do colágeno → risco em movimentos balísticos/explosivos; nandrolona → retenção articular mascarando lesão; HGH → síndrome do túnel do carpo, hipertrofia de tecido conjuntivo, artralgia; insulina → fragilidade vascular periférica; oxandrolona → impacto neutro/positivo no colágeno; estanozolol → ressecamento articular severo; primobolan → seguro para tecido conjuntivo).
-- Recomendação de ajuste de treino baseado no composto (amplitude, velocidade, técnicas de intensidade permitidas/proibidas).
-- Como esse efeito interage com as síndromes posturais identificadas.]
-
-SUPLEMENTAÇÃO ARTICULAR E TECIDO CONJUNTIVO (com dose):
-[Colágeno hidrolisado tipo I/II 10–20g/dia + vitamina C 500mg, MSM 3g/dia, glucosamina 1500mg + condroitina 1200mg, ômega-3 EPA/DHA 3g/dia, silício orgânico 10mg, boswellia 300mg 3×/dia, curcumina 1g + piperina, TB-500/BPC-157 quando aplicável e legal — sempre justificando contra os compostos em uso.]
-
-PROTOCOLO DE MONITORAMENTO — SINAIS DE ALERTA:
-[Estalos articulares novos, dor tendínea persistente >72h, parestesias, perda aguda de ADM, edema assimétrico, dor lombar irradiada, alterações de marcha, queda de força em padrão isolado — com conduta para cada um.]
+[Para cada composto identificado: como ele afeta especificamente o shape desta semana]
 
 SINERGIA DO STACK PARA O OBJETIVO:
-[Como os compostos trabalham juntos para cutting/bulk/peak.]
+[Como os compostos trabalham juntos para o objetivo declarado — cutting/bulk/peak]
 
 O QUE O PROTOCOLO ESTÁ FAZENDO PELO SHAPE AGORA:
-[Efeitos visíveis nas fotos atribuíveis aos compostos.]
+[Efeitos positivos visíveis nas fotos atribuíveis aos compostos]
 
 O QUE O PROTOCOLO NÃO CONSEGUE RESOLVER:
-[Limitações de treino/volume/biomecânica que farmacologia não corrige.]
+[Pontos fracos que são limitação de treino/volume, não de farmacologia]
 
 ESTRATÉGIAS PARA MAXIMIZAR ESTE STACK:
-- Timing de aplicação em relação ao treino.
-- Nutrição específica (TDEE, proteína, CHO timing).
-- Ajustes de treino para potencializar.
-- O que coaches IFBB de elite fazem diferente com este tipo de protocolo.
+- Timing de aplicação em relação ao treino
+- Nutrição específica para este stack (TDEE, proteína, CHO timing)
+- Ajustes de treino para potencializar os compostos
+- O que os coaches de elite fazem diferente com este tipo de protocolo
 
 TDEE_FATOR: X.XX
 PROTEINA_IDEAL: Xg/kg
 CHO_ESTRATEGIA: [cycling recomendado para este stack]
 
 SUPORTE E SAÚDE:
-- Avaliação do suporte atual + gaps + alertas + exames prioritários.
+- Avaliação do suporte atual
+- O que está faltando
+- Alertas específicos para este stack nesta fase
+- Exames prioritários agora
 
 GESTAO_E2: [risco de aromatização + manejo]
 ALERTA_CARDIO: [risco cardiovascular + protocolo]
 ` : "[Nenhum protocolo informado]"}
 
 ## GANHA_PONTOS
-[Máx 4 — o que o juiz IFBB vai valorizar, com referência cinesiológica/estética.]
+[Máx 4 — o que o juiz vai valorizar no palco]
 
 ## PERDE_PONTOS
-[Máx 4 — o que o juiz vai penalizar, correlacionando com desvios biomecânicos identificados.]
+[Máx 4 — o que o juiz vai penalizar]
 
 ## PLANO_ATAQUE
-[ABA PLANO — cronograma semanal integrado nível preparador IFBB + fisioterapeuta esportivo + periodização corretiva.
-
-PRIORIDADE_1: [grupo/ajuste + prescrição completa]
-PRIORIDADE_2: [grupo/ajuste + prescrição completa]
-PRIORIDADE_3: [grupo/ajuste + prescrição completa]
-
-CRONOGRAMA SEMANAL INTEGRADO (Seg → Dom):
-[Para cada dia: treino principal (grupos) + bloco corretivo (qual fase + exercícios) + posing (tempo + foco) + cardio (tipo, duração, zona). Considere as semanas restantes para o show.]
-
-PERIODIZAÇÃO CORRETIVA SEMANA A SEMANA ATÉ O SHOW:
-- O que corrigir em cada bloco de semanas (1–2, 3–6, 7+).
-- Volume de corretivos vs volume de hipertrofia por fase (em séries/semana por grupo).
-- Sinal de alerta que indica que o protocolo precisa ser ajustado.
-
-MARCOS DE REAVALIAÇÃO OBRIGATÓRIOS (semanas 4, 8, 12 ou conforme tempo até show):
-- Fotos padronizadas (mesma luz, ângulo, distância), ângulos posturais, perimetria, BF, scores APEX por segmento.
-
-KPIs OBJETIVOS MENSURÁVEIS:
-- Ângulos posturais alvo (ex.: redução da inclinação pélvica anterior de X° para Y°; redução do ângulo crânio-vertebral; ângulo Q do joelho).
-- Score APEX alvo por segmento por semana.
-- BF meta por fase.
-${protocolo ? "- Marcos farmacológicos integrados (peak week, transição de fase, manejo de E2/cardio)." : ""}]
+PRIORIDADE_1: [grupo/ajuste + prescrição]
+PRIORIDADE_2: [grupo/ajuste + prescrição]
+PRIORIDADE_3: [grupo/ajuste + prescrição]
+[Detalhamento considerando o protocolo farmacológico ativo]
 
 ## POSING_CORRETIVO
-[ABA PALCO — ANÁLISE POSE A POSE nível coach IFBB de elite.
-Para CADA pose obrigatória da categoria (${cat.poses.join(" | ")}):
-- Pose: nome oficial.
-- Impacto do desvio postural identificado nesta pose: o que o juiz vê negativamente, com mecânica anatômica.
-- Compensação visual: instrução técnica EXATA de como mascarar a assimetria durante a pose (ângulo de rotação, deslocamento de peso, ativação compensatória, respiração).
-- Cueing de posing corretivo: frase EXATA para o atleta executar (ex.: "puxe a escápula direita para baixo e medial enquanto rotaciona externamente o úmero 15°").
-- Exercício de POSING CORRETIVO: ativação muscular direcionada DURANTE a pose (qual músculo inibido recrutar para sustentar a pose corrigida) com cue de respiração e contração isométrica.
-- Score estimado antes/depois da correção (ex.: 6/10 → 8/10).
-${protocolo ? "- Ajuste de timing relativo aos compostos (pump, vascularidade, fullness no momento da apresentação)." : ""}]
-
-${clinicalBlock ? `## SINDROMES_POSTURAIS
-[Diagnóstico cinesiológico FORMAL:
-- Nome técnico da(s) síndrome(s).
-- Músculos hiperativos/encurtados × músculos inibidos (nomenclatura completa).
-- Mecanismo biomecânico de instalação.
-- Impacto na cadeia cinética global.]
-
-## CONTRAINDICACOES_E_ADAPTACOES
-[Por exercício clássico afetado:
-- Original → CONTRAINDICADO (motivo fisiológico) ou ADAPTAR.
-- Adaptação biomecânica recomendada (variação, ângulo, ADM, pegada, stance, tempo, footprint).
-- Cue específico para proteger a estrutura comprometida.]
-
-## ATIVACAO_PRE_TREINO
-[Protocolo de ativação neuromuscular pré-sessão para músculos inibidos.
-Exercício + séries × reps/tempo + cue + tempo total da rotina (alvo 8–12 min).]
-
-## EXERCICIOS_CORRETIVOS_DISFUNCOES
-[Para cada disfunção:
-1) Inibição/mobilidade do hiperativo — técnica + duração.
-2) Ativação isolada do inibido — exercício + séries × reps + cue + mecanismo.
-3) Reintegração no padrão funcional — exercício + carga/intensidade + critério de progressão.]
-
-## PROGRESSAO_CORRETIVA_FASES
-FASE_1 (sem 1–3 — Inibição + Ativação): [exercícios + frequência semanal]
-FASE_2 (sem 4–6 — Fortalecimento isolado sob carga): [exercícios + progressão]
-FASE_3 (sem 7+ — Integração funcional): [exercícios + critério de alta corretiva]
-` : ""}
+[Cues por pose mandatória — como compensar desvios e vender pontos fortes
+${protocolo ? "Considerar efeitos dos compostos na aparência durante a pose (pump, vascularidade, fullness)" : ""}]
 
 ## VEREDICTO
-[VEREDICTO APEX ELITE — nível doutor. Estruture obrigatoriamente:
-
-DIAGNÓSTICO CINESIOLÓGICO FORMAL: [parágrafo técnico completo com nome(s) da(s) síndrome(s) postural(is) e disfuncional(is), severidade, cadeia cinética e mecanismo].
-
-FATOR LIMITANTE PRIMÁRIO: [o ÚNICO ponto que mais está custando resultado no palco — biomecânico, farmacológico, nutricional ou de treino, com justificativa].
-
-PROGNÓSTICO REALISTA: [timeline de correção em semanas/meses para cada síndrome, considerando aderência ao protocolo de 3 fases].
-
-POTENCIAL DE MELHORA VISUAL ESTIMADO: [XX% de upgrade visual percebido pelo júri se o protocolo completo for seguido — justifique a estimativa].
-
-MENSAGEM DIRETA AO ATLETA: [3 frases diretas — o que ele precisa entender e aceitar AGORA para chegar ao top 5.
-${protocolo ? "Separar o que é resolvível com ajuste de treino/dieta/biomecânica vs o que depende de ajuste farmacológico." : ""}]]
-
-LEMBRETE FINAL DE QUALIDADE:
-- Mínimo 1500 palavras de output total quando dados completos.
-- Cada prescrição = nome + dose + cue + mecanismo + critério de progressão.
-- Zero linguagem genérica. Toda recomendação justificada biomecânica/fisiologicamente.
-- Cite mecanismos quando relevante: inibição recíproca, lei de Sherrington, padrão de Janda, princípio SAID, órgão tendinoso de Golgi, fuso muscular.
+[3 frases diretas — o que falta para top 5.
+${protocolo ? "Separar o que é resolvível com ajuste de treino/dieta vs o que depende de ajuste farmacológico." : ""}]
 `;
 
 const parseFarmMeta = (text: string) => ({
@@ -428,22 +271,6 @@ const parseFarmMeta = (text: string) => ({
   gestaoE2: text.match(/GESTAO_E2:\s*([^\n]+)/i)?.[1]?.trim(),
   alertaCardio: text.match(/ALERTA_CARDIO:\s*([^\n]+)/i)?.[1]?.trim(),
 });
-
-
-const buildClinicalBlock = (
-  clinical: { lesoes: string; doresArticulares: string; limitacoesADM: string; queixasFuncionais: string },
-  posturalChecks: string[],
-  disfuncoesChecks: string[],
-): string => {
-  const parts: string[] = [];
-  if (clinical.lesoes.trim()) parts.push(`LESÕES ATUAIS/PASSADAS: ${clinical.lesoes.trim()}`);
-  if (clinical.doresArticulares.trim()) parts.push(`DORES ARTICULARES RECORRENTES: ${clinical.doresArticulares.trim()}`);
-  if (clinical.limitacoesADM.trim()) parts.push(`LIMITAÇÕES DE AMPLITUDE DE MOVIMENTO: ${clinical.limitacoesADM.trim()}`);
-  if (posturalChecks.length) parts.push(`PADRÕES POSTURAIS OBSERVADOS: ${posturalChecks.join(" · ")}`);
-  if (disfuncoesChecks.length) parts.push(`DISFUNÇÕES DE MOVIMENTO: ${disfuncoesChecks.join(" · ")}`);
-  if (clinical.queixasFuncionais.trim()) parts.push(`QUEIXAS FUNCIONAIS DO ATLETA: ${clinical.queixasFuncionais.trim()}`);
-  return parts.join("\n");
-};
 
 // ─── Parsers ─────────────────────────────────────────────────────
 const parseSection = (text: string, key: string, nextKey?: string): string => {
@@ -593,9 +420,6 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
     front: null, back: null, side: null,
   });
   const [formData, setFormData] = useState({ semanas: "", compostos: "", obs: "" });
-  const [clinical, setClinical] = useState({ lesoes: "", doresArticulares: "", limitacoesADM: "", queixasFuncionais: "" });
-  const [posturalChecks, setPosturalChecks] = useState<string[]>([]);
-  const [disfuncoesChecks, setDisfuncoesChecks] = useState<string[]>([]);
   const [objetivoCiclo, setObjetivoCiclo] = useState("cutting");
   const [semanaCiclo, setSemanaCiclo] = useState("");
   const [duracaoCiclo, setDuracaoCiclo] = useState("");
@@ -611,7 +435,6 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
   const [generatingTraining, setGeneratingTraining] = useState(false);
   const [showPromptPreview, setShowPromptPreview] = useState(false);
   const [apexMode, setApexMode] = useState<"analise" | "evolucao">("analise");
-  const [evolucaoModalOpen, setEvolucaoModalOpen] = useState(false);
   const [promptCopied, setPromptCopied] = useState(false);
   const navigate = useNavigate();
 
@@ -652,9 +475,6 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
     setAnalysisResult("");
     setPhotos({ front: null, back: null, side: null });
     setFormData({ semanas: "", compostos: "", obs: "" });
-    setClinical({ lesoes: "", doresArticulares: "", limitacoesADM: "", queixasFuncionais: "" });
-    setPosturalChecks([]);
-    setDisfuncoesChecks([]);
     setObjetivoCiclo("cutting");
     setSemanaCiclo("");
     setDuracaoCiclo("");
@@ -720,10 +540,8 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
 Objetivo do ciclo: ${objetivoCiclo}
 Semana ${semanaCiclo || "não informada"} de ${duracaoCiclo || "não informada"} semanas
 Suporte em uso: ${suporte || "não informado"}` : "";
-      const clinicalBlock = buildClinicalBlock(clinical, posturalChecks, disfuncoesChecks);
-      const contextoBase = `Atleta: ${athleteName} | Semanas para o show: ${formData.semanas || "n/d"} | Protocolo: ${formData.compostos || "não informado"} | Obs: ${formData.obs || "nenhuma"}`;
-      const contexto = `${contextoBase}${clinicalBlock ? `\n\n━━━ DADOS CLÍNICOS / POSTURAIS ━━━\n${clinicalBlock}` : ""}\n\nGere a análise APEX v2 completa.`;
-      const system = buildSystemPrompt(cat, athleteName, protocoloCompleto, clinicalBlock);
+      const contexto = `Atleta: ${athleteName} | Semanas para o show: ${formData.semanas || "n/d"} | Protocolo: ${formData.compostos || "não informado"} | Obs: ${formData.obs || "nenhuma"}\n\nGere a análise APEX v2 completa.`;
+      const system = buildSystemPrompt(cat, athleteName, protocoloCompleto);
 
       const { data, error } = await supabase.functions.invoke("apex-visual-analyze", {
         body: { fotos, contexto, system },
@@ -748,26 +566,6 @@ Suporte em uso: ${suporte || "não informado"}` : "";
           return acc;
         }, {} as Record<string, number>);
 
-        // Upload photos to apex-visual-photos bucket for evolution comparison
-        const photosPaths: { front?: string; back?: string; side?: string } = {};
-        if (coachId && athlete?.id) {
-          const ts = Date.now();
-          const uploadAngle = async (angle: "front" | "back" | "side", file: File | null) => {
-            if (!file) return;
-            const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
-            const path = `${coachId}/${athlete.id}/${ts}-${angle}.${ext}`;
-            const { error: upErr } = await supabase.storage
-              .from("apex-visual-photos")
-              .upload(path, file, { upsert: false, contentType: file.type || "image/jpeg" });
-            if (!upErr) photosPaths[angle] = path;
-          };
-          await Promise.all([
-            uploadAngle("front", photos.front),
-            uploadAngle("back", photos.back),
-            uploadAngle("side", photos.side),
-          ]);
-        }
-
         const { data: inserted, error: insErr } = await supabase.from("apex_analyses" as any).insert({
           coach_id: coachId,
           athlete_id: athlete?.id || null,
@@ -788,7 +586,6 @@ Suporte em uso: ${suporte || "não informado"}` : "";
           support: suporte || null,
           tdee_factor: farmMeta.tdeeFator ? parseFloat(farmMeta.tdeeFator) : null,
           protein_ideal: farmMeta.proteinaIdeal || null,
-          photos: photosPaths,
         }).select("id").single();
         if (insErr) throw insErr;
         setSavedAnalysisId((inserted as any)?.id || null);
@@ -812,7 +609,7 @@ Suporte em uso: ${suporte || "não informado"}` : "";
     } finally {
       setLoading(false);
     }
-  }, [athlete, cat, formData, photos, coachId, selectedCategory, fetchHistory, fetchSyncStatus, objetivoCiclo, semanaCiclo, duracaoCiclo, suporte, clinical, posturalChecks, disfuncoesChecks]);
+  }, [athlete, cat, formData, photos, coachId, selectedCategory, fetchHistory, fetchSyncStatus, objetivoCiclo, semanaCiclo, duracaoCiclo, suporte]);
 
   // ─── Generate corrective training ────────────────────
   const buildSyncPayload = useCallback(() => {
@@ -1206,24 +1003,14 @@ Suporte em uso: ${suporte || "não informado"}` : "";
       {/* ━━━ MODE TOGGLE: Análise IA vs Evolução Fotográfica ━━━ */}
       <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
         {([
-          { k: "analise" as const,  l: "DIAGNÓSTICO APEX",     icon: ScanLine, isModal: false },
-          { k: "evolucao" as const, l: "Evolução Fotográfica",  icon: TrendingUp, isModal: true },
-        ]).map(({ k, l, icon: Ic, isModal }) => {
-          const active = !isModal && apexMode === "analise" && k === "analise";
+          { k: "analise" as const,  l: "DIAGNÓSTICO APEX",     icon: ScanLine },
+          { k: "evolucao" as const, l: "Evolução Fotográfica",  icon: TrendingUp },
+        ]).map(({ k, l, icon: Ic }) => {
+          const active = apexMode === k;
           return (
             <button
               key={k}
-              onClick={() => {
-                if (isModal) {
-                  if (!athlete) {
-                    toast({ title: "Selecione um atleta antes", variant: "destructive" });
-                    return;
-                  }
-                  setEvolucaoModalOpen(true);
-                } else {
-                  setApexMode("analise");
-                }
-              }}
+              onClick={() => setApexMode(k)}
               style={{
                 flex: 1, padding: "12px 16px", borderRadius: 12, cursor: "pointer",
                 background: active ? `linear-gradient(135deg, ${APEX.electricDim}, ${APEX.deep})` : APEX.deep,
@@ -1241,14 +1028,21 @@ Suporte em uso: ${suporte || "não informado"}` : "";
         })}
       </div>
 
-      {athlete && (
-        <ApexEvolucaoFotografica
-          open={evolucaoModalOpen}
-          onOpenChange={setEvolucaoModalOpen}
-          athleteId={athlete.id}
-          athleteName={athlete.nome}
-          athleteCategory={athlete.categoria ?? cat.label}
-        />
+      {apexMode === "evolucao" && (
+        <div style={{ marginBottom: 16 }}>
+          {athlete ? (
+            <ApexEvolucao
+              atletaId={athlete.id}
+              atletaNome={athlete.nome}
+              dataCompeticao={athlete.data_competicao}
+              categoriaAtleta={athlete.categoria ?? selectedCategory}
+            />
+          ) : (
+            <div style={{ ...cardStyle, textAlign: "center", color: APEX.textSecondary, padding: 32 }}>
+              Selecione um atleta para acessar a evolução fotográfica.
+            </div>
+          )}
+        </div>
       )}
 
       {apexMode === "analise" && (<>
@@ -1426,144 +1220,7 @@ Suporte em uso: ${suporte || "não informado"}` : "";
         </div>
       )}
 
-      {/* ━━━ HISTÓRICO CLÍNICO E LIMITAÇÕES ━━━ */}
-      <div style={{ ...cardStyle, marginBottom: 16 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
-          {sectionTick(APEX.crimson)}
-          <span style={labelStyle}>🩻 Histórico Clínico e Limitações</span>
-        </div>
-        <div style={{ display: "grid", gap: 10 }}>
-          <div>
-            <div style={{ ...labelStyle, fontSize: 9, marginBottom: 6 }}>Lesões atuais ou passadas</div>
-            <textarea
-              value={clinical.lesoes}
-              onChange={(e) => setClinical({ ...clinical, lesoes: e.target.value })}
-              placeholder="Ex: ombro operado, hérnia L4-L5, tendinite patelar..."
-              rows={2}
-              style={{ ...inputBase, fontSize: 12, lineHeight: 1.5, resize: "vertical" }}
-            />
-          </div>
-          <div>
-            <div style={{ ...labelStyle, fontSize: 9, marginBottom: 6 }}>Dores articulares recorrentes</div>
-            <textarea
-              value={clinical.doresArticulares}
-              onChange={(e) => setClinical({ ...clinical, doresArticulares: e.target.value })}
-              placeholder="Ex: joelho direito no agachamento, lombar no peso morto..."
-              rows={2}
-              style={{ ...inputBase, fontSize: 12, lineHeight: 1.5, resize: "vertical" }}
-            />
-          </div>
-          <div>
-            <div style={{ ...labelStyle, fontSize: 9, marginBottom: 6 }}>Limitações de amplitude de movimento</div>
-            <textarea
-              value={clinical.limitacoesADM}
-              onChange={(e) => setClinical({ ...clinical, limitacoesADM: e.target.value })}
-              placeholder="Ex: não consegue agachar abaixo do paralelo, rotação interna de ombro limitada..."
-              rows={2}
-              style={{ ...inputBase, fontSize: 12, lineHeight: 1.5, resize: "vertical" }}
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* ━━━ AVALIAÇÃO POSTURAL ━━━ */}
-      <div style={{ ...cardStyle, marginBottom: 16 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
-          {sectionTick(APEX.amber)}
-          <span style={labelStyle}>📐 Padrões Posturais Observados</span>
-          {posturalChecks.length > 0 && (
-            <span style={{ fontSize: 10, color: APEX.amber, fontFamily: APEX.fontMono, marginLeft: 4 }}>· {posturalChecks.length}</span>
-          )}
-        </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 8 }}>
-          {POSTURAL_OPTIONS.map((opt) => {
-            const checked = posturalChecks.includes(opt);
-            return (
-              <label
-                key={opt}
-                style={{
-                  display: "flex", alignItems: "center", gap: 8, cursor: "pointer",
-                  padding: "8px 10px", borderRadius: 8,
-                  border: `1px solid ${checked ? APEX.amber : APEX.border}`,
-                  background: checked ? `${APEX.amber}15` : "transparent",
-                  fontSize: 12, color: checked ? APEX.textPrimary : APEX.textSecondary,
-                  transition: "all .15s",
-                }}
-              >
-                <input
-                  type="checkbox"
-                  checked={checked}
-                  onChange={(e) => {
-                    setPosturalChecks(e.target.checked
-                      ? [...posturalChecks, opt]
-                      : posturalChecks.filter((o) => o !== opt));
-                  }}
-                  style={{ accentColor: APEX.amber }}
-                />
-                <span>{opt}</span>
-              </label>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* ━━━ DISFUNÇÕES DE MOVIMENTO ━━━ */}
-      <div style={{ ...cardStyle, marginBottom: 16 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
-          {sectionTick(APEX.violet)}
-          <span style={labelStyle}>⚙️ Disfunções de Movimento</span>
-          {disfuncoesChecks.length > 0 && (
-            <span style={{ fontSize: 10, color: APEX.violet, fontFamily: APEX.fontMono, marginLeft: 4 }}>· {disfuncoesChecks.length}</span>
-          )}
-        </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 8 }}>
-          {DISFUNCAO_OPTIONS.map((opt) => {
-            const checked = disfuncoesChecks.includes(opt);
-            return (
-              <label
-                key={opt}
-                style={{
-                  display: "flex", alignItems: "center", gap: 8, cursor: "pointer",
-                  padding: "8px 10px", borderRadius: 8,
-                  border: `1px solid ${checked ? APEX.violet : APEX.border}`,
-                  background: checked ? `${APEX.violet}15` : "transparent",
-                  fontSize: 12, color: checked ? APEX.textPrimary : APEX.textSecondary,
-                  transition: "all .15s",
-                }}
-              >
-                <input
-                  type="checkbox"
-                  checked={checked}
-                  onChange={(e) => {
-                    setDisfuncoesChecks(e.target.checked
-                      ? [...disfuncoesChecks, opt]
-                      : disfuncoesChecks.filter((o) => o !== opt));
-                  }}
-                  style={{ accentColor: APEX.violet }}
-                />
-                <span>{opt}</span>
-              </label>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* ━━━ QUEIXAS DO ATLETA ━━━ */}
-      <div style={{ ...cardStyle, marginBottom: 16 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-          {sectionTick(APEX.emerald)}
-          <span style={labelStyle}>💬 Queixas do Atleta</span>
-        </div>
-        <textarea
-          value={clinical.queixasFuncionais}
-          onChange={(e) => setClinical({ ...clinical, queixasFuncionais: e.target.value })}
-          placeholder="O que o atleta relata sentir durante os treinos (dores, fraquezas, compensações percebidas...)"
-          rows={3}
-          style={{ ...inputBase, fontSize: 12, lineHeight: 1.65, resize: "vertical" }}
-        />
-      </div>
-
-
+      {/* ━━━ OBSERVAÇÕES ━━━ */}
       <div style={{ ...cardStyle, marginBottom: 16 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
           {sectionTick(APEX.electric)}
@@ -1712,10 +1369,8 @@ Suporte em uso: ${suporte || "não informado"}` : "";
 Objetivo do ciclo: ${objetivoCiclo}
 Semana ${semanaCiclo || "não informada"} de ${duracaoCiclo || "não informada"} semanas
 Suporte em uso: ${suporte || "não informado"}` : "";
-            const clinicalBlock = buildClinicalBlock(clinical, posturalChecks, disfuncoesChecks);
-            const system = buildSystemPrompt(cat, athleteName, protocoloCompleto, clinicalBlock);
-            const contextoBase = `Atleta: ${athleteName} | Semanas para o show: ${formData.semanas || "n/d"} | Protocolo: ${formData.compostos || "não informado"} | Obs: ${formData.obs || "nenhuma"}`;
-            const contexto = `${contextoBase}${clinicalBlock ? `\n\n━━━ DADOS CLÍNICOS / POSTURAIS ━━━\n${clinicalBlock}` : ""}\n\nGere a análise APEX completa.`;
+            const system = buildSystemPrompt(cat, athleteName, protocoloCompleto);
+            const contexto = `Atleta: ${athleteName} | Semanas para o show: ${formData.semanas || "n/d"} | Protocolo: ${formData.compostos || "não informado"} | Obs: ${formData.obs || "nenhuma"}\n\nGere a análise APEX completa.`;
             const fullPrompt = `━━━━━ SYSTEM PROMPT ━━━━━\n\n${system}\n\n━━━━━ USER CONTEXT ━━━━━\n\n${contexto}`;
             return (
               <>

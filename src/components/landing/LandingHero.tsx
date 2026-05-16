@@ -1,41 +1,12 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 
-const BOOT_STEPS = [
-  "Conectando ao sistema...",
-  "Carregando protocolos MCE...",
-  "Verificando sincronização...",
-  "Sistema MCE · Ativo",
-];
-
-const useLiveCounter = (base: number) => {
-  const [count, setCount] = useState(base);
-  useEffect(() => {
-    let timeoutId: ReturnType<typeof setTimeout>;
-    const tick = () => {
-      const delay = 2400 + Math.random() * 2600;
-      timeoutId = setTimeout(() => {
-        setCount((c) => c + 1);
-        tick();
-      }, delay);
-    };
-    tick();
-    return () => clearTimeout(timeoutId);
-  }, []);
-  return count;
-};
-
 const ROTATING_LINES = [
+  "4 dias antes da prova e você não sabe se tá flat, full ou spilled.",
+  "Motivação dura 2 semanas. Protocolo dura a vida.",
+  "Protocolo farmacológico ativo. Nenhum app calculava seu TDEE real. Até agora.",
   "Sua fome nunca foi de comida.",
-  "Força de vontade não periodiza treino. Sistema sim.",
-  "Você sabe o que fazer. O problema nunca foi esse.",
-  "Ninguém falhou na dieta. Falhou no diagnóstico.",
-  "Seu corpo responde ao padrão que você instalou. Não à sua intenção.",
-  "Não existe platô de resultado. Existe platô de padrão.",
-  "A fome que você sente às 23h não é física. É padrão sem protocolo.",
-  "Cardápio é intenção. Protocolo é resultado.",
-  "95% sabe o que comer. 5% tem estrutura pra não parar.",
-  "Transformação não é evento. É sistema que nunca para.",
+  "Peak week chegando. O plano de depleção e carb load já está pronto?",
 ];
 
 const PARTICLES = [
@@ -67,100 +38,12 @@ const CHIPS = [
   { pos: "bottom-[2%] right-[-6%]", label: "SCORE MCE", value: "94 / 100", color: "#7890ff", x: 30, delay: 2.5 },
 ];
 
-const MCE_PILLARS = [
-  { letter: "M", label: "MINDSET", desc: "Padrão mental", color: "#7890ff", bars: [0.9, 0.6, 0.85, 0.7, 0.95] },
-  { letter: "C", label: "COMPORTAMENTO", desc: "Antes do prato", color: "#e8a020", bars: [0.7, 0.95, 0.75, 1.0, 0.8] },
-  { letter: "E", label: "EXECUÇÃO", desc: "Protocolo ativo", color: "#00f0b4", bars: [0.85, 0.65, 0.95, 0.7, 0.88] },
-];
-
-const MCESystemCard = () => (
-  <div className="lg:hidden w-full">
-    <div
-      className="relative border p-4 rounded-sm overflow-hidden"
-      style={{ borderColor: "rgba(232,160,32,.12)", background: "rgba(4,4,14,.85)" }}
-    >
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <span
-            className="w-1.5 h-1.5 rounded-full animate-pulse"
-            style={{ background: "#00f0b4", boxShadow: "0 0 8px rgba(0,240,180,.9)" }}
-          />
-          <span className="font-mono text-[.5rem] tracking-[.22em] uppercase" style={{ color: "rgba(0,240,180,.7)" }}>
-            MCE · SISTEMA ATIVO
-          </span>
-        </div>
-        <span className="font-mono text-[.5rem]" style={{ color: "#50507a" }}>NUTRI·ON v2.4</span>
-      </div>
-
-      <div className="grid grid-cols-3 gap-2">
-        {MCE_PILLARS.map((p, i) => (
-          <motion.div
-            key={p.letter}
-            initial={{ opacity: 0, scale: 0.88 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5, delay: 1.5 + i * 0.15 }}
-            className="relative border p-2.5 rounded-sm overflow-hidden"
-            style={{ borderColor: `${p.color}18`, background: "rgba(4,4,14,.85)" }}
-          >
-            <div
-              className="font-heading text-[2.1rem] leading-none mb-1"
-              style={{
-                color: "transparent",
-                WebkitTextStroke: `1px ${p.color}`,
-                textShadow: `0 0 18px ${p.color}66`,
-              }}
-            >
-              {p.letter}
-            </div>
-            <div className="font-mono text-[.44rem] tracking-[.16em] uppercase mb-0.5" style={{ color: p.color }}>
-              {p.label}
-            </div>
-            <div className="font-mono text-[.42rem] mb-2" style={{ color: "#404060" }}>
-              {p.desc}
-            </div>
-            <div className="flex items-end gap-[2px] h-4">
-              {p.bars.map((b, bi) => (
-                <motion.div
-                  key={bi}
-                  className="flex-1 rounded-[1px]"
-                  style={{ background: p.color, opacity: 0.7 }}
-                  animate={{ height: [`${b * 40}%`, `${b * 100}%`, `${b * 55}%`] }}
-                  transition={{ duration: 1.4 + bi * 0.18, repeat: Infinity, ease: "easeInOut" }}
-                />
-              ))}
-            </div>
-          </motion.div>
-        ))}
-      </div>
-
-      <motion.div
-        className="absolute bottom-0 left-0 right-0 h-px"
-        style={{
-          originX: 0.5,
-          background: "linear-gradient(90deg, transparent, #7890ff, #e8a020, #00f0b4, transparent)",
-        }}
-        animate={{ opacity: [0.35, 1, 0.35], scaleX: [0.85, 1, 0.85] }}
-        transition={{ duration: 2.8, repeat: Infinity, ease: "easeInOut" }}
-      />
-    </div>
-  </div>
-);
-
 const LandingHero = () => {
   const [lineIdx, setLineIdx] = useState(0);
-  const [bootStep, setBootStep] = useState(0);
-  const liveCount = useLiveCounter(3847);
 
   useEffect(() => {
     const id = setInterval(() => setLineIdx((p) => (p + 1) % ROTATING_LINES.length), 3800);
     return () => clearInterval(id);
-  }, []);
-
-  useEffect(() => {
-    const timeouts = [350, 800, 1300, 1950].map((d, i) =>
-      setTimeout(() => setBootStep(i), d)
-    );
-    return () => timeouts.forEach(clearTimeout);
   }, []);
 
   return (
@@ -212,38 +95,21 @@ const LandingHero = () => {
         {/* LEFT COLUMN */}
         <div className="w-full lg:w-[55%] flex flex-col justify-center">
           {/* [1] Rotating micro-text */}
-          <div className="flex items-center gap-2.5 mb-5">
-            <div
-              className="flex items-center gap-1.5 border px-2 py-[3px] rounded-sm shrink-0"
-              style={{ borderColor: "rgba(255,68,68,.22)", background: "rgba(255,68,68,.04)" }}
-            >
-              <span
-                className="w-1.5 h-1.5 rounded-full animate-pulse"
-                style={{ background: "#ff4444", boxShadow: "0 0 6px rgba(255,68,68,.9)" }}
-              />
-              <span
-                className="font-mono text-[.44rem] tracking-[.15em]"
-                style={{ color: "#ff4444" }}
+          <div className="h-[1.3rem] overflow-hidden mb-5">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={lineIdx}
+                initial={{ y: 16, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: -16, opacity: 0 }}
+                transition={{ duration: 0.4 }}
+                className="font-mono text-[.62rem] tracking-[.05em]"
+                style={{ color: "rgba(240,237,248,.28)" }}
               >
-                AO VIVO
-              </span>
-            </div>
-            <div className="h-[1.3rem] overflow-hidden flex-1">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={lineIdx}
-                  initial={{ y: 16, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  exit={{ y: -16, opacity: 0 }}
-                  transition={{ duration: 0.4 }}
-                  className="font-mono text-[.62rem] tracking-[.05em]"
-                  style={{ color: "rgba(240,237,248,.28)" }}
-                >
-                  <span className="mr-2" style={{ color: "rgba(232,160,32,.4)" }}>›</span>
-                  {ROTATING_LINES[lineIdx]}
-                </motion.div>
-              </AnimatePresence>
-            </div>
+                <span className="mr-2" style={{ color: "rgba(232,160,32,.4)" }}>›</span>
+                {ROTATING_LINES[lineIdx]}
+              </motion.div>
+            </AnimatePresence>
           </div>
 
           {/* [2] MCE badge */}
@@ -258,19 +124,11 @@ const LandingHero = () => {
               className="w-1.5 h-1.5 rounded-full animate-pulse"
               style={{ background: "#00f0b4", boxShadow: "0 0 8px rgba(0,240,180,1)" }}
             />
-            <span className="font-mono text-[.58rem] tracking-[.2em] uppercase overflow-hidden inline-block" style={{ color: "rgba(0,240,180,.8)" }}>
-              <AnimatePresence mode="wait">
-                <motion.span
-                  key={bootStep}
-                  initial={{ y: 4, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  exit={{ y: -4, opacity: 0 }}
-                  transition={{ duration: 0.28 }}
-                  className="inline-block"
-                >
-                  {BOOT_STEPS[bootStep]}
-                </motion.span>
-              </AnimatePresence>
+            <span
+              className="font-mono text-[.58rem] tracking-[.2em] uppercase"
+              style={{ color: "rgba(0,240,180,.8)" }}
+            >
+              Sistema MCE · Ativo
             </span>
             <span className="font-mono text-[.58rem]" style={{ color: "#50507a" }}>v2.4.1</span>
           </motion.div>
@@ -339,7 +197,7 @@ const LandingHero = () => {
               fontSize: "clamp(1rem,3vw,2.2rem)",
             }}
           >
-            MINDSET · COMPORTAMENTO · EXECUÇÃO
+            PALCO. SAÚDE. PERFORMANCE.
           </motion.div>
 
           {/* [6] Animated separator */}
@@ -365,65 +223,71 @@ const LandingHero = () => {
             <div className="w-6 h-px" style={{ background: "rgba(232,160,32,.15)" }} />
           </motion.div>
 
-          {/* [7] Three cascade lines */}
+          {/* [7] Sub-headline */}
           <div className="max-w-[580px] mb-6">
             <motion.p
-              initial={{ opacity: 0, x: -28 }}
-              animate={{ opacity: 1, x: 0 }}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 1.3 }}
               className="font-heading leading-tight"
               style={{
-                fontSize: "clamp(1.05rem, 2.5vw, 1.8rem)",
-                color: "rgba(240,237,248,.35)",
+                fontSize: "clamp(1.1rem, 2.8vw, 1.9rem)",
+                color: "rgba(240,237,248,.55)",
               }}
             >
-              TODO APP TE DÁ UM PLANO.
+              TODO APP TE DIZ O QUE COMER.
             </motion.p>
             <motion.p
-              initial={{ opacity: 0, x: -28 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.7, delay: 1.52 }}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 1.4 }}
               className="font-heading leading-tight"
               style={{
-                fontSize: "clamp(1.05rem, 2.5vw, 1.8rem)",
-                color: "rgba(240,237,248,.72)",
+                fontSize: "clamp(1.1rem, 2.8vw, 1.9rem)",
+                color: "rgba(240,237,248,.55)",
               }}
             >
-              TODO PERSONAL TE DÁ UM TREINO.
+              TODO PERSONAL TE DIZ COMO TREINAR.
             </motion.p>
             <motion.p
-              initial={{ opacity: 0, scale: 0.95, filter: "blur(4px)" }}
-              animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-              transition={{ duration: 0.75, delay: 1.78 }}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 1.55 }}
               className="font-heading leading-tight"
               style={{
-                fontSize: "clamp(1.05rem, 2.5vw, 1.8rem)",
+                fontSize: "clamp(1.1rem, 2.8vw, 1.9rem)",
                 color: "#e8a020",
-                textShadow: "0 0 35px rgba(232,160,32,.5), 0 0 70px rgba(232,160,32,.2)",
+                textShadow: "0 0 30px rgba(232,160,32,.35)",
               }}
             >
-              O NUTRION É O SISTEMA
-              <br />
-              QUE FAZ VOCÊ NÃO PARAR.
+              O NUTRION DESCOBRE POR QUE VOCÊ PARA DE EVOLUIR.
             </motion.p>
           </div>
 
-          {/* [8] Support paragraph */}
+          {/* [8] Body copy */}
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 2.1 }}
+            transition={{ duration: 0.7, delay: 1.5 }}
             className="max-w-[500px] mb-8"
           >
             <p
-              className="font-landing text-[.88rem] leading-[1.88]"
-              style={{ color: "#60607a" }}
+              className="text-[.95rem] leading-[1.9] mb-3"
+              style={{ color: "rgba(240,237,248,.55)" }}
             >
-              Nutrição de precisão, prescrição de treino adaptativa e análise comportamental — integrados num único protocolo que aprende com você e{" "}
-              <span style={{ color: "rgba(240,237,248,.62)" }}>
-                age antes de você parar
+              Análise comportamental + nutrição de precisão + prescrição de treino — integrados num único sistema.{" "}
+              <span style={{ color: "rgba(240,237,248,.75)" }}>
+                Feito por quem usa os mesmos protocolos que prescreve.
               </span>
-              .
+            </p>
+            <p
+              className="font-semibold text-[.95rem] leading-[1.9]"
+              style={{ color: "rgba(240,237,248,.7)" }}
+            >
+              Bem-vindo ao time.{" "}
+              <span style={{ color: "#e8a020" }}>
+                Aqui, seu objetivo tem protocolo. Não dieta.
+              </span>
             </p>
           </motion.div>
 
@@ -431,7 +295,7 @@ const LandingHero = () => {
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 2.3 }}
+            transition={{ duration: 0.7, delay: 1.6 }}
             className="flex flex-wrap items-center gap-3 mb-8"
           >
             <div
@@ -442,32 +306,17 @@ const LandingHero = () => {
                 className="w-1.5 h-1.5 rounded-full animate-pulse"
                 style={{ background: "#00f0b4", boxShadow: "0 0 6px rgba(0,240,180,.8)" }}
               />
-              <span className="font-mono text-[.56rem] flex items-center gap-1" style={{ color: "rgba(0,240,180,.7)" }}>
-                <span className="inline-block overflow-hidden h-[.85em] align-middle" style={{ minWidth: "3.2em", textAlign: "right" }}>
-                  <AnimatePresence mode="popLayout">
-                    <motion.span
-                      key={liveCount}
-                      initial={{ y: -5, opacity: 0 }}
-                      animate={{ y: 0, opacity: 1 }}
-                      exit={{ y: 5, opacity: 0 }}
-                      transition={{ duration: 0.28 }}
-                      className="inline-block tabular-nums"
-                      style={{ color: "#00f0b4" }}
-                    >
-                      {liveCount.toLocaleString("pt-BR")}
-                    </motion.span>
-                  </AnimatePresence>
-                </span>
-                <span>protocolos ativados hoje</span>
+              <span className="font-mono text-[.56rem]" style={{ color: "rgba(0,240,180,.7)" }}>
+                protocolos executados hoje
               </span>
             </div>
             <div
               className="flex items-center gap-2 border px-3 py-1.5 rounded-full"
               style={{ borderColor: "rgba(232,160,32,.1)", background: "rgba(232,160,32,.03)" }}
             >
-              <span style={{ color: "#e8a020" }}>⚡</span>
+              <span>🏆</span>
               <span className="font-mono text-[.55rem]" style={{ color: "#8888b0" }}>
-                Treino · Nutrição · Comportamento · Performance
+                Stage prep · Flat/Full/Spilled · Peak Week
               </span>
             </div>
           </motion.div>
@@ -476,14 +325,14 @@ const LandingHero = () => {
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 2.5 }}
+            transition={{ duration: 0.7, delay: 1.7 }}
             className="flex flex-wrap mb-9 border w-fit"
             style={{ borderColor: "rgba(232,160,32,.08)" }}
           >
             {[
-              { v: "MCE", l: "Método Exclusivo", s: "Mindset · Comportamento · Execução" },
-              { v: "RPE", l: "Tracking Nativo", s: "Deload automático por acúmulo de fadiga" },
-              { v: "8", l: "Grupos Musculares", s: "Heatmap de recuperação em tempo real" },
+              { v: "BB", l: "Stage Ready", s: "Flat/Full/Spilled · Peak Week · Janela Anabólica" },
+              { v: "24H", l: "Sempre ON", s: "Protocolo adaptativo em tempo real" },
+              { v: "0", l: "Apps iguais", s: "Nada como isso no mundo" },
             ].map((c, i, arr) => (
               <div
                 key={i}
@@ -513,7 +362,7 @@ const LandingHero = () => {
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 2.7 }}
+            transition={{ duration: 0.7, delay: 1.9 }}
             className="flex gap-3 flex-wrap"
           >
             <button
@@ -535,17 +384,7 @@ const LandingHero = () => {
                 className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity"
                 style={{ background: "rgba(255,255,255,.12)" }}
               />
-              <motion.span
-                aria-hidden
-                className="absolute inset-0 pointer-events-none"
-                style={{
-                  background:
-                    "linear-gradient(105deg, transparent 30%, rgba(255,255,255,.28) 50%, transparent 70%)",
-                }}
-                animate={{ x: ["-130%", "130%"] }}
-                transition={{ duration: 1.15, repeat: Infinity, repeatDelay: 3.2, ease: "easeInOut" }}
-              />
-              <span className="relative">QUERO O SISTEMA →</span>
+              <span className="relative">COMEÇAR PROTOCOLO ON →</span>
             </button>
             <a
               href="/auth"
@@ -581,55 +420,7 @@ const LandingHero = () => {
               VER PROTOCOLOS
             </a>
           </motion.div>
-
-          {/* [12] Social proof */}
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 2.95 }}
-            className="mt-6 flex flex-col gap-2"
-          >
-            <div className="flex items-center gap-3">
-              <div className="flex -space-x-1.5">
-                {["#1c1f3a", "#2a1c1c", "#1c2a22", "#241c2e"].map((bg, i) => (
-                  <div
-                    key={i}
-                    className="w-5 h-5 rounded-full border"
-                    style={{ background: bg, borderColor: "#03030a" }}
-                  />
-                ))}
-              </div>
-              <span className="font-mono text-[.6rem]" style={{ color: "rgba(240,237,248,.55)" }}>
-                <AnimatePresence mode="popLayout">
-                  <motion.span
-                    key={liveCount}
-                    initial={{ y: -5, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    exit={{ y: 5, opacity: 0 }}
-                    transition={{ duration: 0.28 }}
-                    className="inline-block tabular-nums mr-1"
-                    style={{ color: "#00f0b4" }}
-                  >
-                    {liveCount.toLocaleString("pt-BR")}
-                  </motion.span>
-                </AnimatePresence>
-                protocolos ativados esta semana
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span
-                className="w-1.5 h-1.5 rounded-full animate-pulse"
-                style={{ background: "#00f0b4", boxShadow: "0 0 6px rgba(0,240,180,.8)" }}
-              />
-              <span className="font-mono text-[.52rem]" style={{ color: "#60607a" }}>
-                Acesso imediato · Sem cartão de crédito · Cancele quando quiser
-              </span>
-            </div>
-          </motion.div>
         </div>
-
-        {/* MCE System Card — mobile only */}
-        <MCESystemCard />
 
         {/* RIGHT COLUMN — visualization */}
         <motion.div
