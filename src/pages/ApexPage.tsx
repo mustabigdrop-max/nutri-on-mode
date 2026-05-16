@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import BottomNav from "@/components/BottomNav";
+import ApexPhdAnalysis from "@/components/apex/ApexPhdAnalysis";
 import {
   useApex,
   DEFAULT_POSTURE, DEFAULT_FMS, DEFAULT_ROM, DEFAULT_MUSCLES,
