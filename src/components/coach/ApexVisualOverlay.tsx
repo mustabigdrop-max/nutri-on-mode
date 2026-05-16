@@ -510,24 +510,74 @@ function OverlayLayer({
   const ang = data.angles;
 
   // Pre-compute label positions with collision avoidance
+  // Smart offset:
+  //  - Detecta clusters (landmarks a <8% Euclidean) → spread maior
+  //  - Labels SEMPRE no exterior (lado oposto ao centro da silhueta = 50)
+  //  - Primários colocados primeiro (prioridade), secundários cedem
+  //  - Colisões resolvidas alternando vertical ± e empurrando horizontal extra
+  //  - Box de colisão aproximada ao tamanho real renderizado (16% x 4.5%)
+  //  - Clamp final em [2, 98] para nunca sair do frame
   const labelPositions = useMemo(() => {
+    type Pos = { key: string; lx: number; ly: number; px: number; py: number; primary: boolean };
     const entries = Object.entries(lm).filter(([, p]) => isValidPoint(p));
-    const placed: { key: string; lx: number; ly: number; px: number; py: number }[] = [];
-    entries.forEach(([key, p]) => {
-      // Default: exterior side based on body center (50)
+
+    // Detecção de cluster: para cada landmark, conta vizinhos a <8% Euclidean
+    const clusterSize = (px: number, py: number) =>
+      entries.reduce((acc, [, q]) => {
+        const d = Math.hypot(q.x - px, q.y - py);
+        return acc + (d > 0 && d < 8 ? 1 : 0);
+      }, 0);
+
+    // Ordena: primários antes (ganham melhor posição), depois por quantidade de vizinhos asc
+    const ordered = entries
+      .map(([k, p]) => ({ k, p, primary: PRIMARY.has(k), neighbors: clusterSize(p.x, p.y) }))
+      .sort((a, b) => {
+        if (a.primary !== b.primary) return a.primary ? -1 : 1;
+        return a.neighbors - b.neighbors;
+      });
+
+    const BOX_W = 16; // largura aproximada do label em %
+    const BOX_H = 4.5; // altura aproximada do label em %
+    const placed: Pos[] = [];
+
+    const collides = (lx: number, ly: number) =>
+      placed.some((q) => Math.abs(q.lx - lx) < BOX_W && Math.abs(q.ly - ly) < BOX_H);
+
+    const insideSilhouette = (lx: number) => Math.abs(lx - 50) < 8; // zona da silhueta
+
+    for (const { k, p, primary, neighbors } of ordered) {
       const exterior = p.x < 50 ? -1 : 1;
-      let lx = p.x + exterior * 6;
+      // Cluster denso → offset horizontal maior (afasta da silhueta)
+      const baseOffset = neighbors >= 2 ? 12 : neighbors === 1 ? 9 : 7;
+      let lx = p.x + exterior * baseOffset;
       let ly = p.y;
-      // Collision: bump vertically until clear
-      let attempts = 0;
-      while (attempts < 10) {
-        const collides = placed.some((q) => Math.abs(q.lx - lx) < 14 && Math.abs(q.ly - ly) < 4);
-        if (!collides) break;
-        ly += 4;
-        attempts++;
+
+      // Garante exterior (nunca dentro da silhueta)
+      if (insideSilhouette(lx)) lx = 50 + exterior * 10;
+
+      // Resolve colisão alternando ± vertical (0, +4, -4, +8, -8, ...) e empurrando exterior se persistir
+      const steps = [0, 4, -4, 8, -8, 12, -12, 16, -16];
+      let resolved = false;
+      for (let pass = 0; pass < 3 && !resolved; pass++) {
+        for (const dy of steps) {
+          const tryY = p.y + dy;
+          const tryX = lx + exterior * pass * 3; // a cada pass empurra mais para fora
+          if (!collides(tryX, tryY) && !insideSilhouette(tryX)) {
+            lx = tryX;
+            ly = tryY;
+            resolved = true;
+            break;
+          }
+        }
       }
-      placed.push({ key, lx, ly, px: p.x, py: p.y });
-    });
+
+      // Clamp final dentro do frame
+      lx = Math.max(2, Math.min(98, lx));
+      ly = Math.max(2, Math.min(98, ly));
+
+      placed.push({ key: k, lx, ly, px: p.x, py: p.y, primary });
+    }
+
     return placed;
   }, [lm]);
 
