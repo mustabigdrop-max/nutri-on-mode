@@ -22,6 +22,8 @@ import SendProtocolModule from "@/components/coach/SendProtocolModule";
 import AthleteRoster from "@/components/coach/AthleteRoster";
 import CoachHub from "@/pages/CoachHub";
 import ApexVisualDashboard from "@/components/coach/ApexVisualDashboard";
+import FeminineCycleBadge from "@/components/coach/FeminineCycleBadge";
+import { isFeminine, getCyclePhase, getCycleDayCount } from "@/lib/feminine";
 
 interface PatientRow {
   id: string;
