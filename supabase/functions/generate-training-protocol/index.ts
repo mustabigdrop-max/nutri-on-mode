@@ -279,127 +279,24 @@ function sanitizeStructure(s: any): any {
   return s;
 }
 
-// =====================================================================
-// WARM-UP SANITIZER — garante que warm-up nunca contenha upper em dia
-// de lower (e vice-versa). Roda determinísticamente após a IA gerar.
-// =====================================================================
-const _normTxt = (s: string) =>
-  (s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-
-const UPPER_KEYWORDS = [
-  "ombro", "ombros", "shoulder", "deltoide", "delt",
-  "peito", "peitor", "chest", "pec", "subescapular", "subscapular",
-  "costas", "dorsal", "lat ", "lats", "trapezio", "romboide", "back ",
-  "biceps", "triceps", "braco", "antebraco", "forearm",
-  "rotador externo", "rotadores externos", "external rotation", "rotator cuff",
-  "band pull", "pull apart", "pull-apart", "face pull", "facepull",
-  "scapular", "escapula", "wall slide", "cars de ombro", "ycars",
-  "torac", "thoracic",
-];
-
-const LOWER_KEYWORDS = [
-  "perna", "pernas", "leg ", "legs",
-  "quadr", "quad ", "vasto",
-  "posterior", "isquio", "hamstring", "femoral",
-  "gluteo", "glute", "hip thrust", "bridge", "clamshell", "monster walk",
-  "abdutor", "adutor", "abductor", "adductor",
-  "panturrilha", "calf", "gastrocnemio", "soleo",
-  "agachamento", "squat", "goblet", "lunge", "afundo", "step up", "step-up",
-  "deadlift", "stiff", "rdl", "good morning",
-  "mobilidade de quadril", "90/90", "frog stretch", "world s greatest", "worlds greatest",
-  "it band",
-];
-
-const UPPER_MUSCLES = [
-  "peito", "peitoral", "costas", "dorsal", "lat", "ombro", "deltoide",
-  "biceps", "triceps", "trapezio", "antebraco",
-];
-const LOWER_MUSCLES = [
-  "quadr", "posterior", "isquio", "femoral", "hamstring",
-  "gluteo", "panturrilha", "calf", "adutor", "abdutor", "perna",
-];
-
-function classifyDay(focus: string[]): "upper" | "lower" | "full" {
-  const norm = (focus || []).map(_normTxt).join(" ");
-  if (!norm.trim()) return "full";
-  const hasUpper = UPPER_MUSCLES.some((m) => norm.includes(m));
-  const hasLower = LOWER_MUSCLES.some((m) => norm.includes(m));
-  if (hasUpper && !hasLower) return "upper";
-  if (hasLower && !hasUpper) return "lower";
-  return "full";
-}
-
-function classifyWarmup(name: string): "upper" | "lower" | "neutral" {
-  const n = ` ${_normTxt(name)} `;
-  const isUpper = UPPER_KEYWORDS.some((k) => n.includes(k));
-  const isLower = LOWER_KEYWORDS.some((k) => n.includes(k));
-  if (isUpper && !isLower) return "upper";
-  if (isLower && !isUpper) return "lower";
-  return "neutral";
-}
-
-const DEFAULT_LOWER_WARMUP = [
-  { name: "Mobilidade de quadril 90/90", sets: "2", reps: "8/lado", notes: "Ativação articular do quadril" },
-  { name: "Glute bridge", sets: "2", reps: "15", notes: "Ativação de glúteo" },
-  { name: "Goblet squat leve", sets: "2", reps: "10", notes: "Padrão de agachamento, carga leve" },
-];
-const DEFAULT_UPPER_WARMUP = [
-  { name: "CARs de ombro", sets: "2", reps: "5/lado", notes: "Mobilidade ativa de ombro" },
-  { name: "Band pull-apart", sets: "2", reps: "15", notes: "Ativação escapular" },
-  { name: "Rotador externo com mini-band", sets: "2", reps: "12/lado", notes: "Aquecer manguito rotador" },
-];
-
-function sanitizeWarmupForDay(warmup: any[], focus: string[]): { warmup: any[]; removed: string[] } {
-  const dayType = classifyDay(focus);
-  if (dayType === "full") return { warmup, removed: [] };
-  const removed: string[] = [];
-  const filtered = warmup.filter((w) => {
-    const cls = classifyWarmup(w?.name || "");
-    if (cls === "neutral") return true;
-    if (cls === dayType) return true;
-    removed.push(w?.name || "(sem nome)");
-    return false;
-  });
-  if (filtered.length === 0) {
-    return {
-      warmup: dayType === "lower" ? DEFAULT_LOWER_WARMUP : DEFAULT_UPPER_WARMUP,
-      removed,
-    };
-  }
-  return { warmup: filtered, removed };
-}
-
 function sanitizeProtocol(protocol: any): any {
   if (!protocol || typeof protocol !== 'object') return protocol;
   if (protocol.training_days && Array.isArray(protocol.training_days)) {
-    const warmupAudit: Array<{ day: number; removed: string[]; type: string }> = [];
-    protocol.training_days = protocol.training_days.map((day: any, idx: number) => {
-      const focus = day.focus_muscles || [];
-      const rawWarmup = (day.warmup || []).map((w: any) => ({
+    protocol.training_days = protocol.training_days.map((day: any) => ({
+      ...day,
+      day_label: day.day_label || `Dia ${day.day_number || '?'}`,
+      session_title: day.session_title || "Sessão de Treino",
+      focus_muscles: day.focus_muscles || [],
+      estimated_duration: day.estimated_duration || "60 min",
+      warmup: (day.warmup || []).map((w: any) => ({
         name: w.name || "Aquecimento",
         sets: w.sets || "2",
         reps: w.reps || "15",
         notes: w.notes || "Ativação e mobilidade",
-      }));
-      const { warmup, removed } = sanitizeWarmupForDay(rawWarmup, focus);
-      if (removed.length > 0) {
-        warmupAudit.push({ day: day.day_number || idx + 1, removed, type: classifyDay(focus) });
-      }
-      return {
-        ...day,
-        day_label: day.day_label || `Dia ${day.day_number || '?'}`,
-        session_title: day.session_title || "Sessão de Treino",
-        focus_muscles: focus,
-        estimated_duration: day.estimated_duration || "60 min",
-        warmup,
-        exercises: (day.exercises || []).map(sanitizeExercise),
-        session_notes: day.session_notes || "Priorize qualidade sobre carga.",
-      };
-    });
-    if (warmupAudit.length > 0) {
-      console.log("[warmup-sanitizer] removidos por incompatibilidade:", JSON.stringify(warmupAudit));
-      (protocol as any).warmup_fixes = warmupAudit;
-    }
+      })),
+      exercises: (day.exercises || []).map(sanitizeExercise),
+      session_notes: day.session_notes || "Priorize qualidade sobre carga.",
+    }));
   }
   return protocol;
 }
@@ -582,22 +479,9 @@ INSTRUÇÕES DE PRESCRIÇÃO:
 3. ESCOLHA o modelo de periodização. Justifique.
 4. DETERMINE duração do bloco e quando fazer deload.
 5. Para cada sessão:
-   - Warm-up ESPECÍFICO ao grupo muscular do dia (regra obrigatória abaixo)
+   - Warm-up geral + específico
    - Feeder sets → Top set → Back-off sets (compostos)
    - Séries de trabalho (acessórios)
-   - Bloco "Corretivos Pós-Treino" ao final, quando aplicável (regra abaixo)
-
-REGRA DE WARM-UP POR GRUPO MUSCULAR DO DIA (OBRIGATÓRIA):
-- Identifique focus_muscles do dia ANTES de gerar o warm-up.
-- Dia de INFERIORES (pernas, glúteos, quadríceps, posterior, panturrilha, adutores): warm-up APENAS de membros inferiores — ativação de glúteo (clamshell, glute bridge, monster walk), mobilidade de quadril (90/90, frog stretch), foam roller de adutores/quadrado lombar/IT band, agachamento livre/goblet leve, world's greatest stretch focado em quadril. PROIBIDO incluir mobilidade de ombro, band pull-apart, rotadores externos ou alongamento de peitoral.
-- Dia de SUPERIORES (peito, costas, ombro, bíceps, tríceps, trapézio): warm-up APENAS de membros superiores — mobilidade de ombro (CARs, wall slides), band pull-apart, rotadores externos com mini-band, face pull leve, scapular push-up, alongamento de peitoral/subescapular, foam roller torácico. PROIBIDO incluir ativação de glúteo, mobilidade de quadril, agachamento ou foam roller de pernas.
-- Dia FULL BODY ou HÍBRIDO (upper+lower no mesmo dia): warm-up completo cobrindo ambos.
-- NUNCA misture exercícios de upper em dia de lower nem vice-versa.
-
-REGRA DE CORRETIVOS PÓS-TREINO (OBRIGATÓRIA quando houver pontos fracos/posturais):
-- Se "Pontos fracos" ou "Lesões/restrições" indicar desvio postural/desequilíbrio (ou se vier seção ## EXERCICIOS_CORRETIVOS_POS no contexto APEX), adicione ao final de cada sessão um bloco "corrective_post" com 2-4 exercícios corretivos relevantes ao grupo do dia.
-- Exibir como bloco separado ao final do treino, logo acima ou abaixo de session_notes, com mesmo padrão visual: nome, séries, reps, RPE, cue de execução.
-- Esses exercícios NÃO contam para o volume principal.
 6. Cadência (tempo) para cada exercício
 7. Descanso específico por tipo
 8. Progressão definida (Double Progression, Linear, Ondulatória)
@@ -654,8 +538,7 @@ FORMATO JSON OBRIGATÓRIO:
       "substitutes": [{ "name": "string", "reason": "string", "equipment": "string" }]
     }],
     "session_notes": "string",
-    "nutrition_notes": "string",
-    "corrective_post": [{ "name": "string", "sets": "string", "reps": "string", "rpe": "string", "cue": "string", "target": "string" }]
+    "nutrition_notes": "string"
   }]
 }
 
