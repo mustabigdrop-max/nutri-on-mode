@@ -633,7 +633,7 @@ const DashboardPage = () => {
     { label: "Simulador", desc: "E se eu comer...?", path: "/food-simulator", emoji: "🤔", plan: "ON +" },
     { label: "Relatório Mensal", desc: "Análise completa do mês com projeções", path: "/monthly-report", emoji: "📊", plan: "ON +" },
     { label: "Performance Pro", desc: "Protocolo de nutrição para atletas", path: "/performance-pro", emoji: "🏆", plan: "ON PRO" },
-    { label: "Painel do Coach", desc: "Gerencie seus alunos e convites", path: "/coach-dashboard", emoji: "👨‍🏫", plan: "ON PRO" },
+    { label: "Painel do Coach", desc: "Gerencie seus alunos e convites", path: "/coach/dashboard", emoji: "👨‍🏫", plan: "ON PRO" },
     { label: "Protocolo GLP-1", desc: "Otimização nutricional com agonistas", path: "/glp1", emoji: "💉", plan: "ON +" },
     // Sistema
     { label: "Wearables", desc: "Passos, sono & atividade", path: "/wearables", emoji: "⌚", plan: "ON +" },
@@ -1086,7 +1086,7 @@ const DashboardPage = () => {
 
             {isCoach && (
               <button
-                onClick={() => navigate("/coach-dashboard")}
+                onClick={() => navigate("/coach/dashboard")}
                 className="w-full flex items-center gap-3 rounded-xl border border-primary/30 bg-primary/10 p-4 text-left transition-all hover:border-primary/50 hover:bg-primary/15"
               >
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/15 text-xl">
