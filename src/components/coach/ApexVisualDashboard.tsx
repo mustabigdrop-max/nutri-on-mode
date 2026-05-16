@@ -665,6 +665,24 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
   const [historyLoading, setHistoryLoading] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<any | null>(null);
 
+  // Visual overlay photo URLs (signed)
+  const [photoUrls, setPhotoUrls] = useState<PhotoBundle>({});
+  const loadPhotoUrls = useCallback(
+    async (paths: { front?: string | null; back?: string | null; side?: string | null }) => {
+      const out: PhotoBundle = {};
+      const sign = async (p?: string | null) => {
+        if (!p) return undefined;
+        const { data } = await supabase.storage.from("apex-visual-photos").createSignedUrl(p, 3600);
+        return data?.signedUrl;
+      };
+      out.front = await sign(paths.front);
+      out.back = await sign(paths.back);
+      out.lateral = await sign(paths.side);
+      setPhotoUrls(out);
+    },
+    []
+  );
+
   // Loading step animation
   useEffect(() => {
     if (!loading) { setStepIdx(0); return; }
