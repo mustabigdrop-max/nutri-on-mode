@@ -7,6 +7,7 @@ import AthleteSelector, { AthleteOption } from "@/components/coach/AthleteSelect
 import { Upload, X, FlaskConical, RotateCcw, History, Eye, Dumbbell, CheckCircle2, Clock, FileText, Copy, Crosshair, ScanLine, Target, Activity, Zap, AlertTriangle, TrendingUp, ChevronRight, Trash2 } from "lucide-react";
 import { ApexSymbol } from "@/components/coach/ApexSymbol";
 import ApexEvolucao from "@/components/apex/ApexEvolucao";
+import ApexVisualOverlay, { LandmarkBundle, PhotoBundle, LandmarkView } from "@/components/coach/ApexVisualOverlay";
 import { ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Legend, Tooltip as RTooltip } from "recharts";
 import React from "react";
 
@@ -314,6 +315,45 @@ const toBase64 = (file: File): Promise<string> =>
     r.readAsDataURL(file);
   });
 
+// ─── Landmarks parser ───────────────────────────────────────────
+const parseLandmarks = (text: string): LandmarkBundle => {
+  const out: LandmarkBundle = {};
+  const re = /```json_landmarks_(front|lateral|back)\s*([\s\S]*?)```/gi;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(text)) !== null) {
+    const view = m[1].toLowerCase() as "front" | "lateral" | "back";
+    try {
+      const parsed = JSON.parse(m[2].trim());
+      if (parsed && parsed.landmarks && parsed.angles) {
+        out[view] = { view, landmarks: parsed.landmarks, angles: parsed.angles } as LandmarkView;
+      }
+    } catch (e) {
+      console.warn(`landmarks ${view} parse failed`, e);
+    }
+  }
+  return out;
+};
+
+const uploadApexPhoto = async (
+  file: File,
+  coachId: string | null,
+  athleteId: string | null,
+  slot: "front" | "back" | "side"
+): Promise<string | null> => {
+  if (!file || !coachId) return null;
+  const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
+  const ts = Date.now();
+  const path = `${coachId}/${athleteId || "noath"}/${ts}-${slot}.${ext}`;
+  const { error } = await supabase.storage.from("apex-visual-photos").upload(path, file, {
+    contentType: file.type || "image/jpeg",
+    upsert: false,
+  });
+  if (error) {
+    console.warn("apex photo upload failed", error);
+    return null;
+  }
+  return path;
+};
 const segColor = (s: number) =>
   s >= 8 ? "#1DB87A" : s >= 6 ? "#C47A15" : s >= 4 ? "#E07030" : "#D94040";
 const segBadge = (s: number) =>
@@ -625,6 +665,24 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
   const [historyLoading, setHistoryLoading] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<any | null>(null);
 
+  // Visual overlay photo URLs (signed)
+  const [photoUrls, setPhotoUrls] = useState<PhotoBundle>({});
+  const loadPhotoUrls = useCallback(
+    async (paths: { front?: string | null; back?: string | null; side?: string | null }) => {
+      const out: PhotoBundle = {};
+      const sign = async (p?: string | null) => {
+        if (!p) return undefined;
+        const { data } = await supabase.storage.from("apex-visual-photos").createSignedUrl(p, 3600);
+        return data?.signedUrl;
+      };
+      out.front = await sign(paths.front);
+      out.back = await sign(paths.back);
+      out.lateral = await sign(paths.side);
+      setPhotoUrls(out);
+    },
+    []
+  );
+
   // Loading step animation
   useEffect(() => {
     if (!loading) { setStepIdx(0); return; }
@@ -664,6 +722,7 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
     setActiveResultTab("scores");
     setSavedAnalysisId(null);
     setSyncStatus(null);
+    setPhotoUrls({});
   };
 
   const fetchSyncStatus = useCallback(async (athleteId: string | null) => {
@@ -686,6 +745,11 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
     setActiveResultTab("scores");
     setSavedAnalysisId(item.id || null);
     fetchSyncStatus(item.athlete_id || athlete?.id || null);
+    loadPhotoUrls({
+      front: item.photo_front_url,
+      back: item.photo_back_url,
+      side: item.photo_side_url,
+    });
   };
 
   const handleDelete = async (item: any) => {
@@ -717,6 +781,14 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
         fotos.push({ label, mime: file.type || "image/jpeg", data });
       }
 
+      // Upload photos in parallel for overlay + persistence
+      const [pathFront, pathBack, pathSide] = await Promise.all([
+        photos.front ? uploadApexPhoto(photos.front, coachId, athlete?.id || null, "front") : Promise.resolve(null),
+        photos.back ? uploadApexPhoto(photos.back, coachId, athlete?.id || null, "back") : Promise.resolve(null),
+        photos.side ? uploadApexPhoto(photos.side, coachId, athlete?.id || null, "side") : Promise.resolve(null),
+      ]);
+      loadPhotoUrls({ front: pathFront, back: pathBack, side: pathSide });
+
       const athleteName = athlete?.nome || "atleta";
       const protocoloCompleto = formData.compostos ? `Compostos: ${formData.compostos}
 Objetivo do ciclo: ${objetivoCiclo}
@@ -743,6 +815,7 @@ Suporte em uso: ${suporte || "não informado"}` : "";
         const meta = parseMeta(text);
         const farmMeta = parseFarmMeta(text);
         const segments = parseSegments(text);
+        const landmarks = parseLandmarks(text);
         const scoresJson = segments.reduce((acc, s) => {
           acc[s.label] = s.score;
           return acc;
@@ -768,6 +841,10 @@ Suporte em uso: ${suporte || "não informado"}` : "";
           support: suporte || null,
           tdee_factor: farmMeta.tdeeFator ? parseFloat(farmMeta.tdeeFator) : null,
           protein_ideal: farmMeta.proteinaIdeal || null,
+          landmarks: Object.keys(landmarks).length ? landmarks : null,
+          photo_front_url: pathFront,
+          photo_back_url: pathBack,
+          photo_side_url: pathSide,
         }).select("id").single();
         if (insErr) throw insErr;
         setSavedAnalysisId((inserted as any)?.id || null);
@@ -791,7 +868,7 @@ Suporte em uso: ${suporte || "não informado"}` : "";
     } finally {
       setLoading(false);
     }
-  }, [athlete, cat, formData, photos, coachId, selectedCategory, fetchHistory, fetchSyncStatus, objetivoCiclo, semanaCiclo, duracaoCiclo, suporte]);
+  }, [athlete, cat, formData, photos, coachId, selectedCategory, fetchHistory, fetchSyncStatus, objetivoCiclo, semanaCiclo, duracaoCiclo, suporte, loadPhotoUrls]);
 
   // ─── Generate corrective training ────────────────────
   const buildSyncPayload = useCallback(() => {
@@ -884,6 +961,7 @@ Suporte em uso: ${suporte || "não informado"}` : "";
     const segments = parseSegments(analysisResult);
     const tabs = [
       { key: "scores", label: "Scores" },
+      { key: "visual", label: "📐 Análise Visual" },
       { key: "postura", label: "Postura" },
       { key: "correcoes", label: "Correções" },
       { key: "protocolo", label: "Protocolo" },
@@ -963,6 +1041,13 @@ Suporte em uso: ${suporte || "não informado"}` : "";
               {segments.map((s, i) => <SegmentBar key={i} {...s} />)}
               <InfoBlock title="Impacto visual" body={parseSection(analysisResult, "IMPACTO_VISUAL", "SCORES_SEGMENTOS")} accent={cat.color} />
             </div>
+          )}
+          {activeResultTab === "visual" && (
+            <ApexVisualOverlay
+              landmarks={parseLandmarks(analysisResult)}
+              photos={photoUrls}
+              athleteName={athlete?.nome}
+            />
           )}
           {activeResultTab === "postura" && (
             <div className="space-y-3">
