@@ -142,6 +142,7 @@ const App = () => (
             <Route path="/vulnerability-map" element={<ProtectedRoute><VulnerabilityMapPage /></ProtectedRoute>} />
             <Route path="/metabolic-reversion" element={<ProtectedRoute><MetabolicReversionPage /></ProtectedRoute>} />
             <Route path="/apex" element={<ProtectedRoute><ApexPage /></ProtectedRoute>} />
+            <Route path="/coach/apex-visual" element={<ProtectedRoute><ApexPage /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
