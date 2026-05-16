@@ -338,6 +338,32 @@ ${f === "lutea" ? "- Lútea: TDEE +5–10% — aumentar kcal +150–250, magnés
 ${f === "menstrual" ? "- Menstrual: ferro heme (carne vermelha 2x/sem), vitamina C com ferro, foco anti-inflamatório (cúrcuma, ômega-3 4g)." : ""}
 - Alerta RED-S: se kcal < 30 kcal/kg de massa magra → BLOQUEAR plano e exigir ajuste.
 - NUNCA prescrever plano restritivo se houver sinal de amenorreia (>2 meses sem ciclo).
+
+━━━ AJUSTES NUTRICIONAIS FEMININOS OBRIGATÓRIOS ━━━
+TDEE FEMININO:
+- Fator de atividade feminino (TMB ~5-10% menor que masculino).
+- Déficit MÁXIMO: 500 kcal/dia (risco de amenorreia e RED-S).
+- MÍNIMO calórico: 1400 kcal para mulheres ativas, qualquer objetivo.
+
+MICRONUTRIENTES PRIORITÁRIOS:
+- Ferro 18 mg/dia (vs 8 mg homens) — reforçar na fase menstrual.
+- Cálcio 1000 mg/dia — saúde óssea e hormonal.
+- Folato — fundamental em idade fértil.
+- Magnésio 320 mg/dia — reduz TPM, cólicas, retenção.
+- Ômega-3 — anti-inflamatório, reduz dismenorreia.
+- Vitamina D + K2 — saúde óssea/hormonal.
+
+AJUSTES POR FASE (refinar):
+- Menstrual: +Fe, +Mg, anti-inflamatórios (cúrcuma, gengibre); reduzir sódio.
+- Folicular/Ovulatória: padrão; aproveitar sensibilidade à insulina elevada.
+- Lútea: carboidratos complexos +10-15% (reduz compulsão); +Mg; reduzir cafeína.
+- Lútea tardia: +fibras +água; -sódio; suporte anti-inflamatório.
+
+PROTEÍNA FEMININA:
+- Mínimo 1.8 g/kg em déficit (proteção de massa magra).
+- Máximo recomendado: 2.5 g/kg (acima sem benefício adicional).
+
+LINGUAGEM: tom técnico E empoderador. NUNCA "excesso de gordura" → "reserva a reduzir".
 `;
       }
       return "";
