@@ -438,6 +438,24 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
                   chains={chains}
                 />
               )}
+              {/* MELHORIA 2 — Quality badge */}
+              {data && (
+                <div
+                  className="absolute top-2 left-2 text-[10px] font-mono font-bold rounded px-2 py-1 z-10"
+                  style={{
+                    background: "rgba(0,0,0,0.75)",
+                    border: `1px solid ${quality.ratio >= 0.8 ? C.green : quality.ratio >= 0.5 ? C.yellow : C.red}`,
+                    color: quality.ratio >= 0.8 ? C.green : quality.ratio >= 0.5 ? C.yellow : C.red,
+                  }}
+                >
+                  {quality.ratio >= 0.8 ? "🟢" : quality.ratio >= 0.5 ? "🟡" : "🔴"}{" "}
+                  {quality.ratio >= 0.8
+                    ? `Análise completa — ${quality.valid} landmarks`
+                    : quality.ratio >= 0.5
+                    ? `Análise parcial — ${quality.valid}/${quality.total}`
+                    : `Reprocessar — ${quality.valid}/${quality.total}`}
+                </div>
+              )}
             </div>
           ) : (
             <div className="text-xs text-muted-foreground p-6 text-center">
