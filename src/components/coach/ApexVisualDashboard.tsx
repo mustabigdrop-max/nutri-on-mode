@@ -9,6 +9,8 @@ import { ApexSymbol } from "@/components/coach/ApexSymbol";
 import ApexEvolucao from "@/components/apex/ApexEvolucao";
 import ApexVisualOverlay, { LandmarkBundle, PhotoBundle, LandmarkView } from "@/components/coach/ApexVisualOverlay";
 import VertexEnhancedView from "@/components/coach/VertexEnhancedView";
+import FeminineCyclePhaseBanner from "@/components/coach/FeminineCyclePhaseBanner";
+import { isFeminine, getCyclePhase, getCycleDayCount, normalizeFeminineCategory, FEMININE_CATEGORIES } from "@/lib/feminine";
 import { ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Legend, Tooltip as RTooltip } from "recharts";
 import React from "react";
 
@@ -766,6 +768,28 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
   const [showTrainingModal, setShowTrainingModal] = useState(false);
   const [generatingTraining, setGeneratingTraining] = useState(false);
   const [showPromptPreview, setShowPromptPreview] = useState(false);
+  const [feminineProfile, setFeminineProfile] = useState<{ ultima_menstruacao: string | null; duracao_ciclo: number | null; fase_ciclo: string | null } | null>(null);
+
+  const isFemAthlete = isFeminine({ sexo: athlete?.sexo });
+  const cyclePhase = feminineProfile?.ultima_menstruacao
+    ? getCyclePhase(feminineProfile.ultima_menstruacao, feminineProfile.duracao_ciclo || 28)
+    : (feminineProfile?.fase_ciclo as any) || null;
+  const cycleDay = feminineProfile?.ultima_menstruacao
+    ? getCycleDayCount(feminineProfile.ultima_menstruacao, feminineProfile.duracao_ciclo || 28)
+    : null;
+  const femCategory = normalizeFeminineCategory(athlete?.categoria || null);
+
+  useEffect(() => {
+    (async () => {
+      if (!isFemAthlete || !athlete?.patient_user_id) { setFeminineProfile(null); return; }
+      const { data } = await supabase
+        .from("feminine_profiles" as any)
+        .select("ultima_menstruacao,duracao_ciclo,fase_ciclo")
+        .eq("user_id", athlete.patient_user_id)
+        .maybeSingle();
+      setFeminineProfile((data as any) || null);
+    })();
+  }, [isFemAthlete, athlete?.patient_user_id]);
   const [apexMode, setApexMode] = useState<"analise" | "evolucao">("analise");
   const [promptCopied, setPromptCopied] = useState(false);
   const navigate = useNavigate();
@@ -908,7 +932,13 @@ Suporte em uso: ${suporte || "não informado"}` : "";
       const system = buildSystemPrompt(cat, athleteName, protocoloCompleto);
 
       const { data, error } = await supabase.functions.invoke("apex-visual-analyze", {
-        body: { fotos, contexto, system },
+        body: {
+          fotos, contexto, system,
+          sex: isFemAthlete ? "F" : (athlete?.sexo || null),
+          category: femCategory ? FEMININE_CATEGORIES[femCategory].label : (athlete?.categoria || null),
+          cyclePhase: cyclePhase || null,
+          cycleDay: cycleDay || null,
+        },
       });
       if (error) throw new Error(error.message);
       if ((data as any)?.error) throw new Error((data as any).error);
@@ -1444,6 +1474,9 @@ Suporte em uso: ${suporte || "não informado"}` : "";
           <span style={labelStyle}>Atleta em Análise</span>
         </div>
         <AthleteSelector value={athlete?.id ?? null} onChange={setAthlete} />
+        {isFemAthlete && (
+          <FeminineCyclePhaseBanner phase={cyclePhase as any} cycleDay={cycleDay} />
+        )}
       </div>
 
       {/* ━━━ MODE TOGGLE: Análise IA vs Evolução Fotográfica ━━━ */}

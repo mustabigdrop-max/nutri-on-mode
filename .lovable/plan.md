@@ -1,93 +1,111 @@
-## Análise Visual com Overlay de Landmarks — APEX
+# Módulo Feminino Específico — nutriON
 
-Nova aba "📐 Análise Visual" no resultado APEX, entre "Scores" e "Postura", com overlay SVG interativo sobre as fotos do atleta + painel de achados + exportação PNG.
+Adaptações automáticas quando `profile.sex === 'F'`. Zero intervenção manual. Não altera nada para masculinos.
 
-### 1. Prompt da IA (`apex-visual-analyze` edge function)
+## Arquitetura — fonte única de verdade
 
-Adicionar ao final do `buildSystemPrompt` (ou ao contexto) a instrução de landmarks/ângulos para `front`, `lateral`, `back`, exigindo três blocos:
+Criar `src/lib/feminine.ts` — utilitários compartilhados:
+- `isFeminine(profile)` — detecta sexo F
+- `getCyclePhase(lastPeriodDate, cycleLength)` → `'menstrual' | 'follicular' | 'ovulatory' | 'luteal_early' | 'luteal_late'`
+- `getCyclePhaseLabel(phase)` — label PT-BR + emoji + cor
+- `getCycleDayCount(lastPeriodDate)` — dia atual do ciclo
+- `FEMININE_CATEGORIES` — Bikini, Wellness, Figure, Women's Physique, Bikini Fitness com padrão, BF range, foco, tags
+- `getFemininePhaseAdjustments(phase)` — { volumeMultiplier, rpeMax, kcalAdjust, sodiumNote, supplementNote }
+- `getFeminineBodyScoreAdjustment(phase)` — +5 pts em lútea tardia
+- `getFemininePhaseBanner(phase)` — texto do banner APEX
 
-````text
-```json_landmarks_front``` ... ```
-```json_landmarks_lateral``` ... ```
-```json_landmarks_back``` ... ```
-````
+Hook já existe: `src/hooks/useFeminineProfile.ts` (feminine_profiles table com fase_ciclo, duracao_ciclo, ultima_menstruacao). Usar este como fonte. Adicionar derivação automática da fase via `getCyclePhase(profile.ultima_menstruacao, profile.duracao_ciclo)` quando data presente; fallback para `fase_ciclo` manual.
 
-Regras:
-- Coordenadas em % (0–100) da largura/altura da foto correspondente.
-- Nunca zeros — sempre estimar.
-- Só retornar blocos das vistas cujas fotos foram enviadas.
-- Cada ângulo: `value`, `unit`, `normal`, `finding` (texto clínico curto).
+## PARTE 1 — APEX Visual Feminino
 
-### 2. Persistência
+`supabase/functions/apex-visual-analyze/index.ts`:
+- Aceitar novos campos no body: `sex`, `category`, `cyclePhase`, `cycleDay`
+- Quando `sex === 'F'`: prepend `FEMININE_SYSTEM_PROMPT` ao system com:
+  - Categorias femininas detalhadas (Bikini/Wellness/Figure/Physique/Bikini Fitness — padrão, BF ideal, foco)
+  - Proporções femininas (cintura/quadril, ombro/quadril, glúteo, MMII)
+  - Análise de celulite/retenção localizada com classificação
+  - Postural feminino (hiperlordose, valgo bilateral, hiperpronação)
+  - Shape por categoria (score 0-10, acima/abaixo padrão)
+- Quando `cyclePhase === 'luteal_late'`: adicionar nota no prompt sobre retenção fisiológica
 
-Salvar os 3 JSONs já parseados em `apex_analyses.landmarks` (novo `jsonb` nullable). Quando o histórico for reaberto, recarregar pelo campo (fallback: parsear de novo do `analysis_text`).
+Cliente APEX (`src/components/coach/ApexVisualDashboard.tsx` e/ou `ApexVisualV3.tsx`):
+- Quando atleta feminina: passar `sex`, `category` (do perfil), `cyclePhase`, `cycleDay` à edge function
+- Renderizar `<FeminineCyclePhaseBanner>` no topo (novo componente `src/components/coach/FeminineCyclePhaseBanner.tsx`)
+- Aplicar `getFeminineBodyScoreAdjustment` ao score exibido + tooltip "Score ajustado para fase do ciclo"
+- Substituir 🏆 por ⭐ no nível máximo; gradiente rosa-dourado (lifestyle) / dourado puro (competição) via classes condicionais
 
-Migração:
-```sql
-ALTER TABLE public.apex_analyses ADD COLUMN landmarks jsonb;
+## PARTE 2 — Ciclo Menstrual Integrado
+
+Campos já existem em `feminine_profiles`. Garantir UI de cadastro:
+- Verificar/criar componente de edição no perfil da atleta (provavelmente `src/pages/ProfilePage.tsx` ou no detalhe do paciente do coach)
+- Seletor fase ciclo, data última menstruação, duração ciclo, tipo (regular/irregular/anticoncepcional/amenorreia)
+
+## PARTE 3 — TrainingON Feminino
+
+`supabase/functions/generate-training-plan/index.ts`:
+- Aceitar `cyclePhase`, `category` (feminina) no profile
+- Quando `sex === 'F'`: substituir bloco PROTOCOLO FEMININO atual por versão completa:
+  - Regras por fase (menstrual/folicular/ovulatória/lútea) com volume %, RPE máx, foco
+  - Prioridades por categoria (Bikini 60/40, Wellness 70/30, Figure 50/50)
+  - Exercícios com atenção especial (Hip Thrust obrigatório, anti-valgo, evitar abdominais que aumentem cintura)
+
+Frontend: garantir que `coachNotes`/profile inclui `cyclePhase` calculada ao chamar a função.
+
+## PARTE 4 — NutriPlan Feminino
+
+Identificar edge function de geração de plano alimentar (provavelmente `generate-meal-plan` / `nutriplan-elite`). Adicionar bloco feminino:
+- TDEE: déficit máx 500kcal, mínimo 1400kcal
+- Micros prioritários (Fe 18mg, Ca 1000mg, Mg 320mg, Folato, Ômega-3, D+K2)
+- Ajustes por fase (menstrual: +Fe/Mg, -Na; lútea: +carbs 10-15%, +Mg, -cafeína)
+- Proteína 1.8-2.5 g/kg
+
+## PARTE 5 — Linguagem e UX Feminina
+
+- Helper `feminineLabel(text, isF)` para substituições leves
+- Cores: tokens novos em `index.css` — `--feminine-gold`, `--feminine-rose`, gradiente `--gradient-feminine`
+- Ícone ⭐ no Body Score quando F + nível máximo
+- Veredictos APEX: instrução no system prompt para tom empoderador, "reserva a reduzir" vs "excesso de gordura"
+
+## PARTE 6 — Dashboard Coach — Visão Feminina
+
+Novo componente `src/components/coach/FeminineCycleBadge.tsx`:
+- Mostra emoji + cor da fase ao lado do nome
+- Tooltip com dia do ciclo
+
+Editar dashboard de pacientes do coach (`src/pages/CoachDashboardPage.tsx` ou `CoachPatientDetailPage.tsx`):
+- Para cada paciente F com `ultima_menstruacao`: renderizar `<FeminineCycleBadge>`
+- Alerta automático quando paciente F em lútea tardia E houver check-in recente: "Check-in de [nome] pode estar afetado pela fase lútea tardia — considerar antes de ajustar protocolo"
+- Notificação janela ideal (dias 6-10): card no dashboard
+
+## Arquivos a criar
+
+```text
+src/lib/feminine.ts
+src/components/coach/FeminineCyclePhaseBanner.tsx
+src/components/coach/FeminineCycleBadge.tsx
 ```
 
-Persistir URL pública/signed das fotos: novas colunas `photo_front_url`, `photo_back_url`, `photo_side_url` (text). Upload no bucket existente `apex-visual-photos` (já presente) durante `analyzeWithAI`, antes de mandar para a IA — guardar paths, gerar signed URL na hora de exibir.
+## Arquivos a editar
 
-### 3. Parser no front
+```text
+supabase/functions/apex-visual-analyze/index.ts        (prompt feminino + categorias)
+supabase/functions/generate-training-plan/index.ts     (protocolo feminino completo)
+supabase/functions/generate-meal-plan/index.ts         (ajustes nutricionais femininos)
+src/components/coach/ApexVisualDashboard.tsx           (passar sex/category/cycle + banner + score adj)
+src/components/coach/ApexVisualV3.tsx                  (idem)
+src/pages/CoachPatientDetailPage.tsx                   (badge + alertas)
+src/pages/CoachDashboardPage.tsx                       (badges lista)
+src/index.css                                          (tokens feminine-gold/rose)
+```
 
-Em `ApexVisualDashboard.tsx`:
-- `parseLandmarks(text)` → `{ front?, lateral?, back? }` extraindo os 3 blocos com regex `/```json_landmarks_(front|lateral|back)\s*([\s\S]*?)```/g`.
-- Validar com try/catch; descartar landmarks com x=0 e y=0 ao renderizar.
+## Detalhes técnicos
 
-### 4. Componente `ApexVisualOverlay`
+- Detecção sexo: ler `profiles.sex` (campo já existente, valores 'M'/'F')
+- Cálculo fase: `(diffDays % cycleLength)` mapeado para faixas
+- Memorizar `feminine.ts` helpers (constantes) — sem chamadas DB
+- Mínima invasão: cada módulo masculino continua intocado; toda lógica gated por `isFeminine(profile)`
+- Edge functions: validar fallback se campos opcionais ausentes (não quebrar masculinos)
 
-Novo arquivo `src/components/coach/ApexVisualOverlay.tsx`:
+## Escopo deste turno
 
-- Props: `{ landmarks, photos: { front?, lateral?, back? } }`.
-- Estado: `view` (front/lateral/back) + `selectedFinding` (chave do ângulo destacado).
-- Layout responsivo grid `lg:grid-cols-[1fr_320px]`:
-  - **Esquerda**: container `relative` com `<img>` da foto + `<svg viewBox="0 0 100 100" preserveAspectRatio="none">` absoluto cobrindo a imagem.
-  - **Direita**: painel de achados ordenado por severidade.
-
-Renderização SVG (por vista):
-- **Front**: linha ombros (ciano `#00D4FF`), linha quadril (ciano), prumo central vertical branco tracejado, eixos joelho-tornozelo vermelhos se `knee_valgus_*` > 5°.
-- **Lateral**: polilinha verde orelha→ombro→trocânter→joelho→maléolo + prumo central branco tracejado.
-- **Back**: linha ombros, linha quadril, espinha C7→L5 amarela `#FFB800`, marcadores de escápulas.
-- **Landmarks**: `<circle r="0.8">` dourado `#B8922A` + `<text>` label branco pequeno offset.
-- **Ângulos**: pequeno arco SVG no vértice + texto com valor; vermelho se fora do `normal`, verde se dentro. Helper `isWithinNormal(value, normalStr)` parseia `"<5°"`, `"0-10°"`, `"0°"`, `"20-40°"`.
-- Pulso CSS `@keyframes apex-pulse-finding` no elemento selecionado.
-
-Interação:
-- Click em ponto/linha/ângulo → seta `selectedFinding` e abre popover (`@/components/ui/popover`) com o `finding` clínico.
-- Click em item do painel direito → mesma seleção + scroll into view.
-
-Painel direito (Achados):
-- Lista `findings` calculada de `angles` ordenada por severidade: severe (>2× normal max) > altered (fora do normal) > normal.
-- Item: nome amigável, valor + unidade, normal, badge status (✅/⚠️/🔴), `finding` truncado em 2 linhas.
-
-Bloco educacional expansível abaixo:
-- Para cada finding alterado, `<details>` "📚 Entenda este achado" mostrando o `finding` completo (já vem da IA contextualizado).
-
-### 5. Exportação PNG
-
-Botão "Exportar Análise Visual":
-- Usa `html2canvas` (já no projeto) com `scale: 3` sobre um container ref que envolve foto+SVG+lista de achados em layout vertical para export (clone offscreen).
-- Download via `a.download = 'apex-visual-{atleta}-{view}.png'`.
-
-### 6. Integração na aba
-
-Em `ApexVisualDashboard.tsx`:
-- Adicionar `{ key: "visual", label: "📐 Análise Visual" }` no array `tabs` entre `scores` e `postura`.
-- Bloco condicional `{activeResultTab === "visual" && <ApexVisualOverlay landmarks={parseLandmarks(analysisResult)} photos={photoUrls} />}`.
-- `photoUrls` vem de signed URLs criados via `supabase.storage.from('apex-visual-photos').createSignedUrl(path, 3600)` em `useEffect` quando a análise é carregada/aberta do histórico.
-- Para análise recém-gerada, fazer upload das 3 fotos antes da chamada da IA e guardar paths nos campos `photo_*_url`.
-
-### 7. Estados vazios
-
-- Sem nenhum landmark parseado → card "Análise de landmarks não disponível nesta análise. Gere uma nova análise para visualizar." (acontece em análises antigas pré-feature).
-- Vista sem foto correspondente → desabilita o botão da vista.
-
-### Arquivos
-
-- **edit** `supabase/functions/apex-visual-analyze/index.ts` — append landmark instructions ao system prompt
-- **edit** `src/components/coach/ApexVisualDashboard.tsx` — upload fotos, parser, nova aba, persistência landmarks/photo paths, signed URLs
-- **new** `src/components/coach/ApexVisualOverlay.tsx` — componente principal de overlay
-- **migration** `apex_analyses`: + `landmarks jsonb`, `photo_front_url text`, `photo_back_url text`, `photo_side_url text`
-
-Sem alterações nas outras abas, scores, exportação existente, fluxo do `/coach/apex-visual` que já está em produção.
+Implementação completa de todos os 6 módulos em uma passada. Sem migrations (schema feminine_profiles já existe). Não alterar `src/integrations/supabase/types.ts`.

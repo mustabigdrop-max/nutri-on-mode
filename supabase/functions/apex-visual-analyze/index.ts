@@ -94,9 +94,44 @@ serve(async (req) => {
 
   try {
     const body = await req.json();
-    const { fotos, contexto, system } = body;
+    const { fotos, contexto, system, sex, category, cyclePhase, cycleDay } = body;
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
+
+    const isF = String(sex || "").toLowerCase().match(/^(f|feminino|female)$/);
+    const FEMININE_PROMPT = isF ? `
+
+━━━ ANÁLISE FEMININA ESPECÍFICA (OBRIGATÓRIO — atleta sexo feminino) ━━━
+CATEGORIA: ${category || "não declarada — inferir pelo shape"}.
+FASE DO CICLO: ${cyclePhase || "não informada"}${cycleDay ? ` (dia ${cycleDay})` : ""}.
+${cyclePhase === "luteal_late" ? "ATENÇÃO: retenção hídrica fisiológica de 1.5-2kg esperada. NÃO confundir com regressão de shape." : ""}
+
+PADRÕES DAS CATEGORIAS FEMININAS:
+- BIKINI: shape atlético suave, cintura definida, glúteo arredondado. BF palco 10-13%. Foco: simetria, apresentação, posing.
+- WELLNESS: glúteo + posterior MUITO desenvolvidos, cintura fina, superior mais seca. BF palco 10-14%. Foco: MMII, proporção inferior/superior.
+- FIGURE: ombros desenvolvidos, V-taper feminino, cintura estreita. BF palco 8-12%. Foco: largura dorsal, ombros, cintura.
+- WOMEN'S PHYSIQUE: massa muscular visível com feminilidade, estriações em condicionamento. BF palco 7-10%.
+- BIKINI FITNESS: shape equilibrado, glúteo presente, condicionamento moderado. BF palco 12-16%.
+
+PROPORÇÕES FEMININAS:
+- Razão cintura/quadril (ideal < 0.75)
+- Razão ombro/quadril (1.0-1.1 Bikini/Wellness; 1.1-1.2 Figure/Physique)
+- Glúteo: projeção, arredondamento, inserção
+- MMII: posterior vs quadríceps
+- Cintura: definição natural vs bloqueio por oblíquos hipertrofiados
+
+CELULITE E RETENÇÃO LOCALIZADA: identificar (glúteo, posterior, flancos), classificar (hormonal vs lipodistrofia vs fibrótica), correlacionar com protocolo, recomendar (drenagem, exercícios localizados, ajuste nutricional, suplementação).
+
+POSTURAL FEMININO: hiperlordose + anteversão pélvica (glúteo inibido), valgo bilateral de joelho, hiperpronação, anteriorização cervical, escoliose funcional. Correlacionar com agachamento, hip thrust, stiff, leg press.
+
+SHAPE POR CATEGORIA — para CADA grupo muscular:
+- Score 0-10 de aderência ao padrão da categoria
+- O que está ACIMA (pode reduzir volume)
+- O que está ABAIXO (priorizar)
+- Exercícios específicos para fechar o gap
+
+LINGUAGEM OBRIGATÓRIA: tom empoderador. NUNCA "excesso de gordura" → usar "reserva a reduzir". Faixas de BF SEMPRE femininas. Veredicto técnico mas humano.
+` : "";
 
     const userContent: any[] = [];
     for (const f of (fotos || [])) {
@@ -108,7 +143,7 @@ serve(async (req) => {
     }
     userContent.push({ type: "text", text: contexto || "" });
 
-    const systemFinal = (system || DEFAULT_SYSTEM) + LANDMARK_INSTRUCTIONS;
+    const systemFinal = (system || DEFAULT_SYSTEM) + FEMININE_PROMPT + LANDMARK_INSTRUCTIONS;
 
     const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",

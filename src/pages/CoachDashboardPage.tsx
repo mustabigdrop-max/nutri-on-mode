@@ -22,6 +22,8 @@ import SendProtocolModule from "@/components/coach/SendProtocolModule";
 import AthleteRoster from "@/components/coach/AthleteRoster";
 import CoachHub from "@/pages/CoachHub";
 import ApexVisualDashboard from "@/components/coach/ApexVisualDashboard";
+import FeminineCycleBadge from "@/components/coach/FeminineCycleBadge";
+import { isFeminine, getCyclePhase, getCycleDayCount } from "@/lib/feminine";
 
 interface PatientRow {
   id: string;
@@ -33,6 +35,10 @@ interface PatientRow {
   score?: number;
   last_activity?: string;
   created_at: string;
+  sex?: string | null;
+  ultima_menstruacao?: string | null;
+  duracao_ciclo?: number | null;
+  fase_ciclo?: string | null;
 }
 
 const CoachDashboardPage = () => {
@@ -75,7 +81,7 @@ const CoachDashboardPage = () => {
         for (const p of patientsData) {
           const { data: prof } = await supabase
             .from("profiles")
-            .select("full_name, updated_at")
+            .select("full_name, updated_at, sex")
             .eq("user_id", p.patient_user_id)
             .maybeSingle();
 
@@ -87,11 +93,25 @@ const CoachDashboardPage = () => {
             .limit(1)
             .maybeSingle();
 
+          let femP: any = null;
+          if ((prof as any)?.sex === "F") {
+            const { data } = await supabase
+              .from("feminine_profiles" as any)
+              .select("ultima_menstruacao,duracao_ciclo,fase_ciclo")
+              .eq("user_id", p.patient_user_id)
+              .maybeSingle();
+            femP = data;
+          }
+
           enriched.push({
             ...p,
             patient_name: prof?.full_name || "Paciente",
             score: scoreData?.total_score || 0,
             last_activity: prof?.updated_at || p.created_at,
+            sex: (prof as any)?.sex || null,
+            ultima_menstruacao: femP?.ultima_menstruacao || null,
+            duracao_ciclo: femP?.duracao_ciclo || null,
+            fase_ciclo: femP?.fase_ciclo || null,
           });
         }
       }
@@ -442,7 +462,24 @@ const CoachDashboardPage = () => {
                               {p.patient_name?.charAt(0) || "A"}
                             </div>
                             <div>
-                              <p className="font-medium text-foreground text-sm">{p.patient_name}</p>
+                              <div className="flex items-center gap-2">
+                                <p className="font-medium text-foreground text-sm">{p.patient_name}</p>
+                                {isFeminine({ sex: p.sex }) && (
+                                  <FeminineCycleBadge
+                                    phase={
+                                      p.ultima_menstruacao
+                                        ? getCyclePhase(p.ultima_menstruacao, p.duracao_ciclo || 28)
+                                        : ((p.fase_ciclo as any) || null)
+                                    }
+                                    cycleDay={
+                                      p.ultima_menstruacao
+                                        ? getCycleDayCount(p.ultima_menstruacao, p.duracao_ciclo || 28)
+                                        : null
+                                    }
+                                    compact
+                                  />
+                                )}
+                              </div>
                               <p className="text-xs text-muted-foreground">
                                 {formatRelativeTime(p.last_activity || p.created_at)}
                                 {(p.score ?? 0) < 30 && " — risco"}

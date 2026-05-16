@@ -13,6 +13,7 @@ export interface AthleteOption {
   fase_atual: string | null;
   data_competicao: string | null;
   categoria?: string | null;
+  sexo?: string | null;
 }
 
 interface Props {

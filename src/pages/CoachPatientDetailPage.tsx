@@ -16,6 +16,9 @@ import CoachCompetitionWizard from "@/components/coach/CoachCompetitionWizard";
 import CoachWeekMealGrid from "@/components/coach/CoachWeekMealGrid";
 import CoachCheckinsTab from "@/components/coach/CoachCheckinsTab";
 import ProtocolGanttChart from "@/components/coach/ProtocolGanttChart";
+import FeminineCycleBadge from "@/components/coach/FeminineCycleBadge";
+import FeminineCyclePhaseBanner from "@/components/coach/FeminineCyclePhaseBanner";
+import { isFeminine, getCyclePhase, getCycleDayCount } from "@/lib/feminine";
 
 const MEAL_TYPES = [
   { key: "cafe_manha", label: "☕ Café" },
@@ -80,6 +83,7 @@ const CoachPatientDetailPage = () => {
   const [newMessage, setNewMessage] = useState("");
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  const [feminineProfile, setFeminineProfile] = useState<any>(null);
 
   // Meal plan state
   const [weekStart, setWeekStart] = useState(getWeekStart(new Date()));
@@ -122,13 +126,14 @@ const CoachPatientDetailPage = () => {
   const loadPatientData = async () => {
     if (!profile || !patientId) return;
 
-    const [profileRes, scoresRes, alertsRes, messagesRes, mealsRes, examsRes] = await Promise.all([
+    const [profileRes, scoresRes, alertsRes, messagesRes, mealsRes, examsRes, femRes] = await Promise.all([
       supabase.from("profiles").select("*").eq("user_id", patientId).maybeSingle(),
       supabase.from("consistency_scores").select("*").eq("user_id", patientId).order("created_at", { ascending: false }).limit(30),
       supabase.from("coach_alerts").select("*").eq("coach_id", profile.id).eq("patient_user_id", patientId).order("created_at", { ascending: false }),
       supabase.from("coach_messages").select("*").eq("coach_id", profile.id).eq("patient_user_id", patientId).order("created_at", { ascending: true }),
       supabase.from("meal_logs").select("*").eq("user_id", patientId).order("created_at", { ascending: false }).limit(14),
       supabase.from("blood_tests").select("*").eq("user_id", patientId).order("created_at", { ascending: false }),
+      supabase.from("feminine_profiles" as any).select("ultima_menstruacao,duracao_ciclo,fase_ciclo").eq("user_id", patientId).maybeSingle(),
     ]);
 
     setPatient(profileRes.data);
@@ -137,6 +142,7 @@ const CoachPatientDetailPage = () => {
     setMessages(messagesRes.data || []);
     setMealLogs(mealsRes.data || []);
     setExams(examsRes.data || []);
+    setFeminineProfile((femRes as any)?.data || null);
     setLoading(false);
     loadCompetitionPlans();
   };
@@ -340,7 +346,24 @@ const CoachPatientDetailPage = () => {
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div className="flex-1">
-            <h1 className="font-bold text-foreground">{patient?.full_name || "Paciente"}</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="font-bold text-foreground">{patient?.full_name || "Paciente"}</h1>
+              {isFeminine(patient) && (
+                <FeminineCycleBadge
+                  phase={
+                    feminineProfile?.ultima_menstruacao
+                      ? getCyclePhase(feminineProfile.ultima_menstruacao, feminineProfile.duracao_ciclo || 28)
+                      : ((feminineProfile?.fase_ciclo as any) || null)
+                  }
+                  cycleDay={
+                    feminineProfile?.ultima_menstruacao
+                      ? getCycleDayCount(feminineProfile.ultima_menstruacao, feminineProfile.duracao_ciclo || 28)
+                      : null
+                  }
+                  compact
+                />
+              )}
+            </div>
             <p className="text-xs text-muted-foreground">
               {patient?.objetivo_principal || patient?.goal || "—"} • {patient?.weight_kg ? `${patient.weight_kg}kg` : "—"}
             </p>
@@ -352,6 +375,29 @@ const CoachPatientDetailPage = () => {
       </header>
 
       <main className="max-w-5xl mx-auto p-4">
+        {isFeminine(patient) && feminineProfile && (() => {
+          const phase = feminineProfile.ultima_menstruacao
+            ? getCyclePhase(feminineProfile.ultima_menstruacao, feminineProfile.duracao_ciclo || 28)
+            : ((feminineProfile.fase_ciclo as any) || null);
+          const day = feminineProfile.ultima_menstruacao
+            ? getCycleDayCount(feminineProfile.ultima_menstruacao, feminineProfile.duracao_ciclo || 28)
+            : null;
+          return (
+            <>
+              <FeminineCyclePhaseBanner phase={phase} cycleDay={day} />
+              {phase === "luteal_late" && (
+                <div className="mb-3 rounded-lg border border-orange-500/40 bg-orange-500/10 px-3 py-2 text-xs text-orange-300">
+                  ⚠️ Check-in de <b>{patient?.full_name}</b> pode estar afetado pela fase lútea tardia — considere antes de ajustar protocolo.
+                </div>
+              )}
+              {day && day >= 6 && day <= 10 && (
+                <div className="mb-3 rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-300">
+                  📸 Janela ideal para foto de avaliação (dias 6-10 do ciclo) — agende um check-in visual.
+                </div>
+              )}
+            </>
+          );
+        })()}
         <Tabs defaultValue="overview" className="space-y-4">
           <TabsList className="w-full grid grid-cols-10">
             <TabsTrigger value="overview" className="text-xs"><User className="w-3 h-3 mr-1" />Geral</TabsTrigger>

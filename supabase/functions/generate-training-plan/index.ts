@@ -39,11 +39,36 @@ REGRAS OBRIGATÓRIAS:
 - Progressão: Double Progression (atingir rep máx antes de subir carga)
 - Volume baseado em MEV/MAV/MRV (Mike Israetel / RP)
 
-${sex === "Feminino" ? `PROTOCOLO FEMININO:
-- Priorizar glúteos com Hip Thrust, Bulgarian, RDL
-- Volume +2-4 séries/grupo vs homens
-- Tolera frequência 3x/semana por grupo
-- Considerar fases do ciclo menstrual na intensidade` : ""}
+${sex === "Feminino" ? `
+━━━ PROTOCOLO DE TREINO FEMININO (OBRIGATÓRIO) ━━━
+
+FASE ATUAL DO CICLO: ${profile?.cyclePhase || "não informada"}${profile?.cycleDay ? ` (dia ${profile.cycleDay})` : ""}.
+CATEGORIA FEMININA: ${profile?.feminineCategory || "shape lifestyle"}.
+
+REGRAS POR FASE DO CICLO:
+- MENSTRUAL (1-5): Volume -20-30%; sem alta intensidade nos 2 primeiros dias; foco em mobilidade/alongamento; sem abdominais intensos; RPE máx 6-7.
+- FOLICULAR (6-13): Janela ideal para treino pesado; estrogênio alto = melhor recuperação; novos PRs e exercícios complexos; RPE 8-9.
+- OVULATÓRIA (14-16): Pico de força; ATENÇÃO à laxidão ligamentar (risco de entorse); evitar exercícios de alto risco torcional se histórico de lesão; RPE 8-9.
+- LÚTEA (17-28): Queda progressiva de energia; reduzir volume gradualmente; sem novidades técnicas; maior tempo de recuperação entre séries; RPE máx 7-8; dias 25-28: leve ou ativo recovery.
+
+PRIORIDADES POR CATEGORIA FEMININA:
+- Bikini / Bikini Fitness: 60% MMII (glúteo foco) + 40% superior (evitar excesso em ombros/costas).
+- Wellness: 70% MMII (glúteo + posterior foco) + 30% superior (ombros definidos, não largos).
+- Figure: 50% MMII + 50% superior (dorsais e ombros desenvolvidos, cintura preservada).
+- Women's Physique: 50% MMII + 50% superior (massa visível com feminilidade).
+- Shape lifestyle feminino: equilíbrio + glúteo prioritário + core funcional.
+
+EXERCÍCIOS COM ATENÇÃO ESPECIAL PARA MULHERES:
+- Agachamento: verificar valgo de joelho — correção obrigatória.
+- Hip Thrust: exercício PRINCIPAL para 100% das categorias femininas.
+- Stiff: técnica de hip hinge obrigatória — posterior + glúteo.
+- Leg Press: pés altos para ênfase em glúteo/posterior.
+- NUNCA priorizar quadríceps sem equilibrar com posterior.
+- Abdominais: EVITAR exercícios que aumentem circunferência de cintura (crunches pesados, oblíquos com carga).
+
+VOLUME GERAL: tolera frequência 3x/semana por grupo. Priorizar Hip Thrust, Bulgarian, RDL.
+SEGURANÇA (RED-S): nunca prescrever déficit ou volume que comprometam ciclo menstrual ou recuperação. Se atleta com amenorreia > 2 meses, reduzir volume e alertar coach.
+` : ""}
 
 REGRA ANTI-REPETIÇÃO (CRÍTICA):
 - NUNCA repita sempre os mesmos exercícios.
