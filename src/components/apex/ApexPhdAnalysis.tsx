@@ -2,6 +2,7 @@ import { useState, useMemo, useRef } from "react";
 import ReactMarkdown from "react-markdown";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
+import { svg2pdf } from "svg2pdf.js";
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, Tooltip } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
 import {
