@@ -539,6 +539,42 @@ Execute a análise PhD completa agora.`;
           {resultTab === "rom" && <RomResultView rom={rom} />}
         </>
       )}
+
+      {/* Container offscreen para captura do PDF (FMS + ROM) */}
+      <div
+        ref={printRef}
+        style={{
+          position: "fixed",
+          left: -99999,
+          top: 0,
+          width: 794, // ~A4 a 96dpi
+          padding: 24,
+          background: "#03030a",
+          color: TEXT,
+          fontFamily: "monospace",
+        }}
+        aria-hidden
+      >
+        <div style={{ marginBottom: 16, borderBottom: `1px solid ${BORDER}`, paddingBottom: 8 }}>
+          <div style={{ color: EM, fontSize: 16, letterSpacing: 2, textTransform: "uppercase" }}>
+            APEX Visual Intelligence · Relatório FMS + ROM
+          </div>
+          <div style={{ color: MUTED, fontSize: 10, marginTop: 4 }}>
+            {category ? `Categoria: ${category} · ` : ""}{new Date().toLocaleString("pt-BR")}
+          </div>
+        </div>
+        <div style={{ color: EM, fontSize: 12, margin: "12px 0", letterSpacing: 1, textTransform: "uppercase" }}>
+          ▸ Functional Movement Screen (FMS)
+        </div>
+        <FmsResultView fms={fms} posture={posture} />
+        <div style={{ color: EM, fontSize: 12, margin: "16px 0 12px", letterSpacing: 1, textTransform: "uppercase" }}>
+          ▸ Range of Motion (ROM · AAOS)
+        </div>
+        <RomResultView rom={rom} />
+        <div style={{ color: MUTED, fontSize: 9, marginTop: 16, borderTop: `1px solid ${BORDER}`, paddingTop: 6 }}>
+          APEX PhD · análise cinesiológica · uso clínico/coaching · não substitui avaliação médica
+        </div>
+      </div>
     </>
   );
 };
