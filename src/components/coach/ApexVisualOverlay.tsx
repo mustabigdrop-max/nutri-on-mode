@@ -328,6 +328,17 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
             Cadeia Cinética
           </button>
           <button
+            onClick={() => setDebugMode((v) => !v)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg border"
+            style={{
+              borderColor: debugMode ? "#FF00FF" : "hsl(var(--border))",
+              color: debugMode ? "#FF00FF" : "hsl(var(--muted-foreground))",
+              background: debugMode ? "#FF00FF1A" : "transparent",
+            }}
+            title="Mostra caixas de colisão e zona da silhueta"
+          >
+            🐛 Debug
+          <button
             onClick={handleExport}
             disabled={exporting}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg border hover:bg-muted disabled:opacity-50"
