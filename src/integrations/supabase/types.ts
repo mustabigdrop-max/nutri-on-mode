@@ -187,6 +187,10 @@ export type Database = {
           cycle_goal: string | null
           cycle_week: number | null
           id: string
+          landmarks: Json | null
+          photo_back_url: string | null
+          photo_front_url: string | null
+          photo_side_url: string | null
           photos: Json | null
           priority_1: string | null
           priority_2: string | null
@@ -211,6 +215,10 @@ export type Database = {
           cycle_goal?: string | null
           cycle_week?: number | null
           id?: string
+          landmarks?: Json | null
+          photo_back_url?: string | null
+          photo_front_url?: string | null
+          photo_side_url?: string | null
           photos?: Json | null
           priority_1?: string | null
           priority_2?: string | null
@@ -235,6 +243,10 @@ export type Database = {
           cycle_goal?: string | null
           cycle_week?: number | null
           id?: string
+          landmarks?: Json | null
+          photo_back_url?: string | null
+          photo_front_url?: string | null
+          photo_side_url?: string | null
           photos?: Json | null
           priority_1?: string | null
           priority_2?: string | null
