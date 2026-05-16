@@ -18,7 +18,7 @@ import CoachCheckinsTab from "@/components/coach/CoachCheckinsTab";
 import ProtocolGanttChart from "@/components/coach/ProtocolGanttChart";
 import FeminineCycleBadge from "@/components/coach/FeminineCycleBadge";
 import FeminineCyclePhaseBanner from "@/components/coach/FeminineCyclePhaseBanner";
-import { isFeminine, getCyclePhase, getCycleDayCount } from "@/lib/feminine";
+import { isFeminine, getCyclePhase, getCycleDayCount, mapCyclePhaseToFaseCiclo } from "@/lib/feminine";
 
 const MEAL_TYPES = [
   { key: "cafe_manha", label: "☕ Café" },
