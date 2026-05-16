@@ -518,15 +518,24 @@ export default function ApexVisualV3() {
     setHistory((data as any) || []);
   };
 
+  const [femCtx, setFemCtx] = useState<FeminineContext | null>(null);
+
   useEffect(() => {
     if (selectedAthlete) {
       setNome(selectedAthlete.nome || "");
       if (selectedAthlete.fase_atual) setFase(selectedAthlete.fase_atual);
       loadHistory(selectedAthlete.id);
+      const sexHint = (selectedAthlete as any).sexo ?? (CATS[catKey]?.g === "F" ? "F" : null);
+      buildFeminineContext(
+        selectedAthlete.patient_user_id,
+        sexHint,
+        selectedAthlete.categoria ?? CATS[catKey]?.l ?? null,
+      ).then(setFemCtx);
     } else {
       setHistory([]);
+      setFemCtx(null);
     }
-  }, [selectedAthlete?.id]);
+  }, [selectedAthlete?.id, catKey]);
 
   const cat = CATS[catKey];
   const temFoto = !!(fotoF || fotoC || fotoL);
