@@ -552,7 +552,66 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
                       <span className="font-bold text-foreground">Desvio: </span>
                       <span className="text-muted-foreground">{f.finding}</span>
                     </div>
-                    {f.key === "scapular_axis_tilt" ? (() => {
+                    {f.key === "spinal_lateral_deviation" ? (() => {
+                      const dev = Math.abs(f.value);
+                      const side = f.value > 0 ? "D" : "E";
+                      const opp = side === "D" ? "E" : "D";
+                      const severity = dev <= 1 ? "alinhada" : dev <= 3 ? "leve" : dev <= 5 ? "moderada" : "acentuada";
+                      const sideFull = side === "D" ? "direita" : "esquerda";
+                      const oppFull = opp === "D" ? "direita" : "esquerda";
+                      if (dev <= 1) {
+                        return (
+                          <div className="text-muted-foreground">
+                            ✓ Coluna alinhada no eixo C7→L5. Manter trabalho de estabilização do core e mobilidade torácica preventiva.
+                          </div>
+                        );
+                      }
+                      return (
+                        <>
+                          <div>
+                            <span className="font-bold text-foreground">📐 Desvio: </span>
+                            <span className="text-muted-foreground">
+                              Inclinação lateral {sideFull} de {dev.toFixed(1)}° — convexidade à {oppFull} (curva tipo C {severity}).
+                            </span>
+                          </div>
+                          <div>
+                            <span className="font-bold text-foreground">💪 Hiperativos (lado côncavo {side}): </span>
+                            <span className="text-muted-foreground">
+                              Quadrado lombar {side}, eretores espinhais {side}, oblíquo interno {side}, iliopsoas {side} (encurtados).
+                            </span>
+                          </div>
+                          <div>
+                            <span className="font-bold text-foreground">⚠️ Inibidos (lado convexo {opp}): </span>
+                            <span className="text-muted-foreground">
+                              Quadrado lombar {opp}, oblíquo externo {opp}, glúteo médio {opp} (alongados e fracos).
+                            </span>
+                          </div>
+                          <div>
+                            <span className="font-bold text-foreground">🔗 Cadeia: </span>
+                            <span className="text-muted-foreground">
+                              Báscula pélvica → desnivelamento de ombros (compensação contralateral) → sobrecarga no disco L4-L5/L5-S1 do lado {side}.
+                            </span>
+                          </div>
+                          <div>
+                            <span className="font-bold text-foreground">🎯 Correção prescrita: </span>
+                            <span className="text-muted-foreground block mt-0.5 space-y-0.5">
+                              <span className="block">1. Liberação miofascial quadrado lombar {side} + iliopsoas {side} (1–2 min cada).</span>
+                              <span className="block">2. Alongamento lateral side-bend para {opp}: 3×30s (alonga côncavo {side}).</span>
+                              <span className="block">3. Side plank com elevação pélvica apoiado no lado {opp}: 3×30–45s (ativa QL/glúteo médio {opp}).</span>
+                              <span className="block">4. Bird-dog assimétrico priorizando braço {side} + perna {opp}: 3×10.</span>
+                              <span className="block">5. Pallof press anti-lateral flexão para {side}: 3×12 cada lado.</span>
+                              <span className="block">6. Fortalecimento glúteo médio {opp}: abdução em decúbito lateral 3×15.</span>
+                              <span className="block">7. Reavaliar eixo C7→L5 em 4–6 semanas — alvo desvio ≤ 1°.</span>
+                              {dev > 5 && (
+                                <span className="block font-bold" style={{ color: C.red }}>
+                                  ⚠ Desvio acentuado ({dev.toFixed(1)}°) — recomendar avaliação fisioterápica / radiografia panorâmica para descartar escoliose estrutural.
+                                </span>
+                              )}
+                            </span>
+                          </div>
+                        </>
+                      );
+                    })() : f.key === "scapular_axis_tilt" ? (() => {
                       const side = f.value > 0 ? "D" : "E";
                       const opp = side === "D" ? "E" : "D";
                       return (
