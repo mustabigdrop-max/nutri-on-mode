@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import html2canvas from "html2canvas";
 import { Download, ChevronDown, BookOpen, Link2, Eye } from "lucide-react";
+import { CYCLE_PHASE_INFO, type CyclePhase } from "@/lib/feminine";
 
 // ─── Types ───────────────────────────────────────────────────────
 export type Landmark = { x: number; y: number; label: string };
