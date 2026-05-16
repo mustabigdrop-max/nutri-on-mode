@@ -722,6 +722,7 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
     setActiveResultTab("scores");
     setSavedAnalysisId(null);
     setSyncStatus(null);
+    setPhotoUrls({});
   };
 
   const fetchSyncStatus = useCallback(async (athleteId: string | null) => {
