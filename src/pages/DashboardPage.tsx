@@ -11,6 +11,7 @@ import { useWaterLogs } from "@/hooks/useWaterLogs";
 import { usePlanGate } from "@/hooks/usePlanGate";
 import { useWorkoutSchedule, getWorkoutAdjustment, combineAdjustments, WORKOUT_TYPES, type WorkoutType } from "@/hooks/useWorkoutSchedule";
 import TrialBanner from "@/components/dashboard/TrialBanner";
+import JarvisBackdrop from "@/components/dashboard/JarvisBackdrop";
 import CoachNotificationsCard from "@/components/dashboard/CoachNotificationsCard";
 import AthleteCompetitionCard from "@/components/dashboard/AthleteCompetitionCard";
 import CoachCompetitionShortcut from "@/components/dashboard/CoachCompetitionShortcut";
@@ -668,8 +669,9 @@ const DashboardPage = () => {
   const isSimplifiedMode = todayMood === "cansado";
 
   return (
-    <div className="min-h-screen bg-background pb-24">
-      <div className="absolute inset-0 bg-grid opacity-10" />
+    <div className="min-h-screen bg-background pb-24 hex-bg">
+      <JarvisBackdrop />
+      <div className="absolute inset-0 bg-grid opacity-[0.04] pointer-events-none" />
 
       {/* Mood Check-in Modal */}
       <MoodCheckinModal

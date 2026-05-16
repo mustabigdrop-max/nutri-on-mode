@@ -1,111 +1,62 @@
-# Módulo Feminino Específico — nutriON
+## Objetivo
+Elevar todo o visual do sistema nutriON ao nível "Jarvis" (dark, holográfico, técnico) sem alterar nenhuma rota, hook, edge function, lógica de dados ou componente de formulário funcional. Apenas estilo.
 
-Adaptações automáticas quando `profile.sex === 'F'`. Zero intervenção manual. Não altera nada para masculinos.
+## Escopo (somente camada de apresentação)
 
-## Arquitetura — fonte única de verdade
+### 1. Fundação global
+- `index.html`: garantir import do Google Fonts com Rajdhani 600/700 + Space Mono 400/700 (já presente — confirmar pesos).
+- `src/index.css`:
+  - Atualizar tokens HSL: `--background` → #020205, `--foreground` → #F5F0E8, `--primary` → #B8922A, `--accent` → #00D4FF, `--destructive` → #ff4444, `--border` → #B8922A com baixa opacidade.
+  - Novos tokens: `--gold-line`, `--gold-soft`, `--cyan-line`, `--danger-line`, `--ink-warm`, `--ink-dim`.
+  - Novas variáveis de fonte: `--font-jarvis: 'Rajdhani'`, `--font-tech: 'Space Mono'`.
+  - Utility classes: `.font-jarvis`, `.font-tech`, `.tech-label` (uppercase + letter-spacing 0.2em), `.num-display` (Rajdhani 700), `.jarvis-card` (radius 0, border `#B8922A1F`), `.jarvis-bar` (track 3px), `.hex-bg` (grade hexagonal sutil), scrollbar hidden global, skeleton `#B8922A08`.
+  - Keyframes: `barFill`, `dotPulse`, `softGlow`.
+- `tailwind.config.ts`: adicionar `fontFamily.jarvis`, `fontFamily.tech`, cores `gold-line`, `cyan-line`, `ink-warm`, `ink-dim`, `danger-line`. Manter tokens existentes para retrocompatibilidade.
 
-Criar `src/lib/feminine.ts` — utilitários compartilhados:
-- `isFeminine(profile)` — detecta sexo F
-- `getCyclePhase(lastPeriodDate, cycleLength)` → `'menstrual' | 'follicular' | 'ovulatory' | 'luteal_early' | 'luteal_late'`
-- `getCyclePhaseLabel(phase)` — label PT-BR + emoji + cor
-- `getCycleDayCount(lastPeriodDate)` — dia atual do ciclo
-- `FEMININE_CATEGORIES` — Bikini, Wellness, Figure, Women's Physique, Bikini Fitness com padrão, BF range, foco, tags
-- `getFemininePhaseAdjustments(phase)` — { volumeMultiplier, rpeMax, kcalAdjust, sodiumNote, supplementNote }
-- `getFeminineBodyScoreAdjustment(phase)` — +5 pts em lútea tardia
-- `getFemininePhaseBanner(phase)` — texto do banner APEX
+### 2. Background canvas (somente dashboard)
+- Novo `src/components/dashboard/JarvisBackdrop.tsx`: grade hexagonal canvas (opacity 0.015 ouro) + 40 partículas lentas gold/cyan opacity ≤0.08. Componente leve, `pointer-events-none`, posição `fixed inset-0 -z-10`.
 
-Hook já existe: `src/hooks/useFeminineProfile.ts` (feminine_profiles table com fase_ciclo, duracao_ciclo, ultima_menstruacao). Usar este como fonte. Adicionar derivação automática da fase via `getCyclePhase(profile.ultima_menstruacao, profile.duracao_ciclo)` quando data presente; fallback para `fase_ciclo` manual.
+### 3. Dashboard (`src/pages/Index.tsx` + componentes em `src/components/dashboard/`)
+- Topbar: `rgba(2,2,5,0.95)` + `backdrop-blur(12px)`, border-bottom `#B8922A18`, logo "NUTRI" + "ON" dourado em Rajdhani, badge "COCKPIT" Space Mono 6px, status "SISTEMA ATIVO" com dot ciano pulsante. Trocar emojis por Lucide.
+- Layout grid 3 colunas (200px / 1fr / 180px) com separadores `1px #B8922A08`.
+- Painel esquerdo: card de perfil + lista de métricas com barras animadas (TDEE/Prot/Carb/Gord/Streak/XP). Cores conforme spec. Item ativo com linha lateral 2px ouro.
+- Centro hero: saudação tech, card "Modo Desafio" sem emoji, anel SVG de kcal 130px (track `#0F0F14`, fill ciano com `strokeDashoffset` animado, centro Rajdhani 28px, % topo Space Mono ciano), 3 rows ao lado.
+- Centro macros: 3 barras 3px (gold/cyan/red) com label tech.
+- Cards inferiores 2x2 (NutriSync, Fase, Pull, Comparativo) `radius:0`, borders sutis, ícones Lucide.
+- Painel direito: APEX Score grande Rajdhani 48px ciano, 4 mini barras, diagnóstico semanal, idade biológica, "MCE ATIVO" com dot.
 
-## PARTE 1 — APEX Visual Feminino
+### 4. Lab (`src/pages/LabPage.tsx` + `src/components/lab/*`)
+- Topbar Lab: "NUTRION LAB" Rajdhani + Lucide `Microscope`, subtítulo Space Mono, border-bottom `#00D4FF0A`.
+- Tabs horizontais scrolláveis: ativa border-bottom 2px ouro + bg `#B8922A08`; Dr. VERTEX / Ergo em ciano quando ativos.
+- Card agente APEX: border `#B8922A18`, bg `#B8922A04`, ícone `FlaskConical`, badge "ONLINE" pulsante ciano.
+- Chat/respostas: bg `#020205`, mensagens APEX com border-left 2px ouro, texto Space Mono 8px line-height 1.9, tags científicas com border ciano.
+- Input: border `#B8922A22`, focus ouro, botão enviar fundo ouro + `Send`, mic com border ouro.
 
-`supabase/functions/apex-visual-analyze/index.ts`:
-- Aceitar novos campos no body: `sex`, `category`, `cyclePhase`, `cycleDay`
-- Quando `sex === 'F'`: prepend `FEMININE_SYSTEM_PROMPT` ao system com:
-  - Categorias femininas detalhadas (Bikini/Wellness/Figure/Physique/Bikini Fitness — padrão, BF ideal, foco)
-  - Proporções femininas (cintura/quadril, ombro/quadril, glúteo, MMII)
-  - Análise de celulite/retenção localizada com classificação
-  - Postural feminino (hiperlordose, valgo bilateral, hiperpronação)
-  - Shape por categoria (score 0-10, acima/abaixo padrão)
-- Quando `cyclePhase === 'luteal_late'`: adicionar nota no prompt sobre retenção fisiológica
+### 5. Coach Dashboard (`src/pages/CoachDashboardPage.tsx` + `src/components/coach/*`)
+- Topbar Coach: "nutriON Coach" Rajdhani, badge "Coach Pro" border ouro, nome em Space Mono.
+- 4 cards de métricas com border-top colorido (gold/cyan/red/gold), valor Rajdhani 24px, ícones Lucide.
+- Botões de ação: primário fundo ouro/texto `#020205` Rajdhani; secundários border ouro suave.
+- Tabs com mesma linguagem do Lab.
+- Lista de alunos: border-bottom `#0A0A0F`, hover bg `#B8922A04`, avatar com border ouro + iniciais Rajdhani, score com cor dinâmica (≥70 ciano, ≥40 ouro, <40 vermelho), badge "Em risco" com dot pulsante.
+- Coluna alertas: border-left ouro, título tech, items com border vermelho suave; estado vazio Space Mono.
+- Parceiros: items com border ouro, badges ON_PLUS / Ativo.
 
-Cliente APEX (`src/components/coach/ApexVisualDashboard.tsx` e/ou `ApexVisualV3.tsx`):
-- Quando atleta feminina: passar `sex`, `category` (do perfil), `cyclePhase`, `cycleDay` à edge function
-- Renderizar `<FeminineCyclePhaseBanner>` no topo (novo componente `src/components/coach/FeminineCyclePhaseBanner.tsx`)
-- Aplicar `getFeminineBodyScoreAdjustment` ao score exibido + tooltip "Score ajustado para fase do ciclo"
-- Substituir 🏆 por ⭐ no nível máximo; gradiente rosa-dourado (lifestyle) / dourado puro (competição) via classes condicionais
+### 6. Regras transversais
+- Trocar emojis por Lucide nos componentes tocados (dashboard, lab, coach topbars/cards).
+- Border-radius 0 em cards principais, 2px em badges/inputs (override pontual via classe `jarvis-card`).
+- Transições `0.2s` em hover, `1.5s` em barras.
+- Scrollbars escondidas globalmente via CSS.
+- Skeleton/loader usa `#B8922A08`.
 
-## PARTE 2 — Ciclo Menstrual Integrado
+## Fora de escopo (não tocar)
+- Rotas, hooks, edge functions, lógica de dados, formulários, validações, RLS, business rules.
+- Landing page hero (já entregue).
+- Módulos não citados (training, nutrisync internals, peptide vault, etc.) — herdam tokens globais via `index.css`/Tailwind sem edição direta.
 
-Campos já existem em `feminine_profiles`. Garantir UI de cadastro:
-- Verificar/criar componente de edição no perfil da atleta (provavelmente `src/pages/ProfilePage.tsx` ou no detalhe do paciente do coach)
-- Seletor fase ciclo, data última menstruação, duração ciclo, tipo (regular/irregular/anticoncepcional/amenorreia)
+## Arquivos previstos
+- Editar: `src/index.css`, `tailwind.config.ts`, `index.html` (se faltar peso), `src/pages/Index.tsx`, `src/pages/LabPage.tsx`, `src/pages/CoachDashboardPage.tsx`, componentes diretos de dashboard/lab/coach topbar e listas.
+- Criar: `src/components/dashboard/JarvisBackdrop.tsx`.
 
-## PARTE 3 — TrainingON Feminino
-
-`supabase/functions/generate-training-plan/index.ts`:
-- Aceitar `cyclePhase`, `category` (feminina) no profile
-- Quando `sex === 'F'`: substituir bloco PROTOCOLO FEMININO atual por versão completa:
-  - Regras por fase (menstrual/folicular/ovulatória/lútea) com volume %, RPE máx, foco
-  - Prioridades por categoria (Bikini 60/40, Wellness 70/30, Figure 50/50)
-  - Exercícios com atenção especial (Hip Thrust obrigatório, anti-valgo, evitar abdominais que aumentem cintura)
-
-Frontend: garantir que `coachNotes`/profile inclui `cyclePhase` calculada ao chamar a função.
-
-## PARTE 4 — NutriPlan Feminino
-
-Identificar edge function de geração de plano alimentar (provavelmente `generate-meal-plan` / `nutriplan-elite`). Adicionar bloco feminino:
-- TDEE: déficit máx 500kcal, mínimo 1400kcal
-- Micros prioritários (Fe 18mg, Ca 1000mg, Mg 320mg, Folato, Ômega-3, D+K2)
-- Ajustes por fase (menstrual: +Fe/Mg, -Na; lútea: +carbs 10-15%, +Mg, -cafeína)
-- Proteína 1.8-2.5 g/kg
-
-## PARTE 5 — Linguagem e UX Feminina
-
-- Helper `feminineLabel(text, isF)` para substituições leves
-- Cores: tokens novos em `index.css` — `--feminine-gold`, `--feminine-rose`, gradiente `--gradient-feminine`
-- Ícone ⭐ no Body Score quando F + nível máximo
-- Veredictos APEX: instrução no system prompt para tom empoderador, "reserva a reduzir" vs "excesso de gordura"
-
-## PARTE 6 — Dashboard Coach — Visão Feminina
-
-Novo componente `src/components/coach/FeminineCycleBadge.tsx`:
-- Mostra emoji + cor da fase ao lado do nome
-- Tooltip com dia do ciclo
-
-Editar dashboard de pacientes do coach (`src/pages/CoachDashboardPage.tsx` ou `CoachPatientDetailPage.tsx`):
-- Para cada paciente F com `ultima_menstruacao`: renderizar `<FeminineCycleBadge>`
-- Alerta automático quando paciente F em lútea tardia E houver check-in recente: "Check-in de [nome] pode estar afetado pela fase lútea tardia — considerar antes de ajustar protocolo"
-- Notificação janela ideal (dias 6-10): card no dashboard
-
-## Arquivos a criar
-
-```text
-src/lib/feminine.ts
-src/components/coach/FeminineCyclePhaseBanner.tsx
-src/components/coach/FeminineCycleBadge.tsx
-```
-
-## Arquivos a editar
-
-```text
-supabase/functions/apex-visual-analyze/index.ts        (prompt feminino + categorias)
-supabase/functions/generate-training-plan/index.ts     (protocolo feminino completo)
-supabase/functions/generate-meal-plan/index.ts         (ajustes nutricionais femininos)
-src/components/coach/ApexVisualDashboard.tsx           (passar sex/category/cycle + banner + score adj)
-src/components/coach/ApexVisualV3.tsx                  (idem)
-src/pages/CoachPatientDetailPage.tsx                   (badge + alertas)
-src/pages/CoachDashboardPage.tsx                       (badges lista)
-src/index.css                                          (tokens feminine-gold/rose)
-```
-
-## Detalhes técnicos
-
-- Detecção sexo: ler `profiles.sex` (campo já existente, valores 'M'/'F')
-- Cálculo fase: `(diffDays % cycleLength)` mapeado para faixas
-- Memorizar `feminine.ts` helpers (constantes) — sem chamadas DB
-- Mínima invasão: cada módulo masculino continua intocado; toda lógica gated por `isFeminine(profile)`
-- Edge functions: validar fallback se campos opcionais ausentes (não quebrar masculinos)
-
-## Escopo deste turno
-
-Implementação completa de todos os 6 módulos em uma passada. Sem migrations (schema feminine_profiles já existe). Não alterar `src/integrations/supabase/types.ts`.
+## Validação
+- Build limpo (sem TS errors).
+- Inspeção visual rápida via screenshot do dashboard, /lab e /coach-dashboard para confirmar paleta, fontes e ausência de emojis nas áreas tocadas.
