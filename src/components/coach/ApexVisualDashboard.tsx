@@ -378,11 +378,18 @@ const parseFarmMeta = (text: string) => ({
 });
 
 // ─── Parsers ─────────────────────────────────────────────────────
+// Remove blocos técnicos de landmarks (com ou sem cercas markdown) que não devem aparecer no texto exibido
+const stripLandmarkBlocks = (text: string): string =>
+  text
+    .replace(/```+\s*json_landmarks_(?:front|lateral|back)[\s\S]*?```+/gi, "")
+    .replace(/`{0,3}\s*json_?landmarks_?(?:front|lateral|back)\s*\{[\s\S]*?\n\}\s*`{0,3}/gi, "");
+
 const parseSection = (text: string, key: string, nextKey?: string): string => {
+  const cleaned = stripLandmarkBlocks(text);
   const pattern = nextKey
     ? new RegExp(`##\\s*${key}([\\s\\S]*?)##\\s*${nextKey}`, "i")
     : new RegExp(`##\\s*${key}([\\s\\S]*)`, "i");
-  return text.match(pattern)?.[1]?.trim() || "";
+  return cleaned.match(pattern)?.[1]?.trim() || "";
 };
 
 const parseSegments = (text: string) => {
