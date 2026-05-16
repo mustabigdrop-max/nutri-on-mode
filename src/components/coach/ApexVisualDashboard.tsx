@@ -750,6 +750,7 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
   const [loading, setLoading] = useState(false);
   const [analysisResult, setAnalysisResult] = useState("");
   const [activeResultTab, setActiveResultTab] = useState("scores");
+  const [activeVertexTab, setActiveVertexTab] = useState<"auditoria"|"sinergia"|"contencao"|"periodizacao"|"veredicto">("auditoria");
   const [isDone, setIsDone] = useState(false);
   const [stepIdx, setStepIdx] = useState(0);
   const [savedAnalysisId, setSavedAnalysisId] = useState<string | null>(null);
