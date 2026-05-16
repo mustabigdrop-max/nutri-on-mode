@@ -83,6 +83,12 @@ interface SelectedFood {
   quantity: number;
 }
 
+type NutritionRecord = Record<string, unknown>;
+
+const asNutritionRecord = (value: unknown): NutritionRecord | null => {
+  return typeof value === "object" && value !== null && !Array.isArray(value) ? value as NutritionRecord : null;
+};
+
 const parseNutritionNumber = (value: unknown): number => {
   if (typeof value === "number") return Number.isFinite(value) ? value : 0;
   if (typeof value === "string") {
@@ -92,10 +98,10 @@ const parseNutritionNumber = (value: unknown): number => {
   return 0;
 };
 
-const readNutritionValue = (food: Record<string, any>, keys: string[]) => {
-  const pools = [food, food.macros, food.nutrition, food.nutritional_values, food.valores_nutricionais];
+const readNutritionValue = (food: NutritionRecord, keys: string[]) => {
+  const pools = [food, asNutritionRecord(food.macros), asNutritionRecord(food.nutrition), asNutritionRecord(food.nutritional_values), asNutritionRecord(food.valores_nutricionais)];
   for (const pool of pools) {
-    if (!pool || typeof pool !== "object") continue;
+    if (!pool) continue;
     for (const key of keys) {
       if (pool[key] !== undefined && pool[key] !== null) return parseNutritionNumber(pool[key]);
     }
@@ -103,7 +109,7 @@ const readNutritionValue = (food: Record<string, any>, keys: string[]) => {
   return 0;
 };
 
-const normalizeFoodFromAI = (food: Record<string, any>): FoodItem & { micronutrients?: Record<string, number> } => {
+const normalizeFoodFromAI = (food: NutritionRecord): FoodItem & { micronutrients?: Record<string, number> } => {
   const protein = readNutritionValue(food, ["protein", "proteins", "protein_g", "proteina", "proteína", "proteina_g"]);
   const carbs = readNutritionValue(food, ["carbs", "carb", "carbohydrates", "carbohydrate", "carbs_g", "carboidratos", "carboidrato", "carboidratos_g"]);
   const fat = readNutritionValue(food, ["fat", "fats", "fat_g", "gordura", "gorduras", "gordura_g", "lipidios", "lipídios"]);
@@ -119,7 +125,7 @@ const normalizeFoodFromAI = (food: Record<string, any>): FoodItem & { micronutri
     carbs,
     fat,
     category: "🤖 IA",
-    micronutrients: food.micronutrients || food.micronutrientes || {},
+    micronutrients: (asNutritionRecord(food.micronutrients) || asNutritionRecord(food.micronutrientes) || {}) as Record<string, number>,
   };
 };
 
@@ -331,7 +337,7 @@ const MealLogPage = () => {
     setSelectedFoods(prev => prev.filter(sf => sf.food.id !== foodId));
   };
 
-  const addAiFoods = (foods: Array<Record<string, any>>, qualityScore?: number) => {
+  const addAiFoods = (foods: NutritionRecord[], qualityScore?: number) => {
     const normalizedFoods = foods.map(normalizeFoodFromAI);
     const newFoods: SelectedFood[] = normalizedFoods.map((food, i) => ({
       food: {
