@@ -170,6 +170,24 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
             : "Eixo escapular dentro do normal.",
         };
       }
+      // FIX 3 — Spine deviation calculado de C7→L5
+      const c7 = data.landmarks.spine_c7;
+      const l5 = data.landmarks.spine_l5;
+      if (isValidPoint(c7) && isValidPoint(l5)) {
+        const dx = l5.x - c7.x;
+        const dy = l5.y - c7.y;
+        // ângulo em relação à vertical (linha perfeita = 0°)
+        const deg = Math.atan2(dx, dy) * (180 / Math.PI);
+        const v = Math.round(deg * 10) / 10;
+        out.spinal_lateral_deviation = {
+          value: v,
+          unit: "graus",
+          normal: "<1°",
+          finding: Math.abs(v) > 1
+            ? `Coluna desviada ${Math.abs(v)}° para ${v > 0 ? "direita" : "esquerda"}. Avaliar escoliose funcional vs estrutural.`
+            : "Coluna alinhada verticalmente. ✓",
+        };
+      }
     }
     return out;
   }, [data]);
