@@ -139,6 +139,7 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
     try { return localStorage.getItem("apex-edu-mode") === "1"; } catch { return false; }
   });
   const [chainMode, setChainMode] = useState<boolean>(false);
+  const [debugMode, setDebugMode] = useState<boolean>(false);
   const exportRef = useRef<HTMLDivElement>(null);
   const [exporting, setExporting] = useState(false);
 
@@ -327,6 +328,18 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
             Cadeia Cinética
           </button>
           <button
+            onClick={() => setDebugMode((v) => !v)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg border"
+            style={{
+              borderColor: debugMode ? "#FF00FF" : "hsl(var(--border))",
+              color: debugMode ? "#FF00FF" : "hsl(var(--muted-foreground))",
+              background: debugMode ? "#FF00FF1A" : "transparent",
+            }}
+            title="Mostra caixas de colisão e zona da silhueta"
+          >
+            🐛 Debug
+          </button>
+          <button
             onClick={handleExport}
             disabled={exporting}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg border hover:bg-muted disabled:opacity-50"
@@ -370,6 +383,7 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
                   onSelect={setSelected}
                   eduMode={eduMode}
                   chainMode={chainMode}
+                  debugMode={debugMode}
                   chains={chains}
                 />
               )}
@@ -497,13 +511,14 @@ function anchorLandmark(view: string, key: string): string {
 
 // ─── Overlay (HTML + SVG hybrid for crisp labels) ────────────────
 function OverlayLayer({
-  data, selected, onSelect, eduMode, chainMode, chains,
+  data, selected, onSelect, eduMode, chainMode, debugMode, chains,
 }: {
   data: LandmarkView;
   selected: string | null;
   onSelect: (k: string) => void;
   eduMode: boolean;
   chainMode: boolean;
+  debugMode: boolean;
   chains: { name: string; nodes: string[]; description: string }[];
 }) {
   const lm = data.landmarks;
@@ -696,6 +711,43 @@ function OverlayLayer({
 
         {/* Plumb line label */}
         <text x={50.5} y={2.5} fontSize={2} fill={C.white} opacity={0.6}>Linha de Prumo</text>
+
+        {/* DEBUG: zona da silhueta (|x-50|<8) + caixas de colisão dos labels */}
+        {debugMode && (
+          <g>
+            {/* Faixa da silhueta = exclusion zone exterior */}
+            <rect
+              x={42} y={0} width={16} height={100}
+              fill="#FF00FF"
+              fillOpacity={0.08}
+              stroke="#FF00FF"
+              strokeOpacity={0.5}
+              strokeDasharray="1 1"
+              vectorEffect="non-scaling-stroke"
+              style={{ strokeWidth: 1 }}
+            />
+            <text x={50} y={99} fontSize={1.8} fill="#FF00FF" textAnchor="middle" opacity={0.9}>
+              SILHUETA (labels proibidos)
+            </text>
+            {/* Caixas de colisão de cada label (16% x 4.5%) */}
+            {labelPositions.map((q) => (
+              <g key={`dbg-${q.key}`}>
+                <rect
+                  x={q.lx - 8} y={q.ly - 2.25}
+                  width={16} height={4.5}
+                  fill="none"
+                  stroke="#00FFAA"
+                  strokeOpacity={0.85}
+                  strokeDasharray="0.6 0.6"
+                  vectorEffect="non-scaling-stroke"
+                  style={{ strokeWidth: 1 }}
+                />
+                {/* Anchor → label vector */}
+                <circle cx={q.lx} cy={q.ly} r={0.5} fill="#00FFAA" />
+              </g>
+            ))}
+          </g>
+        )}
       </svg>
 
       {/* HTML labels layer — crisp, with background */}
