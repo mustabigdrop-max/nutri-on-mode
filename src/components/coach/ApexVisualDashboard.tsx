@@ -781,6 +781,14 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
         fotos.push({ label, mime: file.type || "image/jpeg", data });
       }
 
+      // Upload photos in parallel for overlay + persistence
+      const [pathFront, pathBack, pathSide] = await Promise.all([
+        photos.front ? uploadApexPhoto(photos.front, coachId, athlete?.id || null, "front") : Promise.resolve(null),
+        photos.back ? uploadApexPhoto(photos.back, coachId, athlete?.id || null, "back") : Promise.resolve(null),
+        photos.side ? uploadApexPhoto(photos.side, coachId, athlete?.id || null, "side") : Promise.resolve(null),
+      ]);
+      loadPhotoUrls({ front: pathFront, back: pathBack, side: pathSide });
+
       const athleteName = athlete?.nome || "atleta";
       const protocoloCompleto = formData.compostos ? `Compostos: ${formData.compostos}
 Objetivo do ciclo: ${objetivoCiclo}
@@ -807,6 +815,7 @@ Suporte em uso: ${suporte || "não informado"}` : "";
         const meta = parseMeta(text);
         const farmMeta = parseFarmMeta(text);
         const segments = parseSegments(text);
+        const landmarks = parseLandmarks(text);
         const scoresJson = segments.reduce((acc, s) => {
           acc[s.label] = s.score;
           return acc;
@@ -832,6 +841,10 @@ Suporte em uso: ${suporte || "não informado"}` : "";
           support: suporte || null,
           tdee_factor: farmMeta.tdeeFator ? parseFloat(farmMeta.tdeeFator) : null,
           protein_ideal: farmMeta.proteinaIdeal || null,
+          landmarks: Object.keys(landmarks).length ? landmarks : null,
+          photo_front_url: pathFront,
+          photo_back_url: pathBack,
+          photo_side_url: pathSide,
         }).select("id").single();
         if (insErr) throw insErr;
         setSavedAnalysisId((inserted as any)?.id || null);
