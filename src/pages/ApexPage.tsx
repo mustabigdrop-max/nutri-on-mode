@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import BottomNav from "@/components/BottomNav";
+import ApexPhdAnalysis from "@/components/apex/ApexPhdAnalysis";
 import {
   useApex,
   DEFAULT_POSTURE, DEFAULT_FMS, DEFAULT_ROM, DEFAULT_MUSCLES,
@@ -16,7 +17,7 @@ const PANEL = "rgba(6,16,8,.9)";
 const MUTED = "#5a7a60";
 const TEXT = "#9ec5a6";
 
-type Tab = "overview" | "postura" | "fms" | "dor" | "mobilidade" | "shape" | "protocolo";
+type Tab = "overview" | "postura" | "fms" | "dor" | "mobilidade" | "shape" | "protocolo" | "phd";
 
 const TABS: [Tab, string][] = [
   ["overview", "Overview"],
@@ -26,6 +27,7 @@ const TABS: [Tab, string][] = [
   ["mobilidade", "Mobilidade"],
   ["shape", "Shape"],
   ["protocolo", "Protocolo"],
+  ["phd", "PhD ▸ IA"],
 ];
 
 // ─── DATA TABLES ──────────────────────────────────────────────────────────
@@ -747,6 +749,7 @@ const ApexPage = () => {
             {activeTab === "mobilidade" && <MobilidadeTab value={rom} onChange={setRom} />}
             {activeTab === "shape" && <ShapeTab value={muscles} onChange={setMuscles} />}
             {activeTab === "protocolo" && <ProtocoloTab posture={posture} fms={fms} pain={activePain} />}
+            {activeTab === "phd" && <ApexPhdAnalysis posture={posture} fms={fms} rom={rom} muscles={muscles} pain={activePain} />}
           </motion.div>
         </AnimatePresence>
       </div>
