@@ -1,5 +1,7 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import ReactMarkdown from "react-markdown";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, Tooltip } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -311,6 +313,46 @@ const ApexPhdAnalysis = ({ posture, fms, rom, muscles, pain }: Props) => {
   const [result, setResult] = useState("");
   const [error, setError] = useState("");
   const [resultTab, setResultTab] = useState<ResultTab>("ia");
+  const [exporting, setExporting] = useState(false);
+  const printRef = useRef<HTMLDivElement>(null);
+
+  const exportPdf = async () => {
+    if (!printRef.current) return;
+    setExporting(true);
+    try {
+      // Aguarda render do conteúdo offscreen
+      await new Promise((r) => setTimeout(r, 250));
+      const canvas = await html2canvas(printRef.current, {
+        backgroundColor: "#03030a",
+        scale: 2,
+        useCORS: true,
+        logging: false,
+      });
+      const imgData = canvas.toDataURL("image/jpeg", 0.92);
+      const pdf = new jsPDF("p", "mm", "a4");
+      const pageW = pdf.internal.pageSize.getWidth();
+      const pageH = pdf.internal.pageSize.getHeight();
+      const imgW = pageW;
+      const imgH = (canvas.height * imgW) / canvas.width;
+      let heightLeft = imgH;
+      let position = 0;
+      pdf.addImage(imgData, "JPEG", 0, position, imgW, imgH);
+      heightLeft -= pageH;
+      while (heightLeft > 0) {
+        position = heightLeft - imgH;
+        pdf.addPage();
+        pdf.addImage(imgData, "JPEG", 0, position, imgW, imgH);
+        heightLeft -= pageH;
+      }
+      const stamp = new Date().toISOString().slice(0, 10);
+      pdf.save(`apex-fms-rom-${stamp}.pdf`);
+    } catch (e) {
+      console.error("[APEX export PDF]", e);
+      setError("Falha ao gerar PDF");
+    } finally {
+      setExporting(false);
+    }
+  };
 
   const onPhoto = async (e: React.ChangeEvent<HTMLInputElement>, label: string) => {
     const f = e.target.files?.[0];
@@ -443,7 +485,7 @@ Execute a análise PhD completa agora.`;
       {(result || true) && (
         <>
           {/* Sub-tabs do resultado: IA · FMS · ROM */}
-          <div className="flex gap-1.5 mb-3">
+          <div className="flex gap-1.5 mb-3 items-center">
             {([
               ["ia", "Análise IA", !!result],
               ["fms", "FMS", true],
@@ -459,6 +501,17 @@ Execute a análise PhD completa agora.`;
                   cursor: enabled ? "pointer" : "not-allowed",
                 }}>{label}</button>
             ))}
+            <button onClick={exportPdf} disabled={exporting}
+              className="ml-auto px-3 py-1.5 rounded-[3px] font-mono text-[.6rem] tracking-[.15em] uppercase border transition-colors"
+              style={{
+                borderColor: EM, color: EM,
+                background: "rgba(74,222,128,.08)",
+                opacity: exporting ? 0.5 : 1,
+                cursor: exporting ? "wait" : "pointer",
+              }}
+              title="Exporta FMS + ROM (semáforos, radar, recomendações) em PDF">
+              {exporting ? "gerando..." : "▼ Exportar PDF"}
+            </button>
           </div>
 
           {resultTab === "ia" && result && (
@@ -486,6 +539,42 @@ Execute a análise PhD completa agora.`;
           {resultTab === "rom" && <RomResultView rom={rom} />}
         </>
       )}
+
+      {/* Container offscreen para captura do PDF (FMS + ROM) */}
+      <div
+        ref={printRef}
+        style={{
+          position: "fixed",
+          left: -99999,
+          top: 0,
+          width: 794, // ~A4 a 96dpi
+          padding: 24,
+          background: "#03030a",
+          color: TEXT,
+          fontFamily: "monospace",
+        }}
+        aria-hidden
+      >
+        <div style={{ marginBottom: 16, borderBottom: `1px solid ${BORDER}`, paddingBottom: 8 }}>
+          <div style={{ color: EM, fontSize: 16, letterSpacing: 2, textTransform: "uppercase" }}>
+            APEX Visual Intelligence · Relatório FMS + ROM
+          </div>
+          <div style={{ color: MUTED, fontSize: 10, marginTop: 4 }}>
+            {category ? `Categoria: ${category} · ` : ""}{new Date().toLocaleString("pt-BR")}
+          </div>
+        </div>
+        <div style={{ color: EM, fontSize: 12, margin: "12px 0", letterSpacing: 1, textTransform: "uppercase" }}>
+          ▸ Functional Movement Screen (FMS)
+        </div>
+        <FmsResultView fms={fms} posture={posture} />
+        <div style={{ color: EM, fontSize: 12, margin: "16px 0 12px", letterSpacing: 1, textTransform: "uppercase" }}>
+          ▸ Range of Motion (ROM · AAOS)
+        </div>
+        <RomResultView rom={rom} />
+        <div style={{ color: MUTED, fontSize: 9, marginTop: 16, borderTop: `1px solid ${BORDER}`, paddingTop: 6 }}>
+          APEX PhD · análise cinesiológica · uso clínico/coaching · não substitui avaliação médica
+        </div>
+      </div>
     </>
   );
 };
