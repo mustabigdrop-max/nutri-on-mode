@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Syne:wght@400;700;800&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600;700&family=Rajdhani:wght@600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Syne:wght@400;700;800&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600;700&family=Rajdhani:wght@500;600;700&family=Space+Mono:wght@400;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,74 +6,84 @@
 
 @layer base {
   :root {
-    --background: 240 50% 4%;
-    --foreground: 260 30% 96%;
+    /* === Jarvis core palette ===
+       bg #020205, gold #B8922A, cyan #00D4FF, warm white #F5F0E8, danger #ff4444 */
+    --background: 240 43% 2%;
+    --foreground: 36 41% 93%;
 
-    --card: 240 40% 7%;
-    --card-foreground: 260 30% 96%;
+    --card: 240 40% 4%;
+    --card-foreground: 36 41% 93%;
 
-    --popover: 240 40% 7%;
-    --popover-foreground: 260 30% 96%;
+    --popover: 240 43% 3%;
+    --popover-foreground: 36 41% 93%;
 
-    --primary: 38 80% 52%;
-    --primary-foreground: 240 50% 4%;
+    --primary: 43 64% 44%;            /* #B8922A */
+    --primary-foreground: 240 43% 2%;
 
-    --secondary: 240 30% 12%;
-    --secondary-foreground: 260 30% 96%;
+    --secondary: 240 30% 8%;
+    --secondary-foreground: 36 41% 93%;
 
-    --muted: 240 20% 15%;
-    --muted-foreground: 240 20% 50%;
+    --muted: 240 20% 10%;
+    --muted-foreground: 240 10% 45%;
 
-    --accent: 168 100% 50%;
-    --accent-foreground: 240 50% 4%;
+    --accent: 190 100% 50%;           /* #00D4FF */
+    --accent-foreground: 240 43% 2%;
 
-    --destructive: 345 82% 57%;
-    --destructive-foreground: 260 30% 96%;
+    --destructive: 0 100% 63%;        /* #ff4444 */
+    --destructive-foreground: 36 41% 93%;
 
-    --border: 240 30% 15%;
-    --input: 240 30% 15%;
-    --ring:3 38 80% 52%
+    --border: 43 64% 10%;             /* very dim gold */
+    --input: 43 64% 10%;
+    --ring: 43 64% 44%;
 
-    --radius: 0.75rem;
+    --radius: 0.25rem;
 
     /* Custom tokens */
-    --gold: 38 80% 52%;
-    --gold-glow: 38 80% 62%;
-    --cyan: 168 100% 50%;
-    --cyan-glow: 168 100% 65%;
-    --surface: 240 40% 7%;
-    --surface-elevated: 240 35% 10%;
-    --danger: 345 82% 57%;
+    --gold: 43 64% 44%;
+    --gold-glow: 43 64% 56%;
+    --gold-line: 43 64% 14%;
+    --gold-soft: 43 64% 8%;
+    --cyan: 190 100% 50%;
+    --cyan-glow: 190 100% 65%;
+    --cyan-line: 190 100% 18%;
+    --ink-warm: 36 41% 93%;
+    --ink-dim: 240 6% 16%;
+    --surface: 240 40% 4%;
+    --surface-elevated: 240 35% 6%;
+    --danger: 0 100% 63%;
+    --danger-line: 0 100% 18%;
 
-    --gradient-gold: linear-gradient(135deg, hsl(38 80% 52%), hsl(30 80% 56%));
-    --gradient-cyan: linear-gradient(135deg, hsl(168 100% 50%), hsl(180 100% 60%));
-    --gradient-hero: linear-gradient(180deg, hsl(240 50% 4%) 0%, hsl(240 40% 7%) 100%);
+    --gradient-gold: linear-gradient(135deg, hsl(43 64% 44%), hsl(35 70% 50%));
+    --gradient-cyan: linear-gradient(135deg, hsl(190 100% 50%), hsl(180 100% 60%));
+    --gradient-hero: linear-gradient(180deg, hsl(240 43% 2%) 0%, hsl(240 40% 4%) 100%);
 
-    --shadow-gold: 0 0 30px hsl(38 80% 52% / 0.3);
-    --shadow-gold-lg: 0 0 60px hsl(38 80% 52% / 0.2), 0 0 120px hsl(38 80% 52% / 0.1);
-    --shadow-cyan: 0 0 30px hsl(168 100% 50% / 0.2);
+    --shadow-gold: 0 0 20px hsl(43 64% 44% / 0.1);
+    --shadow-gold-lg: 0 0 40px hsl(43 64% 44% / 0.12);
+    --shadow-cyan: 0 0 20px hsl(190 100% 50% / 0.1);
 
-    --font-display: 'Space Grotesk', sans-serif;
-    --font-heading: 'Bebas Neue', sans-serif;
+    --font-jarvis: 'Rajdhani', sans-serif;
+    --font-tech: 'Space Mono', monospace;
+    --font-display: 'Rajdhani', sans-serif;
+    --font-heading: 'Rajdhani', sans-serif;
     --font-landing: 'Syne', sans-serif;
-    --font-mono: 'JetBrains Mono', monospace;
+    --font-mono: 'Space Mono', monospace;
     --font-body: 'Space Grotesk', sans-serif;
 
     --landing-bg: 240 60% 2%;
-    --landing-s1: 240 40% 4%;
-    --landing-s2: 240 40% 6%;
-    --landing-border: 240 40% 8%;
-    --landing-dim: 240 25% 23%;
-    --landing-muted: 240 20% 40%;
+    --landing-s1: 240 40% 3%;
+    --landing-s2: 240 40% 5%;
+    --landing-border: 43 64% 8%;
+    --landing-dim: 240 6% 20%;
+    --landing-muted: 240 10% 40%;
 
-    --sidebar-background: 240 40% 5%;
-    --sidebar-foreground: 260 30% 96%;
-    --sidebar-primary: 43 100% 50%;
-    --sidebar-primary-foreground: 240 50% 4%;
-    --sidebar-accent: 240 30% 12%;
-    --sidebar-accent-foreground: 260 30% 96%;
-    --sidebar-border: 240 30% 15%;
-    --sidebar-ring: 43 100% 50%;
+    --sidebar-background: 240 43% 3%;
+    --sidebar-foreground: 36 41% 93%;
+    --sidebar-primary: 43 64% 44%;
+    --sidebar-primary-foreground: 240 43% 2%;
+    --sidebar-accent: 240 30% 8%;
+    --sidebar-accent-foreground: 36 41% 93%;
+    --sidebar-border: 43 64% 10%;
+    --sidebar-ring: 43 64% 44%;
   }
 }
 
@@ -88,134 +98,120 @@
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-display);
+    font-family: var(--font-jarvis);
+    font-weight: 700;
+    letter-spacing: 0.01em;
   }
+
+  /* Hide scrollbars globally (functional scroll preserved) */
+  ::-webkit-scrollbar { width: 0; height: 0; display: none; }
+  * { scrollbar-width: none; -ms-overflow-style: none; }
 }
 
 @layer utilities {
-  .font-display {
-    font-family: var(--font-display);
+  .font-display { font-family: var(--font-jarvis); }
+  .font-heading { font-family: var(--font-jarvis); }
+  .font-jarvis { font-family: var(--font-jarvis); font-weight: 700; }
+  .font-tech   { font-family: var(--font-tech); }
+  .font-mono   { font-family: var(--font-tech); }
+  .font-landing { font-family: var(--font-landing); }
+
+  .num-display {
+    font-family: var(--font-jarvis);
+    font-weight: 700;
+    letter-spacing: 0.01em;
   }
 
-  .font-heading {
-    font-family: var(--font-heading);
+  .tech-label {
+    font-family: var(--font-tech);
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
   }
 
-  .font-landing {
-    font-family: var(--font-landing);
+  .jarvis-card {
+    background: hsl(240 40% 4%);
+    border: 1px solid hsl(43 64% 44% / 0.12);
+    border-radius: 0;
+    transition: border-color 0.2s ease, background 0.2s ease;
   }
+  .jarvis-card:hover { border-color: hsl(43 64% 44% / 0.28); }
 
-  .font-mono {
-    font-family: var(--font-mono);
+  .jarvis-divider { border-color: hsl(43 64% 44% / 0.06); }
+
+  .jarvis-bar-track {
+    height: 3px;
+    background: hsl(240 30% 6%);
+    overflow: hidden;
+  }
+  .jarvis-bar-fill {
+    height: 100%;
+    transition: width 1.5s ease;
   }
 
   .text-gradient-gold {
-    background: linear-gradient(135deg, hsl(38 80% 52%), hsl(30 80% 60%));
+    background: linear-gradient(135deg, hsl(43 64% 50%), hsl(35 70% 58%));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
-
   .text-gradient-cyan {
-    background: linear-gradient(135deg, hsl(168 100% 50%), hsl(180 100% 70%));
+    background: linear-gradient(135deg, hsl(190 100% 55%), hsl(180 100% 70%));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
 
-  .glow-gold {
-    box-shadow: var(--shadow-gold);
-  }
+  .glow-gold { box-shadow: var(--shadow-gold); }
+  .glow-gold-lg { box-shadow: var(--shadow-gold-lg); }
+  .glow-cyan { box-shadow: var(--shadow-cyan); }
 
-  .glow-gold-lg {
-    box-shadow: var(--shadow-gold-lg);
-  }
-
-  .glow-cyan {
-    box-shadow: var(--shadow-cyan);
-  }
-
-  .border-gold-subtle {
-    border-color: hsl(38 80% 52% / 0.2);
-  }
-
-  .border-cyan-subtle {
-    border-color: hsl(168 100% 50% / 0.15);
-  }
+  .border-gold-subtle { border-color: hsl(43 64% 44% / 0.18); }
+  .border-cyan-subtle { border-color: hsl(190 100% 50% / 0.15); }
 
   .bg-grid {
     background-image:
-      linear-gradient(hsl(240 30% 15% / 0.3) 1px, transparent 1px),
-      linear-gradient(90deg, hsl(240 30% 15% / 0.3) 1px, transparent 1px);
+      linear-gradient(hsl(43 64% 44% / 0.06) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(43 64% 44% / 0.06) 1px, transparent 1px);
     background-size: 60px 60px;
   }
 
-  .animate-pulse-gold {
-    animation: pulse-gold 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  .hex-bg {
+    background-color: hsl(240 43% 2%);
+    background-image:
+      radial-gradient(circle at 50% 50%, hsl(43 64% 44% / 0.02) 0%, transparent 70%);
   }
 
-  .animate-float {
-    animation: float 6s ease-in-out infinite;
-  }
-
-  .animate-glow {
-    animation: glow 3s ease-in-out infinite;
-  }
+  .animate-pulse-gold { animation: pulse-gold 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+  .animate-float { animation: float 6s ease-in-out infinite; }
+  .animate-glow { animation: glow 3s ease-in-out infinite; }
+  .animate-dot-pulse { animation: dotPulse 1.6s ease-in-out infinite; }
 }
 
 @keyframes pulse-gold {
-  0%, 100% {
-    opacity: 1;
-    filter: brightness(1);
-  }
-  50% {
-    opacity: 0.8;
-    filter: brightness(1.3);
-  }
+  0%, 100% { opacity: 1; filter: brightness(1); }
+  50% { opacity: 0.8; filter: brightness(1.3); }
 }
-
 @keyframes float {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
 }
-
 @keyframes glow {
-  0%, 100% {
-    box-shadow: 0 0 20px hsl(38 80% 52% / 0.2);
-  }
-  50% {
-    box-shadow: 0 0 40px hsl(38 80% 52% / 0.4), 0 0 80px hsl(38 80% 52% / 0.1);
-  }
+  0%, 100% { box-shadow: 0 0 20px hsl(43 64% 44% / 0.1); }
+  50%      { box-shadow: 0 0 40px hsl(43 64% 44% / 0.18); }
 }
-
+@keyframes dotPulse {
+  0%, 100% { opacity: 0.35; transform: scale(0.9); }
+  50%      { opacity: 1;    transform: scale(1.15); }
+}
+@keyframes barFill {
+  from { width: 0%; }
+}
 @keyframes fade-in-up {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
-
-@keyframes bar-fill {
-  from {
-    width: 0%;
-  }
-}
-
+@keyframes bar-fill { from { width: 0%; } }
 @keyframes streak-fire {
-  0%, 100% {
-    transform: scaleY(1) scaleX(1);
-    opacity: 1;
-  }
-  50% {
-    transform: scaleY(1.15) scaleX(0.95);
-    opacity: 0.85;
-  }
+  0%, 100% { transform: scaleY(1) scaleX(1); opacity: 1; }
+  50%      { transform: scaleY(1.15) scaleX(0.95); opacity: 0.85; }
 }
