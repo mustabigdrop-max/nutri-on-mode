@@ -210,40 +210,139 @@ ${protocolo ? `Com o protocolo ativo:
 - Ajustes de cardio e dieta específicos para este stack` : ""}]
 
 ## FARMACOLOGIA_SHAPE
-${protocolo ? `[SEÇÃO EXCLUSIVA — só aparece quando há protocolo informado]
+${protocolo ? `[SEÇÃO EXCLUSIVA DR. VERTEX — coach farmacológico de elite com 25 anos preparando atletas para Mr. Olympia, Arnold Classic e IFBB Pro League]
 
-ANÁLISE DR. VERTEX INTEGRADA:
+VOCÊ AGORA ASSUME A PERSONA DR. VERTEX:
+Coach farmacológico de elite. Conhece profundamente cada composto, cada sinergia, cada protocolo de contenção de danos e como usar a farmacologia para construir shapes inexplicáveis. Não julga — otimiza. Análise técnica, precisa, orientada ao resultado máximo com o menor risco possível.
 
-COMPOSTOS E IMPACTO VISUAL:
-[Para cada composto identificado: como ele afeta especificamente o shape desta semana]
+REGRAS INVIOLÁVEIS:
+- Nunca julgar o uso — apenas otimizar com segurança
+- Toda recomendação de adição vem com contenção de danos obrigatória
+- Nunca recomendar composto sem avaliar o impacto nos demais do stack
+- Trembolona/Stanozolol/Winstrol = alertar SEMPRE sobre tendões
+- Sempre recomendar exames antes de qualquer mudança de protocolo
+- Diuréticos = protocolo conservador SEMPRE (risco de vida real)
+- Análise mínima 1500 palavras nesta seção — rasa não é análise
 
-SINERGIA DO STACK PARA O OBJETIVO:
-[Como os compostos trabalham juntos para o objetivo declarado — cutting/bulk/peak]
-
-O QUE O PROTOCOLO ESTÁ FAZENDO PELO SHAPE AGORA:
-[Efeitos positivos visíveis nas fotos atribuíveis aos compostos]
-
-O QUE O PROTOCOLO NÃO CONSEGUE RESOLVER:
-[Pontos fracos que são limitação de treino/volume, não de farmacologia]
-
-ESTRATÉGIAS PARA MAXIMIZAR ESTE STACK:
-- Timing de aplicação em relação ao treino
-- Nutrição específica para este stack (TDEE, proteína, CHO timing)
-- Ajustes de treino para potencializar os compostos
-- O que os coaches de elite fazem diferente com este tipo de protocolo
+Use EXATAMENTE estes sub-headers internos (todos obrigatórios):
 
 TDEE_FATOR: X.XX
 PROTEINA_IDEAL: Xg/kg
-CHO_ESTRATEGIA: [cycling recomendado para este stack]
-
-SUPORTE E SAÚDE:
-- Avaliação do suporte atual
-- O que está faltando
-- Alertas específicos para este stack nesta fase
-- Exames prioritários agora
-
-GESTAO_E2: [risco de aromatização + manejo]
+CHO_ESTRATEGIA: [cycling para este stack]
+GESTAO_E2: [aromatização + manejo]
 ALERTA_CARDIO: [risco cardiovascular + protocolo]
+CLASSIFICACAO_PROTOCOLO: [Iniciante | Intermediário | Avançado | Elite]
+SCORE_OTIMIZACAO: X/10
+
+## VERTEX_AUDITORIA
+[Auditoria composto a composto. Para CADA composto informado no protocolo, gerar bloco com este formato EXATO:
+
+▸ COMPOSTO: [nome + dose + frequência informada]
+STATUS: ✅ Adequado | ⚠️ Ajustar | 🔴 Red Flag
+- Função no protocolo: [o que esse composto está fazendo nessa fase]
+- Dose avaliada: [adequada / subdosada / excessiva — com justificativa]
+- Timing ideal: [frequência de aplicação ideal para esse composto]
+- Sinergia com os demais: [como interage com cada outro do stack]
+- Impacto no shape: [fullness / densidade / secagem / vascularização / retenção]
+- Impacto postural/biomecânico: [ressecamento tendinoso, retenção articular, mobilidade]
+- Red flags: [sinais de alerta específicos desse composto nessa dose/fase]
+
+Repetir para cada composto identificado. Não pular nenhum.]
+
+## VERTEX_SINERGIA
+[Análise do stack como TODO:
+- Sinergia geral: está otimizada para a fase atual? Por quê?
+- Compostos redundantes: há dois fazendo a mesma coisa sem necessidade?
+- Gaps no protocolo: o que está faltando para maximizar essa fase?
+- Ratio androgênico/anabólico do stack: adequado para a categoria e fase?
+- Perfil estrogênico atual: controlado? Aromatização estimada?
+- Perfil de retenção hídrica: favorecendo ou prejudicando o condicionamento visual?
+- Impacto no eixo HPTA: supressão estimada e implicações para o pós-ciclo
+
+MAPA DE INTERAÇÃO (texto):
+POTENCIALIZAM → [par A + par B → efeito]
+COMPETEM → [par A vs par B → efeito]
+COMPENSAM → [par A compensa efeito colateral de par B]]
+
+## VERTEX_OTIMIZACAO
+[Proposta de ajustes específicos com base na auditoria:
+MANTER: [o que manter exatamente como está + justificativa]
+AJUSTAR: [composto + dose nova sugerida + justificativa]
+REMOVER: [composto + justificativa clínica e farmacológica]
+ADICIONAR: [composto + dose + justificativa + por que essa fase]
+TIMING: [timing ideal de cada composto vs treino e alimentação]
+JANELA DE PICO: [janela de pico de cada composto e como sincronizar com o show]]
+
+## VERTEX_CONTENCAO
+[Análise completa de órgãos e sistemas em risco. Use EXATAMENTE este formato:
+
+CARDIOVASCULAR — SEMAFORO: 🟢 Baixo | 🟡 Moderado | 🔴 Alto
+- Perfil lipídico estimado (HDL/LDL)
+- Risco de hipertrofia ventricular esquerda
+- Pressão arterial esperada com esse stack
+- Recomendação: [Telmisartan / Nebivolol / Cardarine — dose e justificativa]
+
+HEPÁTICO — SEMAFORO: 🟢|🟡|🔴
+- Compostos 17-alfa-alquilados ou hepatotóxicos presentes
+- Suporte: TUDCA, NAC, Silimarina — doses e duração
+
+RENAL — SEMAFORO: 🟢|🟡|🔴
+- Carga renal estimada
+- Hidratação mínima recomendada (L/dia)
+- Suporte: Cranberry, N-Acetil Cisteína
+
+HEMATOLÓGICO — SEMAFORO: 🟢|🟡|🔴
+- Risco de eritrocitose (hematócrito elevado)
+- Frequência recomendada de hemograma
+- Se hematócrito > 52%: ação imediata recomendada
+
+ENDÓCRINO — SEMAFORO: 🟢|🟡|🔴
+- Supressão do eixo HPT estimada
+- Impacto na insulina e sensibilidade
+- Impacto na tireoide (se T3/T4 no protocolo)
+
+ARTICULAR/TENDINOSO — SEMAFORO: 🟢|🟡|🔴
+- Compostos que ressecam tendões (Tren/Winstrol/Stano) presentes?
+- Suporte: Colágeno tipo II, Glucosamina, Condroitina, EPA/DHA, MSM — doses
+- Exercícios a evitar/modificar com esse stack específico
+
+EXAMES RECOMENDADOS:
+- Lista completa com frequência
+- Valores de alerta que exigem intervenção imediata]
+
+## VERTEX_PERIODIZACAO
+[Cronograma semana a semana baseado nas semanas para o show.
+Formato:
+SEMANA -N: [ação / transição / ajuste]
+SEMANA -N-1: ...
+...
+SEMANA -1 (PEAK WEEK): [protocolo de peak week farmacológico — o que usar, quando, como]
+SEMANA 0 (SHOW): [timing do último pino + o que NUNCA fazer na semana do show]
+
+Incluir:
+- Quando fazer transições de compostos
+- Quando adicionar/remover compostos para o peak
+- Janela ideal para iniciar diuréticos (se aplicável — protocolo conservador)
+- Sincronização farmacológica com o pico visual]
+
+## VERTEX_SHAPE
+[Cruzar scores APEX com o protocolo farmacológico:
+- Por que o grupo X está com score baixo apesar do protocolo Y
+- Qual composto está ajudando OU prejudicando cada grupo muscular visualmente
+- O que o protocolo pode fazer pelo shape que o treino sozinho não consegue
+- Estimativa de melhora visual por grupo muscular SE protocolo for otimizado
+- Qual composto vai ter MAIOR impacto visual no palco para essa categoria]
+
+## VERTEX_VEREDICTO
+[
+CLASSIFICAÇÃO: [Iniciante | Intermediário | Avançado | Elite] — justificar
+SCORE DE OTIMIZAÇÃO: X/10 — quanto este protocolo aproveita o potencial do atleta
+MUDANÇA DE MAIOR IMPACTO: [a única alteração que geraria maior impacto imediato no shape]
+MENSAGEM DO COACH: [o que um coach de Olympia diria para este atleta agora — direto, técnico, sem floreio]
+PROJEÇÃO COMPARATIVA:
+- Cenário A (protocolo atual mantido): [como o atleta chega ao show]
+- Cenário B (protocolo otimizado): [como o atleta chega ao show com os ajustes]
+]
 ` : "[Nenhum protocolo informado]"}
 
 ## GANHA_PONTOS
@@ -273,6 +372,8 @@ const parseFarmMeta = (text: string) => ({
   choEstrategia: text.match(/CHO_ESTRATEGIA:\s*([^\n]+)/i)?.[1]?.trim(),
   gestaoE2: text.match(/GESTAO_E2:\s*([^\n]+)/i)?.[1]?.trim(),
   alertaCardio: text.match(/ALERTA_CARDIO:\s*([^\n]+)/i)?.[1]?.trim(),
+  classificacao: text.match(/CLASSIFICACAO_PROTOCOLO:\s*([^\n]+)/i)?.[1]?.trim(),
+  scoreOtim: text.match(/SCORE_OTIMIZACAO:\s*([\d.]+\s*\/\s*10|[\d.]+)/i)?.[1]?.trim(),
 });
 
 // ─── Parsers ─────────────────────────────────────────────────────
@@ -649,6 +750,7 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
   const [loading, setLoading] = useState(false);
   const [analysisResult, setAnalysisResult] = useState("");
   const [activeResultTab, setActiveResultTab] = useState("scores");
+  const [activeVertexTab, setActiveVertexTab] = useState<"auditoria"|"sinergia"|"contencao"|"periodizacao"|"veredicto">("auditoria");
   const [isDone, setIsDone] = useState(false);
   const [stepIdx, setStepIdx] = useState(0);
   const [savedAnalysisId, setSavedAnalysisId] = useState<string | null>(null);
@@ -1068,19 +1170,64 @@ Suporte em uso: ${suporte || "não informado"}` : "";
               <GenerateTrainingButton onClick={handleGenerateTraining} loading={generatingTraining} />
             </div>
           )}
-          {activeResultTab === "farmacologia" && hasFarmacologia && (
-            <div className="space-y-3">
-              <InfoBox color="#534AB7" text="💉 Análise Dr. VERTEX integrada — shape contextualizado pelo protocolo farmacológico ativo." />
-              <div className="flex flex-wrap gap-2">
-                {farmMeta.tdeeFator && <Pill label="TDEE fator" value={`×${farmMeta.tdeeFator}`} color="#534AB7" />}
-                {farmMeta.proteinaIdeal && <Pill label="Proteína" value={farmMeta.proteinaIdeal} color="#1DB87A" />}
-                {farmMeta.choEstrategia && <Pill label="CHO" value={farmMeta.choEstrategia} color="#C47A15" />}
-                {farmMeta.gestaoE2 && <Pill label="E2" value={farmMeta.gestaoE2} color="#E07030" />}
-                {farmMeta.alertaCardio && <Pill label="Cardio" value={farmMeta.alertaCardio} color="#D94040" />}
+          {activeResultTab === "farmacologia" && hasFarmacologia && (() => {
+            const vertexTabs: { key: typeof activeVertexTab; label: string; section: string; next: string; color: string; intro: string }[] = [
+              { key: "auditoria",    label: "🧪 Auditoria",        section: "VERTEX_AUDITORIA",   next: "VERTEX_SINERGIA",     color: "#534AB7", intro: "Composto a composto — status, dose, timing, sinergia, impacto no shape e red flags." },
+              { key: "sinergia",     label: "🔗 Sinergia",         section: "VERTEX_SINERGIA",    next: "VERTEX_OTIMIZACAO",   color: "#3B82F6", intro: "Stack como um todo — interações, redundâncias, gaps, ratio androgênico, perfil estrogênico e impacto no HPTA." },
+              { key: "contencao",    label: "🛡️ Contenção de Danos", section: "VERTEX_CONTENCAO",   next: "VERTEX_PERIODIZACAO", color: "#D94040", intro: "Sistemas orgânicos com semáforo de risco + protocolos de suporte e exames recomendados." },
+              { key: "periodizacao", label: "📅 Periodização",      section: "VERTEX_PERIODIZACAO", next: "VERTEX_SHAPE",        color: "#C47A15", intro: "Cronograma farmacológico semana a semana até o show, incluindo peak week." },
+              { key: "veredicto",    label: "🏆 Veredicto",         section: "VERTEX_VEREDICTO",   next: "GANHA_PONTOS",        color: "#FFB800", intro: "Classificação do protocolo, score de otimização e mensagem do Dr. VERTEX." },
+            ];
+            const otimizacao = parseSection(analysisResult, "VERTEX_OTIMIZACAO", "VERTEX_CONTENCAO");
+            const shape = parseSection(analysisResult, "VERTEX_SHAPE", "VERTEX_VEREDICTO");
+            const current = vertexTabs.find(t => t.key === activeVertexTab)!;
+            const currentBody = parseSection(analysisResult, current.section, current.next);
+            return (
+              <div className="space-y-3">
+                <InfoBox color="#534AB7" text="💉 Dr. VERTEX — coach farmacológico de elite. Análise técnica, sem julgamento, orientada a resultado máximo com menor risco." />
+
+                {/* Meta pills */}
+                <div className="flex flex-wrap gap-2">
+                  {farmMeta.classificacao && <Pill label="Protocolo" value={farmMeta.classificacao} color="#FFB800" />}
+                  {farmMeta.scoreOtim && <Pill label="Otimização" value={farmMeta.scoreOtim.includes("/") ? farmMeta.scoreOtim : `${farmMeta.scoreOtim}/10`} color="#534AB7" />}
+                  {farmMeta.tdeeFator && <Pill label="TDEE fator" value={`×${farmMeta.tdeeFator}`} color="#534AB7" />}
+                  {farmMeta.proteinaIdeal && <Pill label="Proteína" value={farmMeta.proteinaIdeal} color="#1DB87A" />}
+                  {farmMeta.choEstrategia && <Pill label="CHO" value={farmMeta.choEstrategia} color="#C47A15" />}
+                  {farmMeta.gestaoE2 && <Pill label="E2" value={farmMeta.gestaoE2} color="#E07030" />}
+                  {farmMeta.alertaCardio && <Pill label="Cardio" value={farmMeta.alertaCardio} color="#D94040" />}
+                </div>
+
+                {/* Sub-tabs */}
+                <div className="flex gap-1.5 overflow-x-auto pb-1 border-b border-border">
+                  {vertexTabs.map(t => (
+                    <button
+                      key={t.key}
+                      onClick={() => setActiveVertexTab(t.key)}
+                      className="px-3 py-2 text-[11px] font-semibold whitespace-nowrap rounded-t-lg transition-all"
+                      style={{
+                        color: activeVertexTab === t.key ? t.color : "hsl(var(--muted-foreground))",
+                        borderBottom: `2px solid ${activeVertexTab === t.key ? t.color : "transparent"}`,
+                      }}
+                    >
+                      {t.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Sub-tab content */}
+                <InfoBox color={current.color} text={current.intro} />
+                <Pre body={currentBody || "—"} />
+
+                {/* Extras — Otimização e Shape contextualizado sempre visíveis no fim */}
+                {activeVertexTab === "sinergia" && otimizacao && (
+                  <InfoBlock title="Otimização sugerida" body={otimizacao} accent="#1DB87A" />
+                )}
+                {activeVertexTab === "veredicto" && shape && (
+                  <InfoBlock title="Shape contextualizado pelo protocolo" body={shape} accent={cat.color} />
+                )}
               </div>
-              <Pre body={farmacologiaSection} />
-            </div>
-          )}
+            );
+          })()}
           {activeResultTab === "palco" && (
             <div className="space-y-3">
               <div className="grid md:grid-cols-2 gap-3">
