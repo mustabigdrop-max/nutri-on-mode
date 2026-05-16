@@ -1036,7 +1036,7 @@ Suporte em uso: ${suporte || "não informado"}` : "";
             <span className="text-[10px] font-bold uppercase tracking-wider">Veredicto APEX — O que falta para Top 5</span>
           </div>
           <div className="text-sm italic text-foreground whitespace-pre-wrap">
-            {parseSection(analysisResult, "VEREDICTO") || "—"}
+            {parseSection(analysisResult, "VEREDICTO") ? renderMd(parseSection(analysisResult, "VEREDICTO")) : "—"}
           </div>
         </div>
 
