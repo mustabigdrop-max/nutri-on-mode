@@ -318,38 +318,326 @@ const ApexPhdAnalysis = ({ posture, fms, rom, muscles, pain }: Props) => {
   const printRef = useRef<HTMLDivElement>(null);
 
   const exportPdf = async () => {
-    if (!printRef.current) return;
     setExporting(true);
     try {
-      // Aguarda render do conteúdo offscreen
-      await new Promise((r) => setTimeout(r, 250));
-      const canvas = await html2canvas(printRef.current, {
-        backgroundColor: "#03030a",
-        scale: 2,
-        useCORS: true,
-        logging: false,
-      });
-      const imgData = canvas.toDataURL("image/jpeg", 0.92);
-      const pdf = new jsPDF("p", "mm", "a4");
-      const pageW = pdf.internal.pageSize.getWidth();
-      const pageH = pdf.internal.pageSize.getHeight();
-      const imgW = pageW;
-      const imgH = (canvas.height * imgW) / canvas.width;
-      let heightLeft = imgH;
-      let position = 0;
-      pdf.addImage(imgData, "JPEG", 0, position, imgW, imgH);
-      heightLeft -= pageH;
-      while (heightLeft > 0) {
-        position = heightLeft - imgH;
-        pdf.addPage();
-        pdf.addImage(imgData, "JPEG", 0, position, imgW, imgH);
-        heightLeft -= pageH;
+      // Aguarda render do conteúdo offscreen (radar SVG precisa estar pronto)
+      await new Promise((r) => setTimeout(r, 350));
+
+      const pdf = new jsPDF({ orientation: "p", unit: "mm", format: "a4", compress: true });
+      const PW = pdf.internal.pageSize.getWidth();   // 210
+      const PH = pdf.internal.pageSize.getHeight();  // 297
+      const MX = 12;                                 // margem lateral
+      const MT = 14;                                 // margem topo
+      const CW = PW - MX * 2;
+      let y = MT;
+
+      // Cores (RGB)
+      const C_BG: [number, number, number] = [3, 3, 10];
+      const C_EM: [number, number, number] = [74, 222, 128];
+      const C_TX: [number, number, number] = [158, 197, 166];
+      const C_MT: [number, number, number] = [90, 122, 96];
+      const C_BD: [number, number, number] = [30, 60, 38];
+      const C_YL: [number, number, number] = [251, 191, 36];
+      const C_RD: [number, number, number] = [239, 68, 68];
+      const C_OFF: [number, number, number] = [20, 36, 24];
+
+      // Fundo preto da primeira página
+      const paintBg = () => {
+        pdf.setFillColor(...C_BG);
+        pdf.rect(0, 0, PW, PH, "F");
+      };
+      paintBg();
+
+      const ensure = (need: number) => {
+        if (y + need > PH - MT) {
+          pdf.addPage();
+          paintBg();
+          y = MT;
+        }
+      };
+      const hr = (color = C_BD) => {
+        pdf.setDrawColor(...color);
+        pdf.setLineWidth(0.2);
+        pdf.line(MX, y, MX + CW, y);
+        y += 3;
+      };
+      const text = (
+        s: string,
+        size: number,
+        color: [number, number, number],
+        opts: { x?: number; bold?: boolean; align?: "left" | "right" | "center" } = {}
+      ) => {
+        pdf.setFont("helvetica", opts.bold ? "bold" : "normal");
+        pdf.setFontSize(size);
+        pdf.setTextColor(...color);
+        pdf.text(s, opts.x ?? MX, y, { align: opts.align });
+      };
+      const sectionTitle = (s: string) => {
+        ensure(10);
+        text(s.toUpperCase(), 11, C_EM, { bold: true });
+        y += 2;
+        hr(C_EM);
+        y += 2;
+      };
+
+      // ─── HEADER ─────────────────────────────────────────────────────
+      text("APEX VISUAL INTELLIGENCE", 14, C_EM, { bold: true });
+      y += 5;
+      text("Relatório FMS + ROM · Análise Cinesiológica", 9, C_TX);
+      y += 4;
+      text(
+        `${category ? "Categoria: " + category + "  ·  " : ""}${new Date().toLocaleString("pt-BR")}`,
+        7.5,
+        C_MT
+      );
+      y += 4;
+      hr();
+      y += 2;
+
+      // ─── FMS ────────────────────────────────────────────────────────
+      sectionTitle("▸ Functional Movement Screen (FMS)");
+      const total = calcFmsTotal(fms);
+      const sem =
+        total >= 17
+          ? { c: C_EM, label: "VERDE · pronto para carga" }
+          : total >= 14
+          ? { c: C_YL, label: "AMARELO · cautela com compostos pesados" }
+          : { c: C_RD, label: "VERMELHO · risco 3× lesão (Cook 2006)" };
+
+      ensure(22);
+      // Bloco do score com semáforo (vetor: rect + texto)
+      pdf.setDrawColor(...sem.c);
+      pdf.setFillColor(sem.c[0], sem.c[1], sem.c[2]);
+      pdf.setLineWidth(0.3);
+      pdf.roundedRect(MX, y, 22, 16, 1.5, 1.5, "S");
+      pdf.setFillColor(sem.c[0], sem.c[1], sem.c[2]);
+      pdf.circle(MX + 19, y + 3, 1.4, "F");
+      pdf.setTextColor(...sem.c);
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(18);
+      pdf.text(String(total), MX + 11, y + 11, { align: "center" });
+      pdf.setFontSize(7);
+      pdf.setTextColor(...C_MT);
+      pdf.text("/ 21", MX + 11, y + 14.5, { align: "center" });
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(9);
+      pdf.setTextColor(...sem.c);
+      pdf.text(sem.label, MX + 26, y + 8);
+      pdf.setFont("helvetica", "normal");
+      pdf.setFontSize(7.5);
+      pdf.setTextColor(...C_TX);
+      pdf.text(
+        "Cutoff funcional: ≥17 (verde) · 14-16 (amarelo) · <14 (vermelho)",
+        MX + 26,
+        y + 13
+      );
+      y += 20;
+
+      // Barras 0-3 por teste (vetor)
+      ensure(8);
+      text("Score por teste (0-3)", 8, C_EM, { bold: true });
+      y += 4;
+      const tests = (Object.keys(FMS_TEST_LABELS) as (keyof FMSScores)[]).map((k) => ({
+        key: k,
+        label: FMS_TEST_LABELS[k],
+        score: fms[k],
+      }));
+      const labelW = 60;
+      const cellW = 7;
+      const cellH = 4;
+      const gap = 1;
+      for (const t of tests) {
+        ensure(cellH + 2);
+        const color =
+          t.score >= 3 ? C_EM : t.score >= 2 ? C_YL : t.score >= 1 ? C_RD : C_OFF;
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(7.5);
+        pdf.setTextColor(...C_TX);
+        pdf.text(t.label, MX, y + cellH - 0.8);
+        for (let n = 1; n <= 3; n++) {
+          const filled = n <= t.score;
+          pdf.setFillColor(...(filled ? color : C_OFF));
+          pdf.rect(MX + labelW + (n - 1) * (cellW + gap), y, cellW, cellH, "F");
+        }
+        pdf.setTextColor(...color);
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(7.5);
+        pdf.text(`${t.score}/3`, MX + labelW + 3 * (cellW + gap) + 3, y + cellH - 0.8);
+        y += cellH + 1.4;
       }
+      y += 2;
+
+      // Interpretação clínica — 3 menores
+      const lowest = [...tests].sort((a, b) => a.score - b.score).slice(0, 3);
+      ensure(8);
+      text("Interpretação clínica — pontos mais baixos", 8, C_EM, { bold: true });
+      y += 4;
+      for (const t of lowest) {
+        const c = t.score < 2 ? C_RD : C_YL;
+        ensure(10);
+        pdf.setFillColor(...c);
+        pdf.rect(MX, y, 1.2, 6, "F");
+        pdf.setTextColor(...c);
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(8);
+        pdf.text(`${t.label} · ${t.score}/3`, MX + 3, y + 2.6);
+        pdf.setTextColor(...C_TX);
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(7.3);
+        const note = pdf.splitTextToSize(FMS_CLINICAL_NOTE[t.key], CW - 4);
+        pdf.text(note, MX + 3, y + 6);
+        y += 6 + note.length * 3 + 1.5;
+      }
+
+      // Correlação com síndromes (Janda)
+      const synd = detectSyndromes(posture);
+      if (synd.length) {
+        ensure(8);
+        text("Correlação com disfunções (Janda)", 8, C_EM, { bold: true });
+        y += 4;
+        for (const s of synd) {
+          ensure(5);
+          pdf.setTextColor(...C_TX);
+          pdf.setFont("helvetica", "normal");
+          pdf.setFontSize(7.5);
+          pdf.text(`· ${s.name} → confirma achados de FMS (testes bilaterais/mobilidade)`, MX, y);
+          y += 4;
+        }
+      }
+
+      // ─── ROM ────────────────────────────────────────────────────────
+      pdf.addPage();
+      paintBg();
+      y = MT;
+      sectionTitle("▸ Range of Motion (ROM · AAOS)");
+
+      // RADAR VECTOR via svg2pdf (preferindo SVG)
+      const svgEl = printRef.current?.querySelector(
+        ".apex-radar-print svg"
+      ) as SVGSVGElement | null;
+      if (svgEl) {
+        ensure(110);
+        const svgW = CW;        // largura útil
+        const svgH = 105;       // altura no PDF
+        try {
+          await svg2pdf(svgEl, pdf, { x: MX, y, width: svgW, height: svgH });
+        } catch (err) {
+          console.warn("[svg2pdf radar] fallback to raster:", err);
+          const c = await html2canvas(svgEl.parentElement as HTMLElement, {
+            backgroundColor: "#03030a",
+            scale: 3,
+          });
+          pdf.addImage(c.toDataURL("image/png"), "PNG", MX, y, svgW, svgH);
+        }
+        y += svgH + 2;
+        pdf.setFontSize(6.5);
+        pdf.setTextColor(...C_MT);
+        pdf.text(
+          "Linha tracejada amarela = 100% da norma AAOS · área verde = ROM do atleta",
+          MX,
+          y
+        );
+        y += 5;
+      }
+
+      // Tabela ROM
+      ensure(8);
+      text("Tabela ROM vs Norma", 8, C_EM, { bold: true });
+      y += 4;
+      // Header
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(7);
+      pdf.setTextColor(...C_EM);
+      pdf.text("Articulação", MX, y);
+      pdf.text("Norma", MX + 80, y, { align: "right" });
+      pdf.text("Mín", MX + 100, y, { align: "right" });
+      pdf.text("Atleta", MX + 125, y, { align: "right" });
+      pdf.text("Status", MX + CW, y, { align: "right" });
+      y += 1.5;
+      hr(C_BD);
+      pdf.setFont("helvetica", "normal");
+      for (const r of ROM_LIST) {
+        ensure(5);
+        const v = rom[r.key];
+        const status =
+          v === null ? "—" : v < r.min ? "CRÍTICO" : v < r.normal * 0.9 ? "LIMITADO" : "OK";
+        const c =
+          v === null
+            ? C_MT
+            : v < r.min
+            ? C_RD
+            : v < r.normal * 0.9
+            ? C_YL
+            : C_EM;
+        pdf.setFontSize(7.5);
+        pdf.setTextColor(...C_TX);
+        pdf.text(r.label, MX, y);
+        pdf.setTextColor(...C_MT);
+        pdf.text(`${r.normal}°`, MX + 80, y, { align: "right" });
+        pdf.text(`${r.min}°`, MX + 100, y, { align: "right" });
+        pdf.setTextColor(...c);
+        pdf.setFont("helvetica", "bold");
+        pdf.text(v == null ? "—" : `${v}°`, MX + 125, y, { align: "right" });
+        pdf.text(status, MX + CW, y, { align: "right" });
+        pdf.setFont("helvetica", "normal");
+        y += 4.2;
+      }
+      y += 3;
+
+      // Recomendações
+      const flagged = ROM_LIST.filter((r) => {
+        const v = rom[r.key];
+        return v !== null && v < r.min;
+      });
+      if (flagged.length) {
+        ensure(8);
+        text("Recomendações de ganho de amplitude", 8, C_EM, { bold: true });
+        y += 4;
+        for (const r of flagged) {
+          const v = rom[r.key]!;
+          const deficit = r.min - v;
+          ensure(14);
+          pdf.setFillColor(...C_RD);
+          pdf.rect(MX, y, 1.2, 10, "F");
+          pdf.setTextColor(...C_RD);
+          pdf.setFont("helvetica", "bold");
+          pdf.setFontSize(8);
+          pdf.text(`⚠ ${r.label} · ${v}° (déficit ${deficit}° abaixo do mínimo funcional)`, MX + 3, y + 2.6);
+          pdf.setTextColor(...C_TX);
+          pdf.setFont("helvetica", "normal");
+          pdf.setFontSize(7.3);
+          const rec = pdf.splitTextToSize(
+            "Protocolo: PNF contrai-relaxa 3×30s + alongamento estático 2×60s diário · reavaliar em 3 semanas. Bloqueio temporário em compostos que exijam essa amplitude.",
+            CW - 4
+          );
+          pdf.text(rec, MX + 3, y + 6);
+          y += 6 + rec.length * 3 + 2;
+        }
+      }
+
+      // Rodapé em todas as páginas
+      const pageCount = pdf.getNumberOfPages();
+      for (let i = 1; i <= pageCount; i++) {
+        pdf.setPage(i);
+        pdf.setDrawColor(...C_BD);
+        pdf.setLineWidth(0.15);
+        pdf.line(MX, PH - 9, PW - MX, PH - 9);
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(6.5);
+        pdf.setTextColor(...C_MT);
+        pdf.text(
+          "APEX PhD · análise cinesiológica · uso clínico/coaching · não substitui avaliação médica",
+          MX,
+          PH - 5
+        );
+        pdf.text(`${i}/${pageCount}`, PW - MX, PH - 5, { align: "right" });
+      }
+
       const stamp = new Date().toISOString().slice(0, 10);
       pdf.save(`apex-fms-rom-${stamp}.pdf`);
-    } catch (e) {
+    } catch (e: any) {
       console.error("[APEX export PDF]", e);
-      setError("Falha ao gerar PDF");
+      setError(e?.message || "Falha ao gerar PDF");
     } finally {
       setExporting(false);
     }
