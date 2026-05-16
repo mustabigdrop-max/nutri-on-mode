@@ -554,8 +554,10 @@ function enforceVolumeLimits(protocol: any, toleranceFactor = 1.10): { protocol:
 }
 
 function buildStructuredPrompt(data: any): string {
-  const { phase, muscles, level, weeks, days, clientName, equipment, injuries, sessionDuration, stressLevel, supplements, weakPoints, specificGoal, cardio, tab } = data;
+  const { phase, muscles, level, weeks, days, clientName, equipment, injuries, sessionDuration, stressLevel, supplements, weakPoints, specificGoal, cardio, tab, apexContext } = data;
   const muscleList = Array.isArray(muscles) ? muscles.join(", ") : muscles;
+
+  const apexBlock = apexContext ? `\n\n=== DIAGNÓSTICO APEX ATIVO ===\n${apexContext}\n=== FIM DIAGNÓSTICO APEX ===\n` : "";
 
   if (tab === "protocolo") {
     return `Gere um PROTOCOLO DE TREINO DE ELITE para o cliente abaixo. Retorne EXCLUSIVAMENTE um JSON válido, sem markdown, sem texto antes ou depois.
@@ -575,6 +577,7 @@ PERFIL DO CLIENTE:
 - Suplementos: ${supplements || "Nenhum"}
 - Pontos fracos: ${weakPoints || "Nenhum especificado"}
 - Objetivo específico: ${specificGoal || phase}
+${apexBlock}
 
 INSTRUÇÕES DE PRESCRIÇÃO:
 1. ANALISE o perfil completo antes de decidir qualquer coisa.
