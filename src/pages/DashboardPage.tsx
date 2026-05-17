@@ -16,6 +16,7 @@ import CockpitTopbar from "@/components/dashboard/CockpitTopbar";
 import CockpitLeftRail from "@/components/dashboard/CockpitLeftRail";
 import CockpitRightRail from "@/components/dashboard/CockpitRightRail";
 import CoachNotificationsCard from "@/components/dashboard/CoachNotificationsCard";
+import MyProfessionalCard from "@/components/dashboard/MyProfessionalCard";
 import AthleteCompetitionCard from "@/components/dashboard/AthleteCompetitionCard";
 import CoachCompetitionShortcut from "@/components/dashboard/CoachCompetitionShortcut";
 import ReengagementPopup from "@/components/dashboard/ReengagementPopup";
@@ -718,6 +719,7 @@ const DashboardPage = () => {
         >
           <div className="max-w-lg mx-auto px-4 pt-4">
             <TrialBanner />
+        <MyProfessionalCard />
         <CoachNotificationsCard />
         {hasCoachAccess && new Date().getDay() === 1 && (
           <button
