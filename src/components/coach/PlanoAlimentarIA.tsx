@@ -26,53 +26,60 @@ import NutrientDensityPanel from "@/components/coach/NutrientDensityPanel";
 import Glut4SyncCard from "@/components/meal/Glut4SyncCard";
 import AdherenceModal from "@/components/meal/AdherenceModal";
 
-// ─── Design tokens (alinhados ao nutriON: dark bg, green accent) ──────────────
+// ─── Design tokens — Jarvis (dark, holographic, gold/cyan) ────────────────────
 const T = {
-  bg:      "#0a0f0a",
-  bg2:     "#111811",
-  bg3:     "#161e16",
-  card:    "#0f1a0f",
-  border:  "#1f2e1f",
-  border2: "#2a3d2a",
-  green:   "#4ade80",
-  greenDim:"#22c55e",
-  greenBg: "#0d1f0d",
-  text:    "#e8f0e8",
-  muted:   "#6b8f6b",
-  muted2:  "#4a634a",
-  red:     "#f87171",
-  amber:   "#fbbf24",
-  blue:    "#60a5fa",
+  bg:      "#020205",
+  bg2:     "#06060c",
+  bg3:     "#020205",
+  card:    "#06060c",
+  border:  "#B8922A18",
+  border2: "#B8922A22",
+  green:   "#B8922A",   // gold = primary accent (kept as `green` to avoid breaking refs)
+  greenDim:"#8a6e1f",
+  greenBg: "#B8922A0A",
+  text:    "#F5F0E8",
+  muted:   "#6b6258",
+  muted2:  "#2A2A2A",
+  red:     "#ff4444",
+  amber:   "#D4A732",
+  blue:    "#00D4FF",
+  cyan:    "#00D4FF",
+  gold:    "#B8922A",
+  fontDisplay: "'Rajdhani', sans-serif",
+  fontMono: "'Space Mono', monospace",
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 const Label = ({ children, required }: { children: React.ReactNode; required?: boolean }) => (
-  <label style={{ fontSize: 11, fontWeight: 600, color: T.muted, textTransform: "uppercase" as const, letterSpacing: "0.08em", display: "block", marginBottom: 6 }}>
-    {children}{required && <span style={{ color: T.green, marginLeft: 2 }}>*</span>}
+  <label style={{ fontFamily: T.fontMono, fontSize: 9, color: "#B8922A88", textTransform: "uppercase" as const, letterSpacing: "0.2em", display: "block", marginBottom: 6 }}>
+    {children}{required && <span style={{ color: T.red, marginLeft: 3 }}>*</span>}
   </label>
 );
 
 const InputField = ({ style, ...props }: React.InputHTMLAttributes<HTMLInputElement> & { style?: React.CSSProperties }) => (
   <input {...props} style={{
-    width: "100%", background: T.bg3, border: `1px solid ${T.border2}`,
-    borderRadius: 8, padding: "9px 12px", color: T.text, fontSize: 13,
-    outline: "none", transition: "border-color .2s",
-    fontFamily: "inherit", ...style
+    width: "100%", background: T.bg, border: `1px solid ${T.border}`,
+    borderRadius: 0, padding: "10px 14px", color: T.text, fontSize: 12,
+    outline: "none", transition: "border-color .2s, box-shadow .2s",
+    fontFamily: T.fontMono, ...style
   }}
-    onFocus={e => (e.target as HTMLInputElement).style.borderColor = T.green}
-    onBlur={e => (e.target as HTMLInputElement).style.borderColor = T.border2}
+    onFocus={e => { (e.target as HTMLInputElement).style.borderColor = "#B8922A55"; (e.target as HTMLInputElement).style.boxShadow = "0 0 0 1px #B8922A18"; }}
+    onBlur={e => { (e.target as HTMLInputElement).style.borderColor = T.border; (e.target as HTMLInputElement).style.boxShadow = "none"; }}
   />
 );
 
 const SelectField = ({ children, style, ...props }: React.SelectHTMLAttributes<HTMLSelectElement> & { style?: React.CSSProperties }) => (
   <select {...props} style={{
-    width: "100%", background: T.bg3, border: `1px solid ${T.border2}`,
-    borderRadius: 8, padding: "9px 12px", color: T.text, fontSize: 13,
-    outline: "none", transition: "border-color .2s", fontFamily: "inherit",
-    cursor: "pointer", ...style
+    width: "100%", background: T.bg, border: `1px solid ${T.border}`,
+    borderRadius: 0, padding: "10px 14px", color: T.text, fontSize: 12,
+    outline: "none", transition: "border-color .2s, box-shadow .2s", fontFamily: T.fontMono,
+    cursor: "pointer", appearance: "none", WebkitAppearance: "none" as any, MozAppearance: "none" as any,
+    backgroundImage: "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23B8922A' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>\")",
+    backgroundRepeat: "no-repeat", backgroundPosition: "right 12px center", paddingRight: 34,
+    ...style
   }}
-    onFocus={e => (e.target as HTMLSelectElement).style.borderColor = T.green}
-    onBlur={e => (e.target as HTMLSelectElement).style.borderColor = T.border2}
+    onFocus={e => { (e.target as HTMLSelectElement).style.borderColor = "#B8922A55"; (e.target as HTMLSelectElement).style.boxShadow = "0 0 0 1px #B8922A18"; }}
+    onBlur={e => { (e.target as HTMLSelectElement).style.borderColor = T.border; (e.target as HTMLSelectElement).style.boxShadow = "none"; }}
   >
     {children}
   </select>
@@ -80,35 +87,39 @@ const SelectField = ({ children, style, ...props }: React.SelectHTMLAttributes<H
 
 const TextareaField = ({ style, ...props }: React.TextareaHTMLAttributes<HTMLTextAreaElement> & { style?: React.CSSProperties }) => (
   <textarea {...props} style={{
-    width: "100%", background: T.bg3, border: `1px solid ${T.border2}`,
-    borderRadius: 8, padding: "9px 12px", color: T.text, fontSize: 13,
-    outline: "none", resize: "vertical" as const, minHeight: 80, fontFamily: "inherit",
-    transition: "border-color .2s", ...style
+    width: "100%", background: T.bg, border: `1px solid ${T.border}`,
+    borderRadius: 0, padding: "12px 14px", color: T.text, fontSize: 11,
+    outline: "none", resize: "vertical" as const, minHeight: 80, fontFamily: T.fontMono,
+    lineHeight: 1.8, transition: "border-color .2s, box-shadow .2s", ...style
   }}
-    onFocus={e => (e.target as HTMLTextAreaElement).style.borderColor = T.green}
-    onBlur={e => (e.target as HTMLTextAreaElement).style.borderColor = T.border2}
+    onFocus={e => { (e.target as HTMLTextAreaElement).style.borderColor = "#B8922A55"; (e.target as HTMLTextAreaElement).style.boxShadow = "0 0 0 1px #B8922A18"; }}
+    onBlur={e => { (e.target as HTMLTextAreaElement).style.borderColor = T.border; (e.target as HTMLTextAreaElement).style.boxShadow = "none"; }}
   />
 );
 
 const Tag = ({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) => (
   <button onClick={onClick} style={{
-    padding: "5px 12px", borderRadius: 999, fontSize: 12, cursor: "pointer",
-    border: `1px solid ${active ? T.green : T.border2}`,
+    padding: "5px 12px", borderRadius: 2, fontSize: 10, cursor: "pointer",
+    border: `1px solid ${active ? T.gold : "#B8922A22"}`,
     background: active ? T.greenBg : "transparent",
-    color: active ? T.green : T.muted,
-    transition: "all .15s", fontFamily: "inherit"
+    color: active ? T.gold : "#B8922A55",
+    transition: "all .2s", fontFamily: T.fontMono, textTransform: "uppercase" as const, letterSpacing: "0.15em",
   }}>{label}</button>
 );
 
-const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
-  <div style={{ marginBottom: 28 }}>
-    <div style={{ fontSize: 11, fontWeight: 700, color: T.green, textTransform: "uppercase" as const, letterSpacing: "0.1em", marginBottom: 16, display: "flex", alignItems: "center", gap: 8 }}>
-      <div style={{ width: 16, height: 1, background: T.green }} />
-      {title}
+const Section = ({ title, children, icon, accent }: { title: string; children: React.ReactNode; icon?: React.ReactNode; accent?: "gold" | "cyan" }) => {
+  const color = accent === "cyan" ? T.cyan : T.gold;
+  return (
+    <div style={{ marginBottom: 28 }}>
+      <div style={{ fontFamily: T.fontMono, fontSize: 10, fontWeight: 700, color, textTransform: "uppercase" as const, letterSpacing: "0.24em", marginBottom: 16, display: "flex", alignItems: "center", gap: 10 }}>
+        <div style={{ width: 24, height: 2, background: color }} />
+        {icon}
+        <span>{title}</span>
+      </div>
+      {children}
     </div>
-    {children}
-  </div>
-);
+  );
+};
 
 // ─── Validação de timing peri-workout vs schedule ─────────────────────────────
 // Compara o horário de cada refeição peri-workout (pré/intra/pós) gerada pela IA
