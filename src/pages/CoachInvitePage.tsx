@@ -19,6 +19,8 @@ const CoachInvitePage = () => {
   const [coachName, setCoachName] = useState("");
   const [accepting, setAccepting] = useState(false);
   const [accepted, setAccepted] = useState(false);
+  const [inviteKind, setInviteKind] = useState<"professional" | "legacy">("legacy");
+  const [inviteMessage, setInviteMessage] = useState<string | null>(null);
 
   // Registration form (if not logged in)
   const [name, setName] = useState("");
