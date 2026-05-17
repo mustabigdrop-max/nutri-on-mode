@@ -1242,6 +1242,68 @@ export default function PlanoAlimentarIA() {
     compostosAtivos: [] as string[],
   });
 
+  // ─── Campos ADITIVOS (novos blocos /coach/plano-alimentar) ─────────────────
+  const [categoriaEsporte, setCategoriaEsporte] = useState<string>("");
+  const [recuperacao, setRecuperacao] = useState<RecuperacaoCfg>(RECUPERACAO_DEFAULT);
+  const [intraTreino, setIntraTreino] = useState<IntraTreinoCfg>(INTRA_DEFAULT);
+  const [condicoesClinicas, setCondicoesClinicas] = useState<string[]>([]);
+  const [pdfCfg, setPdfCfg] = useState<PdfCfg>(PDF_DEFAULT);
+  const [modoExtras, setModoExtras] = useState<ModoEspecialExtras>(MODO_EXTRAS_DEFAULT);
+  const [identidade, setIdentidade] = useState<IdentidadeProfissional>(IDENTIDADE_DEFAULT);
+  const [coachTemplates, setCoachTemplates] = useState<CoachTemplate[]>([]);
+
+  // Hidratar do localStorage uma vez
+  useEffect(() => {
+    try {
+      const id = localStorage.getItem("nutrion_coach_identity");
+      if (id) setIdentidade({ ...IDENTIDADE_DEFAULT, ...JSON.parse(id) });
+      const tpl = localStorage.getItem("nutrion_coach_templates");
+      if (tpl) setCoachTemplates(JSON.parse(tpl));
+    } catch {}
+  }, []);
+  useEffect(() => {
+    try { localStorage.setItem("nutrion_coach_identity", JSON.stringify(identidade)); } catch {}
+  }, [identidade]);
+  const persistTemplates = (next: CoachTemplate[]) => {
+    setCoachTemplates(next);
+    try { localStorage.setItem("nutrion_coach_templates", JSON.stringify(next)); } catch {}
+  };
+  const handleSaveTemplate = (nome: string) => {
+    const snapshot = {
+      form, categoriaEsporte, recuperacao, intraTreino, condicoesClinicas, pdfCfg, modoExtras,
+    };
+    persistTemplates([...coachTemplates, { id: crypto.randomUUID(), nome, criadoEm: new Date().toISOString(), snapshot }].slice(0, 10));
+  };
+  const handleApplyTemplate = (t: CoachTemplate) => {
+    const s = t.snapshot || {};
+    if (s.form) setForm((f: any) => ({ ...f, ...s.form }));
+    if (s.categoriaEsporte !== undefined) setCategoriaEsporte(s.categoriaEsporte);
+    if (s.recuperacao) setRecuperacao(s.recuperacao);
+    if (s.intraTreino) setIntraTreino(s.intraTreino);
+    if (s.condicoesClinicas) setCondicoesClinicas(s.condicoesClinicas);
+    if (s.pdfCfg) setPdfCfg(s.pdfCfg);
+    if (s.modoExtras) setModoExtras(s.modoExtras);
+  };
+  const handleDeleteTemplate = (id: string) => persistTemplates(coachTemplates.filter(t => t.id !== id));
+
+  // String aditiva injetada no contexto clínico para a edge function
+  const buildContextoAditivo = () => {
+    const parts: string[] = [];
+    if (categoriaEsporte) parts.push(`ESPORTE/MODALIDADE: ${categoriaEsporte}`);
+    if (condicoesClinicas.length) parts.push(`CONDIÇÕES CLÍNICAS: ${condicoesClinicas.join(", ")}`);
+    if (recuperacao.estrategias.length) parts.push(`ESTRATÉGIAS DE RECUPERAÇÃO: ${recuperacao.estrategias.join(", ")}`);
+    if (recuperacao.nivelEstresse) parts.push(`NÍVEL DE ESTRESSE: ${recuperacao.nivelEstresse}`);
+    if (recuperacao.hrvMonitorado && recuperacao.hrvMedio) parts.push(`HRV (7d): ${recuperacao.hrvMedio} ms`);
+    if (recuperacao.lesaoAtiva && recuperacao.lesaoDesc) parts.push(`LESÃO ATIVA: ${recuperacao.lesaoDesc}`);
+    if (intraTreino.ativo) parts.push(`NUTRIÇÃO INTRA-TREINO: tipos=${intraTreino.tipos.join("|")} cho=${intraTreino.choHora}g/h sódio=${intraTreino.sodioLitro}mg/L`);
+    parts.push(`IDIOMA DO PLANO: ${pdfCfg.idioma}`);
+    parts.push(`FORMATO MEDIDAS: ${pdfCfg.formato}`);
+    parts.push(`NÍVEL DE DETALHE: ${pdfCfg.detalhe}`);
+    if (pdfCfg.incluir.length) parts.push(`INCLUIR NO PLANO: ${pdfCfg.incluir.join(", ")}`);
+    if (Object.keys(modoExtras).length) parts.push(`MODO ESPECIAL EXTRAS: ${JSON.stringify(modoExtras)}`);
+    return parts.length ? `\n\nCONTEXTO ADITIVO (NOVOS CAMPOS COACH):\n${parts.join("\n")}` : "";
+  };
+
   // Lista canônica Dr. VERTEX para o multi-select de Compostos Ativos
   const COMPOSTOS_VERTEX = [
     "Ipamorelin", "CJC-1295", "MK-677 (Ibutamoren)", "Tesamorelin",
