@@ -5001,7 +5001,7 @@ export default function PlanoAlimentarIA() {
 
       <div style={{ maxWidth: 860, margin: "0 auto", padding: "32px 20px 120px" }}>
         {/* Dados do paciente */}
-        <Section title="Dados do paciente" icon={<UserIcon size={12} strokeWidth={2} color={T.gold} />}>
+        <Section title="Dados do paciente" icon={<UserIcon size={12} strokeWidth={2} color={T.emerald} />}>
           <div style={{ marginBottom: 14 }}>
             <Label required>Nome do paciente</Label>
             <InputField placeholder="Nome do paciente" value={form.nome} onChange={e => set("nome", e.target.value)} />
