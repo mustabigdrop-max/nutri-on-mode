@@ -9,6 +9,7 @@ import { ApexSymbol } from "@/components/coach/ApexSymbol";
 import ApexEvolucao from "@/components/apex/ApexEvolucao";
 import ApexVisualOverlay, { LandmarkBundle, PhotoBundle, LandmarkView } from "@/components/coach/ApexVisualOverlay";
 import VertexEnhancedView from "@/components/coach/VertexEnhancedView";
+import { ApexScoreGauge, InsightCard, PosturaCards, CorrecoesCards, ProtocoloCards } from "@/components/coach/ApexResultCards";
 import FeminineCyclePhaseBanner from "@/components/coach/FeminineCyclePhaseBanner";
 import { isFeminine, getCyclePhase, getCycleDayCount, normalizeFeminineCategory, FEMININE_CATEGORIES } from "@/lib/feminine";
 import { ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Legend, Tooltip as RTooltip } from "recharts";
@@ -547,6 +548,7 @@ const stripMd = (s: string): string =>
     .replace(/(^|[^*])\*([^*\n]+)\*/g, "$1$2")
     .replace(/_([^_\n]+)_/g, "$1")
     .replace(/`([^`]+)`/g, "$1")
+    .replace(/\*\*+/g, "") // remove any orphan ** sequences
     .trim();
 
 function renderMd(text: string): React.ReactNode {
@@ -621,38 +623,7 @@ function apexBand(score: number): { label: string; color: string } {
 function ApexGeneralScoreCard({ segments, cat }: { segments: SegItem[]; cat: CategoryDef }) {
   if (!segments.length) return null;
   const score = computeApexGeneral(segments, cat);
-  const band = apexBand(score);
-  // Semicircular arc using SVG
-  const r = 70, cx = 90, cy = 90;
-  const start = Math.PI, end = 0;
-  const t = end + (start - end) * (1 - score / 100);
-  const x1 = cx + r * Math.cos(start);
-  const y1 = cy + r * Math.sin(start);
-  const x2 = cx + r * Math.cos(t);
-  const y2 = cy + r * Math.sin(t);
-  const largeArc = score > 50 ? 1 : 0;
-  return (
-    <div
-      className="rounded-xl p-4 border flex items-center gap-5"
-      style={{ background: `linear-gradient(135deg, ${band.color}22, transparent)`, borderColor: `${band.color}55` }}
-    >
-      <svg width="180" height="100" viewBox="0 0 180 100" className="shrink-0">
-        <path d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`} fill="none" stroke="hsl(var(--muted))" strokeWidth="10" />
-        {score > 0 && (
-          <path d={`M ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2}`} fill="none" stroke={band.color} strokeWidth="10" strokeLinecap="round" />
-        )}
-        <text x={cx} y={cy - 6} textAnchor="middle" fontSize="28" fontWeight="900" fill="hsl(var(--foreground))">{score}</text>
-        <text x={cx} y={cy + 10} textAnchor="middle" fontSize="10" fill="hsl(var(--muted-foreground))">/100</text>
-      </svg>
-      <div className="flex-1 min-w-0">
-        <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">APEX Score Geral</div>
-        <div className="text-2xl font-black mt-1" style={{ color: band.color }}>{band.label}</div>
-        <div className="text-xs text-muted-foreground mt-1">
-          Média ponderada — grupos de alta prioridade pesam 2×.
-        </div>
-      </div>
-    </div>
-  );
+  return <ApexScoreGauge score={score} />;
 }
 
 function InsightHighlights({ segments }: { segments: SegItem[] }) {
