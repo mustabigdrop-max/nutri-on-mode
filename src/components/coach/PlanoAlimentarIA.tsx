@@ -5342,7 +5342,7 @@ export default function PlanoAlimentarIA() {
 
         {/* ─── CONTEXTO CLÍNICO · PROTOCOLO DO COACH (NOVO) ─── */}
         <Section title="Contexto clínico · Protocolo do coach" icon={<Brain size={12} strokeWidth={2} color={T.emerald} />} accent="emerald">
-          <div style={{ fontFamily: T.fontMono, fontSize: 9, color: "#555555", letterSpacing: "0.18em", textTransform: "uppercase", marginTop: -10, marginBottom: 14 }}>
+          <div style={{ fontFamily: T.fontMono, fontSize: 12, color: "#888888", letterSpacing: "0.12em", textTransform: "uppercase", marginTop: -10, marginBottom: 14, lineHeight: 1.6 }}>
             Descreva estratégias clínicas, protocolos de nutrição esportiva e observações do paciente. A IA incorporará tudo no plano gerado.
           </div>
 
@@ -5374,7 +5374,7 @@ export default function PlanoAlimentarIA() {
                   width: "100%", minHeight: 140, resize: "vertical" as const,
                   background: T.bg, border: "1px solid #00C89618", borderRadius: 0,
                   padding: "12px 14px", color: T.text, fontFamily: T.fontMono,
-                  fontSize: 11, lineHeight: 1.8, outline: "none",
+                  fontSize: 14, lineHeight: 1.7, outline: "none",
                   transition: "border-color .2s, box-shadow .2s",
                 }}
                 onFocus={(e) => { e.currentTarget.style.borderColor = "#00C89644"; e.currentTarget.style.boxShadow = "0 0 0 1px #00C89612"; }}
@@ -5382,7 +5382,7 @@ export default function PlanoAlimentarIA() {
               />
               <div style={{
                 position: "absolute", bottom: 6, right: 10,
-                fontFamily: T.fontMono, fontSize: 9, letterSpacing: "0.12em",
+                fontFamily: T.fontMono, fontSize: 11, letterSpacing: "0.10em",
                 color: contextoClinico.length > 1400 ? T.red : contextoClinico.length > 1200 ? T.gold : "#666666",
                 pointerEvents: "none",
               }}>
