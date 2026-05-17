@@ -1364,6 +1364,16 @@ const DashboardPage = () => {
             <p className="text-[10px] font-mono text-primary mt-0.5">⚡ NutriSync: +{kcalDiff} kcal ajustado</p>
           )}
         </motion.div>
+          </div>
+        </motion.div>
+
+        <CockpitRightRail
+          apexScore={aiScore}
+          adherencePct={Math.round(((kcalPercent + protPercent + carbPercent + fatPercent) / 4) || 0)}
+          proteinDaysHit={Math.min(profile.streak_days || 0, 7)}
+          chronologicalAge={chronoAge}
+          biologicalAge={Math.max(chronoAge - Math.round((aiScore - 50) / 10), 18)}
+        />
       </div>
 
       <SosHungerInterceptor />
