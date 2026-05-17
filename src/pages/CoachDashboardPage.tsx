@@ -48,6 +48,7 @@ const CoachDashboardPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { profile, loading: profileLoading } = useCoachProfile();
+  const { professionalType } = useUserRole();
   const [patients, setPatients] = useState<PatientRow[]>([]);
   const [partners, setPartners] = useState<any[]>([]);
   const [alerts, setAlerts] = useState<any[]>([]);
