@@ -5106,14 +5106,14 @@ export default function PlanoAlimentarIA() {
 
         {/* ─── CONTEXTO CLÍNICO · PROTOCOLO DO COACH (NOVO) ─── */}
         <Section title="Contexto clínico · Protocolo do coach" icon={<Brain size={12} strokeWidth={2} color={T.cyan} />} accent="cyan">
-          <div style={{ fontFamily: T.fontMono, fontSize: 9, color: "#2A2A2A", letterSpacing: "0.18em", textTransform: "uppercase", marginTop: -10, marginBottom: 14 }}>
+          <div style={{ fontFamily: T.fontMono, fontSize: 9, color: "#555555", letterSpacing: "0.18em", textTransform: "uppercase", marginTop: -10, marginBottom: 14 }}>
             Descreva estratégias clínicas, protocolos de nutrição esportiva e observações do paciente. A IA incorporará tudo no plano gerado.
           </div>
 
           <div style={{
             position: "relative",
             border: "1px solid #00D4FF12",
-            borderTop: "2px solid #00D4FF22",
+            borderTop: "2px solid #00D4FF",
             background: "#00D4FF03",
             padding: 16,
           }}>
@@ -5121,7 +5121,7 @@ export default function PlanoAlimentarIA() {
             <div style={{
               position: "absolute", top: 8, right: 10,
               display: "inline-flex", alignItems: "center", gap: 6,
-              border: "1px solid #00D4FF22", color: "#00D4FF66",
+              border: "1px solid #00D4FF44", color: "#00D4FF",
               padding: "2px 8px", borderRadius: 2,
               fontFamily: T.fontMono, fontSize: 8, letterSpacing: "0.18em", textTransform: "uppercase",
             }}>
@@ -5147,7 +5147,7 @@ export default function PlanoAlimentarIA() {
               <div style={{
                 position: "absolute", bottom: 6, right: 10,
                 fontFamily: T.fontMono, fontSize: 9, letterSpacing: "0.12em",
-                color: contextoClinico.length > 1400 ? T.red : contextoClinico.length > 1200 ? T.gold : "#2A2A2A",
+                color: contextoClinico.length > 1400 ? T.red : contextoClinico.length > 1200 ? T.gold : "#666666",
                 pointerEvents: "none",
               }}>
                 {contextoClinico.length} / 1500 caracteres
@@ -5223,7 +5223,7 @@ export default function PlanoAlimentarIA() {
                   style={{
                     display: "inline-flex", alignItems: "center", gap: 6,
                     background: "transparent", border: "none", padding: 0, cursor: "pointer",
-                    fontFamily: T.fontMono, fontSize: 9, color: "#6b6258", letterSpacing: "0.2em", textTransform: "uppercase",
+                    fontFamily: T.fontMono, fontSize: 9, color: "#666666", letterSpacing: "0.2em", textTransform: "uppercase",
                   }}
                 >
                   <ChevronDown size={11} style={{ transform: contextoHistoryOpen ? "rotate(0deg)" : "rotate(-90deg)", transition: "transform .2s" }} />
@@ -5238,13 +5238,13 @@ export default function PlanoAlimentarIA() {
                       }}>
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{
-                            fontFamily: T.fontMono, fontSize: 10, color: "#3A3A3A", lineHeight: 1.5,
+                            fontFamily: T.fontMono, fontSize: 10, color: "#666666", lineHeight: 1.5,
                             display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as const,
                             overflow: "hidden", textOverflow: "ellipsis",
                           }}>
                             {h.texto}
                           </div>
-                          <div style={{ fontFamily: T.fontMono, fontSize: 8, color: "#2A2A2A", marginTop: 4, letterSpacing: "0.12em" }}>
+                          <div style={{ fontFamily: T.fontMono, fontSize: 8, color: "#666666", marginTop: 4, letterSpacing: "0.12em" }}>
                             {h.paciente ? `${h.paciente.toUpperCase()} · ` : ""}{new Date(h.data).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "2-digit" })}
                           </div>
                         </div>
