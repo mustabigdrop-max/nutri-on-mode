@@ -124,6 +124,45 @@ const CoachSettingsPage = () => {
           </CardContent>
         </Card>
 
+        {/* Identidade Profissional */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Building2 className="w-4 h-4 text-primary" /> Identidade Profissional
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div>
+              <Label>Nome da clínica / consultório</Label>
+              <Input value={form.clinic_name} onChange={e => setForm(p => ({ ...p, clinic_name: e.target.value }))} placeholder="Ex.: Clínica NutriON" />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Cidade</Label>
+                <Input value={form.city} onChange={e => setForm(p => ({ ...p, city: e.target.value }))} placeholder="São Paulo" />
+              </div>
+              <div>
+                <Label>País</Label>
+                <Input value={form.country} onChange={e => setForm(p => ({ ...p, country: e.target.value }))} />
+              </div>
+            </div>
+            <div>
+              <Label>URL do logotipo</Label>
+              <Input value={form.logo_url} onChange={e => setForm(p => ({ ...p, logo_url: e.target.value }))} placeholder="https://..." />
+              {form.logo_url && (
+                <img src={form.logo_url} alt="Logo" className="mt-2 h-16 w-16 object-contain rounded border border-border" />
+              )}
+            </div>
+            <div className="flex items-center justify-between pt-2">
+              <div>
+                <Label>Exibir dados nos planos enviados</Label>
+                <p className="text-xs text-muted-foreground">Logo, nome e clínica aparecem nos PDFs de planos.</p>
+              </div>
+              <Switch checked={form.show_on_plan} onCheckedChange={v => setForm(p => ({ ...p, show_on_plan: v }))} />
+            </div>
+          </CardContent>
+        </Card>
+
         {/* White Label */}
         {profile?.plan === "white_label" && (
           <Card className="border-primary/30">
