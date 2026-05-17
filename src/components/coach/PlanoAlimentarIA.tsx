@@ -5465,6 +5465,9 @@ export default function PlanoAlimentarIA() {
           </div>
         </Section>
 
+        {/* ─── BLOCO 1 — CATEGORIA DE ESPORTE ─── */}
+        <BlocoCategoriaEsporte value={categoriaEsporte} onChange={setCategoriaEsporte} />
+
         {/* ─── CONTEXTO CLÍNICO · PROTOCOLO DO COACH (NOVO) ─── */}
         <Section title="Contexto clínico · Protocolo do coach" icon={<Brain size={12} strokeWidth={2} color={T.emerald} />} accent="emerald">
           <div style={{ fontFamily: T.fontMono, fontSize: 12, color: "#888888", letterSpacing: "0.12em", textTransform: "uppercase", marginTop: -10, marginBottom: 14, lineHeight: 1.6 }}>
