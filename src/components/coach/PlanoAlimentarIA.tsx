@@ -6286,10 +6286,10 @@ export default function PlanoAlimentarIA() {
           display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12,
         }}>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: T.text, display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ fontSize: 16, fontWeight: 700, color: T.text, display: "flex", alignItems: "center", gap: 8 }}>
               🌅 Cronobiologia Nutricional — Relógio Circadiano Aplicado
             </div>
-            <div style={{ fontSize: 11, color: T.muted, marginTop: 4, lineHeight: 1.5 }}>
+            <div style={{ fontSize: 13, color: T.muted, marginTop: 6, lineHeight: 1.55 }}>
               Distribui macros conforme janelas circadianas: CHO complexos pela manhã (pico de sensibilidade insulínica), refeição maior 12–14h (pico metabólico), proteína de absorção lenta + triptofano à noite. Sincroniza com cronotipo, cortisol e melatonina.
             </div>
           </div>
