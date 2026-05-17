@@ -24,6 +24,9 @@ import CoachHub from "@/pages/CoachHub";
 import ApexVisualDashboard from "@/components/coach/ApexVisualDashboard";
 import FeminineCycleBadge from "@/components/coach/FeminineCycleBadge";
 import { isFeminine, getCyclePhase, getCycleDayCount } from "@/lib/feminine";
+import ProfessionalTypeBadge from "@/components/coach/ProfessionalTypeBadge";
+import ProfessionalQuickActions from "@/components/coach/ProfessionalQuickActions";
+import { useUserRole } from "@/hooks/useUserRole";
 
 interface PatientRow {
   id: string;
