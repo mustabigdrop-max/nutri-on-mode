@@ -1142,19 +1142,19 @@ Suporte em uso: ${suporte || "não informado"}` : "";
           {activeResultTab === "postura" && (
             <div className="space-y-3">
               <InfoBox color="#D94040" text="Desvios posturais detectados — músculo dominante vs inibido e impacto no palco." />
-              <Pre body={parseSection(analysisResult, "POSTURA_DESVIOS", "CORRECOES_POSTURAIS")} />
+              <PosturaCards body={parseSection(analysisResult, "POSTURA_DESVIOS", "CORRECOES_POSTURAIS")} />
             </div>
           )}
           {activeResultTab === "correcoes" && (
             <div className="space-y-3">
               <InfoBox color="#0F8A63" text="Para cada desvio: alongamento, ativação e cue de postura." />
-              <Pre body={parseSection(analysisResult, "CORRECOES_POSTURAIS", "PONTOS_FRACOS_PROTOCOLO")} />
+              <CorrecoesCards body={parseSection(analysisResult, "CORRECOES_POSTURAIS", "PONTOS_FRACOS_PROTOCOLO")} />
             </div>
           )}
           {activeResultTab === "protocolo" && (
             <div className="space-y-3">
               <InfoBox color="#C47A15" text="Diagnóstico + causa + exercícios + frequência + tempo de resposta." />
-              <Pre body={parseSection(analysisResult, "PONTOS_FRACOS_PROTOCOLO", "CONDICIONAMENTO")} />
+              <ProtocoloCards body={parseSection(analysisResult, "PONTOS_FRACOS_PROTOCOLO", "CONDICIONAMENTO")} />
               <GenerateTrainingButton onClick={handleGenerateTraining} loading={generatingTraining} />
             </div>
           )}
