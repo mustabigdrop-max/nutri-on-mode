@@ -7,7 +7,9 @@ import { Label } from "@/components/ui/label";
 import { useCoachProfile } from "@/hooks/useCoachProfile";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { Copy, Loader2, Mail, Link2, UserPlus } from "lucide-react";
+import { Copy, Loader2, Mail, Link2, UserPlus, Crown } from "lucide-react";
+import { useCoachTier } from "@/hooks/useCoachTier";
+import { useNavigate } from "react-router-dom";
 
 type Props = {
   trigger?: React.ReactNode;
@@ -15,6 +17,8 @@ type Props = {
 
 const InviteClientDialog = ({ trigger }: Props) => {
   const { profile } = useCoachProfile();
+  const { canAddMore, currentClients, maxClients, isCoachPro, isAdmin } = useCoachTier();
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
@@ -77,8 +81,28 @@ const InviteClientDialog = ({ trigger }: Props) => {
           </DialogTitle>
         </DialogHeader>
 
-        {!generatedCode ? (
+        {!canAddMore ? (
+          <div className="space-y-4 text-center py-4">
+            <div className="w-14 h-14 mx-auto rounded-full bg-yellow-500/15 flex items-center justify-center">
+              <Crown className="w-7 h-7 text-yellow-400" />
+            </div>
+            <div>
+              <p className="font-semibold text-foreground">Limite Coach Free atingido</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                Você tem {currentClients}/{maxClients} clientes. Faça upgrade para Coach Pro e tenha clientes ilimitados.
+              </p>
+            </div>
+            <Button className="w-full" onClick={() => { setOpen(false); navigate("/coach/settings"); }}>
+              Fazer Upgrade
+            </Button>
+          </div>
+        ) : !generatedCode ? (
           <div className="space-y-4">
+            {!isCoachPro && !isAdmin && (
+              <div className="text-[11px] text-muted-foreground bg-muted/40 rounded px-2 py-1.5 font-mono">
+                {currentClients}/{maxClients} clientes · Coach Free
+              </div>
+            )}
             <div>
               <Label>Email do cliente (opcional)</Label>
               <Input

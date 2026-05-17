@@ -27,6 +27,7 @@ import { isFeminine, getCyclePhase, getCycleDayCount } from "@/lib/feminine";
 import ProfessionalTypeBadge from "@/components/coach/ProfessionalTypeBadge";
 import ProfessionalQuickActions from "@/components/coach/ProfessionalQuickActions";
 import InviteClientDialog from "@/components/coach/InviteClientDialog";
+import CoachUpgradeGate from "@/components/coach/CoachUpgradeGate";
 import { useUserRole } from "@/hooks/useUserRole";
 
 interface PatientRow {
@@ -327,6 +328,7 @@ const CoachDashboardPage = () => {
         {professionalType && (
           <div className="space-y-3">
             <ProfessionalQuickActions professionalType={professionalType} />
+            <CoachUpgradeGate />
             <div className="flex justify-end">
               <InviteClientDialog />
             </div>
