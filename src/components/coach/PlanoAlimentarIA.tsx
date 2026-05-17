@@ -5421,7 +5421,7 @@ export default function PlanoAlimentarIA() {
                 })}
               </div>
               {/* Grupo 2 — Nutrição Esportiva */}
-              <div style={{ fontFamily: T.fontMono, fontSize: 5, color: "#00C89666", letterSpacing: "0.22em", textTransform: "uppercase", marginBottom: 8 }}>
+              <div style={{ fontFamily: T.fontMono, fontSize: 10, color: "#00C896", letterSpacing: "0.22em", textTransform: "uppercase", marginBottom: 8 }}>
                 NUTRIÇÃO ESPORTIVA
               </div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
