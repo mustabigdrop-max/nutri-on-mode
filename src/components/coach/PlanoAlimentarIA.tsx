@@ -948,6 +948,39 @@ export default function PlanoAlimentarIA() {
   const [selectedPartner, setSelectedPartner] = useState<string>("");
   const [sendObs, setSendObs] = useState("");
   const [sending, setSending] = useState(false);
+  // ─── Contexto Clínico do Coach (novo campo aditivo) ─────────────────────────
+  const [contextoClinico, setContextoClinico] = useState("");
+  const [contextoHistoryOpen, setContextoHistoryOpen] = useState(false);
+  const [contextoHistory, setContextoHistory] = useState<Array<{ texto: string; data: string; paciente?: string }>>(() => {
+    try {
+      const raw = localStorage.getItem("nutrion_coach_contexts");
+      return raw ? JSON.parse(raw) : [];
+    } catch { return []; }
+  });
+  const CONTEXT_CHIPS = [
+    "Resistência insulínica", "Carb cycling", "Alta atividade NEAT",
+    "Retenção hídrica", "Atleta competição", "GLP-1 ativo",
+    "Protocolo cetogênico", "Refeição snap",
+  ];
+  const [activeChips, setActiveChips] = useState<string[]>([]);
+  const toggleContextChip = (chip: string) => {
+    setActiveChips((prev) => prev.includes(chip) ? prev.filter(c => c !== chip) : [...prev, chip]);
+    setContextoClinico((prev) => {
+      if (prev.includes(chip)) return prev;
+      const sep = prev.trim() ? (prev.trim().endsWith(".") ? " " : ". ") : "";
+      return `${prev}${sep}${chip}`.slice(0, 1500);
+    });
+  };
+  const saveContextoToHistory = (pacienteName?: string) => {
+    const txt = contextoClinico.trim();
+    if (!txt) return;
+    try {
+      const entry = { texto: txt, data: new Date().toISOString(), paciente: pacienteName || "" };
+      const next = [entry, ...contextoHistory.filter(h => h.texto !== txt)].slice(0, 5);
+      setContextoHistory(next);
+      localStorage.setItem("nutrion_coach_contexts", JSON.stringify(next));
+    } catch { /* noop */ }
+  };
   // Histórico
   const [showHistory, setShowHistory] = useState(false);
   // Substituições NUTRION (módulo embutido)
