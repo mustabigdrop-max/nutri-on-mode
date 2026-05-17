@@ -5190,7 +5190,7 @@ export default function PlanoAlimentarIA() {
                 })}
               </div>
               {/* Grupo 2 — Nutrição Esportiva */}
-              <div style={{ fontFamily: T.fontMono, fontSize: 5, color: "#00D4FF33", letterSpacing: "0.22em", textTransform: "uppercase", marginBottom: 8 }}>
+              <div style={{ fontFamily: T.fontMono, fontSize: 5, color: "#00C89666", letterSpacing: "0.22em", textTransform: "uppercase", marginBottom: 8 }}>
                 NUTRIÇÃO ESPORTIVA
               </div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
@@ -5202,15 +5202,15 @@ export default function PlanoAlimentarIA() {
                       type="button"
                       onClick={() => toggleContextChip(chip)}
                       style={{
-                        border: `1px solid ${isActive ? "#00D4FF44" : "#00D4FF18"}`,
-                        background: isActive ? "#00D4FF05" : "transparent",
-                        color: isActive ? "#00D4FF" : "#00D4FF44",
+                        border: `1px solid ${isActive ? "#00C896" : "#00C89622"}`,
+                        background: isActive ? "#00C89608" : "transparent",
+                        color: isActive ? "#00C896" : "#00C89666",
                         fontFamily: T.fontMono, fontSize: 6, letterSpacing: "0.14em",
                         textTransform: "uppercase", padding: "3px 10px", borderRadius: 0,
                         cursor: "pointer", transition: "all .2s",
                       }}
-                      onMouseEnter={(e) => { if (!isActive) { e.currentTarget.style.borderColor = "#00D4FF44"; e.currentTarget.style.color = "#00D4FF"; e.currentTarget.style.background = "#00D4FF05"; } }}
-                      onMouseLeave={(e) => { if (!isActive) { e.currentTarget.style.borderColor = "#00D4FF18"; e.currentTarget.style.color = "#00D4FF44"; e.currentTarget.style.background = "transparent"; } }}
+                      onMouseEnter={(e) => { if (!isActive) { e.currentTarget.style.borderColor = "#00C896"; e.currentTarget.style.color = "#00C896"; e.currentTarget.style.background = "#00C89608"; } }}
+                      onMouseLeave={(e) => { if (!isActive) { e.currentTarget.style.borderColor = "#00C89622"; e.currentTarget.style.color = "#00C89666"; e.currentTarget.style.background = "transparent"; } }}
                     >
                       {chip}
                     </button>
