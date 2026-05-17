@@ -5352,6 +5352,10 @@ export default function PlanoAlimentarIA() {
           );
         })()}
 
+        {/* ─── BLOCOS ADITIVOS: Templates + Identidade Profissional ─── */}
+        <BlocoTemplates templates={coachTemplates} onApply={handleApplyTemplate} onSaveNew={handleSaveTemplate} onDelete={handleDeleteTemplate} />
+        <BlocoIdentidade value={identidade} onChange={setIdentidade} />
+
         {/* Dados do paciente */}
         <Section title="Dados do paciente" icon={<UserIcon size={12} strokeWidth={2} color={T.emerald} />}>
           <div style={{ marginBottom: 14 }}>
