@@ -275,6 +275,7 @@ const CoachDashboardPage = () => {
                 <Badge variant="outline" className="text-xs">
                   {profile.plan === "white_label" ? "White Label" : "Coach Pro"}
                 </Badge>
+                <ProfessionalTypeBadge type={professionalType} />
               </h1>
               <p className="text-sm text-muted-foreground">{profile.professional_name}</p>
             </div>
