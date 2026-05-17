@@ -323,7 +323,14 @@ const CoachDashboardPage = () => {
         </div>
 
         {/* Professional Quick Actions (filtradas por professional_type) */}
-        {professionalType && <ProfessionalQuickActions professionalType={professionalType} />}
+        {professionalType && (
+          <div className="space-y-3">
+            <ProfessionalQuickActions professionalType={professionalType} />
+            <div className="flex justify-end">
+              <InviteClientDialog />
+            </div>
+          </div>
+        )}
 
         {alunosAtivos >= maxAlunos - 2 && (
           <Card className="border-yellow-500/50 bg-yellow-500/10">
