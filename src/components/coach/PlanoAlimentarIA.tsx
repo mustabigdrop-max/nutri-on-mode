@@ -5110,27 +5110,27 @@ export default function PlanoAlimentarIA() {
         </Section>
 
         {/* ─── CONTEXTO CLÍNICO · PROTOCOLO DO COACH (NOVO) ─── */}
-        <Section title="Contexto clínico · Protocolo do coach" icon={<Brain size={12} strokeWidth={2} color={T.cyan} />} accent="cyan">
+        <Section title="Contexto clínico · Protocolo do coach" icon={<Brain size={12} strokeWidth={2} color={T.emerald} />} accent="emerald">
           <div style={{ fontFamily: T.fontMono, fontSize: 9, color: "#555555", letterSpacing: "0.18em", textTransform: "uppercase", marginTop: -10, marginBottom: 14 }}>
             Descreva estratégias clínicas, protocolos de nutrição esportiva e observações do paciente. A IA incorporará tudo no plano gerado.
           </div>
 
           <div style={{
             position: "relative",
-            border: "1px solid #00D4FF12",
-            borderTop: "2px solid #00D4FF",
-            background: "#00D4FF03",
+            border: "1px solid #00C89618",
+            borderLeft: "2px solid #00C896",
+            background: "#00C89606",
             padding: 16,
           }}>
             {/* Tag IA CONTEXTO ATIVO */}
             <div style={{
               position: "absolute", top: 8, right: 10,
               display: "inline-flex", alignItems: "center", gap: 6,
-              border: "1px solid #00D4FF44", color: "#00D4FF",
+              border: "1px solid #00C89633", color: "#00C896",
               padding: "2px 8px", borderRadius: 2,
               fontFamily: T.fontMono, fontSize: 8, letterSpacing: "0.18em", textTransform: "uppercase",
             }}>
-              <span style={{ width: 5, height: 5, borderRadius: "50%", background: T.cyan, boxShadow: "0 0 6px #00D4FF", animation: "pulse 1.4s ease-in-out infinite" }} />
+              <span style={{ width: 5, height: 5, borderRadius: "50%", background: T.emerald, boxShadow: "0 0 6px #00C896", animation: "pulse 1.4s ease-in-out infinite" }} />
               IA Contexto Ativo
             </div>
 
@@ -5141,13 +5141,13 @@ export default function PlanoAlimentarIA() {
                 placeholder="Ex: Paciente tem resistência à insulina — priorizar janela pré-treino com carbo de baixo IG. Protocolo GLUT-4 Sync ativo. Creatina 5g + leucina 3g pós-treino. Refeed semanal às sextas. Nutrição circadiana — carbo concentrado pré e pós-treino. mTOR pós-treino com proteína de rápida absorção. Evitar glúten por sensibilidade relatada..."
                 style={{
                   width: "100%", minHeight: 140, resize: "vertical" as const,
-                  background: T.bg, border: "1px solid #00D4FF18", borderRadius: 0,
+                  background: T.bg, border: "1px solid #00C89618", borderRadius: 0,
                   padding: "12px 14px", color: T.text, fontFamily: T.fontMono,
                   fontSize: 11, lineHeight: 1.8, outline: "none",
                   transition: "border-color .2s, box-shadow .2s",
                 }}
-                onFocus={(e) => { e.currentTarget.style.borderColor = "#00D4FF44"; e.currentTarget.style.boxShadow = "0 0 0 1px #00D4FF12"; }}
-                onBlur={(e) => { e.currentTarget.style.borderColor = "#00D4FF18"; e.currentTarget.style.boxShadow = "none"; }}
+                onFocus={(e) => { e.currentTarget.style.borderColor = "#00C89644"; e.currentTarget.style.boxShadow = "0 0 0 1px #00C89612"; }}
+                onBlur={(e) => { e.currentTarget.style.borderColor = "#00C89618"; e.currentTarget.style.boxShadow = "none"; }}
               />
               <div style={{
                 position: "absolute", bottom: 6, right: 10,
