@@ -1419,6 +1419,8 @@ export default function PlanoAlimentarIA() {
           cycling_carbo: form.cyclingCarbo,
           cronobiologia_aplicada: form.cronobiologiaAtiva,
           hidratacao_farmacologica: form.hidratacaoFarmacologica,
+          clima_hidratacao: form.climaHidratacao,
+          usa_diuretico: form.usaDiuretico,
           modo_economico: modoEcon,
           medidas_caseiras: form.medidasCaseiras,
           medidas_preferencias: form.medidasCaseiras ? form.medidasPrefs : null,
