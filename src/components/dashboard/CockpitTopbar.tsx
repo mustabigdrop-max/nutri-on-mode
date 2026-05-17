@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { useLocation, useNavigate } from "react-router-dom";
 import { LogOut } from "lucide-react";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
 
 interface CockpitTopbarProps {
   phaseLabel?: string;
