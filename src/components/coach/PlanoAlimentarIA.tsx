@@ -6741,13 +6741,13 @@ export default function PlanoAlimentarIA() {
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
               <div style={{ flex: 1 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <span style={{ fontSize: 14 }}>🕐</span>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: cronoCircadiano ? "#60a5fa" : T.text }}>
+                  <span style={{ fontSize: 18 }}>🕐</span>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: cronoCircadiano ? "#60a5fa" : T.text }}>
                     Crononutrição Circadiana Avançada
                   </div>
-                  <span style={{ fontSize: 9, padding: "2px 6px", borderRadius: 4, background: "#1e3a8a", color: "#bfdbfe", fontWeight: 700, letterSpacing: "0.05em" }}>DIMENSÃO 2</span>
+                  <span style={{ fontSize: 11, padding: "3px 8px", borderRadius: 4, background: "#1e3a8a", color: "#bfdbfe", fontWeight: 700, letterSpacing: "0.05em" }}>DIMENSÃO 2</span>
                 </div>
-                <div style={{ fontSize: 10.5, color: T.muted, marginTop: 4, lineHeight: 1.5 }}>
+                <div style={{ fontSize: 13, color: T.muted, marginTop: 6, lineHeight: 1.55 }}>
                   Sincroniza distribuição calórica com cortisol, insulina e GH. Peri-treino calculado dinamicamente do TrainingON.
                 </div>
               </div>
