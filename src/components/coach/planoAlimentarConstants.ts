@@ -106,6 +106,18 @@ export const CATEGORIAS_ESPORTE: EsporteGroup[] = [
       { v: "calistenia", l: "Calistenia", protocolo: PROT(
         "Razão peso/força. Proteína 1.8–2.2 g/kg. Carbo moderado. Foco em recomposição corporal.",
         ["peso/força", "recomposição"]) },
+      { v: "ginastica_artistica", l: "Ginástica Artística", protocolo: PROT(
+        "Periodização por ciclo olímpico e temporada de competições. Alta demanda energética com predominância anaeróbica alática. Controle rigoroso de peso corporal sem comprometer força relativa. Proteína elevada para recuperação muscular e prevenção de fraturas por estresse. Densidade óssea prioritária — cálcio, vitamina D e K2 integrados. Carboidrato periodizado por intensidade de treino. Hidratação monitorada por sessão.",
+        ["força relativa", "densidade óssea", "peso controlado", "periodização olímpica", "recuperação articular"]) },
+      { v: "ginastica_ritmica", l: "Ginástica Rítmica", protocolo: PROT(
+        "Controle extremo de composição corporal com preservação de massa magra. Restrição calórica monitorada — risco elevado de RED-S e amenorreia. Ferro e ferritina prioritários. Alta flexibilidade metabólica. Carboidrato estratégico pré-apresentação. Protocolo anti-inflamatório integrado. Monitoramento hormonal contínuo recomendado.",
+        ["RED-S", "amenorreia", "ferro/ferritina", "composição corporal", "anti-inflamatório", "pré-apresentação"]) },
+      { v: "ginastica_aerobica", l: "Ginástica Aeróbica", protocolo: PROT(
+        "Alta demanda cardiovascular com componente de força explosiva. Carboidrato como combustível principal — periodização por intensidade. GLUT-4 Sync ativo pré e pós-treino. Recuperação muscular rápida entre séries de competição. Eletrólitos intra-treino. Antioxidantes para controle de estresse oxidativo elevado.",
+        ["GLUT-4", "eletrólitos", "explosivo", "antioxidantes", "cardiovascular", "periodização"]) },
+      { v: "parkour_street_workout", l: "Parkour / Street Workout", protocolo: PROT(
+        "Força relativa máxima com controle de peso corporal. Alta demanda neurológica — colina e ômega-3 prioritários. Recuperação de tendões e articulações: colágeno hidrolisado + vitamina C. Proteína distribuída para síntese muscular contínua. Carboidrato pré-sessão para potência de movimento. Hidratação por ambiente (treino outdoor).",
+        ["força relativa", "tendões", "colágeno", "neurológico", "outdoor", "peso corporal"]) },
     ],
   },
   {

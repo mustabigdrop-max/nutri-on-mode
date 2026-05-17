@@ -262,6 +262,25 @@ export function BlocoCategoriaEsporte({
           </div>
         </div>
       )}
+      {value === "ginastica_ritmica" && (
+        <div style={{
+          marginTop: 12,
+          padding: "10px 12px",
+          border: "1px solid #ff444422",
+          background: "#ff44440A",
+          display: "flex",
+          alignItems: "flex-start",
+          gap: 8,
+        }}>
+          <AlertTriangle size={14} color={T.red} style={{ marginTop: 1, flexShrink: 0 }} />
+          <span style={{
+            fontFamily: T.fontMono, fontSize: 7, color: T.red,
+            textTransform: "uppercase", letterSpacing: "0.18em", lineHeight: 1.6,
+          }}>
+            ATENÇÃO: Ginástica Rítmica tem alto risco de RED-S, amenorreia e transtornos alimentares. A IA aplicará protocolo de proteção energética mínima de 45kcal/kg de massa magra.
+          </span>
+        </div>
+      )}
     </SectionBox>
   );
 }
