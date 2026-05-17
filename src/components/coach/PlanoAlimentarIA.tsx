@@ -6632,11 +6632,11 @@ export default function PlanoAlimentarIA() {
         {/* ========== MODO ESPECIAL (pré-geração) — Fase G ========== */}
         <div id="modo-especial-form" style={{ marginBottom: 18, padding: 16, borderRadius: 12, background: T.bg2, border: `1px solid ${T.border2}` }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-            <span style={{ fontSize: 16 }}>⚙️</span>
-            <div style={{ fontSize: 13, fontWeight: 700, color: T.text }}>Modo Especial</div>
-            <span style={{ fontSize: 10, color: T.muted, fontStyle: "italic" }}>(aplicado ao gerar o plano)</span>
+            <span style={{ fontSize: 20 }}>⚙️</span>
+            <div style={{ fontSize: 16, fontWeight: 700, color: T.text }}>Modo Especial</div>
+            <span style={{ fontSize: 12, color: T.muted, fontStyle: "italic" }}>(aplicado ao gerar o plano)</span>
           </div>
-          <div style={{ fontSize: 11, color: T.muted, marginBottom: 12, lineHeight: 1.5 }}>
+          <div style={{ fontSize: 13, color: T.muted, marginBottom: 12, lineHeight: 1.55 }}>
             Ative um protocolo específico para que a IA aplique macros, timing, suplementação e alertas adequados.
           </div>
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
