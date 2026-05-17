@@ -34,6 +34,28 @@ const CoachInvitePage = () => {
   }, [token]);
 
   const validateInvite = async () => {
+    // Try new professional_invites first
+    const { data: profInvite } = await supabase
+      .from("professional_invites")
+      .select("*, coach_profiles:coach_profile_id(professional_name, professional_type)")
+      .eq("invite_code", token!)
+      .eq("status", "pending")
+      .maybeSingle();
+
+    if (profInvite) {
+      if (new Date(profInvite.expires_at) < new Date()) {
+        setInviteValid(false);
+        return;
+      }
+      setInviteKind("professional");
+      setInviteMessage(profInvite.message ?? null);
+      const cp: any = (profInvite as any).coach_profiles;
+      setCoachName(cp?.professional_name || "seu Profissional");
+      setInviteValid(true);
+      return;
+    }
+
+    // Fallback: legacy coach_convites
     const { data, error } = await supabase
       .from("coach_convites")
       .select("*, coach_profiles:coach_id(professional_name)")
@@ -51,8 +73,7 @@ const CoachInvitePage = () => {
       return;
     }
 
-    // coach_profiles is joined via coach_id = user_id, but RLS might not allow this
-    // We'll get coach name from the accept response instead
+    setInviteKind("legacy");
     setCoachName("seu Coach");
     setInviteValid(true);
   };
