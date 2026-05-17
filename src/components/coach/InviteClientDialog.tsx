@@ -7,7 +7,9 @@ import { Label } from "@/components/ui/label";
 import { useCoachProfile } from "@/hooks/useCoachProfile";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { Copy, Loader2, Mail, Link2, UserPlus } from "lucide-react";
+import { Copy, Loader2, Mail, Link2, UserPlus, Crown } from "lucide-react";
+import { useCoachTier } from "@/hooks/useCoachTier";
+import { useNavigate } from "react-router-dom";
 
 type Props = {
   trigger?: React.ReactNode;
@@ -15,6 +17,8 @@ type Props = {
 
 const InviteClientDialog = ({ trigger }: Props) => {
   const { profile } = useCoachProfile();
+  const { canAddMore, currentClients, maxClients, isCoachPro, isAdmin } = useCoachTier();
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
