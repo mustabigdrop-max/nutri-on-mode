@@ -6103,10 +6103,10 @@ export default function PlanoAlimentarIA() {
         }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: form.glut4Enabled ? 14 : 0 }}>
             <div>
-              <div style={{ fontSize: 13, fontWeight: 700, color: T.text, display: "flex", alignItems: "center", gap: 8 }}>
+              <div style={{ fontSize: 16, fontWeight: 700, color: T.text, display: "flex", alignItems: "center", gap: 8 }}>
                 ⚡ Priorizar GLUT-4 Pós-Treino
               </div>
-              <div style={{ fontSize: 11, color: T.muted, marginTop: 4 }}>
+              <div style={{ fontSize: 13, color: T.muted, marginTop: 6, lineHeight: 1.55 }}>
                 Janela fisiológica de translocação do GLUT-4 — CHO isolado, zero gordura, zero proteína completa.
               </div>
             </div>
