@@ -6224,10 +6224,10 @@ export default function PlanoAlimentarIA() {
           display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12,
         }}>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: T.text, display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ fontSize: 16, fontWeight: 700, color: T.text, display: "flex", alignItems: "center", gap: 8 }}>
               🦠 Protocolo Microbiota Ativo
             </div>
-            <div style={{ fontSize: 11, color: T.muted, marginTop: 4, lineHeight: 1.5 }}>
+            <div style={{ fontSize: 13, color: T.muted, marginTop: 6, lineHeight: 1.55 }}>
               Inclui fermentado diário, combinações simbióticas e prebióticos estratégicos em cada refeição.
             </div>
           </div>
