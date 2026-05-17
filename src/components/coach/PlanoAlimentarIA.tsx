@@ -1368,6 +1368,11 @@ export default function PlanoAlimentarIA() {
     const { data, error: fnError } = await supabase.functions.invoke("generate-coach-meal-plan", {
       body: {
         ...form,
+        contexto_clinico: contextoClinico?.trim() || null,
+        contextoClinico: contextoClinico?.trim() || null,
+        contexto_clinico_prompt: contextoClinico?.trim()
+          ? `\n\nCONTEXTO CLÍNICO DO COACH:\n${contextoClinico.trim()}`
+          : "",
         compostos_ativos: form.compostosAtivos || [],
         modo_especial: modoEspecial,
         fase_ciclo: modoEspecial === "feminino" ? faseCiclo : undefined,
