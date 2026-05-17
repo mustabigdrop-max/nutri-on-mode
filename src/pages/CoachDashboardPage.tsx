@@ -26,6 +26,7 @@ import FeminineCycleBadge from "@/components/coach/FeminineCycleBadge";
 import { isFeminine, getCyclePhase, getCycleDayCount } from "@/lib/feminine";
 import ProfessionalTypeBadge from "@/components/coach/ProfessionalTypeBadge";
 import ProfessionalQuickActions from "@/components/coach/ProfessionalQuickActions";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
 import InviteClientDialog from "@/components/coach/InviteClientDialog";
 import CoachUpgradeGate from "@/components/coach/CoachUpgradeGate";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -289,14 +290,7 @@ const CoachDashboardPage = () => {
             <Button variant="outline" size="icon" onClick={() => navigate("/coach/settings")}>
               <Settings className="w-4 h-4" />
             </Button>
-            <Button variant="outline" size="icon" className="relative">
-              <Bell className="w-4 h-4" />
-              {alerts.length > 0 && (
-                <span className="absolute -top-1 -right-1 w-4 h-4 bg-destructive rounded-full text-[10px] text-destructive-foreground flex items-center justify-center">
-                  {alerts.length}
-                </span>
-              )}
-            </Button>
+            <NotificationBell />
           </div>
         </div>
       </header>
