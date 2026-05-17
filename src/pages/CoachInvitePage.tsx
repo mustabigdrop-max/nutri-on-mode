@@ -19,6 +19,8 @@ const CoachInvitePage = () => {
   const [coachName, setCoachName] = useState("");
   const [accepting, setAccepting] = useState(false);
   const [accepted, setAccepted] = useState(false);
+  const [inviteKind, setInviteKind] = useState<"professional" | "legacy">("legacy");
+  const [inviteMessage, setInviteMessage] = useState<string | null>(null);
 
   // Registration form (if not logged in)
   const [name, setName] = useState("");
@@ -32,6 +34,28 @@ const CoachInvitePage = () => {
   }, [token]);
 
   const validateInvite = async () => {
+    // Try new professional_invites first
+    const { data: profInvite } = await supabase
+      .from("professional_invites")
+      .select("*, coach_profiles:coach_profile_id(professional_name, professional_type)")
+      .eq("invite_code", token!)
+      .eq("status", "pending")
+      .maybeSingle();
+
+    if (profInvite) {
+      if (new Date(profInvite.expires_at) < new Date()) {
+        setInviteValid(false);
+        return;
+      }
+      setInviteKind("professional");
+      setInviteMessage(profInvite.message ?? null);
+      const cp: any = (profInvite as any).coach_profiles;
+      setCoachName(cp?.professional_name || "seu Profissional");
+      setInviteValid(true);
+      return;
+    }
+
+    // Fallback: legacy coach_convites
     const { data, error } = await supabase
       .from("coach_convites")
       .select("*, coach_profiles:coach_id(professional_name)")
@@ -49,8 +73,7 @@ const CoachInvitePage = () => {
       return;
     }
 
-    // coach_profiles is joined via coach_id = user_id, but RLS might not allow this
-    // We'll get coach name from the accept response instead
+    setInviteKind("legacy");
     setCoachName("seu Coach");
     setInviteValid(true);
   };
@@ -60,16 +83,16 @@ const CoachInvitePage = () => {
     setAccepting(true);
 
     try {
-      const { data, error } = await supabase.functions.invoke("accept-coach-invite", {
-        body: { invite_token: token },
-      });
+      const fnName = inviteKind === "professional" ? "accept-professional-invite" : "accept-coach-invite";
+      const body = inviteKind === "professional" ? { invite_code: token } : { invite_token: token };
+      const { data, error } = await supabase.functions.invoke(fnName, { body });
 
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
 
       setAccepted(true);
-      setCoachName(data.coach_name || "seu Coach");
-      toast({ title: "Convite aceito! 🎉", description: `Você agora é aluno de ${data.coach_name}` });
+      setCoachName(data.coach_name || "seu Profissional");
+      toast({ title: "Convite aceito! 🎉", description: `Você agora é cliente de ${data.coach_name}` });
 
       setTimeout(() => navigate("/dashboard"), 2000);
     } catch (err: any) {

@@ -26,6 +26,7 @@ import FeminineCycleBadge from "@/components/coach/FeminineCycleBadge";
 import { isFeminine, getCyclePhase, getCycleDayCount } from "@/lib/feminine";
 import ProfessionalTypeBadge from "@/components/coach/ProfessionalTypeBadge";
 import ProfessionalQuickActions from "@/components/coach/ProfessionalQuickActions";
+import InviteClientDialog from "@/components/coach/InviteClientDialog";
 import { useUserRole } from "@/hooks/useUserRole";
 
 interface PatientRow {
@@ -323,7 +324,14 @@ const CoachDashboardPage = () => {
         </div>
 
         {/* Professional Quick Actions (filtradas por professional_type) */}
-        {professionalType && <ProfessionalQuickActions professionalType={professionalType} />}
+        {professionalType && (
+          <div className="space-y-3">
+            <ProfessionalQuickActions professionalType={professionalType} />
+            <div className="flex justify-end">
+              <InviteClientDialog />
+            </div>
+          </div>
+        )}
 
         {alunosAtivos >= maxAlunos - 2 && (
           <Card className="border-yellow-500/50 bg-yellow-500/10">
