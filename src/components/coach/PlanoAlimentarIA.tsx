@@ -26,25 +26,29 @@ import NutrientDensityPanel from "@/components/coach/NutrientDensityPanel";
 import Glut4SyncCard from "@/components/meal/Glut4SyncCard";
 import AdherenceModal from "@/components/meal/AdherenceModal";
 
-// ─── Design tokens — Jarvis (dark, holographic, gold/cyan) ────────────────────
+// ─── Design tokens — Jarvis Nutrition (emerald primary + gold identity) ───────
 const T = {
   bg:      "#020205",
-  bg2:     "#06060c",
+  bg2:     "#0A0A12",
   bg3:     "#020205",
   card:    "#06060c",
-  border:  "#B8922A18",
-  border2: "#B8922A22",
-  green:   "#B8922A",   // gold = primary accent (kept as `green` to avoid breaking refs)
-  greenDim:"#8a6e1f",
-  greenBg: "#B8922A0A",
+  border:  "#00C89622",
+  border2: "#00C89633",
+  // `green` token kept as alias — now emerald, the nutrition module primary
+  green:   "#00C896",
+  greenDim:"#008f6a",
+  greenBg: "#00C8960A",
   text:    "#F5F0E8",
-  muted:   "#6b6258",
+  muted:   "#888888",
   muted2:  "#2A2A2A",
   red:     "#ff4444",
   amber:   "#D4A732",
   blue:    "#00D4FF",
   cyan:    "#00D4FF",
   gold:    "#B8922A",
+  emerald: "#00C896",
+  emeraldDim: "#00C89622",
+  emeraldGlow: "#00C89644",
   fontDisplay: "'Rajdhani', sans-serif",
   fontMono: "'Space Mono', monospace",
 };
@@ -58,28 +62,28 @@ const Label = ({ children, required }: { children: React.ReactNode; required?: b
 
 const InputField = ({ style, ...props }: React.InputHTMLAttributes<HTMLInputElement> & { style?: React.CSSProperties }) => (
   <input {...props} className="placeholder-coach" style={{
-    width: "100%", background: "#0A0A12", border: `1px solid ${T.border}`,
+    width: "100%", background: "#0A0A12", border: `1px solid #00C89615`,
     borderRadius: 0, padding: "10px 14px", color: T.text, fontSize: 12,
     outline: "none", transition: "border-color .2s, box-shadow .2s",
     fontFamily: T.fontMono, ...style
   }}
-    onFocus={e => { (e.target as HTMLInputElement).style.borderColor = "#B8922A55"; (e.target as HTMLInputElement).style.boxShadow = "0 0 0 1px #B8922A18"; }}
-    onBlur={e => { (e.target as HTMLInputElement).style.borderColor = T.border; (e.target as HTMLInputElement).style.boxShadow = "none"; }}
+    onFocus={e => { (e.target as HTMLInputElement).style.borderColor = "#00C89644"; (e.target as HTMLInputElement).style.boxShadow = "0 0 0 1px #00C89611"; }}
+    onBlur={e => { (e.target as HTMLInputElement).style.borderColor = "#00C89615"; (e.target as HTMLInputElement).style.boxShadow = "none"; }}
   />
 );
 
 const SelectField = ({ children, style, ...props }: React.SelectHTMLAttributes<HTMLSelectElement> & { style?: React.CSSProperties }) => (
   <select {...props} className="placeholder-coach" style={{
-    width: "100%", background: "#0A0A12", border: `1px solid ${T.border}`,
+    width: "100%", background: "#0A0A12", border: `1px solid #00C89615`,
     borderRadius: 0, padding: "10px 14px", color: T.text, fontSize: 12,
     outline: "none", transition: "border-color .2s, box-shadow .2s", fontFamily: T.fontMono,
     cursor: "pointer", appearance: "none", WebkitAppearance: "none" as any, MozAppearance: "none" as any,
-    backgroundImage: "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23B8922A' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>\")",
+    backgroundImage: "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2300C896' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>\")",
     backgroundRepeat: "no-repeat", backgroundPosition: "right 12px center", paddingRight: 34,
     ...style
   }}
-    onFocus={e => { (e.target as HTMLSelectElement).style.borderColor = "#B8922A55"; (e.target as HTMLSelectElement).style.boxShadow = "0 0 0 1px #B8922A18"; }}
-    onBlur={e => { (e.target as HTMLSelectElement).style.borderColor = T.border; (e.target as HTMLSelectElement).style.boxShadow = "none"; }}
+    onFocus={e => { (e.target as HTMLSelectElement).style.borderColor = "#00C89644"; (e.target as HTMLSelectElement).style.boxShadow = "0 0 0 1px #00C89611"; }}
+    onBlur={e => { (e.target as HTMLSelectElement).style.borderColor = "#00C89615"; (e.target as HTMLSelectElement).style.boxShadow = "none"; }}
   >
     {children}
   </select>
@@ -87,31 +91,32 @@ const SelectField = ({ children, style, ...props }: React.SelectHTMLAttributes<H
 
 const TextareaField = ({ style, ...props }: React.TextareaHTMLAttributes<HTMLTextAreaElement> & { style?: React.CSSProperties }) => (
   <textarea {...props} className="placeholder-coach" style={{
-    width: "100%", background: "#0A0A12", border: `1px solid ${T.border}`,
+    width: "100%", background: "#0A0A12", border: `1px solid #00C89615`,
     borderRadius: 0, padding: "12px 14px", color: T.text, fontSize: 11,
     outline: "none", resize: "vertical" as const, minHeight: 80, fontFamily: T.fontMono,
     lineHeight: 1.8, transition: "border-color .2s, box-shadow .2s", ...style
   }}
-    onFocus={e => { (e.target as HTMLTextAreaElement).style.borderColor = "#B8922A55"; (e.target as HTMLTextAreaElement).style.boxShadow = "0 0 0 1px #B8922A18"; }}
-    onBlur={e => { (e.target as HTMLTextAreaElement).style.borderColor = T.border; (e.target as HTMLTextAreaElement).style.boxShadow = "none"; }}
+    onFocus={e => { (e.target as HTMLTextAreaElement).style.borderColor = "#00C89644"; (e.target as HTMLTextAreaElement).style.boxShadow = "0 0 0 1px #00C89611"; }}
+    onBlur={e => { (e.target as HTMLTextAreaElement).style.borderColor = "#00C89615"; (e.target as HTMLTextAreaElement).style.boxShadow = "none"; }}
   />
 );
 
 const Tag = ({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) => (
   <button onClick={onClick} style={{
     padding: "5px 12px", borderRadius: 2, fontSize: 10, cursor: "pointer",
-    border: `1px solid ${active ? T.gold : "#B8922A22"}`,
-    background: active ? T.greenBg : "transparent",
-    color: active ? T.gold : "#B8922A55",
+    border: `1px solid ${active ? T.emerald : "#00C89622"}`,
+    background: active ? "#00C89615" : "transparent",
+    color: active ? T.text : "#00C89666",
     transition: "all .2s", fontFamily: T.fontMono, textTransform: "uppercase" as const, letterSpacing: "0.15em",
   }}>{label}</button>
 );
 
-const Section = ({ title, children, icon, accent }: { title: string; children: React.ReactNode; icon?: React.ReactNode; accent?: "gold" | "cyan" }) => {
-  const color = accent === "cyan" ? T.cyan : T.gold;
+const Section = ({ title, children, icon, accent }: { title: string; children: React.ReactNode; icon?: React.ReactNode; accent?: "gold" | "cyan" | "emerald" }) => {
+  const color = accent === "gold" ? T.gold : accent === "cyan" ? T.cyan : T.emerald;
+  const bg    = accent === "gold" ? "rgba(184,146,42,0.02)" : accent === "cyan" ? "rgba(0,212,255,0.02)" : "rgba(0,200,150,0.02)";
   return (
-    <div style={{ marginBottom: 28 }}>
-      <div style={{ fontFamily: T.fontMono, fontSize: 10, fontWeight: 700, color, textTransform: "uppercase" as const, letterSpacing: "0.24em", marginBottom: 16, display: "flex", alignItems: "center", gap: 10 }}>
+    <div style={{ marginBottom: 16, padding: "16px 20px", background: bg, borderLeft: `2px solid ${color}33` }}>
+      <div style={{ fontFamily: T.fontMono, fontSize: 10, fontWeight: 700, color: `${color}AA`, textTransform: "uppercase" as const, letterSpacing: "0.22em", marginBottom: 16, display: "flex", alignItems: "center", gap: 10 }}>
         <div style={{ width: 24, height: 2, background: color }} />
         {icon}
         <span>{title}</span>
@@ -4717,35 +4722,79 @@ export default function PlanoAlimentarIA() {
         @keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
       `}</style>
 
-      {/* ─── Topbar (Jarvis) ─── */}
+      {/* ─── Topbar (APEX Intelligence style) ─── */}
       <div style={{
         position: "sticky", top: 0, zIndex: 40,
-        padding: "10px 24px",
+        padding: "16px 24px 14px",
         background: "rgba(2,2,5,0.95)", backdropFilter: "blur(16px)",
-        borderBottom: "1px solid #B8922A18",
-        display: "flex", alignItems: "center", gap: 16,
+        borderBottom: "1px solid #00C89618",
       }}>
-        <button
-          onClick={() => navigate("/coach-dashboard")}
-          title="Voltar ao Dashboard do Coach"
-          style={{ background: "none", border: "none", cursor: "pointer", padding: 4, color: T.gold, display: "flex", alignItems: "center" }}
-        >
-          <ArrowLeft size={18} strokeWidth={2} />
-        </button>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontFamily: T.fontMono, fontSize: 8, color: "#B8922A33", letterSpacing: "0.22em", textTransform: "uppercase" }}>
-            NUTRION · COACH · PLANO ALIMENTAR
-          </div>
-          <div style={{ fontFamily: "'Rajdhani', sans-serif", fontSize: 24, fontWeight: 700, letterSpacing: "0.02em", lineHeight: 1.1 }}>
-            <span style={{ color: "#F5F0E8" }}>Gerador de Plano Alimentar</span>
-            <span style={{ color: "#B8922A" }}> · IA</span>
+        {/* Top row: voltar (left) + status badge (right) */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+          <button
+            onClick={() => navigate("/coach-dashboard")}
+            title="Voltar"
+            style={{
+              display: "inline-flex", alignItems: "center", gap: 6,
+              padding: "5px 10px", border: "1px solid #00C89622", background: "transparent",
+              color: "#00C896", fontFamily: T.fontMono, fontSize: 9, letterSpacing: "0.2em",
+              textTransform: "uppercase", cursor: "pointer", borderRadius: 0, transition: "all .2s",
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.borderColor = "#00C89666"; e.currentTarget.style.boxShadow = "0 0 12px #00C89622"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#00C89622"; e.currentTarget.style.boxShadow = "none"; }}
+          >
+            <ArrowLeft size={11} strokeWidth={2} /> Voltar
+          </button>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "5px 10px", border: "1px solid #00C89622", borderRadius: 999 }}>
+            <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#00C896", boxShadow: "0 0 8px #00C896", animation: "pulse 2s ease-in-out infinite" }} />
+            <span style={{ fontFamily: T.fontMono, fontSize: 8, color: "#00C89666", letterSpacing: "0.2em", textTransform: "uppercase" }}>SISTEMA ATIVO</span>
           </div>
         </div>
+
+        {/* Breadcrumb */}
+        <div style={{ fontFamily: T.fontMono, fontSize: 8, color: "#2A2A2A", letterSpacing: "0.22em", textTransform: "uppercase", marginBottom: 10 }}>
+          nutriON <span style={{ color: "#2A2A2A", margin: "0 6px" }}>·</span>
+          Coach Hub <span style={{ color: "#2A2A2A", margin: "0 6px" }}>·</span>
+          <span style={{ color: "#00C896" }}>Plano Alimentar</span>
+        </div>
+
+        {/* Title row */}
+        <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
+          <div style={{
+            width: 52, height: 52,
+            background: "#00C89615", border: "1px solid #00C89633",
+            borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center",
+            boxShadow: "0 0 20px #00C89622", flexShrink: 0,
+          }}>
+            {/* Utensils icon */}
+            <BookOpen size={26} strokeWidth={1.5} color="#00C896" />
+          </div>
+          <div style={{ minWidth: 0 }}>
+            <div style={{ display: "flex", alignItems: "baseline", gap: 8, flexWrap: "wrap" }}>
+              <span style={{ fontFamily: T.fontDisplay, fontSize: 28, fontWeight: 700, color: "#F5F0E8", letterSpacing: "0.02em", lineHeight: 1 }}>NUTRIPLAN</span>
+              <span style={{ fontFamily: T.fontDisplay, fontSize: 28, fontWeight: 700, color: "#00C896", letterSpacing: "0.02em", lineHeight: 1 }}>INTELLIGENCE</span>
+              <span style={{ fontFamily: T.fontDisplay, fontSize: 28, fontWeight: 700, color: "#F5F0E8", letterSpacing: "0.02em", lineHeight: 1 }}>SYSTEM</span>
+              <span style={{
+                fontFamily: T.fontDisplay, fontSize: 10, fontWeight: 700, letterSpacing: "0.18em",
+                padding: "3px 8px", borderRadius: 2, color: "#B8922A",
+                border: "1px solid #B8922A",
+              }}>PRO</span>
+            </div>
+            <div style={{ marginTop: 6, fontFamily: T.fontMono, fontSize: 8, color: "#2A2A2A", letterSpacing: "0.18em", textTransform: "uppercase" }}>
+              Geração Avançada por IA <span style={{ margin: "0 6px" }}>·</span>
+              Nutrição Esportiva <span style={{ margin: "0 6px" }}>·</span>
+              Protocolo PCA <span style={{ margin: "0 6px" }}>·</span>
+              Crononutrição
+            </div>
+          </div>
+        </div>
+
+        <div style={{ marginTop: 14, height: 2, background: "linear-gradient(90deg, #00C896, transparent 60%)" }} />
       </div>
 
       {/* ─── Abas horizontais (ações) ─── */}
       <div style={{
-        borderBottom: "1px solid #B8922A0A",
+        borderBottom: "1px solid #00C8960A",
         background: T.bg,
         overflowX: "auto", overflowY: "hidden",
       }}>
@@ -4768,19 +4817,19 @@ export default function PlanoAlimentarIA() {
                 style={{
                   display: "inline-flex", alignItems: "center", gap: 6,
                   padding: "10px 14px",
-                  background: t.active ? "#B8922A08" : "transparent",
+                  background: t.active ? "#00C89608" : "transparent",
                   border: "none",
-                  borderBottom: `2px solid ${t.active ? T.gold : "transparent"}`,
-                  color: t.active ? T.gold : "#555555",
+                  borderBottom: `2px solid ${t.active ? "#00C896" : "transparent"}`,
+                  color: t.active ? "#00C896" : "#555555",
                   fontFamily: T.fontMono, fontSize: 9, fontWeight: 400,
                   letterSpacing: "0.16em", textTransform: "uppercase",
                   cursor: "pointer", transition: "all .2s",
                   whiteSpace: "nowrap",
                 }}
-                onMouseEnter={(e) => { if (!t.active) e.currentTarget.style.color = "#B8922A88"; }}
+                onMouseEnter={(e) => { if (!t.active) e.currentTarget.style.color = "#00C89688"; }}
                 onMouseLeave={(e) => { if (!t.active) e.currentTarget.style.color = "#555555"; }}
               >
-                <Icon size={11} strokeWidth={2} />
+                <Icon size={11} strokeWidth={2} color={t.active ? "#00C896" : "currentColor"} />
                 {t.label}
               </button>
             );
@@ -4996,7 +5045,7 @@ export default function PlanoAlimentarIA() {
 
       <div style={{ maxWidth: 860, margin: "0 auto", padding: "32px 20px 120px" }}>
         {/* Dados do paciente */}
-        <Section title="Dados do paciente" icon={<UserIcon size={12} strokeWidth={2} color={T.gold} />}>
+        <Section title="Dados do paciente" icon={<UserIcon size={12} strokeWidth={2} color={T.emerald} />}>
           <div style={{ marginBottom: 14 }}>
             <Label required>Nome do paciente</Label>
             <InputField placeholder="Nome do paciente" value={form.nome} onChange={e => set("nome", e.target.value)} />
@@ -5025,7 +5074,7 @@ export default function PlanoAlimentarIA() {
         </Section>
 
         {/* Objetivo e perfil */}
-        <Section title="Objetivo e perfil" icon={<Target size={12} strokeWidth={2} color={T.gold} />}>
+        <Section title="Objetivo e perfil" icon={<Target size={12} strokeWidth={2} color={T.emerald} />}>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
             <div>
               <Label>Objetivo principal</Label>
@@ -5105,27 +5154,27 @@ export default function PlanoAlimentarIA() {
         </Section>
 
         {/* ─── CONTEXTO CLÍNICO · PROTOCOLO DO COACH (NOVO) ─── */}
-        <Section title="Contexto clínico · Protocolo do coach" icon={<Brain size={12} strokeWidth={2} color={T.cyan} />} accent="cyan">
+        <Section title="Contexto clínico · Protocolo do coach" icon={<Brain size={12} strokeWidth={2} color={T.emerald} />} accent="emerald">
           <div style={{ fontFamily: T.fontMono, fontSize: 9, color: "#555555", letterSpacing: "0.18em", textTransform: "uppercase", marginTop: -10, marginBottom: 14 }}>
             Descreva estratégias clínicas, protocolos de nutrição esportiva e observações do paciente. A IA incorporará tudo no plano gerado.
           </div>
 
           <div style={{
             position: "relative",
-            border: "1px solid #00D4FF12",
-            borderTop: "2px solid #00D4FF",
-            background: "#00D4FF03",
+            border: "1px solid #00C89618",
+            borderLeft: "2px solid #00C896",
+            background: "#00C89606",
             padding: 16,
           }}>
             {/* Tag IA CONTEXTO ATIVO */}
             <div style={{
               position: "absolute", top: 8, right: 10,
               display: "inline-flex", alignItems: "center", gap: 6,
-              border: "1px solid #00D4FF44", color: "#00D4FF",
+              border: "1px solid #00C89633", color: "#00C896",
               padding: "2px 8px", borderRadius: 2,
               fontFamily: T.fontMono, fontSize: 8, letterSpacing: "0.18em", textTransform: "uppercase",
             }}>
-              <span style={{ width: 5, height: 5, borderRadius: "50%", background: T.cyan, boxShadow: "0 0 6px #00D4FF", animation: "pulse 1.4s ease-in-out infinite" }} />
+              <span style={{ width: 5, height: 5, borderRadius: "50%", background: T.emerald, boxShadow: "0 0 6px #00C896", animation: "pulse 1.4s ease-in-out infinite" }} />
               IA Contexto Ativo
             </div>
 
@@ -5136,13 +5185,13 @@ export default function PlanoAlimentarIA() {
                 placeholder="Ex: Paciente tem resistência à insulina — priorizar janela pré-treino com carbo de baixo IG. Protocolo GLUT-4 Sync ativo. Creatina 5g + leucina 3g pós-treino. Refeed semanal às sextas. Nutrição circadiana — carbo concentrado pré e pós-treino. mTOR pós-treino com proteína de rápida absorção. Evitar glúten por sensibilidade relatada..."
                 style={{
                   width: "100%", minHeight: 140, resize: "vertical" as const,
-                  background: T.bg, border: "1px solid #00D4FF18", borderRadius: 0,
+                  background: T.bg, border: "1px solid #00C89618", borderRadius: 0,
                   padding: "12px 14px", color: T.text, fontFamily: T.fontMono,
                   fontSize: 11, lineHeight: 1.8, outline: "none",
                   transition: "border-color .2s, box-shadow .2s",
                 }}
-                onFocus={(e) => { e.currentTarget.style.borderColor = "#00D4FF44"; e.currentTarget.style.boxShadow = "0 0 0 1px #00D4FF12"; }}
-                onBlur={(e) => { e.currentTarget.style.borderColor = "#00D4FF18"; e.currentTarget.style.boxShadow = "none"; }}
+                onFocus={(e) => { e.currentTarget.style.borderColor = "#00C89644"; e.currentTarget.style.boxShadow = "0 0 0 1px #00C89612"; }}
+                onBlur={(e) => { e.currentTarget.style.borderColor = "#00C89618"; e.currentTarget.style.boxShadow = "none"; }}
               />
               <div style={{
                 position: "absolute", bottom: 6, right: 10,
@@ -5185,7 +5234,7 @@ export default function PlanoAlimentarIA() {
                 })}
               </div>
               {/* Grupo 2 — Nutrição Esportiva */}
-              <div style={{ fontFamily: T.fontMono, fontSize: 5, color: "#00D4FF33", letterSpacing: "0.22em", textTransform: "uppercase", marginBottom: 8 }}>
+              <div style={{ fontFamily: T.fontMono, fontSize: 5, color: "#00C89666", letterSpacing: "0.22em", textTransform: "uppercase", marginBottom: 8 }}>
                 NUTRIÇÃO ESPORTIVA
               </div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
@@ -5197,15 +5246,15 @@ export default function PlanoAlimentarIA() {
                       type="button"
                       onClick={() => toggleContextChip(chip)}
                       style={{
-                        border: `1px solid ${isActive ? "#00D4FF44" : "#00D4FF18"}`,
-                        background: isActive ? "#00D4FF05" : "transparent",
-                        color: isActive ? "#00D4FF" : "#00D4FF44",
+                        border: `1px solid ${isActive ? "#00C896" : "#00C89622"}`,
+                        background: isActive ? "#00C89608" : "transparent",
+                        color: isActive ? "#00C896" : "#00C89666",
                         fontFamily: T.fontMono, fontSize: 6, letterSpacing: "0.14em",
                         textTransform: "uppercase", padding: "3px 10px", borderRadius: 0,
                         cursor: "pointer", transition: "all .2s",
                       }}
-                      onMouseEnter={(e) => { if (!isActive) { e.currentTarget.style.borderColor = "#00D4FF44"; e.currentTarget.style.color = "#00D4FF"; e.currentTarget.style.background = "#00D4FF05"; } }}
-                      onMouseLeave={(e) => { if (!isActive) { e.currentTarget.style.borderColor = "#00D4FF18"; e.currentTarget.style.color = "#00D4FF44"; e.currentTarget.style.background = "transparent"; } }}
+                      onMouseEnter={(e) => { if (!isActive) { e.currentTarget.style.borderColor = "#00C896"; e.currentTarget.style.color = "#00C896"; e.currentTarget.style.background = "#00C89608"; } }}
+                      onMouseLeave={(e) => { if (!isActive) { e.currentTarget.style.borderColor = "#00C89622"; e.currentTarget.style.color = "#00C89666"; e.currentTarget.style.background = "transparent"; } }}
                     >
                       {chip}
                     </button>
