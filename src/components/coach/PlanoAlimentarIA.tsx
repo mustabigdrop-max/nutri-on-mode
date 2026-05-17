@@ -7026,9 +7026,9 @@ export default function PlanoAlimentarIA() {
           </div>
         </div>
 
+        <BlocoPdfConfig value={pdfCfg} onChange={setPdfCfg} />
+
         <button onClick={gerar} style={{
-          width: "100%", padding: 15, borderRadius: 10,
-          background: T.green, border: "none", color: "#0a0f0a",
           fontSize: 15, fontWeight: 700, cursor: "pointer",
           fontFamily: "inherit", letterSpacing: "0.02em",
           transition: "opacity .2s", boxShadow: `0 0 24px ${T.green}33`
