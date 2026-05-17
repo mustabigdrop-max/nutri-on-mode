@@ -5382,7 +5382,7 @@ export default function PlanoAlimentarIA() {
               />
               <div style={{
                 position: "absolute", bottom: 6, right: 10,
-                fontFamily: T.fontMono, fontSize: 9, letterSpacing: "0.12em",
+                fontFamily: T.fontMono, fontSize: 11, letterSpacing: "0.10em",
                 color: contextoClinico.length > 1400 ? T.red : contextoClinico.length > 1200 ? T.gold : "#666666",
                 pointerEvents: "none",
               }}>
