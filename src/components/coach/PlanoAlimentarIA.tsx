@@ -51,14 +51,14 @@ const T = {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 const Label = ({ children, required }: { children: React.ReactNode; required?: boolean }) => (
-  <label style={{ fontFamily: T.fontMono, fontSize: 9, color: "#B8922A88", textTransform: "uppercase" as const, letterSpacing: "0.2em", display: "block", marginBottom: 6 }}>
+  <label style={{ fontFamily: T.fontMono, fontSize: 9, color: "#888888", textTransform: "uppercase" as const, letterSpacing: "0.2em", display: "block", marginBottom: 6 }}>
     {children}{required && <span style={{ color: T.red, marginLeft: 3 }}>*</span>}
   </label>
 );
 
 const InputField = ({ style, ...props }: React.InputHTMLAttributes<HTMLInputElement> & { style?: React.CSSProperties }) => (
-  <input {...props} style={{
-    width: "100%", background: T.bg, border: `1px solid ${T.border}`,
+  <input {...props} className="placeholder-coach" style={{
+    width: "100%", background: "#0A0A12", border: `1px solid ${T.border}`,
     borderRadius: 0, padding: "10px 14px", color: T.text, fontSize: 12,
     outline: "none", transition: "border-color .2s, box-shadow .2s",
     fontFamily: T.fontMono, ...style
@@ -69,8 +69,8 @@ const InputField = ({ style, ...props }: React.InputHTMLAttributes<HTMLInputElem
 );
 
 const SelectField = ({ children, style, ...props }: React.SelectHTMLAttributes<HTMLSelectElement> & { style?: React.CSSProperties }) => (
-  <select {...props} style={{
-    width: "100%", background: T.bg, border: `1px solid ${T.border}`,
+  <select {...props} className="placeholder-coach" style={{
+    width: "100%", background: "#0A0A12", border: `1px solid ${T.border}`,
     borderRadius: 0, padding: "10px 14px", color: T.text, fontSize: 12,
     outline: "none", transition: "border-color .2s, box-shadow .2s", fontFamily: T.fontMono,
     cursor: "pointer", appearance: "none", WebkitAppearance: "none" as any, MozAppearance: "none" as any,
@@ -86,8 +86,8 @@ const SelectField = ({ children, style, ...props }: React.SelectHTMLAttributes<H
 );
 
 const TextareaField = ({ style, ...props }: React.TextareaHTMLAttributes<HTMLTextAreaElement> & { style?: React.CSSProperties }) => (
-  <textarea {...props} style={{
-    width: "100%", background: T.bg, border: `1px solid ${T.border}`,
+  <textarea {...props} className="placeholder-coach" style={{
+    width: "100%", background: "#0A0A12", border: `1px solid ${T.border}`,
     borderRadius: 0, padding: "12px 14px", color: T.text, fontSize: 11,
     outline: "none", resize: "vertical" as const, minHeight: 80, fontFamily: T.fontMono,
     lineHeight: 1.8, transition: "border-color .2s, box-shadow .2s", ...style
@@ -4771,14 +4771,14 @@ export default function PlanoAlimentarIA() {
                   background: t.active ? "#B8922A08" : "transparent",
                   border: "none",
                   borderBottom: `2px solid ${t.active ? T.gold : "transparent"}`,
-                  color: t.active ? T.gold : "#2A2A2A",
+                  color: t.active ? T.gold : "#555555",
                   fontFamily: T.fontMono, fontSize: 9, fontWeight: 400,
                   letterSpacing: "0.16em", textTransform: "uppercase",
                   cursor: "pointer", transition: "all .2s",
                   whiteSpace: "nowrap",
                 }}
-                onMouseEnter={(e) => { if (!t.active) e.currentTarget.style.color = "#B8922A55"; }}
-                onMouseLeave={(e) => { if (!t.active) e.currentTarget.style.color = "#2A2A2A"; }}
+                onMouseEnter={(e) => { if (!t.active) e.currentTarget.style.color = "#B8922A88"; }}
+                onMouseLeave={(e) => { if (!t.active) e.currentTarget.style.color = "#555555"; }}
               >
                 <Icon size={11} strokeWidth={2} />
                 {t.label}

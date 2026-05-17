@@ -4,6 +4,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Coach plano-alimentar placeholder color */
+.placeholder-coach::placeholder { color: #444444; opacity: 1; }
+
 @layer base {
   :root {
     /* === Jarvis core palette ===
