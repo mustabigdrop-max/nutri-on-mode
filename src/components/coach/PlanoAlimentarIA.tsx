@@ -1200,6 +1200,8 @@ export default function PlanoAlimentarIA() {
     cyclingCarbo: false,
     cronobiologiaAtiva: false,
     hidratacaoFarmacologica: false,
+    climaHidratacao: "temperado" as "frio" | "temperado" | "quente" | "muito_quente",
+    usaDiuretico: false,
     modoEconomico: false,
     medidasCaseiras: false,
     // Preferências de unidades caseiras (usadas quando medidasCaseiras = true)
