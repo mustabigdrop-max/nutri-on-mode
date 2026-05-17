@@ -6379,10 +6379,10 @@ export default function PlanoAlimentarIA() {
           display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12,
         }}>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: T.text, display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ fontSize: 16, fontWeight: 700, color: T.text, display: "flex", alignItems: "center", gap: 8 }}>
               🥄 Medidas Caseiras (Nutrition Coach IA)
             </div>
-            <div style={{ fontSize: 11, color: T.muted, marginTop: 4, lineHeight: 1.5 }}>
+            <div style={{ fontSize: 13, color: T.muted, marginTop: 6, lineHeight: 1.55 }}>
               Quando ATIVO: a IA descreve cada alimento em medidas caseiras (colher de sopa, xícara, fatia, concha, unidade) e adiciona ao final do plano um <b>Mapa de Referência</b> com a gramatura exata de cada medida usada. Ideal para o paciente seguir sem balança. O nutricionista continua recebendo a gramatura técnica internamente.
             </div>
           </div>
