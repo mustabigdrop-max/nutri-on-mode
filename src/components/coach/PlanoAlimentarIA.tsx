@@ -1,4 +1,9 @@
 import { useState, useRef, useEffect } from "react";
+import {
+  ArrowLeft, FileText, RefreshCw, BarChart2, CheckSquare,
+  Grid, Zap, BookOpen, Clock, ChevronDown, User as UserIcon,
+  Target, Brain, Loader2, RotateCcw,
+} from "lucide-react";
 import { exportMealPlanPDF } from "@/utils/exportMealPlanPDF";
 import { exportMealPlanPDF as exportMealPlanPDFElite } from "@/lib/mealPlanPdf";
 import ProtocolGanttChart from "@/components/coach/ProtocolGanttChart";
