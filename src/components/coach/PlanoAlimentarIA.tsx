@@ -2,8 +2,9 @@ import { useState, useRef, useEffect } from "react";
 import {
   ArrowLeft, FileText, RefreshCw, BarChart2, CheckSquare,
   Grid, Zap, BookOpen, Clock, ChevronDown, User as UserIcon,
-  Target, Brain, Loader2, RotateCcw,
+  Target, Brain, Loader2, RotateCcw, Utensils, History, Info,
 } from "lucide-react";
+import JarvisBackdrop from "@/components/dashboard/JarvisBackdrop";
 import { exportMealPlanPDF } from "@/utils/exportMealPlanPDF";
 import { exportMealPlanPDF as exportMealPlanPDFElite } from "@/lib/mealPlanPdf";
 import ProtocolGanttChart from "@/components/coach/ProtocolGanttChart";
