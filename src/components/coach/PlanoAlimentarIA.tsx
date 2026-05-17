@@ -62,28 +62,28 @@ const Label = ({ children, required }: { children: React.ReactNode; required?: b
 
 const InputField = ({ style, ...props }: React.InputHTMLAttributes<HTMLInputElement> & { style?: React.CSSProperties }) => (
   <input {...props} className="placeholder-coach" style={{
-    width: "100%", background: "#0A0A12", border: `1px solid ${T.border}`,
+    width: "100%", background: "#0A0A12", border: `1px solid #00C89615`,
     borderRadius: 0, padding: "10px 14px", color: T.text, fontSize: 12,
     outline: "none", transition: "border-color .2s, box-shadow .2s",
     fontFamily: T.fontMono, ...style
   }}
-    onFocus={e => { (e.target as HTMLInputElement).style.borderColor = "#B8922A55"; (e.target as HTMLInputElement).style.boxShadow = "0 0 0 1px #B8922A18"; }}
-    onBlur={e => { (e.target as HTMLInputElement).style.borderColor = T.border; (e.target as HTMLInputElement).style.boxShadow = "none"; }}
+    onFocus={e => { (e.target as HTMLInputElement).style.borderColor = "#00C89644"; (e.target as HTMLInputElement).style.boxShadow = "0 0 0 1px #00C89611"; }}
+    onBlur={e => { (e.target as HTMLInputElement).style.borderColor = "#00C89615"; (e.target as HTMLInputElement).style.boxShadow = "none"; }}
   />
 );
 
 const SelectField = ({ children, style, ...props }: React.SelectHTMLAttributes<HTMLSelectElement> & { style?: React.CSSProperties }) => (
   <select {...props} className="placeholder-coach" style={{
-    width: "100%", background: "#0A0A12", border: `1px solid ${T.border}`,
+    width: "100%", background: "#0A0A12", border: `1px solid #00C89615`,
     borderRadius: 0, padding: "10px 14px", color: T.text, fontSize: 12,
     outline: "none", transition: "border-color .2s, box-shadow .2s", fontFamily: T.fontMono,
     cursor: "pointer", appearance: "none", WebkitAppearance: "none" as any, MozAppearance: "none" as any,
-    backgroundImage: "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23B8922A' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>\")",
+    backgroundImage: "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2300C896' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>\")",
     backgroundRepeat: "no-repeat", backgroundPosition: "right 12px center", paddingRight: 34,
     ...style
   }}
-    onFocus={e => { (e.target as HTMLSelectElement).style.borderColor = "#B8922A55"; (e.target as HTMLSelectElement).style.boxShadow = "0 0 0 1px #B8922A18"; }}
-    onBlur={e => { (e.target as HTMLSelectElement).style.borderColor = T.border; (e.target as HTMLSelectElement).style.boxShadow = "none"; }}
+    onFocus={e => { (e.target as HTMLSelectElement).style.borderColor = "#00C89644"; (e.target as HTMLSelectElement).style.boxShadow = "0 0 0 1px #00C89611"; }}
+    onBlur={e => { (e.target as HTMLSelectElement).style.borderColor = "#00C89615"; (e.target as HTMLSelectElement).style.boxShadow = "none"; }}
   >
     {children}
   </select>
@@ -91,31 +91,32 @@ const SelectField = ({ children, style, ...props }: React.SelectHTMLAttributes<H
 
 const TextareaField = ({ style, ...props }: React.TextareaHTMLAttributes<HTMLTextAreaElement> & { style?: React.CSSProperties }) => (
   <textarea {...props} className="placeholder-coach" style={{
-    width: "100%", background: "#0A0A12", border: `1px solid ${T.border}`,
+    width: "100%", background: "#0A0A12", border: `1px solid #00C89615`,
     borderRadius: 0, padding: "12px 14px", color: T.text, fontSize: 11,
     outline: "none", resize: "vertical" as const, minHeight: 80, fontFamily: T.fontMono,
     lineHeight: 1.8, transition: "border-color .2s, box-shadow .2s", ...style
   }}
-    onFocus={e => { (e.target as HTMLTextAreaElement).style.borderColor = "#B8922A55"; (e.target as HTMLTextAreaElement).style.boxShadow = "0 0 0 1px #B8922A18"; }}
-    onBlur={e => { (e.target as HTMLTextAreaElement).style.borderColor = T.border; (e.target as HTMLTextAreaElement).style.boxShadow = "none"; }}
+    onFocus={e => { (e.target as HTMLTextAreaElement).style.borderColor = "#00C89644"; (e.target as HTMLTextAreaElement).style.boxShadow = "0 0 0 1px #00C89611"; }}
+    onBlur={e => { (e.target as HTMLTextAreaElement).style.borderColor = "#00C89615"; (e.target as HTMLTextAreaElement).style.boxShadow = "none"; }}
   />
 );
 
 const Tag = ({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) => (
   <button onClick={onClick} style={{
     padding: "5px 12px", borderRadius: 2, fontSize: 10, cursor: "pointer",
-    border: `1px solid ${active ? T.gold : "#B8922A22"}`,
-    background: active ? T.greenBg : "transparent",
-    color: active ? T.gold : "#B8922A55",
+    border: `1px solid ${active ? T.emerald : "#00C89622"}`,
+    background: active ? "#00C89615" : "transparent",
+    color: active ? T.text : "#00C89666",
     transition: "all .2s", fontFamily: T.fontMono, textTransform: "uppercase" as const, letterSpacing: "0.15em",
   }}>{label}</button>
 );
 
-const Section = ({ title, children, icon, accent }: { title: string; children: React.ReactNode; icon?: React.ReactNode; accent?: "gold" | "cyan" }) => {
-  const color = accent === "cyan" ? T.cyan : T.gold;
+const Section = ({ title, children, icon, accent }: { title: string; children: React.ReactNode; icon?: React.ReactNode; accent?: "gold" | "cyan" | "emerald" }) => {
+  const color = accent === "gold" ? T.gold : accent === "cyan" ? T.cyan : T.emerald;
+  const bg    = accent === "gold" ? "rgba(184,146,42,0.02)" : accent === "cyan" ? "rgba(0,212,255,0.02)" : "rgba(0,200,150,0.02)";
   return (
-    <div style={{ marginBottom: 28 }}>
-      <div style={{ fontFamily: T.fontMono, fontSize: 10, fontWeight: 700, color, textTransform: "uppercase" as const, letterSpacing: "0.24em", marginBottom: 16, display: "flex", alignItems: "center", gap: 10 }}>
+    <div style={{ marginBottom: 16, padding: "16px 20px", background: bg, borderLeft: `2px solid ${color}33` }}>
+      <div style={{ fontFamily: T.fontMono, fontSize: 10, fontWeight: 700, color: `${color}AA`, textTransform: "uppercase" as const, letterSpacing: "0.22em", marginBottom: 16, display: "flex", alignItems: "center", gap: 10 }}>
         <div style={{ width: 24, height: 2, background: color }} />
         {icon}
         <span>{title}</span>
