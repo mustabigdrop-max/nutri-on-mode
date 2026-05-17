@@ -5016,7 +5016,7 @@ export default function PlanoAlimentarIA() {
         </Section>
 
         {/* Objetivo e perfil */}
-        <Section title="Objetivo e perfil">
+        <Section title="Objetivo e perfil" icon={<Target size={12} strokeWidth={2} color={T.gold} />}>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
             <div>
               <Label>Objetivo principal</Label>
