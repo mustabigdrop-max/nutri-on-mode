@@ -5342,7 +5342,7 @@ export default function PlanoAlimentarIA() {
 
         {/* ─── CONTEXTO CLÍNICO · PROTOCOLO DO COACH (NOVO) ─── */}
         <Section title="Contexto clínico · Protocolo do coach" icon={<Brain size={12} strokeWidth={2} color={T.emerald} />} accent="emerald">
-          <div style={{ fontFamily: T.fontMono, fontSize: 9, color: "#555555", letterSpacing: "0.18em", textTransform: "uppercase", marginTop: -10, marginBottom: 14 }}>
+          <div style={{ fontFamily: T.fontMono, fontSize: 12, color: "#888888", letterSpacing: "0.12em", textTransform: "uppercase", marginTop: -10, marginBottom: 14, lineHeight: 1.6 }}>
             Descreva estratégias clínicas, protocolos de nutrição esportiva e observações do paciente. A IA incorporará tudo no plano gerado.
           </div>
 
