@@ -1426,6 +1426,8 @@ export default function PlanoAlimentarIA() {
     });
     if (fnError) throw fnError;
     if (!data?.plan) throw new Error("Resposta inválida da IA");
+    // Salva contexto clínico no histórico local (apenas ao gerar com sucesso)
+    saveContextoToHistory((form as any)?.nome || "");
     return data.plan as PlanoData;
   };
 
