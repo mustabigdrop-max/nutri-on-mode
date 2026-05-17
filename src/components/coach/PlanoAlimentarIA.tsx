@@ -6620,6 +6620,7 @@ export default function PlanoAlimentarIA() {
           Powered by IA · Método MCE · nutriON
         </div>
       </div>
+      </div>
     </div>
   );
 }
