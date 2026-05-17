@@ -5393,7 +5393,7 @@ export default function PlanoAlimentarIA() {
             {/* Chips de sugestão rápida */}
             <div style={{ marginTop: 14 }}>
               {/* Grupo 1 — Clínico · Comportamental */}
-              <div style={{ fontFamily: T.fontMono, fontSize: 5, color: "#B8922A33", letterSpacing: "0.22em", textTransform: "uppercase", marginBottom: 8 }}>
+              <div style={{ fontFamily: T.fontMono, fontSize: 10, color: "#B8922A", letterSpacing: "0.22em", textTransform: "uppercase", marginBottom: 8 }}>
                 CLÍNICO · COMPORTAMENTAL
               </div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
