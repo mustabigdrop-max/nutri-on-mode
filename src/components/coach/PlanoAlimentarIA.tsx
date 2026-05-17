@@ -957,10 +957,18 @@ export default function PlanoAlimentarIA() {
       return raw ? JSON.parse(raw) : [];
     } catch { return []; }
   });
-  const CONTEXT_CHIPS = [
-    "Resistência insulínica", "Carb cycling", "Alta atividade NEAT",
-    "Retenção hídrica", "Atleta competição", "GLP-1 ativo",
-    "Protocolo cetogênico", "Refeição snap",
+  const CLINICO_CHIPS = [
+    "Resistência insulínica", "Retenção hídrica", "Carb cycling 5/2",
+    "GLP-1 ativo", "Protocolo cetogênico", "Atleta em competição",
+    "Refeição snap", "Alta atividade NEAT",
+  ];
+  const ESPORTIVA_CHIPS = [
+    "Janela pré-treino otimizada", "Protocolo de carb loading",
+    "Creatina + leucina pós-treino", "GLUT-4 Sync ativo",
+    "Periodização nutricional", "Refeed semanal",
+    "Nutrição circadiana", "mTOR pós-treino",
+    "Beta-alanina tampão", "Cafeína pré-treino",
+    "Eletrólitos intra-treino", "Síntese proteica máxima",
   ];
   const [activeChips, setActiveChips] = useState<string[]>([]);
   const toggleContextChip = (chip: string) => {
@@ -4728,8 +4736,9 @@ export default function PlanoAlimentarIA() {
           <div style={{ fontFamily: T.fontMono, fontSize: 8, color: "#B8922A33", letterSpacing: "0.22em", textTransform: "uppercase" }}>
             NUTRION · COACH · PLANO ALIMENTAR
           </div>
-          <div style={{ fontFamily: T.fontDisplay, fontSize: 22, fontWeight: 700, color: T.text, letterSpacing: "0.02em", lineHeight: 1.1 }}>
-            Gerador de Plano Alimentar por IA
+          <div style={{ fontFamily: "'Rajdhani', sans-serif", fontSize: 24, fontWeight: 700, letterSpacing: "0.02em", lineHeight: 1.1 }}>
+            <span style={{ color: "#F5F0E8" }}>Gerador de Plano Alimentar</span>
+            <span style={{ color: "#B8922A" }}> · IA</span>
           </div>
         </div>
       </div>
@@ -5098,7 +5107,7 @@ export default function PlanoAlimentarIA() {
         {/* ─── CONTEXTO CLÍNICO · PROTOCOLO DO COACH (NOVO) ─── */}
         <Section title="Contexto clínico · Protocolo do coach" icon={<Brain size={12} strokeWidth={2} color={T.cyan} />} accent="cyan">
           <div style={{ fontFamily: T.fontMono, fontSize: 9, color: "#2A2A2A", letterSpacing: "0.18em", textTransform: "uppercase", marginTop: -10, marginBottom: 14 }}>
-            Descreva estratégias, observações e protocolos próprios — a IA incorporará no plano gerado.
+            Descreva estratégias clínicas, protocolos de nutrição esportiva e observações do paciente. A IA incorporará tudo no plano gerado.
           </div>
 
           <div style={{
@@ -5124,7 +5133,7 @@ export default function PlanoAlimentarIA() {
               <textarea
                 value={contextoClinico}
                 onChange={(e) => setContextoClinico(e.target.value.slice(0, 1500))}
-                placeholder="Ex: Paciente tem resistência à insulina — priorizar janela pré-treino com carbo de baixo IG. Usar protocolo de carb cycling 5/2. Histórico de retenção hídrica com sódio elevado. Suplementação base: creatina 5g + leucina 3g pós-treino. Evitar glúten por sensibilidade relatada..."
+                placeholder="Ex: Paciente tem resistência à insulina — priorizar janela pré-treino com carbo de baixo IG. Protocolo GLUT-4 Sync ativo. Creatina 5g + leucina 3g pós-treino. Refeed semanal às sextas. Nutrição circadiana — carbo concentrado pré e pós-treino. mTOR pós-treino com proteína de rápida absorção. Evitar glúten por sensibilidade relatada..."
                 style={{
                   width: "100%", minHeight: 140, resize: "vertical" as const,
                   background: T.bg, border: "1px solid #00D4FF18", borderRadius: 0,
@@ -5147,11 +5156,12 @@ export default function PlanoAlimentarIA() {
 
             {/* Chips de sugestão rápida */}
             <div style={{ marginTop: 14 }}>
-              <div style={{ fontFamily: T.fontMono, fontSize: 8, color: "#2A2A2A", letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: 8 }}>
-                Inserir contexto rápido:
+              {/* Grupo 1 — Clínico · Comportamental */}
+              <div style={{ fontFamily: T.fontMono, fontSize: 5, color: "#B8922A33", letterSpacing: "0.22em", textTransform: "uppercase", marginBottom: 8 }}>
+                CLÍNICO · COMPORTAMENTAL
               </div>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                {CONTEXT_CHIPS.map((chip) => {
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
+                {CLINICO_CHIPS.map((chip) => {
                   const isActive = activeChips.includes(chip);
                   return (
                     <button
@@ -5159,15 +5169,43 @@ export default function PlanoAlimentarIA() {
                       type="button"
                       onClick={() => toggleContextChip(chip)}
                       style={{
-                        border: `1px solid ${isActive ? T.gold : "#B8922A22"}`,
-                        background: isActive ? "#B8922A0A" : "transparent",
-                        color: isActive ? T.gold : "#B8922A66",
-                        fontFamily: T.fontMono, fontSize: 9, letterSpacing: "0.14em",
-                        textTransform: "uppercase", padding: "4px 10px", borderRadius: 0,
+                        border: `1px solid ${isActive ? "#B8922A55" : "#B8922A22"}`,
+                        background: isActive ? "#B8922A08" : "transparent",
+                        color: isActive ? "#B8922A" : "#B8922A55",
+                        fontFamily: T.fontMono, fontSize: 6, letterSpacing: "0.14em",
+                        textTransform: "uppercase", padding: "3px 10px", borderRadius: 0,
                         cursor: "pointer", transition: "all .2s",
                       }}
-                      onMouseEnter={(e) => { if (!isActive) { e.currentTarget.style.borderColor = "#B8922A55"; e.currentTarget.style.color = T.gold; e.currentTarget.style.background = "#B8922A08"; } }}
-                      onMouseLeave={(e) => { if (!isActive) { e.currentTarget.style.borderColor = "#B8922A22"; e.currentTarget.style.color = "#B8922A66"; e.currentTarget.style.background = "transparent"; } }}
+                      onMouseEnter={(e) => { if (!isActive) { e.currentTarget.style.borderColor = "#B8922A55"; e.currentTarget.style.color = "#B8922A"; e.currentTarget.style.background = "#B8922A08"; } }}
+                      onMouseLeave={(e) => { if (!isActive) { e.currentTarget.style.borderColor = "#B8922A22"; e.currentTarget.style.color = "#B8922A55"; e.currentTarget.style.background = "transparent"; } }}
+                    >
+                      {chip}
+                    </button>
+                  );
+                })}
+              </div>
+              {/* Grupo 2 — Nutrição Esportiva */}
+              <div style={{ fontFamily: T.fontMono, fontSize: 5, color: "#00D4FF33", letterSpacing: "0.22em", textTransform: "uppercase", marginBottom: 8 }}>
+                NUTRIÇÃO ESPORTIVA
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                {ESPORTIVA_CHIPS.map((chip) => {
+                  const isActive = activeChips.includes(chip);
+                  return (
+                    <button
+                      key={chip}
+                      type="button"
+                      onClick={() => toggleContextChip(chip)}
+                      style={{
+                        border: `1px solid ${isActive ? "#00D4FF44" : "#00D4FF18"}`,
+                        background: isActive ? "#00D4FF05" : "transparent",
+                        color: isActive ? "#00D4FF" : "#00D4FF44",
+                        fontFamily: T.fontMono, fontSize: 6, letterSpacing: "0.14em",
+                        textTransform: "uppercase", padding: "3px 10px", borderRadius: 0,
+                        cursor: "pointer", transition: "all .2s",
+                      }}
+                      onMouseEnter={(e) => { if (!isActive) { e.currentTarget.style.borderColor = "#00D4FF44"; e.currentTarget.style.color = "#00D4FF"; e.currentTarget.style.background = "#00D4FF05"; } }}
+                      onMouseLeave={(e) => { if (!isActive) { e.currentTarget.style.borderColor = "#00D4FF18"; e.currentTarget.style.color = "#00D4FF44"; e.currentTarget.style.background = "transparent"; } }}
                     >
                       {chip}
                     </button>
