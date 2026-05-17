@@ -11,7 +11,10 @@ import { useWaterLogs } from "@/hooks/useWaterLogs";
 import { usePlanGate } from "@/hooks/usePlanGate";
 import { useWorkoutSchedule, getWorkoutAdjustment, combineAdjustments, WORKOUT_TYPES, type WorkoutType } from "@/hooks/useWorkoutSchedule";
 import TrialBanner from "@/components/dashboard/TrialBanner";
-import JarvisBackdrop from "@/components/dashboard/JarvisBackdrop";
+import JarvisCanvas from "@/components/dashboard/JarvisCanvas";
+import CockpitTopbar from "@/components/dashboard/CockpitTopbar";
+import CockpitLeftRail from "@/components/dashboard/CockpitLeftRail";
+import CockpitRightRail from "@/components/dashboard/CockpitRightRail";
 import CoachNotificationsCard from "@/components/dashboard/CoachNotificationsCard";
 import AthleteCompetitionCard from "@/components/dashboard/AthleteCompetitionCard";
 import CoachCompetitionShortcut from "@/components/dashboard/CoachCompetitionShortcut";
@@ -668,10 +671,14 @@ const DashboardPage = () => {
   const isChallengeMode = todayMood === "animado";
   const isSimplifiedMode = todayMood === "cansado";
 
+  const chronoAge = dateOfBirth
+    ? Math.floor((Date.now() - new Date(dateOfBirth).getTime()) / (365.25 * 24 * 60 * 60 * 1000))
+    : 30;
+
   return (
-    <div className="min-h-screen bg-background pb-24 hex-bg">
-      <JarvisBackdrop />
-      <div className="absolute inset-0 bg-grid opacity-[0.04] pointer-events-none" />
+    <div className="min-h-screen pb-24 md:pb-0 md:cursor-crosshair" style={{ background: "#020205" }}>
+      <JarvisCanvas />
+      <CockpitTopbar phaseLabel={goalPhase.label} onSignOut={signOut} />
 
       {/* Mood Check-in Modal */}
       <MoodCheckinModal
@@ -681,8 +688,36 @@ const DashboardPage = () => {
 
       <ReengagementPopup hasMealsToday={todayMeals.length > 0} />
 
-      <div className="relative z-10 max-w-lg mx-auto px-4 pt-4">
-        <TrialBanner />
+      <div
+        className="relative z-10 md:grid md:gap-px"
+        style={{
+          gridTemplateColumns: "200px 1fr 175px",
+          background: "rgba(184,146,42,0.06)",
+          minHeight: "calc(100vh - 48px)",
+        }}
+      >
+        <CockpitLeftRail
+          fullName={profile.full_name || "Piloto"}
+          sport={profile.sport || undefined}
+          phaseLabel={goalPhase.label}
+          tdee={kcalTarget}
+          protein={{ value: todayTotals.protein, target: proteinTarget }}
+          carbs={{ value: todayTotals.carbs, target: carbsTarget }}
+          fat={{ value: todayTotals.fat, target: fatTarget }}
+          streakDays={profile.streak_days || 0}
+          level={profile.level || 1}
+          xp={profile.xp || 0}
+        />
+
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3, duration: 0.4 }}
+          className="md:overflow-y-auto scrollbar-none"
+          style={{ background: "rgba(2,2,5,0.88)", maxHeight: "calc(100vh - 48px)" }}
+        >
+          <div className="max-w-lg mx-auto px-4 pt-4">
+            <TrialBanner />
         <CoachNotificationsCard />
         {hasCoachAccess && new Date().getDay() === 1 && (
           <button
