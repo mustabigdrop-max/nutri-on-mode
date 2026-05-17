@@ -5123,6 +5123,7 @@ export default function PlanoAlimentarIA() {
                     width: "100%", padding: "12px 14px", background: "#0A0A12",
                     border: "1px solid #00C89622", borderRadius: 0,
                     color: T.text, fontSize: 13, fontFamily: T.fontMono, outline: "none",
+                    textTransform: "uppercase", letterSpacing: ".08em",
                   }}
                 >
                   <option value="">Selecione paciente ou cliente...</option>
