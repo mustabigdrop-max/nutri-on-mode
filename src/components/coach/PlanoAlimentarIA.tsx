@@ -6380,7 +6380,122 @@ export default function PlanoAlimentarIA() {
           </div>
         </div>
 
-        {/* Toggle: Modo Econômico */}
+        {/* Calculadora Eletrolítica — aparece quando Hidratação Farmacológica está ativa */}
+        {form.hidratacaoFarmacologica && (() => {
+          const peso = Number(form.peso) || 0;
+          // Cardio: minutos/semana → horas/dia médio
+          const freqNum = parseInt(String(form.cardioFrequencia || "0"), 10) || 0;
+          const durNum = parseInt(String(form.cardioDuracao || "0"), 10) || 0;
+          const horasCardioDia = form.fazCardio ? (freqNum * durNum) / 60 / 7 : 0;
+          // Clima
+          const climaAjusteMl: Record<string, number> = { frio: 0, temperado: 0, quente: 500, muito_quente: 900 };
+          const climaSodioBoost: Record<string, number> = { frio: 0, temperado: 0, quente: 300, muito_quente: 600 };
+          const protoc = form.protocoloFarmacologico || "";
+          const isGLP1 = protoc === "glp1";
+          // Base: 35 ml/kg + cardio (500ml/h) + clima
+          const aguaBaseMl = peso * 35;
+          const aguaCardioMl = horasCardioDia * 500;
+          const aguaClima = climaAjusteMl[form.climaHidratacao] || 0;
+          const aguaGlp1 = isGLP1 ? 750 : 0;
+          const aguaDiur = form.usaDiuretico ? 600 : 0;
+          const aguaTotal = Math.round(aguaBaseMl + aguaCardioMl + aguaClima + aguaGlp1 + aguaDiur);
+          // Sódio (mg)
+          let sodio = 2300;
+          if (form.fazCardio) sodio += 700;
+          if (isGLP1) sodio += 500;
+          if (form.usaDiuretico) sodio += 800;
+          sodio += climaSodioBoost[form.climaHidratacao] || 0;
+          // Potássio (mg)
+          let potassio = 3500;
+          if (isGLP1) potassio += 500;
+          if (form.usaDiuretico) potassio += 700;
+          if (horasCardioDia > 0.5) potassio += 300;
+          // Magnésio (mg)
+          let magnesio = 350;
+          if (isGLP1) magnesio += 50;
+          if (form.usaDiuretico) magnesio += 150;
+          if (form.fazCardio) magnesio += 50;
+          const ratio = (sodio / potassio).toFixed(2);
+
+          const Cell = ({ label, value, sub }: { label: string; value: string; sub?: string }) => (
+            <div style={{ background: T.bg3, border: `1px solid ${T.border}`, borderRadius: 8, padding: 10 }}>
+              <div style={{ fontSize: 10, color: T.muted, letterSpacing: "0.12em", textTransform: "uppercase" }}>{label}</div>
+              <div style={{ fontSize: 18, fontWeight: 700, color: T.text, marginTop: 4 }}>{value}</div>
+              {sub && <div style={{ fontSize: 10, color: T.muted, marginTop: 2 }}>{sub}</div>}
+            </div>
+          );
+
+          return (
+            <div style={{
+              background: T.card, border: `1px solid #B8922A`, borderRadius: 12,
+              padding: 18, marginBottom: 18,
+            }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "#B8922A", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 12 }}>
+                ⚡ Calculadora Eletrolítica (preview determinístico)
+              </div>
+
+              {/* Inputs */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 14 }}>
+                <div>
+                  <Label>Clima dominante</Label>
+                  <SelectField value={form.climaHidratacao} onChange={e => set("climaHidratacao", e.target.value as any)}>
+                    <option value="frio">❄️ Frio (&lt;18°C)</option>
+                    <option value="temperado">🌤️ Temperado (18–26°C)</option>
+                    <option value="quente">☀️ Quente (26–32°C)</option>
+                    <option value="muito_quente">🔥 Muito quente (&gt;32°C)</option>
+                  </SelectField>
+                </div>
+                <div>
+                  <Label>Usa diurético / desidratante?</Label>
+                  <div
+                    onClick={() => set("usaDiuretico", !form.usaDiuretico)}
+                    style={{
+                      cursor: "pointer", height: 38, borderRadius: 8,
+                      border: `1px solid ${form.usaDiuretico ? "#B8922A" : T.border2}`,
+                      background: form.usaDiuretico ? "#B8922A22" : T.bg3,
+                      color: form.usaDiuretico ? "#B8922A" : T.muted,
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      fontSize: 13, fontWeight: 600,
+                    }}
+                  >
+                    {form.usaDiuretico ? "✓ Sim — ajustar K⁺ e Mg²⁺" : "Não"}
+                  </div>
+                </div>
+              </div>
+
+              {/* Outputs */}
+              {peso > 0 ? (
+                <>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10, marginBottom: 12 }}>
+                    <Cell label="Água/dia" value={`${(aguaTotal/1000).toFixed(1)} L`} sub={`${aguaTotal} ml`} />
+                    <Cell label="Sódio (Na⁺)" value={`${sodio} mg`} sub={`${(sodio/1000).toFixed(1)} g`} />
+                    <Cell label="Potássio (K⁺)" value={`${potassio} mg`} sub={`${(potassio/1000).toFixed(1)} g`} />
+                    <Cell label="Magnésio (Mg²⁺)" value={`${magnesio} mg`} sub="glicinato ideal" />
+                  </div>
+                  <div style={{
+                    fontSize: 11, color: T.muted, background: T.bg3, padding: 10,
+                    borderRadius: 8, borderLeft: `2px solid #B8922A`, lineHeight: 1.55,
+                  }}>
+                    <strong style={{ color: T.text }}>Breakdown:</strong> base {Math.round(aguaBaseMl)}ml (35 ml/kg)
+                    {aguaCardioMl > 0 && ` + cardio ${Math.round(aguaCardioMl)}ml`}
+                    {aguaClima > 0 && ` + clima ${aguaClima}ml`}
+                    {aguaGlp1 > 0 && ` + GLP-1 ${aguaGlp1}ml`}
+                    {aguaDiur > 0 && ` + diurético ${aguaDiur}ml`}
+                    . Ratio Na/K = {ratio}.
+                    {isGLP1 && " ⚠️ GLP-1: hidratação antecipada (saciedade reduz ingestão espontânea)."}
+                    {form.usaDiuretico && " ⚠️ Diurético: reponha K⁺ e Mg²⁺ via água de coco, banana, folhas verde-escuras."}
+                  </div>
+                </>
+              ) : (
+                <div style={{ fontSize: 12, color: T.muted, fontStyle: "italic" }}>
+                  Informe o <strong>peso</strong> do paciente para visualizar o cálculo determinístico.
+                </div>
+              )}
+            </div>
+          );
+        })()}
+
+
         <div style={{
           background: T.card, border: `1px solid ${form.modoEconomico ? "#B8922A" : T.border}`,
           borderRadius: 12, padding: 18, marginBottom: 18,
