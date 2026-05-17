@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Loader2, Save, Palette, Bell, CreditCard } from "lucide-react";
+import { ArrowLeft, Loader2, Save, Palette, Bell, CreditCard, Building2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 const CoachSettingsPage = () => {
@@ -20,6 +20,11 @@ const CoachSettingsPage = () => {
     professional_name: "",
     crn: "",
     bio: "",
+    clinic_name: "",
+    city: "",
+    country: "Brasil",
+    logo_url: "",
+    show_on_plan: true,
     wl_app_name: "",
     wl_primary: "#E8A020",
     wl_secondary: "#1a1a2e",
@@ -35,6 +40,11 @@ const CoachSettingsPage = () => {
         professional_name: profile.professional_name || "",
         crn: profile.crn || "",
         bio: profile.bio || "",
+        clinic_name: profile.clinic_name || "",
+        city: profile.city || "",
+        country: profile.country || "Brasil",
+        logo_url: profile.logo_url || "",
+        show_on_plan: profile.show_on_plan ?? true,
         wl_app_name: profile.white_label_app_name || "",
         wl_primary: profile.white_label_primary_color || "#E8A020",
         wl_secondary: profile.white_label_secondary_color || "#1a1a2e",
@@ -53,6 +63,11 @@ const CoachSettingsPage = () => {
       professional_name: form.professional_name,
       crn: form.crn || null,
       bio: form.bio || null,
+      clinic_name: form.clinic_name || null,
+      city: form.city || null,
+      country: form.country || null,
+      logo_url: form.logo_url || null,
+      show_on_plan: form.show_on_plan,
       white_label_app_name: form.wl_app_name || null,
       white_label_primary_color: form.wl_primary,
       white_label_secondary_color: form.wl_secondary,

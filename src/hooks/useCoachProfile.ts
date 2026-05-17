@@ -24,6 +24,13 @@ export interface CoachProfile {
   alert_channels: any;
   trial_ends_at: string | null;
   created_at: string;
+  clinic_name: string | null;
+  city: string | null;
+  country: string | null;
+  logo_url: string | null;
+  show_on_plan: boolean | null;
+  professional_type?: string | null;
+  unique_code?: string | null;
 }
 
 export const useCoachProfile = () => {
