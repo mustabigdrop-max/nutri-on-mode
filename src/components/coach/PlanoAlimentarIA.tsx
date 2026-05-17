@@ -26,25 +26,29 @@ import NutrientDensityPanel from "@/components/coach/NutrientDensityPanel";
 import Glut4SyncCard from "@/components/meal/Glut4SyncCard";
 import AdherenceModal from "@/components/meal/AdherenceModal";
 
-// ─── Design tokens — Jarvis (dark, holographic, gold/cyan) ────────────────────
+// ─── Design tokens — Jarvis Nutrition (emerald primary + gold identity) ───────
 const T = {
   bg:      "#020205",
-  bg2:     "#06060c",
+  bg2:     "#0A0A12",
   bg3:     "#020205",
   card:    "#06060c",
-  border:  "#B8922A18",
-  border2: "#B8922A22",
-  green:   "#B8922A",   // gold = primary accent (kept as `green` to avoid breaking refs)
-  greenDim:"#8a6e1f",
-  greenBg: "#B8922A0A",
+  border:  "#00C89622",
+  border2: "#00C89633",
+  // `green` token kept as alias — now emerald, the nutrition module primary
+  green:   "#00C896",
+  greenDim:"#008f6a",
+  greenBg: "#00C8960A",
   text:    "#F5F0E8",
-  muted:   "#6b6258",
+  muted:   "#888888",
   muted2:  "#2A2A2A",
   red:     "#ff4444",
   amber:   "#D4A732",
   blue:    "#00D4FF",
   cyan:    "#00D4FF",
   gold:    "#B8922A",
+  emerald: "#00C896",
+  emeraldDim: "#00C89622",
+  emeraldGlow: "#00C89644",
   fontDisplay: "'Rajdhani', sans-serif",
   fontMono: "'Space Mono', monospace",
 };
