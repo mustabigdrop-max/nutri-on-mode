@@ -5090,6 +5090,146 @@ export default function PlanoAlimentarIA() {
           </div>
         </Section>
 
+        {/* ─── CONTEXTO CLÍNICO · PROTOCOLO DO COACH (NOVO) ─── */}
+        <Section title="Contexto clínico · Protocolo do coach" icon={<Brain size={12} strokeWidth={2} color={T.cyan} />} accent="cyan">
+          <div style={{ fontFamily: T.fontMono, fontSize: 9, color: "#2A2A2A", letterSpacing: "0.18em", textTransform: "uppercase", marginTop: -10, marginBottom: 14 }}>
+            Descreva estratégias, observações e protocolos próprios — a IA incorporará no plano gerado.
+          </div>
+
+          <div style={{
+            position: "relative",
+            border: "1px solid #00D4FF12",
+            borderTop: "2px solid #00D4FF22",
+            background: "#00D4FF03",
+            padding: 16,
+          }}>
+            {/* Tag IA CONTEXTO ATIVO */}
+            <div style={{
+              position: "absolute", top: 8, right: 10,
+              display: "inline-flex", alignItems: "center", gap: 6,
+              border: "1px solid #00D4FF22", color: "#00D4FF66",
+              padding: "2px 8px", borderRadius: 2,
+              fontFamily: T.fontMono, fontSize: 8, letterSpacing: "0.18em", textTransform: "uppercase",
+            }}>
+              <span style={{ width: 5, height: 5, borderRadius: "50%", background: T.cyan, boxShadow: "0 0 6px #00D4FF", animation: "pulse 1.4s ease-in-out infinite" }} />
+              IA Contexto Ativo
+            </div>
+
+            <div style={{ position: "relative", marginTop: 16 }}>
+              <textarea
+                value={contextoClinico}
+                onChange={(e) => setContextoClinico(e.target.value.slice(0, 1500))}
+                placeholder="Ex: Paciente tem resistência à insulina — priorizar janela pré-treino com carbo de baixo IG. Usar protocolo de carb cycling 5/2. Histórico de retenção hídrica com sódio elevado. Suplementação base: creatina 5g + leucina 3g pós-treino. Evitar glúten por sensibilidade relatada..."
+                style={{
+                  width: "100%", minHeight: 140, resize: "vertical" as const,
+                  background: T.bg, border: "1px solid #00D4FF18", borderRadius: 0,
+                  padding: "12px 14px", color: T.text, fontFamily: T.fontMono,
+                  fontSize: 11, lineHeight: 1.8, outline: "none",
+                  transition: "border-color .2s, box-shadow .2s",
+                }}
+                onFocus={(e) => { e.currentTarget.style.borderColor = "#00D4FF44"; e.currentTarget.style.boxShadow = "0 0 0 1px #00D4FF12"; }}
+                onBlur={(e) => { e.currentTarget.style.borderColor = "#00D4FF18"; e.currentTarget.style.boxShadow = "none"; }}
+              />
+              <div style={{
+                position: "absolute", bottom: 6, right: 10,
+                fontFamily: T.fontMono, fontSize: 9, letterSpacing: "0.12em",
+                color: contextoClinico.length > 1400 ? T.red : contextoClinico.length > 1200 ? T.gold : "#2A2A2A",
+                pointerEvents: "none",
+              }}>
+                {contextoClinico.length} / 1500 caracteres
+              </div>
+            </div>
+
+            {/* Chips de sugestão rápida */}
+            <div style={{ marginTop: 14 }}>
+              <div style={{ fontFamily: T.fontMono, fontSize: 8, color: "#2A2A2A", letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: 8 }}>
+                Inserir contexto rápido:
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                {CONTEXT_CHIPS.map((chip) => {
+                  const isActive = activeChips.includes(chip);
+                  return (
+                    <button
+                      key={chip}
+                      type="button"
+                      onClick={() => toggleContextChip(chip)}
+                      style={{
+                        border: `1px solid ${isActive ? T.gold : "#B8922A22"}`,
+                        background: isActive ? "#B8922A0A" : "transparent",
+                        color: isActive ? T.gold : "#B8922A66",
+                        fontFamily: T.fontMono, fontSize: 9, letterSpacing: "0.14em",
+                        textTransform: "uppercase", padding: "4px 10px", borderRadius: 0,
+                        cursor: "pointer", transition: "all .2s",
+                      }}
+                      onMouseEnter={(e) => { if (!isActive) { e.currentTarget.style.borderColor = "#B8922A55"; e.currentTarget.style.color = T.gold; e.currentTarget.style.background = "#B8922A08"; } }}
+                      onMouseLeave={(e) => { if (!isActive) { e.currentTarget.style.borderColor = "#B8922A22"; e.currentTarget.style.color = "#B8922A66"; e.currentTarget.style.background = "transparent"; } }}
+                    >
+                      {chip}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Histórico de contextos */}
+            {contextoHistory.length > 0 && (
+              <div style={{ marginTop: 18, borderTop: "1px solid #B8922A0A", paddingTop: 12 }}>
+                <button
+                  type="button"
+                  onClick={() => setContextoHistoryOpen(v => !v)}
+                  style={{
+                    display: "inline-flex", alignItems: "center", gap: 6,
+                    background: "transparent", border: "none", padding: 0, cursor: "pointer",
+                    fontFamily: T.fontMono, fontSize: 9, color: "#6b6258", letterSpacing: "0.2em", textTransform: "uppercase",
+                  }}
+                >
+                  <ChevronDown size={11} style={{ transform: contextoHistoryOpen ? "rotate(0deg)" : "rotate(-90deg)", transition: "transform .2s" }} />
+                  Contextos anteriores ({contextoHistory.length})
+                </button>
+                {contextoHistoryOpen && (
+                  <div style={{ marginTop: 10, display: "grid", gap: 6 }}>
+                    {contextoHistory.slice(0, 3).map((h, i) => (
+                      <div key={i} style={{
+                        border: "1px solid #B8922A0A", padding: "8px 12px",
+                        display: "flex", alignItems: "center", gap: 10, background: "#020205",
+                      }}>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{
+                            fontFamily: T.fontMono, fontSize: 10, color: "#3A3A3A", lineHeight: 1.5,
+                            display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as const,
+                            overflow: "hidden", textOverflow: "ellipsis",
+                          }}>
+                            {h.texto}
+                          </div>
+                          <div style={{ fontFamily: T.fontMono, fontSize: 8, color: "#2A2A2A", marginTop: 4, letterSpacing: "0.12em" }}>
+                            {h.paciente ? `${h.paciente.toUpperCase()} · ` : ""}{new Date(h.data).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "2-digit" })}
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setContextoClinico(h.texto.slice(0, 1500))}
+                          title="Reutilizar este contexto"
+                          style={{
+                            display: "inline-flex", alignItems: "center", gap: 4,
+                            background: "transparent", border: "1px solid #B8922A22",
+                            color: T.gold, padding: "4px 8px", borderRadius: 0, cursor: "pointer",
+                            fontFamily: T.fontMono, fontSize: 9, letterSpacing: "0.14em", textTransform: "uppercase",
+                            transition: "all .2s",
+                          }}
+                          onMouseEnter={(e) => { e.currentTarget.style.borderColor = T.gold; e.currentTarget.style.background = "#B8922A08"; }}
+                          onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#B8922A22"; e.currentTarget.style.background = "transparent"; }}
+                        >
+                          <RotateCcw size={10} /> Usar
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </Section>
+
         {/* Fase de periodização */}
         <Section title="Fase de periodização">
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 14 }}>
