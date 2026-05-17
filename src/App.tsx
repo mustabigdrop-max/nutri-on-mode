@@ -49,6 +49,7 @@ import MentalPerformancePage from "./pages/MentalPerformancePage";
 import CoachLandingPage from "./pages/CoachLandingPage";
 import CoachOnboardingPage from "./pages/CoachOnboardingPage";
 import CoachDashboardPage from "./pages/CoachDashboardPage";
+import NotificationsPage from "./pages/NotificationsPage";
 import CoachTemplatesPage from "./pages/CoachTemplatesPage";
 import CoachPatientDetailPage from "./pages/CoachPatientDetailPage";
 import CoachAddPatientPage from "./pages/CoachAddPatientPage";
@@ -133,6 +134,7 @@ const App = () => (
             <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
             <Route path="/support" element={<ProtectedRoute><SupportPage /></ProtectedRoute>} />
+            <Route path="/notificacoes" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
             <Route path="/hydration" element={<ProtectedRoute><HydrationPage /></ProtectedRoute>} />
             <Route path="/meus-protocolos" element={<ProtectedRoute><MeusProtocolosPage /></ProtectedRoute>} />
 
