@@ -322,7 +322,9 @@ const CoachDashboardPage = () => {
           ))}
         </div>
 
-        {/* Capacity warning */}
+        {/* Professional Quick Actions (filtradas por professional_type) */}
+        {professionalType && <ProfessionalQuickActions professionalType={professionalType} />}
+
         {alunosAtivos >= maxAlunos - 2 && (
           <Card className="border-yellow-500/50 bg-yellow-500/10">
             <CardContent className="p-4 flex items-center justify-between">
