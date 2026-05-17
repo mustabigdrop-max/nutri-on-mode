@@ -2,8 +2,9 @@ import { useState, useRef, useEffect } from "react";
 import {
   ArrowLeft, FileText, RefreshCw, BarChart2, CheckSquare,
   Grid, Zap, BookOpen, Clock, ChevronDown, User as UserIcon,
-  Target, Brain, Loader2, RotateCcw,
+  Target, Brain, Loader2, RotateCcw, Utensils, History, Info,
 } from "lucide-react";
+import JarvisBackdrop from "@/components/dashboard/JarvisBackdrop";
 import { exportMealPlanPDF } from "@/utils/exportMealPlanPDF";
 import { exportMealPlanPDF as exportMealPlanPDFElite } from "@/lib/mealPlanPdf";
 import ProtocolGanttChart from "@/components/coach/ProtocolGanttChart";
@@ -4720,7 +4721,11 @@ export default function PlanoAlimentarIA() {
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: T.bg, fontFamily: T.fontMono, color: T.text }}>
+    <div style={{ minHeight: "100vh", background: T.bg, fontFamily: T.fontMono, color: T.text, position: "relative" }}>
+      <div style={{ position: "fixed", inset: 0, zIndex: 0, opacity: 0.6, pointerEvents: "none" }}>
+        <JarvisBackdrop />
+      </div>
+      <div style={{ position: "relative", zIndex: 1 }}>
       <style>{`
         *{box-sizing:border-box}
         ::-webkit-scrollbar{display:none}
@@ -4773,8 +4778,8 @@ export default function PlanoAlimentarIA() {
             borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center",
             boxShadow: "0 0 20px #00C89622", flexShrink: 0,
           }}>
-            {/* Utensils icon */}
-            <BookOpen size={26} strokeWidth={1.5} color="#00C896" />
+            {/* Module icon */}
+            <Utensils size={26} strokeWidth={1.5} color="#00C896" />
           </div>
           <div style={{ minWidth: 0 }}>
             <div style={{ display: "flex", alignItems: "baseline", gap: 8, flexWrap: "wrap" }}>
@@ -5051,6 +5056,180 @@ export default function PlanoAlimentarIA() {
       )}
 
       <div style={{ maxWidth: 860, margin: "0 auto", padding: "32px 20px 120px" }}>
+        {/* ─── PACIENTE EM PROTOCOLO (APEX style) ─── */}
+        {(() => {
+          const OBJ_LABEL: Record<string, string> = {
+            emagrecimento: "Emagrecimento",
+            ganho_massa: "Hipertrofia",
+            recomposicao: "Recomposição",
+            manutencao: "Manutenção",
+            performance: "Performance",
+            saude: "Saúde Geral",
+            gestacao: "Gestante / Pós-parto",
+          };
+          const PROTOCOL_TXT: Record<string, string> = {
+            emagrecimento: "Déficit calórico progressivo com preservação de massa magra. TDEE farmacoajustado. Carb cycling 5/2. Janela pré-treino otimizada.",
+            ganho_massa: "Superávit calórico limpo com periodização de carbo. GLUT-4 Sync ativo. mTOR pós-treino. Leucina 3g por refeição.",
+            recomposicao: "Manutenção calórica com redistribuição de macros. Nutrição circadiana. Refeed semanal estratégico.",
+            performance: "Periodização nutricional por fase de treino. Carb timing peri-workout. Suporte ergogênico integrado.",
+            manutencao: "Manutenção calórica com foco em qualidade nutricional. Densidade de micronutrientes priorizada.",
+            saude: "Protocolo de longevidade · densidade nutricional · padrão anti-inflamatório.",
+            gestacao: "Protocolo materno-fetal · folato, ferro e DHA priorizados · ajustes por trimestre.",
+          };
+          const PROTOCOL_TAGS: Record<string, string[]> = {
+            emagrecimento: ["carb cycling", "janela pré-treino", "déficit progressivo", "TDEE ajustado"],
+            ganho_massa: ["GLUT-4 sync", "mTOR", "leucina 3g", "superávit limpo"],
+            recomposicao: ["recomp", "refeed semanal", "nutrição circadiana"],
+            performance: ["carb timing", "creatina + leucina", "periodização"],
+            manutencao: ["manutenção", "densidade nutricional"],
+            saude: ["longevidade", "anti-inflamatório"],
+            gestacao: ["folato", "ferro", "DHA"],
+          };
+          const obj = form.objetivo || "emagrecimento";
+          const txt = PROTOCOL_TXT[obj] || "Protocolo personalizado baseado no perfil PCA e dados biométricos do paciente.";
+          const tags = PROTOCOL_TAGS[obj] || ["nutriON", "PCA", "personalizado"];
+          const objOptions: Array<[string, string]> = [
+            ["emagrecimento", "Emagrecimento"],
+            ["ganho_massa", "Hipertrofia"],
+            ["recomposicao", "Recomposição"],
+            ["manutencao", "Manutenção"],
+            ["performance", "Performance"],
+            ["saude", "Saúde Geral"],
+            ["gestacao", "Gestante / Pós-parto"],
+          ];
+          const labelStyle: React.CSSProperties = {
+            fontFamily: T.fontMono, fontSize: 9, fontWeight: 700,
+            color: "#B8922A", letterSpacing: ".22em", textTransform: "uppercase",
+          };
+          const tick = (color: string) => (
+            <div style={{ width: 3, height: 14, background: color, borderRadius: 0 }} />
+          );
+          const cardStyle: React.CSSProperties = {
+            background: "rgba(0,200,150,0.02)", border: "1px solid #00C89622",
+            padding: "18px 20px", marginBottom: 16,
+          };
+          return (
+            <>
+              <div style={cardStyle}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+                  {tick(T.emerald)}
+                  <UserIcon size={12} strokeWidth={2} color="#B8922A" />
+                  <span style={labelStyle}>Paciente em Protocolo</span>
+                </div>
+                <select
+                  value={selectedPatient}
+                  onChange={(e) => setSelectedPatient(e.target.value)}
+                  style={{
+                    width: "100%", padding: "12px 14px", background: "#0A0A12",
+                    border: "1px solid #00C89622", borderRadius: 0,
+                    color: T.text, fontSize: 13, fontFamily: T.fontMono, outline: "none",
+                  }}
+                >
+                  <option value="">Selecione paciente ou cliente...</option>
+                  {patients.map((p) => (
+                    <option key={p.user_id} value={p.user_id}>{p.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* ─── 2 ACTION BUTTONS ─── */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 16 }}>
+                <button
+                  onClick={() => { void gerar(); }}
+                  style={{
+                    padding: "14px 16px", borderRadius: 0, cursor: "pointer",
+                    background: "linear-gradient(135deg, #00C89622, #020205)",
+                    border: "1px solid #00C896", color: "#00C896",
+                    fontFamily: T.fontDisplay, fontSize: 13, fontWeight: 700,
+                    letterSpacing: ".12em", textTransform: "uppercase",
+                    display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                    boxShadow: "0 0 18px #00C89633", transition: "all .2s",
+                  }}
+                >
+                  <Zap size={14} strokeWidth={2} /> Gerar Plano
+                </button>
+                <button
+                  onClick={() => { setShowHistory(true); loadHistory(); }}
+                  style={{
+                    padding: "14px 16px", borderRadius: 0, cursor: "pointer",
+                    background: "#020205",
+                    border: "1px solid #B8922A55", color: "#B8922A",
+                    fontFamily: T.fontDisplay, fontSize: 13, fontWeight: 700,
+                    letterSpacing: ".12em", textTransform: "uppercase",
+                    display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                    transition: "all .2s",
+                  }}
+                >
+                  <History size={14} strokeWidth={2} /> Histórico de Planos
+                </button>
+              </div>
+
+              {/* ─── OBJETIVO DO PROTOCOLO (chips) ─── */}
+              <div style={cardStyle}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+                  {tick("#B8922A")}
+                  <Target size={12} strokeWidth={2} color="#B8922A" />
+                  <span style={labelStyle}>Objetivo do Protocolo</span>
+                </div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                  {objOptions.map(([k, l]) => {
+                    const active = obj === k;
+                    return (
+                      <button
+                        key={k}
+                        onClick={() => set("objetivo", k)}
+                        style={{
+                          padding: "8px 14px", borderRadius: 0, cursor: "pointer",
+                          background: active ? "#00C89615" : "#020205",
+                          border: `1px solid ${active ? T.emerald : "#00C89622"}`,
+                          color: active ? T.emerald : "#888888",
+                          fontFamily: T.fontMono, fontSize: 10, fontWeight: active ? 700 : 400,
+                          letterSpacing: ".14em", textTransform: "uppercase",
+                          boxShadow: active ? "0 0 14px #00C89633" : "none",
+                          transition: "all .2s",
+                        }}
+                      >
+                        {l}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* ─── PROTOCOLO NUTRION ATIVO (info card) ─── */}
+              <div style={cardStyle}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+                  {tick(T.emerald)}
+                  <Info size={12} strokeWidth={2} color="#B8922A" />
+                  <span style={labelStyle}>Protocolo nutriON Ativo</span>
+                </div>
+                <div style={{
+                  padding: "12px 14px",
+                  background: "linear-gradient(135deg, #00C89610, transparent)",
+                  border: "1px solid #00C89633",
+                }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
+                    <Target size={11} color={T.emerald} />
+                    <span style={{ fontFamily: T.fontMono, fontSize: 9, fontWeight: 700, color: T.emerald, letterSpacing: ".18em", textTransform: "uppercase" }}>
+                      {OBJ_LABEL[obj] || "Personalizado"}
+                    </span>
+                  </div>
+                  <div style={{ fontSize: 12, color: T.text, lineHeight: 1.6, marginBottom: 10 }}>{txt}</div>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                    {tags.map((tg) => (
+                      <span key={tg} style={{
+                        fontFamily: T.fontMono, fontSize: 9, padding: "3px 8px", borderRadius: 2,
+                        background: "#00C8961A", color: T.emerald, border: "1px solid #00C89633",
+                        letterSpacing: ".08em",
+                      }}>{tg}</span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </>
+          );
+        })()}
+
         {/* Dados do paciente */}
         <Section title="Dados do paciente" icon={<UserIcon size={12} strokeWidth={2} color={T.emerald} />}>
           <div style={{ marginBottom: 14 }}>
@@ -6614,6 +6793,7 @@ export default function PlanoAlimentarIA() {
         <div style={{ textAlign: "center", marginTop: 12, fontSize: 11, color: T.muted2 }}>
           Powered by IA · Método MCE · nutriON
         </div>
+      </div>
       </div>
     </div>
   );
