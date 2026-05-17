@@ -24,6 +24,9 @@ import CoachHub from "@/pages/CoachHub";
 import ApexVisualDashboard from "@/components/coach/ApexVisualDashboard";
 import FeminineCycleBadge from "@/components/coach/FeminineCycleBadge";
 import { isFeminine, getCyclePhase, getCycleDayCount } from "@/lib/feminine";
+import ProfessionalTypeBadge from "@/components/coach/ProfessionalTypeBadge";
+import ProfessionalQuickActions from "@/components/coach/ProfessionalQuickActions";
+import { useUserRole } from "@/hooks/useUserRole";
 
 interface PatientRow {
   id: string;
@@ -45,6 +48,7 @@ const CoachDashboardPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { profile, loading: profileLoading } = useCoachProfile();
+  const { professionalType } = useUserRole();
   const [patients, setPatients] = useState<PatientRow[]>([]);
   const [partners, setPartners] = useState<any[]>([]);
   const [alerts, setAlerts] = useState<any[]>([]);
@@ -271,6 +275,7 @@ const CoachDashboardPage = () => {
                 <Badge variant="outline" className="text-xs">
                   {profile.plan === "white_label" ? "White Label" : "Coach Pro"}
                 </Badge>
+                <ProfessionalTypeBadge type={professionalType} />
               </h1>
               <p className="text-sm text-muted-foreground">{profile.professional_name}</p>
             </div>
@@ -317,7 +322,9 @@ const CoachDashboardPage = () => {
           ))}
         </div>
 
-        {/* Capacity warning */}
+        {/* Professional Quick Actions (filtradas por professional_type) */}
+        {professionalType && <ProfessionalQuickActions professionalType={professionalType} />}
+
         {alunosAtivos >= maxAlunos - 2 && (
           <Card className="border-yellow-500/50 bg-yellow-500/10">
             <CardContent className="p-4 flex items-center justify-between">
