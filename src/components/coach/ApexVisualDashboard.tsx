@@ -628,7 +628,6 @@ function ApexGeneralScoreCard({ segments, cat }: { segments: SegItem[]; cat: Cat
 
 function InsightHighlights({ segments }: { segments: SegItem[] }) {
   if (segments.length < 2) return null;
-  // Stable sort preserving IA order on ties: lowest first / highest last
   let lowIdx = 0, highIdx = 0;
   segments.forEach((s, i) => {
     if (s.score < segments[lowIdx].score) lowIdx = i;
@@ -641,35 +640,10 @@ function InsightHighlights({ segments }: { segments: SegItem[] }) {
     const m = t.match(/^([^.!?\n]+[.!?])/);
     return (m ? m[1] : t).trim();
   };
-  const RED = "#FF4444";
-  const GREEN = "#00FF88";
-  const Card = ({ icon, label, color, name, score, desc }: any) => (
-    <div
-      className="rounded-lg p-3 flex flex-col"
-      style={{
-        background: `${color}0D`, // ~5% opacity
-        borderLeft: `4px solid ${color}`,
-        border: `1px solid ${color}33`,
-        borderLeftWidth: 4,
-        maxHeight: 120,
-      }}
-    >
-      <div className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color }}>
-        {icon} {label}
-      </div>
-      <div className="flex items-baseline gap-2 leading-tight">
-        <div className="text-lg font-black truncate" style={{ color }}>{name}</div>
-        <div className="text-sm font-bold font-mono shrink-0" style={{ color }}>{score}/10</div>
-      </div>
-      <div className="text-[11px] text-muted-foreground mt-1 line-clamp-2 leading-snug">
-        {desc || "—"}
-      </div>
-    </div>
-  );
   return (
     <div className="grid md:grid-cols-2 gap-2">
-      <Card icon="🔴" label="Ponto Crítico" color={RED} name={stripMd(low.label)} score={low.score} desc={firstSentence(low.diag)} />
-      <Card icon="🟢" label="Ponto Forte" color={GREEN} name={stripMd(high.label)} score={high.score} desc={firstSentence(high.diag)} />
+      <InsightCard type="critico" name={stripMd(low.label)} score={low.score} desc={firstSentence(low.diag)} />
+      <InsightCard type="forte" name={stripMd(high.label)} score={high.score} desc={firstSentence(high.diag)} />
     </div>
   );
 }
