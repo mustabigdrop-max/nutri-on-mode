@@ -83,16 +83,16 @@ const CoachInvitePage = () => {
     setAccepting(true);
 
     try {
-      const { data, error } = await supabase.functions.invoke("accept-coach-invite", {
-        body: { invite_token: token },
-      });
+      const fnName = inviteKind === "professional" ? "accept-professional-invite" : "accept-coach-invite";
+      const body = inviteKind === "professional" ? { invite_code: token } : { invite_token: token };
+      const { data, error } = await supabase.functions.invoke(fnName, { body });
 
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
 
       setAccepted(true);
-      setCoachName(data.coach_name || "seu Coach");
-      toast({ title: "Convite aceito! 🎉", description: `Você agora é aluno de ${data.coach_name}` });
+      setCoachName(data.coach_name || "seu Profissional");
+      toast({ title: "Convite aceito! 🎉", description: `Você agora é cliente de ${data.coach_name}` });
 
       setTimeout(() => navigate("/dashboard"), 2000);
     } catch (err: any) {
