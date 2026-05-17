@@ -5123,6 +5123,7 @@ export default function PlanoAlimentarIA() {
                     width: "100%", padding: "12px 14px", background: "#0A0A12",
                     border: "1px solid #00C89622", borderRadius: 0,
                     color: T.text, fontSize: 13, fontFamily: T.fontMono, outline: "none",
+                    textTransform: "uppercase", letterSpacing: ".08em",
                   }}
                 >
                   <option value="">Selecione paciente ou cliente...</option>
@@ -5214,13 +5215,13 @@ export default function PlanoAlimentarIA() {
                       {OBJ_LABEL[obj] || "Personalizado"}
                     </span>
                   </div>
-                  <div style={{ fontSize: 12, color: T.text, lineHeight: 1.6, marginBottom: 10 }}>{txt}</div>
+                  <div style={{ fontSize: 12, color: T.text, lineHeight: 1.6, marginBottom: 10, textTransform: "uppercase", letterSpacing: ".04em" }}>{txt}</div>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                     {tags.map((tg) => (
                       <span key={tg} style={{
                         fontFamily: T.fontMono, fontSize: 9, padding: "3px 8px", borderRadius: 2,
                         background: "#00C8961A", color: T.emerald, border: "1px solid #00C89633",
-                        letterSpacing: ".08em",
+                        letterSpacing: ".08em", textTransform: "uppercase",
                       }}>{tg}</span>
                     ))}
                   </div>
