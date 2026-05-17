@@ -5918,6 +5918,8 @@ export default function PlanoAlimentarIA() {
         </Section>
 
         {/* Protocolo de cardio */}
+        <BlocoRecuperacao value={recuperacao} onChange={setRecuperacao} />
+        <BlocoIntraTreino value={intraTreino} onChange={setIntraTreino} />
         <Section title="Protocolo de cardio">
           <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: form.fazCardio ? 16 : 0 }}>
             <Label>Faz cardio?</Label>
