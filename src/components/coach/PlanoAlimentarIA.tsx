@@ -4,6 +4,18 @@ import {
   Grid, Zap, BookOpen, Clock, ChevronDown, User as UserIcon,
   Target, Brain, Loader2, RotateCcw, Utensils, History, Info,
 } from "lucide-react";
+import {
+  BlocoIdentidade, BlocoTemplates, BlocoCategoriaEsporte,
+  BlocoRecuperacao, BlocoIntraTreino, BlocoCondicoesClinicas,
+  BlocoPdfConfig, BlocoModoEspecialExtras, BlocoComparativoHistorico,
+  type CoachTemplate,
+} from "./PlanoAlimentarExtras";
+import {
+  IDENTIDADE_DEFAULT, INTRA_DEFAULT, PDF_DEFAULT,
+  RECUPERACAO_DEFAULT, MODO_EXTRAS_DEFAULT,
+  type IdentidadeProfissional, type IntraTreinoCfg,
+  type PdfCfg, type RecuperacaoCfg, type ModoEspecialExtras,
+} from "./planoAlimentarConstants";
 import JarvisBackdrop from "@/components/dashboard/JarvisBackdrop";
 import { exportMealPlanPDF } from "@/utils/exportMealPlanPDF";
 import { exportMealPlanPDF as exportMealPlanPDFElite } from "@/lib/mealPlanPdf";
@@ -1230,6 +1242,68 @@ export default function PlanoAlimentarIA() {
     compostosAtivos: [] as string[],
   });
 
+  // ─── Campos ADITIVOS (novos blocos /coach/plano-alimentar) ─────────────────
+  const [categoriaEsporte, setCategoriaEsporte] = useState<string>("");
+  const [recuperacao, setRecuperacao] = useState<RecuperacaoCfg>(RECUPERACAO_DEFAULT);
+  const [intraTreino, setIntraTreino] = useState<IntraTreinoCfg>(INTRA_DEFAULT);
+  const [condicoesClinicas, setCondicoesClinicas] = useState<string[]>([]);
+  const [pdfCfg, setPdfCfg] = useState<PdfCfg>(PDF_DEFAULT);
+  const [modoExtras, setModoExtras] = useState<ModoEspecialExtras>(MODO_EXTRAS_DEFAULT);
+  const [identidade, setIdentidade] = useState<IdentidadeProfissional>(IDENTIDADE_DEFAULT);
+  const [coachTemplates, setCoachTemplates] = useState<CoachTemplate[]>([]);
+
+  // Hidratar do localStorage uma vez
+  useEffect(() => {
+    try {
+      const id = localStorage.getItem("nutrion_coach_identity");
+      if (id) setIdentidade({ ...IDENTIDADE_DEFAULT, ...JSON.parse(id) });
+      const tpl = localStorage.getItem("nutrion_coach_templates");
+      if (tpl) setCoachTemplates(JSON.parse(tpl));
+    } catch {}
+  }, []);
+  useEffect(() => {
+    try { localStorage.setItem("nutrion_coach_identity", JSON.stringify(identidade)); } catch {}
+  }, [identidade]);
+  const persistTemplates = (next: CoachTemplate[]) => {
+    setCoachTemplates(next);
+    try { localStorage.setItem("nutrion_coach_templates", JSON.stringify(next)); } catch {}
+  };
+  const handleSaveTemplate = (nome: string) => {
+    const snapshot = {
+      form, categoriaEsporte, recuperacao, intraTreino, condicoesClinicas, pdfCfg, modoExtras,
+    };
+    persistTemplates([...coachTemplates, { id: crypto.randomUUID(), nome, criadoEm: new Date().toISOString(), snapshot }].slice(0, 10));
+  };
+  const handleApplyTemplate = (t: CoachTemplate) => {
+    const s = t.snapshot || {};
+    if (s.form) setForm((f: any) => ({ ...f, ...s.form }));
+    if (s.categoriaEsporte !== undefined) setCategoriaEsporte(s.categoriaEsporte);
+    if (s.recuperacao) setRecuperacao(s.recuperacao);
+    if (s.intraTreino) setIntraTreino(s.intraTreino);
+    if (s.condicoesClinicas) setCondicoesClinicas(s.condicoesClinicas);
+    if (s.pdfCfg) setPdfCfg(s.pdfCfg);
+    if (s.modoExtras) setModoExtras(s.modoExtras);
+  };
+  const handleDeleteTemplate = (id: string) => persistTemplates(coachTemplates.filter(t => t.id !== id));
+
+  // String aditiva injetada no contexto clínico para a edge function
+  const buildContextoAditivo = () => {
+    const parts: string[] = [];
+    if (categoriaEsporte) parts.push(`ESPORTE/MODALIDADE: ${categoriaEsporte}`);
+    if (condicoesClinicas.length) parts.push(`CONDIÇÕES CLÍNICAS: ${condicoesClinicas.join(", ")}`);
+    if (recuperacao.estrategias.length) parts.push(`ESTRATÉGIAS DE RECUPERAÇÃO: ${recuperacao.estrategias.join(", ")}`);
+    if (recuperacao.nivelEstresse) parts.push(`NÍVEL DE ESTRESSE: ${recuperacao.nivelEstresse}`);
+    if (recuperacao.hrvMonitorado && recuperacao.hrvMedio) parts.push(`HRV (7d): ${recuperacao.hrvMedio} ms`);
+    if (recuperacao.lesaoAtiva && recuperacao.lesaoDesc) parts.push(`LESÃO ATIVA: ${recuperacao.lesaoDesc}`);
+    if (intraTreino.ativo) parts.push(`NUTRIÇÃO INTRA-TREINO: tipos=${intraTreino.tipos.join("|")} cho=${intraTreino.choHora}g/h sódio=${intraTreino.sodioLitro}mg/L`);
+    parts.push(`IDIOMA DO PLANO: ${pdfCfg.idioma}`);
+    parts.push(`FORMATO MEDIDAS: ${pdfCfg.formato}`);
+    parts.push(`NÍVEL DE DETALHE: ${pdfCfg.detalhe}`);
+    if (pdfCfg.incluir.length) parts.push(`INCLUIR NO PLANO: ${pdfCfg.incluir.join(", ")}`);
+    if (Object.keys(modoExtras).length) parts.push(`MODO ESPECIAL EXTRAS: ${JSON.stringify(modoExtras)}`);
+    return parts.length ? `\n\nCONTEXTO ADITIVO (NOVOS CAMPOS COACH):\n${parts.join("\n")}` : "";
+  };
+
   // Lista canônica Dr. VERTEX para o multi-select de Compostos Ativos
   const COMPOSTOS_VERTEX = [
     "Ipamorelin", "CJC-1295", "MK-677 (Ibutamoren)", "Tesamorelin",
@@ -1386,9 +1460,17 @@ export default function PlanoAlimentarIA() {
         ...form,
         contexto_clinico: contextoClinico?.trim() || null,
         contextoClinico: contextoClinico?.trim() || null,
-        contexto_clinico_prompt: contextoClinico?.trim()
+        contexto_clinico_prompt: (contextoClinico?.trim()
           ? `\n\nCONTEXTO CLÍNICO DO COACH:\n${contextoClinico.trim()}`
-          : "",
+          : "") + buildContextoAditivo(),
+        coach_signature: identidade.exibirNoPdf ? identidade : null,
+        coach_identity: identidade,
+        categoria_esporte: categoriaEsporte || null,
+        condicoes_clinicas: condicoesClinicas,
+        recuperacao_cfg: recuperacao,
+        intra_treino_cfg: intraTreino,
+        pdf_cfg: pdfCfg,
+        modo_especial_extras: modoExtras,
         compostos_ativos: form.compostosAtivos || [],
         modo_especial: modoEspecial,
         fase_ciclo: modoEspecial === "feminino" ? faseCiclo : undefined,
@@ -5270,6 +5352,10 @@ export default function PlanoAlimentarIA() {
           );
         })()}
 
+        {/* ─── BLOCOS ADITIVOS: Templates + Identidade Profissional ─── */}
+        <BlocoTemplates templates={coachTemplates} onApply={handleApplyTemplate} onSaveNew={handleSaveTemplate} onDelete={handleDeleteTemplate} />
+        <BlocoIdentidade value={identidade} onChange={setIdentidade} />
+
         {/* Dados do paciente */}
         <Section title="Dados do paciente" icon={<UserIcon size={12} strokeWidth={2} color={T.emerald} />}>
           <div style={{ marginBottom: 14 }}>
@@ -5378,6 +5464,9 @@ export default function PlanoAlimentarIA() {
             </div>
           </div>
         </Section>
+
+        {/* ─── BLOCO 1 — CATEGORIA DE ESPORTE ─── */}
+        <BlocoCategoriaEsporte value={categoriaEsporte} onChange={setCategoriaEsporte} />
 
         {/* ─── CONTEXTO CLÍNICO · PROTOCOLO DO COACH (NOVO) ─── */}
         <Section title="Contexto clínico · Protocolo do coach" icon={<Brain size={12} strokeWidth={2} color={T.emerald} />} accent="emerald">
@@ -5829,6 +5918,8 @@ export default function PlanoAlimentarIA() {
         </Section>
 
         {/* Protocolo de cardio */}
+        <BlocoRecuperacao value={recuperacao} onChange={setRecuperacao} />
+        <BlocoIntraTreino value={intraTreino} onChange={setIntraTreino} />
         <Section title="Protocolo de cardio">
           <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: form.fazCardio ? 16 : 0 }}>
             <Label>Faz cardio?</Label>
@@ -6132,6 +6223,9 @@ export default function PlanoAlimentarIA() {
             <TextareaField placeholder="Ex: Hipotireoidismo, hipertensão controlada, histórico de compulsão alimentar..." value={form.observacoes} onChange={e => set("observacoes", e.target.value)} />
           </div>
         </Section>
+
+        {/* ─── BLOCO 4 — CONDIÇÕES CLÍNICAS ─── */}
+        <BlocoCondicoesClinicas value={condicoesClinicas} onChange={setCondicoesClinicas} />
 
         {/* ─── Módulo GLUT-4 Pós-Treino ─────────────────────────────────────── */}
         <div style={{
@@ -6932,9 +7026,9 @@ export default function PlanoAlimentarIA() {
           </div>
         </div>
 
+        <BlocoPdfConfig value={pdfCfg} onChange={setPdfCfg} />
+
         <button onClick={gerar} style={{
-          width: "100%", padding: 15, borderRadius: 10,
-          background: T.green, border: "none", color: "#0a0f0a",
           fontSize: 15, fontWeight: 700, cursor: "pointer",
           fontFamily: "inherit", letterSpacing: "0.02em",
           transition: "opacity .2s", boxShadow: `0 0 24px ${T.green}33`
