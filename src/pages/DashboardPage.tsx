@@ -718,6 +718,7 @@ const DashboardPage = () => {
         >
           <div className="max-w-lg mx-auto px-4 pt-4">
             <TrialBanner />
+        <MyProfessionalCard />
         <CoachNotificationsCard />
         {hasCoachAccess && new Date().getDay() === 1 && (
           <button
