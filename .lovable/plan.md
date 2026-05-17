@@ -1,62 +1,104 @@
-## Objetivo
-Elevar todo o visual do sistema nutriON ao nível "Jarvis" (dark, holográfico, técnico) sem alterar nenhuma rota, hook, edge function, lógica de dados ou componente de formulário funcional. Apenas estilo.
 
-## Escopo (somente camada de apresentação)
+# Cockpit Jarvis — Dashboard nutriON
 
-### 1. Fundação global
-- `index.html`: garantir import do Google Fonts com Rajdhani 600/700 + Space Mono 400/700 (já presente — confirmar pesos).
-- `src/index.css`:
-  - Atualizar tokens HSL: `--background` → #020205, `--foreground` → #F5F0E8, `--primary` → #B8922A, `--accent` → #00D4FF, `--destructive` → #ff4444, `--border` → #B8922A com baixa opacidade.
-  - Novos tokens: `--gold-line`, `--gold-soft`, `--cyan-line`, `--danger-line`, `--ink-warm`, `--ink-dim`.
-  - Novas variáveis de fonte: `--font-jarvis: 'Rajdhani'`, `--font-tech: 'Space Mono'`.
-  - Utility classes: `.font-jarvis`, `.font-tech`, `.tech-label` (uppercase + letter-spacing 0.2em), `.num-display` (Rajdhani 700), `.jarvis-card` (radius 0, border `#B8922A1F`), `.jarvis-bar` (track 3px), `.hex-bg` (grade hexagonal sutil), scrollbar hidden global, skeleton `#B8922A08`.
-  - Keyframes: `barFill`, `dotPulse`, `softGlow`.
-- `tailwind.config.ts`: adicionar `fontFamily.jarvis`, `fontFamily.tech`, cores `gold-line`, `cyan-line`, `ink-warm`, `ink-dim`, `danger-line`. Manter tokens existentes para retrocompatibilidade.
+Transformação visual completa do `/dashboard`, mantendo TODOS os hooks Supabase, cálculos de TDEE/macros/XP, rotas e componentes existentes (NutriSync, Treino, Estado Muscular, etc).
 
-### 2. Background canvas (somente dashboard)
-- Novo `src/components/dashboard/JarvisBackdrop.tsx`: grade hexagonal canvas (opacity 0.015 ouro) + 40 partículas lentas gold/cyan opacity ≤0.08. Componente leve, `pointer-events-none`, posição `fixed inset-0 -z-10`.
+## 1. Fontes & tokens
 
-### 3. Dashboard (`src/pages/Index.tsx` + componentes em `src/components/dashboard/`)
-- Topbar: `rgba(2,2,5,0.95)` + `backdrop-blur(12px)`, border-bottom `#B8922A18`, logo "NUTRI" + "ON" dourado em Rajdhani, badge "COCKPIT" Space Mono 6px, status "SISTEMA ATIVO" com dot ciano pulsante. Trocar emojis por Lucide.
-- Layout grid 3 colunas (200px / 1fr / 180px) com separadores `1px #B8922A08`.
-- Painel esquerdo: card de perfil + lista de métricas com barras animadas (TDEE/Prot/Carb/Gord/Streak/XP). Cores conforme spec. Item ativo com linha lateral 2px ouro.
-- Centro hero: saudação tech, card "Modo Desafio" sem emoji, anel SVG de kcal 130px (track `#0F0F14`, fill ciano com `strokeDashoffset` animado, centro Rajdhani 28px, % topo Space Mono ciano), 3 rows ao lado.
-- Centro macros: 3 barras 3px (gold/cyan/red) com label tech.
-- Cards inferiores 2x2 (NutriSync, Fase, Pull, Comparativo) `radius:0`, borders sutis, ícones Lucide.
-- Painel direito: APEX Score grande Rajdhani 48px ciano, 4 mini barras, diagnóstico semanal, idade biológica, "MCE ATIVO" com dot.
+- `index.html`: adicionar link Rajdhani 600/700 + Space Mono 400/700 (já existe Rajdhani; só garantir Space Mono e weights).
+- `src/index.css`: confirmar variáveis da paleta (`--gold #B8922A`, `--cyan #00D4FF`, `--bg #020205`, `--danger #ff4444`). Já há tokens HSL equivalentes — adicionar utilitários `.font-rajdhani`, `.font-mono-tech`, `.tech-label`, classes para borders gold/cyan sutis.
 
-### 4. Lab (`src/pages/LabPage.tsx` + `src/components/lab/*`)
-- Topbar Lab: "NUTRION LAB" Rajdhani + Lucide `Microscope`, subtítulo Space Mono, border-bottom `#00D4FF0A`.
-- Tabs horizontais scrolláveis: ativa border-bottom 2px ouro + bg `#B8922A08`; Dr. VERTEX / Ergo em ciano quando ativos.
-- Card agente APEX: border `#B8922A18`, bg `#B8922A04`, ícone `FlaskConical`, badge "ONLINE" pulsante ciano.
-- Chat/respostas: bg `#020205`, mensagens APEX com border-left 2px ouro, texto Space Mono 8px line-height 1.9, tags científicas com border ciano.
-- Input: border `#B8922A22`, focus ouro, botão enviar fundo ouro + `Send`, mic com border ouro.
+## 2. JarvisCanvas (novo)
 
-### 5. Coach Dashboard (`src/pages/CoachDashboardPage.tsx` + `src/components/coach/*`)
-- Topbar Coach: "nutriON Coach" Rajdhani, badge "Coach Pro" border ouro, nome em Space Mono.
-- 4 cards de métricas com border-top colorido (gold/cyan/red/gold), valor Rajdhani 24px, ícones Lucide.
-- Botões de ação: primário fundo ouro/texto `#020205` Rajdhani; secundários border ouro suave.
-- Tabs com mesma linguagem do Lab.
-- Lista de alunos: border-bottom `#0A0A0F`, hover bg `#B8922A04`, avatar com border ouro + iniciais Rajdhani, score com cor dinâmica (≥70 ciano, ≥40 ouro, <40 vermelho), badge "Em risco" com dot pulsante.
-- Coluna alertas: border-left ouro, título tech, items com border vermelho suave; estado vazio Space Mono.
-- Parceiros: items com border ouro, badges ON_PLUS / Ativo.
+`src/components/dashboard/JarvisCanvas.tsx` — substitui o atual `JarvisBackdrop`. Single `<canvas>` fixo z-0, pointer-events none, com:
 
-### 6. Regras transversais
-- Trocar emojis por Lucide nos componentes tocados (dashboard, lab, coach topbars/cards).
-- Border-radius 0 em cards principais, 2px em badges/inputs (override pontual via classe `jarvis-card`).
-- Transições `0.2s` em hover, `1.5s` em barras.
-- Scrollbars escondidas globalmente via CSS.
-- Skeleton/loader usa `#B8922A08`.
+- Grade hexagonal 28px, opacity base 0.015, pulso individual + acende perto do cursor (raio 100px → 0.06).
+- 100 partículas desktop / 35 mobile (75% gold, 25% cyan), conexões <60px, repel cursor (raio 80px).
+- Streams verticais (15 labels técnicos) — desktop only.
+- Linha tracejada centro→cursor + dot ciano — desktop only.
+- Glow radial central pulsante.
+- 3 anéis orbitais + radar sweep + dots orbitais — desktop; mobile só 1 anel sutil.
+- Núcleo branco central com 3 camadas de glow.
+- Detecção `useIsMobile` para alternar densidade; touch tracking no mobile.
 
-## Fora de escopo (não tocar)
-- Rotas, hooks, edge functions, lógica de dados, formulários, validações, RLS, business rules.
-- Landing page hero (já entregue).
-- Módulos não citados (training, nutrisync internals, peptide vault, etc.) — herdam tokens globais via `index.css`/Tailwind sem edição direta.
+## 3. Topbar cockpit
 
-## Arquivos previstos
-- Editar: `src/index.css`, `tailwind.config.ts`, `index.html` (se faltar peso), `src/pages/Index.tsx`, `src/pages/LabPage.tsx`, `src/pages/CoachDashboardPage.tsx`, componentes diretos de dashboard/lab/coach topbar e listas.
-- Criar: `src/components/dashboard/JarvisBackdrop.tsx`.
+`src/components/dashboard/CockpitTopbar.tsx` — sticky 48px, blur 16px, border-bottom gold 0.18. Logo NUTRI/ON Rajdhani 20px + badge COCKPIT, nav central (Home/NutriPlan/TrainingON/LAB/Perfil) só desktop, status "SISTEMA ATIVO" + badge fase à direita. Usa Lucide, sem emojis. Substitui o header inline atual do `DashboardPage`.
 
-## Validação
-- Build limpo (sem TS errors).
-- Inspeção visual rápida via screenshot do dashboard, /lab e /coach-dashboard para confirmar paleta, fontes e ausência de emojis nas áreas tocadas.
+## 4. Layout 3 colunas (desktop ≥768px)
+
+`src/components/dashboard/CockpitShell.tsx` — wrapper grid `200px 1fr 175px`, gap 1px com background gold 0.06, altura `calc(100vh - 48px)`, scrollbar oculta. Mobile (<768px): flex-col empilhado, mantém `BottomNav`.
+
+### Coluna esquerda — `CockpitLeftRail.tsx`
+Perfil do atleta (nome do profile, objetivo, badge fase) + lista de métricas com mini-barras animadas:
+- TDEE (`profile.vet_kcal` / `get_kcal`)
+- Proteína consumida/meta (`todayTotals.protein` / `profile.protein_g`)
+- Carbo idem (cyan)
+- Gordura idem (danger)
+- Streak (`profile.streak_days`)
+- Nível + XP (`profile.level`, `profile.xp`)
+
+### Coluna central — `CockpitMain.tsx`
+- Hero (saudação + cockpit · nome)
+- Anel kcal SVG 130px (reaproveita lógica do `CalorieRing` atual, redesenhado para spec) + 3 rows macros ao lado
+- Macronutrientes (3 barras animadas)
+- Grid 2 colunas (gap 1px gold) com cards existentes embrulhados em wrapper "cockpit card" sem border-radius:
+  NutriSyncComparisonCard, fase atual, treino de hoje, NutrientTimingCard, MuscleStateCard, ConsistencyScoreCard, etc.
+
+### Coluna direita — `CockpitRightRail.tsx`
+- APEX Score (countUp 0→valor real do `MuscleStateCard`/score derivado)
+- 4 mini barras (Postura, Mobilidade, Simetria, FMS) — usar valores reais quando disponíveis, senão fallback do perfil
+- Diagnóstico semanal (Adesão via `ConsistencyScoreCard` data, proteína dias, peso trend via `useWeightLogs` se já presente)
+- Idade biológica (`BiologicalAgeCard` data)
+- Módulos ativos (PCA, NutriPlan, TrainingON, VERTEX, KAA, Microbiota) com dot pulsante
+- Bottom status MCE ATIVO
+
+## 5. Mobile
+
+Mesma `CockpitMain` empilhada sem rails: hero → anel 110px → macros → grid 2x2 métricas rápidas → cards → diagnóstico → módulos. `BottomNav` preservado, recolorido para tokens do cockpit.
+
+## 6. Animações de entrada (framer-motion)
+
+Stagger: topbar (y -10, 0.4s) → left (x -20, delay .2) → center (y 10, delay .3) → right (x 20, delay .4) → barras (width, delay .6, 1.5s) → APEX countUp (delay .8, 1.8s) → ring (delay .5, 1.8s).
+
+## 7. Interações
+
+- Hover cards: `bg #B8922A04`, transition 0.2s.
+- Hover métrica left: border-left 2px gold.
+- Clique módulo right: flash gold + toast "▸ MÓDULO — ativado" 2s (sonner já importado).
+- `cursor-crosshair` no shell desktop.
+
+## 8. Preservação rigorosa
+
+- `DashboardPage.tsx` mantém **toda** a lógica de fetch (meal_logs, protocolos, mood, water, workout), apenas troca o **JSX** por `<CockpitShell>` que recebe props com os dados já calculados.
+- Componentes legados (`CoachNotificationsCard`, `AthleteCompetitionCard`, `WeightCheckInCard`, `SmartAlerts`, `TrialBanner`, `ReengagementPopup`, `MoodCheckinModal`, `SosHungerInterceptor`, `DashboardGamificationCards`, `ProactiveRecipeSuggestion`, `WeeklySabotageCard`, `EmotionalWinRateCard`) continuam montados — distribuídos entre central (cards principais) e topo do main (alerts/banners).
+- Nada removido. Apenas reorganizado dentro do shell cockpit.
+
+## Arquivos criados
+```
+src/components/dashboard/JarvisCanvas.tsx
+src/components/dashboard/CockpitTopbar.tsx
+src/components/dashboard/CockpitShell.tsx
+src/components/dashboard/CockpitLeftRail.tsx
+src/components/dashboard/CockpitMain.tsx
+src/components/dashboard/CockpitRightRail.tsx
+src/components/dashboard/cockpit/CockpitCard.tsx        (wrapper visual)
+src/components/dashboard/cockpit/MiniBar.tsx
+src/components/dashboard/cockpit/CountUp.tsx
+src/components/dashboard/cockpit/KcalRing.tsx           (nova spec 130px)
+```
+
+## Arquivos editados
+```
+index.html                 — fonts Space Mono / Rajdhani weights
+src/index.css              — utilitários tech-label, cockpit-card, scrollbar hide
+src/pages/DashboardPage.tsx — substitui árvore JSX pelo CockpitShell, mantém toda a lógica
+```
+
+## Riscos & mitigação
+
+- Risco de quebrar telas dependentes do scroll/layout do dashboard antigo → manter `BottomNav` e rotas intactas.
+- Risco de performance do canvas em mobile → densidade reduzida + `requestAnimationFrame` único + degradação em `prefers-reduced-motion`.
+- Risco de regressão nos cards: cada card legado renderiza dentro de `CockpitCard` (somente wrapper visual), sem alterar props/internals.
+
+Implementação será feita em um único loop, sequencial: tokens → canvas → topbar → shell+rails → integração no DashboardPage.
