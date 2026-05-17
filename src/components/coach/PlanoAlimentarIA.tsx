@@ -6317,10 +6317,10 @@ export default function PlanoAlimentarIA() {
           display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12,
         }}>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: T.text, display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ fontSize: 16, fontWeight: 700, color: T.text, display: "flex", alignItems: "center", gap: 8 }}>
               💧 Hidratação Farmacológica Inteligente
             </div>
-            <div style={{ fontSize: 11, color: T.muted, marginTop: 4, lineHeight: 1.5 }}>
+            <div style={{ fontSize: 13, color: T.muted, marginTop: 6, lineHeight: 1.55 }}>
               Calcula meta hídrica + eletrólitos (Na⁺, K⁺, Mg²⁺) ajustada ao protocolo farmacológico, diuréticos, GLP-1, cardio e clima. Distribui timing intra-treino, pré-bed e janelas de retenção/depleção em peak week.
             </div>
           </div>
