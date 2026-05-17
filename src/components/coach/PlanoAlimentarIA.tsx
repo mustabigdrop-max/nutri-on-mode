@@ -1460,9 +1460,17 @@ export default function PlanoAlimentarIA() {
         ...form,
         contexto_clinico: contextoClinico?.trim() || null,
         contextoClinico: contextoClinico?.trim() || null,
-        contexto_clinico_prompt: contextoClinico?.trim()
+        contexto_clinico_prompt: (contextoClinico?.trim()
           ? `\n\nCONTEXTO CLÍNICO DO COACH:\n${contextoClinico.trim()}`
-          : "",
+          : "") + buildContextoAditivo(),
+        coach_signature: identidade.exibirNoPdf ? identidade : null,
+        coach_identity: identidade,
+        categoria_esporte: categoriaEsporte || null,
+        condicoes_clinicas: condicoesClinicas,
+        recuperacao_cfg: recuperacao,
+        intra_treino_cfg: intraTreino,
+        pdf_cfg: pdfCfg,
+        modo_especial_extras: modoExtras,
         compostos_ativos: form.compostosAtivos || [],
         modo_especial: modoEspecial,
         fase_ciclo: modoEspecial === "feminino" ? faseCiclo : undefined,
