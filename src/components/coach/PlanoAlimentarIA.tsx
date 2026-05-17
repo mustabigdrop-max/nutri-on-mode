@@ -5436,8 +5436,8 @@ export default function PlanoAlimentarIA() {
                         border: `1px solid ${isActive ? "#00C896" : "#00C89622"}`,
                         background: isActive ? "#00C89608" : "transparent",
                         color: isActive ? "#00C896" : "#00C89666",
-                        fontFamily: T.fontMono, fontSize: 6, letterSpacing: "0.14em",
-                        textTransform: "uppercase", padding: "3px 10px", borderRadius: 0,
+                        fontFamily: T.fontMono, fontSize: 11, letterSpacing: "0.12em",
+                        textTransform: "uppercase", padding: "6px 14px", borderRadius: 0,
                         cursor: "pointer", transition: "all .2s",
                       }}
                       onMouseEnter={(e) => { if (!isActive) { e.currentTarget.style.borderColor = "#00C896"; e.currentTarget.style.color = "#00C896"; e.currentTarget.style.background = "#00C89608"; } }}
