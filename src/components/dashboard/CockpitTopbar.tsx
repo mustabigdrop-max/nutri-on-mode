@@ -122,6 +122,7 @@ export default function CockpitTopbar({ phaseLabel = "BULKING", onSignOut }: Coc
             {phaseLabel}
           </span>
         </div>
+        <NotificationBell />
         {onSignOut && (
           <button
             onClick={onSignOut}
