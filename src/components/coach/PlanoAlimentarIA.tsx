@@ -6652,7 +6652,7 @@ export default function PlanoAlimentarIA() {
               const active = modoEspecial === opt.k;
               return (
                 <button key={opt.k} type="button" onClick={() => setModoEspecial(opt.k as any)}
-                  style={{ padding: "6px 12px", borderRadius: 16, fontSize: 11, fontFamily: "inherit", cursor: "pointer",
+                  style={{ padding: "8px 14px", borderRadius: 16, fontSize: 13, fontFamily: "inherit", cursor: "pointer",
                     border: `1px solid ${active ? T.green : T.border2}`, background: active ? T.greenBg : T.bg3,
                     color: active ? T.green : T.muted, fontWeight: active ? 600 : 400 }}>
                   {opt.l}
