@@ -2953,10 +2953,10 @@ export default function PlanoAlimentarIA() {
           {/* Resumo cards */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(100px, 1fr))", gap: 10, marginBottom: 24 }}>
             {[
-              { l: "Calorias", v: `${kcalTotaisExibicao} kcal`, c: T.green },
-              { l: "Proteína", v: `${r.proteina_total}g (${macroP}%)`, c: T.blue },
-              { l: "Carboidrato", v: `${r.carboidrato_total}g (${macroC}%)`, c: T.amber },
-              { l: "Gordura", v: `${r.gordura_total}g (${macroG}%)`, c: "#f472b6" },
+              { l: "Calorias", v: `${kcalTotaisExibicao} kcal`, c: T.emerald },
+              { l: "Proteína", v: `${r.proteina_total}g (${macroP}%)`, c: "#00C896" },
+              { l: "Carboidrato", v: `${r.carboidrato_total}g (${macroC}%)`, c: "#B8922A" },
+              { l: "Gordura", v: `${r.gordura_total}g (${macroG}%)`, c: "#ff4444" },
               { l: "TMB", v: `${r.tmb} kcal`, c: T.muted },
               { l: "GET", v: `${r.get} kcal`, c: T.muted },
               { l: "IMC", v: r.imc, c: T.muted },
@@ -2968,20 +2968,27 @@ export default function PlanoAlimentarIA() {
             ))}
           </div>
 
-          {/* Barra de macros visual */}
-          <div style={{ marginBottom: 24, padding: "16px", background: T.card, border: `1px solid ${T.border}`, borderRadius: 12 }}>
-            <div style={{ fontSize: 11, color: T.muted, marginBottom: 10, textTransform: "uppercase" as const }}>Distribuição de macros</div>
-            <div style={{ display: "flex", height: 8, borderRadius: 999, overflow: "hidden", background: T.bg3 }}>
-              <div style={{ width: `${macroP}%`, background: T.blue, transition: "width .5s" }} />
-              <div style={{ width: `${macroC}%`, background: T.amber, transition: "width .5s" }} />
-              <div style={{ width: `${macroG}%`, background: "#f472b6", transition: "width .5s" }} />
+          {/* Barra de macros visual — animação fill 1.5s */}
+          <style>{`
+            @keyframes macroFill { from { width: 0% } }
+            @keyframes macroStackFill-P { from { width: 0% } to { width: var(--p) } }
+            @keyframes macroStackFill-C { from { width: 0% } to { width: var(--c) } }
+            @keyframes macroStackFill-G { from { width: 0% } to { width: var(--g) } }
+            .macro-bar-fill { animation: macroFill 1.5s ease both; }
+          `}</style>
+          <div style={{ marginBottom: 24, padding: "16px", background: T.card, border: `1px solid ${T.border}`, borderRadius: 0, borderLeft: "2px solid #00C89633" }}>
+            <div style={{ fontFamily: T.fontMono, fontSize: 9, color: "#00C89666", marginBottom: 12, textTransform: "uppercase" as const, letterSpacing: "0.22em" }}>Distribuição de macros</div>
+            <div style={{ display: "flex", height: 10, overflow: "hidden", background: "#0F0F14" }}>
+              <div className="macro-bar-fill" style={{ width: `${macroP}%`, background: "#00C896", transition: "width 1.5s ease", boxShadow: "0 0 10px #00C89655" }} />
+              <div className="macro-bar-fill" style={{ width: `${macroC}%`, background: "#B8922A", transition: "width 1.5s ease", animationDelay: "0.1s" }} />
+              <div className="macro-bar-fill" style={{ width: `${macroG}%`, background: "#ff4444", transition: "width 1.5s ease", animationDelay: "0.2s" }} />
             </div>
-            <div style={{ display: "flex", gap: 16, marginTop: 10 }}>
-              {([["Proteína", macroP, T.blue], ["Carboidrato", macroC, T.amber], ["Gordura", macroG, "#f472b6"]] as [string, number, string][]).map(([l, v, c]) => (
-                <div key={l} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: T.muted }}>
-                  <div style={{ width: 8, height: 8, borderRadius: 2, background: c }} />
+            <div style={{ display: "flex", gap: 20, marginTop: 14, flexWrap: "wrap" }}>
+              {([["Proteína", macroP, "#00C896"], ["Carboidrato", macroC, "#B8922A"], ["Gordura", macroG, "#ff4444"]] as [string, number, string][]).map(([l, v, c]) => (
+                <div key={l} style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: T.fontMono, fontSize: 10, color: "#888888", letterSpacing: "0.16em", textTransform: "uppercase" as const }}>
+                  <div style={{ width: 8, height: 8, background: c }} />
                   {l}
-                  <span style={{ color: T.text, fontWeight: 600 }}>{v}%</span>
+                  <span style={{ color: c, fontWeight: 700, fontFamily: T.fontDisplay, fontSize: 13, letterSpacing: 0 }}>{v}%</span>
                 </div>
               ))}
             </div>
