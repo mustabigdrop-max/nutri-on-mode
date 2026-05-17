@@ -1,4 +1,9 @@
 import { useState, useRef, useEffect } from "react";
+import {
+  ArrowLeft, FileText, RefreshCw, BarChart2, CheckSquare,
+  Grid, Zap, BookOpen, Clock, ChevronDown, User as UserIcon,
+  Target, Brain, Loader2, RotateCcw,
+} from "lucide-react";
 import { exportMealPlanPDF } from "@/utils/exportMealPlanPDF";
 import { exportMealPlanPDF as exportMealPlanPDFElite } from "@/lib/mealPlanPdf";
 import ProtocolGanttChart from "@/components/coach/ProtocolGanttChart";
@@ -21,53 +26,60 @@ import NutrientDensityPanel from "@/components/coach/NutrientDensityPanel";
 import Glut4SyncCard from "@/components/meal/Glut4SyncCard";
 import AdherenceModal from "@/components/meal/AdherenceModal";
 
-// ─── Design tokens (alinhados ao nutriON: dark bg, green accent) ──────────────
+// ─── Design tokens — Jarvis (dark, holographic, gold/cyan) ────────────────────
 const T = {
-  bg:      "#0a0f0a",
-  bg2:     "#111811",
-  bg3:     "#161e16",
-  card:    "#0f1a0f",
-  border:  "#1f2e1f",
-  border2: "#2a3d2a",
-  green:   "#4ade80",
-  greenDim:"#22c55e",
-  greenBg: "#0d1f0d",
-  text:    "#e8f0e8",
-  muted:   "#6b8f6b",
-  muted2:  "#4a634a",
-  red:     "#f87171",
-  amber:   "#fbbf24",
-  blue:    "#60a5fa",
+  bg:      "#020205",
+  bg2:     "#06060c",
+  bg3:     "#020205",
+  card:    "#06060c",
+  border:  "#B8922A18",
+  border2: "#B8922A22",
+  green:   "#B8922A",   // gold = primary accent (kept as `green` to avoid breaking refs)
+  greenDim:"#8a6e1f",
+  greenBg: "#B8922A0A",
+  text:    "#F5F0E8",
+  muted:   "#6b6258",
+  muted2:  "#2A2A2A",
+  red:     "#ff4444",
+  amber:   "#D4A732",
+  blue:    "#00D4FF",
+  cyan:    "#00D4FF",
+  gold:    "#B8922A",
+  fontDisplay: "'Rajdhani', sans-serif",
+  fontMono: "'Space Mono', monospace",
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 const Label = ({ children, required }: { children: React.ReactNode; required?: boolean }) => (
-  <label style={{ fontSize: 11, fontWeight: 600, color: T.muted, textTransform: "uppercase" as const, letterSpacing: "0.08em", display: "block", marginBottom: 6 }}>
-    {children}{required && <span style={{ color: T.green, marginLeft: 2 }}>*</span>}
+  <label style={{ fontFamily: T.fontMono, fontSize: 9, color: "#B8922A88", textTransform: "uppercase" as const, letterSpacing: "0.2em", display: "block", marginBottom: 6 }}>
+    {children}{required && <span style={{ color: T.red, marginLeft: 3 }}>*</span>}
   </label>
 );
 
 const InputField = ({ style, ...props }: React.InputHTMLAttributes<HTMLInputElement> & { style?: React.CSSProperties }) => (
   <input {...props} style={{
-    width: "100%", background: T.bg3, border: `1px solid ${T.border2}`,
-    borderRadius: 8, padding: "9px 12px", color: T.text, fontSize: 13,
-    outline: "none", transition: "border-color .2s",
-    fontFamily: "inherit", ...style
+    width: "100%", background: T.bg, border: `1px solid ${T.border}`,
+    borderRadius: 0, padding: "10px 14px", color: T.text, fontSize: 12,
+    outline: "none", transition: "border-color .2s, box-shadow .2s",
+    fontFamily: T.fontMono, ...style
   }}
-    onFocus={e => (e.target as HTMLInputElement).style.borderColor = T.green}
-    onBlur={e => (e.target as HTMLInputElement).style.borderColor = T.border2}
+    onFocus={e => { (e.target as HTMLInputElement).style.borderColor = "#B8922A55"; (e.target as HTMLInputElement).style.boxShadow = "0 0 0 1px #B8922A18"; }}
+    onBlur={e => { (e.target as HTMLInputElement).style.borderColor = T.border; (e.target as HTMLInputElement).style.boxShadow = "none"; }}
   />
 );
 
 const SelectField = ({ children, style, ...props }: React.SelectHTMLAttributes<HTMLSelectElement> & { style?: React.CSSProperties }) => (
   <select {...props} style={{
-    width: "100%", background: T.bg3, border: `1px solid ${T.border2}`,
-    borderRadius: 8, padding: "9px 12px", color: T.text, fontSize: 13,
-    outline: "none", transition: "border-color .2s", fontFamily: "inherit",
-    cursor: "pointer", ...style
+    width: "100%", background: T.bg, border: `1px solid ${T.border}`,
+    borderRadius: 0, padding: "10px 14px", color: T.text, fontSize: 12,
+    outline: "none", transition: "border-color .2s, box-shadow .2s", fontFamily: T.fontMono,
+    cursor: "pointer", appearance: "none", WebkitAppearance: "none" as any, MozAppearance: "none" as any,
+    backgroundImage: "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23B8922A' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>\")",
+    backgroundRepeat: "no-repeat", backgroundPosition: "right 12px center", paddingRight: 34,
+    ...style
   }}
-    onFocus={e => (e.target as HTMLSelectElement).style.borderColor = T.green}
-    onBlur={e => (e.target as HTMLSelectElement).style.borderColor = T.border2}
+    onFocus={e => { (e.target as HTMLSelectElement).style.borderColor = "#B8922A55"; (e.target as HTMLSelectElement).style.boxShadow = "0 0 0 1px #B8922A18"; }}
+    onBlur={e => { (e.target as HTMLSelectElement).style.borderColor = T.border; (e.target as HTMLSelectElement).style.boxShadow = "none"; }}
   >
     {children}
   </select>
@@ -75,35 +87,39 @@ const SelectField = ({ children, style, ...props }: React.SelectHTMLAttributes<H
 
 const TextareaField = ({ style, ...props }: React.TextareaHTMLAttributes<HTMLTextAreaElement> & { style?: React.CSSProperties }) => (
   <textarea {...props} style={{
-    width: "100%", background: T.bg3, border: `1px solid ${T.border2}`,
-    borderRadius: 8, padding: "9px 12px", color: T.text, fontSize: 13,
-    outline: "none", resize: "vertical" as const, minHeight: 80, fontFamily: "inherit",
-    transition: "border-color .2s", ...style
+    width: "100%", background: T.bg, border: `1px solid ${T.border}`,
+    borderRadius: 0, padding: "12px 14px", color: T.text, fontSize: 11,
+    outline: "none", resize: "vertical" as const, minHeight: 80, fontFamily: T.fontMono,
+    lineHeight: 1.8, transition: "border-color .2s, box-shadow .2s", ...style
   }}
-    onFocus={e => (e.target as HTMLTextAreaElement).style.borderColor = T.green}
-    onBlur={e => (e.target as HTMLTextAreaElement).style.borderColor = T.border2}
+    onFocus={e => { (e.target as HTMLTextAreaElement).style.borderColor = "#B8922A55"; (e.target as HTMLTextAreaElement).style.boxShadow = "0 0 0 1px #B8922A18"; }}
+    onBlur={e => { (e.target as HTMLTextAreaElement).style.borderColor = T.border; (e.target as HTMLTextAreaElement).style.boxShadow = "none"; }}
   />
 );
 
 const Tag = ({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) => (
   <button onClick={onClick} style={{
-    padding: "5px 12px", borderRadius: 999, fontSize: 12, cursor: "pointer",
-    border: `1px solid ${active ? T.green : T.border2}`,
+    padding: "5px 12px", borderRadius: 2, fontSize: 10, cursor: "pointer",
+    border: `1px solid ${active ? T.gold : "#B8922A22"}`,
     background: active ? T.greenBg : "transparent",
-    color: active ? T.green : T.muted,
-    transition: "all .15s", fontFamily: "inherit"
+    color: active ? T.gold : "#B8922A55",
+    transition: "all .2s", fontFamily: T.fontMono, textTransform: "uppercase" as const, letterSpacing: "0.15em",
   }}>{label}</button>
 );
 
-const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
-  <div style={{ marginBottom: 28 }}>
-    <div style={{ fontSize: 11, fontWeight: 700, color: T.green, textTransform: "uppercase" as const, letterSpacing: "0.1em", marginBottom: 16, display: "flex", alignItems: "center", gap: 8 }}>
-      <div style={{ width: 16, height: 1, background: T.green }} />
-      {title}
+const Section = ({ title, children, icon, accent }: { title: string; children: React.ReactNode; icon?: React.ReactNode; accent?: "gold" | "cyan" }) => {
+  const color = accent === "cyan" ? T.cyan : T.gold;
+  return (
+    <div style={{ marginBottom: 28 }}>
+      <div style={{ fontFamily: T.fontMono, fontSize: 10, fontWeight: 700, color, textTransform: "uppercase" as const, letterSpacing: "0.24em", marginBottom: 16, display: "flex", alignItems: "center", gap: 10 }}>
+        <div style={{ width: 24, height: 2, background: color }} />
+        {icon}
+        <span>{title}</span>
+      </div>
+      {children}
     </div>
-    {children}
-  </div>
-);
+  );
+};
 
 // ─── Validação de timing peri-workout vs schedule ─────────────────────────────
 // Compara o horário de cada refeição peri-workout (pré/intra/pós) gerada pela IA
@@ -932,6 +948,39 @@ export default function PlanoAlimentarIA() {
   const [selectedPartner, setSelectedPartner] = useState<string>("");
   const [sendObs, setSendObs] = useState("");
   const [sending, setSending] = useState(false);
+  // ─── Contexto Clínico do Coach (novo campo aditivo) ─────────────────────────
+  const [contextoClinico, setContextoClinico] = useState("");
+  const [contextoHistoryOpen, setContextoHistoryOpen] = useState(false);
+  const [contextoHistory, setContextoHistory] = useState<Array<{ texto: string; data: string; paciente?: string }>>(() => {
+    try {
+      const raw = localStorage.getItem("nutrion_coach_contexts");
+      return raw ? JSON.parse(raw) : [];
+    } catch { return []; }
+  });
+  const CONTEXT_CHIPS = [
+    "Resistência insulínica", "Carb cycling", "Alta atividade NEAT",
+    "Retenção hídrica", "Atleta competição", "GLP-1 ativo",
+    "Protocolo cetogênico", "Refeição snap",
+  ];
+  const [activeChips, setActiveChips] = useState<string[]>([]);
+  const toggleContextChip = (chip: string) => {
+    setActiveChips((prev) => prev.includes(chip) ? prev.filter(c => c !== chip) : [...prev, chip]);
+    setContextoClinico((prev) => {
+      if (prev.includes(chip)) return prev;
+      const sep = prev.trim() ? (prev.trim().endsWith(".") ? " " : ". ") : "";
+      return `${prev}${sep}${chip}`.slice(0, 1500);
+    });
+  };
+  const saveContextoToHistory = (pacienteName?: string) => {
+    const txt = contextoClinico.trim();
+    if (!txt) return;
+    try {
+      const entry = { texto: txt, data: new Date().toISOString(), paciente: pacienteName || "" };
+      const next = [entry, ...contextoHistory.filter(h => h.texto !== txt)].slice(0, 5);
+      setContextoHistory(next);
+      localStorage.setItem("nutrion_coach_contexts", JSON.stringify(next));
+    } catch { /* noop */ }
+  };
   // Histórico
   const [showHistory, setShowHistory] = useState(false);
   // Substituições NUTRION (módulo embutido)
@@ -1319,6 +1368,11 @@ export default function PlanoAlimentarIA() {
     const { data, error: fnError } = await supabase.functions.invoke("generate-coach-meal-plan", {
       body: {
         ...form,
+        contexto_clinico: contextoClinico?.trim() || null,
+        contextoClinico: contextoClinico?.trim() || null,
+        contexto_clinico_prompt: contextoClinico?.trim()
+          ? `\n\nCONTEXTO CLÍNICO DO COACH:\n${contextoClinico.trim()}`
+          : "",
         compostos_ativos: form.compostosAtivos || [],
         modo_especial: modoEspecial,
         fase_ciclo: modoEspecial === "feminino" ? faseCiclo : undefined,
@@ -1372,6 +1426,8 @@ export default function PlanoAlimentarIA() {
     });
     if (fnError) throw fnError;
     if (!data?.plan) throw new Error("Resposta inválida da IA");
+    // Salva contexto clínico no histórico local (apenas ao gerar com sucesso)
+    saveContextoToHistory((form as any)?.nome || "");
     return data.plan as PlanoData;
   };
 
@@ -4644,78 +4700,83 @@ export default function PlanoAlimentarIA() {
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: T.bg, fontFamily: "'DM Sans', sans-serif" }}>
-      <style>{`*{box-sizing:border-box}`}</style>
+    <div style={{ minHeight: "100vh", background: T.bg, fontFamily: T.fontMono, color: T.text }}>
+      <style>{`
+        *{box-sizing:border-box}
+        ::-webkit-scrollbar{display:none}
+        *{scrollbar-width:none}
+        @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+        @keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+      `}</style>
 
-      {/* Top bar */}
-      <div style={{ padding: "16px 24px", borderBottom: `1px solid ${T.border}`, display: "flex", alignItems: "center", gap: 16, background: T.bg2 }}>
-        <button onClick={() => navigate("/coach-dashboard")} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={T.muted} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M19 12H5M12 19l-7-7 7-7" />
-          </svg>
+      {/* ─── Topbar (Jarvis) ─── */}
+      <div style={{
+        position: "sticky", top: 0, zIndex: 40,
+        padding: "10px 24px",
+        background: "rgba(2,2,5,0.95)", backdropFilter: "blur(16px)",
+        borderBottom: "1px solid #B8922A18",
+        display: "flex", alignItems: "center", gap: 16,
+      }}>
+        <button
+          onClick={() => navigate("/coach-dashboard")}
+          title="Voltar ao Dashboard do Coach"
+          style={{ background: "none", border: "none", cursor: "pointer", padding: 4, color: T.gold, display: "flex", alignItems: "center" }}
+        >
+          <ArrowLeft size={18} strokeWidth={2} />
         </button>
-        <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 11, color: T.muted, textTransform: "uppercase" as const, letterSpacing: "0.1em" }}>nutriON · Dashboard do Coach</div>
-          <div style={{ fontSize: 16, fontWeight: 700, color: T.text }}>Gerador de Plano Alimentar por IA</div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontFamily: T.fontMono, fontSize: 8, color: "#B8922A33", letterSpacing: "0.22em", textTransform: "uppercase" }}>
+            NUTRION · COACH · PLANO ALIMENTAR
+          </div>
+          <div style={{ fontFamily: T.fontDisplay, fontSize: 22, fontWeight: 700, color: T.text, letterSpacing: "0.02em", lineHeight: 1.1 }}>
+            Gerador de Plano Alimentar por IA
+          </div>
         </div>
-        <button
-          onClick={() => navigate("/coach/adjustment-log")}
-          style={{ padding: "8px 14px", borderRadius: 8, background: T.bg3, border: `1px solid ${T.border2}`, color: T.text, fontSize: 12, cursor: "pointer", fontFamily: "inherit", fontWeight: 600 }}
-          title="Log do ajuste calórico (alvo, antes, depois, fator)"
-        >
-          📊 Log de ajuste
-        </button>
-        <button
-          onClick={() => setShowSubstitutions(true)}
-          style={{ padding: "8px 14px", borderRadius: 8, background: "#0d1f0d", border: `1px solid ${T.green}`, color: T.green, fontSize: 12, cursor: "pointer", fontFamily: "inherit", fontWeight: 700 }}
-          title="Banco v2.0 + Agente IA · variedade real por refeição"
-        >
-          🔄 Substituições NUTRION
-        </button>
-        <button
-          onClick={() => setShowGantt(true)}
-          style={{ padding: "8px 14px", borderRadius: 8, background: T.bg3, border: `1px solid ${T.border2}`, color: T.text, fontSize: 12, cursor: "pointer", fontFamily: "inherit", fontWeight: 600 }}
-          title="Periodização do paciente — Gantt de fases"
-        >
-          📈 Periodização
-        </button>
-        <button
-          onClick={() => setShowCheckins(true)}
-          style={{ padding: "8px 14px", borderRadius: 8, background: T.bg3, border: `1px solid ${T.border2}`, color: T.text, fontSize: 12, cursor: "pointer", fontFamily: "inherit", fontWeight: 600 }}
-          title="Check-ins semanais do paciente — peso, fotos e ajustes"
-        >
-          📋 Check-ins
-        </button>
-        <button
-          onClick={() => setShowWeekGrid(true)}
-          style={{ padding: "8px 14px", borderRadius: 8, background: T.bg3, border: `1px solid ${T.border2}`, color: T.text, fontSize: 12, cursor: "pointer", fontFamily: "inherit", fontWeight: 600 }}
-          title="Grade semanal — 6 refeições × 7 dias com substituições"
-        >
-          🗓️ Grade Semanal
-        </button>
-        <button
-          onClick={() => {
-            const el = document.getElementById("modo-especial-form");
-            if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
-          }}
-          style={{ padding: "8px 14px", borderRadius: 8, background: modoEspecial !== "normal" ? "#0d1f0d" : T.bg3, border: `1px solid ${modoEspecial !== "normal" ? T.green : T.border2}`, color: modoEspecial !== "normal" ? T.green : T.text, fontSize: 12, cursor: "pointer", fontFamily: "inherit", fontWeight: modoEspecial !== "normal" ? 700 : 600 }}
-          title="Selecionar modo especial (Competição, GLP-1, Feminino, Vegano, Low-FODMAP, Longevidade)"
-        >
-          ⚙️ Modo Especial{modoEspecial !== "normal" ? ` · ${modoEspecial === "competicao" ? "🏆" : modoEspecial === "glp1" ? "💉" : modoEspecial === "feminino" ? "🌸" : modoEspecial === "vegano" ? "🌱" : modoEspecial === "low_fodmap" ? "🌾" : "🧬"}` : ""}
-        </button>
-        <button
-          onClick={() => navigate("/coach/templates")}
-          style={{ padding: "8px 14px", borderRadius: 8, background: T.bg3, border: `1px solid ${T.border2}`, color: T.text, fontSize: 12, cursor: "pointer", fontFamily: "inherit", fontWeight: 600 }}
-          title="Modelos de plano reutilizáveis"
-        >
-          📚 Biblioteca
-        </button>
-        <button
-          onClick={() => { setShowHistory(true); loadHistory(); }}
-          style={{ padding: "8px 16px", borderRadius: 8, background: T.bg3, border: `1px solid ${T.border2}`, color: T.text, fontSize: 12, cursor: "pointer", fontFamily: "inherit", fontWeight: 600 }}
-        >
-          🗂️ Histórico
-        </button>
+      </div>
+
+      {/* ─── Abas horizontais (ações) ─── */}
+      <div style={{
+        borderBottom: "1px solid #B8922A0A",
+        background: T.bg,
+        overflowX: "auto", overflowY: "hidden",
+      }}>
+        <div style={{ display: "flex", gap: 0, minWidth: "max-content", padding: "0 16px" }}>
+          {([
+            { key: "log",      label: "Log de Ajuste",          icon: FileText,   onClick: () => navigate("/coach/adjustment-log"), active: false },
+            { key: "subs",     label: "Substituições NUTRION",  icon: RefreshCw,  onClick: () => setShowSubstitutions(true),        active: true },
+            { key: "period",   label: "Periodização",           icon: BarChart2,  onClick: () => setShowGantt(true),                active: false },
+            { key: "checkin",  label: "Check-ins",              icon: CheckSquare,onClick: () => setShowCheckins(true),             active: false },
+            { key: "grade",    label: "Grade Semanal",          icon: Grid,       onClick: () => setShowWeekGrid(true),             active: false },
+            { key: "modo",     label: "Modo Especial",          icon: Zap,        onClick: () => { const el = document.getElementById("modo-especial-form"); if (el) el.scrollIntoView({ behavior: "smooth", block: "center" }); }, active: modoEspecial !== "normal" },
+            { key: "biblio",   label: "Biblioteca",             icon: BookOpen,   onClick: () => navigate("/coach/templates"),      active: false },
+            { key: "hist",     label: "Histórico",              icon: Clock,      onClick: () => { setShowHistory(true); loadHistory(); }, active: false },
+          ] as const).map((t) => {
+            const Icon = t.icon;
+            return (
+              <button
+                key={t.key}
+                onClick={t.onClick}
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: 6,
+                  padding: "10px 14px",
+                  background: t.active ? "#B8922A08" : "transparent",
+                  border: "none",
+                  borderBottom: `2px solid ${t.active ? T.gold : "transparent"}`,
+                  color: t.active ? T.gold : "#2A2A2A",
+                  fontFamily: T.fontMono, fontSize: 9, fontWeight: 400,
+                  letterSpacing: "0.16em", textTransform: "uppercase",
+                  cursor: "pointer", transition: "all .2s",
+                  whiteSpace: "nowrap",
+                }}
+                onMouseEnter={(e) => { if (!t.active) e.currentTarget.style.color = "#B8922A55"; }}
+                onMouseLeave={(e) => { if (!t.active) e.currentTarget.style.color = "#2A2A2A"; }}
+              >
+                <Icon size={11} strokeWidth={2} />
+                {t.label}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Overlay: Periodização (Gantt) */}
@@ -4924,9 +4985,9 @@ export default function PlanoAlimentarIA() {
         </div>
       )}
 
-      <div style={{ maxWidth: 680, margin: "0 auto", padding: "32px 24px" }}>
+      <div style={{ maxWidth: 860, margin: "0 auto", padding: "32px 20px 120px" }}>
         {/* Dados do paciente */}
-        <Section title="Dados do paciente">
+        <Section title="Dados do paciente" icon={<UserIcon size={12} strokeWidth={2} color={T.gold} />}>
           <div style={{ marginBottom: 14 }}>
             <Label required>Nome do paciente</Label>
             <InputField placeholder="Nome do paciente" value={form.nome} onChange={e => set("nome", e.target.value)} />
@@ -4955,7 +5016,7 @@ export default function PlanoAlimentarIA() {
         </Section>
 
         {/* Objetivo e perfil */}
-        <Section title="Objetivo e perfil">
+        <Section title="Objetivo e perfil" icon={<Target size={12} strokeWidth={2} color={T.gold} />}>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
             <div>
               <Label>Objetivo principal</Label>
@@ -5031,6 +5092,146 @@ export default function PlanoAlimentarIA() {
                 <option value="nenhum">Sem treino</option>
               </SelectField>
             </div>
+          </div>
+        </Section>
+
+        {/* ─── CONTEXTO CLÍNICO · PROTOCOLO DO COACH (NOVO) ─── */}
+        <Section title="Contexto clínico · Protocolo do coach" icon={<Brain size={12} strokeWidth={2} color={T.cyan} />} accent="cyan">
+          <div style={{ fontFamily: T.fontMono, fontSize: 9, color: "#2A2A2A", letterSpacing: "0.18em", textTransform: "uppercase", marginTop: -10, marginBottom: 14 }}>
+            Descreva estratégias, observações e protocolos próprios — a IA incorporará no plano gerado.
+          </div>
+
+          <div style={{
+            position: "relative",
+            border: "1px solid #00D4FF12",
+            borderTop: "2px solid #00D4FF22",
+            background: "#00D4FF03",
+            padding: 16,
+          }}>
+            {/* Tag IA CONTEXTO ATIVO */}
+            <div style={{
+              position: "absolute", top: 8, right: 10,
+              display: "inline-flex", alignItems: "center", gap: 6,
+              border: "1px solid #00D4FF22", color: "#00D4FF66",
+              padding: "2px 8px", borderRadius: 2,
+              fontFamily: T.fontMono, fontSize: 8, letterSpacing: "0.18em", textTransform: "uppercase",
+            }}>
+              <span style={{ width: 5, height: 5, borderRadius: "50%", background: T.cyan, boxShadow: "0 0 6px #00D4FF", animation: "pulse 1.4s ease-in-out infinite" }} />
+              IA Contexto Ativo
+            </div>
+
+            <div style={{ position: "relative", marginTop: 16 }}>
+              <textarea
+                value={contextoClinico}
+                onChange={(e) => setContextoClinico(e.target.value.slice(0, 1500))}
+                placeholder="Ex: Paciente tem resistência à insulina — priorizar janela pré-treino com carbo de baixo IG. Usar protocolo de carb cycling 5/2. Histórico de retenção hídrica com sódio elevado. Suplementação base: creatina 5g + leucina 3g pós-treino. Evitar glúten por sensibilidade relatada..."
+                style={{
+                  width: "100%", minHeight: 140, resize: "vertical" as const,
+                  background: T.bg, border: "1px solid #00D4FF18", borderRadius: 0,
+                  padding: "12px 14px", color: T.text, fontFamily: T.fontMono,
+                  fontSize: 11, lineHeight: 1.8, outline: "none",
+                  transition: "border-color .2s, box-shadow .2s",
+                }}
+                onFocus={(e) => { e.currentTarget.style.borderColor = "#00D4FF44"; e.currentTarget.style.boxShadow = "0 0 0 1px #00D4FF12"; }}
+                onBlur={(e) => { e.currentTarget.style.borderColor = "#00D4FF18"; e.currentTarget.style.boxShadow = "none"; }}
+              />
+              <div style={{
+                position: "absolute", bottom: 6, right: 10,
+                fontFamily: T.fontMono, fontSize: 9, letterSpacing: "0.12em",
+                color: contextoClinico.length > 1400 ? T.red : contextoClinico.length > 1200 ? T.gold : "#2A2A2A",
+                pointerEvents: "none",
+              }}>
+                {contextoClinico.length} / 1500 caracteres
+              </div>
+            </div>
+
+            {/* Chips de sugestão rápida */}
+            <div style={{ marginTop: 14 }}>
+              <div style={{ fontFamily: T.fontMono, fontSize: 8, color: "#2A2A2A", letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: 8 }}>
+                Inserir contexto rápido:
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                {CONTEXT_CHIPS.map((chip) => {
+                  const isActive = activeChips.includes(chip);
+                  return (
+                    <button
+                      key={chip}
+                      type="button"
+                      onClick={() => toggleContextChip(chip)}
+                      style={{
+                        border: `1px solid ${isActive ? T.gold : "#B8922A22"}`,
+                        background: isActive ? "#B8922A0A" : "transparent",
+                        color: isActive ? T.gold : "#B8922A66",
+                        fontFamily: T.fontMono, fontSize: 9, letterSpacing: "0.14em",
+                        textTransform: "uppercase", padding: "4px 10px", borderRadius: 0,
+                        cursor: "pointer", transition: "all .2s",
+                      }}
+                      onMouseEnter={(e) => { if (!isActive) { e.currentTarget.style.borderColor = "#B8922A55"; e.currentTarget.style.color = T.gold; e.currentTarget.style.background = "#B8922A08"; } }}
+                      onMouseLeave={(e) => { if (!isActive) { e.currentTarget.style.borderColor = "#B8922A22"; e.currentTarget.style.color = "#B8922A66"; e.currentTarget.style.background = "transparent"; } }}
+                    >
+                      {chip}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Histórico de contextos */}
+            {contextoHistory.length > 0 && (
+              <div style={{ marginTop: 18, borderTop: "1px solid #B8922A0A", paddingTop: 12 }}>
+                <button
+                  type="button"
+                  onClick={() => setContextoHistoryOpen(v => !v)}
+                  style={{
+                    display: "inline-flex", alignItems: "center", gap: 6,
+                    background: "transparent", border: "none", padding: 0, cursor: "pointer",
+                    fontFamily: T.fontMono, fontSize: 9, color: "#6b6258", letterSpacing: "0.2em", textTransform: "uppercase",
+                  }}
+                >
+                  <ChevronDown size={11} style={{ transform: contextoHistoryOpen ? "rotate(0deg)" : "rotate(-90deg)", transition: "transform .2s" }} />
+                  Contextos anteriores ({contextoHistory.length})
+                </button>
+                {contextoHistoryOpen && (
+                  <div style={{ marginTop: 10, display: "grid", gap: 6 }}>
+                    {contextoHistory.slice(0, 3).map((h, i) => (
+                      <div key={i} style={{
+                        border: "1px solid #B8922A0A", padding: "8px 12px",
+                        display: "flex", alignItems: "center", gap: 10, background: "#020205",
+                      }}>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{
+                            fontFamily: T.fontMono, fontSize: 10, color: "#3A3A3A", lineHeight: 1.5,
+                            display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as const,
+                            overflow: "hidden", textOverflow: "ellipsis",
+                          }}>
+                            {h.texto}
+                          </div>
+                          <div style={{ fontFamily: T.fontMono, fontSize: 8, color: "#2A2A2A", marginTop: 4, letterSpacing: "0.12em" }}>
+                            {h.paciente ? `${h.paciente.toUpperCase()} · ` : ""}{new Date(h.data).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "2-digit" })}
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setContextoClinico(h.texto.slice(0, 1500))}
+                          title="Reutilizar este contexto"
+                          style={{
+                            display: "inline-flex", alignItems: "center", gap: 4,
+                            background: "transparent", border: "1px solid #B8922A22",
+                            color: T.gold, padding: "4px 8px", borderRadius: 0, cursor: "pointer",
+                            fontFamily: T.fontMono, fontSize: 9, letterSpacing: "0.14em", textTransform: "uppercase",
+                            transition: "all .2s",
+                          }}
+                          onMouseEnter={(e) => { e.currentTarget.style.borderColor = T.gold; e.currentTarget.style.background = "#B8922A08"; }}
+                          onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#B8922A22"; e.currentTarget.style.background = "transparent"; }}
+                        >
+                          <RotateCcw size={10} /> Usar
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </Section>
 
