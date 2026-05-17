@@ -9,6 +9,7 @@ import { ApexSymbol } from "@/components/coach/ApexSymbol";
 import ApexEvolucao from "@/components/apex/ApexEvolucao";
 import ApexVisualOverlay, { LandmarkBundle, PhotoBundle, LandmarkView } from "@/components/coach/ApexVisualOverlay";
 import VertexEnhancedView from "@/components/coach/VertexEnhancedView";
+import { ApexScoreGauge, InsightCard, PosturaCards, CorrecoesCards, ProtocoloCards } from "@/components/coach/ApexResultCards";
 import FeminineCyclePhaseBanner from "@/components/coach/FeminineCyclePhaseBanner";
 import { isFeminine, getCyclePhase, getCycleDayCount, normalizeFeminineCategory, FEMININE_CATEGORIES } from "@/lib/feminine";
 import { ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Legend, Tooltip as RTooltip } from "recharts";
@@ -547,6 +548,7 @@ const stripMd = (s: string): string =>
     .replace(/(^|[^*])\*([^*\n]+)\*/g, "$1$2")
     .replace(/_([^_\n]+)_/g, "$1")
     .replace(/`([^`]+)`/g, "$1")
+    .replace(/\*\*+/g, "") // remove any orphan ** sequences
     .trim();
 
 function renderMd(text: string): React.ReactNode {
@@ -621,43 +623,11 @@ function apexBand(score: number): { label: string; color: string } {
 function ApexGeneralScoreCard({ segments, cat }: { segments: SegItem[]; cat: CategoryDef }) {
   if (!segments.length) return null;
   const score = computeApexGeneral(segments, cat);
-  const band = apexBand(score);
-  // Semicircular arc using SVG
-  const r = 70, cx = 90, cy = 90;
-  const start = Math.PI, end = 0;
-  const t = end + (start - end) * (1 - score / 100);
-  const x1 = cx + r * Math.cos(start);
-  const y1 = cy + r * Math.sin(start);
-  const x2 = cx + r * Math.cos(t);
-  const y2 = cy + r * Math.sin(t);
-  const largeArc = score > 50 ? 1 : 0;
-  return (
-    <div
-      className="rounded-xl p-4 border flex items-center gap-5"
-      style={{ background: `linear-gradient(135deg, ${band.color}22, transparent)`, borderColor: `${band.color}55` }}
-    >
-      <svg width="180" height="100" viewBox="0 0 180 100" className="shrink-0">
-        <path d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`} fill="none" stroke="hsl(var(--muted))" strokeWidth="10" />
-        {score > 0 && (
-          <path d={`M ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2}`} fill="none" stroke={band.color} strokeWidth="10" strokeLinecap="round" />
-        )}
-        <text x={cx} y={cy - 6} textAnchor="middle" fontSize="28" fontWeight="900" fill="hsl(var(--foreground))">{score}</text>
-        <text x={cx} y={cy + 10} textAnchor="middle" fontSize="10" fill="hsl(var(--muted-foreground))">/100</text>
-      </svg>
-      <div className="flex-1 min-w-0">
-        <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">APEX Score Geral</div>
-        <div className="text-2xl font-black mt-1" style={{ color: band.color }}>{band.label}</div>
-        <div className="text-xs text-muted-foreground mt-1">
-          Média ponderada — grupos de alta prioridade pesam 2×.
-        </div>
-      </div>
-    </div>
-  );
+  return <ApexScoreGauge score={score} />;
 }
 
 function InsightHighlights({ segments }: { segments: SegItem[] }) {
   if (segments.length < 2) return null;
-  // Stable sort preserving IA order on ties: lowest first / highest last
   let lowIdx = 0, highIdx = 0;
   segments.forEach((s, i) => {
     if (s.score < segments[lowIdx].score) lowIdx = i;
@@ -670,35 +640,10 @@ function InsightHighlights({ segments }: { segments: SegItem[] }) {
     const m = t.match(/^([^.!?\n]+[.!?])/);
     return (m ? m[1] : t).trim();
   };
-  const RED = "#FF4444";
-  const GREEN = "#00FF88";
-  const Card = ({ icon, label, color, name, score, desc }: any) => (
-    <div
-      className="rounded-lg p-3 flex flex-col"
-      style={{
-        background: `${color}0D`, // ~5% opacity
-        borderLeft: `4px solid ${color}`,
-        border: `1px solid ${color}33`,
-        borderLeftWidth: 4,
-        maxHeight: 120,
-      }}
-    >
-      <div className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color }}>
-        {icon} {label}
-      </div>
-      <div className="flex items-baseline gap-2 leading-tight">
-        <div className="text-lg font-black truncate" style={{ color }}>{name}</div>
-        <div className="text-sm font-bold font-mono shrink-0" style={{ color }}>{score}/10</div>
-      </div>
-      <div className="text-[11px] text-muted-foreground mt-1 line-clamp-2 leading-snug">
-        {desc || "—"}
-      </div>
-    </div>
-  );
   return (
     <div className="grid md:grid-cols-2 gap-2">
-      <Card icon="🔴" label="Ponto Crítico" color={RED} name={stripMd(low.label)} score={low.score} desc={firstSentence(low.diag)} />
-      <Card icon="🟢" label="Ponto Forte" color={GREEN} name={stripMd(high.label)} score={high.score} desc={firstSentence(high.diag)} />
+      <InsightCard type="critico" name={stripMd(low.label)} score={low.score} desc={firstSentence(low.diag)} />
+      <InsightCard type="forte" name={stripMd(high.label)} score={high.score} desc={firstSentence(high.diag)} />
     </div>
   );
 }
@@ -1197,19 +1142,19 @@ Suporte em uso: ${suporte || "não informado"}` : "";
           {activeResultTab === "postura" && (
             <div className="space-y-3">
               <InfoBox color="#D94040" text="Desvios posturais detectados — músculo dominante vs inibido e impacto no palco." />
-              <Pre body={parseSection(analysisResult, "POSTURA_DESVIOS", "CORRECOES_POSTURAIS")} />
+              <PosturaCards body={parseSection(analysisResult, "POSTURA_DESVIOS", "CORRECOES_POSTURAIS")} />
             </div>
           )}
           {activeResultTab === "correcoes" && (
             <div className="space-y-3">
               <InfoBox color="#0F8A63" text="Para cada desvio: alongamento, ativação e cue de postura." />
-              <Pre body={parseSection(analysisResult, "CORRECOES_POSTURAIS", "PONTOS_FRACOS_PROTOCOLO")} />
+              <CorrecoesCards body={parseSection(analysisResult, "CORRECOES_POSTURAIS", "PONTOS_FRACOS_PROTOCOLO")} />
             </div>
           )}
           {activeResultTab === "protocolo" && (
             <div className="space-y-3">
               <InfoBox color="#C47A15" text="Diagnóstico + causa + exercícios + frequência + tempo de resposta." />
-              <Pre body={parseSection(analysisResult, "PONTOS_FRACOS_PROTOCOLO", "CONDICIONAMENTO")} />
+              <ProtocoloCards body={parseSection(analysisResult, "PONTOS_FRACOS_PROTOCOLO", "CONDICIONAMENTO")} />
               <GenerateTrainingButton onClick={handleGenerateTraining} loading={generatingTraining} />
             </div>
           )}
