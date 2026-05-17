@@ -4700,78 +4700,83 @@ export default function PlanoAlimentarIA() {
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: T.bg, fontFamily: "'DM Sans', sans-serif" }}>
-      <style>{`*{box-sizing:border-box}`}</style>
+    <div style={{ minHeight: "100vh", background: T.bg, fontFamily: T.fontMono, color: T.text }}>
+      <style>{`
+        *{box-sizing:border-box}
+        ::-webkit-scrollbar{display:none}
+        *{scrollbar-width:none}
+        @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+        @keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+      `}</style>
 
-      {/* Top bar */}
-      <div style={{ padding: "16px 24px", borderBottom: `1px solid ${T.border}`, display: "flex", alignItems: "center", gap: 16, background: T.bg2 }}>
-        <button onClick={() => navigate("/coach-dashboard")} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={T.muted} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M19 12H5M12 19l-7-7 7-7" />
-          </svg>
+      {/* ─── Topbar (Jarvis) ─── */}
+      <div style={{
+        position: "sticky", top: 0, zIndex: 40,
+        padding: "10px 24px",
+        background: "rgba(2,2,5,0.95)", backdropFilter: "blur(16px)",
+        borderBottom: "1px solid #B8922A18",
+        display: "flex", alignItems: "center", gap: 16,
+      }}>
+        <button
+          onClick={() => navigate("/coach-dashboard")}
+          title="Voltar ao Dashboard do Coach"
+          style={{ background: "none", border: "none", cursor: "pointer", padding: 4, color: T.gold, display: "flex", alignItems: "center" }}
+        >
+          <ArrowLeft size={18} strokeWidth={2} />
         </button>
-        <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 11, color: T.muted, textTransform: "uppercase" as const, letterSpacing: "0.1em" }}>nutriON · Dashboard do Coach</div>
-          <div style={{ fontSize: 16, fontWeight: 700, color: T.text }}>Gerador de Plano Alimentar por IA</div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontFamily: T.fontMono, fontSize: 8, color: "#B8922A33", letterSpacing: "0.22em", textTransform: "uppercase" }}>
+            NUTRION · COACH · PLANO ALIMENTAR
+          </div>
+          <div style={{ fontFamily: T.fontDisplay, fontSize: 22, fontWeight: 700, color: T.text, letterSpacing: "0.02em", lineHeight: 1.1 }}>
+            Gerador de Plano Alimentar por IA
+          </div>
         </div>
-        <button
-          onClick={() => navigate("/coach/adjustment-log")}
-          style={{ padding: "8px 14px", borderRadius: 8, background: T.bg3, border: `1px solid ${T.border2}`, color: T.text, fontSize: 12, cursor: "pointer", fontFamily: "inherit", fontWeight: 600 }}
-          title="Log do ajuste calórico (alvo, antes, depois, fator)"
-        >
-          📊 Log de ajuste
-        </button>
-        <button
-          onClick={() => setShowSubstitutions(true)}
-          style={{ padding: "8px 14px", borderRadius: 8, background: "#0d1f0d", border: `1px solid ${T.green}`, color: T.green, fontSize: 12, cursor: "pointer", fontFamily: "inherit", fontWeight: 700 }}
-          title="Banco v2.0 + Agente IA · variedade real por refeição"
-        >
-          🔄 Substituições NUTRION
-        </button>
-        <button
-          onClick={() => setShowGantt(true)}
-          style={{ padding: "8px 14px", borderRadius: 8, background: T.bg3, border: `1px solid ${T.border2}`, color: T.text, fontSize: 12, cursor: "pointer", fontFamily: "inherit", fontWeight: 600 }}
-          title="Periodização do paciente — Gantt de fases"
-        >
-          📈 Periodização
-        </button>
-        <button
-          onClick={() => setShowCheckins(true)}
-          style={{ padding: "8px 14px", borderRadius: 8, background: T.bg3, border: `1px solid ${T.border2}`, color: T.text, fontSize: 12, cursor: "pointer", fontFamily: "inherit", fontWeight: 600 }}
-          title="Check-ins semanais do paciente — peso, fotos e ajustes"
-        >
-          📋 Check-ins
-        </button>
-        <button
-          onClick={() => setShowWeekGrid(true)}
-          style={{ padding: "8px 14px", borderRadius: 8, background: T.bg3, border: `1px solid ${T.border2}`, color: T.text, fontSize: 12, cursor: "pointer", fontFamily: "inherit", fontWeight: 600 }}
-          title="Grade semanal — 6 refeições × 7 dias com substituições"
-        >
-          🗓️ Grade Semanal
-        </button>
-        <button
-          onClick={() => {
-            const el = document.getElementById("modo-especial-form");
-            if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
-          }}
-          style={{ padding: "8px 14px", borderRadius: 8, background: modoEspecial !== "normal" ? "#0d1f0d" : T.bg3, border: `1px solid ${modoEspecial !== "normal" ? T.green : T.border2}`, color: modoEspecial !== "normal" ? T.green : T.text, fontSize: 12, cursor: "pointer", fontFamily: "inherit", fontWeight: modoEspecial !== "normal" ? 700 : 600 }}
-          title="Selecionar modo especial (Competição, GLP-1, Feminino, Vegano, Low-FODMAP, Longevidade)"
-        >
-          ⚙️ Modo Especial{modoEspecial !== "normal" ? ` · ${modoEspecial === "competicao" ? "🏆" : modoEspecial === "glp1" ? "💉" : modoEspecial === "feminino" ? "🌸" : modoEspecial === "vegano" ? "🌱" : modoEspecial === "low_fodmap" ? "🌾" : "🧬"}` : ""}
-        </button>
-        <button
-          onClick={() => navigate("/coach/templates")}
-          style={{ padding: "8px 14px", borderRadius: 8, background: T.bg3, border: `1px solid ${T.border2}`, color: T.text, fontSize: 12, cursor: "pointer", fontFamily: "inherit", fontWeight: 600 }}
-          title="Modelos de plano reutilizáveis"
-        >
-          📚 Biblioteca
-        </button>
-        <button
-          onClick={() => { setShowHistory(true); loadHistory(); }}
-          style={{ padding: "8px 16px", borderRadius: 8, background: T.bg3, border: `1px solid ${T.border2}`, color: T.text, fontSize: 12, cursor: "pointer", fontFamily: "inherit", fontWeight: 600 }}
-        >
-          🗂️ Histórico
-        </button>
+      </div>
+
+      {/* ─── Abas horizontais (ações) ─── */}
+      <div style={{
+        borderBottom: "1px solid #B8922A0A",
+        background: T.bg,
+        overflowX: "auto", overflowY: "hidden",
+      }}>
+        <div style={{ display: "flex", gap: 0, minWidth: "max-content", padding: "0 16px" }}>
+          {([
+            { key: "log",      label: "Log de Ajuste",          icon: FileText,   onClick: () => navigate("/coach/adjustment-log"), active: false },
+            { key: "subs",     label: "Substituições NUTRION",  icon: RefreshCw,  onClick: () => setShowSubstitutions(true),        active: true },
+            { key: "period",   label: "Periodização",           icon: BarChart2,  onClick: () => setShowGantt(true),                active: false },
+            { key: "checkin",  label: "Check-ins",              icon: CheckSquare,onClick: () => setShowCheckins(true),             active: false },
+            { key: "grade",    label: "Grade Semanal",          icon: Grid,       onClick: () => setShowWeekGrid(true),             active: false },
+            { key: "modo",     label: "Modo Especial",          icon: Zap,        onClick: () => { const el = document.getElementById("modo-especial-form"); if (el) el.scrollIntoView({ behavior: "smooth", block: "center" }); }, active: modoEspecial !== "normal" },
+            { key: "biblio",   label: "Biblioteca",             icon: BookOpen,   onClick: () => navigate("/coach/templates"),      active: false },
+            { key: "hist",     label: "Histórico",              icon: Clock,      onClick: () => { setShowHistory(true); loadHistory(); }, active: false },
+          ] as const).map((t) => {
+            const Icon = t.icon;
+            return (
+              <button
+                key={t.key}
+                onClick={t.onClick}
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: 6,
+                  padding: "10px 14px",
+                  background: t.active ? "#B8922A08" : "transparent",
+                  border: "none",
+                  borderBottom: `2px solid ${t.active ? T.gold : "transparent"}`,
+                  color: t.active ? T.gold : "#2A2A2A",
+                  fontFamily: T.fontMono, fontSize: 9, fontWeight: 400,
+                  letterSpacing: "0.16em", textTransform: "uppercase",
+                  cursor: "pointer", transition: "all .2s",
+                  whiteSpace: "nowrap",
+                }}
+                onMouseEnter={(e) => { if (!t.active) e.currentTarget.style.color = "#B8922A55"; }}
+                onMouseLeave={(e) => { if (!t.active) e.currentTarget.style.color = "#2A2A2A"; }}
+              >
+                <Icon size={11} strokeWidth={2} />
+                {t.label}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Overlay: Periodização (Gantt) */}
