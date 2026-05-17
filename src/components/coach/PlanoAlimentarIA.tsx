@@ -6103,10 +6103,10 @@ export default function PlanoAlimentarIA() {
         }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: form.glut4Enabled ? 14 : 0 }}>
             <div>
-              <div style={{ fontSize: 13, fontWeight: 700, color: T.text, display: "flex", alignItems: "center", gap: 8 }}>
+              <div style={{ fontSize: 16, fontWeight: 700, color: T.text, display: "flex", alignItems: "center", gap: 8 }}>
                 ⚡ Priorizar GLUT-4 Pós-Treino
               </div>
-              <div style={{ fontSize: 11, color: T.muted, marginTop: 4 }}>
+              <div style={{ fontSize: 13, color: T.muted, marginTop: 6, lineHeight: 1.55 }}>
                 Janela fisiológica de translocação do GLUT-4 — CHO isolado, zero gordura, zero proteína completa.
               </div>
             </div>
@@ -6224,10 +6224,10 @@ export default function PlanoAlimentarIA() {
           display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12,
         }}>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: T.text, display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ fontSize: 16, fontWeight: 700, color: T.text, display: "flex", alignItems: "center", gap: 8 }}>
               🦠 Protocolo Microbiota Ativo
             </div>
-            <div style={{ fontSize: 11, color: T.muted, marginTop: 4, lineHeight: 1.5 }}>
+            <div style={{ fontSize: 13, color: T.muted, marginTop: 6, lineHeight: 1.55 }}>
               Inclui fermentado diário, combinações simbióticas e prebióticos estratégicos em cada refeição.
             </div>
           </div>
@@ -6255,10 +6255,10 @@ export default function PlanoAlimentarIA() {
           display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12,
         }}>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: T.text, display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ fontSize: 16, fontWeight: 700, color: T.text, display: "flex", alignItems: "center", gap: 8 }}>
               📊 Cycling de Carboidratos
             </div>
-            <div style={{ fontSize: 11, color: T.muted, marginTop: 4, lineHeight: 1.5 }}>
+            <div style={{ fontSize: 13, color: T.muted, marginTop: 6, lineHeight: 1.55 }}>
               Dias de treino pesado recebem CHO máximo. Dias leves e descanso recebem 60–70% do CHO — mantém sensibilidade à insulina alta.
             </div>
           </div>
@@ -6286,10 +6286,10 @@ export default function PlanoAlimentarIA() {
           display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12,
         }}>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: T.text, display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ fontSize: 16, fontWeight: 700, color: T.text, display: "flex", alignItems: "center", gap: 8 }}>
               🌅 Cronobiologia Nutricional — Relógio Circadiano Aplicado
             </div>
-            <div style={{ fontSize: 11, color: T.muted, marginTop: 4, lineHeight: 1.5 }}>
+            <div style={{ fontSize: 13, color: T.muted, marginTop: 6, lineHeight: 1.55 }}>
               Distribui macros conforme janelas circadianas: CHO complexos pela manhã (pico de sensibilidade insulínica), refeição maior 12–14h (pico metabólico), proteína de absorção lenta + triptofano à noite. Sincroniza com cronotipo, cortisol e melatonina.
             </div>
           </div>
@@ -6317,10 +6317,10 @@ export default function PlanoAlimentarIA() {
           display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12,
         }}>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: T.text, display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ fontSize: 16, fontWeight: 700, color: T.text, display: "flex", alignItems: "center", gap: 8 }}>
               💧 Hidratação Farmacológica Inteligente
             </div>
-            <div style={{ fontSize: 11, color: T.muted, marginTop: 4, lineHeight: 1.5 }}>
+            <div style={{ fontSize: 13, color: T.muted, marginTop: 6, lineHeight: 1.55 }}>
               Calcula meta hídrica + eletrólitos (Na⁺, K⁺, Mg²⁺) ajustada ao protocolo farmacológico, diuréticos, GLP-1, cardio e clima. Distribui timing intra-treino, pré-bed e janelas de retenção/depleção em peak week.
             </div>
           </div>
@@ -6348,10 +6348,10 @@ export default function PlanoAlimentarIA() {
           display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12,
         }}>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: T.text, display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ fontSize: 16, fontWeight: 700, color: T.text, display: "flex", alignItems: "center", gap: 8 }}>
               💰 Modo Econômico
             </div>
-            <div style={{ fontSize: 11, color: T.muted, marginTop: 4, lineHeight: 1.5 }}>
+            <div style={{ fontSize: 13, color: T.muted, marginTop: 6, lineHeight: 1.55 }}>
               Prioriza alimentos de menor custo do banco (vísceras, ovo, sardinha em lata, frango inteiro, músculo, leite em pó, aveia) mantendo as MESMAS equivalências nutricionais (proteína ±3g, perfil de gordura, IG).
             </div>
           </div>
@@ -6379,10 +6379,10 @@ export default function PlanoAlimentarIA() {
           display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12,
         }}>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: T.text, display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ fontSize: 16, fontWeight: 700, color: T.text, display: "flex", alignItems: "center", gap: 8 }}>
               🥄 Medidas Caseiras (Nutrition Coach IA)
             </div>
-            <div style={{ fontSize: 11, color: T.muted, marginTop: 4, lineHeight: 1.5 }}>
+            <div style={{ fontSize: 13, color: T.muted, marginTop: 6, lineHeight: 1.55 }}>
               Quando ATIVO: a IA descreve cada alimento em medidas caseiras (colher de sopa, xícara, fatia, concha, unidade) e adiciona ao final do plano um <b>Mapa de Referência</b> com a gramatura exata de cada medida usada. Ideal para o paciente seguir sem balança. O nutricionista continua recebendo a gramatura técnica internamente.
             </div>
           </div>
@@ -6632,11 +6632,11 @@ export default function PlanoAlimentarIA() {
         {/* ========== MODO ESPECIAL (pré-geração) — Fase G ========== */}
         <div id="modo-especial-form" style={{ marginBottom: 18, padding: 16, borderRadius: 12, background: T.bg2, border: `1px solid ${T.border2}` }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-            <span style={{ fontSize: 16 }}>⚙️</span>
-            <div style={{ fontSize: 13, fontWeight: 700, color: T.text }}>Modo Especial</div>
-            <span style={{ fontSize: 10, color: T.muted, fontStyle: "italic" }}>(aplicado ao gerar o plano)</span>
+            <span style={{ fontSize: 20 }}>⚙️</span>
+            <div style={{ fontSize: 16, fontWeight: 700, color: T.text }}>Modo Especial</div>
+            <span style={{ fontSize: 12, color: T.muted, fontStyle: "italic" }}>(aplicado ao gerar o plano)</span>
           </div>
-          <div style={{ fontSize: 11, color: T.muted, marginBottom: 12, lineHeight: 1.5 }}>
+          <div style={{ fontSize: 13, color: T.muted, marginBottom: 12, lineHeight: 1.55 }}>
             Ative um protocolo específico para que a IA aplique macros, timing, suplementação e alertas adequados.
           </div>
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
@@ -6652,7 +6652,7 @@ export default function PlanoAlimentarIA() {
               const active = modoEspecial === opt.k;
               return (
                 <button key={opt.k} type="button" onClick={() => setModoEspecial(opt.k as any)}
-                  style={{ padding: "6px 12px", borderRadius: 16, fontSize: 11, fontFamily: "inherit", cursor: "pointer",
+                  style={{ padding: "8px 14px", borderRadius: 16, fontSize: 13, fontFamily: "inherit", cursor: "pointer",
                     border: `1px solid ${active ? T.green : T.border2}`, background: active ? T.greenBg : T.bg3,
                     color: active ? T.green : T.muted, fontWeight: active ? 600 : 400 }}>
                   {opt.l}
@@ -6741,13 +6741,13 @@ export default function PlanoAlimentarIA() {
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
               <div style={{ flex: 1 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <span style={{ fontSize: 14 }}>🕐</span>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: cronoCircadiano ? "#60a5fa" : T.text }}>
+                  <span style={{ fontSize: 18 }}>🕐</span>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: cronoCircadiano ? "#60a5fa" : T.text }}>
                     Crononutrição Circadiana Avançada
                   </div>
-                  <span style={{ fontSize: 9, padding: "2px 6px", borderRadius: 4, background: "#1e3a8a", color: "#bfdbfe", fontWeight: 700, letterSpacing: "0.05em" }}>DIMENSÃO 2</span>
+                  <span style={{ fontSize: 11, padding: "3px 8px", borderRadius: 4, background: "#1e3a8a", color: "#bfdbfe", fontWeight: 700, letterSpacing: "0.05em" }}>DIMENSÃO 2</span>
                 </div>
-                <div style={{ fontSize: 10.5, color: T.muted, marginTop: 4, lineHeight: 1.5 }}>
+                <div style={{ fontSize: 13, color: T.muted, marginTop: 6, lineHeight: 1.55 }}>
                   Sincroniza distribuição calórica com cortisol, insulina e GH. Peri-treino calculado dinamicamente do TrainingON.
                 </div>
               </div>
