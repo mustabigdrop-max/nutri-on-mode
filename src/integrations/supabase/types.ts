@@ -2579,16 +2579,23 @@ export type Database = {
           alunos_ativos: number | null
           avatar_url: string | null
           bio: string | null
+          city: string | null
+          clinic_name: string | null
+          country: string | null
           created_at: string | null
           crn: string | null
           id: string
+          logo_url: string | null
           max_alunos: number | null
           max_patients: number | null
           plan: string | null
           professional_name: string | null
+          professional_type: string | null
+          show_on_plan: boolean | null
           specialties: string[] | null
           tier: string | null
           trial_ends_at: string | null
+          unique_code: string | null
           updated_at: string | null
           user_id: string
           white_label_app_name: string | null
@@ -2604,16 +2611,23 @@ export type Database = {
           alunos_ativos?: number | null
           avatar_url?: string | null
           bio?: string | null
+          city?: string | null
+          clinic_name?: string | null
+          country?: string | null
           created_at?: string | null
           crn?: string | null
           id?: string
+          logo_url?: string | null
           max_alunos?: number | null
           max_patients?: number | null
           plan?: string | null
           professional_name?: string | null
+          professional_type?: string | null
+          show_on_plan?: boolean | null
           specialties?: string[] | null
           tier?: string | null
           trial_ends_at?: string | null
+          unique_code?: string | null
           updated_at?: string | null
           user_id: string
           white_label_app_name?: string | null
@@ -2629,16 +2643,23 @@ export type Database = {
           alunos_ativos?: number | null
           avatar_url?: string | null
           bio?: string | null
+          city?: string | null
+          clinic_name?: string | null
+          country?: string | null
           created_at?: string | null
           crn?: string | null
           id?: string
+          logo_url?: string | null
           max_alunos?: number | null
           max_patients?: number | null
           plan?: string | null
           professional_name?: string | null
+          professional_type?: string | null
+          show_on_plan?: boolean | null
           specialties?: string[] | null
           tier?: string | null
           trial_ends_at?: string | null
+          unique_code?: string | null
           updated_at?: string | null
           user_id?: string
           white_label_app_name?: string | null
@@ -5603,6 +5624,42 @@ export type Database = {
         }
         Relationships: []
       }
+      notifications: {
+        Row: {
+          action_url: string | null
+          body: string | null
+          created_at: string
+          id: string
+          metadata: Json | null
+          read: boolean
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          action_url?: string | null
+          body?: string | null
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          read?: boolean
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          action_url?: string | null
+          body?: string | null
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          read?: boolean
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       nutry_sync_log: {
         Row: {
           alteracoes: Json | null
@@ -6111,6 +6168,53 @@ export type Database = {
         }
         Relationships: []
       }
+      professional_invites: {
+        Row: {
+          accepted_at: string | null
+          accepted_by_user_id: string | null
+          coach_profile_id: string
+          created_at: string
+          email: string | null
+          expires_at: string
+          id: string
+          invite_code: string
+          message: string | null
+          status: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          accepted_by_user_id?: string | null
+          coach_profile_id: string
+          created_at?: string
+          email?: string | null
+          expires_at?: string
+          id?: string
+          invite_code?: string
+          message?: string | null
+          status?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          accepted_by_user_id?: string | null
+          coach_profile_id?: string
+          created_at?: string
+          email?: string | null
+          expires_at?: string
+          id?: string
+          invite_code?: string
+          message?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "professional_invites_coach_profile_id_fkey"
+            columns: ["coach_profile_id"]
+            isOneToOne: false
+            referencedRelation: "coach_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       professional_patients: {
         Row: {
           created_at: string
@@ -6170,6 +6274,7 @@ export type Database = {
           perfil_comportamental: string | null
           plano_atual: string | null
           prefere_refeicoes: string | null
+          professional_type: string | null
           protein_g: number | null
           role: string | null
           sex: string | null
@@ -6215,6 +6320,7 @@ export type Database = {
           perfil_comportamental?: string | null
           plano_atual?: string | null
           prefere_refeicoes?: string | null
+          professional_type?: string | null
           protein_g?: number | null
           role?: string | null
           sex?: string | null
@@ -6260,6 +6366,7 @@ export type Database = {
           perfil_comportamental?: string | null
           plano_atual?: string | null
           prefere_refeicoes?: string | null
+          professional_type?: string | null
           protein_g?: number | null
           role?: string | null
           sex?: string | null
@@ -8463,6 +8570,7 @@ export type Database = {
     }
     Functions: {
       decrement_coach_slots: { Args: never; Returns: undefined }
+      generate_unique_coach_code: { Args: never; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
