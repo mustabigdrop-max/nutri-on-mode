@@ -6224,6 +6224,9 @@ export default function PlanoAlimentarIA() {
           </div>
         </Section>
 
+        {/* ─── BLOCO 4 — CONDIÇÕES CLÍNICAS ─── */}
+        <BlocoCondicoesClinicas value={condicoesClinicas} onChange={setCondicoesClinicas} />
+
         {/* ─── Módulo GLUT-4 Pós-Treino ─────────────────────────────────────── */}
         <div style={{
           background: T.card, border: `1px solid ${form.glut4Enabled ? T.green : T.border}`,
