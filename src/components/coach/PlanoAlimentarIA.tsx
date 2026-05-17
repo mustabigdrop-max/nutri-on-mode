@@ -4774,8 +4774,8 @@ export default function PlanoAlimentarIA() {
             borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center",
             boxShadow: "0 0 20px #00C89622", flexShrink: 0,
           }}>
-            {/* Utensils icon */}
-            <BookOpen size={26} strokeWidth={1.5} color="#00C896" />
+            {/* Module icon */}
+            <Utensils size={26} strokeWidth={1.5} color="#00C896" />
           </div>
           <div style={{ minWidth: 0 }}>
             <div style={{ display: "flex", alignItems: "baseline", gap: 8, flexWrap: "wrap" }}>
