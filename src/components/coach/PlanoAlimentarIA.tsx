@@ -4722,35 +4722,79 @@ export default function PlanoAlimentarIA() {
         @keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
       `}</style>
 
-      {/* ─── Topbar (Jarvis) ─── */}
+      {/* ─── Topbar (APEX Intelligence style) ─── */}
       <div style={{
         position: "sticky", top: 0, zIndex: 40,
-        padding: "10px 24px",
+        padding: "16px 24px 14px",
         background: "rgba(2,2,5,0.95)", backdropFilter: "blur(16px)",
-        borderBottom: "1px solid #B8922A18",
-        display: "flex", alignItems: "center", gap: 16,
+        borderBottom: "1px solid #00C89618",
       }}>
-        <button
-          onClick={() => navigate("/coach-dashboard")}
-          title="Voltar ao Dashboard do Coach"
-          style={{ background: "none", border: "none", cursor: "pointer", padding: 4, color: T.gold, display: "flex", alignItems: "center" }}
-        >
-          <ArrowLeft size={18} strokeWidth={2} />
-        </button>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontFamily: T.fontMono, fontSize: 8, color: "#B8922A33", letterSpacing: "0.22em", textTransform: "uppercase" }}>
-            NUTRION · COACH · PLANO ALIMENTAR
-          </div>
-          <div style={{ fontFamily: "'Rajdhani', sans-serif", fontSize: 24, fontWeight: 700, letterSpacing: "0.02em", lineHeight: 1.1 }}>
-            <span style={{ color: "#F5F0E8" }}>Gerador de Plano Alimentar</span>
-            <span style={{ color: "#B8922A" }}> · IA</span>
+        {/* Top row: voltar (left) + status badge (right) */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+          <button
+            onClick={() => navigate("/coach-dashboard")}
+            title="Voltar"
+            style={{
+              display: "inline-flex", alignItems: "center", gap: 6,
+              padding: "5px 10px", border: "1px solid #00C89622", background: "transparent",
+              color: "#00C896", fontFamily: T.fontMono, fontSize: 9, letterSpacing: "0.2em",
+              textTransform: "uppercase", cursor: "pointer", borderRadius: 0, transition: "all .2s",
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.borderColor = "#00C89666"; e.currentTarget.style.boxShadow = "0 0 12px #00C89622"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#00C89622"; e.currentTarget.style.boxShadow = "none"; }}
+          >
+            <ArrowLeft size={11} strokeWidth={2} /> Voltar
+          </button>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "5px 10px", border: "1px solid #00C89622", borderRadius: 999 }}>
+            <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#00C896", boxShadow: "0 0 8px #00C896", animation: "pulse 2s ease-in-out infinite" }} />
+            <span style={{ fontFamily: T.fontMono, fontSize: 8, color: "#00C89666", letterSpacing: "0.2em", textTransform: "uppercase" }}>SISTEMA ATIVO</span>
           </div>
         </div>
+
+        {/* Breadcrumb */}
+        <div style={{ fontFamily: T.fontMono, fontSize: 8, color: "#2A2A2A", letterSpacing: "0.22em", textTransform: "uppercase", marginBottom: 10 }}>
+          nutriON <span style={{ color: "#2A2A2A", margin: "0 6px" }}>·</span>
+          Coach Hub <span style={{ color: "#2A2A2A", margin: "0 6px" }}>·</span>
+          <span style={{ color: "#00C896" }}>Plano Alimentar</span>
+        </div>
+
+        {/* Title row */}
+        <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
+          <div style={{
+            width: 52, height: 52,
+            background: "#00C89615", border: "1px solid #00C89633",
+            borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center",
+            boxShadow: "0 0 20px #00C89622", flexShrink: 0,
+          }}>
+            {/* Utensils icon */}
+            <BookOpen size={26} strokeWidth={1.5} color="#00C896" />
+          </div>
+          <div style={{ minWidth: 0 }}>
+            <div style={{ display: "flex", alignItems: "baseline", gap: 8, flexWrap: "wrap" }}>
+              <span style={{ fontFamily: T.fontDisplay, fontSize: 28, fontWeight: 700, color: "#F5F0E8", letterSpacing: "0.02em", lineHeight: 1 }}>NUTRIPLAN</span>
+              <span style={{ fontFamily: T.fontDisplay, fontSize: 28, fontWeight: 700, color: "#00C896", letterSpacing: "0.02em", lineHeight: 1 }}>INTELLIGENCE</span>
+              <span style={{ fontFamily: T.fontDisplay, fontSize: 28, fontWeight: 700, color: "#F5F0E8", letterSpacing: "0.02em", lineHeight: 1 }}>SYSTEM</span>
+              <span style={{
+                fontFamily: T.fontDisplay, fontSize: 10, fontWeight: 700, letterSpacing: "0.18em",
+                padding: "3px 8px", borderRadius: 2, color: "#B8922A",
+                border: "1px solid #B8922A",
+              }}>PRO</span>
+            </div>
+            <div style={{ marginTop: 6, fontFamily: T.fontMono, fontSize: 8, color: "#2A2A2A", letterSpacing: "0.18em", textTransform: "uppercase" }}>
+              Geração Avançada por IA <span style={{ margin: "0 6px" }}>·</span>
+              Nutrição Esportiva <span style={{ margin: "0 6px" }}>·</span>
+              Protocolo PCA <span style={{ margin: "0 6px" }}>·</span>
+              Crononutrição
+            </div>
+          </div>
+        </div>
+
+        <div style={{ marginTop: 14, height: 2, background: "linear-gradient(90deg, #00C896, transparent 60%)" }} />
       </div>
 
       {/* ─── Abas horizontais (ações) ─── */}
       <div style={{
-        borderBottom: "1px solid #B8922A0A",
+        borderBottom: "1px solid #00C8960A",
         background: T.bg,
         overflowX: "auto", overflowY: "hidden",
       }}>
@@ -4773,19 +4817,19 @@ export default function PlanoAlimentarIA() {
                 style={{
                   display: "inline-flex", alignItems: "center", gap: 6,
                   padding: "10px 14px",
-                  background: t.active ? "#B8922A08" : "transparent",
+                  background: t.active ? "#00C89608" : "transparent",
                   border: "none",
-                  borderBottom: `2px solid ${t.active ? T.gold : "transparent"}`,
-                  color: t.active ? T.gold : "#555555",
+                  borderBottom: `2px solid ${t.active ? "#00C896" : "transparent"}`,
+                  color: t.active ? "#00C896" : "#555555",
                   fontFamily: T.fontMono, fontSize: 9, fontWeight: 400,
                   letterSpacing: "0.16em", textTransform: "uppercase",
                   cursor: "pointer", transition: "all .2s",
                   whiteSpace: "nowrap",
                 }}
-                onMouseEnter={(e) => { if (!t.active) e.currentTarget.style.color = "#B8922A88"; }}
+                onMouseEnter={(e) => { if (!t.active) e.currentTarget.style.color = "#00C89688"; }}
                 onMouseLeave={(e) => { if (!t.active) e.currentTarget.style.color = "#555555"; }}
               >
-                <Icon size={11} strokeWidth={2} />
+                <Icon size={11} strokeWidth={2} color={t.active ? "#00C896" : "currentColor"} />
                 {t.label}
               </button>
             );
