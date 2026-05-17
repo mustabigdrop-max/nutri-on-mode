@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Loader2, Save, Palette, Bell, CreditCard } from "lucide-react";
+import { ArrowLeft, Loader2, Save, Palette, Bell, CreditCard, Building2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 const CoachSettingsPage = () => {
@@ -20,6 +20,11 @@ const CoachSettingsPage = () => {
     professional_name: "",
     crn: "",
     bio: "",
+    clinic_name: "",
+    city: "",
+    country: "Brasil",
+    logo_url: "",
+    show_on_plan: true,
     wl_app_name: "",
     wl_primary: "#E8A020",
     wl_secondary: "#1a1a2e",
@@ -35,6 +40,11 @@ const CoachSettingsPage = () => {
         professional_name: profile.professional_name || "",
         crn: profile.crn || "",
         bio: profile.bio || "",
+        clinic_name: profile.clinic_name || "",
+        city: profile.city || "",
+        country: profile.country || "Brasil",
+        logo_url: profile.logo_url || "",
+        show_on_plan: profile.show_on_plan ?? true,
         wl_app_name: profile.white_label_app_name || "",
         wl_primary: profile.white_label_primary_color || "#E8A020",
         wl_secondary: profile.white_label_secondary_color || "#1a1a2e",
@@ -53,6 +63,11 @@ const CoachSettingsPage = () => {
       professional_name: form.professional_name,
       crn: form.crn || null,
       bio: form.bio || null,
+      clinic_name: form.clinic_name || null,
+      city: form.city || null,
+      country: form.country || null,
+      logo_url: form.logo_url || null,
+      show_on_plan: form.show_on_plan,
       white_label_app_name: form.wl_app_name || null,
       white_label_primary_color: form.wl_primary,
       white_label_secondary_color: form.wl_secondary,
@@ -105,6 +120,45 @@ const CoachSettingsPage = () => {
             <div>
               <Label>Bio</Label>
               <Textarea value={form.bio} onChange={e => setForm(p => ({ ...p, bio: e.target.value }))} rows={3} />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Identidade Profissional */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Building2 className="w-4 h-4 text-primary" /> Identidade Profissional
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div>
+              <Label>Nome da clínica / consultório</Label>
+              <Input value={form.clinic_name} onChange={e => setForm(p => ({ ...p, clinic_name: e.target.value }))} placeholder="Ex.: Clínica NutriON" />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Cidade</Label>
+                <Input value={form.city} onChange={e => setForm(p => ({ ...p, city: e.target.value }))} placeholder="São Paulo" />
+              </div>
+              <div>
+                <Label>País</Label>
+                <Input value={form.country} onChange={e => setForm(p => ({ ...p, country: e.target.value }))} />
+              </div>
+            </div>
+            <div>
+              <Label>URL do logotipo</Label>
+              <Input value={form.logo_url} onChange={e => setForm(p => ({ ...p, logo_url: e.target.value }))} placeholder="https://..." />
+              {form.logo_url && (
+                <img src={form.logo_url} alt="Logo" className="mt-2 h-16 w-16 object-contain rounded border border-border" />
+              )}
+            </div>
+            <div className="flex items-center justify-between pt-2">
+              <div>
+                <Label>Exibir dados nos planos enviados</Label>
+                <p className="text-xs text-muted-foreground">Logo, nome e clínica aparecem nos PDFs de planos.</p>
+              </div>
+              <Switch checked={form.show_on_plan} onCheckedChange={v => setForm(p => ({ ...p, show_on_plan: v }))} />
             </div>
           </CardContent>
         </Card>
