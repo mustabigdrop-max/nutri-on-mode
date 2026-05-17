@@ -1,104 +1,78 @@
+# Plano: Expansão Aditiva do /coach/plano-alimentar
 
-# Cockpit Jarvis — Dashboard nutriON
+Vou estender `src/components/coach/PlanoAlimentarIA.tsx` adicionando 9 blocos novos **sem remover nada**. Edge function `gerar-plano-alimentar-ia` recebe os novos campos via prompt aditivo (sem quebrar contrato existente).
 
-Transformação visual completa do `/dashboard`, mantendo TODOS os hooks Supabase, cálculos de TDEE/macros/XP, rotas e componentes existentes (NutriSync, Treino, Estado Muscular, etc).
+## Estrutura de implementação
 
-## 1. Fontes & tokens
+### Estado novo (form state)
+Adicionar ao state existente:
+- `categoriaEsporte`, `protocoloEsporte` (derivado)
+- `nivelEstresse`, `estrategiasRecuperacao[]`, `hrvMonitorado`, `hrvMedio`, `lesaoAtiva`, `lesaoDesc`
+- `condicoesClinicas[]`
+- `identidadeProfissional { nome, registro, especialidade, consultorio, cidade, exibirNoPdf }`
+- `intraTreino { ativo, tipos[], cho_hora, sodio_litro }`
+- `pdfConfig { idioma, formatoMedidas, nivelDetalhe, itensIncluir[] }`
+- `modoEspecialCampos` (campos contextuais por modo: combate/endurance/peak/feminino)
 
-- `index.html`: adicionar link Rajdhani 600/700 + Space Mono 400/700 (já existe Rajdhani; só garantir Space Mono e weights).
-- `src/index.css`: confirmar variáveis da paleta (`--gold #B8922A`, `--cyan #00D4FF`, `--bg #020205`, `--danger #ff4444`). Já há tokens HSL equivalentes — adicionar utilitários `.font-rajdhani`, `.font-mono-tech`, `.tech-label`, classes para borders gold/cyan sutis.
+### Constantes (arquivo novo)
+`src/components/coach/planoAlimentarConstants.ts` — listas grandes:
+- `CATEGORIAS_ESPORTE` (grupos + opções + protocolo + tags por esporte)
+- `CONDICOES_CLINICAS` (grupos)
+- `ESTRATEGIAS_RECUPERACAO`, `TIPOS_INTRA_TREINO`
+- `IDIOMAS_PDF`, `FORMATOS_MEDIDA`, `NIVEIS_DETALHE`, `ITENS_INCLUIR_PDF`
 
-## 2. JarvisCanvas (novo)
+### Blocos UI (ordem de inserção)
 
-`src/components/dashboard/JarvisCanvas.tsx` — substitui o atual `JarvisBackdrop`. Single `<canvas>` fixo z-0, pointer-events none, com:
+| Bloco | Posição | Default |
+|---|---|---|
+| 5. Identidade Profissional | TOPO, antes Dados Paciente | collapsed |
+| 6. Meus Templates | abaixo header, antes form | sempre visível |
+| 1. Categoria Esporte + Protocolo Card | após Modalidade de treino | expandido |
+| 2. Modo Especial expandido | dentro Modo Especial existente | inline |
+| 3. Protocolo Recuperação | após Protocolo Cardio | collapsed |
+| 7. Nutrição Intra-treino | após Protocolo Cardio | collapsed |
+| 4. Condições Clínicas | após Observações Clínicas | collapsed |
+| 8. Config PDF | antes botão Gerar Plano | collapsed |
+| 9. Comparativo Histórico | aba Histórico | inline |
 
-- Grade hexagonal 28px, opacity base 0.015, pulso individual + acende perto do cursor (raio 100px → 0.06).
-- 100 partículas desktop / 35 mobile (75% gold, 25% cyan), conexões <60px, repel cursor (raio 80px).
-- Streams verticais (15 labels técnicos) — desktop only.
-- Linha tracejada centro→cursor + dot ciano — desktop only.
-- Glow radial central pulsante.
-- 3 anéis orbitais + radar sweep + dots orbitais — desktop; mobile só 1 anel sutil.
-- Núcleo branco central com 3 camadas de glow.
-- Detecção `useIsMobile` para alternar densidade; touch tracking no mobile.
+### Persistência
+- **Templates (Bloco 6):** `localStorage['nutrion_coach_templates']`, máx 10, schema `{id, nome, criadoEm, snapshot: formState}`
+- **Identidade Profissional (Bloco 5):** colunas novas em `coach_profiles` via migração:
+  - `professional_signature_name`, `professional_registry`, `professional_specialty`, `clinic_name`, `clinic_city`, `show_signature_on_pdf`
+  - Carregar via `useCoachProfile`, salvar via `supabase.from('coach_profiles').update(...)` no blur/save manual
 
-## 3. Topbar cockpit
+### Integração no Prompt (edge function)
+Em `handleGerarPlano`, construir `novoContexto` string e concatenar ao prompt enviado para `gerar-plano-alimentar-ia`. Edge function não precisa mudanças — recebe contexto extra no campo `contextoAdicional` (ou anexado em `observacoes` se não existir).
 
-`src/components/dashboard/CockpitTopbar.tsx` — sticky 48px, blur 16px, border-bottom gold 0.18. Logo NUTRI/ON Rajdhani 20px + badge COCKPIT, nav central (Home/NutriPlan/TrainingON/LAB/Perfil) só desktop, status "SISTEMA ATIVO" + badge fase à direita. Usa Lucide, sem emojis. Substitui o header inline atual do `DashboardPage`.
+### Comparativo (Bloco 9)
+Em aba Histórico:
+- Dois `<select>` para escolher 2 planos da lista
+- Render lado a lado: TDEE, macros (P/C/G), kcal, fase, data
+- Delta com cor: `#00C896` (aumento) / `#ff4444` (redução)
 
-## 4. Layout 3 colunas (desktop ≥768px)
+### Estilo
+- Reusar tokens `T.*` existentes (cor primária Amber #B8922A, bg #0A0A12)
+- Border-left 2px cor primária, headers Space Mono, ícones Lucide (`Trophy`, `Activity`, `Stethoscope`, `BadgeCheck`, `BookMarked`, `Zap`, `FileOutput`)
+- Alertas clínicos: border `#ff444422`, bg `#ff44440A`, cor `#ff4444`
 
-`src/components/dashboard/CockpitShell.tsx` — wrapper grid `200px 1fr 175px`, gap 1px com background gold 0.06, altura `calc(100vh - 48px)`, scrollbar oculta. Mobile (<768px): flex-col empilhado, mantém `BottomNav`.
+## Detalhes técnicos
 
-### Coluna esquerda — `CockpitLeftRail.tsx`
-Perfil do atleta (nome do profile, objetivo, badge fase) + lista de métricas com mini-barras animadas:
-- TDEE (`profile.vet_kcal` / `get_kcal`)
-- Proteína consumida/meta (`todayTotals.protein` / `profile.protein_g`)
-- Carbo idem (cyan)
-- Gordura idem (danger)
-- Streak (`profile.streak_days`)
-- Nível + XP (`profile.level`, `profile.xp`)
+**Arquivos a editar/criar:**
+1. `src/components/coach/planoAlimentarConstants.ts` (novo) — todas as listas
+2. `src/components/coach/PlanoAlimentarIA.tsx` — state + UI + prompt integration
+3. Migração Supabase — colunas em `coach_profiles`
+4. `src/hooks/useCoachProfile.ts` — incluir novos campos no tipo
 
-### Coluna central — `CockpitMain.tsx`
-- Hero (saudação + cockpit · nome)
-- Anel kcal SVG 130px (reaproveita lógica do `CalorieRing` atual, redesenhado para spec) + 3 rows macros ao lado
-- Macronutrientes (3 barras animadas)
-- Grid 2 colunas (gap 1px gold) com cards existentes embrulhados em wrapper "cockpit card" sem border-radius:
-  NutriSyncComparisonCard, fase atual, treino de hoje, NutrientTimingCard, MuscleStateCard, ConsistencyScoreCard, etc.
+**Não modificar:**
+- Edge function `gerar-plano-alimentar-ia` (recebe contexto via campo já existente)
+- Estrutura/lógica do form atual
+- Validações existentes
 
-### Coluna direita — `CockpitRightRail.tsx`
-- APEX Score (countUp 0→valor real do `MuscleStateCard`/score derivado)
-- 4 mini barras (Postura, Mobilidade, Simetria, FMS) — usar valores reais quando disponíveis, senão fallback do perfil
-- Diagnóstico semanal (Adesão via `ConsistencyScoreCard` data, proteína dias, peso trend via `useWeightLogs` se já presente)
-- Idade biológica (`BiologicalAgeCard` data)
-- Módulos ativos (PCA, NutriPlan, TrainingON, VERTEX, KAA, Microbiota) com dot pulsante
-- Bottom status MCE ATIVO
+**Verificação final:** confirmar que clicar "Gerar Plano" sem preencher novos campos ainda funciona (todos opcionais, defaults vazios).
 
-## 5. Mobile
+## Decisão a confirmar
 
-Mesma `CockpitMain` empilhada sem rails: hero → anel 110px → macros → grid 2x2 métricas rápidas → cards → diagnóstico → módulos. `BottomNav` preservado, recolorido para tokens do cockpit.
+O componente `PlanoAlimentarIA.tsx` já é muito grande (>6700 linhas). Vou:
+- **Adicionar inline** (mantém tudo num lugar, mais fácil de revisar)
 
-## 6. Animações de entrada (framer-motion)
-
-Stagger: topbar (y -10, 0.4s) → left (x -20, delay .2) → center (y 10, delay .3) → right (x 20, delay .4) → barras (width, delay .6, 1.5s) → APEX countUp (delay .8, 1.8s) → ring (delay .5, 1.8s).
-
-## 7. Interações
-
-- Hover cards: `bg #B8922A04`, transition 0.2s.
-- Hover métrica left: border-left 2px gold.
-- Clique módulo right: flash gold + toast "▸ MÓDULO — ativado" 2s (sonner já importado).
-- `cursor-crosshair` no shell desktop.
-
-## 8. Preservação rigorosa
-
-- `DashboardPage.tsx` mantém **toda** a lógica de fetch (meal_logs, protocolos, mood, water, workout), apenas troca o **JSX** por `<CockpitShell>` que recebe props com os dados já calculados.
-- Componentes legados (`CoachNotificationsCard`, `AthleteCompetitionCard`, `WeightCheckInCard`, `SmartAlerts`, `TrialBanner`, `ReengagementPopup`, `MoodCheckinModal`, `SosHungerInterceptor`, `DashboardGamificationCards`, `ProactiveRecipeSuggestion`, `WeeklySabotageCard`, `EmotionalWinRateCard`) continuam montados — distribuídos entre central (cards principais) e topo do main (alerts/banners).
-- Nada removido. Apenas reorganizado dentro do shell cockpit.
-
-## Arquivos criados
-```
-src/components/dashboard/JarvisCanvas.tsx
-src/components/dashboard/CockpitTopbar.tsx
-src/components/dashboard/CockpitShell.tsx
-src/components/dashboard/CockpitLeftRail.tsx
-src/components/dashboard/CockpitMain.tsx
-src/components/dashboard/CockpitRightRail.tsx
-src/components/dashboard/cockpit/CockpitCard.tsx        (wrapper visual)
-src/components/dashboard/cockpit/MiniBar.tsx
-src/components/dashboard/cockpit/CountUp.tsx
-src/components/dashboard/cockpit/KcalRing.tsx           (nova spec 130px)
-```
-
-## Arquivos editados
-```
-index.html                 — fonts Space Mono / Rajdhani weights
-src/index.css              — utilitários tech-label, cockpit-card, scrollbar hide
-src/pages/DashboardPage.tsx — substitui árvore JSX pelo CockpitShell, mantém toda a lógica
-```
-
-## Riscos & mitigação
-
-- Risco de quebrar telas dependentes do scroll/layout do dashboard antigo → manter `BottomNav` e rotas intactas.
-- Risco de performance do canvas em mobile → densidade reduzida + `requestAnimationFrame` único + degradação em `prefers-reduced-motion`.
-- Risco de regressão nos cards: cada card legado renderiza dentro de `CockpitCard` (somente wrapper visual), sem alterar props/internals.
-
-Implementação será feita em um único loop, sequencial: tokens → canvas → topbar → shell+rails → integração no DashboardPage.
+Se preferir extrair em sub-componentes (`<BlocoIdentidade/>`, `<BlocoTemplates/>` etc) avise antes — adiciona ~1h de refactor mas melhora manutenibilidade.
