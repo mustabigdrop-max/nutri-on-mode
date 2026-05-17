@@ -4721,7 +4721,11 @@ export default function PlanoAlimentarIA() {
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: T.bg, fontFamily: T.fontMono, color: T.text }}>
+    <div style={{ minHeight: "100vh", background: T.bg, fontFamily: T.fontMono, color: T.text, position: "relative" }}>
+      <div style={{ position: "fixed", inset: 0, zIndex: 0, opacity: 0.6, pointerEvents: "none" }}>
+        <JarvisBackdrop />
+      </div>
+      <div style={{ position: "relative", zIndex: 1 }}>
       <style>{`
         *{box-sizing:border-box}
         ::-webkit-scrollbar{display:none}
