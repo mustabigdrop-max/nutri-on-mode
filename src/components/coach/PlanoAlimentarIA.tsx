@@ -2490,18 +2490,53 @@ export default function PlanoAlimentarIA() {
                 ) : <Empty />}
               </Section>
 
-              <Section icon="💧" title="BLOCO 4 · Hidratação & Eletrólitos">
-                {elet ? (
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(110px, 1fr))", gap: 8 }}>
-                    <Stat label="Fase" value={elet.fase || "—"} />
-                    <Stat label="Água" value={`${elet.agua_ml ?? elet.agua_l ?? "—"} ${elet.agua_ml ? "ml" : "L"}`} />
-                    <Stat label="Sódio" value={`${elet.sodio_mg ?? "—"} mg`} />
-                    <Stat label="Potássio" value={`${elet.potassio_mg ?? "—"} mg`} />
-                    <Stat label="Magnésio" value={`${elet.magnesio_mg ?? "—"} mg`} />
-                    <Stat label="Na:K" value={elet.ratio_na_k ?? "—"} hl />
-                  </div>
-                ) : <Empty />}
-              </Section>
+              {(() => {
+                const hf = ne.hidratacao_farmacologica as any;
+                const hfAtivo = !!form.hidratacaoFarmacologica;
+                const aguaMl = hf?.meta_agua_ml ?? elet?.agua_ml ?? (elet?.agua_l ? Math.round(Number(elet.agua_l) * 1000) : null);
+                const sodio = hf?.sodio_mg ?? elet?.sodio_mg;
+                const potassio = hf?.potassio_mg ?? elet?.potassio_mg;
+                const magnesio = hf?.magnesio_mg ?? elet?.magnesio_mg;
+                return (
+                  <Section icon="💧" title={`BLOCO 4 · Hidratação & Eletrólitos${hfAtivo ? " · Farmacológica" : ""}`}>
+                    {elet || hf ? (
+                      <div style={{ display: "grid", gap: 10 }}>
+                        {hfAtivo && (
+                          <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "6px 10px", borderRadius: 4, background: "#B8922A14", border: `1px solid #B8922A55`, color: "#B8922A", fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", width: "fit-content" }}>
+                            💧 Hidratação Farmacológica Inteligente · ATIVA
+                          </div>
+                        )}
+                        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(110px, 1fr))", gap: 8 }}>
+                          <Stat label="Fase" value={elet?.fase || "—"} />
+                          <Stat label="Água" value={aguaMl != null ? `${aguaMl} ml` : "—"} hl={hfAtivo} />
+                          <Stat label="Sódio" value={sodio != null ? `${sodio} mg` : "—"} />
+                          <Stat label="Potássio" value={potassio != null ? `${potassio} mg` : "—"} />
+                          <Stat label="Magnésio" value={magnesio != null ? `${magnesio} mg` : "—"} />
+                          <Stat label="Na:K" value={elet?.ratio_na_k ?? "—"} hl />
+                        </div>
+                        {hf?.ajuste_farmacologico && (
+                          <div style={{ padding: 10, background: "#B8922A0A", borderLeft: "2px solid #B8922A", fontSize: 12, color: T.text, lineHeight: 1.55 }}>
+                            <div style={{ fontSize: 10, color: "#B8922A", letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 700, marginBottom: 4 }}>Ajuste Farmacológico</div>
+                            {hf.ajuste_farmacologico}
+                          </div>
+                        )}
+                        {Array.isArray(hf?.timing) && hf.timing.length > 0 && (
+                          <div>
+                            <div style={{ fontSize: 10, color: "#B8922A", letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 700, marginBottom: 6 }}>Timing intra-dia</div>
+                            <div style={{ display: "grid", gap: 4 }}>
+                              {hf.timing.map((t: any, i: number) => (
+                                <div key={i} style={{ fontSize: 11, color: T.text, padding: "6px 10px", background: T.bg3, border: `1px solid ${T.border}`, borderRadius: 4 }}>
+                                  {typeof t === "string" ? t : `${t?.momento || t?.horario || ""} ${t?.descricao || t?.detalhe || JSON.stringify(t)}`}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ) : <Empty />}
+                  </Section>
+                );
+              })()}
 
               <Section icon="💊" title="BLOCO 5 · Micronutrientes Críticos">
                 {micros.length ? (
