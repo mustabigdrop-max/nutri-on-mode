@@ -5374,7 +5374,7 @@ export default function PlanoAlimentarIA() {
                   width: "100%", minHeight: 140, resize: "vertical" as const,
                   background: T.bg, border: "1px solid #00C89618", borderRadius: 0,
                   padding: "12px 14px", color: T.text, fontFamily: T.fontMono,
-                  fontSize: 11, lineHeight: 1.8, outline: "none",
+                  fontSize: 14, lineHeight: 1.7, outline: "none",
                   transition: "border-color .2s, box-shadow .2s",
                 }}
                 onFocus={(e) => { e.currentTarget.style.borderColor = "#00C89644"; e.currentTarget.style.boxShadow = "0 0 0 1px #00C89612"; }}
