@@ -157,7 +157,7 @@ export type FlexSeverity = "normal" | "reduced" | "severe" | "na";
 export function classifyFlex(def: FlexTestDef, val: number | string | undefined): FlexSeverity {
   if (def.unit === "bool") {
     if (val === undefined || val === "" || val === null) return "na";
-    return val === "positivo" || val === true ? "severe" : "normal";
+    return val === "positivo" ? "severe" : "normal";
   }
   const n = typeof val === "number" ? val : parseFloat(String(val ?? ""));
   if (!Number.isFinite(n)) return "na";
