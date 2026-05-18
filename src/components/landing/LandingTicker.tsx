@@ -1,20 +1,28 @@
 const items = [
-  { label: "LOW CARB",      code: "LC-01" },
-  { label: "CETOGÊNICA",    code: "KT-02" },
-  { label: "JEJUM 16/8",    code: "IF-03" },
-  { label: "HIGH CARB",     code: "HC-04" },
-  { label: "BODYBUILDER",   code: "BB-05" },
-  { label: "PLANT-BASED",   code: "VG-06" },
-  { label: "MEDITERRÂNEA",  code: "MD-07" },
-  { label: "PALEO",         code: "PL-08" },
-  { label: "PEAK WEEK",     code: "PW-09" },
-  { label: "MICROBIOMA",    code: "MB-10" },
-  { label: "CRONOBIOLOGIA", code: "CB-11" },
-  { label: "SUPLEMENTAÇÃO", code: "SS-12" },
-  { label: "GLP-1",         code: "GP-13" },
-  { label: "STRATUM",       code: "ST-14" },
-  { label: "VERTEX™",       code: "VX-15" },
-  { label: "KAA™",          code: "KA-16" },
+  { label: "NUTRIÇÃO DE PRECISÃO", code: "NP-01" },
+  { label: "STRATUM™",             code: "ST-02" },
+  { label: "VERTEX™",              code: "VX-03" },
+  { label: "PEPTÍDEOS",            code: "PT-04" },
+  { label: "MICROBIOMA",           code: "MB-05" },
+  { label: "FITOTERÁPICOS",        code: "FT-06" },
+  { label: "GLP-1",                code: "GP-07" },
+  { label: "CRONOBIOLOGIA",        code: "CB-08" },
+  { label: "PEAK WEEK",            code: "PW-09" },
+  { label: "KAA™",                 code: "KA-10" },
+  { label: "FARMACOLOGIA",         code: "FM-11" },
+  { label: "MMA · CROSSFIT",       code: "SP-12" },
+  { label: "PERIODIZAÇÃO",         code: "PD-13" },
+  { label: "LONGEVIDADE",          code: "LV-14" },
+  { label: "BIOMARCADORES",        code: "BM-15" },
+  { label: "TCC NUTRICIONAL",      code: "TC-16" },
+  { label: "PERFORMANCE PRO",      code: "PR-17" },
+  { label: "RUNNING · NATAÇÃO",    code: "EN-18" },
+  { label: "HORMÔNIOS",            code: "HR-19" },
+  { label: "ANTI-AGING",           code: "AA-20" },
+  { label: "NUTRISYNC™",           code: "NS-21" },
+  { label: "PCA",                  code: "PC-22" },
+  { label: "CETOGÊNICA",           code: "KT-23" },
+  { label: "MCE",                  code: "MC-24" },
 ];
 
 const LandingTicker = () => (
@@ -37,7 +45,7 @@ const LandingTicker = () => (
     {/* Status dot left */}
     <div className="absolute left-4 top-1/2 -translate-y-1/2 z-20 flex items-center gap-1.5">
       <span className="w-1.5 h-1.5 rounded-full" style={{ background: "#00D4FF", boxShadow: "0 0 6px #00D4FF", animation: "dotPulse 1.6s ease-in-out infinite" }} />
-      <span style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.5rem", letterSpacing: "0.2em", color: "rgba(0,212,255,0.45)" }}>MÓDULOS</span>
+      <span style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.5rem", letterSpacing: "0.2em", color: "rgba(0,212,255,0.45)" }}>SISTEMAS ATIVOS</span>
     </div>
 
     <div

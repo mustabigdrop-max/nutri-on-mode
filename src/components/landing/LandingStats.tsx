@@ -5,10 +5,10 @@ const GOLD = "#B8922A";
 const CYAN = "#00D4FF";
 
 const stats = [
-  { val: 10, suffix: "", label: "Protocolos de dieta", sub: "evidência científica", color: GOLD, id: "ST-01" },
-  { val: 7,  suffix: "", label: "Módulos de saúde",   sub: "integrados e sincronizados", color: CYAN, id: "ST-02" },
-  { val: 22, suffix: "+", label: "Telas e funcionalidades", sub: "sistema completo", color: GOLD, id: "ST-03" },
-  { val: 0,  suffix: "", label: "Downtime · Sempre ativo", sub: "diagnóstico contínuo", color: CYAN, id: "ST-04", display: "ON" },
+  { val: 85, suffix: "+", label: "Compostos catalogados", sub: "nutrição · farma · fito · peptídeos", color: GOLD, id: "ST-01" },
+  { val: 7,  suffix: "",  label: "Camadas Stratum™",      sub: "sistema de treino integrado",         color: CYAN, id: "ST-02" },
+  { val: 9,  suffix: "",  label: "Sistemas ativos",       sub: "nutrição · treino · farma · mente · mais", color: GOLD, id: "ST-03" },
+  { val: 0,  suffix: "",  label: "24h · Sempre ligado",   sub: "diagnóstico contínuo de performance",  color: CYAN, id: "ST-04", display: "ON" },
 ];
 
 const CountUp = ({ target, inView, suffix, display }: { target: number; inView: boolean; suffix: string; display?: string }) => {
@@ -54,7 +54,7 @@ const LandingStats = () => {
       >
         <span className="w-1.5 h-1.5 rounded-full" style={{ background: CYAN, boxShadow: `0 0 8px ${CYAN}`, animation: "dotPulse 1.6s ease-in-out infinite" }} />
         <span style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.62rem", letterSpacing: "0.18em", color: "rgba(184,146,42,0.6)", textTransform: "uppercase" }}>
-          Enquanto você lê isso, alguém está ativando o protocolo
+          Enquanto você lê isso, alguém está ativando o sistema
         </span>
         <span className="w-1.5 h-1.5 rounded-full" style={{ background: GOLD, boxShadow: `0 0 8px ${GOLD}`, animation: "dotPulse 1.6s ease-in-out infinite 0.4s" }} />
       </motion.div>

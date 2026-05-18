@@ -69,7 +69,7 @@ const LandingCTA = () => {
         transition={{ duration: 0.6, delay: 0.1 }}
         style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.7rem", letterSpacing: "0.12em", color: "rgba(80,80,122,1)", textTransform: "uppercase", marginBottom: 24 }}
       >
-        Você ainda vai usar aquele app que só te dá um cardápio?
+        Você ainda vai tratar seu corpo como um problema de cardápio?
       </motion.p>
 
       {/* Main headline */}
@@ -93,8 +93,8 @@ const LandingCTA = () => {
         className="max-w-[520px] mx-auto mb-10 relative"
         style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "1rem", color: "rgba(80,80,122,1)", lineHeight: 1.7 }}
       >
-        O nutriON não é mais uma tentativa.{" "}
-        <span style={{ color: "rgba(245,240,232,0.75)" }}>É o protocolo feito pra quem você é.</span>
+        Nutrição. Treino. Farmacologia. Microbiota. Mente.{" "}
+        <span style={{ color: "rgba(245,240,232,0.75)" }}>Tudo integrado. Tudo adaptado para você.</span>
       </motion.p>
 
       {/* Risk reversal */}

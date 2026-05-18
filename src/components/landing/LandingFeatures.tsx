@@ -5,15 +5,15 @@ const GOLD = "#B8922A";
 const CYAN = "#00D4FF";
 
 const features = [
-  { code: "IA", id: "F-01", title: "IA lê seus exames", desc: "Upload do exame de sangue. IA interpreta ferro, vitamina D, colesterol, TSH, glicemia e ajusta o plano automaticamente.", color: GOLD },
-  { code: "CB", id: "F-02", title: "Cronobiologia", desc: "Janelas de macros por horário baseadas no ritmo circadiano. Carbo pela manhã, gordura à noite. Jejum calculado.", color: CYAN },
-  { code: "SN", id: "F-03", title: "Sono + Recuperação", desc: "Dormiu mal → app aumenta proteína e magnésio do dia seguinte automaticamente. Correlação sono × comportamento.", color: GOLD },
-  { code: "NC", id: "F-04", title: "Nutrição Comportamental", desc: "Escala de fome, diário emocional, Mindful Eating, desafios de TCC, entrevista motivacional. Ciência real.", color: CYAN },
-  { code: "SS", id: "F-05", title: "Stack de Suplementação", desc: "IA monta seu stack personalizado por objetivo + exames. Dose certa, horário certo, evidência científica.", color: GOLD },
-  { code: "MB", id: "F-06", title: "Perfil de Microbioma", desc: "Questionário científico gera 4 dimensões do seu intestino. Plano ajustado com prebióticos e probióticos.", color: CYAN },
-  { code: "DF", id: "F-07", title: "Diário Fotográfico", desc: "Slider antes × depois em tempo real. IA analisa sequência de fotos e gera relatório de evolução visual.", color: GOLD },
-  { code: "GM", id: "F-08", title: "Gamificação Real", desc: "XP por refeição, streak de dias consecutivos, níveis Iniciante → Lenda, badges, ranking semanal.", color: CYAN },
-  { code: "LC", id: "F-09", title: "Lista + Custo da Dieta", desc: "Lista de compras automática pelo plano semanal. Calculadora de custo por refeição. Substitutos com mesmo macro.", color: GOLD },
+  { code: "NP", id: "F-01", title: "Nutrição de Precisão", desc: "GEB, GET, VET calculados. 10 protocolos com evidência: Low Carb, Cetogênica, Jejum, Peak Week, Vegano e mais. Banco TACO/IBGE 100% brasileiro.", color: GOLD },
+  { code: "ST", id: "F-02", title: "Stratum™ — Treino", desc: "Sistema de treino em 7 camadas: periodização, intensidade, recuperação, progressão. Integrado à nutrição em tempo real via NutriSync.", color: CYAN },
+  { code: "VX", id: "F-03", title: "Vertex™ — Farmacologia", desc: "85+ compostos catalogados: peptídeos, fitoterápicos, ergogênicos, GLP-1, TRT. IA interpreta interações e monta stack por objetivo + exames.", color: GOLD },
+  { code: "MB", id: "F-04", title: "Microbioma + Gut-Brain", desc: "Perfil intestinal científico em 4 dimensões. Plano ajustado com prebióticos, probióticos e fitoterápicos específicos. Eixo gut-brain monitorado.", color: CYAN },
+  { code: "CB", id: "F-05", title: "Cronobiologia", desc: "Macros distribuídos pelo ritmo circadiano. Janelas metabólicas calculadas por cronotipo. Sono recalibra o protocolo automaticamente.", color: GOLD },
+  { code: "IA", id: "F-06", title: "IA lê seus exames", desc: "Upload do hemograma, perfil hormonal, lipidograma. IA interpreta biomarcadores, detecta deficiências e ajusta nutrição + suplementação.", color: CYAN },
+  { code: "SP", id: "F-07", title: "Performance Esportiva", desc: "Protocolos específicos para MMA, Crossfit, Running, Natação, Bodybuilding. KAA™ analisa cinética e adapta nutrição por tipo de esforço.", color: GOLD },
+  { code: "NC", id: "F-08", title: "Nutrição Comportamental", desc: "IA comportamental identifica fome emocional, habitual e por estresse. TCC nutricional em tempo real. Win rate semanal monitorado.", color: CYAN },
+  { code: "LV", id: "F-09", title: "Longevidade & Hormônios", desc: "Otimização hormonal, marcadores biológicos, nutrição anti-inflamatória, sono como medicina. PCA avalia idade biológica vs cronológica.", color: GOLD },
 ];
 
 const LandingFeatures = () => {
@@ -41,15 +41,17 @@ const LandingFeatures = () => {
         className="mb-16"
       >
         <div className="hud-section-label mb-4">
-          O que o NutriON entrega
+          9 sistemas. 1 plataforma.
         </div>
         <h2
           className="font-heading leading-[0.9]"
           style={{ fontSize: "clamp(2.8rem, 7vw, 7rem)", fontFamily: "'Rajdhani', sans-serif", fontWeight: 700 }}
         >
-          <span style={{ color: "#F5F0E8" }}>FUNCIONA</span>
+          <span style={{ color: "#F5F0E8" }}>TUDO QUE</span>
           <br />
-          <span style={{ color: GOLD, textShadow: `0 0 40px rgba(184,146,42,0.35)` }}>DE VERDADE.</span>
+          <span style={{ color: GOLD, textShadow: `0 0 40px rgba(184,146,42,0.35)` }}>SEU CORPO</span>
+          <br />
+          <span style={{ color: "#F5F0E8" }}>PRECISA.</span>
         </h2>
       </motion.div>
 

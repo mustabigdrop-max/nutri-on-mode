@@ -7,18 +7,18 @@ const CYAN = "#00D4FF";
 /* ── Pilares ── */
 const pillars = [
   {
-    code: "01", tag: "NUTRI = CIÊNCIA",
-    desc: "Cálculo energético GEB/GET/VET, fórmulas de Harris-Benedict e Katch-McArdle, 10 protocolos baseados em evidência, banco TACO/IBGE, análise de exames e microbioma.",
+    code: "01", tag: "SISTEMA = INTEGRAÇÃO",
+    desc: "Nutrição, treino (Stratum™), farmacologia (Vertex™), microbiota, fitoterápicos, peptídeos, cronobiologia e comportamento — todos conversando em tempo real.",
     color: GOLD, colorRGB: "184,146,42",
   },
   {
-    code: "02", tag: "ON = EXECUÇÃO",
-    desc: "Notificação às 7h com o plano do dia, refeições prontas com 1 toque, gamificação que gera hábito, coach humano integrado, IA comportamental que age antes do erro.",
+    code: "02", tag: "IA = ADAPTAÇÃO",
+    desc: "Cada dado muda o protocolo: sono, exame, treino, humor, peso, biomarcadores. A IA não sugere — ela executa o ajuste automaticamente antes de você perceber o problema.",
     color: CYAN, colorRGB: "0,212,255",
   },
   {
-    code: "03", tag: "24H = RESULTADO",
-    desc: "Cronobiologia ajusta macros por horário, wearables sincronizam o gasto real, sono recalibra o plano da manhã, termômetro emocional monitora o comportamento à noite.",
+    code: "03", tag: "PERFORMANCE = RESULTADO",
+    desc: "Do atleta de palco ao executivo que quer viver melhor. Do cutting de competição à longevidade hormonal. Um sistema. Infinitos protocolos. Zero achismo.",
     color: GOLD, colorRGB: "184,146,42",
   },
 ];
@@ -35,9 +35,9 @@ const features = [
 
 /* ── MCE ── */
 const mce = [
-  { letter: "M", label: "MINDSET",      title: "Protocolo bate motivação.",               desc: "Todo mundo começa motivado. Quem chega ao fim tem sistema." },
-  { letter: "C", label: "COMPORTAMENTO", title: "Hábito é mais forte que força de vontade.", desc: "IA que identifica padrões e age antes do sabotador." },
-  { letter: "E", label: "EXECUÇÃO",     title: "Plano sem execução é fantasia.",            desc: "Protocolo individual, ajuste automático, coach em tempo real." },
+  { letter: "M", label: "MINDSET",       title: "Protocolo bate motivação.",                desc: "Todo mundo começa motivado. Quem sustenta resultado tem sistema — não força de vontade." },
+  { letter: "C", label: "COMPORTAMENTO", title: "Seu corpo fala. O sistema escuta.",         desc: "IA comportamental lê padrões de sono, humor, fome e treino para agir antes do problema aparecer." },
+  { letter: "E", label: "EXECUÇÃO",      title: "9 sistemas trabalhando ao mesmo tempo.",    desc: "Nutrição, treino, farma, microbiota e mais — todos integrados, todos adaptando em tempo real." },
 ];
 
 const Word = ({ children, delay }: { children: React.ReactNode; delay: number }) => (
@@ -80,13 +80,13 @@ const LandingManifesto = () => {
           style={{ width: 700, height: 350, background: "radial-gradient(ellipse, rgba(184,146,42,0.05) 0%, transparent 70%)" }} />
 
         <div className="relative z-10 space-y-2 mb-10">
-          <TypeLine text="O NUTRION É O ÚNICO SISTEMA"
+          <TypeLine text="O PRIMEIRO SISTEMA"
             style={{ fontFamily: "'Rajdhani', sans-serif", fontWeight: 700, lineHeight: 1, fontSize: "clamp(1.8rem,4.5vw,4.5rem)", color: "rgba(245,240,232,0.3)" }}
             baseDelay={0} />
-          <TypeLine text="QUE TRATA SEU CORPO"
+          <TypeLine text="DE PERFORMANCE HUMANA"
             style={{ fontFamily: "'Rajdhani', sans-serif", fontWeight: 700, lineHeight: 1, fontSize: "clamp(2.2rem,5.5vw,5.5rem)", color: "#F5F0E8" }}
             baseDelay={0.2} />
-          <TypeLine text="COMO CIÊNCIA."
+          <TypeLine text="INTEGRADO."
             style={{ fontFamily: "'Rajdhani', sans-serif", fontWeight: 700, lineHeight: 1, fontSize: "clamp(2.8rem,7vw,7rem)", color: GOLD, textShadow: `0 0 60px rgba(184,146,42,0.5), 0 0 120px rgba(184,146,42,0.2)` }}
             baseDelay={0.45} />
         </div>
@@ -107,7 +107,7 @@ const LandingManifesto = () => {
           transition={{ duration: 0.6, delay: 1.1 }}
           style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "1rem", fontStyle: "italic", color: "rgba(245,240,232,0.35)" }}
         >
-          Não como dieta. Não como castigo.
+          Nutrição · Treino · Farmacologia · Microbiota · Mente · Longevidade
         </motion.p>
       </div>
 
@@ -129,11 +129,11 @@ const LandingManifesto = () => {
             className="font-heading leading-[1.1] mb-12"
             style={{ fontSize: "clamp(1.6rem, 3vw, 2.6rem)", fontFamily: "'Rajdhani', sans-serif", fontWeight: 700 }}
           >
-            <span style={{ color: "#F5F0E8" }}>Execução sem planejamento é </span>
-            <span style={{ color: GOLD, textShadow: `0 0 30px rgba(184,146,42,0.4)` }}>sofrimento.</span>
+            <span style={{ color: "#F5F0E8" }}>Não é app de dieta.</span>
             <br />
-            <span style={{ color: "#F5F0E8" }}>Planejamento sem execução é só </span>
-            <span style={{ color: GOLD, textShadow: `0 0 30px rgba(184,146,42,0.4)` }}>opinião.</span>
+            <span style={{ color: "#F5F0E8" }}>Não é app de treino.</span>
+            <br />
+            <span style={{ color: GOLD, textShadow: `0 0 30px rgba(184,146,42,0.4)` }}>É o sistema que une os dois — e vai além.</span>
           </div>
 
           {/* Problema / Solução */}
@@ -142,19 +142,19 @@ const LandingManifesto = () => {
               {
                 label: "[PROBLEMA]", colorRGB: "184,146,42", color: GOLD,
                 lines: [
-                  "Todo mundo já fez dieta. Todo mundo já começou uma semana certinho. E todo mundo já abandonou na terceira semana sem saber exatamente por quê.",
-                  "Não é fraqueza. É falta de sistema.",
+                  "Você treina. Come bem. Suplementa. E ainda assim estagna — porque cada peça trabalha sozinha, sem comunicação com as outras.",
+                  "Nutricionista não fala com o personal. Ninguém monitora seu intestino, seus hormônios ou seu estado comportamental.",
                 ],
-                strong: "Motivação vai embora. Estrutura fica.",
+                strong: "Um corpo de alta performance exige um sistema integrado. Não soluções isoladas.",
                 strongColor: "#F5F0E8",
               },
               {
                 label: "[SOLUÇÃO]", colorRGB: "0,212,255", color: CYAN,
                 lines: [
-                  "O nutriON é o único app construído com a mentalidade de quem vive isso — nutrition coach, bodybuilder e Analista em comportamento humano.",
-                  "Porque resultado não vem de inspiração. Vem de protocolo.",
+                  "O nutriON conecta nutrição, treino, farmacologia, microbiota, cronobiologia e comportamento em um único protocolo adaptativo — criado por nutrition coach, bodybuilder e analista comportamental.",
+                  "Cada variável conversa com as outras. Dormiu mal → proteína sobe. Treino pesado → carbo ajusta. Exame alterado → stack recalculado.",
                 ],
-                strong: "Isso não é mais um app de dieta. É o sistema que faltava.",
+                strong: "Não é mais um app. É a infraestrutura de performance que faltava.",
                 strongColor: GOLD,
               },
             ].map((block) => (
@@ -198,7 +198,7 @@ const LandingManifesto = () => {
           </div>
 
           {/* Feature grid */}
-          <div className="hud-section-label mb-8">Para quem é o nutriON</div>
+          <div className="hud-section-label mb-8">9 sistemas. 1 protocolo. Você no centro.</div>
           <motion.div
             initial="hidden"
             whileInView="visible"
@@ -260,9 +260,9 @@ const LandingManifesto = () => {
             >
               <div className="hud-corner-tl" style={{ top: 0, left: "15%", opacity: 0.25 }} />
               <div className="hud-corner-br" style={{ bottom: 0, right: "15%", opacity: 0.25 }} />
-              <p style={{ fontFamily: "'Rajdhani', sans-serif", fontWeight: 700, fontSize: "clamp(1rem,2.5vw,2rem)", color: "rgba(245,240,232,0.2)", marginBottom: 10 }}>Outros apps perguntam o que você comeu.</p>
-              <p style={{ fontFamily: "'Rajdhani', sans-serif", fontWeight: 700, fontSize: "clamp(1.3rem,3.5vw,3rem)", color: GOLD, textShadow: `0 0 50px rgba(184,146,42,0.5)`, marginBottom: 16 }}>O NutriON pergunta por que você comeu.</p>
-              <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.52rem", letterSpacing: "0.25em", color: "rgba(80,80,122,0.45)", textTransform: "uppercase" }}>MINDSET · COMPORTAMENTO · EXECUÇÃO — MCE</div>
+              <p style={{ fontFamily: "'Rajdhani', sans-serif", fontWeight: 700, fontSize: "clamp(1rem,2.5vw,2rem)", color: "rgba(245,240,232,0.2)", marginBottom: 10 }}>Outros apps te dão um cardápio.</p>
+              <p style={{ fontFamily: "'Rajdhani', sans-serif", fontWeight: 700, fontSize: "clamp(1.3rem,3.5vw,3rem)", color: GOLD, textShadow: `0 0 50px rgba(184,146,42,0.5)`, marginBottom: 16 }}>O NutriON te dá um sistema de performance completo.</p>
+              <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.52rem", letterSpacing: "0.25em", color: "rgba(80,80,122,0.45)", textTransform: "uppercase" }}>NUTRIÇÃO · TREINO · FARMACOLOGIA · MICROBIOTA · MENTE</div>
             </motion.div>
           </div>
         </motion.div>
