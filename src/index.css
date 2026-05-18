@@ -9,37 +9,38 @@
 
 @layer base {
   :root {
-    /* === Jarvis core palette ===
-       bg #020205, gold #B8922A, cyan #00D4FF, warm white #F5F0E8, danger #ff4444 */
-    --background: 240 43% 2%;
-    --foreground: 36 41% 93%;
+    /* === nutriON HUD palette ===
+       bg #0a0a1a, card rgba(10,10,26,0.9), gold #B8922A, cyan #00D4FF,
+       warm white #F5F0E8, dim ink rgba(80,80,122,1), danger #ff4444 */
+    --background: 240 44% 7%;         /* #0a0a1a */
+    --foreground: 36 41% 93%;         /* #F5F0E8 */
 
-    --card: 240 40% 4%;
+    --card: 240 44% 7%;
     --card-foreground: 36 41% 93%;
 
-    --popover: 240 43% 3%;
+    --popover: 240 44% 7%;
     --popover-foreground: 36 41% 93%;
 
     --primary: 43 64% 44%;            /* #B8922A */
-    --primary-foreground: 240 43% 2%;
+    --primary-foreground: 240 44% 7%;
 
-    --secondary: 240 30% 8%;
+    --secondary: 240 30% 10%;
     --secondary-foreground: 36 41% 93%;
 
-    --muted: 240 20% 10%;
-    --muted-foreground: 240 10% 45%;
+    --muted: 240 22% 12%;
+    --muted-foreground: 240 21% 40%;  /* rgba(80,80,122,1) */
 
     --accent: 190 100% 50%;           /* #00D4FF */
-    --accent-foreground: 240 43% 2%;
+    --accent-foreground: 240 44% 7%;
 
     --destructive: 0 100% 63%;        /* #ff4444 */
     --destructive-foreground: 36 41% 93%;
 
-    --border: 43 64% 10%;             /* very dim gold */
-    --input: 43 64% 10%;
+    --border: 43 64% 24%;             /* dim gold ~ rgba(184,146,42,0.15) feel when used solid */
+    --input: 43 64% 18%;
     --ring: 43 64% 44%;
 
-    --radius: 0.25rem;
+    --radius: 0rem;
 
     /* Custom tokens */
     --gold: 43 64% 44%;
@@ -132,14 +133,98 @@
   }
 
   .jarvis-card {
-    background: hsl(240 40% 4%);
-    border: 1px solid hsl(43 64% 44% / 0.12);
+    background: rgba(10, 10, 26, 0.9);
+    border: 1px solid rgba(184, 146, 42, 0.15);
     border-radius: 0;
     transition: border-color 0.2s ease, background 0.2s ease;
   }
-  .jarvis-card:hover { border-color: hsl(43 64% 44% / 0.28); }
+  .jarvis-card:hover { border-color: rgba(184, 146, 42, 0.35); }
 
   .jarvis-divider { border-color: hsl(43 64% 44% / 0.06); }
+
+  /* ============= HUD card primitive =============
+     Uso: <div class="hud-card p-4"> ... </div>
+     Inclui: fundo, borda dourada sutil, linha gradiente no topo
+     e 4 corner brackets dourados nos cantos. */
+  .hud-card {
+    position: relative;
+    background: rgba(10, 10, 26, 0.9);
+    border: 1px solid rgba(184, 146, 42, 0.15);
+    border-radius: 0;
+    transition: border-color 0.2s ease;
+  }
+  .hud-card:hover { border-color: rgba(184, 146, 42, 0.35); }
+  /* Linha gradiente topo */
+  .hud-card::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(184, 146, 42, 0.4), transparent);
+    pointer-events: none;
+    z-index: 1;
+  }
+  /* Corner brackets — 12px dourados nos 4 cantos */
+  .hud-card::after {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    pointer-events: none;
+    z-index: 1;
+    background:
+      linear-gradient(to right, rgba(184,146,42,0.7) 12px, transparent 12px) top left/12px 1px no-repeat,
+      linear-gradient(to bottom, rgba(184,146,42,0.7) 12px, transparent 12px) top left/1px 12px no-repeat,
+      linear-gradient(to left, rgba(184,146,42,0.7) 12px, transparent 12px) top right/12px 1px no-repeat,
+      linear-gradient(to bottom, rgba(184,146,42,0.7) 12px, transparent 12px) top right/1px 12px no-repeat,
+      linear-gradient(to right, rgba(184,146,42,0.7) 12px, transparent 12px) bottom left/12px 1px no-repeat,
+      linear-gradient(to top, rgba(184,146,42,0.7) 12px, transparent 12px) bottom left/1px 12px no-repeat,
+      linear-gradient(to left, rgba(184,146,42,0.7) 12px, transparent 12px) bottom right/12px 1px no-repeat,
+      linear-gradient(to top, rgba(184,146,42,0.7) 12px, transparent 12px) bottom right/1px 12px no-repeat;
+  }
+
+  /* ============= HUD buttons ============= */
+  .hud-btn-primary {
+    background: #B8922A;
+    color: #0a0a1a;
+    border: none;
+    border-radius: 0;
+    font-family: var(--font-tech);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-weight: 700;
+    padding: 0.625rem 1.25rem;
+    clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+    transition: filter 0.15s ease;
+  }
+  .hud-btn-primary:hover { filter: brightness(1.1); }
+  .hud-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .hud-btn-secondary {
+    background: transparent;
+    color: #B8922A;
+    border: 1px solid #B8922A;
+    border-radius: 0;
+    font-family: var(--font-tech);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-weight: 700;
+    padding: 0.5rem 1.125rem;
+    transition: background 0.15s ease;
+  }
+  .hud-btn-secondary:hover { background: rgba(184, 146, 42, 0.08); }
+
+  /* ============= HUD input ============= */
+  .hud-input {
+    background: rgba(10, 10, 26, 0.8);
+    border: 1px solid rgba(184, 146, 42, 0.15);
+    border-radius: 0;
+    color: #F5F0E8;
+    padding: 0.5rem 0.75rem;
+    font-family: var(--font-body);
+    transition: border-color 0.15s ease;
+  }
+  .hud-input::placeholder { color: rgba(80, 80, 122, 0.5); }
+  .hud-input:focus { outline: none; border-color: #B8922A; }
 
   .jarvis-bar-track {
     height: 3px;
