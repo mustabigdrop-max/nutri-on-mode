@@ -14,6 +14,7 @@ import VertexEnhancedView from "@/components/coach/VertexEnhancedView";
 import { ApexScoreGauge, InsightCard, PosturaCards, CorrecoesCards, ProtocoloCards } from "@/components/coach/ApexResultCards";
 import { ApexCorrectiveLibrary } from "@/components/coach/ApexCorrectiveLibrary";
 import { ApexSessionGenerator } from "@/components/coach/ApexSessionGenerator";
+import ApexGuidedSession from "@/components/coach/ApexGuidedSession";
 import { ApexClinicalTests } from "@/components/coach/ApexClinicalTests";
 import { ApexFennerGauge } from "@/components/coach/ApexFennerGauge";
 import { EMPTY_CLINICAL, buildClinicalPromptBlock, type ClinicalTestsState } from "@/data/fennerTests";
