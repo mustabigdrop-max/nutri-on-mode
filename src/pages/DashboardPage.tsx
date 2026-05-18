@@ -954,7 +954,7 @@ const DashboardPage = () => {
           transition={{ delay: 0.1 }}
           className="mb-4"
         >
-          <CalorieRing percent={kcalPercent} kcal={todayTotals.kcal} target={kcalTarget} objetivo={objetivo} />
+          <CalorieRing percent={kcalPercent} kcal={todayTotals.kcal} target={kcalTarget} objetivo={objetivo} protPercent={protPercent} carbPercent={carbPercent} fatPercent={fatPercent} />
         </motion.div>
 
         {/* Macro bars — card wrapped with shimmer and % */}
