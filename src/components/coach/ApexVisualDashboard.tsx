@@ -13,6 +13,7 @@ import ApexPostural33Overlay, { parsePostural33 } from "@/components/coach/ApexP
 import VertexEnhancedView from "@/components/coach/VertexEnhancedView";
 import { ApexScoreGauge, InsightCard, PosturaCards, CorrecoesCards, ProtocoloCards } from "@/components/coach/ApexResultCards";
 import { ApexCorrectiveLibrary } from "@/components/coach/ApexCorrectiveLibrary";
+import { ApexSessionGenerator } from "@/components/coach/ApexSessionGenerator";
 import FeminineCyclePhaseBanner from "@/components/coach/FeminineCyclePhaseBanner";
 import { isFeminine, getCyclePhase, getCycleDayCount, normalizeFeminineCategory, FEMININE_CATEGORIES } from "@/lib/feminine";
 import { ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Legend, Tooltip as RTooltip } from "recharts";
@@ -1159,6 +1160,7 @@ Suporte em uso: ${suporte || "não informado"}` : "";
             <div className="space-y-4">
               <InfoBox color="#0F8A63" text="Para cada desvio: alongamento, ativação e cue de postura." />
               <CorrecoesCards body={parseSection(analysisResult, "CORRECOES_POSTURAIS", "PONTOS_FRACOS_PROTOCOLO")} />
+              <ApexSessionGenerator />
               <ApexCorrectiveLibrary />
             </div>
           )}
