@@ -266,16 +266,22 @@ export function ApexSessionGenerator() {
                 {b.items.length === 0 && (
                   <div className="text-[11px] text-muted-foreground italic">Sem exercícios disponíveis nesta fase.</div>
                 )}
-                {b.items.map((ex, i) => {
+                {b.items.map((raw, i) => {
+                  const { ex, note, missing } = adaptExercise(raw, tools);
                   const protocol = ex.phase === 1 ? pickReleaseProtocol(ex, tools) : "";
-                  const noEquipWarn =
-                    ex.phase === 1 && !foam && !ball && /contraindicado/i.test(protocol);
                   return (
                     <div key={i} className="text-xs border-l-2 pl-2 py-1" style={{ borderColor: `${meta.color}80` }}>
                       <div className="flex items-start gap-1.5">
                         <CheckCircle2 size={11} className="text-emerald-500 mt-0.5 shrink-0" />
                         <div className="min-w-0">
-                          <div className="font-semibold text-foreground">{ex.name}</div>
+                          <div className="font-semibold text-foreground flex items-center flex-wrap gap-1.5">
+                            <span>{ex.name}</span>
+                            {note && (
+                              <span className="text-[9px] px-1.5 py-0.5 border border-amber-500/50 text-amber-400 uppercase tracking-wider">
+                                {note}
+                              </span>
+                            )}
+                          </div>
                           <div className="text-[10px] text-muted-foreground">Alvo: {ex.target}</div>
                           {ex.phase === 1 ? (
                             <div className="text-[11px] text-foreground/80 mt-1">{protocol}</div>
@@ -286,9 +292,9 @@ export function ApexSessionGenerator() {
                               {ex.cues?.[0] && <span className="text-muted-foreground">· {ex.cues[0]}</span>}
                             </div>
                           )}
-                          {noEquipWarn && (
+                          {missing.length > 0 && (
                             <div className="mt-1 flex items-center gap-1 text-[10px] text-amber-400">
-                              <AlertTriangle size={10} /> Use sempre a opção sem equipamento neste alvo.
+                              <AlertTriangle size={10} /> Falta: {missing.join(", ")}
                             </div>
                           )}
                         </div>
