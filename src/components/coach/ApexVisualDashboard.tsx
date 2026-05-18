@@ -14,6 +14,7 @@ import VertexEnhancedView from "@/components/coach/VertexEnhancedView";
 import { ApexScoreGauge, InsightCard, PosturaCards, CorrecoesCards, ProtocoloCards } from "@/components/coach/ApexResultCards";
 import { ApexCorrectiveLibrary } from "@/components/coach/ApexCorrectiveLibrary";
 import { ApexSessionGenerator } from "@/components/coach/ApexSessionGenerator";
+import ApexGuidedSession from "@/components/coach/ApexGuidedSession";
 import { ApexClinicalTests } from "@/components/coach/ApexClinicalTests";
 import { ApexFennerGauge } from "@/components/coach/ApexFennerGauge";
 import { EMPTY_CLINICAL, buildClinicalPromptBlock, type ClinicalTestsState } from "@/data/fennerTests";
@@ -743,7 +744,7 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
       setFeminineProfile((data as any) || null);
     })();
   }, [isFemAthlete, athlete?.patient_user_id]);
-  const [apexMode, setApexMode] = useState<"analise" | "evolucao">("analise");
+  const [apexMode, setApexMode] = useState<"analise" | "evolucao" | "guiada">("analise");
   const [promptCopied, setPromptCopied] = useState(false);
   const navigate = useNavigate();
 
@@ -1478,6 +1479,7 @@ Suporte em uso: ${suporte || "não informado"}` : "";
       <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
         {([
           { k: "analise" as const,  l: "Análise IA",            icon: ScanLine },
+          { k: "guiada" as const,   l: "Sessão Guiada",         icon: Crosshair },
           { k: "evolucao" as const, l: "Evolução Fotográfica",  icon: TrendingUp },
         ]).map(({ k, l, icon: Ic }) => {
           const active = apexMode === k;
@@ -1519,7 +1521,23 @@ Suporte em uso: ${suporte || "não informado"}` : "";
         </div>
       )}
 
+      {apexMode === "guiada" && (
+        <div style={{ marginBottom: 16 }}>
+          <ApexGuidedSession
+            athleteId={athlete?.id || null}
+            athleteName={athlete?.nome || null}
+            athleteData={{
+              sex: (athlete?.sexo as "M" | "F") || undefined,
+              sport: athlete?.categoria || undefined,
+            }}
+            accentColor={APEX.gold}
+            onCompleted={() => { /* salvo no Supabase */ }}
+          />
+        </div>
+      )}
+
       {apexMode === "analise" && (<>
+
 
 
       {/* ━━━ CATEGORIA ━━━ */}
