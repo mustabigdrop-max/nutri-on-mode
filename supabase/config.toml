@@ -125,3 +125,6 @@ verify_jwt = false
 
 [functions.videoform-ai]
 verify_jwt = false
+
+[functions.apex-analyze-step]
+verify_jwt = false
