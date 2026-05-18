@@ -339,9 +339,50 @@ const ProfilePage = () => {
             <div className="text-foreground font-semibold">{profile.fat_g}g</div>
             <div className="text-muted-foreground">Objetivo:</div>
             <div className="text-primary font-semibold">
-              {{ lose_weight: "Emagrecimento", gain_muscle: "Hipertrofia", definition: "Definição", cutting: "Cutting", bulking: "Bulking", recomposition: "Recomposição", health: "Saúde Geral", maintenance: "Manutenção", performance: "Performance", longevity: "Longevidade", glp1: "GLP-1" }[profile.goal || ""] || "Saúde"}
+              <select
+                value={profile.goal || ""}
+                disabled={savingGoal}
+                onChange={async (e) => {
+                  const newGoal = e.target.value;
+                  setSavingGoal(true);
+                  const w = Number(profile.weight_kg) || 70;
+                  const get = Number(profile.get_kcal) || 2000;
+                  let vet = get;
+                  let proteinPerKg = 1.6;
+                  switch (newGoal) {
+                    case "lose_weight": vet = get - 500; proteinPerKg = 2.0; break;
+                    case "gain_muscle": case "bulking": vet = get + 350; proteinPerKg = 2.2; break;
+                    case "definition": case "cutting": vet = get - 500; proteinPerKg = 2.2; break;
+                    case "recomposition": vet = get; proteinPerKg = 2.2; break;
+                    case "performance": vet = get + 250; proteinPerKg = 2.0; break;
+                    case "longevity": vet = get - 100; proteinPerKg = 1.8; break;
+                    case "glp1": vet = get - 400; proteinPerKg = 2.2; break;
+                  }
+                  if (profile.uses_glp1) proteinPerKg = Math.max(proteinPerKg, 2.0);
+                  const protein = Math.round(w * proteinPerKg);
+                  const fat = Math.round((vet * 0.25) / 9);
+                  const carbs = Math.round(Math.max((vet - protein * 4 - fat * 9) / 4, 50));
+                  await updateProfile({
+                    goal: newGoal || null,
+                    vet_kcal: Math.round(vet),
+                    protein_g: protein,
+                    carbs_g: carbs,
+                    fat_g: fat,
+                  });
+                  setSavingGoal(false);
+                }}
+                className="w-full bg-card border border-primary/30 rounded-md px-2 py-1 text-xs text-primary font-semibold focus:outline-none focus:border-primary"
+              >
+                <option value="">—</option>
+                {Object.entries(GOAL_LABELS).map(([k, v]) => (
+                  <option key={k} value={k}>{v}</option>
+                ))}
+              </select>
             </div>
           </div>
+          <p className="text-[10px] text-muted-foreground mt-2">
+            💡 Altere seu objetivo a qualquer momento — as metas de calorias e macros são recalculadas automaticamente.
+          </p>
         </div>
       </div>
 
