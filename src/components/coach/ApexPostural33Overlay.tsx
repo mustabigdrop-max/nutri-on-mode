@@ -16,6 +16,7 @@ export type Postural33Bundle = Record<string, { x: number; y: number; severity?:
 interface Props {
   data: Postural33Bundle;
   photoUrl?: string | null;
+  athleteHeightCm?: number | null;
 }
 
 const AXIS_LINE_COLOR = "rgba(255,255,255,0.6)";
@@ -53,9 +54,12 @@ function angleAt(b: { x: number; y: number }, a: { x: number; y: number }, c: { 
   return Math.round((Math.acos(cos) * 180) / Math.PI);
 }
 
-export default function ApexPostural33Overlay({ data, photoUrl }: Props) {
+export default function ApexPostural33Overlay({ data, photoUrl, athleteHeightCm }: Props) {
   const [eduMode, setEduMode] = useState<boolean>(() => {
     try { return localStorage.getItem("apex-33-edu") === "1"; } catch { return false; }
+  });
+  const [gridMode, setGridMode] = useState<boolean>(() => {
+    try { return localStorage.getItem("apex-33-grid") === "1"; } catch { return false; }
   });
   const [hover, setHover] = useState<string | null>(null);
 
@@ -80,6 +84,11 @@ export default function ApexPostural33Overlay({ data, photoUrl }: Props) {
     const next = !eduMode;
     setEduMode(next);
     try { localStorage.setItem("apex-33-edu", next ? "1" : "0"); } catch {}
+  };
+  const toggleGrid = () => {
+    const next = !gridMode;
+    setGridMode(next);
+    try { localStorage.setItem("apex-33-grid", next ? "1" : "0"); } catch {}
   };
 
   if (present.length === 0) {
