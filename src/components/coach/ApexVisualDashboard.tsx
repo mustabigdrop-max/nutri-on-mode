@@ -14,6 +14,9 @@ import VertexEnhancedView from "@/components/coach/VertexEnhancedView";
 import { ApexScoreGauge, InsightCard, PosturaCards, CorrecoesCards, ProtocoloCards } from "@/components/coach/ApexResultCards";
 import { ApexCorrectiveLibrary } from "@/components/coach/ApexCorrectiveLibrary";
 import { ApexSessionGenerator } from "@/components/coach/ApexSessionGenerator";
+import { ApexClinicalTests } from "@/components/coach/ApexClinicalTests";
+import { ApexFennerGauge } from "@/components/coach/ApexFennerGauge";
+import { EMPTY_CLINICAL, buildClinicalPromptBlock, type ClinicalTestsState } from "@/data/fennerTests";
 import FeminineCyclePhaseBanner from "@/components/coach/FeminineCyclePhaseBanner";
 import { isFeminine, getCyclePhase, getCycleDayCount, normalizeFeminineCategory, FEMININE_CATEGORIES } from "@/lib/feminine";
 import { ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Legend, Tooltip as RTooltip } from "recharts";
@@ -702,6 +705,7 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
     front: null, back: null, side: null,
   });
   const [formData, setFormData] = useState({ semanas: "", compostos: "", obs: "" });
+  const [clinicalTests, setClinicalTests] = useState<ClinicalTestsState>(EMPTY_CLINICAL);
   const [objetivoCiclo, setObjetivoCiclo] = useState("cutting");
   const [semanaCiclo, setSemanaCiclo] = useState("");
   const [duracaoCiclo, setDuracaoCiclo] = useState("");
