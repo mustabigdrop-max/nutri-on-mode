@@ -881,7 +881,8 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
 Objetivo do ciclo: ${objetivoCiclo}
 Semana ${semanaCiclo || "não informada"} de ${duracaoCiclo || "não informada"} semanas
 Suporte em uso: ${suporte || "não informado"}` : "";
-      const contexto = `Atleta: ${athleteName} | Semanas para o show: ${formData.semanas || "n/d"} | Protocolo: ${formData.compostos || "não informado"} | Obs: ${formData.obs || "nenhuma"}\n\nGere a análise APEX v2 completa.`;
+      const clinicalBlock = buildClinicalPromptBlock(clinicalTests);
+      const contexto = `Atleta: ${athleteName} | Semanas para o show: ${formData.semanas || "n/d"} | Protocolo: ${formData.compostos || "não informado"} | Obs: ${formData.obs || "nenhuma"}${clinicalBlock ? "\n\n" + clinicalBlock : ""}\n\nGere a análise APEX v2 completa.`;
       const system = buildSystemPrompt(cat, athleteName, protocoloCompleto);
 
       const { data, error } = await supabase.functions.invoke("apex-visual-analyze", {
@@ -1140,6 +1141,7 @@ Suporte em uso: ${suporte || "não informado"}` : "";
               <ApexPostural33Overlay
                 data={parsePostural33(analysisResult) || {}}
                 photoUrl={photoUrls.front || photoUrls.back || photoUrls.lateral || null}
+                athleteHeightCm={clinicalTests.athleteHeightCm ?? null}
               />
               <ApexVisualOverlay
                 landmarks={parseLandmarks(analysisResult)}
