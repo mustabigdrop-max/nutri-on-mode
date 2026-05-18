@@ -16,6 +16,7 @@ export type Postural33Bundle = Record<string, { x: number; y: number; severity?:
 interface Props {
   data: Postural33Bundle;
   photoUrl?: string | null;
+  athleteHeightCm?: number | null;
 }
 
 const AXIS_LINE_COLOR = "rgba(255,255,255,0.6)";
@@ -53,9 +54,12 @@ function angleAt(b: { x: number; y: number }, a: { x: number; y: number }, c: { 
   return Math.round((Math.acos(cos) * 180) / Math.PI);
 }
 
-export default function ApexPostural33Overlay({ data, photoUrl }: Props) {
+export default function ApexPostural33Overlay({ data, photoUrl, athleteHeightCm }: Props) {
   const [eduMode, setEduMode] = useState<boolean>(() => {
     try { return localStorage.getItem("apex-33-edu") === "1"; } catch { return false; }
+  });
+  const [gridMode, setGridMode] = useState<boolean>(() => {
+    try { return localStorage.getItem("apex-33-grid") === "1"; } catch { return false; }
   });
   const [hover, setHover] = useState<string | null>(null);
 
@@ -80,6 +84,11 @@ export default function ApexPostural33Overlay({ data, photoUrl }: Props) {
     const next = !eduMode;
     setEduMode(next);
     try { localStorage.setItem("apex-33-edu", next ? "1" : "0"); } catch {}
+  };
+  const toggleGrid = () => {
+    const next = !gridMode;
+    setGridMode(next);
+    try { localStorage.setItem("apex-33-grid", next ? "1" : "0"); } catch {}
   };
 
   if (present.length === 0) {
@@ -129,13 +138,24 @@ export default function ApexPostural33Overlay({ data, photoUrl }: Props) {
         <h4 className="font-mono text-[11px] uppercase tracking-[0.18em] text-white/70">
           Landmarks Profissionais — 33 pontos ({present.length}/33)
         </h4>
-        <button
-          onClick={toggleEdu}
-          className="flex items-center gap-1.5 border border-white/15 bg-black/50 px-2.5 py-1 text-[10px] uppercase tracking-wider text-white/80 transition-colors hover:bg-white/10"
-        >
-          {eduMode ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
-          Modo educacional
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={toggleGrid}
+            className={`flex items-center gap-1.5 border px-2.5 py-1 text-[10px] uppercase tracking-wider transition-colors ${
+              gridMode ? "border-amber-500/60 bg-amber-500/10 text-amber-300" : "border-white/15 bg-black/50 text-white/80 hover:bg-white/10"
+            }`}
+          >
+            {gridMode ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
+            Grade simetrográfica
+          </button>
+          <button
+            onClick={toggleEdu}
+            className="flex items-center gap-1.5 border border-white/15 bg-black/50 px-2.5 py-1 text-[10px] uppercase tracking-wider text-white/80 transition-colors hover:bg-white/10"
+          >
+            {eduMode ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
+            Modo educacional
+          </button>
+        </div>
       </div>
 
       <div className="relative overflow-hidden border border-white/10 bg-black">
@@ -150,6 +170,40 @@ export default function ApexPostural33Overlay({ data, photoUrl }: Props) {
           preserveAspectRatio="none"
           className="absolute inset-0 h-full w-full"
         >
+          {/* ─── GRADE SIMETROGRÁFICA ─── */}
+          {gridMode && (() => {
+            const pairs = [
+              { id: "shoulders", a: aR, b: aL },
+              { id: "scapulae", a: pointOf(data, "angulo_escapula_r"), b: pointOf(data, "angulo_escapula_l") },
+              { id: "hips", a: eR, b: eL },
+              { id: "knees", a: kR, b: kL },
+              { id: "ankles", a: malR, b: malL },
+            ].filter((p) => p.a && p.b) as { id: string; a: PosturalLandmark; b: PosturalLandmark }[];
+
+            const tiltColor = (deg: number) => deg < 1 ? "rgba(255,255,255,0.4)" : deg <= 3 ? "rgba(245,158,11,0.7)" : "rgba(239,68,68,0.85)";
+
+            // Linha vertical central — média entre tragos topo e maléolos base
+            const topX = tR && tL ? (tR.x + tL.x) / 2 : null;
+            const botX = malR && malL ? (malR.x + malL.x) / 2 : (topX ?? 50);
+            const cx = topX != null ? (topX + botX) / 2 : 50;
+
+            return (
+              <g>
+                <line x1={cx} y1={0} x2={cx} y2={100}
+                  stroke="rgba(255,255,255,0.5)" strokeWidth={0.25}
+                  strokeDasharray="0.6 0.6" vectorEffect="non-scaling-stroke" />
+                {pairs.map((p) => {
+                  const deg = Math.abs(angleBetween(p.a.x, p.a.y, p.b.x, p.b.y));
+                  return (
+                    <line key={p.id}
+                      x1={p.a.x} y1={p.a.y} x2={p.b.x} y2={p.b.y}
+                      stroke={tiltColor(deg)} strokeWidth={0.35}
+                      vectorEffect="non-scaling-stroke" />
+                  );
+                })}
+              </g>
+            );
+          })()}
           {/* EIXO DE SIMETRIA — tragos (horizontal cranial) */}
           {tR && tL && (
             <line x1={tR.x} y1={tR.y} x2={tL.x} y2={tL.y}
@@ -237,6 +291,38 @@ export default function ApexPostural33Overlay({ data, photoUrl }: Props) {
           {qAngleL != null && kL && (
             <AngleTag x={kL.x - 4} y={kL.y} label={`Q-E ${qAngleL}°`} />
           )}
+
+          {/* Grade simetrográfica — badges de ângulo e cm */}
+          {gridMode && (() => {
+            const scR = pointOf(data, "angulo_escapula_r");
+            const scL = pointOf(data, "angulo_escapula_l");
+            const pairs: { id: string; label: string; a: PosturalLandmark | null; b: PosturalLandmark | null }[] = [
+              { id: "sh", label: "Ombros", a: aR, b: aL },
+              { id: "sc", label: "Escápulas", a: scR, b: scL },
+              { id: "hp", label: "Quadril", a: eR, b: eL },
+              { id: "kn", label: "Joelhos", a: kR, b: kL },
+              { id: "an", label: "Tornozelos", a: malR, b: malL },
+            ];
+            const heightCm = athleteHeightCm && athleteHeightCm > 0 ? athleteHeightCm : null;
+            return pairs.filter((p) => p.a && p.b).map((p) => {
+              const a = p.a!, b = p.b!;
+              const deg = Math.abs(angleBetween(a.x, a.y, b.x, b.y));
+              const tier = deg < 1 ? "ok" : deg <= 3 ? "leve" : "sev";
+              const col = tier === "ok" ? "#94a3b8" : tier === "leve" ? "#F59E0B" : "#EF4444";
+              const dyPct = Math.abs(a.y - b.y);
+              const cm = heightCm ? (dyPct * heightCm) / 100 : null;
+              const higher = a.y < b.y ? "D" : "E";
+              const cmTxt = cm != null && cm >= 0.2 ? ` · ${higher} +${cm.toFixed(1)}cm` : "";
+              return (
+                <div key={p.id} className="absolute -translate-y-1/2"
+                  style={{ right: "2px", top: `${(a.y + b.y) / 2}%` }}>
+                  <span className="font-mono text-[10px]" style={{ color: col, background: "rgba(0,0,0,0.7)", padding: "1px 4px" }}>
+                    {p.label} {deg.toFixed(1)}°{cmTxt}
+                  </span>
+                </div>
+              );
+            });
+          })()}
 
           {/* Tooltip educacional */}
           {eduMode && hover && (() => {

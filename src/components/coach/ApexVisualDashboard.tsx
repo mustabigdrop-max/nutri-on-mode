@@ -14,6 +14,9 @@ import VertexEnhancedView from "@/components/coach/VertexEnhancedView";
 import { ApexScoreGauge, InsightCard, PosturaCards, CorrecoesCards, ProtocoloCards } from "@/components/coach/ApexResultCards";
 import { ApexCorrectiveLibrary } from "@/components/coach/ApexCorrectiveLibrary";
 import { ApexSessionGenerator } from "@/components/coach/ApexSessionGenerator";
+import { ApexClinicalTests } from "@/components/coach/ApexClinicalTests";
+import { ApexFennerGauge } from "@/components/coach/ApexFennerGauge";
+import { EMPTY_CLINICAL, buildClinicalPromptBlock, type ClinicalTestsState } from "@/data/fennerTests";
 import FeminineCyclePhaseBanner from "@/components/coach/FeminineCyclePhaseBanner";
 import { isFeminine, getCyclePhase, getCycleDayCount, normalizeFeminineCategory, FEMININE_CATEGORIES } from "@/lib/feminine";
 import { ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Legend, Tooltip as RTooltip } from "recharts";
@@ -702,6 +705,7 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
     front: null, back: null, side: null,
   });
   const [formData, setFormData] = useState({ semanas: "", compostos: "", obs: "" });
+  const [clinicalTests, setClinicalTests] = useState<ClinicalTestsState>(EMPTY_CLINICAL);
   const [objetivoCiclo, setObjetivoCiclo] = useState("cutting");
   const [semanaCiclo, setSemanaCiclo] = useState("");
   const [duracaoCiclo, setDuracaoCiclo] = useState("");
@@ -877,7 +881,8 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
 Objetivo do ciclo: ${objetivoCiclo}
 Semana ${semanaCiclo || "não informada"} de ${duracaoCiclo || "não informada"} semanas
 Suporte em uso: ${suporte || "não informado"}` : "";
-      const contexto = `Atleta: ${athleteName} | Semanas para o show: ${formData.semanas || "n/d"} | Protocolo: ${formData.compostos || "não informado"} | Obs: ${formData.obs || "nenhuma"}\n\nGere a análise APEX v2 completa.`;
+      const clinicalBlock = buildClinicalPromptBlock(clinicalTests);
+      const contexto = `Atleta: ${athleteName} | Semanas para o show: ${formData.semanas || "n/d"} | Protocolo: ${formData.compostos || "não informado"} | Obs: ${formData.obs || "nenhuma"}${clinicalBlock ? "\n\n" + clinicalBlock : ""}\n\nGere a análise APEX v2 completa.`;
       const system = buildSystemPrompt(cat, athleteName, protocoloCompleto);
 
       const { data, error } = await supabase.functions.invoke("apex-visual-analyze", {
@@ -1136,6 +1141,7 @@ Suporte em uso: ${suporte || "não informado"}` : "";
               <ApexPostural33Overlay
                 data={parsePostural33(analysisResult) || {}}
                 photoUrl={photoUrls.front || photoUrls.back || photoUrls.lateral || null}
+                athleteHeightCm={clinicalTests.athleteHeightCm ?? null}
               />
               <ApexVisualOverlay
                 landmarks={parseLandmarks(analysisResult)}
@@ -1158,6 +1164,7 @@ Suporte em uso: ${suporte || "não informado"}` : "";
           )}
           {activeResultTab === "correcoes" && (
             <div className="space-y-4">
+              <ApexFennerGauge state={clinicalTests} />
               <InfoBox color="#0F8A63" text="Para cada desvio: alongamento, ativação e cue de postura." />
               <CorrecoesCards body={parseSection(analysisResult, "CORRECOES_POSTURAIS", "PONTOS_FRACOS_PROTOCOLO")} />
               <ApexSessionGenerator />
@@ -1686,6 +1693,15 @@ Suporte em uso: ${suporte || "não informado"}` : "";
           </div>
         </div>
       )}
+
+      {/* ━━━ TESTES CLÍNICOS (FENNER) ━━━ */}
+      <div style={{ ...cardStyle, marginBottom: 16 }}>
+        <ApexClinicalTests
+          athleteId={athlete?.id || null}
+          value={clinicalTests}
+          onChange={setClinicalTests}
+        />
+      </div>
 
       {/* ━━━ OBSERVAÇÕES ━━━ */}
       <div style={{ ...cardStyle, marginBottom: 16 }}>
