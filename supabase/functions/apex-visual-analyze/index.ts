@@ -87,7 +87,52 @@ Formato OBRIGATÓRIO — três blocos separados (apenas das vistas enviadas):
 Regras estritas:
 - Coordenadas reais baseadas na foto, nunca zeros placeholder
 - Cada finding é uma frase clínica curta com músculo dominante/inibido e consequência prática
-- JSON estritamente válido dentro do bloco`;
+- JSON estritamente válido dentro do bloco
+
+━━━ LANDMARKS PROFISSIONAIS (33 PONTOS — OBRIGATÓRIO) ━━━
+Além dos blocos por vista acima, retorne UM bloco adicional com 33 landmarks anatômicos profissionais (vista frontal/posterior preferencial). Coordenadas em porcentagem 0-100. NUNCA retornar zero — se a região não é totalmente visível, estime com base em anatomia de referência. Severidade opcional por ponto: "normal" | "mild" | "moderate" | "severe".
+
+\`\`\`json_landmarks_pro
+{
+  "landmarks": {
+    "trago_r": {"x": 0, "y": 0},
+    "trago_l": {"x": 0, "y": 0},
+    "c7": {"x": 0, "y": 0},
+    "occipital": {"x": 0, "y": 0},
+    "acromio_r": {"x": 0, "y": 0},
+    "acromio_l": {"x": 0, "y": 0},
+    "angulo_escapula_r": {"x": 0, "y": 0},
+    "angulo_escapula_l": {"x": 0, "y": 0},
+    "esterno_manubrio": {"x": 0, "y": 0},
+    "glenoumeral_r": {"x": 0, "y": 0},
+    "glenoumeral_l": {"x": 0, "y": 0},
+    "t4": {"x": 0, "y": 0},
+    "t6": {"x": 0, "y": 0},
+    "t12": {"x": 0, "y": 0},
+    "l3": {"x": 0, "y": 0},
+    "l5_s1": {"x": 0, "y": 0},
+    "eias_r": {"x": 0, "y": 0},
+    "eias_l": {"x": 0, "y": 0},
+    "eips_r": {"x": 0, "y": 0},
+    "eips_l": {"x": 0, "y": 0},
+    "trocantermaior_r": {"x": 0, "y": 0},
+    "trocantermaior_l": {"x": 0, "y": 0},
+    "joelho_r": {"x": 0, "y": 0},
+    "joelho_l": {"x": 0, "y": 0},
+    "cabeca_fibula_r": {"x": 0, "y": 0},
+    "cabeca_fibula_l": {"x": 0, "y": 0},
+    "maleolo_r": {"x": 0, "y": 0},
+    "maleolo_l": {"x": 0, "y": 0},
+    "calcaneo_r": {"x": 0, "y": 0},
+    "calcaneo_l": {"x": 0, "y": 0},
+    "cabeca_1metatarso_r": {"x": 0, "y": 0},
+    "cabeca_1metatarso_l": {"x": 0, "y": 0},
+    "cabeca_5metatarso_r": {"x": 0, "y": 0},
+    "cabeca_5metatarso_l": {"x": 0, "y": 0}
+  }
+}
+\`\`\`
+IMPORTANTE: todos os 33 IDs devem aparecer e ter coordenadas estimadas (não zero). JSON estritamente válido.`;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
