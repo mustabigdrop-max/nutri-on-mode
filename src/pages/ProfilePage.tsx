@@ -25,10 +25,25 @@ interface Badge {
   condition: string;
 }
 
+const GOAL_LABELS: Record<string, string> = {
+  lose_weight: "Emagrecimento",
+  gain_muscle: "Hipertrofia",
+  definition: "Definição",
+  cutting: "Cutting",
+  bulking: "Bulking",
+  recomposition: "Recomposição Corporal",
+  health: "Saúde Geral",
+  maintenance: "Manutenção",
+  performance: "Performance",
+  longevity: "Longevidade",
+  glp1: "Protocolo GLP-1",
+};
+
 const ProfilePage = () => {
   const { signOut } = useAuth();
-  const { profile, loading } = useProfile();
+  const { profile, loading, updateProfile } = useProfile();
   const navigate = useNavigate();
+  const [savingGoal, setSavingGoal] = useState(false);
   const [mealCount, setMealCount] = useState(0);
   const [weightCount, setWeightCount] = useState(0);
   const { hasSubscription: hasGlp1 } = useGlp1();
