@@ -170,6 +170,40 @@ export default function ApexPostural33Overlay({ data, photoUrl, athleteHeightCm 
           preserveAspectRatio="none"
           className="absolute inset-0 h-full w-full"
         >
+          {/* ─── GRADE SIMETROGRÁFICA ─── */}
+          {gridMode && (() => {
+            const pairs = [
+              { id: "shoulders", a: aR, b: aL },
+              { id: "scapulae", a: pointOf(data, "angulo_escapula_r"), b: pointOf(data, "angulo_escapula_l") },
+              { id: "hips", a: eR, b: eL },
+              { id: "knees", a: kR, b: kL },
+              { id: "ankles", a: malR, b: malL },
+            ].filter((p) => p.a && p.b) as { id: string; a: PosturalLandmark; b: PosturalLandmark }[];
+
+            const tiltColor = (deg: number) => deg < 1 ? "rgba(255,255,255,0.4)" : deg <= 3 ? "rgba(245,158,11,0.7)" : "rgba(239,68,68,0.85)";
+
+            // Linha vertical central — média entre tragos topo e maléolos base
+            const topX = tR && tL ? (tR.x + tL.x) / 2 : null;
+            const botX = malR && malL ? (malR.x + malL.x) / 2 : (topX ?? 50);
+            const cx = topX != null ? (topX + botX) / 2 : 50;
+
+            return (
+              <g>
+                <line x1={cx} y1={0} x2={cx} y2={100}
+                  stroke="rgba(255,255,255,0.5)" strokeWidth={0.25}
+                  strokeDasharray="0.6 0.6" vectorEffect="non-scaling-stroke" />
+                {pairs.map((p) => {
+                  const deg = Math.abs(angleBetween(p.a.x, p.a.y, p.b.x, p.b.y));
+                  return (
+                    <line key={p.id}
+                      x1={p.a.x} y1={p.a.y} x2={p.b.x} y2={p.b.y}
+                      stroke={tiltColor(deg)} strokeWidth={0.35}
+                      vectorEffect="non-scaling-stroke" />
+                  );
+                })}
+              </g>
+            );
+          })()}
           {/* EIXO DE SIMETRIA — tragos (horizontal cranial) */}
           {tR && tL && (
             <line x1={tR.x} y1={tR.y} x2={tL.x} y2={tL.y}
