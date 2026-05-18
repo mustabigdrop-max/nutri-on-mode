@@ -130,13 +130,19 @@ export function ApexSessionGenerator() {
   const [duration, setDuration] = useState<Duration>(30);
   const [foam, setFoam] = useState(false);
   const [ball, setBall] = useState(false);
-  const tools: Tools = { foam, ball };
+  const [band, setBand] = useState(false);
+  const [dumbbells, setDumbbells] = useState(false);
+  const [step, setStep] = useState(false);
+  const tools: Tools = { foam, ball, band, dumbbells, step };
 
   const region = useMemo(
     () => APEX_CORRECTIVE_LIBRARY.find((r) => r.id === regionId) ?? APEX_CORRECTIVE_LIBRARY[0],
     [regionId],
   );
-  const session = useMemo(() => buildSession(region, duration, tools), [region, duration, foam, ball]);
+  const session = useMemo(
+    () => buildSession(region, duration, tools),
+    [region, duration, foam, ball, band, dumbbells, step],
+  );
 
   const copy = async () => {
     try {
@@ -195,14 +201,24 @@ export function ApexSessionGenerator() {
         </div>
         <div>
           <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Equipamentos</div>
-          <div className="flex flex-col gap-1">
+          <div className="grid grid-cols-2 gap-x-3 gap-y-1">
             <label className="flex items-center gap-2 cursor-pointer text-xs">
-              <Checkbox checked={foam} onCheckedChange={(v) => setFoam(!!v)} />
-              Foam roller
+              <Checkbox checked={foam} onCheckedChange={(v) => setFoam(!!v)} /> Foam roller
             </label>
             <label className="flex items-center gap-2 cursor-pointer text-xs">
-              <Checkbox checked={ball} onCheckedChange={(v) => setBall(!!v)} />
-              Bola de tênis / lacrosse
+              <Checkbox checked={ball} onCheckedChange={(v) => setBall(!!v)} /> Bola tênis/lacrosse
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer text-xs">
+              <Checkbox checked={band} onCheckedChange={(v) => setBand(!!v)} /> Faixa elástica
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer text-xs">
+              <Checkbox checked={dumbbells} onCheckedChange={(v) => setDumbbells(!!v)} /> Halteres
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer text-xs">
+              <Checkbox checked={step} onCheckedChange={(v) => setStep(!!v)} /> Step / caixote
+            </label>
+            <label className="flex items-center gap-2 cursor-not-allowed opacity-80 text-xs">
+              <Checkbox checked disabled /> Sem equip.
             </label>
           </div>
         </div>
