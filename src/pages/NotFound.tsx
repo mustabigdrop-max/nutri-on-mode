@@ -1,6 +1,6 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
-import { HudShell, HudStatusBar } from "@/components/hud/HudShell";
+import { HudShell, HudStatusBar, HudPanel } from "@/components/hud/HudShell";
 
 const NotFound = () => {
   const location = useLocation();
