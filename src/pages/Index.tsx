@@ -15,25 +15,30 @@ import LandingCTA from "@/components/landing/LandingCTA";
 import LandingFooter from "@/components/landing/LandingFooter";
 
 const Index = () => (
-  <div className="min-h-screen bg-[#03030a] text-[#f0edf8] font-landing overflow-x-hidden">
-    <LandingAudio />
-    <LandingBackground />
-    <div className="relative z-[2]">
-      <LandingNav />
-      <LandingHero />
-      <LandingTicker />
-      <LandingManifesto />
-      <LandingProtocols />
-      <LandingFeatures />
-      <LandingStats />
-      <LandingCoach />
-      <LandingTestimonials />
-      <LandingPlans />
-      <LandingGuarantee />
-      <LandingCTA />
-      <LandingFooter />
-    </div>
-  </div>
+  
+
+    
+    
+    
+
+
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+     
+
+
 );
 
 export default Index;
