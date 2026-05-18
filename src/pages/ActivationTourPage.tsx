@@ -4,41 +4,67 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
-import { BarChart3, Utensils, HelpingHand, Bell, ChevronRight, Check } from "lucide-react";
+
+const GOLD = "#B8922A";
+const CYAN = "#00D4FF";
+const GREEN = "#00C896";
 
 const TOUR_STEPS = [
   {
-    icon: BarChart3,
-    emoji: "📊",
-    title: "Esse é seu painel de macros.",
-    description: "Atualiza em tempo real a cada registro. Proteína, carboidrato e gordura — tudo visual.",
-    color: "from-primary to-gold-glow",
+    code: "MC",
+    id: "T-01",
+    title: "Painel de Macros em Tempo Real",
+    description: "Proteína, carboidrato e gordura atualizados a cada registro. Seu protocolo nutriON visualizado em tempo real.",
+    color: GOLD,
   },
   {
-    icon: Utensils,
-    emoji: "🍴",
-    title: "Esses botões são seu salva-vidas.",
-    description: "'Comi fora' e 'Refeição Livre' — para quando a vida não segue o plano. Sem culpa.",
-    color: "from-accent to-cyan-glow",
+    code: "RF",
+    id: "T-02",
+    title: "Registros Flexíveis",
+    description: "'Comi fora' e 'Refeição Livre' — para quando a vida não segue o plano. O sistema recalibra. Sem culpa.",
+    color: CYAN,
   },
   {
-    icon: HelpingHand,
-    emoji: "🤔",
-    title: "Esse botão muda tudo.",
-    description: "'E se eu comer?' — antes de qualquer desvio, consulta a IA primeiro. Ela te dá opções sem julgamento.",
-    color: "from-orange-500 to-red-500",
+    code: "IA",
+    id: "T-03",
+    title: "IA de Decisão",
+    description: "'E se eu comer?' — antes de qualquer desvio, consulta a IA primeiro. Ela te dá opções inteligentes, sem julgamento.",
+    color: GOLD,
   },
 ];
+
+const HudShell = ({ children }: { children: React.ReactNode }) => (
+  <div
+    className="min-h-screen flex flex-col items-center justify-center px-4 py-8 relative overflow-hidden"
+    style={{ background: "#0a0a1a", fontFamily: "'Space Grotesk', sans-serif" }}
+  >
+    <div
+      className="absolute inset-0 pointer-events-none"
+      style={{
+        backgroundImage: `
+          linear-gradient(rgba(184,146,42,.04) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(184,146,42,.04) 1px, transparent 1px)
+        `,
+        backgroundSize: "50px 50px",
+      }}
+    />
+    <div
+      className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+      style={{ width: 600, height: 400, background: `radial-gradient(ellipse, rgba(184,146,42,0.06) 0%, transparent 65%)` }}
+    />
+    <div className="hud-scan-line" />
+    <div className="hud-corner-tl" style={{ top: 24, left: 24 }} />
+    <div className="hud-corner-tr" style={{ top: 24, right: 24 }} />
+    <div className="hud-corner-bl" style={{ bottom: 24, left: 24 }} />
+    <div className="hud-corner-br" style={{ bottom: 24, right: 24 }} />
+    {children}
+  </div>
+);
 
 const ActivationTourPage = () => {
   const [step, setStep] = useState(0);
   const [showNotifications, setShowNotifications] = useState(false);
-  const [notifTimes, setNotifTimes] = useState({
-    cafe: "07:00",
-    almoco: "12:00",
-    jantar: "19:00",
-    lanche: "",
-  });
+  const [notifTimes, setNotifTimes] = useState({ cafe: "07:00", almoco: "12:00", jantar: "19:00", lanche: "" });
   const [includeLanche, setIncludeLanche] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -55,7 +81,6 @@ const ActivationTourPage = () => {
   const handleFinish = async (withNotifications: boolean) => {
     if (user) {
       await updateProfile({ activation_completed: true } as any);
-      
       const prefs = withNotifications ? {
         enabled: true,
         times: {
@@ -65,7 +90,6 @@ const ActivationTourPage = () => {
           ...(includeLanche ? { lanche: notifTimes.lanche } : {}),
         },
       } : { enabled: false };
-
       await supabase.from("activation_metrics").upsert({
         user_id: user.id,
         tour_completed_at: new Date().toISOString(),
@@ -76,39 +100,83 @@ const ActivationTourPage = () => {
     navigate("/dashboard");
   };
 
-  // Notification setup
+  // Notification setup screen
   if (showNotifications) {
     return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4 py-8">
-        <div className="absolute inset-0 bg-grid opacity-10" />
+      <HudShell>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="relative z-10 w-full max-w-lg space-y-5"
+          className="relative z-10 w-full max-w-md"
         >
-          <div className="text-center">
-            <div className="w-14 h-14 rounded-2xl bg-primary/20 flex items-center justify-center mx-auto mb-4">
-              <Bell className="w-7 h-7 text-primary" />
+          {/* Header */}
+          <div className="text-center mb-8">
+            <div
+              className="inline-flex items-center justify-center mb-4"
+              style={{
+                width: 52, height: 52,
+                background: "rgba(0,212,255,0.1)",
+                border: `1px solid ${CYAN}44`,
+                clipPath: "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)",
+              }}
+            >
+              <span style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.62rem", fontWeight: 700, color: CYAN }}>BEL</span>
             </div>
-            <h1 className="text-xl font-bold text-foreground mb-2">Último passo!</h1>
-            <p className="text-sm text-muted-foreground">
-              Quando você quer que eu te avise para registrar?
+            <h1
+              className="leading-tight mb-1"
+              style={{ fontFamily: "'Rajdhani', sans-serif", fontWeight: 700, fontSize: "2rem", color: "#F5F0E8" }}
+            >
+              CONFIGURAR ALERTAS
+            </h1>
+            <p style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.55rem", letterSpacing: "0.12em", color: "rgba(80,80,122,0.7)" }}>
+              QUANDO REGISTRAR SUAS REFEIÇÕES?
             </p>
           </div>
 
-          <div className="space-y-3">
+          {/* Time slots */}
+          <div
+            className="space-y-2 p-5 mb-4"
+            style={{
+              border: "1px solid rgba(184,146,42,0.12)",
+              background: "rgba(10,10,26,0.6)",
+              clipPath: "polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px))",
+            }}
+          >
             {[
-              { key: "cafe", label: "☀️ Café da manhã", value: notifTimes.cafe },
-              { key: "almoco", label: "🍽️ Almoço", value: notifTimes.almoco },
-              { key: "jantar", label: "🌙 Jantar", value: notifTimes.jantar },
+              { key: "cafe",   label: "CAFÉ DA MANHÃ", code: "BK" },
+              { key: "almoco", label: "ALMOÇO",         code: "LN" },
+              { key: "jantar", label: "JANTAR",         code: "DN" },
             ].map((item) => (
-              <div key={item.key} className="flex items-center justify-between p-4 rounded-xl border border-border bg-card">
-                <span className="text-sm font-mono text-foreground">{item.label}</span>
+              <div key={item.key} className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div
+                    className="flex items-center justify-center"
+                    style={{
+                      width: 28, height: 28,
+                      background: "rgba(184,146,42,0.08)",
+                      border: "1px solid rgba(184,146,42,0.2)",
+                      clipPath: "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)",
+                    }}
+                  >
+                    <span style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.42rem", color: GOLD }}>{item.code}</span>
+                  </div>
+                  <span style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.58rem", letterSpacing: "0.1em", color: "rgba(245,240,232,0.7)" }}>
+                    {item.label}
+                  </span>
+                </div>
                 <input
                   type="time"
-                  value={item.value}
-                  onChange={(e) => setNotifTimes((prev) => ({ ...prev, [item.key]: e.target.value }))}
-                  className="px-3 py-1.5 rounded-lg bg-secondary border border-border text-foreground text-sm font-mono focus:outline-none focus:border-primary/50"
+                  value={(notifTimes as any)[item.key]}
+                  onChange={(e) => setNotifTimes(prev => ({ ...prev, [item.key]: e.target.value }))}
+                  style={{
+                    padding: "6px 10px",
+                    background: "rgba(10,10,26,0.9)",
+                    border: "1px solid rgba(184,146,42,0.25)",
+                    color: GOLD,
+                    fontFamily: "'Space Mono', monospace",
+                    fontSize: "0.7rem",
+                    outline: "none",
+                  }}
                 />
               </div>
             ))}
@@ -116,40 +184,96 @@ const ActivationTourPage = () => {
             {!includeLanche ? (
               <button
                 onClick={() => setIncludeLanche(true)}
-                className="w-full p-3 rounded-xl border border-dashed border-border text-sm text-muted-foreground hover:text-foreground hover:border-primary/30 transition-colors"
+                className="w-full py-2.5 transition-colors"
+                style={{
+                  border: "1px dashed rgba(184,146,42,0.2)",
+                  fontFamily: "'Space Mono', monospace",
+                  fontSize: "0.55rem",
+                  letterSpacing: "0.1em",
+                  color: "rgba(80,80,122,0.7)",
+                  background: "transparent",
+                  cursor: "pointer",
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = GOLD)}
+                onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(80,80,122,0.7)")}
               >
-                + Adicionar lanche da tarde 🍎
+                + ADICIONAR LANCHE DA TARDE
               </button>
             ) : (
-              <div className="flex items-center justify-between p-4 rounded-xl border border-border bg-card">
-                <span className="text-sm font-mono text-foreground">🍎 Lanche da tarde</span>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div
+                    className="flex items-center justify-center"
+                    style={{
+                      width: 28, height: 28,
+                      background: "rgba(0,212,255,0.08)",
+                      border: "1px solid rgba(0,212,255,0.2)",
+                      clipPath: "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)",
+                    }}
+                  >
+                    <span style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.42rem", color: CYAN }}>LC</span>
+                  </div>
+                  <span style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.58rem", letterSpacing: "0.1em", color: "rgba(245,240,232,0.7)" }}>
+                    LANCHE DA TARDE
+                  </span>
+                </div>
                 <input
                   type="time"
                   value={notifTimes.lanche}
-                  onChange={(e) => setNotifTimes((prev) => ({ ...prev, lanche: e.target.value }))}
-                  className="px-3 py-1.5 rounded-lg bg-secondary border border-border text-foreground text-sm font-mono focus:outline-none focus:border-primary/50"
+                  onChange={(e) => setNotifTimes(prev => ({ ...prev, lanche: e.target.value }))}
+                  style={{
+                    padding: "6px 10px",
+                    background: "rgba(10,10,26,0.9)",
+                    border: "1px solid rgba(0,212,255,0.25)",
+                    color: CYAN,
+                    fontFamily: "'Space Mono', monospace",
+                    fontSize: "0.7rem",
+                    outline: "none",
+                  }}
                 />
               </div>
             )}
           </div>
 
-          <div className="space-y-2">
-            <button
-              onClick={() => handleFinish(true)}
-              className="w-full py-4 rounded-xl bg-primary text-primary-foreground font-bold transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2"
-            >
-              <Bell className="w-4 h-4" />
-              Sim, me avisa!
-            </button>
-            <button
-              onClick={() => handleFinish(false)}
-              className="w-full py-3 text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Prefiro sem notificações
-            </button>
-          </div>
+          <button
+            onClick={() => handleFinish(true)}
+            className="w-full mb-2"
+            style={{
+              background: GOLD,
+              color: "#0a0a1a",
+              fontFamily: "'Space Mono', monospace",
+              fontSize: "0.75rem",
+              fontWeight: 700,
+              letterSpacing: "0.15em",
+              textTransform: "uppercase",
+              padding: "1rem",
+              clipPath: "polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px))",
+              border: "none",
+              cursor: "pointer",
+            }}
+          >
+            ATIVAR ALERTAS →
+          </button>
+
+          <button
+            onClick={() => handleFinish(false)}
+            className="w-full py-3 transition-colors"
+            style={{
+              background: "transparent",
+              border: "none",
+              fontFamily: "'Space Mono', monospace",
+              fontSize: "0.55rem",
+              letterSpacing: "0.1em",
+              color: "rgba(80,80,122,0.6)",
+              cursor: "pointer",
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = "rgba(245,240,232,0.5)")}
+            onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(80,80,122,0.6)")}
+          >
+            PREFIRO SEM NOTIFICAÇÕES
+          </button>
         </motion.div>
-      </div>
+      </HudShell>
     );
   }
 
@@ -157,18 +281,19 @@ const ActivationTourPage = () => {
   const current = TOUR_STEPS[step];
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4 py-8">
-      <div className="absolute inset-0 bg-grid opacity-10" />
-
-      <motion.div className="relative z-10 w-full max-w-lg">
+    <HudShell>
+      <motion.div className="relative z-10 w-full max-w-md">
         {/* Step indicator */}
-        <div className="flex items-center justify-center gap-2 mb-8">
-          {TOUR_STEPS.map((_, i) => (
+        <div className="flex items-center justify-center gap-2 mb-10">
+          {TOUR_STEPS.map((s, i) => (
             <div
               key={i}
-              className={`h-1.5 rounded-full transition-all ${
-                i === step ? "w-8 bg-primary" : i < step ? "w-4 bg-primary/40" : "w-4 bg-border"
-              }`}
+              className="transition-all duration-300"
+              style={{
+                height: 3,
+                width: i === step ? 32 : 16,
+                background: i <= step ? (i === step ? s.color : "rgba(184,146,42,0.4)") : "rgba(80,80,122,0.3)",
+              }}
             />
           ))}
         </div>
@@ -176,51 +301,82 @@ const ActivationTourPage = () => {
         <AnimatePresence mode="wait">
           <motion.div
             key={step}
-            initial={{ opacity: 0, x: 50 }}
+            initial={{ opacity: 0, x: 40 }}
             animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -50 }}
+            exit={{ opacity: 0, x: -40 }}
             transition={{ duration: 0.3 }}
-            className="text-center space-y-6"
+            className="text-center"
           >
+            {/* Hex icon */}
             <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ delay: 0.1, type: "spring" }}
-              className={`w-20 h-20 rounded-3xl bg-gradient-to-br ${current.color} flex items-center justify-center mx-auto shadow-lg`}
+              initial={{ scale: 0.7, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.1, duration: 0.4 }}
+              className="inline-flex items-center justify-center mb-6"
+              style={{
+                width: 72, height: 72,
+                background: `rgba(${current.color === GOLD ? "184,146,42" : "0,212,255"},0.1)`,
+                border: `1px solid ${current.color}44`,
+                clipPath: "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)",
+                boxShadow: `0 0 40px ${current.color}22`,
+              }}
             >
-              <current.icon className="w-10 h-10 text-white" />
+              <span style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.9rem", fontWeight: 700, color: current.color }}>
+                {current.code}
+              </span>
             </motion.div>
 
-            <div>
-              <p className="text-3xl mb-3">{current.emoji}</p>
-              <h2 className="text-xl font-bold text-foreground mb-3">{current.title}</h2>
-              <p className="text-sm text-muted-foreground leading-relaxed max-w-sm mx-auto">{current.description}</p>
+            {/* ID tag */}
+            <div className="mb-4" style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.48rem", letterSpacing: "0.2em", color: `${current.color}66` }}>
+              {current.id}
             </div>
+
+            <h2
+              className="mb-4 leading-tight"
+              style={{ fontFamily: "'Rajdhani', sans-serif", fontWeight: 700, fontSize: "1.8rem", color: "#F5F0E8" }}
+            >
+              {current.title.toUpperCase()}
+            </h2>
+
+            <p
+              className="mb-8 max-w-xs mx-auto"
+              style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.6rem", letterSpacing: "0.08em", color: "rgba(80,80,122,0.9)", lineHeight: 1.8 }}
+            >
+              {current.description}
+            </p>
 
             <button
               onClick={handleTourNext}
-              className="w-full max-w-xs mx-auto py-4 rounded-xl bg-primary text-primary-foreground font-bold transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2"
+              className="mx-auto"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 8,
+                background: current.color,
+                color: "#0a0a1a",
+                fontFamily: "'Space Mono', monospace",
+                fontSize: "0.7rem",
+                fontWeight: 700,
+                letterSpacing: "0.15em",
+                textTransform: "uppercase",
+                padding: "0.9rem 2.5rem",
+                clipPath: "polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px))",
+                border: "none",
+                cursor: "pointer",
+                minWidth: 220,
+              }}
             >
-              {step === TOUR_STEPS.length - 1 ? (
-                <>
-                  <Check className="w-4 h-4" />
-                  Entendi — quero usar o app
-                </>
-              ) : (
-                <>
-                  Toque para continuar
-                  <ChevronRight className="w-4 h-4" />
-                </>
-              )}
+              {step === TOUR_STEPS.length - 1 ? "ATIVAR SISTEMA →" : "CONTINUAR →"}
             </button>
 
-            <p className="text-xs text-muted-foreground font-mono">
-              Passo {step + 1} de {TOUR_STEPS.length}
+            <p className="mt-5" style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.48rem", letterSpacing: "0.15em", color: "rgba(80,80,122,0.5)" }}>
+              PASSO {step + 1} DE {TOUR_STEPS.length}
             </p>
           </motion.div>
         </AnimatePresence>
       </motion.div>
-    </div>
+    </HudShell>
   );
 };
 
