@@ -743,7 +743,7 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
       setFeminineProfile((data as any) || null);
     })();
   }, [isFemAthlete, athlete?.patient_user_id]);
-  const [apexMode, setApexMode] = useState<"analise" | "evolucao">("analise");
+  const [apexMode, setApexMode] = useState<"analise" | "evolucao" | "guiada">("analise");
   const [promptCopied, setPromptCopied] = useState(false);
   const navigate = useNavigate();
 
