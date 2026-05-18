@@ -41,7 +41,7 @@ const WeightCheckInCard = () => {
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="rounded-xl border border-border bg-card mb-4 overflow-hidden"
+      className="hud-card mb-4 overflow-hidden"
     >
       {/* Top accent */}
       <div className="h-0.5" style={{ background: `linear-gradient(90deg, ${st.color}, transparent)` }} />

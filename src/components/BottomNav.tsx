@@ -26,7 +26,7 @@ const BottomNav = () => {
 
   return (
     <>
-      <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-md border-t border-border z-50">
+      <div className="fixed bottom-0 left-0 right-0 backdrop-blur-md z-50" style={{ background: "rgba(6,6,15,0.97)", borderTop: "1px solid rgba(184,146,42,0.12)" }}>
         <div className="max-w-lg mx-auto flex items-center justify-around py-2 px-2">
           {NAV_ITEMS.map((item) => {
             const isActive = currentPath === item.path;
@@ -40,7 +40,8 @@ const BottomNav = () => {
                 >
                   <motion.div
                     whileTap={{ scale: 0.9 }}
-                    className="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-primary-foreground -mt-5 glow-gold"
+                    className="w-12 h-12 flex items-center justify-center -mt-5 glow-gold"
+                    style={{ background: "#B8922A", color: "#0a0a1a", clipPath: "polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px)" }}
                   >
                     <Plus className="w-6 h-6" />
                   </motion.div>

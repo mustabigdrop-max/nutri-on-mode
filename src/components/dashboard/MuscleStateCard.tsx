@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Dumbbell } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { getLocalDateStr } from "@/lib/utils";
@@ -53,10 +54,10 @@ const MuscleStateCard = () => {
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="rounded-xl border border-border bg-card p-4"
+      className="hud-card p-4"
     >
       <div className="flex items-center gap-2 mb-3">
-        <span className="text-sm">🪞</span>
+        <Dumbbell className="w-3.5 h-3.5 text-primary" />
         <h3 className="text-xs font-mono font-bold text-foreground uppercase tracking-wider">Estado Muscular</h3>
       </div>
 

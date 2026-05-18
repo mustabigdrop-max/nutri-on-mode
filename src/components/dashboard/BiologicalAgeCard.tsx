@@ -49,7 +49,7 @@ const BiologicalAgeCard = () => {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       onClick={() => navigate("/biological-age")}
-      className="rounded-xl border border-border bg-card p-4 cursor-pointer hover:border-primary/30 transition-colors"
+      className="hud-card p-4 cursor-pointer"
     >
       <div className="flex items-center gap-2 mb-3">
         <Dna className="w-4 h-4 text-[hsl(var(--accent))]" />
