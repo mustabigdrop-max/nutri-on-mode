@@ -49,16 +49,30 @@ import {
 import BottomNav from "@/components/BottomNav";
 import { toast } from "sonner";
 
-// SVG animated ring component — premium dual ring with glow
-const CalorieRing = ({ percent, kcal, target, objetivo }: { percent: number; kcal: number; target: number; objetivo?: string }) => {
+// SVG animated ring component — premium quad ring (kcal + 3 macros)
+const CalorieRing = ({
+  percent, kcal, target, objetivo,
+  protPercent = 0, carbPercent = 0, fatPercent = 0,
+}: {
+  percent: number; kcal: number; target: number; objetivo?: string;
+  protPercent?: number; carbPercent?: number; fatPercent?: number;
+}) => {
   const radius = 90;
-  const innerRadius = 76;
   const stroke = 10;
-  const innerStroke = 4;
+  const macroStroke = 5;
+  // 3 macro tracks inside, evenly spaced
+  const rProt = 74;
+  const rCarb = 64;
+  const rFat = 54;
   const circumference = 2 * Math.PI * radius;
-  const innerCircumference = 2 * Math.PI * innerRadius;
   const offset = circumference - (Math.min(percent, 100) / 100) * circumference;
-  const innerOffset = innerCircumference - (Math.min(percent, 100) / 100) * innerCircumference;
+  const arc = (r: number, p: number) => {
+    const c = 2 * Math.PI * r;
+    return { c, off: c - (Math.min(p, 100) / 100) * c };
+  };
+  const a1 = arc(rProt, protPercent);
+  const a2 = arc(rCarb, carbPercent);
+  const a3 = arc(rFat, fatPercent);
   const remaining = Math.max(target - kcal, 0);
   const isOver = percent > 100;
   const isOnTarget = percent >= 85 && percent <= 105;
@@ -84,11 +98,12 @@ const CalorieRing = ({ percent, kcal, target, objetivo }: { percent: number; kca
             <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
           </filter>
         </defs>
-        {/* Outer track */}
+        {/* Tracks */}
         <circle cx="100" cy="100" r={radius} fill="none" stroke="hsl(var(--border))" strokeWidth={stroke} />
-        {/* Inner track */}
-        <circle cx="100" cy="100" r={innerRadius} fill="none" stroke="hsl(var(--border))" strokeWidth={innerStroke} opacity={0.4} />
-        {/* Outer ring — gradient gold→cyan */}
+        <circle cx="100" cy="100" r={rProt} fill="none" stroke="hsl(var(--border))" strokeWidth={macroStroke} opacity={0.35} />
+        <circle cx="100" cy="100" r={rCarb} fill="none" stroke="hsl(var(--border))" strokeWidth={macroStroke} opacity={0.35} />
+        <circle cx="100" cy="100" r={rFat} fill="none" stroke="hsl(var(--border))" strokeWidth={macroStroke} opacity={0.35} />
+        {/* Outer kcal ring */}
         <motion.circle
           cx="100" cy="100" r={radius} fill="none"
           stroke="url(#ringGrad)"
@@ -100,19 +115,41 @@ const CalorieRing = ({ percent, kcal, target, objetivo }: { percent: number; kca
           transition={{ duration: 1.5, ease: "easeOut", delay: 0.3 }}
           filter="url(#ringGlow)"
         />
-        {/* Inner ring — cyan accent */}
+        {/* Protein — gold */}
         <motion.circle
-          cx="100" cy="100" r={innerRadius} fill="none"
-          stroke="hsl(var(--accent))"
-          strokeWidth={innerStroke}
+          cx="100" cy="100" r={rProt} fill="none"
+          stroke="hsl(var(--primary))"
+          strokeWidth={macroStroke}
           strokeLinecap="round"
-          strokeDasharray={innerCircumference}
-          initial={{ strokeDashoffset: innerCircumference }}
-          animate={{ strokeDashoffset: innerOffset }}
-          transition={{ duration: 1.8, ease: "easeOut", delay: 0.5 }}
-          opacity={0.5}
+          strokeDasharray={a1.c}
+          initial={{ strokeDashoffset: a1.c }}
+          animate={{ strokeDashoffset: a1.off }}
+          transition={{ duration: 1.6, ease: "easeOut", delay: 0.5 }}
+        />
+        {/* Carbs — cyan */}
+        <motion.circle
+          cx="100" cy="100" r={rCarb} fill="none"
+          stroke="hsl(var(--accent))"
+          strokeWidth={macroStroke}
+          strokeLinecap="round"
+          strokeDasharray={a2.c}
+          initial={{ strokeDashoffset: a2.c }}
+          animate={{ strokeDashoffset: a2.off }}
+          transition={{ duration: 1.7, ease: "easeOut", delay: 0.65 }}
+        />
+        {/* Fat — destructive */}
+        <motion.circle
+          cx="100" cy="100" r={rFat} fill="none"
+          stroke="hsl(var(--destructive))"
+          strokeWidth={macroStroke}
+          strokeLinecap="round"
+          strokeDasharray={a3.c}
+          initial={{ strokeDashoffset: a3.c }}
+          animate={{ strokeDashoffset: a3.off }}
+          transition={{ duration: 1.8, ease: "easeOut", delay: 0.8 }}
         />
       </svg>
+
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         {/* Percentage badge */}
         <motion.span
