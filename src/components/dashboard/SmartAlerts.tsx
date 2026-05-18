@@ -102,7 +102,7 @@ export default function SmartAlerts() {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, x: -100, scale: 0.95 }}
               transition={{ delay: i * 0.08 }}
-              className={`rounded-xl border ${config.border} ${config.bg} p-0 relative overflow-hidden`}
+              className={`hud-card p-0 relative overflow-hidden`}
             >
               {/* Severity side bar */}
               <div className={`absolute left-0 top-0 bottom-0 w-1 ${config.bar}`} />

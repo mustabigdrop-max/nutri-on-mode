@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { ChevronDown, ChevronUp, TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { ChevronDown, ChevronUp, TrendingUp, TrendingDown, Minus, BarChart3 } from "lucide-react";
 
 interface ConsistencyScore {
   id: string;
@@ -57,22 +57,22 @@ const ConsistencyScoreCard = () => {
   const trendColor = diff > 0 ? "text-primary" : diff < 0 ? "text-destructive" : "text-muted-foreground";
 
   const criteria = [
-    { label: "Adesão", score: current.adherence_score, max: 40, emoji: "✅" },
-    { label: "Qualidade", score: current.quality_score, max: 20, emoji: "✅" },
-    { label: "Recuperação", score: current.recovery_score, max: 20, emoji: "✅" },
-    { label: "Progresso", score: current.progress_score, max: 20, emoji: "✅" },
+    { label: "Adesão", score: current.adherence_score, max: 40 },
+    { label: "Qualidade", score: current.quality_score, max: 20 },
+    { label: "Recuperação", score: current.recovery_score, max: 20 },
+    { label: "Progresso", score: current.progress_score, max: 20 },
   ];
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="rounded-xl border border-primary/20 bg-card p-4 mb-4"
+      className="hud-card p-4 mb-4"
     >
       <button onClick={() => setExpanded(!expanded)} className="w-full text-left">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <span className="text-lg">📊</span>
+            <BarChart3 className="w-3.5 h-3.5 text-primary" />
             <span className="text-xs font-mono text-primary uppercase tracking-wider">Score de Consistência</span>
           </div>
           <div className="flex items-center gap-2">
@@ -108,8 +108,7 @@ const ConsistencyScoreCard = () => {
           </div>
           <div className="flex-1">
             <div className="flex items-center gap-1.5 mb-1">
-              <span className="text-lg">{tier.emoji}</span>
-              <span className="text-sm font-bold text-foreground">{tier.label}</span>
+              <span className="text-xs font-mono text-accent uppercase tracking-widest">{tier.label}</span>
             </div>
             <p className="text-xs text-muted-foreground font-mono">{tier.desc}</p>
             {current.percentile > 0 && (
@@ -134,8 +133,8 @@ const ConsistencyScoreCard = () => {
               {criteria.map(c => (
                 <div key={c.label}>
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs font-mono text-foreground">{c.emoji} {c.label}</span>
-                    <span className="text-xs font-mono text-primary font-bold">{c.score}/{c.max} pts</span>
+                    <span className="text-xs font-mono text-foreground uppercase tracking-wider">› {c.label}</span>
+                    <span className="text-xs font-mono text-primary font-bold">{c.score}/{c.max}</span>
                   </div>
                   <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
                     <motion.div
