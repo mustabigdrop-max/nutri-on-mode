@@ -480,6 +480,51 @@ export type Database = {
           },
         ]
       }
+      apex_guided_sessions: {
+        Row: {
+          athlete_id: string | null
+          body_score: number | null
+          coach_id: string
+          completed_at: string | null
+          created_at: string
+          duration_minutes: number | null
+          fcs_score: number | null
+          full_report: Json | null
+          id: string
+          session_type: string
+          sri_score: number | null
+          steps_data: Json
+        }
+        Insert: {
+          athlete_id?: string | null
+          body_score?: number | null
+          coach_id: string
+          completed_at?: string | null
+          created_at?: string
+          duration_minutes?: number | null
+          fcs_score?: number | null
+          full_report?: Json | null
+          id?: string
+          session_type: string
+          sri_score?: number | null
+          steps_data?: Json
+        }
+        Update: {
+          athlete_id?: string | null
+          body_score?: number | null
+          coach_id?: string
+          completed_at?: string | null
+          created_at?: string
+          duration_minutes?: number | null
+          fcs_score?: number | null
+          full_report?: Json | null
+          id?: string
+          session_type?: string
+          sri_score?: number | null
+          steps_data?: Json
+        }
+        Relationships: []
+      }
       apex_muscle_scores: {
         Row: {
           abs_obliques: number | null
