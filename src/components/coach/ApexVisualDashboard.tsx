@@ -1156,9 +1156,10 @@ Suporte em uso: ${suporte || "não informado"}` : "";
             </div>
           )}
           {activeResultTab === "correcoes" && (
-            <div className="space-y-3">
+            <div className="space-y-4">
               <InfoBox color="#0F8A63" text="Para cada desvio: alongamento, ativação e cue de postura." />
               <CorrecoesCards body={parseSection(analysisResult, "CORRECOES_POSTURAIS", "PONTOS_FRACOS_PROTOCOLO")} />
+              <ApexCorrectiveLibrary />
             </div>
           )}
           {activeResultTab === "protocolo" && (
