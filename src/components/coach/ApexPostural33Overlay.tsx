@@ -138,13 +138,24 @@ export default function ApexPostural33Overlay({ data, photoUrl, athleteHeightCm 
         <h4 className="font-mono text-[11px] uppercase tracking-[0.18em] text-white/70">
           Landmarks Profissionais — 33 pontos ({present.length}/33)
         </h4>
-        <button
-          onClick={toggleEdu}
-          className="flex items-center gap-1.5 border border-white/15 bg-black/50 px-2.5 py-1 text-[10px] uppercase tracking-wider text-white/80 transition-colors hover:bg-white/10"
-        >
-          {eduMode ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
-          Modo educacional
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={toggleGrid}
+            className={`flex items-center gap-1.5 border px-2.5 py-1 text-[10px] uppercase tracking-wider transition-colors ${
+              gridMode ? "border-amber-500/60 bg-amber-500/10 text-amber-300" : "border-white/15 bg-black/50 text-white/80 hover:bg-white/10"
+            }`}
+          >
+            {gridMode ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
+            Grade simetrográfica
+          </button>
+          <button
+            onClick={toggleEdu}
+            className="flex items-center gap-1.5 border border-white/15 bg-black/50 px-2.5 py-1 text-[10px] uppercase tracking-wider text-white/80 transition-colors hover:bg-white/10"
+          >
+            {eduMode ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
+            Modo educacional
+          </button>
+        </div>
       </div>
 
       <div className="relative overflow-hidden border border-white/10 bg-black">
