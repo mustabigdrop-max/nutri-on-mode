@@ -301,11 +301,11 @@ export default function ApexGuidedSession({
       const { data, error } = await supabase
         .from("apex_guided_sessions")
         .insert({
-          athlete_id: athleteId || null,
+          athlete_id: athleteId || undefined,
           coach_id: coachId,
           session_type: "quick",
-          steps_data: stepsData,
-          full_report: fullReport,
+          steps_data: stepsData as any,
+          full_report: fullReport as any,
           fcs_score: consolidated.fcs,
           duration_minutes: duration,
           completed_at: new Date().toISOString(),
