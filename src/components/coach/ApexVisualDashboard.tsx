@@ -1164,6 +1164,7 @@ Suporte em uso: ${suporte || "não informado"}` : "";
           )}
           {activeResultTab === "correcoes" && (
             <div className="space-y-4">
+              <ApexFennerGauge state={clinicalTests} />
               <InfoBox color="#0F8A63" text="Para cada desvio: alongamento, ativação e cue de postura." />
               <CorrecoesCards body={parseSection(analysisResult, "CORRECOES_POSTURAIS", "PONTOS_FRACOS_PROTOCOLO")} />
               <ApexSessionGenerator />
@@ -1692,6 +1693,15 @@ Suporte em uso: ${suporte || "não informado"}` : "";
           </div>
         </div>
       )}
+
+      {/* ━━━ TESTES CLÍNICOS (FENNER) ━━━ */}
+      <div style={{ ...cardStyle, marginBottom: 16 }}>
+        <ApexClinicalTests
+          athleteId={athlete?.id || null}
+          value={clinicalTests}
+          onChange={setClinicalTests}
+        />
+      </div>
 
       {/* ━━━ OBSERVAÇÕES ━━━ */}
       <div style={{ ...cardStyle, marginBottom: 16 }}>
