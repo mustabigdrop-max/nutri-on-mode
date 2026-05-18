@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Syne:wght@400;700;800&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600;700&family=Rajdhani:wght@500;600;700&family=Space+Mono:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Syne:wght@400;700;800&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600;700&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&family=Space+Mono:wght@400;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -217,4 +217,212 @@
 @keyframes streak-fire {
   0%, 100% { transform: scaleY(1) scaleX(1); opacity: 1; }
   50%      { transform: scaleY(1.15) scaleX(0.95); opacity: 0.85; }
+}
+@keyframes hud-scan {
+  0%   { top: -8%; opacity: 0; }
+  5%   { opacity: 1; }
+  95%  { opacity: 1; }
+  100% { top: 108%; opacity: 0; }
+}
+@keyframes hud-flicker {
+  0%, 100% { opacity: 1; }
+  92%       { opacity: 1; }
+  93%       { opacity: 0.6; }
+  94%       { opacity: 1; }
+  96%       { opacity: 0.5; }
+  97%       { opacity: 1; }
+}
+@keyframes hud-data-scroll {
+  from { transform: translateY(0); }
+  to   { transform: translateY(-50%); }
+}
+@keyframes hud-spin-slow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+@keyframes hud-spin-slow-rev {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(-360deg); }
+}
+@keyframes hud-corner-in {
+  from { opacity: 0; transform: scale(1.3); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes hud-ping-gold {
+  0%   { transform: scale(1); opacity: 1; }
+  100% { transform: scale(2.8); opacity: 0; }
+}
+@keyframes hud-ping-cyan {
+  0%   { transform: scale(1); opacity: 1; }
+  100% { transform: scale(2.4); opacity: 0; }
+}
+@keyframes hud-bar-fill {
+  from { width: 0; }
+}
+@keyframes hud-fade-up {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes ticker-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+@layer utilities {
+  .hud-scan-line {
+    position: absolute;
+    left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(0,212,255,.55), transparent);
+    pointer-events: none;
+    animation: hud-scan 6s linear infinite;
+    box-shadow: 0 0 12px rgba(0,212,255,.35);
+  }
+
+  .hud-corner-tl {
+    position: absolute; top: 0; left: 0;
+    width: 20px; height: 20px;
+    border-top: 1px solid #B8922A;
+    border-left: 1px solid #B8922A;
+    pointer-events: none;
+  }
+  .hud-corner-tr {
+    position: absolute; top: 0; right: 0;
+    width: 20px; height: 20px;
+    border-top: 1px solid #B8922A;
+    border-right: 1px solid #B8922A;
+    pointer-events: none;
+  }
+  .hud-corner-bl {
+    position: absolute; bottom: 0; left: 0;
+    width: 20px; height: 20px;
+    border-bottom: 1px solid #B8922A;
+    border-left: 1px solid #B8922A;
+    pointer-events: none;
+  }
+  .hud-corner-br {
+    position: absolute; bottom: 0; right: 0;
+    width: 20px; height: 20px;
+    border-bottom: 1px solid #B8922A;
+    border-right: 1px solid #B8922A;
+    pointer-events: none;
+  }
+
+  .hud-section-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: rgba(184,146,42,0.7);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .hud-section-label::before {
+    content: '';
+    display: inline-block;
+    width: 16px; height: 1px;
+    background: #B8922A;
+  }
+
+  .hud-card {
+    background: rgba(10,10,26,0.85);
+    border: 1px solid rgba(184,146,42,0.15);
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.3s ease;
+  }
+  .hud-card:hover { border-color: rgba(184,146,42,0.35); }
+  .hud-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(184,146,42,0.4), transparent);
+  }
+
+  .hud-card-cyan {
+    background: rgba(10,10,26,0.85);
+    border: 1px solid rgba(0,212,255,0.15);
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.3s ease;
+  }
+  .hud-card-cyan:hover { border-color: rgba(0,212,255,0.35); }
+  .hud-card-cyan::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(0,212,255,0.4), transparent);
+  }
+
+  .hud-button-gold {
+    background: transparent;
+    border: 1px solid #B8922A;
+    color: #B8922A;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 0.75rem 2rem;
+    position: relative;
+    transition: all 0.25s ease;
+    clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
+  }
+  .hud-button-gold:hover {
+    background: rgba(184,146,42,0.12);
+    box-shadow: 0 0 20px rgba(184,146,42,0.25), inset 0 0 20px rgba(184,146,42,0.05);
+  }
+
+  .hud-button-filled {
+    background: #B8922A;
+    color: #0a0a1a;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 0.875rem 2.5rem;
+    font-weight: 700;
+    position: relative;
+    transition: all 0.25s ease;
+    clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
+  }
+  .hud-button-filled:hover {
+    background: #d4a940;
+    box-shadow: 0 0 30px rgba(184,146,42,0.4);
+  }
+
+  .hud-tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.55rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.5rem;
+    border: 1px solid rgba(184,146,42,0.35);
+    color: #B8922A;
+    background: rgba(184,146,42,0.06);
+  }
+
+  .hud-tag-cyan {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.55rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.5rem;
+    border: 1px solid rgba(0,212,255,0.35);
+    color: #00D4FF;
+    background: rgba(0,212,255,0.06);
+  }
+
+  .hud-hex-icon {
+    width: 44px; height: 44px;
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+  }
+
+  .animate-hud-flicker { animation: hud-flicker 8s ease-in-out infinite; }
+  .animate-hud-scan    { animation: hud-scan 6s linear infinite; }
+  .animate-spin-slow   { animation: hud-spin-slow 30s linear infinite; }
+  .animate-spin-slow-rev { animation: hud-spin-slow-rev 22s linear infinite; }
+  .animate-fade-up     { animation: hud-fade-up 0.6s ease both; }
 }

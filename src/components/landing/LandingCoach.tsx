@@ -1,6 +1,9 @@
 import { useRef } from "react";
 import { motion, useInView } from "framer-motion";
 
+const GOLD = "#B8922A";
+const CYAN = "#00D4FF";
+
 const patients = [
   {
     name: "Marcos Silva",
@@ -10,9 +13,10 @@ const patients = [
     delta: "−2.8kg",
     goal: "Meta: −8kg",
     adherence: 87,
-    alert: "⚠ Abaixo da meta semanal",
+    alert: "Abaixo da meta semanal",
     alertType: "warning",
-    dot: "bg-[#ffcc00]",
+    dotColor: "#ffcc00",
+    id: "PAC-001",
   },
   {
     name: "Juliana Costa",
@@ -22,9 +26,10 @@ const patients = [
     delta: "−4.1kg",
     goal: "Meta: −10kg",
     adherence: 62,
-    alert: "⚠ Registros irregulares esta semana",
-    alertType: "warning",
-    dot: "bg-[#ff2d55]",
+    alert: "Registros irregulares",
+    alertType: "danger",
+    dotColor: "#ff2d55",
+    id: "PAC-002",
   },
   {
     name: "Rafael Moura",
@@ -34,10 +39,19 @@ const patients = [
     delta: "+0.9kg",
     goal: "Meta: +6kg",
     adherence: 91,
-    alert: "✓ Evoluindo dentro do esperado",
+    alert: "Evoluindo conforme esperado",
     alertType: "success",
-    dot: "bg-[#00c896]",
+    dotColor: "#00c896",
+    id: "PAC-003",
   },
+];
+
+const features = [
+  "Alertas automáticos de risco",
+  "IA sugere texto de feedback",
+  "Diário fotográfico do aluno",
+  "Relatório PDF em 1 clique",
+  "White label disponível",
 ];
 
 const LandingCoach = () => {
@@ -45,66 +59,134 @@ const LandingCoach = () => {
   const inView = useInView(ref, { once: true, margin: "-10%" });
 
   return (
-    <section id="coach" className="bg-[#03030a] px-6 md:px-12 py-[120px] overflow-hidden">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20 items-center">
-        <motion.div ref={ref} initial={{ opacity: 0, y: 40 }} animate={inView ? { opacity: 1, y: 0 } : {}} transition={{ duration: 0.7 }}>
-          <div className="font-mono text-[.65rem] text-primary tracking-[.2em] uppercase mb-4 flex items-center gap-2.5">
-            <span className="w-4 h-px bg-primary" />Painel Profissional
-          </div>
-          <h2 className="font-heading leading-[.92] mb-6" style={{ fontSize: "clamp(2.5rem, 6vw, 6rem)" }}>
-            PARA<br /><span className="text-primary">PROFISSIONAIS</span><br />
-            <span style={{ WebkitTextStroke: "1px rgba(255,255,255,.12)", color: "transparent" }}>DA ÁREA.</span>
+    <section
+      id="coach"
+      className="relative px-6 md:px-12 py-28 overflow-hidden"
+      style={{ background: "#06060f" }}
+    >
+      {/* Side lines */}
+      <div className="absolute left-0 top-0 bottom-0 w-px pointer-events-none" style={{ background: "linear-gradient(to bottom, transparent, rgba(184,146,42,0.08), transparent)" }} />
+      <div className="absolute right-0 top-0 bottom-0 w-px pointer-events-none" style={{ background: "linear-gradient(to bottom, transparent, rgba(184,146,42,0.08), transparent)" }} />
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-14 md:gap-20 items-center">
+        {/* Left */}
+        <motion.div
+          ref={ref}
+          initial={{ opacity: 0, y: 40 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.7 }}
+        >
+          <div className="hud-section-label mb-5">Painel Profissional</div>
+          <h2
+            className="font-heading leading-[0.9] mb-6"
+            style={{ fontSize: "clamp(2.5rem, 6vw, 6rem)", fontFamily: "'Rajdhani', sans-serif", fontWeight: 700 }}
+          >
+            <span style={{ color: "#F5F0E8" }}>PARA</span>
+            <br />
+            <span style={{ color: GOLD, textShadow: `0 0 40px rgba(184,146,42,0.35)` }}>PROFISSIONAIS</span>
+            <br />
+            <span style={{ WebkitTextStroke: "1px rgba(255,255,255,.1)", color: "transparent" }}>DA ÁREA.</span>
           </h2>
-          <p className="text-[#7070a0] text-[.95rem] leading-[1.7] mt-5 max-w-[460px] font-landing">
-            Um painel B2B completo para <strong className="text-[#f0edf8]">Nutrition Coaches, Nutricionistas e profissionais de saúde</strong> que acompanham pacientes e alunos. Gerencie até 30 pessoas, receba alertas automáticos, use IA para acelerar seus atendimentos e entregue resultados que falam por si.
+          <p style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: "0.92rem", color: "rgba(80,80,122,1)", lineHeight: 1.75, maxWidth: 460, marginTop: 16 }}>
+            Painel B2B completo para{" "}
+            <span style={{ color: "#F5F0E8" }}>Nutrition Coaches, Nutricionistas e profissionais de saúde</span>{" "}
+            que acompanham pacientes e alunos. Gerencie até 30 pessoas, receba alertas automáticos, use IA para acelerar seus atendimentos.
           </p>
-          <div className="mt-8 flex flex-col gap-2.5">
-            {["✦ Alertas automáticos de risco", "✦ IA sugere texto de feedback", "✦ Diário fotográfico do aluno", "✦ Relatório PDF em 1 clique", "✦ White label disponível"].map((f) => (
-              <span key={f} className="font-mono text-[.65rem] bg-primary/[.06] border border-primary/[.12] text-primary px-2.5 py-1.5 rounded inline-flex items-center gap-1.5 w-fit">{f}</span>
+
+          <div className="mt-8 flex flex-col gap-2">
+            {features.map((f) => (
+              <div
+                key={f}
+                className="inline-flex items-center gap-2.5 w-fit"
+                style={{
+                  background: "rgba(184,146,42,0.05)",
+                  border: "1px solid rgba(184,146,42,0.15)",
+                  padding: "0.4rem 0.9rem",
+                }}
+              >
+                <span style={{ color: GOLD, fontFamily: "'Space Mono', monospace", fontSize: "0.55rem" }}>→</span>
+                <span style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.6rem", letterSpacing: "0.08em", color: GOLD }}>{f}</span>
+              </div>
             ))}
           </div>
         </motion.div>
 
-        <motion.div initial={{ opacity: 0, y: 40 }} animate={inView ? { opacity: 1, y: 0 } : {}} transition={{ duration: 0.7, delay: 0.2 }}>
-          <div className="bg-[#0d0d1f] border border-[#14142a] rounded-2xl p-6 md:p-8 relative overflow-hidden">
-            <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse at 30% 20%, rgba(232,160,32,.06), transparent 60%)" }} />
-            <div className="relative">
-              {/* Header */}
-              <div className="mb-1">
-                <div className="font-heading text-[1.1rem] tracking-[.08em] text-primary">PAINEL DO PROFISSIONAL</div>
-                <div className="w-full h-px bg-primary/20 mt-2 mb-3" />
-              </div>
+        {/* Right — Coach panel mockup */}
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.7, delay: 0.2 }}
+        >
+          <div
+            className="relative overflow-hidden"
+            style={{
+              background: "rgba(8,8,22,0.9)",
+              border: "1px solid rgba(184,146,42,0.15)",
+            }}
+          >
+            {/* Panel top line */}
+            <span className="absolute top-0 left-0 right-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${GOLD}, transparent)` }} />
+            <div className="hud-corner-tl" style={{ top: 0, left: 0 }} />
+            <div className="hud-corner-br" style={{ bottom: 0, right: 0 }} />
 
-              {/* Stats bar */}
-              <div className="flex items-center gap-3 mb-5 font-mono text-[.6rem] text-[#9090b8]">
+            {/* Panel header */}
+            <div className="px-5 py-4" style={{ borderBottom: "1px solid rgba(184,146,42,0.08)" }}>
+              <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.55rem", letterSpacing: "0.2em", color: "rgba(184,146,42,0.6)", textTransform: "uppercase" }}>
+                [COACH] Painel do Profissional
+              </div>
+              <div className="flex items-center gap-4 mt-2" style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.55rem", color: "rgba(80,80,122,0.7)" }}>
                 <span className="flex items-center gap-1.5">
-                  <span className="w-[5px] h-[5px] bg-[#ff2d55] rounded-full animate-pulse" />
+                  <span className="w-1.5 h-1.5 rounded-full" style={{ background: "#ff2d55", animation: "dotPulse 1.4s ease-in-out infinite" }} />
                   5 alertas ativos
                 </span>
-                <span className="text-[#2a2a4a]">•</span>
+                <span style={{ color: "rgba(30,30,50,1)" }}>·</span>
                 <span>28 pacientes</span>
-                <span className="text-[#2a2a4a]">•</span>
+                <span style={{ color: "rgba(30,30,50,1)" }}>·</span>
                 <span>Hoje, 08h47</span>
               </div>
+            </div>
 
-              {/* Patient cards */}
+            {/* Patient list */}
+            <div className="p-4 flex flex-col gap-2">
               {patients.map((p) => (
-                <div key={p.name} className="p-4 bg-white/[.02] border border-[#14142a] rounded-lg mb-3 cursor-pointer hover:bg-primary/[.03] transition-colors">
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className={`w-[8px] h-[8px] rounded-full ${p.dot} shrink-0`} />
-                    <div className="text-[.85rem] font-bold text-[#f0edf8] font-landing">
-                      {p.name}, {p.age} anos
+                <div
+                  key={p.name}
+                  className="relative overflow-hidden group cursor-pointer"
+                  style={{
+                    background: "rgba(10,10,26,0.7)",
+                    border: "1px solid rgba(80,80,122,0.15)",
+                    padding: "0.85rem 1rem",
+                    transition: "border-color 0.25s ease",
+                  }}
+                  onMouseEnter={e => (e.currentTarget.style.borderColor = `rgba(${p.alertType === "success" ? "0,200,150" : p.alertType === "danger" ? "255,45,85" : "255,204,0"},0.3)`)}
+                  onMouseLeave={e => (e.currentTarget.style.borderColor = "rgba(80,80,122,0.15)")}
+                >
+                  {/* Left border colored */}
+                  <span className="absolute left-0 top-0 bottom-0 w-px" style={{ background: p.dotColor }} />
+
+                  <div className="flex items-start justify-between mb-1.5">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full shrink-0" style={{ background: p.dotColor, boxShadow: `0 0 6px ${p.dotColor}` }} />
+                      <span style={{ fontFamily: "'Rajdhani', sans-serif", fontWeight: 700, fontSize: "0.95rem", color: "#F5F0E8" }}>
+                        {p.name}, {p.age}a
+                      </span>
                     </div>
+                    <span style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.45rem", letterSpacing: "0.1em", color: "rgba(80,80,122,0.5)" }}>{p.id}</span>
                   </div>
-                  <div className="pl-5 space-y-1">
-                    <div className="font-mono text-[.6rem] text-[#7070a0]">
-                      {p.program} &nbsp;•&nbsp; {p.week} &nbsp;•&nbsp; <span className="text-[#f0edf8]">{p.delta}</span> &nbsp;•&nbsp; {p.goal}
-                    </div>
-                    <div className="font-mono text-[.6rem] flex items-center gap-2">
-                      <span className="text-[#9090b8]">Aderência: <span className={`font-bold ${p.adherence >= 80 ? "text-[#00c896]" : p.adherence >= 60 ? "text-[#ffcc00]" : "text-[#ff2d55]"}`}>{p.adherence}%</span></span>
-                      <span className="text-[#2a2a4a]">•</span>
-                      <span className={p.alertType === "success" ? "text-[#00c896]" : "text-[#ff8080]"}>{p.alert}</span>
-                    </div>
+                  <div style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.55rem", color: "rgba(80,80,122,0.7)", paddingLeft: "1rem" }}>
+                    {p.program} · {p.week} · <span style={{ color: "#F5F0E8" }}>{p.delta}</span> · {p.goal}
+                  </div>
+                  <div className="flex items-center gap-2 mt-1.5" style={{ paddingLeft: "1rem" }}>
+                    <span style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.52rem", color: "rgba(80,80,122,0.7)" }}>
+                      Aderência:{" "}
+                      <span style={{ color: p.adherence >= 80 ? "#00c896" : p.adherence >= 60 ? "#ffcc00" : "#ff2d55", fontWeight: 700 }}>
+                        {p.adherence}%
+                      </span>
+                    </span>
+                    <span style={{ color: "rgba(30,30,50,1)" }}>·</span>
+                    <span style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.5rem", color: p.alertType === "success" ? "#00c896" : p.alertType === "danger" ? "#ff8080" : "#ffcc00" }}>
+                      {p.alertType !== "success" ? "⚠ " : "✓ "}{p.alert}
+                    </span>
                   </div>
                 </div>
               ))}

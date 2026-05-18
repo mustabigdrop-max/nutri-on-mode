@@ -13,7 +13,7 @@ type AudienceCard = {
 
 const cards: AudienceCard[] = [
   {
-    icon: "🏆",
+    icon: "SP",
     badge: "STAGE PREP · COMPETIÇÃO",
     badgeColor: "#e8a020",
     headline: "Para quem compete.",
@@ -23,7 +23,7 @@ const cards: AudienceCard[] = [
     accent: "#e8a020",
   },
   {
-    icon: "⚡",
+    icon: "VO",
     badge: "MMA · CROSSFIT · RUNNING · NATAÇÃO",
     badgeColor: "#00f0b4",
     headline: "Para quem performa.",
@@ -33,7 +33,7 @@ const cards: AudienceCard[] = [
     accent: "#00f0b4",
   },
   {
-    icon: "💪",
+    icon: "HT",
     badge: "BULK · RECOMP · DEFINIÇÃO",
     badgeColor: "#7890ff",
     headline: "Para quem quer músculo.",
@@ -43,7 +43,7 @@ const cards: AudienceCard[] = [
     accent: "#7890ff",
   },
   {
-    icon: "🔥",
+    icon: "TX",
     badge: "TRANSFORMAÇÃO · SEM SOFRIMENTO",
     badgeColor: "#ff6b35",
     headline: "Para quem quer mudar de vez.",
@@ -53,7 +53,7 @@ const cards: AudienceCard[] = [
     accent: "#ff6b35",
   },
   {
-    icon: "🧬",
+    icon: "LH",
     badge: "ANTI-AGING · HORMÔNIOS · HEALTHSPAN",
     badgeColor: "#a78bfa",
     headline: "Para quem pensa no longo prazo.",
@@ -63,7 +63,7 @@ const cards: AudienceCard[] = [
     accent: "#a78bfa",
   },
   {
-    icon: "❤️",
+    icon: "QV",
     badge: "EQUILÍBRIO · ENERGIA · QUALIDADE DE VIDA",
     badgeColor: "#34d399",
     headline: "Para quem quer viver melhor.",
@@ -76,21 +76,18 @@ const cards: AudienceCard[] = [
 
 const mce = [
   {
-    icon: "🧠",
     letter: "M",
     label: "MINDSET",
     title: "Protocolo bate motivação.",
     desc: "Todo mundo começa motivado. Quem chega ao fim tem sistema. O NutriON instala o mindset certo para cada fase da sua jornada.",
   },
   {
-    icon: "🔄",
     letter: "C",
     label: "COMPORTAMENTO",
     title: "Hábito é mais forte que força de vontade.",
     desc: "IA comportamental que identifica padrões, age antes do sabotador e transforma seu relacionamento com a comida.",
   },
   {
-    icon: "⚡",
     letter: "E",
     label: "EXECUÇÃO",
     title: "Plano sem execução é fantasia.",
@@ -167,7 +164,20 @@ const LandingTeamSection = () => {
                 }}
               />
 
-              <div className="text-[2.5rem] mb-3 leading-none">{c.icon}</div>
+              {/* Hex code icon */}
+              <div
+                className="mb-4 flex items-center justify-center"
+                style={{
+                  width: 40, height: 40,
+                  clipPath: "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)",
+                  background: `${c.accent}12`,
+                  border: `1px solid ${c.accent}33`,
+                }}
+              >
+                <span style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.55rem", fontWeight: 700, color: c.accent, letterSpacing: "0.05em" }}>
+                  {c.icon}
+                </span>
+              </div>
 
               <div
                 className="font-mono text-[.5rem] tracking-[.22em] mb-3"
@@ -235,7 +245,6 @@ const LandingTeamSection = () => {
                 transition={{ duration: 0.5, delay: 0.4 + i * 0.1 }}
                 className="text-center md:text-left"
               >
-                <div className="text-[2rem] mb-3">{m.icon}</div>
                 <div className="flex items-baseline gap-2 mb-3 justify-center md:justify-start">
                   <span
                     className="font-heading text-[2.5rem] leading-none"
