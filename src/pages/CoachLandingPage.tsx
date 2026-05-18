@@ -1,16 +1,15 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Check, Users, Palette, Globe, Shield, Brain, BarChart3, MessageSquare, Star } from "lucide-react";
 import { motion } from "framer-motion";
+import { HudShell, HudStatusBar, HudHex, HudPanel } from "@/components/hud/HudShell";
 
 const plans = [
   {
     name: "nutriON Coach",
     description: "Painel com marca nutriON",
-    badge: "Coach Pro",
+    badge: "COACH PRO",
+    badgeColor: "#B8922A",
     tiers: [
       { patients: "até 30 pacientes", price: "R$297", period: "/mês" },
       { patients: "até 100 pacientes", price: "R$497", period: "/mês" },
@@ -31,7 +30,8 @@ const plans = [
   {
     name: "nutriON White Label",
     description: "App com sua marca própria",
-    badge: "White Label Partner",
+    badge: "ELITE PARTNER",
+    badgeColor: "#00D4FF",
     tiers: [
       { patients: "até 30 pacientes", price: "R$597", period: "/mês" },
       { patients: "até 100 pacientes", price: "R$997", period: "/mês" },
@@ -51,148 +51,201 @@ const plans = [
   },
 ];
 
+const FEATURES = [
+  { code: "IA", label: "Protocolos por IA", icon: Brain, color: "#B8922A" },
+  { code: "SC", label: "Score de Execução", icon: BarChart3, color: "#00D4FF" },
+  { code: "AL", label: "Alertas Inteligentes", icon: Shield, color: "#B8922A" },
+  { code: "CH", label: "Chat Integrado", icon: MessageSquare, color: "#00C896" },
+  { code: "UN", label: "Pacientes Ilimitados", icon: Users, color: "#B8922A" },
+  { code: "DN", label: "Domínio Próprio", icon: Globe, color: "#00D4FF" },
+  { code: "WL", label: "White Label", icon: Palette, color: "#00D4FF" },
+  { code: "RP", label: "Relatórios Premium", icon: Star, color: "#B8922A" },
+];
+
 const CoachLandingPage = () => {
   const navigate = useNavigate();
   const [selectedTier, setSelectedTier] = useState<Record<number, number>>({ 0: 0, 1: 0 });
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Hero */}
-      <section className="relative overflow-hidden py-20 px-4">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-primary/5" />
-        <div className="relative max-w-5xl mx-auto text-center">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-            <Badge className="mb-6 bg-primary/20 text-primary border-primary/30 text-sm px-4 py-1">
-              B2B para Profissionais de Nutrição
-            </Badge>
-            <h1 className="text-3xl md:text-5xl font-bold text-foreground leading-tight mb-6">
-              Gerencie todos os seus pacientes com{" "}
-              <span className="text-primary">tecnologia de elite.</span>
-              <br />
-              <span className="text-muted-foreground">Sua marca. Nossa inteligência.</span>
-            </h1>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-8">
-              Alertas automáticos, protocolos gerados por IA, relatórios profissionais.
-              Você foca no paciente — a tecnologia cuida do resto.
-            </p>
-          </motion.div>
+    <HudShell>
+      {/* Nav */}
+      <nav className="px-6 py-5 flex items-center justify-between max-w-6xl mx-auto">
+        <div style={{ fontFamily: "'Rajdhani', sans-serif", fontWeight: 700, fontSize: 22, letterSpacing: "0.08em" }}>
+          <span style={{ color: "#F5F0E8" }}>NUTRI</span>
+          <span style={{ color: "#B8922A", textShadow: "0 0 16px rgba(184,146,42,0.6)" }}>ON</span>
         </div>
+        <HudStatusBar label="B2B PROFISSIONAIS" color="#00C896" />
+      </nav>
+
+      {/* Hero */}
+      <section className="px-6 pt-12 pb-16 max-w-5xl mx-auto">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
+          <p className="hud-tech mb-4">SISTEMA DE PERFORMANCE · MÓDULO PROFISSIONAL</p>
+          <h1
+            style={{
+              fontFamily: "'Rajdhani', sans-serif",
+              fontWeight: 700,
+              fontSize: "clamp(2.4rem, 6vw, 4.2rem)",
+              lineHeight: 1.05,
+              letterSpacing: "0.02em",
+              color: "#F5F0E8",
+            }}
+          >
+            SUA CLÍNICA.<br />
+            NOSSA TECNOLOGIA.<br />
+            <span style={{ color: "#B8922A" }}>SEU RESULTADO.</span>
+          </h1>
+          <p className="mt-6 text-base max-w-2xl" style={{ color: "rgba(170,170,200,0.85)", fontFamily: "'Space Grotesk', sans-serif" }}>
+            Alertas automáticos, protocolos gerados por IA, relatórios profissionais.
+            Você foca no paciente — a tecnologia cuida do resto.
+          </p>
+        </motion.div>
       </section>
 
       {/* Features grid */}
-      <section className="py-12 px-4 max-w-5xl mx-auto">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-16">
-          {[
-            { icon: Brain, label: "Protocolos por IA" },
-            { icon: BarChart3, label: "Score de Execução" },
-            { icon: Shield, label: "Alertas Inteligentes" },
-            { icon: MessageSquare, label: "Chat Integrado" },
-            { icon: Users, label: "Até ilimitado pacientes" },
-            { icon: Globe, label: "Domínio Próprio" },
-            { icon: Palette, label: "White Label" },
-            { icon: Star, label: "Relatórios Premium" },
-          ].map((f, i) => (
+      <section className="px-6 py-10 max-w-5xl mx-auto">
+        <p className="hud-tech mb-5">MÓDULOS ATIVOS</p>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {FEATURES.map((f, i) => (
             <motion.div
               key={i}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.05 }}
-              className="flex flex-col items-center gap-2 p-4 rounded-xl bg-card border border-border"
+              className="hud-panel p-4 flex flex-col items-center gap-3"
             >
-              <f.icon className="w-6 h-6 text-primary" />
-              <span className="text-xs text-center text-foreground font-medium">{f.label}</span>
+              <HudHex code={f.code} color={f.color} size={48} />
+              <span
+                className="text-xs text-center"
+                style={{ fontFamily: "'Space Mono', monospace", letterSpacing: "0.1em", color: "#F5F0E8" }}
+              >
+                {f.label}
+              </span>
             </motion.div>
           ))}
         </div>
       </section>
 
       {/* Pricing */}
-      <section className="py-12 px-4 max-w-5xl mx-auto">
-        <h2 className="text-2xl font-bold text-center text-foreground mb-10">Escolha seu plano</h2>
+      <section className="px-6 py-16 max-w-5xl mx-auto">
+        <p className="hud-tech text-center mb-3">PRICING-MODULE · v2.4</p>
+        <h2
+          className="text-center mb-12"
+          style={{ fontFamily: "'Rajdhani', sans-serif", fontWeight: 700, fontSize: "2rem", color: "#F5F0E8", letterSpacing: "0.04em" }}
+        >
+          SELECIONE SEU PROTOCOLO
+        </h2>
         <div className="grid md:grid-cols-2 gap-6">
           {plans.map((plan, planIdx) => (
-            <Card
-              key={planIdx}
-              className={`relative overflow-hidden ${plan.highlight ? "border-primary ring-2 ring-primary/20" : ""}`}
-            >
-              {plan.highlight && (
-                <div className="absolute top-0 left-0 right-0 bg-primary text-primary-foreground text-center text-xs py-1 font-semibold">
-                  MAIS POPULAR
-                </div>
-              )}
-              <CardHeader className={plan.highlight ? "pt-8" : ""}>
-                <div className="flex items-center gap-2 mb-2">
-                  <CardTitle className="text-xl">{plan.name}</CardTitle>
-                  <Badge variant="outline" className="text-xs">{plan.badge}</Badge>
-                </div>
-                <p className="text-sm text-muted-foreground">{plan.description}</p>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Tier selector */}
-                <div className="space-y-2">
-                  {plan.tiers.map((tier, tierIdx) => (
-                    <button
-                      key={tierIdx}
-                      onClick={() => setSelectedTier(prev => ({ ...prev, [planIdx]: tierIdx }))}
-                      className={`w-full flex items-center justify-between p-3 rounded-lg border transition-all text-left ${
-                        selectedTier[planIdx] === tierIdx
-                          ? "border-primary bg-primary/10"
-                          : "border-border hover:border-primary/50"
-                      }`}
-                    >
-                      <span className="text-sm text-foreground">{tier.patients}</span>
-                      <span className="font-bold text-foreground">
-                        {tier.price}<span className="text-xs text-muted-foreground font-normal">{tier.period}</span>
-                      </span>
-                    </button>
-                  ))}
+            <HudPanel key={planIdx} tag={plan.highlight ? "MAIS POPULAR" : undefined} tagColor={plan.badgeColor}>
+              <div className="p-6 space-y-6">
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <h3 style={{ fontFamily: "'Rajdhani', sans-serif", fontWeight: 700, fontSize: 22, color: "#F5F0E8", letterSpacing: "0.03em" }}>
+                      {plan.name}
+                    </h3>
+                  </div>
+                  <div
+                    className="inline-block px-2 py-0.5 mt-1"
+                    style={{
+                      border: `1px solid ${plan.badgeColor}55`,
+                      color: plan.badgeColor,
+                      fontFamily: "'Space Mono', monospace",
+                      fontSize: 9,
+                      letterSpacing: "0.2em",
+                    }}
+                  >
+                    {plan.badge}
+                  </div>
+                  <p className="mt-3 text-sm" style={{ color: "rgba(170,170,200,0.8)", fontFamily: "'Space Grotesk', sans-serif" }}>
+                    {plan.description}
+                  </p>
                 </div>
 
-                {/* Features */}
+                {/* Tier selector */}
+                <div className="space-y-2">
+                  {plan.tiers.map((tier, tierIdx) => {
+                    const sel = selectedTier[planIdx] === tierIdx;
+                    return (
+                      <button
+                        key={tierIdx}
+                        onClick={() => setSelectedTier(prev => ({ ...prev, [planIdx]: tierIdx }))}
+                        className="w-full flex items-center justify-between p-3 text-left transition-all"
+                        style={{
+                          background: sel ? `${plan.badgeColor}12` : "rgba(10,10,26,0.6)",
+                          border: `1px solid ${sel ? plan.badgeColor : "rgba(184,146,42,0.15)"}`,
+                          clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))",
+                        }}
+                      >
+                        <span className="text-sm uppercase" style={{ color: "#F5F0E8", fontFamily: "'Space Mono', monospace", fontSize: 11, letterSpacing: "0.1em" }}>
+                          {tier.patients}
+                        </span>
+                        <span style={{ fontFamily: "'Rajdhani', sans-serif", fontWeight: 700, fontSize: 18, color: sel ? plan.badgeColor : "#F5F0E8" }}>
+                          {tier.price}
+                          <span className="text-xs ml-1" style={{ color: "rgba(80,80,122,1)" }}>{tier.period}</span>
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+
                 <ul className="space-y-2">
                   {plan.features.map((f, i) => (
-                    <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
-                      <Check className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-                      {f}
+                    <li key={i} className="flex items-start gap-2 text-[11px]" style={{ color: "rgba(200,200,220,0.9)", fontFamily: "'Space Mono', monospace", letterSpacing: "0.05em" }}>
+                      <Check className="w-3.5 h-3.5 mt-0.5 shrink-0" style={{ color: plan.badgeColor }} />
+                      <span className="uppercase">{f}</span>
                     </li>
                   ))}
                 </ul>
 
-                <Button
-                  className="w-full"
-                  variant={plan.highlight ? "default" : "outline"}
-                  size="lg"
+                <button
+                  className="hud-btn w-full"
+                  style={{ background: plan.badgeColor }}
                   onClick={() => navigate("/coach/onboarding", { state: { plan: plan.highlight ? "white_label" : "coach" } })}
                 >
-                  Quero começar agora — 7 dias grátis
-                </Button>
-              </CardContent>
-            </Card>
+                  ► ATIVAR · 7 DIAS GRÁTIS
+                </button>
+              </div>
+            </HudPanel>
           ))}
         </div>
       </section>
 
       {/* White Label CTA */}
-      <section className="py-16 px-4">
-        <div className="max-w-3xl mx-auto text-center bg-gradient-to-br from-primary/10 to-primary/5 rounded-2xl p-10 border border-primary/20">
-          <Palette className="w-10 h-10 text-primary mx-auto mb-4" />
-          <h3 className="text-2xl font-bold text-foreground mb-3">
-            Seu app. Sua marca. Nossa tecnologia.
-          </h3>
-          <p className="text-muted-foreground mb-6">
-            Zero desenvolvimento, zero manutenção. Só resultado para seus pacientes e receita recorrente para você.
-          </p>
-          <Button size="lg" onClick={() => navigate("/coach/onboarding", { state: { plan: "white_label" } })}>
-            Começar com White Label
-          </Button>
+      <section className="px-6 py-16">
+        <div className="max-w-3xl mx-auto">
+          <HudPanel tag="WL-MODULE" tagColor="#00D4FF">
+            <div className="p-10 text-center">
+              <HudHex code="WL" color="#00D4FF" size={64} />
+              <h3
+                className="mt-5 mb-3"
+                style={{ fontFamily: "'Rajdhani', sans-serif", fontWeight: 700, fontSize: 26, color: "#F5F0E8", letterSpacing: "0.03em" }}
+              >
+                SEU APP. SUA MARCA. NOSSA TECNOLOGIA.
+              </h3>
+              <p className="mb-7" style={{ color: "rgba(170,170,200,0.85)", fontFamily: "'Space Grotesk', sans-serif" }}>
+                Zero desenvolvimento, zero manutenção. Só resultado para seus pacientes
+                e receita recorrente para você.
+              </p>
+              <button
+                className="hud-btn hud-btn-cyan"
+                onClick={() => navigate("/coach/onboarding", { state: { plan: "white_label" } })}
+              >
+                ► INICIAR COM WHITE LABEL
+              </button>
+            </div>
+          </HudPanel>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="py-8 px-4 text-center text-xs text-muted-foreground border-t border-border">
-        nutriON Coach © {new Date().getFullYear()} — Tecnologia de elite para profissionais de nutrição
+      <footer className="py-8 px-6 text-center hud-tech relative" style={{ color: "rgba(80,80,122,1)" }}>
+        <div
+          className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-px"
+          style={{ background: "linear-gradient(90deg, transparent, #B8922A, transparent)" }}
+        />
+        NUTRION COACH © {new Date().getFullYear()} · TECNOLOGIA DE ELITE PARA PROFISSIONAIS
       </footer>
-    </div>
+    </HudShell>
   );
 };
 
