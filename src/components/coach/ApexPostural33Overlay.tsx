@@ -292,6 +292,38 @@ export default function ApexPostural33Overlay({ data, photoUrl, athleteHeightCm 
             <AngleTag x={kL.x - 4} y={kL.y} label={`Q-E ${qAngleL}°`} />
           )}
 
+          {/* Grade simetrográfica — badges de ângulo e cm */}
+          {gridMode && (() => {
+            const scR = pointOf(data, "angulo_escapula_r");
+            const scL = pointOf(data, "angulo_escapula_l");
+            const pairs: { id: string; label: string; a: PosturalLandmark | null; b: PosturalLandmark | null }[] = [
+              { id: "sh", label: "Ombros", a: aR, b: aL },
+              { id: "sc", label: "Escápulas", a: scR, b: scL },
+              { id: "hp", label: "Quadril", a: eR, b: eL },
+              { id: "kn", label: "Joelhos", a: kR, b: kL },
+              { id: "an", label: "Tornozelos", a: malR, b: malL },
+            ];
+            const heightCm = athleteHeightCm && athleteHeightCm > 0 ? athleteHeightCm : null;
+            return pairs.filter((p) => p.a && p.b).map((p) => {
+              const a = p.a!, b = p.b!;
+              const deg = Math.abs(angleBetween(a.x, a.y, b.x, b.y));
+              const tier = deg < 1 ? "ok" : deg <= 3 ? "leve" : "sev";
+              const col = tier === "ok" ? "#94a3b8" : tier === "leve" ? "#F59E0B" : "#EF4444";
+              const dyPct = Math.abs(a.y - b.y);
+              const cm = heightCm ? (dyPct * heightCm) / 100 : null;
+              const higher = a.y < b.y ? "D" : "E";
+              const cmTxt = cm != null && cm >= 0.2 ? ` · ${higher} +${cm.toFixed(1)}cm` : "";
+              return (
+                <div key={p.id} className="absolute -translate-y-1/2"
+                  style={{ right: "2px", top: `${(a.y + b.y) / 2}%` }}>
+                  <span className="font-mono text-[10px]" style={{ color: col, background: "rgba(0,0,0,0.7)", padding: "1px 4px" }}>
+                    {p.label} {deg.toFixed(1)}°{cmTxt}
+                  </span>
+                </div>
+              );
+            });
+          })()}
+
           {/* Tooltip educacional */}
           {eduMode && hover && (() => {
             const p = present.find((x) => x.id === hover);
