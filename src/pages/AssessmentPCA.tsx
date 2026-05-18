@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAssessmentPCA } from "@/hooks/useAssessmentPCA";
 import { PERGUNTAS_PCA } from "@/data/perguntas-pca";
-import { HudShell, HudStatusBar, HudHex } from "@/components/hud/HudShell";
+import { HudShell, HudStatusBar, HudHex, HudPanel } from "@/components/hud/HudShell";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 
 const EIXO_COLORS: Record<string, string> = {
