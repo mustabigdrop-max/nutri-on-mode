@@ -12,7 +12,15 @@ import {
   type Exercise,
 } from "@/data/apexCorrectiveLibrary";
 
-type Tools = { foam: boolean; ball: boolean };
+
+
+type Tools = {
+  foam: boolean;
+  ball: boolean;
+  band: boolean;       // faixa elástica / mini-band
+  dumbbells: boolean;  // halteres
+  step: boolean;       // step / caixote / banco baixo
+};
 
 const DURATIONS = [15, 30, 45, 60] as const;
 type Duration = (typeof DURATIONS)[number];
@@ -21,6 +29,22 @@ type Duration = (typeof DURATIONS)[number];
 const PHASE_SPLIT: Record<Phase, number> = { 1: 0.2, 2: 0.25, 3: 0.35, 4: 0.2 };
 // Tempo estimado por exercício/fase (min)
 const PER_EX_MIN: Record<Phase, number> = { 1: 2, 2: 2, 3: 3, 4: 3 };
+
+// Heurística de equipamento necessário, a partir do texto do exercício
+const RX = {
+  band: /\b(band|elástic|elastico|mini.?band|theraband|tubing|cable)\b/i,
+  dumbbell: /\b(halter|haltere|dumbbell|kettlebell|peso livre|livro pesado)\b/i,
+  step: /\b(step|caixote|banco|degrau|step.?up|elev[aá]ç)\b/i,
+};
+
+function detectNeeded(ex: Exercise): Array<"band" | "dumbbell" | "step"> {
+  const text = `${ex.name} ${ex.target} ${(ex.cues ?? []).join(" ")} ${ex.progression ?? ""} ${ex.regression ?? ""}`;
+  const out: Array<"band" | "dumbbell" | "step"> = [];
+  if (RX.band.test(text)) out.push("band");
+  if (RX.dumbbell.test(text)) out.push("dumbbell");
+  if (RX.step.test(text)) out.push("step");
+  return out;
+}
 
 function pickReleaseProtocol(ex: Exercise, tools: Tools): string {
   const rels = ex.releases ?? [];
@@ -34,6 +58,25 @@ function pickReleaseProtocol(ex: Exercise, tools: Tools): string {
   }
   const none = rels.find((x) => x.tool === "none");
   return none ? `[Sem equip.] ${none.protocol}` : "";
+}
+
+function adaptExercise(ex: Exercise, tools: Tools): { ex: Exercise; note?: string; missing: string[] } {
+  const needed = detectNeeded(ex);
+  const missing: string[] = [];
+  if (needed.includes("band") && !tools.band) missing.push("faixa elástica");
+  if (needed.includes("dumbbell") && !tools.dumbbells) missing.push("halteres");
+  if (needed.includes("step") && !tools.step) missing.push("step");
+
+  if (missing.length === 0) return { ex, missing: [] };
+  // tenta usar regressão como alternativa
+  if (ex.regression) {
+    return {
+      ex: { ...ex, name: `${ex.name} — alternativa`, cues: [ex.regression] },
+      note: `Adaptado (sem ${missing.join(", ")})`,
+      missing,
+    };
+  }
+  return { ex, note: `Requer ${missing.join(", ")} — execute versão isométrica/sem carga`, missing };
 }
 
 function buildSession(region: Region, duration: Duration, tools: Tools) {
@@ -56,8 +99,11 @@ function formatPlainText(region: Region, duration: Duration, tools: Tools) {
   lines.push(`Duração alvo: ${duration} min · Total alocado: ${total} min`);
   lines.push(
     `Equipamentos: ${[
-      tools.foam ? "Foam roller" : null,
-      tools.ball ? "Bola tênis/lacrosse" : null,
+      tools.foam && "Foam roller",
+      tools.ball && "Bola tênis/lacrosse",
+      tools.band && "Faixa elástica",
+      tools.dumbbells && "Halteres",
+      tools.step && "Step",
       "Sem equipamento",
     ]
       .filter(Boolean)
@@ -67,8 +113,9 @@ function formatPlainText(region: Region, duration: Duration, tools: Tools) {
   for (const b of blocks) {
     const meta = PHASE_META[b.phase];
     lines.push(`── FASE ${b.phase} · ${meta.label.toUpperCase()} (${b.minutes} min) ──`);
-    b.items.forEach((ex, i) => {
-      lines.push(`${i + 1}. ${ex.name} — alvo: ${ex.target}`);
+    b.items.forEach((raw, i) => {
+      const { ex, note } = adaptExercise(raw, tools);
+      lines.push(`${i + 1}. ${ex.name} — alvo: ${ex.target}${note ? ` (${note})` : ""}`);
       if (ex.phase === 1) {
         const p = pickReleaseProtocol(ex, tools);
         if (p) lines.push(`   ${p}`);
@@ -87,13 +134,19 @@ export function ApexSessionGenerator() {
   const [duration, setDuration] = useState<Duration>(30);
   const [foam, setFoam] = useState(false);
   const [ball, setBall] = useState(false);
-  const tools: Tools = { foam, ball };
+  const [band, setBand] = useState(false);
+  const [dumbbells, setDumbbells] = useState(false);
+  const [step, setStep] = useState(false);
+  const tools: Tools = { foam, ball, band, dumbbells, step };
 
   const region = useMemo(
     () => APEX_CORRECTIVE_LIBRARY.find((r) => r.id === regionId) ?? APEX_CORRECTIVE_LIBRARY[0],
     [regionId],
   );
-  const session = useMemo(() => buildSession(region, duration, tools), [region, duration, foam, ball]);
+  const session = useMemo(
+    () => buildSession(region, duration, tools),
+    [region, duration, foam, ball, band, dumbbells, step],
+  );
 
   const copy = async () => {
     try {
@@ -152,14 +205,24 @@ export function ApexSessionGenerator() {
         </div>
         <div>
           <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Equipamentos</div>
-          <div className="flex flex-col gap-1">
+          <div className="grid grid-cols-2 gap-x-3 gap-y-1">
             <label className="flex items-center gap-2 cursor-pointer text-xs">
-              <Checkbox checked={foam} onCheckedChange={(v) => setFoam(!!v)} />
-              Foam roller
+              <Checkbox checked={foam} onCheckedChange={(v) => setFoam(!!v)} /> Foam roller
             </label>
             <label className="flex items-center gap-2 cursor-pointer text-xs">
-              <Checkbox checked={ball} onCheckedChange={(v) => setBall(!!v)} />
-              Bola de tênis / lacrosse
+              <Checkbox checked={ball} onCheckedChange={(v) => setBall(!!v)} /> Bola tênis/lacrosse
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer text-xs">
+              <Checkbox checked={band} onCheckedChange={(v) => setBand(!!v)} /> Faixa elástica
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer text-xs">
+              <Checkbox checked={dumbbells} onCheckedChange={(v) => setDumbbells(!!v)} /> Halteres
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer text-xs">
+              <Checkbox checked={step} onCheckedChange={(v) => setStep(!!v)} /> Step / caixote
+            </label>
+            <label className="flex items-center gap-2 cursor-not-allowed opacity-80 text-xs">
+              <Checkbox checked disabled /> Sem equip.
             </label>
           </div>
         </div>
@@ -203,16 +266,22 @@ export function ApexSessionGenerator() {
                 {b.items.length === 0 && (
                   <div className="text-[11px] text-muted-foreground italic">Sem exercícios disponíveis nesta fase.</div>
                 )}
-                {b.items.map((ex, i) => {
+                {b.items.map((raw, i) => {
+                  const { ex, note, missing } = adaptExercise(raw, tools);
                   const protocol = ex.phase === 1 ? pickReleaseProtocol(ex, tools) : "";
-                  const noEquipWarn =
-                    ex.phase === 1 && !foam && !ball && /contraindicado/i.test(protocol);
                   return (
                     <div key={i} className="text-xs border-l-2 pl-2 py-1" style={{ borderColor: `${meta.color}80` }}>
                       <div className="flex items-start gap-1.5">
                         <CheckCircle2 size={11} className="text-emerald-500 mt-0.5 shrink-0" />
                         <div className="min-w-0">
-                          <div className="font-semibold text-foreground">{ex.name}</div>
+                          <div className="font-semibold text-foreground flex items-center flex-wrap gap-1.5">
+                            <span>{ex.name}</span>
+                            {note && (
+                              <span className="text-[9px] px-1.5 py-0.5 border border-amber-500/50 text-amber-400 uppercase tracking-wider">
+                                {note}
+                              </span>
+                            )}
+                          </div>
                           <div className="text-[10px] text-muted-foreground">Alvo: {ex.target}</div>
                           {ex.phase === 1 ? (
                             <div className="text-[11px] text-foreground/80 mt-1">{protocol}</div>
@@ -223,9 +292,9 @@ export function ApexSessionGenerator() {
                               {ex.cues?.[0] && <span className="text-muted-foreground">· {ex.cues[0]}</span>}
                             </div>
                           )}
-                          {noEquipWarn && (
+                          {missing.length > 0 && (
                             <div className="mt-1 flex items-center gap-1 text-[10px] text-amber-400">
-                              <AlertTriangle size={10} /> Use sempre a opção sem equipamento neste alvo.
+                              <AlertTriangle size={10} /> Falta: {missing.join(", ")}
                             </div>
                           )}
                         </div>
