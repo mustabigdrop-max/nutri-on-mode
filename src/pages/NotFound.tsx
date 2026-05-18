@@ -1,6 +1,6 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
-import { HudShell, HudStatusBar } from "@/components/hud/HudShell";
+import { HudShell, HudStatusBar, HudPanel } from "@/components/hud/HudShell";
 
 const NotFound = () => {
   const location = useLocation();
@@ -18,12 +18,12 @@ const NotFound = () => {
             <HudStatusBar label="ERRO DE SISTEMA" meta={`ROUTE · ${location.pathname}`} color="#00D4FF" />
           </div>
 
-          <div className="text-center">
+          <HudPanel tag="ERR · 404" className="p-10 text-center">
             <div
               style={{
                 fontFamily: "'Rajdhani', sans-serif",
                 fontWeight: 700,
-                fontSize: "14rem",
+                fontSize: "12rem",
                 lineHeight: 1,
                 color: "#B8922A",
                 textShadow: "0 0 80px rgba(184,146,42,0.45)",
@@ -44,7 +44,7 @@ const NotFound = () => {
             <button onClick={() => navigate("/")} className="hud-btn mt-10">
               ◄ VOLTAR AO SISTEMA
             </button>
-          </div>
+          </HudPanel>
         </div>
       </div>
     </HudShell>

@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAssessmentPCA } from "@/hooks/useAssessmentPCA";
 import { PERGUNTAS_PCA } from "@/data/perguntas-pca";
-import { HudShell, HudStatusBar, HudHex } from "@/components/hud/HudShell";
+import { HudShell, HudStatusBar, HudHex, HudPanel } from "@/components/hud/HudShell";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 
 const EIXO_COLORS: Record<string, string> = {
@@ -97,67 +97,72 @@ export default function AssessmentPCA() {
         </div>
 
         {/* Pergunta + opções */}
-        <div
-          className="flex-1 mt-6"
-          style={{
-            transform: animando
-              ? direcao === "saida" ? "translateX(-40px)" : "translateX(40px)"
-              : "translateX(0)",
-            opacity: animando ? 0 : 1,
-            transition: "all 0.22s cubic-bezier(0.4, 0, 0.2, 1)",
-          }}
+        <HudPanel
+          tag={`Q · ${String(perguntaAtual + 1).padStart(2, "0")}`}
+          tagColor={eixoColor}
+          className="flex-1 mt-6 p-6"
         >
-          <h2
-            className="mb-8"
+          <div
             style={{
-              fontFamily: "'Rajdhani', sans-serif",
-              fontWeight: 700,
-              fontSize: 24,
-              lineHeight: 1.3,
-              color: "#F5F0E8",
-              letterSpacing: "0.02em",
+              transform: animando
+                ? direcao === "saida" ? "translateX(-40px)" : "translateX(40px)"
+                : "translateX(0)",
+              opacity: animando ? 0 : 1,
+              transition: "all 0.22s cubic-bezier(0.4, 0, 0.2, 1)",
             }}
           >
-            {pergunta.pergunta}
-          </h2>
+            <h2
+              className="mb-8"
+              style={{
+                fontFamily: "'Rajdhani', sans-serif",
+                fontWeight: 700,
+                fontSize: 24,
+                lineHeight: 1.3,
+                color: "#F5F0E8",
+                letterSpacing: "0.02em",
+              }}
+            >
+              {pergunta.pergunta}
+            </h2>
 
-          <div className="flex flex-col gap-3">
-            {pergunta.opcoes.map((opcao) => {
-              const sel = respostaAtual === opcao.id;
-              return (
-                <button
-                  key={opcao.id}
-                  onClick={() => responder(pergunta.id, opcao.id)}
-                  className="relative flex items-start gap-4 p-4 text-left transition-all"
-                  style={{
-                    background: sel ? `${eixoColor}14` : "rgba(10,10,26,0.7)",
-                    border: `1px solid ${sel ? eixoColor : "rgba(184,146,42,0.15)"}`,
-                    clipPath: "polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px))",
-                  }}
-                >
-                  {sel && (
-                    <div
-                      className="absolute top-0 left-0 right-0 h-px"
-                      style={{ background: `linear-gradient(90deg, transparent, ${eixoColor}, transparent)` }}
-                    />
-                  )}
-                  <HudHex code={opcao.id} color={eixoColor} size={36} />
-                  <span
-                    className="flex-1 pt-1"
+            <div className="flex flex-col gap-3">
+              {pergunta.opcoes.map((opcao) => {
+                const sel = respostaAtual === opcao.id;
+                return (
+                  <button
+                    key={opcao.id}
+                    onClick={() => responder(pergunta.id, opcao.id)}
+                    className="relative flex items-start gap-4 p-4 text-left transition-all"
                     style={{
-                      fontFamily: "'Space Grotesk', sans-serif",
-                      fontSize: 14,
-                      lineHeight: 1.5,
-                      color: "#F5F0E8",
+                      background: sel ? `${eixoColor}14` : "rgba(10,10,26,0.7)",
+                      border: `1px solid ${sel ? eixoColor : "rgba(184,146,42,0.15)"}`,
+                      clipPath: "polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px))",
                     }}
                   >
-                    {opcao.texto}
-                  </span>
-                </button>
-              );
-            })}
+                    {sel && (
+                      <div
+                        className="absolute top-0 left-0 right-0 h-px"
+                        style={{ background: `linear-gradient(90deg, transparent, ${eixoColor}, transparent)` }}
+                      />
+                    )}
+                    <HudHex code={opcao.id} color={eixoColor} size={36} />
+                    <span
+                      className="flex-1 pt-1"
+                      style={{
+                        fontFamily: "'Space Grotesk', sans-serif",
+                        fontSize: 14,
+                        lineHeight: 1.5,
+                        color: "#F5F0E8",
+                      }}
+                    >
+                      {opcao.texto}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
-        </div>
+        </HudPanel>
 
         {/* Footer */}
         <div className="flex items-center gap-3 mt-6 pt-4">
