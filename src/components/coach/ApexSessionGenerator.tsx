@@ -12,7 +12,7 @@ import {
   type Exercise,
 } from "@/data/apexCorrectiveLibrary";
 
-type Tools = { foam: boolean; ball: boolean };
+
 
 type Tools = {
   foam: boolean;
