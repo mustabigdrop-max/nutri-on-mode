@@ -8,6 +8,8 @@ import { Upload, X, FlaskConical, RotateCcw, History, Eye, Dumbbell, CheckCircle
 import { ApexSymbol } from "@/components/coach/ApexSymbol";
 import ApexEvolucao from "@/components/apex/ApexEvolucao";
 import ApexVisualOverlay, { LandmarkBundle, PhotoBundle, LandmarkView } from "@/components/coach/ApexVisualOverlay";
+import ApexPostural33Overlay, { parsePostural33 } from "@/components/coach/ApexPostural33Overlay";
+
 import VertexEnhancedView from "@/components/coach/VertexEnhancedView";
 import { ApexScoreGauge, InsightCard, PosturaCards, CorrecoesCards, ProtocoloCards } from "@/components/coach/ApexResultCards";
 import FeminineCyclePhaseBanner from "@/components/coach/FeminineCyclePhaseBanner";
@@ -384,8 +386,8 @@ const parseFarmMeta = (text: string) => ({
 // Remove blocos técnicos de landmarks (com ou sem cercas markdown) que não devem aparecer no texto exibido
 const stripLandmarkBlocks = (text: string): string =>
   text
-    .replace(/```+\s*json_landmarks_(?:front|lateral|back)[\s\S]*?```+/gi, "")
-    .replace(/`{0,3}\s*json_?landmarks_?(?:front|lateral|back)\s*\{[\s\S]*?\n\}\s*`{0,3}/gi, "");
+    .replace(/```+\s*json_landmarks_(?:front|lateral|back|pro)[\s\S]*?```+/gi, "")
+    .replace(/`{0,3}\s*json_?landmarks_?(?:front|lateral|back|pro)\s*\{[\s\S]*?\n\}\s*`{0,3}/gi, "");
 
 const parseSection = (text: string, key: string, nextKey?: string): string => {
   const cleaned = stripLandmarkBlocks(text);
@@ -1128,17 +1130,24 @@ Suporte em uso: ${suporte || "não informado"}` : "";
             </div>
           )}
           {activeResultTab === "visual" && (
-            <ApexVisualOverlay
-              landmarks={parseLandmarks(analysisResult)}
-              photos={photoUrls}
-              athleteName={athlete?.nome}
-              category={cat.label}
-              sex={isFemAthlete ? "F" : (athlete?.sexo || null)}
-              cyclePhase={cyclePhase as any}
-              cycleDay={cycleDay}
-              feminineCategory={femCategory ? FEMININE_CATEGORIES[femCategory].label : null}
-            />
+            <div className="space-y-4">
+              <ApexPostural33Overlay
+                data={parsePostural33(analysisResult) || {}}
+                photoUrl={photoUrls.front || photoUrls.back || photoUrls.lateral || null}
+              />
+              <ApexVisualOverlay
+                landmarks={parseLandmarks(analysisResult)}
+                photos={photoUrls}
+                athleteName={athlete?.nome}
+                category={cat.label}
+                sex={isFemAthlete ? "F" : (athlete?.sexo || null)}
+                cyclePhase={cyclePhase as any}
+                cycleDay={cycleDay}
+                feminineCategory={femCategory ? FEMININE_CATEGORIES[femCategory].label : null}
+              />
+            </div>
           )}
+
           {activeResultTab === "postura" && (
             <div className="space-y-3">
               <InfoBox color="#D94040" text="Desvios posturais detectados — músculo dominante vs inibido e impacto no palco." />
