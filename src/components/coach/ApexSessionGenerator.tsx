@@ -99,8 +99,11 @@ function formatPlainText(region: Region, duration: Duration, tools: Tools) {
   lines.push(`Duração alvo: ${duration} min · Total alocado: ${total} min`);
   lines.push(
     `Equipamentos: ${[
-      tools.foam ? "Foam roller" : null,
-      tools.ball ? "Bola tênis/lacrosse" : null,
+      tools.foam && "Foam roller",
+      tools.ball && "Bola tênis/lacrosse",
+      tools.band && "Faixa elástica",
+      tools.dumbbells && "Halteres",
+      tools.step && "Step",
       "Sem equipamento",
     ]
       .filter(Boolean)
@@ -110,8 +113,9 @@ function formatPlainText(region: Region, duration: Duration, tools: Tools) {
   for (const b of blocks) {
     const meta = PHASE_META[b.phase];
     lines.push(`── FASE ${b.phase} · ${meta.label.toUpperCase()} (${b.minutes} min) ──`);
-    b.items.forEach((ex, i) => {
-      lines.push(`${i + 1}. ${ex.name} — alvo: ${ex.target}`);
+    b.items.forEach((raw, i) => {
+      const { ex, note } = adaptExercise(raw, tools);
+      lines.push(`${i + 1}. ${ex.name} — alvo: ${ex.target}${note ? ` (${note})` : ""}`);
       if (ex.phase === 1) {
         const p = pickReleaseProtocol(ex, tools);
         if (p) lines.push(`   ${p}`);
