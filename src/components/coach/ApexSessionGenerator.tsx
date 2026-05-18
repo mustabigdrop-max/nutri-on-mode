@@ -14,6 +14,14 @@ import {
 
 type Tools = { foam: boolean; ball: boolean };
 
+type Tools = {
+  foam: boolean;
+  ball: boolean;
+  band: boolean;       // faixa elástica / mini-band
+  dumbbells: boolean;  // halteres
+  step: boolean;       // step / caixote / banco baixo
+};
+
 const DURATIONS = [15, 30, 45, 60] as const;
 type Duration = (typeof DURATIONS)[number];
 
@@ -21,6 +29,22 @@ type Duration = (typeof DURATIONS)[number];
 const PHASE_SPLIT: Record<Phase, number> = { 1: 0.2, 2: 0.25, 3: 0.35, 4: 0.2 };
 // Tempo estimado por exercício/fase (min)
 const PER_EX_MIN: Record<Phase, number> = { 1: 2, 2: 2, 3: 3, 4: 3 };
+
+// Heurística de equipamento necessário, a partir do texto do exercício
+const RX = {
+  band: /\b(band|elástic|elastico|mini.?band|theraband|tubing|cable)\b/i,
+  dumbbell: /\b(halter|haltere|dumbbell|kettlebell|peso livre|livro pesado)\b/i,
+  step: /\b(step|caixote|banco|degrau|step.?up|elev[aá]ç)\b/i,
+};
+
+function detectNeeded(ex: Exercise): Array<"band" | "dumbbell" | "step"> {
+  const text = `${ex.name} ${ex.target} ${(ex.cues ?? []).join(" ")} ${ex.progression ?? ""} ${ex.regression ?? ""}`;
+  const out: Array<"band" | "dumbbell" | "step"> = [];
+  if (RX.band.test(text)) out.push("band");
+  if (RX.dumbbell.test(text)) out.push("dumbbell");
+  if (RX.step.test(text)) out.push("step");
+  return out;
+}
 
 function pickReleaseProtocol(ex: Exercise, tools: Tools): string {
   const rels = ex.releases ?? [];
@@ -34,6 +58,25 @@ function pickReleaseProtocol(ex: Exercise, tools: Tools): string {
   }
   const none = rels.find((x) => x.tool === "none");
   return none ? `[Sem equip.] ${none.protocol}` : "";
+}
+
+function adaptExercise(ex: Exercise, tools: Tools): { ex: Exercise; note?: string; missing: string[] } {
+  const needed = detectNeeded(ex);
+  const missing: string[] = [];
+  if (needed.includes("band") && !tools.band) missing.push("faixa elástica");
+  if (needed.includes("dumbbell") && !tools.dumbbells) missing.push("halteres");
+  if (needed.includes("step") && !tools.step) missing.push("step");
+
+  if (missing.length === 0) return { ex, missing: [] };
+  // tenta usar regressão como alternativa
+  if (ex.regression) {
+    return {
+      ex: { ...ex, name: `${ex.name} — alternativa`, cues: [ex.regression] },
+      note: `Adaptado (sem ${missing.join(", ")})`,
+      missing,
+    };
+  }
+  return { ex, note: `Requer ${missing.join(", ")} — execute versão isométrica/sem carga`, missing };
 }
 
 function buildSession(region: Region, duration: Duration, tools: Tools) {
