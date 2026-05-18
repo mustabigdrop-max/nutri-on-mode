@@ -1521,7 +1521,23 @@ Suporte em uso: ${suporte || "não informado"}` : "";
         </div>
       )}
 
+      {apexMode === "guiada" && (
+        <div style={{ marginBottom: 16 }}>
+          <ApexGuidedSession
+            athleteId={athlete?.id || null}
+            athleteName={athlete?.nome || null}
+            athleteData={{
+              sex: (athlete?.sexo as "M" | "F") || undefined,
+              sport: athlete?.categoria || undefined,
+            }}
+            accentColor={APEX.gold}
+            onCompleted={() => { /* salvo no Supabase */ }}
+          />
+        </div>
+      )}
+
       {apexMode === "analise" && (<>
+
 
 
       {/* ━━━ CATEGORIA ━━━ */}
