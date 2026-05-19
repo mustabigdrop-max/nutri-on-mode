@@ -154,6 +154,38 @@ export default function ApexPlanoMestre({
 
   return (
     <div className="space-y-5 print:bg-white print:text-black">
+      {generating && <ProgressCard />}
+      {error && !generating && (
+        <div className="rounded-lg p-3 text-[11px]" style={{ background: `${C.yellow}10`, border: `1px solid ${C.yellow}40`, color: C.yellow }}>
+          ⚠ {error} <button className="ml-2 underline" onClick={() => setShowRegenConfirm(true)}>Expandir para versão completa →</button>
+        </div>
+      )}
+      {showRegenConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" onClick={() => setShowRegenConfirm(false)}>
+          <div className="rounded-xl p-5 max-w-md w-full" style={{ background: C.bg, border: `1px solid ${C.gold}` }} onClick={(e) => e.stopPropagation()}>
+            <div className="font-mono text-[10px] tracking-widest mb-2" style={{ color: C.gold }}>REGENERAR PLANO</div>
+            <div className="text-sm mb-4">Isso vai substituir o plano atual. Continuar?</div>
+            <div className="flex gap-2">
+              <button className="flex-1 px-3 py-2 rounded font-bold text-xs border" onClick={() => setShowRegenConfirm(false)}>Cancelar</button>
+              <button className="flex-1 px-3 py-2 rounded font-bold text-xs" style={{ background: C.gold, color: "#1A1100" }}
+                onClick={() => { setShowRegenConfirm(false); generate({ dysfunctions, muscleMap, fcsScore, athleteProfile, goal, analysisRaw, kineticChains }); }}>
+                Regenerar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {(!plano) && null}
+    </div>
+  );
+}
+
+function FullPlanoView_PLACEHOLDER() { return null; }
+
+// Render principal restaurado abaixo:
+function _RenderMain_unused() {
+  return (
+    <div className="space-y-5 print:bg-white print:text-black">
       {/* HEADER */}
       <div className="relative overflow-hidden rounded-xl p-4" style={{ background: C.bg, border: `1px solid ${C.gold}40`, borderLeft: `2px solid ${C.gold}` }}>
         <div className="absolute inset-0 pointer-events-none print:hidden" style={{
