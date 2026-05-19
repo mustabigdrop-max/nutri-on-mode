@@ -1,99 +1,72 @@
+## Objetivo
 
-# Sistema de Perfis Profissionais nutriON
+Adicionar uma nova aba **"Plano Mestre"** ao APEX Visual Intelligence (em `ApexVisualDashboard.tsx`, após "Correções") que gera automaticamente, via IA, um Plano Mestre de Evolução estruturado em fases e semanas, com persistência, checklist semanal e ações de exportação/integração.
 
-Este é um escopo **muito grande** (9 blocos, ~15-20 arquivos novos, mudanças em ~10 existentes, 4 tabelas + RLS, novo roteamento, novo dashboard inteiro). Vou implementar **bloco por bloco**, parando após cada um para você validar antes de seguir.
+Nenhuma aba ou comportamento existente será alterado — apenas adições.
 
-⚠️ **Pontos críticos detectados antes de começar:**
+---
 
-1. **Já existe `coach_profiles` + role `coach` + `coach_patients` + `usePartner`** no projeto. O schema novo (`professional_*`, `user_role` em profiles) **duplica** o que já existe. Risco real de bagunçar a base.
-2. **Já existe `/coach/dashboard`** funcionando. Criar `/pro/dashboard` paralelo gera dois sistemas concorrentes.
-3. **Já existe `usePlanGate`** com hierarquia free/ON/ON+/ON PRO. O modelo "Coach Free 3 clientes / Coach Pro ilimitado" do Bloco 7 conflita com isso.
-4. **Já existe role `aluno_coach`** — vinculação coach↔aluno já implementada via `coach_profile_id` em `profiles`.
+## Entregas
 
-**Recomendação forte:** em vez de criar estrutura paralela, **estender** o que existe:
-- `user_role` em profiles → adicionar `professional_type` (subtipo de coach: nutritionist/personal/nutrition_coach/bodybuilding/medico)
-- `professional_clients` → reusar `coach_patients`
-- `/pro/dashboard` → estender `/coach/dashboard` (já existe `CoachDashboardPage.tsx`)
-- Gating → reusar `usePlanGate`
+### 1. Banco de dados (migração)
+- `apex_guided_sessions`: adicionar colunas
+  - `plano_mestre jsonb`
+  - `plano_semana_atual int default 1`
+  - `plano_fase_atual int default 1`
+  - `metricas_atingidas jsonb default '[]'`
+- Nova tabela `apex_plano_progresso` (session_id, athlete_id, semana, fase, exercicio, concluido, observacao, registrado_em).
+- RLS: coach acessa apenas progresso dos seus atletas (via `apex_guided_sessions.coach_id = auth.uid()`).
 
-## Plano de execução (faseado)
+### 2. Edge Function `apex-plano-mestre`
+- Recebe: `dysfunctions`, `muscleMap`, `fcsScore`, `athleteProfile`, `goal`, `analysisRaw` (opcional).
+- Chama Lovable AI (`google/gemini-2.5-pro`) com o prompt completo do briefing (duração por severidade FCS, 4 fases padrão Inibição → Elongação → Ativação → Integração, semanas detalhadas, métricas, sinais de alarme, recheck).
+- `response_format: json_object` e retorna `{ plano_mestre: {...} }` exatamente no schema pedido.
+- Trata erros 429 / 402 / parse.
 
-### FASE 1 — Fundação DB (Bloco 1 adaptado)
-- Migration: adicionar `professional_type` em `profiles` (subtipo do coach atual: nutritionist | personal_trainer | nutrition_coach | bodybuilding_coach | medico). Default NULL.
-- Migration: adicionar `unique_code` (8 chars) em `coach_profiles` para vinculação por código.
-- Migration: criar tabela `professional_invites` (link único, expira em 7d).
-- Migration: criar tabela `notifications` (Bloco 9 — usado por vários blocos).
-- RLS: profissional vê seus convites/notificações; cliente vê suas notificações.
-- **NÃO** criar `professional_clients` nem `professional_profiles` — reusar `coach_patients` + `coach_profiles`.
+### 3. Novo componente `ApexPlanoMestre.tsx` (`src/components/coach/`)
+- Header dourado monospace **"— PLANO MESTRE DE EVOLUÇÃO"** + scan-line ciano.
+- Card de resumo (título, duração, fase atual, FCS inicial/meta, próximo recheck, barra de progresso global).
+- Timeline horizontal das fases (●━━●━━●━━●), com estados concluída / atual (dourado pulsando) / futura.
+- Accordion de fases → accordion de semanas dentro de cada fase.
+- Por semana: foco, sessões, exercícios prioritários (com cue, séries, reps, progressão), contraindicados, sinal verde para avançar.
+- Tabela de métricas de sucesso por fase com checkbox "Meta atingida".
+- Card de sinais de alarme (alta/média/baixa codificadas por cor) e card ciano de Recheck APEX.
+- **Checklist semanal interativo** na semana atual: marcar exercícios → grava em `apex_plano_progresso` → atualiza barra; semana completa libera botão "Avançar para semana X+1"; critério de fase aciona modal de confirmação.
+- Barra de ações: **Copiar plano**, **Exportar PDF** (window.print/jsPDF), **Enviar para TrainingON** (stub que salva flags na sessão), **Agendar Recheck**.
+- Paleta: `#0a0a1a`, `#B8922A`, `#00D4FF`, `#1D9E75`, branco, `#888`.
+- Mobile: accordions fechados por padrão.
 
-### FASE 2 — Cadastro com seleção de perfil (Bloco 2)
-- Reescrever `AuthPage.tsx` em wizard 2 etapas: (1) escolha de perfil (6 cards), (2) form email/senha.
-- Salvar `professional_type` em `raw_user_meta_data` no signup.
-- Atualizar trigger `handle_new_user` para propagar `professional_type` + criar `coach_profiles` automaticamente quando profissional.
-- Login: adicionar links "Cadastrar como Atleta · Profissional · Coach" que pré-selecionam o card.
+### 4. Integração em `ApexVisualDashboard.tsx`
+- Inserir `{ key: "plano-mestre", label: "Plano Mestre", icon: CalendarDays }` na lista `tabs` logo após `"correcoes"`.
+- Cor de aba ativa: `#B8922A`.
+- Conteúdo da aba: renderiza `<ApexPlanoMestre sessionId={...} dysfunctions={...} muscleMap={...} fcsScore={...} athleteProfile={...} goal={...} analysisRaw={analysisResult} />`.
+- Geração automática: ao primeiro render da aba (ou quando uma análise APEX completa o `isDone`), se `plano_mestre` ainda não existe na sessão, dispara a Edge Function automaticamente e persiste. Botão **"Gerar Plano Mestre"** disponível para análises antigas.
 
-### FASE 3 — Hook + roteamento (Bloco 3)
-- `useUserRole()` lê `role` + `professional_type` do profile.
-- `<RoleGuard>` componente que redireciona conforme role.
-- Aplicar em `App.tsx`: `/dashboard` só athletes, `/coach/*` só professionals.
+### 5. Hook utilitário `useApexPlanoMestre.ts`
+- `loadPlano(sessionId)`, `generatePlano(payload)`, `saveProgresso(...)`, `marcarMetricaAtingida(...)`, `avancarSemana()`, `avancarFase()`.
 
-### FASE 4 — Dashboard Profissional (Bloco 4)
-- Estender `CoachDashboardPage.tsx` (NÃO criar `/pro/dashboard` novo) com:
-  - Topbar: badge colorido por `professional_type`
-  - 4 cards de métricas (alunos ativos, score médio, em risco, check-ins)
-  - Botões de ação rápida filtrados por `professional_type`
-  - Lista de clientes com tabs/busca/score circular
-  - Painel lateral slide-in do cliente (5 tabs)
-  - Coluna direita de alertas
-  - Gráfico de barras semana
+---
 
-### FASE 5 — Vínculos (Bloco 5)
-- Botão "Convidar Cliente" → modal email → cria `professional_invites` → email
-- Página `/convite/[code]` (pública) → aceitar → vincula em `coach_patients`
-- Seção "Meu Profissional" no dashboard atleta com input de código
-- Botão "Adicionar Manualmente" → busca por email/nome
-- Edge function `accept-professional-invite` para fluxo transacional
+## Arquivos
 
-### FASE 6 — Dashboard Atleta (Bloco 6)
-- Adicionar seção "MEU PROFISSIONAL" em `DashboardPage` (após métricas)
-- Card com profissional vinculado OU input de código
-- Seção "PLANOS RECEBIDOS"
+**Criados**
+- `supabase/functions/apex-plano-mestre/index.ts`
+- `src/components/coach/ApexPlanoMestre.tsx`
+- `src/hooks/useApexPlanoMestre.ts`
+- `supabase/migrations/<timestamp>_apex_plano_mestre.sql`
 
-### FASE 7 — Gating profissional (Bloco 7)
-- Estender `usePlanGate` com tier `coach_free` (3 clientes) vs `coach_pro` (ilimitado)
-- Modal de upgrade quando coach FREE atinge 3 clientes
-- Badge no topbar por plano
+**Editados (mínimo)**
+- `src/components/coach/ApexVisualDashboard.tsx` — apenas adicionar entrada na `tabs` e bloco de render da nova aba.
 
-### FASE 8 — Perfil profissional (Bloco 8)
-- Página `/pro/perfil` (ou estender `/coach/settings` existente)
-- Form: dados, registro, bio, upload logo (bucket novo `professional-logos`), código + QR
+Nada mais será tocado.
 
-### FASE 9 — Notificações (Bloco 9)
-- Hook `useNotifications()`
-- Dropdown no sino (topbar)
-- Página `/notificacoes`
-- Triggers DB para gerar notificações em eventos (convite aceito, check-in, etc)
+---
 
-## Detalhes técnicos
+## Notas técnicas
 
-- **Visual:** reusar tokens existentes (`T.gold`, Rajdhani, Space Mono, bg #020205) já presentes em `CoachDashboardPage` e `PlanoAlimentarIA`.
-- **Cor por professional_type:** mapa central em `src/lib/professionalTypes.ts` (já não existe — criar) com {color, badge, icon, label, defaultActions}.
-- **Migrations:** uma por fase, com RLS completa e triggers de timestamp.
-- **Edge functions novas:** `accept-professional-invite`, `link-by-code`, `send-invite-email`.
-- **Compatibilidade:** todos os usuários existentes continuam funcionando — `professional_type` é NULL para quem já é coach genérico (default = coach genérico).
+- O JSON do plano segue exatamente o schema do briefing (`plano_mestre.fases[].semanas_detalhadas[]`, etc.).
+- Validação leve no front: se algum campo crítico vier ausente, mostra fallback "—" (sem quebrar).
+- PDF: impressão estilizada via `@media print` no próprio componente (sem nova dependência).
+- TrainingON: integração inicial = grava `plano_semana_atual` + lista de contraindicados em `apex_guided_sessions`; consumo no TrainingON fica para passo futuro caso queira (não altera TrainingON agora).
 
-## Estimativa
-
-- ~25 arquivos novos
-- ~12 arquivos editados
-- ~6 migrations
-- ~3 edge functions
-- Trabalho real de ~6-8 mensagens longas para implementar tudo
-
-## Confirmação necessária antes de começar
-
-1. **OK estender `coach_profiles`/`coach_patients` ao invés de criar `professional_*` paralelos?** (Recomendo fortemente — evita duplicação e mantém `usePartner`/RLS atual funcionando.)
-2. **OK estender `/coach/dashboard` ao invés de criar `/pro/dashboard` paralelo?**
-3. **Começo pela FASE 1 (migration) agora?** Após sua aprovação da migration, sigo direto para FASE 2 no mesmo turno.
-
-Responda "vai" + confirme os 2 pontos acima e eu disparo a Fase 1.
+Posso seguir e implementar tudo acima?
