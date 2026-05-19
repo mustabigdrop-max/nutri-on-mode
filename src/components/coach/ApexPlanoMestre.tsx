@@ -105,19 +105,51 @@ export default function ApexPlanoMestre({
     );
   }
 
-  if (generating) {
-    return (
-      <div className="rounded-xl p-8 text-center space-y-3 relative overflow-hidden" style={{ background: C.bg, border: `1px solid ${C.cyan}40` }}>
-        <div className="absolute inset-0 pointer-events-none" style={{
-          background: `linear-gradient(90deg, transparent, ${C.cyan}30, transparent)`,
-          animation: "apexScan 2s linear infinite",
-        }} />
-        <Loader2 className="w-8 h-8 animate-spin mx-auto" style={{ color: C.cyan }} />
-        <div className="font-mono text-xs tracking-[0.2em]" style={{ color: C.gold }}>GERANDO PLANO MESTRE…</div>
-        <p className="text-xs text-muted-foreground">A IA está periodizando 4 fases corretivas com semanas detalhadas.</p>
-        <style>{`@keyframes apexScan { 0%{transform:translateX(-100%)} 100%{transform:translateX(100%)} }`}</style>
+  const doneCount = stages.filter(s => s.status === "done").length;
+  const inProgressStage = stages.find(s => s.status === "in_progress");
+  const progressPct = Math.round(((doneCount + (inProgressStage ? 0.5 : 0)) / stages.length) * 100);
+
+  const ProgressCard = () => (
+    <div className="rounded-lg p-6 space-y-4" style={{ background: "#0d1520", border: `0.5px solid ${C.cyan}30`, borderRadius: 8 }}>
+      <div className="font-mono text-xs tracking-[0.25em] font-bold" style={{ color: C.gold }}>GERANDO PLANO MESTRE</div>
+      <div>
+        <div className="flex justify-between text-[10px] mb-2 font-mono opacity-70">
+          <span>PROGRESSO</span><span>{progressPct}%</span>
+        </div>
+        <div className="overflow-hidden" style={{ background: "#ffffff10", borderRadius: 99, height: 4 }}>
+          <div className="h-full transition-all duration-500" style={{ width: `${progressPct}%`, background: C.gold, borderRadius: 99 }} />
+        </div>
       </div>
-    );
+      <div className="space-y-1.5">
+        <StageLine icon="✓" color={C.green} text="Diagnóstico analisado" />
+        <StageLine icon="✓" color={C.green} text={`Duração calculada: ${plano?.duracao_total_semanas || "—"} semanas`} dim={!plano?.duracao_total_semanas} />
+        {stages.map((s) => {
+          const iconChar = s.status === "done" ? "✓" : s.status === "in_progress" ? "⟳" : s.status === "warning" ? "⚠" : "○";
+          const color = s.status === "done" ? C.green : s.status === "in_progress" ? C.yellow : s.status === "warning" ? C.yellow : C.muted;
+          const prefix = s.status === "in_progress" ? "Gerando " : "";
+          return (
+            <StageLine
+              key={s.key}
+              icon={iconChar}
+              color={color}
+              animated={s.status === "in_progress"}
+              text={`${prefix}${s.label}${s.warning ? ` — ${s.warning}` : ""}`}
+            />
+          );
+        })}
+      </div>
+      {inProgressStage && (
+        <div className="font-mono text-[12px]" style={{ color: C.muted }}>
+          A IA está gerando {inProgressStage.label}…
+        </div>
+      )}
+      <style>{`@keyframes apexSpin { to { transform: rotate(360deg); } }`}</style>
+    </div>
+  );
+
+  // Loading inicial: sem plano ainda + gerando
+  if (generating && !plano) {
+    return <ProgressCard />;
   }
 
   return (
