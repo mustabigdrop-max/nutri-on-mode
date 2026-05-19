@@ -15,6 +15,13 @@ import {
   X,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { ApexFramingGuide } from "@/components/coach/ApexFramingGuide";
+import { cropToAthlete } from "@/lib/apexImageCrop";
+import {
+  validateLandmarks,
+  landmarksArrayToMap,
+  type LandmarkValidation,
+} from "@/lib/apexLandmarkValidator";
 
 export type GuidedPhase = "static" | "flexibility" | "strength" | "dynamic";
 
