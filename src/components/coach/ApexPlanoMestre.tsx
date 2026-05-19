@@ -176,8 +176,7 @@ export default function ApexPlanoMestre({
         </div>
       )}
 
-
-    <div className="space-y-5 print:bg-white print:text-black">
+      {plano && (<>
       {/* HEADER */}
       <div className="relative overflow-hidden rounded-xl p-4" style={{ background: C.bg, border: `1px solid ${C.gold}40`, borderLeft: `2px solid ${C.gold}` }}>
         <div className="absolute inset-0 pointer-events-none print:hidden" style={{
