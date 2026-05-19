@@ -6,7 +6,34 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const SYSTEM_PROMPT = `⛔ REGRA CRÍTICA — LER ANTES DE GERAR QUALQUER COISA:
+const KCAL_CLOSURE_RULE = `⚠ REGRA INVIOLÁVEL DO NUTRIPLAN — FECHAMENTO CALÓRICO:
+
+Antes de retornar o plano, execute internamente:
+  SOMA = 0
+  Para cada refeição:
+    SOMA += (proteína × 4) + (carboidrato × 4) + (gordura × 9)
+  Se |SOMA - metaKcal| > 50: ajustar as porções até fechar.
+
+NUNCA retornar plano com diferença maior que 50 kcal da meta declarada no TDEE.
+O kcal de cada refeição DEVE bater com (proteína×4)+(carbo×4)+(gordura×9) — tolerância ±30 kcal.
+
+NÚMERO MÍNIMO DE REFEIÇÕES POR FAIXA CALÓRICA (obrigatório):
+- Até 2.000 kcal → mínimo 3 refeições
+- 2.001 a 2.800 kcal → mínimo 4 refeições
+- 2.801 a 3.500 kcal → mínimo 5 refeições
+- 3.501 a 4.200 kcal → mínimo 6 refeições
+- Acima de 4.200 kcal → mínimo 7 refeições
+
+DISTRIBUIÇÃO SUGERIDA (% da meta):
+Café 15-20% · Almoço/Pré 20-25% · Pós-treino 12-15% · Lanche tarde 10-12% · Jantar 15-20% · Ceia 10-15% · Extra: completar.
+
+Se faltar kcal para fechar, ADICIONE refeição extra. Esta regra tem prioridade sobre qualquer outra instrução.
+
+═══════════════════════════════════════════════════════
+
+`;
+
+const SYSTEM_PROMPT = KCAL_CLOSURE_RULE + `⛔ REGRA CRÍTICA — LER ANTES DE GERAR QUALQUER COISA:
 
 AEJ (Aeróbico Em Jejum) = JEJUM TOTAL.
 - AEJ NÃO é uma refeição.
@@ -2676,7 +2703,7 @@ ${perfilFisiologico?.modo_economico ? `
     // Retry enxuto + prompt compacto: evita timeout quando variedade funcional aumenta o JSON.
     // O SYSTEM_PROMPT completo contém um banco alimentar grande; com variedade ativa, o userPrompt
     // já carrega as regras necessárias, então usamos um sistema curto para reduzir latência.
-    const COMPACT_SYSTEM_PROMPT = `Você é o NutriSync Elite, gerador técnico de plano alimentar para coach.
+    const COMPACT_SYSTEM_PROMPT = KCAL_CLOSURE_RULE + `Você é o NutriSync Elite, gerador técnico de plano alimentar para coach.
 Responda APENAS com um único JSON válido, sem markdown.
 Siga rigorosamente horários reais do treino, macros/calorias calculados, restrições, medidas caseiras e regras peri-workout do prompt do usuário.
 AEJ não é refeição e nunca deve aparecer em refeicoes. Pós-Treino Imediato deve ser único.`;
@@ -3931,6 +3958,54 @@ AEJ não é refeição e nunca deve aparecer em refeicoes. Pós-Treino Imediato 
         refeicoes_recomendadas: calc.refeicoesRecomendadas,
       };
     }
+
+    // ═══════════════════════════════════════════════════════════════
+    // VALIDAÇÃO AUTOMÁTICA DE FECHAMENTO CALÓRICO
+    // Compara a soma real dos macros das refeições contra a meta determinística.
+    // Tolerâncias: refeição ±30 kcal · plano total ±50 kcal.
+    // ═══════════════════════════════════════════════════════════════
+    try {
+      const metaKcal = Number(calc?.metaKcal) || 0;
+      const refs: any[] = Array.isArray((parsed as any)?.refeicoes) ? (parsed as any).refeicoes : [];
+      let somaCalc = 0;
+      const erros: string[] = [];
+      refs.forEach((r, i) => {
+        const p = Number(r?.proteina_g ?? r?.proteina ?? 0) || 0;
+        const c = Number(r?.carboidrato_g ?? r?.carboidrato ?? r?.carbo_g ?? 0) || 0;
+        const g = Number(r?.gordura_g ?? r?.gordura ?? 0) || 0;
+        const kcalDecl = Number(r?.calorias ?? r?.kcal ?? 0) || 0;
+        const kcalCalc = Math.round(p * 4 + c * 4 + g * 9);
+        somaCalc += kcalCalc;
+        if (kcalDecl > 0 && Math.abs(kcalCalc - kcalDecl) > 30) {
+          erros.push(`Refeição ${i + 1} (${r?.refeicao || "—"}): kcal declarado ${kcalDecl} ≠ calculado ${kcalCalc}`);
+        }
+      });
+      const diferenca = Math.abs(metaKcal - somaCalc);
+      const minMap = (m: number) =>
+        m <= 2000 ? 3 : m <= 2800 ? 4 : m <= 3500 ? 5 : m <= 4200 ? 6 : 7;
+      const minRefeicoes = metaKcal > 0 ? minMap(metaKcal) : 0;
+      if (metaKcal > 0 && diferenca > 50) {
+        erros.push(`Total do plano (${somaCalc} kcal) não fecha com a meta (${metaKcal} kcal). Diferença: ${diferenca} kcal`);
+      }
+      if (minRefeicoes && refs.length < minRefeicoes) {
+        erros.push(`Plano tem ${refs.length} refeições; mínimo para ${metaKcal} kcal é ${minRefeicoes}.`);
+      }
+      const valido = metaKcal > 0 && diferenca <= 50 && erros.length === 0;
+      (parsed as any).validacao = {
+        total_kcal_meta: metaKcal,
+        total_kcal_refeicoes: somaCalc,
+        diferenca,
+        valido,
+        refeicoes_geradas: refs.length,
+        refeicoes_minimas: minRefeicoes,
+        erros,
+      };
+      console.log(`[validacao-fechamento] meta=${metaKcal} soma=${somaCalc} diff=${diferenca} refs=${refs.length}/${minRefeicoes} valido=${valido}${erros.length ? ` erros=${erros.length}` : ""}`);
+    } catch (vErr) {
+      console.warn("[validacao-fechamento] erro:", vErr);
+    }
+
+
 
     // ═══════════════════════════════════════════════════════════════
     // NORMALIZAÇÃO DETERMINÍSTICA DO BLOCO "hidratacao"
