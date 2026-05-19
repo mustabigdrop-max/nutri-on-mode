@@ -895,6 +895,57 @@ export type Database = {
           },
         ]
       }
+      apex_test_results: {
+        Row: {
+          athlete_id: string | null
+          coach_id: string
+          created_at: string
+          evaluated_at: string
+          findings_text: string | null
+          id: string
+          image_url: string | null
+          measurements: Json
+          muscle_updates: Json
+          overall_severity: string | null
+          raw_result: Json
+          test_group: string | null
+          test_id: string
+          test_name: string
+        }
+        Insert: {
+          athlete_id?: string | null
+          coach_id: string
+          created_at?: string
+          evaluated_at?: string
+          findings_text?: string | null
+          id?: string
+          image_url?: string | null
+          measurements?: Json
+          muscle_updates?: Json
+          overall_severity?: string | null
+          raw_result?: Json
+          test_group?: string | null
+          test_id: string
+          test_name: string
+        }
+        Update: {
+          athlete_id?: string | null
+          coach_id?: string
+          created_at?: string
+          evaluated_at?: string
+          findings_text?: string | null
+          id?: string
+          image_url?: string | null
+          measurements?: Json
+          muscle_updates?: Json
+          overall_severity?: string | null
+          raw_result?: Json
+          test_group?: string | null
+          test_id?: string
+          test_name?: string
+        }
+        Relationships: []
+      }
       apex_training_sync: {
         Row: {
           apex_analysis_id: string | null
