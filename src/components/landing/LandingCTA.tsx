@@ -118,15 +118,10 @@ const LandingCTA = () => {
         NutriON
       </span>
 
-      {/* Layer 1: Provocation */}
-      <motion.p
-        initial={{ opacity: 0, y: 20 }}
-        animate={inView ? { opacity: 1, y: 0 } : {}}
-        transition={{ duration: 0.6 }}
-        className="font-mono text-[.8rem] text-black/50 tracking-[.1em] uppercase mb-8 relative"
-      >
-        Você ainda vai usar aquele app que só te dá um cardápio?
-      </motion.p>
+      {/* Layer 1: Provocation block */}
+      <div className="relative">
+        <ProvocationBlock inView={inView} />
+      </div>
 
       {/* Layer 2: Headline */}
       <motion.h2
