@@ -6,7 +6,34 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const SYSTEM_PROMPT = `⛔ REGRA CRÍTICA — LER ANTES DE GERAR QUALQUER COISA:
+const KCAL_CLOSURE_RULE = `⚠ REGRA INVIOLÁVEL DO NUTRIPLAN — FECHAMENTO CALÓRICO:
+
+Antes de retornar o plano, execute internamente:
+  SOMA = 0
+  Para cada refeição:
+    SOMA += (proteína × 4) + (carboidrato × 4) + (gordura × 9)
+  Se |SOMA - metaKcal| > 50: ajustar as porções até fechar.
+
+NUNCA retornar plano com diferença maior que 50 kcal da meta declarada no TDEE.
+O kcal de cada refeição DEVE bater com (proteína×4)+(carbo×4)+(gordura×9) — tolerância ±30 kcal.
+
+NÚMERO MÍNIMO DE REFEIÇÕES POR FAIXA CALÓRICA (obrigatório):
+- Até 2.000 kcal → mínimo 3 refeições
+- 2.001 a 2.800 kcal → mínimo 4 refeições
+- 2.801 a 3.500 kcal → mínimo 5 refeições
+- 3.501 a 4.200 kcal → mínimo 6 refeições
+- Acima de 4.200 kcal → mínimo 7 refeições
+
+DISTRIBUIÇÃO SUGERIDA (% da meta):
+Café 15-20% · Almoço/Pré 20-25% · Pós-treino 12-15% · Lanche tarde 10-12% · Jantar 15-20% · Ceia 10-15% · Extra: completar.
+
+Se faltar kcal para fechar, ADICIONE refeição extra. Esta regra tem prioridade sobre qualquer outra instrução.
+
+═══════════════════════════════════════════════════════
+
+`;
+
+const SYSTEM_PROMPT = KCAL_CLOSURE_RULE + `⛔ REGRA CRÍTICA — LER ANTES DE GERAR QUALQUER COISA:
 
 AEJ (Aeróbico Em Jejum) = JEJUM TOTAL.
 - AEJ NÃO é uma refeição.
