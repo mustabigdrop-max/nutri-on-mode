@@ -1209,6 +1209,7 @@ Suporte em uso: ${suporte || "não informado"}` : "";
               }}
               goal={(athlete as any)?.objetivo || cat?.label || ""}
               analysisRaw={analysisResult}
+              kineticChains={kineticChains}
             />
           )}
           {activeResultTab === "protocolo" && (
