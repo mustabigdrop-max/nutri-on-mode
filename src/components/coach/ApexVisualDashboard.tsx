@@ -1712,14 +1712,6 @@ Suporte em uso: ${suporte || "não informado"}` : "";
         </div>
       )}
 
-      {/* ━━━ TESTES CLÍNICOS (FENNER) ━━━ */}
-      <div style={{ ...cardStyle, marginBottom: 16 }}>
-        <ApexClinicalTests
-          athleteId={athlete?.id || null}
-          value={clinicalTests}
-          onChange={setClinicalTests}
-        />
-      </div>
 
       {/* ━━━ OBSERVAÇÕES ━━━ */}
       <div style={{ ...cardStyle, marginBottom: 16 }}>
