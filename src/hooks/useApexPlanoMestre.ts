@@ -290,7 +290,7 @@ export function useApexPlanoMestre(sessionId?: string | null) {
 
   return {
     plano, semanaAtual, faseAtual, metricasAtingidas, progresso,
-    loading, generating, error,
+    loading, generating, error, stages,
     load, generate, toggleExercicio, avancarSemana, avancarFase, marcarMetrica,
     setPlano,
   };
