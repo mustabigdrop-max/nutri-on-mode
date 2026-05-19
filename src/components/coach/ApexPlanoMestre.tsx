@@ -32,7 +32,7 @@ export default function ApexPlanoMestre({
   const { toast } = useToast();
   const {
     plano, semanaAtual, faseAtual, metricasAtingidas, progresso,
-    loading, generating, error,
+    loading, generating, error, stages,
     generate, toggleExercicio, avancarSemana, avancarFase, marcarMetrica,
   } = useApexPlanoMestre(sessionId);
 
