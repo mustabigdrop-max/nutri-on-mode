@@ -1,312 +1,368 @@
-// APEX Visual — Testes Clínicos do Método Fenner (entrada manual)
-import { useEffect, useMemo, useState } from "react";
-import { ChevronDown, ChevronRight, FlaskConical, Activity, Dumbbell, AlertTriangle, CheckCircle2, Info } from "lucide-react";
+// APEX Visual — Testes Clínicos do Método Fenner com análise por IA (foto + Gemini Vision)
+import { useState, useRef, useMemo, useCallback, useEffect } from "react";
+import { Upload, Loader2, Camera, ChevronRight, AlertTriangle, Sparkles, RefreshCw } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 import {
-  FLEX_TESTS,
-  MRC_MUSCLES,
-  MRC_OPTIONS,
-  DYNAMIC_TESTS,
-  EMPTY_CLINICAL,
-  classifyFlex,
-  mrcSeverity,
-  type ClinicalTestsState,
-  type FlexTestDef,
-  type MrcScore,
-  type FlexSeverity,
+  FENNER_AI_TESTS,
+  FENNER_AI_GROUPS,
+  type FennerAiTest,
+  type AiTestGroup,
 } from "@/data/fennerTests";
+import TestResultCard, { type TestAiResult } from "@/components/apex/TestResultCard";
+
+// ─── Design tokens (HUD Jarvis) ─────────────────────────────────
+const C = {
+  bg: "#0a0a1a",
+  card: "rgba(10,10,26,0.8)",
+  border: "rgba(0,212,255,0.18)",
+  borderHi: "rgba(0,212,255,0.45)",
+  cyan: "#00D4FF",
+  gold: "#B8922A",
+  green: "#00C896",
+  text: "#F5F0E8",
+  muted: "#9AA6B8",
+  fontMono: "'Space Mono', 'JetBrains Mono', monospace",
+};
+
+interface AthleteData {
+  height?: number;
+  weight?: number;
+  sex?: "M" | "F";
+  age?: number;
+}
 
 interface Props {
   athleteId?: string | null;
-  value: ClinicalTestsState;
-  onChange: (next: ClinicalTestsState) => void;
+  coachId?: string | null;
+  athleteData?: AthleteData;
 }
 
-const SEV_BADGE: Record<FlexSeverity, { label: string; color: string }> = {
-  normal: { label: "Normal", color: "#10B981" },
-  reduced: { label: "Reduzido", color: "#F59E0B" },
-  severe: { label: "Severo", color: "#EF4444" },
-  na: { label: "—", color: "#475569" },
-};
+interface CompletedTest {
+  test: FennerAiTest;
+  imageUrl: string;
+  result: TestAiResult;
+  evaluatedAt: string;
+}
 
-function FlexCard({ def, value, onChange }: { def: FlexTestDef; value: any; onChange: (v: any) => void }) {
-  const [open, setOpen] = useState(false);
+async function fileToBase64(file: File): Promise<string> {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(String(r.result));
+    r.onerror = rej;
+    r.readAsDataURL(file);
+  });
+}
 
-  const renderInput = (side: "D" | "E" | "single") => {
-    const cur = value?.[side] ?? "";
-    if (def.unit === "bool") {
-      return (
-        <select
-          value={cur || ""}
-          onChange={(e) => onChange({ ...value, [side]: e.target.value })}
-          className="w-full bg-background border border-border rounded-none text-xs px-2 py-1 focus:border-primary outline-none"
-        >
-          <option value="">—</option>
-          <option value="negativo">Negativo</option>
-          <option value="positivo">Positivo</option>
-        </select>
-      );
-    }
-    return (
-      <input
-        type="number"
-        step="0.1"
-        value={cur}
-        onChange={(e) => onChange({ ...value, [side]: e.target.value === "" ? undefined : Number(e.target.value) })}
-        placeholder={def.unit}
-        className="w-full bg-background border border-border rounded-none text-xs px-2 py-1 font-mono focus:border-primary outline-none"
-      />
-    );
-  };
+export function ApexClinicalTests({ athleteId, coachId, athleteData }: Props) {
+  const [activeGroup, setActiveGroup] = useState<AiTestGroup>("flexibility");
+  const [selectedTestId, setSelectedTestId] = useState<string | null>(null);
+  const [analyzing, setAnalyzing] = useState(false);
+  const [completed, setCompleted] = useState<CompletedTest[]>([]);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
 
-  const sevD = def.bilateral ? classifyFlex(def, value?.D) : "na";
-  const sevE = def.bilateral ? classifyFlex(def, value?.E) : "na";
-  const sevS = !def.bilateral ? classifyFlex(def, value?.single) : "na";
+  const groupedTests = useMemo(() => {
+    const map: Record<AiTestGroup, FennerAiTest[]> = { flexibility: [], strength: [], dynamic: [], static: [] };
+    FENNER_AI_TESTS.forEach((t) => map[t.group].push(t));
+    return map;
+  }, []);
 
-  return (
-    <div className="border border-border bg-card/30 rounded-none p-3 space-y-2">
-      <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0">
-          <div className="text-xs font-semibold text-foreground">{def.name}</div>
-          <div className="text-[10px] text-muted-foreground">{def.muscle}</div>
-          <div className="text-[10px] text-muted-foreground italic mt-0.5">Normal: {def.normal}</div>
-        </div>
-        <button
-          onClick={() => setOpen((o) => !o)}
-          className="text-[10px] text-primary flex items-center gap-1 hover:underline"
-          type="button"
-        >
-          <Info size={10} /> Como
-        </button>
-      </div>
-
-      {open && (
-        <div className="text-[10px] text-foreground/80 border-l-2 border-primary/40 pl-2">
-          {def.instruction}
-        </div>
-      )}
-
-      {def.bilateral ? (
-        <div className="grid grid-cols-2 gap-2">
-          <div>
-            <div className="text-[9px] text-muted-foreground uppercase tracking-wider mb-0.5">Direito</div>
-            {renderInput("D")}
-            <SevBadge sev={sevD} />
-          </div>
-          <div>
-            <div className="text-[9px] text-muted-foreground uppercase tracking-wider mb-0.5">Esquerdo</div>
-            {renderInput("E")}
-            <SevBadge sev={sevE} />
-          </div>
-        </div>
-      ) : (
-        <div>
-          {renderInput("single")}
-          <SevBadge sev={sevS} />
-        </div>
-      )}
-    </div>
+  const selectedTest = useMemo(
+    () => FENNER_AI_TESTS.find((t) => t.id === selectedTestId) || null,
+    [selectedTestId],
   );
-}
 
-function SevBadge({ sev }: { sev: FlexSeverity }) {
-  if (sev === "na") return null;
-  const meta = SEV_BADGE[sev];
-  return (
-    <div
-      className="mt-1 inline-block px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider"
-      style={{ color: meta.color, borderLeft: `2px solid ${meta.color}` }}
-    >
-      {meta.label}
-    </div>
-  );
-}
-
-export function ApexClinicalTests({ athleteId, value, onChange }: Props) {
-  const [openFlex, setOpenFlex] = useState(true);
-  const [openMrc, setOpenMrc] = useState(false);
-  const [openDyn, setOpenDyn] = useState(false);
-
-  // Persistência local por atleta
-  const storageKey = useMemo(() => `apex-clinical-${athleteId || "no-athlete"}`, [athleteId]);
+  // Carregar histórico do atleta
   useEffect(() => {
+    if (!athleteId) { setCompleted([]); return; }
+    (async () => {
+      const { data, error } = await supabase
+        .from("apex_test_results" as any)
+        .select("*")
+        .eq("athlete_id", athleteId)
+        .order("evaluated_at", { ascending: false })
+        .limit(20);
+      if (error || !data) return;
+      const rows: CompletedTest[] = (data as any[])
+        .map((r) => {
+          const test = FENNER_AI_TESTS.find((t) => t.id === r.test_id);
+          if (!test) return null;
+          return { test, imageUrl: r.image_url || "", result: r.raw_result || {}, evaluatedAt: r.evaluated_at };
+        })
+        .filter(Boolean) as CompletedTest[];
+      setCompleted(rows);
+    })();
+  }, [athleteId]);
+
+  const uploadImageToStorage = useCallback(async (file: File): Promise<string | null> => {
+    if (!coachId) return null;
+    const path = `${coachId}/${athleteId ?? "_anon"}/${Date.now()}_${file.name.replace(/\s+/g, "_")}`;
+    const { error } = await supabase.storage.from("apex-visual-photos").upload(path, file, { upsert: false });
+    if (error) { console.error(error); return null; }
+    const { data: signed } = await supabase.storage.from("apex-visual-photos").createSignedUrl(path, 60 * 60 * 24 * 7);
+    return signed?.signedUrl ?? null;
+  }, [coachId, athleteId]);
+
+  const handleFile = useCallback(async (file: File) => {
+    if (!selectedTest) { toast({ title: "Selecione um teste antes de enviar a foto." }); return; }
+    if (file.size > 15 * 1024 * 1024) { toast({ title: "Arquivo muito grande (máx 15 MB)." }); return; }
+
+    setAnalyzing(true);
+    const localUrl = URL.createObjectURL(file);
+    setPreviewUrl(localUrl);
+
     try {
-      const raw = localStorage.getItem(storageKey);
-      if (raw) {
-        const parsed = JSON.parse(raw) as ClinicalTestsState;
-        if (parsed && typeof parsed === "object") onChange({ ...EMPTY_CLINICAL, ...parsed });
+      const b64 = await fileToBase64(file);
+      const { data, error } = await supabase.functions.invoke("apex-analyze-test", {
+        body: {
+          testId: selectedTest.id,
+          testName: selectedTest.name,
+          testGroup: selectedTest.group,
+          aiPrompt: selectedTest.aiPrompt,
+          imageBase64: b64,
+          athleteData: athleteData ?? {},
+        },
+      });
+      if (error) throw error;
+      if (!data?.ok) throw new Error(data?.error || "Falha na análise");
+
+      const result = data.result as TestAiResult;
+
+      // upload da imagem para storage (signed) e salvar registro
+      const signedUrl = await uploadImageToStorage(file);
+      const finalImg = signedUrl ?? localUrl;
+
+      if (athleteId && coachId) {
+        await supabase.from("apex_test_results" as any).insert({
+          athlete_id: athleteId,
+          coach_id: coachId,
+          test_id: selectedTest.id,
+          test_name: selectedTest.name,
+          test_group: selectedTest.group,
+          image_url: signedUrl,
+          raw_result: result,
+          measurements: {},
+          muscle_updates: [],
+          findings_text: result?.findings ?? null,
+          overall_severity: pickSeverity(result),
+        });
       }
-    } catch {/* ignore */}
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [storageKey]);
 
-  useEffect(() => {
-    try { localStorage.setItem(storageKey, JSON.stringify(value)); } catch {/* ignore */}
-  }, [storageKey, value]);
+      setCompleted((prev) => [{ test: selectedTest, imageUrl: finalImg, result, evaluatedAt: new Date().toISOString() }, ...prev]);
+      toast({ title: "Análise concluída", description: selectedTest.name });
+    } catch (err: any) {
+      console.error(err);
+      toast({ title: "Erro na análise", description: String(err?.message ?? err), variant: "destructive" });
+    } finally {
+      setAnalyzing(false);
+    }
+  }, [selectedTest, athleteData, athleteId, coachId, uploadImageToStorage]);
 
-  const setFlex = (id: string, v: any) => onChange({ ...value, flex: { ...value.flex, [id]: v } });
-  const setMrc = (id: string, v: any) => onChange({ ...value, mrc: { ...value.mrc, [id]: v } });
-  const setDyn = (id: string, v: any) => onChange({ ...value, dynamic: { ...value.dynamic, [id]: v } });
+  const onDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    const f = e.dataTransfer.files?.[0];
+    if (f) handleFile(f);
+  }, [handleFile]);
+
+  const hasSevereFinding = completed.some(
+    (c) => pickSeverity(c.result) === "severe" || pickSeverity(c.result) === "inibido"
+  );
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-center gap-2">
-        <FlaskConical size={14} className="text-primary" />
-        <span className="text-xs font-bold uppercase tracking-widest text-primary">
-          Testes Clínicos · Método Fenner
-        </span>
+    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+      <style>{`@keyframes apex-pulse{0%,100%{opacity:1}50%{opacity:.35}}`}</style>
+
+      {/* Cabeçalho */}
+      <div style={{
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        padding: "12px 16px", background: C.card, border: `1px solid ${C.border}`, borderRadius: 12,
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <Sparkles size={16} style={{ color: C.cyan }} />
+          <div>
+            <div style={{ fontFamily: C.fontMono, fontSize: 11, color: C.muted, letterSpacing: 1.5 }}>
+              APEX · TESTES CLÍNICOS · IA
+            </div>
+            <div style={{ color: C.text, fontWeight: 700, fontSize: 14, marginTop: 2 }}>
+              Análise automática por foto · Método Fenner
+            </div>
+          </div>
+        </div>
+        <div style={{ fontFamily: C.fontMono, fontSize: 11, color: C.cyan }}>
+          {completed.length} {completed.length === 1 ? "teste" : "testes"} realizados
+        </div>
       </div>
 
-      <div>
-        <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Altura do atleta (cm) — para grade simetrográfica</label>
-        <input
-          type="number"
-          value={value.athleteHeightCm ?? ""}
-          onChange={(e) => onChange({ ...value, athleteHeightCm: e.target.value === "" ? null : Number(e.target.value) })}
-          placeholder="ex.: 175"
-          className="mt-1 w-32 bg-background border border-border rounded-none text-xs px-2 py-1 font-mono focus:border-primary outline-none"
-        />
+      {hasSevereFinding && (
+        <div style={{
+          display: "flex", alignItems: "center", gap: 10,
+          padding: "10px 14px", background: "rgba(239,68,68,0.08)",
+          border: "1px solid rgba(239,68,68,0.35)", borderRadius: 10, color: "#FCA5A5",
+          fontSize: 12,
+        }}>
+          <AlertTriangle size={14} />
+          <span><strong>Achado severo detectado</strong> — revisar protocolo antes de prescrever treino.</span>
+        </div>
+      )}
+
+      {/* Tabs de grupo */}
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+        {FENNER_AI_GROUPS.map((g) => {
+          const isActive = activeGroup === g.id;
+          return (
+            <button
+              key={g.id}
+              onClick={() => setActiveGroup(g.id)}
+              style={{
+                padding: "8px 14px", borderRadius: 8, cursor: "pointer",
+                background: isActive ? `${g.color}22` : "transparent",
+                border: `1px solid ${isActive ? g.color : C.border}`,
+                color: isActive ? g.color : C.muted,
+                fontFamily: C.fontMono, fontSize: 11, fontWeight: 700, letterSpacing: 1,
+                display: "flex", alignItems: "center", gap: 6,
+              }}
+            >
+              <span>{g.icon}</span> {g.label}
+              <span style={{ opacity: 0.6 }}>· {groupedTests[g.id].length}</span>
+            </button>
+          );
+        })}
       </div>
 
-      {/* FLEXIBILIDADE */}
-      <Accordion
-        open={openFlex} onToggle={() => setOpenFlex((o) => !o)}
-        icon={<Activity size={13} className="text-primary" />}
-        title="Bateria de Flexibilidade (12 testes)"
-      >
-        <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
-          {FLEX_TESTS.map((def) => (
-            <FlexCard key={def.id} def={def} value={value.flex[def.id] ?? {}} onChange={(v) => setFlex(def.id, v)} />
+      {/* Grid de testes do grupo */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: 10 }}>
+        {groupedTests[activeGroup].map((t) => {
+          const sel = selectedTestId === t.id;
+          const done = completed.some((c) => c.test.id === t.id);
+          return (
+            <button
+              key={t.id}
+              onClick={() => { setSelectedTestId(t.id); setPreviewUrl(null); }}
+              style={{
+                textAlign: "left", padding: 12, borderRadius: 10, cursor: "pointer",
+                background: sel ? "rgba(0,212,255,0.08)" : C.card,
+                border: `1px solid ${sel ? C.borderHi : C.border}`,
+                color: C.text, position: "relative",
+                transition: "all 0.18s",
+              }}
+            >
+              <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 4 }}>{t.name}</div>
+              <div style={{ fontSize: 10, color: C.muted, fontFamily: C.fontMono }}>
+                {t.photoAngle}
+              </div>
+              {done && (
+                <span style={{
+                  position: "absolute", top: 8, right: 8, width: 8, height: 8, borderRadius: "50%",
+                  background: C.green, boxShadow: `0 0 6px ${C.green}`,
+                }} />
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Instrução + Upload */}
+      {selectedTest && (
+        <div style={{
+          background: C.card, border: `1px solid ${C.borderHi}`, borderRadius: 12, padding: 16,
+        }}>
+          <div style={{ fontFamily: C.fontMono, fontSize: 10, color: C.cyan, letterSpacing: 1.5, marginBottom: 6 }}>
+            INSTRUÇÃO DA POSIÇÃO
+          </div>
+          <div style={{ color: C.text, fontSize: 13, lineHeight: 1.6, marginBottom: 12 }}>
+            {selectedTest.instruction}
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 8, marginBottom: 14 }}>
+            {selectedTest.normalValues.map((nv, i) => (
+              <div key={i} style={{ padding: 10, background: "rgba(255,255,255,0.02)", borderRadius: 8, border: `1px solid ${C.border}` }}>
+                <div style={{ fontSize: 10, color: C.muted, fontFamily: C.fontMono, marginBottom: 4 }}>{nv.metric}</div>
+                <div style={{ fontSize: 11, color: C.green }}>✓ {nv.normal}</div>
+                <div style={{ fontSize: 11, color: C.gold }}>~ {nv.mild}</div>
+                <div style={{ fontSize: 11, color: "#FCA5A5" }}>✗ {nv.severe}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Drag & drop */}
+          <div
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={onDrop}
+            style={{
+              border: `2px dashed ${C.border}`, borderRadius: 12, padding: 24,
+              textAlign: "center", color: C.muted, cursor: analyzing ? "not-allowed" : "pointer",
+              background: "rgba(0,212,255,0.03)",
+            }}
+            onClick={() => !analyzing && fileRef.current?.click()}
+          >
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              style={{ display: "none" }}
+              onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }}
+            />
+            {analyzing ? (
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, color: C.cyan }}>
+                <Loader2 size={18} className="animate-spin" /> Analisando posição com IA...
+              </div>
+            ) : (
+              <div>
+                <div style={{ display: "flex", justifyContent: "center", gap: 8, marginBottom: 8 }}>
+                  <Upload size={20} style={{ color: C.cyan }} />
+                  <Camera size={20} style={{ color: C.cyan }} />
+                </div>
+                <div style={{ fontSize: 13, color: C.text, marginBottom: 4 }}>
+                  Arraste a foto ou clique para abrir a câmera
+                </div>
+                <div style={{ fontSize: 11 }}>{selectedTest.photoAngle.toUpperCase()} · MÁX 15MB</div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Resultados */}
+      {completed.length > 0 && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <ChevronRight size={14} style={{ color: C.cyan }} />
+            <span style={{ fontFamily: C.fontMono, fontSize: 11, color: C.muted, letterSpacing: 1.5 }}>
+              RESULTADOS
+            </span>
+          </div>
+          {completed.map((c, i) => (
+            <TestResultCard key={`${c.test.id}_${i}`} test={c.test} imageUrl={c.imageUrl} result={c.result} />
           ))}
         </div>
-      </Accordion>
+      )}
 
-      {/* MRC */}
-      <Accordion
-        open={openMrc} onToggle={() => setOpenMrc((o) => !o)}
-        icon={<Dumbbell size={13} className="text-primary" />}
-        title="Testes de Força (escala MRC 0-5)"
-      >
-        <div className="grid gap-2 md:grid-cols-2">
-          {MRC_MUSCLES.map((m) => {
-            const v = value.mrc[m.id] ?? {};
-            const renderSel = (side: "D" | "E" | "single") => {
-              const cur = (v as any)[side];
-              return (
-                <select
-                  value={cur ?? ""}
-                  onChange={(e) => {
-                    const val = e.target.value === "" ? undefined : (Number(e.target.value) as MrcScore);
-                    setMrc(m.id, { ...v, [side]: val });
-                  }}
-                  className="w-full bg-background border border-border rounded-none text-xs px-2 py-1 focus:border-primary outline-none"
-                >
-                  <option value="">—</option>
-                  {MRC_OPTIONS.map((o) => <option key={String(o.value)} value={o.value}>{o.label}</option>)}
-                </select>
-              );
-            };
-            const sev = (s?: MrcScore) => {
-              const sv = mrcSeverity(s);
-              if (sv === "ok" || sv === "na") return null;
-              const col = sv === "inhibited" ? "#EF4444" : "#F59E0B";
-              const lbl = sv === "inhibited" ? "INIBIDO CONFIRMADO" : "FRAQUEZA RELATIVA";
-              return (
-                <div className="mt-1 inline-block px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider"
-                  style={{ color: col, borderLeft: `2px solid ${col}` }}>
-                  {lbl}
-                </div>
-              );
-            };
-            return (
-              <div key={m.id} className="border border-border bg-card/30 rounded-none p-3 space-y-2">
-                <div className="text-xs font-semibold text-foreground">{m.name}</div>
-                {m.bilateral ? (
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <div className="text-[9px] text-muted-foreground uppercase tracking-wider mb-0.5">Direito</div>
-                      {renderSel("D")}
-                      {sev(v.D)}
-                    </div>
-                    <div>
-                      <div className="text-[9px] text-muted-foreground uppercase tracking-wider mb-0.5">Esquerdo</div>
-                      {renderSel("E")}
-                      {sev(v.E)}
-                    </div>
-                  </div>
-                ) : (
-                  <div>{renderSel("single")}{sev(v.single)}</div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </Accordion>
-
-      {/* DINÂMICA */}
-      <Accordion
-        open={openDyn} onToggle={() => setOpenDyn((o) => !o)}
-        icon={<CheckCircle2 size={13} className="text-primary" />}
-        title="Análise Dinâmica (7 testes de movimento)"
-      >
-        <div className="grid gap-2 md:grid-cols-2">
-          {DYNAMIC_TESTS.map((d) => {
-            const v = value.dynamic[d.id] ?? { failed: {}, note: "" };
-            const anyFail = Object.values(v.failed || {}).some(Boolean);
-            const passed = !anyFail && Object.keys(v.failed || {}).length === 0 ? null : !anyFail;
-            return (
-              <div key={d.id} className="border border-border bg-card/30 rounded-none p-3 space-y-2">
-                <div className="flex items-center justify-between gap-2">
-                  <div className="text-xs font-semibold text-foreground">{d.name}</div>
-                  {passed === true && (
-                    <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-500">PASSOU</span>
-                  )}
-                  {passed === false && (
-                    <span className="text-[9px] font-bold uppercase tracking-wider text-red-500 flex items-center gap-1">
-                      <AlertTriangle size={10} /> FALHOU
-                    </span>
-                  )}
-                </div>
-                <div className="grid grid-cols-1 gap-0.5">
-                  {d.failures.map((f) => (
-                    <label key={f.id} className="flex items-center gap-1.5 text-[11px] cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={!!v.failed?.[f.id]}
-                        onChange={(e) => setDyn(d.id, { ...v, failed: { ...v.failed, [f.id]: e.target.checked } })}
-                        className="accent-primary"
-                      />
-                      <span>{f.label}</span>
-                    </label>
-                  ))}
-                </div>
-                <input
-                  value={v.note ?? ""}
-                  onChange={(e) => setDyn(d.id, { ...v, note: e.target.value })}
-                  placeholder="Observação (opcional)"
-                  className="w-full bg-background border border-border rounded-none text-[11px] px-2 py-1 focus:border-primary outline-none"
-                />
-              </div>
-            );
-          })}
-        </div>
-      </Accordion>
+      {completed.length >= 3 && (
+        <button style={{
+          marginTop: 8, padding: "12px 18px", borderRadius: 10,
+          background: `linear-gradient(135deg, ${C.gold}, #D4A53A)`,
+          color: "#03040A", fontWeight: 800, fontFamily: C.fontMono,
+          letterSpacing: 1, border: "none", cursor: "pointer",
+          display: "inline-flex", alignItems: "center", gap: 8, alignSelf: "flex-start",
+        }}>
+          <Sparkles size={14} /> GERAR DIAGNÓSTICO FINAL
+        </button>
+      )}
     </div>
   );
 }
 
-function Accordion({ open, onToggle, icon, title, children }: {
-  open: boolean; onToggle: () => void; icon: React.ReactNode; title: string; children: React.ReactNode;
-}) {
-  return (
-    <div className="border border-border bg-card/20 rounded-none">
-      <button onClick={onToggle} type="button" className="w-full flex items-center gap-2 p-2.5 hover:bg-card/40 transition-colors text-left">
-        {open ? <ChevronDown size={14} className="text-primary" /> : <ChevronRight size={14} className="text-muted-foreground" />}
-        {icon}
-        <span className="text-xs font-bold uppercase tracking-wide text-foreground">{title}</span>
-      </button>
-      {open && <div className="p-3 border-t border-border">{children}</div>}
-    </div>
-  );
+function pickSeverity(result: TestAiResult): string {
+  const keys = Object.keys(result).filter((k) => k.startsWith("classificacao") || k === "severity");
+  const rank: Record<string, number> = { normal: 0, mild: 1, fraqueza_relativa: 2, moderate: 3, inibido: 4, severe: 5 };
+  let worst = "normal";
+  for (const k of keys) {
+    const v = String(result[k]);
+    if (rank[v] !== undefined && rank[v] > (rank[worst] ?? 0)) worst = v;
+  }
+  return worst;
 }
 
 export default ApexClinicalTests;

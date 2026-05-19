@@ -1712,6 +1712,20 @@ Suporte em uso: ${suporte || "não informado"}` : "";
         </div>
       )}
 
+      {/* ━━━ TESTES CLÍNICOS (IA por foto) ━━━ */}
+      <div style={{ ...cardStyle, marginBottom: 16 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+          {sectionTick(APEX.electric)}
+          <span style={labelStyle}>Testes Clínicos · IA (Fenner)</span>
+        </div>
+        <ApexClinicalTests
+          athleteId={athlete?.patient_user_id ?? athlete?.id ?? null}
+          coachId={user?.id ?? null}
+          athleteData={{
+            sex: (athlete?.sexo === "F" ? "F" : "M") as "M" | "F",
+          }}
+        />
+      </div>
 
       {/* ━━━ OBSERVAÇÕES ━━━ */}
       <div style={{ ...cardStyle, marginBottom: 16 }}>
