@@ -286,6 +286,11 @@ export function ApexClinicalTests({ athleteId, coachId, athleteData }: Props) {
             ))}
           </div>
 
+          {/* Guia de enquadramento */}
+          <div style={{ marginBottom: 12 }}>
+            <ApexFramingGuide />
+          </div>
+
           {/* Drag & drop */}
           <div
             onDragOver={(e) => e.preventDefault()}
