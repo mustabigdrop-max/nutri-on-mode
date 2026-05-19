@@ -531,7 +531,8 @@ export default function ApexGuidedSession({
 
             {/* Foto + análise */}
             {currentPhoto.status === "pending" && (
-              <div>
+              <div className="flex flex-col gap-3">
+                <ApexFramingGuide />
                 <input
                   ref={fileRef}
                   type="file"
@@ -566,6 +567,38 @@ export default function ApexGuidedSession({
               </div>
             )}
 
+            {currentPhoto.status === "framing_warning" && (
+              <div
+                className="rounded-lg p-3 text-xs"
+                style={{ background: "rgba(239,159,39,0.08)", border: "1px solid rgba(239,159,39,0.45)" }}
+              >
+                <div className="flex items-center gap-2 font-bold mb-1" style={{ color: "#EF9F27" }}>
+                  <AlertTriangle className="w-4 h-4" /> ⚠ ENQUADRAMENTO PODE REDUZIR A PRECISÃO DOS LANDMARKS
+                </div>
+                <div className="text-muted-foreground mb-3">
+                  {currentPhoto.analysis?.framing_check?.aviso ||
+                    `Atleta ocupa apenas ${
+                      currentPhoto.analysis?.framing_check?.percentual_estimado ?? "?"
+                    }% da imagem. Para maior precisão, refaça a foto com o atleta mais próximo da câmera.`}
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleRetake}
+                    className="text-[11px] px-3 py-1.5 rounded border font-bold hover:bg-muted"
+                  >
+                    Refazer foto
+                  </button>
+                  <button
+                    onClick={continueDespiteFraming}
+                    className="text-[11px] px-3 py-1.5 rounded font-bold"
+                    style={{ background: "#EF9F27", color: "#1A1100" }}
+                  >
+                    Continuar assim
+                  </button>
+                </div>
+              </div>
+            )}
+
             {currentPhoto.status === "error" && (
               <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-xs">
                 <div className="flex items-center gap-2 font-bold text-destructive mb-1">
@@ -584,12 +617,20 @@ export default function ApexGuidedSession({
             )}
 
             {currentPhoto.status === "done" && currentPhoto.analysis && (
-              <PhotoOverlay
-                photoUrl={currentPhoto.dataUrl}
-                analysis={currentPhoto.analysis}
-                accentColor={accentColor}
-                onRetake={handleRetake}
-              />
+              <>
+                {currentPhoto.landmarkValidation && (
+                  <LandmarkBadge
+                    validation={currentPhoto.landmarkValidation}
+                    onReanalyze={() => runAnalysis(currentPhoto.dataUrl, { forceLowFraming: false })}
+                  />
+                )}
+                <PhotoOverlay
+                  photoUrl={currentPhoto.dataUrl}
+                  analysis={currentPhoto.analysis}
+                  accentColor={accentColor}
+                  onRetake={handleRetake}
+                />
+              </>
             )}
           </div>
 
