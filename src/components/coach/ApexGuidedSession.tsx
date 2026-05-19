@@ -77,6 +77,9 @@ interface StepPhoto {
   pendingFile?: File;
   landmarkValidation?: LandmarkValidation;
 }
+
+// ───────── SVG guides simples por step ─────────
+const Stick = ({ stroke }: { stroke: string }) => (
   <g stroke={stroke} strokeWidth={3} fill="none" strokeLinecap="round">
     <circle cx="50" cy="14" r="6" />
     <line x1="50" y1="20" x2="50" y2="55" />
