@@ -32,13 +32,14 @@ export default function ApexPlanoMestre({
   const { toast } = useToast();
   const {
     plano, semanaAtual, faseAtual, metricasAtingidas, progresso,
-    loading, generating, error,
+    loading, generating, error, stages,
     generate, toggleExercicio, avancarSemana, avancarFase, marcarMetrica,
   } = useApexPlanoMestre(sessionId);
 
   const [openFase, setOpenFase] = useState<number | null>(null);
   const [openSemana, setOpenSemana] = useState<Record<string, boolean>>({});
   const [showFaseModal, setShowFaseModal] = useState(false);
+  const [showRegenConfirm, setShowRegenConfirm] = useState(false);
 
   // Auto-geração se sessão tem dados e ainda não tem plano
   useEffect(() => {
@@ -104,23 +105,78 @@ export default function ApexPlanoMestre({
     );
   }
 
-  if (generating) {
-    return (
-      <div className="rounded-xl p-8 text-center space-y-3 relative overflow-hidden" style={{ background: C.bg, border: `1px solid ${C.cyan}40` }}>
-        <div className="absolute inset-0 pointer-events-none" style={{
-          background: `linear-gradient(90deg, transparent, ${C.cyan}30, transparent)`,
-          animation: "apexScan 2s linear infinite",
-        }} />
-        <Loader2 className="w-8 h-8 animate-spin mx-auto" style={{ color: C.cyan }} />
-        <div className="font-mono text-xs tracking-[0.2em]" style={{ color: C.gold }}>GERANDO PLANO MESTRE…</div>
-        <p className="text-xs text-muted-foreground">A IA está periodizando 4 fases corretivas com semanas detalhadas.</p>
-        <style>{`@keyframes apexScan { 0%{transform:translateX(-100%)} 100%{transform:translateX(100%)} }`}</style>
+  const doneCount = stages.filter(s => s.status === "done").length;
+  const inProgressStage = stages.find(s => s.status === "in_progress");
+  const progressPct = Math.round(((doneCount + (inProgressStage ? 0.5 : 0)) / stages.length) * 100);
+
+  const ProgressCard = () => (
+    <div className="rounded-lg p-6 space-y-4" style={{ background: "#0d1520", border: `0.5px solid ${C.cyan}30`, borderRadius: 8 }}>
+      <div className="font-mono text-xs tracking-[0.25em] font-bold" style={{ color: C.gold }}>GERANDO PLANO MESTRE</div>
+      <div>
+        <div className="flex justify-between text-[10px] mb-2 font-mono opacity-70">
+          <span>PROGRESSO</span><span>{progressPct}%</span>
+        </div>
+        <div className="overflow-hidden" style={{ background: "#ffffff10", borderRadius: 99, height: 4 }}>
+          <div className="h-full transition-all duration-500" style={{ width: `${progressPct}%`, background: C.gold, borderRadius: 99 }} />
+        </div>
       </div>
-    );
+      <div className="space-y-1.5">
+        <StageLine icon="✓" color={C.green} text="Diagnóstico analisado" />
+        <StageLine icon="✓" color={C.green} text={`Duração calculada: ${plano?.duracao_total_semanas || "—"} semanas`} dim={!plano?.duracao_total_semanas} />
+        {stages.map((s) => {
+          const iconChar = s.status === "done" ? "✓" : s.status === "in_progress" ? "⟳" : s.status === "warning" ? "⚠" : "○";
+          const color = s.status === "done" ? C.green : s.status === "in_progress" ? C.yellow : s.status === "warning" ? C.yellow : C.muted;
+          const prefix = s.status === "in_progress" ? "Gerando " : "";
+          return (
+            <StageLine
+              key={s.key}
+              icon={iconChar}
+              color={color}
+              animated={s.status === "in_progress"}
+              text={`${prefix}${s.label}${s.warning ? ` — ${s.warning}` : ""}`}
+            />
+          );
+        })}
+      </div>
+      {inProgressStage && (
+        <div className="font-mono text-[12px]" style={{ color: C.muted }}>
+          A IA está gerando {inProgressStage.label}…
+        </div>
+      )}
+      <style>{`@keyframes apexSpin { to { transform: rotate(360deg); } }`}</style>
+    </div>
+  );
+
+  // Loading inicial: sem plano ainda + gerando
+  if (generating && !plano) {
+    return <ProgressCard />;
   }
 
   return (
     <div className="space-y-5 print:bg-white print:text-black">
+      {generating && <ProgressCard />}
+      {error && !generating && (
+        <div className="rounded-lg p-3 text-[11px]" style={{ background: `${C.yellow}10`, border: `1px solid ${C.yellow}40`, color: C.yellow }}>
+          ⚠ {error} <button className="ml-2 underline" onClick={() => setShowRegenConfirm(true)}>Expandir para versão completa →</button>
+        </div>
+      )}
+      {showRegenConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" onClick={() => setShowRegenConfirm(false)}>
+          <div className="rounded-xl p-5 max-w-md w-full" style={{ background: C.bg, border: `1px solid ${C.gold}` }} onClick={(e) => e.stopPropagation()}>
+            <div className="font-mono text-[10px] tracking-widest mb-2" style={{ color: C.gold }}>REGENERAR PLANO</div>
+            <div className="text-sm mb-4">Isso vai substituir o plano atual. Continuar?</div>
+            <div className="flex gap-2">
+              <button className="flex-1 px-3 py-2 rounded font-bold text-xs border" onClick={() => setShowRegenConfirm(false)}>Cancelar</button>
+              <button className="flex-1 px-3 py-2 rounded font-bold text-xs" style={{ background: C.gold, color: "#1A1100" }}
+                onClick={() => { setShowRegenConfirm(false); generate({ dysfunctions, muscleMap, fcsScore, athleteProfile, goal, analysisRaw, kineticChains }); }}>
+                Regenerar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {plano && (<>
       {/* HEADER */}
       <div className="relative overflow-hidden rounded-xl p-4" style={{ background: C.bg, border: `1px solid ${C.gold}40`, borderLeft: `2px solid ${C.gold}` }}>
         <div className="absolute inset-0 pointer-events-none print:hidden" style={{
@@ -363,6 +419,7 @@ export default function ApexPlanoMestre({
           </div>
         </div>
       )}
+      </>)}
     </div>
   );
 }
@@ -476,6 +533,20 @@ function Info({ label, value }: { label: string; value: string }) {
     <div className="p-2 rounded" style={{ background: "#ffffff05" }}>
       <div className="text-[9px] font-mono opacity-60">{label}</div>
       <div className="font-bold">{value}</div>
+    </div>
+  );
+}
+
+function StageLine({ icon, color, text, animated, dim }: { icon: string; color: string; text: string; animated?: boolean; dim?: boolean }) {
+  return (
+    <div className="flex items-center gap-2 text-[12px] font-mono" style={{ opacity: dim ? 0.5 : 1 }}>
+      <span
+        className="inline-block w-4 text-center"
+        style={{ color, animation: animated ? "apexSpin 1s linear infinite" : undefined, display: "inline-block" }}
+      >
+        {icon}
+      </span>
+      <span style={{ color: animated ? "#fff" : "#ccc" }}>{text}</span>
     </div>
   );
 }
