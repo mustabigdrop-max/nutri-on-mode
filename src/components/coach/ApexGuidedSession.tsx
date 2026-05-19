@@ -15,6 +15,13 @@ import {
   X,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { ApexFramingGuide } from "@/components/coach/ApexFramingGuide";
+import { cropToAthlete } from "@/lib/apexImageCrop";
+import {
+  validateLandmarks,
+  landmarksArrayToMap,
+  type LandmarkValidation,
+} from "@/lib/apexLandmarkValidator";
 
 export type GuidedPhase = "static" | "flexibility" | "strength" | "dynamic";
 
@@ -54,14 +61,21 @@ export interface StepAnalysis {
     severity: "normal" | "mild" | "moderate" | "severe";
   }[];
   red_flags: string[];
+  framing_check?: {
+    enquadramento_adequado: boolean;
+    percentual_estimado?: number;
+    aviso?: string;
+  };
 }
 
 interface StepPhoto {
   stepId: string;
   dataUrl: string;
-  status: "pending" | "analyzing" | "done" | "error";
+  status: "pending" | "analyzing" | "done" | "error" | "framing_warning";
   analysis: StepAnalysis | null;
   error?: string;
+  pendingFile?: File;
+  landmarkValidation?: LandmarkValidation;
 }
 
 // ───────── SVG guides simples por step ─────────
@@ -206,6 +220,88 @@ export default function ApexGuidedSession({
   const progress = Math.round(((stepIdx + (currentPhoto?.status === "done" ? 1 : 0)) / totalSteps) * 100);
   const allDone = photos.every((p) => p.status === "done");
 
+  // ─── análise propriamente dita (após crop + checagem opcional de framing) ───
+  const runAnalysis = useCallback(
+    async (dataUrl: string, opts?: { forceLowFraming?: boolean }) => {
+      setPhotos((prev) => {
+        const next = [...prev];
+        next[stepIdx] = { ...next[stepIdx], dataUrl, status: "analyzing", analysis: null, error: undefined };
+        return next;
+      });
+
+      try {
+        // Crop inteligente — silencioso se falhar
+        const { cropped } = await cropToAthlete(dataUrl);
+        const finalImg = cropped || dataUrl;
+
+        const extraInstruction = opts?.forceLowFraming
+          ? "ATENÇÃO: O atleta ocupa menos de 60% do frame. Use referências anatômicas relativas para posicionar os landmarks com máxima precisão possível. Priorize landmarks visíveis claramente e estime os demais por proporção anatômica padrão."
+          : "";
+
+        const { data, error } = await supabase.functions.invoke("apex-analyze-step", {
+          body: {
+            stepId: current.id,
+            imageBase64: finalImg,
+            athleteData,
+            instruction: current.instruction,
+            aiPrompt: `${current.aiPrompt}\n\n${extraInstruction}`.trim(),
+          },
+        });
+        if (error) throw error;
+        if ((data as any)?.error) throw new Error((data as any).error);
+
+        const analysis = data as StepAnalysis;
+        const framing = analysis.framing_check;
+
+        // Se IA detectou enquadramento ruim e usuário ainda não forçou, pausa para confirmar
+        if (framing && framing.enquadramento_adequado === false && !opts?.forceLowFraming) {
+          setPhotos((prev) => {
+            const next = [...prev];
+            next[stepIdx] = {
+              ...next[stepIdx],
+              status: "framing_warning",
+              analysis,
+              dataUrl: finalImg,
+            };
+            return next;
+          });
+          return;
+        }
+
+        // Valida landmarks
+        const validation = validateLandmarks(landmarksArrayToMap(analysis.overlay?.landmarks));
+
+        setPhotos((prev) => {
+          const next = [...prev];
+          next[stepIdx] = {
+            ...next[stepIdx],
+            status: "done",
+            analysis,
+            dataUrl: finalImg,
+            landmarkValidation: validation,
+          };
+          return next;
+        });
+      } catch (e: any) {
+        setPhotos((prev) => {
+          const next = [...prev];
+          next[stepIdx] = {
+            ...next[stepIdx],
+            status: "error",
+            error: e?.message || "Falha ao analisar",
+          };
+          return next;
+        });
+        toast({
+          title: "Erro na análise",
+          description: e?.message || "Tente reenviar a foto.",
+          variant: "destructive",
+        });
+      }
+    },
+    [stepIdx, current, athleteData, toast],
+  );
+
   // ─── upload + analise ───
   const handleFile = useCallback(
     async (file: File) => {
@@ -213,55 +309,19 @@ export default function ApexGuidedSession({
       reader.onload = async () => {
         const dataUrl = String(reader.result || "");
         if (!dataUrl) return;
-        setPhotos((prev) => {
-          const next = [...prev];
-          next[stepIdx] = { ...next[stepIdx], dataUrl, status: "analyzing", analysis: null, error: undefined };
-          return next;
-        });
-
-        try {
-          const { data, error } = await supabase.functions.invoke("apex-analyze-step", {
-            body: {
-              stepId: current.id,
-              imageBase64: dataUrl,
-              athleteData,
-              instruction: current.instruction,
-              aiPrompt: current.aiPrompt,
-            },
-          });
-          if (error) throw error;
-          if ((data as any)?.error) throw new Error((data as any).error);
-
-          setPhotos((prev) => {
-            const next = [...prev];
-            next[stepIdx] = {
-              ...next[stepIdx],
-              status: "done",
-              analysis: data as StepAnalysis,
-            };
-            return next;
-          });
-        } catch (e: any) {
-          setPhotos((prev) => {
-            const next = [...prev];
-            next[stepIdx] = {
-              ...next[stepIdx],
-              status: "error",
-              error: e?.message || "Falha ao analisar",
-            };
-            return next;
-          });
-          toast({
-            title: "Erro na análise",
-            description: e?.message || "Tente reenviar a foto.",
-            variant: "destructive",
-          });
-        }
+        await runAnalysis(dataUrl);
       };
       reader.readAsDataURL(file);
     },
-    [stepIdx, current, athleteData, toast],
+    [runAnalysis],
   );
+
+  const continueDespiteFraming = useCallback(async () => {
+    const photo = photos[stepIdx];
+    if (!photo?.dataUrl) return;
+    await runAnalysis(photo.dataUrl, { forceLowFraming: true });
+  }, [photos, stepIdx, runAnalysis]);
+
 
   // ─── consolidação final ───
   const consolidated = useMemo(() => {
@@ -464,7 +524,8 @@ export default function ApexGuidedSession({
 
             {/* Foto + análise */}
             {currentPhoto.status === "pending" && (
-              <div>
+              <div className="flex flex-col gap-3">
+                <ApexFramingGuide />
                 <input
                   ref={fileRef}
                   type="file"
@@ -499,6 +560,38 @@ export default function ApexGuidedSession({
               </div>
             )}
 
+            {currentPhoto.status === "framing_warning" && (
+              <div
+                className="rounded-lg p-3 text-xs"
+                style={{ background: "rgba(239,159,39,0.08)", border: "1px solid rgba(239,159,39,0.45)" }}
+              >
+                <div className="flex items-center gap-2 font-bold mb-1" style={{ color: "#EF9F27" }}>
+                  <AlertTriangle className="w-4 h-4" /> ⚠ ENQUADRAMENTO PODE REDUZIR A PRECISÃO DOS LANDMARKS
+                </div>
+                <div className="text-muted-foreground mb-3">
+                  {currentPhoto.analysis?.framing_check?.aviso ||
+                    `Atleta ocupa apenas ${
+                      currentPhoto.analysis?.framing_check?.percentual_estimado ?? "?"
+                    }% da imagem. Para maior precisão, refaça a foto com o atleta mais próximo da câmera.`}
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleRetake}
+                    className="text-[11px] px-3 py-1.5 rounded border font-bold hover:bg-muted"
+                  >
+                    Refazer foto
+                  </button>
+                  <button
+                    onClick={continueDespiteFraming}
+                    className="text-[11px] px-3 py-1.5 rounded font-bold"
+                    style={{ background: "#EF9F27", color: "#1A1100" }}
+                  >
+                    Continuar assim
+                  </button>
+                </div>
+              </div>
+            )}
+
             {currentPhoto.status === "error" && (
               <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-xs">
                 <div className="flex items-center gap-2 font-bold text-destructive mb-1">
@@ -517,12 +610,20 @@ export default function ApexGuidedSession({
             )}
 
             {currentPhoto.status === "done" && currentPhoto.analysis && (
-              <PhotoOverlay
-                photoUrl={currentPhoto.dataUrl}
-                analysis={currentPhoto.analysis}
-                accentColor={accentColor}
-                onRetake={handleRetake}
-              />
+              <>
+                {currentPhoto.landmarkValidation && (
+                  <LandmarkBadge
+                    validation={currentPhoto.landmarkValidation}
+                    onReanalyze={() => runAnalysis(currentPhoto.dataUrl, { forceLowFraming: false })}
+                  />
+                )}
+                <PhotoOverlay
+                  photoUrl={currentPhoto.dataUrl}
+                  analysis={currentPhoto.analysis}
+                  accentColor={accentColor}
+                  onRetake={handleRetake}
+                />
+              </>
             )}
           </div>
 
@@ -841,4 +942,61 @@ function useConsolidatedFake() {
     sev: { normal: 0, mild: 0, moderate: 0, severe: 0 },
     fcs: 0,
   };
+}
+
+// ───────── Badge de validação de landmarks ─────────
+function LandmarkBadge({
+  validation,
+  onReanalyze,
+}: {
+  validation: LandmarkValidation;
+  onReanalyze: () => void;
+}) {
+  if (validation.confianca === "alta") {
+    return (
+      <div
+        className="rounded-md px-3 py-1.5 text-[11px] font-bold inline-flex items-center gap-1.5 self-start"
+        style={{ background: "rgba(29,158,117,0.10)", border: "1px solid rgba(29,158,117,0.45)", color: "#1D9E75" }}
+      >
+        ✓ Landmarks validados
+      </div>
+    );
+  }
+  if (validation.confianca === "media") {
+    return (
+      <div
+        className="rounded-md px-3 py-1.5 text-[11px] font-bold inline-flex items-center gap-1.5 self-start"
+        style={{ background: "rgba(184,146,42,0.10)", border: "1px solid rgba(184,146,42,0.45)", color: "#B8922A" }}
+        title={validation.erros.join(" · ")}
+      >
+        Precisão média — enquadramento pode melhorar os resultados
+      </div>
+    );
+  }
+  return (
+    <div
+      className="rounded-lg p-3 text-xs"
+      style={{ background: "rgba(226,75,74,0.08)", border: "1px solid rgba(226,75,74,0.45)" }}
+    >
+      <div className="flex items-center gap-2 font-bold mb-1" style={{ color: "#E24B4A" }}>
+        ⚠ Alguns landmarks podem estar imprecisos
+      </div>
+      <div className="text-muted-foreground mb-2">
+        Recomendamos refazer a foto com melhor enquadramento.
+      </div>
+      <ul className="text-[10px] text-muted-foreground mb-2 list-disc pl-4">
+        {validation.erros.slice(0, 3).map((e, i) => (
+          <li key={i}>{e}</li>
+        ))}
+      </ul>
+      <div className="flex gap-2">
+        <button
+          onClick={onReanalyze}
+          className="text-[11px] px-3 py-1.5 rounded border font-bold hover:bg-muted"
+        >
+          Reanalisar
+        </button>
+      </div>
+    </div>
+  );
 }

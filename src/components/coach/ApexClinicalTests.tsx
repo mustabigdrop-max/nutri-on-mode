@@ -10,6 +10,7 @@ import {
   type AiTestGroup,
 } from "@/data/fennerTests";
 import TestResultCard, { type TestAiResult } from "@/components/apex/TestResultCard";
+import { ApexFramingGuide } from "@/components/coach/ApexFramingGuide";
 
 // ─── Design tokens (HUD Jarvis) ─────────────────────────────────
 const C = {
@@ -283,6 +284,11 @@ export function ApexClinicalTests({ athleteId, coachId, athleteData }: Props) {
                 <div style={{ fontSize: 11, color: "#FCA5A5" }}>✗ {nv.severe}</div>
               </div>
             ))}
+          </div>
+
+          {/* Guia de enquadramento */}
+          <div style={{ marginBottom: 12 }}>
+            <ApexFramingGuide />
           </div>
 
           {/* Drag & drop */}
