@@ -1,27 +1,133 @@
-import { motion, useInView } from "framer-motion";
-import { useRef } from "react";
+import { motion, useInView, useMotionValue, useTransform, animate } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
+import { Eye, FlaskConical, Zap, Dna, Microscope, Brain, Trophy, Users, Activity } from "lucide-react";
 
-const cards = [
-  {
-    tag: "01", title: "NUTRI = CIÊNCIA",
-    desc: "Cálculo energético GEB/GET/VET, fórmulas de Harris-Benedict e Katch-McArdle, 10 protocolos baseados em evidência, banco TACO/IBGE, análise de exames e microbioma.",
-    accent: "rgba(232,160,32,.5)",
-  },
-  {
-    tag: "02", title: "ON = EXECUÇÃO",
-    desc: "Notificação às 7h com o plano do dia, refeições prontas com 1 toque, gamificação que gera hábito, coach humano integrado, IA comportamental que age antes do erro.",
-    accent: "rgba(0,240,180,.4)",
-  },
-  {
-    tag: "03", title: "24H = RESULTADO",
-    desc: "Cronobiologia ajusta macros por horário, wearables sincronizam o gasto real, sono recalibra o plano da manhã, termômetro emocional monitora o comportamento à noite.",
-    accent: "rgba(232,160,32,.5)",
-  },
+const GOLD = "#B8922A";
+const CYAN = "#00D4FF";
+const GREEN = "#1D9E75";
+const PURPLE = "#A78BFA";
+const AMBER = "#E8A020";
+
+const moduleCards = [
+  { n: "01", title: "APEX VISUAL INTELLIGENCE", Icon: Eye, color: CYAN,
+    desc: "Análise postural por IA. 33 landmarks biomecânicos, testes clínicos por foto, mapa de dominâncias musculares, protocolo corretivo de 4 fases e exercícios contraindicados por disfunção. O coach sobe a foto. O sistema prescreve." },
+  { n: "02", title: "DR. VERTEX", Icon: FlaskConical, color: PURPLE,
+    desc: "85+ compostos farmacológicos, auditoria de protocolo, damage control por órgão-alvo, PeptideVault e periodização farmacológica. Profundidade que o mercado não tem." },
+  { n: "03", title: "TRAININGON / STRATUM", Icon: Zap, color: AMBER,
+    desc: "7 camadas de periodização, detecção de dominância de fibra muscular, LoadTracker Pro e protocolos gerados por objetivo, fase e perfil do atleta." },
+  { n: "04", title: "NUTRIPLAN", Icon: Dna, color: GREEN,
+    desc: "Crononutrição circadiana, TDEE ajustado por protocolo farmacológico ativo, GLUT-4 Sync, perfil PCA integrado e peak week automático via SRI do APEX." },
+  { n: "05", title: "MICROBIOTA / GUT-BRAIN", Icon: Microscope, color: CYAN,
+    desc: "Análise do eixo intestino-cérebro, modulação da microbiota por nutrição e impacto do microbioma em composição corporal, humor e adesão ao protocolo." },
+  { n: "06", title: "PCA COMPORTAMENTAL", Icon: Brain, color: GOLD,
+    desc: "4 perfis de atleta, metodologia MCE — Mindset, Comportamento, Execução. A IA age antes do abandono. Comportamento vem antes do alimento." },
 ];
+
+const audienceCards = [
+  { badge: "IFBB / COMPETIÇÃO", color: GOLD, Icon: Trophy, title: "O ATLETA",
+    text: "Você compete ou quer competir. APEX diagnostica sua postura e prescreve o protocolo corretivo. Dr. VERTEX audita seu ciclo. STRATUM periodiza 7 camadas. Peak week gerado automaticamente pelo SRI. Tudo integrado. Tudo no nível que você exige." },
+  { badge: "PROFISSIONAL", color: CYAN, Icon: Users, title: "O COACH",
+    text: "Você prescreve para outros e precisa de escala sem perder qualidade técnica. APEX faz a análise clínica. TrainingON gera o protocolo. NutriPlan ajusta os macros. Você entrega resultado para cada aluno sem precisar de 10 ferramentas diferentes." },
+  { badge: "TRANSFORMAÇÃO", color: GREEN, Icon: Activity, title: "O ESTILO DE VIDA",
+    text: "Você não compete mas quer resultado real e definitivo. O perfil PCA te conhece antes de qualquer prescrição. O sistema entende seu comportamento, sua rotina e seus gatilhos. Chega de recomeçar do zero. Dessa vez é diferente porque o sistema é diferente." },
+];
+
+const ModuleCard = ({ n, title, Icon, color, desc, delay, inView }: any) => (
+  <motion.div
+    initial={{ opacity: 0, y: 16 }}
+    animate={inView ? { opacity: 1, y: 0 } : {}}
+    transition={{ duration: 0.5, delay }}
+    className="group relative rounded-lg p-5 transition-all"
+    style={{
+      background: "#0d0d1f",
+      border: "0.5px solid #ffffff15",
+      borderLeft: `2px solid ${GOLD}`,
+    }}
+    onMouseEnter={(e) => {
+      e.currentTarget.style.borderLeft = `2px solid ${CYAN}`;
+      e.currentTarget.style.background = "#13132a";
+    }}
+    onMouseLeave={(e) => {
+      e.currentTarget.style.borderLeft = `2px solid ${GOLD}`;
+      e.currentTarget.style.background = "#0d0d1f";
+    }}
+  >
+    <span className="absolute top-3 right-4 font-mono text-[11px] tracking-wider" style={{ color: GOLD }}>{n}</span>
+    <Icon className="w-5 h-5 mb-3" style={{ color }} />
+    <div className="font-heading font-bold text-white uppercase tracking-[.04em] text-[.95rem] mb-2 leading-tight pr-8">{title}</div>
+    <p className="text-[13px] leading-[1.65]" style={{ color: "#888" }}>{desc}</p>
+  </motion.div>
+);
+
+const AudienceCard = ({ badge, color, Icon, title, text, delay, inView }: any) => {
+  const [hover, setHover] = useState(false);
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.5, delay }}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      className="relative rounded-lg transition-all"
+      style={{
+        background: "#0d0d1f",
+        border: "0.5px solid #ffffff15",
+        borderTop: hover ? `2px solid ${color}` : "0.5px solid #ffffff15",
+        padding: "28px 24px",
+      }}
+    >
+      <div
+        className="inline-block px-2.5 py-1 rounded font-mono text-[10px] tracking-[.18em] mb-5"
+        style={{ background: `${color}20`, color, border: `1px solid ${color}55` }}
+      >
+        {badge}
+      </div>
+      <div className="flex justify-center mb-4">
+        <Icon className="w-9 h-9" style={{ color }} />
+      </div>
+      <div className="text-center font-heading font-bold text-white uppercase tracking-[.05em] text-lg mb-3">{title}</div>
+      <p className="text-[13.5px] leading-[1.75] text-center" style={{ color: "#888" }}>{text}</p>
+    </motion.div>
+  );
+};
+
+const Counter = ({ to, inView }: { to: number; inView: boolean }) => {
+  const mv = useMotionValue(0);
+  const rounded = useTransform(mv, (v) => Math.round(v).toString());
+  const [val, setVal] = useState("0");
+  useEffect(() => {
+    if (!inView) return;
+    const controls = animate(mv, to, { duration: 1.5, ease: "easeOut" });
+    const unsub = rounded.on("change", (v) => setVal(v));
+    return () => { controls.stop(); unsub(); };
+  }, [inView, to]);
+  return <span>{val}</span>;
+};
+
+const Typewriter = ({ text, inView, speed = 35 }: { text: string; inView: boolean; speed?: number }) => {
+  const [out, setOut] = useState("");
+  useEffect(() => {
+    if (!inView) return;
+    let i = 0;
+    const id = setInterval(() => {
+      i++;
+      setOut(text.slice(0, i));
+      if (i >= text.length) clearInterval(id);
+    }, speed);
+    return () => clearInterval(id);
+  }, [inView, text, speed]);
+  return <span>{out}<span className="opacity-60">▌</span></span>;
+};
 
 const LandingManifesto = () => {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: "-10%" });
+  const solRef = useRef(null);
+  const solInView = useInView(solRef, { once: true, margin: "-15%" });
+  const audRef = useRef(null);
+  const audInView = useInView(audRef, { once: true, margin: "-10%" });
+  const origRef = useRef(null);
+  const origInView = useInView(origRef, { once: true, margin: "-15%" });
 
   return (
     <section className="bg-background px-6 md:px-12 py-[100px] border-b border-border relative overflow-hidden">
@@ -35,86 +141,193 @@ const LandingManifesto = () => {
           backgroundSize: "48px 48px",
         }}
       />
-      <div
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] pointer-events-none"
-        style={{ background: "radial-gradient(ellipse, rgba(232,160,32,.04) 0%, transparent 70%)" }}
-      />
 
       <motion.div
         ref={ref}
-        initial={{ opacity: 0, y: 40 }}
+        initial={{ opacity: 0, y: 30 }}
         animate={inView ? { opacity: 1, y: 0 } : {}}
         transition={{ duration: 0.7 }}
-        className="max-w-[860px] mx-auto relative z-10"
+        className="max-w-[1080px] mx-auto relative z-10"
       >
-        <div className="font-mono text-[.65rem] text-primary tracking-[.2em] uppercase mb-4 flex items-center gap-2.5">
-          <span className="w-4 h-px bg-primary" />
-          <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+        {/* Label */}
+        <div className="font-mono text-[.65rem] tracking-[.2em] uppercase mb-4 flex items-center gap-2.5" style={{ color: GOLD }}>
+          <span className="w-4 h-px" style={{ background: GOLD }} />
+          <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: GOLD }} />
           O que é o NUTRION
         </div>
 
-        <div className="font-heading leading-[1.1] mb-12" style={{ fontSize: "clamp(1.6rem, 3.5vw, 2.8rem)" }}>
-          Execução sem planejamento é <span className="text-primary" style={{ textShadow: "0 0 30px rgba(232,160,32,.4)" }}>sofrimento.</span><br />
-          Planejamento sem execução é só <span className="text-primary" style={{ textShadow: "0 0 30px rgba(232,160,32,.4)" }}>opinião.</span>
+        {/* Headline */}
+        <div className="font-heading leading-[1.1] mb-14" style={{ fontSize: "clamp(1.6rem, 3.5vw, 2.8rem)" }}>
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={inView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.6 }}
+            className="text-white"
+          >
+            O mercado tem apps.
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={inView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            style={{ color: GOLD, textShadow: `0 0 30px ${GOLD}55` }}
+          >
+            Você entrou no sistema.
+          </motion.div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-          <div className="bg-card/60 border border-border p-6 rounded-sm relative group hover:border-primary/20 transition-colors backdrop-blur-sm">
-            <span className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
-            <div className="font-mono text-[.6rem] text-primary/60 tracking-[.22em] uppercase mb-4 flex items-center gap-2">
-              <span className="w-2 h-px bg-primary/60" />O problema
+        {/* Problema + Solução */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
+          {/* Problema */}
+          <div className="relative rounded-sm p-6 backdrop-blur-sm" style={{ background: "rgba(13,13,31,.6)", border: "1px solid #ffffff10" }}>
+            <span className="absolute top-0 left-0 right-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${GOLD}55, transparent)` }} />
+            <div className="font-mono text-[.6rem] tracking-[.22em] uppercase mb-4" style={{ color: GOLD }}>
+              — O PROBLEMA
             </div>
-            <p className="text-[.93rem] text-muted-foreground leading-[1.85] font-landing mb-3">
-              Todo mundo já fez dieta. Todo mundo já começou uma semana certinho. E todo mundo já abandonou na terceira semana sem saber exatamente por quê.
-            </p>
-            <p className="text-[.93rem] text-muted-foreground leading-[1.85] font-landing mb-3">
-              Não é fraqueza. É falta de <strong className="text-foreground/70">sistema</strong>.
-            </p>
-            <p className="text-[.93rem] text-foreground/70 leading-[1.85] font-landing font-semibold">Motivação vai embora. Estrutura fica.</p>
-            <span className="absolute bottom-2 right-2 w-4 h-4 border-b border-r border-primary/15 group-hover:border-primary/40 transition-colors" />
+            <div className="space-y-3 text-[.93rem] leading-[1.85] font-landing" style={{ color: "#a8a8b8" }}>
+              <p>Todo coach já prescreveu treino sem diagnóstico postural.</p>
+              <p>Todo atleta já fez ciclo sem auditoria de protocolo.</p>
+              <p>Todo cliente já recebeu dieta sem análise comportamental.</p>
+              <p>Não é erro do profissional. É limite da ferramenta.</p>
+              <p>O problema nunca foi motivação. Foi falta de <strong style={{ color: GOLD, fontWeight: 700 }}>sistema integrado</strong>.</p>
+            </div>
           </div>
 
-          <div className="bg-card/60 border border-border p-6 rounded-sm relative group hover:border-primary/20 transition-colors backdrop-blur-sm">
-            <span className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
-            <div className="font-mono text-[.6rem] text-primary/60 tracking-[.22em] uppercase mb-4 flex items-center gap-2">
-              <span className="w-2 h-px bg-primary/60" />A solução
+          {/* Solução com scan line */}
+          <div ref={solRef} className="relative rounded-sm p-6 backdrop-blur-sm overflow-hidden" style={{ background: "rgba(13,13,31,.6)", border: "1px solid #ffffff10" }}>
+            <span className="absolute top-0 left-0 right-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${CYAN}55, transparent)` }} />
+            {solInView && (
+              <motion.div
+                initial={{ y: "-100%" }}
+                animate={{ y: "100%" }}
+                transition={{ duration: 1.5, ease: "easeInOut" }}
+                className="absolute left-0 right-0 h-px pointer-events-none"
+                style={{ background: CYAN, opacity: 0.4, boxShadow: `0 0 12px ${CYAN}` }}
+              />
+            )}
+            <div className="font-mono text-[.6rem] tracking-[.22em] uppercase mb-4" style={{ color: GOLD }}>
+              — A SOLUÇÃO
             </div>
-            <p className="text-[.93rem] text-muted-foreground leading-[1.85] font-landing mb-3">
-              O nutriON é o único app construído com a mentalidade de quem vive isso — <strong className="text-foreground/70">nutrition coach, bodybuilder e Analista em comportamento humano</strong>.
-            </p>
-            <p className="text-[.93rem] text-muted-foreground leading-[1.85] font-landing mb-3">
-              Porque resultado não vem de inspiração. Vem de <strong className="text-foreground/70">protocolo</strong>.
-            </p>
-            <p className="text-[.93rem] text-primary leading-[1.85] font-landing font-semibold">Isso não é mais um app de dieta. É o sistema que faltava.</p>
-            <span className="absolute bottom-2 right-2 w-4 h-4 border-b border-r border-primary/15 group-hover:border-primary/40 transition-colors" />
+            <div className="space-y-3 text-[.93rem] leading-[1.85] font-landing" style={{ color: "#a8a8b8" }}>
+              <p>Não importa se você está subindo no palco ou querendo mudar sua vida. O problema é o mesmo: você nunca teve um sistema feito para você.</p>
+              <p>Para o atleta IFBB que precisa de diagnóstico postural automatizado, periodização de 7 camadas e auditoria farmacológica de protocolo.</p>
+              <p>Para quem quer perder gordura, dormir melhor e entender por que todas as tentativas anteriores falharam.</p>
+              <p>A ferramenta é a mesma. O nível de profundidade se adapta a você.</p>
+            </div>
+            <div className="mt-5 text-center font-heading font-bold uppercase tracking-[.06em] text-[1.05rem]" style={{ color: CYAN, textShadow: `0 0 20px ${CYAN}55` }}>
+              Resultado não é sorte. É sistema.
+            </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          {cards.map((card, i) => (
-            <motion.div
-              key={card.title}
-              initial={{ opacity: 0, y: 20 }}
-              animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.5, delay: 0.3 + i * 0.12 }}
-              className="relative group rounded-sm overflow-hidden bg-card/70 backdrop-blur-sm border border-border/30"
-            >
-              <div
-                className="absolute top-0 left-0 right-0 h-[2px]"
-                style={{ background: `linear-gradient(90deg, transparent, ${card.accent}, transparent)`, opacity: 0.6 }}
-              />
-              <div
-                className="absolute top-0 left-0 right-0 h-[2px] opacity-0 group-hover:opacity-100 transition-opacity"
-                style={{ background: `linear-gradient(90deg, transparent, ${card.accent}, transparent)` }}
-              />
-              <div className="p-7">
-                <div className="font-heading text-[3rem] text-border leading-none mb-1 absolute top-3 right-4 select-none">{card.tag}</div>
-                <div className="font-heading text-[1.1rem] text-primary mb-3 tracking-[.04em]" style={{ textShadow: "0 0 16px rgba(232,160,32,.3)" }}>{card.title}</div>
-                <p className="text-[.78rem] text-muted-foreground leading-[1.65] font-landing">{card.desc}</p>
-              </div>
-              <span className="absolute bottom-2 right-2 w-3 h-3 border-b border-r border-primary/15 group-hover:border-primary/40 transition-colors" />
-            </motion.div>
+        {/* 6 module cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mb-20">
+          {moduleCards.map((c, i) => (
+            <ModuleCard key={c.n} {...c} delay={0.1 + i * 0.08} inView={inView} />
           ))}
+        </div>
+
+        {/* Para quem é o NUTRION */}
+        <div ref={audRef} className="relative mb-20">
+          <div className="font-mono text-[.65rem] tracking-[.2em] uppercase mb-6 flex items-center gap-2.5 relative overflow-hidden" style={{ color: GOLD }}>
+            <span className="w-4 h-px" style={{ background: GOLD }} />
+            — PARA QUEM É O NUTRION
+            {audInView && (
+              <motion.span
+                initial={{ x: "-100%", width: "40%" }}
+                animate={{ x: "250%" }}
+                transition={{ duration: 1.4, ease: "easeOut" }}
+                className="absolute top-1/2 left-0 h-px pointer-events-none"
+                style={{ background: CYAN, opacity: 0.5, boxShadow: `0 0 8px ${CYAN}` }}
+              />
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {audienceCards.map((c, i) => (
+              <AudienceCard key={c.title} {...c} delay={0.15 + i * 0.12} inView={audInView} />
+            ))}
+          </div>
+
+          <p className="text-center mt-8 italic text-[14px]" style={{ color: "#888" }}>
+            Qualquer que seja o seu ponto de partida — o sistema te leva mais longe do que qualquer app já conseguiu.
+          </p>
+        </div>
+
+        {/* Origem do sistema */}
+        <div
+          ref={origRef}
+          className="relative rounded-lg p-8 md:p-12 overflow-hidden"
+          style={{
+            background: "#0a0a1a",
+            backgroundImage: "radial-gradient(circle, #ffffff08 1px, transparent 1px)",
+            backgroundSize: "24px 24px",
+            border: "0.5px solid #ffffff10",
+          }}
+        >
+          {origInView && (
+            <motion.div
+              initial={{ x: "-100%" }}
+              animate={{ x: "100%" }}
+              transition={{ duration: 1.5, ease: "easeInOut" }}
+              className="absolute top-1/4 left-0 right-0 h-px pointer-events-none"
+              style={{ background: CYAN, opacity: 0.5, boxShadow: `0 0 12px ${CYAN}` }}
+            />
+          )}
+
+          <div className="font-mono text-[.65rem] tracking-[.2em] uppercase mb-6 flex items-center gap-2.5" style={{ color: GOLD }}>
+            <span className="w-4 h-px" style={{ background: GOLD }} />
+            — ORIGEM DO SISTEMA
+          </div>
+
+          <div className="text-center max-w-3xl mx-auto">
+            <div className="font-heading font-bold leading-[1.2] text-white" style={{ fontSize: "clamp(1.4rem, 2.8vw, 2.2rem)" }}>
+              Desenvolvido com a mentalidade de quem vive dentro do esporte.
+            </div>
+            <div className="font-heading font-bold leading-[1.2] mt-2" style={{ fontSize: "clamp(1.4rem, 2.8vw, 2.2rem)", color: GOLD, textShadow: `0 0 30px ${GOLD}55` }}>
+              Não de fora observando.
+            </div>
+
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={origInView ? { opacity: 1 } : {}}
+              transition={{ duration: 0.8, delay: 0.6 }}
+              className="mt-6 text-[14px] leading-[1.8]"
+              style={{ color: "#888" }}
+            >
+              Cada módulo foi testado na prática. Cada protocolo foi vivido no corpo. Cada decisão foi tomada em campo — não em sala de reunião.
+            </motion.p>
+          </div>
+
+          {/* HUD status bar */}
+          <div
+            className="mt-8 px-4 py-2.5 font-mono text-[10px] tracking-[.15em]"
+            style={{ background: "#0a0a1a", borderTop: "1px solid #ffffff10", borderBottom: "1px solid #ffffff10", color: CYAN }}
+          >
+            <Typewriter inView={origInView} text="SISTEMA VALIDADO · PROTOCOLO ATIVO · DESENVOLVIDO EM CAMPO · ORIGEM CONFIRMADA" />
+          </div>
+
+          {/* 3 métricas */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-8">
+            {[
+              { val: 132, label1: "COMPOSTOS", label2: "CATALOGADOS" },
+              { val: 28, label1: "TESTES", label2: "CLÍNICOS" },
+              { val: 7, label1: "CAMADAS", label2: "STRATUM" },
+            ].map((m) => (
+              <div
+                key={m.label1}
+                className="rounded-lg text-center"
+                style={{ padding: "16px 24px", border: "0.5px solid #ffffff15", background: "rgba(13,13,31,.4)" }}
+              >
+                <div className="font-heading font-bold text-white text-[2.4rem] leading-none mb-1">
+                  <Counter to={m.val} inView={origInView} />
+                </div>
+                <div className="font-mono text-[10px] tracking-[.15em] uppercase" style={{ color: "#888" }}>
+                  {m.label1} {m.label2}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </motion.div>
     </section>
