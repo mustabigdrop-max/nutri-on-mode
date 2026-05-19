@@ -2703,7 +2703,7 @@ ${perfilFisiologico?.modo_economico ? `
     // Retry enxuto + prompt compacto: evita timeout quando variedade funcional aumenta o JSON.
     // O SYSTEM_PROMPT completo contém um banco alimentar grande; com variedade ativa, o userPrompt
     // já carrega as regras necessárias, então usamos um sistema curto para reduzir latência.
-    const COMPACT_SYSTEM_PROMPT = `Você é o NutriSync Elite, gerador técnico de plano alimentar para coach.
+    const COMPACT_SYSTEM_PROMPT = KCAL_CLOSURE_RULE + `Você é o NutriSync Elite, gerador técnico de plano alimentar para coach.
 Responda APENAS com um único JSON válido, sem markdown.
 Siga rigorosamente horários reais do treino, macros/calorias calculados, restrições, medidas caseiras e regras peri-workout do prompt do usuário.
 AEJ não é refeição e nunca deve aparecer em refeicoes. Pós-Treino Imediato deve ser único.`;
