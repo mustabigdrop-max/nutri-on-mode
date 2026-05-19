@@ -1174,6 +1174,27 @@ Suporte em uso: ${suporte || "não informado"}` : "";
               <ApexCorrectiveLibrary />
             </div>
           )}
+          {activeResultTab === "plano-mestre" && (
+            <ApexPlanoMestre
+              sessionId={savedAnalysisId || null}
+              autoGenerate
+              fcsScore={(() => {
+                const sc = segments.map(s => s.score).filter(n => typeof n === "number");
+                return sc.length ? Math.round(sc.reduce((a,b)=>a+b,0)/sc.length) : null;
+              })()}
+              dysfunctions={parseSection(analysisResult, "POSTURA_DESVIOS", "CORRECOES_POSTURAIS")}
+              muscleMap={parseSection(analysisResult, "CORRECOES_POSTURAIS", "PONTOS_FRACOS_PROTOCOLO")}
+              athleteProfile={{
+                nome: athlete?.nome,
+                sexo: athlete?.sexo,
+                idade: (athlete as any)?.idade,
+                altura: (athlete as any)?.altura,
+                peso: (athlete as any)?.peso,
+                categoria: cat?.label,
+              }}
+              goal={(athlete as any)?.objetivo || cat?.label || ""}
+              analysisRaw={analysisResult}
+            />
           {activeResultTab === "protocolo" && (
             <div className="space-y-3">
               <InfoBox color="#C47A15" text="Diagnóstico + causa + exercícios + frequência + tempo de resposta." />
