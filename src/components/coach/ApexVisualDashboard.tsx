@@ -1158,6 +1158,19 @@ Suporte em uso: ${suporte || "não informado"}` : "";
                 cycleDay={cycleDay}
                 feminineCategory={femCategory ? FEMININE_CATEGORIES[femCategory].label : null}
               />
+              <KineticChain
+                sessionId={savedAnalysisId || null}
+                dysfunctions={parseSection(analysisResult, "POSTURA_DESVIOS", "CORRECOES_POSTURAIS")}
+                muscleMap={parseSection(analysisResult, "CORRECOES_POSTURAIS", "PONTOS_FRACOS_PROTOCOLO")}
+                analysisRaw={analysisResult}
+                athleteProfile={{
+                  nome: athlete?.nome,
+                  sexo: athlete?.sexo,
+                  categoria: cat?.label,
+                }}
+                autoGenerate={isDone}
+                onChainsReady={setKineticChains}
+              />
             </div>
           )}
 
