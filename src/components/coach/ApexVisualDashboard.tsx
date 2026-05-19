@@ -1195,6 +1195,7 @@ Suporte em uso: ${suporte || "não informado"}` : "";
               goal={(athlete as any)?.objetivo || cat?.label || ""}
               analysisRaw={analysisResult}
             />
+          )}
           {activeResultTab === "protocolo" && (
             <div className="space-y-3">
               <InfoBox color="#C47A15" text="Diagnóstico + causa + exercícios + frequência + tempo de resposta." />
