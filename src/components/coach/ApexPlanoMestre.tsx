@@ -536,3 +536,17 @@ function Info({ label, value }: { label: string; value: string }) {
     </div>
   );
 }
+
+function StageLine({ icon, color, text, animated, dim }: { icon: string; color: string; text: string; animated?: boolean; dim?: boolean }) {
+  return (
+    <div className="flex items-center gap-2 text-[12px] font-mono" style={{ opacity: dim ? 0.5 : 1 }}>
+      <span
+        className="inline-block w-4 text-center"
+        style={{ color, animation: animated ? "apexSpin 1s linear infinite" : undefined, display: "inline-block" }}
+      >
+        {icon}
+      </span>
+      <span style={{ color: animated ? "#fff" : "#ccc" }}>{text}</span>
+    </div>
+  );
+}
