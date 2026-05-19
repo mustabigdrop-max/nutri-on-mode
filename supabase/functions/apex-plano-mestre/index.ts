@@ -116,6 +116,7 @@ Deno.serve(async (req) => {
       athleteProfile = {},
       goal = "",
       analysisRaw = "",
+      kineticChains = [],
     } = body ?? {};
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
@@ -141,6 +142,7 @@ ${JSON.stringify(athleteProfile, null, 2)}
 
 OBJETIVO PRINCIPAL: ${goal || "—"}
 
+${Array.isArray(kineticChains) && kineticChains.length ? `CADEIAS CINÉTICAS DETECTADAS (aplicar regras de cadeia obrigatoriamente):\n${JSON.stringify(kineticChains, null, 2)}\n` : ""}
 ${analysisRaw ? `RESUMO DA ANÁLISE APEX:\n${String(analysisRaw).slice(0, 8000)}` : ""}
 
 Retorne o JSON conforme schema, com cada semana detalhada e executável.`;
