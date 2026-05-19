@@ -322,13 +322,6 @@ export default function ApexGuidedSession({
     await runAnalysis(photo.dataUrl, { forceLowFraming: true });
   }, [photos, stepIdx, runAnalysis]);
 
-  const retakePhoto = useCallback(() => {
-    setPhotos((prev) => {
-      const next = [...prev];
-      next[stepIdx] = { ...next[stepIdx], status: "pending", analysis: null, error: undefined, dataUrl: "" };
-      return next;
-    });
-  }, [stepIdx]);
 
   // ─── consolidação final ───
   const consolidated = useMemo(() => {
