@@ -27,7 +27,7 @@ interface Props extends UseApexPlanoMestrePayload {
 
 export default function ApexPlanoMestre({
   sessionId, autoGenerate = true, onSendToTrainingON,
-  dysfunctions, muscleMap, fcsScore, athleteProfile, goal, analysisRaw,
+  dysfunctions, muscleMap, fcsScore, athleteProfile, goal, analysisRaw, kineticChains,
 }: Props) {
   const { toast } = useToast();
   const {
@@ -44,7 +44,7 @@ export default function ApexPlanoMestre({
   useEffect(() => {
     if (!autoGenerate || plano || loading || generating) return;
     if (!dysfunctions && !muscleMap && !analysisRaw && fcsScore == null) return;
-    generate({ dysfunctions, muscleMap, fcsScore, athleteProfile, goal, analysisRaw }).catch(() => {});
+    generate({ dysfunctions, muscleMap, fcsScore, athleteProfile, goal, analysisRaw, kineticChains }).catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [plano, loading, generating]);
 
