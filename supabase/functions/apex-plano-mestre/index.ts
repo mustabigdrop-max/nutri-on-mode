@@ -95,6 +95,13 @@ Cada semana DEVE ter progressão clara em relação à anterior, marcador mensur
 
 Para atletas de palco (presença de SRI/competição): inclua fase de manutenção pré-competição e alerte que peak week não pode coincidir com deload corretivo.
 
+REGRAS DE CADEIA CINÉTICA (quando "cadeias_cineticas" estiver presente no payload):
+- TRATAR A ORIGEM PRIMEIRO: se a cadeia detectada tem origem específica (ex: pé pronado em cadeia ascendente), os exercícios para o segmento de origem sobem para PRIORIDADE 1 do plano, independentemente da severidade local.
+- NÃO TRATAR ELOS SEM TRATAR A ORIGEM: se a ativação de um elo (ex: glúteo médio) é limitada pela disfunção da origem (ex: pronação do pé), inclua nos exercicios_prioritarios da semana correspondente um aviso explícito em "cue_principal" ou em "o_que_evitar_essa_semana" do tipo: "Ativação do glúteo médio será limitada enquanto a pronação do pé não for corrigida. Tratar tornozelo nas semanas 1-3 antes de progredir."
+- PROTOCOLO EM ONDA para cadeias longas (4+ elos): organize fases/semanas progressivamente — semanas 1-2 origem, 3-4 elo 2, 5-6 elo 3, 7-8 integração global; ajuste totais conforme severidade.
+- Registre as cadeias usadas em "regras_globais" como: "Cadeia X (tipo): origem→...→último elo. Tratar origem primeiro."
+- O ponto crítico da cadeia deve receber atenção reforçada na fase mais apropriada (geralmente Ativação ou Integração).
+
 Seja EXTREMAMENTE detalhado. O coach deve executar o plano inteiro sem precisar de outra fonte.`;
 
 Deno.serve(async (req) => {
