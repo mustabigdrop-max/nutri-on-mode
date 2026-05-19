@@ -3960,6 +3960,54 @@ AEJ não é refeição e nunca deve aparecer em refeicoes. Pós-Treino Imediato 
     }
 
     // ═══════════════════════════════════════════════════════════════
+    // VALIDAÇÃO AUTOMÁTICA DE FECHAMENTO CALÓRICO
+    // Compara a soma real dos macros das refeições contra a meta determinística.
+    // Tolerâncias: refeição ±30 kcal · plano total ±50 kcal.
+    // ═══════════════════════════════════════════════════════════════
+    try {
+      const metaKcal = Number(calc?.metaKcal) || 0;
+      const refs: any[] = Array.isArray((parsed as any)?.refeicoes) ? (parsed as any).refeicoes : [];
+      let somaCalc = 0;
+      const erros: string[] = [];
+      refs.forEach((r, i) => {
+        const p = Number(r?.proteina_g ?? r?.proteina ?? 0) || 0;
+        const c = Number(r?.carboidrato_g ?? r?.carboidrato ?? r?.carbo_g ?? 0) || 0;
+        const g = Number(r?.gordura_g ?? r?.gordura ?? 0) || 0;
+        const kcalDecl = Number(r?.calorias ?? r?.kcal ?? 0) || 0;
+        const kcalCalc = Math.round(p * 4 + c * 4 + g * 9);
+        somaCalc += kcalCalc;
+        if (kcalDecl > 0 && Math.abs(kcalCalc - kcalDecl) > 30) {
+          erros.push(`Refeição ${i + 1} (${r?.refeicao || "—"}): kcal declarado ${kcalDecl} ≠ calculado ${kcalCalc}`);
+        }
+      });
+      const diferenca = Math.abs(metaKcal - somaCalc);
+      const minMap = (m: number) =>
+        m <= 2000 ? 3 : m <= 2800 ? 4 : m <= 3500 ? 5 : m <= 4200 ? 6 : 7;
+      const minRefeicoes = metaKcal > 0 ? minMap(metaKcal) : 0;
+      if (metaKcal > 0 && diferenca > 50) {
+        erros.push(`Total do plano (${somaCalc} kcal) não fecha com a meta (${metaKcal} kcal). Diferença: ${diferenca} kcal`);
+      }
+      if (minRefeicoes && refs.length < minRefeicoes) {
+        erros.push(`Plano tem ${refs.length} refeições; mínimo para ${metaKcal} kcal é ${minRefeicoes}.`);
+      }
+      const valido = metaKcal > 0 && diferenca <= 50 && erros.length === 0;
+      (parsed as any).validacao = {
+        total_kcal_meta: metaKcal,
+        total_kcal_refeicoes: somaCalc,
+        diferenca,
+        valido,
+        refeicoes_geradas: refs.length,
+        refeicoes_minimas: minRefeicoes,
+        erros,
+      };
+      console.log(`[validacao-fechamento] meta=${metaKcal} soma=${somaCalc} diff=${diferenca} refs=${refs.length}/${minRefeicoes} valido=${valido}${erros.length ? ` erros=${erros.length}` : ""}`);
+    } catch (vErr) {
+      console.warn("[validacao-fechamento] erro:", vErr);
+    }
+
+
+
+    // ═══════════════════════════════════════════════════════════════
     // NORMALIZAÇÃO DETERMINÍSTICA DO BLOCO "hidratacao"
     // Garante que o JSON sempre contenha meta_diaria_ml, formula_aplicada,
     // ajuste_farmacologico_ml, compostos_que_alteraram e distribuicao completa.
