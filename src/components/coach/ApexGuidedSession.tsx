@@ -220,6 +220,88 @@ export default function ApexGuidedSession({
   const progress = Math.round(((stepIdx + (currentPhoto?.status === "done" ? 1 : 0)) / totalSteps) * 100);
   const allDone = photos.every((p) => p.status === "done");
 
+  // ─── análise propriamente dita (após crop + checagem opcional de framing) ───
+  const runAnalysis = useCallback(
+    async (dataUrl: string, opts?: { forceLowFraming?: boolean }) => {
+      setPhotos((prev) => {
+        const next = [...prev];
+        next[stepIdx] = { ...next[stepIdx], dataUrl, status: "analyzing", analysis: null, error: undefined };
+        return next;
+      });
+
+      try {
+        // Crop inteligente — silencioso se falhar
+        const { cropped } = await cropToAthlete(dataUrl);
+        const finalImg = cropped || dataUrl;
+
+        const extraInstruction = opts?.forceLowFraming
+          ? "ATENÇÃO: O atleta ocupa menos de 60% do frame. Use referências anatômicas relativas para posicionar os landmarks com máxima precisão possível. Priorize landmarks visíveis claramente e estime os demais por proporção anatômica padrão."
+          : "";
+
+        const { data, error } = await supabase.functions.invoke("apex-analyze-step", {
+          body: {
+            stepId: current.id,
+            imageBase64: finalImg,
+            athleteData,
+            instruction: current.instruction,
+            aiPrompt: `${current.aiPrompt}\n\n${extraInstruction}`.trim(),
+          },
+        });
+        if (error) throw error;
+        if ((data as any)?.error) throw new Error((data as any).error);
+
+        const analysis = data as StepAnalysis;
+        const framing = analysis.framing_check;
+
+        // Se IA detectou enquadramento ruim e usuário ainda não forçou, pausa para confirmar
+        if (framing && framing.enquadramento_adequado === false && !opts?.forceLowFraming) {
+          setPhotos((prev) => {
+            const next = [...prev];
+            next[stepIdx] = {
+              ...next[stepIdx],
+              status: "framing_warning",
+              analysis,
+              dataUrl: finalImg,
+            };
+            return next;
+          });
+          return;
+        }
+
+        // Valida landmarks
+        const validation = validateLandmarks(landmarksArrayToMap(analysis.overlay?.landmarks));
+
+        setPhotos((prev) => {
+          const next = [...prev];
+          next[stepIdx] = {
+            ...next[stepIdx],
+            status: "done",
+            analysis,
+            dataUrl: finalImg,
+            landmarkValidation: validation,
+          };
+          return next;
+        });
+      } catch (e: any) {
+        setPhotos((prev) => {
+          const next = [...prev];
+          next[stepIdx] = {
+            ...next[stepIdx],
+            status: "error",
+            error: e?.message || "Falha ao analisar",
+          };
+          return next;
+        });
+        toast({
+          title: "Erro na análise",
+          description: e?.message || "Tente reenviar a foto.",
+          variant: "destructive",
+        });
+      }
+    },
+    [stepIdx, current, athleteData, toast],
+  );
+
   // ─── upload + analise ───
   const handleFile = useCallback(
     async (file: File) => {
@@ -227,55 +309,26 @@ export default function ApexGuidedSession({
       reader.onload = async () => {
         const dataUrl = String(reader.result || "");
         if (!dataUrl) return;
-        setPhotos((prev) => {
-          const next = [...prev];
-          next[stepIdx] = { ...next[stepIdx], dataUrl, status: "analyzing", analysis: null, error: undefined };
-          return next;
-        });
-
-        try {
-          const { data, error } = await supabase.functions.invoke("apex-analyze-step", {
-            body: {
-              stepId: current.id,
-              imageBase64: dataUrl,
-              athleteData,
-              instruction: current.instruction,
-              aiPrompt: current.aiPrompt,
-            },
-          });
-          if (error) throw error;
-          if ((data as any)?.error) throw new Error((data as any).error);
-
-          setPhotos((prev) => {
-            const next = [...prev];
-            next[stepIdx] = {
-              ...next[stepIdx],
-              status: "done",
-              analysis: data as StepAnalysis,
-            };
-            return next;
-          });
-        } catch (e: any) {
-          setPhotos((prev) => {
-            const next = [...prev];
-            next[stepIdx] = {
-              ...next[stepIdx],
-              status: "error",
-              error: e?.message || "Falha ao analisar",
-            };
-            return next;
-          });
-          toast({
-            title: "Erro na análise",
-            description: e?.message || "Tente reenviar a foto.",
-            variant: "destructive",
-          });
-        }
+        await runAnalysis(dataUrl);
       };
       reader.readAsDataURL(file);
     },
-    [stepIdx, current, athleteData, toast],
+    [runAnalysis],
   );
+
+  const continueDespiteFraming = useCallback(async () => {
+    const photo = photos[stepIdx];
+    if (!photo?.dataUrl) return;
+    await runAnalysis(photo.dataUrl, { forceLowFraming: true });
+  }, [photos, stepIdx, runAnalysis]);
+
+  const retakePhoto = useCallback(() => {
+    setPhotos((prev) => {
+      const next = [...prev];
+      next[stepIdx] = { ...next[stepIdx], status: "pending", analysis: null, error: undefined, dataUrl: "" };
+      return next;
+    });
+  }, [stepIdx]);
 
   // ─── consolidação final ───
   const consolidated = useMemo(() => {
