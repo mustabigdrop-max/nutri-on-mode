@@ -66,6 +66,57 @@ export interface UseApexPlanoMestrePayload {
   kineticChains?: any[];
 }
 
+export type StageKey = "fase1" | "fase23" | "fase4";
+export type StageStatus = "pending" | "in_progress" | "done" | "warning";
+export interface StageState { key: StageKey; label: string; status: StageStatus; warning?: string; }
+
+const INITIAL_STAGES: StageState[] = [
+  { key: "fase1", label: "Fase 1 — Inibição", status: "pending" },
+  { key: "fase23", label: "Fases 2 e 3 — Elongação & Ativação", status: "pending" },
+  { key: "fase4", label: "Fase 4 — Integração & finalização", status: "pending" },
+];
+
+function buildFallbackPlano(payload: UseApexPlanoMestrePayload): PlanoMestre {
+  const mk = (numero: number, nome: string, semanas: string, foco: string): PlanoFase => ({
+    numero, nome, semanas, duracao_semanas: 2,
+    foco_principal: foco, descricao: foco, objetivo_da_fase: foco,
+    criterio_de_avanco: "Conclusão dos exercícios-chave da fase",
+    semanas_detalhadas: [{
+      semana: numero * 2 - 1, titulo: `${nome} — Semana inicial`, foco,
+      sessoes_por_semana: 3, duracao_sessao_minutos: 30,
+      exercicios_prioritarios: [
+        { nome: "Exercício-chave A", fase_corretiva: numero, series: "2-3", reps_ou_tempo: "30-45s", cue_principal: "Foco em controle", progressao_semana_seguinte: "Adicionar tempo sob tensão" },
+        { nome: "Exercício-chave B", fase_corretiva: numero, series: "2-3", reps_ou_tempo: "30-45s", cue_principal: "Respiração diafragmática", progressao_semana_seguinte: "Aumentar amplitude" },
+        { nome: "Exercício-chave C", fase_corretiva: numero, series: "2", reps_ou_tempo: "10 reps", cue_principal: "Qualidade > quantidade", progressao_semana_seguinte: "+1 série" },
+      ],
+      o_que_evitar_essa_semana: [], marcador_de_progresso: "Conclusão das sessões previstas", sinal_verde_para_avancar: "Sem dor e execução limpa",
+    }],
+  });
+  return {
+    titulo: "Plano Corretivo — Versão Simplificada",
+    duracao_total_semanas: 8,
+    objetivo_principal: payload.goal || "Corrigir desequilíbrios posturais",
+    objetivos_secundarios: [],
+    premissa: "Plano gerado em modo simplificado por tempo de resposta excedido.",
+    fases: [
+      mk(1, "Inibição", "1-2", "Liberar dominantes"),
+      mk(2, "Elongação", "3-4", "Ganhar amplitude"),
+      mk(3, "Ativação", "5-6", "Ativar inibidos"),
+      mk(4, "Integração", "7-8", "Integrar ao treino"),
+    ],
+    regras_globais: ["Plano simplificado — regenere para versão completa."],
+  };
+}
+
+async function invokeStep(payload: any, step: 1 | 2 | 3, prev: any, simplified: boolean, timeoutMs = 25000): Promise<any> {
+  const promise = supabase.functions.invoke("apex-plano-mestre", { body: { ...payload, step, prev, simplified } });
+  const timeout = new Promise<never>((_, reject) => setTimeout(() => reject(new Error(`Timeout etapa ${step}`)), timeoutMs));
+  const res: any = await Promise.race([promise, timeout]);
+  if (res?.error) throw new Error(res.error?.message || `Erro etapa ${step}`);
+  if (res?.data?.error) throw new Error(res.data.error);
+  return res?.data?.data ?? res?.data;
+}
+
 export function useApexPlanoMestre(sessionId?: string | null) {
   const [plano, setPlano] = useState<PlanoMestre | null>(null);
   const [semanaAtual, setSemanaAtual] = useState(1);
@@ -75,6 +126,7 @@ export function useApexPlanoMestre(sessionId?: string | null) {
   const [loading, setLoading] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [stages, setStages] = useState<StageState[]>(INITIAL_STAGES);
 
   const load = useCallback(async () => {
     if (!sessionId) return;
@@ -106,29 +158,84 @@ export function useApexPlanoMestre(sessionId?: string | null) {
 
   useEffect(() => { load(); }, [load]);
 
+  const persist = useCallback(async (pm: PlanoMestre) => {
+    if (!sessionId) return;
+    await supabase
+      .from("apex_guided_sessions")
+      .update({ plano_mestre: { plano_mestre: pm } as any, plano_semana_atual: 1, plano_fase_atual: 1 })
+      .eq("id", sessionId);
+  }, [sessionId]);
+
+  const updateStage = (key: StageKey, patch: Partial<StageState>) =>
+    setStages(prev => prev.map(s => s.key === key ? { ...s, ...patch } : s));
+
   const generate = useCallback(async (payload: UseApexPlanoMestrePayload) => {
     setGenerating(true);
     setError(null);
-    try {
-      const { data, error } = await supabase.functions.invoke("apex-plano-mestre", { body: payload });
-      if (error) throw error;
-      if ((data as any)?.error) throw new Error((data as any).error);
-      const pm: PlanoMestre = (data as any)?.plano_mestre || (data as any);
-      setPlano(pm);
-      if (sessionId) {
-        await supabase
-          .from("apex_guided_sessions")
-          .update({ plano_mestre: { plano_mestre: pm } as any, plano_semana_atual: 1, plano_fase_atual: 1 })
-          .eq("id", sessionId);
+    setStages(INITIAL_STAGES.map(s => ({ ...s })));
+    const collected: any = { fases: [] as PlanoFase[] };
+
+    const runStep = async (key: StageKey, step: 1 | 2 | 3): Promise<any> => {
+      updateStage(key, { status: "in_progress" });
+      try {
+        return await invokeStep(payload, step, collected, false);
+      } catch {
+        try {
+          const r = await invokeStep(payload, step, collected, true);
+          updateStage(key, { warning: "Gerado em modo resumido" });
+          return r;
+        } catch {
+          updateStage(key, { status: "warning", warning: "Falhou — usando fallback" });
+          return null;
+        }
       }
-      return pm;
-    } catch (e: any) {
-      setError(e?.message || "Erro ao gerar plano");
-      throw e;
+    };
+
+    try {
+      const s1 = await runStep("fase1", 1);
+      if (!s1) throw new Error("fallback");
+      collected.titulo = s1.titulo;
+      collected.duracao_total_semanas = s1.duracao_total_semanas;
+      collected.objetivo_principal = s1.objetivo_principal;
+      collected.objetivos_secundarios = s1.objetivos_secundarios;
+      collected.premissa = s1.premissa;
+      if (s1.fase1) collected.fases.push(s1.fase1);
+      setPlano({ ...collected });
+      updateStage("fase1", { status: "done" });
+
+      const s2 = await runStep("fase23", 2);
+      if (s2) {
+        if (s2.fase2) collected.fases.push(s2.fase2);
+        if (s2.fase3) collected.fases.push(s2.fase3);
+        setPlano({ ...collected });
+        updateStage("fase23", { status: "done" });
+      }
+
+      const s3 = await runStep("fase4", 3);
+      if (s3) {
+        if (s3.fase4) collected.fases.push(s3.fase4);
+        collected.cronograma_visual = s3.cronograma_visual;
+        collected.regras_globais = s3.regras_globais;
+        collected.sinais_de_alarme = s3.sinais_de_alarme;
+        collected.recheck_apex = s3.recheck_apex;
+        updateStage("fase4", { status: "done" });
+      }
+
+      collected.fases = (collected.fases as PlanoFase[]).filter(Boolean).sort((a, b) => (a.numero || 0) - (b.numero || 0));
+      const finalPlano: PlanoMestre = collected;
+      setPlano(finalPlano);
+      await persist(finalPlano);
+      return finalPlano;
+    } catch {
+      const fb = buildFallbackPlano(payload);
+      setPlano(fb);
+      await persist(fb);
+      setError("Plano gerado em modo simplificado por tempo de resposta excedido.");
+      return fb;
     } finally {
       setGenerating(false);
     }
-  }, [sessionId]);
+  }, [persist]);
 
   const toggleExercicio = useCallback(async (semana: number, fase: number, exercicio: string, concluido: boolean) => {
     if (!sessionId) return;
