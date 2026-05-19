@@ -233,6 +233,54 @@ export default function NutriPlanElitePage() {
               <h2 className="text-xl font-bold text-amber-400">Plano gerado — 11 blocos</h2>
             </div>
 
+            {(() => {
+              const v = (result?.plan?.validacao || result?.plano?.validacao || result?.validacao) as any;
+              if (!v || !v.total_kcal_meta) return null;
+              const diff = Number(v.diferenca) || 0;
+              const meta = Number(v.total_kcal_meta) || 0;
+              const soma = Number(v.total_kcal_refeicoes) || 0;
+              const signed = soma - meta;
+              const status = diff <= 50 ? "ok" : diff <= 100 ? "warn" : "err";
+              const color = status === "ok" ? "#1D9E75" : status === "warn" ? "#EF9F27" : "#E24B4A";
+              const icon = status === "ok" ? "✓" : status === "warn" ? "⚠" : "✗";
+              const label = status === "ok" ? "DENTRO DA MARGEM" : status === "warn" ? "FORA DA MARGEM" : "REGENERAR NECESSÁRIO";
+              return (
+                <div className="rounded border p-3 bg-zinc-950 space-y-2" style={{ borderColor: `${color}55` }}>
+                  {status === "ok" && (
+                    <p className="font-mono text-[10px]" style={{ color }}>
+                      ✓ PLANO VALIDADO · {soma} kcal · FECHAMENTO ±{diff} kcal
+                    </p>
+                  )}
+                  <div className="flex flex-wrap items-center gap-x-6 gap-y-1 text-xs font-mono">
+                    <span className="text-zinc-400">META: <span className="text-zinc-100">{meta.toLocaleString("pt-BR")} kcal</span></span>
+                    <span className="text-zinc-400">PLANO: <span className="text-zinc-100">{soma.toLocaleString("pt-BR")} kcal</span></span>
+                    <span style={{ color }}>
+                      DIFERENÇA: {signed >= 0 ? "+" : ""}{signed} kcal {icon} {label}
+                    </span>
+                    {Number(v.refeicoes_minimas) > 0 && (
+                      <span className="text-zinc-400">
+                        REFEIÇÕES: <span style={{ color: Number(v.refeicoes_geradas) < Number(v.refeicoes_minimas) ? "#E24B4A" : "#1D9E75" }}>
+                          {v.refeicoes_geradas}/{v.refeicoes_minimas}
+                        </span>
+                      </span>
+                    )}
+                    {status === "err" && (
+                      <Button size="sm" onClick={generate} disabled={loading} className="ml-auto h-7 bg-amber-500 hover:bg-amber-600 text-black text-[11px] font-semibold">
+                        {loading ? <Loader2 className="w-3 h-3 animate-spin" /> : "REGENERAR PLANO"}
+                      </Button>
+                    )}
+                  </div>
+                  {Array.isArray(v.erros) && v.erros.length > 0 && status !== "ok" && (
+                    <ul className="text-[11px] text-red-400 space-y-0.5 pt-1 border-t border-zinc-800">
+                      {v.erros.slice(0, 4).map((e: string, i: number) => <li key={i}>• {e}</li>)}
+                    </ul>
+                  )}
+                </div>
+              );
+            })()}
+
+
+
             <BlockCard icon={Flame} title="BLOCO 1 · TDEE Farmacológico" color="amber">
               {elite.tdee_breakdown ? (
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
