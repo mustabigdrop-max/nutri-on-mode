@@ -206,6 +206,7 @@ Retorne JSON estrito (sem markdown).`;
     parsed.overlay = parsed.overlay || { landmarks: [], lines: [], angles: [] };
     parsed.muscle_updates = parsed.muscle_updates || [];
     parsed.red_flags = parsed.red_flags || [];
+    parsed.framing_check = parsed.framing_check || { enquadramento_adequado: true, percentual_estimado: 100 };
 
     return new Response(JSON.stringify(parsed), {
       status: 200,
