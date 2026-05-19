@@ -10,6 +10,7 @@ import {
   type AiTestGroup,
 } from "@/data/fennerTests";
 import TestResultCard, { type TestAiResult } from "@/components/apex/TestResultCard";
+import { ApexFramingGuide } from "@/components/coach/ApexFramingGuide";
 
 // ─── Design tokens (HUD Jarvis) ─────────────────────────────────
 const C = {
