@@ -117,7 +117,7 @@ export function useApexPlanoMestre(sessionId?: string | null) {
       if (sessionId) {
         await supabase
           .from("apex_guided_sessions")
-          .update({ plano_mestre: { plano_mestre: pm }, plano_semana_atual: 1, plano_fase_atual: 1 })
+          .update({ plano_mestre: { plano_mestre: pm } as any, plano_semana_atual: 1, plano_fase_atual: 1 })
           .eq("id", sessionId);
       }
       return pm;
