@@ -63,6 +63,7 @@ export interface UseApexPlanoMestrePayload {
   athleteProfile?: any;
   goal?: string;
   analysisRaw?: string;
+  kineticChains?: any[];
 }
 
 export function useApexPlanoMestre(sessionId?: string | null) {
