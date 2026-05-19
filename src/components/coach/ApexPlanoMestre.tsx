@@ -39,6 +39,7 @@ export default function ApexPlanoMestre({
   const [openFase, setOpenFase] = useState<number | null>(null);
   const [openSemana, setOpenSemana] = useState<Record<string, boolean>>({});
   const [showFaseModal, setShowFaseModal] = useState(false);
+  const [showRegenConfirm, setShowRegenConfirm] = useState(false);
 
   // Auto-geração se sessão tem dados e ainda não tem plano
   useEffect(() => {
