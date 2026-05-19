@@ -950,3 +950,60 @@ function useConsolidatedFake() {
     fcs: 0,
   };
 }
+
+// ───────── Badge de validação de landmarks ─────────
+function LandmarkBadge({
+  validation,
+  onReanalyze,
+}: {
+  validation: LandmarkValidation;
+  onReanalyze: () => void;
+}) {
+  if (validation.confianca === "alta") {
+    return (
+      <div
+        className="rounded-md px-3 py-1.5 text-[11px] font-bold inline-flex items-center gap-1.5 self-start"
+        style={{ background: "rgba(29,158,117,0.10)", border: "1px solid rgba(29,158,117,0.45)", color: "#1D9E75" }}
+      >
+        ✓ Landmarks validados
+      </div>
+    );
+  }
+  if (validation.confianca === "media") {
+    return (
+      <div
+        className="rounded-md px-3 py-1.5 text-[11px] font-bold inline-flex items-center gap-1.5 self-start"
+        style={{ background: "rgba(184,146,42,0.10)", border: "1px solid rgba(184,146,42,0.45)", color: "#B8922A" }}
+        title={validation.erros.join(" · ")}
+      >
+        Precisão média — enquadramento pode melhorar os resultados
+      </div>
+    );
+  }
+  return (
+    <div
+      className="rounded-lg p-3 text-xs"
+      style={{ background: "rgba(226,75,74,0.08)", border: "1px solid rgba(226,75,74,0.45)" }}
+    >
+      <div className="flex items-center gap-2 font-bold mb-1" style={{ color: "#E24B4A" }}>
+        ⚠ Alguns landmarks podem estar imprecisos
+      </div>
+      <div className="text-muted-foreground mb-2">
+        Recomendamos refazer a foto com melhor enquadramento.
+      </div>
+      <ul className="text-[10px] text-muted-foreground mb-2 list-disc pl-4">
+        {validation.erros.slice(0, 3).map((e, i) => (
+          <li key={i}>{e}</li>
+        ))}
+      </ul>
+      <div className="flex gap-2">
+        <button
+          onClick={onReanalyze}
+          className="text-[11px] px-3 py-1.5 rounded border font-bold hover:bg-muted"
+        >
+          Reanalisar
+        </button>
+      </div>
+    </div>
+  );
+}
