@@ -1756,7 +1756,7 @@ Suporte em uso: ${suporte || "não informado"}` : "";
       <div style={{ ...cardStyle, marginBottom: 16 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
           {sectionTick(APEX.electric)}
-          <span style={labelStyle}>Testes Clínicos · IA (Fenner)</span>
+          <span style={labelStyle}>Testes Clínicos</span>
         </div>
         <ApexClinicalTests
           athleteId={athlete?.patient_user_id ?? athlete?.id ?? null}
