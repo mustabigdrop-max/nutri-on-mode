@@ -1445,11 +1445,11 @@ Suporte em uso: ${suporte || "não informado"}` : "";
                   boxShadow: `0 0 12px ${APEX.gold}55`,
                 }}>ELITE</span>
               </div>
-              <div style={{ marginTop: 6, fontSize: 11, color: APEX.textSecondary, fontFamily: APEX.fontBody, letterSpacing: ".02em" }}>
-                Motor de Diagnóstico Visual <span style={{ color: APEX.textMuted, margin: "0 6px" }}>·</span>
-                Padrão IFBB <span style={{ color: APEX.textMuted, margin: "0 6px" }}>·</span>
-                Biomecânica <span style={{ color: APEX.textMuted, margin: "0 6px" }}>·</span>
-                Farmacologia Integrada
+              <div style={{ marginTop: 6, fontSize: 11, color: APEX.textSecondary, fontFamily: APEX.fontBody, letterSpacing: ".02em", display: "flex", flexWrap: "wrap", gap: "0 4px", alignItems: "center" }}>
+                <span>Motor de Diagnóstico Visual</span><span style={{ color: APEX.textMuted }}>·</span>
+                <span>Padrão IFBB</span><span style={{ color: APEX.textMuted }}>·</span>
+                <span>Biomecânica</span><span style={{ color: APEX.textMuted }}>·</span>
+                <span>Farmacologia Integrada</span>
               </div>
             </div>
           </div>
