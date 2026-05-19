@@ -175,16 +175,8 @@ export default function ApexPlanoMestre({
           </div>
         </div>
       )}
-      {(!plano) && null}
-    </div>
-  );
-}
 
-function FullPlanoView_PLACEHOLDER() { return null; }
 
-// Render principal restaurado abaixo:
-function _RenderMain_unused() {
-  return (
     <div className="space-y-5 print:bg-white print:text-black">
       {/* HEADER */}
       <div className="relative overflow-hidden rounded-xl p-4" style={{ background: C.bg, border: `1px solid ${C.gold}40`, borderLeft: `2px solid ${C.gold}` }}>
