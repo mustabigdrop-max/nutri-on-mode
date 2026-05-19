@@ -124,7 +124,9 @@ const LandingCoach = () => {
                   </div>
                   <div className="pl-5 space-y-1">
                     <div className="font-mono text-[.6rem] text-[#7070a0]">
-                      {p.program} &nbsp;•&nbsp; {p.week}{p.delta ? ` \u00a0•\u00a0 <span class="text-[#f0edf8]">${p.delta}</span>` : ""}{p.goal ? ` \u00a0•\u00a0 ${p.goal}` : ""}
+                      {p.program} &nbsp;•&nbsp; {p.week}
+                      {p.delta && <> &nbsp;•&nbsp; <span className="text-[#f0edf8]">{p.delta}</span></>}
+                      {p.goal && <> &nbsp;•&nbsp; {p.goal}</>}
                     </div>
                     <div className="font-mono text-[.6rem] flex items-center gap-2">
                       <span className="text-[#9090b8]">Aderência: <span className={`font-bold ${p.adherence >= 80 ? "text-[#00c896]" : p.adherence >= 60 ? "text-[#ffcc00]" : "text-[#ff2d55]"}`}>{p.adherence}%</span></span>
