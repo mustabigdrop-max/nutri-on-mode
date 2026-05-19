@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import ApexPlanoMestre from "@/components/coach/ApexPlanoMestre";
+import KineticChain, { type KineticChain as KineticChainType } from "@/components/apex/KineticChain";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
