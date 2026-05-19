@@ -1060,6 +1060,7 @@ Suporte em uso: ${suporte || "não informado"}` : "";
       { key: "visual", label: "📐 Análise Visual" },
       { key: "postura", label: "Postura" },
       { key: "correcoes", label: "Correções" },
+      { key: "plano-mestre", label: "Plano Mestre" },
       { key: "protocolo", label: "Protocolo" },
       ...(hasFarmacologia ? [{ key: "farmacologia", label: "💉 Farmacologia" }] : []),
       { key: "palco", label: "Palco" },
