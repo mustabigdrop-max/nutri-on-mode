@@ -57,26 +57,26 @@ const ProvocationBlock = ({ inView }: { inView: boolean }) => {
         start={t >= 3}
         text="ignora sua postura,"
         prefix="✗ "
-        className="text-[12px] md:text-[13px] mt-1"
+        className="text-[12px] md:text-[13px] mt-1 text-[#E24B4A] font-bold"
         speed={28}
       />
       <Typewriter
         start={t >= 4}
         text="ignora seu protocolo,"
         prefix="✗ "
-        className="text-[12px] md:text-[13px] mt-1"
+        className="text-[12px] md:text-[13px] mt-1 text-[#E24B4A] font-bold"
       />
       <Typewriter
         start={t >= 5}
         text="ignora seu comportamento"
         prefix="✗ "
-        className="text-[12px] md:text-[13px] mt-1"
+        className="text-[12px] md:text-[13px] mt-1 text-[#E24B4A] font-bold"
       />
       <Typewriter
         start={t >= 6}
         text="e ignora seu ciclo —"
         prefix="✗ "
-        className="text-[12px] md:text-[13px] mt-1"
+        className="text-[12px] md:text-[13px] mt-1 text-[#E24B4A] font-bold"
       />
       <style>{`
         .prov-red { color: #E24B4A; font-weight: 700; }
