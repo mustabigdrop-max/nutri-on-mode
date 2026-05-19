@@ -491,6 +491,10 @@ export type Database = {
           fcs_score: number | null
           full_report: Json | null
           id: string
+          metricas_atingidas: Json | null
+          plano_fase_atual: number | null
+          plano_mestre: Json | null
+          plano_semana_atual: number | null
           session_type: string
           sri_score: number | null
           steps_data: Json
@@ -505,6 +509,10 @@ export type Database = {
           fcs_score?: number | null
           full_report?: Json | null
           id?: string
+          metricas_atingidas?: Json | null
+          plano_fase_atual?: number | null
+          plano_mestre?: Json | null
+          plano_semana_atual?: number | null
           session_type: string
           sri_score?: number | null
           steps_data?: Json
@@ -519,6 +527,10 @@ export type Database = {
           fcs_score?: number | null
           full_report?: Json | null
           id?: string
+          metricas_atingidas?: Json | null
+          plano_fase_atual?: number | null
+          plano_mestre?: Json | null
+          plano_semana_atual?: number | null
           session_type?: string
           sri_score?: number | null
           steps_data?: Json
@@ -680,6 +692,53 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      apex_plano_progresso: {
+        Row: {
+          athlete_id: string | null
+          coach_id: string
+          concluido: boolean | null
+          exercicio: string
+          fase: number
+          id: string
+          observacao: string | null
+          registrado_em: string
+          semana: number
+          session_id: string
+        }
+        Insert: {
+          athlete_id?: string | null
+          coach_id: string
+          concluido?: boolean | null
+          exercicio: string
+          fase: number
+          id?: string
+          observacao?: string | null
+          registrado_em?: string
+          semana: number
+          session_id: string
+        }
+        Update: {
+          athlete_id?: string | null
+          coach_id?: string
+          concluido?: boolean | null
+          exercicio?: string
+          fase?: number
+          id?: string
+          observacao?: string | null
+          registrado_em?: string
+          semana?: number
+          session_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "apex_plano_progresso_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "apex_guided_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       apex_posture_data: {
         Row: {
