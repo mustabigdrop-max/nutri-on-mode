@@ -491,6 +491,7 @@ export type Database = {
           fcs_score: number | null
           full_report: Json | null
           id: string
+          kinetic_chains: Json | null
           metricas_atingidas: Json | null
           plano_fase_atual: number | null
           plano_mestre: Json | null
@@ -509,6 +510,7 @@ export type Database = {
           fcs_score?: number | null
           full_report?: Json | null
           id?: string
+          kinetic_chains?: Json | null
           metricas_atingidas?: Json | null
           plano_fase_atual?: number | null
           plano_mestre?: Json | null
@@ -527,6 +529,7 @@ export type Database = {
           fcs_score?: number | null
           full_report?: Json | null
           id?: string
+          kinetic_chains?: Json | null
           metricas_atingidas?: Json | null
           plano_fase_atual?: number | null
           plano_mestre?: Json | null

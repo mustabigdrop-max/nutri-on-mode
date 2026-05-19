@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import ApexPlanoMestre from "@/components/coach/ApexPlanoMestre";
+import KineticChain, { type KineticChain as KineticChainType } from "@/components/apex/KineticChain";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
@@ -719,6 +720,7 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
   const [isDone, setIsDone] = useState(false);
   const [stepIdx, setStepIdx] = useState(0);
   const [savedAnalysisId, setSavedAnalysisId] = useState<string | null>(null);
+  const [kineticChains, setKineticChains] = useState<KineticChainType[]>([]);
   const [syncStatus, setSyncStatus] = useState<"pending" | "applied" | null>(null);
   const [showTrainingModal, setShowTrainingModal] = useState(false);
   const [generatingTraining, setGeneratingTraining] = useState(false);
@@ -1156,6 +1158,19 @@ Suporte em uso: ${suporte || "não informado"}` : "";
                 cycleDay={cycleDay}
                 feminineCategory={femCategory ? FEMININE_CATEGORIES[femCategory].label : null}
               />
+              <KineticChain
+                sessionId={savedAnalysisId || null}
+                dysfunctions={parseSection(analysisResult, "POSTURA_DESVIOS", "CORRECOES_POSTURAIS")}
+                muscleMap={parseSection(analysisResult, "CORRECOES_POSTURAIS", "PONTOS_FRACOS_PROTOCOLO")}
+                analysisRaw={analysisResult}
+                athleteProfile={{
+                  nome: athlete?.nome,
+                  sexo: athlete?.sexo,
+                  categoria: cat?.label,
+                }}
+                autoGenerate={isDone}
+                onChainsReady={setKineticChains}
+              />
             </div>
           )}
 
@@ -1194,6 +1209,7 @@ Suporte em uso: ${suporte || "não informado"}` : "";
               }}
               goal={(athlete as any)?.objetivo || cat?.label || ""}
               analysisRaw={analysisResult}
+              kineticChains={kineticChains}
             />
           )}
           {activeResultTab === "protocolo" && (

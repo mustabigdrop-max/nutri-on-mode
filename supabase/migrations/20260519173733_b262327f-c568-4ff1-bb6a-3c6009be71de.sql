@@ -1,0 +1,1 @@
+ALTER TABLE public.apex_guided_sessions ADD COLUMN IF NOT EXISTS kinetic_chains JSONB;
