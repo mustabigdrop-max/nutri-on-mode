@@ -720,6 +720,7 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
   const [isDone, setIsDone] = useState(false);
   const [stepIdx, setStepIdx] = useState(0);
   const [savedAnalysisId, setSavedAnalysisId] = useState<string | null>(null);
+  const [kineticChains, setKineticChains] = useState<KineticChainType[]>([]);
   const [syncStatus, setSyncStatus] = useState<"pending" | "applied" | null>(null);
   const [showTrainingModal, setShowTrainingModal] = useState(false);
   const [generatingTraining, setGeneratingTraining] = useState(false);
