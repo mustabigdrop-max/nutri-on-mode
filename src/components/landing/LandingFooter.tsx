@@ -1,11 +1,35 @@
 const LandingFooter = () => (
-  <footer className="bg-[#03030a] border-t border-[#14142a] px-6 md:px-12 py-10 flex flex-col md:flex-row justify-between items-center gap-4">
-    <div className="font-heading text-[1.4rem] tracking-[.1em]">
-      <span className="opacity-70">NUTRI</span>
-      <span className="text-primary" style={{ textShadow: "0 0 12px rgba(232,160,32,.4)" }}>ON</span>
+  <footer className="bg-[#03030a] border-t border-[#ffffff08] px-6 md:px-12 pt-8 pb-6 flex flex-col gap-4">
+    {/* Status bar final */}
+    <div className="font-mono text-[9px] text-[#ffffff20] tracking-[0.1em] text-center leading-relaxed pb-4 border-b border-[#ffffff08]">
+      nutrion.app.br · Sua fome nunca foi de comida.{" "}
+      <span className="italic text-[#B8922A30]">O comportamento vem antes do alimento.</span>
     </div>
-    <div className="font-mono text-[.65rem] text-[#50507a]">
-      © 2026 NutriON · Nutrição de Precisão · Feito por Nutrition Coach · Powered by IA
+
+    <div className="flex flex-col md:flex-row justify-between items-center gap-6 md:gap-4">
+      {/* Bloco esquerdo */}
+      <div className="flex flex-col items-center md:items-start gap-1">
+        <span className="font-mono text-[11px] text-[#888] tracking-[0.08em]">© 2026 nutriON</span>
+        <span className="font-mono text-[10px] text-[#ffffff30]">
+          SISTEMA INTEGRADO DE PERFORMANCE HUMANA
+        </span>
+      </div>
+
+      {/* Bloco central */}
+      <div className="font-mono text-[10px] text-[#888] tracking-[0.06em] text-center leading-relaxed">
+        APEX · VERTEX · TRAININGON · NUTRIPLAN · MICROBIOTA · PCA
+      </div>
+
+      {/* Bloco direito */}
+      <div className="flex flex-col items-center md:items-end gap-1">
+        <span className="font-mono text-[10px] text-[#888]">
+          Powered by Claude AI · Supabase · React
+        </span>
+        <div className="flex items-center gap-2">
+          <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#1D9E75] animate-pulse" />
+          <span className="font-mono text-[10px] text-[#888]">SISTEMA ONLINE</span>
+        </div>
+      </div>
     </div>
   </footer>
 );
