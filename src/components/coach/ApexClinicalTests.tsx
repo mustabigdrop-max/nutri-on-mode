@@ -183,10 +183,10 @@ export function ApexClinicalTests({ athleteId, coachId, athleteData }: Props) {
           <Sparkles size={16} style={{ color: C.cyan }} />
           <div>
             <div style={{ fontFamily: C.fontMono, fontSize: 11, color: C.muted, letterSpacing: 1.5 }}>
-              APEX · TESTES CLÍNICOS · IA
+              APEX · TESTES CLÍNICOS
             </div>
             <div style={{ color: C.text, fontWeight: 700, fontSize: 14, marginTop: 2 }}>
-              Análise automática por foto · Método Fenner
+              Avaliação Funcional APEX
             </div>
           </div>
         </div>
