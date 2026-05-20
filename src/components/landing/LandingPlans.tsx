@@ -243,8 +243,22 @@ const LandingPlans = () => {
                 )}
               </div>
             )}
-            <div className="font-heading text-[1.5rem] tracking-[.08em] mb-1.5 text-[#f0edf8]">{plan.name}</div>
-            
+            {plan.name === "ON +" ? (
+              <div className="mb-1.5">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <div className="font-heading text-[1.25rem] tracking-[.06em] text-[#f0edf8] leading-tight">
+                    NUTRIPLAN INTELLIGENCE SYSTEM
+                  </div>
+                  <span className="font-mono text-[.55rem] text-black bg-primary px-1.5 py-0.5 rounded-[2px] tracking-[.1em] font-bold">PRO</span>
+                </div>
+                <div className="font-mono text-[.6rem] text-[#6060a0] mt-1.5 leading-relaxed">
+                  Geração Avançada por IA · Nutrição Esportiva · Protocolo PCA · Crononutrição
+                </div>
+              </div>
+            ) : (
+              <div className="font-heading text-[1.5rem] tracking-[.08em] mb-1.5 text-[#f0edf8]">{plan.name}</div>
+            )}
+
             {/* Price with anchoring */}
             <div className="my-5">
               <div className="flex items-baseline gap-2.5">
@@ -259,23 +273,44 @@ const LandingPlans = () => {
               </div>
             </div>
 
-            <ul className="flex flex-col gap-2.5 mb-8">
-              {plan.features.map((f, i) => {
-                const text = typeof f === "string" ? f : f.text;
-                const isLocked = !!(f as any).locked;
-                const plainText = text.replace(/<[^>]*>/g, "").replace("🔒", "").trim();
-                return (
-                  <li
-                    key={i}
-                    className={`text-[.82rem] flex items-start gap-2 font-landing ${isLocked ? "text-[#40405a] cursor-pointer hover:text-[#6060a0] transition-colors" : "text-[#7070a0]"}`}
-                    onClick={isLocked ? () => setModal({ open: true, plan: plan.name, feature: plainText }) : undefined}
-                  >
-                    <span className={`text-[.7rem] mt-0.5 shrink-0 ${isLocked ? "text-[#40405a]" : "text-primary"}`}>{isLocked ? "✗" : "→"}</span>
-                    <span className="[&_strong]:text-[#f0edf8]" dangerouslySetInnerHTML={{ __html: text }} />
-                  </li>
-                );
-              })}
-            </ul>
+            {plan.name === "ON +" ? (
+              <>
+                <ul className="flex flex-col gap-2 mb-3">
+                  {NUTRIPLAN_SHORT.map((text, i) => (
+                    <li key={i} className="text-[.78rem] flex items-start gap-2 font-landing text-[#8585b0] leading-snug">
+                      <span className="text-[.7rem] mt-0.5 shrink-0 text-primary">✓</span>
+                      <span>{text}</span>
+                    </li>
+                  ))}
+                </ul>
+                <button
+                  type="button"
+                  onClick={() => setNutriplanOpen(true)}
+                  className="w-full text-center py-2 mb-6 rounded border text-[11px] font-mono tracking-wider transition-colors hover:border-primary/40 hover:text-[#aaa]"
+                  style={{ background: "transparent", borderColor: "#ffffff20", color: "#888" }}
+                >
+                  Ver tudo incluído →
+                </button>
+              </>
+            ) : (
+              <ul className="flex flex-col gap-2.5 mb-8">
+                {plan.features.map((f, i) => {
+                  const text = typeof f === "string" ? f : f.text;
+                  const isLocked = !!(f as any).locked;
+                  const plainText = text.replace(/<[^>]*>/g, "").replace("🔒", "").trim();
+                  return (
+                    <li
+                      key={i}
+                      className={`text-[.82rem] flex items-start gap-2 font-landing ${isLocked ? "text-[#40405a] cursor-pointer hover:text-[#6060a0] transition-colors" : "text-[#7070a0]"}`}
+                      onClick={isLocked ? () => setModal({ open: true, plan: plan.name, feature: plainText }) : undefined}
+                    >
+                      <span className={`text-[.7rem] mt-0.5 shrink-0 ${isLocked ? "text-[#40405a]" : "text-primary"}`}>{isLocked ? "✗" : "→"}</span>
+                      <span className="[&_strong]:text-[#f0edf8]" dangerouslySetInnerHTML={{ __html: text }} />
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
             <a
               href={plan.checkoutUrl}
               target="_blank"
