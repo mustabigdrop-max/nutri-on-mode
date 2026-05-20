@@ -1290,6 +1290,13 @@ Suporte em uso: ${suporte || "não informado"}` : "";
                 {meta.semEst && <Pill label="Semanas" value={meta.semEst} color={cat.color} />}
               </div>
               <InfoBlock title="Condicionamento" body={parseSection(analysisResult, "CONDICIONAMENTO", "FARMACOLOGIA_SHAPE")} accent={cat.color} />
+              {hasFarmacologia && (
+                <InfoBlock
+                  title="💉 Farmacologia"
+                  body={farmacologiaSection || ""}
+                  accent="#C47A15"
+                />
+              )}
               <GenerateTrainingButton onClick={handleGenerateTraining} loading={generatingTraining} />
             </div>
           )}
