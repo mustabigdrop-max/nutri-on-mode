@@ -24,6 +24,7 @@ import FeminineCyclePhaseBanner from "@/components/coach/FeminineCyclePhaseBanne
 import { isFeminine, getCyclePhase, getCycleDayCount, normalizeFeminineCategory, FEMININE_CATEGORIES } from "@/lib/feminine";
 import { ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Legend, Tooltip as RTooltip } from "recharts";
 import React from "react";
+import ApexMarkdown from "@/components/apex/ApexMarkdown";
 
 // ─── APEX Elite design tokens ───────────────────────────────────
 const APEX = {
