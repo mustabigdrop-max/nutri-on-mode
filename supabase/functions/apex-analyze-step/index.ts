@@ -73,6 +73,21 @@ REGRAS DE POSICIONAMENTO DE LANDMARKS:
    - Média: C7, escápulas, trocânteres
    - Estimada: trago, suboccipital, landmarks faciais
 
+VALIDAÇÃO DE LARGURA:
+Antes de posicionar os landmarks de ombro (acromio_r e acromio_l), verificar se ambos estão dentro dos limites da imagem.
+Se acromio_r.x > 95% ou acromio_l.x < 5%:
+Os ombros estão cortados na foto. Neste caso:
+- Posicionar os acrômios na borda visível do ombro dentro da imagem.
+- Adicionar a string EXATA em "avisos":
+  "Ombros parcialmente cortados — a análise de simetria escapular pode ser imprecisa. Refaça a foto com mais margem lateral."
+
+Proporções de largura de referência (atleta de costas centralizado):
+- O atleta ocupa ~50–60% da largura total da imagem.
+- Acrômio direito: ~65–70% da largura.
+- Acrômio esquerdo: ~30–35% da largura.
+- Centro (coluna): ~50% da largura.
+Se os ombros ultrapassarem esses limites, ajustar automaticamente para as bordas corporais visíveis.
+
 REGRAS GERAIS:
 1. Responda SOMENTE com JSON válido, sem markdown, sem texto adicional.
 2. Use sistema métrico (graus °, centímetros cm).
