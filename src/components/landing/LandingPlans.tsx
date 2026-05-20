@@ -82,6 +82,85 @@ const NUTRIPLAN_FULL: { category: string; items: string[] }[] = [
   },
 ];
 
+const TRAININGON_PILLS = [
+  "Prescrição", "Readiness", "Fibras", "Sistemas", "STRATUM",
+  "Competição", "Progressão", "Volume", "Histórico",
+];
+
+const TRAININGON_SHORT: string[] = [
+  "6 fases de treinamento: Bulking · Cutting · Manutenção · Recomposição · Emagrecimento · Performance",
+  "27 sistemas de treino em 5 categorias: Periodização · Força Lendária · Hipertrofia Específica · Atlético/Olímpico · Bodybuilding Clássico",
+  "Sistemas inclusos: Linear · DUP · WUP · Westside · Bloco · APRE · 5/3/1 Wendler · Smolov · Texas Method · GVT · DC Training · Mountain Dog · RP · Doggcrapp · EDT · Heavy Duty · Weider · Flushing · Staggered · VBT · Bulgarian e mais 6 especializados",
+  "13 músculos prioritários configuráveis: Peitoral · Costas · Deltoides · Bíceps · Tríceps · Quadríceps · Posterior · Glúteos · Panturrilha · Core · Trapézio · Antebraço · Romboides",
+  "Protocolo corretivo APEX integrado — exercícios corretivos injetados automaticamente no treino",
+  "Verificação de compatibilidade — detecta conflitos entre sistema escolhido e restrições do aluno",
+  "Readiness diário — score de prontidão antes de cada sessão",
+  "Análise de fibras musculares — dominância Tipo I · IIA · IIX",
+  "STRATUM — 7 camadas de periodização (módulo ADM)",
+  "Competição — prep para palco (módulo ADM)",
+  "Progressão e LoadTracker Pro",
+  "Volume por grupo muscular",
+  "Histórico completo de sessões",
+  "Painel coach — até 30 alunos",
+  "Relatório PDF mensal por aluno",
+  "Protocolo farmacológico integrado — IA ajusta volume e intensidade conforme compostos ativos",
+];
+
+const TRAININGON_SYSTEMS: { category: string; items: { name: string; desc: string }[] }[] = [
+  {
+    category: "Periodização",
+    items: [
+      { name: "Linear", desc: "Progressão clássica de carga semanal — base universal." },
+      { name: "DUP (Daily Undulating Periodization)", desc: "Variação diária de volume/intensidade na mesma semana." },
+      { name: "WUP (Weekly Undulating Periodization)", desc: "Ondulação semanal de estímulo — força, hipertrofia, potência." },
+      { name: "Block Periodization", desc: "Blocos sequenciais focados (acumulação · transmutação · realização)." },
+      { name: "Conjugate (Westside)", desc: "Max Effort + Dynamic Effort + Repetition — Louie Simmons." },
+      { name: "APRE (Autoregulatory Progressive Resistance Exercise)", desc: "Auto-regulação por desempenho real do dia." },
+    ],
+  },
+  {
+    category: "Força Lendária",
+    items: [
+      { name: "5/3/1 Wendler", desc: "Ciclos de 4 semanas com TM (Training Max) e PRs por AMRAP." },
+      { name: "Smolov", desc: "Programa russo brutal de agachamento — 13 semanas." },
+      { name: "Texas Method", desc: "Volume na segunda, recuperação na quarta, intensidade na sexta." },
+      { name: "Bulgarian Method", desc: "Máxima diária, alta frequência — atletismo de força." },
+      { name: "VBT (Velocity Based Training)", desc: "Prescrição baseada em velocidade da barra." },
+    ],
+  },
+  {
+    category: "Hipertrofia Específica",
+    items: [
+      { name: "GVT (German Volume Training)", desc: "10x10 — choque hipertrófico clássico." },
+      { name: "RP (Renaissance Periodization)", desc: "MV · MEV · MAV · MRV — volume por mesociclo." },
+      { name: "DC Training (Doggcrapp)", desc: "Rest-pause + extreme stretching, baixa frequência alta intensidade." },
+      { name: "Mountain Dog (John Meadows)", desc: "Pré-exaustão, ângulos múltiplos, conexão neuromuscular." },
+      { name: "EDT (Escalating Density Training)", desc: "PR Zones — mais trabalho no mesmo tempo." },
+      { name: "Heavy Duty (Mike Mentzer)", desc: "Uma série até a falha absoluta, baixíssima frequência." },
+    ],
+  },
+  {
+    category: "Atlético / Olímpico",
+    items: [
+      { name: "Olympic Weightlifting", desc: "Snatch e Clean & Jerk — periodização técnica." },
+      { name: "Tier System (Joe Kenn)", desc: "Total · Upper · Lower em rotação para atletas." },
+      { name: "Triphasic Training (Cal Dietz)", desc: "Excêntrico · Isométrico · Concêntrico." },
+      { name: "PHA (Peripheral Heart Action)", desc: "Circuito alternando membros superior/inferior." },
+    ],
+  },
+  {
+    category: "Bodybuilding Clássico",
+    items: [
+      { name: "Sistema Weider", desc: "Princípios fundadores do BB — pirâmide, superséries, drop sets." },
+      { name: "Flushing", desc: "Múltiplos exercícios consecutivos para um único grupo." },
+      { name: "Staggered Sets", desc: "Intercalar grupos atrasados entre séries principais." },
+      { name: "Pre-Exhaustion", desc: "Isolador antes do composto — falha muscular precoce." },
+      { name: "Giant Sets", desc: "4+ exercícios em sequência para o mesmo grupo." },
+      { name: "FST-7 (Hany Rambod)", desc: "7 séries finais com pump máximo para expansão fascial." },
+    ],
+  },
+];
+
 const plans = [
   {
     name: "ON", price: "R$67", oldPrice: "R$97", discount: "31% off fundador", featured: false,
