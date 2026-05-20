@@ -20,7 +20,9 @@ import { cropToAthlete } from "@/lib/apexImageCrop";
 import {
   validateLandmarks,
   landmarksArrayToMap,
+  validateAndFixLandmarks,
   type LandmarkValidation,
+  type LandmarkQuality,
 } from "@/lib/apexLandmarkValidator";
 
 export type GuidedPhase = "static" | "flexibility" | "strength" | "dynamic";
@@ -76,6 +78,7 @@ interface StepPhoto {
   error?: string;
   pendingFile?: File;
   landmarkValidation?: LandmarkValidation;
+  landmarkQuality?: LandmarkQuality;
 }
 
 // ───────── SVG guides simples por step ─────────
@@ -268,8 +271,17 @@ export default function ApexGuidedSession({
           return;
         }
 
-        // Valida landmarks
-        const validation = validateLandmarks(landmarksArrayToMap(analysis.overlay?.landmarks));
+        // CAMADA 3 — corrigir landmarks fora do corpo antes de qualquer render
+        const rawMap = landmarksArrayToMap(analysis.overlay?.landmarks);
+        const { fixed, quality } = validateAndFixLandmarks(rawMap);
+        if (analysis.overlay) {
+          analysis.overlay.landmarks = Object.entries(fixed).map(([id, p]) => ({
+            id,
+            x: p.x,
+            y: p.y,
+          }));
+        }
+        const validation = validateLandmarks(fixed);
 
         setPhotos((prev) => {
           const next = [...prev];
@@ -279,6 +291,7 @@ export default function ApexGuidedSession({
             analysis,
             dataUrl: finalImg,
             landmarkValidation: validation,
+            landmarkQuality: quality,
           };
           return next;
         });
@@ -614,7 +627,9 @@ export default function ApexGuidedSession({
                 {currentPhoto.landmarkValidation && (
                   <LandmarkBadge
                     validation={currentPhoto.landmarkValidation}
+                    quality={currentPhoto.landmarkQuality}
                     onReanalyze={() => runAnalysis(currentPhoto.dataUrl, { forceLowFraming: false })}
+                    onRetake={handleRetake}
                   />
                 )}
                 <PhotoOverlay
@@ -944,14 +959,82 @@ function useConsolidatedFake() {
   };
 }
 
-// ───────── Badge de validação de landmarks ─────────
+// ───────── Badge de validação de landmarks (CAMADA 4) ─────────
 function LandmarkBadge({
   validation,
+  quality,
   onReanalyze,
+  onRetake,
 }: {
   validation: LandmarkValidation;
+  quality?: LandmarkQuality;
   onReanalyze: () => void;
+  onRetake?: () => void;
 }) {
+  // Se temos quality, priorizamos a métrica de % dentro do corpo
+  if (quality && quality.totalCount > 0) {
+    const pct = Math.round(quality.qualidade);
+
+    if (pct >= 90) {
+      return (
+        <div
+          className="rounded-md px-3 py-1.5 text-[11px] font-bold inline-flex items-center gap-1.5 self-start"
+          style={{ background: "rgba(29,158,117,0.10)", border: "1px solid rgba(29,158,117,0.45)", color: "#1D9E75" }}
+        >
+          ✓ Landmarks precisos · {pct}%
+        </div>
+      );
+    }
+    if (pct >= 70) {
+      return (
+        <div
+          className="rounded-md px-3 py-1.5 text-[11px] font-bold inline-flex items-center gap-1.5 self-start"
+          style={{ background: "rgba(184,146,42,0.10)", border: "1px solid rgba(184,146,42,0.45)", color: "#B8922A" }}
+          title={validation.erros.join(" · ")}
+        >
+          ⚠ Precisão moderada ({pct}%) — refaça a foto mais próximo
+        </div>
+      );
+    }
+    return (
+      <div
+        className="rounded-lg p-3 text-xs"
+        style={{ background: "rgba(226,75,74,0.08)", border: "1px solid rgba(226,75,74,0.45)" }}
+      >
+        <div className="flex items-center gap-2 font-bold mb-1" style={{ color: "#E24B4A" }}>
+          ✗ Foto muito aberta ({pct}%) — refaça com o atleta mais próximo
+        </div>
+        <details className="text-[10px] text-muted-foreground mb-2">
+          <summary className="cursor-pointer underline">Ver instruções de enquadramento</summary>
+          <ul className="list-disc pl-4 mt-1 space-y-0.5">
+            <li>O atleta deve ocupar pelo menos 80% da altura do frame</li>
+            <li>Mantenha a câmera na altura do umbigo, a ~1,5m</li>
+            <li>Use fundo liso e iluminação uniforme</li>
+            <li>Pés inteiramente visíveis até o topo da cabeça</li>
+          </ul>
+        </details>
+        <div className="flex gap-2">
+          {onRetake && (
+            <button
+              onClick={onRetake}
+              className="text-[11px] px-3 py-1.5 rounded font-bold"
+              style={{ background: "#E24B4A", color: "white" }}
+            >
+              Refazer foto
+            </button>
+          )}
+          <button
+            onClick={onReanalyze}
+            className="text-[11px] px-3 py-1.5 rounded border font-bold hover:bg-muted"
+          >
+            Reanalisar
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Fallback: comportamento legado por validation.confianca
   if (validation.confianca === "alta") {
     return (
       <div

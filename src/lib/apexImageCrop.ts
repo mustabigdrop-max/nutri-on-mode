@@ -47,22 +47,95 @@ export async function cropToAthlete(imageBase64: string): Promise<{
   bbox: BoundingBox | null;
   heightPct: number | null;
 }> {
+  // Tenta detecção via IA primeiro
   try {
     const { data, error } = await supabase.functions.invoke("apex-detect-bbox", {
       body: { imageBase64 },
     });
-    if (error || !data?.bbox) {
-      return { cropped: imageBase64, bbox: null, heightPct: null };
+    if (!error && data?.bbox) {
+      const bbox = data.bbox as BoundingBox;
+      const heightPct = Math.max(0, Math.min(100, bbox.y_max - bbox.y_min));
+      const img = await loadImage(
+        imageBase64.startsWith("data:") ? imageBase64 : `data:image/jpeg;base64,${imageBase64}`,
+      );
+      const cropped = cropDataUrl(img, bbox);
+      return { cropped, bbox, heightPct };
     }
-    const bbox = data.bbox as BoundingBox;
-    const heightPct = Math.max(0, Math.min(100, bbox.y_max - bbox.y_min));
-    const img = await loadImage(
-      imageBase64.startsWith("data:") ? imageBase64 : `data:image/jpeg;base64,${imageBase64}`,
-    );
-    const cropped = cropDataUrl(img, bbox);
-    return { cropped, bbox, heightPct };
   } catch (e) {
-    console.warn("[apex] cropToAthlete falhou, usando imagem original:", e);
+    console.warn("[apex] cropToAthlete via IA falhou, tentando fallback central:", e);
+  }
+
+  // CAMADA 1 — fallback: crop central 60% (heurística determinística)
+  try {
+    const fallback = await preprocessApexImage(imageBase64);
+    const bbox: BoundingBox = {
+      x_min: 15,
+      y_min: 5,
+      x_max: 85,
+      y_max: 95,
+    };
+    return {
+      cropped: fallback.croppedBase64.startsWith("data:")
+        ? fallback.croppedBase64
+        : `data:image/jpeg;base64,${fallback.croppedBase64}`,
+      bbox,
+      heightPct: 90,
+    };
+  } catch (e) {
+    console.warn("[apex] fallback central falhou, usando imagem original:", e);
     return { cropped: imageBase64, bbox: null, heightPct: null };
   }
+}
+
+/**
+ * CAMADA 1 — pré-processamento determinístico.
+ * Faz crop central 60% da imagem quando o atleta provavelmente está muito
+ * pequeno no frame. Não depende de IA. Retorna informações para reverter
+ * coordenadas ao espaço original quando necessário.
+ */
+export async function preprocessApexImage(base64: string): Promise<{
+  croppedBase64: string;
+  cropInfo: { x: number; y: number; w: number; h: number };
+  athleteRatio: number;
+}> {
+  const dataUrl = base64.startsWith("data:") ? base64 : `data:image/jpeg;base64,${base64}`;
+  const img = await loadImage(dataUrl);
+
+  // Crop central 60% (fallback robusto)
+  const centerCrop = {
+    x: img.naturalWidth * 0.15,
+    y: img.naturalHeight * 0.05,
+    w: img.naturalWidth * 0.70,
+    h: img.naturalHeight * 0.90,
+  };
+
+  const cropCanvas = document.createElement("canvas");
+  cropCanvas.width = Math.round(centerCrop.w);
+  cropCanvas.height = Math.round(centerCrop.h);
+  const cropCtx = cropCanvas.getContext("2d");
+  if (!cropCtx) {
+    return {
+      croppedBase64: base64,
+      cropInfo: centerCrop,
+      athleteRatio: 1,
+    };
+  }
+  cropCtx.drawImage(
+    img,
+    centerCrop.x,
+    centerCrop.y,
+    centerCrop.w,
+    centerCrop.h,
+    0,
+    0,
+    cropCanvas.width,
+    cropCanvas.height,
+  );
+
+  const dataOut = cropCanvas.toDataURL("image/jpeg", 0.92);
+  return {
+    croppedBase64: dataOut.split(",")[1] || dataOut,
+    cropInfo: centerCrop,
+    athleteRatio: centerCrop.h / img.naturalHeight,
+  };
 }
