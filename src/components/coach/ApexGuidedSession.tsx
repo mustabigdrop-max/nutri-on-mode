@@ -271,8 +271,17 @@ export default function ApexGuidedSession({
           return;
         }
 
-        // Valida landmarks
-        const validation = validateLandmarks(landmarksArrayToMap(analysis.overlay?.landmarks));
+        // CAMADA 3 — corrigir landmarks fora do corpo antes de qualquer render
+        const rawMap = landmarksArrayToMap(analysis.overlay?.landmarks);
+        const { fixed, quality } = validateAndFixLandmarks(rawMap);
+        if (analysis.overlay) {
+          analysis.overlay.landmarks = Object.entries(fixed).map(([id, p]) => ({
+            id,
+            x: p.x,
+            y: p.y,
+          }));
+        }
+        const validation = validateLandmarks(fixed);
 
         setPhotos((prev) => {
           const next = [...prev];
@@ -282,6 +291,7 @@ export default function ApexGuidedSession({
             analysis,
             dataUrl: finalImg,
             landmarkValidation: validation,
+            landmarkQuality: quality,
           };
           return next;
         });
