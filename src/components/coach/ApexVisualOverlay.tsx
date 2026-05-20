@@ -939,22 +939,36 @@ function OverlayLayer({
         {/* View-specific lines */}
         {data.view === "front" && (
           <>
-            <SvgLine p1={lm.shoulder_left} p2={lm.shoulder_right} color={colorBySev(lineSev("shoulder_tilt"))} />
-            <SvgLine p1={lm.hip_left} p2={lm.hip_right} color={colorBySev(lineSev("hip_tilt"))} />
-            <SvgLine p1={lm.hip_left} p2={lm.ankle_left} color={colorBySev(lineSev("knee_valgus_left"))} />
-            <SvgLine p1={lm.hip_right} p2={lm.ankle_right} color={colorBySev(lineSev("knee_valgus_right"))} />
+            <SvgSevLine id="sho-front" p1={lm.shoulder_left} p2={lm.shoulder_right}
+              style={getLineStyle(angleVal("shoulder_tilt"), LINE_THRESHOLDS.shoulder_tilt.n, LINE_THRESHOLDS.shoulder_tilt.mi, LINE_THRESHOLDS.shoulder_tilt.mo)} />
+            <SvgSevLine id="hip-front" p1={lm.hip_left} p2={lm.hip_right}
+              style={getLineStyle(angleVal("hip_tilt"), LINE_THRESHOLDS.hip_tilt.n, LINE_THRESHOLDS.hip_tilt.mi, LINE_THRESHOLDS.hip_tilt.mo)} />
+            <SvgSevLine id="knee-L" p1={lm.hip_left} p2={lm.ankle_left}
+              style={getLineStyle(angleVal("knee_valgus_left"), LINE_THRESHOLDS.knee_valgus_left.n, LINE_THRESHOLDS.knee_valgus_left.mi, LINE_THRESHOLDS.knee_valgus_left.mo)} />
+            <SvgSevLine id="knee-R" p1={lm.hip_right} p2={lm.ankle_right}
+              style={getLineStyle(angleVal("knee_valgus_right"), LINE_THRESHOLDS.knee_valgus_right.n, LINE_THRESHOLDS.knee_valgus_right.mi, LINE_THRESHOLDS.knee_valgus_right.mo)} />
           </>
         )}
-        {data.view === "lateral" && (
-          <SvgPolyline
-            points={["ear", "shoulder", "hip_greater_trochanter", "knee_lateral", "ankle_lateral"].map((k) => lm[k]).filter(isValidPoint)}
-            color={colorBySev(lineSev("plumb_line_deviation"))}
-          />
-        )}
+        {data.view === "lateral" && (() => {
+          const ls = getLineStyle(angleVal("plumb_line_deviation"), LINE_THRESHOLDS.plumb_line_deviation.n, LINE_THRESHOLDS.plumb_line_deviation.mi, LINE_THRESHOLDS.plumb_line_deviation.mo);
+          return (
+            <SvgPolyline
+              points={["ear", "shoulder", "hip_greater_trochanter", "knee_lateral", "ankle_lateral"].map((k) => lm[k]).filter(isValidPoint)}
+              color={ls.stroke}
+              style={{ strokeWidth: ls.strokeWidth, strokeDasharray: ls.strokeDasharray, opacity: ls.opacity }}
+            />
+          );
+        })()}
         {data.view === "back" && (
           <>
-            <SvgLine p1={lm.shoulder_left} p2={lm.shoulder_right} color={colorBySev(lineSev("shoulder_asymmetry"))} />
-            <SvgLine p1={lm.hip_left} p2={lm.hip_right} color={colorBySev(lineSev("hip_asymmetry"))} />
+            <SvgSevLine id="sho-back" p1={lm.shoulder_left} p2={lm.shoulder_right}
+              style={getLineStyle(angleVal("shoulder_asymmetry"), LINE_THRESHOLDS.shoulder_asymmetry.n, LINE_THRESHOLDS.shoulder_asymmetry.mi, LINE_THRESHOLDS.shoulder_asymmetry.mo)} />
+            <SvgSevLine id="hip-back" p1={lm.hip_left} p2={lm.hip_right}
+              style={getLineStyle(angleVal("hip_asymmetry"), LINE_THRESHOLDS.hip_asymmetry.n, LINE_THRESHOLDS.hip_asymmetry.mi, LINE_THRESHOLDS.hip_asymmetry.mo)} />
+            {isValidPoint(lm.scapula_left) && isValidPoint(lm.scapula_right) && (
+              <SvgSevLine id="scap-back" p1={lm.scapula_left} p2={lm.scapula_right}
+                style={getLineStyle(angleVal("scapular_axis_tilt"), LINE_THRESHOLDS.scapular_axis_tilt.n, LINE_THRESHOLDS.scapular_axis_tilt.mi, LINE_THRESHOLDS.scapular_axis_tilt.mo)} />
+            )}
             {/* FIX 3 — C7→L5 sempre em amarelo, 2px, com badge de desvio CLICÁVEL */}
             {isValidPoint(lm.spine_c7) && isValidPoint(lm.spine_l5) && (() => {
               const c7 = lm.spine_c7;
