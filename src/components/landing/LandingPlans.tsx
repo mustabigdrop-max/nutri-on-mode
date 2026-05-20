@@ -338,7 +338,7 @@ const LandingPlans = () => {
             ) : plan.name === "ON PRO" ? (
               <div className="mb-1.5">
                 <div className="font-heading text-[1.5rem] tracking-[.06em] text-[#f0edf8] leading-tight">
-                  TRAININGON
+                  TRAINING<span style={{ color: "#1D9E75" }}>ON</span>
                 </div>
                 <div className="font-mono text-[.55rem] mt-1.5 tracking-[.08em]" style={{ color: "#1D9E75" }}>
                   MOTOR DE PRESCRIÇÃO DE ELITE v2.4
