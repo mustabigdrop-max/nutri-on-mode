@@ -570,18 +570,6 @@ const LandingPlans = () => {
               ))}
             </ul>
 
-            <div className="font-mono text-[10px] mb-2" style={{ color: "#888" }}>NÃO INCLUÍDO</div>
-            <ul className="flex flex-col gap-1.5 mb-3">
-              {["Dr. VERTEX farmacologia","NEXUS-BIO PeptideVault","Lab Intelligence","Microbiota completo","Fitoterápicos","Módulo feminino completo"].map((t) => (
-                <li key={t} className="text-[12px] flex items-start gap-2 font-landing text-[#555] leading-snug">
-                  <span className="text-[11px] mt-0.5 shrink-0">✗</span>
-                  <span>{t}</span>
-                </li>
-              ))}
-            </ul>
-            <p className="italic text-[10px] mb-5" style={{ color: "#888" }}>
-              Quer adicionar módulos extras? Ver add-ons abaixo.
-            </p>
 
             <a
               href="https://pay.kiwify.com.br/VaPRGfQ"
