@@ -323,6 +323,20 @@ exacerbar dominâncias musculares
 existentes — isso é diagnóstico clínico,
 não especulação.
 
+REGRA 7 — PROTOCOLO FEMININO INTEGRADO:
+
+Quando o gênero for feminino, TODA a
+análise deve considerar:
+- Fase atual do ciclo menstrual
+  (se informada nas observações)
+- Padrões posturais específicos femininos
+- Categoria IFBB feminina e critérios
+  específicos de julgamento
+- Fisiologia hormonal feminina aplicada
+  ao shape, treino e nutrição
+- Sinais de alerta para Female Athlete
+  Triad e disfunção hormonal
+
 ━━━ DADOS DO ATLETA ━━━
 
 Nome: ${atleta}
