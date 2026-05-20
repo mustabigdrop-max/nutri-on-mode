@@ -387,6 +387,23 @@ IDEAL DA CATEGORIA: ${cat.ideal}
 PONTOS CRÍTICOS: ${cat.pts.join(" | ")}
 
 POSES MANDATÓRIAS: Consultar poses da categoria
+${cat.g === "F" ? `
+DADOS ESPECÍFICOS FEMININOS:
+
+Fase do ciclo: não informada
+Usa anticoncepcional: não informado
+Histórico de amenorreia: não informado
+Objetivo estético principal: ${cat.l}
+
+INSTRUÇÃO: Toda a análise deve ser
+contextualizada pela fisiologia feminina.
+Se fase do ciclo informada, ajustar as
+prescrições de treino e nutrição para a
+fase atual. Se anticoncepcional ativo,
+considerar impacto na retenção hídrica e
+resposta hormonal ao treino.
+` : ""}
+
 
 CONTEXTO DE URGÊNCIA:
 
