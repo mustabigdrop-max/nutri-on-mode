@@ -206,6 +206,7 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
   });
   const [chainMode, setChainMode] = useState<boolean>(false);
   const [debugMode, setDebugMode] = useState<boolean>(false);
+  const [gridMode, setGridMode] = useState<boolean>(false);
   const exportRef = useRef<HTMLDivElement>(null);
   const [exporting, setExporting] = useState(false);
 
@@ -451,6 +452,18 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
             Cadeia Cinética
           </button>
           <button
+            onClick={() => setGridMode((v) => !v)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg border"
+            style={{
+              borderColor: gridMode ? C.gold : "hsl(var(--border))",
+              color: gridMode ? C.gold : "hsl(var(--muted-foreground))",
+              background: gridMode ? `${C.gold}1A` : "transparent",
+            }}
+            title="Exibe arcos goniométricos sobre cada linha de análise"
+          >
+            📐 Grade simetrográfica
+          </button>
+          <button
             onClick={() => setDebugMode((v) => !v)}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg border"
             style={{
@@ -517,6 +530,7 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
                   eduMode={eduMode}
                   chainMode={chainMode}
                   debugMode={debugMode}
+                  gridMode={gridMode}
                   chains={chains}
                 />
               )}
@@ -801,7 +815,7 @@ function anchorLandmark(view: string, key: string): string {
 
 // ─── Overlay (HTML + SVG hybrid for crisp labels) ────────────────
 function OverlayLayer({
-  data, selected, onSelect, eduMode, chainMode, debugMode, chains,
+  data, selected, onSelect, eduMode, chainMode, debugMode, gridMode, chains,
 }: {
   data: LandmarkView;
   selected: string | null;
@@ -809,6 +823,7 @@ function OverlayLayer({
   eduMode: boolean;
   chainMode: boolean;
   debugMode: boolean;
+  gridMode: boolean;
   chains: { name: string; nodes: string[]; description: string }[];
 }) {
   const lm = data.landmarks;
@@ -1137,6 +1152,95 @@ function OverlayLayer({
             })()}
           </>
         )}
+
+        {/* Goniometric arcs — Grade simetrográfica */}
+        {gridMode && (() => {
+          const mid = (a?: Landmark, b?: Landmark) =>
+            isValidPoint(a) && isValidPoint(b) ? { x: (a!.x + b!.x) / 2, y: (a!.y + b!.y) / 2 } : null;
+          const sevColor = (key: string): string => {
+            const a = ang[key];
+            if (!a) return "#1D9E75";
+            const s = severityOf(a.value, a.normal);
+            return s === "sev" ? "#E24B4A" : s === "alt" ? "#EF9F27" : "#1D9E75";
+          };
+          const arcs: Array<{ key: string; cx: number; cy: number; r: number; angle: number; color: string }> = [];
+          const push = (key: string, c: { x: number; y: number } | null, r: number) => {
+            const a = ang[key];
+            if (!c || !a) return;
+            arcs.push({ key, cx: c.x, cy: c.y, r, angle: Number(a.value) || 0, color: sevColor(key) });
+          };
+          if (data.view === "front") {
+            push("shoulder_tilt", mid(lm.shoulder_left, lm.shoulder_right), 10);
+            push("hip_tilt", mid(lm.hip_left, lm.hip_right), 9);
+            if (isValidPoint(lm.knee_left)) push("knee_valgus_left", { x: lm.knee_left.x, y: lm.knee_left.y }, 6);
+            if (isValidPoint(lm.knee_right)) push("knee_valgus_right", { x: lm.knee_right.x, y: lm.knee_right.y }, 6);
+          }
+          if (data.view === "back") {
+            push("shoulder_asymmetry", mid(lm.shoulder_left, lm.shoulder_right), 10);
+            push("scapular_axis_tilt", mid(lm.scapula_left, lm.scapula_right), 9);
+            push("hip_asymmetry", mid(lm.hip_left, lm.hip_right), 9);
+          }
+          return arcs.map((a) => {
+            const startRad = Math.PI; // -180° horizontal
+            const endRad = startRad + (a.angle * Math.PI) / 180;
+            const x1 = a.cx + a.r * Math.cos(startRad);
+            const y1 = a.cy + a.r * Math.sin(startRad);
+            const x2 = a.cx + a.r * Math.cos(endRad);
+            const y2 = a.cy + a.r * Math.sin(endRad);
+            const largeArc = Math.abs(a.angle) > 180 ? 1 : 0;
+            const sweep = a.angle >= 0 ? 1 : 0;
+            const arcPath = `M ${a.cx} ${a.cy} L ${x1} ${y1} A ${a.r} ${a.r} 0 ${largeArc} ${sweep} ${x2} ${y2} Z`;
+            // Reference horizontal line (ideal) — extends both sides
+            const refX1 = a.cx - a.r;
+            const refX2 = a.cx + a.r;
+            // Label position — outside arc on the side of deviation
+            const midRad = (startRad + endRad) / 2;
+            const labelX = a.cx + (a.r + 4) * Math.cos(midRad);
+            const labelY = a.cy + (a.r + 4) * Math.sin(midRad);
+            const dir = Math.abs(a.angle) < 0.3 ? "" : a.angle > 0 ? " ↑D" : " ↑E";
+            const txt = `${a.angle >= 0 ? "" : "−"}${Math.abs(a.angle).toFixed(1)}°${dir}`;
+            const charW = 1.05;
+            const padX = 1.2;
+            const boxW = txt.length * charW + padX * 2;
+            const boxH = 3.4;
+            return (
+              <g key={`arc-${a.key}`} pointerEvents="none">
+                {/* horizontal reference (ideal) */}
+                <line
+                  x1={refX1} y1={a.cy} x2={refX2} y2={a.cy}
+                  stroke="#FFFFFF" strokeOpacity={0.3}
+                  strokeDasharray="4 2"
+                  vectorEffect="non-scaling-stroke"
+                  style={{ strokeWidth: 1 }}
+                />
+                {/* filled arc */}
+                <path d={arcPath} fill={a.color} fillOpacity={0.15} stroke="none" />
+                {/* arc stroke */}
+                <path d={arcPath} fill="none" stroke={a.color}
+                  vectorEffect="non-scaling-stroke" style={{ strokeWidth: 1.5 }} />
+                {/* angle label */}
+                <rect
+                  x={labelX - boxW / 2} y={labelY - boxH / 2}
+                  width={boxW} height={boxH}
+                  rx={0.8} ry={0.8}
+                  fill="#000000" fillOpacity={0.56}
+                />
+                <text
+                  x={labelX} y={labelY + 1}
+                  textAnchor="middle"
+                  fontFamily="ui-monospace, SFMono-Regular, Menlo, monospace"
+                  fontSize={2.4}
+                  fontWeight={700}
+                  fill={a.color}
+                >
+                  {txt}
+                </text>
+              </g>
+            );
+          });
+        })()}
+
+
 
         {/* Connector lines from landmarks to labels */}
         {labelPositions.map((q) => (
