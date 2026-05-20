@@ -262,7 +262,7 @@ export default function VertexEnhancedView({
                       <Calendar className="w-3 h-3" style={{ color }} />
                       <div className="text-[11px] font-bold" style={{ color }}>{w.label}</div>
                     </div>
-                    <div className="text-[11px] text-foreground/90 leading-snug">{w.body}</div>
+                    <div className="text-[11px] text-foreground/90 leading-snug"><ApexMarkdown text={w.body} /></div>
                   </div>
                 </div>
               );
