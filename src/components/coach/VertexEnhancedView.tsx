@@ -236,7 +236,7 @@ export default function VertexEnhancedView({
             <div className="text-[10px] font-bold uppercase tracking-widest text-amber-500 mb-1.5 flex items-center gap-1">
               <Activity className="w-3 h-3" /> Exames recomendados
             </div>
-            <div className="text-[11px] text-foreground/90 whitespace-pre-wrap leading-snug">{exames}</div>
+            <div className="text-[11px] text-foreground/90 leading-snug"><ApexMarkdown text={exames} /></div>
           </div>
         )}
       </div>
