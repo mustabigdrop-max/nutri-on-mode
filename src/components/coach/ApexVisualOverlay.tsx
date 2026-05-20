@@ -394,6 +394,12 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
       <style>{`
         @keyframes apex-chain-dash { to { stroke-dashoffset: -20; } }
         .apex-chain-line { animation: apex-chain-dash 1.2s linear infinite; }
+        @keyframes landmarkPulse {
+          0%   { r: 1.1; opacity: 1; }
+          50%  { r: 1.8; opacity: 0.55; }
+          100% { r: 1.1; opacity: 1; }
+        }
+        .apex-landmark-pulse { animation: landmarkPulse 1.5s ease-in-out infinite; transform-origin: center; }
       `}</style>
 
       {/* Header / toggles */}
