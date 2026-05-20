@@ -349,6 +349,39 @@ const LandingPlans = () => {
         fromPlan={modal.plan}
         lockedFeature={modal.feature}
       />
+
+      <Dialog open={nutriplanOpen} onOpenChange={setNutriplanOpen}>
+        <DialogContent className="max-w-2xl bg-[#0a0a18] border-[#2a2a4a] text-[#e0e0f0] max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="font-heading text-[1.3rem] tracking-[.06em] text-[#f0edf8] flex items-center gap-2 flex-wrap">
+              NUTRIPLAN INTELLIGENCE SYSTEM
+              <span className="font-mono text-[.55rem] text-black bg-primary px-1.5 py-0.5 rounded-[2px] tracking-[.1em] font-bold">PRO</span>
+            </DialogTitle>
+            <p className="font-mono text-[.65rem] text-[#7070a0] tracking-wide mt-1">
+              Tudo o que está incluído no sistema
+            </p>
+          </DialogHeader>
+          <Accordion type="multiple" defaultValue={[NUTRIPLAN_FULL[0].category]} className="w-full mt-2">
+            {NUTRIPLAN_FULL.map((cat) => (
+              <AccordionItem key={cat.category} value={cat.category} className="border-[#1f1f3a]">
+                <AccordionTrigger className="text-[.85rem] font-landing text-[#f0edf8] hover:text-primary hover:no-underline">
+                  {cat.category}
+                </AccordionTrigger>
+                <AccordionContent>
+                  <ul className="flex flex-col gap-2 pt-1">
+                    {cat.items.map((it, i) => (
+                      <li key={i} className="text-[.78rem] flex items-start gap-2 text-[#8585b0] leading-snug font-landing">
+                        <span className="text-primary text-[.7rem] mt-0.5 shrink-0">✓</span>
+                        <span>{it}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+        </DialogContent>
+      </Dialog>
     </section>
   );
 };
