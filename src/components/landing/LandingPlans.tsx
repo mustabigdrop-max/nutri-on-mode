@@ -307,7 +307,7 @@ const LandingPlans = () => {
               plan.featured ? "border-primary/30 bg-primary/[.02]" : "border-[#14142a] hover:border-[#2a2a4a]"
             }`}
           >
-            {(plan.badge || plan.slotKey) && (
+            {(plan.badge || plan.slotKey) && plan.name !== "ON PRO" && (
               <div className="absolute top-4 right-4 flex flex-col items-end gap-1">
                 {plan.badge && (
                   <span className="font-mono text-[.55rem] text-black bg-primary px-2 py-1 rounded-[2px] tracking-[.1em]">{plan.badge}</span>
@@ -335,23 +335,76 @@ const LandingPlans = () => {
                   Geração Avançada por IA · Nutrição Esportiva · Protocolo PCA · Crononutrição
                 </div>
               </div>
+            ) : plan.name === "ON PRO" ? (
+              <div className="mb-1.5">
+                <div className="font-heading text-[1.5rem] tracking-[.06em] text-[#f0edf8] leading-tight">
+                  TRAININGON
+                </div>
+                <div className="font-mono text-[.55rem] mt-1.5 tracking-[.08em]" style={{ color: "#1D9E75" }}>
+                  MOTOR DE PRESCRIÇÃO DE ELITE v2.4
+                </div>
+                <div className="font-mono text-[.6rem] text-[#6060a0] mt-1.5 leading-relaxed">
+                  Prescrição individualizada por IA · 27 sistemas · STRATUM 7 camadas
+                </div>
+                <div className="flex flex-wrap gap-1 mt-3">
+                  {TRAININGON_PILLS.map((p) => (
+                    <span
+                      key={p}
+                      className="font-mono text-[.55rem] px-1.5 py-0.5 rounded-[2px] tracking-wider"
+                      style={{ background: "#1D9E7510", border: "1px solid #1D9E7530", color: "#1D9E75" }}
+                    >
+                      {p}
+                    </span>
+                  ))}
+                </div>
+              </div>
             ) : (
               <div className="font-heading text-[1.5rem] tracking-[.08em] mb-1.5 text-[#f0edf8]">{plan.name}</div>
             )}
 
             {/* Price with anchoring */}
-            <div className="my-5">
-              <div className="flex items-baseline gap-2.5">
-                <span className="font-heading text-[3.5rem] text-primary leading-none">{plan.price}</span>
-                <span className="font-mono text-[.65rem] text-[#50507a]">/mês</span>
+            {plan.name === "ON PRO" ? (
+              <div className="my-5">
+                <div className="flex items-baseline gap-2.5">
+                  <span className="font-mono text-[.7rem] text-[#50507a] line-through">R$297</span>
+                  <span className="font-heading text-[2.4rem] leading-none font-bold" style={{ color: "#1D9E75" }}>R$197</span>
+                  <span className="font-mono text-[.65rem] text-[#50507a]">/mês</span>
+                  <span
+                    className="font-mono text-[.6rem] px-2 py-0.5 rounded-sm tracking-[.05em]"
+                    style={{ background: "#1D9E7520", border: "1px solid #1D9E7540", color: "#1D9E75" }}
+                  >
+                    34% OFF
+                  </span>
+                </div>
+                <div className="font-mono text-[.65rem] text-[#7070a0] mt-2">
+                  ou R$1.597/ano — 2 meses grátis
+                </div>
+                <div className="mt-2.5">
+                  <span
+                    className="font-mono text-[.6rem] px-2 py-1 rounded-[2px] tracking-[.08em] inline-block"
+                    style={{ background: "#E24B4A18", border: "1px solid #E24B4A55", color: "#E24B4A" }}
+                  >
+                    PREÇO DE FUNDADOR · R$97/mês
+                  </span>
+                </div>
+                <div className="font-mono text-[.6rem] text-[#6060a0] mt-1.5 leading-relaxed">
+                  Vagas limitadas — sobe para R$197 quando as vagas esgotarem.
+                </div>
               </div>
-              <div className="flex items-center gap-2 mt-1.5">
-                <span className="font-mono text-[.7rem] text-[#50507a] line-through">{plan.oldPrice}</span>
-                <span className="font-mono text-[.6rem] text-primary bg-primary/10 px-2 py-0.5 rounded-sm tracking-[.05em]">
-                  {plan.discount}
-                </span>
+            ) : (
+              <div className="my-5">
+                <div className="flex items-baseline gap-2.5">
+                  <span className="font-heading text-[3.5rem] text-primary leading-none">{plan.price}</span>
+                  <span className="font-mono text-[.65rem] text-[#50507a]">/mês</span>
+                </div>
+                <div className="flex items-center gap-2 mt-1.5">
+                  <span className="font-mono text-[.7rem] text-[#50507a] line-through">{plan.oldPrice}</span>
+                  <span className="font-mono text-[.6rem] text-primary bg-primary/10 px-2 py-0.5 rounded-sm tracking-[.05em]">
+                    {plan.discount}
+                  </span>
+                </div>
               </div>
-            </div>
+            )}
 
             {plan.name === "ON +" ? (
               <>
@@ -370,6 +423,25 @@ const LandingPlans = () => {
                   style={{ background: "transparent", borderColor: "#ffffff20", color: "#888" }}
                 >
                   Ver tudo incluído →
+                </button>
+              </>
+            ) : plan.name === "ON PRO" ? (
+              <>
+                <ul className="flex flex-col gap-2 mb-3">
+                  {TRAININGON_SHORT.map((text, i) => (
+                    <li key={i} className="text-[.78rem] flex items-start gap-2 font-landing text-[#8585b0] leading-snug">
+                      <span className="text-[.7rem] mt-0.5 shrink-0" style={{ color: "#1D9E75" }}>✓</span>
+                      <span>{text}</span>
+                    </li>
+                  ))}
+                </ul>
+                <button
+                  type="button"
+                  onClick={() => setTrainingOpen(true)}
+                  className="w-full text-center py-2 mb-6 rounded border text-[11px] font-mono tracking-wider transition-colors hover:border-[#1D9E7560] hover:text-[#aaa]"
+                  style={{ background: "transparent", borderColor: "#ffffff20", color: "#888" }}
+                >
+                  Ver todos os 27 sistemas →
                 </button>
               </>
             ) : (
