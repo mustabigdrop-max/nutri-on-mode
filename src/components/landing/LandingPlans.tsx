@@ -379,15 +379,7 @@ const LandingPlans = () => {
                 <div className="font-mono text-[.65rem] text-[#7070a0] mt-2">
                   ou R$1.597/ano — 2 meses grátis
                 </div>
-                <div className="mt-2.5">
-                  <span
-                    className="font-mono text-[.6rem] px-2 py-1 rounded-[2px] tracking-[.08em] inline-block"
-                    style={{ background: "#E24B4A18", border: "1px solid #E24B4A55", color: "#E24B4A" }}
-                  >
-                    PREÇO DE FUNDADOR · R$97/mês
-                  </span>
-                </div>
-                <div className="font-mono text-[.6rem] text-[#6060a0] mt-1.5 leading-relaxed">
+                <div className="font-mono text-[.6rem] text-[#6060a0] mt-2.5 leading-relaxed">
                   Vagas limitadas — sobe para R$197 quando as vagas esgotarem.
                 </div>
               </div>
