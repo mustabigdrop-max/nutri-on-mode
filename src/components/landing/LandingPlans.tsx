@@ -4,6 +4,83 @@ import { motion, useInView } from "framer-motion";
 import { usePlanSlots } from "@/hooks/usePlanSlots";
 import UpgradeModal from "@/components/landing/UpgradeModal";
 import { Shield, Star, Zap } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+
+const NUTRIPLAN_SHORT: string[] = [
+  "7 objetivos: Emagrecimento · Hipertrofia · Recomp · Performance · Saúde Geral · Gestante / Pós-parto",
+  "TDEE farmacológico — 22 compostos com multiplicadores automáticos",
+  "Crononutrição circadiana — cortisol, insulina e GH sincronizados",
+  "GLUT-4 Sync — janela pós-treino calculada automaticamente",
+  "Carb cycling automático — dias de treino vs descanso",
+  "Perfil PCA comportamental — 4 perfis",
+  "Banco TACO/IBGE — medidas caseiras com mapa de referência de gramatura",
+  "Substituições inteligentes — até 16 por alimento com kcal equivalente",
+  "Hidratação farmacológica — Na⁺ K⁺ Mg²⁺ ajustados ao protocolo",
+  "Modo econômico — mesmas equivalências nutricionais com menor custo",
+  "8 modos especiais: Peak Week · GLP-1 · Feminino · Vegano · Low-FODMAP · Longevidade · Cetogênico · Circadiano",
+];
+
+const NUTRIPLAN_FULL: { category: string; items: string[] }[] = [
+  {
+    category: "Objetivos e Cálculo Metabólico",
+    items: [
+      "7 objetivos prescritivos: Emagrecimento, Hipertrofia, Recomposição, Performance, Saúde Geral, Gestante, Pós-parto",
+      "TDEE adaptativo com calibração diária por logs de peso reais",
+      "TDEE farmacológico — 22 compostos com multiplicadores automáticos (GLP-1, T3, clenbuterol, MK-677, etc.)",
+      "Projeção VENTA (7700 kcal/kg) com tracking semanal de desvio",
+    ],
+  },
+  {
+    category: "Crononutrição & Sincronização",
+    items: [
+      "Janelas circadianas: cortisol matinal, insulina pós-treino, GH noturno",
+      "GLUT-4 Sync — janela anabólica pós-treino calculada por intensidade",
+      "Carb cycling automático — alto em dias de treino, baixo em descanso",
+      "Timing peri-workout: pré, intra e pós com macros específicos",
+    ],
+  },
+  {
+    category: "Banco de Alimentos & Substituições",
+    items: [
+      "Banco TACO + IBGE — alimentos 100% brasileiros regionais",
+      "Medidas caseiras com mapa visual de referência de gramatura",
+      "Até 16 substituições inteligentes por alimento com kcal equivalente",
+      "Validação de macros automática em cada troca (delta P/C/G)",
+      "Modo econômico — equivalências nutricionais com menor custo de mercado",
+    ],
+  },
+  {
+    category: "Perfil Comportamental PCA",
+    items: [
+      "4 perfis comportamentais (Disciplinado, Emocional, Social, Caótico)",
+      "Plano adaptado por perfil — estrutura de refeições, frequência e flexibilidade",
+      "Receitas personalizadas por perfil comportamental",
+      "Alertas preditivos de sabotagem com base no perfil",
+    ],
+  },
+  {
+    category: "Hidratação & Eletrólitos",
+    items: [
+      "Hidratação farmacológica — Na⁺ K⁺ Mg²⁺ ajustados ao protocolo ativo",
+      "Compensação de diurese (cafeína, GLP-1, ciclos farmacológicos)",
+      "Alertas de desidratação preditivos por temperatura e atividade",
+    ],
+  },
+  {
+    category: "8 Modos Especiais",
+    items: [
+      "Peak Week — protocolo de palco com SRI automático D-7",
+      "GLP-1 — proteína 1.8–2.2g/kg, faixa de saciedade ajustada",
+      "Feminino — periodização por fase do ciclo, RED-S safety",
+      "Vegano — combinação proteica completa + B12/ferro/ômega",
+      "Low-FODMAP — protocolo 3 fases (eliminação · reintrodução · personalização)",
+      "Longevidade — densidade nutricional, autofagia, restrição calórica suave",
+      "Cetogênico — cetose induzida, eletrólitos reforçados",
+      "Circadiano — refeições alinhadas ao cronotipo individual",
+    ],
+  },
+];
 
 const plans = [
   {
@@ -70,6 +147,7 @@ const LandingPlans = () => {
   const navigate = useNavigate();
   const { getRemaining } = usePlanSlots();
   const [modal, setModal] = useState<{ open: boolean; plan: string; feature: string }>({ open: false, plan: "", feature: "" });
+  const [nutriplanOpen, setNutriplanOpen] = useState(false);
 
   const slotBadge = (planKey: string | undefined) => {
     if (!planKey) return null;
@@ -165,8 +243,22 @@ const LandingPlans = () => {
                 )}
               </div>
             )}
-            <div className="font-heading text-[1.5rem] tracking-[.08em] mb-1.5 text-[#f0edf8]">{plan.name}</div>
-            
+            {plan.name === "ON +" ? (
+              <div className="mb-1.5">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <div className="font-heading text-[1.25rem] tracking-[.06em] text-[#f0edf8] leading-tight">
+                    NUTRIPLAN INTELLIGENCE SYSTEM
+                  </div>
+                  <span className="font-mono text-[.55rem] text-black bg-primary px-1.5 py-0.5 rounded-[2px] tracking-[.1em] font-bold">PRO</span>
+                </div>
+                <div className="font-mono text-[.6rem] text-[#6060a0] mt-1.5 leading-relaxed">
+                  Geração Avançada por IA · Nutrição Esportiva · Protocolo PCA · Crononutrição
+                </div>
+              </div>
+            ) : (
+              <div className="font-heading text-[1.5rem] tracking-[.08em] mb-1.5 text-[#f0edf8]">{plan.name}</div>
+            )}
+
             {/* Price with anchoring */}
             <div className="my-5">
               <div className="flex items-baseline gap-2.5">
@@ -181,23 +273,44 @@ const LandingPlans = () => {
               </div>
             </div>
 
-            <ul className="flex flex-col gap-2.5 mb-8">
-              {plan.features.map((f, i) => {
-                const text = typeof f === "string" ? f : f.text;
-                const isLocked = !!(f as any).locked;
-                const plainText = text.replace(/<[^>]*>/g, "").replace("🔒", "").trim();
-                return (
-                  <li
-                    key={i}
-                    className={`text-[.82rem] flex items-start gap-2 font-landing ${isLocked ? "text-[#40405a] cursor-pointer hover:text-[#6060a0] transition-colors" : "text-[#7070a0]"}`}
-                    onClick={isLocked ? () => setModal({ open: true, plan: plan.name, feature: plainText }) : undefined}
-                  >
-                    <span className={`text-[.7rem] mt-0.5 shrink-0 ${isLocked ? "text-[#40405a]" : "text-primary"}`}>{isLocked ? "✗" : "→"}</span>
-                    <span className="[&_strong]:text-[#f0edf8]" dangerouslySetInnerHTML={{ __html: text }} />
-                  </li>
-                );
-              })}
-            </ul>
+            {plan.name === "ON +" ? (
+              <>
+                <ul className="flex flex-col gap-2 mb-3">
+                  {NUTRIPLAN_SHORT.map((text, i) => (
+                    <li key={i} className="text-[.78rem] flex items-start gap-2 font-landing text-[#8585b0] leading-snug">
+                      <span className="text-[.7rem] mt-0.5 shrink-0 text-primary">✓</span>
+                      <span>{text}</span>
+                    </li>
+                  ))}
+                </ul>
+                <button
+                  type="button"
+                  onClick={() => setNutriplanOpen(true)}
+                  className="w-full text-center py-2 mb-6 rounded border text-[11px] font-mono tracking-wider transition-colors hover:border-primary/40 hover:text-[#aaa]"
+                  style={{ background: "transparent", borderColor: "#ffffff20", color: "#888" }}
+                >
+                  Ver tudo incluído →
+                </button>
+              </>
+            ) : (
+              <ul className="flex flex-col gap-2.5 mb-8">
+                {plan.features.map((f, i) => {
+                  const text = typeof f === "string" ? f : f.text;
+                  const isLocked = !!(f as any).locked;
+                  const plainText = text.replace(/<[^>]*>/g, "").replace("🔒", "").trim();
+                  return (
+                    <li
+                      key={i}
+                      className={`text-[.82rem] flex items-start gap-2 font-landing ${isLocked ? "text-[#40405a] cursor-pointer hover:text-[#6060a0] transition-colors" : "text-[#7070a0]"}`}
+                      onClick={isLocked ? () => setModal({ open: true, plan: plan.name, feature: plainText }) : undefined}
+                    >
+                      <span className={`text-[.7rem] mt-0.5 shrink-0 ${isLocked ? "text-[#40405a]" : "text-primary"}`}>{isLocked ? "✗" : "→"}</span>
+                      <span className="[&_strong]:text-[#f0edf8]" dangerouslySetInnerHTML={{ __html: text }} />
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
             <a
               href={plan.checkoutUrl}
               target="_blank"
@@ -236,6 +349,39 @@ const LandingPlans = () => {
         fromPlan={modal.plan}
         lockedFeature={modal.feature}
       />
+
+      <Dialog open={nutriplanOpen} onOpenChange={setNutriplanOpen}>
+        <DialogContent className="max-w-2xl bg-[#0a0a18] border-[#2a2a4a] text-[#e0e0f0] max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="font-heading text-[1.3rem] tracking-[.06em] text-[#f0edf8] flex items-center gap-2 flex-wrap">
+              NUTRIPLAN INTELLIGENCE SYSTEM
+              <span className="font-mono text-[.55rem] text-black bg-primary px-1.5 py-0.5 rounded-[2px] tracking-[.1em] font-bold">PRO</span>
+            </DialogTitle>
+            <p className="font-mono text-[.65rem] text-[#7070a0] tracking-wide mt-1">
+              Tudo o que está incluído no sistema
+            </p>
+          </DialogHeader>
+          <Accordion type="multiple" defaultValue={[NUTRIPLAN_FULL[0].category]} className="w-full mt-2">
+            {NUTRIPLAN_FULL.map((cat) => (
+              <AccordionItem key={cat.category} value={cat.category} className="border-[#1f1f3a]">
+                <AccordionTrigger className="text-[.85rem] font-landing text-[#f0edf8] hover:text-primary hover:no-underline">
+                  {cat.category}
+                </AccordionTrigger>
+                <AccordionContent>
+                  <ul className="flex flex-col gap-2 pt-1">
+                    {cat.items.map((it, i) => (
+                      <li key={i} className="text-[.78rem] flex items-start gap-2 text-[#8585b0] leading-snug font-landing">
+                        <span className="text-primary text-[.7rem] mt-0.5 shrink-0">✓</span>
+                        <span>{it}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+        </DialogContent>
+      </Dialog>
     </section>
   );
 };
