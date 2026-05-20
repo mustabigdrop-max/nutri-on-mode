@@ -627,7 +627,9 @@ export default function ApexGuidedSession({
                 {currentPhoto.landmarkValidation && (
                   <LandmarkBadge
                     validation={currentPhoto.landmarkValidation}
+                    quality={currentPhoto.landmarkQuality}
                     onReanalyze={() => runAnalysis(currentPhoto.dataUrl, { forceLowFraming: false })}
+                    onRetake={handleRetake}
                   />
                 )}
                 <PhotoOverlay
