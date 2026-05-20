@@ -400,7 +400,7 @@ function SystemCard({ name, sev, body }: { name: string; sev: "ok" | "warn" | "r
           {icon} {sev === "red" ? "Alto" : sev === "warn" ? "Moderado" : "Baixo"}
         </span>
       </div>
-      <div className="text-[11px] text-foreground/90 whitespace-pre-wrap leading-snug">{body}</div>
+      <div className="text-[11px] text-foreground/90 leading-snug"><ApexMarkdown text={body} /></div>
     </div>
   );
 }
