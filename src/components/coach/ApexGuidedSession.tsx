@@ -63,6 +63,7 @@ export interface StepAnalysis {
     severity: "normal" | "mild" | "moderate" | "severe";
   }[];
   red_flags: string[];
+  avisos?: string[];
   framing_check?: {
     enquadramento_adequado: boolean;
     percentual_estimado?: number;
