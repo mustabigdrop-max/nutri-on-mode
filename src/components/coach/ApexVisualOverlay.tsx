@@ -1112,17 +1112,20 @@ function OverlayLayer({
           />
         ))}
 
-        {/* Landmarks: primary vs secondary */}
+        {/* Landmarks: cor por severidade clínica do achado relacionado */}
         {labelPositions.map((q) => {
           const isPrimary = PRIMARY.has(q.key);
+          const sev = landmarkSeverity(q.key, ang);
+          const { fill, stroke, pulse } = landmarkColor(sev);
           return (
             <circle
               key={`pt-${q.key}`}
               cx={q.px} cy={q.py}
               r={isPrimary ? 1.1 : 0.75}
-              fill={isPrimary ? `${C.gold}99` : `${C.white}66`}
-              stroke={isPrimary ? C.gold : C.white}
+              fill={fill}
+              stroke={stroke}
               vectorEffect="non-scaling-stroke"
+              className={pulse ? "apex-landmark-pulse" : undefined}
               style={{ strokeWidth: isPrimary ? 2 : 1.5 }}
             />
           );
