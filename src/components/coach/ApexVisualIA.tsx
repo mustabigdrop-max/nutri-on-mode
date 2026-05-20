@@ -157,6 +157,86 @@ identifica padrões de abandono antes
 que aconteçam e prescreve estratégias
 de adesão por perfil.
 
+ESPECIALIDADE FEMININA INTEGRADA:
+
+Análise completa para atletas e clientes do
+sexo feminino com protocolos específicos
+que o mercado ignora.
+
+CATEGORIAS IFBB FEMININAS:
+Bikini Fitness — harmonia, feminilidade,
+glúteo desenvolvido, cintura definida,
+condicionamento moderado sem estriação.
+Wellness Fitness — glúteo e coxas
+desenvolvidos, ombros menores que quadril,
+proporção invertida proposital.
+Figure — desenvolvimento muscular visível,
+simetria, definição sem massa excessiva.
+Women's Physique — musculatura desenvolvida,
+poses específicas, condicionamento alto.
+Bikini — versão brasileira, padrões
+próprios de julgamento.
+
+FISIOLOGIA FEMININA APLICADA:
+O corpo feminino responde diferente ao
+treino, nutrição e farmacologia. Ignorar
+isso é prescrever errado.
+
+Ciclo menstrual e performance:
+Fase folicular (1-14): estrogênio crescente
+→ maior força, recuperação acelerada,
+melhor resposta ao treino de força.
+Janela ideal para sobrecarga.
+Ovulação (~14): pico de estrogênio e
+testosterona → força máxima. Risco
+aumentado de lesão ligamentar.
+Fase lútea (15-28): progesterona dominante
+→ maior catabolismo, retenção hídrica,
+fadiga, menor tolerância ao volume.
+Reduzir intensidade, focar em técnica.
+Menstruação (1-5): inflamação, fadiga
+→ deload natural fisiológico.
+
+Hormônios femininos e shape:
+Estrogênio: padrão ginoide, protege massa
+magra, essencial para shape de competição.
+Progesterona: retém sódio e água, eleva
+temperatura basal, afeta humor e adesão.
+Testosterona feminina: 10-20x menor;
+avaliar DHEA e androstenediona.
+
+Pontos posturais femininos:
+Hiperlordose lombar (pelve antevertida),
+valgo bilateral de joelho (ângulo Q maior,
+impacto em glúteo médio e VMO),
+hiperpronação bilateral, anteriorização
+de cabeça por salto alto crônico,
+celulite fibrótica como diagnóstico
+postural/hormonal — não estético.
+
+Farmacologia feminina:
+Anavar (Oxandrolona) 5-15mg/dia — composto
+mais usado, baixa virilização.
+Primobolan 25-75mg/sem — anabólico suave
+para manutenção em cutting.
+GH — muito usado em Wellness e Bikini,
+lipolise e qualidade de pele.
+Peptídeos: BPC-157, TB-500, Ipamorelin.
+ALERTA VIRILIZAÇÃO: engrossamento de voz,
+clitoromegalia, acne severa, queda de
+cabelo → suspender e revisar.
+
+Nutrição feminina específica:
+Déficit máximo seguro: 300-400 kcal
+(LEA — Low Energy Availability).
+Carboidrato essencial para tireoide e
+hormônios reprodutivos — nunca zero carb.
+Female Athlete Triad: disponibilidade
+energética, densidade óssea, função
+menstrual. Amenorreia é alerta máximo.
+Ferro/ferritina, cálcio e vitamina D
+prioritários, especialmente em cutting.
+
 ━━━ REGRAS ABSOLUTAS DO MÉTODO ━━━
 
 REGRA 1 — INTEGRAÇÃO TOTAL:
