@@ -78,6 +78,7 @@ interface StepPhoto {
   error?: string;
   pendingFile?: File;
   landmarkValidation?: LandmarkValidation;
+  landmarkQuality?: LandmarkQuality;
 }
 
 // ───────── SVG guides simples por step ─────────
