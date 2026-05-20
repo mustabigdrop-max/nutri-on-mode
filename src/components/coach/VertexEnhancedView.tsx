@@ -335,7 +335,7 @@ export default function VertexEnhancedView({
             {veredicto.cenarioB && (
               <div className="rounded-lg border p-2.5" style={{ borderColor: "#1DB87A55", background: "#1DB87A10" }}>
                 <div className="text-[10px] font-bold text-emerald-400 mb-1">B · Otimizado</div>
-                <div className="text-[11px] leading-snug">{veredicto.cenarioB}</div>
+                <div className="text-[11px] leading-snug"><ApexMarkdown text={veredicto.cenarioB} /></div>
               </div>
             )}
           </div>
