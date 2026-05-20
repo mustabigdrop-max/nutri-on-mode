@@ -49,7 +49,7 @@ type Section = "gerar" | "readiness" | "fibras" | "sistemas" | "stratum" | "comp
 const sectionNav: { id: Section; label: string; icon: any; adminOnly?: boolean }[] = [
   { id: "gerar", label: "Prescrição", icon: Brain },
   { id: "readiness", label: "Readiness", icon: HeartPulse },
-  { id: "fibras", label: "Fibras IA", icon: Activity },
+  { id: "fibras", label: "Fibras", icon: Activity },
   { id: "sistemas", label: "Sistemas", icon: Layers, adminOnly: true },
   { id: "stratum", label: "STRATUM", icon: Microscope, adminOnly: true },
   { id: "competicao", label: "Competição", icon: Award, adminOnly: true },
