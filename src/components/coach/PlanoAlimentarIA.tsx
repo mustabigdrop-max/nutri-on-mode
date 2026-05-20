@@ -1031,6 +1031,8 @@ export default function PlanoAlimentarIA() {
   const [showHistory, setShowHistory] = useState(false);
   // Substituições NUTRION (módulo embutido)
   const [showSubstitutions, setShowSubstitutions] = useState(false);
+  // Drawer de substituição validada (isocalórica)
+  const [swapDrawer, setSwapDrawer] = useState<{ mealIdx: number; alimentoIdx: number; subs: SubstituicaoItem[] } | null>(null);
   // Periodização (Gantt)
   const [showGantt, setShowGantt] = useState(false);
   // Check-ins semanais
