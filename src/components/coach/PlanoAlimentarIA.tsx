@@ -38,6 +38,8 @@ import { SUBSTITUTION_BANK_V2, type FoodCategoryV2 } from "@/data/substitutionBa
 import NutrientDensityPanel from "@/components/coach/NutrientDensityPanel";
 import Glut4SyncCard from "@/components/meal/Glut4SyncCard";
 import AdherenceModal from "@/components/meal/AdherenceModal";
+import SubstitutionDrawer, { type DrawerConfirmPayload } from "@/components/coach/SubstitutionDrawer";
+import { buildSnapshot } from "@/lib/substitutionValidator";
 
 // ─── Design tokens — Jarvis Nutrition (emerald primary + gold identity) ───────
 const T = {
