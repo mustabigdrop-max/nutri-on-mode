@@ -332,7 +332,7 @@ const LandingPlans = () => {
                   <span className="font-mono text-[.55rem] text-black bg-primary px-1.5 py-0.5 rounded-[2px] tracking-[.1em] font-bold">PRO</span>
                 </div>
                 <div className="font-mono text-[.6rem] text-[#6060a0] mt-1.5 leading-relaxed">
-                  Geração Avançada por IA · Nutrição Esportiva · Protocolo PCA · Crononutrição
+                  Geração Avançada · Nutrição Esportiva · Protocolo PCA · Crononutrição
                 </div>
               </div>
             ) : plan.name === "ON PRO" ? (
@@ -344,7 +344,7 @@ const LandingPlans = () => {
                   MOTOR DE PRESCRIÇÃO DE ELITE v2.4
                 </div>
                 <div className="font-mono text-[.6rem] text-[#6060a0] mt-1.5 leading-relaxed">
-                  Prescrição individualizada por IA · 27 sistemas · STRATUM 7 camadas
+                  Prescrição individualizada · 27 sistemas · STRATUM 7 camadas
                 </div>
                 <div className="flex flex-wrap gap-1 mt-3">
                   {TRAININGON_PILLS.map((p) => (
