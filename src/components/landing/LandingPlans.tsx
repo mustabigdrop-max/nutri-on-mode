@@ -471,6 +471,138 @@ const LandingPlans = () => {
         ))}
       </div>
 
+      {/* ===== SEÇÃO PLANOS PROFISSIONAIS ===== */}
+      <div className="mt-20">
+        <div className="flex items-center gap-4 mb-10">
+          <div className="flex-1 h-px" style={{ background: "#B8922A30" }} />
+          <span className="font-mono text-[.65rem] tracking-[.2em] uppercase" style={{ color: "#B8922A" }}>
+            Planos Profissionais
+          </span>
+          <div className="flex-1 h-px" style={{ background: "#B8922A30" }} />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          {/* CARD — NUTRION TRIO */}
+          <div
+            className="relative rounded-xl p-6 overflow-hidden transition-all hover:-translate-y-1"
+            style={{
+              background: "linear-gradient(135deg, #0d0d1f 0%, #1a0f00 100%)",
+              border: "1.5px solid #B8922A55",
+              boxShadow: "0 0 30px #B8922A10",
+            }}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <span
+                className="font-mono text-[10px] font-bold rounded-full px-2.5 py-0.5"
+                style={{ background: "#B8922A20", border: "1px solid #B8922A55", color: "#B8922A" }}
+              >
+                PROFISSIONAL
+              </span>
+              <span
+                className="font-mono text-[10px] font-bold rounded-full px-2.5 py-0.5"
+                style={{ background: "#B8922A", color: "#0a0a1a" }}
+              >
+                TRIO COMPLETO
+              </span>
+            </div>
+
+            <div className="font-heading font-bold text-white text-[24px] leading-none tracking-wide">TRIO</div>
+            <div className="font-mono text-[11px] mt-1.5" style={{ color: "#888" }}>
+              NutriPlan · TrainingON · APEX Visual
+            </div>
+
+            <div className="mt-5">
+              <div className="font-heading font-bold text-[32px] leading-none" style={{ color: "#B8922A" }}>
+                R$547<span className="text-[14px] font-mono font-normal">/mês</span>
+              </div>
+              <div className="text-[11px] mt-2" style={{ color: "#888" }}>
+                ou R$4.397/ano — 2 meses grátis
+              </div>
+            </div>
+
+            <div style={{ height: "0.5px", background: "#ffffff10", margin: "14px 0" }} />
+
+            <div className="font-mono font-bold text-[10px] tracking-[.1em] mb-2" style={{ color: "#1D9E75" }}>
+              🍽 NUTRIPLAN
+            </div>
+            <ul className="flex flex-col gap-1.5 mb-4">
+              {["7 objetivos de protocolo","TDEE farmacológico automático","Crononutrição circadiana","GLUT-4 Sync pós-treino","Carb cycling automático","Banco TACO/IBGE","Substituições inteligentes","Perfil PCA comportamental","8 modos especiais","Medidas caseiras automáticas"].map((t) => (
+                <li key={t} className="text-[12px] flex items-start gap-2 font-landing text-[#a0a0c0] leading-snug">
+                  <span className="text-[11px] mt-0.5 shrink-0" style={{ color: "#1D9E75" }}>✓</span>
+                  <span>{t}</span>
+                </li>
+              ))}
+            </ul>
+
+            <div className="font-mono font-bold text-[10px] tracking-[.1em] mb-2" style={{ color: "#1D9E75" }}>
+              ⚡ TRAININGON
+            </div>
+            <ul className="flex flex-col gap-1.5 mb-4">
+              {["27 sistemas de treino","6 fases de treinamento","13 músculos prioritários","Readiness diário","LoadTracker Pro","Fibras musculares","Progressão automática","Histórico de sessões"].map((t) => (
+                <li key={t} className="text-[12px] flex items-start gap-2 font-landing text-[#a0a0c0] leading-snug">
+                  <span className="text-[11px] mt-0.5 shrink-0" style={{ color: "#1D9E75" }}>✓</span>
+                  <span>{t}</span>
+                </li>
+              ))}
+            </ul>
+
+            <div className="font-mono font-bold text-[10px] tracking-[.1em] mb-2" style={{ color: "#00D4FF" }}>
+              👁 APEX VISUAL
+            </div>
+            <ul className="flex flex-col gap-1.5 mb-4">
+              {["Análise postural por foto","33 landmarks biomecânicos","Protocolo corretivo 4 fases","Exercícios contraindicados bloqueados automaticamente","Cadeia cinética detectada","FCS — Fenner Clinical Score","Plano mestre de evolução","Análises ilimitadas"].map((t) => (
+                <li key={t} className="text-[12px] flex items-start gap-2 font-landing text-[#a0a0c0] leading-snug">
+                  <span className="text-[11px] mt-0.5 shrink-0" style={{ color: "#00D4FF" }}>✓</span>
+                  <span>{t}</span>
+                </li>
+              ))}
+            </ul>
+
+            <div className="font-mono font-bold text-[10px] tracking-[.1em] mb-2" style={{ color: "#B8922A" }}>
+              📊 PAINEL COACH
+            </div>
+            <ul className="flex flex-col gap-1.5 mb-4">
+              {["Até 30 alunos simultâneos","Gestão completa de alunos","Score de aderência por aluno","Alertas automáticos de risco","Relatório PDF mensal automático","Check-in dos alunos em tempo real","Diário fotográfico por aluno","Histórico completo por aluno"].map((t) => (
+                <li key={t} className="text-[12px] flex items-start gap-2 font-landing text-[#a0a0c0] leading-snug">
+                  <span className="text-[11px] mt-0.5 shrink-0" style={{ color: "#B8922A" }}>✓</span>
+                  <span>{t}</span>
+                </li>
+              ))}
+            </ul>
+
+            <div className="font-mono text-[10px] mb-2" style={{ color: "#888" }}>NÃO INCLUÍDO</div>
+            <ul className="flex flex-col gap-1.5 mb-3">
+              {["Dr. VERTEX farmacologia","NEXUS-BIO PeptideVault","Lab Intelligence","Microbiota completo","Fitoterápicos","Módulo feminino completo"].map((t) => (
+                <li key={t} className="text-[12px] flex items-start gap-2 font-landing text-[#555] leading-snug">
+                  <span className="text-[11px] mt-0.5 shrink-0">✗</span>
+                  <span>{t}</span>
+                </li>
+              ))}
+            </ul>
+            <p className="italic text-[10px] mb-5" style={{ color: "#888" }}>
+              Quer adicionar módulos extras? Ver add-ons abaixo.
+            </p>
+
+            <a
+              href="https://pay.kiwify.com.br/VaPRGfQ"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block w-full text-center font-bold text-[14px] rounded-lg transition-all hover:scale-[1.01]"
+              style={{ background: "#B8922A", color: "#0a0a1a", padding: "14px" }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = "#D4A832")}
+              onMouseLeave={(e) => (e.currentTarget.style.background = "#B8922A")}
+            >
+              COMEÇAR COMO PROFISSIONAL →
+            </a>
+            <p className="text-center text-[10px] mt-3" style={{ color: "#888" }}>
+              Cancele quando quiser.<br />Sem fidelidade. Acesso imediato.
+            </p>
+          </div>
+        </div>
+      </div>
+
+
+
       {/* Trust bar */}
       <div className="flex flex-wrap items-center justify-center gap-6 mt-12 py-4">
         <div className="flex items-center gap-2 text-[.7rem] font-mono text-[#50507a]">
