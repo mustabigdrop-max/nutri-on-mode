@@ -530,6 +530,7 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
                   eduMode={eduMode}
                   chainMode={chainMode}
                   debugMode={debugMode}
+                  gridMode={gridMode}
                   chains={chains}
                 />
               )}
