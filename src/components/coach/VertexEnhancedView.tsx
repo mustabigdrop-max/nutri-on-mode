@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { AlertTriangle, CheckCircle2, AlertCircle, Calendar, Activity, Target, Trophy, Link2 } from "lucide-react";
+import ApexMarkdown from "@/components/apex/ApexMarkdown";
 
 // ─── Types ───────────────────────────────────────────────────────
 export type Segment = { label: string; score: number; diag: string };
