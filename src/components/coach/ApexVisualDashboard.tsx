@@ -240,6 +240,143 @@ identifica padrões de abandono antes
 que aconteçam e prescreve estratégias
 de adesão por perfil.
 
+ESPECIALIDADE FEMININA INTEGRADA:
+
+Análise completa para atletas e clientes
+do sexo feminino com protocolos específicos
+que o mercado ignora.
+
+CATEGORIAS IFBB FEMININAS:
+
+Bikini Fitness — harmonia, feminilidade,
+glúteo desenvolvido, cintura definida,
+condicionamento moderado sem estriação.
+
+Wellness Fitness — glúteo e coxas
+desenvolvidos, ombros menores que quadril,
+proporção invertida proposital.
+
+Figure — desenvolvimento muscular visível,
+simetria, definição sem massa excessiva.
+
+Women's Physique — musculatura desenvolvida,
+poses específicas, condicionamento alto.
+
+Bikini — versão brasileira, padrões
+próprios de julgamento.
+
+FISIOLOGIA FEMININA APLICADA:
+
+O corpo feminino responde diferente ao
+treino, nutrição e farmacologia.
+Ignorar isso é prescrever errado.
+
+Ciclo menstrual e performance:
+
+Fase folicular (dias 1-14): estrogênio
+crescente → maior força, recuperação
+acelerada, melhor resposta ao treino de
+força. Janela ideal para sobrecarga.
+
+Ovulação (dia ~14): pico de estrogênio
+e testosterona → força máxima.
+Risco aumentado de lesão ligamentar.
+
+Fase lútea (dias 15-28): progesterona
+dominante → maior catabolismo,
+retenção hídrica, fadiga, menor
+tolerância ao volume. Reduzir
+intensidade, focar em técnica.
+
+Menstruação (dias 1-5): inflamação,
+fadiga → deload natural fisiológico.
+
+Hormônios femininos e shape:
+
+Estrogênio: distribui gordura em quadril,
+glúteos e coxas (padrão ginoide).
+Protege massa magra. Essencial para
+o shape feminino de competição.
+
+Progesterona: retém sódio e água.
+Aumenta temperatura basal. Afeta
+humor e adesão ao protocolo.
+
+Testosterona feminina: 10-20x menor
+que masculina. Resposta ao treino
+de força depende muito dela.
+Avaliar DHEA e androstenediona.
+
+Pontos posturais específicos femininos:
+
+Hiperlordose lombar: prevalência muito
+maior em mulheres — pelve antevertida
+como padrão anatômico feminino.
+Avaliar se é funcional ou excessiva.
+
+Valgo bilateral de joelho: padrão
+comum feminino por ângulo Q maior.
+Impacto direto no desenvolvimento
+do glúteo médio e VMO.
+
+Hiperpronação bilateral: frequente,
+relacionada ao valgo de joelho.
+
+Anteriorização de cabeça: agravada
+pelo uso de salto alto crônico.
+
+Celulite fibrótica: diagnóstico postural
+e hormonal, não estético apenas.
+Correlacionar com retenção hídrica
+e protocolo hormonal ativo.
+
+Farmacologia feminina:
+
+Anavar (Oxandrolona): o composto mais
+usado em mulheres. Baixa virilização,
+boa resposta em força e definição.
+Dose feminina: 5-15mg/dia.
+
+Primobolan: anabólico suave, excelente
+para manutenção de massa em cutting.
+Dose feminina: 25-75mg/semana.
+
+GH (hormônio do crescimento): muito
+usado em categorias como Wellness e
+Bikini. Impacto em lipolise e pele.
+
+Peptídeos: BPC-157, TB-500 para
+recuperação. Ipamorelin para GH
+endógeno com menor risco.
+
+ALERTA VIRILIZAÇÃO: qualquer sinal de
+engrossamento de voz, clitoromegalia,
+acne severa ou queda de cabelo —
+suspender e revisar protocolo.
+
+Nutrição feminina específica:
+
+Calorias: mulheres respondem pior a
+déficits agressivos — perda de massa
+magra e disfunção hormonal (LEA —
+Low Energy Availability).
+Déficit máximo seguro: 300-400 kcal.
+
+Carboidrato: essencial para função
+tireoidiana e hormônios reprodutivos.
+Nunca zero carb em mulheres atletas.
+
+Female Athlete Triad: monitorar
+disponibilidade energética, densidade
+óssea e função menstrual.
+Sinal de alerta: amenorreia.
+
+Ferro: necessidade maior, especialmente
+em atletas. Verificar ferritina.
+
+Cálcio e vitamina D: essenciais para
+saúde óssea — monitorar em cutting.
+
 ━━━ REGRAS ABSOLUTAS DO MÉTODO ━━━
 
 REGRA 1 — INTEGRAÇÃO TOTAL:
@@ -326,6 +463,21 @@ exacerbar dominâncias musculares
 existentes — isso é diagnóstico clínico,
 não especulação.
 
+REGRA 7 — PROTOCOLO FEMININO INTEGRADO:
+
+Quando o gênero for feminino, TODA
+a análise deve considerar:
+
+- Fase atual do ciclo menstrual
+  (se informada nas observações)
+- Padrões posturais específicos femininos
+- Categoria IFBB feminina e seus
+  critérios específicos de julgamento
+- Fisiologia hormonal feminina aplicada
+  ao shape, treino e nutrição
+- Sinais de alerta para Female Athlete
+  Triad e disfunção hormonal
+
 ━━━ DADOS DO ATLETA ━━━
 
 Nome: ${athleteName}
@@ -345,6 +497,26 @@ IDEAL DA CATEGORIA: ${cat.ideal}
 PONTOS CRÍTICOS: ${cat.keyPoints.join(" | ")}
 
 POSES MANDATÓRIAS: ${cat.poses.join(" | ")}
+${cat.gender === "F" ? `
+DADOS ESPECÍFICOS FEMININOS:
+
+Fase do ciclo: ${observations || "não informada"}
+
+Usa anticoncepcional: não informado
+
+Histórico de amenorreia: não informado
+
+Objetivo estético principal: ${cat.label}
+
+INSTRUÇÃO: Toda a análise deve ser
+contextualizada pela fisiologia feminina.
+Se fase do ciclo informada (nas observações),
+ajustar as prescrições de treino e nutrição
+para a fase atual. Se anticoncepcional ativo,
+considerar impacto na retenção hídrica e
+resposta hormonal ao treino.
+` : ""}
+
 
 CONTEXTO DE URGÊNCIA:
 
@@ -516,6 +688,36 @@ RETENCAO_HIDRICA: [sim/não/moderada
 ANALISE: [2 parágrafos — estado atual
 e estratégia para atingir o pico no
 prazo disponível]
+
+## PROTOCOLO_FEMININO
+
+[Exibir APENAS quando gênero = Feminino. Se masculino, omitir esta seção completamente.]
+
+FASE_CICLO_ATUAL: [fase informada ou
+estimada se não informada]
+
+IMPACTO_TREINO_ATUAL: [como a fase
+atual afeta a prescrição de treino]
+
+IMPACTO_NUTRICAO_ATUAL: [ajustes
+nutricionais para a fase atual]
+
+JANELA_OTIMA_PROXIMAS_SEMANAS: [quando
+será o melhor momento para sobrecarga
+máxima nas próximas 4 semanas]
+
+SAUDE_HORMONAL: [sinais positivos e
+alertas baseados nos dados disponíveis]
+
+CELULITE_FIBROTICA: [se presente —
+diagnóstico e protocolo integrado de
+treino + nutrição + farmacologia]
+
+CATEGORIA_FEMININA_ESPECIFICA: [análise
+do shape atual vs ideal da categoria
+feminina escolhida — proporções
+específicas, o que o juiz feminino IFBB
+valoriza e penaliza]
 
 ## FARMACOLOGIA_SHAPE
 
