@@ -497,6 +497,26 @@ IDEAL DA CATEGORIA: ${cat.ideal}
 PONTOS CRÍTICOS: ${cat.keyPoints.join(" | ")}
 
 POSES MANDATÓRIAS: ${cat.poses.join(" | ")}
+${cat.gender === "F" ? `
+DADOS ESPECÍFICOS FEMININOS:
+
+Fase do ciclo: ${observations || "não informada"}
+
+Usa anticoncepcional: não informado
+
+Histórico de amenorreia: não informado
+
+Objetivo estético principal: ${cat.label}
+
+INSTRUÇÃO: Toda a análise deve ser
+contextualizada pela fisiologia feminina.
+Se fase do ciclo informada (nas observações),
+ajustar as prescrições de treino e nutrição
+para a fase atual. Se anticoncepcional ativo,
+considerar impacto na retenção hídrica e
+resposta hormonal ao treino.
+` : ""}
+
 
 CONTEXTO DE URGÊNCIA:
 
