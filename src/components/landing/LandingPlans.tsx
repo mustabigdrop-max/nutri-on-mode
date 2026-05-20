@@ -534,6 +534,45 @@ const LandingPlans = () => {
           </Accordion>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={trainingOpen} onOpenChange={setTrainingOpen}>
+        <DialogContent className="max-w-2xl bg-[#0a0a18] border-[#2a2a4a] text-[#e0e0f0] max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="font-heading text-[1.3rem] tracking-[.06em] text-[#f0edf8] flex items-center gap-2 flex-wrap">
+              TRAININGON
+              <span className="font-mono text-[.55rem] px-1.5 py-0.5 rounded-[2px] tracking-[.1em] font-bold" style={{ background: "#1D9E7520", border: "1px solid #1D9E7540", color: "#1D9E75" }}>
+                27 SISTEMAS
+              </span>
+            </DialogTitle>
+            <p className="font-mono text-[.65rem] text-[#7070a0] tracking-wide mt-1">
+              Sistemas de treino organizados em 5 categorias
+            </p>
+          </DialogHeader>
+          <Accordion type="multiple" defaultValue={[TRAININGON_SYSTEMS[0].category]} className="w-full mt-2">
+            {TRAININGON_SYSTEMS.map((cat) => (
+              <AccordionItem key={cat.category} value={cat.category} className="border-[#1f1f3a]">
+                <AccordionTrigger className="text-[.85rem] font-landing text-[#f0edf8] hover:no-underline" style={{ color: "#f0edf8" }}>
+                  <span className="flex items-center gap-2">
+                    <span style={{ color: "#1D9E75" }}>▸</span>
+                    {cat.category}
+                    <span className="font-mono text-[.6rem] text-[#6060a0]">({cat.items.length})</span>
+                  </span>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <ul className="flex flex-col gap-3 pt-1">
+                    {cat.items.map((it, i) => (
+                      <li key={i} className="text-[.78rem] flex flex-col gap-0.5 leading-snug font-landing">
+                        <span className="font-semibold text-[#f0edf8]">{it.name}</span>
+                        <span className="text-[#8585b0]">{it.desc}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+        </DialogContent>
+      </Dialog>
     </section>
   );
 };
