@@ -62,6 +62,7 @@ export function ApexClinicalTests({ athleteId, coachId, athleteData }: Props) {
   const [completed, setCompleted] = useState<CompletedTest[]>([]);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const albumRef = useRef<HTMLInputElement>(null);
 
   const groupedTests = useMemo(() => {
     const map: Record<AiTestGroup, FennerAiTest[]> = { flexibility: [], strength: [], dynamic: [], static: [] };
