@@ -20,7 +20,9 @@ import { cropToAthlete } from "@/lib/apexImageCrop";
 import {
   validateLandmarks,
   landmarksArrayToMap,
+  validateAndFixLandmarks,
   type LandmarkValidation,
+  type LandmarkQuality,
 } from "@/lib/apexLandmarkValidator";
 
 export type GuidedPhase = "static" | "flexibility" | "strength" | "dynamic";
