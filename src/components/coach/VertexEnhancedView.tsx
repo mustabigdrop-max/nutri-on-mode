@@ -435,7 +435,7 @@ function CollapsibleText({ title, body, accent, defaultOpen }: { title: string; 
   return (
     <details open={defaultOpen} className="rounded-lg border p-2 bg-card/40" style={{ borderColor: `${accent}33` }}>
       <summary className="cursor-pointer text-[11px] font-bold" style={{ color: accent }}>{title}</summary>
-      <div className="text-[11px] mt-1.5 whitespace-pre-wrap leading-snug text-foreground/90">{body}</div>
+      <div className="text-[11px] mt-1.5 leading-snug text-foreground/90"><ApexMarkdown text={body} /></div>
     </details>
   );
 }
