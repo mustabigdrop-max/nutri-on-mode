@@ -639,6 +639,22 @@ export default function ApexGuidedSession({
                   accentColor={accentColor}
                   onRetake={handleRetake}
                 />
+                {(currentPhoto.analysis.avisos || []).some((a) =>
+                  /ombros parcialmente cortados/i.test(a),
+                ) && (
+                  <div
+                    style={{
+                      background: "#1a1000",
+                      border: "0.5px solid #EF9F27",
+                      color: "#EF9F27",
+                      fontSize: 12,
+                      padding: "10px 16px",
+                      borderRadius: 6,
+                    }}
+                  >
+                    ⚠ Ombros parcialmente fora do enquadramento — refaça a foto com mais margem lateral para análise escapular precisa.
+                  </div>
+                )}
               </>
             )}
           </div>
