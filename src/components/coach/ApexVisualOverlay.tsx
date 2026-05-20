@@ -893,6 +893,30 @@ function OverlayLayer({
     return severityOf(a.value, a.normal);
   };
 
+  // Severity-aware line styling per spec (thresholds in degrees)
+  type LineStyle = { stroke: string; strokeWidth: number; strokeDasharray: string; opacity: number; level: "normal" | "mild" | "moderate" | "severe" };
+  const getLineStyle = (angleDegrees: number, normal: number, mild: number, moderate: number): LineStyle => {
+    const a = Math.abs(Number(angleDegrees) || 0);
+    if (a <= normal)   return { stroke: "#1D9E75", strokeWidth: 1.5, strokeDasharray: "none", opacity: 0.7, level: "normal" };
+    if (a <= mild)     return { stroke: "#B8922A", strokeWidth: 2,   strokeDasharray: "none", opacity: 0.8, level: "mild" };
+    if (a <= moderate) return { stroke: "#EF9F27", strokeWidth: 2.5, strokeDasharray: "6 2",  opacity: 0.9, level: "moderate" };
+    return                    { stroke: "#E24B4A", strokeWidth: 3,   strokeDasharray: "4 2",  opacity: 1,   level: "severe" };
+  };
+  const angleVal = (key: string): number => {
+    const a = ang[key];
+    return a ? Number(a.value) || 0 : 0;
+  };
+  const LINE_THRESHOLDS: Record<string, { n: number; mi: number; mo: number }> = {
+    shoulder_tilt:        { n: 1, mi: 2, mo: 5 },
+    shoulder_asymmetry:   { n: 1, mi: 2, mo: 5 },
+    scapular_axis_tilt:   { n: 2, mi: 3, mo: 6 },
+    hip_tilt:             { n: 1, mi: 3, mo: 5 },
+    hip_asymmetry:        { n: 1, mi: 3, mo: 5 },
+    knee_valgus_left:     { n: 3, mi: 5, mo: 8 },
+    knee_valgus_right:    { n: 3, mi: 5, mo: 8 },
+    plumb_line_deviation: { n: 1, mi: 3, mo: 5 },
+  };
+
   return (
     <>
       {/* SVG layer: lines + landmarks */}
@@ -915,22 +939,36 @@ function OverlayLayer({
         {/* View-specific lines */}
         {data.view === "front" && (
           <>
-            <SvgLine p1={lm.shoulder_left} p2={lm.shoulder_right} color={colorBySev(lineSev("shoulder_tilt"))} />
-            <SvgLine p1={lm.hip_left} p2={lm.hip_right} color={colorBySev(lineSev("hip_tilt"))} />
-            <SvgLine p1={lm.hip_left} p2={lm.ankle_left} color={colorBySev(lineSev("knee_valgus_left"))} />
-            <SvgLine p1={lm.hip_right} p2={lm.ankle_right} color={colorBySev(lineSev("knee_valgus_right"))} />
+            <SvgSevLine id="sho-front" p1={lm.shoulder_left} p2={lm.shoulder_right}
+              style={getLineStyle(angleVal("shoulder_tilt"), LINE_THRESHOLDS.shoulder_tilt.n, LINE_THRESHOLDS.shoulder_tilt.mi, LINE_THRESHOLDS.shoulder_tilt.mo)} />
+            <SvgSevLine id="hip-front" p1={lm.hip_left} p2={lm.hip_right}
+              style={getLineStyle(angleVal("hip_tilt"), LINE_THRESHOLDS.hip_tilt.n, LINE_THRESHOLDS.hip_tilt.mi, LINE_THRESHOLDS.hip_tilt.mo)} />
+            <SvgSevLine id="knee-L" p1={lm.hip_left} p2={lm.ankle_left}
+              style={getLineStyle(angleVal("knee_valgus_left"), LINE_THRESHOLDS.knee_valgus_left.n, LINE_THRESHOLDS.knee_valgus_left.mi, LINE_THRESHOLDS.knee_valgus_left.mo)} />
+            <SvgSevLine id="knee-R" p1={lm.hip_right} p2={lm.ankle_right}
+              style={getLineStyle(angleVal("knee_valgus_right"), LINE_THRESHOLDS.knee_valgus_right.n, LINE_THRESHOLDS.knee_valgus_right.mi, LINE_THRESHOLDS.knee_valgus_right.mo)} />
           </>
         )}
-        {data.view === "lateral" && (
-          <SvgPolyline
-            points={["ear", "shoulder", "hip_greater_trochanter", "knee_lateral", "ankle_lateral"].map((k) => lm[k]).filter(isValidPoint)}
-            color={colorBySev(lineSev("plumb_line_deviation"))}
-          />
-        )}
+        {data.view === "lateral" && (() => {
+          const ls = getLineStyle(angleVal("plumb_line_deviation"), LINE_THRESHOLDS.plumb_line_deviation.n, LINE_THRESHOLDS.plumb_line_deviation.mi, LINE_THRESHOLDS.plumb_line_deviation.mo);
+          return (
+            <SvgPolyline
+              points={["ear", "shoulder", "hip_greater_trochanter", "knee_lateral", "ankle_lateral"].map((k) => lm[k]).filter(isValidPoint)}
+              color={ls.stroke}
+              style={{ strokeWidth: ls.strokeWidth, strokeDasharray: ls.strokeDasharray, opacity: ls.opacity }}
+            />
+          );
+        })()}
         {data.view === "back" && (
           <>
-            <SvgLine p1={lm.shoulder_left} p2={lm.shoulder_right} color={colorBySev(lineSev("shoulder_asymmetry"))} />
-            <SvgLine p1={lm.hip_left} p2={lm.hip_right} color={colorBySev(lineSev("hip_asymmetry"))} />
+            <SvgSevLine id="sho-back" p1={lm.shoulder_left} p2={lm.shoulder_right}
+              style={getLineStyle(angleVal("shoulder_asymmetry"), LINE_THRESHOLDS.shoulder_asymmetry.n, LINE_THRESHOLDS.shoulder_asymmetry.mi, LINE_THRESHOLDS.shoulder_asymmetry.mo)} />
+            <SvgSevLine id="hip-back" p1={lm.hip_left} p2={lm.hip_right}
+              style={getLineStyle(angleVal("hip_asymmetry"), LINE_THRESHOLDS.hip_asymmetry.n, LINE_THRESHOLDS.hip_asymmetry.mi, LINE_THRESHOLDS.hip_asymmetry.mo)} />
+            {isValidPoint(lm.scapula_left) && isValidPoint(lm.scapula_right) && (
+              <SvgSevLine id="scap-back" p1={lm.scapula_left} p2={lm.scapula_right}
+                style={getLineStyle(angleVal("scapular_axis_tilt"), LINE_THRESHOLDS.scapular_axis_tilt.n, LINE_THRESHOLDS.scapular_axis_tilt.mi, LINE_THRESHOLDS.scapular_axis_tilt.mo)} />
+            )}
             {/* FIX 3 — C7→L5 sempre em amarelo, 2px, com badge de desvio CLICÁVEL */}
             {isValidPoint(lm.spine_c7) && isValidPoint(lm.spine_l5) && (() => {
               const c7 = lm.spine_c7;
@@ -1447,15 +1485,53 @@ function SvgLine({ p1, p2, color, dashed, thickness }: { p1?: Landmark; p2?: Lan
   );
 }
 
-function SvgPolyline({ points, color }: { points: Landmark[]; color: string }) {
+// Severity-aware line with optional gradient (green → severity color in direction of deviation)
+function SvgSevLine({
+  p1, p2, style, id,
+}: {
+  p1?: Landmark; p2?: Landmark;
+  style: { stroke: string; strokeWidth: number; strokeDasharray: string; opacity: number; level: "normal" | "mild" | "moderate" | "severe" };
+  id: string;
+}) {
+  if (!isValidPoint(p1) || !isValidPoint(p2)) return null;
+  const useGradient = style.level === "moderate" || style.level === "severe";
+  const gradId = `apex-line-grad-${id}`;
+  // Direction: from p1 (normal anchor) → p2 (deviated end). If p1 is "lower" deviation side, gradient flows green→sev along line.
+  const x1 = p1!.x, y1 = p1!.y, x2 = p2!.x, y2 = p2!.y;
+  const strokeRef = useGradient ? `url(#${gradId})` : style.stroke;
+  return (
+    <>
+      {useGradient && (
+        <defs>
+          <linearGradient id={gradId} gradientUnits="userSpaceOnUse" x1={x1} y1={y1} x2={x2} y2={y2}>
+            <stop offset="0%" stopColor="#1D9E75" stopOpacity={style.opacity} />
+            <stop offset="100%" stopColor={style.stroke} stopOpacity={style.opacity} />
+          </linearGradient>
+        </defs>
+      )}
+      <line
+        x1={x1} y1={y1} x2={x2} y2={y2}
+        stroke={strokeRef}
+        strokeOpacity={useGradient ? 1 : style.opacity}
+        strokeDasharray={style.strokeDasharray === "none" ? undefined : style.strokeDasharray}
+        vectorEffect="non-scaling-stroke"
+        style={{ strokeWidth: style.strokeWidth }}
+      />
+    </>
+  );
+}
+
+function SvgPolyline({ points, color, style }: { points: Landmark[]; color: string; style?: { strokeWidth: number; strokeDasharray: string; opacity: number } }) {
   if (points.length < 2) return null;
   return (
     <polyline
       points={points.map((p) => `${p.x},${p.y}`).join(" ")}
       fill="none"
       stroke={color}
+      strokeOpacity={style?.opacity ?? 1}
+      strokeDasharray={style && style.strokeDasharray !== "none" ? style.strokeDasharray : undefined}
       vectorEffect="non-scaling-stroke"
-      style={{ strokeWidth: 2 }}
+      style={{ strokeWidth: style?.strokeWidth ?? 2 }}
     />
   );
 }
