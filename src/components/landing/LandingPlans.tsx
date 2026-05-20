@@ -204,7 +204,7 @@ const plans = [
   {
     name: "ON PRO", price: "R$247", oldPrice: "R$397", discount: "37% off fundador", featured: false,
     slotKey: "on_pro",
-    checkoutUrl: "https://pay.kiwify.com.br/nDxfj4b",
+    checkoutUrl: "https://pay.kiwify.com.br/boprEBl",
     badge: "VAGAS LIMITADAS",
     features: [
       { text: "<strong>Tudo do ON+</strong> +" },
