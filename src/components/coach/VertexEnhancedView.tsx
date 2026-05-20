@@ -319,7 +319,7 @@ export default function VertexEnhancedView({
             <div className="text-[10px] font-bold uppercase tracking-widest text-purple-400 mb-1 flex items-center gap-1">
               <Trophy className="w-3 h-3" /> Mensagem do Dr. VERTEX
             </div>
-            <div className="text-xs text-foreground/95 leading-relaxed italic">"{veredicto.mensagem}"</div>
+            <div className="text-xs text-foreground/95 leading-relaxed italic"><ApexMarkdown text={veredicto.mensagem} /></div>
           </div>
         )}
 
