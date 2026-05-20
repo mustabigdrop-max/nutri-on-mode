@@ -570,12 +570,278 @@ const LandingPlans = () => {
               ))}
             </ul>
 
-
             <a
               href="https://pay.kiwify.com.br/VaPRGfQ"
               target="_blank"
               rel="noopener noreferrer"
               className="block w-full text-center font-bold text-[14px] rounded-lg transition-all hover:scale-[1.01]"
+              style={{ background: "#B8922A", color: "#0a0a1a", padding: "14px" }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = "#D4A832")}
+              onMouseLeave={(e) => (e.currentTarget.style.background = "#B8922A")}
+            >
+              COMEÇAR COMO PROFISSIONAL →
+            </a>
+            <p className="text-center text-[10px] mt-3" style={{ color: "#888" }}>
+              Cancele quando quiser.<br />Sem fidelidade. Acesso imediato.
+            </p>
+          </div>
+
+          {/* CARD — ACESSO TOTAL */}
+          <div
+            className="relative rounded-xl p-6 overflow-hidden transition-all hover:-translate-y-1 md:col-span-2"
+            style={{
+              background: "linear-gradient(135deg, #0d0d1f 0%, #1a0f00 100%)",
+              border: "1.5px solid #B8922A55",
+              boxShadow: "0 0 30px #B8922A10",
+            }}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <span
+                className="font-mono text-[10px] font-bold rounded-full px-2.5 py-0.5"
+                style={{ background: "#B8922A20", border: "1px solid #B8922A55", color: "#B8922A" }}
+              >
+                PROFISSIONAL
+              </span>
+              <span
+                className="font-mono text-[10px] font-bold rounded-full px-2.5 py-1"
+                style={{ background: "#B8922A", color: "#0a0a1a" }}
+              >
+                ACESSO TOTAL
+              </span>
+            </div>
+
+            <div className="font-heading font-bold text-white text-[24px] leading-none tracking-wide">ACESSO TOTAL</div>
+            <div className="font-mono text-[11px] mt-1.5" style={{ color: "#888" }}>
+              Todos os módulos. Sem restrições. Alunos ilimitados.
+            </div>
+
+            <div className="mt-5">
+              <div className="font-heading font-bold text-[32px] leading-none" style={{ color: "#B8922A" }}>
+                R$997<span className="text-[14px] font-mono font-normal">/mês</span>
+              </div>
+              <div className="text-[11px] mt-2" style={{ color: "#888" }}>
+                ou R$9.997/ano — 2 meses grátis
+              </div>
+            </div>
+
+            <div style={{ height: "0.5px", background: "#ffffff10", margin: "14px 0" }} />
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+              <div>
+                <div className="font-mono font-bold text-[10px] tracking-[.1em] mb-2" style={{ color: "#1D9E75" }}>
+                  🍽 NUTRIPLAN
+                </div>
+                <ul className="flex flex-col gap-1.5 mb-4">
+                  {[
+                    "NutriPlan Intelligence System completo",
+                    "TDEE farmacológico",
+                    "Crononutrição circadiana",
+                    "GLUT-4 Sync",
+                    "Carb cycling automático",
+                    "Banco TACO/IBGE",
+                    "8 modos especiais",
+                    "PCA Comportamental",
+                    "Medidas caseiras automáticas",
+                  ].map((t) => (
+                    <li key={t} className="text-[12px] flex items-start gap-2 font-landing text-[#a0a0c0] leading-snug">
+                      <span className="text-[11px] mt-0.5 shrink-0" style={{ color: "#1D9E75" }}>✓</span>
+                      <span>{t}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <div className="font-mono font-bold text-[10px] tracking-[.1em] mb-2" style={{ color: "#1D9E75" }}>
+                  ⚡ TRAININGON
+                </div>
+                <ul className="flex flex-col gap-1.5 mb-4">
+                  {[
+                    "27 sistemas de treino",
+                    "STRATUM — 7 camadas",
+                    "6 fases de treinamento",
+                    "LoadTracker Pro",
+                    "Fibras musculares",
+                    "Readiness diário",
+                    "Progressão automática",
+                  ].map((t) => (
+                    <li key={t} className="text-[12px] flex items-start gap-2 font-landing text-[#a0a0c0] leading-snug">
+                      <span className="text-[11px] mt-0.5 shrink-0" style={{ color: "#1D9E75" }}>✓</span>
+                      <span>{t}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <div className="font-mono font-bold text-[10px] tracking-[.1em] mb-2" style={{ color: "#00D4FF" }}>
+                  👁 APEX VISUAL INTELLIGENCE
+                </div>
+                <ul className="flex flex-col gap-1.5 mb-4">
+                  {[
+                    "33 landmarks biomecânicos",
+                    "Protocolo corretivo 4 fases",
+                    "Cadeia cinética detectada",
+                    "FCS — Fenner Clinical Score",
+                    "Plano mestre de evolução",
+                    "Análises ilimitadas",
+                    "Comparativo de evolução",
+                  ].map((t) => (
+                    <li key={t} className="text-[12px] flex items-start gap-2 font-landing text-[#a0a0c0] leading-snug">
+                      <span className="text-[11px] mt-0.5 shrink-0" style={{ color: "#00D4FF" }}>✓</span>
+                      <span>{t}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div>
+                <div className="font-mono font-bold text-[10px] tracking-[.1em] mb-2" style={{ color: "#B8922A" }}>
+                  ⚗ DR. VERTEX
+                </div>
+                <ul className="flex flex-col gap-1.5 mb-4">
+                  {[
+                    "85+ compostos farmacológicos",
+                    "Auditoria de protocolo",
+                    "Análise de sinergia",
+                    "Alertas de interação",
+                    "Damage Control por órgão",
+                    "Periodização farmacológica",
+                    "PCT completo",
+                  ].map((t) => (
+                    <li key={t} className="text-[12px] flex items-start gap-2 font-landing text-[#a0a0c0] leading-snug">
+                      <span className="text-[11px] mt-0.5 shrink-0" style={{ color: "#B8922A" }}>✓</span>
+                      <span>{t}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <div className="font-mono font-bold text-[10px] tracking-[.1em] mb-2" style={{ color: "#B8922A" }}>
+                  🧬 DR. NEXUS — PEPTIDEVAULT
+                </div>
+                <ul className="flex flex-col gap-1.5 mb-4">
+                  {[
+                    "132 peptídeos catalogados",
+                    "Bioreguladores de Khavinson",
+                    "Blends de cutting elite",
+                    "Senolíticos e FOXO4-DRI",
+                    "Oracle IA ilimitado",
+                    "Mecanismos moleculares",
+                  ].map((t) => (
+                    <li key={t} className="text-[12px] flex items-start gap-2 font-landing text-[#a0a0c0] leading-snug">
+                      <span className="text-[11px] mt-0.5 shrink-0" style={{ color: "#B8922A" }}>✓</span>
+                      <span>{t}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <div className="font-mono font-bold text-[10px] tracking-[.1em] mb-2" style={{ color: "#B8922A" }}>
+                  🦠 MICROBIOTA — GUT-BRAIN
+                </div>
+                <ul className="flex flex-col gap-1.5 mb-4">
+                  {[
+                    "Análise em 4 dimensões",
+                    "Eixo intestino-cérebro",
+                    "Modulação por nutrição",
+                    "Prebióticos e probióticos",
+                    "Protocolo personalizado",
+                    "Impacto em composição corporal",
+                  ].map((t) => (
+                    <li key={t} className="text-[12px] flex items-start gap-2 font-landing text-[#a0a0c0] leading-snug">
+                      <span className="text-[11px] mt-0.5 shrink-0" style={{ color: "#B8922A" }}>✓</span>
+                      <span>{t}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <div className="font-mono font-bold text-[10px] tracking-[.1em] mb-2" style={{ color: "#B8922A" }}>
+                  🌿 FITOTERÁPICOS
+                </div>
+                <ul className="flex flex-col gap-1.5 mb-4">
+                  {[
+                    "100+ fitoterápicos catalogados",
+                    "Adaptógenos e nootropics",
+                    "Mecanismos de ação completos",
+                    "Dosagens e protocolos",
+                    "Interações com fármacos",
+                    "Oracle IA ilimitado",
+                  ].map((t) => (
+                    <li key={t} className="text-[12px] flex items-start gap-2 font-landing text-[#a0a0c0] leading-snug">
+                      <span className="text-[11px] mt-0.5 shrink-0" style={{ color: "#B8922A" }}>✓</span>
+                      <span>{t}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+
+            <div style={{ height: "0.5px", background: "#ffffff10", margin: "14px 0" }} />
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-6 gap-y-4">
+              <div>
+                <div className="font-mono font-bold text-[10px] tracking-[.1em] mb-2" style={{ color: "#B8922A" }}>
+                  🦴 BIOMECHANICS VAULT
+                </div>
+                <ul className="flex flex-col gap-1.5 mb-4">
+                  {[
+                    "Biblioteca biomecânica completa",
+                    "Análise de movimento",
+                    "Padrões de recrutamento muscular",
+                    "Integração com APEX Visual",
+                    "Referências científicas",
+                  ].map((t) => (
+                    <li key={t} className="text-[12px] flex items-start gap-2 font-landing text-[#a0a0c0] leading-snug">
+                      <span className="text-[11px] mt-0.5 shrink-0" style={{ color: "#B8922A" }}>✓</span>
+                      <span>{t}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div>
+                <div className="font-mono font-bold text-[10px] tracking-[.1em] mb-2" style={{ color: "#B8922A" }}>
+                  📊 PAINEL COACH ELITE
+                </div>
+                <ul className="flex flex-col gap-1.5 mb-4">
+                  {[
+                    "Alunos ilimitados",
+                    "Gestão completa",
+                    "Alertas automáticos",
+                    "Relatórios PDF automáticos",
+                    "Check-in em tempo real",
+                    "Diário fotográfico por aluno",
+                    "Histórico completo",
+                  ].map((t) => (
+                    <li key={t} className="text-[12px] flex items-start gap-2 font-landing text-[#a0a0c0] leading-snug">
+                      <span className="text-[11px] mt-0.5 shrink-0" style={{ color: "#B8922A" }}>✓</span>
+                      <span>{t}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div>
+                <div className="font-mono font-bold text-[10px] tracking-[.1em] mb-2" style={{ color: "#B8922A" }}>
+                  EXTRAS
+                </div>
+                <ul className="flex flex-col gap-1.5 mb-4">
+                  {[
+                    "Módulo feminino completo",
+                    "Lab Intelligence",
+                    "Loja interna de materiais",
+                    "Acesso antecipado a novos módulos",
+                    "Suporte prioritário",
+                  ].map((t) => (
+                    <li key={t} className="text-[12px] flex items-start gap-2 font-landing text-[#a0a0c0] leading-snug">
+                      <span className="text-[11px] mt-0.5 shrink-0" style={{ color: "#B8922A" }}>✓</span>
+                      <span>{t}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+
+            <a
+              href="https://pay.kiwify.com.br/VaPRGfQ"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block w-full text-center font-bold text-[14px] rounded-lg transition-all hover:scale-[1.01] mt-2"
               style={{ background: "#B8922A", color: "#0a0a1a", padding: "14px" }}
               onMouseEnter={(e) => (e.currentTarget.style.background = "#D4A832")}
               onMouseLeave={(e) => (e.currentTarget.style.background = "#B8922A")}
