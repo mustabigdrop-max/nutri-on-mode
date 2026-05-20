@@ -882,7 +882,7 @@ const MealCard = ({ meal, index, onSwap, onValidate, workoutTag }: MealCardProps
                             })()}
                             {sub.observacao && <div style={{ fontSize: 10, color: T.muted2, fontStyle: "italic" }}>{sub.observacao}</div>}
                             <button
-                              onClick={() => onSwap(i, sub)}
+                              onClick={(e) => { e.preventDefault(); e.stopPropagation(); onSwap(i, sub); }}
                               style={{
                                 marginTop: 2, padding: "5px 8px", borderRadius: 6,
                                 background: T.greenBg, border: `1px solid ${T.green}`,
