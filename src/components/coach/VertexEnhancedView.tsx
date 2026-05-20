@@ -423,8 +423,8 @@ function CrossShapeBlock({ weak, shapeText, color }: { weak: Segment[]; shapeTex
         ))}
       </div>
       {shapeText && (
-        <div className="text-[11px] text-foreground/90 whitespace-pre-wrap leading-snug border-t pt-2" style={{ borderColor: `${color}33` }}>
-          {shapeText}
+        <div className="text-[11px] text-foreground/90 leading-snug border-t pt-2" style={{ borderColor: `${color}33` }}>
+          <ApexMarkdown text={shapeText} />
         </div>
       )}
     </div>
