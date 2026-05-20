@@ -476,7 +476,7 @@ const LandingPlans = () => {
         <div className="flex items-center gap-4 mb-10">
           <div className="flex-1 h-px" style={{ background: "#B8922A30" }} />
           <span className="font-mono text-[.65rem] tracking-[.2em] uppercase" style={{ color: "#B8922A" }}>
-            Planos Profissionais
+            Planos Premium
           </span>
           <div className="flex-1 h-px" style={{ background: "#B8922A30" }} />
         </div>
