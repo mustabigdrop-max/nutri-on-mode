@@ -1471,15 +1471,53 @@ function SvgLine({ p1, p2, color, dashed, thickness }: { p1?: Landmark; p2?: Lan
   );
 }
 
-function SvgPolyline({ points, color }: { points: Landmark[]; color: string }) {
+// Severity-aware line with optional gradient (green → severity color in direction of deviation)
+function SvgSevLine({
+  p1, p2, style, id,
+}: {
+  p1?: Landmark; p2?: Landmark;
+  style: { stroke: string; strokeWidth: number; strokeDasharray: string; opacity: number; level: "normal" | "mild" | "moderate" | "severe" };
+  id: string;
+}) {
+  if (!isValidPoint(p1) || !isValidPoint(p2)) return null;
+  const useGradient = style.level === "moderate" || style.level === "severe";
+  const gradId = `apex-line-grad-${id}`;
+  // Direction: from p1 (normal anchor) → p2 (deviated end). If p1 is "lower" deviation side, gradient flows green→sev along line.
+  const x1 = p1!.x, y1 = p1!.y, x2 = p2!.x, y2 = p2!.y;
+  const strokeRef = useGradient ? `url(#${gradId})` : style.stroke;
+  return (
+    <>
+      {useGradient && (
+        <defs>
+          <linearGradient id={gradId} gradientUnits="userSpaceOnUse" x1={x1} y1={y1} x2={x2} y2={y2}>
+            <stop offset="0%" stopColor="#1D9E75" stopOpacity={style.opacity} />
+            <stop offset="100%" stopColor={style.stroke} stopOpacity={style.opacity} />
+          </linearGradient>
+        </defs>
+      )}
+      <line
+        x1={x1} y1={y1} x2={x2} y2={y2}
+        stroke={strokeRef}
+        strokeOpacity={useGradient ? 1 : style.opacity}
+        strokeDasharray={style.strokeDasharray === "none" ? undefined : style.strokeDasharray}
+        vectorEffect="non-scaling-stroke"
+        style={{ strokeWidth: style.strokeWidth }}
+      />
+    </>
+  );
+}
+
+function SvgPolyline({ points, color, style }: { points: Landmark[]; color: string; style?: { strokeWidth: number; strokeDasharray: string; opacity: number } }) {
   if (points.length < 2) return null;
   return (
     <polyline
       points={points.map((p) => `${p.x},${p.y}`).join(" ")}
       fill="none"
       stroke={color}
+      strokeOpacity={style?.opacity ?? 1}
+      strokeDasharray={style && style.strokeDasharray !== "none" ? style.strokeDasharray : undefined}
       vectorEffect="non-scaling-stroke"
-      style={{ strokeWidth: 2 }}
+      style={{ strokeWidth: style?.strokeWidth ?? 2 }}
     />
   );
 }
