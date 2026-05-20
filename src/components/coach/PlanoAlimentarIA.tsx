@@ -38,6 +38,8 @@ import { SUBSTITUTION_BANK_V2, type FoodCategoryV2 } from "@/data/substitutionBa
 import NutrientDensityPanel from "@/components/coach/NutrientDensityPanel";
 import Glut4SyncCard from "@/components/meal/Glut4SyncCard";
 import AdherenceModal from "@/components/meal/AdherenceModal";
+import SubstitutionDrawer, { type DrawerConfirmPayload } from "@/components/coach/SubstitutionDrawer";
+import { buildSnapshot } from "@/lib/substitutionValidator";
 
 // ─── Design tokens — Jarvis Nutrition (emerald primary + gold identity) ───────
 const T = {
@@ -681,10 +683,11 @@ interface MealCardProps {
   meal: Meal;
   index: number;
   onSwap: (alimentoIdx: number, sub: SubstituicaoItem) => void;
+  onValidate?: (alimentoIdx: number, subs: SubstituicaoItem[]) => void;
   workoutTag?: "pre" | "post" | null;
 }
 
-const MealCard = ({ meal, index, onSwap, workoutTag }: MealCardProps) => {
+const MealCard = ({ meal, index, onSwap, onValidate, workoutTag }: MealCardProps) => {
   const colors = [T.green, T.blue, T.amber, "#a78bfa", "#f472b6", "#34d399", "#fb923c"];
   const color = colors[index % colors.length];
   const [openSubs, setOpenSubs] = useState<Record<number, boolean>>({});
@@ -743,19 +746,36 @@ const MealCard = ({ meal, index, onSwap, workoutTag }: MealCardProps) => {
                   <span style={{ fontSize: 13, color: T.text }}>{a.alimento}</span>
                   {a.observacao && <div style={{ fontSize: 11, color: T.muted, marginTop: 2 }}>{a.observacao}</div>}
                   {subs.length > 0 && (
-                    <button
-                      onClick={() => setOpenSubs((s) => ({ ...s, [i]: !s[i] }))}
-                      style={{
-                        marginTop: 6, padding: "3px 10px", borderRadius: 999,
-                        background: open ? T.greenBg : "transparent",
-                        border: `1px solid ${open ? T.green : T.border2}`,
-                        color: open ? T.green : T.muted,
-                        fontSize: 10, cursor: "pointer", fontFamily: "inherit",
-                        display: "inline-flex", alignItems: "center", gap: 6,
-                      }}
-                    >
-                      ⇄ {subs.length} substituto{subs.length > 1 ? "s" : ""} {open ? "▲" : "▼"}
-                    </button>
+                    <div style={{ display: "inline-flex", gap: 6, marginTop: 6, flexWrap: "wrap" }}>
+                      <button
+                        type="button"
+                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); setOpenSubs((s) => ({ ...s, [i]: !s[i] })); }}
+                        style={{
+                          padding: "3px 10px", borderRadius: 999,
+                          background: open ? T.greenBg : "transparent",
+                          border: `1px solid ${open ? T.green : T.border2}`,
+                          color: open ? T.green : T.muted,
+                          fontSize: 10, cursor: "pointer", fontFamily: "inherit",
+                          display: "inline-flex", alignItems: "center", gap: 6,
+                        }}
+                      >
+                        ⇄ {subs.length} substituto{subs.length > 1 ? "s" : ""} {open ? "▲" : "▼"}
+                      </button>
+                      {onValidate && (
+                        <button
+                          type="button"
+                          onClick={(e) => { e.preventDefault(); e.stopPropagation(); onValidate(i, subs); }}
+                          style={{
+                            padding: "3px 10px", borderRadius: 999,
+                            background: "transparent", border: `1px solid ${T.amber}55`,
+                            color: T.amber, fontSize: 10, cursor: "pointer", fontFamily: "inherit",
+                            display: "inline-flex", alignItems: "center", gap: 6,
+                          }}
+                        >
+                          🔬 Validar substituição
+                        </button>
+                      )}
+                    </div>
                   )}
                 </div>
                 {(() => {
@@ -862,7 +882,7 @@ const MealCard = ({ meal, index, onSwap, workoutTag }: MealCardProps) => {
                             })()}
                             {sub.observacao && <div style={{ fontSize: 10, color: T.muted2, fontStyle: "italic" }}>{sub.observacao}</div>}
                             <button
-                              onClick={() => onSwap(i, sub)}
+                              onClick={(e) => { e.preventDefault(); e.stopPropagation(); onSwap(i, sub); }}
                               style={{
                                 marginTop: 2, padding: "5px 8px", borderRadius: 6,
                                 background: T.greenBg, border: `1px solid ${T.green}`,
@@ -1011,6 +1031,8 @@ export default function PlanoAlimentarIA() {
   const [showHistory, setShowHistory] = useState(false);
   // Substituições NUTRION (módulo embutido)
   const [showSubstitutions, setShowSubstitutions] = useState(false);
+  // Drawer de substituição validada (isocalórica)
+  const [swapDrawer, setSwapDrawer] = useState<{ mealIdx: number; alimentoIdx: number; subs: SubstituicaoItem[] } | null>(null);
   // Periodização (Gantt)
   const [showGantt, setShowGantt] = useState(false);
   // Check-ins semanais
@@ -4714,6 +4736,36 @@ export default function PlanoAlimentarIA() {
               Refeições do dia
             </div>
 
+            {/* Indicador de fechamento calórico em tempo real */}
+            {(() => {
+              const meta = Number(plano?.resumo?.calorias_totais) || 0;
+              const atual = (plano.refeicoes || []).reduce((acc, m) => acc + getMealKcal(m as Meal), 0);
+              const delta = atual - meta;
+              const absDelta = Math.abs(delta);
+              const status: { label: string; color: string } =
+                absDelta <= 50 ? { label: "✓ FECHADO", color: T.green } :
+                absDelta <= 150 ? { label: "⚠ AJUSTE LEVE", color: T.amber } :
+                { label: "✗ DESBALANCEADO", color: T.red };
+              const pct = meta > 0 ? Math.min(100, Math.max(0, (atual / meta) * 100)) : 0;
+              return (
+                <div style={{ padding: "10px 14px", marginBottom: 12, background: T.bg2, border: `1px solid ${status.color}44`, borderRadius: 10 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 6, fontFamily: T.fontMono }}>
+                    <span style={{ fontSize: 10, color: T.muted, letterSpacing: "0.15em", textTransform: "uppercase" }}>
+                      META: <span style={{ color: T.text, fontWeight: 700 }}>{meta.toLocaleString("pt-BR")} kcal</span>
+                    </span>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: status.color, letterSpacing: "0.1em" }}>{status.label}</span>
+                  </div>
+                  <div style={{ height: 6, background: "#ffffff10", borderRadius: 999, overflow: "hidden", marginBottom: 6 }}>
+                    <div style={{ width: `${pct}%`, height: "100%", background: status.color, transition: "width 0.3s" }} />
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: T.muted, fontFamily: T.fontMono }}>
+                    <span>Atual: <span style={{ color: T.text, fontWeight: 700 }}>{Math.round(atual).toLocaleString("pt-BR")} kcal</span></span>
+                    <span>Δ: <span style={{ color: status.color, fontWeight: 700 }}>{delta > 0 ? "+" : ""}{Math.round(delta)} kcal</span></span>
+                  </div>
+                </div>
+              );
+            })()}
+
             {/* Legenda Treino/Descanso · Pré/Pós */}
             <div style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "center", padding: "8px 12px", marginBottom: 12, background: T.bg2, border: `1px dashed ${T.border2}`, borderRadius: 10, fontSize: 11, color: T.muted }}>
               <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}><span style={{ color: T.amber }}>⚡</span> Pré-treino</span>
@@ -4750,6 +4802,7 @@ export default function PlanoAlimentarIA() {
                   meal={m}
                   index={i}
                   workoutTag={classify(m.horario)}
+                  onValidate={(alimentoIdx, subs) => setSwapDrawer({ mealIdx: i, alimentoIdx, subs })}
                   onSwap={(alimentoIdx, sub) => {
                     setPlano((prev) => {
                       if (!prev) return prev;
@@ -5089,6 +5142,85 @@ export default function PlanoAlimentarIA() {
           </div>
         </div>
       )}
+
+      {/* Drawer: Substituição validada isocalórica */}
+      <SubstitutionDrawer
+        open={!!swapDrawer}
+        original={(() => {
+          if (!swapDrawer || !plano) return null;
+          const a = plano.refeicoes?.[swapDrawer.mealIdx]?.alimentos?.[swapDrawer.alimentoIdx];
+          if (!a) return null;
+          return { alimento: a.alimento, quantidade: a.quantidade, quantidade_g: a.quantidade_g };
+        })()}
+        substitutos={swapDrawer?.subs || []}
+        onClose={() => setSwapDrawer(null)}
+        onConfirm={(payload: DrawerConfirmPayload) => {
+          if (!swapDrawer) return;
+          const { mealIdx, alimentoIdx } = swapDrawer;
+          setPlano((prev) => {
+            if (!prev) return prev;
+            const next = JSON.parse(JSON.stringify(prev)) as PlanoData;
+            const meal = next.refeicoes[mealIdx];
+            const original = meal?.alimentos?.[alimentoIdx];
+            if (!meal?.alimentos || !original) return prev;
+
+            // Recalcular macros: subtrair original, somar novo (quando há densidade)
+            const snapOld = buildSnapshot(original.alimento, original.quantidade_g || original.quantidade);
+            const snapNew = buildSnapshot(payload.alimento, payload.quantidade_g || payload.quantidade);
+            if (snapOld.kcal != null && snapNew.kcal != null) {
+              const m = meal.macros || { proteina: 0, carboidrato: 0, gordura: 0 };
+              meal.macros = {
+                proteina: Math.max(0, Math.round(((m.proteina || 0) - (snapOld.proteina || 0) + (snapNew.proteina || 0)) * 10) / 10),
+                carboidrato: Math.max(0, Math.round(((m.carboidrato || 0) - (snapOld.carbo || 0) + (snapNew.carbo || 0)) * 10) / 10),
+                gordura: Math.max(0, Math.round(((m.gordura || 0) - (snapOld.gordura || 0) + (snapNew.gordura || 0)) * 10) / 10),
+              };
+              meal.kcal_calculada = (snapNew.kcal - snapOld.kcal) + (typeof meal.kcal_calculada === "number" ? meal.kcal_calculada : (Number(meal.calorias) || 0));
+
+              // Atualizar totais do dia (resumo)
+              if (next.resumo) {
+                next.resumo.proteina_total = Math.max(0, Math.round(((next.resumo.proteina_total || 0) - (snapOld.proteina || 0) + (snapNew.proteina || 0)) * 10) / 10);
+                next.resumo.carboidrato_total = Math.max(0, Math.round(((next.resumo.carboidrato_total || 0) - (snapOld.carbo || 0) + (snapNew.carbo || 0)) * 10) / 10);
+                next.resumo.gordura_total = Math.max(0, Math.round(((next.resumo.gordura_total || 0) - (snapOld.gordura || 0) + (snapNew.gordura || 0)) * 10) / 10);
+              }
+            }
+
+            const otherSubs = (original.substituicoes || []).filter((s) => s.alimento !== payload.alimento);
+            meal.alimentos[alimentoIdx] = {
+              alimento: payload.alimento,
+              quantidade: payload.quantidade,
+              quantidade_g: payload.quantidade_g,
+              observacao: payload.observacao ?? undefined,
+              substituicoes: [
+                { alimento: original.alimento, quantidade: original.quantidade || original.quantidade_g, quantidade_g: original.quantidade_g, observacao: original.observacao },
+                ...otherSubs,
+              ],
+            };
+            return next;
+          });
+          setSavedId(null);
+          setSwapDrawer(null);
+
+          // Toast com aviso de fechamento
+          setTimeout(() => {
+            setPlano((curr) => {
+              if (curr) {
+                const meta = Number(curr.resumo?.calorias_totais) || 0;
+                const atual = (curr.refeicoes || []).reduce((acc, m) => acc + getMealKcal(m as Meal), 0);
+                const delta = atual - meta;
+                const abs = Math.abs(delta);
+                if (abs <= 50) {
+                  toast({ title: "✓ Substituído", description: `Plano recalculado. Fechamento: ${Math.round(atual)} kcal` });
+                } else if (abs <= 200) {
+                  toast({ title: "⚠ Substituído com desvio", description: `Plano ficou com ${delta > 0 ? "+" : ""}${Math.round(delta)} kcal vs meta. Revise outra refeição.` });
+                } else {
+                  toast({ title: "✗ Substituição desbalanceou", description: `Plano com ${delta > 0 ? "+" : ""}${Math.round(delta)} kcal de diferença. Ajuste outra refeição.`, variant: "destructive" as any });
+                }
+              }
+              return curr;
+            });
+          }, 0);
+        }}
+      />
 
       {/* Overlay: Módulo Substituições NUTRION */}
       {showSubstitutions && (
