@@ -614,7 +614,7 @@ function PhotoZone({ label, file, onPick, onClear, accent }: {
               onMouseEnter={handleMouseEnter}
               onMouseLeave={handleMouseLeave}
             >
-              <ImageIcon className="w-3.5 h-3.5" />
+              <Image className="w-3.5 h-3.5" />
               Escolher do álbum
             </button>
           </div>
