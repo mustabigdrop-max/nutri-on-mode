@@ -206,6 +206,7 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
   });
   const [chainMode, setChainMode] = useState<boolean>(false);
   const [debugMode, setDebugMode] = useState<boolean>(false);
+  const [gridMode, setGridMode] = useState<boolean>(false);
   const exportRef = useRef<HTMLDivElement>(null);
   const [exporting, setExporting] = useState(false);
 
