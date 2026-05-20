@@ -893,6 +893,30 @@ function OverlayLayer({
     return severityOf(a.value, a.normal);
   };
 
+  // Severity-aware line styling per spec (thresholds in degrees)
+  type LineStyle = { stroke: string; strokeWidth: number; strokeDasharray: string; opacity: number; level: "normal" | "mild" | "moderate" | "severe" };
+  const getLineStyle = (angleDegrees: number, normal: number, mild: number, moderate: number): LineStyle => {
+    const a = Math.abs(Number(angleDegrees) || 0);
+    if (a <= normal)   return { stroke: "#1D9E75", strokeWidth: 1.5, strokeDasharray: "none", opacity: 0.7, level: "normal" };
+    if (a <= mild)     return { stroke: "#B8922A", strokeWidth: 2,   strokeDasharray: "none", opacity: 0.8, level: "mild" };
+    if (a <= moderate) return { stroke: "#EF9F27", strokeWidth: 2.5, strokeDasharray: "6 2",  opacity: 0.9, level: "moderate" };
+    return                    { stroke: "#E24B4A", strokeWidth: 3,   strokeDasharray: "4 2",  opacity: 1,   level: "severe" };
+  };
+  const angleVal = (key: string): number => {
+    const a = ang[key];
+    return a ? Number(a.value) || 0 : 0;
+  };
+  const LINE_THRESHOLDS: Record<string, { n: number; mi: number; mo: number }> = {
+    shoulder_tilt:        { n: 1, mi: 2, mo: 5 },
+    shoulder_asymmetry:   { n: 1, mi: 2, mo: 5 },
+    scapular_axis_tilt:   { n: 2, mi: 3, mo: 6 },
+    hip_tilt:             { n: 1, mi: 3, mo: 5 },
+    hip_asymmetry:        { n: 1, mi: 3, mo: 5 },
+    knee_valgus_left:     { n: 3, mi: 5, mo: 8 },
+    knee_valgus_right:    { n: 3, mi: 5, mo: 8 },
+    plumb_line_deviation: { n: 1, mi: 3, mo: 5 },
+  };
+
   return (
     <>
       {/* SVG layer: lines + landmarks */}
