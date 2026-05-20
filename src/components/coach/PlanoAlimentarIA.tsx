@@ -4736,6 +4736,36 @@ export default function PlanoAlimentarIA() {
               Refeições do dia
             </div>
 
+            {/* Indicador de fechamento calórico em tempo real */}
+            {(() => {
+              const meta = Number(plano?.resumo?.calorias_totais) || 0;
+              const atual = (plano.refeicoes || []).reduce((acc, m) => acc + getMealKcal(m as Meal), 0);
+              const delta = atual - meta;
+              const absDelta = Math.abs(delta);
+              const status: { label: string; color: string } =
+                absDelta <= 50 ? { label: "✓ FECHADO", color: T.green } :
+                absDelta <= 150 ? { label: "⚠ AJUSTE LEVE", color: T.amber } :
+                { label: "✗ DESBALANCEADO", color: T.red };
+              const pct = meta > 0 ? Math.min(100, Math.max(0, (atual / meta) * 100)) : 0;
+              return (
+                <div style={{ padding: "10px 14px", marginBottom: 12, background: T.bg2, border: `1px solid ${status.color}44`, borderRadius: 10 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 6, fontFamily: T.fontMono }}>
+                    <span style={{ fontSize: 10, color: T.muted, letterSpacing: "0.15em", textTransform: "uppercase" }}>
+                      META: <span style={{ color: T.text, fontWeight: 700 }}>{meta.toLocaleString("pt-BR")} kcal</span>
+                    </span>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: status.color, letterSpacing: "0.1em" }}>{status.label}</span>
+                  </div>
+                  <div style={{ height: 6, background: "#ffffff10", borderRadius: 999, overflow: "hidden", marginBottom: 6 }}>
+                    <div style={{ width: `${pct}%`, height: "100%", background: status.color, transition: "width 0.3s" }} />
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: T.muted, fontFamily: T.fontMono }}>
+                    <span>Atual: <span style={{ color: T.text, fontWeight: 700 }}>{Math.round(atual).toLocaleString("pt-BR")} kcal</span></span>
+                    <span>Δ: <span style={{ color: status.color, fontWeight: 700 }}>{delta > 0 ? "+" : ""}{Math.round(delta)} kcal</span></span>
+                  </div>
+                </div>
+              );
+            })()}
+
             {/* Legenda Treino/Descanso · Pré/Pós */}
             <div style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "center", padding: "8px 12px", marginBottom: 12, background: T.bg2, border: `1px dashed ${T.border2}`, borderRadius: 10, fontSize: 11, color: T.muted }}>
               <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}><span style={{ color: T.amber }}>⚡</span> Pré-treino</span>
