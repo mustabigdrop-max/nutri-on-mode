@@ -227,6 +227,7 @@ const LandingPlans = () => {
   const { getRemaining } = usePlanSlots();
   const [modal, setModal] = useState<{ open: boolean; plan: string; feature: string }>({ open: false, plan: "", feature: "" });
   const [nutriplanOpen, setNutriplanOpen] = useState(false);
+  const [trainingOpen, setTrainingOpen] = useState(false);
 
   const slotBadge = (planKey: string | undefined) => {
     if (!planKey) return null;
