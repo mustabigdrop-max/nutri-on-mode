@@ -107,6 +107,65 @@ function colorBySev(sev: "ok" | "alt" | "sev"): string {
   return sev === "sev" ? C.red : sev === "alt" ? C.yellow : C.green;
 }
 
+// ─── Landmark severity (4-level: normal | mild | moderate | severe) ─
+type LmSev = "normal" | "mild" | "moderate" | "severe";
+
+function severity4(value: number, normal: string): LmSev {
+  if (isWithinNormal(value, normal)) return "normal";
+  const limit = normalLimit(normal);
+  const ratio = Math.abs(value) / (limit || 1);
+  if (ratio >= 1.5) return "severe";
+  if (ratio >= 1.25) return "moderate";
+  return "mild";
+}
+
+// Mapeamento landmark → angle keys que o implicam clinicamente
+const LANDMARK_ANGLES: Record<string, string[]> = {
+  shoulder_left: ["shoulder_tilt", "shoulder_asymmetry"],
+  shoulder_right: ["shoulder_tilt", "shoulder_asymmetry"],
+  hip_left: ["hip_tilt", "hip_asymmetry", "pelvic_tilt"],
+  hip_right: ["hip_tilt", "hip_asymmetry", "pelvic_tilt"],
+  knee_left: ["knee_valgus_left"],
+  knee_right: ["knee_valgus_right"],
+  ankle_left: ["knee_valgus_left"],
+  ankle_right: ["knee_valgus_right"],
+  ear: ["forward_head_posture", "head_lateral_tilt"],
+  ear_left: ["head_lateral_tilt", "forward_head_posture"],
+  ear_right: ["head_lateral_tilt", "forward_head_posture"],
+  shoulder: ["thoracic_kyphosis", "forward_head_posture"],
+  hip_greater_trochanter: ["pelvic_tilt", "lumbar_lordosis"],
+  knee_lateral: ["plumb_line_deviation"],
+  ankle_lateral: ["plumb_line_deviation"],
+  spine_c7: ["spinal_lateral_deviation", "scapular_axis_tilt"],
+  spine_l5: ["spinal_lateral_deviation", "lumbar_lordosis"],
+  scapula_left: ["scapular_winging_left", "scapular_axis_tilt"],
+  scapula_right: ["scapular_winging_right", "scapular_axis_tilt"],
+};
+
+const SEV_RANK: Record<LmSev, number> = { normal: 0, mild: 1, moderate: 2, severe: 3 };
+
+function landmarkSeverity(id: string, ang: Record<string, { value: number; normal: string }>): LmSev {
+  const keys = LANDMARK_ANGLES[id];
+  if (!keys || !keys.length) return "normal";
+  let worst: LmSev = "normal";
+  for (const k of keys) {
+    const a = ang[k];
+    if (!a) continue;
+    const s = severity4(a.value, a.normal);
+    if (SEV_RANK[s] > SEV_RANK[worst]) worst = s;
+  }
+  return worst;
+}
+
+function landmarkColor(sev: LmSev): { fill: string; stroke: string; pulse: boolean } {
+  switch (sev) {
+    case "severe":   return { fill: "#E24B4A", stroke: "#E24B4A",   pulse: true  };
+    case "moderate": return { fill: "#EF9F27", stroke: "#EF9F2780", pulse: false };
+    case "mild":     return { fill: "#B8922A", stroke: "#B8922A80", pulse: false };
+    default:         return { fill: "#1D9E75", stroke: "#1D9E7580", pulse: false };
+  }
+}
+
 // Educational tags per landmark
 const EDU: Record<string, { reveals: string; dom?: string; inh?: string }> = {
   shoulder_left: { reveals: "Inclinação e protração", dom: "Trapézio superior E", inh: "Serrátil anterior E" },
@@ -335,6 +394,12 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
       <style>{`
         @keyframes apex-chain-dash { to { stroke-dashoffset: -20; } }
         .apex-chain-line { animation: apex-chain-dash 1.2s linear infinite; }
+        @keyframes landmarkPulse {
+          0%   { r: 1.1; opacity: 1; }
+          50%  { r: 1.8; opacity: 0.55; }
+          100% { r: 1.1; opacity: 1; }
+        }
+        .apex-landmark-pulse { animation: landmarkPulse 1.5s ease-in-out infinite; transform-origin: center; }
       `}</style>
 
       {/* Header / toggles */}
@@ -1047,17 +1112,20 @@ function OverlayLayer({
           />
         ))}
 
-        {/* Landmarks: primary vs secondary */}
+        {/* Landmarks: cor por severidade clínica do achado relacionado */}
         {labelPositions.map((q) => {
           const isPrimary = PRIMARY.has(q.key);
+          const sev = landmarkSeverity(q.key, ang);
+          const { fill, stroke, pulse } = landmarkColor(sev);
           return (
             <circle
               key={`pt-${q.key}`}
               cx={q.px} cy={q.py}
               r={isPrimary ? 1.1 : 0.75}
-              fill={isPrimary ? `${C.gold}99` : `${C.white}66`}
-              stroke={isPrimary ? C.gold : C.white}
+              fill={fill}
+              stroke={stroke}
               vectorEffect="non-scaling-stroke"
+              className={pulse ? "apex-landmark-pulse" : undefined}
               style={{ strokeWidth: isPrimary ? 2 : 1.5 }}
             />
           );
@@ -1122,6 +1190,29 @@ function OverlayLayer({
           </g>
         )}
       </svg>
+
+      {/* Legenda de severidade dos landmarks */}
+      <div
+        className="absolute left-2 bottom-2 pointer-events-none"
+        style={{
+          background: "#00000080",
+          padding: "6px 10px",
+          borderRadius: 6,
+          fontSize: 10,
+          fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+          color: "#FFFFFF",
+          lineHeight: 1.5,
+          display: "flex",
+          flexDirection: "column",
+          gap: 2,
+          zIndex: 5,
+        }}
+      >
+        <div><span style={{ color: "#1D9E75" }}>●</span> Normal</div>
+        <div><span style={{ color: "#B8922A" }}>●</span> Leve</div>
+        <div><span style={{ color: "#EF9F27" }}>●</span> Moderado</div>
+        <div><span style={{ color: "#E24B4A" }}>●</span> Crítico (pulsa)</div>
+      </div>
 
       {/* HTML labels layer — crisp, with background */}
       <div className="absolute inset-0 pointer-events-none">
