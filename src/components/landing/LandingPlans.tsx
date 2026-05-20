@@ -4,6 +4,83 @@ import { motion, useInView } from "framer-motion";
 import { usePlanSlots } from "@/hooks/usePlanSlots";
 import UpgradeModal from "@/components/landing/UpgradeModal";
 import { Shield, Star, Zap } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+
+const NUTRIPLAN_SHORT: string[] = [
+  "7 objetivos: Emagrecimento · Hipertrofia · Recomp · Performance · Saúde Geral · Gestante / Pós-parto",
+  "TDEE farmacológico — 22 compostos com multiplicadores automáticos",
+  "Crononutrição circadiana — cortisol, insulina e GH sincronizados",
+  "GLUT-4 Sync — janela pós-treino calculada automaticamente",
+  "Carb cycling automático — dias de treino vs descanso",
+  "Perfil PCA comportamental — 4 perfis",
+  "Banco TACO/IBGE — medidas caseiras com mapa de referência de gramatura",
+  "Substituições inteligentes — até 16 por alimento com kcal equivalente",
+  "Hidratação farmacológica — Na⁺ K⁺ Mg²⁺ ajustados ao protocolo",
+  "Modo econômico — mesmas equivalências nutricionais com menor custo",
+  "8 modos especiais: Peak Week · GLP-1 · Feminino · Vegano · Low-FODMAP · Longevidade · Cetogênico · Circadiano",
+];
+
+const NUTRIPLAN_FULL: { category: string; items: string[] }[] = [
+  {
+    category: "Objetivos e Cálculo Metabólico",
+    items: [
+      "7 objetivos prescritivos: Emagrecimento, Hipertrofia, Recomposição, Performance, Saúde Geral, Gestante, Pós-parto",
+      "TDEE adaptativo com calibração diária por logs de peso reais",
+      "TDEE farmacológico — 22 compostos com multiplicadores automáticos (GLP-1, T3, clenbuterol, MK-677, etc.)",
+      "Projeção VENTA (7700 kcal/kg) com tracking semanal de desvio",
+    ],
+  },
+  {
+    category: "Crononutrição & Sincronização",
+    items: [
+      "Janelas circadianas: cortisol matinal, insulina pós-treino, GH noturno",
+      "GLUT-4 Sync — janela anabólica pós-treino calculada por intensidade",
+      "Carb cycling automático — alto em dias de treino, baixo em descanso",
+      "Timing peri-workout: pré, intra e pós com macros específicos",
+    ],
+  },
+  {
+    category: "Banco de Alimentos & Substituições",
+    items: [
+      "Banco TACO + IBGE — alimentos 100% brasileiros regionais",
+      "Medidas caseiras com mapa visual de referência de gramatura",
+      "Até 16 substituições inteligentes por alimento com kcal equivalente",
+      "Validação de macros automática em cada troca (delta P/C/G)",
+      "Modo econômico — equivalências nutricionais com menor custo de mercado",
+    ],
+  },
+  {
+    category: "Perfil Comportamental PCA",
+    items: [
+      "4 perfis comportamentais (Disciplinado, Emocional, Social, Caótico)",
+      "Plano adaptado por perfil — estrutura de refeições, frequência e flexibilidade",
+      "Receitas personalizadas por perfil comportamental",
+      "Alertas preditivos de sabotagem com base no perfil",
+    ],
+  },
+  {
+    category: "Hidratação & Eletrólitos",
+    items: [
+      "Hidratação farmacológica — Na⁺ K⁺ Mg²⁺ ajustados ao protocolo ativo",
+      "Compensação de diurese (cafeína, GLP-1, ciclos farmacológicos)",
+      "Alertas de desidratação preditivos por temperatura e atividade",
+    ],
+  },
+  {
+    category: "8 Modos Especiais",
+    items: [
+      "Peak Week — protocolo de palco com SRI automático D-7",
+      "GLP-1 — proteína 1.8–2.2g/kg, faixa de saciedade ajustada",
+      "Feminino — periodização por fase do ciclo, RED-S safety",
+      "Vegano — combinação proteica completa + B12/ferro/ômega",
+      "Low-FODMAP — protocolo 3 fases (eliminação · reintrodução · personalização)",
+      "Longevidade — densidade nutricional, autofagia, restrição calórica suave",
+      "Cetogênico — cetose induzida, eletrólitos reforçados",
+      "Circadiano — refeições alinhadas ao cronotipo individual",
+    ],
+  },
+];
 
 const plans = [
   {
