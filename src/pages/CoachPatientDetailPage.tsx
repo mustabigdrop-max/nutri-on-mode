@@ -868,7 +868,7 @@ const CoachPatientDetailPage = () => {
                     </div>
                     {e.ai_analysis && typeof e.ai_analysis === "object" && (
                       <div className="text-xs text-muted-foreground">
-                        Análise IA disponível
+                        Análise APEX disponível
                       </div>
                     )}
                   </CardContent>
