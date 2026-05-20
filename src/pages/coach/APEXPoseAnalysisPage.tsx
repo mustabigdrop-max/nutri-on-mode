@@ -448,6 +448,19 @@ export default function APEXPoseAnalysisPage() {
                   Arraste uma foto lateral ou frontal do atleta — ou use a câmera ao vivo.
                 </p>
               </div>
+            ) : mode === "analyzing" && !cameraRef.current ? (
+              <div className="flex flex-col items-center justify-center gap-4 py-16 px-6 text-center w-full">
+                <Loader2 size={48} style={{ color: C.gold }} className="animate-spin" />
+                <div style={{ color: C.gold, fontFamily: "'Bebas Neue', sans-serif", fontSize: 22, letterSpacing: ".08em" }}>
+                  APEX analisando — aguarde…
+                </div>
+                <div style={{ color: C.textSec, fontSize: 12, maxWidth: 320 }}>
+                  Processando landmarks, ângulos e diagnóstico clínico integrado.
+                </div>
+                {/* Canvas oculto: MediaPipe precisa renderizar, mas escondemos até o diagnóstico ficar pronto */}
+                <video ref={videoRef} className="hidden" playsInline />
+                <canvas ref={canvasRef} style={{ display: "none" }} />
+              </div>
             ) : (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: .4 }} className="w-full">
                 <video ref={videoRef} className="hidden" playsInline />
