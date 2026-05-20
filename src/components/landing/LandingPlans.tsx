@@ -82,6 +82,85 @@ const NUTRIPLAN_FULL: { category: string; items: string[] }[] = [
   },
 ];
 
+const TRAININGON_PILLS = [
+  "Prescrição", "Readiness", "Fibras", "Sistemas", "STRATUM",
+  "Competição", "Progressão", "Volume", "Histórico",
+];
+
+const TRAININGON_SHORT: string[] = [
+  "6 fases de treinamento: Bulking · Cutting · Manutenção · Recomposição · Emagrecimento · Performance",
+  "27 sistemas de treino em 5 categorias: Periodização · Força Lendária · Hipertrofia Específica · Atlético/Olímpico · Bodybuilding Clássico",
+  "Sistemas inclusos: Linear · DUP · WUP · Westside · Bloco · APRE · 5/3/1 Wendler · Smolov · Texas Method · GVT · DC Training · Mountain Dog · RP · Doggcrapp · EDT · Heavy Duty · Weider · Flushing · Staggered · VBT · Bulgarian e mais 6 especializados",
+  "13 músculos prioritários configuráveis: Peitoral · Costas · Deltoides · Bíceps · Tríceps · Quadríceps · Posterior · Glúteos · Panturrilha · Core · Trapézio · Antebraço · Romboides",
+  "Protocolo corretivo APEX integrado — exercícios corretivos injetados automaticamente no treino",
+  "Verificação de compatibilidade — detecta conflitos entre sistema escolhido e restrições do aluno",
+  "Readiness diário — score de prontidão antes de cada sessão",
+  "Análise de fibras musculares — dominância Tipo I · IIA · IIX",
+  "STRATUM — 7 camadas de periodização (módulo ADM)",
+  "Competição — prep para palco (módulo ADM)",
+  "Progressão e LoadTracker Pro",
+  "Volume por grupo muscular",
+  "Histórico completo de sessões",
+  "Painel coach — até 30 alunos",
+  "Relatório PDF mensal por aluno",
+  "Protocolo farmacológico integrado — IA ajusta volume e intensidade conforme compostos ativos",
+];
+
+const TRAININGON_SYSTEMS: { category: string; items: { name: string; desc: string }[] }[] = [
+  {
+    category: "Periodização",
+    items: [
+      { name: "Linear", desc: "Progressão clássica de carga semanal — base universal." },
+      { name: "DUP (Daily Undulating Periodization)", desc: "Variação diária de volume/intensidade na mesma semana." },
+      { name: "WUP (Weekly Undulating Periodization)", desc: "Ondulação semanal de estímulo — força, hipertrofia, potência." },
+      { name: "Block Periodization", desc: "Blocos sequenciais focados (acumulação · transmutação · realização)." },
+      { name: "Conjugate (Westside)", desc: "Max Effort + Dynamic Effort + Repetition — Louie Simmons." },
+      { name: "APRE (Autoregulatory Progressive Resistance Exercise)", desc: "Auto-regulação por desempenho real do dia." },
+    ],
+  },
+  {
+    category: "Força Lendária",
+    items: [
+      { name: "5/3/1 Wendler", desc: "Ciclos de 4 semanas com TM (Training Max) e PRs por AMRAP." },
+      { name: "Smolov", desc: "Programa russo brutal de agachamento — 13 semanas." },
+      { name: "Texas Method", desc: "Volume na segunda, recuperação na quarta, intensidade na sexta." },
+      { name: "Bulgarian Method", desc: "Máxima diária, alta frequência — atletismo de força." },
+      { name: "VBT (Velocity Based Training)", desc: "Prescrição baseada em velocidade da barra." },
+    ],
+  },
+  {
+    category: "Hipertrofia Específica",
+    items: [
+      { name: "GVT (German Volume Training)", desc: "10x10 — choque hipertrófico clássico." },
+      { name: "RP (Renaissance Periodization)", desc: "MV · MEV · MAV · MRV — volume por mesociclo." },
+      { name: "DC Training (Doggcrapp)", desc: "Rest-pause + extreme stretching, baixa frequência alta intensidade." },
+      { name: "Mountain Dog (John Meadows)", desc: "Pré-exaustão, ângulos múltiplos, conexão neuromuscular." },
+      { name: "EDT (Escalating Density Training)", desc: "PR Zones — mais trabalho no mesmo tempo." },
+      { name: "Heavy Duty (Mike Mentzer)", desc: "Uma série até a falha absoluta, baixíssima frequência." },
+    ],
+  },
+  {
+    category: "Atlético / Olímpico",
+    items: [
+      { name: "Olympic Weightlifting", desc: "Snatch e Clean & Jerk — periodização técnica." },
+      { name: "Tier System (Joe Kenn)", desc: "Total · Upper · Lower em rotação para atletas." },
+      { name: "Triphasic Training (Cal Dietz)", desc: "Excêntrico · Isométrico · Concêntrico." },
+      { name: "PHA (Peripheral Heart Action)", desc: "Circuito alternando membros superior/inferior." },
+    ],
+  },
+  {
+    category: "Bodybuilding Clássico",
+    items: [
+      { name: "Sistema Weider", desc: "Princípios fundadores do BB — pirâmide, superséries, drop sets." },
+      { name: "Flushing", desc: "Múltiplos exercícios consecutivos para um único grupo." },
+      { name: "Staggered Sets", desc: "Intercalar grupos atrasados entre séries principais." },
+      { name: "Pre-Exhaustion", desc: "Isolador antes do composto — falha muscular precoce." },
+      { name: "Giant Sets", desc: "4+ exercícios em sequência para o mesmo grupo." },
+      { name: "FST-7 (Hany Rambod)", desc: "7 séries finais com pump máximo para expansão fascial." },
+    ],
+  },
+];
+
 const plans = [
   {
     name: "ON", price: "R$67", oldPrice: "R$97", discount: "31% off fundador", featured: false,
@@ -148,6 +227,7 @@ const LandingPlans = () => {
   const { getRemaining } = usePlanSlots();
   const [modal, setModal] = useState<{ open: boolean; plan: string; feature: string }>({ open: false, plan: "", feature: "" });
   const [nutriplanOpen, setNutriplanOpen] = useState(false);
+  const [trainingOpen, setTrainingOpen] = useState(false);
 
   const slotBadge = (planKey: string | undefined) => {
     if (!planKey) return null;
@@ -227,7 +307,7 @@ const LandingPlans = () => {
               plan.featured ? "border-primary/30 bg-primary/[.02]" : "border-[#14142a] hover:border-[#2a2a4a]"
             }`}
           >
-            {(plan.badge || plan.slotKey) && (
+            {(plan.badge || plan.slotKey) && plan.name !== "ON PRO" && (
               <div className="absolute top-4 right-4 flex flex-col items-end gap-1">
                 {plan.badge && (
                   <span className="font-mono text-[.55rem] text-black bg-primary px-2 py-1 rounded-[2px] tracking-[.1em]">{plan.badge}</span>
@@ -255,23 +335,76 @@ const LandingPlans = () => {
                   Geração Avançada por IA · Nutrição Esportiva · Protocolo PCA · Crononutrição
                 </div>
               </div>
+            ) : plan.name === "ON PRO" ? (
+              <div className="mb-1.5">
+                <div className="font-heading text-[1.5rem] tracking-[.06em] text-[#f0edf8] leading-tight">
+                  TRAININGON
+                </div>
+                <div className="font-mono text-[.55rem] mt-1.5 tracking-[.08em]" style={{ color: "#1D9E75" }}>
+                  MOTOR DE PRESCRIÇÃO DE ELITE v2.4
+                </div>
+                <div className="font-mono text-[.6rem] text-[#6060a0] mt-1.5 leading-relaxed">
+                  Prescrição individualizada por IA · 27 sistemas · STRATUM 7 camadas
+                </div>
+                <div className="flex flex-wrap gap-1 mt-3">
+                  {TRAININGON_PILLS.map((p) => (
+                    <span
+                      key={p}
+                      className="font-mono text-[.55rem] px-1.5 py-0.5 rounded-[2px] tracking-wider"
+                      style={{ background: "#1D9E7510", border: "1px solid #1D9E7530", color: "#1D9E75" }}
+                    >
+                      {p}
+                    </span>
+                  ))}
+                </div>
+              </div>
             ) : (
               <div className="font-heading text-[1.5rem] tracking-[.08em] mb-1.5 text-[#f0edf8]">{plan.name}</div>
             )}
 
             {/* Price with anchoring */}
-            <div className="my-5">
-              <div className="flex items-baseline gap-2.5">
-                <span className="font-heading text-[3.5rem] text-primary leading-none">{plan.price}</span>
-                <span className="font-mono text-[.65rem] text-[#50507a]">/mês</span>
+            {plan.name === "ON PRO" ? (
+              <div className="my-5">
+                <div className="flex items-baseline gap-2.5">
+                  <span className="font-mono text-[.7rem] text-[#50507a] line-through">R$297</span>
+                  <span className="font-heading text-[2.4rem] leading-none font-bold" style={{ color: "#1D9E75" }}>R$197</span>
+                  <span className="font-mono text-[.65rem] text-[#50507a]">/mês</span>
+                  <span
+                    className="font-mono text-[.6rem] px-2 py-0.5 rounded-sm tracking-[.05em]"
+                    style={{ background: "#1D9E7520", border: "1px solid #1D9E7540", color: "#1D9E75" }}
+                  >
+                    34% OFF
+                  </span>
+                </div>
+                <div className="font-mono text-[.65rem] text-[#7070a0] mt-2">
+                  ou R$1.597/ano — 2 meses grátis
+                </div>
+                <div className="mt-2.5">
+                  <span
+                    className="font-mono text-[.6rem] px-2 py-1 rounded-[2px] tracking-[.08em] inline-block"
+                    style={{ background: "#E24B4A18", border: "1px solid #E24B4A55", color: "#E24B4A" }}
+                  >
+                    PREÇO DE FUNDADOR · R$97/mês
+                  </span>
+                </div>
+                <div className="font-mono text-[.6rem] text-[#6060a0] mt-1.5 leading-relaxed">
+                  Vagas limitadas — sobe para R$197 quando as vagas esgotarem.
+                </div>
               </div>
-              <div className="flex items-center gap-2 mt-1.5">
-                <span className="font-mono text-[.7rem] text-[#50507a] line-through">{plan.oldPrice}</span>
-                <span className="font-mono text-[.6rem] text-primary bg-primary/10 px-2 py-0.5 rounded-sm tracking-[.05em]">
-                  {plan.discount}
-                </span>
+            ) : (
+              <div className="my-5">
+                <div className="flex items-baseline gap-2.5">
+                  <span className="font-heading text-[3.5rem] text-primary leading-none">{plan.price}</span>
+                  <span className="font-mono text-[.65rem] text-[#50507a]">/mês</span>
+                </div>
+                <div className="flex items-center gap-2 mt-1.5">
+                  <span className="font-mono text-[.7rem] text-[#50507a] line-through">{plan.oldPrice}</span>
+                  <span className="font-mono text-[.6rem] text-primary bg-primary/10 px-2 py-0.5 rounded-sm tracking-[.05em]">
+                    {plan.discount}
+                  </span>
+                </div>
               </div>
-            </div>
+            )}
 
             {plan.name === "ON +" ? (
               <>
@@ -290,6 +423,25 @@ const LandingPlans = () => {
                   style={{ background: "transparent", borderColor: "#ffffff20", color: "#888" }}
                 >
                   Ver tudo incluído →
+                </button>
+              </>
+            ) : plan.name === "ON PRO" ? (
+              <>
+                <ul className="flex flex-col gap-2 mb-3">
+                  {TRAININGON_SHORT.map((text, i) => (
+                    <li key={i} className="text-[.78rem] flex items-start gap-2 font-landing text-[#8585b0] leading-snug">
+                      <span className="text-[.7rem] mt-0.5 shrink-0" style={{ color: "#1D9E75" }}>✓</span>
+                      <span>{text}</span>
+                    </li>
+                  ))}
+                </ul>
+                <button
+                  type="button"
+                  onClick={() => setTrainingOpen(true)}
+                  className="w-full text-center py-2 mb-6 rounded border text-[11px] font-mono tracking-wider transition-colors hover:border-[#1D9E7560] hover:text-[#aaa]"
+                  style={{ background: "transparent", borderColor: "#ffffff20", color: "#888" }}
+                >
+                  Ver todos os 27 sistemas →
                 </button>
               </>
             ) : (
@@ -373,6 +525,45 @@ const LandingPlans = () => {
                       <li key={i} className="text-[.78rem] flex items-start gap-2 text-[#8585b0] leading-snug font-landing">
                         <span className="text-primary text-[.7rem] mt-0.5 shrink-0">✓</span>
                         <span>{it}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={trainingOpen} onOpenChange={setTrainingOpen}>
+        <DialogContent className="max-w-2xl bg-[#0a0a18] border-[#2a2a4a] text-[#e0e0f0] max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="font-heading text-[1.3rem] tracking-[.06em] text-[#f0edf8] flex items-center gap-2 flex-wrap">
+              TRAININGON
+              <span className="font-mono text-[.55rem] px-1.5 py-0.5 rounded-[2px] tracking-[.1em] font-bold" style={{ background: "#1D9E7520", border: "1px solid #1D9E7540", color: "#1D9E75" }}>
+                27 SISTEMAS
+              </span>
+            </DialogTitle>
+            <p className="font-mono text-[.65rem] text-[#7070a0] tracking-wide mt-1">
+              Sistemas de treino organizados em 5 categorias
+            </p>
+          </DialogHeader>
+          <Accordion type="multiple" defaultValue={[TRAININGON_SYSTEMS[0].category]} className="w-full mt-2">
+            {TRAININGON_SYSTEMS.map((cat) => (
+              <AccordionItem key={cat.category} value={cat.category} className="border-[#1f1f3a]">
+                <AccordionTrigger className="text-[.85rem] font-landing text-[#f0edf8] hover:no-underline" style={{ color: "#f0edf8" }}>
+                  <span className="flex items-center gap-2">
+                    <span style={{ color: "#1D9E75" }}>▸</span>
+                    {cat.category}
+                    <span className="font-mono text-[.6rem] text-[#6060a0]">({cat.items.length})</span>
+                  </span>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <ul className="flex flex-col gap-3 pt-1">
+                    {cat.items.map((it, i) => (
+                      <li key={i} className="text-[.78rem] flex flex-col gap-0.5 leading-snug font-landing">
+                        <span className="font-semibold text-[#f0edf8]">{it.name}</span>
+                        <span className="text-[#8585b0]">{it.desc}</span>
                       </li>
                     ))}
                   </ul>
