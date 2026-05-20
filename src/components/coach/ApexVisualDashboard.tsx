@@ -1753,7 +1753,7 @@ Suporte em uso: ${suporte || "não informado"}` : "";
       )}
 
       {/* ━━━ TESTES CLÍNICOS (IA por foto) ━━━ */}
-      <div style={{ ...cardStyle, marginBottom: 16 }}>
+      <div id="apex-clinical-tests" style={{ ...cardStyle, marginBottom: 16 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
           {sectionTick(APEX.electric)}
           <span style={labelStyle}>Testes Clínicos</span>
