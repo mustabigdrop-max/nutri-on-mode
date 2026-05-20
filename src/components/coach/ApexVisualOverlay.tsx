@@ -452,6 +452,18 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
             Cadeia Cinética
           </button>
           <button
+            onClick={() => setGridMode((v) => !v)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg border"
+            style={{
+              borderColor: gridMode ? C.gold : "hsl(var(--border))",
+              color: gridMode ? C.gold : "hsl(var(--muted-foreground))",
+              background: gridMode ? `${C.gold}1A` : "transparent",
+            }}
+            title="Exibe arcos goniométricos sobre cada linha de análise"
+          >
+            📐 Grade simetrográfica
+          </button>
+          <button
             onClick={() => setDebugMode((v) => !v)}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg border"
             style={{
