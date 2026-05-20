@@ -564,25 +564,7 @@ const stripMd = (s: string): string =>
 
 function renderMd(text: string): React.ReactNode {
   if (!text) return null;
-  // strip ATX headers but preserve newlines
-  const cleaned = text.replace(/^\s{0,3}#{1,6}\s*/gm, "");
-  const lines = cleaned.split("\n");
-  return lines.map((line, li) => {
-    const parts = line.split(/(\*\*[^*]+\*\*|__[^_]+__|\*[^*\n]+\*|_[^_\n]+_|`[^`]+`)/g);
-    return (
-      <React.Fragment key={li}>
-        {parts.map((p, i) => {
-          if (/^\*\*[^*]+\*\*$/.test(p)) return <strong key={i}>{p.slice(2, -2)}</strong>;
-          if (/^__[^_]+__$/.test(p)) return <strong key={i}>{p.slice(2, -2)}</strong>;
-          if (/^\*[^*\n]+\*$/.test(p)) return <em key={i}>{p.slice(1, -1)}</em>;
-          if (/^_[^_\n]+_$/.test(p)) return <em key={i}>{p.slice(1, -1)}</em>;
-          if (/^`[^`]+`$/.test(p)) return <code key={i} className="px-1 rounded bg-muted/60">{p.slice(1, -1)}</code>;
-          return <span key={i}>{p}</span>;
-        })}
-        {li < lines.length - 1 && "\n"}
-      </React.Fragment>
-    );
-  });
+  return <ApexMarkdown text={text} />;
 }
 
 // ─── Segment bar ────────────────────────────────────────────────
