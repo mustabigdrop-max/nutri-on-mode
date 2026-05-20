@@ -1191,6 +1191,29 @@ function OverlayLayer({
         )}
       </svg>
 
+      {/* Legenda de severidade dos landmarks */}
+      <div
+        className="absolute left-2 bottom-2 pointer-events-none"
+        style={{
+          background: "#00000080",
+          padding: "6px 10px",
+          borderRadius: 6,
+          fontSize: 10,
+          fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+          color: "#FFFFFF",
+          lineHeight: 1.5,
+          display: "flex",
+          flexDirection: "column",
+          gap: 2,
+          zIndex: 5,
+        }}
+      >
+        <div><span style={{ color: "#1D9E75" }}>●</span> Normal</div>
+        <div><span style={{ color: "#B8922A" }}>●</span> Leve</div>
+        <div><span style={{ color: "#EF9F27" }}>●</span> Moderado</div>
+        <div><span style={{ color: "#E24B4A" }}>●</span> Crítico (pulsa)</div>
+      </div>
+
       {/* HTML labels layer — crisp, with background */}
       <div className="absolute inset-0 pointer-events-none">
         {labelPositions.map((q) => (
