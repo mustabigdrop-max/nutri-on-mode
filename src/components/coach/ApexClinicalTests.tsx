@@ -62,6 +62,7 @@ export function ApexClinicalTests({ athleteId, coachId, athleteData }: Props) {
   const [completed, setCompleted] = useState<CompletedTest[]>([]);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const albumRef = useRef<HTMLInputElement>(null);
 
   const groupedTests = useMemo(() => {
     const map: Record<AiTestGroup, FennerAiTest[]> = { flexibility: [], strength: [], dynamic: [], static: [] };
@@ -291,16 +292,15 @@ export function ApexClinicalTests({ athleteId, coachId, athleteData }: Props) {
             <ApexFramingGuide />
           </div>
 
-          {/* Drag & drop */}
+          {/* Drag & drop + botões */}
           <div
             onDragOver={(e) => e.preventDefault()}
             onDrop={onDrop}
             style={{
-              border: `2px dashed ${C.border}`, borderRadius: 12, padding: 24,
-              textAlign: "center", color: C.muted, cursor: analyzing ? "not-allowed" : "pointer",
+              border: `2px dashed ${C.border}`, borderRadius: 12, padding: 20,
+              textAlign: "center", color: C.muted,
               background: "rgba(0,212,255,0.03)",
             }}
-            onClick={() => !analyzing && fileRef.current?.click()}
           >
             <input
               ref={fileRef}
@@ -308,22 +308,61 @@ export function ApexClinicalTests({ athleteId, coachId, athleteData }: Props) {
               accept="image/*"
               capture="environment"
               style={{ display: "none" }}
-              onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }}
+              onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = ""; }}
+            />
+            <input
+              ref={albumRef}
+              type="file"
+              accept="image/*"
+              style={{ display: "none" }}
+              onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = ""; }}
             />
             {analyzing ? (
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, color: C.cyan }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, color: C.cyan, padding: 8 }}>
                 <Loader2 size={18} className="animate-spin" /> Analisando posição com IA...
               </div>
             ) : (
               <div>
-                <div style={{ display: "flex", justifyContent: "center", gap: 8, marginBottom: 8 }}>
-                  <Upload size={20} style={{ color: C.cyan }} />
-                  <Camera size={20} style={{ color: C.cyan }} />
+                <div style={{ display: "flex", justifyContent: "center", gap: 8, marginBottom: 6 }}>
+                  <Upload size={18} style={{ color: C.cyan }} />
                 </div>
-                <div style={{ fontSize: 13, color: C.text, marginBottom: 4 }}>
-                  Arraste a foto ou clique para abrir a câmera
+                <div style={{ fontSize: 13, color: C.text, marginBottom: 2 }}>
+                  Arraste a foto aqui
                 </div>
-                <div style={{ fontSize: 11 }}>{selectedTest.photoAngle.toUpperCase()} · MÁX 15MB</div>
+                <div style={{ fontSize: 11, marginBottom: 10 }}>{selectedTest.photoAngle.toUpperCase()} · MÁX 15MB</div>
+                <div style={{ fontSize: 10, color: C.muted, marginBottom: 8 }}>ou</div>
+                <div style={{ display: "flex", justifyContent: "center", gap: 12, flexWrap: "wrap" }}>
+                  <button
+                    type="button"
+                    onClick={() => fileRef.current?.click()}
+                    style={{
+                      display: "inline-flex", alignItems: "center", gap: 8,
+                      background: "#0d1520", border: "0.5px solid #00D4FF40",
+                      color: "#00D4FF", fontSize: 12, fontWeight: 700,
+                      borderRadius: 8, padding: "10px 20px", cursor: "pointer",
+                      fontFamily: C.fontMono,
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = "#001520"; e.currentTarget.style.borderColor = "#00D4FF"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = "#0d1520"; e.currentTarget.style.borderColor = "#00D4FF40"; }}
+                  >
+                    <Camera size={14} /> Tirar foto
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => albumRef.current?.click()}
+                    style={{
+                      display: "inline-flex", alignItems: "center", gap: 8,
+                      background: "#0d1520", border: "0.5px solid #00D4FF40",
+                      color: "#00D4FF", fontSize: 12, fontWeight: 700,
+                      borderRadius: 8, padding: "10px 20px", cursor: "pointer",
+                      fontFamily: C.fontMono,
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = "#001520"; e.currentTarget.style.borderColor = "#00D4FF"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = "#0d1520"; e.currentTarget.style.borderColor = "#00D4FF40"; }}
+                  >
+                    <Upload size={14} /> Escolher do álbum
+                  </button>
+                </div>
               </div>
             )}
           </div>
