@@ -107,6 +107,65 @@ function colorBySev(sev: "ok" | "alt" | "sev"): string {
   return sev === "sev" ? C.red : sev === "alt" ? C.yellow : C.green;
 }
 
+// ─── Landmark severity (4-level: normal | mild | moderate | severe) ─
+type LmSev = "normal" | "mild" | "moderate" | "severe";
+
+function severity4(value: number, normal: string): LmSev {
+  if (isWithinNormal(value, normal)) return "normal";
+  const limit = normalLimit(normal);
+  const ratio = Math.abs(value) / (limit || 1);
+  if (ratio >= 1.5) return "severe";
+  if (ratio >= 1.25) return "moderate";
+  return "mild";
+}
+
+// Mapeamento landmark → angle keys que o implicam clinicamente
+const LANDMARK_ANGLES: Record<string, string[]> = {
+  shoulder_left: ["shoulder_tilt", "shoulder_asymmetry"],
+  shoulder_right: ["shoulder_tilt", "shoulder_asymmetry"],
+  hip_left: ["hip_tilt", "hip_asymmetry", "pelvic_tilt"],
+  hip_right: ["hip_tilt", "hip_asymmetry", "pelvic_tilt"],
+  knee_left: ["knee_valgus_left"],
+  knee_right: ["knee_valgus_right"],
+  ankle_left: ["knee_valgus_left"],
+  ankle_right: ["knee_valgus_right"],
+  ear: ["forward_head_posture", "head_lateral_tilt"],
+  ear_left: ["head_lateral_tilt", "forward_head_posture"],
+  ear_right: ["head_lateral_tilt", "forward_head_posture"],
+  shoulder: ["thoracic_kyphosis", "forward_head_posture"],
+  hip_greater_trochanter: ["pelvic_tilt", "lumbar_lordosis"],
+  knee_lateral: ["plumb_line_deviation"],
+  ankle_lateral: ["plumb_line_deviation"],
+  spine_c7: ["spinal_lateral_deviation", "scapular_axis_tilt"],
+  spine_l5: ["spinal_lateral_deviation", "lumbar_lordosis"],
+  scapula_left: ["scapular_winging_left", "scapular_axis_tilt"],
+  scapula_right: ["scapular_winging_right", "scapular_axis_tilt"],
+};
+
+const SEV_RANK: Record<LmSev, number> = { normal: 0, mild: 1, moderate: 2, severe: 3 };
+
+function landmarkSeverity(id: string, ang: Record<string, { value: number; normal: string }>): LmSev {
+  const keys = LANDMARK_ANGLES[id];
+  if (!keys || !keys.length) return "normal";
+  let worst: LmSev = "normal";
+  for (const k of keys) {
+    const a = ang[k];
+    if (!a) continue;
+    const s = severity4(a.value, a.normal);
+    if (SEV_RANK[s] > SEV_RANK[worst]) worst = s;
+  }
+  return worst;
+}
+
+function landmarkColor(sev: LmSev): { fill: string; stroke: string; pulse: boolean } {
+  switch (sev) {
+    case "severe":   return { fill: "#E24B4A", stroke: "#E24B4A",   pulse: true  };
+    case "moderate": return { fill: "#EF9F27", stroke: "#EF9F2780", pulse: false };
+    case "mild":     return { fill: "#B8922A", stroke: "#B8922A80", pulse: false };
+    default:         return { fill: "#1D9E75", stroke: "#1D9E7580", pulse: false };
+  }
+}
+
 // Educational tags per landmark
 const EDU: Record<string, { reveals: string; dom?: string; inh?: string }> = {
   shoulder_left: { reveals: "Inclinação e protração", dom: "Trapézio superior E", inh: "Serrátil anterior E" },
