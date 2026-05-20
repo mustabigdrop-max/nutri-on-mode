@@ -617,7 +617,7 @@ const LandingPlans = () => {
 
             <div className="mt-5">
               <div className="font-heading font-bold text-[32px] leading-none" style={{ color: "#B8922A" }}>
-                R$997<span className="text-[14px] font-mono font-normal">/mês</span>
+                R$697<span className="text-[14px] font-mono font-normal">/mês</span>
               </div>
               <div className="flex items-center gap-2 mt-2 flex-wrap">
                 <div className="text-[11px]" style={{ color: "#888" }}>
