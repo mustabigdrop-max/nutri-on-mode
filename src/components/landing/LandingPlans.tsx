@@ -181,7 +181,7 @@ const plans = [
     cta: "Começar agora →",
   },
   {
-    name: "ON +", price: "R$127", oldPrice: "R$197", discount: "35% off fundador", featured: true,
+    name: "ON +", price: "R$197", oldPrice: "R$297", discount: "34% off", featured: true,
     slotKey: "on_plus",
     checkoutUrl: "https://pay.kiwify.com.br/S3AGTbz",
     badge: "PREÇO DE FUNDADOR",
