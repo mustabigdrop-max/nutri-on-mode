@@ -125,7 +125,8 @@ ESQUEMA DE RESPOSTA OBRIGATÓRIO:
   "muscle_updates": [
     { "muscle": "string", "side": "L" | "R" | "C", "status": "shortened" | "inhibited" | "normal", "severity": "normal" | "mild" | "moderate" | "severe" }
   ],
-  "red_flags": ["string"]
+  "red_flags": ["string"],
+  "avisos": ["string"]
 }`;
 
 Deno.serve(async (req) => {
