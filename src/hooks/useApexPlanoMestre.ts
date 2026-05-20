@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { APEX_CORRECTIVE_LIBRARY, type Exercise, type Phase } from "@/data/apexCorrectiveLibrary";
 
 export interface PlanoExercicio {
   nome: string;
@@ -76,33 +77,65 @@ const INITIAL_STAGES: StageState[] = [
   { key: "fase4", label: "Fase 4 — Integração & finalização", status: "pending" },
 ];
 
+// Pool exercícios reais do protocolo corretivo APEX (cobre todas as 6 regiões)
+function pickRealExercises(phase: Phase, n = 3): Exercise[] {
+  const pool: Exercise[] = [];
+  for (const r of APEX_CORRECTIVE_LIBRARY) pool.push(...(r.phases[phase] || []));
+  return pool.slice(0, n);
+}
+
+const PHASE_PROGRESSION_FALLBACK: Record<number, string> = {
+  1: "Aumentar tempo sob tensão (+10s)",
+  2: "Aumentar amplitude / +1 série",
+  3: "Adicionar resistência leve",
+  4: "Progredir carga / volume",
+};
+const PHASE_FOCO: Record<number, string> = {
+  1: "Liberar dominantes",
+  2: "Ganhar amplitude",
+  3: "Ativar inibidos",
+  4: "Integrar ao treino",
+};
+
 function buildFallbackPlano(payload: UseApexPlanoMestrePayload): PlanoMestre {
-  const mk = (numero: number, nome: string, semanas: string, foco: string): PlanoFase => ({
-    numero, nome, semanas, duracao_semanas: 2,
-    foco_principal: foco, descricao: foco, objetivo_da_fase: foco,
-    criterio_de_avanco: "Conclusão dos exercícios-chave da fase",
-    semanas_detalhadas: [{
-      semana: numero * 2 - 1, titulo: `${nome} — Semana inicial`, foco,
-      sessoes_por_semana: 3, duracao_sessao_minutos: 30,
-      exercicios_prioritarios: [
-        { nome: "Exercício-chave A", fase_corretiva: numero, series: "2-3", reps_ou_tempo: "30-45s", cue_principal: "Foco em controle", progressao_semana_seguinte: "Adicionar tempo sob tensão" },
-        { nome: "Exercício-chave B", fase_corretiva: numero, series: "2-3", reps_ou_tempo: "30-45s", cue_principal: "Respiração diafragmática", progressao_semana_seguinte: "Aumentar amplitude" },
-        { nome: "Exercício-chave C", fase_corretiva: numero, series: "2", reps_ou_tempo: "10 reps", cue_principal: "Qualidade > quantidade", progressao_semana_seguinte: "+1 série" },
-      ],
-      o_que_evitar_essa_semana: [], marcador_de_progresso: "Conclusão das sessões previstas", sinal_verde_para_avancar: "Sem dor e execução limpa",
-    }],
-  });
+  const mk = (numero: number, nome: string, semanas: string): PlanoFase => {
+    const reais = pickRealExercises(numero as Phase, 3);
+    const exercicios: PlanoExercicio[] = reais.length
+      ? reais.map((ex) => ({
+          nome: ex.name,
+          fase_corretiva: numero,
+          series: ex.sets || "2-3",
+          reps_ou_tempo: ex.repsOrDuration || "30-45s",
+          cue_principal: ex.cues?.[0] || "Foco em controle e respiração",
+          progressao_semana_seguinte: ex.progression || PHASE_PROGRESSION_FALLBACK[numero],
+        }))
+      : [
+          { nome: "Exercício-chave A", fase_corretiva: numero, series: "2-3", reps_ou_tempo: "30-45s", cue_principal: "Foco em controle", progressao_semana_seguinte: PHASE_PROGRESSION_FALLBACK[numero] },
+        ];
+    const foco = PHASE_FOCO[numero] || nome;
+    return {
+      numero, nome, semanas, duracao_semanas: 2,
+      foco_principal: foco, descricao: foco, objetivo_da_fase: foco,
+      criterio_de_avanco: "Conclusão dos exercícios-chave da fase",
+      semanas_detalhadas: [{
+        semana: numero * 2 - 1, titulo: `${nome} — Semana inicial`, foco,
+        sessoes_por_semana: 3, duracao_sessao_minutos: 30,
+        exercicios_prioritarios: exercicios,
+        o_que_evitar_essa_semana: [], marcador_de_progresso: "Conclusão das sessões previstas", sinal_verde_para_avancar: "Sem dor e execução limpa",
+      }],
+    };
+  };
   return {
     titulo: "Plano Corretivo — Versão Simplificada",
     duracao_total_semanas: 8,
     objetivo_principal: payload.goal || "Corrigir desequilíbrios posturais",
     objetivos_secundarios: [],
-    premissa: "Plano gerado em modo simplificado por tempo de resposta excedido.",
+    premissa: "Plano gerado em modo simplificado por tempo de resposta excedido — exercícios extraídos do protocolo corretivo APEX.",
     fases: [
-      mk(1, "Inibição", "1-2", "Liberar dominantes"),
-      mk(2, "Elongação", "3-4", "Ganhar amplitude"),
-      mk(3, "Ativação", "5-6", "Ativar inibidos"),
-      mk(4, "Integração", "7-8", "Integrar ao treino"),
+      mk(1, "Inibição", "1-2"),
+      mk(2, "Elongação", "3-4"),
+      mk(3, "Ativação", "5-6"),
+      mk(4, "Integração", "7-8"),
     ],
     regras_globais: ["Plano simplificado — regenere para versão completa."],
   };

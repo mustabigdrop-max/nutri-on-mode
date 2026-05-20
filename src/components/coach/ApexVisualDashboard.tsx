@@ -24,6 +24,7 @@ import FeminineCyclePhaseBanner from "@/components/coach/FeminineCyclePhaseBanne
 import { isFeminine, getCyclePhase, getCycleDayCount, normalizeFeminineCategory, FEMININE_CATEGORIES } from "@/lib/feminine";
 import { ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Legend, Tooltip as RTooltip } from "recharts";
 import React from "react";
+import ApexMarkdown from "@/components/apex/ApexMarkdown";
 
 // ─── APEX Elite design tokens ───────────────────────────────────
 const APEX = {
@@ -563,25 +564,7 @@ const stripMd = (s: string): string =>
 
 function renderMd(text: string): React.ReactNode {
   if (!text) return null;
-  // strip ATX headers but preserve newlines
-  const cleaned = text.replace(/^\s{0,3}#{1,6}\s*/gm, "");
-  const lines = cleaned.split("\n");
-  return lines.map((line, li) => {
-    const parts = line.split(/(\*\*[^*]+\*\*|__[^_]+__|\*[^*\n]+\*|_[^_\n]+_|`[^`]+`)/g);
-    return (
-      <React.Fragment key={li}>
-        {parts.map((p, i) => {
-          if (/^\*\*[^*]+\*\*$/.test(p)) return <strong key={i}>{p.slice(2, -2)}</strong>;
-          if (/^__[^_]+__$/.test(p)) return <strong key={i}>{p.slice(2, -2)}</strong>;
-          if (/^\*[^*\n]+\*$/.test(p)) return <em key={i}>{p.slice(1, -1)}</em>;
-          if (/^_[^_\n]+_$/.test(p)) return <em key={i}>{p.slice(1, -1)}</em>;
-          if (/^`[^`]+`$/.test(p)) return <code key={i} className="px-1 rounded bg-muted/60">{p.slice(1, -1)}</code>;
-          return <span key={i}>{p}</span>;
-        })}
-        {li < lines.length - 1 && "\n"}
-      </React.Fragment>
-    );
-  });
+  return <ApexMarkdown text={text} />;
 }
 
 // ─── Segment bar ────────────────────────────────────────────────
@@ -1753,7 +1736,7 @@ Suporte em uso: ${suporte || "não informado"}` : "";
       )}
 
       {/* ━━━ TESTES CLÍNICOS (IA por foto) ━━━ */}
-      <div style={{ ...cardStyle, marginBottom: 16 }}>
+      <div id="apex-clinical-tests" style={{ ...cardStyle, marginBottom: 16 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
           {sectionTick(APEX.electric)}
           <span style={labelStyle}>Testes Clínicos</span>

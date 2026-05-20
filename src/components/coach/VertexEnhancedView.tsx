@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { AlertTriangle, CheckCircle2, AlertCircle, Calendar, Activity, Target, Trophy, Link2 } from "lucide-react";
+import ApexMarkdown from "@/components/apex/ApexMarkdown";
 
 // ─── Types ───────────────────────────────────────────────────────
 export type Segment = { label: string; score: number; diag: string };
@@ -235,7 +236,7 @@ export default function VertexEnhancedView({
             <div className="text-[10px] font-bold uppercase tracking-widest text-amber-500 mb-1.5 flex items-center gap-1">
               <Activity className="w-3 h-3" /> Exames recomendados
             </div>
-            <div className="text-[11px] text-foreground/90 whitespace-pre-wrap leading-snug">{exames}</div>
+            <div className="text-[11px] text-foreground/90 leading-snug"><ApexMarkdown text={exames} /></div>
           </div>
         )}
       </div>
@@ -261,7 +262,7 @@ export default function VertexEnhancedView({
                       <Calendar className="w-3 h-3" style={{ color }} />
                       <div className="text-[11px] font-bold" style={{ color }}>{w.label}</div>
                     </div>
-                    <div className="text-[11px] text-foreground/90 leading-snug">{w.body}</div>
+                    <div className="text-[11px] text-foreground/90 leading-snug"><ApexMarkdown text={w.body} /></div>
                   </div>
                 </div>
               );
@@ -318,7 +319,7 @@ export default function VertexEnhancedView({
             <div className="text-[10px] font-bold uppercase tracking-widest text-purple-400 mb-1 flex items-center gap-1">
               <Trophy className="w-3 h-3" /> Mensagem do Dr. VERTEX
             </div>
-            <div className="text-xs text-foreground/95 leading-relaxed italic">"{veredicto.mensagem}"</div>
+            <div className="text-xs text-foreground/95 leading-relaxed italic"><ApexMarkdown text={veredicto.mensagem} /></div>
           </div>
         )}
 
@@ -328,13 +329,13 @@ export default function VertexEnhancedView({
             {veredicto.cenarioA && (
               <div className="rounded-lg border p-2.5" style={{ borderColor: "#88888855", background: "#88888810" }}>
                 <div className="text-[10px] font-bold text-muted-foreground mb-1">A · Mantendo atual</div>
-                <div className="text-[11px] leading-snug">{veredicto.cenarioA}</div>
+                <div className="text-[11px] leading-snug"><ApexMarkdown text={veredicto.cenarioA} /></div>
               </div>
             )}
             {veredicto.cenarioB && (
               <div className="rounded-lg border p-2.5" style={{ borderColor: "#1DB87A55", background: "#1DB87A10" }}>
                 <div className="text-[10px] font-bold text-emerald-400 mb-1">B · Otimizado</div>
-                <div className="text-[11px] leading-snug">{veredicto.cenarioB}</div>
+                <div className="text-[11px] leading-snug"><ApexMarkdown text={veredicto.cenarioB} /></div>
               </div>
             )}
           </div>
@@ -399,7 +400,7 @@ function SystemCard({ name, sev, body }: { name: string; sev: "ok" | "warn" | "r
           {icon} {sev === "red" ? "Alto" : sev === "warn" ? "Moderado" : "Baixo"}
         </span>
       </div>
-      <div className="text-[11px] text-foreground/90 whitespace-pre-wrap leading-snug">{body}</div>
+      <div className="text-[11px] text-foreground/90 leading-snug"><ApexMarkdown text={body} /></div>
     </div>
   );
 }
@@ -422,8 +423,8 @@ function CrossShapeBlock({ weak, shapeText, color }: { weak: Segment[]; shapeTex
         ))}
       </div>
       {shapeText && (
-        <div className="text-[11px] text-foreground/90 whitespace-pre-wrap leading-snug border-t pt-2" style={{ borderColor: `${color}33` }}>
-          {shapeText}
+        <div className="text-[11px] text-foreground/90 leading-snug border-t pt-2" style={{ borderColor: `${color}33` }}>
+          <ApexMarkdown text={shapeText} />
         </div>
       )}
     </div>
@@ -434,7 +435,7 @@ function CollapsibleText({ title, body, accent, defaultOpen }: { title: string; 
   return (
     <details open={defaultOpen} className="rounded-lg border p-2 bg-card/40" style={{ borderColor: `${accent}33` }}>
       <summary className="cursor-pointer text-[11px] font-bold" style={{ color: accent }}>{title}</summary>
-      <div className="text-[11px] mt-1.5 whitespace-pre-wrap leading-snug text-foreground/90">{body}</div>
+      <div className="text-[11px] mt-1.5 leading-snug text-foreground/90"><ApexMarkdown text={body} /></div>
     </details>
   );
 }

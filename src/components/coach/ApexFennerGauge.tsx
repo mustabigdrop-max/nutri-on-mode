@@ -1,19 +1,60 @@
 // APEX Visual — Fenner Clinical Score gauge
 import { useMemo } from "react";
-import { Activity } from "lucide-react";
+import { Activity, FlaskConical } from "lucide-react";
 import { computeFennerScore, topDeficits, type ClinicalTestsState } from "@/data/fennerTests";
 
 interface Props {
   state: ClinicalTestsState;
+  onStartEvaluation?: () => void;
 }
 
-export function ApexFennerGauge({ state }: Props) {
+export function ApexFennerGauge({ state, onStartEvaluation }: Props) {
   const fs = useMemo(() => computeFennerScore(state), [state]);
   const deficits = useMemo(() => topDeficits(state), [state]);
   const radius = 56;
   const circ = 2 * Math.PI * radius;
   const dash = (fs.total / 100) * circ;
   const priority = fs.total <= 40 ? "Fase 1 — Inibir/Liberar" : fs.total <= 65 ? "Fase 2 — Alongar/Mobilizar" : "Fase 3 — Ativar/Integrar";
+
+  // Sem testes realizados → mostrar empty state em vez de gauge zerado enganoso
+  const hasAnyTest = (fs.counts.flexCount + fs.counts.mrcCount + fs.counts.dynTotal) > 0;
+  if (!hasAnyTest) {
+    const handleClick = () => {
+      if (onStartEvaluation) return onStartEvaluation();
+      const el = document.getElementById("apex-clinical-tests");
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    };
+    return (
+      <div
+        className="p-5 text-center"
+        style={{
+          background: "#0d1520",
+          border: "0.5px solid #B8922A30",
+          borderLeft: "2px solid #B8922A",
+          borderRadius: 0,
+        }}
+      >
+        <div className="flex items-center justify-center gap-2 mb-3">
+          <Activity size={14} style={{ color: "#B8922A" }} />
+          <span className="text-xs font-bold uppercase tracking-widest" style={{ color: "#B8922A" }}>
+            Fenner Clinical Score (FCS)
+          </span>
+        </div>
+        <FlaskConical size={32} style={{ color: "#B8922A", margin: "8px auto" }} />
+        <div className="text-sm font-bold text-white mb-2">Testes clínicos não realizados</div>
+        <div className="text-xs mb-4" style={{ color: "#888" }}>
+          O FCS requer a Avaliação Funcional APEX com fotos dos testes.
+        </div>
+        <button
+          onClick={handleClick}
+          className="px-4 py-2 text-xs font-bold tracking-wider"
+          style={{ background: "#B8922A", color: "#0a0a1a", borderRadius: 0 }}
+        >
+          Realizar Avaliação Funcional →
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="border border-primary/30 bg-primary/5 rounded-none p-4">
