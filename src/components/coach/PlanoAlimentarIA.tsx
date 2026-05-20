@@ -4802,6 +4802,7 @@ export default function PlanoAlimentarIA() {
                   meal={m}
                   index={i}
                   workoutTag={classify(m.horario)}
+                  onValidate={(alimentoIdx, subs) => setSwapDrawer({ mealIdx: i, alimentoIdx, subs })}
                   onSwap={(alimentoIdx, sub) => {
                     setPlano((prev) => {
                       if (!prev) return prev;
