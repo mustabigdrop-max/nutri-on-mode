@@ -487,7 +487,8 @@ function PhotoZone({ label, file, onPick, onClear, accent }: {
   label: string; file: File | null;
   onPick: (f: File) => void; onClear: () => void; accent: string;
 }) {
-  const inputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const albumInputRef = useRef<HTMLInputElement>(null);
   const [drag, setDrag] = useState(false);
   const [preview, setPreview] = useState<string>("");
 
@@ -498,6 +499,33 @@ function PhotoZone({ label, file, onPick, onClear, accent }: {
     return () => URL.revokeObjectURL(url);
   }, [file]);
 
+  const btnStyle: React.CSSProperties = {
+    flex: 1,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    background: "#0d1520",
+    border: "0.5px solid #00D4FF40",
+    color: "#00D4FF",
+    fontSize: 12,
+    fontWeight: 700,
+    borderRadius: 8,
+    padding: "10px 20px",
+    cursor: "pointer",
+    transition: "all .2s",
+    fontFamily: "inherit",
+  };
+
+  const handleMouseEnter = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.currentTarget.style.background = "#001520";
+    e.currentTarget.style.borderColor = "#00D4FF";
+  };
+  const handleMouseLeave = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.currentTarget.style.background = "#0d1520";
+    e.currentTarget.style.borderColor = "#00D4FF40";
+  };
+
   return (
     <div
       onDragOver={(e) => { e.preventDefault(); setDrag(true); }}
@@ -507,16 +535,28 @@ function PhotoZone({ label, file, onPick, onClear, accent }: {
         const f = e.dataTransfer.files?.[0];
         if (f && f.type.startsWith("image/")) onPick(f);
       }}
-      onClick={() => !file && inputRef.current?.click()}
-      className="relative rounded-xl overflow-hidden cursor-pointer transition-all"
+      className="relative rounded-xl overflow-hidden transition-all"
       style={{
         border: `2px dashed ${file ? "#1DB87A" : drag ? accent : "hsl(var(--border))"}`,
         background: file ? "rgba(29,184,122,0.05)" : "hsl(var(--muted) / 0.3)",
         minHeight: 140,
       }}
     >
+      {/* Input para câmera (Tirar foto) */}
       <input
-        ref={inputRef}
+        ref={cameraInputRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        className="hidden"
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          if (f) onPick(f);
+        }}
+      />
+      {/* Input para álbum (Escolher do álbum) — sem capture */}
+      <input
+        ref={albumInputRef}
         type="file"
         accept="image/*"
         className="hidden"
@@ -540,10 +580,44 @@ function PhotoZone({ label, file, onPick, onClear, accent }: {
           </div>
         </>
       ) : (
-        <div className="flex flex-col items-center justify-center h-36 gap-2 text-muted-foreground">
-          <Upload className="w-6 h-6" />
-          <div className="text-sm font-semibold text-foreground">{label}</div>
-          <div className="text-[10px]">Clique ou arraste</div>
+        <div className="flex flex-col items-center justify-center h-36 gap-3 text-muted-foreground">
+          {/* Ícones superiores */}
+          <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
+            <Upload className="w-5 h-5" style={{ color: accent }} />
+            <Camera className="w-5 h-5" style={{ color: accent }} />
+          </div>
+          {/* Texto drag-and-drop */}
+          <div className="text-sm font-semibold text-foreground">Arraste a foto aqui</div>
+          <div className="text-[10px]" style={{ color: APEX.textMuted }}>{label} · MÁX 15MB</div>
+          {/* Linha ou */}
+          <div style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "0 12px" }}>
+            <div style={{ flex: 1, height: 1, background: APEX.border }} />
+            <span style={{ fontSize: 10, color: APEX.textMuted }}>ou</span>
+            <div style={{ flex: 1, height: 1, background: APEX.border }} />
+          </div>
+          {/* Botões lado a lado */}
+          <div style={{ display: "flex", gap: 12, width: "100%", padding: "0 12px" }}>
+            <button
+              type="button"
+              onClick={() => cameraInputRef.current?.click()}
+              style={btnStyle}
+              onMouseEnter={handleMouseEnter}
+              onMouseLeave={handleMouseLeave}
+            >
+              <Camera className="w-3.5 h-3.5" />
+              Tirar foto
+            </button>
+            <button
+              type="button"
+              onClick={() => albumInputRef.current?.click()}
+              style={btnStyle}
+              onMouseEnter={handleMouseEnter}
+              onMouseLeave={handleMouseLeave}
+            >
+              <ImageIcon className="w-3.5 h-3.5" />
+              Escolher do álbum
+            </button>
+          </div>
         </div>
       )}
     </div>
