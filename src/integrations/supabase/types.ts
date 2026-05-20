@@ -4616,44 +4616,59 @@ export type Database = {
       }
       fitoterapicos_lib: {
         Row: {
+          categorias: string[] | null
           ciclo: string | null
           contraindicoes: string[] | null
           created_at: string | null
           dose: string | null
+          evidencia: string | null
           farmacocinetica: Json | null
           id: string
           indicacoes: string[] | null
           interacoes: string[] | null
           mecanismo: string | null
+          nivel: string | null
           nome: string
+          nome_cientifico: string | null
+          nota_elite: string | null
           origem: string | null
           timing: string | null
         }
         Insert: {
+          categorias?: string[] | null
           ciclo?: string | null
           contraindicoes?: string[] | null
           created_at?: string | null
           dose?: string | null
+          evidencia?: string | null
           farmacocinetica?: Json | null
           id?: string
           indicacoes?: string[] | null
           interacoes?: string[] | null
           mecanismo?: string | null
+          nivel?: string | null
           nome: string
+          nome_cientifico?: string | null
+          nota_elite?: string | null
           origem?: string | null
           timing?: string | null
         }
         Update: {
+          categorias?: string[] | null
           ciclo?: string | null
           contraindicoes?: string[] | null
           created_at?: string | null
           dose?: string | null
+          evidencia?: string | null
           farmacocinetica?: Json | null
           id?: string
           indicacoes?: string[] | null
           interacoes?: string[] | null
           mecanismo?: string | null
+          nivel?: string | null
           nome?: string
+          nome_cientifico?: string | null
+          nota_elite?: string | null
           origem?: string | null
           timing?: string | null
         }
