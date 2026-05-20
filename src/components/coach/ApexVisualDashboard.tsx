@@ -1501,7 +1501,7 @@ Suporte em uso: ${suporte || "não informado"}` : "";
       {/* ━━━ MODE TOGGLE: Análise IA vs Evolução Fotográfica ━━━ */}
       <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
         {([
-          { k: "analise" as const,  l: "Análise IA",            icon: ScanLine },
+          { k: "analise" as const,  l: "Análise APEX",            icon: ScanLine },
           { k: "guiada" as const,   l: "Sessão Guiada",         icon: Crosshair },
           { k: "evolucao" as const, l: "Evolução Fotográfica",  icon: TrendingUp },
         ]).map(({ k, l, icon: Ic }) => {
@@ -1842,7 +1842,7 @@ Suporte em uso: ${suporte || "não informado"}` : "";
           }}
         >
           <FileText size={12} />
-          Pré-visualizar prompt enviado à IA (APEX + Dr. VERTEX)
+          Pré-visualizar diagnóstico (APEX + Dr. VERTEX)
         </button>
 
         <button
