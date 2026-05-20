@@ -689,6 +689,36 @@ ANALISE: [2 parágrafos — estado atual
 e estratégia para atingir o pico no
 prazo disponível]
 
+## PROTOCOLO_FEMININO
+
+[Exibir APENAS quando gênero = Feminino. Se masculino, omitir esta seção completamente.]
+
+FASE_CICLO_ATUAL: [fase informada ou
+estimada se não informada]
+
+IMPACTO_TREINO_ATUAL: [como a fase
+atual afeta a prescrição de treino]
+
+IMPACTO_NUTRICAO_ATUAL: [ajustes
+nutricionais para a fase atual]
+
+JANELA_OTIMA_PROXIMAS_SEMANAS: [quando
+será o melhor momento para sobrecarga
+máxima nas próximas 4 semanas]
+
+SAUDE_HORMONAL: [sinais positivos e
+alertas baseados nos dados disponíveis]
+
+CELULITE_FIBROTICA: [se presente —
+diagnóstico e protocolo integrado de
+treino + nutrição + farmacologia]
+
+CATEGORIA_FEMININA_ESPECIFICA: [análise
+do shape atual vs ideal da categoria
+feminina escolhida — proporções
+específicas, o que o juiz feminino IFBB
+valoriza e penaliza]
+
 ## FARMACOLOGIA_SHAPE
 
 [Se protocolo informado:]
