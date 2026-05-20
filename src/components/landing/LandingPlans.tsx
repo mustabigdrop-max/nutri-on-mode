@@ -619,8 +619,22 @@ const LandingPlans = () => {
               <div className="font-heading font-bold text-[32px] leading-none" style={{ color: "#B8922A" }}>
                 R$997<span className="text-[14px] font-mono font-normal">/mês</span>
               </div>
-              <div className="text-[11px] mt-2" style={{ color: "#888" }}>
-                ou R$9.997/ano — 2 meses grátis
+              <div className="flex items-center gap-2 mt-2 flex-wrap">
+                <div className="text-[11px]" style={{ color: "#888" }}>
+                  ou R$5.855/ano — 30% off (equivale a R$488/mês)
+                </div>
+                <span
+                  className="font-mono text-[10px] font-bold"
+                  style={{
+                    background: "#1D9E7520",
+                    border: "0.5px solid #1D9E7540",
+                    color: "#1D9E75",
+                    borderRadius: "99px",
+                    padding: "2px 8px",
+                  }}
+                >
+                  ECONOMIZE R$2.509
+                </span>
               </div>
             </div>
 
