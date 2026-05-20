@@ -5143,6 +5143,85 @@ export default function PlanoAlimentarIA() {
         </div>
       )}
 
+      {/* Drawer: Substituição validada isocalórica */}
+      <SubstitutionDrawer
+        open={!!swapDrawer}
+        original={(() => {
+          if (!swapDrawer || !plano) return null;
+          const a = plano.refeicoes?.[swapDrawer.mealIdx]?.alimentos?.[swapDrawer.alimentoIdx];
+          if (!a) return null;
+          return { alimento: a.alimento, quantidade: a.quantidade, quantidade_g: a.quantidade_g };
+        })()}
+        substitutos={swapDrawer?.subs || []}
+        onClose={() => setSwapDrawer(null)}
+        onConfirm={(payload: DrawerConfirmPayload) => {
+          if (!swapDrawer) return;
+          const { mealIdx, alimentoIdx } = swapDrawer;
+          setPlano((prev) => {
+            if (!prev) return prev;
+            const next = JSON.parse(JSON.stringify(prev)) as PlanoData;
+            const meal = next.refeicoes[mealIdx];
+            const original = meal?.alimentos?.[alimentoIdx];
+            if (!meal?.alimentos || !original) return prev;
+
+            // Recalcular macros: subtrair original, somar novo (quando há densidade)
+            const snapOld = buildSnapshot(original.alimento, original.quantidade_g || original.quantidade);
+            const snapNew = buildSnapshot(payload.alimento, payload.quantidade_g || payload.quantidade);
+            if (snapOld.kcal != null && snapNew.kcal != null) {
+              const m = meal.macros || { proteina: 0, carboidrato: 0, gordura: 0 };
+              meal.macros = {
+                proteina: Math.max(0, Math.round(((m.proteina || 0) - (snapOld.proteina || 0) + (snapNew.proteina || 0)) * 10) / 10),
+                carboidrato: Math.max(0, Math.round(((m.carboidrato || 0) - (snapOld.carbo || 0) + (snapNew.carbo || 0)) * 10) / 10),
+                gordura: Math.max(0, Math.round(((m.gordura || 0) - (snapOld.gordura || 0) + (snapNew.gordura || 0)) * 10) / 10),
+              };
+              meal.kcal_calculada = (snapNew.kcal - snapOld.kcal) + (typeof meal.kcal_calculada === "number" ? meal.kcal_calculada : (Number(meal.calorias) || 0));
+
+              // Atualizar totais do dia (resumo)
+              if (next.resumo) {
+                next.resumo.proteina_total = Math.max(0, Math.round(((next.resumo.proteina_total || 0) - (snapOld.proteina || 0) + (snapNew.proteina || 0)) * 10) / 10);
+                next.resumo.carboidrato_total = Math.max(0, Math.round(((next.resumo.carboidrato_total || 0) - (snapOld.carbo || 0) + (snapNew.carbo || 0)) * 10) / 10);
+                next.resumo.gordura_total = Math.max(0, Math.round(((next.resumo.gordura_total || 0) - (snapOld.gordura || 0) + (snapNew.gordura || 0)) * 10) / 10);
+              }
+            }
+
+            const otherSubs = (original.substituicoes || []).filter((s) => s.alimento !== payload.alimento);
+            meal.alimentos[alimentoIdx] = {
+              alimento: payload.alimento,
+              quantidade: payload.quantidade,
+              quantidade_g: payload.quantidade_g,
+              observacao: payload.observacao ?? undefined,
+              substituicoes: [
+                { alimento: original.alimento, quantidade: original.quantidade || original.quantidade_g, quantidade_g: original.quantidade_g, observacao: original.observacao },
+                ...otherSubs,
+              ],
+            };
+            return next;
+          });
+          setSavedId(null);
+          setSwapDrawer(null);
+
+          // Toast com aviso de fechamento
+          setTimeout(() => {
+            setPlano((curr) => {
+              if (curr) {
+                const meta = Number(curr.resumo?.calorias_totais) || 0;
+                const atual = (curr.refeicoes || []).reduce((acc, m) => acc + getMealKcal(m as Meal), 0);
+                const delta = atual - meta;
+                const abs = Math.abs(delta);
+                if (abs <= 50) {
+                  toast({ title: "✓ Substituído", description: `Plano recalculado. Fechamento: ${Math.round(atual)} kcal` });
+                } else if (abs <= 200) {
+                  toast({ title: "⚠ Substituído com desvio", description: `Plano ficou com ${delta > 0 ? "+" : ""}${Math.round(delta)} kcal vs meta. Revise outra refeição.` });
+                } else {
+                  toast({ title: "✗ Substituição desbalanceou", description: `Plano com ${delta > 0 ? "+" : ""}${Math.round(delta)} kcal de diferença. Ajuste outra refeição.`, variant: "destructive" as any });
+                }
+              }
+              return curr;
+            });
+          }, 0);
+        }}
+      />
+
       {/* Overlay: Módulo Substituições NUTRION */}
       {showSubstitutions && (
         <div style={{ position: "fixed", inset: 0, background: T.bg, zIndex: 60, overflow: "auto" }}>
