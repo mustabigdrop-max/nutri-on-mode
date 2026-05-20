@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { APEX_CORRECTIVE_LIBRARY, type Exercise, type Phase } from "@/data/apexCorrectiveLibrary";
 
 export interface PlanoExercicio {
   nome: string;
