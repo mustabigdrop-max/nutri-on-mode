@@ -746,19 +746,36 @@ const MealCard = ({ meal, index, onSwap, onValidate, workoutTag }: MealCardProps
                   <span style={{ fontSize: 13, color: T.text }}>{a.alimento}</span>
                   {a.observacao && <div style={{ fontSize: 11, color: T.muted, marginTop: 2 }}>{a.observacao}</div>}
                   {subs.length > 0 && (
-                    <button
-                      onClick={() => setOpenSubs((s) => ({ ...s, [i]: !s[i] }))}
-                      style={{
-                        marginTop: 6, padding: "3px 10px", borderRadius: 999,
-                        background: open ? T.greenBg : "transparent",
-                        border: `1px solid ${open ? T.green : T.border2}`,
-                        color: open ? T.green : T.muted,
-                        fontSize: 10, cursor: "pointer", fontFamily: "inherit",
-                        display: "inline-flex", alignItems: "center", gap: 6,
-                      }}
-                    >
-                      ⇄ {subs.length} substituto{subs.length > 1 ? "s" : ""} {open ? "▲" : "▼"}
-                    </button>
+                    <div style={{ display: "inline-flex", gap: 6, marginTop: 6, flexWrap: "wrap" }}>
+                      <button
+                        type="button"
+                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); setOpenSubs((s) => ({ ...s, [i]: !s[i] })); }}
+                        style={{
+                          padding: "3px 10px", borderRadius: 999,
+                          background: open ? T.greenBg : "transparent",
+                          border: `1px solid ${open ? T.green : T.border2}`,
+                          color: open ? T.green : T.muted,
+                          fontSize: 10, cursor: "pointer", fontFamily: "inherit",
+                          display: "inline-flex", alignItems: "center", gap: 6,
+                        }}
+                      >
+                        ⇄ {subs.length} substituto{subs.length > 1 ? "s" : ""} {open ? "▲" : "▼"}
+                      </button>
+                      {onValidate && (
+                        <button
+                          type="button"
+                          onClick={(e) => { e.preventDefault(); e.stopPropagation(); onValidate(i, subs); }}
+                          style={{
+                            padding: "3px 10px", borderRadius: 999,
+                            background: "transparent", border: `1px solid ${T.amber}55`,
+                            color: T.amber, fontSize: 10, cursor: "pointer", fontFamily: "inherit",
+                            display: "inline-flex", alignItems: "center", gap: 6,
+                          }}
+                        >
+                          🔬 Validar substituição
+                        </button>
+                      )}
+                    </div>
                   )}
                 </div>
                 {(() => {
