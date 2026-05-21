@@ -849,6 +849,24 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
               </div>
             );
           })()}
+          {data?.landmarks && (() => {
+            const q = calcAnalysisQuality(data.landmarks as any);
+            const pct = Math.round(q.score * 100);
+            return (
+              <div
+                className="inline-flex items-center gap-1 ml-1.5 mb-1.5"
+                style={{
+                  fontSize: 10, color: q.color,
+                  padding: "2px 8px", borderRadius: 4,
+                  background: `${q.color}18`,
+                  fontFamily: "ui-monospace, monospace",
+                }}
+                title="Confiança média estimada (heurística por landmark)"
+              >
+                ◉ {q.label} — {pct}%
+              </div>
+            );
+          })()}
           {findings.length === 0 && (
             <div className="text-xs text-muted-foreground">Nenhum ângulo retornado.</div>
           )}
