@@ -589,10 +589,13 @@ const LandingPlans = () => {
               target="_blank"
               rel="noopener noreferrer"
               className={`block w-full text-center py-3.5 rounded font-mono text-[.72rem] tracking-[.08em] transition-all ${
-                plan.featured
+                plan.mce
+                  ? "font-bold hover:scale-[1.01]"
+                  : plan.featured
                   ? "bg-primary text-black font-medium hover:bg-black hover:text-primary hover:outline hover:outline-1 hover:outline-primary"
                   : "border border-[#2a2a4a] text-[#50507a] hover:border-primary hover:text-primary"
               }`}
+              style={plan.mce ? { background: "#B8922A", color: "#0a0a1a" } : undefined}
             >
               {plan.cta}
             </a>
