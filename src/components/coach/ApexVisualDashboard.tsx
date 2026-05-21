@@ -11,6 +11,7 @@ import { ApexSymbol } from "@/components/coach/ApexSymbol";
 import ApexEvolucao from "@/components/apex/ApexEvolucao";
 import ApexVisualOverlay, { LandmarkBundle, PhotoBundle, LandmarkView, calcPlumbLine } from "@/components/coach/ApexVisualOverlay";
 import ApexPostural33Overlay, { parsePostural33 } from "@/components/coach/ApexPostural33Overlay";
+import ApexTimelineTab from "@/components/coach/ApexTimelineTab";
 
 import VertexEnhancedView from "@/components/coach/VertexEnhancedView";
 import { ApexScoreGauge, InsightCard, PosturaCards, CorrecoesCards, ProtocoloCards } from "@/components/coach/ApexResultCards";
@@ -1571,6 +1572,7 @@ Suporte em uso: ${suporte || "não informado"}` : "";
     const farmacologiaSection = parseSection(analysisResult, "FARMACOLOGIA_SHAPE", "GANHA_PONTOS");
     const hasFarmacologia = !!farmacologiaSection && !/nenhum protocolo informado/i.test(farmacologiaSection);
     const segments = parseSegments(analysisResult);
+    const hasTimeline = history.length >= 2;
     const tabs = [
       { key: "scores", label: "Scores" },
       { key: "visual", label: "📐 Análise Visual" },
@@ -1581,6 +1583,7 @@ Suporte em uso: ${suporte || "não informado"}` : "";
       ...(hasFarmacologia ? [{ key: "farmacologia", label: "💉 Farmacologia" }] : []),
       { key: "palco", label: "Palco" },
       { key: "plano", label: "Plano" },
+      { key: "timeline", label: "📅 Timeline" },
     ];
 
     return (
