@@ -937,6 +937,12 @@ function OverlayLayer({
   const calcAnatomicalCenter = (): number => {
     const spineWeights: Array<{ k: string; w: number }> = [
       { k: "occipital", w: 1 },
+      { k: "c7", w: 3 },
+      { k: "t4", w: 2 },
+      { k: "t12", w: 2 },
+      { k: "l3", w: 1 },
+      { k: "l5_s1", w: 3 },
+      // Aliases tolerantes a variações de nomenclatura
       { k: "spine_c7", w: 3 },
       { k: "spine_t4", w: 2 },
       { k: "spine_t12", w: 2 },
