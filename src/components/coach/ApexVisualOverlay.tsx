@@ -1315,8 +1315,16 @@ function OverlayLayer({
                     />
                   )}
                   {/* Âncoras destacadas (círculo maior) */}
-                  <circle cx={c7.x} cy={c7.y} r={1.6} fill={lineColor} stroke="#000" vectorEffect="non-scaling-stroke" style={{ strokeWidth: 1 }} />
-                  <circle cx={l5.x} cy={l5.y} r={1.6} fill={lineColor} stroke="#000" vectorEffect="non-scaling-stroke" style={{ strokeWidth: 1 }} />
+                  <circle cx={c7.x} cy={c7.y} r={1.6} fill={lineColor} stroke="#000" vectorEffect="non-scaling-stroke" style={{ strokeWidth: 1 }}>
+                    {(c7 as any).snapped && (
+                      <title>C7 — 📐 Ancorado na linha de prumo (referência anatômica fixa). Detecção IA originalX={typeof (c7 as any).originalX === "number" ? (c7 as any).originalX.toFixed(1) : "—"}</title>
+                    )}
+                  </circle>
+                  <circle cx={l5.x} cy={l5.y} r={1.6} fill={lineColor} stroke="#000" vectorEffect="non-scaling-stroke" style={{ strokeWidth: 1 }}>
+                    {(l5 as any).snapped && (
+                      <title>L5 — 📐 Ancorado na linha de prumo (referência anatômica fixa). Detecção IA originalX={typeof (l5 as any).originalX === "number" ? (l5 as any).originalX.toFixed(1) : "—"}</title>
+                    )}
+                  </circle>
                   {/* Conector do badge até a linha */}
                   <line
                     x1={mxS} y1={myS} x2={bx} y2={by}
@@ -1343,9 +1351,9 @@ function OverlayLayer({
                   >
                     {label}
                   </text>
-                  {/* mini-tag C7/L5 nas pontas */}
-                  <text x={c7.x + 2} y={c7.y + 0.6} fill={lineColor} fontSize={1.7} fontWeight={700} style={{ pointerEvents: "none", paintOrder: "stroke" }} stroke="#000" strokeWidth={0.4}>C7</text>
-                  <text x={l5.x + 2} y={l5.y + 0.6} fill={lineColor} fontSize={1.7} fontWeight={700} style={{ pointerEvents: "none", paintOrder: "stroke" }} stroke="#000" strokeWidth={0.4}>L5</text>
+                  {/* mini-tag C7/L5 nas pontas (📐 indica âncora anatômica fixa) */}
+                  <text x={c7.x + 2} y={c7.y + 0.6} fill={lineColor} fontSize={1.7} fontWeight={700} style={{ pointerEvents: "none", paintOrder: "stroke" }} stroke="#000" strokeWidth={0.4}>{(c7 as any).snapped ? "C7 📐" : "C7"}</text>
+                  <text x={l5.x + 2} y={l5.y + 0.6} fill={lineColor} fontSize={1.7} fontWeight={700} style={{ pointerEvents: "none", paintOrder: "stroke" }} stroke="#000" strokeWidth={0.4}>{(l5 as any).snapped ? "L5 📐" : "L5"}</text>
                 </g>
               );
             })()}
