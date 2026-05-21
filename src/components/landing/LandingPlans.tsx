@@ -370,10 +370,29 @@ const LandingPlans = () => {
           <div
             key={plan.name}
             className={`bg-[#03030a] border rounded-xl p-8 md:p-9 relative overflow-hidden transition-all hover:-translate-y-1 ${
-              plan.featured ? "border-primary/30 bg-primary/[.02]" : "border-[#14142a] hover:border-[#2a2a4a]"
+              plan.mce
+                ? ""
+                : plan.featured
+                ? "border-primary/30 bg-primary/[.02]"
+                : "border-[#14142a] hover:border-[#2a2a4a]"
             }`}
+            style={
+              plan.mce
+                ? { borderColor: "#B8922A", boxShadow: "0 0 30px #B8922A20" }
+                : undefined
+            }
           >
-            {(plan.badge || plan.slotKey) && plan.name !== "ON PRO" && (
+            {plan.mce && (
+              <div className="absolute top-4 right-4">
+                <span
+                  className="font-mono text-[.55rem] px-2 py-1 rounded-[2px] tracking-[.1em] font-bold"
+                  style={{ background: "#B8922A", color: "#0a0a1a" }}
+                >
+                  {plan.badge}
+                </span>
+              </div>
+            )}
+            {(plan.badge || plan.slotKey) && !plan.mce && plan.name !== "ON PRO" && (
               <div className="absolute top-4 right-4 flex flex-col items-end gap-1">
                 {plan.badge && (
                   <span className="font-mono text-[.55rem] text-black bg-primary px-2 py-1 rounded-[2px] tracking-[.1em]">{plan.badge}</span>
