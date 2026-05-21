@@ -375,7 +375,7 @@ export default function ApexPlanoMestre({
                               onAvancarSemana={avancarSemana}
                               onAvancarFase={() => setShowFaseModal(true)}
                               semanaPct={isAtual ? semanaProgresso : null}
-                              totalFaseSemanas={(f.semanas_detalhadas || []).length}
+                              totalFaseSemanas={getDerivedWeeks(f).length}
                             />
                           )}
                         </div>
