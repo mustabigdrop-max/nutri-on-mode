@@ -1014,6 +1014,32 @@ function anchorLandmark(view: string, key: string): string {
   return "";
 }
 
+// ─── Snap anatômico C7/L5 à linha de prumo ───────────────────────
+// C7 e L5 são vértebras da coluna — por definição anatômica devem
+// estar sobre o eixo gravitacional sagital mediano. Desvios em X
+// nesses pontos são erro de detecção, não desvio postural.
+// Sistema de coordenadas: viewBox 0..100 (normalizado), centro = 50.
+const SNAP_LANDMARK_KEYS = ["spine_c7", "spine_l5", "c7", "l5_s1", "spine_l5_s1"] as const;
+function snapToPlumbLine<T extends Record<string, any>>(
+  landmarks: T,
+  imageWidth: number = 100,
+): T {
+  const centerX = imageWidth / 2;
+  const out: any = { ...landmarks };
+  for (const key of SNAP_LANDMARK_KEYS) {
+    const p = (landmarks as any)[key];
+    if (p && typeof p.x === "number") {
+      const originalX = p.x;
+      out[key] = { ...p, x: centerX, snapped: true, originalX };
+      if (import.meta.env?.DEV) {
+        // eslint-disable-next-line no-console
+        console.debug(`[APEX snap] ${key}: x=${originalX.toFixed(2)} → ${centerX} (Δ=${(originalX - centerX).toFixed(2)})`);
+      }
+    }
+  }
+  return out as T;
+}
+
 // ─── Overlay (HTML + SVG hybrid for crisp labels) ────────────────
 function OverlayLayer({
   data, selected, onSelect, eduMode, chainMode, debugMode, gridMode, chains, plumbXOverride,
@@ -1028,7 +1054,7 @@ function OverlayLayer({
   chains: { name: string; nodes: string[]; description: string }[];
   plumbXOverride?: number | null;
 }) {
-  const lm = data.landmarks;
+  const lm = useMemo(() => snapToPlumbLine(data.landmarks, 100), [data.landmarks]);
   const ang = data.angles;
 
   // Pre-compute label positions with collision avoidance
