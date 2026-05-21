@@ -210,6 +210,41 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
   const exportRef = useRef<HTMLDivElement>(null);
   const [exporting, setExporting] = useState(false);
 
+  // ── Overlay rect tracking: corrige offset do object-fit: contain ──
+  const photoWrapperRef = useRef<HTMLDivElement>(null);
+  const imgRef = useRef<HTMLImageElement>(null);
+  const [imgRect, setImgRect] = useState<{ left: number; top: number; width: number; height: number } | null>(null);
+
+  useEffect(() => {
+    const recompute = () => {
+      const wrap = photoWrapperRef.current;
+      const img = imgRef.current;
+      if (!wrap || !img) return;
+      const cw = wrap.clientWidth;
+      const ch = wrap.clientHeight;
+      const nw = img.naturalWidth;
+      const nh = img.naturalHeight;
+      if (!cw || !ch || !nw || !nh) return;
+      const scale = Math.min(cw / nw, ch / nh);
+      const width = nw * scale;
+      const height = nh * scale;
+      const left = (cw - width) / 2;
+      const top = (ch - height) / 2;
+      setImgRect({ left, top, width, height });
+    };
+    recompute();
+    const img = imgRef.current;
+    img?.addEventListener("load", recompute);
+    const ro = typeof ResizeObserver !== "undefined" ? new ResizeObserver(recompute) : null;
+    if (ro && photoWrapperRef.current) ro.observe(photoWrapperRef.current);
+    window.addEventListener("resize", recompute);
+    return () => {
+      img?.removeEventListener("load", recompute);
+      ro?.disconnect();
+      window.removeEventListener("resize", recompute);
+    };
+  }, [view, photoUrl]);
+
   useEffect(() => {
     try { localStorage.setItem("apex-edu-mode", eduMode ? "1" : "0"); } catch {}
   }, [eduMode]);
