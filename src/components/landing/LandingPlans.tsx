@@ -371,6 +371,10 @@ const LandingPlans = () => {
                 <div className="font-mono text-[.6rem] text-[#6060a0] mt-1.5 leading-relaxed">
                   Geração Avançada · Nutrição Esportiva · Protocolo PCA · Crononutrição
                 </div>
+                <div className="font-mono text-[.6rem] text-[#4a8a5a] mt-1.5 leading-relaxed flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#4a8a5a]" />
+                  Para nutricionistas e nutrition coaches
+                </div>
               </div>
             ) : plan.name === "ON PRO" ? (
               <div className="mb-1.5">
@@ -382,6 +386,10 @@ const LandingPlans = () => {
                 </div>
                 <div className="font-mono text-[.6rem] text-[#6060a0] mt-1.5 leading-relaxed">
                   Prescrição individualizada · 27 sistemas · STRATUM 7 camadas
+                </div>
+                <div className="font-mono text-[.6rem] text-[#1D9E75] mt-1.5 leading-relaxed flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#1D9E75]" />
+                  Para personais e treinadores
                 </div>
                 <div className="flex flex-wrap gap-1 mt-3">
                   {TRAININGON_PILLS.map((p) => (
