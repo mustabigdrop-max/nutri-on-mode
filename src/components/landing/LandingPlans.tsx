@@ -161,23 +161,89 @@ const TRAININGON_SYSTEMS: { category: string; items: { name: string; desc: strin
   },
 ];
 
-const plans = [
+const MCE_BLOCKS: { icon: string; title: string; items: string[]; bonus?: boolean }[] = [
   {
-    name: "ON", price: "R$67", oldPrice: "R$97", discount: "31% off fundador", featured: false,
-    checkoutUrl: "https://pay.kiwify.com.br/Y6CB7tE",
-    features: [
-      "Onboarding inteligente por conversa (sem formulário)",
-      "Modo 'Sem Balança' — medidas visuais brasileiras",
-      "Diagnóstico de Sabotagem Semanal por IA",
-      "Plano Adaptativo por Humor (diário)",
-      "Alerta de Janela de Oportunidade (preditivo)",
-      "Banco de alimentos 100% brasileiro (regionais)",
-      "Tracking macros + calorias (TACO/IBGE)",
-      "Gamificação: XP, streaks, badges, níveis",
-      "Máx. 3 notificações/dia personalizadas",
-      { text: "Plano semanal por IA <strong>🔒</strong>", locked: true },
-      { text: "Acesso ao Coach <strong>🔒</strong>", locked: true },
+    icon: "🍽",
+    title: "NUTRIPLAN",
+    items: [
+      "7 objetivos de protocolo",
+      "TDEE farmacológico automático",
+      "Crononutrição circadiana",
+      "GLUT-4 Sync pós-treino",
+      "Carb cycling automático",
+      "Banco TACO/IBGE",
+      "Substituições inteligentes",
+      "Perfil PCA comportamental",
+      "8 modos especiais",
+      "Medidas caseiras automáticas",
     ],
+  },
+  {
+    icon: "⚡",
+    title: "TRAININGON",
+    items: [
+      "27 sistemas de treino",
+      "6 fases de treinamento",
+      "13 músculos prioritários",
+      "Readiness diário",
+      "LoadTracker Pro",
+      "Fibras musculares",
+      "Progressão automática",
+      "Histórico de sessões",
+    ],
+  },
+  {
+    icon: "👁",
+    title: "APEX VISUAL",
+    items: [
+      "Análise postural por foto",
+      "33 landmarks biomecânicos",
+      "Protocolo corretivo 4 fases",
+      "Exercícios contraindicados bloqueados automaticamente",
+      "Cadeia cinética detectada",
+      "FCS — Fenner Clinical Score",
+      "Plano mestre de evolução",
+      "Análises ilimitadas",
+    ],
+  },
+  {
+    icon: "🦠",
+    title: "MICROBIOTA — GUT-BRAIN",
+    bonus: true,
+    items: [
+      "Análise em 4 dimensões",
+      "Eixo intestino-cérebro",
+      "Modulação por nutrição",
+      "Prebióticos e probióticos",
+      "Protocolo personalizado",
+      "Impacto em composição corporal",
+    ],
+  },
+  {
+    icon: "🌿",
+    title: "FITOTERÁPICOS",
+    bonus: true,
+    items: [
+      "100+ fitoterápicos catalogados",
+      "Adaptógenos e nootropics",
+      "Mecanismos de ação completos",
+      "Dosagens e protocolos",
+      "Interações com fármacos",
+      "Oracle IA ilimitado",
+    ],
+  },
+];
+
+const plans: any[] = [
+  {
+    name: "MCE Performance",
+    mce: true,
+    subtitle: "Sistema Integrado de Performance Humana",
+    badge: "CONSULTORIA",
+    price: "R$397",
+    featured: false,
+    checkoutUrl: "https://pay.kiwify.com.br/Y1e8Oi6",
+    blocks: MCE_BLOCKS,
     cta: "Começar agora →",
   },
   {
@@ -304,10 +370,29 @@ const LandingPlans = () => {
           <div
             key={plan.name}
             className={`bg-[#03030a] border rounded-xl p-8 md:p-9 relative overflow-hidden transition-all hover:-translate-y-1 ${
-              plan.featured ? "border-primary/30 bg-primary/[.02]" : "border-[#14142a] hover:border-[#2a2a4a]"
+              plan.mce
+                ? ""
+                : plan.featured
+                ? "border-primary/30 bg-primary/[.02]"
+                : "border-[#14142a] hover:border-[#2a2a4a]"
             }`}
+            style={
+              plan.mce
+                ? { borderColor: "#B8922A", boxShadow: "0 0 30px #B8922A20" }
+                : undefined
+            }
           >
-            {(plan.badge || plan.slotKey) && plan.name !== "ON PRO" && (
+            {plan.mce && (
+              <div className="absolute top-4 right-4">
+                <span
+                  className="font-mono text-[.55rem] px-2 py-1 rounded-[2px] tracking-[.1em] font-bold"
+                  style={{ background: "#B8922A", color: "#0a0a1a" }}
+                >
+                  {plan.badge}
+                </span>
+              </div>
+            )}
+            {(plan.badge || plan.slotKey) && !plan.mce && plan.name !== "ON PRO" && (
               <div className="absolute top-4 right-4 flex flex-col items-end gap-1">
                 {plan.badge && (
                   <span className="font-mono text-[.55rem] text-black bg-primary px-2 py-1 rounded-[2px] tracking-[.1em]">{plan.badge}</span>
@@ -358,6 +443,15 @@ const LandingPlans = () => {
                   ))}
                 </div>
               </div>
+            ) : plan.mce ? (
+              <div className="mb-1.5">
+                <div className="font-heading text-[1.5rem] tracking-[.06em] leading-tight" style={{ color: "#B8922A" }}>
+                  MCE PERFORMANCE
+                </div>
+                <div className="font-mono text-[.65rem] text-[#8a8aa8] mt-1.5 leading-relaxed">
+                  {plan.subtitle}
+                </div>
+              </div>
             ) : (
               <div className="font-heading text-[1.5rem] tracking-[.08em] mb-1.5 text-[#f0edf8]">{plan.name}</div>
             )}
@@ -383,6 +477,13 @@ const LandingPlans = () => {
                   Vagas limitadas — sobe para R$197 quando as vagas esgotarem.
                 </div>
               </div>
+            ) : plan.mce ? (
+              <div className="my-5">
+                <div className="flex items-baseline gap-2.5">
+                  <span className="font-heading text-[3.5rem] leading-none" style={{ color: "#B8922A" }}>{plan.price}</span>
+                  <span className="font-mono text-[.65rem] text-[#50507a]">/mês</span>
+                </div>
+              </div>
             ) : (
               <div className="my-5">
                 <div className="flex items-baseline gap-2.5">
@@ -398,7 +499,35 @@ const LandingPlans = () => {
               </div>
             )}
 
-            {plan.name === "ON +" ? (
+            {plan.mce ? (
+              <div className="flex flex-col gap-4 mb-6">
+                {plan.blocks.map((block: any) => (
+                  <div key={block.title}>
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="font-mono font-bold text-[10px] tracking-[.1em]" style={{ color: "#B8922A" }}>
+                        {block.icon} {block.title}
+                      </div>
+                      {block.bonus && (
+                        <span
+                          className="font-mono text-[8px] font-bold px-1.5 py-0.5 rounded-[2px] tracking-[.1em]"
+                          style={{ background: "#1D9E7520", border: "1px solid #1D9E7560", color: "#1D9E75" }}
+                        >
+                          BÔNUS
+                        </span>
+                      )}
+                    </div>
+                    <ul className="flex flex-col gap-1.5">
+                      {block.items.map((t: string) => (
+                        <li key={t} className="text-[12px] flex items-start gap-2 font-landing text-[#a0a0c0] leading-snug">
+                          <span className="text-[11px] mt-0.5 shrink-0" style={{ color: "#B8922A" }}>✓</span>
+                          <span>{t}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            ) : plan.name === "ON +" ? (
               <>
                 <ul className="flex flex-col gap-2 mb-3">
                   {NUTRIPLAN_SHORT.map((text, i) => (
@@ -460,10 +589,13 @@ const LandingPlans = () => {
               target="_blank"
               rel="noopener noreferrer"
               className={`block w-full text-center py-3.5 rounded font-mono text-[.72rem] tracking-[.08em] transition-all ${
-                plan.featured
+                plan.mce
+                  ? "font-bold hover:scale-[1.01]"
+                  : plan.featured
                   ? "bg-primary text-black font-medium hover:bg-black hover:text-primary hover:outline hover:outline-1 hover:outline-primary"
                   : "border border-[#2a2a4a] text-[#50507a] hover:border-primary hover:text-primary"
               }`}
+              style={plan.mce ? { background: "#B8922A", color: "#0a0a1a" } : undefined}
             >
               {plan.cta}
             </a>
