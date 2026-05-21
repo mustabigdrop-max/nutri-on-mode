@@ -77,7 +77,7 @@ const LandingCoach = () => {
             O nutriON não é uma ferramenta de apoio. É a infraestrutura técnica do seu trabalho. <strong className="text-[#f0edf8]">APEX</strong> analisa a postura dos seus atletas por foto. <strong className="text-[#f0edf8]">Dr. VERTEX</strong> audita protocolos farmacológicos. <strong className="text-[#f0edf8]">TrainingON</strong> gera periodização de 7 camadas. <strong className="text-[#f0edf8]">NutriPlan</strong> ajusta macros pelo ciclo farmacológico ativo. Você entrega o que o mercado não consegue. Sem precisar de 10 ferramentas diferentes.
           </p>
           <div className="mt-7 -mx-1">
-            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide px-1">
+            <div className="gap-2 overflow-x-auto pb-2 scrollbar-hide px-1 flex-col font-extrabold flex items-start justify-start opacity-100">
               {[
                 "Nutrition Coach",
                 "Personal Trainer",
