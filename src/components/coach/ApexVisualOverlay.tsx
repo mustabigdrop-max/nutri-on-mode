@@ -562,6 +562,7 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
         >
           {photoUrl ? (
             <div
+              ref={photoWrapperRef}
               className="relative"
               style={{
                 position: "relative",
@@ -573,6 +574,7 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
               }}
             >
               <img
+                ref={imgRef}
                 src={photoUrl}
                 alt={`Foto ${view}`}
                 crossOrigin="anonymous"
@@ -584,14 +586,14 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
                   objectPosition: "center center",
                 }}
               />
-              {data && (
+              {data && imgRect && (
                 <div
                   style={{
                     position: "absolute",
-                    top: 0,
-                    left: 0,
-                    width: "100%",
-                    height: "100%",
+                    top: imgRect.top,
+                    left: imgRect.left,
+                    width: imgRect.width,
+                    height: imgRect.height,
                     pointerEvents: "none",
                   }}
                 >
