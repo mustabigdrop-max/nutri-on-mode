@@ -352,7 +352,7 @@ export default function ApexPlanoMestre({
 
                   {/* Semanas detalhadas */}
                   <div className="space-y-2 mt-3">
-                    {(f.semanas_detalhadas || []).map((s) => {
+                    {getDerivedWeeks(f).map((s) => {
                       const key = `${f.numero}-${s.semana}`;
                       const sOpen = !!openSemana[key];
                       const isAtual = s.semana === semanaAtual && f.numero === faseAtual;
