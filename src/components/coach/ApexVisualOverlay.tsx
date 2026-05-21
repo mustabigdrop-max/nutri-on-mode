@@ -1213,6 +1213,22 @@ function OverlayLayer({
   const anatomicalDeviation = Math.abs(anatomicalCenterX - 50);
   const showAnatomicalLabel = anatomicalDeviation > 5;
 
+  // ── Linha de prumo dinâmica (C7/L5 pós-snap, com fallback rastreável) ──
+  const plumb = useMemo(() => {
+    const auto = calcPlumbLine(lm as any, 100, 100);
+    // honra override manual sem perder rastreabilidade
+    if (typeof plumbXOverride === "number") {
+      return { ...auto, x1: plumbXOverride, x2: plumbXOverride, axisX: plumbXOverride };
+    }
+    return auto;
+  }, [lm, plumbXOverride]);
+  useEffect(() => {
+    if (import.meta.env?.DEV) {
+      // eslint-disable-next-line no-console
+      console.debug("[APEX plumb]", plumb);
+    }
+  }, [plumb]);
+
   return (
     <>
       {/* SVG layer: lines + landmarks */}
@@ -1233,15 +1249,16 @@ function OverlayLayer({
             style={{ strokeWidth: 1 }}
           />
         )}
-        {/* Plumb line — centro anatômico */}
+        {/* Plumb line dinâmica — ancorada em C7/L5 (com fallback) */}
         <line
-          x1={anatomicalCenterX} y1={0} x2={anatomicalCenterX} y2={100}
-          stroke={C.white}
-          strokeOpacity={0.35}
+          x1={plumb.x1} y1={plumb.y1} x2={plumb.x2} y2={plumb.y2}
+          stroke={plumb.source === "frame-center" ? "#FBBF24" : C.white}
+          strokeOpacity={plumb.source === "frame-center" ? 0.5 : 0.35}
           strokeDasharray="2 1"
           vectorEffect="non-scaling-stroke"
           style={{ strokeWidth: 1.5 }}
         />
+
 
 
 
