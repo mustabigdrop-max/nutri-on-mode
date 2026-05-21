@@ -67,27 +67,46 @@ const LandingCoach = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20 items-center">
         <motion.div ref={ref} initial={{ opacity: 0, y: 40 }} animate={inView ? { opacity: 1, y: 0 } : {}} transition={{ duration: 0.7 }}>
           <div className="font-mono text-[.65rem] text-primary tracking-[.2em] uppercase mb-4 flex items-center gap-2.5">
-            <span className="w-4 h-px bg-primary" />— PARA COACHES E PROFISSIONAIS
+            <span className="w-4 h-px bg-primary" />— PARA QUEM ENTREGA RESULTADO
           </div>
           <h2 className="font-heading leading-[.92] mb-6" style={{ fontSize: "clamp(2.5rem, 6vw, 6rem)" }}>
-            PARA<br /><span className="text-primary">COACHES</span><br />
-            <span className="text-[#f0edf8]">QUE ENTREGAM</span><br />
-            <span style={{ fontSize: "clamp(1.8rem, 4vw, 3.5rem)" }}>RESULTADO TÉCNICO.</span>
+            PARA QUEM<br />
+            <span className="text-primary">ENTREGA</span><br />
+            <span className="text-[#f0edf8]">RESULTADO</span><br />
+            <span style={{ fontSize: "clamp(1.8rem, 4vw, 3.5rem)" }}>TÉCNICO.</span>
           </h2>
           <p className="text-[#7070a0] text-[.95rem] leading-[1.7] mt-5 max-w-[460px] font-landing">
-            O nutriON não é uma ferramenta de apoio. É a infraestrutura técnica do seu trabalho. <strong className="text-[#f0edf8]">APEX</strong> analisa a postura dos seus atletas por foto com IA. <strong className="text-[#f0edf8]">Dr. VERTEX</strong> audita os protocolos farmacológicos. <strong className="text-[#f0edf8]">TrainingON</strong> gera periodização de 7 camadas. <strong className="text-[#f0edf8]">NutriPlan</strong> ajusta macros pelo ciclo farmacológico ativo. Você entrega o que o mercado não consegue. Sem precisar de 10 ferramentas diferentes.
+            O nutriON não é uma ferramenta de apoio. É a infraestrutura técnica do seu trabalho. <strong className="text-[#f0edf8]">APEX</strong> analisa a postura dos seus atletas por foto. <strong className="text-[#f0edf8]">Dr. VERTEX</strong> audita protocolos farmacológicos. <strong className="text-[#f0edf8]">TrainingON</strong> gera periodização de 7 camadas. <strong className="text-[#f0edf8]">NutriPlan</strong> ajusta macros pelo ciclo farmacológico ativo. Você entrega o que o mercado não consegue. Sem precisar de 10 ferramentas diferentes.
           </p>
-          <div className="mt-8 flex flex-col gap-2.5">
-            {[
-              "+ APEX diagnostica postura por foto — sem equipamento especializado",
-              "+ Dr. VERTEX audita ciclos e alerta interações farmacológicas em tempo real",
-              "+ Protocolo corretivo gerado automaticamente e injetado no treino do atleta",
-              "+ Relatório PDF mensal automático com SRI, FCS e evolução do atleta",
-              "+ Painel coach — até 30 atletas com alertas de risco e aderência em tempo real",
-              "+ White label disponível — sua marca, nossa infraestrutura",
-            ].map((f) => (
-              <span key={f} className="font-mono text-[.65rem] bg-primary/[.06] border border-primary/[.12] text-primary px-2.5 py-1.5 rounded inline-flex items-center gap-1.5 w-fit">{f}</span>
-            ))}
+          <div className="mt-7 -mx-1">
+            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide px-1">
+              {[
+                "Nutrition Coach",
+                "Personal Trainer",
+                "Nutricionista",
+                "Nutrólogo",
+                "Acadêmico de Nutrição",
+                "Acadêmico de Ed. Física",
+                "Treinador de Futebol",
+                "Treinador de Natação",
+                "Treinador de Artes Marciais",
+                "Treinador de Atletismo",
+                "Preparador Físico",
+                "Entusiasta do Esporte",
+                "Atleta Amador",
+                "Praticante de Musculação",
+                "Praticante de CrossFit",
+                "Praticante de Corrida",
+              ].map((b) => (
+                <span
+                  key={b}
+                  className="shrink-2 font-mono text-[.65rem] bg-primary/[.06] border border-primary/[.12] text-primary px-2.5 py-1.5 rounded inline-flex items-center gap-1.5 whitespace-nowrap"
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-primary/70 animate-pulse" />
+                  {b}
+                </span>
+              ))}
+            </div>
           </div>
         </motion.div>
 
