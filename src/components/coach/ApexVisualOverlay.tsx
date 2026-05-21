@@ -458,6 +458,95 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
     }
   };
 
+  // ── Exportação PDF profissional (foto + achados + prescrição) ──
+  const captureOverlaySVG = async (): Promise<string | null> => {
+    const svgElement = document.querySelector("#apex-overlay-svg");
+    if (!svgElement) return null;
+    const cloned = svgElement.cloneNode(true) as SVGSVGElement;
+    if (!cloned.getAttribute("xmlns")) cloned.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+    const svgData = new XMLSerializer().serializeToString(cloned);
+    const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
+    const url = URL.createObjectURL(svgBlob);
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = (img.width || 600) * 2;
+        canvas.height = (img.height || 800) * 2;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) { URL.revokeObjectURL(url); resolve(null); return; }
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        URL.revokeObjectURL(url);
+        resolve(canvas.toDataURL("image/png"));
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); resolve(null); };
+      img.src = url;
+    });
+  };
+
+  const generateApexPDF = async () => {
+    if (!photoUrl) {
+      toast("Foto da vista atual não disponível para exportação.");
+      return;
+    }
+    setExportingPDF(true);
+    try {
+      const overlayDataUrl = await captureOverlaySVG();
+      setPdfPayload({ overlayDataUrl, geradoEm: new Date() });
+      await new Promise((r) => setTimeout(r, 350));
+      const container = pdfContainerRef.current;
+      if (!container) throw new Error("Container PDF não encontrado");
+      const canvas = await html2canvas(container, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: "#0A0A0F",
+        logging: false,
+        windowWidth: 794,
+      });
+      const { jsPDF } = await import("jspdf");
+      const pdf = new jsPDF({ orientation: "portrait", unit: "px", format: "a4" });
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const fullHeight = (canvas.height * pdfWidth) / canvas.width;
+      if (fullHeight <= pdfHeight) {
+        pdf.addImage(canvas.toDataURL("image/jpeg", 0.95), "JPEG", 0, 0, pdfWidth, fullHeight);
+      } else {
+        let yOffset = 0;
+        let page = 0;
+        while (yOffset < fullHeight) {
+          if (page > 0) pdf.addPage();
+          const sourceY = (yOffset / fullHeight) * canvas.height;
+          const sourceH = Math.min(
+            (pdfHeight / fullHeight) * canvas.height,
+            canvas.height - sourceY,
+          );
+          const pageCanvas = document.createElement("canvas");
+          pageCanvas.width = canvas.width;
+          pageCanvas.height = sourceH;
+          const ctx = pageCanvas.getContext("2d")!;
+          ctx.fillStyle = "#0A0A0F";
+          ctx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
+          ctx.drawImage(canvas, 0, -sourceY);
+          const renderedH = (sourceH / canvas.height) * fullHeight;
+          pdf.addImage(pageCanvas.toDataURL("image/jpeg", 0.95), "JPEG", 0, 0, pdfWidth, renderedH);
+          yOffset += pdfHeight;
+          page++;
+        }
+      }
+      const nome = (athleteName || "atleta").replace(/\s+/g, "_");
+      const data = new Date().toISOString().split("T")[0];
+      pdf.save(`APEX_${nome}_${data}.pdf`);
+      toast("PDF gerado com sucesso.");
+    } catch (error) {
+      console.error("Erro ao gerar PDF:", error);
+      toast("Erro ao gerar PDF. Tente novamente.");
+    } finally {
+      setExportingPDF(false);
+      setPdfPayload(null);
+    }
+  };
+
   // ── Sugestão de onde clicar para alinhar o prumo (coords 0..100) ──
   const plumbSuggestion = useMemo<{ x: number; y: number; label: string }>(() => {
     const lm = data?.landmarks || ({} as Record<string, Landmark>);
