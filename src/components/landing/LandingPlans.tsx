@@ -571,7 +571,7 @@ const LandingPlans = () => {
             </ul>
 
             <a
-              href="https://pay.kiwify.com.br/VaPRGfQ"
+              href="https://pay.kiwify.com.br/DjoJxnu"
               target="_blank"
               rel="noopener noreferrer"
               className="block w-full text-center font-bold text-[14px] rounded-lg transition-all hover:scale-[1.01]"
