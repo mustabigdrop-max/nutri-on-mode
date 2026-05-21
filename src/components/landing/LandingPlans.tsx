@@ -315,55 +315,7 @@ const LandingPlans = () => {
         </h2>
       </motion.div>
 
-      {/* Starter Tripwire Banner */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={inView ? { opacity: 1, y: 0 } : {}}
-        transition={{ delay: 0.3, duration: 0.6 }}
-        className="relative mt-10 mb-12 rounded-xl border border-primary/30 bg-primary/[.04] p-6 md:p-8 overflow-hidden"
-      >
-        {/* Glow effect */}
-        <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-[300px] h-[200px] bg-primary/10 rounded-full blur-[80px] pointer-events-none" />
-        
-        <div className="relative z-10 flex flex-col md:flex-row items-center gap-6 md:gap-10">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-primary/15 border border-primary/25 flex items-center justify-center">
-              <Zap className="w-6 h-6 text-primary" />
-            </div>
-            <div>
-              <div className="font-mono text-[.6rem] text-primary tracking-[.15em] uppercase">Acesso Starter</div>
-              <div className="font-heading text-[1.8rem] text-[#f0edf8] leading-none mt-0.5">
-                R$9,90
-              </div>
-            </div>
-          </div>
-          
-          <div className="flex-1 text-center md:text-left">
-            <p className="text-[.88rem] text-[#a0a0c0] font-landing leading-relaxed">
-              <strong className="text-[#f0edf8]">7 dias de acesso completo ao ON+</strong> — pagamento único, sem renovação automática.
-            </p>
-            <p className="text-[.72rem] text-[#7070a0] font-mono mt-1.5">
-              Abata R$9,90 na primeira mensalidade se assinar em seguida
-            </p>
-          </div>
-          
-          <a
-            href="https://pay.kiwify.com.br/VaPRGfQ"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="shrink-0 px-7 py-3 rounded-lg bg-primary text-black font-mono text-[.72rem] font-medium tracking-[.08em] hover:bg-black hover:text-primary hover:outline hover:outline-1 hover:outline-primary transition-all whitespace-nowrap"
-          >
-            EXPERIMENTAR POR R$9,90 →
-          </a>
-        </div>
-      </motion.div>
-
-      {/* Divider */}
-      <div className="flex items-center gap-4 mb-12">
-        <div className="flex-1 h-px bg-[#14142a]" />
-        <span className="font-mono text-[.6rem] text-[#50507a] tracking-[.15em] uppercase">Ou assine um plano completo</span>
-        <div className="flex-1 h-px bg-[#14142a]" />
-      </div>
+      <div className="mb-12" />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         {plans.map((plan) => (

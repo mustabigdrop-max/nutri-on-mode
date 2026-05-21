@@ -97,50 +97,7 @@ const PricingSection = () => {
           </p>
         </motion.div>
 
-        {/* Starter Tripwire */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-          className="relative rounded-2xl border border-primary/30 bg-primary/5 p-6 md:p-8 mb-10 overflow-hidden"
-        >
-          <div className="absolute -top-16 left-1/2 -translate-x-1/2 w-[250px] h-[150px] bg-primary/10 rounded-full blur-[60px] pointer-events-none" />
-          <div className="relative z-10 flex flex-col md:flex-row items-center gap-6">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-primary/15 border border-primary/25 flex items-center justify-center">
-                <Zap className="w-6 h-6 text-primary" />
-              </div>
-              <div>
-                <p className="text-xs font-mono text-primary tracking-widest uppercase">Acesso Starter</p>
-                <p className="text-3xl font-bold text-foreground leading-none mt-0.5">R$9,90</p>
-              </div>
-            </div>
-            <div className="flex-1 text-center md:text-left">
-              <p className="text-sm text-muted-foreground">
-                <strong className="text-foreground">7 dias de acesso completo ao ON+</strong> — pagamento único, sem renovação automática.
-              </p>
-              <p className="text-xs text-muted-foreground/70 font-mono mt-1">
-                Abata R$9,90 na primeira mensalidade se assinar em seguida
-              </p>
-            </div>
-            <a
-              href="https://pay.kiwify.com.br/VaPRGfQ"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="shrink-0 px-6 py-3 rounded-lg bg-primary text-primary-foreground font-bold text-sm hover:scale-[1.02] glow-gold transition-all whitespace-nowrap"
-            >
-              EXPERIMENTAR POR R$9,90 →
-            </a>
-          </div>
-        </motion.div>
-
-        {/* Divider */}
-        <div className="flex items-center gap-4 mb-10">
-          <div className="flex-1 h-px bg-border" />
-          <span className="text-xs font-mono text-muted-foreground tracking-widest uppercase">Ou assine um plano completo</span>
-          <div className="flex-1 h-px bg-border" />
-        </div>
+        <div className="mb-10" />
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
           {plans.map((plan, index) => (
