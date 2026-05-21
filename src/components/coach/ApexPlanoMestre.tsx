@@ -25,6 +25,74 @@ interface Props extends UseApexPlanoMestrePayload {
   onSendToTrainingON?: (semana: PlanoSemana | undefined, contraindicados: string[]) => void;
 }
 
+// ── Helpers consolidação ───────────────────────────────────────────────
+const SESSION_KEY = (n: number) => `__session_${n}__`;
+const isSessionKey = (s: string) => /^__session_\d+__$/.test(s);
+
+function bumpRepsOrTime(repsOrTime?: string, progression?: string): string {
+  if (!repsOrTime) return repsOrTime || "—";
+  const m = progression?.match(/\+\s*(\d+)\s*(s|seg)/i);
+  if (m) {
+    const inc = parseInt(m[1], 10);
+    if (/\d+\s*-\s*\d+\s*s/i.test(repsOrTime)) {
+      return repsOrTime.replace(/(\d+)\s*-\s*(\d+)\s*s/i, (_, a, b) => `${+a + inc}-${+b + inc}s`);
+    }
+    if (/^\d+\s*s$/i.test(repsOrTime.trim())) {
+      return repsOrTime.replace(/(\d+)\s*s/i, (_, a) => `${+a + inc}s`);
+    }
+  }
+  return repsOrTime;
+}
+function bumpSeries(series?: string, progression?: string): string {
+  if (!series) return series || "—";
+  if (/\+\s*1\s*s[ée]rie/i.test(progression || "")) {
+    if (/\d+\s*-\s*\d+/.test(series)) {
+      return series.replace(/(\d+)\s*-\s*(\d+)/, (_, a, b) => `${+a + 1}-${+b + 1}`);
+    }
+    const n = parseInt(series, 10);
+    if (!isNaN(n)) return String(n + 1);
+  }
+  return series;
+}
+function buildConsolidationWeek(base: PlanoSemana, weekNumber: number): PlanoSemana {
+  return {
+    ...base,
+    semana: weekNumber,
+    titulo: "Semana de Consolidação",
+    exercicios_prioritarios: (base.exercicios_prioritarios || []).map((ex) => ({
+      ...ex,
+      series: bumpSeries(ex.series, ex.progressao_semana_seguinte),
+      reps_ou_tempo: bumpRepsOrTime(ex.reps_ou_tempo, ex.progressao_semana_seguinte),
+    })),
+    marcador_de_progresso: "Consolidar carga da semana anterior",
+    sinal_verde_para_avancar: base.sinal_verde_para_avancar || "Execução limpa e sem dor durante toda a semana",
+  };
+}
+function getDerivedWeeks(f: PlanoFase): PlanoSemana[] {
+  const existing = (f.semanas_detalhadas || []).slice().sort((a, b) => a.semana - b.semana);
+  const dur = f.duracao_semanas || (existing.length || 2);
+  if (existing.length === 0) return existing;
+  if (existing.length >= dur) {
+    return existing.map((s, i) => ({
+      ...s,
+      titulo: s.titulo || (i % 2 === 0 ? "Semana inicial" : "Semana de Consolidação"),
+    }));
+  }
+  const out: PlanoSemana[] = [];
+  const base = existing[0];
+  const firstWeek = base.semana;
+  for (let i = 0; i < dur; i++) {
+    const wn = firstWeek + i;
+    const found = existing.find((s) => s.semana === wn);
+    if (found) {
+      out.push({ ...found, titulo: found.titulo || (i % 2 === 0 ? "Semana inicial" : "Semana de Consolidação") });
+    } else {
+      out.push(buildConsolidationWeek(base, wn));
+    }
+  }
+  return out;
+}
+
 export default function ApexPlanoMestre({
   sessionId, autoGenerate = true, onSendToTrainingON,
   dysfunctions, muscleMap, fcsScore, athleteProfile, goal, analysisRaw, kineticChains,
@@ -52,16 +120,17 @@ export default function ApexPlanoMestre({
   const fases: PlanoFase[] = plano?.fases || [];
   const totalSemanas = plano?.duracao_total_semanas || fases.reduce((s, f) => s + (f.duracao_semanas || 0), 0);
   const faseObj = fases.find(f => f.numero === faseAtual) || fases[0];
-  const semanaObj: PlanoSemana | undefined = faseObj?.semanas_detalhadas?.find(s => s.semana === semanaAtual);
+  const semanasFase: PlanoSemana[] = faseObj ? getDerivedWeeks(faseObj) : [];
+  const semanaObj: PlanoSemana | undefined = semanasFase.find(s => s.semana === semanaAtual) || semanasFase[0];
 
-  // progresso da semana atual
+  // progresso da semana atual — agora baseado em SESSÕES concluídas
   const semanaProgresso = useMemo(() => {
-    const total = semanaObj?.exercicios_prioritarios?.length || 0;
-    if (!total) return { done: 0, total: 0, pct: 0 };
-    const done = (semanaObj?.exercicios_prioritarios || []).filter(ex =>
-      progresso.find(p => p.semana === semanaAtual && p.fase === faseAtual && p.exercicio === ex.nome && p.concluido)
+    const total = semanaObj?.sessoes_por_semana ?? 3;
+    const done = progresso.filter(p =>
+      p.semana === semanaAtual && p.fase === faseAtual && isSessionKey(p.exercicio) && p.concluido
     ).length;
-    return { done, total, pct: Math.round((done / total) * 100) };
+    const capped = Math.min(done, total);
+    return { done: capped, total, pct: total ? Math.round((capped / total) * 100) : 0 };
   }, [semanaObj, progresso, semanaAtual, faseAtual]);
 
   const globalPct = totalSemanas ? Math.round(((faseObj && fases.slice(0, faseObj.numero - 1).reduce((s, f) => s + (f.duracao_semanas || 0), 0) + (semanaAtual - 1)) / totalSemanas) * 100) : 0;
@@ -283,7 +352,7 @@ export default function ApexPlanoMestre({
 
                   {/* Semanas detalhadas */}
                   <div className="space-y-2 mt-3">
-                    {(f.semanas_detalhadas || []).map((s) => {
+                    {getDerivedWeeks(f).map((s) => {
                       const key = `${f.numero}-${s.semana}`;
                       const sOpen = !!openSemana[key];
                       const isAtual = s.semana === semanaAtual && f.numero === faseAtual;
@@ -306,7 +375,7 @@ export default function ApexPlanoMestre({
                               onAvancarSemana={avancarSemana}
                               onAvancarFase={() => setShowFaseModal(true)}
                               semanaPct={isAtual ? semanaProgresso : null}
-                              totalFaseSemanas={(f.semanas_detalhadas || []).length}
+                              totalFaseSemanas={getDerivedWeeks(f).length}
                             />
                           )}
                         </div>
@@ -443,25 +512,47 @@ function SemanaBody({
   semanaPct: { done: number; total: number; pct: number } | null;
   totalFaseSemanas: number;
 }) {
-  const checkedOf = (nome: string) =>
-    !!progresso.find(p => p.semana === s.semana && p.fase === f.numero && p.exercicio === nome && p.concluido);
-
   const all = s.exercicios_prioritarios || [];
-  const allDone = isAtual && all.length > 0 && all.every(ex => checkedOf(ex.nome));
-  const ultimaSemanaDaFase = s.semana === ((f.semanas_detalhadas || []).slice(-1)[0]?.semana);
+  const totalSessoes = s.sessoes_por_semana ?? 3;
+  const sessoesDone = progresso.filter(p =>
+    p.semana === s.semana && p.fase === f.numero && isSessionKey(p.exercicio) && p.concluido
+  ).length;
+  const sessoesDoneCapped = Math.min(sessoesDone, totalSessoes);
+  const allDone = isAtual && sessoesDoneCapped >= totalSessoes;
+  const ultimaSemanaDaFase = s.semana === ((f.semanas_detalhadas || getDerivedWeeks(f)).slice(-1)[0]?.semana) ||
+    s.semana - ((f.semanas_detalhadas?.[0]?.semana) || s.semana) === (f.duracao_semanas || totalFaseSemanas) - 1;
+
+  const duracaoTotal = s.duracao_sessao_minutos ?? 25;
+  const perEx = all.length ? Math.max(3, Math.round(duracaoTotal / all.length)) : duracaoTotal;
+
+  const handleMarcarSessao = () => {
+    if (!isAtual || sessoesDoneCapped >= totalSessoes) return;
+    onToggle(SESSION_KEY(sessoesDoneCapped + 1), true);
+  };
 
   return (
     <div className="px-3 pb-3 space-y-3 text-[11px]">
-      <div className="grid grid-cols-2 gap-2 pt-1">
-        <Info label="FOCO" value={s.foco || "—"} />
-        <Info label="SESSÕES" value={`${s.sessoes_por_semana ?? "—"}x · ${s.duracao_sessao_minutos ?? "—"}min`} />
+      {/* COMO EXECUTAR — bloco fixo no topo */}
+      <div className="rounded-lg p-3 text-[10.5px] leading-relaxed" style={{ background: `${C.cyan}10`, border: `1px solid ${C.cyan}30` }}>
+        <div className="font-mono font-bold mb-1 tracking-wider" style={{ color: C.cyan }}>📋 COMO EXECUTAR</div>
+        <ul className="space-y-0.5 opacity-90">
+          <li>• Faça <b>antes do treino principal</b> ou em dia separado.</li>
+          <li>• Execute na <b>ordem indicada</b>.</li>
+          <li>• Descanse <b>30–60s</b> entre séries.</li>
+          <li>• Duração total: <b>~{Math.max(20, duracaoTotal)}–{Math.max(30, duracaoTotal + 5)}min</b>.</li>
+        </ul>
       </div>
 
-      {isAtual && semanaPct && semanaPct.total > 0 && (
+      <div className="grid grid-cols-2 gap-2 pt-1">
+        <Info label="FOCO" value={s.foco || "—"} />
+        <Info label="SESSÕES" value={`${totalSessoes}x · ${duracaoTotal}min`} />
+      </div>
+
+      {isAtual && (
         <div>
-          <div className="flex justify-between text-[9px] mb-1 opacity-70"><span>PROGRESSO DA SEMANA</span><span>{semanaPct.done}/{semanaPct.total}</span></div>
+          <div className="flex justify-between text-[9px] mb-1 opacity-70"><span>PROGRESSO DA SEMANA</span><span>{sessoesDoneCapped}/{totalSessoes}</span></div>
           <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "#ffffff15" }}>
-            <div className="h-full" style={{ width: `${semanaPct.pct}%`, background: C.green }} />
+            <div className="h-full transition-all" style={{ width: `${totalSessoes ? (sessoesDoneCapped / totalSessoes) * 100 : 0}%`, background: C.green }} />
           </div>
         </div>
       )}
@@ -469,30 +560,35 @@ function SemanaBody({
       <div>
         <div className="font-mono text-[10px] font-bold mb-1.5 opacity-70">EXERCÍCIOS PRIORITÁRIOS</div>
         <div className="space-y-1.5">
-          {all.map((ex, i) => {
-            const checked = checkedOf(ex.nome);
-            const interactive = isAtual;
-            return (
-              <div key={i} className="p-2 rounded" style={{ background: checked ? `${C.green}10` : "#ffffff05", borderLeft: `2px solid ${checked ? C.green : C.gold}` }}>
-                <div className="flex items-start gap-2">
-                  {interactive ? (
-                    <input type="checkbox" checked={checked} onChange={(e) => onToggle(ex.nome, e.target.checked)} className="mt-0.5" />
-                  ) : <div className="w-3.5" />}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-bold text-white">{String(i + 1).padStart(2, "0")}. {ex.nome}</span>
-                      {ex.fase_corretiva != null && <span className="text-[9px] px-1 py-0.5 rounded font-mono" style={{ background: `${C.cyan}20`, color: C.cyan }}>F{ex.fase_corretiva}</span>}
-                    </div>
-                    <div className="opacity-70 text-[10px]">{ex.series || "—"} · {ex.reps_ou_tempo || "—"}</div>
-                    {ex.cue_principal && <div className="text-[10px] mt-0.5">💡 {ex.cue_principal}</div>}
-                    {ex.progressao_semana_seguinte && <div className="text-[10px] opacity-70 mt-0.5">→ Próxima sem: {ex.progressao_semana_seguinte}</div>}
-                  </div>
+          {all.map((ex, i) => (
+            <div key={i} className="p-2 rounded" style={{ background: "#ffffff05", borderLeft: `2px solid ${C.gold}` }}>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="font-bold text-white">{String(i + 1).padStart(2, "0")}. {ex.nome}</span>
+                  {ex.fase_corretiva != null && <span className="text-[9px] px-1 py-0.5 rounded font-mono" style={{ background: `${C.cyan}20`, color: C.cyan }}>F{ex.fase_corretiva}</span>}
                 </div>
+                <div className="text-[9.5px] font-mono opacity-60 mt-0.5">
+                  {String(i + 1).padStart(2, "0")} de {String(all.length).padStart(2, "0")} · ~{perEx}min
+                </div>
+                <div className="opacity-70 text-[10px] mt-0.5">{ex.series || "—"} · {ex.reps_ou_tempo || "—"}</div>
+                {ex.cue_principal && <div className="text-[10px] mt-0.5">💡 {ex.cue_principal}</div>}
+                {ex.progressao_semana_seguinte && <div className="text-[10px] opacity-70 mt-0.5">→ Próxima sem: {ex.progressao_semana_seguinte}</div>}
               </div>
-            );
-          })}
+            </div>
+          ))}
         </div>
       </div>
+
+      {/* CHECKBOX SESSÃO CONCLUÍDA */}
+      {isAtual && sessoesDoneCapped < totalSessoes && (
+        <button
+          onClick={handleMarcarSessao}
+          className="w-full py-2.5 rounded-lg font-bold text-xs flex items-center justify-center gap-2 transition-all hover:scale-[1.01]"
+          style={{ background: C.green, color: "white" }}
+        >
+          <CheckCircle2 className="w-4 h-4" /> Marcar sessão {sessoesDoneCapped + 1} como concluída
+        </button>
+      )}
 
       {!!(s.o_que_evitar_essa_semana?.length) && (
         <div className="p-2 rounded text-[10px]" style={{ background: `${C.red}10`, border: `1px solid ${C.red}30` }}>
@@ -501,7 +597,8 @@ function SemanaBody({
         </div>
       )}
 
-      {s.sinal_verde_para_avancar && (
+      {/* SINAL VERDE só aparece quando todas as sessões foram concluídas */}
+      {isAtual && allDone && s.sinal_verde_para_avancar && (
         <div className="p-2 rounded text-[10px]" style={{ background: `${C.green}10`, border: `1px solid ${C.green}30` }}>
           <div className="font-mono font-bold mb-1" style={{ color: C.green }}>✓ SINAL VERDE PARA AVANÇAR</div>
           {s.sinal_verde_para_avancar}
@@ -511,7 +608,7 @@ function SemanaBody({
       {isAtual && allDone && (
         <div className="p-3 rounded text-center space-y-2" style={{ background: `${C.green}15`, border: `1px solid ${C.green}` }}>
           <div className="flex items-center justify-center gap-2 font-bold" style={{ color: C.green }}>
-            <CheckCircle2 className="w-4 h-4" /> SEMANA {s.semana} CONCLUÍDA
+            <CheckCircle2 className="w-4 h-4" /> SEMANA {s.semana} CONCLUÍDA ({totalSessoes}/{totalSessoes} sessões)
           </div>
           {ultimaSemanaDaFase ? (
             <button onClick={onAvancarFase} className="px-3 py-1.5 rounded font-bold text-xs" style={{ background: C.gold, color: "#1A1100" }}>
