@@ -1170,6 +1170,36 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
           ))}
         </div>
       )}
+
+      {/* Container oculto para renderização do PDF */}
+      {pdfPayload && (
+        <div
+          ref={pdfContainerRef}
+          id="apex-pdf-container"
+          style={{
+            position: "fixed",
+            left: -9999,
+            top: 0,
+            width: 794,
+            background: "#0A0A0F",
+            fontFamily: "Inter, sans-serif",
+            color: "#fff",
+            padding: 0,
+            zIndex: -1,
+          }}
+        >
+          <ApexPDFLayout
+            athleteName={athleteName}
+            photoUrl={photoUrl}
+            overlayDataUrl={pdfPayload.overlayDataUrl}
+            findings={findings}
+            quality={data?.landmarks ? calcAnalysisQuality(data.landmarks as any) : null}
+            plumbSource={currentPlumb?.source ?? "—"}
+            viewLabel={{ front: "Frente", lateral: "Lateral", back: "Costas" }[view]}
+            geradoEm={pdfPayload.geradoEm}
+          />
+        </div>
+      )}
     </div>
   );
 }
