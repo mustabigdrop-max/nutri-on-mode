@@ -3,6 +3,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Content-Type": "application/json",
 };
 
 const DEFAULT_SYSTEM = `Você é o APEX Visual Intelligence — sistema de análise de performance humana integrada desenvolvido com a metodologia de Diogo Mello: educador físico, coach de fisiculturismo competitivo, analista comportamental e atleta IFBB Classic Physique em atividade. Analise fotos de atletas com olhar técnico de juiz IFBB e coach de elite. Tom direto, sem elogios vazios.`;
@@ -137,11 +138,42 @@ IMPORTANTE: todos os 33 IDs devem aparecer e ter coordenadas estimadas (não zer
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
+  let body: any = null;
   try {
-    const body = await req.json();
-    const { fotos, contexto, system, sex, category, cyclePhase, cycleDay } = body;
+    try {
+      body = await req.json();
+    } catch (parseErr) {
+      console.error("apex-visual-analyze: falha ao parsear body", parseErr);
+      return new Response(
+        JSON.stringify({ error: true, message: "Invalid JSON body", stack: (parseErr as Error)?.stack }),
+        { status: 400, headers: corsHeaders },
+      );
+    }
+
+    console.log("apex-visual-analyze chamada", JSON.stringify({
+      hasBody: !!body,
+      fields: Object.keys(body || {}),
+      fotosCount: Array.isArray(body?.fotos) ? body.fotos.length : 0,
+    }));
+
+    const { fotos, contexto, system, sex, category, cyclePhase, cycleDay } = body || {};
+
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
+    if (!LOVABLE_API_KEY) {
+      console.error("apex-visual-analyze: LOVABLE_API_KEY ausente");
+      return new Response(
+        JSON.stringify({ error: true, message: "LOVABLE_API_KEY not configured" }),
+        { status: 500, headers: corsHeaders },
+      );
+    }
+
+    if (!Array.isArray(fotos) || fotos.length === 0) {
+      console.error("apex-visual-analyze: nenhuma foto enviada");
+      return new Response(
+        JSON.stringify({ error: true, message: "Campo 'fotos' obrigatório (array não vazio)" }),
+        { status: 400, headers: corsHeaders },
+      );
+    }
 
     const isF = String(sex || "").toLowerCase().match(/^(f|feminino|female)$/);
     const FEMININE_PROMPT = isF ? `
@@ -179,12 +211,16 @@ LINGUAGEM OBRIGATÓRIA: tom empoderador. NUNCA "excesso de gordura" → usar "re
 ` : "";
 
     const userContent: any[] = [];
-    for (const f of (fotos || [])) {
+    for (const f of fotos) {
+      if (!f || !f.data) {
+        console.warn("apex-visual-analyze: foto sem 'data', ignorando", { label: f?.label });
+        continue;
+      }
       userContent.push({
         type: "image_url",
         image_url: { url: `data:${f.mime || "image/jpeg"};base64,${f.data}` },
       });
-      userContent.push({ type: "text", text: `[Foto ${f.label} do atleta acima]` });
+      userContent.push({ type: "text", text: `[Foto ${f.label || "?"} do atleta acima]` });
     }
     userContent.push({ type: "text", text: contexto || "" });
 
@@ -206,32 +242,35 @@ LINGUAGEM OBRIGATÓRIA: tom empoderador. NUNCA "excesso de gordura" → usar "re
     });
 
     if (res.status === 429) {
-      return new Response(JSON.stringify({ error: "Rate limit. Tente novamente em instantes." }), {
-        status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({ error: true, message: "Rate limit. Tente novamente em instantes." }),
+        { status: 429, headers: corsHeaders },
+      );
     }
     if (res.status === 402) {
-      return new Response(JSON.stringify({ error: "Créditos esgotados. Adicione em Settings > Workspace > Usage." }), {
-        status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({ error: true, message: "Créditos esgotados. Adicione em Settings > Workspace > Usage." }),
+        { status: 402, headers: corsHeaders },
+      );
     }
     if (!res.ok) {
       const t = await res.text();
-      console.error("AI gateway error:", res.status, t);
-      return new Response(JSON.stringify({ error: "AI gateway error" }), {
-        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      console.error("apex-visual-analyze: AI gateway error", res.status, t);
+      return new Response(
+        JSON.stringify({ error: true, message: `AI gateway error ${res.status}`, detail: t }),
+        { status: 500, headers: corsHeaders },
+      );
     }
 
     const data = await res.json();
     const text = data.choices?.[0]?.message?.content || "";
-    return new Response(JSON.stringify({ text }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-  } catch (e) {
-    console.error("apex-visual-analyze error:", e);
-    return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Unknown" }), {
-      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return new Response(JSON.stringify({ text }), { headers: corsHeaders });
+  } catch (err) {
+    const e = err as Error;
+    console.error("apex-visual-analyze: erro não tratado", e?.message, e?.stack);
+    return new Response(
+      JSON.stringify({ error: true, message: e?.message || "Unknown", stack: e?.stack }),
+      { status: 500, headers: corsHeaders },
+    );
   }
 });
