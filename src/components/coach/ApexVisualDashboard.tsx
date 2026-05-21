@@ -1640,11 +1640,6 @@ Suporte em uso: ${suporte || "não informado"}` : "";
           )}
           {activeResultTab === "visual" && (
             <div className="space-y-4">
-              <ApexPostural33Overlay
-                data={parsePostural33(analysisResult) || {}}
-                photoUrl={photoUrls.front || photoUrls.back || photoUrls.lateral || null}
-                athleteHeightCm={clinicalTests.athleteHeightCm ?? null}
-              />
               <ApexVisualOverlay
                 landmarks={parseLandmarks(analysisResult)}
                 photos={photoUrls}

@@ -578,6 +578,7 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
                 src={photoUrl}
                 alt={`Foto ${view}`}
                 crossOrigin="anonymous"
+                className="apex-photo"
                 style={{
                   display: "block",
                   width: "100%",
