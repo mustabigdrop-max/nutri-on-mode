@@ -243,7 +243,7 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
       ro?.disconnect();
       window.removeEventListener("resize", recompute);
     };
-  }, [view, photoUrl]);
+  }, [view, photos]);
 
   useEffect(() => {
     try { localStorage.setItem("apex-edu-mode", eduMode ? "1" : "0"); } catch {}
