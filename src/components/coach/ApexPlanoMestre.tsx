@@ -25,6 +25,74 @@ interface Props extends UseApexPlanoMestrePayload {
   onSendToTrainingON?: (semana: PlanoSemana | undefined, contraindicados: string[]) => void;
 }
 
+// ── Helpers consolidação ───────────────────────────────────────────────
+const SESSION_KEY = (n: number) => `__session_${n}__`;
+const isSessionKey = (s: string) => /^__session_\d+__$/.test(s);
+
+function bumpRepsOrTime(repsOrTime?: string, progression?: string): string {
+  if (!repsOrTime) return repsOrTime || "—";
+  const m = progression?.match(/\+\s*(\d+)\s*(s|seg)/i);
+  if (m) {
+    const inc = parseInt(m[1], 10);
+    if (/\d+\s*-\s*\d+\s*s/i.test(repsOrTime)) {
+      return repsOrTime.replace(/(\d+)\s*-\s*(\d+)\s*s/i, (_, a, b) => `${+a + inc}-${+b + inc}s`);
+    }
+    if (/^\d+\s*s$/i.test(repsOrTime.trim())) {
+      return repsOrTime.replace(/(\d+)\s*s/i, (_, a) => `${+a + inc}s`);
+    }
+  }
+  return repsOrTime;
+}
+function bumpSeries(series?: string, progression?: string): string {
+  if (!series) return series || "—";
+  if (/\+\s*1\s*s[ée]rie/i.test(progression || "")) {
+    if (/\d+\s*-\s*\d+/.test(series)) {
+      return series.replace(/(\d+)\s*-\s*(\d+)/, (_, a, b) => `${+a + 1}-${+b + 1}`);
+    }
+    const n = parseInt(series, 10);
+    if (!isNaN(n)) return String(n + 1);
+  }
+  return series;
+}
+function buildConsolidationWeek(base: PlanoSemana, weekNumber: number): PlanoSemana {
+  return {
+    ...base,
+    semana: weekNumber,
+    titulo: "Semana de Consolidação",
+    exercicios_prioritarios: (base.exercicios_prioritarios || []).map((ex) => ({
+      ...ex,
+      series: bumpSeries(ex.series, ex.progressao_semana_seguinte),
+      reps_ou_tempo: bumpRepsOrTime(ex.reps_ou_tempo, ex.progressao_semana_seguinte),
+    })),
+    marcador_de_progresso: "Consolidar carga da semana anterior",
+    sinal_verde_para_avancar: base.sinal_verde_para_avancar || "Execução limpa e sem dor durante toda a semana",
+  };
+}
+function getDerivedWeeks(f: PlanoFase): PlanoSemana[] {
+  const existing = (f.semanas_detalhadas || []).slice().sort((a, b) => a.semana - b.semana);
+  const dur = f.duracao_semanas || (existing.length || 2);
+  if (existing.length === 0) return existing;
+  if (existing.length >= dur) {
+    return existing.map((s, i) => ({
+      ...s,
+      titulo: s.titulo || (i % 2 === 0 ? "Semana inicial" : "Semana de Consolidação"),
+    }));
+  }
+  const out: PlanoSemana[] = [];
+  const base = existing[0];
+  const firstWeek = base.semana;
+  for (let i = 0; i < dur; i++) {
+    const wn = firstWeek + i;
+    const found = existing.find((s) => s.semana === wn);
+    if (found) {
+      out.push({ ...found, titulo: found.titulo || (i % 2 === 0 ? "Semana inicial" : "Semana de Consolidação") });
+    } else {
+      out.push(buildConsolidationWeek(base, wn));
+    }
+  }
+  return out;
+}
+
 export default function ApexPlanoMestre({
   sessionId, autoGenerate = true, onSendToTrainingON,
   dysfunctions, muscleMap, fcsScore, athleteProfile, goal, analysisRaw, kineticChains,
