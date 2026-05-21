@@ -1611,8 +1611,15 @@ function OverlayLayer({
           );
         })}
 
-        {/* Plumb line label */}
-        <text x={anatomicalCenterX + 0.5} y={2.5} fontSize={2} fill={C.white} opacity={0.6}>{showAnatomicalLabel ? "Centro anatômico" : "Linha de Prumo"}</text>
+        {/* Plumb line label — com fonte do eixo (C7+L5 / C7 / L5 / frame-center) */}
+        <text x={plumb.x1 + 0.6} y={2.5} fontSize={2} fill={C.white} opacity={0.6}>
+          Linha de Prumo{plumb.source !== "C7+L5" ? ` (${plumb.source})` : ""}
+        </text>
+        {plumb.source === "frame-center" && (
+          <text x={plumb.x1 + 0.6} y={4.8} fontSize={1.6} fill="#FBBF24" opacity={0.85}>
+            ⚠ C7/L5 não detectados — usando centro do frame
+          </text>
+        )}
 
         {/* DEBUG: zona da silhueta (|x-50|<8) + caixas de colisão dos labels */}
         {debugMode && (
