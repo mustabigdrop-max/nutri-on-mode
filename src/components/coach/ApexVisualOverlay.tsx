@@ -849,6 +849,24 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
               </div>
             );
           })()}
+          {data?.landmarks && (() => {
+            const q = calcAnalysisQuality(data.landmarks as any);
+            const pct = Math.round(q.score * 100);
+            return (
+              <div
+                className="inline-flex items-center gap-1 ml-1.5 mb-1.5"
+                style={{
+                  fontSize: 10, color: q.color,
+                  padding: "2px 8px", borderRadius: 4,
+                  background: `${q.color}18`,
+                  fontFamily: "ui-monospace, monospace",
+                }}
+                title="Confiança média estimada (heurística por landmark)"
+              >
+                ◉ {q.label} — {pct}%
+              </div>
+            );
+          })()}
           {findings.length === 0 && (
             <div className="text-xs text-muted-foreground">Nenhum ângulo retornado.</div>
           )}
@@ -1104,6 +1122,58 @@ export function calcPlumbLine(
   if (valid(l5)) return { x1: l5.x, y1: 0, x2: l5.x, y2: imageHeight, axisX: l5.x, source: "L5" };
   const cx = imageWidth / 2;
   return { x1: cx, y1: 0, x2: cx, y2: imageHeight, axisX: cx, source: "frame-center" };
+}
+
+// ─── Confiança por landmark (fallback até a IA retornar `confidence`) ──
+// Heurística baseada em definição óssea visual: ombros/quadris alto;
+// joelhos/tornozelos médio; coluna/escápulas baixo. NÃO remove pontos
+// do SVG — apenas modula visual e participação em cálculos clínicos.
+const HIGH_CONF_IDS = new Set([
+  "shoulder_left", "shoulder_right", "hip_left", "hip_right", "acromio_l", "acromio_r",
+]);
+const MED_CONF_IDS = new Set([
+  "knee_left", "knee_right", "ankle_left", "ankle_right", "ankle_lateral",
+  "knee_lateral", "ear", "hip_greater_trochanter",
+]);
+const LOW_CONF_IDS = new Set([
+  "spine_c7", "spine_l5", "c7", "l5_s1", "spine_l5_s1",
+  "scapula_left", "scapula_right",
+]);
+export function estimateConfidence(id: string, raw?: { confidence?: number }): number {
+  if (raw && typeof raw.confidence === "number" && Number.isFinite(raw.confidence)) {
+    return Math.max(0, Math.min(1, raw.confidence));
+  }
+  if (HIGH_CONF_IDS.has(id)) return 0.90;
+  if (MED_CONF_IDS.has(id)) return 0.78;
+  if (LOW_CONF_IDS.has(id)) return 0.65;
+  return 0.70;
+}
+
+interface ConfStyle {
+  fill: string; stroke: string; strokeWidth: number;
+  radius: number; opacity: number; dash?: string;
+}
+function getConfidenceStyle(confidence: number): ConfStyle {
+  if (confidence >= 0.85) {
+    return { fill: "#B8922A", stroke: "#F5D485", strokeWidth: 1.5, radius: 1.1, opacity: 1.0 };
+  }
+  if (confidence >= 0.65) {
+    return { fill: "#78716C", stroke: "#A8A29E", strokeWidth: 1, radius: 0.95, opacity: 0.85 };
+  }
+  return { fill: "transparent", stroke: "#EF4444", strokeWidth: 1, radius: 0.95, opacity: 0.7, dash: "3 2" };
+}
+
+export interface AnalysisQuality { score: number; label: string; color: string }
+export function calcAnalysisQuality(landmarks: Record<string, any>): AnalysisQuality {
+  const entries = Object.entries(landmarks || {}).filter(
+    ([, p]) => p && typeof (p as any).x === "number" && typeof (p as any).y === "number",
+  );
+  if (!entries.length) return { score: 0, label: "Sem dados", color: "#FCA5A5" };
+  const avg = entries.reduce((s, [id, p]) => s + estimateConfidence(id, p as any), 0) / entries.length;
+  if (avg >= 0.85) return { score: avg, label: "Análise confiável", color: "#6EE7B7" };
+  if (avg >= 0.70) return { score: avg, label: "Análise aceitável", color: "#FCD34D" };
+  if (avg >= 0.55) return { score: avg, label: "Análise com ressalvas", color: "#FB923C" };
+  return { score: avg, label: "Reenviar foto", color: "#FCA5A5" };
 }
 
 // ─── Overlay (HTML + SVG hybrid for crisp labels) ────────────────
@@ -1608,22 +1678,34 @@ function OverlayLayer({
           />
         ))}
 
-        {/* Landmarks: cor por severidade clínica do achado relacionado */}
+        {/* Landmarks: confiança da detecção (base) + severidade clínica (override crítico) */}
         {labelPositions.map((q) => {
           const isPrimary = PRIMARY.has(q.key);
           const sev = landmarkSeverity(q.key, ang);
-          const { fill, stroke, pulse } = landmarkColor(sev);
+          const conf = estimateConfidence(q.key, (lm as any)[q.key]);
+          const confStyle = getConfidenceStyle(conf);
+          const isCritical = sev === "severe" || sev === "moderate";
+          // Severidade crítica sobrepõe estilo de confiança (sinal clínico tem prioridade visual)
+          const { fill, stroke, pulse } = isCritical ? landmarkColor(sev) : { fill: confStyle.fill, stroke: confStyle.stroke, pulse: false };
+          const radius = (isPrimary ? 1.1 : 0.75) * (isCritical ? 1 : confStyle.radius / 1.0);
+          const pct = Math.round(conf * 100);
           return (
             <circle
               key={`pt-${q.key}`}
               cx={q.px} cy={q.py}
-              r={isPrimary ? 1.1 : 0.75}
+              r={isCritical ? (isPrimary ? 1.1 : 0.75) : confStyle.radius}
               fill={fill}
               stroke={stroke}
+              strokeDasharray={isCritical ? undefined : confStyle.dash}
               vectorEffect="non-scaling-stroke"
               className={pulse ? "apex-landmark-pulse" : undefined}
-              style={{ strokeWidth: isPrimary ? 2 : 1.5 }}
-            />
+              opacity={isCritical ? 1 : confStyle.opacity}
+              style={{ strokeWidth: isCritical ? (isPrimary ? 2 : 1.5) : confStyle.strokeWidth }}
+            >
+              <title>
+                {(lm as any)[q.key]?.label || q.key} — Confiança: {pct}%{conf < 0.65 ? " ⚠ detecção instável" : ""}
+              </title>
+            </circle>
           );
         })}
 
