@@ -499,7 +499,35 @@ const LandingPlans = () => {
               </div>
             )}
 
-            {plan.name === "ON +" ? (
+            {plan.mce ? (
+              <div className="flex flex-col gap-4 mb-6">
+                {plan.blocks.map((block: any) => (
+                  <div key={block.title}>
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="font-mono font-bold text-[10px] tracking-[.1em]" style={{ color: "#B8922A" }}>
+                        {block.icon} {block.title}
+                      </div>
+                      {block.bonus && (
+                        <span
+                          className="font-mono text-[8px] font-bold px-1.5 py-0.5 rounded-[2px] tracking-[.1em]"
+                          style={{ background: "#1D9E7520", border: "1px solid #1D9E7560", color: "#1D9E75" }}
+                        >
+                          BÔNUS
+                        </span>
+                      )}
+                    </div>
+                    <ul className="flex flex-col gap-1.5">
+                      {block.items.map((t: string) => (
+                        <li key={t} className="text-[12px] flex items-start gap-2 font-landing text-[#a0a0c0] leading-snug">
+                          <span className="text-[11px] mt-0.5 shrink-0" style={{ color: "#B8922A" }}>✓</span>
+                          <span>{t}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            ) : plan.name === "ON +" ? (
               <>
                 <ul className="flex flex-col gap-2 mb-3">
                   {NUTRIPLAN_SHORT.map((text, i) => (
