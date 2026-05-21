@@ -261,6 +261,20 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
   const data = landmarks[view];
   const photoUrl = photos[view];
 
+  // Qualidade da linha de prumo da vista atual (para badge nos achados)
+  const currentPlumb = useMemo<PlumbLine | null>(() => {
+    if (!data?.landmarks) return null;
+    const snapped = snapToPlumbLine(data.landmarks, 100);
+    const base = calcPlumbLine(snapped as any, 100, 100);
+    const override = manualPlumb[view];
+    if (typeof override === "number") {
+      return { ...base, x1: override, x2: override, axisX: override };
+    }
+    return base;
+  }, [data, manualPlumb, view]);
+
+
+
   // Compute scapular axis (back view) augmentation
   const augmentedAngles = useMemo(() => {
     if (!data) return {} as Record<string, AngleData>;
@@ -814,6 +828,27 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
           <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1 pt-1">
             Achados clínicos ({findings.length})
           </div>
+          {currentPlumb && (() => {
+            const s = currentPlumb.source;
+            const cfg = s === "C7+L5"
+              ? { bg: "#064E3B", fg: "#6EE7B7", text: "📐 Prumo ancorado em C7/L5" }
+              : s === "frame-center"
+              ? { bg: "#7F1D1D", fg: "#FCA5A5", text: "✕ Prumo estimado — reenviar foto de costas" }
+              : { bg: "#78350F", fg: "#FCD34D", text: `⚠ Prumo parcial (${s} apenas)` };
+            return (
+              <div
+                className="inline-block mb-1.5"
+                style={{
+                  background: cfg.bg, color: cfg.fg,
+                  fontSize: 10, padding: "2px 8px",
+                  borderRadius: 4, fontFamily: "ui-monospace, monospace",
+                }}
+                title={`Eixo X = ${currentPlumb.axisX.toFixed(2)}% · fonte: ${s}`}
+              >
+                {cfg.text}
+              </div>
+            );
+          })()}
           {findings.length === 0 && (
             <div className="text-xs text-muted-foreground">Nenhum ângulo retornado.</div>
           )}
@@ -1044,6 +1079,33 @@ function snapToPlumbLine<T extends Record<string, any>>(
   return out as T;
 }
 
+// ─── Linha de prumo dinâmica ─────────────────────────────────────
+// Eixo gravitacional real do atleta — calculado a partir de C7/L5
+// pós-snap. Sistema de coordenadas: viewBox 0..100 (normalizado).
+export type PlumbSource = "C7+L5" | "C7" | "L5" | "frame-center";
+export interface PlumbLine {
+  x1: number; y1: number; x2: number; y2: number;
+  axisX: number;
+  source: PlumbSource;
+}
+export function calcPlumbLine(
+  landmarks: Record<string, any>,
+  imageWidth: number = 100,
+  imageHeight: number = 100,
+): PlumbLine {
+  const c7 = landmarks?.spine_c7 ?? landmarks?.c7;
+  const l5 = landmarks?.spine_l5 ?? landmarks?.l5_s1 ?? landmarks?.spine_l5_s1;
+  const valid = (p: any) => p && typeof p.x === "number" && typeof p.y === "number";
+  if (valid(c7) && valid(l5)) {
+    const axisX = (c7.x + l5.x) / 2;
+    return { x1: axisX, y1: 0, x2: axisX, y2: imageHeight, axisX, source: "C7+L5" };
+  }
+  if (valid(c7)) return { x1: c7.x, y1: 0, x2: c7.x, y2: imageHeight, axisX: c7.x, source: "C7" };
+  if (valid(l5)) return { x1: l5.x, y1: 0, x2: l5.x, y2: imageHeight, axisX: l5.x, source: "L5" };
+  const cx = imageWidth / 2;
+  return { x1: cx, y1: 0, x2: cx, y2: imageHeight, axisX: cx, source: "frame-center" };
+}
+
 // ─── Overlay (HTML + SVG hybrid for crisp labels) ────────────────
 function OverlayLayer({
   data, selected, onSelect, eduMode, chainMode, debugMode, gridMode, chains, plumbXOverride,
@@ -1186,6 +1248,22 @@ function OverlayLayer({
   const anatomicalDeviation = Math.abs(anatomicalCenterX - 50);
   const showAnatomicalLabel = anatomicalDeviation > 5;
 
+  // ── Linha de prumo dinâmica (C7/L5 pós-snap, com fallback rastreável) ──
+  const plumb = useMemo(() => {
+    const auto = calcPlumbLine(lm as any, 100, 100);
+    // honra override manual sem perder rastreabilidade
+    if (typeof plumbXOverride === "number") {
+      return { ...auto, x1: plumbXOverride, x2: plumbXOverride, axisX: plumbXOverride };
+    }
+    return auto;
+  }, [lm, plumbXOverride]);
+  useEffect(() => {
+    if (import.meta.env?.DEV) {
+      // eslint-disable-next-line no-console
+      console.debug("[APEX plumb]", plumb);
+    }
+  }, [plumb]);
+
   return (
     <>
       {/* SVG layer: lines + landmarks */}
@@ -1206,15 +1284,16 @@ function OverlayLayer({
             style={{ strokeWidth: 1 }}
           />
         )}
-        {/* Plumb line — centro anatômico */}
+        {/* Plumb line dinâmica — ancorada em C7/L5 (com fallback) */}
         <line
-          x1={anatomicalCenterX} y1={0} x2={anatomicalCenterX} y2={100}
-          stroke={C.white}
-          strokeOpacity={0.35}
+          x1={plumb.x1} y1={plumb.y1} x2={plumb.x2} y2={plumb.y2}
+          stroke={plumb.source === "frame-center" ? "#FBBF24" : C.white}
+          strokeOpacity={plumb.source === "frame-center" ? 0.5 : 0.35}
           strokeDasharray="2 1"
           vectorEffect="non-scaling-stroke"
           style={{ strokeWidth: 1.5 }}
         />
+
 
 
 
@@ -1567,8 +1646,15 @@ function OverlayLayer({
           );
         })}
 
-        {/* Plumb line label */}
-        <text x={anatomicalCenterX + 0.5} y={2.5} fontSize={2} fill={C.white} opacity={0.6}>{showAnatomicalLabel ? "Centro anatômico" : "Linha de Prumo"}</text>
+        {/* Plumb line label — com fonte do eixo (C7+L5 / C7 / L5 / frame-center) */}
+        <text x={plumb.x1 + 0.6} y={2.5} fontSize={2} fill={C.white} opacity={0.6}>
+          Linha de Prumo{plumb.source !== "C7+L5" ? ` (${plumb.source})` : ""}
+        </text>
+        {plumb.source === "frame-center" && (
+          <text x={plumb.x1 + 0.6} y={4.8} fontSize={1.6} fill="#FBBF24" opacity={0.85}>
+            ⚠ C7/L5 não detectados — usando centro do frame
+          </text>
+        )}
 
         {/* DEBUG: zona da silhueta (|x-50|<8) + caixas de colisão dos labels */}
         {debugMode && (

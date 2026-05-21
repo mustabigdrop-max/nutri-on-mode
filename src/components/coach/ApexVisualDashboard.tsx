@@ -9,7 +9,7 @@ import AthleteSelector, { AthleteOption } from "@/components/coach/AthleteSelect
 import { Upload, X, FlaskConical, RotateCcw, History, Eye, Dumbbell, CheckCircle2, Clock, FileText, Copy, Crosshair, ScanLine, Target, Activity, Zap, AlertTriangle, TrendingUp, ChevronRight, Trash2, ArrowLeft, Camera, Image } from "lucide-react";
 import { ApexSymbol } from "@/components/coach/ApexSymbol";
 import ApexEvolucao from "@/components/apex/ApexEvolucao";
-import ApexVisualOverlay, { LandmarkBundle, PhotoBundle, LandmarkView } from "@/components/coach/ApexVisualOverlay";
+import ApexVisualOverlay, { LandmarkBundle, PhotoBundle, LandmarkView, calcPlumbLine } from "@/components/coach/ApexVisualOverlay";
 import ApexPostural33Overlay, { parsePostural33 } from "@/components/coach/ApexPostural33Overlay";
 
 import VertexEnhancedView from "@/components/coach/VertexEnhancedView";
@@ -1411,6 +1411,23 @@ Suporte em uso: ${suporte || "não informado"}` : "";
         const farmMeta = parseFarmMeta(text);
         const segments = parseSegments(text);
         const landmarks = parseLandmarks(text);
+        // Auditoria retrospectiva da qualidade da linha de prumo por vista
+        const plumbQuality: Record<string, any> = {};
+        (["front", "lateral", "back"] as const).forEach((v) => {
+          const lv = (landmarks as any)[v];
+          if (lv?.landmarks) {
+            const p = calcPlumbLine(lv.landmarks, 100, 100);
+            plumbQuality[v] = {
+              source: p.source,
+              axis_x: p.axisX,
+              image_width: 100,
+              axis_percent: p.axisX / 100,
+            };
+          }
+        });
+        const landmarksWithMeta = Object.keys(landmarks).length
+          ? { ...landmarks, plumb_line_quality: plumbQuality }
+          : null;
         const scoresJson = segments.reduce((acc, s) => {
           acc[s.label] = s.score;
           return acc;
@@ -1436,7 +1453,7 @@ Suporte em uso: ${suporte || "não informado"}` : "";
           support: suporte || null,
           tdee_factor: farmMeta.tdeeFator ? parseFloat(farmMeta.tdeeFator) : null,
           protein_ideal: farmMeta.proteinaIdeal || null,
-          landmarks: Object.keys(landmarks).length ? landmarks : null,
+          landmarks: landmarksWithMeta,
           photo_front_url: pathFront,
           photo_back_url: pathBack,
           photo_side_url: pathSide,
