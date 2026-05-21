@@ -210,6 +210,41 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
   const exportRef = useRef<HTMLDivElement>(null);
   const [exporting, setExporting] = useState(false);
 
+  // ── Overlay rect tracking: corrige offset do object-fit: contain ──
+  const photoWrapperRef = useRef<HTMLDivElement>(null);
+  const imgRef = useRef<HTMLImageElement>(null);
+  const [imgRect, setImgRect] = useState<{ left: number; top: number; width: number; height: number } | null>(null);
+
+  useEffect(() => {
+    const recompute = () => {
+      const wrap = photoWrapperRef.current;
+      const img = imgRef.current;
+      if (!wrap || !img) return;
+      const cw = wrap.clientWidth;
+      const ch = wrap.clientHeight;
+      const nw = img.naturalWidth;
+      const nh = img.naturalHeight;
+      if (!cw || !ch || !nw || !nh) return;
+      const scale = Math.min(cw / nw, ch / nh);
+      const width = nw * scale;
+      const height = nh * scale;
+      const left = (cw - width) / 2;
+      const top = (ch - height) / 2;
+      setImgRect({ left, top, width, height });
+    };
+    recompute();
+    const img = imgRef.current;
+    img?.addEventListener("load", recompute);
+    const ro = typeof ResizeObserver !== "undefined" ? new ResizeObserver(recompute) : null;
+    if (ro && photoWrapperRef.current) ro.observe(photoWrapperRef.current);
+    window.addEventListener("resize", recompute);
+    return () => {
+      img?.removeEventListener("load", recompute);
+      ro?.disconnect();
+      window.removeEventListener("resize", recompute);
+    };
+  }, [view, photos]);
+
   useEffect(() => {
     try { localStorage.setItem("apex-edu-mode", eduMode ? "1" : "0"); } catch {}
   }, [eduMode]);
@@ -527,6 +562,7 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
         >
           {photoUrl ? (
             <div
+              ref={photoWrapperRef}
               className="relative"
               style={{
                 position: "relative",
@@ -538,6 +574,7 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
               }}
             >
               <img
+                ref={imgRef}
                 src={photoUrl}
                 alt={`Foto ${view}`}
                 crossOrigin="anonymous"
@@ -549,14 +586,14 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
                   objectPosition: "center center",
                 }}
               />
-              {data && (
+              {data && imgRect && (
                 <div
                   style={{
                     position: "absolute",
-                    top: 0,
-                    left: 0,
-                    width: "100%",
-                    height: "100%",
+                    top: imgRect.top,
+                    left: imgRect.left,
+                    width: imgRect.width,
+                    height: imgRect.height,
                     pointerEvents: "none",
                   }}
                 >
