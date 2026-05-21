@@ -281,9 +281,13 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
             : "Eixo escapular dentro do normal.",
         };
       }
-      // FIX 3 — Spine deviation calculado de C7→L5
-      const c7 = data.landmarks.spine_c7;
-      const l5 = data.landmarks.spine_l5;
+      // FIX 3 — Spine deviation calculado de C7→L5 (com snap anatômico)
+      // C7 e L5 são âncoras do prumo: sem landmarks torácicos intermediários,
+      // o desvio lateral é 0° por definição. Escoliose funcional só pode ser
+      // medida com pontos torácicos intermediários (T1–T12).
+      const snappedSpine = snapToPlumbLine(data.landmarks, 100);
+      const c7 = snappedSpine.spine_c7;
+      const l5 = snappedSpine.spine_l5;
       if (isValidPoint(c7) && isValidPoint(l5)) {
         const dx = l5.x - c7.x;
         const dy = l5.y - c7.y;
@@ -296,7 +300,7 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
           normal: "<1°",
           finding: Math.abs(v) > 1
             ? `Coluna desviada ${Math.abs(v)}° para ${v > 0 ? "direita" : "esquerda"}. Avaliar escoliose funcional vs estrutural.`
-            : "Coluna alinhada verticalmente. ✓",
+            : "Coluna alinhada no eixo de prumo C7→L5 (âncoras anatômicas). ✓",
         };
       }
     }
@@ -1014,6 +1018,32 @@ function anchorLandmark(view: string, key: string): string {
   return "";
 }
 
+// ─── Snap anatômico C7/L5 à linha de prumo ───────────────────────
+// C7 e L5 são vértebras da coluna — por definição anatômica devem
+// estar sobre o eixo gravitacional sagital mediano. Desvios em X
+// nesses pontos são erro de detecção, não desvio postural.
+// Sistema de coordenadas: viewBox 0..100 (normalizado), centro = 50.
+const SNAP_LANDMARK_KEYS = ["spine_c7", "spine_l5", "c7", "l5_s1", "spine_l5_s1"] as const;
+function snapToPlumbLine<T extends Record<string, any>>(
+  landmarks: T,
+  imageWidth: number = 100,
+): T {
+  const centerX = imageWidth / 2;
+  const out: any = { ...landmarks };
+  for (const key of SNAP_LANDMARK_KEYS) {
+    const p = (landmarks as any)[key];
+    if (p && typeof p.x === "number") {
+      const originalX = p.x;
+      out[key] = { ...p, x: centerX, snapped: true, originalX };
+      if (import.meta.env?.DEV) {
+        // eslint-disable-next-line no-console
+        console.debug(`[APEX snap] ${key}: x=${originalX.toFixed(2)} → ${centerX} (Δ=${(originalX - centerX).toFixed(2)})`);
+      }
+    }
+  }
+  return out as T;
+}
+
 // ─── Overlay (HTML + SVG hybrid for crisp labels) ────────────────
 function OverlayLayer({
   data, selected, onSelect, eduMode, chainMode, debugMode, gridMode, chains, plumbXOverride,
@@ -1028,7 +1058,7 @@ function OverlayLayer({
   chains: { name: string; nodes: string[]; description: string }[];
   plumbXOverride?: number | null;
 }) {
-  const lm = data.landmarks;
+  const lm = useMemo(() => snapToPlumbLine(data.landmarks, 100), [data.landmarks]);
   const ang = data.angles;
 
   // Pre-compute label positions with collision avoidance
@@ -1289,8 +1319,16 @@ function OverlayLayer({
                     />
                   )}
                   {/* Âncoras destacadas (círculo maior) */}
-                  <circle cx={c7.x} cy={c7.y} r={1.6} fill={lineColor} stroke="#000" vectorEffect="non-scaling-stroke" style={{ strokeWidth: 1 }} />
-                  <circle cx={l5.x} cy={l5.y} r={1.6} fill={lineColor} stroke="#000" vectorEffect="non-scaling-stroke" style={{ strokeWidth: 1 }} />
+                  <circle cx={c7.x} cy={c7.y} r={1.6} fill={lineColor} stroke="#000" vectorEffect="non-scaling-stroke" style={{ strokeWidth: 1 }}>
+                    {(c7 as any).snapped && (
+                      <title>C7 — 📐 Ancorado na linha de prumo (referência anatômica fixa). Detecção IA originalX={typeof (c7 as any).originalX === "number" ? (c7 as any).originalX.toFixed(1) : "—"}</title>
+                    )}
+                  </circle>
+                  <circle cx={l5.x} cy={l5.y} r={1.6} fill={lineColor} stroke="#000" vectorEffect="non-scaling-stroke" style={{ strokeWidth: 1 }}>
+                    {(l5 as any).snapped && (
+                      <title>L5 — 📐 Ancorado na linha de prumo (referência anatômica fixa). Detecção IA originalX={typeof (l5 as any).originalX === "number" ? (l5 as any).originalX.toFixed(1) : "—"}</title>
+                    )}
+                  </circle>
                   {/* Conector do badge até a linha */}
                   <line
                     x1={mxS} y1={myS} x2={bx} y2={by}
@@ -1317,9 +1355,9 @@ function OverlayLayer({
                   >
                     {label}
                   </text>
-                  {/* mini-tag C7/L5 nas pontas */}
-                  <text x={c7.x + 2} y={c7.y + 0.6} fill={lineColor} fontSize={1.7} fontWeight={700} style={{ pointerEvents: "none", paintOrder: "stroke" }} stroke="#000" strokeWidth={0.4}>C7</text>
-                  <text x={l5.x + 2} y={l5.y + 0.6} fill={lineColor} fontSize={1.7} fontWeight={700} style={{ pointerEvents: "none", paintOrder: "stroke" }} stroke="#000" strokeWidth={0.4}>L5</text>
+                  {/* mini-tag C7/L5 nas pontas (📐 indica âncora anatômica fixa) */}
+                  <text x={c7.x + 2} y={c7.y + 0.6} fill={lineColor} fontSize={1.7} fontWeight={700} style={{ pointerEvents: "none", paintOrder: "stroke" }} stroke="#000" strokeWidth={0.4}>{(c7 as any).snapped ? "C7 📐" : "C7"}</text>
+                  <text x={l5.x + 2} y={l5.y + 0.6} fill={lineColor} fontSize={1.7} fontWeight={700} style={{ pointerEvents: "none", paintOrder: "stroke" }} stroke="#000" strokeWidth={0.4}>{(l5 as any).snapped ? "L5 📐" : "L5"}</text>
                 </g>
               );
             })()}
