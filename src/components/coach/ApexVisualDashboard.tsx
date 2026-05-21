@@ -1829,6 +1829,13 @@ Suporte em uso: ${suporte || "não informado"}` : "";
               <GenerateTrainingButton onClick={handleGenerateTraining} loading={generatingTraining} />
             </div>
           )}
+          {activeResultTab === "timeline" && (
+            <ApexTimelineTab
+              athleteId={athlete?.id || null}
+              coachId={coachId || null}
+              athleteName={athlete?.nome}
+            />
+          )}
         </div>
 
         {/* Sync status badge */}
