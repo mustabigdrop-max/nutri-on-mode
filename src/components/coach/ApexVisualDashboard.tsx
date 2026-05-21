@@ -1933,7 +1933,7 @@ Suporte em uso: ${suporte || "não informado"}` : "";
         padding: "20px 24px", marginBottom: 20, position: "relative", overflow: "hidden",
       }}>
         <button
-          onClick={() => navigate("/coach")}
+          onClick={() => navigate("/coach/hub")}
           className="absolute top-4 right-4 inline-flex items-center gap-1.5 px-3 py-1.5 rounded border transition-all hover:brightness-110"
           style={{
             borderColor: `${APEX.gold}44`,
