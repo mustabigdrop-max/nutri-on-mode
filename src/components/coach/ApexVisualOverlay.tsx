@@ -1044,6 +1044,33 @@ function snapToPlumbLine<T extends Record<string, any>>(
   return out as T;
 }
 
+// ─── Linha de prumo dinâmica ─────────────────────────────────────
+// Eixo gravitacional real do atleta — calculado a partir de C7/L5
+// pós-snap. Sistema de coordenadas: viewBox 0..100 (normalizado).
+export type PlumbSource = "C7+L5" | "C7" | "L5" | "frame-center";
+export interface PlumbLine {
+  x1: number; y1: number; x2: number; y2: number;
+  axisX: number;
+  source: PlumbSource;
+}
+export function calcPlumbLine(
+  landmarks: Record<string, any>,
+  imageWidth: number = 100,
+  imageHeight: number = 100,
+): PlumbLine {
+  const c7 = landmarks?.spine_c7 ?? landmarks?.c7;
+  const l5 = landmarks?.spine_l5 ?? landmarks?.l5_s1 ?? landmarks?.spine_l5_s1;
+  const valid = (p: any) => p && typeof p.x === "number" && typeof p.y === "number";
+  if (valid(c7) && valid(l5)) {
+    const axisX = (c7.x + l5.x) / 2;
+    return { x1: axisX, y1: 0, x2: axisX, y2: imageHeight, axisX, source: "C7+L5" };
+  }
+  if (valid(c7)) return { x1: c7.x, y1: 0, x2: c7.x, y2: imageHeight, axisX: c7.x, source: "C7" };
+  if (valid(l5)) return { x1: l5.x, y1: 0, x2: l5.x, y2: imageHeight, axisX: l5.x, source: "L5" };
+  const cx = imageWidth / 2;
+  return { x1: cx, y1: 0, x2: cx, y2: imageHeight, axisX: cx, source: "frame-center" };
+}
+
 // ─── Overlay (HTML + SVG hybrid for crisp labels) ────────────────
 function OverlayLayer({
   data, selected, onSelect, eduMode, chainMode, debugMode, gridMode, chains, plumbXOverride,
