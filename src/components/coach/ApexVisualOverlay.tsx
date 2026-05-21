@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import html2canvas from "html2canvas";
-import { Download, ChevronDown, BookOpen, Link2, Eye } from "lucide-react";
+import { Download, ChevronDown, BookOpen, Link2, Eye, Crosshair } from "lucide-react";
+import { toast } from "sonner";
 import { CYCLE_PHASE_INFO, type CyclePhase } from "@/lib/feminine";
 
 // ─── Types ───────────────────────────────────────────────────────
@@ -209,6 +210,14 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
   const [gridMode, setGridMode] = useState<boolean>(false);
   const exportRef = useRef<HTMLDivElement>(null);
   const [exporting, setExporting] = useState(false);
+
+  // ── Ajuste manual do prumo (por vista) ─────────────────────────
+  const [manualMode, setManualMode] = useState(false);
+  const [showPlumbInstruction, setShowPlumbInstruction] = useState(false);
+  const [manualPlumb, setManualPlumb] = useState<Record<"front" | "lateral" | "back", number | null>>({
+    front: null, lateral: null, back: null,
+  });
+  const instructionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // ── Overlay rect tracking: corrige offset do object-fit: contain ──
   const photoWrapperRef = useRef<HTMLDivElement>(null);
@@ -425,6 +434,64 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
     }
   };
 
+  // ── Sugestão de onde clicar para alinhar o prumo (coords 0..100) ──
+  const plumbSuggestion = useMemo<{ x: number; y: number; label: string }>(() => {
+    const lm = data?.landmarks || ({} as Record<string, Landmark>);
+    if (view === "front") {
+      const sL = (lm as any).shoulder_left;
+      const sR = (lm as any).shoulder_right;
+      const x = isValidPoint(sL) && isValidPoint(sR) ? (sL.x + sR.x) / 2 : 50;
+      const y = isValidPoint(sL) && isValidPoint(sR) ? (sL.y + sR.y) / 2 + 4 : 24;
+      return { x, y, label: "Clique no centro do esterno, entre os dois ombros" };
+    }
+    if (view === "lateral") {
+      const ear = (lm as any).ear ?? (lm as any).ear_left ?? (lm as any).ear_right;
+      const ankle = (lm as any).ankle_lateral;
+      if (isValidPoint(ear)) return { x: ear.x, y: ear.y, label: "Clique no lóbulo da orelha ou centro do tornozelo" };
+      if (isValidPoint(ankle)) return { x: ankle.x, y: ankle.y, label: "Clique no lóbulo da orelha ou centro do tornozelo" };
+      return { x: 50, y: 12, label: "Clique no lóbulo da orelha ou centro do tornozelo" };
+    }
+    const sL = (lm as any).shoulder_left;
+    const sR = (lm as any).shoulder_right;
+    const c7 = (lm as any).spine_c7;
+    if (isValidPoint(c7)) return { x: c7.x, y: c7.y, label: "Clique no ponto central entre os dois ombros, na base do pescoço" };
+    if (isValidPoint(sL) && isValidPoint(sR)) {
+      return { x: (sL.x + sR.x) / 2, y: Math.min(sL.y, sR.y) - 2, label: "Clique no ponto central entre os dois ombros, na base do pescoço" };
+    }
+    return { x: 50, y: 15, label: "Clique no ponto central entre os dois ombros, na base do pescoço" };
+  }, [view, data]);
+
+  const activateManualMode = () => {
+    if (manualMode) {
+      setManualMode(false);
+      setShowPlumbInstruction(false);
+      if (instructionTimerRef.current) clearTimeout(instructionTimerRef.current);
+      return;
+    }
+    setManualMode(true);
+    setShowPlumbInstruction(true);
+    if (instructionTimerRef.current) clearTimeout(instructionTimerRef.current);
+    instructionTimerRef.current = setTimeout(() => setShowPlumbInstruction(false), 3000);
+  };
+
+  useEffect(() => () => { if (instructionTimerRef.current) clearTimeout(instructionTimerRef.current); }, []);
+
+  const handlePlumbClick: React.MouseEventHandler<HTMLDivElement> = (e) => {
+    if (!manualMode || !imgRect) return;
+    if (showPlumbInstruction) return;
+    const rect = (e.currentTarget as HTMLDivElement).getBoundingClientRect();
+    const cx = e.clientX - rect.left;
+    const xInImg = ((cx - imgRect.left) / imgRect.width) * 100;
+    const clamped = Math.max(0, Math.min(100, xInImg));
+    setManualPlumb((prev) => ({ ...prev, [view]: clamped }));
+    setManualMode(false);
+    const distPct = Math.abs(clamped - plumbSuggestion.x);
+    if (distPct > 20) {
+      toast("Prumo ajustado. Você pode reajustar clicando em ⊕ novamente.");
+    }
+  };
+
+
   return (
     <div className="space-y-4">
       <style>{`
@@ -511,6 +578,19 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
             🐛 Debug
           </button>
           <button
+            onClick={activateManualMode}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg border"
+            style={{
+              borderColor: manualMode ? C.gold : "hsl(var(--border))",
+              color: manualMode ? C.gold : "hsl(var(--muted-foreground))",
+              background: manualMode ? `${C.gold}1A` : "transparent",
+            }}
+            title="Ajustar manualmente a Linha de Prumo"
+          >
+            <Crosshair className="w-3.5 h-3.5" />
+            ⊕ Ajustar Prumo
+          </button>
+          <button
             onClick={handleExport}
             disabled={exporting}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg border hover:bg-muted disabled:opacity-50"
@@ -563,6 +643,7 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
           {photoUrl ? (
             <div
               ref={photoWrapperRef}
+              onClick={handlePlumbClick}
               className="relative"
               style={{
                 position: "relative",
@@ -571,6 +652,7 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
+                cursor: manualMode && !showPlumbInstruction ? "crosshair" : "default",
               }}
             >
               <img
@@ -607,7 +689,50 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
                     debugMode={debugMode}
                     gridMode={gridMode}
                     chains={chains}
+                    plumbXOverride={manualPlumb[view]}
                   />
+                  {/* Pulse de sugestão durante o modo manual */}
+                  {manualMode && !showPlumbInstruction && (
+                    <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 w-full h-full pointer-events-none" style={{ overflow: "visible" }}>
+                      <style>{`@keyframes apexPlumbPulse {0%{r:2;opacity:.9}50%{r:4;opacity:.35}100%{r:2;opacity:.9}}`}</style>
+                      <circle cx={plumbSuggestion.x} cy={plumbSuggestion.y} r={3} fill="none" stroke="#B8922A" strokeWidth={0.6} vectorEffect="non-scaling-stroke" style={{ animation: "apexPlumbPulse 1.4s ease-in-out infinite", transformOrigin: "center" }} />
+                      <circle cx={plumbSuggestion.x} cy={plumbSuggestion.y} r={0.7} fill="#B8922A" />
+                    </svg>
+                  )}
+                </div>
+              )}
+              {/* Overlay de instrução do prumo */}
+              {manualMode && showPlumbInstruction && (
+                <div
+                  className="absolute inset-0 z-20 flex items-center justify-center p-4"
+                  style={{ background: "rgba(0,0,0,0.55)" }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div
+                    className="max-w-xs w-full rounded-xl p-5 text-center"
+                    style={{ background: "rgba(10,10,18,0.95)", border: `1px solid ${C.gold}` }}
+                  >
+                    <div className="text-xs font-bold tracking-widest mb-2" style={{ color: C.gold }}>🎯 ALINHE O PRUMO</div>
+                    <div className="text-sm text-white/90 mb-3">{plumbSuggestion.label}</div>
+                    <svg viewBox="0 0 60 80" className="mx-auto mb-3" style={{ width: 70, height: 90 }}>
+                      <ellipse cx={30} cy={12} rx={7} ry={8} fill="none" stroke="#B8922A" strokeWidth={1.2} />
+                      <path d={`M18 22 Q30 18 42 22 L40 55 L34 78 L30 60 L26 78 L20 55 Z`} fill="none" stroke="#B8922A" strokeWidth={1.2} />
+                      <circle cx={30} cy={22} r={2.5} fill="#B8922A">
+                        <animate attributeName="r" values="2.5;4;2.5" dur="1.2s" repeatCount="indefinite" />
+                        <animate attributeName="opacity" values="1;.4;1" dur="1.2s" repeatCount="indefinite" />
+                      </circle>
+                    </svg>
+                    <button
+                      onClick={() => {
+                        setShowPlumbInstruction(false);
+                        if (instructionTimerRef.current) clearTimeout(instructionTimerRef.current);
+                      }}
+                      className="px-4 py-1.5 rounded-md text-xs font-bold"
+                      style={{ background: C.gold, color: "#0a0a12" }}
+                    >
+                      Entendi
+                    </button>
+                  </div>
                 </div>
               )}
               {/* MELHORIA 2 — Quality badge */}
@@ -891,7 +1016,7 @@ function anchorLandmark(view: string, key: string): string {
 
 // ─── Overlay (HTML + SVG hybrid for crisp labels) ────────────────
 function OverlayLayer({
-  data, selected, onSelect, eduMode, chainMode, debugMode, gridMode, chains,
+  data, selected, onSelect, eduMode, chainMode, debugMode, gridMode, chains, plumbXOverride,
 }: {
   data: LandmarkView;
   selected: string | null;
@@ -901,6 +1026,7 @@ function OverlayLayer({
   debugMode: boolean;
   gridMode: boolean;
   chains: { name: string; nodes: string[]; description: string }[];
+  plumbXOverride?: number | null;
 }) {
   const lm = data.landmarks;
   const ang = data.angles;
@@ -1025,8 +1151,8 @@ function OverlayLayer({
     if (isValidPoint(l5)) return l5.x;
     return 50;
   };
-  const anatomicalCenterX = calcAnatomicalCenter();
-
+  const autoCenterX = calcAnatomicalCenter();
+  const anatomicalCenterX = typeof plumbXOverride === "number" ? plumbXOverride : autoCenterX;
   const anatomicalDeviation = Math.abs(anatomicalCenterX - 50);
   const showAnatomicalLabel = anatomicalDeviation > 5;
 
