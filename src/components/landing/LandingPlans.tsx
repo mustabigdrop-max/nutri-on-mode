@@ -371,8 +371,8 @@ const LandingPlans = () => {
                 <div className="font-mono text-[.6rem] text-[#6060a0] mt-1.5 leading-relaxed">
                   Geração Avançada · Nutrição Esportiva · Protocolo PCA · Crononutrição
                 </div>
-                <div className="font-mono text-[.6rem] text-[#4a8a5a] mt-1.5 leading-relaxed flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#4a8a5a]" />
+                <div className="mt-2 inline-flex items-center gap-2 font-mono text-[.72rem] font-semibold tracking-wide px-2.5 py-1 rounded-md bg-[#4a8a5a]/15 text-[#7dd3a0] border border-[#4a8a5a]/25">
+                  <span className="w-2 h-2 rounded-full bg-[#7dd3a0] animate-pulse" />
                   Para nutricionistas e nutrition coaches
                 </div>
               </div>
@@ -387,8 +387,8 @@ const LandingPlans = () => {
                 <div className="font-mono text-[.6rem] text-[#6060a0] mt-1.5 leading-relaxed">
                   Prescrição individualizada · 27 sistemas · STRATUM 7 camadas
                 </div>
-                <div className="font-mono text-[.6rem] text-[#1D9E75] mt-1.5 leading-relaxed flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#1D9E75]" />
+                <div className="mt-2 inline-flex items-center gap-2 font-mono text-[.72rem] font-semibold tracking-wide px-2.5 py-1 rounded-md bg-[#1D9E75]/15 text-[#4adeb0] border border-[#1D9E75]/25">
+                  <span className="w-2 h-2 rounded-full bg-[#4adeb0] animate-pulse" />
                   Para personais e treinadores
                 </div>
                 <div className="flex flex-wrap gap-1 mt-3">
