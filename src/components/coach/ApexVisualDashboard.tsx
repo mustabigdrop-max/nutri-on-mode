@@ -11,6 +11,7 @@ import { ApexSymbol } from "@/components/coach/ApexSymbol";
 import ApexEvolucao from "@/components/apex/ApexEvolucao";
 import ApexVisualOverlay, { LandmarkBundle, PhotoBundle, LandmarkView, calcPlumbLine } from "@/components/coach/ApexVisualOverlay";
 import ApexPostural33Overlay, { parsePostural33 } from "@/components/coach/ApexPostural33Overlay";
+import ApexTimelineTab from "@/components/coach/ApexTimelineTab";
 
 import VertexEnhancedView from "@/components/coach/VertexEnhancedView";
 import { ApexScoreGauge, InsightCard, PosturaCards, CorrecoesCards, ProtocoloCards } from "@/components/coach/ApexResultCards";
@@ -1581,6 +1582,7 @@ Suporte em uso: ${suporte || "não informado"}` : "";
       ...(hasFarmacologia ? [{ key: "farmacologia", label: "💉 Farmacologia" }] : []),
       { key: "palco", label: "Palco" },
       { key: "plano", label: "Plano" },
+      { key: "timeline", label: "📅 Timeline" },
     ];
 
     return (
@@ -1825,6 +1827,13 @@ Suporte em uso: ${suporte || "não informado"}` : "";
               )}
               <GenerateTrainingButton onClick={handleGenerateTraining} loading={generatingTraining} />
             </div>
+          )}
+          {activeResultTab === "timeline" && (
+            <ApexTimelineTab
+              athleteId={athlete?.id || null}
+              coachId={coachId || null}
+              athleteName={athlete?.nome}
+            />
           )}
         </div>
 
