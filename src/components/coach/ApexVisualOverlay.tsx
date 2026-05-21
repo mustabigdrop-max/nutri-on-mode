@@ -1660,22 +1660,34 @@ function OverlayLayer({
           />
         ))}
 
-        {/* Landmarks: cor por severidade clínica do achado relacionado */}
+        {/* Landmarks: confiança da detecção (base) + severidade clínica (override crítico) */}
         {labelPositions.map((q) => {
           const isPrimary = PRIMARY.has(q.key);
           const sev = landmarkSeverity(q.key, ang);
-          const { fill, stroke, pulse } = landmarkColor(sev);
+          const conf = estimateConfidence(q.key, (lm as any)[q.key]);
+          const confStyle = getConfidenceStyle(conf);
+          const isCritical = sev === "sev" || sev === "alt";
+          // Severidade crítica sobrepõe estilo de confiança (sinal clínico tem prioridade visual)
+          const { fill, stroke, pulse } = isCritical ? landmarkColor(sev) : { fill: confStyle.fill, stroke: confStyle.stroke, pulse: false };
+          const radius = (isPrimary ? 1.1 : 0.75) * (isCritical ? 1 : confStyle.radius / 1.0);
+          const pct = Math.round(conf * 100);
           return (
             <circle
               key={`pt-${q.key}`}
               cx={q.px} cy={q.py}
-              r={isPrimary ? 1.1 : 0.75}
+              r={isCritical ? (isPrimary ? 1.1 : 0.75) : confStyle.radius}
               fill={fill}
               stroke={stroke}
+              strokeDasharray={isCritical ? undefined : confStyle.dash}
               vectorEffect="non-scaling-stroke"
               className={pulse ? "apex-landmark-pulse" : undefined}
-              style={{ strokeWidth: isPrimary ? 2 : 1.5 }}
-            />
+              opacity={isCritical ? 1 : confStyle.opacity}
+              style={{ strokeWidth: isCritical ? (isPrimary ? 2 : 1.5) : confStyle.strokeWidth }}
+            >
+              <title>
+                {(lm as any)[q.key]?.label || q.key} — Confiança: {pct}%{conf < 0.65 ? " ⚠ detecção instável" : ""}
+              </title>
+            </circle>
           );
         })}
 
