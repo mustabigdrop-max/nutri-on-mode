@@ -434,6 +434,64 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
     }
   };
 
+  // ── Sugestão de onde clicar para alinhar o prumo (coords 0..100) ──
+  const plumbSuggestion = useMemo<{ x: number; y: number; label: string }>(() => {
+    const lm = data?.landmarks || ({} as Record<string, Landmark>);
+    if (view === "front") {
+      const sL = (lm as any).shoulder_left;
+      const sR = (lm as any).shoulder_right;
+      const x = isValidPoint(sL) && isValidPoint(sR) ? (sL.x + sR.x) / 2 : 50;
+      const y = isValidPoint(sL) && isValidPoint(sR) ? (sL.y + sR.y) / 2 + 4 : 24;
+      return { x, y, label: "Clique no centro do esterno, entre os dois ombros" };
+    }
+    if (view === "lateral") {
+      const ear = (lm as any).ear ?? (lm as any).ear_left ?? (lm as any).ear_right;
+      const ankle = (lm as any).ankle_lateral;
+      if (isValidPoint(ear)) return { x: ear.x, y: ear.y, label: "Clique no lóbulo da orelha ou centro do tornozelo" };
+      if (isValidPoint(ankle)) return { x: ankle.x, y: ankle.y, label: "Clique no lóbulo da orelha ou centro do tornozelo" };
+      return { x: 50, y: 12, label: "Clique no lóbulo da orelha ou centro do tornozelo" };
+    }
+    const sL = (lm as any).shoulder_left;
+    const sR = (lm as any).shoulder_right;
+    const c7 = (lm as any).spine_c7;
+    if (isValidPoint(c7)) return { x: c7.x, y: c7.y, label: "Clique no ponto central entre os dois ombros, na base do pescoço" };
+    if (isValidPoint(sL) && isValidPoint(sR)) {
+      return { x: (sL.x + sR.x) / 2, y: Math.min(sL.y, sR.y) - 2, label: "Clique no ponto central entre os dois ombros, na base do pescoço" };
+    }
+    return { x: 50, y: 15, label: "Clique no ponto central entre os dois ombros, na base do pescoço" };
+  }, [view, data]);
+
+  const activateManualMode = () => {
+    if (manualMode) {
+      setManualMode(false);
+      setShowPlumbInstruction(false);
+      if (instructionTimerRef.current) clearTimeout(instructionTimerRef.current);
+      return;
+    }
+    setManualMode(true);
+    setShowPlumbInstruction(true);
+    if (instructionTimerRef.current) clearTimeout(instructionTimerRef.current);
+    instructionTimerRef.current = setTimeout(() => setShowPlumbInstruction(false), 3000);
+  };
+
+  useEffect(() => () => { if (instructionTimerRef.current) clearTimeout(instructionTimerRef.current); }, []);
+
+  const handlePlumbClick: React.MouseEventHandler<HTMLDivElement> = (e) => {
+    if (!manualMode || !imgRect) return;
+    if (showPlumbInstruction) return;
+    const rect = (e.currentTarget as HTMLDivElement).getBoundingClientRect();
+    const cx = e.clientX - rect.left;
+    const xInImg = ((cx - imgRect.left) / imgRect.width) * 100;
+    const clamped = Math.max(0, Math.min(100, xInImg));
+    setManualPlumb((prev) => ({ ...prev, [view]: clamped }));
+    setManualMode(false);
+    const distPct = Math.abs(clamped - plumbSuggestion.x);
+    if (distPct > 20) {
+      toast("Prumo ajustado. Você pode reajustar clicando em ⊕ novamente.");
+    }
+  };
+
+
   return (
     <div className="space-y-4">
       <style>{`
