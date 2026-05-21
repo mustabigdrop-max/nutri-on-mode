@@ -643,6 +643,7 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
           {photoUrl ? (
             <div
               ref={photoWrapperRef}
+              onClick={handlePlumbClick}
               className="relative"
               style={{
                 position: "relative",
@@ -651,6 +652,7 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
+                cursor: manualMode && !showPlumbInstruction ? "crosshair" : "default",
               }}
             >
               <img
@@ -687,7 +689,50 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
                     debugMode={debugMode}
                     gridMode={gridMode}
                     chains={chains}
+                    plumbXOverride={manualPlumb[view]}
                   />
+                  {/* Pulse de sugestão durante o modo manual */}
+                  {manualMode && !showPlumbInstruction && (
+                    <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 w-full h-full pointer-events-none" style={{ overflow: "visible" }}>
+                      <style>{`@keyframes apexPlumbPulse {0%{r:2;opacity:.9}50%{r:4;opacity:.35}100%{r:2;opacity:.9}}`}</style>
+                      <circle cx={plumbSuggestion.x} cy={plumbSuggestion.y} r={3} fill="none" stroke="#B8922A" strokeWidth={0.6} vectorEffect="non-scaling-stroke" style={{ animation: "apexPlumbPulse 1.4s ease-in-out infinite", transformOrigin: "center" }} />
+                      <circle cx={plumbSuggestion.x} cy={plumbSuggestion.y} r={0.7} fill="#B8922A" />
+                    </svg>
+                  )}
+                </div>
+              )}
+              {/* Overlay de instrução do prumo */}
+              {manualMode && showPlumbInstruction && (
+                <div
+                  className="absolute inset-0 z-20 flex items-center justify-center p-4"
+                  style={{ background: "rgba(0,0,0,0.55)" }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div
+                    className="max-w-xs w-full rounded-xl p-5 text-center"
+                    style={{ background: "rgba(10,10,18,0.95)", border: `1px solid ${C.gold}` }}
+                  >
+                    <div className="text-xs font-bold tracking-widest mb-2" style={{ color: C.gold }}>🎯 ALINHE O PRUMO</div>
+                    <div className="text-sm text-white/90 mb-3">{plumbSuggestion.label}</div>
+                    <svg viewBox="0 0 60 80" className="mx-auto mb-3" style={{ width: 70, height: 90 }}>
+                      <ellipse cx={30} cy={12} rx={7} ry={8} fill="none" stroke="#B8922A" strokeWidth={1.2} />
+                      <path d={`M18 22 Q30 18 42 22 L40 55 L34 78 L30 60 L26 78 L20 55 Z`} fill="none" stroke="#B8922A" strokeWidth={1.2} />
+                      <circle cx={30} cy={22} r={2.5} fill="#B8922A">
+                        <animate attributeName="r" values="2.5;4;2.5" dur="1.2s" repeatCount="indefinite" />
+                        <animate attributeName="opacity" values="1;.4;1" dur="1.2s" repeatCount="indefinite" />
+                      </circle>
+                    </svg>
+                    <button
+                      onClick={() => {
+                        setShowPlumbInstruction(false);
+                        if (instructionTimerRef.current) clearTimeout(instructionTimerRef.current);
+                      }}
+                      className="px-4 py-1.5 rounded-md text-xs font-bold"
+                      style={{ background: C.gold, color: "#0a0a12" }}
+                    >
+                      Entendi
+                    </button>
+                  </div>
                 </div>
               )}
               {/* MELHORIA 2 — Quality badge */}
