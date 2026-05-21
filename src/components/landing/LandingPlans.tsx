@@ -586,31 +586,31 @@ const LandingPlans = () => {
             </p>
           </div>
 
-          {/* CARD — ACESSO TOTAL */}
+          {/* CARD — MASTER */}
           <div
             className="relative rounded-xl p-6 overflow-hidden transition-all hover:-translate-y-1 md:col-span-2"
             style={{
               background: "linear-gradient(135deg, #0d0d1f 0%, #1a0f00 100%)",
-              border: "1.5px solid #B8922A55",
-              boxShadow: "0 0 30px #B8922A10",
+              border: "1.5px solid #7C3AED55",
+              boxShadow: "0 0 30px #7C3AED10",
             }}
           >
             <div className="flex items-center justify-between mb-4">
               <span
                 className="font-mono text-[10px] font-bold rounded-full px-2.5 py-0.5"
-                style={{ background: "#B8922A20", border: "1px solid #B8922A55", color: "#B8922A" }}
+                style={{ background: "#7C3AED20", border: "1px solid #7C3AED55", color: "#7C3AED" }}
               >
                 PROFISSIONAL
               </span>
               <span
                 className="font-mono text-[10px] font-bold rounded-full px-2.5 py-1"
-                style={{ background: "#B8922A", color: "#0a0a1a" }}
+                style={{ background: "#7C3AED", color: "#0a0a1a" }}
               >
-                ACESSO TOTAL
+                MASTER
               </span>
             </div>
 
-            <div className="font-heading font-bold text-white text-[24px] leading-none tracking-wide">ACESSO TOTAL</div>
+            <div className="font-heading font-bold text-white text-[24px] leading-none tracking-wide">MASTER</div>
             <div className="font-mono text-[11px] mt-1.5" style={{ color: "#888" }}>
               Todos os módulos. Sem restrições. Alunos ilimitados.
             </div>
