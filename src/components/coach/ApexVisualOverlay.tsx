@@ -211,6 +211,14 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
   const exportRef = useRef<HTMLDivElement>(null);
   const [exporting, setExporting] = useState(false);
 
+  // ── Ajuste manual do prumo (por vista) ─────────────────────────
+  const [manualMode, setManualMode] = useState(false);
+  const [showPlumbInstruction, setShowPlumbInstruction] = useState(false);
+  const [manualPlumb, setManualPlumb] = useState<Record<"front" | "lateral" | "back", number | null>>({
+    front: null, lateral: null, back: null,
+  });
+  const instructionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   // ── Overlay rect tracking: corrige offset do object-fit: contain ──
   const photoWrapperRef = useRef<HTMLDivElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
