@@ -482,37 +482,37 @@ const LandingPlans = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          {/* CARD — NUTRION TRIO */}
+          {/* CARD — NUTRION PERFORMANCE */}
           <div
             className="relative rounded-xl p-6 overflow-hidden transition-all hover:-translate-y-1"
             style={{
               background: "linear-gradient(135deg, #0d0d1f 0%, #1a0f00 100%)",
-              border: "1.5px solid #B8922A55",
-              boxShadow: "0 0 30px #B8922A10",
+              border: "1.5px solid #FF6B0055",
+              boxShadow: "0 0 30px #FF6B0010",
             }}
           >
             <div className="flex items-center justify-between mb-4">
               <span
                 className="font-mono text-[10px] font-bold rounded-full px-2.5 py-0.5"
-                style={{ background: "#B8922A20", border: "1px solid #B8922A55", color: "#B8922A" }}
+                style={{ background: "#FF6B0020", border: "1px solid #FF6B0055", color: "#FF6B00" }}
               >
                 PROFISSIONAL
               </span>
               <span
                 className="font-mono text-[10px] font-bold rounded-full px-2.5 py-0.5"
-                style={{ background: "#B8922A", color: "#0a0a1a" }}
+                style={{ background: "#FF6B00", color: "#0a0a1a" }}
               >
-                TRIO COMPLETO
+                PERFORMANCE COMPLETO
               </span>
             </div>
 
-            <div className="font-heading font-bold text-white text-[24px] leading-none tracking-wide">TRIO</div>
+            <div className="font-heading font-bold text-white text-[24px] leading-none tracking-wide">PERFORMANCE</div>
             <div className="font-mono text-[11px] mt-1.5" style={{ color: "#888" }}>
               NutriPlan · TrainingON · APEX Visual
             </div>
 
             <div className="mt-5">
-              <div className="font-heading font-bold text-[32px] leading-none" style={{ color: "#B8922A" }}>
+              <div className="font-heading font-bold text-[32px] leading-none" style={{ color: "#FF6B00" }}>
                 R$547<span className="text-[14px] font-mono font-normal">/mês</span>
               </div>
               <div className="text-[11px] mt-2" style={{ color: "#888" }}>
@@ -558,13 +558,13 @@ const LandingPlans = () => {
               ))}
             </ul>
 
-            <div className="font-mono font-bold text-[10px] tracking-[.1em] mb-2" style={{ color: "#B8922A" }}>
+            <div className="font-mono font-bold text-[10px] tracking-[.1em] mb-2" style={{ color: "#FF6B00" }}>
               📊 PAINEL COACH
             </div>
             <ul className="flex flex-col gap-1.5 mb-4">
               {["Até 30 alunos simultâneos","Gestão completa de alunos","Score de aderência por aluno","Alertas automáticos de risco","Relatório PDF mensal automático","Check-in dos alunos em tempo real","Diário fotográfico por aluno","Histórico completo por aluno"].map((t) => (
                 <li key={t} className="text-[12px] flex items-start gap-2 font-landing text-[#a0a0c0] leading-snug">
-                  <span className="text-[11px] mt-0.5 shrink-0" style={{ color: "#B8922A" }}>✓</span>
+                  <span className="text-[11px] mt-0.5 shrink-0" style={{ color: "#FF6B00" }}>✓</span>
                   <span>{t}</span>
                 </li>
               ))}
@@ -575,9 +575,9 @@ const LandingPlans = () => {
               target="_blank"
               rel="noopener noreferrer"
               className="block w-full text-center font-bold text-[14px] rounded-lg transition-all hover:scale-[1.01]"
-              style={{ background: "#B8922A", color: "#0a0a1a", padding: "14px" }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = "#D4A832")}
-              onMouseLeave={(e) => (e.currentTarget.style.background = "#B8922A")}
+              style={{ background: "#FF6B00", color: "#0a0a1a", padding: "14px" }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = "#FF8533")}
+              onMouseLeave={(e) => (e.currentTarget.style.background = "#FF6B00")}
             >
               COMEÇAR COMO PROFISSIONAL →
             </a>
