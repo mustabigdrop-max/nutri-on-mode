@@ -462,7 +462,7 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
   const generateApexPDF = async () => {
     setExportingPDF(true);
     try {
-      const { generateApexPDF: generate, type AchadoClinico } = await import("@/utils/apexPDFGenerator") as any;
+      const { generateApexPDF: generate } = await import("@/utils/apexPDFGenerator");
       const qualityScore = data?.landmarks ? calcAnalysisQuality(data.landmarks as any).score : undefined;
       const achados = findings.map((f): import("@/utils/apexPDFGenerator").AchadoClinico => {
         const dom = EDU[anchorLandmark(view, f.key)]?.dom;
