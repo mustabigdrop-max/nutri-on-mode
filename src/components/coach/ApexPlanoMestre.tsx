@@ -120,16 +120,17 @@ export default function ApexPlanoMestre({
   const fases: PlanoFase[] = plano?.fases || [];
   const totalSemanas = plano?.duracao_total_semanas || fases.reduce((s, f) => s + (f.duracao_semanas || 0), 0);
   const faseObj = fases.find(f => f.numero === faseAtual) || fases[0];
-  const semanaObj: PlanoSemana | undefined = faseObj?.semanas_detalhadas?.find(s => s.semana === semanaAtual);
+  const semanasFase: PlanoSemana[] = faseObj ? getDerivedWeeks(faseObj) : [];
+  const semanaObj: PlanoSemana | undefined = semanasFase.find(s => s.semana === semanaAtual) || semanasFase[0];
 
-  // progresso da semana atual
+  // progresso da semana atual — agora baseado em SESSÕES concluídas
   const semanaProgresso = useMemo(() => {
-    const total = semanaObj?.exercicios_prioritarios?.length || 0;
-    if (!total) return { done: 0, total: 0, pct: 0 };
-    const done = (semanaObj?.exercicios_prioritarios || []).filter(ex =>
-      progresso.find(p => p.semana === semanaAtual && p.fase === faseAtual && p.exercicio === ex.nome && p.concluido)
+    const total = semanaObj?.sessoes_por_semana ?? 3;
+    const done = progresso.filter(p =>
+      p.semana === semanaAtual && p.fase === faseAtual && isSessionKey(p.exercicio) && p.concluido
     ).length;
-    return { done, total, pct: Math.round((done / total) * 100) };
+    const capped = Math.min(done, total);
+    return { done: capped, total, pct: total ? Math.round((capped / total) * 100) : 0 };
   }, [semanaObj, progresso, semanaAtual, faseAtual]);
 
   const globalPct = totalSemanas ? Math.round(((faseObj && fases.slice(0, faseObj.numero - 1).reduce((s, f) => s + (f.duracao_semanas || 0), 0) + (semanaAtual - 1)) / totalSemanas) * 100) : 0;
