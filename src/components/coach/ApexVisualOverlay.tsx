@@ -712,6 +712,26 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
             <Download className="w-3.5 h-3.5" />
             {exporting ? "Exportando..." : "Exportar"}
           </button>
+          <button
+            onClick={generateApexPDF}
+            disabled={exportingPDF}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg border hover:bg-muted disabled:opacity-50"
+            style={{
+              borderColor: C.gold,
+              color: C.gold,
+              background: exportingPDF ? `${C.gold}26` : `${C.gold}1A`,
+            }}
+            title="Gerar relatório PDF completo (foto anotada + achados + prescrição)"
+          >
+            {exportingPDF ? (
+              <>
+                <span style={{ width: 6, height: 6, borderRadius: "50%", background: C.gold, display: "inline-block", animation: "apex-chain-dash 1s infinite" }} />
+                Gerando PDF...
+              </>
+            ) : (
+              <>↓ Exportar PDF</>
+            )}
+          </button>
         </div>
       </div>
 
