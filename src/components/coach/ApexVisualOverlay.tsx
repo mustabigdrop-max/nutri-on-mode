@@ -578,6 +578,19 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
             🐛 Debug
           </button>
           <button
+            onClick={activateManualMode}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg border"
+            style={{
+              borderColor: manualMode ? C.gold : "hsl(var(--border))",
+              color: manualMode ? C.gold : "hsl(var(--muted-foreground))",
+              background: manualMode ? `${C.gold}1A` : "transparent",
+            }}
+            title="Ajustar manualmente a Linha de Prumo"
+          >
+            <Crosshair className="w-3.5 h-3.5" />
+            ⊕ Ajustar Prumo
+          </button>
+          <button
             onClick={handleExport}
             disabled={exporting}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg border hover:bg-muted disabled:opacity-50"
