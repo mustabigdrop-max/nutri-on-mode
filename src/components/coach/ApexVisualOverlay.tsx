@@ -1344,7 +1344,7 @@ function OverlayLayer({
         })}
 
         {/* Plumb line label */}
-        <text x={50.5} y={2.5} fontSize={2} fill={C.white} opacity={0.6}>Linha de Prumo</text>
+        <text x={anatomicalCenterX + 0.5} y={2.5} fontSize={2} fill={C.white} opacity={0.6}>{showAnatomicalLabel ? "Centro anatômico" : "Linha de Prumo"}</text>
 
         {/* DEBUG: zona da silhueta (|x-50|<8) + caixas de colisão dos labels */}
         {debugMode && (
