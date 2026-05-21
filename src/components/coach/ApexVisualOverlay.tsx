@@ -261,6 +261,20 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
   const data = landmarks[view];
   const photoUrl = photos[view];
 
+  // Qualidade da linha de prumo da vista atual (para badge nos achados)
+  const currentPlumb = useMemo<PlumbLine | null>(() => {
+    if (!data?.landmarks) return null;
+    const snapped = snapToPlumbLine(data.landmarks, 100);
+    const base = calcPlumbLine(snapped as any, 100, 100);
+    const override = manualPlumb[view];
+    if (typeof override === "number") {
+      return { ...base, x1: override, x2: override, axisX: override };
+    }
+    return base;
+  }, [data, manualPlumb, view]);
+
+
+
   // Compute scapular axis (back view) augmentation
   const augmentedAngles = useMemo(() => {
     if (!data) return {} as Record<string, AngleData>;
