@@ -161,23 +161,89 @@ const TRAININGON_SYSTEMS: { category: string; items: { name: string; desc: strin
   },
 ];
 
-const plans = [
+const MCE_BLOCKS: { icon: string; title: string; items: string[]; bonus?: boolean }[] = [
   {
-    name: "ON", price: "R$67", oldPrice: "R$97", discount: "31% off fundador", featured: false,
-    checkoutUrl: "https://pay.kiwify.com.br/Y6CB7tE",
-    features: [
-      "Onboarding inteligente por conversa (sem formulário)",
-      "Modo 'Sem Balança' — medidas visuais brasileiras",
-      "Diagnóstico de Sabotagem Semanal por IA",
-      "Plano Adaptativo por Humor (diário)",
-      "Alerta de Janela de Oportunidade (preditivo)",
-      "Banco de alimentos 100% brasileiro (regionais)",
-      "Tracking macros + calorias (TACO/IBGE)",
-      "Gamificação: XP, streaks, badges, níveis",
-      "Máx. 3 notificações/dia personalizadas",
-      { text: "Plano semanal por IA <strong>🔒</strong>", locked: true },
-      { text: "Acesso ao Coach <strong>🔒</strong>", locked: true },
+    icon: "🍽",
+    title: "NUTRIPLAN",
+    items: [
+      "7 objetivos de protocolo",
+      "TDEE farmacológico automático",
+      "Crononutrição circadiana",
+      "GLUT-4 Sync pós-treino",
+      "Carb cycling automático",
+      "Banco TACO/IBGE",
+      "Substituições inteligentes",
+      "Perfil PCA comportamental",
+      "8 modos especiais",
+      "Medidas caseiras automáticas",
     ],
+  },
+  {
+    icon: "⚡",
+    title: "TRAININGON",
+    items: [
+      "27 sistemas de treino",
+      "6 fases de treinamento",
+      "13 músculos prioritários",
+      "Readiness diário",
+      "LoadTracker Pro",
+      "Fibras musculares",
+      "Progressão automática",
+      "Histórico de sessões",
+    ],
+  },
+  {
+    icon: "👁",
+    title: "APEX VISUAL",
+    items: [
+      "Análise postural por foto",
+      "33 landmarks biomecânicos",
+      "Protocolo corretivo 4 fases",
+      "Exercícios contraindicados bloqueados automaticamente",
+      "Cadeia cinética detectada",
+      "FCS — Fenner Clinical Score",
+      "Plano mestre de evolução",
+      "Análises ilimitadas",
+    ],
+  },
+  {
+    icon: "🦠",
+    title: "MICROBIOTA — GUT-BRAIN",
+    bonus: true,
+    items: [
+      "Análise em 4 dimensões",
+      "Eixo intestino-cérebro",
+      "Modulação por nutrição",
+      "Prebióticos e probióticos",
+      "Protocolo personalizado",
+      "Impacto em composição corporal",
+    ],
+  },
+  {
+    icon: "🌿",
+    title: "FITOTERÁPICOS",
+    bonus: true,
+    items: [
+      "100+ fitoterápicos catalogados",
+      "Adaptógenos e nootropics",
+      "Mecanismos de ação completos",
+      "Dosagens e protocolos",
+      "Interações com fármacos",
+      "Oracle IA ilimitado",
+    ],
+  },
+];
+
+const plans: any[] = [
+  {
+    name: "MCE Performance",
+    mce: true,
+    subtitle: "Sistema Integrado de Performance Humana",
+    badge: "CONSULTORIA",
+    price: "R$397",
+    featured: false,
+    checkoutUrl: "https://pay.kiwify.com.br/Y1e8Oi6",
+    blocks: MCE_BLOCKS,
     cta: "Começar agora →",
   },
   {
