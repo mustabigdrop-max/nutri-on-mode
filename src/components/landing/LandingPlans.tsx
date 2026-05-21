@@ -477,6 +477,13 @@ const LandingPlans = () => {
                   Vagas limitadas — sobe para R$197 quando as vagas esgotarem.
                 </div>
               </div>
+            ) : plan.mce ? (
+              <div className="my-5">
+                <div className="flex items-baseline gap-2.5">
+                  <span className="font-heading text-[3.5rem] leading-none" style={{ color: "#B8922A" }}>{plan.price}</span>
+                  <span className="font-mono text-[.65rem] text-[#50507a]">/mês</span>
+                </div>
+              </div>
             ) : (
               <div className="my-5">
                 <div className="flex items-baseline gap-2.5">
