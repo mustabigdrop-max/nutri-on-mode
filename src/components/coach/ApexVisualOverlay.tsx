@@ -512,27 +512,65 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
         </div>
 
         {/* Photo + overlay */}
-        <div className="relative rounded-lg overflow-hidden bg-black flex items-center justify-center" style={{ minHeight: 360 }}>
+        <div
+          className="relative rounded-lg overflow-hidden bg-black"
+          style={{
+            position: "relative",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            overflow: "hidden",
+            width: "100%",
+            height: 640,
+            minHeight: 360,
+          }}
+        >
           {photoUrl ? (
-            <div className="relative inline-block max-w-full">
+            <div
+              className="relative"
+              style={{
+                position: "relative",
+                width: "100%",
+                height: "100%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
               <img
                 src={photoUrl}
                 alt={`Foto ${view}`}
                 crossOrigin="anonymous"
-                className="block max-w-full max-h-[640px] w-auto h-auto"
-                style={{ objectFit: "contain" }}
+                style={{
+                  display: "block",
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "contain",
+                  objectPosition: "center center",
+                }}
               />
               {data && (
-                <OverlayLayer
-                  data={{ ...data, angles: augmentedAngles }}
-                  selected={selected}
-                  onSelect={setSelected}
-                  eduMode={eduMode}
-                  chainMode={chainMode}
-                  debugMode={debugMode}
-                  gridMode={gridMode}
-                  chains={chains}
-                />
+                <div
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    width: "100%",
+                    height: "100%",
+                    pointerEvents: "none",
+                  }}
+                >
+                  <OverlayLayer
+                    data={{ ...data, angles: augmentedAngles }}
+                    selected={selected}
+                    onSelect={setSelected}
+                    eduMode={eduMode}
+                    chainMode={chainMode}
+                    debugMode={debugMode}
+                    gridMode={gridMode}
+                    chains={chains}
+                  />
+                </div>
               )}
               {/* MELHORIA 2 — Quality badge */}
               {data && (
