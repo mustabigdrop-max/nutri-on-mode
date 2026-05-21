@@ -1572,7 +1572,6 @@ Suporte em uso: ${suporte || "não informado"}` : "";
     const farmacologiaSection = parseSection(analysisResult, "FARMACOLOGIA_SHAPE", "GANHA_PONTOS");
     const hasFarmacologia = !!farmacologiaSection && !/nenhum protocolo informado/i.test(farmacologiaSection);
     const segments = parseSegments(analysisResult);
-    const hasTimeline = history.length >= 2;
     const tabs = [
       { key: "scores", label: "Scores" },
       { key: "visual", label: "📐 Análise Visual" },
