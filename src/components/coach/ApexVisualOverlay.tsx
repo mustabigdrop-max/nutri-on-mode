@@ -1666,7 +1666,7 @@ function OverlayLayer({
           const sev = landmarkSeverity(q.key, ang);
           const conf = estimateConfidence(q.key, (lm as any)[q.key]);
           const confStyle = getConfidenceStyle(conf);
-          const isCritical = sev === "sev" || sev === "alt";
+          const isCritical = sev === "severe" || sev === "moderate";
           // Severidade crítica sobrepõe estilo de confiança (sinal clínico tem prioridade visual)
           const { fill, stroke, pulse } = isCritical ? landmarkColor(sev) : { fill: confStyle.fill, stroke: confStyle.stroke, pulse: false };
           const radius = (isPrimary ? 1.1 : 0.75) * (isCritical ? 1 : confStyle.radius / 1.0);
