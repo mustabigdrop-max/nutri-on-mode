@@ -1151,8 +1151,8 @@ function OverlayLayer({
     if (isValidPoint(l5)) return l5.x;
     return 50;
   };
-  const anatomicalCenterX = calcAnatomicalCenter();
-
+  const autoCenterX = calcAnatomicalCenter();
+  const anatomicalCenterX = typeof plumbXOverride === "number" ? plumbXOverride : autoCenterX;
   const anatomicalDeviation = Math.abs(anatomicalCenterX - 50);
   const showAnatomicalLabel = anatomicalDeviation > 5;
 
