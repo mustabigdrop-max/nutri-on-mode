@@ -443,6 +443,15 @@ const LandingPlans = () => {
                   ))}
                 </div>
               </div>
+            ) : plan.mce ? (
+              <div className="mb-1.5">
+                <div className="font-heading text-[1.5rem] tracking-[.06em] leading-tight" style={{ color: "#B8922A" }}>
+                  MCE PERFORMANCE
+                </div>
+                <div className="font-mono text-[.65rem] text-[#8a8aa8] mt-1.5 leading-relaxed">
+                  {plan.subtitle}
+                </div>
+              </div>
             ) : (
               <div className="font-heading text-[1.5rem] tracking-[.08em] mb-1.5 text-[#f0edf8]">{plan.name}</div>
             )}
