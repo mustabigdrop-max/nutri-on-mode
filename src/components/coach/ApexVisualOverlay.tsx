@@ -472,7 +472,7 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
           graus: typeof f.value === "number" ? f.value : 0,
           dominante: dom,
           inibido: inh,
-          correcao: f.finding || PRESCRIPTION_MAP[f.key] || "Avaliar correção postural específica.",
+          correcao: f.finding || CORRECTION_MAP[f.key] || "Avaliar correção postural específica.",
           severityColor: f.sev === "sev" ? "#EF4444" : f.sev === "alt" ? "#FBBF24" : "#34D399",
         };
       });
