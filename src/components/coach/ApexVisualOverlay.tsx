@@ -281,9 +281,13 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
             : "Eixo escapular dentro do normal.",
         };
       }
-      // FIX 3 — Spine deviation calculado de C7→L5
-      const c7 = data.landmarks.spine_c7;
-      const l5 = data.landmarks.spine_l5;
+      // FIX 3 — Spine deviation calculado de C7→L5 (com snap anatômico)
+      // C7 e L5 são âncoras do prumo: sem landmarks torácicos intermediários,
+      // o desvio lateral é 0° por definição. Escoliose funcional só pode ser
+      // medida com pontos torácicos intermediários (T1–T12).
+      const snappedSpine = snapToPlumbLine(data.landmarks, 100);
+      const c7 = snappedSpine.spine_c7;
+      const l5 = snappedSpine.spine_l5;
       if (isValidPoint(c7) && isValidPoint(l5)) {
         const dx = l5.x - c7.x;
         const dy = l5.y - c7.y;
@@ -296,7 +300,7 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
           normal: "<1°",
           finding: Math.abs(v) > 1
             ? `Coluna desviada ${Math.abs(v)}° para ${v > 0 ? "direita" : "esquerda"}. Avaliar escoliose funcional vs estrutural.`
-            : "Coluna alinhada verticalmente. ✓",
+            : "Coluna alinhada no eixo de prumo C7→L5 (âncoras anatômicas). ✓",
         };
       }
     }
