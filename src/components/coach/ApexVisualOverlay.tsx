@@ -828,6 +828,27 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
           <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1 pt-1">
             Achados clínicos ({findings.length})
           </div>
+          {currentPlumb && (() => {
+            const s = currentPlumb.source;
+            const cfg = s === "C7+L5"
+              ? { bg: "#064E3B", fg: "#6EE7B7", text: "📐 Prumo ancorado em C7/L5" }
+              : s === "frame-center"
+              ? { bg: "#7F1D1D", fg: "#FCA5A5", text: "✕ Prumo estimado — reenviar foto de costas" }
+              : { bg: "#78350F", fg: "#FCD34D", text: `⚠ Prumo parcial (${s} apenas)` };
+            return (
+              <div
+                className="inline-block mb-1.5"
+                style={{
+                  background: cfg.bg, color: cfg.fg,
+                  fontSize: 10, padding: "2px 8px",
+                  borderRadius: 4, fontFamily: "ui-monospace, monospace",
+                }}
+                title={`Eixo X = ${currentPlumb.axisX.toFixed(2)}% · fonte: ${s}`}
+              >
+                {cfg.text}
+              </div>
+            );
+          })()}
           {findings.length === 0 && (
             <div className="text-xs text-muted-foreground">Nenhum ângulo retornado.</div>
           )}
