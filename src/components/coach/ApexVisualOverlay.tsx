@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import html2canvas from "html2canvas";
-import { Download, ChevronDown, BookOpen, Link2, Eye } from "lucide-react";
+import { Download, ChevronDown, BookOpen, Link2, Eye, Crosshair } from "lucide-react";
+import { toast } from "sonner";
 import { CYCLE_PHASE_INFO, type CyclePhase } from "@/lib/feminine";
 
 // ─── Types ───────────────────────────────────────────────────────
