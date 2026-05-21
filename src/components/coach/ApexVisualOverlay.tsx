@@ -971,46 +971,24 @@ function OverlayLayer({
   };
 
   // ── Centro anatômico do atleta (linha de prumo) ──────────────────
-  // Combina linha média espinhal (ponderada) com ponto médio ombros/quadril.
+  // Eixo X = média(C7.x, L5.x). Fallback: média(ombroD.x, ombroE.x).
   const calcAnatomicalCenter = (): number => {
-    const spineWeights: Array<{ k: string; w: number }> = [
-      { k: "occipital", w: 1 },
-      { k: "c7", w: 3 },
-      { k: "t4", w: 2 },
-      { k: "t12", w: 2 },
-      { k: "l3", w: 1 },
-      { k: "l5_s1", w: 3 },
-      // Aliases tolerantes a variações de nomenclatura
-      { k: "spine_c7", w: 3 },
-      { k: "spine_t4", w: 2 },
-      { k: "spine_t12", w: 2 },
-      { k: "spine_l3", w: 1 },
-      { k: "spine_l5", w: 3 },
-      { k: "spine_l5_s1", w: 3 },
-    ];
-    let sw = 0, sx = 0;
-    spineWeights.forEach(({ k, w }) => {
-      const p = (lm as any)[k];
-      if (isValidPoint(p) && typeof p.x === "number") { sx += p.x * w; sw += w; }
-    });
-    const spineCenter = sw > 0 ? sx / sw : null;
-
-    const pairs: Array<[any, any]> = [
-      [(lm as any).acromio_l ?? lm.shoulder_left, (lm as any).acromio_r ?? lm.shoulder_right],
-      [(lm as any).trocantermaior_l ?? lm.hip_left, (lm as any).trocantermaior_r ?? lm.hip_right],
-    ];
-    const mids: number[] = [];
-    pairs.forEach(([a, b]) => {
-      if (isValidPoint(a) && isValidPoint(b)) mids.push((a.x + b.x) / 2);
-    });
-    const altCenter = mids.length > 0 ? mids.reduce((s, v) => s + v, 0) / mids.length : null;
-
-    if (spineCenter != null && altCenter != null) return (spineCenter + altCenter) / 2;
-    if (spineCenter != null) return spineCenter;
-    if (altCenter != null) return altCenter;
+    const c7 = (lm as any).c7 ?? (lm as any).spine_c7;
+    const l5 = (lm as any).l5_s1 ?? (lm as any).spine_l5_s1 ?? (lm as any).spine_l5;
+    if (isValidPoint(c7) && isValidPoint(l5) && typeof c7.x === "number" && typeof l5.x === "number") {
+      return (c7.x + l5.x) / 2;
+    }
+    const sR = (lm as any).acromio_r ?? lm.shoulder_right;
+    const sL = (lm as any).acromio_l ?? lm.shoulder_left;
+    if (isValidPoint(sR) && isValidPoint(sL)) {
+      return (sR.x + sL.x) / 2;
+    }
+    if (isValidPoint(c7)) return c7.x;
+    if (isValidPoint(l5)) return l5.x;
     return 50;
   };
   const anatomicalCenterX = calcAnatomicalCenter();
+
   const anatomicalDeviation = Math.abs(anatomicalCenterX - 50);
   const showAnatomicalLabel = anatomicalDeviation > 5;
 
