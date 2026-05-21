@@ -586,37 +586,37 @@ const LandingPlans = () => {
             </p>
           </div>
 
-          {/* CARD — ACESSO TOTAL */}
+          {/* CARD — MASTER */}
           <div
             className="relative rounded-xl p-6 overflow-hidden transition-all hover:-translate-y-1 md:col-span-2"
             style={{
               background: "linear-gradient(135deg, #0d0d1f 0%, #1a0f00 100%)",
-              border: "1.5px solid #B8922A55",
-              boxShadow: "0 0 30px #B8922A10",
+              border: "1.5px solid #7C3AED55",
+              boxShadow: "0 0 30px #7C3AED10",
             }}
           >
             <div className="flex items-center justify-between mb-4">
               <span
                 className="font-mono text-[10px] font-bold rounded-full px-2.5 py-0.5"
-                style={{ background: "#B8922A20", border: "1px solid #B8922A55", color: "#B8922A" }}
+                style={{ background: "#7C3AED20", border: "1px solid #7C3AED55", color: "#7C3AED" }}
               >
                 PROFISSIONAL
               </span>
               <span
                 className="font-mono text-[10px] font-bold rounded-full px-2.5 py-1"
-                style={{ background: "#B8922A", color: "#0a0a1a" }}
+                style={{ background: "#7C3AED", color: "#0a0a1a" }}
               >
-                ACESSO TOTAL
+                MASTER
               </span>
             </div>
 
-            <div className="font-heading font-bold text-white text-[24px] leading-none tracking-wide">ACESSO TOTAL</div>
+            <div className="font-heading font-bold text-white text-[24px] leading-none tracking-wide">MASTER</div>
             <div className="font-mono text-[11px] mt-1.5" style={{ color: "#888" }}>
               Todos os módulos. Sem restrições. Alunos ilimitados.
             </div>
 
             <div className="mt-5">
-              <div className="font-heading font-bold text-[32px] leading-none" style={{ color: "#B8922A" }}>
+              <div className="font-heading font-bold text-[32px] leading-none" style={{ color: "#7C3AED" }}>
                 R$697<span className="text-[14px] font-mono font-normal">/mês</span>
               </div>
               <div className="flex items-center gap-2 mt-2 flex-wrap">
@@ -706,7 +706,7 @@ const LandingPlans = () => {
               </div>
 
               <div>
-                <div className="font-mono font-bold text-[10px] tracking-[.1em] mb-2" style={{ color: "#B8922A" }}>
+                <div className="font-mono font-bold text-[10px] tracking-[.1em] mb-2" style={{ color: "#7C3AED" }}>
                   ⚗ DR. VERTEX
                 </div>
                 <ul className="flex flex-col gap-1.5 mb-4">
@@ -720,13 +720,13 @@ const LandingPlans = () => {
                     "PCT completo",
                   ].map((t) => (
                     <li key={t} className="text-[12px] flex items-start gap-2 font-landing text-[#a0a0c0] leading-snug">
-                      <span className="text-[11px] mt-0.5 shrink-0" style={{ color: "#B8922A" }}>✓</span>
+                      <span className="text-[11px] mt-0.5 shrink-0" style={{ color: "#7C3AED" }}>✓</span>
                       <span>{t}</span>
                     </li>
                   ))}
                 </ul>
 
-                <div className="font-mono font-bold text-[10px] tracking-[.1em] mb-2" style={{ color: "#B8922A" }}>
+                <div className="font-mono font-bold text-[10px] tracking-[.1em] mb-2" style={{ color: "#7C3AED" }}>
                   🧬 DR. NEXUS — PEPTIDEVAULT
                 </div>
                 <ul className="flex flex-col gap-1.5 mb-4">
@@ -739,13 +739,13 @@ const LandingPlans = () => {
                     "Mecanismos moleculares",
                   ].map((t) => (
                     <li key={t} className="text-[12px] flex items-start gap-2 font-landing text-[#a0a0c0] leading-snug">
-                      <span className="text-[11px] mt-0.5 shrink-0" style={{ color: "#B8922A" }}>✓</span>
+                      <span className="text-[11px] mt-0.5 shrink-0" style={{ color: "#7C3AED" }}>✓</span>
                       <span>{t}</span>
                     </li>
                   ))}
                 </ul>
 
-                <div className="font-mono font-bold text-[10px] tracking-[.1em] mb-2" style={{ color: "#B8922A" }}>
+                <div className="font-mono font-bold text-[10px] tracking-[.1em] mb-2" style={{ color: "#7C3AED" }}>
                   🦠 MICROBIOTA — GUT-BRAIN
                 </div>
                 <ul className="flex flex-col gap-1.5 mb-4">
@@ -758,13 +758,13 @@ const LandingPlans = () => {
                     "Impacto em composição corporal",
                   ].map((t) => (
                     <li key={t} className="text-[12px] flex items-start gap-2 font-landing text-[#a0a0c0] leading-snug">
-                      <span className="text-[11px] mt-0.5 shrink-0" style={{ color: "#B8922A" }}>✓</span>
+                      <span className="text-[11px] mt-0.5 shrink-0" style={{ color: "#7C3AED" }}>✓</span>
                       <span>{t}</span>
                     </li>
                   ))}
                 </ul>
 
-                <div className="font-mono font-bold text-[10px] tracking-[.1em] mb-2" style={{ color: "#B8922A" }}>
+                <div className="font-mono font-bold text-[10px] tracking-[.1em] mb-2" style={{ color: "#7C3AED" }}>
                   🌿 FITOTERÁPICOS
                 </div>
                 <ul className="flex flex-col gap-1.5 mb-4">
@@ -777,7 +777,7 @@ const LandingPlans = () => {
                     "Oracle IA ilimitado",
                   ].map((t) => (
                     <li key={t} className="text-[12px] flex items-start gap-2 font-landing text-[#a0a0c0] leading-snug">
-                      <span className="text-[11px] mt-0.5 shrink-0" style={{ color: "#B8922A" }}>✓</span>
+                      <span className="text-[11px] mt-0.5 shrink-0" style={{ color: "#7C3AED" }}>✓</span>
                       <span>{t}</span>
                     </li>
                   ))}
@@ -789,7 +789,7 @@ const LandingPlans = () => {
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-6 gap-y-4">
               <div>
-                <div className="font-mono font-bold text-[10px] tracking-[.1em] mb-2" style={{ color: "#B8922A" }}>
+                <div className="font-mono font-bold text-[10px] tracking-[.1em] mb-2" style={{ color: "#7C3AED" }}>
                   🦴 BIOMECHANICS VAULT
                 </div>
                 <ul className="flex flex-col gap-1.5 mb-4">
@@ -801,7 +801,7 @@ const LandingPlans = () => {
                     "Referências científicas",
                   ].map((t) => (
                     <li key={t} className="text-[12px] flex items-start gap-2 font-landing text-[#a0a0c0] leading-snug">
-                      <span className="text-[11px] mt-0.5 shrink-0" style={{ color: "#B8922A" }}>✓</span>
+                      <span className="text-[11px] mt-0.5 shrink-0" style={{ color: "#7C3AED" }}>✓</span>
                       <span>{t}</span>
                     </li>
                   ))}
@@ -809,7 +809,7 @@ const LandingPlans = () => {
               </div>
 
               <div>
-                <div className="font-mono font-bold text-[10px] tracking-[.1em] mb-2" style={{ color: "#B8922A" }}>
+                <div className="font-mono font-bold text-[10px] tracking-[.1em] mb-2" style={{ color: "#7C3AED" }}>
                   📊 PAINEL COACH ELITE
                 </div>
                 <ul className="flex flex-col gap-1.5 mb-4">
@@ -823,7 +823,7 @@ const LandingPlans = () => {
                     "Histórico completo",
                   ].map((t) => (
                     <li key={t} className="text-[12px] flex items-start gap-2 font-landing text-[#a0a0c0] leading-snug">
-                      <span className="text-[11px] mt-0.5 shrink-0" style={{ color: "#B8922A" }}>✓</span>
+                      <span className="text-[11px] mt-0.5 shrink-0" style={{ color: "#7C3AED" }}>✓</span>
                       <span>{t}</span>
                     </li>
                   ))}
@@ -831,7 +831,7 @@ const LandingPlans = () => {
               </div>
 
               <div>
-                <div className="font-mono font-bold text-[10px] tracking-[.1em] mb-2" style={{ color: "#B8922A" }}>
+                <div className="font-mono font-bold text-[10px] tracking-[.1em] mb-2" style={{ color: "#7C3AED" }}>
                   EXTRAS
                 </div>
                 <ul className="flex flex-col gap-1.5 mb-4">
@@ -843,7 +843,7 @@ const LandingPlans = () => {
                     "Suporte prioritário",
                   ].map((t) => (
                     <li key={t} className="text-[12px] flex items-start gap-2 font-landing text-[#a0a0c0] leading-snug">
-                      <span className="text-[11px] mt-0.5 shrink-0" style={{ color: "#B8922A" }}>✓</span>
+                      <span className="text-[11px] mt-0.5 shrink-0" style={{ color: "#7C3AED" }}>✓</span>
                       <span>{t}</span>
                     </li>
                   ))}
@@ -856,9 +856,9 @@ const LandingPlans = () => {
               target="_blank"
               rel="noopener noreferrer"
               className="block w-full text-center font-bold text-[14px] rounded-lg transition-all hover:scale-[1.01] mt-2"
-              style={{ background: "#B8922A", color: "#0a0a1a", padding: "14px" }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = "#D4A832")}
-              onMouseLeave={(e) => (e.currentTarget.style.background = "#B8922A")}
+              style={{ background: "#7C3AED", color: "#0a0a1a", padding: "14px" }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = "#9361F5")}
+              onMouseLeave={(e) => (e.currentTarget.style.background = "#7C3AED")}
             >
               COMEÇAR COMO PROFISSIONAL →
             </a>
