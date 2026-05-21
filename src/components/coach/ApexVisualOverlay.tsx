@@ -209,7 +209,13 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
   const [debugMode, setDebugMode] = useState<boolean>(false);
   const [gridMode, setGridMode] = useState<boolean>(false);
   const exportRef = useRef<HTMLDivElement>(null);
+  const pdfContainerRef = useRef<HTMLDivElement>(null);
   const [exporting, setExporting] = useState(false);
+  const [exportingPDF, setExportingPDF] = useState(false);
+  const [pdfPayload, setPdfPayload] = useState<null | {
+    overlayDataUrl: string | null;
+    geradoEm: Date;
+  }>(null);
 
   // ── Ajuste manual do prumo (por vista) ─────────────────────────
   const [manualMode, setManualMode] = useState(false);
@@ -452,6 +458,95 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
     }
   };
 
+  // ── Exportação PDF profissional (foto + achados + prescrição) ──
+  const captureOverlaySVG = async (): Promise<string | null> => {
+    const svgElement = document.querySelector("#apex-overlay-svg");
+    if (!svgElement) return null;
+    const cloned = svgElement.cloneNode(true) as SVGSVGElement;
+    if (!cloned.getAttribute("xmlns")) cloned.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+    const svgData = new XMLSerializer().serializeToString(cloned);
+    const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
+    const url = URL.createObjectURL(svgBlob);
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = (img.width || 600) * 2;
+        canvas.height = (img.height || 800) * 2;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) { URL.revokeObjectURL(url); resolve(null); return; }
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        URL.revokeObjectURL(url);
+        resolve(canvas.toDataURL("image/png"));
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); resolve(null); };
+      img.src = url;
+    });
+  };
+
+  const generateApexPDF = async () => {
+    if (!photoUrl) {
+      toast("Foto da vista atual não disponível para exportação.");
+      return;
+    }
+    setExportingPDF(true);
+    try {
+      const overlayDataUrl = await captureOverlaySVG();
+      setPdfPayload({ overlayDataUrl, geradoEm: new Date() });
+      await new Promise((r) => setTimeout(r, 350));
+      const container = pdfContainerRef.current;
+      if (!container) throw new Error("Container PDF não encontrado");
+      const canvas = await html2canvas(container, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: "#0A0A0F",
+        logging: false,
+        windowWidth: 794,
+      });
+      const { jsPDF } = await import("jspdf");
+      const pdf = new jsPDF({ orientation: "portrait", unit: "px", format: "a4" });
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const fullHeight = (canvas.height * pdfWidth) / canvas.width;
+      if (fullHeight <= pdfHeight) {
+        pdf.addImage(canvas.toDataURL("image/jpeg", 0.95), "JPEG", 0, 0, pdfWidth, fullHeight);
+      } else {
+        let yOffset = 0;
+        let page = 0;
+        while (yOffset < fullHeight) {
+          if (page > 0) pdf.addPage();
+          const sourceY = (yOffset / fullHeight) * canvas.height;
+          const sourceH = Math.min(
+            (pdfHeight / fullHeight) * canvas.height,
+            canvas.height - sourceY,
+          );
+          const pageCanvas = document.createElement("canvas");
+          pageCanvas.width = canvas.width;
+          pageCanvas.height = sourceH;
+          const ctx = pageCanvas.getContext("2d")!;
+          ctx.fillStyle = "#0A0A0F";
+          ctx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
+          ctx.drawImage(canvas, 0, -sourceY);
+          const renderedH = (sourceH / canvas.height) * fullHeight;
+          pdf.addImage(pageCanvas.toDataURL("image/jpeg", 0.95), "JPEG", 0, 0, pdfWidth, renderedH);
+          yOffset += pdfHeight;
+          page++;
+        }
+      }
+      const nome = (athleteName || "atleta").replace(/\s+/g, "_");
+      const data = new Date().toISOString().split("T")[0];
+      pdf.save(`APEX_${nome}_${data}.pdf`);
+      toast("PDF gerado com sucesso.");
+    } catch (error) {
+      console.error("Erro ao gerar PDF:", error);
+      toast("Erro ao gerar PDF. Tente novamente.");
+    } finally {
+      setExportingPDF(false);
+      setPdfPayload(null);
+    }
+  };
+
   // ── Sugestão de onde clicar para alinhar o prumo (coords 0..100) ──
   const plumbSuggestion = useMemo<{ x: number; y: number; label: string }>(() => {
     const lm = data?.landmarks || ({} as Record<string, Landmark>);
@@ -616,6 +711,26 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
           >
             <Download className="w-3.5 h-3.5" />
             {exporting ? "Exportando..." : "Exportar"}
+          </button>
+          <button
+            onClick={generateApexPDF}
+            disabled={exportingPDF}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg border hover:bg-muted disabled:opacity-50"
+            style={{
+              borderColor: C.gold,
+              color: C.gold,
+              background: exportingPDF ? `${C.gold}26` : `${C.gold}1A`,
+            }}
+            title="Gerar relatório PDF completo (foto anotada + achados + prescrição)"
+          >
+            {exportingPDF ? (
+              <>
+                <span style={{ width: 6, height: 6, borderRadius: "50%", background: C.gold, display: "inline-block", animation: "apex-chain-dash 1s infinite" }} />
+                Gerando PDF...
+              </>
+            ) : (
+              <>↓ Exportar PDF</>
+            )}
           </button>
         </div>
       </div>
@@ -1055,6 +1170,36 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
           ))}
         </div>
       )}
+
+      {/* Container oculto para renderização do PDF */}
+      {pdfPayload && (
+        <div
+          ref={pdfContainerRef}
+          id="apex-pdf-container"
+          style={{
+            position: "fixed",
+            left: -9999,
+            top: 0,
+            width: 794,
+            background: "#0A0A0F",
+            fontFamily: "Inter, sans-serif",
+            color: "#fff",
+            padding: 0,
+            zIndex: -1,
+          }}
+        >
+          <ApexPDFLayout
+            athleteName={athleteName}
+            photoUrl={photoUrl}
+            overlayDataUrl={pdfPayload.overlayDataUrl}
+            findings={findings}
+            quality={data?.landmarks ? calcAnalysisQuality(data.landmarks as any) : null}
+            plumbSource={currentPlumb?.source ?? "—"}
+            viewLabel={{ front: "Frente", lateral: "Lateral", back: "Costas" }[view]}
+            geradoEm={pdfPayload.geradoEm}
+          />
+        </div>
+      )}
     </div>
   );
 }
@@ -1338,6 +1483,7 @@ function OverlayLayer({
     <>
       {/* SVG layer: lines + landmarks */}
       <svg
+        id="apex-overlay-svg"
         viewBox="0 0 100 100"
         preserveAspectRatio="none"
         className="absolute inset-0 w-full h-full pointer-events-none"
@@ -2115,4 +2261,195 @@ function anchorForAngle(
     if (key === "scapular_axis_tilt") return mid(lm.scapula_left, lm.scapula_right);
   }
   return null;
+}
+
+// ─── PDF Layout (renderizado em container oculto) ─────────────────
+const CORRECTION_MAP: Record<string, string> = {
+  shoulder_tilt: "Liberação miofascial do trapézio superior dominante + ativação do serrátil anterior (3×15) + alongamento contralateral 3×30s.",
+  shoulder_asymmetry: "Mobilidade torácica + ativação serrátil anterior do lado inibido (3×15) + cues posturais ao longo do dia.",
+  hip_tilt: "Liberação do quadrado lombar dominante + ativação do glúteo médio contralateral (3×15 cada lado) + bird-dog 3×10.",
+  hip_asymmetry: "Side plank no lado fraco 3×30s + abdução em decúbito lateral 3×15 + ponte unilateral 3×12.",
+  knee_valgus_left: "Ativação do glúteo médio E (clamshell 3×15) + fortalecimento de tibial posterior + cue de alinhamento joelho-pé.",
+  knee_valgus_right: "Ativação do glúteo médio D (clamshell 3×15) + fortalecimento de tibial posterior + cue de alinhamento joelho-pé.",
+  head_lateral_tilt: "Alongamento de ECOM e escalenos do lado inclinado 3×30s + ativação dos flexores cervicais profundos (chin-tuck 3×10).",
+  forward_head_posture: "Chin-tuck 3×15 + alongamento de peitoral menor 3×30s + fortalecimento de retração escapular (face pull/Y-T-W).",
+  thoracic_kyphosis: "Mobilidade torácica em extensão (foam roller) 1–2min + alongamento de peitoral menor + Y-T-W de cabeça para baixo 3×10.",
+  lumbar_lordosis: "Alongamento de iliopsoas e eretores 3×30s + ativação de abdominal profundo (dead bug 3×10) + ponte glútea 3×15.",
+  pelvic_tilt: "Mobilidade pélvica (gato/camelo) + ativação do glúteo máximo + alongamento de flexores de quadril.",
+  plumb_line_deviation: "Reeducação postural global — trabalho de alinhamento sagital em frente ao espelho 5min/dia + core estabilizador.",
+  scapular_winging_left: "Ativação serrátil anterior E (push-up plus, scap punches) 3×15 + alongamento de peitoral menor 3×30s.",
+  scapular_winging_right: "Ativação serrátil anterior D (push-up plus, scap punches) 3×15 + alongamento de peitoral menor 3×30s.",
+  spinal_lateral_deviation: "Alongamento lateral side-bend para o lado convexo 3×30s + side plank com elevação pélvica no lado fraco 3×30s + bird-dog assimétrico.",
+  scapular_axis_tilt: "Ativação do serrátil anterior inibido + alongamento de trapézio superior dominante + mobilidade torácica.",
+};
+
+interface PDFLayoutProps {
+  athleteName?: string;
+  photoUrl?: string;
+  overlayDataUrl: string | null;
+  findings: Array<{ key: string; label: string; value: number; unit: string; normal: string; finding: string; sev: "ok" | "alt" | "sev" }>;
+  quality: AnalysisQuality | null;
+  plumbSource: string;
+  viewLabel: string;
+  geradoEm: Date;
+}
+
+function ApexPDFLayout({ athleteName, photoUrl, overlayDataUrl, findings, quality, plumbSource, viewLabel, geradoEm }: PDFLayoutProps) {
+  const sevColor = (s: "ok" | "alt" | "sev") => s === "sev" ? "#FF3344" : s === "alt" ? "#FFB800" : "#1DB87A";
+  const relevant = findings.filter((f) => f.sev !== "ok");
+  const corrective = relevant.length ? relevant : findings.slice(0, 3);
+
+  return (
+    <div style={{ width: 794, background: "#0A0A0F", color: "#fff" }}>
+      {/* HEADER */}
+      <div style={{
+        background: "linear-gradient(135deg, #0A0A0F 0%, #111118 100%)",
+        borderBottom: "1px solid rgba(184,146,42,0.3)",
+        padding: "20px 32px",
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+      }}>
+        <div>
+          <p style={{ fontSize: 18, fontWeight: 700, color: "#B8922A", margin: 0, letterSpacing: "0.15em" }}>nutriON</p>
+          <p style={{ fontSize: 10, color: "rgba(255,255,255,0.4)", margin: "2px 0 0", letterSpacing: "0.1em" }}>
+            APEX VISUAL INTELLIGENCE
+          </p>
+        </div>
+        <div style={{ textAlign: "right" }}>
+          <p style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", margin: 0 }}>{athleteName || "Atleta"}</p>
+          <p style={{ fontSize: 9, color: "rgba(255,255,255,0.3)", margin: "2px 0 0" }}>
+            {geradoEm.toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" })} · Vista: {viewLabel}
+          </p>
+        </div>
+      </div>
+
+      {/* BODY */}
+      <div style={{ padding: "24px 32px" }}>
+        {/* SEÇÃO 1 — Foto + overlay */}
+        <div style={{ marginBottom: 24 }}>
+          <p style={{ fontSize: 10, fontWeight: 600, color: "rgba(255,255,255,0.35)", letterSpacing: "0.1em", margin: "0 0 10px" }}>
+            ANÁLISE POSTURAL VISUAL
+          </p>
+          <div style={{ position: "relative", display: "inline-block", borderRadius: 8, overflow: "hidden", border: "0.5px solid rgba(255,255,255,0.1)", background: "#000" }}>
+            {photoUrl && (
+              <img
+                src={photoUrl}
+                style={{ display: "block", maxHeight: 380, maxWidth: 730, objectFit: "contain" }}
+                crossOrigin="anonymous"
+                alt="Foto postural"
+              />
+            )}
+            {overlayDataUrl && (
+              <img
+                src={overlayDataUrl}
+                style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", objectFit: "contain" }}
+                alt=""
+              />
+            )}
+          </div>
+          <div style={{ marginTop: 10, display: "flex", gap: 8, flexWrap: "wrap" }}>
+            {quality && (
+              <span style={{
+                fontSize: 9, padding: "3px 9px", borderRadius: 10,
+                background: `${quality.color}22`, color: quality.color,
+                border: `0.5px solid ${quality.color}55`,
+              }}>
+                ◉ {quality.label} — {Math.round(quality.score * 100)}%
+              </span>
+            )}
+            <span style={{
+              fontSize: 9, padding: "3px 9px", borderRadius: 10,
+              background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.5)",
+            }}>
+              📐 Prumo: {plumbSource}
+            </span>
+          </div>
+        </div>
+
+        {/* SEÇÃO 2 — Achados clínicos */}
+        <div style={{ marginBottom: 24 }}>
+          <p style={{ fontSize: 10, fontWeight: 600, color: "rgba(255,255,255,0.35)", letterSpacing: "0.1em", margin: "0 0 10px" }}>
+            ACHADOS CLÍNICOS ({findings.length})
+          </p>
+          {findings.length === 0 && (
+            <p style={{ fontSize: 11, color: "rgba(255,255,255,0.4)" }}>Nenhum achado relevante nesta vista.</p>
+          )}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+            {findings.map((f, i) => {
+              const color = sevColor(f.sev);
+              const unit = f.unit?.includes("graus") ? "°" : f.unit?.includes("cm") ? "cm" : "";
+              return (
+                <div key={i} style={{
+                  padding: "10px 12px",
+                  background: "rgba(255,255,255,0.04)",
+                  borderRadius: 6,
+                  borderLeft: `2px solid ${color}`,
+                }}>
+                  <p style={{ fontSize: 11, fontWeight: 600, color: "#fff", margin: "0 0 3px" }}>
+                    {f.label}
+                    <span style={{ fontSize: 9, marginLeft: 6, color }}>
+                      {f.value}{unit}
+                    </span>
+                  </p>
+                  <p style={{ fontSize: 9, color: "rgba(255,255,255,0.45)", margin: "0 0 4px", lineHeight: 1.4 }}>
+                    {f.finding || `Normal: ${f.normal}`}
+                  </p>
+                  <p style={{ fontSize: 9, color: "rgba(255,255,255,0.35)", margin: 0, lineHeight: 1.4 }}>
+                    → {CORRECTION_MAP[f.key] || "Avaliar correção específica com base no contexto clínico."}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* SEÇÃO 3 — Prescrição corretiva */}
+        {corrective.length > 0 && (
+          <div style={{ marginBottom: 24 }}>
+            <p style={{ fontSize: 10, fontWeight: 600, color: "rgba(255,255,255,0.35)", letterSpacing: "0.1em", margin: "0 0 10px" }}>
+              PRESCRIÇÃO CORRETIVA
+            </p>
+            <div style={{
+              padding: "12px 16px",
+              background: "rgba(184,146,42,0.06)",
+              borderRadius: 6,
+              border: "0.5px solid rgba(184,146,42,0.2)",
+            }}>
+              {corrective.map((f, i) => (
+                <div key={i} style={{
+                  marginBottom: i < corrective.length - 1 ? 8 : 0,
+                  paddingBottom: i < corrective.length - 1 ? 8 : 0,
+                  borderBottom: i < corrective.length - 1 ? "0.5px solid rgba(255,255,255,0.06)" : "none",
+                }}>
+                  <p style={{ fontSize: 10, fontWeight: 600, color: "#B8922A", margin: "0 0 2px" }}>
+                    {f.label}
+                  </p>
+                  <p style={{ fontSize: 9, color: "rgba(255,255,255,0.55)", margin: 0, lineHeight: 1.5 }}>
+                    {CORRECTION_MAP[f.key] || "Avaliar correção específica com base no contexto clínico."}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* FOOTER */}
+      <div style={{
+        borderTop: "0.5px solid rgba(255,255,255,0.08)",
+        padding: "12px 32px",
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+      }}>
+        <p style={{ fontSize: 8, color: "rgba(255,255,255,0.2)", margin: 0 }}>
+          nutrion.app.br — APEX Visual Intelligence
+        </p>
+        <p style={{ fontSize: 8, color: "rgba(255,255,255,0.2)", margin: 0, fontStyle: "italic" }}>
+          "Sua fome nunca foi de comida."
+        </p>
+      </div>
+    </div>
+  );
 }
