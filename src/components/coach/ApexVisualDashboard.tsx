@@ -1411,6 +1411,23 @@ Suporte em uso: ${suporte || "não informado"}` : "";
         const farmMeta = parseFarmMeta(text);
         const segments = parseSegments(text);
         const landmarks = parseLandmarks(text);
+        // Auditoria retrospectiva da qualidade da linha de prumo por vista
+        const plumbQuality: Record<string, any> = {};
+        (["front", "lateral", "back"] as const).forEach((v) => {
+          const lv = (landmarks as any)[v];
+          if (lv?.landmarks) {
+            const p = calcPlumbLine(lv.landmarks, 100, 100);
+            plumbQuality[v] = {
+              source: p.source,
+              axis_x: p.axisX,
+              image_width: 100,
+              axis_percent: p.axisX / 100,
+            };
+          }
+        });
+        const landmarksWithMeta = Object.keys(landmarks).length
+          ? { ...landmarks, plumb_line_quality: plumbQuality }
+          : null;
         const scoresJson = segments.reduce((acc, s) => {
           acc[s.label] = s.score;
           return acc;
