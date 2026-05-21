@@ -1453,7 +1453,7 @@ Suporte em uso: ${suporte || "não informado"}` : "";
           support: suporte || null,
           tdee_factor: farmMeta.tdeeFator ? parseFloat(farmMeta.tdeeFator) : null,
           protein_ideal: farmMeta.proteinaIdeal || null,
-          landmarks: Object.keys(landmarks).length ? landmarks : null,
+          landmarks: landmarksWithMeta,
           photo_front_url: pathFront,
           photo_back_url: pathBack,
           photo_side_url: pathSide,
