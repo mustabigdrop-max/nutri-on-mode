@@ -2262,3 +2262,194 @@ function anchorForAngle(
   }
   return null;
 }
+
+// ─── PDF Layout (renderizado em container oculto) ─────────────────
+const CORRECTION_MAP: Record<string, string> = {
+  shoulder_tilt: "Liberação miofascial do trapézio superior dominante + ativação do serrátil anterior (3×15) + alongamento contralateral 3×30s.",
+  shoulder_asymmetry: "Mobilidade torácica + ativação serrátil anterior do lado inibido (3×15) + cues posturais ao longo do dia.",
+  hip_tilt: "Liberação do quadrado lombar dominante + ativação do glúteo médio contralateral (3×15 cada lado) + bird-dog 3×10.",
+  hip_asymmetry: "Side plank no lado fraco 3×30s + abdução em decúbito lateral 3×15 + ponte unilateral 3×12.",
+  knee_valgus_left: "Ativação do glúteo médio E (clamshell 3×15) + fortalecimento de tibial posterior + cue de alinhamento joelho-pé.",
+  knee_valgus_right: "Ativação do glúteo médio D (clamshell 3×15) + fortalecimento de tibial posterior + cue de alinhamento joelho-pé.",
+  head_lateral_tilt: "Alongamento de ECOM e escalenos do lado inclinado 3×30s + ativação dos flexores cervicais profundos (chin-tuck 3×10).",
+  forward_head_posture: "Chin-tuck 3×15 + alongamento de peitoral menor 3×30s + fortalecimento de retração escapular (face pull/Y-T-W).",
+  thoracic_kyphosis: "Mobilidade torácica em extensão (foam roller) 1–2min + alongamento de peitoral menor + Y-T-W de cabeça para baixo 3×10.",
+  lumbar_lordosis: "Alongamento de iliopsoas e eretores 3×30s + ativação de abdominal profundo (dead bug 3×10) + ponte glútea 3×15.",
+  pelvic_tilt: "Mobilidade pélvica (gato/camelo) + ativação do glúteo máximo + alongamento de flexores de quadril.",
+  plumb_line_deviation: "Reeducação postural global — trabalho de alinhamento sagital em frente ao espelho 5min/dia + core estabilizador.",
+  scapular_winging_left: "Ativação serrátil anterior E (push-up plus, scap punches) 3×15 + alongamento de peitoral menor 3×30s.",
+  scapular_winging_right: "Ativação serrátil anterior D (push-up plus, scap punches) 3×15 + alongamento de peitoral menor 3×30s.",
+  spinal_lateral_deviation: "Alongamento lateral side-bend para o lado convexo 3×30s + side plank com elevação pélvica no lado fraco 3×30s + bird-dog assimétrico.",
+  scapular_axis_tilt: "Ativação do serrátil anterior inibido + alongamento de trapézio superior dominante + mobilidade torácica.",
+};
+
+interface PDFLayoutProps {
+  athleteName?: string;
+  photoUrl?: string;
+  overlayDataUrl: string | null;
+  findings: Array<{ key: string; label: string; value: number; unit: string; normal: string; finding: string; sev: "ok" | "alt" | "sev" }>;
+  quality: AnalysisQuality | null;
+  plumbSource: string;
+  viewLabel: string;
+  geradoEm: Date;
+}
+
+function ApexPDFLayout({ athleteName, photoUrl, overlayDataUrl, findings, quality, plumbSource, viewLabel, geradoEm }: PDFLayoutProps) {
+  const sevColor = (s: "ok" | "alt" | "sev") => s === "sev" ? "#FF3344" : s === "alt" ? "#FFB800" : "#1DB87A";
+  const relevant = findings.filter((f) => f.sev !== "ok");
+  const corrective = relevant.length ? relevant : findings.slice(0, 3);
+
+  return (
+    <div style={{ width: 794, background: "#0A0A0F", color: "#fff" }}>
+      {/* HEADER */}
+      <div style={{
+        background: "linear-gradient(135deg, #0A0A0F 0%, #111118 100%)",
+        borderBottom: "1px solid rgba(184,146,42,0.3)",
+        padding: "20px 32px",
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+      }}>
+        <div>
+          <p style={{ fontSize: 18, fontWeight: 700, color: "#B8922A", margin: 0, letterSpacing: "0.15em" }}>nutriON</p>
+          <p style={{ fontSize: 10, color: "rgba(255,255,255,0.4)", margin: "2px 0 0", letterSpacing: "0.1em" }}>
+            APEX VISUAL INTELLIGENCE
+          </p>
+        </div>
+        <div style={{ textAlign: "right" }}>
+          <p style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", margin: 0 }}>{athleteName || "Atleta"}</p>
+          <p style={{ fontSize: 9, color: "rgba(255,255,255,0.3)", margin: "2px 0 0" }}>
+            {geradoEm.toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" })} · Vista: {viewLabel}
+          </p>
+        </div>
+      </div>
+
+      {/* BODY */}
+      <div style={{ padding: "24px 32px" }}>
+        {/* SEÇÃO 1 — Foto + overlay */}
+        <div style={{ marginBottom: 24 }}>
+          <p style={{ fontSize: 10, fontWeight: 600, color: "rgba(255,255,255,0.35)", letterSpacing: "0.1em", margin: "0 0 10px" }}>
+            ANÁLISE POSTURAL VISUAL
+          </p>
+          <div style={{ position: "relative", display: "inline-block", borderRadius: 8, overflow: "hidden", border: "0.5px solid rgba(255,255,255,0.1)", background: "#000" }}>
+            {photoUrl && (
+              <img
+                src={photoUrl}
+                style={{ display: "block", maxHeight: 380, maxWidth: 730, objectFit: "contain" }}
+                crossOrigin="anonymous"
+                alt="Foto postural"
+              />
+            )}
+            {overlayDataUrl && (
+              <img
+                src={overlayDataUrl}
+                style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", objectFit: "contain" }}
+                alt=""
+              />
+            )}
+          </div>
+          <div style={{ marginTop: 10, display: "flex", gap: 8, flexWrap: "wrap" }}>
+            {quality && (
+              <span style={{
+                fontSize: 9, padding: "3px 9px", borderRadius: 10,
+                background: `${quality.color}22`, color: quality.color,
+                border: `0.5px solid ${quality.color}55`,
+              }}>
+                ◉ {quality.label} — {Math.round(quality.score * 100)}%
+              </span>
+            )}
+            <span style={{
+              fontSize: 9, padding: "3px 9px", borderRadius: 10,
+              background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.5)",
+            }}>
+              📐 Prumo: {plumbSource}
+            </span>
+          </div>
+        </div>
+
+        {/* SEÇÃO 2 — Achados clínicos */}
+        <div style={{ marginBottom: 24 }}>
+          <p style={{ fontSize: 10, fontWeight: 600, color: "rgba(255,255,255,0.35)", letterSpacing: "0.1em", margin: "0 0 10px" }}>
+            ACHADOS CLÍNICOS ({findings.length})
+          </p>
+          {findings.length === 0 && (
+            <p style={{ fontSize: 11, color: "rgba(255,255,255,0.4)" }}>Nenhum achado relevante nesta vista.</p>
+          )}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+            {findings.map((f, i) => {
+              const color = sevColor(f.sev);
+              const unit = f.unit?.includes("graus") ? "°" : f.unit?.includes("cm") ? "cm" : "";
+              return (
+                <div key={i} style={{
+                  padding: "10px 12px",
+                  background: "rgba(255,255,255,0.04)",
+                  borderRadius: 6,
+                  borderLeft: `2px solid ${color}`,
+                }}>
+                  <p style={{ fontSize: 11, fontWeight: 600, color: "#fff", margin: "0 0 3px" }}>
+                    {f.label}
+                    <span style={{ fontSize: 9, marginLeft: 6, color }}>
+                      {f.value}{unit}
+                    </span>
+                  </p>
+                  <p style={{ fontSize: 9, color: "rgba(255,255,255,0.45)", margin: "0 0 4px", lineHeight: 1.4 }}>
+                    {f.finding || `Normal: ${f.normal}`}
+                  </p>
+                  <p style={{ fontSize: 9, color: "rgba(255,255,255,0.35)", margin: 0, lineHeight: 1.4 }}>
+                    → {CORRECTION_MAP[f.key] || "Avaliar correção específica com base no contexto clínico."}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* SEÇÃO 3 — Prescrição corretiva */}
+        {corrective.length > 0 && (
+          <div style={{ marginBottom: 24 }}>
+            <p style={{ fontSize: 10, fontWeight: 600, color: "rgba(255,255,255,0.35)", letterSpacing: "0.1em", margin: "0 0 10px" }}>
+              PRESCRIÇÃO CORRETIVA
+            </p>
+            <div style={{
+              padding: "12px 16px",
+              background: "rgba(184,146,42,0.06)",
+              borderRadius: 6,
+              border: "0.5px solid rgba(184,146,42,0.2)",
+            }}>
+              {corrective.map((f, i) => (
+                <div key={i} style={{
+                  marginBottom: i < corrective.length - 1 ? 8 : 0,
+                  paddingBottom: i < corrective.length - 1 ? 8 : 0,
+                  borderBottom: i < corrective.length - 1 ? "0.5px solid rgba(255,255,255,0.06)" : "none",
+                }}>
+                  <p style={{ fontSize: 10, fontWeight: 600, color: "#B8922A", margin: "0 0 2px" }}>
+                    {f.label}
+                  </p>
+                  <p style={{ fontSize: 9, color: "rgba(255,255,255,0.55)", margin: 0, lineHeight: 1.5 }}>
+                    {CORRECTION_MAP[f.key] || "Avaliar correção específica com base no contexto clínico."}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* FOOTER */}
+      <div style={{
+        borderTop: "0.5px solid rgba(255,255,255,0.08)",
+        padding: "12px 32px",
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+      }}>
+        <p style={{ fontSize: 8, color: "rgba(255,255,255,0.2)", margin: 0 }}>
+          nutrion.app.br — APEX Visual Intelligence
+        </p>
+        <p style={{ fontSize: 8, color: "rgba(255,255,255,0.2)", margin: 0, fontStyle: "italic" }}>
+          "Sua fome nunca foi de comida."
+        </p>
+      </div>
+    </div>
+  );
+}
