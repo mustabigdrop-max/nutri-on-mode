@@ -512,25 +512,47 @@ function SemanaBody({
   semanaPct: { done: number; total: number; pct: number } | null;
   totalFaseSemanas: number;
 }) {
-  const checkedOf = (nome: string) =>
-    !!progresso.find(p => p.semana === s.semana && p.fase === f.numero && p.exercicio === nome && p.concluido);
-
   const all = s.exercicios_prioritarios || [];
-  const allDone = isAtual && all.length > 0 && all.every(ex => checkedOf(ex.nome));
-  const ultimaSemanaDaFase = s.semana === ((f.semanas_detalhadas || []).slice(-1)[0]?.semana);
+  const totalSessoes = s.sessoes_por_semana ?? 3;
+  const sessoesDone = progresso.filter(p =>
+    p.semana === s.semana && p.fase === f.numero && isSessionKey(p.exercicio) && p.concluido
+  ).length;
+  const sessoesDoneCapped = Math.min(sessoesDone, totalSessoes);
+  const allDone = isAtual && sessoesDoneCapped >= totalSessoes;
+  const ultimaSemanaDaFase = s.semana === ((f.semanas_detalhadas || getDerivedWeeks(f)).slice(-1)[0]?.semana) ||
+    s.semana - ((f.semanas_detalhadas?.[0]?.semana) || s.semana) === (f.duracao_semanas || totalFaseSemanas) - 1;
+
+  const duracaoTotal = s.duracao_sessao_minutos ?? 25;
+  const perEx = all.length ? Math.max(3, Math.round(duracaoTotal / all.length)) : duracaoTotal;
+
+  const handleMarcarSessao = () => {
+    if (!isAtual || sessoesDoneCapped >= totalSessoes) return;
+    onToggle(SESSION_KEY(sessoesDoneCapped + 1), true);
+  };
 
   return (
     <div className="px-3 pb-3 space-y-3 text-[11px]">
-      <div className="grid grid-cols-2 gap-2 pt-1">
-        <Info label="FOCO" value={s.foco || "—"} />
-        <Info label="SESSÕES" value={`${s.sessoes_por_semana ?? "—"}x · ${s.duracao_sessao_minutos ?? "—"}min`} />
+      {/* COMO EXECUTAR — bloco fixo no topo */}
+      <div className="rounded-lg p-3 text-[10.5px] leading-relaxed" style={{ background: `${C.cyan}10`, border: `1px solid ${C.cyan}30` }}>
+        <div className="font-mono font-bold mb-1 tracking-wider" style={{ color: C.cyan }}>📋 COMO EXECUTAR</div>
+        <ul className="space-y-0.5 opacity-90">
+          <li>• Faça <b>antes do treino principal</b> ou em dia separado.</li>
+          <li>• Execute na <b>ordem indicada</b>.</li>
+          <li>• Descanse <b>30–60s</b> entre séries.</li>
+          <li>• Duração total: <b>~{Math.max(20, duracaoTotal)}–{Math.max(30, duracaoTotal + 5)}min</b>.</li>
+        </ul>
       </div>
 
-      {isAtual && semanaPct && semanaPct.total > 0 && (
+      <div className="grid grid-cols-2 gap-2 pt-1">
+        <Info label="FOCO" value={s.foco || "—"} />
+        <Info label="SESSÕES" value={`${totalSessoes}x · ${duracaoTotal}min`} />
+      </div>
+
+      {isAtual && (
         <div>
-          <div className="flex justify-between text-[9px] mb-1 opacity-70"><span>PROGRESSO DA SEMANA</span><span>{semanaPct.done}/{semanaPct.total}</span></div>
+          <div className="flex justify-between text-[9px] mb-1 opacity-70"><span>PROGRESSO DA SEMANA</span><span>{sessoesDoneCapped}/{totalSessoes}</span></div>
           <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "#ffffff15" }}>
-            <div className="h-full" style={{ width: `${semanaPct.pct}%`, background: C.green }} />
+            <div className="h-full transition-all" style={{ width: `${totalSessoes ? (sessoesDoneCapped / totalSessoes) * 100 : 0}%`, background: C.green }} />
           </div>
         </div>
       )}
@@ -538,30 +560,35 @@ function SemanaBody({
       <div>
         <div className="font-mono text-[10px] font-bold mb-1.5 opacity-70">EXERCÍCIOS PRIORITÁRIOS</div>
         <div className="space-y-1.5">
-          {all.map((ex, i) => {
-            const checked = checkedOf(ex.nome);
-            const interactive = isAtual;
-            return (
-              <div key={i} className="p-2 rounded" style={{ background: checked ? `${C.green}10` : "#ffffff05", borderLeft: `2px solid ${checked ? C.green : C.gold}` }}>
-                <div className="flex items-start gap-2">
-                  {interactive ? (
-                    <input type="checkbox" checked={checked} onChange={(e) => onToggle(ex.nome, e.target.checked)} className="mt-0.5" />
-                  ) : <div className="w-3.5" />}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-bold text-white">{String(i + 1).padStart(2, "0")}. {ex.nome}</span>
-                      {ex.fase_corretiva != null && <span className="text-[9px] px-1 py-0.5 rounded font-mono" style={{ background: `${C.cyan}20`, color: C.cyan }}>F{ex.fase_corretiva}</span>}
-                    </div>
-                    <div className="opacity-70 text-[10px]">{ex.series || "—"} · {ex.reps_ou_tempo || "—"}</div>
-                    {ex.cue_principal && <div className="text-[10px] mt-0.5">💡 {ex.cue_principal}</div>}
-                    {ex.progressao_semana_seguinte && <div className="text-[10px] opacity-70 mt-0.5">→ Próxima sem: {ex.progressao_semana_seguinte}</div>}
-                  </div>
+          {all.map((ex, i) => (
+            <div key={i} className="p-2 rounded" style={{ background: "#ffffff05", borderLeft: `2px solid ${C.gold}` }}>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="font-bold text-white">{String(i + 1).padStart(2, "0")}. {ex.nome}</span>
+                  {ex.fase_corretiva != null && <span className="text-[9px] px-1 py-0.5 rounded font-mono" style={{ background: `${C.cyan}20`, color: C.cyan }}>F{ex.fase_corretiva}</span>}
                 </div>
+                <div className="text-[9.5px] font-mono opacity-60 mt-0.5">
+                  {String(i + 1).padStart(2, "0")} de {String(all.length).padStart(2, "0")} · ~{perEx}min
+                </div>
+                <div className="opacity-70 text-[10px] mt-0.5">{ex.series || "—"} · {ex.reps_ou_tempo || "—"}</div>
+                {ex.cue_principal && <div className="text-[10px] mt-0.5">💡 {ex.cue_principal}</div>}
+                {ex.progressao_semana_seguinte && <div className="text-[10px] opacity-70 mt-0.5">→ Próxima sem: {ex.progressao_semana_seguinte}</div>}
               </div>
-            );
-          })}
+            </div>
+          ))}
         </div>
       </div>
+
+      {/* CHECKBOX SESSÃO CONCLUÍDA */}
+      {isAtual && sessoesDoneCapped < totalSessoes && (
+        <button
+          onClick={handleMarcarSessao}
+          className="w-full py-2.5 rounded-lg font-bold text-xs flex items-center justify-center gap-2 transition-all hover:scale-[1.01]"
+          style={{ background: C.green, color: "white" }}
+        >
+          <CheckCircle2 className="w-4 h-4" /> Marcar sessão {sessoesDoneCapped + 1} como concluída
+        </button>
+      )}
 
       {!!(s.o_que_evitar_essa_semana?.length) && (
         <div className="p-2 rounded text-[10px]" style={{ background: `${C.red}10`, border: `1px solid ${C.red}30` }}>
@@ -570,7 +597,8 @@ function SemanaBody({
         </div>
       )}
 
-      {s.sinal_verde_para_avancar && (
+      {/* SINAL VERDE só aparece quando todas as sessões foram concluídas */}
+      {isAtual && allDone && s.sinal_verde_para_avancar && (
         <div className="p-2 rounded text-[10px]" style={{ background: `${C.green}10`, border: `1px solid ${C.green}30` }}>
           <div className="font-mono font-bold mb-1" style={{ color: C.green }}>✓ SINAL VERDE PARA AVANÇAR</div>
           {s.sinal_verde_para_avancar}
@@ -580,7 +608,7 @@ function SemanaBody({
       {isAtual && allDone && (
         <div className="p-3 rounded text-center space-y-2" style={{ background: `${C.green}15`, border: `1px solid ${C.green}` }}>
           <div className="flex items-center justify-center gap-2 font-bold" style={{ color: C.green }}>
-            <CheckCircle2 className="w-4 h-4" /> SEMANA {s.semana} CONCLUÍDA
+            <CheckCircle2 className="w-4 h-4" /> SEMANA {s.semana} CONCLUÍDA ({totalSessoes}/{totalSessoes} sessões)
           </div>
           {ultimaSemanaDaFase ? (
             <button onClick={onAvancarFase} className="px-3 py-1.5 rounded font-bold text-xs" style={{ background: C.gold, color: "#1A1100" }}>
