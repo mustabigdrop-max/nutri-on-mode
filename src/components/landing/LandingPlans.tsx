@@ -316,7 +316,6 @@ const LandingPlans = () => {
       </motion.div>
 
       <div className="mb-12" />
-      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         {plans.map((plan) => (
