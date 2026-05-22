@@ -94,12 +94,38 @@ function detectFase(dia: number): Fase {
 export default function VeraPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [phase, setPhase] = useState<"intake" | "chat">("intake");
+  const [searchParams] = useSearchParams();
+  const apexFlag = searchParams.get("avaliacao") === "apex";
+  const apexAtletaId = searchParams.get("atleta");
+
+  const [phase, setPhase] = useState<"intake" | "chat" | "apex">(apexFlag ? "apex" : "intake");
   const [anamnese, setAnamnese] = useState<AnamneseFeminina>(EMPTY);
   const [loadingExisting, setLoadingExisting] = useState(true);
+  const [apexPackage, setApexPackage] = useState<ApexToVERAPackage | null>(null);
+  const [apexDiagnostic, setApexDiagnostic] = useState<VERADiagnostic | null>(null);
+  const [apexLoading, setApexLoading] = useState(false);
 
-  // Load most recent anamnese for this coach
+  // Load APEX bridge package
   useEffect(() => {
+    if (!apexFlag || !apexAtletaId) return;
+    setApexLoading(true);
+    (async () => {
+      const { data } = await supabase
+        .from("apex_vera_bridge" as any)
+        .select("*")
+        .eq("atleta_id", apexAtletaId)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (data) {
+        const pkg = (data as any).package as ApexToVERAPackage;
+        setApexPackage(pkg);
+        setApexDiagnostic(buildDeterministicDiagnostic(pkg));
+      }
+      setApexLoading(false);
+    })();
+  }, [apexFlag, apexAtletaId]);
+
     if (!user?.id) return;
     (async () => {
       const { data } = await supabase
