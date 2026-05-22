@@ -1549,6 +1549,14 @@ function TrainingDayCard({ day, index, expanded, onToggle, expandedExercise, set
             <div className="px-4 pb-4 space-y-3">
               {/* Perfis de Resistência */}
               <SessionProfilePanel exercises={day.exercises || []} />
+              {/* Supercompensação por grupo muscular */}
+              <SupercompPanel athleteId={athleteId} muscleGroups={muscleTags} />
+              {/* Repeated Bout Effect — alerta de adaptação */}
+              <RBEPanel
+                athleteId={athleteId}
+                exercises={(day.exercises || []).map((e: any) => ({ name: e?.name ?? e?.nome ?? "" }))}
+                mesoStart={(() => { const d = new Date(); d.setDate(d.getDate() - 28); return d.toISOString(); })()}
+              />
               {/* Ondulação de Zonas de Repetição */}
               {(() => {
                 const pattern = WAVE_PATTERNS[DEFAULT_PATTERN_KEY];
