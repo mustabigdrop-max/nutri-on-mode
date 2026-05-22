@@ -966,6 +966,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 
 // ─── MAIN COMPONENT ──────────────────────────────────────────────
 export default function ApexVisualV3() {
+  const navigate = useNavigate();
   const [catKey, setCatKey] = useState("mens_physique");
   const [fotoF, setFotoF] = useState<File | null>(null);
   const [fotoC, setFotoC] = useState<File | null>(null);
