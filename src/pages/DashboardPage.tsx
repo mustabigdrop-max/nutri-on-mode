@@ -1155,6 +1155,9 @@ const DashboardPage = () => {
           </div>
           <span className="rounded-full px-2 py-1 text-[9px] font-mono font-bold" style={{ background: "rgba(167,139,250,0.18)", color: "#A78BFA" }}>FEMININO</span>
           <ChevronRight className="h-4 w-4" style={{ color: "#A78BFA" }} />
+        </motion.button>
+
+
 
         <motion.button
           initial={{ opacity: 0, y: 8 }}
