@@ -1,11 +1,18 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowLeft, Sparkles, Send, Loader2, AlertTriangle, Heart, ShieldAlert } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { VERA_AGENT_SYSTEM } from "@/utils/veraAgentPrompt";
+import {
+  buildDeterministicDiagnostic,
+  formatProtocolForTrainingOn,
+  OITO_PILARES,
+  type ApexToVERAPackage,
+  type VERADiagnostic,
+} from "@/utils/apexVeraMap";
 
 const PURPLE = "#A78BFA";
 const BG = "#0A0A0F";
