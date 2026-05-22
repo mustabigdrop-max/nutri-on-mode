@@ -795,6 +795,10 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
                     gridMode={gridMode}
                     chains={chains}
                     plumbXOverride={manualPlumb[view]}
+                    manualSpine={manualSpinePositions[view]}
+                    onSpineMove={handleSpineMove}
+                    onSpineRelease={handleSpineRelease}
+                    onSpineReset={resetSpinePositions}
                   />
                   {/* Pulse de sugestão durante o modo manual */}
                   {manualMode && !showPlumbInstruction && (
