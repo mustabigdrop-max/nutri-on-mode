@@ -43,6 +43,8 @@ import { RIRBadge, MesocycleRIRPlanner } from "@/components/training/RIRControls
 import { calcWeekRIR, resolveRIRForExercise, buildRIRInstruction } from "@/utils/rirSystem";
 import { RepZoneBadge, SessionZonePanel, TripleCoherenceMarker } from "@/components/training/RepZoneBadge";
 import { buildZoneInstruction, getWeekZones, WAVE_PATTERNS, DEFAULT_PATTERN_KEY } from "@/utils/repZones";
+import { MuscleRegionBadge, RegionalCoveragePanel } from "@/components/training/RegionalCoverage";
+import { buildRegionalInstruction, findExerciseRegion } from "@/utils/muscleRegions";
 import { buildSystemPrescription } from "@/data/recommendSystem";
 import { TRAINING_SYSTEMS } from "@/data/trainingSystems";
 import CompetitionModeBlocks from "@/components/training/systems/CompetitionModeBlocks";
@@ -355,6 +357,10 @@ ${buildRIRInstruction(1, Math.max(parseInt(String(weeks)) || 8, 1))}
 ━━━ ZONAS DE REPETIÇÃO + ONDULAÇÃO — OBRIGATÓRIO ━━━
 ${buildZoneInstruction(1, Math.max(parseInt(String(weeks)) || 8, 1), DEFAULT_PATTERN_KEY)}
 ━━━ FIM ZONAS DE REPETIÇÃO ━━━
+
+━━━ HIPERTROFIA REGIONAL — OBRIGATÓRIO ━━━
+${buildRegionalInstruction(["ombro","costas","peito","biceps","triceps","quadriceps","posterior","gluteo","panturrilha"], "")}
+━━━ FIM HIPERTROFIA REGIONAL ━━━
 ${correctivePrompt ? `\n━━━ PROTOCOLO CORRETIVO APEX (colado pelo coach) ━━━\nUse as recomendações abaixo como BASE para os exercícios corretivos, ativações, finalizadores e ajustes de volume por grupo. Integre ao protocolo principal sem duplicar exercícios. Corretivos APEX NUNCA recebem RIR 0 — mínimo RIR 1.\n\n${correctivePrompt}\n━━━ FIM PROTOCOLO CORRETIVO ━━━` : ""}
 
 ━━━ OUTPUT OBRIGATÓRIO ━━━
