@@ -361,187 +361,200 @@ function AnamneseFemininaForm({ initial, onComplete }: { initial: AnamneseFemini
   const setField = <K extends keyof AnamneseFeminina>(k: K, v: AnamneseFeminina[K]) =>
     setData((s) => ({ ...s, [k]: v }));
 
+  const stepTitles = ["Ciclo menstrual", "Anticoncepcionais", "Histórico", "Farmacologia", "Objetivos"];
+
   return (
-    <div style={{ padding: "20px", maxWidth: 640, margin: "0 auto" }}>
-      {/* Progress bar */}
-      <div style={{ marginBottom: 24 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-          {steps.map((s, i) => (
-            <span key={i} style={{ fontSize: 9, fontWeight: 500, color: i + 1 === step ? PURPLE : i + 1 < step ? "rgba(167,139,250,0.5)" : "rgba(255,255,255,0.2)", letterSpacing: "0.06em", textTransform: "uppercase" }}>{s}</span>
-          ))}
-        </div>
-        <div style={{ height: 2, borderRadius: 1, background: "rgba(255,255,255,0.06)", overflow: "hidden" }}>
-          <div style={{ height: "100%", width: `${(step / steps.length) * 100}%`, background: PURPLE, borderRadius: 1, transition: "width .3s" }} />
+    <div style={{ padding: "20px 0 40px", maxWidth: 720, margin: "0 auto" }}>
+      {/* Barras superiores de progresso */}
+      <div style={{ padding: "0 24px 18px" }}>
+        <div style={{ display: "flex", gap: 4 }}>
+          {steps.map((s, i) => {
+            const idx = i + 1;
+            const active = idx === step;
+            const done = idx < step;
+            return (
+              <div key={i} style={{ flex: 1 }}>
+                <div style={{ height: 2, borderRadius: 1, background: done || active ? PURPLE : "rgba(255,255,255,0.08)", transition: "background .3s" }} />
+                <p style={{ fontSize: 9, marginTop: 5, color: active ? PURPLE : done ? "rgba(167,139,250,0.5)" : "rgba(255,255,255,0.2)", letterSpacing: "0.08em", textTransform: "uppercase", textAlign: "center", marginBottom: 0 }}>{s}</p>
+              </div>
+            );
+          })}
         </div>
       </div>
 
-      {/* STEP 1 — Ciclo */}
-      {step === 1 && (
-        <div>
-          <SectionTitle>Ciclo menstrual</SectionTitle>
-          <FieldLabel>Dia atual do ciclo (1-28)</FieldLabel>
-          <input
-            type="number" min={1} max={28} placeholder="Ex: 8"
-            value={data.dia_ciclo_atual ?? ""}
-            onChange={(e) => {
-              const v = parseInt(e.target.value);
-              if (isNaN(v)) { setField("dia_ciclo_atual", null); setField("fase_atual", "NAO_INFORMADO"); return; }
-              setField("dia_ciclo_atual", v);
-              setField("fase_atual", detectFase(v));
-            }}
-            style={inputStyle}
-          />
-          {data.fase_atual !== "NAO_INFORMADO" && (
-            <div style={{ marginTop: 8, padding: "6px 10px", background: "rgba(167,139,250,0.08)", border: "0.5px solid rgba(167,139,250,0.2)", borderRadius: 8, display: "flex", gap: 6, alignItems: "center" }}>
-              <span style={{ fontSize: 10, color: PURPLE }}>Fase detectada:</span>
-              <span style={{ fontSize: 10, fontWeight: 600, color: PURPLE }}>{data.fase_atual}</span>
-            </div>
-          )}
+      {/* Card do step atual */}
+      <div style={{ padding: "0 24px" }}>
+        <div style={{ background: "rgba(255,255,255,0.03)", border: "0.5px solid rgba(255,255,255,0.08)", borderRadius: 14, overflow: "hidden" }}>
+          <div style={{ padding: "14px 20px", borderBottom: "0.5px solid rgba(255,255,255,0.06)", background: "rgba(167,139,250,0.04)" }}>
+            <p style={{ fontSize: 9, fontWeight: 600, color: "rgba(167,139,250,0.6)", letterSpacing: "0.1em", textTransform: "uppercase", margin: "0 0 3px" }}>{`0${step} / 0${steps.length}`}</p>
+            <p style={{ fontSize: 15, fontWeight: 500, color: "rgba(255,255,255,0.9)", margin: 0 }}>{stepTitles[step - 1]}</p>
+          </div>
 
-          <FieldLabel className="mt-4">Ciclo regular?</FieldLabel>
-          <YesNo value={data.ciclo_regular} onChange={(v) => setField("ciclo_regular", v)} />
+          <div style={{ padding: 20 }}>
+            {/* STEP 1 — Ciclo */}
+            {step === 1 && (
+              <div>
+                <FieldLabel>Dia atual do ciclo (1-28)</FieldLabel>
+                <input type="number" min={1} max={28} placeholder="Ex: 8" value={data.dia_ciclo_atual ?? ""}
+                  onChange={(e) => {
+                    const v = parseInt(e.target.value);
+                    if (isNaN(v)) { setField("dia_ciclo_atual", null); setField("fase_atual", "NAO_INFORMADO"); return; }
+                    setField("dia_ciclo_atual", v);
+                    setField("fase_atual", detectFase(v));
+                  }} style={inputStyle} />
+                {data.fase_atual !== "NAO_INFORMADO" && (
+                  <div style={{ marginTop: 8, padding: "8px 12px", background: FASE_CONFIG[data.fase_atual].bg, border: `0.5px solid ${FASE_CONFIG[data.fase_atual].border}`, borderRadius: 8, display: "flex", gap: 8, alignItems: "center" }}>
+                    <span style={{ width: 6, height: 6, borderRadius: "50%", background: FASE_CONFIG[data.fase_atual].cor, flexShrink: 0 }} />
+                    <span style={{ fontSize: 10, fontWeight: 600, color: FASE_CONFIG[data.fase_atual].cor }}>Fase detectada: {FASE_CONFIG[data.fase_atual].label}</span>
+                    <span style={{ fontSize: 10, color: "rgba(255,255,255,0.3)", marginLeft: "auto" }}>{FASE_CONFIG[data.fase_atual].instrucao}</span>
+                  </div>
+                )}
 
-          <FieldLabel className="mt-4">Duração média do ciclo (dias)</FieldLabel>
-          <input type="number" min={20} max={45} value={data.duracao_ciclo}
-            onChange={(e) => setField("duracao_ciclo", parseInt(e.target.value) || 28)}
-            style={inputStyle} />
+                <FieldLabel className="mt-4">Ciclo regular?</FieldLabel>
+                <YesNo value={data.ciclo_regular} onChange={(v) => setField("ciclo_regular", v)} />
+
+                <FieldLabel className="mt-4">Duração média do ciclo (dias)</FieldLabel>
+                <input type="number" min={20} max={45} value={data.duracao_ciclo}
+                  onChange={(e) => setField("duracao_ciclo", parseInt(e.target.value) || 28)} style={inputStyle} />
+              </div>
+            )}
+
+            {/* STEP 2 — Anticoncepcional */}
+            {step === 2 && (
+              <div>
+                <FieldLabel>Usa anticoncepcional?</FieldLabel>
+                <YesNo value={data.usa_anticoncepcional} onChange={(v) => setField("usa_anticoncepcional", v)} />
+                {data.usa_anticoncepcional && (
+                  <>
+                    <FieldLabel className="mt-4">Tipo</FieldLabel>
+                    {[
+                      { v: "COMBINADO_ORAL", l: "Pílula combinada" },
+                      { v: "DIU_HORMONAL", l: "DIU hormonal (Mirena)" },
+                      { v: "DIU_COBRE", l: "DIU de cobre" },
+                      { v: "INJETAVEL", l: "Injetável (Depo-Provera)" },
+                      { v: "IMPLANTE", l: "Implante subdérmico" },
+                      { v: "OUTRO", l: "Outro" },
+                    ].map((opt) => (
+                      <OptionButton key={opt.v} selected={data.tipo_anticoncepcional === opt.v} onClick={() => setField("tipo_anticoncepcional", opt.v)}>{opt.l}</OptionButton>
+                    ))}
+                    <FieldLabel className="mt-4">Nome comercial (opcional)</FieldLabel>
+                    <input type="text" placeholder="Ex: Yasmin, Mirena…" value={data.anticoncepcional_nome}
+                      onChange={(e) => setField("anticoncepcional_nome", e.target.value)} style={inputStyle} />
+                  </>
+                )}
+              </div>
+            )}
+
+            {/* STEP 3 — Histórico */}
+            {step === 3 && (
+              <div>
+                <FieldLabel>Histórico de dieta restritiva?</FieldLabel>
+                <YesNo value={data.historico_dieta_restritiva} onChange={(v) => setField("historico_dieta_restritiva", v)} />
+                {data.historico_dieta_restritiva && (
+                  <>
+                    <FieldLabel className="mt-3">Por quantos anos?</FieldLabel>
+                    <input type="number" min={0} max={40} value={data.anos_restricao ?? ""} onChange={(e) => setField("anos_restricao", parseInt(e.target.value) || null)} style={inputStyle} />
+                  </>
+                )}
+
+                <FieldLabel className="mt-4">Gestação recente?</FieldLabel>
+                <YesNo value={data.gestacao_recente} onChange={(v) => setField("gestacao_recente", v)} />
+                {data.gestacao_recente && (
+                  <>
+                    <FieldLabel className="mt-3">Quantos meses pós-parto?</FieldLabel>
+                    <input type="number" min={0} max={60} value={data.meses_pos_parto ?? ""} onChange={(e) => setField("meses_pos_parto", parseInt(e.target.value) || null)} style={inputStyle} />
+                  </>
+                )}
+
+                <FieldLabel className="mt-4">Menopausa?</FieldLabel>
+                <YesNo value={data.menopausa} onChange={(v) => setField("menopausa", v)} />
+
+                <FieldLabel className="mt-4">Perimenopausa?</FieldLabel>
+                <YesNo value={data.perimenopausa} onChange={(v) => setField("perimenopausa", v)} />
+
+                <FieldLabel className="mt-4">Histórico de transtorno alimentar?</FieldLabel>
+                <YesNo value={data.historico_ta} onChange={(v) => setField("historico_ta", v)} />
+                {data.historico_ta && (
+                  <div style={{ marginTop: 10, padding: 10, borderRadius: 8, background: "rgba(239,68,68,0.08)", border: "0.5px solid rgba(239,68,68,0.25)", display: "flex", gap: 8, alignItems: "flex-start" }}>
+                    <AlertTriangle className="w-3 h-3 mt-0.5 shrink-0" style={{ color: "#f87171" }} />
+                    <p style={{ fontSize: 10, color: "#fca5a5", margin: 0 }}>Abordagem especial — encaminhar para equipe multidisciplinar antes de qualquer déficit calórico.</p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* STEP 4 — Farmacologia */}
+            {step === 4 && (
+              <div>
+                <FieldLabel>Uso de EAAs?</FieldLabel>
+                <YesNo value={data.usa_eaa} onChange={(v) => setField("usa_eaa", v)} />
+                {data.usa_eaa && (
+                  <>
+                    <FieldLabel className="mt-3">Compostos em uso</FieldLabel>
+                    <textarea rows={3} placeholder="Ex: Oxandrolona 10mg/dia, Primobolan 50mg/sem…" value={data.compostos_em_uso}
+                      onChange={(e) => setField("compostos_em_uso", e.target.value)} style={{ ...inputStyle, resize: "vertical" }} />
+                    <FieldLabel className="mt-3">Ciclos anteriores</FieldLabel>
+                    <input type="number" min={0} max={50} value={data.ciclos_anteriores}
+                      onChange={(e) => setField("ciclos_anteriores", parseInt(e.target.value) || 0)} style={inputStyle} />
+                  </>
+                )}
+              </div>
+            )}
+
+            {/* STEP 5 — Objetivos */}
+            {step === 5 && (
+              <div>
+                <FieldLabel>Objetivo principal</FieldLabel>
+                {[
+                  { v: "EMAGRECIMENTO", l: "Emagrecimento" },
+                  { v: "HIPERTROFIA", l: "Hipertrofia" },
+                  { v: "RECOMP", l: "Recomposição corporal" },
+                  { v: "COMPETICAO", l: "Competição" },
+                  { v: "SAUDE", l: "Saúde / longevidade" },
+                ].map((opt) => (
+                  <OptionButton key={opt.v} selected={data.objetivo_principal === opt.v} onClick={() => setField("objetivo_principal", opt.v)}>{opt.l}</OptionButton>
+                ))}
+
+                {data.objetivo_principal === "COMPETICAO" && (
+                  <>
+                    <FieldLabel className="mt-3">Categoria de competição</FieldLabel>
+                    <input type="text" placeholder="Ex: Wellness, Bikini, Figure…" value={data.categoria_competicao}
+                      onChange={(e) => setField("categoria_competicao", e.target.value)} style={inputStyle} />
+                  </>
+                )}
+
+                <FieldLabel className="mt-4">Pontos fracos</FieldLabel>
+                <input type="text" placeholder="Ex: glúteo, posterior de coxa…" value={data.pontos_fracos}
+                  onChange={(e) => setField("pontos_fracos", e.target.value)} style={inputStyle} />
+
+                <FieldLabel className="mt-4">Lesões / restrições</FieldLabel>
+                <input type="text" placeholder="Ex: lombar, joelho direito…" value={data.lesoes}
+                  onChange={(e) => setField("lesoes", e.target.value)} style={inputStyle} />
+              </div>
+            )}
+          </div>
         </div>
-      )}
 
-      {/* STEP 2 — Anticoncepcional */}
-      {step === 2 && (
-        <div>
-          <SectionTitle>Anticoncepcionais</SectionTitle>
-          <FieldLabel>Usa anticoncepcional?</FieldLabel>
-          <YesNo value={data.usa_anticoncepcional} onChange={(v) => setField("usa_anticoncepcional", v)} />
-
-          {data.usa_anticoncepcional && (
-            <>
-              <FieldLabel className="mt-4">Tipo</FieldLabel>
-              {[
-                { v: "COMBINADO_ORAL", l: "Pílula combinada" },
-                { v: "DIU_HORMONAL", l: "DIU hormonal (Mirena)" },
-                { v: "DIU_COBRE", l: "DIU de cobre" },
-                { v: "INJETAVEL", l: "Injetável (Depo-Provera)" },
-                { v: "IMPLANTE", l: "Implante subdérmico" },
-                { v: "OUTRO", l: "Outro" },
-              ].map((opt) => (
-                <OptionButton key={opt.v} selected={data.tipo_anticoncepcional === opt.v} onClick={() => setField("tipo_anticoncepcional", opt.v)}>{opt.l}</OptionButton>
-              ))}
-              <FieldLabel className="mt-4">Nome comercial (opcional)</FieldLabel>
-              <input type="text" placeholder="Ex: Yasmin, Mirena…" value={data.anticoncepcional_nome}
-                onChange={(e) => setField("anticoncepcional_nome", e.target.value)} style={inputStyle} />
-            </>
+        {/* Nav buttons */}
+        <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
+          {step > 1 && (
+            <button onClick={() => setStep((s) => s - 1)} style={{ flex: 1, padding: 13, background: "transparent", border: "0.5px solid rgba(255,255,255,0.1)", borderRadius: 12, cursor: "pointer", fontSize: 12, color: "rgba(255,255,255,0.4)", letterSpacing: "0.04em" }}>← Voltar</button>
           )}
+          <button
+            onClick={() => { if (step < steps.length) setStep((s) => s + 1); else onComplete(data); }}
+            style={{ flex: 2, padding: 13, background: "rgba(167,139,250,0.18)", border: "0.5px solid rgba(167,139,250,0.4)", borderRadius: 12, cursor: "pointer", fontSize: 13, fontWeight: 600, color: PURPLE, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, letterSpacing: "0.04em", transition: "all .2s" }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(167,139,250,0.25)"; e.currentTarget.style.borderColor = "rgba(167,139,250,0.6)"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(167,139,250,0.18)"; e.currentTarget.style.borderColor = "rgba(167,139,250,0.4)"; }}
+          >
+            {step < steps.length ? "Continuar" : "Iniciar VERA"}
+            <span style={{ fontSize: 14 }}>→</span>
+          </button>
         </div>
-      )}
-
-      {/* STEP 3 — Histórico */}
-      {step === 3 && (
-        <div>
-          <SectionTitle>Histórico</SectionTitle>
-          <FieldLabel>Histórico de dieta restritiva?</FieldLabel>
-          <YesNo value={data.historico_dieta_restritiva} onChange={(v) => setField("historico_dieta_restritiva", v)} />
-          {data.historico_dieta_restritiva && (
-            <>
-              <FieldLabel className="mt-3">Por quantos anos?</FieldLabel>
-              <input type="number" min={0} max={40} value={data.anos_restricao ?? ""} onChange={(e) => setField("anos_restricao", parseInt(e.target.value) || null)} style={inputStyle} />
-            </>
-          )}
-
-          <FieldLabel className="mt-4">Gestação recente?</FieldLabel>
-          <YesNo value={data.gestacao_recente} onChange={(v) => setField("gestacao_recente", v)} />
-          {data.gestacao_recente && (
-            <>
-              <FieldLabel className="mt-3">Quantos meses pós-parto?</FieldLabel>
-              <input type="number" min={0} max={60} value={data.meses_pos_parto ?? ""} onChange={(e) => setField("meses_pos_parto", parseInt(e.target.value) || null)} style={inputStyle} />
-            </>
-          )}
-
-          <FieldLabel className="mt-4">Menopausa?</FieldLabel>
-          <YesNo value={data.menopausa} onChange={(v) => setField("menopausa", v)} />
-
-          <FieldLabel className="mt-4">Perimenopausa?</FieldLabel>
-          <YesNo value={data.perimenopausa} onChange={(v) => setField("perimenopausa", v)} />
-
-          <FieldLabel className="mt-4">Histórico de transtorno alimentar?</FieldLabel>
-          <YesNo value={data.historico_ta} onChange={(v) => setField("historico_ta", v)} />
-          {data.historico_ta && (
-            <div style={{ marginTop: 10, padding: 10, borderRadius: 8, background: "rgba(239,68,68,0.08)", border: "0.5px solid rgba(239,68,68,0.25)", display: "flex", gap: 8, alignItems: "flex-start" }}>
-              <AlertTriangle className="w-3 h-3 mt-0.5 shrink-0" style={{ color: "#f87171" }} />
-              <p style={{ fontSize: 10, color: "#fca5a5", margin: 0 }}>Abordagem especial — encaminhar para equipe multidisciplinar antes de qualquer déficit calórico.</p>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* STEP 4 — Farmacologia */}
-      {step === 4 && (
-        <div>
-          <SectionTitle>Farmacologia</SectionTitle>
-          <FieldLabel>Uso de EAAs?</FieldLabel>
-          <YesNo value={data.usa_eaa} onChange={(v) => setField("usa_eaa", v)} />
-          {data.usa_eaa && (
-            <>
-              <FieldLabel className="mt-3">Compostos em uso</FieldLabel>
-              <textarea rows={3} placeholder="Ex: Oxandrolona 10mg/dia, Primobolan 50mg/sem…" value={data.compostos_em_uso}
-                onChange={(e) => setField("compostos_em_uso", e.target.value)} style={{ ...inputStyle, resize: "vertical" }} />
-              <FieldLabel className="mt-3">Ciclos anteriores</FieldLabel>
-              <input type="number" min={0} max={50} value={data.ciclos_anteriores}
-                onChange={(e) => setField("ciclos_anteriores", parseInt(e.target.value) || 0)} style={inputStyle} />
-            </>
-          )}
-        </div>
-      )}
-
-      {/* STEP 5 — Objetivos */}
-      {step === 5 && (
-        <div>
-          <SectionTitle>Objetivos</SectionTitle>
-          <FieldLabel>Objetivo principal</FieldLabel>
-          {[
-            { v: "EMAGRECIMENTO", l: "Emagrecimento" },
-            { v: "HIPERTROFIA", l: "Hipertrofia" },
-            { v: "RECOMP", l: "Recomposição corporal" },
-            { v: "COMPETICAO", l: "Competição" },
-            { v: "SAUDE", l: "Saúde / longevidade" },
-          ].map((opt) => (
-            <OptionButton key={opt.v} selected={data.objetivo_principal === opt.v} onClick={() => setField("objetivo_principal", opt.v)}>{opt.l}</OptionButton>
-          ))}
-
-          {data.objetivo_principal === "COMPETICAO" && (
-            <>
-              <FieldLabel className="mt-3">Categoria de competição</FieldLabel>
-              <input type="text" placeholder="Ex: Wellness, Bikini, Figure…" value={data.categoria_competicao}
-                onChange={(e) => setField("categoria_competicao", e.target.value)} style={inputStyle} />
-            </>
-          )}
-
-          <FieldLabel className="mt-4">Pontos fracos</FieldLabel>
-          <input type="text" placeholder="Ex: glúteo, posterior de coxa…" value={data.pontos_fracos}
-            onChange={(e) => setField("pontos_fracos", e.target.value)} style={inputStyle} />
-
-          <FieldLabel className="mt-4">Lesões / restrições</FieldLabel>
-          <input type="text" placeholder="Ex: lombar, joelho direito…" value={data.lesoes}
-            onChange={(e) => setField("lesoes", e.target.value)} style={inputStyle} />
-        </div>
-      )}
-
-      {/* Nav buttons */}
-      <div style={{ display: "flex", gap: 8, marginTop: 24 }}>
-        {step > 1 && (
-          <button onClick={() => setStep((s) => s - 1)} style={{ flex: 1, padding: 10, background: "transparent", border: "0.5px solid rgba(255,255,255,0.12)", borderRadius: 10, cursor: "pointer", fontSize: 12, color: "rgba(255,255,255,0.4)" }}>← Voltar</button>
-        )}
-        <button
-          onClick={() => { if (step < steps.length) setStep((s) => s + 1); else onComplete(data); }}
-          style={{ flex: 2, padding: 10, background: "rgba(167,139,250,0.2)", border: "0.5px solid rgba(167,139,250,0.4)", borderRadius: 10, cursor: "pointer", fontSize: 12, fontWeight: 600, color: PURPLE }}
-        >
-          {step < steps.length ? "Continuar →" : "Iniciar VERA →"}
-        </button>
       </div>
     </div>
   );
 }
+
 
 const inputStyle: React.CSSProperties = {
   width: "100%", padding: "10px 14px",
