@@ -10,7 +10,7 @@ import {
   Target, Shield, AlertTriangle, Clock, Flame, Eye, Brain,
   ChevronDown, ChevronUp, Activity, Award, Bookmark, Share2,
   Trash2, Edit3, Users, X, Check, FileDown, RotateCcw,
-  Microscope, Scan, HeartPulse, BookOpen, TrendingDown, Layers, Sparkles,
+  Microscope, Scan, HeartPulse, BookOpen, TrendingDown, Layers, Sparkles, Flower2,
 } from "lucide-react";
 import { buildVolumeReport, detectGvtMismatch } from "@/lib/trainingVolume";
 import "@/styles/training-hud.css";
@@ -58,10 +58,11 @@ import { buildSystemPrescription } from "@/data/recommendSystem";
 import { TRAINING_SYSTEMS } from "@/data/trainingSystems";
 import CompetitionModeBlocks from "@/components/training/systems/CompetitionModeBlocks";
 import StratumAIAgent from "@/components/training/StratumAIAgent";
+import VERAAgent from "@/components/training/VERAAgent";
 
 const ADMIN_UID = "70e51469-1acf-4df6-afe6-f094d21db122";
 
-type Section = "gerar" | "readiness" | "fibras" | "sistemas" | "stratum" | "competicao" | "stratumai" | "progressao" | "volume" | "historico" | "config";
+type Section = "gerar" | "readiness" | "fibras" | "sistemas" | "stratum" | "competicao" | "stratumai" | "vera" | "progressao" | "volume" | "historico" | "config";
 
 const sectionNav: { id: Section; label: string; icon: any; adminOnly?: boolean }[] = [
   { id: "gerar", label: "Prescrição", icon: Brain },
@@ -74,6 +75,7 @@ const sectionNav: { id: Section; label: string; icon: any; adminOnly?: boolean }
   { id: "volume", label: "Volume", icon: BarChart3 },
   { id: "historico", label: "Histórico", icon: History },
   { id: "stratumai", label: "STRATUM AI", icon: Sparkles },
+  { id: "vera", label: "VERA", icon: Flower2 },
   { id: "config", label: "Config", icon: Settings },
 ];
 
@@ -155,6 +157,7 @@ export default function TrainingPage() {
             {section === "historico" && <HistorySection userId={user?.id} />}
             {section === "config" && <CoachConfigSection userId={user?.id} />}
             {section === "stratumai" && <StratumAIAgent userId={user?.id} />}
+            {section === "vera" && <VERAAgent userId={user?.id} />}
             {section === "competicao" && isAdmin && (
               <div className="space-y-4">
                 <CompetitionModeBlocks />
