@@ -1280,6 +1280,7 @@ export function calcAnalysisQuality(landmarks: Record<string, any>): AnalysisQua
 // ─── Overlay (HTML + SVG hybrid for crisp labels) ────────────────
 function OverlayLayer({
   data, selected, onSelect, eduMode, chainMode, debugMode, gridMode, chains, plumbXOverride,
+  manualSpine, onSpineMove, onSpineRelease, onSpineReset,
 }: {
   data: LandmarkView;
   selected: string | null;
@@ -1290,8 +1291,68 @@ function OverlayLayer({
   gridMode: boolean;
   chains: { name: string; nodes: string[]; description: string }[];
   plumbXOverride?: number | null;
+  manualSpine?: { c7?: { x: number; y: number } | null; l5?: { x: number; y: number } | null };
+  onSpineMove?: (key: "c7" | "l5", x: number, y: number) => void;
+  onSpineRelease?: () => void;
+  onSpineReset?: () => void;
 }) {
-  const lm = useMemo(() => snapToPlumbLine(data.landmarks, 100), [data.landmarks]);
+  // Aplica overrides manuais (drag livre X/Y) sobre o snap automático
+  const lm = useMemo(() => {
+    const snapped: any = snapToPlumbLine(data.landmarks, 100);
+    if (manualSpine?.c7) {
+      snapped.spine_c7 = { ...(snapped.spine_c7 || {}), x: manualSpine.c7.x, y: manualSpine.c7.y, manual: true, snapped: false };
+    }
+    if (manualSpine?.l5) {
+      snapped.spine_l5 = { ...(snapped.spine_l5 || {}), x: manualSpine.l5.x, y: manualSpine.l5.y, manual: true, snapped: false };
+    }
+    return snapped;
+  }, [data.landmarks, manualSpine]);
+
+  // ─── Drag livre de C7/L5 ─────────────────────────────────────
+  const svgRef = useRef<SVGSVGElement>(null);
+  const draggingRef = useRef<null | "c7" | "l5">(null);
+  const toSVGCoords = useCallback((clientX: number, clientY: number) => {
+    const svg = svgRef.current;
+    if (!svg) return null;
+    const r = svg.getBoundingClientRect();
+    if (!r.width || !r.height) return null;
+    return {
+      x: Math.max(0, Math.min(100, ((clientX - r.left) / r.width) * 100)),
+      y: Math.max(0, Math.min(100, ((clientY - r.top) / r.height) * 100)),
+    };
+  }, []);
+  const beginSpineDrag = useCallback((key: "c7" | "l5") => (e: React.MouseEvent | React.TouchEvent) => {
+    e.stopPropagation();
+    if ((e as any).preventDefault) (e as any).preventDefault();
+    draggingRef.current = key;
+    const handleMove = (ev: MouseEvent) => {
+      if (draggingRef.current !== key) return;
+      const c = toSVGCoords(ev.clientX, ev.clientY);
+      if (c) onSpineMove?.(key, c.x, c.y);
+    };
+    const handleTouchMove = (ev: TouchEvent) => {
+      if (draggingRef.current !== key) return;
+      const t = ev.touches[0]; if (!t) return;
+      if (ev.cancelable) ev.preventDefault();
+      const c = toSVGCoords(t.clientX, t.clientY);
+      if (c) onSpineMove?.(key, c.x, c.y);
+    };
+    const handleUp = () => {
+      draggingRef.current = null;
+      window.removeEventListener("mousemove", handleMove);
+      window.removeEventListener("mouseup", handleUp);
+      window.removeEventListener("touchmove", handleTouchMove);
+      window.removeEventListener("touchend", handleUp);
+      window.removeEventListener("touchcancel", handleUp);
+      onSpineRelease?.();
+    };
+    window.addEventListener("mousemove", handleMove);
+    window.addEventListener("mouseup", handleUp);
+    window.addEventListener("touchmove", handleTouchMove, { passive: false });
+    window.addEventListener("touchend", handleUp);
+    window.addEventListener("touchcancel", handleUp);
+  }, [toSVGCoords, onSpineMove, onSpineRelease]);
+
   const ang = data.angles;
 
   // Pre-compute label positions with collision avoidance
