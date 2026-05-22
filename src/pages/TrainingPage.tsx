@@ -73,6 +73,7 @@ const sectionNav: { id: Section; label: string; icon: any; adminOnly?: boolean }
   { id: "progressao", label: "Progressão", icon: TrendingUp },
   { id: "volume", label: "Volume", icon: BarChart3 },
   { id: "historico", label: "Histórico", icon: History },
+  { id: "stratumai", label: "STRATUM AI", icon: Sparkles },
   { id: "config", label: "Config", icon: Settings },
 ];
 
