@@ -1317,7 +1317,66 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
     setSavedAnalysisId(null);
     setSyncStatus(null);
     setPhotoUrls({});
+    setVertexV4Analysis(null);
+    setVertexV4Error(null);
   };
+
+  // Dr. VERTEX v4.0 — dispara análise farmacológica PhD em JSON
+  const runVertexV4 = useCallback(async () => {
+    if (!formData.compostos || formData.compostos.trim().length < 5) {
+      toast({ title: "Protocolo vazio", description: "Informe os compostos no campo Protocolo antes de analisar.", variant: "destructive" });
+      return;
+    }
+    setVertexV4Loading(true);
+    setVertexV4Error(null);
+    try {
+      const farmMeta = parseFarmMeta(analysisResult);
+      const meta = parseMeta(analysisResult);
+      const protocoloCompleto = `Compostos: ${formData.compostos}
+Objetivo do ciclo: ${objetivoCiclo}
+Semana ${semanaCiclo || "não informada"} de ${duracaoCiclo || "não informada"} semanas
+Suporte em uso: ${suporte || "não informado"}`;
+      const { data, error } = await supabase.functions.invoke("dr-vertex-analyze", {
+        body: {
+          atleta: {
+            nome: athlete?.nome,
+            categoria: cat?.label,
+            semanasShow: formData.semanas,
+            fase: objetivoCiclo,
+            peso: (athlete as any)?.peso,
+            altura: (athlete as any)?.altura,
+            experiencia: (athlete as any)?.experiencia,
+            condicoes: (athlete as any)?.condicoes,
+            suporte,
+            observacoes: formData.obs,
+          },
+          apexScores: {
+            bf_estimado: meta?.bfEst,
+            bf_meta: meta?.bfMeta,
+            condicionamento: segments.find((s) => /condicionamento/i.test(s.label))?.score,
+            dorsais: segments.find((s) => /dorsa|largura/i.test(s.label))?.score,
+            cintura: segments.find((s) => /cintura/i.test(s.label))?.score,
+            panturrilhas: segments.find((s) => /panturr/i.test(s.label))?.score,
+            sri: farmMeta?.scoreOtim,
+            achados_posturais: parseSection(analysisResult, "POSTURA", "TREINO") || "",
+          },
+          protocolo: protocoloCompleto,
+        },
+      });
+      if (error) throw new Error(error.message);
+      if ((data as any)?.error) throw new Error((data as any).error);
+      const analysis = (data as any)?.analysis;
+      if (!analysis) throw new Error("Resposta sem análise estruturada");
+      setVertexV4Analysis(analysis);
+      toast({ title: "Dr. VERTEX v4.0", description: "Análise PhD concluída." });
+    } catch (e: any) {
+      const msg = e?.message || "Falha na análise";
+      setVertexV4Error(msg);
+      toast({ title: "Erro Dr. VERTEX", description: msg, variant: "destructive" });
+    } finally {
+      setVertexV4Loading(false);
+    }
+  }, [formData, objetivoCiclo, semanaCiclo, duracaoCiclo, suporte, athlete, analysisResult]);
 
   const fetchSyncStatus = useCallback(async (athleteId: string | null) => {
     if (!athleteId) { setSyncStatus(null); return; }
