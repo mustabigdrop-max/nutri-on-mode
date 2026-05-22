@@ -1118,6 +1118,25 @@ const DashboardPage = () => {
           </button>
         </motion.div>
 
+        {/* Aprenda — aulas interativas */}
+        <motion.button
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.87 }}
+          onClick={() => navigate("/learn")}
+          className="w-full mb-4 flex items-center gap-3 rounded-xl border border-primary/20 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-4 text-left transition-all hover:border-primary/40 group"
+        >
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/15 text-xl group-hover:bg-primary/25 transition-colors">
+            🎓
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-bold text-foreground">Aprenda · Fisiologia do Treino</p>
+            <p className="text-[11px] text-muted-foreground">4 cards interativos · conecte ciência ao seu treino</p>
+          </div>
+          <span className="rounded-full bg-primary/15 px-2 py-1 text-[9px] font-mono font-bold text-primary">+50 XP</span>
+          <ChevronRight className="h-4 w-4 text-primary" />
+        </motion.button>
+
         <motion.button
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
