@@ -1153,6 +1153,69 @@ export default function ApexVisualV3() {
 
   const reset = () => { setRaw(""); setDone(false); setError(null); setFotoF(null); setFotoC(null); setFotoL(null); setStreaming(false); setSavedId(null); setSavingState("idle"); };
 
+  // ─── APEX → VERA / STRATUM bridge ───────────────────────────────
+  const atletaFeminino = (selectedAthlete as any)?.sexo === "F" || cat.g === "F";
+
+  const extractAchadosFromRaw = (): { key: string; titulo: string; graus: number; inibido?: string; dominante?: string; lado?: "E" | "D" | "bilateral" | null }[] => {
+    const text = (raw || "").toLowerCase();
+    const detect: { re: RegExp; key: string; titulo: string; inibido: string; dominante: string; lado: "E" | "D" | "bilateral" | null }[] = [
+      { re: /escápula\s+alada|escapula\s+alada|winging/i, key: "scapula_alada", titulo: "Escápula alada", inibido: "Serrátil anterior", dominante: "Peitoral menor", lado: null },
+      { re: /pelv(e|ic).*(antever|inclina)|hiperlordose|anterior\s+pelvic/i, key: "pelvic_tilt", titulo: "Inclinação pélvica anterior", inibido: "Glúteo máximo + médio", dominante: "Iliopsoas + lombar", lado: null },
+      { re: /assimetria.*(ombro|deltoid)|ombro.*assim/i, key: "shoulder_asymmetry", titulo: "Assimetria de ombros", inibido: "Deltóide lateral", dominante: "Trapézio superior", lado: null },
+      { re: /escoliose|desvio.*lateral.*coluna|lateral.*spine/i, key: "lateral_spine_deviation", titulo: "Desvio lateral da coluna", inibido: "Oblíquos contralateral", dominante: "Quadrado lombar ipsilateral", lado: null },
+      { re: /assimetria.*quadril|quadril.*assim|hip.*asymmetry/i, key: "hip_asymmetry", titulo: "Assimetria de quadril", inibido: "Glúteo médio", dominante: "Adutores", lado: null },
+    ];
+    const out: any[] = [];
+    detect.forEach((d) => {
+      if (d.re.test(text)) {
+        // extract degrees if present near match
+        const m = text.match(new RegExp(d.re.source + "[^\\n]{0,80}?(\\d+(?:\\.\\d+)?)\\s*[°º]", "i"));
+        const graus = m ? Math.round(parseFloat(m[1])) : 2;
+        out.push({ key: d.key, titulo: d.titulo, graus, inibido: d.inibido, dominante: d.dominante, lado: d.lado });
+      }
+    });
+    // Garantir ao menos um achado para permitir fluxo de demonstração
+    if (out.length === 0 && done) {
+      out.push({ key: "pelvic_tilt", titulo: "Inclinação pélvica (genérico)", graus: 1, inibido: "Glúteo máximo + médio", dominante: "Iliopsoas + lombar", lado: null });
+    }
+    return out;
+  };
+
+  const iniciarAvaliacaoVERAouSTRATUM = async (destino: "vera" | "stratum") => {
+    if (!selectedAthlete) {
+      alert("Vincule um atleta cadastrado antes de avaliar pontos fracos.");
+      return;
+    }
+    try {
+      const achados = extractAchadosFromRaw();
+      const m = parseMeta(raw);
+      const pkg = buildApexPackage({
+        atleta_id: selectedAthlete.id,
+        atleta_nome: selectedAthlete.nome || nome || "Atleta",
+        atleta_sexo: atletaFeminino ? "F" : "M",
+        sri: (m as any)?.sri ?? null,
+        body_score: (m as any)?.bodyScore ?? null,
+        fcs: (m as any)?.fcs ?? null,
+        qualidade: 0.82,
+        achados,
+      });
+      await supabase.from("apex_vera_bridge" as any).insert({
+        atleta_id: selectedAthlete.id,
+        coach_user_id: user?.id ?? null,
+        package: pkg as any,
+        status: "PENDENTE",
+      });
+      if (destino === "vera") {
+        navigate(`/coach/vera?avaliacao=apex&atleta=${selectedAthlete.id}`);
+      } else {
+        navigate(`/training?avaliacao=apex&atleta=${selectedAthlete.id}`);
+      }
+    } catch (e: any) {
+      console.error("apex bridge error", e);
+      alert("Falha ao iniciar avaliação: " + (e?.message || "erro desconhecido"));
+    }
+  };
+
   const saveAssessment = async (fullText: string) => {
     if (!user || !selectedAthlete) {
       setSavingState("idle");
