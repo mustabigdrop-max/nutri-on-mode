@@ -8,6 +8,7 @@ import { toast } from "@/hooks/use-toast";
 import AthleteSelector, { AthleteOption } from "@/components/coach/AthleteSelector";
 import CorrectivePlanViewer from "@/components/coach/CorrectivePlanViewer";
 import TrainingFeedbackForm from "@/components/coach/TrainingFeedbackForm";
+import ApexBridgePanel from "@/components/coach/ApexBridgePanel";
 
 export default function CoachTrainingOnPage() {
   const navigate = useNavigate();
