@@ -1494,6 +1494,8 @@ function TrainingDayCard({ day, index, expanded, onToggle, expandedExercise, set
         {expanded && (
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.25 }}>
             <div className="px-4 pb-4 space-y-3">
+              {/* Perfis de Resistência */}
+              <SessionProfilePanel exercises={day.exercises || []} />
               {/* Warm-up */}
               {day.warmup?.length > 0 && (
                 <div className="rounded-xl p-3" style={{ background: "rgba(59,130,246,0.06)", border: "1px solid rgba(59,130,246,0.12)" }}>
