@@ -1655,6 +1655,11 @@ function ExerciseCard({
             <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
               <p className="text-[9px]" style={{ color: TEXT_MUTED }}>{safeMuscleTarget}</p>
               <ResistanceProfileBadge exerciseName={safeExerciseName} />
+              {(() => {
+                const weekRIR = weekPhase ? calcWeekRIR(weekPhase.week, 16) : 2;
+                const effectiveRIR = resolveRIRForExercise(safeExerciseName, weekRIR);
+                return <RIRBadge exerciseName={safeExerciseName} rir={effectiveRIR} showIntensity={false} />;
+              })()}
             </div>
           </div>
         </div>
