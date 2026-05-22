@@ -39,6 +39,8 @@ import SystemConflictAlerts from "@/components/training/systems/SystemConflictAl
 import ProtocolDurationCheck from "@/components/training/systems/ProtocolDurationCheck";
 import { estimateProtocolDuration } from "@/data/protocolDuration";
 import { ResistanceProfileBadge, SessionProfilePanel } from "@/components/training/ResistanceProfileBadge";
+import { RIRBadge, MesocycleRIRPlanner } from "@/components/training/RIRControls";
+import { calcWeekRIR, resolveRIRForExercise, buildRIRInstruction } from "@/utils/rirSystem";
 import { buildSystemPrescription } from "@/data/recommendSystem";
 import { TRAINING_SYSTEMS } from "@/data/trainingSystems";
 import CompetitionModeBlocks from "@/components/training/systems/CompetitionModeBlocks";
