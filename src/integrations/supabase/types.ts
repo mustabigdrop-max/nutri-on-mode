@@ -1008,6 +1008,42 @@ export type Database = {
         }
         Relationships: []
       }
+      apex_training_rules: {
+        Row: {
+          achado_key: string
+          achado_label: string
+          ativacao_alvo: string[] | null
+          ativo: boolean | null
+          contraindicados: Json
+          corretivos: Json
+          created_at: string | null
+          id: string
+          severidade_min: number | null
+        }
+        Insert: {
+          achado_key: string
+          achado_label: string
+          ativacao_alvo?: string[] | null
+          ativo?: boolean | null
+          contraindicados?: Json
+          corretivos?: Json
+          created_at?: string | null
+          id?: string
+          severidade_min?: number | null
+        }
+        Update: {
+          achado_key?: string
+          achado_label?: string
+          ativacao_alvo?: string[] | null
+          ativo?: boolean | null
+          contraindicados?: Json
+          corretivos?: Json
+          created_at?: string | null
+          id?: string
+          severidade_min?: number | null
+        }
+        Relationships: []
+      }
       apex_training_sync: {
         Row: {
           apex_analysis_id: string | null

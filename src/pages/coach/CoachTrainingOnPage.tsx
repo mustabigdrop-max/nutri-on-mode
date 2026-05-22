@@ -8,6 +8,7 @@ import { toast } from "@/hooks/use-toast";
 import AthleteSelector, { AthleteOption } from "@/components/coach/AthleteSelector";
 import CorrectivePlanViewer from "@/components/coach/CorrectivePlanViewer";
 import TrainingFeedbackForm from "@/components/coach/TrainingFeedbackForm";
+import ApexBridgePanel from "@/components/coach/ApexBridgePanel";
 
 export default function CoachTrainingOnPage() {
   const navigate = useNavigate();
@@ -488,6 +489,9 @@ export default function CoachTrainingOnPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <AthleteSelector value={athlete?.id ?? null} onChange={setAthlete} />
+
+          {/* APEX Bridge — corretivos + contraindicados a partir de apex_training_rules */}
+          <ApexBridgePanel athleteId={athlete?.id} />
 
           {/* APEX Sync Banner */}
           {showApexBanner && apexSyncData && (
