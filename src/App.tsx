@@ -111,6 +111,7 @@ import WeeklyCheckinPage from "./pages/WeeklyCheckinPage";
 import NotFound from "./pages/NotFound";
 import NutriPlanElitePage from "./pages/NutriPlanElitePage";
 import LearnPage from "./pages/LearnPage";
+import VeraPage from "./pages/VeraPage";
 
 const queryClient = new QueryClient();
 
@@ -234,6 +235,7 @@ const App = () => (
             <Route path="/coach/atletas" element={<ProtectedRoute><AthleteRoster /></ProtectedRoute>} />
             <Route path="/coach/atletas/:id" element={<ProtectedRoute><AthleteProgressTracker /></ProtectedRoute>} />
             <Route path="/coach/apex-pose" element={<ProtectedRoute><APEXPoseAnalysisPage /></ProtectedRoute>} />
+            <Route path="/coach/vera" element={<ProtectedRoute><VeraPage /></ProtectedRoute>} />
 
             <Route path="/nutriplan-elite" element={<ProtectedRoute><NutriPlanElitePage /></ProtectedRoute>} />
 

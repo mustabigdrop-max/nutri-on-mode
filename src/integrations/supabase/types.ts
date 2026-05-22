@@ -8136,6 +8136,93 @@ export type Database = {
         }
         Relationships: []
       }
+      vera_anamnese: {
+        Row: {
+          anos_restricao: number | null
+          anticoncepcional_nome: string | null
+          athlete_id: string
+          categoria_competicao: string | null
+          ciclo_regular: boolean | null
+          ciclos_anteriores: number | null
+          coach_id: string
+          compostos_em_uso: string | null
+          created_at: string
+          dia_ciclo_atual: number | null
+          duracao_ciclo: number | null
+          fase_atual: string | null
+          gestacao_recente: boolean | null
+          historico_dieta_restritiva: boolean | null
+          historico_ta: boolean | null
+          id: string
+          lesoes: string | null
+          menopausa: boolean | null
+          meses_pos_parto: number | null
+          objetivo_principal: string | null
+          perimenopausa: boolean | null
+          pontos_fracos: string | null
+          tipo_anticoncepcional: string | null
+          updated_at: string
+          usa_anticoncepcional: boolean | null
+          usa_eaa: boolean | null
+        }
+        Insert: {
+          anos_restricao?: number | null
+          anticoncepcional_nome?: string | null
+          athlete_id: string
+          categoria_competicao?: string | null
+          ciclo_regular?: boolean | null
+          ciclos_anteriores?: number | null
+          coach_id: string
+          compostos_em_uso?: string | null
+          created_at?: string
+          dia_ciclo_atual?: number | null
+          duracao_ciclo?: number | null
+          fase_atual?: string | null
+          gestacao_recente?: boolean | null
+          historico_dieta_restritiva?: boolean | null
+          historico_ta?: boolean | null
+          id?: string
+          lesoes?: string | null
+          menopausa?: boolean | null
+          meses_pos_parto?: number | null
+          objetivo_principal?: string | null
+          perimenopausa?: boolean | null
+          pontos_fracos?: string | null
+          tipo_anticoncepcional?: string | null
+          updated_at?: string
+          usa_anticoncepcional?: boolean | null
+          usa_eaa?: boolean | null
+        }
+        Update: {
+          anos_restricao?: number | null
+          anticoncepcional_nome?: string | null
+          athlete_id?: string
+          categoria_competicao?: string | null
+          ciclo_regular?: boolean | null
+          ciclos_anteriores?: number | null
+          coach_id?: string
+          compostos_em_uso?: string | null
+          created_at?: string
+          dia_ciclo_atual?: number | null
+          duracao_ciclo?: number | null
+          fase_atual?: string | null
+          gestacao_recente?: boolean | null
+          historico_dieta_restritiva?: boolean | null
+          historico_ta?: boolean | null
+          id?: string
+          lesoes?: string | null
+          menopausa?: boolean | null
+          meses_pos_parto?: number | null
+          objetivo_principal?: string | null
+          perimenopausa?: boolean | null
+          pontos_fracos?: string | null
+          tipo_anticoncepcional?: string | null
+          updated_at?: string
+          usa_anticoncepcional?: boolean | null
+          usa_eaa?: boolean | null
+        }
+        Relationships: []
+      }
       voice_checkins: {
         Row: {
           audio_duration: number | null
