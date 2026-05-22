@@ -6356,6 +6356,48 @@ export type Database = {
           },
         ]
       }
+      plateau_protocols: {
+        Row: {
+          ajustes: Json | null
+          applied_at: string
+          athlete_id: string
+          created_at: string
+          exercise_name: string
+          id: string
+          protocol_type: string
+          resolved_at: string | null
+          resultado: string | null
+          score: number | null
+          sinais: Json | null
+        }
+        Insert: {
+          ajustes?: Json | null
+          applied_at?: string
+          athlete_id: string
+          created_at?: string
+          exercise_name: string
+          id?: string
+          protocol_type: string
+          resolved_at?: string | null
+          resultado?: string | null
+          score?: number | null
+          sinais?: Json | null
+        }
+        Update: {
+          ajustes?: Json | null
+          applied_at?: string
+          athlete_id?: string
+          created_at?: string
+          exercise_name?: string
+          id?: string
+          protocol_type?: string
+          resolved_at?: string | null
+          resultado?: string | null
+          score?: number | null
+          sinais?: Json | null
+        }
+        Relationships: []
+      }
       postural_photos: {
         Row: {
           category: string

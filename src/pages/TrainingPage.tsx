@@ -45,6 +45,8 @@ import { RepZoneBadge, SessionZonePanel, TripleCoherenceMarker } from "@/compone
 import { buildZoneInstruction, getWeekZones, WAVE_PATTERNS, DEFAULT_PATTERN_KEY } from "@/utils/repZones";
 import { MuscleRegionBadge, RegionalCoveragePanel } from "@/components/training/RegionalCoverage";
 import { buildRegionalInstruction, findExerciseRegion } from "@/utils/muscleRegions";
+import { PlateauDashboard } from "@/components/training/PlateauDashboard";
+import { buildPlateauInstruction } from "@/utils/plateauDetector";
 import { buildSystemPrescription } from "@/data/recommendSystem";
 import { TRAINING_SYSTEMS } from "@/data/trainingSystems";
 import CompetitionModeBlocks from "@/components/training/systems/CompetitionModeBlocks";
@@ -361,6 +363,14 @@ ${buildZoneInstruction(1, Math.max(parseInt(String(weeks)) || 8, 1), DEFAULT_PAT
 ━━━ HIPERTROFIA REGIONAL — OBRIGATÓRIO ━━━
 ${buildRegionalInstruction(["ombro","costas","peito","biceps","triceps","quadriceps","posterior","gluteo","panturrilha"], "")}
 ━━━ FIM HIPERTROFIA REGIONAL ━━━
+
+━━━ DETECÇÃO DE PLATÔ (De-Output) — DIRETRIZES ━━━
+Caso o atleta esteja em platô (carga estagnada 2+ semanas, queda de performance, RIR executado acima do prescrito):
+- Reduzir volume 30-50% e carga 20-30% por 1 semana (De-Output / Deload Ativo)
+- Variar perfil de resistência e zona de reps dos exercícios estagnados
+- Aumentar RIR (mais conservador) durante a semana de descarga
+- Após a semana de De-Output, reiniciar mesociclo com +1 série no exercício principal
+━━━ FIM DETECÇÃO DE PLATÔ ━━━
 ${correctivePrompt ? `\n━━━ PROTOCOLO CORRETIVO APEX (colado pelo coach) ━━━\nUse as recomendações abaixo como BASE para os exercícios corretivos, ativações, finalizadores e ajustes de volume por grupo. Integre ao protocolo principal sem duplicar exercícios. Corretivos APEX NUNCA recebem RIR 0 — mínimo RIR 1.\n\n${correctivePrompt}\n━━━ FIM PROTOCOLO CORRETIVO ━━━` : ""}
 
 ━━━ OUTPUT OBRIGATÓRIO ━━━
@@ -932,6 +942,17 @@ Português. Específico. Científico. Zero genérico.`;
                   totalWeeks={Math.max(parseInt(String(weeks)) || 8, 1)}
                   currentWeek={isMello16 ? weekPhase.week : 1}
                 />
+                {/* De-Output — Detecção de Platô */}
+                {userId && (
+                  <PlateauDashboard
+                    athleteId={userId}
+                    exercises={(protocol.training_days || []).flatMap((d: any) =>
+                      (d.exercises || []).map((e: any) => ({ nome: e?.name ?? e?.nome ?? "" }))
+                    ).filter((e: any) => e.nome)}
+                    semanaMeso={isMello16 ? weekPhase.week : 1}
+                    totalMeso={Math.max(parseInt(String(weeks)) || 8, 1)}
+                  />
+                )}
                 {protocol.training_days.map((day: any, idx: number) => (
                   <TrainingDayCard
                     key={idx}
