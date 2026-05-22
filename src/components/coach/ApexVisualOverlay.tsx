@@ -218,6 +218,36 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
   const [manualPlumb, setManualPlumb] = useState<Record<"front" | "lateral" | "back", number | null>>({
     front: null, lateral: null, back: null,
   });
+  // Drag livre (X e Y) dos landmarks C7 e L5 — por vista
+  type SpinePos = { x: number; y: number };
+  type ManualSpine = { c7?: SpinePos | null; l5?: SpinePos | null };
+  const [manualSpinePositions, setManualSpinePositions] = useState<Record<"front" | "lateral" | "back", ManualSpine>>({
+    front: {}, lateral: {}, back: {},
+  });
+  const handleSpineMove = useCallback((key: "c7" | "l5", x: number, y: number) => {
+    setManualSpinePositions(prev => ({
+      ...prev,
+      [view]: { ...prev[view], [key]: { x, y } },
+    }));
+  }, [view]);
+  const handleSpineRelease = useCallback(() => {
+    // Snap suave: se C7 e L5 estiverem com Δx pequeno, alinhar no mesmo X
+    setManualSpinePositions(prev => {
+      const cur = prev[view] || {};
+      const c7 = cur.c7; const l5 = cur.l5;
+      if (c7 && l5) {
+        const diffX = Math.abs(c7.x - l5.x);
+        if (diffX > 0 && diffX < 1.6) { // ~8px em viewBox 100; foto ~500px
+          const midX = (c7.x + l5.x) / 2;
+          return { ...prev, [view]: { c7: { x: midX, y: c7.y }, l5: { x: midX, y: l5.y } } };
+        }
+      }
+      return prev;
+    });
+  }, [view]);
+  const resetSpinePositions = useCallback(() => {
+    setManualSpinePositions(prev => ({ ...prev, [view]: {} }));
+  }, [view]);
   const instructionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // ── Overlay rect tracking: corrige offset do object-fit: contain ──
