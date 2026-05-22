@@ -1368,6 +1368,49 @@ function OverlayLayer({
     window.addEventListener("touchcancel", handleUp);
   }, [toSVGCoords, onSpineMove, onSpineRelease]);
 
+  // ─── Drag da COLUNA inteira (C7+L5 juntos, preserva ângulo/distância) ─
+  const beginColumnDrag = useCallback((e: React.MouseEvent | React.TouchEvent) => {
+    e.stopPropagation();
+    if ((e as any).preventDefault) (e as any).preventDefault();
+    const c7 = (data.landmarks as any).spine_c7;
+    const l5 = (data.landmarks as any).spine_l5;
+    const curC7 = (manualSpine?.c7) ?? (isValidPoint(c7) ? { x: c7.x, y: c7.y } : null);
+    const curL5 = (manualSpine?.l5) ?? (isValidPoint(l5) ? { x: l5.x, y: l5.y } : null);
+    if (!curC7 || !curL5) return;
+    const isTouch = "touches" in e;
+    const startClient = isTouch
+      ? { x: (e as React.TouchEvent).touches[0].clientX, y: (e as React.TouchEvent).touches[0].clientY }
+      : { x: (e as React.MouseEvent).clientX, y: (e as React.MouseEvent).clientY };
+    const svg = svgRef.current;
+    const rect = svg?.getBoundingClientRect();
+    const handleMove = (cx: number, cy: number) => {
+      if (!rect || !rect.width || !rect.height) return;
+      const dxPct = ((cx - startClient.x) / rect.width) * 100;
+      const dyPct = ((cy - startClient.y) / rect.height) * 100;
+      onSpineMove?.("c7", Math.max(0, Math.min(100, curC7.x + dxPct)), Math.max(0, Math.min(100, curC7.y + dyPct)));
+      onSpineMove?.("l5", Math.max(0, Math.min(100, curL5.x + dxPct)), Math.max(0, Math.min(100, curL5.y + dyPct)));
+    };
+    const onMouseMove = (ev: MouseEvent) => handleMove(ev.clientX, ev.clientY);
+    const onTouchMove = (ev: TouchEvent) => {
+      const t = ev.touches[0]; if (!t) return;
+      if (ev.cancelable) ev.preventDefault();
+      handleMove(t.clientX, t.clientY);
+    };
+    const onUp = () => {
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onUp);
+      window.removeEventListener("touchmove", onTouchMove);
+      window.removeEventListener("touchend", onUp);
+      window.removeEventListener("touchcancel", onUp);
+      onSpineRelease?.();
+    };
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onUp);
+    window.addEventListener("touchmove", onTouchMove, { passive: false });
+    window.addEventListener("touchend", onUp);
+    window.addEventListener("touchcancel", onUp);
+  }, [data.landmarks, manualSpine, onSpineMove, onSpineRelease]);
+
   const ang = data.angles;
 
   // Pre-compute label positions with collision avoidance
