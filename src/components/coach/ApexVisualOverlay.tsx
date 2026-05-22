@@ -980,6 +980,11 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
               ⚠ Prumo inclinado {currentPlumb.inclinacao > 0 ? "+" : ""}{currentPlumb.inclinacao}° — verifique posição do atleta na foto
             </p>
           )}
+          {/* Painel educativo — Onde ficam C7 e L5 (começa fechado) */}
+          <AnatomyEducationPanel
+            c7Ajustado={!!manualSpinePositions[view]?.c7}
+            l5Ajustado={!!manualSpinePositions[view]?.l5}
+          />
           {/* Card permanente — instrução de ajuste C7/L5 */}
           {(() => {
             const c7Ajustado = !!manualSpinePositions[view]?.c7;
