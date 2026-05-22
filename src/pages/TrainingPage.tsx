@@ -1513,6 +1513,19 @@ function TrainingDayCard({ day, index, expanded, onToggle, expandedExercise, set
             <div className="px-4 pb-4 space-y-3">
               {/* Perfis de Resistência */}
               <SessionProfilePanel exercises={day.exercises || []} />
+              {/* Ondulação de Zonas de Repetição */}
+              {(() => {
+                const pattern = WAVE_PATTERNS[DEFAULT_PATTERN_KEY];
+                const weekNum = 1;
+                const weekZones = getWeekZones(weekNum, pattern);
+                return (
+                  <SessionZonePanel
+                    exercises={day.exercises || []}
+                    weekZones={weekZones}
+                    patternName={pattern.nome}
+                  />
+                );
+              })()}
               {/* Warm-up */}
               {day.warmup?.length > 0 && (
                 <div className="rounded-xl p-3" style={{ background: "rgba(59,130,246,0.06)", border: "1px solid rgba(59,130,246,0.12)" }}>
@@ -1664,7 +1677,14 @@ function ExerciseCard({
               {(() => {
                 const weekRIR = weekPhase ? calcWeekRIR(weekPhase.week, 16) : 2;
                 const effectiveRIR = resolveRIRForExercise(safeExerciseName, weekRIR);
-                return <RIRBadge exerciseName={safeExerciseName} rir={effectiveRIR} showIntensity={false} />;
+                const repsValue = exercise?.reps ?? exercise?.sets_reps ?? exercise?.work_sets?.reps ?? "10";
+                return (
+                  <>
+                    <RepZoneBadge reps={repsValue} compact />
+                    <RIRBadge exerciseName={safeExerciseName} rir={effectiveRIR} showIntensity={false} />
+                    <TripleCoherenceMarker exerciseName={safeExerciseName} reps={repsValue} rir={effectiveRIR} />
+                  </>
+                );
               })()}
             </div>
           </div>
