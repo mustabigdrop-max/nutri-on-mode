@@ -215,6 +215,7 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
   // ── Ajuste manual do prumo (por vista) ─────────────────────────
   const [manualMode, setManualMode] = useState(false);
   const [showPlumbInstruction, setShowPlumbInstruction] = useState(false);
+  const [showAnatomyGuide, setShowAnatomyGuide] = useState(false);
   const [manualPlumb, setManualPlumb] = useState<Record<"front" | "lateral" | "back", number | null>>({
     front: null, lateral: null, back: null,
   });
@@ -676,6 +677,18 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
             ⊕ Ajustar Prumo
           </button>
           <button
+            onClick={() => setShowAnatomyGuide((v) => !v)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg border"
+            style={{
+              borderColor: showAnatomyGuide ? "rgba(184,146,42,0.5)" : "hsl(var(--border))",
+              color: showAnatomyGuide ? C.gold : "hsl(var(--muted-foreground))",
+              background: showAnatomyGuide ? "rgba(184,146,42,0.2)" : "transparent",
+            }}
+            title="Mostrar guia anatômico — onde ficam C7 e L5"
+          >
+            🦴 Guia
+          </button>
+          <button
             onClick={handleExport}
             disabled={exporting}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg border hover:bg-muted disabled:opacity-50"
@@ -806,6 +819,28 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
                       <style>{`@keyframes apexPlumbPulse {0%{r:2;opacity:.9}50%{r:4;opacity:.35}100%{r:2;opacity:.9}}`}</style>
                       <circle cx={plumbSuggestion.x} cy={plumbSuggestion.y} r={3} fill="none" stroke="#B8922A" strokeWidth={0.6} vectorEffect="non-scaling-stroke" style={{ animation: "apexPlumbPulse 1.4s ease-in-out infinite", transformOrigin: "center" }} />
                       <circle cx={plumbSuggestion.x} cy={plumbSuggestion.y} r={0.7} fill="#B8922A" />
+                    </svg>
+                  )}
+                  {/* Guia anatômico de referência — C7 e L5 sobre a foto */}
+                  {showAnatomyGuide && (
+                    <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 w-full h-full pointer-events-none" style={{ overflow: "visible" }}>
+                      <rect x={0} y={0} width={100} height={100} fill="rgba(0,0,0,0.28)" />
+                      {[
+                        { id: "C7", y: 18, cor: "#B8922A", hint: "base do pescoço" },
+                        { id: "L5", y: 62, cor: "#38BDF8", hint: "acima do glúteo" },
+                      ].map((ref) => (
+                        <g key={ref.id}>
+                          <line x1={30} y1={ref.y} x2={70} y2={ref.y} stroke={ref.cor} strokeWidth={0.5} strokeDasharray="2 1" opacity={0.75} vectorEffect="non-scaling-stroke" />
+                          <circle cx={50} cy={ref.y} r={2.4} fill={`${ref.cor}33`} stroke={ref.cor} strokeWidth={0.6} vectorEffect="non-scaling-stroke">
+                            <animate attributeName="r" values="2;3.4;2" dur="2s" repeatCount="indefinite" />
+                          </circle>
+                          <text x={50} y={ref.y + 0.9} textAnchor="middle" fill={ref.cor} fontSize={2.2} fontWeight={700}>{ref.id}</text>
+                          <text x={72} y={ref.y + 0.9} fill={ref.cor} fontSize={1.8} opacity={0.85}>← {ref.hint}</text>
+                        </g>
+                      ))}
+                      <text x={50} y={5} textAnchor="middle" fill="rgba(255,255,255,0.65)" fontSize={2} fontWeight={600}>
+                        Guia anatômico — referência visual
+                      </text>
                     </svg>
                   )}
                 </div>
@@ -945,6 +980,11 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
               ⚠ Prumo inclinado {currentPlumb.inclinacao > 0 ? "+" : ""}{currentPlumb.inclinacao}° — verifique posição do atleta na foto
             </p>
           )}
+          {/* Painel educativo — Onde ficam C7 e L5 (começa fechado) */}
+          <AnatomyEducationPanel
+            c7Ajustado={!!manualSpinePositions[view]?.c7}
+            l5Ajustado={!!manualSpinePositions[view]?.l5}
+          />
           {/* Card permanente — instrução de ajuste C7/L5 */}
           {(() => {
             const c7Ajustado = !!manualSpinePositions[view]?.c7;
@@ -2574,3 +2614,178 @@ const CORRECTION_MAP: Record<string, string> = {
   scapular_axis_tilt: "Ativação do serrátil anterior inibido + alongamento de trapézio superior dominante + mobilidade torácica.",
 };
 
+
+// ─── AnatomyEducationPanel — guia educativo no sidebar ──────────
+function AnatomyEducationPanel({
+  c7Ajustado,
+  l5Ajustado,
+}: {
+  c7Ajustado: boolean;
+  l5Ajustado: boolean;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const refs = [
+    {
+      id: "C7",
+      cor: "#B8922A",
+      bg: "rgba(184,146,42,0.08)",
+      border: "rgba(184,146,42,0.2)",
+      onde: "Base do pescoço — saliência mais proeminente onde o pescoço encontra os ombros",
+      como: 'Procure o "calombo" no centro da base do pescoço. É o ponto mais saliente nessa região.',
+      erro: "Não confundir com C5 ou C6 — sempre use o processo espinhoso MAIS proeminente",
+      ajustado: c7Ajustado,
+    },
+    {
+      id: "L5",
+      cor: "#38BDF8",
+      bg: "rgba(56,189,248,0.08)",
+      border: "rgba(56,189,248,0.2)",
+      onde: 'Junção lombossacra — nível das fossetas sacras (dois "furinhos" acima do glúteo)',
+      como: 'Trace uma linha imaginária entre os dois "furinhos" simétricos acima do glúteo. L5 está no centro dessa linha.',
+      erro: "Não existe L6 ou L7 — a coluna lombar termina em L5",
+      ajustado: l5Ajustado,
+    },
+  ];
+  return (
+    <div
+      style={{
+        marginBottom: 12,
+        background: "rgba(255,255,255,0.03)",
+        border: "0.5px solid rgba(184,146,42,0.2)",
+        borderRadius: 12,
+        overflow: "hidden",
+      }}
+    >
+      <div
+        onClick={() => setExpanded((v) => !v)}
+        style={{
+          padding: "10px 14px",
+          cursor: "pointer",
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+          justifyContent: "space-between",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div
+            style={{
+              width: 26, height: 26,
+              background: "rgba(184,146,42,0.12)",
+              border: "0.5px solid rgba(184,146,42,0.3)",
+              borderRadius: 7,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 12, color: "#B8922A",
+            }}
+          >🦴</div>
+          <div>
+            <p style={{ fontSize: 10, fontWeight: 600, color: "#B8922A", margin: "0 0 1px", textTransform: "uppercase", letterSpacing: "0.04em" }}>
+              Onde ficam C7 e L5?
+            </p>
+            <p style={{ fontSize: 9, color: "rgba(255,255,255,0.3)", margin: 0 }}>
+              Guia rápido de posicionamento
+            </p>
+          </div>
+        </div>
+        <span style={{ fontSize: 10, color: "rgba(255,255,255,0.25)" }}>
+          {expanded ? "▲" : "▼"}
+        </span>
+      </div>
+      {expanded && (
+        <div style={{ padding: "0 14px 14px", borderTop: "0.5px solid rgba(255,255,255,0.06)" }}>
+          {/* Silhueta de referência SVG (costas) */}
+          <svg viewBox="0 0 120 280" style={{ width: "100%", maxHeight: 200, margin: "10px 0", display: "block" }}>
+            <ellipse cx={60} cy={22} rx={16} ry={18} fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.15)" strokeWidth={1} />
+            <rect x={53} y={38} width={14} height={14} fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.15)" strokeWidth={1} />
+            <path d="M 25 52 Q 20 100 22 160 L 98 160 Q 100 100 95 52 Z" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.12)" strokeWidth={1} />
+            <rect x={8} y={52} width={16} height={80} rx={8} fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.1)" strokeWidth={1} />
+            <rect x={96} y={52} width={16} height={80} rx={8} fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.1)" strokeWidth={1} />
+            <rect x={22} y={160} width={76} height={36} rx={4} fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.12)" strokeWidth={1} />
+            <rect x={24} y={196} width={30} height={70} rx={8} fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.1)" strokeWidth={1} />
+            <rect x={66} y={196} width={30} height={70} rx={8} fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.1)" strokeWidth={1} />
+            <line x1={60} y1={52} x2={60} y2={190} stroke="rgba(255,255,255,0.12)" strokeWidth={2} strokeDasharray="3 2" />
+            {/* C7 */}
+            <circle cx={60} cy={51} r={6} fill="rgba(184,146,42,0.3)" stroke="#B8922A" strokeWidth={1.5} />
+            <text x={60} y={54} textAnchor="middle" fill="#B8922A" fontSize={5} fontWeight={700}>C7</text>
+            <line x1={66} y1={51} x2={90} y2={51} stroke="#B8922A" strokeWidth={0.8} strokeDasharray="2 1" />
+            <text x={92} y={54} fill="#B8922A" fontSize={7}>← base do pescoço</text>
+            {/* L5 */}
+            <circle cx={60} cy={158} r={6} fill="rgba(56,189,248,0.3)" stroke="#38BDF8" strokeWidth={1.5} />
+            <text x={60} y={161} textAnchor="middle" fill="#38BDF8" fontSize={5} fontWeight={700}>L5</text>
+            <line x1={66} y1={158} x2={90} y2={158} stroke="#38BDF8" strokeWidth={0.8} strokeDasharray="2 1" />
+            <text x={92} y={161} fill="#38BDF8" fontSize={7}>← acima do glúteo</text>
+            {/* fossetas sacras */}
+            <circle cx={52} cy={165} r={2.5} fill="rgba(56,189,248,0.4)" />
+            <circle cx={68} cy={165} r={2.5} fill="rgba(56,189,248,0.4)" />
+          </svg>
+          {refs.map((ref, i) => (
+            <div key={ref.id} style={{
+              marginBottom: i === 0 ? 8 : 0,
+              padding: "10px 12px",
+              background: ref.bg,
+              border: `0.5px solid ${ref.border}`,
+              borderRadius: 9,
+            }}>
+              <p style={{
+                fontSize: 10, fontWeight: 700, color: ref.cor,
+                margin: "0 0 6px", display: "flex", alignItems: "center", gap: 5,
+              }}>
+                <span style={{
+                  width: 16, height: 16, background: `${ref.cor}33`,
+                  borderRadius: "50%", display: "inline-flex",
+                  alignItems: "center", justifyContent: "center", fontSize: 8,
+                }}>{ref.id === "C7" ? "↑" : "↓"}</span>
+                {ref.id}
+              </p>
+              <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                <div>
+                  <p style={{ fontSize: 8, color: `${ref.cor}cc`, letterSpacing: "0.06em", textTransform: "uppercase", margin: "0 0 2px" }}>
+                    Onde fica
+                  </p>
+                  <p style={{ fontSize: 10, color: "rgba(255,255,255,0.65)", margin: 0, lineHeight: 1.4 }}>
+                    {ref.onde}
+                  </p>
+                </div>
+                <div>
+                  <p style={{ fontSize: 8, color: `${ref.cor}cc`, letterSpacing: "0.06em", textTransform: "uppercase", margin: "0 0 2px" }}>
+                    Como identificar na foto
+                  </p>
+                  <p style={{ fontSize: 10, color: "rgba(255,255,255,0.65)", margin: 0, lineHeight: 1.4 }}>
+                    {ref.como}
+                  </p>
+                </div>
+                <div style={{
+                  padding: "4px 8px",
+                  background: "rgba(239,68,68,0.08)",
+                  border: "0.5px solid rgba(239,68,68,0.15)",
+                  borderRadius: 5,
+                }}>
+                  <p style={{ fontSize: 9, color: "rgba(239,68,68,0.75)", margin: 0, lineHeight: 1.4 }}>
+                    ⚠ {ref.erro}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ))}
+          <div style={{ marginTop: 10, display: "flex", gap: 6 }}>
+            {refs.map((ref) => (
+              <div key={ref.id} style={{
+                flex: 1, padding: "6px 8px",
+                background: ref.ajustado ? "rgba(52,211,153,0.07)" : "rgba(255,255,255,0.03)",
+                border: `0.5px solid ${ref.ajustado ? "rgba(52,211,153,0.2)" : "rgba(255,255,255,0.07)"}`,
+                borderRadius: 7, textAlign: "center",
+              }}>
+                <p style={{ fontSize: 11, fontWeight: 700, color: ref.ajustado ? "#34D399" : ref.cor, margin: "0 0 2px" }}>
+                  {ref.id}
+                </p>
+                <p style={{ fontSize: 9, color: ref.ajustado ? "rgba(52,211,153,0.6)" : "rgba(255,255,255,0.3)", margin: 0 }}>
+                  {ref.ajustado ? "✓ posicionado" : "posição da IA"}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
