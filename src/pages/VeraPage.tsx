@@ -787,34 +787,39 @@ function VeraChat({ anamnese, onEditAnamnese }: { anamnese: AnamneseFeminina; on
 /* ───────────────────────── TABS WRAPPER (Chat + Farmacologia) ───────────────────────── */
 function VeraChatTabs({ anamnese, onEditAnamnese }: { anamnese: AnamneseFeminina; onEditAnamnese: () => void }) {
   const [tab, setTab] = useState<"chat" | "farmaco">("chat");
+  const tabs: Array<{ id: "chat" | "farmaco"; label: string; icon: string }> = [
+    { id: "chat", label: "VERA Chat", icon: "✦" },
+    { id: "farmaco", label: "Farmacologia", icon: "✚" },
+  ];
   return (
-    <div style={{ padding: "12px 20px 0", maxWidth: 900, margin: "0 auto" }}>
-      <div style={{ display: "flex", gap: 6, marginBottom: 4 }}>
-        <button
-          onClick={() => setTab("chat")}
-          style={{
-            padding: "8px 14px", borderRadius: 10, fontSize: 12, fontWeight: 600, cursor: "pointer",
-            background: tab === "chat" ? "rgba(167,139,250,0.15)" : "rgba(255,255,255,0.03)",
-            border: `0.5px solid ${tab === "chat" ? "rgba(167,139,250,0.4)" : "rgba(255,255,255,0.08)"}`,
-            color: tab === "chat" ? PURPLE : "rgba(255,255,255,0.55)",
-          }}
-        >✦ VERA Chat</button>
-        <button
-          onClick={() => setTab("farmaco")}
-          style={{
-            padding: "8px 14px", borderRadius: 10, fontSize: 12, fontWeight: 600, cursor: "pointer",
-            background: tab === "farmaco" ? "rgba(167,139,250,0.15)" : "rgba(255,255,255,0.03)",
-            border: `0.5px solid ${tab === "farmaco" ? "rgba(167,139,250,0.4)" : "rgba(255,255,255,0.08)"}`,
-            color: tab === "farmaco" ? PURPLE : "rgba(255,255,255,0.55)",
-          }}
-        >💉 Farmacologia</button>
+    <div>
+      <div style={{ display: "flex", borderBottom: "0.5px solid rgba(255,255,255,0.08)", padding: "0 24px", gap: 0, overflowX: "auto" }}>
+        {tabs.map((t) => {
+          const active = tab === t.id;
+          return (
+            <button key={t.id} onClick={() => setTab(t.id)} style={{
+              padding: "12px 16px", background: "transparent", border: "none",
+              borderBottom: active ? "2px solid #A78BFA" : "2px solid transparent",
+              cursor: "pointer", fontSize: 12, fontWeight: active ? 600 : 400,
+              color: active ? PURPLE : "rgba(255,255,255,0.4)",
+              transition: "all .2s", whiteSpace: "nowrap",
+              display: "flex", alignItems: "center", gap: 6,
+            }}>
+              <span style={{ fontSize: 13 }}>{t.icon}</span>
+              {t.label}
+            </button>
+          );
+        })}
       </div>
-      {tab === "chat"
-        ? <VeraChat anamnese={anamnese} onEditAnamnese={onEditAnamnese} />
-        : <VeraFarmacoTab anamnese={anamnese} />}
+      <div style={{ maxWidth: 900, margin: "0 auto", padding: "0 20px" }}>
+        {tab === "chat"
+          ? <VeraChat anamnese={anamnese} onEditAnamnese={onEditAnamnese} />
+          : <VeraFarmacoTab anamnese={anamnese} />}
+      </div>
     </div>
   );
 }
+
 
 /* ───────────────────────── FARMACOLOGIA TAB ───────────────────────── */
 function VeraFarmacoTab({ anamnese }: { anamnese: AnamneseFeminina }) {
