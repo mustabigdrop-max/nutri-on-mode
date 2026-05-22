@@ -180,25 +180,48 @@ export default function VeraPage() {
 
   return (
     <div className="min-h-screen" style={{ background: BG, color: "rgba(255,255,255,0.9)" }}>
-      {/* Header */}
-      <div style={{ background: "linear-gradient(180deg, rgba(167,139,250,0.08) 0%, transparent 100%)", borderBottom: "0.5px solid rgba(167,139,250,0.15)", padding: "18px 24px 16px" }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <button onClick={() => navigate(-1)} aria-label="Voltar" style={{ background: "transparent", border: "none", cursor: "pointer", padding: 6, color: PURPLE, display: "flex" }}>
+      {/* Breadcrumb */}
+      <div style={{ padding: "12px 24px 0", fontSize: 11, color: "rgba(255,255,255,0.3)", display: "flex", alignItems: "center", gap: 6 }}>
+        <button onClick={() => navigate("/coach")} style={{ background: "transparent", border: "none", color: "rgba(255,255,255,0.45)", cursor: "pointer", padding: 0, fontSize: 11 }}>nutriON</button>
+        <span style={{ color: "rgba(255,255,255,0.15)" }}>›</span>
+        <button onClick={() => navigate("/coach")} style={{ background: "transparent", border: "none", color: "rgba(255,255,255,0.45)", cursor: "pointer", padding: 0, fontSize: 11 }}>Coach Hub</button>
+        <span style={{ color: "rgba(255,255,255,0.15)" }}>›</span>
+        <span style={{ color: PURPLE }}>VERA</span>
+      </div>
+
+      {/* Header principal — padrão APEX */}
+      <div style={{ padding: "16px 24px 20px", borderBottom: "0.5px solid rgba(167,139,250,0.12)", background: "linear-gradient(180deg, rgba(167,139,250,0.06) 0%, transparent 100%)" }}>
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+            <button onClick={() => navigate(-1)} aria-label="Voltar" style={{ width: 36, height: 36, background: "rgba(255,255,255,0.04)", border: "0.5px solid rgba(255,255,255,0.08)", borderRadius: 10, color: "rgba(255,255,255,0.55)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
               <ArrowLeft className="w-4 h-4" />
             </button>
-            <div style={{ width: 36, height: 36, background: "rgba(167,139,250,0.15)", border: "0.5px solid rgba(167,139,250,0.35)", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, color: PURPLE }}>✦</div>
+            <div style={{ width: 52, height: 52, background: "rgba(167,139,250,0.1)", border: "0.5px solid rgba(167,139,250,0.3)", borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, color: PURPLE, flexShrink: 0 }}>✦</div>
             <div>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <span style={{ fontSize: 20, fontWeight: 700, color: PURPLE, letterSpacing: "0.15em" }}>VERA</span>
-                <span style={{ fontSize: 9, fontWeight: 600, color: PURPLE, background: "rgba(167,139,250,0.12)", border: "0.5px solid rgba(167,139,250,0.3)", borderRadius: 6, padding: "2px 8px", letterSpacing: "0.1em" }}>FEMININO</span>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 5 }}>
+                <h1 style={{ fontSize: 26, fontWeight: 800, color: "rgba(255,255,255,0.95)", margin: 0, letterSpacing: "0.06em", lineHeight: 1 }}>VERA</h1>
+                <span style={{ fontSize: 11, fontWeight: 700, color: PURPLE, background: "rgba(167,139,250,0.15)", border: "0.5px solid rgba(167,139,250,0.4)", borderRadius: 6, padding: "3px 10px", letterSpacing: "0.1em" }}>FEMININO</span>
+                <span style={{ fontSize: 10, fontWeight: 600, color: "rgba(255,255,255,0.4)", letterSpacing: "0.06em" }}>v2.0</span>
               </div>
-              <p style={{ fontSize: 10, color: "rgba(255,255,255,0.3)", margin: "2px 0 0", letterSpacing: "0.06em" }}>Visão Estratégica de Resultados Avançados</p>
+              <p style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", margin: "0 0 8px", letterSpacing: "0.04em" }}>
+                Visão Estratégica de Resultados Avançados &nbsp;·&nbsp; Fisiologia Feminina &nbsp;·&nbsp; Diagnóstico Postural &nbsp;·&nbsp; Farmacologia Expert
+              </p>
+              <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
+                {["Ciclo Menstrual", "Pontos Fracos", "EAAs Femininos", "APEX Integrado", "TrainingON Sync"].map((chip, i) => (
+                  <span key={i} style={{ fontSize: 9, padding: "2px 7px", background: "rgba(255,255,255,0.05)", border: "0.5px solid rgba(255,255,255,0.1)", borderRadius: 20, color: "rgba(255,255,255,0.4)", letterSpacing: "0.04em" }}>{chip}</span>
+                ))}
+              </div>
             </div>
           </div>
-          {anamnese.fase_atual !== "NAO_INFORMADO" && phase === "chat" && (
-            <CicloIndicator fase={anamnese.fase_atual} />
-          )}
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 12px", background: "rgba(52,211,153,0.1)", border: "0.5px solid rgba(52,211,153,0.3)", borderRadius: 20 }}>
+              <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#34D399", boxShadow: "0 0 6px rgba(52,211,153,0.6)" }} />
+              <span style={{ fontSize: 10, fontWeight: 600, color: "#34D399", letterSpacing: "0.06em" }}>SISTEMA ATIVO</span>
+            </div>
+            {anamnese.fase_atual !== "NAO_INFORMADO" && (
+              <CicloIndicator fase={anamnese.fase_atual} />
+            )}
+          </div>
         </div>
       </div>
 

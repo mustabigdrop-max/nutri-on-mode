@@ -10,6 +10,7 @@ import {
   FlaskConical,
   FileBarChart,
   ArrowLeft,
+  Sparkles,
 } from "lucide-react";
 import AthleteRoster from "@/components/coach/AthleteRoster";
 import PlanoAlimentarIA from "@/components/coach/PlanoAlimentarIA";
@@ -19,7 +20,7 @@ import APEXPoseAnalysisPage from "@/pages/coach/APEXPoseAnalysisPage";
 import CoachLabExamsPage from "@/pages/coach/CoachLabExamsPage";
 import CoachReportsPage from "@/pages/coach/CoachReportsPage";
 
-type ModuleKey = "atletas" | "apex" | "plano" | "training" | "pose" | "lab" | "relatorios";
+type ModuleKey = "atletas" | "apex" | "vera" | "plano" | "training" | "pose" | "lab" | "relatorios";
 
 // ── Design tokens (mesmo padrão do TrainingON, paleta Coach Amber) ──
 const BG = "#03030a";
@@ -28,6 +29,7 @@ const BORDER = "rgba(232,160,32,0.12)";
 const BORDER_ACTIVE = "rgba(232,160,32,0.4)";
 const AMBER = "#E8A020";
 const AMBER_DIM = "rgba(232,160,32,0.1)";
+const VERA_PURPLE = "#A78BFA";
 const TEXT = "#fff8eb";
 const TEXT_DIM = "#a8a29e";
 const TEXT_MUTED = "#78716c";
@@ -36,6 +38,7 @@ const FONT = "'Space Grotesk', sans-serif";
 const modules: { key: ModuleKey; label: string; icon: any; desc: string }[] = [
   { key: "atletas", label: "Atletas", icon: Trophy, desc: "Roster e timeline visual" },
   { key: "apex", label: "APEX Visual", icon: Camera, desc: "Análise de fotos por IA" },
+  { key: "vera", label: "VERA", icon: Sparkles, desc: "Avaliação feminina completa" },
   { key: "plano", label: "Plano Alimentar", icon: UtensilsCrossed, desc: "Macros e carb cycling" },
   { key: "training", label: "TrainingON", icon: Dumbbell, desc: "Sistema, fibra e volume" },
   { key: "pose", label: "Pose AI", icon: ScanLine, desc: "Análise postural MediaPipe" },
@@ -64,6 +67,8 @@ const CoachHub = () => {
         return <CoachLabExamsPage />;
       case "relatorios":
         return <CoachReportsPage />;
+      case "vera":
+        return null;
     }
   };
 
@@ -118,12 +123,12 @@ const CoachHub = () => {
           {modules.map((m) => (
             <button
               key={m.key}
-              onClick={() => setActive(m.key)}
+              onClick={() => m.key === "vera" ? navigate("/coach/vera") : setActive(m.key)}
               className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-[11px] font-semibold whitespace-nowrap transition-all"
               style={{
-                background: active === m.key ? AMBER_DIM : "transparent",
-                color: active === m.key ? AMBER : TEXT_MUTED,
-                border: `1px solid ${active === m.key ? BORDER_ACTIVE : "transparent"}`,
+                background: m.key === "vera" ? "rgba(167,139,250,0.1)" : (active === m.key ? AMBER_DIM : "transparent"),
+                color: m.key === "vera" ? VERA_PURPLE : (active === m.key ? AMBER : TEXT_MUTED),
+                border: `1px solid ${m.key === "vera" ? "rgba(167,139,250,0.3)" : (active === m.key ? BORDER_ACTIVE : "transparent")}`,
               }}
             >
               <m.icon className="w-3.5 h-3.5" />
