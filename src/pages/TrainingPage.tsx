@@ -363,6 +363,14 @@ ${buildZoneInstruction(1, Math.max(parseInt(String(weeks)) || 8, 1), DEFAULT_PAT
 ━━━ HIPERTROFIA REGIONAL — OBRIGATÓRIO ━━━
 ${buildRegionalInstruction(["ombro","costas","peito","biceps","triceps","quadriceps","posterior","gluteo","panturrilha"], "")}
 ━━━ FIM HIPERTROFIA REGIONAL ━━━
+
+━━━ DETECÇÃO DE PLATÔ (De-Output) — DIRETRIZES ━━━
+Caso o atleta esteja em platô (carga estagnada 2+ semanas, queda de performance, RIR executado acima do prescrito):
+- Reduzir volume 30-50% e carga 20-30% por 1 semana (De-Output / Deload Ativo)
+- Variar perfil de resistência e zona de reps dos exercícios estagnados
+- Aumentar RIR (mais conservador) durante a semana de descarga
+- Após a semana de De-Output, reiniciar mesociclo com +1 série no exercício principal
+━━━ FIM DETECÇÃO DE PLATÔ ━━━
 ${correctivePrompt ? `\n━━━ PROTOCOLO CORRETIVO APEX (colado pelo coach) ━━━\nUse as recomendações abaixo como BASE para os exercícios corretivos, ativações, finalizadores e ajustes de volume por grupo. Integre ao protocolo principal sem duplicar exercícios. Corretivos APEX NUNCA recebem RIR 0 — mínimo RIR 1.\n\n${correctivePrompt}\n━━━ FIM PROTOCOLO CORRETIVO ━━━` : ""}
 
 ━━━ OUTPUT OBRIGATÓRIO ━━━
