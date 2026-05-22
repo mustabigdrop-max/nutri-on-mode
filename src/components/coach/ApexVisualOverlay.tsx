@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import html2canvas from "html2canvas";
 import { Download, ChevronDown, BookOpen, Link2, Eye, Crosshair } from "lucide-react";
 import { toast } from "sonner";
@@ -218,6 +218,36 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
   const [manualPlumb, setManualPlumb] = useState<Record<"front" | "lateral" | "back", number | null>>({
     front: null, lateral: null, back: null,
   });
+  // Drag livre (X e Y) dos landmarks C7 e L5 — por vista
+  type SpinePos = { x: number; y: number };
+  type ManualSpine = { c7?: SpinePos | null; l5?: SpinePos | null };
+  const [manualSpinePositions, setManualSpinePositions] = useState<Record<"front" | "lateral" | "back", ManualSpine>>({
+    front: {}, lateral: {}, back: {},
+  });
+  const handleSpineMove = useCallback((key: "c7" | "l5", x: number, y: number) => {
+    setManualSpinePositions(prev => ({
+      ...prev,
+      [view]: { ...prev[view], [key]: { x, y } },
+    }));
+  }, [view]);
+  const handleSpineRelease = useCallback(() => {
+    // Snap suave: se C7 e L5 estiverem com Δx pequeno, alinhar no mesmo X
+    setManualSpinePositions(prev => {
+      const cur = prev[view] || {};
+      const c7 = cur.c7; const l5 = cur.l5;
+      if (c7 && l5) {
+        const diffX = Math.abs(c7.x - l5.x);
+        if (diffX > 0 && diffX < 1.6) { // ~8px em viewBox 100; foto ~500px
+          const midX = (c7.x + l5.x) / 2;
+          return { ...prev, [view]: { c7: { x: midX, y: c7.y }, l5: { x: midX, y: l5.y } } };
+        }
+      }
+      return prev;
+    });
+  }, [view]);
+  const resetSpinePositions = useCallback(() => {
+    setManualSpinePositions(prev => ({ ...prev, [view]: {} }));
+  }, [view]);
   const instructionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // ── Overlay rect tracking: corrige offset do object-fit: contain ──
@@ -765,6 +795,10 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
                     gridMode={gridMode}
                     chains={chains}
                     plumbXOverride={manualPlumb[view]}
+                    manualSpine={manualSpinePositions[view]}
+                    onSpineMove={handleSpineMove}
+                    onSpineRelease={handleSpineRelease}
+                    onSpineReset={resetSpinePositions}
                   />
                   {/* Pulse de sugestão durante o modo manual */}
                   {manualMode && !showPlumbInstruction && (
@@ -906,6 +940,21 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
               </div>
             );
           })()}
+          {currentPlumb && Math.abs(currentPlumb.inclinacao) > 1 && (
+            <p style={{ fontSize: 9, color: "rgba(251,191,36,0.75)", margin: "2px 0 4px" }}>
+              ⚠ Prumo inclinado {currentPlumb.inclinacao > 0 ? "+" : ""}{currentPlumb.inclinacao}° — verifique posição do atleta na foto
+            </p>
+          )}
+          {(manualSpinePositions[view]?.c7 || manualSpinePositions[view]?.l5) && (
+            <button
+              onClick={resetSpinePositions}
+              className="ml-1.5 text-[9px] px-2 py-0.5 rounded border mb-1.5"
+              style={{ borderColor: "rgba(255,255,255,0.2)", color: "rgba(255,255,255,0.7)", background: "rgba(255,255,255,0.04)" }}
+              title="Voltar C7 e L5 às posições detectadas pela IA"
+            >
+              ↺ Reset C7/L5
+            </button>
+          )}
           {data?.landmarks && (() => {
             const q = calcAnalysisQuality(data.landmarks as any);
             const pct = Math.round(q.score * 100);
@@ -1156,13 +1205,15 @@ function snapToPlumbLine<T extends Record<string, any>>(
 }
 
 // ─── Linha de prumo dinâmica ─────────────────────────────────────
-// Eixo gravitacional real do atleta — calculado a partir de C7/L5
-// pós-snap. Sistema de coordenadas: viewBox 0..100 (normalizado).
+// Eixo gravitacional real do atleta — calculado a partir de C7/L5.
+// Quando ambos estão posicionados, a linha PASSA pelos dois pontos
+// (inclinação real). Sistema de coordenadas: viewBox 0..100.
 export type PlumbSource = "C7+L5" | "C7" | "L5" | "frame-center";
 export interface PlumbLine {
   x1: number; y1: number; x2: number; y2: number;
   axisX: number;
   source: PlumbSource;
+  inclinacao: number; // graus do vertical (+ = inferior à direita)
 }
 export function calcPlumbLine(
   landmarks: Record<string, any>,
@@ -1173,13 +1224,20 @@ export function calcPlumbLine(
   const l5 = landmarks?.spine_l5 ?? landmarks?.l5_s1 ?? landmarks?.spine_l5_s1;
   const valid = (p: any) => p && typeof p.x === "number" && typeof p.y === "number";
   if (valid(c7) && valid(l5)) {
+    const dx = l5.x - c7.x;
+    const dy = l5.y - c7.y;
+    const slope = dy !== 0 ? dx / dy : 0;
+    // Extende a reta que passa por C7 e L5 até topo (y=0) e fundo (y=imageHeight)
+    const x1 = c7.x - slope * c7.y;
+    const x2 = c7.x + slope * (imageHeight - c7.y);
+    const inclinacao = Math.round(Math.atan2(dx, dy) * (180 / Math.PI) * 10) / 10;
     const axisX = (c7.x + l5.x) / 2;
-    return { x1: axisX, y1: 0, x2: axisX, y2: imageHeight, axisX, source: "C7+L5" };
+    return { x1, y1: 0, x2, y2: imageHeight, axisX, source: "C7+L5", inclinacao };
   }
-  if (valid(c7)) return { x1: c7.x, y1: 0, x2: c7.x, y2: imageHeight, axisX: c7.x, source: "C7" };
-  if (valid(l5)) return { x1: l5.x, y1: 0, x2: l5.x, y2: imageHeight, axisX: l5.x, source: "L5" };
+  if (valid(c7)) return { x1: c7.x, y1: 0, x2: c7.x, y2: imageHeight, axisX: c7.x, source: "C7", inclinacao: 0 };
+  if (valid(l5)) return { x1: l5.x, y1: 0, x2: l5.x, y2: imageHeight, axisX: l5.x, source: "L5", inclinacao: 0 };
   const cx = imageWidth / 2;
-  return { x1: cx, y1: 0, x2: cx, y2: imageHeight, axisX: cx, source: "frame-center" };
+  return { x1: cx, y1: 0, x2: cx, y2: imageHeight, axisX: cx, source: "frame-center", inclinacao: 0 };
 }
 
 // ─── Confiança por landmark (fallback até a IA retornar `confidence`) ──
@@ -1237,6 +1295,7 @@ export function calcAnalysisQuality(landmarks: Record<string, any>): AnalysisQua
 // ─── Overlay (HTML + SVG hybrid for crisp labels) ────────────────
 function OverlayLayer({
   data, selected, onSelect, eduMode, chainMode, debugMode, gridMode, chains, plumbXOverride,
+  manualSpine, onSpineMove, onSpineRelease, onSpineReset,
 }: {
   data: LandmarkView;
   selected: string | null;
@@ -1247,8 +1306,68 @@ function OverlayLayer({
   gridMode: boolean;
   chains: { name: string; nodes: string[]; description: string }[];
   plumbXOverride?: number | null;
+  manualSpine?: { c7?: { x: number; y: number } | null; l5?: { x: number; y: number } | null };
+  onSpineMove?: (key: "c7" | "l5", x: number, y: number) => void;
+  onSpineRelease?: () => void;
+  onSpineReset?: () => void;
 }) {
-  const lm = useMemo(() => snapToPlumbLine(data.landmarks, 100), [data.landmarks]);
+  // Aplica overrides manuais (drag livre X/Y) sobre o snap automático
+  const lm = useMemo(() => {
+    const snapped = snapToPlumbLine(data.landmarks, 100) as any;
+    if (manualSpine?.c7) {
+      snapped.spine_c7 = { ...(snapped.spine_c7 || {}), x: manualSpine.c7.x, y: manualSpine.c7.y, manual: true, snapped: false };
+    }
+    if (manualSpine?.l5) {
+      snapped.spine_l5 = { ...(snapped.spine_l5 || {}), x: manualSpine.l5.x, y: manualSpine.l5.y, manual: true, snapped: false };
+    }
+    return snapped as typeof data.landmarks;
+  }, [data.landmarks, manualSpine]);
+
+  // ─── Drag livre de C7/L5 ─────────────────────────────────────
+  const svgRef = useRef<SVGSVGElement>(null);
+  const draggingRef = useRef<null | "c7" | "l5">(null);
+  const toSVGCoords = useCallback((clientX: number, clientY: number) => {
+    const svg = svgRef.current;
+    if (!svg) return null;
+    const r = svg.getBoundingClientRect();
+    if (!r.width || !r.height) return null;
+    return {
+      x: Math.max(0, Math.min(100, ((clientX - r.left) / r.width) * 100)),
+      y: Math.max(0, Math.min(100, ((clientY - r.top) / r.height) * 100)),
+    };
+  }, []);
+  const beginSpineDrag = useCallback((key: "c7" | "l5") => (e: React.MouseEvent | React.TouchEvent) => {
+    e.stopPropagation();
+    if ((e as any).preventDefault) (e as any).preventDefault();
+    draggingRef.current = key;
+    const handleMove = (ev: MouseEvent) => {
+      if (draggingRef.current !== key) return;
+      const c = toSVGCoords(ev.clientX, ev.clientY);
+      if (c) onSpineMove?.(key, c.x, c.y);
+    };
+    const handleTouchMove = (ev: TouchEvent) => {
+      if (draggingRef.current !== key) return;
+      const t = ev.touches[0]; if (!t) return;
+      if (ev.cancelable) ev.preventDefault();
+      const c = toSVGCoords(t.clientX, t.clientY);
+      if (c) onSpineMove?.(key, c.x, c.y);
+    };
+    const handleUp = () => {
+      draggingRef.current = null;
+      window.removeEventListener("mousemove", handleMove);
+      window.removeEventListener("mouseup", handleUp);
+      window.removeEventListener("touchmove", handleTouchMove);
+      window.removeEventListener("touchend", handleUp);
+      window.removeEventListener("touchcancel", handleUp);
+      onSpineRelease?.();
+    };
+    window.addEventListener("mousemove", handleMove);
+    window.addEventListener("mouseup", handleUp);
+    window.addEventListener("touchmove", handleTouchMove, { passive: false });
+    window.addEventListener("touchend", handleUp);
+    window.addEventListener("touchcancel", handleUp);
+  }, [toSVGCoords, onSpineMove, onSpineRelease]);
+
   const ang = data.angles;
 
   // Pre-compute label positions with collision avoidance
@@ -1396,6 +1515,7 @@ function OverlayLayer({
     <>
       {/* SVG layer: lines + landmarks */}
       <svg
+        ref={svgRef}
         id="apex-overlay-svg"
         viewBox="0 0 100 100"
         preserveAspectRatio="none"
@@ -1526,17 +1646,31 @@ function OverlayLayer({
                       style={{ strokeWidth: 0.8 }}
                     />
                   )}
-                  {/* Âncoras destacadas (círculo maior) */}
-                  <circle cx={c7.x} cy={c7.y} r={1.6} fill={lineColor} stroke="#000" vectorEffect="non-scaling-stroke" style={{ strokeWidth: 1 }}>
-                    {(c7 as any).snapped && (
-                      <title>C7 — 📐 Ancorado na linha de prumo (referência anatômica fixa). Detecção IA originalX={typeof (c7 as any).originalX === "number" ? (c7 as any).originalX.toFixed(1) : "—"}</title>
-                    )}
-                  </circle>
-                  <circle cx={l5.x} cy={l5.y} r={1.6} fill={lineColor} stroke="#000" vectorEffect="non-scaling-stroke" style={{ strokeWidth: 1 }}>
-                    {(l5 as any).snapped && (
-                      <title>L5 — 📐 Ancorado na linha de prumo (referência anatômica fixa). Detecção IA originalX={typeof (l5 as any).originalX === "number" ? (l5 as any).originalX.toFixed(1) : "—"}</title>
-                    )}
-                  </circle>
+                  {/* Âncoras destacadas (círculo maior) — drag livre X/Y */}
+                  <g
+                    onMouseDown={beginSpineDrag("c7")}
+                    onTouchStart={beginSpineDrag("c7")}
+                    style={{ cursor: "move", pointerEvents: "auto", touchAction: "none" }}
+                  >
+                    {/* hit area maior para facilitar o drag */}
+                    <circle cx={c7.x} cy={c7.y} r={3.2} fill="transparent" />
+                    <circle cx={c7.x} cy={c7.y} r={1.6} fill={lineColor} stroke="#000" vectorEffect="non-scaling-stroke" style={{ strokeWidth: 1 }}>
+                      <title>{(c7 as any).manual ? "C7 — ✥ posicionado manualmente (arraste para reajustar)" : (c7 as any).snapped ? `C7 — 📐 snap automático. Arraste para mover livremente.` : "C7 — arraste para mover livremente"}</title>
+                    </circle>
+                    {/* ícone ✥ indicando movimento livre */}
+                    <text x={c7.x} y={c7.y - 2.6} textAnchor="middle" fill="rgba(255,255,255,0.65)" fontSize={2} style={{ pointerEvents: "none", userSelect: "none" }}>✥</text>
+                  </g>
+                  <g
+                    onMouseDown={beginSpineDrag("l5")}
+                    onTouchStart={beginSpineDrag("l5")}
+                    style={{ cursor: "move", pointerEvents: "auto", touchAction: "none" }}
+                  >
+                    <circle cx={l5.x} cy={l5.y} r={3.2} fill="transparent" />
+                    <circle cx={l5.x} cy={l5.y} r={1.6} fill={lineColor} stroke="#000" vectorEffect="non-scaling-stroke" style={{ strokeWidth: 1 }}>
+                      <title>{(l5 as any).manual ? "L5 — ✥ posicionado manualmente (arraste para reajustar)" : (l5 as any).snapped ? `L5 — 📐 snap automático. Arraste para mover livremente.` : "L5 — arraste para mover livremente"}</title>
+                    </circle>
+                    <text x={l5.x} y={l5.y - 2.6} textAnchor="middle" fill="rgba(255,255,255,0.65)" fontSize={2} style={{ pointerEvents: "none", userSelect: "none" }}>✥</text>
+                  </g>
                   {/* Conector do badge até a linha */}
                   <line
                     x1={mxS} y1={myS} x2={bx} y2={by}
@@ -1563,9 +1697,9 @@ function OverlayLayer({
                   >
                     {label}
                   </text>
-                  {/* mini-tag C7/L5 nas pontas (📐 indica âncora anatômica fixa) */}
-                  <text x={c7.x + 2} y={c7.y + 0.6} fill={lineColor} fontSize={1.7} fontWeight={700} style={{ pointerEvents: "none", paintOrder: "stroke" }} stroke="#000" strokeWidth={0.4}>{(c7 as any).snapped ? "C7 📐" : "C7"}</text>
-                  <text x={l5.x + 2} y={l5.y + 0.6} fill={lineColor} fontSize={1.7} fontWeight={700} style={{ pointerEvents: "none", paintOrder: "stroke" }} stroke="#000" strokeWidth={0.4}>{(l5 as any).snapped ? "L5 📐" : "L5"}</text>
+                  {/* mini-tag C7/L5 nas pontas — ✥ manual, 📐 snap automático */}
+                  <text x={c7.x + 2} y={c7.y + 0.6} fill={lineColor} fontSize={1.7} fontWeight={700} style={{ pointerEvents: "none", paintOrder: "stroke" }} stroke="#000" strokeWidth={0.4}>{(c7 as any).manual ? "C7 ✥" : (c7 as any).snapped ? "C7 📐" : "C7"}</text>
+                  <text x={l5.x + 2} y={l5.y + 0.6} fill={lineColor} fontSize={1.7} fontWeight={700} style={{ pointerEvents: "none", paintOrder: "stroke" }} stroke="#000" strokeWidth={0.4}>{(l5 as any).manual ? "L5 ✥" : (l5 as any).snapped ? "L5 📐" : "L5"}</text>
                 </g>
               );
             })()}
@@ -1787,9 +1921,11 @@ function OverlayLayer({
           );
         })}
 
-        {/* Plumb line label — com fonte do eixo (C7+L5 / C7 / L5 / frame-center) */}
+        {/* Plumb line label — fonte do eixo + inclinação real */}
         <text x={plumb.x1 + 0.6} y={2.5} fontSize={2} fill={C.white} opacity={0.6}>
-          Linha de Prumo{plumb.source !== "C7+L5" ? ` (${plumb.source})` : ""}
+          Linha de Prumo
+          {plumb.inclinacao !== 0 ? ` ${plumb.inclinacao > 0 ? "+" : ""}${plumb.inclinacao}°` : ""}
+          {plumb.source !== "C7+L5" ? ` (${plumb.source})` : ""}
         </text>
         {plumb.source === "frame-center" && (
           <text x={plumb.x1 + 0.6} y={4.8} fontSize={1.6} fill="#FBBF24" opacity={0.85}>
