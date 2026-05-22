@@ -2033,19 +2033,7 @@ function OverlayLayer({
                     vectorEffect="non-scaling-stroke"
                     style={{ strokeWidth: 1 }}
                   />
-                  {/* badge "clique" sutil acima do losango */}
-                  <text
-                    x={mx} y={my - 2.4}
-                    textAnchor="middle"
-                    fill={stroke}
-                    fontSize={1.8}
-                    fontWeight={700}
-                    style={{ pointerEvents: "none", paintOrder: "stroke" }}
-                    stroke="#000"
-                    strokeWidth={0.4}
-                  >
-                    {isSel ? "▼ aberto" : "▲ clique"}
-                  </text>
+                  {/* losango central já é a affordance de clique — sem badge textual */}
                 </g>
               );
             })()}
