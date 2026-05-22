@@ -87,6 +87,22 @@ INTEGRAÇÃO nutriON (OBRIGATÓRIO):
 
 ${coachNotes ? `OBSERVAÇÕES DO COACH:\n${coachNotes}` : ""}
 
+PERFIS DE RESISTÊNCIA — REGRA OBRIGATÓRIA (Darkside / Kassiano 2023; Pedrosa 2022):
+Para cada grupo muscular treinado, incluir obrigatoriamente:
+1. Pelo menos 1 exercício com tensão máxima no ALONGADO (prioridade absoluta para pontos fracos e stretched-mediated hypertrophy)
+2. Pelo menos 1 exercício com tensão CONSTANTE (base de volume e força)
+3. Pelo menos 1 exercício no ENCURTADO quando o volume permitir (pump e hipertrofia sarcoplasmática)
+
+Exemplos por grupo:
+- Costas: Remada curvada (CONSTANTE) + Straight arm pulldown (ALONGADO) + Remada cavalinho (ENCURTADO)
+- Peito: Supino reto (CONSTANTE) + Crucifixo halteres (ALONGADO) + Cross-over alto (ENCURTADO)
+- Bíceps: Rosca direta (CONSTANTE) + Rosca inclinada halteres (ALONGADO) + Rosca concentrada (ENCURTADO)
+- Ombro: Desenvolvimento halteres (CONSTANTE) + Elevação lateral cabo baixo (ALONGADO) + Elevação lateral halteres (ENCURTADO)
+- Quadríceps: Agachamento livre (CONSTANTE) + Búlgaro (ALONGADO) + Cadeira extensora (ENCURTADO)
+- Posterior: Stiff (ALONGADO) + Leg curl sentado (ALONGADO) + Mesa flexora (ENCURTADO)
+
+Para pontos fracos identificados, PRIORIZAR exercícios no ALONGADO.
+
 FORMATO DE RESPOSTA (JSON OBRIGATÓRIO):
 {
   "days": [

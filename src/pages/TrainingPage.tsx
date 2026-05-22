@@ -38,6 +38,7 @@ import SystemSelectorInline from "@/components/training/systems/SystemSelectorIn
 import SystemConflictAlerts from "@/components/training/systems/SystemConflictAlerts";
 import ProtocolDurationCheck from "@/components/training/systems/ProtocolDurationCheck";
 import { estimateProtocolDuration } from "@/data/protocolDuration";
+import { ResistanceProfileBadge, SessionProfilePanel } from "@/components/training/ResistanceProfileBadge";
 import { buildSystemPrescription } from "@/data/recommendSystem";
 import { TRAINING_SYSTEMS } from "@/data/trainingSystems";
 import CompetitionModeBlocks from "@/components/training/systems/CompetitionModeBlocks";
@@ -1493,6 +1494,8 @@ function TrainingDayCard({ day, index, expanded, onToggle, expandedExercise, set
         {expanded && (
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.25 }}>
             <div className="px-4 pb-4 space-y-3">
+              {/* Perfis de Resistência */}
+              <SessionProfilePanel exercises={day.exercises || []} />
               {/* Warm-up */}
               {day.warmup?.length > 0 && (
                 <div className="rounded-xl p-3" style={{ background: "rgba(59,130,246,0.06)", border: "1px solid rgba(59,130,246,0.12)" }}>
@@ -1632,13 +1635,16 @@ function ExerciseCard({
         <div className="flex items-center gap-2.5">
           <div className="w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-black" style={{ background: GREEN_DIM, color: GREEN }}>{displayOrder ?? exercise.order}</div>
           <div className="text-left">
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5 flex-wrap">
               <p className="text-[11px] font-bold" style={{ color: TEXT }}>{safeExerciseName}</p>
               {isSwapped && (
                 <span className="text-[7px] px-1 py-0.5 rounded font-bold" style={{ background: "rgba(59,130,246,0.15)", color: "#60a5fa" }}>SUBSTITUTO</span>
               )}
             </div>
-            <p className="text-[9px]" style={{ color: TEXT_MUTED }}>{safeMuscleTarget}</p>
+            <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+              <p className="text-[9px]" style={{ color: TEXT_MUTED }}>{safeMuscleTarget}</p>
+              <ResistanceProfileBadge exerciseName={safeExerciseName} />
+            </div>
           </div>
         </div>
         <div className="flex items-center gap-1.5">
