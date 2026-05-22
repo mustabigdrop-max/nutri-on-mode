@@ -821,6 +821,28 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
                       <circle cx={plumbSuggestion.x} cy={plumbSuggestion.y} r={0.7} fill="#B8922A" />
                     </svg>
                   )}
+                  {/* Guia anatômico de referência — C7 e L5 sobre a foto */}
+                  {showAnatomyGuide && (
+                    <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 w-full h-full pointer-events-none" style={{ overflow: "visible" }}>
+                      <rect x={0} y={0} width={100} height={100} fill="rgba(0,0,0,0.28)" />
+                      {[
+                        { id: "C7", y: 18, cor: "#B8922A", hint: "base do pescoço" },
+                        { id: "L5", y: 62, cor: "#38BDF8", hint: "acima do glúteo" },
+                      ].map((ref) => (
+                        <g key={ref.id}>
+                          <line x1={30} y1={ref.y} x2={70} y2={ref.y} stroke={ref.cor} strokeWidth={0.5} strokeDasharray="2 1" opacity={0.75} vectorEffect="non-scaling-stroke" />
+                          <circle cx={50} cy={ref.y} r={2.4} fill={`${ref.cor}33`} stroke={ref.cor} strokeWidth={0.6} vectorEffect="non-scaling-stroke">
+                            <animate attributeName="r" values="2;3.4;2" dur="2s" repeatCount="indefinite" />
+                          </circle>
+                          <text x={50} y={ref.y + 0.9} textAnchor="middle" fill={ref.cor} fontSize={2.2} fontWeight={700}>{ref.id}</text>
+                          <text x={72} y={ref.y + 0.9} fill={ref.cor} fontSize={1.8} opacity={0.85}>← {ref.hint}</text>
+                        </g>
+                      ))}
+                      <text x={50} y={5} textAnchor="middle" fill="rgba(255,255,255,0.65)" fontSize={2} fontWeight={600}>
+                        Guia anatômico — referência visual
+                      </text>
+                    </svg>
+                  )}
                 </div>
               )}
               {/* Overlay de instrução do prumo */}
