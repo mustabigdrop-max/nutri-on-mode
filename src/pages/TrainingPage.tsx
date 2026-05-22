@@ -1635,13 +1635,16 @@ function ExerciseCard({
         <div className="flex items-center gap-2.5">
           <div className="w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-black" style={{ background: GREEN_DIM, color: GREEN }}>{displayOrder ?? exercise.order}</div>
           <div className="text-left">
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5 flex-wrap">
               <p className="text-[11px] font-bold" style={{ color: TEXT }}>{safeExerciseName}</p>
               {isSwapped && (
                 <span className="text-[7px] px-1 py-0.5 rounded font-bold" style={{ background: "rgba(59,130,246,0.15)", color: "#60a5fa" }}>SUBSTITUTO</span>
               )}
             </div>
-            <p className="text-[9px]" style={{ color: TEXT_MUTED }}>{safeMuscleTarget}</p>
+            <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+              <p className="text-[9px]" style={{ color: TEXT_MUTED }}>{safeMuscleTarget}</p>
+              <ResistanceProfileBadge exerciseName={safeExerciseName} />
+            </div>
           </div>
         </div>
         <div className="flex items-center gap-1.5">
