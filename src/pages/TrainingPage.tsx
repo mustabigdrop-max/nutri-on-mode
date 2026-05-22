@@ -39,6 +39,8 @@ import SystemConflictAlerts from "@/components/training/systems/SystemConflictAl
 import ProtocolDurationCheck from "@/components/training/systems/ProtocolDurationCheck";
 import { estimateProtocolDuration } from "@/data/protocolDuration";
 import { ResistanceProfileBadge, SessionProfilePanel } from "@/components/training/ResistanceProfileBadge";
+import { RIRBadge, MesocycleRIRPlanner } from "@/components/training/RIRControls";
+import { calcWeekRIR, resolveRIRForExercise, buildRIRInstruction } from "@/utils/rirSystem";
 import { buildSystemPrescription } from "@/data/recommendSystem";
 import { TRAINING_SYSTEMS } from "@/data/trainingSystems";
 import CompetitionModeBlocks from "@/components/training/systems/CompetitionModeBlocks";
@@ -343,7 +345,11 @@ Integre QUATRO fontes de inteligência em UM protocolo definitivo:
 ${prontidaoBloco}
 ${fibrasBloco}
 ${sistemaBloco}
-${correctivePrompt ? `\n━━━ PROTOCOLO CORRETIVO APEX (colado pelo coach) ━━━\nUse as recomendações abaixo como BASE para os exercícios corretivos, ativações, finalizadores e ajustes de volume por grupo. Integre ao protocolo principal sem duplicar exercícios.\n\n${correctivePrompt}\n━━━ FIM PROTOCOLO CORRETIVO ━━━` : ""}
+
+━━━ PROGRESSÃO DE RIR (Reps In Reserve) — OBRIGATÓRIO ━━━
+${buildRIRInstruction(1, Math.max(parseInt(String(weeks)) || 8, 1))}
+━━━ FIM PROGRESSÃO RIR ━━━
+${correctivePrompt ? `\n━━━ PROTOCOLO CORRETIVO APEX (colado pelo coach) ━━━\nUse as recomendações abaixo como BASE para os exercícios corretivos, ativações, finalizadores e ajustes de volume por grupo. Integre ao protocolo principal sem duplicar exercícios. Corretivos APEX NUNCA recebem RIR 0 — mínimo RIR 1.\n\n${correctivePrompt}\n━━━ FIM PROTOCOLO CORRETIVO ━━━` : ""}
 
 ━━━ OUTPUT OBRIGATÓRIO ━━━
 1. AQUECIMENTO específico (considera lesões e grupo muscular)
@@ -909,6 +915,11 @@ Português. Específico. Científico. Zero genérico.`;
                 {isMello16 && (
                   <WeekNavigator onWeekChange={setWeekPhase} />
                 )}
+                {/* Progressão de RIR no mesociclo */}
+                <MesocycleRIRPlanner
+                  totalWeeks={Math.max(parseInt(String(weeks)) || 8, 1)}
+                  currentWeek={isMello16 ? weekPhase.week : 1}
+                />
                 {protocol.training_days.map((day: any, idx: number) => (
                   <TrainingDayCard
                     key={idx}
@@ -1644,6 +1655,11 @@ function ExerciseCard({
             <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
               <p className="text-[9px]" style={{ color: TEXT_MUTED }}>{safeMuscleTarget}</p>
               <ResistanceProfileBadge exerciseName={safeExerciseName} />
+              {(() => {
+                const weekRIR = weekPhase ? calcWeekRIR(weekPhase.week, 16) : 2;
+                const effectiveRIR = resolveRIRForExercise(safeExerciseName, weekRIR);
+                return <RIRBadge exerciseName={safeExerciseName} rir={effectiveRIR} showIntensity={false} />;
+              })()}
             </div>
           </div>
         </div>
