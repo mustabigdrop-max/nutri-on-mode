@@ -154,6 +154,7 @@ export default function TrainingPage() {
             {section === "volume" && <VolumeLandmarksSection userId={user?.id} />}
             {section === "historico" && <HistorySection userId={user?.id} />}
             {section === "config" && <CoachConfigSection userId={user?.id} />}
+            {section === "stratumai" && <StratumAIAgent userId={user?.id} />}
             {section === "competicao" && isAdmin && (
               <div className="space-y-4">
                 <CompetitionModeBlocks />
