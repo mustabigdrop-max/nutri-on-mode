@@ -1332,6 +1332,7 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
     try {
       const farmMeta = parseFarmMeta(analysisResult);
       const meta = parseMeta(analysisResult);
+      const segments = parseSegments(analysisResult);
       const protocoloCompleto = `Compostos: ${formData.compostos}
 Objetivo do ciclo: ${objetivoCiclo}
 Semana ${semanaCiclo || "não informada"} de ${duracaoCiclo || "não informada"} semanas
