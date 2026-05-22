@@ -15,6 +15,7 @@ import ApexTimelineTab from "@/components/coach/ApexTimelineTab";
 import ApexEvolutionTab from "@/components/coach/ApexEvolutionTab";
 
 import VertexEnhancedView from "@/components/coach/VertexEnhancedView";
+import VertexAnalysisV4 from "@/components/coach/VertexAnalysisV4";
 import { ApexScoreGauge, InsightCard, PosturaCards, CorrecoesCards, ProtocoloCards } from "@/components/coach/ApexResultCards";
 import { ApexCorrectiveLibrary } from "@/components/coach/ApexCorrectiveLibrary";
 import { ApexSessionGenerator } from "@/components/coach/ApexSessionGenerator";
