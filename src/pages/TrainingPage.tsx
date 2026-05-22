@@ -47,6 +47,13 @@ import { MuscleRegionBadge, RegionalCoveragePanel } from "@/components/training/
 import { buildRegionalInstruction, findExerciseRegion } from "@/utils/muscleRegions";
 import { PlateauDashboard } from "@/components/training/PlateauDashboard";
 import { buildPlateauInstruction } from "@/utils/plateauDetector";
+import {
+  SMHPanel,
+  SupercompPanel,
+  RBEPanel,
+  ExerciseRBEBadge,
+  buildDarksideFinalInstruction,
+} from "@/components/training/DarksideFinalPanels";
 import { buildSystemPrescription } from "@/data/recommendSystem";
 import { TRAINING_SYSTEMS } from "@/data/trainingSystems";
 import CompetitionModeBlocks from "@/components/training/systems/CompetitionModeBlocks";
@@ -371,6 +378,8 @@ Caso o atleta esteja em platô (carga estagnada 2+ semanas, queda de performance
 - Aumentar RIR (mais conservador) durante a semana de descarga
 - Após a semana de De-Output, reiniciar mesociclo com +1 série no exercício principal
 ━━━ FIM DETECÇÃO DE PLATÔ ━━━
+
+${buildDarksideFinalInstruction()}
 ${correctivePrompt ? `\n━━━ PROTOCOLO CORRETIVO APEX (colado pelo coach) ━━━\nUse as recomendações abaixo como BASE para os exercícios corretivos, ativações, finalizadores e ajustes de volume por grupo. Integre ao protocolo principal sem duplicar exercícios. Corretivos APEX NUNCA recebem RIR 0 — mínimo RIR 1.\n\n${correctivePrompt}\n━━━ FIM PROTOCOLO CORRETIVO ━━━` : ""}
 
 ━━━ OUTPUT OBRIGATÓRIO ━━━
@@ -1540,6 +1549,14 @@ function TrainingDayCard({ day, index, expanded, onToggle, expandedExercise, set
             <div className="px-4 pb-4 space-y-3">
               {/* Perfis de Resistência */}
               <SessionProfilePanel exercises={day.exercises || []} />
+              {/* Supercompensação por grupo muscular */}
+              <SupercompPanel athleteId={athleteId} muscleGroups={muscleTags} />
+              {/* Repeated Bout Effect — alerta de adaptação */}
+              <RBEPanel
+                athleteId={athleteId}
+                exercises={(day.exercises || []).map((e: any) => ({ name: e?.name ?? e?.nome ?? "" }))}
+                mesoStart={(() => { const d = new Date(); d.setDate(d.getDate() - 28); return d.toISOString(); })()}
+              />
               {/* Ondulação de Zonas de Repetição */}
               {(() => {
                 const pattern = WAVE_PATTERNS[DEFAULT_PATTERN_KEY];
@@ -1715,6 +1732,13 @@ function ExerciseCard({
                     <RepZoneBadge reps={repsValue} compact />
                     <RIRBadge exerciseName={safeExerciseName} rir={effectiveRIR} showIntensity={false} />
                     <TripleCoherenceMarker exerciseName={safeExerciseName} reps={repsValue} rir={effectiveRIR} />
+                    {athleteId && (
+                      <ExerciseRBEBadge
+                        athleteId={athleteId}
+                        exerciseName={safeExerciseName}
+                        mesoStart={(() => { const d = new Date(); d.setDate(d.getDate() - 28); return d.toISOString(); })()}
+                      />
+                    )}
                   </>
                 );
               })()}
@@ -1876,6 +1900,9 @@ function ExerciseCard({
                   dayNumber={dayNumber || 1}
                 />
               )}
+
+              {/* SMH Protocol — Sobrecarga no Alongado (perfil ALONGADO) */}
+              <SMHPanel exerciseName={safeExerciseName} />
 
               {/* Execution Cues */}
               {safeExecutionCues && (
