@@ -67,6 +67,8 @@ const CoachHub = () => {
         return <CoachLabExamsPage />;
       case "relatorios":
         return <CoachReportsPage />;
+      case "vera":
+        return null;
     }
   };
 
