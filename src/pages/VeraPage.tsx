@@ -126,6 +126,8 @@ export default function VeraPage() {
     })();
   }, [apexFlag, apexAtletaId]);
 
+  // Load most recent anamnese for this coach
+  useEffect(() => {
     if (!user?.id) return;
     (async () => {
       const { data } = await supabase
