@@ -132,3 +132,6 @@ verify_jwt = false
 [functions.stratum-ai-agent]
 verify_jwt = false
 
+[functions.vera-agent]
+verify_jwt = false
+
