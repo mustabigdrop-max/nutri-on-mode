@@ -490,6 +490,9 @@ export default function CoachTrainingOnPage() {
         <CardContent className="space-y-4">
           <AthleteSelector value={athlete?.id ?? null} onChange={setAthlete} />
 
+          {/* APEX Bridge — corretivos + contraindicados a partir de apex_training_rules */}
+          <ApexBridgePanel athleteId={athlete?.id} />
+
           {/* APEX Sync Banner */}
           {showApexBanner && apexSyncData && (
             <Card className="border-amber-500/40 bg-gradient-to-r from-amber-500/10 to-blue-500/10">
