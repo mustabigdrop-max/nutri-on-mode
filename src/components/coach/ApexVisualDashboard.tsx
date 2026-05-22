@@ -1584,6 +1584,7 @@ Suporte em uso: ${suporte || "não informado"}` : "";
       { key: "palco", label: "Palco" },
       { key: "plano", label: "Plano" },
       { key: "timeline", label: "📅 Timeline" },
+      { key: "evolucao", label: "📈 Evolução" },
     ];
 
     return (
