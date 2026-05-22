@@ -206,11 +206,133 @@ export default function VeraPage() {
         <div className="flex items-center justify-center p-10" style={{ color: PURPLE }}>
           <Loader2 className="w-4 h-4 animate-spin" />
         </div>
+      ) : phase === "apex" ? (
+        <ApexDiagnosticPanel
+          loading={apexLoading}
+          pkg={apexPackage}
+          diagnostic={apexDiagnostic}
+          onSendToTrainingOn={async () => {
+            if (!apexDiagnostic || !apexPackage) return;
+            const text = formatProtocolForTrainingOn(apexDiagnostic, apexPackage.atleta_nome);
+            await supabase.from("apex_vera_bridge" as any).update({
+              status: "ENVIADO_TRAININGON",
+              resultado: { protocolo_texto: text, exercicios: apexDiagnostic.pontos_fracos.flatMap(p => p.protocolo), pilares: apexDiagnostic.pilares_ativos, timeline: apexDiagnostic.timeline_semanas },
+            } as any).eq("atleta_id", apexPackage.atleta_id);
+            toast.success("Protocolo enviado ao TrainingON");
+            navigate(`/training?vera_protocolo=true&atleta=${apexPackage.atleta_id}`);
+          }}
+          onOpenAnamnese={() => setPhase("intake")}
+        />
       ) : phase === "intake" ? (
         <AnamneseFemininaForm initial={anamnese} onComplete={handleAnamneseComplete} />
       ) : (
         <VeraChat anamnese={anamnese} onEditAnamnese={() => setPhase("intake")} />
       )}
+    </div>
+  );
+}
+
+/* ───────────────────────── APEX DIAGNOSTIC PANEL ───────────────────────── */
+function ApexDiagnosticPanel({
+  loading, pkg, diagnostic, onSendToTrainingOn, onOpenAnamnese,
+}: {
+  loading: boolean;
+  pkg: ApexToVERAPackage | null;
+  diagnostic: VERADiagnostic | null;
+  onSendToTrainingOn: () => void;
+  onOpenAnamnese: () => void;
+}) {
+  if (loading) {
+    return <div className="flex items-center justify-center p-10" style={{ color: PURPLE }}><Loader2 className="w-4 h-4 animate-spin" /></div>;
+  }
+  if (!pkg || !diagnostic) {
+    return <div style={{ padding: 24, color: "rgba(255,255,255,0.5)", fontSize: 13 }}>Nenhuma análise APEX vinculada encontrada.</div>;
+  }
+  return (
+    <div style={{ padding: "16px 20px", maxWidth: 820, margin: "0 auto" }}>
+      <div style={{ padding: "10px 14px", marginBottom: 16, background: "rgba(184,146,42,0.07)", border: "0.5px solid rgba(184,146,42,0.2)", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div>
+          <p style={{ fontSize: 10, color: "#B8922A", letterSpacing: "0.08em", margin: "0 0 3px" }}>ANÁLISE APEX IMPORTADA</p>
+          <p style={{ fontSize: 12, color: "rgba(255,255,255,.7)", margin: 0 }}>
+            {pkg.atleta_nome} · {pkg.achados.length} achados · SRI {pkg.sri ?? "--"} · {Math.round(pkg.qualidade * 100)}% qualidade
+          </p>
+        </div>
+        <span style={{ fontSize: 9, padding: "2px 8px", background: "rgba(184,146,42,0.15)", border: "0.5px solid rgba(184,146,42,0.3)", borderRadius: 8, color: "#B8922A" }}>APEX ✓</span>
+      </div>
+
+      <p style={{ fontSize: 10, color: "rgba(255,255,255,.35)", letterSpacing: "0.08em", margin: "0 0 10px", textTransform: "uppercase" }}>
+        Pontos fracos identificados — {diagnostic.pontos_fracos.length}
+      </p>
+
+      {diagnostic.pontos_fracos.map((pf, i) => {
+        const isCrit = pf.severidade === "CRITICO";
+        return (
+          <div key={i} style={{ marginBottom: 12, background: "rgba(255,255,255,.03)", border: `0.5px solid ${isCrit ? "rgba(239,68,68,.25)" : "rgba(251,191,36,.2)"}`, borderLeft: `2px solid ${isCrit ? "#EF4444" : "#FBBF24"}`, borderRadius: 10, overflow: "hidden" }}>
+            <div style={{ padding: "10px 14px", background: "rgba(255,255,255,.03)" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+                <p style={{ fontSize: 13, fontWeight: 500, color: "rgba(255,255,255,.9)", margin: 0 }}>{pf.nome}</p>
+                <span style={{ fontSize: 9, padding: "1px 7px", background: isCrit ? "rgba(239,68,68,.12)" : "rgba(251,191,36,.12)", border: `0.5px solid ${isCrit ? "rgba(239,68,68,.3)" : "rgba(251,191,36,.3)"}`, borderRadius: 7, color: isCrit ? "#EF4444" : "#FBBF24" }}>{pf.severidade}</span>
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                <div>
+                  <p style={{ fontSize: 9, color: "rgba(255,255,255,.3)", margin: "0 0 2px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Impacto visual</p>
+                  <p style={{ fontSize: 11, color: "rgba(255,255,255,.55)", margin: 0, lineHeight: 1.4 }}>{pf.impacto_visual}</p>
+                </div>
+                <div>
+                  <p style={{ fontSize: 9, color: "rgba(255,255,255,.3)", margin: "0 0 2px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Causa raiz</p>
+                  <p style={{ fontSize: 11, color: "rgba(255,255,255,.55)", margin: 0, lineHeight: 1.4 }}>{pf.causa_raiz}</p>
+                </div>
+              </div>
+            </div>
+            <div style={{ padding: "8px 14px", borderTop: "0.5px solid rgba(255,255,255,.06)" }}>
+              <p style={{ fontSize: 9, color: "rgba(167,139,250,.6)", margin: "0 0 5px", letterSpacing: "0.06em" }}>PILARES DARKSIDE ATIVOS</p>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+                {pf.pilares.map((num, j) => {
+                  const pilar = OITO_PILARES.find((p) => p.numero === num);
+                  return pilar ? (
+                    <span key={j} title={pilar.aplicacao} style={{ fontSize: 9, padding: "1px 7px", background: "rgba(167,139,250,.1)", border: "0.5px solid rgba(167,139,250,.2)", borderRadius: 7, color: "#A78BFA", cursor: "help" }}>{num}. {pilar.nome}</span>
+                  ) : null;
+                })}
+              </div>
+            </div>
+            <div style={{ padding: "8px 14px", borderTop: "0.5px solid rgba(255,255,255,.06)" }}>
+              <p style={{ fontSize: 9, color: "rgba(255,255,255,.3)", margin: "0 0 6px", letterSpacing: "0.06em" }}>PROTOCOLO DE TREINO</p>
+              {pf.protocolo.map((ex, k) => {
+                const pColor = ({ ALONGADO: "#34D399", ENCURTADO: "#FBBF24", CONSTANTE: "#38BDF8" } as const)[ex.perfil];
+                return (
+                  <div key={k} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "5px 0", borderBottom: k < pf.protocolo.length - 1 ? "0.5px solid rgba(255,255,255,.05)" : "none" }}>
+                    <div>
+                      <p style={{ fontSize: 11, fontWeight: 500, color: "rgba(255,255,255,.8)", margin: "0 0 2px" }}>
+                        {ex.exercicio}
+                        {ex.smh && <span style={{ fontSize: 9, color: "#34D399", marginLeft: 5 }}>SMH</span>}
+                        {ex.prioridade === "CRITICA" && <span style={{ fontSize: 9, color: "#B8922A", marginLeft: 4 }}>★</span>}
+                      </p>
+                      <div style={{ display: "flex", gap: 4 }}>
+                        <span style={{ fontSize: 9, color: pColor, background: `${pColor}12`, borderRadius: 4, padding: "0 4px" }}>{ex.perfil}</span>
+                        <span style={{ fontSize: 9, color: "rgba(184,146,42,.7)", background: "rgba(184,146,42,.1)", borderRadius: 4, padding: "0 4px" }}>Z{ex.zona}</span>
+                      </div>
+                    </div>
+                    <span style={{ fontSize: 11, color: "rgba(255,255,255,.4)", whiteSpace: "nowrap" }}>{ex.series}×{ex.reps}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })}
+
+      <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+        <button onClick={onOpenAnamnese} style={{ flex: 1, padding: "10px", background: "rgba(167,139,250,0.08)", border: "0.5px solid rgba(167,139,250,0.3)", borderRadius: 10, cursor: "pointer", fontSize: 12, fontWeight: 600, color: PURPLE }}>
+          Refinar com anamnese feminina
+        </button>
+        <button onClick={onSendToTrainingOn} style={{ flex: 2, padding: "12px", background: "rgba(52,211,153,0.15)", border: "0.5px solid rgba(52,211,153,0.35)", borderRadius: 10, cursor: "pointer", fontSize: 13, fontWeight: 600, color: "#34D399", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+          <span>⬡</span> Enviar protocolo para o TrainingON
+        </button>
+      </div>
+
+      <p style={{ marginTop: 16, fontSize: 10, color: "rgba(255,255,255,0.35)", textAlign: "center" }}>
+        Timeline esperada de desenvolvimento: <strong style={{ color: PURPLE }}>{diagnostic.timeline_semanas} semanas</strong>
+      </p>
     </div>
   );
 }
