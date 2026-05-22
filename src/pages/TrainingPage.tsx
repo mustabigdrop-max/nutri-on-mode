@@ -378,6 +378,8 @@ Caso o atleta esteja em platô (carga estagnada 2+ semanas, queda de performance
 - Aumentar RIR (mais conservador) durante a semana de descarga
 - Após a semana de De-Output, reiniciar mesociclo com +1 série no exercício principal
 ━━━ FIM DETECÇÃO DE PLATÔ ━━━
+
+${buildDarksideFinalInstruction()}
 ${correctivePrompt ? `\n━━━ PROTOCOLO CORRETIVO APEX (colado pelo coach) ━━━\nUse as recomendações abaixo como BASE para os exercícios corretivos, ativações, finalizadores e ajustes de volume por grupo. Integre ao protocolo principal sem duplicar exercícios. Corretivos APEX NUNCA recebem RIR 0 — mínimo RIR 1.\n\n${correctivePrompt}\n━━━ FIM PROTOCOLO CORRETIVO ━━━` : ""}
 
 ━━━ OUTPUT OBRIGATÓRIO ━━━
