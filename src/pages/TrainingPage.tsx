@@ -1532,6 +1532,10 @@ function TrainingDayCard({ day, index, expanded, onToggle, expandedExercise, set
                   />
                 );
               })()}
+              {/* Cobertura Regional (Hipertrofia Regional) */}
+              <RegionalCoveragePanel
+                exercises={(day.exercises || []).map((e: any) => ({ nome: e?.name ?? e?.nome ?? "" }))}
+              />
               {/* Warm-up */}
               {day.warmup?.length > 0 && (
                 <div className="rounded-xl p-3" style={{ background: "rgba(59,130,246,0.06)", border: "1px solid rgba(59,130,246,0.12)" }}>
@@ -1680,6 +1684,7 @@ function ExerciseCard({
             <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
               <p className="text-[9px]" style={{ color: TEXT_MUTED }}>{safeMuscleTarget}</p>
               <ResistanceProfileBadge exerciseName={safeExerciseName} />
+              <MuscleRegionBadge exerciseName={safeExerciseName} />
               {(() => {
                 const weekRIR = weekPhase ? calcWeekRIR(weekPhase.week, 16) : 2;
                 const effectiveRIR = resolveRIRForExercise(safeExerciseName, weekRIR);
