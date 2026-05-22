@@ -1368,6 +1368,49 @@ function OverlayLayer({
     window.addEventListener("touchcancel", handleUp);
   }, [toSVGCoords, onSpineMove, onSpineRelease]);
 
+  // ─── Drag da COLUNA inteira (C7+L5 juntos, preserva ângulo/distância) ─
+  const beginColumnDrag = useCallback((e: React.MouseEvent | React.TouchEvent) => {
+    e.stopPropagation();
+    if ((e as any).preventDefault) (e as any).preventDefault();
+    const c7 = (data.landmarks as any).spine_c7;
+    const l5 = (data.landmarks as any).spine_l5;
+    const curC7 = (manualSpine?.c7) ?? (isValidPoint(c7) ? { x: c7.x, y: c7.y } : null);
+    const curL5 = (manualSpine?.l5) ?? (isValidPoint(l5) ? { x: l5.x, y: l5.y } : null);
+    if (!curC7 || !curL5) return;
+    const isTouch = "touches" in e;
+    const startClient = isTouch
+      ? { x: (e as React.TouchEvent).touches[0].clientX, y: (e as React.TouchEvent).touches[0].clientY }
+      : { x: (e as React.MouseEvent).clientX, y: (e as React.MouseEvent).clientY };
+    const svg = svgRef.current;
+    const rect = svg?.getBoundingClientRect();
+    const handleMove = (cx: number, cy: number) => {
+      if (!rect || !rect.width || !rect.height) return;
+      const dxPct = ((cx - startClient.x) / rect.width) * 100;
+      const dyPct = ((cy - startClient.y) / rect.height) * 100;
+      onSpineMove?.("c7", Math.max(0, Math.min(100, curC7.x + dxPct)), Math.max(0, Math.min(100, curC7.y + dyPct)));
+      onSpineMove?.("l5", Math.max(0, Math.min(100, curL5.x + dxPct)), Math.max(0, Math.min(100, curL5.y + dyPct)));
+    };
+    const onMouseMove = (ev: MouseEvent) => handleMove(ev.clientX, ev.clientY);
+    const onTouchMove = (ev: TouchEvent) => {
+      const t = ev.touches[0]; if (!t) return;
+      if (ev.cancelable) ev.preventDefault();
+      handleMove(t.clientX, t.clientY);
+    };
+    const onUp = () => {
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onUp);
+      window.removeEventListener("touchmove", onTouchMove);
+      window.removeEventListener("touchend", onUp);
+      window.removeEventListener("touchcancel", onUp);
+      onSpineRelease?.();
+    };
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onUp);
+    window.addEventListener("touchmove", onTouchMove, { passive: false });
+    window.addEventListener("touchend", onUp);
+    window.addEventListener("touchcancel", onUp);
+  }, [data.landmarks, manualSpine, onSpineMove, onSpineRelease]);
+
   const ang = data.angles;
 
   // Pre-compute label positions with collision avoidance
@@ -1623,6 +1666,15 @@ function OverlayLayer({
                       style={{ strokeWidth: 7 }}
                     />
                   )}
+                  {/* Glow dourado sob a linha (destaque visual permanente) */}
+                  <line
+                    x1={c7.x} y1={c7.y} x2={l5.x} y2={l5.y}
+                    stroke="#B8922A"
+                    strokeOpacity={0.25}
+                    vectorEffect="non-scaling-stroke"
+                    strokeLinecap="round"
+                    style={{ strokeWidth: 6 }}
+                  />
                   {/* hit-area invisível */}
                   <line
                     x1={c7.x} y1={c7.y} x2={l5.x} y2={l5.y}
@@ -1633,6 +1685,8 @@ function OverlayLayer({
                   <line
                     x1={c7.x} y1={c7.y} x2={l5.x} y2={l5.y}
                     stroke={lineColor}
+                    strokeDasharray="3 1.5"
+                    strokeLinecap="round"
                     vectorEffect="non-scaling-stroke"
                     style={{ strokeWidth: isSelS ? 3 : 2 }}
                   />
@@ -1671,6 +1725,67 @@ function OverlayLayer({
                     </circle>
                     <text x={l5.x} y={l5.y - 2.6} textAnchor="middle" fill="rgba(255,255,255,0.65)" fontSize={2} style={{ pointerEvents: "none", userSelect: "none" }}>✥</text>
                   </g>
+
+                  {/* Handle central — arrasta C7+L5 juntos (mover coluna inteira) */}
+                  <g
+                    onMouseDown={beginColumnDrag}
+                    onTouchStart={beginColumnDrag}
+                    style={{ cursor: "move", pointerEvents: "auto", touchAction: "none" }}
+                  >
+                    <circle cx={mxS} cy={myS} r={3.5} fill="transparent" />
+                    <circle
+                      cx={mxS} cy={myS} r={1.9}
+                      fill="rgba(184,146,42,0.22)"
+                      stroke="#B8922A"
+                      strokeDasharray="0.8 0.4"
+                      vectorEffect="non-scaling-stroke"
+                      style={{ strokeWidth: 0.9 }}
+                    >
+                      <title>Arraste para mover a coluna inteira (C7 + L5)</title>
+                    </circle>
+                    <text
+                      x={mxS} y={myS + 0.8}
+                      textAnchor="middle"
+                      fill="#B8922A"
+                      fontSize={2.1}
+                      fontWeight={700}
+                      style={{ pointerEvents: "none", userSelect: "none" }}
+                    >✥</text>
+                  </g>
+
+                  {/* Comprimento C7-L5 (sutil, ao lado do ponto médio) */}
+                  <text
+                    x={mxS - nx * 3.2} y={myS - ny * 3.2}
+                    textAnchor="middle"
+                    fill="rgba(184,146,42,0.55)"
+                    fontSize={1.6}
+                    style={{ pointerEvents: "none", userSelect: "none" }}
+                  >
+                    {Math.round(len * 10) / 10}u
+                  </text>
+
+                  {/* Badge de ângulo C7-L5 próximo ao C7 */}
+                  <g pointerEvents="none">
+                    <rect
+                      x={c7.x + 3} y={c7.y - 2.6}
+                      width={9.5} height={3.2} rx={0.8}
+                      fill="rgba(10,10,15,0.9)"
+                      stroke={badgeColor}
+                      strokeOpacity={0.5}
+                      vectorEffect="non-scaling-stroke"
+                      style={{ strokeWidth: 0.6 }}
+                    />
+                    <text
+                      x={c7.x + 7.75} y={c7.y - 0.4}
+                      textAnchor="middle"
+                      fill={badgeColor}
+                      fontSize={1.8}
+                      fontWeight={700}
+                    >
+                      {devAbs.toFixed(1)}°
+                    </text>
+                  </g>
+
                   {/* Conector do badge até a linha */}
                   <line
                     x1={mxS} y1={myS} x2={bx} y2={by}
