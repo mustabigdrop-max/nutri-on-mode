@@ -4369,10 +4369,13 @@ export type Database = {
           fases_recomendadas: string[] | null
           grupo_muscular: string
           id: string
+          muscle_portion: string | null
           musculo_primario: string
           musculos_secundarios: string[] | null
           nome: string
           prioridade: number | null
+          profile_evidence: string | null
+          resistance_profile: string | null
           subgrupo_especifico: string
           variacoes: string[] | null
         }
@@ -4387,10 +4390,13 @@ export type Database = {
           fases_recomendadas?: string[] | null
           grupo_muscular: string
           id?: string
+          muscle_portion?: string | null
           musculo_primario: string
           musculos_secundarios?: string[] | null
           nome: string
           prioridade?: number | null
+          profile_evidence?: string | null
+          resistance_profile?: string | null
           subgrupo_especifico: string
           variacoes?: string[] | null
         }
@@ -4405,10 +4411,13 @@ export type Database = {
           fases_recomendadas?: string[] | null
           grupo_muscular?: string
           id?: string
+          muscle_portion?: string | null
           musculo_primario?: string
           musculos_secundarios?: string[] | null
           nome?: string
           prioridade?: number | null
+          profile_evidence?: string | null
+          resistance_profile?: string | null
           subgrupo_especifico?: string
           variacoes?: string[] | null
         }
