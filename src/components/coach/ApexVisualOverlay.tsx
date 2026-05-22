@@ -1666,6 +1666,15 @@ function OverlayLayer({
                       style={{ strokeWidth: 7 }}
                     />
                   )}
+                  {/* Glow dourado sob a linha (destaque visual permanente) */}
+                  <line
+                    x1={c7.x} y1={c7.y} x2={l5.x} y2={l5.y}
+                    stroke="#B8922A"
+                    strokeOpacity={0.25}
+                    vectorEffect="non-scaling-stroke"
+                    strokeLinecap="round"
+                    style={{ strokeWidth: 6 }}
+                  />
                   {/* hit-area invisível */}
                   <line
                     x1={c7.x} y1={c7.y} x2={l5.x} y2={l5.y}
@@ -1676,6 +1685,8 @@ function OverlayLayer({
                   <line
                     x1={c7.x} y1={c7.y} x2={l5.x} y2={l5.y}
                     stroke={lineColor}
+                    strokeDasharray="3 1.5"
+                    strokeLinecap="round"
                     vectorEffect="non-scaling-stroke"
                     style={{ strokeWidth: isSelS ? 3 : 2 }}
                   />
