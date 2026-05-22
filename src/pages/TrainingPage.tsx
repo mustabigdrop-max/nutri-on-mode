@@ -38,6 +38,7 @@ import SystemSelectorInline from "@/components/training/systems/SystemSelectorIn
 import SystemConflictAlerts from "@/components/training/systems/SystemConflictAlerts";
 import ProtocolDurationCheck from "@/components/training/systems/ProtocolDurationCheck";
 import { estimateProtocolDuration } from "@/data/protocolDuration";
+import { ResistanceProfileBadge, SessionProfilePanel } from "@/components/training/ResistanceProfileBadge";
 import { buildSystemPrescription } from "@/data/recommendSystem";
 import { TRAINING_SYSTEMS } from "@/data/trainingSystems";
 import CompetitionModeBlocks from "@/components/training/systems/CompetitionModeBlocks";
