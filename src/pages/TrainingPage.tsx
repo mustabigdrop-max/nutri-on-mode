@@ -45,6 +45,8 @@ import { RepZoneBadge, SessionZonePanel, TripleCoherenceMarker } from "@/compone
 import { buildZoneInstruction, getWeekZones, WAVE_PATTERNS, DEFAULT_PATTERN_KEY } from "@/utils/repZones";
 import { MuscleRegionBadge, RegionalCoveragePanel } from "@/components/training/RegionalCoverage";
 import { buildRegionalInstruction, findExerciseRegion } from "@/utils/muscleRegions";
+import { PlateauDashboard } from "@/components/training/PlateauDashboard";
+import { buildPlateauInstruction } from "@/utils/plateauDetector";
 import { buildSystemPrescription } from "@/data/recommendSystem";
 import { TRAINING_SYSTEMS } from "@/data/trainingSystems";
 import CompetitionModeBlocks from "@/components/training/systems/CompetitionModeBlocks";
@@ -932,6 +934,17 @@ Português. Específico. Científico. Zero genérico.`;
                   totalWeeks={Math.max(parseInt(String(weeks)) || 8, 1)}
                   currentWeek={isMello16 ? weekPhase.week : 1}
                 />
+                {/* De-Output — Detecção de Platô */}
+                {userId && (
+                  <PlateauDashboard
+                    athleteId={userId}
+                    exercises={(protocol.training_days || []).flatMap((d: any) =>
+                      (d.exercises || []).map((e: any) => ({ nome: e?.name ?? e?.nome ?? "" }))
+                    ).filter((e: any) => e.nome)}
+                    semanaMeso={isMello16 ? weekPhase.week : 1}
+                    totalMeso={Math.max(parseInt(String(weeks)) || 8, 1)}
+                  />
+                )}
                 {protocol.training_days.map((day: any, idx: number) => (
                   <TrainingDayCard
                     key={idx}
