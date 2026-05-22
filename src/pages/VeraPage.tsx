@@ -5,7 +5,7 @@ import ReactMarkdown from "react-markdown";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { VERA_AGENT_SYSTEM } from "@/utils/veraAgentPrompt";
+import { VERA_AGENT_SYSTEM, VERA_PHARMA_MODULE } from "@/utils/veraAgentPrompt";
 import {
   buildDeterministicDiagnostic,
   formatProtocolForTrainingOn,
