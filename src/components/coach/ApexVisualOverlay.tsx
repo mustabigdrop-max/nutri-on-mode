@@ -1354,6 +1354,7 @@ function OverlayLayer({
   const beginSpineDrag = useCallback((key: "c7" | "l5") => (e: React.MouseEvent | React.TouchEvent) => {
     e.stopPropagation();
     if ((e as any).preventDefault) (e as any).preventDefault();
+    dismissOnboarding();
     draggingRef.current = key;
     const handleMove = (ev: MouseEvent) => {
       if (draggingRef.current !== key) return;
