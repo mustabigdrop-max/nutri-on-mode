@@ -345,7 +345,11 @@ Integre QUATRO fontes de inteligência em UM protocolo definitivo:
 ${prontidaoBloco}
 ${fibrasBloco}
 ${sistemaBloco}
-${correctivePrompt ? `\n━━━ PROTOCOLO CORRETIVO APEX (colado pelo coach) ━━━\nUse as recomendações abaixo como BASE para os exercícios corretivos, ativações, finalizadores e ajustes de volume por grupo. Integre ao protocolo principal sem duplicar exercícios.\n\n${correctivePrompt}\n━━━ FIM PROTOCOLO CORRETIVO ━━━` : ""}
+
+━━━ PROGRESSÃO DE RIR (Reps In Reserve) — OBRIGATÓRIO ━━━
+${buildRIRInstruction(1, Math.max(parseInt(String(weeks)) || 8, 1))}
+━━━ FIM PROGRESSÃO RIR ━━━
+${correctivePrompt ? `\n━━━ PROTOCOLO CORRETIVO APEX (colado pelo coach) ━━━\nUse as recomendações abaixo como BASE para os exercícios corretivos, ativações, finalizadores e ajustes de volume por grupo. Integre ao protocolo principal sem duplicar exercícios. Corretivos APEX NUNCA recebem RIR 0 — mínimo RIR 1.\n\n${correctivePrompt}\n━━━ FIM PROTOCOLO CORRETIVO ━━━` : ""}
 
 ━━━ OUTPUT OBRIGATÓRIO ━━━
 1. AQUECIMENTO específico (considera lesões e grupo muscular)
