@@ -811,10 +811,10 @@ function VeraChatTabs({ anamnese, onEditAnamnese }: { anamnese: AnamneseFeminina
           );
         })}
       </div>
-      <div style={{ maxWidth: 900, margin: "0 auto", padding: "0 20px" }}>
+      <div>
         {tab === "chat"
           ? <VeraChat anamnese={anamnese} onEditAnamnese={onEditAnamnese} />
-          : <VeraFarmacoTab anamnese={anamnese} />}
+          : <div style={{ maxWidth: 900, margin: "0 auto", padding: "16px 20px 0" }}><VeraFarmacoTab anamnese={anamnese} /></div>}
       </div>
     </div>
   );
