@@ -1840,16 +1840,44 @@ Suporte em uso: ${suporte || "não informado"}` : "";
                   ))}
                 </div>
 
+                {/* Trigger Dr. VERTEX v4.0 (JSON estruturado, PhD-level) */}
+                <div className="flex items-center gap-2 flex-wrap">
+                  <button
+                    onClick={runVertexV4}
+                    disabled={vertexV4Loading}
+                    className="px-3 py-2 text-[11px] font-bold rounded-lg border transition-all disabled:opacity-50"
+                    style={{
+                      background: vertexV4Analysis ? "#1E2A42" : "#534AB733",
+                      borderColor: "#534AB7",
+                      color: "#A78BFA",
+                    }}
+                  >
+                    {vertexV4Loading ? "🔬 Analisando…" : vertexV4Analysis ? "🔬 Reexecutar Dr. VERTEX v4.0" : "🔬 Analisar com Dr. VERTEX v4.0 (PhD)"}
+                  </button>
+                  {vertexV4Analysis && (
+                    <span className="text-[10px] font-mono" style={{ color: "#34D399" }}>
+                      ✓ Análise PhD ativa — JSON estruturado
+                    </span>
+                  )}
+                  {vertexV4Error && (
+                    <span className="text-[10px]" style={{ color: "#EF4444" }}>⚠ {vertexV4Error}</span>
+                  )}
+                </div>
+
                 {/* Sub-tab content — visualização estruturada */}
                 <InfoBox color={current.color} text={current.intro} />
-                <VertexEnhancedView
-                  activeTab={activeVertexTab}
-                  analysisResult={analysisResult}
-                  segments={segments}
-                  farmMeta={farmMeta}
-                  categoryColor={cat.color}
-                  parseSection={parseSection}
-                />
+                {vertexV4Analysis ? (
+                  <VertexAnalysisV4 analysis={vertexV4Analysis} activeTab={activeVertexTab} />
+                ) : (
+                  <VertexEnhancedView
+                    activeTab={activeVertexTab}
+                    analysisResult={analysisResult}
+                    segments={segments}
+                    farmMeta={farmMeta}
+                    categoryColor={cat.color}
+                    parseSection={parseSection}
+                  />
+                )}
                 {/* Fallback raw markdown (colapsado) caso a IA não respeite o formato esperado */}
                 {currentBody && (
                   <details className="rounded border border-border/50 p-2 bg-card/30">
