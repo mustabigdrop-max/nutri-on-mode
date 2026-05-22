@@ -41,6 +41,8 @@ import { estimateProtocolDuration } from "@/data/protocolDuration";
 import { ResistanceProfileBadge, SessionProfilePanel } from "@/components/training/ResistanceProfileBadge";
 import { RIRBadge, MesocycleRIRPlanner } from "@/components/training/RIRControls";
 import { calcWeekRIR, resolveRIRForExercise, buildRIRInstruction } from "@/utils/rirSystem";
+import { RepZoneBadge, SessionZonePanel, TripleCoherenceMarker } from "@/components/training/RepZoneBadge";
+import { buildZoneInstruction, getWeekZones, WAVE_PATTERNS, DEFAULT_PATTERN_KEY } from "@/utils/repZones";
 import { buildSystemPrescription } from "@/data/recommendSystem";
 import { TRAINING_SYSTEMS } from "@/data/trainingSystems";
 import CompetitionModeBlocks from "@/components/training/systems/CompetitionModeBlocks";
@@ -349,6 +351,10 @@ ${sistemaBloco}
 ━━━ PROGRESSÃO DE RIR (Reps In Reserve) — OBRIGATÓRIO ━━━
 ${buildRIRInstruction(1, Math.max(parseInt(String(weeks)) || 8, 1))}
 ━━━ FIM PROGRESSÃO RIR ━━━
+
+━━━ ZONAS DE REPETIÇÃO + ONDULAÇÃO — OBRIGATÓRIO ━━━
+${buildZoneInstruction(1, Math.max(parseInt(String(weeks)) || 8, 1), DEFAULT_PATTERN_KEY)}
+━━━ FIM ZONAS DE REPETIÇÃO ━━━
 ${correctivePrompt ? `\n━━━ PROTOCOLO CORRETIVO APEX (colado pelo coach) ━━━\nUse as recomendações abaixo como BASE para os exercícios corretivos, ativações, finalizadores e ajustes de volume por grupo. Integre ao protocolo principal sem duplicar exercícios. Corretivos APEX NUNCA recebem RIR 0 — mínimo RIR 1.\n\n${correctivePrompt}\n━━━ FIM PROTOCOLO CORRETIVO ━━━` : ""}
 
 ━━━ OUTPUT OBRIGATÓRIO ━━━
@@ -1507,6 +1513,19 @@ function TrainingDayCard({ day, index, expanded, onToggle, expandedExercise, set
             <div className="px-4 pb-4 space-y-3">
               {/* Perfis de Resistência */}
               <SessionProfilePanel exercises={day.exercises || []} />
+              {/* Ondulação de Zonas de Repetição */}
+              {(() => {
+                const pattern = WAVE_PATTERNS[DEFAULT_PATTERN_KEY];
+                const weekNum = 1;
+                const weekZones = getWeekZones(weekNum, pattern);
+                return (
+                  <SessionZonePanel
+                    exercises={day.exercises || []}
+                    weekZones={weekZones}
+                    patternName={pattern.nome}
+                  />
+                );
+              })()}
               {/* Warm-up */}
               {day.warmup?.length > 0 && (
                 <div className="rounded-xl p-3" style={{ background: "rgba(59,130,246,0.06)", border: "1px solid rgba(59,130,246,0.12)" }}>
@@ -1658,7 +1677,14 @@ function ExerciseCard({
               {(() => {
                 const weekRIR = weekPhase ? calcWeekRIR(weekPhase.week, 16) : 2;
                 const effectiveRIR = resolveRIRForExercise(safeExerciseName, weekRIR);
-                return <RIRBadge exerciseName={safeExerciseName} rir={effectiveRIR} showIntensity={false} />;
+                const repsValue = exercise?.reps ?? exercise?.sets_reps ?? exercise?.work_sets?.reps ?? "10";
+                return (
+                  <>
+                    <RepZoneBadge reps={repsValue} compact />
+                    <RIRBadge exerciseName={safeExerciseName} rir={effectiveRIR} showIntensity={false} />
+                    <TripleCoherenceMarker exerciseName={safeExerciseName} reps={repsValue} rir={effectiveRIR} />
+                  </>
+                );
               })()}
             </div>
           </div>
