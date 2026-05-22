@@ -1137,6 +1137,25 @@ const DashboardPage = () => {
           <ChevronRight className="h-4 w-4 text-primary" />
         </motion.button>
 
+        {/* VERA — Agente Feminino */}
+        <motion.button
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.875 }}
+          onClick={() => navigate("/coach/vera")}
+          className="w-full mb-4 flex items-center gap-3 rounded-xl p-4 text-left transition-all group"
+          style={{ background: "linear-gradient(135deg, rgba(167,139,250,0.12), rgba(167,139,250,0.03))", border: "1px solid rgba(167,139,250,0.25)" }}
+        >
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: "rgba(167,139,250,0.18)" }}>
+            <Sparkles className="w-5 h-5" style={{ color: "#A78BFA" }} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-bold" style={{ color: "#fff" }}>VERA · Agente Feminino</p>
+            <p className="text-[11px] text-muted-foreground">Ciclo · ACO · EAA · biomecânica · adesão</p>
+          </div>
+          <span className="rounded-full px-2 py-1 text-[9px] font-mono font-bold" style={{ background: "rgba(167,139,250,0.18)", color: "#A78BFA" }}>FEMININO</span>
+          <ChevronRight className="h-4 w-4" style={{ color: "#A78BFA" }} />
+
         <motion.button
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
