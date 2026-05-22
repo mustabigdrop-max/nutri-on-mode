@@ -915,6 +915,11 @@ Português. Específico. Científico. Zero genérico.`;
                 {isMello16 && (
                   <WeekNavigator onWeekChange={setWeekPhase} />
                 )}
+                {/* Progressão de RIR no mesociclo */}
+                <MesocycleRIRPlanner
+                  totalWeeks={Math.max(parseInt(String(weeks)) || 8, 1)}
+                  currentWeek={isMello16 ? weekPhase.week : 1}
+                />
                 {protocol.training_days.map((day: any, idx: number) => (
                   <TrainingDayCard
                     key={idx}
