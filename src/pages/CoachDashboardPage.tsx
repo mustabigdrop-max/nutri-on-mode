@@ -353,6 +353,14 @@ const CoachDashboardPage = () => {
           <Button onClick={() => navigate("/coach/apex-visual")} variant="outline" className="flex items-center gap-2">
             <Scan className="w-4 h-4" /> APEX Visual
           </Button>
+          <Button
+            onClick={() => navigate("/coach/vera")}
+            variant="outline"
+            className="flex items-center gap-2"
+            style={{ borderColor: "rgba(167,139,250,0.4)", color: "#A78BFA", background: "rgba(167,139,250,0.08)" }}
+          >
+            <Sparkles className="w-4 h-4" /> VERA
+          </Button>
           <Button onClick={() => navigate("/biomechanics")} variant="outline" className="flex items-center gap-2">
             <Bone className="w-4 h-4" /> Biomecânica
           </Button>
