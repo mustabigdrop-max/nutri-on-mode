@@ -677,6 +677,18 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
             ⊕ Ajustar Prumo
           </button>
           <button
+            onClick={() => setShowAnatomyGuide((v) => !v)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg border"
+            style={{
+              borderColor: showAnatomyGuide ? "rgba(184,146,42,0.5)" : "hsl(var(--border))",
+              color: showAnatomyGuide ? C.gold : "hsl(var(--muted-foreground))",
+              background: showAnatomyGuide ? "rgba(184,146,42,0.2)" : "transparent",
+            }}
+            title="Mostrar guia anatômico — onde ficam C7 e L5"
+          >
+            🦴 Guia
+          </button>
+          <button
             onClick={handleExport}
             disabled={exporting}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg border hover:bg-muted disabled:opacity-50"
