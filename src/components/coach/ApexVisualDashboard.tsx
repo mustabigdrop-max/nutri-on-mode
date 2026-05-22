@@ -1837,6 +1837,9 @@ Suporte em uso: ${suporte || "não informado"}` : "";
               athleteName={athlete?.nome}
             />
           )}
+          {activeResultTab === "evolucao" && (
+            <ApexEvolutionTab athleteId={athlete?.id || null} />
+          )}
         </div>
 
         {/* Sync status badge */}
