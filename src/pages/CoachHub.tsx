@@ -10,6 +10,7 @@ import {
   FlaskConical,
   FileBarChart,
   ArrowLeft,
+  Sparkles,
 } from "lucide-react";
 import AthleteRoster from "@/components/coach/AthleteRoster";
 import PlanoAlimentarIA from "@/components/coach/PlanoAlimentarIA";
@@ -19,7 +20,7 @@ import APEXPoseAnalysisPage from "@/pages/coach/APEXPoseAnalysisPage";
 import CoachLabExamsPage from "@/pages/coach/CoachLabExamsPage";
 import CoachReportsPage from "@/pages/coach/CoachReportsPage";
 
-type ModuleKey = "atletas" | "apex" | "plano" | "training" | "pose" | "lab" | "relatorios";
+type ModuleKey = "atletas" | "apex" | "vera" | "plano" | "training" | "pose" | "lab" | "relatorios";
 
 // ── Design tokens (mesmo padrão do TrainingON, paleta Coach Amber) ──
 const BG = "#03030a";
@@ -28,6 +29,7 @@ const BORDER = "rgba(232,160,32,0.12)";
 const BORDER_ACTIVE = "rgba(232,160,32,0.4)";
 const AMBER = "#E8A020";
 const AMBER_DIM = "rgba(232,160,32,0.1)";
+const VERA_PURPLE = "#A78BFA";
 const TEXT = "#fff8eb";
 const TEXT_DIM = "#a8a29e";
 const TEXT_MUTED = "#78716c";
