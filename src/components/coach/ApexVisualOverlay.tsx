@@ -940,6 +940,21 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
               </div>
             );
           })()}
+          {currentPlumb && Math.abs(currentPlumb.inclinacao) > 1 && (
+            <p style={{ fontSize: 9, color: "rgba(251,191,36,0.75)", margin: "2px 0 4px" }}>
+              ⚠ Prumo inclinado {currentPlumb.inclinacao > 0 ? "+" : ""}{currentPlumb.inclinacao}° — verifique posição do atleta na foto
+            </p>
+          )}
+          {(manualSpinePositions[view]?.c7 || manualSpinePositions[view]?.l5) && (
+            <button
+              onClick={resetSpinePositions}
+              className="ml-1.5 text-[9px] px-2 py-0.5 rounded border mb-1.5"
+              style={{ borderColor: "rgba(255,255,255,0.2)", color: "rgba(255,255,255,0.7)", background: "rgba(255,255,255,0.04)" }}
+              title="Voltar C7 e L5 às posições detectadas pela IA"
+            >
+              ↺ Reset C7/L5
+            </button>
+          )}
           {data?.landmarks && (() => {
             const q = calcAnalysisQuality(data.landmarks as any);
             const pct = Math.round(q.score * 100);
