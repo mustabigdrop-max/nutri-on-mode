@@ -123,7 +123,7 @@ const CoachHub = () => {
           {modules.map((m) => (
             <button
               key={m.key}
-              onClick={() => setActive(m.key)}
+              onClick={() => m.key === "vera" ? navigate("/coach/vera") : setActive(m.key)}
               className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-[11px] font-semibold whitespace-nowrap transition-all"
               style={{
                 background: active === m.key ? AMBER_DIM : "transparent",
