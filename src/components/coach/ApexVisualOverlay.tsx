@@ -1631,17 +1631,31 @@ function OverlayLayer({
                       style={{ strokeWidth: 0.8 }}
                     />
                   )}
-                  {/* Âncoras destacadas (círculo maior) */}
-                  <circle cx={c7.x} cy={c7.y} r={1.6} fill={lineColor} stroke="#000" vectorEffect="non-scaling-stroke" style={{ strokeWidth: 1 }}>
-                    {(c7 as any).snapped && (
-                      <title>C7 — 📐 Ancorado na linha de prumo (referência anatômica fixa). Detecção IA originalX={typeof (c7 as any).originalX === "number" ? (c7 as any).originalX.toFixed(1) : "—"}</title>
-                    )}
-                  </circle>
-                  <circle cx={l5.x} cy={l5.y} r={1.6} fill={lineColor} stroke="#000" vectorEffect="non-scaling-stroke" style={{ strokeWidth: 1 }}>
-                    {(l5 as any).snapped && (
-                      <title>L5 — 📐 Ancorado na linha de prumo (referência anatômica fixa). Detecção IA originalX={typeof (l5 as any).originalX === "number" ? (l5 as any).originalX.toFixed(1) : "—"}</title>
-                    )}
-                  </circle>
+                  {/* Âncoras destacadas (círculo maior) — drag livre X/Y */}
+                  <g
+                    onMouseDown={beginSpineDrag("c7")}
+                    onTouchStart={beginSpineDrag("c7")}
+                    style={{ cursor: "move", pointerEvents: "auto", touchAction: "none" }}
+                  >
+                    {/* hit area maior para facilitar o drag */}
+                    <circle cx={c7.x} cy={c7.y} r={3.2} fill="transparent" />
+                    <circle cx={c7.x} cy={c7.y} r={1.6} fill={lineColor} stroke="#000" vectorEffect="non-scaling-stroke" style={{ strokeWidth: 1 }}>
+                      <title>{(c7 as any).manual ? "C7 — ✥ posicionado manualmente (arraste para reajustar)" : (c7 as any).snapped ? `C7 — 📐 snap automático. Arraste para mover livremente.` : "C7 — arraste para mover livremente"}</title>
+                    </circle>
+                    {/* ícone ✥ indicando movimento livre */}
+                    <text x={c7.x} y={c7.y - 2.6} textAnchor="middle" fill="rgba(255,255,255,0.65)" fontSize={2} style={{ pointerEvents: "none", userSelect: "none" }}>✥</text>
+                  </g>
+                  <g
+                    onMouseDown={beginSpineDrag("l5")}
+                    onTouchStart={beginSpineDrag("l5")}
+                    style={{ cursor: "move", pointerEvents: "auto", touchAction: "none" }}
+                  >
+                    <circle cx={l5.x} cy={l5.y} r={3.2} fill="transparent" />
+                    <circle cx={l5.x} cy={l5.y} r={1.6} fill={lineColor} stroke="#000" vectorEffect="non-scaling-stroke" style={{ strokeWidth: 1 }}>
+                      <title>{(l5 as any).manual ? "L5 — ✥ posicionado manualmente (arraste para reajustar)" : (l5 as any).snapped ? `L5 — 📐 snap automático. Arraste para mover livremente.` : "L5 — arraste para mover livremente"}</title>
+                    </circle>
+                    <text x={l5.x} y={l5.y - 2.6} textAnchor="middle" fill="rgba(255,255,255,0.65)" fontSize={2} style={{ pointerEvents: "none", userSelect: "none" }}>✥</text>
+                  </g>
                   {/* Conector do badge até a linha */}
                   <line
                     x1={mxS} y1={myS} x2={bx} y2={by}
