@@ -110,6 +110,7 @@ import ErgoDiaryPage from "./pages/ErgoDiaryPage";
 import WeeklyCheckinPage from "./pages/WeeklyCheckinPage";
 import NotFound from "./pages/NotFound";
 import NutriPlanElitePage from "./pages/NutriPlanElitePage";
+import LearnPage from "./pages/LearnPage";
 
 const queryClient = new QueryClient();
 
@@ -137,6 +138,7 @@ const App = () => (
             <Route path="/notificacoes" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
             <Route path="/hydration" element={<ProtectedRoute><HydrationPage /></ProtectedRoute>} />
             <Route path="/meus-protocolos" element={<ProtectedRoute><MeusProtocolosPage /></ProtectedRoute>} />
+            <Route path="/learn" element={<ProtectedRoute><LearnPage /></ProtectedRoute>} />
 
             {/* ON Plan */}
             <Route path="/meal-plan" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON" featureName="Plano Alimentar"><MealPlanPage /></PlanGateWrapper></ProtectedRoute>} />
