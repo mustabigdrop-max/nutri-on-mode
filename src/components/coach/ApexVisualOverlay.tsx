@@ -1906,9 +1906,11 @@ function OverlayLayer({
           );
         })}
 
-        {/* Plumb line label — com fonte do eixo (C7+L5 / C7 / L5 / frame-center) */}
+        {/* Plumb line label — fonte do eixo + inclinação real */}
         <text x={plumb.x1 + 0.6} y={2.5} fontSize={2} fill={C.white} opacity={0.6}>
-          Linha de Prumo{plumb.source !== "C7+L5" ? ` (${plumb.source})` : ""}
+          Linha de Prumo
+          {plumb.inclinacao !== 0 ? ` ${plumb.inclinacao > 0 ? "+" : ""}${plumb.inclinacao}°` : ""}
+          {plumb.source !== "C7+L5" ? ` (${plumb.source})` : ""}
         </text>
         {plumb.source === "frame-center" && (
           <text x={plumb.x1 + 0.6} y={4.8} fontSize={1.6} fill="#FBBF24" opacity={0.85}>
