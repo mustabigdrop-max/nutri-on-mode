@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -95,13 +95,38 @@ const FONT = "'Space Grotesk', sans-serif";
 export default function TrainingPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [section, setSection] = useState<Section>("gerar");
   const isAdmin = user?.id === ADMIN_UID;
   const visibleNav = sectionNav.filter((s) => !s.adminOnly || isAdmin);
 
+  // APEX → VERA → TrainingON: protocolo recebido
+  const veraProtocoloFlag = searchParams.get("vera_protocolo") === "true";
+  const veraAtletaId = searchParams.get("atleta");
+  const [veraProtocolo, setVeraProtocolo] = useState<{ texto: string; timeline: number } | null>(null);
+  useEffect(() => {
+    if (!veraProtocoloFlag || !veraAtletaId) return;
+    (async () => {
+      const { data } = await supabase
+        .from("apex_vera_bridge" as any)
+        .select("resultado")
+        .eq("atleta_id", veraAtletaId)
+        .eq("status", "ENVIADO_TRAININGON")
+        .order("updated_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      const r = (data as any)?.resultado;
+      if (r?.protocolo_texto) {
+        setVeraProtocolo({ texto: r.protocolo_texto, timeline: r.timeline ?? 12 });
+        toast.success("Protocolo VERA + APEX recebido");
+      }
+    })();
+  }, [veraProtocoloFlag, veraAtletaId]);
+
   return (
     <div className="ton-root min-h-screen">
       <TrainingHUDBackground />
+
 
       {/* ── HUD Header ── */}
       <div className="ton-header">
@@ -135,6 +160,20 @@ export default function TrainingPage() {
           </button>
         ))}
       </div>
+
+      {/* APEX → VERA → TrainingON banner */}
+      {veraProtocolo && (
+        <div style={{ margin: "12px 16px", padding: 14, background: "rgba(167,139,250,0.06)", border: "0.5px solid rgba(167,139,250,0.35)", borderLeft: "3px solid #A78BFA", borderRadius: 10 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+            <div>
+              <p style={{ fontSize: 10, color: "#A78BFA", letterSpacing: "0.1em", margin: 0, fontWeight: 700 }}>PROTOCOLO VERA + APEX RECEBIDO</p>
+              <p style={{ fontSize: 11, color: "rgba(255,255,255,0.55)", margin: "2px 0 0" }}>Timeline esperada: {veraProtocolo.timeline} semanas</p>
+            </div>
+            <button onClick={() => setVeraProtocolo(null)} style={{ background: "transparent", border: "none", color: "rgba(255,255,255,0.4)", cursor: "pointer" }}>×</button>
+          </div>
+          <pre style={{ margin: 0, fontSize: 11, color: "rgba(255,255,255,0.75)", fontFamily: "ui-monospace, monospace", whiteSpace: "pre-wrap", maxHeight: 240, overflow: "auto", background: "rgba(0,0,0,0.25)", padding: 10, borderRadius: 6 }}>{veraProtocolo.texto}</pre>
+        </div>
+      )}
 
       {/* ── Content ── */}
       <div className="ton-content">

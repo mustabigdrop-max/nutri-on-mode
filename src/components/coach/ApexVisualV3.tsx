@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import AthleteSelector, { AthleteOption } from "@/components/coach/AthleteSelector";
@@ -6,6 +7,7 @@ import { buildFeminineContext, type FeminineContext } from "@/lib/feminineContex
 import jsPDF from "jspdf";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend, BarChart, Bar, Cell } from "recharts";
 import APEXPoseAnalysisPage from "@/pages/coach/APEXPoseAnalysisPage";
+import { buildApexPackage } from "@/utils/apexVeraMap";
 
 function EvolutionCharts({ history, cat, C }: { history: any[]; cat: any; C: any }) {
   // Order chronologically (history is desc)
@@ -964,6 +966,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 
 // ─── MAIN COMPONENT ──────────────────────────────────────────────
 export default function ApexVisualV3() {
+  const navigate = useNavigate();
   const [catKey, setCatKey] = useState("mens_physique");
   const [fotoF, setFotoF] = useState<File | null>(null);
   const [fotoC, setFotoC] = useState<File | null>(null);
@@ -1149,6 +1152,69 @@ export default function ApexVisualV3() {
 
 
   const reset = () => { setRaw(""); setDone(false); setError(null); setFotoF(null); setFotoC(null); setFotoL(null); setStreaming(false); setSavedId(null); setSavingState("idle"); };
+
+  // ─── APEX → VERA / STRATUM bridge ───────────────────────────────
+  const atletaFeminino = (selectedAthlete as any)?.sexo === "F" || cat.g === "F";
+
+  const extractAchadosFromRaw = (): { key: string; titulo: string; graus: number; inibido?: string; dominante?: string; lado?: "E" | "D" | "bilateral" | null }[] => {
+    const text = (raw || "").toLowerCase();
+    const detect: { re: RegExp; key: string; titulo: string; inibido: string; dominante: string; lado: "E" | "D" | "bilateral" | null }[] = [
+      { re: /escápula\s+alada|escapula\s+alada|winging/i, key: "scapula_alada", titulo: "Escápula alada", inibido: "Serrátil anterior", dominante: "Peitoral menor", lado: null },
+      { re: /pelv(e|ic).*(antever|inclina)|hiperlordose|anterior\s+pelvic/i, key: "pelvic_tilt", titulo: "Inclinação pélvica anterior", inibido: "Glúteo máximo + médio", dominante: "Iliopsoas + lombar", lado: null },
+      { re: /assimetria.*(ombro|deltoid)|ombro.*assim/i, key: "shoulder_asymmetry", titulo: "Assimetria de ombros", inibido: "Deltóide lateral", dominante: "Trapézio superior", lado: null },
+      { re: /escoliose|desvio.*lateral.*coluna|lateral.*spine/i, key: "lateral_spine_deviation", titulo: "Desvio lateral da coluna", inibido: "Oblíquos contralateral", dominante: "Quadrado lombar ipsilateral", lado: null },
+      { re: /assimetria.*quadril|quadril.*assim|hip.*asymmetry/i, key: "hip_asymmetry", titulo: "Assimetria de quadril", inibido: "Glúteo médio", dominante: "Adutores", lado: null },
+    ];
+    const out: any[] = [];
+    detect.forEach((d) => {
+      if (d.re.test(text)) {
+        // extract degrees if present near match
+        const m = text.match(new RegExp(d.re.source + "[^\\n]{0,80}?(\\d+(?:\\.\\d+)?)\\s*[°º]", "i"));
+        const graus = m ? Math.round(parseFloat(m[1])) : 2;
+        out.push({ key: d.key, titulo: d.titulo, graus, inibido: d.inibido, dominante: d.dominante, lado: d.lado });
+      }
+    });
+    // Garantir ao menos um achado para permitir fluxo de demonstração
+    if (out.length === 0 && done) {
+      out.push({ key: "pelvic_tilt", titulo: "Inclinação pélvica (genérico)", graus: 1, inibido: "Glúteo máximo + médio", dominante: "Iliopsoas + lombar", lado: null });
+    }
+    return out;
+  };
+
+  const iniciarAvaliacaoVERAouSTRATUM = async (destino: "vera" | "stratum") => {
+    if (!selectedAthlete) {
+      alert("Vincule um atleta cadastrado antes de avaliar pontos fracos.");
+      return;
+    }
+    try {
+      const achados = extractAchadosFromRaw();
+      const m = parseMeta(raw);
+      const pkg = buildApexPackage({
+        atleta_id: selectedAthlete.id,
+        atleta_nome: selectedAthlete.nome || nome || "Atleta",
+        atleta_sexo: atletaFeminino ? "F" : "M",
+        sri: (m as any)?.sri ?? null,
+        body_score: (m as any)?.bodyScore ?? null,
+        fcs: (m as any)?.fcs ?? null,
+        qualidade: 0.82,
+        achados,
+      });
+      await supabase.from("apex_vera_bridge" as any).insert({
+        atleta_id: selectedAthlete.id,
+        coach_user_id: user?.id ?? null,
+        package: pkg as any,
+        status: "PENDENTE",
+      });
+      if (destino === "vera") {
+        navigate(`/coach/vera?avaliacao=apex&atleta=${selectedAthlete.id}`);
+      } else {
+        navigate(`/training?avaliacao=apex&atleta=${selectedAthlete.id}`);
+      }
+    } catch (e: any) {
+      console.error("apex bridge error", e);
+      alert("Falha ao iniciar avaliação: " + (e?.message || "erro desconhecido"));
+    }
+  };
 
   const saveAssessment = async (fullText: string) => {
     if (!user || !selectedAthlete) {
@@ -1486,6 +1552,16 @@ export default function ApexVisualV3() {
               {streaming && <div style={{ padding:"6px 12px", borderRadius:8, background:cat.c+"22", border:`1px solid ${cat.c}55`, fontSize:10, color:cat.c, fontWeight:700, letterSpacing:".1em" }}>● ANALISANDO</div>}
               {done && <button onClick={() => exportarPDF(false)} style={{ padding:"6px 14px", borderRadius:8, background:cat.c+"22", border:`1px solid ${cat.c}66`, color:cat.c, fontSize:11, cursor:"pointer", fontFamily:"inherit", letterSpacing:".05em", fontWeight:700 }}>⬇ EXPORTAR PDF</button>}
               {done && <button onClick={() => exportarPDF(true)} title="Versão com fontes maiores e contraste alto (WCAG AA)" style={{ padding:"6px 14px", borderRadius:8, background:"#ffffff", border:`1px solid #000`, color:"#000", fontSize:11, cursor:"pointer", fontFamily:"inherit", letterSpacing:".05em", fontWeight:700 }}>♿ PDF ACESSÍVEL</button>}
+              {done && atletaFeminino && (
+                <button onClick={() => iniciarAvaliacaoVERAouSTRATUM("vera")} style={{ padding:"6px 14px", borderRadius:8, background:"rgba(167,139,250,0.12)", border:"1px solid rgba(167,139,250,0.45)", color:"#A78BFA", fontSize:11, cursor:"pointer", fontFamily:"inherit", letterSpacing:".05em", fontWeight:700 }}>
+                  ✦ AVALIAR COM VERA
+                </button>
+              )}
+              {done && !atletaFeminino && (
+                <button onClick={() => iniciarAvaliacaoVERAouSTRATUM("stratum")} style={{ padding:"6px 14px", borderRadius:8, background:"rgba(52,211,153,0.12)", border:"1px solid rgba(52,211,153,0.4)", color:"#34D399", fontSize:11, cursor:"pointer", fontFamily:"inherit", letterSpacing:".05em", fontWeight:700 }}>
+                  ⬡ AVALIAR COM STRATUM AI
+                </button>
+              )}
               {done && <button onClick={reset} style={{ padding:"6px 14px", borderRadius:8, background:C.card, border:`1px solid ${C.border}`, color:C.text, fontSize:11, cursor:"pointer", fontFamily:"inherit", letterSpacing:".05em" }}>+ NOVA ANÁLISE</button>}
             </div>
           )}
