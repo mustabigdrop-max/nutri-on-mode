@@ -8831,6 +8831,45 @@ export type Database = {
     Functions: {
       decrement_coach_slots: { Args: never; Returns: undefined }
       generate_unique_coach_code: { Args: never; Returns: string }
+      get_coach_invite_by_token: {
+        Args: { _token: string }
+        Returns: {
+          aluno_id: string | null
+          coach_id: string
+          created_at: string | null
+          expires_at: string
+          id: string
+          token: string
+          usado: boolean | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "coach_convites"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      get_professional_invite_by_code: {
+        Args: { _invite_code: string }
+        Returns: {
+          accepted_at: string | null
+          accepted_by_user_id: string | null
+          coach_profile_id: string
+          created_at: string
+          email: string | null
+          expires_at: string
+          id: string
+          invite_code: string
+          message: string | null
+          status: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "professional_invites"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
