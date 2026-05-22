@@ -945,16 +945,90 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
               ⚠ Prumo inclinado {currentPlumb.inclinacao > 0 ? "+" : ""}{currentPlumb.inclinacao}° — verifique posição do atleta na foto
             </p>
           )}
-          {(manualSpinePositions[view]?.c7 || manualSpinePositions[view]?.l5) && (
-            <button
-              onClick={resetSpinePositions}
-              className="ml-1.5 text-[9px] px-2 py-0.5 rounded border mb-1.5"
-              style={{ borderColor: "rgba(255,255,255,0.2)", color: "rgba(255,255,255,0.7)", background: "rgba(255,255,255,0.04)" }}
-              title="Voltar C7 e L5 às posições detectadas pela IA"
-            >
-              ↺ Reset C7/L5
-            </button>
-          )}
+          {/* Card permanente — instrução de ajuste C7/L5 */}
+          {(() => {
+            const c7Ajustado = !!manualSpinePositions[view]?.c7;
+            const l5Ajustado = !!manualSpinePositions[view]?.l5;
+            const algumAjustado = c7Ajustado || l5Ajustado;
+            return (
+              <div
+                style={{
+                  padding: "10px 12px",
+                  marginBottom: 10,
+                  background: "rgba(184,146,42,0.06)",
+                  border: "0.5px solid rgba(184,146,42,0.2)",
+                  borderRadius: 10,
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
+                  <div
+                    style={{
+                      width: 28, height: 28, flexShrink: 0,
+                      background: "rgba(184,146,42,0.12)",
+                      border: "0.5px solid rgba(184,146,42,0.25)",
+                      borderRadius: 7,
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      fontSize: 13, color: "#B8922A",
+                    }}
+                  >✥</div>
+                  <div style={{ flex: 1 }}>
+                    <p style={{ fontSize: 10, fontWeight: 600, color: "#B8922A", margin: "0 0 3px", letterSpacing: "0.04em", textTransform: "uppercase" }}>
+                      Ajuste C7 e L5
+                    </p>
+                    <p style={{ fontSize: 10, color: "rgba(255,255,255,0.45)", margin: 0, lineHeight: 1.5 }}>
+                      Arraste os pontos amarelos <strong style={{ color: "rgba(255,255,255,0.75)" }}>C7</strong> e <strong style={{ color: "rgba(255,255,255,0.75)" }}>L5</strong> para alinhá-los sobre as vértebras visíveis na foto. Isso melhora a precisão de todos os achados.
+                    </p>
+                  </div>
+                </div>
+                <div style={{ marginTop: 8, display: "flex", gap: 6 }}>
+                  {([["C7", c7Ajustado], ["L5", l5Ajustado]] as const).map(([id, ajustado]) => (
+                    <div key={id} style={{
+                      flex: 1, padding: "5px 8px",
+                      background: ajustado ? "rgba(52,211,153,0.08)" : "rgba(255,255,255,0.04)",
+                      border: `0.5px solid ${ajustado ? "rgba(52,211,153,0.2)" : "rgba(255,255,255,0.08)"}`,
+                      borderRadius: 7,
+                      display: "flex", alignItems: "center", gap: 5,
+                    }}>
+                      <span style={{
+                        width: 5, height: 5, borderRadius: "50%",
+                        background: ajustado ? "#34D399" : "rgba(255,255,255,0.2)",
+                        flexShrink: 0,
+                      }} />
+                      <span style={{ fontSize: 10, fontWeight: 600, color: ajustado ? "#34D399" : "rgba(255,255,255,0.4)" }}>
+                        {id}
+                      </span>
+                      <span style={{ fontSize: 9, color: ajustado ? "rgba(52,211,153,0.6)" : "rgba(255,255,255,0.25)" }}>
+                        {ajustado ? "ajustado" : "IA"}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                {algumAjustado && (
+                  <button
+                    onClick={resetSpinePositions}
+                    style={{
+                      width: "100%", marginTop: 7, padding: "5px",
+                      background: "transparent",
+                      border: "0.5px solid rgba(255,255,255,0.08)",
+                      borderRadius: 7, cursor: "pointer", fontSize: 9,
+                      color: "rgba(255,255,255,0.4)", transition: "all .15s",
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.borderColor = "rgba(255,255,255,0.2)";
+                      e.currentTarget.style.color = "rgba(255,255,255,0.7)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)";
+                      e.currentTarget.style.color = "rgba(255,255,255,0.4)";
+                    }}
+                    title="Voltar C7 e L5 às posições detectadas pela IA"
+                  >
+                    ↺ Restaurar posição da IA
+                  </button>
+                )}
+              </div>
+            );
+          })()}
           {data?.landmarks && (() => {
             const q = calcAnalysisQuality(data.landmarks as any);
             const pct = Math.round(q.score * 100);
@@ -1326,6 +1400,21 @@ function OverlayLayer({
   // ─── Drag livre de C7/L5 ─────────────────────────────────────
   const svgRef = useRef<SVGSVGElement>(null);
   const draggingRef = useRef<null | "c7" | "l5">(null);
+
+  // ─── Onboarding e hover de descoberta C7/L5 ─────────────────
+  const ONBOARDING_KEY = "apex_landmark_onboarding_done";
+  const analiseCompleta = useMemo(() => {
+    const valids = Object.values(data.landmarks).filter(isValidPoint).length;
+    return valids >= 8;
+  }, [data.landmarks]);
+  const [showOnboarding, setShowOnboarding] = useState<boolean>(() => {
+    try { return !localStorage.getItem(ONBOARDING_KEY); } catch { return false; }
+  });
+  const [hoveredSpine, setHoveredSpine] = useState<null | "c7" | "l5">(null);
+  const dismissOnboarding = useCallback(() => {
+    try { localStorage.setItem(ONBOARDING_KEY, "true"); } catch {}
+    setShowOnboarding(false);
+  }, []);
   const toSVGCoords = useCallback((clientX: number, clientY: number) => {
     const svg = svgRef.current;
     if (!svg) return null;
@@ -1339,6 +1428,7 @@ function OverlayLayer({
   const beginSpineDrag = useCallback((key: "c7" | "l5") => (e: React.MouseEvent | React.TouchEvent) => {
     e.stopPropagation();
     if ((e as any).preventDefault) (e as any).preventDefault();
+    dismissOnboarding();
     draggingRef.current = key;
     const handleMove = (ev: MouseEvent) => {
       if (draggingRef.current !== key) return;
@@ -1366,7 +1456,7 @@ function OverlayLayer({
     window.addEventListener("touchmove", handleTouchMove, { passive: false });
     window.addEventListener("touchend", handleUp);
     window.addEventListener("touchcancel", handleUp);
-  }, [toSVGCoords, onSpineMove, onSpineRelease]);
+  }, [toSVGCoords, onSpineMove, onSpineRelease, dismissOnboarding]);
 
   // ─── Drag da COLUNA inteira (C7+L5 juntos, preserva ângulo/distância) ─
   const beginColumnDrag = useCallback((e: React.MouseEvent | React.TouchEvent) => {
@@ -1700,10 +1790,31 @@ function OverlayLayer({
                       style={{ strokeWidth: 0.8 }}
                     />
                   )}
+                  {/* Hover highlight — anel + setas direcionais (apenas em C7/L5) */}
+                  {hoveredSpine === "c7" && (
+                    <g pointerEvents="none">
+                      <circle cx={c7.x} cy={c7.y} r={3.6} fill="rgba(184,146,42,0.1)" stroke="rgba(184,146,42,0.45)" vectorEffect="non-scaling-stroke" style={{ strokeWidth: 0.8 }} />
+                      <text x={c7.x} y={c7.y - 3.6} textAnchor="middle" fill="rgba(184,146,42,0.85)" fontSize={1.8}>↑</text>
+                      <text x={c7.x} y={c7.y + 4.4} textAnchor="middle" fill="rgba(184,146,42,0.85)" fontSize={1.8}>↓</text>
+                      <text x={c7.x - 3.6} y={c7.y + 0.7} textAnchor="middle" fill="rgba(184,146,42,0.85)" fontSize={1.8}>←</text>
+                      <text x={c7.x + 3.6} y={c7.y + 0.7} textAnchor="middle" fill="rgba(184,146,42,0.85)" fontSize={1.8}>→</text>
+                    </g>
+                  )}
+                  {hoveredSpine === "l5" && (
+                    <g pointerEvents="none">
+                      <circle cx={l5.x} cy={l5.y} r={3.6} fill="rgba(184,146,42,0.1)" stroke="rgba(184,146,42,0.45)" vectorEffect="non-scaling-stroke" style={{ strokeWidth: 0.8 }} />
+                      <text x={l5.x} y={l5.y - 3.6} textAnchor="middle" fill="rgba(184,146,42,0.85)" fontSize={1.8}>↑</text>
+                      <text x={l5.x} y={l5.y + 4.4} textAnchor="middle" fill="rgba(184,146,42,0.85)" fontSize={1.8}>↓</text>
+                      <text x={l5.x - 3.6} y={l5.y + 0.7} textAnchor="middle" fill="rgba(184,146,42,0.85)" fontSize={1.8}>←</text>
+                      <text x={l5.x + 3.6} y={l5.y + 0.7} textAnchor="middle" fill="rgba(184,146,42,0.85)" fontSize={1.8}>→</text>
+                    </g>
+                  )}
                   {/* Âncoras destacadas (círculo maior) — drag livre X/Y */}
                   <g
                     onMouseDown={beginSpineDrag("c7")}
                     onTouchStart={beginSpineDrag("c7")}
+                    onMouseEnter={() => setHoveredSpine("c7")}
+                    onMouseLeave={() => setHoveredSpine(null)}
                     style={{ cursor: "move", pointerEvents: "auto", touchAction: "none" }}
                   >
                     {/* hit area maior para facilitar o drag */}
@@ -1717,6 +1828,8 @@ function OverlayLayer({
                   <g
                     onMouseDown={beginSpineDrag("l5")}
                     onTouchStart={beginSpineDrag("l5")}
+                    onMouseEnter={() => setHoveredSpine("l5")}
+                    onMouseLeave={() => setHoveredSpine(null)}
                     style={{ cursor: "move", pointerEvents: "auto", touchAction: "none" }}
                   >
                     <circle cx={l5.x} cy={l5.y} r={3.2} fill="transparent" />
@@ -1725,6 +1838,20 @@ function OverlayLayer({
                     </circle>
                     <text x={l5.x} y={l5.y - 2.6} textAnchor="middle" fill="rgba(255,255,255,0.65)" fontSize={2} style={{ pointerEvents: "none", userSelect: "none" }}>✥</text>
                   </g>
+
+                  {/* Onboarding pulse + tooltip (primeira análise completa) */}
+                  {showOnboarding && analiseCompleta && (
+                    <g pointerEvents="none">
+                      <circle cx={c7.x} cy={c7.y} r={3} fill="rgba(184,146,42,0.25)" stroke="#B8922A" vectorEffect="non-scaling-stroke" style={{ strokeWidth: 0.6 }}>
+                        <animate attributeName="r" values="2;4;2" dur="1.5s" repeatCount="indefinite" />
+                        <animate attributeName="opacity" values="0.6;0;0.6" dur="1.5s" repeatCount="indefinite" />
+                      </circle>
+                      <line x1={c7.x + 6} y1={c7.y - 6} x2={c7.x + 1.8} y2={c7.y - 1.8} stroke="#B8922A" strokeWidth={0.4} strokeDasharray="0.8 0.4" vectorEffect="non-scaling-stroke" />
+                      <rect x={c7.x + 5} y={c7.y - 14} width={34} height={8} rx={1.2} fill="rgba(184,146,42,0.95)" />
+                      <text x={c7.x + 22} y={c7.y - 10.3} textAnchor="middle" fill="#0A0A0F" fontSize={2.1} fontWeight={700}>✥ Arraste C7 e L5</text>
+                      <text x={c7.x + 22} y={c7.y - 7.6} textAnchor="middle" fill="#0A0A0F" fontSize={1.7} opacity={0.85}>toque e ajuste a posição</text>
+                    </g>
+                  )}
 
                   {/* Handle central — arrasta C7+L5 juntos (mover coluna inteira) */}
                   <g
