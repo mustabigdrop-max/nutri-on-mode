@@ -1901,6 +1901,9 @@ function ExerciseCard({
                 />
               )}
 
+              {/* SMH Protocol — Sobrecarga no Alongado (perfil ALONGADO) */}
+              <SMHPanel exerciseName={safeExerciseName} />
+
               {/* Execution Cues */}
               {safeExecutionCues && (
                 <div className="rounded-lg p-2.5 mt-1" style={{ background: "rgba(74,222,128,0.04)" }}>
