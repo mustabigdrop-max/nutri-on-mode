@@ -41,6 +41,8 @@ import { estimateProtocolDuration } from "@/data/protocolDuration";
 import { ResistanceProfileBadge, SessionProfilePanel } from "@/components/training/ResistanceProfileBadge";
 import { RIRBadge, MesocycleRIRPlanner } from "@/components/training/RIRControls";
 import { calcWeekRIR, resolveRIRForExercise, buildRIRInstruction } from "@/utils/rirSystem";
+import { RepZoneBadge, SessionZonePanel, TripleCoherenceMarker } from "@/components/training/RepZoneBadge";
+import { buildZoneInstruction, getWeekZones, WAVE_PATTERNS, DEFAULT_PATTERN_KEY } from "@/utils/repZones";
 import { buildSystemPrescription } from "@/data/recommendSystem";
 import { TRAINING_SYSTEMS } from "@/data/trainingSystems";
 import CompetitionModeBlocks from "@/components/training/systems/CompetitionModeBlocks";
@@ -349,6 +351,10 @@ ${sistemaBloco}
 ━━━ PROGRESSÃO DE RIR (Reps In Reserve) — OBRIGATÓRIO ━━━
 ${buildRIRInstruction(1, Math.max(parseInt(String(weeks)) || 8, 1))}
 ━━━ FIM PROGRESSÃO RIR ━━━
+
+━━━ ZONAS DE REPETIÇÃO + ONDULAÇÃO — OBRIGATÓRIO ━━━
+${buildZoneInstruction(1, Math.max(parseInt(String(weeks)) || 8, 1), DEFAULT_PATTERN_KEY)}
+━━━ FIM ZONAS DE REPETIÇÃO ━━━
 ${correctivePrompt ? `\n━━━ PROTOCOLO CORRETIVO APEX (colado pelo coach) ━━━\nUse as recomendações abaixo como BASE para os exercícios corretivos, ativações, finalizadores e ajustes de volume por grupo. Integre ao protocolo principal sem duplicar exercícios. Corretivos APEX NUNCA recebem RIR 0 — mínimo RIR 1.\n\n${correctivePrompt}\n━━━ FIM PROTOCOLO CORRETIVO ━━━` : ""}
 
 ━━━ OUTPUT OBRIGATÓRIO ━━━
