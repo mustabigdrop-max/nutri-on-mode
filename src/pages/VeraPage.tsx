@@ -226,7 +226,7 @@ export default function VeraPage() {
       ) : phase === "intake" ? (
         <AnamneseFemininaForm initial={anamnese} onComplete={handleAnamneseComplete} />
       ) : (
-        <VeraChat anamnese={anamnese} onEditAnamnese={() => setPhase("intake")} />
+        <VeraChatTabs anamnese={anamnese} onEditAnamnese={() => setPhase("intake")} />
       )}
     </div>
   );
