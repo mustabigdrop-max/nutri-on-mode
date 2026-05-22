@@ -1225,6 +1225,10 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
   const [generatingTraining, setGeneratingTraining] = useState(false);
   const [showPromptPreview, setShowPromptPreview] = useState(false);
   const [feminineProfile, setFeminineProfile] = useState<{ ultima_menstruacao: string | null; duracao_ciclo: number | null; fase_ciclo: string | null } | null>(null);
+  // Dr. VERTEX v4.0 — análise farmacológica PhD em JSON estruturado
+  const [vertexV4Analysis, setVertexV4Analysis] = useState<import("@/components/coach/VertexAnalysisV4").VertexAnalysis | null>(null);
+  const [vertexV4Loading, setVertexV4Loading] = useState(false);
+  const [vertexV4Error, setVertexV4Error] = useState<string | null>(null);
 
   const isFemAthlete = isFeminine({ sexo: athlete?.sexo });
   const cyclePhase = feminineProfile?.ultima_menstruacao
