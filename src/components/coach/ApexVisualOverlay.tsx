@@ -1725,6 +1725,67 @@ function OverlayLayer({
                     </circle>
                     <text x={l5.x} y={l5.y - 2.6} textAnchor="middle" fill="rgba(255,255,255,0.65)" fontSize={2} style={{ pointerEvents: "none", userSelect: "none" }}>✥</text>
                   </g>
+
+                  {/* Handle central — arrasta C7+L5 juntos (mover coluna inteira) */}
+                  <g
+                    onMouseDown={beginColumnDrag}
+                    onTouchStart={beginColumnDrag}
+                    style={{ cursor: "move", pointerEvents: "auto", touchAction: "none" }}
+                  >
+                    <circle cx={mxS} cy={myS} r={3.5} fill="transparent" />
+                    <circle
+                      cx={mxS} cy={myS} r={1.9}
+                      fill="rgba(184,146,42,0.22)"
+                      stroke="#B8922A"
+                      strokeDasharray="0.8 0.4"
+                      vectorEffect="non-scaling-stroke"
+                      style={{ strokeWidth: 0.9 }}
+                    >
+                      <title>Arraste para mover a coluna inteira (C7 + L5)</title>
+                    </circle>
+                    <text
+                      x={mxS} y={myS + 0.8}
+                      textAnchor="middle"
+                      fill="#B8922A"
+                      fontSize={2.1}
+                      fontWeight={700}
+                      style={{ pointerEvents: "none", userSelect: "none" }}
+                    >✥</text>
+                  </g>
+
+                  {/* Comprimento C7-L5 (sutil, ao lado do ponto médio) */}
+                  <text
+                    x={mxS - nx * 3.2} y={myS - ny * 3.2}
+                    textAnchor="middle"
+                    fill="rgba(184,146,42,0.55)"
+                    fontSize={1.6}
+                    style={{ pointerEvents: "none", userSelect: "none" }}
+                  >
+                    {Math.round(len * 10) / 10}u
+                  </text>
+
+                  {/* Badge de ângulo C7-L5 próximo ao C7 */}
+                  <g pointerEvents="none">
+                    <rect
+                      x={c7.x + 3} y={c7.y - 2.6}
+                      width={9.5} height={3.2} rx={0.8}
+                      fill="rgba(10,10,15,0.9)"
+                      stroke={badgeColor}
+                      strokeOpacity={0.5}
+                      vectorEffect="non-scaling-stroke"
+                      style={{ strokeWidth: 0.6 }}
+                    />
+                    <text
+                      x={c7.x + 7.75} y={c7.y - 0.4}
+                      textAnchor="middle"
+                      fill={badgeColor}
+                      fontSize={1.8}
+                      fontWeight={700}
+                    >
+                      {devAbs.toFixed(1)}°
+                    </text>
+                  </g>
+
                   {/* Conector do badge até a linha */}
                   <line
                     x1={mxS} y1={myS} x2={bx} y2={by}
