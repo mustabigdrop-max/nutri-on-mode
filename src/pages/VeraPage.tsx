@@ -769,3 +769,183 @@ function VeraChat({ anamnese, onEditAnamnese }: { anamnese: AnamneseFeminina; on
     </div>
   );
 }
+
+/* ───────────────────────── TABS WRAPPER (Chat + Farmacologia) ───────────────────────── */
+function VeraChatTabs({ anamnese, onEditAnamnese }: { anamnese: AnamneseFeminina; onEditAnamnese: () => void }) {
+  const [tab, setTab] = useState<"chat" | "farmaco">("chat");
+  return (
+    <div style={{ padding: "12px 20px 0", maxWidth: 900, margin: "0 auto" }}>
+      <div style={{ display: "flex", gap: 6, marginBottom: 4 }}>
+        <button
+          onClick={() => setTab("chat")}
+          style={{
+            padding: "8px 14px", borderRadius: 10, fontSize: 12, fontWeight: 600, cursor: "pointer",
+            background: tab === "chat" ? "rgba(167,139,250,0.15)" : "rgba(255,255,255,0.03)",
+            border: `0.5px solid ${tab === "chat" ? "rgba(167,139,250,0.4)" : "rgba(255,255,255,0.08)"}`,
+            color: tab === "chat" ? PURPLE : "rgba(255,255,255,0.55)",
+          }}
+        >✦ VERA Chat</button>
+        <button
+          onClick={() => setTab("farmaco")}
+          style={{
+            padding: "8px 14px", borderRadius: 10, fontSize: 12, fontWeight: 600, cursor: "pointer",
+            background: tab === "farmaco" ? "rgba(167,139,250,0.15)" : "rgba(255,255,255,0.03)",
+            border: `0.5px solid ${tab === "farmaco" ? "rgba(167,139,250,0.4)" : "rgba(255,255,255,0.08)"}`,
+            color: tab === "farmaco" ? PURPLE : "rgba(255,255,255,0.55)",
+          }}
+        >💉 Farmacologia</button>
+      </div>
+      {tab === "chat"
+        ? <VeraChat anamnese={anamnese} onEditAnamnese={onEditAnamnese} />
+        : <VeraFarmacoTab anamnese={anamnese} />}
+    </div>
+  );
+}
+
+/* ───────────────────────── FARMACOLOGIA TAB ───────────────────────── */
+function VeraFarmacoTab({ anamnese }: { anamnese: AnamneseFeminina }) {
+  const [query, setQuery] = useState("");
+  const [response, setResponse] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [showAlerta, setShowAlerta] = useState(!anamnese.usa_eaa);
+
+  const quickActions = [
+    { label: "Protocolo para o objetivo dela", prompt: `Com base no objetivo "${anamnese.objetivo_principal || "não informado"}" e no uso de anticoncepcional "${anamnese.tipo_anticoncepcional ?? "não informado"}", recomende o protocolo farmacológico feminino mais adequado com doses, timing, farmacocinética e suporte hepático.` },
+    { label: "Analisar ciclo atual", prompt: `Analise o protocolo atual: "${anamnese.compostos_em_uso || "nenhum"}". Avalie dose, timing, risco virilizante, interações com o ciclo menstrual (fase ${anamnese.fase_atual}) e com o anticoncepcional em uso.` },
+    { label: "TPC feminina completa", prompt: `Monte o protocolo completo de TPC feminina pós-ciclo de "${anamnese.compostos_em_uso || "compostos típicos"}". Incluir compostos, doses, duração e exames de acompanhamento.` },
+    { label: "Farmacocinética × ciclo", prompt: `Como a fase ${anamnese.fase_atual} do ciclo menstrual afeta a farmacocinética dos compostos em uso? Qual o melhor momento para aplicar e como adaptar a dose?` },
+    { label: "Checklist pré-ciclo", prompt: `Gere o checklist completo de exames e critérios que devem ser cumpridos antes de iniciar o próximo ciclo para esta atleta.` },
+    { label: "Identificar sinais de virilização", prompt: `Quais sinais de virilização monitorar semanalmente com o protocolo atual? O que é reversível e o que é irreversível? Quando suspender imediatamente?` },
+  ];
+
+  async function consultar(userPrompt: string) {
+    if (!userPrompt.trim() || loading) return;
+    setLoading(true);
+    setResponse("");
+    try {
+      const URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/vera-agent`;
+      const resp = await fetch(URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({
+          system: VERA_AGENT_SYSTEM + "\n\n" + VERA_PHARMA_MODULE,
+          athleteContext: buildVeraContext(anamnese),
+          messages: [{ role: "user", content: userPrompt }],
+        }),
+      });
+      if (resp.status === 429) { toast.error("Limite de requisições — aguarde."); setLoading(false); return; }
+      if (resp.status === 402) { toast.error("Créditos esgotados no workspace."); setLoading(false); return; }
+      if (!resp.ok || !resp.body) throw new Error("Falha na VERA");
+      const reader = resp.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "", soFar = "", done = false;
+      while (!done) {
+        const { done: d, value } = await reader.read();
+        if (d) break;
+        buffer += decoder.decode(value, { stream: true });
+        let nl: number;
+        while ((nl = buffer.indexOf("\n")) !== -1) {
+          let line = buffer.slice(0, nl); buffer = buffer.slice(nl + 1);
+          if (line.endsWith("\r")) line = line.slice(0, -1);
+          if (!line.startsWith("data: ")) continue;
+          const json = line.slice(6).trim();
+          if (json === "[DONE]") { done = true; break; }
+          try {
+            const parsed = JSON.parse(json);
+            const delta = parsed.choices?.[0]?.delta?.content;
+            if (delta) { soFar += delta; setResponse(soFar); }
+          } catch { buffer = line + "\n" + buffer; break; }
+        }
+      }
+    } catch (e: any) {
+      console.error(e); toast.error(e?.message || "Erro na VERA");
+    } finally { setLoading(false); }
+  }
+
+  const contextChips = [
+    { label: "Fase", value: anamnese.fase_atual },
+    { label: "AC", value: anamnese.usa_anticoncepcional ? (anamnese.tipo_anticoncepcional ?? "Sim") : "Sem AC" },
+    { label: "Em uso", value: anamnese.compostos_em_uso || "Nenhum" },
+    { label: "Ciclos", value: String(anamnese.ciclos_anteriores) },
+  ];
+
+  return (
+    <div style={{ padding: "16px 0 32px" }}>
+      {showAlerta && (
+        <div style={{ margin: "0 0 16px", padding: "12px 16px", background: "rgba(239,68,68,0.08)", border: "0.5px solid rgba(239,68,68,0.25)", borderRadius: 10 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+            <p style={{ fontSize: 11, fontWeight: 600, color: "#EF4444", margin: 0 }}>⚠ Leia antes de prosseguir</p>
+            <button onClick={() => setShowAlerta(false)} style={{ fontSize: 11, color: "rgba(255,255,255,.3)", background: "transparent", border: "none", cursor: "pointer" }}>✕</button>
+          </div>
+          <p style={{ fontSize: 11, color: "rgba(255,255,255,.55)", margin: "0 0 6px", lineHeight: 1.6 }}>
+            O uso de EAAs em mulheres envolve riscos de colaterais IRREVERSÍVEIS — especialmente engrossamento da voz e clitoromegalia avançada.
+          </p>
+          <p style={{ fontSize: 10, color: "rgba(239,68,68,.7)", margin: 0, fontStyle: "italic" }}>
+            A VERA oferece informação técnica expert. Toda decisão de uso é de responsabilidade da atleta e do médico responsável.
+          </p>
+        </div>
+      )}
+
+      <div style={{ margin: "0 0 16px", padding: "8px 14px", background: "rgba(167,139,250,0.07)", border: "0.5px solid rgba(167,139,250,0.2)", borderRadius: 10, display: "flex", gap: 12, flexWrap: "wrap" }}>
+        {contextChips.map((item, i) => (
+          <div key={i}>
+            <span style={{ fontSize: 9, color: "rgba(167,139,250,.5)" }}>{item.label}: </span>
+            <span style={{ fontSize: 10, fontWeight: 500, color: PURPLE }}>{item.value}</span>
+          </div>
+        ))}
+      </div>
+
+      <p style={{ fontSize: 9, color: "rgba(255,255,255,.3)", letterSpacing: "0.08em", margin: "0 0 8px", textTransform: "uppercase" }}>
+        Consultas frequentes
+      </p>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, marginBottom: 16 }}>
+        {quickActions.map((action, i) => (
+          <button key={i} onClick={() => consultar(action.prompt)} disabled={loading}
+            style={{ padding: "8px 10px", background: "rgba(167,139,250,0.06)", border: "0.5px solid rgba(167,139,250,0.15)", borderRadius: 9, cursor: loading ? "not-allowed" : "pointer", fontSize: 11, textAlign: "left", color: "rgba(255,255,255,.55)", lineHeight: 1.4 }}>
+            {action.label}
+          </button>
+        ))}
+      </div>
+
+      {loading && !response && (
+        <div className="flex items-center gap-2 text-[11px]" style={{ color: PURPLE, padding: "12px 0" }}>
+          <Loader2 className="w-3 h-3 animate-spin" /> VERA analisando…
+        </div>
+      )}
+
+      {response && (
+        <div style={{ padding: "14px 16px", background: "rgba(255,255,255,.03)", border: "0.5px solid rgba(167,139,250,.15)", borderRadius: 12 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
+            <span style={{ fontSize: 10, fontWeight: 600, color: PURPLE, letterSpacing: "0.08em" }}>✦ VERA — Análise Farmacológica</span>
+            <button onClick={() => { navigator.clipboard.writeText(response); toast.success("Copiado"); }}
+              style={{ fontSize: 10, color: "rgba(167,139,250,.5)", background: "transparent", border: "none", cursor: "pointer" }}>
+              Copiar
+            </button>
+          </div>
+          <div className="prose prose-invert prose-sm max-w-none [&_p]:my-1.5 [&_ul]:my-1.5 [&_h3]:text-[12px] [&_h3]:font-bold [&_h3]:mt-2 [&_h3]:mb-1 [&_strong]:text-[#A78BFA]">
+            <ReactMarkdown>{response}</ReactMarkdown>
+          </div>
+        </div>
+      )}
+
+      <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
+        <input value={query} onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); consultar(query); setQuery(""); } }}
+          placeholder="Pergunte sobre doses, timing, interações, TPC feminina…"
+          disabled={loading}
+          style={{ flex: 1, padding: "10px 14px", background: "rgba(255,255,255,.05)", border: "0.5px solid rgba(167,139,250,.2)", borderRadius: 10, fontSize: 12, color: "rgba(255,255,255,.8)", outline: "none" }} />
+        <button onClick={() => { consultar(query); setQuery(""); }} disabled={loading || !query.trim()}
+          style={{ padding: "10px 16px", background: loading || !query.trim() ? "rgba(255,255,255,.04)" : "rgba(167,139,250,.2)", border: `0.5px solid ${loading || !query.trim() ? "rgba(255,255,255,.08)" : "rgba(167,139,250,.4)"}`, borderRadius: 10, cursor: loading || !query.trim() ? "not-allowed" : "pointer", fontSize: 13, color: loading || !query.trim() ? "rgba(255,255,255,.2)" : PURPLE }}>
+          <Send className="w-4 h-4" />
+        </button>
+      </div>
+
+      <p style={{ marginTop: 16, fontSize: 10, color: "rgba(255,255,255,0.3)", textAlign: "center", fontStyle: "italic" }}>
+        Farmacologia feminina exclusiva da VERA — não duplica o Dr. VERTEX (masculino).
+      </p>
+    </div>
+  );
+}
