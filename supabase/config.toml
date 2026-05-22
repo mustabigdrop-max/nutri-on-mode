@@ -128,3 +128,7 @@ verify_jwt = false
 
 [functions.apex-analyze-step]
 verify_jwt = false
+
+[functions.stratum-ai-agent]
+verify_jwt = false
+
