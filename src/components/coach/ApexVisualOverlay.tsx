@@ -1297,7 +1297,7 @@ function OverlayLayer({
   onSpineReset?: () => void;
 }) {
   // Aplica overrides manuais (drag livre X/Y) sobre o snap automático
-  const lm = useMemo(() => {
+  const lm: any = useMemo(() => {
     const snapped: any = snapToPlumbLine(data.landmarks, 100);
     if (manualSpine?.c7) {
       snapped.spine_c7 = { ...(snapped.spine_c7 || {}), x: manualSpine.c7.x, y: manualSpine.c7.y, manual: true, snapped: false };
