@@ -1382,7 +1382,7 @@ function OverlayLayer({
     window.addEventListener("touchmove", handleTouchMove, { passive: false });
     window.addEventListener("touchend", handleUp);
     window.addEventListener("touchcancel", handleUp);
-  }, [toSVGCoords, onSpineMove, onSpineRelease]);
+  }, [toSVGCoords, onSpineMove, onSpineRelease, dismissOnboarding]);
 
   // ─── Drag da COLUNA inteira (C7+L5 juntos, preserva ângulo/distância) ─
   const beginColumnDrag = useCallback((e: React.MouseEvent | React.TouchEvent) => {
