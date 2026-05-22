@@ -1106,6 +1106,39 @@ export type Database = {
           },
         ]
       }
+      apex_vera_bridge: {
+        Row: {
+          atleta_id: string
+          coach_user_id: string | null
+          created_at: string
+          id: string
+          package: Json
+          resultado: Json | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          atleta_id: string
+          coach_user_id?: string | null
+          created_at?: string
+          id?: string
+          package: Json
+          resultado?: Json | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          atleta_id?: string
+          coach_user_id?: string | null
+          created_at?: string
+          id?: string
+          package?: Json
+          resultado?: Json | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       athlete_exams: {
         Row: {
           acido_urico: number | null
