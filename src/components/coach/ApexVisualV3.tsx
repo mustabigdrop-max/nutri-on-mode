@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import AthleteSelector, { AthleteOption } from "@/components/coach/AthleteSelector";
@@ -6,6 +7,7 @@ import { buildFeminineContext, type FeminineContext } from "@/lib/feminineContex
 import jsPDF from "jspdf";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend, BarChart, Bar, Cell } from "recharts";
 import APEXPoseAnalysisPage from "@/pages/coach/APEXPoseAnalysisPage";
+import { buildApexPackage } from "@/utils/apexVeraMap";
 
 function EvolutionCharts({ history, cat, C }: { history: any[]; cat: any; C: any }) {
   // Order chronologically (history is desc)
