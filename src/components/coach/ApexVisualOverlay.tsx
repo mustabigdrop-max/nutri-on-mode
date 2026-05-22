@@ -1297,15 +1297,15 @@ function OverlayLayer({
   onSpineReset?: () => void;
 }) {
   // Aplica overrides manuais (drag livre X/Y) sobre o snap automático
-  const lm: any = useMemo(() => {
-    const snapped: any = snapToPlumbLine(data.landmarks, 100);
+  const lm = useMemo(() => {
+    const snapped = snapToPlumbLine(data.landmarks, 100) as any;
     if (manualSpine?.c7) {
       snapped.spine_c7 = { ...(snapped.spine_c7 || {}), x: manualSpine.c7.x, y: manualSpine.c7.y, manual: true, snapped: false };
     }
     if (manualSpine?.l5) {
       snapped.spine_l5 = { ...(snapped.spine_l5 || {}), x: manualSpine.l5.x, y: manualSpine.l5.y, manual: true, snapped: false };
     }
-    return snapped;
+    return snapped as typeof data.landmarks;
   }, [data.landmarks, manualSpine]);
 
   // ─── Drag livre de C7/L5 ─────────────────────────────────────
