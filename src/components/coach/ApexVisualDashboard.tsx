@@ -12,6 +12,7 @@ import ApexEvolucao from "@/components/apex/ApexEvolucao";
 import ApexVisualOverlay, { LandmarkBundle, PhotoBundle, LandmarkView, calcPlumbLine } from "@/components/coach/ApexVisualOverlay";
 import ApexPostural33Overlay, { parsePostural33 } from "@/components/coach/ApexPostural33Overlay";
 import ApexTimelineTab from "@/components/coach/ApexTimelineTab";
+import ApexEvolutionTab from "@/components/coach/ApexEvolutionTab";
 
 import VertexEnhancedView from "@/components/coach/VertexEnhancedView";
 import { ApexScoreGauge, InsightCard, PosturaCards, CorrecoesCards, ProtocoloCards } from "@/components/coach/ApexResultCards";
@@ -1583,6 +1584,7 @@ Suporte em uso: ${suporte || "não informado"}` : "";
       { key: "palco", label: "Palco" },
       { key: "plano", label: "Plano" },
       { key: "timeline", label: "📅 Timeline" },
+      { key: "evolucao", label: "📈 Evolução" },
     ];
 
     return (
@@ -1834,6 +1836,9 @@ Suporte em uso: ${suporte || "não informado"}` : "";
               coachId={coachId || null}
               athleteName={athlete?.nome}
             />
+          )}
+          {activeResultTab === "evolucao" && (
+            <ApexEvolutionTab athleteId={athlete?.id || null} />
           )}
         </div>
 
