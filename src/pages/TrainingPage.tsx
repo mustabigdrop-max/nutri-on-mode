@@ -47,6 +47,13 @@ import { MuscleRegionBadge, RegionalCoveragePanel } from "@/components/training/
 import { buildRegionalInstruction, findExerciseRegion } from "@/utils/muscleRegions";
 import { PlateauDashboard } from "@/components/training/PlateauDashboard";
 import { buildPlateauInstruction } from "@/utils/plateauDetector";
+import {
+  SMHPanel,
+  SupercompPanel,
+  RBEPanel,
+  ExerciseRBEBadge,
+  buildDarksideFinalInstruction,
+} from "@/components/training/DarksideFinalPanels";
 import { buildSystemPrescription } from "@/data/recommendSystem";
 import { TRAINING_SYSTEMS } from "@/data/trainingSystems";
 import CompetitionModeBlocks from "@/components/training/systems/CompetitionModeBlocks";
