@@ -95,13 +95,38 @@ const FONT = "'Space Grotesk', sans-serif";
 export default function TrainingPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [section, setSection] = useState<Section>("gerar");
   const isAdmin = user?.id === ADMIN_UID;
   const visibleNav = sectionNav.filter((s) => !s.adminOnly || isAdmin);
 
+  // APEX → VERA → TrainingON: protocolo recebido
+  const veraProtocoloFlag = searchParams.get("vera_protocolo") === "true";
+  const veraAtletaId = searchParams.get("atleta");
+  const [veraProtocolo, setVeraProtocolo] = useState<{ texto: string; timeline: number } | null>(null);
+  useEffect(() => {
+    if (!veraProtocoloFlag || !veraAtletaId) return;
+    (async () => {
+      const { data } = await supabase
+        .from("apex_vera_bridge" as any)
+        .select("resultado")
+        .eq("atleta_id", veraAtletaId)
+        .eq("status", "ENVIADO_TRAININGON")
+        .order("updated_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      const r = (data as any)?.resultado;
+      if (r?.protocolo_texto) {
+        setVeraProtocolo({ texto: r.protocolo_texto, timeline: r.timeline ?? 12 });
+        toast.success("Protocolo VERA + APEX recebido");
+      }
+    })();
+  }, [veraProtocoloFlag, veraAtletaId]);
+
   return (
     <div className="ton-root min-h-screen">
       <TrainingHUDBackground />
+
 
       {/* ── HUD Header ── */}
       <div className="ton-header">
