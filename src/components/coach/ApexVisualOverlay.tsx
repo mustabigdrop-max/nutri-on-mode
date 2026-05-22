@@ -1716,10 +1716,31 @@ function OverlayLayer({
                       style={{ strokeWidth: 0.8 }}
                     />
                   )}
+                  {/* Hover highlight — anel + setas direcionais (apenas em C7/L5) */}
+                  {hoveredSpine === "c7" && (
+                    <g pointerEvents="none">
+                      <circle cx={c7.x} cy={c7.y} r={3.6} fill="rgba(184,146,42,0.1)" stroke="rgba(184,146,42,0.45)" vectorEffect="non-scaling-stroke" style={{ strokeWidth: 0.8 }} />
+                      <text x={c7.x} y={c7.y - 3.6} textAnchor="middle" fill="rgba(184,146,42,0.85)" fontSize={1.8}>↑</text>
+                      <text x={c7.x} y={c7.y + 4.4} textAnchor="middle" fill="rgba(184,146,42,0.85)" fontSize={1.8}>↓</text>
+                      <text x={c7.x - 3.6} y={c7.y + 0.7} textAnchor="middle" fill="rgba(184,146,42,0.85)" fontSize={1.8}>←</text>
+                      <text x={c7.x + 3.6} y={c7.y + 0.7} textAnchor="middle" fill="rgba(184,146,42,0.85)" fontSize={1.8}>→</text>
+                    </g>
+                  )}
+                  {hoveredSpine === "l5" && (
+                    <g pointerEvents="none">
+                      <circle cx={l5.x} cy={l5.y} r={3.6} fill="rgba(184,146,42,0.1)" stroke="rgba(184,146,42,0.45)" vectorEffect="non-scaling-stroke" style={{ strokeWidth: 0.8 }} />
+                      <text x={l5.x} y={l5.y - 3.6} textAnchor="middle" fill="rgba(184,146,42,0.85)" fontSize={1.8}>↑</text>
+                      <text x={l5.x} y={l5.y + 4.4} textAnchor="middle" fill="rgba(184,146,42,0.85)" fontSize={1.8}>↓</text>
+                      <text x={l5.x - 3.6} y={l5.y + 0.7} textAnchor="middle" fill="rgba(184,146,42,0.85)" fontSize={1.8}>←</text>
+                      <text x={l5.x + 3.6} y={l5.y + 0.7} textAnchor="middle" fill="rgba(184,146,42,0.85)" fontSize={1.8}>→</text>
+                    </g>
+                  )}
                   {/* Âncoras destacadas (círculo maior) — drag livre X/Y */}
                   <g
                     onMouseDown={beginSpineDrag("c7")}
                     onTouchStart={beginSpineDrag("c7")}
+                    onMouseEnter={() => setHoveredSpine("c7")}
+                    onMouseLeave={() => setHoveredSpine(null)}
                     style={{ cursor: "move", pointerEvents: "auto", touchAction: "none" }}
                   >
                     {/* hit area maior para facilitar o drag */}
@@ -1733,6 +1754,8 @@ function OverlayLayer({
                   <g
                     onMouseDown={beginSpineDrag("l5")}
                     onTouchStart={beginSpineDrag("l5")}
+                    onMouseEnter={() => setHoveredSpine("l5")}
+                    onMouseLeave={() => setHoveredSpine(null)}
                     style={{ cursor: "move", pointerEvents: "auto", touchAction: "none" }}
                   >
                     <circle cx={l5.x} cy={l5.y} r={3.2} fill="transparent" />
@@ -1741,6 +1764,20 @@ function OverlayLayer({
                     </circle>
                     <text x={l5.x} y={l5.y - 2.6} textAnchor="middle" fill="rgba(255,255,255,0.65)" fontSize={2} style={{ pointerEvents: "none", userSelect: "none" }}>✥</text>
                   </g>
+
+                  {/* Onboarding pulse + tooltip (primeira análise completa) */}
+                  {showOnboarding && analiseCompleta && (
+                    <g pointerEvents="none">
+                      <circle cx={c7.x} cy={c7.y} r={3} fill="rgba(184,146,42,0.25)" stroke="#B8922A" vectorEffect="non-scaling-stroke" style={{ strokeWidth: 0.6 }}>
+                        <animate attributeName="r" values="2;4;2" dur="1.5s" repeatCount="indefinite" />
+                        <animate attributeName="opacity" values="0.6;0;0.6" dur="1.5s" repeatCount="indefinite" />
+                      </circle>
+                      <line x1={c7.x + 6} y1={c7.y - 6} x2={c7.x + 1.8} y2={c7.y - 1.8} stroke="#B8922A" strokeWidth={0.4} strokeDasharray="0.8 0.4" vectorEffect="non-scaling-stroke" />
+                      <rect x={c7.x + 5} y={c7.y - 14} width={34} height={8} rx={1.2} fill="rgba(184,146,42,0.95)" />
+                      <text x={c7.x + 22} y={c7.y - 10.3} textAnchor="middle" fill="#0A0A0F" fontSize={2.1} fontWeight={700}>✥ Arraste C7 e L5</text>
+                      <text x={c7.x + 22} y={c7.y - 7.6} textAnchor="middle" fill="#0A0A0F" fontSize={1.7} opacity={0.85}>toque e ajuste a posição</text>
+                    </g>
+                  )}
 
                   {/* Handle central — arrasta C7+L5 juntos (mover coluna inteira) */}
                   <g
