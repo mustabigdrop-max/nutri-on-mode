@@ -945,16 +945,90 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
               ⚠ Prumo inclinado {currentPlumb.inclinacao > 0 ? "+" : ""}{currentPlumb.inclinacao}° — verifique posição do atleta na foto
             </p>
           )}
-          {(manualSpinePositions[view]?.c7 || manualSpinePositions[view]?.l5) && (
-            <button
-              onClick={resetSpinePositions}
-              className="ml-1.5 text-[9px] px-2 py-0.5 rounded border mb-1.5"
-              style={{ borderColor: "rgba(255,255,255,0.2)", color: "rgba(255,255,255,0.7)", background: "rgba(255,255,255,0.04)" }}
-              title="Voltar C7 e L5 às posições detectadas pela IA"
-            >
-              ↺ Reset C7/L5
-            </button>
-          )}
+          {/* Card permanente — instrução de ajuste C7/L5 */}
+          {(() => {
+            const c7Ajustado = !!manualSpinePositions[view]?.c7;
+            const l5Ajustado = !!manualSpinePositions[view]?.l5;
+            const algumAjustado = c7Ajustado || l5Ajustado;
+            return (
+              <div
+                style={{
+                  padding: "10px 12px",
+                  marginBottom: 10,
+                  background: "rgba(184,146,42,0.06)",
+                  border: "0.5px solid rgba(184,146,42,0.2)",
+                  borderRadius: 10,
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
+                  <div
+                    style={{
+                      width: 28, height: 28, flexShrink: 0,
+                      background: "rgba(184,146,42,0.12)",
+                      border: "0.5px solid rgba(184,146,42,0.25)",
+                      borderRadius: 7,
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      fontSize: 13, color: "#B8922A",
+                    }}
+                  >✥</div>
+                  <div style={{ flex: 1 }}>
+                    <p style={{ fontSize: 10, fontWeight: 600, color: "#B8922A", margin: "0 0 3px", letterSpacing: "0.04em", textTransform: "uppercase" }}>
+                      Ajuste C7 e L5
+                    </p>
+                    <p style={{ fontSize: 10, color: "rgba(255,255,255,0.45)", margin: 0, lineHeight: 1.5 }}>
+                      Arraste os pontos amarelos <strong style={{ color: "rgba(255,255,255,0.75)" }}>C7</strong> e <strong style={{ color: "rgba(255,255,255,0.75)" }}>L5</strong> para alinhá-los sobre as vértebras visíveis na foto. Isso melhora a precisão de todos os achados.
+                    </p>
+                  </div>
+                </div>
+                <div style={{ marginTop: 8, display: "flex", gap: 6 }}>
+                  {([["C7", c7Ajustado], ["L5", l5Ajustado]] as const).map(([id, ajustado]) => (
+                    <div key={id} style={{
+                      flex: 1, padding: "5px 8px",
+                      background: ajustado ? "rgba(52,211,153,0.08)" : "rgba(255,255,255,0.04)",
+                      border: `0.5px solid ${ajustado ? "rgba(52,211,153,0.2)" : "rgba(255,255,255,0.08)"}`,
+                      borderRadius: 7,
+                      display: "flex", alignItems: "center", gap: 5,
+                    }}>
+                      <span style={{
+                        width: 5, height: 5, borderRadius: "50%",
+                        background: ajustado ? "#34D399" : "rgba(255,255,255,0.2)",
+                        flexShrink: 0,
+                      }} />
+                      <span style={{ fontSize: 10, fontWeight: 600, color: ajustado ? "#34D399" : "rgba(255,255,255,0.4)" }}>
+                        {id}
+                      </span>
+                      <span style={{ fontSize: 9, color: ajustado ? "rgba(52,211,153,0.6)" : "rgba(255,255,255,0.25)" }}>
+                        {ajustado ? "ajustado" : "IA"}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                {algumAjustado && (
+                  <button
+                    onClick={resetSpinePositions}
+                    style={{
+                      width: "100%", marginTop: 7, padding: "5px",
+                      background: "transparent",
+                      border: "0.5px solid rgba(255,255,255,0.08)",
+                      borderRadius: 7, cursor: "pointer", fontSize: 9,
+                      color: "rgba(255,255,255,0.4)", transition: "all .15s",
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.borderColor = "rgba(255,255,255,0.2)";
+                      e.currentTarget.style.color = "rgba(255,255,255,0.7)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)";
+                      e.currentTarget.style.color = "rgba(255,255,255,0.4)";
+                    }}
+                    title="Voltar C7 e L5 às posições detectadas pela IA"
+                  >
+                    ↺ Restaurar posição da IA
+                  </button>
+                )}
+              </div>
+            );
+          })()}
           {data?.landmarks && (() => {
             const q = calcAnalysisQuality(data.landmarks as any);
             const pct = Math.round(q.score * 100);
