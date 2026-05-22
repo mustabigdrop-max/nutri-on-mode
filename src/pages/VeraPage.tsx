@@ -179,22 +179,23 @@ export default function VeraPage() {
   }, [user?.id]);
 
   return (
-    <div className="min-h-screen" style={{ background: BG, color: "rgba(255,255,255,0.85)" }}>
+    <div className="min-h-screen" style={{ background: BG, color: "rgba(255,255,255,0.9)" }}>
       {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", borderBottom: `0.5px solid ${BORDER}` }}>
-        <div className="flex items-center gap-3">
-          <button onClick={() => navigate(-1)} className="rounded-lg p-1.5 hover:bg-white/5" aria-label="Voltar">
-            <ArrowLeft className="w-4 h-4" style={{ color: PURPLE }} />
-          </button>
-          <div>
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <span style={{ fontSize: 18, fontWeight: 700, color: PURPLE, letterSpacing: "0.12em" }}>VERA</span>
-              <span style={{ fontSize: 9, fontWeight: 600, color: PURPLE, background: "rgba(167,139,250,0.12)", border: "0.5px solid rgba(167,139,250,0.3)", borderRadius: 8, padding: "2px 8px", letterSpacing: "0.1em" }}>FEMININO</span>
+      <div style={{ background: "linear-gradient(180deg, rgba(167,139,250,0.08) 0%, transparent 100%)", borderBottom: "0.5px solid rgba(167,139,250,0.15)", padding: "18px 24px 16px" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <button onClick={() => navigate(-1)} aria-label="Voltar" style={{ background: "transparent", border: "none", cursor: "pointer", padding: 6, color: PURPLE, display: "flex" }}>
+              <ArrowLeft className="w-4 h-4" />
+            </button>
+            <div style={{ width: 36, height: 36, background: "rgba(167,139,250,0.15)", border: "0.5px solid rgba(167,139,250,0.35)", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, color: PURPLE }}>✦</div>
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <span style={{ fontSize: 20, fontWeight: 700, color: PURPLE, letterSpacing: "0.15em" }}>VERA</span>
+                <span style={{ fontSize: 9, fontWeight: 600, color: PURPLE, background: "rgba(167,139,250,0.12)", border: "0.5px solid rgba(167,139,250,0.3)", borderRadius: 6, padding: "2px 8px", letterSpacing: "0.1em" }}>FEMININO</span>
+              </div>
+              <p style={{ fontSize: 10, color: "rgba(255,255,255,0.3)", margin: "2px 0 0", letterSpacing: "0.06em" }}>Visão Estratégica de Resultados Avançados</p>
             </div>
-            <p style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", margin: "3px 0 0" }}>Visão Estratégica de Resultados Avançados</p>
           </div>
-        </div>
-        <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
           {anamnese.fase_atual !== "NAO_INFORMADO" && phase === "chat" && (
             <CicloIndicator fase={anamnese.fase_atual} />
           )}
