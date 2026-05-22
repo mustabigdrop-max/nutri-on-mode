@@ -215,6 +215,7 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
   // ── Ajuste manual do prumo (por vista) ─────────────────────────
   const [manualMode, setManualMode] = useState(false);
   const [showPlumbInstruction, setShowPlumbInstruction] = useState(false);
+  const [showAnatomyGuide, setShowAnatomyGuide] = useState(false);
   const [manualPlumb, setManualPlumb] = useState<Record<"front" | "lateral" | "back", number | null>>({
     front: null, lateral: null, back: null,
   });
