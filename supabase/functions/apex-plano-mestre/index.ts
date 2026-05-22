@@ -95,12 +95,36 @@ async function callAI(systemPrompt: string, userPrompt: string, maxTokens: numbe
 }
 
 function parseJson(raw: any): any {
-  try { return typeof raw === "string" ? JSON.parse(raw) : raw; }
-  catch {
-    const m = String(raw).match(/\{[\s\S]*\}/);
-    return m ? JSON.parse(m[0]) : null;
+  if (raw == null) return null;
+  if (typeof raw !== "string") {
+    try { return raw; } catch { return null; }
   }
+  let s = raw.replace(/```json\s*/gi, "").replace(/```\s*/g, "").trim();
+  const start = s.search(/[\{\[]/);
+  if (start === -1) return null;
+  const openChar = s[start];
+  const closeChar = openChar === "[" ? "]" : "}";
+  const end = s.lastIndexOf(closeChar);
+  if (end > start) s = s.substring(start, end + 1);
+
+  const attempts = [
+    s,
+    s.replace(/,\s*([}\]])/g, "$1").replace(/[\x00-\x1F\x7F]/g, ""),
+  ];
+  for (const a of attempts) {
+    try { return JSON.parse(a); } catch { /* next */ }
+  }
+  // Last resort: truncate progressively to find a valid JSON prefix
+  let cleaned = attempts[1];
+  for (let i = cleaned.length; i > 100; i -= 50) {
+    const candidate = cleaned.substring(0, i).replace(/,\s*$/, "");
+    const balanced = candidate + (openChar === "[" ? "]" : "}").repeat(3);
+    try { return JSON.parse(balanced); } catch { /* next */ }
+    try { return JSON.parse(candidate); } catch { /* next */ }
+  }
+  return null;
 }
+
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
