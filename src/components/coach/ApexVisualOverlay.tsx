@@ -1500,6 +1500,7 @@ function OverlayLayer({
     <>
       {/* SVG layer: lines + landmarks */}
       <svg
+        ref={svgRef}
         id="apex-overlay-svg"
         viewBox="0 0 100 100"
         preserveAspectRatio="none"
