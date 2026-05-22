@@ -1326,6 +1326,21 @@ function OverlayLayer({
   // ─── Drag livre de C7/L5 ─────────────────────────────────────
   const svgRef = useRef<SVGSVGElement>(null);
   const draggingRef = useRef<null | "c7" | "l5">(null);
+
+  // ─── Onboarding e hover de descoberta C7/L5 ─────────────────
+  const ONBOARDING_KEY = "apex_landmark_onboarding_done";
+  const analiseCompleta = useMemo(() => {
+    const valids = Object.values(data.landmarks).filter(isValidPoint).length;
+    return valids >= 8;
+  }, [data.landmarks]);
+  const [showOnboarding, setShowOnboarding] = useState<boolean>(() => {
+    try { return !localStorage.getItem(ONBOARDING_KEY); } catch { return false; }
+  });
+  const [hoveredSpine, setHoveredSpine] = useState<null | "c7" | "l5">(null);
+  const dismissOnboarding = useCallback(() => {
+    try { localStorage.setItem(ONBOARDING_KEY, "true"); } catch {}
+    setShowOnboarding(false);
+  }, []);
   const toSVGCoords = useCallback((clientX: number, clientY: number) => {
     const svg = svgRef.current;
     if (!svg) return null;
