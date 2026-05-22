@@ -1732,6 +1732,13 @@ function ExerciseCard({
                     <RepZoneBadge reps={repsValue} compact />
                     <RIRBadge exerciseName={safeExerciseName} rir={effectiveRIR} showIntensity={false} />
                     <TripleCoherenceMarker exerciseName={safeExerciseName} reps={repsValue} rir={effectiveRIR} />
+                    {athleteId && (
+                      <ExerciseRBEBadge
+                        athleteId={athleteId}
+                        exerciseName={safeExerciseName}
+                        mesoStart={(() => { const d = new Date(); d.setDate(d.getDate() - 28); return d.toISOString(); })()}
+                      />
+                    )}
                   </>
                 );
               })()}
