@@ -126,9 +126,9 @@ const CoachHub = () => {
               onClick={() => m.key === "vera" ? navigate("/coach/vera") : setActive(m.key)}
               className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-[11px] font-semibold whitespace-nowrap transition-all"
               style={{
-                background: active === m.key ? AMBER_DIM : "transparent",
-                color: active === m.key ? AMBER : TEXT_MUTED,
-                border: `1px solid ${active === m.key ? BORDER_ACTIVE : "transparent"}`,
+                background: m.key === "vera" ? "rgba(167,139,250,0.1)" : (active === m.key ? AMBER_DIM : "transparent"),
+                color: m.key === "vera" ? VERA_PURPLE : (active === m.key ? AMBER : TEXT_MUTED),
+                border: `1px solid ${m.key === "vera" ? "rgba(167,139,250,0.3)" : (active === m.key ? BORDER_ACTIVE : "transparent")}`,
               }}
             >
               <m.icon className="w-3.5 h-3.5" />
