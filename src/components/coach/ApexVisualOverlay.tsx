@@ -1682,9 +1682,9 @@ function OverlayLayer({
                   >
                     {label}
                   </text>
-                  {/* mini-tag C7/L5 nas pontas (📐 indica âncora anatômica fixa) */}
-                  <text x={c7.x + 2} y={c7.y + 0.6} fill={lineColor} fontSize={1.7} fontWeight={700} style={{ pointerEvents: "none", paintOrder: "stroke" }} stroke="#000" strokeWidth={0.4}>{(c7 as any).snapped ? "C7 📐" : "C7"}</text>
-                  <text x={l5.x + 2} y={l5.y + 0.6} fill={lineColor} fontSize={1.7} fontWeight={700} style={{ pointerEvents: "none", paintOrder: "stroke" }} stroke="#000" strokeWidth={0.4}>{(l5 as any).snapped ? "L5 📐" : "L5"}</text>
+                  {/* mini-tag C7/L5 nas pontas — ✥ manual, 📐 snap automático */}
+                  <text x={c7.x + 2} y={c7.y + 0.6} fill={lineColor} fontSize={1.7} fontWeight={700} style={{ pointerEvents: "none", paintOrder: "stroke" }} stroke="#000" strokeWidth={0.4}>{(c7 as any).manual ? "C7 ✥" : (c7 as any).snapped ? "C7 📐" : "C7"}</text>
+                  <text x={l5.x + 2} y={l5.y + 0.6} fill={lineColor} fontSize={1.7} fontWeight={700} style={{ pointerEvents: "none", paintOrder: "stroke" }} stroke="#000" strokeWidth={0.4}>{(l5 as any).manual ? "L5 ✥" : (l5 as any).snapped ? "L5 📐" : "L5"}</text>
                 </g>
               );
             })()}
