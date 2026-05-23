@@ -4,6 +4,7 @@ import { Download, ChevronDown, BookOpen, Link2, Eye, Crosshair } from "lucide-r
 import { toast } from "sonner";
 import { CYCLE_PHASE_INFO, type CyclePhase } from "@/lib/feminine";
 import { getEducationContent } from "@/utils/apexEducation";
+import { DraggableEducationCard } from "@/components/coach/ApexDraggableEducationCard";
 
 // ─── Types ───────────────────────────────────────────────────────
 export type Landmark = { x: number; y: number; label: string };
