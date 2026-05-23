@@ -1382,6 +1382,11 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
                     )}
                   </div>
                 )}
+                {active && eduMode && f.sev !== "ok" && getEducationContent(f.key) && (
+                  <div className="px-2 pb-2">
+                    <EducationCard findingKey={f.key} eduMode={eduMode} />
+                  </div>
+                )}
               </div>
             );
           })}
