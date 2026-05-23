@@ -2808,3 +2808,195 @@ function AnatomyEducationPanel({
     </div>
   );
 }
+
+// ─── EducationCard — conteúdo educativo por achado clínico ─────────
+function EducationCard({
+  findingKey,
+  eduMode,
+}: {
+  findingKey: string;
+  eduMode: boolean;
+}) {
+  const [secaoAberta, setSecaoAberta] = useState<"o_que_e" | "por_que" | "muda" | null>("o_que_e");
+  const content = getEducationContent(findingKey);
+  if (!content || !eduMode) return null;
+
+  const secoes = [
+    { id: "o_que_e" as const, icon: "◎", label: "O que está acontecendo", cor: "#38BDF8", bg: "rgba(56,189,248,0.06)" },
+    { id: "por_que" as const, icon: "◈", label: "Por que isso importa",   cor: "#FBBF24", bg: "rgba(251,191,36,0.06)" },
+    { id: "muda"    as const, icon: "⬡", label: "O que vai mudar",        cor: "#34D399", bg: "rgba(52,211,153,0.06)" },
+  ];
+
+  return (
+    <div style={{
+      marginTop: 8,
+      background: "rgba(255,255,255,0.02)",
+      border: "0.5px solid rgba(255,255,255,0.07)",
+      borderRadius: 10,
+      overflow: "hidden",
+    }}>
+      <div style={{
+        padding: "8px 12px",
+        background: "rgba(255,255,255,0.03)",
+        borderBottom: "0.5px solid rgba(255,255,255,0.06)",
+        display: "flex", alignItems: "center", gap: 6,
+      }}>
+        <span style={{
+          fontSize: 8, fontWeight: 600,
+          color: "rgba(56,189,248,0.7)",
+          background: "rgba(56,189,248,0.1)",
+          border: "0.5px solid rgba(56,189,248,0.2)",
+          borderRadius: 5, padding: "1px 6px",
+          letterSpacing: "0.08em",
+        }}>MODO EDUCAÇÃO</span>
+        <span style={{ fontSize: 10, color: "rgba(255,255,255,0.4)", flex: 1 }}>
+          {content.o_que_e.titulo}
+        </span>
+      </div>
+
+      {secoes.map((secao) => {
+        const isOpen = secaoAberta === secao.id;
+        let conteudo: string[] = [];
+        if (secao.id === "o_que_e") {
+          conteudo = [content.o_que_e.texto, `💡 ${content.o_que_e.analogia}`];
+        } else if (secao.id === "por_que") {
+          conteudo = [
+            `👁 Visual: ${content.por_que_importa.impacto_visual}`,
+            `🏆 Palco: ${content.por_que_importa.impacto_palco}`,
+            `🫀 Saúde: ${content.por_que_importa.impacto_saude}`,
+          ];
+        } else {
+          conteudo = [
+            `🏋 ${content.o_que_muda.no_treino}`,
+            `⏱ Prazo: ${content.o_que_muda.tempo_medio}`,
+            `✓ Resultado: ${content.o_que_muda.resultado}`,
+          ];
+        }
+        return (
+          <div key={secao.id}>
+            <div
+              onClick={() => setSecaoAberta(isOpen ? null : secao.id)}
+              style={{
+                padding: "8px 12px",
+                cursor: "pointer",
+                display: "flex", alignItems: "center", gap: 8,
+                background: isOpen ? secao.bg : "transparent",
+                borderBottom: "0.5px solid rgba(255,255,255,0.05)",
+                transition: "background .15s",
+              }}
+            >
+              <span style={{ fontSize: 11, color: secao.cor, flexShrink: 0 }}>{secao.icon}</span>
+              <span style={{
+                fontSize: 11, fontWeight: isOpen ? 600 : 400,
+                color: isOpen ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.45)",
+                flex: 1,
+              }}>{secao.label}</span>
+              <span style={{ fontSize: 9, color: "rgba(255,255,255,0.2)" }}>{isOpen ? "▲" : "▼"}</span>
+            </div>
+            {isOpen && (
+              <div style={{
+                padding: "10px 12px",
+                background: secao.bg,
+                borderBottom: "0.5px solid rgba(255,255,255,0.05)",
+              }}>
+                {conteudo.map((linha, i) => (
+                  <p key={i} style={{
+                    fontSize: 11,
+                    color: "rgba(255,255,255,0.65)",
+                    margin: i < conteudo.length - 1 ? "0 0 8px" : "0",
+                    lineHeight: 1.6,
+                  }}>{linha}</p>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      })}
+
+      <div style={{
+        padding: "8px 12px",
+        background: "rgba(167,139,250,0.04)",
+        borderTop: "0.5px solid rgba(255,255,255,0.05)",
+        display: "flex", gap: 8, alignItems: "flex-start",
+      }}>
+        <span style={{ fontSize: 12, flexShrink: 0 }}>🧬</span>
+        <p style={{
+          fontSize: 10,
+          color: "rgba(167,139,250,0.7)",
+          margin: 0, lineHeight: 1.5,
+          fontStyle: "italic",
+        }}>
+          <strong style={{ color: "#A78BFA" }}>Sabia que?</strong>{" "}
+          {content.sabia_que}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// ─── EducationSummary — resumo educativo geral da avaliação ────────
+function EducationSummary({
+  findings,
+  atletaNome,
+  eduMode,
+}: {
+  findings: Array<{ sev: "ok" | "alt" | "sev" }>;
+  atletaNome?: string;
+  eduMode: boolean;
+}) {
+  if (!eduMode) return null;
+  const criticos  = findings.filter((f) => f.sev === "sev").length;
+  const moderados = findings.filter((f) => f.sev === "alt").length;
+  const normais   = findings.filter((f) => f.sev === "ok").length;
+
+  const nome = atletaNome ? atletaNome : "Atleta";
+  const mensagem =
+    criticos === 0 && moderados === 0
+      ? `${atletaNome ? atletaNome + ", sua" : "Sua"} postura está bem equilibrada. Nenhum desvio significativo detectado nesta vista.`
+      : `${nome}, foram encontrados ` +
+        `${criticos > 0 ? `${criticos} ponto(s) que precisam de atenção` : ""}` +
+        `${criticos > 0 && moderados > 0 ? " e " : ""}` +
+        `${moderados > 0 ? `${moderados} ponto(s) para monitorar` : ""}` +
+        `. Clique em cada achado para entender o que significa.`;
+
+  const barras = [
+    { count: criticos,  label: "Atenção",   cor: "#EF4444" },
+    { count: moderados, label: "Monitorar", cor: "#FBBF24" },
+    { count: normais,   label: "Normal",    cor: "#34D399" },
+  ];
+
+  return (
+    <div style={{
+      marginBottom: 14, padding: "12px 14px",
+      background: "rgba(255,255,255,0.03)",
+      border: "0.5px solid rgba(255,255,255,0.08)",
+      borderRadius: 12,
+    }}>
+      <p style={{
+        fontSize: 9, fontWeight: 600,
+        color: "rgba(255,255,255,0.3)",
+        letterSpacing: "0.1em",
+        textTransform: "uppercase",
+        margin: "0 0 8px",
+      }}>RESUMO DA AVALIAÇÃO</p>
+      <p style={{
+        fontSize: 12, color: "rgba(255,255,255,0.75)",
+        margin: "0 0 10px", lineHeight: 1.6,
+      }}>{mensagem}</p>
+      <div style={{ display: "flex", gap: 6 }}>
+        {barras.map((item, i) => (
+          <div key={i} style={{
+            flex: 1, textAlign: "center",
+            padding: "6px 4px",
+            background: `${item.cor}10`,
+            border: `0.5px solid ${item.cor}25`,
+            borderRadius: 7,
+          }}>
+            <p style={{ fontSize: 16, fontWeight: 700, color: item.cor, margin: "0 0 1px" }}>{item.count}</p>
+            <p style={{ fontSize: 8, color: "rgba(255,255,255,0.35)", margin: 0 }}>{item.label}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
