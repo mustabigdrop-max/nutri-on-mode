@@ -2510,8 +2510,8 @@ function OverlayLayer({
       </div>
 
       {/* Labels e badges fixos removidos — tooltip aparece apenas no hover sobre cada landmark */}
-
-        {/* Education Mode balloons — FIX 1 (colisão + bilateral collapse) + FIX 2 (adaptativo) */}
+      <div className="absolute inset-0 pointer-events-none">
+        {/* Education Mode balloons — apenas quando eduMode ativo (toggle) */}
         {eduMode && (() => {
           const eduItems = Object.entries(lm)
             .filter(([k, p]) => PRIMARY.has(k) && isValidPoint(p) && EDU[k]);
