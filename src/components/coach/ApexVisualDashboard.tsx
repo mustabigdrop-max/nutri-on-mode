@@ -11,6 +11,7 @@ import { ApexSymbol } from "@/components/coach/ApexSymbol";
 import ApexEvolucao from "@/components/apex/ApexEvolucao";
 import ApexVisualOverlay, { LandmarkBundle, PhotoBundle, LandmarkView, calcPlumbLine } from "@/components/coach/ApexVisualOverlay";
 import ApexPostural33Overlay, { parsePostural33 } from "@/components/coach/ApexPostural33Overlay";
+import { validateAndCorrectPosturalLandmarks } from "@/lib/apexLandmarkValidator";
 import ApexTimelineTab from "@/components/coach/ApexTimelineTab";
 import ApexEvolutionTab from "@/components/coach/ApexEvolutionTab";
 
