@@ -1116,6 +1116,7 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
         </div>
 
         {/* Findings panel */}
+        {!modoMarketing && (
         <div className="space-y-2 max-h-[640px] overflow-y-auto pr-1">
           {/* MELHORIA 3 — Mini-mapa de severidade */}
           <div className="flex items-center justify-around gap-2 p-2 rounded-lg border bg-background/30">
