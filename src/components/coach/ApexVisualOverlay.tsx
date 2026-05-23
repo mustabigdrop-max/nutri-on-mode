@@ -737,16 +737,16 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
             📐 Grade simetrográfica
           </button>
           <button
-            onClick={() => setDebugMode((v) => !v)}
+            onClick={() => setModoTecnico((v) => !v)}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg border"
             style={{
-              borderColor: debugMode ? "#FF00FF" : "hsl(var(--border))",
-              color: debugMode ? "#FF00FF" : "hsl(var(--muted-foreground))",
-              background: debugMode ? "#FF00FF1A" : "transparent",
+              borderColor: modoTecnico ? "rgba(255,255,255,0.3)" : "hsl(var(--border))",
+              color: modoTecnico ? "rgba(255,255,255,0.8)" : "hsl(var(--muted-foreground))",
+              background: modoTecnico ? "rgba(255,255,255,0.12)" : "transparent",
             }}
-            title="Mostra caixas de colisão e zona da silhueta"
+            title={modoTecnico ? "Ocultar landmarks" : "Mostrar landmarks"}
           >
-            🐛 Debug
+            {modoTecnico ? "◎ Landmarks ON" : "◎ Landmarks OFF"}
           </button>
           <button
             onClick={activateManualMode}
@@ -889,7 +889,7 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
                     onSelect={setSelected}
                     eduMode={eduMode}
                     chainMode={chainMode}
-                    debugMode={debugMode}
+                    modoTecnico={modoTecnico}
                     gridMode={gridMode}
                     chains={chains}
                     plumbXOverride={manualPlumb[view]}
