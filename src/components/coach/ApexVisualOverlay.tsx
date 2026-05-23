@@ -1908,9 +1908,7 @@ function OverlayLayer({
           />
         )}
 
-
-
-
+        {modoTecnico && (<>
         {/* View-specific lines */}
         {data.view === "front" && (
           <>
