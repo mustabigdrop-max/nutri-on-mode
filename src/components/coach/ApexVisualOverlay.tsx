@@ -2247,12 +2247,10 @@ function OverlayLayer({
               vectorEffect="non-scaling-stroke"
               className={pulse ? "apex-landmark-pulse" : undefined}
               opacity={isCritical ? 1 : confStyle.opacity}
-              style={{ strokeWidth: isCritical ? (isPrimary ? 2 : 1.5) : confStyle.strokeWidth }}
-            >
-              <title>
-                {(lm as any)[q.key]?.label || q.key} — Confiança: {pct}%{conf < 0.65 ? " ⚠ detecção instável" : ""}
-              </title>
-            </circle>
+              style={{ strokeWidth: isCritical ? (isPrimary ? 2 : 1.5) : confStyle.strokeWidth, cursor: "default", pointerEvents: "auto" }}
+              onMouseEnter={() => setHoveredLm(q.key)}
+              onMouseLeave={() => setHoveredLm((h) => (h === q.key ? null : h))}
+            />
           );
         })}
 
