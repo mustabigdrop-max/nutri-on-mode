@@ -1507,6 +1507,7 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
             );
           })}
         </div>
+        )}
       </div>
 
       {/* Kinetic chain legend */}
