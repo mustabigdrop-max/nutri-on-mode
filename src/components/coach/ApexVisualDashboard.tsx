@@ -1,4 +1,5 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import { autoDetectAllViews, mergeAiWithMediaPipe, type ApexAutoDetectResult, type DetectionSource } from "@/lib/apexAutoDetect";
 import ApexPlanoMestre from "@/components/coach/ApexPlanoMestre";
 import KineticChain, { type KineticChain as KineticChainType } from "@/components/apex/KineticChain";
 import { useNavigate } from "react-router-dom";
@@ -1248,6 +1249,13 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
   });
   const [showVirilizationModal, setShowVirilizationModal] = useState(false);
   const [pendingVertexAction, setPendingVertexAction] = useState<null | (() => void)>(null);
+  // MediaPipe auto-detect bundle (sobrescreve landmarks da IA quando presente)
+  const [mpAutoBundle, setMpAutoBundle] = useState<{
+    front: ApexAutoDetectResult | null;
+    back: ApexAutoDetectResult | null;
+    lateral: ApexAutoDetectResult | null;
+  } | null>(null);
+  const [detectionSource, setDetectionSource] = useState<DetectionSource>("none");
 
   const isFemAthlete = isFeminine({ sexo: athlete?.sexo });
   const cyclePhase = feminineProfile?.ultima_menstruacao
@@ -1305,6 +1313,25 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
 
   const cat = CATEGORIES[selectedCategory];
   const hasAnyPhoto = !!(photos.front || photos.back || photos.side);
+
+  // Bundle de landmarks final = IA (parseado) + MediaPipe (autoritativo onde presente)
+  const mergedLandmarksBundle = useMemo(() => {
+    const aiBundle = analysisResult ? parseLandmarks(analysisResult) : ({} as any);
+    if (!mpAutoBundle) return aiBundle;
+    const out: any = { ...aiBundle };
+    (["front", "back", "lateral"] as const).forEach((v) => {
+      const aiView = (aiBundle as any)[v];
+      const mpRes = (mpAutoBundle as any)[v] as ApexAutoDetectResult | null;
+      if (!mpRes || mpRes.source === "none") return;
+      const { landmarks: merged } = mergeAiWithMediaPipe(aiView?.landmarks, mpRes);
+      out[v] = {
+        view: v,
+        landmarks: merged,
+        angles: aiView?.angles || {},
+      };
+    });
+    return out;
+  }, [analysisResult, mpAutoBundle]);
 
   // Fetch history for selected athlete
   const fetchHistory = useCallback(async () => {
@@ -1441,6 +1468,15 @@ Suporte em uso: ${suporte || "não informado"}`;
 
   const analyzeWithAI = useCallback(async () => {
     setLoading(true);
+    // Kick off MediaPipe auto-detect em paralelo com a chamada da IA
+    const mpPromise = autoDetectAllViews({
+      front: photos.front,
+      back: photos.back,
+      side: photos.side,
+    }).catch((e) => {
+      console.warn("[APEX] autoDetectAllViews falhou:", e);
+      return { front: null, back: null, lateral: null };
+    });
     try {
       const photoMap: { label: string; file: File | null }[] = [
         { label: "Frente", file: photos.front },
@@ -1490,12 +1526,45 @@ Suporte em uso: ${suporte || "não informado"}` : "";
       setIsDone(true);
       setActiveResultTab("scores");
 
+      // Await MediaPipe auto-detect e armazena para render/merge
+      const mpBundle = await mpPromise;
+      setMpAutoBundle(mpBundle);
+      const anyMp = ["front", "back", "lateral"].some(
+        (v) => (mpBundle as any)[v]?.source === "mediapipe+interpolated",
+      );
+      const src: DetectionSource = anyMp ? "mediapipe+interpolated" : "ai_vision_fallback";
+      setDetectionSource(src);
+      if (import.meta.env.DEV) {
+        console.log(
+          `[APEX MediaPipe] source=${src}`,
+          {
+            front: mpBundle.front && { conf: mpBundle.front.confidence, n: Object.keys(mpBundle.front.landmarks).length, corrections: mpBundle.front.corrections },
+            back: mpBundle.back && { conf: mpBundle.back.confidence, n: Object.keys(mpBundle.back.landmarks).length, corrections: mpBundle.back.corrections },
+            lateral: mpBundle.lateral && { conf: mpBundle.lateral.confidence, n: Object.keys(mpBundle.lateral.landmarks).length, corrections: mpBundle.lateral.corrections },
+          },
+        );
+      }
+
       // Persist to Supabase
       try {
         const meta = parseMeta(text);
         const farmMeta = parseFarmMeta(text);
         const segments = parseSegments(text);
-        const landmarks = parseLandmarks(text);
+        const aiLandmarks = parseLandmarks(text);
+        // Mescla MediaPipe sobre IA por vista
+        const landmarks: any = {};
+        (["front", "back", "lateral"] as const).forEach((v) => {
+          const aiView = (aiLandmarks as any)[v];
+          const mpRes = (mpBundle as any)[v] as ApexAutoDetectResult | null;
+          if (!aiView && !mpRes) return;
+          const { landmarks: merged, source } = mergeAiWithMediaPipe(aiView?.landmarks, mpRes);
+          landmarks[v] = {
+            view: v,
+            landmarks: merged,
+            angles: aiView?.angles || {},
+            detection_source: source,
+          };
+        });
         // Auditoria retrospectiva da qualidade da linha de prumo por vista
         const plumbQuality: Record<string, any> = {};
         (["front", "lateral", "back"] as const).forEach((v) => {
@@ -1744,8 +1813,25 @@ Suporte em uso: ${suporte || "não informado"}` : "";
           )}
           {activeResultTab === "visual" && (
             <div className="space-y-4">
+              {detectionSource !== "none" && (
+                <div className="flex items-center gap-2 text-xs">
+                  <span
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border"
+                    style={{
+                      borderColor: detectionSource === "mediapipe+interpolated" ? "#1D9E75" : "#B8922A",
+                      color: detectionSource === "mediapipe+interpolated" ? "#1D9E75" : "#B8922A",
+                      background: "rgba(255,255,255,0.02)",
+                    }}
+                  >
+                    {detectionSource === "mediapipe+interpolated"
+                      ? "⬡ MediaPipe + Interpolação"
+                      : "✦ Vision (fallback)"}
+                  </span>
+                  <span className="text-white/40">Landmarks detectados automaticamente — coach pode ajustar manualmente</span>
+                </div>
+              )}
               <ApexVisualOverlay
-                landmarks={parseLandmarks(analysisResult)}
+                landmarks={mergedLandmarksBundle}
                 photos={photoUrls}
                 athleteName={athlete?.nome}
                 category={cat.label}
