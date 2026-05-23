@@ -697,7 +697,7 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
       `}</style>
 
       {/* Header / toggles */}
-      <div className="flex flex-wrap items-center justify-between gap-2">
+      <div className="flex flex-wrap items-center justify-between gap-2" style={{ display: modoMarketing ? "none" : undefined }}>
         <div className="flex gap-1.5">
           {(["front", "lateral", "back"] as const).map((v) => {
             const enabled = availableViews.includes(v);
