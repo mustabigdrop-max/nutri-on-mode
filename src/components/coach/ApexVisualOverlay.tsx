@@ -349,6 +349,10 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
     try { localStorage.setItem("apex_modo_tecnico", modoTecnico.toString()); } catch {}
   }, [modoTecnico]);
 
+  useEffect(() => {
+    try { localStorage.setItem("apex_modo_marketing", modoMarketing.toString()); } catch {}
+  }, [modoMarketing]);
+
   // Aplica overrides manuais (drag livre) sobre os landmarks da IA — antes de todos os recálculos
   const data = useMemo(() => {
     const base = landmarks[view];
