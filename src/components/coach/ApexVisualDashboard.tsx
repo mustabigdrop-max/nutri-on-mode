@@ -1507,12 +1507,45 @@ Suporte em uso: ${suporte || "não informado"}` : "";
       setIsDone(true);
       setActiveResultTab("scores");
 
+      // Await MediaPipe auto-detect e armazena para render/merge
+      const mpBundle = await mpPromise;
+      setMpAutoBundle(mpBundle);
+      const anyMp = ["front", "back", "lateral"].some(
+        (v) => (mpBundle as any)[v]?.source === "mediapipe+interpolated",
+      );
+      const src: DetectionSource = anyMp ? "mediapipe+interpolated" : "ai_vision_fallback";
+      setDetectionSource(src);
+      if (import.meta.env.DEV) {
+        console.log(
+          `[APEX MediaPipe] source=${src}`,
+          {
+            front: mpBundle.front && { conf: mpBundle.front.confidence, n: Object.keys(mpBundle.front.landmarks).length, corrections: mpBundle.front.corrections },
+            back: mpBundle.back && { conf: mpBundle.back.confidence, n: Object.keys(mpBundle.back.landmarks).length, corrections: mpBundle.back.corrections },
+            lateral: mpBundle.lateral && { conf: mpBundle.lateral.confidence, n: Object.keys(mpBundle.lateral.landmarks).length, corrections: mpBundle.lateral.corrections },
+          },
+        );
+      }
+
       // Persist to Supabase
       try {
         const meta = parseMeta(text);
         const farmMeta = parseFarmMeta(text);
         const segments = parseSegments(text);
-        const landmarks = parseLandmarks(text);
+        const aiLandmarks = parseLandmarks(text);
+        // Mescla MediaPipe sobre IA por vista
+        const landmarks: any = {};
+        (["front", "back", "lateral"] as const).forEach((v) => {
+          const aiView = (aiLandmarks as any)[v];
+          const mpRes = (mpBundle as any)[v] as ApexAutoDetectResult | null;
+          if (!aiView && !mpRes) return;
+          const { landmarks: merged, source } = mergeAiWithMediaPipe(aiView?.landmarks, mpRes);
+          landmarks[v] = {
+            view: v,
+            landmarks: merged,
+            angles: aiView?.angles || {},
+            detection_source: source,
+          };
+        });
         // Auditoria retrospectiva da qualidade da linha de prumo por vista
         const plumbQuality: Record<string, any> = {};
         (["front", "lateral", "back"] as const).forEach((v) => {
