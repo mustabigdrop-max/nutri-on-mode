@@ -2005,6 +2005,24 @@ Suporte em uso: ${suporte || "não informado"}` : "";
           })()}
           {activeResultTab === "palco" && (
             <div className="space-y-3">
+              <PalcoNPCTab
+                photoUrls={{ front: photoUrls.front, side: photoUrls.side, back: photoUrls.back }}
+                initialCategoryKey={selectedCategory}
+                athlete={{
+                  nome: athlete?.nome,
+                  bf: (meta as any)?.bfEst ?? null,
+                  sexo: athlete?.sexo,
+                }}
+                achados={(parseSection(analysisResult, "POSTURA", "TREINO") || "")
+                  .split("\n")
+                  .map((l) => l.trim())
+                  .filter(Boolean)
+                  .slice(0, 12)
+                  .map((titulo) => {
+                    const m = titulo.match(/(-?\d+(?:[.,]\d+)?)\s*°/);
+                    return { titulo, graus: m ? parseFloat(m[1].replace(",", ".")) : 0 };
+                  })}
+              />
               <div className="grid md:grid-cols-2 gap-3">
                 <ScoreSide title="✅ Ganha pontos" color="#1DB87A" body={parseSection(analysisResult, "GANHA_PONTOS", "PERDE_PONTOS")} />
                 <ScoreSide title="❌ Perde pontos" color="#D94040" body={parseSection(analysisResult, "PERDE_PONTOS", "PLANO_ATAQUE")} />
