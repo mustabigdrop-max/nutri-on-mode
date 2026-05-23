@@ -1814,7 +1814,7 @@ Suporte em uso: ${suporte || "não informado"}` : "";
           {activeResultTab === "visual" && (
             <div className="space-y-4">
               <ApexVisualOverlay
-                landmarks={parseLandmarks(analysisResult)}
+                landmarks={mergedLandmarksBundle}
                 photos={photoUrls}
                 athleteName={athlete?.nome}
                 category={cat.label}
