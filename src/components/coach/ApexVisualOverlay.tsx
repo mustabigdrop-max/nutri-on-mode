@@ -2274,6 +2274,8 @@ function OverlayLayer({
                 key={`drag-${k}`}
                 onMouseDown={beginLandmarkDrag(k)}
                 onTouchStart={beginLandmarkDrag(k)}
+                onMouseEnter={() => setHoveredLm(k)}
+                onMouseLeave={() => setHoveredLm((h) => (h === k ? null : h))}
                 style={{ cursor: "move", pointerEvents: "auto", touchAction: "none" }}
               >
                 {/* hit-area generosa */}
@@ -2287,40 +2289,14 @@ function OverlayLayer({
                   vectorEffect="non-scaling-stroke"
                   style={{ strokeWidth: 0.6 }}
                 />
-                {/* círculo principal */}
+                {/* círculo principal — sem textos fixos */}
                 <circle
                   cx={p.x} cy={p.y} r={1.4}
                   fill={fill}
                   stroke={style.corBorda}
                   vectorEffect="non-scaling-stroke"
                   style={{ strokeWidth: 0.8 }}
-                >
-                  <title>{`${style.label} — ${ajustado ? "✥ ajustado manualmente" : "arraste para corrigir"}`}</title>
-                </circle>
-                {/* ícone ✥ */}
-                <text
-                  x={p.x} y={p.y + 0.55}
-                  textAnchor="middle"
-                  fill="rgba(255,255,255,0.9)"
-                  fontSize={1.4}
-                  fontWeight={700}
-                  style={{ pointerEvents: "none", userSelect: "none" }}
-                >
-                  ✥
-                </text>
-                {/* label */}
-                <text
-                  x={p.x} y={p.y - 2.6}
-                  textAnchor="middle"
-                  fill={ajustado ? style.cor : "rgba(255,255,255,0.65)"}
-                  fontSize={1.7}
-                  fontWeight={ajustado ? 700 : 500}
-                  style={{ pointerEvents: "none", userSelect: "none", paintOrder: "stroke" }}
-                  stroke="#000"
-                  strokeWidth={0.3}
-                >
-                  {style.label}{ajustado ? " ✥" : ""}
-                </text>
+                />
               </g>
             );
           });
