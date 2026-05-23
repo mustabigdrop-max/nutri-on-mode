@@ -2006,7 +2006,7 @@ Suporte em uso: ${suporte || "não informado"}` : "";
           {activeResultTab === "palco" && (
             <div className="space-y-3">
               <PalcoNPCTab
-                photoUrls={{ front: photoUrls.front, side: photoUrls.side, back: photoUrls.back }}
+                photoUrls={{ front: photoUrls.front, side: photoUrls.lateral, back: photoUrls.back }}
                 initialCategoryKey={selectedCategory}
                 athlete={{
                   nome: athlete?.nome,
