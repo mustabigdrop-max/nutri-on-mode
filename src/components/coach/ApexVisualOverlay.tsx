@@ -204,7 +204,10 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
   const [selected, setSelected] = useState<string | null>(null);
   const [hoveredLm, setHoveredLm] = useState<string | null>(null);
   const [eduMode, setEduMode] = useState<boolean>(() => {
-    try { return localStorage.getItem("apex-edu-mode") === "1"; } catch { return false; }
+    try {
+      const saved = localStorage.getItem("apex-edu-mode");
+      return saved !== null ? saved === "1" : true;
+    } catch { return true; }
   });
   const [chainMode, setChainMode] = useState<boolean>(false);
   const [modoTecnico, setModoTecnico] = useState<boolean>(() => {
@@ -1885,26 +1888,28 @@ function OverlayLayer({
             style={{ strokeWidth: 1 }}
           />
         )}
-        {/* Plumb line dinâmica — ancorada em C7/L5 (com fallback) */}
-        <line
-          x1={plumb.x1} y1={plumb.y1} x2={plumb.x2} y2={plumb.y2}
-          stroke={plumb.source === "frame-center" ? "#FBBF24" : C.white}
-          strokeOpacity={modoTecnico ? (plumb.source === "frame-center" ? 0.5 : 0.35) : 0.3}
-          strokeDasharray="2 1"
-          vectorEffect="non-scaling-stroke"
-          style={{ strokeWidth: 1.5 }}
-        />
-        {/* Linha C7-L5 discreta no modo análise (back view) */}
-        {!modoTecnico && data.view === "back" && isValidPoint(lm.spine_c7) && isValidPoint(lm.spine_l5) && (
+        {/* Plumb line dinâmica — apenas no modo técnico */}
+        {modoTecnico && (
+          <line
+            x1={plumb.x1} y1={plumb.y1} x2={plumb.x2} y2={plumb.y2}
+            stroke={plumb.source === "frame-center" ? "#FBBF24" : C.white}
+            strokeOpacity={plumb.source === "frame-center" ? 1 : 0.8}
+            strokeDasharray="8 4"
+            vectorEffect="non-scaling-stroke"
+            style={{ strokeWidth: 1.5 }}
+          />
+        )}
+        {/* Linha C7-L5 — apenas no modo técnico (back view) */}
+        {modoTecnico && data.view === "back" && isValidPoint(lm.spine_c7) && isValidPoint(lm.spine_l5) && (
           <line
             x1={lm.spine_c7.x} y1={lm.spine_c7.y}
             x2={lm.spine_l5.x} y2={lm.spine_l5.y}
             stroke="#B8922A"
-            strokeOpacity={0.2}
-            strokeDasharray="3 1.5"
+            strokeOpacity={0.85}
+            strokeDasharray="6 3"
             strokeLinecap="round"
             vectorEffect="non-scaling-stroke"
-            style={{ strokeWidth: 2 }}
+            style={{ strokeWidth: 1.5 }}
           />
         )}
 
