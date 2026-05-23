@@ -4,6 +4,7 @@ import { Download, ChevronDown, BookOpen, Link2, Eye, Crosshair } from "lucide-r
 import { toast } from "sonner";
 import { CYCLE_PHASE_INFO, type CyclePhase } from "@/lib/feminine";
 import { getEducationContent } from "@/utils/apexEducation";
+import { DraggableEducationCard } from "@/components/coach/ApexDraggableEducationCard";
 
 // ─── Types ───────────────────────────────────────────────────────
 export type Landmark = { x: number; y: number; label: string };
@@ -215,6 +216,17 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
     try { return localStorage.getItem("apex_modo_tecnico") === "true"; } catch { return false; }
   });
   const [gridMode, setGridMode] = useState<boolean>(false);
+  const [modoMarketing, setModoMarketing] = useState<boolean>(() => {
+    try { return localStorage.getItem("apex_modo_marketing") === "true"; } catch { return false; }
+  });
+  // Posições e visibilidade dos cards educativos arrastáveis (por vista + key)
+  const [cardState, setCardState] = useState<Record<string, { x: number; y: number; visible: boolean; initialized: boolean }>>({});
+  const closeEduCard = useCallback((id: string) => {
+    setCardState((prev) => ({ ...prev, [id]: { ...(prev[id] || { x: 0, y: 0, initialized: true }), visible: false } }));
+  }, []);
+  const reopenEduCard = useCallback((id: string) => {
+    setCardState((prev) => ({ ...prev, [id]: { ...(prev[id] || { x: 0, y: 0, initialized: true }), visible: true } }));
+  }, []);
   const exportRef = useRef<HTMLDivElement>(null);
   const [exporting, setExporting] = useState(false);
   const [exportingPDF, setExportingPDF] = useState(false);
@@ -336,6 +348,10 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
   useEffect(() => {
     try { localStorage.setItem("apex_modo_tecnico", modoTecnico.toString()); } catch {}
   }, [modoTecnico]);
+
+  useEffect(() => {
+    try { localStorage.setItem("apex_modo_marketing", modoMarketing.toString()); } catch {}
+  }, [modoMarketing]);
 
   // Aplica overrides manuais (drag livre) sobre os landmarks da IA — antes de todos os recálculos
   const data = useMemo(() => {
@@ -681,7 +697,7 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
       `}</style>
 
       {/* Header / toggles */}
-      <div className="flex flex-wrap items-center justify-between gap-2">
+      <div className="flex flex-wrap items-center justify-between gap-2" style={{ display: modoMarketing ? "none" : undefined }}>
         <div className="flex gap-1.5">
           {(["front", "lateral", "back"] as const).map((v) => {
             const enabled = availableViews.includes(v);
@@ -778,6 +794,18 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
             🦴 Guia
           </button>
           <button
+            onClick={() => setModoMarketing((v) => !v)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg border"
+            style={{
+              borderColor: modoMarketing ? "rgba(184,146,42,0.5)" : "hsl(var(--border))",
+              color: modoMarketing ? C.gold : "hsl(var(--muted-foreground))",
+              background: modoMarketing ? "rgba(184,146,42,0.2)" : "transparent",
+            }}
+            title="Modo Marketing — oculta UI, expande foto e mantém cards educativos arrastáveis"
+          >
+            📸 Marketing
+          </button>
+          <button
             onClick={handleExport}
             disabled={exporting}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg border hover:bg-muted disabled:opacity-50"
@@ -827,11 +855,28 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
       </div>
 
       {/* Main grid */}
-      <div ref={exportRef} className="grid lg:grid-cols-[1fr_340px] gap-4 bg-card rounded-xl p-3 border relative">
+      <div ref={exportRef} className={`grid ${modoMarketing ? "grid-cols-1" : "lg:grid-cols-[1fr_340px]"} gap-4 bg-card rounded-xl p-3 border relative`}>
         {/* Watermark / footer for export */}
         <div className="absolute top-2 right-3 text-[10px] font-bold tracking-widest opacity-60" style={{ color: C.gold }}>
           nutriON · APEX
         </div>
+
+        {/* Botão sair do Modo Marketing */}
+        {modoMarketing && (
+          <button
+            onClick={() => setModoMarketing(false)}
+            className="absolute top-2 left-2 z-30 px-3 py-1.5 text-[11px] font-bold rounded-lg border"
+            style={{
+              borderColor: "rgba(184,146,42,0.5)",
+              color: C.gold,
+              background: "rgba(10,10,18,0.75)",
+              backdropFilter: "blur(6px)",
+            }}
+            title="Sair do Modo Marketing"
+          >
+            ← Sair Marketing
+          </button>
+        )}
 
         {/* Photo + overlay */}
         <div
@@ -843,7 +888,7 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
             justifyContent: "center",
             overflow: "hidden",
             width: "100%",
-            height: 640,
+            height: modoMarketing ? "85vh" : 640,
             minHeight: 360,
           }}
         >
@@ -988,6 +1033,76 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
                     : `Reprocessar — ${quality.valid}/${quality.total}`}
                 </div>
               )}
+              {/* Cards educativos arrastáveis sobre a foto */}
+              {eduMode && findings
+                .filter((f) => f.sev !== "ok" && getEducationContent(f.key))
+                .map((f, idx) => {
+                  const stateKey = `${view}:${f.key}`;
+                  const st = cardState[stateKey];
+                  if (st && !st.visible) return null;
+                  const col = idx % 2;
+                  const row = Math.floor(idx / 2);
+                  const initialX = st?.initialized ? st.x : 16 + col * 220;
+                  const initialY = st?.initialized ? st.y : 16 + row * 240;
+                  const content = getEducationContent(f.key)!;
+                  const graus = typeof f.value === "number" ? f.value : 0;
+                  return (
+                    <DraggableEducationCard
+                      key={stateKey}
+                      achado={{ key: f.key, label: f.label, graus, sev: f.sev }}
+                      content={content}
+                      initialX={initialX}
+                      initialY={initialY}
+                      onClose={() => closeEduCard(stateKey)}
+                    />
+                  );
+                })}
+              {/* Marketing — barra de reabrir cards fechados */}
+              {eduMode && modoMarketing && (
+                <div style={{
+                  position: "absolute", bottom: 36, left: 8, right: 8,
+                  display: "flex", flexWrap: "wrap", gap: 6, justifyContent: "center",
+                  pointerEvents: "none", zIndex: 20,
+                }}>
+                  {findings
+                    .filter((f) => f.sev !== "ok" && getEducationContent(f.key))
+                    .filter((f) => cardState[`${view}:${f.key}`]?.visible === false)
+                    .map((f) => {
+                      const cor = f.sev === "sev" ? "#EF4444" : "#FBBF24";
+                      return (
+                        <button
+                          key={f.key}
+                          onClick={() => reopenEduCard(`${view}:${f.key}`)}
+                          style={{
+                            pointerEvents: "auto",
+                            padding: "4px 10px",
+                            background: `${cor}20`,
+                            border: `0.5px solid ${cor}60`,
+                            borderRadius: 6,
+                            fontSize: 10, color: cor,
+                            cursor: "pointer",
+                            backdropFilter: "blur(6px)",
+                          }}
+                        >
+                          + {f.label}
+                        </button>
+                      );
+                    })}
+                </div>
+              )}
+              {/* Watermark marketing */}
+              {modoMarketing && (
+                <div style={{
+                  position: "absolute", bottom: 8, right: 10,
+                  fontSize: 10, fontWeight: 700,
+                  color: "rgba(184,146,42,0.85)",
+                  letterSpacing: "0.12em",
+                  textShadow: "0 1px 2px rgba(0,0,0,0.6)",
+                  zIndex: 20,
+                }}>
+                  nutrion.app.br
+                </div>
+              )}
             </div>
           ) : (
             <div className="text-xs text-muted-foreground p-6 text-center">
@@ -1001,6 +1116,7 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
         </div>
 
         {/* Findings panel */}
+        {!modoMarketing && (
         <div className="space-y-2 max-h-[640px] overflow-y-auto pr-1">
           {/* MELHORIA 3 — Mini-mapa de severidade */}
           <div className="flex items-center justify-around gap-2 p-2 rounded-lg border bg-background/30">
@@ -1391,6 +1507,7 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
             );
           })}
         </div>
+        )}
       </div>
 
       {/* Kinetic chain legend */}
