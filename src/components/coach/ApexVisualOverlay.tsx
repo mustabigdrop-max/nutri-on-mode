@@ -2322,17 +2322,42 @@ function OverlayLayer({
           );
         })}
 
-        {/* Plumb line label — fonte do eixo + inclinação real */}
-        <text x={plumb.x1 + 0.6} y={2.5} fontSize={2} fill={C.white} opacity={0.6}>
-          Linha de Prumo
-          {plumb.inclinacao !== 0 ? ` ${plumb.inclinacao > 0 ? "+" : ""}${plumb.inclinacao}°` : ""}
-          {plumb.source !== "C7+L5" ? ` (${plumb.source})` : ""}
-        </text>
-        {plumb.source === "frame-center" && (
-          <text x={plumb.x1 + 0.6} y={4.8} fontSize={1.6} fill="#FBBF24" opacity={0.85}>
-            ⚠ C7/L5 não detectados — usando centro do frame
-          </text>
-        )}
+        {/* Tooltip de landmark — aparece apenas no hover */}
+        {hoveredLm && (lm as any)[hoveredLm] && isValidPoint((lm as any)[hoveredLm]) && (() => {
+          const p = (lm as any)[hoveredLm];
+          const label = (LM_DRAG_STYLE as any)[hoveredLm]?.label || p.label || hoveredLm;
+          const cor = (LM_DRAG_STYLE as any)[hoveredLm]?.cor || "#FFFFFF";
+          const goRight = p.x < 80;
+          const tx = goRight ? p.x + 2 : p.x - 2;
+          const tw = Math.max(12, label.length * 1.05 + 2);
+          return (
+            <g pointerEvents="none">
+              <rect
+                x={goRight ? tx : tx - tw}
+                y={p.y - 2.6}
+                width={tw}
+                height={3.4}
+                rx={0.8}
+                fill="rgba(10,10,15,0.92)"
+                stroke={`${cor}80`}
+                vectorEffect="non-scaling-stroke"
+                style={{ strokeWidth: 0.4 }}
+              />
+              <text
+                x={goRight ? tx + tw / 2 : tx - tw / 2}
+                y={p.y - 0.4}
+                textAnchor="middle"
+                fill={cor}
+                fontSize={1.8}
+                fontWeight={700}
+                style={{ pointerEvents: "none", userSelect: "none" }}
+              >
+                {label}
+              </text>
+            </g>
+          );
+        })()}
+
 
         {/* DEBUG: zona da silhueta (|x-50|<8) + caixas de colisão dos labels */}
         {debugMode && (
