@@ -1543,7 +1543,7 @@ const LM_DRAG_STYLE: Record<DragLmKey, { cor: string; corBorda: string; label: s
 };
 
 function OverlayLayer({
-  data, selected, onSelect, eduMode, chainMode, debugMode, gridMode, chains, plumbXOverride,
+  data, selected, onSelect, eduMode, chainMode, modoTecnico, gridMode, chains, plumbXOverride,
   manualSpine, onSpineMove, onSpineRelease, onSpineReset,
   manualLandmarks, onLandmarkMove,
 }: {
