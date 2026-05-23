@@ -1314,6 +1314,25 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
   const cat = CATEGORIES[selectedCategory];
   const hasAnyPhoto = !!(photos.front || photos.back || photos.side);
 
+  // Bundle de landmarks final = IA (parseado) + MediaPipe (autoritativo onde presente)
+  const mergedLandmarksBundle = useMemo(() => {
+    const aiBundle = analysisResult ? parseLandmarks(analysisResult) : ({} as any);
+    if (!mpAutoBundle) return aiBundle;
+    const out: any = { ...aiBundle };
+    (["front", "back", "lateral"] as const).forEach((v) => {
+      const aiView = (aiBundle as any)[v];
+      const mpRes = (mpAutoBundle as any)[v] as ApexAutoDetectResult | null;
+      if (!mpRes || mpRes.source === "none") return;
+      const { landmarks: merged } = mergeAiWithMediaPipe(aiView?.landmarks, mpRes);
+      out[v] = {
+        view: v,
+        landmarks: merged,
+        angles: aiView?.angles || {},
+      };
+    });
+    return out;
+  }, [analysisResult, mpAutoBundle]);
+
   // Fetch history for selected athlete
   const fetchHistory = useCallback(async () => {
     if (!coachId || !athlete?.id) { setHistory([]); return; }
