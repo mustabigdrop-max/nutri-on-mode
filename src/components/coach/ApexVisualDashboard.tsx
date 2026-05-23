@@ -892,7 +892,17 @@ const parseLandmarks = (text: string): LandmarkBundle => {
     try {
       const parsed = JSON.parse(m[2].trim());
       if (parsed && parsed.landmarks && parsed.angles) {
-        out[view] = { view, landmarks: parsed.landmarks, angles: parsed.angles } as LandmarkView;
+        let landmarks = parsed.landmarks;
+        // Validação pós-detecção (corrige landmarks obviamente errados)
+        if (view === "front" || view === "back") {
+          const { landmarks: fixed, correcoes, qualidade } =
+            validateAndCorrectPosturalLandmarks(landmarks);
+          if (correcoes.length > 0 && import.meta.env.DEV) {
+            console.log(`[APEX ${view}] Correções aplicadas (q=${qualidade}):`, correcoes);
+          }
+          landmarks = fixed;
+        }
+        out[view] = { view, landmarks, angles: parsed.angles } as LandmarkView;
       }
     } catch (e) {
       console.warn(`landmarks ${view} parse failed`, e);
