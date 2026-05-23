@@ -2609,6 +2609,65 @@ Suporte em uso: ${suporte || "não informado"}` : "";
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Consentimento obrigatório — risco virilizante antes de gerar farmacologia */}
+      <AlertDialog
+        open={showVirilizationModal}
+        onOpenChange={(open) => {
+          if (!open) {
+            setShowVirilizationModal(false);
+            setPendingVertexAction(null);
+          }
+        }}
+      >
+        <AlertDialogContent style={{ background: APEX.surface, border: `1px solid #D94040`, color: APEX.textPrimary, maxWidth: 540 }}>
+          <AlertDialogHeader>
+            <AlertDialogTitle style={{ color: "#FF6B6B", display: "flex", alignItems: "center", gap: 8 }}>
+              ⚠️ Consentimento de risco — Farmacologia
+            </AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div style={{ color: APEX.textSecondary, fontSize: 13, lineHeight: 1.55, marginTop: 8 }}>
+                <p style={{ marginBottom: 10 }}>
+                  Toda recomendação farmacológica gerada pelo <b style={{ color: "#A78BFA" }}>Dr. VERTEX</b> envolve compostos
+                  androgênicos/anabolizantes com <b style={{ color: "#FF6B6B" }}>risco virilizante</b> (especialmente em atletas
+                  femininas): engrossamento da voz, hirsutismo, clitoromegalia, acne severa, queda capilar, alteração do ciclo
+                  menstrual — alguns efeitos podem ser <b>irreversíveis</b>.
+                </p>
+                <p style={{ marginBottom: 10 }}>
+                  Esta ferramenta é destinada a <b>profissionais qualificados</b>. Você confirma que:
+                </p>
+                <ul style={{ paddingLeft: 18, marginBottom: 10, listStyle: "disc" }}>
+                  <li>O atleta tem <b>≥ 18 anos</b> e consentiu o uso.</li>
+                  <li>Há <b>acompanhamento médico</b> e exames laboratoriais em dia.</li>
+                  <li>Você compreende os <b>sinais de virilização</b> e interromperá o protocolo ao primeiro sinal.</li>
+                  <li>A responsabilidade clínica é <b>sua</b> — o NutriON não prescreve medicamentos.</li>
+                </ul>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              style={{ background: "transparent", color: APEX.textSecondary, border: `1px solid ${APEX.border}` }}
+              onClick={() => { setShowVirilizationModal(false); setPendingVertexAction(null); }}
+            >
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                setVirilizationRiskAccepted(true);
+                try { sessionStorage.setItem("apex_virilization_risk_accepted", "1"); } catch {}
+                setShowVirilizationModal(false);
+                const action = pendingVertexAction;
+                setPendingVertexAction(null);
+                if (action) action();
+              }}
+              style={{ background: "#D94040", color: "#fff", border: "none", fontWeight: 700 }}
+            >
+              Aceito o risco e prosseguir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
