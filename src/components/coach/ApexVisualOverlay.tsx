@@ -249,6 +249,42 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
   const resetSpinePositions = useCallback(() => {
     setManualSpinePositions(prev => ({ ...prev, [view]: {} }));
   }, [view]);
+
+  // Drag livre (X e Y) dos demais landmarks (ombros, escápulas, quadris) — por vista
+  type LandmarkKey =
+    | "shoulder_left" | "shoulder_right"
+    | "scapula_left" | "scapula_right"
+    | "hip_left" | "hip_right";
+  type ManualLandmarks = Partial<Record<LandmarkKey, { x: number; y: number }>>;
+  const [manualLandmarksPositions, setManualLandmarksPositions] = useState<Record<"front" | "lateral" | "back", ManualLandmarks>>({
+    front: {}, lateral: {}, back: {},
+  });
+  const handleLandmarkMove = useCallback((key: LandmarkKey, x: number, y: number) => {
+    setManualLandmarksPositions(prev => ({
+      ...prev,
+      [view]: { ...prev[view], [key]: { x, y } },
+    }));
+  }, [view]);
+  const resetLandmark = useCallback((key?: LandmarkKey | "C7" | "L5") => {
+    if (!key) {
+      setManualLandmarksPositions(prev => ({ ...prev, [view]: {} }));
+      setManualSpinePositions(prev => ({ ...prev, [view]: {} }));
+      return;
+    }
+    if (key === "C7") {
+      setManualSpinePositions(prev => ({ ...prev, [view]: { ...prev[view], c7: undefined } }));
+      return;
+    }
+    if (key === "L5") {
+      setManualSpinePositions(prev => ({ ...prev, [view]: { ...prev[view], l5: undefined } }));
+      return;
+    }
+    setManualLandmarksPositions(prev => {
+      const cur = { ...(prev[view] || {}) };
+      delete cur[key as LandmarkKey];
+      return { ...prev, [view]: cur };
+    });
+  }, [view]);
   const instructionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // ── Overlay rect tracking: corrige offset do object-fit: contain ──
