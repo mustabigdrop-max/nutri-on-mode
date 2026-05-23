@@ -2379,7 +2379,7 @@ function OverlayLayer({
       </>)}
       </svg>
 
-      {/* Legenda de severidade dos landmarks */}
+      {modoTecnico && (<> {/* Legenda de severidade dos landmarks */}
       <div
         className="absolute left-2 bottom-2 pointer-events-none"
         style={{
@@ -2503,8 +2503,8 @@ function OverlayLayer({
             );
           });
         })()}
-      </div>
-    </>
+      </div></>)}
+
   );
 }
 
