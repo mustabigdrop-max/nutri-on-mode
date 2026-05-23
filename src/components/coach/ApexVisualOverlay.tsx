@@ -2092,68 +2092,7 @@ function OverlayLayer({
                     >✥</text>
                   </g>
 
-                  {/* Comprimento C7-L5 (sutil, ao lado do ponto médio) */}
-                  <text
-                    x={mxS - nx * 3.2} y={myS - ny * 3.2}
-                    textAnchor="middle"
-                    fill="rgba(184,146,42,0.55)"
-                    fontSize={1.6}
-                    style={{ pointerEvents: "none", userSelect: "none" }}
-                  >
-                    {Math.round(len * 10) / 10}u
-                  </text>
-
-                  {/* Badge de ângulo C7-L5 próximo ao C7 */}
-                  <g pointerEvents="none">
-                    <rect
-                      x={c7.x + 3} y={c7.y - 2.6}
-                      width={9.5} height={3.2} rx={0.8}
-                      fill="rgba(10,10,15,0.9)"
-                      stroke={badgeColor}
-                      strokeOpacity={0.5}
-                      vectorEffect="non-scaling-stroke"
-                      style={{ strokeWidth: 0.6 }}
-                    />
-                    <text
-                      x={c7.x + 7.75} y={c7.y - 0.4}
-                      textAnchor="middle"
-                      fill={badgeColor}
-                      fontSize={1.8}
-                      fontWeight={700}
-                    >
-                      {devAbs.toFixed(1)}°
-                    </text>
-                  </g>
-
-                  {/* Conector do badge até a linha */}
-                  <line
-                    x1={mxS} y1={myS} x2={bx} y2={by}
-                    stroke={badgeColor} strokeOpacity={0.6}
-                    vectorEffect="non-scaling-stroke"
-                    style={{ strokeWidth: 0.8 }}
-                  />
-                  {/* Badge */}
-                  <rect
-                    x={bx - bw / 2} y={by - bh / 2}
-                    width={bw} height={bh} rx={1.2}
-                    fill="#000" fillOpacity={0.85}
-                    stroke={badgeColor}
-                    vectorEffect="non-scaling-stroke"
-                    style={{ strokeWidth: 1 }}
-                  />
-                  <text
-                    x={bx} y={by + 0.9}
-                    textAnchor="middle"
-                    fill={badgeColor}
-                    fontSize={2.2}
-                    fontWeight={700}
-                    style={{ pointerEvents: "none" }}
-                  >
-                    {label}
-                  </text>
-                  {/* mini-tag C7/L5 nas pontas — ✥ manual, 📐 snap automático */}
-                  <text x={c7.x + 2} y={c7.y + 0.6} fill={lineColor} fontSize={1.7} fontWeight={700} style={{ pointerEvents: "none", paintOrder: "stroke" }} stroke="#000" strokeWidth={0.4}>{(c7 as any).manual ? "C7 ✥" : (c7 as any).snapped ? "C7 📐" : "C7"}</text>
-                  <text x={l5.x + 2} y={l5.y + 0.6} fill={lineColor} fontSize={1.7} fontWeight={700} style={{ pointerEvents: "none", paintOrder: "stroke" }} stroke="#000" strokeWidth={0.4}>{(l5 as any).manual ? "L5 ✥" : (l5 as any).snapped ? "L5 📐" : "L5"}</text>
+                  {/* Apenas a linha C7→L5 + handle central; sem textos, comprimento ou badges */}
                 </g>
               );
             })()}
