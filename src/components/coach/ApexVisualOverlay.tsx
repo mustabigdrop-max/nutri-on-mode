@@ -2216,41 +2216,13 @@ function OverlayLayer({
                 {/* arc stroke */}
                 <path d={arcPath} fill="none" stroke={a.color}
                   vectorEffect="non-scaling-stroke" style={{ strokeWidth: 1.5 }} />
-                {/* angle label */}
-                <rect
-                  x={labelX - boxW / 2} y={labelY - boxH / 2}
-                  width={boxW} height={boxH}
-                  rx={0.8} ry={0.8}
-                  fill="#000000" fillOpacity={0.56}
-                />
-                <text
-                  x={labelX} y={labelY + 1}
-                  textAnchor="middle"
-                  fontFamily="ui-monospace, SFMono-Regular, Menlo, monospace"
-                  fontSize={2.4}
-                  fontWeight={700}
-                  fill={a.color}
-                >
-                  {txt}
-                </text>
+                {/* label do ângulo removido — sem badge fixo */}
               </g>
             );
           });
         })()}
 
-
-
-        {/* Connector lines from landmarks to labels */}
-        {labelPositions.map((q) => (
-          <line
-            key={`con-${q.key}`}
-            x1={q.px} y1={q.py} x2={q.lx} y2={q.ly}
-            stroke={C.white}
-            strokeOpacity={0.4}
-            vectorEffect="non-scaling-stroke"
-            style={{ strokeWidth: 1 }}
-          />
-        ))}
+        {/* Conectores landmark→label removidos: labels não existem mais */}
 
         {/* Landmarks: confiança da detecção (base) + severidade clínica (override crítico) */}
         {labelPositions.map((q) => {
