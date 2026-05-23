@@ -1813,6 +1813,23 @@ Suporte em uso: ${suporte || "não informado"}` : "";
           )}
           {activeResultTab === "visual" && (
             <div className="space-y-4">
+              {detectionSource !== "none" && (
+                <div className="flex items-center gap-2 text-xs">
+                  <span
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border"
+                    style={{
+                      borderColor: detectionSource === "mediapipe+interpolated" ? "#1D9E75" : "#B8922A",
+                      color: detectionSource === "mediapipe+interpolated" ? "#1D9E75" : "#B8922A",
+                      background: "rgba(255,255,255,0.02)",
+                    }}
+                  >
+                    {detectionSource === "mediapipe+interpolated"
+                      ? "⬡ MediaPipe + Interpolação"
+                      : "✦ Vision (fallback)"}
+                  </span>
+                  <span className="text-white/40">Landmarks detectados automaticamente — coach pode ajustar manualmente</span>
+                </div>
+              )}
               <ApexVisualOverlay
                 landmarks={mergedLandmarksBundle}
                 photos={photoUrls}
