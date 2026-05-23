@@ -326,43 +326,6 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
     try { localStorage.setItem("apex-edu-mode", eduMode ? "1" : "0"); } catch {}
   }, [eduMode]);
 
-  const data = landmarks[view];
-  const photoUrl = photos[view];
-
-  // Qualidade da linha de prumo da vista atual (para badge nos achados)
-  const currentPlumb = useMemo<PlumbLine | null>(() => {
-    if (!data?.landmarks) return null;
-    const snapped = snapToPlumbLine(data.landmarks, 100);
-    const base = calcPlumbLine(snapped as any, 100, 100);
-    const override = manualPlumb[view];
-    if (typeof override === "number") {
-      return { ...base, x1: override, x2: override, axisX: override };
-    }
-    return base;
-  }, [data, manualPlumb, view]);
-
-
-
-  // Compute scapular axis (back view) augmentation
-  const augmentedAngles = useMemo(() => {
-    if (!data) return {} as Record<string, AngleData>;
-    const out: Record<string, AngleData> = { ...data.angles };
-    if (data.view === "back") {
-      const sL = data.landmarks.scapula_left;
-      const sR = data.landmarks.scapula_right;
-      if (isValidPoint(sL) && isValidPoint(sR)) {
-        const dx = sR.x - sL.x;
-        const dy = sR.y - sL.y;
-        const angle = Math.atan2(dy, dx) * (180 / Math.PI);
-        out.scapular_axis_tilt = {
-          value: Math.round(angle * 10) / 10,
-          unit: "graus",
-          normal: "<2°",
-          finding: Math.abs(angle) > 2
-            ? `Assimetria escapular indica possível inibição do serrátil anterior ${angle > 0 ? "E" : "D"} e dominância do trapézio superior ${angle > 0 ? "D" : "E"}.`
-            : "Eixo escapular dentro do normal.",
-        };
-      }
   // Aplica overrides manuais (drag livre) sobre os landmarks da IA — antes de todos os recálculos
   const data = useMemo(() => {
     const base = landmarks[view];
