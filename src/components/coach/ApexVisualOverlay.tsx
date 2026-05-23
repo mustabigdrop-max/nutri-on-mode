@@ -1590,6 +1590,7 @@ function OverlayLayer({
     try { return !localStorage.getItem(ONBOARDING_KEY); } catch { return false; }
   });
   const [hoveredSpine, setHoveredSpine] = useState<null | "c7" | "l5">(null);
+  const [hoveredLm, setHoveredLm] = useState<string | null>(null);
   const dismissOnboarding = useCallback(() => {
     try { localStorage.setItem(ONBOARDING_KEY, "true"); } catch {}
     setShowOnboarding(false);
