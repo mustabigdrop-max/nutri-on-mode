@@ -363,17 +363,96 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
             : "Eixo escapular dentro do normal.",
         };
       }
+  // Aplica overrides manuais (drag livre) sobre os landmarks da IA — antes de todos os recálculos
+  const data = useMemo(() => {
+    const base = landmarks[view];
+    if (!base) return base;
+    const overrides = manualLandmarksPositions[view] || {};
+    const spine = manualSpinePositions[view] || {};
+    const hasAny = Object.keys(overrides).length > 0 || !!spine.c7 || !!spine.l5;
+    if (!hasAny) return base;
+    const mergedLm: any = { ...base.landmarks };
+    (Object.keys(overrides) as LandmarkKey[]).forEach(k => {
+      const ov = overrides[k]!;
+      mergedLm[k] = { ...(mergedLm[k] || {}), x: ov.x, y: ov.y, manual: true };
+    });
+    if (spine.c7) mergedLm.spine_c7 = { ...(mergedLm.spine_c7 || {}), x: spine.c7.x, y: spine.c7.y, manual: true };
+    if (spine.l5) mergedLm.spine_l5 = { ...(mergedLm.spine_l5 || {}), x: spine.l5.x, y: spine.l5.y, manual: true };
+    return { ...base, landmarks: mergedLm };
+  }, [landmarks, view, manualLandmarksPositions, manualSpinePositions]);
+
+  const photoUrl = photos[view];
+
+  // Qualidade da linha de prumo da vista atual (para badge nos achados)
+  const currentPlumb = useMemo<PlumbLine | null>(() => {
+    if (!data?.landmarks) return null;
+    const snapped = snapToPlumbLine(data.landmarks, 100);
+    const base = calcPlumbLine(snapped as any, 100, 100);
+    const override = manualPlumb[view];
+    if (typeof override === "number") {
+      return { ...base, x1: override, x2: override, axisX: override };
+    }
+    return base;
+  }, [data, manualPlumb, view]);
+
+
+
+  // Compute scapular axis (back view) augmentation + recompute symmetry angles a partir dos landmarks (pode ter overrides manuais)
+  const augmentedAngles = useMemo(() => {
+    if (!data) return {} as Record<string, AngleData>;
+    const out: Record<string, AngleData> = { ...data.angles };
+    const lm0: any = data.landmarks;
+
+    // Recompute simétrico — qualquer landmark ajustado manualmente reflete aqui
+    const tiltDeg = (a: any, b: any) => {
+      if (!isValidPoint(a) || !isValidPoint(b)) return null;
+      return Math.atan2(b.y - a.y, b.x - a.x) * (180 / Math.PI);
+    };
+    if (data.view === "front" || data.view === "back") {
+      const shoT = tiltDeg(lm0.shoulder_left, lm0.shoulder_right);
+      if (shoT !== null) {
+        const v = Math.round(shoT * 10) / 10;
+        const key = data.view === "front" ? "shoulder_tilt" : "shoulder_asymmetry";
+        out[key] = {
+          ...(out[key] || { unit: "graus", normal: "<1°" }),
+          value: v,
+          finding: Math.abs(v) > 1 ? `Desnível de ombros ${Math.abs(v).toFixed(1)}° (${v > 0 ? "D abaixo" : "E abaixo"}).` : "Ombros nivelados.",
+        };
+      }
+      const hipT = tiltDeg(lm0.hip_left, lm0.hip_right);
+      if (hipT !== null) {
+        const v = Math.round(hipT * 10) / 10;
+        const key = data.view === "front" ? "hip_tilt" : "hip_asymmetry";
+        out[key] = {
+          ...(out[key] || { unit: "graus", normal: "<1°" }),
+          value: v,
+          finding: Math.abs(v) > 1 ? `Báscula pélvica ${Math.abs(v).toFixed(1)}° (${v > 0 ? "D abaixo" : "E abaixo"}).` : "Pelve nivelada.",
+        };
+      }
+    }
+    if (data.view === "back") {
+      const sL = lm0.scapula_left;
+      const sR = lm0.scapula_right;
+      if (isValidPoint(sL) && isValidPoint(sR)) {
+        const dx = sR.x - sL.x;
+        const dy = sR.y - sL.y;
+        const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+        out.scapular_axis_tilt = {
+          value: Math.round(angle * 10) / 10,
+          unit: "graus",
+          normal: "<2°",
+          finding: Math.abs(angle) > 2
+            ? `Assimetria escapular indica possível inibição do serrátil anterior ${angle > 0 ? "E" : "D"} e dominância do trapézio superior ${angle > 0 ? "D" : "E"}.`
+            : "Eixo escapular dentro do normal.",
+        };
+      }
       // FIX 3 — Spine deviation calculado de C7→L5 (com snap anatômico)
-      // C7 e L5 são âncoras do prumo: sem landmarks torácicos intermediários,
-      // o desvio lateral é 0° por definição. Escoliose funcional só pode ser
-      // medida com pontos torácicos intermediários (T1–T12).
       const snappedSpine = snapToPlumbLine(data.landmarks, 100);
       const c7 = snappedSpine.spine_c7;
       const l5 = snappedSpine.spine_l5;
       if (isValidPoint(c7) && isValidPoint(l5)) {
         const dx = l5.x - c7.x;
         const dy = l5.y - c7.y;
-        // ângulo em relação à vertical (linha perfeita = 0°)
         const deg = Math.atan2(dx, dy) * (180 / Math.PI);
         const v = Math.round(deg * 10) / 10;
         out.spinal_lateral_deviation = {
