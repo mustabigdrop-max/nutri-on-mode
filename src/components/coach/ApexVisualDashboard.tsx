@@ -30,6 +30,7 @@ import { isFeminine, getCyclePhase, getCycleDayCount, normalizeFeminineCategory,
 import { ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Legend, Tooltip as RTooltip } from "recharts";
 import React from "react";
 import ApexMarkdown from "@/components/apex/ApexMarkdown";
+import PalcoNPCTab from "@/components/coach/PalcoNPCTab";
 
 // ─── APEX Elite design tokens ───────────────────────────────────
 const APEX = {
