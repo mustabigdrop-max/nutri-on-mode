@@ -1851,7 +1851,14 @@ Suporte em uso: ${suporte || "não informado"}` : "";
                 {/* Trigger Dr. VERTEX v4.0 (JSON estruturado, PhD-level) */}
                 <div className="flex items-center gap-2 flex-wrap">
                   <button
-                    onClick={runVertexV4}
+                    onClick={() => {
+                      if (virilizationRiskAccepted) {
+                        runVertexV4();
+                      } else {
+                        setPendingVertexAction(() => () => runVertexV4());
+                        setShowVirilizationModal(true);
+                      }
+                    }}
                     disabled={vertexV4Loading}
                     className="px-3 py-2 text-[11px] font-bold rounded-lg border transition-all disabled:opacity-50"
                     style={{
