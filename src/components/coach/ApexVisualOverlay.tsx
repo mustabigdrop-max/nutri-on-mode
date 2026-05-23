@@ -207,7 +207,9 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
     try { return localStorage.getItem("apex-edu-mode") === "1"; } catch { return false; }
   });
   const [chainMode, setChainMode] = useState<boolean>(false);
-  const [debugMode, setDebugMode] = useState<boolean>(false);
+  const [modoTecnico, setModoTecnico] = useState<boolean>(() => {
+    try { return localStorage.getItem("apex_modo_tecnico") === "true"; } catch { return false; }
+  });
   const [gridMode, setGridMode] = useState<boolean>(false);
   const exportRef = useRef<HTMLDivElement>(null);
   const [exporting, setExporting] = useState(false);
@@ -326,6 +328,10 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
   useEffect(() => {
     try { localStorage.setItem("apex-edu-mode", eduMode ? "1" : "0"); } catch {}
   }, [eduMode]);
+
+  useEffect(() => {
+    try { localStorage.setItem("apex_modo_tecnico", modoTecnico.toString()); } catch {}
+  }, [modoTecnico]);
 
   // Aplica overrides manuais (drag livre) sobre os landmarks da IA — antes de todos os recálculos
   const data = useMemo(() => {
