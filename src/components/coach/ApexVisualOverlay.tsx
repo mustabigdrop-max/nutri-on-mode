@@ -794,6 +794,18 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
             🦴 Guia
           </button>
           <button
+            onClick={() => setModoMarketing((v) => !v)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg border"
+            style={{
+              borderColor: modoMarketing ? "rgba(184,146,42,0.5)" : "hsl(var(--border))",
+              color: modoMarketing ? C.gold : "hsl(var(--muted-foreground))",
+              background: modoMarketing ? "rgba(184,146,42,0.2)" : "transparent",
+            }}
+            title="Modo Marketing — oculta UI, expande foto e mantém cards educativos arrastáveis"
+          >
+            📸 Marketing
+          </button>
+          <button
             onClick={handleExport}
             disabled={exporting}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg border hover:bg-muted disabled:opacity-50"
