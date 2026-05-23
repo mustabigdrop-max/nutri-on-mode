@@ -2376,6 +2376,7 @@ function OverlayLayer({
         })()}
 
 
+      </>)}
       </svg>
 
       {/* Legenda de severidade dos landmarks */}
