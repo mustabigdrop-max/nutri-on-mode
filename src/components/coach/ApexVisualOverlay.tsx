@@ -1033,6 +1033,76 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
                     : `Reprocessar — ${quality.valid}/${quality.total}`}
                 </div>
               )}
+              {/* Cards educativos arrastáveis sobre a foto */}
+              {eduMode && findings
+                .filter((f) => f.sev !== "ok" && getEducationContent(f.key))
+                .map((f, idx) => {
+                  const stateKey = `${view}:${f.key}`;
+                  const st = cardState[stateKey];
+                  if (st && !st.visible) return null;
+                  const col = idx % 2;
+                  const row = Math.floor(idx / 2);
+                  const initialX = st?.initialized ? st.x : 16 + col * 220;
+                  const initialY = st?.initialized ? st.y : 16 + row * 240;
+                  const content = getEducationContent(f.key)!;
+                  const graus = typeof f.value === "number" ? f.value : 0;
+                  return (
+                    <DraggableEducationCard
+                      key={stateKey}
+                      achado={{ key: f.key, label: f.label, graus, sev: f.sev }}
+                      content={content}
+                      initialX={initialX}
+                      initialY={initialY}
+                      onClose={() => closeEduCard(stateKey)}
+                    />
+                  );
+                })}
+              {/* Marketing — barra de reabrir cards fechados */}
+              {eduMode && modoMarketing && (
+                <div style={{
+                  position: "absolute", bottom: 36, left: 8, right: 8,
+                  display: "flex", flexWrap: "wrap", gap: 6, justifyContent: "center",
+                  pointerEvents: "none", zIndex: 20,
+                }}>
+                  {findings
+                    .filter((f) => f.sev !== "ok" && getEducationContent(f.key))
+                    .filter((f) => cardState[`${view}:${f.key}`]?.visible === false)
+                    .map((f) => {
+                      const cor = f.sev === "sev" ? "#EF4444" : "#FBBF24";
+                      return (
+                        <button
+                          key={f.key}
+                          onClick={() => reopenEduCard(`${view}:${f.key}`)}
+                          style={{
+                            pointerEvents: "auto",
+                            padding: "4px 10px",
+                            background: `${cor}20`,
+                            border: `0.5px solid ${cor}60`,
+                            borderRadius: 6,
+                            fontSize: 10, color: cor,
+                            cursor: "pointer",
+                            backdropFilter: "blur(6px)",
+                          }}
+                        >
+                          + {f.label}
+                        </button>
+                      );
+                    })}
+                </div>
+              )}
+              {/* Watermark marketing */}
+              {modoMarketing && (
+                <div style={{
+                  position: "absolute", bottom: 8, right: 10,
+                  fontSize: 10, fontWeight: 700,
+                  color: "rgba(184,146,42,0.85)",
+                  letterSpacing: "0.12em",
+                  textShadow: "0 1px 2px rgba(0,0,0,0.6)",
+                  zIndex: 20,
+                }}>
+                  nutrion.app.br
+                </div>
+              )}
             </div>
           ) : (
             <div className="text-xs text-muted-foreground p-6 text-center">
