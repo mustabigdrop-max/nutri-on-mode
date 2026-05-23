@@ -1249,6 +1249,13 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
   });
   const [showVirilizationModal, setShowVirilizationModal] = useState(false);
   const [pendingVertexAction, setPendingVertexAction] = useState<null | (() => void)>(null);
+  // MediaPipe auto-detect bundle (sobrescreve landmarks da IA quando presente)
+  const [mpAutoBundle, setMpAutoBundle] = useState<{
+    front: ApexAutoDetectResult | null;
+    back: ApexAutoDetectResult | null;
+    lateral: ApexAutoDetectResult | null;
+  } | null>(null);
+  const [detectionSource, setDetectionSource] = useState<DetectionSource>("none");
 
   const isFemAthlete = isFeminine({ sexo: athlete?.sexo });
   const cyclePhase = feminineProfile?.ultima_menstruacao
