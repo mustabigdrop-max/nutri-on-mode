@@ -1889,11 +1889,24 @@ function OverlayLayer({
         <line
           x1={plumb.x1} y1={plumb.y1} x2={plumb.x2} y2={plumb.y2}
           stroke={plumb.source === "frame-center" ? "#FBBF24" : C.white}
-          strokeOpacity={plumb.source === "frame-center" ? 0.5 : 0.35}
+          strokeOpacity={modoTecnico ? (plumb.source === "frame-center" ? 0.5 : 0.35) : 0.3}
           strokeDasharray="2 1"
           vectorEffect="non-scaling-stroke"
           style={{ strokeWidth: 1.5 }}
         />
+        {/* Linha C7-L5 discreta no modo análise (back view) */}
+        {!modoTecnico && data.view === "back" && isValidPoint(lm.spine_c7) && isValidPoint(lm.spine_l5) && (
+          <line
+            x1={lm.spine_c7.x} y1={lm.spine_c7.y}
+            x2={lm.spine_l5.x} y2={lm.spine_l5.y}
+            stroke="#B8922A"
+            strokeOpacity={0.2}
+            strokeDasharray="3 1.5"
+            strokeLinecap="round"
+            vectorEffect="non-scaling-stroke"
+            style={{ strokeWidth: 2 }}
+          />
+        )}
 
 
 
