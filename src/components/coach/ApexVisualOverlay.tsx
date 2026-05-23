@@ -202,6 +202,7 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
   );
   const [view, setView] = useState<"front" | "lateral" | "back">(availableViews[0] || "front");
   const [selected, setSelected] = useState<string | null>(null);
+  const [hoveredLm, setHoveredLm] = useState<string | null>(null);
   const [eduMode, setEduMode] = useState<boolean>(() => {
     try { return localStorage.getItem("apex-edu-mode") === "1"; } catch { return false; }
   });
@@ -1589,6 +1590,7 @@ function OverlayLayer({
     try { return !localStorage.getItem(ONBOARDING_KEY); } catch { return false; }
   });
   const [hoveredSpine, setHoveredSpine] = useState<null | "c7" | "l5">(null);
+  const [hoveredLm, setHoveredLm] = useState<string | null>(null);
   const dismissOnboarding = useCallback(() => {
     try { localStorage.setItem(ONBOARDING_KEY, "true"); } catch {}
     setShowOnboarding(false);
@@ -2091,68 +2093,7 @@ function OverlayLayer({
                     >✥</text>
                   </g>
 
-                  {/* Comprimento C7-L5 (sutil, ao lado do ponto médio) */}
-                  <text
-                    x={mxS - nx * 3.2} y={myS - ny * 3.2}
-                    textAnchor="middle"
-                    fill="rgba(184,146,42,0.55)"
-                    fontSize={1.6}
-                    style={{ pointerEvents: "none", userSelect: "none" }}
-                  >
-                    {Math.round(len * 10) / 10}u
-                  </text>
-
-                  {/* Badge de ângulo C7-L5 próximo ao C7 */}
-                  <g pointerEvents="none">
-                    <rect
-                      x={c7.x + 3} y={c7.y - 2.6}
-                      width={9.5} height={3.2} rx={0.8}
-                      fill="rgba(10,10,15,0.9)"
-                      stroke={badgeColor}
-                      strokeOpacity={0.5}
-                      vectorEffect="non-scaling-stroke"
-                      style={{ strokeWidth: 0.6 }}
-                    />
-                    <text
-                      x={c7.x + 7.75} y={c7.y - 0.4}
-                      textAnchor="middle"
-                      fill={badgeColor}
-                      fontSize={1.8}
-                      fontWeight={700}
-                    >
-                      {devAbs.toFixed(1)}°
-                    </text>
-                  </g>
-
-                  {/* Conector do badge até a linha */}
-                  <line
-                    x1={mxS} y1={myS} x2={bx} y2={by}
-                    stroke={badgeColor} strokeOpacity={0.6}
-                    vectorEffect="non-scaling-stroke"
-                    style={{ strokeWidth: 0.8 }}
-                  />
-                  {/* Badge */}
-                  <rect
-                    x={bx - bw / 2} y={by - bh / 2}
-                    width={bw} height={bh} rx={1.2}
-                    fill="#000" fillOpacity={0.85}
-                    stroke={badgeColor}
-                    vectorEffect="non-scaling-stroke"
-                    style={{ strokeWidth: 1 }}
-                  />
-                  <text
-                    x={bx} y={by + 0.9}
-                    textAnchor="middle"
-                    fill={badgeColor}
-                    fontSize={2.2}
-                    fontWeight={700}
-                    style={{ pointerEvents: "none" }}
-                  >
-                    {label}
-                  </text>
-                  {/* mini-tag C7/L5 nas pontas — ✥ manual, 📐 snap automático */}
-                  <text x={c7.x + 2} y={c7.y + 0.6} fill={lineColor} fontSize={1.7} fontWeight={700} style={{ pointerEvents: "none", paintOrder: "stroke" }} stroke="#000" strokeWidth={0.4}>{(c7 as any).manual ? "C7 ✥" : (c7 as any).snapped ? "C7 📐" : "C7"}</text>
-                  <text x={l5.x + 2} y={l5.y + 0.6} fill={lineColor} fontSize={1.7} fontWeight={700} style={{ pointerEvents: "none", paintOrder: "stroke" }} stroke="#000" strokeWidth={0.4}>{(l5 as any).manual ? "L5 ✥" : (l5 as any).snapped ? "L5 📐" : "L5"}</text>
+                  {/* Apenas a linha C7→L5 + handle central; sem textos, comprimento ou badges */}
                 </g>
               );
             })()}
@@ -2276,41 +2217,13 @@ function OverlayLayer({
                 {/* arc stroke */}
                 <path d={arcPath} fill="none" stroke={a.color}
                   vectorEffect="non-scaling-stroke" style={{ strokeWidth: 1.5 }} />
-                {/* angle label */}
-                <rect
-                  x={labelX - boxW / 2} y={labelY - boxH / 2}
-                  width={boxW} height={boxH}
-                  rx={0.8} ry={0.8}
-                  fill="#000000" fillOpacity={0.56}
-                />
-                <text
-                  x={labelX} y={labelY + 1}
-                  textAnchor="middle"
-                  fontFamily="ui-monospace, SFMono-Regular, Menlo, monospace"
-                  fontSize={2.4}
-                  fontWeight={700}
-                  fill={a.color}
-                >
-                  {txt}
-                </text>
+                {/* label do ângulo removido — sem badge fixo */}
               </g>
             );
           });
         })()}
 
-
-
-        {/* Connector lines from landmarks to labels */}
-        {labelPositions.map((q) => (
-          <line
-            key={`con-${q.key}`}
-            x1={q.px} y1={q.py} x2={q.lx} y2={q.ly}
-            stroke={C.white}
-            strokeOpacity={0.4}
-            vectorEffect="non-scaling-stroke"
-            style={{ strokeWidth: 1 }}
-          />
-        ))}
+        {/* Conectores landmark→label removidos: labels não existem mais */}
 
         {/* Landmarks: confiança da detecção (base) + severidade clínica (override crítico) */}
         {labelPositions.map((q) => {
@@ -2334,12 +2247,10 @@ function OverlayLayer({
               vectorEffect="non-scaling-stroke"
               className={pulse ? "apex-landmark-pulse" : undefined}
               opacity={isCritical ? 1 : confStyle.opacity}
-              style={{ strokeWidth: isCritical ? (isPrimary ? 2 : 1.5) : confStyle.strokeWidth }}
-            >
-              <title>
-                {(lm as any)[q.key]?.label || q.key} — Confiança: {pct}%{conf < 0.65 ? " ⚠ detecção instável" : ""}
-              </title>
-            </circle>
+              style={{ strokeWidth: isCritical ? (isPrimary ? 2 : 1.5) : confStyle.strokeWidth, cursor: "default", pointerEvents: "auto" }}
+              onMouseEnter={() => setHoveredLm(q.key)}
+              onMouseLeave={() => setHoveredLm((h) => (h === q.key ? null : h))}
+            />
           );
         })}
 
@@ -2362,6 +2273,8 @@ function OverlayLayer({
                 key={`drag-${k}`}
                 onMouseDown={beginLandmarkDrag(k)}
                 onTouchStart={beginLandmarkDrag(k)}
+                onMouseEnter={() => setHoveredLm(k)}
+                onMouseLeave={() => setHoveredLm((h) => (h === k ? null : h))}
                 style={{ cursor: "move", pointerEvents: "auto", touchAction: "none" }}
               >
                 {/* hit-area generosa */}
@@ -2375,40 +2288,14 @@ function OverlayLayer({
                   vectorEffect="non-scaling-stroke"
                   style={{ strokeWidth: 0.6 }}
                 />
-                {/* círculo principal */}
+                {/* círculo principal — sem textos fixos */}
                 <circle
                   cx={p.x} cy={p.y} r={1.4}
                   fill={fill}
                   stroke={style.corBorda}
                   vectorEffect="non-scaling-stroke"
                   style={{ strokeWidth: 0.8 }}
-                >
-                  <title>{`${style.label} — ${ajustado ? "✥ ajustado manualmente" : "arraste para corrigir"}`}</title>
-                </circle>
-                {/* ícone ✥ */}
-                <text
-                  x={p.x} y={p.y + 0.55}
-                  textAnchor="middle"
-                  fill="rgba(255,255,255,0.9)"
-                  fontSize={1.4}
-                  fontWeight={700}
-                  style={{ pointerEvents: "none", userSelect: "none" }}
-                >
-                  ✥
-                </text>
-                {/* label */}
-                <text
-                  x={p.x} y={p.y - 2.6}
-                  textAnchor="middle"
-                  fill={ajustado ? style.cor : "rgba(255,255,255,0.65)"}
-                  fontSize={1.7}
-                  fontWeight={ajustado ? 700 : 500}
-                  style={{ pointerEvents: "none", userSelect: "none", paintOrder: "stroke" }}
-                  stroke="#000"
-                  strokeWidth={0.3}
-                >
-                  {style.label}{ajustado ? " ✥" : ""}
-                </text>
+                />
               </g>
             );
           });
@@ -2435,17 +2322,42 @@ function OverlayLayer({
           );
         })}
 
-        {/* Plumb line label — fonte do eixo + inclinação real */}
-        <text x={plumb.x1 + 0.6} y={2.5} fontSize={2} fill={C.white} opacity={0.6}>
-          Linha de Prumo
-          {plumb.inclinacao !== 0 ? ` ${plumb.inclinacao > 0 ? "+" : ""}${plumb.inclinacao}°` : ""}
-          {plumb.source !== "C7+L5" ? ` (${plumb.source})` : ""}
-        </text>
-        {plumb.source === "frame-center" && (
-          <text x={plumb.x1 + 0.6} y={4.8} fontSize={1.6} fill="#FBBF24" opacity={0.85}>
-            ⚠ C7/L5 não detectados — usando centro do frame
-          </text>
-        )}
+        {/* Tooltip de landmark — aparece apenas no hover */}
+        {hoveredLm && (lm as any)[hoveredLm] && isValidPoint((lm as any)[hoveredLm]) && (() => {
+          const p = (lm as any)[hoveredLm];
+          const label = (LM_DRAG_STYLE as any)[hoveredLm]?.label || p.label || hoveredLm;
+          const cor = (LM_DRAG_STYLE as any)[hoveredLm]?.cor || "#FFFFFF";
+          const goRight = p.x < 80;
+          const tx = goRight ? p.x + 2 : p.x - 2;
+          const tw = Math.max(12, label.length * 1.05 + 2);
+          return (
+            <g pointerEvents="none">
+              <rect
+                x={goRight ? tx : tx - tw}
+                y={p.y - 2.6}
+                width={tw}
+                height={3.4}
+                rx={0.8}
+                fill="rgba(10,10,15,0.92)"
+                stroke={`${cor}80`}
+                vectorEffect="non-scaling-stroke"
+                style={{ strokeWidth: 0.4 }}
+              />
+              <text
+                x={goRight ? tx + tw / 2 : tx - tw / 2}
+                y={p.y - 0.4}
+                textAnchor="middle"
+                fill={cor}
+                fontSize={1.8}
+                fontWeight={700}
+                style={{ pointerEvents: "none", userSelect: "none" }}
+              >
+                {label}
+              </text>
+            </g>
+          );
+        })()}
+
 
         {/* DEBUG: zona da silhueta (|x-50|<8) + caixas de colisão dos labels */}
         {debugMode && (
@@ -2508,122 +2420,9 @@ function OverlayLayer({
         <div><span style={{ color: "#E24B4A" }}>●</span> Crítico (pulsa)</div>
       </div>
 
-      {/* HTML labels layer — crisp, with background */}
+      {/* Labels e badges fixos removidos — tooltip aparece apenas no hover sobre cada landmark */}
       <div className="absolute inset-0 pointer-events-none">
-        {labelPositions.map((q) => (
-          <div
-            key={`lbl-${q.key}`}
-            className="absolute text-[10px] font-semibold whitespace-nowrap"
-            style={{
-              left: `${q.lx}%`,
-              top: `${q.ly}%`,
-              transform: q.lx > 50 ? "translate(0, -50%)" : "translate(-100%, -50%)",
-              background: "rgba(0,0,0,0.6)",
-              color: PRIMARY.has(q.key) ? C.gold : C.white,
-              padding: "1px 5px",
-              borderRadius: 4,
-              border: `1px solid ${PRIMARY.has(q.key) ? C.gold : "rgba(255,255,255,0.3)"}`,
-            }}
-            title={lm[q.key].label}
-          >
-            {lm[q.key].label}
-          </div>
-        ))}
-
-        {/* Angle badges — adaptativos com colisão + estilo 0° confirmado */}
-        {(() => {
-          const items = Object.entries(ang)
-            .map(([k, a]) => {
-              const anchor = anchorForAngle(data.view, k, lm);
-              if (!anchor) return null;
-              return { k, a, anchor };
-            })
-            .filter(Boolean) as { k: string; a: AngleData; anchor: { x: number; y: number } }[];
-
-          const placed: { x: number; y: number }[] = [];
-          const BW = 14, BH = 4.5;
-
-          return items.map(({ k, a, anchor }, idx) => {
-            const isZeroConfirmed = a.value === 0 && (a.normal?.includes("0") || a.normal === "0°");
-            const isUnknown = !Number.isFinite(a.value);
-            const sev = severityOf(a.value, a.normal);
-            const color = isZeroConfirmed ? "#9CA3AF" : isUnknown ? "#6B7280" : colorBySev(sev);
-            const unit = a.unit?.includes("graus") ? "°" : a.unit?.includes("cm") ? "cm" : a.unit?.includes("mm") ? "mm" : "";
-            const arrow = isZeroConfirmed || isUnknown ? "" : directionArrow(k, a.value);
-            const active = selected === k;
-
-            // FIX 2 — direção adaptativa
-            let bx = anchor.x, by = anchor.y;
-            let transform = "translate(-50%, -50%)";
-            if (anchor.y > 70) { by = anchor.y - 7; transform = "translate(-50%, -100%)"; }
-            else if (anchor.y < 30) { by = anchor.y + 7; transform = "translate(-50%, 0)"; }
-            else if (anchor.x < 20) { bx = anchor.x + 9; transform = "translate(0, -50%)"; }
-            else if (anchor.x > 80) { bx = anchor.x - 9; transform = "translate(-100%, -50%)"; }
-            else {
-              const ext = anchor.x < 50 ? -1 : 1;
-              bx = anchor.x + ext * 9;
-              transform = ext > 0 ? "translate(0, -50%)" : "translate(-100%, -50%)";
-            }
-
-            // FIX 1 — offset progressivo de colisão
-            let attempts = 0;
-            while (placed.some((p) => Math.abs(p.x - bx) < BW && Math.abs(p.y - by) < BH) && attempts < 8) {
-              by += attempts % 2 === 0 ? BH + 0.5 : -(BH + 0.5);
-              attempts++;
-            }
-            bx = Math.max(2, Math.min(98, bx));
-            by = Math.max(3, Math.min(97, by));
-            placed.push({ x: bx, y: by });
-
-            const text = isUnknown ? "—" : isZeroConfirmed ? "0° ✓" : `${a.value}${unit}${arrow}`;
-            const borderStyle = isUnknown ? "dashed" : "solid";
-            const bg = isZeroConfirmed ? "#2A2A2A" : "rgba(0,0,0,0.78)";
-
-            return (
-              <div key={`ang-wrap-${k}`}>
-                {/* Linha conectora badge → âncora */}
-                <svg
-                  className="absolute inset-0 pointer-events-none"
-                  viewBox="0 0 100 100"
-                  preserveAspectRatio="none"
-                  style={{ overflow: "visible" }}
-                >
-                  <line
-                    x1={anchor.x} y1={anchor.y} x2={bx} y2={by}
-                    stroke={C.white} strokeOpacity={0.4}
-                    vectorEffect="non-scaling-stroke"
-                    style={{ strokeWidth: 1 }}
-                  />
-                </svg>
-                <div style={{ position: "absolute", left: `${bx}%`, top: `${by}%`, transform, pointerEvents: "auto" }}>
-                  <button
-                    onClick={() => onSelect(active ? "" : k)}
-                    className="text-[10px] font-mono font-bold transition-all"
-                    style={{
-                      background: bg,
-                      color,
-                      border: `1.5px ${borderStyle} ${color}`,
-                      borderRadius: 4,
-                      padding: "2px 6px",
-                      boxShadow: active ? `0 0 8px ${color}` : "none",
-                    }}
-                  >
-                    {text}
-                  </button>
-                  {active && (
-                    <div className="mt-1 text-[10px] rounded-md p-2 shadow-xl max-w-[220px]" style={{ background: C.dark, color: C.white, border: `1px solid ${color}` }}>
-                      <div className="font-bold mb-1" style={{ color }}>{FRIENDLY[k] || k}</div>
-                      <div className="opacity-70">Normal: {a.normal}</div>
-                      <div className="mt-1 opacity-90">{a.finding}</div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            );
-          });
-        })()}
-
-        {/* Education Mode balloons — FIX 1 (colisão + bilateral collapse) + FIX 2 (adaptativo) */}
+        {/* Education Mode balloons — apenas quando eduMode ativo (toggle) */}
         {eduMode && (() => {
           const eduItems = Object.entries(lm)
             .filter(([k, p]) => PRIMARY.has(k) && isValidPoint(p) && EDU[k]);

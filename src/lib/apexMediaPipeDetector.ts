@@ -40,9 +40,9 @@ async function getDetector(): Promise<PoseLandmarker> {
         baseOptions: { modelAssetPath: modelPath, delegate: "GPU" },
         runningMode: "IMAGE",
         numPoses: 1,
-        minPoseDetectionConfidence: 0.5,
-        minPosePresenceConfidence: 0.5,
-        minTrackingConfidence: 0.5,
+        minPoseDetectionConfidence: 0.3,
+        minPosePresenceConfidence: 0.3,
+        minTrackingConfidence: 0.3,
       });
     } catch (gpuErr) {
       console.warn("[APEX MP] GPU falhou, usando CPU:", gpuErr);
@@ -50,6 +50,9 @@ async function getDetector(): Promise<PoseLandmarker> {
         baseOptions: { modelAssetPath: modelPath, delegate: "CPU" },
         runningMode: "IMAGE",
         numPoses: 1,
+        minPoseDetectionConfidence: 0.3,
+        minPosePresenceConfidence: 0.3,
+        minTrackingConfidence: 0.3,
       });
     }
     return cached;
@@ -90,6 +93,20 @@ export interface MpLandmark {
   visibility: number;
 }
 
+/** Pré-processa a imagem aumentando contraste/brilho para favorecer detecção. */
+function preprocessForMediaPipe(img: HTMLImageElement): HTMLCanvasElement {
+  const canvas = document.createElement("canvas");
+  canvas.width = img.naturalWidth || img.width;
+  canvas.height = img.naturalHeight || img.height;
+  const ctx = canvas.getContext("2d")!;
+  // @ts-ignore — filter é suportado em browsers modernos
+  ctx.filter = "contrast(1.4) brightness(1.1)";
+  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+  // @ts-ignore
+  ctx.filter = "none";
+  return canvas;
+}
+
 /**
  * Detecta pose a partir de um File. Retorna 33 landmarks normalizados (0-1).
  * Retorna null se MediaPipe não detectar corpo ou falhar.
@@ -98,8 +115,14 @@ export async function detectPoseFromFile(file: File): Promise<MpLandmark[] | nul
   try {
     const detector = await getDetector();
     const img = await fileToImage(file);
-    const result = detector.detect(img);
-    const lms = result?.landmarks?.[0];
+    const canvas = preprocessForMediaPipe(img);
+    let result = detector.detect(canvas);
+    let lms = result?.landmarks?.[0];
+    // Fallback: tenta com imagem original se canvas pré-processado falhar
+    if (!lms || lms.length < 20) {
+      result = detector.detect(img);
+      lms = result?.landmarks?.[0];
+    }
     if (!lms || lms.length < 20) return null;
     return lms.map((l: NormalizedLandmark, i: number) => ({
       index: i,
