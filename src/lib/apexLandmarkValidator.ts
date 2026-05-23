@@ -204,3 +204,137 @@ export function validateAndFixLandmarks(
     },
   };
 }
+
+// ─────────────────────────────────────────────────────────────
+// CAMADA 4 — Validação anatômica para landmarks por vista
+// (front/back) emitidos por apex-visual-analyze. Coordenadas 0-100.
+// ─────────────────────────────────────────────────────────────
+
+type PostLM = { x: number; y: number; label?: string; confidence?: number };
+type PostMap = Record<string, PostLM>;
+
+export interface PosturalValidationResult {
+  landmarks: PostMap;
+  correcoes: string[];
+  qualidade: number; // 0-100
+}
+
+/**
+ * Corrige automaticamente landmarks obviamente errados retornados
+ * pela IA de visão. Opera sobre as chaves do schema atual
+ * (shoulder_left/right, scapula_left/right, hip_left/right,
+ * spine_c7, spine_l5). Coordenadas em porcentagem (0-100).
+ */
+export function validateAndCorrectPosturalLandmarks(
+  raw: PostMap,
+): PosturalValidationResult {
+  const lm: PostMap = { ...raw };
+  const correcoes: string[] = [];
+
+  const conf = (id: string) => lm[id]?.confidence ?? 0.5;
+
+  // REGRA 1: C7 e L5 na linha média (x entre 42 e 58)
+  (["spine_c7", "spine_l5"] as const).forEach((id) => {
+    if (lm[id] && (lm[id].x < 42 || lm[id].x > 58)) {
+      correcoes.push(`${id}: corrigido para linha média (x=50)`);
+      lm[id] = { ...lm[id], x: 50 };
+    }
+  });
+
+  // REGRA 2: L5 abaixo de C7
+  if (lm.spine_c7 && lm.spine_l5 && lm.spine_l5.y <= lm.spine_c7.y) {
+    correcoes.push("L5 estava acima de C7 — corrigido");
+    lm.spine_l5 = { ...lm.spine_l5, y: Math.min(95, lm.spine_c7.y + 35) };
+  }
+
+  // REGRA 3: Ombros no mesmo nível (diferença Y < 6%)
+  if (lm.shoulder_left && lm.shoulder_right) {
+    const diffY = Math.abs(lm.shoulder_left.y - lm.shoulder_right.y);
+    if (diffY > 6) {
+      correcoes.push(`Ombros com diferença excessiva (${diffY.toFixed(1)}%) — ajustado`);
+      if (conf("shoulder_left") >= conf("shoulder_right")) {
+        lm.shoulder_right = { ...lm.shoulder_right, y: lm.shoulder_left.y };
+      } else {
+        lm.shoulder_left = { ...lm.shoulder_left, y: lm.shoulder_right.y };
+      }
+    }
+  }
+
+  // REGRA 4: Escápulas abaixo dos ombros
+  (
+    [
+      ["scapula_left", "shoulder_left"],
+      ["scapula_right", "shoulder_right"],
+    ] as const
+  ).forEach(([esc, omb]) => {
+    if (lm[esc] && lm[omb] && lm[esc].y <= lm[omb].y) {
+      correcoes.push(`${esc} estava acima do ombro — corrigido`);
+      lm[esc] = { ...lm[esc], y: Math.min(95, lm[omb].y + 15) };
+    }
+  });
+
+  // REGRA 5: Escápulas acima do quadril
+  (
+    [
+      ["scapula_left", "hip_left"],
+      ["scapula_right", "hip_right"],
+    ] as const
+  ).forEach(([esc, quad]) => {
+    if (lm[esc] && lm[quad] && lm[esc].y >= lm[quad].y) {
+      correcoes.push(`${esc} estava abaixo do quadril — corrigido`);
+      lm[esc] = { ...lm[esc], y: Math.max(0, lm[quad].y - 15) };
+    }
+  });
+
+  // REGRA 6: Quadris no mesmo nível (diferença Y < 5%)
+  if (lm.hip_left && lm.hip_right) {
+    const diffY = Math.abs(lm.hip_left.y - lm.hip_right.y);
+    if (diffY > 5) {
+      correcoes.push(`Quadris com diferença excessiva (${diffY.toFixed(1)}%) — ajustado`);
+      if (conf("hip_left") >= conf("hip_right")) {
+        lm.hip_right = { ...lm.hip_right, y: lm.hip_left.y };
+      } else {
+        lm.hip_left = { ...lm.hip_left, y: lm.hip_right.y };
+      }
+    }
+  }
+
+  // REGRA 7: Ombros mais laterais que escápulas
+  //   shoulder_left/scapula_left ficam à esquerda do atleta. Em foto
+  //   de costas isso é o lado esquerdo da imagem (x menor).
+  if (lm.shoulder_left && lm.scapula_left && lm.shoulder_left.x >= lm.scapula_left.x) {
+    correcoes.push("shoulder_left menos lateral que scapula_left — corrigido");
+    lm.shoulder_left = {
+      ...lm.shoulder_left,
+      x: Math.max(2, lm.scapula_left.x - 8),
+    };
+  }
+  if (lm.shoulder_right && lm.scapula_right && lm.shoulder_right.x <= lm.scapula_right.x) {
+    correcoes.push("shoulder_right menos lateral que scapula_right — corrigido");
+    lm.shoulder_right = {
+      ...lm.shoulder_right,
+      x: Math.min(98, lm.scapula_right.x + 8),
+    };
+  }
+
+  // Clamp final 0-100
+  Object.keys(lm).forEach((k) => {
+    lm[k] = {
+      ...lm[k],
+      x: Math.max(0, Math.min(100, lm[k].x)),
+      y: Math.max(0, Math.min(100, lm[k].y)),
+    };
+  });
+
+  // Qualidade: confidence média (fallback 0.7) penalizada por correções
+  const confs = Object.values(raw)
+    .map((l) => l?.confidence)
+    .filter((v): v is number => typeof v === "number");
+  const avgConf = confs.length ? confs.reduce((s, v) => s + v, 0) / confs.length : 0.7;
+  const qualidade = Math.min(
+    100,
+    Math.round(avgConf * 100 * (correcoes.length === 0 ? 1 : 0.85)),
+  );
+
+  return { landmarks: lm, correcoes, qualidade };
+}
