@@ -2309,6 +2309,79 @@ function OverlayLayer({
           );
         })}
 
+        {/* ─── Handles arrastáveis para ombros, escápulas e quadris ─── */}
+        {(() => {
+          const visibleKeys: DragLmKey[] =
+            data.view === "front"
+              ? ["shoulder_left", "shoulder_right", "hip_left", "hip_right"]
+              : data.view === "back"
+              ? ["shoulder_left", "shoulder_right", "scapula_left", "scapula_right", "hip_left", "hip_right"]
+              : [];
+          return visibleKeys.map((k) => {
+            const p = (lm as any)[k];
+            if (!isValidPoint(p)) return null;
+            const style = LM_DRAG_STYLE[k];
+            const ajustado = !!manualLandmarks?.[k];
+            const fill = ajustado ? style.cor : `${style.cor}B3`;
+            return (
+              <g
+                key={`drag-${k}`}
+                onMouseDown={beginLandmarkDrag(k)}
+                onTouchStart={beginLandmarkDrag(k)}
+                style={{ cursor: "move", pointerEvents: "auto", touchAction: "none" }}
+              >
+                {/* hit-area generosa */}
+                <circle cx={p.x} cy={p.y} r={3.5} fill="transparent" />
+                {/* anel tracejado — indica arrastável */}
+                <circle
+                  cx={p.x} cy={p.y} r={2.2}
+                  fill="none"
+                  stroke={ajustado ? style.cor : `${style.cor}80`}
+                  strokeDasharray="0.8 0.6"
+                  vectorEffect="non-scaling-stroke"
+                  style={{ strokeWidth: 0.6 }}
+                />
+                {/* círculo principal */}
+                <circle
+                  cx={p.x} cy={p.y} r={1.4}
+                  fill={fill}
+                  stroke={style.corBorda}
+                  vectorEffect="non-scaling-stroke"
+                  style={{ strokeWidth: 0.8 }}
+                >
+                  <title>{`${style.label} — ${ajustado ? "✥ ajustado manualmente" : "arraste para corrigir"}`}</title>
+                </circle>
+                {/* ícone ✥ */}
+                <text
+                  x={p.x} y={p.y + 0.55}
+                  textAnchor="middle"
+                  fill="rgba(255,255,255,0.9)"
+                  fontSize={1.4}
+                  fontWeight={700}
+                  style={{ pointerEvents: "none", userSelect: "none" }}
+                >
+                  ✥
+                </text>
+                {/* label */}
+                <text
+                  x={p.x} y={p.y - 2.6}
+                  textAnchor="middle"
+                  fill={ajustado ? style.cor : "rgba(255,255,255,0.65)"}
+                  fontSize={1.7}
+                  fontWeight={ajustado ? 700 : 500}
+                  style={{ pointerEvents: "none", userSelect: "none", paintOrder: "stroke" }}
+                  stroke="#000"
+                  strokeWidth={0.3}
+                >
+                  {style.label}{ajustado ? " ✥" : ""}
+                </text>
+              </g>
+            );
+          });
+        })()}
+
+
+
         {/* Kinetic chain animated polylines */}
         {chainMode && chains.map((c, i) => {
           const pts = c.nodes.map((k) => lm[k]).filter(isValidPoint);
