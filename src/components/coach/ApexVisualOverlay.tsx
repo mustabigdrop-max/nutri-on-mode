@@ -249,6 +249,42 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
   const resetSpinePositions = useCallback(() => {
     setManualSpinePositions(prev => ({ ...prev, [view]: {} }));
   }, [view]);
+
+  // Drag livre (X e Y) dos demais landmarks (ombros, escápulas, quadris) — por vista
+  type LandmarkKey =
+    | "shoulder_left" | "shoulder_right"
+    | "scapula_left" | "scapula_right"
+    | "hip_left" | "hip_right";
+  type ManualLandmarks = Partial<Record<LandmarkKey, { x: number; y: number }>>;
+  const [manualLandmarksPositions, setManualLandmarksPositions] = useState<Record<"front" | "lateral" | "back", ManualLandmarks>>({
+    front: {}, lateral: {}, back: {},
+  });
+  const handleLandmarkMove = useCallback((key: LandmarkKey, x: number, y: number) => {
+    setManualLandmarksPositions(prev => ({
+      ...prev,
+      [view]: { ...prev[view], [key]: { x, y } },
+    }));
+  }, [view]);
+  const resetLandmark = useCallback((key?: LandmarkKey | "C7" | "L5") => {
+    if (!key) {
+      setManualLandmarksPositions(prev => ({ ...prev, [view]: {} }));
+      setManualSpinePositions(prev => ({ ...prev, [view]: {} }));
+      return;
+    }
+    if (key === "C7") {
+      setManualSpinePositions(prev => ({ ...prev, [view]: { ...prev[view], c7: undefined } }));
+      return;
+    }
+    if (key === "L5") {
+      setManualSpinePositions(prev => ({ ...prev, [view]: { ...prev[view], l5: undefined } }));
+      return;
+    }
+    setManualLandmarksPositions(prev => {
+      const cur = { ...(prev[view] || {}) };
+      delete cur[key as LandmarkKey];
+      return { ...prev, [view]: cur };
+    });
+  }, [view]);
   const instructionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // ── Overlay rect tracking: corrige offset do object-fit: contain ──
@@ -290,7 +326,24 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
     try { localStorage.setItem("apex-edu-mode", eduMode ? "1" : "0"); } catch {}
   }, [eduMode]);
 
-  const data = landmarks[view];
+  // Aplica overrides manuais (drag livre) sobre os landmarks da IA — antes de todos os recálculos
+  const data = useMemo(() => {
+    const base = landmarks[view];
+    if (!base) return base;
+    const overrides = manualLandmarksPositions[view] || {};
+    const spine = manualSpinePositions[view] || {};
+    const hasAny = Object.keys(overrides).length > 0 || !!spine.c7 || !!spine.l5;
+    if (!hasAny) return base;
+    const mergedLm: any = { ...base.landmarks };
+    (Object.keys(overrides) as LandmarkKey[]).forEach(k => {
+      const ov = overrides[k]!;
+      mergedLm[k] = { ...(mergedLm[k] || {}), x: ov.x, y: ov.y, manual: true };
+    });
+    if (spine.c7) mergedLm.spine_c7 = { ...(mergedLm.spine_c7 || {}), x: spine.c7.x, y: spine.c7.y, manual: true };
+    if (spine.l5) mergedLm.spine_l5 = { ...(mergedLm.spine_l5 || {}), x: spine.l5.x, y: spine.l5.y, manual: true };
+    return { ...base, landmarks: mergedLm };
+  }, [landmarks, view, manualLandmarksPositions, manualSpinePositions]);
+
   const photoUrl = photos[view];
 
   // Qualidade da linha de prumo da vista atual (para badge nos achados)
@@ -307,13 +360,42 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
 
 
 
-  // Compute scapular axis (back view) augmentation
+  // Compute scapular axis (back view) augmentation + recompute symmetry angles a partir dos landmarks (pode ter overrides manuais)
   const augmentedAngles = useMemo(() => {
     if (!data) return {} as Record<string, AngleData>;
     const out: Record<string, AngleData> = { ...data.angles };
+    const lm0: any = data.landmarks;
+
+    // Recompute simétrico — qualquer landmark ajustado manualmente reflete aqui
+    const tiltDeg = (a: any, b: any) => {
+      if (!isValidPoint(a) || !isValidPoint(b)) return null;
+      return Math.atan2(b.y - a.y, b.x - a.x) * (180 / Math.PI);
+    };
+    if (data.view === "front" || data.view === "back") {
+      const shoT = tiltDeg(lm0.shoulder_left, lm0.shoulder_right);
+      if (shoT !== null) {
+        const v = Math.round(shoT * 10) / 10;
+        const key = data.view === "front" ? "shoulder_tilt" : "shoulder_asymmetry";
+        out[key] = {
+          ...(out[key] || { unit: "graus", normal: "<1°" }),
+          value: v,
+          finding: Math.abs(v) > 1 ? `Desnível de ombros ${Math.abs(v).toFixed(1)}° (${v > 0 ? "D abaixo" : "E abaixo"}).` : "Ombros nivelados.",
+        };
+      }
+      const hipT = tiltDeg(lm0.hip_left, lm0.hip_right);
+      if (hipT !== null) {
+        const v = Math.round(hipT * 10) / 10;
+        const key = data.view === "front" ? "hip_tilt" : "hip_asymmetry";
+        out[key] = {
+          ...(out[key] || { unit: "graus", normal: "<1°" }),
+          value: v,
+          finding: Math.abs(v) > 1 ? `Báscula pélvica ${Math.abs(v).toFixed(1)}° (${v > 0 ? "D abaixo" : "E abaixo"}).` : "Pelve nivelada.",
+        };
+      }
+    }
     if (data.view === "back") {
-      const sL = data.landmarks.scapula_left;
-      const sR = data.landmarks.scapula_right;
+      const sL = lm0.scapula_left;
+      const sR = lm0.scapula_right;
       if (isValidPoint(sL) && isValidPoint(sR)) {
         const dx = sR.x - sL.x;
         const dy = sR.y - sL.y;
@@ -328,16 +410,12 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
         };
       }
       // FIX 3 — Spine deviation calculado de C7→L5 (com snap anatômico)
-      // C7 e L5 são âncoras do prumo: sem landmarks torácicos intermediários,
-      // o desvio lateral é 0° por definição. Escoliose funcional só pode ser
-      // medida com pontos torácicos intermediários (T1–T12).
       const snappedSpine = snapToPlumbLine(data.landmarks, 100);
       const c7 = snappedSpine.spine_c7;
       const l5 = snappedSpine.spine_l5;
       if (isValidPoint(c7) && isValidPoint(l5)) {
         const dx = l5.x - c7.x;
         const dy = l5.y - c7.y;
-        // ângulo em relação à vertical (linha perfeita = 0°)
         const deg = Math.atan2(dx, dy) * (180 / Math.PI);
         const v = Math.round(deg * 10) / 10;
         out.spinal_lateral_deviation = {
@@ -812,6 +890,8 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
                     onSpineMove={handleSpineMove}
                     onSpineRelease={handleSpineRelease}
                     onSpineReset={resetSpinePositions}
+                    manualLandmarks={manualLandmarksPositions[view]}
+                    onLandmarkMove={handleLandmarkMove}
                   />
                   {/* Pulse de sugestão durante o modo manual */}
                   {manualMode && !showPlumbInstruction && (
@@ -985,90 +1065,124 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
             c7Ajustado={!!manualSpinePositions[view]?.c7}
             l5Ajustado={!!manualSpinePositions[view]?.l5}
           />
-          {/* Card permanente — instrução de ajuste C7/L5 */}
+          {/* Card permanente — status de todos os 8 landmarks arrastáveis */}
           {(() => {
             const c7Ajustado = !!manualSpinePositions[view]?.c7;
             const l5Ajustado = !!manualSpinePositions[view]?.l5;
-            const algumAjustado = c7Ajustado || l5Ajustado;
+            const ml = manualLandmarksPositions[view] || {};
+            const grupos: Array<{ nome: string; cor: string; itens: Array<{ id: string; label: string; ajustado: boolean; reset: () => void }> }> = [
+              {
+                nome: "Coluna", cor: "#B8922A",
+                itens: [
+                  { id: "C7", label: "C7", ajustado: c7Ajustado, reset: () => resetLandmark("C7") },
+                  { id: "L5", label: "L5", ajustado: l5Ajustado, reset: () => resetLandmark("L5") },
+                ],
+              },
+              {
+                nome: "Ombros", cor: "#38BDF8",
+                itens: [
+                  { id: "shoulder_left",  label: "Ombro E", ajustado: !!ml.shoulder_left,  reset: () => resetLandmark("shoulder_left") },
+                  { id: "shoulder_right", label: "Ombro D", ajustado: !!ml.shoulder_right, reset: () => resetLandmark("shoulder_right") },
+                ],
+              },
+              ...(view === "back" ? [{
+                nome: "Escápulas", cor: "#A78BFA",
+                itens: [
+                  { id: "scapula_left",  label: "Escáp E", ajustado: !!ml.scapula_left,  reset: () => resetLandmark("scapula_left") },
+                  { id: "scapula_right", label: "Escáp D", ajustado: !!ml.scapula_right, reset: () => resetLandmark("scapula_right") },
+                ],
+              }] : []),
+              {
+                nome: "Quadris", cor: "#34D399",
+                itens: [
+                  { id: "hip_left",  label: "Quadril E", ajustado: !!ml.hip_left,  reset: () => resetLandmark("hip_left") },
+                  { id: "hip_right", label: "Quadril D", ajustado: !!ml.hip_right, reset: () => resetLandmark("hip_right") },
+                ],
+              },
+            ];
+            const totalAjustados = grupos.reduce((s, g) => s + g.itens.filter(i => i.ajustado).length, 0);
             return (
-              <div
-                style={{
+              <div style={{
+                marginBottom: 12,
+                background: "rgba(255,255,255,0.03)",
+                border: "0.5px solid rgba(255,255,255,0.08)",
+                borderRadius: 12, overflow: "hidden",
+              }}>
+                <div style={{
                   padding: "10px 12px",
-                  marginBottom: 10,
-                  background: "rgba(184,146,42,0.06)",
-                  border: "0.5px solid rgba(184,146,42,0.2)",
-                  borderRadius: 10,
-                }}
-              >
-                <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
-                  <div
-                    style={{
-                      width: 28, height: 28, flexShrink: 0,
-                      background: "rgba(184,146,42,0.12)",
-                      border: "0.5px solid rgba(184,146,42,0.25)",
-                      borderRadius: 7,
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      fontSize: 13, color: "#B8922A",
-                    }}
-                  >✥</div>
-                  <div style={{ flex: 1 }}>
-                    <p style={{ fontSize: 10, fontWeight: 600, color: "#B8922A", margin: "0 0 3px", letterSpacing: "0.04em", textTransform: "uppercase" }}>
-                      Ajuste C7 e L5
+                  borderBottom: "0.5px solid rgba(255,255,255,0.06)",
+                  display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8,
+                }}>
+                  <div>
+                    <p style={{ fontSize: 10, fontWeight: 600, color: "rgba(255,255,255,0.75)", margin: "0 0 2px" }}>
+                      ✥ Todos os pontos são arrastáveis
                     </p>
-                    <p style={{ fontSize: 10, color: "rgba(255,255,255,0.45)", margin: 0, lineHeight: 1.5 }}>
-                      Arraste os pontos amarelos <strong style={{ color: "rgba(255,255,255,0.75)" }}>C7</strong> e <strong style={{ color: "rgba(255,255,255,0.75)" }}>L5</strong> para alinhá-los sobre as vértebras visíveis na foto. Isso melhora a precisão de todos os achados.
+                    <p style={{ fontSize: 9, color: "rgba(255,255,255,0.4)", margin: 0 }}>
+                      {totalAjustados === 0
+                        ? "Posições da IA — arraste qualquer ponto para corrigir"
+                        : `${totalAjustados} ponto(s) ajustado(s) manualmente`}
                     </p>
                   </div>
+                  {totalAjustados > 0 && (
+                    <button
+                      onClick={() => resetLandmark()}
+                      style={{
+                        fontSize: 9, color: "rgba(255,255,255,0.55)",
+                        background: "transparent",
+                        border: "0.5px solid rgba(255,255,255,0.12)",
+                        borderRadius: 6, padding: "3px 8px", cursor: "pointer",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      ↺ Resetar todos
+                    </button>
+                  )}
                 </div>
-                <div style={{ marginTop: 8, display: "flex", gap: 6 }}>
-                  {([["C7", c7Ajustado], ["L5", l5Ajustado]] as const).map(([id, ajustado]) => (
-                    <div key={id} style={{
-                      flex: 1, padding: "5px 8px",
-                      background: ajustado ? "rgba(52,211,153,0.08)" : "rgba(255,255,255,0.04)",
-                      border: `0.5px solid ${ajustado ? "rgba(52,211,153,0.2)" : "rgba(255,255,255,0.08)"}`,
-                      borderRadius: 7,
-                      display: "flex", alignItems: "center", gap: 5,
-                    }}>
-                      <span style={{
-                        width: 5, height: 5, borderRadius: "50%",
-                        background: ajustado ? "#34D399" : "rgba(255,255,255,0.2)",
-                        flexShrink: 0,
-                      }} />
-                      <span style={{ fontSize: 10, fontWeight: 600, color: ajustado ? "#34D399" : "rgba(255,255,255,0.4)" }}>
-                        {id}
-                      </span>
-                      <span style={{ fontSize: 9, color: ajustado ? "rgba(52,211,153,0.6)" : "rgba(255,255,255,0.25)" }}>
-                        {ajustado ? "ajustado" : "IA"}
-                      </span>
+                <div style={{ padding: "10px 12px" }}>
+                  {grupos.map((g, gi) => (
+                    <div key={g.nome} style={{ marginBottom: gi < grupos.length - 1 ? 8 : 0 }}>
+                      <p style={{
+                        fontSize: 9, color: `${g.cor}B3`,
+                        letterSpacing: "0.08em", textTransform: "uppercase",
+                        margin: "0 0 4px", fontWeight: 600,
+                      }}>{g.nome}</p>
+                      <div style={{ display: "flex", gap: 5 }}>
+                        {g.itens.map(it => (
+                          <div key={it.id} style={{
+                            flex: 1, padding: "5px 6px",
+                            background: it.ajustado ? `${g.cor}1A` : "rgba(255,255,255,0.03)",
+                            border: `0.5px solid ${it.ajustado ? `${g.cor}59` : "rgba(255,255,255,0.07)"}`,
+                            borderRadius: 7,
+                            display: "flex", flexDirection: "column", alignItems: "center", gap: 1,
+                          }}>
+                            <span style={{ fontSize: 10, fontWeight: 700, color: it.ajustado ? g.cor : "rgba(255,255,255,0.45)" }}>
+                              {it.label}
+                            </span>
+                            <span style={{ fontSize: 8, color: it.ajustado ? `${g.cor}B3` : "rgba(255,255,255,0.3)" }}>
+                              {it.ajustado ? "✓ ajustado" : "IA"}
+                            </span>
+                            {it.ajustado && (
+                              <button
+                                onClick={it.reset}
+                                title={`Restaurar ${it.label} à posição da IA`}
+                                style={{
+                                  fontSize: 8, color: "rgba(255,255,255,0.4)",
+                                  background: "transparent", border: "none",
+                                  cursor: "pointer", padding: 0, marginTop: 1,
+                                }}
+                              >↺</button>
+                            )}
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   ))}
                 </div>
-                {algumAjustado && (
-                  <button
-                    onClick={resetSpinePositions}
-                    style={{
-                      width: "100%", marginTop: 7, padding: "5px",
-                      background: "transparent",
-                      border: "0.5px solid rgba(255,255,255,0.08)",
-                      borderRadius: 7, cursor: "pointer", fontSize: 9,
-                      color: "rgba(255,255,255,0.4)", transition: "all .15s",
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.borderColor = "rgba(255,255,255,0.2)";
-                      e.currentTarget.style.color = "rgba(255,255,255,0.7)";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)";
-                      e.currentTarget.style.color = "rgba(255,255,255,0.4)";
-                    }}
-                    title="Voltar C7 e L5 às posições detectadas pela IA"
-                  >
-                    ↺ Restaurar posição da IA
-                  </button>
-                )}
               </div>
             );
           })()}
+
+
           {data?.landmarks && (() => {
             const q = calcAnalysisQuality(data.landmarks as any);
             const pct = Math.round(q.score * 100);
@@ -1407,9 +1521,24 @@ export function calcAnalysisQuality(landmarks: Record<string, any>): AnalysisQua
 }
 
 // ─── Overlay (HTML + SVG hybrid for crisp labels) ────────────────
+type DragLmKey =
+  | "shoulder_left" | "shoulder_right"
+  | "scapula_left" | "scapula_right"
+  | "hip_left" | "hip_right";
+
+const LM_DRAG_STYLE: Record<DragLmKey, { cor: string; corBorda: string; label: string }> = {
+  shoulder_left:  { cor: "#38BDF8", corBorda: "#BAE6FD", label: "Ombro E" },
+  shoulder_right: { cor: "#38BDF8", corBorda: "#BAE6FD", label: "Ombro D" },
+  scapula_left:   { cor: "#A78BFA", corBorda: "#DDD6FE", label: "Escáp E" },
+  scapula_right:  { cor: "#A78BFA", corBorda: "#DDD6FE", label: "Escáp D" },
+  hip_left:       { cor: "#34D399", corBorda: "#A7F3D0", label: "Quadril E" },
+  hip_right:      { cor: "#34D399", corBorda: "#A7F3D0", label: "Quadril D" },
+};
+
 function OverlayLayer({
   data, selected, onSelect, eduMode, chainMode, debugMode, gridMode, chains, plumbXOverride,
   manualSpine, onSpineMove, onSpineRelease, onSpineReset,
+  manualLandmarks, onLandmarkMove,
 }: {
   data: LandmarkView;
   selected: string | null;
@@ -1424,6 +1553,8 @@ function OverlayLayer({
   onSpineMove?: (key: "c7" | "l5", x: number, y: number) => void;
   onSpineRelease?: () => void;
   onSpineReset?: () => void;
+  manualLandmarks?: Partial<Record<DragLmKey, { x: number; y: number }>>;
+  onLandmarkMove?: (key: DragLmKey, x: number, y: number) => void;
 }) {
   // Aplica overrides manuais (drag livre X/Y) sobre o snap automático
   const lm = useMemo(() => {
@@ -1434,12 +1565,19 @@ function OverlayLayer({
     if (manualSpine?.l5) {
       snapped.spine_l5 = { ...(snapped.spine_l5 || {}), x: manualSpine.l5.x, y: manualSpine.l5.y, manual: true, snapped: false };
     }
+    if (manualLandmarks) {
+      (Object.keys(manualLandmarks) as DragLmKey[]).forEach(k => {
+        const ov = manualLandmarks[k];
+        if (!ov) return;
+        snapped[k] = { ...(snapped[k] || {}), x: ov.x, y: ov.y, manual: true };
+      });
+    }
     return snapped as typeof data.landmarks;
-  }, [data.landmarks, manualSpine]);
+  }, [data.landmarks, manualSpine, manualLandmarks]);
 
-  // ─── Drag livre de C7/L5 ─────────────────────────────────────
+  // ─── Drag livre de C7/L5 e demais landmarks ──────────────────
   const svgRef = useRef<SVGSVGElement>(null);
-  const draggingRef = useRef<null | "c7" | "l5">(null);
+  const draggingRef = useRef<null | "c7" | "l5" | DragLmKey>(null);
 
   // ─── Onboarding e hover de descoberta C7/L5 ─────────────────
   const ONBOARDING_KEY = "apex_landmark_onboarding_done";
@@ -1497,6 +1635,39 @@ function OverlayLayer({
     window.addEventListener("touchend", handleUp);
     window.addEventListener("touchcancel", handleUp);
   }, [toSVGCoords, onSpineMove, onSpineRelease, dismissOnboarding]);
+
+  // ─── Drag livre genérico (ombros / escápulas / quadris) ──────
+  const beginLandmarkDrag = useCallback((key: DragLmKey) => (e: React.MouseEvent | React.TouchEvent) => {
+    e.stopPropagation();
+    if ((e as any).preventDefault) (e as any).preventDefault();
+    draggingRef.current = key;
+    const handleMove = (ev: MouseEvent) => {
+      if (draggingRef.current !== key) return;
+      const c = toSVGCoords(ev.clientX, ev.clientY);
+      if (c) onLandmarkMove?.(key, c.x, c.y);
+    };
+    const handleTouchMove = (ev: TouchEvent) => {
+      if (draggingRef.current !== key) return;
+      const t = ev.touches[0]; if (!t) return;
+      if (ev.cancelable) ev.preventDefault();
+      const c = toSVGCoords(t.clientX, t.clientY);
+      if (c) onLandmarkMove?.(key, c.x, c.y);
+    };
+    const handleUp = () => {
+      draggingRef.current = null;
+      window.removeEventListener("mousemove", handleMove);
+      window.removeEventListener("mouseup", handleUp);
+      window.removeEventListener("touchmove", handleTouchMove);
+      window.removeEventListener("touchend", handleUp);
+      window.removeEventListener("touchcancel", handleUp);
+    };
+    window.addEventListener("mousemove", handleMove);
+    window.addEventListener("mouseup", handleUp);
+    window.addEventListener("touchmove", handleTouchMove, { passive: false });
+    window.addEventListener("touchend", handleUp);
+    window.addEventListener("touchcancel", handleUp);
+  }, [toSVGCoords, onLandmarkMove]);
+
 
   // ─── Drag da COLUNA inteira (C7+L5 juntos, preserva ângulo/distância) ─
   const beginColumnDrag = useCallback((e: React.MouseEvent | React.TouchEvent) => {
@@ -2171,6 +2342,79 @@ function OverlayLayer({
             </circle>
           );
         })}
+
+        {/* ─── Handles arrastáveis para ombros, escápulas e quadris ─── */}
+        {(() => {
+          const visibleKeys: DragLmKey[] =
+            data.view === "front"
+              ? ["shoulder_left", "shoulder_right", "hip_left", "hip_right"]
+              : data.view === "back"
+              ? ["shoulder_left", "shoulder_right", "scapula_left", "scapula_right", "hip_left", "hip_right"]
+              : [];
+          return visibleKeys.map((k) => {
+            const p = (lm as any)[k];
+            if (!isValidPoint(p)) return null;
+            const style = LM_DRAG_STYLE[k];
+            const ajustado = !!manualLandmarks?.[k];
+            const fill = ajustado ? style.cor : `${style.cor}B3`;
+            return (
+              <g
+                key={`drag-${k}`}
+                onMouseDown={beginLandmarkDrag(k)}
+                onTouchStart={beginLandmarkDrag(k)}
+                style={{ cursor: "move", pointerEvents: "auto", touchAction: "none" }}
+              >
+                {/* hit-area generosa */}
+                <circle cx={p.x} cy={p.y} r={3.5} fill="transparent" />
+                {/* anel tracejado — indica arrastável */}
+                <circle
+                  cx={p.x} cy={p.y} r={2.2}
+                  fill="none"
+                  stroke={ajustado ? style.cor : `${style.cor}80`}
+                  strokeDasharray="0.8 0.6"
+                  vectorEffect="non-scaling-stroke"
+                  style={{ strokeWidth: 0.6 }}
+                />
+                {/* círculo principal */}
+                <circle
+                  cx={p.x} cy={p.y} r={1.4}
+                  fill={fill}
+                  stroke={style.corBorda}
+                  vectorEffect="non-scaling-stroke"
+                  style={{ strokeWidth: 0.8 }}
+                >
+                  <title>{`${style.label} — ${ajustado ? "✥ ajustado manualmente" : "arraste para corrigir"}`}</title>
+                </circle>
+                {/* ícone ✥ */}
+                <text
+                  x={p.x} y={p.y + 0.55}
+                  textAnchor="middle"
+                  fill="rgba(255,255,255,0.9)"
+                  fontSize={1.4}
+                  fontWeight={700}
+                  style={{ pointerEvents: "none", userSelect: "none" }}
+                >
+                  ✥
+                </text>
+                {/* label */}
+                <text
+                  x={p.x} y={p.y - 2.6}
+                  textAnchor="middle"
+                  fill={ajustado ? style.cor : "rgba(255,255,255,0.65)"}
+                  fontSize={1.7}
+                  fontWeight={ajustado ? 700 : 500}
+                  style={{ pointerEvents: "none", userSelect: "none", paintOrder: "stroke" }}
+                  stroke="#000"
+                  strokeWidth={0.3}
+                >
+                  {style.label}{ajustado ? " ✥" : ""}
+                </text>
+              </g>
+            );
+          });
+        })()}
+
+
 
         {/* Kinetic chain animated polylines */}
         {chainMode && chains.map((c, i) => {
