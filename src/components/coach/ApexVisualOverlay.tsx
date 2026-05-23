@@ -216,6 +216,17 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
     try { return localStorage.getItem("apex_modo_tecnico") === "true"; } catch { return false; }
   });
   const [gridMode, setGridMode] = useState<boolean>(false);
+  const [modoMarketing, setModoMarketing] = useState<boolean>(() => {
+    try { return localStorage.getItem("apex_modo_marketing") === "true"; } catch { return false; }
+  });
+  // Posições e visibilidade dos cards educativos arrastáveis (por vista + key)
+  const [cardState, setCardState] = useState<Record<string, { x: number; y: number; visible: boolean; initialized: boolean }>>({});
+  const closeEduCard = useCallback((id: string) => {
+    setCardState((prev) => ({ ...prev, [id]: { ...(prev[id] || { x: 0, y: 0, initialized: true }), visible: false } }));
+  }, []);
+  const reopenEduCard = useCallback((id: string) => {
+    setCardState((prev) => ({ ...prev, [id]: { ...(prev[id] || { x: 0, y: 0, initialized: true }), visible: true } }));
+  }, []);
   const exportRef = useRef<HTMLDivElement>(null);
   const [exporting, setExporting] = useState(false);
   const [exportingPDF, setExportingPDF] = useState(false);
