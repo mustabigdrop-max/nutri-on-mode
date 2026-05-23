@@ -1552,7 +1552,7 @@ function OverlayLayer({
   onSelect: (k: string) => void;
   eduMode: boolean;
   chainMode: boolean;
-  debugMode: boolean;
+  modoTecnico: boolean;
   gridMode: boolean;
   chains: { name: string; nodes: string[]; description: string }[];
   plumbXOverride?: number | null;
