@@ -855,11 +855,28 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
       </div>
 
       {/* Main grid */}
-      <div ref={exportRef} className="grid lg:grid-cols-[1fr_340px] gap-4 bg-card rounded-xl p-3 border relative">
+      <div ref={exportRef} className={`grid ${modoMarketing ? "grid-cols-1" : "lg:grid-cols-[1fr_340px]"} gap-4 bg-card rounded-xl p-3 border relative`}>
         {/* Watermark / footer for export */}
         <div className="absolute top-2 right-3 text-[10px] font-bold tracking-widest opacity-60" style={{ color: C.gold }}>
           nutriON · APEX
         </div>
+
+        {/* Botão sair do Modo Marketing */}
+        {modoMarketing && (
+          <button
+            onClick={() => setModoMarketing(false)}
+            className="absolute top-2 left-2 z-30 px-3 py-1.5 text-[11px] font-bold rounded-lg border"
+            style={{
+              borderColor: "rgba(184,146,42,0.5)",
+              color: C.gold,
+              background: "rgba(10,10,18,0.75)",
+              backdropFilter: "blur(6px)",
+            }}
+            title="Sair do Modo Marketing"
+          >
+            ← Sair Marketing
+          </button>
+        )}
 
         {/* Photo + overlay */}
         <div
@@ -871,7 +888,7 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
             justifyContent: "center",
             overflow: "hidden",
             width: "100%",
-            height: 640,
+            height: modoMarketing ? "85vh" : 640,
             minHeight: 360,
           }}
         >
