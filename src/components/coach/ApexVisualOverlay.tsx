@@ -1065,89 +1065,123 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
             c7Ajustado={!!manualSpinePositions[view]?.c7}
             l5Ajustado={!!manualSpinePositions[view]?.l5}
           />
-          {/* Card permanente — instrução de ajuste C7/L5 */}
+          {/* Card permanente — status de todos os 8 landmarks arrastáveis */}
           {(() => {
             const c7Ajustado = !!manualSpinePositions[view]?.c7;
             const l5Ajustado = !!manualSpinePositions[view]?.l5;
-            const algumAjustado = c7Ajustado || l5Ajustado;
+            const ml = manualLandmarksPositions[view] || {};
+            const grupos: Array<{ nome: string; cor: string; itens: Array<{ id: string; label: string; ajustado: boolean; reset: () => void }> }> = [
+              {
+                nome: "Coluna", cor: "#B8922A",
+                itens: [
+                  { id: "C7", label: "C7", ajustado: c7Ajustado, reset: () => resetLandmark("C7") },
+                  { id: "L5", label: "L5", ajustado: l5Ajustado, reset: () => resetLandmark("L5") },
+                ],
+              },
+              {
+                nome: "Ombros", cor: "#38BDF8",
+                itens: [
+                  { id: "shoulder_left",  label: "Ombro E", ajustado: !!ml.shoulder_left,  reset: () => resetLandmark("shoulder_left") },
+                  { id: "shoulder_right", label: "Ombro D", ajustado: !!ml.shoulder_right, reset: () => resetLandmark("shoulder_right") },
+                ],
+              },
+              ...(view === "back" ? [{
+                nome: "Escápulas", cor: "#A78BFA",
+                itens: [
+                  { id: "scapula_left",  label: "Escáp E", ajustado: !!ml.scapula_left,  reset: () => resetLandmark("scapula_left") },
+                  { id: "scapula_right", label: "Escáp D", ajustado: !!ml.scapula_right, reset: () => resetLandmark("scapula_right") },
+                ],
+              }] : []),
+              {
+                nome: "Quadris", cor: "#34D399",
+                itens: [
+                  { id: "hip_left",  label: "Quadril E", ajustado: !!ml.hip_left,  reset: () => resetLandmark("hip_left") },
+                  { id: "hip_right", label: "Quadril D", ajustado: !!ml.hip_right, reset: () => resetLandmark("hip_right") },
+                ],
+              },
+            ];
+            const totalAjustados = grupos.reduce((s, g) => s + g.itens.filter(i => i.ajustado).length, 0);
             return (
-              <div
-                style={{
+              <div style={{
+                marginBottom: 12,
+                background: "rgba(255,255,255,0.03)",
+                border: "0.5px solid rgba(255,255,255,0.08)",
+                borderRadius: 12, overflow: "hidden",
+              }}>
+                <div style={{
                   padding: "10px 12px",
-                  marginBottom: 10,
-                  background: "rgba(184,146,42,0.06)",
-                  border: "0.5px solid rgba(184,146,42,0.2)",
-                  borderRadius: 10,
-                }}
-              >
-                <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
-                  <div
-                    style={{
-                      width: 28, height: 28, flexShrink: 0,
-                      background: "rgba(184,146,42,0.12)",
-                      border: "0.5px solid rgba(184,146,42,0.25)",
-                      borderRadius: 7,
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      fontSize: 13, color: "#B8922A",
-                    }}
-                  >✥</div>
-                  <div style={{ flex: 1 }}>
-                    <p style={{ fontSize: 10, fontWeight: 600, color: "#B8922A", margin: "0 0 3px", letterSpacing: "0.04em", textTransform: "uppercase" }}>
-                      Ajuste C7 e L5
+                  borderBottom: "0.5px solid rgba(255,255,255,0.06)",
+                  display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8,
+                }}>
+                  <div>
+                    <p style={{ fontSize: 10, fontWeight: 600, color: "rgba(255,255,255,0.75)", margin: "0 0 2px" }}>
+                      ✥ Todos os pontos são arrastáveis
                     </p>
-                    <p style={{ fontSize: 10, color: "rgba(255,255,255,0.45)", margin: 0, lineHeight: 1.5 }}>
-                      Arraste os pontos amarelos <strong style={{ color: "rgba(255,255,255,0.75)" }}>C7</strong> e <strong style={{ color: "rgba(255,255,255,0.75)" }}>L5</strong> para alinhá-los sobre as vértebras visíveis na foto. Isso melhora a precisão de todos os achados.
+                    <p style={{ fontSize: 9, color: "rgba(255,255,255,0.4)", margin: 0 }}>
+                      {totalAjustados === 0
+                        ? "Posições da IA — arraste qualquer ponto para corrigir"
+                        : `${totalAjustados} ponto(s) ajustado(s) manualmente`}
                     </p>
                   </div>
+                  {totalAjustados > 0 && (
+                    <button
+                      onClick={() => resetLandmark()}
+                      style={{
+                        fontSize: 9, color: "rgba(255,255,255,0.55)",
+                        background: "transparent",
+                        border: "0.5px solid rgba(255,255,255,0.12)",
+                        borderRadius: 6, padding: "3px 8px", cursor: "pointer",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      ↺ Resetar todos
+                    </button>
+                  )}
                 </div>
-                <div style={{ marginTop: 8, display: "flex", gap: 6 }}>
-                  {([["C7", c7Ajustado], ["L5", l5Ajustado]] as const).map(([id, ajustado]) => (
-                    <div key={id} style={{
-                      flex: 1, padding: "5px 8px",
-                      background: ajustado ? "rgba(52,211,153,0.08)" : "rgba(255,255,255,0.04)",
-                      border: `0.5px solid ${ajustado ? "rgba(52,211,153,0.2)" : "rgba(255,255,255,0.08)"}`,
-                      borderRadius: 7,
-                      display: "flex", alignItems: "center", gap: 5,
-                    }}>
-                      <span style={{
-                        width: 5, height: 5, borderRadius: "50%",
-                        background: ajustado ? "#34D399" : "rgba(255,255,255,0.2)",
-                        flexShrink: 0,
-                      }} />
-                      <span style={{ fontSize: 10, fontWeight: 600, color: ajustado ? "#34D399" : "rgba(255,255,255,0.4)" }}>
-                        {id}
-                      </span>
-                      <span style={{ fontSize: 9, color: ajustado ? "rgba(52,211,153,0.6)" : "rgba(255,255,255,0.25)" }}>
-                        {ajustado ? "ajustado" : "IA"}
-                      </span>
+                <div style={{ padding: "10px 12px" }}>
+                  {grupos.map((g, gi) => (
+                    <div key={g.nome} style={{ marginBottom: gi < grupos.length - 1 ? 8 : 0 }}>
+                      <p style={{
+                        fontSize: 9, color: `${g.cor}B3`,
+                        letterSpacing: "0.08em", textTransform: "uppercase",
+                        margin: "0 0 4px", fontWeight: 600,
+                      }}>{g.nome}</p>
+                      <div style={{ display: "flex", gap: 5 }}>
+                        {g.itens.map(it => (
+                          <div key={it.id} style={{
+                            flex: 1, padding: "5px 6px",
+                            background: it.ajustado ? `${g.cor}1A` : "rgba(255,255,255,0.03)",
+                            border: `0.5px solid ${it.ajustado ? `${g.cor}59` : "rgba(255,255,255,0.07)"}`,
+                            borderRadius: 7,
+                            display: "flex", flexDirection: "column", alignItems: "center", gap: 1,
+                          }}>
+                            <span style={{ fontSize: 10, fontWeight: 700, color: it.ajustado ? g.cor : "rgba(255,255,255,0.45)" }}>
+                              {it.label}
+                            </span>
+                            <span style={{ fontSize: 8, color: it.ajustado ? `${g.cor}B3` : "rgba(255,255,255,0.3)" }}>
+                              {it.ajustado ? "✓ ajustado" : "IA"}
+                            </span>
+                            {it.ajustado && (
+                              <button
+                                onClick={it.reset}
+                                title={`Restaurar ${it.label} à posição da IA`}
+                                style={{
+                                  fontSize: 8, color: "rgba(255,255,255,0.4)",
+                                  background: "transparent", border: "none",
+                                  cursor: "pointer", padding: 0, marginTop: 1,
+                                }}
+                              >↺</button>
+                            )}
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   ))}
                 </div>
-                {algumAjustado && (
-                  <button
-                    onClick={resetSpinePositions}
-                    style={{
-                      width: "100%", marginTop: 7, padding: "5px",
-                      background: "transparent",
-                      border: "0.5px solid rgba(255,255,255,0.08)",
-                      borderRadius: 7, cursor: "pointer", fontSize: 9,
-                      color: "rgba(255,255,255,0.4)", transition: "all .15s",
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.borderColor = "rgba(255,255,255,0.2)";
-                      e.currentTarget.style.color = "rgba(255,255,255,0.7)";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)";
-                      e.currentTarget.style.color = "rgba(255,255,255,0.4)";
-                    }}
-                    title="Voltar C7 e L5 às posições detectadas pela IA"
-                  >
-                    ↺ Restaurar posição da IA
-                  </button>
-                )}
               </div>
             );
+          })()}
+
           })()}
           {data?.landmarks && (() => {
             const q = calcAnalysisQuality(data.landmarks as any);
