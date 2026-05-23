@@ -1602,6 +1602,39 @@ function OverlayLayer({
     window.addEventListener("touchcancel", handleUp);
   }, [toSVGCoords, onSpineMove, onSpineRelease, dismissOnboarding]);
 
+  // ─── Drag livre genérico (ombros / escápulas / quadris) ──────
+  const beginLandmarkDrag = useCallback((key: DragLmKey) => (e: React.MouseEvent | React.TouchEvent) => {
+    e.stopPropagation();
+    if ((e as any).preventDefault) (e as any).preventDefault();
+    draggingRef.current = key;
+    const handleMove = (ev: MouseEvent) => {
+      if (draggingRef.current !== key) return;
+      const c = toSVGCoords(ev.clientX, ev.clientY);
+      if (c) onLandmarkMove?.(key, c.x, c.y);
+    };
+    const handleTouchMove = (ev: TouchEvent) => {
+      if (draggingRef.current !== key) return;
+      const t = ev.touches[0]; if (!t) return;
+      if (ev.cancelable) ev.preventDefault();
+      const c = toSVGCoords(t.clientX, t.clientY);
+      if (c) onLandmarkMove?.(key, c.x, c.y);
+    };
+    const handleUp = () => {
+      draggingRef.current = null;
+      window.removeEventListener("mousemove", handleMove);
+      window.removeEventListener("mouseup", handleUp);
+      window.removeEventListener("touchmove", handleTouchMove);
+      window.removeEventListener("touchend", handleUp);
+      window.removeEventListener("touchcancel", handleUp);
+    };
+    window.addEventListener("mousemove", handleMove);
+    window.addEventListener("mouseup", handleUp);
+    window.addEventListener("touchmove", handleTouchMove, { passive: false });
+    window.addEventListener("touchend", handleUp);
+    window.addEventListener("touchcancel", handleUp);
+  }, [toSVGCoords, onLandmarkMove]);
+
+
   // ─── Drag da COLUNA inteira (C7+L5 juntos, preserva ângulo/distância) ─
   const beginColumnDrag = useCallback((e: React.MouseEvent | React.TouchEvent) => {
     e.stopPropagation();
