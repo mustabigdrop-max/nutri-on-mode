@@ -278,20 +278,41 @@ LINGUAGEM OBRIGATÓRIA: tom empoderador. NUNCA "excesso de gordura" → usar "re
 
     const systemFinal = (system || DEFAULT_SYSTEM) + FEMININE_PROMPT + LANDMARK_INSTRUCTIONS;
 
-    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-pro",
-        messages: [
-          { role: "system", content: systemFinal },
-          { role: "user", content: userContent },
-        ],
-      }),
-    });
+    const ac = new AbortController();
+    const timeoutId = setTimeout(() => ac.abort(), 140_000);
+
+    let res: Response;
+    try {
+      res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "google/gemini-2.5-flash",
+          messages: [
+            { role: "system", content: systemFinal },
+            { role: "user", content: userContent },
+          ],
+        }),
+        signal: ac.signal,
+      });
+    } catch (fetchErr) {
+      clearTimeout(timeoutId);
+      const isAbort = (fetchErr as any)?.name === "AbortError";
+      console.error("apex-visual-analyze: fetch falhou", fetchErr);
+      return new Response(
+        JSON.stringify({
+          error: true,
+          message: isAbort
+            ? "A análise demorou demais (>140s). Tente novamente com menos fotos ou imagens menores."
+            : `Falha de rede ao chamar AI: ${(fetchErr as Error)?.message}`,
+        }),
+        { status: isAbort ? 504 : 502, headers: corsHeaders },
+      );
+    }
+    clearTimeout(timeoutId);
 
     if (res.status === 429) {
       return new Response(
