@@ -1042,6 +1042,8 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
             </details>
           )}
 
+          <EducationSummary findings={findings} eduMode={eduMode} />
+
           <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1 pt-1">
             Achados clínicos ({findings.length})
           </div>
