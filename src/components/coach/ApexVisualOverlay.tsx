@@ -207,7 +207,9 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
     try { return localStorage.getItem("apex-edu-mode") === "1"; } catch { return false; }
   });
   const [chainMode, setChainMode] = useState<boolean>(false);
-  const [debugMode, setDebugMode] = useState<boolean>(false);
+  const [modoTecnico, setModoTecnico] = useState<boolean>(() => {
+    try { return localStorage.getItem("apex_modo_tecnico") === "true"; } catch { return false; }
+  });
   const [gridMode, setGridMode] = useState<boolean>(false);
   const exportRef = useRef<HTMLDivElement>(null);
   const [exporting, setExporting] = useState(false);
@@ -326,6 +328,10 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
   useEffect(() => {
     try { localStorage.setItem("apex-edu-mode", eduMode ? "1" : "0"); } catch {}
   }, [eduMode]);
+
+  useEffect(() => {
+    try { localStorage.setItem("apex_modo_tecnico", modoTecnico.toString()); } catch {}
+  }, [modoTecnico]);
 
   // Aplica overrides manuais (drag livre) sobre os landmarks da IA — antes de todos os recálculos
   const data = useMemo(() => {
@@ -731,16 +737,16 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
             📐 Grade simetrográfica
           </button>
           <button
-            onClick={() => setDebugMode((v) => !v)}
+            onClick={() => setModoTecnico((v) => !v)}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg border"
             style={{
-              borderColor: debugMode ? "#FF00FF" : "hsl(var(--border))",
-              color: debugMode ? "#FF00FF" : "hsl(var(--muted-foreground))",
-              background: debugMode ? "#FF00FF1A" : "transparent",
+              borderColor: modoTecnico ? "rgba(255,255,255,0.3)" : "hsl(var(--border))",
+              color: modoTecnico ? "rgba(255,255,255,0.8)" : "hsl(var(--muted-foreground))",
+              background: modoTecnico ? "rgba(255,255,255,0.12)" : "transparent",
             }}
-            title="Mostra caixas de colisão e zona da silhueta"
+            title={modoTecnico ? "Ocultar landmarks" : "Mostrar landmarks"}
           >
-            🐛 Debug
+            {modoTecnico ? "◎ Landmarks ON" : "◎ Landmarks OFF"}
           </button>
           <button
             onClick={activateManualMode}
@@ -883,7 +889,7 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
                     onSelect={setSelected}
                     eduMode={eduMode}
                     chainMode={chainMode}
-                    debugMode={debugMode}
+                    modoTecnico={modoTecnico}
                     gridMode={gridMode}
                     chains={chains}
                     plumbXOverride={manualPlumb[view]}
@@ -1537,7 +1543,7 @@ const LM_DRAG_STYLE: Record<DragLmKey, { cor: string; corBorda: string; label: s
 };
 
 function OverlayLayer({
-  data, selected, onSelect, eduMode, chainMode, debugMode, gridMode, chains, plumbXOverride,
+  data, selected, onSelect, eduMode, chainMode, modoTecnico, gridMode, chains, plumbXOverride,
   manualSpine, onSpineMove, onSpineRelease, onSpineReset,
   manualLandmarks, onLandmarkMove,
 }: {
@@ -1546,7 +1552,7 @@ function OverlayLayer({
   onSelect: (k: string) => void;
   eduMode: boolean;
   chainMode: boolean;
-  debugMode: boolean;
+  modoTecnico: boolean;
   gridMode: boolean;
   chains: { name: string; nodes: string[]; description: string }[];
   plumbXOverride?: number | null;
@@ -1883,15 +1889,26 @@ function OverlayLayer({
         <line
           x1={plumb.x1} y1={plumb.y1} x2={plumb.x2} y2={plumb.y2}
           stroke={plumb.source === "frame-center" ? "#FBBF24" : C.white}
-          strokeOpacity={plumb.source === "frame-center" ? 0.5 : 0.35}
+          strokeOpacity={modoTecnico ? (plumb.source === "frame-center" ? 0.5 : 0.35) : 0.3}
           strokeDasharray="2 1"
           vectorEffect="non-scaling-stroke"
           style={{ strokeWidth: 1.5 }}
         />
+        {/* Linha C7-L5 discreta no modo análise (back view) */}
+        {!modoTecnico && data.view === "back" && isValidPoint(lm.spine_c7) && isValidPoint(lm.spine_l5) && (
+          <line
+            x1={lm.spine_c7.x} y1={lm.spine_c7.y}
+            x2={lm.spine_l5.x} y2={lm.spine_l5.y}
+            stroke="#B8922A"
+            strokeOpacity={0.2}
+            strokeDasharray="3 1.5"
+            strokeLinecap="round"
+            vectorEffect="non-scaling-stroke"
+            style={{ strokeWidth: 2 }}
+          />
+        )}
 
-
-
-
+        {modoTecnico && (<>
         {/* View-specific lines */}
         {data.view === "front" && (
           <>
@@ -2359,45 +2376,10 @@ function OverlayLayer({
         })()}
 
 
-        {/* DEBUG: zona da silhueta (|x-50|<8) + caixas de colisão dos labels */}
-        {debugMode && (
-          <g>
-            {/* Faixa da silhueta = exclusion zone exterior */}
-            <rect
-              x={42} y={0} width={16} height={100}
-              fill="#FF00FF"
-              fillOpacity={0.08}
-              stroke="#FF00FF"
-              strokeOpacity={0.5}
-              strokeDasharray="1 1"
-              vectorEffect="non-scaling-stroke"
-              style={{ strokeWidth: 1 }}
-            />
-            <text x={50} y={99} fontSize={1.8} fill="#FF00FF" textAnchor="middle" opacity={0.9}>
-              SILHUETA (labels proibidos)
-            </text>
-            {/* Caixas de colisão de cada label (16% x 4.5%) */}
-            {labelPositions.map((q) => (
-              <g key={`dbg-${q.key}`}>
-                <rect
-                  x={q.lx - 8} y={q.ly - 2.25}
-                  width={16} height={4.5}
-                  fill="none"
-                  stroke="#00FFAA"
-                  strokeOpacity={0.85}
-                  strokeDasharray="0.6 0.6"
-                  vectorEffect="non-scaling-stroke"
-                  style={{ strokeWidth: 1 }}
-                />
-                {/* Anchor → label vector */}
-                <circle cx={q.lx} cy={q.ly} r={0.5} fill="#00FFAA" />
-              </g>
-            ))}
-          </g>
-        )}
+      </>)}
       </svg>
 
-      {/* Legenda de severidade dos landmarks */}
+      {modoTecnico && (<> {/* Legenda de severidade dos landmarks */}
       <div
         className="absolute left-2 bottom-2 pointer-events-none"
         style={{
@@ -2521,7 +2503,7 @@ function OverlayLayer({
             );
           });
         })()}
-      </div>
+      </div></>)}
     </>
   );
 }
