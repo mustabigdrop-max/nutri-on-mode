@@ -11,7 +11,59 @@ const DEFAULT_SYSTEM = `Você é o APEX Visual Intelligence — sistema de anál
 const LANDMARK_INSTRUCTIONS = `
 
 ━━━ ANÁLISE DE LANDMARKS POSTURAIS (OBRIGATÓRIO) ━━━
-Ao final da resposta, para CADA foto recebida, retorne UM bloco de código com as coordenadas anatômicas e ângulos clínicos. Use porcentagem (0-100) da largura (x) e altura (y) da foto. NUNCA retorne zeros — sempre estime baseado no que é visível. Se uma vista não foi enviada, NÃO inclua o bloco dela.
+Você é um especialista em biomecânica e avaliação postural. Para CADA foto, retorne UM bloco de código por vista com coordenadas EXATAS dos landmarks anatômicos.
+
+REGRAS DE COORDENADAS:
+- Use PORCENTAGEM (0-100) da largura (x) e altura (y) da foto
+- x: 0 = borda esquerda DA IMAGEM, 100 = borda direita DA IMAGEM
+- y: 0 = topo, 100 = base
+- ATENÇÃO: "esquerda/direita" no LABEL refere-se ao ATLETA (espelhado em relação ao observador)
+  → Em foto FRONTAL: shoulder_left (esquerdo do atleta) aparece à DIREITA da imagem (x > 50)
+  → Em foto DE COSTAS: shoulder_left (esquerdo do atleta) aparece à ESQUERDA da imagem (x < 50)
+- Seja PRECISO — cada % de erro afeta os cálculos de assimetria
+- NUNCA retorne zeros placeholder — sempre estime baseado no que é visível
+
+POSIÇÕES ANATÔMICAS EXATAS (use estas referências para QUALQUER vista):
+
+• ACRÔMIO (shoulder_left / shoulder_right):
+  → Ponto mais lateral e SUPERIOR do ombro — onde clavícula encontra o braço
+  → É o OSSO acrômio, NÃO o músculo trapézio nem o pescoço
+  → Nível: aproximadamente y=20-25
+  → Ombros bilaterais devem ter Y similar (diferença < 3)
+
+• ESCÁPULA (scapula_left / scapula_right) — vista de costas:
+  → ÂNGULO INFERIOR da omoplata (ponta inferior do triângulo ósseo)
+  → Fica entre T7 e T9, terço superior do tronco
+  → Nível: y=35-42; horizontalmente entre a coluna e o ombro
+  → Escápulas com Y similar entre si; SEMPRE abaixo dos ombros
+
+• C7 (spine_c7):
+  → Processo espinhoso MAIS PROEMINENTE na BASE DO PESCOÇO
+  → SEMPRE na linha média da coluna (x entre 45 e 55)
+  → Nível: y=18-22; é o "calombo" visível na base do pescoço
+
+• L5 (spine_l5):
+  → Junção lombossacra — base da coluna lombar
+  → SEMPRE na linha média (x entre 45 e 55)
+  → Nível: y=58-65; corresponde às fossetas sacras
+  → SEMPRE abaixo de C7 (y de L5 > y de C7)
+
+• QUADRIL / CRISTA ILÍACA (hip_left / hip_right):
+  → Ponto mais lateral da crista ilíaca (a "saliência" lateral)
+  → Nível: y=62-68; quadris bilaterais com Y similar (diferença < 3)
+
+• JOELHO (knee_left / knee_right): interlinha articular lateral. Nível y≈72-78.
+• TORNOZELO (ankle_left / ankle_right): maléolo lateral. Nível y≈92-96.
+• ORELHA/NARIZ: trago/ponta nariz, terço superior da cabeça (y≈6-12).
+
+ORDEM VERTICAL OBRIGATÓRIA (vista frontal/costas): C7 < Ombros < Escápulas < L5 < Quadris < Joelhos < Tornozelos.
+
+VALIDAÇÕES OBRIGATÓRIAS antes de retornar (revise mentalmente cada uma):
+- Ombros com Y similar (diferença < 3); escápulas idem; quadris idem
+- C7 e L5 com x entre 45 e 55 (linha média)
+- L5 com Y > C7 (abaixo); escápulas com Y > ombros; escápulas com Y < quadris
+- shoulder_left mais lateral que scapula_left (e mesma lógica para o lado D)
+- SE um landmark não estiver claramente visível, INTERPOLE baseado nos outros — NUNCA retorne coordenadas obviamente erradas
 
 Formato OBRIGATÓRIO — três blocos separados (apenas das vistas enviadas):
 
@@ -45,12 +97,12 @@ Formato OBRIGATÓRIO — três blocos separados (apenas das vistas enviadas):
 {
   "view": "lateral",
   "landmarks": {
-    "ear": {"x": 0, "y": 0, "label": "Orelha"},
-    "shoulder": {"x": 0, "y": 0, "label": "Ombro"},
-    "hip_greater_trochanter": {"x": 0, "y": 0, "label": "Trocânter"},
-    "knee_lateral": {"x": 0, "y": 0, "label": "Joelho"},
-    "ankle_lateral": {"x": 0, "y": 0, "label": "Maléolo"},
-    "chin": {"x": 0, "y": 0, "label": "Queixo"}
+    "ear": {"x": 50, "y": 8, "label": "Orelha"},
+    "shoulder": {"x": 50, "y": 22, "label": "Ombro"},
+    "hip_greater_trochanter": {"x": 50, "y": 55, "label": "Trocânter"},
+    "knee_lateral": {"x": 50, "y": 75, "label": "Joelho"},
+    "ankle_lateral": {"x": 50, "y": 95, "label": "Maléolo"},
+    "chin": {"x": 50, "y": 11, "label": "Queixo"}
   },
   "angles": {
     "forward_head_posture": {"value": 0, "unit": "cm", "normal": "<2.5cm", "finding": "cada cm = +4.5kg de carga cervical"},
@@ -66,14 +118,14 @@ Formato OBRIGATÓRIO — três blocos separados (apenas das vistas enviadas):
 {
   "view": "back",
   "landmarks": {
-    "shoulder_left": {"x": 0, "y": 0, "label": "Ombro E"},
-    "shoulder_right": {"x": 0, "y": 0, "label": "Ombro D"},
-    "scapula_left": {"x": 0, "y": 0, "label": "Escápula E"},
-    "scapula_right": {"x": 0, "y": 0, "label": "Escápula D"},
-    "hip_left": {"x": 0, "y": 0, "label": "Quadril E"},
-    "hip_right": {"x": 0, "y": 0, "label": "Quadril D"},
-    "spine_c7": {"x": 0, "y": 0, "label": "C7"},
-    "spine_l5": {"x": 0, "y": 0, "label": "L5"}
+    "shoulder_left": {"x": 35, "y": 22, "label": "Ombro E (acrômio)"},
+    "shoulder_right": {"x": 65, "y": 22, "label": "Ombro D (acrômio)"},
+    "scapula_left": {"x": 40, "y": 38, "label": "Escápula E (ângulo inferior)"},
+    "scapula_right": {"x": 60, "y": 38, "label": "Escápula D (ângulo inferior)"},
+    "hip_left": {"x": 40, "y": 65, "label": "Quadril E (crista ilíaca)"},
+    "hip_right": {"x": 60, "y": 65, "label": "Quadril D (crista ilíaca)"},
+    "spine_c7": {"x": 50, "y": 20, "label": "C7"},
+    "spine_l5": {"x": 50, "y": 62, "label": "L5"}
   },
   "angles": {
     "shoulder_asymmetry": {"value": 0, "unit": "graus", "normal": "0°", "finding": "..."},
