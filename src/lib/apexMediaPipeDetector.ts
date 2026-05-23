@@ -40,9 +40,9 @@ async function getDetector(): Promise<PoseLandmarker> {
         baseOptions: { modelAssetPath: modelPath, delegate: "GPU" },
         runningMode: "IMAGE",
         numPoses: 1,
-        minPoseDetectionConfidence: 0.5,
-        minPosePresenceConfidence: 0.5,
-        minTrackingConfidence: 0.5,
+        minPoseDetectionConfidence: 0.3,
+        minPosePresenceConfidence: 0.3,
+        minTrackingConfidence: 0.3,
       });
     } catch (gpuErr) {
       console.warn("[APEX MP] GPU falhou, usando CPU:", gpuErr);
@@ -50,6 +50,9 @@ async function getDetector(): Promise<PoseLandmarker> {
         baseOptions: { modelAssetPath: modelPath, delegate: "CPU" },
         runningMode: "IMAGE",
         numPoses: 1,
+        minPoseDetectionConfidence: 0.3,
+        minPosePresenceConfidence: 0.3,
+        minTrackingConfidence: 0.3,
       });
     }
     return cached;
