@@ -3,6 +3,7 @@ import html2canvas from "html2canvas";
 import { Download, ChevronDown, BookOpen, Link2, Eye, Crosshair } from "lucide-react";
 import { toast } from "sonner";
 import { CYCLE_PHASE_INFO, type CyclePhase } from "@/lib/feminine";
+import { getEducationContent } from "@/utils/apexEducation";
 
 // ─── Types ───────────────────────────────────────────────────────
 export type Landmark = { x: number; y: number; label: string };
