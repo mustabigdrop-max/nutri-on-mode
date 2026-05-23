@@ -202,6 +202,7 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
   );
   const [view, setView] = useState<"front" | "lateral" | "back">(availableViews[0] || "front");
   const [selected, setSelected] = useState<string | null>(null);
+  const [hoveredLm, setHoveredLm] = useState<string | null>(null);
   const [eduMode, setEduMode] = useState<boolean>(() => {
     try { return localStorage.getItem("apex-edu-mode") === "1"; } catch { return false; }
   });
