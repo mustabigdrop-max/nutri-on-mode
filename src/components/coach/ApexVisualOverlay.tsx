@@ -1182,7 +1182,7 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
             );
           })()}
 
-          })()}
+
           {data?.landmarks && (() => {
             const q = calcAnalysisQuality(data.landmarks as any);
             const pct = Math.round(q.score * 100);
