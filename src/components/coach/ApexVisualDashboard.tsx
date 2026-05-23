@@ -1449,6 +1449,15 @@ Suporte em uso: ${suporte || "não informado"}`;
 
   const analyzeWithAI = useCallback(async () => {
     setLoading(true);
+    // Kick off MediaPipe auto-detect em paralelo com a chamada da IA
+    const mpPromise = autoDetectAllViews({
+      front: photos.front,
+      back: photos.back,
+      side: photos.side,
+    }).catch((e) => {
+      console.warn("[APEX] autoDetectAllViews falhou:", e);
+      return { front: null, back: null, lateral: null };
+    });
     try {
       const photoMap: { label: string; file: File | null }[] = [
         { label: "Frente", file: photos.front },
