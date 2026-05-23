@@ -1487,9 +1487,24 @@ export function calcAnalysisQuality(landmarks: Record<string, any>): AnalysisQua
 }
 
 // ─── Overlay (HTML + SVG hybrid for crisp labels) ────────────────
+type DragLmKey =
+  | "shoulder_left" | "shoulder_right"
+  | "scapula_left" | "scapula_right"
+  | "hip_left" | "hip_right";
+
+const LM_DRAG_STYLE: Record<DragLmKey, { cor: string; corBorda: string; label: string }> = {
+  shoulder_left:  { cor: "#38BDF8", corBorda: "#BAE6FD", label: "Ombro E" },
+  shoulder_right: { cor: "#38BDF8", corBorda: "#BAE6FD", label: "Ombro D" },
+  scapula_left:   { cor: "#A78BFA", corBorda: "#DDD6FE", label: "Escáp E" },
+  scapula_right:  { cor: "#A78BFA", corBorda: "#DDD6FE", label: "Escáp D" },
+  hip_left:       { cor: "#34D399", corBorda: "#A7F3D0", label: "Quadril E" },
+  hip_right:      { cor: "#34D399", corBorda: "#A7F3D0", label: "Quadril D" },
+};
+
 function OverlayLayer({
   data, selected, onSelect, eduMode, chainMode, debugMode, gridMode, chains, plumbXOverride,
   manualSpine, onSpineMove, onSpineRelease, onSpineReset,
+  manualLandmarks, onLandmarkMove,
 }: {
   data: LandmarkView;
   selected: string | null;
@@ -1504,6 +1519,8 @@ function OverlayLayer({
   onSpineMove?: (key: "c7" | "l5", x: number, y: number) => void;
   onSpineRelease?: () => void;
   onSpineReset?: () => void;
+  manualLandmarks?: Partial<Record<DragLmKey, { x: number; y: number }>>;
+  onLandmarkMove?: (key: DragLmKey, x: number, y: number) => void;
 }) {
   // Aplica overrides manuais (drag livre X/Y) sobre o snap automático
   const lm = useMemo(() => {
@@ -1514,12 +1531,19 @@ function OverlayLayer({
     if (manualSpine?.l5) {
       snapped.spine_l5 = { ...(snapped.spine_l5 || {}), x: manualSpine.l5.x, y: manualSpine.l5.y, manual: true, snapped: false };
     }
+    if (manualLandmarks) {
+      (Object.keys(manualLandmarks) as DragLmKey[]).forEach(k => {
+        const ov = manualLandmarks[k];
+        if (!ov) return;
+        snapped[k] = { ...(snapped[k] || {}), x: ov.x, y: ov.y, manual: true };
+      });
+    }
     return snapped as typeof data.landmarks;
-  }, [data.landmarks, manualSpine]);
+  }, [data.landmarks, manualSpine, manualLandmarks]);
 
-  // ─── Drag livre de C7/L5 ─────────────────────────────────────
+  // ─── Drag livre de C7/L5 e demais landmarks ──────────────────
   const svgRef = useRef<SVGSVGElement>(null);
-  const draggingRef = useRef<null | "c7" | "l5">(null);
+  const draggingRef = useRef<null | "c7" | "l5" | DragLmKey>(null);
 
   // ─── Onboarding e hover de descoberta C7/L5 ─────────────────
   const ONBOARDING_KEY = "apex_landmark_onboarding_done";
