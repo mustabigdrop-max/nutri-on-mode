@@ -159,11 +159,23 @@ function CopyButton({ text }: { text: string }) {
 export default function CorrectivePlanViewer({
   text,
   apexScores,
+  coachId = null,
+  athleteId = null,
+  protocolId = null,
+  athleteContext = "",
+  onProtocolUpdate,
 }: {
   text: string;
   apexScores: Record<string, number>;
+  coachId?: string | null;
+  athleteId?: string | null;
+  protocolId?: string | null;
+  athleteContext?: string;
+  onProtocolUpdate?: (newText: string, newVersion: number) => void;
 }) {
   const [tab, setTab] = useState<typeof TABS[number]["key"]>("semana");
+  const [reviewStatus, setReviewStatus] = useState<"reviewing" | "approved">("reviewing");
+  const [reviewVersion, setReviewVersion] = useState(1);
 
   const parsed = useMemo(() => {
     const allHeaders = [
