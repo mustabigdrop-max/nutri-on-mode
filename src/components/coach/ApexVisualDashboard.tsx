@@ -1370,10 +1370,6 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
 
   // Dr. VERTEX v4.0 — dispara análise farmacológica PhD em JSON
   const runVertexV4 = useCallback(async () => {
-    if (!formData.compostos || formData.compostos.trim().length < 5) {
-      toast({ title: "Protocolo vazio", description: "Informe os compostos no campo Protocolo antes de analisar.", variant: "destructive" });
-      return;
-    }
     setVertexV4Loading(true);
     setVertexV4Error(null);
     try {
