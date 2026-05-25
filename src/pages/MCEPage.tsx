@@ -657,7 +657,7 @@ function MceChat({ scores, autoMessage }: { scores: { m: number; c: number; e: n
         </button>
         <Waveform active={state === "listening" || state === "speaking"} color={state === "speaking" ? C.cc : C.gold} side="R" />
       </div>
-      <div className="text-center text-[9px] mb-3" style={{ color: C.textDim }}>
+      <div className="text-center text-[12px] mb-3" style={{ color: C.textDim }}>
         {state === "idle" && "Pressione para falar"}
         {state === "listening" && "Ouvindo..."}
         {state === "thinking" && "Processando..."}
@@ -667,7 +667,7 @@ function MceChat({ scores, autoMessage }: { scores: { m: number; c: number; e: n
       {/* Text input */}
       <div className="flex gap-2 mb-3">
         <input value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && send(input)}
-          placeholder="Digite sua mensagem..." className="flex-1 px-3 py-2 text-[11px]"
+          placeholder="Digite sua mensagem..." className="flex-1 px-3 py-2 text-[13px]"
           style={{ background: C.surface2, border: `0.5px solid ${C.border}`, color: C.text, borderRadius: 3, fontFamily: "inherit" }} />
         <button onClick={() => send(input)} className="px-3 mce-btn" style={{ background: C.gold, color: "#000", borderRadius: 3 }}>
           <Send className="w-3.5 h-3.5" />
