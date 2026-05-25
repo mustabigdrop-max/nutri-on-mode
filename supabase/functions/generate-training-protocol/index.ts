@@ -993,59 +993,86 @@ serve(async (req) => {
       ? `${userPrompt}\n\nREFERÊNCIAS CIENTÍFICAS ATUAIS (Perplexity):\n${scienceContext}\n\nCitações: ${JSON.stringify(scienceCitations)}\n\nUse essas referências para embasar as decisões.`
       : userPrompt;
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${LOVABLE_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [
-          { role: "system", content: TRAININGON_SYSTEM_PROMPT },
-          { role: "user", content: enrichedPrompt },
-        ],
-        temperature: 0.7,
-      }),
-    });
-
-    if (!response.ok) {
-      if (response.status === 429) {
-        return new Response(JSON.stringify({ error: "Rate limit excedido." }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    async function callAI(extraInstruction = ""): Promise<{ response: Response; raw: string }> {
+      const sys = extraInstruction
+        ? `${TRAININGON_SYSTEM_PROMPT}\n\n## RETENTATIVA OBRIGATÓRIA\n${extraInstruction}`
+        : TRAININGON_SYSTEM_PROMPT;
+      const r = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${LOVABLE_API_KEY}` },
+        body: JSON.stringify({
+          model: "google/gemini-2.5-flash",
+          messages: [
+            { role: "system", content: sys },
+            { role: "user", content: enrichedPrompt },
+          ],
+          temperature: 0.7,
+        }),
+      });
+      if (!r.ok) {
+        if (r.status === 429 || r.status === 402) return { response: r, raw: "" };
+        const errText = await r.text();
+        throw new Error(`AI API error: ${r.status} - ${errText}`);
       }
-      if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "Créditos insuficientes." }), { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-      }
-      const errText = await response.text();
-      throw new Error(`AI API error: ${response.status} - ${errText}`);
+      const j = await r.json();
+      return { response: r, raw: j.choices?.[0]?.message?.content || "" };
     }
 
-    const aiData = await response.json();
-    let content = aiData.choices?.[0]?.message?.content || "";
+    let { response, raw: content } = await callAI();
 
-    // For protocolo tab, parse JSON and sanitize
+    if (!response.ok) {
+      if (response.status === 429) return new Response(JSON.stringify({ error: "Rate limit excedido." }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      if (response.status === 402) return new Response(JSON.stringify({ error: "Créditos insuficientes." }), { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
+    // For protocolo tab, parse JSON, validate, retry if invalid, sanitize.
     if (data.tab === "protocolo") {
-      try {
-        const jsonMatch = content.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          let parsed = JSON.parse(jsonMatch[0]);
-          parsed = sanitizeProtocol(parsed);
-          // Camada 3: enforcer determinístico de volume semanal.
-          const enforced = enforceVolumeLimits(parsed, 1.10);
-          if (enforced.anyFixed) {
-            console.log("[volume-enforcer] aplicado:", JSON.stringify(enforced.fixes));
+      let parsed: any = null;
+      let lastMissing: string[] = [];
+      for (let attempt = 0; attempt < 3; attempt++) {
+        try {
+          const jsonMatch = content.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+            parsed = JSON.parse(jsonMatch[0]);
+            const missing = validateProtocolStructure(parsed);
+            if (missing.length === 0) { lastMissing = []; break; }
+            lastMissing = missing;
+            console.log(`[validate] tentativa ${attempt + 1} faltando:`, missing.slice(0, 8));
+            if (attempt < 2) {
+              const fix = `A resposta anterior estava INVÁLIDA. Faltaram OBRIGATORIAMENTE os campos: ${missing.slice(0, 20).join(", ")}.\nRegenere o JSON COMPLETO preenchendo TODOS os campos do checklist. Não omita feeder_sets, work_sets/top_set, why_this_exercise, execution_cues, warmup, muscle_priorities, coach_notes nem improvement_alerts.`;
+              const retry = await callAI(fix);
+              content = retry.raw || content;
+              parsed = null;
+              continue;
+            }
+          } else if (attempt < 2) {
+            const retry = await callAI("A resposta anterior NÃO continha JSON válido. Retorne APENAS o objeto JSON estruturado completo, sem markdown nem texto fora do JSON.");
+            content = retry.raw || content;
+            continue;
           }
-          return new Response(JSON.stringify({
-            protocol: enforced.protocol,
-            volume_fixes: enforced.fixes,
-            citations: scienceCitations,
-          }), {
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          });
+        } catch (e) {
+          console.log(`[parse] tentativa ${attempt + 1} falhou:`, (e as Error).message);
+          parsed = null;
+          if (attempt < 2) {
+            const retry = await callAI("A resposta anterior não era JSON parseável. Retorne APENAS o objeto JSON válido completo.");
+            content = retry.raw || content;
+            continue;
+          }
         }
-      } catch (e) {
-        console.log("JSON parse failed, returning raw content");
       }
+
+      if (parsed) {
+        parsed = sanitizeProtocol(parsed);
+        const enforced = enforceVolumeLimits(parsed, 1.10);
+        if (enforced.anyFixed) console.log("[volume-enforcer] aplicado:", JSON.stringify(enforced.fixes));
+        return new Response(JSON.stringify({
+          protocol: enforced.protocol,
+          volume_fixes: enforced.fixes,
+          citations: scienceCitations,
+          validation_warnings: lastMissing,
+        }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+      console.log("[protocolo] JSON inválido após 3 tentativas — devolvendo raw content");
     }
 
     return new Response(JSON.stringify({ content, citations: scienceCitations }), {
