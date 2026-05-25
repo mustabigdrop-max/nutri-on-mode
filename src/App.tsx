@@ -91,6 +91,7 @@ import TrainingSystemsPage from "./pages/TrainingSystemsPage";
 import ScienceHubPage from "./pages/ScienceHubPage";
 import BiomechanicsVaultPage from "./pages/BiomechanicsVaultPage";
 import MetabolicONPage from "./pages/MetabolicONPage";
+import MCEPage from "./pages/MCEPage";
 import PlanoAlimentarIA from "./components/coach/PlanoAlimentarIA";
 import AthleteRoster from "./components/coach/AthleteRoster";
 import AthleteProgressTracker from "./components/coach/AthleteProgressTracker";
@@ -210,6 +211,7 @@ const App = () => (
             <Route path="/science" element={<ProtectedRoute><ScienceHubPage /></ProtectedRoute>} />
             <Route path="/biomechanics" element={<ProtectedRoute><BiomechanicsVaultPage /></ProtectedRoute>} />
             <Route path="/metabolicon" element={<ProtectedRoute><MetabolicONPage /></ProtectedRoute>} />
+            <Route path="/mce" element={<ProtectedRoute><MCEPage /></ProtectedRoute>} />
             <Route path="/dr-nexus" element={<ProtectedRoute><DrNexusPage /></ProtectedRoute>} />
             <Route path="/videoform" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON PRO" featureName="VideoForm AI"><VideoFormPage /></PlanGateWrapper></ProtectedRoute>} />
             {/* COACH */}
