@@ -267,7 +267,7 @@ export default function MCEPage() {
                   background: C.surface, border: `0.5px solid ${isActive ? d.color : C.border}`, borderRadius: 4,
                 }}>
                 <div className="flex items-baseline justify-between mb-2">
-                  <span style={{ color: d.color, fontSize: 44, fontWeight: 700, lineHeight: 1 }}>{k}</span>
+                  <span style={{ color: d.color, fontSize: 48, fontWeight: 900, lineHeight: 1 }}>{k}</span>
                   <span style={{ color: C.textDim, fontSize: 11 }}>{d.name}</span>
                 </div>
                 <div className="h-0.5 w-full rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.05)" }}>
