@@ -4,8 +4,10 @@ import { toast } from "@/hooks/use-toast";
 import { Sparkles, Send, CheckCircle2, RefreshCw, X } from "lucide-react";
 
 interface Msg {
-  role: "user" | "assistant";
+  role: "user" | "assistant" | "system";
   content: string;
+  isError?: boolean;
+  retryPayload?: { kind: "chat" | "initial"; messages: Msg[] };
 }
 
 interface Props {
@@ -97,27 +99,54 @@ export default function TrainingReviewAgent({
     [reviewId],
   );
 
+  const invokeWithRetry = useCallback(
+    async (body: any, maxAttempts = 3): Promise<{ ok: true; text: string } | { ok: false; error: string }> => {
+      let lastErr = "Falha desconhecida";
+      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        try {
+          const { data, error } = await supabase.functions.invoke("training-review-agent", { body });
+          if (error) throw new Error(error.message || "Edge function error");
+          if ((data as any)?.error) throw new Error((data as any).error);
+          const text = (data as any)?.text || "";
+          return { ok: true, text };
+        } catch (e: any) {
+          lastErr = e?.message || "Falha de conexão";
+          if (attempt < maxAttempts) await new Promise((r) => setTimeout(r, 2000));
+        }
+      }
+      return { ok: false, error: lastErr };
+    },
+    [],
+  );
+
   const callAgent = useCallback(
     async (nextMessages: Msg[]) => {
       setLoading(true);
-      try {
-        const { data, error } = await supabase.functions.invoke("training-review-agent", {
-          body: { mode: "chat", messages: nextMessages, protocol: protocolText, athleteContext },
-        });
-        if (error) throw new Error(error.message);
-        if ((data as any)?.error) throw new Error((data as any).error);
-        const text = (data as any)?.text || "";
-        const final = [...nextMessages, { role: "assistant" as const, content: text }];
+      // remove previous transient error system messages
+      const clean = nextMessages.filter((m) => !m.isError);
+      const result = await invokeWithRetry({
+        mode: "chat",
+        messages: clean.filter((m) => m.role !== "system").map(({ role, content }) => ({ role, content })),
+        protocol: protocolText,
+        athleteContext,
+      });
+      if (result.ok) {
+        const final = [...clean, { role: "assistant" as const, content: result.text }];
         setMessages(final);
         await persistMessages(final);
-        scrollDown();
-      } catch (e: any) {
-        toast({ title: "Erro no Training Agent", description: e?.message || "Falha", variant: "destructive" });
-      } finally {
-        setLoading(false);
+      } else {
+        const errMsg: Msg = {
+          role: "system",
+          content: "Serviço temporariamente indisponível. Tente novamente em alguns instantes.",
+          isError: true,
+          retryPayload: { kind: "chat", messages: clean },
+        };
+        setMessages([...clean, errMsg]);
       }
+      setLoading(false);
+      scrollDown();
     },
-    [protocolText, athleteContext, persistMessages],
+    [protocolText, athleteContext, persistMessages, invokeWithRetry],
   );
 
   const sendInitialAnalysis = async () => {
@@ -126,24 +155,35 @@ export default function TrainingReviewAgent({
       content:
         "Analise este protocolo gerado para o atleta. Identifique: 1 ponto forte, 1 ponto de atenção, e faça 1 pergunta técnica ao coach para refinar o protocolo.",
     };
-    // We don't show the seed user message; we synthesize the assistant's first turn directly.
     setLoading(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("training-review-agent", {
-        body: { mode: "chat", messages: [initial], protocol: protocolText, athleteContext },
-      });
-      if (error) throw new Error(error.message);
-      if ((data as any)?.error) throw new Error((data as any).error);
-      const text = (data as any)?.text || "";
-      const final: Msg[] = [{ role: "assistant", content: text }];
+    const result = await invokeWithRetry({
+      mode: "chat",
+      messages: [{ role: initial.role, content: initial.content }],
+      protocol: protocolText,
+      athleteContext,
+    });
+    if (result.ok) {
+      const final: Msg[] = [{ role: "assistant", content: result.text }];
       setMessages(final);
       await persistMessages(final);
-      scrollDown();
-    } catch (e: any) {
-      toast({ title: "Erro ao iniciar análise", description: e?.message || "Falha", variant: "destructive" });
-    } finally {
-      setLoading(false);
+    } else {
+      setMessages([
+        {
+          role: "system",
+          content: "Serviço temporariamente indisponível. Tente novamente em alguns instantes.",
+          isError: true,
+          retryPayload: { kind: "initial", messages: [] },
+        },
+      ]);
     }
+    setLoading(false);
+    scrollDown();
+  };
+
+  const retryLast = (m: Msg) => {
+    if (!m.retryPayload) return;
+    if (m.retryPayload.kind === "initial") void sendInitialAnalysis();
+    else void callAgent(m.retryPayload.messages);
   };
 
   const sendMessage = async (text: string) => {
@@ -312,36 +352,74 @@ export default function TrainingReviewAgent({
         {messages.length === 0 && !loading && (
           <div className="text-[10px] italic opacity-60 text-center py-6">Iniciando análise do protocolo...</div>
         )}
-        {messages.map((m, i) => (
-          <div
-            key={i}
-            className="mb-2"
-            style={
-              m.role === "assistant"
-                ? {
-                    background: "rgba(0,212,170,0.04)",
-                    borderLeft: "2px solid rgba(0,212,170,0.3)",
-                    borderRadius: "0 6px 6px 6px",
-                    padding: "8px 10px",
-                    fontSize: 11,
-                    lineHeight: 1.7,
-                    color: "hsl(var(--foreground))",
-                  }
-                : {
-                    background: "rgba(200,160,32,0.05)",
-                    borderRight: "2px solid rgba(200,160,32,0.3)",
-                    borderRadius: "6px 0 6px 6px",
-                    padding: "8px 10px",
-                    fontSize: 11,
-                    color: "hsl(var(--muted-foreground))",
-                    textAlign: "right",
-                    marginLeft: "20%",
-                  }
-            }
-          >
-            {m.content}
-          </div>
-        ))}
+        {messages.map((m, i) => {
+          if (m.role === "system" && m.isError) {
+            return (
+              <div
+                key={i}
+                className="mb-2"
+                style={{
+                  background: "rgba(255,64,96,0.06)",
+                  borderLeft: "2px solid rgba(255,64,96,0.3)",
+                  borderRadius: "0 6px 6px 6px",
+                  padding: "8px 10px",
+                  fontSize: 11,
+                  color: "rgba(255,140,160,0.95)",
+                }}
+              >
+                <div>{m.content}</div>
+                {m.retryPayload && (
+                  <button
+                    onClick={() => retryLast(m)}
+                    className="mt-2 transition-opacity hover:opacity-80"
+                    style={{
+                      fontSize: 9,
+                      padding: "4px 10px",
+                      background: "rgba(0,212,170,0.12)",
+                      border: "0.5px solid rgba(0,212,170,0.4)",
+                      color: "#60ffdd",
+                      borderRadius: 3,
+                      letterSpacing: "0.08em",
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    Tentar novamente
+                  </button>
+                )}
+              </div>
+            );
+          }
+          return (
+            <div
+              key={i}
+              className="mb-2"
+              style={
+                m.role === "assistant"
+                  ? {
+                      background: "rgba(0,212,170,0.04)",
+                      borderLeft: "2px solid rgba(0,212,170,0.3)",
+                      borderRadius: "0 6px 6px 6px",
+                      padding: "8px 10px",
+                      fontSize: 11,
+                      lineHeight: 1.7,
+                      color: "hsl(var(--foreground))",
+                    }
+                  : {
+                      background: "rgba(200,160,32,0.05)",
+                      borderRight: "2px solid rgba(200,160,32,0.3)",
+                      borderRadius: "6px 0 6px 6px",
+                      padding: "8px 10px",
+                      fontSize: 11,
+                      color: "hsl(var(--muted-foreground))",
+                      textAlign: "right",
+                      marginLeft: "20%",
+                    }
+              }
+            >
+              {m.content}
+            </div>
+          );
+        })}
         {loading && (
           <div className="flex items-center gap-2 text-[10px]" style={{ color: "#60ffdd" }}>
             <Sparkles className="h-3 w-3 animate-pulse" />

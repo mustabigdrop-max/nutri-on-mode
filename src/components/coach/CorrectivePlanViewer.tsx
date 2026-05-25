@@ -298,7 +298,7 @@ export default function CorrectivePlanViewer({
               <CopyButton text={text} />
             </div>
             <pre className="text-xs whitespace-pre-wrap font-mono text-foreground/90 max-h-[700px] overflow-y-auto p-3 rounded-lg border border-border bg-card/60">
-              {text || "—"}
+              {cleanProtocolMarkdown(text) || "—"}
             </pre>
           </div>
 
@@ -328,6 +328,20 @@ export default function CorrectivePlanViewer({
     </div>
   );
 }
+
+function cleanProtocolMarkdown(t: string): string {
+  if (!t) return "";
+  return t
+    .replace(/^#{1,6}\s+/gm, "")           // strip leading # ## ###
+    .replace(/\*\*(.+?)\*\*/g, "$1")        // **bold**
+    .replace(/__(.+?)__/g, "$1")            // __bold__
+    .replace(/(^|\s)\*(?!\s)([^*\n]+?)\*(?!\w)/g, "$1$2")  // *italic*
+    .replace(/`([^`]+)`/g, "$1")            // `code`
+    .replace(/^[ \t]*[-*+•]\s+/gm, "• ")    // bullets
+    .replace(/\n{3,}/g, "\n\n");
+}
+
+
 
 function Pre({ text }: { text: string }) {
   if (!text) return <Empty text="—" />;
