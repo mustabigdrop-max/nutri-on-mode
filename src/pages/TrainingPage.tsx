@@ -58,6 +58,13 @@ import { buildSystemPrescription } from "@/data/recommendSystem";
 import { TRAINING_SYSTEMS } from "@/data/trainingSystems";
 import CompetitionModeBlocks from "@/components/training/systems/CompetitionModeBlocks";
 import StratumAIAgent from "@/components/training/StratumAIAgent";
+import {
+  TrackerProvider,
+  WorkoutProgressBar,
+  RestTimerOverlay,
+  WorkoutCompleteCard,
+  SetTrackerBlock,
+} from "@/components/training/tracker/WorkoutTracker";
 import VERAAgent from "@/components/training/VERAAgent";
 import MceBanner from "@/components/mce/MceBanner";
 
@@ -125,13 +132,18 @@ export default function TrainingPage() {
   }, [veraProtocoloFlag, veraAtletaId]);
 
   return (
+    <TrackerProvider userId={user?.id}>
     <div className="ton-root min-h-screen">
       <TrainingHUDBackground />
+      <WorkoutProgressBar />
+      <WorkoutCompleteCard />
+      <RestTimerOverlay />
       <MceBanner
         dimension="e"
         storageKey="mce_banner_trainingon_dismissed"
         text="Protocolo de Foco Progressivo recomendado — dimensão Execução crítica"
       />
+
 
 
 
@@ -235,8 +247,10 @@ export default function TrainingPage() {
 
       <BottomNav />
     </div>
+    </TrackerProvider>
   );
 }
+
 
 /* ================================================================
    ELITE GENERATE SECTION — Premium Protocol Generator
@@ -1854,6 +1868,12 @@ function ExerciseCard({
         {expanded && (
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }}>
             <div className="px-3 pb-3 space-y-2">
+              {/* Tracker — séries marcáveis */}
+              <SetTrackerBlock
+                exerciseId={(currentExercise.id || currentExercise.name || `ex-${displayOrder ?? 0}`).toString().toLowerCase().replace(/\s+/g, "-").slice(0, 80)}
+                struct={struct}
+              />
+
               {/* Feeder Sets */}
               {struct.feeder_sets?.length > 0 && (
                 <div className="space-y-1">
