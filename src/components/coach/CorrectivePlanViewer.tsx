@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { ClipboardList, Flame, Zap, TrendingUp, Link2, FileText, Copy, Check } from "lucide-react";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import TrainingReviewAgent, { ReviewStatusBadge } from "@/components/coach/TrainingReviewAgent";
 
 // ─── Parsing helpers ────────────────────────────────────────────
 function section(text: string, header: string | string[], nextHeaders: string[] = []): string {
