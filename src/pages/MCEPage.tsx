@@ -616,6 +616,7 @@ function MceChat({ scores }: { scores: { m: number; c: number; e: number } }) {
             <>
               <span className="absolute inset-0 rounded-full" style={{ border: `1px solid ${state === "speaking" ? C.cc : C.gold}`, animation: "ringExp 1.5s ease-out infinite" }} />
               <span className="absolute inset-0 rounded-full" style={{ border: `1px solid ${state === "speaking" ? C.cc : C.gold}`, animation: "ringExp 1.5s ease-out infinite .5s" }} />
+              <span className="absolute inset-0 rounded-full" style={{ border: `1px solid ${state === "speaking" ? C.cc : C.gold}`, animation: "ringExp 1.5s ease-out infinite 1s" }} />
             </>
           )}
           {state === "thinking" ? <Loader2 className="w-5 h-5 animate-spin" style={{ color: C.gold }} />
