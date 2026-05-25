@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { BarChart3, Droplets, Plus, User, Microscope, Lock, ClipboardList } from "lucide-react";
+import { BarChart3, Droplets, Plus, User, Microscope, Lock, ClipboardList, Brain } from "lucide-react";
 import { useLabSubscription } from "@/hooks/useLabSubscription";
 import { useCoachAccess } from "@/hooks/useCoachAccess";
 import LabUpsellModal from "@/components/lab/LabUpsellModal";
