@@ -109,13 +109,14 @@ function ParticlesBg() {
     const canvas = ref.current; if (!canvas) return;
     const ctx = canvas.getContext("2d"); if (!ctx) return;
     let raf = 0;
-    const colors = [C.teal, C.gold, C.m];
+    const colors = ["#00d4aa", "#c8a020", "#9080ff", "#ffffff"];
     const resize = () => { canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight; };
     resize();
-    const parts = Array.from({ length: 24 }, () => ({
+    const parts = Array.from({ length: 40 }, () => ({
       x: Math.random() * canvas.width, y: Math.random() * canvas.height,
-      vx: (Math.random() - 0.5) * 0.3, vy: (Math.random() - 0.5) * 0.3,
-      c: colors[Math.floor(Math.random() * 3)],
+      vx: (Math.random() - 0.5) * 0.24, vy: (Math.random() - 0.5) * 0.24,
+      r: 0.8 + Math.random() * 1.2,
+      c: colors[Math.floor(Math.random() * colors.length)],
     }));
     const tick = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -123,16 +124,16 @@ function ParticlesBg() {
         p.x += p.vx; p.y += p.vy;
         if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
         if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
-        ctx.fillStyle = p.c; ctx.globalAlpha = 0.6;
-        ctx.beginPath(); ctx.arc(p.x, p.y, 1.5, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = p.c; ctx.globalAlpha = 0.75;
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fill();
       });
       for (let i = 0; i < parts.length; i++) {
         for (let j = i + 1; j < parts.length; j++) {
           const dx = parts[i].x - parts[j].x, dy = parts[i].y - parts[j].y;
           const d = Math.sqrt(dx * dx + dy * dy);
-          if (d < 80) {
-            ctx.strokeStyle = parts[i].c; ctx.globalAlpha = (1 - d / 80) * 0.18;
-            ctx.lineWidth = 0.5; ctx.beginPath();
+          if (d < 90) {
+            ctx.strokeStyle = parts[i].c; ctx.globalAlpha = (1 - d / 90) * 0.15;
+            ctx.lineWidth = 0.3; ctx.beginPath();
             ctx.moveTo(parts[i].x, parts[i].y); ctx.lineTo(parts[j].x, parts[j].y); ctx.stroke();
           }
         }
@@ -143,7 +144,7 @@ function ParticlesBg() {
     window.addEventListener("resize", resize);
     return () => { cancelAnimationFrame(raf); window.removeEventListener("resize", resize); };
   }, []);
-  return <canvas ref={ref} className="absolute inset-0 w-full h-full pointer-events-none" style={{ opacity: 0.5 }} />;
+  return <canvas ref={ref} className="fixed inset-0 w-full h-full pointer-events-none z-[2]" style={{ opacity: 0.85 }} />;
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -208,43 +209,82 @@ export default function MCEPage() {
   const criticalDim: DimKey = critical.toUpperCase() as DimKey;
 
   return (
-    <div className="min-h-screen relative overflow-hidden" style={{ background: C.bg, color: C.text, fontFamily: "'Courier New', monospace" }}>
-      {/* Grid bg */}
-      <div className="fixed inset-0 pointer-events-none" style={{
-        backgroundImage: "linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)",
-        backgroundSize: "40px 40px",
+    <div className="min-h-screen relative overflow-hidden" style={{ color: C.text, fontFamily: "'Courier New', monospace" }}>
+      {/* Layer 1 — radial base */}
+      <div className="fixed inset-0 pointer-events-none z-0" style={{
+        background: "radial-gradient(ellipse at 50% 0%, rgba(0,180,140,0.06) 0%, rgba(9,9,20,1) 55%, #040810 100%)",
       }} />
-      {/* Scan line */}
-      <div className="fixed left-0 right-0 h-px pointer-events-none z-10" style={{ background: "rgba(0,212,170,0.04)", animation: "mceScan 8s linear infinite" }} />
+      {/* Layer 2 — dual grid */}
+      <div className="fixed inset-0 pointer-events-none z-[1]" style={{
+        backgroundImage: [
+          "linear-gradient(rgba(0,212,170,0.04) 1px, transparent 1px)",
+          "linear-gradient(90deg, rgba(0,212,170,0.04) 1px, transparent 1px)",
+          "linear-gradient(rgba(200,160,32,0.02) 1px, transparent 1px)",
+          "linear-gradient(90deg, rgba(200,160,32,0.02) 1px, transparent 1px)",
+        ].join(","),
+        backgroundSize: "40px 40px, 40px 40px, 8px 8px, 8px 8px",
+      }} />
+      {/* Layer 3 — vignette */}
+      <div className="fixed inset-0 pointer-events-none z-[3]" style={{
+        boxShadow: "inset 0 0 120px rgba(0,0,0,0.8), inset 0 0 60px rgba(0,0,0,0.4)",
+      }} />
+      {/* Layer 4 — particles */}
       <ParticlesBg />
+      {/* Layer 5 — scan line */}
+      <div className="fixed left-0 right-0 pointer-events-none z-[4]" style={{
+        height: 1,
+        background: "linear-gradient(90deg, transparent 0%, rgba(0,212,170,0.15) 30%, rgba(0,212,170,0.4) 50%, rgba(0,212,170,0.15) 70%, transparent 100%)",
+        animation: "mceScan 6s linear infinite",
+      }} />
 
       <style>{`
-        @keyframes mceScan { 0%{top:0} 100%{top:100%} }
-        @keyframes mcePulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(1.2)} }
+        @keyframes mceScan { 0%{top:-1px;opacity:1} 100%{top:100vh;opacity:1} }
+        @keyframes mcePulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.6;transform:scale(1.15)} }
+        @keyframes mceOrbPulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.18)} }
+        @keyframes mceRotate { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+        @keyframes mceRotateR { from{transform:rotate(360deg)} to{transform:rotate(0deg)} }
+        @keyframes mceDash { from{stroke-dashoffset:0} to{stroke-dashoffset:-20} }
         @keyframes ringExp { 0%{transform:scale(1);opacity:.6} 100%{transform:scale(2);opacity:0} }
         @keyframes wave { 0%,100%{transform:scaleY(0.3)} 50%{transform:scaleY(1)} }
+        @keyframes mceCenterPulse { 0%,100%{r:19} 50%{r:21} }
         .mce-btn { transition: all .2s ease; }
         .mce-btn:hover { border-color: ${C.gold}; }
+        .mce-rotate-slow { transform-origin: center; animation: mceRotate 8s linear infinite; transform-box: fill-box; }
+        .mce-rotate-rev { transform-origin: center; animation: mceRotateR 20s linear infinite; transform-box: fill-box; }
+        .mce-dash { animation: mceDash 1.5s linear infinite; }
+        .mce-center-pulse { animation: mceCenterPulse 3s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+        .mce-input:focus { outline: none; border-color: rgba(200,160,32,0.5) !important; box-shadow: 0 0 0 1px rgba(200,160,32,0.1), 0 0 12px rgba(200,160,32,0.08); }
       `}</style>
 
       <div className="relative z-20 max-w-6xl mx-auto px-4 py-4">
-        {/* TOP BAR */}
-        <div className="flex items-center justify-between mb-6 pb-3 border-b" style={{ borderColor: C.border }}>
+        {/* TOP BAR — cockpit */}
+        <div className="flex items-center justify-between mb-6 px-4" style={{
+          height: 44,
+          background: "linear-gradient(180deg, rgba(0,212,170,0.06) 0%, rgba(4,8,16,0.95) 100%)",
+          borderBottom: "1px solid rgba(0,212,170,0.15)",
+          boxShadow: "0 1px 0 rgba(0,212,170,0.08), 0 4px 20px rgba(0,0,0,0.6)",
+          borderRadius: 4,
+        }}>
           <div className="flex items-center gap-3">
             <button onClick={() => navigate(-1)} className="p-1.5 rounded hover:bg-white/5" aria-label="Voltar">
               <ArrowLeft className="w-4 h-4" style={{ color: C.textDim }} />
             </button>
-            <div className="text-base tracking-widest">
-              <span style={{ color: "#fff" }}>NUTRI</span>
-              <span style={{ color: C.gold }}>ON</span>
-              <span style={{ color: C.textDim }}> · </span>
-              <span style={{ color: C.teal }}>MCE INTELLIGENCE</span>
+            <div className="flex items-baseline gap-2">
+              <span style={{ color: "#e8f0ff", fontSize: 14, fontWeight: 900, letterSpacing: "0.25em" }}>NUTRI</span>
+              <span style={{ color: "#f0c840", fontSize: 14, fontWeight: 900, letterSpacing: "0.25em" }}>ON</span>
+              <span style={{ color: "rgba(255,255,255,0.2)" }}>·</span>
+              <span style={{ color: "#00d4aa", fontSize: 11, fontWeight: 400, letterSpacing: "0.3em" }}>MCE INTELLIGENCE</span>
             </div>
           </div>
           <div className="flex items-center gap-2 text-[11px]">
-            <span style={{ color: C.textDim }}>Sistema comportamental</span>
-            <span className="w-1.5 h-1.5 rounded-full" style={{ background: C.cc, animation: "mcePulse 1.5s ease-in-out infinite" }} />
-            <span style={{ color: C.cc }}>ONLINE</span>
+            <span style={{ color: C.textDim, letterSpacing: "0.15em" }}>SISTEMA COMPORTAMENTAL</span>
+            <span style={{
+              width: 7, height: 7, borderRadius: "50%",
+              background: "#00e888",
+              boxShadow: "0 0 6px #00e888, 0 0 12px rgba(0,232,136,0.4)",
+              animation: "mcePulse 2s ease-in-out infinite",
+            }} />
+            <span style={{ color: "#00e888", letterSpacing: "0.2em" }}>ONLINE</span>
           </div>
         </div>
 
@@ -263,35 +303,68 @@ export default function MCEPage() {
             const isActive = activeDim === k;
             return (
               <button key={k} onClick={() => { setActiveDim(k); setTab("estudo"); }}
-                className="text-left p-3 mce-btn" style={{
-                  background: C.surface, border: `0.5px solid ${isActive ? d.color : C.border}`, borderRadius: 4,
+                className="text-left mce-btn relative overflow-hidden"
+                style={{
+                  height: 88,
+                  background: "linear-gradient(135deg, rgba(8,12,22,0.95) 0%, rgba(12,18,32,0.9) 100%)",
+                  border: `0.5px solid ${isActive ? d.color : "rgba(255,255,255,0.06)"}`,
+                  borderRadius: 6,
+                  padding: "12px 14px",
+                  boxShadow: isActive
+                    ? `0 0 24px ${d.color}33, inset 0 0 18px ${d.color}10`
+                    : `inset 0 0 18px ${d.color}06`,
                 }}>
-                <div className="flex items-baseline justify-between mb-2">
-                  <span style={{ color: d.color, fontSize: 48, fontWeight: 900, lineHeight: 1 }}>{k}</span>
-                  <span style={{ color: C.textDim, fontSize: 11 }}>{d.name}</span>
+                {/* top accent bar */}
+                <div style={{
+                  position: "absolute", top: 0, left: 0, right: 0, height: 2,
+                  background: d.color,
+                  boxShadow: `0 0 8px ${d.color}99`,
+                }} />
+                {/* giant watermark letter */}
+                <span style={{
+                  position: "absolute", right: 12, bottom: -10,
+                  fontSize: 52, fontWeight: 900, lineHeight: 1,
+                  color: d.color, opacity: 0.12, letterSpacing: "-0.04em",
+                }}>{k}</span>
+                <div style={{ color: d.color, fontSize: 9, letterSpacing: "0.14em", fontWeight: 600 }}>{d.name}</div>
+                <div className="mt-1.5" style={{ color: "#e8f0ff", fontSize: 22, fontWeight: 700, lineHeight: 1 }}>
+                  {scores[sk]}<span style={{ color: C.textDim, fontSize: 11, fontWeight: 400 }}>/100</span>
                 </div>
-                <div className="h-0.5 w-full rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.05)" }}>
+                <div className="mt-3 w-full rounded-full overflow-hidden" style={{ height: 2, background: "rgba(255,255,255,0.04)" }}>
                   <div style={{
-                    width: `${scores[sk]}%`, height: "100%", background: d.color,
+                    width: `${scores[sk]}%`, height: "100%",
+                    background: `linear-gradient(90deg, ${d.color}, ${d.color}55)`,
+                    boxShadow: `0 0 6px ${d.color}`,
                     transition: "width 1.2s cubic-bezier(.4,0,.2,1)",
                   }} />
                 </div>
-                <div className="text-[12px] mt-1" style={{ color: C.textDim }}>{scores[sk]}/100</div>
               </button>
             );
           })}
         </div>
 
         {/* TABS */}
-        <div className="flex gap-1 mb-4 border-b" style={{ borderColor: C.border }}>
-          {([["estudo", "Estudo"], ["diag", "Diagnóstico"], ["ex", "Exercícios"], ["prog", "Progresso"]] as const).map(([k, l]) => (
-            <button key={k} onClick={() => setTab(k)}
-              className="px-4 py-2 text-[12px] uppercase tracking-widest mce-btn"
-              style={{
-                color: tab === k ? C.gold : C.textDim,
-                borderBottom: `2px solid ${tab === k ? C.gold : "transparent"}`,
-              }}>{l}</button>
-          ))}
+        <div className="flex gap-1 mb-4 p-[3px]" style={{
+          background: "rgba(4,8,14,0.8)",
+          border: "0.5px solid rgba(255,255,255,0.05)",
+          borderRadius: 4,
+        }}>
+          {([["estudo", "Estudo"], ["diag", "Diagnóstico"], ["ex", "Exercícios"], ["prog", "Progresso"]] as const).map(([k, l]) => {
+            const active = tab === k;
+            return (
+              <button key={k} onClick={() => setTab(k)}
+                className="flex-1 px-4 py-2 text-[12px] uppercase tracking-widest mce-btn"
+                style={{
+                  color: active ? "#f0c840" : C.textDim,
+                  background: active
+                    ? "linear-gradient(135deg, rgba(200,160,32,0.12) 0%, rgba(200,160,32,0.06) 100%)"
+                    : "transparent",
+                  border: `0.5px solid ${active ? "rgba(200,160,32,0.3)" : "transparent"}`,
+                  borderRadius: 3,
+                  boxShadow: active ? "0 0 8px rgba(200,160,32,0.1)" : "none",
+                }}>{l}</button>
+            );
+          })}
         </div>
 
         {/* TAB CONTENT */}
@@ -324,17 +397,31 @@ function DataCol({ side, scores }: { side: "left" | "right"; scores: { m: number
   const items: { l: string; v: any; c: string; bar?: number }[] = side === "left"
     ? [{ l: "SCORE M", v: scores.m, c: C.m, bar: scores.m }, { l: "AUTOR BASE", v: "Dweck/Stanford", c: C.textDim }, { l: "STATUS", v: "ATIVO", c: C.cc }]
     : [{ l: "SCORE E", v: scores.e, c: C.e, bar: scores.e }, { l: "AUTOR BASE", v: "Newport/Georgetown", c: C.textDim }, { l: "FOCO", v: scores.e < 40 ? "CRÍTICO" : scores.e < 70 ? "ATENÇÃO" : "ESTÁVEL", c: scores.e < 40 ? "#ff5555" : scores.e < 70 ? C.gold : C.cc }];
+  const sideBorder = side === "left"
+    ? { borderLeft: "1.5px solid rgba(0,212,170,0.3)" }
+    : { borderRight: "1.5px solid rgba(255,170,0,0.3)" };
   return (
     <div className="space-y-2">
       {items.map((it, i) => (
-        <div key={i} className="p-2.5" style={{ background: C.surface2, border: `0.5px solid ${C.border}`, borderRadius: 4 }}>
-          <div className="text-[10px] tracking-widest mb-1" style={{ color: C.textDim }}>{it.l}</div>
-          <div className="text-[14px] font-bold" style={{ color: it.c }}>
-            {it.v}{typeof it.bar === "number" && <span className="text-[11px] ml-1" style={{ color: C.textDim }}>/100</span>}
+        <div key={i} className="p-2.5" style={{
+          background: "rgba(6,10,18,0.9)",
+          border: "0.5px solid rgba(0,212,170,0.08)",
+          ...sideBorder,
+          borderRadius: 4,
+          boxShadow: typeof it.bar === "number" ? `inset 0 0 16px ${it.c}10` : "none",
+        }}>
+          <div className="mb-1" style={{ fontSize: 8, letterSpacing: "0.18em", color: "rgba(0,212,170,0.6)", textTransform: "uppercase" }}>{it.l}</div>
+          <div style={{ fontSize: 15, fontWeight: 700, color: typeof it.bar === "number" ? "#e8f0ff" : it.c }}>
+            {it.v}{typeof it.bar === "number" && <span className="ml-1" style={{ color: C.textDim, fontSize: 11, fontWeight: 400 }}>/100</span>}
           </div>
           {typeof it.bar === "number" && (
             <div className="mt-2 w-full rounded-full overflow-hidden" style={{ height: 3, background: "rgba(255,255,255,0.05)" }}>
-              <div style={{ width: `${it.bar}%`, height: "100%", background: it.c, transition: "width 1.2s cubic-bezier(.4,0,.2,1)" }} />
+              <div style={{
+                width: `${it.bar}%`, height: "100%",
+                background: `linear-gradient(90deg, ${it.c}, ${it.c}55)`,
+                boxShadow: `0 0 6px ${it.c}`,
+                transition: "width 1.2s cubic-bezier(.4,0,.2,1)",
+              }} />
             </div>
           )}
         </div>
@@ -346,41 +433,83 @@ function DataCol({ side, scores }: { side: "left" | "right"; scores: { m: number
 function NeuralWeb({ scores, onSelect }: { scores: { m: number; c: number; e: number }; onSelect: (d: DimKey) => void }) {
   return (
     <div className="flex flex-col items-center justify-center text-center">
-      <div className="text-[12px] tracking-widest mb-1" style={{ color: C.textDim }}>MÉTODO COMPORTAMENTAL · v2.0</div>
-      <div className="font-bold mb-3 tracking-tight" style={{ color: "#fff", fontSize: 42, lineHeight: 1 }}>
-        MC<span style={{ color: C.gold }}>E</span>
+      <div style={{ fontSize: 10, letterSpacing: "0.28em", color: "rgba(0,212,170,0.5)", textTransform: "uppercase", marginBottom: 6 }}>
+        MÉTODO COMPORTAMENTAL · v2.0
       </div>
-      <svg viewBox="0 0 240 230" className="w-full max-w-[280px]">
+      <div className="font-black mb-3" style={{
+        fontSize: 52, lineHeight: 1, letterSpacing: "0.2em",
+        textShadow: "0 0 20px rgba(200,160,32,0.4), 0 0 40px rgba(200,160,32,0.2), 0 0 80px rgba(200,160,32,0.1)",
+      }}>
+        <span style={{ color: "#e8f0ff" }}>MC</span><span style={{ color: "#f0c840" }}>E</span>
+      </div>
+      <svg viewBox="0 0 400 320" className="w-full max-w-[420px]" style={{ height: 320 }}>
         <defs>
-          <radialGradient id="centerG"><stop offset="0%" stopColor={C.goldLight} /><stop offset="100%" stopColor={C.gold} stopOpacity="0" /></radialGradient>
+          <linearGradient id="grad-m" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#9080ff" /><stop offset="100%" stopColor="#c8a020" />
+          </linearGradient>
+          <linearGradient id="grad-c" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#00e888" /><stop offset="100%" stopColor="#c8a020" />
+          </linearGradient>
+          <linearGradient id="grad-e" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#ffaa00" /><stop offset="100%" stopColor="#c8a020" />
+          </linearGradient>
+          <radialGradient id="grad-center"><stop offset="0%" stopColor="#f0c840" /><stop offset="100%" stopColor="#c8a020" /></radialGradient>
         </defs>
+
         {/* Orbital rings */}
-        <circle cx="120" cy="135" r="70" fill="none" stroke={C.gold} strokeOpacity="0.15" strokeDasharray="2 4" />
-        <circle cx="120" cy="135" r="92" fill="none" stroke={C.teal} strokeOpacity="0.1" strokeDasharray="1 6" />
-        {/* Connections — triangle: M top, C bottom-left, E bottom-right */}
-        <line x1="120" y1="25" x2="55" y2="190" stroke="#fff" strokeOpacity="0.18" strokeDasharray="2 3" />
-        <line x1="120" y1="25" x2="185" y2="190" stroke="#fff" strokeOpacity="0.18" strokeDasharray="2 3" />
-        <line x1="55" y1="190" x2="185" y2="190" stroke="#fff" strokeOpacity="0.18" strokeDasharray="2 3" />
-        <line x1="120" y1="135" x2="120" y2="25" stroke={C.m} strokeOpacity="0.3" />
-        <line x1="120" y1="135" x2="55" y2="190" stroke={C.cc} strokeOpacity="0.3" />
-        <line x1="120" y1="135" x2="185" y2="190" stroke={C.e} strokeOpacity="0.3" />
-        {/* Center — centroid of M(120,25), C(55,190), E(185,190) = (120,135) */}
-        <circle cx="120" cy="135" r="18" fill="url(#centerG)" />
-        <circle cx="120" cy="135" r="9" fill={C.gold} />
-        <text x="120" y="138" textAnchor="middle" fontSize="7" fill="#000" fontWeight="700">MCE</text>
-        {/* Nodes — M TOPO, C inf-esq, E inf-dir */}
-        {[
-          { k: "M" as DimKey, x: 120, y: 25, c: C.m, labelDy: -22 },
-          { k: "C" as DimKey, x: 55, y: 190, c: C.cc, labelDy: 26 },
-          { k: "E" as DimKey, x: 185, y: 190, c: C.e, labelDy: 26 },
-        ].map((n) => (
-          <g key={n.k} onClick={() => onSelect(n.k)} style={{ cursor: "pointer" }}>
-            <circle cx={n.x} cy={n.y} r="16" fill={n.c} fillOpacity="0.15" />
-            <circle cx={n.x} cy={n.y} r="10" fill={n.c} />
-            <text x={n.x} y={n.y + 3} textAnchor="middle" fontSize="9" fill="#000" fontWeight="700">{n.k}</text>
-            <text x={n.x} y={n.y + n.labelDy} textAnchor="middle" fontSize="6" fill={C.textDim}>{DIMS[n.k].name.slice(0, 8)}</text>
-          </g>
-        ))}
+        <circle cx="200" cy="160" r="120" fill="none" stroke="rgba(0,212,170,0.04)" strokeDasharray="1 6" />
+        <circle cx="200" cy="160" r="155" fill="none" stroke="rgba(200,160,32,0.03)" strokeDasharray="2 8" />
+
+        {/* Outer triangle (no animation) */}
+        <line x1="200" y1="40" x2="80" y2="240" stroke="rgba(255,255,255,0.06)" strokeWidth="0.5" />
+        <line x1="200" y1="40" x2="320" y2="240" stroke="rgba(255,255,255,0.06)" strokeWidth="0.5" />
+        <line x1="80" y1="240" x2="320" y2="240" stroke="rgba(255,255,255,0.06)" strokeWidth="0.5" />
+
+        {/* Animated connections to center */}
+        <line x1="200" y1="40" x2="200" y2="175" stroke="url(#grad-m)" strokeWidth="0.8" strokeDasharray="6 4" strokeOpacity="0.4" className="mce-dash" />
+        <line x1="80" y1="240" x2="200" y2="175" stroke="url(#grad-c)" strokeWidth="0.8" strokeDasharray="6 4" strokeOpacity="0.4" className="mce-dash" />
+        <line x1="320" y1="240" x2="200" y2="175" stroke="url(#grad-e)" strokeWidth="0.8" strokeDasharray="6 4" strokeOpacity="0.4" className="mce-dash" />
+
+        {/* CENTER NODE */}
+        <g>
+          <circle cx="200" cy="175" r="26" fill="none" stroke="rgba(200,160,32,0.2)" strokeDasharray="3 6" className="mce-rotate-rev" style={{ transformOrigin: "200px 175px" } as any} />
+          <circle cx="200" cy="175" r="19" fill="rgba(200,160,32,0.08)" stroke="rgba(200,160,32,0.5)" filter="url(#)" />
+          <circle cx="200" cy="175" r="13" fill="rgba(200,160,32,0.18)" stroke="#c8a020" strokeWidth="1.5" />
+          <text x="200" y="178" textAnchor="middle" fontSize="8" fill="#f0c840" fontWeight="900" letterSpacing="0.5">MCE</text>
+        </g>
+
+        {/* NODE M — top */}
+        <g onClick={() => onSelect("M")} style={{ cursor: "pointer", filter: "drop-shadow(0 0 8px rgba(144,128,255,0.4))" }}>
+          <circle cx="200" cy="40" r="38" fill="none" stroke="rgba(144,128,255,0.3)" strokeDasharray="4 8"
+            className="mce-rotate-slow" style={{ transformOrigin: "200px 40px" } as any} />
+          <circle cx="200" cy="40" r="32" fill="rgba(144,128,255,0.06)" stroke="rgba(144,128,255,0.5)" strokeWidth="0.8" />
+          <circle cx="200" cy="40" r="22" fill="rgba(144,128,255,0.12)" stroke="rgba(144,128,255,0.7)" strokeWidth="1" />
+          <circle cx="200" cy="40" r="14" fill="rgba(144,128,255,0.25)" stroke="#9080ff" strokeWidth="1.5" />
+          <text x="200" y="44" textAnchor="middle" fontSize="13" fill="#c0b8ff" fontWeight="900">M</text>
+          <text x="200" y="14" textAnchor="middle" fontSize="7" fill="rgba(144,128,255,0.7)" letterSpacing="1.5">MINDSET</text>
+        </g>
+
+        {/* NODE C — bottom-left */}
+        <g onClick={() => onSelect("C")} style={{ cursor: "pointer", filter: "drop-shadow(0 0 8px rgba(0,232,136,0.4))" }}>
+          <circle cx="80" cy="240" r="38" fill="none" stroke="rgba(0,232,136,0.3)" strokeDasharray="4 8"
+            className="mce-rotate-slow" style={{ transformOrigin: "80px 240px" } as any} />
+          <circle cx="80" cy="240" r="32" fill="rgba(0,232,136,0.06)" stroke="rgba(0,232,136,0.5)" strokeWidth="0.8" />
+          <circle cx="80" cy="240" r="22" fill="rgba(0,232,136,0.12)" stroke="rgba(0,232,136,0.7)" strokeWidth="1" />
+          <circle cx="80" cy="240" r="14" fill="rgba(0,232,136,0.25)" stroke="#00e888" strokeWidth="1.5" />
+          <text x="80" y="244" textAnchor="middle" fontSize="13" fill="#60ffbb" fontWeight="900">C</text>
+          <text x="80" y="294" textAnchor="middle" fontSize="7" fill="rgba(0,232,136,0.7)" letterSpacing="1.5">COMPORT.</text>
+        </g>
+
+        {/* NODE E — bottom-right */}
+        <g onClick={() => onSelect("E")} style={{ cursor: "pointer", filter: "drop-shadow(0 0 8px rgba(255,170,0,0.4))" }}>
+          <circle cx="320" cy="240" r="38" fill="none" stroke="rgba(255,170,0,0.3)" strokeDasharray="4 8"
+            className="mce-rotate-slow" style={{ transformOrigin: "320px 240px" } as any} />
+          <circle cx="320" cy="240" r="32" fill="rgba(255,170,0,0.06)" stroke="rgba(255,170,0,0.5)" strokeWidth="0.8" />
+          <circle cx="320" cy="240" r="22" fill="rgba(255,170,0,0.12)" stroke="rgba(255,170,0,0.7)" strokeWidth="1" />
+          <circle cx="320" cy="240" r="14" fill="rgba(255,170,0,0.25)" stroke="#ffaa00" strokeWidth="1.5" />
+          <text x="320" y="244" textAnchor="middle" fontSize="13" fill="#ffd060" fontWeight="900">E</text>
+          <text x="320" y="294" textAnchor="middle" fontSize="7" fill="rgba(255,170,0,0.7)" letterSpacing="1.5">EXECUÇÃO</text>
+        </g>
       </svg>
     </div>
   );
@@ -664,36 +793,69 @@ function MceChat({ scores, autoMessage }: { scores: { m: number; c: number; e: n
   };
 
   return (
-    <div className="p-4" style={{ background: C.surface, border: `0.5px solid ${C.border}`, borderRadius: 4 }}>
+    <div className="p-4" style={{
+      background: "linear-gradient(180deg, rgba(4,8,14,0.98) 0%, rgba(6,10,18,0.97) 100%)",
+      border: "0.5px solid rgba(200,160,32,0.2)",
+      borderTop: "1.5px solid rgba(200,160,32,0.4)",
+      borderRadius: 6,
+      boxShadow: "0 -4px 30px rgba(200,160,32,0.05), inset 0 1px 0 rgba(200,160,32,0.1)",
+    }}>
       {/* Header */}
-      <div className="flex items-center justify-between mb-4 pb-3 border-b" style={{ borderColor: C.border }}>
+      <div className="flex items-center justify-between mb-4 px-3 py-2" style={{
+        background: "linear-gradient(90deg, rgba(200,160,32,0.08) 0%, rgba(4,8,14,0.95) 100%)",
+        borderBottom: "0.5px solid rgba(200,160,32,0.12)",
+        borderRadius: 4,
+      }}>
         <div className="flex items-center gap-3">
-          <div className="relative w-8 h-8 flex items-center justify-center">
-            <div className="absolute inset-0 rounded-full" style={{ background: C.gold, opacity: 0.2, animation: "mcePulse 2s ease-in-out infinite" }} />
-            <div className="absolute inset-1 rounded-full" style={{ background: C.gold, opacity: 0.4 }} />
-            <div className="relative w-3 h-3 rounded-full" style={{ background: C.goldLight }} />
+          {/* Golden ORB */}
+          <div className="relative flex items-center justify-center" style={{
+            width: 32, height: 32, borderRadius: "50%",
+            background: "radial-gradient(circle, rgba(200,160,32,0.3) 0%, rgba(200,160,32,0.05) 70%, transparent 100%)",
+            border: "1px solid rgba(200,160,32,0.5)",
+            boxShadow: "0 0 12px rgba(200,160,32,0.3), inset 0 0 8px rgba(200,160,32,0.1)",
+          }}>
+            <div style={{
+              width: 10, height: 10, borderRadius: "50%",
+              background: "radial-gradient(circle, #f0c840, #c8a020)",
+              boxShadow: "0 0 8px #c8a020, 0 0 16px rgba(200,160,32,0.4)",
+              animation: "mceOrbPulse 1s ease-in-out infinite",
+            }} />
           </div>
           <div>
-            <div className="text-[14px]" style={{ color: C.gold }}>MCE Intelligence</div>
-            <div className="text-[11px]" style={{ color: C.textDim }}>{statusText}</div>
+            <div style={{ color: "#f0c840", fontSize: 14, fontWeight: 700, letterSpacing: "0.15em" }}>MCE Intelligence</div>
+            <div style={{ color: C.textDim, fontSize: 11, letterSpacing: "0.12em" }}>{statusText}</div>
           </div>
         </div>
-        <span className="text-[11px] px-2 py-0.5" style={{ background: `${C.teal}22`, color: C.teal, borderRadius: 99 }}>Voice · Active</span>
+        <span className="px-2 py-0.5" style={{
+          fontSize: 11, letterSpacing: "0.15em",
+          background: "rgba(0,212,170,0.1)", color: "#00d4aa",
+          border: "0.5px solid rgba(0,212,170,0.3)",
+          borderRadius: 99,
+        }}>VOICE · ACTIVE</span>
       </div>
 
       {/* Messages */}
       <div className="space-y-2 mb-4 max-h-60 overflow-y-auto pr-2">
-        {msgs.length === 0 && <div className="text-[12px] text-center py-6" style={{ color: C.textDim }}>Pressione o microfone ou digite. A resposta será lida em voz.</div>}
-        {msgs.map((m, i) => (
-          <div key={i} className="text-[13px] p-2" style={{
-            background: m.role === "user" ? "rgba(0,212,170,0.06)" : "rgba(200,160,32,0.06)",
-            borderLeft: `2px solid ${m.role === "user" ? C.teal : C.gold}`,
-            color: C.text, borderRadius: 2,
-          }}>
-            <div className="text-[10px] mb-1 tracking-widest" style={{ color: m.role === "user" ? C.teal : C.gold }}>{m.role === "user" ? "VOCÊ" : "MCE"}</div>
-            {m.content}
-          </div>
-        ))}
+        {msgs.length === 0 && <div className="text-[12px] text-center py-6" style={{ color: C.textDim, letterSpacing: "0.08em" }}>Pressione o microfone ou digite. A resposta será lida em voz.</div>}
+        {msgs.map((m, i) => {
+          const isUser = m.role === "user";
+          return (
+            <div key={i} className="p-3" style={{
+              background: isUser ? "rgba(20,28,44,0.9)" : "rgba(8,12,20,0.95)",
+              border: isUser ? "0.5px solid rgba(144,128,255,0.15)" : "0.5px solid rgba(200,160,32,0.1)",
+              borderLeft: isUser ? undefined : "2px solid rgba(200,160,32,0.4)",
+              borderRight: isUser ? "2px solid rgba(144,128,255,0.4)" : undefined,
+              borderRadius: isUser ? "6px 1px 6px 6px" : "1px 6px 6px 6px",
+              boxShadow: isUser ? "none" : "inset 0 0 20px rgba(200,160,32,0.02)",
+              fontSize: 13, color: C.text,
+            }}>
+              <div className="mb-1" style={{ fontSize: 10, letterSpacing: "0.2em", color: isUser ? "#c0b8ff" : "#f0c840", fontWeight: 700 }}>
+                {isUser ? "VOCÊ" : "MCE"}
+              </div>
+              {m.content}
+            </div>
+          );
+        })}
       </div>
 
       {/* Voice button */}
@@ -701,22 +863,27 @@ function MceChat({ scores, autoMessage }: { scores: { m: number; c: number; e: n
         <Waveform active={state === "listening" || state === "speaking"} color={state === "speaking" ? C.cc : C.gold} side="L" />
         <button onClick={onMic} className="relative w-[52px] h-[52px] rounded-full flex items-center justify-center"
           style={{
-            border: `1.5px solid ${state === "speaking" ? C.cc : C.gold}`,
-            background: state === "speaking" ? `${C.cc}22` : `${C.gold}22`,
+            border: `1.5px solid ${state === "speaking" ? "#00e888" : C.gold}`,
+            background: state === "speaking"
+              ? "radial-gradient(circle, rgba(0,232,136,0.2) 0%, rgba(0,232,136,0.05) 70%, transparent 100%)"
+              : "radial-gradient(circle, rgba(200,160,32,0.18) 0%, rgba(200,160,32,0.04) 70%, transparent 100%)",
+            boxShadow: state === "speaking"
+              ? "0 0 16px rgba(0,232,136,0.3), 0 0 32px rgba(0,232,136,0.15)"
+              : "0 0 12px rgba(200,160,32,0.25), 0 0 24px rgba(200,160,32,0.1)",
           }}>
           {(state === "listening" || state === "speaking") && (
             <>
-              <span className="absolute inset-0 rounded-full" style={{ border: `1px solid ${state === "speaking" ? C.cc : C.gold}`, animation: "ringExp 1.5s ease-out infinite" }} />
-              <span className="absolute inset-0 rounded-full" style={{ border: `1px solid ${state === "speaking" ? C.cc : C.gold}`, animation: "ringExp 1.5s ease-out infinite .5s" }} />
-              <span className="absolute inset-0 rounded-full" style={{ border: `1px solid ${state === "speaking" ? C.cc : C.gold}`, animation: "ringExp 1.5s ease-out infinite 1s" }} />
+              <span className="absolute inset-0 rounded-full" style={{ border: `1px solid ${state === "speaking" ? "#00e888" : C.gold}`, animation: "ringExp 1.5s ease-out infinite" }} />
+              <span className="absolute inset-0 rounded-full" style={{ border: `1px solid ${state === "speaking" ? "#00e888" : C.gold}`, animation: "ringExp 1.5s ease-out infinite .5s" }} />
+              <span className="absolute inset-0 rounded-full" style={{ border: `1px solid ${state === "speaking" ? "#00e888" : C.gold}`, animation: "ringExp 1.5s ease-out infinite 1s" }} />
             </>
           )}
           {state === "thinking" ? <Loader2 className="w-5 h-5 animate-spin" style={{ color: C.gold }} />
-            : <Mic className="w-5 h-5" style={{ color: state === "speaking" ? C.cc : C.gold }} />}
+            : <Mic className="w-5 h-5" style={{ color: state === "speaking" ? "#00e888" : C.gold }} />}
         </button>
         <Waveform active={state === "listening" || state === "speaking"} color={state === "speaking" ? C.cc : C.gold} side="R" />
       </div>
-      <div className="text-center text-[12px] mb-3" style={{ color: C.textDim }}>
+      <div className="text-center text-[12px] mb-3" style={{ color: C.textDim, letterSpacing: "0.1em" }}>
         {state === "idle" && "Pressione para falar"}
         {state === "listening" && "Ouvindo..."}
         {state === "thinking" && "Processando..."}
@@ -725,15 +892,15 @@ function MceChat({ scores, autoMessage }: { scores: { m: number; c: number; e: n
 
       {/* Voice selector */}
       <div className="mb-3">
-        <div className="text-[9px] tracking-widest mb-1" style={{ color: C.teal }}>VOZ DO SISTEMA</div>
+        <div style={{ fontSize: 9, letterSpacing: "0.2em", color: "#00d4aa", marginBottom: 4 }}>VOZ DO SISTEMA</div>
         <div className="flex gap-2 items-center">
           <select
             value={selectedVoiceURI}
             onChange={(e) => onVoiceChange(e.target.value)}
-            className="flex-1 px-2 py-1"
+            className="flex-1 px-2 py-1 mce-input"
             style={{
-              background: "#060c14",
-              border: `0.5px solid ${C.gold}`,
+              background: "rgba(8,12,20,0.95)",
+              border: "0.5px solid rgba(200,160,32,0.3)",
               color: C.gold,
               fontSize: 11,
               borderRadius: 3,
@@ -751,12 +918,13 @@ function MceChat({ scores, autoMessage }: { scores: { m: number; c: number; e: n
             onClick={testVoice}
             className="px-3 py-1 mce-btn"
             style={{
-              border: `0.5px solid ${C.gold}`,
+              border: "0.5px solid rgba(200,160,32,0.5)",
               color: C.gold,
-              background: `${C.gold}15`,
+              background: "rgba(200,160,32,0.1)",
               fontSize: 11,
               borderRadius: 3,
-              letterSpacing: "0.1em",
+              letterSpacing: "0.15em",
+              boxShadow: "0 0 8px rgba(200,160,32,0.15)",
             }}
           >
             TESTAR
@@ -767,9 +935,21 @@ function MceChat({ scores, autoMessage }: { scores: { m: number; c: number; e: n
       {/* Text input */}
       <div className="flex gap-2 mb-3">
         <input value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && send(input)}
-          placeholder="Digite sua mensagem..." className="flex-1 px-3 py-2 text-[13px]"
-          style={{ background: C.surface2, border: `0.5px solid ${C.border}`, color: C.text, borderRadius: 3, fontFamily: "inherit" }} />
-        <button onClick={() => send(input)} className="px-3 mce-btn" style={{ background: C.gold, color: "#000", borderRadius: 3 }}>
+          placeholder="Digite sua mensagem..." className="flex-1 px-3 py-2 mce-input"
+          style={{
+            background: "rgba(8,12,20,0.95)",
+            border: "0.5px solid rgba(200,160,32,0.15)",
+            borderBottom: "1.5px solid rgba(200,160,32,0.3)",
+            color: "#e8f0ff",
+            fontSize: 13,
+            borderRadius: 3,
+            fontFamily: "'Courier New', monospace",
+          }} />
+        <button onClick={() => send(input)} className="px-3 mce-btn" style={{
+          background: "linear-gradient(135deg, #f0c840, #c8a020)",
+          color: "#000", borderRadius: 3, fontWeight: 700,
+          boxShadow: "0 0 12px rgba(200,160,32,0.3)",
+        }}>
           <Send className="w-3.5 h-3.5" />
         </button>
       </div>
@@ -781,8 +961,17 @@ function MceChat({ scores, autoMessage }: { scores: { m: number; c: number; e: n
           { l: "Sistema C", q: "Como aplicar o sistema de hábitos Fogg/Clear no meu dia?", c: C.cc },
           { l: "Execução E", q: "Como estruturar meu bloco Deep Work Newport hoje?", c: C.e },
         ].map((a) => (
-          <button key={a.l} onClick={() => send(a.q)} className="text-[12px] py-2 mce-btn"
-            style={{ background: C.surface2, border: `0.5px solid ${C.border}`, color: a.c, borderRadius: 3 }}>{a.l}</button>
+          <button key={a.l} onClick={() => send(a.q)} className="py-2 mce-btn"
+            style={{
+              background: `linear-gradient(135deg, ${a.c}15, ${a.c}05)`,
+              border: `0.5px solid ${a.c}40`,
+              color: a.c,
+              fontSize: 12,
+              fontWeight: 600,
+              letterSpacing: "0.1em",
+              borderRadius: 3,
+              boxShadow: `inset 0 0 12px ${a.c}08`,
+            }}>{a.l}</button>
         ))}
       </div>
     </div>
