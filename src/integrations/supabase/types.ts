@@ -5321,6 +5321,78 @@ export type Database = {
           },
         ]
       }
+      mce_chat_sessions: {
+        Row: {
+          id: string
+          messages: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          messages?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          messages?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      mce_exercises_done: {
+        Row: {
+          completed_at: string
+          exercise_key: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string
+          exercise_key: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string
+          exercise_key?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      mce_scores: {
+        Row: {
+          created_at: string
+          id: string
+          score_c: number
+          score_e: number
+          score_m: number
+          source: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          score_c: number
+          score_e: number
+          score_m: number
+          source?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          score_c?: number
+          score_e?: number
+          score_m?: number
+          source?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       meal_logs: {
         Row: {
           confirmed: boolean | null
