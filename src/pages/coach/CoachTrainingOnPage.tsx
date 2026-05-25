@@ -843,7 +843,21 @@ export default function CoachTrainingOnPage() {
                 </Button>
               </CardHeader>
               <CardContent>
-                <CorrectivePlanViewer text={correctiveTraining} apexScores={apexScores} />
+                <CorrectivePlanViewer
+                  text={correctiveTraining}
+                  apexScores={apexScores}
+                  coachId={coachId}
+                  athleteId={athlete?.id ?? null}
+                  protocolId={apexSyncData?.id ?? null}
+                  athleteContext={[
+                    athlete?.nome ? `Atleta: ${athlete.nome}` : "",
+                    sync?.training_phase ? `Fase: ${sync.training_phase}` : "",
+                    Object.keys(apexScores).length ? `Scores APEX: ${Object.entries(apexScores).map(([m, s]) => `${m} ${s}/10`).join(", ")}` : "",
+                    apexWeakPoints.length ? `Pontos fracos: ${apexWeakPoints.map((p) => `${p.muscle} (${p.score})`).join(", ")}` : "",
+                  ].filter(Boolean).join(" | ")}
+                  onProtocolUpdate={(newText) => setCorrectiveTraining(newText)}
+                />
+
               </CardContent>
             </Card>
           )}

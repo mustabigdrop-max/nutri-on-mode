@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { ClipboardList, Flame, Zap, TrendingUp, Link2, FileText, Copy, Check } from "lucide-react";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import TrainingReviewAgent, { ReviewStatusBadge } from "@/components/coach/TrainingReviewAgent";
 
 // ─── Parsing helpers ────────────────────────────────────────────
 function section(text: string, header: string | string[], nextHeaders: string[] = []): string {
@@ -158,11 +159,23 @@ function CopyButton({ text }: { text: string }) {
 export default function CorrectivePlanViewer({
   text,
   apexScores,
+  coachId = null,
+  athleteId = null,
+  protocolId = null,
+  athleteContext = "",
+  onProtocolUpdate,
 }: {
   text: string;
   apexScores: Record<string, number>;
+  coachId?: string | null;
+  athleteId?: string | null;
+  protocolId?: string | null;
+  athleteContext?: string;
+  onProtocolUpdate?: (newText: string, newVersion: number) => void;
 }) {
   const [tab, setTab] = useState<typeof TABS[number]["key"]>("semana");
+  const [reviewStatus, setReviewStatus] = useState<"reviewing" | "approved">("reviewing");
+  const [reviewVersion, setReviewVersion] = useState(1);
 
   const parsed = useMemo(() => {
     const allHeaders = [
@@ -277,16 +290,39 @@ export default function CorrectivePlanViewer({
       )}
 
       {tab === "raw" && (
-        <div className="space-y-3">
-          <div className="flex items-center justify-between gap-2">
-            <div className="text-xs text-muted-foreground">
-              Resposta completa da IA — use como guia para montar o treino no TrainingON e o plano alimentar.
+        <div className="grid grid-cols-1 lg:grid-cols-[55fr_45fr] gap-3">
+          {/* LEFT: protocol */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between gap-2 flex-wrap">
+              <ReviewStatusBadge status={reviewStatus} version={reviewVersion} />
+              <CopyButton text={text} />
             </div>
-            <CopyButton text={text} />
+            <pre className="text-xs whitespace-pre-wrap font-mono text-foreground/90 max-h-[700px] overflow-y-auto p-3 rounded-lg border border-border bg-card/60">
+              {text || "—"}
+            </pre>
           </div>
-          <pre className="text-xs whitespace-pre-wrap font-mono text-foreground/90 max-h-[700px] overflow-y-auto p-3 rounded-lg border border-border bg-card/60">
-            {text || "—"}
-          </pre>
+
+          {/* RIGHT: review agent */}
+          <div className="relative">
+            {coachId && athleteId ? (
+              <TrainingReviewAgent
+                protocolText={text}
+                athleteContext={athleteContext}
+                coachId={coachId}
+                athleteId={athleteId}
+                protocolId={protocolId}
+                onProtocolUpdate={(newText, newV) => {
+                  setReviewVersion(newV);
+                  onProtocolUpdate?.(newText, newV);
+                }}
+                onApproved={() => setReviewStatus("approved")}
+              />
+            ) : (
+              <div className="rounded-md border border-border bg-card/60 p-4 text-[11px] text-muted-foreground italic">
+                Selecione um atleta para ativar o Training Agent de revisão.
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>
