@@ -286,7 +286,7 @@ export default function MCEPage() {
         <div className="flex gap-1 mb-4 border-b" style={{ borderColor: C.border }}>
           {([["estudo", "Estudo"], ["diag", "Diagnóstico"], ["ex", "Exercícios"], ["prog", "Progresso"]] as const).map(([k, l]) => (
             <button key={k} onClick={() => setTab(k)}
-              className="px-4 py-2 text-[10px] uppercase tracking-widest mce-btn"
+              className="px-4 py-2 text-[12px] uppercase tracking-widest mce-btn"
               style={{
                 color: tab === k ? C.gold : C.textDim,
                 borderBottom: `2px solid ${tab === k ? C.gold : "transparent"}`,
