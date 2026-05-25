@@ -300,6 +300,8 @@ function sanitizeStructure(s: any): any {
   }
   if (!s.feeder_sets && !s.top_set && !s.backoff_sets && !s.work_sets) {
     s.work_sets = { sets: "3", reps: "8-12", rpe: "7-8", rest: "90s", notes: "Séries de trabalho" };
+  }
+  return s;
 }
 
 /**
@@ -348,8 +350,7 @@ function validateProtocolStructure(p: any): string[] {
   }
   return missing;
 }
-  return s;
-}
+
 
 function sanitizeProtocol(protocol: any): any {
   if (!protocol || typeof protocol !== 'object') return protocol;
