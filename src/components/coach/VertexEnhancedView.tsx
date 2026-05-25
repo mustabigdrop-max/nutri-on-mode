@@ -157,7 +157,7 @@ export default function VertexEnhancedView({
     return (
       <div className="space-y-3">
         {compounds.length === 0 ? (
-          <div className="text-xs text-muted-foreground italic">Nenhum composto extraído. Verifique o protocolo informado.</div>
+          <div className="text-[11px] text-muted-foreground italic">Nenhum composto informado. A análise será baseada no perfil do atleta e objetivo de palco.</div>
         ) : (
           <div className="grid md:grid-cols-2 gap-2">
             {compounds.map((c, i) => {

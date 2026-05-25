@@ -1370,17 +1370,14 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
 
   // Dr. VERTEX v4.0 — dispara análise farmacológica PhD em JSON
   const runVertexV4 = useCallback(async () => {
-    if (!formData.compostos || formData.compostos.trim().length < 5) {
-      toast({ title: "Protocolo vazio", description: "Informe os compostos no campo Protocolo antes de analisar.", variant: "destructive" });
-      return;
-    }
     setVertexV4Loading(true);
     setVertexV4Error(null);
     try {
       const farmMeta = parseFarmMeta(analysisResult);
       const meta = parseMeta(analysisResult);
       const segments = parseSegments(analysisResult);
-      const protocoloCompleto = `Compostos: ${formData.compostos}
+      const compostosInformados = (formData.compostos || "").trim();
+      const protocoloCompleto = `Compostos: ${compostosInformados || "não informado — gerar recomendação farmacológica baseada em perfil/objetivo"}
 Objetivo do ciclo: ${objetivoCiclo}
 Semana ${semanaCiclo || "não informada"} de ${duracaoCiclo || "não informada"} semanas
 Suporte em uso: ${suporte || "não informado"}`;
@@ -1947,9 +1944,11 @@ Suporte em uso: ${suporte || "não informado"}` : "";
                 </div>
 
                 {/* Trigger Dr. VERTEX v4.0 (JSON estruturado, PhD-level) */}
-                <div className="flex items-center gap-2 flex-wrap">
+                <div className="flex items-center gap-2 flex-wrap relative" style={{ zIndex: 10 }}>
                   <button
+                    type="button"
                     onClick={() => {
+                      if (vertexV4Loading) return;
                       if (virilizationRiskAccepted) {
                         runVertexV4();
                       } else {
@@ -1957,15 +1956,36 @@ Suporte em uso: ${suporte || "não informado"}` : "";
                         setShowVirilizationModal(true);
                       }
                     }}
-                    disabled={vertexV4Loading}
-                    className="px-3 py-2 text-[11px] font-bold rounded-lg border transition-all disabled:opacity-50"
+                    className="px-[18px] py-[10px] text-[13px] font-semibold rounded-md border transition-all"
                     style={{
-                      background: vertexV4Analysis ? "#1E2A42" : "#534AB733",
-                      borderColor: "#534AB7",
-                      color: "#A78BFA",
+                      background: vertexV4Loading ? "rgba(144,128,255,0.12)" : (vertexV4Analysis ? "rgba(144,128,255,0.18)" : "rgba(144,128,255,0.12)"),
+                      borderColor: "rgba(144,128,255,0.4)",
+                      color: "#c0b8ff",
+                      position: "relative",
+                      zIndex: 10,
+                      pointerEvents: "auto",
+                      cursor: vertexV4Loading ? "wait" : "pointer",
+                      opacity: vertexV4Loading ? 0.7 : 1,
+                      boxShadow: vertexV4Loading ? "none" : undefined,
+                    }}
+                    onMouseEnter={(e) => {
+                      if (vertexV4Loading) return;
+                      e.currentTarget.style.background = "rgba(144,128,255,0.22)";
+                      e.currentTarget.style.borderColor = "#9080ff";
+                      e.currentTarget.style.boxShadow = "0 0 12px rgba(144,128,255,0.2)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = vertexV4Analysis ? "rgba(144,128,255,0.18)" : "rgba(144,128,255,0.12)";
+                      e.currentTarget.style.borderColor = "rgba(144,128,255,0.4)";
+                      e.currentTarget.style.boxShadow = "none";
                     }}
                   >
-                    {vertexV4Loading ? "🔬 Analisando…" : vertexV4Analysis ? "🔬 Reexecutar Dr. VERTEX v4.0" : "🔬 Analisar com Dr. VERTEX v4.0 (PhD)"}
+                    {vertexV4Loading ? (
+                      <span className="inline-flex items-center gap-2">
+                        <span className="inline-block w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                        Analisando...
+                      </span>
+                    ) : vertexV4Analysis ? "🔬 Reexecutar Dr. VERTEX v4.0" : "🔬 Analisar com Dr. VERTEX v4.0 (PhD)"}
                   </button>
                   {vertexV4Analysis && (
                     <span className="text-[10px] font-mono" style={{ color: "#34D399" }}>
