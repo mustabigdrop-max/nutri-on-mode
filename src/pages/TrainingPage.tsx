@@ -58,6 +58,7 @@ import { buildSystemPrescription } from "@/data/recommendSystem";
 import { TRAINING_SYSTEMS } from "@/data/trainingSystems";
 import CompetitionModeBlocks from "@/components/training/systems/CompetitionModeBlocks";
 import StratumAIAgent from "@/components/training/StratumAIAgent";
+import SmartWarmup from "@/components/training/SmartWarmup";
 import {
   TrackerProvider,
   WorkoutProgressBar,
@@ -1641,20 +1642,9 @@ function TrainingDayCard({ day, index, expanded, onToggle, expandedExercise, set
               <RegionalCoveragePanel
                 exercises={(day.exercises || []).map((e: any) => ({ nome: e?.name ?? e?.nome ?? "" }))}
               />
-              {/* Warm-up */}
-              {day.warmup?.length > 0 && (
-                <div className="rounded-xl p-3" style={{ background: "rgba(59,130,246,0.06)", border: "1px solid rgba(59,130,246,0.12)" }}>
-                  <span className="text-[9px] font-bold tracking-widest uppercase" style={{ color: "#60a5fa" }}>🔥 WARM-UP</span>
-                  <div className="mt-2 space-y-1.5">
-                    {day.warmup.map((w: any, i: number) => (
-                      <div key={i} className="flex items-center justify-between">
-                        <span className="text-[11px] font-medium" style={{ color: TEXT }}>{w.name}</span>
-                        <span className="text-[10px]" style={{ color: TEXT_DIM }}>{w.sets}×{w.reps}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+              {/* Warm-up específico por grupamento muscular do dia */}
+              <SmartWarmup exercises={day.exercises || []} dayKey={day.day_number ?? index} />
+
 
               {/* Exercises */}
               {day.exercises?.map((ex: any, i: number) => (

@@ -8093,9 +8093,11 @@ export type Database = {
           feedback_summary: Json | null
           feeder_count: number | null
           id: string
+          primary_muscle_group: string | null
           session_date: string
           total_sets: number | null
           user_id: string
+          warmup_completed: boolean
           working_count: number | null
         }
         Insert: {
@@ -8107,9 +8109,11 @@ export type Database = {
           feedback_summary?: Json | null
           feeder_count?: number | null
           id?: string
+          primary_muscle_group?: string | null
           session_date: string
           total_sets?: number | null
           user_id: string
+          warmup_completed?: boolean
           working_count?: number | null
         }
         Update: {
@@ -8121,9 +8125,11 @@ export type Database = {
           feedback_summary?: Json | null
           feeder_count?: number | null
           id?: string
+          primary_muscle_group?: string | null
           session_date?: string
           total_sets?: number | null
           user_id?: string
+          warmup_completed?: boolean
           working_count?: number | null
         }
         Relationships: []
