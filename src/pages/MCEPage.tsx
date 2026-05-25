@@ -234,14 +234,14 @@ export default function MCEPage() {
             <button onClick={() => navigate(-1)} className="p-1.5 rounded hover:bg-white/5" aria-label="Voltar">
               <ArrowLeft className="w-4 h-4" style={{ color: C.textDim }} />
             </button>
-            <div className="text-xs tracking-widest">
+            <div className="text-base tracking-widest">
               <span style={{ color: "#fff" }}>NUTRI</span>
               <span style={{ color: C.gold }}>ON</span>
               <span style={{ color: C.textDim }}> · </span>
               <span style={{ color: C.teal }}>MCE INTELLIGENCE</span>
             </div>
           </div>
-          <div className="flex items-center gap-2 text-[10px]">
+          <div className="flex items-center gap-2 text-[11px]">
             <span style={{ color: C.textDim }}>Sistema comportamental</span>
             <span className="w-1.5 h-1.5 rounded-full" style={{ background: C.cc, animation: "mcePulse 1.5s ease-in-out infinite" }} />
             <span style={{ color: C.cc }}>ONLINE</span>
