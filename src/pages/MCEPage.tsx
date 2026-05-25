@@ -157,6 +157,7 @@ export default function MCEPage() {
   const [tab, setTab] = useState<"estudo" | "diag" | "ex" | "prog">("estudo");
   const [done, setDone] = useState<Record<string, boolean>>({});
   const [streak, setStreak] = useState(0);
+  const [autoMsg, setAutoMsg] = useState<{ text: string; nonce: number } | null>(null);
 
   // Load saved data
   useEffect(() => {
@@ -292,13 +293,21 @@ export default function MCEPage() {
         {/* TAB CONTENT */}
         <div className="mb-6">
           {tab === "estudo" && <EstudoTab dim={dim} scores={scores} onChange={updateScore} />}
-          {tab === "diag" && <DiagTab onComplete={(next) => { setScores(next); queueSave(next, "diagnostico"); setTab("prog"); }} />}
+          {tab === "diag" && <DiagTab onComplete={(next) => {
+            setScores(next);
+            queueSave(next, "diagnostico");
+            const critK = (Object.keys(next) as (keyof typeof next)[]).reduce((a, b) => (next[a] < next[b] ? a : b));
+            const critDim = DIMS[critK.toUpperCase() as DimKey];
+            const txt = `Diagnóstico concluído. M ${next.m} · C ${next.c} · E ${next.e}. Dimensão crítica: ${critDim.name.charAt(0) + critDim.name.slice(1).toLowerCase()}. Protocolo ativado.`;
+            setAutoMsg({ text: txt, nonce: Date.now() });
+            setTab("prog");
+          }} />}
           {tab === "ex" && <ExTab dim={activeDim} done={done} onToggle={toggleExercise} />}
           {tab === "prog" && <ProgTab streak={streak} totalDone={totalDone} mceScore={mceScore} scores={scores} criticalDim={criticalDim} />}
         </div>
 
         {/* CHAT */}
-        <MceChat scores={scores} />
+        <MceChat scores={scores} autoMessage={autoMsg} />
       </div>
     </div>
   );
@@ -510,12 +519,32 @@ function ProgTab({ streak, totalDone, mceScore, scores, criticalDim }: { streak:
 // ─────────────────────────────────────────────────────────────
 type Msg = { role: "user" | "assistant"; content: string };
 
-function MceChat({ scores }: { scores: { m: number; c: number; e: number } }) {
+function MceChat({ scores, autoMessage }: { scores: { m: number; c: number; e: number }; autoMessage?: { text: string; nonce: number } | null }) {
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [state, setState] = useState<"idle" | "listening" | "thinking" | "speaking">("idle");
   const recRef = useRef<any>(null);
   const synthRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const lastAutoNonce = useRef<number | null>(null);
+
+  const speak = useCallback((text: string) => {
+    if (!("speechSynthesis" in window)) return;
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = "pt-BR"; u.rate = 0.95; u.pitch = 0.9;
+    u.onend = () => setState("idle");
+    u.onerror = () => setState("idle");
+    synthRef.current = u;
+    setState("speaking");
+    window.speechSynthesis.speak(u);
+  }, []);
+
+  useEffect(() => {
+    if (!autoMessage || autoMessage.nonce === lastAutoNonce.current) return;
+    lastAutoNonce.current = autoMessage.nonce;
+    setMsgs((m) => [...m, { role: "assistant", content: autoMessage.text }]);
+    speak(autoMessage.text);
+  }, [autoMessage, speak]);
 
   const statusText = {
     idle: "Neural · Standby",
