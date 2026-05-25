@@ -234,14 +234,14 @@ export default function MCEPage() {
             <button onClick={() => navigate(-1)} className="p-1.5 rounded hover:bg-white/5" aria-label="Voltar">
               <ArrowLeft className="w-4 h-4" style={{ color: C.textDim }} />
             </button>
-            <div className="text-xs tracking-widest">
+            <div className="text-base tracking-widest">
               <span style={{ color: "#fff" }}>NUTRI</span>
               <span style={{ color: C.gold }}>ON</span>
               <span style={{ color: C.textDim }}> · </span>
               <span style={{ color: C.teal }}>MCE INTELLIGENCE</span>
             </div>
           </div>
-          <div className="flex items-center gap-2 text-[10px]">
+          <div className="flex items-center gap-2 text-[11px]">
             <span style={{ color: C.textDim }}>Sistema comportamental</span>
             <span className="w-1.5 h-1.5 rounded-full" style={{ background: C.cc, animation: "mcePulse 1.5s ease-in-out infinite" }} />
             <span style={{ color: C.cc }}>ONLINE</span>
@@ -267,8 +267,8 @@ export default function MCEPage() {
                   background: C.surface, border: `0.5px solid ${isActive ? d.color : C.border}`, borderRadius: 4,
                 }}>
                 <div className="flex items-baseline justify-between mb-2">
-                  <span style={{ color: d.color, fontSize: 28, fontWeight: 700 }}>{k}</span>
-                  <span style={{ color: C.textDim, fontSize: 9 }}>{d.name}</span>
+                  <span style={{ color: d.color, fontSize: 44, fontWeight: 700, lineHeight: 1 }}>{k}</span>
+                  <span style={{ color: C.textDim, fontSize: 11 }}>{d.name}</span>
                 </div>
                 <div className="h-0.5 w-full rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.05)" }}>
                   <div style={{
@@ -276,7 +276,7 @@ export default function MCEPage() {
                     transition: "width 1.2s cubic-bezier(.4,0,.2,1)",
                   }} />
                 </div>
-                <div className="text-[10px] mt-1" style={{ color: C.textDim }}>{scores[sk]}/100</div>
+                <div className="text-[12px] mt-1" style={{ color: C.textDim }}>{scores[sk]}/100</div>
               </button>
             );
           })}
@@ -286,7 +286,7 @@ export default function MCEPage() {
         <div className="flex gap-1 mb-4 border-b" style={{ borderColor: C.border }}>
           {([["estudo", "Estudo"], ["diag", "Diagnóstico"], ["ex", "Exercícios"], ["prog", "Progresso"]] as const).map(([k, l]) => (
             <button key={k} onClick={() => setTab(k)}
-              className="px-4 py-2 text-[10px] uppercase tracking-widest mce-btn"
+              className="px-4 py-2 text-[12px] uppercase tracking-widest mce-btn"
               style={{
                 color: tab === k ? C.gold : C.textDim,
                 borderBottom: `2px solid ${tab === k ? C.gold : "transparent"}`,
@@ -328,8 +328,8 @@ function DataCol({ side, scores }: { side: "left" | "right"; scores: { m: number
     <div className="space-y-2">
       {items.map((it, i) => (
         <div key={i} className="p-2.5" style={{ background: C.surface2, border: `0.5px solid ${C.border}`, borderRadius: 4 }}>
-          <div className="text-[8px] tracking-widest mb-1" style={{ color: C.textDim }}>{it.l}</div>
-          <div className="text-sm font-bold" style={{ color: it.c }}>{it.v}</div>
+          <div className="text-[10px] tracking-widest mb-1" style={{ color: C.textDim }}>{it.l}</div>
+          <div className="text-[14px] font-bold" style={{ color: it.c }}>{it.v}</div>
         </div>
       ))}
     </div>
@@ -339,8 +339,8 @@ function DataCol({ side, scores }: { side: "left" | "right"; scores: { m: number
 function NeuralWeb({ scores, onSelect }: { scores: { m: number; c: number; e: number }; onSelect: (d: DimKey) => void }) {
   return (
     <div className="flex flex-col items-center justify-center text-center">
-      <div className="text-[10px] tracking-widest mb-1" style={{ color: C.textDim }}>MÉTODO COMPORTAMENTAL · v2.0</div>
-      <div className="text-5xl font-bold mb-3 tracking-tight" style={{ color: "#fff" }}>
+      <div className="text-[12px] tracking-widest mb-1" style={{ color: C.textDim }}>MÉTODO COMPORTAMENTAL · v2.0</div>
+      <div className="font-bold mb-3 tracking-tight" style={{ color: "#fff", fontSize: 42, lineHeight: 1 }}>
         MC<span style={{ color: C.gold }}>E</span>
       </div>
       <svg viewBox="0 0 240 230" className="w-full max-w-[280px]">
@@ -383,26 +383,26 @@ function EstudoTab({ dim, scores, onChange }: { dim: typeof DIMS[DimKey]; scores
   return (
     <div className="grid md:grid-cols-2 gap-4">
       <div className="p-4" style={{ background: C.surface, border: `0.5px solid ${C.border}`, borderRadius: 4 }}>
-        <span className="inline-block text-[9px] px-2 py-0.5 mb-3 tracking-widest" style={{ background: `${dim.color}22`, color: dim.color, borderRadius: 3 }}>
+        <span className="inline-block text-[11px] px-2 py-0.5 mb-3 tracking-widest" style={{ background: `${dim.color}22`, color: dim.color, borderRadius: 3 }}>
           {dim.name}
         </span>
-        <div className="text-lg mb-1" style={{ color: dim.colorLight }}>{dim.name.charAt(0) + dim.name.slice(1).toLowerCase()}</div>
-        <div className="text-[10px] mb-3" style={{ color: C.textDim }}>{dim.subtitle}</div>
-        <p className="text-[11px] leading-relaxed mb-3" style={{ color: C.text }}>{dim.body}</p>
+        <div className="text-[15px] mb-1" style={{ color: dim.colorLight }}>{dim.name.charAt(0) + dim.name.slice(1).toLowerCase()}</div>
+        <div className="text-[11px] mb-3" style={{ color: C.textDim }}>{dim.subtitle}</div>
+        <p className="text-[14px] leading-relaxed mb-3" style={{ color: C.text }}>{dim.body}</p>
         <div className="flex flex-wrap gap-1.5 mb-3">
           {dim.authors.map((a) => (
-            <span key={a} className="text-[9px] px-2 py-0.5" style={{ background: `${dim.color}15`, color: dim.colorLight, borderRadius: 99 }}>{a}</span>
+            <span key={a} className="text-[11px] px-2 py-0.5" style={{ background: `${dim.color}15`, color: dim.colorLight, borderRadius: 99 }}>{a}</span>
           ))}
         </div>
-        <div className="text-[10px] italic pl-3" style={{ color: C.textDim, borderLeft: `2px solid ${dim.color}` }}>"{dim.quote}"</div>
+        <div className="text-[13px] italic pl-3" style={{ color: C.textDim, borderLeft: `2px solid ${dim.color}` }}>"{dim.quote}"</div>
       </div>
       <div className="p-4 space-y-4" style={{ background: C.surface, border: `0.5px solid ${C.border}`, borderRadius: 4 }}>
-        <div className="text-[10px] tracking-widest" style={{ color: C.textDim }}>CALIBRAÇÃO MANUAL</div>
+        <div className="text-[11px] tracking-widest" style={{ color: C.textDim }}>CALIBRAÇÃO MANUAL</div>
         {(["m", "c", "e"] as const).map((k) => {
           const d = DIMS[k.toUpperCase() as DimKey];
           return (
             <div key={k}>
-              <div className="flex justify-between text-[10px] mb-1">
+              <div className="flex justify-between text-[12px] mb-1">
                 <span style={{ color: d.color }}>{d.name}</span>
                 <span style={{ color: C.text }}>{scores[k]}/100</span>
               </div>
@@ -434,12 +434,12 @@ function DiagTab({ onComplete }: { onComplete: (s: { m: number; c: number; e: nu
           <div key={idx} className="flex-1 h-1 rounded-full" style={{ background: ans[idx] >= 0 ? segColor(idx) : "rgba(255,255,255,0.08)" }} />
         ))}
       </div>
-      <div className="text-[9px] tracking-widest mb-2" style={{ color: DIMS[q.dim].color }}>{DIMS[q.dim].name} · QUESTÃO {i + 1}/9</div>
-      <div className="text-sm mb-4" style={{ color: C.text }}>{q.q}</div>
+      <div className="text-[11px] tracking-widest mb-2" style={{ color: DIMS[q.dim].color }}>{DIMS[q.dim].name} · QUESTÃO {i + 1}/9</div>
+      <div className="text-[15px] mb-4" style={{ color: C.text }}>{q.q}</div>
       <div className="space-y-2 mb-5">
         {q.opts.map((o, idx) => (
           <button key={idx} onClick={() => setAns((a) => { const n = [...a]; n[i] = idx; return n; })}
-            className="w-full text-left p-3 text-[11px] mce-btn" style={{
+            className="w-full text-left p-3 text-[13px] mce-btn" style={{
               background: ans[i] === idx ? `${DIMS[q.dim].color}22` : C.surface2,
               border: `0.5px solid ${ans[i] === idx ? DIMS[q.dim].color : C.border}`, borderRadius: 3, color: C.text,
             }}>{o}</button>
@@ -447,15 +447,15 @@ function DiagTab({ onComplete }: { onComplete: (s: { m: number; c: number; e: nu
       </div>
       <div className="flex justify-between">
         <button disabled={i === 0} onClick={() => setI(i - 1)}
-          className="text-[10px] px-4 py-2 mce-btn disabled:opacity-30"
+          className="text-[12px] px-4 py-2 mce-btn disabled:opacity-30"
           style={{ border: `0.5px solid ${C.border}`, color: C.textDim, borderRadius: 3 }}>← Voltar</button>
         {i < QUESTIONS.length - 1 ? (
           <button disabled={ans[i] < 0} onClick={() => setI(i + 1)}
-            className="text-[10px] px-4 py-2 mce-btn disabled:opacity-30"
+            className="text-[12px] px-4 py-2 mce-btn disabled:opacity-30"
             style={{ background: C.gold, color: "#000", borderRadius: 3, fontWeight: 700 }}>Próximo →</button>
         ) : (
           <button disabled={ans.some((a) => a < 0)} onClick={finish}
-            className="text-[10px] px-4 py-2 mce-btn disabled:opacity-30"
+            className="text-[12px] px-4 py-2 mce-btn disabled:opacity-30"
             style={{ background: C.teal, color: "#000", borderRadius: 3, fontWeight: 700 }}>Finalizar</button>
         )}
       </div>
@@ -467,7 +467,7 @@ function ExTab({ dim, done, onToggle }: { dim: DimKey; done: Record<string, bool
   const d = DIMS[dim];
   return (
     <div>
-      <div className="text-[10px] tracking-widest mb-3" style={{ color: d.color }}>EXERCÍCIOS · {d.name}</div>
+      <div className="text-[11px] tracking-widest mb-3" style={{ color: d.color }}>EXERCÍCIOS · {d.name}</div>
       <div className="grid md:grid-cols-2 gap-3">
         {EXERCISES[dim].map((ex) => {
           const isDone = !!done[ex.key];
@@ -475,8 +475,8 @@ function ExTab({ dim, done, onToggle }: { dim: DimKey; done: Record<string, bool
             <div key={ex.key} className="p-3 flex items-start justify-between mce-btn"
               style={{ background: C.surface, border: `0.5px solid ${isDone ? C.cc : C.border}`, borderRadius: 4 }}>
               <div className="flex-1 pr-3">
-                <div className="text-[12px] mb-1" style={{ color: isDone ? C.textDim : C.text, textDecoration: isDone ? "line-through" : "none" }}>{ex.title}</div>
-                <div className="text-[9px]" style={{ color: C.textDim }}>{ex.meta}</div>
+                <div className="text-[13px] mb-1" style={{ color: isDone ? C.textDim : C.text, textDecoration: isDone ? "line-through" : "none" }}>{ex.title}</div>
+                <div className="text-[11px]" style={{ color: C.textDim }}>{ex.meta}</div>
               </div>
               <button onClick={() => onToggle(ex.key)}
                 className="w-5 h-5 flex items-center justify-center"
@@ -503,14 +503,14 @@ function ProgTab({ streak, totalDone, mceScore, scores, criticalDim }: { streak:
           { l: "MCE SCORE", v: `${mceScore}/100`, c: C.cc },
         ].map((m, i) => (
           <div key={i} className="p-4 text-center" style={{ background: C.surface, border: `0.5px solid ${C.border}`, borderRadius: 4 }}>
-            <div className="text-2xl font-bold mb-1" style={{ color: m.c }}>{m.v}</div>
-            <div className="text-[9px] tracking-widest" style={{ color: C.textDim }}>{m.l}</div>
+            <div className="font-bold mb-1" style={{ color: m.c, fontSize: 32, lineHeight: 1.1 }}>{m.v}</div>
+            <div className="text-[11px] tracking-widest" style={{ color: C.textDim }}>{m.l}</div>
           </div>
         ))}
       </div>
       <div className="p-4" style={{ background: C.surface, border: `0.5px solid ${d.color}55`, borderRadius: 4 }}>
-        <div className="text-[10px] tracking-widest mb-2" style={{ color: d.color }}>ANÁLISE PRESCRITIVA</div>
-        <p className="text-[12px] leading-relaxed" style={{ color: C.text }}>
+        <div className="text-[11px] tracking-widest mb-2" style={{ color: d.color }}>ANÁLISE PRESCRITIVA</div>
+        <p className="text-[13px] leading-relaxed" style={{ color: C.text }}>
           <span style={{ color: d.color, fontWeight: 700 }}>{d.name.charAt(0) + d.name.slice(1).toLowerCase()}</span> ({scores[sk]}/100) é sua dimensão crítica. Concentre 70% dos exercícios MCE aqui por 14 dias antes de redistribuir o esforço.
         </p>
       </div>
@@ -615,23 +615,23 @@ function MceChat({ scores, autoMessage }: { scores: { m: number; c: number; e: n
             <div className="relative w-3 h-3 rounded-full" style={{ background: C.goldLight }} />
           </div>
           <div>
-            <div className="text-[12px]" style={{ color: C.gold }}>MCE Intelligence</div>
-            <div className="text-[9px]" style={{ color: C.textDim }}>{statusText}</div>
+            <div className="text-[14px]" style={{ color: C.gold }}>MCE Intelligence</div>
+            <div className="text-[11px]" style={{ color: C.textDim }}>{statusText}</div>
           </div>
         </div>
-        <span className="text-[9px] px-2 py-0.5" style={{ background: `${C.teal}22`, color: C.teal, borderRadius: 99 }}>Voice · Active</span>
+        <span className="text-[11px] px-2 py-0.5" style={{ background: `${C.teal}22`, color: C.teal, borderRadius: 99 }}>Voice · Active</span>
       </div>
 
       {/* Messages */}
       <div className="space-y-2 mb-4 max-h-60 overflow-y-auto pr-2">
-        {msgs.length === 0 && <div className="text-[10px] text-center py-6" style={{ color: C.textDim }}>Pressione o microfone ou digite. A resposta será lida em voz.</div>}
+        {msgs.length === 0 && <div className="text-[12px] text-center py-6" style={{ color: C.textDim }}>Pressione o microfone ou digite. A resposta será lida em voz.</div>}
         {msgs.map((m, i) => (
-          <div key={i} className="text-[11px] p-2" style={{
+          <div key={i} className="text-[13px] p-2" style={{
             background: m.role === "user" ? "rgba(0,212,170,0.06)" : "rgba(200,160,32,0.06)",
             borderLeft: `2px solid ${m.role === "user" ? C.teal : C.gold}`,
             color: C.text, borderRadius: 2,
           }}>
-            <div className="text-[8px] mb-1 tracking-widest" style={{ color: m.role === "user" ? C.teal : C.gold }}>{m.role === "user" ? "VOCÊ" : "MCE"}</div>
+            <div className="text-[10px] mb-1 tracking-widest" style={{ color: m.role === "user" ? C.teal : C.gold }}>{m.role === "user" ? "VOCÊ" : "MCE"}</div>
             {m.content}
           </div>
         ))}
@@ -657,7 +657,7 @@ function MceChat({ scores, autoMessage }: { scores: { m: number; c: number; e: n
         </button>
         <Waveform active={state === "listening" || state === "speaking"} color={state === "speaking" ? C.cc : C.gold} side="R" />
       </div>
-      <div className="text-center text-[9px] mb-3" style={{ color: C.textDim }}>
+      <div className="text-center text-[12px] mb-3" style={{ color: C.textDim }}>
         {state === "idle" && "Pressione para falar"}
         {state === "listening" && "Ouvindo..."}
         {state === "thinking" && "Processando..."}
@@ -667,7 +667,7 @@ function MceChat({ scores, autoMessage }: { scores: { m: number; c: number; e: n
       {/* Text input */}
       <div className="flex gap-2 mb-3">
         <input value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && send(input)}
-          placeholder="Digite sua mensagem..." className="flex-1 px-3 py-2 text-[11px]"
+          placeholder="Digite sua mensagem..." className="flex-1 px-3 py-2 text-[13px]"
           style={{ background: C.surface2, border: `0.5px solid ${C.border}`, color: C.text, borderRadius: 3, fontFamily: "inherit" }} />
         <button onClick={() => send(input)} className="px-3 mce-btn" style={{ background: C.gold, color: "#000", borderRadius: 3 }}>
           <Send className="w-3.5 h-3.5" />
@@ -681,7 +681,7 @@ function MceChat({ scores, autoMessage }: { scores: { m: number; c: number; e: n
           { l: "Sistema C", q: "Como aplicar o sistema de hábitos Fogg/Clear no meu dia?", c: C.cc },
           { l: "Execução E", q: "Como estruturar meu bloco Deep Work Newport hoje?", c: C.e },
         ].map((a) => (
-          <button key={a.l} onClick={() => send(a.q)} className="text-[10px] py-2 mce-btn"
+          <button key={a.l} onClick={() => send(a.q)} className="text-[12px] py-2 mce-btn"
             style={{ background: C.surface2, border: `0.5px solid ${C.border}`, color: a.c, borderRadius: 3 }}>{a.l}</button>
         ))}
       </div>
