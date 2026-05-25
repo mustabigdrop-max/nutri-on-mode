@@ -339,8 +339,8 @@ function DataCol({ side, scores }: { side: "left" | "right"; scores: { m: number
 function NeuralWeb({ scores, onSelect }: { scores: { m: number; c: number; e: number }; onSelect: (d: DimKey) => void }) {
   return (
     <div className="flex flex-col items-center justify-center text-center">
-      <div className="text-[10px] tracking-widest mb-1" style={{ color: C.textDim }}>MÉTODO COMPORTAMENTAL · v2.0</div>
-      <div className="text-5xl font-bold mb-3 tracking-tight" style={{ color: "#fff" }}>
+      <div className="text-[12px] tracking-widest mb-1" style={{ color: C.textDim }}>MÉTODO COMPORTAMENTAL · v2.0</div>
+      <div className="font-bold mb-3 tracking-tight" style={{ color: "#fff", fontSize: 42, lineHeight: 1 }}>
         MC<span style={{ color: C.gold }}>E</span>
       </div>
       <svg viewBox="0 0 240 230" className="w-full max-w-[280px]">
