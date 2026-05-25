@@ -300,7 +300,54 @@ function sanitizeStructure(s: any): any {
   }
   if (!s.feeder_sets && !s.top_set && !s.backoff_sets && !s.work_sets) {
     s.work_sets = { sets: "3", reps: "8-12", rpe: "7-8", rest: "90s", notes: "Séries de trabalho" };
+}
+
+/**
+ * Valida que o protocolo possui TODAS as seções obrigatórias para renderizar
+ * no padrão STRATUM Elite (mesmo padrão dos protocolos antigos como Carlos Júnior).
+ * Retorna lista de campos ausentes — vazia significa válido.
+ */
+function validateProtocolStructure(p: any): string[] {
+  const missing: string[] = [];
+  if (!p || typeof p !== "object") return ["root"];
+  const bo = p.block_overview;
+  if (!bo || typeof bo !== "object") missing.push("block_overview");
+  else {
+    if (!bo.title || typeof bo.title !== "string") missing.push("block_overview.title");
+    if (!Array.isArray(bo.muscle_priorities) || bo.muscle_priorities.length === 0)
+      missing.push("block_overview.muscle_priorities");
+    if (!bo.coach_notes || typeof bo.coach_notes !== "string") missing.push("block_overview.coach_notes");
   }
+  if (!Array.isArray(p.improvement_alerts) || p.improvement_alerts.length === 0)
+    missing.push("improvement_alerts");
+  const days = p.training_days;
+  if (!Array.isArray(days) || days.length === 0) {
+    missing.push("training_days");
+  } else {
+    days.forEach((d: any, i: number) => {
+      const tag = `training_days[${i}]`;
+      if (!Array.isArray(d.warmup) || d.warmup.length === 0) missing.push(`${tag}.warmup`);
+      if (!Array.isArray(d.exercises) || d.exercises.length === 0) {
+        missing.push(`${tag}.exercises`);
+      } else {
+        d.exercises.forEach((ex: any, j: number) => {
+          const etag = `${tag}.exercises[${j}]`;
+          const s = ex?.structure;
+          if (!s || typeof s !== "object") missing.push(`${etag}.structure`);
+          else {
+            if (!Array.isArray(s.feeder_sets) || s.feeder_sets.length === 0)
+              missing.push(`${etag}.structure.feeder_sets`);
+            if (!s.work_sets && !s.top_set)
+              missing.push(`${etag}.structure.work_sets|top_set`);
+          }
+          if (!ex?.why_this_exercise) missing.push(`${etag}.why_this_exercise`);
+          if (!ex?.execution_cues) missing.push(`${etag}.execution_cues`);
+        });
+      }
+    });
+  }
+  return missing;
+}
   return s;
 }
 
