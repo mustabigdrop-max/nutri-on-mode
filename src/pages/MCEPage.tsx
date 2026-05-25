@@ -157,6 +157,7 @@ export default function MCEPage() {
   const [tab, setTab] = useState<"estudo" | "diag" | "ex" | "prog">("estudo");
   const [done, setDone] = useState<Record<string, boolean>>({});
   const [streak, setStreak] = useState(0);
+  const [autoMsg, setAutoMsg] = useState<{ text: string; nonce: number } | null>(null);
 
   // Load saved data
   useEffect(() => {
