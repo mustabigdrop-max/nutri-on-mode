@@ -523,6 +523,16 @@ function ProgTab({ streak, totalDone, mceScore, scores, criticalDim }: { streak:
 // ─────────────────────────────────────────────────────────────
 type Msg = { role: "user" | "assistant"; content: string };
 
+function pickJarvisVoice(list: SpeechSynthesisVoice[]): SpeechSynthesisVoice | undefined {
+  return (
+    list.find((v) => /google/i.test(v.name) && v.lang === "pt-BR") ||
+    list.find((v) => v.lang === "pt-BR") ||
+    list.find((v) => /google/i.test(v.name) && v.lang?.toLowerCase().startsWith("pt")) ||
+    list.find((v) => v.lang?.toLowerCase().startsWith("pt")) ||
+    list.find((v) => /daniel|reed|google uk/i.test(v.name))
+  );
+}
+
 function MceChat({ scores, autoMessage }: { scores: { m: number; c: number; e: number }; autoMessage?: { text: string; nonce: number } | null }) {
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
@@ -530,18 +540,52 @@ function MceChat({ scores, autoMessage }: { scores: { m: number; c: number; e: n
   const recRef = useRef<any>(null);
   const synthRef = useRef<SpeechSynthesisUtterance | null>(null);
   const lastAutoNonce = useRef<number | null>(null);
+  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const [selectedVoiceURI, setSelectedVoiceURI] = useState<string>("");
+  const selectedVoiceRef = useRef<string>("");
+
+  useEffect(() => {
+    if (!("speechSynthesis" in window)) return;
+    const load = () => {
+      const list = window.speechSynthesis.getVoices();
+      if (!list.length) return;
+      setVoices(list);
+      const saved = localStorage.getItem("mce_voice_preference") || "";
+      if (saved && list.some((v) => v.voiceURI === saved)) {
+        setSelectedVoiceURI(saved);
+        selectedVoiceRef.current = saved;
+      } else {
+        const pick = pickJarvisVoice(list);
+        if (pick) {
+          setSelectedVoiceURI(pick.voiceURI);
+          selectedVoiceRef.current = pick.voiceURI;
+        }
+      }
+    };
+    load();
+    window.speechSynthesis.onvoiceschanged = load;
+    return () => { if ("speechSynthesis" in window) window.speechSynthesis.onvoiceschanged = null as any; };
+  }, []);
+
+  const applyVoice = useCallback((u: SpeechSynthesisUtterance) => {
+    const list = window.speechSynthesis.getVoices();
+    const uri = selectedVoiceRef.current;
+    const v = list.find((x) => x.voiceURI === uri) || pickJarvisVoice(list);
+    if (v) { u.voice = v; u.lang = v.lang; } else { u.lang = "pt-BR"; }
+    u.rate = 0.88; u.pitch = 0.75; u.volume = 1.0;
+  }, []);
 
   const speak = useCallback((text: string) => {
     if (!("speechSynthesis" in window)) return;
     window.speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
-    u.lang = "pt-BR"; u.rate = 0.95; u.pitch = 0.9;
+    applyVoice(u);
     u.onend = () => setState("idle");
     u.onerror = () => setState("idle");
     synthRef.current = u;
     setState("speaking");
     window.speechSynthesis.speak(u);
-  }, []);
+  }, [applyVoice]);
 
   useEffect(() => {
     if (!autoMessage || autoMessage.nonce === lastAutoNonce.current) return;
@@ -549,6 +593,14 @@ function MceChat({ scores, autoMessage }: { scores: { m: number; c: number; e: n
     setMsgs((m) => [...m, { role: "assistant", content: autoMessage.text }]);
     speak(autoMessage.text);
   }, [autoMessage, speak]);
+
+  const onVoiceChange = (uri: string) => {
+    setSelectedVoiceURI(uri);
+    selectedVoiceRef.current = uri;
+    localStorage.setItem("mce_voice_preference", uri);
+  };
+
+  const testVoice = () => speak("MCE Intelligence online. Sistema comportamental ativado.");
 
   const statusText = {
     idle: "Neural · Standby",
