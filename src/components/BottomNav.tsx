@@ -18,6 +18,7 @@ const BottomNav = () => {
     { id: "home", icon: BarChart3, label: "Home", path: "/dashboard" },
     { id: "hydration", icon: Droplets, label: "Água", path: "/hydration" },
     { id: "add", icon: Plus, label: "", path: "/meal-log" },
+    { id: "mce", icon: Brain, label: "MCE", path: "/mce" },
     ...(hasCoachAccess
       ? [{ id: "coach", icon: ClipboardList, label: "Coach", path: "/meus-protocolos" }]
       : [{ id: "lab", icon: Microscope, label: "LAB", path: "/lab" }]),
