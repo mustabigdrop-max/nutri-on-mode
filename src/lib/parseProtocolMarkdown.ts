@@ -81,7 +81,40 @@ const PILL_DEDUPE: Record<string, string> = {
 };
 
 // regex que captura cabeçalho de "dia":  DIA 1, Dia 2:, D1 —, ## Dia 3, Sessão 1, Treino 2
-const DAY_HEADER = /^\s*(?:#{1,4}\s*)?(?:dia|sess[aã]o|treino|d)\s*0*(\d+)\b[\s:.\-—–]*([^\n]*)$/im;
+const DAY_HEADER = /^\s*(?:#{1,4}\s*)?(?:\*{0,2})(?:dia|sess[aã]o|treino|d)\s*0*(\d+)\b[\s:.\-—–]*([^\n]*)$/im;
+
+// regex que captura cabeçalho por dia da semana usado em protocolos APEX:
+//   ### SEGUNDA-FEIRA: PEITO E TRÍCEPS, **Quarta:** Pernas, "Terça feira — Costas"
+const WEEKDAY_HEADER =
+  /^\s*(?:#{1,4}\s*)?(?:\*{0,2})(segunda|ter[çc]a|quarta|quinta|sexta|s[áa]bado|domingo)(?:[\s\-]*feira)?(?:\*{0,2})[\s:.\-—–]*([^\n]*)$/im;
+
+const WEEKDAY_ORDER: Record<string, number> = {
+  segunda: 1,
+  terca: 2, terça: 2,
+  quarta: 3,
+  quinta: 4,
+  sexta: 5,
+  sabado: 6, sábado: 6,
+  domingo: 7,
+};
+
+function normalizeWeekday(w: string): string {
+  return w.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
+
+function matchDayHeader(line: string): { num: number; rest: string; isWeekday: boolean } | null {
+  const m1 = line.match(DAY_HEADER);
+  if (m1) return { num: parseInt(m1[1]), rest: (m1[2] || "").trim(), isWeekday: false };
+  const m2 = line.match(WEEKDAY_HEADER);
+  if (m2) {
+    const key = normalizeWeekday(m2[1]);
+    const num = WEEKDAY_ORDER[key] ?? WEEKDAY_ORDER[m2[1].toLowerCase()] ?? 1;
+    const dayLabel = m2[1].charAt(0).toUpperCase() + m2[1].slice(1).toLowerCase();
+    const rest = (m2[2] || "").trim();
+    return { num, rest: rest ? `${dayLabel} — ${rest}` : dayLabel, isWeekday: true };
+  }
+  return null;
+}
 
 function extractMuscleTags(text: string): string[] {
   const lower = text.toLowerCase();
@@ -96,7 +129,6 @@ function extractMuscleTags(text: string): string[] {
 }
 
 function extractDuration(text: string): string {
-  // procura padrões: "90min", "90 min", "90 minutos", "1h30", "1h", "60 a 90 min"
   const m1 = text.match(/(\d{2,3})\s*(?:a|–|-)\s*(\d{2,3})\s*min(?:utos)?/i);
   if (m1) return `${m1[1]}-${m1[2]}min`;
   const m2 = text.match(/(\d{1,3})\s*min(?:utos)?/i);
@@ -109,13 +141,11 @@ function extractDuration(text: string): string {
   return "90min";
 }
 
-function extractTitle(headerLine: string, dayNumber: number, body: string): string {
-  // remove o prefixo "DIA N", "Dia N:", "D1 —" etc, e usa o resto como título
-  const cleaned = headerLine.replace(DAY_HEADER, "$2").trim();
+function extractTitle(rest: string, dayNumber: number, body: string): string {
+  const cleaned = rest.replace(/^[*#\-•:\s]+/, "").replace(/\*+$/g, "").trim();
   if (cleaned && cleaned.length > 1) return cleaned;
-  // tenta primeira linha não vazia do body
   const firstLine = body.split("\n").map(l => l.trim()).find(Boolean);
-  if (firstLine && firstLine.length < 80 && !DAY_HEADER.test(firstLine)) {
+  if (firstLine && firstLine.length < 80 && !matchDayHeader(firstLine)) {
     return firstLine.replace(/^[#\-•*]+\s*/, "");
   }
   return `Treino ${dayNumber}`;
@@ -161,16 +191,18 @@ export function parseProtocolToDays(content: any): ParsedProtocol {
   }
 
   const lines = text.split("\n");
-  type Block = { header: string; num: number; bodyLines: string[] };
+  type Block = { rest: string; num: number; bodyLines: string[] };
   const blocks: Block[] = [];
   let introLines: string[] = [];
   let current: Block | null = null;
+  let autoNum = 0;
 
   for (const line of lines) {
-    const m = line.match(DAY_HEADER);
+    const m = matchDayHeader(line);
     if (m) {
       if (current) blocks.push(current);
-      current = { header: line, num: parseInt(m[1]), bodyLines: [] };
+      autoNum += 1;
+      current = { rest: m.rest, num: m.isWeekday ? autoNum : (m.num || autoNum), bodyLines: [] };
     } else if (current) {
       current.bodyLines.push(line);
     } else {
@@ -190,12 +222,12 @@ export function parseProtocolToDays(content: any): ParsedProtocol {
 
   const days: ParsedDay[] = blocks.map((b, i) => {
     const body = b.bodyLines.join("\n").trim();
-    const title = extractTitle(b.header, b.num || i + 1, body);
+    const title = extractTitle(b.rest, b.num || i + 1, body);
     return {
       day_number: b.num || i + 1,
       session_title: title,
       estimated_duration: extractDuration(body),
-      muscle_tags: extractMuscleTags(b.header + "\n" + body),
+      muscle_tags: extractMuscleTags(b.rest + "\n" + body),
       body,
     };
   });
