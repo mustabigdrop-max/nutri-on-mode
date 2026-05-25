@@ -1376,7 +1376,8 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
       const farmMeta = parseFarmMeta(analysisResult);
       const meta = parseMeta(analysisResult);
       const segments = parseSegments(analysisResult);
-      const protocoloCompleto = `Compostos: ${formData.compostos}
+      const compostosInformados = (formData.compostos || "").trim();
+      const protocoloCompleto = `Compostos: ${compostosInformados || "não informado — gerar recomendação farmacológica baseada em perfil/objetivo"}
 Objetivo do ciclo: ${objetivoCiclo}
 Semana ${semanaCiclo || "não informada"} de ${duracaoCiclo || "não informada"} semanas
 Suporte em uso: ${suporte || "não informado"}`;
