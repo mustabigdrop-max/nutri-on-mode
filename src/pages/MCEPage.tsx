@@ -434,12 +434,12 @@ function DiagTab({ onComplete }: { onComplete: (s: { m: number; c: number; e: nu
           <div key={idx} className="flex-1 h-1 rounded-full" style={{ background: ans[idx] >= 0 ? segColor(idx) : "rgba(255,255,255,0.08)" }} />
         ))}
       </div>
-      <div className="text-[9px] tracking-widest mb-2" style={{ color: DIMS[q.dim].color }}>{DIMS[q.dim].name} · QUESTÃO {i + 1}/9</div>
-      <div className="text-sm mb-4" style={{ color: C.text }}>{q.q}</div>
+      <div className="text-[11px] tracking-widest mb-2" style={{ color: DIMS[q.dim].color }}>{DIMS[q.dim].name} · QUESTÃO {i + 1}/9</div>
+      <div className="text-[15px] mb-4" style={{ color: C.text }}>{q.q}</div>
       <div className="space-y-2 mb-5">
         {q.opts.map((o, idx) => (
           <button key={idx} onClick={() => setAns((a) => { const n = [...a]; n[i] = idx; return n; })}
-            className="w-full text-left p-3 text-[11px] mce-btn" style={{
+            className="w-full text-left p-3 text-[13px] mce-btn" style={{
               background: ans[i] === idx ? `${DIMS[q.dim].color}22` : C.surface2,
               border: `0.5px solid ${ans[i] === idx ? DIMS[q.dim].color : C.border}`, borderRadius: 3, color: C.text,
             }}>{o}</button>
@@ -447,15 +447,15 @@ function DiagTab({ onComplete }: { onComplete: (s: { m: number; c: number; e: nu
       </div>
       <div className="flex justify-between">
         <button disabled={i === 0} onClick={() => setI(i - 1)}
-          className="text-[10px] px-4 py-2 mce-btn disabled:opacity-30"
+          className="text-[12px] px-4 py-2 mce-btn disabled:opacity-30"
           style={{ border: `0.5px solid ${C.border}`, color: C.textDim, borderRadius: 3 }}>← Voltar</button>
         {i < QUESTIONS.length - 1 ? (
           <button disabled={ans[i] < 0} onClick={() => setI(i + 1)}
-            className="text-[10px] px-4 py-2 mce-btn disabled:opacity-30"
+            className="text-[12px] px-4 py-2 mce-btn disabled:opacity-30"
             style={{ background: C.gold, color: "#000", borderRadius: 3, fontWeight: 700 }}>Próximo →</button>
         ) : (
           <button disabled={ans.some((a) => a < 0)} onClick={finish}
-            className="text-[10px] px-4 py-2 mce-btn disabled:opacity-30"
+            className="text-[12px] px-4 py-2 mce-btn disabled:opacity-30"
             style={{ background: C.teal, color: "#000", borderRadius: 3, fontWeight: 700 }}>Finalizar</button>
         )}
       </div>
