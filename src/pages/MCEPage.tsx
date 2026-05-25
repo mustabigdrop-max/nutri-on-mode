@@ -397,12 +397,12 @@ function EstudoTab({ dim, scores, onChange }: { dim: typeof DIMS[DimKey]; scores
         <div className="text-[13px] italic pl-3" style={{ color: C.textDim, borderLeft: `2px solid ${dim.color}` }}>"{dim.quote}"</div>
       </div>
       <div className="p-4 space-y-4" style={{ background: C.surface, border: `0.5px solid ${C.border}`, borderRadius: 4 }}>
-        <div className="text-[10px] tracking-widest" style={{ color: C.textDim }}>CALIBRAÇÃO MANUAL</div>
+        <div className="text-[11px] tracking-widest" style={{ color: C.textDim }}>CALIBRAÇÃO MANUAL</div>
         {(["m", "c", "e"] as const).map((k) => {
           const d = DIMS[k.toUpperCase() as DimKey];
           return (
             <div key={k}>
-              <div className="flex justify-between text-[10px] mb-1">
+              <div className="flex justify-between text-[12px] mb-1">
                 <span style={{ color: d.color }}>{d.name}</span>
                 <span style={{ color: C.text }}>{scores[k]}/100</span>
               </div>
