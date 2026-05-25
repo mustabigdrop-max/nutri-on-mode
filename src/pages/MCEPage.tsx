@@ -467,7 +467,7 @@ function ExTab({ dim, done, onToggle }: { dim: DimKey; done: Record<string, bool
   const d = DIMS[dim];
   return (
     <div>
-      <div className="text-[10px] tracking-widest mb-3" style={{ color: d.color }}>EXERCÍCIOS · {d.name}</div>
+      <div className="text-[11px] tracking-widest mb-3" style={{ color: d.color }}>EXERCÍCIOS · {d.name}</div>
       <div className="grid md:grid-cols-2 gap-3">
         {EXERCISES[dim].map((ex) => {
           const isDone = !!done[ex.key];
@@ -475,8 +475,8 @@ function ExTab({ dim, done, onToggle }: { dim: DimKey; done: Record<string, bool
             <div key={ex.key} className="p-3 flex items-start justify-between mce-btn"
               style={{ background: C.surface, border: `0.5px solid ${isDone ? C.cc : C.border}`, borderRadius: 4 }}>
               <div className="flex-1 pr-3">
-                <div className="text-[12px] mb-1" style={{ color: isDone ? C.textDim : C.text, textDecoration: isDone ? "line-through" : "none" }}>{ex.title}</div>
-                <div className="text-[9px]" style={{ color: C.textDim }}>{ex.meta}</div>
+                <div className="text-[13px] mb-1" style={{ color: isDone ? C.textDim : C.text, textDecoration: isDone ? "line-through" : "none" }}>{ex.title}</div>
+                <div className="text-[11px]" style={{ color: C.textDim }}>{ex.meta}</div>
               </div>
               <button onClick={() => onToggle(ex.key)}
                 className="w-5 h-5 flex items-center justify-center"
