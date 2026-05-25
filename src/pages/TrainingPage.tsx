@@ -1048,7 +1048,7 @@ Português. Específico. Científico. Zero genérico.`;
               </div>
             )}
             {activeResultTab === "treino" && !protocol?.training_days && textResults.protocolo && (
-              <TextCard content={textResults.protocolo} />
+              <MarkdownProtocolView content={textResults.protocolo} title={clientName || "Protocolo"} />
             )}
 
             {/* ── Text Tabs ── */}
