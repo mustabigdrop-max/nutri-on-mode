@@ -99,27 +99,54 @@ export default function TrainingReviewAgent({
     [reviewId],
   );
 
+  const invokeWithRetry = useCallback(
+    async (body: any, maxAttempts = 3): Promise<{ ok: true; text: string } | { ok: false; error: string }> => {
+      let lastErr = "Falha desconhecida";
+      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        try {
+          const { data, error } = await supabase.functions.invoke("training-review-agent", { body });
+          if (error) throw new Error(error.message || "Edge function error");
+          if ((data as any)?.error) throw new Error((data as any).error);
+          const text = (data as any)?.text || "";
+          return { ok: true, text };
+        } catch (e: any) {
+          lastErr = e?.message || "Falha de conexão";
+          if (attempt < maxAttempts) await new Promise((r) => setTimeout(r, 2000));
+        }
+      }
+      return { ok: false, error: lastErr };
+    },
+    [],
+  );
+
   const callAgent = useCallback(
     async (nextMessages: Msg[]) => {
       setLoading(true);
-      try {
-        const { data, error } = await supabase.functions.invoke("training-review-agent", {
-          body: { mode: "chat", messages: nextMessages, protocol: protocolText, athleteContext },
-        });
-        if (error) throw new Error(error.message);
-        if ((data as any)?.error) throw new Error((data as any).error);
-        const text = (data as any)?.text || "";
-        const final = [...nextMessages, { role: "assistant" as const, content: text }];
+      // remove previous transient error system messages
+      const clean = nextMessages.filter((m) => !m.isError);
+      const result = await invokeWithRetry({
+        mode: "chat",
+        messages: clean.filter((m) => m.role !== "system").map(({ role, content }) => ({ role, content })),
+        protocol: protocolText,
+        athleteContext,
+      });
+      if (result.ok) {
+        const final = [...clean, { role: "assistant" as const, content: result.text }];
         setMessages(final);
         await persistMessages(final);
-        scrollDown();
-      } catch (e: any) {
-        toast({ title: "Erro no Training Agent", description: e?.message || "Falha", variant: "destructive" });
-      } finally {
-        setLoading(false);
+      } else {
+        const errMsg: Msg = {
+          role: "system",
+          content: "Serviço temporariamente indisponível. Tente novamente em alguns instantes.",
+          isError: true,
+          retryPayload: { kind: "chat", messages: clean },
+        };
+        setMessages([...clean, errMsg]);
       }
+      setLoading(false);
+      scrollDown();
     },
-    [protocolText, athleteContext, persistMessages],
+    [protocolText, athleteContext, persistMessages, invokeWithRetry],
   );
 
   const sendInitialAnalysis = async () => {
@@ -128,24 +155,35 @@ export default function TrainingReviewAgent({
       content:
         "Analise este protocolo gerado para o atleta. Identifique: 1 ponto forte, 1 ponto de atenção, e faça 1 pergunta técnica ao coach para refinar o protocolo.",
     };
-    // We don't show the seed user message; we synthesize the assistant's first turn directly.
     setLoading(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("training-review-agent", {
-        body: { mode: "chat", messages: [initial], protocol: protocolText, athleteContext },
-      });
-      if (error) throw new Error(error.message);
-      if ((data as any)?.error) throw new Error((data as any).error);
-      const text = (data as any)?.text || "";
-      const final: Msg[] = [{ role: "assistant", content: text }];
+    const result = await invokeWithRetry({
+      mode: "chat",
+      messages: [{ role: initial.role, content: initial.content }],
+      protocol: protocolText,
+      athleteContext,
+    });
+    if (result.ok) {
+      const final: Msg[] = [{ role: "assistant", content: result.text }];
       setMessages(final);
       await persistMessages(final);
-      scrollDown();
-    } catch (e: any) {
-      toast({ title: "Erro ao iniciar análise", description: e?.message || "Falha", variant: "destructive" });
-    } finally {
-      setLoading(false);
+    } else {
+      setMessages([
+        {
+          role: "system",
+          content: "Serviço temporariamente indisponível. Tente novamente em alguns instantes.",
+          isError: true,
+          retryPayload: { kind: "initial", messages: [] },
+        },
+      ]);
     }
+    setLoading(false);
+    scrollDown();
+  };
+
+  const retryLast = (m: Msg) => {
+    if (!m.retryPayload) return;
+    if (m.retryPayload.kind === "initial") void sendInitialAnalysis();
+    else void callAgent(m.retryPayload.messages);
   };
 
   const sendMessage = async (text: string) => {
