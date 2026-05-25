@@ -267,7 +267,7 @@ export default function MCEPage() {
                   background: C.surface, border: `0.5px solid ${isActive ? d.color : C.border}`, borderRadius: 4,
                 }}>
                 <div className="flex items-baseline justify-between mb-2">
-                  <span style={{ color: d.color, fontSize: 44, fontWeight: 700, lineHeight: 1 }}>{k}</span>
+                  <span style={{ color: d.color, fontSize: 48, fontWeight: 900, lineHeight: 1 }}>{k}</span>
                   <span style={{ color: C.textDim, fontSize: 11 }}>{d.name}</span>
                 </div>
                 <div className="h-0.5 w-full rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.05)" }}>
@@ -321,15 +321,22 @@ export default function MCEPage() {
 // SUBCOMPONENTS
 // ─────────────────────────────────────────────────────────────
 function DataCol({ side, scores }: { side: "left" | "right"; scores: { m: number; c: number; e: number } }) {
-  const items = side === "left"
-    ? [{ l: "SCORE M", v: scores.m, c: C.m }, { l: "AUTOR BASE", v: "Dweck/Stanford", c: C.textDim }, { l: "STATUS", v: "ATIVO", c: C.cc }]
-    : [{ l: "SCORE E", v: scores.e, c: C.e }, { l: "AUTOR BASE", v: "Newport/Georgetown", c: C.textDim }, { l: "FOCO", v: scores.e < 40 ? "CRÍTICO" : scores.e < 70 ? "ATENÇÃO" : "ESTÁVEL", c: scores.e < 40 ? "#ff5555" : scores.e < 70 ? C.gold : C.cc }];
+  const items: { l: string; v: any; c: string; bar?: number }[] = side === "left"
+    ? [{ l: "SCORE M", v: scores.m, c: C.m, bar: scores.m }, { l: "AUTOR BASE", v: "Dweck/Stanford", c: C.textDim }, { l: "STATUS", v: "ATIVO", c: C.cc }]
+    : [{ l: "SCORE E", v: scores.e, c: C.e, bar: scores.e }, { l: "AUTOR BASE", v: "Newport/Georgetown", c: C.textDim }, { l: "FOCO", v: scores.e < 40 ? "CRÍTICO" : scores.e < 70 ? "ATENÇÃO" : "ESTÁVEL", c: scores.e < 40 ? "#ff5555" : scores.e < 70 ? C.gold : C.cc }];
   return (
     <div className="space-y-2">
       {items.map((it, i) => (
         <div key={i} className="p-2.5" style={{ background: C.surface2, border: `0.5px solid ${C.border}`, borderRadius: 4 }}>
           <div className="text-[10px] tracking-widest mb-1" style={{ color: C.textDim }}>{it.l}</div>
-          <div className="text-[14px] font-bold" style={{ color: it.c }}>{it.v}</div>
+          <div className="text-[14px] font-bold" style={{ color: it.c }}>
+            {it.v}{typeof it.bar === "number" && <span className="text-[11px] ml-1" style={{ color: C.textDim }}>/100</span>}
+          </div>
+          {typeof it.bar === "number" && (
+            <div className="mt-2 w-full rounded-full overflow-hidden" style={{ height: 3, background: "rgba(255,255,255,0.05)" }}>
+              <div style={{ width: `${it.bar}%`, height: "100%", background: it.c, transition: "width 1.2s cubic-bezier(.4,0,.2,1)" }} />
+            </div>
+          )}
         </div>
       ))}
     </div>
@@ -348,19 +355,19 @@ function NeuralWeb({ scores, onSelect }: { scores: { m: number; c: number; e: nu
           <radialGradient id="centerG"><stop offset="0%" stopColor={C.goldLight} /><stop offset="100%" stopColor={C.gold} stopOpacity="0" /></radialGradient>
         </defs>
         {/* Orbital rings */}
-        <circle cx="120" cy="120" r="70" fill="none" stroke={C.gold} strokeOpacity="0.15" strokeDasharray="2 4" />
-        <circle cx="120" cy="120" r="92" fill="none" stroke={C.teal} strokeOpacity="0.1" strokeDasharray="1 6" />
+        <circle cx="120" cy="135" r="70" fill="none" stroke={C.gold} strokeOpacity="0.15" strokeDasharray="2 4" />
+        <circle cx="120" cy="135" r="92" fill="none" stroke={C.teal} strokeOpacity="0.1" strokeDasharray="1 6" />
         {/* Connections — triangle: M top, C bottom-left, E bottom-right */}
         <line x1="120" y1="25" x2="55" y2="190" stroke="#fff" strokeOpacity="0.18" strokeDasharray="2 3" />
         <line x1="120" y1="25" x2="185" y2="190" stroke="#fff" strokeOpacity="0.18" strokeDasharray="2 3" />
         <line x1="55" y1="190" x2="185" y2="190" stroke="#fff" strokeOpacity="0.18" strokeDasharray="2 3" />
-        <line x1="120" y1="120" x2="120" y2="25" stroke={C.m} strokeOpacity="0.3" />
-        <line x1="120" y1="120" x2="55" y2="190" stroke={C.cc} strokeOpacity="0.3" />
-        <line x1="120" y1="120" x2="185" y2="190" stroke={C.e} strokeOpacity="0.3" />
-        {/* Center */}
-        <circle cx="120" cy="120" r="18" fill="url(#centerG)" />
-        <circle cx="120" cy="120" r="8" fill={C.gold} />
-        <text x="120" y="123" textAnchor="middle" fontSize="7" fill="#000" fontWeight="700">MCE</text>
+        <line x1="120" y1="135" x2="120" y2="25" stroke={C.m} strokeOpacity="0.3" />
+        <line x1="120" y1="135" x2="55" y2="190" stroke={C.cc} strokeOpacity="0.3" />
+        <line x1="120" y1="135" x2="185" y2="190" stroke={C.e} strokeOpacity="0.3" />
+        {/* Center — centroid of M(120,25), C(55,190), E(185,190) = (120,135) */}
+        <circle cx="120" cy="135" r="18" fill="url(#centerG)" />
+        <circle cx="120" cy="135" r="9" fill={C.gold} />
+        <text x="120" y="138" textAnchor="middle" fontSize="7" fill="#000" fontWeight="700">MCE</text>
         {/* Nodes — M TOPO, C inf-esq, E inf-dir */}
         {[
           { k: "M" as DimKey, x: 120, y: 25, c: C.m, labelDy: -22 },
