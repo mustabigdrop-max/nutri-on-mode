@@ -59,6 +59,7 @@ import { TRAINING_SYSTEMS } from "@/data/trainingSystems";
 import CompetitionModeBlocks from "@/components/training/systems/CompetitionModeBlocks";
 import StratumAIAgent from "@/components/training/StratumAIAgent";
 import SmartWarmup from "@/components/training/SmartWarmup";
+import { MarkdownProtocolView } from "@/components/training/MarkdownProtocolView";
 import {
   TrackerProvider,
   WorkoutProgressBar,
@@ -1047,7 +1048,7 @@ Português. Específico. Científico. Zero genérico.`;
               </div>
             )}
             {activeResultTab === "treino" && !protocol?.training_days && textResults.protocolo && (
-              <TextCard content={textResults.protocolo} />
+              <MarkdownProtocolView content={textResults.protocolo} title={clientName || "Protocolo"} />
             )}
 
             {/* ── Text Tabs ── */}
@@ -2680,7 +2681,10 @@ function HistoryViewModal({ protocol: p, onClose, userId, onUpdate }: { protocol
               ))}
             </>
           ) : p.protocol_text ? (
-            <TextCard content={typeof p.protocol_text === "string" ? p.protocol_text : JSON.stringify(p.protocol_text, null, 2)} />
+            <MarkdownProtocolView
+              content={typeof p.protocol_text === "string" ? p.protocol_text : JSON.stringify(p.protocol_text, null, 2)}
+              title={p.client_name || "Protocolo"}
+            />
           ) : (
             <p className="text-xs text-center py-8" style={{ color: TEXT_MUTED }}>Sem dados do protocolo</p>
           )}
