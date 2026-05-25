@@ -130,8 +130,8 @@ function ParticlesBg() {
         for (let j = i + 1; j < parts.length; j++) {
           const dx = parts[i].x - parts[j].x, dy = parts[i].y - parts[j].y;
           const d = Math.sqrt(dx * dx + dy * dy);
-          if (d < 120) {
-            ctx.strokeStyle = parts[i].c; ctx.globalAlpha = (1 - d / 120) * 0.15;
+          if (d < 80) {
+            ctx.strokeStyle = parts[i].c; ctx.globalAlpha = (1 - d / 80) * 0.18;
             ctx.lineWidth = 0.5; ctx.beginPath();
             ctx.moveTo(parts[i].x, parts[i].y); ctx.lineTo(parts[j].x, parts[j].y); ctx.stroke();
           }
@@ -194,7 +194,11 @@ export default function MCEPage() {
     if (!user) return;
     const wasDone = done[key];
     setDone((d) => ({ ...d, [key]: !wasDone }));
-    if (!wasDone) await supabase.from("mce_exercises_done").insert({ user_id: user.id, exercise_key: key });
+    if (!wasDone) {
+      await supabase.from("mce_exercises_done").insert({ user_id: user.id, exercise_key: key });
+    } else {
+      await supabase.from("mce_exercises_done").delete().eq("user_id", user.id).eq("exercise_key", key);
+    }
   };
 
   const dim = DIMS[activeDim];
@@ -211,7 +215,7 @@ export default function MCEPage() {
         backgroundSize: "40px 40px",
       }} />
       {/* Scan line */}
-      <div className="fixed left-0 right-0 h-px pointer-events-none z-10" style={{ background: `linear-gradient(90deg, transparent, ${C.teal}, transparent)`, animation: "mceScan 8s linear infinite", boxShadow: `0 0 8px ${C.teal}` }} />
+      <div className="fixed left-0 right-0 h-px pointer-events-none z-10" style={{ background: "rgba(0,212,170,0.04)", animation: "mceScan 8s linear infinite" }} />
       <ParticlesBg />
 
       <style>{`
