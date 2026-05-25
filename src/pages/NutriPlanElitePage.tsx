@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Loader2, Flame, Beef, Clock, Droplet, Pill, CalendarDays, Trophy, ShieldAlert, Stethoscope, Brain, Utensils } from "lucide-react";
 import { toast } from "sonner";
+import MceBanner from "@/components/mce/MceBanner";
 
 const COMPOSTOS = [
   "Testosterona", "Trembolona", "Masteron", "Boldenona", "Deca/Nandrolona",
