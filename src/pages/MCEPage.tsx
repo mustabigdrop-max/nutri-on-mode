@@ -793,36 +793,69 @@ function MceChat({ scores, autoMessage }: { scores: { m: number; c: number; e: n
   };
 
   return (
-    <div className="p-4" style={{ background: C.surface, border: `0.5px solid ${C.border}`, borderRadius: 4 }}>
+    <div className="p-4" style={{
+      background: "linear-gradient(180deg, rgba(4,8,14,0.98) 0%, rgba(6,10,18,0.97) 100%)",
+      border: "0.5px solid rgba(200,160,32,0.2)",
+      borderTop: "1.5px solid rgba(200,160,32,0.4)",
+      borderRadius: 6,
+      boxShadow: "0 -4px 30px rgba(200,160,32,0.05), inset 0 1px 0 rgba(200,160,32,0.1)",
+    }}>
       {/* Header */}
-      <div className="flex items-center justify-between mb-4 pb-3 border-b" style={{ borderColor: C.border }}>
+      <div className="flex items-center justify-between mb-4 px-3 py-2" style={{
+        background: "linear-gradient(90deg, rgba(200,160,32,0.08) 0%, rgba(4,8,14,0.95) 100%)",
+        borderBottom: "0.5px solid rgba(200,160,32,0.12)",
+        borderRadius: 4,
+      }}>
         <div className="flex items-center gap-3">
-          <div className="relative w-8 h-8 flex items-center justify-center">
-            <div className="absolute inset-0 rounded-full" style={{ background: C.gold, opacity: 0.2, animation: "mcePulse 2s ease-in-out infinite" }} />
-            <div className="absolute inset-1 rounded-full" style={{ background: C.gold, opacity: 0.4 }} />
-            <div className="relative w-3 h-3 rounded-full" style={{ background: C.goldLight }} />
+          {/* Golden ORB */}
+          <div className="relative flex items-center justify-center" style={{
+            width: 32, height: 32, borderRadius: "50%",
+            background: "radial-gradient(circle, rgba(200,160,32,0.3) 0%, rgba(200,160,32,0.05) 70%, transparent 100%)",
+            border: "1px solid rgba(200,160,32,0.5)",
+            boxShadow: "0 0 12px rgba(200,160,32,0.3), inset 0 0 8px rgba(200,160,32,0.1)",
+          }}>
+            <div style={{
+              width: 10, height: 10, borderRadius: "50%",
+              background: "radial-gradient(circle, #f0c840, #c8a020)",
+              boxShadow: "0 0 8px #c8a020, 0 0 16px rgba(200,160,32,0.4)",
+              animation: "mceOrbPulse 1s ease-in-out infinite",
+            }} />
           </div>
           <div>
-            <div className="text-[14px]" style={{ color: C.gold }}>MCE Intelligence</div>
-            <div className="text-[11px]" style={{ color: C.textDim }}>{statusText}</div>
+            <div style={{ color: "#f0c840", fontSize: 14, fontWeight: 700, letterSpacing: "0.15em" }}>MCE Intelligence</div>
+            <div style={{ color: C.textDim, fontSize: 11, letterSpacing: "0.12em" }}>{statusText}</div>
           </div>
         </div>
-        <span className="text-[11px] px-2 py-0.5" style={{ background: `${C.teal}22`, color: C.teal, borderRadius: 99 }}>Voice · Active</span>
+        <span className="px-2 py-0.5" style={{
+          fontSize: 11, letterSpacing: "0.15em",
+          background: "rgba(0,212,170,0.1)", color: "#00d4aa",
+          border: "0.5px solid rgba(0,212,170,0.3)",
+          borderRadius: 99,
+        }}>VOICE · ACTIVE</span>
       </div>
 
       {/* Messages */}
       <div className="space-y-2 mb-4 max-h-60 overflow-y-auto pr-2">
-        {msgs.length === 0 && <div className="text-[12px] text-center py-6" style={{ color: C.textDim }}>Pressione o microfone ou digite. A resposta será lida em voz.</div>}
-        {msgs.map((m, i) => (
-          <div key={i} className="text-[13px] p-2" style={{
-            background: m.role === "user" ? "rgba(0,212,170,0.06)" : "rgba(200,160,32,0.06)",
-            borderLeft: `2px solid ${m.role === "user" ? C.teal : C.gold}`,
-            color: C.text, borderRadius: 2,
-          }}>
-            <div className="text-[10px] mb-1 tracking-widest" style={{ color: m.role === "user" ? C.teal : C.gold }}>{m.role === "user" ? "VOCÊ" : "MCE"}</div>
-            {m.content}
-          </div>
-        ))}
+        {msgs.length === 0 && <div className="text-[12px] text-center py-6" style={{ color: C.textDim, letterSpacing: "0.08em" }}>Pressione o microfone ou digite. A resposta será lida em voz.</div>}
+        {msgs.map((m, i) => {
+          const isUser = m.role === "user";
+          return (
+            <div key={i} className="p-3" style={{
+              background: isUser ? "rgba(20,28,44,0.9)" : "rgba(8,12,20,0.95)",
+              border: isUser ? "0.5px solid rgba(144,128,255,0.15)" : "0.5px solid rgba(200,160,32,0.1)",
+              borderLeft: isUser ? undefined : "2px solid rgba(200,160,32,0.4)",
+              borderRight: isUser ? "2px solid rgba(144,128,255,0.4)" : undefined,
+              borderRadius: isUser ? "6px 1px 6px 6px" : "1px 6px 6px 6px",
+              boxShadow: isUser ? "none" : "inset 0 0 20px rgba(200,160,32,0.02)",
+              fontSize: 13, color: C.text,
+            }}>
+              <div className="mb-1" style={{ fontSize: 10, letterSpacing: "0.2em", color: isUser ? "#c0b8ff" : "#f0c840", fontWeight: 700 }}>
+                {isUser ? "VOCÊ" : "MCE"}
+              </div>
+              {m.content}
+            </div>
+          );
+        })}
       </div>
 
       {/* Voice button */}
@@ -830,22 +863,27 @@ function MceChat({ scores, autoMessage }: { scores: { m: number; c: number; e: n
         <Waveform active={state === "listening" || state === "speaking"} color={state === "speaking" ? C.cc : C.gold} side="L" />
         <button onClick={onMic} className="relative w-[52px] h-[52px] rounded-full flex items-center justify-center"
           style={{
-            border: `1.5px solid ${state === "speaking" ? C.cc : C.gold}`,
-            background: state === "speaking" ? `${C.cc}22` : `${C.gold}22`,
+            border: `1.5px solid ${state === "speaking" ? "#00e888" : C.gold}`,
+            background: state === "speaking"
+              ? "radial-gradient(circle, rgba(0,232,136,0.2) 0%, rgba(0,232,136,0.05) 70%, transparent 100%)"
+              : "radial-gradient(circle, rgba(200,160,32,0.18) 0%, rgba(200,160,32,0.04) 70%, transparent 100%)",
+            boxShadow: state === "speaking"
+              ? "0 0 16px rgba(0,232,136,0.3), 0 0 32px rgba(0,232,136,0.15)"
+              : "0 0 12px rgba(200,160,32,0.25), 0 0 24px rgba(200,160,32,0.1)",
           }}>
           {(state === "listening" || state === "speaking") && (
             <>
-              <span className="absolute inset-0 rounded-full" style={{ border: `1px solid ${state === "speaking" ? C.cc : C.gold}`, animation: "ringExp 1.5s ease-out infinite" }} />
-              <span className="absolute inset-0 rounded-full" style={{ border: `1px solid ${state === "speaking" ? C.cc : C.gold}`, animation: "ringExp 1.5s ease-out infinite .5s" }} />
-              <span className="absolute inset-0 rounded-full" style={{ border: `1px solid ${state === "speaking" ? C.cc : C.gold}`, animation: "ringExp 1.5s ease-out infinite 1s" }} />
+              <span className="absolute inset-0 rounded-full" style={{ border: `1px solid ${state === "speaking" ? "#00e888" : C.gold}`, animation: "ringExp 1.5s ease-out infinite" }} />
+              <span className="absolute inset-0 rounded-full" style={{ border: `1px solid ${state === "speaking" ? "#00e888" : C.gold}`, animation: "ringExp 1.5s ease-out infinite .5s" }} />
+              <span className="absolute inset-0 rounded-full" style={{ border: `1px solid ${state === "speaking" ? "#00e888" : C.gold}`, animation: "ringExp 1.5s ease-out infinite 1s" }} />
             </>
           )}
           {state === "thinking" ? <Loader2 className="w-5 h-5 animate-spin" style={{ color: C.gold }} />
-            : <Mic className="w-5 h-5" style={{ color: state === "speaking" ? C.cc : C.gold }} />}
+            : <Mic className="w-5 h-5" style={{ color: state === "speaking" ? "#00e888" : C.gold }} />}
         </button>
         <Waveform active={state === "listening" || state === "speaking"} color={state === "speaking" ? C.cc : C.gold} side="R" />
       </div>
-      <div className="text-center text-[12px] mb-3" style={{ color: C.textDim }}>
+      <div className="text-center text-[12px] mb-3" style={{ color: C.textDim, letterSpacing: "0.1em" }}>
         {state === "idle" && "Pressione para falar"}
         {state === "listening" && "Ouvindo..."}
         {state === "thinking" && "Processando..."}
@@ -854,15 +892,15 @@ function MceChat({ scores, autoMessage }: { scores: { m: number; c: number; e: n
 
       {/* Voice selector */}
       <div className="mb-3">
-        <div className="text-[9px] tracking-widest mb-1" style={{ color: C.teal }}>VOZ DO SISTEMA</div>
+        <div style={{ fontSize: 9, letterSpacing: "0.2em", color: "#00d4aa", marginBottom: 4 }}>VOZ DO SISTEMA</div>
         <div className="flex gap-2 items-center">
           <select
             value={selectedVoiceURI}
             onChange={(e) => onVoiceChange(e.target.value)}
-            className="flex-1 px-2 py-1"
+            className="flex-1 px-2 py-1 mce-input"
             style={{
-              background: "#060c14",
-              border: `0.5px solid ${C.gold}`,
+              background: "rgba(8,12,20,0.95)",
+              border: "0.5px solid rgba(200,160,32,0.3)",
               color: C.gold,
               fontSize: 11,
               borderRadius: 3,
@@ -880,12 +918,13 @@ function MceChat({ scores, autoMessage }: { scores: { m: number; c: number; e: n
             onClick={testVoice}
             className="px-3 py-1 mce-btn"
             style={{
-              border: `0.5px solid ${C.gold}`,
+              border: "0.5px solid rgba(200,160,32,0.5)",
               color: C.gold,
-              background: `${C.gold}15`,
+              background: "rgba(200,160,32,0.1)",
               fontSize: 11,
               borderRadius: 3,
-              letterSpacing: "0.1em",
+              letterSpacing: "0.15em",
+              boxShadow: "0 0 8px rgba(200,160,32,0.15)",
             }}
           >
             TESTAR
@@ -896,9 +935,21 @@ function MceChat({ scores, autoMessage }: { scores: { m: number; c: number; e: n
       {/* Text input */}
       <div className="flex gap-2 mb-3">
         <input value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && send(input)}
-          placeholder="Digite sua mensagem..." className="flex-1 px-3 py-2 text-[13px]"
-          style={{ background: C.surface2, border: `0.5px solid ${C.border}`, color: C.text, borderRadius: 3, fontFamily: "inherit" }} />
-        <button onClick={() => send(input)} className="px-3 mce-btn" style={{ background: C.gold, color: "#000", borderRadius: 3 }}>
+          placeholder="Digite sua mensagem..." className="flex-1 px-3 py-2 mce-input"
+          style={{
+            background: "rgba(8,12,20,0.95)",
+            border: "0.5px solid rgba(200,160,32,0.15)",
+            borderBottom: "1.5px solid rgba(200,160,32,0.3)",
+            color: "#e8f0ff",
+            fontSize: 13,
+            borderRadius: 3,
+            fontFamily: "'Courier New', monospace",
+          }} />
+        <button onClick={() => send(input)} className="px-3 mce-btn" style={{
+          background: "linear-gradient(135deg, #f0c840, #c8a020)",
+          color: "#000", borderRadius: 3, fontWeight: 700,
+          boxShadow: "0 0 12px rgba(200,160,32,0.3)",
+        }}>
           <Send className="w-3.5 h-3.5" />
         </button>
       </div>
@@ -910,8 +961,17 @@ function MceChat({ scores, autoMessage }: { scores: { m: number; c: number; e: n
           { l: "Sistema C", q: "Como aplicar o sistema de hábitos Fogg/Clear no meu dia?", c: C.cc },
           { l: "Execução E", q: "Como estruturar meu bloco Deep Work Newport hoje?", c: C.e },
         ].map((a) => (
-          <button key={a.l} onClick={() => send(a.q)} className="text-[12px] py-2 mce-btn"
-            style={{ background: C.surface2, border: `0.5px solid ${C.border}`, color: a.c, borderRadius: 3 }}>{a.l}</button>
+          <button key={a.l} onClick={() => send(a.q)} className="py-2 mce-btn"
+            style={{
+              background: `linear-gradient(135deg, ${a.c}15, ${a.c}05)`,
+              border: `0.5px solid ${a.c}40`,
+              color: a.c,
+              fontSize: 12,
+              fontWeight: 600,
+              letterSpacing: "0.1em",
+              borderRadius: 3,
+              boxShadow: `inset 0 0 12px ${a.c}08`,
+            }}>{a.l}</button>
         ))}
       </div>
     </div>
