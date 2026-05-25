@@ -209,43 +209,82 @@ export default function MCEPage() {
   const criticalDim: DimKey = critical.toUpperCase() as DimKey;
 
   return (
-    <div className="min-h-screen relative overflow-hidden" style={{ background: C.bg, color: C.text, fontFamily: "'Courier New', monospace" }}>
-      {/* Grid bg */}
-      <div className="fixed inset-0 pointer-events-none" style={{
-        backgroundImage: "linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)",
-        backgroundSize: "40px 40px",
+    <div className="min-h-screen relative overflow-hidden" style={{ color: C.text, fontFamily: "'Courier New', monospace" }}>
+      {/* Layer 1 — radial base */}
+      <div className="fixed inset-0 pointer-events-none z-0" style={{
+        background: "radial-gradient(ellipse at 50% 0%, rgba(0,180,140,0.06) 0%, rgba(9,9,20,1) 55%, #040810 100%)",
       }} />
-      {/* Scan line */}
-      <div className="fixed left-0 right-0 h-px pointer-events-none z-10" style={{ background: "rgba(0,212,170,0.04)", animation: "mceScan 8s linear infinite" }} />
+      {/* Layer 2 — dual grid */}
+      <div className="fixed inset-0 pointer-events-none z-[1]" style={{
+        backgroundImage: [
+          "linear-gradient(rgba(0,212,170,0.04) 1px, transparent 1px)",
+          "linear-gradient(90deg, rgba(0,212,170,0.04) 1px, transparent 1px)",
+          "linear-gradient(rgba(200,160,32,0.02) 1px, transparent 1px)",
+          "linear-gradient(90deg, rgba(200,160,32,0.02) 1px, transparent 1px)",
+        ].join(","),
+        backgroundSize: "40px 40px, 40px 40px, 8px 8px, 8px 8px",
+      }} />
+      {/* Layer 3 — vignette */}
+      <div className="fixed inset-0 pointer-events-none z-[3]" style={{
+        boxShadow: "inset 0 0 120px rgba(0,0,0,0.8), inset 0 0 60px rgba(0,0,0,0.4)",
+      }} />
+      {/* Layer 4 — particles */}
       <ParticlesBg />
+      {/* Layer 5 — scan line */}
+      <div className="fixed left-0 right-0 pointer-events-none z-[4]" style={{
+        height: 1,
+        background: "linear-gradient(90deg, transparent 0%, rgba(0,212,170,0.15) 30%, rgba(0,212,170,0.4) 50%, rgba(0,212,170,0.15) 70%, transparent 100%)",
+        animation: "mceScan 6s linear infinite",
+      }} />
 
       <style>{`
-        @keyframes mceScan { 0%{top:0} 100%{top:100%} }
-        @keyframes mcePulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(1.2)} }
+        @keyframes mceScan { 0%{top:-1px;opacity:1} 100%{top:100vh;opacity:1} }
+        @keyframes mcePulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.6;transform:scale(1.15)} }
+        @keyframes mceOrbPulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.18)} }
+        @keyframes mceRotate { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+        @keyframes mceRotateR { from{transform:rotate(360deg)} to{transform:rotate(0deg)} }
+        @keyframes mceDash { from{stroke-dashoffset:0} to{stroke-dashoffset:-20} }
         @keyframes ringExp { 0%{transform:scale(1);opacity:.6} 100%{transform:scale(2);opacity:0} }
         @keyframes wave { 0%,100%{transform:scaleY(0.3)} 50%{transform:scaleY(1)} }
+        @keyframes mceCenterPulse { 0%,100%{r:19} 50%{r:21} }
         .mce-btn { transition: all .2s ease; }
         .mce-btn:hover { border-color: ${C.gold}; }
+        .mce-rotate-slow { transform-origin: center; animation: mceRotate 8s linear infinite; transform-box: fill-box; }
+        .mce-rotate-rev { transform-origin: center; animation: mceRotateR 20s linear infinite; transform-box: fill-box; }
+        .mce-dash { animation: mceDash 1.5s linear infinite; }
+        .mce-center-pulse { animation: mceCenterPulse 3s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+        .mce-input:focus { outline: none; border-color: rgba(200,160,32,0.5) !important; box-shadow: 0 0 0 1px rgba(200,160,32,0.1), 0 0 12px rgba(200,160,32,0.08); }
       `}</style>
 
       <div className="relative z-20 max-w-6xl mx-auto px-4 py-4">
-        {/* TOP BAR */}
-        <div className="flex items-center justify-between mb-6 pb-3 border-b" style={{ borderColor: C.border }}>
+        {/* TOP BAR — cockpit */}
+        <div className="flex items-center justify-between mb-6 px-4" style={{
+          height: 44,
+          background: "linear-gradient(180deg, rgba(0,212,170,0.06) 0%, rgba(4,8,16,0.95) 100%)",
+          borderBottom: "1px solid rgba(0,212,170,0.15)",
+          boxShadow: "0 1px 0 rgba(0,212,170,0.08), 0 4px 20px rgba(0,0,0,0.6)",
+          borderRadius: 4,
+        }}>
           <div className="flex items-center gap-3">
             <button onClick={() => navigate(-1)} className="p-1.5 rounded hover:bg-white/5" aria-label="Voltar">
               <ArrowLeft className="w-4 h-4" style={{ color: C.textDim }} />
             </button>
-            <div className="text-base tracking-widest">
-              <span style={{ color: "#fff" }}>NUTRI</span>
-              <span style={{ color: C.gold }}>ON</span>
-              <span style={{ color: C.textDim }}> · </span>
-              <span style={{ color: C.teal }}>MCE INTELLIGENCE</span>
+            <div className="flex items-baseline gap-2">
+              <span style={{ color: "#e8f0ff", fontSize: 14, fontWeight: 900, letterSpacing: "0.25em" }}>NUTRI</span>
+              <span style={{ color: "#f0c840", fontSize: 14, fontWeight: 900, letterSpacing: "0.25em" }}>ON</span>
+              <span style={{ color: "rgba(255,255,255,0.2)" }}>·</span>
+              <span style={{ color: "#00d4aa", fontSize: 11, fontWeight: 400, letterSpacing: "0.3em" }}>MCE INTELLIGENCE</span>
             </div>
           </div>
           <div className="flex items-center gap-2 text-[11px]">
-            <span style={{ color: C.textDim }}>Sistema comportamental</span>
-            <span className="w-1.5 h-1.5 rounded-full" style={{ background: C.cc, animation: "mcePulse 1.5s ease-in-out infinite" }} />
-            <span style={{ color: C.cc }}>ONLINE</span>
+            <span style={{ color: C.textDim, letterSpacing: "0.15em" }}>SISTEMA COMPORTAMENTAL</span>
+            <span style={{
+              width: 7, height: 7, borderRadius: "50%",
+              background: "#00e888",
+              boxShadow: "0 0 6px #00e888, 0 0 12px rgba(0,232,136,0.4)",
+              animation: "mcePulse 2s ease-in-out infinite",
+            }} />
+            <span style={{ color: "#00e888", letterSpacing: "0.2em" }}>ONLINE</span>
           </div>
         </div>
 
