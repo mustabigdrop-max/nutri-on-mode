@@ -298,7 +298,7 @@ export default function CorrectivePlanViewer({
               <CopyButton text={text} />
             </div>
             <pre className="text-xs whitespace-pre-wrap font-mono text-foreground/90 max-h-[700px] overflow-y-auto p-3 rounded-lg border border-border bg-card/60">
-              {text || "—"}
+              {cleanProtocolMarkdown(text) || "—"}
             </pre>
           </div>
 
