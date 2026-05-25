@@ -91,6 +91,7 @@ import TrainingSystemsPage from "./pages/TrainingSystemsPage";
 import ScienceHubPage from "./pages/ScienceHubPage";
 import BiomechanicsVaultPage from "./pages/BiomechanicsVaultPage";
 import MetabolicONPage from "./pages/MetabolicONPage";
+import MCEPage from "./pages/MCEPage";
 import PlanoAlimentarIA from "./components/coach/PlanoAlimentarIA";
 import AthleteRoster from "./components/coach/AthleteRoster";
 import AthleteProgressTracker from "./components/coach/AthleteProgressTracker";
