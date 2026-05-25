@@ -293,7 +293,15 @@ export default function MCEPage() {
         {/* TAB CONTENT */}
         <div className="mb-6">
           {tab === "estudo" && <EstudoTab dim={dim} scores={scores} onChange={updateScore} />}
-          {tab === "diag" && <DiagTab onComplete={(next) => { setScores(next); queueSave(next, "diagnostico"); setTab("prog"); }} />}
+          {tab === "diag" && <DiagTab onComplete={(next) => {
+            setScores(next);
+            queueSave(next, "diagnostico");
+            const critK = (Object.keys(next) as (keyof typeof next)[]).reduce((a, b) => (next[a] < next[b] ? a : b));
+            const critDim = DIMS[critK.toUpperCase() as DimKey];
+            const txt = `Diagnóstico concluído. M ${next.m} · C ${next.c} · E ${next.e}. Dimensão crítica: ${critDim.name.charAt(0) + critDim.name.slice(1).toLowerCase()}. Protocolo ativado.`;
+            setAutoMsg({ text: txt, nonce: Date.now() });
+            setTab("prog");
+          }} />}
           {tab === "ex" && <ExTab dim={activeDim} done={done} onToggle={toggleExercise} />}
           {tab === "prog" && <ProgTab streak={streak} totalDone={totalDone} mceScore={mceScore} scores={scores} criticalDim={criticalDim} />}
         </div>
