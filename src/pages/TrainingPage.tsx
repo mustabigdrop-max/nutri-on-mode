@@ -58,6 +58,13 @@ import { buildSystemPrescription } from "@/data/recommendSystem";
 import { TRAINING_SYSTEMS } from "@/data/trainingSystems";
 import CompetitionModeBlocks from "@/components/training/systems/CompetitionModeBlocks";
 import StratumAIAgent from "@/components/training/StratumAIAgent";
+import {
+  TrackerProvider,
+  WorkoutProgressBar,
+  RestTimerOverlay,
+  WorkoutCompleteCard,
+  SetTrackerBlock,
+} from "@/components/training/tracker/WorkoutTracker";
 import VERAAgent from "@/components/training/VERAAgent";
 import MceBanner from "@/components/mce/MceBanner";
 
