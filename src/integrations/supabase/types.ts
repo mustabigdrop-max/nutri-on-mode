@@ -8083,6 +8083,105 @@ export type Database = {
         }
         Relationships: []
       }
+      training_sessions_completed: {
+        Row: {
+          ai_message: string | null
+          backoff_count: number | null
+          completed: boolean
+          created_at: string
+          duration_minutes: number | null
+          feedback_summary: Json | null
+          feeder_count: number | null
+          id: string
+          session_date: string
+          total_sets: number | null
+          user_id: string
+          working_count: number | null
+        }
+        Insert: {
+          ai_message?: string | null
+          backoff_count?: number | null
+          completed?: boolean
+          created_at?: string
+          duration_minutes?: number | null
+          feedback_summary?: Json | null
+          feeder_count?: number | null
+          id?: string
+          session_date: string
+          total_sets?: number | null
+          user_id: string
+          working_count?: number | null
+        }
+        Update: {
+          ai_message?: string | null
+          backoff_count?: number | null
+          completed?: boolean
+          created_at?: string
+          duration_minutes?: number | null
+          feedback_summary?: Json | null
+          feeder_count?: number | null
+          id?: string
+          session_date?: string
+          total_sets?: number | null
+          user_id?: string
+          working_count?: number | null
+        }
+        Relationships: []
+      }
+      training_set_logs: {
+        Row: {
+          completed: boolean
+          completed_at: string | null
+          created_at: string
+          exercise_id: string
+          feedback: string | null
+          id: string
+          load_done: number | null
+          load_prescribed: string | null
+          reps_done: number | null
+          reps_prescribed: string | null
+          session_date: string
+          set_number: number
+          set_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          exercise_id: string
+          feedback?: string | null
+          id?: string
+          load_done?: number | null
+          load_prescribed?: string | null
+          reps_done?: number | null
+          reps_prescribed?: string | null
+          session_date?: string
+          set_number: number
+          set_type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          exercise_id?: string
+          feedback?: string | null
+          id?: string
+          load_done?: number | null
+          load_prescribed?: string | null
+          reps_done?: number | null
+          reps_prescribed?: string | null
+          session_date?: string
+          set_number?: number
+          set_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       training_templates: {
         Row: {
           created_at: string | null
