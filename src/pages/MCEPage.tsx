@@ -681,7 +681,7 @@ function MceChat({ scores, autoMessage }: { scores: { m: number; c: number; e: n
           { l: "Sistema C", q: "Como aplicar o sistema de hábitos Fogg/Clear no meu dia?", c: C.cc },
           { l: "Execução E", q: "Como estruturar meu bloco Deep Work Newport hoje?", c: C.e },
         ].map((a) => (
-          <button key={a.l} onClick={() => send(a.q)} className="text-[10px] py-2 mce-btn"
+          <button key={a.l} onClick={() => send(a.q)} className="text-[12px] py-2 mce-btn"
             style={{ background: C.surface2, border: `0.5px solid ${C.border}`, color: a.c, borderRadius: 3 }}>{a.l}</button>
         ))}
       </div>
