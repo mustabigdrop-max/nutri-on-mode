@@ -352,36 +352,74 @@ export default function TrainingReviewAgent({
         {messages.length === 0 && !loading && (
           <div className="text-[10px] italic opacity-60 text-center py-6">Iniciando análise do protocolo...</div>
         )}
-        {messages.map((m, i) => (
-          <div
-            key={i}
-            className="mb-2"
-            style={
-              m.role === "assistant"
-                ? {
-                    background: "rgba(0,212,170,0.04)",
-                    borderLeft: "2px solid rgba(0,212,170,0.3)",
-                    borderRadius: "0 6px 6px 6px",
-                    padding: "8px 10px",
-                    fontSize: 11,
-                    lineHeight: 1.7,
-                    color: "hsl(var(--foreground))",
-                  }
-                : {
-                    background: "rgba(200,160,32,0.05)",
-                    borderRight: "2px solid rgba(200,160,32,0.3)",
-                    borderRadius: "6px 0 6px 6px",
-                    padding: "8px 10px",
-                    fontSize: 11,
-                    color: "hsl(var(--muted-foreground))",
-                    textAlign: "right",
-                    marginLeft: "20%",
-                  }
-            }
-          >
-            {m.content}
-          </div>
-        ))}
+        {messages.map((m, i) => {
+          if (m.role === "system" && m.isError) {
+            return (
+              <div
+                key={i}
+                className="mb-2"
+                style={{
+                  background: "rgba(255,64,96,0.06)",
+                  borderLeft: "2px solid rgba(255,64,96,0.3)",
+                  borderRadius: "0 6px 6px 6px",
+                  padding: "8px 10px",
+                  fontSize: 11,
+                  color: "rgba(255,140,160,0.95)",
+                }}
+              >
+                <div>{m.content}</div>
+                {m.retryPayload && (
+                  <button
+                    onClick={() => retryLast(m)}
+                    className="mt-2 transition-opacity hover:opacity-80"
+                    style={{
+                      fontSize: 9,
+                      padding: "4px 10px",
+                      background: "rgba(0,212,170,0.12)",
+                      border: "0.5px solid rgba(0,212,170,0.4)",
+                      color: "#60ffdd",
+                      borderRadius: 3,
+                      letterSpacing: "0.08em",
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    Tentar novamente
+                  </button>
+                )}
+              </div>
+            );
+          }
+          return (
+            <div
+              key={i}
+              className="mb-2"
+              style={
+                m.role === "assistant"
+                  ? {
+                      background: "rgba(0,212,170,0.04)",
+                      borderLeft: "2px solid rgba(0,212,170,0.3)",
+                      borderRadius: "0 6px 6px 6px",
+                      padding: "8px 10px",
+                      fontSize: 11,
+                      lineHeight: 1.7,
+                      color: "hsl(var(--foreground))",
+                    }
+                  : {
+                      background: "rgba(200,160,32,0.05)",
+                      borderRight: "2px solid rgba(200,160,32,0.3)",
+                      borderRadius: "6px 0 6px 6px",
+                      padding: "8px 10px",
+                      fontSize: 11,
+                      color: "hsl(var(--muted-foreground))",
+                      textAlign: "right",
+                      marginLeft: "20%",
+                    }
+              }
+            >
+              {m.content}
+            </div>
+          );
+        })}
         {loading && (
           <div className="flex items-center gap-2 text-[10px]" style={{ color: "#60ffdd" }}>
             <Sparkles className="h-3 w-3 animate-pulse" />
