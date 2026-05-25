@@ -626,7 +626,7 @@ function MceChat({ scores, autoMessage }: { scores: { m: number; c: number; e: n
       if ("speechSynthesis" in window) {
         window.speechSynthesis.cancel();
         const u = new SpeechSynthesisUtterance(answer);
-        u.lang = "pt-BR"; u.rate = 0.95; u.pitch = 0.9;
+        applyVoice(u);
         u.onend = () => setState("idle");
         u.onerror = () => setState("idle");
         synthRef.current = u;
