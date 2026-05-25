@@ -321,15 +321,22 @@ export default function MCEPage() {
 // SUBCOMPONENTS
 // ─────────────────────────────────────────────────────────────
 function DataCol({ side, scores }: { side: "left" | "right"; scores: { m: number; c: number; e: number } }) {
-  const items = side === "left"
-    ? [{ l: "SCORE M", v: scores.m, c: C.m }, { l: "AUTOR BASE", v: "Dweck/Stanford", c: C.textDim }, { l: "STATUS", v: "ATIVO", c: C.cc }]
-    : [{ l: "SCORE E", v: scores.e, c: C.e }, { l: "AUTOR BASE", v: "Newport/Georgetown", c: C.textDim }, { l: "FOCO", v: scores.e < 40 ? "CRÍTICO" : scores.e < 70 ? "ATENÇÃO" : "ESTÁVEL", c: scores.e < 40 ? "#ff5555" : scores.e < 70 ? C.gold : C.cc }];
+  const items: { l: string; v: any; c: string; bar?: number }[] = side === "left"
+    ? [{ l: "SCORE M", v: scores.m, c: C.m, bar: scores.m }, { l: "AUTOR BASE", v: "Dweck/Stanford", c: C.textDim }, { l: "STATUS", v: "ATIVO", c: C.cc }]
+    : [{ l: "SCORE E", v: scores.e, c: C.e, bar: scores.e }, { l: "AUTOR BASE", v: "Newport/Georgetown", c: C.textDim }, { l: "FOCO", v: scores.e < 40 ? "CRÍTICO" : scores.e < 70 ? "ATENÇÃO" : "ESTÁVEL", c: scores.e < 40 ? "#ff5555" : scores.e < 70 ? C.gold : C.cc }];
   return (
     <div className="space-y-2">
       {items.map((it, i) => (
         <div key={i} className="p-2.5" style={{ background: C.surface2, border: `0.5px solid ${C.border}`, borderRadius: 4 }}>
           <div className="text-[10px] tracking-widest mb-1" style={{ color: C.textDim }}>{it.l}</div>
-          <div className="text-[14px] font-bold" style={{ color: it.c }}>{it.v}</div>
+          <div className="text-[14px] font-bold" style={{ color: it.c }}>
+            {it.v}{typeof it.bar === "number" && <span className="text-[11px] ml-1" style={{ color: C.textDim }}>/100</span>}
+          </div>
+          {typeof it.bar === "number" && (
+            <div className="mt-2 w-full rounded-full overflow-hidden" style={{ height: 3, background: "rgba(255,255,255,0.05)" }}>
+              <div style={{ width: `${it.bar}%`, height: "100%", background: it.c, transition: "width 1.2s cubic-bezier(.4,0,.2,1)" }} />
+            </div>
+          )}
         </div>
       ))}
     </div>
