@@ -130,8 +130,8 @@ function ParticlesBg() {
         for (let j = i + 1; j < parts.length; j++) {
           const dx = parts[i].x - parts[j].x, dy = parts[i].y - parts[j].y;
           const d = Math.sqrt(dx * dx + dy * dy);
-          if (d < 120) {
-            ctx.strokeStyle = parts[i].c; ctx.globalAlpha = (1 - d / 120) * 0.15;
+          if (d < 80) {
+            ctx.strokeStyle = parts[i].c; ctx.globalAlpha = (1 - d / 80) * 0.18;
             ctx.lineWidth = 0.5; ctx.beginPath();
             ctx.moveTo(parts[i].x, parts[i].y); ctx.lineTo(parts[j].x, parts[j].y); ctx.stroke();
           }
