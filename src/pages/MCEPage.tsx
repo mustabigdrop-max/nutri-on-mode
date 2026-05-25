@@ -503,14 +503,14 @@ function ProgTab({ streak, totalDone, mceScore, scores, criticalDim }: { streak:
           { l: "MCE SCORE", v: `${mceScore}/100`, c: C.cc },
         ].map((m, i) => (
           <div key={i} className="p-4 text-center" style={{ background: C.surface, border: `0.5px solid ${C.border}`, borderRadius: 4 }}>
-            <div className="text-2xl font-bold mb-1" style={{ color: m.c }}>{m.v}</div>
-            <div className="text-[9px] tracking-widest" style={{ color: C.textDim }}>{m.l}</div>
+            <div className="font-bold mb-1" style={{ color: m.c, fontSize: 32, lineHeight: 1.1 }}>{m.v}</div>
+            <div className="text-[11px] tracking-widest" style={{ color: C.textDim }}>{m.l}</div>
           </div>
         ))}
       </div>
       <div className="p-4" style={{ background: C.surface, border: `0.5px solid ${d.color}55`, borderRadius: 4 }}>
-        <div className="text-[10px] tracking-widest mb-2" style={{ color: d.color }}>ANÁLISE PRESCRITIVA</div>
-        <p className="text-[12px] leading-relaxed" style={{ color: C.text }}>
+        <div className="text-[11px] tracking-widest mb-2" style={{ color: d.color }}>ANÁLISE PRESCRITIVA</div>
+        <p className="text-[13px] leading-relaxed" style={{ color: C.text }}>
           <span style={{ color: d.color, fontWeight: 700 }}>{d.name.charAt(0) + d.name.slice(1).toLowerCase()}</span> ({scores[sk]}/100) é sua dimensão crítica. Concentre 70% dos exercícios MCE aqui por 14 dias antes de redistribuir o esforço.
         </p>
       </div>
