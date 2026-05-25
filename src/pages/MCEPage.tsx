@@ -194,7 +194,11 @@ export default function MCEPage() {
     if (!user) return;
     const wasDone = done[key];
     setDone((d) => ({ ...d, [key]: !wasDone }));
-    if (!wasDone) await supabase.from("mce_exercises_done").insert({ user_id: user.id, exercise_key: key });
+    if (!wasDone) {
+      await supabase.from("mce_exercises_done").insert({ user_id: user.id, exercise_key: key });
+    } else {
+      await supabase.from("mce_exercises_done").delete().eq("user_id", user.id).eq("exercise_key", key);
+    }
   };
 
   const dim = DIMS[activeDim];
