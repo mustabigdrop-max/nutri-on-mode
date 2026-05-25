@@ -397,17 +397,31 @@ function DataCol({ side, scores }: { side: "left" | "right"; scores: { m: number
   const items: { l: string; v: any; c: string; bar?: number }[] = side === "left"
     ? [{ l: "SCORE M", v: scores.m, c: C.m, bar: scores.m }, { l: "AUTOR BASE", v: "Dweck/Stanford", c: C.textDim }, { l: "STATUS", v: "ATIVO", c: C.cc }]
     : [{ l: "SCORE E", v: scores.e, c: C.e, bar: scores.e }, { l: "AUTOR BASE", v: "Newport/Georgetown", c: C.textDim }, { l: "FOCO", v: scores.e < 40 ? "CRÍTICO" : scores.e < 70 ? "ATENÇÃO" : "ESTÁVEL", c: scores.e < 40 ? "#ff5555" : scores.e < 70 ? C.gold : C.cc }];
+  const sideBorder = side === "left"
+    ? { borderLeft: "1.5px solid rgba(0,212,170,0.3)" }
+    : { borderRight: "1.5px solid rgba(255,170,0,0.3)" };
   return (
     <div className="space-y-2">
       {items.map((it, i) => (
-        <div key={i} className="p-2.5" style={{ background: C.surface2, border: `0.5px solid ${C.border}`, borderRadius: 4 }}>
-          <div className="text-[10px] tracking-widest mb-1" style={{ color: C.textDim }}>{it.l}</div>
-          <div className="text-[14px] font-bold" style={{ color: it.c }}>
-            {it.v}{typeof it.bar === "number" && <span className="text-[11px] ml-1" style={{ color: C.textDim }}>/100</span>}
+        <div key={i} className="p-2.5" style={{
+          background: "rgba(6,10,18,0.9)",
+          border: "0.5px solid rgba(0,212,170,0.08)",
+          ...sideBorder,
+          borderRadius: 4,
+          boxShadow: typeof it.bar === "number" ? `inset 0 0 16px ${it.c}10` : "none",
+        }}>
+          <div className="mb-1" style={{ fontSize: 8, letterSpacing: "0.18em", color: "rgba(0,212,170,0.6)", textTransform: "uppercase" }}>{it.l}</div>
+          <div style={{ fontSize: 15, fontWeight: 700, color: typeof it.bar === "number" ? "#e8f0ff" : it.c }}>
+            {it.v}{typeof it.bar === "number" && <span className="ml-1" style={{ color: C.textDim, fontSize: 11, fontWeight: 400 }}>/100</span>}
           </div>
           {typeof it.bar === "number" && (
             <div className="mt-2 w-full rounded-full overflow-hidden" style={{ height: 3, background: "rgba(255,255,255,0.05)" }}>
-              <div style={{ width: `${it.bar}%`, height: "100%", background: it.c, transition: "width 1.2s cubic-bezier(.4,0,.2,1)" }} />
+              <div style={{
+                width: `${it.bar}%`, height: "100%",
+                background: `linear-gradient(90deg, ${it.c}, ${it.c}55)`,
+                boxShadow: `0 0 6px ${it.c}`,
+                transition: "width 1.2s cubic-bezier(.4,0,.2,1)",
+              }} />
             </div>
           )}
         </div>
@@ -419,41 +433,83 @@ function DataCol({ side, scores }: { side: "left" | "right"; scores: { m: number
 function NeuralWeb({ scores, onSelect }: { scores: { m: number; c: number; e: number }; onSelect: (d: DimKey) => void }) {
   return (
     <div className="flex flex-col items-center justify-center text-center">
-      <div className="text-[12px] tracking-widest mb-1" style={{ color: C.textDim }}>MÉTODO COMPORTAMENTAL · v2.0</div>
-      <div className="font-bold mb-3 tracking-tight" style={{ color: "#fff", fontSize: 42, lineHeight: 1 }}>
-        MC<span style={{ color: C.gold }}>E</span>
+      <div style={{ fontSize: 10, letterSpacing: "0.28em", color: "rgba(0,212,170,0.5)", textTransform: "uppercase", marginBottom: 6 }}>
+        MÉTODO COMPORTAMENTAL · v2.0
       </div>
-      <svg viewBox="0 0 240 230" className="w-full max-w-[280px]">
+      <div className="font-black mb-3" style={{
+        fontSize: 52, lineHeight: 1, letterSpacing: "0.2em",
+        textShadow: "0 0 20px rgba(200,160,32,0.4), 0 0 40px rgba(200,160,32,0.2), 0 0 80px rgba(200,160,32,0.1)",
+      }}>
+        <span style={{ color: "#e8f0ff" }}>MC</span><span style={{ color: "#f0c840" }}>E</span>
+      </div>
+      <svg viewBox="0 0 400 320" className="w-full max-w-[420px]" style={{ height: 320 }}>
         <defs>
-          <radialGradient id="centerG"><stop offset="0%" stopColor={C.goldLight} /><stop offset="100%" stopColor={C.gold} stopOpacity="0" /></radialGradient>
+          <linearGradient id="grad-m" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#9080ff" /><stop offset="100%" stopColor="#c8a020" />
+          </linearGradient>
+          <linearGradient id="grad-c" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#00e888" /><stop offset="100%" stopColor="#c8a020" />
+          </linearGradient>
+          <linearGradient id="grad-e" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#ffaa00" /><stop offset="100%" stopColor="#c8a020" />
+          </linearGradient>
+          <radialGradient id="grad-center"><stop offset="0%" stopColor="#f0c840" /><stop offset="100%" stopColor="#c8a020" /></radialGradient>
         </defs>
+
         {/* Orbital rings */}
-        <circle cx="120" cy="135" r="70" fill="none" stroke={C.gold} strokeOpacity="0.15" strokeDasharray="2 4" />
-        <circle cx="120" cy="135" r="92" fill="none" stroke={C.teal} strokeOpacity="0.1" strokeDasharray="1 6" />
-        {/* Connections — triangle: M top, C bottom-left, E bottom-right */}
-        <line x1="120" y1="25" x2="55" y2="190" stroke="#fff" strokeOpacity="0.18" strokeDasharray="2 3" />
-        <line x1="120" y1="25" x2="185" y2="190" stroke="#fff" strokeOpacity="0.18" strokeDasharray="2 3" />
-        <line x1="55" y1="190" x2="185" y2="190" stroke="#fff" strokeOpacity="0.18" strokeDasharray="2 3" />
-        <line x1="120" y1="135" x2="120" y2="25" stroke={C.m} strokeOpacity="0.3" />
-        <line x1="120" y1="135" x2="55" y2="190" stroke={C.cc} strokeOpacity="0.3" />
-        <line x1="120" y1="135" x2="185" y2="190" stroke={C.e} strokeOpacity="0.3" />
-        {/* Center — centroid of M(120,25), C(55,190), E(185,190) = (120,135) */}
-        <circle cx="120" cy="135" r="18" fill="url(#centerG)" />
-        <circle cx="120" cy="135" r="9" fill={C.gold} />
-        <text x="120" y="138" textAnchor="middle" fontSize="7" fill="#000" fontWeight="700">MCE</text>
-        {/* Nodes — M TOPO, C inf-esq, E inf-dir */}
-        {[
-          { k: "M" as DimKey, x: 120, y: 25, c: C.m, labelDy: -22 },
-          { k: "C" as DimKey, x: 55, y: 190, c: C.cc, labelDy: 26 },
-          { k: "E" as DimKey, x: 185, y: 190, c: C.e, labelDy: 26 },
-        ].map((n) => (
-          <g key={n.k} onClick={() => onSelect(n.k)} style={{ cursor: "pointer" }}>
-            <circle cx={n.x} cy={n.y} r="16" fill={n.c} fillOpacity="0.15" />
-            <circle cx={n.x} cy={n.y} r="10" fill={n.c} />
-            <text x={n.x} y={n.y + 3} textAnchor="middle" fontSize="9" fill="#000" fontWeight="700">{n.k}</text>
-            <text x={n.x} y={n.y + n.labelDy} textAnchor="middle" fontSize="6" fill={C.textDim}>{DIMS[n.k].name.slice(0, 8)}</text>
-          </g>
-        ))}
+        <circle cx="200" cy="160" r="120" fill="none" stroke="rgba(0,212,170,0.04)" strokeDasharray="1 6" />
+        <circle cx="200" cy="160" r="155" fill="none" stroke="rgba(200,160,32,0.03)" strokeDasharray="2 8" />
+
+        {/* Outer triangle (no animation) */}
+        <line x1="200" y1="40" x2="80" y2="240" stroke="rgba(255,255,255,0.06)" strokeWidth="0.5" />
+        <line x1="200" y1="40" x2="320" y2="240" stroke="rgba(255,255,255,0.06)" strokeWidth="0.5" />
+        <line x1="80" y1="240" x2="320" y2="240" stroke="rgba(255,255,255,0.06)" strokeWidth="0.5" />
+
+        {/* Animated connections to center */}
+        <line x1="200" y1="40" x2="200" y2="175" stroke="url(#grad-m)" strokeWidth="0.8" strokeDasharray="6 4" strokeOpacity="0.4" className="mce-dash" />
+        <line x1="80" y1="240" x2="200" y2="175" stroke="url(#grad-c)" strokeWidth="0.8" strokeDasharray="6 4" strokeOpacity="0.4" className="mce-dash" />
+        <line x1="320" y1="240" x2="200" y2="175" stroke="url(#grad-e)" strokeWidth="0.8" strokeDasharray="6 4" strokeOpacity="0.4" className="mce-dash" />
+
+        {/* CENTER NODE */}
+        <g>
+          <circle cx="200" cy="175" r="26" fill="none" stroke="rgba(200,160,32,0.2)" strokeDasharray="3 6" className="mce-rotate-rev" style={{ transformOrigin: "200px 175px" } as any} />
+          <circle cx="200" cy="175" r="19" fill="rgba(200,160,32,0.08)" stroke="rgba(200,160,32,0.5)" filter="url(#)" />
+          <circle cx="200" cy="175" r="13" fill="rgba(200,160,32,0.18)" stroke="#c8a020" strokeWidth="1.5" />
+          <text x="200" y="178" textAnchor="middle" fontSize="8" fill="#f0c840" fontWeight="900" letterSpacing="0.5">MCE</text>
+        </g>
+
+        {/* NODE M — top */}
+        <g onClick={() => onSelect("M")} style={{ cursor: "pointer", filter: "drop-shadow(0 0 8px rgba(144,128,255,0.4))" }}>
+          <circle cx="200" cy="40" r="38" fill="none" stroke="rgba(144,128,255,0.3)" strokeDasharray="4 8"
+            className="mce-rotate-slow" style={{ transformOrigin: "200px 40px" } as any} />
+          <circle cx="200" cy="40" r="32" fill="rgba(144,128,255,0.06)" stroke="rgba(144,128,255,0.5)" strokeWidth="0.8" />
+          <circle cx="200" cy="40" r="22" fill="rgba(144,128,255,0.12)" stroke="rgba(144,128,255,0.7)" strokeWidth="1" />
+          <circle cx="200" cy="40" r="14" fill="rgba(144,128,255,0.25)" stroke="#9080ff" strokeWidth="1.5" />
+          <text x="200" y="44" textAnchor="middle" fontSize="13" fill="#c0b8ff" fontWeight="900">M</text>
+          <text x="200" y="14" textAnchor="middle" fontSize="7" fill="rgba(144,128,255,0.7)" letterSpacing="1.5">MINDSET</text>
+        </g>
+
+        {/* NODE C — bottom-left */}
+        <g onClick={() => onSelect("C")} style={{ cursor: "pointer", filter: "drop-shadow(0 0 8px rgba(0,232,136,0.4))" }}>
+          <circle cx="80" cy="240" r="38" fill="none" stroke="rgba(0,232,136,0.3)" strokeDasharray="4 8"
+            className="mce-rotate-slow" style={{ transformOrigin: "80px 240px" } as any} />
+          <circle cx="80" cy="240" r="32" fill="rgba(0,232,136,0.06)" stroke="rgba(0,232,136,0.5)" strokeWidth="0.8" />
+          <circle cx="80" cy="240" r="22" fill="rgba(0,232,136,0.12)" stroke="rgba(0,232,136,0.7)" strokeWidth="1" />
+          <circle cx="80" cy="240" r="14" fill="rgba(0,232,136,0.25)" stroke="#00e888" strokeWidth="1.5" />
+          <text x="80" y="244" textAnchor="middle" fontSize="13" fill="#60ffbb" fontWeight="900">C</text>
+          <text x="80" y="294" textAnchor="middle" fontSize="7" fill="rgba(0,232,136,0.7)" letterSpacing="1.5">COMPORT.</text>
+        </g>
+
+        {/* NODE E — bottom-right */}
+        <g onClick={() => onSelect("E")} style={{ cursor: "pointer", filter: "drop-shadow(0 0 8px rgba(255,170,0,0.4))" }}>
+          <circle cx="320" cy="240" r="38" fill="none" stroke="rgba(255,170,0,0.3)" strokeDasharray="4 8"
+            className="mce-rotate-slow" style={{ transformOrigin: "320px 240px" } as any} />
+          <circle cx="320" cy="240" r="32" fill="rgba(255,170,0,0.06)" stroke="rgba(255,170,0,0.5)" strokeWidth="0.8" />
+          <circle cx="320" cy="240" r="22" fill="rgba(255,170,0,0.12)" stroke="rgba(255,170,0,0.7)" strokeWidth="1" />
+          <circle cx="320" cy="240" r="14" fill="rgba(255,170,0,0.25)" stroke="#ffaa00" strokeWidth="1.5" />
+          <text x="320" y="244" textAnchor="middle" fontSize="13" fill="#ffd060" fontWeight="900">E</text>
+          <text x="320" y="294" textAnchor="middle" fontSize="7" fill="rgba(255,170,0,0.7)" letterSpacing="1.5">EXECUÇÃO</text>
+        </g>
       </svg>
     </div>
   );
