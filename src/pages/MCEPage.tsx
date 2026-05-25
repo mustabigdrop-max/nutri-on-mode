@@ -383,18 +383,18 @@ function EstudoTab({ dim, scores, onChange }: { dim: typeof DIMS[DimKey]; scores
   return (
     <div className="grid md:grid-cols-2 gap-4">
       <div className="p-4" style={{ background: C.surface, border: `0.5px solid ${C.border}`, borderRadius: 4 }}>
-        <span className="inline-block text-[9px] px-2 py-0.5 mb-3 tracking-widest" style={{ background: `${dim.color}22`, color: dim.color, borderRadius: 3 }}>
+        <span className="inline-block text-[11px] px-2 py-0.5 mb-3 tracking-widest" style={{ background: `${dim.color}22`, color: dim.color, borderRadius: 3 }}>
           {dim.name}
         </span>
-        <div className="text-lg mb-1" style={{ color: dim.colorLight }}>{dim.name.charAt(0) + dim.name.slice(1).toLowerCase()}</div>
-        <div className="text-[10px] mb-3" style={{ color: C.textDim }}>{dim.subtitle}</div>
-        <p className="text-[11px] leading-relaxed mb-3" style={{ color: C.text }}>{dim.body}</p>
+        <div className="text-[15px] mb-1" style={{ color: dim.colorLight }}>{dim.name.charAt(0) + dim.name.slice(1).toLowerCase()}</div>
+        <div className="text-[11px] mb-3" style={{ color: C.textDim }}>{dim.subtitle}</div>
+        <p className="text-[14px] leading-relaxed mb-3" style={{ color: C.text }}>{dim.body}</p>
         <div className="flex flex-wrap gap-1.5 mb-3">
           {dim.authors.map((a) => (
-            <span key={a} className="text-[9px] px-2 py-0.5" style={{ background: `${dim.color}15`, color: dim.colorLight, borderRadius: 99 }}>{a}</span>
+            <span key={a} className="text-[11px] px-2 py-0.5" style={{ background: `${dim.color}15`, color: dim.colorLight, borderRadius: 99 }}>{a}</span>
           ))}
         </div>
-        <div className="text-[10px] italic pl-3" style={{ color: C.textDim, borderLeft: `2px solid ${dim.color}` }}>"{dim.quote}"</div>
+        <div className="text-[13px] italic pl-3" style={{ color: C.textDim, borderLeft: `2px solid ${dim.color}` }}>"{dim.quote}"</div>
       </div>
       <div className="p-4 space-y-4" style={{ background: C.surface, border: `0.5px solid ${C.border}`, borderRadius: 4 }}>
         <div className="text-[10px] tracking-widest" style={{ color: C.textDim }}>CALIBRAÇÃO MANUAL</div>
