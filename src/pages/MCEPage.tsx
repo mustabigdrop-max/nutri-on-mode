@@ -624,14 +624,14 @@ function MceChat({ scores, autoMessage }: { scores: { m: number; c: number; e: n
 
       {/* Messages */}
       <div className="space-y-2 mb-4 max-h-60 overflow-y-auto pr-2">
-        {msgs.length === 0 && <div className="text-[10px] text-center py-6" style={{ color: C.textDim }}>Pressione o microfone ou digite. A resposta será lida em voz.</div>}
+        {msgs.length === 0 && <div className="text-[12px] text-center py-6" style={{ color: C.textDim }}>Pressione o microfone ou digite. A resposta será lida em voz.</div>}
         {msgs.map((m, i) => (
-          <div key={i} className="text-[11px] p-2" style={{
+          <div key={i} className="text-[13px] p-2" style={{
             background: m.role === "user" ? "rgba(0,212,170,0.06)" : "rgba(200,160,32,0.06)",
             borderLeft: `2px solid ${m.role === "user" ? C.teal : C.gold}`,
             color: C.text, borderRadius: 2,
           }}>
-            <div className="text-[8px] mb-1 tracking-widest" style={{ color: m.role === "user" ? C.teal : C.gold }}>{m.role === "user" ? "VOCÊ" : "MCE"}</div>
+            <div className="text-[10px] mb-1 tracking-widest" style={{ color: m.role === "user" ? C.teal : C.gold }}>{m.role === "user" ? "VOCÊ" : "MCE"}</div>
             {m.content}
           </div>
         ))}
