@@ -116,10 +116,34 @@ function matchDayHeader(line: string): { num: number; rest: string; isWeekday: b
   return null;
 }
 
+function extractMuscleTags(text: string): string[] {
+  const lower = text.toLowerCase();
+  const found = new Set<string>();
+  for (const kw of MUSCLE_KEYWORDS) {
+    if (lower.includes(kw)) {
+      const canonical = PILL_DEDUPE[kw] || kw;
+      found.add(canonical);
+    }
+  }
+  return Array.from(found).slice(0, 6);
+}
+
+function extractDuration(text: string): string {
+  const m1 = text.match(/(\d{2,3})\s*(?:a|–|-)\s*(\d{2,3})\s*min(?:utos)?/i);
+  if (m1) return `${m1[1]}-${m1[2]}min`;
+  const m2 = text.match(/(\d{1,3})\s*min(?:utos)?/i);
+  if (m2) return `${m2[1]}min`;
+  const m3 = text.match(/(\d)\s*h\s*(\d{0,2})/i);
+  if (m3) {
+    const mins = parseInt(m3[1]) * 60 + (parseInt(m3[2] || "0") || 0);
+    return `${mins}min`;
+  }
+  return "90min";
+}
+
 function extractTitle(rest: string, dayNumber: number, body: string): string {
   const cleaned = rest.replace(/^[*#\-•:\s]+/, "").replace(/\*+$/g, "").trim();
   if (cleaned && cleaned.length > 1) return cleaned;
-  // tenta primeira linha não vazia do body
   const firstLine = body.split("\n").map(l => l.trim()).find(Boolean);
   if (firstLine && firstLine.length < 80 && !matchDayHeader(firstLine)) {
     return firstLine.replace(/^[#\-•*]+\s*/, "");
