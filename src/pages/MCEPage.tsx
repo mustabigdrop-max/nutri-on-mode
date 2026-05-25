@@ -109,13 +109,14 @@ function ParticlesBg() {
     const canvas = ref.current; if (!canvas) return;
     const ctx = canvas.getContext("2d"); if (!ctx) return;
     let raf = 0;
-    const colors = [C.teal, C.gold, C.m];
+    const colors = ["#00d4aa", "#c8a020", "#9080ff", "#ffffff"];
     const resize = () => { canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight; };
     resize();
-    const parts = Array.from({ length: 24 }, () => ({
+    const parts = Array.from({ length: 40 }, () => ({
       x: Math.random() * canvas.width, y: Math.random() * canvas.height,
-      vx: (Math.random() - 0.5) * 0.3, vy: (Math.random() - 0.5) * 0.3,
-      c: colors[Math.floor(Math.random() * 3)],
+      vx: (Math.random() - 0.5) * 0.24, vy: (Math.random() - 0.5) * 0.24,
+      r: 0.8 + Math.random() * 1.2,
+      c: colors[Math.floor(Math.random() * colors.length)],
     }));
     const tick = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -123,16 +124,16 @@ function ParticlesBg() {
         p.x += p.vx; p.y += p.vy;
         if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
         if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
-        ctx.fillStyle = p.c; ctx.globalAlpha = 0.6;
-        ctx.beginPath(); ctx.arc(p.x, p.y, 1.5, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = p.c; ctx.globalAlpha = 0.75;
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fill();
       });
       for (let i = 0; i < parts.length; i++) {
         for (let j = i + 1; j < parts.length; j++) {
           const dx = parts[i].x - parts[j].x, dy = parts[i].y - parts[j].y;
           const d = Math.sqrt(dx * dx + dy * dy);
-          if (d < 80) {
-            ctx.strokeStyle = parts[i].c; ctx.globalAlpha = (1 - d / 80) * 0.18;
-            ctx.lineWidth = 0.5; ctx.beginPath();
+          if (d < 90) {
+            ctx.strokeStyle = parts[i].c; ctx.globalAlpha = (1 - d / 90) * 0.15;
+            ctx.lineWidth = 0.3; ctx.beginPath();
             ctx.moveTo(parts[i].x, parts[i].y); ctx.lineTo(parts[j].x, parts[j].y); ctx.stroke();
           }
         }
@@ -143,7 +144,7 @@ function ParticlesBg() {
     window.addEventListener("resize", resize);
     return () => { cancelAnimationFrame(raf); window.removeEventListener("resize", resize); };
   }, []);
-  return <canvas ref={ref} className="absolute inset-0 w-full h-full pointer-events-none" style={{ opacity: 0.5 }} />;
+  return <canvas ref={ref} className="fixed inset-0 w-full h-full pointer-events-none z-[2]" style={{ opacity: 0.85 }} />;
 }
 
 // ─────────────────────────────────────────────────────────────
