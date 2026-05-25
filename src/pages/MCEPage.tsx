@@ -364,10 +364,10 @@ function NeuralWeb({ scores, onSelect }: { scores: { m: number; c: number; e: nu
         <line x1="120" y1="120" x2="120" y2="25" stroke={C.m} strokeOpacity="0.3" />
         <line x1="120" y1="120" x2="55" y2="190" stroke={C.cc} strokeOpacity="0.3" />
         <line x1="120" y1="120" x2="185" y2="190" stroke={C.e} strokeOpacity="0.3" />
-        {/* Center */}
-        <circle cx="120" cy="120" r="18" fill="url(#centerG)" />
-        <circle cx="120" cy="120" r="8" fill={C.gold} />
-        <text x="120" y="123" textAnchor="middle" fontSize="7" fill="#000" fontWeight="700">MCE</text>
+        {/* Center — centroid of M(120,25), C(55,190), E(185,190) = (120,135) */}
+        <circle cx="120" cy="135" r="18" fill="url(#centerG)" />
+        <circle cx="120" cy="135" r="9" fill={C.gold} />
+        <text x="120" y="138" textAnchor="middle" fontSize="7" fill="#000" fontWeight="700">MCE</text>
         {/* Nodes — M TOPO, C inf-esq, E inf-dir */}
         {[
           { k: "M" as DimKey, x: 120, y: 25, c: C.m, labelDy: -22 },
