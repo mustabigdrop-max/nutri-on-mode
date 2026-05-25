@@ -519,12 +519,32 @@ function ProgTab({ streak, totalDone, mceScore, scores, criticalDim }: { streak:
 // ─────────────────────────────────────────────────────────────
 type Msg = { role: "user" | "assistant"; content: string };
 
-function MceChat({ scores }: { scores: { m: number; c: number; e: number } }) {
+function MceChat({ scores, autoMessage }: { scores: { m: number; c: number; e: number }; autoMessage?: { text: string; nonce: number } | null }) {
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [state, setState] = useState<"idle" | "listening" | "thinking" | "speaking">("idle");
   const recRef = useRef<any>(null);
   const synthRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const lastAutoNonce = useRef<number | null>(null);
+
+  const speak = useCallback((text: string) => {
+    if (!("speechSynthesis" in window)) return;
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = "pt-BR"; u.rate = 0.95; u.pitch = 0.9;
+    u.onend = () => setState("idle");
+    u.onerror = () => setState("idle");
+    synthRef.current = u;
+    setState("speaking");
+    window.speechSynthesis.speak(u);
+  }, []);
+
+  useEffect(() => {
+    if (!autoMessage || autoMessage.nonce === lastAutoNonce.current) return;
+    lastAutoNonce.current = autoMessage.nonce;
+    setMsgs((m) => [...m, { role: "assistant", content: autoMessage.text }]);
+    speak(autoMessage.text);
+  }, [autoMessage, speak]);
 
   const statusText = {
     idle: "Neural · Standby",
