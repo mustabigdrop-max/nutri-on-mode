@@ -328,8 +328,8 @@ function DataCol({ side, scores }: { side: "left" | "right"; scores: { m: number
     <div className="space-y-2">
       {items.map((it, i) => (
         <div key={i} className="p-2.5" style={{ background: C.surface2, border: `0.5px solid ${C.border}`, borderRadius: 4 }}>
-          <div className="text-[8px] tracking-widest mb-1" style={{ color: C.textDim }}>{it.l}</div>
-          <div className="text-sm font-bold" style={{ color: it.c }}>{it.v}</div>
+          <div className="text-[10px] tracking-widest mb-1" style={{ color: C.textDim }}>{it.l}</div>
+          <div className="text-[14px] font-bold" style={{ color: it.c }}>{it.v}</div>
         </div>
       ))}
     </div>
