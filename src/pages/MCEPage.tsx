@@ -615,11 +615,11 @@ function MceChat({ scores, autoMessage }: { scores: { m: number; c: number; e: n
             <div className="relative w-3 h-3 rounded-full" style={{ background: C.goldLight }} />
           </div>
           <div>
-            <div className="text-[12px]" style={{ color: C.gold }}>MCE Intelligence</div>
-            <div className="text-[9px]" style={{ color: C.textDim }}>{statusText}</div>
+            <div className="text-[14px]" style={{ color: C.gold }}>MCE Intelligence</div>
+            <div className="text-[11px]" style={{ color: C.textDim }}>{statusText}</div>
           </div>
         </div>
-        <span className="text-[9px] px-2 py-0.5" style={{ background: `${C.teal}22`, color: C.teal, borderRadius: 99 }}>Voice · Active</span>
+        <span className="text-[11px] px-2 py-0.5" style={{ background: `${C.teal}22`, color: C.teal, borderRadius: 99 }}>Voice · Active</span>
       </div>
 
       {/* Messages */}
