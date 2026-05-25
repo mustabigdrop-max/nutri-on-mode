@@ -2681,7 +2681,10 @@ function HistoryViewModal({ protocol: p, onClose, userId, onUpdate }: { protocol
               ))}
             </>
           ) : p.protocol_text ? (
-            <TextCard content={typeof p.protocol_text === "string" ? p.protocol_text : JSON.stringify(p.protocol_text, null, 2)} />
+            <MarkdownProtocolView
+              content={typeof p.protocol_text === "string" ? p.protocol_text : JSON.stringify(p.protocol_text, null, 2)}
+              title={p.client_name || "Protocolo"}
+            />
           ) : (
             <p className="text-xs text-center py-8" style={{ color: TEXT_MUTED }}>Sem dados do protocolo</p>
           )}
