@@ -19,7 +19,7 @@ const GOLD = "#E8A020";
 const GOLD_DIM = "rgba(232,160,32,0.12)";
 const GOLD_BORDER = "rgba(232,160,32,0.30)";
 
-/** Renderiza markdown leve dentro do conteúdo expandido (sem mostrar #/*/- crus) */
+/** Renderiza markdown leve dentro do conteúdo expandido sem mostrar marcadores crus */
 function MarkdownBlock({ text }: { text: string }) {
   const lines = text.split("\n");
   return (
