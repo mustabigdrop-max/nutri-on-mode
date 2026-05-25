@@ -716,6 +716,47 @@ function MceChat({ scores, autoMessage }: { scores: { m: number; c: number; e: n
         {state === "speaking" && "Falando..."}
       </div>
 
+      {/* Voice selector */}
+      <div className="mb-3">
+        <div className="text-[9px] tracking-widest mb-1" style={{ color: C.teal }}>VOZ DO SISTEMA</div>
+        <div className="flex gap-2 items-center">
+          <select
+            value={selectedVoiceURI}
+            onChange={(e) => onVoiceChange(e.target.value)}
+            className="flex-1 px-2 py-1"
+            style={{
+              background: "#060c14",
+              border: `0.5px solid ${C.gold}`,
+              color: C.gold,
+              fontSize: 11,
+              borderRadius: 3,
+              fontFamily: "inherit",
+            }}
+          >
+            {voices.length === 0 && <option value="">— sem vozes disponíveis —</option>}
+            {voices.map((v) => (
+              <option key={v.voiceURI} value={v.voiceURI} style={{ background: "#060c14", color: C.gold }}>
+                {v.name} ({v.lang})
+              </option>
+            ))}
+          </select>
+          <button
+            onClick={testVoice}
+            className="px-3 py-1 mce-btn"
+            style={{
+              border: `0.5px solid ${C.gold}`,
+              color: C.gold,
+              background: `${C.gold}15`,
+              fontSize: 11,
+              borderRadius: 3,
+              letterSpacing: "0.1em",
+            }}
+          >
+            TESTAR
+          </button>
+        </div>
+      </div>
+
       {/* Text input */}
       <div className="flex gap-2 mb-3">
         <input value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && send(input)}
