@@ -339,6 +339,9 @@ function cleanProtocolMarkdown(t: string): string {
     .replace(/`([^`]+)`/g, "$1")            // `code`
     .replace(/^[ \t]*[-*+•]\s+/gm, "• ")    // bullets
     .replace(/\n{3,}/g, "\n\n");
+}
+
+
 
 function Pre({ text }: { text: string }) {
   if (!text) return <Empty text="—" />;
