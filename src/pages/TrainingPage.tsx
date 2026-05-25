@@ -126,6 +126,13 @@ export default function TrainingPage() {
   return (
     <div className="ton-root min-h-screen">
       <TrainingHUDBackground />
+      <MceBanner
+        dimension="e"
+        storageKey="mce_banner_trainingon_dismissed"
+        text="Protocolo de Foco Progressivo recomendado — dimensão Execução crítica"
+      />
+
+
 
 
       {/* ── HUD Header ── */}
