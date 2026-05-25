@@ -132,13 +132,18 @@ export default function TrainingPage() {
   }, [veraProtocoloFlag, veraAtletaId]);
 
   return (
+    <TrackerProvider userId={user?.id}>
     <div className="ton-root min-h-screen">
       <TrainingHUDBackground />
+      <WorkoutProgressBar />
+      <WorkoutCompleteCard />
+      <RestTimerOverlay />
       <MceBanner
         dimension="e"
         storageKey="mce_banner_trainingon_dismissed"
         text="Protocolo de Foco Progressivo recomendado — dimensão Execução crítica"
       />
+
 
 
 
