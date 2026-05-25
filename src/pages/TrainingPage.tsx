@@ -59,6 +59,7 @@ import { TRAINING_SYSTEMS } from "@/data/trainingSystems";
 import CompetitionModeBlocks from "@/components/training/systems/CompetitionModeBlocks";
 import StratumAIAgent from "@/components/training/StratumAIAgent";
 import VERAAgent from "@/components/training/VERAAgent";
+import MceBanner from "@/components/mce/MceBanner";
 
 const ADMIN_UID = "70e51469-1acf-4df6-afe6-f094d21db122";
 
