@@ -211,7 +211,7 @@ export default function MCEPage() {
         backgroundSize: "40px 40px",
       }} />
       {/* Scan line */}
-      <div className="fixed left-0 right-0 h-px pointer-events-none z-10" style={{ background: `linear-gradient(90deg, transparent, ${C.teal}, transparent)`, animation: "mceScan 8s linear infinite", boxShadow: `0 0 8px ${C.teal}` }} />
+      <div className="fixed left-0 right-0 h-px pointer-events-none z-10" style={{ background: "rgba(0,212,170,0.04)", animation: "mceScan 8s linear infinite" }} />
       <ParticlesBg />
 
       <style>{`
