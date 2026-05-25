@@ -355,15 +355,15 @@ function NeuralWeb({ scores, onSelect }: { scores: { m: number; c: number; e: nu
           <radialGradient id="centerG"><stop offset="0%" stopColor={C.goldLight} /><stop offset="100%" stopColor={C.gold} stopOpacity="0" /></radialGradient>
         </defs>
         {/* Orbital rings */}
-        <circle cx="120" cy="120" r="70" fill="none" stroke={C.gold} strokeOpacity="0.15" strokeDasharray="2 4" />
-        <circle cx="120" cy="120" r="92" fill="none" stroke={C.teal} strokeOpacity="0.1" strokeDasharray="1 6" />
+        <circle cx="120" cy="135" r="70" fill="none" stroke={C.gold} strokeOpacity="0.15" strokeDasharray="2 4" />
+        <circle cx="120" cy="135" r="92" fill="none" stroke={C.teal} strokeOpacity="0.1" strokeDasharray="1 6" />
         {/* Connections — triangle: M top, C bottom-left, E bottom-right */}
         <line x1="120" y1="25" x2="55" y2="190" stroke="#fff" strokeOpacity="0.18" strokeDasharray="2 3" />
         <line x1="120" y1="25" x2="185" y2="190" stroke="#fff" strokeOpacity="0.18" strokeDasharray="2 3" />
         <line x1="55" y1="190" x2="185" y2="190" stroke="#fff" strokeOpacity="0.18" strokeDasharray="2 3" />
-        <line x1="120" y1="120" x2="120" y2="25" stroke={C.m} strokeOpacity="0.3" />
-        <line x1="120" y1="120" x2="55" y2="190" stroke={C.cc} strokeOpacity="0.3" />
-        <line x1="120" y1="120" x2="185" y2="190" stroke={C.e} strokeOpacity="0.3" />
+        <line x1="120" y1="135" x2="120" y2="25" stroke={C.m} strokeOpacity="0.3" />
+        <line x1="120" y1="135" x2="55" y2="190" stroke={C.cc} strokeOpacity="0.3" />
+        <line x1="120" y1="135" x2="185" y2="190" stroke={C.e} strokeOpacity="0.3" />
         {/* Center — centroid of M(120,25), C(55,190), E(185,190) = (120,135) */}
         <circle cx="120" cy="135" r="18" fill="url(#centerG)" />
         <circle cx="120" cy="135" r="9" fill={C.gold} />
