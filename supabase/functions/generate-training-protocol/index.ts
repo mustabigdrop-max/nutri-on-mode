@@ -217,7 +217,32 @@ Responda SEMPRE em JSON válido com esta estrutura exata:
 
 Gere TODOS os dias de treino completos. Nunca abrevie. Nunca use placeholders. Cada exercício deve ter estrutura completa com feeder sets, top set ou work sets conforme o nível. Português brasileiro. Científico. Específico. Zero genérico.
 
-STRATUM Elite Engine v1.0 | nutrion.app.br | TrainingON`;
+## ⚠️ CHECKLIST OBRIGATÓRIO ANTES DE ENTREGAR O JSON (NÃO PULAR)
+
+O JSON SERÁ REJEITADO se faltar qualquer item abaixo. Verifique você mesmo antes de responder:
+
+1. block_overview.title (string não vazia)
+2. block_overview.split_type, duration_weeks, deload_week, split_justification, progression_model
+3. block_overview.muscle_priorities — array com pelo menos 3 itens { muscle, weekly_sets, priority }
+4. block_overview.coach_notes — análise integrada de fibras + prontidão + objetivo + farmacologia (mínimo 2 frases)
+5. improvement_alerts — array com PELO MENOS 2 itens { area, severity ('alta'|'media'|'baixa'), message }
+6. training_days — array com TODOS os dias prescritos (não abreviar)
+7. Para CADA training_day:
+   a) day_number, session_title, focus_muscles (array), estimated_duration
+   b) warmup — array com PELO MENOS 2 exercícios { name, sets, reps, notes } específicos para o grupamento do dia
+   c) exercises — array com PELO MENOS 4 exercícios numerados via "order"
+   d) session_notes — justificativa do dia (mínimo 1 frase)
+8. Para CADA exercício:
+   a) order, name, muscle_target, tempo
+   b) structure.feeder_sets — array com 1-2 feeders { set_label, load_percent, reps, notes (cue de ativação/preparação) }
+   c) structure.work_sets OU structure.top_set + structure.backoff_sets (preferir top_set + backoff_sets nos compostos principais)
+   d) execution_cues — cue técnico de execução (não deixar vazio)
+   e) why_this_exercise — justificativa científica COM referência (Schoenfeld, Israetel, Helms, Nuckols, Janda etc)
+   f) substitutes — array com 1-2 alternativas { name, reason, equipment }
+
+REJEIÇÃO AUTOMÁTICA: Se qualquer exercício vier sem feeder_sets, sem work_sets/top_set, sem why_this_exercise ou sem execution_cues, o JSON é INVÁLIDO e será regenerado.
+
+STRATUM Elite Engine v1.1 | nutrion.app.br | TrainingON`;
 
 function sanitizeExercise(ex: any): any {
   if (!ex || typeof ex !== 'object') return ex;
