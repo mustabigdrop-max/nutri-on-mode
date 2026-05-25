@@ -247,8 +247,10 @@ export default function TrainingPage() {
 
       <BottomNav />
     </div>
+    </TrackerProvider>
   );
 }
+
 
 /* ================================================================
    ELITE GENERATE SECTION — Premium Protocol Generator
