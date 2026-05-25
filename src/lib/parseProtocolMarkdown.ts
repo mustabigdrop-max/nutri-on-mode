@@ -191,16 +191,18 @@ export function parseProtocolToDays(content: any): ParsedProtocol {
   }
 
   const lines = text.split("\n");
-  type Block = { header: string; num: number; bodyLines: string[] };
+  type Block = { rest: string; num: number; bodyLines: string[] };
   const blocks: Block[] = [];
   let introLines: string[] = [];
   let current: Block | null = null;
+  let autoNum = 0;
 
   for (const line of lines) {
-    const m = line.match(DAY_HEADER);
+    const m = matchDayHeader(line);
     if (m) {
       if (current) blocks.push(current);
-      current = { header: line, num: parseInt(m[1]), bodyLines: [] };
+      autoNum += 1;
+      current = { rest: m.rest, num: m.isWeekday ? autoNum : (m.num || autoNum), bodyLines: [] };
     } else if (current) {
       current.bodyLines.push(line);
     } else {
@@ -220,12 +222,12 @@ export function parseProtocolToDays(content: any): ParsedProtocol {
 
   const days: ParsedDay[] = blocks.map((b, i) => {
     const body = b.bodyLines.join("\n").trim();
-    const title = extractTitle(b.header, b.num || i + 1, body);
+    const title = extractTitle(b.rest, b.num || i + 1, body);
     return {
       day_number: b.num || i + 1,
       session_title: title,
       estimated_duration: extractDuration(body),
-      muscle_tags: extractMuscleTags(b.header + "\n" + body),
+      muscle_tags: extractMuscleTags(b.rest + "\n" + body),
       body,
     };
   });
