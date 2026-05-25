@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Loader2, Flame, Beef, Clock, Droplet, Pill, CalendarDays, Trophy, ShieldAlert, Stethoscope, Brain, Utensils } from "lucide-react";
 import { toast } from "sonner";
+import MceBanner from "@/components/mce/MceBanner";
 
 const COMPOSTOS = [
   "Testosterona", "Trembolona", "Masteron", "Boldenona", "Deca/Nandrolona",
@@ -117,6 +118,11 @@ export default function NutriPlanElitePage() {
 
   return (
     <div className="min-h-screen bg-[#03030a] text-foreground">
+      <MceBanner
+        dimension="c"
+        storageKey="mce_banner_nutriplan_dismissed"
+        text="Modo Ancoragem Comportamental ativo — MCE detectou padrão de baixa consistência"
+      />
       <div className="max-w-5xl mx-auto p-4 md:p-6 space-y-6">
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="text-amber-400">

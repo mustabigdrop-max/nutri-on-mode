@@ -59,6 +59,7 @@ import { TRAINING_SYSTEMS } from "@/data/trainingSystems";
 import CompetitionModeBlocks from "@/components/training/systems/CompetitionModeBlocks";
 import StratumAIAgent from "@/components/training/StratumAIAgent";
 import VERAAgent from "@/components/training/VERAAgent";
+import MceBanner from "@/components/mce/MceBanner";
 
 const ADMIN_UID = "70e51469-1acf-4df6-afe6-f094d21db122";
 
@@ -126,6 +127,13 @@ export default function TrainingPage() {
   return (
     <div className="ton-root min-h-screen">
       <TrainingHUDBackground />
+      <MceBanner
+        dimension="e"
+        storageKey="mce_banner_trainingon_dismissed"
+        text="Protocolo de Foco Progressivo recomendado — dimensão Execução crítica"
+      />
+
+
 
 
       {/* ── HUD Header ── */}
