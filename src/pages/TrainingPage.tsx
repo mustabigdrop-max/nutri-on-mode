@@ -58,6 +58,7 @@ import { buildSystemPrescription } from "@/data/recommendSystem";
 import { TRAINING_SYSTEMS } from "@/data/trainingSystems";
 import CompetitionModeBlocks from "@/components/training/systems/CompetitionModeBlocks";
 import StratumAIAgent from "@/components/training/StratumAIAgent";
+import SmartWarmup from "@/components/training/SmartWarmup";
 import {
   TrackerProvider,
   WorkoutProgressBar,
