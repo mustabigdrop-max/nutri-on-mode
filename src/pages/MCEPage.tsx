@@ -303,35 +303,68 @@ export default function MCEPage() {
             const isActive = activeDim === k;
             return (
               <button key={k} onClick={() => { setActiveDim(k); setTab("estudo"); }}
-                className="text-left p-3 mce-btn" style={{
-                  background: C.surface, border: `0.5px solid ${isActive ? d.color : C.border}`, borderRadius: 4,
+                className="text-left mce-btn relative overflow-hidden"
+                style={{
+                  height: 88,
+                  background: "linear-gradient(135deg, rgba(8,12,22,0.95) 0%, rgba(12,18,32,0.9) 100%)",
+                  border: `0.5px solid ${isActive ? d.color : "rgba(255,255,255,0.06)"}`,
+                  borderRadius: 6,
+                  padding: "12px 14px",
+                  boxShadow: isActive
+                    ? `0 0 24px ${d.color}33, inset 0 0 18px ${d.color}10`
+                    : `inset 0 0 18px ${d.color}06`,
                 }}>
-                <div className="flex items-baseline justify-between mb-2">
-                  <span style={{ color: d.color, fontSize: 48, fontWeight: 900, lineHeight: 1 }}>{k}</span>
-                  <span style={{ color: C.textDim, fontSize: 11 }}>{d.name}</span>
+                {/* top accent bar */}
+                <div style={{
+                  position: "absolute", top: 0, left: 0, right: 0, height: 2,
+                  background: d.color,
+                  boxShadow: `0 0 8px ${d.color}99`,
+                }} />
+                {/* giant watermark letter */}
+                <span style={{
+                  position: "absolute", right: 12, bottom: -10,
+                  fontSize: 52, fontWeight: 900, lineHeight: 1,
+                  color: d.color, opacity: 0.12, letterSpacing: "-0.04em",
+                }}>{k}</span>
+                <div style={{ color: d.color, fontSize: 9, letterSpacing: "0.14em", fontWeight: 600 }}>{d.name}</div>
+                <div className="mt-1.5" style={{ color: "#e8f0ff", fontSize: 22, fontWeight: 700, lineHeight: 1 }}>
+                  {scores[sk]}<span style={{ color: C.textDim, fontSize: 11, fontWeight: 400 }}>/100</span>
                 </div>
-                <div className="h-0.5 w-full rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.05)" }}>
+                <div className="mt-3 w-full rounded-full overflow-hidden" style={{ height: 2, background: "rgba(255,255,255,0.04)" }}>
                   <div style={{
-                    width: `${scores[sk]}%`, height: "100%", background: d.color,
+                    width: `${scores[sk]}%`, height: "100%",
+                    background: `linear-gradient(90deg, ${d.color}, ${d.color}55)`,
+                    boxShadow: `0 0 6px ${d.color}`,
                     transition: "width 1.2s cubic-bezier(.4,0,.2,1)",
                   }} />
                 </div>
-                <div className="text-[12px] mt-1" style={{ color: C.textDim }}>{scores[sk]}/100</div>
               </button>
             );
           })}
         </div>
 
         {/* TABS */}
-        <div className="flex gap-1 mb-4 border-b" style={{ borderColor: C.border }}>
-          {([["estudo", "Estudo"], ["diag", "Diagnóstico"], ["ex", "Exercícios"], ["prog", "Progresso"]] as const).map(([k, l]) => (
-            <button key={k} onClick={() => setTab(k)}
-              className="px-4 py-2 text-[12px] uppercase tracking-widest mce-btn"
-              style={{
-                color: tab === k ? C.gold : C.textDim,
-                borderBottom: `2px solid ${tab === k ? C.gold : "transparent"}`,
-              }}>{l}</button>
-          ))}
+        <div className="flex gap-1 mb-4 p-[3px]" style={{
+          background: "rgba(4,8,14,0.8)",
+          border: "0.5px solid rgba(255,255,255,0.05)",
+          borderRadius: 4,
+        }}>
+          {([["estudo", "Estudo"], ["diag", "Diagnóstico"], ["ex", "Exercícios"], ["prog", "Progresso"]] as const).map(([k, l]) => {
+            const active = tab === k;
+            return (
+              <button key={k} onClick={() => setTab(k)}
+                className="flex-1 px-4 py-2 text-[12px] uppercase tracking-widest mce-btn"
+                style={{
+                  color: active ? "#f0c840" : C.textDim,
+                  background: active
+                    ? "linear-gradient(135deg, rgba(200,160,32,0.12) 0%, rgba(200,160,32,0.06) 100%)"
+                    : "transparent",
+                  border: `0.5px solid ${active ? "rgba(200,160,32,0.3)" : "transparent"}`,
+                  borderRadius: 3,
+                  boxShadow: active ? "0 0 8px rgba(200,160,32,0.1)" : "none",
+                }}>{l}</button>
+            );
+          })}
         </div>
 
         {/* TAB CONTENT */}
