@@ -173,6 +173,48 @@ export type Database = {
         }
         Relationships: []
       }
+      apex_agent_sessions: {
+        Row: {
+          approved_at: string | null
+          athlete_id: string | null
+          change_log: Json
+          coach_id: string
+          created_at: string
+          id: string
+          messages: Json
+          protocol_version: number
+          snapshot: Json | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          approved_at?: string | null
+          athlete_id?: string | null
+          change_log?: Json
+          coach_id: string
+          created_at?: string
+          id?: string
+          messages?: Json
+          protocol_version?: number
+          snapshot?: Json | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          approved_at?: string | null
+          athlete_id?: string | null
+          change_log?: Json
+          coach_id?: string
+          created_at?: string
+          id?: string
+          messages?: Json
+          protocol_version?: number
+          snapshot?: Json | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       apex_analyses: {
         Row: {
           analysis_text: string | null

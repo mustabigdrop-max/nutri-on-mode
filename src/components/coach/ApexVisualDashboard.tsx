@@ -21,6 +21,7 @@ import VertexAnalysisV4 from "@/components/coach/VertexAnalysisV4";
 import { ApexScoreGauge, InsightCard, PosturaCards, CorrecoesCards, ProtocoloCards } from "@/components/coach/ApexResultCards";
 import { ApexCorrectiveLibrary } from "@/components/coach/ApexCorrectiveLibrary";
 import { ApexSessionGenerator } from "@/components/coach/ApexSessionGenerator";
+import ApexAgentDrawer from "@/components/coach/ApexAgentDrawer";
 import ApexGuidedSession from "@/components/coach/ApexGuidedSession";
 import { ApexClinicalTests } from "@/components/coach/ApexClinicalTests";
 import { ApexFennerGauge } from "@/components/coach/ApexFennerGauge";
@@ -2804,6 +2805,22 @@ Suporte em uso: ${suporte || "não informado"}` : "";
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* APEX Agent — fixed drawer available on every tab */}
+      <ApexAgentDrawer
+        athleteId={(athlete as any)?.patient_user_id ?? (athlete as any)?.id ?? null}
+        athleteName={(athlete as any)?.nome || undefined}
+        activeTab={activeResultTab}
+        apexContext={[
+          `Atleta: ${(athlete as any)?.nome || "n/d"} · Categoria: ${cat?.label || "n/d"}`,
+          `Semanas para o palco: ${formData?.semanas || "n/d"}`,
+          formData?.compostos ? `Protocolo farmacológico: ${formData.compostos}` : "Sem protocolo farmacológico informado",
+          formData?.obs ? `Observações: ${formData.obs}` : "",
+          "",
+          "=== ANÁLISE APEX COMPLETA ===",
+          analysisResult || "(análise ainda não gerada)",
+        ].filter(Boolean).join("\n")}
+      />
     </div>
   );
 }
