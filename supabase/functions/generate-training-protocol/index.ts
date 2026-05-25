@@ -217,7 +217,32 @@ Responda SEMPRE em JSON válido com esta estrutura exata:
 
 Gere TODOS os dias de treino completos. Nunca abrevie. Nunca use placeholders. Cada exercício deve ter estrutura completa com feeder sets, top set ou work sets conforme o nível. Português brasileiro. Científico. Específico. Zero genérico.
 
-STRATUM Elite Engine v1.0 | nutrion.app.br | TrainingON`;
+## ⚠️ CHECKLIST OBRIGATÓRIO ANTES DE ENTREGAR O JSON (NÃO PULAR)
+
+O JSON SERÁ REJEITADO se faltar qualquer item abaixo. Verifique você mesmo antes de responder:
+
+1. block_overview.title (string não vazia)
+2. block_overview.split_type, duration_weeks, deload_week, split_justification, progression_model
+3. block_overview.muscle_priorities — array com pelo menos 3 itens { muscle, weekly_sets, priority }
+4. block_overview.coach_notes — análise integrada de fibras + prontidão + objetivo + farmacologia (mínimo 2 frases)
+5. improvement_alerts — array com PELO MENOS 2 itens { area, severity ('alta'|'media'|'baixa'), message }
+6. training_days — array com TODOS os dias prescritos (não abreviar)
+7. Para CADA training_day:
+   a) day_number, session_title, focus_muscles (array), estimated_duration
+   b) warmup — array com PELO MENOS 2 exercícios { name, sets, reps, notes } específicos para o grupamento do dia
+   c) exercises — array com PELO MENOS 4 exercícios numerados via "order"
+   d) session_notes — justificativa do dia (mínimo 1 frase)
+8. Para CADA exercício:
+   a) order, name, muscle_target, tempo
+   b) structure.feeder_sets — array com 1-2 feeders { set_label, load_percent, reps, notes (cue de ativação/preparação) }
+   c) structure.work_sets OU structure.top_set + structure.backoff_sets (preferir top_set + backoff_sets nos compostos principais)
+   d) execution_cues — cue técnico de execução (não deixar vazio)
+   e) why_this_exercise — justificativa científica COM referência (Schoenfeld, Israetel, Helms, Nuckols, Janda etc)
+   f) substitutes — array com 1-2 alternativas { name, reason, equipment }
+
+REJEIÇÃO AUTOMÁTICA: Se qualquer exercício vier sem feeder_sets, sem work_sets/top_set, sem why_this_exercise ou sem execution_cues, o JSON é INVÁLIDO e será regenerado.
+
+STRATUM Elite Engine v1.1 | nutrion.app.br | TrainingON`;
 
 function sanitizeExercise(ex: any): any {
   if (!ex || typeof ex !== 'object') return ex;
@@ -278,6 +303,54 @@ function sanitizeStructure(s: any): any {
   }
   return s;
 }
+
+/**
+ * Valida que o protocolo possui TODAS as seções obrigatórias para renderizar
+ * no padrão STRATUM Elite (mesmo padrão dos protocolos antigos como Carlos Júnior).
+ * Retorna lista de campos ausentes — vazia significa válido.
+ */
+function validateProtocolStructure(p: any): string[] {
+  const missing: string[] = [];
+  if (!p || typeof p !== "object") return ["root"];
+  const bo = p.block_overview;
+  if (!bo || typeof bo !== "object") missing.push("block_overview");
+  else {
+    if (!bo.title || typeof bo.title !== "string") missing.push("block_overview.title");
+    if (!Array.isArray(bo.muscle_priorities) || bo.muscle_priorities.length === 0)
+      missing.push("block_overview.muscle_priorities");
+    if (!bo.coach_notes || typeof bo.coach_notes !== "string") missing.push("block_overview.coach_notes");
+  }
+  if (!Array.isArray(p.improvement_alerts) || p.improvement_alerts.length === 0)
+    missing.push("improvement_alerts");
+  const days = p.training_days;
+  if (!Array.isArray(days) || days.length === 0) {
+    missing.push("training_days");
+  } else {
+    days.forEach((d: any, i: number) => {
+      const tag = `training_days[${i}]`;
+      if (!Array.isArray(d.warmup) || d.warmup.length === 0) missing.push(`${tag}.warmup`);
+      if (!Array.isArray(d.exercises) || d.exercises.length === 0) {
+        missing.push(`${tag}.exercises`);
+      } else {
+        d.exercises.forEach((ex: any, j: number) => {
+          const etag = `${tag}.exercises[${j}]`;
+          const s = ex?.structure;
+          if (!s || typeof s !== "object") missing.push(`${etag}.structure`);
+          else {
+            if (!Array.isArray(s.feeder_sets) || s.feeder_sets.length === 0)
+              missing.push(`${etag}.structure.feeder_sets`);
+            if (!s.work_sets && !s.top_set)
+              missing.push(`${etag}.structure.work_sets|top_set`);
+          }
+          if (!ex?.why_this_exercise) missing.push(`${etag}.why_this_exercise`);
+          if (!ex?.execution_cues) missing.push(`${etag}.execution_cues`);
+        });
+      }
+    });
+  }
+  return missing;
+}
+
 
 function sanitizeProtocol(protocol: any): any {
   if (!protocol || typeof protocol !== 'object') return protocol;
@@ -920,59 +993,86 @@ serve(async (req) => {
       ? `${userPrompt}\n\nREFERÊNCIAS CIENTÍFICAS ATUAIS (Perplexity):\n${scienceContext}\n\nCitações: ${JSON.stringify(scienceCitations)}\n\nUse essas referências para embasar as decisões.`
       : userPrompt;
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${LOVABLE_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [
-          { role: "system", content: TRAININGON_SYSTEM_PROMPT },
-          { role: "user", content: enrichedPrompt },
-        ],
-        temperature: 0.7,
-      }),
-    });
-
-    if (!response.ok) {
-      if (response.status === 429) {
-        return new Response(JSON.stringify({ error: "Rate limit excedido." }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    async function callAI(extraInstruction = ""): Promise<{ response: Response; raw: string }> {
+      const sys = extraInstruction
+        ? `${TRAININGON_SYSTEM_PROMPT}\n\n## RETENTATIVA OBRIGATÓRIA\n${extraInstruction}`
+        : TRAININGON_SYSTEM_PROMPT;
+      const r = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${LOVABLE_API_KEY}` },
+        body: JSON.stringify({
+          model: "google/gemini-2.5-flash",
+          messages: [
+            { role: "system", content: sys },
+            { role: "user", content: enrichedPrompt },
+          ],
+          temperature: 0.7,
+        }),
+      });
+      if (!r.ok) {
+        if (r.status === 429 || r.status === 402) return { response: r, raw: "" };
+        const errText = await r.text();
+        throw new Error(`AI API error: ${r.status} - ${errText}`);
       }
-      if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "Créditos insuficientes." }), { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-      }
-      const errText = await response.text();
-      throw new Error(`AI API error: ${response.status} - ${errText}`);
+      const j = await r.json();
+      return { response: r, raw: j.choices?.[0]?.message?.content || "" };
     }
 
-    const aiData = await response.json();
-    let content = aiData.choices?.[0]?.message?.content || "";
+    let { response, raw: content } = await callAI();
 
-    // For protocolo tab, parse JSON and sanitize
+    if (!response.ok) {
+      if (response.status === 429) return new Response(JSON.stringify({ error: "Rate limit excedido." }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      if (response.status === 402) return new Response(JSON.stringify({ error: "Créditos insuficientes." }), { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
+    // For protocolo tab, parse JSON, validate, retry if invalid, sanitize.
     if (data.tab === "protocolo") {
-      try {
-        const jsonMatch = content.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          let parsed = JSON.parse(jsonMatch[0]);
-          parsed = sanitizeProtocol(parsed);
-          // Camada 3: enforcer determinístico de volume semanal.
-          const enforced = enforceVolumeLimits(parsed, 1.10);
-          if (enforced.anyFixed) {
-            console.log("[volume-enforcer] aplicado:", JSON.stringify(enforced.fixes));
+      let parsed: any = null;
+      let lastMissing: string[] = [];
+      for (let attempt = 0; attempt < 3; attempt++) {
+        try {
+          const jsonMatch = content.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+            parsed = JSON.parse(jsonMatch[0]);
+            const missing = validateProtocolStructure(parsed);
+            if (missing.length === 0) { lastMissing = []; break; }
+            lastMissing = missing;
+            console.log(`[validate] tentativa ${attempt + 1} faltando:`, missing.slice(0, 8));
+            if (attempt < 2) {
+              const fix = `A resposta anterior estava INVÁLIDA. Faltaram OBRIGATORIAMENTE os campos: ${missing.slice(0, 20).join(", ")}.\nRegenere o JSON COMPLETO preenchendo TODOS os campos do checklist. Não omita feeder_sets, work_sets/top_set, why_this_exercise, execution_cues, warmup, muscle_priorities, coach_notes nem improvement_alerts.`;
+              const retry = await callAI(fix);
+              content = retry.raw || content;
+              parsed = null;
+              continue;
+            }
+          } else if (attempt < 2) {
+            const retry = await callAI("A resposta anterior NÃO continha JSON válido. Retorne APENAS o objeto JSON estruturado completo, sem markdown nem texto fora do JSON.");
+            content = retry.raw || content;
+            continue;
           }
-          return new Response(JSON.stringify({
-            protocol: enforced.protocol,
-            volume_fixes: enforced.fixes,
-            citations: scienceCitations,
-          }), {
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          });
+        } catch (e) {
+          console.log(`[parse] tentativa ${attempt + 1} falhou:`, (e as Error).message);
+          parsed = null;
+          if (attempt < 2) {
+            const retry = await callAI("A resposta anterior não era JSON parseável. Retorne APENAS o objeto JSON válido completo.");
+            content = retry.raw || content;
+            continue;
+          }
         }
-      } catch (e) {
-        console.log("JSON parse failed, returning raw content");
       }
+
+      if (parsed) {
+        parsed = sanitizeProtocol(parsed);
+        const enforced = enforceVolumeLimits(parsed, 1.10);
+        if (enforced.anyFixed) console.log("[volume-enforcer] aplicado:", JSON.stringify(enforced.fixes));
+        return new Response(JSON.stringify({
+          protocol: enforced.protocol,
+          volume_fixes: enforced.fixes,
+          citations: scienceCitations,
+          validation_warnings: lastMissing,
+        }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+      console.log("[protocolo] JSON inválido após 3 tentativas — devolvendo raw content");
     }
 
     return new Response(JSON.stringify({ content, citations: scienceCitations }), {
