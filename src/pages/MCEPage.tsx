@@ -307,7 +307,7 @@ export default function MCEPage() {
         </div>
 
         {/* CHAT */}
-        <MceChat scores={scores} />
+        <MceChat scores={scores} autoMessage={autoMsg} />
       </div>
     </div>
   );
