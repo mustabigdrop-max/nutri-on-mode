@@ -330,35 +330,35 @@ function NeuralWeb({ scores, onSelect }: { scores: { m: number; c: number; e: nu
       <div className="text-5xl font-bold mb-3 tracking-tight" style={{ color: "#fff" }}>
         MC<span style={{ color: C.gold }}>E</span>
       </div>
-      <svg viewBox="0 0 240 220" className="w-full max-w-[280px]">
+      <svg viewBox="0 0 240 230" className="w-full max-w-[280px]">
         <defs>
           <radialGradient id="centerG"><stop offset="0%" stopColor={C.goldLight} /><stop offset="100%" stopColor={C.gold} stopOpacity="0" /></radialGradient>
         </defs>
         {/* Orbital rings */}
-        <circle cx="120" cy="110" r="60" fill="none" stroke={C.gold} strokeOpacity="0.15" strokeDasharray="2 4" />
-        <circle cx="120" cy="110" r="80" fill="none" stroke={C.teal} strokeOpacity="0.1" strokeDasharray="1 6" />
-        {/* Connections */}
-        <line x1="120" y1="40" x2="60" y2="170" stroke="#fff" strokeOpacity="0.18" strokeDasharray="2 3" />
-        <line x1="120" y1="40" x2="180" y2="170" stroke="#fff" strokeOpacity="0.18" strokeDasharray="2 3" />
-        <line x1="60" y1="170" x2="180" y2="170" stroke="#fff" strokeOpacity="0.18" strokeDasharray="2 3" />
-        <line x1="120" y1="110" x2="120" y2="40" stroke={C.m} strokeOpacity="0.3" />
-        <line x1="120" y1="110" x2="60" y2="170" stroke={C.cc} strokeOpacity="0.3" />
-        <line x1="120" y1="110" x2="180" y2="170" stroke={C.e} strokeOpacity="0.3" />
+        <circle cx="120" cy="120" r="70" fill="none" stroke={C.gold} strokeOpacity="0.15" strokeDasharray="2 4" />
+        <circle cx="120" cy="120" r="92" fill="none" stroke={C.teal} strokeOpacity="0.1" strokeDasharray="1 6" />
+        {/* Connections — triangle: M top, C bottom-left, E bottom-right */}
+        <line x1="120" y1="25" x2="55" y2="190" stroke="#fff" strokeOpacity="0.18" strokeDasharray="2 3" />
+        <line x1="120" y1="25" x2="185" y2="190" stroke="#fff" strokeOpacity="0.18" strokeDasharray="2 3" />
+        <line x1="55" y1="190" x2="185" y2="190" stroke="#fff" strokeOpacity="0.18" strokeDasharray="2 3" />
+        <line x1="120" y1="120" x2="120" y2="25" stroke={C.m} strokeOpacity="0.3" />
+        <line x1="120" y1="120" x2="55" y2="190" stroke={C.cc} strokeOpacity="0.3" />
+        <line x1="120" y1="120" x2="185" y2="190" stroke={C.e} strokeOpacity="0.3" />
         {/* Center */}
-        <circle cx="120" cy="110" r="18" fill="url(#centerG)" />
-        <circle cx="120" cy="110" r="8" fill={C.gold} />
-        <text x="120" y="113" textAnchor="middle" fontSize="7" fill="#000" fontWeight="700">MCE</text>
-        {/* Nodes */}
+        <circle cx="120" cy="120" r="18" fill="url(#centerG)" />
+        <circle cx="120" cy="120" r="8" fill={C.gold} />
+        <text x="120" y="123" textAnchor="middle" fontSize="7" fill="#000" fontWeight="700">MCE</text>
+        {/* Nodes — M TOPO, C inf-esq, E inf-dir */}
         {[
-          { k: "M" as DimKey, x: 120, y: 40, c: C.m },
-          { k: "C" as DimKey, x: 60, y: 170, c: C.cc },
-          { k: "E" as DimKey, x: 180, y: 170, c: C.e },
+          { k: "M" as DimKey, x: 120, y: 25, c: C.m, labelDy: -22 },
+          { k: "C" as DimKey, x: 55, y: 190, c: C.cc, labelDy: 26 },
+          { k: "E" as DimKey, x: 185, y: 190, c: C.e, labelDy: 26 },
         ].map((n) => (
           <g key={n.k} onClick={() => onSelect(n.k)} style={{ cursor: "pointer" }}>
             <circle cx={n.x} cy={n.y} r="16" fill={n.c} fillOpacity="0.15" />
             <circle cx={n.x} cy={n.y} r="10" fill={n.c} />
             <text x={n.x} y={n.y + 3} textAnchor="middle" fontSize="9" fill="#000" fontWeight="700">{n.k}</text>
-            <text x={n.x} y={n.y + 26} textAnchor="middle" fontSize="6" fill={C.textDim}>{DIMS[n.k].name.slice(0, 8)}</text>
+            <text x={n.x} y={n.y + n.labelDy} textAnchor="middle" fontSize="6" fill={C.textDim}>{DIMS[n.k].name.slice(0, 8)}</text>
           </g>
         ))}
       </svg>
