@@ -4,8 +4,10 @@ import { toast } from "@/hooks/use-toast";
 import { Sparkles, Send, CheckCircle2, RefreshCw, X } from "lucide-react";
 
 interface Msg {
-  role: "user" | "assistant";
+  role: "user" | "assistant" | "system";
   content: string;
+  isError?: boolean;
+  retryPayload?: { kind: "chat" | "initial"; messages: Msg[] };
 }
 
 interface Props {
