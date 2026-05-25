@@ -329,6 +329,17 @@ export default function CorrectivePlanViewer({
   );
 }
 
+function cleanProtocolMarkdown(t: string): string {
+  if (!t) return "";
+  return t
+    .replace(/^#{1,6}\s+/gm, "")           // strip leading # ## ###
+    .replace(/\*\*(.+?)\*\*/g, "$1")        // **bold**
+    .replace(/__(.+?)__/g, "$1")            // __bold__
+    .replace(/(^|\s)\*(?!\s)([^*\n]+?)\*(?!\w)/g, "$1$2")  // *italic*
+    .replace(/`([^`]+)`/g, "$1")            // `code`
+    .replace(/^[ \t]*[-*+•]\s+/gm, "• ")    // bullets
+    .replace(/\n{3,}/g, "\n\n");
+
 function Pre({ text }: { text: string }) {
   if (!text) return <Empty text="—" />;
   return (
