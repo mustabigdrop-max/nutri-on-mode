@@ -271,17 +271,21 @@ export default function ApexPlanoMestre({
       {/* CARD RESUMO */}
       <div className="rounded-xl p-4 space-y-3" style={{ background: C.bg, border: `1px solid ${C.cyan}30`, borderLeft: `2px solid ${C.cyan}` }}>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-[11px] font-mono">
-          <div><div className="opacity-60">DURAÇÃO</div><div className="text-sm font-bold" style={{ color: C.cyan }}>{totalSemanas} semanas</div></div>
-          <div><div className="opacity-60">FASE ATUAL</div><div className="text-sm font-bold" style={{ color: C.gold }}>{faseAtual}/{fases.length}</div></div>
+          <div><div className="opacity-60">DURAÇÃO</div><div className="text-sm font-bold" style={{ color: C.cyan }}>{totalSemanas || "—"} semanas</div></div>
+          <div><div className="opacity-60">FASE ATUAL</div><div className="text-sm font-bold" style={{ color: C.gold }}>{faseAtual}/{totalFases || "—"}</div></div>
           <div><div className="opacity-60">FCS INICIAL</div><div className="text-sm font-bold text-white">{fcsScore ?? "—"}</div></div>
-          <div><div className="opacity-60">RECHECK</div><div className="text-sm font-bold" style={{ color: C.cyan }}>{plano!.recheck_apex?.quando || "—"}</div></div>
+          <div><div className="opacity-60">RECHECK</div><div className="text-sm font-bold" style={{ color: C.cyan }}>{plano!.recheck_apex?.quando || (totalFases ? `Após ${totalSemanas} semanas (final da Fase ${totalFases})` : "—")}</div></div>
         </div>
         <div>
-          <div className="flex justify-between text-[10px] mb-1 font-mono opacity-70"><span>PROGRESSO GLOBAL</span><span>{globalPct}%</span></div>
+          <div className="flex justify-between text-[10px] mb-1 font-mono opacity-70">
+            <span>PROGRESSO GLOBAL{globalPct === 0 ? " · Protocolo não iniciado" : ""}</span>
+            <span>{globalPct}%</span>
+          </div>
           <div className="h-2 rounded-full overflow-hidden" style={{ background: "#ffffff15" }}>
-            <div className="h-full transition-all" style={{ width: `${globalPct}%`, background: `linear-gradient(90deg, ${C.gold}, ${C.cyan})` }} />
+            <div className="h-full transition-all" style={{ width: `${Math.max(globalPct, 2)}%`, background: `linear-gradient(90deg, ${C.gold}, ${C.cyan})` }} />
           </div>
         </div>
+
       </div>
 
       {/* BARRA DE AÇÕES */}
