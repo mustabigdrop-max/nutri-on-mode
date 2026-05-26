@@ -301,6 +301,13 @@ function sanitizeStructure(s: any): any {
   if (!s.feeder_sets && !s.top_set && !s.backoff_sets && !s.work_sets) {
     s.work_sets = { sets: "3", reps: "8-12", rpe: "7-8", rest: "90s", notes: "Séries de trabalho" };
   }
+  // Garante feeder_sets default (validação pede pelo menos 1)
+  if (!s.feeder_sets || !Array.isArray(s.feeder_sets) || s.feeder_sets.length === 0) {
+    s.feeder_sets = [
+      { set_label: "Feeder 1", load_percent: "50%", reps: "10", notes: "Aquecimento progressivo" },
+      { set_label: "Feeder 2", load_percent: "70%", reps: "6", notes: "Ativação neural" },
+    ];
+  }
   return s;
 }
 
