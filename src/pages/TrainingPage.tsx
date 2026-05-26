@@ -1657,7 +1657,7 @@ function TrainingDayCard({ day, index, expanded, onToggle, expandedExercise, set
                 exercises={(day.exercises || []).map((e: any) => ({ nome: e?.name ?? e?.nome ?? "" }))}
               />
               {/* Warm-up específico por grupamento muscular do dia */}
-              <SmartWarmup exercises={day.exercises || []} dayKey={day.day_number ?? index} />
+              <SmartWarmup exercises={day.exercises || []} dayKey={day.day_number ?? index} groupings={muscleTags} />
 
 
               {/* Exercises */}
