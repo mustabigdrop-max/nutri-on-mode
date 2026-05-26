@@ -22,8 +22,10 @@ const C = {
 interface Props extends UseApexPlanoMestrePayload {
   sessionId?: string | null;
   autoGenerate?: boolean;
+  weeksContext?: number;
   onSendToTrainingON?: (semana: PlanoSemana | undefined, contraindicados: string[]) => void;
 }
+
 
 // ── Helpers consolidação ───────────────────────────────────────────────
 const SESSION_KEY = (n: number) => `__session_${n}__`;
