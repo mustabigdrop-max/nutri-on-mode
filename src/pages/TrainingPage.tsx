@@ -969,8 +969,12 @@ Português. Específico. Científico. Zero genérico.`;
           </div>
         </div>
 
-        {loading ? (
-          <LoadingState />
+        {loading || generationError ? (
+          <StratumGenerationProgress
+            error={generationError}
+            onRetry={() => { setGenerationError(null); generate(); }}
+            onCancel={() => { setGenerationError(null); setGenerated(false); }}
+          />
         ) : (
           <>
             {/* Result Tabs */}
