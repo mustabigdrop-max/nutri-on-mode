@@ -301,6 +301,13 @@ function sanitizeStructure(s: any): any {
   if (!s.feeder_sets && !s.top_set && !s.backoff_sets && !s.work_sets) {
     s.work_sets = { sets: "3", reps: "8-12", rpe: "7-8", rest: "90s", notes: "Séries de trabalho" };
   }
+  // Garante feeder_sets default (validação pede pelo menos 1)
+  if (!s.feeder_sets || !Array.isArray(s.feeder_sets) || s.feeder_sets.length === 0) {
+    s.feeder_sets = [
+      { set_label: "Feeder 1", load_percent: "50%", reps: "10", notes: "Aquecimento progressivo" },
+      { set_label: "Feeder 2", load_percent: "70%", reps: "6", notes: "Ativação neural" },
+    ];
+  }
   return s;
 }
 
@@ -361,7 +368,13 @@ function sanitizeProtocol(protocol: any): any {
       session_title: day.session_title || "Sessão de Treino",
       focus_muscles: day.focus_muscles || [],
       estimated_duration: day.estimated_duration || "60 min",
-      warmup: (day.warmup || []).map((w: any) => ({
+      warmup: (day.warmup && Array.isArray(day.warmup) && day.warmup.length > 0
+        ? day.warmup
+        : [
+            { name: "Mobilidade articular", sets: "1", reps: "10", notes: "Mobilidade dinâmica geral 5min" },
+            { name: "Ativação específica", sets: "2", reps: "15", notes: "Ativação do grupamento principal" },
+          ]
+      ).map((w: any) => ({
         name: w.name || "Aquecimento",
         sets: w.sets || "2",
         reps: w.reps || "15",
@@ -1025,44 +1038,39 @@ serve(async (req) => {
       if (response.status === 402) return new Response(JSON.stringify({ error: "Créditos insuficientes." }), { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    // For protocolo tab, parse JSON, validate, retry if invalid, sanitize.
+    // For protocolo tab: parse + sanitize. Validação é informativa (não bloqueia).
+    // Só regenera 1x se estrutura realmente quebrada (sem training_days).
     if (data.tab === "protocolo") {
       let parsed: any = null;
       let lastMissing: string[] = [];
-      for (let attempt = 0; attempt < 3; attempt++) {
+
+      const tryParse = (txt: string) => {
+        const jsonMatch = txt.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) return null;
+        try { return JSON.parse(jsonMatch[0]); } catch { return null; }
+      };
+
+      parsed = tryParse(content);
+
+      const isStructurallyBroken = (p: any) =>
+        !p || !Array.isArray(p.training_days) || p.training_days.length === 0 ||
+        !p.training_days.some((d: any) => Array.isArray(d.exercises) && d.exercises.length > 0);
+
+      if (isStructurallyBroken(parsed)) {
+        console.log("[protocolo] estrutura quebrada — 1 retry");
         try {
-          const jsonMatch = content.match(/\{[\s\S]*\}/);
-          if (jsonMatch) {
-            parsed = JSON.parse(jsonMatch[0]);
-            const missing = validateProtocolStructure(parsed);
-            if (missing.length === 0) { lastMissing = []; break; }
-            lastMissing = missing;
-            console.log(`[validate] tentativa ${attempt + 1} faltando:`, missing.slice(0, 8));
-            if (attempt < 2) {
-              const fix = `A resposta anterior estava INVÁLIDA. Faltaram OBRIGATORIAMENTE os campos: ${missing.slice(0, 20).join(", ")}.\nRegenere o JSON COMPLETO preenchendo TODOS os campos do checklist. Não omita feeder_sets, work_sets/top_set, why_this_exercise, execution_cues, warmup, muscle_priorities, coach_notes nem improvement_alerts.`;
-              const retry = await callAI(fix);
-              content = retry.raw || content;
-              parsed = null;
-              continue;
-            }
-          } else if (attempt < 2) {
-            const retry = await callAI("A resposta anterior NÃO continha JSON válido. Retorne APENAS o objeto JSON estruturado completo, sem markdown nem texto fora do JSON.");
-            content = retry.raw || content;
-            continue;
-          }
+          const retry = await callAI("A resposta anterior estava incompleta. Retorne SOMENTE o JSON completo com training_days populados e exercises em cada dia. Sem markdown, sem texto extra.");
+          content = retry.raw || content;
+          const second = tryParse(content);
+          if (!isStructurallyBroken(second)) parsed = second;
         } catch (e) {
-          console.log(`[parse] tentativa ${attempt + 1} falhou:`, (e as Error).message);
-          parsed = null;
-          if (attempt < 2) {
-            const retry = await callAI("A resposta anterior não era JSON parseável. Retorne APENAS o objeto JSON válido completo.");
-            content = retry.raw || content;
-            continue;
-          }
+          console.log("[protocolo] retry falhou:", (e as Error).message);
         }
       }
 
-      if (parsed) {
+      if (parsed && !isStructurallyBroken(parsed)) {
         parsed = sanitizeProtocol(parsed);
+        lastMissing = validateProtocolStructure(parsed);
         const enforced = enforceVolumeLimits(parsed, 1.10);
         if (enforced.anyFixed) console.log("[volume-enforcer] aplicado:", JSON.stringify(enforced.fixes));
         return new Response(JSON.stringify({
@@ -1072,7 +1080,7 @@ serve(async (req) => {
           validation_warnings: lastMissing,
         }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
-      console.log("[protocolo] JSON inválido após 3 tentativas — devolvendo raw content");
+      console.log("[protocolo] JSON inválido após retry — devolvendo raw content");
     }
 
     return new Response(JSON.stringify({ content, citations: scienceCitations }), {
