@@ -368,7 +368,13 @@ function sanitizeProtocol(protocol: any): any {
       session_title: day.session_title || "Sessão de Treino",
       focus_muscles: day.focus_muscles || [],
       estimated_duration: day.estimated_duration || "60 min",
-      warmup: (day.warmup || []).map((w: any) => ({
+      warmup: (day.warmup && Array.isArray(day.warmup) && day.warmup.length > 0
+        ? day.warmup
+        : [
+            { name: "Mobilidade articular", sets: "1", reps: "10", notes: "Mobilidade dinâmica geral 5min" },
+            { name: "Ativação específica", sets: "2", reps: "15", notes: "Ativação do grupamento principal" },
+          ]
+      ).map((w: any) => ({
         name: w.name || "Aquecimento",
         sets: w.sets || "2",
         reps: w.reps || "15",
