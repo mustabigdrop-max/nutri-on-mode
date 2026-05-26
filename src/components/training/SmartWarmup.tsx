@@ -79,7 +79,7 @@ export default function SmartWarmup({
             className="text-[8px] px-1.5 py-0.5 rounded-full font-bold tracking-wider"
             style={{ background: `${ACCENT}18`, color: ACCENT, border: `1px solid ${ACCENT}33` }}
           >
-            {label}
+            {badge}
           </span>
           {allDone && (
             <span className="text-[8px] px-1.5 py-0.5 rounded-full font-bold" style={{ background: `${TEAL}20`, color: TEAL }}>
@@ -91,7 +91,7 @@ export default function SmartWarmup({
 
       {!isFallback && (
         <p className="text-[10px] italic mt-0.5" style={{ color: TEAL }}>
-          Específico para {label}
+          Específico para {badge}
         </p>
       )}
 
