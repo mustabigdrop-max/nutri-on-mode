@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { buildWarmup, detectMuscleGroups, groupKey } from "@/lib/warmupByMuscle";
+import { buildWarmup, buildWarmupFromGroupings, detectMuscleGroups, groupKey } from "@/lib/warmupByMuscle";
 
 const TEAL = "#00d4aa";
 const ACCENT = "#00e888";
@@ -15,11 +15,32 @@ const today = () => new Date().toISOString().slice(0, 10);
 export default function SmartWarmup({
   exercises,
   dayKey,
-}: { exercises: Array<{ name?: string; muscle_target?: string }>; dayKey: string | number }) {
+  groupings,
+}: {
+  exercises: Array<{ name?: string; muscle_target?: string }>;
+  dayKey: string | number;
+  groupings?: string[];
+}) {
   const { user } = useAuth();
-  const groups = useMemo(() => detectMuscleGroups(exercises || []), [exercises]);
-  const { label, exercises: warmup, isFallback } = useMemo(() => buildWarmup(groups), [groups]);
-  const storageKey = `warmup-done:${today()}:${dayKey}:${groupKey(groups)}`;
+  const hasGroupings = Array.isArray(groupings) && groupings.length > 0;
+  const fromGroupings = useMemo(
+    () => (hasGroupings ? buildWarmupFromGroupings(groupings!) : null),
+    [hasGroupings, groupings]
+  );
+  const legacyGroups = useMemo(
+    () => (hasGroupings ? [] : detectMuscleGroups(exercises || [])),
+    [hasGroupings, exercises]
+  );
+  const legacy = useMemo(
+    () => (hasGroupings ? null : buildWarmup(legacyGroups)),
+    [hasGroupings, legacyGroups]
+  );
+  const label = fromGroupings?.label ?? legacy!.label;
+  const warmup = fromGroupings?.exercises ?? legacy!.exercises;
+  const isFallback = fromGroupings?.isFallback ?? legacy!.isFallback;
+  const badge = fromGroupings?.badge ?? label;
+  const groups = legacyGroups;
+  const storageKey = `warmup-done:${today()}:${dayKey}:${hasGroupings ? (groupings!.join("+").toLowerCase()) : groupKey(groups)}`;
 
   const [done, setDone] = useState<Record<number, boolean>>(() => {
     try { return JSON.parse(localStorage.getItem(storageKey) || "{}"); } catch { return {}; }
@@ -58,7 +79,7 @@ export default function SmartWarmup({
             className="text-[8px] px-1.5 py-0.5 rounded-full font-bold tracking-wider"
             style={{ background: `${ACCENT}18`, color: ACCENT, border: `1px solid ${ACCENT}33` }}
           >
-            {label}
+            {badge}
           </span>
           {allDone && (
             <span className="text-[8px] px-1.5 py-0.5 rounded-full font-bold" style={{ background: `${TEAL}20`, color: TEAL }}>
@@ -70,7 +91,7 @@ export default function SmartWarmup({
 
       {!isFallback && (
         <p className="text-[10px] italic mt-0.5" style={{ color: TEAL }}>
-          Específico para {label}
+          Específico para {badge}
         </p>
       )}
 
