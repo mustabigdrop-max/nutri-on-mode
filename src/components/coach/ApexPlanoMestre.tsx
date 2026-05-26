@@ -96,7 +96,7 @@ function getDerivedWeeks(f: PlanoFase): PlanoSemana[] {
 }
 
 export default function ApexPlanoMestre({
-  sessionId, autoGenerate = true, onSendToTrainingON,
+  sessionId, autoGenerate = true, weeksContext, onSendToTrainingON,
   dysfunctions, muscleMap, fcsScore, athleteProfile, goal, analysisRaw, kineticChains,
 }: Props) {
   const { toast } = useToast();
@@ -111,19 +111,24 @@ export default function ApexPlanoMestre({
   const [showFaseModal, setShowFaseModal] = useState(false);
   const [showRegenConfirm, setShowRegenConfirm] = useState(false);
 
-  // Auto-geração se sessão tem dados e ainda não tem plano
+  // Auto-geração se sessão tem dados e ainda não tem plano (ou plano salvo está vazio)
   useEffect(() => {
-    if (!autoGenerate || plano || loading || generating) return;
+    if (!autoGenerate || loading || generating) return;
     if (!dysfunctions && !muscleMap && !analysisRaw && fcsScore == null) return;
+    const isEmpty = !plano || !plano.fases || plano.fases.length === 0;
+    if (!isEmpty) return;
     generate({ dysfunctions, muscleMap, fcsScore, athleteProfile, goal, analysisRaw, kineticChains }).catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [plano, loading, generating]);
 
   const fases: PlanoFase[] = plano?.fases || [];
-  const totalSemanas = plano?.duracao_total_semanas || fases.reduce((s, f) => s + (f.duracao_semanas || 0), 0);
+  const sumFases = fases.reduce((s, f) => s + (f.duracao_semanas || 0), 0);
+  const totalSemanas = plano?.duracao_total_semanas || sumFases || weeksContext || 0;
+  const totalFases = fases.length || (totalSemanas ? Math.max(1, Math.round(totalSemanas / 4)) : 0);
   const faseObj = fases.find(f => f.numero === faseAtual) || fases[0];
   const semanasFase: PlanoSemana[] = faseObj ? getDerivedWeeks(faseObj) : [];
   const semanaObj: PlanoSemana | undefined = semanasFase.find(s => s.semana === semanaAtual) || semanasFase[0];
+
 
   // progresso da semana atual — agora baseado em SESSÕES concluídas
   const semanaProgresso = useMemo(() => {
