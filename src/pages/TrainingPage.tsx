@@ -483,17 +483,22 @@ Português. Específico. Científico. Zero genérico.`;
       return;
     }
     setLoading(true);
+    setGenerationError(null);
     setGenerated(true);
     setActiveResultTab("overview");
     try {
-      const { data, error } = await supabase.functions.invoke("generate-training-protocol", {
+      // Timeout de 90s — Edge Functions Supabase já têm limite, mas damos feedback claro
+      const invokePromise = supabase.functions.invoke("generate-training-protocol", {
         body: {
           ...bodyData,
           tab: "protocolo",
-          // Sempre injetar elitePrompt (agora inclui sistema de treino)
           elitePrompt: buildElitePrompt(),
         },
       });
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error("Tempo excedido (90s). O protocolo é complexo — tente novamente.")), 90000)
+      );
+      const { data, error } = await Promise.race([invokePromise, timeoutPromise]) as any;
       if (error) throw error;
       let proto = data.protocol;
       if (!proto && data.content) proto = tryParseJson(data.content);
@@ -504,7 +509,6 @@ Português. Específico. Científico. Zero genérico.`;
           `✅ Protocolo gerado${sysName ? ` · ${sysName}` : ""}${fiberProfile ? ` · Fibras ${fiberProfile.dominancia.toUpperCase()}` : ""}${readyCheckin ? ` · Ready ⚡` : ""}`,
           { duration: 4000 }
         );
-        // Camada 3 — informa ao usuário se o enforcer aparou séries excedentes.
         if (Array.isArray(data.volume_fixes) && data.volume_fixes.length > 0) {
           const summary = data.volume_fixes
             .map((f: any) => `${f.muscle}: ${f.before}→${f.after} (max ${f.prescribed})`)
@@ -513,10 +517,13 @@ Português. Específico. Científico. Zero genérico.`;
         }
       } else if (data.content) {
         setTextResults(prev => ({ ...prev, protocolo: data.content }));
+      } else {
+        throw new Error("Resposta vazia da IA");
       }
     } catch (e: any) {
-      toast.error(`Erro: ${e.message}`);
-      setGenerated(false);
+      const msg = e?.message || "Erro desconhecido";
+      setGenerationError(msg);
+      // não chama setGenerated(false) — mantém na view do erro pra mostrar o card
     } finally {
       setLoading(false);
     }
