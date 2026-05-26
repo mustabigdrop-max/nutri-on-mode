@@ -23,6 +23,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import BottomNav from "@/components/BottomNav";
 import StratumModule from "@/components/training/StratumModule";
+import StratumGenerationProgress from "@/components/training/StratumGenerationProgress";
 import StratumProtocolHub from "@/components/training/StratumProtocolHub";
 import TrainingOnFibrasChat from "@/components/training/TrainingOnFibrasChat";
 import TrainingReadinessSection from "@/components/training/TrainingReadinessSection";
