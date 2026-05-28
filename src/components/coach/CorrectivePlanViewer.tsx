@@ -212,6 +212,18 @@ export default function CorrectivePlanViewer({
   }, [text]);
 
   const days = useMemo(() => parseDays(parsed.semanaRaw), [parsed.semanaRaw]);
+  const finalizadoresParsed = useMemo(
+    () => parseFinalizadoresByDay(parsed.finalizadores || ""),
+    [parsed.finalizadores],
+  );
+
+  // Resolve a chave canônica do dia ("D1", "PUSH"...) a partir do header textual.
+  const dayKeyOf = (label: string, idx: number): { num: number; title: string } => {
+    const t = (label || "").trim();
+    const m = t.match(/(?:dia|day|d|treino|sess[ãa]o)\s*(\d+)/i);
+    const num = m ? parseInt(m[1], 10) : idx + 1;
+    return { num, title: t };
+  };
 
   return (
     <div className="space-y-3">
