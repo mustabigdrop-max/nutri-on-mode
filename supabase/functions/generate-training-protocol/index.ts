@@ -1019,29 +1019,55 @@ serve(async (req) => {
       ? `${userPrompt}\n\nREFERÊNCIAS CIENTÍFICAS ATUAIS (Perplexity):\n${scienceContext}\n\nCitações: ${JSON.stringify(scienceCitations)}\n\nUse essas referências para embasar as decisões.`
       : userPrompt;
 
+    const TRAININGON_SYSTEM_PROMPT_COMPACT = `Você é o STRATUM Elite Engine do nutriON.
+Gere protocolos de treino em JSON estruturado.
+Responda SEMPRE em JSON válido. Sem texto antes ou depois do JSON.
+Sem markdown. Sem comentários.
+
+REGRA PRINCIPAL: Não ultrapasse os weekly_sets definidos em muscle_priorities.
+Feeder sets não contam para o volume.
+Use feeder_sets + top_set + backoff_sets para compostos.
+work_sets para isoladores.
+Inclua execution_cues e why_this_exercise em cada exercício.
+Português brasileiro.`;
+
     async function callAI(extraInstruction = ""): Promise<{ response: Response; raw: string }> {
+      const basePrompt = data.tab === "protocolo" ? TRAININGON_SYSTEM_PROMPT_COMPACT : TRAININGON_SYSTEM_PROMPT;
       const sys = extraInstruction
-        ? `${TRAININGON_SYSTEM_PROMPT}\n\n## RETENTATIVA OBRIGATÓRIA\n${extraInstruction}`
-        : TRAININGON_SYSTEM_PROMPT;
-      const r = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${LOVABLE_API_KEY}` },
-        body: JSON.stringify({
-          model: "google/gemini-2.5-flash",
-          messages: [
-            { role: "system", content: sys },
-            { role: "user", content: enrichedPrompt },
-          ],
-          temperature: 0.7,
-        }),
-      });
-      if (!r.ok) {
-        if (r.status === 429 || r.status === 402) return { response: r, raw: "" };
-        const errText = await r.text();
-        throw new Error(`AI API error: ${r.status} - ${errText}`);
+        ? `${basePrompt}\n\n## RETENTATIVA OBRIGATÓRIA\n${extraInstruction}`
+        : basePrompt;
+
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 120000);
+
+      try {
+        const r = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Authorization": `Bearer ${LOVABLE_API_KEY}` },
+          signal: controller.signal,
+          body: JSON.stringify({
+            model: "anthropic/claude-haiku-4-5-20251001",
+            messages: [
+              { role: "system", content: sys },
+              { role: "user", content: enrichedPrompt },
+            ],
+            temperature: 0.7,
+            max_tokens: 8000,
+          }),
+        });
+        clearTimeout(timeout);
+        if (!r.ok) {
+          if (r.status === 429 || r.status === 402) return { response: r, raw: "" };
+          const errText = await r.text();
+          throw new Error(`AI API error: ${r.status} - ${errText}`);
+        }
+        const j = await r.json();
+        return { response: r, raw: j.choices?.[0]?.message?.content || "" };
+      } catch (e: any) {
+        clearTimeout(timeout);
+        if (e.name === "AbortError") throw new Error("Timeout: geração excedeu 120s");
+        throw e;
       }
-      const j = await r.json();
-      return { response: r, raw: j.choices?.[0]?.message?.content || "" };
     }
 
     let { response, raw: content } = await callAI();
