@@ -2723,13 +2723,21 @@ function HistoryViewModal({ protocol: p, onClose, userId, onUpdate }: { protocol
                   onWeekChange={handleWeekChange}
                 />
               )}
-              {parsed.training_days?.map((day: any, idx: number) => (
-                <TrainingDayCard key={idx} day={day} index={idx} expanded={expandedDay === idx} onToggle={() => setExpandedDay(expandedDay === idx ? null : idx)}
-                  expandedExercise={expandedExercise} setExpandedExercise={setExpandedExercise}
-                  weekPhase={isMello16 ? weekPhase : null}
-                  athleteId={userId}
-                  protocolId={p.id} />
-              ))}
+              {(() => {
+                const finText =
+                  typeof parsed.finalizadores === "string"
+                    ? parsed.finalizadores
+                    : parsed.finalizadores_text || parsed.finishers_text || "";
+                const finParsed = finText ? parseFinalizadoresByDay(finText) : undefined;
+                return parsed.training_days?.map((day: any, idx: number) => (
+                  <TrainingDayCard key={idx} day={day} index={idx} expanded={expandedDay === idx} onToggle={() => setExpandedDay(expandedDay === idx ? null : idx)}
+                    expandedExercise={expandedExercise} setExpandedExercise={setExpandedExercise}
+                    weekPhase={isMello16 ? weekPhase : null}
+                    athleteId={userId}
+                    protocolId={p.id}
+                    protocolFinalizadoresParsed={finParsed} />
+                ));
+              })()}
             </>
           ) : p.protocol_text ? (
             <MarkdownProtocolView
