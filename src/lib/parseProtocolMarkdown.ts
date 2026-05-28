@@ -161,16 +161,38 @@ export function parseProtocolToDays(content: any): ParsedProtocol {
   if (typeof content === "object") {
     if (Array.isArray(content?.training_days) && content.training_days.length) {
       return {
-        days: content.training_days.map((d: any, i: number) => ({
-          day_number: d.day_number || i + 1,
-          session_title: d.session_title || `Treino ${i + 1}`,
-          estimated_duration: d.estimated_duration || "90min",
-          muscle_tags: extractMuscleTags(
-            (d.session_title || "") + " " +
-            (d.exercises || []).map((e: any) => `${e?.name || ""} ${e?.muscle_target || ""}`).join(" ")
-          ),
-          body: "",
-        })),
+        days: content.training_days.map((d: any, i: number) => {
+          const exercises = Array.isArray(d.exercises) ? d.exercises : [];
+          // Constrói corpo legível a partir dos exercícios para evitar dump de JSON cru
+          const bodyParts: string[] = [];
+          if (d.session_notes) bodyParts.push(String(d.session_notes), "");
+          exercises.forEach((ex: any, idx: number) => {
+            const name = ex?.name || ex?.nome || `Exercício ${idx + 1}`;
+            const muscle = ex?.muscle_target || ex?.grupo || "";
+            bodyParts.push(`**${idx + 1}. ${name}**${muscle ? ` — ${muscle}` : ""}`);
+            const s = ex?.structure || {};
+            if (s.top_set) bodyParts.push(`- TOP SET: ${s.top_set.sets}×${s.top_set.reps}${s.top_set.rpe ? ` @RPE ${s.top_set.rpe}` : ""}`);
+            if (s.backoff_sets) bodyParts.push(`- BACK-OFF: ${s.backoff_sets.sets}×${s.backoff_sets.reps}`);
+            if (s.work_sets) bodyParts.push(`- TRABALHO: ${s.work_sets.sets}×${s.work_sets.reps}`);
+            if (!s.top_set && !s.backoff_sets && !s.work_sets) {
+              const sets = ex?.sets ?? ex?.series;
+              const reps = ex?.reps ?? ex?.repeticoes;
+              if (sets || reps) bodyParts.push(`- ${sets ?? "?"}×${reps ?? "?"}`);
+            }
+            if (ex?.cue || ex?.notes) bodyParts.push(`  ${ex.cue || ex.notes}`);
+            bodyParts.push("");
+          });
+          return {
+            day_number: d.day_number || i + 1,
+            session_title: d.session_title || `Treino ${i + 1}`,
+            estimated_duration: d.estimated_duration || "90min",
+            muscle_tags: extractMuscleTags(
+              (d.session_title || "") + " " +
+              exercises.map((e: any) => `${e?.name || ""} ${e?.muscle_target || ""}`).join(" ")
+            ),
+            body: bodyParts.join("\n").trim(),
+          };
+        }),
         isStructured: true,
         isFallback: false,
       };
