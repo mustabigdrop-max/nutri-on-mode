@@ -269,6 +269,8 @@ export default function CorrectivePlanViewer({
           )}
           {days.map((d, i) => {
             const exs = parseExercises(d.body);
+            const { num, title } = dayKeyOf(d.day, i);
+            const finItems = resolveFinalizadoresForDay(finalizadoresParsed, num, title);
             return (
               <div key={i} className="space-y-2">
                 <div className="text-sm font-bold text-foreground">{d.day}</div>
@@ -279,6 +281,14 @@ export default function CorrectivePlanViewer({
                     {exs.map((ex, j) => <ExerciseCard key={j} ex={ex} scores={apexScores} />)}
                   </div>
                 )}
+                {finItems.length > 0 && (
+                  <FinalizadoresSection
+                    items={finItems}
+                    objetivo={finalizadoresParsed.objetivo}
+                    duracaoMin={finalizadoresParsed.duracao_min || 10}
+                    storageKey={protocolId ? `${protocolId}:d${num}` : undefined}
+                  />
+                )}
               </div>
             );
           })}
@@ -286,7 +296,7 @@ export default function CorrectivePlanViewer({
       )}
 
       {tab === "ativacao" && <PreOrEmpty text={parsed.ativacao} hint="ativação pré-treino" onOpenRaw={() => setTab("raw")} />}
-      {tab === "finalizadores" && <PreOrEmpty text={parsed.finalizadores} hint="finalizadores / exercícios corretivos pós" onOpenRaw={() => setTab("raw")} />}
+      {tab === "progressao" && <PreOrEmpty text={parsed.progressao} hint="progressão 4 semanas" onOpenRaw={() => setTab("raw")} />}
       {tab === "progressao" && <PreOrEmpty text={parsed.progressao} hint="progressão 4 semanas" onOpenRaw={() => setTab("raw")} />}
       {tab === "integracao" && (
         <div className="space-y-3">
