@@ -423,7 +423,15 @@ export function MarkdownProtocolView({
   content: any;
   title?: string;
 }) {
-  const parsed = parseProtocolToDays(content);
+  // Tenta normalizar via adapter (lida com strings JSON, code-fences, formatos alternados)
+  let normalized: any = content;
+  try {
+    normalized = adaptProtocolFormat(content);
+  } catch {
+    normalized = content;
+  }
+
+  const parsed = parseProtocolToDays(normalized);
 
   if (parsed.isFallback) {
     const txt =
