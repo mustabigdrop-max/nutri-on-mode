@@ -316,6 +316,19 @@ function IntroCard({ text }: { text: string }) {
   );
 }
 
+// Tenta extrair JSON do conteúdo, mesmo com code-fences ou texto antes/depois
+function tryParseProtocolJSON(content: string): any | null {
+  if (!content || typeof content !== "string") return null;
+  const s = content.replace(/```(?:json|JSON)?/g, "").replace(/```/g, "").trim();
+  try { return JSON.parse(s); } catch {}
+  const first = s.indexOf("{");
+  const last = s.lastIndexOf("}");
+  if (first >= 0 && last > first) {
+    try { return JSON.parse(s.slice(first, last + 1)); } catch {}
+  }
+  return null;
+}
+
 function FallbackCard({
   title,
   content,
@@ -324,6 +337,97 @@ function FallbackCard({
   content: string;
 }) {
   const [open, setOpen] = useState(true);
+
+  // Se o "fallback" recebeu um JSON de protocolo válido, mostra header legível
+  // em vez de despejar JSON cru via MarkdownBlock.
+  const parsedJSON = tryParseProtocolJSON(content);
+  if (parsedJSON?.block_overview) {
+    const ov = parsedJSON.block_overview;
+    return (
+      <div
+        style={{
+          background: CARD_BG,
+          border: `0.5px solid ${GOLD_BORDER}`,
+          borderRadius: 8,
+          marginBottom: 8,
+          padding: 16,
+        }}
+      >
+        <div
+          style={{
+            fontSize: 8,
+            color: GREEN,
+            letterSpacing: "0.16em",
+            textTransform: "uppercase",
+            marginBottom: 6,
+            fontWeight: 700,
+          }}
+        >
+          PROTOCOLO GERADO
+        </div>
+        <div
+          style={{
+            fontSize: 15,
+            fontWeight: 700,
+            color: TEXT,
+            marginBottom: 6,
+            lineHeight: 1.3,
+          }}
+        >
+          {ov.title || title || "Protocolo"}
+        </div>
+        <div style={{ fontSize: 10, color: TEXT_DIM, marginBottom: 12 }}>
+          {[
+            ov.split_type,
+            ov.duration_weeks ? `${ov.duration_weeks} semanas` : null,
+            ov.deload_week ? `Deload sem ${ov.deload_week}` : null,
+          ]
+            .filter(Boolean)
+            .join(" · ")}
+        </div>
+        {ov.split_justification && (
+          <div
+            style={{
+              fontSize: 11,
+              color: TEXT_DIM,
+              lineHeight: 1.5,
+              marginBottom: 8,
+            }}
+          >
+            {ov.split_justification}
+          </div>
+        )}
+        {ov.coach_notes && (
+          <div
+            style={{
+              fontSize: 11,
+              color: TEXT_DIM,
+              lineHeight: 1.5,
+              padding: "8px 10px",
+              background: GREEN_PILL_BG,
+              border: `0.5px solid ${GREEN_PILL_BORDER}`,
+              borderRadius: 4,
+            }}
+          >
+            {ov.coach_notes}
+          </div>
+        )}
+        <div
+          style={{
+            fontSize: 10,
+            color: TEXT_MUTED,
+            textAlign: "center",
+            padding: "16px 0 4px",
+            marginTop: 8,
+            borderTop: `1px solid ${CARD_BORDER}`,
+          }}
+        >
+          Processando dias de treino…
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       style={{
