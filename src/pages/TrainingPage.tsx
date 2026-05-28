@@ -2559,7 +2559,8 @@ function HistoryViewModal({ protocol: p, onClose, userId, onUpdate }: { protocol
 
   let parsed: any = null;
   try {
-    parsed = typeof p.protocol_text === "string" ? JSON.parse(p.protocol_text) : p.protocol_text;
+    const raw = typeof p.protocol_text === "string" ? JSON.parse(p.protocol_text) : p.protocol_text;
+    parsed = adaptProtocolFormat(raw);
   } catch { parsed = null; }
 
   // ── Mello 16 wk navigator (apenas se 16 semanas + bulking) ──
