@@ -16,6 +16,7 @@ import { buildVolumeReport, detectGvtMismatch } from "@/lib/trainingVolume";
 import "@/styles/training-hud.css";
 import { TrainingHUDBackground } from "@/components/training/TrainingHUDBackground";
 import { exportTrainingPDF } from "@/lib/trainingPdfExport";
+import { adaptProtocolFormat } from "@/lib/adaptProtocolFormat";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
