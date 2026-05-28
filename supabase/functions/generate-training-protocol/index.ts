@@ -982,7 +982,7 @@ serve(async (req) => {
 
     // Dual-AI: Perplexity for scientific references
     const scienceTabs = ["protocolo", "periodizacao", "volume", "biomec", "emg", "postural", "feminino"];
-    if (PERPLEXITY_API_KEY && scienceTabs.includes(data.tab)) {
+    if (false && PERPLEXITY_API_KEY && scienceTabs.includes(data.tab)) {
       try {
         const muscles = Array.isArray(data.muscles) ? data.muscles.join(" ") : data.muscles;
         const searchQuery = data.tab === "biomec"
