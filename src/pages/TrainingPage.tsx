@@ -60,6 +60,12 @@ import { TRAINING_SYSTEMS } from "@/data/trainingSystems";
 import CompetitionModeBlocks from "@/components/training/systems/CompetitionModeBlocks";
 import StratumAIAgent from "@/components/training/StratumAIAgent";
 import SmartWarmup from "@/components/training/SmartWarmup";
+import FinalizadoresSection from "@/components/training/FinalizadoresSection";
+import {
+  parseFinalizadoresByDay,
+  resolveFinalizadoresForDay,
+  normalizeFinalizadoresJson,
+} from "@/lib/parseFinalizadores";
 import { MarkdownProtocolView } from "@/components/training/MarkdownProtocolView";
 import {
   TrackerProvider,
