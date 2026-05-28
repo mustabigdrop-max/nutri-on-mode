@@ -3946,7 +3946,7 @@ export default function PlanoAlimentarIA() {
             );
           })()}
 
-          {/* Mapa de Medidas Caseiras (Nutrition Coach IA) */}
+          {/* Mapa de Medidas Caseiras (Nutrition Coach) */}
           {plano.mapa_medidas_caseiras?.ativo && (
             <div style={{
               background: "#1A1A1A", borderLeft: "3px solid #B8922A", borderRadius: 8,
@@ -6752,7 +6752,7 @@ export default function PlanoAlimentarIA() {
           </div>
         </div>
 
-        {/* Toggle: Medidas Caseiras (Nutrition Coach IA) */}
+        {/* Toggle: Medidas Caseiras (Nutrition Coach) */}
         <div style={{
           background: T.card, border: `1px solid ${form.medidasCaseiras ? "#B8922A" : T.border}`,
           borderRadius: 12, padding: 18, marginBottom: 18,
@@ -6760,10 +6760,10 @@ export default function PlanoAlimentarIA() {
         }}>
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 16, fontWeight: 700, color: T.text, display: "flex", alignItems: "center", gap: 8 }}>
-              🥄 Medidas Caseiras (Nutrition Coach IA)
+              🥄 Medidas Caseiras (Nutrition Coach)
             </div>
             <div style={{ fontSize: 13, color: T.muted, marginTop: 6, lineHeight: 1.55 }}>
-              Quando ATIVO: a IA descreve cada alimento em medidas caseiras (colher de sopa, xícara, fatia, concha, unidade) e adiciona ao final do plano um <b>Mapa de Referência</b> com a gramatura exata de cada medida usada. Ideal para o paciente seguir sem balança. O nutricionista continua recebendo a gramatura técnica internamente.
+              Quando ATIVO: o SISTEMA descreve cada alimento em medidas caseiras (colher de sopa, xícara, fatia, concha, unidade) e adiciona ao final do plano um <b>Mapa de Referência</b> com a gramatura exata de cada medida usada. Ideal para o paciente seguir sem balança. O nutricionista continua recebendo a gramatura técnica internamente.
             </div>
           </div>
           <div
@@ -7017,7 +7017,7 @@ export default function PlanoAlimentarIA() {
             <span style={{ fontSize: 12, color: T.muted, fontStyle: "italic" }}>(aplicado ao gerar o plano)</span>
           </div>
           <div style={{ fontSize: 13, color: T.muted, marginBottom: 12, lineHeight: 1.55 }}>
-            Ative um protocolo específico para que a IA aplique macros, timing, suplementação e alertas adequados.
+            Ative um protocolo específico para que o SISTEMA aplique macros, timing, suplementação e alertas adequados.
           </div>
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
             {([
