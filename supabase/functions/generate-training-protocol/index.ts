@@ -1024,12 +1024,73 @@ Gere protocolos de treino em JSON estruturado.
 Responda SEMPRE em JSON válido. Sem texto antes ou depois do JSON.
 Sem markdown. Sem comentários.
 
-REGRA PRINCIPAL: Não ultrapasse os weekly_sets definidos em muscle_priorities.
-Feeder sets não contam para o volume.
-Use feeder_sets + top_set + backoff_sets para compostos.
-work_sets para isoladores.
-Inclua execution_cues e why_this_exercise em cada exercício.
-Português brasileiro.`;
+ESTRUTURA JSON OBRIGATÓRIA — use EXATAMENTE estas chaves de topo (block_overview, improvement_alerts, training_days):
+{
+  "block_overview": {
+    "title": "string",
+    "duration_weeks": number,
+    "deload_week": number,
+    "split_type": "string",
+    "split_justification": "string",
+    "progression_model": "string",
+    "muscle_priorities": [
+      {"muscle":"string","weekly_sets":number,"priority":"alta|media|baixa"}
+    ],
+    "coach_notes": "string"
+  },
+  "improvement_alerts": [
+    {"area":"string","severity":"alta|media|baixa","message":"string"}
+  ],
+  "training_days": [
+    {
+      "day_number": 1,
+      "session_title": "string",
+      "focus_muscles": ["string"],
+      "estimated_duration": "string",
+      "warmup": [
+        {"name":"string","sets":"string","reps":"string","notes":"string"}
+      ],
+      "exercises": [
+        {
+          "order": 1,
+          "name": "string",
+          "muscle_target": "string",
+          "tempo": "string",
+          "structure": {
+            "feeder_sets": [
+              {"set_label":"string","load_percent":"string","reps":"string","notes":"string"}
+            ],
+            "top_set": {"sets":"1","reps":"string","rpe":"string","rest":"string","notes":"string"},
+            "backoff_sets": {"sets":"string","reps":"string","load_reduction":"string","rest":"string","notes":"string"},
+            "work_sets": {"sets":"string","reps":"string","rpe":"string","rest":"string","notes":"string"}
+          },
+          "execution_cues": "string",
+          "why_this_exercise": "string",
+          "substitutes": [
+            {"name":"string","reason":"string","equipment":"string"}
+          ]
+        }
+      ],
+      "finalizadores": {
+        "duracao_min": 10,
+        "objetivo": "string",
+        "exercicios": [
+          {"numero":1,"nome":"string","execucao":"string","series_duracao":"string","foco_corretivo":"string"}
+        ]
+      },
+      "session_notes": "string"
+    }
+  ]
+}
+
+REGRAS:
+- training_days DEVE ser ARRAY (não objeto), com todos os dias prescritos completos.
+- muscle_priorities DEVE ser ARRAY de objetos {muscle, weekly_sets, priority}.
+- Não use campos alternativos como client_name, mesocycle_duration_weeks, training_system_base, phase no topo — use a estrutura acima.
+- Não ultrapasse os weekly_sets definidos em muscle_priorities. Feeder sets não contam para o volume.
+- Use feeder_sets + top_set + backoff_sets para compostos. work_sets para isoladores.
+- Inclua execution_cues e why_this_exercise em cada exercício.
+- Português brasileiro. Científico e específico.`;
 
     async function callAI(extraInstruction = ""): Promise<{ response: Response; raw: string }> {
       const basePrompt = data.tab === "protocolo" ? TRAININGON_SYSTEM_PROMPT_COMPACT : TRAININGON_SYSTEM_PROMPT;

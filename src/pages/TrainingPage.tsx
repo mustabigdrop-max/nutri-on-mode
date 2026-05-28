@@ -16,6 +16,7 @@ import { buildVolumeReport, detectGvtMismatch } from "@/lib/trainingVolume";
 import "@/styles/training-hud.css";
 import { TrainingHUDBackground } from "@/components/training/TrainingHUDBackground";
 import { exportTrainingPDF } from "@/lib/trainingPdfExport";
+import { adaptProtocolFormat } from "@/lib/adaptProtocolFormat";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -508,6 +509,7 @@ Português. Específico. Científico. Zero genérico.`;
       if (error) throw error;
       let proto = data.protocol;
       if (!proto && data.content) proto = tryParseJson(data.content);
+      proto = adaptProtocolFormat(proto);
       if (proto && (proto.block_overview || proto.training_days || proto.phase_plan)) {
         setProtocol(proto);
         const sysName = TRAINING_SYSTEMS.find(s => s.id === trainingSystem)?.nome;
@@ -2557,7 +2559,8 @@ function HistoryViewModal({ protocol: p, onClose, userId, onUpdate }: { protocol
 
   let parsed: any = null;
   try {
-    parsed = typeof p.protocol_text === "string" ? JSON.parse(p.protocol_text) : p.protocol_text;
+    const raw = typeof p.protocol_text === "string" ? JSON.parse(p.protocol_text) : p.protocol_text;
+    parsed = adaptProtocolFormat(raw);
   } catch { parsed = null; }
 
   // ── Mello 16 wk navigator (apenas se 16 semanas + bulking) ──
