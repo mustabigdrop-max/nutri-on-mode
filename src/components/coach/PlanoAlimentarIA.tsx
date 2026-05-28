@@ -4967,7 +4967,7 @@ export default function PlanoAlimentarIA() {
               }}>PRO</span>
             </div>
             <div style={{ marginTop: 6, fontFamily: T.fontMono, fontSize: 8, color: "#2A2A2A", letterSpacing: "0.18em", textTransform: "uppercase" }}>
-              Geração Avançada por IA <span style={{ margin: "0 6px" }}>·</span>
+              PROCESSAMENTO ADAPTATIVO ATIVO <span style={{ margin: "0 6px" }}>·</span>
               Nutrição Esportiva <span style={{ margin: "0 6px" }}>·</span>
               Protocolo PCA <span style={{ margin: "0 6px" }}>·</span>
               Crononutrição
@@ -5603,7 +5603,7 @@ export default function PlanoAlimentarIA() {
         {/* ─── CONTEXTO CLÍNICO · PROTOCOLO DO COACH (NOVO) ─── */}
         <Section title="Contexto clínico · Protocolo do coach" icon={<Brain size={12} strokeWidth={2} color={T.emerald} />} accent="emerald">
           <div style={{ fontFamily: T.fontMono, fontSize: 12, color: "#888888", letterSpacing: "0.12em", textTransform: "uppercase", marginTop: -10, marginBottom: 14, lineHeight: 1.6 }}>
-            Descreva estratégias clínicas, protocolos de nutrição esportiva e observações do paciente. A IA incorporará tudo no plano gerado.
+            Descreva estratégias clínicas, protocolos de nutrição esportiva e observações do paciente. O SISTEMA incorporará tudo no plano gerado.
           </div>
 
           <div style={{
@@ -6152,7 +6152,7 @@ export default function PlanoAlimentarIA() {
             }}>
               <span style={{ fontSize: 14, lineHeight: 1 }}>🧠</span>
               <span style={{ fontSize: 11, color: T.green, lineHeight: 1.5 }}>
-                A IA interpretará cada composto e ajustará TDEE, macros e timing automaticamente com base em evidências farmacológicas.
+                O SISTEMA interpretará cada composto e ajustará TDEE, macros e timing automaticamente com base em evidências farmacológicas.
               </span>
             </div>
           </div>
@@ -7168,11 +7168,11 @@ export default function PlanoAlimentarIA() {
           onMouseEnter={e => (e.target as HTMLButtonElement).style.opacity = ".88"}
           onMouseLeave={e => (e.target as HTMLButtonElement).style.opacity = "1"}
         >
-          Gerar Plano Alimentar com IA
+          Ativar Geração do Plano
         </button>
 
         <div style={{ textAlign: "center", marginTop: 12, fontSize: 11, color: T.muted2 }}>
-          Powered by IA · Método MCE · nutriON
+          Powered by NUTRION ENGINE · Método MCE · nutriON
         </div>
       </div>
       </div>
