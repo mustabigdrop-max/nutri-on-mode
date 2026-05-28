@@ -1046,7 +1046,7 @@ Português brasileiro.`;
           headers: { "Content-Type": "application/json", "Authorization": `Bearer ${LOVABLE_API_KEY}` },
           signal: controller.signal,
           body: JSON.stringify({
-            model: "anthropic/claude-haiku-4-5-20251001",
+            model: "google/gemini-2.5-flash-lite",
             messages: [
               { role: "system", content: sys },
               { role: "user", content: enrichedPrompt },
