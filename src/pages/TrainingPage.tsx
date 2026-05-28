@@ -510,7 +510,12 @@ Português. Específico. Científico. Zero genérico.`;
       let proto = data.protocol;
       if (!proto && data.content) proto = tryParseJson(data.content);
       proto = adaptProtocolFormat(proto);
-      if (proto && (proto.block_overview || proto.training_days || proto.phase_plan)) {
+      const hasStructured =
+        proto && typeof proto === "object" &&
+        (proto.block_overview ||
+          (Array.isArray(proto.training_days) && proto.training_days.length > 0) ||
+          proto.phase_plan);
+      if (hasStructured) {
         setProtocol(proto);
         const sysName = TRAINING_SYSTEMS.find(s => s.id === trainingSystem)?.nome;
         toast.success(
