@@ -2754,7 +2754,19 @@ function HistoryViewModal({ protocol: p, onClose, userId, onUpdate }: { protocol
             </>
           ) : p.protocol_text ? (
             <MarkdownProtocolView
-              content={typeof p.protocol_text === "string" ? p.protocol_text : JSON.stringify(p.protocol_text, null, 2)}
+              content={(() => {
+                try {
+                  const raw = typeof p.protocol_text === "string"
+                    ? JSON.parse(p.protocol_text)
+                    : p.protocol_text;
+                  const unwrapped = raw?.protocol && typeof raw.protocol === "object"
+                    ? raw.protocol
+                    : raw;
+                  return adaptProtocolFormat(unwrapped);
+                } catch {
+                  return p.protocol_text;
+                }
+              })()}
               title={p.client_name || "Protocolo"}
             />
           ) : (
