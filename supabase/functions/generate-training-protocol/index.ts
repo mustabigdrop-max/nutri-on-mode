@@ -207,7 +207,20 @@ Responda SEMPRE em JSON válido com esta estrutura exata:
           ]
         }
       ],
-      "session_notes": "observações da sessão considerando fibras e prontidão"
+      "session_notes": "observações da sessão considerando fibras e prontidão",
+      "finalizadores": {
+        "duracao_min": 10,
+        "objetivo": "recuperação ativa, flexibilidade e reforço postural",
+        "exercicios": [
+          {
+            "numero": 1,
+            "nome": "nome do exercício finalizador",
+            "execucao": "descrição técnica da execução",
+            "series_duracao": "ex: 2 séries de 45-60s OU 3×12-15",
+            "foco_corretivo": "qual desequilíbrio/grupo este finalizador corrige"
+          }
+        ]
+      }
     }
   ],
   "improvement_alerts": [

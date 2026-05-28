@@ -60,6 +60,12 @@ import { TRAINING_SYSTEMS } from "@/data/trainingSystems";
 import CompetitionModeBlocks from "@/components/training/systems/CompetitionModeBlocks";
 import StratumAIAgent from "@/components/training/StratumAIAgent";
 import SmartWarmup from "@/components/training/SmartWarmup";
+import FinalizadoresSection from "@/components/training/FinalizadoresSection";
+import {
+  parseFinalizadoresByDay,
+  resolveFinalizadoresForDay,
+  normalizeFinalizadoresJson,
+} from "@/lib/parseFinalizadores";
 import { MarkdownProtocolView } from "@/components/training/MarkdownProtocolView";
 import {
   TrackerProvider,
@@ -1044,20 +1050,28 @@ Português. Específico. Científico. Zero genérico.`;
                     totalMeso={Math.max(parseInt(String(weeks)) || 8, 1)}
                   />
                 )}
-                {protocol.training_days.map((day: any, idx: number) => (
-                  <TrainingDayCard
-                    key={idx}
-                    day={day}
-                    index={idx}
-                    expanded={expandedDay === idx}
-                    onToggle={() => setExpandedDay(expandedDay === idx ? null : idx)}
-                    expandedExercise={expandedExercise}
-                    setExpandedExercise={setExpandedExercise}
-                    weekPhase={isMello16 ? weekPhase : null}
-                    athleteId={userId}
-                    protocolId={savedProtocolId}
-                  />
-                ))}
+                {(() => {
+                  const finText =
+                    typeof protocol.finalizadores === "string"
+                      ? protocol.finalizadores
+                      : protocol.finalizadores_text || protocol.finishers_text || "";
+                  const finParsed = finText ? parseFinalizadoresByDay(finText) : undefined;
+                  return protocol.training_days.map((day: any, idx: number) => (
+                    <TrainingDayCard
+                      key={idx}
+                      day={day}
+                      index={idx}
+                      expanded={expandedDay === idx}
+                      onToggle={() => setExpandedDay(expandedDay === idx ? null : idx)}
+                      expandedExercise={expandedExercise}
+                      setExpandedExercise={setExpandedExercise}
+                      weekPhase={isMello16 ? weekPhase : null}
+                      athleteId={userId}
+                      protocolId={savedProtocolId}
+                      protocolFinalizadoresParsed={finParsed}
+                    />
+                  ));
+                })()}
               </div>
             )}
             {activeResultTab === "treino" && !protocol?.training_days && textResults.protocolo && (
@@ -1599,8 +1613,24 @@ function extractDayMuscleTags(day: any): string[] {
 }
 
 /* ── Training Day Card ── */
-function TrainingDayCard({ day, index, expanded, onToggle, expandedExercise, setExpandedExercise, weekPhase, athleteId, protocolId }: any) {
+function TrainingDayCard({ day, index, expanded, onToggle, expandedExercise, setExpandedExercise, weekPhase, athleteId, protocolId, protocolFinalizadoresParsed }: any) {
   const muscleTags = extractDayMuscleTags(day);
+  const dayNum = day.day_number || index + 1;
+
+  // 1) prioridade ao JSON dentro do dia
+  const dayFinalizadores = normalizeFinalizadoresJson(day.finalizadores);
+  // 2) fallback: parse do bloco global do protocolo
+  const fromGlobal =
+    !dayFinalizadores?.exercicios?.length && protocolFinalizadoresParsed
+      ? resolveFinalizadoresForDay(protocolFinalizadoresParsed, dayNum, day.session_title)
+      : [];
+  const finalizadoresItems = dayFinalizadores?.exercicios?.length
+    ? dayFinalizadores.exercicios
+    : fromGlobal;
+  const finalizadoresObjetivo =
+    dayFinalizadores?.objetivo || protocolFinalizadoresParsed?.objetivo;
+  const finalizadoresDuracao = dayFinalizadores?.duracao_min || protocolFinalizadoresParsed?.duracao_min || 10;
+
   return (
     <div className="rounded-2xl overflow-hidden" style={{ background: SURFACE, border: `1px solid ${expanded ? BORDER_ACTIVE : BORDER}` }}>
       <button onClick={onToggle} className="w-full p-4 flex items-center justify-between">
@@ -1682,6 +1712,14 @@ function TrainingDayCard({ day, index, expanded, onToggle, expandedExercise, set
                   <p className="text-[11px] mt-1" style={{ color: TEXT_DIM }}>{day.session_notes}</p>
                 </div>
               )}
+
+              {/* Finalizadores — última seção do dia */}
+              <FinalizadoresSection
+                items={finalizadoresItems}
+                objetivo={finalizadoresObjetivo}
+                duracaoMin={finalizadoresDuracao}
+                storageKey={protocolId ? `${protocolId}:d${dayNum}` : undefined}
+              />
             </div>
           </motion.div>
         )}
@@ -2685,13 +2723,21 @@ function HistoryViewModal({ protocol: p, onClose, userId, onUpdate }: { protocol
                   onWeekChange={handleWeekChange}
                 />
               )}
-              {parsed.training_days?.map((day: any, idx: number) => (
-                <TrainingDayCard key={idx} day={day} index={idx} expanded={expandedDay === idx} onToggle={() => setExpandedDay(expandedDay === idx ? null : idx)}
-                  expandedExercise={expandedExercise} setExpandedExercise={setExpandedExercise}
-                  weekPhase={isMello16 ? weekPhase : null}
-                  athleteId={userId}
-                  protocolId={p.id} />
-              ))}
+              {(() => {
+                const finText =
+                  typeof parsed.finalizadores === "string"
+                    ? parsed.finalizadores
+                    : parsed.finalizadores_text || parsed.finishers_text || "";
+                const finParsed = finText ? parseFinalizadoresByDay(finText) : undefined;
+                return parsed.training_days?.map((day: any, idx: number) => (
+                  <TrainingDayCard key={idx} day={day} index={idx} expanded={expandedDay === idx} onToggle={() => setExpandedDay(expandedDay === idx ? null : idx)}
+                    expandedExercise={expandedExercise} setExpandedExercise={setExpandedExercise}
+                    weekPhase={isMello16 ? weekPhase : null}
+                    athleteId={userId}
+                    protocolId={p.id}
+                    protocolFinalizadoresParsed={finParsed} />
+                ));
+              })()}
             </>
           ) : p.protocol_text ? (
             <MarkdownProtocolView
