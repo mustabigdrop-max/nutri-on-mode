@@ -509,6 +509,7 @@ Português. Específico. Científico. Zero genérico.`;
       if (error) throw error;
       let proto = data.protocol;
       if (!proto && data.content) proto = tryParseJson(data.content);
+      proto = adaptProtocolFormat(proto);
       if (proto && (proto.block_overview || proto.training_days || proto.phase_plan)) {
         setProtocol(proto);
         const sysName = TRAINING_SYSTEMS.find(s => s.id === trainingSystem)?.nome;
