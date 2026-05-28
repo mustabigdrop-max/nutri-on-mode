@@ -1050,20 +1050,28 @@ Português. Específico. Científico. Zero genérico.`;
                     totalMeso={Math.max(parseInt(String(weeks)) || 8, 1)}
                   />
                 )}
-                {protocol.training_days.map((day: any, idx: number) => (
-                  <TrainingDayCard
-                    key={idx}
-                    day={day}
-                    index={idx}
-                    expanded={expandedDay === idx}
-                    onToggle={() => setExpandedDay(expandedDay === idx ? null : idx)}
-                    expandedExercise={expandedExercise}
-                    setExpandedExercise={setExpandedExercise}
-                    weekPhase={isMello16 ? weekPhase : null}
-                    athleteId={userId}
-                    protocolId={savedProtocolId}
-                  />
-                ))}
+                {(() => {
+                  const finText =
+                    typeof protocol.finalizadores === "string"
+                      ? protocol.finalizadores
+                      : protocol.finalizadores_text || protocol.finishers_text || "";
+                  const finParsed = finText ? parseFinalizadoresByDay(finText) : undefined;
+                  return protocol.training_days.map((day: any, idx: number) => (
+                    <TrainingDayCard
+                      key={idx}
+                      day={day}
+                      index={idx}
+                      expanded={expandedDay === idx}
+                      onToggle={() => setExpandedDay(expandedDay === idx ? null : idx)}
+                      expandedExercise={expandedExercise}
+                      setExpandedExercise={setExpandedExercise}
+                      weekPhase={isMello16 ? weekPhase : null}
+                      athleteId={userId}
+                      protocolId={savedProtocolId}
+                      protocolFinalizadoresParsed={finParsed}
+                    />
+                  ));
+                })()}
               </div>
             )}
             {activeResultTab === "treino" && !protocol?.training_days && textResults.protocolo && (
