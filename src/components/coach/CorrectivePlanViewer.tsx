@@ -1,10 +1,12 @@
 import { useMemo, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ClipboardList, Flame, Zap, TrendingUp, Link2, FileText, Copy, Check } from "lucide-react";
+import { ClipboardList, Flame, TrendingUp, Link2, FileText, Copy, Check } from "lucide-react";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import TrainingReviewAgent, { ReviewStatusBadge } from "@/components/coach/TrainingReviewAgent";
+import FinalizadoresSection from "@/components/training/FinalizadoresSection";
+import { parseFinalizadoresByDay, resolveFinalizadoresForDay } from "@/lib/parseFinalizadores";
 
 // ─── Parsing helpers ────────────────────────────────────────────
 function section(text: string, header: string | string[], nextHeaders: string[] = []): string {
@@ -130,7 +132,6 @@ function Stat({ label, v, accent }: { label: string; v: string; accent?: string 
 const TABS = [
   { key: "semana", label: "📋 Semana Tipo", icon: ClipboardList },
   { key: "ativacao", label: "🔥 Ativação", icon: Flame },
-  { key: "finalizadores", label: "⚡ Finalizadores", icon: Zap },
   { key: "progressao", label: "📈 Progressão", icon: TrendingUp },
   { key: "integracao", label: "🔗 Integração APEX", icon: Link2 },
   { key: "raw", label: "📄 Recomendações (texto completo)", icon: FileText },
