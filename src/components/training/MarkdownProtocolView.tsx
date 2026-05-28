@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, ChevronUp, Clock, FileText } from "lucide-react";
 import { parseProtocolToDays, type ParsedDay } from "@/lib/parseProtocolMarkdown";
+import { adaptProtocolFormat } from "@/lib/adaptProtocolFormat";
 
 // Paleta TrainingON (espelha tokens usados em TrainingPage.tsx)
 const GREEN = "#00e888";
@@ -423,7 +424,15 @@ export function MarkdownProtocolView({
   content: any;
   title?: string;
 }) {
-  const parsed = parseProtocolToDays(content);
+  // Tenta normalizar via adapter (lida com strings JSON, code-fences, formatos alternados)
+  let normalized: any = content;
+  try {
+    normalized = adaptProtocolFormat(content);
+  } catch {
+    normalized = content;
+  }
+
+  const parsed = parseProtocolToDays(normalized);
 
   if (parsed.isFallback) {
     const txt =
