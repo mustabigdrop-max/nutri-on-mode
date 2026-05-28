@@ -1144,10 +1144,47 @@ REGRAS:
       let parsed: any = null;
       let lastMissing: string[] = [];
 
+      // Normalize alternate JSON shapes returned by the model so downstream
+      // checks (and the client renderer) always see block_overview + array training_days.
+      const adaptShape = (raw: any): any => {
+        if (!raw || typeof raw !== "object") return raw;
+        // Convert training_days from object → array
+        if (raw.training_days && !Array.isArray(raw.training_days) && typeof raw.training_days === "object") {
+          raw.training_days = Object.entries(raw.training_days).map(([k, d]: [string, any]) => ({
+            ...d,
+            day_number: d?.day_number ?? parseInt(String(k).replace(/\D/g, ""), 10) ?? 1,
+          }));
+        }
+        // Convert muscle_priorities (top-level) from object → array
+        const mpObj = raw.muscle_priorities;
+        if (mpObj && !Array.isArray(mpObj) && typeof mpObj === "object") {
+          raw.muscle_priorities = Object.entries(mpObj).map(([muscle, d]: [string, any]) => ({
+            muscle,
+            weekly_sets: d?.weekly_sets ?? d?.weekly_sets_mav ?? d?.weekly_sets_mev ?? 12,
+            priority: d?.priority ?? "media",
+          }));
+        }
+        // If using the alt top-level shape, wrap into block_overview
+        if (!raw.block_overview && (raw.client_name || raw.mesocycle_duration_weeks || raw.training_system_base || raw.training_frequency_days_per_week)) {
+          raw.block_overview = {
+            title: raw.client_name ? `Protocolo ${raw.client_name}` : (raw.title || "Protocolo de Treino"),
+            duration_weeks: raw.mesocycle_duration_weeks || raw.duration_weeks || 4,
+            deload_week: raw.deload_week || raw.mesocycle_duration_weeks || 4,
+            split_type: raw.training_system_base || raw.split_type || "PPL",
+            split_justification: raw.split_justification || "",
+            progression_model: raw.progression_model || "Dupla progressão",
+            muscle_priorities: Array.isArray(raw.muscle_priorities) ? raw.muscle_priorities : [],
+            coach_notes: raw.coach_notes || raw.observations || "",
+          };
+        }
+        if (!raw.improvement_alerts && Array.isArray(raw.alerts)) raw.improvement_alerts = raw.alerts;
+        return raw;
+      };
+
       const tryParse = (txt: string) => {
         const jsonMatch = txt.match(/\{[\s\S]*\}/);
         if (!jsonMatch) return null;
-        try { return JSON.parse(jsonMatch[0]); } catch { return null; }
+        try { return adaptShape(JSON.parse(jsonMatch[0])); } catch { return null; }
       };
 
       parsed = tryParse(content);
