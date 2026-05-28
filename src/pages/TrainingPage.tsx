@@ -2565,7 +2565,12 @@ function HistoryViewModal({ protocol: p, onClose, userId, onUpdate }: { protocol
   let parsed: any = null;
   try {
     const raw = typeof p.protocol_text === "string" ? JSON.parse(p.protocol_text) : p.protocol_text;
-    parsed = adaptProtocolFormat(raw);
+    // Defesa: se o protocolo foi salvo com o envelope completo da Edge Function
+    // ({ protocol, volume_fixes, citations, validation_warnings }), extrai apenas o protocolo.
+    const unwrapped = raw && typeof raw === "object" && raw.protocol && typeof raw.protocol === "object"
+      ? raw.protocol
+      : raw;
+    parsed = adaptProtocolFormat(unwrapped);
   } catch { parsed = null; }
 
   // ── Mello 16 wk navigator (apenas se 16 semanas + bulking) ──
