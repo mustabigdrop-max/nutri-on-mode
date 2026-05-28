@@ -536,6 +536,15 @@ export function MarkdownProtocolView({
     normalized = content;
   }
 
+  // Segunda tentativa: se ainda for string, extrair JSON via tryParseProtocolJSON
+  // (lida com texto antes/depois do bloco { ... } que o JSON.parse padrão rejeita).
+  if (typeof normalized === "string") {
+    const extracted = tryParseProtocolJSON(normalized);
+    if (extracted && typeof extracted === "object") {
+      try { normalized = adaptProtocolFormat(extracted); } catch { normalized = extracted; }
+    }
+  }
+
   const parsed = parseProtocolToDays(normalized);
 
   if (parsed.isFallback) {
