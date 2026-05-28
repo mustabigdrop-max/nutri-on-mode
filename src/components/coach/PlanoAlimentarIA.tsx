@@ -7160,15 +7160,35 @@ export default function PlanoAlimentarIA() {
 
         <BlocoPdfConfig value={pdfCfg} onChange={setPdfCfg} />
 
-        <button onClick={gerar} style={{
-          fontSize: 15, fontWeight: 700, cursor: "pointer",
-          fontFamily: "inherit", letterSpacing: "0.02em",
-          transition: "opacity .2s", boxShadow: `0 0 24px ${T.green}33`
-        }}
-          onMouseEnter={e => (e.target as HTMLButtonElement).style.opacity = ".88"}
-          onMouseLeave={e => (e.target as HTMLButtonElement).style.opacity = "1"}
+        <button
+          onClick={gerar}
+          style={{
+            width: "100%",
+            height: 56,
+            backgroundImage: "linear-gradient(135deg, #00ff88, #00cc6a)",
+            color: "#000000",
+            fontWeight: 700,
+            fontSize: 16,
+            letterSpacing: "2px",
+            textTransform: "uppercase",
+            borderRadius: 8,
+            border: "none",
+            cursor: "pointer",
+            transition: "transform 0.2s ease, filter 0.2s ease",
+            fontFamily: "inherit",
+          }}
+          onMouseEnter={e => {
+            const t = e.target as HTMLButtonElement;
+            t.style.transform = "scale(1.02)";
+            t.style.filter = "brightness(1.1)";
+          }}
+          onMouseLeave={e => {
+            const t = e.target as HTMLButtonElement;
+            t.style.transform = "scale(1)";
+            t.style.filter = "brightness(1)";
+          }}
         >
-          Ativar Geração do Plano
+          ⚡ Ativar Geração do Plano
         </button>
 
         <div style={{ textAlign: "center", marginTop: 12, fontSize: 11, color: T.muted2 }}>
