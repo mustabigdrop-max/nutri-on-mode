@@ -300,6 +300,28 @@ Deno.serve(async (req) => {
       }
     }
 
+    // 6d. Track LIFESTYLE — modo manutenção sustentável
+    if (isLifestyle) {
+      const lossRatePct = (lossKg / currentWeight) * 100;
+      if (lossRatePct > 8) {
+        if (viabilityStatus === "GREEN") viabilityStatus = "YELLOW";
+        warnings.push(
+          `LIFESTYLE: perda projetada ${lossRatePct.toFixed(1)}% acima do ideal sustentável (≤8%). Considere ajustar o target ou aumentar a janela.`,
+        );
+      }
+      if (availableWeeks > 0 && availableWeeks < 8) {
+        if (viabilityStatus === "GREEN") viabilityStatus = "YELLOW";
+        warnings.push(
+          `LIFESTYLE: janela curta (${availableWeeks} sem). Para eventos pontuais use mini-cut de 4-8 semanas; abaixo disso o risco de rebote aumenta.`,
+        );
+      }
+      warnings.push(
+        "LIFESTYLE: modo manutenção ativo — peak week opcional, foco em adesão e reverse diet pós-evento.",
+      );
+    }
+
+
+
 
     // 7. Persistir plano
     // Desativa planos ativos anteriores
