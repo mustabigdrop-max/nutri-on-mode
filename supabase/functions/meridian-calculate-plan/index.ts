@@ -22,6 +22,7 @@ interface AthleteOverride {
 interface CalculatePlanBody {
   competition_id: string;
   athlete_params_override?: AthleteOverride;
+  patient_user_id?: string; // Coach prescrevendo para aluno vinculado.
 }
 
 function addDays(d: Date, days: number): Date {
@@ -73,7 +74,7 @@ Deno.serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-    const userId = userData.user.id;
+    const callerId = userData.user.id;
 
     // Service client para operações seguras
     const admin = createClient(SUPABASE_URL, SERVICE_KEY);
@@ -84,6 +85,22 @@ Deno.serve(async (req) => {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
+    }
+
+    // Resolve userId alvo: próprio caller OU paciente vinculado (coach mode).
+    let userId = callerId;
+    if (body.patient_user_id && body.patient_user_id !== callerId) {
+      const { data: isCoach } = await admin.rpc("is_coach_of_patient", {
+        _coach_user_id: callerId,
+        _patient_user_id: body.patient_user_id,
+      });
+      if (!isCoach) {
+        return new Response(JSON.stringify({ error: "Sem vínculo coach-aluno ativo." }), {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      userId = body.patient_user_id;
     }
 
     // 1. Competição
