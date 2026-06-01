@@ -12,6 +12,7 @@ import type {
   AthleteTrack,
   BiologicalSex,
   BodybuildingCategory,
+  MenstrualStatus,
   MeridianCompetition,
   MeridianPlan,
 } from "@/lib/meridian/types";
