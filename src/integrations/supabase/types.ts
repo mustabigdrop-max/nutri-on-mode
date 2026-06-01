@@ -5932,6 +5932,69 @@ export type Database = {
         }
         Relationships: []
       }
+      meridian_drug_tests: {
+        Row: {
+          competition_id: string | null
+          created_at: string
+          federation: string
+          id: string
+          is_mandatory: boolean
+          notes: string | null
+          plan_id: string | null
+          result: string | null
+          scheduled_date: string
+          status: string
+          test_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          competition_id?: string | null
+          created_at?: string
+          federation: string
+          id?: string
+          is_mandatory?: boolean
+          notes?: string | null
+          plan_id?: string | null
+          result?: string | null
+          scheduled_date: string
+          status?: string
+          test_type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          competition_id?: string | null
+          created_at?: string
+          federation?: string
+          id?: string
+          is_mandatory?: boolean
+          notes?: string | null
+          plan_id?: string | null
+          result?: string | null
+          scheduled_date?: string
+          status?: string
+          test_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meridian_drug_tests_competition_id_fkey"
+            columns: ["competition_id"]
+            isOneToOne: false
+            referencedRelation: "meridian_competitions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "meridian_drug_tests_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "meridian_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       meridian_menstrual_cycle: {
         Row: {
           created_at: string
