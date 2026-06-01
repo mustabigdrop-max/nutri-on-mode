@@ -6102,6 +6102,108 @@ export type Database = {
         }
         Relationships: []
       }
+      meridian_multi_show_chains: {
+        Row: {
+          created_at: string
+          gap_days: number
+          id: string
+          intra_chain_notes: string | null
+          mini_refeed_days: number
+          primary_competition_id: string
+          secondary_competition_id: string
+          strategy: string
+          updated_at: string
+          user_id: string
+          viability_status: string
+          warnings: Json
+        }
+        Insert: {
+          created_at?: string
+          gap_days: number
+          id?: string
+          intra_chain_notes?: string | null
+          mini_refeed_days?: number
+          primary_competition_id: string
+          secondary_competition_id: string
+          strategy?: string
+          updated_at?: string
+          user_id: string
+          viability_status?: string
+          warnings?: Json
+        }
+        Update: {
+          created_at?: string
+          gap_days?: number
+          id?: string
+          intra_chain_notes?: string | null
+          mini_refeed_days?: number
+          primary_competition_id?: string
+          secondary_competition_id?: string
+          strategy?: string
+          updated_at?: string
+          user_id?: string
+          viability_status?: string
+          warnings?: Json
+        }
+        Relationships: []
+      }
+      meridian_peak_week_protocols: {
+        Row: {
+          carbs_grams: Json
+          competition_id: string
+          created_at: string
+          id: string
+          notes: string | null
+          plan_id: string
+          posing_minutes: Json
+          potassium_mg: Json
+          sodium_mg: Json
+          start_date: string
+          status: string
+          tanning_schedule: string | null
+          training_focus: Json
+          updated_at: string
+          user_id: string
+          water_liters: Json
+        }
+        Insert: {
+          carbs_grams?: Json
+          competition_id: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          plan_id: string
+          posing_minutes?: Json
+          potassium_mg?: Json
+          sodium_mg?: Json
+          start_date: string
+          status?: string
+          tanning_schedule?: string | null
+          training_focus?: Json
+          updated_at?: string
+          user_id: string
+          water_liters?: Json
+        }
+        Update: {
+          carbs_grams?: Json
+          competition_id?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          plan_id?: string
+          posing_minutes?: Json
+          potassium_mg?: Json
+          sodium_mg?: Json
+          start_date?: string
+          status?: string
+          tanning_schedule?: string | null
+          training_focus?: Json
+          updated_at?: string
+          user_id?: string
+          water_liters?: Json
+        }
+        Relationships: []
+      }
       meridian_plan_adjustments: {
         Row: {
           adjustment_date: string
@@ -6250,6 +6352,60 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      meridian_post_stage_recovery: {
+        Row: {
+          binge_risk_level: string
+          competition_id: string
+          created_at: string
+          id: string
+          mental_health_check: Json
+          notes: string | null
+          plan_id: string
+          recovery_start_date: string
+          recovery_weeks: number
+          refeed_days_per_week: number
+          reverse_diet_kcal_step: number
+          training_deload_weeks: number
+          updated_at: string
+          user_id: string
+          weekly_kcal_targets: Json
+        }
+        Insert: {
+          binge_risk_level?: string
+          competition_id: string
+          created_at?: string
+          id?: string
+          mental_health_check?: Json
+          notes?: string | null
+          plan_id: string
+          recovery_start_date: string
+          recovery_weeks?: number
+          refeed_days_per_week?: number
+          reverse_diet_kcal_step?: number
+          training_deload_weeks?: number
+          updated_at?: string
+          user_id: string
+          weekly_kcal_targets?: Json
+        }
+        Update: {
+          binge_risk_level?: string
+          competition_id?: string
+          created_at?: string
+          id?: string
+          mental_health_check?: Json
+          notes?: string | null
+          plan_id?: string
+          recovery_start_date?: string
+          recovery_weeks?: number
+          refeed_days_per_week?: number
+          reverse_diet_kcal_step?: number
+          training_deload_weeks?: number
+          updated_at?: string
+          user_id?: string
+          weekly_kcal_targets?: Json
+        }
+        Relationships: []
       }
       meridian_triad_log: {
         Row: {

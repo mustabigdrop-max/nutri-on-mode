@@ -5,18 +5,22 @@ import MeridianCheckpointForm from "./MeridianCheckpointForm";
 import MeridianCheckpointHistory from "./MeridianCheckpointHistory";
 import MeridianDrugTestCalendar from "./MeridianDrugTestCalendar";
 import MeridianLifestyleRoutine from "./MeridianLifestyleRoutine";
+import MeridianPeakWeekProtocol from "./MeridianPeakWeekProtocol";
+import MeridianPostStageRecovery from "./MeridianPostStageRecovery";
+import MeridianMultiShowOptimizer from "./MeridianMultiShowOptimizer";
 import { PHASE_LABELS, type MeridianCompetition, type MeridianPlan } from "@/lib/meridian/types";
 import { getCurrentPhase, daysBetween, formatDate } from "@/lib/meridian/calculator";
 
 interface Props {
   plan: MeridianPlan;
   competition: MeridianCompetition;
+  allCompetitions?: MeridianCompetition[];
   onReset?: () => void;
 }
 
 const ACCENT = "#B8922A";
 
-export default function MeridianDashboard({ plan, competition, onReset }: Props) {
+export default function MeridianDashboard({ plan, competition, allCompetitions = [], onReset }: Props) {
   const today = new Date().toISOString().slice(0, 10);
   const daysToStage = Math.max(daysBetween(today, competition.competition_date), 0);
   const weeksToStage = Math.floor(daysToStage / 7);
@@ -115,6 +119,26 @@ export default function MeridianDashboard({ plan, competition, onReset }: Props)
 
       {/* HISTÓRICO DE CHECKPOINTS E AJUSTES */}
       <MeridianCheckpointHistory planId={plan.id} />
+
+      {/* PEAK WEEK — Bloco 6 */}
+      <MeridianPeakWeekProtocol
+        planId={plan.id}
+        competitionId={competition.id}
+        peakStartDate={plan.peak_week_start_date}
+      />
+
+      {/* MULTI-SHOW OPTIMIZER — Bloco 5 */}
+      {allCompetitions.length > 1 && (
+        <MeridianMultiShowOptimizer primary={competition} allCompetitions={allCompetitions} />
+      )}
+
+      {/* POST-STAGE RECOVERY — Bloco 6 */}
+      <MeridianPostStageRecovery
+        planId={plan.id}
+        competitionId={competition.id}
+      />
+
+
 
 
 

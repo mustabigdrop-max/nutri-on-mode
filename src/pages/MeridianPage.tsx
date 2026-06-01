@@ -74,7 +74,7 @@ export default function MeridianPage() {
             CARREGANDO...
           </div>
         ) : activePlan && activeComp ? (
-          <MeridianDashboard plan={activePlan as any} competition={activeComp as any} />
+          <MeridianDashboard plan={activePlan as any} competition={activeComp as any} allCompetitions={competitions as any} />
         ) : (
           <MeridianPlanBuilder />
         )}
