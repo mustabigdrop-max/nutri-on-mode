@@ -113,6 +113,7 @@ import NotFound from "./pages/NotFound";
 import NutriPlanElitePage from "./pages/NutriPlanElitePage";
 import LearnPage from "./pages/LearnPage";
 import VeraPage from "./pages/VeraPage";
+import MeridianPage from "./pages/MeridianPage";
 
 const queryClient = new QueryClient();
 
@@ -240,6 +241,7 @@ const App = () => (
             <Route path="/coach/vera" element={<ProtectedRoute><VeraPage /></ProtectedRoute>} />
 
             <Route path="/nutriplan-elite" element={<ProtectedRoute><NutriPlanElitePage /></ProtectedRoute>} />
+            <Route path="/meridian" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON PRO" featureName="MERIDIAN"><MeridianPage /></PlanGateWrapper></ProtectedRoute>} />
 
             <Route path="*" element={<NotFound />} />
           </Routes>

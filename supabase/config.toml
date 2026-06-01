@@ -135,3 +135,8 @@ verify_jwt = false
 [functions.vera-agent]
 verify_jwt = false
 
+[functions.meridian-calculate-plan]
+verify_jwt = false
+
+
+
