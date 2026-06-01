@@ -4,6 +4,7 @@ import MeridianCycleTracker from "./MeridianCycleTracker";
 import MeridianCheckpointForm from "./MeridianCheckpointForm";
 import MeridianCheckpointHistory from "./MeridianCheckpointHistory";
 import MeridianDrugTestCalendar from "./MeridianDrugTestCalendar";
+import MeridianLifestyleRoutine from "./MeridianLifestyleRoutine";
 import { PHASE_LABELS, type MeridianCompetition, type MeridianPlan } from "@/lib/meridian/types";
 import { getCurrentPhase, daysBetween, formatDate } from "@/lib/meridian/calculator";
 
