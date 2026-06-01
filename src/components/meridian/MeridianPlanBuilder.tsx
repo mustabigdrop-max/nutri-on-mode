@@ -7,6 +7,7 @@ import MeridianTrackSelector from "./MeridianTrackSelector";
 import MeridianCategorySelector from "./MeridianCategorySelector";
 import MeridianDashboard from "./MeridianDashboard";
 import { useMeridian } from "@/hooks/useMeridian";
+import { useMeridianForPatient } from "@/hooks/useMeridianForPatient";
 import type {
   AgeGroup,
   AthleteTrack,
@@ -19,9 +20,18 @@ import type {
 
 const ACCENT = "#B8922A";
 
-export default function MeridianPlanBuilder() {
+interface Props {
+  patientUserId?: string | null;
+  onCreated?: () => void;
+}
+
+export default function MeridianPlanBuilder({ patientUserId, onCreated }: Props = {}) {
   const { user } = useAuth();
-  const { calculatePlan } = useMeridian();
+  const ownHook = useMeridian();
+  const patientHook = useMeridianForPatient(patientUserId ?? null);
+  const targetUserId = patientUserId ?? user?.id;
+  const isCoachMode = !!patientUserId && patientUserId !== user?.id;
+  const calculatePlan = isCoachMode ? patientHook.calculatePlan : ownHook.calculatePlan;
 
   const [step, setStep] = useState(1);
   const [track, setTrack] = useState<AthleteTrack | null>(null);
@@ -50,12 +60,12 @@ export default function MeridianPlanBuilder() {
     heightCm && weightKg && bfPercent && (sex === "MALE" || (sex === "FEMALE" && menstrualStatus));
 
   async function handleSubmit() {
-    if (!user || !track || !sex || !category) return;
+    if (!targetUserId || !track || !sex || !category) return;
     setSubmitting(true);
     try {
       // 1. Upsert athlete parameters
       const { error: aErr } = await supabase.from("meridian_athlete_parameters" as any).upsert({
-        user_id: user.id,
+        user_id: targetUserId,
         biological_sex: sex,
         athlete_track: track,
         height_cm: Number(heightCm),
@@ -70,7 +80,7 @@ export default function MeridianPlanBuilder() {
       const { data: comp, error: cErr } = await supabase
         .from("meridian_competitions" as any)
         .insert({
-          user_id: user.id,
+          user_id: targetUserId,
           name: compName.trim(),
           federation: federation.trim(),
           is_natural_federation: track === "NATURAL",
@@ -97,6 +107,7 @@ export default function MeridianPlanBuilder() {
         Object.keys(overrides).length ? overrides : undefined,
       );
       setResult({ plan, competition: comp as any });
+      onCreated?.();
       toast.success("Plano MERIDIAN gerado.");
     } catch (e: any) {
       toast.error(e?.message ?? "Erro ao gerar plano.");
