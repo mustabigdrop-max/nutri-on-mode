@@ -157,6 +157,12 @@ export default function MeridianCrossModuleBridge({ plan, competition }: Props) 
                   </button>
                   <a
                     href={MODULE_ROUTES[module]}
+                    onClick={() =>
+                      trackMeridianEvent("bridge_module_opened", {
+                        planId: plan.id,
+                        data: { module, phase },
+                      })
+                    }
                     style={{
                       fontSize: 10,
                       letterSpacing: 1.5,
@@ -183,7 +189,7 @@ export default function MeridianCrossModuleBridge({ plan, competition }: Props) 
               {latest && latest.status === "pending" && (
                 <div style={{ marginTop: 8, display: "flex", gap: 6 }}>
                   <button
-                    onClick={() => updateStatus(latest.id, "applied")}
+                    onClick={() => handleStatus(latest.id, "applied", module)}
                     style={{
                       fontSize: 9,
                       letterSpacing: 1,
@@ -198,7 +204,7 @@ export default function MeridianCrossModuleBridge({ plan, competition }: Props) 
                     Marcar aplicado
                   </button>
                   <button
-                    onClick={() => updateStatus(latest.id, "discarded")}
+                    onClick={() => handleStatus(latest.id, "discarded", module)}
                     style={{
                       fontSize: 9,
                       letterSpacing: 1,
