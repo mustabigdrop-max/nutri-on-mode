@@ -1,5 +1,6 @@
 // MERIDIAN — Dashboard com SITREP + timeline + targets + warnings.
 import MeridianTimeline from "./MeridianTimeline";
+import MeridianCycleTracker from "./MeridianCycleTracker";
 import { PHASE_LABELS, type MeridianCompetition, type MeridianPlan } from "@/lib/meridian/types";
 import { getCurrentPhase, daysBetween, formatDate } from "@/lib/meridian/calculator";
 
