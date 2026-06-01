@@ -5630,6 +5630,7 @@ export type Database = {
         Row: {
           adherence_pattern: string | null
           athlete_track: Database["public"]["Enums"]["athlete_track"]
+          avg_cycle_length_days: number | null
           best_stage_bf_percent: number | null
           best_stage_weight_kg: number | null
           bf_measurement_method: string | null
@@ -5650,9 +5651,13 @@ export type Database = {
           height_cm: number
           hrv_baseline: number | null
           last_competition_date: string | null
+          last_menstruation_date: string | null
           last_prep_duration_weeks: number | null
           last_prep_satisfaction_score: number | null
           lh: number | null
+          menstrual_status:
+            | Database["public"]["Enums"]["menstrual_status"]
+            | null
           progesterone: number | null
           prolactin: number | null
           resting_hr: number | null
@@ -5670,6 +5675,7 @@ export type Database = {
         Insert: {
           adherence_pattern?: string | null
           athlete_track?: Database["public"]["Enums"]["athlete_track"]
+          avg_cycle_length_days?: number | null
           best_stage_bf_percent?: number | null
           best_stage_weight_kg?: number | null
           bf_measurement_method?: string | null
@@ -5690,9 +5696,13 @@ export type Database = {
           height_cm: number
           hrv_baseline?: number | null
           last_competition_date?: string | null
+          last_menstruation_date?: string | null
           last_prep_duration_weeks?: number | null
           last_prep_satisfaction_score?: number | null
           lh?: number | null
+          menstrual_status?:
+            | Database["public"]["Enums"]["menstrual_status"]
+            | null
           progesterone?: number | null
           prolactin?: number | null
           resting_hr?: number | null
@@ -5710,6 +5720,7 @@ export type Database = {
         Update: {
           adherence_pattern?: string | null
           athlete_track?: Database["public"]["Enums"]["athlete_track"]
+          avg_cycle_length_days?: number | null
           best_stage_bf_percent?: number | null
           best_stage_weight_kg?: number | null
           bf_measurement_method?: string | null
@@ -5730,9 +5741,13 @@ export type Database = {
           height_cm?: number
           hrv_baseline?: number | null
           last_competition_date?: string | null
+          last_menstruation_date?: string | null
           last_prep_duration_weeks?: number | null
           last_prep_satisfaction_score?: number | null
           lh?: number | null
+          menstrual_status?:
+            | Database["public"]["Enums"]["menstrual_status"]
+            | null
           progesterone?: number | null
           prolactin?: number | null
           resting_hr?: number | null
@@ -5917,6 +5932,51 @@ export type Database = {
         }
         Relationships: []
       }
+      meridian_menstrual_cycle: {
+        Row: {
+          created_at: string
+          current_phase: string | null
+          cycle_length_days: number | null
+          cycle_start_date: string
+          flow_intensity: string | null
+          id: string
+          menstruation_duration_days: number | null
+          notes: string | null
+          pms_severity: number | null
+          symptoms: string[] | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_phase?: string | null
+          cycle_length_days?: number | null
+          cycle_start_date: string
+          flow_intensity?: string | null
+          id?: string
+          menstruation_duration_days?: number | null
+          notes?: string | null
+          pms_severity?: number | null
+          symptoms?: string[] | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_phase?: string | null
+          cycle_length_days?: number | null
+          cycle_start_date?: string
+          flow_intensity?: string | null
+          id?: string
+          menstruation_duration_days?: number | null
+          notes?: string | null
+          pms_severity?: number | null
+          symptoms?: string[] | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       meridian_plans: {
         Row: {
           buffer_weeks: number
@@ -5990,6 +6050,83 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "meridian_plans_competition_id_fkey"
+            columns: ["competition_id"]
+            isOneToOne: false
+            referencedRelation: "meridian_competitions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      meridian_triad_log: {
+        Row: {
+          body_temp_morning: number | null
+          bone_density_z_score: number | null
+          competition_id: string | null
+          created_at: string
+          energy_availability_kcal_per_kg_lbm: number | null
+          estradiol: number | null
+          ferritin: number | null
+          flags: string[] | null
+          id: string
+          log_date: string
+          menstrual_status:
+            | Database["public"]["Enums"]["menstrual_status"]
+            | null
+          months_since_menstruation: number | null
+          notes: string | null
+          resting_hr: number | null
+          severity: string
+          tsh: number | null
+          user_id: string
+          weight_loss_rate_pct_per_week: number | null
+        }
+        Insert: {
+          body_temp_morning?: number | null
+          bone_density_z_score?: number | null
+          competition_id?: string | null
+          created_at?: string
+          energy_availability_kcal_per_kg_lbm?: number | null
+          estradiol?: number | null
+          ferritin?: number | null
+          flags?: string[] | null
+          id?: string
+          log_date?: string
+          menstrual_status?:
+            | Database["public"]["Enums"]["menstrual_status"]
+            | null
+          months_since_menstruation?: number | null
+          notes?: string | null
+          resting_hr?: number | null
+          severity?: string
+          tsh?: number | null
+          user_id: string
+          weight_loss_rate_pct_per_week?: number | null
+        }
+        Update: {
+          body_temp_morning?: number | null
+          bone_density_z_score?: number | null
+          competition_id?: string | null
+          created_at?: string
+          energy_availability_kcal_per_kg_lbm?: number | null
+          estradiol?: number | null
+          ferritin?: number | null
+          flags?: string[] | null
+          id?: string
+          log_date?: string
+          menstrual_status?:
+            | Database["public"]["Enums"]["menstrual_status"]
+            | null
+          months_since_menstruation?: number | null
+          notes?: string | null
+          resting_hr?: number | null
+          severity?: string
+          tsh?: number | null
+          user_id?: string
+          weight_loss_rate_pct_per_week?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meridian_triad_log_competition_id_fkey"
             columns: ["competition_id"]
             isOneToOne: false
             referencedRelation: "meridian_competitions"
