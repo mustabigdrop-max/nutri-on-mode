@@ -17,11 +17,18 @@ import type {
   MeridianPlan,
 } from "@/lib/meridian/types";
 
-const ACCENT = "#B8922A";
+interface Props {
+  patientUserId?: string | null;
+  onCreated?: () => void;
+}
 
-export default function MeridianPlanBuilder() {
+export default function MeridianPlanBuilder({ patientUserId, onCreated }: Props = {}) {
   const { user } = useAuth();
-  const { calculatePlan } = useMeridian();
+  const ownHook = useMeridian();
+  const patientHook = useMeridianForPatient(patientUserId ?? null);
+  const targetUserId = patientUserId ?? user?.id;
+  const isCoachMode = !!patientUserId && patientUserId !== user?.id;
+  const calculatePlan = isCoachMode ? patientHook.calculatePlan : ownHook.calculatePlan;
 
   const [step, setStep] = useState(1);
   const [track, setTrack] = useState<AthleteTrack | null>(null);
