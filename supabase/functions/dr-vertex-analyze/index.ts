@@ -325,7 +325,7 @@ Deno.serve(async (req: Request) => {
     }
 
     const body = await req.json().catch(() => ({}));
-    const { atleta = {}, apexScores = {}, protocolo = "" } = body || {};
+    const { atleta = {}, apexScores = {}, protocolo = "", patient_user_id } = body || {};
 
     if (!protocolo || String(protocolo).trim().length < 5) {
       return new Response(JSON.stringify({ error: "Protocolo farmacológico não informado." }), {
@@ -334,6 +334,10 @@ Deno.serve(async (req: Request) => {
     }
 
     const userPrompt = buildUserPrompt(atleta, apexScores, protocolo);
+
+    // MERIDIAN context (handoffs pendentes do plano de competição)
+    const { buildMeridianPromptBlock } = await import("../_shared/meridianContext.ts");
+    const meridianBlock = await buildMeridianPromptBlock(req, "dr_vertex", patient_user_id);
 
     const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -344,7 +348,7 @@ Deno.serve(async (req: Request) => {
       body: JSON.stringify({
         model: "google/gemini-2.5-pro",
         messages: [
-          { role: "system", content: VERTEX_SYSTEM_PROMPT },
+          { role: "system", content: VERTEX_SYSTEM_PROMPT + meridianBlock },
           { role: "user", content: userPrompt },
         ],
         tools: [VERTEX_TOOL],

@@ -170,7 +170,7 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { messages, profileContext, mealHistoryContext, objetivo, perfilPCA, perfilComportamental, globalKnowledge, agentSystemPrompt } = await req.json();
+    const { messages, profileContext, mealHistoryContext, objetivo, perfilPCA, perfilComportamental, globalKnowledge, agentSystemPrompt, patient_user_id } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
@@ -202,8 +202,12 @@ serve(async (req) => {
       userContextBlock += `\n\n# PESQUISA GLOBAL ATUALIZADA (Perplexity):\n${globalKnowledge}`;
     }
 
+    // MERIDIAN context (handoffs pendentes do plano de competição)
+    const { buildMeridianPromptBlock } = await import("../_shared/meridianContext.ts");
+    const meridianBlock = await buildMeridianPromptBlock(req, "nutriplan", patient_user_id);
+
     const systemPrompt = `${basePrompt}
-${userContextBlock}
+${userContextBlock}${meridianBlock}
 
 ## REGRAS GERAIS
 - Sempre responda em português brasileiro
