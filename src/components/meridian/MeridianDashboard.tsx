@@ -11,6 +11,7 @@ import MeridianPeakWeekProtocol from "./MeridianPeakWeekProtocol";
 import MeridianPostStageRecovery from "./MeridianPostStageRecovery";
 import MeridianMultiShowOptimizer from "./MeridianMultiShowOptimizer";
 import MeridianNarrativeBriefing from "./MeridianNarrativeBriefing";
+import MeridianTacticalIntel from "./MeridianTacticalIntel";
 import MeridianCrossModuleBridge from "./MeridianCrossModuleBridge";
 import { PHASE_LABELS, type MeridianCompetition, type MeridianPlan } from "@/lib/meridian/types";
 import { getCurrentPhase, daysBetween, formatDate } from "@/lib/meridian/calculator";
@@ -194,6 +195,9 @@ export default function MeridianDashboard({ plan, competition, allCompetitions =
         planId={plan.id}
         competitionId={competition.id}
       />
+
+      {/* TACTICAL INTEL — IA Briefing consolidado (Drug Tests + Multi-Show + Recovery) */}
+      <MeridianTacticalIntel planId={plan.id} competitionId={competition.id} />
 
 
 
