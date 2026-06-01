@@ -29,19 +29,23 @@ Deno.serve(async (req) => {
   try {
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
     const body = await req.json();
-    const { messages = [], apexContext = "", activeTab = "", mode = "chat" } = body;
+    const { messages = [], apexContext = "", activeTab = "", mode = "chat", patient_user_id } = body;
 
     const intro =
       mode === "initial"
         ? "Analise o protocolo APEX completo abaixo e faça uma abertura técnica: identifique o maior desequilíbrio encontrado, explique a lógica principal do protocolo gerado e faça 1 pergunta ao coach para refinar o plano."
         : "";
 
+    // MERIDIAN context (handoffs pendentes do plano de competição)
+    const { buildMeridianPromptBlock } = await import("../_shared/meridianContext.ts");
+    const meridianBlock = await buildMeridianPromptBlock(req, "apex", patient_user_id);
+
     const systemContent = `${SYSTEM_BASE}
 
 ABA ATIVA NO APEX VISUAL: ${activeTab || "geral"}
 
 CONTEXTO COMPLETO DO PROTOCOLO APEX:
-${apexContext || "(sem dados disponíveis)"}`;
+${apexContext || "(sem dados disponíveis)"}${meridianBlock}`;
 
     const finalMessages = mode === "initial"
       ? [{ role: "user", content: intro }]

@@ -9,9 +9,13 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { profile, coachNotes } = await req.json();
+    const { profile, coachNotes, patient_user_id } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
+
+    // MERIDIAN context (handoffs pendentes do plano de competição)
+    const { buildMeridianPromptBlock } = await import("./../_shared/meridianContext.ts");
+    const meridianBlock = await buildMeridianPromptBlock(req, "trainingon", patient_user_id ?? profile?.user_id);
 
     const objetivo = profile?.goal || profile?.objetivo_principal || "hipertrofia";
     const nivel = profile?.nivel_treino || "intermediário";
@@ -127,7 +131,7 @@ FORMATO DE RESPOSTA (JSON OBRIGATÓRIO):
       body: JSON.stringify({
         model: "google/gemini-2.5-flash",
         messages: [
-          { role: "system", content: systemPrompt },
+          { role: "system", content: systemPrompt + meridianBlock },
           { role: "user", content: `Gere o plano de treino semanal completo para este cliente. Retorne SOMENTE o JSON.` },
         ],
         temperature: 0.7,
