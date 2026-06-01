@@ -19,7 +19,7 @@ export const TRACK_META: Record<
     bg: "rgba(75,83,32,0.08)",
     description:
       "Federações drug-free (WNBF, INBA, ANB, DFAC). Taxas conservadoras, recovery longo, drug test calendar obrigatório.",
-    available: false,
+    available: true,
   },
   LIFESTYLE: {
     label: "Lifestyle",
