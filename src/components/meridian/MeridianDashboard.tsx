@@ -1,5 +1,6 @@
 // MERIDIAN — Dashboard com SITREP + timeline + targets + warnings.
 import MeridianTimeline from "./MeridianTimeline";
+import MeridianCycleTracker from "./MeridianCycleTracker";
 import { PHASE_LABELS, type MeridianCompetition, type MeridianPlan } from "@/lib/meridian/types";
 import { getCurrentPhase, daysBetween, formatDate } from "@/lib/meridian/calculator";
 
@@ -81,6 +82,12 @@ export default function MeridianDashboard({ plan, competition, onReset }: Props)
       >
         <MeridianTimeline plan={plan} competitionDate={competition.competition_date} />
       </div>
+
+      {/* CYCLE TRACKER — feminino */}
+      {["WOMENS_BODYBUILDING","WOMENS_PHYSIQUE","FIGURE","FITNESS","WELLNESS","BIKINI"].includes(competition.category) && (
+        <MeridianCycleTracker />
+      )}
+
 
       {/* WARNINGS */}
       {plan.warnings && plan.warnings.length > 0 && (

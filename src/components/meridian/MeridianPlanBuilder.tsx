@@ -12,6 +12,7 @@ import type {
   AthleteTrack,
   BiologicalSex,
   BodybuildingCategory,
+  MenstrualStatus,
   MeridianCompetition,
   MeridianPlan,
 } from "@/lib/meridian/types";
@@ -36,6 +37,8 @@ export default function MeridianPlanBuilder() {
   const [heightCm, setHeightCm] = useState("");
   const [weightKg, setWeightKg] = useState("");
   const [bfPercent, setBfPercent] = useState("");
+  const [menstrualStatus, setMenstrualStatus] = useState<MenstrualStatus | "">("");
+  const [monthsSinceMenstruation, setMonthsSinceMenstruation] = useState("");
 
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<{ plan: MeridianPlan; competition: MeridianCompetition } | null>(null);
@@ -43,7 +46,8 @@ export default function MeridianPlanBuilder() {
   const canNext1 = !!track;
   const canNext2 = !!sex && !!category;
   const canNext3 = compName.trim() && federation.trim() && compDate;
-  const canSubmit = heightCm && weightKg && bfPercent;
+  const canSubmit =
+    heightCm && weightKg && bfPercent && (sex === "MALE" || (sex === "FEMALE" && menstrualStatus));
 
   async function handleSubmit() {
     if (!user || !track || !sex || !category) return;
@@ -57,6 +61,7 @@ export default function MeridianPlanBuilder() {
         height_cm: Number(heightCm),
         current_weight_kg: Number(weightKg),
         current_bf_percent: Number(bfPercent),
+        menstrual_status: sex === "FEMALE" ? menstrualStatus || null : null,
         updated_at: new Date().toISOString(),
       });
       if (aErr) throw aErr;
@@ -80,7 +85,17 @@ export default function MeridianPlanBuilder() {
       if (cErr || !comp) throw cErr ?? new Error("Falha ao criar prova");
 
       // 3. Calculate plan
-      const plan = await calculatePlan((comp as any).id);
+      const overrides: Record<string, unknown> = {};
+      if (sex === "FEMALE") {
+        overrides.menstrual_status = menstrualStatus || null;
+        overrides.months_since_menstruation = monthsSinceMenstruation
+          ? Number(monthsSinceMenstruation)
+          : null;
+      }
+      const plan = await calculatePlan(
+        (comp as any).id,
+        Object.keys(overrides).length ? overrides : undefined,
+      );
       setResult({ plan, competition: comp as any });
       toast.success("Plano MERIDIAN gerado.");
     } catch (e: any) {
@@ -162,6 +177,37 @@ export default function MeridianPlanBuilder() {
             <Field label="BF% estimado">
               <input type="number" style={inputStyle} value={bfPercent} onChange={(e) => setBfPercent(e.target.value)} />
             </Field>
+            {sex === "FEMALE" && (
+              <>
+                <Field label="Status menstrual">
+                  <select
+                    value={menstrualStatus}
+                    onChange={(e) => setMenstrualStatus(e.target.value as MenstrualStatus | "")}
+                    style={inputStyle}
+                  >
+                    <option value="" style={{ background: "#0a0a0a" }}>Selecione...</option>
+                    <option value="REGULAR" style={{ background: "#0a0a0a" }}>Regular</option>
+                    <option value="IRREGULAR" style={{ background: "#0a0a0a" }}>Irregular</option>
+                    <option value="AMENORRHEA" style={{ background: "#0a0a0a" }}>Amenorreia</option>
+                    <option value="PMS_AFFECTED" style={{ background: "#0a0a0a" }}>TPM intensa</option>
+                    <option value="PILL" style={{ background: "#0a0a0a" }}>Pílula</option>
+                    <option value="IUD_HORMONAL" style={{ background: "#0a0a0a" }}>DIU hormonal</option>
+                    <option value="IUD_COPPER" style={{ background: "#0a0a0a" }}>DIU cobre</option>
+                    <option value="POST_MENOPAUSE" style={{ background: "#0a0a0a" }}>Pós-menopausa</option>
+                  </select>
+                </Field>
+                {menstrualStatus === "AMENORRHEA" && (
+                  <Field label="Meses sem menstruar">
+                    <input
+                      type="number"
+                      style={inputStyle}
+                      value={monthsSinceMenstruation}
+                      onChange={(e) => setMonthsSinceMenstruation(e.target.value)}
+                    />
+                  </Field>
+                )}
+              </>
+            )}
           </Section>
           <div style={{ display: "flex", gap: 10 }}>
             <button type="button" onClick={() => setStep(3)} style={btnSecondary}>◀ VOLTAR</button>

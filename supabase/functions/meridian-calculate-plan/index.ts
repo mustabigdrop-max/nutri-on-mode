@@ -15,6 +15,8 @@ interface AthleteOverride {
   height_cm?: number;
   current_weight_kg?: number;
   current_bf_percent?: number;
+  menstrual_status?: string | null;
+  months_since_menstruation?: number | null;
 }
 
 interface CalculatePlanBody {
@@ -113,6 +115,10 @@ Deno.serve(async (req) => {
       current_weight_kg: ov.current_weight_kg ?? athleteRow?.current_weight_kg,
       current_bf_percent: ov.current_bf_percent ?? athleteRow?.current_bf_percent,
     };
+    const menstrualStatus: string | null =
+      (ov.menstrual_status ?? athleteRow?.menstrual_status ?? null) as any;
+    const monthsSinceMenstruation: number | null =
+      (ov.months_since_menstruation ?? null) as any;
 
     for (const [k, v] of Object.entries(athlete)) {
       if (v === undefined || v === null) {
@@ -233,6 +239,35 @@ Deno.serve(async (req) => {
       warnings.push(
         `Perda total projetada (${(lossKg / currentWeight * 100).toFixed(1)}%) acima do ideal. Considere prep mais longa.`,
       );
+    }
+
+    // 6b. RED-S / Tríade da Atleta Feminina
+    if (athlete.biological_sex === "FEMALE") {
+      const amenorrheaFlag = defaults.amenorrhea_is_red_flag === true;
+      if (amenorrheaFlag && menstrualStatus === "AMENORRHEA") {
+        if ((monthsSinceMenstruation ?? 0) >= 2) {
+          viabilityStatus = "RED";
+          warnings.push(
+            "RED-S CRÍTICO: amenorreia ≥ 2 meses. Prep bloqueada — encaminhamento médico obrigatório antes de prosseguir.",
+          );
+        } else {
+          if (viabilityStatus === "GREEN") viabilityStatus = "YELLOW";
+          warnings.push(
+            "RED-S ALERTA: amenorreia recente. Monitoramento hormonal semanal obrigatório (estradiol, ferritina, TSH).",
+          );
+        }
+      }
+      if (currentBf < 14) {
+        if (viabilityStatus === "GREEN") viabilityStatus = "YELLOW";
+        warnings.push(
+          `BF inicial baixo (${currentBf}%). Risco elevado de RED-S durante a prep — priorizar energia disponível ≥ 30 kcal/kg LBM.`,
+        );
+      }
+      if (defaults.cycle_sync_recommended) {
+        warnings.push(
+          "Cycle-sync recomendado: cargas e cardio sincronizados às fases folicular/lútea para preservar performance.",
+        );
+      }
     }
 
     // 7. Persistir plano

@@ -1,5 +1,45 @@
-// MERIDIAN — Tipos compartilhados (Bloco 1).
+// MERIDIAN — Tipos compartilhados (Blocos 1-2).
 export type BiologicalSex = "MALE" | "FEMALE";
+
+export type MenstrualStatus =
+  | "REGULAR"
+  | "IRREGULAR"
+  | "AMENORRHEA"
+  | "PMS_AFFECTED"
+  | "PILL"
+  | "IUD_HORMONAL"
+  | "IUD_COPPER"
+  | "POST_MENOPAUSE"
+  | "NOT_APPLICABLE";
+
+export type CyclePhaseMeridian = "MENSTRUAL" | "FOLLICULAR" | "OVULATORY" | "LUTEAL";
+
+export interface MeridianMenstrualCycleEntry {
+  id: string;
+  user_id: string;
+  cycle_start_date: string;
+  cycle_length_days?: number | null;
+  menstruation_duration_days?: number | null;
+  current_phase?: CyclePhaseMeridian | string | null;
+  symptoms?: string[] | null;
+  flow_intensity?: string | null;
+  pms_severity?: number | null;
+  notes?: string | null;
+}
+
+export interface MeridianTriadEntry {
+  id: string;
+  user_id: string;
+  competition_id?: string | null;
+  log_date: string;
+  menstrual_status?: MenstrualStatus | null;
+  months_since_menstruation?: number | null;
+  weight_loss_rate_pct_per_week?: number | null;
+  energy_availability_kcal_per_kg_lbm?: number | null;
+  severity: "GREEN" | "YELLOW" | "RED" | string;
+  flags?: string[] | null;
+  notes?: string | null;
+}
 export type AthleteTrack = "ENHANCED" | "NATURAL" | "LIFESTYLE";
 export type BodybuildingCategory =
   | "OPEN_BODYBUILDING"
