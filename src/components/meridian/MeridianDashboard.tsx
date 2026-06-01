@@ -3,6 +3,7 @@ import MeridianTimeline from "./MeridianTimeline";
 import MeridianCycleTracker from "./MeridianCycleTracker";
 import MeridianCheckpointForm from "./MeridianCheckpointForm";
 import MeridianCheckpointHistory from "./MeridianCheckpointHistory";
+import MeridianDrugTestCalendar from "./MeridianDrugTestCalendar";
 import { PHASE_LABELS, type MeridianCompetition, type MeridianPlan } from "@/lib/meridian/types";
 import { getCurrentPhase, daysBetween, formatDate } from "@/lib/meridian/calculator";
 
@@ -88,6 +89,15 @@ export default function MeridianDashboard({ plan, competition, onReset }: Props)
       {/* CYCLE TRACKER — feminino */}
       {["WOMENS_BODYBUILDING","WOMENS_PHYSIQUE","FIGURE","FITNESS","WELLNESS","BIKINI"].includes(competition.category) && (
         <MeridianCycleTracker />
+      )}
+
+      {/* DRUG TEST CALENDAR — federações naturais */}
+      {competition.is_natural_federation && (
+        <MeridianDrugTestCalendar
+          competitionId={competition.id}
+          planId={plan.id}
+          federation={competition.federation}
+        />
       )}
 
       {/* CHECKPOINT SEMANAL — Bloco 3 */}
