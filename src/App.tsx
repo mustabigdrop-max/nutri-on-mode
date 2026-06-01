@@ -113,6 +113,7 @@ import NotFound from "./pages/NotFound";
 import NutriPlanElitePage from "./pages/NutriPlanElitePage";
 import LearnPage from "./pages/LearnPage";
 import VeraPage from "./pages/VeraPage";
+import MeridianPage from "./pages/MeridianPage";
 
 const queryClient = new QueryClient();
 
