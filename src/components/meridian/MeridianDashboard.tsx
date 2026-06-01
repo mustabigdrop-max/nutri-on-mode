@@ -9,6 +9,7 @@ import MeridianPeakWeekProtocol from "./MeridianPeakWeekProtocol";
 import MeridianPostStageRecovery from "./MeridianPostStageRecovery";
 import MeridianMultiShowOptimizer from "./MeridianMultiShowOptimizer";
 import MeridianNarrativeBriefing from "./MeridianNarrativeBriefing";
+import MeridianCrossModuleBridge from "./MeridianCrossModuleBridge";
 import { PHASE_LABELS, type MeridianCompetition, type MeridianPlan } from "@/lib/meridian/types";
 import { getCurrentPhase, daysBetween, formatDate } from "@/lib/meridian/calculator";
 
@@ -117,6 +118,9 @@ export default function MeridianDashboard({ plan, competition, allCompetitions =
 
       {/* BRIEFING IA NARRATIVO — Bloco 9 */}
       <MeridianNarrativeBriefing planId={plan.id} />
+
+      {/* INTEGRAÇÕES CROSS-MÓDULO — Handoffs táticos */}
+      <MeridianCrossModuleBridge plan={plan} competition={competition} />
 
       {/* CHECKPOINT SEMANAL — Bloco 3 */}
       <MeridianCheckpointForm plan={plan} competitionId={competition.id} />
