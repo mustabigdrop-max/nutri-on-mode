@@ -183,11 +183,14 @@ Deno.serve(async (req) => {
     const bufferWeeks = defaults.buffer_weeks_recommended;
     const recoveryWeeks = defaults.reverse_diet_weeks_recommended;
 
-    // Distribuir perda entre Diet Phase e Hard Cut (Hard Cut tipicamente últimas 4-6 sem)
-    const hardCutWeeksTarget = 5;
+    // Distribuir perda entre Diet Phase e Hard Cut.
+    // LIFESTYLE: hard_cut suavizado (mini-cut), prioriza diet phase sustentável.
+    const isLifestyle = athlete.athlete_track === "LIFESTYLE";
+    const hardCutWeeksTarget = isLifestyle ? 3 : 5;
+    const hardCutMaxFraction = isLifestyle ? 0.25 : 0.45;
     const hardCutLossKg = Math.min(
       currentWeight * (hardCutLossRate / 100) * hardCutWeeksTarget,
-      lossKg * 0.45,
+      lossKg * hardCutMaxFraction,
     );
     const dietLossKg = Math.max(lossKg - hardCutLossKg, 0);
 
