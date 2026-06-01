@@ -26,8 +26,8 @@ export const TRACK_META: Record<
     color: "#1B4965",
     bg: "rgba(27,73,101,0.08)",
     description:
-      "Não-competidor. Stage-ready em janelas planejadas. Foco em sustentabilidade e adesão de longo prazo.",
-    available: false,
+      "Não-competidor. Stage-ready em janelas planejadas. Foco em sustentabilidade, mini-cuts pontuais e adesão de longo prazo.",
+    available: true,
   },
 };
 

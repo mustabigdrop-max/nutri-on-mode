@@ -183,11 +183,14 @@ Deno.serve(async (req) => {
     const bufferWeeks = defaults.buffer_weeks_recommended;
     const recoveryWeeks = defaults.reverse_diet_weeks_recommended;
 
-    // Distribuir perda entre Diet Phase e Hard Cut (Hard Cut tipicamente últimas 4-6 sem)
-    const hardCutWeeksTarget = 5;
+    // Distribuir perda entre Diet Phase e Hard Cut.
+    // LIFESTYLE: hard_cut suavizado (mini-cut), prioriza diet phase sustentável.
+    const isLifestyle = athlete.athlete_track === "LIFESTYLE";
+    const hardCutWeeksTarget = isLifestyle ? 3 : 5;
+    const hardCutMaxFraction = isLifestyle ? 0.25 : 0.45;
     const hardCutLossKg = Math.min(
       currentWeight * (hardCutLossRate / 100) * hardCutWeeksTarget,
-      lossKg * 0.45,
+      lossKg * hardCutMaxFraction,
     );
     const dietLossKg = Math.max(lossKg - hardCutLossKg, 0);
 
@@ -296,6 +299,28 @@ Deno.serve(async (req) => {
         );
       }
     }
+
+    // 6d. Track LIFESTYLE — modo manutenção sustentável
+    if (isLifestyle) {
+      const lossRatePct = (lossKg / currentWeight) * 100;
+      if (lossRatePct > 8) {
+        if (viabilityStatus === "GREEN") viabilityStatus = "YELLOW";
+        warnings.push(
+          `LIFESTYLE: perda projetada ${lossRatePct.toFixed(1)}% acima do ideal sustentável (≤8%). Considere ajustar o target ou aumentar a janela.`,
+        );
+      }
+      if (availableWeeks > 0 && availableWeeks < 8) {
+        if (viabilityStatus === "GREEN") viabilityStatus = "YELLOW";
+        warnings.push(
+          `LIFESTYLE: janela curta (${availableWeeks} sem). Para eventos pontuais use mini-cut de 4-8 semanas; abaixo disso o risco de rebote aumenta.`,
+        );
+      }
+      warnings.push(
+        "LIFESTYLE: modo manutenção ativo — peak week opcional, foco em adesão e reverse diet pós-evento.",
+      );
+    }
+
+
 
 
     // 7. Persistir plano

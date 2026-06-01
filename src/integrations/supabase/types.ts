@@ -5995,6 +5995,68 @@ export type Database = {
           },
         ]
       }
+      meridian_lifestyle_routines: {
+        Row: {
+          cardio_minutes_per_week: number
+          created_at: string
+          current_phase: string
+          id: string
+          next_event_date: string | null
+          next_event_name: string | null
+          notes: string | null
+          plan_id: string | null
+          step_target_daily: number
+          sustainability_score: number | null
+          target_bf_max: number
+          target_bf_min: number
+          training_days_per_week: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cardio_minutes_per_week?: number
+          created_at?: string
+          current_phase?: string
+          id?: string
+          next_event_date?: string | null
+          next_event_name?: string | null
+          notes?: string | null
+          plan_id?: string | null
+          step_target_daily?: number
+          sustainability_score?: number | null
+          target_bf_max: number
+          target_bf_min: number
+          training_days_per_week?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cardio_minutes_per_week?: number
+          created_at?: string
+          current_phase?: string
+          id?: string
+          next_event_date?: string | null
+          next_event_name?: string | null
+          notes?: string | null
+          plan_id?: string | null
+          step_target_daily?: number
+          sustainability_score?: number | null
+          target_bf_max?: number
+          target_bf_min?: number
+          training_days_per_week?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meridian_lifestyle_routines_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "meridian_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       meridian_menstrual_cycle: {
         Row: {
           created_at: string

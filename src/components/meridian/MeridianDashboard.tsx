@@ -4,6 +4,7 @@ import MeridianCycleTracker from "./MeridianCycleTracker";
 import MeridianCheckpointForm from "./MeridianCheckpointForm";
 import MeridianCheckpointHistory from "./MeridianCheckpointHistory";
 import MeridianDrugTestCalendar from "./MeridianDrugTestCalendar";
+import MeridianLifestyleRoutine from "./MeridianLifestyleRoutine";
 import { PHASE_LABELS, type MeridianCompetition, type MeridianPlan } from "@/lib/meridian/types";
 import { getCurrentPhase, daysBetween, formatDate } from "@/lib/meridian/calculator";
 
@@ -97,6 +98,15 @@ export default function MeridianDashboard({ plan, competition, onReset }: Props)
           competitionId={competition.id}
           planId={plan.id}
           federation={competition.federation}
+        />
+      )}
+
+      {/* LIFESTYLE ROUTINE — Track Lifestyle */}
+      {plan.calculation_inputs?.athlete_snapshot?.athlete_track === "LIFESTYLE" && (
+        <MeridianLifestyleRoutine
+          planId={plan.id}
+          defaultBfMin={Number(plan.stage_target_bf_percent) - 1}
+          defaultBfMax={Number(plan.stage_target_bf_percent) + 2}
         />
       )}
 
