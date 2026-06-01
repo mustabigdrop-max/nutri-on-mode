@@ -60,12 +60,12 @@ export default function MeridianPlanBuilder({ patientUserId, onCreated }: Props 
     heightCm && weightKg && bfPercent && (sex === "MALE" || (sex === "FEMALE" && menstrualStatus));
 
   async function handleSubmit() {
-    if (!user || !track || !sex || !category) return;
+    if (!targetUserId || !track || !sex || !category) return;
     setSubmitting(true);
     try {
       // 1. Upsert athlete parameters
       const { error: aErr } = await supabase.from("meridian_athlete_parameters" as any).upsert({
-        user_id: user.id,
+        user_id: targetUserId,
         biological_sex: sex,
         athlete_track: track,
         height_cm: Number(heightCm),
@@ -80,7 +80,7 @@ export default function MeridianPlanBuilder({ patientUserId, onCreated }: Props 
       const { data: comp, error: cErr } = await supabase
         .from("meridian_competitions" as any)
         .insert({
-          user_id: user.id,
+          user_id: targetUserId,
           name: compName.trim(),
           federation: federation.trim(),
           is_natural_federation: track === "NATURAL",
