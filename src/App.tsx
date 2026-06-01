@@ -103,6 +103,7 @@ import CoachTrainingOnPage from "./pages/coach/CoachTrainingOnPage";
 import CoachLabExamsPage from "./pages/coach/CoachLabExamsPage";
 import CoachReportsPage from "./pages/coach/CoachReportsPage";
 import CoachMeridianPage from "./pages/CoachMeridianPage";
+import CoachMeridianRosterPage from "./pages/CoachMeridianRosterPage";
 import APEXPoseAnalysisPage from "./pages/coach/APEXPoseAnalysisPage";
 import DrNexusPage from "./pages/DrNexusPage";
 import VideoFormPage from "./pages/VideoFormPage";
@@ -236,6 +237,7 @@ const App = () => (
             <Route path="/coach/trainingon" element={<ProtectedRoute><CoachTrainingOnPage /></ProtectedRoute>} />
             <Route path="/coach/lab-exams" element={<ProtectedRoute><CoachLabExamsPage /></ProtectedRoute>} />
             <Route path="/coach/relatorios" element={<ProtectedRoute><CoachReportsPage /></ProtectedRoute>} />
+            <Route path="/coach/meridian" element={<ProtectedRoute><CoachMeridianRosterPage /></ProtectedRoute>} />
             <Route path="/coach/meridian/:patientId" element={<ProtectedRoute><CoachMeridianPage /></ProtectedRoute>} />
             <Route path="/coach/atletas" element={<ProtectedRoute><AthleteRoster /></ProtectedRoute>} />
             <Route path="/coach/atletas/:id" element={<ProtectedRoute><AthleteProgressTracker /></ProtectedRoute>} />
