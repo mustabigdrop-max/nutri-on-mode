@@ -7,6 +7,7 @@ import MeridianTrackSelector from "./MeridianTrackSelector";
 import MeridianCategorySelector from "./MeridianCategorySelector";
 import MeridianDashboard from "./MeridianDashboard";
 import { useMeridian } from "@/hooks/useMeridian";
+import { useMeridianForPatient } from "@/hooks/useMeridianForPatient";
 import type {
   AgeGroup,
   AthleteTrack,
@@ -16,6 +17,8 @@ import type {
   MeridianCompetition,
   MeridianPlan,
 } from "@/lib/meridian/types";
+
+const ACCENT = "#B8922A";
 
 interface Props {
   patientUserId?: string | null;
