@@ -12,6 +12,7 @@ import MeridianPostStageRecovery from "./MeridianPostStageRecovery";
 import MeridianMultiShowOptimizer from "./MeridianMultiShowOptimizer";
 import MeridianNarrativeBriefing from "./MeridianNarrativeBriefing";
 import MeridianTacticalIntel from "./MeridianTacticalIntel";
+import MeridianNotificationCenter from "./MeridianNotificationCenter";
 import MeridianCrossModuleBridge from "./MeridianCrossModuleBridge";
 import { PHASE_LABELS, type MeridianCompetition, type MeridianPlan } from "@/lib/meridian/types";
 import { getCurrentPhase, daysBetween, formatDate } from "@/lib/meridian/calculator";
@@ -121,6 +122,9 @@ export default function MeridianDashboard({ plan, competition, allCompetitions =
           <Pill label="BUFFER" value={`${plan.buffer_weeks} sem`} color="#7a7a7a" />
         </div>
       </div>
+
+      {/* CENTRAL DE NOTIFICAÇÕES — alertas automáticos */}
+      <MeridianNotificationCenter />
 
       {/* TARGETS */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
