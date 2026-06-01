@@ -5995,6 +5995,66 @@ export type Database = {
           },
         ]
       }
+      meridian_handoffs: {
+        Row: {
+          applied_at: string | null
+          competition_id: string
+          created_at: string
+          id: string
+          notes: string | null
+          payload: Json
+          phase: string
+          plan_id: string
+          status: string
+          target_module: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          applied_at?: string | null
+          competition_id: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          payload?: Json
+          phase: string
+          plan_id: string
+          status?: string
+          target_module: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          applied_at?: string | null
+          competition_id?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          payload?: Json
+          phase?: string
+          plan_id?: string
+          status?: string
+          target_module?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meridian_handoffs_competition_id_fkey"
+            columns: ["competition_id"]
+            isOneToOne: false
+            referencedRelation: "meridian_competitions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "meridian_handoffs_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "meridian_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       meridian_lifestyle_routines: {
         Row: {
           cardio_minutes_per_week: number
