@@ -5626,6 +5626,377 @@ export type Database = {
         }
         Relationships: []
       }
+      meridian_athlete_parameters: {
+        Row: {
+          adherence_pattern: string | null
+          athlete_track: Database["public"]["Enums"]["athlete_track"]
+          best_stage_bf_percent: number | null
+          best_stage_weight_kg: number | null
+          bf_measurement_method: string | null
+          biological_sex: Database["public"]["Enums"]["biological_sex"]
+          cortisol_morning: number | null
+          created_at: string
+          current_bf_percent: number
+          current_lean_mass_kg: number | null
+          current_weight_kg: number
+          date_of_birth: string | null
+          deficit_tolerance: string | null
+          emotional_eating_risk: string | null
+          estradiol_female: number | null
+          estradiol_male: number | null
+          ferritin: number | null
+          free_testosterone: number | null
+          fsh: number | null
+          height_cm: number
+          hrv_baseline: number | null
+          last_competition_date: string | null
+          last_prep_duration_weeks: number | null
+          last_prep_satisfaction_score: number | null
+          lh: number | null
+          progesterone: number | null
+          prolactin: number | null
+          resting_hr: number | null
+          shbg: number | null
+          t3_value: number | null
+          t4_value: number | null
+          total_preps_completed: number | null
+          total_testosterone: number | null
+          tsh_value: number | null
+          updated_at: string
+          user_id: string
+          vitamin_d: number | null
+          years_in_track: number | null
+        }
+        Insert: {
+          adherence_pattern?: string | null
+          athlete_track?: Database["public"]["Enums"]["athlete_track"]
+          best_stage_bf_percent?: number | null
+          best_stage_weight_kg?: number | null
+          bf_measurement_method?: string | null
+          biological_sex: Database["public"]["Enums"]["biological_sex"]
+          cortisol_morning?: number | null
+          created_at?: string
+          current_bf_percent: number
+          current_lean_mass_kg?: number | null
+          current_weight_kg: number
+          date_of_birth?: string | null
+          deficit_tolerance?: string | null
+          emotional_eating_risk?: string | null
+          estradiol_female?: number | null
+          estradiol_male?: number | null
+          ferritin?: number | null
+          free_testosterone?: number | null
+          fsh?: number | null
+          height_cm: number
+          hrv_baseline?: number | null
+          last_competition_date?: string | null
+          last_prep_duration_weeks?: number | null
+          last_prep_satisfaction_score?: number | null
+          lh?: number | null
+          progesterone?: number | null
+          prolactin?: number | null
+          resting_hr?: number | null
+          shbg?: number | null
+          t3_value?: number | null
+          t4_value?: number | null
+          total_preps_completed?: number | null
+          total_testosterone?: number | null
+          tsh_value?: number | null
+          updated_at?: string
+          user_id: string
+          vitamin_d?: number | null
+          years_in_track?: number | null
+        }
+        Update: {
+          adherence_pattern?: string | null
+          athlete_track?: Database["public"]["Enums"]["athlete_track"]
+          best_stage_bf_percent?: number | null
+          best_stage_weight_kg?: number | null
+          bf_measurement_method?: string | null
+          biological_sex?: Database["public"]["Enums"]["biological_sex"]
+          cortisol_morning?: number | null
+          created_at?: string
+          current_bf_percent?: number
+          current_lean_mass_kg?: number | null
+          current_weight_kg?: number
+          date_of_birth?: string | null
+          deficit_tolerance?: string | null
+          emotional_eating_risk?: string | null
+          estradiol_female?: number | null
+          estradiol_male?: number | null
+          ferritin?: number | null
+          free_testosterone?: number | null
+          fsh?: number | null
+          height_cm?: number
+          hrv_baseline?: number | null
+          last_competition_date?: string | null
+          last_prep_duration_weeks?: number | null
+          last_prep_satisfaction_score?: number | null
+          lh?: number | null
+          progesterone?: number | null
+          prolactin?: number | null
+          resting_hr?: number | null
+          shbg?: number | null
+          t3_value?: number | null
+          t4_value?: number | null
+          total_preps_completed?: number | null
+          total_testosterone?: number | null
+          tsh_value?: number | null
+          updated_at?: string
+          user_id?: string
+          vitamin_d?: number | null
+          years_in_track?: number | null
+        }
+        Relationships: []
+      }
+      meridian_competitions: {
+        Row: {
+          age_group: Database["public"]["Enums"]["age_group"]
+          category: Database["public"]["Enums"]["bodybuilding_category"]
+          competition_date: string
+          created_at: string
+          drug_test_pre_contest_window_days: number | null
+          drug_test_required: boolean
+          drug_test_type: string[] | null
+          federation: string
+          height_class: string | null
+          id: string
+          is_natural_federation: boolean
+          is_primary: boolean
+          location: string | null
+          name: string
+          result_notes: string | null
+          result_placement: number | null
+          status: string
+          updated_at: string
+          user_id: string
+          weight_class: string | null
+        }
+        Insert: {
+          age_group?: Database["public"]["Enums"]["age_group"]
+          category: Database["public"]["Enums"]["bodybuilding_category"]
+          competition_date: string
+          created_at?: string
+          drug_test_pre_contest_window_days?: number | null
+          drug_test_required?: boolean
+          drug_test_type?: string[] | null
+          federation: string
+          height_class?: string | null
+          id?: string
+          is_natural_federation?: boolean
+          is_primary?: boolean
+          location?: string | null
+          name: string
+          result_notes?: string | null
+          result_placement?: number | null
+          status?: string
+          updated_at?: string
+          user_id: string
+          weight_class?: string | null
+        }
+        Update: {
+          age_group?: Database["public"]["Enums"]["age_group"]
+          category?: Database["public"]["Enums"]["bodybuilding_category"]
+          competition_date?: string
+          created_at?: string
+          drug_test_pre_contest_window_days?: number | null
+          drug_test_required?: boolean
+          drug_test_type?: string[] | null
+          federation?: string
+          height_class?: string | null
+          id?: string
+          is_natural_federation?: boolean
+          is_primary?: boolean
+          location?: string | null
+          name?: string
+          result_notes?: string | null
+          result_placement?: number | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+          weight_class?: string | null
+        }
+        Relationships: []
+      }
+      meridian_default_parameters: {
+        Row: {
+          age_group: Database["public"]["Enums"]["age_group"]
+          amenorrhea_is_red_flag: boolean | null
+          athlete_track: Database["public"]["Enums"]["athlete_track"]
+          biological_sex: Database["public"]["Enums"]["biological_sex"]
+          buffer_weeks_min: number
+          buffer_weeks_recommended: number
+          category: Database["public"]["Enums"]["bodybuilding_category"]
+          created_at: string
+          cycle_sync_recommended: boolean | null
+          diet_phase_loss_max: number
+          diet_phase_loss_min: number
+          final_sharpening_weeks_default: number
+          glute_specialization_required: boolean | null
+          hard_cut_loss_max: number
+          hard_cut_loss_min: number
+          has_weight_cap: boolean
+          id: string
+          min_weeks_between_peaks: number
+          notes: string | null
+          pre_prep_weeks_default: number
+          recovery_multiplier: number | null
+          red_flag_thresholds: Json | null
+          required_health_markers: string[] | null
+          reverse_diet_weeks_min: number
+          reverse_diet_weeks_recommended: number
+          routine_practice_required: boolean | null
+          routine_practice_weeks_before_stage: number | null
+          stage_bf_max: number
+          stage_bf_min: number
+          weight_cap_table: Json | null
+        }
+        Insert: {
+          age_group?: Database["public"]["Enums"]["age_group"]
+          amenorrhea_is_red_flag?: boolean | null
+          athlete_track: Database["public"]["Enums"]["athlete_track"]
+          biological_sex: Database["public"]["Enums"]["biological_sex"]
+          buffer_weeks_min?: number
+          buffer_weeks_recommended?: number
+          category: Database["public"]["Enums"]["bodybuilding_category"]
+          created_at?: string
+          cycle_sync_recommended?: boolean | null
+          diet_phase_loss_max: number
+          diet_phase_loss_min: number
+          final_sharpening_weeks_default?: number
+          glute_specialization_required?: boolean | null
+          hard_cut_loss_max: number
+          hard_cut_loss_min: number
+          has_weight_cap?: boolean
+          id?: string
+          min_weeks_between_peaks: number
+          notes?: string | null
+          pre_prep_weeks_default?: number
+          recovery_multiplier?: number | null
+          red_flag_thresholds?: Json | null
+          required_health_markers?: string[] | null
+          reverse_diet_weeks_min: number
+          reverse_diet_weeks_recommended: number
+          routine_practice_required?: boolean | null
+          routine_practice_weeks_before_stage?: number | null
+          stage_bf_max: number
+          stage_bf_min: number
+          weight_cap_table?: Json | null
+        }
+        Update: {
+          age_group?: Database["public"]["Enums"]["age_group"]
+          amenorrhea_is_red_flag?: boolean | null
+          athlete_track?: Database["public"]["Enums"]["athlete_track"]
+          biological_sex?: Database["public"]["Enums"]["biological_sex"]
+          buffer_weeks_min?: number
+          buffer_weeks_recommended?: number
+          category?: Database["public"]["Enums"]["bodybuilding_category"]
+          created_at?: string
+          cycle_sync_recommended?: boolean | null
+          diet_phase_loss_max?: number
+          diet_phase_loss_min?: number
+          final_sharpening_weeks_default?: number
+          glute_specialization_required?: boolean | null
+          hard_cut_loss_max?: number
+          hard_cut_loss_min?: number
+          has_weight_cap?: boolean
+          id?: string
+          min_weeks_between_peaks?: number
+          notes?: string | null
+          pre_prep_weeks_default?: number
+          recovery_multiplier?: number | null
+          red_flag_thresholds?: Json | null
+          required_health_markers?: string[] | null
+          reverse_diet_weeks_min?: number
+          reverse_diet_weeks_recommended?: number
+          routine_practice_required?: boolean | null
+          routine_practice_weeks_before_stage?: number | null
+          stage_bf_max?: number
+          stage_bf_min?: number
+          weight_cap_table?: Json | null
+        }
+        Relationships: []
+      }
+      meridian_plans: {
+        Row: {
+          buffer_weeks: number
+          calculation_inputs: Json | null
+          competition_id: string
+          created_at: string
+          diet_phase_start_date: string
+          final_sharpening_start_date: string
+          generated_by: string | null
+          hard_cut_start_date: string
+          id: string
+          is_active: boolean
+          off_season_end_date: string
+          peak_week_start_date: string
+          post_stage_recovery_end_date: string
+          pre_prep_start_date: string
+          stage_target_bf_percent: number
+          stage_target_weight_kg: number
+          total_weeks_to_stage: number
+          user_id: string
+          version: number
+          viability_status: string | null
+          warnings: string[] | null
+        }
+        Insert: {
+          buffer_weeks?: number
+          calculation_inputs?: Json | null
+          competition_id: string
+          created_at?: string
+          diet_phase_start_date: string
+          final_sharpening_start_date: string
+          generated_by?: string | null
+          hard_cut_start_date: string
+          id?: string
+          is_active?: boolean
+          off_season_end_date: string
+          peak_week_start_date: string
+          post_stage_recovery_end_date: string
+          pre_prep_start_date: string
+          stage_target_bf_percent: number
+          stage_target_weight_kg: number
+          total_weeks_to_stage: number
+          user_id: string
+          version?: number
+          viability_status?: string | null
+          warnings?: string[] | null
+        }
+        Update: {
+          buffer_weeks?: number
+          calculation_inputs?: Json | null
+          competition_id?: string
+          created_at?: string
+          diet_phase_start_date?: string
+          final_sharpening_start_date?: string
+          generated_by?: string | null
+          hard_cut_start_date?: string
+          id?: string
+          is_active?: boolean
+          off_season_end_date?: string
+          peak_week_start_date?: string
+          post_stage_recovery_end_date?: string
+          pre_prep_start_date?: string
+          stage_target_bf_percent?: number
+          stage_target_weight_kg?: number
+          total_weeks_to_stage?: number
+          user_id?: string
+          version?: number
+          viability_status?: string | null
+          warnings?: string[] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meridian_plans_competition_id_fkey"
+            columns: ["competition_id"]
+            isOneToOne: false
+            referencedRelation: "meridian_competitions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       metabolicon_conversations: {
         Row: {
           ai_source: string | null
@@ -9266,7 +9637,50 @@ export type Database = {
       }
     }
     Enums: {
+      age_group:
+        | "JUNIOR"
+        | "OPEN"
+        | "MASTERS_35"
+        | "MASTERS_40"
+        | "MASTERS_45"
+        | "MASTERS_50"
+        | "MASTERS_55"
+        | "MASTERS_60"
+        | "MASTERS_65"
+        | "MASTERS_70_PLUS"
       app_role: "admin" | "moderator" | "user" | "professional"
+      athlete_track: "ENHANCED" | "NATURAL" | "LIFESTYLE"
+      biological_sex: "MALE" | "FEMALE"
+      bodybuilding_category:
+        | "OPEN_BODYBUILDING"
+        | "BODYBUILDING_212"
+        | "CLASSIC_PHYSIQUE"
+        | "MENS_PHYSIQUE"
+        | "WHEELCHAIR_BODYBUILDING"
+        | "WOMENS_BODYBUILDING"
+        | "WOMENS_PHYSIQUE"
+        | "FIGURE"
+        | "FITNESS"
+        | "WELLNESS"
+        | "BIKINI"
+      menstrual_status:
+        | "REGULAR"
+        | "IRREGULAR"
+        | "AMENORRHEA"
+        | "PMS_AFFECTED"
+        | "PILL"
+        | "IUD_HORMONAL"
+        | "IUD_COPPER"
+        | "POST_MENOPAUSE"
+        | "NOT_APPLICABLE"
+      meridian_phase:
+        | "OFF_SEASON"
+        | "PRE_PREP"
+        | "DIET_PRINCIPAL"
+        | "HARD_CUT"
+        | "FINAL_SHARPENING"
+        | "PEAK_WEEK"
+        | "POST_STAGE_RECOVERY"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -9394,7 +9808,54 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      age_group: [
+        "JUNIOR",
+        "OPEN",
+        "MASTERS_35",
+        "MASTERS_40",
+        "MASTERS_45",
+        "MASTERS_50",
+        "MASTERS_55",
+        "MASTERS_60",
+        "MASTERS_65",
+        "MASTERS_70_PLUS",
+      ],
       app_role: ["admin", "moderator", "user", "professional"],
+      athlete_track: ["ENHANCED", "NATURAL", "LIFESTYLE"],
+      biological_sex: ["MALE", "FEMALE"],
+      bodybuilding_category: [
+        "OPEN_BODYBUILDING",
+        "BODYBUILDING_212",
+        "CLASSIC_PHYSIQUE",
+        "MENS_PHYSIQUE",
+        "WHEELCHAIR_BODYBUILDING",
+        "WOMENS_BODYBUILDING",
+        "WOMENS_PHYSIQUE",
+        "FIGURE",
+        "FITNESS",
+        "WELLNESS",
+        "BIKINI",
+      ],
+      menstrual_status: [
+        "REGULAR",
+        "IRREGULAR",
+        "AMENORRHEA",
+        "PMS_AFFECTED",
+        "PILL",
+        "IUD_HORMONAL",
+        "IUD_COPPER",
+        "POST_MENOPAUSE",
+        "NOT_APPLICABLE",
+      ],
+      meridian_phase: [
+        "OFF_SEASON",
+        "PRE_PREP",
+        "DIET_PRINCIPAL",
+        "HARD_CUT",
+        "FINAL_SHARPENING",
+        "PEAK_WEEK",
+        "POST_STAGE_RECOVERY",
+      ],
     },
   },
 } as const
