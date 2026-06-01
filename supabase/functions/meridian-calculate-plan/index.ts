@@ -270,6 +270,34 @@ Deno.serve(async (req) => {
       }
     }
 
+    // 6c. Track NATURAL — janelas mínimas mais longas + drug test calendar
+    if (athlete.athlete_track === "NATURAL") {
+      const naturalMinPrepWeeks = athlete.biological_sex === "FEMALE" ? 28 : 24;
+      if (availableWeeks < naturalMinPrepWeeks) {
+        if (viabilityStatus === "GREEN") viabilityStatus = "YELLOW";
+        warnings.push(
+          `NATURAL: prep abaixo da janela mínima recomendada (${availableWeeks} sem vs ${naturalMinPrepWeeks} sem). Atletas tested precisam de prep estendida para preservar massa.`,
+        );
+      }
+      const lossRatePct = (lossKg / currentWeight) * 100;
+      if (lossRatePct > 12) {
+        if (viabilityStatus === "GREEN") viabilityStatus = "YELLOW";
+        warnings.push(
+          `NATURAL: perda total projetada ${lossRatePct.toFixed(1)}% acima do ideal (≤12% sem assistência farmacológica). Risco elevado de catabolismo.`,
+        );
+      }
+      if (comp.is_natural_federation) {
+        warnings.push(
+          `NATURAL: federação ${comp.federation} exige drug test. Cadastre o calendário de testes no painel para evitar desqualificação.`,
+        );
+      } else {
+        warnings.push(
+          `NATURAL: federação ${comp.federation} declarada como NÃO-tested. Confirme política antidoping antes de competir.`,
+        );
+      }
+    }
+
+
     // 7. Persistir plano
     // Desativa planos ativos anteriores
     await admin
