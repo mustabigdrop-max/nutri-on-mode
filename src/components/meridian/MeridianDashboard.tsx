@@ -90,6 +90,14 @@ export default function MeridianDashboard({ plan, competition, onReset }: Props)
         <MeridianCycleTracker />
       )}
 
+      {/* CHECKPOINT SEMANAL — Bloco 3 */}
+      <MeridianCheckpointForm plan={plan} competitionId={competition.id} />
+
+      {/* HISTÓRICO DE CHECKPOINTS E AJUSTES */}
+      <MeridianCheckpointHistory planId={plan.id} />
+
+
+
 
       {/* WARNINGS */}
       {plan.warnings && plan.warnings.length > 0 && (
