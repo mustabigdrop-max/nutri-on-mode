@@ -55,22 +55,15 @@ export default function MeridianCategorySelector({ sex, category, ageGroup, onCh
       <Section title="SEXO BIOLÓGICO">
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
           {(["MALE", "FEMALE"] as BiologicalSex[]).map((s) => {
-            const disabled = s === "FEMALE";
             const selected = sex === s;
             return (
               <button
                 key={s}
                 type="button"
-                disabled={disabled}
-                onClick={() =>
-                  !disabled && onChange({ sex: s, category: null, ageGroup })
-                }
-                style={btnStyle(selected, disabled)}
+                onClick={() => onChange({ sex: s, category: null, ageGroup })}
+                style={btnStyle(selected, false)}
               >
                 {s === "MALE" ? "MASCULINO" : "FEMININO"}
-                {disabled && (
-                  <span style={{ fontSize: 9, marginLeft: 8, opacity: 0.7 }}>EM BREVE</span>
-                )}
               </button>
             );
           })}
