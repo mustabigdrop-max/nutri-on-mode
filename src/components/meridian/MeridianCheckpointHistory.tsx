@@ -119,6 +119,10 @@ export default function MeridianCheckpointHistory({ planId }: Props) {
                 "{cp.notes}"
               </div>
             )}
+            <MeridianCheckpointNarrative
+              checkpointId={cp.id}
+              initial={(cp as any).ai_assessment ?? null}
+            />
           </div>
         );
       })}
