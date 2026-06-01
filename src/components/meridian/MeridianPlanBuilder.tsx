@@ -37,6 +37,8 @@ export default function MeridianPlanBuilder() {
   const [heightCm, setHeightCm] = useState("");
   const [weightKg, setWeightKg] = useState("");
   const [bfPercent, setBfPercent] = useState("");
+  const [menstrualStatus, setMenstrualStatus] = useState<MenstrualStatus | "">("");
+  const [monthsSinceMenstruation, setMonthsSinceMenstruation] = useState("");
 
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<{ plan: MeridianPlan; competition: MeridianCompetition } | null>(null);
@@ -44,7 +46,8 @@ export default function MeridianPlanBuilder() {
   const canNext1 = !!track;
   const canNext2 = !!sex && !!category;
   const canNext3 = compName.trim() && federation.trim() && compDate;
-  const canSubmit = heightCm && weightKg && bfPercent;
+  const canSubmit =
+    heightCm && weightKg && bfPercent && (sex === "MALE" || (sex === "FEMALE" && menstrualStatus));
 
   async function handleSubmit() {
     if (!user || !track || !sex || !category) return;
@@ -58,6 +61,7 @@ export default function MeridianPlanBuilder() {
         height_cm: Number(heightCm),
         current_weight_kg: Number(weightKg),
         current_bf_percent: Number(bfPercent),
+        menstrual_status: sex === "FEMALE" ? menstrualStatus || null : null,
         updated_at: new Date().toISOString(),
       });
       if (aErr) throw aErr;
@@ -81,7 +85,17 @@ export default function MeridianPlanBuilder() {
       if (cErr || !comp) throw cErr ?? new Error("Falha ao criar prova");
 
       // 3. Calculate plan
-      const plan = await calculatePlan((comp as any).id);
+      const overrides: Record<string, unknown> = {};
+      if (sex === "FEMALE") {
+        overrides.menstrual_status = menstrualStatus || null;
+        overrides.months_since_menstruation = monthsSinceMenstruation
+          ? Number(monthsSinceMenstruation)
+          : null;
+      }
+      const plan = await calculatePlan(
+        (comp as any).id,
+        Object.keys(overrides).length ? overrides : undefined,
+      );
       setResult({ plan, competition: comp as any });
       toast.success("Plano MERIDIAN gerado.");
     } catch (e: any) {
