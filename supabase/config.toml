@@ -138,5 +138,10 @@ verify_jwt = false
 [functions.meridian-calculate-plan]
 verify_jwt = false
 
+[functions.meridian-recalibrate]
+verify_jwt = false
+
+
+
 
 
