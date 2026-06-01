@@ -1,6 +1,7 @@
-// MERIDIAN — Histórico de checkpoints + ajustes (Bloco 3).
+// MERIDIAN — Histórico de checkpoints + ajustes + análise IA (Bloco 3 + 9.2).
 import { useMeridianCheckpoints } from "@/hooks/useMeridianCheckpoints";
 import { formatDate } from "@/lib/meridian/calculator";
+import MeridianCheckpointNarrative from "./MeridianCheckpointNarrative";
 
 const ACCENT = "#B8922A";
 
