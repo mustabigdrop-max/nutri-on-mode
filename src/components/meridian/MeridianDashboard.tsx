@@ -2,6 +2,7 @@
 import { useEffect, useRef } from "react";
 import MeridianTimeline from "./MeridianTimeline";
 import MeridianCycleTracker from "./MeridianCycleTracker";
+import MeridianTriadLog from "./MeridianTriadLog";
 import MeridianCheckpointForm from "./MeridianCheckpointForm";
 import MeridianCheckpointHistory from "./MeridianCheckpointHistory";
 import MeridianDrugTestCalendar from "./MeridianDrugTestCalendar";
@@ -138,9 +139,12 @@ export default function MeridianDashboard({ plan, competition, allCompetitions =
         <MeridianTimeline plan={plan} competitionDate={competition.competition_date} />
       </div>
 
-      {/* CYCLE TRACKER — feminino */}
+      {/* CYCLE TRACKER + TRIAD/RED-S — feminino */}
       {["WOMENS_BODYBUILDING","WOMENS_PHYSIQUE","FIGURE","FITNESS","WELLNESS","BIKINI"].includes(competition.category) && (
-        <MeridianCycleTracker />
+        <>
+          <MeridianCycleTracker />
+          <MeridianTriadLog competitionId={competition.id} />
+        </>
       )}
 
       {/* DRUG TEST CALENDAR — federações naturais */}
