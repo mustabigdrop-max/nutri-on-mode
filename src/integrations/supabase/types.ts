@@ -10267,6 +10267,10 @@ export type Database = {
         Returns: boolean
       }
       increment_coach_slots: { Args: never; Returns: undefined }
+      is_coach_of_patient: {
+        Args: { _coach_user_id: string; _patient_user_id: string }
+        Returns: boolean
+      }
       user_is_athlete_of_plan: {
         Args: { _plan_id: string; _user_id: string }
         Returns: boolean
