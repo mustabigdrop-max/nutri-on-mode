@@ -107,6 +107,7 @@ export default function MeridianPlanBuilder({ patientUserId, onCreated }: Props 
         Object.keys(overrides).length ? overrides : undefined,
       );
       setResult({ plan, competition: comp as any });
+      onCreated?.();
       toast.success("Plano MERIDIAN gerado.");
     } catch (e: any) {
       toast.error(e?.message ?? "Erro ao gerar plano.");
