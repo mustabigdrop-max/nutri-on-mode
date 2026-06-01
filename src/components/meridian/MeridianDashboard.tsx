@@ -1,6 +1,8 @@
 // MERIDIAN — Dashboard com SITREP + timeline + targets + warnings.
 import MeridianTimeline from "./MeridianTimeline";
 import MeridianCycleTracker from "./MeridianCycleTracker";
+import MeridianCheckpointForm from "./MeridianCheckpointForm";
+import MeridianCheckpointHistory from "./MeridianCheckpointHistory";
 import { PHASE_LABELS, type MeridianCompetition, type MeridianPlan } from "@/lib/meridian/types";
 import { getCurrentPhase, daysBetween, formatDate } from "@/lib/meridian/calculator";
 
@@ -87,6 +89,14 @@ export default function MeridianDashboard({ plan, competition, onReset }: Props)
       {["WOMENS_BODYBUILDING","WOMENS_PHYSIQUE","FIGURE","FITNESS","WELLNESS","BIKINI"].includes(competition.category) && (
         <MeridianCycleTracker />
       )}
+
+      {/* CHECKPOINT SEMANAL — Bloco 3 */}
+      <MeridianCheckpointForm plan={plan} competitionId={competition.id} />
+
+      {/* HISTÓRICO DE CHECKPOINTS E AJUSTES */}
+      <MeridianCheckpointHistory planId={plan.id} />
+
+
 
 
       {/* WARNINGS */}

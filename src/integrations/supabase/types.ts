@@ -5977,6 +5977,75 @@ export type Database = {
         }
         Relationships: []
       }
+      meridian_plan_adjustments: {
+        Row: {
+          adjustment_date: string
+          adjustment_type: string
+          ai_rationale: string | null
+          applied_by: string
+          carbs_delta_g: number | null
+          cardio_delta_min: number | null
+          checkpoint_id: string | null
+          created_at: string
+          fat_delta_g: number | null
+          id: string
+          kcal_delta: number | null
+          plan_id: string
+          protein_delta_g: number | null
+          reason: string | null
+          user_id: string
+        }
+        Insert: {
+          adjustment_date?: string
+          adjustment_type: string
+          ai_rationale?: string | null
+          applied_by?: string
+          carbs_delta_g?: number | null
+          cardio_delta_min?: number | null
+          checkpoint_id?: string | null
+          created_at?: string
+          fat_delta_g?: number | null
+          id?: string
+          kcal_delta?: number | null
+          plan_id: string
+          protein_delta_g?: number | null
+          reason?: string | null
+          user_id: string
+        }
+        Update: {
+          adjustment_date?: string
+          adjustment_type?: string
+          ai_rationale?: string | null
+          applied_by?: string
+          carbs_delta_g?: number | null
+          cardio_delta_min?: number | null
+          checkpoint_id?: string | null
+          created_at?: string
+          fat_delta_g?: number | null
+          id?: string
+          kcal_delta?: number | null
+          plan_id?: string
+          protein_delta_g?: number | null
+          reason?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meridian_plan_adjustments_checkpoint_id_fkey"
+            columns: ["checkpoint_id"]
+            isOneToOne: false
+            referencedRelation: "meridian_weekly_checkpoints"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "meridian_plan_adjustments_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "meridian_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       meridian_plans: {
         Row: {
           buffer_weeks: number
@@ -6130,6 +6199,99 @@ export type Database = {
             columns: ["competition_id"]
             isOneToOne: false
             referencedRelation: "meridian_competitions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      meridian_weekly_checkpoints: {
+        Row: {
+          adherence_pct: number | null
+          ai_assessment: Json | null
+          bf_percent: number | null
+          checkpoint_date: string
+          competition_id: string | null
+          created_at: string
+          current_phase: string | null
+          energy_level: number | null
+          hunger_level: number | null
+          id: string
+          mood: number | null
+          notes: string | null
+          photo_back_url: string | null
+          photo_front_url: string | null
+          photo_side_url: string | null
+          plan_id: string | null
+          sleep_quality: number | null
+          training_performance: number | null
+          updated_at: string
+          user_id: string
+          waist_cm: number | null
+          week_number: number | null
+          weight_kg: number | null
+        }
+        Insert: {
+          adherence_pct?: number | null
+          ai_assessment?: Json | null
+          bf_percent?: number | null
+          checkpoint_date?: string
+          competition_id?: string | null
+          created_at?: string
+          current_phase?: string | null
+          energy_level?: number | null
+          hunger_level?: number | null
+          id?: string
+          mood?: number | null
+          notes?: string | null
+          photo_back_url?: string | null
+          photo_front_url?: string | null
+          photo_side_url?: string | null
+          plan_id?: string | null
+          sleep_quality?: number | null
+          training_performance?: number | null
+          updated_at?: string
+          user_id: string
+          waist_cm?: number | null
+          week_number?: number | null
+          weight_kg?: number | null
+        }
+        Update: {
+          adherence_pct?: number | null
+          ai_assessment?: Json | null
+          bf_percent?: number | null
+          checkpoint_date?: string
+          competition_id?: string | null
+          created_at?: string
+          current_phase?: string | null
+          energy_level?: number | null
+          hunger_level?: number | null
+          id?: string
+          mood?: number | null
+          notes?: string | null
+          photo_back_url?: string | null
+          photo_front_url?: string | null
+          photo_side_url?: string | null
+          plan_id?: string | null
+          sleep_quality?: number | null
+          training_performance?: number | null
+          updated_at?: string
+          user_id?: string
+          waist_cm?: number | null
+          week_number?: number | null
+          weight_kg?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meridian_weekly_checkpoints_competition_id_fkey"
+            columns: ["competition_id"]
+            isOneToOne: false
+            referencedRelation: "meridian_competitions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "meridian_weekly_checkpoints_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "meridian_plans"
             referencedColumns: ["id"]
           },
         ]
