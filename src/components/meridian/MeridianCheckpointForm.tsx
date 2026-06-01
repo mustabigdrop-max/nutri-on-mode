@@ -57,6 +57,12 @@ export default function MeridianCheckpointForm({ plan, competitionId, onSubmitte
       });
       const adj = await recalibrate(cp.id);
       setSitrep(adj?.reason ?? "Checkpoint registrado.");
+      // Fire-and-forget: análise narrativa IA por checkpoint
+      import("@/integrations/supabase/client").then(({ supabase }) => {
+        supabase.functions
+          .invoke("meridian-checkpoint-narrative", { body: { checkpoint_id: cp.id } })
+          .catch((err) => console.warn("[meridian] checkpoint narrative falhou:", err));
+      });
       onSubmitted?.();
     } catch (err) {
       setError((err as Error).message);
