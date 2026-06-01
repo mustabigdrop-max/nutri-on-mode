@@ -100,6 +100,15 @@ export default function MeridianDashboard({ plan, competition, onReset }: Props)
         />
       )}
 
+      {/* LIFESTYLE ROUTINE — Track Lifestyle */}
+      {plan.calculation_inputs?.athlete_snapshot?.athlete_track === "LIFESTYLE" && (
+        <MeridianLifestyleRoutine
+          planId={plan.id}
+          defaultBfMin={Number(plan.stage_target_bf_percent) - 1}
+          defaultBfMax={Number(plan.stage_target_bf_percent) + 2}
+        />
+      )}
+
       {/* CHECKPOINT SEMANAL — Bloco 3 */}
       <MeridianCheckpointForm plan={plan} competitionId={competition.id} />
 
