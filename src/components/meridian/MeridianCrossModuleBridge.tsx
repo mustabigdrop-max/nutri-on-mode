@@ -5,6 +5,7 @@ import { toast } from "@/hooks/use-toast";
 import { ALL_HANDOFF_MODULES, buildHandoff, type HandoffModule } from "@/lib/meridian/handoffs";
 import { useMeridianHandoffs } from "@/hooks/useMeridianHandoffs";
 import { getCurrentPhase } from "@/lib/meridian/calculator";
+import { trackMeridianEvent } from "@/lib/meridian/telemetry";
 import type { MeridianCompetition, MeridianPlan } from "@/lib/meridian/types";
 
 interface Props {
@@ -46,6 +47,10 @@ export default function MeridianCrossModuleBridge({ plan, competition }: Props) 
     });
     setSending(null);
     if (r) {
+      trackMeridianEvent("handoff_sent", {
+        planId: plan.id,
+        data: { module, phase, headline: payload.headline },
+      });
       toast({
         title: `Handoff enviado → ${payload.module_label}`,
         description: payload.headline,
@@ -53,6 +58,14 @@ export default function MeridianCrossModuleBridge({ plan, competition }: Props) 
     } else {
       toast({ title: "Erro ao enviar handoff", variant: "destructive" });
     }
+  }
+
+  async function handleStatus(id: string, status: "applied" | "discarded", module: HandoffModule) {
+    await updateStatus(id, status);
+    trackMeridianEvent(status === "applied" ? "handoff_applied" : "handoff_discarded", {
+      planId: plan.id,
+      data: { module, phase },
+    });
   }
 
   return (
@@ -144,6 +157,12 @@ export default function MeridianCrossModuleBridge({ plan, competition }: Props) 
                   </button>
                   <a
                     href={MODULE_ROUTES[module]}
+                    onClick={() =>
+                      trackMeridianEvent("bridge_module_opened", {
+                        planId: plan.id,
+                        data: { module, phase },
+                      })
+                    }
                     style={{
                       fontSize: 10,
                       letterSpacing: 1.5,
@@ -170,7 +189,7 @@ export default function MeridianCrossModuleBridge({ plan, competition }: Props) 
               {latest && latest.status === "pending" && (
                 <div style={{ marginTop: 8, display: "flex", gap: 6 }}>
                   <button
-                    onClick={() => updateStatus(latest.id, "applied")}
+                    onClick={() => handleStatus(latest.id, "applied", module)}
                     style={{
                       fontSize: 9,
                       letterSpacing: 1,
@@ -185,7 +204,7 @@ export default function MeridianCrossModuleBridge({ plan, competition }: Props) 
                     Marcar aplicado
                   </button>
                   <button
-                    onClick={() => updateStatus(latest.id, "discarded")}
+                    onClick={() => handleStatus(latest.id, "discarded", module)}
                     style={{
                       fontSize: 9,
                       letterSpacing: 1,

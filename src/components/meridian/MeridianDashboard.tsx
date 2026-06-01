@@ -1,4 +1,5 @@
 // MERIDIAN — Dashboard com SITREP + timeline + targets + warnings.
+import { useEffect, useRef } from "react";
 import MeridianTimeline from "./MeridianTimeline";
 import MeridianCycleTracker from "./MeridianCycleTracker";
 import MeridianCheckpointForm from "./MeridianCheckpointForm";
@@ -12,6 +13,7 @@ import MeridianNarrativeBriefing from "./MeridianNarrativeBriefing";
 import MeridianCrossModuleBridge from "./MeridianCrossModuleBridge";
 import { PHASE_LABELS, type MeridianCompetition, type MeridianPlan } from "@/lib/meridian/types";
 import { getCurrentPhase, daysBetween, formatDate } from "@/lib/meridian/calculator";
+import { trackMeridianEvent } from "@/lib/meridian/telemetry";
 
 interface Props {
   plan: MeridianPlan;
@@ -31,6 +33,24 @@ export default function MeridianDashboard({ plan, competition, allCompetitions =
   const viabColor =
     plan.viability_status === "GREEN" ? "#4ade80" : plan.viability_status === "YELLOW" ? "#facc15" : "#ef4444";
 
+  // Telemetry: log dashboard view + phase transitions.
+  const lastPhaseRef = useRef<string | null>(null);
+  useEffect(() => {
+    trackMeridianEvent("dashboard_viewed", {
+      planId: plan.id,
+      data: { phase: currentPhase, weeks_to_stage: weeksToStage, viability: plan.viability_status },
+    });
+  }, [plan.id]);
+  useEffect(() => {
+    if (lastPhaseRef.current && lastPhaseRef.current !== currentPhase) {
+      trackMeridianEvent("phase_transition", {
+        planId: plan.id,
+        data: { from: lastPhaseRef.current, to: currentPhase },
+      });
+    }
+    lastPhaseRef.current = currentPhase;
+  }, [currentPhase, plan.id]);
+
   return (
     <div
       style={{
@@ -41,7 +61,31 @@ export default function MeridianDashboard({ plan, competition, allCompetitions =
       }}
     >
       {/* SITREP HEADER */}
+      <style>{`
+        @keyframes meridian-sitrep-pulse {
+          0%, 100% { box-shadow: inset 4px 0 0 ${ACCENT}, 0 0 0 0 rgba(184,146,42,0); }
+          50% { box-shadow: inset 4px 0 0 ${ACCENT}, 0 0 24px -8px rgba(184,146,42,0.55); }
+        }
+        @keyframes meridian-sitrep-blink {
+          0%, 70%, 100% { opacity: 1; }
+          80% { opacity: 0.25; }
+        }
+        .meridian-sitrep {
+          animation: meridian-sitrep-pulse 4.5s ease-in-out infinite;
+        }
+        .meridian-sitrep-dot {
+          display: inline-block; width: 6px; height: 6px; border-radius: 50%;
+          background: ${ACCENT}; margin-right: 8px; vertical-align: middle;
+          animation: meridian-sitrep-blink 2.4s ease-in-out infinite;
+        }
+        @keyframes meridian-fade-up {
+          from { opacity: 0; transform: translateY(6px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .meridian-fade { animation: meridian-fade-up 0.5s ease both; }
+      `}</style>
       <div
+        className="meridian-sitrep meridian-fade"
         style={{
           background: "rgba(184,146,42,0.06)",
           border: "1px solid rgba(184,146,42,0.4)",
@@ -58,6 +102,7 @@ export default function MeridianDashboard({ plan, competition, allCompetitions =
             marginBottom: 6,
           }}
         >
+          <span className="meridian-sitrep-dot" />
           SITREP // OPERAÇÃO MERIDIAN
         </div>
         <div style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap" }}>

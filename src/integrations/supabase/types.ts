@@ -6467,6 +6467,33 @@ export type Database = {
         }
         Relationships: []
       }
+      meridian_telemetry: {
+        Row: {
+          created_at: string
+          event_data: Json
+          event_type: string
+          id: string
+          plan_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_data?: Json
+          event_type: string
+          id?: string
+          plan_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_data?: Json
+          event_type?: string
+          id?: string
+          plan_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       meridian_triad_log: {
         Row: {
           body_temp_morning: number | null
