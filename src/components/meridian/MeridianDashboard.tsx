@@ -83,6 +83,12 @@ export default function MeridianDashboard({ plan, competition, onReset }: Props)
         <MeridianTimeline plan={plan} competitionDate={competition.competition_date} />
       </div>
 
+      {/* CYCLE TRACKER — feminino */}
+      {["WOMENS_BODYBUILDING","WOMENS_PHYSIQUE","FIGURE","FITNESS","WELLNESS","BIKINI"].includes(competition.category) && (
+        <MeridianCycleTracker />
+      )}
+
+
       {/* WARNINGS */}
       {plan.warnings && plan.warnings.length > 0 && (
         <div
