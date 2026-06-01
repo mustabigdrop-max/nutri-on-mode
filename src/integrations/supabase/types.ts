@@ -6207,6 +6207,66 @@ export type Database = {
         }
         Relationships: []
       }
+      meridian_notifications: {
+        Row: {
+          body: string | null
+          competition_id: string | null
+          created_at: string
+          dedupe_key: string
+          id: string
+          kind: string
+          payload: Json | null
+          plan_id: string | null
+          read_at: string | null
+          severity: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          competition_id?: string | null
+          created_at?: string
+          dedupe_key: string
+          id?: string
+          kind: string
+          payload?: Json | null
+          plan_id?: string | null
+          read_at?: string | null
+          severity?: string
+          title: string
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          competition_id?: string | null
+          created_at?: string
+          dedupe_key?: string
+          id?: string
+          kind?: string
+          payload?: Json | null
+          plan_id?: string | null
+          read_at?: string | null
+          severity?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meridian_notifications_competition_id_fkey"
+            columns: ["competition_id"]
+            isOneToOne: false
+            referencedRelation: "meridian_competitions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "meridian_notifications_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "meridian_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       meridian_peak_week_protocols: {
         Row: {
           carbs_grams: Json
