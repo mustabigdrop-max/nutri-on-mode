@@ -16,15 +16,53 @@ interface HandoffRow {
 }
 
 /**
+ * Resolve the target user for MERIDIAN context:
+ * - returns patientUserId if caller is an active coach of that patient
+ * - otherwise returns the caller's own id
+ * - returns null if no caller could be identified
+ */
+export async function resolveMeridianUserId(
+  req: Request,
+  patientUserId?: string | null,
+): Promise<string | null> {
+  try {
+    const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+    const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY");
+    const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    if (!SUPABASE_URL || !ANON_KEY || !SERVICE_KEY) return null;
+
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) return null;
+
+    const userClient = createClient(SUPABASE_URL, ANON_KEY, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const { data: userData } = await userClient.auth.getUser();
+    const callerId = userData?.user?.id;
+    if (!callerId) return null;
+
+    if (!patientUserId || patientUserId === callerId) return callerId;
+
+    const admin = createClient(SUPABASE_URL, SERVICE_KEY);
+    const { data: isCoach } = await admin.rpc("is_coach_of_patient", {
+      _coach_user_id: callerId,
+      _patient_user_id: patientUserId,
+    });
+    return isCoach ? patientUserId : callerId;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Fetch pending MERIDIAN handoffs for the given user+module and return a
  * markdown block ready to be appended to a system prompt.
  *
  * - Safe by default: silently returns "" on any error (never blocks AI flows).
  * - If `autoApply` is true, found handoffs are marked as "applied".
- * - Requires SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY env vars in the function.
  */
 export async function fetchMeridianContext(
-  userId: string,
+  userId: string | null,
   module: MeridianTargetModule,
   opts: { autoApply?: boolean } = {},
 ): Promise<string> {
@@ -76,4 +114,16 @@ ${blocks.join("\n\n")}
     console.warn("[meridian-context] fetch failed:", e);
     return "";
   }
+}
+
+/**
+ * Convenience: resolve user + fetch context in one call.
+ */
+export async function buildMeridianPromptBlock(
+  req: Request,
+  module: MeridianTargetModule,
+  patientUserId?: string | null,
+): Promise<string> {
+  const uid = await resolveMeridianUserId(req, patientUserId);
+  return fetchMeridianContext(uid, module);
 }
