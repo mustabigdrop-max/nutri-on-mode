@@ -241,6 +241,7 @@ const App = () => (
             <Route path="/coach/vera" element={<ProtectedRoute><VeraPage /></ProtectedRoute>} />
 
             <Route path="/nutriplan-elite" element={<ProtectedRoute><NutriPlanElitePage /></ProtectedRoute>} />
+            <Route path="/meridian" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON PRO" featureName="MERIDIAN"><MeridianPage /></PlanGateWrapper></ProtectedRoute>} />
 
             <Route path="*" element={<NotFound />} />
           </Routes>
