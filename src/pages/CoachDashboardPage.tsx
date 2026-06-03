@@ -370,6 +370,15 @@ const CoachDashboardPage = () => {
           <Button onClick={() => navigate("/metabolicon")} variant="outline" className="flex items-center gap-2">
             <Flame className="w-4 h-4" /> MetabolicON
           </Button>
+          <Button
+            onClick={() => navigate("/coach/meridian")}
+            variant="outline"
+            className="flex items-center gap-2"
+            style={{ borderColor: "rgba(232,160,32,0.5)", color: "#E8A020", background: "rgba(232,160,32,0.08)" }}
+          >
+            <Crosshair className="w-4 h-4" /> MERIDIAN
+          </Button>
+
         </div>
 
         <Tabs defaultValue="overview" className="w-full">
