@@ -127,7 +127,12 @@ const CoachHub = () => {
           {modules.map((m) => (
             <button
               key={m.key}
-              onClick={() => m.key === "vera" ? navigate("/coach/vera") : setActive(m.key)}
+              onClick={() => {
+                if (m.key === "vera") return navigate("/coach/vera");
+                if (m.key === "meridian") return navigate("/coach/meridian");
+                setActive(m.key);
+              }}
+
               className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-[11px] font-semibold whitespace-nowrap transition-all"
               style={{
                 background: m.key === "vera" ? "rgba(167,139,250,0.1)" : (active === m.key ? AMBER_DIM : "transparent"),
