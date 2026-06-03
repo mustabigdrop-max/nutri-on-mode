@@ -1,7 +1,9 @@
 // MERIDIAN — Página COACH: roster de atletas em prep.
-import { ArrowLeft, AlertTriangle, FlaskConical, Target } from "lucide-react";
+import { ArrowLeft, AlertTriangle, FlaskConical, Target, Plus, UserPlus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useMeridianCoachRoster, type MeridianRosterRow } from "@/hooks/useMeridianCoachRoster";
+import { useMeridianPendingAthletes } from "@/hooks/useMeridianPendingAthletes";
+
 
 const ACCENT = "#B8922A";
 
