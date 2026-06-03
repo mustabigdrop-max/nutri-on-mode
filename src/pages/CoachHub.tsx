@@ -11,7 +11,9 @@ import {
   FileBarChart,
   ArrowLeft,
   Sparkles,
+  Crosshair,
 } from "lucide-react";
+
 import AthleteRoster from "@/components/coach/AthleteRoster";
 import PlanoAlimentarIA from "@/components/coach/PlanoAlimentarIA";
 import CoachApexVisualPage from "@/pages/coach/CoachApexVisualPage";
