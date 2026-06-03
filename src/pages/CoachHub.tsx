@@ -11,7 +11,9 @@ import {
   FileBarChart,
   ArrowLeft,
   Sparkles,
+  Crosshair,
 } from "lucide-react";
+
 import AthleteRoster from "@/components/coach/AthleteRoster";
 import PlanoAlimentarIA from "@/components/coach/PlanoAlimentarIA";
 import CoachApexVisualPage from "@/pages/coach/CoachApexVisualPage";
@@ -20,7 +22,7 @@ import APEXPoseAnalysisPage from "@/pages/coach/APEXPoseAnalysisPage";
 import CoachLabExamsPage from "@/pages/coach/CoachLabExamsPage";
 import CoachReportsPage from "@/pages/coach/CoachReportsPage";
 
-type ModuleKey = "atletas" | "apex" | "vera" | "plano" | "training" | "pose" | "lab" | "relatorios";
+type ModuleKey = "atletas" | "meridian" | "apex" | "vera" | "plano" | "training" | "pose" | "lab" | "relatorios";
 
 // ── Design tokens (mesmo padrão do TrainingON, paleta Coach Amber) ──
 const BG = "#03030a";
@@ -37,6 +39,7 @@ const FONT = "'Space Grotesk', sans-serif";
 
 const modules: { key: ModuleKey; label: string; icon: any; desc: string }[] = [
   { key: "atletas", label: "Atletas", icon: Trophy, desc: "Roster e timeline visual" },
+  { key: "meridian", label: "MERIDIAN", icon: Crosshair, desc: "Command center de competição" },
   { key: "apex", label: "APEX Visual", icon: Camera, desc: "Análise de fotos por IA" },
   { key: "vera", label: "VERA", icon: Sparkles, desc: "Avaliação feminina completa" },
   { key: "plano", label: "Plano Alimentar", icon: UtensilsCrossed, desc: "Macros e carb cycling" },
@@ -45,6 +48,7 @@ const modules: { key: ModuleKey; label: string; icon: any; desc: string }[] = [
   { key: "lab", label: "Exames Lab", icon: FlaskConical, desc: "Score metabólico e alertas" },
   { key: "relatorios", label: "Relatórios", icon: FileBarChart, desc: "Relatório semanal IA" },
 ];
+
 
 const CoachHub = () => {
   const [active, setActive] = useState<ModuleKey>("atletas");
@@ -123,7 +127,12 @@ const CoachHub = () => {
           {modules.map((m) => (
             <button
               key={m.key}
-              onClick={() => m.key === "vera" ? navigate("/coach/vera") : setActive(m.key)}
+              onClick={() => {
+                if (m.key === "vera") return navigate("/coach/vera");
+                if (m.key === "meridian") return navigate("/coach/meridian");
+                setActive(m.key);
+              }}
+
               className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-[11px] font-semibold whitespace-nowrap transition-all"
               style={{
                 background: m.key === "vera" ? "rgba(167,139,250,0.1)" : (active === m.key ? AMBER_DIM : "transparent"),
