@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Users, AlertTriangle, TrendingUp, Search, Bell, Settings, UserPlus, ArrowUpRight, Link2, Copy, Loader2, Trash2, Zap, Dumbbell, FlaskConical, Bone, Flame, ArrowLeft, Handshake, Send, Trophy, Library, Scan, Sparkles } from "lucide-react";
+import { Users, AlertTriangle, TrendingUp, Search, Bell, Settings, UserPlus, ArrowUpRight, Link2, Copy, Loader2, Trash2, Zap, Dumbbell, FlaskConical, Bone, Flame, ArrowLeft, Handshake, Send, Trophy, Library, Scan, Sparkles, Crosshair } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "@/hooks/use-toast";
 import {
@@ -370,6 +370,15 @@ const CoachDashboardPage = () => {
           <Button onClick={() => navigate("/metabolicon")} variant="outline" className="flex items-center gap-2">
             <Flame className="w-4 h-4" /> MetabolicON
           </Button>
+          <Button
+            onClick={() => navigate("/coach/meridian")}
+            variant="outline"
+            className="flex items-center gap-2"
+            style={{ borderColor: "rgba(232,160,32,0.5)", color: "#E8A020", background: "rgba(232,160,32,0.08)" }}
+          >
+            <Crosshair className="w-4 h-4" /> MERIDIAN
+          </Button>
+
         </div>
 
         <Tabs defaultValue="overview" className="w-full">
