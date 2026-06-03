@@ -1093,7 +1093,7 @@ export type Database = {
           bf_estimated: number | null
           bf_target: number | null
           category: string | null
-          coach_id: string | null
+          coach_id: string
           corrective_protocol: string | null
           created_at: string | null
           id: string
@@ -1110,7 +1110,7 @@ export type Database = {
           bf_estimated?: number | null
           bf_target?: number | null
           category?: string | null
-          coach_id?: string | null
+          coach_id: string
           corrective_protocol?: string | null
           created_at?: string | null
           id?: string
@@ -1127,7 +1127,7 @@ export type Database = {
           bf_estimated?: number | null
           bf_target?: number | null
           category?: string | null
-          coach_id?: string | null
+          coach_id?: string
           corrective_protocol?: string | null
           created_at?: string | null
           id?: string
@@ -3646,7 +3646,7 @@ export type Database = {
           apex_weak_points: Json | null
           athlete_id: string
           category: string | null
-          coach_id: string | null
+          coach_id: string
           created_at: string | null
           id: string
           is_active: boolean | null
@@ -3666,7 +3666,7 @@ export type Database = {
           apex_weak_points?: Json | null
           athlete_id: string
           category?: string | null
-          coach_id?: string | null
+          coach_id: string
           created_at?: string | null
           id?: string
           is_active?: boolean | null
@@ -3686,7 +3686,7 @@ export type Database = {
           apex_weak_points?: Json | null
           athlete_id?: string
           category?: string | null
-          coach_id?: string | null
+          coach_id?: string
           created_at?: string | null
           id?: string
           is_active?: boolean | null
