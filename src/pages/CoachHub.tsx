@@ -39,6 +39,7 @@ const FONT = "'Space Grotesk', sans-serif";
 
 const modules: { key: ModuleKey; label: string; icon: any; desc: string }[] = [
   { key: "atletas", label: "Atletas", icon: Trophy, desc: "Roster e timeline visual" },
+  { key: "meridian", label: "MERIDIAN", icon: Crosshair, desc: "Command center de competição" },
   { key: "apex", label: "APEX Visual", icon: Camera, desc: "Análise de fotos por IA" },
   { key: "vera", label: "VERA", icon: Sparkles, desc: "Avaliação feminina completa" },
   { key: "plano", label: "Plano Alimentar", icon: UtensilsCrossed, desc: "Macros e carb cycling" },
@@ -47,6 +48,7 @@ const modules: { key: ModuleKey; label: string; icon: any; desc: string }[] = [
   { key: "lab", label: "Exames Lab", icon: FlaskConical, desc: "Score metabólico e alertas" },
   { key: "relatorios", label: "Relatórios", icon: FileBarChart, desc: "Relatório semanal IA" },
 ];
+
 
 const CoachHub = () => {
   const [active, setActive] = useState<ModuleKey>("atletas");
