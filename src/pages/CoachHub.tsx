@@ -22,7 +22,7 @@ import APEXPoseAnalysisPage from "@/pages/coach/APEXPoseAnalysisPage";
 import CoachLabExamsPage from "@/pages/coach/CoachLabExamsPage";
 import CoachReportsPage from "@/pages/coach/CoachReportsPage";
 
-type ModuleKey = "atletas" | "apex" | "vera" | "plano" | "training" | "pose" | "lab" | "relatorios";
+type ModuleKey = "atletas" | "meridian" | "apex" | "vera" | "plano" | "training" | "pose" | "lab" | "relatorios";
 
 // ── Design tokens (mesmo padrão do TrainingON, paleta Coach Amber) ──
 const BG = "#03030a";
