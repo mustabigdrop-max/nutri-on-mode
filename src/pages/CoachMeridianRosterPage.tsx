@@ -1,7 +1,9 @@
 // MERIDIAN — Página COACH: roster de atletas em prep.
-import { ArrowLeft, AlertTriangle, FlaskConical, Target } from "lucide-react";
+import { ArrowLeft, AlertTriangle, FlaskConical, Target, Plus, UserPlus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useMeridianCoachRoster, type MeridianRosterRow } from "@/hooks/useMeridianCoachRoster";
+import { useMeridianPendingAthletes } from "@/hooks/useMeridianPendingAthletes";
+
 
 const ACCENT = "#B8922A";
 
@@ -22,6 +24,9 @@ const CATEGORY_LABEL: Record<string, string> = {
 export default function CoachMeridianRosterPage() {
   const navigate = useNavigate();
   const { rows, loading, error, reload } = useMeridianCoachRoster();
+  const activeIds = rows.map((r) => r.patient_user_id);
+  const { items: pending } = useMeridianPendingAthletes(activeIds);
+
 
   const critical = rows.filter(
     (r) =>
@@ -168,6 +173,74 @@ export default function CoachMeridianRosterPage() {
             ))}
           </div>
         )}
+
+        {pending.length > 0 && (
+          <div style={{ marginTop: 28 }}>
+            <div
+              style={{
+                fontSize: 10,
+                letterSpacing: 3,
+                color: ACCENT,
+                marginBottom: 10,
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+              }}
+            >
+              <UserPlus size={12} /> ATLETAS SEM OPERAÇÃO MERIDIAN
+            </div>
+            <div style={{ fontSize: 11, color: "#7a7a7a", marginBottom: 12 }}>
+              Atletas vinculados ao seu coach que ainda não têm plano de prep ativo. Clique para iniciar a operação.
+            </div>
+            <div style={{ display: "grid", gap: 8 }}>
+              {pending.map((p) => (
+                <button
+                  key={p.patient_user_id}
+                  onClick={() => navigate(`/coach/meridian/${p.patient_user_id}`)}
+                  style={{
+                    textAlign: "left",
+                    background: "rgba(255,255,255,0.02)",
+                    border: "1px dashed rgba(184,146,42,0.3)",
+                    padding: 12,
+                    borderRadius: 3,
+                    cursor: "pointer",
+                    color: "#e8e8e8",
+                    fontFamily: "'Space Grotesk', sans-serif",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    gap: 12,
+                  }}
+                >
+                  <div>
+                    <div style={{ fontSize: 14, fontWeight: 600 }}>{p.full_name}</div>
+                    <div style={{ fontSize: 10, color: "#7a7a7a", marginTop: 2 }}>
+                      {p.email ?? "—"} {p.sex ? `· ${p.sex}` : ""}
+                    </div>
+                  </div>
+                  <div
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 4,
+                      padding: "6px 10px",
+                      background: `${ACCENT}1a`,
+                      border: `1px solid ${ACCENT}55`,
+                      borderRadius: 3,
+                      fontSize: 10,
+                      letterSpacing: 2,
+                      color: ACCENT,
+                      fontWeight: 700,
+                    }}
+                  >
+                    <Plus size={11} /> INICIAR
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
 
         <button
           onClick={reload}
