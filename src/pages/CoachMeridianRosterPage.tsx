@@ -24,6 +24,9 @@ const CATEGORY_LABEL: Record<string, string> = {
 export default function CoachMeridianRosterPage() {
   const navigate = useNavigate();
   const { rows, loading, error, reload } = useMeridianCoachRoster();
+  const activeIds = rows.map((r) => r.patient_user_id);
+  const { items: pending } = useMeridianPendingAthletes(activeIds);
+
 
   const critical = rows.filter(
     (r) =>
