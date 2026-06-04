@@ -144,6 +144,14 @@ export default function MeridianPlanBuilder({ patientUserId, onCreated }: Props 
 
   return (
     <div style={{ fontFamily: "'Space Grotesk', sans-serif", color: "#e8e8e8", display: "grid", gap: 18 }}>
+      <ClinicalBlockDialog
+        block={clinicalBlock}
+        onClose={() => setClinicalBlock(null)}
+        onGoToExams={() => {
+          setClinicalBlock(null);
+          navigate("/athlete/health-markers");
+        }}
+      />
       <Stepper step={step} />
 
       {step === 1 && (
