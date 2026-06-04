@@ -118,7 +118,12 @@ export default function MeridianPlanBuilder({ patientUserId, onCreated }: Props 
       onCreated?.();
       toast.success("Plano MERIDIAN gerado.");
     } catch (e: any) {
-      toast.error(e?.message ?? "Erro ao gerar plano.");
+      if (e instanceof MeridianCalculationError && e.payload?.error === "BLOQUEIO_CLINICO_OBRIGATORIO") {
+        setClinicalBlock(e.payload);
+      } else {
+        const msg = e?.payload?.message || e?.payload?.error || e?.message || "Erro ao gerar plano.";
+        toast.error("MERIDIAN — Falha no cálculo", { description: msg, duration: 10000 });
+      }
     } finally {
       setSubmitting(false);
     }
