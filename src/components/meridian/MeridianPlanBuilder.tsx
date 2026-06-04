@@ -6,8 +6,14 @@ import { toast } from "sonner";
 import MeridianTrackSelector from "./MeridianTrackSelector";
 import MeridianCategorySelector from "./MeridianCategorySelector";
 import MeridianDashboard from "./MeridianDashboard";
-import { useMeridian } from "@/hooks/useMeridian";
+import { useMeridian, MeridianCalculationError } from "@/hooks/useMeridian";
 import { useMeridianForPatient } from "@/hooks/useMeridianForPatient";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
+import type { MeridianInvokeError } from "@/lib/meridian/invokeCalculatePlan";
 import type {
   AgeGroup,
   AthleteTrack,
@@ -52,6 +58,8 @@ export default function MeridianPlanBuilder({ patientUserId, onCreated }: Props 
 
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<{ plan: MeridianPlan; competition: MeridianCompetition } | null>(null);
+  const [clinicalBlock, setClinicalBlock] = useState<MeridianInvokeError | null>(null);
+  const navigate = useNavigate();
 
   const canNext1 = !!track;
   const canNext2 = !!sex && !!category;
@@ -110,7 +118,12 @@ export default function MeridianPlanBuilder({ patientUserId, onCreated }: Props 
       onCreated?.();
       toast.success("Plano MERIDIAN gerado.");
     } catch (e: any) {
-      toast.error(e?.message ?? "Erro ao gerar plano.");
+      if (e instanceof MeridianCalculationError && e.payload?.error === "BLOQUEIO_CLINICO_OBRIGATORIO") {
+        setClinicalBlock(e.payload);
+      } else {
+        const msg = e?.payload?.message || e?.payload?.error || e?.message || "Erro ao gerar plano.";
+        toast.error("MERIDIAN — Falha no cálculo", { description: msg, duration: 10000 });
+      }
     } finally {
       setSubmitting(false);
     }
@@ -131,6 +144,14 @@ export default function MeridianPlanBuilder({ patientUserId, onCreated }: Props 
 
   return (
     <div style={{ fontFamily: "'Space Grotesk', sans-serif", color: "#e8e8e8", display: "grid", gap: 18 }}>
+      <ClinicalBlockDialog
+        block={clinicalBlock}
+        onClose={() => setClinicalBlock(null)}
+        onGoToExams={() => {
+          setClinicalBlock(null);
+          navigate("/athlete/health-markers");
+        }}
+      />
       <Stepper step={step} />
 
       {step === 1 && (
@@ -333,3 +354,59 @@ const btnSecondary: React.CSSProperties = {
   cursor: "pointer",
   borderRadius: 3,
 };
+
+function ClinicalBlockDialog({
+  block,
+  onClose,
+  onGoToExams,
+}: {
+  block: MeridianInvokeError | null;
+  onClose: () => void;
+  onGoToExams: () => void;
+}) {
+  return (
+    <Dialog open={!!block} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="border-amber-600 bg-zinc-950 text-zinc-200">
+        <DialogHeader>
+          <DialogTitle className="text-amber-500 uppercase tracking-wider">
+            ⚠ Protocolo Clínico Obrigatório
+          </DialogTitle>
+        </DialogHeader>
+        {block && (
+          <div className="space-y-4">
+            <p className="text-sm">{block.message}</p>
+            {block.required_markers && block.required_markers.length > 0 && (
+              <div>
+                <h4 className="text-xs uppercase tracking-wider text-amber-500 mb-2">
+                  Exames Requeridos
+                </h4>
+                <ul className="text-xs space-y-1">
+                  {block.required_markers.map((m) => <li key={m}>· {m}</li>)}
+                </ul>
+              </div>
+            )}
+            {block.next_steps && block.next_steps.length > 0 && (
+              <div>
+                <h4 className="text-xs uppercase tracking-wider text-amber-500 mb-2">
+                  Próximos Passos
+                </h4>
+                <ol className="text-xs space-y-1 list-decimal list-inside">
+                  {block.next_steps.map((s) => <li key={s}>{s}</li>)}
+                </ol>
+              </div>
+            )}
+          </div>
+        )}
+        <DialogFooter>
+          <Button variant="outline" onClick={onGoToExams}>
+            Cadastrar Exames
+          </Button>
+          <Button variant="ghost" onClick={onClose}>
+            Voltar ao Wizard
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+

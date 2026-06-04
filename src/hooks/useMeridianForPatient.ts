@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { MeridianCompetition, MeridianPlan } from "@/lib/meridian/types";
+import { invokeMeridianCalculatePlan } from "@/lib/meridian/invokeCalculatePlan";
+import { MeridianCalculationError } from "@/hooks/useMeridian";
 
 export function useMeridianForPatient(patientUserId: string | null) {
   const [competitions, setCompetitions] = useState<MeridianCompetition[]>([]);
@@ -40,17 +42,14 @@ export function useMeridianForPatient(patientUserId: string | null) {
   const calculatePlan = useCallback(
     async (competitionId: string, override?: Record<string, unknown>) => {
       if (!patientUserId) throw new Error("patient_user_id ausente");
-      const { data, error } = await supabase.functions.invoke("meridian-calculate-plan", {
-        body: {
-          competition_id: competitionId,
-          athlete_params_override: override,
-          patient_user_id: patientUserId,
-        },
+      const res = await invokeMeridianCalculatePlan({
+        competition_id: competitionId,
+        athlete_params_override: override,
+        patient_user_id: patientUserId,
       });
-      if (error) throw new Error(error.message);
-      if ((data as any)?.error) throw new Error((data as any).error);
+      if (res.ok === false) throw new MeridianCalculationError(res.payload);
       await reload();
-      return (data as any)?.plan as MeridianPlan;
+      return res.plan as MeridianPlan;
     },
     [patientUserId, reload],
   );
