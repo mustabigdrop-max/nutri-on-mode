@@ -6396,19 +6396,24 @@ export type Database = {
       meridian_plans: {
         Row: {
           buffer_weeks: number
+          build_phase_start_date: string | null
           calculation_inputs: Json | null
           competition_id: string
           created_at: string
-          diet_phase_start_date: string
+          diet_phase_start_date: string | null
           final_sharpening_start_date: string
           generated_by: string | null
-          hard_cut_start_date: string
+          hard_cut_start_date: string | null
           id: string
           is_active: boolean
           off_season_end_date: string
           peak_week_start_date: string
+          plan_strategy: string
           post_stage_recovery_end_date: string
           pre_prep_start_date: string
+          projected_fat_loss_kg: number | null
+          projected_lean_gain_kg: number | null
+          refine_phase_start_date: string | null
           stage_target_bf_percent: number
           stage_target_weight_kg: number
           total_weeks_to_stage: number
@@ -6419,19 +6424,24 @@ export type Database = {
         }
         Insert: {
           buffer_weeks?: number
+          build_phase_start_date?: string | null
           calculation_inputs?: Json | null
           competition_id: string
           created_at?: string
-          diet_phase_start_date: string
+          diet_phase_start_date?: string | null
           final_sharpening_start_date: string
           generated_by?: string | null
-          hard_cut_start_date: string
+          hard_cut_start_date?: string | null
           id?: string
           is_active?: boolean
           off_season_end_date: string
           peak_week_start_date: string
+          plan_strategy?: string
           post_stage_recovery_end_date: string
           pre_prep_start_date: string
+          projected_fat_loss_kg?: number | null
+          projected_lean_gain_kg?: number | null
+          refine_phase_start_date?: string | null
           stage_target_bf_percent: number
           stage_target_weight_kg: number
           total_weeks_to_stage: number
@@ -6442,19 +6452,24 @@ export type Database = {
         }
         Update: {
           buffer_weeks?: number
+          build_phase_start_date?: string | null
           calculation_inputs?: Json | null
           competition_id?: string
           created_at?: string
-          diet_phase_start_date?: string
+          diet_phase_start_date?: string | null
           final_sharpening_start_date?: string
           generated_by?: string | null
-          hard_cut_start_date?: string
+          hard_cut_start_date?: string | null
           id?: string
           is_active?: boolean
           off_season_end_date?: string
           peak_week_start_date?: string
+          plan_strategy?: string
           post_stage_recovery_end_date?: string
           pre_prep_start_date?: string
+          projected_fat_loss_kg?: number | null
+          projected_lean_gain_kg?: number | null
+          refine_phase_start_date?: string | null
           stage_target_bf_percent?: number
           stage_target_weight_kg?: number
           total_weeks_to_stage?: number
