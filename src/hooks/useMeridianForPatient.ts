@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { MeridianCompetition, MeridianPlan } from "@/lib/meridian/types";
+import { invokeMeridianCalculatePlan } from "@/lib/meridian/invokeCalculatePlan";
+import { MeridianCalculationError } from "@/hooks/useMeridian";
 
 export function useMeridianForPatient(patientUserId: string | null) {
   const [competitions, setCompetitions] = useState<MeridianCompetition[]>([]);
