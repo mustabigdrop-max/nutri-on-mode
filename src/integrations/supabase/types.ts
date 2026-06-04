@@ -9074,6 +9074,585 @@ export type Database = {
         }
         Relationships: []
       }
+      tensor_assessments: {
+        Row: {
+          age_years: number
+          assessment_date: string
+          assessment_mode: Database["public"]["Enums"]["tensor_assessment_mode"]
+          bia_device: Database["public"]["Enums"]["bia_device_type"] | null
+          biological_sex: string
+          clinical_notes: string | null
+          coach_user_id: string | null
+          consent_signed: boolean | null
+          consent_signed_at: string | null
+          created_at: string | null
+          height_cm: number
+          hours_since_exercise: number | null
+          hours_since_last_meal: number | null
+          hydration_status: string | null
+          id: string
+          is_fasting: boolean | null
+          is_post_exercise: boolean | null
+          is_validated: boolean | null
+          location: string | null
+          menstrual_phase: string | null
+          patient_subjective_notes: string | null
+          patient_user_id: string
+          skinfold_protocol:
+            | Database["public"]["Enums"]["skinfold_protocol"]
+            | null
+          updated_at: string | null
+          validated_at: string | null
+          weight_kg: number
+        }
+        Insert: {
+          age_years: number
+          assessment_date?: string
+          assessment_mode: Database["public"]["Enums"]["tensor_assessment_mode"]
+          bia_device?: Database["public"]["Enums"]["bia_device_type"] | null
+          biological_sex: string
+          clinical_notes?: string | null
+          coach_user_id?: string | null
+          consent_signed?: boolean | null
+          consent_signed_at?: string | null
+          created_at?: string | null
+          height_cm: number
+          hours_since_exercise?: number | null
+          hours_since_last_meal?: number | null
+          hydration_status?: string | null
+          id?: string
+          is_fasting?: boolean | null
+          is_post_exercise?: boolean | null
+          is_validated?: boolean | null
+          location?: string | null
+          menstrual_phase?: string | null
+          patient_subjective_notes?: string | null
+          patient_user_id: string
+          skinfold_protocol?:
+            | Database["public"]["Enums"]["skinfold_protocol"]
+            | null
+          updated_at?: string | null
+          validated_at?: string | null
+          weight_kg: number
+        }
+        Update: {
+          age_years?: number
+          assessment_date?: string
+          assessment_mode?: Database["public"]["Enums"]["tensor_assessment_mode"]
+          bia_device?: Database["public"]["Enums"]["bia_device_type"] | null
+          biological_sex?: string
+          clinical_notes?: string | null
+          coach_user_id?: string | null
+          consent_signed?: boolean | null
+          consent_signed_at?: string | null
+          created_at?: string | null
+          height_cm?: number
+          hours_since_exercise?: number | null
+          hours_since_last_meal?: number | null
+          hydration_status?: string | null
+          id?: string
+          is_fasting?: boolean | null
+          is_post_exercise?: boolean | null
+          is_validated?: boolean | null
+          location?: string | null
+          menstrual_phase?: string | null
+          patient_subjective_notes?: string | null
+          patient_user_id?: string
+          skinfold_protocol?:
+            | Database["public"]["Enums"]["skinfold_protocol"]
+            | null
+          updated_at?: string | null
+          validated_at?: string | null
+          weight_kg?: number
+        }
+        Relationships: []
+      }
+      tensor_bia_results: {
+        Row: {
+          assessment_id: string
+          body_fat_kg: number | null
+          body_fat_percent: number | null
+          bone_mineral_content_kg: number | null
+          created_at: string | null
+          ecw_tbw_ratio: number | null
+          extracellular_water_l: number | null
+          fat_free_mass_kg: number | null
+          frequency_hz: number | null
+          icw_ecw_ratio: number | null
+          id: string
+          impedance_ohms: number | null
+          intracellular_water_l: number | null
+          lean_body_mass_kg: number | null
+          mineral_kg: number | null
+          phase_angle_degrees: number | null
+          protein_kg: number | null
+          raw_device_output: Json | null
+          reactance_ohms: number | null
+          resistance_ohms: number | null
+          segmental_fat_mass: Json | null
+          segmental_lean_mass: Json | null
+          segmental_water: Json | null
+          skeletal_muscle_mass_kg: number | null
+          total_body_water_l: number | null
+          visceral_fat_area_cm2: number | null
+          visceral_fat_level: number | null
+        }
+        Insert: {
+          assessment_id: string
+          body_fat_kg?: number | null
+          body_fat_percent?: number | null
+          bone_mineral_content_kg?: number | null
+          created_at?: string | null
+          ecw_tbw_ratio?: number | null
+          extracellular_water_l?: number | null
+          fat_free_mass_kg?: number | null
+          frequency_hz?: number | null
+          icw_ecw_ratio?: number | null
+          id?: string
+          impedance_ohms?: number | null
+          intracellular_water_l?: number | null
+          lean_body_mass_kg?: number | null
+          mineral_kg?: number | null
+          phase_angle_degrees?: number | null
+          protein_kg?: number | null
+          raw_device_output?: Json | null
+          reactance_ohms?: number | null
+          resistance_ohms?: number | null
+          segmental_fat_mass?: Json | null
+          segmental_lean_mass?: Json | null
+          segmental_water?: Json | null
+          skeletal_muscle_mass_kg?: number | null
+          total_body_water_l?: number | null
+          visceral_fat_area_cm2?: number | null
+          visceral_fat_level?: number | null
+        }
+        Update: {
+          assessment_id?: string
+          body_fat_kg?: number | null
+          body_fat_percent?: number | null
+          bone_mineral_content_kg?: number | null
+          created_at?: string | null
+          ecw_tbw_ratio?: number | null
+          extracellular_water_l?: number | null
+          fat_free_mass_kg?: number | null
+          frequency_hz?: number | null
+          icw_ecw_ratio?: number | null
+          id?: string
+          impedance_ohms?: number | null
+          intracellular_water_l?: number | null
+          lean_body_mass_kg?: number | null
+          mineral_kg?: number | null
+          phase_angle_degrees?: number | null
+          protein_kg?: number | null
+          raw_device_output?: Json | null
+          reactance_ohms?: number | null
+          resistance_ohms?: number | null
+          segmental_fat_mass?: Json | null
+          segmental_lean_mass?: Json | null
+          segmental_water?: Json | null
+          skeletal_muscle_mass_kg?: number | null
+          total_body_water_l?: number | null
+          visceral_fat_area_cm2?: number | null
+          visceral_fat_level?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tensor_bia_results_assessment_id_fkey"
+            columns: ["assessment_id"]
+            isOneToOne: true
+            referencedRelation: "tensor_assessments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tensor_bone_diameters: {
+        Row: {
+          assessment_id: string
+          created_at: string | null
+          id: string
+          notes: string | null
+          site: Database["public"]["Enums"]["bone_diameter_site"]
+          value_cm: number
+        }
+        Insert: {
+          assessment_id: string
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          site: Database["public"]["Enums"]["bone_diameter_site"]
+          value_cm: number
+        }
+        Update: {
+          assessment_id?: string
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          site?: Database["public"]["Enums"]["bone_diameter_site"]
+          value_cm?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tensor_bone_diameters_assessment_id_fkey"
+            columns: ["assessment_id"]
+            isOneToOne: false
+            referencedRelation: "tensor_assessments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tensor_calculated_results: {
+        Row: {
+          assessment_id: string
+          bf_kg_skinfold: number | null
+          bf_percent_bia: number | null
+          bf_percent_consensus: number | null
+          bf_percent_skinfold: number | null
+          bmi: number | null
+          body_adiposity_index: number | null
+          body_density_g_ml: number | null
+          calculated_at: string | null
+          calculation_engine_version: string | null
+          catabolism_risk: string | null
+          conicity_index: number | null
+          consensus_method: string | null
+          ectomorphy: number | null
+          endomorphy: number | null
+          id: string
+          inter_protocol_alert: boolean | null
+          inter_protocol_alert_message: string | null
+          inter_protocol_delta_bf: number | null
+          lbm_kg_bia: number | null
+          lbm_kg_consensus: number | null
+          lbm_kg_skinfold: number | null
+          mesomorphy: number | null
+          phase_angle_prognosis: string | null
+          smm_kg_lee: number | null
+          somatotype_classification: string | null
+          sport_specific_metrics: Json | null
+          waist_height_ratio: number | null
+          waist_hip_ratio: number | null
+          warnings: string[] | null
+        }
+        Insert: {
+          assessment_id: string
+          bf_kg_skinfold?: number | null
+          bf_percent_bia?: number | null
+          bf_percent_consensus?: number | null
+          bf_percent_skinfold?: number | null
+          bmi?: number | null
+          body_adiposity_index?: number | null
+          body_density_g_ml?: number | null
+          calculated_at?: string | null
+          calculation_engine_version?: string | null
+          catabolism_risk?: string | null
+          conicity_index?: number | null
+          consensus_method?: string | null
+          ectomorphy?: number | null
+          endomorphy?: number | null
+          id?: string
+          inter_protocol_alert?: boolean | null
+          inter_protocol_alert_message?: string | null
+          inter_protocol_delta_bf?: number | null
+          lbm_kg_bia?: number | null
+          lbm_kg_consensus?: number | null
+          lbm_kg_skinfold?: number | null
+          mesomorphy?: number | null
+          phase_angle_prognosis?: string | null
+          smm_kg_lee?: number | null
+          somatotype_classification?: string | null
+          sport_specific_metrics?: Json | null
+          waist_height_ratio?: number | null
+          waist_hip_ratio?: number | null
+          warnings?: string[] | null
+        }
+        Update: {
+          assessment_id?: string
+          bf_kg_skinfold?: number | null
+          bf_percent_bia?: number | null
+          bf_percent_consensus?: number | null
+          bf_percent_skinfold?: number | null
+          bmi?: number | null
+          body_adiposity_index?: number | null
+          body_density_g_ml?: number | null
+          calculated_at?: string | null
+          calculation_engine_version?: string | null
+          catabolism_risk?: string | null
+          conicity_index?: number | null
+          consensus_method?: string | null
+          ectomorphy?: number | null
+          endomorphy?: number | null
+          id?: string
+          inter_protocol_alert?: boolean | null
+          inter_protocol_alert_message?: string | null
+          inter_protocol_delta_bf?: number | null
+          lbm_kg_bia?: number | null
+          lbm_kg_consensus?: number | null
+          lbm_kg_skinfold?: number | null
+          mesomorphy?: number | null
+          phase_angle_prognosis?: string | null
+          smm_kg_lee?: number | null
+          somatotype_classification?: string | null
+          sport_specific_metrics?: Json | null
+          waist_height_ratio?: number | null
+          waist_hip_ratio?: number | null
+          warnings?: string[] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tensor_calculated_results_assessment_id_fkey"
+            columns: ["assessment_id"]
+            isOneToOne: true
+            referencedRelation: "tensor_assessments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tensor_consent_log: {
+        Row: {
+          assessment_id: string | null
+          consent_text: string
+          consent_type: string
+          id: string
+          ip_address: string | null
+          patient_user_id: string
+          signed_at: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          assessment_id?: string | null
+          consent_text: string
+          consent_type: string
+          id?: string
+          ip_address?: string | null
+          patient_user_id: string
+          signed_at?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          assessment_id?: string | null
+          consent_text?: string
+          consent_type?: string
+          id?: string
+          ip_address?: string | null
+          patient_user_id?: string
+          signed_at?: string | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tensor_consent_log_assessment_id_fkey"
+            columns: ["assessment_id"]
+            isOneToOne: false
+            referencedRelation: "tensor_assessments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tensor_equations: {
+        Row: {
+          age_max_years: number | null
+          age_min_years: number | null
+          bf_conversion_method: string
+          density_formula: string
+          ethnicity: string | null
+          id: string
+          notes: string | null
+          population_sex: string | null
+          protocol: Database["public"]["Enums"]["skinfold_protocol"]
+          reference_citation: string | null
+          required_sites: string[]
+        }
+        Insert: {
+          age_max_years?: number | null
+          age_min_years?: number | null
+          bf_conversion_method: string
+          density_formula: string
+          ethnicity?: string | null
+          id?: string
+          notes?: string | null
+          population_sex?: string | null
+          protocol: Database["public"]["Enums"]["skinfold_protocol"]
+          reference_citation?: string | null
+          required_sites: string[]
+        }
+        Update: {
+          age_max_years?: number | null
+          age_min_years?: number | null
+          bf_conversion_method?: string
+          density_formula?: string
+          ethnicity?: string | null
+          id?: string
+          notes?: string | null
+          population_sex?: string | null
+          protocol?: Database["public"]["Enums"]["skinfold_protocol"]
+          reference_citation?: string | null
+          required_sites?: string[]
+        }
+        Relationships: []
+      }
+      tensor_girth_measurements: {
+        Row: {
+          assessment_id: string
+          created_at: string | null
+          final_value_cm: number | null
+          id: string
+          measure_1_cm: number
+          measure_2_cm: number | null
+          notes: string | null
+          site: Database["public"]["Enums"]["girth_site"]
+        }
+        Insert: {
+          assessment_id: string
+          created_at?: string | null
+          final_value_cm?: number | null
+          id?: string
+          measure_1_cm: number
+          measure_2_cm?: number | null
+          notes?: string | null
+          site: Database["public"]["Enums"]["girth_site"]
+        }
+        Update: {
+          assessment_id?: string
+          created_at?: string | null
+          final_value_cm?: number | null
+          id?: string
+          measure_1_cm?: number
+          measure_2_cm?: number | null
+          notes?: string | null
+          site?: Database["public"]["Enums"]["girth_site"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tensor_girth_measurements_assessment_id_fkey"
+            columns: ["assessment_id"]
+            isOneToOne: false
+            referencedRelation: "tensor_assessments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tensor_skinfold_measurements: {
+        Row: {
+          assessment_id: string
+          created_at: string | null
+          etm_intra: number | null
+          final_value_mm: number | null
+          id: string
+          is_outlier: boolean | null
+          measure_1_mm: number
+          measure_2_mm: number | null
+          measure_3_mm: number | null
+          notes: string | null
+          outlier_reason: string | null
+          site: Database["public"]["Enums"]["skinfold_site"]
+        }
+        Insert: {
+          assessment_id: string
+          created_at?: string | null
+          etm_intra?: number | null
+          final_value_mm?: number | null
+          id?: string
+          is_outlier?: boolean | null
+          measure_1_mm: number
+          measure_2_mm?: number | null
+          measure_3_mm?: number | null
+          notes?: string | null
+          outlier_reason?: string | null
+          site: Database["public"]["Enums"]["skinfold_site"]
+        }
+        Update: {
+          assessment_id?: string
+          created_at?: string | null
+          etm_intra?: number | null
+          final_value_mm?: number | null
+          id?: string
+          is_outlier?: boolean | null
+          measure_1_mm?: number
+          measure_2_mm?: number | null
+          measure_3_mm?: number | null
+          notes?: string | null
+          outlier_reason?: string | null
+          site?: Database["public"]["Enums"]["skinfold_site"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tensor_skinfold_measurements_assessment_id_fkey"
+            columns: ["assessment_id"]
+            isOneToOne: false
+            referencedRelation: "tensor_assessments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tensor_trajectory: {
+        Row: {
+          bf_percent_delta: number | null
+          created_at: string | null
+          days_between: number
+          fat_delta_kg: number | null
+          from_assessment_id: string
+          id: string
+          insights: string[] | null
+          lean_delta_kg: number | null
+          patient_user_id: string
+          phase_angle_delta: number | null
+          smm_delta_kg: number | null
+          to_assessment_id: string
+          trajectory_quality: string | null
+          water_delta_l: number | null
+          weight_delta_kg: number | null
+        }
+        Insert: {
+          bf_percent_delta?: number | null
+          created_at?: string | null
+          days_between: number
+          fat_delta_kg?: number | null
+          from_assessment_id: string
+          id?: string
+          insights?: string[] | null
+          lean_delta_kg?: number | null
+          patient_user_id: string
+          phase_angle_delta?: number | null
+          smm_delta_kg?: number | null
+          to_assessment_id: string
+          trajectory_quality?: string | null
+          water_delta_l?: number | null
+          weight_delta_kg?: number | null
+        }
+        Update: {
+          bf_percent_delta?: number | null
+          created_at?: string | null
+          days_between?: number
+          fat_delta_kg?: number | null
+          from_assessment_id?: string
+          id?: string
+          insights?: string[] | null
+          lean_delta_kg?: number | null
+          patient_user_id?: string
+          phase_angle_delta?: number | null
+          smm_delta_kg?: number | null
+          to_assessment_id?: string
+          trajectory_quality?: string | null
+          water_delta_l?: number | null
+          weight_delta_kg?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tensor_trajectory_from_assessment_id_fkey"
+            columns: ["from_assessment_id"]
+            isOneToOne: false
+            referencedRelation: "tensor_assessments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tensor_trajectory_to_assessment_id_fkey"
+            columns: ["to_assessment_id"]
+            isOneToOne: false
+            referencedRelation: "tensor_assessments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       training_feedback: {
         Row: {
           athlete_id: string
@@ -10396,6 +10975,23 @@ export type Database = {
         | "MASTERS_70_PLUS"
       app_role: "admin" | "moderator" | "user" | "professional"
       athlete_track: "ENHANCED" | "NATURAL" | "LIFESTYLE"
+      bia_device_type:
+        | "INBODY_270"
+        | "INBODY_370"
+        | "INBODY_570"
+        | "INBODY_770"
+        | "INBODY_970"
+        | "TANITA_BC601"
+        | "TANITA_BC730"
+        | "TANITA_MC780"
+        | "SEC_SOLUTION"
+        | "WISEUP"
+        | "OMRON_HBF514"
+        | "BIODYNAMICS_310"
+        | "BIODYNAMICS_450"
+        | "GENERIC_SINGLE_FREQUENCY"
+        | "GENERIC_MULTI_FREQUENCY"
+        | "OTHER"
       biological_sex: "MALE" | "FEMALE"
       bodybuilding_category:
         | "OPEN_BODYBUILDING"
@@ -10409,6 +11005,34 @@ export type Database = {
         | "FITNESS"
         | "WELLNESS"
         | "BIKINI"
+      bone_diameter_site:
+        | "BIACROMIAL"
+        | "BIILIOCRESTAL"
+        | "CHEST_TRANSVERSE"
+        | "CHEST_ANTEROPOSTERIOR"
+        | "HUMERUS_EPICONDYLES"
+        | "FEMUR_EPICONDYLES"
+        | "WRIST_STYLOID"
+        | "ANKLE_MALLEOLI"
+      girth_site:
+        | "HEAD"
+        | "NECK"
+        | "CHEST_RELAXED"
+        | "CHEST_INSPIRED"
+        | "CHEST_EXPIRED"
+        | "WAIST_MINIMAL"
+        | "WAIST_UMBILICAL"
+        | "HIP_MAXIMAL"
+        | "GLUTEAL_MAXIMAL"
+        | "THIGH_PROXIMAL"
+        | "THIGH_MID"
+        | "THIGH_DISTAL"
+        | "CALF_MAXIMAL"
+        | "ARM_RELAXED"
+        | "ARM_FLEXED_TENSED"
+        | "FOREARM_RELAXED"
+        | "FOREARM_FLEXED"
+        | "WRIST"
       menstrual_status:
         | "REGULAR"
         | "IRREGULAR"
@@ -10427,6 +11051,39 @@ export type Database = {
         | "FINAL_SHARPENING"
         | "PEAK_WEEK"
         | "POST_STAGE_RECOVERY"
+      skinfold_protocol:
+        | "JACKSON_POLLOCK_3"
+        | "JACKSON_POLLOCK_4"
+        | "JACKSON_POLLOCK_7"
+        | "POLLOCK_7"
+        | "PETROSKI_4"
+        | "PETROSKI_7"
+        | "GUEDES_3"
+        | "FAULKNER"
+        | "DURNIN_WOMERSLEY_4"
+        | "SLAUGHTER_JUVENILE"
+        | "LOHMAN_JUVENILE"
+        | "ISAK_8"
+      skinfold_site:
+        | "TRICEPS"
+        | "SUBSCAPULAR"
+        | "BICEPS"
+        | "ILIAC_CREST"
+        | "SUPRASPINAL"
+        | "ABDOMINAL"
+        | "FRONT_THIGH"
+        | "MEDIAL_CALF"
+        | "CHEST_PECTORAL"
+        | "AXILLARY_MID"
+        | "SUPRAILIAC"
+        | "MEDIAL_THIGH"
+        | "SUPRAILIAC_OBLIQUE"
+      tensor_assessment_mode:
+        | "COACH_FULL"
+        | "COACH_SKINFOLD_ONLY"
+        | "COACH_BIA_ONLY"
+        | "PATIENT_BIA_HOMECARE"
+        | "IMPORT_FROM_DEVICE"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -10568,6 +11225,24 @@ export const Constants = {
       ],
       app_role: ["admin", "moderator", "user", "professional"],
       athlete_track: ["ENHANCED", "NATURAL", "LIFESTYLE"],
+      bia_device_type: [
+        "INBODY_270",
+        "INBODY_370",
+        "INBODY_570",
+        "INBODY_770",
+        "INBODY_970",
+        "TANITA_BC601",
+        "TANITA_BC730",
+        "TANITA_MC780",
+        "SEC_SOLUTION",
+        "WISEUP",
+        "OMRON_HBF514",
+        "BIODYNAMICS_310",
+        "BIODYNAMICS_450",
+        "GENERIC_SINGLE_FREQUENCY",
+        "GENERIC_MULTI_FREQUENCY",
+        "OTHER",
+      ],
       biological_sex: ["MALE", "FEMALE"],
       bodybuilding_category: [
         "OPEN_BODYBUILDING",
@@ -10581,6 +11256,36 @@ export const Constants = {
         "FITNESS",
         "WELLNESS",
         "BIKINI",
+      ],
+      bone_diameter_site: [
+        "BIACROMIAL",
+        "BIILIOCRESTAL",
+        "CHEST_TRANSVERSE",
+        "CHEST_ANTEROPOSTERIOR",
+        "HUMERUS_EPICONDYLES",
+        "FEMUR_EPICONDYLES",
+        "WRIST_STYLOID",
+        "ANKLE_MALLEOLI",
+      ],
+      girth_site: [
+        "HEAD",
+        "NECK",
+        "CHEST_RELAXED",
+        "CHEST_INSPIRED",
+        "CHEST_EXPIRED",
+        "WAIST_MINIMAL",
+        "WAIST_UMBILICAL",
+        "HIP_MAXIMAL",
+        "GLUTEAL_MAXIMAL",
+        "THIGH_PROXIMAL",
+        "THIGH_MID",
+        "THIGH_DISTAL",
+        "CALF_MAXIMAL",
+        "ARM_RELAXED",
+        "ARM_FLEXED_TENSED",
+        "FOREARM_RELAXED",
+        "FOREARM_FLEXED",
+        "WRIST",
       ],
       menstrual_status: [
         "REGULAR",
@@ -10601,6 +11306,42 @@ export const Constants = {
         "FINAL_SHARPENING",
         "PEAK_WEEK",
         "POST_STAGE_RECOVERY",
+      ],
+      skinfold_protocol: [
+        "JACKSON_POLLOCK_3",
+        "JACKSON_POLLOCK_4",
+        "JACKSON_POLLOCK_7",
+        "POLLOCK_7",
+        "PETROSKI_4",
+        "PETROSKI_7",
+        "GUEDES_3",
+        "FAULKNER",
+        "DURNIN_WOMERSLEY_4",
+        "SLAUGHTER_JUVENILE",
+        "LOHMAN_JUVENILE",
+        "ISAK_8",
+      ],
+      skinfold_site: [
+        "TRICEPS",
+        "SUBSCAPULAR",
+        "BICEPS",
+        "ILIAC_CREST",
+        "SUPRASPINAL",
+        "ABDOMINAL",
+        "FRONT_THIGH",
+        "MEDIAL_CALF",
+        "CHEST_PECTORAL",
+        "AXILLARY_MID",
+        "SUPRAILIAC",
+        "MEDIAL_THIGH",
+        "SUPRAILIAC_OBLIQUE",
+      ],
+      tensor_assessment_mode: [
+        "COACH_FULL",
+        "COACH_SKINFOLD_ONLY",
+        "COACH_BIA_ONLY",
+        "PATIENT_BIA_HOMECARE",
+        "IMPORT_FROM_DEVICE",
       ],
     },
   },
