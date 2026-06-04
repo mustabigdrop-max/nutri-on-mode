@@ -6,8 +6,14 @@ import { toast } from "sonner";
 import MeridianTrackSelector from "./MeridianTrackSelector";
 import MeridianCategorySelector from "./MeridianCategorySelector";
 import MeridianDashboard from "./MeridianDashboard";
-import { useMeridian } from "@/hooks/useMeridian";
+import { useMeridian, MeridianCalculationError } from "@/hooks/useMeridian";
 import { useMeridianForPatient } from "@/hooks/useMeridianForPatient";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
+import type { MeridianInvokeError } from "@/lib/meridian/invokeCalculatePlan";
 import type {
   AgeGroup,
   AthleteTrack,
