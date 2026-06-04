@@ -58,6 +58,8 @@ export default function MeridianPlanBuilder({ patientUserId, onCreated }: Props 
 
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<{ plan: MeridianPlan; competition: MeridianCompetition } | null>(null);
+  const [clinicalBlock, setClinicalBlock] = useState<MeridianInvokeError | null>(null);
+  const navigate = useNavigate();
 
   const canNext1 = !!track;
   const canNext2 = !!sex && !!category;
