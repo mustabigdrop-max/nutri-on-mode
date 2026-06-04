@@ -3,6 +3,19 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import type { MeridianCompetition, MeridianPlan } from "@/lib/meridian/types";
+import {
+  invokeMeridianCalculatePlan,
+  type MeridianInvokeError,
+} from "@/lib/meridian/invokeCalculatePlan";
+
+export class MeridianCalculationError extends Error {
+  payload: MeridianInvokeError;
+  constructor(payload: MeridianInvokeError) {
+    super(payload.message || payload.error || "Falha no cálculo MERIDIAN");
+    this.payload = payload;
+    this.name = "MeridianCalculationError";
+  }
+}
 
 export function useMeridian() {
   const { user } = useAuth();
@@ -40,13 +53,13 @@ export function useMeridian() {
       competitionId: string,
       athleteParamsOverride?: Record<string, unknown>,
     ) => {
-      const { data, error } = await supabase.functions.invoke("meridian-calculate-plan", {
-        body: { competition_id: competitionId, athlete_params_override: athleteParamsOverride },
+      const res = await invokeMeridianCalculatePlan({
+        competition_id: competitionId,
+        athlete_params_override: athleteParamsOverride,
       });
-      if (error) throw new Error(error.message);
-      if ((data as any)?.error) throw new Error((data as any).error);
+      if (!res.ok) throw new MeridianCalculationError(res.payload);
       await reload();
-      return (data as any)?.plan as MeridianPlan;
+      return res.plan as MeridianPlan;
     },
     [reload],
   );
