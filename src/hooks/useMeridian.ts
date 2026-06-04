@@ -57,7 +57,7 @@ export function useMeridian() {
         competition_id: competitionId,
         athlete_params_override: athleteParamsOverride,
       });
-      if (!res.ok) throw new MeridianCalculationError(res.payload);
+      if (res.ok === false) throw new MeridianCalculationError(res.payload);
       await reload();
       return res.plan as MeridianPlan;
     },
