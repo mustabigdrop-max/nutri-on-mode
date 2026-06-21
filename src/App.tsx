@@ -116,6 +116,7 @@ import NutriPlanElitePage from "./pages/NutriPlanElitePage";
 import LearnPage from "./pages/LearnPage";
 import VeraPage from "./pages/VeraPage";
 import MeridianPage from "./pages/MeridianPage";
+import MelloPreviewPage from "./pages/MelloPreviewPage";
 
 const queryClient = new QueryClient();
 
@@ -128,6 +129,7 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/training/preview-mello" element={<MelloPreviewPage />} />
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/assessment" element={<ProtectedRoute><AssessmentPCA /></ProtectedRoute>} />
             <Route path="/resultado-pca" element={<ProtectedRoute><ResultadoPCAPage /></ProtectedRoute>} />
