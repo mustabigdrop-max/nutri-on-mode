@@ -588,7 +588,11 @@ Português. Específico. Científico. Zero genérico.`;
 
   const saveProtocol = async (patientId?: string) => {
     if (!userId) return;
-    const { data: inserted, error } = await supabase.from("training_protocols").insert({
+    // ── Persistência no padrão Mello v1 ─────────────────────────────────
+    // Mantém colunas legadas (`protocol_text`) por compatibilidade, mas
+    // grava o payload tipado em `protocol_json` + flag `format_version`.
+    const ov = protocol?.block_overview;
+    const insertPayload: any = {
       user_id: userId, client_name: clientName, phase, muscles, level, weeks,
       days_per_week: days, equipment: equipment.join(", "), injuries,
       session_duration: sessionDuration,
@@ -597,7 +601,16 @@ Português. Específico. Científico. Zero genérico.`;
       tecnica_text: textResults.tecnica || "",
       periodizacao_text: textResults.periodizacao || "",
       patient_user_id: patientId || null,
-    }).select("id").single();
+      format_version: protocol ? "mello_v1" : "legacy",
+      protocol_json: protocol ?? null,
+      title: ov?.title ?? clientName ?? null,
+      duration_weeks: ov?.mesocycle_duration_weeks ?? (parseInt(String(weeks)) || null),
+      current_week: 1,
+      division: ov?.split ?? null,
+      deload_week: 5,
+    };
+    const { data: inserted, error } = await (supabase.from("training_protocols") as any)
+      .insert(insertPayload).select("id").single();
     if (error) { toast.error("Erro ao salvar"); setShowSaveModal(false); return; }
     if (inserted?.id) setSavedProtocolId(inserted.id);
 
