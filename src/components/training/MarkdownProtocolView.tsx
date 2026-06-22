@@ -531,6 +531,26 @@ export function MarkdownProtocolView({
   content: any;
   title?: string;
 }) {
+  // PRIMEIRA tentativa: validar contra o schema Mello v1 → renderiza no padrão novo
+  const rawCandidate =
+    content && typeof content === "object" && "protocol_json" in content
+      ? (content as any).protocol_json ?? content
+      : content;
+
+  let melloCandidate: any = rawCandidate;
+  if (typeof melloCandidate === "string") {
+    try {
+      melloCandidate = JSON.parse(melloCandidate);
+    } catch {
+      // mantém string
+    }
+  }
+
+  const melloParsed = MelloProtocolSchema.safeParse(melloCandidate);
+  if (melloParsed.success) {
+    return <MelloProtocolViewer protocol={melloParsed.data} />;
+  }
+
   // Tenta normalizar via adapter (lida com strings JSON, code-fences, formatos alternados)
   let normalized: any = content;
   try {
@@ -539,8 +559,6 @@ export function MarkdownProtocolView({
     normalized = content;
   }
 
-  // Segunda tentativa: se ainda for string, extrair JSON via tryParseProtocolJSON
-  // (lida com texto antes/depois do bloco { ... } que o JSON.parse padrão rejeita).
   if (typeof normalized === "string") {
     const extracted = tryParseProtocolJSON(normalized);
     if (extracted && typeof extracted === "object") {
@@ -551,11 +569,42 @@ export function MarkdownProtocolView({
   const parsed = parseProtocolToDays(normalized);
 
   if (parsed.isFallback) {
-    const txt =
-      typeof content === "string"
-        ? content
-        : JSON.stringify(content, null, 2);
-    return <FallbackCard title={title || "Protocolo"} content={txt} />;
+    // Fallback legado — NUNCA mostrar JSON.stringify cru
+    return (
+      <div
+        style={{
+          background: CARD_BG,
+          border: `1px solid ${GOLD_BORDER}`,
+          borderRadius: 12,
+          padding: 16,
+          marginBottom: 12,
+        }}
+      >
+        <div
+          style={{
+            display: "inline-block",
+            fontSize: 10,
+            fontWeight: 700,
+            letterSpacing: 1,
+            textTransform: "uppercase",
+            color: GOLD,
+            background: GOLD_DIM,
+            border: `1px solid ${GOLD_BORDER}`,
+            borderRadius: 4,
+            padding: "2px 8px",
+            marginBottom: 10,
+          }}
+        >
+          Legado
+        </div>
+        <div style={{ fontSize: 14, fontWeight: 600, color: TEXT, marginBottom: 6 }}>
+          Este protocolo está no formato antigo
+        </div>
+        <div style={{ fontSize: 12, color: TEXT_DIM }}>
+          Clique em "Regenerar no padrão Mello" pra atualizar pro novo layout.
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -567,3 +616,4 @@ export function MarkdownProtocolView({
     </div>
   );
 }
+
