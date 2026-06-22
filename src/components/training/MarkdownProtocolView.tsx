@@ -3,6 +3,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, ChevronUp, Clock, FileText } from "lucide-react";
 import { parseProtocolToDays, type ParsedDay } from "@/lib/parseProtocolMarkdown";
 import { adaptProtocolFormat } from "@/lib/adaptProtocolFormat";
+import { MelloProtocolViewer } from "@/components/training/MelloProtocolViewer";
+import { MelloProtocolSchema } from "@/types/melloProtocol";
+
 
 // Paleta TrainingON (espelha tokens usados em TrainingPage.tsx)
 const GREEN = "#00e888";
