@@ -2734,53 +2734,17 @@ function HistoryViewModal({ protocol: p, onClose, userId, onUpdate }: { protocol
 
         {/* Content */}
         <div className="px-5 py-4 space-y-3">
-          {parsed?.block_overview ? (
-            <>
-              <BlockOverviewCard overview={parsed.block_overview} alerts={parsed.improvement_alerts} clientName={p.client_name} trainingDays={parsed.training_days} />
-              {isMello16 && (
-                <WeekNavigator
-                  protocolKey={`history-${p.id}`}
-                  initialWeek={initialWeek}
-                  weekSummaries={weekSummaries}
-                  onWeekChange={handleWeekChange}
-                />
-              )}
-              {(() => {
-                const finText =
-                  typeof parsed.finalizadores === "string"
-                    ? parsed.finalizadores
-                    : parsed.finalizadores_text || parsed.finishers_text || "";
-                const finParsed = finText ? parseFinalizadoresByDay(finText) : undefined;
-                return parsed.training_days?.map((day: any, idx: number) => (
-                  <TrainingDayCard key={idx} day={day} index={idx} expanded={expandedDay === idx} onToggle={() => setExpandedDay(expandedDay === idx ? null : idx)}
-                    expandedExercise={expandedExercise} setExpandedExercise={setExpandedExercise}
-                    weekPhase={isMello16 ? weekPhase : null}
-                    athleteId={userId}
-                    protocolId={p.id}
-                    protocolFinalizadoresParsed={finParsed} />
-                ));
-              })()}
-            </>
-          ) : p.protocol_text ? (
-            <MarkdownProtocolView
-              content={(() => {
-                try {
-                  const raw = typeof p.protocol_text === "string"
-                    ? JSON.parse(p.protocol_text)
-                    : p.protocol_text;
-                  const unwrapped = raw?.protocol && typeof raw.protocol === "object"
-                    ? raw.protocol
-                    : raw;
-                  return adaptProtocolFormat(unwrapped);
-                } catch {
-                  return p.protocol_text;
-                }
-              })()}
-              title={p.client_name || "Protocolo"}
-            />
-          ) : (
-            <p className="text-xs text-center py-8" style={{ color: TEXT_MUTED }}>Sem dados do protocolo</p>
-          )}
+          {/* ── Render unificado: Mello v1 ou Legado (NUNCA JSON cru) ── */}
+          <TrainingTabContent
+            protocol={{
+              id: p.id,
+              title: p.title || p.client_name,
+              client_name: p.client_name,
+              protocol_json: p.protocol_json ?? (parsed && parsed.block_overview ? parsed : null),
+              protocol_text: p.protocol_text,
+              format_version: p.format_version,
+            }}
+          />
 
           {p.anatomy_text && (
             <div>
