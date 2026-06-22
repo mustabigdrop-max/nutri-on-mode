@@ -68,6 +68,7 @@ import {
   normalizeFinalizadoresJson,
 } from "@/lib/parseFinalizadores";
 import { MarkdownProtocolView } from "@/components/training/MarkdownProtocolView";
+import { TrainingTabContent } from "@/components/training/TrainingTabContent";
 import {
   TrackerProvider,
   WorkoutProgressBar,
