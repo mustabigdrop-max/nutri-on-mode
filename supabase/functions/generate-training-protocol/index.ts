@@ -1,3 +1,8 @@
+/**
+ * @deprecated Substituída por `generate-mello-protocol` (padrão Mello v1).
+ * Mantida apenas para compatibilidade com históricos antigos. Não usar em
+ * novas chamadas — toda nova geração deve ir pela Mello.
+ */
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 
 const corsHeaders = {
