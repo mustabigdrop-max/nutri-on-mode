@@ -496,21 +496,32 @@ Português. Específico. Científico. Zero genérico.`;
     setActiveResultTab("overview");
     try {
       // Timeout de 90s — Edge Functions Supabase já têm limite, mas damos feedback claro
-      const invokePromise = supabase.functions.invoke("generate-training-protocol", {
-        body: {
-          ...bodyData,
-          tab: "protocolo",
-          elitePrompt: buildElitePrompt(),
-        },
+      // ── Geração no padrão Mello v1 ─────────────────────────────────────
+      // Substitui o gerador legado (`generate-training-protocol`) pela nova
+      // Edge Function que devolve um payload validado por MelloProtocolSchema.
+      const athletePayload = {
+        name: clientName,
+        category: phase || "Hipertrofia",
+        phase: phase || "Hipertrofia",
+        readiness: 7,
+        apex_priorities: [] as string[],
+        fiber_profile: fiberProfile?.notas || fiberProfile?.dominancia || "padrão de atleta",
+        biotype: "mesomorfo",
+        restrictions: injuries ? [injuries] : [],
+        division: TRAINING_SYSTEMS.find(s => s.id === trainingSystem)?.nome || "Bro Split Adaptado",
+        total_weeks: Math.max(parseInt(String(weeks)) || 16, 1),
+        current_week: 1,
+        deload_week: 5,
+      };
+      const invokePromise = supabase.functions.invoke("generate-mello-protocol", {
+        body: { athlete: athletePayload },
       });
       const timeoutPromise = new Promise<never>((_, reject) =>
         setTimeout(() => reject(new Error("Tempo excedido (90s). O protocolo é complexo — tente novamente.")), 90000)
       );
       const { data, error } = await Promise.race([invokePromise, timeoutPromise]) as any;
       if (error) throw error;
-      let proto = data.protocol;
-      if (!proto && data.content) proto = tryParseJson(data.content);
-      proto = adaptProtocolFormat(proto);
+      const proto = data?.protocol ?? null;
       const hasStructured =
         proto && typeof proto === "object" &&
         (proto.block_overview ||
