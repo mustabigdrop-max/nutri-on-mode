@@ -9797,19 +9797,14 @@ export type Database = {
           created_at: string | null
           days_per_week: string | null
           equipment: string | null
-          format_version: string
           id: string
           injuries: string | null
-          is_legacy_replaced: boolean
           last_viewed_week: number | null
           level: string | null
-          migrated_at: string | null
-          migration_source_id: string | null
           muscles: string[] | null
           patient_user_id: string | null
           periodizacao_text: string | null
           phase: string | null
-          protocol_json: Json | null
           protocol_text: string | null
           session_duration: string | null
           tecnica_text: string | null
@@ -9823,19 +9818,14 @@ export type Database = {
           created_at?: string | null
           days_per_week?: string | null
           equipment?: string | null
-          format_version?: string
           id?: string
           injuries?: string | null
-          is_legacy_replaced?: boolean
           last_viewed_week?: number | null
           level?: string | null
-          migrated_at?: string | null
-          migration_source_id?: string | null
           muscles?: string[] | null
           patient_user_id?: string | null
           periodizacao_text?: string | null
           phase?: string | null
-          protocol_json?: Json | null
           protocol_text?: string | null
           session_duration?: string | null
           tecnica_text?: string | null
@@ -9849,19 +9839,14 @@ export type Database = {
           created_at?: string | null
           days_per_week?: string | null
           equipment?: string | null
-          format_version?: string
           id?: string
           injuries?: string | null
-          is_legacy_replaced?: boolean
           last_viewed_week?: number | null
           level?: string | null
-          migrated_at?: string | null
-          migration_source_id?: string | null
           muscles?: string[] | null
           patient_user_id?: string | null
           periodizacao_text?: string | null
           phase?: string | null
-          protocol_json?: Json | null
           protocol_text?: string | null
           session_duration?: string | null
           tecnica_text?: string | null
@@ -9869,15 +9854,7 @@ export type Database = {
           volume_landmarks?: Json | null
           weeks?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "training_protocols_migration_source_id_fkey"
-            columns: ["migration_source_id"]
-            isOneToOne: false
-            referencedRelation: "training_protocols"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       training_sessions_completed: {
         Row: {
@@ -10917,17 +10894,6 @@ export type Database = {
           periodo?: string | null
           plano?: string | null
           status?: string | null
-        }
-        Relationships: []
-      }
-      trainingon_migration_stats: {
-        Row: {
-          last_migrated_at: string | null
-          legacy_pending: number | null
-          legacy_replaced: number | null
-          mello_v1_count: number | null
-          total_protocols: number | null
-          user_id: string | null
         }
         Relationships: []
       }
