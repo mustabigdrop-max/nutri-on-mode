@@ -1,12 +1,10 @@
 import { useMemo, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ClipboardList, Flame, TrendingUp, Link2, FileText, Copy, Check } from "lucide-react";
+import { ClipboardList, Flame, Zap, TrendingUp, Link2, FileText, Copy, Check } from "lucide-react";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import TrainingReviewAgent, { ReviewStatusBadge } from "@/components/coach/TrainingReviewAgent";
-import FinalizadoresSection from "@/components/training/FinalizadoresSection";
-import { parseFinalizadoresByDay, resolveFinalizadoresForDay } from "@/lib/parseFinalizadores";
 
 // ─── Parsing helpers ────────────────────────────────────────────
 function section(text: string, header: string | string[], nextHeaders: string[] = []): string {
@@ -132,6 +130,7 @@ function Stat({ label, v, accent }: { label: string; v: string; accent?: string 
 const TABS = [
   { key: "semana", label: "📋 Semana Tipo", icon: ClipboardList },
   { key: "ativacao", label: "🔥 Ativação", icon: Flame },
+  { key: "finalizadores", label: "⚡ Finalizadores", icon: Zap },
   { key: "progressao", label: "📈 Progressão", icon: TrendingUp },
   { key: "integracao", label: "🔗 Integração APEX", icon: Link2 },
   { key: "raw", label: "📄 Recomendações (texto completo)", icon: FileText },
@@ -212,18 +211,6 @@ export default function CorrectivePlanViewer({
   }, [text]);
 
   const days = useMemo(() => parseDays(parsed.semanaRaw), [parsed.semanaRaw]);
-  const finalizadoresParsed = useMemo(
-    () => parseFinalizadoresByDay(parsed.finalizadores || ""),
-    [parsed.finalizadores],
-  );
-
-  // Resolve a chave canônica do dia ("D1", "PUSH"...) a partir do header textual.
-  const dayKeyOf = (label: string, idx: number): { num: number; title: string } => {
-    const t = (label || "").trim();
-    const m = t.match(/(?:dia|day|d|treino|sess[ãa]o)\s*(\d+)/i);
-    const num = m ? parseInt(m[1], 10) : idx + 1;
-    return { num, title: t };
-  };
 
   return (
     <div className="space-y-3">
@@ -269,8 +256,6 @@ export default function CorrectivePlanViewer({
           )}
           {days.map((d, i) => {
             const exs = parseExercises(d.body);
-            const { num, title } = dayKeyOf(d.day, i);
-            const finItems = resolveFinalizadoresForDay(finalizadoresParsed, num, title);
             return (
               <div key={i} className="space-y-2">
                 <div className="text-sm font-bold text-foreground">{d.day}</div>
@@ -281,14 +266,6 @@ export default function CorrectivePlanViewer({
                     {exs.map((ex, j) => <ExerciseCard key={j} ex={ex} scores={apexScores} />)}
                   </div>
                 )}
-                {finItems.length > 0 && (
-                  <FinalizadoresSection
-                    items={finItems}
-                    objetivo={finalizadoresParsed.objetivo}
-                    duracaoMin={finalizadoresParsed.duracao_min || 10}
-                    storageKey={protocolId ? `${protocolId}:d${num}` : undefined}
-                  />
-                )}
               </div>
             );
           })}
@@ -296,7 +273,7 @@ export default function CorrectivePlanViewer({
       )}
 
       {tab === "ativacao" && <PreOrEmpty text={parsed.ativacao} hint="ativação pré-treino" onOpenRaw={() => setTab("raw")} />}
-      {tab === "progressao" && <PreOrEmpty text={parsed.progressao} hint="progressão 4 semanas" onOpenRaw={() => setTab("raw")} />}
+      {tab === "finalizadores" && <PreOrEmpty text={parsed.finalizadores} hint="finalizadores / exercícios corretivos pós" onOpenRaw={() => setTab("raw")} />}
       {tab === "progressao" && <PreOrEmpty text={parsed.progressao} hint="progressão 4 semanas" onOpenRaw={() => setTab("raw")} />}
       {tab === "integracao" && (
         <div className="space-y-3">

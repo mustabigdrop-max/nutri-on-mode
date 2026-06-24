@@ -1874,8 +1874,6 @@ Suporte em uso: ${suporte || "não informado"}` : "";
             <ApexPlanoMestre
               sessionId={savedAnalysisId || null}
               autoGenerate
-              weeksContext={parseInt(meta?.semEst || "0", 10) || undefined}
-
               fcsScore={(() => {
                 const sc = segments.map(s => s.score).filter(n => typeof n === "number");
                 return sc.length ? Math.round(sc.reduce((a,b)=>a+b,0)/sc.length) : null;

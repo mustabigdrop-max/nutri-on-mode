@@ -102,8 +102,6 @@ import ApexVisualIAPage from "./pages/coach/ApexVisualIAPage";
 import CoachTrainingOnPage from "./pages/coach/CoachTrainingOnPage";
 import CoachLabExamsPage from "./pages/coach/CoachLabExamsPage";
 import CoachReportsPage from "./pages/coach/CoachReportsPage";
-import CoachMeridianPage from "./pages/CoachMeridianPage";
-import CoachMeridianRosterPage from "./pages/CoachMeridianRosterPage";
 import APEXPoseAnalysisPage from "./pages/coach/APEXPoseAnalysisPage";
 import DrNexusPage from "./pages/DrNexusPage";
 import VideoFormPage from "./pages/VideoFormPage";
@@ -115,8 +113,6 @@ import NotFound from "./pages/NotFound";
 import NutriPlanElitePage from "./pages/NutriPlanElitePage";
 import LearnPage from "./pages/LearnPage";
 import VeraPage from "./pages/VeraPage";
-import MeridianPage from "./pages/MeridianPage";
-import MelloPreviewPage from "./pages/MelloPreviewPage";
 
 const queryClient = new QueryClient();
 
@@ -129,7 +125,6 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
-            <Route path="/training/preview-mello" element={<MelloPreviewPage />} />
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/assessment" element={<ProtectedRoute><AssessmentPCA /></ProtectedRoute>} />
             <Route path="/resultado-pca" element={<ProtectedRoute><ResultadoPCAPage /></ProtectedRoute>} />
@@ -239,15 +234,12 @@ const App = () => (
             <Route path="/coach/trainingon" element={<ProtectedRoute><CoachTrainingOnPage /></ProtectedRoute>} />
             <Route path="/coach/lab-exams" element={<ProtectedRoute><CoachLabExamsPage /></ProtectedRoute>} />
             <Route path="/coach/relatorios" element={<ProtectedRoute><CoachReportsPage /></ProtectedRoute>} />
-            <Route path="/coach/meridian" element={<ProtectedRoute><CoachMeridianRosterPage /></ProtectedRoute>} />
-            <Route path="/coach/meridian/:patientId" element={<ProtectedRoute><CoachMeridianPage /></ProtectedRoute>} />
             <Route path="/coach/atletas" element={<ProtectedRoute><AthleteRoster /></ProtectedRoute>} />
             <Route path="/coach/atletas/:id" element={<ProtectedRoute><AthleteProgressTracker /></ProtectedRoute>} />
             <Route path="/coach/apex-pose" element={<ProtectedRoute><APEXPoseAnalysisPage /></ProtectedRoute>} />
             <Route path="/coach/vera" element={<ProtectedRoute><VeraPage /></ProtectedRoute>} />
 
             <Route path="/nutriplan-elite" element={<ProtectedRoute><NutriPlanElitePage /></ProtectedRoute>} />
-            <Route path="/meridian" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON PRO" featureName="MERIDIAN"><MeridianPage /></PlanGateWrapper></ProtectedRoute>} />
 
             <Route path="*" element={<NotFound />} />
           </Routes>

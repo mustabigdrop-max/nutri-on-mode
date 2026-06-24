@@ -769,14 +769,9 @@ const CoachPatientDetailPage = () => {
                     Competition Mode
                     <Badge variant="outline" className="text-[10px] border-primary/40 text-primary">ON PRO</Badge>
                   </CardTitle>
-                  <div className="flex gap-2">
-                    <Button size="sm" variant="outline" onClick={() => navigate(`/coach/meridian/${patientId}`)} className="border-amber-500/40 text-amber-500 hover:bg-amber-500/10">
-                      MERIDIAN
-                    </Button>
-                    <Button size="sm" onClick={() => setWizardOpen(true)}>
-                      <Plus className="w-3 h-3 mr-1" /> Novo plano
-                    </Button>
-                  </div>
+                  <Button size="sm" onClick={() => setWizardOpen(true)}>
+                    <Plus className="w-3 h-3 mr-1" /> Novo plano
+                  </Button>
                 </div>
               </CardHeader>
               <CardContent className="space-y-2">

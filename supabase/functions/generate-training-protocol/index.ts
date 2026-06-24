@@ -1,8 +1,3 @@
-/**
- * @deprecated Substituída por `generate-mello-protocol` (padrão Mello v1).
- * Mantida apenas para compatibilidade com históricos antigos. Não usar em
- * novas chamadas — toda nova geração deve ir pela Mello.
- */
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 
 const corsHeaders = {
@@ -212,20 +207,7 @@ Responda SEMPRE em JSON válido com esta estrutura exata:
           ]
         }
       ],
-      "session_notes": "observações da sessão considerando fibras e prontidão",
-      "finalizadores": {
-        "duracao_min": 10,
-        "objetivo": "recuperação ativa, flexibilidade e reforço postural",
-        "exercicios": [
-          {
-            "numero": 1,
-            "nome": "nome do exercício finalizador",
-            "execucao": "descrição técnica da execução",
-            "series_duracao": "ex: 2 séries de 45-60s OU 3×12-15",
-            "foco_corretivo": "qual desequilíbrio/grupo este finalizador corrige"
-          }
-        ]
-      }
+      "session_notes": "observações da sessão considerando fibras e prontidão"
     }
   ],
   "improvement_alerts": [
@@ -987,7 +969,7 @@ serve(async (req) => {
 
     // Dual-AI: Perplexity for scientific references
     const scienceTabs = ["protocolo", "periodizacao", "volume", "biomec", "emg", "postural", "feminino"];
-    if (false && PERPLEXITY_API_KEY && scienceTabs.includes(data.tab)) {
+    if (PERPLEXITY_API_KEY && scienceTabs.includes(data.tab)) {
       try {
         const muscles = Array.isArray(data.muscles) ? data.muscles.join(" ") : data.muscles;
         const searchQuery = data.tab === "biomec"
@@ -1024,116 +1006,29 @@ serve(async (req) => {
       ? `${userPrompt}\n\nREFERÊNCIAS CIENTÍFICAS ATUAIS (Perplexity):\n${scienceContext}\n\nCitações: ${JSON.stringify(scienceCitations)}\n\nUse essas referências para embasar as decisões.`
       : userPrompt;
 
-    const TRAININGON_SYSTEM_PROMPT_COMPACT = `Você é o STRATUM Elite Engine do nutriON.
-Gere protocolos de treino em JSON estruturado.
-Responda SEMPRE em JSON válido. Sem texto antes ou depois do JSON.
-Sem markdown. Sem comentários.
-
-ESTRUTURA JSON OBRIGATÓRIA — use EXATAMENTE estas chaves de topo (block_overview, improvement_alerts, training_days):
-{
-  "block_overview": {
-    "title": "string",
-    "duration_weeks": number,
-    "deload_week": number,
-    "split_type": "string",
-    "split_justification": "string",
-    "progression_model": "string",
-    "muscle_priorities": [
-      {"muscle":"string","weekly_sets":number,"priority":"alta|media|baixa"}
-    ],
-    "coach_notes": "string"
-  },
-  "improvement_alerts": [
-    {"area":"string","severity":"alta|media|baixa","message":"string"}
-  ],
-  "training_days": [
-    {
-      "day_number": 1,
-      "session_title": "string",
-      "focus_muscles": ["string"],
-      "estimated_duration": "string",
-      "warmup": [
-        {"name":"string","sets":"string","reps":"string","notes":"string"}
-      ],
-      "exercises": [
-        {
-          "order": 1,
-          "name": "string",
-          "muscle_target": "string",
-          "tempo": "string",
-          "structure": {
-            "feeder_sets": [
-              {"set_label":"string","load_percent":"string","reps":"string","notes":"string"}
-            ],
-            "top_set": {"sets":"1","reps":"string","rpe":"string","rest":"string","notes":"string"},
-            "backoff_sets": {"sets":"string","reps":"string","load_reduction":"string","rest":"string","notes":"string"},
-            "work_sets": {"sets":"string","reps":"string","rpe":"string","rest":"string","notes":"string"}
-          },
-          "execution_cues": "string",
-          "why_this_exercise": "string",
-          "substitutes": [
-            {"name":"string","reason":"string","equipment":"string"}
-          ]
-        }
-      ],
-      "finalizadores": {
-        "duracao_min": 10,
-        "objetivo": "string",
-        "exercicios": [
-          {"numero":1,"nome":"string","execucao":"string","series_duracao":"string","foco_corretivo":"string"}
-        ]
-      },
-      "session_notes": "string"
-    }
-  ]
-}
-
-REGRAS:
-- training_days DEVE ser ARRAY (não objeto), com todos os dias prescritos completos.
-- muscle_priorities DEVE ser ARRAY de objetos {muscle, weekly_sets, priority}.
-- Não use campos alternativos como client_name, mesocycle_duration_weeks, training_system_base, phase no topo — use a estrutura acima.
-- Não ultrapasse os weekly_sets definidos em muscle_priorities. Feeder sets não contam para o volume.
-- Use feeder_sets + top_set + backoff_sets para compostos. work_sets para isoladores.
-- Inclua execution_cues e why_this_exercise em cada exercício.
-- Português brasileiro. Científico e específico.`;
-
     async function callAI(extraInstruction = ""): Promise<{ response: Response; raw: string }> {
-      const basePrompt = data.tab === "protocolo" ? TRAININGON_SYSTEM_PROMPT_COMPACT : TRAININGON_SYSTEM_PROMPT;
       const sys = extraInstruction
-        ? `${basePrompt}\n\n## RETENTATIVA OBRIGATÓRIA\n${extraInstruction}`
-        : basePrompt;
-
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 120000);
-
-      try {
-        const r = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "Authorization": `Bearer ${LOVABLE_API_KEY}` },
-          signal: controller.signal,
-          body: JSON.stringify({
-            model: "google/gemini-2.5-flash-lite",
-            messages: [
-              { role: "system", content: sys },
-              { role: "user", content: enrichedPrompt },
-            ],
-            temperature: 0.7,
-            max_tokens: 8000,
-          }),
-        });
-        clearTimeout(timeout);
-        if (!r.ok) {
-          if (r.status === 429 || r.status === 402) return { response: r, raw: "" };
-          const errText = await r.text();
-          throw new Error(`AI API error: ${r.status} - ${errText}`);
-        }
-        const j = await r.json();
-        return { response: r, raw: j.choices?.[0]?.message?.content || "" };
-      } catch (e: any) {
-        clearTimeout(timeout);
-        if (e.name === "AbortError") throw new Error("Timeout: geração excedeu 120s");
-        throw e;
+        ? `${TRAININGON_SYSTEM_PROMPT}\n\n## RETENTATIVA OBRIGATÓRIA\n${extraInstruction}`
+        : TRAININGON_SYSTEM_PROMPT;
+      const r = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${LOVABLE_API_KEY}` },
+        body: JSON.stringify({
+          model: "google/gemini-2.5-flash",
+          messages: [
+            { role: "system", content: sys },
+            { role: "user", content: enrichedPrompt },
+          ],
+          temperature: 0.7,
+        }),
+      });
+      if (!r.ok) {
+        if (r.status === 429 || r.status === 402) return { response: r, raw: "" };
+        const errText = await r.text();
+        throw new Error(`AI API error: ${r.status} - ${errText}`);
       }
+      const j = await r.json();
+      return { response: r, raw: j.choices?.[0]?.message?.content || "" };
     }
 
     let { response, raw: content } = await callAI();
@@ -1149,47 +1044,10 @@ REGRAS:
       let parsed: any = null;
       let lastMissing: string[] = [];
 
-      // Normalize alternate JSON shapes returned by the model so downstream
-      // checks (and the client renderer) always see block_overview + array training_days.
-      const adaptShape = (raw: any): any => {
-        if (!raw || typeof raw !== "object") return raw;
-        // Convert training_days from object → array
-        if (raw.training_days && !Array.isArray(raw.training_days) && typeof raw.training_days === "object") {
-          raw.training_days = Object.entries(raw.training_days).map(([k, d]: [string, any]) => ({
-            ...d,
-            day_number: d?.day_number ?? parseInt(String(k).replace(/\D/g, ""), 10) ?? 1,
-          }));
-        }
-        // Convert muscle_priorities (top-level) from object → array
-        const mpObj = raw.muscle_priorities;
-        if (mpObj && !Array.isArray(mpObj) && typeof mpObj === "object") {
-          raw.muscle_priorities = Object.entries(mpObj).map(([muscle, d]: [string, any]) => ({
-            muscle,
-            weekly_sets: d?.weekly_sets ?? d?.weekly_sets_mav ?? d?.weekly_sets_mev ?? 12,
-            priority: d?.priority ?? "media",
-          }));
-        }
-        // If using the alt top-level shape, wrap into block_overview
-        if (!raw.block_overview && (raw.client_name || raw.mesocycle_duration_weeks || raw.training_system_base || raw.training_frequency_days_per_week)) {
-          raw.block_overview = {
-            title: raw.client_name ? `Protocolo ${raw.client_name}` : (raw.title || "Protocolo de Treino"),
-            duration_weeks: raw.mesocycle_duration_weeks || raw.duration_weeks || 4,
-            deload_week: raw.deload_week || raw.mesocycle_duration_weeks || 4,
-            split_type: raw.training_system_base || raw.split_type || "PPL",
-            split_justification: raw.split_justification || "",
-            progression_model: raw.progression_model || "Dupla progressão",
-            muscle_priorities: Array.isArray(raw.muscle_priorities) ? raw.muscle_priorities : [],
-            coach_notes: raw.coach_notes || raw.observations || "",
-          };
-        }
-        if (!raw.improvement_alerts && Array.isArray(raw.alerts)) raw.improvement_alerts = raw.alerts;
-        return raw;
-      };
-
       const tryParse = (txt: string) => {
         const jsonMatch = txt.match(/\{[\s\S]*\}/);
         if (!jsonMatch) return null;
-        try { return adaptShape(JSON.parse(jsonMatch[0])); } catch { return null; }
+        try { return JSON.parse(jsonMatch[0]); } catch { return null; }
       };
 
       parsed = tryParse(content);

@@ -205,10 +205,7 @@ serve(async (req) => {
       }
     }
 
-    // MERIDIAN context (handoffs pendentes do plano de competição)
-    const { fetchMeridianContext } = await import("../_shared/meridianContext.ts");
-    const meridianBlock = await fetchMeridianContext(userId, "mce");
-    const systemPrompt = buildMCESystemPrompt(profile, behavioralProfile, researchContext) + meridianBlock;
+    const systemPrompt = buildMCESystemPrompt(profile, behavioralProfile, researchContext);
 
     // Build message history
     const messages: any[] = [

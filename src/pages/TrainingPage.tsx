@@ -16,7 +16,6 @@ import { buildVolumeReport, detectGvtMismatch } from "@/lib/trainingVolume";
 import "@/styles/training-hud.css";
 import { TrainingHUDBackground } from "@/components/training/TrainingHUDBackground";
 import { exportTrainingPDF } from "@/lib/trainingPdfExport";
-import { adaptProtocolFormat } from "@/lib/adaptProtocolFormat";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -61,14 +60,7 @@ import { TRAINING_SYSTEMS } from "@/data/trainingSystems";
 import CompetitionModeBlocks from "@/components/training/systems/CompetitionModeBlocks";
 import StratumAIAgent from "@/components/training/StratumAIAgent";
 import SmartWarmup from "@/components/training/SmartWarmup";
-import FinalizadoresSection from "@/components/training/FinalizadoresSection";
-import {
-  parseFinalizadoresByDay,
-  resolveFinalizadoresForDay,
-  normalizeFinalizadoresJson,
-} from "@/lib/parseFinalizadores";
 import { MarkdownProtocolView } from "@/components/training/MarkdownProtocolView";
-import { TrainingTabContent } from "@/components/training/TrainingTabContent";
 import {
   TrackerProvider,
   WorkoutProgressBar,
@@ -496,38 +488,21 @@ Português. Específico. Científico. Zero genérico.`;
     setActiveResultTab("overview");
     try {
       // Timeout de 90s — Edge Functions Supabase já têm limite, mas damos feedback claro
-      // ── Geração no padrão Mello v1 ─────────────────────────────────────
-      // Substitui o gerador legado (`generate-training-protocol`) pela nova
-      // Edge Function que devolve um payload validado por MelloProtocolSchema.
-      const athletePayload = {
-        name: clientName,
-        category: phase || "Hipertrofia",
-        phase: phase || "Hipertrofia",
-        readiness: 7,
-        apex_priorities: [] as string[],
-        fiber_profile: fiberProfile?.notas || fiberProfile?.dominancia || "padrão de atleta",
-        biotype: "mesomorfo",
-        restrictions: injuries ? [injuries] : [],
-        division: TRAINING_SYSTEMS.find(s => s.id === trainingSystem)?.nome || "Bro Split Adaptado",
-        total_weeks: Math.max(parseInt(String(weeks)) || 16, 1),
-        current_week: 1,
-        deload_week: 5,
-      };
-      const invokePromise = supabase.functions.invoke("generate-mello-protocol", {
-        body: { athlete: athletePayload },
+      const invokePromise = supabase.functions.invoke("generate-training-protocol", {
+        body: {
+          ...bodyData,
+          tab: "protocolo",
+          elitePrompt: buildElitePrompt(),
+        },
       });
       const timeoutPromise = new Promise<never>((_, reject) =>
         setTimeout(() => reject(new Error("Tempo excedido (90s). O protocolo é complexo — tente novamente.")), 90000)
       );
       const { data, error } = await Promise.race([invokePromise, timeoutPromise]) as any;
       if (error) throw error;
-      const proto = data?.protocol ?? null;
-      const hasStructured =
-        proto && typeof proto === "object" &&
-        (proto.block_overview ||
-          (Array.isArray(proto.training_days) && proto.training_days.length > 0) ||
-          proto.phase_plan);
-      if (hasStructured) {
+      let proto = data.protocol;
+      if (!proto && data.content) proto = tryParseJson(data.content);
+      if (proto && (proto.block_overview || proto.training_days || proto.phase_plan)) {
         setProtocol(proto);
         const sysName = TRAINING_SYSTEMS.find(s => s.id === trainingSystem)?.nome;
         toast.success(
@@ -588,11 +563,7 @@ Português. Específico. Científico. Zero genérico.`;
 
   const saveProtocol = async (patientId?: string) => {
     if (!userId) return;
-    // ── Persistência no padrão Mello v1 ─────────────────────────────────
-    // Mantém colunas legadas (`protocol_text`) por compatibilidade, mas
-    // grava o payload tipado em `protocol_json` + flag `format_version`.
-    const ov = protocol?.block_overview;
-    const insertPayload: any = {
+    const { data: inserted, error } = await supabase.from("training_protocols").insert({
       user_id: userId, client_name: clientName, phase, muscles, level, weeks,
       days_per_week: days, equipment: equipment.join(", "), injuries,
       session_duration: sessionDuration,
@@ -601,16 +572,7 @@ Português. Específico. Científico. Zero genérico.`;
       tecnica_text: textResults.tecnica || "",
       periodizacao_text: textResults.periodizacao || "",
       patient_user_id: patientId || null,
-      format_version: protocol ? "mello_v1" : "legacy",
-      protocol_json: protocol ?? null,
-      title: ov?.title ?? clientName ?? null,
-      duration_weeks: ov?.mesocycle_duration_weeks ?? (parseInt(String(weeks)) || null),
-      current_week: 1,
-      division: ov?.split ?? null,
-      deload_week: 5,
-    };
-    const { data: inserted, error } = await (supabase.from("training_protocols") as any)
-      .insert(insertPayload).select("id").single();
+    }).select("id").single();
     if (error) { toast.error("Erro ao salvar"); setShowSaveModal(false); return; }
     if (inserted?.id) setSavedProtocolId(inserted.id);
 
@@ -1060,17 +1022,19 @@ Português. Específico. Científico. Zero genérico.`;
               </div>
             )}
 
-            {/* ── Training Days Tab — render Mello v1 unificado ── */}
-            {activeResultTab === "treino" && protocol && (
+            {/* ── Training Days Tab ── */}
+            {activeResultTab === "treino" && protocol?.training_days && (
               <div className="space-y-3">
                 {isMello16 && (
                   <WeekNavigator onWeekChange={setWeekPhase} />
                 )}
+                {/* Progressão de RIR no mesociclo */}
                 <MesocycleRIRPlanner
                   totalWeeks={Math.max(parseInt(String(weeks)) || 8, 1)}
                   currentWeek={isMello16 ? weekPhase.week : 1}
                 />
-                {userId && protocol?.training_days && (
+                {/* De-Output — Detecção de Platô */}
+                {userId && (
                   <PlateauDashboard
                     athleteId={userId}
                     exercises={(protocol.training_days || []).flatMap((d: any) =>
@@ -1080,17 +1044,23 @@ Português. Específico. Científico. Zero genérico.`;
                     totalMeso={Math.max(parseInt(String(weeks)) || 8, 1)}
                   />
                 )}
-                <TrainingTabContent
-                  protocol={{
-                    id: savedProtocolId,
-                    title: clientName,
-                    client_name: clientName,
-                    protocol_json: protocol,
-                  }}
-                />
+                {protocol.training_days.map((day: any, idx: number) => (
+                  <TrainingDayCard
+                    key={idx}
+                    day={day}
+                    index={idx}
+                    expanded={expandedDay === idx}
+                    onToggle={() => setExpandedDay(expandedDay === idx ? null : idx)}
+                    expandedExercise={expandedExercise}
+                    setExpandedExercise={setExpandedExercise}
+                    weekPhase={isMello16 ? weekPhase : null}
+                    athleteId={userId}
+                    protocolId={savedProtocolId}
+                  />
+                ))}
               </div>
             )}
-            {activeResultTab === "treino" && !protocol && textResults.protocolo && (
+            {activeResultTab === "treino" && !protocol?.training_days && textResults.protocolo && (
               <MarkdownProtocolView content={textResults.protocolo} title={clientName || "Protocolo"} />
             )}
 
@@ -1629,24 +1599,8 @@ function extractDayMuscleTags(day: any): string[] {
 }
 
 /* ── Training Day Card ── */
-function TrainingDayCard({ day, index, expanded, onToggle, expandedExercise, setExpandedExercise, weekPhase, athleteId, protocolId, protocolFinalizadoresParsed }: any) {
+function TrainingDayCard({ day, index, expanded, onToggle, expandedExercise, setExpandedExercise, weekPhase, athleteId, protocolId }: any) {
   const muscleTags = extractDayMuscleTags(day);
-  const dayNum = day.day_number || index + 1;
-
-  // 1) prioridade ao JSON dentro do dia
-  const dayFinalizadores = normalizeFinalizadoresJson(day.finalizadores);
-  // 2) fallback: parse do bloco global do protocolo
-  const fromGlobal =
-    !dayFinalizadores?.exercicios?.length && protocolFinalizadoresParsed
-      ? resolveFinalizadoresForDay(protocolFinalizadoresParsed, dayNum, day.session_title)
-      : [];
-  const finalizadoresItems = dayFinalizadores?.exercicios?.length
-    ? dayFinalizadores.exercicios
-    : fromGlobal;
-  const finalizadoresObjetivo =
-    dayFinalizadores?.objetivo || protocolFinalizadoresParsed?.objetivo;
-  const finalizadoresDuracao = dayFinalizadores?.duracao_min || protocolFinalizadoresParsed?.duracao_min || 10;
-
   return (
     <div className="rounded-2xl overflow-hidden" style={{ background: SURFACE, border: `1px solid ${expanded ? BORDER_ACTIVE : BORDER}` }}>
       <button onClick={onToggle} className="w-full p-4 flex items-center justify-between">
@@ -1728,14 +1682,6 @@ function TrainingDayCard({ day, index, expanded, onToggle, expandedExercise, set
                   <p className="text-[11px] mt-1" style={{ color: TEXT_DIM }}>{day.session_notes}</p>
                 </div>
               )}
-
-              {/* Finalizadores — última seção do dia */}
-              <FinalizadoresSection
-                items={finalizadoresItems}
-                objetivo={finalizadoresObjetivo}
-                duracaoMin={finalizadoresDuracao}
-                storageKey={protocolId ? `${protocolId}:d${dayNum}` : undefined}
-              />
             </div>
           </motion.div>
         )}
@@ -2573,13 +2519,7 @@ function HistoryViewModal({ protocol: p, onClose, userId, onUpdate }: { protocol
 
   let parsed: any = null;
   try {
-    const raw = typeof p.protocol_text === "string" ? JSON.parse(p.protocol_text) : p.protocol_text;
-    // Defesa: se o protocolo foi salvo com o envelope completo da Edge Function
-    // ({ protocol, volume_fixes, citations, validation_warnings }), extrai apenas o protocolo.
-    const unwrapped = raw && typeof raw === "object" && raw.protocol && typeof raw.protocol === "object"
-      ? raw.protocol
-      : raw;
-    parsed = adaptProtocolFormat(unwrapped);
+    parsed = typeof p.protocol_text === "string" ? JSON.parse(p.protocol_text) : p.protocol_text;
   } catch { parsed = null; }
 
   // ── Mello 16 wk navigator (apenas se 16 semanas + bulking) ──
@@ -2734,17 +2674,33 @@ function HistoryViewModal({ protocol: p, onClose, userId, onUpdate }: { protocol
 
         {/* Content */}
         <div className="px-5 py-4 space-y-3">
-          {/* ── Render unificado: Mello v1 ou Legado (NUNCA JSON cru) ── */}
-          <TrainingTabContent
-            protocol={{
-              id: p.id,
-              title: p.title || p.client_name,
-              client_name: p.client_name,
-              protocol_json: p.protocol_json ?? (parsed && parsed.block_overview ? parsed : null),
-              protocol_text: p.protocol_text,
-              format_version: p.format_version,
-            }}
-          />
+          {parsed?.block_overview ? (
+            <>
+              <BlockOverviewCard overview={parsed.block_overview} alerts={parsed.improvement_alerts} clientName={p.client_name} trainingDays={parsed.training_days} />
+              {isMello16 && (
+                <WeekNavigator
+                  protocolKey={`history-${p.id}`}
+                  initialWeek={initialWeek}
+                  weekSummaries={weekSummaries}
+                  onWeekChange={handleWeekChange}
+                />
+              )}
+              {parsed.training_days?.map((day: any, idx: number) => (
+                <TrainingDayCard key={idx} day={day} index={idx} expanded={expandedDay === idx} onToggle={() => setExpandedDay(expandedDay === idx ? null : idx)}
+                  expandedExercise={expandedExercise} setExpandedExercise={setExpandedExercise}
+                  weekPhase={isMello16 ? weekPhase : null}
+                  athleteId={userId}
+                  protocolId={p.id} />
+              ))}
+            </>
+          ) : p.protocol_text ? (
+            <MarkdownProtocolView
+              content={typeof p.protocol_text === "string" ? p.protocol_text : JSON.stringify(p.protocol_text, null, 2)}
+              title={p.client_name || "Protocolo"}
+            />
+          ) : (
+            <p className="text-xs text-center py-8" style={{ color: TEXT_MUTED }}>Sem dados do protocolo</p>
+          )}
 
           {p.anatomy_text && (
             <div>

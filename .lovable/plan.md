@@ -1,119 +1,44 @@
 
-# MERIDIAN — Bloco 1 (Fundação Standalone)
+## Objetivo
+Eliminar o ajuste manual de landmarks no APEX Visual Intelligence (`/coach/apex-visual`) usando **MediaPipe Pose** para detecção automática nas três vistas (frente, lateral, costas) + interpolação para os pontos anatômicos (C7, L5, escápulas) que o MediaPipe não cobre. Coach permanece podendo ajustar manualmente, mas o ponto de partida vem totalmente automatizado.
 
-Entrega o motor de engenharia reversa de prep, restrito a **atletas masculinos Enhanced**, com fluxo end-to-end testável em Classic Physique. Standalone: não depende do Sport Engine do TrainingON nem do Dr. VERTEX nesta fase (hooks ficam preparados como TODO).
+## Observação importante
+O projeto já tem **`@mediapipe/tasks-vision`** instalado (usado em `src/lib/poseAnalysis.ts` para VideoForm). Vamos usar essa API moderna em vez do legacy `@mediapipe/pose`. Isso evita adicionar dependência e mantém consistência. Os IDs internos do APEX (`shoulder_left`, `hip_right`, `scapula_left`, `spine_c7`, `spine_l5`, etc.) serão preservados — o mapeamento converte de MediaPipe → IDs APEX, sem trocar o schema esperado pelo overlay/validador.
 
-## Escopo desta entrega
+## Arquivos novos
 
-**Incluído:**
-- Schema Supabase completo do Bloco 1 (enums + 4 tabelas + RLS + GRANTs)
-- Seed de `meridian_default_parameters` para masculino Enhanced: Open BB, 212, Classic Physique, Men's Physique, Wheelchair
-- Weight cap table para Classic Physique
-- Edge Function `meridian-calculate-plan` (lógica determinística, sem IA narrativa ainda)
-- Tipos TypeScript + helpers de cálculo reverso
-- 5 componentes UI: `MeridianTrackSelector`, `MeridianCategorySelector`, `MeridianPlanBuilder` (wizard), `MeridianDashboard`, `MeridianTimeline`
-- Página `/meridian` + rota
-- Estética tactical: dourado queimado `#B8922A` (Enhanced), verde militar `#4B5320` (Natural, já preparado), azul-aço `#1B4965` (Lifestyle, preparado)
-- Linguagem SITREP em PT-BR
+1. **`src/lib/apexMediaPipeDetector.ts`** — singleton que inicializa `PoseLandmarker` (modo IMAGE, `pose_landmarker_full`) e expõe `detectPoseFromFile(file)` → 33 landmarks normalizados (0-1).
+2. **`src/lib/apexLandmarkMapper.ts`** — três funções (`mapFrente`, `mapCostas`, `mapLateral`) que recebem landmarks MediaPipe e emitem o objeto `{ shoulder_left, shoulder_right, hip_left, hip_right, scapula_left, scapula_right, spine_c7, spine_l5, ... }` em coords 0-100, com C7/L5/escápulas interpolados via heurísticas anatômicas (entre orelhas + 85% até ombros; midpoint dos quadris -2.5%; 35% abaixo do ombro a meio caminho do centro). Cada landmark recebe `{ x, y, source: "mediapipe"|"interpolated", confidence }`.
+3. **`src/lib/apexAutoDetect.ts`** — pipeline: `detectPoseFromFile` → mapper por vista → snap C7/L5 ao eixo central calculado dos ombros/quadris → `validateAndCorrectPosturalLandmarks` (já existe) → retorna `{ landmarks, angles: {}, source, confidence, corrections }`.
 
-**Fora do escopo (próximos blocos):**
-- Feminino, Natural, Lifestyle (seeds preparados mas só Enhanced masculino navegável)
-- Cycle tracker, Female Athlete Triad
-- Drug test calendar, multi-show optimizer, recovery protocol pós-prova
-- Integração real com NutriPlan / TrainingON / Dr. VERTEX / MCE / APEX
-- IA narrativa (Gemini) nos checkpoints
-- Componente `MeridianCheckpoint` (vem no Bloco 2)
+## Modificações
 
-## Arquitetura técnica
+4. **`src/components/coach/ApexVisualDashboard.tsx`**
+   - Em `analyzeWithAI`, **antes** do `invoke("apex-visual-analyze")`, rodar `apexAutoDetect` em paralelo nas 3 fotos (front/back/side).
+   - Após receber a resposta da IA e parsear com `parseLandmarks(text)`, **mesclar** os landmarks da IA com os do MediaPipe: para cada vista, usar `mediapipeBundle[view].landmarks` como base autoritativa para os pontos diretos (ombros/quadris/joelhos/tornozelos) e manter os campos da IA apenas onde MediaPipe falhar.
+   - Persistir `detection_source` ("mediapipe+interpolated" | "ai_vision_fallback") no `plumb_line_quality` para auditoria.
+   - Se MediaPipe falhar em todas as vistas, fluxo segue 100% como hoje (fallback Vision já existente).
 
-### Database (1 migration)
+## Detalhes técnicos
 
-Enums:
-- `biological_sex`, `athlete_track`, `bodybuilding_category`, `age_group`, `meridian_phase`, `menstrual_status` (criado já para evitar ALTER futuro)
+- **Coordenadas**: MediaPipe normaliza 0-1; multiplicamos por 100 (overlay espera percentuais).
+- **Lateralidade**: na vista frente/costas a IA da APEX usa convenção do observador (E/D do atleta = lado oposto da imagem). MediaPipe `LEFT_*` = lado esquerdo do **atleta** → na frente fica à direita da imagem. O mapper traduz corretamente por vista (na vista de costas, `LEFT_SHOULDER` MediaPipe ↔ `shoulder_right` APEX).
+- **Confidence threshold**: visibility > 0.4 (igual à spec). Abaixo disso, o ponto não é emitido e a IA mantém o valor.
+- **C7/L5 snap**: centerX = média de `(shoulderMidX + hipMidX) / 2`, e força `spine_c7.x` e `spine_l5.x` para esse valor (lógica já existe parcialmente em `apexLandmarkValidator`).
+- **Modelo**: `pose_landmarker_full.task` (mais preciso que `_lite`, ainda <10MB). Carregado via CDN jsdelivr, runningMode `IMAGE`.
+- **Inicialização lazy**: só carrega o WASM/modelo na 1ª análise para não pesar o bundle inicial.
 
-Tabelas (com RLS + GRANTs):
-- `meridian_competitions` — prova alvo
-- `meridian_athlete_parameters` — perfil do atleta (PK = user_id)
-- `meridian_default_parameters` — matriz sex × track × category × ageGroup (leitura pública para `authenticated`)
-- `meridian_plans` — plano gerado (datas calculadas reversamente)
+## O que NÃO muda
 
-Tabelas adiadas para blocos seguintes: weekly_checkpoints, menstrual_cycle, triad_log, drug_tests, fitness_routine, plan_adjustments, multi_show_plans.
+- Painel lateral de achados, PDF, Timeline, Score History, VERA, Dr. VERTEX, TrainingON, modal de virilização, drag manual, snap dourado de C7/L5, tema dark — tudo intocado.
+- Edge function `apex-visual-analyze` continua sendo chamada (gera scores, diagnósticos, achados clínicos, recomendações). Apenas os **landmarks** dela são sobrescritos pelo MediaPipe quando disponível.
+- Schema do banco e tipos não mudam.
 
-Seed: 5 rows masculino Enhanced + weight_cap_table JSONB para Classic Physique.
+## Validação final
 
-### Edge Function: `meridian-calculate-plan`
+- Console log `[APEX MediaPipe] source=mediapipe+interpolated confidence=0.87 corrections=[...]` em DEV.
+- Badge sutil no painel: "⬡ MediaPipe" (quando auto) ou "✦ Vision" (quando fallback).
 
-Input: `{ competition_id, athlete_params_override? }`
+## Risco / fallback
 
-Pipeline determinístico:
-1. Carrega atleta + competição + default_parameters
-2. Determina `stage_target_weight_kg`:
-   - Se weight cap (Classic Physique, 212): aplica cap por altura
-   - Caso contrário: `current_weight * (1 - bf_loss_projetado)`
-3. Determina `stage_target_bf_percent` = mid-range
-4. Calcula semanas de Diet Phase usando taxa média do perfil
-5. Calcula datas reversas: peak_week → final_sharpening → hard_cut → diet_principal → pre_prep → off_season_end → today (+ buffer)
-6. Valida viabilidade (warnings se janela insuficiente)
-7. Persiste em `meridian_plans` com `calculation_inputs` JSONB e `warnings[]`
-
-Sem IA nesta fase.
-
-### Frontend
-
-Rota: `/meridian` (gateada por usePlanGate ≥ ON, admin bypass).
-
-Fluxo wizard (`MeridianPlanBuilder`):
-1. `MeridianTrackSelector` — 3 cards (Enhanced ativo, Natural/Lifestyle marcados "em breve")
-2. `MeridianCategorySelector` — sexo biológico → categoria → age group → height (se Classic/212)
-3. Form de prova (nome, federação, data, location)
-4. Form de parâmetros atuais (peso, BF%, método de medição)
-5. Submit → chama edge function → mostra `MeridianDashboard`
-
-`MeridianDashboard`:
-- SITREP header (status, dias até prova, fase atual)
-- `MeridianTimeline` horizontal das fases com datas
-- Card de stage targets
-- Lista de warnings
-
-Estética: Space Grotesk, pure black `#03030a`, accent dourado queimado `#B8922A`, micro-grain. Linguagem SITREP ("SITREP: 18 SEMANAS ATÉ PALCO", "FASE ATIVA: PRE-PREP", etc.).
-
-## Arquivos a criar/editar
-
-```text
-supabase/migrations/<ts>_meridian_bloco1.sql       (novo)
-supabase/functions/meridian-calculate-plan/index.ts (novo)
-supabase/config.toml                                (+ verify_jwt = false)
-src/lib/meridian/types.ts                           (novo)
-src/lib/meridian/calculator.ts                      (novo - helpers reverso, weight cap)
-src/lib/meridian/constants.ts                       (novo - cores por track, copy SITREP)
-src/hooks/useMeridian.ts                            (novo)
-src/components/meridian/MeridianTrackSelector.tsx   (novo)
-src/components/meridian/MeridianCategorySelector.tsx (novo)
-src/components/meridian/MeridianPlanBuilder.tsx     (novo - wizard)
-src/components/meridian/MeridianDashboard.tsx       (novo)
-src/components/meridian/MeridianTimeline.tsx        (novo)
-src/pages/MeridianPage.tsx                          (novo)
-src/App.tsx                                         (+ rota /meridian)
-```
-
-## Regras de ouro aplicadas
-
-- Determinístico primeiro, IA depois (IA fica para Bloco 9)
-- Conservadorismo nos defaults (sempre piso saudável do range)
-- Buffer obrigatório (3 semanas default Enhanced)
-- Decisões pesadas mostram opções, humano confirma
-- Toda decisão da função loga `calculation_inputs` para auditoria
-- RLS: atleta lê/escreve apenas seus dados; `meridian_default_parameters` é leitura pública para `authenticated`
-- Comentários e UI em PT-BR
-
-## Critérios de aceite do Bloco 1
-
-1. Migration roda sem erros, todas as tabelas com RLS + GRANTs
-2. Atleta masculino Classic Physique Enhanced consegue: escolher track → categoria → preencher prova/parâmetros → ver plano gerado com 7 fases, datas reversas, weight cap aplicado, warnings se viabilidade frágil
-3. Edge function aceita override de parâmetros para teste rápido
-4. Dashboard mostra SITREP + timeline navegável
-5. Tracks Natural/Lifestyle aparecem mas marcados "em breve" (não bloqueiam UI)
-
-## Próximos passos após aprovação
-
-Implemento na ordem: migration → seed → edge function → tipos/helpers → componentes (parallel) → página/rota → smoke test manual.
+Se o modelo MediaPipe não carregar (rede, WASM bloqueado), o pipeline cai silenciosamente no fluxo Vision atual — zero regressão.

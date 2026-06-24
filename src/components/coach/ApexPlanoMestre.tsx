@@ -22,10 +22,8 @@ const C = {
 interface Props extends UseApexPlanoMestrePayload {
   sessionId?: string | null;
   autoGenerate?: boolean;
-  weeksContext?: number;
   onSendToTrainingON?: (semana: PlanoSemana | undefined, contraindicados: string[]) => void;
 }
-
 
 // ── Helpers consolidação ───────────────────────────────────────────────
 const SESSION_KEY = (n: number) => `__session_${n}__`;
@@ -96,7 +94,7 @@ function getDerivedWeeks(f: PlanoFase): PlanoSemana[] {
 }
 
 export default function ApexPlanoMestre({
-  sessionId, autoGenerate = true, weeksContext, onSendToTrainingON,
+  sessionId, autoGenerate = true, onSendToTrainingON,
   dysfunctions, muscleMap, fcsScore, athleteProfile, goal, analysisRaw, kineticChains,
 }: Props) {
   const { toast } = useToast();
@@ -111,24 +109,19 @@ export default function ApexPlanoMestre({
   const [showFaseModal, setShowFaseModal] = useState(false);
   const [showRegenConfirm, setShowRegenConfirm] = useState(false);
 
-  // Auto-geração se sessão tem dados e ainda não tem plano (ou plano salvo está vazio)
+  // Auto-geração se sessão tem dados e ainda não tem plano
   useEffect(() => {
-    if (!autoGenerate || loading || generating) return;
+    if (!autoGenerate || plano || loading || generating) return;
     if (!dysfunctions && !muscleMap && !analysisRaw && fcsScore == null) return;
-    const isEmpty = !plano || !plano.fases || plano.fases.length === 0;
-    if (!isEmpty) return;
     generate({ dysfunctions, muscleMap, fcsScore, athleteProfile, goal, analysisRaw, kineticChains }).catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [plano, loading, generating]);
 
   const fases: PlanoFase[] = plano?.fases || [];
-  const sumFases = fases.reduce((s, f) => s + (f.duracao_semanas || 0), 0);
-  const totalSemanas = plano?.duracao_total_semanas || sumFases || weeksContext || 0;
-  const totalFases = fases.length || (totalSemanas ? Math.max(1, Math.round(totalSemanas / 4)) : 0);
+  const totalSemanas = plano?.duracao_total_semanas || fases.reduce((s, f) => s + (f.duracao_semanas || 0), 0);
   const faseObj = fases.find(f => f.numero === faseAtual) || fases[0];
   const semanasFase: PlanoSemana[] = faseObj ? getDerivedWeeks(faseObj) : [];
   const semanaObj: PlanoSemana | undefined = semanasFase.find(s => s.semana === semanaAtual) || semanasFase[0];
-
 
   // progresso da semana atual — agora baseado em SESSÕES concluídas
   const semanaProgresso = useMemo(() => {
@@ -271,21 +264,17 @@ export default function ApexPlanoMestre({
       {/* CARD RESUMO */}
       <div className="rounded-xl p-4 space-y-3" style={{ background: C.bg, border: `1px solid ${C.cyan}30`, borderLeft: `2px solid ${C.cyan}` }}>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-[11px] font-mono">
-          <div><div className="opacity-60">DURAÇÃO</div><div className="text-sm font-bold" style={{ color: C.cyan }}>{totalSemanas || "—"} semanas</div></div>
-          <div><div className="opacity-60">FASE ATUAL</div><div className="text-sm font-bold" style={{ color: C.gold }}>{faseAtual}/{totalFases || "—"}</div></div>
+          <div><div className="opacity-60">DURAÇÃO</div><div className="text-sm font-bold" style={{ color: C.cyan }}>{totalSemanas} semanas</div></div>
+          <div><div className="opacity-60">FASE ATUAL</div><div className="text-sm font-bold" style={{ color: C.gold }}>{faseAtual}/{fases.length}</div></div>
           <div><div className="opacity-60">FCS INICIAL</div><div className="text-sm font-bold text-white">{fcsScore ?? "—"}</div></div>
-          <div><div className="opacity-60">RECHECK</div><div className="text-sm font-bold" style={{ color: C.cyan }}>{plano!.recheck_apex?.quando || (totalFases ? `Após ${totalSemanas} semanas (final da Fase ${totalFases})` : "—")}</div></div>
+          <div><div className="opacity-60">RECHECK</div><div className="text-sm font-bold" style={{ color: C.cyan }}>{plano!.recheck_apex?.quando || "—"}</div></div>
         </div>
         <div>
-          <div className="flex justify-between text-[10px] mb-1 font-mono opacity-70">
-            <span>PROGRESSO GLOBAL{globalPct === 0 ? " · Protocolo não iniciado" : ""}</span>
-            <span>{globalPct}%</span>
-          </div>
+          <div className="flex justify-between text-[10px] mb-1 font-mono opacity-70"><span>PROGRESSO GLOBAL</span><span>{globalPct}%</span></div>
           <div className="h-2 rounded-full overflow-hidden" style={{ background: "#ffffff15" }}>
-            <div className="h-full transition-all" style={{ width: `${Math.max(globalPct, 2)}%`, background: `linear-gradient(90deg, ${C.gold}, ${C.cyan})` }} />
+            <div className="h-full transition-all" style={{ width: `${globalPct}%`, background: `linear-gradient(90deg, ${C.gold}, ${C.cyan})` }} />
           </div>
         </div>
-
       </div>
 
       {/* BARRA DE AÇÕES */}

@@ -2,10 +2,6 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, ChevronUp, Clock, FileText } from "lucide-react";
 import { parseProtocolToDays, type ParsedDay } from "@/lib/parseProtocolMarkdown";
-import { adaptProtocolFormat } from "@/lib/adaptProtocolFormat";
-import { MelloProtocolViewer } from "@/components/training/MelloProtocolViewer";
-import { MelloProtocolSchema } from "@/types/melloProtocol";
-
 
 // Paleta TrainingON (espelha tokens usados em TrainingPage.tsx)
 const GREEN = "#00e888";
@@ -319,19 +315,6 @@ function IntroCard({ text }: { text: string }) {
   );
 }
 
-// Tenta extrair JSON do conteúdo, mesmo com code-fences ou texto antes/depois
-function tryParseProtocolJSON(content: string): any | null {
-  if (!content || typeof content !== "string") return null;
-  const s = content.replace(/```(?:json|JSON)?/g, "").replace(/```/g, "").trim();
-  try { return JSON.parse(s); } catch {}
-  const first = s.indexOf("{");
-  const last = s.lastIndexOf("}");
-  if (first >= 0 && last > first) {
-    try { return JSON.parse(s.slice(first, last + 1)); } catch {}
-  }
-  return null;
-}
-
 function FallbackCard({
   title,
   content,
@@ -340,97 +323,6 @@ function FallbackCard({
   content: string;
 }) {
   const [open, setOpen] = useState(true);
-
-  // Se o "fallback" recebeu um JSON de protocolo válido, mostra header legível
-  // em vez de despejar JSON cru via MarkdownBlock.
-  const parsedJSON = tryParseProtocolJSON(content);
-  if (parsedJSON?.block_overview) {
-    const ov = parsedJSON.block_overview;
-    return (
-      <div
-        style={{
-          background: CARD_BG,
-          border: `0.5px solid ${GOLD_BORDER}`,
-          borderRadius: 8,
-          marginBottom: 8,
-          padding: 16,
-        }}
-      >
-        <div
-          style={{
-            fontSize: 8,
-            color: GREEN,
-            letterSpacing: "0.16em",
-            textTransform: "uppercase",
-            marginBottom: 6,
-            fontWeight: 700,
-          }}
-        >
-          PROTOCOLO GERADO
-        </div>
-        <div
-          style={{
-            fontSize: 15,
-            fontWeight: 700,
-            color: TEXT,
-            marginBottom: 6,
-            lineHeight: 1.3,
-          }}
-        >
-          {ov.title || title || "Protocolo"}
-        </div>
-        <div style={{ fontSize: 10, color: TEXT_DIM, marginBottom: 12 }}>
-          {[
-            ov.split_type,
-            ov.duration_weeks ? `${ov.duration_weeks} semanas` : null,
-            ov.deload_week ? `Deload sem ${ov.deload_week}` : null,
-          ]
-            .filter(Boolean)
-            .join(" · ")}
-        </div>
-        {ov.split_justification && (
-          <div
-            style={{
-              fontSize: 11,
-              color: TEXT_DIM,
-              lineHeight: 1.5,
-              marginBottom: 8,
-            }}
-          >
-            {ov.split_justification}
-          </div>
-        )}
-        {ov.coach_notes && (
-          <div
-            style={{
-              fontSize: 11,
-              color: TEXT_DIM,
-              lineHeight: 1.5,
-              padding: "8px 10px",
-              background: GREEN_PILL_BG,
-              border: `0.5px solid ${GREEN_PILL_BORDER}`,
-              borderRadius: 4,
-            }}
-          >
-            {ov.coach_notes}
-          </div>
-        )}
-        <div
-          style={{
-            fontSize: 10,
-            color: TEXT_MUTED,
-            textAlign: "center",
-            padding: "16px 0 4px",
-            marginTop: 8,
-            borderTop: `1px solid ${CARD_BORDER}`,
-          }}
-        >
-          Processando dias de treino…
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div
       style={{
@@ -531,80 +423,14 @@ export function MarkdownProtocolView({
   content: any;
   title?: string;
 }) {
-  // PRIMEIRA tentativa: validar contra o schema Mello v1 → renderiza no padrão novo
-  const rawCandidate =
-    content && typeof content === "object" && "protocol_json" in content
-      ? (content as any).protocol_json ?? content
-      : content;
-
-  let melloCandidate: any = rawCandidate;
-  if (typeof melloCandidate === "string") {
-    try {
-      melloCandidate = JSON.parse(melloCandidate);
-    } catch {
-      // mantém string
-    }
-  }
-
-  const melloParsed = MelloProtocolSchema.safeParse(melloCandidate);
-  if (melloParsed.success) {
-    return <MelloProtocolViewer protocol={melloParsed.data} />;
-  }
-
-  // Tenta normalizar via adapter (lida com strings JSON, code-fences, formatos alternados)
-  let normalized: any = content;
-  try {
-    normalized = adaptProtocolFormat(content);
-  } catch {
-    normalized = content;
-  }
-
-  if (typeof normalized === "string") {
-    const extracted = tryParseProtocolJSON(normalized);
-    if (extracted && typeof extracted === "object") {
-      try { normalized = adaptProtocolFormat(extracted); } catch { normalized = extracted; }
-    }
-  }
-
-  const parsed = parseProtocolToDays(normalized);
+  const parsed = parseProtocolToDays(content);
 
   if (parsed.isFallback) {
-    // Fallback legado — NUNCA mostrar JSON.stringify cru
-    return (
-      <div
-        style={{
-          background: CARD_BG,
-          border: `1px solid ${GOLD_BORDER}`,
-          borderRadius: 12,
-          padding: 16,
-          marginBottom: 12,
-        }}
-      >
-        <div
-          style={{
-            display: "inline-block",
-            fontSize: 10,
-            fontWeight: 700,
-            letterSpacing: 1,
-            textTransform: "uppercase",
-            color: GOLD,
-            background: GOLD_DIM,
-            border: `1px solid ${GOLD_BORDER}`,
-            borderRadius: 4,
-            padding: "2px 8px",
-            marginBottom: 10,
-          }}
-        >
-          Legado
-        </div>
-        <div style={{ fontSize: 14, fontWeight: 600, color: TEXT, marginBottom: 6 }}>
-          Este protocolo está no formato antigo
-        </div>
-        <div style={{ fontSize: 12, color: TEXT_DIM }}>
-          Clique em "Regenerar no padrão Mello" pra atualizar pro novo layout.
-        </div>
-      </div>
-    );
+    const txt =
+      typeof content === "string"
+        ? content
+        : JSON.stringify(content, null, 2);
+    return <FallbackCard title={title || "Protocolo"} content={txt} />;
   }
 
   return (
@@ -616,4 +442,3 @@ export function MarkdownProtocolView({
     </div>
   );
 }
-
