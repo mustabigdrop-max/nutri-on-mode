@@ -1021,6 +1021,19 @@ Português. Específico. Científico. Zero genérico.`;
               ))}
             </div>
 
+            {console.log("[CHECK render]", {
+              activeResultTab,
+              hasProtocol: !!protocol,
+              protocolType: typeof protocol,
+              protocolKeys: protocol ? Object.keys(protocol) : null,
+              hasBlockOverview: !!(protocol as any)?.block_overview,
+              hasTrainingDays: !!(protocol as any)?.training_days,
+              textResultsProtoType: typeof textResults.protocolo,
+              textResultsProtoPreview: typeof textResults.protocolo === "string"
+                ? textResults.protocolo.slice(0, 100)
+                : null,
+            })}
+
             {/* ── Overview Tab ── */}
             {activeResultTab === "overview" && (() => {
               if (protocol?.block_overview) {
