@@ -1069,17 +1069,10 @@ Português. Específico. Científico. Zero genérico.`;
 
             {/* ── Training Days Tab ── */}
             {activeResultTab === "treino" && (() => {
-              console.log("[DEBUG protocol]", typeof protocol, protocol);
-              console.log(
-                "[DEBUG textResults.protocolo]",
-                typeof textResults.protocolo,
-                typeof textResults.protocolo === "string"
-                  ? textResults.protocolo.slice(0, 200)
-                  : textResults.protocolo
-              );
               const { json: protocolObj, markdown: protocolMd } = parseProtocolText(
                 (protocol as any) ?? textResults.protocolo
               );
+
               if (protocolObj?.training_days) {
                 return (
                   <div className="space-y-3">
