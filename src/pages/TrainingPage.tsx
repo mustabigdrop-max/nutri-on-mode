@@ -2771,19 +2771,20 @@ function HistoryViewModal({ protocol: p, onClose, userId, onUpdate }: { protocol
           {p.anatomy_text && (
             <div>
               <h4 className="text-[11px] font-bold mb-2" style={{ color: GREEN }}>📐 Anatomia</h4>
-              <TextCard content={p.anatomy_text} />
+              <TextCard content={safeTextContent(p.anatomy_text)} />
             </div>
           )}
           {p.tecnica_text && (
             <div>
               <h4 className="text-[11px] font-bold mb-2" style={{ color: GREEN }}>🎯 Técnica</h4>
-              <TextCard content={p.tecnica_text} />
+              <TextCard content={safeTextContent(p.tecnica_text)} />
             </div>
           )}
           {p.periodizacao_text && (
             <div>
               <h4 className="text-[11px] font-bold mb-2" style={{ color: GREEN }}>📊 Periodização</h4>
-              <TextCard content={p.periodizacao_text} />
+              <TextCard content={safeTextContent(p.periodizacao_text)} />
+
             </div>
           )}
         </div>
