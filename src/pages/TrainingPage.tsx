@@ -61,6 +61,7 @@ import CompetitionModeBlocks from "@/components/training/systems/CompetitionMode
 import StratumAIAgent from "@/components/training/StratumAIAgent";
 import SmartWarmup from "@/components/training/SmartWarmup";
 import { MarkdownProtocolView } from "@/components/training/MarkdownProtocolView";
+import { parseProtocolText } from "@/lib/parseProtocolText";
 import {
   TrackerProvider,
   WorkoutProgressBar,
@@ -2517,10 +2518,7 @@ function HistoryViewModal({ protocol: p, onClose, userId, onUpdate }: { protocol
   const [editing, setEditing] = useState(false);
   const [editName, setEditName] = useState(p.client_name || "");
 
-  let parsed: any = null;
-  try {
-    parsed = typeof p.protocol_text === "string" ? JSON.parse(p.protocol_text) : p.protocol_text;
-  } catch { parsed = null; }
+  const { json: parsed, markdown: rawMarkdown } = parseProtocolText(p.protocol_text);
 
   // ── Mello 16 wk navigator (apenas se 16 semanas + bulking) ──
   const isMello16 = String(p.weeks) === "16" && String(p.phase || "").toLowerCase().includes("bulk");
@@ -2693,9 +2691,9 @@ function HistoryViewModal({ protocol: p, onClose, userId, onUpdate }: { protocol
                   protocolId={p.id} />
               ))}
             </>
-          ) : p.protocol_text ? (
+          ) : rawMarkdown ? (
             <MarkdownProtocolView
-              content={typeof p.protocol_text === "string" ? p.protocol_text : JSON.stringify(p.protocol_text, null, 2)}
+              content={rawMarkdown}
               title={p.client_name || "Protocolo"}
             />
           ) : (
