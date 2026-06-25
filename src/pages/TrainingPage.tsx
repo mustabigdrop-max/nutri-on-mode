@@ -1024,46 +1024,63 @@ Português. Específico. Científico. Zero genérico.`;
             )}
 
             {/* ── Training Days Tab ── */}
-            {activeResultTab === "treino" && protocol?.training_days && (
-              <div className="space-y-3">
-                {isMello16 && (
-                  <WeekNavigator onWeekChange={setWeekPhase} />
-                )}
-                {/* Progressão de RIR no mesociclo */}
-                <MesocycleRIRPlanner
-                  totalWeeks={Math.max(parseInt(String(weeks)) || 8, 1)}
-                  currentWeek={isMello16 ? weekPhase.week : 1}
-                />
-                {/* De-Output — Detecção de Platô */}
-                {userId && (
-                  <PlateauDashboard
-                    athleteId={userId}
-                    exercises={(protocol.training_days || []).flatMap((d: any) =>
-                      (d.exercises || []).map((e: any) => ({ nome: e?.name ?? e?.nome ?? "" }))
-                    ).filter((e: any) => e.nome)}
-                    semanaMeso={isMello16 ? weekPhase.week : 1}
-                    totalMeso={Math.max(parseInt(String(weeks)) || 8, 1)}
-                  />
-                )}
-                {protocol.training_days.map((day: any, idx: number) => (
-                  <TrainingDayCard
-                    key={idx}
-                    day={day}
-                    index={idx}
-                    expanded={expandedDay === idx}
-                    onToggle={() => setExpandedDay(expandedDay === idx ? null : idx)}
-                    expandedExercise={expandedExercise}
-                    setExpandedExercise={setExpandedExercise}
-                    weekPhase={isMello16 ? weekPhase : null}
-                    athleteId={userId}
-                    protocolId={savedProtocolId}
-                  />
-                ))}
-              </div>
-            )}
-            {activeResultTab === "treino" && !protocol?.training_days && textResults.protocolo && (
-              <MarkdownProtocolView content={textResults.protocolo} title={clientName || "Protocolo"} />
-            )}
+            {activeResultTab === "treino" && (() => {
+              console.log("[DEBUG protocol]", typeof protocol, protocol);
+              console.log(
+                "[DEBUG textResults.protocolo]",
+                typeof textResults.protocolo,
+                typeof textResults.protocolo === "string"
+                  ? textResults.protocolo.slice(0, 200)
+                  : textResults.protocolo
+              );
+              const { json: protocolObj, markdown: protocolMd } = parseProtocolText(
+                (protocol as any) ?? textResults.protocolo
+              );
+              if (protocolObj?.training_days) {
+                return (
+                  <div className="space-y-3">
+                    {isMello16 && <WeekNavigator onWeekChange={setWeekPhase} />}
+                    <MesocycleRIRPlanner
+                      totalWeeks={Math.max(parseInt(String(weeks)) || 8, 1)}
+                      currentWeek={isMello16 ? weekPhase.week : 1}
+                    />
+                    {userId && (
+                      <PlateauDashboard
+                        athleteId={userId}
+                        exercises={(protocolObj.training_days || []).flatMap((d: any) =>
+                          (d.exercises || []).map((e: any) => ({ nome: e?.name ?? e?.nome ?? "" }))
+                        ).filter((e: any) => e.nome)}
+                        semanaMeso={isMello16 ? weekPhase.week : 1}
+                        totalMeso={Math.max(parseInt(String(weeks)) || 8, 1)}
+                      />
+                    )}
+                    {protocolObj.training_days.map((day: any, idx: number) => (
+                      <TrainingDayCard
+                        key={idx}
+                        day={day}
+                        index={idx}
+                        expanded={expandedDay === idx}
+                        onToggle={() => setExpandedDay(expandedDay === idx ? null : idx)}
+                        expandedExercise={expandedExercise}
+                        setExpandedExercise={setExpandedExercise}
+                        weekPhase={isMello16 ? weekPhase : null}
+                        athleteId={userId}
+                        protocolId={savedProtocolId}
+                      />
+                    ))}
+                  </div>
+                );
+              }
+              if (protocolMd) {
+                return <MarkdownProtocolView content={protocolMd} title={clientName || "Protocolo"} />;
+              }
+              return (
+                <p className="text-xs text-center py-8 text-zinc-500">
+                  Sem dados do protocolo
+                </p>
+              );
+            })()}
+
 
             {/* ── Text Tabs ── */}
             {["anatomia", "tecnica", "periodizacao", "biomec", "emg", "postural", "recuperacao", "metodologia", "feminino", "platô"].includes(activeResultTab) && (
