@@ -2163,7 +2163,21 @@ function JsonRender({ data, level = 0 }: { data: any; level?: number }) {
   );
 }
 
+const safeTextContent = (raw: unknown): string => {
+  if (!raw) return "";
+  if (typeof raw === "string") {
+    const trimmed = raw.trim();
+    if (trimmed.startsWith("{") && trimmed.endsWith("}")) {
+      return "Conteúdo em formato inválido. Gere novamente esta seção.";
+    }
+    return raw;
+  }
+  console.warn("[safeTextContent] received non-string:", typeof raw);
+  return "Conteúdo em formato inválido.";
+};
+
 function TextCard({ content }: { content: string }) {
+
   const parsed = tryParseJson(content);
   if (parsed) {
     return (
