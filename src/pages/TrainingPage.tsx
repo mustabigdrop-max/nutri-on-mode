@@ -503,6 +503,11 @@ Português. Específico. Científico. Zero genérico.`;
       if (error) throw error;
       let proto = data.protocol;
       if (!proto && data.content) proto = tryParseJson(data.content);
+      // Tenta extrair via parseProtocolText também (cobre data.content como string JSON serializada)
+      if (!proto && data.content) {
+        const { json } = parseProtocolText(data.content);
+        if (json) proto = json;
+      }
       if (proto && (proto.block_overview || proto.training_days || proto.phase_plan)) {
         setProtocol(proto);
         const sysName = TRAINING_SYSTEMS.find(s => s.id === trainingSystem)?.nome;
@@ -517,10 +522,21 @@ Português. Específico. Científico. Zero genérico.`;
           toast.info(`🛠 Volume redistribuído automaticamente — ${summary}`, { duration: 7000 });
         }
       } else if (data.content) {
-        setTextResults(prev => ({ ...prev, protocolo: data.content }));
+        // Se chegou aqui, data.content NÃO é JSON parseável — esperamos markdown legítimo.
+        // Blindagem extra: se ainda assim tiver cara de JSON cru, descarta para não poluir textResults.
+        const looksLikeJson = typeof data.content === "string" &&
+          data.content.trim().startsWith("{") &&
+          data.content.trim().endsWith("}");
+        if (looksLikeJson) {
+          console.warn("[protocol] data.content parece JSON mas falhou parse — descartando");
+          toast.error("Protocolo gerado em formato inválido. Tente novamente.");
+        } else {
+          setTextResults(prev => ({ ...prev, protocolo: data.content }));
+        }
       } else {
         throw new Error("Resposta vazia da IA");
       }
+
     } catch (e: any) {
       const msg = e?.message || "Erro desconhecido";
       setGenerationError(msg);
@@ -1006,12 +1022,40 @@ Português. Específico. Científico. Zero genérico.`;
             </div>
 
             {/* ── Overview Tab ── */}
-            {activeResultTab === "overview" && protocol?.block_overview && (
-              <BlockOverviewCard overview={protocol.block_overview} alerts={protocol.improvement_alerts} clientName={clientName} trainingDays={protocol.training_days} systemId={trainingSystem} />
-            )}
-            {activeResultTab === "overview" && !protocol?.block_overview && textResults.protocolo && (
-              <TextCard content={textResults.protocolo} />
-            )}
+            {activeResultTab === "overview" && (() => {
+              if (protocol?.block_overview) {
+                return (
+                  <BlockOverviewCard
+                    overview={protocol.block_overview}
+                    alerts={protocol.improvement_alerts}
+                    clientName={clientName}
+                    trainingDays={protocol.training_days}
+                    systemId={trainingSystem}
+                  />
+                );
+              }
+              const { json, markdown } = parseProtocolText(textResults.protocolo);
+              if (json?.block_overview) {
+                return (
+                  <BlockOverviewCard
+                    overview={json.block_overview}
+                    alerts={json.improvement_alerts}
+                    clientName={clientName}
+                    trainingDays={json.training_days}
+                    systemId={trainingSystem}
+                  />
+                );
+              }
+              if (markdown) {
+                return <MarkdownProtocolView content={markdown} title={clientName || "Protocolo"} />;
+              }
+              return (
+                <p className="text-xs text-center py-8 text-zinc-500">
+                  Sem dados do protocolo. Gere um treino novo na aba "Prescrição".
+                </p>
+              );
+            })()}
+
 
             {/* ── Phase Plan Tab ── */}
             {activeResultTab === "fases" && protocol?.phase_plan && (
@@ -1025,17 +1069,10 @@ Português. Específico. Científico. Zero genérico.`;
 
             {/* ── Training Days Tab ── */}
             {activeResultTab === "treino" && (() => {
-              console.log("[DEBUG protocol]", typeof protocol, protocol);
-              console.log(
-                "[DEBUG textResults.protocolo]",
-                typeof textResults.protocolo,
-                typeof textResults.protocolo === "string"
-                  ? textResults.protocolo.slice(0, 200)
-                  : textResults.protocolo
-              );
               const { json: protocolObj, markdown: protocolMd } = parseProtocolText(
                 (protocol as any) ?? textResults.protocolo
               );
+
               if (protocolObj?.training_days) {
                 return (
                   <div className="space-y-3">
@@ -1085,7 +1122,7 @@ Português. Específico. Científico. Zero genérico.`;
             {/* ── Text Tabs ── */}
             {["anatomia", "tecnica", "periodizacao", "biomec", "emg", "postural", "recuperacao", "metodologia", "feminino", "platô"].includes(activeResultTab) && (
               loadingTab[activeResultTab] ? <LoadingState /> :
-              textResults[activeResultTab] ? <TextCard content={textResults[activeResultTab]} /> :
+              textResults[activeResultTab] ? <TextCard content={safeTextContent(textResults[activeResultTab])} /> :
               <div className="py-12 text-center"><p className="text-xs" style={{ color: TEXT_MUTED }}>Clique na aba para carregar</p></div>
              )}
            </>
@@ -2126,7 +2163,21 @@ function JsonRender({ data, level = 0 }: { data: any; level?: number }) {
   );
 }
 
+const safeTextContent = (raw: unknown): string => {
+  if (!raw) return "";
+  if (typeof raw === "string") {
+    const trimmed = raw.trim();
+    if (trimmed.startsWith("{") && trimmed.endsWith("}")) {
+      return "Conteúdo em formato inválido. Gere novamente esta seção.";
+    }
+    return raw;
+  }
+  console.warn("[safeTextContent] received non-string:", typeof raw);
+  return "Conteúdo em formato inválido.";
+};
+
 function TextCard({ content }: { content: string }) {
+
   const parsed = tryParseJson(content);
   if (parsed) {
     return (
@@ -2720,19 +2771,20 @@ function HistoryViewModal({ protocol: p, onClose, userId, onUpdate }: { protocol
           {p.anatomy_text && (
             <div>
               <h4 className="text-[11px] font-bold mb-2" style={{ color: GREEN }}>📐 Anatomia</h4>
-              <TextCard content={p.anatomy_text} />
+              <TextCard content={safeTextContent(p.anatomy_text)} />
             </div>
           )}
           {p.tecnica_text && (
             <div>
               <h4 className="text-[11px] font-bold mb-2" style={{ color: GREEN }}>🎯 Técnica</h4>
-              <TextCard content={p.tecnica_text} />
+              <TextCard content={safeTextContent(p.tecnica_text)} />
             </div>
           )}
           {p.periodizacao_text && (
             <div>
               <h4 className="text-[11px] font-bold mb-2" style={{ color: GREEN }}>📊 Periodização</h4>
-              <TextCard content={p.periodizacao_text} />
+              <TextCard content={safeTextContent(p.periodizacao_text)} />
+
             </div>
           )}
         </div>
