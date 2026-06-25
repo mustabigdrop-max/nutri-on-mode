@@ -1022,12 +1022,40 @@ Português. Específico. Científico. Zero genérico.`;
             </div>
 
             {/* ── Overview Tab ── */}
-            {activeResultTab === "overview" && protocol?.block_overview && (
-              <BlockOverviewCard overview={protocol.block_overview} alerts={protocol.improvement_alerts} clientName={clientName} trainingDays={protocol.training_days} systemId={trainingSystem} />
-            )}
-            {activeResultTab === "overview" && !protocol?.block_overview && textResults.protocolo && (
-              <TextCard content={textResults.protocolo} />
-            )}
+            {activeResultTab === "overview" && (() => {
+              if (protocol?.block_overview) {
+                return (
+                  <BlockOverviewCard
+                    overview={protocol.block_overview}
+                    alerts={protocol.improvement_alerts}
+                    clientName={clientName}
+                    trainingDays={protocol.training_days}
+                    systemId={trainingSystem}
+                  />
+                );
+              }
+              const { json, markdown } = parseProtocolText(textResults.protocolo);
+              if (json?.block_overview) {
+                return (
+                  <BlockOverviewCard
+                    overview={json.block_overview}
+                    alerts={json.improvement_alerts}
+                    clientName={clientName}
+                    trainingDays={json.training_days}
+                    systemId={trainingSystem}
+                  />
+                );
+              }
+              if (markdown) {
+                return <MarkdownProtocolView content={markdown} title={clientName || "Protocolo"} />;
+              }
+              return (
+                <p className="text-xs text-center py-8 text-zinc-500">
+                  Sem dados do protocolo. Gere um treino novo na aba "Prescrição".
+                </p>
+              );
+            })()}
+
 
             {/* ── Phase Plan Tab ── */}
             {activeResultTab === "fases" && protocol?.phase_plan && (
