@@ -1122,7 +1122,7 @@ Português. Específico. Científico. Zero genérico.`;
             {/* ── Text Tabs ── */}
             {["anatomia", "tecnica", "periodizacao", "biomec", "emg", "postural", "recuperacao", "metodologia", "feminino", "platô"].includes(activeResultTab) && (
               loadingTab[activeResultTab] ? <LoadingState /> :
-              textResults[activeResultTab] ? <TextCard content={textResults[activeResultTab]} /> :
+              textResults[activeResultTab] ? <TextCard content={safeTextContent(textResults[activeResultTab])} /> :
               <div className="py-12 text-center"><p className="text-xs" style={{ color: TEXT_MUTED }}>Clique na aba para carregar</p></div>
              )}
            </>
