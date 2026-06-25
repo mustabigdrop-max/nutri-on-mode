@@ -503,6 +503,11 @@ Português. Específico. Científico. Zero genérico.`;
       if (error) throw error;
       let proto = data.protocol;
       if (!proto && data.content) proto = tryParseJson(data.content);
+      // Tenta extrair via parseProtocolText também (cobre data.content como string JSON serializada)
+      if (!proto && data.content) {
+        const { json } = parseProtocolText(data.content);
+        if (json) proto = json;
+      }
       if (proto && (proto.block_overview || proto.training_days || proto.phase_plan)) {
         setProtocol(proto);
         const sysName = TRAINING_SYSTEMS.find(s => s.id === trainingSystem)?.nome;
@@ -517,10 +522,21 @@ Português. Específico. Científico. Zero genérico.`;
           toast.info(`🛠 Volume redistribuído automaticamente — ${summary}`, { duration: 7000 });
         }
       } else if (data.content) {
-        setTextResults(prev => ({ ...prev, protocolo: data.content }));
+        // Se chegou aqui, data.content NÃO é JSON parseável — esperamos markdown legítimo.
+        // Blindagem extra: se ainda assim tiver cara de JSON cru, descarta para não poluir textResults.
+        const looksLikeJson = typeof data.content === "string" &&
+          data.content.trim().startsWith("{") &&
+          data.content.trim().endsWith("}");
+        if (looksLikeJson) {
+          console.warn("[protocol] data.content parece JSON mas falhou parse — descartando");
+          toast.error("Protocolo gerado em formato inválido. Tente novamente.");
+        } else {
+          setTextResults(prev => ({ ...prev, protocolo: data.content }));
+        }
       } else {
         throw new Error("Resposta vazia da IA");
       }
+
     } catch (e: any) {
       const msg = e?.message || "Erro desconhecido";
       setGenerationError(msg);
