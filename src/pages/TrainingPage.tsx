@@ -61,6 +61,7 @@ import CompetitionModeBlocks from "@/components/training/systems/CompetitionMode
 import StratumAIAgent from "@/components/training/StratumAIAgent";
 import SmartWarmup from "@/components/training/SmartWarmup";
 import { MarkdownProtocolView } from "@/components/training/MarkdownProtocolView";
+import { parseProtocolText } from "@/lib/parseProtocolText";
 import {
   TrackerProvider,
   WorkoutProgressBar,
