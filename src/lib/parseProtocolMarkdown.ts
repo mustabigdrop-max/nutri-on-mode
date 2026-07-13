@@ -151,49 +151,119 @@ function extractTitle(rest: string, dayNumber: number, body: string): string {
   return `Treino ${dayNumber}`;
 }
 
+/** Retorno seguro para conteúdo inutilizável — nunca vaza dados brutos. */
+function emptyFallback(): ParsedProtocol {
+  return { days: [], isStructured: false, isFallback: true };
+}
+
+/** Serializa objeto de forma segura (nunca lança, corta circular refs). */
+function safeStringify(v: any): string {
+  try {
+    const seen = new WeakSet();
+    return JSON.stringify(v, (_k, val) => {
+      if (val && typeof val === "object") {
+        if (seen.has(val)) return "[Circular]";
+        seen.add(val);
+      }
+      return val;
+    }, 2);
+  } catch {
+    return "";
+  }
+}
+
+/** true se a string parece JSON serializado (objeto/array). */
+function looksLikeJson(s: string): boolean {
+  const t = s.trim();
+  if (!t) return false;
+  if (!((t.startsWith("{") && t.endsWith("}")) || (t.startsWith("[") && t.endsWith("]")))) return false;
+  try { JSON.parse(t); return true; } catch { return false; }
+}
+
+/** Normaliza um item de training_days garantindo tipos previsíveis. */
+function normalizeDay(d: any, idx: number): ParsedDay {
+  const safe = d && typeof d === "object" ? d : {};
+  const dayNumRaw = safe.day_number ?? safe.day_index;
+  const dayNum = Number.isFinite(Number(dayNumRaw)) ? Number(dayNumRaw) : idx + 1;
+  const title = typeof safe.session_title === "string" && safe.session_title.trim()
+    ? safe.session_title
+    : (typeof safe.title === "string" && safe.title.trim() ? safe.title : `Treino ${dayNum}`);
+  const duration = typeof safe.estimated_duration === "string" && safe.estimated_duration.trim()
+    ? safe.estimated_duration
+    : "90min";
+  const exercises = Array.isArray(safe.exercises) ? safe.exercises : [];
+  return {
+    day_number: dayNum,
+    session_title: title,
+    estimated_duration: duration,
+    muscle_tags: extractMuscleTags(
+      String(title) + " " +
+      exercises.map((e: any) => `${e?.name ?? e?.nome ?? ""} ${e?.muscle_target ?? ""}`).join(" ")
+    ),
+    body: "",
+  };
+}
+
 /**
  * Função principal: recebe qualquer conteúdo e retorna a estrutura uniforme.
+ * Nunca vaza JSON cru — entradas inutilizáveis retornam isFallback com intro vazio.
  */
 export function parseProtocolToDays(content: any): ParsedProtocol {
-  if (!content) return { days: [], isStructured: false, isFallback: true };
+  // === entradas vazias / inválidas ===
+  if (content == null) return emptyFallback();
+  if (typeof content === "number" || typeof content === "boolean") return emptyFallback();
 
-  // === CASO 1: já é objeto JSON estruturado ===
+  // === CASO 1: objeto/array ===
   if (typeof content === "object") {
-    if (Array.isArray(content?.training_days) && content.training_days.length) {
+    // array direto de dias
+    if (Array.isArray(content)) {
+      if (content.length === 0) return emptyFallback();
+      // se o array tem shape de exercises/dias, tenta usar
+      if (content.every(x => x && typeof x === "object")) {
+        return {
+          days: content.map((d, i) => normalizeDay(d, i)),
+          isStructured: true,
+          isFallback: false,
+        };
+      }
+      return emptyFallback();
+    }
+    const td = (content as any).training_days;
+    if (Array.isArray(td) && td.length > 0) {
       return {
-        days: content.training_days.map((d: any, i: number) => ({
-          day_number: d.day_number || i + 1,
-          session_title: d.session_title || `Treino ${i + 1}`,
-          estimated_duration: d.estimated_duration || "90min",
-          muscle_tags: extractMuscleTags(
-            (d.session_title || "") + " " +
-            (d.exercises || []).map((e: any) => `${e?.name || ""} ${e?.muscle_target || ""}`).join(" ")
-          ),
-          body: "",
-        })),
+        days: td.map((d: any, i: number) => normalizeDay(d, i)),
         isStructured: true,
         isFallback: false,
       };
     }
+    // objeto sem training_days: pode ter block_overview/phase_plan → não é nosso trabalho renderizar
+    return emptyFallback();
   }
 
-  // === CASO 2: string com possível markdown ===
-  let text: string;
-  if (typeof content === "string") {
-    // tenta JSON.parse
-    try {
-      const j = JSON.parse(content);
-      if (j && typeof j === "object") return parseProtocolToDays(j);
-    } catch { /* segue como texto */ }
-    text = content;
-  } else {
-    text = JSON.stringify(content, null, 2);
+  // === CASO 2: string ===
+  if (typeof content !== "string") return emptyFallback();
+
+  const raw = content;
+  const trimmed = raw.trim();
+  if (!trimmed) return emptyFallback();
+
+  // string que começa com { ou [ → tratada como JSON. Se não parsear/normalizar, fallback vazio.
+  if (trimmed.startsWith("{") || trimmed.startsWith("[")) {
+    if (looksLikeJson(trimmed)) {
+      try {
+        const j = JSON.parse(trimmed);
+        const result = parseProtocolToDays(j);
+        if (!result.isFallback) return result;
+      } catch { /* cai no fallback */ }
+    }
+    return emptyFallback();
   }
 
-  const lines = text.split("\n");
+  // texto/markdown: divide por cabeçalhos de dia
+  const lines = raw.split("\n");
   type Block = { rest: string; num: number; bodyLines: string[] };
   const blocks: Block[] = [];
-  let introLines: string[] = [];
+  const introLines: string[] = [];
   let current: Block | null = null;
   let autoNum = 0;
 
@@ -211,13 +281,16 @@ export function parseProtocolToDays(content: any): ParsedProtocol {
   }
   if (current) blocks.push(current);
 
+  // Limita tamanho do intro para não vazar textos gigantes/lixo
+  const introText = introLines.join("\n").trim();
+  const safeIntro = introText && introText.length <= 4000 && !looksLikeJson(introText)
+    ? introText
+    : undefined;
+
   if (blocks.length === 0) {
-    return {
-      days: [],
-      intro: text,
-      isStructured: false,
-      isFallback: true,
-    };
+    // nenhum cabeçalho de dia detectado: só é útil se o texto tiver conteúdo curto e humano
+    if (!safeIntro) return emptyFallback();
+    return { days: [], intro: safeIntro, isStructured: false, isFallback: true };
   }
 
   const days: ParsedDay[] = blocks.map((b, i) => {
@@ -232,10 +305,8 @@ export function parseProtocolToDays(content: any): ParsedProtocol {
     };
   });
 
-  return {
-    days,
-    intro: introLines.join("\n").trim() || undefined,
-    isStructured: false,
-    isFallback: false,
-  };
+  return { days, intro: safeIntro, isStructured: false, isFallback: false };
 }
+
+// export interno para testes
+export const __internal = { safeStringify, looksLikeJson, normalizeDay };
