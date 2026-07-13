@@ -423,13 +423,59 @@ export function MarkdownProtocolView({
   content: any;
   title?: string;
 }) {
+  // ── Guarda anti-vazamento: nunca renderizar JSON cru ─────────────
+  // Se o content for objeto, ou string JSON serializada, este componente
+  // não é responsável por exibir — retorna aviso silencioso.
+  const isJsonLike = (v: any) => {
+    if (v && typeof v === "object") return true;
+    if (typeof v !== "string") return false;
+    const t = v.trim();
+    if (!t.startsWith("{") && !t.startsWith("[")) return false;
+    try {
+      JSON.parse(t);
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
+  if (isJsonLike(content)) {
+    return (
+      <div
+        style={{
+          padding: 16,
+          borderRadius: 12,
+          border: `1px solid ${CARD_BORDER}`,
+          background: CARD_BG,
+        }}
+      >
+        <p style={{ fontSize: 11, color: "#71717a", textAlign: "center", margin: 0 }}>
+          Protocolo estruturado — abra a aba "Visão Geral" para visualizar.
+        </p>
+      </div>
+    );
+  }
+
   const parsed = parseProtocolToDays(content);
 
   if (parsed.isFallback) {
-    const txt =
-      typeof content === "string"
-        ? content
-        : JSON.stringify(content, null, 2);
+    const txt = typeof content === "string" ? content : "";
+    if (!txt.trim()) {
+      return (
+        <div
+          style={{
+            padding: 16,
+            borderRadius: 12,
+            border: `1px solid ${CARD_BORDER}`,
+            background: CARD_BG,
+          }}
+        >
+          <p style={{ fontSize: 11, color: "#71717a", textAlign: "center", margin: 0 }}>
+            Sem dados do protocolo.
+          </p>
+        </div>
+      );
+    }
     return <FallbackCard title={title || "Protocolo"} content={txt} />;
   }
 
