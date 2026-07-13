@@ -1036,27 +1036,37 @@ Português. Específico. Científico. Zero genérico.`;
 
             {/* ── Overview Tab ── */}
             {activeResultTab === "overview" && (() => {
-              if (protocol?.block_overview) {
+              // Padrão unificado — igual ao modal de histórico arquivado
+              const source = (protocol as any) ?? textResults.protocolo;
+              const { json, markdown } = parseProtocolText(source);
+              const proto = (protocol as any)?.block_overview ? (protocol as any) : json;
+
+              if (proto?.block_overview) {
                 return (
-                  <BlockOverviewCard
-                    overview={protocol.block_overview}
-                    alerts={protocol.improvement_alerts}
-                    clientName={clientName}
-                    trainingDays={protocol.training_days}
-                    systemId={trainingSystem}
-                  />
-                );
-              }
-              const { json, markdown } = parseProtocolText(textResults.protocolo);
-              if (json?.block_overview) {
-                return (
-                  <BlockOverviewCard
-                    overview={json.block_overview}
-                    alerts={json.improvement_alerts}
-                    clientName={clientName}
-                    trainingDays={json.training_days}
-                    systemId={trainingSystem}
-                  />
+                  <div className="space-y-3">
+                    <BlockOverviewCard
+                      overview={proto.block_overview}
+                      alerts={proto.improvement_alerts}
+                      clientName={clientName}
+                      trainingDays={proto.training_days}
+                      systemId={trainingSystem}
+                    />
+                    {isMello16 && <WeekNavigator onWeekChange={setWeekPhase} />}
+                    {proto.training_days?.map((day: any, idx: number) => (
+                      <TrainingDayCard
+                        key={idx}
+                        day={day}
+                        index={idx}
+                        expanded={expandedDay === idx}
+                        onToggle={() => setExpandedDay(expandedDay === idx ? null : idx)}
+                        expandedExercise={expandedExercise}
+                        setExpandedExercise={setExpandedExercise}
+                        weekPhase={isMello16 ? weekPhase : null}
+                        athleteId={userId}
+                        protocolId={savedProtocolId}
+                      />
+                    ))}
+                  </div>
                 );
               }
               if (markdown) {
