@@ -247,17 +247,16 @@ export function parseProtocolToDays(content: any): ParsedProtocol {
   const trimmed = raw.trim();
   if (!trimmed) return emptyFallback();
 
-  // string JSON serializada
-  if (looksLikeJson(trimmed)) {
-    try {
-      const j = JSON.parse(trimmed);
-      // recursão controlada — só uma vez, e resultado nunca vira intro=texto cru
-      const result = parseProtocolToDays(j);
-      if (!result.isFallback) return result;
-      return emptyFallback();
-    } catch {
-      return emptyFallback();
+  // string que começa com { ou [ → tratada como JSON. Se não parsear/normalizar, fallback vazio.
+  if (trimmed.startsWith("{") || trimmed.startsWith("[")) {
+    if (looksLikeJson(trimmed)) {
+      try {
+        const j = JSON.parse(trimmed);
+        const result = parseProtocolToDays(j);
+        if (!result.isFallback) return result;
+      } catch { /* cai no fallback */ }
     }
+    return emptyFallback();
   }
 
   // texto/markdown: divide por cabeçalhos de dia
