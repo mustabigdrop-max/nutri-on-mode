@@ -47,7 +47,7 @@ describe("parseProtocolText", () => {
       expect(r.json).toBeNull();
       expect(r.markdown).toBeNull();
       // Garantia crítica: string JSON crua não escapa
-      expect(r.markdown).not.toContain("{");
+      expect(r.markdown ?? "").not.toContain("{");
     });
 
     it("string quebrada que parece JSON (chaves) mas não parseia é tratada como markdown", () => {
