@@ -949,6 +949,78 @@ Referências científicas.`;
   return `Protocolo de treino completo para ${clientName || "Cliente"}, fase ${phase}, músculos ${muscleList}, nível ${level}, ${days}x/semana, ${sessionDuration || "60min"} por sessão. Equipamentos: ${equipment || "Academia completa"}. Lesões: ${injuries || "Nenhuma"}. Analise, justifique e prescreva. Integre com recomendações nutricionais do nutriON.`;
 }
 
+// =====================================================================
+// GERAÇÃO FRACIONADA — prompts enxutos (skeleton + day)
+// =====================================================================
+const SKELETON_SYSTEM = `Você é o STRATUM Elite Engine (TrainingON) — periodização científica (Israetel, Schoenfeld, Helms).
+Gere APENAS o ESQUELETO do bloco. NÃO gere exercícios.
+
+Volume landmarks (sets/sem): Peito 8/16/20 · Costas 10/18/22 · Pernas 10/18/25 · Ombros 8/14/20 · Bíceps 6/14/18 · Tríceps 6/14/18 · Glúteos 6/12/20 · Panturrilha 8/16/20 (MEV/MAV/MRV).
+Zonas: Z2 6-8 reps (força-hipertrofia) · Z3 9-12 (hipertrofia) · Z4 13-20 (metabólico).
+
+Responda EXCLUSIVAMENTE com um único objeto JSON válido:
+{
+ "block_overview": {
+  "title": string, "split_type": string, "duration_weeks": number, "deload_week": number,
+  "split_justification": string, "progression_model": string,
+  "muscle_priorities": [{ "muscle": string, "weekly_sets": number, "priority": "alta"|"media"|"baixa" }],
+  "coach_notes": string
+ },
+ "improvement_alerts": [{ "area": string, "severity": "alta"|"media"|"baixa", "message": string }],
+ "day_plan": [{
+   "day_number": number, "session_title": string, "focus_muscles": [string],
+   "estimated_duration": string,
+   "target_sets": [{ "muscle": string, "sets": number }],
+   "zone": "Z2"|"Z3"|"Z4", "rir": string, "priority_note": string
+ }]
+}
+Regras: muscle_priorities ≥3 itens · improvement_alerts ≥2 itens · day_plan com EXATAMENTE o número de dias pedido · a soma de target_sets por músculo em todos os dias ≤ weekly_sets. Português. Conciso.`;
+
+const DAY_SYSTEM = `Você é o STRATUM Elite Engine (TrainingON). Prescreva UM único dia de treino.
+Use apenas exercícios validados por EMG e respeite EXATAMENTE o target_sets do dia (séries de trabalho = top_set + backoff_sets + work_sets; feeder NÃO conta).
+
+Responda EXCLUSIVAMENTE com um objeto JSON válido:
+{
+ "day_number": number, "session_title": string, "focus_muscles": [string], "estimated_duration": string,
+ "warmup": [{ "name": string, "sets": string, "reps": string, "notes": string }],
+ "exercises": [{
+   "order": number, "name": string, "muscle_target": string, "tempo": "3-1-2-0",
+   "structure": {
+     "feeder_sets": [{ "set_label": string, "load_percent": string, "reps": string, "notes": string }],
+     "top_set": { "sets": number, "reps": string, "rpe": number, "rest": string, "notes": string },
+     "backoff_sets": { "sets": number, "reps": string, "load_reduction": string, "rest": string, "notes": string },
+     "work_sets": { "sets": number, "reps": string, "rpe": number, "rest": string, "notes": string }
+   },
+   "execution_cues": string,
+   "why_this_exercise": "UMA frase curta (máx 15 palavras) com referência (Schoenfeld/Israetel/Helms)",
+   "substitutes": [{ "name": string, "reason": string, "equipment": string }]
+ }],
+ "session_notes": string
+}
+Regras: warmup ≥2 · exercises 4-6 · use top_set+backoff_sets nos compostos principais e work_sets nos acessórios · 1-2 feeder_sets por exercício · 1-2 substitutes · sem markdown, sem texto fora do JSON. Português.`;
+
+async function callGateway(apiKey: string, system: string, user: string, maxTokens: number) {
+  const r = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${apiKey}` },
+    body: JSON.stringify({
+      model: "google/gemini-2.5-flash",
+      messages: [{ role: "system", content: system }, { role: "user", content: user }],
+      temperature: 0.6,
+      max_tokens: maxTokens,
+      response_format: { type: "json_object" },
+    }),
+  });
+  return r;
+}
+
+function parseJsonLoose(txt: string): any | null {
+  if (!txt) return null;
+  const m = txt.match(/\{[\s\S]*\}/);
+  if (!m) return null;
+  try { return JSON.parse(m[0]); } catch { return null; }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -958,6 +1030,78 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     const PERPLEXITY_API_KEY = Deno.env.get("PERPLEXITY_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
+
+    const json = (body: unknown, status = 200) =>
+      new Response(JSON.stringify(body), { status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+
+    // ---------- FASE 1 — ESQUELETO ----------
+    if (data.mode === "skeleton") {
+      const t0 = Date.now();
+      console.log("[SKELETON] start", { days: data.days, client: data.clientName });
+      const userMsg = `${elitePrompt || buildStructuredPrompt(data)}\n\nGere o ESQUELETO com EXATAMENTE ${data.days || 4} dias (day_plan). Sem exercícios.`;
+      const r = await callGateway(LOVABLE_API_KEY, SKELETON_SYSTEM, userMsg, 1500);
+      if (r.status === 429) return json({ error: "Rate limit excedido." }, 429);
+      if (r.status === 402) return json({ error: "Créditos insuficientes." }, 402);
+      if (!r.ok) return json({ error: `AI error ${r.status}` }, 500);
+      const jr = await r.json();
+      const skeleton = parseJsonLoose(jr.choices?.[0]?.message?.content || "");
+      if (!skeleton?.block_overview || !Array.isArray(skeleton.day_plan) || skeleton.day_plan.length === 0) {
+        console.log("[SKELETON] JSON inválido");
+        return json({ error: "Não foi possível gerar o esqueleto do protocolo. Tente novamente." }, 422);
+      }
+      skeleton.day_plan = skeleton.day_plan.map((d: any, i: number) => ({
+        day_number: d.day_number || i + 1,
+        session_title: d.session_title || `Dia ${i + 1}`,
+        focus_muscles: Array.isArray(d.focus_muscles) ? d.focus_muscles : [],
+        estimated_duration: d.estimated_duration || data.sessionDuration || "60min",
+        target_sets: Array.isArray(d.target_sets) ? d.target_sets : [],
+        zone: d.zone || "Z3",
+        rir: d.rir || "1-2",
+        priority_note: d.priority_note || "",
+      }));
+      if (!Array.isArray(skeleton.improvement_alerts)) skeleton.improvement_alerts = [];
+      console.log("[SKELETON] ok", { days: skeleton.day_plan.length, ms: Date.now() - t0 });
+      return json({ skeleton });
+    }
+
+    // ---------- FASE 2 — DIA ISOLADO ----------
+    if (data.mode === "day") {
+      const spec = data.daySpec || {};
+      const n = spec.day_number || 1;
+      const t0 = Date.now();
+      console.log(`[DAY-${n}] start`, { focus: spec.focus_muscles });
+      const ctx = data.blockContext || {};
+      const userMsg = `ATLETA: ${data.athleteSummary || "não informado"}
+
+BLOCO: ${ctx.title || ""} · split ${ctx.split_type || ""} · progressão ${ctx.progression_model || ""}
+
+DIA A PRESCREVER:
+${JSON.stringify(spec)}
+
+Prescreva SOMENTE este dia, respeitando target_sets, zona ${spec.zone || "Z3"} e RIR ${spec.rir || "1-2"}. Retorne só o JSON do dia.`;
+      const buildDay = async () => {
+        const r = await callGateway(LOVABLE_API_KEY, DAY_SYSTEM, userMsg, 3000);
+        if (r.status === 429 || r.status === 402) return { status: r.status, day: null };
+        if (!r.ok) return { status: r.status, day: null };
+        const jr = await r.json();
+        return { status: 200, day: parseJsonLoose(jr.choices?.[0]?.message?.content || "") };
+      };
+      let { status, day } = await buildDay();
+      if (status === 429) return json({ error: "Rate limit excedido." }, 429);
+      if (status === 402) return json({ error: "Créditos insuficientes." }, 402);
+      if (!day || !Array.isArray(day.exercises) || day.exercises.length === 0) {
+        console.log(`[DAY-${n}] JSON inválido — 1 retry`);
+        ({ day } = await buildDay());
+      }
+      if (!day || !Array.isArray(day.exercises) || day.exercises.length === 0) {
+        console.log(`[DAY-${n}] falhou após retry`);
+        return json({ error: `Não foi possível gerar o dia ${n}. Tente novamente.` }, 422);
+      }
+      const sanitized = sanitizeProtocol({ training_days: [{ ...day, day_number: n }] }).training_days[0];
+      console.log(`[DAY-${n}] ok`, { exercises: sanitized.exercises.length, ms: Date.now() - t0 });
+      return json({ day: sanitized });
+    }
+
 
     // Se vier elitePrompt do frontend (Fibras + Ready sincronizados), usa diretamente.
     // Caso contrário, usa o pipeline padrão de prompts por tab.
