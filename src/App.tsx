@@ -8,6 +8,8 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import PlanGateWrapper from "@/components/PlanGateWrapper";
 import Index from "./pages/Index";
 import AuthPage from "./pages/AuthPage";
+import OAuthConsentPage from "./pages/OAuthConsentPage";
+
 import OnboardingPage from "./pages/OnboardingPage";
 import FirstMealScreen from "./pages/FirstMealScreen";
 import ActivationTourPage from "./pages/ActivationTourPage";
@@ -126,6 +128,8 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<AuthPage />} />
+            <Route path="/.lovable/oauth/consent" element={<OAuthConsentPage />} />
+
             <Route path="/assessment" element={<ProtectedRoute><AssessmentPCA /></ProtectedRoute>} />
             <Route path="/resultado-pca" element={<ProtectedRoute><ResultadoPCAPage /></ProtectedRoute>} />
             <Route path="/onboarding" element={<ProtectedRoute><OnboardingPage /></ProtectedRoute>} />

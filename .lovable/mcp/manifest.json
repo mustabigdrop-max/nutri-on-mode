@@ -1,0 +1,183 @@
+{
+  "version": 1,
+  "sdk_version": "0.24.0",
+  "path": "/functions/v1/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://hibohvntewqtthyuotye.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "nutrion-mcp",
+      "version": "0.1.0",
+      "title": "nutriON"
+    },
+    "tools": [
+      {
+        "name": "get_profile",
+        "title": "Obter perfil nutricional",
+        "description": "Retorna o perfil do usuário autenticado: objetivo, peso, altura, metas de calorias e macros, nível de treino e plano atual.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_meal_logs",
+        "title": "Listar refeições registradas",
+        "description": "Lista as refeições registradas pelo usuário autenticado, com calorias e macros, opcionalmente filtradas por intervalo de datas.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "from": {
+              "description": "Data inicial (YYYY-MM-DD).",
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            },
+            "to": {
+              "description": "Data final (YYYY-MM-DD).",
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            },
+            "limit": {
+              "default": 30,
+              "description": "Máximo de registros.",
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_weight_logs",
+        "title": "Histórico de peso",
+        "description": "Retorna o histórico de peso corporal do usuário autenticado, do mais recente para o mais antigo.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "limit": {
+              "default": 30,
+              "description": "Máximo de registros.",
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "log_weight",
+        "title": "Registrar peso corporal",
+        "description": "Registra um novo peso corporal (e opcionalmente percentual de gordura e massa muscular) para o usuário autenticado.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "weight_kg": {
+              "type": "number",
+              "minimum": 20,
+              "maximum": 400,
+              "description": "Peso em quilogramas."
+            },
+            "body_fat_pct": {
+              "description": "Percentual de gordura corporal.",
+              "type": "number",
+              "minimum": 1,
+              "maximum": 70
+            },
+            "muscle_mass_kg": {
+              "description": "Massa muscular em kg.",
+              "type": "number",
+              "minimum": 1,
+              "maximum": 200
+            }
+          },
+          "required": [
+            "weight_kg"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_training_protocols",
+        "title": "Listar protocolos de treino",
+        "description": "Lista os protocolos de treino (TrainingON) do usuário autenticado, com fase, nível, músculos e duração.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "limit": {
+              "default": 10,
+              "description": "Máximo de protocolos.",
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_training_protocol",
+        "title": "Obter protocolo de treino",
+        "description": "Retorna o conteúdo completo de um protocolo de treino do usuário autenticado a partir do seu id.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "protocol_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "description": "Id do protocolo (use list_training_protocols)."
+            }
+          },
+          "required": [
+            "protocol_id"
+          ]
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
