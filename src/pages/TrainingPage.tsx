@@ -473,6 +473,33 @@ REGRA ABSOLUTA #2 — SISTEMA: Os parâmetros do SISTEMA DE TREINAMENTO BASE sã
 Português. Específico. Científico. Zero genérico.`;
   };
 
+  // Chamada com timeout individual de 60s (geração fracionada)
+  const invokeWithTimeout = async (body: any, label: string, ms = 60000) => {
+    const invokePromise = supabase.functions.invoke("generate-training-protocol", { body });
+    const timeoutPromise = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error(`Tempo excedido (60s) em ${label}. Tente novamente.`)), ms)
+    );
+    const { data, error } = (await Promise.race([invokePromise, timeoutPromise])) as any;
+    if (error) throw new Error(error.message || `Falha em ${label}`);
+    if (data?.error) throw new Error(data.error);
+    return data;
+  };
+
+  const buildAthleteSummary = () =>
+    [
+      `Cliente: ${clientName}`,
+      phase && `Fase: ${phase}`,
+      level && `Nível: ${level}`,
+      `Frequência: ${days}x/sem`,
+      `Duração/sessão: ${sessionDuration}`,
+      muscles.length ? `Prioridades: ${muscles.join(", ")}` : "",
+      equipment.length ? `Equipamentos: ${equipment.join(", ")}` : "",
+      injuries ? `Lesões: ${injuries}` : "",
+      trainingSystem ? `Sistema: ${TRAINING_SYSTEMS.find(s => s.id === trainingSystem)?.nome || trainingSystem}` : "",
+      fiberProfile ? `Fibras: ${fiberProfile.dominancia}` : "",
+      readyCheckin ? `Prontidão: sono ${readyCheckin.sono}/10, energia ${readyCheckin.energia}/10` : "",
+    ].filter(Boolean).join(" · ");
+
   const generate = async () => {
     if (!clientName) {
       toast.error("Informe o nome do cliente para gerar o protocolo");
@@ -488,57 +515,93 @@ Português. Específico. Científico. Zero genérico.`;
     setLoading(true);
     setGenerationError(null);
     setGenerated(true);
+    setProtocol(null);
+    setDayStatus({});
     setActiveResultTab("overview");
     try {
-      // Timeout de 90s — Edge Functions Supabase já têm limite, mas damos feedback claro
-      const invokePromise = supabase.functions.invoke("generate-training-protocol", {
-        body: {
-          ...bodyData,
-          tab: "protocolo",
-          elitePrompt: buildElitePrompt(),
-        },
-      });
-      const timeoutPromise = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error("Tempo excedido (90s). O protocolo é complexo — tente novamente.")), 90000)
+      // ── FASE 1 — ESQUELETO ──
+      console.log("[SKELETON] request", { clientName, days });
+      const skelData = await invokeWithTimeout(
+        { ...bodyData, mode: "skeleton", tab: "protocolo", elitePrompt: buildElitePrompt() },
+        "esqueleto"
       );
-      const { data, error } = await Promise.race([invokePromise, timeoutPromise]) as any;
-      if (error) throw error;
-      let proto = data.protocol;
-      if (!proto && data.content) proto = tryParseJson(data.content);
-      // Tenta extrair via parseProtocolText também (cobre data.content como string JSON serializada)
-      if (!proto && data.content) {
-        const { json } = parseProtocolText(data.content);
-        if (json) proto = json;
+      const skeleton = skelData?.skeleton;
+      if (!skeleton?.block_overview || !Array.isArray(skeleton.day_plan) || !skeleton.day_plan.length) {
+        throw new Error("Não foi possível gerar o esqueleto do protocolo. Tente novamente.");
       }
-      if (proto && (proto.block_overview || proto.training_days || proto.phase_plan)) {
-        setProtocol(proto);
-        const sysName = TRAINING_SYSTEMS.find(s => s.id === trainingSystem)?.nome;
+      console.log("[SKELETON] ok", { days: skeleton.day_plan.length });
+
+      // Renderiza imediatamente com placeholders por dia
+      const placeholderDays = skeleton.day_plan.map((d: any) => ({
+        day_number: d.day_number,
+        session_title: d.session_title,
+        focus_muscles: d.focus_muscles,
+        estimated_duration: d.estimated_duration,
+        warmup: [],
+        exercises: [],
+        session_notes: d.priority_note || "",
+        _loading: true,
+      }));
+      setProtocol({
+        block_overview: skeleton.block_overview,
+        improvement_alerts: skeleton.improvement_alerts || [],
+        training_days: placeholderDays,
+      });
+      setDayStatus(Object.fromEntries(skeleton.day_plan.map((d: any) => [d.day_number, "loading"])));
+      setLoading(false);
+
+      // ── FASE 2 — DIAS EM PARALELO ──
+      const athleteSummary = buildAthleteSummary();
+      const blockContext = {
+        title: skeleton.block_overview.title,
+        split_type: skeleton.block_overview.split_type,
+        progression_model: skeleton.block_overview.progression_model,
+      };
+
+      const results = await Promise.allSettled(
+        skeleton.day_plan.map(async (spec: any) => {
+          console.log(`[DAY-${spec.day_number}] request`, spec.focus_muscles);
+          const res = await invokeWithTimeout(
+            { mode: "day", daySpec: spec, athleteSummary, blockContext },
+            `dia ${spec.day_number}`
+          );
+          const day = res?.day;
+          if (!day || !Array.isArray(day.exercises) || !day.exercises.length) {
+            throw new Error(`Dia ${spec.day_number} inválido`);
+          }
+          console.log(`[DAY-${spec.day_number}] ok`, { exercises: day.exercises.length });
+          setProtocol((prev: any) => {
+            if (!prev) return prev;
+            const training_days = prev.training_days.map((d: any) =>
+              d.day_number === spec.day_number ? { ...day, day_number: spec.day_number } : d
+            );
+            return { ...prev, training_days };
+          });
+          setDayStatus(prev => ({ ...prev, [spec.day_number]: "done" }));
+          return spec.day_number;
+        })
+      );
+
+      const failed = results
+        .map((r, i) => (r.status === "rejected" ? skeleton.day_plan[i].day_number : null))
+        .filter((n): n is number => n != null);
+      if (failed.length) {
+        console.warn("[DAY] falhas:", failed);
+        setDayStatus(prev => {
+          const next = { ...prev };
+          failed.forEach(n => { next[n] = "error"; });
+          return next;
+        });
+        toast.error(`Falha ao gerar ${failed.length} dia(s): D${failed.join(", D")}. Use "Regerar dia".`);
+      }
+
+      const sysName = TRAINING_SYSTEMS.find(s => s.id === trainingSystem)?.nome;
+      if (failed.length < skeleton.day_plan.length) {
         toast.success(
           `✅ Protocolo gerado${sysName ? ` · ${sysName}` : ""}${fiberProfile ? ` · Fibras ${fiberProfile.dominancia.toUpperCase()}` : ""}${readyCheckin ? ` · Ready ⚡` : ""}`,
           { duration: 4000 }
         );
-        if (Array.isArray(data.volume_fixes) && data.volume_fixes.length > 0) {
-          const summary = data.volume_fixes
-            .map((f: any) => `${f.muscle}: ${f.before}→${f.after} (max ${f.prescribed})`)
-            .join(" · ");
-          toast.info(`🛠 Volume redistribuído automaticamente — ${summary}`, { duration: 7000 });
-        }
-      } else if (data.content) {
-        // Se chegou aqui, data.content NÃO é JSON parseável — esperamos markdown legítimo.
-        // Blindagem extra: se ainda assim tiver cara de JSON cru, descarta para não poluir textResults.
-        const looksLikeJson = typeof data.content === "string" &&
-          data.content.trim().startsWith("{") &&
-          data.content.trim().endsWith("}");
-        if (looksLikeJson) {
-          console.warn("[protocol] data.content parece JSON mas falhou parse — descartando");
-          toast.error("Protocolo gerado em formato inválido. Tente novamente.");
-        } else {
-          setTextResults(prev => ({ ...prev, protocolo: data.content }));
-        }
-      } else {
-        throw new Error("Resposta vazia da IA");
       }
-
     } catch (e: any) {
       const msg = e?.message || "Erro desconhecido";
       setGenerationError(msg);
@@ -547,6 +610,48 @@ Português. Específico. Científico. Zero genérico.`;
       setLoading(false);
     }
   };
+
+  // Regenera um único dia (usado nos cards com falha)
+  const regenerateDay = async (dayNumber: number) => {
+    const proto: any = protocol;
+    const spec = proto?.training_days?.find((d: any) => d.day_number === dayNumber);
+    if (!spec) return;
+    setDayStatus(prev => ({ ...prev, [dayNumber]: "loading" }));
+    try {
+      console.log(`[DAY-${dayNumber}] retry`);
+      const res = await invokeWithTimeout(
+        {
+          mode: "day",
+          daySpec: {
+            day_number: dayNumber,
+            session_title: spec.session_title,
+            focus_muscles: spec.focus_muscles,
+            estimated_duration: spec.estimated_duration,
+          },
+          athleteSummary: buildAthleteSummary(),
+          blockContext: {
+            title: proto?.block_overview?.title,
+            split_type: proto?.block_overview?.split_type,
+            progression_model: proto?.block_overview?.progression_model,
+          },
+        },
+        `dia ${dayNumber}`
+      );
+      const day = res?.day;
+      if (!day?.exercises?.length) throw new Error("Dia inválido");
+      setProtocol((prev: any) => ({
+        ...prev,
+        training_days: prev.training_days.map((d: any) =>
+          d.day_number === dayNumber ? { ...day, day_number: dayNumber } : d
+        ),
+      }));
+      setDayStatus(prev => ({ ...prev, [dayNumber]: "done" }));
+    } catch (e: any) {
+      setDayStatus(prev => ({ ...prev, [dayNumber]: "error" }));
+      toast.error(e?.message || `Falha ao regerar dia ${dayNumber}`);
+    }
+  };
+
 
   const loadTab = async (tab: string) => {
     if (textResults[tab] || loadingTab[tab]) return;
