@@ -24,6 +24,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import BottomNav from "@/components/BottomNav";
 import StratumModule from "@/components/training/StratumModule";
 import StratumGenerationProgress from "@/components/training/StratumGenerationProgress";
+import DayLoadingCard from "@/components/training/DayLoadingCard";
 import StratumProtocolHub from "@/components/training/StratumProtocolHub";
 import TrainingOnFibrasChat from "@/components/training/TrainingOnFibrasChat";
 import TrainingReadinessSection from "@/components/training/TrainingReadinessSection";
