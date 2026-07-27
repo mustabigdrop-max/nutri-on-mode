@@ -62,6 +62,7 @@ const AuthPage = () => {
       if (mode === "login") {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) toast.error(error.message);
+        else if (nextPath) window.location.href = nextPath;
         else navigate("/dashboard");
       } else {
         if (!choice) { toast.error("Selecione um perfil."); return; }
@@ -71,9 +72,12 @@ const AuthPage = () => {
           password,
           options: {
             data: { full_name: fullName, professional_type },
-            emailRedirectTo: window.location.origin,
+            emailRedirectTo: nextPath
+              ? `${window.location.origin}${nextPath}`
+              : window.location.origin,
           },
         });
+
         if (error) toast.error(error.message);
         else toast.success("Conta criada! Verifique seu email para confirmar.");
       }
