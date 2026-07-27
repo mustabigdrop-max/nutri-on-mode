@@ -1010,17 +1010,22 @@ serve(async (req) => {
       const sys = extraInstruction
         ? `${TRAININGON_SYSTEM_PROMPT}\n\n## RETENTATIVA OBRIGATÓRIA\n${extraInstruction}`
         : TRAININGON_SYSTEM_PROMPT;
+      const reqBody: Record<string, unknown> = {
+        model: "google/gemini-2.5-flash",
+        messages: [
+          { role: "system", content: sys },
+          { role: "user", content: enrichedPrompt },
+        ],
+        temperature: 0.7,
+      };
+      // O tab "protocolo" exige o schema JSON estruturado (block_overview/training_days).
+      // Forçar json_object no gateway evita respostas em markdown/prosa que quebram o parser
+      // e faziam o protocolo "não lançar" no app.
+      if (data.tab === "protocolo") reqBody.response_format = { type: "json_object" };
       const r = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${LOVABLE_API_KEY}` },
-        body: JSON.stringify({
-          model: "google/gemini-2.5-flash",
-          messages: [
-            { role: "system", content: sys },
-            { role: "user", content: enrichedPrompt },
-          ],
-          temperature: 0.7,
-        }),
+        body: JSON.stringify(reqBody),
       });
       if (!r.ok) {
         if (r.status === 429 || r.status === 402) return { response: r, raw: "" };

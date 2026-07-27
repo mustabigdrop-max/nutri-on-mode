@@ -2522,19 +2522,32 @@ function VolumeLandmarksSection({ userId }: { userId?: string }) {
 /* ================================================================
    SECTION 4 — HISTORY
    ================================================================ */
+const HISTORY_LIST_COLUMNS = "id, client_name, phase, level, weeks, created_at";
+
 function HistorySection({ userId }: { userId?: string }) {
   const [protocols, setProtocols] = useState<any[]>([]);
   const [search, setSearch] = useState("");
   const [viewModal, setViewModal] = useState<any>(null);
+  const [openingId, setOpeningId] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
   const loadProtocols = useCallback(() => {
     if (!userId) return;
-    supabase.from("training_protocols").select("*").eq("user_id", userId).order("created_at", { ascending: false }).limit(50)
+    // Lista só precisa dos campos de resumo — protocol_text/anatomy_text/etc. (o payload pesado)
+    // são carregados sob demanda ao abrir "Ver Treino", em vez de trazer os 50 registros inteiros.
+    supabase.from("training_protocols").select(HISTORY_LIST_COLUMNS).eq("user_id", userId).order("created_at", { ascending: false }).limit(50)
       .then(({ data }) => setProtocols(data || []));
   }, [userId]);
 
   useEffect(() => { loadProtocols(); }, [loadProtocols]);
+
+  const openProtocol = async (id: string) => {
+    setOpeningId(id);
+    const { data, error } = await supabase.from("training_protocols").select("*").eq("id", id).single();
+    setOpeningId(null);
+    if (error || !data) { toast.error("Erro ao carregar protocolo"); return; }
+    setViewModal(data);
+  };
 
   const deleteProtocol = async (id: string) => {
     const { error } = await supabase.from("training_protocols").delete().eq("id", id);
@@ -2572,8 +2585,8 @@ function HistorySection({ userId }: { userId?: string }) {
             {p.level && <span className="text-[9px] px-1.5 py-0.5 rounded" style={{ background: SURFACE2, color: TEXT_MUTED }}>{p.level}</span>}
           </div>
           <div className="flex items-center gap-1.5">
-            <button onClick={() => setViewModal(p)} className="flex-1 text-[10px] py-2 rounded-lg font-semibold text-center" style={{ background: GREEN_DIM, color: GREEN, border: `1px solid ${BORDER}` }}>
-              <Eye className="w-3 h-3 inline mr-1" />Ver Treino
+            <button onClick={() => openProtocol(p.id)} disabled={openingId === p.id} className="flex-1 text-[10px] py-2 rounded-lg font-semibold text-center disabled:opacity-60" style={{ background: GREEN_DIM, color: GREEN, border: `1px solid ${BORDER}` }}>
+              <Eye className="w-3 h-3 inline mr-1" />{openingId === p.id ? "Carregando..." : "Ver Treino"}
             </button>
             {confirmDelete === p.id ? (
               <>
