@@ -1161,6 +1161,17 @@ Português. Específico. Científico. Zero genérico.`;
                     />
                     {isMello16 && <WeekNavigator onWeekChange={setWeekPhase} />}
                     {proto.training_days?.map((day: any, idx: number) => (
+                      (day?._loading || dayStatus[day?.day_number] === "loading" || dayStatus[day?.day_number] === "error") &&
+                      !(day?.exercises?.length) ? (
+                        <DayLoadingCard
+                          key={idx}
+                          dayNumber={day?.day_number ?? idx + 1}
+                          title={day?.session_title}
+                          focusMuscles={day?.focus_muscles}
+                          state={dayStatus[day?.day_number] === "error" ? "error" : "loading"}
+                          onRetry={() => regenerateDay(day?.day_number ?? idx + 1)}
+                        />
+                      ) : (
                       <TrainingDayCard
                         key={idx}
                         day={day}
@@ -1173,6 +1184,7 @@ Português. Específico. Científico. Zero genérico.`;
                         athleteId={userId}
                         protocolId={savedProtocolId}
                       />
+                      )
                     ))}
                   </div>
                 );
