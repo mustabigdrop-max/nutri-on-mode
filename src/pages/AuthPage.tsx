@@ -23,9 +23,14 @@ const PROFILE_CODE: Record<ProfileChoice, string> = {
   medico: "MD",
 };
 
+const safeNext = (value: string | null) =>
+  value && /^\/(?!\/)/.test(value) ? value : null;
+
 const AuthPage = () => {
   const navigate = useNavigate();
   const [params] = useSearchParams();
+  const nextPath = safeNext(params.get("next"));
+
 
   const [mode, setMode] = useState<Mode>(params.get("mode") === "signup" ? "signup" : "login");
   const [step, setStep] = useState<1 | 2>(1);
