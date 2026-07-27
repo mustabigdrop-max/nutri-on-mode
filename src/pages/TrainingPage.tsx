@@ -2696,8 +2696,8 @@ function HistoryViewModal({ protocol: p, onClose, userId, onUpdate }: { protocol
           if (s.work_sets) lines.push(`     [TRABALHO] ${s.work_sets.sets}×${s.work_sets.reps}`);
         });
       });
-    } else if (p.protocol_text && !parsed) {
-      lines.push(p.protocol_text);
+    } else if (rawMarkdown && !parsed) {
+      lines.push(rawMarkdown);
     }
     const blob = new Blob([lines.join("\n")], { type: "text/plain;charset=utf-8" });
     const url = URL.createObjectURL(blob);

@@ -1006,10 +1006,16 @@ serve(async (req) => {
       ? `${userPrompt}\n\nREFERÊNCIAS CIENTÍFICAS ATUAIS (Perplexity):\n${scienceContext}\n\nCitações: ${JSON.stringify(scienceCitations)}\n\nUse essas referências para embasar as decisões.`
       : userPrompt;
 
+    // A aba "protocolo" DEVE sempre retornar JSON estruturado — força modo de saída estruturada.
+    const forceJson = data.tab === "protocolo";
+
     async function callAI(extraInstruction = ""): Promise<{ response: Response; raw: string }> {
-      const sys = extraInstruction
+      let sys = extraInstruction
         ? `${TRAININGON_SYSTEM_PROMPT}\n\n## RETENTATIVA OBRIGATÓRIA\n${extraInstruction}`
         : TRAININGON_SYSTEM_PROMPT;
+      if (forceJson) {
+        sys += `\n\n## SAÍDA OBRIGATÓRIA\nResponda EXCLUSIVAMENTE com um único objeto JSON válido contendo as chaves "block_overview" e "training_days" (com "exercises" populados em cada dia de treino). Nada de markdown, cercas de código ou texto fora do JSON.`;
+      }
       const r = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${LOVABLE_API_KEY}` },
@@ -1020,6 +1026,7 @@ serve(async (req) => {
             { role: "user", content: enrichedPrompt },
           ],
           temperature: 0.7,
+          ...(forceJson ? { response_format: { type: "json_object" } } : {}),
         }),
       });
       if (!r.ok) {
@@ -1080,7 +1087,11 @@ serve(async (req) => {
           validation_warnings: lastMissing,
         }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
-      console.log("[protocolo] JSON inválido após retry — devolvendo raw content");
+      // Nunca devolver conteúdo bruto para a UI — erro explícito.
+      console.log("[protocolo] JSON inválido após retry — retornando erro explícito");
+      return new Response(JSON.stringify({
+        error: "Não foi possível gerar o protocolo em formato estruturado. Tente novamente.",
+      }), { status: 422, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     return new Response(JSON.stringify({ content, citations: scienceCitations }), {

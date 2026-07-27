@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "@/hooks/use-toast";
+import { parseProtocolText } from "@/lib/parseProtocolText";
 
 type Envio = {
   id: string;
@@ -392,39 +393,71 @@ function ContentRenderer({ tipo, items }: { tipo: string; items: any[] }) {
             {item.notes && (
               <p className="text-sm text-muted-foreground whitespace-pre-wrap">{item.notes}</p>
             )}
-            {item.content && (
-              <div className="text-sm text-foreground whitespace-pre-wrap bg-muted/30 rounded p-3">
-                {typeof item.content === "string"
-                  ? item.content
-                  : JSON.stringify(item.content, null, 2)}
-              </div>
-            )}
-            {item.protocol && (
-              <div className="text-sm text-foreground whitespace-pre-wrap bg-muted/30 rounded p-3">
-                {typeof item.protocol === "string"
-                  ? item.protocol
-                  : JSON.stringify(item.protocol, null, 2)}
-              </div>
-            )}
+            {item.content && <ProtocolBody value={item.content} />}
+            {item.protocol && <ProtocolBody value={item.protocol} />}
             {item.query && (
               <div className="text-sm">
                 <span className="text-muted-foreground">Pesquisa: </span>
                 <span className="text-foreground">{item.query}</span>
               </div>
             )}
-            {item.result && (
-              <div className="text-sm text-foreground whitespace-pre-wrap bg-muted/30 rounded p-3 max-h-64 overflow-auto">
-                {typeof item.result === "string"
-                  ? item.result
-                  : JSON.stringify(item.result, null, 2)}
-              </div>
-            )}
+            {item.result && <ProtocolBody value={item.result} maxHeight />}
           </CardContent>
         </Card>
       ))}
     </div>
   );
 }
+
+/** Renderiza conteúdo de protocolo sem nunca vazar JSON cru na tela. */
+function ProtocolBody({ value, maxHeight }: { value: unknown; maxHeight?: boolean }) {
+  const { json, markdown } = parseProtocolText(value);
+  const box = `text-sm text-foreground whitespace-pre-wrap bg-muted/30 rounded p-3${maxHeight ? " max-h-64 overflow-auto" : ""}`;
+
+  if (json) {
+    const ov = json.block_overview || {};
+    const days: any[] = Array.isArray(json.training_days) ? json.training_days : [];
+    return (
+      <div className={maxHeight ? "space-y-2 max-h-64 overflow-auto" : "space-y-2"}>
+        {(ov.title || ov.split_type) && (
+          <div className="rounded bg-muted/30 p-3">
+            {ov.title && <p className="text-sm font-semibold text-foreground">{ov.title}</p>}
+            <p className="text-xs text-muted-foreground">
+              {[ov.split_type, ov.duration_weeks ? `${ov.duration_weeks} semanas` : null]
+                .filter(Boolean)
+                .join(" · ")}
+            </p>
+          </div>
+        )}
+        {days.map((d: any, i: number) => (
+          <div key={i} className="rounded bg-muted/30 p-3">
+            <p className="text-sm font-semibold text-foreground">
+              D{d.day_number ?? i + 1} — {d.session_title || "Treino"}
+            </p>
+            {Array.isArray(d.exercises) && d.exercises.length > 0 && (
+              <ul className="mt-1 space-y-0.5">
+                {d.exercises.map((ex: any, j: number) => (
+                  <li key={j} className="text-xs text-muted-foreground">
+                    {j + 1}. {ex?.name || "Exercício"}
+                    {ex?.muscle_target ? ` — ${ex.muscle_target}` : ""}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        ))}
+        {!ov.title && days.length === 0 && (
+          <div className={box}>Protocolo estruturado — abra no módulo TrainingON para ver os detalhes.</div>
+        )}
+      </div>
+    );
+  }
+
+  if (markdown) return <div className={box}>{markdown}</div>;
+  return <div className={`${box} text-muted-foreground`}>Conteúdo indisponível neste formato.</div>;
+}
+
+
 
 function MealPlanCard({ item }: { item: any }) {
   const plano = item.plano || {};
