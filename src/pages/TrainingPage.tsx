@@ -284,6 +284,8 @@ function EliteGenerateSection({ userId }: { userId?: string }) {
   const [textResults, setTextResults] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [generationError, setGenerationError] = useState<string | null>(null);
+  const [dayStatus, setDayStatus] = useState<Record<number, "loading" | "done" | "error">>({});
+
   const [loadingTab, setLoadingTab] = useState<Record<string, boolean>>({});
   const [generated, setGenerated] = useState(false);
   const [activeResultTab, setActiveResultTab] = useState<string>("overview");
