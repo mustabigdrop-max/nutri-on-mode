@@ -444,7 +444,7 @@ const LandingHero = () => {
                   opacity: phase >= 5 ? 1 : 0, transition: "opacity .8s ease .3s",
                 }}
               >
-                Sistema Integrado de Performance Humana
+                Nutrição · Treino · Comportamento — um sistema só
               </div>
             </div>
           </div>
@@ -499,7 +499,7 @@ const LandingHero = () => {
           transition: "opacity .8s ease",
         }}
       >
-        O mercado tem apps. Você encontrou o sistema.
+        Chega de app genérico. Seu protocolo evolui toda semana.
       </div>
 
       {/* Status bar */}
@@ -516,7 +516,7 @@ const LandingHero = () => {
           style={{ background: CYAN, boxShadow: `0 0 10px ${CYAN}`, animation: "lhBlink 1.1s ease-in-out infinite" }}
         />
         <span style={{ fontSize: 9, letterSpacing: "0.32em", color: `${CYAN}aa` }}>
-          DIAGNÓSTICO INICIADO — AGUARDANDO SEU PERFIL
+          DIAGNÓSTICO INICIADO — MONTANDO SEU PROTOCOLO
         </span>
       </div>
 
