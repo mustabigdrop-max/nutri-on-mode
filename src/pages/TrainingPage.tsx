@@ -688,11 +688,18 @@ Português. Específico. Científico. Zero genérico.`;
 
   const saveProtocol = async (patientId?: string) => {
     if (!userId) return;
+    // Remove flags internas de carregamento antes de persistir
+    const cleanProtocol = protocol
+      ? {
+          ...(protocol as any),
+          training_days: ((protocol as any).training_days || []).map(({ _loading, ...d }: any) => d),
+        }
+      : null;
     const { data: inserted, error } = await supabase.from("training_protocols").insert({
       user_id: userId, client_name: clientName, phase, muscles, level, weeks,
       days_per_week: days, equipment: equipment.join(", "), injuries,
       session_duration: sessionDuration,
-      protocol_text: protocol ? JSON.stringify(protocol) : textResults.protocolo || "",
+      protocol_text: cleanProtocol ? JSON.stringify(cleanProtocol) : textResults.protocolo || "",
       anatomy_text: textResults.anatomia || "",
       tecnica_text: textResults.tecnica || "",
       periodizacao_text: textResults.periodizacao || "",
