@@ -244,6 +244,31 @@ REJEIÇÃO AUTOMÁTICA: Se qualquer exercício vier sem feeder_sets, sem work_se
 
 STRATUM Elite Engine v1.1 | nutrion.app.br | TrainingON`;
 
+// Versão compacta (~60% menor) usada SOMENTE na aba "protocolo" para reduzir latência.
+// Mantém EXATAMENTE o mesmo contrato de JSON de saída.
+const PROTOCOL_SYSTEM_COMPACT = `Você é o STRATUM Elite Engine (TrainingON) — prescrição de treino científica (Israetel/RP, Schoenfeld, Helms, Nuckols, Poliquin).
+Individualize por: Perfil de Fibras, Prontidão do dia (STRATUM Ready) e Anamnese do cliente (vêm no prompt do usuário). Se houver elitePrompt, ele é a instrução principal.
+
+FIBRAS → Tipo I: 15-30 reps, desc 45-90s, freq 3-5x, dropset/superset. Tipo IIA: 6-15 reps, desc 90-180s, freq 2-3x, top set+back-off. Tipo IIX: 1-8 reps, desc 3-5min, freq 1-2x, cluster/rest-pause. Misto: DUP (força→hipertrofia→metabólico).
+PRONTIDÃO → 9-10: +1 set nos compostos, RPE 9.5. 7-8: padrão, RPE 8-9. 5-6: -20% volume, RPE 8. 3-4: só MEV, RPE 7. 1-2: recuperação ativa.
+VOLUME (MEV/MAV/MRV sets/sem) → Peito 8/16/20 · Costas 10/18/22 · Pernas 10/18/25 · Ombros 8/14/20 · Bíceps 6/14/18 · Tríceps 6/14/18 · Glúteos 6/12/20 · Panturrilha 8/16/20 · Core 0/10/16.
+FASE → Bulking: MEV→MAV→MRV→deload. Cutting: mantém intensidade, -30% volume, compostos. Recomp: ondulação diária 85/70/60%. Força: blocos 85-95% 1RM. Performance: conjugada.
+TÉCNICAS → Intermediário: dupla progressão, top set+back-off. Avançado: rest-pause, dropset, cluster, myo-reps, pausa no estiramento. Elite: conjugada/ondulação.
+EXERCÍCIOS: use apenas movimentos validados por EMG (supino inclinado 30°, remada curvada, pulldown neutro, agachamento, leg press, RDL, leg curl, hip thrust, press militar, elevação lateral cabo, rosca direta/inclinada, testa EZ, pushdown corda, panturrilha em pé/sentado).
+
+⛔ LIMITE DE VOLUME (regra mais importante): defina weekly_sets por músculo em muscle_priorities. Só contam séries de trabalho (top_set + backoff_sets + work_sets); feeder/warm-up não contam. A soma por músculo em TODOS os dias não pode passar weekly_sets (tolerância +10%). Séries por sessão ≈ weekly_sets / frequência. Composto conta só para o muscle_target. Antes de fechar o JSON, some você mesmo e remova acessórios até todos os grupos ficarem dentro do limite.
+
+## SAÍDA — JSON válido, exatamente estas chaves:
+{
+ "block_overview": { "title": string, "split_type": string, "duration_weeks": number, "deload_week": number, "split_justification": string, "progression_model": string, "muscle_priorities": [{ "muscle": string, "weekly_sets": number, "priority": "alta"|"media"|"baixa" }], "coach_notes": string },
+ "phase_plan": { "macrocycle_title": string, "current_phase": string, "phases": [{ "name": string, "duration_weeks": number, "objective": string, "volume_strategy": string, "intensity_strategy": string, "criteria_to_advance": string, "rationale": string }], "deload_strategy": string, "post_deload_decision": { "intro": string, "scenarios": [{ "condition": string, "signal": string, "decision": string, "action": string, "how_next_block_starts": string }] }, "long_term_note": string },
+ "training_days": [{ "day_number": number, "session_title": string, "focus_muscles": [string], "estimated_duration": string, "warmup": [{ "name": string, "sets": string, "reps": string, "notes": string }], "exercises": [{ "order": number, "name": string, "muscle_target": string, "tempo": string, "structure": { "feeder_sets": [{ "set_label": string, "load_percent": string, "reps": string, "notes": string }], "top_set": { "sets": number, "reps": string, "rpe": number, "rest": string, "notes": string }, "backoff_sets": { "sets": number, "reps": string, "load_reduction": string, "rest": string, "notes": string }, "work_sets": { "sets": number, "reps": string, "rpe": number, "rest": string, "notes": string } }, "execution_cues": string, "why_this_exercise": string, "substitutes": [{ "name": string, "reason": string, "equipment": string }] }], "session_notes": string }],
+ "improvement_alerts": [{ "area": string, "severity": "alta"|"media"|"baixa", "message": string }]
+}
+
+OBRIGATÓRIO: muscle_priorities ≥3 itens · improvement_alerts ≥2 itens · TODOS os dias prescritos · por dia: warmup ≥2 e exercises 4-6 · por exercício: 1-2 feeder_sets, work_sets OU top_set+backoff_sets (top_set+backoff nos compostos principais), execution_cues, why_this_exercise com referência (Schoenfeld/Israetel/Helms/Nuckols), 1-2 substitutes.
+SEJA CONCISO: justificativas e notas em no máximo 1-2 frases curtas. Sem markdown, sem texto fora do JSON. Português brasileiro.`;
+
 function sanitizeExercise(ex: any): any {
   if (!ex || typeof ex !== 'object') return ex;
   return {
@@ -1039,14 +1064,28 @@ serve(async (req) => {
       const t0 = Date.now();
       console.log("[SKELETON] start", { days: data.days, client: data.clientName });
       const userMsg = `${elitePrompt || buildStructuredPrompt(data)}\n\nGere o ESQUELETO com EXATAMENTE ${data.days || 4} dias (day_plan). Sem exercícios.`;
-      const r = await callGateway(LOVABLE_API_KEY, SKELETON_SYSTEM, userMsg, 1500);
-      if (r.status === 429) return json({ error: "Rate limit excedido." }, 429);
-      if (r.status === 402) return json({ error: "Créditos insuficientes." }, 402);
-      if (!r.ok) return json({ error: `AI error ${r.status}` }, 500);
-      const jr = await r.json();
-      const skeleton = parseJsonLoose(jr.choices?.[0]?.message?.content || "");
-      if (!skeleton?.block_overview || !Array.isArray(skeleton.day_plan) || skeleton.day_plan.length === 0) {
-        console.log("[SKELETON] JSON inválido");
+      const buildSkeleton = async () => {
+        const r = await callGateway(LOVABLE_API_KEY, SKELETON_SYSTEM, userMsg, 3500);
+        if (r.status === 429 || r.status === 402 || !r.ok) return { status: r.status, skeleton: null as any };
+        const jr = await r.json();
+        const rawTxt = jr.choices?.[0]?.message?.content || "";
+        const parsedSkel = parseJsonLoose(rawTxt);
+        if (!parsedSkel?.block_overview || !Array.isArray(parsedSkel.day_plan) || parsedSkel.day_plan.length === 0) {
+          console.log("[RAW_RESPONSE][skeleton] len=", rawTxt.length, "finish=", jr.choices?.[0]?.finish_reason, "head=", rawTxt.slice(0, 1000));
+          return { status: 200, skeleton: null as any };
+        }
+        return { status: 200, skeleton: parsedSkel };
+      };
+      let { status: skStatus, skeleton } = await buildSkeleton();
+      if (skStatus === 429) return json({ error: "Rate limit excedido." }, 429);
+      if (skStatus === 402) return json({ error: "Créditos insuficientes." }, 402);
+      if (skStatus !== 200) return json({ error: `AI error ${skStatus}` }, 500);
+      if (!skeleton) {
+        console.log("[SKELETON] JSON inválido — 1 retry");
+        ({ skeleton } = await buildSkeleton());
+      }
+      if (!skeleton) {
+        console.log("[SKELETON] falhou após retry");
         return json({ error: "Não foi possível gerar o esqueleto do protocolo. Tente novamente." }, 422);
       }
       skeleton.day_plan = skeleton.day_plan.map((d: any, i: number) => ({
@@ -1112,7 +1151,9 @@ Prescreva SOMENTE este dia, respeitando target_sets, zona ${spec.zone || "Z3"} e
     let scienceCitations: string[] = [];
 
     // Dual-AI: Perplexity for scientific references
-    const scienceTabs = ["protocolo", "periodizacao", "volume", "biomec", "emg", "postural", "feminino"];
+    // "protocolo" fica FORA: o enriquecimento adiciona 5-15s de latência + milhares de tokens
+    // de entrada numa chamada que já é a mais longa do sistema (timeout de 90s no cliente).
+    const scienceTabs = ["periodizacao", "volume", "biomec", "emg", "postural", "feminino"];
     if (PERPLEXITY_API_KEY && scienceTabs.includes(data.tab)) {
       try {
         const muscles = Array.isArray(data.muscles) ? data.muscles.join(" ") : data.muscles;
@@ -1154,12 +1195,15 @@ Prescreva SOMENTE este dia, respeitando target_sets, zona ${spec.zone || "Z3"} e
     const forceJson = data.tab === "protocolo";
 
     async function callAI(extraInstruction = ""): Promise<{ response: Response; raw: string }> {
+      // Aba "protocolo" usa o prompt compacto (~60% menor) para caber na janela de 90s do cliente.
+      const base = forceJson ? PROTOCOL_SYSTEM_COMPACT : TRAININGON_SYSTEM_PROMPT;
       let sys = extraInstruction
-        ? `${TRAININGON_SYSTEM_PROMPT}\n\n## RETENTATIVA OBRIGATÓRIA\n${extraInstruction}`
-        : TRAININGON_SYSTEM_PROMPT;
+        ? `${base}\n\n## RETENTATIVA OBRIGATÓRIA\n${extraInstruction}`
+        : base;
       if (forceJson) {
         sys += `\n\n## SAÍDA OBRIGATÓRIA\nResponda EXCLUSIVAMENTE com um único objeto JSON válido contendo as chaves "block_overview" e "training_days" (com "exercises" populados em cada dia de treino). Nada de markdown, cercas de código ou texto fora do JSON.`;
       }
+      const t0 = Date.now();
       const r = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${LOVABLE_API_KEY}` },
@@ -1170,7 +1214,10 @@ Prescreva SOMENTE este dia, respeitando target_sets, zona ${spec.zone || "Z3"} e
             { role: "user", content: enrichedPrompt },
           ],
           temperature: 0.7,
-          ...(forceJson ? { response_format: { type: "json_object" } } : {}),
+          // Teto de saída: as gerações que estouravam 90s produziam 16k-19k tokens.
+          // Teto de saída: as gerações que estouravam 90s produziam 16k-19k tokens.
+          // 14k cabe em ~55-60s e ainda comporta o protocolo completo com o prompt compacto.
+          ...(forceJson ? { response_format: { type: "json_object" }, max_tokens: 14000 } : {}),
         }),
       });
       if (!r.ok) {
@@ -1179,6 +1226,12 @@ Prescreva SOMENTE este dia, respeitando target_sets, zona ${spec.zone || "Z3"} e
         throw new Error(`AI API error: ${r.status} - ${errText}`);
       }
       const j = await r.json();
+      console.log("[protocolo] gateway ok", {
+        ms: Date.now() - t0,
+        out_tokens: j.usage?.completion_tokens,
+        in_tokens: j.usage?.prompt_tokens,
+        finish_reason: j.choices?.[0]?.finish_reason,
+      });
       return { response: r, raw: j.choices?.[0]?.message?.content || "" };
     }
 
@@ -1209,6 +1262,7 @@ Prescreva SOMENTE este dia, respeitando target_sets, zona ${spec.zone || "Z3"} e
 
       if (isStructurallyBroken(parsed)) {
         console.log("[protocolo] estrutura quebrada — 1 retry");
+        console.log("[RAW_RESPONSE] len=", content?.length ?? 0, "head=", (content || "").slice(0, 1200), "tail=", (content || "").slice(-400));
         try {
           const retry = await callAI("A resposta anterior estava incompleta. Retorne SOMENTE o JSON completo com training_days populados e exercises em cada dia. Sem markdown, sem texto extra.");
           content = retry.raw || content;
@@ -1233,6 +1287,7 @@ Prescreva SOMENTE este dia, respeitando target_sets, zona ${spec.zone || "Z3"} e
       }
       // Nunca devolver conteúdo bruto para a UI — erro explícito.
       console.log("[protocolo] JSON inválido após retry — retornando erro explícito");
+      console.log("[RAW_RESPONSE][final] len=", content?.length ?? 0, "head=", (content || "").slice(0, 1200));
       return new Response(JSON.stringify({
         error: "Não foi possível gerar o protocolo em formato estruturado. Tente novamente.",
       }), { status: 422, headers: { ...corsHeaders, "Content-Type": "application/json" } });
