@@ -1181,12 +1181,15 @@ Prescreva SOMENTE este dia, respeitando target_sets, zona ${spec.zone || "Z3"} e
     const forceJson = data.tab === "protocolo";
 
     async function callAI(extraInstruction = ""): Promise<{ response: Response; raw: string }> {
+      // Aba "protocolo" usa o prompt compacto (~60% menor) para caber na janela de 90s do cliente.
+      const base = forceJson ? PROTOCOL_SYSTEM_COMPACT : TRAININGON_SYSTEM_PROMPT;
       let sys = extraInstruction
-        ? `${TRAININGON_SYSTEM_PROMPT}\n\n## RETENTATIVA OBRIGATÓRIA\n${extraInstruction}`
-        : TRAININGON_SYSTEM_PROMPT;
+        ? `${base}\n\n## RETENTATIVA OBRIGATÓRIA\n${extraInstruction}`
+        : base;
       if (forceJson) {
         sys += `\n\n## SAÍDA OBRIGATÓRIA\nResponda EXCLUSIVAMENTE com um único objeto JSON válido contendo as chaves "block_overview" e "training_days" (com "exercises" populados em cada dia de treino). Nada de markdown, cercas de código ou texto fora do JSON.`;
       }
+      const t0 = Date.now();
       const r = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${LOVABLE_API_KEY}` },
@@ -1197,7 +1200,8 @@ Prescreva SOMENTE este dia, respeitando target_sets, zona ${spec.zone || "Z3"} e
             { role: "user", content: enrichedPrompt },
           ],
           temperature: 0.7,
-          ...(forceJson ? { response_format: { type: "json_object" } } : {}),
+          // Teto de saída: as gerações que estouravam 90s produziam 16k-19k tokens.
+          ...(forceJson ? { response_format: { type: "json_object" }, max_tokens: 10000 } : {}),
         }),
       });
       if (!r.ok) {
@@ -1206,6 +1210,12 @@ Prescreva SOMENTE este dia, respeitando target_sets, zona ${spec.zone || "Z3"} e
         throw new Error(`AI API error: ${r.status} - ${errText}`);
       }
       const j = await r.json();
+      console.log("[protocolo] gateway ok", {
+        ms: Date.now() - t0,
+        out_tokens: j.usage?.completion_tokens,
+        in_tokens: j.usage?.prompt_tokens,
+        finish_reason: j.choices?.[0]?.finish_reason,
+      });
       return { response: r, raw: j.choices?.[0]?.message?.content || "" };
     }
 
