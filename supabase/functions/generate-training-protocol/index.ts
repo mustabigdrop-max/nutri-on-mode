@@ -1246,6 +1246,7 @@ Prescreva SOMENTE este dia, respeitando target_sets, zona ${spec.zone || "Z3"} e
 
       if (isStructurallyBroken(parsed)) {
         console.log("[protocolo] estrutura quebrada — 1 retry");
+        console.log("[RAW_RESPONSE] len=", content?.length ?? 0, "head=", (content || "").slice(0, 1200), "tail=", (content || "").slice(-400));
         try {
           const retry = await callAI("A resposta anterior estava incompleta. Retorne SOMENTE o JSON completo com training_days populados e exercises em cada dia. Sem markdown, sem texto extra.");
           content = retry.raw || content;
