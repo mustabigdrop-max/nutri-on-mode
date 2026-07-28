@@ -2665,13 +2665,25 @@ function HistorySection({ userId }: { userId?: string }) {
   const [protocols, setProtocols] = useState<any[]>([]);
   const [search, setSearch] = useState("");
   const [viewModal, setViewModal] = useState<any>(null);
+  const [loadingId, setLoadingId] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
   const loadProtocols = useCallback(() => {
     if (!userId) return;
-    supabase.from("training_protocols").select("*").eq("user_id", userId).order("created_at", { ascending: false }).limit(50)
+    supabase.from("training_protocols")
+      .select("id, client_name, phase, level, weeks, created_at")
+      .eq("user_id", userId).order("created_at", { ascending: false }).limit(50)
       .then(({ data }) => setProtocols(data || []));
   }, [userId]);
+
+  // Conteúdo completo só é buscado ao abrir um protocolo específico
+  const openProtocol = useCallback(async (id: string) => {
+    setLoadingId(id);
+    const { data, error } = await supabase.from("training_protocols").select("*").eq("id", id).maybeSingle();
+    setLoadingId(null);
+    if (error || !data) { toast.error("Erro ao carregar protocolo"); return; }
+    setViewModal(data);
+  }, []);
 
   useEffect(() => { loadProtocols(); }, [loadProtocols]);
 
@@ -2711,8 +2723,8 @@ function HistorySection({ userId }: { userId?: string }) {
             {p.level && <span className="text-[9px] px-1.5 py-0.5 rounded" style={{ background: SURFACE2, color: TEXT_MUTED }}>{p.level}</span>}
           </div>
           <div className="flex items-center gap-1.5">
-            <button onClick={() => setViewModal(p)} className="flex-1 text-[10px] py-2 rounded-lg font-semibold text-center" style={{ background: GREEN_DIM, color: GREEN, border: `1px solid ${BORDER}` }}>
-              <Eye className="w-3 h-3 inline mr-1" />Ver Treino
+            <button onClick={() => openProtocol(p.id)} disabled={loadingId === p.id} className="flex-1 text-[10px] py-2 rounded-lg font-semibold text-center disabled:opacity-60" style={{ background: GREEN_DIM, color: GREEN, border: `1px solid ${BORDER}` }}>
+              <Eye className="w-3 h-3 inline mr-1" />{loadingId === p.id ? "Carregando..." : "Ver Treino"}
             </button>
             {confirmDelete === p.id ? (
               <>
