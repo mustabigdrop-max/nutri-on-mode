@@ -2723,8 +2723,8 @@ function HistorySection({ userId }: { userId?: string }) {
             {p.level && <span className="text-[9px] px-1.5 py-0.5 rounded" style={{ background: SURFACE2, color: TEXT_MUTED }}>{p.level}</span>}
           </div>
           <div className="flex items-center gap-1.5">
-            <button onClick={() => setViewModal(p)} className="flex-1 text-[10px] py-2 rounded-lg font-semibold text-center" style={{ background: GREEN_DIM, color: GREEN, border: `1px solid ${BORDER}` }}>
-              <Eye className="w-3 h-3 inline mr-1" />Ver Treino
+            <button onClick={() => openProtocol(p.id)} disabled={loadingId === p.id} className="flex-1 text-[10px] py-2 rounded-lg font-semibold text-center disabled:opacity-60" style={{ background: GREEN_DIM, color: GREEN, border: `1px solid ${BORDER}` }}>
+              <Eye className="w-3 h-3 inline mr-1" />{loadingId === p.id ? "Carregando..." : "Ver Treino"}
             </button>
             {confirmDelete === p.id ? (
               <>
