@@ -1215,7 +1215,9 @@ Prescreva SOMENTE este dia, respeitando target_sets, zona ${spec.zone || "Z3"} e
           ],
           temperature: 0.7,
           // Teto de saída: as gerações que estouravam 90s produziam 16k-19k tokens.
-          ...(forceJson ? { response_format: { type: "json_object" }, max_tokens: 10000 } : {}),
+          // Teto de saída: as gerações que estouravam 90s produziam 16k-19k tokens.
+          // 14k cabe em ~55-60s e ainda comporta o protocolo completo com o prompt compacto.
+          ...(forceJson ? { response_format: { type: "json_object" }, max_tokens: 14000 } : {}),
         }),
       });
       if (!r.ok) {
