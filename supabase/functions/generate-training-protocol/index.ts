@@ -1137,7 +1137,9 @@ Prescreva SOMENTE este dia, respeitando target_sets, zona ${spec.zone || "Z3"} e
     let scienceCitations: string[] = [];
 
     // Dual-AI: Perplexity for scientific references
-    const scienceTabs = ["protocolo", "periodizacao", "volume", "biomec", "emg", "postural", "feminino"];
+    // "protocolo" fica FORA: o enriquecimento adiciona 5-15s de latência + milhares de tokens
+    // de entrada numa chamada que já é a mais longa do sistema (timeout de 90s no cliente).
+    const scienceTabs = ["periodizacao", "volume", "biomec", "emg", "postural", "feminino"];
     if (PERPLEXITY_API_KEY && scienceTabs.includes(data.tab)) {
       try {
         const muscles = Array.isArray(data.muscles) ? data.muscles.join(" ") : data.muscles;
