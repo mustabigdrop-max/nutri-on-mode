@@ -1064,14 +1064,28 @@ serve(async (req) => {
       const t0 = Date.now();
       console.log("[SKELETON] start", { days: data.days, client: data.clientName });
       const userMsg = `${elitePrompt || buildStructuredPrompt(data)}\n\nGere o ESQUELETO com EXATAMENTE ${data.days || 4} dias (day_plan). Sem exercícios.`;
-      const r = await callGateway(LOVABLE_API_KEY, SKELETON_SYSTEM, userMsg, 1500);
-      if (r.status === 429) return json({ error: "Rate limit excedido." }, 429);
-      if (r.status === 402) return json({ error: "Créditos insuficientes." }, 402);
-      if (!r.ok) return json({ error: `AI error ${r.status}` }, 500);
-      const jr = await r.json();
-      const skeleton = parseJsonLoose(jr.choices?.[0]?.message?.content || "");
-      if (!skeleton?.block_overview || !Array.isArray(skeleton.day_plan) || skeleton.day_plan.length === 0) {
-        console.log("[SKELETON] JSON inválido");
+      const buildSkeleton = async () => {
+        const r = await callGateway(LOVABLE_API_KEY, SKELETON_SYSTEM, userMsg, 3500);
+        if (r.status === 429 || r.status === 402 || !r.ok) return { status: r.status, skeleton: null as any };
+        const jr = await r.json();
+        const rawTxt = jr.choices?.[0]?.message?.content || "";
+        const parsedSkel = parseJsonLoose(rawTxt);
+        if (!parsedSkel?.block_overview || !Array.isArray(parsedSkel.day_plan) || parsedSkel.day_plan.length === 0) {
+          console.log("[RAW_RESPONSE][skeleton] len=", rawTxt.length, "finish=", jr.choices?.[0]?.finish_reason, "head=", rawTxt.slice(0, 1000));
+          return { status: 200, skeleton: null as any };
+        }
+        return { status: 200, skeleton: parsedSkel };
+      };
+      let { status: skStatus, skeleton } = await buildSkeleton();
+      if (skStatus === 429) return json({ error: "Rate limit excedido." }, 429);
+      if (skStatus === 402) return json({ error: "Créditos insuficientes." }, 402);
+      if (skStatus !== 200) return json({ error: `AI error ${skStatus}` }, 500);
+      if (!skeleton) {
+        console.log("[SKELETON] JSON inválido — 1 retry");
+        ({ skeleton } = await buildSkeleton());
+      }
+      if (!skeleton) {
+        console.log("[SKELETON] falhou após retry");
         return json({ error: "Não foi possível gerar o esqueleto do protocolo. Tente novamente." }, 422);
       }
       skeleton.day_plan = skeleton.day_plan.map((d: any, i: number) => ({
