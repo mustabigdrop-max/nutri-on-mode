@@ -2665,13 +2665,25 @@ function HistorySection({ userId }: { userId?: string }) {
   const [protocols, setProtocols] = useState<any[]>([]);
   const [search, setSearch] = useState("");
   const [viewModal, setViewModal] = useState<any>(null);
+  const [loadingId, setLoadingId] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
   const loadProtocols = useCallback(() => {
     if (!userId) return;
-    supabase.from("training_protocols").select("*").eq("user_id", userId).order("created_at", { ascending: false }).limit(50)
+    supabase.from("training_protocols")
+      .select("id, client_name, phase, level, weeks, created_at")
+      .eq("user_id", userId).order("created_at", { ascending: false }).limit(50)
       .then(({ data }) => setProtocols(data || []));
   }, [userId]);
+
+  // Conteúdo completo só é buscado ao abrir um protocolo específico
+  const openProtocol = useCallback(async (id: string) => {
+    setLoadingId(id);
+    const { data, error } = await supabase.from("training_protocols").select("*").eq("id", id).maybeSingle();
+    setLoadingId(null);
+    if (error || !data) { toast.error("Erro ao carregar protocolo"); return; }
+    setViewModal(data);
+  }, []);
 
   useEffect(() => { loadProtocols(); }, [loadProtocols]);
 

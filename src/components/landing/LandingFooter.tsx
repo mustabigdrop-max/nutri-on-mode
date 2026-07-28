@@ -23,7 +23,7 @@ const LandingFooter = () => (
       {/* Bloco direito */}
       <div className="flex flex-col items-center md:items-end gap-1">
         <span className="font-mono text-[10px] text-[#888]">
-          Powered by Claude AI · Supabase · React
+          IA de ponta · Dados protegidos · Protocolo sempre atualizado
         </span>
         <div className="flex items-center gap-2">
           <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#1D9E75] animate-pulse" />
