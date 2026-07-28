@@ -1271,6 +1271,7 @@ Prescreva SOMENTE este dia, respeitando target_sets, zona ${spec.zone || "Z3"} e
       }
       // Nunca devolver conteúdo bruto para a UI — erro explícito.
       console.log("[protocolo] JSON inválido após retry — retornando erro explícito");
+      console.log("[RAW_RESPONSE][final] len=", content?.length ?? 0, "head=", (content || "").slice(0, 1200));
       return new Response(JSON.stringify({
         error: "Não foi possível gerar o protocolo em formato estruturado. Tente novamente.",
       }), { status: 422, headers: { ...corsHeaders, "Content-Type": "application/json" } });
