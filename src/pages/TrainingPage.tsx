@@ -2661,8 +2661,29 @@ function VolumeLandmarksSection({ userId }: { userId?: string }) {
 /* ================================================================
    SECTION 4 — HISTORY
    ================================================================ */
+
+/** Cache de protocolos completos (persiste entre trocas de aba/remontagens). */
+const protocolFullCache = new Map<string, any>();
+
+function HistorySkeletonCard() {
+  return (
+    <div className="rounded-xl p-3 animate-pulse" style={{ background: SURFACE, border: `1px solid ${BORDER}` }}>
+      <div className="flex items-center justify-between mb-2">
+        <div className="h-3 rounded w-1/3" style={{ background: SURFACE2 }} />
+        <div className="h-3 rounded w-16" style={{ background: SURFACE2 }} />
+      </div>
+      <div className="flex items-center gap-2 mb-3">
+        <div className="h-2.5 rounded w-16" style={{ background: SURFACE2 }} />
+        <div className="h-2.5 rounded w-10" style={{ background: SURFACE2 }} />
+      </div>
+      <div className="h-7 rounded-lg w-full" style={{ background: SURFACE2 }} />
+    </div>
+  );
+}
+
 function HistorySection({ userId }: { userId?: string }) {
   const [protocols, setProtocols] = useState<any[]>([]);
+  const [loadingList, setLoadingList] = useState(true);
   const [search, setSearch] = useState("");
   const [viewModal, setViewModal] = useState<any>(null);
   const [loadingId, setLoadingId] = useState<string | null>(null);
@@ -2670,20 +2691,39 @@ function HistorySection({ userId }: { userId?: string }) {
 
   const loadProtocols = useCallback(() => {
     if (!userId) return;
+    setLoadingList(true);
     supabase.from("training_protocols")
       .select("id, client_name, phase, level, weeks, created_at")
       .eq("user_id", userId).order("created_at", { ascending: false }).limit(50)
-      .then(({ data }) => setProtocols(data || []));
+      .then(({ data }) => { setProtocols(data || []); setLoadingList(false); });
   }, [userId]);
 
-  // Conteúdo completo só é buscado ao abrir um protocolo específico
-  const openProtocol = useCallback(async (id: string) => {
-    setLoadingId(id);
+  /** Busca (com cache) o conteúdo completo de um protocolo. */
+  const fetchFull = useCallback(async (id: string) => {
+    const cached = protocolFullCache.get(id);
+    if (cached) return cached;
     const { data, error } = await supabase.from("training_protocols").select("*").eq("id", id).maybeSingle();
-    setLoadingId(null);
-    if (error || !data) { toast.error("Erro ao carregar protocolo"); return; }
-    setViewModal(data);
+    if (error || !data) return null;
+    protocolFullCache.set(id, data);
+    return data;
   }, []);
+
+  // Pré-carrega em segundo plano ao passar o mouse / tocar no card
+  const prefetchProtocol = useCallback((id: string) => {
+    if (protocolFullCache.has(id)) return;
+    fetchFull(id);
+  }, [fetchFull]);
+
+  // Conteúdo completo só é buscado ao abrir um protocolo específico (cacheado)
+  const openProtocol = useCallback(async (id: string) => {
+    const cached = protocolFullCache.get(id);
+    if (cached) { setViewModal(cached); return; }
+    setLoadingId(id);
+    const data = await fetchFull(id);
+    setLoadingId(null);
+    if (!data) { toast.error("Erro ao carregar protocolo"); return; }
+    setViewModal(data);
+  }, [fetchFull]);
 
   useEffect(() => { loadProtocols(); }, [loadProtocols]);
 
@@ -2692,10 +2732,12 @@ function HistorySection({ userId }: { userId?: string }) {
     if (error) toast.error("Erro ao excluir");
     else {
       toast.success("Protocolo excluído");
+      protocolFullCache.delete(id);
       setProtocols(prev => prev.filter(p => p.id !== id));
       setConfirmDelete(null);
     }
   };
+
 
   const filtered = protocols.filter(p => p.client_name?.toLowerCase().includes(search.toLowerCase()) || p.phase?.toLowerCase().includes(search.toLowerCase()));
   const phaseColor: Record<string, string> = { bulking: GREEN, cutting: "#ef4444", manutencao: "#3b82f6", recomposicao: "#8b5cf6", emagrecimento: "#f97316", performance: "#fbbf24" };
