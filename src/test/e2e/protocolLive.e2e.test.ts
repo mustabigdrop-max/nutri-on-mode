@@ -35,16 +35,18 @@ async function callFn(body: unknown) {
 
 const suite = LIVE && BASE && KEY ? describe : describe.skip;
 
+// Campos exatamente como a Edge Function os lê (buildStructuredPrompt)
 const athlete = {
   clientName: "E2E Bot",
-  sex: "M",
-  age: 30,
-  weight: 80,
-  level: "intermediario",
   phase: "bulking",
-  daysPerWeek: 4,
+  muscles: ["Peito", "Costas", "Quadríceps", "Ombros"],
+  level: "intermediario",
   weeks: 4,
+  days: 4,
+  sessionDuration: "60min",
+  equipment: "Academia completa",
 };
+
 
 suite("E2E LIVE · generate-training-protocol", () => {
   it(
