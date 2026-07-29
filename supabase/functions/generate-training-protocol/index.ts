@@ -1119,12 +1119,22 @@ ${JSON.stringify(spec)}
 
 Prescreva SOMENTE este dia, respeitando target_sets, zona ${spec.zone || "Z3"} e RIR ${spec.rir || "1-2"}. Retorne só o JSON do dia.`;
       const buildDay = async () => {
-        const r = await callGateway(LOVABLE_API_KEY, DAY_SYSTEM, userMsg, 3000);
+        const r = await callGateway(LOVABLE_API_KEY, DAY_SYSTEM, userMsg, 6000);
         if (r.status === 429 || r.status === 402) return { status: r.status, day: null };
-        if (!r.ok) return { status: r.status, day: null };
+        if (!r.ok) {
+          const errTxt = await r.text().catch(() => "");
+          console.log(`[RAW_RESPONSE][day-${n}] http=${r.status} body=`, errTxt.slice(0, 600));
+          return { status: r.status, day: null };
+        }
         const jr = await r.json();
-        return { status: 200, day: parseJsonLoose(jr.choices?.[0]?.message?.content || "") };
+        const rawTxt = jr.choices?.[0]?.message?.content || "";
+        const parsedDay = parseJsonLoose(rawTxt);
+        if (!parsedDay || !Array.isArray(parsedDay.exercises) || parsedDay.exercises.length === 0) {
+          console.log(`[RAW_RESPONSE][day-${n}] len=`, rawTxt.length, "finish=", jr.choices?.[0]?.finish_reason, "head=", rawTxt.slice(0, 800));
+        }
+        return { status: 200, day: parsedDay };
       };
+
       let { status, day } = await buildDay();
       if (status === 429) return json({ error: "Rate limit excedido." }, 429);
       if (status === 402) return json({ error: "Créditos insuficientes." }, 402);
