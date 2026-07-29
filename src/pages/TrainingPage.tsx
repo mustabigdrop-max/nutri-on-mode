@@ -2879,7 +2879,7 @@ function HistoryViewModal({ protocol: p, onClose, userId, onUpdate }: { protocol
   const updateProtocol = async () => {
     const { error } = await supabase.from("training_protocols").update({ client_name: editName }).eq("id", p.id);
     if (error) toast.error("Erro ao atualizar");
-    else { toast.success("Atualizado!"); setEditing(false); onUpdate?.(); }
+    else { toast.success("Atualizado!"); setEditing(false); onUpdate?.({ client_name: editName }); }
   };
 
   const saveToNotebook = async () => {
