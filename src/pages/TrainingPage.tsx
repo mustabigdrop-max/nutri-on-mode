@@ -2749,10 +2749,22 @@ function HistorySection({ userId }: { userId?: string }) {
         <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar..." className="bg-transparent text-sm pl-9" style={{ borderColor: BORDER, color: TEXT }} />
       </div>
 
-      {filtered.length === 0 ? (
+      {loadingList ? (
+        <>
+          <HistorySkeletonCard />
+          <HistorySkeletonCard />
+          <HistorySkeletonCard />
+        </>
+      ) : filtered.length === 0 ? (
         <p className="text-xs text-center py-10" style={{ color: TEXT_MUTED }}>Nenhum protocolo encontrado</p>
       ) : filtered.map(p => (
-        <div key={p.id} className="rounded-xl p-3" style={{ background: SURFACE, border: `1px solid ${BORDER}` }}>
+        <div
+          key={p.id}
+          className="rounded-xl p-3"
+          style={{ background: SURFACE, border: `1px solid ${BORDER}` }}
+          onMouseEnter={() => prefetchProtocol(p.id)}
+          onTouchStart={() => prefetchProtocol(p.id)}
+        >
           <div className="flex items-center justify-between mb-1.5">
             <span className="text-[12px] font-bold" style={{ color: TEXT }}>{p.client_name}</span>
             <span className="text-[9px] px-2 py-0.5 rounded-full font-bold" style={{ background: `${phaseColor[p.phase] || GREEN}15`, color: phaseColor[p.phase] || GREEN }}>
@@ -2765,8 +2777,9 @@ function HistorySection({ userId }: { userId?: string }) {
             {p.level && <span className="text-[9px] px-1.5 py-0.5 rounded" style={{ background: SURFACE2, color: TEXT_MUTED }}>{p.level}</span>}
           </div>
           <div className="flex items-center gap-1.5">
-            <button onClick={() => openProtocol(p.id)} disabled={loadingId === p.id} className="flex-1 text-[10px] py-2 rounded-lg font-semibold text-center disabled:opacity-60" style={{ background: GREEN_DIM, color: GREEN, border: `1px solid ${BORDER}` }}>
-              <Eye className="w-3 h-3 inline mr-1" />{loadingId === p.id ? "Carregando..." : "Ver Treino"}
+            <button onClick={() => openProtocol(p.id)} disabled={loadingId === p.id} className="flex-1 text-[10px] py-2 rounded-lg font-semibold text-center disabled:opacity-60 flex items-center justify-center gap-1" style={{ background: GREEN_DIM, color: GREEN, border: `1px solid ${BORDER}` }}>
+              {loadingId === p.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Eye className="w-3 h-3" />}
+              {loadingId === p.id ? "Carregando..." : "Ver Treino"}
             </button>
             {confirmDelete === p.id ? (
               <>
@@ -2788,9 +2801,25 @@ function HistorySection({ userId }: { userId?: string }) {
 
       <AnimatePresence>
         {viewModal && (
-          <HistoryViewModal protocol={viewModal} onClose={() => setViewModal(null)} userId={userId} onUpdate={loadProtocols} />
+          <HistoryViewModal
+            protocol={viewModal}
+            onClose={() => setViewModal(null)}
+            userId={userId}
+            onUpdate={(patch?: any) => {
+              // Mantém o cache coerente após edições (ex.: renomear cliente)
+              if (patch && typeof patch === "object") {
+                const merged = { ...viewModal, ...patch };
+                protocolFullCache.set(viewModal.id, merged);
+                setViewModal(merged);
+              } else {
+                protocolFullCache.delete(viewModal.id);
+              }
+              loadProtocols();
+            }}
+          />
         )}
       </AnimatePresence>
+
     </div>
   );
 }
