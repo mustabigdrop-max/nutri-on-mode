@@ -10,7 +10,7 @@ import {
   Target, Shield, AlertTriangle, Clock, Flame, Eye, Brain,
   ChevronDown, ChevronUp, Activity, Award, Bookmark, Share2,
   Trash2, Edit3, Users, X, Check, FileDown, RotateCcw,
-  Microscope, Scan, HeartPulse, BookOpen, TrendingDown, Layers, Sparkles, Flower2,
+  Microscope, Scan, HeartPulse, BookOpen, TrendingDown, Layers, Sparkles, Flower2, Loader2,
 } from "lucide-react";
 import { buildVolumeReport, detectGvtMismatch } from "@/lib/trainingVolume";
 import "@/styles/training-hud.css";
@@ -2661,8 +2661,29 @@ function VolumeLandmarksSection({ userId }: { userId?: string }) {
 /* ================================================================
    SECTION 4 — HISTORY
    ================================================================ */
+
+/** Cache de protocolos completos (persiste entre trocas de aba/remontagens). */
+const protocolFullCache = new Map<string, any>();
+
+function HistorySkeletonCard() {
+  return (
+    <div className="rounded-xl p-3 animate-pulse" style={{ background: SURFACE, border: `1px solid ${BORDER}` }}>
+      <div className="flex items-center justify-between mb-2">
+        <div className="h-3 rounded w-1/3" style={{ background: SURFACE2 }} />
+        <div className="h-3 rounded w-16" style={{ background: SURFACE2 }} />
+      </div>
+      <div className="flex items-center gap-2 mb-3">
+        <div className="h-2.5 rounded w-16" style={{ background: SURFACE2 }} />
+        <div className="h-2.5 rounded w-10" style={{ background: SURFACE2 }} />
+      </div>
+      <div className="h-7 rounded-lg w-full" style={{ background: SURFACE2 }} />
+    </div>
+  );
+}
+
 function HistorySection({ userId }: { userId?: string }) {
   const [protocols, setProtocols] = useState<any[]>([]);
+  const [loadingList, setLoadingList] = useState(true);
   const [search, setSearch] = useState("");
   const [viewModal, setViewModal] = useState<any>(null);
   const [loadingId, setLoadingId] = useState<string | null>(null);
@@ -2670,20 +2691,39 @@ function HistorySection({ userId }: { userId?: string }) {
 
   const loadProtocols = useCallback(() => {
     if (!userId) return;
+    setLoadingList(true);
     supabase.from("training_protocols")
       .select("id, client_name, phase, level, weeks, created_at")
       .eq("user_id", userId).order("created_at", { ascending: false }).limit(50)
-      .then(({ data }) => setProtocols(data || []));
+      .then(({ data }) => { setProtocols(data || []); setLoadingList(false); });
   }, [userId]);
 
-  // Conteúdo completo só é buscado ao abrir um protocolo específico
-  const openProtocol = useCallback(async (id: string) => {
-    setLoadingId(id);
+  /** Busca (com cache) o conteúdo completo de um protocolo. */
+  const fetchFull = useCallback(async (id: string) => {
+    const cached = protocolFullCache.get(id);
+    if (cached) return cached;
     const { data, error } = await supabase.from("training_protocols").select("*").eq("id", id).maybeSingle();
-    setLoadingId(null);
-    if (error || !data) { toast.error("Erro ao carregar protocolo"); return; }
-    setViewModal(data);
+    if (error || !data) return null;
+    protocolFullCache.set(id, data);
+    return data;
   }, []);
+
+  // Pré-carrega em segundo plano ao passar o mouse / tocar no card
+  const prefetchProtocol = useCallback((id: string) => {
+    if (protocolFullCache.has(id)) return;
+    fetchFull(id);
+  }, [fetchFull]);
+
+  // Conteúdo completo só é buscado ao abrir um protocolo específico (cacheado)
+  const openProtocol = useCallback(async (id: string) => {
+    const cached = protocolFullCache.get(id);
+    if (cached) { setViewModal(cached); return; }
+    setLoadingId(id);
+    const data = await fetchFull(id);
+    setLoadingId(null);
+    if (!data) { toast.error("Erro ao carregar protocolo"); return; }
+    setViewModal(data);
+  }, [fetchFull]);
 
   useEffect(() => { loadProtocols(); }, [loadProtocols]);
 
@@ -2692,10 +2732,12 @@ function HistorySection({ userId }: { userId?: string }) {
     if (error) toast.error("Erro ao excluir");
     else {
       toast.success("Protocolo excluído");
+      protocolFullCache.delete(id);
       setProtocols(prev => prev.filter(p => p.id !== id));
       setConfirmDelete(null);
     }
   };
+
 
   const filtered = protocols.filter(p => p.client_name?.toLowerCase().includes(search.toLowerCase()) || p.phase?.toLowerCase().includes(search.toLowerCase()));
   const phaseColor: Record<string, string> = { bulking: GREEN, cutting: "#ef4444", manutencao: "#3b82f6", recomposicao: "#8b5cf6", emagrecimento: "#f97316", performance: "#fbbf24" };
@@ -2707,10 +2749,22 @@ function HistorySection({ userId }: { userId?: string }) {
         <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar..." className="bg-transparent text-sm pl-9" style={{ borderColor: BORDER, color: TEXT }} />
       </div>
 
-      {filtered.length === 0 ? (
+      {loadingList ? (
+        <>
+          <HistorySkeletonCard />
+          <HistorySkeletonCard />
+          <HistorySkeletonCard />
+        </>
+      ) : filtered.length === 0 ? (
         <p className="text-xs text-center py-10" style={{ color: TEXT_MUTED }}>Nenhum protocolo encontrado</p>
       ) : filtered.map(p => (
-        <div key={p.id} className="rounded-xl p-3" style={{ background: SURFACE, border: `1px solid ${BORDER}` }}>
+        <div
+          key={p.id}
+          className="rounded-xl p-3"
+          style={{ background: SURFACE, border: `1px solid ${BORDER}` }}
+          onMouseEnter={() => prefetchProtocol(p.id)}
+          onTouchStart={() => prefetchProtocol(p.id)}
+        >
           <div className="flex items-center justify-between mb-1.5">
             <span className="text-[12px] font-bold" style={{ color: TEXT }}>{p.client_name}</span>
             <span className="text-[9px] px-2 py-0.5 rounded-full font-bold" style={{ background: `${phaseColor[p.phase] || GREEN}15`, color: phaseColor[p.phase] || GREEN }}>
@@ -2723,8 +2777,9 @@ function HistorySection({ userId }: { userId?: string }) {
             {p.level && <span className="text-[9px] px-1.5 py-0.5 rounded" style={{ background: SURFACE2, color: TEXT_MUTED }}>{p.level}</span>}
           </div>
           <div className="flex items-center gap-1.5">
-            <button onClick={() => openProtocol(p.id)} disabled={loadingId === p.id} className="flex-1 text-[10px] py-2 rounded-lg font-semibold text-center disabled:opacity-60" style={{ background: GREEN_DIM, color: GREEN, border: `1px solid ${BORDER}` }}>
-              <Eye className="w-3 h-3 inline mr-1" />{loadingId === p.id ? "Carregando..." : "Ver Treino"}
+            <button onClick={() => openProtocol(p.id)} disabled={loadingId === p.id} className="flex-1 text-[10px] py-2 rounded-lg font-semibold text-center disabled:opacity-60 flex items-center justify-center gap-1" style={{ background: GREEN_DIM, color: GREEN, border: `1px solid ${BORDER}` }}>
+              {loadingId === p.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Eye className="w-3 h-3" />}
+              {loadingId === p.id ? "Carregando..." : "Ver Treino"}
             </button>
             {confirmDelete === p.id ? (
               <>
@@ -2746,15 +2801,31 @@ function HistorySection({ userId }: { userId?: string }) {
 
       <AnimatePresence>
         {viewModal && (
-          <HistoryViewModal protocol={viewModal} onClose={() => setViewModal(null)} userId={userId} onUpdate={loadProtocols} />
+          <HistoryViewModal
+            protocol={viewModal}
+            onClose={() => setViewModal(null)}
+            userId={userId}
+            onUpdate={(patch?: any) => {
+              // Mantém o cache coerente após edições (ex.: renomear cliente)
+              if (patch && typeof patch === "object") {
+                const merged = { ...viewModal, ...patch };
+                protocolFullCache.set(viewModal.id, merged);
+                setViewModal(merged);
+              } else {
+                protocolFullCache.delete(viewModal.id);
+              }
+              loadProtocols();
+            }}
+          />
         )}
       </AnimatePresence>
+
     </div>
   );
 }
 
 /* ── History View Modal ── */
-function HistoryViewModal({ protocol: p, onClose, userId, onUpdate }: { protocol: any; onClose: () => void; userId?: string; onUpdate?: () => void }) {
+function HistoryViewModal({ protocol: p, onClose, userId, onUpdate }: { protocol: any; onClose: () => void; userId?: string; onUpdate?: (patch?: any) => void }) {
   const [expandedDay, setExpandedDay] = useState<number | null>(0);
   const [expandedExercise, setExpandedExercise] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
@@ -2808,7 +2879,7 @@ function HistoryViewModal({ protocol: p, onClose, userId, onUpdate }: { protocol
   const updateProtocol = async () => {
     const { error } = await supabase.from("training_protocols").update({ client_name: editName }).eq("id", p.id);
     if (error) toast.error("Erro ao atualizar");
-    else { toast.success("Atualizado!"); setEditing(false); onUpdate?.(); }
+    else { toast.success("Atualizado!"); setEditing(false); onUpdate?.({ client_name: editName }); }
   };
 
   const saveToNotebook = async () => {
