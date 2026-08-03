@@ -580,11 +580,24 @@ const DashboardPage = () => {
     return combineAdjustments(todayAllWorkouts, weightKg);
   }, [todayAllWorkouts, weightKg]);
 
-  // Final targets = VET × goal phase × workout adjustment
-  const kcalTarget = Math.round(baseKcal * goalPhase.multiplier * workoutAdj.kcalMultiplier);
-  const proteinTarget = Math.round(workoutAdj.proteinPerKg * weightKg * goalPhase.proteinBoost);
-  const carbsTarget = Math.round(baseCarbs * goalPhase.multiplier * workoutAdj.carbsMultiplier);
-  const fatTarget = Math.round(baseFat * workoutAdj.fatMultiplier);
+  // Final targets = VET × fase do objetivo (mesma lógica do NutriSync) × ajuste do treino
+  const goalObjetivo = useMemo(() => resolveGoalObjetivo(rawGoal), [rawGoal]);
+  const adjustedTargets = useMemo(
+    () =>
+      computeAdjustedMacros({
+        baseKcal,
+        baseCarbs,
+        baseFat,
+        weightKg,
+        objetivo: goalObjetivo,
+        workout: workoutAdj,
+      }),
+    [baseKcal, baseCarbs, baseFat, weightKg, goalObjetivo, workoutAdj]
+  );
+  const kcalTarget = adjustedTargets.kcal;
+  const proteinTarget = adjustedTargets.protein;
+  const carbsTarget = adjustedTargets.carbs;
+  const fatTarget = adjustedTargets.fat;
   const kcalDiff = kcalTarget - baseKcal;
 
   const kcalPercent = (todayTotals.kcal / kcalTarget) * 100;
