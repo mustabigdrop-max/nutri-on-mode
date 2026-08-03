@@ -2228,7 +2228,7 @@ const ExerciseCard = memo(function ExerciseCard({
       </AnimatePresence>
     </div>
   );
-}
+});
 
 /* ── Set Row ── */
 function SetRow({ label, detail, note, color, rest }: { label: string; detail: string; note?: string; color: string; rest?: string }) {
