@@ -165,7 +165,7 @@ const NutriSyncPage = () => {
   const adjustedKcal = Math.round(baseKcal * adjustment.kcalMultiplier * goalMult);
   const adjustedProtein = Math.round(weightKg * Math.max(adjustment.proteinPerKg, proteinPerKgGoal));
   const adjustedCarbs = Math.round(baseCarbs * adjustment.carbsMultiplier * goalMult);
-  const adjustedFat = Math.round(baseFat * adjustment.fatMultiplier * (objetivo === "cutting" ? 0.85 : objetivo === "bulking" ? 1.05 : 1.0));
+  const adjustedFat = Math.round(baseFat * adjustment.fatMultiplier * goalAdj.fatMultiplier);
   const kcalDiff = adjustedKcal - baseKcal;
 
   const recovery = useMemo(() => computeMuscleRecovery(schedule), [schedule]);
