@@ -183,6 +183,14 @@ export default function CockpitLeftRail(props: CockpitLeftRailProps) {
                 </span>
               )}
             </div>
+            {m.note && (
+              <div className="flex items-center gap-1 mt-1" title={lbm.hasData ? lbm.message : undefined}>
+                <span className="w-1 h-1 rounded-full" style={{ background: m.note.color }} />
+                <span style={{ fontFamily: "'Space Mono', monospace", fontSize: 8.5, color: m.note.color }}>
+                  {m.note.text}
+                </span>
+              </div>
+            )}
             <div className="mt-1.5 h-px w-full" style={{ background: "#0F0F14" }}>
               <motion.div
                 initial={{ width: 0 }}
