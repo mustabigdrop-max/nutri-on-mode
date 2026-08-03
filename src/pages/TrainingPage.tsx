@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, memo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -1914,7 +1914,7 @@ const TrainingDayCard = memo(function TrainingDayCard({ day, index, expanded, se
       </AnimatePresence>
     </div>
   );
-}
+});
 
 /* ── Exercise Card ── */
 const hasMeaningfulValue = (value: unknown) => {
@@ -1949,7 +1949,7 @@ const joinDefinedParts = (parts: Array<string | false | null | undefined>, separ
   parts.filter(Boolean).join(separator)
 );
 
-function ExerciseCard({
+const ExerciseCard = memo(function ExerciseCard({
   exercise,
   displayOrder,
   expanded,
