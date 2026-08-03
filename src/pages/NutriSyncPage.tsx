@@ -5,6 +5,7 @@ import { ArrowLeft, History, ChevronRight, Plus, Trash2, Check, Zap } from "luci
 import PeakWeekManager from "@/components/nutrisync/PeakWeekManager";
 import BottomNav from "@/components/BottomNav";
 import { useProfile } from "@/hooks/useProfile";
+import { getGoalAdjustment } from "@/lib/goalMacros";
 import {
   useWorkoutSchedule,
   WORKOUT_TYPES,
