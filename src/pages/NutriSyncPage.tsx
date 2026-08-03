@@ -147,8 +147,9 @@ const NutriSyncPage = () => {
   useEffect(() => {
     try { localStorage.setItem("nutrisync_objetivo", objetivo); } catch {}
   }, [objetivo]);
-  const goalMult = objetivo === "bulking" ? 1.12 : objetivo === "cutting" ? 0.82 : 1.0;
-  const proteinPerKgGoal = objetivo === "cutting" ? 2.4 : objetivo === "bulking" ? 2.0 : 1.8;
+  const goalAdj = getGoalAdjustment(objetivo);
+  const goalMult = goalAdj.kcalMultiplier;
+  const proteinPerKgGoal = goalAdj.proteinPerKg;
 
   const todayWorkouts = getTodayWorkouts();
   const todayDow = new Date().getDay();
