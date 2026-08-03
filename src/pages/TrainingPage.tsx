@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, memo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -474,11 +474,14 @@ REGRA ABSOLUTA #2 — SISTEMA: Os parâmetros do SISTEMA DE TREINAMENTO BASE sã
 Português. Específico. Científico. Zero genérico.`;
   };
 
-  // Chamada com timeout individual de 60s (geração fracionada)
-  const invokeWithTimeout = async (body: any, label: string, ms = 60000) => {
+  // Chamada com timeout individual por etapa (geração fracionada).
+  // 90s alinhado ao teto de latência já validado nos testes E2E (protocolLive.e2e.test.ts)
+  // para skeleton/day — 60s causava "Tempo excedido" mesmo quando a function ainda ia responder
+  // (o retry interno por JSON inválido some chega perto do próprio limite de 60s).
+  const invokeWithTimeout = async (body: any, label: string, ms = 90000) => {
     const invokePromise = supabase.functions.invoke("generate-training-protocol", { body });
     const timeoutPromise = new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new Error(`Tempo excedido (60s) em ${label}. Tente novamente.`)), ms)
+      setTimeout(() => reject(new Error(`Tempo excedido (${Math.round(ms / 1000)}s) em ${label}. Tente novamente.`)), ms)
     );
     const { data, error } = (await Promise.race([invokePromise, timeoutPromise])) as any;
     if (error) throw new Error(error.message || `Falha em ${label}`);
@@ -1136,19 +1139,6 @@ Português. Específico. Científico. Zero genérico.`;
               ))}
             </div>
 
-            {console.log("[CHECK render]", {
-              activeResultTab,
-              hasProtocol: !!protocol,
-              protocolType: typeof protocol,
-              protocolKeys: protocol ? Object.keys(protocol) : null,
-              hasBlockOverview: !!(protocol as any)?.block_overview,
-              hasTrainingDays: !!(protocol as any)?.training_days,
-              textResultsProtoType: typeof textResults.protocolo,
-              textResultsProtoPreview: typeof textResults.protocolo === "string"
-                ? textResults.protocolo.slice(0, 100)
-                : null,
-            })}
-
             {/* ── Overview Tab ── */}
             {activeResultTab === "overview" && (() => {
               // Padrão unificado — igual ao modal de histórico arquivado
@@ -1183,8 +1173,8 @@ Português. Específico. Científico. Zero genérico.`;
                         key={idx}
                         day={day}
                         index={idx}
-                        expanded={expandedDay === idx}
-                        onToggle={() => setExpandedDay(expandedDay === idx ? null : idx)}
+                        expandedDay={expandedDay}
+                        setExpandedDay={setExpandedDay}
                         expandedExercise={expandedExercise}
                         setExpandedExercise={setExpandedExercise}
                         weekPhase={isMello16 ? weekPhase : null}
@@ -1257,8 +1247,8 @@ Português. Específico. Científico. Zero genérico.`;
                         key={idx}
                         day={day}
                         index={idx}
-                        expanded={expandedDay === idx}
-                        onToggle={() => setExpandedDay(expandedDay === idx ? null : idx)}
+                        expandedDay={expandedDay}
+                        setExpandedDay={setExpandedDay}
                         expandedExercise={expandedExercise}
                         setExpandedExercise={setExpandedExercise}
                         weekPhase={isMello16 ? weekPhase : null}
@@ -1816,7 +1806,9 @@ function extractDayMuscleTags(day: any): string[] {
 }
 
 /* ── Training Day Card ── */
-function TrainingDayCard({ day, index, expanded, onToggle, expandedExercise, setExpandedExercise, weekPhase, athleteId, protocolId }: any) {
+const TrainingDayCard = memo(function TrainingDayCard({ day, index, expandedDay, setExpandedDay, expandedExercise, setExpandedExercise, weekPhase, athleteId, protocolId }: any) {
+  const expanded = expandedDay === index;
+  const onToggle = () => setExpandedDay(expandedDay === index ? null : index);
   const muscleTags = extractDayMuscleTags(day);
   return (
     <div className="rounded-2xl overflow-hidden" style={{ background: SURFACE, border: `1px solid ${expanded ? BORDER_ACTIVE : BORDER}` }}>
@@ -1883,8 +1875,9 @@ function TrainingDayCard({ day, index, expanded, onToggle, expandedExercise, set
                   key={i}
                   exercise={ex}
                   displayOrder={i + 1}
-                  expanded={expandedExercise === `${index}-${i}`}
-                  onToggle={() => setExpandedExercise(expandedExercise === `${index}-${i}` ? null : `${index}-${i}`)}
+                  exerciseKey={`${index}-${i}`}
+                  expandedExercise={expandedExercise}
+                  setExpandedExercise={setExpandedExercise}
                   weekPhase={weekPhase}
                   athleteId={athleteId}
                   protocolId={protocolId}
@@ -1905,7 +1898,7 @@ function TrainingDayCard({ day, index, expanded, onToggle, expandedExercise, set
       </AnimatePresence>
     </div>
   );
-}
+});
 
 /* ── Exercise Card ── */
 const hasMeaningfulValue = (value: unknown) => {
@@ -1940,11 +1933,12 @@ const joinDefinedParts = (parts: Array<string | false | null | undefined>, separ
   parts.filter(Boolean).join(separator)
 );
 
-function ExerciseCard({
+const ExerciseCard = memo(function ExerciseCard({
   exercise,
   displayOrder,
-  expanded,
-  onToggle,
+  exerciseKey,
+  expandedExercise,
+  setExpandedExercise,
   weekPhase,
   athleteId,
   protocolId,
@@ -1952,13 +1946,16 @@ function ExerciseCard({
 }: {
   exercise: any;
   displayOrder?: number;
-  expanded: boolean;
-  onToggle: () => void;
+  exerciseKey: string;
+  expandedExercise: string | null;
+  setExpandedExercise: (key: string | null) => void;
   weekPhase?: WeekPhase | null;
   athleteId?: string | null;
   protocolId?: string | null;
   dayNumber?: number;
 }) {
+  const expanded = expandedExercise === exerciseKey;
+  const onToggle = () => setExpandedExercise(expandedExercise === exerciseKey ? null : exerciseKey);
   const [showSubs, setShowSubs] = useState(false);
   const [currentExercise, setCurrentExercise] = useState(exercise);
   const [swapHistory, setSwapHistory] = useState<string[]>([]);
@@ -2219,7 +2216,7 @@ function ExerciseCard({
       </AnimatePresence>
     </div>
   );
-}
+});
 
 /* ── Set Row ── */
 function SetRow({ label, detail, note, color, rest }: { label: string; detail: string; note?: string; color: string; rest?: string }) {
@@ -2997,7 +2994,7 @@ function HistoryViewModal({ protocol: p, onClose, userId, onUpdate }: { protocol
                 />
               )}
               {parsed.training_days?.map((day: any, idx: number) => (
-                <TrainingDayCard key={idx} day={day} index={idx} expanded={expandedDay === idx} onToggle={() => setExpandedDay(expandedDay === idx ? null : idx)}
+                <TrainingDayCard key={idx} day={day} index={idx} expandedDay={expandedDay} setExpandedDay={setExpandedDay}
                   expandedExercise={expandedExercise} setExpandedExercise={setExpandedExercise}
                   weekPhase={isMello16 ? weekPhase : null}
                   athleteId={userId}
