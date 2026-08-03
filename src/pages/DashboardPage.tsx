@@ -781,6 +781,8 @@ const DashboardPage = () => {
           protein={{ value: todayTotals.protein, target: proteinTarget }}
           carbs={{ value: todayTotals.carbs, target: carbsTarget }}
           fat={{ value: todayTotals.fat, target: fatTarget }}
+          fiber={{ target: fiberTarget }}
+          bodyComposition={{ weightKg, bodyFatPct: periodization.bodyFatPct }}
           streakDays={profile.streak_days || 0}
           level={profile.level || 1}
           xp={profile.xp || 0}
