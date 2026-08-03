@@ -603,10 +603,27 @@ const DashboardPage = () => {
       }),
     [baseKcal, baseCarbs, baseFat, weightKg, goalObjetivo, workoutAdj]
   );
-  const kcalTarget = adjustedTargets.kcal;
-  const proteinTarget = adjustedTargets.protein;
-  const carbsTarget = adjustedTargets.carbs;
-  const fatTarget = adjustedTargets.fat;
+  // Periodização nutricional (refeeds / diet break) — mesma fonte do NutriSync
+  const periodization = useNutritionPeriodization();
+  const periodized = useMemo(
+    () =>
+      applyPeriodization({
+        macros: adjustedTargets,
+        tdee: baseKcal,
+        objetivo: goalObjetivo,
+        cycle: periodization.cycleState,
+        refeedTarget: periodization.config.cycle.refeed_target,
+        dietBreakActive: periodization.dietBreakState.active,
+      }),
+    [adjustedTargets, baseKcal, goalObjetivo, periodization.cycleState, periodization.config.cycle.refeed_target, periodization.dietBreakState.active]
+  );
+  const kcalTarget = periodized.kcal;
+  const proteinTarget = periodized.protein;
+  const carbsTarget = periodized.carbs;
+  const fatTarget = periodized.fat;
+  const fiberTarget = computeFiberTarget(kcalTarget, profile?.sex);
+  const isRefeedDay = periodized.mode === "refeed";
+  const isDietBreak = periodized.mode === "diet_break";
   const kcalDiff = kcalTarget - baseKcal;
 
   const kcalPercent = (todayTotals.kcal / kcalTarget) * 100;
