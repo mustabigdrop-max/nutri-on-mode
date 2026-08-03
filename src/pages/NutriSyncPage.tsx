@@ -5,6 +5,7 @@ import { ArrowLeft, History, ChevronRight, Plus, Trash2, Check, Zap } from "luci
 import PeakWeekManager from "@/components/nutrisync/PeakWeekManager";
 import BottomNav from "@/components/BottomNav";
 import { useProfile } from "@/hooks/useProfile";
+import { getGoalAdjustment } from "@/lib/goalMacros";
 import {
   useWorkoutSchedule,
   WORKOUT_TYPES,
@@ -147,8 +148,9 @@ const NutriSyncPage = () => {
   useEffect(() => {
     try { localStorage.setItem("nutrisync_objetivo", objetivo); } catch {}
   }, [objetivo]);
-  const goalMult = objetivo === "bulking" ? 1.12 : objetivo === "cutting" ? 0.82 : 1.0;
-  const proteinPerKgGoal = objetivo === "cutting" ? 2.4 : objetivo === "bulking" ? 2.0 : 1.8;
+  const goalAdj = getGoalAdjustment(objetivo);
+  const goalMult = goalAdj.kcalMultiplier;
+  const proteinPerKgGoal = goalAdj.proteinPerKg;
 
   const todayWorkouts = getTodayWorkouts();
   const todayDow = new Date().getDay();
@@ -163,7 +165,7 @@ const NutriSyncPage = () => {
   const adjustedKcal = Math.round(baseKcal * adjustment.kcalMultiplier * goalMult);
   const adjustedProtein = Math.round(weightKg * Math.max(adjustment.proteinPerKg, proteinPerKgGoal));
   const adjustedCarbs = Math.round(baseCarbs * adjustment.carbsMultiplier * goalMult);
-  const adjustedFat = Math.round(baseFat * adjustment.fatMultiplier * (objetivo === "cutting" ? 0.85 : objetivo === "bulking" ? 1.05 : 1.0));
+  const adjustedFat = Math.round(baseFat * adjustment.fatMultiplier * goalAdj.fatMultiplier);
   const kcalDiff = adjustedKcal - baseKcal;
 
   const recovery = useMemo(() => computeMuscleRecovery(schedule), [schedule]);
