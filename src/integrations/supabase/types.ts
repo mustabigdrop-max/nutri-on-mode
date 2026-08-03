@@ -7785,6 +7785,7 @@ export type Database = {
           level: number | null
           meta_peso: number | null
           nivel_treino: string | null
+          nutrition_periodization: Json | null
           objetivo_principal: string | null
           onboarding_completed: boolean | null
           orcamento_semanal: number | null
@@ -7831,6 +7832,7 @@ export type Database = {
           level?: number | null
           meta_peso?: number | null
           nivel_treino?: string | null
+          nutrition_periodization?: Json | null
           objetivo_principal?: string | null
           onboarding_completed?: boolean | null
           orcamento_semanal?: number | null
@@ -7877,6 +7879,7 @@ export type Database = {
           level?: number | null
           meta_peso?: number | null
           nivel_treino?: string | null
+          nutrition_periodization?: Json | null
           objetivo_principal?: string | null
           onboarding_completed?: boolean | null
           orcamento_semanal?: number | null

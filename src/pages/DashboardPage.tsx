@@ -15,6 +15,14 @@ import JarvisCanvas from "@/components/dashboard/JarvisCanvas";
 import CockpitTopbar from "@/components/dashboard/CockpitTopbar";
 import CockpitLeftRail from "@/components/dashboard/CockpitLeftRail";
 import { resolveGoalObjetivo, computeAdjustedMacros } from "@/lib/goalMacros";
+import { useNutritionPeriodization } from "@/hooks/useNutritionPeriodization";
+import { applyPeriodization, computeFiberTarget } from "@/lib/nutritionPeriodization";
+import CycleStatusCard from "@/components/nutrition/CycleStatusCard";
+import DietBreakCard from "@/components/nutrition/DietBreakCard";
+import MetabolicAdaptationCard from "@/components/nutrition/MetabolicAdaptationCard";
+import CuttingMicronutrientsCard from "@/components/nutrition/CuttingMicronutrientsCard";
+import DynamicHydrationCard from "@/components/nutrition/DynamicHydrationCard";
+import PeriWorkoutTimingCard from "@/components/nutrition/PeriWorkoutTimingCard";
 import CockpitRightRail from "@/components/dashboard/CockpitRightRail";
 import CoachNotificationsCard from "@/components/dashboard/CoachNotificationsCard";
 import MyProfessionalCard from "@/components/dashboard/MyProfessionalCard";
@@ -595,10 +603,27 @@ const DashboardPage = () => {
       }),
     [baseKcal, baseCarbs, baseFat, weightKg, goalObjetivo, workoutAdj]
   );
-  const kcalTarget = adjustedTargets.kcal;
-  const proteinTarget = adjustedTargets.protein;
-  const carbsTarget = adjustedTargets.carbs;
-  const fatTarget = adjustedTargets.fat;
+  // Periodização nutricional (refeeds / diet break) — mesma fonte do NutriSync
+  const periodization = useNutritionPeriodization();
+  const periodized = useMemo(
+    () =>
+      applyPeriodization({
+        macros: adjustedTargets,
+        tdee: baseKcal,
+        objetivo: goalObjetivo,
+        cycle: periodization.cycleState,
+        refeedTarget: periodization.config.cycle.refeed_target,
+        dietBreakActive: periodization.dietBreakState.active,
+      }),
+    [adjustedTargets, baseKcal, goalObjetivo, periodization.cycleState, periodization.config.cycle.refeed_target, periodization.dietBreakState.active]
+  );
+  const kcalTarget = periodized.kcal;
+  const proteinTarget = periodized.protein;
+  const carbsTarget = periodized.carbs;
+  const fatTarget = periodized.fat;
+  const fiberTarget = computeFiberTarget(kcalTarget, profile?.sex);
+  const isRefeedDay = periodized.mode === "refeed";
+  const isDietBreak = periodized.mode === "diet_break";
   const kcalDiff = kcalTarget - baseKcal;
 
   const kcalPercent = (todayTotals.kcal / kcalTarget) * 100;
@@ -756,6 +781,8 @@ const DashboardPage = () => {
           protein={{ value: todayTotals.protein, target: proteinTarget }}
           carbs={{ value: todayTotals.carbs, target: carbsTarget }}
           fat={{ value: todayTotals.fat, target: fatTarget }}
+          fiber={{ target: fiberTarget }}
+          bodyComposition={{ weightKg, bodyFatPct: periodization.bodyFatPct }}
           streakDays={profile.streak_days || 0}
           level={profile.level || 1}
           xp={profile.xp || 0}
@@ -898,27 +925,82 @@ const DashboardPage = () => {
           </motion.div>
         )}
 
-        {/* Goal phase banner */}
+        {/* Goal phase banner (com ciclagem de déficit / diet break) */}
         <motion.div
           initial={{ opacity: 0, y: -5 }}
           animate={{ opacity: 1, y: 0 }}
-          className={`rounded-xl border p-3 mb-4 flex items-center justify-between ${goalPhase.bg}`}
+          className="rounded-xl border p-3 mb-4"
+          style={{
+            borderColor: isRefeedDay ? "#B8922A" : isDietBreak ? "rgba(138,160,192,.45)" : undefined,
+            background: isRefeedDay
+              ? "linear-gradient(180deg, rgba(184,146,42,.14), rgba(2,2,5,0))"
+              : isDietBreak
+              ? "rgba(138,160,192,.08)"
+              : undefined,
+            boxShadow: isRefeedDay ? "0 0 22px rgba(184,146,42,.18)" : undefined,
+          }}
         >
-          <div className="flex items-center gap-3">
-            <span className="text-2xl">{goalPhase.emoji}</span>
-            <div>
-              <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">Fase atual</p>
-              <p className={`text-sm font-bold ${goalPhase.color}`}>{goalPhase.label}</p>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">{isRefeedDay ? "⚡" : isDietBreak ? "🧠" : goalPhase.emoji}</span>
+              <div>
+                <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">Fase atual</p>
+                <p className="text-sm font-bold" style={{ color: isRefeedDay ? "#B8922A" : isDietBreak ? "#8aa0c0" : undefined }}>
+                  <span className={isRefeedDay || isDietBreak ? "" : goalPhase.color}>
+                    {isDietBreak ? "MANUTENÇÃO (Diet Break)" : isRefeedDay ? "REFEED 🔄" : goalPhase.label}
+                  </span>
+                </p>
+                {goalObjetivo === "cutting" && periodization.config.modules.refeeds && (
+                  <p className="text-[10px] font-mono mt-0.5" style={{ color: isRefeedDay ? "#B8922A" : "rgba(255,255,255,.45)" }}>
+                    {isDietBreak
+                      ? `Dia ${periodization.dietBreakState.dayInBreak}/${periodization.dietBreakState.totalDays} do Diet Break`
+                      : periodization.cycleState.label}
+                  </p>
+                )}
+              </div>
+            </div>
+            <div className="text-right">
+              <p className="text-lg font-bold" style={{ color: isRefeedDay ? "#B8922A" : undefined }}>{kcalTarget}</p>
+              <p className="text-[10px] font-mono text-muted-foreground">kcal/dia</p>
+              {kcalTarget !== baseKcal && (
+                <p className="text-[9px] font-mono text-muted-foreground/60">TDEE base {baseKcal}</p>
+              )}
             </div>
           </div>
-          <div className="text-right">
-            <p className="text-lg font-bold text-foreground">{kcalTarget}</p>
-            <p className="text-[10px] font-mono text-muted-foreground">kcal/dia</p>
-            {kcalTarget !== baseKcal && (
-              <p className="text-[9px] font-mono text-muted-foreground/60">TDEE base {baseKcal}</p>
-            )}
-          </div>
+
+          {/* Progresso do ciclo */}
+          {goalObjetivo === "cutting" && periodization.config.modules.refeeds && periodization.cycleState.enabled && !isDietBreak && (
+            <div className="flex gap-1 mt-3">
+              {Array.from({ length: periodization.cycleState.cycleLength }).map((_, i) => {
+                const isRefeedSlot = i >= periodization.config.cycle.deficit_days;
+                const isCurrent = i === periodization.cycleState.index;
+                return (
+                  <div
+                    key={i}
+                    className="flex-1 rounded-full"
+                    style={{
+                      height: 4,
+                      background: isCurrent
+                        ? isRefeedSlot ? "#B8922A" : "#00D4FF"
+                        : isRefeedSlot ? "rgba(184,146,42,.3)" : "rgba(255,255,255,.08)",
+                    }}
+                  />
+                );
+              })}
+            </div>
+          )}
         </motion.div>
+
+        {/* Diet break — alerta / status */}
+        {goalObjetivo === "cutting" && periodization.config.modules.dietBreak && (
+          <div className="mb-4">
+            <DietBreakCard
+              state={periodization.dietBreakState}
+              onSchedule={periodization.scheduleDietBreak}
+              onPostpone={periodization.postponeDietBreak}
+            />
+          </div>
+        )}
 
         {/* NutriSync workout banner */}
         {todayWorkout && todayWorkout.workout_type !== "rest" && (() => {
@@ -963,6 +1045,47 @@ const DashboardPage = () => {
           nextRestDow={getNextRestDay().dow}
           restDayWorkouts={getWorkoutsForDay(getNextRestDay().dow)}
         />
+
+        {/* Periodização nutricional — ciclagem, hidratação, timing, adaptação e micros */}
+        <div className="space-y-4 mb-4">
+          {goalObjetivo === "cutting" && periodization.config.modules.refeeds && (
+            <CycleStatusCard
+              cycle={periodization.cycleState}
+              config={periodization.config}
+              onChange={periodization.saveConfig}
+              kcalDelta={periodized.kcalDelta}
+              carbsDelta={periodized.carbsDelta}
+            />
+          )}
+
+          {periodization.config.modules.hydration && (
+            <DynamicHydrationCard
+              weightKg={weightKg}
+              workoutMinutes={todayWorkout?.duration_minutes || 0}
+              workoutLabel={todayWorkout ? WORKOUT_TYPES[todayWorkout.workout_type as WorkoutType]?.label : null}
+              muscleGroups={todayWorkout ? [...(WORKOUT_TYPES[todayWorkout.workout_type as WorkoutType]?.muscleGroups || [])] : []}
+              isTrainingDay={Boolean(todayWorkout && todayWorkout.workout_type !== "rest")}
+            />
+          )}
+
+          {periodization.config.modules.timing && (
+            <PeriWorkoutTimingCard
+              macros={{ kcal: kcalTarget, protein: proteinTarget, carbs: carbsTarget, fat: fatTarget }}
+              isTrainingDay={Boolean(todayWorkout && todayWorkout.workout_type !== "rest")}
+              workoutMinutes={todayWorkout?.duration_minutes || 60}
+            />
+          )}
+
+          {periodization.config.modules.adaptation && (
+            <MetabolicAdaptationCard weightLogs={periodization.weightLogs} />
+          )}
+
+          {periodization.config.modules.micros && (
+            <CuttingMicronutrientsCard isCutting={goalObjetivo === "cutting"} sex={profile?.sex} />
+          )}
+        </div>
+
+
 
         {/* Calorie ring */}
         <motion.div
