@@ -489,11 +489,31 @@ const NutriSyncPage = () => {
               </div>
             </div>
 
+            {/* FEATURE 1 — CICLAGEM DE DÉFICIT + REFEEDS */}
+            {objetivo === "cutting" && periodization.config.modules.refeeds && (
+              <CycleStatusCard
+                cycle={periodization.cycleState}
+                config={periodization.config}
+                onChange={periodization.saveConfig}
+                kcalDelta={periodized.kcalDelta}
+                carbsDelta={periodized.carbsDelta}
+              />
+            )}
+
+            {/* FEATURE 2 — DIET BREAK */}
+            {objetivo === "cutting" && periodization.config.modules.dietBreak && (
+              <DietBreakCard
+                state={periodization.dietBreakState}
+                onSchedule={periodization.scheduleDietBreak}
+                onPostpone={periodization.postponeDietBreak}
+              />
+            )}
+
             {/* CARD 3 — MACROS */}
-            <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 16, padding: 18 }}>
+            <div style={{ background: C.card, border: `1px solid ${periodized.mode === "refeed" ? "#B8922A" : C.border}`, borderRadius: 16, padding: 18 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
                 <p style={{ fontSize: 9, color: C.gold, fontFamily: "monospace", letterSpacing: "0.14em", textTransform: "uppercase", margin: 0 }}>
-                  Macro Protocol Ajustado
+                  {periodized.mode === "refeed" ? "Macro Protocol — Refeed ⚡" : periodized.mode === "diet_break" ? "Macro Protocol — Diet Break" : "Macro Protocol Ajustado"}
                 </p>
                 {kcalDiff !== 0 && (
                   <span style={{ fontSize: 10, color: kcalDiff > 0 ? C.gold : C.teal, fontFamily: "monospace", fontWeight: 700 }}>
@@ -504,10 +524,10 @@ const NutriSyncPage = () => {
 
               <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 8 }}>
                 {[
-                  { l: "Calorias", v: adjustedKcal, u: "kcal", c: C.gold, d: kcalDiff },
-                  { l: "Proteína", v: adjustedProtein, u: "g", c: C.teal, d: adjustedProtein - baseProtein },
-                  { l: "Carboidrato", v: adjustedCarbs, u: "g", c: C.purple, d: adjustedCarbs - baseCarbs },
-                  { l: "Gordura", v: adjustedFat, u: "g", c: "#facc15", d: adjustedFat - baseFat },
+                  { l: "Calorias", v: finalKcal, u: "kcal", c: C.gold, d: kcalDiff },
+                  { l: "Proteína", v: finalProtein, u: "g", c: C.teal, d: finalProtein - baseProtein },
+                  { l: "Carboidrato", v: finalCarbs, u: "g", c: C.purple, d: finalCarbs - baseCarbs },
+                  { l: "Gordura", v: finalFat, u: "g", c: "#facc15", d: finalFat - baseFat },
                 ].map(m => (
                   <div key={m.l} style={{ background: C.card2, border: `1px solid ${m.c}33`, borderRadius: 10, padding: 12, textAlign: "center" }}>
                     <p style={{ fontSize: 22, fontWeight: 900, color: m.c, fontFamily: "monospace", margin: 0, lineHeight: 1 }}>
@@ -519,16 +539,28 @@ const NutriSyncPage = () => {
                         {m.d > 0 ? "+" : ""}{m.d}{m.u}
                       </p>
                     )}
+                    {/* FEATURE 3 — proteína relativa (g/kg LBM) */}
+                    {m.l === "Proteína" && periodization.config.modules.proteinLbm && (
+                      <ProteinLbmLine proteinG={finalProtein} weightKg={weightKg} bodyFatPct={periodization.bodyFatPct} />
+                    )}
                   </div>
                 ))}
+                {/* FEATURE 4 — fibra como 5º macro */}
+                {periodization.config.modules.fiber && <FiberMacroTile target={fiberTarget} />}
               </div>
 
-              <div style={{ marginTop: 12, padding: "8px 12px", borderRadius: 8, background: C.card2, border: `1px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <span style={{ fontSize: 11, color: C.text, fontFamily: "monospace" }}>💧 Hidratação</span>
-                <span style={{ fontSize: 12, color: C.purple, fontFamily: "monospace", fontWeight: 700 }}>
-                  {adjustment.hydrationLiters}L · {Math.round(adjustment.hydrationLiters / 0.25)} copos
-                </span>
+              {/* FEATURE 6 — hidratação dinâmica */}
+              <div style={{ marginTop: 12 }}>
+                <DynamicHydrationCard
+                  variant="row"
+                  weightKg={weightKg}
+                  workoutMinutes={primaryWorkout?.duration_minutes || 0}
+                  workoutLabel={primaryMeta?.label}
+                  muscleGroups={primaryMeta?.muscleGroups ? [...primaryMeta.muscleGroups] : []}
+                  isTrainingDay={isTrainingDay}
+                />
               </div>
+
 
               {adjustment.electrolytes && (
                 <div style={{ marginTop: 8, padding: 10, borderRadius: 8, background: C.purpleBg, border: `1px solid ${C.purple}33` }}>
