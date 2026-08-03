@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { computeProteinPerLbm } from "@/lib/nutritionPeriodization";
 
 interface Metric {
   label: string;
@@ -6,6 +7,7 @@ interface Metric {
   sub?: string;
   percent: number;
   color: string;
+  note?: { text: string; color: string };
 }
 
 interface CockpitLeftRailProps {
@@ -16,6 +18,10 @@ interface CockpitLeftRailProps {
   protein: { value: number; target: number };
   carbs: { value: number; target: number };
   fat: { value: number; target: number };
+  /** FEATURE 4 — fibra como macro visível. */
+  fiber?: { value?: number; target: number };
+  /** FEATURE 3 — dados para proteína relativa (g/kg LBM). */
+  bodyComposition?: { weightKg?: number | null; bodyFatPct?: number | null };
   streakDays: number;
   level: number;
   xp: number;
@@ -39,6 +45,12 @@ export default function CockpitLeftRail(props: CockpitLeftRailProps) {
   const currentLevelXP = props.xp % xpPerLevel;
   const xpPercent = (currentLevelXP / xpPerLevel) * 100;
 
+  const lbm = computeProteinPerLbm(
+    props.protein.target,
+    props.bodyComposition?.weightKg,
+    props.bodyComposition?.bodyFatPct
+  );
+
   const metrics: Metric[] = [
     { label: "TDEE", value: `${props.tdee}`, sub: "kcal/dia", percent: 100, color: "#B8922A" },
     {
@@ -47,6 +59,9 @@ export default function CockpitLeftRail(props: CockpitLeftRailProps) {
       sub: `/ ${props.protein.target}g`,
       percent: Math.min((props.protein.value / props.protein.target) * 100, 100),
       color: "#B8922A",
+      note: lbm.hasData
+        ? { text: `${lbm.gPerKg.toFixed(1)} g/kg LBM`, color: lbm.color }
+        : { text: "add. composição corporal", color: "#3A3A3A" },
     },
     {
       label: "Carboidrato",
@@ -62,6 +77,15 @@ export default function CockpitLeftRail(props: CockpitLeftRailProps) {
       percent: Math.min((props.fat.value / props.fat.target) * 100, 100),
       color: "#ff4444",
     },
+    ...(props.fiber
+      ? [{
+          label: "🌿 Fibra",
+          value: `${Math.round(props.fiber.value ?? 0)}`,
+          sub: `/ ${props.fiber.target}g`,
+          percent: Math.min(((props.fiber.value ?? 0) / props.fiber.target) * 100, 100),
+          color: "#7bc96f",
+        } as Metric]
+      : []),
     {
       label: "Streak",
       value: `${props.streakDays}`,
