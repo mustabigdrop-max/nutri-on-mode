@@ -1046,6 +1046,47 @@ const DashboardPage = () => {
           restDayWorkouts={getWorkoutsForDay(getNextRestDay().dow)}
         />
 
+        {/* Periodização nutricional — ciclagem, hidratação, timing, adaptação e micros */}
+        <div className="space-y-4 mb-4">
+          {goalObjetivo === "cutting" && periodization.config.modules.refeeds && (
+            <CycleStatusCard
+              cycle={periodization.cycleState}
+              config={periodization.config}
+              onChange={periodization.saveConfig}
+              kcalDelta={periodized.kcalDelta}
+              carbsDelta={periodized.carbsDelta}
+            />
+          )}
+
+          {periodization.config.modules.hydration && (
+            <DynamicHydrationCard
+              weightKg={weightKg}
+              workoutMinutes={todayWorkout?.duration_minutes || 0}
+              workoutLabel={todayWorkout ? WORKOUT_TYPES[todayWorkout.workout_type as WorkoutType]?.label : null}
+              muscleGroups={todayWorkout ? [...(WORKOUT_TYPES[todayWorkout.workout_type as WorkoutType]?.muscleGroups || [])] : []}
+              isTrainingDay={Boolean(todayWorkout && todayWorkout.workout_type !== "rest")}
+            />
+          )}
+
+          {periodization.config.modules.timing && (
+            <PeriWorkoutTimingCard
+              macros={{ kcal: kcalTarget, protein: proteinTarget, carbs: carbsTarget, fat: fatTarget }}
+              isTrainingDay={Boolean(todayWorkout && todayWorkout.workout_type !== "rest")}
+              workoutMinutes={todayWorkout?.duration_minutes || 60}
+            />
+          )}
+
+          {periodization.config.modules.adaptation && (
+            <MetabolicAdaptationCard weightLogs={periodization.weightLogs} />
+          )}
+
+          {periodization.config.modules.micros && (
+            <CuttingMicronutrientsCard isCutting={goalObjetivo === "cutting"} sex={profile?.sex} />
+          )}
+        </div>
+
+
+
         {/* Calorie ring */}
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
