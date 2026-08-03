@@ -14,6 +14,7 @@ import TrialBanner from "@/components/dashboard/TrialBanner";
 import JarvisCanvas from "@/components/dashboard/JarvisCanvas";
 import CockpitTopbar from "@/components/dashboard/CockpitTopbar";
 import CockpitLeftRail from "@/components/dashboard/CockpitLeftRail";
+import { resolveGoalObjetivo, computeAdjustedMacros } from "@/lib/goalMacros";
 import CockpitRightRail from "@/components/dashboard/CockpitRightRail";
 import CoachNotificationsCard from "@/components/dashboard/CoachNotificationsCard";
 import MyProfessionalCard from "@/components/dashboard/MyProfessionalCard";
