@@ -474,11 +474,11 @@ REGRA ABSOLUTA #2 — SISTEMA: Os parâmetros do SISTEMA DE TREINAMENTO BASE sã
 Português. Específico. Científico. Zero genérico.`;
   };
 
-  // Chamada com timeout individual de 60s (geração fracionada)
-  const invokeWithTimeout = async (body: any, label: string, ms = 60000) => {
+  // Chamada com timeout individual de 90s (geração fracionada; cobre o retry interno da edge function)
+  const invokeWithTimeout = async (body: any, label: string, ms = 90000) => {
     const invokePromise = supabase.functions.invoke("generate-training-protocol", { body });
     const timeoutPromise = new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new Error(`Tempo excedido (60s) em ${label}. Tente novamente.`)), ms)
+      setTimeout(() => reject(new Error(`Tempo excedido (${Math.round(ms / 1000)}s) em ${label}. Tente novamente.`)), ms)
     );
     const { data, error } = (await Promise.race([invokePromise, timeoutPromise])) as any;
     if (error) throw new Error(error.message || `Falha em ${label}`);
@@ -1184,7 +1184,7 @@ Português. Específico. Científico. Zero genérico.`;
                         day={day}
                         index={idx}
                         expanded={expandedDay === idx}
-                        onToggle={() => setExpandedDay(expandedDay === idx ? null : idx)}
+                        setExpandedDay={setExpandedDay}
                         expandedExercise={expandedExercise}
                         setExpandedExercise={setExpandedExercise}
                         weekPhase={isMello16 ? weekPhase : null}
@@ -1258,7 +1258,7 @@ Português. Específico. Científico. Zero genérico.`;
                         day={day}
                         index={idx}
                         expanded={expandedDay === idx}
-                        onToggle={() => setExpandedDay(expandedDay === idx ? null : idx)}
+                        setExpandedDay={setExpandedDay}
                         expandedExercise={expandedExercise}
                         setExpandedExercise={setExpandedExercise}
                         weekPhase={isMello16 ? weekPhase : null}
@@ -1816,8 +1816,17 @@ function extractDayMuscleTags(day: any): string[] {
 }
 
 /* ── Training Day Card ── */
-function TrainingDayCard({ day, index, expanded, onToggle, expandedExercise, setExpandedExercise, weekPhase, athleteId, protocolId }: any) {
-  const muscleTags = extractDayMuscleTags(day);
+const TrainingDayCard = memo(function TrainingDayCard({ day, index, expanded, setExpandedDay, expandedExercise, setExpandedExercise, weekPhase, athleteId, protocolId }: any) {
+  const muscleTags = useMemo(() => extractDayMuscleTags(day), [day]);
+  const onToggle = useCallback(
+    () => setExpandedDay((cur: number | null) => (cur === index ? null : index)),
+    [setExpandedDay, index],
+  );
+  const toggleExercise = useCallback(
+    (i: number) =>
+      setExpandedExercise((cur: string | null) => (cur === `${index}-${i}` ? null : `${index}-${i}`)),
+    [setExpandedExercise, index],
+  );
   return (
     <div className="rounded-2xl overflow-hidden" style={{ background: SURFACE, border: `1px solid ${expanded ? BORDER_ACTIVE : BORDER}` }}>
       <button onClick={onToggle} className="w-full p-4 flex items-center justify-between">
@@ -1884,7 +1893,7 @@ function TrainingDayCard({ day, index, expanded, onToggle, expandedExercise, set
                   exercise={ex}
                   displayOrder={i + 1}
                   expanded={expandedExercise === `${index}-${i}`}
-                  onToggle={() => setExpandedExercise(expandedExercise === `${index}-${i}` ? null : `${index}-${i}`)}
+                  onToggle={() => toggleExercise(i)}
                   weekPhase={weekPhase}
                   athleteId={athleteId}
                   protocolId={protocolId}
@@ -2997,7 +3006,7 @@ function HistoryViewModal({ protocol: p, onClose, userId, onUpdate }: { protocol
                 />
               )}
               {parsed.training_days?.map((day: any, idx: number) => (
-                <TrainingDayCard key={idx} day={day} index={idx} expanded={expandedDay === idx} onToggle={() => setExpandedDay(expandedDay === idx ? null : idx)}
+                <TrainingDayCard key={idx} day={day} index={idx} expanded={expandedDay === idx} setExpandedDay={setExpandedDay}
                   expandedExercise={expandedExercise} setExpandedExercise={setExpandedExercise}
                   weekPhase={isMello16 ? weekPhase : null}
                   athleteId={userId}
