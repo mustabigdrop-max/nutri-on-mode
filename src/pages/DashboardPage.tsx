@@ -914,6 +914,9 @@ const DashboardPage = () => {
           <div className="text-right">
             <p className="text-lg font-bold text-foreground">{kcalTarget}</p>
             <p className="text-[10px] font-mono text-muted-foreground">kcal/dia</p>
+            {kcalTarget !== baseKcal && (
+              <p className="text-[9px] font-mono text-muted-foreground/60">TDEE base {baseKcal}</p>
+            )}
           </div>
         </motion.div>
 
