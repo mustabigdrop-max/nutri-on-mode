@@ -572,6 +572,26 @@ const NutriSyncPage = () => {
               )}
             </div>
 
+            {/* FEATURE 7 — NUTRIENT TIMING PERI-TREINO */}
+            {periodization.config.modules.timing && (
+              <PeriWorkoutTimingCard
+                macros={{ kcal: finalKcal, protein: finalProtein, carbs: finalCarbs, fat: finalFat }}
+                isTrainingDay={isTrainingDay}
+                workoutMinutes={primaryWorkout?.duration_minutes || 60}
+                workoutTimeLabel={primaryWorkout ? WORKOUT_TIME_LABELS[primaryWorkout.workout_time as WorkoutTime]?.label : undefined}
+              />
+            )}
+
+            {/* FEATURE 5 — ADAPTAÇÃO METABÓLICA */}
+            {periodization.config.modules.adaptation && (
+              <MetabolicAdaptationCard weightLogs={periodization.weightLogs} />
+            )}
+
+            {/* FEATURE 8 — MICRONUTRIENTES */}
+            {periodization.config.modules.micros && (
+              <CuttingMicronutrientsCard isCutting={objetivo === "cutting"} sex={profile?.sex} />
+            )}
+
             {/* CARD 4 — TIMELINE */}
             {isTrainingDay && (
               <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 16, padding: 18 }}>
