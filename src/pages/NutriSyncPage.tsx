@@ -176,7 +176,27 @@ const NutriSyncPage = () => {
   const adjustedProtein = Math.round(weightKg * Math.max(adjustment.proteinPerKg, proteinPerKgGoal));
   const adjustedCarbs = Math.round(baseCarbs * adjustment.carbsMultiplier * goalMult);
   const adjustedFat = Math.round(baseFat * adjustment.fatMultiplier * goalAdj.fatMultiplier);
-  const kcalDiff = adjustedKcal - baseKcal;
+
+  // ── Periodização nutricional (refeeds / diet break) ──
+  const periodization = useNutritionPeriodization();
+  const periodized = useMemo(
+    () =>
+      applyPeriodization({
+        macros: { kcal: adjustedKcal, protein: adjustedProtein, carbs: adjustedCarbs, fat: adjustedFat },
+        tdee: baseKcal,
+        objetivo,
+        cycle: periodization.cycleState,
+        refeedTarget: periodization.config.cycle.refeed_target,
+        dietBreakActive: periodization.dietBreakState.active,
+      }),
+    [adjustedKcal, adjustedProtein, adjustedCarbs, adjustedFat, baseKcal, objetivo, periodization.cycleState, periodization.config.cycle.refeed_target, periodization.dietBreakState.active]
+  );
+  const finalKcal = periodized.kcal;
+  const finalProtein = periodized.protein;
+  const finalCarbs = periodized.carbs;
+  const finalFat = periodized.fat;
+  const fiberTarget = computeFiberTarget(finalKcal, profile?.sex);
+  const kcalDiff = finalKcal - baseKcal;
 
   const recovery = useMemo(() => computeMuscleRecovery(schedule), [schedule]);
   const readiness = useMemo(() => computeReadiness(recovery), [recovery]);
