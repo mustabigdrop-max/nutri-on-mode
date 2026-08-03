@@ -6,6 +6,16 @@ import PeakWeekManager from "@/components/nutrisync/PeakWeekManager";
 import BottomNav from "@/components/BottomNav";
 import { useProfile } from "@/hooks/useProfile";
 import { getGoalAdjustment } from "@/lib/goalMacros";
+import { useNutritionPeriodization } from "@/hooks/useNutritionPeriodization";
+import { applyPeriodization, computeFiberTarget } from "@/lib/nutritionPeriodization";
+import CycleStatusCard from "@/components/nutrition/CycleStatusCard";
+import DietBreakCard from "@/components/nutrition/DietBreakCard";
+import ProteinLbmLine from "@/components/nutrition/ProteinLbmLine";
+import FiberMacroTile from "@/components/nutrition/FiberMacroTile";
+import DynamicHydrationCard from "@/components/nutrition/DynamicHydrationCard";
+import PeriWorkoutTimingCard from "@/components/nutrition/PeriWorkoutTimingCard";
+import MetabolicAdaptationCard from "@/components/nutrition/MetabolicAdaptationCard";
+import CuttingMicronutrientsCard from "@/components/nutrition/CuttingMicronutrientsCard";
 import {
   useWorkoutSchedule,
   WORKOUT_TYPES,
