@@ -398,3 +398,14 @@
   clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
   font-family: 'Space Mono', monospace; font-weight: 700; letter-spacing: 0.05em;
 }
+
+/* ============= RunON (APEX pattern) ============= */
+.runon-card:hover { border-color: #00D4FF22 !important; }
+.runon-tab:hover { color: #666; background: #ffffff05; }
+.runon-back:hover { background: #00D4FF11; }
+.runon-mini:hover { border-color: #a855f722 !important; }
+.runon-aegis-btn:hover { background: #a855f711; }
+.runon-row:hover { background: #ffffff03; }
+@keyframes slide-in-right { from { transform: translateX(100%); } to { transform: translateX(0); } }
+.animate-slide-in-right { animation: slide-in-right 300ms ease; }
+.animate-fade-in { animation: fade-in-up 300ms ease both; }
