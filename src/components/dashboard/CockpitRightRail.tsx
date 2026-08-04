@@ -169,7 +169,7 @@ export default function CockpitRightRail(props: CockpitRightRailProps) {
           {MODULES.map((m) => (
             <button
               key={m.name}
-              onClick={() => toast.success(`▸ ${m.name} — ativado`, { duration: 2000 })}
+              onClick={() => { toast.success(`▸ ${m.name} — ativado`, { duration: 2000 }); navigate(m.path); }}
               className="w-full flex items-center gap-2 px-1 py-1 transition-colors hover:bg-[rgba(184,146,42,0.04)]"
             >
               <span
