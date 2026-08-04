@@ -5,11 +5,17 @@ import {
   Mountain, Shuffle, ShieldAlert, CalendarDays, Utensils, Layers, Flag, LayoutGrid,
 } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
+import { useToast } from "@/hooks/use-toast";
+import HybridProfileWizard from "@/components/runon/HybridProfileWizard";
+import AegisCard from "@/components/runon/AegisCard";
+import AegisPanel from "@/components/runon/AegisPanel";
+import { HybridProfile, loadProfile, saveProfile } from "@/lib/runonProfile";
 import {
   RUNON, sessionTypes, weeklyPlans, racePreps, nutritionPrinciples, dayMacros,
   hybridStack, muscleGuardRules, severityColors, annualPeriodization,
   transitionRules, overviewPillars,
 } from "@/data/runonData";
+
 
 const ICONS: Record<string, any> = { Footprints, Route, Gauge, Zap, Mountain, Shuffle };
 
