@@ -1,12 +1,32 @@
 import { useState } from "react";
-import { X, Shield, ShieldCheck, Zap, Moon, Flame, Bone, AlertTriangle } from "lucide-react";
+import { X, ShieldPlus, TrendingUp, Moon, Scale, Bone, Shield, AlertTriangle, ShieldCheck } from "lucide-react";
 import {
-  AEGIS, aegisCategories, aegisProtocols, evidenceColors, evidenceLabels,
-  relevanceColors, AEGIS_DISCLAIMER, AegisCategory,
+  aegisCategories, aegisProtocols, evidenceLabels, AEGIS_DISCLAIMER, AegisCategory,
 } from "@/data/aegisData";
 import { HybridProfile, aegisTierFromProfile } from "@/lib/runonProfile";
+import { RC, mono, raj, RBadge } from "@/components/runon/runonUi";
 
-const ICONS: Record<string, any> = { Shield, Zap, Moon, Flame, Bone };
+const ICONS: Record<string, any> = {
+  preservation: ShieldPlus,
+  performance: TrendingUp,
+  recovery: Moon,
+  composition: Scale,
+  protection: Bone,
+};
+
+const EVIDENCE_COLORS: Record<string, string> = {
+  scientific: RC.green,
+  clinical: RC.cyan,
+  empirical: RC.orange,
+  "bro-science": RC.red,
+  controversial: RC.purple,
+};
+
+const RELEVANCE_COLORS: Record<string, string> = {
+  critical: RC.red,
+  high: RC.orange,
+  moderate: RC.gold,
+};
 
 const TIER_RANK = { natural: 0, trt: 1, cycle: 2 } as const;
 
@@ -26,107 +46,119 @@ export default function AegisPanel({
 
   return (
     <div className="fixed inset-0 z-[80] flex justify-end">
-      <div className="absolute inset-0 bg-black/70" onClick={onClose} />
+      <div
+        className="absolute inset-0"
+        style={{ background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)" }}
+        onClick={onClose}
+      />
 
       <aside
-        className="relative h-full w-full sm:w-[520px] overflow-y-auto animate-slide-in-right"
-        style={{ background: AEGIS.bg, borderLeft: `1px solid ${AEGIS.cyan}33` }}
+        className="relative h-full w-full sm:w-[540px] overflow-y-auto animate-slide-in-right"
+        style={{ background: RC.bg, borderLeft: `1px solid ${RC.purple}22`, boxShadow: "-20px 0 60px rgba(0,0,0,0.8)" }}
       >
         {/* header */}
         <div
-          className="sticky top-0 z-10 px-5 py-4"
-          style={{ background: AEGIS.bg, borderBottom: `1px solid ${AEGIS.border}` }}
+          className="sticky top-0 z-10 px-4 sm:px-5 pt-4 pb-4"
+          style={{ background: "rgba(2,2,5,0.95)", backdropFilter: "blur(16px)", borderBottom: `1px solid #a855f718` }}
         >
           <div className="flex items-start gap-3">
-            <ShieldCheck className="w-6 h-6 shrink-0" style={{ color: AEGIS.cyan }} />
-            <div className="flex-1">
-              <p style={{ fontSize: 18, fontWeight: 900, color: AEGIS.text, letterSpacing: "2px" }}>AEGIS</p>
-              <p style={{ fontSize: 10, color: AEGIS.muted, letterSpacing: "2px", fontWeight: 700 }}>
-                HYBRID PROTECTION PROTOCOL
-              </p>
+            <div
+              className="flex items-center justify-center shrink-0"
+              style={{ width: 44, height: 44, background: RC.purpleDim, border: `1px solid ${RC.purpleBorder}`, borderRadius: 8 }}
+            >
+              <ShieldCheck style={{ width: 26, height: 26, color: RC.purple }} />
             </div>
-            <button onClick={onClose} aria-label="Fechar" style={{ color: AEGIS.muted }}>
-              <X className="w-5 h-5" />
+            <div className="flex-1 min-w-0">
+              <p style={raj(22, 700)}>AEGIS</p>
+              <p style={mono(7, "#a855f766", 3)}>HYBRID PROTECTION PROTOCOL</p>
+            </div>
+            <button onClick={onClose} aria-label="Fechar" style={{ color: "#444" }}>
+              <X style={{ width: 20, height: 20 }} />
             </button>
           </div>
-          <p style={{ fontSize: 11, color: "#777", marginTop: 8 }}>
-            Protocolo baseado no seu perfil de atleta híbrido
-            {profile?.usoErgogenicos ? ` · ${profile.usoErgogenicos}` : " · perfil não preenchido"}
+
+          <p style={{ ...mono(7, RC.mutedDark, 1), marginTop: 10 }}>
+            PERFIL {profile?.usoErgogenicos ? `· ${profile.usoErgogenicos}` : "· NÃO PREENCHIDO"}
           </p>
 
-          {/* category tabs */}
+          {/* tabs */}
           <div className="flex gap-2 overflow-x-auto mt-3 pb-1" style={{ scrollbarWidth: "none" }}>
             {aegisCategories.map((c) => {
-              const Icon = ICONS[c.icon] ?? Shield;
+              const Icon = ICONS[c.id] ?? Shield;
               const on = c.id === cat;
               return (
                 <button
                   key={c.id}
                   onClick={() => setCat(c.id)}
-                  className="flex items-center gap-1.5 shrink-0 px-3 py-1.5"
+                  className="flex items-center gap-1.5 shrink-0"
                   style={{
-                    border: `1px solid ${on ? `${c.color}66` : "#333"}`,
-                    background: on ? `${c.color}15` : "transparent",
-                    color: on ? c.color : "#777",
-                    fontSize: 10, fontWeight: 700, letterSpacing: "0.5px", borderRadius: 20, whiteSpace: "nowrap",
+                    ...mono(7, on ? RC.purple : "#444", 2),
+                    padding: "10px 16px",
+                    borderRadius: 6,
+                    background: on ? "#a855f70a" : "transparent",
+                    border: `1px solid ${on ? RC.purpleBorder : "transparent"}`,
+                    boxShadow: on ? "0 0 12px #a855f708" : "none",
+                    whiteSpace: "nowrap",
                   }}
                 >
-                  <Icon className="w-3 h-3" /> {c.label}
+                  <Icon style={{ width: 13, height: 13 }} /> {c.label}
                 </button>
               );
             })}
           </div>
         </div>
 
-        <div className="px-5 py-4 space-y-4">
-          {/* disclaimer */}
+        <div className="px-4 sm:px-5 py-4 space-y-4">
+          {/* warning */}
           <div
             className="flex gap-2"
-            style={{ background: "#f9731622", border: "1px solid #f9731644", color: "#f97316", fontSize: 11, borderRadius: 8, padding: 12, lineHeight: 1.5 }}
+            style={{ background: "#f9731608", border: "1px solid #f9731622", borderRadius: 8, padding: "12px 16px" }}
           >
-            <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
-            <span>{AEGIS_DISCLAIMER}</span>
+            <AlertTriangle style={{ width: 14, height: 14, color: RC.orange, flexShrink: 0, marginTop: 2 }} />
+            <span style={{ ...mono(8, RC.orange, 0), textTransform: "none", lineHeight: 1.5 }}>{AEGIS_DISCLAIMER}</span>
           </div>
 
           <div>
-            <p style={{ fontSize: 13, fontWeight: 800, color: active.color, letterSpacing: "1px" }}>{active.label}</p>
-            <p style={{ fontSize: 12, color: AEGIS.muted, marginTop: 2 }}>{active.desc}</p>
+            <p style={raj(16, 700, RC.purple)}>{active.label}</p>
+            <p style={{ fontSize: 12, color: "#555", marginTop: 3, lineHeight: 1.5 }}>{active.desc}</p>
           </div>
 
           {protocols.map((p) => (
             <div
               key={p.id}
-              style={{ background: AEGIS.card, border: `1px solid ${AEGIS.border}`, borderLeft: `3px solid ${active.color}`, borderRadius: 8, padding: 16 }}
+              style={{
+                background: RC.card,
+                border: `1px solid ${RC.border}`,
+                borderLeft: `3px solid ${RC.purple}`,
+                borderRadius: 8,
+                padding: 16,
+              }}
             >
               <div className="flex items-start justify-between gap-3">
-                <h4 style={{ fontSize: 14, fontWeight: 800, color: AEGIS.text }}>{p.title}</h4>
-                <span style={{ fontSize: 9, fontWeight: 800, color: relevanceColors[p.hybridRelevance], border: `1px solid ${relevanceColors[p.hybridRelevance]}44`, background: `${relevanceColors[p.hybridRelevance]}18`, borderRadius: 4, padding: "2px 6px", whiteSpace: "nowrap" }}>
-                  {p.hybridRelevance.toUpperCase()}
-                </span>
+                <h4 style={raj(14, 600)}>{p.title}</h4>
+                <RBadge color={RELEVANCE_COLORS[p.hybridRelevance] ?? RC.gold}>{p.hybridRelevance.toUpperCase()}</RBadge>
               </div>
 
-              <div className="flex flex-wrap gap-2 mt-2">
-                <span style={{ fontSize: 9, fontWeight: 800, color: evidenceColors[p.evidence], border: `1px solid ${evidenceColors[p.evidence]}44`, background: `${evidenceColors[p.evidence]}18`, borderRadius: 4, padding: "2px 6px" }}>
-                  {evidenceLabels[p.evidence]}
-                </span>
+              <div className="mt-2">
+                <RBadge color={EVIDENCE_COLORS[p.evidence] ?? RC.cyan}>{evidenceLabels[p.evidence]}</RBadge>
               </div>
 
-              <p style={{ fontSize: 12, color: "#aaa", lineHeight: 1.55, marginTop: 10 }}>{p.context}</p>
+              <p style={{ fontSize: 12, color: "#666", lineHeight: 1.6, marginTop: 10 }}>{p.context}</p>
 
               <div className="space-y-2 mt-3">
                 {p.compounds.map((c) => (
-                  <div key={c.name} style={{ background: AEGIS.inner, border: `1px solid ${AEGIS.border}`, borderRadius: 6, padding: 12 }}>
+                  <div key={c.name} style={{ background: RC.bg2, border: `1px solid ${RC.border}`, borderRadius: 6, padding: 12 }}>
                     <div className="flex flex-wrap items-baseline gap-x-2">
-                      <span style={{ fontSize: 12.5, fontWeight: 700, color: AEGIS.cyan }}>{c.name}</span>
-                      <span style={{ fontSize: 11, color: AEGIS.purple, fontWeight: 600 }}>{c.dosageRange}</span>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: RC.purple }}>{c.name}</span>
+                      <span style={{ fontSize: 12, color: RC.muted }}>{c.dosageRange}</span>
                     </div>
-                    <p style={{ fontSize: 11, color: "#888", marginTop: 4 }}>
-                      <span style={{ color: "#666" }}>Timing · </span>{c.timing}
+                    <p style={{ fontSize: 12, color: "#555", marginTop: 4 }}>
+                      <span style={mono(7, RC.mutedDark, 2)}>TIMING · </span>{c.timing}
                     </p>
-                    <p style={{ fontSize: 11, color: "#999", marginTop: 4, lineHeight: 1.5 }}>{c.mechanism}</p>
+                    <p style={{ fontSize: 12, color: "#555", marginTop: 4, lineHeight: 1.5 }}>{c.mechanism}</p>
                     {c.interactionWithRunning !== "—" && (
-                      <p style={{ fontSize: 11, color: "#bbb", marginTop: 6, lineHeight: 1.5, borderTop: "1px solid #222", paddingTop: 6 }}>
-                        <span style={{ color: AEGIS.cyan, fontWeight: 700 }}>Corrida · </span>{c.interactionWithRunning}
+                      <p style={{ fontSize: 12, color: "#666", marginTop: 6, lineHeight: 1.5, borderTop: `1px solid ${RC.border}`, paddingTop: 6 }}>
+                        <span style={mono(7, RC.cyan, 2)}>CORRIDA · </span>{c.interactionWithRunning}
                       </p>
                     )}
                   </div>
@@ -136,7 +168,7 @@ export default function AegisPanel({
               {p.warnings.length > 0 && (
                 <ul className="mt-3 space-y-1">
                   {p.warnings.map((w) => (
-                    <li key={w} style={{ fontSize: 11, color: "#f97316", lineHeight: 1.5 }}>⚠ {w}</li>
+                    <li key={w} style={{ fontSize: 11, color: RC.orange, lineHeight: 1.5 }}>⚠ {w}</li>
                   ))}
                 </ul>
               )}
@@ -144,7 +176,7 @@ export default function AegisPanel({
           ))}
 
           {hidden > 0 && (
-            <p style={{ fontSize: 11, color: "#666", lineHeight: 1.5, border: "1px dashed #333", borderRadius: 8, padding: 12 }}>
+            <p style={{ fontSize: 12, color: "#555", lineHeight: 1.5, border: `1px dashed ${RC.border}`, borderRadius: 8, padding: 12 }}>
               {hidden} protocolo(s) desta categoria estão fora do seu perfil ergogênico atual
               {profile ? "" : " (perfil não preenchido)"}. Atualize o Step 5 do seu perfil para liberar.
             </p>
