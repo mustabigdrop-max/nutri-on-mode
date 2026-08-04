@@ -5,11 +5,17 @@ import {
   Mountain, Shuffle, ShieldAlert, CalendarDays, Utensils, Layers, Flag, LayoutGrid,
 } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
+import { useToast } from "@/hooks/use-toast";
+import HybridProfileWizard from "@/components/runon/HybridProfileWizard";
+import AegisCard from "@/components/runon/AegisCard";
+import AegisPanel from "@/components/runon/AegisPanel";
+import { HybridProfile, loadProfile, saveProfile } from "@/lib/runonProfile";
 import {
   RUNON, sessionTypes, weeklyPlans, racePreps, nutritionPrinciples, dayMacros,
   hybridStack, muscleGuardRules, severityColors, annualPeriodization,
   transitionRules, overviewPillars,
 } from "@/data/runonData";
+
 
 const ICONS: Record<string, any> = { Footprints, Route, Gauge, Zap, Mountain, Shuffle };
 
@@ -63,8 +69,53 @@ function DataCell({ label, value, color }: { label: string; value: string; color
   );
 }
 
+/* ─────────── PERFIL + AEGIS ─────────── */
+function ProfileSummary({ p, onEdit, onGenerate }: { p: HybridProfile; onEdit: () => void; onGenerate: () => void }) {
+  const items: [string, string][] = [
+    ["Nome", p.nome || "—"],
+    ["Peso", p.peso ? `${p.peso} kg` : "—"],
+    ["Objetivo", p.objetivo || "—"],
+    ["Split", p.split || "—"],
+    ["Nível corrida", p.nivelCorrida || "—"],
+    ["Distância alvo", p.temProva ? p.distanciaAlvo || "—" : p.objetivoGeral || "—"],
+    ["Status AEGIS", p.usoErgogenicos || "Não informado"],
+  ];
+  return (
+    <div style={cardStyle(RUNON.cyan)}>
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <Sparkles className="w-4 h-4" style={{ color: RUNON.cyan }} />
+          <h3 style={{ fontSize: 15, fontWeight: 800, color: RUNON.text }}>Seu Perfil Hybrid</h3>
+        </div>
+        <button
+          onClick={onEdit}
+          className="px-3 py-1.5"
+          style={{ border: "1px solid #333", color: "#888", fontSize: 10, fontWeight: 700, letterSpacing: "1px", borderRadius: 6 }}
+        >
+          EDITAR
+        </button>
+      </div>
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-4">
+        {items.map(([l, v]) => <DataCell key={l} label={l} value={v} />)}
+      </div>
+      <button
+        onClick={onGenerate}
+        className="w-full mt-4 py-3"
+        style={{ background: RUNON.cyan, color: "#001018", fontSize: 12, fontWeight: 700, letterSpacing: "1px", borderRadius: 8 }}
+      >
+        GERAR MEU PROTOCOLO RUNON
+      </button>
+    </div>
+  );
+}
+
 /* ─────────── OVERVIEW ─────────── */
 function OverviewTab() {
+  const [profile, setProfile] = useState<HybridProfile | null>(() => loadProfile());
+  const [editing, setEditing] = useState(false);
+  const [aegisOpen, setAegisOpen] = useState(false);
+  const { toast } = useToast();
+
   return (
     <div className="space-y-4">
       <div style={cardStyle(RUNON.cyan)}>
@@ -89,31 +140,45 @@ function OverviewTab() {
         ))}
       </div>
 
-      <div style={cardStyle(RUNON.cyan)}>
-        <div className="flex items-start gap-3">
-          <Sparkles className="w-5 h-5 shrink-0" style={{ color: RUNON.cyan }} />
-          <div className="flex-1">
-            <h3 style={{ fontSize: 15, fontWeight: 800, color: RUNON.text }}>Protocolo RunON Personalizado</h3>
-            <p style={{ fontSize: 12, color: RUNON.muted, marginTop: 4, lineHeight: 1.5 }}>
-              Geração de protocolo personalizado via IA — em breve
-            </p>
-            <button
-              disabled
-              title="Em breve"
-              className="mt-3 px-4 py-2 cursor-not-allowed"
-              style={{
-                background: `${RUNON.cyan}12`, border: `1px solid ${RUNON.cyan}33`, color: `${RUNON.cyan}88`,
-                fontSize: 11, fontWeight: 700, letterSpacing: "1px", borderRadius: 8, opacity: 0.7,
-              }}
-            >
-              GERAR MEU PROTOCOLO RUNON
-            </button>
+      {editing || !profile ? (
+        <div style={cardStyle(RUNON.cyan)}>
+          <div className="flex items-start gap-3 mb-4">
+            <Sparkles className="w-5 h-5 shrink-0" style={{ color: RUNON.cyan }} />
+            <div>
+              <h3 style={{ fontSize: 15, fontWeight: 800, color: RUNON.text }}>Seu Perfil Hybrid</h3>
+              <p style={{ fontSize: 12, color: RUNON.muted, marginTop: 4, lineHeight: 1.5 }}>
+                Preencha para receber seu protocolo integrado de corrida + musculação
+              </p>
+            </div>
           </div>
+          <HybridProfileWizard
+            initial={profile}
+            onCancel={profile ? () => setEditing(false) : undefined}
+            onSave={(p) => {
+              saveProfile(p);
+              setProfile(p);
+              setEditing(false);
+              toast({ title: "Perfil Hybrid salvo", description: "Protocolo RunON calibrado com seus dados." });
+            }}
+          />
         </div>
-      </div>
+      ) : (
+        <ProfileSummary
+          p={profile}
+          onEdit={() => setEditing(true)}
+          onGenerate={() =>
+            toast({ title: "Protocolo RunON", description: "Perfil pronto — consulte o AEGIS para o direcionamento ergogênico." })
+          }
+        />
+      )}
+
+      <AegisCard onOpen={() => setAegisOpen(true)} />
+
+      {aegisOpen && <AegisPanel profile={profile} onClose={() => setAegisOpen(false)} />}
     </div>
   );
 }
+
 
 /* ─────────── SESSÕES ─────────── */
 function SessionsTab() {
