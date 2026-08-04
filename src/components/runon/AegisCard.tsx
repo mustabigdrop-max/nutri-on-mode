@@ -1,61 +1,68 @@
 import { ShieldCheck } from "lucide-react";
-import { RUNON } from "@/data/runonData";
+import { RC, mono, raj } from "@/components/runon/runonUi";
 
 const MINI = [
-  { label: "Ergogênicos", value: "85+ compostos", color: "#00D4FF" },
-  { label: "Peptídeos", value: "40+ peptídeos", color: "#a855f7" },
-  { label: "Off-Label", value: "Protocolos", color: "#00D4FF" },
-  { label: "Suplementos", value: "Evidence-based", color: "#a855f7" },
+  { label: "ERGOGÊNICOS", value: "85+ compostos" },
+  { label: "PEPTÍDEOS", value: "40+ peptídeos" },
+  { label: "OFF-LABEL", value: "Protocolos" },
+  { label: "SUPLEMENTAÇÃO", value: "Evidence-based" },
 ];
 
 export default function AegisCard({ onOpen }: { onOpen: () => void }) {
   return (
     <div
       style={{
-        background: "linear-gradient(160deg, #111111 0%, #0a0a0a 100%)",
-        border: `1px solid ${RUNON.cyan}33`,
-        borderRadius: 10,
-        padding: 20,
+        background: `linear-gradient(135deg, ${RC.card} 0%, ${RC.bg2} 50%, #a855f708 100%)`,
+        border: `1px solid ${RC.purpleBorder}`,
+        borderRadius: 12,
+        padding: 24,
       }}
     >
       <div className="flex items-start gap-3">
-        <ShieldCheck className="w-7 h-7 shrink-0" style={{ color: RUNON.cyan }} />
-        <div>
-          <h3 style={{ fontSize: 20, fontWeight: 900, color: RUNON.text, letterSpacing: "3px" }}>AEGIS</h3>
-          <p style={{ fontSize: 10, color: RUNON.muted, letterSpacing: "2px", fontWeight: 700 }}>
-            HYBRID PROTECTION PROTOCOL
-          </p>
+        <div
+          className="flex items-center justify-center shrink-0"
+          style={{
+            width: 52, height: 52, background: RC.purpleDim,
+            border: `1px solid ${RC.purpleBorder}`, borderRadius: 8,
+            boxShadow: "0 0 20px #a855f711",
+          }}
+        >
+          <ShieldCheck style={{ width: 26, height: 26, color: RC.purple }} />
+        </div>
+        <div className="min-w-0">
+          <p style={raj(22, 700)}>AEGIS</p>
+          <p style={mono(7, "#a855f788", 3)}>HYBRID PROTECTION PROTOCOL</p>
         </div>
       </div>
 
-      <p style={{ fontSize: 13, color: "#bbb", lineHeight: 1.6, marginTop: 14 }}>
-        Sistema especialista em preservação muscular e otimização ergogênica para atletas híbridos.
-        Protocolos baseados em evidência + experiência prática de campo.
+      <p style={{ fontSize: 13, color: "#666", lineHeight: 1.6, marginTop: 14 }}>
+        Motor de inteligência farmacológica do RunON. Protocolos curados de preservação muscular,
+        performance e recuperação, filtrados pelo seu perfil.
       </p>
 
       <div className="grid grid-cols-2 gap-2 mt-4">
         {MINI.map((m) => (
-          <div key={m.label} style={{ background: "#1a1a1a", border: `1px solid ${RUNON.border}`, borderRadius: 8, padding: 12 }}>
-            <p style={{ fontSize: 11, fontWeight: 800, color: m.color, letterSpacing: "1px" }}>{m.label}</p>
-            <p style={{ fontSize: 12, color: "#999", marginTop: 3 }}>{m.value}</p>
+          <div
+            key={m.label}
+            className="runon-mini"
+            style={{ background: RC.bg2, border: `1px solid ${RC.border}`, borderRadius: 8, padding: 12, transition: "border-color 0.3s ease" }}
+          >
+            <p style={mono(7, RC.purple, 2)}>{m.label}</p>
+            <p style={{ fontSize: 12, color: "#555", marginTop: 4 }}>{m.value}</p>
           </div>
         ))}
       </div>
 
       <button
         onClick={onOpen}
-        className="w-full mt-4 py-3 transition-colors"
+        className="w-full mt-4 runon-aegis-btn"
         style={{
-          border: `1px solid ${RUNON.cyan}`,
-          color: RUNON.cyan,
-          background: "transparent",
-          fontSize: 11,
-          fontWeight: 800,
-          letterSpacing: "2px",
-          borderRadius: 8,
+          ...mono(8, RC.purple, 2),
+          border: `1px solid ${RC.purple}44`,
+          padding: "10px 24px",
+          borderRadius: 6,
+          transition: "background 0.2s ease",
         }}
-        onMouseEnter={(e) => (e.currentTarget.style.background = `${RUNON.cyan}22`)}
-        onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
       >
         CONSULTAR AEGIS
       </button>
