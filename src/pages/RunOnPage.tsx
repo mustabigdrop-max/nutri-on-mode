@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  ArrowLeft, Activity, ChevronDown, Sparkles, Footprints, Route, Gauge, Zap,
-  Mountain, Shuffle, ShieldAlert, CalendarDays, Utensils, Layers, Flag, LayoutGrid,
+  Activity, ChevronDown, Zap, Shuffle, ShieldCheck, CalendarDays, Utensils, Flag,
+  LayoutDashboard, Calendar, Shield, BarChart3, Footprints, GitBranch, Users,
+  Heart, Route, Gauge, Flame, TrendingUp, Dumbbell, Fuel, Timer, AlertTriangle,
+  RefreshCw, Target, Scale, ShieldAlert, HeartPulse,
 } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
 import { useToast } from "@/hooks/use-toast";
@@ -11,101 +13,76 @@ import AegisCard from "@/components/runon/AegisCard";
 import AegisPanel from "@/components/runon/AegisPanel";
 import { HybridProfile, loadProfile, saveProfile } from "@/lib/runonProfile";
 import {
-  RUNON, sessionTypes, weeklyPlans, racePreps, nutritionPrinciples, dayMacros,
+  RC, mono, raj, HexBackdrop, IconBox, RBadge, SectionCard, StatCard, Chip,
+} from "@/components/runon/runonUi";
+import {
+  sessionTypes, weeklyPlans, racePreps, nutritionPrinciples, dayMacros,
   hybridStack, muscleGuardRules, severityColors, annualPeriodization,
   transitionRules, overviewPillars,
 } from "@/data/runonData";
 
-
-const ICONS: Record<string, any> = { Footprints, Route, Gauge, Zap, Mountain, Shuffle };
-
 type TabId = "overview" | "sessoes" | "semana" | "race" | "nutrition" | "guard" | "periodizacao";
 
 const TABS: { id: TabId; label: string; icon: any }[] = [
-  { id: "overview", label: "OVERVIEW", icon: LayoutGrid },
+  { id: "overview", label: "OVERVIEW", icon: LayoutDashboard },
   { id: "sessoes", label: "SESSÕES", icon: Activity },
-  { id: "semana", label: "ARQUITETURA SEMANAL", icon: CalendarDays },
+  { id: "semana", label: "SEMANAL", icon: Calendar },
   { id: "race", label: "RACE PREP", icon: Flag },
-  { id: "nutrition", label: "NUTRITION BRIDGE", icon: Utensils },
-  { id: "guard", label: "MUSCLE GUARD", icon: ShieldAlert },
-  { id: "periodizacao", label: "PERIODIZAÇÃO", icon: Layers },
+  { id: "nutrition", label: "NUTRITION", icon: Utensils },
+  { id: "guard", label: "MUSCLE GUARD", icon: Shield },
+  { id: "periodizacao", label: "PERIODIZAÇÃO", icon: BarChart3 },
 ];
 
-const cardStyle = (color?: string): React.CSSProperties => ({
-  background: RUNON.card,
-  border: `1px solid ${color ? `${color}44` : RUNON.border}`,
-  borderRadius: 10,
-  padding: 20,
-});
-
-const labelStyle: React.CSSProperties = {
-  fontSize: 10,
-  color: RUNON.muted,
-  fontWeight: 600,
-  letterSpacing: "1px",
-  textTransform: "uppercase",
+const SESSION_ICONS: Record<string, any> = {
+  easy: Heart, long: Route, tempo: Gauge, intervals: Flame, incline: TrendingUp, fartlek: Shuffle,
 };
 
-function Badge({ color, children }: { color: string; children: React.ReactNode }) {
-  return (
-    <span
-      className="inline-block px-2 py-0.5"
-      style={{
-        background: `${color}22`, color, border: `1px solid ${color}44`,
-        fontSize: 10, fontWeight: 700, borderRadius: 4, letterSpacing: "0.5px",
-      }}
-    >
-      {children}
-    </span>
-  );
-}
+const PILLAR_ICONS: any[] = [Footprints, ShieldCheck, GitBranch, Utensils, Flag, CalendarDays];
+const NUTRI_ICONS: any[] = [Fuel, BarChart3, Timer];
+const TRANSITION_ICONS: any[] = [RefreshCw, AlertTriangle, Target, Scale, ShieldAlert, HeartPulse];
 
-function DataCell({ label, value, color }: { label: string; value: string; color?: string }) {
-  return (
-    <div>
-      <p style={labelStyle}>{label}</p>
-      <p style={{ fontSize: 14, color: color ?? RUNON.text, fontWeight: 600, marginTop: 2 }}>{value}</p>
-    </div>
-  );
-}
+const REFERENCES = [
+  { name: "Nick Bare", desc: "Bodybuilder que virou ultramaratonista — o arquétipo hybrid moderno.", tag: "HYBRID ATHLETE" },
+  { name: "Fergus Crawley", desc: "Sub-5 na milha, 500kg total no powerlifting, maratona sub-3.", tag: "STRENGTH + ENDURANCE" },
+  { name: "Alex Viada", desc: "Autor do The Hybrid Athlete — base científica da periodização conjugada.", tag: "REFERÊNCIA TÉCNICA" },
+];
 
-/* ─────────── PERFIL + AEGIS ─────────── */
+/* ─────────── PERFIL ─────────── */
 function ProfileSummary({ p, onEdit, onGenerate }: { p: HybridProfile; onEdit: () => void; onGenerate: () => void }) {
   const items: [string, string][] = [
-    ["Nome", p.nome || "—"],
-    ["Peso", p.peso ? `${p.peso} kg` : "—"],
-    ["Objetivo", p.objetivo || "—"],
-    ["Split", p.split || "—"],
-    ["Nível corrida", p.nivelCorrida || "—"],
-    ["Distância alvo", p.temProva ? p.distanciaAlvo || "—" : p.objetivoGeral || "—"],
-    ["Status AEGIS", p.usoErgogenicos || "Não informado"],
+    ["NOME", p.nome || "—"],
+    ["PESO", p.peso ? `${p.peso} kg` : "—"],
+    ["OBJETIVO", p.objetivo || "—"],
+    ["SPLIT", p.split || "—"],
+    ["NÍVEL CORRIDA", p.nivelCorrida || "—"],
+    ["DISTÂNCIA ALVO", p.temProva ? p.distanciaAlvo || "—" : p.objetivoGeral || "—"],
+    ["STATUS AEGIS", p.usoErgogenicos || "NÃO INFORMADO"],
   ];
   return (
-    <div style={cardStyle(RUNON.cyan)}>
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <Sparkles className="w-4 h-4" style={{ color: RUNON.cyan }} />
-          <h3 style={{ fontSize: 15, fontWeight: 800, color: RUNON.text }}>Seu Perfil Hybrid</h3>
-        </div>
+    <SectionCard label="PERFIL HYBRID" icon={Users}>
+      <div className="flex justify-end -mt-10 mb-4">
         <button
           onClick={onEdit}
-          className="px-3 py-1.5"
-          style={{ border: "1px solid #333", color: "#888", fontSize: 10, fontWeight: 700, letterSpacing: "1px", borderRadius: 6 }}
+          style={{ ...mono(7, RC.cyan, 2), border: `1px solid ${RC.cyan}22`, borderRadius: 4, padding: "5px 12px" }}
         >
           EDITAR
         </button>
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-4">
-        {items.map(([l, v]) => <DataCell key={l} label={l} value={v} />)}
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        {items.map(([l, v]) => <StatCard key={l} label={l} value={v} />)}
       </div>
       <button
         onClick={onGenerate}
-        className="w-full mt-4 py-3"
-        style={{ background: RUNON.cyan, color: "#001018", fontSize: 12, fontWeight: 700, letterSpacing: "1px", borderRadius: 8 }}
+        className="w-full mt-4"
+        style={{
+          ...mono(9, "#020205", 3),
+          background: "linear-gradient(135deg, #00D4FF, #00B4DD)",
+          fontWeight: 700, padding: 14, borderRadius: 8, boxShadow: `0 0 20px ${RC.cyanGlow}`,
+        }}
       >
         GERAR MEU PROTOCOLO RUNON
       </button>
-    </div>
+    </SectionCard>
   );
 }
 
@@ -118,39 +95,61 @@ function OverviewTab() {
 
   return (
     <div className="space-y-4">
-      <div style={cardStyle(RUNON.cyan)}>
-        <Badge color={RUNON.cyan}>O PROBLEMA</Badge>
-        <h3 style={{ fontSize: 16, fontWeight: 800, color: RUNON.text, marginTop: 10 }}>
-          Interferência Concorrente
-        </h3>
-        <p style={{ fontSize: 13, color: "#bbb", lineHeight: 1.6, marginTop: 8 }}>
+      {/* O problema */}
+      <div
+        style={{
+          background: `linear-gradient(135deg, ${RC.card}, ${RC.bg2})`,
+          border: `1px solid ${RC.cyanGlow}`,
+          borderRadius: 12,
+          padding: 24,
+        }}
+      >
+        <div className="flex items-start gap-3">
+          <IconBox icon={Zap} color={RC.cyan} size={40} iconSize={20} />
+          <div className="flex-1">
+            <p style={mono(7, RC.cyan, 3)}>O PROBLEMA</p>
+            <h3 style={{ ...raj(20, 700), marginTop: 6 }}>
+              <span style={{ color: RC.cyan }}>Interferência Concorrente</span>
+            </h3>
+          </div>
+        </div>
+        <p style={{ fontSize: 13, color: RC.muted, lineHeight: 1.7, marginTop: 12 }}>
           Treino de força ativa mTOR (síntese proteica). Endurance ativa AMPK (eficiência energética).
           Quando as duas vias competem no mesmo dia e no mesmo grupamento, a hipertrofia perde.
-          O RunON organiza a semana para que corrida e musculação se somem em vez de se anularem —
-          separando estímulos por tempo, grupamento e combustível.
+          O RunON organiza a semana com <span style={{ color: RC.cyan }}>periodização conjugada</span> para
+          que corrida e musculação se somem em vez de se anularem — separando estímulos por tempo,
+          grupamento e combustível.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {overviewPillars.map((p) => (
-          <div key={p.name} style={cardStyle()}>
-            <p style={{ ...labelStyle, color: RUNON.cyan }}>{p.name}</p>
-            <p style={{ fontSize: 13, color: "#bbb", lineHeight: 1.5, marginTop: 6 }}>{p.desc}</p>
-          </div>
-        ))}
-      </div>
+      {/* Pilares */}
+      <SectionCard label="PILARES DO SISTEMA" icon={Shield}>
+        <div className="space-y-0">
+          {overviewPillars.map((p, i) => {
+            const Icon = PILLAR_ICONS[i % PILLAR_ICONS.length];
+            return (
+              <div
+                key={p.name}
+                className="flex items-start gap-3 py-3"
+                style={{ borderBottom: i < overviewPillars.length - 1 ? `1px solid ${RC.bg2}` : "none" }}
+              >
+                <IconBox icon={Icon} color={RC.cyan} size={36} iconSize={18} />
+                <div className="flex-1 min-w-0">
+                  <p style={{ fontSize: 13, fontWeight: 700, color: RC.white }}>{p.name}</p>
+                  <p style={{ fontSize: 11, color: "#555", lineHeight: 1.5, marginTop: 3 }}>{p.desc}</p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </SectionCard>
 
+      {/* Perfil / wizard */}
       {editing || !profile ? (
-        <div style={cardStyle(RUNON.cyan)}>
-          <div className="flex items-start gap-3 mb-4">
-            <Sparkles className="w-5 h-5 shrink-0" style={{ color: RUNON.cyan }} />
-            <div>
-              <h3 style={{ fontSize: 15, fontWeight: 800, color: RUNON.text }}>Seu Perfil Hybrid</h3>
-              <p style={{ fontSize: 12, color: RUNON.muted, marginTop: 4, lineHeight: 1.5 }}>
-                Preencha para receber seu protocolo integrado de corrida + musculação
-              </p>
-            </div>
-          </div>
+        <SectionCard label="PERFIL HYBRID" icon={Users}>
+          <p style={{ fontSize: 12, color: "#555", lineHeight: 1.6, marginBottom: 14 }}>
+            Preencha para receber seu protocolo integrado de corrida + musculação.
+          </p>
           <HybridProfileWizard
             initial={profile}
             onCancel={profile ? () => setEditing(false) : undefined}
@@ -161,7 +160,7 @@ function OverviewTab() {
               toast({ title: "Perfil Hybrid salvo", description: "Protocolo RunON calibrado com seus dados." });
             }}
           />
-        </div>
+        </SectionCard>
       ) : (
         <ProfileSummary
           p={profile}
@@ -174,11 +173,27 @@ function OverviewTab() {
 
       <AegisCard onOpen={() => setAegisOpen(true)} />
 
+      {/* Referências */}
+      <SectionCard label="REFERÊNCIAS DO MODELO HÍBRIDO" icon={Users}>
+        {REFERENCES.map((r, i) => (
+          <div
+            key={r.name}
+            className="flex items-start justify-between gap-3 py-3"
+            style={{ borderBottom: i < REFERENCES.length - 1 ? `1px solid ${RC.bg2}` : "none" }}
+          >
+            <div className="min-w-0">
+              <p style={{ fontSize: 14, fontWeight: 700, color: RC.white }}>{r.name}</p>
+              <p style={{ fontSize: 12, color: "#555", marginTop: 2, lineHeight: 1.5 }}>{r.desc}</p>
+            </div>
+            <RBadge color={RC.cyan}>{r.tag}</RBadge>
+          </div>
+        ))}
+      </SectionCard>
+
       {aegisOpen && <AegisPanel profile={profile} onClose={() => setAegisOpen(false)} />}
     </div>
   );
 }
-
 
 /* ─────────── SESSÕES ─────────── */
 function SessionsTab() {
@@ -186,50 +201,59 @@ function SessionsTab() {
   return (
     <div className="space-y-3">
       {sessionTypes.map((s) => {
-        const Icon = ICONS[s.icon] ?? Activity;
+        const Icon = SESSION_ICONS[s.id] ?? Activity;
         const expanded = open === s.id;
         return (
-          <div key={s.id} style={cardStyle(expanded ? s.color : undefined)}>
-            <button
-              onClick={() => setOpen(expanded ? null : s.id)}
-              className="w-full flex items-center gap-3 text-left"
-            >
-              <div
-                className="w-9 h-9 flex items-center justify-center shrink-0"
-                style={{ background: `${s.color}18`, border: `1px solid ${s.color}44`, borderRadius: 8 }}
-              >
-                <Icon className="w-4 h-4" style={{ color: s.color }} />
-              </div>
+          <div
+            key={s.id}
+            style={{
+              background: RC.card,
+              border: `1px solid ${expanded ? `${s.color}33` : RC.border}`,
+              borderRadius: 10,
+              padding: expanded ? 20 : "16px 20px",
+              boxShadow: expanded ? `0 0 20px ${s.color}08` : "none",
+              transition: "all 0.3s ease",
+            }}
+          >
+            <button onClick={() => setOpen(expanded ? null : s.id)} className="w-full flex items-center gap-3 text-left">
+              <IconBox icon={Icon} color={s.color} size={40} iconSize={18} />
               <div className="flex-1 min-w-0">
-                <p style={{ fontSize: 15, fontWeight: 800, color: s.color }}>{s.name}</p>
-                <p style={{ fontSize: 11, color: RUNON.muted }}>{s.aka} · {s.zone}</p>
+                <p style={raj(16, 700)}>{s.name}</p>
+                <p style={mono(8, RC.mutedDark, 1)}>{s.aka}</p>
               </div>
+              <RBadge color={s.color}>{s.zone}</RBadge>
               <ChevronDown
-                className="w-4 h-4 transition-transform"
-                style={{ color: RUNON.muted, transform: expanded ? "rotate(180deg)" : "none" }}
+                className="w-4 h-4 transition-transform shrink-0"
+                style={{ color: "#444", transform: expanded ? "rotate(180deg)" : "none" }}
               />
             </button>
 
             {expanded && (
-              <div className="mt-4 space-y-4">
+              <div className="mt-4 space-y-4 animate-fade-in">
                 <div className="grid grid-cols-2 gap-3">
-                  <DataCell label="Zona" value={s.zone} color={s.color} />
-                  <DataCell label="FC" value={s.hrRange} />
-                  <DataCell label="Pace" value={s.pace} />
-                  <DataCell label="Duração" value={s.duration} />
-                  <DataCell label="Frequência" value={s.frequency} color={s.color} />
+                  <StatCard label="FC" value={s.hrRange} color={s.color} />
+                  <StatCard label="PACE" value={s.pace} color={s.color} />
+                  <StatCard label="DURAÇÃO" value={s.duration} color={s.color} />
+                  <StatCard label="FREQUÊNCIA" value={s.frequency} color={s.color} />
                 </div>
+
+                <div style={{ borderLeft: `3px solid ${s.color}`, background: RC.bg2, padding: "12px 16px", borderRadius: 6 }}>
+                  <p style={mono(6, RC.mutedDark, 3)}>PROPÓSITO</p>
+                  <p style={{ fontSize: 13, color: RC.muted, lineHeight: 1.6, marginTop: 4 }}>{s.purpose}</p>
+                </div>
+
                 <div>
-                  <p style={labelStyle}>Propósito</p>
-                  <p style={{ fontSize: 13, color: "#bbb", lineHeight: 1.5, marginTop: 4 }}>{s.purpose}</p>
-                </div>
-                <ul className="space-y-1.5">
-                  {s.tips.map((t) => (
-                    <li key={t} style={{ fontSize: 13, color: "#bbb", lineHeight: 1.5 }}>
-                      <span style={{ color: s.color, marginRight: 6 }}>→</span>{t}
-                    </li>
+                  {s.tips.map((t, i) => (
+                    <div
+                      key={t}
+                      className="flex gap-2 py-2"
+                      style={{ borderBottom: i < s.tips.length - 1 ? `1px solid ${RC.bg2}` : "none" }}
+                    >
+                      <span style={{ ...mono(10, s.color, 0), textTransform: "none" }}>→</span>
+                      <span style={{ fontSize: 12, color: "#666", lineHeight: 1.5 }}>{t}</span>
+                    </div>
                   ))}
-                </ul>
+                </div>
               </div>
             )}
           </div>
@@ -239,63 +263,76 @@ function SessionsTab() {
   );
 }
 
-/* ─────────── ARQUITETURA SEMANAL ─────────── */
+/* ─────────── SEMANAL ─────────── */
 function WeeklyTab() {
   const [phase, setPhase] = useState(weeklyPlans[0].id);
   const plan = weeklyPlans.find((p) => p.id === phase)!;
   return (
     <div className="space-y-4">
-      <div className="flex gap-2 overflow-x-auto pb-1">
-        {weeklyPlans.map((p) => {
-          const active = p.id === phase;
-          return (
-            <button
-              key={p.id}
-              onClick={() => setPhase(p.id)}
-              className="px-3 py-2 whitespace-nowrap"
-              style={{
-                background: active ? `${p.color}18` : "transparent",
-                border: `1px solid ${active ? `${p.color}66` : RUNON.border}`,
-                color: active ? p.color : RUNON.muted,
-                fontSize: 11, fontWeight: 700, letterSpacing: "1px", borderRadius: 8,
-              }}
-            >
-              {p.name}
-            </button>
-          );
-        })}
+      <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
+        {weeklyPlans.map((p) => (
+          <Chip key={p.id} active={p.id === phase} color={p.color} onClick={() => setPhase(p.id)}>
+            {p.name}
+          </Chip>
+        ))}
       </div>
 
-      <div style={cardStyle(plan.color)}>
+      <SectionCard accent={plan.color}>
         <div className="flex items-center justify-between flex-wrap gap-2">
           <div>
-            <p style={{ fontSize: 15, fontWeight: 800, color: plan.color }}>{plan.name}</p>
-            <p style={{ fontSize: 11, color: RUNON.muted }}>{plan.weeks}</p>
+            <p style={raj(18, 700, plan.color)}>{plan.name}</p>
+            <p style={mono(8, RC.mutedDark, 1)}>{plan.weeks}</p>
           </div>
-          <Badge color={plan.color}>{plan.volume.km}</Badge>
+          <RBadge color={plan.color}>{plan.volume.km}</RBadge>
         </div>
 
-        <div className="mt-4" style={{ border: `1px solid ${RUNON.border}`, borderRadius: 8, overflow: "hidden" }}>
-          <div className="grid grid-cols-3 gap-2 px-3 py-2" style={{ background: "#161616" }}>
-            <span style={labelStyle}>Dia</span>
-            <span style={labelStyle}>Manhã</span>
-            <span style={labelStyle}>Tarde</span>
+        <div className="mt-5">
+          <div className="grid grid-cols-3 gap-2 pb-2" style={{ borderBottom: `2px solid ${RC.border}` }}>
+            <span style={mono(6, RC.mutedDark, 3)}>DIA</span>
+            <span style={mono(6, RC.mutedDark, 3)}>MANHÃ</span>
+            <span style={mono(6, RC.mutedDark, 3)}>TARDE</span>
           </div>
           {plan.days.map((d) => (
-            <div key={d.day} className="grid grid-cols-3 gap-2 px-3 py-2.5" style={{ borderTop: `1px solid ${RUNON.border}` }}>
-              <span style={{ fontSize: 11, fontWeight: 700, color: RUNON.muted, letterSpacing: "1px" }}>{d.day}</span>
-              <span style={{ fontSize: 13, color: d.color ?? RUNON.text }}>{d.am}</span>
-              <span style={{ fontSize: 13, color: d.pm === "—" ? "#444" : (d.color ?? RUNON.text) }}>{d.pm}</span>
+            <div key={d.day} className="grid grid-cols-3 gap-2 py-3" style={{ borderBottom: `1px solid ${RC.bg2}` }}>
+              <span style={raj(13, 700, d.color ?? RC.mutedDark)}>{d.day}</span>
+              <span style={{ fontSize: 12, fontWeight: d.color ? 600 : 500, color: d.color ?? RC.white }}>{d.am}</span>
+              <span
+                style={{
+                  fontSize: 12,
+                  fontWeight: d.pm !== "—" && d.color ? 600 : 500,
+                  color: d.pm === "—" ? RC.border : (d.color ?? RC.white),
+                }}
+              >
+                {d.pm}
+              </span>
             </div>
           ))}
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4">
-          <DataCell label="Volume corrida" value={plan.volume.km} color={plan.color} />
-          <DataCell label="Musculação" value={plan.volume.strength} />
-          <DataCell label="Cardio" value={plan.volume.cardio} />
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-5">
+          <div style={{ background: RC.bg2, border: `1px solid ${RC.border}`, borderRadius: 8, padding: 14 }}>
+            <div className="flex items-center gap-1.5">
+              <Route style={{ width: 14, height: 14, color: RC.cyan }} />
+              <span style={mono(6, RC.mutedDark, 3)}>CORRIDA</span>
+            </div>
+            <p style={{ ...raj(16, 700, RC.cyan), marginTop: 6 }}>{plan.volume.km}</p>
+          </div>
+          <div style={{ background: RC.bg2, border: `1px solid ${RC.border}`, borderRadius: 8, padding: 14 }}>
+            <div className="flex items-center gap-1.5">
+              <Dumbbell style={{ width: 14, height: 14, color: RC.green }} />
+              <span style={mono(6, RC.mutedDark, 3)}>MUSCULAÇÃO</span>
+            </div>
+            <p style={{ ...raj(16, 700, RC.white), marginTop: 6 }}>{plan.volume.strength}</p>
+          </div>
+          <div style={{ background: RC.bg2, border: `1px solid ${RC.border}`, borderRadius: 8, padding: 14 }}>
+            <div className="flex items-center gap-1.5">
+              <Activity style={{ width: 14, height: 14, color: RC.orange }} />
+              <span style={mono(6, RC.mutedDark, 3)}>TOTAL CARDIO</span>
+            </div>
+            <p style={{ ...raj(16, 700, RC.white), marginTop: 6 }}>{plan.volume.cardio}</p>
+          </div>
         </div>
-      </div>
+      </SectionCard>
     </div>
   );
 }
@@ -306,95 +343,115 @@ function RaceTab() {
   const r = racePreps.find((x) => x.id === race)!;
   return (
     <div className="space-y-4">
-      <div className="flex gap-2 overflow-x-auto pb-1">
-        {racePreps.map((p) => {
-          const active = p.id === race;
-          return (
-            <button
-              key={p.id}
-              onClick={() => setRace(p.id)}
-              className="px-4 py-2 whitespace-nowrap"
-              style={{
-                background: active ? `${p.color}18` : "transparent",
-                border: `1px solid ${active ? `${p.color}66` : RUNON.border}`,
-                color: active ? p.color : RUNON.muted,
-                fontSize: 12, fontWeight: 800, letterSpacing: "1px", borderRadius: 8,
-              }}
-            >
-              {p.distance}
-            </button>
-          );
-        })}
+      <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
+        {racePreps.map((p) => (
+          <Chip key={p.id} active={p.id === race} color={p.color} onClick={() => setRace(p.id)}>
+            {p.distance}
+          </Chip>
+        ))}
       </div>
 
-      <div style={cardStyle(r.color)}>
-        <div className="flex items-center justify-between flex-wrap gap-2">
+      <SectionCard accent={r.color}>
+        <div className="flex items-start justify-between flex-wrap gap-4">
           <div>
-            <p style={{ fontSize: 20, fontWeight: 800, color: r.color }}>{r.distance}</p>
-            <p style={{ fontSize: 11, color: RUNON.muted }}>{r.weeks} · {r.level}</p>
+            <p style={raj(36, 900, r.color)}>{r.distance}</p>
+            <p style={mono(8, RC.mutedDark, 1)}>{r.level}</p>
           </div>
-          <Badge color={r.color}>PACE {r.targetPace}</Badge>
+          <div className="grid grid-cols-2 gap-3">
+            <StatCard label="DURAÇÃO" value={r.weeks} color={r.color} />
+            <StatCard label="PACE ALVO" value={r.targetPace} color={r.color} />
+          </div>
         </div>
 
-        <div className="mt-4 space-y-2">
+        <div className="relative mt-6 pl-6">
+          <div className="absolute top-1 bottom-1" style={{ left: 0, width: 2, background: `${r.color}22` }} />
           {r.phases.map((ph) => (
-            <div key={ph.name} style={{ borderLeft: `3px solid ${r.color}`, background: "#0d0d0d", padding: 12, borderRadius: 6 }}>
-              <div className="flex items-center justify-between flex-wrap gap-2">
-                <p style={{ fontSize: 13, fontWeight: 800, color: r.color }}>{ph.name}</p>
-                <span style={{ fontSize: 11, color: RUNON.muted }}>{ph.weeks}</span>
+            <div key={ph.name} className="relative mb-3">
+              <span
+                className="absolute rounded-full"
+                style={{ left: -25, top: 14, width: 10, height: 10, background: r.color, border: `2px solid ${RC.bg}` }}
+              />
+              <div style={{ background: `${r.color}06`, border: `1px solid ${r.color}22`, borderRadius: 8, padding: "14px 18px" }}>
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <p style={raj(14, 700, r.color)}>{ph.name}</p>
+                  <span style={mono(8, RC.mutedDark, 1)}>{ph.weeks}</span>
+                </div>
+                <p style={{ fontSize: 12, color: "#666", lineHeight: 1.5, marginTop: 6 }}>{ph.focus}</p>
+                <div className="mt-2"><RBadge color={r.color}>{ph.volume}</RBadge></div>
               </div>
-              <p style={{ fontSize: 13, color: "#bbb", marginTop: 4, lineHeight: 1.5 }}>{ph.focus}</p>
-              <p style={{ fontSize: 11, color: RUNON.cyan, marginTop: 4 }}>{ph.volume}</p>
             </div>
           ))}
         </div>
-      </div>
+      </SectionCard>
     </div>
   );
 }
 
-/* ─────────── NUTRITION BRIDGE ─────────── */
+/* ─────────── NUTRITION ─────────── */
 function NutritionTab() {
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        {nutritionPrinciples.map((p) => (
-          <div key={p.name} style={cardStyle()}>
-            <p style={{ ...labelStyle, color: RUNON.cyan }}>{p.name}</p>
-            <p style={{ fontSize: 13, color: "#bbb", lineHeight: 1.5, marginTop: 6 }}>{p.desc}</p>
-          </div>
-        ))}
-      </div>
+      <SectionCard label="PRINCÍPIOS DO NUTRITION BRIDGE" icon={Utensils}>
+        {nutritionPrinciples.map((p, i) => {
+          const Icon = NUTRI_ICONS[i % NUTRI_ICONS.length];
+          return (
+            <div
+              key={p.name}
+              className="flex items-start gap-3 py-3"
+              style={{ borderBottom: i < nutritionPrinciples.length - 1 ? `1px solid ${RC.bg2}` : "none" }}
+            >
+              <IconBox icon={Icon} color={RC.cyan} size={36} iconSize={18} />
+              <div className="flex-1 min-w-0">
+                <p style={{ fontSize: 13, fontWeight: 700, color: RC.white }}>{p.name}</p>
+                <p style={{ fontSize: 11, color: "#555", lineHeight: 1.5, marginTop: 3 }}>{p.desc}</p>
+              </div>
+            </div>
+          );
+        })}
+      </SectionCard>
 
-      <div style={cardStyle()}>
-        <p style={{ fontSize: 14, fontWeight: 800, color: RUNON.text }}>Macros por Tipo de Dia</p>
-        <div className="mt-3 space-y-2">
-          {dayMacros.map((d) => (
-            <div key={d.type} style={{ borderLeft: `3px solid ${d.color}`, background: "#0d0d0d", padding: 12, borderRadius: 6 }}>
-              <p style={{ fontSize: 13, fontWeight: 800, color: d.color }}>{d.type}</p>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-2">
-                <DataCell label="Proteína" value={d.protein} />
-                <DataCell label="Carb" value={d.carb} />
-                <DataCell label="Gordura" value={d.fat} />
-                <DataCell label="Kcal" value={d.kcal} color={d.color} />
+      <SectionCard label="MACROS POR TIPO DE DIA" icon={BarChart3}>
+        <div className="space-y-3">
+          {dayMacros.map((d, i) => (
+            <div
+              key={d.type}
+              className="animate-fade-in"
+              style={{
+                borderLeft: `3px solid ${d.color}`,
+                background: RC.bg2,
+                padding: "14px 16px",
+                borderRadius: 6,
+                animationDelay: `${i * 60}ms`,
+              }}
+            >
+              <p style={mono(8, d.color, 2)}>{d.type}</p>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-3">
+                {[["PROTEÍNA", d.protein], ["CARB", d.carb], ["GORDURA", d.fat], ["KCAL", d.kcal]].map(([l, v]) => (
+                  <div key={l}>
+                    <p style={mono(6, RC.mutedDark, 3)}>{l}</p>
+                    <p style={{ ...raj(14, 600), marginTop: 2 }}>{v}</p>
+                  </div>
+                ))}
               </div>
             </div>
           ))}
         </div>
-      </div>
+      </SectionCard>
 
-      <div style={cardStyle(RUNON.cyan)}>
-        <p style={{ fontSize: 14, fontWeight: 800, color: RUNON.text }}>Suplementação · Hybrid Stack</p>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-3">
-          {hybridStack.map((s) => (
-            <div key={s.name} style={{ background: "#0d0d0d", border: `1px solid ${RUNON.border}`, borderRadius: 8, padding: 12 }}>
-              <p style={{ fontSize: 13, fontWeight: 800, color: RUNON.cyan }}>{s.name}</p>
-              <p style={{ fontSize: 13, color: RUNON.text, marginTop: 2 }}>{s.dose}</p>
-              <p style={{ fontSize: 11, color: RUNON.muted, marginTop: 4, lineHeight: 1.4 }}>{s.note}</p>
-            </div>
-          ))}
+      <SectionCard label="SUPLEMENTAÇÃO · HYBRID STACK" icon={Fuel}>
+        <div className="grid grid-cols-3 gap-2 pb-2" style={{ borderBottom: `2px solid ${RC.border}` }}>
+          <span style={mono(6, RC.mutedDark, 3)}>SUPLEMENTO</span>
+          <span style={mono(6, RC.mutedDark, 3)}>DOSE</span>
+          <span style={mono(6, RC.mutedDark, 3)}>NOTA</span>
         </div>
-      </div>
+        {hybridStack.map((s) => (
+          <div key={s.name} className="grid grid-cols-3 gap-2 py-3 runon-row" style={{ borderBottom: `1px solid ${RC.bg2}` }}>
+            <span style={raj(14, 600, RC.cyan)}>{s.name}</span>
+            <span style={{ fontSize: 13, color: RC.white }}>{s.dose}</span>
+            <span style={{ fontSize: 12, color: "#555", fontStyle: "italic" }}>{s.note}</span>
+          </div>
+        ))}
+      </SectionCard>
     </div>
   );
 }
@@ -406,13 +463,27 @@ function GuardTab() {
       {muscleGuardRules.map((r) => {
         const color = severityColors[r.severity];
         return (
-          <div key={r.id} style={{ ...cardStyle(), borderLeft: `3px solid ${color}` }}>
+          <div
+            key={r.id}
+            className="runon-card"
+            style={{
+              background: RC.card,
+              border: `1px solid ${RC.border}`,
+              borderLeft: `3px solid ${color}`,
+              borderRadius: 10,
+              padding: 20,
+              transition: "border-color 0.3s ease",
+            }}
+          >
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="rounded-full" style={{ width: 8, height: 8, background: color, display: "inline-block" }} />
-              <p style={{ fontSize: 14, fontWeight: 800, color: RUNON.text }}>{r.title}</p>
-              <Badge color={color}>{r.severity.toUpperCase()}</Badge>
+              <span
+                className={`rounded-full ${r.severity === "critical" ? "animate-pulse" : ""}`}
+                style={{ width: 8, height: 8, background: color, display: "inline-block", boxShadow: `0 0 8px ${color}` }}
+              />
+              <p style={raj(15, 700)}>{r.title}</p>
+              <RBadge color={color}>{r.severity.toUpperCase()}</RBadge>
             </div>
-            <p style={{ fontSize: 13, color: "#bbb", lineHeight: 1.6, marginTop: 8 }}>{r.desc}</p>
+            <p style={{ fontSize: 13, color: "#666", lineHeight: 1.6, marginTop: 10 }}>{r.desc}</p>
           </div>
         );
       })}
@@ -424,116 +495,167 @@ function GuardTab() {
 function PeriodizationTab() {
   return (
     <div className="space-y-4">
+      <div className="flex gap-[3px]">
+        {annualPeriodization.map((b) => (
+          <div
+            key={b.id}
+            style={{ flex: 1, height: 8, borderRadius: 4, background: b.color, boxShadow: `0 0 8px ${b.color}22` }}
+          />
+        ))}
+      </div>
+
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {annualPeriodization.map((b) => (
-          <div key={b.id} style={cardStyle(b.color)}>
-            <div className="flex items-center justify-between gap-2 flex-wrap">
-              <p style={{ fontSize: 13, fontWeight: 800, color: b.color }}>{b.name}</p>
-              <Badge color={b.color}>{b.months}</Badge>
+          <div key={b.id} style={{ background: `${b.color}04`, border: `1px solid ${b.color}22`, borderRadius: 10, padding: 20 }}>
+            <div className="flex items-start justify-between gap-2 flex-wrap">
+              <p style={raj(15, 700, b.color)}>{b.name}</p>
+              <RBadge color={b.color}>{b.months}</RBadge>
             </div>
-            <div className="grid grid-cols-1 gap-2 mt-3">
-              <DataCell label="Musculação" value={b.strength} />
-              <DataCell label="Corrida" value={b.running} color={b.color} />
+            <div className="grid grid-cols-2 gap-3 mt-4">
+              <div>
+                <p style={mono(6, RC.green, 3)}>MUSCULAÇÃO</p>
+                <p style={{ fontSize: 12, color: RC.white, marginTop: 4, lineHeight: 1.5 }}>{b.strength}</p>
+              </div>
+              <div>
+                <p style={mono(6, RC.cyan, 3)}>CORRIDA</p>
+                <p style={{ fontSize: 12, color: RC.white, marginTop: 4, lineHeight: 1.5 }}>{b.running}</p>
+              </div>
             </div>
           </div>
         ))}
       </div>
 
-      <div style={cardStyle()}>
-        <p style={{ fontSize: 14, fontWeight: 800, color: RUNON.text }}>Regras de Transição</p>
-        <ul className="space-y-1.5 mt-3">
-          {transitionRules.map((t) => (
-            <li key={t} style={{ fontSize: 13, color: "#bbb", lineHeight: 1.5 }}>
-              <span style={{ color: RUNON.cyan, marginRight: 6 }}>→</span>{t}
-            </li>
-          ))}
-        </ul>
-      </div>
+      <SectionCard label="REGRAS DE TRANSIÇÃO" icon={AlertTriangle}>
+        {transitionRules.map((t, i) => {
+          const Icon = TRANSITION_ICONS[i % TRANSITION_ICONS.length];
+          return (
+            <div
+              key={t}
+              className="flex items-start gap-3 py-3"
+              style={{ borderBottom: i < transitionRules.length - 1 ? `1px solid ${RC.bg2}` : "none" }}
+            >
+              <Icon style={{ width: 16, height: 16, color: RC.cyan, marginTop: 2, flexShrink: 0 }} />
+              <span style={{ fontSize: 13, color: "#666", lineHeight: 1.6 }}>{t}</span>
+            </div>
+          );
+        })}
+      </SectionCard>
     </div>
   );
 }
 
+/* ─────────── PAGE ─────────── */
 export default function RunOnPage() {
   const navigate = useNavigate();
   const [tab, setTab] = useState<TabId>("overview");
 
   return (
-    <div className="min-h-screen pb-28" style={{ background: RUNON.bg }}>
-      <div className="mx-auto px-4 pt-5" style={{ maxWidth: 900 }}>
-        {/* Header */}
-        <div className="flex items-center gap-3 mb-4">
-          <button
-            onClick={() => navigate(-1)}
-            className="w-9 h-9 flex items-center justify-center shrink-0"
-            style={{ background: RUNON.card, border: `1px solid ${RUNON.border}`, borderRadius: 8 }}
-            aria-label="Voltar"
-          >
-            <ArrowLeft className="w-4 h-4" style={{ color: RUNON.muted }} />
-          </button>
-          <span
-            className="px-2 py-1"
-            style={{
-              background: "#00D4FF22", border: "1px solid #00D4FF44", color: RUNON.cyan,
-              fontSize: 10, fontWeight: 700, letterSpacing: "1.5px", borderRadius: 4,
-            }}
-          >
-            NUTRION PLATFORM · RUNON
-          </span>
-        </div>
+    <div className="min-h-screen pb-28 relative" style={{ background: RC.bg }}>
+      <HexBackdrop />
 
-        <h1 style={{ fontSize: 36, fontWeight: 800, color: "#fff", lineHeight: 1.1 }}>
-          Run<span style={{ color: RUNON.cyan }}>ON</span>
-        </h1>
-        <p style={{ fontSize: 14, color: RUNON.cyan, letterSpacing: "2px", fontWeight: 700, marginTop: 2 }}>
-          HYBRID PERFORMANCE ENGINE
-        </p>
-        <p style={{ fontSize: 13, color: RUNON.muted, marginTop: 8, lineHeight: 1.6 }}>
-          Periodização de corrida integrada ao bodybuilding. Programe easy runs, tiros, longões e caminhadas
-          ao lado da musculação — protegendo massa muscular e otimizando performance aeróbica.
-        </p>
+      {/* TOPBAR */}
+      <div
+        className="sticky top-0"
+        style={{
+          zIndex: 50,
+          background: "rgba(2,2,5,0.95)",
+          backdropFilter: "blur(16px)",
+          borderBottom: `1px solid #00D4FF18`,
+        }}
+      >
+        <div className="mx-auto px-4 py-4" style={{ maxWidth: 980 }}>
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-start gap-3 min-w-0">
+              <IconBox icon={Zap} color={RC.cyan} size={52} iconSize={26} />
+              <div className="min-w-0">
+                <p style={mono(6, RC.mutedDark, 3)}>
+                  nutriON <span style={{ color: RC.mutedDark }}>·</span> Performance Hub{" "}
+                  <span style={{ color: RC.mutedDark }}>·</span> <span style={{ color: RC.cyan }}>RunON</span>
+                </p>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <h1 style={raj(28, 700)}>
+                    RUN<span style={{ color: RC.cyan }}>ON</span>
+                  </h1>
+                  <span
+                    style={{
+                      ...mono(7, RC.cyan, 2),
+                      border: `1px solid ${RC.cyan}44`,
+                      padding: "2px 8px",
+                      borderRadius: 3,
+                    }}
+                  >
+                    HYBRID
+                  </span>
+                </div>
+                <p style={{ ...mono(7, RC.mutedDark, 1), marginTop: 2 }}>
+                  Hybrid Performance Engine · Periodização Conjugada · Muscle Guard · Race Architecture
+                </p>
+              </div>
+            </div>
 
-        {/* Tabs */}
-        <div className="flex gap-1.5 overflow-x-auto no-scrollbar mt-5 pb-1">
-          {TABS.map((t) => {
-            const active = tab === t.id;
-            return (
+            <div className="flex flex-col items-end gap-2 shrink-0">
               <button
-                key={t.id}
-                onClick={() => setTab(t.id)}
-                className="flex items-center gap-1.5 px-3 py-2 whitespace-nowrap"
-                style={{
-                  background: active ? "#00D4FF18" : "transparent",
-                  border: `1px solid ${active ? "#00D4FF66" : "transparent"}`,
-                  color: active ? RUNON.cyan : RUNON.muted,
-                  fontSize: 11, fontWeight: 700, letterSpacing: "1px", borderRadius: 8,
-                }}
+                onClick={() => navigate(-1)}
+                className="runon-back"
+                style={{ ...mono(7, RC.cyan, 2), border: `1px solid ${RC.cyan}22`, borderRadius: 4, padding: "6px 12px" }}
               >
-                <t.icon className="w-3.5 h-3.5" />
-                {t.label}
+                ← VOLTAR
               </button>
-            );
-          })}
-        </div>
+              <div
+                className="flex items-center gap-1.5"
+                style={{ border: `1px solid ${RC.cyan}22`, borderRadius: 12, padding: "4px 10px" }}
+              >
+                <span
+                  className="rounded-full animate-pulse"
+                  style={{ width: 8, height: 8, background: RC.cyan, display: "inline-block" }}
+                />
+                <span style={mono(6, "#00D4FF66", 2)}>SISTEMA ATIVO</span>
+              </div>
+            </div>
+          </div>
 
-        {/* Content */}
-        <div className="mt-4">
-          {tab === "overview" && <OverviewTab />}
-          {tab === "sessoes" && <SessionsTab />}
-          {tab === "semana" && <WeeklyTab />}
-          {tab === "race" && <RaceTab />}
-          {tab === "nutrition" && <NutritionTab />}
-          {tab === "guard" && <GuardTab />}
-          {tab === "periodizacao" && <PeriodizationTab />}
-        </div>
+          <div style={{ height: 1, margin: "16px 0", background: "linear-gradient(90deg, transparent, #00D4FF22, transparent)" }} />
 
-        {/* Footer */}
-        <div className="text-center mt-10 pt-8" style={{ borderTop: `1px solid ${RUNON.border}` }}>
-          <p style={{ fontSize: 10, color: RUNON.muted, letterSpacing: "2px" }}>
-            RUNON HYBRID PERFORMANCE ENGINE · NUTRION PLATFORM
-          </p>
-          <p style={{ fontSize: 10, color: RUNON.muted, letterSpacing: "2px", marginTop: 4 }}>
-            DEVELOPED BY DIOGO MELLO · MCE METHOD · 2026
-          </p>
+          {/* TABS */}
+          <div className="flex gap-2 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
+            {TABS.map((t) => {
+              const active = t.id === tab;
+              return (
+                <button
+                  key={t.id}
+                  onClick={() => setTab(t.id)}
+                  className="flex items-center gap-1.5 whitespace-nowrap runon-tab"
+                  style={{
+                    ...mono(7, active ? RC.cyan : "#444", 2),
+                    padding: "10px 16px",
+                    borderRadius: 6,
+                    background: active ? "#00D4FF0a" : "transparent",
+                    border: `1px solid ${active ? RC.cyanBorder : "transparent"}`,
+                    boxShadow: active ? "0 0 12px #00D4FF08" : "none",
+                  }}
+                >
+                  <t.icon style={{ width: 13, height: 13 }} />
+                  {t.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* CONTENT */}
+      <div className="mx-auto px-4 pt-5 relative" style={{ maxWidth: 980, zIndex: 1 }}>
+        {tab === "overview" && <OverviewTab />}
+        {tab === "sessoes" && <SessionsTab />}
+        {tab === "semana" && <WeeklyTab />}
+        {tab === "race" && <RaceTab />}
+        {tab === "nutrition" && <NutritionTab />}
+        {tab === "guard" && <GuardTab />}
+        {tab === "periodizacao" && <PeriodizationTab />}
+
+        <div className="text-center mt-10 pt-8" style={{ borderTop: `1px solid ${RC.border}` }}>
+          <p style={mono(6, RC.mutedDark, 3)}>RUNON HYBRID PERFORMANCE ENGINE · NUTRION PLATFORM</p>
+          <p style={{ ...mono(6, RC.mutedDark, 3), marginTop: 4 }}>DEVELOPED BY DIOGO MELLO · MCE METHOD · 2026</p>
         </div>
       </div>
 
