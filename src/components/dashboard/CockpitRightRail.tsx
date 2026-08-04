@@ -176,8 +176,20 @@ export default function CockpitRightRail(props: CockpitRightRailProps) {
               <span style={{ fontFamily: "'Rajdhani', sans-serif", fontWeight: 600, fontSize: 13, color: "#F5F0E8" }}>
                 {m.name}
               </span>
+              {"isNew" in m && (m as { isNew?: boolean }).isNew && (
+                <span
+                  style={{
+                    fontFamily: "'Space Mono', monospace", fontSize: 8, letterSpacing: "0.12em",
+                    color: "#00D4FF", border: "1px solid rgba(0,212,255,0.4)",
+                    background: "rgba(0,212,255,0.12)", padding: "0 4px",
+                  }}
+                >
+                  NEW
+                </span>
+              )}
             </button>
           ))}
+
         </div>
       </div>
 
