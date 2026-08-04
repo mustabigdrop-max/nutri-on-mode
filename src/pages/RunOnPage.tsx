@@ -140,31 +140,45 @@ function OverviewTab() {
         ))}
       </div>
 
-      <div style={cardStyle(RUNON.cyan)}>
-        <div className="flex items-start gap-3">
-          <Sparkles className="w-5 h-5 shrink-0" style={{ color: RUNON.cyan }} />
-          <div className="flex-1">
-            <h3 style={{ fontSize: 15, fontWeight: 800, color: RUNON.text }}>Protocolo RunON Personalizado</h3>
-            <p style={{ fontSize: 12, color: RUNON.muted, marginTop: 4, lineHeight: 1.5 }}>
-              Geração de protocolo personalizado via IA — em breve
-            </p>
-            <button
-              disabled
-              title="Em breve"
-              className="mt-3 px-4 py-2 cursor-not-allowed"
-              style={{
-                background: `${RUNON.cyan}12`, border: `1px solid ${RUNON.cyan}33`, color: `${RUNON.cyan}88`,
-                fontSize: 11, fontWeight: 700, letterSpacing: "1px", borderRadius: 8, opacity: 0.7,
-              }}
-            >
-              GERAR MEU PROTOCOLO RUNON
-            </button>
+      {editing || !profile ? (
+        <div style={cardStyle(RUNON.cyan)}>
+          <div className="flex items-start gap-3 mb-4">
+            <Sparkles className="w-5 h-5 shrink-0" style={{ color: RUNON.cyan }} />
+            <div>
+              <h3 style={{ fontSize: 15, fontWeight: 800, color: RUNON.text }}>Seu Perfil Hybrid</h3>
+              <p style={{ fontSize: 12, color: RUNON.muted, marginTop: 4, lineHeight: 1.5 }}>
+                Preencha para receber seu protocolo integrado de corrida + musculação
+              </p>
+            </div>
           </div>
+          <HybridProfileWizard
+            initial={profile}
+            onCancel={profile ? () => setEditing(false) : undefined}
+            onSave={(p) => {
+              saveProfile(p);
+              setProfile(p);
+              setEditing(false);
+              toast({ title: "Perfil Hybrid salvo", description: "Protocolo RunON calibrado com seus dados." });
+            }}
+          />
         </div>
-      </div>
+      ) : (
+        <ProfileSummary
+          p={profile}
+          onEdit={() => setEditing(true)}
+          onGenerate={() =>
+            toast({ title: "Protocolo RunON", description: "Perfil pronto — consulte o AEGIS para o direcionamento ergogênico." })
+          }
+        />
+      )}
+
+      <AegisCard onOpen={() => setAegisOpen(true)} />
+
+      {aegisOpen && <AegisPanel profile={profile} onClose={() => setAegisOpen(false)} />}
     </div>
   );
 }
+
 
 /* ─────────── SESSÕES ─────────── */
 function SessionsTab() {
