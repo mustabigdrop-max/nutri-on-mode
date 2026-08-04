@@ -89,6 +89,7 @@ const PartnerDashboardPage = lazy(() => import("./pages/PartnerDashboardPage"));
 const PartnerBlockedPage = lazy(() => import("./pages/PartnerBlockedPage"));
 const PeptideVaultPage = lazy(() => import("./pages/PeptideVaultPage"));
 const TrainingPage = lazy(() => import("./pages/TrainingPage"));
+const RunOnPage = lazy(() => import("./pages/RunOnPage"));
 const AthleteTodayTrainingPage = lazy(() => import("./pages/AthleteTodayTrainingPage"));
 const TrainingSystemsPage = lazy(() => import("./pages/TrainingSystemsPage"));
 const ScienceHubPage = lazy(() => import("./pages/ScienceHubPage"));
