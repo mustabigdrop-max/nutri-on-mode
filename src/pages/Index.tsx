@@ -9,6 +9,7 @@ import LandingFeatures from "@/components/landing/LandingFeatures";
 import LandingStats from "@/components/landing/LandingStats";
 import LandingCoach from "@/components/landing/LandingCoach";
 import LandingTestimonials from "@/components/landing/LandingTestimonials";
+import LandingInteractiveQuiz from "@/components/landing/LandingInteractiveQuiz";
 import LandingPlans from "@/components/landing/LandingPlans";
 import LandingGuarantee from "@/components/landing/LandingGuarantee";
 import LandingCTA from "@/components/landing/LandingCTA";
@@ -28,6 +29,7 @@ const Index = () => (
       <LandingStats />
       <LandingCoach />
       <LandingTestimonials />
+      <LandingInteractiveQuiz />
       <LandingPlans />
       <LandingGuarantee />
       <LandingCTA />
