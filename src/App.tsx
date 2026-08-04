@@ -89,6 +89,7 @@ const PartnerDashboardPage = lazy(() => import("./pages/PartnerDashboardPage"));
 const PartnerBlockedPage = lazy(() => import("./pages/PartnerBlockedPage"));
 const PeptideVaultPage = lazy(() => import("./pages/PeptideVaultPage"));
 const TrainingPage = lazy(() => import("./pages/TrainingPage"));
+const RunOnPage = lazy(() => import("./pages/RunOnPage"));
 const AthleteTodayTrainingPage = lazy(() => import("./pages/AthleteTodayTrainingPage"));
 const TrainingSystemsPage = lazy(() => import("./pages/TrainingSystemsPage"));
 const ScienceHubPage = lazy(() => import("./pages/ScienceHubPage"));
@@ -216,6 +217,8 @@ const App = () => (
             <Route path="/peptide-vault" element={<ProtectedRoute><PeptideVaultPage /></ProtectedRoute>} />
             {/* Training & Science */}
             <Route path="/training" element={<ProtectedRoute><TrainingPage /></ProtectedRoute>} />
+            <Route path="/runon" element={<ProtectedRoute><RunOnPage /></ProtectedRoute>} />
+
             <Route path="/treino-hoje" element={<ProtectedRoute><AthleteTodayTrainingPage /></ProtectedRoute>} />
             <Route path="/training/systems" element={<ProtectedRoute><TrainingSystemsPage /></ProtectedRoute>} />
             <Route path="/science" element={<ProtectedRoute><ScienceHubPage /></ProtectedRoute>} />

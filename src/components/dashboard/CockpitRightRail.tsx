@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 interface CockpitRightRailProps {
@@ -46,12 +47,14 @@ const MODULES = [
   { name: "PCA", color: "#B8922A", path: "/assessment-pca" },
   { name: "NutriPlan", color: "#00D4FF", path: "/meal-plan" },
   { name: "TrainingON", color: "#B8922A", path: "/nutrisync" },
+  { name: "RunON", color: "#00D4FF", path: "/runon", isNew: true },
   { name: "VERTEX", color: "#00D4FF", path: "/lab" },
   { name: "KAA™", color: "#B8922A", path: "/chat" },
   { name: "Microbiota", color: "#00D4FF", path: "/microbiome" },
 ];
 
 export default function CockpitRightRail(props: CockpitRightRailProps) {
+  const navigate = useNavigate();
   const ageDiff = props.biologicalAge - props.chronologicalAge;
   const ageDiffLabel = ageDiff === 0 ? "neutro" : ageDiff > 0 ? `+${ageDiff} ano${ageDiff > 1 ? "s" : ""}` : `${ageDiff} ano${ageDiff < -1 ? "s" : ""}`;
 
@@ -166,7 +169,7 @@ export default function CockpitRightRail(props: CockpitRightRailProps) {
           {MODULES.map((m) => (
             <button
               key={m.name}
-              onClick={() => toast.success(`▸ ${m.name} — ativado`, { duration: 2000 })}
+              onClick={() => { toast.success(`▸ ${m.name} — ativado`, { duration: 2000 }); navigate(m.path); }}
               className="w-full flex items-center gap-2 px-1 py-1 transition-colors hover:bg-[rgba(184,146,42,0.04)]"
             >
               <span
@@ -176,8 +179,20 @@ export default function CockpitRightRail(props: CockpitRightRailProps) {
               <span style={{ fontFamily: "'Rajdhani', sans-serif", fontWeight: 600, fontSize: 13, color: "#F5F0E8" }}>
                 {m.name}
               </span>
+              {"isNew" in m && (m as { isNew?: boolean }).isNew && (
+                <span
+                  style={{
+                    fontFamily: "'Space Mono', monospace", fontSize: 8, letterSpacing: "0.12em",
+                    color: "#00D4FF", border: "1px solid rgba(0,212,255,0.4)",
+                    background: "rgba(0,212,255,0.12)", padding: "0 4px",
+                  }}
+                >
+                  NEW
+                </span>
+              )}
             </button>
           ))}
+
         </div>
       </div>
 
