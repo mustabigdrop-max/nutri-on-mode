@@ -1,15 +1,15 @@
 import { useState } from "react";
 import { Check, ChevronLeft, ChevronRight, Sparkles, ShieldCheck } from "lucide-react";
-import { RUNON } from "@/data/runonData";
+import { RC, mono, raj } from "@/components/runon/runonUi";
 import { HybridProfile, WEEKDAYS, emptyProfile } from "@/lib/runonProfile";
 
-const C = RUNON.cyan;
+const C = RC.cyan;
 
 /* ─────────── primitives ─────────── */
 
 function Label({ children, required }: { children: React.ReactNode; required?: boolean }) {
   return (
-    <p style={{ fontSize: 11, color: RUNON.muted, fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase", marginBottom: 8 }}>
+    <p style={{ ...mono(7, RC.mutedDark, 3), marginBottom: 8 }}>
       {children}
       {required && <span style={{ color: "#ef4444" }}> *</span>}
     </p>
@@ -18,12 +18,12 @@ function Label({ children, required }: { children: React.ReactNode; required?: b
 
 const inputStyle: React.CSSProperties = {
   width: "100%",
-  background: "#1a1a1a",
-  border: "1px solid #333",
-  borderRadius: 8,
-  padding: "10px 12px",
-  color: "#fff",
-  fontSize: 13,
+  background: RC.bg2,
+  border: `1px solid ${RC.border}`,
+  borderRadius: 6,
+  padding: "12px 16px",
+  color: RC.white,
+  fontSize: 14,
   outline: "none",
 };
 
@@ -41,7 +41,7 @@ function TextField({
         onChange={(e) => onChange(e.target.value)}
         onFocus={() => setFocus(true)}
         onBlur={() => setFocus(false)}
-        style={{ ...inputStyle, borderColor: focus ? C : "#333" }}
+        style={{ ...inputStyle, borderColor: focus ? `${C}44` : RC.border, boxShadow: focus ? `0 0 12px ${C}08` : "none" }}
       />
     </div>
   );
@@ -59,7 +59,7 @@ function TextArea({ label, value, onChange, placeholder }: { label: string; valu
         onChange={(e) => onChange(e.target.value)}
         onFocus={() => setFocus(true)}
         onBlur={() => setFocus(false)}
-        style={{ ...inputStyle, borderColor: focus ? C : "#333", resize: "vertical" }}
+        style={{ ...inputStyle, borderColor: focus ? `${C}44` : RC.border, boxShadow: focus ? `0 0 12px ${C}08` : "none", resize: "vertical" }}
       />
     </div>
   );
@@ -81,17 +81,18 @@ function SelectCards({
               onClick={() => onChange(active ? "" : opt)}
               className="text-left relative transition-colors"
               style={{
-                padding: 14,
+                padding: 16,
                 borderRadius: 8,
-                border: `1px solid ${active ? C : "#222"}`,
-                background: active ? `${C}0a` : "#1a1a1a",
+                border: `1px solid ${active ? `${C}44` : RC.border}`,
+                background: active ? `${C}06` : RC.bg2,
                 color: active ? C : "#ccc",
-                fontSize: 12.5,
+                fontSize: 13,
                 fontWeight: active ? 700 : 500,
+                boxShadow: active ? `0 0 16px ${C}08` : "none",
               }}
             >
               {opt}
-              {active && <Check className="w-3.5 h-3.5 absolute top-2 right-2" style={{ color: C }} />}
+              {active && <ShieldCheck className="w-4 h-4 absolute top-2 right-2" style={{ color: C }} />}
             </button>
           );
         })}
@@ -126,13 +127,12 @@ function Chips({
               onClick={() => toggle(opt)}
               className="transition-colors"
               style={{
+                ...mono(8, active ? C : "#444", 1),
                 borderRadius: 20,
                 padding: "6px 14px",
-                fontSize: 12,
-                border: `1px solid ${active ? `${C}66` : "#333"}`,
-                background: active ? `${C}15` : "transparent",
-                color: active ? C : "#888",
-                fontWeight: active ? 700 : 500,
+                border: `1px solid ${active ? `${C}44` : RC.border}`,
+                background: active ? `${C}0a` : "transparent",
+                boxShadow: active ? `0 0 8px ${C}11` : "none",
               }}
             >
               {opt}
@@ -159,10 +159,9 @@ function NumberSelector({ label, value, onChange, min, max }: { label: string; v
               onClick={() => onChange(n)}
               style={{
                 width: 40, height: 40, borderRadius: 8,
-                border: `1px solid ${active ? C : "#333"}`,
-                background: active ? `${C}15` : "#1a1a1a",
-                color: active ? C : "#888",
-                fontSize: 14, fontWeight: 700,
+                border: `1px solid ${active ? `${C}44` : RC.border}`,
+                background: active ? `${C}0a` : RC.bg2,
+                ...raj(16, 700, active ? C : "#666"),
               }}
             >
               {n}
@@ -200,25 +199,25 @@ export default function HybridProfileWizard({
   ][step];
 
   return (
-    <div style={{ background: RUNON.card, border: `1px solid ${C}33`, borderRadius: 10, padding: 20 }}>
+    <div style={{ background: RC.card, border: `1px solid ${RC.border}`, borderRadius: 10, padding: 20 }}>
       {/* progress */}
       <div className="flex gap-1.5 mb-4">
         {[0, 1, 2, 3, 4].map((i) => (
-          <div key={i} style={{ flex: 1, height: 3, borderRadius: 2, background: i <= step ? C : "#333", transition: "background 300ms" }} />
+          <div key={i} style={{ flex: 1, height: 4, borderRadius: 2, background: i <= step ? C : RC.border, boxShadow: i <= step ? `0 0 6px ${C}22` : "none", transition: "background 300ms" }} />
         ))}
       </div>
 
       <div className="flex items-center justify-between mb-1">
-        <p style={{ fontSize: 11, color: "#888", letterSpacing: "2px", fontWeight: 700 }}>STEP {step + 1} DE 5</p>
-        <p style={{ fontSize: 11, color: "#555" }}>{step + 1} / 5</p>
+        <p style={mono(7, RC.mutedDark, 3)}>STEP {step + 1} DE 5</p>
+        <p style={mono(7, RC.mutedDark, 3)}>{step + 1} / 5</p>
       </div>
 
-      <h3 className="flex items-center gap-2" style={{ fontSize: 16, fontWeight: 800, color: RUNON.text, marginBottom: 4 }}>
+      <h3 className="flex items-center gap-2" style={{ ...raj(18, 700), marginBottom: 4 }}>
         {step === 4 && <ShieldCheck className="w-4 h-4" style={{ color: C }} />}
         {STEP_TITLES[step]}
       </h3>
       {step === 4 && (
-        <p style={{ fontSize: 12, color: RUNON.muted, marginBottom: 14 }}>
+        <p style={{ fontSize: 12, color: "#555", lineHeight: 1.6, marginBottom: 14 }}>
           Informações opcionais e confidenciais — ficam salvas apenas neste dispositivo. Usadas para calibrar protocolos de preservação muscular e performance.
         </p>
       )}
@@ -298,10 +297,10 @@ export default function HybridProfileWizard({
                   <button
                     key={String(opt)} type="button" onClick={() => set("temProva", opt)}
                     style={{
-                      flex: 1, padding: 12, borderRadius: 8, fontSize: 13, fontWeight: 700,
-                      border: `1px solid ${p.temProva === opt ? C : "#222"}`,
-                      background: p.temProva === opt ? `${C}0a` : "#1a1a1a",
-                      color: p.temProva === opt ? C : "#888",
+                      flex: 1, padding: 12, borderRadius: 8,
+                      ...mono(8, p.temProva === opt ? C : "#444", 2),
+                      border: `1px solid ${p.temProva === opt ? `${C}44` : RC.border}`,
+                      background: p.temProva === opt ? `${C}06` : RC.bg2,
                     }}
                   >
                     {opt ? "SIM" : "NÃO"}
@@ -363,14 +362,14 @@ export default function HybridProfileWizard({
           <button
             type="button" onClick={() => setStep((s) => s - 1)}
             className="flex items-center gap-1 px-4 py-2"
-            style={{ color: "#888", fontSize: 11, fontWeight: 700, letterSpacing: "1px", background: "transparent", border: "1px solid #222", borderRadius: 8 }}
+            style={{ ...mono(8, "#444", 2), background: "transparent", border: `1px solid ${RC.border}`, borderRadius: 6 }}
           >
             <ChevronLeft className="w-3.5 h-3.5" /> VOLTAR
           </button>
         ) : onCancel ? (
           <button
             type="button" onClick={onCancel} className="px-4 py-2"
-            style={{ color: "#888", fontSize: 11, fontWeight: 700, letterSpacing: "1px", background: "transparent", border: "1px solid #222", borderRadius: 8 }}
+            style={{ ...mono(8, "#444", 2), background: "transparent", border: `1px solid ${RC.border}`, borderRadius: 6 }}
           >
             CANCELAR
           </button>
@@ -381,8 +380,10 @@ export default function HybridProfileWizard({
             type="button" disabled={!valid} onClick={() => setStep((s) => s + 1)}
             className="flex items-center gap-1 px-5 py-2 ml-auto"
             style={{
-              background: valid ? C : `${C}22`, color: valid ? "#001018" : `${C}66`,
-              fontSize: 11, fontWeight: 800, letterSpacing: "1px", borderRadius: 8,
+              ...mono(8, valid ? "#020205" : "#020205", 2),
+              fontWeight: 700,
+              background: C, borderRadius: 6,
+              opacity: valid ? 1 : 0.3,
               cursor: valid ? "pointer" : "not-allowed",
             }}
           >
@@ -392,7 +393,11 @@ export default function HybridProfileWizard({
           <button
             type="button" onClick={() => onSave(p)}
             className="flex items-center justify-center gap-2 w-full py-3"
-            style={{ background: C, color: "#001018", fontSize: 12, fontWeight: 700, letterSpacing: "1px", borderRadius: 8 }}
+            style={{
+              ...mono(9, "#020205", 3), fontWeight: 700, padding: 14,
+              background: "linear-gradient(135deg, #00D4FF, #00B4DD)",
+              borderRadius: 8, boxShadow: `0 0 20px ${C}22`,
+            }}
           >
             <Sparkles className="w-4 h-4" /> GERAR MEU PROTOCOLO RUNON
           </button>
