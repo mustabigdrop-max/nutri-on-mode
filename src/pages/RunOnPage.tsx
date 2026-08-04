@@ -63,8 +63,53 @@ function DataCell({ label, value, color }: { label: string; value: string; color
   );
 }
 
+/* ─────────── PERFIL + AEGIS ─────────── */
+function ProfileSummary({ p, onEdit, onGenerate }: { p: HybridProfile; onEdit: () => void; onGenerate: () => void }) {
+  const items: [string, string][] = [
+    ["Nome", p.nome || "—"],
+    ["Peso", p.peso ? `${p.peso} kg` : "—"],
+    ["Objetivo", p.objetivo || "—"],
+    ["Split", p.split || "—"],
+    ["Nível corrida", p.nivelCorrida || "—"],
+    ["Distância alvo", p.temProva ? p.distanciaAlvo || "—" : p.objetivoGeral || "—"],
+    ["Status AEGIS", p.usoErgogenicos || "Não informado"],
+  ];
+  return (
+    <div style={cardStyle(RUNON.cyan)}>
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <Sparkles className="w-4 h-4" style={{ color: RUNON.cyan }} />
+          <h3 style={{ fontSize: 15, fontWeight: 800, color: RUNON.text }}>Seu Perfil Hybrid</h3>
+        </div>
+        <button
+          onClick={onEdit}
+          className="px-3 py-1.5"
+          style={{ border: "1px solid #333", color: "#888", fontSize: 10, fontWeight: 700, letterSpacing: "1px", borderRadius: 6 }}
+        >
+          EDITAR
+        </button>
+      </div>
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-4">
+        {items.map(([l, v]) => <DataCell key={l} label={l} value={v} />)}
+      </div>
+      <button
+        onClick={onGenerate}
+        className="w-full mt-4 py-3"
+        style={{ background: RUNON.cyan, color: "#001018", fontSize: 12, fontWeight: 700, letterSpacing: "1px", borderRadius: 8 }}
+      >
+        GERAR MEU PROTOCOLO RUNON
+      </button>
+    </div>
+  );
+}
+
 /* ─────────── OVERVIEW ─────────── */
 function OverviewTab() {
+  const [profile, setProfile] = useState<HybridProfile | null>(() => loadProfile());
+  const [editing, setEditing] = useState(false);
+  const [aegisOpen, setAegisOpen] = useState(false);
+  const { toast } = useToast();
+
   return (
     <div className="space-y-4">
       <div style={cardStyle(RUNON.cyan)}>
