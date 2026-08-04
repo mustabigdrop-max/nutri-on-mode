@@ -88,6 +88,7 @@ const TRAININGON_PILLS = [
 ];
 
 const TRAININGON_SHORT: string[] = [
+  "Inclui 100% do NUTRIPLAN (plano ON+) — treino e dieta no mesmo sistema",
   "6 fases de treinamento: Bulking · Cutting · Manutenção · Recomposição · Emagrecimento · Performance",
   "27 sistemas de treino em 5 categorias: Periodização · Força Lendária · Hipertrofia Específica · Atlético/Olímpico · Bodybuilding Clássico",
   "Sistemas inclusos: Linear · DUP · WUP · Westside · Bloco · APRE · 5/3/1 Wendler · Smolov · Texas Method · GVT · DC Training · Mountain Dog · RP · Doggcrapp · EDT · Heavy Duty · Weider · Flushing · Staggered · VBT · Bulgarian e mais 6 especializados",
@@ -104,6 +105,8 @@ const TRAININGON_SHORT: string[] = [
   "Painel coach — até 30 alunos",
   "Relatório PDF mensal por aluno",
   "Protocolo farmacológico integrado — IA ajusta volume e intensidade conforme compostos ativos",
+  "2 check-ins mensais por vídeo/áudio com o Coach humano",
+  "Canal prioritário com o Coach — resposta em até 24h",
 ];
 
 const TRAININGON_SYSTEMS: { category: string; items: { name: string; desc: string }[] }[] = [
@@ -236,10 +239,10 @@ const MCE_BLOCKS: { icon: string; title: string; items: string[]; bonus?: boolea
 
 const plans: any[] = [
   {
-    name: "MCE Performance",
+    name: "MCE Coaching",
     mce: true,
     subtitle: "Sistema Integrado de Performance Humana",
-    badge: "CONSULTORIA",
+    badge: "CONSULTORIA 1:1",
     price: "R$397",
     featured: false,
     checkoutUrl: "https://pay.kiwify.com.br/Y1e8Oi6",
@@ -251,20 +254,6 @@ const plans: any[] = [
     slotKey: "on_plus",
     checkoutUrl: "https://pay.kiwify.com.br/S3AGTbz",
     badge: "PREÇO DE FUNDADOR",
-    features: [
-      { text: "<strong>Tudo do ON</strong> +" },
-      "Chat IA nutriON ilimitado (adaptado por objetivo)",
-      "Plano semanal completo por IA (café/almoço/jantar/lanches)",
-      "Receitas personalizadas por perfil comportamental",
-      "Lista de compras automática por seção do mercado",
-      "Rastreamento 30+ micronutrientes",
-      "Score de qualidade nutricional diário (0-100)",
-      "Diário fotográfico antes/depois com slider",
-      "Alertas preditivos — IA avisa antes do erro",
-      "Modo 'Comi fora' — estima macros por restaurante",
-      "Foto do prato — IA identifica alimentos e registra",
-      { text: "Acesso ao Coach <strong>🔒</strong>", locked: true },
-    ],
     cta: "Garantir vaga de fundador →",
   },
   {
@@ -272,16 +261,6 @@ const plans: any[] = [
     slotKey: "on_pro",
     checkoutUrl: "https://pay.kiwify.com.br/boprEBl",
     badge: "VAGAS LIMITADAS",
-    features: [
-      { text: "<strong>Tudo do ON+</strong> +" },
-      "2 check-ins mensais por vídeo/áudio com o Coach",
-      "Coach acessa painel com dados em tempo real",
-      "Feedback semanal personalizado (texto ou áudio)",
-      "Ajuste de plano pelo Coach quando necessário",
-      "Canal prioritário com o Coach (resposta em até 24h)",
-      "Grupo exclusivo alunos PRO",
-      { text: "Badge dinâmico: <strong>'X vagas restantes'</strong>" },
-    ],
     cta: "Quero acompanhamento real →",
   },
 ];
@@ -344,7 +323,7 @@ const LandingPlans = () => {
                 </span>
               </div>
             )}
-            {(plan.badge || plan.slotKey) && !plan.mce && plan.name !== "ON PRO" && (
+            {(plan.badge || plan.slotKey) && !plan.mce && (
               <div className="absolute top-4 right-4 flex flex-col items-end gap-1">
                 {plan.badge && (
                   <span className="font-mono text-[.55rem] text-black bg-primary px-2 py-1 rounded-[2px] tracking-[.1em]">{plan.badge}</span>
@@ -406,7 +385,7 @@ const LandingPlans = () => {
             ) : plan.mce ? (
               <div className="mb-1.5">
                 <div className="font-heading text-[1.5rem] tracking-[.06em] leading-tight" style={{ color: "#B8922A" }}>
-                  MCE PERFORMANCE
+                  MCE COACHING
                 </div>
                 <div className="font-mono text-[.65rem] text-[#8a8aa8] mt-1.5 leading-relaxed">
                   {plan.subtitle}
@@ -496,6 +475,13 @@ const LandingPlans = () => {
                       <span>{text}</span>
                     </li>
                   ))}
+                  <li
+                    className="text-[.78rem] flex items-start gap-2 font-landing text-[#40405a] cursor-pointer hover:text-[#6060a0] transition-colors"
+                    onClick={() => setModal({ open: true, plan: "ON +", feature: "Acesso ao Coach" })}
+                  >
+                    <span className="text-[.7rem] mt-0.5 shrink-0 text-[#40405a]">✗</span>
+                    <span>Acesso ao Coach humano 🔒</span>
+                  </li>
                 </ul>
                 <button
                   type="button"
@@ -525,25 +511,7 @@ const LandingPlans = () => {
                   Ver todos os 27 sistemas →
                 </button>
               </>
-            ) : (
-              <ul className="flex flex-col gap-2.5 mb-8">
-                {plan.features.map((f, i) => {
-                  const text = typeof f === "string" ? f : f.text;
-                  const isLocked = !!(f as any).locked;
-                  const plainText = text.replace(/<[^>]*>/g, "").replace("🔒", "").trim();
-                  return (
-                    <li
-                      key={i}
-                      className={`text-[.82rem] flex items-start gap-2 font-landing ${isLocked ? "text-[#40405a] cursor-pointer hover:text-[#6060a0] transition-colors" : "text-[#7070a0]"}`}
-                      onClick={isLocked ? () => setModal({ open: true, plan: plan.name, feature: plainText }) : undefined}
-                    >
-                      <span className={`text-[.7rem] mt-0.5 shrink-0 ${isLocked ? "text-[#40405a]" : "text-primary"}`}>{isLocked ? "✗" : "→"}</span>
-                      <span className="[&_strong]:text-[#f0edf8]" dangerouslySetInnerHTML={{ __html: text }} />
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
+            ) : null}
             <a
               href={plan.checkoutUrl}
               target="_blank"
