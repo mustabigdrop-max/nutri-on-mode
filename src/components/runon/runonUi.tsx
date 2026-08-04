@@ -39,7 +39,7 @@ export const mono = (
   textTransform: "uppercase",
 });
 
-export const raj = (size: number, weight = 700, color = RC.white): React.CSSProperties => ({
+export const raj = (size: number, weight = 700, color: string = RC.white): React.CSSProperties => ({
   fontFamily: RAJ,
   fontSize: size,
   fontWeight: weight,
