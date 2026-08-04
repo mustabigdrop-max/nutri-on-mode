@@ -47,12 +47,14 @@ const MODULES = [
   { name: "PCA", color: "#B8922A", path: "/assessment-pca" },
   { name: "NutriPlan", color: "#00D4FF", path: "/meal-plan" },
   { name: "TrainingON", color: "#B8922A", path: "/nutrisync" },
+  { name: "RunON", color: "#00D4FF", path: "/runon", isNew: true },
   { name: "VERTEX", color: "#00D4FF", path: "/lab" },
   { name: "KAA™", color: "#B8922A", path: "/chat" },
   { name: "Microbiota", color: "#00D4FF", path: "/microbiome" },
 ];
 
 export default function CockpitRightRail(props: CockpitRightRailProps) {
+  const navigate = useNavigate();
   const ageDiff = props.biologicalAge - props.chronologicalAge;
   const ageDiffLabel = ageDiff === 0 ? "neutro" : ageDiff > 0 ? `+${ageDiff} ano${ageDiff > 1 ? "s" : ""}` : `${ageDiff} ano${ageDiff < -1 ? "s" : ""}`;
 
