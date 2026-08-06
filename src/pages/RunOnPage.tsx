@@ -11,11 +11,10 @@ import { useToast } from "@/hooks/use-toast";
 import HybridProfileWizard from "@/components/runon/HybridProfileWizard";
 import AegisCard from "@/components/runon/AegisCard";
 import AegisPanel from "@/components/runon/AegisPanel";
-import { HybridProfile, loadProfile, saveProfile } from "@/lib/runonProfile";
+import { HybridProfile, loadProfile } from "@/lib/runonProfile";
+import { useRunonProfile } from "@/hooks/useRunonProfile";
 import HybridProtocolResult from "@/components/runon/HybridProtocolResult";
-import {
-  generateProtocol, loadGeneratedProtocol, saveGeneratedProtocol, RunOnProtocol,
-} from "@/lib/runonProtocol";
+import { generateProtocol } from "@/lib/runonProtocol";
 import {
   RC, mono, raj, HexBackdrop, IconBox, RBadge, SectionCard, StatCard, Chip,
 } from "@/components/runon/runonUi";
@@ -140,16 +139,14 @@ function ProfileSummary({ p, onEdit, onGenerate, hasProtocol, lastGeneratedAt }:
 
 /* ─────────── OVERVIEW ─────────── */
 function OverviewTab() {
-  const [profile, setProfile] = useState<HybridProfile | null>(() => loadProfile());
   const [editing, setEditing] = useState(false);
   const [aegisOpen, setAegisOpen] = useState(false);
-  const [protocol, setProtocol] = useState<RunOnProtocol | null>(() => loadGeneratedProtocol());
+  const { profile, protocol, saveProfile: persistProfile, saveProtocol } = useRunonProfile();
   const { toast } = useToast();
 
   const runGenerate = (p: HybridProfile) => {
     const generated = generateProtocol(p);
-    saveGeneratedProtocol(generated);
-    setProtocol(generated);
+    saveProtocol(generated);
     toast({
       title: "Protocolo RunON gerado",
       description: `${generated.runSessions} sessões de corrida · risco de interferência ${generated.riskLabel.toLowerCase()}.`,
@@ -217,8 +214,7 @@ function OverviewTab() {
             initial={profile}
             onCancel={profile ? () => setEditing(false) : undefined}
             onSave={(p) => {
-              saveProfile(p);
-              setProfile(p);
+              persistProfile(p);
               setEditing(false);
               runGenerate(p);
             }}
