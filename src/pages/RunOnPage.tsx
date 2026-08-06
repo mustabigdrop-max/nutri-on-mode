@@ -215,8 +215,7 @@ function OverviewTab() {
             initial={profile}
             onCancel={profile ? () => setEditing(false) : undefined}
             onSave={(p) => {
-              saveProfile(p);
-              setProfile(p);
+              persistProfile(p);
               setEditing(false);
               runGenerate(p);
             }}
