@@ -141,7 +141,7 @@ function ProfileSummary({ p, onEdit, onGenerate, hasProtocol, lastGeneratedAt }:
 function OverviewTab() {
   const [editing, setEditing] = useState(false);
   const [aegisOpen, setAegisOpen] = useState(false);
-  const { profile, protocol, saveProfile: persistProfile, saveProtocol, isSignedIn } = useRunonProfile();
+  const { profile, protocol, saveProfile: persistProfile, saveProtocol } = useRunonProfile();
   const { toast } = useToast();
 
   const runGenerate = (p: HybridProfile) => {
