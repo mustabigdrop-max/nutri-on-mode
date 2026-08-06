@@ -369,7 +369,7 @@ function WeeklyTab() {
 }
 
 /* ─────────── RACE PREP ─────────── */
-function RaceTab() {
+function RaceTab({ raceMode, onRaceMode }: { raceMode: RaceModeConfig; onRaceMode: (c: RaceModeConfig) => void }) {
   const [race, setRace] = useState(racePreps[0].id);
   const r = racePreps.find((x) => x.id === race)!;
   return (
