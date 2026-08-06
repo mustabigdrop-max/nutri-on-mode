@@ -1371,6 +1371,7 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
 
   // Dr. VERTEX v4.0 — dispara análise farmacológica PhD em JSON
   const runVertexV4 = useCallback(async () => {
+    console.log("[DR.VERTEX DEBUG] runVertexV4() iniciado");
     setVertexV4Loading(true);
     setVertexV4Error(null);
     try {
@@ -1378,48 +1379,58 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
       const meta = parseMeta(analysisResult);
       const segments = parseSegments(analysisResult);
       const compostosInformados = (formData.compostos || "").trim();
+      console.log("[DR.VERTEX DEBUG] Compostos informados:", compostosInformados || "(vazio)");
       const protocoloCompleto = `Compostos: ${compostosInformados || "não informado — gerar recomendação farmacológica baseada em perfil/objetivo"}
 Objetivo do ciclo: ${objetivoCiclo}
 Semana ${semanaCiclo || "não informada"} de ${duracaoCiclo || "não informada"} semanas
 Suporte em uso: ${suporte || "não informado"}`;
-      const { data, error } = await supabase.functions.invoke("dr-vertex-analyze", {
-        body: {
-          atleta: {
-            nome: athlete?.nome,
-            categoria: cat?.label,
-            semanasShow: formData.semanas,
-            fase: objetivoCiclo,
-            peso: (athlete as any)?.peso,
-            altura: (athlete as any)?.altura,
-            experiencia: (athlete as any)?.experiencia,
-            condicoes: (athlete as any)?.condicoes,
-            suporte,
-            observacoes: formData.obs,
-          },
-          apexScores: {
-            bf_estimado: meta?.bfEst,
-            bf_meta: meta?.bfMeta,
-            condicionamento: segments.find((s) => /condicionamento/i.test(s.label))?.score,
-            dorsais: segments.find((s) => /dorsa|largura/i.test(s.label))?.score,
-            cintura: segments.find((s) => /cintura/i.test(s.label))?.score,
-            panturrilhas: segments.find((s) => /panturr/i.test(s.label))?.score,
-            sri: farmMeta?.scoreOtim,
-            achados_posturais: parseSection(analysisResult, "POSTURA", "TREINO") || "",
-          },
-          protocolo: protocoloCompleto,
+      const payload = {
+        atleta: {
+          nome: athlete?.nome,
+          categoria: cat?.label,
+          semanasShow: formData.semanas,
+          fase: objetivoCiclo,
+          peso: (athlete as any)?.peso,
+          altura: (athlete as any)?.altura,
+          experiencia: (athlete as any)?.experiencia,
+          condicoes: (athlete as any)?.condicoes,
+          suporte,
+          observacoes: formData.obs,
         },
+        apexScores: {
+          bf_estimado: meta?.bfEst,
+          bf_meta: meta?.bfMeta,
+          condicionamento: segments.find((s) => /condicionamento/i.test(s.label))?.score,
+          dorsais: segments.find((s) => /dorsa|largura/i.test(s.label))?.score,
+          cintura: segments.find((s) => /cintura/i.test(s.label))?.score,
+          panturrilhas: segments.find((s) => /panturr/i.test(s.label))?.score,
+          sri: farmMeta?.scoreOtim,
+          achados_posturais: parseSection(analysisResult, "POSTURA", "TREINO") || "",
+        },
+        protocolo: protocoloCompleto,
+      };
+      console.log("[DR.VERTEX DEBUG] Iniciando chamada para:", "edge function: dr-vertex-analyze");
+      console.log("[DR.VERTEX DEBUG] Payload enviado:", JSON.stringify(payload, null, 2));
+      const { data, error } = await supabase.functions.invoke("dr-vertex-analyze", {
+        body: payload,
       });
+      console.log("[DR.VERTEX DEBUG] Status da resposta:", error ? `erro: ${error.message}` : "ok (2xx)");
+      console.log("[DR.VERTEX DEBUG] Dados retornados:", data);
       if (error) throw new Error(error.message);
       if ((data as any)?.error) throw new Error((data as any).error);
       const analysis = (data as any)?.analysis;
       if (!analysis) throw new Error("Resposta sem análise estruturada");
+      console.log("[DR.VERTEX DEBUG] Análise recebida com seções:", Object.keys(analysis || {}));
       setVertexV4Analysis(analysis);
       toast({ title: "Dr. VERTEX v4.0", description: "Análise PhD concluída." });
     } catch (e: any) {
+      console.error("[DR.VERTEX DEBUG] ERRO na análise:", e);
+      console.error("[DR.VERTEX DEBUG] Error message:", e?.message);
       const msg = e?.message || "Falha na análise";
       setVertexV4Error(msg);
       toast({ title: "Erro Dr. VERTEX", description: msg, variant: "destructive" });
     } finally {
+      console.log("[DR.VERTEX DEBUG] runVertexV4() finalizado — loading=false");
       setVertexV4Loading(false);
     }
   }, [formData, objetivoCiclo, semanaCiclo, duracaoCiclo, suporte, athlete, analysisResult]);
@@ -1949,10 +1960,27 @@ Suporte em uso: ${suporte || "não informado"}` : "";
                   <button
                     type="button"
                     onClick={() => {
-                      if (vertexV4Loading) return;
+                      console.log("[DR.VERTEX DEBUG] Botão clicado");
+                      console.log("[DR.VERTEX DEBUG] Handler registrado no botão", typeof runVertexV4);
+                      console.log("[DR.VERTEX DEBUG] Props recebidas:", {
+                        analysisId: savedAnalysisId,
+                        compounds: formData?.compostos,
+                        profileData: { athlete, objetivoCiclo, semanaCiclo, duracaoCiclo, suporte },
+                      });
+                      console.log("[DR.VERTEX DEBUG] Estados de bloqueio:", {
+                        vertexV4Loading,
+                        virilizationRiskAccepted,
+                        temAnaliseAnterior: !!vertexV4Analysis,
+                      });
+                      if (vertexV4Loading) {
+                        console.warn("[DR.VERTEX DEBUG] RETURN PREMATURO: loading travado em true");
+                        return;
+                      }
                       if (virilizationRiskAccepted) {
+                        console.log("[DR.VERTEX DEBUG] Risco aceito → chamando runVertexV4()");
                         runVertexV4();
                       } else {
+                        console.log("[DR.VERTEX DEBUG] Risco NÃO aceito → abrindo modal de consentimento (ação pendente)");
                         setPendingVertexAction(() => () => runVertexV4());
                         setShowVirilizationModal(true);
                       }
@@ -2791,11 +2819,13 @@ Suporte em uso: ${suporte || "não informado"}` : "";
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
+                console.log("[DR.VERTEX DEBUG] Consentimento aceito no modal de virilização");
                 setVirilizationRiskAccepted(true);
                 try { sessionStorage.setItem("apex_virilization_risk_accepted", "1"); } catch {}
                 setShowVirilizationModal(false);
                 const action = pendingVertexAction;
                 setPendingVertexAction(null);
+                console.log("[DR.VERTEX DEBUG] Ação pendente presente?", !!action);
                 if (action) action();
               }}
               style={{ background: "#D94040", color: "#fff", border: "none", fontWeight: 700 }}
