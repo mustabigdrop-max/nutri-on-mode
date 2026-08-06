@@ -27,6 +27,13 @@ import {
 import {
   ScienceTab, BodybuilderTab, MastersTab, PharmaTab, PeptidesTab, FuelTab, MonitorTab,
 } from "@/components/runon/hybridTabs";
+import RaceModeBar from "@/components/runon/RaceModeBar";
+import StridePlannerCard from "@/components/runon/StridePlannerCard";
+import RaceFuelMatrix from "@/components/runon/RaceFuelMatrix";
+import {
+  RaceModeConfig, defaultRaceMode, loadRaceMode, saveRaceMode,
+} from "@/lib/raceMode";
+
 
 type TabId =
   | "overview" | "sessoes" | "semana" | "race" | "nutrition" | "guard" | "periodizacao"
@@ -362,11 +369,14 @@ function WeeklyTab() {
 }
 
 /* ─────────── RACE PREP ─────────── */
-function RaceTab() {
+function RaceTab({ raceMode, onRaceMode }: { raceMode: RaceModeConfig; onRaceMode: (c: RaceModeConfig) => void }) {
   const [race, setRace] = useState(racePreps[0].id);
   const r = racePreps.find((x) => x.id === race)!;
   return (
     <div className="space-y-4">
+      <RaceModeBar cfg={raceMode} onChange={onRaceMode} />
+      {raceMode.enabled && <StridePlannerCard cfg={raceMode} />}
+
       <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
         {racePreps.map((p) => (
           <Chip key={p.id} active={p.id === race} color={p.color} onClick={() => setRace(p.id)}>
@@ -572,6 +582,21 @@ function PeriodizationTab() {
 export default function RunOnPage() {
   const navigate = useNavigate();
   const [tab, setTab] = useState<TabId>("overview");
+  const [raceMode, setRaceMode] = useState<RaceModeConfig>(() => {
+    const saved = loadRaceMode();
+    if (saved) return saved;
+    const p = loadProfile();
+    const dist = (["5k", "10k", "21k", "42k"] as const).find(
+      (d) => (p?.distanciaAlvo || "").toLowerCase().replace(/\s/g, "").includes(d),
+    );
+    return defaultRaceMode(dist ?? "10k", Number(p?.peso) || 75);
+  });
+
+  const updateRaceMode = (c: RaceModeConfig) => {
+    setRaceMode(c);
+    saveRaceMode(c);
+  };
+
 
   return (
     <div className="min-h-screen pb-28 relative" style={{ background: RC.bg }}>
@@ -672,7 +697,7 @@ export default function RunOnPage() {
         {tab === "overview" && <OverviewTab />}
         {tab === "sessoes" && <SessionsTab />}
         {tab === "semana" && <WeeklyTab />}
-        {tab === "race" && <RaceTab />}
+        {tab === "race" && <RaceTab raceMode={raceMode} onRaceMode={updateRaceMode} />}
         {tab === "nutrition" && <NutritionTab />}
         {tab === "guard" && <GuardTab />}
         {tab === "periodizacao" && <PeriodizationTab />}
@@ -681,7 +706,13 @@ export default function RunOnPage() {
         {tab === "mestres" && <MastersTab />}
         {tab === "farmaco" && <PharmaTab />}
         {tab === "peptideos" && <PeptidesTab />}
-        {tab === "fuel" && <FuelTab />}
+        {tab === "fuel" && (
+          <div className="space-y-4">
+            <RaceModeBar cfg={raceMode} onChange={updateRaceMode} />
+            {raceMode.enabled && <RaceFuelMatrix cfg={raceMode} />}
+            <FuelTab />
+          </div>
+        )}
         {tab === "monitor" && <MonitorTab />}
 
         <div className="text-center mt-10 pt-8" style={{ borderTop: `1px solid ${RC.border}` }}>
