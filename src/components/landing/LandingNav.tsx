@@ -29,7 +29,7 @@ const LandingNav = () => {
       {/* Desktop */}
       <div className="hidden md:flex items-center gap-8">
         <a href="#protocols" className={linkClass}>Protocolos</a>
-        <a href="#features" className={linkClass}>Features</a>
+        <a href="#features" className={linkClass}>Módulos</a>
         <a href="#coach" className={linkClass}>Coach</a>
         <a href="#plans" className={linkClass}>Planos</a>
         <a href="/auth" className={linkClass}>Entrar</a>
@@ -56,7 +56,7 @@ const LandingNav = () => {
       {menuOpen && (
         <div className="absolute top-full left-0 right-0 bg-[#03030a]/95 backdrop-blur-[20px] border-b border-[#14142a] flex flex-col items-center gap-5 py-6 md:hidden">
           <a href="#protocols" className={linkClass} onClick={() => setMenuOpen(false)}>Protocolos</a>
-          <a href="#features" className={linkClass} onClick={() => setMenuOpen(false)}>Features</a>
+          <a href="#features" className={linkClass} onClick={() => setMenuOpen(false)}>Módulos</a>
           <a href="#coach" className={linkClass} onClick={() => setMenuOpen(false)}>Coach</a>
           <a href="#plans" className={linkClass} onClick={() => setMenuOpen(false)}>Planos</a>
           <a href="/auth" className={linkClass} onClick={() => setMenuOpen(false)}>Entrar</a>

@@ -7,8 +7,8 @@ const TEXT = "#F5F0E8";
 const STREAM_LABELS = ["TDEE","PCA","ROM","FMS","MCE","IGF-1","GH","RPE","mTOR","GLUT4","KAA","GUT","ATP","VO2","SLU","CJC"];
 
 const HUDS = [
-  { pos: "top-[6%] left-[3%]",     align: "left",  title: "TDEE CALCULADO",   value: 3240, suffix: " kcal", bar: GOLD, delay: 4700 },
-  { pos: "top-[6%] right-[3%]",    align: "right", title: "KAA™ SCORE",       value: 82,   suffix: "/100",  bar: CYAN, delay: 4800 },
+  { pos: "top-24 left-[3%]",       align: "left",  title: "TDEE CALCULADO",   value: 3240, suffix: " kcal", bar: GOLD, delay: 4700 },
+  { pos: "top-24 right-[3%]",      align: "right", title: "KAA™ SCORE",       value: 82,   suffix: "/100",  bar: CYAN, delay: 4800 },
   { pos: "top-[44%] left-[3%]",    align: "left",  title: "PCA ACTIVE",       text: "PERFIL AM",          bar: GOLD, delay: 4900 },
   { pos: "top-[44%] right-[3%]",   align: "right", title: "MICROBIOTA",       text: "GUT-BRAIN ON",       bar: CYAN, delay: 5000 },
   { pos: "bottom-[10%] left-[3%]", align: "left",  title: "DR. VERTEX",       text: "85+ COMPOSTOS",      bar: CYAN, delay: 5100 },
@@ -96,7 +96,7 @@ const LandingHero = () => {
 
     type S = { x:number; y:number; speed:number; label:string; trail:string[] };
     const streams: S[] = [];
-    for (let i = 0; i < 28; i++) {
+    for (let i = 0; i < 14; i++) {
       streams.push({
         x: Math.random() * 1600,
         y: Math.random() * 900,
@@ -168,9 +168,9 @@ const LandingHero = () => {
         s.y += s.speed;
         if (s.y > h + 20) { s.y = -20; s.x = Math.random() * w; s.trail = []; }
         s.trail.unshift(`${s.label} ${(Math.random() * 100).toFixed(0)}`);
-        if (s.trail.length > 8) s.trail.pop();
+        if (s.trail.length > 5) s.trail.pop();
         for (let i = 0; i < s.trail.length; i++) {
-          const alpha = (1 - i / s.trail.length) * 0.35;
+          const alpha = (1 - i / s.trail.length) * 0.22;
           ctx.fillStyle = `rgba(184,146,42,${alpha.toFixed(3)})`;
           ctx.fillText(s.trail[i], s.x, s.y - i * 12);
         }
@@ -446,6 +446,17 @@ const LandingHero = () => {
               >
                 Nutrição · Treino · Comportamento — um sistema só
               </div>
+              <div
+                className="text-center mt-4 px-4"
+                style={{
+                  fontSize: "clamp(13px, 1.6vw, 16px)",
+                  color: TEXT,
+                  opacity: phase >= 5 ? 0.92 : 0,
+                  transition: "opacity .8s ease .5s",
+                }}
+              >
+                Chega de app genérico. Seu protocolo evolui toda semana.
+              </div>
             </div>
           </div>
         </div>
@@ -485,22 +496,6 @@ const LandingHero = () => {
           </div>
         );
       })}
-
-      {/* Tagline */}
-      <div
-        className="absolute left-0 right-0 z-20 text-center px-4"
-        style={{
-          bottom: 68,
-          fontSize: 10,
-          letterSpacing: "0.35em",
-          color: "#B8922A55",
-          textTransform: "uppercase",
-          opacity: phase >= 8 ? 1 : 0,
-          transition: "opacity .8s ease",
-        }}
-      >
-        Chega de app genérico. Seu protocolo evolui toda semana.
-      </div>
 
       {/* Status bar */}
       <div

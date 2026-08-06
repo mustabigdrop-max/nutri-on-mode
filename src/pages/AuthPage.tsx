@@ -12,7 +12,7 @@ import {
 } from "@/lib/professionalTypes";
 import { HudShell, HudStatusBar, HudHex, HudPanel } from "@/components/hud/HudShell";
 
-type Mode = "login" | "signup";
+type Mode = "login" | "signup" | "forgot" | "recovery";
 
 const PROFILE_CODE: Record<ProfileChoice, string> = {
   athlete: "AT",
@@ -26,6 +26,28 @@ const PROFILE_CODE: Record<ProfileChoice, string> = {
 const safeNext = (value: string | null) =>
   value && /^\/(?!\/)/.test(value) ? value : null;
 
+// Supabase devolve mensagens de erro em inglês — traduzimos as mais comuns
+// para não quebrar a experiência em português no momento mais sensível do fluxo.
+const AUTH_ERROR_MAP: Record<string, string> = {
+  "invalid login credentials": "Email ou senha incorretos.",
+  "email not confirmed": "Confirme seu email antes de entrar — verifique sua caixa de entrada (e o spam).",
+  "user already registered": "Este email já tem uma conta. Faça login em vez de cadastrar.",
+  "password should be at least 6 characters": "A senha precisa ter pelo menos 6 caracteres.",
+  "unable to validate email address: invalid format": "Email inválido. Verifique e tente novamente.",
+  "new password should be different from the old password": "A nova senha precisa ser diferente da senha atual.",
+};
+
+const translateAuthError = (message: string | undefined | null): string => {
+  if (!message) return "Não foi possível concluir. Tente novamente em instantes.";
+  const key = message.trim().toLowerCase();
+  const mapped = Object.entries(AUTH_ERROR_MAP).find(([en]) => key.includes(en));
+  if (mapped) return mapped[1];
+  if (key.includes("rate limit") || key.includes("security purposes")) {
+    return "Muitas tentativas seguidas. Aguarde um minuto e tente de novo.";
+  }
+  return "Não foi possível concluir. Verifique os dados e tente novamente.";
+};
+
 const AuthPage = () => {
   const navigate = useNavigate();
   const [params] = useSearchParams();
@@ -38,6 +60,7 @@ const AuthPage = () => {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -50,6 +73,52 @@ const AuthPage = () => {
     }
   }, [params]);
 
+  // Link de "esqueci minha senha" no email traz o usuário de volta aqui com uma
+  // sessão de recuperação — o Supabase dispara PASSWORD_RECOVERY quando isso acontece.
+  useEffect(() => {
+    const { data: listener } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "PASSWORD_RECOVERY") setMode("recovery");
+    });
+    return () => listener.subscription.unsubscribe();
+  }, []);
+
+  const handleForgotSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth`,
+      });
+      if (error) toast.error(translateAuthError(error.message));
+      else toast.success("Link de recuperação enviado! Confira seu email.");
+    } catch {
+      toast.error("Não foi possível enviar o link. Tente novamente.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRecoverySubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (password !== confirmPassword) {
+      toast.error("As senhas não coincidem.");
+      return;
+    }
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ password });
+      if (error) toast.error(translateAuthError(error.message));
+      else {
+        toast.success("Senha atualizada! Redirecionando…");
+        navigate(nextPath || "/dashboard");
+      }
+    } catch {
+      toast.error("Não foi possível atualizar a senha. Tente novamente.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -61,7 +130,7 @@ const AuthPage = () => {
     try {
       if (mode === "login") {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) toast.error(error.message);
+        if (error) toast.error(translateAuthError(error.message));
         else if (nextPath) window.location.href = nextPath;
         else navigate("/dashboard");
       } else {
@@ -78,11 +147,11 @@ const AuthPage = () => {
           },
         });
 
-        if (error) toast.error(error.message);
+        if (error) toast.error(translateAuthError(error.message));
         else toast.success("Conta criada! Verifique seu email para confirmar.");
       }
     } catch (err: any) {
-      toast.error(err?.message ?? "Erro inesperado.");
+      toast.error(translateAuthError(err?.message));
     } finally {
       window.clearTimeout(t);
       setLoading(false);
@@ -100,13 +169,22 @@ const AuthPage = () => {
           <div className="mb-8">
             <HudStatusBar
               label="SISTEMA ATIVO"
-              meta={`AUTH-MODULE · v2.4 · ${mode === "signup" ? (step === 1 ? "PROFILE-SELECT" : "REGISTER") : "LOGIN"}`}
+              meta={`AUTH-MODULE · v2.4 · ${
+                mode === "signup" ? (step === 1 ? "PROFILE-SELECT" : "REGISTER")
+                : mode === "forgot" ? "RECUPERAR SENHA"
+                : mode === "recovery" ? "NOVA SENHA"
+                : "LOGIN"
+              }`}
               color="#00D4FF"
             />
           </div>
 
           <button
-            onClick={() => (mode === "signup" && step === 2 && !params.get("profile") ? setStep(1) : navigate("/"))}
+            onClick={() => {
+              if (mode === "signup" && step === 2 && !params.get("profile")) setStep(1);
+              else if (mode === "forgot") setMode("login");
+              else navigate("/");
+            }}
             className="flex items-center gap-2 mb-8 hud-tech hover:text-[#B8922A] transition-colors"
             style={{ color: "rgba(80,80,122,1)" }}
           >
@@ -137,6 +215,16 @@ const AuthPage = () => {
               <p className="hud-tech">
                 <span style={{ color: "rgba(80,80,122,1)" }}>PERFIL · </span>
                 <span style={{ color: accent }}>{selectedMeta.label.toUpperCase()}</span>
+              </p>
+            )}
+            {mode === "forgot" && (
+              <p className="hud-tech" style={{ color: "rgba(80,80,122,1)" }}>
+                DIGITE SEU EMAIL — ENVIAMOS UM LINK DE RECUPERAÇÃO
+              </p>
+            )}
+            {mode === "recovery" && (
+              <p className="hud-tech" style={{ color: "rgba(80,80,122,1)" }}>
+                ESCOLHA SUA NOVA SENHA
               </p>
             )}
           </div>
@@ -277,6 +365,19 @@ const AuthPage = () => {
                       />
                     </div>
 
+                    {mode === "login" && (
+                      <div className="text-right -mt-1">
+                        <button
+                          type="button"
+                          onClick={() => setMode("forgot")}
+                          className="hud-tech underline"
+                          style={{ color: "rgba(80,80,122,1)", fontSize: 11 }}
+                        >
+                          ESQUECI MINHA SENHA
+                        </button>
+                      </div>
+                    )}
+
                     <button
                       type="submit"
                       disabled={loading}
@@ -294,30 +395,13 @@ const AuthPage = () => {
                       AINDA NÃO CADASTRADO?
                     </p>
                     <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 hud-tech">
-                      <span style={{ color: "rgba(80,80,122,1)" }}>CADASTRAR ·</span>
                       <button
                         type="button"
-                        onClick={() => { setMode("signup"); setChoice("athlete"); setStep(2); }}
-                        className="underline"
-                        style={{ color: "#00C896" }}
-                      >
-                        ATLETA
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => { setMode("signup"); setChoice("nutritionist"); setStep(2); }}
+                        onClick={() => { setMode("signup"); setChoice(null); setStep(1); }}
                         className="underline"
                         style={{ color: "#B8922A" }}
                       >
-                        PROFISSIONAL
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => { setMode("signup"); setChoice("bodybuilding_coach"); setStep(2); }}
-                        className="underline"
-                        style={{ color: "#00D4FF" }}
-                      >
-                        COACH
+                        ESCOLHER MEU PERFIL E CADASTRAR
                       </button>
                     </div>
                   </div>
@@ -329,6 +413,72 @@ const AuthPage = () => {
                     </button>
                   </p>
                 )}
+              </motion.div>
+            )}
+
+            {mode === "forgot" && (
+              <motion.div key="forgotStep" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="max-w-md mx-auto">
+                <HudPanel tag="AUTH-RECOVER" tagColor="#B8922A">
+                  <form onSubmit={handleForgotSubmit} className="space-y-4 p-6 pt-8">
+                    <div className="hud-input-row">
+                      <span className="hud-tag">EML</span>
+                      <input
+                        type="email"
+                        placeholder="seu@email.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                      />
+                    </div>
+
+                    <button type="submit" disabled={loading} className="hud-btn w-full mt-2" style={{ background: "#B8922A" }}>
+                      {loading ? "ENVIANDO..." : "► ENVIAR LINK DE RECUPERAÇÃO"}
+                    </button>
+                  </form>
+                </HudPanel>
+
+                <p className="text-center pt-6 hud-tech">
+                  <span style={{ color: "rgba(80,80,122,1)" }}>LEMBROU A SENHA? </span>
+                  <button type="button" onClick={() => setMode("login")} className="underline" style={{ color: "#B8922A" }}>
+                    FAZER LOGIN
+                  </button>
+                </p>
+              </motion.div>
+            )}
+
+            {mode === "recovery" && (
+              <motion.div key="recoveryStep" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="max-w-md mx-auto">
+                <HudPanel tag="AUTH-NEW-PWD" tagColor="#00D4FF">
+                  <form onSubmit={handleRecoverySubmit} className="space-y-4 p-6 pt-8">
+                    <div className="hud-input-row">
+                      <span className="hud-tag">PWD</span>
+                      <input
+                        type="password"
+                        placeholder="Nova senha (mín. 6 caracteres)"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                        minLength={6}
+                      />
+                    </div>
+
+                    <div className="hud-input-row">
+                      <span className="hud-tag">PWD</span>
+                      <input
+                        type="password"
+                        placeholder="Confirme a nova senha"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        required
+                        minLength={6}
+                      />
+                    </div>
+
+                    <button type="submit" disabled={loading} className="hud-btn w-full mt-2" style={{ background: "#00D4FF" }}>
+                      {loading ? "SALVANDO..." : "► SALVAR NOVA SENHA"}
+                    </button>
+                  </form>
+                </HudPanel>
               </motion.div>
             )}
           </AnimatePresence>

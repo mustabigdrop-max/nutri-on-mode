@@ -79,8 +79,8 @@ const LandingCoach = () => {
           <div className="mt-7 -mx-1">
             <div className="gap-2 overflow-x-auto pb-2 scrollbar-hide px-1 flex-col font-extrabold flex items-start justify-start opacity-100">
               {[
-                "Nutrition Coach",
-                "Personal Trainer",
+                "Coach de Nutrição",
+                "Treinador Pessoal",
                 "Nutricionista",
                 "Nutrólogo",
                 "Acadêmico de Nutrição",
