@@ -4,7 +4,7 @@ import {
   Activity, ChevronDown, Zap, Shuffle, ShieldCheck, CalendarDays, Utensils, Flag,
   LayoutDashboard, Calendar, Shield, BarChart3, Footprints, GitBranch, Users,
   Heart, Route, Gauge, Flame, TrendingUp, Dumbbell, Fuel, Timer, AlertTriangle,
-  RefreshCw, Target, Scale, ShieldAlert, HeartPulse,
+  RefreshCw, Target, Scale, ShieldAlert, HeartPulse, Atom, FlaskConical, Syringe,
 } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
 import { useToast } from "@/hooks/use-toast";
@@ -20,8 +20,13 @@ import {
   hybridStack, muscleGuardRules, severityColors, annualPeriodization,
   transitionRules, overviewPillars,
 } from "@/data/runonData";
+import {
+  ScienceTab, BodybuilderTab, MastersTab, PharmaTab, PeptidesTab, FuelTab, MonitorTab,
+} from "@/components/runon/hybridTabs";
 
-type TabId = "overview" | "sessoes" | "semana" | "race" | "nutrition" | "guard" | "periodizacao";
+type TabId =
+  | "overview" | "sessoes" | "semana" | "race" | "nutrition" | "guard" | "periodizacao"
+  | "ciencia" | "bbsplit" | "mestres" | "farmaco" | "peptideos" | "fuel" | "monitor";
 
 const TABS: { id: TabId; label: string; icon: any }[] = [
   { id: "overview", label: "OVERVIEW", icon: LayoutDashboard },
@@ -31,6 +36,13 @@ const TABS: { id: TabId; label: string; icon: any }[] = [
   { id: "nutrition", label: "NUTRITION", icon: Utensils },
   { id: "guard", label: "MUSCLE GUARD", icon: Shield },
   { id: "periodizacao", label: "PERIODIZAÇÃO", icon: BarChart3 },
+  { id: "ciencia", label: "CIÊNCIA", icon: Atom },
+  { id: "bbsplit", label: "BB SPLIT", icon: Dumbbell },
+  { id: "mestres", label: "MESTRES", icon: Users },
+  { id: "farmaco", label: "FARMACOLOGIA", icon: FlaskConical },
+  { id: "peptideos", label: "PEPTÍDEOS", icon: Syringe },
+  { id: "fuel", label: "FUEL MATRIX", icon: Fuel },
+  { id: "monitor", label: "MONITOR", icon: HeartPulse },
 ];
 
 const SESSION_ICONS: Record<string, any> = {
@@ -652,6 +664,13 @@ export default function RunOnPage() {
         {tab === "nutrition" && <NutritionTab />}
         {tab === "guard" && <GuardTab />}
         {tab === "periodizacao" && <PeriodizationTab />}
+        {tab === "ciencia" && <ScienceTab />}
+        {tab === "bbsplit" && <BodybuilderTab />}
+        {tab === "mestres" && <MastersTab />}
+        {tab === "farmaco" && <PharmaTab />}
+        {tab === "peptideos" && <PeptidesTab />}
+        {tab === "fuel" && <FuelTab />}
+        {tab === "monitor" && <MonitorTab />}
 
         <div className="text-center mt-10 pt-8" style={{ borderTop: `1px solid ${RC.border}` }}>
           <p style={mono(6, RC.mutedDark, 3)}>RUNON HYBRID PERFORMANCE ENGINE · NUTRION PLATFORM</p>
