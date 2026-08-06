@@ -140,16 +140,14 @@ function ProfileSummary({ p, onEdit, onGenerate, hasProtocol, lastGeneratedAt }:
 
 /* ─────────── OVERVIEW ─────────── */
 function OverviewTab() {
-  const [profile, setProfile] = useState<HybridProfile | null>(() => loadProfile());
   const [editing, setEditing] = useState(false);
   const [aegisOpen, setAegisOpen] = useState(false);
-  const [protocol, setProtocol] = useState<RunOnProtocol | null>(() => loadGeneratedProtocol());
+  const { profile, protocol, saveProfile: persistProfile, saveProtocol, isSignedIn } = useRunonProfile();
   const { toast } = useToast();
 
   const runGenerate = (p: HybridProfile) => {
     const generated = generateProtocol(p);
-    saveGeneratedProtocol(generated);
-    setProtocol(generated);
+    saveProtocol(generated);
     toast({
       title: "Protocolo RunON gerado",
       description: `${generated.runSessions} sessões de corrida · risco de interferência ${generated.riskLabel.toLowerCase()}.`,
