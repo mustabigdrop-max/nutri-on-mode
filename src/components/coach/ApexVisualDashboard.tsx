@@ -2819,11 +2819,13 @@ Suporte em uso: ${suporte || "não informado"}` : "";
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
+                console.log("[DR.VERTEX DEBUG] Consentimento aceito no modal de virilização");
                 setVirilizationRiskAccepted(true);
                 try { sessionStorage.setItem("apex_virilization_risk_accepted", "1"); } catch {}
                 setShowVirilizationModal(false);
                 const action = pendingVertexAction;
                 setPendingVertexAction(null);
+                console.log("[DR.VERTEX DEBUG] Ação pendente presente?", !!action);
                 if (action) action();
               }}
               style={{ background: "#D94040", color: "#fff", border: "none", fontWeight: 700 }}
