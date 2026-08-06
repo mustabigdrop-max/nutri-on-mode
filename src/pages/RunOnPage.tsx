@@ -374,6 +374,9 @@ function RaceTab({ raceMode, onRaceMode }: { raceMode: RaceModeConfig; onRaceMod
   const r = racePreps.find((x) => x.id === race)!;
   return (
     <div className="space-y-4">
+      <RaceModeBar cfg={raceMode} onChange={onRaceMode} />
+      {raceMode.enabled && <StridePlannerCard cfg={raceMode} />}
+
       <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
         {racePreps.map((p) => (
           <Chip key={p.id} active={p.id === race} color={p.color} onClick={() => setRace(p.id)}>
