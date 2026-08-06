@@ -12,6 +12,10 @@ import HybridProfileWizard from "@/components/runon/HybridProfileWizard";
 import AegisCard from "@/components/runon/AegisCard";
 import AegisPanel from "@/components/runon/AegisPanel";
 import { HybridProfile, loadProfile, saveProfile } from "@/lib/runonProfile";
+import HybridProtocolResult from "@/components/runon/HybridProtocolResult";
+import {
+  generateProtocol, loadGeneratedProtocol, saveGeneratedProtocol, RunOnProtocol,
+} from "@/lib/runonProtocol";
 import {
   RC, mono, raj, HexBackdrop, IconBox, RBadge, SectionCard, StatCard, Chip,
 } from "@/components/runon/runonUi";
@@ -71,7 +75,7 @@ function ProfileSummary({ p, onEdit, onGenerate }: { p: HybridProfile; onEdit: (
     ["STATUS AEGIS", p.usoErgogenicos || "NÃO INFORMADO"],
   ];
   return (
-    <SectionCard label="PERFIL HYBRID" icon={Users}>
+    <SectionCard label="SEU PERFIL HYBRID" icon={Users}>
       <div className="flex justify-end -mt-10 mb-4">
         <button
           onClick={onEdit}
@@ -103,7 +107,18 @@ function OverviewTab() {
   const [profile, setProfile] = useState<HybridProfile | null>(() => loadProfile());
   const [editing, setEditing] = useState(false);
   const [aegisOpen, setAegisOpen] = useState(false);
+  const [protocol, setProtocol] = useState<RunOnProtocol | null>(() => loadGeneratedProtocol());
   const { toast } = useToast();
+
+  const runGenerate = (p: HybridProfile) => {
+    const generated = generateProtocol(p);
+    saveGeneratedProtocol(generated);
+    setProtocol(generated);
+    toast({
+      title: "Protocolo RunON gerado",
+      description: `${generated.runSessions} sessões de corrida · risco de interferência ${generated.riskLabel.toLowerCase()}.`,
+    });
+  };
 
   return (
     <div className="space-y-4">
@@ -158,7 +173,7 @@ function OverviewTab() {
 
       {/* Perfil / wizard */}
       {editing || !profile ? (
-        <SectionCard label="PERFIL HYBRID" icon={Users}>
+        <SectionCard label="SEU PERFIL HYBRID" icon={Users}>
           <p style={{ fontSize: 12, color: "#555", lineHeight: 1.6, marginBottom: 14 }}>
             Preencha para receber seu protocolo integrado de corrida + musculação.
           </p>
@@ -169,18 +184,15 @@ function OverviewTab() {
               saveProfile(p);
               setProfile(p);
               setEditing(false);
-              toast({ title: "Perfil Hybrid salvo", description: "Protocolo RunON calibrado com seus dados." });
+              runGenerate(p);
             }}
           />
         </SectionCard>
       ) : (
-        <ProfileSummary
-          p={profile}
-          onEdit={() => setEditing(true)}
-          onGenerate={() =>
-            toast({ title: "Protocolo RunON", description: "Perfil pronto — consulte o AEGIS para o direcionamento ergogênico." })
-          }
-        />
+        <>
+          <ProfileSummary p={profile} onEdit={() => setEditing(true)} onGenerate={() => runGenerate(profile)} />
+          {protocol && <HybridProtocolResult protocol={protocol} onRegenerate={() => runGenerate(profile)} />}
+        </>
       )}
 
       <AegisCard onOpen={() => setAegisOpen(true)} />
