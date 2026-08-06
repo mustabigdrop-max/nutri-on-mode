@@ -4,7 +4,7 @@ import {
   Activity, ChevronDown, Zap, Shuffle, ShieldCheck, CalendarDays, Utensils, Flag,
   LayoutDashboard, Calendar, Shield, BarChart3, Footprints, GitBranch, Users,
   Heart, Route, Gauge, Flame, TrendingUp, Dumbbell, Fuel, Timer, AlertTriangle,
-  RefreshCw, Target, Scale, ShieldAlert, HeartPulse, Atom, FlaskConical, Syringe,
+  RefreshCw, Target, Scale, ShieldAlert, HeartPulse, Atom, FlaskConical, Syringe, RotateCcw,
 } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
 import { useToast } from "@/hooks/use-toast";
