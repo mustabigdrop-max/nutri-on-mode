@@ -4,7 +4,7 @@ import {
   Activity, ChevronDown, Zap, Shuffle, ShieldCheck, CalendarDays, Utensils, Flag,
   LayoutDashboard, Calendar, Shield, BarChart3, Footprints, GitBranch, Users,
   Heart, Route, Gauge, Flame, TrendingUp, Dumbbell, Fuel, Timer, AlertTriangle,
-  RefreshCw, Target, Scale, ShieldAlert, HeartPulse, Atom, FlaskConical, Syringe,
+  RefreshCw, Target, Scale, ShieldAlert, HeartPulse, Atom, FlaskConical, Syringe, RotateCcw,
 } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
 import { useToast } from "@/hooks/use-toast";
@@ -71,7 +71,7 @@ const REFERENCES = [
 ];
 
 /* ─────────── PERFIL ─────────── */
-function ProfileSummary({ p, onEdit, onGenerate }: { p: HybridProfile; onEdit: () => void; onGenerate: () => void }) {
+function ProfileSummary({ p, onEdit, onGenerate, hasProtocol, lastGeneratedAt }: { p: HybridProfile; onEdit: () => void; onGenerate: () => void; hasProtocol?: boolean; lastGeneratedAt?: string }) {
   const items: [string, string][] = [
     ["NOME", p.nome || "—"],
     ["PESO", p.peso ? `${p.peso} kg` : "—"],
@@ -96,15 +96,23 @@ function ProfileSummary({ p, onEdit, onGenerate }: { p: HybridProfile; onEdit: (
       </div>
       <button
         onClick={onGenerate}
-        className="w-full mt-4"
+        className="w-full mt-4 flex items-center justify-center gap-2"
         style={{
           ...mono(9, "#020205", 3),
           background: "linear-gradient(135deg, #00D4FF, #00B4DD)",
           fontWeight: 700, padding: 14, borderRadius: 8, boxShadow: `0 0 20px ${RC.cyanGlow}`,
         }}
       >
-        GERAR MEU PROTOCOLO RUNON
+        <RotateCcw style={{ width: 14, height: 14 }} />
+        {hasProtocol ? "RECALCULAR MEU PROTOCOLO RUNON" : "GERAR MEU PROTOCOLO RUNON"}
       </button>
+      {hasProtocol && lastGeneratedAt && (
+        <p style={{ ...mono(6, RC.mutedDark, 2), textAlign: "center", marginTop: 8 }}>
+          ÚLTIMO CÁLCULO ·{" "}
+          {new Date(lastGeneratedAt).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
+          {" "}· USA OS DADOS DO WIZARD
+        </p>
+      )}
     </SectionCard>
   );
 }
@@ -197,7 +205,13 @@ function OverviewTab() {
         </SectionCard>
       ) : (
         <>
-          <ProfileSummary p={profile} onEdit={() => setEditing(true)} onGenerate={() => runGenerate(profile)} />
+          <ProfileSummary
+            p={profile}
+            onEdit={() => setEditing(true)}
+            onGenerate={() => runGenerate(profile)}
+            hasProtocol={!!protocol}
+            lastGeneratedAt={protocol?.generatedAt}
+          />
           {protocol && <HybridProtocolResult protocol={protocol} onRegenerate={() => runGenerate(profile)} />}
         </>
       )}
