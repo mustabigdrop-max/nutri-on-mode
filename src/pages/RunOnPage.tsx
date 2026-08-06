@@ -697,7 +697,7 @@ export default function RunOnPage() {
         {tab === "overview" && <OverviewTab />}
         {tab === "sessoes" && <SessionsTab />}
         {tab === "semana" && <WeeklyTab />}
-        {tab === "race" && <RaceTab />}
+        {tab === "race" && <RaceTab raceMode={raceMode} onRaceMode={updateRaceMode} />}
         {tab === "nutrition" && <NutritionTab />}
         {tab === "guard" && <GuardTab />}
         {tab === "periodizacao" && <PeriodizationTab />}
@@ -706,7 +706,13 @@ export default function RunOnPage() {
         {tab === "mestres" && <MastersTab />}
         {tab === "farmaco" && <PharmaTab />}
         {tab === "peptideos" && <PeptidesTab />}
-        {tab === "fuel" && <FuelTab />}
+        {tab === "fuel" && (
+          <div className="space-y-4">
+            <RaceModeBar cfg={raceMode} onChange={updateRaceMode} />
+            {raceMode.enabled && <RaceFuelMatrix cfg={raceMode} />}
+            <FuelTab />
+          </div>
+        )}
         {tab === "monitor" && <MonitorTab />}
 
         <div className="text-center mt-10 pt-8" style={{ borderTop: `1px solid ${RC.border}` }}>
