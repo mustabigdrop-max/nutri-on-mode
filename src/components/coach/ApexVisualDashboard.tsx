@@ -1949,10 +1949,27 @@ Suporte em uso: ${suporte || "não informado"}` : "";
                   <button
                     type="button"
                     onClick={() => {
-                      if (vertexV4Loading) return;
+                      console.log("[DR.VERTEX DEBUG] Botão clicado");
+                      console.log("[DR.VERTEX DEBUG] Handler registrado no botão", typeof runVertexV4);
+                      console.log("[DR.VERTEX DEBUG] Props recebidas:", {
+                        analysisId: savedAnalysisId,
+                        compounds: formData?.compostos,
+                        profileData: { athlete, objetivoCiclo, semanaCiclo, duracaoCiclo, suporte },
+                      });
+                      console.log("[DR.VERTEX DEBUG] Estados de bloqueio:", {
+                        vertexV4Loading,
+                        virilizationRiskAccepted,
+                        temAnaliseAnterior: !!vertexV4Analysis,
+                      });
+                      if (vertexV4Loading) {
+                        console.warn("[DR.VERTEX DEBUG] RETURN PREMATURO: loading travado em true");
+                        return;
+                      }
                       if (virilizationRiskAccepted) {
+                        console.log("[DR.VERTEX DEBUG] Risco aceito → chamando runVertexV4()");
                         runVertexV4();
                       } else {
+                        console.log("[DR.VERTEX DEBUG] Risco NÃO aceito → abrindo modal de consentimento (ação pendente)");
                         setPendingVertexAction(() => () => runVertexV4());
                         setShowVirilizationModal(true);
                       }
