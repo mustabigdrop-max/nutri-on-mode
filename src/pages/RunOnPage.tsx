@@ -71,7 +71,7 @@ const REFERENCES = [
 ];
 
 /* ─────────── PERFIL ─────────── */
-function ProfileSummary({ p, onEdit, onGenerate }: { p: HybridProfile; onEdit: () => void; onGenerate: () => void }) {
+function ProfileSummary({ p, onEdit, onGenerate, hasProtocol, lastGeneratedAt }: { p: HybridProfile; onEdit: () => void; onGenerate: () => void; hasProtocol?: boolean; lastGeneratedAt?: string }) {
   const items: [string, string][] = [
     ["NOME", p.nome || "—"],
     ["PESO", p.peso ? `${p.peso} kg` : "—"],
