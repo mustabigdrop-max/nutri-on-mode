@@ -205,7 +205,13 @@ function OverviewTab() {
         </SectionCard>
       ) : (
         <>
-          <ProfileSummary p={profile} onEdit={() => setEditing(true)} onGenerate={() => runGenerate(profile)} />
+          <ProfileSummary
+            p={profile}
+            onEdit={() => setEditing(true)}
+            onGenerate={() => runGenerate(profile)}
+            hasProtocol={!!protocol}
+            lastGeneratedAt={protocol?.generatedAt}
+          />
           {protocol && <HybridProtocolResult protocol={protocol} onRegenerate={() => runGenerate(profile)} />}
         </>
       )}
