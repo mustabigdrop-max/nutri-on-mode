@@ -572,6 +572,21 @@ function PeriodizationTab() {
 export default function RunOnPage() {
   const navigate = useNavigate();
   const [tab, setTab] = useState<TabId>("overview");
+  const [raceMode, setRaceMode] = useState<RaceModeConfig>(() => {
+    const saved = loadRaceMode();
+    if (saved) return saved;
+    const p = loadProfile();
+    const dist = (["5k", "10k", "21k", "42k"] as const).find(
+      (d) => (p?.distanciaAlvo || "").toLowerCase().replace(/\s/g, "").includes(d),
+    );
+    return defaultRaceMode(dist ?? "10k", Number(p?.peso) || 75);
+  });
+
+  const updateRaceMode = (c: RaceModeConfig) => {
+    setRaceMode(c);
+    saveRaceMode(c);
+  };
+
 
   return (
     <div className="min-h-screen pb-28 relative" style={{ background: RC.bg }}>
