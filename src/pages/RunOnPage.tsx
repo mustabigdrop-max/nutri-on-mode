@@ -27,6 +27,13 @@ import {
 import {
   ScienceTab, BodybuilderTab, MastersTab, PharmaTab, PeptidesTab, FuelTab, MonitorTab,
 } from "@/components/runon/hybridTabs";
+import RaceModeBar from "@/components/runon/RaceModeBar";
+import StridePlannerCard from "@/components/runon/StridePlannerCard";
+import RaceFuelMatrix from "@/components/runon/RaceFuelMatrix";
+import {
+  RaceModeConfig, defaultRaceMode, loadRaceMode, saveRaceMode,
+} from "@/lib/raceMode";
+
 
 type TabId =
   | "overview" | "sessoes" | "semana" | "race" | "nutrition" | "guard" | "periodizacao"
