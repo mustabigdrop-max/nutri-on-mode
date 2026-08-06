@@ -736,6 +736,18 @@ export default function RunOnPage() {
         {tab === "nutrition" && <NutritionTab />}
         {tab === "guard" && <GuardTab />}
         {tab === "periodizacao" && <PeriodizationTab />}
+        {tab === "stride" && <StrideLabTab />}
+        {tab === "shoes" && <ShoeTab />}
+        {tab === "hrv" && <HrvTab />}
+        {tab === "bfr" && <BfrTab />}
+        {tab === "joint" && <JointTab />}
+        {tab === "restore" && <RestoreTab />}
+        {tab === "weather" && <WeatherTab />}
+        {tab === "mind" && <MindTab />}
+        {tab === "couch" && <CouchTab />}
+        {tab === "ranks" && <RanksTab />}
+        {tab === "integra" && <IntegrationsTab />}
+
         {tab === "ciencia" && <ScienceTab />}
         {tab === "bbsplit" && <BodybuilderTab />}
         {tab === "mestres" && <MastersTab />}
