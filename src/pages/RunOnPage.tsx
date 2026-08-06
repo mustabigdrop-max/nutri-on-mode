@@ -11,11 +11,10 @@ import { useToast } from "@/hooks/use-toast";
 import HybridProfileWizard from "@/components/runon/HybridProfileWizard";
 import AegisCard from "@/components/runon/AegisCard";
 import AegisPanel from "@/components/runon/AegisPanel";
-import { HybridProfile, loadProfile, saveProfile } from "@/lib/runonProfile";
+import { HybridProfile, loadProfile } from "@/lib/runonProfile";
+import { useRunonProfile } from "@/hooks/useRunonProfile";
 import HybridProtocolResult from "@/components/runon/HybridProtocolResult";
-import {
-  generateProtocol, loadGeneratedProtocol, saveGeneratedProtocol, RunOnProtocol,
-} from "@/lib/runonProtocol";
+import { generateProtocol } from "@/lib/runonProtocol";
 import {
   RC, mono, raj, HexBackdrop, IconBox, RBadge, SectionCard, StatCard, Chip,
 } from "@/components/runon/runonUi";
