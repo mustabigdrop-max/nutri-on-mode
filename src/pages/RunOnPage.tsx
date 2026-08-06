@@ -33,11 +33,20 @@ import RaceFuelMatrix from "@/components/runon/RaceFuelMatrix";
 import {
   RaceModeConfig, defaultRaceMode, loadRaceMode, saveRaceMode,
 } from "@/lib/raceMode";
+import {
+  StrideLabTab, ShoeTab, HrvTab, BfrTab, JointTab, RestoreTab, WeatherTab,
+  MindTab, CouchTab, RanksTab, IntegrationsTab,
+} from "@/components/runon/expertTabs";
+import {
+  ShoppingBag, Lock, ShieldPlus, CloudSun, Sparkles, Brain, Rocket, Trophy, Network,
+} from "lucide-react";
 
 
 type TabId =
   | "overview" | "sessoes" | "semana" | "race" | "nutrition" | "guard" | "periodizacao"
-  | "ciencia" | "bbsplit" | "mestres" | "farmaco" | "peptideos" | "fuel" | "monitor";
+  | "ciencia" | "bbsplit" | "mestres" | "farmaco" | "peptideos" | "fuel" | "monitor"
+  | "stride" | "shoes" | "hrv" | "bfr" | "joint" | "restore" | "weather" | "mind"
+  | "couch" | "ranks" | "integra";
 
 const TABS: { id: TabId; label: string; icon: any }[] = [
   { id: "overview", label: "OVERVIEW", icon: LayoutDashboard },
@@ -47,6 +56,17 @@ const TABS: { id: TabId; label: string; icon: any }[] = [
   { id: "nutrition", label: "NUTRITION", icon: Utensils },
   { id: "guard", label: "MUSCLE GUARD", icon: Shield },
   { id: "periodizacao", label: "PERIODIZAÇÃO", icon: BarChart3 },
+  { id: "stride", label: "STRIDE LAB", icon: Footprints },
+  { id: "shoes", label: "SHOE SELECTOR", icon: ShoppingBag },
+  { id: "hrv", label: "HRV READINESS", icon: HeartPulse },
+  { id: "bfr", label: "FLOW LOCK", icon: Lock },
+  { id: "joint", label: "JOINT SHIELD", icon: ShieldPlus },
+  { id: "restore", label: "RESTORE ENGINE", icon: Sparkles },
+  { id: "weather", label: "WEATHER SHIELD", icon: CloudSun },
+  { id: "mind", label: "MIND TRACK", icon: Brain },
+  { id: "couch", label: "COUCH TO RUNON", icon: Rocket },
+  { id: "ranks", label: "RANKS", icon: Trophy },
+  { id: "integra", label: "INTEGRAÇÕES", icon: Network },
   { id: "ciencia", label: "CIÊNCIA", icon: Atom },
   { id: "bbsplit", label: "BB SPLIT", icon: Dumbbell },
   { id: "mestres", label: "MESTRES", icon: Users },
@@ -55,6 +75,7 @@ const TABS: { id: TabId; label: string; icon: any }[] = [
   { id: "fuel", label: "FUEL MATRIX", icon: Fuel },
   { id: "monitor", label: "MONITOR", icon: HeartPulse },
 ];
+
 
 const SESSION_ICONS: Record<string, any> = {
   easy: Heart, long: Route, tempo: Gauge, intervals: Flame, incline: TrendingUp, fartlek: Shuffle,
@@ -715,6 +736,18 @@ export default function RunOnPage() {
         {tab === "nutrition" && <NutritionTab />}
         {tab === "guard" && <GuardTab />}
         {tab === "periodizacao" && <PeriodizationTab />}
+        {tab === "stride" && <StrideLabTab />}
+        {tab === "shoes" && <ShoeTab />}
+        {tab === "hrv" && <HrvTab />}
+        {tab === "bfr" && <BfrTab />}
+        {tab === "joint" && <JointTab />}
+        {tab === "restore" && <RestoreTab />}
+        {tab === "weather" && <WeatherTab />}
+        {tab === "mind" && <MindTab />}
+        {tab === "couch" && <CouchTab />}
+        {tab === "ranks" && <RanksTab />}
+        {tab === "integra" && <IntegrationsTab />}
+
         {tab === "ciencia" && <ScienceTab />}
         {tab === "bbsplit" && <BodybuilderTab />}
         {tab === "mestres" && <MastersTab />}
