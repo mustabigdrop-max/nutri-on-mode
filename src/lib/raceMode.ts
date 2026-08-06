@@ -213,6 +213,7 @@ export function buildStridePlan(cfg: RaceModeConfig): StridePlan {
     longRunKm: Math.round(LONG_RUN_KM[distance.id] * phase.volumeFactor),
     qualitySessions: phase.id === "raceweek" ? 1 : phase.id === "taper" ? 2 : 3,
     zones,
+    splits,
     cues: [
       `Cadência alvo ${distance.cadenceTarget[0]}–${distance.cadenceTarget[1]} ppm — passada estimada ${strideLengthCm} cm.`,
       "Pé aterrissa sob o quadril: overstriding aumenta força de frenagem no joelho.",
