@@ -521,7 +521,17 @@ export default function MCEIntelligencePage() {
           <div style={{ display: "flex", justifyContent: "center", marginTop: 20 }}>
             <TriangleDiagram scores={scores} activeKey={pillar} />
           </div>
+
+          <div style={{ marginTop: 18, padding: "16px 14px", borderRadius: 12, background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}>
+            <p key={quoteIdx} style={{ fontFamily: DISPLAY, fontSize: 16, fontStyle: "italic", color: "rgba(255,255,255,0.8)", animation: "mceFade 0.6s ease" }}>
+              "{MCE_QUOTES[quoteIdx]}"
+            </p>
+            <span style={{ fontFamily: MONO, fontSize: 9, letterSpacing: 2, color: "rgba(255,255,255,0.25)" }}>
+              @DIOGOMELLO180 · MCE METHOD
+            </span>
+          </div>
         </section>
+
 
         {/* Pillar nav */}
         <div style={{ marginTop: 8 }}>
