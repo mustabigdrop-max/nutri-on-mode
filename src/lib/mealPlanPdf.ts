@@ -1,4 +1,5 @@
 import jsPDF from "jspdf";
+import { buildPlanAudit, summarizeAudit } from "@/lib/planPdfAudit";
 
 interface PlanItem {
   day_index: number;
