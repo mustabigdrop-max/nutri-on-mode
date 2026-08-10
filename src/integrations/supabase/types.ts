@@ -5384,6 +5384,33 @@ export type Database = {
         }
         Relationships: []
       }
+      mce_diagnostics: {
+        Row: {
+          answers: number[]
+          created_at: string
+          id: string
+          pillar: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          answers?: number[]
+          created_at?: string
+          id?: string
+          pillar: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          answers?: number[]
+          created_at?: string
+          id?: string
+          pillar?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       mce_exercises_done: {
         Row: {
           completed_at: string
