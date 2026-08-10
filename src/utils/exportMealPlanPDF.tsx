@@ -314,9 +314,49 @@ const MealPlanDoc = ({
         })}
         <Footer coachName={coachName} patientName={patientName} />
       </Page>
+
+      {/* AUDITORIA NUTRICIONAL */}
+      {audits.length > 0 && (
+        <Page size="A4" style={styles.page}>
+          <Text style={styles.sectionTitle}>Auditoria Nutricional</Text>
+          <View style={styles.card}>
+            <Text style={{ fontSize: 9, color: COLORS.muted, lineHeight: 1.5 }}>
+              Validação automática por dia: itens sem dados nutricionais, pesos/porções suspeitos e desvio do total
+              recalculado (Atwater) em relação à meta de {patient.target_kcal || "—"} kcal.
+            </Text>
+            <Text style={{ fontSize: 9, color: COLORS.text, marginTop: 6, fontFamily: "Helvetica-Bold" }}>
+              {auditSummary.errors} erro(s) crítico(s) · {auditSummary.warnings} aviso(s)
+            </Text>
+          </View>
+
+          {audits.map((audit) => (
+            <View key={audit.dayIndex} style={audit.alerts.length ? styles.auditCard : styles.auditOkCard} wrap={false}>
+              <Text style={styles.auditDay}>{DAYS[audit.dayIndex] || `Dia ${audit.dayIndex + 1}`}</Text>
+              <Text style={styles.auditMeta}>
+                Total recalculado: {audit.totals.kcal} kcal · P{audit.totals.protein}g · C{audit.totals.carbs}g · G
+                {audit.totals.fat}g
+                {audit.targetKcal > 0
+                  ? ` · desvio ${audit.deviation > 0 ? "+" : ""}${Math.round(audit.deviation)} kcal (${audit.deviationPct.toFixed(1)}%)`
+                  : ""}
+              </Text>
+              {audit.alerts.length === 0 ? (
+                <Text style={styles.auditOk}>Nenhuma inconsistência detectada.</Text>
+              ) : (
+                audit.alerts.map((alert, idx) => (
+                  <Text key={idx} style={alert.type === "error" ? styles.auditError : styles.auditWarn}>
+                    {alert.message}
+                  </Text>
+                ))
+              )}
+            </View>
+          ))}
+          <Footer coachName={coachName} patientName={patientName} />
+        </Page>
+      )}
     </Document>
   );
 };
+
 
 export async function exportMealPlanPDF(
   patient: PatientLike,
