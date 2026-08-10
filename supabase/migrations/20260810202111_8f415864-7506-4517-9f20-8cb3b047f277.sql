@@ -1,0 +1,1 @@
+ALTER TABLE public.partners DROP COLUMN IF EXISTS temp_password;
