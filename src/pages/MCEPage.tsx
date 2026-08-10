@@ -137,10 +137,22 @@ function AuthorCard({ author, color }: { author: Author; color: string }) {
         </span>
       </div>
       {open && (
-        <p style={{ marginTop: 12, fontFamily: DISPLAY, fontSize: 14, lineHeight: 1.6, color: "rgba(255,255,255,0.65)" }}>
-          {author.desc}
-        </p>
+        <div style={{ marginTop: 12 }}>
+          <div style={{ fontFamily: MONO, fontSize: 9, letterSpacing: 2, color: "rgba(255,255,255,0.3)" }}>
+            OBRA REFERÊNCIA · {author.year}
+          </div>
+          <div style={{ fontFamily: DISPLAY, fontSize: 14, fontWeight: 600, color, marginTop: 2 }}>
+            {author.book}
+          </div>
+          <div style={{ fontFamily: MONO, fontSize: 9, letterSpacing: 2, color: "rgba(255,255,255,0.3)", marginTop: 10 }}>
+            INSIGHT APLICADO AO MCE
+          </div>
+          <p style={{ marginTop: 4, fontFamily: DISPLAY, fontSize: 14, lineHeight: 1.6, color: "rgba(255,255,255,0.65)" }}>
+            {author.insight}
+          </p>
+        </div>
       )}
+
       <div style={{ position: "absolute", bottom: 6, right: 12, fontSize: 9, color: "rgba(255,255,255,0.2)" }}>
         {open ? "▲" : "▼"}
       </div>
