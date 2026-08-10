@@ -22,6 +22,7 @@ const modules: Mod[] = [
   { num: "16", icon: "♀", title: "MÓDULO FEMININO", subtitle: "4 fases do ciclo integradas", color: "#E24B4A", text: "Nutrição e treino ajustados por fase menstrual. Categorias IFBB femininas. Padrões posturais específicos. Análise de celulite fibrótica. Ciclo tracker preditivo com IA. Protocolo de gestação e pós-parto." },
   { num: "17", icon: "🥇", title: "PREP COMPETITIVA", subtitle: "Do bulk ao palco", color: "#B8922A", text: "Periodização completa de off-season ao peak week. SRI monitora o condicionamento semana a semana. Peak week automática com manipulação hídrica, sódio e carboidrato pelo protocolo APEX-NutriPlan integrado." },
   { num: "18", icon: "📋", title: "PROGRESS REPORT", subtitle: "Laudo mensal automático", color: "#4A90D9", text: "Relatório PDF gerado automaticamente com gráficos de evolução, SRI/Body Score, FCS clínico, aderência ao protocolo e próximas metas. Pronto para enviar ao atleta em 1 clique." },
+  { num: "19", icon: "🏃", title: "RUNON — CORRIDA + FORÇA", subtitle: "Periodização conjugada", color: "#00D4FF", text: "Corrida e musculação organizadas na mesma semana sem competir pelo mesmo estímulo. Muscle Guard protege a hipertrofia enquanto o volume aeróbico sobe. Planos de prova de 5K a 42K com taper e carb load estruturados." },
 ];
 
 const Counter = ({ to, inView }: { to: number; inView: boolean }) => {
@@ -129,7 +130,7 @@ const LandingFeatures = () => {
       <div ref={statsRef} className="mt-12 bg-[#0a0a1a] rounded-lg" style={{ border: "1px solid transparent", borderTop: "1px solid #ffffff10" }}>
         <div className="px-6 py-5 grid grid-cols-2 md:grid-cols-4 gap-6">
           {[
-            { v: 18, l1: "MÓDULOS", l2: "ATIVOS" },
+            { v: 19, l1: "MÓDULOS", l2: "ATIVOS" },
             { v: 132, l1: "COMPOSTOS", l2: "CATALOGADOS" },
             { v: 28, l1: "TESTES", l2: "CLÍNICOS" },
             { v: 7, l1: "CAMADAS", l2: "STRATUM" },
