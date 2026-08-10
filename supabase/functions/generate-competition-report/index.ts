@@ -29,8 +29,19 @@ Deno.serve(async (req) => {
     if (planErr || !plan) throw new Error("Plano não encontrado");
 
     // Autorização: apenas o atleta do plano ou o coach responsável
-    const g = await guard(req, corsHeaders, plan.athlete_id);
+    const g = await guard(req, corsHeaders);
     if ("response" in g) return g.response;
+    if (g.userId !== plan.athlete_id) {
+      const { data: ownsPlan } = await supabase.rpc("user_owns_competition_plan", {
+        _user_id: g.userId,
+        _plan_id: plan.id,
+      });
+      if (ownsPlan !== true) {
+        return new Response(JSON.stringify({ error: "Forbidden" }), {
+          status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
 
     // Buscar atleta + coach
     const [{ data: athlete }, { data: coachProfile }] = await Promise.all([
