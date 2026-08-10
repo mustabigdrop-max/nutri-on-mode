@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
+import { guard } from "../_shared/auth.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
@@ -158,6 +159,8 @@ serve(async (req) => {
 
   try {
     const { usuario, mensagem, messages } = await req.json();
+    const g = await guard(req, corsHeaders, usuario?.user_id);
+    if ("response" in g) return g.response;
     
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
