@@ -1,5 +1,6 @@
 import { Document, Page, Text, View, StyleSheet, Image, pdf, Font } from "@react-pdf/renderer";
 import React from "react";
+import { buildPlanAudit, summarizeAudit } from "@/lib/planPdfAudit";
 
 const COLORS = {
   bg: "#09090b",
@@ -52,10 +53,19 @@ const styles = StyleSheet.create({
   totalLabel: { fontSize: 10, fontFamily: "Helvetica-Bold", color: "#ffffff" },
   totalValue: { fontSize: 10, fontFamily: "Helvetica-Bold", color: "#ffffff" },
 
+  auditCard: { backgroundColor: COLORS.card, borderRadius: 6, padding: 12, marginBottom: 10, borderLeft: "3px solid #f59e0b" },
+  auditOkCard: { backgroundColor: COLORS.card, borderRadius: 6, padding: 12, marginBottom: 10, borderLeft: "3px solid #10b981" },
+  auditDay: { fontSize: 11, fontFamily: "Helvetica-Bold", color: COLORS.text, marginBottom: 4 },
+  auditMeta: { fontSize: 8, color: COLORS.muted, marginBottom: 6 },
+  auditError: { fontSize: 8, color: "#f87171", marginBottom: 3, lineHeight: 1.4 },
+  auditWarn: { fontSize: 8, color: "#fbbf24", marginBottom: 3, lineHeight: 1.4 },
+  auditOk: { fontSize: 8, color: "#34d399" },
+
   footer: { position: "absolute", bottom: 18, left: 32, right: 32, borderTop: `0.5px solid ${COLORS.border}`, paddingTop: 8 },
   footerText: { fontSize: 7, color: COLORS.muted, textAlign: "center" },
   footerWarn: { fontSize: 7, color: COLORS.muted, textAlign: "center", fontStyle: "italic", marginTop: 2 },
 });
+
 
 const MEAL_TIMES: Record<string, { label: string; time: string }> = {
   cafe_manha: { label: "Café da manhã", time: "07:00" },
@@ -142,6 +152,11 @@ const MealPlanDoc = ({
   const fatKcal = (patient.target_fat_g || 0) * 9;
   const totalKcal = patient.target_kcal || proteinKcal + carbsKcal + fatKcal || 1;
   const pct = (k: number) => Math.round((k / totalKcal) * 100);
+
+  const audits = buildPlanAudit(items, patient.target_kcal || 0);
+  const auditSummary = summarizeAudit(audits);
+
+
 
   return (
     <Document>
@@ -299,9 +314,49 @@ const MealPlanDoc = ({
         })}
         <Footer coachName={coachName} patientName={patientName} />
       </Page>
+
+      {/* AUDITORIA NUTRICIONAL */}
+      {audits.length > 0 && (
+        <Page size="A4" style={styles.page}>
+          <Text style={styles.sectionTitle}>Auditoria Nutricional</Text>
+          <View style={styles.card}>
+            <Text style={{ fontSize: 9, color: COLORS.muted, lineHeight: 1.5 }}>
+              Validação automática por dia: itens sem dados nutricionais, pesos/porções suspeitos e desvio do total
+              recalculado (Atwater) em relação à meta de {patient.target_kcal || "—"} kcal.
+            </Text>
+            <Text style={{ fontSize: 9, color: COLORS.text, marginTop: 6, fontFamily: "Helvetica-Bold" }}>
+              {auditSummary.errors} erro(s) crítico(s) · {auditSummary.warnings} aviso(s)
+            </Text>
+          </View>
+
+          {audits.map((audit) => (
+            <View key={audit.dayIndex} style={audit.alerts.length ? styles.auditCard : styles.auditOkCard} wrap={false}>
+              <Text style={styles.auditDay}>{DAYS[audit.dayIndex] || `Dia ${audit.dayIndex + 1}`}</Text>
+              <Text style={styles.auditMeta}>
+                Total recalculado: {audit.totals.kcal} kcal · P{audit.totals.protein}g · C{audit.totals.carbs}g · G
+                {audit.totals.fat}g
+                {audit.targetKcal > 0
+                  ? ` · desvio ${audit.deviation > 0 ? "+" : ""}${Math.round(audit.deviation)} kcal (${audit.deviationPct.toFixed(1)}%)`
+                  : ""}
+              </Text>
+              {audit.alerts.length === 0 ? (
+                <Text style={styles.auditOk}>Nenhuma inconsistência detectada.</Text>
+              ) : (
+                audit.alerts.map((alert, idx) => (
+                  <Text key={idx} style={alert.type === "error" ? styles.auditError : styles.auditWarn}>
+                    {alert.message}
+                  </Text>
+                ))
+              )}
+            </View>
+          ))}
+          <Footer coachName={coachName} patientName={patientName} />
+        </Page>
+      )}
     </Document>
   );
 };
+
 
 export async function exportMealPlanPDF(
   patient: PatientLike,

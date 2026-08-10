@@ -1,4 +1,5 @@
 import jsPDF from "jspdf";
+import { buildPlanAudit, summarizeAudit } from "@/lib/planPdfAudit";
 
 interface PlanItem {
   day_index: number;
@@ -244,8 +245,61 @@ export function exportMealPlanPDF(opts: {
     y += 6;
   }
 
+  // Auditoria nutricional (itens sem kcal, pesos suspeitos, total fora da meta)
+  const targetKcal = Number(nutriEliteMeta?.tdee_ajustado || nutriEliteMeta?.kcal_alvo || 0) || 0;
+  const audits = buildPlanAudit(items, targetKcal);
+  if (audits.length) {
+    const summary = summarizeAudit(audits);
+    if (y > H - 140) { doc.addPage(); y = M; }
+    doc.setFillColor(20, 20, 20);
+    doc.rect(M, y, W - 2 * M, 22, "F");
+    doc.setTextColor(232, 160, 32);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.text("Auditoria Nutricional", M + 8, y + 15);
+    doc.setTextColor(220, 220, 220);
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    doc.text(`${summary.errors} erro(s) · ${summary.warnings} aviso(s)`, W - M - 8, y + 15, { align: "right" });
+    y += 30;
+
+    doc.setTextColor(20, 20, 20);
+    for (const audit of audits) {
+      if (y > H - 70) { doc.addPage(); y = M; }
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9);
+      doc.text(DAYS[audit.dayIndex] || `Dia ${audit.dayIndex + 1}`, M, y); y += 11;
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8);
+      doc.setTextColor(110, 110, 110);
+      const desvio = audit.targetKcal > 0
+        ? ` · desvio ${audit.deviation > 0 ? "+" : ""}${Math.round(audit.deviation)} kcal (${audit.deviationPct.toFixed(1)}%)`
+        : "";
+      doc.text(
+        `Total recalculado: ${audit.totals.kcal} kcal · P${audit.totals.protein} C${audit.totals.carbs} G${audit.totals.fat}${desvio}`,
+        M + 6, y, { maxWidth: W - 2 * M - 6 }
+      ); y += 10;
+      if (!audit.alerts.length) {
+        doc.setTextColor(30, 130, 80);
+        doc.text("Nenhuma inconsistência detectada.", M + 6, y); y += 12;
+      } else {
+        for (const alert of audit.alerts) {
+          if (y > H - 50) { doc.addPage(); y = M; }
+          if (alert.type === "error") doc.setTextColor(180, 60, 60);
+          else doc.setTextColor(170, 120, 20);
+          const lines = doc.splitTextToSize(alert.message, W - 2 * M - 10);
+          doc.text(lines, M + 6, y);
+          y += lines.length * 9 + 1;
+        }
+        y += 3;
+      }
+      doc.setTextColor(20, 20, 20);
+    }
+  }
+
   // Footer on each page
   const pages = doc.getNumberOfPages();
+
   for (let i = 1; i <= pages; i++) {
     doc.setPage(i);
     doc.setFontSize(7.5);
