@@ -160,12 +160,17 @@ function AuthorCard({ author, color }: { author: Author; color: string }) {
   );
 }
 
-function DiagnosticSlider({ question, value, onChange, index }: {
-  question: string; value: number; onChange: (v: number) => void; index: number;
+function DiagnosticSlider({ question, refLabel, value, onChange, index }: {
+  question: string; refLabel?: string; value: number; onChange: (v: number) => void; index: number;
 }) {
   const color = value >= 7 ? "#00FF88" : value >= 4 ? "#F59E0B" : "#EF4444";
   return (
     <div style={{ marginBottom: 18 }}>
+      {refLabel && (
+        <div style={{ fontFamily: MONO, fontSize: 9, letterSpacing: 2, color: "rgba(255,255,255,0.28)", marginBottom: 4 }}>
+          {refLabel.toUpperCase()}
+        </div>
+      )}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 8 }}>
         <span style={{ fontFamily: DISPLAY, fontSize: 14, color: "rgba(255,255,255,0.75)" }}>
           {`0${index + 1}. ${question}`}
@@ -174,6 +179,7 @@ function DiagnosticSlider({ question, value, onChange, index }: {
           {value}
         </span>
       </div>
+
       <input
         type="range" min={1} max={10} step={1} value={value}
         onChange={(e) => onChange(Number(e.target.value))}
