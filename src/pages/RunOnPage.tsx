@@ -143,6 +143,8 @@ function OverviewTab() {
   const [aegisOpen, setAegisOpen] = useState(false);
   const { profile, protocol, saveProfile: persistProfile, saveProtocol } = useRunonProfile();
   const { toast } = useToast();
+  const navigate = useNavigate();
+
 
   const runGenerate = (p: HybridProfile) => {
     const generated = generateProtocol(p);
@@ -155,7 +157,49 @@ function OverviewTab() {
 
   return (
     <div className="space-y-4">
+      {/* Desafio 21 Dias */}
+      <div
+        className="desafio-banner"
+        style={{
+          background: "linear-gradient(135deg, #020205, #0a1a2a)",
+          border: "1px solid rgba(0,212,255,0.25)",
+          borderRadius: 12,
+          padding: 20,
+        }}
+      >
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="flex-1 min-w-[220px]">
+            <div className="flex items-center gap-2">
+              <Flame style={{ width: 16, height: 16, color: "#FFB800" }} />
+              <h3 style={{ fontFamily: "'Rajdhani', sans-serif", fontWeight: 700, fontSize: 22, color: "#F5F0E8" }}>
+                DESAFIO 21 DIAS — ATLETA HÍBRIDO
+              </h3>
+            </div>
+            <p style={{ fontFamily: "'Space Mono', monospace", fontWeight: 400, fontSize: 11, color: "#7a8a99", marginTop: 6 }}>
+              "Corra. Levante. Prove que dá pra fazer os dois."
+            </p>
+          </div>
+          <button
+            type="button"
+            aria-label="Começar o Desafio 21 Dias"
+            onClick={() => navigate("/runon/desafio-21")}
+            style={{
+              background: "#00D4FF",
+              color: "#020205",
+              borderRadius: 8,
+              padding: "12px 22px",
+              fontFamily: "'Rajdhani', sans-serif",
+              fontWeight: 700,
+              fontSize: 16,
+            }}
+          >
+            COMEÇAR DESAFIO
+          </button>
+        </div>
+      </div>
+
       {/* O problema */}
+
       <div
         style={{
           background: `linear-gradient(135deg, ${RC.card}, ${RC.bg2})`,
