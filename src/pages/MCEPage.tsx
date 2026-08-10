@@ -569,15 +569,17 @@ export default function MCEIntelligencePage() {
                 Avalie cada item de 1 a 10 com honestidade. O score atualiza e salva automaticamente.
               </p>
 
-              {data.diagnostics.map((q, i) => (
+              {data.diagnostics.map((item, i) => (
                 <DiagnosticSlider
-                  key={q}
-                  question={q}
+                  key={item.q}
+                  question={item.q}
+                  refLabel={item.ref}
                   index={i}
                   value={diagnostics[pillar][i]}
                   onChange={(val) => updateDiagnostic(pillar, i, val)}
                 />
               ))}
+
 
               <div style={{
                 display: "flex", alignItems: "baseline", gap: 8, padding: 16, borderRadius: 12,
