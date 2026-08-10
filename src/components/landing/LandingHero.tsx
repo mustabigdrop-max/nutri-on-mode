@@ -11,8 +11,8 @@ const HUDS = [
   { pos: "top-24 right-[3%]",      align: "right", title: "1RM SUPINO",         value: 120,  suffix: " kg",   bar: CYAN, delay: 4800 },
   { pos: "top-[44%] left-[3%]",    align: "left",  title: "RITMO 5KM",          text: "4'12 /KM",           bar: GOLD, delay: 4900 },
   { pos: "top-[44%] right-[3%]",   align: "right", title: "MICROBIOTA",         text: "GUT-BRAIN ON",       bar: CYAN, delay: 5000 },
-  { pos: "bottom-[10%] left-[3%]", align: "left",  title: "VOLUME SEMANAL",     text: "118K KG",            bar: CYAN, delay: 5100 },
-  { pos: "bottom-[10%] right-[3%]",align: "right", title: "RECUPERAÇÃO",        text: "92% PRONTO",         bar: GOLD, delay: 5200 },
+  { pos: "bottom-24 left-[3%]",    align: "left",  title: "VOLUME SEMANAL",     text: "118K KG",            bar: CYAN, delay: 5100 },
+  { pos: "bottom-24 right-[3%]",   align: "right", title: "RECUPERAÇÃO",        text: "92% PRONTO",         bar: GOLD, delay: 5200 },
 ];
 
 const NODES = [
@@ -456,6 +456,35 @@ const LandingHero = () => {
                 }}
               >
                 Chega de app genérico. Seu protocolo evolui toda semana.
+              </div>
+              <div
+                className="text-center mt-2 px-4"
+                style={{
+                  fontSize: "clamp(10px, 1.2vw, 12px)",
+                  letterSpacing: "0.08em",
+                  color: `${GOLD}cc`,
+                  opacity: phase >= 5 ? 1 : 0,
+                  transition: "opacity .8s ease .65s",
+                }}
+              >
+                Pra quem treina sério: corrida, musculação, performance.
+              </div>
+              <div
+                className="text-center mt-6 pointer-events-auto"
+                style={{
+                  opacity: phase >= 6 ? 1 : 0,
+                  transform: phase >= 6 ? "translateY(0)" : "translateY(6px)",
+                  transition: "opacity .6s ease .2s, transform .6s ease .2s",
+                }}
+              >
+                <a
+                  href="https://pay.kiwify.com.br/G8uxU9O"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-block bg-primary text-black font-mono text-[.72rem] font-medium tracking-[.08em] px-6 py-3 rounded-[2px] transition-all hover:bg-black hover:text-primary hover:outline hover:outline-1 hover:outline-primary"
+                >
+                  Começar agora →
+                </a>
               </div>
             </div>
           </div>
