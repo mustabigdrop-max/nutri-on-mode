@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
+import { guard } from "../_shared/auth.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
@@ -25,7 +26,11 @@ serve(async (req) => {
   }
 
   try {
-    const { coachId, patientId, weekStart } = await req.json();
+    const body = await req.json();
+    const g = await guard(req, corsHeaders, body?.patientId);
+    if ("response" in g) return g.response;
+    const { coachId, weekStart } = body;
+    const patientId = body?.patientId || g.userId;
     
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;

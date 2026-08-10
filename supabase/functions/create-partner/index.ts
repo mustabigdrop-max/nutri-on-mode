@@ -175,7 +175,6 @@ Deno.serve(async (req) => {
       status: "active",
       referral_count: 0,
       commission_total: 0,
-      temp_password: password,
     });
 
     if (insertErr) {

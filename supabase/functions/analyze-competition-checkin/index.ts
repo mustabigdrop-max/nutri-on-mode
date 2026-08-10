@@ -1,6 +1,8 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
+import { guard } from "../_shared/auth.ts";
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
@@ -42,6 +44,21 @@ serve(async (req) => {
       .eq("id", log.competition_plan_id)
       .maybeSingle();
     if (!plan) return json({ error: "plan not found" }, 404);
+
+    // Autorização: apenas o atleta do plano ou o coach responsável
+    const g = await guard(req, corsHeaders);
+    if ("response" in g) return g.response;
+    if (g.userId !== plan.athlete_id) {
+      const { data: ownsPlan } = await supabase.rpc("user_owns_competition_plan", {
+        _user_id: g.userId,
+        _plan_id: plan.id,
+      });
+      if (ownsPlan !== true) {
+        return new Response(JSON.stringify({ error: "Forbidden" }), {
+          status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
 
     // 2) Load previous logs for trend
     const { data: history } = await supabase
