@@ -91,6 +91,8 @@ interface MealItemLike {
   carbs_g?: number;
   fat_g?: number;
 }
+
+const hasNutrition = (item: MealItemLike) => [item.kcal, item.protein_g, item.carbs_g, item.fat_g].every((value) => typeof value === "number" && value >= 0);
 interface CoachProfileLike {
   professional_name?: string | null;
   crn?: string | null;
@@ -279,7 +281,7 @@ const MealPlanDoc = ({
                         <Text style={styles.foodName}>{item.food_name}</Text>
                         <Text style={styles.foodPortion}>{item.portion || "—"}</Text>
                         <Text style={styles.foodMacros}>
-                          {Math.round(item.kcal || 0)}kcal · P{Math.round(item.protein_g || 0)} C{Math.round(item.carbs_g || 0)} G{Math.round(item.fat_g || 0)}
+                          {hasNutrition(item) ? `${Math.round(item.kcal || 0)}kcal · P${Math.round(item.protein_g || 0)} C${Math.round(item.carbs_g || 0)} G${Math.round(item.fat_g || 0)}` : "⚠ dados indisponíveis"}
                         </Text>
                       </View>
                     ))}
