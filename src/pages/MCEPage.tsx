@@ -467,7 +467,9 @@ export default function MCEIntelligencePage() {
     <div style={{ minHeight: "100vh", background: "#05070C", color: "#fff", paddingBottom: 96 }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+        @keyframes mceFade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
         .mce-root input[type="range"] { -webkit-appearance: none; height: 4px; border-radius: 4px; background: rgba(255,255,255,0.08); outline: none; }
+
         .mce-root input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; cursor: pointer; background: currentColor; }
       `}</style>
 
