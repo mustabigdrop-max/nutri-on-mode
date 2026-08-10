@@ -5,145 +5,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
 // ── Data Layer ──────────────────────────────────────────────────────────────
-type PillarKey = "M" | "C" | "E";
+import {
+  PILLAR_DATA,
+  PROFILES,
+  MCE_QUOTES,
+  type PillarKey,
+  type Author,
+  type Exercise,
+} from "@/data/mceData";
 
-interface Author { name: string; inst: string; concept: string; desc: string }
-interface Exercise { title: string; desc: string; difficulty: number }
-interface Pillar {
-  key: PillarKey; label: string; fullLabel: string; color: string;
-  tagline: string; subtitle: string; authors: Author[]; quote: string;
-  diagnostics: string[]; exercises: Exercise[];
-}
-
-const PILLAR_DATA: Record<PillarKey, Pillar> = {
-  M: {
-    key: "M",
-    label: "MINDSET",
-    fullLabel: "Mentalidade",
-    color: "#A78BFA",
-    tagline: "O Sistema Operacional",
-    subtitle: "Fundação cognitiva · crenças e identidade",
-    authors: [
-      { name: "Carol Dweck", inst: "Stanford", concept: "Growth Mindset", desc: "Indivíduos com mentalidade de crescimento interpretam falha como dado, não veredito — atingindo desempenho 47% superior em domínios complexos." },
-      { name: "Daniel Kahneman", inst: "Nobel 2002", concept: "Sistema 1 vs Sistema 2", desc: "O Sistema 1 opera no automático e gera decisões impulsivas. O Sistema 2 é deliberado e racional. MCE treina a pausa de 10 segundos entre estímulo e resposta." },
-      { name: "Albert Bandura", inst: "Stanford", concept: "Autoeficácia", desc: "A crença na própria capacidade de executar é o maior preditor de sucesso. Construída por experiências de domínio, modelagem social e reforço verbal." },
-      { name: "Julian Rotter", inst: "UConn", concept: "Locus de Controle", desc: "Locus interno (eu controlo meus resultados) vs externo (o destino controla). MCE treina migração do externo para o interno." },
-      { name: "Viktor Frankl", inst: "Viena", concept: "Logoterapia", desc: "Entre o estímulo e a resposta há um espaço. Nesse espaço está nosso poder de escolher. A busca por sentido é o motor primário do ser humano." },
-      { name: "Michael Merzenich", inst: "UCSF", concept: "Neuroplasticidade", desc: "O cérebro se reorganiza fisicamente com base nos padrões repetidos. 66 dias é a média para automatização de novos comportamentos (Lally et al., 2010)." },
-    ],
-    quote: "Genética é o ponto de partida, não o teto.",
-    diagnostics: [
-      "Quando algo dá errado, você assume o controle da situação?",
-      "Você acredita que pode transformar seu corpo em 6 meses?",
-      "Consegue adiar gratificação pelo resultado futuro?",
-    ],
-    exercises: [
-      { title: "Pausa dos 10 Segundos", desc: "Antes de cada decisão alimentar, conte até 10. Ative o Sistema 2 antes de agir.", difficulty: 1 },
-      { title: "Diário de Locus", desc: "Registre 3 situações do dia. Classifique: eu controlei ou terceirizei a responsabilidade?", difficulty: 2 },
-      { title: "Reframe Cognitivo", desc: "Transforme 'eu não consigo' em 'eu ainda não encontrei o caminho'. Registre a mudança.", difficulty: 2 },
-      { title: "Mapa de Autoeficácia", desc: "Liste 5 conquistas passadas. Use como evidência interna de que você é capaz.", difficulty: 1 },
-    ],
-  },
-  C: {
-    key: "C",
-    label: "COMPORTAMENTO",
-    fullLabel: "Comportamento",
-    color: "#00FF88",
-    tagline: "O Código de Execução",
-    subtitle: "Arquitetura de hábitos · design de ambiente",
-    authors: [
-      { name: "James Clear", inst: "Autor", concept: "Atomic Habits — 4 Leis", desc: "1) Torne óbvio — 2) Torne atraente — 3) Torne fácil — 4) Torne satisfatório. Se o comportamento não acontece, uma dessas leis está falhando." },
-      { name: "Charles Duhigg", inst: "MIT/Yale", concept: "Loop do Hábito", desc: "Todo comportamento segue: Gatilho → Rotina → Recompensa. Você não elimina hábitos ruins — reprograma a rotina mantendo o gatilho e mudando a recompensa." },
-      { name: "BJ Fogg", inst: "Stanford", concept: "Tiny Habits", desc: "Comece ridiculamente pequeno. Quer treinar? Comece colocando o tênis. O comportamento mínimo viável remove a barreira da inércia." },
-      { name: "Thaler & Sunstein", inst: "Nobel 2017", concept: "Nudge Theory", desc: "Arquitetar ambientes que guiam decisões sem proibir. Prato menor = come menos. Frutas visíveis = come frutas. O ambiente decide por você." },
-      { name: "Roy Baumeister", inst: "Princeton", concept: "Willpower Finito", desc: "Força de vontade esgota com o uso. É por isso que a maioria sabota à NOITE — decision fatigue. Solução: automatize decisões." },
-      { name: "Prochaska", inst: "URI", concept: "5 Estágios de Mudança", desc: "Pré-contemplação → Contemplação → Preparação → Ação → Manutenção. A intervenção errada no estágio errado garante o fracasso." },
-    ],
-    quote: "Sua fome nunca foi de comida. O comportamento vem antes do alimento.",
-    diagnostics: [
-      "Suas refeições são planejadas com antecedência?",
-      "Seu ambiente favorece seus objetivos?",
-      "Você mantém controle diante de gatilhos emocionais?",
-    ],
-    exercises: [
-      { title: "Auditoria de Ambiente", desc: "Fotografe sua geladeira e despensa. Identifique: o que sabota e o que favorece?", difficulty: 1 },
-      { title: "Reprogramação de Loop", desc: "Identifique 1 hábito ruim. Mapeie: gatilho → rotina atual → recompensa. Substitua a rotina.", difficulty: 3 },
-      { title: "Nudge Doméstico", desc: "Implemente 3 mudanças de ambiente hoje: frutas visíveis, água na mesa, doces escondidos.", difficulty: 1 },
-      { title: "Estágio de Mudança", desc: "Em qual dos 5 estágios de Prochaska você está? Seja honesto. A resposta define a intervenção.", difficulty: 2 },
-    ],
-  },
-  E: {
-    key: "E",
-    label: "EXECUÇÃO",
-    fullLabel: "Execução",
-    color: "#F59E0B",
-    tagline: "O Output",
-    subtitle: "Sistemas de performance · accountability · feedback",
-    authors: [
-      { name: "John Boyd", inst: "USAF", concept: "OODA Loop", desc: "Observar → Orientar → Decidir → Agir. Ciclo militar de decisão. Quem cicla mais rápido vence. No fitness: ajuste semanal baseado em dados, não intuição." },
-      { name: "Peter Gollwitzer", inst: "NYU", concept: "Implementation Intentions", desc: "Planos no formato SE [situação] ENTÃO [ação] triplicam a taxa de execução. Chega de planos vagos." },
-      { name: "Gary Keller", inst: "Autor", concept: "The ONE Thing", desc: "Qual é a ÚNICA coisa que, ao fazê-la, tudo mais se torna mais fácil ou desnecessário? Foco radical destrói multitasking." },
-      { name: "Cal Newport", inst: "Georgetown", concept: "Deep Work", desc: "4 horas de trabalho focado superam 10 horas fragmentadas. 45 min de treino com intenção > 2h de treino distraído." },
-      { name: "Jocko Willink", inst: "Navy SEALs", concept: "Discipline Equals Freedom", desc: "Disciplina não é restrição — é liberdade. O sistema disciplinado libera energia cognitiva para o que importa." },
-      { name: "David Goggins", inst: "Navy SEALs", concept: "Regra dos 40%", desc: "Quando sua mente diz que acabou, você está a apenas 40% do seu potencial real. O limite é mental, não físico." },
-    ],
-    quote: "Planejamento sem execução é só opinião.",
-    diagnostics: [
-      "Você tem um plano escrito com ações específicas para esta semana?",
-      "Você rastreia seu progresso de alguma forma?",
-      "Você tem alguém que cobra seus resultados?",
-    ],
-    exercises: [
-      { title: "SE-ENTÃO Protocol", desc: "Crie 3 implementation intentions hoje. Formato: SE [hora/situação] ENTÃO [ação específica].", difficulty: 1 },
-      { title: "OODA Semanal", desc: "Todo domingo: Observe (dados da semana) → Oriente (análise) → Decida (ajustes) → Aja (execute).", difficulty: 3 },
-      { title: "The ONE Thing", desc: "Qual é a ÚNICA coisa que você vai dominar esta semana? Defina. Escreva. Execute.", difficulty: 2 },
-      { title: "Deep Work Session", desc: "45 minutos de treino: sem celular, sem conversa, intenção em cada rep. Cronometre e registre.", difficulty: 2 },
-    ],
-  },
-};
-
-const PROFILES = [
-  {
-    id: "reativo",
-    name: "O REATIVO",
-    icon: "⚡",
-    color: "#EF4444",
-    desc: "Opera no piloto automático. Come por emoção, não por estratégia. Responde ao ambiente em vez de moldá-lo.",
-    intervention: "Design de ambiente (Nudge) + Loop do Hábito (Duhigg)",
-    weakness: "Mentalidade",
-    traits: ["Decisões impulsivas", "Sem planejamento", "Reage ao ambiente"],
-  },
-  {
-    id: "planejador",
-    name: "O PLANEJADOR",
-    icon: "📋",
-    color: "#3B82F6",
-    desc: "Pesquisa infinitamente, nunca executa. 'Vou começar segunda' é seu mantra. Confunde informação com transformação.",
-    intervention: "Implementation Intentions (Gollwitzer) + The ONE Thing (Keller)",
-    weakness: "Execução",
-    traits: ["Paralisia por análise", "Perfeccionismo", "Procrastinação"],
-  },
-  {
-    id: "intenso",
-    name: "O INTENSO",
-    icon: "🔥",
-    color: "#F59E0B",
-    desc: "Vai de 0 a 100 e volta pra 0. Dieta radical por 2 semanas, depois desiste. Tudo ou nada.",
-    intervention: "Tiny Habits (Fogg) + Identidade > Resultado (Clear)",
-    weakness: "Comportamento",
-    traits: ["Ciclos extremos", "Burnout frequente", "Expectativas irreais"],
-  },
-  {
-    id: "consistente",
-    name: "O CONSISTENTE",
-    icon: "🎯",
-    color: "#10B981",
-    desc: "Já tem o sistema operacional rodando. Precisa de otimização, não de motivação.",
-    intervention: "OODA Loop acelerado + Deep Work + Periodização comportamental",
-    weakness: "Nenhum crítico",
-    traits: ["Sistema ativo", "Busca refinamento", "Autônomo"],
-  },
-];
 
 const MONO = "'Space Mono', ui-monospace, monospace";
 const DISPLAY = "'Rajdhani', system-ui, sans-serif";
