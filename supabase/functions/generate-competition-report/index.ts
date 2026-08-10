@@ -1,5 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
+import { guard } from "../_shared/auth.ts";
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -25,6 +27,10 @@ Deno.serve(async (req) => {
     const { data: plan, error: planErr } = await supabase
       .from("competition_plans").select("*").eq("id", plan_id).maybeSingle();
     if (planErr || !plan) throw new Error("Plano não encontrado");
+
+    // Autorização: apenas o atleta do plano ou o coach responsável
+    const g = await guard(req, corsHeaders, plan.athlete_id);
+    if ("response" in g) return g.response;
 
     // Buscar atleta + coach
     const [{ data: athlete }, { data: coachProfile }] = await Promise.all([
