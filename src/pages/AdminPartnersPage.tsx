@@ -367,7 +367,7 @@ export default function AdminPartnersPage() {
         </DialogContent>
       </Dialog>
 
-      {/* View Password */}
+      {/* Access info (passwords are never stored or displayed) */}
       <Dialog open={!!viewPasswordPartner} onOpenChange={() => setViewPasswordPartner(null)}>
         <DialogContent>
           <DialogHeader><DialogTitle>Chave de Acesso</DialogTitle></DialogHeader>
@@ -376,13 +376,11 @@ export default function AdminPartnersPage() {
               <p><strong>Parceiro:</strong> {viewPasswordPartner.full_name}</p>
               <p><strong>Email:</strong> {viewPasswordPartner.email}</p>
               <div className="bg-muted p-3 rounded-lg">
-                <p className="text-xs text-muted-foreground mb-1">Senha temporária</p>
-                <p className="font-mono text-lg font-bold">{viewPasswordPartner.temp_password || "Não disponível"}</p>
+                <p className="text-xs text-muted-foreground">
+                  Por segurança, senhas não são armazenadas. Informe a senha ao parceiro no
+                  momento da criação da conta ou peça que ele use "Esqueci minha senha".
+                </p>
               </div>
-              <Button size="sm" variant="outline" onClick={() => {
-                navigator.clipboard.writeText(viewPasswordPartner.temp_password || "");
-                toast.success("Senha copiada!");
-              }}>Copiar senha</Button>
             </div>
           )}
         </DialogContent>
