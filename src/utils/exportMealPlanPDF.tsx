@@ -1,5 +1,6 @@
 import { Document, Page, Text, View, StyleSheet, Image, pdf, Font } from "@react-pdf/renderer";
 import React from "react";
+import { buildPlanAudit, summarizeAudit } from "@/lib/planPdfAudit";
 
 const COLORS = {
   bg: "#09090b",
