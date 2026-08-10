@@ -409,3 +409,29 @@
 @keyframes slide-in-right { from { transform: translateX(100%); } to { transform: translateX(0); } }
 .animate-slide-in-right { animation: slide-in-right 300ms ease; }
 .animate-fade-in { animation: fade-in-up 300ms ease both; }
+
+/* ============= Desafio 21 Dias ============= */
+@keyframes desafio-glow {
+  0%, 100% { box-shadow: 0 0 12px rgba(0,212,255,0.12); border-color: rgba(0,212,255,0.25); }
+  50%      { box-shadow: 0 0 28px rgba(0,212,255,0.30); border-color: rgba(0,212,255,0.60); }
+}
+.desafio-banner { animation: desafio-glow 3s ease-in-out infinite; }
+
+@keyframes desafio-flame {
+  0%, 100% { transform: scale(1); opacity: 0.85; }
+  50%      { transform: scale(1.18); opacity: 1; }
+}
+.desafio-flame { animation: desafio-flame 1.4s ease-in-out infinite; }
+
+@keyframes desafio-fall {
+  0%   { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(110vh) rotate(540deg); opacity: 0; }
+}
+.desafio-confetti {
+  position: absolute; top: 0; width: 7px; height: 12px; border-radius: 2px;
+  animation: desafio-fall 3.4s linear infinite;
+}
+
+:root { --desafio-card-scale: 0.30; }
+@media (min-width: 420px) { :root { --desafio-card-scale: 0.34; } }
+@media (min-width: 560px) { :root { --desafio-card-scale: 0.46; } }
