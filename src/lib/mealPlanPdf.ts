@@ -11,6 +11,8 @@ interface PlanItem {
   fat_g: number;
 }
 
+const hasNutrition = (item: PlanItem) => item.kcal >= 0 && item.protein_g >= 0 && item.carbs_g >= 0 && item.fat_g >= 0;
+
 const DAYS = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
 const MEAL_LABELS: Record<string, string> = {
   cafe_manha: "Café da manhã",
@@ -211,7 +213,7 @@ export function exportMealPlanPDF(opts: {
       doc.text(MEAL_LABELS[m.meal_type] || m.meal_type, M, y);
       doc.setTextColor(20, 20, 20);
       doc.setFont("helvetica", "normal");
-      doc.text(`${m.kcal} kcal · P${m.protein_g} C${m.carbs_g} G${m.fat_g}`, W - M, y, { align: "right" });
+      doc.text(hasNutrition(m) ? `${m.kcal} kcal · P${m.protein_g} C${m.carbs_g} G${m.fat_g}` : "⚠ dados indisponíveis", W - M, y, { align: "right" });
       y += 12;
       doc.setFontSize(10);
       doc.text(m.food_name, M, y, { maxWidth: W - 2 * M }); y += 12;

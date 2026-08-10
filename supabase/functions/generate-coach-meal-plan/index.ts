@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { enforceCeiaPosition } from "./meal_timing.ts";
+import { calculatePlanFromItems } from "../_shared/nutrition-validation.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -10,8 +11,10 @@ const KCAL_CLOSURE_RULE = `⚠ REGRA INVIOLÁVEL DO NUTRIPLAN — FECHAMENTO CAL
 
 Antes de retornar o plano, execute internamente:
   SOMA = 0
-  Para cada refeição:
-    SOMA += (proteína × 4) + (carboidrato × 4) + (gordura × 9)
+  Para cada ALIMENTO de cada refeição:
+    1) calcular kcal e macros pela tabela TACO por 100g × gramatura/100
+    2) SOMAR os itens para obter a refeição; NUNCA atribuir o total ao primeiro item
+  Calcular o total final por Atwater: proteína × 4 + carboidrato × 4 + gordura × 9.
   Se |SOMA - metaKcal| > 50: ajustar as porções até fechar.
 
 NUNCA retornar plano com diferença maior que 50 kcal da meta declarada no TDEE.
@@ -28,6 +31,8 @@ DISTRIBUIÇÃO SUGERIDA (% da meta):
 Café 15-20% · Almoço/Pré 20-25% · Pós-treino 12-15% · Lanche tarde 10-12% · Jantar 15-20% · Ceia 10-15% · Extra: completar.
 
 Se faltar kcal para fechar, ADICIONE refeição extra. Esta regra tem prioridade sobre qualquer outra instrução.
+
+PESOS DE REFERÊNCIA OBRIGATÓRIOS: banana média sem casca 120g; ovo inteiro 50g; concha média de feijão 85g; xícara de arroz cozido 155g; colher de sopa de aveia seca 13g; goma de 1 tapioca 80g; colher de sopa de azeite 13ml. NUNCA retorne macros totais da refeição sem macros individuais de cada alimento.
 
 ═══════════════════════════════════════════════════════
 
@@ -2447,6 +2452,10 @@ Estrutura exata:
           "alimento": "string",
           "quantidade": "string (${perfilFisiologico?.medidas_caseiras ? "MEDIDA CASEIRA, ex: '2 colheres de sopa cheias', '1 xícara de chá', '1 fatia média'" : "em gramas"})",
           "quantidade_g": "string (gramatura técnica em g, ex: '120g'${perfilFisiologico?.medidas_caseiras ? " — OBRIGATÓRIO quando medidas caseiras está ativo" : " — opcional, igual a 'quantidade'"})",
+          "kcal": "number — calculado exclusivamente para ESTE alimento pela TACO",
+          "protein_g": "number — proteína deste item",
+          "carbs_g": "number — carboidrato deste item",
+          "fat_g": "number — gordura deste item",
           "observacao": "string ou null",
           "substituicoes": [
             { "alimento": "string", "quantidade": "string ${perfilFisiologico?.medidas_caseiras ? "(medida caseira)" : "(em gramas)"}", "quantidade_g": "string (gramatura em g)", "observacao": "string ou null", "grupo": "proteina | carbo | gordura" }
@@ -3959,6 +3968,12 @@ AEJ não é refeição e nunca deve aparecer em refeicoes. Pós-Treino Imediato 
       };
     }
 
+    // Fonte final da verdade: gramatura individual × densidade TACO, seguida de Atwater.
+    // Também corrige porções unitárias incompatíveis e recalibra fontes energéticas para a meta.
+    if (parsed && typeof parsed === "object") {
+      calculatePlanFromItems(parsed, Number(calc?.metaKcal) || Number(calorias) || 0, true);
+    }
+
     // ═══════════════════════════════════════════════════════════════
     // VALIDAÇÃO AUTOMÁTICA DE FECHAMENTO CALÓRICO
     // Compara a soma real dos macros das refeições contra a meta determinística.
@@ -3970,9 +3985,9 @@ AEJ não é refeição e nunca deve aparecer em refeicoes. Pós-Treino Imediato 
       let somaCalc = 0;
       const erros: string[] = [];
       refs.forEach((r, i) => {
-        const p = Number(r?.proteina_g ?? r?.proteina ?? 0) || 0;
-        const c = Number(r?.carboidrato_g ?? r?.carboidrato ?? r?.carbo_g ?? 0) || 0;
-        const g = Number(r?.gordura_g ?? r?.gordura ?? 0) || 0;
+        const p = Number(r?.macros?.proteina ?? r?.proteina_g ?? r?.proteina ?? 0) || 0;
+        const c = Number(r?.macros?.carboidrato ?? r?.carboidrato_g ?? r?.carboidrato ?? r?.carbo_g ?? 0) || 0;
+        const g = Number(r?.macros?.gordura ?? r?.gordura_g ?? r?.gordura ?? 0) || 0;
         const kcalDecl = Number(r?.calorias ?? r?.kcal ?? 0) || 0;
         const kcalCalc = Math.round(p * 4 + c * 4 + g * 9);
         somaCalc += kcalCalc;

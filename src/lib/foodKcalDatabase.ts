@@ -96,6 +96,9 @@ const RAW: Record<string, FoodDensity> = {
   "frutas vermelhas": { kcal: 50, p: 0.7, c: 12, g: 0.3, grupo: "carbo" },
   "mel": { kcal: 304, p: 0.3, c: 82, g: 0, grupo: "carbo" },
   "granola": { kcal: 471, p: 10, c: 64, g: 20, grupo: "carbo" },
+  "maltodextrina": { kcal: 400, p: 0, c: 100, g: 0, grupo: "carbo" },
+  "doce de leite": { kcal: 280, p: 6, c: 54, g: 6, grupo: "carbo" },
+  "fruta": { kcal: 50, p: 0.7, c: 12, g: 0.3, grupo: "carbo" },
 
   // ── GORDURAS ──
   "azeite": { kcal: 884, p: 0, c: 0, g: 100, grupo: "gordura" },
@@ -113,6 +116,10 @@ const RAW: Record<string, FoodDensity> = {
   "chia": { kcal: 486, p: 17, c: 42, g: 31, grupo: "gordura" },
   "linhaca": { kcal: 534, p: 18, c: 29, g: 42, grupo: "gordura" },
   "coco ralado": { kcal: 660, p: 7, c: 24, g: 64, grupo: "gordura" },
+  "castanhas": { kcal: 600, p: 18, c: 18, g: 55, grupo: "gordura" },
+  "legumes": { kcal: 30, p: 1.5, c: 6, g: 0.3, grupo: "outro" },
+  "vegetais": { kcal: 25, p: 2, c: 5, g: 0.2, grupo: "outro" },
+  "salada": { kcal: 20, p: 1, c: 4, g: 0.2, grupo: "outro" },
 };
 
 const normalize = (s: string): string =>
@@ -148,8 +155,9 @@ export const parseGrams = (raw?: string | number | null): number | null => {
   if (raw == null) return null;
   if (typeof raw === "number") return raw > 0 ? raw : null;
   const s = String(raw);
-  // pega o primeiro número seguido (opcionalmente) de "g"
-  const m = s.match(/(\d+[\.,]?\d*)\s*g/i) || s.match(/(\d+[\.,]?\d*)/);
+  // Usa a última gramatura explícita. Evita interpretar "8 unidades (~400g)" como 8g.
+  const gramsMatches = [...s.matchAll(/(\d+[\.,]?\d*)\s*g\b/gi)];
+  const m = gramsMatches.at(-1) || s.match(/(\d+[\.,]?\d*)/);
   if (!m) return null;
   const n = Number(m[1].replace(",", "."));
   return Number.isFinite(n) && n > 0 ? n : null;

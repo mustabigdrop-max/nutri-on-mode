@@ -40,6 +40,8 @@ import Glut4SyncCard from "@/components/meal/Glut4SyncCard";
 import AdherenceModal from "@/components/meal/AdherenceModal";
 import SubstitutionDrawer, { type DrawerConfirmPayload } from "@/components/coach/SubstitutionDrawer";
 import { buildSnapshot } from "@/lib/substitutionValidator";
+import PlanValidationAlert from "@/components/coach/PlanValidationAlert";
+import { calculateNutritionItem, validateNutritionPlan } from "@/lib/planNutritionValidation";
 
 // ─── Design tokens — Jarvis Nutrition (emerald primary + gold identity) ───────
 const T = {
@@ -315,6 +317,11 @@ interface MealAlimento {
   quantidade_g?: string;
   observacao?: string;
   substituicoes?: SubstituicaoItem[];
+  kcal?: number | null;
+  protein_g?: number | null;
+  carbs_g?: number | null;
+  fat_g?: number | null;
+  nutrition_status?: "calculated" | "unavailable";
 }
 
 interface Meal {
@@ -2174,17 +2181,17 @@ export default function PlanoAlimentarIA() {
             fat_g: m.macros?.gordura || 0,
           });
         } else {
-          alimentos.forEach((a, idx) => {
+          alimentos.forEach((a) => {
+            const calculated = calculateNutritionItem(a);
             items.push({
               day_index: day,
               meal_type: tipo,
               food_name: a.alimento,
               portion: (a.quantidade || a.quantidade_g || "") as string,
-              // Distribui kcal/macros da refeição apenas no primeiro item para evitar duplicar totais.
-              kcal: idx === 0 ? getMealKcal(m as Meal) : 0,
-              protein_g: idx === 0 ? (m.macros?.proteina || 0) : 0,
-              carbs_g: idx === 0 ? (m.macros?.carboidrato || 0) : 0,
-              fat_g: idx === 0 ? (m.macros?.gordura || 0) : 0,
+              kcal: calculated.macros?.kcal ?? -1,
+              protein_g: calculated.macros?.protein ?? -1,
+              carbs_g: calculated.macros?.carbs ?? -1,
+              fat_g: calculated.macros?.fat ?? -1,
             });
           });
         }
@@ -2311,6 +2318,7 @@ export default function PlanoAlimentarIA() {
   // ── RESULT ──
   if (step === "result" && plano) {
     const r = plano.resumo;
+    const nutritionValidation = validateNutritionPlan(plano.refeicoes || [], Number((form as any).calorias) || Number(r.calorias_totais) || 0);
     // Fonte única: kcalFromMacros aplica tolerância ±50 kcal e retorna o valor correto.
     const kcalAtwaterTotal = calcKcalAtwater(r.proteina_total, r.carboidrato_total, r.gordura_total);
     const kcalDeclTotal = Number(r.calorias_totais) || 0;
@@ -3057,14 +3065,14 @@ export default function PlanoAlimentarIA() {
 
 
         <div style={{ maxWidth: 800, margin: "0 auto", padding: "32px 24px" }} className="fade-up">
+          <PlanValidationAlert alerts={nutritionValidation.alerts} onRecalculate={gerar} />
           {/* Total real do dia (Atwater) vs meta */}
           {(() => {
-            const meals = (plano?.refeicoes || []) as Meal[];
-            const kcalReal = meals.reduce((acc, m) => acc + getMealKcal(m), 0);
-            const pReal = Math.round(meals.reduce((a, m) => a + (Number(m?.macros?.proteina) || 0), 0) * 10) / 10;
-            const cReal = Math.round(meals.reduce((a, m) => a + (Number(m?.macros?.carboidrato) || 0), 0) * 10) / 10;
-            const gReal = Math.round(meals.reduce((a, m) => a + (Number(m?.macros?.gordura) || 0), 0) * 10) / 10;
-            const meta = getResumoKcal(r);
+            const kcalReal = nutritionValidation.totals.kcal;
+            const pReal = nutritionValidation.totals.protein;
+            const cReal = nutritionValidation.totals.carbs;
+            const gReal = nutritionValidation.totals.fat;
+            const meta = nutritionValidation.targetKcal;
             const diff = meta - kcalReal;
             const divergente = meta && Math.abs(diff) > 50;
             return (
@@ -4738,8 +4746,8 @@ export default function PlanoAlimentarIA() {
 
             {/* Indicador de fechamento calórico em tempo real */}
             {(() => {
-              const meta = Number(plano?.resumo?.calorias_totais) || 0;
-              const atual = (plano.refeicoes || []).reduce((acc, m) => acc + getMealKcal(m as Meal), 0);
+              const meta = nutritionValidation.targetKcal;
+              const atual = nutritionValidation.totals.kcal;
               const delta = atual - meta;
               const absDelta = Math.abs(delta);
               const status: { label: string; color: string } =
