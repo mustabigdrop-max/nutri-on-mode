@@ -246,10 +246,16 @@ function ProfileCard({ profile, selected, onClick }: {
     >
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
         <span style={{ fontSize: 20 }}>{profile.icon}</span>
-        <span style={{ fontFamily: DISPLAY, fontSize: 16, fontWeight: 700, color: profile.color, letterSpacing: 1 }}>
-          {profile.name}
-        </span>
+        <div>
+          <div style={{ fontFamily: DISPLAY, fontSize: 16, fontWeight: 700, color: profile.color, letterSpacing: 1 }}>
+            {profile.name}
+          </div>
+          <div style={{ fontFamily: MONO, fontSize: 9, letterSpacing: 1.5, color: "rgba(255,255,255,0.3)", marginTop: 2 }}>
+            {profile.weakness === "Nenhum crítico" ? "SEM DÉFICIT CRÍTICO" : `DÉFICIT: ${profile.weakness.toUpperCase()}`}
+          </div>
+        </div>
       </div>
+
       <p style={{ marginTop: 8, fontFamily: DISPLAY, fontSize: 14, lineHeight: 1.55, color: "rgba(255,255,255,0.6)" }}>
         {profile.desc}
       </p>
