@@ -153,6 +153,11 @@ const MealPlanDoc = ({
   const totalKcal = patient.target_kcal || proteinKcal + carbsKcal + fatKcal || 1;
   const pct = (k: number) => Math.round((k / totalKcal) * 100);
 
+  const audits = buildPlanAudit(items, patient.target_kcal || 0);
+  const auditSummary = summarizeAudit(audits);
+
+
+
   return (
     <Document>
       {/* COVER */}
