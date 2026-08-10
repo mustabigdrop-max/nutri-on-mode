@@ -208,9 +208,13 @@ function ExerciseCard({ exercise, color, onComplete, completed }: {
           {diffLabels[exercise.difficulty - 1]}
         </span>
       </div>
-      <p style={{ marginTop: 8, fontFamily: DISPLAY, fontSize: 14, lineHeight: 1.55, color: "rgba(255,255,255,0.6)" }}>
+      <div style={{ marginTop: 6, fontFamily: MONO, fontSize: 9, letterSpacing: 2, color: `${color}AA` }}>
+        REF: {exercise.ref.toUpperCase()}
+      </div>
+      <p style={{ marginTop: 6, fontFamily: DISPLAY, fontSize: 14, lineHeight: 1.55, color: "rgba(255,255,255,0.6)" }}>
         {exercise.desc}
       </p>
+
       <button
         onClick={onComplete}
         style={{
