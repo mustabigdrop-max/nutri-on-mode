@@ -53,10 +53,19 @@ const styles = StyleSheet.create({
   totalLabel: { fontSize: 10, fontFamily: "Helvetica-Bold", color: "#ffffff" },
   totalValue: { fontSize: 10, fontFamily: "Helvetica-Bold", color: "#ffffff" },
 
+  auditCard: { backgroundColor: COLORS.card, borderRadius: 6, padding: 12, marginBottom: 10, borderLeft: "3px solid #f59e0b" },
+  auditOkCard: { backgroundColor: COLORS.card, borderRadius: 6, padding: 12, marginBottom: 10, borderLeft: "3px solid #10b981" },
+  auditDay: { fontSize: 11, fontFamily: "Helvetica-Bold", color: COLORS.text, marginBottom: 4 },
+  auditMeta: { fontSize: 8, color: COLORS.muted, marginBottom: 6 },
+  auditError: { fontSize: 8, color: "#f87171", marginBottom: 3, lineHeight: 1.4 },
+  auditWarn: { fontSize: 8, color: "#fbbf24", marginBottom: 3, lineHeight: 1.4 },
+  auditOk: { fontSize: 8, color: "#34d399" },
+
   footer: { position: "absolute", bottom: 18, left: 32, right: 32, borderTop: `0.5px solid ${COLORS.border}`, paddingTop: 8 },
   footerText: { fontSize: 7, color: COLORS.muted, textAlign: "center" },
   footerWarn: { fontSize: 7, color: COLORS.muted, textAlign: "center", fontStyle: "italic", marginTop: 2 },
 });
+
 
 const MEAL_TIMES: Record<string, { label: string; time: string }> = {
   cafe_manha: { label: "Café da manhã", time: "07:00" },
