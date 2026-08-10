@@ -558,7 +558,15 @@ export default function MCEIntelligencePage() {
           <div style={{ fontFamily: DISPLAY, fontSize: 14, color: "rgba(255,255,255,0.5)", marginTop: 2 }}>
             {data.subtitle}
           </div>
+          <p style={{
+            marginTop: 10, padding: "12px 14px", borderRadius: 12,
+            background: `${data.color}08`, border: `1px solid ${data.color}20`,
+            fontFamily: DISPLAY, fontSize: 14, lineHeight: 1.6, color: "rgba(255,255,255,0.7)",
+          }}>
+            {data.manifesto}
+          </p>
         </div>
+
 
         {/* Tabs */}
         <div style={{ marginTop: 14 }}>
