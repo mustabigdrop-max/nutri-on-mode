@@ -1,6 +1,6 @@
 import { motion, useInView, useMotionValue, useTransform, animate } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
-import { Eye, FlaskConical, Zap, Dna, Microscope, Brain, Trophy, Users, Activity } from "lucide-react";
+import { Eye, FlaskConical, Zap, Dna, Microscope, Brain, Trophy, Users, Activity, Footprints } from "lucide-react";
 
 const GOLD = "#B8922A";
 const CYAN = "#00D4FF";
@@ -21,6 +21,8 @@ const moduleCards = [
     desc: "Análise do eixo intestino-cérebro, modulação da microbiota por nutrição e impacto do microbioma em composição corporal, humor e adesão ao protocolo." },
   { n: "06", title: "PCA COMPORTAMENTAL", Icon: Brain, color: GOLD,
     desc: "4 perfis de atleta, metodologia MCE — Mindset, Comportamento, Execução. A IA age antes do abandono. Comportamento vem antes do alimento." },
+  { n: "07", title: "RUNON — CORRIDA + FORÇA", Icon: Footprints, color: CYAN,
+    desc: "Periodização integrada pra corrida e musculação não competirem pelo mesmo estímulo. Muscle Guard preserva hipertrofia enquanto o volume aeróbico sobe. Planos de prova de 5K a 42K com taper e carb load estruturados." },
 ];
 
 const audienceCards = [
