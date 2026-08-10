@@ -469,23 +469,6 @@ const LandingHero = () => {
               >
                 Pra quem treina sério: corrida, musculação, performance.
               </div>
-              <div
-                className="text-center mt-6 pointer-events-auto"
-                style={{
-                  opacity: phase >= 6 ? 1 : 0,
-                  transform: phase >= 6 ? "translateY(0)" : "translateY(6px)",
-                  transition: "opacity .6s ease .2s, transform .6s ease .2s",
-                }}
-              >
-                <a
-                  href="https://pay.kiwify.com.br/G8uxU9O"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-block bg-primary text-black font-mono text-[.72rem] font-medium tracking-[.08em] px-6 py-3 rounded-[2px] transition-all hover:bg-black hover:text-primary hover:outline hover:outline-1 hover:outline-primary"
-                >
-                  Começar agora →
-                </a>
-              </div>
             </div>
           </div>
         </div>
