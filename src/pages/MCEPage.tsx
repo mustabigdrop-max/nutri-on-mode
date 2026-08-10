@@ -358,6 +358,13 @@ export default function MCEIntelligencePage() {
   const [diagnostics, setDiagnostics] = useState<Record<PillarKey, number[]>>({ M: [5, 5, 5], C: [5, 5, 5], E: [5, 5, 5] });
   const [completed, setCompleted] = useState<Record<string, boolean>>({});
   const [selectedProfile, setSelectedProfile] = useState<string | null>(null);
+  const [quoteIdx, setQuoteIdx] = useState(0);
+
+  useEffect(() => {
+    const iv = setInterval(() => setQuoteIdx((i) => (i + 1) % MCE_QUOTES.length), 6000);
+    return () => clearInterval(iv);
+  }, []);
+
   const [loaded, setLoaded] = useState(false);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
