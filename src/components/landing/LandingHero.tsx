@@ -4,15 +4,15 @@ const GOLD = "#B8922A";
 const CYAN = "#00D4FF";
 const TEXT = "#F5F0E8";
 
-const STREAM_LABELS = ["TDEE","PCA","ROM","FMS","MCE","IGF-1","GH","RPE","mTOR","GLUT4","KAA","GUT","ATP","VO2","SLU","CJC"];
+const STREAM_LABELS = ["TDEE","VO2","RPE","BPM","1RM","PACE","HRV","ATP","GH","PCA","KAA","MCE","GLUT4","GUT"];
 
 const HUDS = [
-  { pos: "top-24 left-[3%]",       align: "left",  title: "TDEE CALCULADO",   value: 3240, suffix: " kcal", bar: GOLD, delay: 4700 },
-  { pos: "top-24 right-[3%]",      align: "right", title: "KAA™ SCORE",       value: 82,   suffix: "/100",  bar: CYAN, delay: 4800 },
-  { pos: "top-[44%] left-[3%]",    align: "left",  title: "PCA ACTIVE",       text: "PERFIL AM",          bar: GOLD, delay: 4900 },
-  { pos: "top-[44%] right-[3%]",   align: "right", title: "MICROBIOTA",       text: "GUT-BRAIN ON",       bar: CYAN, delay: 5000 },
-  { pos: "bottom-[10%] left-[3%]", align: "left",  title: "DR. VERTEX",       text: "85+ COMPOSTOS",      bar: CYAN, delay: 5100 },
-  { pos: "bottom-[10%] right-[3%]",align: "right", title: "STRATUM",          text: "7 CAMADAS",          bar: GOLD, delay: 5200 },
+  { pos: "top-24 left-[3%]",       align: "left",  title: "TDEE CALCULADO",     value: 3240, suffix: " kcal", bar: GOLD, delay: 4700 },
+  { pos: "top-24 right-[3%]",      align: "right", title: "1RM SUPINO",         value: 120,  suffix: " kg",   bar: CYAN, delay: 4800 },
+  { pos: "top-[44%] left-[3%]",    align: "left",  title: "RITMO 5KM",          text: "4'12 /KM",           bar: GOLD, delay: 4900 },
+  { pos: "top-[44%] right-[3%]",   align: "right", title: "MICROBIOTA",         text: "GUT-BRAIN ON",       bar: CYAN, delay: 5000 },
+  { pos: "bottom-[10%] left-[3%]", align: "left",  title: "VOLUME SEMANAL",     text: "118K KG",            bar: CYAN, delay: 5100 },
+  { pos: "bottom-[10%] right-[3%]",align: "right", title: "RECUPERAÇÃO",        text: "92% PRONTO",         bar: GOLD, delay: 5200 },
 ];
 
 const NODES = [
@@ -192,7 +192,7 @@ const LandingHero = () => {
   }, []);
 
   const tdee = useCount(3240, phase >= 6);
-  const kaa = useCount(82, phase >= 6);
+  const oneRm = useCount(120, phase >= 6);
 
   return (
     <section
@@ -480,7 +480,7 @@ const LandingHero = () => {
             <div style={{ fontSize: 7, letterSpacing: "0.35em", color: `${h.bar}cc` }}>{h.title}</div>
             <div style={{ fontSize: 13, color: TEXT, marginTop: 4, fontWeight: 700 }}>
               {"value" in h && h.value !== undefined
-                ? `${(i === 0 ? tdee : i === 1 ? kaa : h.value).toLocaleString("pt-BR")}${h.suffix ?? ""}`
+                ? `${(i === 0 ? tdee : i === 1 ? oneRm : h.value).toLocaleString("pt-BR")}${h.suffix ?? ""}`
                 : h.text}
             </div>
             <div className="mt-2 h-px w-full" style={{ background: "rgba(255,255,255,0.08)" }}>
