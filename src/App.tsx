@@ -107,6 +107,7 @@ const ApexCheckinPage = lazy(() => import("./pages/coach/ApexCheckinPage"));
 const ApexVisualIAPage = lazy(() => import("./pages/coach/ApexVisualIAPage"));
 const CoachTrainingOnPage = lazy(() => import("./pages/coach/CoachTrainingOnPage"));
 const CoachLabExamsPage = lazy(() => import("./pages/coach/CoachLabExamsPage"));
+const ExamRequestPage = lazy(() => import("./pages/coach/ExamRequestPage"));
 const CoachReportsPage = lazy(() => import("./pages/coach/CoachReportsPage"));
 const APEXPoseAnalysisPage = lazy(() => import("./pages/coach/APEXPoseAnalysisPage"));
 const DrNexusPage = lazy(() => import("./pages/DrNexusPage"));
@@ -250,6 +251,7 @@ const App = () => (
             <Route path="/coach/apex-visual-ia" element={<ProtectedRoute><ApexVisualIAPage /></ProtectedRoute>} />
             <Route path="/coach/trainingon" element={<ProtectedRoute><CoachTrainingOnPage /></ProtectedRoute>} />
             <Route path="/coach/lab-exams" element={<ProtectedRoute><CoachLabExamsPage /></ProtectedRoute>} />
+            <Route path="/coach/exames" element={<ProtectedRoute><ExamRequestPage /></ProtectedRoute>} />
             <Route path="/coach/relatorios" element={<ProtectedRoute><CoachReportsPage /></ProtectedRoute>} />
             <Route path="/coach/atletas" element={<ProtectedRoute><AthleteRoster /></ProtectedRoute>} />
             <Route path="/coach/atletas/:id" element={<ProtectedRoute><AthleteProgressTracker /></ProtectedRoute>} />
