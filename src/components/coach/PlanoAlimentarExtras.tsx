@@ -3,16 +3,18 @@
 // ───────────────────────────────────────────────────────────────────────────────
 import React, { useState } from "react";
 import {
-  Trophy, Activity, Stethoscope, BadgeCheck, BookMarked,
+  Trophy, Activity, Stethoscope, BadgeCheck, BookMarked, FlaskConical,
   Zap as ZapIcon, FileOutput, ChevronDown, ChevronRight, X, Plus, Trash2, AlertTriangle,
 } from "lucide-react";
 import {
   CATEGORIAS_ESPORTE, CONDICOES_CLINICAS_GROUPS, ESTRATEGIAS_RECUPERACAO,
   TIPOS_INTRA_TREINO, NIVEIS_ESTRESSE, IDIOMAS_PDF, FORMATOS_MEDIDA,
   NIVEIS_DETALHE, ITENS_INCLUIR_PDF, ESPECIALIDADES_PROFISSIONAL,
-  type IdentidadeProfissional, type IntraTreinoCfg,
+  PHARM_PROFILE_OPTIONS, PHARM_PROTOCOLS,
+  type IdentidadeProfissional, type IntraTreinoCfg, type PharmProfile,
   type PdfCfg, type RecuperacaoCfg, type ModoEspecialExtras,
 } from "./planoAlimentarConstants";
+
 
 // Tokens (subset, alinhado ao componente principal)
 const T = {
