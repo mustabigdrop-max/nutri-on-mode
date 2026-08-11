@@ -11,6 +11,8 @@ export type Overtraining = "" | "nao" | "alguns" | "sim";
 export type DietasAnteriores = "" | "0" | "1_2" | "3_5" | "6_mais";
 export type ModoDieta = "" | "normal" | "reverse" | "diet_break";
 export type PrioridadeSaciedade = "" | "baixa" | "media" | "alta";
+export type FaseCiclo = "" | "folicular" | "ovulatoria" | "lutea" | "menstrual" | "anticoncepcional" | "amenorreia" | "menopausa";
+export type FreqComerFora = "" | "raro" | "1_2" | "3_5" | "diario";
 
 export type IntelState = {
   somatotipo: Somatotipo;
@@ -37,6 +39,17 @@ export type IntelState = {
   estrategiasSaciedade: string[];
   diaOnOff: boolean;
   deltaChoOff: string;
+  // ─── Fase 3 ───
+  labs: Record<string, string>;
+  faseCiclo: FaseCiclo;
+  cicloSincronizado: boolean;
+  duracaoCiclo: string;
+  tpmIntensa: boolean;
+  comerFora: FreqComerFora;
+  contextosComerFora: string[];
+  alcoolSemanal: string;
+  calorimetriaKcal: string;
+  metodoCalorimetria: string;
 };
 
 export const INTEL_DEFAULT: IntelState = {
@@ -63,6 +76,16 @@ export const INTEL_DEFAULT: IntelState = {
   estrategiasSaciedade: [],
   diaOnOff: false,
   deltaChoOff: "25",
+  labs: {},
+  faseCiclo: "",
+  cicloSincronizado: false,
+  duracaoCiclo: "28",
+  tpmIntensa: false,
+  comerFora: "",
+  contextosComerFora: [],
+  alcoolSemanal: "",
+  calorimetriaKcal: "",
+  metodoCalorimetria: "",
 };
 
 // ─── 1.1 QUICK CLIENT ────────────────────────────────────────────────────────
@@ -350,6 +373,152 @@ export const ESTRATEGIAS_SACIEDADE = [
   "Refeição maior à noite (compliance)",
 ];
 
+// ═══ FASE 3.1 — EXAMES LABORATORIAIS ════════════════════════════════════════
+export type LabMarker = {
+  k: string; l: string; unit: string;
+  min?: number; max?: number;
+  otimo?: string;
+  baixoAcao?: string;
+  altoAcao?: string;
+};
+
+export const LAB_MARKERS: { grupo: string; cor: string; itens: LabMarker[] }[] = [
+  {
+    grupo: "Metabólico / Glicemia", cor: "#00C896",
+    itens: [
+      { k: "glicemia", l: "Glicemia jejum", unit: "mg/dL", min: 70, max: 99, otimo: "75–90",
+        altoAcao: "Reduzir CHO refinado, priorizar CHO periworkout, fibra ≥35g, canela/vinagre, caminhada pós-refeição" },
+      { k: "insulina", l: "Insulina jejum", unit: "µUI/mL", min: 2, max: 8, otimo: "< 6",
+        altoAcao: "Resistência insulínica — CHO 30–35% VET, cromo/magnésio, jejum noturno de 12h" },
+      { k: "hba1c", l: "HbA1c", unit: "%", min: 4, max: 5.6, otimo: "< 5.3",
+        altoAcao: "Controle glicêmico crônico — reduzir carga glicêmica total" },
+      { k: "hdl", l: "HDL", unit: "mg/dL", min: 45, max: 90, otimo: "> 55",
+        baixoAcao: "Azeite, abacate, ômega-3, oleaginosas; reduzir açúcar" },
+      { k: "triglicerides", l: "Triglicerídeos", unit: "mg/dL", min: 40, max: 149, otimo: "< 100",
+        altoAcao: "Cortar frutose líquida e álcool, ômega-3 2–3g/dia" },
+    ],
+  },
+  {
+    grupo: "Hormonal", cor: "#B8922A",
+    itens: [
+      { k: "tsh", l: "TSH", unit: "µUI/mL", min: 0.5, max: 4.0, otimo: "1.0–2.0",
+        altoAcao: "Suspeita de hipotireoidismo — evitar déficit agressivo, garantir iodo, selênio e zinco, CHO ≥100g/dia" },
+      { k: "t3", l: "T3 livre", unit: "pg/mL", min: 2.3, max: 4.2,
+        baixoAcao: "T3 baixo sugere adaptação metabólica — refeed/diet break antes de novo déficit" },
+      { k: "testosterona", l: "Testosterona total", unit: "ng/dL", min: 300, max: 1000, otimo: "> 550",
+        baixoAcao: "Gordura ≥25% VET, zinco, vitamina D, colesterol dietético, sono ≥7h" },
+      { k: "cortisol", l: "Cortisol matinal", unit: "µg/dL", min: 6, max: 18,
+        altoAcao: "Reduzir déficit, CHO na última refeição, magnésio bisglicinato, ashwagandha, cafeína < 200mg" },
+    ],
+  },
+  {
+    grupo: "Micronutrientes / Hematologia", cor: "#7890ff",
+    itens: [
+      { k: "vitd", l: "Vitamina D (25-OH)", unit: "ng/mL", min: 30, max: 60, otimo: "40–60",
+        baixoAcao: "Peixes gordos, gema, exposição solar; suplementação com K2 e magnésio (avaliação médica)" },
+      { k: "b12", l: "Vitamina B12", unit: "pg/mL", min: 400, max: 900,
+        baixoAcao: "Carnes, ovos, laticínios; avaliar má absorção (uso de metformina/IBP)" },
+      { k: "ferritina", l: "Ferritina", unit: "ng/mL", min: 30, max: 300,
+        baixoAcao: "Ferro heme + vitamina C, evitar café/chá junto às refeições",
+        altoAcao: "Reduzir ferro heme e álcool; investigar inflamação" },
+      { k: "hemoglobina", l: "Hemoglobina", unit: "g/dL", min: 12, max: 17.5 },
+      { k: "zinco", l: "Zinco", unit: "µg/dL", min: 70, max: 120,
+        baixoAcao: "Carne vermelha, ostras, sementes de abóbora" },
+      { k: "magnesio", l: "Magnésio", unit: "mg/dL", min: 1.8, max: 2.6,
+        baixoAcao: "Folhas verdes, cacau, oleaginosas; bisglicinato à noite" },
+    ],
+  },
+  {
+    grupo: "Renal / Hepático / Inflamação", cor: "#FF8C42",
+    itens: [
+      { k: "creatinina", l: "Creatinina", unit: "mg/dL", min: 0.6, max: 1.3,
+        altoAcao: "Ajustar proteína para 1.6–1.8 g/kg e água ≥40 ml/kg; encaminhamento médico" },
+      { k: "tgo", l: "TGO/AST", unit: "U/L", min: 10, max: 40,
+        altoAcao: "Retirar álcool, priorizar colina, taurina, cardo mariano e vegetais crucíferos" },
+      { k: "tgp", l: "TGP/ALT", unit: "U/L", min: 10, max: 41,
+        altoAcao: "Suspeita de esteatose — cortar frutose industrial, ômega-3, café sem açúcar" },
+      { k: "pcr", l: "PCR ultrassensível", unit: "mg/L", min: 0, max: 1,
+        altoAcao: "Padrão anti-inflamatório: ômega-3 3g, cúrcuma+piperina, frutas vermelhas, reduzir ultraprocessados" },
+      { k: "acidourico", l: "Ácido úrico", unit: "mg/dL", min: 2.5, max: 6.5,
+        altoAcao: "Reduzir frutose, álcool e vísceras; aumentar água e cereja" },
+    ],
+  },
+];
+
+export type LabFinding = { marker: LabMarker; valor: number; status: "baixo" | "alto"; acao: string };
+
+export function analisarLabs(labs: Record<string, string>): LabFinding[] {
+  const out: LabFinding[] = [];
+  for (const g of LAB_MARKERS) {
+    for (const m of g.itens) {
+      const raw = labs?.[m.k];
+      if (raw === undefined || raw === null || String(raw).trim() === "") continue;
+      const v = Number(String(raw).replace(",", "."));
+      if (!Number.isFinite(v)) continue;
+      if (m.min !== undefined && v < m.min) {
+        out.push({ marker: m, valor: v, status: "baixo", acao: m.baixoAcao || "Valor abaixo da referência — avaliar com o médico responsável." });
+      } else if (m.max !== undefined && v > m.max) {
+        out.push({ marker: m, valor: v, status: "alto", acao: m.altoAcao || "Valor acima da referência — avaliar com o médico responsável." });
+      }
+    }
+  }
+  return out;
+}
+
+// ═══ FASE 3.2 — NUTRIENT INTELLIGENCE (sinergias e antagonismos) ════════════
+export type NutrientRule = { tipo: "sinergia" | "antagonismo"; titulo: string; detalhe: string };
+
+export const NUTRIENT_RULES: NutrientRule[] = [
+  { tipo: "sinergia", titulo: "Ferro + Vitamina C", detalhe: "Combinar carne/feijão com limão, laranja ou pimentão aumenta a absorção do ferro em até 3x." },
+  { tipo: "sinergia", titulo: "Vitamina D + K2 + Magnésio", detalhe: "Direciona o cálcio para o osso e ativa a vitamina D." },
+  { tipo: "sinergia", titulo: "Cúrcuma + Piperina", detalhe: "Pimenta-do-reino aumenta a biodisponibilidade da curcumina em ~2000%." },
+  { tipo: "sinergia", titulo: "Zinco + Vitamina A", detalhe: "Necessários mutuamente para testosterona, imunidade e visão." },
+  { tipo: "sinergia", titulo: "Gordura + Carotenoides", detalhe: "Azeite na salada aumenta a absorção de licopeno, luteína e betacaroteno." },
+  { tipo: "sinergia", titulo: "Creatina + Carboidrato", detalhe: "A insulina melhora a captação muscular de creatina." },
+  { tipo: "antagonismo", titulo: "Café/chá + Ferro", detalhe: "Taninos e polifenóis reduzem a absorção de ferro — espaçar 1h das refeições principais." },
+  { tipo: "antagonismo", titulo: "Cálcio + Ferro / Zinco", detalhe: "Competem pelo mesmo transportador — separar laticínios da refeição rica em ferro." },
+  { tipo: "antagonismo", titulo: "Fibra em excesso + minerais", detalhe: "Fitatos reduzem zinco e ferro — demolhar leguminosas e grãos." },
+  { tipo: "antagonismo", titulo: "Álcool + B12 / Zinco / Magnésio", detalhe: "Aumenta a excreção e prejudica a absorção." },
+];
+
+// ═══ FASE 3.3 — CICLO MENSTRUAL ═════════════════════════════════════════════
+export const FASES_CICLO: { v: FaseCiclo; l: string; d: string }[] = [
+  { v: "folicular", l: "Folicular", d: "Melhor sensibilidade insulínica — CHO mais alto, treinos pesados, déficit tolerado" },
+  { v: "ovulatoria", l: "Ovulatória", d: "Pico de performance — priorizar CHO periworkout e PRs" },
+  { v: "lutea", l: "Lútea", d: "TMB +5–10%, mais fome — subir kcal 100–200, mais gordura, magnésio e chocolate 85%" },
+  { v: "menstrual", l: "Menstrual", d: "Repor ferro (heme + vitamina C), anti-inflamatórios, reduzir volume de treino" },
+  { v: "anticoncepcional", l: "Anticoncepcional hormonal", d: "Sem fases naturais — atenção a B6, B12, folato, magnésio e zinco" },
+  { v: "amenorreia", l: "Amenorreia (>3 meses)", d: "🚨 RED-S — proibido déficit. Aumentar disponibilidade energética e encaminhar" },
+  { v: "menopausa", l: "Peri/Pós-menopausa", d: "Proteína ≥2g/kg, cálcio+D+K2, isoflavonas, resistência à insulina aumentada" },
+];
+
+// ═══ FASE 3.4 — COMER FORA / VIDA REAL ══════════════════════════════════════
+export const FREQ_COMER_FORA: { v: FreqComerFora; l: string }[] = [
+  { v: "raro", l: "Raro (< 1x/semana)" },
+  { v: "1_2", l: "1 a 2x por semana" },
+  { v: "3_5", l: "3 a 5x por semana" },
+  { v: "diario", l: "Diário (almoço fora)" },
+];
+
+export const CONTEXTOS_COMER_FORA = [
+  "Restaurante por quilo",
+  "Marmita / delivery fitness",
+  "Churrascaria",
+  "Jantar de negócios",
+  "Viagens frequentes",
+  "Fast food inevitável",
+  "Padaria (café da manhã)",
+  "Happy hour / social",
+];
+
+// ═══ FASE 3.5 — CALORIMETRIA ════════════════════════════════════════════════
+export const METODOS_CALORIMETRIA = [
+  "Calorimetria indireta",
+  "Bioimpedância (TMB estimada)",
+  "Smartwatch / wearable",
+  "Diário alimentar (manutenção real)",
+];
+
 // ─── Contexto para a IA ─────────────────────────────────────────────────────
 export function buildIntelContext(i: IntelState): string[] {
   const parts: string[] = [];
@@ -388,6 +557,28 @@ export function buildIntelContext(i: IntelState): string[] {
 
   if (i.prioridadeSaciedade) parts.push(`PRIORIDADE DE SACIEDADE: ${i.prioridadeSaciedade}`);
   if (i.estrategiasSaciedade.length) parts.push(`ESTRATÉGIAS DE SACIEDADE: ${i.estrategiasSaciedade.join(", ")}`);
+  // ─── Fase 3 ───
+  const findings = analisarLabs(i.labs || {});
+  const labsPreenchidos = Object.entries(i.labs || {}).filter(([, v]) => String(v).trim() !== "");
+  if (labsPreenchidos.length) {
+    const nomes: Record<string, LabMarker> = {};
+    LAB_MARKERS.forEach(g => g.itens.forEach(m => { nomes[m.k] = m; }));
+    parts.push(`EXAMES LABORATORIAIS: ${labsPreenchidos.map(([k, v]) => `${nomes[k]?.l || k} ${v}${nomes[k]?.unit || ""}`).join(" | ")}`);
+  }
+  if (findings.length) {
+    parts.push(`ALTERAÇÕES LABORATORIAIS: ${findings.map(f => `${f.marker.l} ${f.status.toUpperCase()} (${f.valor}${f.marker.unit}) → ${f.acao}`).join(" ;; ")}`);
+  }
+  if (i.calorimetriaKcal) parts.push(`GASTO ENERGÉTICO MEDIDO: ${i.calorimetriaKcal} kcal${i.metodoCalorimetria ? ` (${i.metodoCalorimetria})` : ""} — USAR ESTE VALOR NO LUGAR DA FÓRMULA PREDITIVA`);
+  if (i.faseCiclo) {
+    const f = FASES_CICLO.find(x => x.v === i.faseCiclo);
+    parts.push(`FASE DO CICLO MENSTRUAL: ${f?.l || i.faseCiclo} — ${f?.d || ""}`);
+  }
+  if (i.cicloSincronizado) parts.push(`PLANO SINCRONIZADO COM O CICLO: sim — ciclo de ${i.duracaoCiclo || 28} dias, entregar ajustes por fase (folicular, ovulatória, lútea, menstrual)`);
+  if (i.tpmIntensa) parts.push("TPM INTENSA: sim — reforçar magnésio, B6, cálcio, ômega-3 e chocolate 85% na fase lútea");
+  if (i.comerFora) parts.push(`FREQUÊNCIA DE REFEIÇÕES FORA DE CASA: ${FREQ_COMER_FORA.find(f => f.v === i.comerFora)?.l || i.comerFora}`);
+  if (i.contextosComerFora.length) parts.push(`CONTEXTOS SOCIAIS/FORA DE CASA: ${i.contextosComerFora.join(", ")} — incluir orientações práticas de escolha para cada contexto`);
+  if (i.alcoolSemanal) parts.push(`CONSUMO DE ÁLCOOL: ${i.alcoolSemanal} doses/semana — descontar as kcal do orçamento e orientar dias de consumo`);
+
   if (i.diaOnOff) parts.push(`DIA ON/OFF: sim — no dia OFF (sem treino) reduzir carboidrato em ${i.deltaChoOff || 25}% e redistribuir parte em gordura, mantendo a proteína`);
 
   return parts;
