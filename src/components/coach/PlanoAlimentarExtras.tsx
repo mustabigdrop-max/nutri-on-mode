@@ -3,16 +3,18 @@
 // ───────────────────────────────────────────────────────────────────────────────
 import React, { useState } from "react";
 import {
-  Trophy, Activity, Stethoscope, BadgeCheck, BookMarked,
+  Trophy, Activity, Stethoscope, BadgeCheck, BookMarked, FlaskConical,
   Zap as ZapIcon, FileOutput, ChevronDown, ChevronRight, X, Plus, Trash2, AlertTriangle,
 } from "lucide-react";
 import {
   CATEGORIAS_ESPORTE, CONDICOES_CLINICAS_GROUPS, ESTRATEGIAS_RECUPERACAO,
   TIPOS_INTRA_TREINO, NIVEIS_ESTRESSE, IDIOMAS_PDF, FORMATOS_MEDIDA,
   NIVEIS_DETALHE, ITENS_INCLUIR_PDF, ESPECIALIDADES_PROFISSIONAL,
-  type IdentidadeProfissional, type IntraTreinoCfg,
+  PHARM_PROFILE_OPTIONS, PHARM_PROTOCOLS,
+  type IdentidadeProfissional, type IntraTreinoCfg, type PharmProfile,
   type PdfCfg, type RecuperacaoCfg, type ModoEspecialExtras,
 } from "./planoAlimentarConstants";
+
 
 // Tokens (subset, alinhado ao componente principal)
 const T = {
@@ -666,6 +668,109 @@ export function BlocoComparativoHistorico({
           </div>
         );
       })()}
+    </div>
+  );
+}
+
+// ─── BLOCO — SUPORTE FARMACOLÓGICO ────────────────────────────────────────────
+const AMBER = "#FF6B00";
+
+export function BlocoSuporteFarmacologico({
+  enabled, onToggle, profile, onProfileChange,
+}: {
+  enabled: boolean;
+  onToggle: (v: boolean) => void;
+  profile: PharmProfile;
+  onProfileChange: (v: PharmProfile) => void;
+}) {
+  const prot = enabled && profile !== "natural" ? PHARM_PROTOCOLS[profile] : null;
+  return (
+    <div style={{
+      marginBottom: 16, padding: "16px 20px",
+      background: "rgba(255,107,0,0.05)",
+      border: "1px solid rgba(255,107,0,0.15)",
+      borderLeft: `2px solid ${AMBER}`,
+    }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        <FlaskConical size={13} strokeWidth={2} color={AMBER} />
+        <span style={{
+          fontFamily: T.fontMono, fontSize: 10, fontWeight: 700, color: AMBER,
+          textTransform: "uppercase", letterSpacing: "0.22em",
+        }}>Suporte farmacológico</span>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={enabled}
+          aria-label="Ativar suporte farmacológico"
+          onClick={() => onToggle(!enabled)}
+          style={{
+            marginLeft: "auto", width: 42, height: 22, borderRadius: 11, cursor: "pointer",
+            background: enabled ? "rgba(255,107,0,0.25)" : "#1a1a1a",
+            border: `1px solid ${enabled ? AMBER : "#333"}`,
+            position: "relative", padding: 0, transition: "all .2s",
+          }}
+        >
+          <span style={{
+            position: "absolute", top: 2, left: enabled ? 21 : 2,
+            width: 16, height: 16, borderRadius: "50%",
+            background: enabled ? AMBER : "#666", transition: "left .2s",
+          }} />
+        </button>
+      </div>
+
+      {enabled && (
+        <div style={{ marginTop: 14 }}>
+          <label style={labelMono}>Perfil farmacológico atual</label>
+          <select
+            style={{ ...inputBase, appearance: "none", border: "1px solid rgba(255,107,0,0.3)" }}
+            value={profile === "natural" ? "" : profile}
+            onChange={e => onProfileChange((e.target.value || "natural") as PharmProfile)}
+          >
+            <option value="">— Selecionar perfil —</option>
+            {PHARM_PROFILE_OPTIONS.map(o => (
+              <option key={o.v} value={o.v}>{o.l}</option>
+            ))}
+          </select>
+
+          <div style={{
+            marginTop: 12, display: "flex", alignItems: "flex-start", gap: 8,
+          }}>
+            <AlertTriangle size={13} color={AMBER} style={{ marginTop: 2, flexShrink: 0 }} />
+            <span style={{ fontSize: 12, color: "#A0A0A0", lineHeight: 1.6 }}>
+              Este campo NÃO prescreve fármacos. Ajusta o protocolo nutricional para otimizar
+              resultados e proteção orgânica de quem já utiliza.
+            </span>
+          </div>
+
+          {prot && (
+            <div style={{
+              marginTop: 14, padding: "12px 14px",
+              background: "rgba(255,107,0,0.05)",
+              border: "1px solid rgba(255,107,0,0.3)",
+            }}>
+              <div style={{
+                fontFamily: T.fontMono, fontSize: 9, color: AMBER, letterSpacing: ".18em",
+                textTransform: "uppercase", marginBottom: 8, fontWeight: 700,
+              }}>
+                ⚗️ Ajuste farmacológico · {prot.titulo}
+              </div>
+              <div style={{ fontSize: 12, color: T.text, lineHeight: 1.6, marginBottom: 10 }}>
+                {prot.descricao}
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                {prot.tags.map(tg => (
+                  <span key={tg} style={{
+                    fontFamily: T.fontMono, fontSize: 9, padding: "3px 8px", borderRadius: 2,
+                    background: "rgba(255,107,0,0.08)", color: AMBER,
+                    border: "1px solid rgba(255,107,0,0.4)",
+                    letterSpacing: ".08em", textTransform: "uppercase",
+                  }}>{tg}</span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

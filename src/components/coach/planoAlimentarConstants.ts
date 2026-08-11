@@ -21,10 +21,50 @@ export type EsporteGroup = {
 
 const PROT = (texto: string, tags: string[]): ProtocoloEsporte => ({ texto, tags });
 
+// ───────────────────────────────────────────────────────────────────────────────
+// ESTÉTICA & LIFESTYLE — modalidades não-competitivas
+// ───────────────────────────────────────────────────────────────────────────────
+export type LifestyleModality =
+  | "shape_estetico_masc"
+  | "shape_estetico_fem"
+  | "recomposicao_corporal"
+  | "definicao_summer"
+  | "bulk_controlado"
+  | "longevidade_saude";
+
+export const LIFESTYLE_MODALITIES: string[] = [
+  "shape_estetico_masc", "shape_estetico_fem", "recomposicao_corporal",
+  "definicao_summer", "bulk_controlado", "longevidade_saude",
+];
+
 export const CATEGORIAS_ESPORTE: EsporteGroup[] = [
   {
-    grupo: "FISICULTURISMO E ESTÉTICA",
+    grupo: "ESTÉTICA & LIFESTYLE",
     options: [
+      { v: "shape_estetico_masc", l: "Shape Estético (Masculino)", protocolo: PROT(
+        "Hipertrofia com estética proporcional. Proteína 2.0–2.4 g/kg, carbo moderado cíclico conforme volume de treino. Sem manipulações extremas. Foco em aderência, proporção e definição visual sustentável ao longo do ano.",
+        ["hipertrofia", "proporção", "aderência"]) },
+      { v: "shape_estetico_fem", l: "Shape Estético (Feminino)", protocolo: PROT(
+        "Foco em glúteos, cintura e tônus muscular geral. Proteína 1.8–2.2 g/kg, gorduras saudáveis ≥25% VET para equilíbrio hormonal. Déficit suave respeitando ciclo menstrual. Sem protocolos de palco.",
+        ["tônus", "equilíbrio hormonal", "sustentável"]) },
+      { v: "recomposicao_corporal", l: "Recomposição Corporal", protocolo: PROT(
+        "Perda de gordura e ganho de massa simultâneos. Déficit leve (-10 a -15%) em dias OFF, normocalórico em dias ON. Proteína alta 2.2–2.6 g/kg. Ideal para iniciante/intermediário com BF% ≥18% (M) ou ≥25% (F).",
+        ["recomposição", "carb cycling", "progressivo"]) },
+      { v: "definicao_summer", l: "Definição / Summer Body", protocolo: PROT(
+        "Cutting direcionado a estética pessoal, timeline 8–16 semanas. Déficit moderado (-15 a -25%), proteína elevada para preservação muscular. Sem depleção, sem peak week. Cardio progressivo estratégico com refeed semanal programado.",
+        ["cutting", "preservação", "refeed"]) },
+      { v: "bulk_controlado", l: "Bulk Controlado", protocolo: PROT(
+        "Ganho de massa com superávit moderado (+10 a +15%). Monitoramento de BF% para manter ganho limpo (limiar: +2% BF/mês = ajustar). Carbo alto em dias ON, moderado em OFF. Avaliação quinzenal.",
+        ["superávit", "ganho limpo", "monitoramento"]) },
+      { v: "longevidade_saude", l: "Longevidade & Saúde", protocolo: PROT(
+        "Qualidade de vida e envelhecimento saudável. Proteína ≥1.6 g/kg anti-sarcopenia, ômega-3 ≥2g EPA+DHA/dia, fibras ≥30g/dia, micronutrientes priorizados. Sem déficits agressivos. Foco em marcadores de saúde e composição corporal funcional.",
+        ["longevidade", "micronutrientes", "funcional"]) },
+    ],
+  },
+  {
+    grupo: "FISICULTURISMO COMPETITIVO",
+    options: [
+
       { v: "bodybuilding", l: "Bodybuilding / Fisiculturismo", protocolo: PROT(
         "Periodização por bulk/cut/peak week. Proteína 2.2–2.8 g/kg. Carb cycling. Manipulação de água e sódio na semana da prova.",
         ["bulk/cut", "peak week", "proteína alta", "carb cycling"]) },
@@ -340,3 +380,67 @@ export type ModoEspecialExtras = {
   sintomas?: string; contraceptivo?: boolean; menopausa?: boolean;
 };
 export const MODO_EXTRAS_DEFAULT: ModoEspecialExtras = {};
+
+// ───────────────────────────────────────────────────────────────────────────────
+// SUPORTE FARMACOLÓGICO — perfis e ajustes nutricionais
+// Não prescreve fármacos: otimiza a nutrição de quem já utiliza.
+// ───────────────────────────────────────────────────────────────────────────────
+export type PharmProfile =
+  | "natural" | "trt" | "ciclo_leve" | "ciclo_moderado"
+  | "ciclo_avancado" | "gh_peptideos" | "gh_aas" | "sarms" | "pct";
+
+export type PharmProtocolo = { titulo: string; descricao: string; tags: string[] };
+
+export const PHARM_PROFILE_OPTIONS: { v: PharmProfile; l: string }[] = [
+  { v: "trt", l: "Apenas TRT / Reposição hormonal" },
+  { v: "ciclo_leve", l: "Ciclo leve (1-2 compostos)" },
+  { v: "ciclo_moderado", l: "Ciclo moderado (2-3 compostos)" },
+  { v: "ciclo_avancado", l: "Ciclo avançado (3+ compostos)" },
+  { v: "gh_peptideos", l: "Uso de GH / Peptídeos" },
+  { v: "gh_aas", l: "GH + AAS combinado" },
+  { v: "sarms", l: "Apenas SARMs" },
+  { v: "pct", l: "PCT / Terapia pós-ciclo" },
+];
+
+export const PHARM_PROTOCOLS: Record<string, PharmProtocolo> = {
+  trt: {
+    titulo: "TRT / REPOSIÇÃO HORMONAL",
+    descricao: "Ajustes sutis. Proteína pode ser otimizada em 2.0–2.2 g/kg pela melhor partição de nutrientes. Incluir zinco 30mg, magnésio 400mg, vitamina D3 5000UI, boro 10mg para otimizar eixo hormonal. Monitorar hematócrito — priorizar hidratação ≥40ml/kg e alimentos ricos em naringenina (toranja). Controle lipídico: fibras solúveis ≥15g/dia, fitoesteróis, ômega-3 ≥2g EPA+DHA.",
+    tags: ["EIXO HORMONAL", "HEMATÓCRITO", "LIPÍDEOS", "HIDRATAÇÃO"],
+  },
+  ciclo_leve: {
+    titulo: "CICLO LEVE (1-2 COMPOSTOS)",
+    descricao: "Partição de nutrientes melhorada — aproveitar com carbo periworkout mais agressivo (40–50% do CHO total peri-treino). Proteína 2.2–2.6 g/kg. Suporte hepático: NAC 600–1200mg/dia, silimarina 300mg, TUDCA se oral 17-alpha. Lipídeos: aumentar fibra solúvel para 20g/dia, citrus bergamot 1000mg, ômega-3 3g EPA+DHA. Hidratação ≥45ml/kg. Incluir alimentos ricos em potássio e taurina para suporte cardiovascular.",
+    tags: ["PERIWORKOUT", "HEPATOPROTEÇÃO", "CARDIO SUPPORT", "LIPÍDEOS"],
+  },
+  ciclo_moderado: {
+    titulo: "CICLO MODERADO (2-3 COMPOSTOS)",
+    descricao: "Demanda nutricional significativamente elevada. Proteína 2.4–3.0 g/kg (síntese proteica upregulated). CHO 4–7 g/kg. Suporte hepático obrigatório: NAC 1200mg + TUDCA 500mg (se orais). Suporte renal: hidratação ≥50ml/kg, limitar sódio processado, cranberry extract. Suporte cardiovascular: CoQ10 200mg, taurina 3g, ômega-3 4g EPA+DHA, fibra solúvel 20g+. Vitamina C 1000mg e E 400UI como antioxidantes. Gordura saturada <10% VET. Potássio ≥4700mg/dia via alimentação (banana, batata, abacate).",
+    tags: ["SÍNTESE ELEVADA", "HEPATO + RENAL", "CARDIOVASCULAR", "ANTIOXIDANTE"],
+  },
+  ciclo_avancado: {
+    titulo: "CICLO AVANÇADO (3+ COMPOSTOS)",
+    descricao: "Protocolo nutricional de alta demanda. Proteína 2.8–3.5 g/kg. CHO 5–8 g/kg com periodização intra-dia (maior carga peri-treino). Suporte hepático intensivo: NAC 1200mg + TUDCA 500mg + silimarina 600mg. Suporte renal crítico: hidratação ≥55ml/kg, astragalus 500mg, limitar proteína em uma única refeição a ≤50g. Cardiovascular: CoQ10 300mg, taurina 5g, ômega-3 4–5g EPA+DHA, citrus bergamot 2000mg, fibra solúvel 25g+. Vitamina K2 MK-7 200mcg. Anti-inflamatórios: cúrcuma, gengibre, frutas vermelhas, crucíferos. Sódio <2500mg/dia, priorizar potássio e magnésio.",
+    tags: ["ALTA DEMANDA", "PROTEÇÃO TOTAL", "ANTI-INFLAMATÓRIO", "PRESSÃO ARTERIAL"],
+  },
+  gh_peptideos: {
+    titulo: "GH / PEPTÍDEOS",
+    descricao: "GH aumenta resistência à insulina — reduzir carboidratos de alto IG, priorizar fontes complexas e fibras em todas as refeições. Timing de GH: se aplicação matinal em jejum, primeira refeição após 30–40min com proteína + gordura (sem CHO alto). Se noturno, última refeição low-carb. Incluir berberina 500mg ou ácido alfa-lipóico 600mg com refeições maiores em CHO. Colágeno hidrolisado 15–20g/dia + vitamina C 500mg. Zinco e magnésio para otimizar conversão IGF-1.",
+    tags: ["INSULINA", "TIMING GH", "COLÁGENO", "SENSIBILIDADE"],
+  },
+  gh_aas: {
+    titulo: "GH + AAS COMBINADO",
+    descricao: "Cenário de máxima demanda nutricional e máxima necessidade de proteção orgânica. Combinar diretrizes de ciclo moderado/avançado COM os ajustes de sensibilidade insulínica do GH. Proteína 2.8–3.2 g/kg. CHO periodizado: alto peri-treino, moderado-baixo nas demais refeições. Berberina com refeições de alto CHO. Colágeno 20g/dia + Vit C. Stack completo de proteção: NAC + TUDCA + CoQ10 + Taurina + Ômega-3. Monitorar glicemia de jejum e HbA1c a cada 8 semanas. Alimentos de baixa carga glicêmica fora do periworkout.",
+    tags: ["DEMANDA MÁXIMA", "GESTÃO INSULÍNICA", "PROTEÇÃO TOTAL", "PERIWORKOUT"],
+  },
+  sarms: {
+    titulo: "APENAS SARMs",
+    descricao: "SARMs têm hepatotoxicidade moderada e supressão hormonal parcial. Suporte hepático preventivo: NAC 600mg/dia, silimarina 300mg. Proteína 2.2–2.6 g/kg (partição melhorada, inferior a AAS). Manter gorduras ≥25% VET para suportar produção hormonal endógena. Incluir zinco 30mg, vitamina D3 5000UI, ashwagandha KSM-66 600mg para suporte ao eixo HPT. Priorizar ovos, abacate e azeite como substrato hormonal. Hidratação ≥40ml/kg.",
+    tags: ["HEPATOPROTEÇÃO", "EIXO HPT", "GORDURAS ESSENCIAIS", "SUPORTE HORMONAL"],
+  },
+  pct: {
+    titulo: "PCT / TERAPIA PÓS-CICLO",
+    descricao: "Fase crítica de recuperação hormonal: preservar massa muscular com metabolismo em queda + suportar recuperação do eixo HPT. Proteína alta 2.4–2.8 g/kg. Calorias em manutenção ou leve superávit (+5%) — NÃO fazer cutting durante PCT. Gorduras ≥30% VET (colesterol é precursor hormonal). Alimentos pró-testosterona: ovos inteiros, ostras/frutos do mar, crucíferos, romã, gengibre. Zinco 50mg, magnésio 400mg, D3 5000UI, boro 10mg, ashwagandha 600mg. Triptofano na última refeição (aveia, banana, peru, leite). Álcool: zero.",
+    tags: ["RECUPERAÇÃO HORMONAL", "ANTI-CATABÓLICO", "PRÓ-TESTOSTERONA", "SONO"],
+  },
+};
