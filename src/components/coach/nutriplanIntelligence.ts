@@ -55,7 +55,7 @@ export const QUICK_PROFILES: QuickProfile[] = [
   {
     id: "homem_bulk", label: "Homem Bulk", emoji: "👨",
     form: {
-      sexo: "masculino", objetivo: "hipertrofia", fasePeriodizacao: "bulking",
+      sexo: "masculino", objetivo: "ganho_massa", fasePeriodizacao: "bulk_limpo",
       nivelAtividade: "ativo", neat: "medio", qualidadeSono: "boa",
       refeicoes: "6", treino: "musculacao", perfilPCA: "executor",
       cyclingCarbo: false, cronobiologiaAtiva: true, glut4Enabled: true, protocoloMicrobiota: true,
@@ -65,12 +65,12 @@ export const QUICK_PROFILES: QuickProfile[] = [
   {
     id: "mulher_shape", label: "Mulher Shape", emoji: "👩",
     form: {
-      sexo: "feminino", objetivo: "recomposicao", fasePeriodizacao: "manutencao_offseason",
+      sexo: "feminino", objetivo: "recomposicao", fasePeriodizacao: "recomposicao",
       nivelAtividade: "moderado", neat: "medio", qualidadeSono: "boa",
       refeicoes: "5", treino: "musculacao", cronobiologiaAtiva: true, medidasCaseiras: true,
     },
     categoriaEsporte: "shape_estetico_fem",
-    intel: { somatotipo: "meso" as any, toleranciaCho: "moderada" },
+    intel: { somatotipo: "mesomorfo", toleranciaCho: "moderada" },
   },
   {
     id: "atleta_comp", label: "Atleta Comp", emoji: "🏋️",
@@ -104,7 +104,7 @@ export const QUICK_PROFILES: QuickProfile[] = [
   {
     id: "trt_lifestyle", label: "TRT Lifestyle", emoji: "💉",
     form: {
-      sexo: "masculino", objetivo: "recomposicao", fasePeriodizacao: "manutencao_offseason",
+      sexo: "masculino", objetivo: "recomposicao", fasePeriodizacao: "recomposicao",
       nivelAtividade: "moderado", neat: "medio", qualidadeSono: "boa",
       refeicoes: "5", treino: "musculacao", cronobiologiaAtiva: true, glut4Enabled: true,
     },
@@ -114,7 +114,7 @@ export const QUICK_PROFILES: QuickProfile[] = [
   {
     id: "recomp", label: "Recomp", emoji: "🔄",
     form: {
-      objetivo: "recomposicao", fasePeriodizacao: "manutencao_offseason",
+      objetivo: "recomposicao", fasePeriodizacao: "recomposicao",
       nivelAtividade: "moderado", neat: "medio", qualidadeSono: "boa",
       refeicoes: "5", treino: "musculacao", cyclingCarbo: true, cronobiologiaAtiva: true, glut4Enabled: true,
     },
@@ -129,12 +129,12 @@ export const SMART_DEFAULTS: Record<string, Record<string, any>> = {
     fasePeriodizacao: "cutting", cyclingCarbo: true, cronobiologiaAtiva: true,
     glut4Enabled: true, hidratacaoFarmacologica: true, medidasCaseiras: true,
   },
-  hipertrofia: {
-    fasePeriodizacao: "bulking", cyclingCarbo: false, cronobiologiaAtiva: true,
+  ganho_massa: {
+    fasePeriodizacao: "bulk_limpo", cyclingCarbo: false, cronobiologiaAtiva: true,
     glut4Enabled: true, protocoloMicrobiota: true,
   },
   recomposicao: {
-    fasePeriodizacao: "manutencao_offseason", cyclingCarbo: true,
+    fasePeriodizacao: "recomposicao", cyclingCarbo: true,
     cronobiologiaAtiva: true, glut4Enabled: true,
   },
   performance: {
