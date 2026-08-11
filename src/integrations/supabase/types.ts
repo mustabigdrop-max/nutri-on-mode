@@ -4328,6 +4328,104 @@ export type Database = {
           },
         ]
       }
+      exam_request_results: {
+        Row: {
+          coach_id: string
+          created_at: string
+          data_coleta: string | null
+          exame_id: string
+          id: string
+          request_id: string
+          status: string | null
+          unidade: string | null
+          valor: number | null
+        }
+        Insert: {
+          coach_id: string
+          created_at?: string
+          data_coleta?: string | null
+          exame_id: string
+          id?: string
+          request_id: string
+          status?: string | null
+          unidade?: string | null
+          valor?: number | null
+        }
+        Update: {
+          coach_id?: string
+          created_at?: string
+          data_coleta?: string | null
+          exame_id?: string
+          id?: string
+          request_id?: string
+          status?: string | null
+          unidade?: string | null
+          valor?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exam_request_results_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "exam_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      exam_requests: {
+        Row: {
+          coach_id: string
+          created_at: string
+          exames: Json
+          id: string
+          justificativa: string | null
+          observacoes: string | null
+          paineis: Json
+          patient_age: number | null
+          patient_name: string | null
+          patient_sex: string | null
+          patient_user_id: string | null
+          periodicidade: string | null
+          proxima_solicitacao: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          coach_id: string
+          created_at?: string
+          exames?: Json
+          id?: string
+          justificativa?: string | null
+          observacoes?: string | null
+          paineis?: Json
+          patient_age?: number | null
+          patient_name?: string | null
+          patient_sex?: string | null
+          patient_user_id?: string | null
+          periodicidade?: string | null
+          proxima_solicitacao?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          coach_id?: string
+          created_at?: string
+          exames?: Json
+          id?: string
+          justificativa?: string | null
+          observacoes?: string | null
+          paineis?: Json
+          patient_age?: number | null
+          patient_name?: string | null
+          patient_sex?: string | null
+          patient_user_id?: string | null
+          periodicidade?: string | null
+          proxima_solicitacao?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       exercise_cues: {
         Row: {
           created_at: string | null
