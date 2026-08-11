@@ -1275,6 +1275,8 @@ export default function PlanoAlimentarIA() {
 
   // ─── Campos ADITIVOS (novos blocos /coach/plano-alimentar) ─────────────────
   const [categoriaEsporte, setCategoriaEsporte] = useState<string>("");
+  const [pharmEnabled, setPharmEnabled] = useState(false);
+  const [pharmProfile, setPharmProfile] = useState<PharmProfile>("natural");
   const [recuperacao, setRecuperacao] = useState<RecuperacaoCfg>(RECUPERACAO_DEFAULT);
   const [intraTreino, setIntraTreino] = useState<IntraTreinoCfg>(INTRA_DEFAULT);
   const [condicoesClinicas, setCondicoesClinicas] = useState<string[]>([]);
@@ -1301,7 +1303,7 @@ export default function PlanoAlimentarIA() {
   };
   const handleSaveTemplate = (nome: string) => {
     const snapshot = {
-      form, categoriaEsporte, recuperacao, intraTreino, condicoesClinicas, pdfCfg, modoExtras,
+      form, categoriaEsporte, pharmEnabled, pharmProfile, recuperacao, intraTreino, condicoesClinicas, pdfCfg, modoExtras,
     };
     persistTemplates([...coachTemplates, { id: crypto.randomUUID(), nome, criadoEm: new Date().toISOString(), snapshot }].slice(0, 10));
   };
@@ -1309,6 +1311,8 @@ export default function PlanoAlimentarIA() {
     const s = t.snapshot || {};
     if (s.form) setForm((f: any) => ({ ...f, ...s.form }));
     if (s.categoriaEsporte !== undefined) setCategoriaEsporte(s.categoriaEsporte);
+    if (s.pharmEnabled !== undefined) setPharmEnabled(!!s.pharmEnabled);
+    if (s.pharmProfile !== undefined) setPharmProfile(s.pharmProfile);
     if (s.recuperacao) setRecuperacao(s.recuperacao);
     if (s.intraTreino) setIntraTreino(s.intraTreino);
     if (s.condicoesClinicas) setCondicoesClinicas(s.condicoesClinicas);
@@ -1321,6 +1325,10 @@ export default function PlanoAlimentarIA() {
   const buildContextoAditivo = () => {
     const parts: string[] = [];
     if (categoriaEsporte) parts.push(`ESPORTE/MODALIDADE: ${categoriaEsporte}`);
+    if (categoriaEsporte && LIFESTYLE_MODALITIES.includes(categoriaEsporte)) {
+      parts.push("CATEGORIA: ESTÉTICA & LIFESTYLE (não competitivo)");
+    }
+    parts.push(`PERFIL FARMACOLÓGICO: ${pharmEnabled && pharmProfile !== "natural" ? pharmProfile : "natural"}`);
     if (condicoesClinicas.length) parts.push(`CONDIÇÕES CLÍNICAS: ${condicoesClinicas.join(", ")}`);
     if (recuperacao.estrategias.length) parts.push(`ESTRATÉGIAS DE RECUPERAÇÃO: ${recuperacao.estrategias.join(", ")}`);
     if (recuperacao.nivelEstresse) parts.push(`NÍVEL DE ESTRESSE: ${recuperacao.nivelEstresse}`);
@@ -1497,6 +1505,8 @@ export default function PlanoAlimentarIA() {
         coach_signature: identidade.exibirNoPdf ? identidade : null,
         coach_identity: identidade,
         categoria_esporte: categoriaEsporte || null,
+        pharm_enabled: pharmEnabled && pharmProfile !== "natural",
+        pharm_profile: pharmEnabled ? pharmProfile : "natural",
         condicoes_clinicas: condicoesClinicas,
         recuperacao_cfg: recuperacao,
         intra_treino_cfg: intraTreino,
@@ -5609,6 +5619,14 @@ export default function PlanoAlimentarIA() {
 
         {/* ─── BLOCO 1 — CATEGORIA DE ESPORTE ─── */}
         <BlocoCategoriaEsporte value={categoriaEsporte} onChange={setCategoriaEsporte} />
+
+        {/* ─── SUPORTE FARMACOLÓGICO ─── */}
+        <BlocoSuporteFarmacologico
+          enabled={pharmEnabled}
+          onToggle={(v) => { setPharmEnabled(v); if (!v) setPharmProfile("natural"); }}
+          profile={pharmProfile}
+          onProfileChange={setPharmProfile}
+        />
 
         {/* ─── CONTEXTO CLÍNICO · PROTOCOLO DO COACH (NOVO) ─── */}
         <Section title="Contexto clínico · Protocolo do coach" icon={<Brain size={12} strokeWidth={2} color={T.emerald} />} accent="emerald">
