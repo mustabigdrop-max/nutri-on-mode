@@ -131,6 +131,24 @@ const AuthPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (loading) return;
+
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanName = fullName.trim();
+
+    if (!cleanEmail.includes("@")) {
+      toast.error("Email inválido. Verifique e tente novamente.");
+      return;
+    }
+    if (password.length < 6) {
+      toast.error("A senha precisa ter pelo menos 6 caracteres.");
+      return;
+    }
+    if (mode === "signup" && !cleanName) {
+      toast.error("Informe seu nome completo.");
+      return;
+    }
+
     setLoading(true);
     const t = window.setTimeout(() => {
       setLoading(false);
@@ -139,28 +157,46 @@ const AuthPage = () => {
 
     try {
       if (mode === "login") {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) toast.error(translateAuthError(error.message));
-        else if (nextPath) window.location.href = nextPath;
+        const { error } = await supabase.auth.signInWithPassword({ email: cleanEmail, password });
+        if (error) {
+          console.error("[AUTH] login error:", error.status, error.message);
+          toast.error(translateAuthError(error.message));
+        } else if (nextPath) window.location.href = nextPath;
         else navigate("/dashboard");
       } else {
         if (!choice) { toast.error("Selecione um perfil."); return; }
         const professional_type = isProfessionalType(choice) ? choice : null;
-        const { error } = await supabase.auth.signUp({
-          email,
+        const { data, error } = await supabase.auth.signUp({
+          email: cleanEmail,
           password,
           options: {
-            data: { full_name: fullName, professional_type },
+            data: { full_name: cleanName, professional_type },
             emailRedirectTo: nextPath
               ? `${window.location.origin}${nextPath}`
               : window.location.origin,
           },
         });
 
-        if (error) toast.error(translateAuthError(error.message));
-        else toast.success("Conta criada! Verifique seu email para confirmar.");
+        if (error) {
+          console.error("[AUTH] signup error:", error.status, error.message);
+          toast.error(translateAuthError(error.message));
+          return;
+        }
+
+        if (data.user && data.user.identities && data.user.identities.length === 0) {
+          toast.error('Este email já tem uma conta. Use "FAZER LOGIN".');
+          return;
+        }
+
+        if (data.session) {
+          toast.success("Conta ativada! Redirecionando…");
+          navigate(nextPath || "/dashboard");
+        } else {
+          toast.success("Conta criada! Verifique seu email para confirmar.", { duration: 6000 });
+        }
       }
     } catch (err: any) {
+      console.error("[AUTH] unexpected error:", err);
       toast.error(translateAuthError(err?.message));
     } finally {
       window.clearTimeout(t);
