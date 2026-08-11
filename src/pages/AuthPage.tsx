@@ -32,8 +32,15 @@ const AUTH_ERROR_MAP: Record<string, string> = {
   "invalid login credentials": "Email ou senha incorretos.",
   "email not confirmed": "Confirme seu email antes de entrar — verifique sua caixa de entrada (e o spam).",
   "user already registered": "Este email já tem uma conta. Faça login em vez de cadastrar.",
-  "password should be at least 6 characters": "A senha precisa ter pelo menos 6 caracteres.",
+  "already been registered": "Este email já tem uma conta. Faça login em vez de cadastrar.",
+  "password is known to be weak": "Essa senha aparece em vazamentos públicos. Escolha uma senha mais forte e única (letras, números e símbolos).",
+  "pwned": "Essa senha aparece em vazamentos públicos. Escolha uma senha mais forte e única (letras, números e símbolos).",
+  "password should be at least": "A senha é curta demais. Use pelo menos 6 caracteres.",
   "unable to validate email address: invalid format": "Email inválido. Verifique e tente novamente.",
+  "invalid email": "Email inválido. Verifique e tente novamente.",
+  "email address": "Email inválido ou não permitido. Tente outro endereço.",
+  "signups not allowed": "Cadastros estão temporariamente desabilitados. Fale com o suporte.",
+  "not authorized": "Cadastros estão temporariamente desabilitados. Fale com o suporte.",
   "new password should be different from the old password": "A nova senha precisa ser diferente da senha atual.",
 };
 
@@ -42,10 +49,13 @@ const translateAuthError = (message: string | undefined | null): string => {
   const key = message.trim().toLowerCase();
   const mapped = Object.entries(AUTH_ERROR_MAP).find(([en]) => key.includes(en));
   if (mapped) return mapped[1];
-  if (key.includes("rate limit") || key.includes("security purposes")) {
+  if (key.includes("rate limit") || key.includes("security purposes") || key.includes("too many")) {
     return "Muitas tentativas seguidas. Aguarde um minuto e tente de novo.";
   }
-  return "Não foi possível concluir. Verifique os dados e tente novamente.";
+  if (key.includes("failed to fetch") || key.includes("networkerror")) {
+    return "Sem conexão com o servidor. Verifique sua internet e tente novamente.";
+  }
+  return `Erro no cadastro: ${message}`;
 };
 
 const AuthPage = () => {
@@ -121,6 +131,24 @@ const AuthPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (loading) return;
+
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanName = fullName.trim();
+
+    if (!cleanEmail.includes("@")) {
+      toast.error("Email inválido. Verifique e tente novamente.");
+      return;
+    }
+    if (password.length < 6) {
+      toast.error("A senha precisa ter pelo menos 6 caracteres.");
+      return;
+    }
+    if (mode === "signup" && !cleanName) {
+      toast.error("Informe seu nome completo.");
+      return;
+    }
+
     setLoading(true);
     const t = window.setTimeout(() => {
       setLoading(false);
@@ -129,28 +157,46 @@ const AuthPage = () => {
 
     try {
       if (mode === "login") {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) toast.error(translateAuthError(error.message));
-        else if (nextPath) window.location.href = nextPath;
+        const { error } = await supabase.auth.signInWithPassword({ email: cleanEmail, password });
+        if (error) {
+          console.error("[AUTH] login error:", error.status, error.message);
+          toast.error(translateAuthError(error.message));
+        } else if (nextPath) window.location.href = nextPath;
         else navigate("/dashboard");
       } else {
         if (!choice) { toast.error("Selecione um perfil."); return; }
         const professional_type = isProfessionalType(choice) ? choice : null;
-        const { error } = await supabase.auth.signUp({
-          email,
+        const { data, error } = await supabase.auth.signUp({
+          email: cleanEmail,
           password,
           options: {
-            data: { full_name: fullName, professional_type },
+            data: { full_name: cleanName, professional_type },
             emailRedirectTo: nextPath
               ? `${window.location.origin}${nextPath}`
               : window.location.origin,
           },
         });
 
-        if (error) toast.error(translateAuthError(error.message));
-        else toast.success("Conta criada! Verifique seu email para confirmar.");
+        if (error) {
+          console.error("[AUTH] signup error:", error.status, error.message);
+          toast.error(translateAuthError(error.message));
+          return;
+        }
+
+        if (data.user && data.user.identities && data.user.identities.length === 0) {
+          toast.error('Este email já tem uma conta. Use "FAZER LOGIN".');
+          return;
+        }
+
+        if (data.session) {
+          toast.success("Conta ativada! Redirecionando…");
+          navigate(nextPath || "/dashboard");
+        } else {
+          toast.success("Conta criada! Verifique seu email para confirmar.", { duration: 6000 });
+        }
       }
     } catch (err: any) {
+      console.error("[AUTH] unexpected error:", err);
       toast.error(translateAuthError(err?.message));
     } finally {
       window.clearTimeout(t);
