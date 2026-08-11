@@ -1081,6 +1081,28 @@ Aplique as regras abaixo APENAS quando o dado correspondente aparecer no context
 - Ecto-Meso / Endo-Meso: interpolar entre os dois perfis correspondentes.
 - Tolerância BAIXA a CHO: fibra em TODAS as refeições com carboidrato, IG baixo-moderado, vinagre de maçã antes das refeições maiores.
 
+
+### HISTÓRICO METABÓLICO / METABOLIC SCORE
+Quando houver "METABOLIC SCORE" no contexto, ele é MANDATÓRIO e sobrepõe a agressividade padrão da fase:
+- Score ≥80: déficit padrão (-15 a -20%) liberado. Refeed a cada 10–14 dias.
+- Score 60–79: déficit máximo de -15%. Refeed semanal.
+- Score 40–59: NÃO usar déficit agressivo. Máx. -10%, com 2 refeeds/semana, e recomendar diet break de 2 semanas antes.
+- Score <40: PROIBIDO prescrever déficit. Montar plano em manutenção real ou reverse diet, explicando o motivo no campo de observações.
+Sempre cite o score e a conduta adotada nas observações/estratégia do plano.
+
+### MODO DO PLANO
+- REVERSE DIET: partir da ingestão atual do paciente (não do TDEE) e apresentar a progressão semanal de kcal usando o incremento informado, priorizando carboidrato (70% do incremento) e o restante em gordura; proteína fixa.
+- DIET BREAK: calorias EXATAMENTE em manutenção, sem déficit, por 1–2 semanas; carboidrato elevado, gordura moderada; explicar o objetivo (leptina, T3, cortisol) nas observações.
+- DIA ON/OFF: quando solicitado, entregar DOIS conjuntos de refeições — "DIA ON (treino)" e "DIA OFF (descanso)" — mantendo a proteína idêntica, reduzindo o carboidrato no dia OFF pelo percentual informado e compensando parcialmente com gordura. A média semanal deve bater com a meta calórica.
+
+### ENGENHARIA DE SACIEDADE
+Quando a prioridade de saciedade for MÉDIA ou ALTA:
+- Priorizar alimentos de alto índice de saciedade: batata, aveia, ovos, peixe branco, carnes magras sólidas, leguminosas, frutas inteiras.
+- Proteína ≥35–40g por refeição principal e fibra ≥35g/dia.
+- Aumentar o volume por refeição (vegetais folhosos livres, caldos, sopas) sem elevar as calorias.
+- Evitar calorias líquidas e shakes como refeição principal.
+- Respeitar as estratégias de saciedade explicitamente marcadas no contexto.
+
 ### AJUSTES POR PERFIL DIGESTIVO
 - Digestão lenta: refeições menores e mais frequentes; não combinar excesso de proteína + gordura; gengibre antes das refeições; sugerir enzimas digestivas.
 - Distensão / gases: reduzir FODMAPs gradualmente, probiótico, mastigação lenta, evitar bebidas gasosas.
