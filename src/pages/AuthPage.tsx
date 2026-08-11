@@ -32,8 +32,15 @@ const AUTH_ERROR_MAP: Record<string, string> = {
   "invalid login credentials": "Email ou senha incorretos.",
   "email not confirmed": "Confirme seu email antes de entrar — verifique sua caixa de entrada (e o spam).",
   "user already registered": "Este email já tem uma conta. Faça login em vez de cadastrar.",
-  "password should be at least 6 characters": "A senha precisa ter pelo menos 6 caracteres.",
+  "already been registered": "Este email já tem uma conta. Faça login em vez de cadastrar.",
+  "password is known to be weak": "Essa senha aparece em vazamentos públicos. Escolha uma senha mais forte e única (letras, números e símbolos).",
+  "pwned": "Essa senha aparece em vazamentos públicos. Escolha uma senha mais forte e única (letras, números e símbolos).",
+  "password should be at least": "A senha é curta demais. Use pelo menos 6 caracteres.",
   "unable to validate email address: invalid format": "Email inválido. Verifique e tente novamente.",
+  "invalid email": "Email inválido. Verifique e tente novamente.",
+  "email address": "Email inválido ou não permitido. Tente outro endereço.",
+  "signups not allowed": "Cadastros estão temporariamente desabilitados. Fale com o suporte.",
+  "not authorized": "Cadastros estão temporariamente desabilitados. Fale com o suporte.",
   "new password should be different from the old password": "A nova senha precisa ser diferente da senha atual.",
 };
 
@@ -42,10 +49,13 @@ const translateAuthError = (message: string | undefined | null): string => {
   const key = message.trim().toLowerCase();
   const mapped = Object.entries(AUTH_ERROR_MAP).find(([en]) => key.includes(en));
   if (mapped) return mapped[1];
-  if (key.includes("rate limit") || key.includes("security purposes")) {
+  if (key.includes("rate limit") || key.includes("security purposes") || key.includes("too many")) {
     return "Muitas tentativas seguidas. Aguarde um minuto e tente de novo.";
   }
-  return "Não foi possível concluir. Verifique os dados e tente novamente.";
+  if (key.includes("failed to fetch") || key.includes("networkerror")) {
+    return "Sem conexão com o servidor. Verifique sua internet e tente novamente.";
+  }
+  return `Erro no cadastro: ${message}`;
 };
 
 const AuthPage = () => {
