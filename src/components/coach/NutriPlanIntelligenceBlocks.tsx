@@ -1,10 +1,11 @@
 import React from "react";
-import { Zap, Dna, Activity, Brain, History, TrendingUp, Utensils } from "lucide-react";
+import { Zap, Dna, Activity, Brain, History, TrendingUp, Utensils, FlaskConical, Sparkles, Moon, MapPin } from "lucide-react";
 import {
   QUICK_PROFILES, SOMATOTIPOS, TOLERANCIA_CHO, VELOCIDADE_DIGESTIVA,
   SINTOMAS_DIGESTIVOS, NIVEIS_ESTRESSE_INTEL, OVERTRAINING_OPTS,
   DIETAS_ANTERIORES, MODOS_DIETA, PRIORIDADE_SACIEDADE, ESTRATEGIAS_SACIEDADE,
-  computeMetabolicScore,
+  computeMetabolicScore, LAB_MARKERS, analisarLabs, NUTRIENT_RULES,
+  FASES_CICLO, FREQ_COMER_FORA, CONTEXTOS_COMER_FORA, METODOS_CALORIMETRIA,
   type IntelState, type QuickProfile,
 } from "./nutriplanIntelligence";
 
@@ -408,6 +409,239 @@ export function BlocoSaciedade({ value, onChange }: {
           </Chip>
         ))}
       </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// FASE 3 — Exames, Nutrient Intelligence, Ciclo, Comer fora e Calorimetria
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ─── 3.1 EXAMES LABORATORIAIS ────────────────────────────────────────────────
+export function BlocoExamesLaboratoriais({ value, onChange }: {
+  value: IntelState; onChange: (v: Partial<IntelState>) => void;
+}) {
+  const labs = value.labs || {};
+  const setLab = (k: string, v: string) => onChange({ labs: { ...labs, [k]: v } });
+  const findings = analisarLabs(labs);
+  const preenchidos = Object.values(labs).filter(v => String(v).trim() !== "").length;
+
+  return (
+    <div style={{ ...box, borderLeft: "2px solid #FF5C5C" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+        <FlaskConical size={12} strokeWidth={2} color="#FF5C5C" />
+        <span style={{ ...label, color: "#FF5C5C" }}>Exames laboratoriais</span>
+        <span style={{ fontSize: 11, color: MUTED }}>
+          — opcional · {preenchidos} preenchido{preenchidos === 1 ? "" : "s"}
+        </span>
+      </div>
+      <div style={{ fontSize: 11, color: MUTED, marginBottom: 14, lineHeight: 1.6 }}>
+        Os marcadores alterados geram ajustes nutricionais automáticos no plano. Não substituem
+        avaliação médica nem servem para prescrição de medicamentos.
+      </div>
+
+      {LAB_MARKERS.map(g => (
+        <div key={g.grupo} style={{ marginBottom: 14 }}>
+          <div style={{ ...label, color: g.cor, marginBottom: 8 }}>{g.grupo}</div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(148px,1fr))", gap: 10 }}>
+            {g.itens.map(m => {
+              const raw = labs[m.k];
+              const v = Number(String(raw ?? "").replace(",", "."));
+              const alterado = String(raw ?? "").trim() !== "" && Number.isFinite(v) &&
+                ((m.min !== undefined && v < m.min) || (m.max !== undefined && v > m.max));
+              return (
+                <div key={m.k}>
+                  <div style={{ fontSize: 11, color: alterado ? "#FF5C5C" : MUTED, marginBottom: 5 }}>
+                    {m.l} <span style={{ opacity: .6 }}>({m.unit})</span>
+                  </div>
+                  <input
+                    style={{ ...inputBase, borderColor: alterado ? "#FF5C5C66" : "#ffffff14" }}
+                    type="number" inputMode="decimal"
+                    placeholder={m.otimo ? `Ótimo ${m.otimo}` : `${m.min ?? ""}–${m.max ?? ""}`}
+                    value={raw ?? ""}
+                    onChange={e => setLab(m.k, e.target.value)}
+                  />
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ))}
+
+      {findings.length > 0 && (
+        <div style={{ marginTop: 6, padding: "13px 15px", background: "rgba(255,92,92,.05)", border: "1px solid rgba(255,92,92,.3)" }}>
+          <div style={{ ...label, color: "#FF5C5C", marginBottom: 10 }}>
+            {findings.length} marcador{findings.length === 1 ? "" : "es"} fora da faixa
+          </div>
+          {findings.map(f => (
+            <div key={f.marker.k} style={{ marginBottom: 9, fontSize: 12, color: TEXT, lineHeight: 1.6 }}>
+              <strong style={{ color: f.status === "alto" ? "#FF8C42" : "#7890ff" }}>
+                {f.marker.l} {f.status === "alto" ? "↑" : "↓"} {f.valor}{f.marker.unit}
+              </strong>
+              <div style={{ color: MUTED, fontSize: 11 }}>{f.acao}</div>
+            </div>
+          ))}
+          <div style={{ fontSize: 10, color: MUTED, marginTop: 8, fontStyle: "italic" }}>
+            Conduta exclusivamente nutricional. Encaminhe ao médico quando indicado.
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── 3.2 NUTRIENT INTELLIGENCE ───────────────────────────────────────────────
+export function BlocoNutrientIntelligence() {
+  const [open, setOpen] = React.useState(false);
+  return (
+    <div style={{ ...box, borderLeft: "2px solid #00C896" }}>
+      <button type="button" onClick={() => setOpen(o => !o)} style={{
+        display: "flex", alignItems: "center", gap: 8, width: "100%",
+        background: "none", border: "none", padding: 0, cursor: "pointer", fontFamily: "inherit",
+      }}>
+        <Sparkles size={12} strokeWidth={2} color={EMERALD} />
+        <span style={{ ...label, color: EMERALD }}>Nutrient Intelligence</span>
+        <span style={{ fontSize: 11, color: MUTED }}>— sinergias e antagonismos aplicados ao plano</span>
+        <span style={{ marginLeft: "auto", color: MUTED, fontSize: 12 }}>{open ? "−" : "+"}</span>
+      </button>
+      {open && (
+        <div style={{ marginTop: 14, display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(230px,1fr))", gap: 10 }}>
+          {NUTRIENT_RULES.map(r => (
+            <div key={r.titulo} style={{
+              padding: "10px 12px", background: "#020205",
+              border: `1px solid ${r.tipo === "sinergia" ? `${EMERALD}33` : "#FF8C4233"}`,
+            }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: r.tipo === "sinergia" ? EMERALD : "#FF8C42", marginBottom: 4 }}>
+                {r.tipo === "sinergia" ? "＋" : "✕"} {r.titulo}
+              </div>
+              <div style={{ fontSize: 11, color: MUTED, lineHeight: 1.6 }}>{r.detalhe}</div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── 3.3 CICLO MENSTRUAL ─────────────────────────────────────────────────────
+export function BlocoCicloMenstrual({ value, onChange }: {
+  value: IntelState; onChange: (v: Partial<IntelState>) => void;
+}) {
+  const fase = FASES_CICLO.find(f => f.v === value.faseCiclo);
+  const redS = value.faseCiclo === "amenorreia";
+  return (
+    <div style={{ ...box, borderLeft: "2px solid #FF80B5" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+        <Moon size={12} strokeWidth={2} color="#FF80B5" />
+        <span style={{ ...label, color: "#FF80B5" }}>Ciclo menstrual</span>
+      </div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 10 }}>
+        {FASES_CICLO.map(f => (
+          <Chip key={f.v} accent="#FF80B5" active={value.faseCiclo === f.v}
+            onClick={() => onChange({ faseCiclo: value.faseCiclo === f.v ? "" : f.v })}>
+            {f.l}
+          </Chip>
+        ))}
+      </div>
+      {fase && (
+        <div style={{ fontSize: 11, color: MUTED, marginBottom: 12, lineHeight: 1.6 }}>{fase.d}</div>
+      )}
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
+        <Toggle accent="#FF80B5" on={value.cicloSincronizado} onClick={() => onChange({ cicloSincronizado: !value.cicloSincronizado })}>
+          Sincronizar plano com as 4 fases
+        </Toggle>
+        <Toggle accent="#FF80B5" on={value.tpmIntensa} onClick={() => onChange({ tpmIntensa: !value.tpmIntensa })}>
+          TPM intensa
+        </Toggle>
+        {value.cicloSincronizado && (
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{ fontSize: 11, color: MUTED }}>Duração:</span>
+            <input style={{ ...inputBase, width: 74 }} type="number" value={value.duracaoCiclo}
+              onChange={e => onChange({ duracaoCiclo: e.target.value })} />
+            <span style={{ fontSize: 11, color: MUTED }}>dias</span>
+          </div>
+        )}
+      </div>
+      {redS && (
+        <div style={{
+          marginTop: 12, padding: "10px 12px", background: "rgba(255,92,92,.06)",
+          border: "1px solid rgba(255,92,92,.35)", fontSize: 12, color: "#FF9B9B", lineHeight: 1.6,
+        }}>
+          🚨 RED-S — amenorreia há mais de 3 meses. A IA NÃO prescreverá déficit calórico:
+          o plano será montado para restaurar a disponibilidade energética, com encaminhamento médico.
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── 3.4 / 3.5 COMER FORA + CALORIMETRIA ─────────────────────────────────────
+export function BlocoVidaRealCalorimetria({ value, onChange }: {
+  value: IntelState; onChange: (v: Partial<IntelState>) => void;
+}) {
+  const toggleCtx = (c: string) => onChange({
+    contextosComerFora: value.contextosComerFora.includes(c)
+      ? value.contextosComerFora.filter(x => x !== c)
+      : [...value.contextosComerFora, c],
+  });
+  return (
+    <div style={{ ...box, borderLeft: "2px solid #7890ff" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+        <MapPin size={12} strokeWidth={2} color="#7890ff" />
+        <span style={{ ...label, color: "#7890ff" }}>Vida real & gasto medido</span>
+      </div>
+
+      <div style={{ ...label, color: MUTED, marginBottom: 8 }}>Refeições fora de casa</div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 14 }}>
+        {FREQ_COMER_FORA.map(f => (
+          <Chip key={f.v} accent="#7890ff" active={value.comerFora === f.v}
+            onClick={() => onChange({ comerFora: value.comerFora === f.v ? "" : f.v })}>
+            {f.l}
+          </Chip>
+        ))}
+      </div>
+
+      {value.comerFora && value.comerFora !== "raro" && (
+        <>
+          <div style={{ ...label, color: MUTED, marginBottom: 8 }}>Contextos mais frequentes</div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 14 }}>
+            {CONTEXTOS_COMER_FORA.map(c => (
+              <Chip key={c} accent="#7890ff" active={value.contextosComerFora.includes(c)} onClick={() => toggleCtx(c)}>
+                {c}
+              </Chip>
+            ))}
+          </div>
+        </>
+      )}
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(160px,1fr))", gap: 10 }}>
+        <div>
+          <div style={{ ...label, color: MUTED, marginBottom: 6 }}>Álcool (doses/semana)</div>
+          <input style={inputBase} type="number" placeholder="Ex: 4" value={value.alcoolSemanal}
+            onChange={e => onChange({ alcoolSemanal: e.target.value })} />
+        </div>
+        <div>
+          <div style={{ ...label, color: MUTED, marginBottom: 6 }}>Gasto medido (kcal)</div>
+          <input style={inputBase} type="number" placeholder="Calorimetria / diário" value={value.calorimetriaKcal}
+            onChange={e => onChange({ calorimetriaKcal: e.target.value })} />
+        </div>
+        <div>
+          <div style={{ ...label, color: MUTED, marginBottom: 6 }}>Método</div>
+          <select
+            style={{ ...inputBase, cursor: "pointer" }}
+            value={value.metodoCalorimetria}
+            onChange={e => onChange({ metodoCalorimetria: e.target.value })}
+          >
+            <option value="">Selecione</option>
+            {METODOS_CALORIMETRIA.map(m => <option key={m} value={m}>{m}</option>)}
+          </select>
+        </div>
+      </div>
+      {value.calorimetriaKcal && (
+        <div style={{ marginTop: 10, fontSize: 11, color: EMERALD, lineHeight: 1.6 }}>
+          ✓ O gasto medido substitui a fórmula preditiva no cálculo do plano.
+        </div>
+      )}
     </div>
   );
 }

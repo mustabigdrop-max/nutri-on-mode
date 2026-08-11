@@ -18,7 +18,7 @@ import {
   type PdfCfg, type RecuperacaoCfg, type ModoEspecialExtras,
 } from "./planoAlimentarConstants";
 
-import { QuickClientBar, BlocoSomatotipo, BlocoPerfilDigestivo, BlocoPerfilAutonomico, BlocoHistoricoMetabolico, BlocoModoDieta, BlocoSaciedade } from "./NutriPlanIntelligenceBlocks";
+import { QuickClientBar, BlocoSomatotipo, BlocoPerfilDigestivo, BlocoPerfilAutonomico, BlocoHistoricoMetabolico, BlocoModoDieta, BlocoSaciedade, BlocoExamesLaboratoriais, BlocoNutrientIntelligence, BlocoCicloMenstrual, BlocoVidaRealCalorimetria } from "./NutriPlanIntelligenceBlocks";
 import {
   INTEL_DEFAULT, SMART_DEFAULTS, ELITE_CHIPS, FEMININO_CHIPS, buildIntelContext,
   type IntelState, type QuickProfile,
@@ -5713,6 +5713,10 @@ export default function PlanoAlimentarIA() {
         <BlocoSaciedade value={intel} onChange={updIntel} />
         <BlocoPerfilDigestivo value={intel} onChange={updIntel} />
         <BlocoPerfilAutonomico value={intel} onChange={updIntel} />
+        <BlocoExamesLaboratoriais value={intel} onChange={updIntel} />
+        {form.sexo === "feminino" && <BlocoCicloMenstrual value={intel} onChange={updIntel} />}
+        <BlocoVidaRealCalorimetria value={intel} onChange={updIntel} />
+        <BlocoNutrientIntelligence />
 
         {/* ─── BLOCO 1 — CATEGORIA DE ESPORTE ─── */}
         <BlocoCategoriaEsporte value={categoriaEsporte} onChange={setCategoriaEsporte} />
