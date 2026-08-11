@@ -952,6 +952,10 @@ serve(async (req) => {
       // NutriPlan Elite — compostos ativos estruturados (multi-select do form)
       compostos_ativos,
       compostosAtivos,
+      // ESTÉTICA & LIFESTYLE + camada farmacológica
+      categoria_esporte,
+      pharm_enabled,
+      pharm_profile,
       // NutriPlan Elite — modo especial (competicao | glp1 | feminino)
       modo_especial,
       fase_ciclo,
@@ -959,6 +963,133 @@ serve(async (req) => {
       crononutricao_circadiana,
     } = body;
     const _cronoCircadiano: boolean = !!crononutricao_circadiana;
+
+    // ═══════════════════════════════════════════════════════════════
+    // ESTÉTICA & LIFESTYLE — regras não competitivas
+    // ═══════════════════════════════════════════════════════════════
+    const LIFESTYLE_MODALITIES = [
+      "shape_estetico_masc", "shape_estetico_fem", "recomposicao_corporal",
+      "definicao_summer", "bulk_controlado", "longevidade_saude",
+    ];
+    const _modalidade: string = typeof categoria_esporte === "string" ? categoria_esporte : "";
+    const _isLifestyle = LIFESTYLE_MODALITIES.includes(_modalidade);
+    const LIFESTYLE_MACROS: Record<string, string> = {
+      shape_estetico_masc: "PTN 2.0–2.4g/kg | CHO 3.0–5.0g/kg (cíclico) | LIP 0.8–1.2g/kg",
+      shape_estetico_fem: "PTN 1.8–2.2g/kg | CHO 2.5–4.0g/kg | LIP ≥1.0g/kg (≥25% VET)",
+      recomposicao_corporal: "PTN 2.2–2.6g/kg | CHO 2.5–4.5g/kg (cycling ON/OFF) | LIP 0.8–1.0g/kg",
+      definicao_summer: "PTN 2.4–2.8g/kg | CHO 2.0–3.5g/kg (regressivo) | LIP 0.7–1.0g/kg",
+      bulk_controlado: "PTN 1.8–2.2g/kg | CHO 4.0–6.0g/kg | LIP 0.8–1.2g/kg",
+      longevidade_saude: "PTN ≥1.6g/kg | CHO 3.0–4.5g/kg | LIP 1.0–1.5g/kg (ômega-3 priorizado)",
+    };
+    const _lifestyleBlock = _isLifestyle ? `
+
+## REGRAS PARA MODALIDADES ESTÉTICA & LIFESTYLE (modalidade: ${_modalidade})
+
+### O que NÃO incluir:
+- NÃO incluir protocolos de peak week
+- NÃO incluir manipulação de água ou sódio
+- NÃO incluir depleção/carb loading extremo
+- NÃO incluir timelines de prep com datas de palco
+- NÃO usar linguagem de competição ("stage day", "check-in", "posing")
+- NÃO recomendar déficits calóricos superiores a -25%
+
+### O que PRIORIZAR:
+- Aderência de longo prazo (sustentabilidade > resultado extremo)
+- Flexibilidade alimentar (substituições, refeições livres programadas)
+- Praticidade (meal prep, opções rápidas, comer fora com estratégia)
+- Progressividade (ajustes graduais quinzenais)
+- Qualidade de vida (sono, estresse, hidratação, vida social)
+- Educação nutricional (explicar o "porquê" de cada escolha)
+- Refeed semanal em fases de déficit (1 dia normocalórico com CHO alto)
+
+### Macros BASE da modalidade (cliente NATURAL):
+${LIFESTYLE_MACROS[_modalidade] || ""}
+
+### Tom e linguagem:
+Motivacional mas realista, sem pressão estética tóxica, progresso > perfeição.
+Métricas: medidas corporais, fotos de progresso, força nos treinos, energia e bem-estar.
+` : "";
+
+    // ═══════════════════════════════════════════════════════════════
+    // CAMADA FARMACOLÓGICA — ajustes nutricionais (não prescreve fármacos)
+    // ═══════════════════════════════════════════════════════════════
+    const _pharmProfile: string = typeof pharm_profile === "string" ? pharm_profile : "natural";
+    const _pharmOn = !!pharm_enabled && _pharmProfile !== "natural";
+    const PHARM_SPECIFIC: Record<string, string> = {
+      trt: `#### TRT / Reposição Hormonal:
+- Ajuste SUTIL — mais próximo do natural
+- PTN: +0.2g/kg acima do baseline da modalidade
+- Foco: zinco 30mg, magnésio 400mg, D3 5000UI, boro 10mg, hidratação ≥40ml/kg (hematócrito)
+- Lipídeos: fibra solúvel ≥15g/dia + ômega-3 ≥2g EPA+DHA, fitoesteróis`,
+      ciclo_leve: `#### Ciclo Leve (1-2 compostos):
+- PTN: +0.2–0.4g/kg acima do baseline
+- CHO periworkout: concentrar 40–50% do total
+- Suporte hepático: NAC 600–1200mg + silimarina 300mg (+ TUDCA se oral 17α)
+- Lipídeos: fibra solúvel 20g/dia, citrus bergamot 1000mg, ômega-3 3g EPA+DHA
+- Hidratação ≥45ml/kg; potássio e taurina para suporte cardiovascular`,
+      ciclo_moderado: `#### Ciclo Moderado (2-3 compostos):
+- PTN: +0.4–0.8g/kg acima do baseline (2.4–3.0g/kg); CHO 4–7g/kg (+20–30% vs baseline)
+- Suporte hepático OBRIGATÓRIO: NAC 1200mg + TUDCA 500mg
+- Suporte renal: hidratação ≥50ml/kg, limitar sódio processado, cranberry
+- Cardiovascular: CoQ10 200mg, taurina 3g, ômega-3 4g, fibra solúvel 20g+
+- Antioxidantes: vitamina C 1000mg, E 400UI. Gordura saturada <10% VET. Potássio ≥4700mg/dia`,
+      ciclo_avancado: `#### Ciclo Avançado (3+ compostos):
+- PTN: +0.8–1.0g/kg acima do baseline (2.8–3.5g/kg); CHO 5–8g/kg com periodização intra-dia
+- Hepático intensivo: NAC 1200mg + TUDCA 500mg + silimarina 600mg
+- Renal crítico: hidratação ≥55ml/kg, astragalus 500mg, ≤50g de proteína por refeição
+- Cardiovascular: CoQ10 300mg, taurina 5g, ômega-3 4–5g, citrus bergamot 2000mg, fibra solúvel 25g+
+- Vitamina K2 MK-7 200mcg; anti-inflamatórios (cúrcuma, gengibre, frutas vermelhas, crucíferos)
+- Sódio <2500mg/dia, priorizar potássio ≥4700mg e magnésio`,
+      gh_peptideos: `#### GH / Peptídeos:
+- Gestão de resistência insulínica é PRIORIDADE
+- CHO de alto IG apenas periworkout; complexo + fibra nas demais refeições
+- Timing GH matinal → primeira refeição PTN+LIP (sem CHO alto por 30–40min); noturno → última refeição low-carb
+- Colágeno hidrolisado 15–20g + vitamina C 500mg
+- Berberina 500mg ou ALA 600mg com refeições de alto CHO; zinco e magnésio (conversão IGF-1)`,
+      gh_aas: `#### GH + AAS Combinado:
+- Combinar regras de ciclo moderado/avançado + gestão insulínica do GH
+- PTN 2.8–3.2g/kg. CHO periodizado: ALTO periworkout / MODERADO-BAIXO nas demais refeições
+- Colágeno 20g + Vit C; stack completo: NAC + TUDCA + CoQ10 + taurina + ômega-3
+- Monitorar glicemia de jejum e HbA1c a cada 8 semanas
+- Alimentos de baixa carga glicêmica fora do periworkout`,
+      sarms: `#### SARMs:
+- Hepatotoxicidade MODERADA — suporte preventivo NAC 600mg + silimarina 300mg
+- Supressão parcial do eixo — gorduras ≥25% VET, zinco 30mg, D3 5000UI, ashwagandha KSM-66 600mg
+- PTN: +0.2g/kg acima do baseline (partição inferior a AAS); hidratação ≥40ml/kg`,
+      pct: `#### PCT / Terapia Pós-Ciclo:
+- NUNCA recomendar cutting durante PCT
+- Calorias: manutenção ou leve superávit (+5%)
+- PTN alta: 2.4–2.8g/kg (anti-catabólico). Gorduras ≥30% VET (precursor hormonal)
+- Alimentos pró-testosterona: ovos, ostras, crucíferos, romã, gengibre
+- Zinco 50mg, magnésio 400mg, D3 5000UI, boro 10mg, ashwagandha 600mg
+- Triptofano na última refeição (aveia, banana, peru). Álcool: ZERO
+- Incluir ALERTA no plano: "Fase de recuperação hormonal — NÃO reduzir calorias"`,
+    };
+    const _pharmBlock = _pharmOn ? `
+
+## AJUSTES NUTRICIONAIS POR PERFIL FARMACOLÓGICO (perfil: ${_pharmProfile})
+
+O cliente declarou utilizar suporte farmacológico. O plano NÃO prescreve fármacos.
+O objetivo é OTIMIZAR a nutrição de quem já utiliza, maximizando resultados e PRIORIZANDO proteção orgânica.
+
+### PRINCÍPIOS GERAIS:
+1. Partição de nutrientes melhorada — timing periworkout otimizado (maior % do CHO peri-treino).
+2. Síntese proteica upregulated — proteína AUMENTADA vs baseline natural, 4–6 refeições com ≥30g cada.
+3. Proteção hepática — alimentos hepatoprotetores (brócolis, couve, alho, beterraba, limão) + NAC/TUDCA quando aplicável.
+4. Proteção renal — hidratação 40–55ml/kg conforme intensidade; cranberry, hibisco; monitorar creatinina.
+5. Proteção cardiovascular — ômega-3 3–5g EPA+DHA, fibra solúvel 15–25g/dia, potássio/magnésio/taurina, gordura saturada <10% VET, fitoesteróis e citrus bergamot.
+6. Controle de estrogênio via nutrição — crucíferos diários, fibra alta, limitar álcool e xenoestrogênios.
+7. Sensibilidade insulínica — CHO complexo, fibra em todas as refeições, berberina ou ALA com refeições de alto CHO.
+
+### AJUSTE ESPECÍFICO:
+${PHARM_SPECIFIC[_pharmProfile] || ""}
+
+### FORMATO DE SAÍDA OBRIGATÓRIO (perfil farmacológico ativo):
+1. Usar o protocolo da modalidade selecionada como BASE e somar os ajustes de macros do perfil farmacológico.
+2. Incluir em "observacoes_gerais" (ou campo textual equivalente) a seção "🛡️ PROTOCOLO DE PROTEÇÃO ORGÂNICA": suplementação de suporte com dosagens, alimentos estratégicos priorizados, hidratação diária alvo e alertas do perfil.
+3. Incluir a seção "⏱️ TIMING NUTRICIONAL OTIMIZADO": distribuição periworkout (pré/intra/pós), timing em relação à aplicação (se GH) e distribuição de proteína a cada 3–4h.
+4. Incluir a seção "📋 EXAMES RECOMENDADOS": hemograma completo, TGO/TGP, GGT, creatinina, ureia, lipidograma completo, glicemia de jejum + HbA1c (se GH), testosterona total/livre, E2, LH, FSH (especialmente PCT), PSA (se >35 anos).
+` : "";
     // NutriPlan Elite — lista normalizada de compostos vindos do multi-select
     const _compostosAtivos: string[] = Array.isArray(compostos_ativos)
       ? compostos_ativos
@@ -2518,7 +2649,7 @@ ${perfilFisiologico?.modo_economico ? `
 - Some os totais para "custo_diario_economico" e "custo_diario_padrao_equivalente". Calcule "economia_diaria", "economia_percentual" (1 casa decimal) e "custo_mensal_economico" / "economia_mensal" (× 30).
 - Liste 3–5 "principais_substituicoes" mostrando a troca aplicada e a economia aproximada.
 - Todos os valores numéricos em BRL, com no máximo 2 casas decimais. Sem string, apenas números no JSON.
-` : ""}`;
+` : ""}${_lifestyleBlock}${_pharmBlock}`;
 
     const buildFallbackMealPlan = (reason: string) => {
       const targetKcal = Math.round(calc?.metaKcal || Number(calorias) || 2200);
