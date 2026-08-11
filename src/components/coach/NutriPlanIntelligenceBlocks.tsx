@@ -1,8 +1,10 @@
 import React from "react";
-import { Zap, Dna, Activity, Brain } from "lucide-react";
+import { Zap, Dna, Activity, Brain, History, TrendingUp, Utensils } from "lucide-react";
 import {
   QUICK_PROFILES, SOMATOTIPOS, TOLERANCIA_CHO, VELOCIDADE_DIGESTIVA,
   SINTOMAS_DIGESTIVOS, NIVEIS_ESTRESSE_INTEL, OVERTRAINING_OPTS,
+  DIETAS_ANTERIORES, MODOS_DIETA, PRIORIDADE_SACIEDADE, ESTRATEGIAS_SACIEDADE,
+  computeMetabolicScore,
   type IntelState, type QuickProfile,
 } from "./nutriplanIntelligence";
 
@@ -196,6 +198,216 @@ export function BlocoPerfilAutonomico({ value, onChange }: {
           magnésio, adaptógenos e carboidrato na última refeição para modular o cortisol noturno.
         </div>
       )}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// FASE 2 — Histórico metabólico, Reverse Diet, Saciedade e Dia ON/OFF
+// ═══════════════════════════════════════════════════════════════════════════
+
+const inputBase: React.CSSProperties = {
+  width: "100%", background: "#020205", border: "1px solid #ffffff14",
+  padding: "9px 11px", color: TEXT, fontSize: 13, outline: "none", fontFamily: "inherit",
+};
+
+function Toggle({ on, onClick, children, accent = EMERALD }: {
+  on: boolean; onClick: () => void; children: React.ReactNode; accent?: string;
+}) {
+  return (
+    <button type="button" onClick={onClick} style={{
+      display: "flex", alignItems: "center", gap: 9, padding: "9px 12px", cursor: "pointer",
+      background: on ? `${accent}12` : "#020205", border: `1px solid ${on ? accent : "#ffffff14"}`,
+      color: on ? accent : MUTED, fontSize: 12, fontWeight: 600, fontFamily: "inherit", textAlign: "left",
+    }}>
+      <span style={{
+        width: 14, height: 14, flexShrink: 0, borderRadius: 3,
+        border: `1px solid ${on ? accent : "#ffffff26"}`, background: on ? accent : "transparent",
+        color: "#03030a", fontSize: 10, lineHeight: "13px", textAlign: "center", fontWeight: 900,
+      }}>{on ? "✓" : ""}</span>
+      {children}
+    </button>
+  );
+}
+
+// ─── 2.1 HISTÓRICO METABÓLICO + SCORE ────────────────────────────────────────
+export function BlocoHistoricoMetabolico({ value, onChange, pesoKg }: {
+  value: IntelState; onChange: (v: Partial<IntelState>) => void; pesoKg?: number;
+}) {
+  const ms = computeMetabolicScore(value, pesoKg);
+  return (
+    <div style={{ ...box, borderLeft: "2px solid #FF8C42" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+        <History size={12} strokeWidth={2} color="#FF8C42" />
+        <span style={{ ...label, color: "#FF8C42" }}>Histórico metabólico</span>
+        <span style={{ fontSize: 11, color: MUTED }}>— define o quão agressivo o plano pode ser</span>
+      </div>
+
+      <div style={{ ...label, color: MUTED, marginBottom: 8 }}>Dietas restritivas anteriores</div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 14 }}>
+        {DIETAS_ANTERIORES.map(d => (
+          <Chip key={d.v} accent="#FF8C42" active={value.dietasAnteriores === d.v}
+            onClick={() => onChange({ dietasAnteriores: value.dietasAnteriores === d.v ? "" : d.v })}>
+            {d.l}
+          </Chip>
+        ))}
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))", gap: 10, marginBottom: 14 }}>
+        <div>
+          <div style={{ ...label, color: MUTED, marginBottom: 6 }}>Menor kcal sustentada</div>
+          <input style={inputBase} type="number" placeholder="Ex: 1400" value={value.menorKcal}
+            onChange={e => onChange({ menorKcal: e.target.value })} />
+        </div>
+        <div>
+          <div style={{ ...label, color: MUTED, marginBottom: 6 }}>Meses em déficit</div>
+          <input style={inputBase} type="number" placeholder="Ex: 6" value={value.mesesEmDeficit}
+            onChange={e => onChange({ mesesEmDeficit: e.target.value })} />
+        </div>
+        <div>
+          <div style={{ ...label, color: MUTED, marginBottom: 6 }}>Semanas sem refeed</div>
+          <input style={inputBase} type="number" placeholder="Ex: 10" value={value.semanasSemRefeed}
+            onChange={e => onChange({ semanasSemRefeed: e.target.value })} />
+        </div>
+        {value.efeitoSanfona && (
+          <div>
+            <div style={{ ...label, color: MUTED, marginBottom: 6 }}>Kg recuperados</div>
+            <input style={inputBase} type="number" placeholder="Ex: 10" value={value.kgRecuperado}
+              onChange={e => onChange({ kgRecuperado: e.target.value })} />
+          </div>
+        )}
+      </div>
+
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+        <Toggle accent="#FF8C42" on={value.efeitoSanfona} onClick={() => onChange({ efeitoSanfona: !value.efeitoSanfona })}>
+          Efeito sanfona
+        </Toggle>
+        <Toggle accent="#FF8C42" on={value.usoTermogenicos} onClick={() => onChange({ usoTermogenicos: !value.usoTermogenicos })}>
+          Termogênicos recorrentes
+        </Toggle>
+        <Toggle accent="#FF8C42" on={value.jejumFrequente} onClick={() => onChange({ jejumFrequente: !value.jejumFrequente })}>
+          Jejum prolongado frequente
+        </Toggle>
+      </div>
+
+      {ms && (
+        <div style={{ marginTop: 16, padding: "14px 16px", background: "#020205", border: `1px solid ${ms.cor}44` }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 10 }}>
+            <div style={{
+              width: 58, height: 58, flexShrink: 0, borderRadius: "50%",
+              border: `2px solid ${ms.cor}`, display: "flex", flexDirection: "column",
+              alignItems: "center", justifyContent: "center", background: `${ms.cor}10`,
+            }}>
+              <span style={{ fontSize: 19, fontWeight: 900, color: ms.cor, lineHeight: 1 }}>{ms.score}</span>
+              <span style={{ fontSize: 8, color: MUTED, fontFamily: MONO }}>/100</span>
+            </div>
+            <div>
+              <div style={{ ...label, color: MUTED, marginBottom: 4 }}>Metabolic Score</div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: ms.cor }}>{ms.label}</div>
+            </div>
+          </div>
+          {ms.riscos.length > 0 && (
+            <ul style={{ margin: "0 0 10px", paddingLeft: 18, color: MUTED, fontSize: 11, lineHeight: 1.7 }}>
+              {ms.riscos.map(r => <li key={r}>{r}</li>)}
+            </ul>
+          )}
+          <div style={{ fontSize: 12, color: TEXT, lineHeight: 1.6 }}>
+            <strong style={{ color: ms.cor }}>Conduta: </strong>{ms.recomendacao}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── 2.2 REVERSE DIET / DIET BREAK + DIA ON/OFF ──────────────────────────────
+export function BlocoModoDieta({ value, onChange }: {
+  value: IntelState; onChange: (v: Partial<IntelState>) => void;
+}) {
+  return (
+    <div style={{ ...box, borderLeft: `2px solid ${GOLD}` }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+        <TrendingUp size={12} strokeWidth={2} color={GOLD} />
+        <span style={{ ...label }}>Modo do plano</span>
+      </div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 10 }}>
+        {MODOS_DIETA.map(m => (
+          <Chip key={m.v} accent={GOLD} active={value.modoDieta === m.v}
+            onClick={() => onChange({ modoDieta: value.modoDieta === m.v ? "" : m.v })}>
+            {m.l}
+          </Chip>
+        ))}
+      </div>
+      {value.modoDieta && (
+        <div style={{ fontSize: 11, color: MUTED, marginBottom: 12 }}>
+          {MODOS_DIETA.find(m => m.v === value.modoDieta)?.d}
+        </div>
+      )}
+
+      {value.modoDieta === "reverse" && (
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
+          <div>
+            <div style={{ ...label, color: MUTED, marginBottom: 6 }}>Incremento (kcal/semana)</div>
+            <input style={inputBase} type="number" value={value.reverseIncremento}
+              onChange={e => onChange({ reverseIncremento: e.target.value })} />
+          </div>
+          <div>
+            <div style={{ ...label, color: MUTED, marginBottom: 6 }}>Duração (semanas)</div>
+            <input style={inputBase} type="number" value={value.reverseSemanas}
+              onChange={e => onChange({ reverseSemanas: e.target.value })} />
+          </div>
+        </div>
+      )}
+
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
+        <Toggle accent={GOLD} on={value.diaOnOff} onClick={() => onChange({ diaOnOff: !value.diaOnOff })}>
+          Gerar dia ON (treino) e dia OFF (descanso)
+        </Toggle>
+        {value.diaOnOff && (
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{ fontSize: 11, color: MUTED }}>− CHO no dia OFF:</span>
+            <input style={{ ...inputBase, width: 78 }} type="number" value={value.deltaChoOff}
+              onChange={e => onChange({ deltaChoOff: e.target.value })} />
+            <span style={{ fontSize: 11, color: MUTED }}>%</span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── 2.3 ENGENHARIA DE SACIEDADE ─────────────────────────────────────────────
+export function BlocoSaciedade({ value, onChange }: {
+  value: IntelState; onChange: (v: Partial<IntelState>) => void;
+}) {
+  const toggle = (s: string) => onChange({
+    estrategiasSaciedade: value.estrategiasSaciedade.includes(s)
+      ? value.estrategiasSaciedade.filter(x => x !== s)
+      : [...value.estrategiasSaciedade, s],
+  });
+  return (
+    <div style={{ ...box, borderLeft: "2px solid #C77DFF" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+        <Utensils size={12} strokeWidth={2} color="#C77DFF" />
+        <span style={{ ...label, color: "#C77DFF" }}>Engenharia de saciedade</span>
+      </div>
+      <div style={{ ...label, color: MUTED, marginBottom: 8 }}>Prioridade</div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 14 }}>
+        {PRIORIDADE_SACIEDADE.map(p => (
+          <Chip key={p.v} accent="#C77DFF" active={value.prioridadeSaciedade === p.v}
+            onClick={() => onChange({ prioridadeSaciedade: value.prioridadeSaciedade === p.v ? "" : p.v })}>
+            {p.l}
+          </Chip>
+        ))}
+      </div>
+      <div style={{ ...label, color: MUTED, marginBottom: 8 }}>Estratégias aplicadas ao plano</div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+        {ESTRATEGIAS_SACIEDADE.map(s => (
+          <Chip key={s} accent="#C77DFF" active={value.estrategiasSaciedade.includes(s)} onClick={() => toggle(s)}>
+            {s}
+          </Chip>
+        ))}
+      </div>
     </div>
   );
 }
