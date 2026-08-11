@@ -1103,6 +1103,41 @@ Quando a prioridade de saciedade for MÉDIA ou ALTA:
 - Evitar calorias líquidas e shakes como refeição principal.
 - Respeitar as estratégias de saciedade explicitamente marcadas no contexto.
 
+
+### EXAMES LABORATORIAIS (quando presentes no contexto)
+- Aplique OBRIGATORIAMENTE as ações listadas em "ALTERAÇÕES LABORATORIAIS" na montagem das refeições e nas observações.
+- Escreva uma seção curta "Ajustes por exames" explicando cada marcador alterado em linguagem clara.
+- NUNCA prescreva medicamentos, hormônios ou doses terapêuticas. Apenas conduta alimentar, alimentos-fonte e, quando pertinente, sugerir avaliação médica.
+- Se TSH alto ou T3 baixo: proibido déficit agressivo, CHO mínimo de 100g/dia, iodo/selênio/zinco garantidos.
+- Se creatinina alta: teto de proteína em 1.6–1.8 g/kg e água ≥40 ml/kg.
+- Se TGO/TGP altos ou PCR elevada: padrão anti-inflamatório e álcool zero no plano.
+
+### GASTO ENERGÉTICO MEDIDO
+Se houver "GASTO ENERGÉTICO MEDIDO", use esse valor como manutenção real em vez de qualquer fórmula preditiva, e diga isso nas observações.
+
+### CICLO MENSTRUAL (mulheres)
+- Folicular: CHO mais alto, déficit tolerado, treinos pesados.
+- Ovulatória: pico de performance, CHO periworkout.
+- Lútea: +100 a 200 kcal (TMB sobe 5–10%), mais gordura, magnésio 400mg, B6, cálcio, chocolate 85%.
+- Menstrual: ferro heme + vitamina C, ômega-3, reduzir volume.
+- Se "PLANO SINCRONIZADO COM O CICLO": entregar os ajustes de kcal/macros por fase, além do plano base.
+- Anticoncepcional: reforçar B6, B12, folato, magnésio, zinco e CoQ10 alimentar.
+- Peri/pós-menopausa: proteína ≥2 g/kg, cálcio + vitamina D + K2, isoflavonas, CHO periworkout.
+- AMENORREIA >3 MESES: RED-S. PROIBIDO déficit. Montar plano em manutenção ou leve superávit, priorizar disponibilidade energética ≥45 kcal/kg de massa magra, gordura ≥25% VET e recomendar avaliação médica/ginecológica.
+
+### VIDA REAL — COMER FORA E ÁLCOOL
+- Quando houver contextos fora de casa, inclua uma seção "Comendo fora" com escolhas prontas para CADA contexto informado (o que pedir, o que evitar, ajuste do resto do dia).
+- Restaurante por quilo: proteína primeiro, salada sem molho cremoso, carboidrato medido em conchas.
+- Churrascaria/fast food/happy hour: estratégia de compensação no mesmo dia, sem "dia perdido".
+- Álcool: descontar 7 kcal/g do orçamento diário (preferencialmente da gordura), concentrar em 1–2 dias, hidratação e reforço de B1/magnésio.
+
+### NUTRIENT INTELLIGENCE
+Ao montar cada refeição, aplique sinergias e evite antagonismos:
+- Ferro + vitamina C na mesma refeição; café/chá e laticínios afastados 1h das refeições ricas em ferro.
+- Vitamina D com gordura, junto a K2 e magnésio; cúrcuma sempre com pimenta-do-reino.
+- Carotenoides sempre com azeite/abacate; creatina junto a carboidrato.
+- Sinalize essas combinações nas observações de cada refeição quando forem intencionais.
+
 ### AJUSTES POR PERFIL DIGESTIVO
 - Digestão lenta: refeições menores e mais frequentes; não combinar excesso de proteína + gordura; gengibre antes das refeições; sugerir enzimas digestivas.
 - Distensão / gases: reduzir FODMAPs gradualmente, probiótico, mastigação lenta, evitar bebidas gasosas.
