@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import {
   ArrowLeft, FileText, RefreshCw, BarChart2, CheckSquare,
   Grid, Zap, BookOpen, Clock, ChevronDown, User as UserIcon,
-  Target, Brain, Loader2, RotateCcw, Utensils, History, Info,
+  Target, Brain, Loader2, RotateCcw, Utensils, History, Info, FlaskConical,
 } from "lucide-react";
 import {
   BlocoIdentidade, BlocoTemplates, BlocoCategoriaEsporte,
@@ -5091,6 +5091,7 @@ export default function PlanoAlimentarIA() {
             { key: "grade",    label: "Grade Semanal",          icon: Grid,       onClick: () => setShowWeekGrid(true),             active: false },
             { key: "modo",     label: "Modo Especial",          icon: Zap,        onClick: () => { const el = document.getElementById("modo-especial-form"); if (el) el.scrollIntoView({ behavior: "smooth", block: "center" }); }, active: modoEspecial !== "normal" },
             { key: "biblio",   label: "Biblioteca",             icon: BookOpen,   onClick: () => navigate("/coach/templates"),      active: false },
+            { key: "exames",   label: "Solicitar Exames",       icon: FlaskConical, onClick: () => navigate("/coach/exames"),       active: false },
             { key: "hist",     label: "Histórico",              icon: Clock,      onClick: () => { setShowHistory(true); loadHistory(); }, active: false },
           ] as const).map((t) => {
             const Icon = t.icon;
