@@ -8,14 +8,16 @@ import {
   BlocoIdentidade, BlocoTemplates, BlocoCategoriaEsporte,
   BlocoRecuperacao, BlocoIntraTreino, BlocoCondicoesClinicas,
   BlocoPdfConfig, BlocoModoEspecialExtras, BlocoComparativoHistorico,
+  BlocoSuporteFarmacologico,
   type CoachTemplate,
 } from "./PlanoAlimentarExtras";
 import {
   IDENTIDADE_DEFAULT, INTRA_DEFAULT, PDF_DEFAULT,
-  RECUPERACAO_DEFAULT, MODO_EXTRAS_DEFAULT,
-  type IdentidadeProfissional, type IntraTreinoCfg,
+  RECUPERACAO_DEFAULT, MODO_EXTRAS_DEFAULT, LIFESTYLE_MODALITIES,
+  type IdentidadeProfissional, type IntraTreinoCfg, type PharmProfile,
   type PdfCfg, type RecuperacaoCfg, type ModoEspecialExtras,
 } from "./planoAlimentarConstants";
+
 import JarvisBackdrop from "@/components/dashboard/JarvisBackdrop";
 import { exportMealPlanPDF } from "@/utils/exportMealPlanPDF";
 import { exportMealPlanPDF as exportMealPlanPDFElite } from "@/lib/mealPlanPdf";
