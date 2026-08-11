@@ -21,10 +21,50 @@ export type EsporteGroup = {
 
 const PROT = (texto: string, tags: string[]): ProtocoloEsporte => ({ texto, tags });
 
+// ───────────────────────────────────────────────────────────────────────────────
+// ESTÉTICA & LIFESTYLE — modalidades não-competitivas
+// ───────────────────────────────────────────────────────────────────────────────
+export type LifestyleModality =
+  | "shape_estetico_masc"
+  | "shape_estetico_fem"
+  | "recomposicao_corporal"
+  | "definicao_summer"
+  | "bulk_controlado"
+  | "longevidade_saude";
+
+export const LIFESTYLE_MODALITIES: string[] = [
+  "shape_estetico_masc", "shape_estetico_fem", "recomposicao_corporal",
+  "definicao_summer", "bulk_controlado", "longevidade_saude",
+];
+
 export const CATEGORIAS_ESPORTE: EsporteGroup[] = [
   {
-    grupo: "FISICULTURISMO E ESTÉTICA",
+    grupo: "ESTÉTICA & LIFESTYLE",
     options: [
+      { v: "shape_estetico_masc", l: "Shape Estético (Masculino)", protocolo: PROT(
+        "Hipertrofia com estética proporcional. Proteína 2.0–2.4 g/kg, carbo moderado cíclico conforme volume de treino. Sem manipulações extremas. Foco em aderência, proporção e definição visual sustentável ao longo do ano.",
+        ["hipertrofia", "proporção", "aderência"]) },
+      { v: "shape_estetico_fem", l: "Shape Estético (Feminino)", protocolo: PROT(
+        "Foco em glúteos, cintura e tônus muscular geral. Proteína 1.8–2.2 g/kg, gorduras saudáveis ≥25% VET para equilíbrio hormonal. Déficit suave respeitando ciclo menstrual. Sem protocolos de palco.",
+        ["tônus", "equilíbrio hormonal", "sustentável"]) },
+      { v: "recomposicao_corporal", l: "Recomposição Corporal", protocolo: PROT(
+        "Perda de gordura e ganho de massa simultâneos. Déficit leve (-10 a -15%) em dias OFF, normocalórico em dias ON. Proteína alta 2.2–2.6 g/kg. Ideal para iniciante/intermediário com BF% ≥18% (M) ou ≥25% (F).",
+        ["recomposição", "carb cycling", "progressivo"]) },
+      { v: "definicao_summer", l: "Definição / Summer Body", protocolo: PROT(
+        "Cutting direcionado a estética pessoal, timeline 8–16 semanas. Déficit moderado (-15 a -25%), proteína elevada para preservação muscular. Sem depleção, sem peak week. Cardio progressivo estratégico com refeed semanal programado.",
+        ["cutting", "preservação", "refeed"]) },
+      { v: "bulk_controlado", l: "Bulk Controlado", protocolo: PROT(
+        "Ganho de massa com superávit moderado (+10 a +15%). Monitoramento de BF% para manter ganho limpo (limiar: +2% BF/mês = ajustar). Carbo alto em dias ON, moderado em OFF. Avaliação quinzenal.",
+        ["superávit", "ganho limpo", "monitoramento"]) },
+      { v: "longevidade_saude", l: "Longevidade & Saúde", protocolo: PROT(
+        "Qualidade de vida e envelhecimento saudável. Proteína ≥1.6 g/kg anti-sarcopenia, ômega-3 ≥2g EPA+DHA/dia, fibras ≥30g/dia, micronutrientes priorizados. Sem déficits agressivos. Foco em marcadores de saúde e composição corporal funcional.",
+        ["longevidade", "micronutrientes", "funcional"]) },
+    ],
+  },
+  {
+    grupo: "FISICULTURISMO COMPETITIVO",
+    options: [
+
       { v: "bodybuilding", l: "Bodybuilding / Fisiculturismo", protocolo: PROT(
         "Periodização por bulk/cut/peak week. Proteína 2.2–2.8 g/kg. Carb cycling. Manipulação de água e sódio na semana da prova.",
         ["bulk/cut", "peak week", "proteína alta", "carb cycling"]) },
