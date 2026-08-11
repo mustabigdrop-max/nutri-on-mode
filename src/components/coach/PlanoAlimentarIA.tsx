@@ -3125,6 +3125,13 @@ export default function PlanoAlimentarIA() {
                           </div>
                           <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
                             <button
+                              onClick={() => clonarPlano(h)}
+                              title="Clonar configuração deste plano"
+                              style={{ padding: "7px 12px", borderRadius: 7, background: "#020205", border: "1px solid #B8922A55", color: "#B8922A", fontSize: 11, cursor: "pointer", fontFamily: "inherit", fontWeight: 600 }}
+                            >
+                              📋 Clonar
+                            </button>
+                            <button
                               onClick={() => { setPlano(h.plano); setSavedId(h.id); setShowHistory(false); setStep("result"); }}
                               style={{ padding: "7px 12px", borderRadius: 7, background: T.bg3, border: `1px solid ${T.border2}`, color: T.text, fontSize: 11, cursor: "pointer", fontFamily: "inherit", fontWeight: 600 }}
                             >
@@ -5477,6 +5484,9 @@ export default function PlanoAlimentarIA() {
                 </select>
               </div>
 
+              {/* ─── ⚡ QUICK CLIENT ─── */}
+              <QuickClientBar onApply={applyQuickProfile} />
+
               {/* ─── 2 ACTION BUTTONS ─── */}
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 16 }}>
                 <button
@@ -5687,6 +5697,11 @@ export default function PlanoAlimentarIA() {
             </div>
           </div>
         </Section>
+
+        {/* ─── NUTRIPLAN INTELLIGENCE — somatotipo, digestivo, autonômico ─── */}
+        <BlocoSomatotipo value={intel} onChange={updIntel} />
+        <BlocoPerfilDigestivo value={intel} onChange={updIntel} />
+        <BlocoPerfilAutonomico value={intel} onChange={updIntel} />
 
         {/* ─── BLOCO 1 — CATEGORIA DE ESPORTE ─── */}
         <BlocoCategoriaEsporte value={categoriaEsporte} onChange={setCategoriaEsporte} />
