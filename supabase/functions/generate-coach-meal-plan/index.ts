@@ -1065,6 +1065,41 @@ Métricas: medidas corporais, fotos de progresso, força nos treinos, energia e 
 - Triptofano na última refeição (aveia, banana, peru). Álcool: ZERO
 - Incluir ALERTA no plano: "Fase de recuperação hormonal — NÃO reduzir calorias"`,
     };
+    // ═══════════════════════════════════════════════════════════════
+    // NUTRIPLAN INTELLIGENCE — somatotipo, digestivo e autonômico
+    // Os dados chegam via contexto clínico aditivo (SOMATOTIPO:, etc.)
+    // ═══════════════════════════════════════════════════════════════
+    const _intelBlock = `
+
+## NUTRIPLAN INTELLIGENCE — REGRAS CONDICIONAIS
+Aplique as regras abaixo APENAS quando o dado correspondente aparecer no contexto clínico.
+
+### AJUSTE POR SOMATOTIPO
+- Ectomorfo: CHO 50–60% VET. Superávit mais agressivo (+15–20%). Refeições mais frequentes.
+- Mesomorfo: distribuição equilibrada. Responde bem a carb cycling.
+- Endomorfo: CHO 30–40% VET, priorizar periworkout. Gorduras moderadas-altas. Carb cycling OBRIGATÓRIO.
+- Ecto-Meso / Endo-Meso: interpolar entre os dois perfis correspondentes.
+- Tolerância BAIXA a CHO: fibra em TODAS as refeições com carboidrato, IG baixo-moderado, vinagre de maçã antes das refeições maiores.
+
+### AJUSTES POR PERFIL DIGESTIVO
+- Digestão lenta: refeições menores e mais frequentes; não combinar excesso de proteína + gordura; gengibre antes das refeições; sugerir enzimas digestivas.
+- Distensão / gases: reduzir FODMAPs gradualmente, probiótico, mastigação lenta, evitar bebidas gasosas.
+- Constipação: fibra ≥35g/dia, água ≥45ml/kg, linhaça/chia hidratadas, kiwi pela manhã, magnésio citrato à noite.
+- Diarreia frequente: reduzir irritantes (cafeína, adoçantes poliol, gordura alta em refeição única), fibra solúvel priorizada.
+- Refluxo: última refeição ≥3h antes de dormir, evitar gordura + CHO alto à noite, gengibre.
+- Desconforto com laticínios: opções zero lactose ou plant-based; kefir pode ser tolerado.
+- Desconforto com glúten ou leguminosas: substituições diretas com mesmos macros; leguminosas demolhadas/pressão.
+- Má digestão de carne vermelha: porções menores e mais frequentes, marinada ácida (limão), sugerir betaína HCl / enzimas proteolíticas.
+
+### AJUSTES POR ESTADO AUTONÔMICO (estresse / overtraining)
+- Estresse ALTO ou BURNOUT, ou sinais claros de overtraining, ou HRV baixo / recovery <50%:
+  • Reduzir o déficit em 5–10% (nunca déficit agressivo)
+  • Priorizar magnésio bisglicinato 400mg e adaptógenos (ashwagandha 600mg)
+  • Colocar carboidrato na ÚLTIMA refeição (modula cortisol noturno → melhora sono e GH)
+  • Aumentar vitamina C e alimentos anti-inflamatórios
+  • Sugerir semana de deload e protocolo de higiene do sono no plano
+- Estresse baixo/moderado sem overtraining: manter a agressividade planejada da fase.
+`;
     const _pharmBlock = _pharmOn ? `
 
 ## AJUSTES NUTRICIONAIS POR PERFIL FARMACOLÓGICO (perfil: ${_pharmProfile})
@@ -2649,7 +2684,7 @@ ${perfilFisiologico?.modo_economico ? `
 - Some os totais para "custo_diario_economico" e "custo_diario_padrao_equivalente". Calcule "economia_diaria", "economia_percentual" (1 casa decimal) e "custo_mensal_economico" / "economia_mensal" (× 30).
 - Liste 3–5 "principais_substituicoes" mostrando a troca aplicada e a economia aproximada.
 - Todos os valores numéricos em BRL, com no máximo 2 casas decimais. Sem string, apenas números no JSON.
-` : ""}${_lifestyleBlock}${_pharmBlock}`;
+` : ""}${_lifestyleBlock}${_pharmBlock}${_intelBlock}`;
 
     const buildFallbackMealPlan = (reason: string) => {
       const targetKcal = Math.round(calc?.metaKcal || Number(calorias) || 2200);

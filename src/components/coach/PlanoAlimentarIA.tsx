@@ -18,6 +18,11 @@ import {
   type PdfCfg, type RecuperacaoCfg, type ModoEspecialExtras,
 } from "./planoAlimentarConstants";
 
+import { QuickClientBar, BlocoSomatotipo, BlocoPerfilDigestivo, BlocoPerfilAutonomico } from "./NutriPlanIntelligenceBlocks";
+import {
+  INTEL_DEFAULT, SMART_DEFAULTS, ELITE_CHIPS, FEMININO_CHIPS, buildIntelContext,
+  type IntelState, type QuickProfile,
+} from "./nutriplanIntelligence";
 import JarvisBackdrop from "@/components/dashboard/JarvisBackdrop";
 import { exportMealPlanPDF } from "@/utils/exportMealPlanPDF";
 import { exportMealPlanPDF as exportMealPlanPDFElite } from "@/lib/mealPlanPdf";
@@ -1008,6 +1013,7 @@ export default function PlanoAlimentarIA() {
     "Resistência insulínica", "Retenção hídrica", "Carb cycling 5/2",
     "GLP-1 ativo", "Protocolo cetogênico", "Atleta em competição",
     "Refeição snap", "Alta atividade NEAT",
+    ...ELITE_CHIPS,
   ];
   const ESPORTIVA_CHIPS = [
     "Janela pré-treino otimizada", "Protocolo de carb loading",
@@ -1016,6 +1022,7 @@ export default function PlanoAlimentarIA() {
     "Nutrição circadiana", "mTOR pós-treino",
     "Beta-alanina tampão", "Cafeína pré-treino",
     "Eletrólitos intra-treino", "Síntese proteica máxima",
+    ...FEMININO_CHIPS,
   ];
   const [activeChips, setActiveChips] = useState<string[]>([]);
   const toggleContextChip = (chip: string) => {
@@ -1275,6 +1282,8 @@ export default function PlanoAlimentarIA() {
 
   // ─── Campos ADITIVOS (novos blocos /coach/plano-alimentar) ─────────────────
   const [categoriaEsporte, setCategoriaEsporte] = useState<string>("");
+  const [intel, setIntel] = useState<IntelState>(INTEL_DEFAULT);
+  const updIntel = (v: Partial<IntelState>) => setIntel(prev => ({ ...prev, ...v }));
   const [pharmEnabled, setPharmEnabled] = useState(false);
   const [pharmProfile, setPharmProfile] = useState<PharmProfile>("natural");
   const [recuperacao, setRecuperacao] = useState<RecuperacaoCfg>(RECUPERACAO_DEFAULT);
@@ -1303,13 +1312,14 @@ export default function PlanoAlimentarIA() {
   };
   const handleSaveTemplate = (nome: string) => {
     const snapshot = {
-      form, categoriaEsporte, pharmEnabled, pharmProfile, recuperacao, intraTreino, condicoesClinicas, pdfCfg, modoExtras,
+      form, intel, categoriaEsporte, pharmEnabled, pharmProfile, recuperacao, intraTreino, condicoesClinicas, pdfCfg, modoExtras,
     };
     persistTemplates([...coachTemplates, { id: crypto.randomUUID(), nome, criadoEm: new Date().toISOString(), snapshot }].slice(0, 10));
   };
   const handleApplyTemplate = (t: CoachTemplate) => {
     const s = t.snapshot || {};
     if (s.form) setForm((f: any) => ({ ...f, ...s.form }));
+    if (s.intel) setIntel({ ...INTEL_DEFAULT, ...s.intel });
     if (s.categoriaEsporte !== undefined) setCategoriaEsporte(s.categoriaEsporte);
     if (s.pharmEnabled !== undefined) setPharmEnabled(!!s.pharmEnabled);
     if (s.pharmProfile !== undefined) setPharmProfile(s.pharmProfile);
@@ -1329,6 +1339,7 @@ export default function PlanoAlimentarIA() {
       parts.push("CATEGORIA: ESTÉTICA & LIFESTYLE (não competitivo)");
     }
     parts.push(`PERFIL FARMACOLÓGICO: ${pharmEnabled && pharmProfile !== "natural" ? pharmProfile : "natural"}`);
+    parts.push(...buildIntelContext(intel));
     if (condicoesClinicas.length) parts.push(`CONDIÇÕES CLÍNICAS: ${condicoesClinicas.join(", ")}`);
     if (recuperacao.estrategias.length) parts.push(`ESTRATÉGIAS DE RECUPERAÇÃO: ${recuperacao.estrategias.join(", ")}`);
     if (recuperacao.nivelEstresse) parts.push(`NÍVEL DE ESTRESSE: ${recuperacao.nivelEstresse}`);
@@ -1402,6 +1413,56 @@ export default function PlanoAlimentarIA() {
   }, [plano]);
 
   const set = (k: string, v: any) => setForm(f => ({ ...f, [k]: v }));
+
+  // ⚡ Smart Defaults — ao trocar o objetivo, pré-seleciona os campos mais prováveis
+  const setObjetivo = (k: string) => {
+    const defaults = SMART_DEFAULTS[k] || {};
+    setForm(f => ({ ...f, ...defaults, objetivo: k }));
+  };
+
+  // ⚡ Quick Client — preenche o formulário a partir de um preset
+  const applyQuickProfile = (p: QuickProfile) => {
+    setForm(f => ({ ...f, ...p.form }));
+    if (p.categoriaEsporte) setCategoriaEsporte(p.categoriaEsporte);
+    if (p.intel) setIntel(prev => ({ ...prev, ...p.intel }));
+    toast({ title: `Perfil rápido aplicado: ${p.label}`, description: "Ajuste nome, peso, altura e idade e gere o plano." });
+  };
+
+  // 📋 Clonar plano do histórico — restaura a configuração usada na geração
+  const clonarPlano = (h: any) => {
+    let snap: any = null;
+    try {
+      const all = JSON.parse(localStorage.getItem("nutrion_plan_form_snapshots") || "{}");
+      snap = all?.[h.id] || null;
+    } catch {}
+    if (snap?.form) {
+      setForm((f: any) => ({ ...f, ...snap.form }));
+      if (snap.intel) setIntel({ ...INTEL_DEFAULT, ...snap.intel });
+      if (snap.categoriaEsporte !== undefined) setCategoriaEsporte(snap.categoriaEsporte);
+      if (snap.pharmEnabled !== undefined) setPharmEnabled(!!snap.pharmEnabled);
+      if (snap.pharmProfile) setPharmProfile(snap.pharmProfile);
+      if (snap.condicoesClinicas) setCondicoesClinicas(snap.condicoesClinicas);
+      if (snap.recuperacao) setRecuperacao(snap.recuperacao);
+      if (snap.intraTreino) setIntraTreino(snap.intraTreino);
+      if (snap.modoExtras) setModoExtras(snap.modoExtras);
+      if (snap.contextoClinico !== undefined) setContextoClinico(snap.contextoClinico);
+      if (snap.activeChips) setActiveChips(snap.activeChips);
+    } else {
+      // Fallback: reaproveita o que o plano salvo expõe
+      const r = h?.plano?.resumo || {};
+      setForm((f: any) => ({
+        ...f,
+        nome: h.patient_name || f.nome,
+        objetivo: h.objetivo || f.objetivo,
+        calorias: r.kcal ? String(r.kcal) : f.calorias,
+      }));
+    }
+    setPlano(null);
+    setSavedId(null);
+    setShowHistory(false);
+    setStep("form");
+    toast({ title: "Plano clonado 📋", description: "Configuração carregada — ajuste o que precisar e gere." });
+  };
   const toggleArr = (k: string, v: string) => {
     const arr = (form as any)[k] as string[];
     set(k, arr.includes(v) ? arr.filter((x: string) => x !== v) : [...arr, v]);
@@ -2060,6 +2121,16 @@ export default function PlanoAlimentarIA() {
         .single();
       if (insErr) throw insErr;
       setSavedId(data.id);
+      try {
+        const all = JSON.parse(localStorage.getItem("nutrion_plan_form_snapshots") || "{}");
+        all[data.id] = {
+          form, intel, categoriaEsporte, pharmEnabled, pharmProfile,
+          condicoesClinicas, recuperacao, intraTreino, modoExtras, contextoClinico, activeChips,
+        };
+        const keys = Object.keys(all);
+        if (keys.length > 60) keys.slice(0, keys.length - 60).forEach(k => delete all[k]);
+        localStorage.setItem("nutrion_plan_form_snapshots", JSON.stringify(all));
+      } catch {}
       toast({ title: "Plano salvo ✅", description: "Disponível no histórico do coach. Gerando PDF Elite..." });
       try { exportPDFElite(); } catch {}
       return data.id;
@@ -3053,6 +3124,13 @@ export default function PlanoAlimentarIA() {
                             )}
                           </div>
                           <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+                            <button
+                              onClick={() => clonarPlano(h)}
+                              title="Clonar configuração deste plano"
+                              style={{ padding: "7px 12px", borderRadius: 7, background: "#020205", border: "1px solid #B8922A55", color: "#B8922A", fontSize: 11, cursor: "pointer", fontFamily: "inherit", fontWeight: 600 }}
+                            >
+                              📋 Clonar
+                            </button>
                             <button
                               onClick={() => { setPlano(h.plano); setSavedId(h.id); setShowHistory(false); setStep("result"); }}
                               style={{ padding: "7px 12px", borderRadius: 7, background: T.bg3, border: `1px solid ${T.border2}`, color: T.text, fontSize: 11, cursor: "pointer", fontFamily: "inherit", fontWeight: 600 }}
@@ -5307,6 +5385,14 @@ export default function PlanoAlimentarIA() {
                         </div>
                         <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
                           <button
+                            onClick={() => clonarPlano(h)}
+                            title="Clonar configuração deste plano"
+                            style={{ padding: "7px 12px", borderRadius: 7, background: "#020205", border: "1px solid #B8922A55", color: "#B8922A", fontSize: 11, cursor: "pointer", fontFamily: "inherit", fontWeight: 600 }}
+                          >
+                            📋 Clonar
+                          </button>
+                          <button
+
                             onClick={() => { setPlano(h.plano); setSavedId(h.id); setShowHistory(false); setStep("result"); }}
                             style={{ padding: "7px 12px", borderRadius: 7, background: T.bg3, border: `1px solid ${T.border2}`, color: T.text, fontSize: 11, cursor: "pointer", fontFamily: "inherit", fontWeight: 600 }}
                           >
@@ -5406,6 +5492,9 @@ export default function PlanoAlimentarIA() {
                 </select>
               </div>
 
+              {/* ─── ⚡ QUICK CLIENT ─── */}
+              <QuickClientBar onApply={applyQuickProfile} />
+
               {/* ─── 2 ACTION BUTTONS ─── */}
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 16 }}>
                 <button
@@ -5451,7 +5540,7 @@ export default function PlanoAlimentarIA() {
                     return (
                       <button
                         key={k}
-                        onClick={() => set("objetivo", k)}
+                        onClick={() => setObjetivo(k)}
                         style={{
                           padding: "8px 14px", borderRadius: 0, cursor: "pointer",
                           background: active ? "#00C89615" : "#020205",
@@ -5616,6 +5705,11 @@ export default function PlanoAlimentarIA() {
             </div>
           </div>
         </Section>
+
+        {/* ─── NUTRIPLAN INTELLIGENCE — somatotipo, digestivo, autonômico ─── */}
+        <BlocoSomatotipo value={intel} onChange={updIntel} />
+        <BlocoPerfilDigestivo value={intel} onChange={updIntel} />
+        <BlocoPerfilAutonomico value={intel} onChange={updIntel} />
 
         {/* ─── BLOCO 1 — CATEGORIA DE ESPORTE ─── */}
         <BlocoCategoriaEsporte value={categoriaEsporte} onChange={setCategoriaEsporte} />
