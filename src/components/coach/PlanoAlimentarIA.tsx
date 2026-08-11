@@ -18,7 +18,7 @@ import {
   type PdfCfg, type RecuperacaoCfg, type ModoEspecialExtras,
 } from "./planoAlimentarConstants";
 
-import { QuickClientBar, BlocoSomatotipo, BlocoPerfilDigestivo, BlocoPerfilAutonomico } from "./NutriPlanIntelligenceBlocks";
+import { QuickClientBar, BlocoSomatotipo, BlocoPerfilDigestivo, BlocoPerfilAutonomico, BlocoHistoricoMetabolico, BlocoModoDieta, BlocoSaciedade } from "./NutriPlanIntelligenceBlocks";
 import {
   INTEL_DEFAULT, SMART_DEFAULTS, ELITE_CHIPS, FEMININO_CHIPS, buildIntelContext,
   type IntelState, type QuickProfile,
@@ -5708,6 +5708,9 @@ export default function PlanoAlimentarIA() {
 
         {/* ─── NUTRIPLAN INTELLIGENCE — somatotipo, digestivo, autonômico ─── */}
         <BlocoSomatotipo value={intel} onChange={updIntel} />
+        <BlocoHistoricoMetabolico value={intel} onChange={updIntel} pesoKg={Number(form.peso) || undefined} />
+        <BlocoModoDieta value={intel} onChange={updIntel} />
+        <BlocoSaciedade value={intel} onChange={updIntel} />
         <BlocoPerfilDigestivo value={intel} onChange={updIntel} />
         <BlocoPerfilAutonomico value={intel} onChange={updIntel} />
 
