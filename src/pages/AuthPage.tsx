@@ -183,11 +183,21 @@ const AuthPage = () => {
           },
         });
 
+        console.log("[AUTH DEBUG] signup response:", {
+          hasUser: !!data?.user,
+          hasSession: !!data?.session,
+          userId: data?.user?.id,
+          identitiesCount: data?.user?.identities?.length,
+          error: error?.message,
+          status: (error as any)?.status,
+        });
+
         if (error) {
           console.error("[AUTH] signup error:", error.status, error.message);
           toast.error(translateAuthError(error.message));
           return;
         }
+
 
         if (data.user && data.user.identities && data.user.identities.length === 0) {
           toast.error('Este email já tem uma conta. Use "FAZER LOGIN".');
