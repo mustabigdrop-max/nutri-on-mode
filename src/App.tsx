@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import { AthleteDashboardGate, CoachToolRoute, AthleteOnlyRoute } from "@/components/athlete/AthleteRouteGuard";
 import PlanGateWrapper from "@/components/PlanGateWrapper";
 const Index = lazy(() => import("./pages/Index"));
 const AuthPage = lazy(() => import("./pages/AuthPage"));
@@ -120,6 +121,9 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const NutriPlanElitePage = lazy(() => import("./pages/NutriPlanElitePage"));
 const LearnPage = lazy(() => import("./pages/LearnPage"));
 const VeraPage = lazy(() => import("./pages/VeraPage"));
+const MyPlanPage = lazy(() => import("./pages/athlete/MyPlanPage"));
+const MyTrainingPage = lazy(() => import("./pages/athlete/MyTrainingPage"));
+const AthleteCheckinPage = lazy(() => import("./pages/athlete/AthleteCheckinPage"));
 
 const queryClient = new QueryClient();
 
@@ -145,7 +149,10 @@ const App = () => (
             <Route path="/onboarding" element={<ProtectedRoute><OnboardingPage /></ProtectedRoute>} />
             <Route path="/first-meal" element={<ProtectedRoute><FirstMealScreen /></ProtectedRoute>} />
             <Route path="/activation-tour" element={<ProtectedRoute><ActivationTourPage /></ProtectedRoute>} />
-            <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+            <Route path="/dashboard" element={<ProtectedRoute><AthleteDashboardGate><DashboardPage /></AthleteDashboardGate></ProtectedRoute>} />
+            <Route path="/my-plan" element={<ProtectedRoute><AthleteOnlyRoute><MyPlanPage /></AthleteOnlyRoute></ProtectedRoute>} />
+            <Route path="/my-training" element={<ProtectedRoute><AthleteOnlyRoute><MyTrainingPage /></AthleteOnlyRoute></ProtectedRoute>} />
+            <Route path="/checkin" element={<ProtectedRoute><AthleteOnlyRoute><AthleteCheckinPage /></AthleteOnlyRoute></ProtectedRoute>} />
             <Route path="/weekly-checkin" element={<ProtectedRoute><WeeklyCheckinPage /></ProtectedRoute>} />
             <Route path="/meal-log" element={<ProtectedRoute><MealLogPage /></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
@@ -154,7 +161,7 @@ const App = () => (
             <Route path="/notificacoes" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
             <Route path="/hydration" element={<ProtectedRoute><HydrationPage /></ProtectedRoute>} />
             <Route path="/meus-protocolos" element={<ProtectedRoute><MeusProtocolosPage /></ProtectedRoute>} />
-            <Route path="/learn" element={<ProtectedRoute><LearnPage /></ProtectedRoute>} />
+            <Route path="/learn" element={<CoachToolRoute><ProtectedRoute><LearnPage /></ProtectedRoute></CoachToolRoute>} />
 
             {/* ON Plan */}
             <Route path="/meal-plan" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON" featureName="Plano Alimentar"><MealPlanPage /></PlanGateWrapper></ProtectedRoute>} />
@@ -200,15 +207,15 @@ const App = () => (
             <Route path="/metabolic-reversion" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON +" featureName="Reversão Metabólica"><MetabolicReversionPage /></PlanGateWrapper></ProtectedRoute>} />
             <Route path="/nutricao-sport" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON +" featureName="Nutrição Sport"><NutricaoSportPage /></PlanGateWrapper></ProtectedRoute>} />
             <Route path="/protocolo-feminino" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON +" featureName="Protocolo Feminino"><ProtocoloFemininoPage /></PlanGateWrapper></ProtectedRoute>} />
-            <Route path="/ergo-vault" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON +" featureName="ERGO VAULT Feminino"><ErgoVaultPage /></PlanGateWrapper></ProtectedRoute>} />
-            <Route path="/ergo-diary" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON +" featureName="Diários de Ergogênicos"><ErgoDiaryPage /></PlanGateWrapper></ProtectedRoute>} />
+            <Route path="/ergo-vault" element={<CoachToolRoute><ProtectedRoute><PlanGateWrapper requiredPlan="ON +" featureName="ERGO VAULT Feminino"><ErgoVaultPage /></PlanGateWrapper></ProtectedRoute></CoachToolRoute>} />
+            <Route path="/ergo-diary" element={<CoachToolRoute><ProtectedRoute><PlanGateWrapper requiredPlan="ON +" featureName="Diários de Ergogênicos"><ErgoDiaryPage /></PlanGateWrapper></ProtectedRoute></CoachToolRoute>} />
 
             {/* ON PRO Plan */}
             <Route path="/performance-pro" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON PRO" featureName="Performance Pro"><PerformanceProPage /></PlanGateWrapper></ProtectedRoute>} />
             <Route path="/professional" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON PRO" featureName="Dashboard Profissional"><ProfessionalDashboard /></PlanGateWrapper></ProtectedRoute>} />
             <Route path="/weight-adaptive" element={<ProtectedRoute><WeightAdaptivePage /></ProtectedRoute>} />
             <Route path="/biological-age" element={<ProtectedRoute><BiologicalAgePage /></ProtectedRoute>} />
-            <Route path="/lab" element={<ProtectedRoute><LabPage /></ProtectedRoute>} />
+            <Route path="/lab" element={<CoachToolRoute><ProtectedRoute><LabPage /></ProtectedRoute></CoachToolRoute>} />
             <Route path="/admin" element={<ProtectedRoute><AdminDashboardPage /></ProtectedRoute>} />
             <Route path="/admin/apex-coach" element={<ProtectedRoute><AdminApexCoachPage /></ProtectedRoute>} />
             <Route path="/emotional-scan" element={<ProtectedRoute><EmotionalScanPage /></ProtectedRoute>} />
@@ -219,13 +226,13 @@ const App = () => (
             <Route path="/blocked" element={<PartnerBlockedPage />} />
             <Route path="/peptide-vault" element={<ProtectedRoute><PeptideVaultPage /></ProtectedRoute>} />
             {/* Training & Science */}
-            <Route path="/training" element={<ProtectedRoute><TrainingPage /></ProtectedRoute>} />
-            <Route path="/runon" element={<ProtectedRoute><RunOnPage /></ProtectedRoute>} />
+            <Route path="/training" element={<CoachToolRoute><ProtectedRoute><TrainingPage /></ProtectedRoute></CoachToolRoute>} />
+            <Route path="/runon" element={<CoachToolRoute><ProtectedRoute><RunOnPage /></ProtectedRoute></CoachToolRoute>} />
             <Route path="/runon/desafio-21" element={<ProtectedRoute><Desafio21Page /></ProtectedRoute>} />
             <Route path="/runon/desafio-21/dashboard" element={<ProtectedRoute><Desafio21DashboardPage /></ProtectedRoute>} />
 
             <Route path="/treino-hoje" element={<ProtectedRoute><AthleteTodayTrainingPage /></ProtectedRoute>} />
-            <Route path="/training/systems" element={<ProtectedRoute><TrainingSystemsPage /></ProtectedRoute>} />
+            <Route path="/training/systems" element={<CoachToolRoute><ProtectedRoute><TrainingSystemsPage /></ProtectedRoute></CoachToolRoute>} />
             <Route path="/science" element={<ProtectedRoute><ScienceHubPage /></ProtectedRoute>} />
             <Route path="/biomechanics" element={<ProtectedRoute><BiomechanicsVaultPage /></ProtectedRoute>} />
             <Route path="/metabolicon" element={<ProtectedRoute><MetabolicONPage /></ProtectedRoute>} />
@@ -233,32 +240,32 @@ const App = () => (
             <Route path="/dr-nexus" element={<ProtectedRoute><DrNexusPage /></ProtectedRoute>} />
             <Route path="/videoform" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON PRO" featureName="VideoForm AI"><VideoFormPage /></PlanGateWrapper></ProtectedRoute>} />
             {/* COACH */}
-            <Route path="/coach/plano-alimentar" element={<ProtectedRoute><PlanoAlimentarIA /></ProtectedRoute>} />
+            <Route path="/coach/plano-alimentar" element={<CoachToolRoute><ProtectedRoute><PlanoAlimentarIA /></ProtectedRoute></CoachToolRoute>} />
             <Route path="/coach" element={<CoachLandingPage />} />
             <Route path="/coach-onboarding" element={<ProtectedRoute><CoachOnboardingPage /></ProtectedRoute>} />
             <Route path="/coach-dashboard" element={<ProtectedRoute><CoachDashboardPage /></ProtectedRoute>} />
-            <Route path="/coach/dashboard" element={<ProtectedRoute><CoachDashboardPage /></ProtectedRoute>} />
-            <Route path="/coach/templates" element={<ProtectedRoute><CoachTemplatesPage /></ProtectedRoute>} />
-            <Route path="/coach/patient/:id" element={<ProtectedRoute><CoachPatientDetailPage /></ProtectedRoute>} />
-            <Route path="/coach/add-patient" element={<ProtectedRoute><CoachAddPatientPage /></ProtectedRoute>} />
-            <Route path="/coach/settings" element={<ProtectedRoute><CoachSettingsPage /></ProtectedRoute>} />
-            <Route path="/coach/adjustment-log" element={<ProtectedRoute><CoachAdjustmentLogPage /></ProtectedRoute>} />
-            <Route path="/coach/competition/:planId" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON PRO" featureName="Competition Mode"><CoachCompetitionPlanPage /></PlanGateWrapper></ProtectedRoute>} />
+            <Route path="/coach/dashboard" element={<CoachToolRoute><ProtectedRoute><CoachDashboardPage /></ProtectedRoute></CoachToolRoute>} />
+            <Route path="/coach/templates" element={<CoachToolRoute><ProtectedRoute><CoachTemplatesPage /></ProtectedRoute></CoachToolRoute>} />
+            <Route path="/coach/patient/:id" element={<CoachToolRoute><ProtectedRoute><CoachPatientDetailPage /></ProtectedRoute></CoachToolRoute>} />
+            <Route path="/coach/add-patient" element={<CoachToolRoute><ProtectedRoute><CoachAddPatientPage /></ProtectedRoute></CoachToolRoute>} />
+            <Route path="/coach/settings" element={<CoachToolRoute><ProtectedRoute><CoachSettingsPage /></ProtectedRoute></CoachToolRoute>} />
+            <Route path="/coach/adjustment-log" element={<CoachToolRoute><ProtectedRoute><CoachAdjustmentLogPage /></ProtectedRoute></CoachToolRoute>} />
+            <Route path="/coach/competition/:planId" element={<CoachToolRoute><ProtectedRoute><PlanGateWrapper requiredPlan="ON PRO" featureName="Competition Mode"><CoachCompetitionPlanPage /></PlanGateWrapper></ProtectedRoute></CoachToolRoute>} />
             <Route path="/athlete/competition/:planId/check-in" element={<ProtectedRoute><AthleteCompetitionCheckInPage /></ProtectedRoute>} />
-            <Route path="/coach/hub" element={<ProtectedRoute><CoachHub /></ProtectedRoute>} />
-            <Route path="/coach/apex-visual" element={<ProtectedRoute><CoachApexVisualPage /></ProtectedRoute>} />
-            <Route path="/coach/apex-checkin" element={<ProtectedRoute><ApexCheckinPage /></ProtectedRoute>} />
-            <Route path="/coach/apex-visual-ia" element={<ProtectedRoute><ApexVisualIAPage /></ProtectedRoute>} />
-            <Route path="/coach/trainingon" element={<ProtectedRoute><CoachTrainingOnPage /></ProtectedRoute>} />
-            <Route path="/coach/lab-exams" element={<ProtectedRoute><CoachLabExamsPage /></ProtectedRoute>} />
-            <Route path="/coach/exames" element={<ProtectedRoute><ExamRequestPage /></ProtectedRoute>} />
-            <Route path="/coach/relatorios" element={<ProtectedRoute><CoachReportsPage /></ProtectedRoute>} />
-            <Route path="/coach/atletas" element={<ProtectedRoute><AthleteRoster /></ProtectedRoute>} />
-            <Route path="/coach/atletas/:id" element={<ProtectedRoute><AthleteProgressTracker /></ProtectedRoute>} />
-            <Route path="/coach/apex-pose" element={<ProtectedRoute><APEXPoseAnalysisPage /></ProtectedRoute>} />
-            <Route path="/coach/vera" element={<ProtectedRoute><VeraPage /></ProtectedRoute>} />
+            <Route path="/coach/hub" element={<CoachToolRoute><ProtectedRoute><CoachHub /></ProtectedRoute></CoachToolRoute>} />
+            <Route path="/coach/apex-visual" element={<CoachToolRoute><ProtectedRoute><CoachApexVisualPage /></ProtectedRoute></CoachToolRoute>} />
+            <Route path="/coach/apex-checkin" element={<CoachToolRoute><ProtectedRoute><ApexCheckinPage /></ProtectedRoute></CoachToolRoute>} />
+            <Route path="/coach/apex-visual-ia" element={<CoachToolRoute><ProtectedRoute><ApexVisualIAPage /></ProtectedRoute></CoachToolRoute>} />
+            <Route path="/coach/trainingon" element={<CoachToolRoute><ProtectedRoute><CoachTrainingOnPage /></ProtectedRoute></CoachToolRoute>} />
+            <Route path="/coach/lab-exams" element={<CoachToolRoute><ProtectedRoute><CoachLabExamsPage /></ProtectedRoute></CoachToolRoute>} />
+            <Route path="/coach/exames" element={<CoachToolRoute><ProtectedRoute><ExamRequestPage /></ProtectedRoute></CoachToolRoute>} />
+            <Route path="/coach/relatorios" element={<CoachToolRoute><ProtectedRoute><CoachReportsPage /></ProtectedRoute></CoachToolRoute>} />
+            <Route path="/coach/atletas" element={<CoachToolRoute><ProtectedRoute><AthleteRoster /></ProtectedRoute></CoachToolRoute>} />
+            <Route path="/coach/atletas/:id" element={<CoachToolRoute><ProtectedRoute><AthleteProgressTracker /></ProtectedRoute></CoachToolRoute>} />
+            <Route path="/coach/apex-pose" element={<CoachToolRoute><ProtectedRoute><APEXPoseAnalysisPage /></ProtectedRoute></CoachToolRoute>} />
+            <Route path="/coach/vera" element={<CoachToolRoute><ProtectedRoute><VeraPage /></ProtectedRoute></CoachToolRoute>} />
 
-            <Route path="/nutriplan-elite" element={<ProtectedRoute><NutriPlanElitePage /></ProtectedRoute>} />
+            <Route path="/nutriplan-elite" element={<CoachToolRoute><ProtectedRoute><NutriPlanElitePage /></ProtectedRoute></CoachToolRoute>} />
 
             <Route path="*" element={<NotFound />} />
           </Routes>
