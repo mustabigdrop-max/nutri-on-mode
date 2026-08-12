@@ -155,6 +155,12 @@ const AuthPage = () => {
       toast.error("Conexão demorou demais. Tente novamente.");
     }, 15000);
 
+    console.log("[AUTH DEBUG] modo:", mode);
+    console.log("[AUTH DEBUG] email:", cleanEmail);
+    console.log("[AUTH DEBUG] nome:", cleanName);
+    console.log("[AUTH DEBUG] password length:", password?.length);
+    console.log("[AUTH DEBUG] perfil:", choice);
+
     try {
       if (mode === "login") {
         const { error } = await supabase.auth.signInWithPassword({ email: cleanEmail, password });
