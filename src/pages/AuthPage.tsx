@@ -419,13 +419,30 @@ const AuthPage = () => {
                       <span className="hud-tag">PWD</span>
                       <input
                         type="password"
-                        placeholder="••••••••"
+                        placeholder={mode === "signup" ? "Senha forte (mín. 8, com número e símbolo)" : "••••••••"}
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         required
                         minLength={6}
                       />
                     </div>
+
+                    {mode === "signup" && (
+                      <p
+                        className="-mt-2"
+                        style={{
+                          fontFamily: "'Space Grotesk', sans-serif",
+                          fontSize: 11,
+                          lineHeight: 1.5,
+                          color: weakPassword ? "#FF6B6B" : "rgba(80,80,122,1)",
+                        }}
+                      >
+                        {weakPassword
+                          ? "Essa senha é fraca/comum e será recusada. Misture letras maiúsculas, números e símbolos."
+                          : "Use ao menos 8 caracteres com letras, números e um símbolo. Senhas comuns são bloqueadas."}
+                      </p>
+                    )}
+
 
                     {mode === "login" && (
                       <div className="text-right -mt-1">
