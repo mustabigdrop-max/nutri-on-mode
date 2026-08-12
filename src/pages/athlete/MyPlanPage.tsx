@@ -1,0 +1,232 @@
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  ArrowLeft, ChevronDown, UtensilsCrossed, Pill, Loader2, Repeat, Info,
+} from "lucide-react";
+import { useAthletePlans, mealKcal, type AthleteMeal } from "@/hooks/useAthletePlans";
+import AthleteBottomNav from "@/components/athlete/AthleteBottomNav";
+
+const BG = "#020205";
+const CYAN = "#00D4FF";
+const TEXT = "#FFFFFF";
+const DIM = "#A0A0A0";
+
+const MealCard = ({ meal, index }: { meal: AthleteMeal; index: number }) => {
+  const [open, setOpen] = useState(index === 0);
+  return (
+    <div
+      className="rounded-2xl overflow-hidden"
+      style={{
+        border: `1px solid ${CYAN}22`,
+        borderLeft: `3px solid ${CYAN}`,
+        background: `linear-gradient(135deg, ${CYAN}0d, ${CYAN}03)`,
+      }}
+    >
+      <button onClick={() => setOpen((o) => !o)} className="w-full text-left p-4 flex items-center gap-3">
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-bold truncate">{meal.refeicao}</p>
+          <p className="text-xs mt-0.5 font-mono" style={{ color: DIM }}>
+            {meal.horario || "--:--"} · {mealKcal(meal)} kcal
+          </p>
+        </div>
+        <div className="flex gap-1.5 flex-shrink-0">
+          {[
+            ["P", meal.macros?.proteina],
+            ["C", meal.macros?.carboidrato],
+            ["G", meal.macros?.gordura],
+          ].map(([l, v]) => (
+            <span
+              key={l as string}
+              className="text-[10px] px-1.5 py-0.5 rounded font-mono"
+              style={{ background: `${CYAN}12`, color: CYAN }}
+            >
+              {l}{Math.round(Number(v) || 0)}
+            </span>
+          ))}
+        </div>
+        <ChevronDown
+          className="w-4 h-4 flex-shrink-0 transition-transform"
+          style={{ color: DIM, transform: open ? "rotate(180deg)" : "none" }}
+        />
+      </button>
+
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden"
+          >
+            <div className="px-4 pb-4 space-y-2" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+              {(meal.alimentos || []).map((a, i) => (
+                <div key={i} className="pt-2">
+                  <p className="text-sm">
+                    {a.alimento}
+                    <span className="ml-2 font-mono text-xs" style={{ color: CYAN }}>
+                      {a.quantidade_g || a.quantidade || ""}
+                    </span>
+                  </p>
+                  {a.observacao && (
+                    <p className="text-[11px] mt-0.5 flex items-start gap-1" style={{ color: DIM }}>
+                      <Info className="w-3 h-3 mt-0.5 flex-shrink-0" /> {a.observacao}
+                    </p>
+                  )}
+                  {!!a.substituicoes?.length && (
+                    <p className="text-[11px] mt-1 flex items-start gap-1" style={{ color: DIM }}>
+                      <Repeat className="w-3 h-3 mt-0.5 flex-shrink-0" style={{ color: CYAN }} />
+                      {a.substituicoes
+                        .map((s) => `${s.alimento} ${s.quantidade_g || s.quantidade || ""}`.trim())
+                        .join(" · ")}
+                    </p>
+                  )}
+                </div>
+              ))}
+              {meal.nota && (
+                <p className="text-[11px] pt-2 italic" style={{ color: DIM }}>
+                  {meal.nota}
+                </p>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
+const MyPlanPage = () => {
+  const navigate = useNavigate();
+  const { loading, mealPlan } = useAthletePlans();
+
+  useEffect(() => {
+    document.title = "Meu Plano Alimentar · NUTRION";
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: BG }}>
+        <Loader2 className="w-7 h-7 animate-spin" style={{ color: CYAN }} />
+      </div>
+    );
+  }
+
+  const r = mealPlan?.resumo || {};
+
+  return (
+    <div className="min-h-screen pb-28" style={{ background: BG, color: TEXT }}>
+      <header className="px-4 pt-6 pb-4 max-w-3xl mx-auto">
+        <div className="flex items-center gap-3 mb-4">
+          <button
+            onClick={() => navigate("/dashboard")}
+            className="w-9 h-9 rounded-xl flex items-center justify-center"
+            style={{ background: "rgba(255,255,255,0.05)" }}
+            aria-label="Voltar"
+          >
+            <ArrowLeft className="w-4 h-4" style={{ color: DIM }} />
+          </button>
+          <div>
+            <h1 className="text-xl font-black flex items-center gap-2">
+              <UtensilsCrossed className="w-5 h-5" style={{ color: CYAN }} />
+              Meu Plano Alimentar
+            </h1>
+            {mealPlan && (
+              <p className="text-[11px]" style={{ color: DIM }}>
+                Atualizado em {new Date(mealPlan.updatedAt).toLocaleDateString("pt-BR")}
+              </p>
+            )}
+          </div>
+        </div>
+      </header>
+
+      <main className="px-4 max-w-3xl mx-auto space-y-3">
+        {!mealPlan ? (
+          <div
+            className="rounded-2xl p-6 text-center"
+            style={{ border: `1px solid ${CYAN}22`, background: `${CYAN}08` }}
+          >
+            <p className="text-sm font-semibold">Nenhum plano alimentar enviado ainda</p>
+            <p className="text-xs mt-1" style={{ color: DIM }}>
+              Assim que seu coach enviar, ele aparece aqui.
+            </p>
+          </div>
+        ) : (
+          <>
+            <div
+              className="rounded-2xl p-4 grid grid-cols-4 gap-2 text-center"
+              style={{ border: `1px solid ${CYAN}22`, background: `linear-gradient(135deg, ${CYAN}12, ${CYAN}03)` }}
+            >
+              {[
+                ["kcal", Math.round(r.calorias_totais || 0)],
+                ["Prot", `${Math.round(r.proteina_total || 0)}g`],
+                ["Carb", `${Math.round(r.carboidrato_total || 0)}g`],
+                ["Gord", `${Math.round(r.gordura_total || 0)}g`],
+              ].map(([l, v]) => (
+                <div key={l as string}>
+                  <p className="text-lg font-black font-mono" style={{ color: CYAN }}>{v}</p>
+                  <p className="text-[10px] uppercase tracking-wider" style={{ color: DIM }}>{l}</p>
+                </div>
+              ))}
+            </div>
+
+            {(mealPlan.objetivo || r.objetivo) && (
+              <p className="text-xs px-1" style={{ color: DIM }}>
+                Objetivo: <span style={{ color: TEXT }}>{r.objetivo || mealPlan.objetivo}</span>
+              </p>
+            )}
+
+            {mealPlan.refeicoes.map((m, i) => (
+              <MealCard key={i} meal={m} index={i} />
+            ))}
+
+            {!!mealPlan.suplementacao.length && (
+              <div
+                className="rounded-2xl p-4"
+                style={{ border: `1px solid ${CYAN}22`, background: `${CYAN}08` }}
+              >
+                <div className="flex items-center gap-2 mb-3">
+                  <Pill className="w-4 h-4" style={{ color: CYAN }} />
+                  <span className="text-xs font-bold uppercase tracking-wider" style={{ color: CYAN }}>
+                    Suplementação
+                  </span>
+                </div>
+                <div className="space-y-2">
+                  {mealPlan.suplementacao.map((s, i) => (
+                    <div key={i}>
+                      <p className="text-sm">
+                        {s.suplemento} <span style={{ color: CYAN }}>{s.dose}</span>
+                      </p>
+                      <p className="text-[11px]" style={{ color: DIM }}>
+                        {s.timing} {s.justificativa ? `· ${s.justificativa}` : ""}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {(mealPlan.observacao || r.observacao_protocolo) && (
+              <div
+                className="rounded-2xl p-4"
+                style={{ border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.03)" }}
+              >
+                <p className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: DIM }}>
+                  Orientações do coach
+                </p>
+                <p className="text-sm whitespace-pre-wrap">
+                  {mealPlan.observacao || r.observacao_protocolo}
+                </p>
+              </div>
+            )}
+          </>
+        )}
+      </main>
+
+      <AthleteBottomNav />
+    </div>
+  );
+};
+
+export default MyPlanPage;
