@@ -2200,6 +2200,18 @@ export default function PlanoAlimentarIA() {
       setSavedId(planId);
       try { exportPDFElite(); } catch {}
 
+      if (destUserId && user?.id) {
+        await supabase.from("sent_plans").insert({
+          coach_id: user.id,
+          athlete_id: destUserId,
+          type: "meal_plan",
+          status: "active",
+          plan_data: plano as any,
+          coach_message: sendObs || "",
+          metadata: { source_id: planId, objetivo: plano.resumo?.objetivo || null },
+        });
+      }
+
       await supabase.from("protocolo_envios").insert({
         coach_id: coachProfileId,
         destinatario_id: destUserId || destDisplayId,
