@@ -204,12 +204,31 @@ const AuthPage = () => {
           return;
         }
 
+        // Convite direto por link: /auth?invite=<coach_profile_id>&role=athlete
+        const inviteCoachId = params.get("invite");
+        if (inviteCoachId && data.user) {
+          try {
+            await supabase.from("coach_patients").insert({
+              coach_id: inviteCoachId,
+              patient_user_id: data.user.id,
+              status: "active",
+            });
+            await supabase
+              .from("profiles")
+              .update({ coach_profile_id: inviteCoachId, role: "aluno_coach" })
+              .eq("user_id", data.user.id);
+          } catch (linkErr) {
+            console.error("[AUTH] invite link error:", linkErr);
+          }
+        }
+
         if (data.session) {
           toast.success("Conta ativada! Redirecionando…");
           navigate(nextPath || "/dashboard");
         } else {
           toast.success("Conta criada! Verifique seu email para confirmar.", { duration: 6000 });
         }
+
       }
     } catch (err: any) {
       console.error("[AUTH] unexpected error:", err);
