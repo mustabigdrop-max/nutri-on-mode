@@ -74,7 +74,7 @@ export function useAthletePlans(): AthletePlansState {
     }
     setLoading(true);
 
-    const [{ data: meal }, { data: prot }, { data: envio }] = await Promise.all([
+    const [{ data: meal }, { data: prot }, { data: envio }, { data: sent }] = await Promise.all([
       supabase
         .from("coach_meal_plans")
         .select("id, plano, objetivo, observacao, updated_at, created_at, status")
@@ -97,9 +97,32 @@ export function useAthletePlans(): AthletePlansState {
         .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle(),
+      supabase
+        .from("sent_plans")
+        .select("id, type, plan_data, coach_message, created_at")
+        .eq("athlete_id", user.id)
+        .eq("status", "active")
+        .order("created_at", { ascending: false }),
     ]);
 
-    if (meal) {
+    const sentMeal = (sent || []).find((s) => s.type === "meal_plan") as any;
+    const sentTraining = (sent || []).find((s) => s.type === "training_plan") as any;
+
+    const sentMealNewer =
+      sentMeal && (!meal || new Date(sentMeal.created_at) >= new Date(meal.updated_at || meal.created_at));
+
+    if (sentMealNewer) {
+      const plano = (sentMeal.plan_data || {}) as any;
+      setMealPlan({
+        id: sentMeal.id,
+        updatedAt: sentMeal.created_at,
+        objetivo: plano.resumo?.objetivo ?? null,
+        observacao: sentMeal.coach_message || null,
+        resumo: plano.resumo || {},
+        refeicoes: Array.isArray(plano.refeicoes) ? plano.refeicoes : [],
+        suplementacao: Array.isArray(plano.suplementacao) ? plano.suplementacao : [],
+      });
+    } else if (meal) {
       const plano = (meal.plano || {}) as any;
       setMealPlan({
         id: meal.id,
@@ -113,6 +136,7 @@ export function useAthletePlans(): AthletePlansState {
     } else {
       setMealPlan(null);
     }
+
 
     if (prot) {
       const p = prot as any;
