@@ -438,12 +438,12 @@ const AuthPage = () => {
                           fontFamily: "'Space Grotesk', sans-serif",
                           fontSize: 11,
                           lineHeight: 1.5,
-                          color: weakPassword ? "#FF6B6B" : "rgba(80,80,122,1)",
+                          color: weakPassword ? "#E0A800" : "rgba(80,80,122,1)",
                         }}
                       >
                         {weakPassword
-                          ? "Essa senha é fraca/comum e será recusada. Misture letras maiúsculas, números e símbolos."
-                          : "Use ao menos 8 caracteres com letras, números e um símbolo. Senhas comuns são bloqueadas."}
+                          ? "Senha aceita, mas fraca. Recomendamos 8+ caracteres com número e símbolo."
+                          : "Mínimo de 6 caracteres. Recomendado: 8+ com letras, números e um símbolo."}
                       </p>
                     )}
 
