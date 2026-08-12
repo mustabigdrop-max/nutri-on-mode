@@ -138,7 +138,24 @@ export function useAthletePlans(): AthletePlansState {
     }
 
 
-    if (prot) {
+    const sentTrainingNewer =
+      sentTraining && (!prot || new Date(sentTraining.created_at) >= new Date((prot as any).created_at));
+
+    if (sentTrainingNewer) {
+      const d = (sentTraining.plan_data || {}) as any;
+      setTraining({
+        id: sentTraining.id,
+        updatedAt: sentTraining.created_at,
+        clientName: d.client_name ?? null,
+        phase: d.phase ?? null,
+        weeks: d.weeks ?? null,
+        daysPerWeek: d.days_per_week ?? null,
+        level: d.level ?? null,
+        muscles: d.muscles ?? null,
+        protocolText: d.protocol_text,
+        observacao: d.periodizacao_text ?? sentTraining.coach_message ?? null,
+      });
+    } else if (prot) {
       const p = prot as any;
       setTraining({
         id: p.id,
@@ -156,8 +173,11 @@ export function useAthletePlans(): AthletePlansState {
       setTraining(null);
     }
 
+    const latestMsg = sentMeal?.coach_message || sentTraining?.coach_message;
     if (envio?.observacao) {
       setCoachMessage({ text: envio.observacao, date: envio.created_at });
+    } else if (latestMsg) {
+      setCoachMessage({ text: latestMsg, date: (sentMeal || sentTraining).created_at });
     } else {
       setCoachMessage(null);
     }
@@ -168,6 +188,26 @@ export function useAthletePlans(): AthletePlansState {
   useEffect(() => {
     load();
   }, [load]);
+
+  // Realtime: novo plano enviado pelo coach aparece na hora
+  useEffect(() => {
+    if (!user) return;
+    const channel = supabase
+      .channel("athlete-sent-plans")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "sent_plans", filter: `athlete_id=eq.${user.id}` },
+        () => {
+          toast.success("Novo plano recebido do seu coach! 🎉");
+          load();
+        }
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, load]);
+
 
   return { loading, mealPlan, training, coachMessage, refetch: load };
 }
