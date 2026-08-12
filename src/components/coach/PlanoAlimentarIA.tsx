@@ -1185,6 +1185,16 @@ export default function PlanoAlimentarIA() {
         );
       }
 
+      // Pré-seleção via ?athlete=<user_id> vindo do dashboard do coach
+      try {
+        const preAthlete = new URLSearchParams(window.location.search).get("athlete");
+        if (preAthlete) {
+          setRecipientType("aluno");
+          setSelectedPatient(preAthlete);
+        }
+      } catch {}
+
+
       // Parceiros criados pelo coach (auth user_id)
       const { data: prs } = await supabase
         .from("partners")
