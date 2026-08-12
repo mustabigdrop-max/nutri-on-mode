@@ -8554,6 +8554,45 @@ export type Database = {
         }
         Relationships: []
       }
+      sent_plans: {
+        Row: {
+          athlete_id: string
+          coach_id: string
+          coach_message: string
+          created_at: string
+          id: string
+          metadata: Json
+          plan_data: Json
+          status: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          athlete_id: string
+          coach_id: string
+          coach_message?: string
+          created_at?: string
+          id?: string
+          metadata?: Json
+          plan_data?: Json
+          status?: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          athlete_id?: string
+          coach_id?: string
+          coach_message?: string
+          created_at?: string
+          id?: string
+          metadata?: Json
+          plan_data?: Json
+          status?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       session_alerts: {
         Row: {
           action_taken: string | null

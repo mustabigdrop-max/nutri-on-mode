@@ -435,3 +435,47 @@
 :root { --desafio-card-scale: 0.30; }
 @media (min-width: 420px) { :root { --desafio-card-scale: 0.34; } }
 @media (min-width: 560px) { :root { --desafio-card-scale: 0.46; } }
+
+/* ============= Coach Dashboard ============= */
+.coach-stat-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+  width: 100%;
+}
+.coach-stat-card:hover { background: rgba(255,255,255,0.05); }
+
+.quick-action {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: linear-gradient(135deg, rgba(0,212,255,0.10), rgba(0,212,255,0.02));
+  border: 1px solid rgba(0,212,255,0.20);
+  border-radius: 10px;
+  padding: 12px 20px;
+  color: #00D4FF;
+  font-weight: 700; font-size: 0.9rem; letter-spacing: 0.04em;
+  cursor: pointer; transition: all 0.2s;
+}
+.quick-action:hover { background: rgba(0,212,255,0.15); border-color: rgba(0,212,255,0.4); }
+
+.quick-action-sm {
+  display: inline-flex; align-items: center; gap: 6px;
+  border: 1px solid rgba(0,212,255,0.20);
+  border-radius: 8px;
+  padding: 6px 12px;
+  color: #00D4FF;
+  font-size: 0.72rem; font-weight: 700;
+  cursor: pointer; transition: all 0.2s;
+}
+.quick-action-sm:hover { background: rgba(0,212,255,0.12); border-color: rgba(0,212,255,0.4); }
+
+.agenda-item { padding: 10px 14px; border-left: 3px solid transparent; border-bottom: 1px solid rgba(255,255,255,0.04); }
+.agenda-item.high { border-left-color: #FF4444; }
+.agenda-item.medium { border-left-color: #FFD700; }
+.agenda-item.low { border-left-color: #00FF88; }
+
+@keyframes coach-pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.55; } }
+.coach-pulse { animation: coach-pulse 1.8s ease-in-out infinite; }

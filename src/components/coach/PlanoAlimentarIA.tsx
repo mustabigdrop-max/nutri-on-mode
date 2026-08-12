@@ -1185,6 +1185,16 @@ export default function PlanoAlimentarIA() {
         );
       }
 
+      // Pré-seleção via ?athlete=<user_id> vindo do dashboard do coach
+      try {
+        const preAthlete = new URLSearchParams(window.location.search).get("athlete");
+        if (preAthlete) {
+          setRecipientType("aluno");
+          setSelectedPatient(preAthlete);
+        }
+      } catch {}
+
+
       // Parceiros criados pelo coach (auth user_id)
       const { data: prs } = await supabase
         .from("partners")
@@ -2189,6 +2199,18 @@ export default function PlanoAlimentarIA() {
       }
       setSavedId(planId);
       try { exportPDFElite(); } catch {}
+
+      if (destUserId && user?.id) {
+        await supabase.from("sent_plans").insert({
+          coach_id: user.id,
+          athlete_id: destUserId,
+          type: "meal_plan",
+          status: "active",
+          plan_data: plano as any,
+          coach_message: sendObs || "",
+          metadata: { source_id: planId, objetivo: plano.resumo?.objetivo || null },
+        });
+      }
 
       await supabase.from("protocolo_envios").insert({
         coach_id: coachProfileId,
