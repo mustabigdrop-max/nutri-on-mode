@@ -221,6 +221,10 @@ const AuthPage = () => {
   };
 
   const selectedMeta = choice ? PROFILE_META[choice] : null;
+  const weakPassword =
+    password.length > 0 &&
+    (password.length < 8 || !/\d/.test(password) || !/[^a-zA-Z0-9]/.test(password));
+
   const accent = selectedMeta?.color ?? "#B8922A";
 
   return (
