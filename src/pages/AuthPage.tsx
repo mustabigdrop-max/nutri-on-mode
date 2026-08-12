@@ -155,6 +155,12 @@ const AuthPage = () => {
       toast.error("Conexão demorou demais. Tente novamente.");
     }, 15000);
 
+    console.log("[AUTH DEBUG] modo:", mode);
+    console.log("[AUTH DEBUG] email:", cleanEmail);
+    console.log("[AUTH DEBUG] nome:", cleanName);
+    console.log("[AUTH DEBUG] password length:", password?.length);
+    console.log("[AUTH DEBUG] perfil:", choice);
+
     try {
       if (mode === "login") {
         const { error } = await supabase.auth.signInWithPassword({ email: cleanEmail, password });
@@ -177,11 +183,21 @@ const AuthPage = () => {
           },
         });
 
+        console.log("[AUTH DEBUG] signup response:", {
+          hasUser: !!data?.user,
+          hasSession: !!data?.session,
+          userId: data?.user?.id,
+          identitiesCount: data?.user?.identities?.length,
+          error: error?.message,
+          status: (error as any)?.status,
+        });
+
         if (error) {
           console.error("[AUTH] signup error:", error.status, error.message);
           toast.error(translateAuthError(error.message));
           return;
         }
+
 
         if (data.user && data.user.identities && data.user.identities.length === 0) {
           toast.error('Este email já tem uma conta. Use "FAZER LOGIN".');
@@ -205,6 +221,10 @@ const AuthPage = () => {
   };
 
   const selectedMeta = choice ? PROFILE_META[choice] : null;
+  const weakPassword =
+    password.length > 0 &&
+    (password.length < 8 || !/\d/.test(password) || !/[^a-zA-Z0-9]/.test(password));
+
   const accent = selectedMeta?.color ?? "#B8922A";
 
   return (
@@ -403,13 +423,30 @@ const AuthPage = () => {
                       <span className="hud-tag">PWD</span>
                       <input
                         type="password"
-                        placeholder="••••••••"
+                        placeholder={mode === "signup" ? "Senha forte (mín. 8, com número e símbolo)" : "••••••••"}
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         required
                         minLength={6}
                       />
                     </div>
+
+                    {mode === "signup" && (
+                      <p
+                        className="-mt-2"
+                        style={{
+                          fontFamily: "'Space Grotesk', sans-serif",
+                          fontSize: 11,
+                          lineHeight: 1.5,
+                          color: weakPassword ? "#FF6B6B" : "rgba(80,80,122,1)",
+                        }}
+                      >
+                        {weakPassword
+                          ? "Essa senha é fraca/comum e será recusada. Misture letras maiúsculas, números e símbolos."
+                          : "Use ao menos 8 caracteres com letras, números e um símbolo. Senhas comuns são bloqueadas."}
+                      </p>
+                    )}
+
 
                     {mode === "login" && (
                       <div className="text-right -mt-1">
