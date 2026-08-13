@@ -26,6 +26,8 @@ export interface CoachAthlete {
   trainingPlanSentAt?: string | null;
   score: number;
   riskLevel: RiskLevel;
+  /** "pendente" = conta criada mas atleta ainda nao acessou/usou o app */
+  accessStatus: "pendente" | "ativo";
 }
 
 export const daysSince = (iso?: string | null): number => {
@@ -93,7 +95,7 @@ export function useCoachAthletes(coachProfileId?: string | null, coachUserId?: s
       await Promise.all([
         supabase
           .from("profiles")
-          .select("user_id, full_name, avatar_url, sex, weight_kg, goal, objetivo_principal, active_protocol, streak_days, updated_at")
+          .select("user_id, full_name, avatar_url, sex, weight_kg, goal, objetivo_principal, active_protocol, streak_days, updated_at, onboarding_completed, activation_completed, first_meal_registered")
           .in("user_id", ids.length ? ids : ["00000000-0000-0000-0000-000000000000"]),
         supabase
           .from("weekly_checkins")
@@ -178,6 +180,14 @@ export function useCoachAthletes(coachProfileId?: string | null, coachUserId?: s
         trainingPlanSentAt: sentTrain?.created_at || train?.created_at || null,
         score,
         riskLevel: getRiskLevel(score, dias),
+        accessStatus:
+          prof?.onboarding_completed ||
+          prof?.activation_completed ||
+          prof?.first_meal_registered ||
+          streak > 0 ||
+          !!lastCheckin
+            ? "ativo"
+            : "pendente",
       };
     });
 
