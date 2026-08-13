@@ -8548,6 +8548,66 @@ export type Database = {
         }
         Relationships: []
       }
+      protocol_suggestions: {
+        Row: {
+          analysis: string | null
+          approved_at: string | null
+          approved_option: number | null
+          athlete_id: string
+          category: string | null
+          coach_id: string | null
+          created_at: string
+          custom_action: string | null
+          id: string
+          options: Json
+          reasoning: string | null
+          rule_id: string
+          severity: string
+          snoozed_until: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          analysis?: string | null
+          approved_at?: string | null
+          approved_option?: number | null
+          athlete_id: string
+          category?: string | null
+          coach_id?: string | null
+          created_at?: string
+          custom_action?: string | null
+          id?: string
+          options?: Json
+          reasoning?: string | null
+          rule_id: string
+          severity?: string
+          snoozed_until?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          analysis?: string | null
+          approved_at?: string | null
+          approved_option?: number | null
+          athlete_id?: string
+          category?: string | null
+          coach_id?: string | null
+          created_at?: string
+          custom_action?: string | null
+          id?: string
+          options?: Json
+          reasoning?: string | null
+          rule_id?: string
+          severity?: string
+          snoozed_until?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       protocolo_envios: {
         Row: {
           coach_id: string
