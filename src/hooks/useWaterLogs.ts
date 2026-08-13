@@ -13,56 +13,56 @@ export interface WaterLog {
 
 export const useWaterLogs = (overrideUserId?: string) => {
   const { user: authUser } = useAuth();
-  const user = overrideUserId ? ({ id: overrideUserId } as { id: string }) : authUser;
+  const userId = overrideUserId || authUser?.id || null;
   const [todayLog, setTodayLog] = useState<WaterLog | null>(null);
   const [loading, setLoading] = useState(true);
   const today = getLocalDateStr();
 
   const fetchToday = useCallback(async () => {
-    if (!user) return;
+    if (!userId) return;
     setLoading(true);
     const { data } = await supabase
       .from("water_logs")
       .select("*")
-      .eq("user_id", user.id)
+      .eq("user_id", userId)
       .eq("log_date", today)
       .maybeSingle();
     setTodayLog(data as WaterLog | null);
     setLoading(false);
-  }, [user, today]);
+  }, [userId, today]);
 
   useEffect(() => {
     fetchToday();
   }, [fetchToday]);
 
   const addWater = useCallback(async (ml: number) => {
-    if (!user) return;
+    if (!userId) return;
     const newTotal = (todayLog?.ml_total ?? 0) + ml;
     const { data, error } = await supabase
       .from("water_logs")
       .upsert(
-        { user_id: user.id, log_date: today, ml_total: newTotal },
+        { user_id: userId, log_date: today, ml_total: newTotal },
         { onConflict: "user_id,log_date" }
       )
       .select()
       .single();
     if (!error && data) setTodayLog(data as WaterLog);
     return { data, error };
-  }, [user, today, todayLog]);
+  }, [userId, today, todayLog]);
 
   const setWater = useCallback(async (ml: number) => {
-    if (!user) return;
+    if (!userId) return;
     const { data, error } = await supabase
       .from("water_logs")
       .upsert(
-        { user_id: user.id, log_date: today, ml_total: ml },
+        { user_id: userId, log_date: today, ml_total: ml },
         { onConflict: "user_id,log_date" }
       )
       .select()
       .single();
     if (!error && data) setTodayLog(data as WaterLog);
     return { data, error };
-  }, [user, today]);
+  }, [userId, today]);
 
   return { todayLog, loading, addWater, setWater, refetch: fetchToday };
 };

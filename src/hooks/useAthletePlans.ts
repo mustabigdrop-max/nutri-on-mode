@@ -63,14 +63,14 @@ export interface AthletePlansState {
 
 export function useAthletePlans(overrideUserId?: string): AthletePlansState {
   const { user: authUser } = useAuth();
-  const user = overrideUserId ? ({ id: overrideUserId } as { id: string }) : authUser;
+  const userId = overrideUserId || authUser?.id || null;
   const [loading, setLoading] = useState(true);
   const [mealPlan, setMealPlan] = useState<AthleteMealPlan | null>(null);
   const [training, setTraining] = useState<AthleteTrainingPlan | null>(null);
   const [coachMessage, setCoachMessage] = useState<{ text: string; date: string } | null>(null);
 
   const load = useCallback(async () => {
-    if (!user) {
+    if (!userId) {
       setLoading(false);
       return;
     }
@@ -80,21 +80,21 @@ export function useAthletePlans(overrideUserId?: string): AthletePlansState {
       supabase
         .from("coach_meal_plans")
         .select("id, plano, objetivo, observacao, updated_at, created_at, status")
-        .eq("patient_user_id", user.id)
+        .eq("patient_user_id", userId)
         .order("updated_at", { ascending: false })
         .limit(1)
         .maybeSingle(),
       supabase
         .from("training_protocols")
         .select("*")
-        .eq("patient_user_id", user.id)
+        .eq("patient_user_id", userId)
         .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle(),
       supabase
         .from("protocolo_envios")
         .select("observacao, created_at")
-        .eq("destinatario_id", user.id)
+        .eq("destinatario_id", userId)
         .not("observacao", "is", null)
         .order("created_at", { ascending: false })
         .limit(1)
@@ -102,7 +102,7 @@ export function useAthletePlans(overrideUserId?: string): AthletePlansState {
       supabase
         .from("sent_plans")
         .select("id, type, plan_data, coach_message, created_at")
-        .eq("athlete_id", user.id)
+        .eq("athlete_id", userId)
         .eq("status", "active")
         .order("created_at", { ascending: false }),
     ]);
@@ -185,7 +185,7 @@ export function useAthletePlans(overrideUserId?: string): AthletePlansState {
     }
 
     setLoading(false);
-  }, [user]);
+  }, [userId]);
 
   useEffect(() => {
     load();
@@ -193,12 +193,12 @@ export function useAthletePlans(overrideUserId?: string): AthletePlansState {
 
   // Realtime: novo plano enviado pelo coach aparece na hora
   useEffect(() => {
-    if (!user) return;
+    if (!userId) return;
     const channel = supabase
       .channel("athlete-sent-plans")
       .on(
         "postgres_changes",
-        { event: "INSERT", schema: "public", table: "sent_plans", filter: `athlete_id=eq.${user.id}` },
+        { event: "INSERT", schema: "public", table: "sent_plans", filter: `athlete_id=eq.${userId}` },
         () => {
           toast.success("Novo plano recebido do seu coach! 🎉");
           load();
@@ -208,7 +208,7 @@ export function useAthletePlans(overrideUserId?: string): AthletePlansState {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user, load]);
+  }, [userId, load]);
 
 
   return { loading, mealPlan, training, coachMessage, refetch: load };
