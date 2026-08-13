@@ -1,6 +1,6 @@
 import { memo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { UtensilsCrossed, Dumbbell, BarChart3, MessageSquare, AlertTriangle, Zap, Eye, ClipboardList } from "lucide-react";
+import { UtensilsCrossed, Dumbbell, BarChart3, MessageSquare, AlertTriangle, Zap, Eye, ClipboardList, Clock, CheckCircle2 } from "lucide-react";
 import AnamnesisDialog from "@/components/coach/AnamnesisDialog";
 import type { CoachAthlete } from "@/hooks/useCoachAthletes";
 
@@ -42,7 +42,26 @@ const AthleteCard = ({ athlete: a, onSendMeal, onSendTraining }: Props) => {
             {a.name.charAt(0).toUpperCase()}
           </div>
           <div className="min-w-0">
-            <p className="font-semibold text-foreground truncate">{a.name}</p>
+            <div className="flex items-center gap-2 min-w-0">
+              <p className="font-semibold text-foreground truncate">{a.name}</p>
+              {a.accessStatus === "pendente" ? (
+                <span
+                  className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded shrink-0"
+                  style={{ background: "rgba(255,215,0,0.12)", color: "#FFD700", border: "1px solid rgba(255,215,0,0.3)" }}
+                  title="Conta criada — aguardando primeiro acesso do atleta"
+                >
+                  <Clock className="w-3 h-3" /> PENDENTE
+                </span>
+              ) : (
+                <span
+                  className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded shrink-0"
+                  style={{ background: "rgba(0,255,136,0.12)", color: "#00FF88", border: "1px solid rgba(0,255,136,0.3)" }}
+                  title="Atleta ativo na plataforma"
+                >
+                  <CheckCircle2 className="w-3 h-3" /> ATIVO
+                </span>
+              )}
+            </div>
             <p className="text-xs text-muted-foreground truncate">
               {a.objetivo}
               {a.fase && a.fase !== "—" ? ` · ${a.fase}` : ""}
