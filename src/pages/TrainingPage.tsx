@@ -1107,7 +1107,25 @@ Português. Específico. Científico. Zero genérico.`;
             <button onClick={exportFormatted} className="flex items-center gap-1 text-[10px] px-2.5 py-1.5 rounded-lg font-semibold" style={{ background: GREEN_DIM, color: GREEN, border: `1px solid ${BORDER}` }}>
               <Download className="w-3 h-3" /> TXT
             </button>
-          </div>
+        </div>
+
+        {(protocol || textResults.protocolo) && (
+          <SendToAthleteBar
+            type="training_plan"
+            sourceId={savedProtocolId}
+            label={`${clientName || "Protocolo"} — ${phase || "treino"}`}
+            buildPayload={() => ({
+              protocol: protocol || null,
+              protocol_text: textResults.protocolo || "",
+              periodizacao_text: textResults.periodizacao || "",
+              client_name: clientName,
+              phase,
+              weeks,
+            })}
+          />
+        )}
+
+
         </div>
 
         {loading || generationError ? (
