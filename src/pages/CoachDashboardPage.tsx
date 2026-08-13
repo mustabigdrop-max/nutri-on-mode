@@ -263,7 +263,7 @@ const CoachDashboardPage = () => {
         {/* MÓDULOS AVANÇADOS */}
         <section className="space-y-3">
           <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Módulos avançados</p>
-          <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-7 gap-2">
+          <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-8 gap-2">
             {ADVANCED_MODULES.map((m) => (
               <button
                 key={m.route}
