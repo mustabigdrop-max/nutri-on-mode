@@ -1640,8 +1640,15 @@ export default function PlanoAlimentarIA() {
     if (!data?.plan) throw new Error("Resposta inválida da IA");
     // Salva contexto clínico no histórico local (apenas ao gerar com sucesso)
     saveContextoToHistory((form as any)?.nome || "");
-    return data.plan as PlanoData;
+    // ── PRECISÃO CALÓRICA: recalcula com banco TACO e auto-corrige para meta ±2% ──
+    const rawPlan = data.plan as PlanoData;
+    const metaKcal = Number((form as any).calorias) || Number((rawPlan as any)?.resumo?.calorias_totais) || 0;
+    const { plano: balanced, report } = autoBalancePlan(rawPlan, metaKcal);
+    (balanced as any)._balance = report;
+    console.log("[NutriPlan] auto-balance:", report);
+    return balanced as PlanoData;
   };
+
 
   // Abre o modal de revisão do protocolo farmacológico com o texto atual
   const abrirRevisaoProtocolo = () => {
