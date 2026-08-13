@@ -7810,6 +7810,33 @@ export type Database = {
         }
         Relationships: []
       }
+      praxis_conversations: {
+        Row: {
+          athlete_id: string
+          created_at: string
+          id: string
+          message_praxis: string
+          message_user: string
+          topic: string | null
+        }
+        Insert: {
+          athlete_id: string
+          created_at?: string
+          id?: string
+          message_praxis: string
+          message_user: string
+          topic?: string | null
+        }
+        Update: {
+          athlete_id?: string
+          created_at?: string
+          id?: string
+          message_praxis?: string
+          message_user?: string
+          topic?: string | null
+        }
+        Relationships: []
+      }
       professional_invites: {
         Row: {
           accepted_at: string | null
