@@ -5913,7 +5913,7 @@ export default function PlanoAlimentarIA() {
         {/* ─── CONTEXTO CLÍNICO · PROTOCOLO DO COACH (NOVO) ─── */}
         <Section title="Contexto clínico · Protocolo do coach" icon={<Brain size={12} strokeWidth={2} color={T.emerald} />} accent="emerald">
           <div style={{ fontFamily: T.fontMono, fontSize: 12, color: "#888888", letterSpacing: "0.12em", textTransform: "uppercase", marginTop: -10, marginBottom: 14, lineHeight: 1.6 }}>
-            Descreva estratégias clínicas, protocolos de nutrição esportiva e observações do paciente. O sistema incorporará tudo no plano gerado.
+            Descreva estratégias clínicas, protocolos de nutrição esportiva e observações do paciente. O sistema incorporará tudo no protocolo gerado.
           </div>
 
           <div style={{
@@ -6593,7 +6593,7 @@ export default function PlanoAlimentarIA() {
 
           <Label>Alimentos disponíveis em casa ou de preferência (opcional)</Label>
           <div style={{ fontSize: 11, color: T.muted, marginBottom: 10 }}>
-            O sistema prioriza esses itens, mas não fica restrita a eles.
+            O sistema prioriza esses itens, mas não fica restrito a eles.
           </div>
           {alimentosDisponiveisGrupos.map(g => (
             <div key={g.grupo} style={{ marginBottom: 12 }}>
@@ -6625,7 +6625,7 @@ export default function PlanoAlimentarIA() {
           <div style={{ marginTop: 18, padding: 14, background: "#0f1410", border: `1px solid ${T.amber}44`, borderRadius: 10 }}>
             <Label>🍎 Frutas que tenho em casa</Label>
             <div style={{ fontSize: 11, color: T.muted, marginBottom: 10 }}>
-              O sistema usa estas frutas como base do <strong>Protocolo de Frutas Obrigatório</strong> e sugere upgrades se faltar uma fruta funcional importante (ex.: enzimática, anti-inflamatória, cronobiológica).
+              Estas frutas serão usadas como base do <strong>Protocolo de Frutas Obrigatório</strong>. O sistema sugere upgrades se faltar uma fruta funcional importante (ex.: enzimática, anti-inflamatória, cronobiológica).
             </div>
             <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 6, marginBottom: 10 }}>
               {[

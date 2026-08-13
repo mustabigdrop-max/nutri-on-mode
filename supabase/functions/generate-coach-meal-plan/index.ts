@@ -2587,6 +2587,7 @@ OUTROS DADOS:
 - Preferências alimentares: ${preferencias || "Não informadas"}
 - Suplementação atual: ${suplementos || "Não informada"}
 - Observações clínicas: ${observacoes || "Nenhuma"}
+- Janela alimentar do paciente: ${rotina_preferencias?.janela_alimentar_h ? `${rotina_preferencias.janela_alimentar_h}h (acorda ${rotina_preferencias.hora_acordar}, dorme ${rotina_preferencias.hora_dormir})` : "não informada"}
 ${typeof contexto_clinico_prompt === "string" && contexto_clinico_prompt.trim() ? contexto_clinico_prompt.trim() : ""}
 
 
