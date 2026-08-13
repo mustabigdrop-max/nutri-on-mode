@@ -381,8 +381,9 @@ const AthleteDashboard = ({ overrideUserId, overrideName, viewMode = "normal" }:
         )}
       </main>
 
-      <PraxisFAB />
-      <AthleteBottomNav />
+      <PraxisFAB disabled={preview} />
+      {!preview && <AthleteBottomNav />}
+
     </div>
   );
 };
