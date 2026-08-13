@@ -49,6 +49,8 @@ import SubstitutionDrawer, { type DrawerConfirmPayload } from "@/components/coac
 import { buildSnapshot } from "@/lib/substitutionValidator";
 import PlanValidationAlert from "@/components/coach/PlanValidationAlert";
 import { calculateNutritionItem, validateNutritionPlan } from "@/lib/planNutritionValidation";
+import { autoBalancePlan, type BalanceReport } from "@/lib/planAutoBalance";
+
 
 // ─── Design tokens — Jarvis Nutrition (emerald primary + gold identity) ───────
 const T = {
