@@ -173,6 +173,87 @@ export type Database = {
         }
         Relationships: []
       }
+      anamnesis: {
+        Row: {
+          alerts: Json
+          athlete_id: string | null
+          athlete_name: string | null
+          coach_id: string | null
+          completed_at: string | null
+          created_at: string
+          diet_history: Json
+          digestive: Json
+          expires_at: string | null
+          goals: Json
+          health_history: Json
+          hormonal: Json
+          id: string
+          invite_token: string | null
+          lifestyle: Json
+          mode: string
+          personal: Json
+          pharmacology: Json
+          sections_completed: number
+          status: string
+          supplements: Json
+          total_sections: number
+          training: Json
+          updated_at: string
+        }
+        Insert: {
+          alerts?: Json
+          athlete_id?: string | null
+          athlete_name?: string | null
+          coach_id?: string | null
+          completed_at?: string | null
+          created_at?: string
+          diet_history?: Json
+          digestive?: Json
+          expires_at?: string | null
+          goals?: Json
+          health_history?: Json
+          hormonal?: Json
+          id?: string
+          invite_token?: string | null
+          lifestyle?: Json
+          mode?: string
+          personal?: Json
+          pharmacology?: Json
+          sections_completed?: number
+          status?: string
+          supplements?: Json
+          total_sections?: number
+          training?: Json
+          updated_at?: string
+        }
+        Update: {
+          alerts?: Json
+          athlete_id?: string | null
+          athlete_name?: string | null
+          coach_id?: string | null
+          completed_at?: string | null
+          created_at?: string
+          diet_history?: Json
+          digestive?: Json
+          expires_at?: string | null
+          goals?: Json
+          health_history?: Json
+          hormonal?: Json
+          id?: string
+          invite_token?: string | null
+          lifestyle?: Json
+          mode?: string
+          personal?: Json
+          pharmacology?: Json
+          sections_completed?: number
+          status?: string
+          supplements?: Json
+          total_sections?: number
+          training?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
       apex_agent_sessions: {
         Row: {
           approved_at: string | null
@@ -11137,6 +11218,41 @@ export type Database = {
     Functions: {
       decrement_coach_slots: { Args: never; Returns: undefined }
       generate_unique_coach_code: { Args: never; Returns: string }
+      get_anamnesis_by_token: {
+        Args: { _token: string }
+        Returns: {
+          alerts: Json
+          athlete_id: string | null
+          athlete_name: string | null
+          coach_id: string | null
+          completed_at: string | null
+          created_at: string
+          diet_history: Json
+          digestive: Json
+          expires_at: string | null
+          goals: Json
+          health_history: Json
+          hormonal: Json
+          id: string
+          invite_token: string | null
+          lifestyle: Json
+          mode: string
+          personal: Json
+          pharmacology: Json
+          sections_completed: number
+          status: string
+          supplements: Json
+          total_sections: number
+          training: Json
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "anamnesis"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       get_coach_invite_by_token: {
         Args: { _token: string }
         Returns: {
@@ -11187,6 +11303,47 @@ export type Database = {
       is_coach_of_patient: {
         Args: { _coach_user_id: string; _patient_user_id: string }
         Returns: boolean
+      }
+      save_anamnesis_by_token: {
+        Args: {
+          _alerts: Json
+          _payload: Json
+          _sections_completed: number
+          _status: string
+          _token: string
+        }
+        Returns: {
+          alerts: Json
+          athlete_id: string | null
+          athlete_name: string | null
+          coach_id: string | null
+          completed_at: string | null
+          created_at: string
+          diet_history: Json
+          digestive: Json
+          expires_at: string | null
+          goals: Json
+          health_history: Json
+          hormonal: Json
+          id: string
+          invite_token: string | null
+          lifestyle: Json
+          mode: string
+          personal: Json
+          pharmacology: Json
+          sections_completed: number
+          status: string
+          supplements: Json
+          total_sections: number
+          training: Json
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "anamnesis"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       user_is_athlete_of_plan: {
         Args: { _plan_id: string; _user_id: string }
