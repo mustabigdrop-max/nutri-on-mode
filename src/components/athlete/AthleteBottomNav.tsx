@@ -1,6 +1,7 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Home, UtensilsCrossed, Plus, Dumbbell, User } from "lucide-react";
+import { useAthleteTarget, athleteQuery } from "@/hooks/useAthleteTarget";
 
 const CYAN = "#00D4FF";
 const GREEN = "#00FF88";
@@ -17,6 +18,8 @@ const ITEMS = [
 const AthleteBottomNav = () => {
   const navigate = useNavigate();
   const { pathname } = useLocation();
+  const targetId = useAthleteTarget();
+  const go = (path: string) => navigate(`${path}${athleteQuery(targetId)}`);
 
   return (
     <div
@@ -31,7 +34,7 @@ const AthleteBottomNav = () => {
             return (
               <button
                 key={item.id}
-                onClick={() => navigate(item.path)}
+                onClick={() => go(item.path)}
                 className="flex flex-col items-center gap-1 min-w-[56px]"
                 aria-label="Check-in"
               >
@@ -58,7 +61,7 @@ const AthleteBottomNav = () => {
           return (
             <button
               key={item.id}
-              onClick={() => navigate(item.path)}
+              onClick={() => go(item.path)}
               className="flex flex-col items-center gap-1 py-1 min-w-[56px]"
             >
               <item.icon className="w-5 h-5" style={{ color: isActive ? item.color : "#6b7280" }} />

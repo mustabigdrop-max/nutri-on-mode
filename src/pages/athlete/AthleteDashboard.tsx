@@ -159,7 +159,7 @@ const AthleteDashboard = ({ overrideUserId, overrideName, viewMode = "normal" }:
       <main className="px-4 max-w-3xl mx-auto space-y-3">
         {/* Plano + Treino */}
         <div className="grid gap-3 sm:grid-cols-2">
-          <Card accent={CYAN} onClick={() => !preview && navigate("/my-plan")}>
+          <Card accent={CYAN} onClick={() => navigate(`/my-plan${overrideUserId ? `?athlete=${overrideUserId}` : ""}`)}>
             <div className="flex items-center gap-2 mb-3">
               <UtensilsCrossed className="w-4 h-4" style={{ color: CYAN }} />
               <span className="text-xs font-bold tracking-wider uppercase" style={{ color: CYAN }}>
@@ -199,7 +199,7 @@ const AthleteDashboard = ({ overrideUserId, overrideName, viewMode = "normal" }:
             </div>
           </Card>
 
-          <Card accent={GREEN} onClick={() => !preview && navigate("/my-training")}>
+          <Card accent={GREEN} onClick={() => navigate(`/my-training${overrideUserId ? `?athlete=${overrideUserId}` : ""}`)}>
             <div className="flex items-center gap-2 mb-3">
               <Dumbbell className="w-4 h-4" style={{ color: GREEN }} />
               <span className="text-xs font-bold tracking-wider uppercase" style={{ color: GREEN }}>
