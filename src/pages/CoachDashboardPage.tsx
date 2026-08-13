@@ -264,6 +264,7 @@ const CoachDashboardPage = () => {
                   athlete={a}
                   onSendMeal={(x) => openSend(x, "meal_plan")}
                   onSendTraining={(x) => openSend(x, "training_plan")}
+                  onUpdated={refetch}
                 />
               ))
             )}
