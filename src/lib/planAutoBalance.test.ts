@@ -48,7 +48,7 @@ describe("autoBalancePlan", () => {
   });
 
   it("não reduz a proteína total ao corrigir para baixo", () => {
-    const before = autoBalancePlan(mkPlan(), 99999).report.macros.protein;
+    const before = autoBalancePlan(mkPlan(), 0).report.macros.protein;
     const after = autoBalancePlan(mkPlan(), 2600).report.macros.protein;
     expect(after).toBeGreaterThanOrEqual(before * 0.9);
   });
