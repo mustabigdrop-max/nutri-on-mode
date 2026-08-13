@@ -11,8 +11,9 @@ export interface WaterLog {
   created_at: string;
 }
 
-export const useWaterLogs = () => {
-  const { user } = useAuth();
+export const useWaterLogs = (overrideUserId?: string) => {
+  const { user: authUser } = useAuth();
+  const user = overrideUserId ? ({ id: overrideUserId } as { id: string }) : authUser;
   const [todayLog, setTodayLog] = useState<WaterLog | null>(null);
   const [loading, setLoading] = useState(true);
   const today = getLocalDateStr();

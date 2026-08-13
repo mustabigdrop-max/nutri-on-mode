@@ -39,8 +39,9 @@ function computeTrend(logs: WeightLog[], avgDailyKcal: number | null, targetWeek
   return { weeklyRateKg, estimatedTDEE, status, adjustmentKcal, daysOfData: days };
 }
 
-export function useWeightLogs(avgDailyKcal?: number | null, targetWeeklyRateKg = -0.5) {
-  const { user } = useAuth();
+export function useWeightLogs(avgDailyKcal?: number | null, targetWeeklyRateKg = -0.5, overrideUserId?: string) {
+  const { user: authUser } = useAuth();
+  const user = overrideUserId ? ({ id: overrideUserId } as { id: string }) : authUser;
   const [logs, setLogs] = useState<WeightLog[]>([]);
   const [loading, setLoading] = useState(true);
 

@@ -61,8 +61,9 @@ export interface AthletePlansState {
   refetch: () => Promise<void>;
 }
 
-export function useAthletePlans(): AthletePlansState {
-  const { user } = useAuth();
+export function useAthletePlans(overrideUserId?: string): AthletePlansState {
+  const { user: authUser } = useAuth();
+  const user = overrideUserId ? ({ id: overrideUserId } as { id: string }) : authUser;
   const [loading, setLoading] = useState(true);
   const [mealPlan, setMealPlan] = useState<AthleteMealPlan | null>(null);
   const [training, setTraining] = useState<AthleteTrainingPlan | null>(null);
