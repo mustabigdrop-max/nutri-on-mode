@@ -23,6 +23,7 @@ import AthleteCard from "@/components/coach/AthleteCard";
 import SendPlanDialog, { type SendPlanType } from "@/components/coach/SendPlanDialog";
 
 const ADVANCED_MODULES = [
+  { label: "TrainingON", icon: Dumbbell, route: "/coach/trainingon", color: "#E8A020" },
   { label: "APEX Visual", icon: Camera, route: "/coach/apex-visual", color: "#E8A020" },
   { label: "VERA", icon: Sparkles, route: "/coach/vera", color: "#A78BFA" },
   { label: "LAB Exames", icon: FlaskConical, route: "/coach/exames", color: "#4ade80" },
@@ -182,9 +183,6 @@ const CoachDashboardPage = () => {
             <button className="quick-action" onClick={() => navigate("/coach/plano-alimentar")}>
               <UtensilsCrossed className="w-4 h-4" /> Gerar Plano Alimentar
             </button>
-            <button className="quick-action" onClick={() => navigate("/coach/trainingon")}>
-              <Dumbbell className="w-4 h-4" /> TrainingON — Montar Treino
-            </button>
             <button className="quick-action" onClick={() => navigate("/coach/exames")}>
               <FlaskConical className="w-4 h-4" /> Solicitar Exames
             </button>
@@ -265,7 +263,7 @@ const CoachDashboardPage = () => {
         {/* MÓDULOS AVANÇADOS */}
         <section className="space-y-3">
           <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Módulos avançados</p>
-          <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-7 gap-2">
+          <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-8 gap-2">
             {ADVANCED_MODULES.map((m) => (
               <button
                 key={m.route}
