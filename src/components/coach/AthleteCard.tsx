@@ -115,7 +115,17 @@ const AthleteCard = ({ athlete: a, onSendMeal, onSendTraining }: Props) => {
         <button className="quick-action-sm" onClick={() => navigate(`/coach/praxis-logs/${a.userId}`)}>
           <Zap className="w-3.5 h-3.5" /> PRAXIS
         </button>
+        <button className="quick-action-sm" onClick={() => setAnamneseOpen(true)}>
+          <ClipboardList className="w-3.5 h-3.5" /> Anamnese
+        </button>
       </div>
+
+      <AnamnesisDialog
+        open={anamneseOpen}
+        onOpenChange={setAnamneseOpen}
+        athleteId={a.userId}
+        athleteName={a.name}
+      />
     </div>
   );
 };
