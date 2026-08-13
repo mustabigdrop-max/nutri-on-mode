@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, ArrowRight, Check, Loader2, Upload } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { runSelfAnalysis } from "@/hooks/useProtocolSuggestions";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -129,6 +130,7 @@ const WeeklyCheckinPage = () => {
       toast({ title: "Erro ao enviar", description: error.message, variant: "destructive" });
       return;
     }
+    void runSelfAnalysis(user.id);
     toast({ title: "✅ Check-in enviado!", description: "Seu coach vai responder em até 24h" });
     navigate("/dashboard");
   };
