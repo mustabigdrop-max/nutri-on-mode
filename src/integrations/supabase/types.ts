@@ -7454,6 +7454,96 @@ export type Database = {
         }
         Relationships: []
       }
+      patient_team: {
+        Row: {
+          accepted_at: string | null
+          created_at: string
+          id: string
+          invite_message: string | null
+          invited_by: string | null
+          patient_consent: boolean
+          patient_consent_at: string | null
+          patient_id: string
+          permissions: Json
+          professional_id: string
+          professional_role: Database["public"]["Enums"]["professional_role"]
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          created_at?: string
+          id?: string
+          invite_message?: string | null
+          invited_by?: string | null
+          patient_consent?: boolean
+          patient_consent_at?: string | null
+          patient_id: string
+          permissions?: Json
+          professional_id: string
+          professional_role: Database["public"]["Enums"]["professional_role"]
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          created_at?: string
+          id?: string
+          invite_message?: string | null
+          invited_by?: string | null
+          patient_consent?: boolean
+          patient_consent_at?: string | null
+          patient_id?: string
+          permissions?: Json
+          professional_id?: string
+          professional_role?: Database["public"]["Enums"]["professional_role"]
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      patient_timeline: {
+        Row: {
+          actor_id: string | null
+          actor_name: string | null
+          actor_role: Database["public"]["Enums"]["professional_role"] | null
+          created_at: string
+          data_category: string | null
+          description: string | null
+          event_type: string
+          id: string
+          metadata: Json
+          patient_id: string
+          title: string
+        }
+        Insert: {
+          actor_id?: string | null
+          actor_name?: string | null
+          actor_role?: Database["public"]["Enums"]["professional_role"] | null
+          created_at?: string
+          data_category?: string | null
+          description?: string | null
+          event_type: string
+          id?: string
+          metadata?: Json
+          patient_id: string
+          title: string
+        }
+        Update: {
+          actor_id?: string | null
+          actor_name?: string | null
+          actor_role?: Database["public"]["Enums"]["professional_role"] | null
+          created_at?: string
+          data_category?: string | null
+          description?: string | null
+          event_type?: string
+          id?: string
+          metadata?: Json
+          patient_id?: string
+          title?: string
+        }
+        Relationships: []
+      }
       peak_week_plans: {
         Row: {
           created_at: string | null
@@ -7918,6 +8008,42 @@ export type Database = {
         }
         Relationships: []
       }
+      professional_alerts: {
+        Row: {
+          action_url: string | null
+          created_at: string
+          id: string
+          message: string
+          patient_id: string
+          status: string
+          target_professional: string
+          trigger_type: string
+          triggered_by: string | null
+        }
+        Insert: {
+          action_url?: string | null
+          created_at?: string
+          id?: string
+          message: string
+          patient_id: string
+          status?: string
+          target_professional: string
+          trigger_type: string
+          triggered_by?: string | null
+        }
+        Update: {
+          action_url?: string | null
+          created_at?: string
+          id?: string
+          message?: string
+          patient_id?: string
+          status?: string
+          target_professional?: string
+          trigger_type?: string
+          triggered_by?: string | null
+        }
+        Relationships: []
+      }
       professional_invites: {
         Row: {
           accepted_at: string | null
@@ -7964,6 +8090,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      professional_notes: {
+        Row: {
+          author_id: string
+          author_role: Database["public"]["Enums"]["professional_role"]
+          content: string
+          created_at: string
+          id: string
+          patient_id: string
+          updated_at: string
+          visibility: string
+        }
+        Insert: {
+          author_id: string
+          author_role: Database["public"]["Enums"]["professional_role"]
+          content: string
+          created_at?: string
+          id?: string
+          patient_id: string
+          updated_at?: string
+          visibility?: string
+        }
+        Update: {
+          author_id?: string
+          author_role?: Database["public"]["Enums"]["professional_role"]
+          content?: string
+          created_at?: string
+          id?: string
+          patient_id?: string
+          updated_at?: string
+          visibility?: string
+        }
+        Relationships: []
       }
       professional_patients: {
         Row: {
@@ -8029,8 +8188,13 @@ export type Database = {
           phone: string | null
           plano_atual: string | null
           prefere_refeicoes: string | null
+          professional_role:
+            | Database["public"]["Enums"]["professional_role"]
+            | null
           professional_type: string | null
           protein_g: number | null
+          registration_number: string | null
+          registration_type: string | null
           role: string | null
           sex: string | null
           sport: string | null
@@ -8080,8 +8244,13 @@ export type Database = {
           phone?: string | null
           plano_atual?: string | null
           prefere_refeicoes?: string | null
+          professional_role?:
+            | Database["public"]["Enums"]["professional_role"]
+            | null
           professional_type?: string | null
           protein_g?: number | null
+          registration_number?: string | null
+          registration_type?: string | null
           role?: string | null
           sex?: string | null
           sport?: string | null
@@ -8131,8 +8300,13 @@ export type Database = {
           phone?: string | null
           plano_atual?: string | null
           prefere_refeicoes?: string | null
+          professional_role?:
+            | Database["public"]["Enums"]["professional_role"]
+            | null
           professional_type?: string | null
           protein_g?: number | null
+          registration_number?: string | null
+          registration_type?: string | null
           role?: string | null
           sex?: string | null
           sport?: string | null
@@ -11304,6 +11478,10 @@ export type Database = {
         Args: { _coach_user_id: string; _patient_user_id: string }
         Returns: boolean
       }
+      is_team_member: {
+        Args: { _patient_id: string; _professional_id: string }
+        Returns: boolean
+      }
       save_anamnesis_by_token: {
         Args: {
           _alerts: Json
@@ -11344,6 +11522,10 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      team_role_of: {
+        Args: { _patient_id: string; _professional_id: string }
+        Returns: Database["public"]["Enums"]["professional_role"]
       }
       user_is_athlete_of_plan: {
         Args: { _plan_id: string; _user_id: string }
@@ -11444,6 +11626,15 @@ export type Database = {
         | "FINAL_SHARPENING"
         | "PEAK_WEEK"
         | "POST_STAGE_RECOVERY"
+      professional_role:
+        | "nutricionista"
+        | "personal_trainer"
+        | "medico_esportivo"
+        | "nutrologo"
+        | "fisioterapeuta"
+        | "psicologo"
+        | "coach_esportivo"
+        | "preparador_fisico"
       skinfold_protocol:
         | "JACKSON_POLLOCK_3"
         | "JACKSON_POLLOCK_4"
@@ -11699,6 +11890,16 @@ export const Constants = {
         "FINAL_SHARPENING",
         "PEAK_WEEK",
         "POST_STAGE_RECOVERY",
+      ],
+      professional_role: [
+        "nutricionista",
+        "personal_trainer",
+        "medico_esportivo",
+        "nutrologo",
+        "fisioterapeuta",
+        "psicologo",
+        "coach_esportivo",
+        "preparador_fisico",
       ],
       skinfold_protocol: [
         "JACKSON_POLLOCK_3",
