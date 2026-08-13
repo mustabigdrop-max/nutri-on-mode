@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Eye, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import AthleteDashboard from "@/pages/athlete/AthleteDashboard";
+import { ViewAsProvider } from "@/contexts/ViewAsContext";
 
 const ViewAsClient = () => {
   const { athleteId } = useParams<{ athleteId: string }>();
@@ -21,13 +22,14 @@ const ViewAsClient = () => {
     })();
   }, [athleteId]);
 
-  if (!athleteId) {
-    navigate("/coach/dashboard", { replace: true });
-    return null;
-  }
+  useEffect(() => {
+    if (!athleteId) navigate("/coach/dashboard", { replace: true });
+  }, [athleteId, navigate]);
+
+  if (!athleteId) return null;
 
   return (
-    <div>
+    <ViewAsProvider targetUserId={athleteId}>
       <div
         className="sticky top-0 z-[60] flex items-center justify-between gap-3 px-4 py-2.5"
         style={{
@@ -57,7 +59,7 @@ const ViewAsClient = () => {
       </div>
 
       <AthleteDashboard overrideUserId={athleteId} overrideName={name} viewMode="coach-preview" />
-    </div>
+    </ViewAsProvider>
   );
 };
 

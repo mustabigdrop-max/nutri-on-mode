@@ -41,42 +41,42 @@ function computeTrend(logs: WeightLog[], avgDailyKcal: number | null, targetWeek
 
 export function useWeightLogs(avgDailyKcal?: number | null, targetWeeklyRateKg = -0.5, overrideUserId?: string) {
   const { user: authUser } = useAuth();
-  const user = overrideUserId ? ({ id: overrideUserId } as { id: string }) : authUser;
+  const userId = overrideUserId || authUser?.id || null;
   const [logs, setLogs] = useState<WeightLog[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchLogs = useCallback(async () => {
-    if (!user) return;
+    if (!userId) return;
     setLoading(true);
     const { data } = await supabase
       .from("weight_logs" as any)
       .select("*")
-      .eq("user_id", user.id)
+      .eq("user_id", userId)
       .order("logged_at", { ascending: false })
       .limit(60);
     setLogs((data as unknown as WeightLog[]) ?? []);
     setLoading(false);
-  }, [user]);
+  }, [userId]);
 
   useEffect(() => { fetchLogs(); }, [fetchLogs]);
 
   const addLog = useCallback(async (weightKg: number, bodyFatPct?: number) => {
-    if (!user) return;
+    if (!userId) return;
     await supabase
       .from("weight_logs" as any)
-      .insert({ user_id: user.id, weight_kg: weightKg, body_fat_pct: bodyFatPct ?? null, logged_at: new Date().toISOString() } as any);
+      .insert({ user_id: userId, weight_kg: weightKg, body_fat_pct: bodyFatPct ?? null, logged_at: new Date().toISOString() } as any);
     await fetchLogs();
-  }, [user, fetchLogs]);
+  }, [userId, fetchLogs]);
 
   const deleteLog = useCallback(async (id: string) => {
-    if (!user) return;
+    if (!userId) return;
     await supabase
       .from("weight_logs" as any)
       .delete()
       .eq("id", id)
-      .eq("user_id", user.id);
+      .eq("user_id", userId);
     await fetchLogs();
-  }, [user, fetchLogs]);
+  }, [userId, fetchLogs]);
 
   const latestWeight = logs[0]?.weight_kg ?? null;
   const firstWeight = logs.length > 0 ? logs[logs.length - 1].weight_kg : null;
