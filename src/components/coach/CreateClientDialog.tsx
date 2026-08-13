@@ -235,7 +235,7 @@ const CreateClientDialog = ({ trigger, onCreated }: Props) => {
             <div className="space-y-2">
               <Label className="text-xs uppercase tracking-wider text-muted-foreground">Próximos passos</Label>
               <div className="grid gap-2">
-                <Button variant="outline" className="justify-start gap-2" onClick={() => { setOpen(false); navigate(`/coach/nutriplan?patient=${created.userId}`); }}>
+                <Button variant="outline" className="justify-start gap-2" onClick={() => { setOpen(false); navigate(`/nutriplan-elite?patient=${created.userId}`); }}>
                   <UtensilsCrossed className="w-4 h-4" /> Enviar Plano Alimentar agora
                 </Button>
                 <Button variant="outline" className="justify-start gap-2" onClick={() => { setOpen(false); navigate(`/coach/trainingon?patient=${created.userId}`); }}>
