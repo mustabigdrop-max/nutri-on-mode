@@ -106,7 +106,7 @@ const EditAthleteDialog = ({ open, onOpenChange, athleteId, athleteName, onSaved
       .update({
         full_name: form.full_name.trim(),
         phone: txt(form.phone),
-        sex: txt(form.sex),
+        sex: normalizeSex(form.sex),
         age: int(form.age),
         weight_kg: num(form.weight_kg),
         height_cm: num(form.height_cm),
