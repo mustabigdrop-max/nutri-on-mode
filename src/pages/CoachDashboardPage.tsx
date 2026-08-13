@@ -23,6 +23,7 @@ import AthleteCard from "@/components/coach/AthleteCard";
 import SendPlanDialog, { type SendPlanType } from "@/components/coach/SendPlanDialog";
 
 const ADVANCED_MODULES = [
+  { label: "TrainingON", icon: Dumbbell, route: "/coach/trainingon", color: "#E8A020" },
   { label: "APEX Visual", icon: Camera, route: "/coach/apex-visual", color: "#E8A020" },
   { label: "VERA", icon: Sparkles, route: "/coach/vera", color: "#A78BFA" },
   { label: "LAB Exames", icon: FlaskConical, route: "/coach/exames", color: "#4ade80" },
