@@ -5775,6 +5775,118 @@ export default function PlanoAlimentarIA() {
           </div>
         </Section>
 
+        {/* ─── ROTINA E PREFERÊNCIAS DO PACIENTE ─── */}
+        <Section title="Rotina e preferências do paciente" icon={<Clock size={12} strokeWidth={2} color={T.emerald} />}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14 }}>
+            <div>
+              <Label>Horário que acorda</Label>
+              <InputField type="time" value={form.horaAcordar} onChange={e => set("horaAcordar", e.target.value)} />
+            </div>
+            <div>
+              <Label>Horário que dorme</Label>
+              <InputField type="time" value={form.horaDormir} onChange={e => set("horaDormir", e.target.value)} />
+            </div>
+            <div>
+              <Label>Janela alimentar</Label>
+              <div style={{
+                fontFamily: T.fontMono, fontSize: 13, color: T.emerald,
+                border: "1px solid #00C89622", background: "#00C89608",
+                padding: "10px 12px", letterSpacing: "0.08em",
+              }}>
+                {computeJanelaAlimentar(form.horaAcordar, form.horaDormir)}h · automático
+              </div>
+            </div>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginTop: 14 }}>
+            <div>
+              <Label>Tipo de trabalho / rotina</Label>
+              <SelectField value={form.tipoTrabalho} onChange={e => set("tipoTrabalho", e.target.value)}>
+                <option value="sedentario">Sedentário (escritório)</option>
+                <option value="ativo">Ativo (em pé, andando)</option>
+                <option value="pesado">Pesado (construção, carga)</option>
+                <option value="noturno">Noturno (turno)</option>
+                <option value="remoto">Remoto (home office)</option>
+              </SelectField>
+            </div>
+            <div>
+              <Label>Habilidade na cozinha</Label>
+              <SelectField value={form.habilidadeCulinaria} onChange={e => set("habilidadeCulinaria", e.target.value)}>
+                <option value="nao_cozinha">Não cozinha — precisa de refeições simples</option>
+                <option value="basico">Básico — arroz, ovo, frango grelhado</option>
+                <option value="intermediario">Intermediário — segue receitas, meal prep</option>
+                <option value="avancado">Avançado — aceita receitas elaboradas</option>
+              </SelectField>
+            </div>
+            <div>
+              <Label>Prepara refeições antecipadas (meal prep)?</Label>
+              <SelectField value={form.mealPrep} onChange={e => set("mealPrep", e.target.value)}>
+                <option value="nao">Não — come no momento</option>
+                <option value="2_3_dias">Sim — prepara 2–3 dias</option>
+                <option value="semana">Sim — prepara a semana toda</option>
+              </SelectField>
+            </div>
+            <div>
+              <Label>Apetite ao longo do dia</Label>
+              <SelectField value={form.apetitePerfil} onChange={e => set("apetitePerfil", e.target.value)}>
+                <option value="normal">Normal — come bem em todos os horários</option>
+                <option value="sem_fome_manha">Sem fome de manhã — apetite aumenta à noite</option>
+                <option value="fome_manha">Muita fome de manhã — pouca à noite</option>
+                <option value="fome_constante">Fome constante o dia todo</option>
+                <option value="peri_treino">Fome apenas peri-treino</option>
+              </SelectField>
+            </div>
+            <div>
+              <Label>Prazo desejado para o objetivo</Label>
+              <SelectField value={form.prazoObjetivo} onChange={e => set("prazoObjetivo", e.target.value)}>
+                <option value="sem_prazo">Sem prazo — progresso sustentável</option>
+                <option value="3_meses">3 meses</option>
+                <option value="6_meses">6 meses</option>
+                <option value="12_meses">12 meses</option>
+                <option value="data">Data específica</option>
+              </SelectField>
+            </div>
+            {form.prazoObjetivo === "data" && (
+              <div>
+                <Label>Data alvo</Label>
+                <InputField type="date" value={form.dataAlvo} onChange={e => set("dataAlvo", e.target.value)} />
+              </div>
+            )}
+            <div>
+              <Label>Ingestão atual de água (estimativa)</Label>
+              <SelectField value={form.aguaAtual} onChange={e => set("aguaAtual", e.target.value)}>
+                <option value="menos_1">Menos de 1L</option>
+                <option value="1_2">1–2L</option>
+                <option value="2_3">2–3L</option>
+                <option value="3_mais">3L ou mais</option>
+                <option value="nao_sei">Não sei</option>
+              </SelectField>
+            </div>
+          </div>
+
+          <div style={{ marginTop: 14 }}>
+            <Label>Alimentos que NÃO quer no plano</Label>
+            <InputField
+              placeholder="Ex: fígado, peixe, brócolis, clara de ovo pura..."
+              value={form.alimentosOdeia}
+              onChange={e => set("alimentosOdeia", e.target.value)}
+            />
+          </div>
+          <div style={{ marginTop: 14 }}>
+            <Label>Alimentos gatilho (compulsão)</Label>
+            <InputField
+              placeholder="Ex: sorvete, pizza, chocolate, biscoito, pão..."
+              value={form.alimentosGatilho}
+              onChange={e => set("alimentosGatilho", e.target.value)}
+            />
+            <div style={{ fontFamily: T.fontMono, fontSize: 10, color: "#888888", letterSpacing: "0.08em", marginTop: 8, lineHeight: 1.6 }}>
+              ⚠️ Estes alimentos não serão incluídos no protocolo e serão listados como "evitar" nas observações.
+            </div>
+          </div>
+        </Section>
+
+
+
         {/* ─── NUTRIPLAN INTELLIGENCE — somatotipo, digestivo, autonômico ─── */}
         <BlocoSomatotipo value={intel} onChange={updIntel} />
         <BlocoHistoricoMetabolico value={intel} onChange={updIntel} pesoKg={Number(form.peso) || undefined} />
