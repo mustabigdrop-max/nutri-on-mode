@@ -120,7 +120,7 @@ export default function SendToAthleteBar({ type, buildPayload, sourceId, label, 
         notification_type: isMeal ? "meal_plan_sent" : "training_plan_sent",
         title: isMeal ? "Novo plano alimentar recebido!" : "Novo treino recebido!",
         message: message || "Seu coach enviou um novo protocolo.",
-        action_url: isMeal ? "/meu-plano" : "/meu-treino",
+        action_url: isMeal ? "/my-plan" : "/my-training",
         reference_id: sourceId || null,
       });
 
