@@ -95,6 +95,15 @@ const EditAthleteDialog = ({ open, onOpenChange, athleteId, athleteName, onSaved
   const set = (k: keyof FormState) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
     setForm((f) => ({ ...f, [k]: e.target.value }));
 
+  /** O banco só aceita 'male' | 'female' — normaliza pt-BR e valores livres. */
+  const normalizeSex = (v: string): "male" | "female" | null => {
+    const s = (v || "").trim().toLowerCase();
+    if (!s) return null;
+    if (["male", "m", "masculino", "homem"].includes(s)) return "male";
+    if (["female", "f", "feminino", "mulher"].includes(s)) return "female";
+    return null;
+  };
+
   const handleSave = async () => {
     if (!form.full_name.trim()) {
       toast({ title: "Nome obrigatório", variant: "destructive" });
@@ -106,7 +115,7 @@ const EditAthleteDialog = ({ open, onOpenChange, athleteId, athleteName, onSaved
       .update({
         full_name: form.full_name.trim(),
         phone: txt(form.phone),
-        sex: txt(form.sex),
+        sex: normalizeSex(form.sex),
         age: int(form.age),
         weight_kg: num(form.weight_kg),
         height_cm: num(form.height_cm),
@@ -159,7 +168,15 @@ const EditAthleteDialog = ({ open, onOpenChange, athleteId, athleteName, onSaved
               </div>
               <div className="space-y-1">
                 <Label>Sexo</Label>
-                <Input value={form.sex} onChange={set("sex")} placeholder="masculino / feminino" />
+                <select
+                  value={normalizeSex(form.sex) ?? ""}
+                  onChange={(e) => setForm((f) => ({ ...f, sex: e.target.value }))}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                >
+                  <option value="">Não informado</option>
+                  <option value="male">Masculino</option>
+                  <option value="female">Feminino</option>
+                </select>
               </div>
               <div className="space-y-1">
                 <Label>Idade</Label>
