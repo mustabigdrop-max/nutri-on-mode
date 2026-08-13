@@ -5,7 +5,7 @@ import { useAthletePlans } from "@/hooks/useAthletePlans";
 import AthleteBottomNav from "@/components/athlete/AthleteBottomNav";
 import { MarkdownProtocolView } from "@/components/training/MarkdownProtocolView";
 import { parseProtocolText } from "@/lib/parseProtocolText";
-import { useAthleteTarget } from "@/hooks/useAthleteTarget";
+import { athleteQuery, useAthleteTarget } from "@/hooks/useAthleteTarget";
 
 const BG = "#020205";
 const GREEN = "#00FF88";
@@ -40,7 +40,7 @@ const MyTrainingPage = () => {
       <header className="px-4 pt-6 pb-4 max-w-3xl mx-auto">
         <div className="flex items-center gap-3 mb-4">
           <button
-            onClick={() => navigate("/dashboard")}
+            onClick={() => navigate(`/dashboard${athleteQuery(targetId)}`)}
             className="w-9 h-9 rounded-xl flex items-center justify-center"
             style={{ background: "rgba(255,255,255,0.05)" }}
             aria-label="Voltar"

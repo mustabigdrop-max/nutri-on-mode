@@ -423,11 +423,9 @@ export function MarkdownProtocolView({
   content: any;
   title?: string;
 }) {
-  // ── Guarda anti-vazamento: nunca renderizar JSON cru ─────────────
-  // Se o content for objeto, ou string JSON serializada, este componente
-  // não é responsável por exibir — retorna aviso silencioso.
+  // Strings JSON são normalizadas antes da renderização. Objetos estruturados
+  // são aceitos porque parseProtocolToDays já converte training_days em cards.
   const isJsonLike = (v: any) => {
-    if (v && typeof v === "object") return true;
     if (typeof v !== "string") return false;
     const t = v.trim();
     if (!t.startsWith("{") && !t.startsWith("[")) return false;
@@ -439,27 +437,19 @@ export function MarkdownProtocolView({
     }
   };
 
+  let normalizedContent = content;
   if (isJsonLike(content)) {
-    return (
-      <div
-        style={{
-          padding: 16,
-          borderRadius: 12,
-          border: `1px solid ${CARD_BORDER}`,
-          background: CARD_BG,
-        }}
-      >
-        <p style={{ fontSize: 11, color: "#71717a", textAlign: "center", margin: 0 }}>
-          Protocolo estruturado — abra a aba "Visão Geral" para visualizar.
-        </p>
-      </div>
-    );
+    try {
+      normalizedContent = JSON.parse(content);
+    } catch {
+      normalizedContent = null;
+    }
   }
 
-  const parsed = parseProtocolToDays(content);
+  const parsed = parseProtocolToDays(normalizedContent);
 
   if (parsed.isFallback) {
-    const txt = typeof content === "string" ? content : "";
+    const txt = typeof normalizedContent === "string" ? normalizedContent : "";
     if (!txt.trim()) {
       return (
         <div
