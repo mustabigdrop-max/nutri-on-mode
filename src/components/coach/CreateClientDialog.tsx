@@ -15,8 +15,17 @@ import {
   Copy, Crown, Dumbbell, Eye, Home, Link2, Loader2, RefreshCw, UserPlus, UtensilsCrossed, CheckCircle2, MessageCircle,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { createClient } from "@supabase/supabase-js";
+
+// Client isolado: cria a conta do atleta sem persistir/trocar a sessão do coach
+const signupClient = createClient(
+  import.meta.env.VITE_SUPABASE_URL,
+  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+  { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } },
+);
 
 type Mode = "direct" | "invite";
+
 
 const OBJETIVOS = [
   "Hipertrofia",
@@ -103,28 +112,85 @@ const CreateClientDialog = ({ trigger, onCreated }: Props) => {
       toast({ title: "Preencha nome e email", variant: "destructive" });
       return;
     }
+    if (!profile?.id) {
+      toast({ title: "Perfil de coach não encontrado", variant: "destructive" });
+      return;
+    }
+    if (password.length < 8) {
+      toast({ title: "Senha muito curta", description: "Use no mínimo 8 caracteres.", variant: "destructive" });
+      return;
+    }
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke("create-client", {
-        body: {
-          email: email.trim().toLowerCase(),
-          password,
-          full_name: name.trim(),
-          phone: phone.trim() || null,
-          sex: sex || null,
-          age: age ? Number(age) : null,
-          weight: weight ? Number(weight) : null,
-          height: height ? Number(height) : null,
-          objective: objective || null,
-          notes: notes.trim() || null,
+      const cleanEmail = email.trim().toLowerCase();
+
+      // 1. Criar a conta com um client isolado (não troca a sessão do coach)
+      const { data: signUpData, error: signUpError } = await signupClient.auth.signUp({
+        email: cleanEmail,
+        password,
+        options: {
+          data: { full_name: name.trim(), role: "aluno_coach", created_by_coach: profile.id },
         },
       });
 
-      const errMsg = (data as any)?.error || (error as any)?.message;
-      if (!data?.userId) throw new Error(errMsg || "Não foi possível criar a conta.");
+      if (signUpError) {
+        console.error("[CREATE CLIENT] signUp error:", signUpError);
+        const msg = signUpError.message || "";
+        if (/already|registered|exists/i.test(msg)) {
+          throw new Error("Este email já está cadastrado. Use outro email ou vincule o cliente existente.");
+        }
+        if (/password/i.test(msg)) throw new Error("Senha inválida: use no mínimo 8 caracteres.");
+        throw new Error(msg || "Não foi possível criar a conta.");
+      }
 
-      setCreated({ userId: data.userId, name: name.trim(), email: email.trim().toLowerCase(), password });
-      toast({ title: "Cliente cadastrado! 🎉", description: data.message });
+      if (signUpData.user?.identities?.length === 0) {
+        throw new Error("Este email já possui conta no nutriON. Use outro email.");
+      }
+
+      const newUserId = signUpData.user?.id;
+      if (!newUserId) throw new Error("Erro inesperado: usuário não foi criado.");
+
+      // 2. Vincular coach ↔ atleta (antes do update, para liberar o RLS do profile)
+      const { error: linkError } = await supabase.from("coach_patients").insert({
+        coach_id: profile.id,
+        patient_user_id: newUserId,
+        status: "active",
+        notes: notes.trim() || null,
+      });
+      if (linkError) {
+        console.error("[CREATE CLIENT] link error:", linkError);
+        if (linkError.code === "23505") {
+          await supabase
+            .from("coach_patients")
+            .update({ status: "active" })
+            .eq("coach_id", profile.id)
+            .eq("patient_user_id", newUserId);
+        }
+      }
+
+      // 3. Completar o perfil do atleta
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .update({
+          full_name: name.trim(),
+          email: cleanEmail,
+          phone: phone.trim() || null,
+          sex: sex || null,
+          age: age ? Number(age) : null,
+          weight_kg: weight ? Number(weight) : null,
+          height_cm: height ? Number(height) : null,
+          objetivo_principal: objective || null,
+          goal: objective || null,
+          coach_notes: notes.trim() || null,
+          role: "aluno_coach",
+          coach_profile_id: profile.id,
+          onboarding_completed: true,
+        })
+        .eq("user_id", newUserId);
+      if (profileError) console.error("[CREATE CLIENT] profile update error:", profileError);
+
+      setCreated({ userId: newUserId, name: name.trim(), email: cleanEmail, password });
+      toast({ title: "Cliente cadastrado! 🎉", description: `${name.trim()} já pode acessar o nutriON.` });
       onCreated?.();
     } catch (err: any) {
       toast({ title: "Erro ao cadastrar cliente", description: err.message, variant: "destructive" });
@@ -132,6 +198,7 @@ const CreateClientDialog = ({ trigger, onCreated }: Props) => {
       setLoading(false);
     }
   };
+
 
   const handleGenerateInvite = async () => {
     if (!profile) return;
