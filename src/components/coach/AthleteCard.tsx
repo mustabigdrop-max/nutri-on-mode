@@ -21,6 +21,7 @@ interface Props {
 
 const AthleteCard = ({ athlete: a, onSendMeal, onSendTraining }: Props) => {
   const navigate = useNavigate();
+  const [anamneseOpen, setAnamneseOpen] = useState(false);
   const color = RISK_COLOR[a.riskLevel];
 
   return (
