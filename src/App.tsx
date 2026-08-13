@@ -124,6 +124,8 @@ const VeraPage = lazy(() => import("./pages/VeraPage"));
 const MyPlanPage = lazy(() => import("./pages/athlete/MyPlanPage"));
 const MyTrainingPage = lazy(() => import("./pages/athlete/MyTrainingPage"));
 const AthleteCheckinPage = lazy(() => import("./pages/athlete/AthleteCheckinPage"));
+const PraxisPage = lazy(() => import("./pages/PraxisPage"));
+const PraxisLogsPage = lazy(() => import("./pages/coach/PraxisLogsPage"));
 
 const queryClient = new QueryClient();
 
@@ -153,6 +155,7 @@ const App = () => (
             <Route path="/my-plan" element={<ProtectedRoute><AthleteOnlyRoute><MyPlanPage /></AthleteOnlyRoute></ProtectedRoute>} />
             <Route path="/my-training" element={<ProtectedRoute><AthleteOnlyRoute><MyTrainingPage /></AthleteOnlyRoute></ProtectedRoute>} />
             <Route path="/checkin" element={<ProtectedRoute><AthleteOnlyRoute><AthleteCheckinPage /></AthleteOnlyRoute></ProtectedRoute>} />
+            <Route path="/praxis" element={<ProtectedRoute><PraxisPage /></ProtectedRoute>} />
             <Route path="/weekly-checkin" element={<ProtectedRoute><WeeklyCheckinPage /></ProtectedRoute>} />
             <Route path="/meal-log" element={<ProtectedRoute><MealLogPage /></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
@@ -259,6 +262,7 @@ const App = () => (
             <Route path="/coach/trainingon" element={<CoachToolRoute><ProtectedRoute><CoachTrainingOnPage /></ProtectedRoute></CoachToolRoute>} />
             <Route path="/coach/lab-exams" element={<CoachToolRoute><ProtectedRoute><CoachLabExamsPage /></ProtectedRoute></CoachToolRoute>} />
             <Route path="/coach/exames" element={<CoachToolRoute><ProtectedRoute><ExamRequestPage /></ProtectedRoute></CoachToolRoute>} />
+            <Route path="/coach/praxis-logs/:athleteId" element={<CoachToolRoute><ProtectedRoute><PraxisLogsPage /></ProtectedRoute></CoachToolRoute>} />
             <Route path="/coach/relatorios" element={<CoachToolRoute><ProtectedRoute><CoachReportsPage /></ProtectedRoute></CoachToolRoute>} />
             <Route path="/coach/atletas" element={<CoachToolRoute><ProtectedRoute><AthleteRoster /></ProtectedRoute></CoachToolRoute>} />
             <Route path="/coach/atletas/:id" element={<CoachToolRoute><ProtectedRoute><AthleteProgressTracker /></ProtectedRoute></CoachToolRoute>} />
