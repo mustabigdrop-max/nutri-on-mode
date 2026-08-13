@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import SendToAthleteBar from "@/components/coach/SendToAthleteBar";
 import {
   ArrowLeft, FileText, RefreshCw, BarChart2, CheckSquare,
   Grid, Zap, BookOpen, Clock, ChevronDown, User as UserIcon,
