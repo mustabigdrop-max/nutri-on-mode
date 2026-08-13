@@ -2583,6 +2583,8 @@ OUTROS DADOS:
 - Preferências alimentares: ${preferencias || "Não informadas"}
 - Suplementação atual: ${suplementos || "Não informada"}
 - Observações clínicas: ${observacoes || "Nenhuma"}
+${typeof contexto_clinico_prompt === "string" && contexto_clinico_prompt.trim() ? contexto_clinico_prompt.trim() : ""}
+
 
 Aplique TODAS as regras de cálculo (Mifflin-St Jeor — valores já pré-calculados no bloco determinístico, ajustes farmacológicos por composto, integração de cardio, fase de periodização). Use alimentos brasileiros acessíveis com gramagem precisa. Linguagem técnica de coach de competição.
 
