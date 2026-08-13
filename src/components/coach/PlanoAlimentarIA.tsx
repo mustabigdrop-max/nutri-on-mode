@@ -1587,7 +1587,22 @@ export default function PlanoAlimentarIA() {
         contextoClinico: contextoClinico?.trim() || null,
         contexto_clinico_prompt: (contextoClinico?.trim()
           ? `\n\nCONTEXTO CLÍNICO DO COACH:\n${contextoClinico.trim()}`
-          : "") + buildContextoAditivo(),
+          : "") + buildContextoAditivo() + buildRotinaPrompt(form),
+        rotina_preferencias: {
+          hora_acordar: form.horaAcordar,
+          hora_dormir: form.horaDormir,
+          janela_alimentar_h: computeJanelaAlimentar(form.horaAcordar, form.horaDormir),
+          tipo_trabalho: form.tipoTrabalho,
+          habilidade_culinaria: form.habilidadeCulinaria,
+          meal_prep: form.mealPrep,
+          apetite_perfil: form.apetitePerfil,
+          alimentos_odeia: form.alimentosOdeia || null,
+          alimentos_gatilho: form.alimentosGatilho || null,
+          prazo_objetivo: form.prazoObjetivo,
+          data_alvo: form.prazoObjetivo === "data" ? (form.dataAlvo || null) : null,
+          agua_atual: form.aguaAtual,
+        },
+
         coach_signature: identidade.exibirNoPdf ? identidade : null,
         coach_identity: identidade,
         categoria_esporte: categoriaEsporte || null,
