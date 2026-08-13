@@ -95,6 +95,15 @@ const EditAthleteDialog = ({ open, onOpenChange, athleteId, athleteName, onSaved
   const set = (k: keyof FormState) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
     setForm((f) => ({ ...f, [k]: e.target.value }));
 
+  /** O banco só aceita 'male' | 'female' — normaliza pt-BR e valores livres. */
+  const normalizeSex = (v: string): "male" | "female" | null => {
+    const s = (v || "").trim().toLowerCase();
+    if (!s) return null;
+    if (["male", "m", "masculino", "homem"].includes(s)) return "male";
+    if (["female", "f", "feminino", "mulher"].includes(s)) return "female";
+    return null;
+  };
+
   const handleSave = async () => {
     if (!form.full_name.trim()) {
       toast({ title: "Nome obrigatório", variant: "destructive" });
