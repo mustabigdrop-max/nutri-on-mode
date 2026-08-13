@@ -1,6 +1,7 @@
-import { memo } from "react";
+import { memo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { UtensilsCrossed, Dumbbell, BarChart3, MessageSquare, AlertTriangle, Zap, Eye } from "lucide-react";
+import { UtensilsCrossed, Dumbbell, BarChart3, MessageSquare, AlertTriangle, Zap, Eye, ClipboardList } from "lucide-react";
+import AnamnesisDialog from "@/components/coach/AnamnesisDialog";
 import type { CoachAthlete } from "@/hooks/useCoachAthletes";
 
 const RISK_COLOR: Record<CoachAthlete["riskLevel"], string> = {
@@ -20,6 +21,7 @@ interface Props {
 
 const AthleteCard = ({ athlete: a, onSendMeal, onSendTraining }: Props) => {
   const navigate = useNavigate();
+  const [anamneseOpen, setAnamneseOpen] = useState(false);
   const color = RISK_COLOR[a.riskLevel];
 
   return (
@@ -113,7 +115,17 @@ const AthleteCard = ({ athlete: a, onSendMeal, onSendTraining }: Props) => {
         <button className="quick-action-sm" onClick={() => navigate(`/coach/praxis-logs/${a.userId}`)}>
           <Zap className="w-3.5 h-3.5" /> PRAXIS
         </button>
+        <button className="quick-action-sm" onClick={() => setAnamneseOpen(true)}>
+          <ClipboardList className="w-3.5 h-3.5" /> Anamnese
+        </button>
       </div>
+
+      <AnamnesisDialog
+        open={anamneseOpen}
+        onOpenChange={setAnamneseOpen}
+        athleteId={a.userId}
+        athleteName={a.name}
+      />
     </div>
   );
 };

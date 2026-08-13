@@ -110,6 +110,8 @@ const CoachTrainingOnPage = lazy(() => import("./pages/coach/CoachTrainingOnPage
 const CoachLabExamsPage = lazy(() => import("./pages/coach/CoachLabExamsPage"));
 const ExamRequestPage = lazy(() => import("./pages/coach/ExamRequestPage"));
 const CoachReportsPage = lazy(() => import("./pages/coach/CoachReportsPage"));
+const CoachAnamnesisPage = lazy(() => import("./pages/coach/CoachAnamnesisPage"));
+const AnamnesisPublicPage = lazy(() => import("./pages/AnamnesisPublicPage"));
 const APEXPoseAnalysisPage = lazy(() => import("./pages/coach/APEXPoseAnalysisPage"));
 const DrNexusPage = lazy(() => import("./pages/DrNexusPage"));
 const VideoFormPage = lazy(() => import("./pages/VideoFormPage"));
@@ -266,6 +268,8 @@ const App = () => (
             <Route path="/coach/view-as/:athleteId" element={<CoachToolRoute><ProtectedRoute><ViewAsClient /></ProtectedRoute></CoachToolRoute>} />
             <Route path="/coach/praxis-logs/:athleteId" element={<CoachToolRoute><ProtectedRoute><PraxisLogsPage /></ProtectedRoute></CoachToolRoute>} />
             <Route path="/coach/relatorios" element={<CoachToolRoute><ProtectedRoute><CoachReportsPage /></ProtectedRoute></CoachToolRoute>} />
+            <Route path="/coach/anamneses" element={<CoachToolRoute><ProtectedRoute><CoachAnamnesisPage /></ProtectedRoute></CoachToolRoute>} />
+            <Route path="/anamnese/:token" element={<AnamnesisPublicPage />} />
             <Route path="/coach/atletas" element={<CoachToolRoute><ProtectedRoute><AthleteRoster /></ProtectedRoute></CoachToolRoute>} />
             <Route path="/coach/atletas/:id" element={<CoachToolRoute><ProtectedRoute><AthleteProgressTracker /></ProtectedRoute></CoachToolRoute>} />
             <Route path="/coach/apex-pose" element={<CoachToolRoute><ProtectedRoute><APEXPoseAnalysisPage /></ProtectedRoute></CoachToolRoute>} />

@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import {
   FileText, Activity, ClipboardCheck, Pill, Eye, Brain, Trophy, FlaskConical,
-  Stethoscope, Apple, Dumbbell, type LucideIcon,
+  Stethoscope, Apple, Dumbbell, ClipboardList, type LucideIcon,
 } from "lucide-react";
 import { PROFILE_META, type ProfessionalType } from "@/lib/professionalTypes";
 
@@ -17,6 +17,7 @@ const ACTIONS_BY_TYPE: Record<ProfessionalType, Action[]> = {
     { label: "GERAR PLANO ALIMENTAR", icon: FileText, route: "/coach/plano-alimentar", primary: true },
     { label: "MATRIX Intelligence", icon: Brain, route: "/coach/matrix" },
     { label: "Check-ins", icon: ClipboardCheck, route: "/coach/checkins" },
+    { label: "Anamneses", icon: ClipboardList, route: "/coach/anamneses" },
     { label: "Suplementação", icon: Pill, route: "/coach/suplementos" },
   ],
   personal_trainer: [
@@ -24,12 +25,14 @@ const ACTIONS_BY_TYPE: Record<ProfessionalType, Action[]> = {
     { label: "AXIS Intelligence", icon: Activity, route: "/coach/axis" },
     { label: "Avaliação Física", icon: Eye, route: "/coach/avaliacao" },
     { label: "Check-ins", icon: ClipboardCheck, route: "/coach/checkins" },
+    { label: "Anamneses", icon: ClipboardList, route: "/coach/anamneses" },
   ],
   nutrition_coach: [
     { label: "GERAR PLANO", icon: FileText, route: "/coach/plano-alimentar", primary: true },
     { label: "Protocolo Comportamental", icon: Brain, route: "/coach/pca" },
     { label: "MATRIX Intelligence", icon: Apple, route: "/coach/matrix" },
     { label: "Check-ins", icon: ClipboardCheck, route: "/coach/checkins" },
+    { label: "Anamneses", icon: ClipboardList, route: "/coach/anamneses" },
   ],
   bodybuilding_coach: [
     { label: "GERAR PLANO", icon: FileText, route: "/coach/plano-alimentar", primary: true },
@@ -38,12 +41,14 @@ const ACTIONS_BY_TYPE: Record<ProfessionalType, Action[]> = {
     { label: "Dr. VERTEX", icon: FlaskConical, route: "/coach/vertex" },
     { label: "Peak Week", icon: Trophy, route: "/coach/competition" },
     { label: "Check-ins", icon: ClipboardCheck, route: "/coach/checkins" },
+    { label: "Anamneses", icon: ClipboardList, route: "/coach/anamneses" },
   ],
   medico: [
     { label: "Protocolo Clínico", icon: Stethoscope, route: "/coach/plano-alimentar", primary: true },
     { label: "Farmacologia", icon: FlaskConical, route: "/coach/vertex" },
     { label: "Exames e Biomarcadores", icon: Activity, route: "/coach/exames" },
     { label: "Check-ins", icon: ClipboardCheck, route: "/coach/checkins" },
+    { label: "Anamneses", icon: ClipboardList, route: "/coach/anamneses" },
   ],
 };
 
