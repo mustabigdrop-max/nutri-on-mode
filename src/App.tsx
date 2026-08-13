@@ -1,4 +1,6 @@
-import { lazy, Suspense } from "react";
+import { Suspense } from "react";
+import { lazyWithRetry as lazy } from "@/lib/lazyWithRetry";
+import RouteErrorBoundary from "@/components/RouteErrorBoundary";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -135,7 +137,10 @@ const PraxisLogsPage = lazy(() => import("./pages/coach/PraxisLogsPage"));
 const queryClient = new QueryClient();
 
 const RouteFallback = () => (
-  <div className="min-h-screen w-full bg-background" aria-busy="true" />
+  <div className="min-h-screen w-full bg-background flex flex-col items-center justify-center gap-3" aria-busy="true">
+    <div className="h-8 w-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+    <p className="text-sm text-muted-foreground">Carregando módulo…</p>
+  </div>
 );
 
 const App = () => (
@@ -145,6 +150,7 @@ const App = () => (
       <Sonner />
       <AuthProvider>
         <BrowserRouter>
+          <RouteErrorBoundary>
           <Suspense fallback={<RouteFallback />}>
           <Routes>
             <Route path="/" element={<Index />} />
@@ -285,6 +291,7 @@ const App = () => (
             <Route path="*" element={<NotFound />} />
           </Routes>
           </Suspense>
+          </RouteErrorBoundary>
         </BrowserRouter>
       </AuthProvider>
     </TooltipProvider>

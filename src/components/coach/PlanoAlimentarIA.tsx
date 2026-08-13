@@ -1,4 +1,5 @@
-import { useState, useRef, useEffect, lazy, Suspense } from "react";
+import { useState, useRef, useEffect, Suspense } from "react";
+import { lazyWithRetry as lazy } from "@/lib/lazyWithRetry";
 import SendToAthleteBar from "@/components/coach/SendToAthleteBar";
 import {
   ArrowLeft, FileText, RefreshCw, BarChart2, CheckSquare,
