@@ -1288,9 +1288,22 @@ export default function PlanoAlimentarIA() {
     neat: "medio" as "baixo" | "medio" | "alto",
     qualidadeSono: "boa" as "boa" | "regular" | "ruim",
     semanasEmDeficit: "" as string,
+    // ─── ROTINA E PREFERÊNCIAS DO PACIENTE (detalhes finos) ───
+    horaAcordar: "06:30",
+    horaDormir: "22:30",
+    tipoTrabalho: "sedentario" as "sedentario" | "ativo" | "pesado" | "noturno" | "remoto",
+    habilidadeCulinaria: "basico" as "nao_cozinha" | "basico" | "intermediario" | "avancado",
+    mealPrep: "nao" as "nao" | "2_3_dias" | "semana",
+    apetitePerfil: "normal" as "normal" | "sem_fome_manha" | "fome_manha" | "fome_constante" | "peri_treino",
+    alimentosOdeia: "",
+    alimentosGatilho: "",
+    prazoObjetivo: "sem_prazo" as "sem_prazo" | "3_meses" | "6_meses" | "12_meses" | "data",
+    dataAlvo: "",
+    aguaAtual: "1_2" as "menos_1" | "1_2" | "2_3" | "3_mais" | "nao_sei",
     // NutriPlan Elite — multi-select de compostos farmacológicos ativos do paciente
     compostosAtivos: [] as string[],
   });
+
 
   // ─── Campos ADITIVOS (novos blocos /coach/plano-alimentar) ─────────────────
   const [categoriaEsporte, setCategoriaEsporte] = useState<string>("");
