@@ -14,7 +14,7 @@ import {
 import { motion } from "framer-motion";
 import ProfessionalTypeBadge from "@/components/coach/ProfessionalTypeBadge";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
-import InviteClientDialog from "@/components/coach/InviteClientDialog";
+import CreateClientDialog from "@/components/coach/CreateClientDialog";
 import CoachUpgradeGate from "@/components/coach/CoachUpgradeGate";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useCoachAthletes, type CoachAthlete } from "@/hooks/useCoachAthletes";
@@ -211,7 +211,7 @@ const CoachDashboardPage = () => {
             <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
               Meus atletas — {athletes.length} ativos
             </p>
-            <InviteClientDialog />
+            <CreateClientDialog />
           </div>
 
           <div className="flex items-center gap-2 flex-wrap">

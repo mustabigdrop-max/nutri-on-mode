@@ -47,16 +47,25 @@ const greeting = () => {
   return "Boa noite";
 };
 
-const AthleteDashboard = () => {
+export interface AthleteDashboardProps {
+  /** Quando presente, mostra os dados deste atleta (modo "ver como cliente") */
+  overrideUserId?: string;
+  /** Nome exibido no cabeçalho quando em modo visualização */
+  overrideName?: string | null;
+  viewMode?: "normal" | "coach-preview";
+}
+
+const AthleteDashboard = ({ overrideUserId, overrideName, viewMode = "normal" }: AthleteDashboardProps = {}) => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const preview = viewMode === "coach-preview";
   const { coachName, fullName } = useAthleteView();
-  const { loading, mealPlan, training, coachMessage } = useAthletePlans();
-  const { todayLog, addWater } = useWaterLogs();
-  const { logs: weightLogs } = useWeightLogs();
+  const { loading, mealPlan, training, coachMessage } = useAthletePlans(overrideUserId);
+  const { todayLog, addWater } = useWaterLogs(overrideUserId);
+  const { logs: weightLogs } = useWeightLogs(undefined, -0.5, overrideUserId);
   const [suppChecked, setSuppChecked] = useState<Record<number, boolean>>({});
 
-  const firstName = (fullName || user?.user_metadata?.full_name || "Atleta").split(" ")[0];
+  const firstName = (overrideName || fullName || user?.user_metadata?.full_name || "Atleta").split(" ")[0];
 
   const nextMeal = useMemo(() => {
     if (!mealPlan?.refeicoes?.length) return null;
@@ -102,8 +111,8 @@ const AthleteDashboard = () => {
   const supplements = mealPlan?.suplementacao || [];
 
   useEffect(() => {
-    document.title = "Meu Painel · NUTRION";
-  }, []);
+    document.title = preview ? "Ver como cliente · NUTRION" : "Meu Painel · NUTRION";
+  }, [preview]);
 
   if (loading) {
     return (
@@ -143,14 +152,14 @@ const AthleteDashboard = () => {
 
         <h1 className="text-2xl font-black tracking-tight">{greeting()}, {firstName} 👋</h1>
         <p className="text-sm mt-1" style={{ color: DIM }}>
-          {coachName ? `${coachName} preparou tudo pra hoje.` : "Seu coach preparou tudo pra hoje."}
+          {preview ? "Visualização do painel do cliente." : coachName ? `${coachName} preparou tudo pra hoje.` : "Seu coach preparou tudo pra hoje."}
         </p>
       </header>
 
       <main className="px-4 max-w-3xl mx-auto space-y-3">
         {/* Plano + Treino */}
         <div className="grid gap-3 sm:grid-cols-2">
-          <Card accent={CYAN} onClick={() => navigate("/my-plan")}>
+          <Card accent={CYAN} onClick={() => !preview && navigate("/my-plan")}>
             <div className="flex items-center gap-2 mb-3">
               <UtensilsCrossed className="w-4 h-4" style={{ color: CYAN }} />
               <span className="text-xs font-bold tracking-wider uppercase" style={{ color: CYAN }}>
@@ -190,7 +199,7 @@ const AthleteDashboard = () => {
             </div>
           </Card>
 
-          <Card accent={GREEN} onClick={() => navigate("/my-training")}>
+          <Card accent={GREEN} onClick={() => !preview && navigate("/my-training")}>
             <div className="flex items-center gap-2 mb-3">
               <Dumbbell className="w-4 h-4" style={{ color: GREEN }} />
               <span className="text-xs font-bold tracking-wider uppercase" style={{ color: GREEN }}>
@@ -255,8 +264,9 @@ const AthleteDashboard = () => {
               {[250, 500].map((ml) => (
                 <button
                   key={ml}
-                  onClick={() => addWater(ml)}
-                  className="text-xs font-semibold px-3 py-1.5 rounded-lg"
+                  disabled={preview}
+                  onClick={() => !preview && addWater(ml)}
+                  className="text-xs font-semibold px-3 py-1.5 rounded-lg disabled:opacity-40"
                   style={{ background: `${CYAN}14`, color: CYAN, border: `1px solid ${CYAN}33` }}
                 >
                   + {ml}ml
@@ -335,15 +345,17 @@ const AthleteDashboard = () => {
           </p>
           <div className="flex gap-2 mt-3">
             <button
-              onClick={() => navigate("/checkin")}
-              className="flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-lg"
+              onClick={() => !preview && navigate("/checkin")}
+              disabled={preview}
+              className="flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-lg disabled:opacity-40"
               style={{ background: `${GOLD}14`, color: GOLD, border: `1px solid ${GOLD}33` }}
             >
               <Camera className="w-3 h-3" /> Registrar check-in
             </button>
             <button
-              onClick={() => navigate("/checkin")}
-              className="flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-lg"
+              onClick={() => !preview && navigate("/checkin")}
+              disabled={preview}
+              className="flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-lg disabled:opacity-40"
               style={{ background: "rgba(255,255,255,0.05)", color: DIM }}
             >
               <Scale className="w-3 h-3" /> Registrar peso
@@ -369,8 +381,9 @@ const AthleteDashboard = () => {
         )}
       </main>
 
-      <PraxisFAB />
-      <AthleteBottomNav />
+      <PraxisFAB disabled={preview} />
+      {!preview && <AthleteBottomNav />}
+
     </div>
   );
 };
