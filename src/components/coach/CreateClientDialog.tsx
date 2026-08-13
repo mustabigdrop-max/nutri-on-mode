@@ -15,8 +15,17 @@ import {
   Copy, Crown, Dumbbell, Eye, Home, Link2, Loader2, RefreshCw, UserPlus, UtensilsCrossed, CheckCircle2, MessageCircle,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { createClient } from "@supabase/supabase-js";
+
+// Client isolado: cria a conta do atleta sem persistir/trocar a sessão do coach
+const signupClient = createClient(
+  import.meta.env.VITE_SUPABASE_URL,
+  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+  { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } },
+);
 
 type Mode = "direct" | "invite";
+
 
 const OBJETIVOS = [
   "Hipertrofia",
