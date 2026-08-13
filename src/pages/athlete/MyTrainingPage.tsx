@@ -5,6 +5,7 @@ import { useAthletePlans } from "@/hooks/useAthletePlans";
 import AthleteBottomNav from "@/components/athlete/AthleteBottomNav";
 import { MarkdownProtocolView } from "@/components/training/MarkdownProtocolView";
 import { parseProtocolText } from "@/lib/parseProtocolText";
+import { useAthleteTarget } from "@/hooks/useAthleteTarget";
 
 const BG = "#020205";
 const GREEN = "#00FF88";
@@ -13,7 +14,8 @@ const DIM = "#A0A0A0";
 
 const MyTrainingPage = () => {
   const navigate = useNavigate();
-  const { loading, training } = useAthletePlans();
+  const targetId = useAthleteTarget();
+  const { loading, training } = useAthletePlans(targetId || undefined);
 
   useEffect(() => {
     document.title = "Meu Treino · NUTRION";

@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { useAthletePlans, mealKcal, type AthleteMeal } from "@/hooks/useAthletePlans";
 import AthleteBottomNav from "@/components/athlete/AthleteBottomNav";
+import { useAthleteTarget } from "@/hooks/useAthleteTarget";
 
 const BG = "#020205";
 const CYAN = "#00D4FF";
@@ -99,7 +100,8 @@ const MealCard = ({ meal, index }: { meal: AthleteMeal; index: number }) => {
 
 const MyPlanPage = () => {
   const navigate = useNavigate();
-  const { loading, mealPlan } = useAthletePlans();
+  const targetId = useAthleteTarget();
+  const { loading, mealPlan } = useAthletePlans(targetId || undefined);
 
   useEffect(() => {
     document.title = "Meu Plano Alimentar · NUTRION";

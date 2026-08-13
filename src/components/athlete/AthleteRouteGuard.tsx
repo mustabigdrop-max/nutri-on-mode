@@ -1,6 +1,7 @@
 import { Navigate } from "react-router-dom";
 import { Suspense, lazy } from "react";
 import { useAthleteView } from "@/hooks/useAthleteView";
+import { useAthleteTarget } from "@/hooks/useAthleteTarget";
 
 const AthleteDashboard = lazy(() => import("@/pages/athlete/AthleteDashboard"));
 
@@ -42,7 +43,9 @@ export const CoachToolRoute = ({ children }: { children: React.ReactNode }) => {
  */
 export const AthleteOnlyRoute = ({ children }: { children: React.ReactNode }) => {
   const { loading, isRestrictedAthlete } = useAthleteView();
+  const targetId = useAthleteTarget();
   if (loading) return <Loader />;
-  if (!isRestrictedAthlete) return <Navigate to="/dashboard" replace />;
+  // coach visualizando um atleta específico também pode abrir (RLS protege os dados)
+  if (!isRestrictedAthlete && !targetId) return <Navigate to="/dashboard" replace />;
   return <>{children}</>;
 };

@@ -4,6 +4,7 @@ import { Eye, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import AthleteDashboard from "@/pages/athlete/AthleteDashboard";
 import { ViewAsProvider } from "@/contexts/ViewAsContext";
+import { setViewAsAthlete } from "@/hooks/useAthleteTarget";
 
 const ViewAsClient = () => {
   const { athleteId } = useParams<{ athleteId: string }>();
@@ -20,6 +21,11 @@ const ViewAsClient = () => {
         .maybeSingle();
       setName(data?.full_name ?? null);
     })();
+  }, [athleteId]);
+
+  useEffect(() => {
+    setViewAsAthlete(athleteId || null);
+    return () => setViewAsAthlete(null);
   }, [athleteId]);
 
   useEffect(() => {
