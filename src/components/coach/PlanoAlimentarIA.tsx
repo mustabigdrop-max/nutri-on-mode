@@ -2508,6 +2508,17 @@ export default function PlanoAlimentarIA() {
           </div>
         </div>
 
+        <div style={{ margin: "12px 24px 0" }}>
+          <SendToAthleteBar
+            type="meal_plan"
+            sourceId={savedId}
+            label={`Plano alimentar — ${r.nome || ""}`}
+            buildPayload={() => plano}
+          />
+        </div>
+
+
+
         {/* NutriPlan Elite — TDEE Bruto → Ajustado + breakdown farmacológico */}
         {(() => {
           const ne: any = (plano as any)?.nutriplan_elite;
