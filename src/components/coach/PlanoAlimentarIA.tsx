@@ -2379,7 +2379,7 @@ export default function PlanoAlimentarIA() {
   };
 
   // NutriPlan Elite PDF — usa lib/mealPlanPdf.ts com TDEE breakdown + enrichment por refeição
-  const exportPDFElite = () => {
+  const exportPDFElite = async () => {
     if (!plano) return;
     try {
       const inferMealType = (titulo: string): string => {
