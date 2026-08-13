@@ -212,7 +212,7 @@ const VideoFormPage = () => {
           <Video className="w-6 h-6 text-primary" />
           <div>
             <h1 className="text-xl font-bold">VideoForm AI</h1>
-            <p className="text-xs text-muted-foreground">Análise biomecânica de execução por IA · Pose estimation + Dr. BioMech</p>
+            <p className="text-xs text-muted-foreground">Análise biomecânica de execução pelo sistema · Pose estimation + Dr. BioMech</p>
           </div>
         </div>
       </header>

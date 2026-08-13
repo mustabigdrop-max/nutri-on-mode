@@ -153,7 +153,7 @@ const Section = ({ title, children, icon, accent }: { title: string; children: R
 };
 
 // ─── Validação de timing peri-workout vs schedule ─────────────────────────────
-// Compara o horário de cada refeição peri-workout (pré/intra/pós) gerada pela IA
+// Compara o horário de cada refeição peri-workout (pré/intra/pós) gerada pelo sistema
 // com os horários reais do schedule semanal informado pelo coach.
 type PeriKind = "pre_solido" | "pre_liquido" | "intra" | "pos_imediato" | "pos_solido";
 interface TimingMismatch {
@@ -554,7 +554,7 @@ const inferGrupo = (s: SubstituicaoItem): GrupoSub => {
   return "outro";
 };
 
-// ─── Enricher: mescla substitutos da IA com SUBSTITUTION_BANK_V2 (mais variações) ──
+// ─── Enricher: mescla substitutos do sistema com SUBSTITUTION_BANK_V2 (mais variações) ──
 const norm = (s: string) =>
   (s || "")
     .toLowerCase()
@@ -606,7 +606,7 @@ const enrichSubstitutes = (
 
   const original: SubstituicaoItem[] = (alimento.substituicoes || [])
     .map((s) => ({ ...s, grupo: inferGrupo(s) }))
-    // descarta substitutos de grupo diferente vindos da IA (ex.: gordura no lugar de carbo)
+    // descarta substitutos de grupo diferente vindos do sistema (ex.: gordura no lugar de carbo)
     .filter((s) => grupoRef === "outro" || s.grupo === grupoRef || s.grupo === "outro");
 
   const block = findBlockByHorario(mealHorario);
@@ -734,7 +734,7 @@ const MealCard = ({ meal, index, onSwap, onValidate, workoutTag }: MealCardProps
               <span style={{ fontSize: 12, color, fontWeight: 600 }}>{kcalCalc} kcal</span>
               {divergente && (
                 <span
-                  title={`Valor declarado pela IA: ${kcalDecl} kcal — recalculado pela fórmula Atwater (P×4 + C×4 + G×9): ${kcalCalc} kcal`}
+                  title={`Valor declarado pelo sistema: ${kcalDecl} kcal — recalculado pela fórmula Atwater (P×4 + C×4 + G×9): ${kcalCalc} kcal`}
                   style={{ fontSize: 9, fontWeight: 700, color: "#f59e0b", background: "rgba(245,158,11,0.12)", border: "1px solid rgba(245,158,11,0.4)", padding: "1px 6px", borderRadius: 999 }}
                 >
                   ⚠ Δ{Math.abs((kcalDecl as number) - kcalCalc)}
@@ -795,7 +795,7 @@ const MealCard = ({ meal, index, onSwap, onValidate, workoutTag }: MealCardProps
                   )}
                 </div>
                 {(() => {
-                  // Sanitiza: se a IA mandou texto placeholder ("ajustar pela meta", "a definir", etc.)
+                  // Sanitiza: se o sistema mandou texto placeholder ("ajustar pela meta", "a definir", etc.)
                   // ou veio vazio, fazemos fallback usando quantidade_g ou um valor padrão visível.
                   const raw = (a.quantidade || "").toString().trim();
                   // "1 porção" sozinho é placeholder; mas "1 porção média (~100g)" não é.
@@ -1288,9 +1288,22 @@ export default function PlanoAlimentarIA() {
     neat: "medio" as "baixo" | "medio" | "alto",
     qualidadeSono: "boa" as "boa" | "regular" | "ruim",
     semanasEmDeficit: "" as string,
+    // ─── ROTINA E PREFERÊNCIAS DO PACIENTE (detalhes finos) ───
+    horaAcordar: "06:30",
+    horaDormir: "22:30",
+    tipoTrabalho: "sedentario" as "sedentario" | "ativo" | "pesado" | "noturno" | "remoto",
+    habilidadeCulinaria: "basico" as "nao_cozinha" | "basico" | "intermediario" | "avancado",
+    mealPrep: "nao" as "nao" | "2_3_dias" | "semana",
+    apetitePerfil: "normal" as "normal" | "sem_fome_manha" | "fome_manha" | "fome_constante" | "peri_treino",
+    alimentosOdeia: "",
+    alimentosGatilho: "",
+    prazoObjetivo: "sem_prazo" as "sem_prazo" | "3_meses" | "6_meses" | "12_meses" | "data",
+    dataAlvo: "",
+    aguaAtual: "1_2" as "menos_1" | "1_2" | "2_3" | "3_mais" | "nao_sei",
     // NutriPlan Elite — multi-select de compostos farmacológicos ativos do paciente
     compostosAtivos: [] as string[],
   });
+
 
   // ─── Campos ADITIVOS (novos blocos /coach/plano-alimentar) ─────────────────
   const [categoriaEsporte, setCategoriaEsporte] = useState<string>("");
@@ -1574,7 +1587,22 @@ export default function PlanoAlimentarIA() {
         contextoClinico: contextoClinico?.trim() || null,
         contexto_clinico_prompt: (contextoClinico?.trim()
           ? `\n\nCONTEXTO CLÍNICO DO COACH:\n${contextoClinico.trim()}`
-          : "") + buildContextoAditivo(),
+          : "") + buildContextoAditivo() + buildRotinaPrompt(form),
+        rotina_preferencias: {
+          hora_acordar: form.horaAcordar,
+          hora_dormir: form.horaDormir,
+          janela_alimentar_h: computeJanelaAlimentar(form.horaAcordar, form.horaDormir),
+          tipo_trabalho: form.tipoTrabalho,
+          habilidade_culinaria: form.habilidadeCulinaria,
+          meal_prep: form.mealPrep,
+          apetite_perfil: form.apetitePerfil,
+          alimentos_odeia: form.alimentosOdeia || null,
+          alimentos_gatilho: form.alimentosGatilho || null,
+          prazo_objetivo: form.prazoObjetivo,
+          data_alvo: form.prazoObjetivo === "data" ? (form.dataAlvo || null) : null,
+          agua_atual: form.aguaAtual,
+        },
+
         coach_signature: identidade.exibirNoPdf ? identidade : null,
         coach_identity: identidade,
         categoria_esporte: categoriaEsporte || null,
@@ -1639,7 +1667,7 @@ export default function PlanoAlimentarIA() {
       },
     });
     if (fnError) throw fnError;
-    if (!data?.plan) throw new Error("Resposta inválida da IA");
+    if (!data?.plan) throw new Error("Resposta inválida do sistema");
     // Salva contexto clínico no histórico local (apenas ao gerar com sucesso)
     saveContextoToHistory((form as any)?.nome || "");
     // ── PRECISÃO CALÓRICA: recalcula com banco TACO e auto-corrige para meta ±2% ──
@@ -1710,8 +1738,8 @@ export default function PlanoAlimentarIA() {
     if (status === 503 || /503|unavailable|indispon/i.test(serverMsg) || /503/.test(rawMsg)) {
       return {
         kind: "unavailable" as const,
-        title: "Modelo de IA temporariamente indisponível (503)",
-        description: serverMsg || "O provedor de IA não respondeu agora. Já tentamos 3 vezes em 3 modelos diferentes (flash → flash-lite → pro) sem sucesso. Aguarde alguns segundos.",
+        title: "Modelo de temporariamente indisponível (503)",
+        description: serverMsg || "O provedor de não respondeu agora. Já tentamos 3 vezes em 3 modelos diferentes (flash → flash-lite → pro) sem sucesso. Aguarde alguns segundos.",
         technical: `status=${status} ${e?.message || ""}`.trim(),
         canRetry: true,
       };
@@ -1720,7 +1748,7 @@ export default function PlanoAlimentarIA() {
       return {
         kind: "timeout" as const,
         title: "Tempo esgotado ao gerar (timeout)",
-        description: "A IA demorou demais para responder. Tente reduzir restrições/observações ou gerar novamente.",
+        description: "O sistema demorou demais para responder. Tente reduzir restrições/observações ou gerar novamente.",
         technical: `status=${status || "504"} ${e?.message || ""}`.trim(),
         canRetry: true,
       };
@@ -1737,8 +1765,8 @@ export default function PlanoAlimentarIA() {
     if (status === 402 || /cr[ée]ditos|insufficient/i.test(rawMsg + serverMsg)) {
       return {
         kind: "credits" as const,
-        title: "Créditos de IA insuficientes (402)",
-        description: "O workspace está sem créditos para o gateway de IA. Adicione créditos em Settings → Workspace → Usage.",
+        title: "Créditos de insuficientes (402)",
+        description: "O workspace está sem créditos para o gateway de. Adicione créditos em Settings → Workspace → Usage.",
         technical: `status=${status} ${e?.message || ""}`.trim(),
         canRetry: false,
       };
@@ -1746,8 +1774,8 @@ export default function PlanoAlimentarIA() {
     if (/json|parse|invalid|inv[áa]lid/i.test(rawMsg + serverMsg)) {
       return {
         kind: "invalid_json" as const,
-        title: "Resposta da IA em formato inválido",
-        description: "A IA retornou um conteúdo que não pôde ser interpretado como plano. Geralmente resolve ao tentar novamente.",
+        title: "Resposta do sistema em formato inválido",
+        description: "O sistema retornou um conteúdo que não pôde ser interpretado como plano. Geralmente resolve ao tentar novamente.",
         technical: e?.message || serverMsg || "JSON inválido",
         canRetry: true,
       };
@@ -2584,7 +2612,7 @@ export default function PlanoAlimentarIA() {
                 style={{ width: "100%", background: "transparent", border: `1px dashed ${T.green}`, borderRadius: 4, padding: "2px 6px", color: T.text, fontSize: 12, fontFamily: "inherit", outline: "none" }} />
             );
           };
-          const Empty = () => <div style={{ fontSize: 11, color: T.muted2, fontStyle: "italic" }}>Sem dados retornados pela IA.</div>;
+          const Empty = () => <div style={{ fontSize: 11, color: T.muted2, fontStyle: "italic" }}>Sem dados retornados pelo sistema.</div>;
           const pesoKg = Number(form.peso) || 0;
           const idadePaciente = Number(form.idade) || 0;
           const treinoDias = Object.entries(trainingSchedule.base || {})
@@ -3218,7 +3246,7 @@ export default function PlanoAlimentarIA() {
             <div style={{ background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.45)", borderRadius: 10, padding: "10px 14px", marginBottom: 12, display: "flex", alignItems: "center", gap: 10, fontSize: 12, color: "#f59e0b" }}>
               <span style={{ fontSize: 14 }}>⚠</span>
               <div style={{ lineHeight: 1.5 }}>
-                <strong>Inconsistência calórica:</strong> a IA declarou <strong>{kcalDeclTotal} kcal</strong>, mas os macros (P {r.proteina_total}g · C {r.carboidrato_total}g · G {r.gordura_total}g) somam <strong>{kcalAtwaterTotal} kcal</strong> pela fórmula Atwater (4/4/9). Diferença de <strong>{Math.abs(kcalDeclTotal - kcalAtwaterTotal)} kcal</strong>. Exibindo o valor calculado.
+                <strong>Inconsistência calórica:</strong> o sistema declarou <strong>{kcalDeclTotal} kcal</strong>, mas os macros (P {r.proteina_total}g · C {r.carboidrato_total}g · G {r.gordura_total}g) somam <strong>{kcalAtwaterTotal} kcal</strong> pela fórmula Atwater (4/4/9). Diferença de <strong>{Math.abs(kcalDeclTotal - kcalAtwaterTotal)} kcal</strong>. Exibindo o valor calculado.
               </div>
             </div>
           )}
@@ -3538,7 +3566,7 @@ export default function PlanoAlimentarIA() {
                   ⏱ Atenção: {mismatches.length} refeição{mismatches.length > 1 ? "ões" : ""} peri-workout fora do horário do schedule
                 </div>
                 <div style={{ color: "#fbbf24", fontSize: 11, marginBottom: 8 }}>
-                  A IA gerou refeições com horário desalinhado do treino que você cadastrou. Use os botões de correção abaixo.
+                  O sistema gerou refeições com horário desalinhado do treino que você cadastrou. Use os botões de correção abaixo.
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                   {mismatches.map((m, i) => (
@@ -4075,7 +4103,7 @@ export default function PlanoAlimentarIA() {
             );
           })()}
 
-          {/* Mapa de Medidas Caseiras (Nutrition Coach IA) */}
+          {/* Mapa de Medidas Caseiras (Nutrition Coach System) */}
           {plano.mapa_medidas_caseiras?.ativo && (
             <div style={{
               background: "#1A1A1A", borderLeft: "3px solid #B8922A", borderRadius: 8,
@@ -4388,7 +4416,7 @@ export default function PlanoAlimentarIA() {
                   </div>
                   {(!custoA || !custoB) && (
                     <div style={{ marginTop: 8, fontSize: 10, color: T.muted, fontStyle: "italic" as const }}>
-                      Estimativas de custo dependem do bloco "Custo Estimado" gerado pela IA — pode ser parcial se um dos modos não retornou valores.
+                      Estimativas de custo dependem do bloco "Custo Estimado" gerado pelo sistema — pode ser parcial se um dos modos não retornou valores.
                     </div>
                   )}
                 </div>
@@ -5105,7 +5133,7 @@ export default function PlanoAlimentarIA() {
               }}>PRO</span>
             </div>
             <div style={{ marginTop: 6, fontFamily: T.fontMono, fontSize: 8, color: "#2A2A2A", letterSpacing: "0.18em", textTransform: "uppercase" }}>
-              Geração Avançada por IA <span style={{ margin: "0 6px" }}>·</span>
+              Geração Avançada <span style={{ margin: "0 6px" }}>·</span>
               Nutrição Esportiva <span style={{ margin: "0 6px" }}>·</span>
               Protocolo PCA <span style={{ margin: "0 6px" }}>·</span>
               Crononutrição
@@ -5747,6 +5775,118 @@ export default function PlanoAlimentarIA() {
           </div>
         </Section>
 
+        {/* ─── ROTINA E PREFERÊNCIAS DO PACIENTE ─── */}
+        <Section title="Rotina e preferências do paciente" icon={<Clock size={12} strokeWidth={2} color={T.emerald} />}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14 }}>
+            <div>
+              <Label>Horário que acorda</Label>
+              <InputField type="time" value={form.horaAcordar} onChange={e => set("horaAcordar", e.target.value)} />
+            </div>
+            <div>
+              <Label>Horário que dorme</Label>
+              <InputField type="time" value={form.horaDormir} onChange={e => set("horaDormir", e.target.value)} />
+            </div>
+            <div>
+              <Label>Janela alimentar</Label>
+              <div style={{
+                fontFamily: T.fontMono, fontSize: 13, color: T.emerald,
+                border: "1px solid #00C89622", background: "#00C89608",
+                padding: "10px 12px", letterSpacing: "0.08em",
+              }}>
+                {computeJanelaAlimentar(form.horaAcordar, form.horaDormir)}h · automático
+              </div>
+            </div>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginTop: 14 }}>
+            <div>
+              <Label>Tipo de trabalho / rotina</Label>
+              <SelectField value={form.tipoTrabalho} onChange={e => set("tipoTrabalho", e.target.value)}>
+                <option value="sedentario">Sedentário (escritório)</option>
+                <option value="ativo">Ativo (em pé, andando)</option>
+                <option value="pesado">Pesado (construção, carga)</option>
+                <option value="noturno">Noturno (turno)</option>
+                <option value="remoto">Remoto (home office)</option>
+              </SelectField>
+            </div>
+            <div>
+              <Label>Habilidade na cozinha</Label>
+              <SelectField value={form.habilidadeCulinaria} onChange={e => set("habilidadeCulinaria", e.target.value)}>
+                <option value="nao_cozinha">Não cozinha — precisa de refeições simples</option>
+                <option value="basico">Básico — arroz, ovo, frango grelhado</option>
+                <option value="intermediario">Intermediário — segue receitas, meal prep</option>
+                <option value="avancado">Avançado — aceita receitas elaboradas</option>
+              </SelectField>
+            </div>
+            <div>
+              <Label>Prepara refeições antecipadas (meal prep)?</Label>
+              <SelectField value={form.mealPrep} onChange={e => set("mealPrep", e.target.value)}>
+                <option value="nao">Não — come no momento</option>
+                <option value="2_3_dias">Sim — prepara 2–3 dias</option>
+                <option value="semana">Sim — prepara a semana toda</option>
+              </SelectField>
+            </div>
+            <div>
+              <Label>Apetite ao longo do dia</Label>
+              <SelectField value={form.apetitePerfil} onChange={e => set("apetitePerfil", e.target.value)}>
+                <option value="normal">Normal — come bem em todos os horários</option>
+                <option value="sem_fome_manha">Sem fome de manhã — apetite aumenta à noite</option>
+                <option value="fome_manha">Muita fome de manhã — pouca à noite</option>
+                <option value="fome_constante">Fome constante o dia todo</option>
+                <option value="peri_treino">Fome apenas peri-treino</option>
+              </SelectField>
+            </div>
+            <div>
+              <Label>Prazo desejado para o objetivo</Label>
+              <SelectField value={form.prazoObjetivo} onChange={e => set("prazoObjetivo", e.target.value)}>
+                <option value="sem_prazo">Sem prazo — progresso sustentável</option>
+                <option value="3_meses">3 meses</option>
+                <option value="6_meses">6 meses</option>
+                <option value="12_meses">12 meses</option>
+                <option value="data">Data específica</option>
+              </SelectField>
+            </div>
+            {form.prazoObjetivo === "data" && (
+              <div>
+                <Label>Data alvo</Label>
+                <InputField type="date" value={form.dataAlvo} onChange={e => set("dataAlvo", e.target.value)} />
+              </div>
+            )}
+            <div>
+              <Label>Ingestão atual de água (estimativa)</Label>
+              <SelectField value={form.aguaAtual} onChange={e => set("aguaAtual", e.target.value)}>
+                <option value="menos_1">Menos de 1L</option>
+                <option value="1_2">1–2L</option>
+                <option value="2_3">2–3L</option>
+                <option value="3_mais">3L ou mais</option>
+                <option value="nao_sei">Não sei</option>
+              </SelectField>
+            </div>
+          </div>
+
+          <div style={{ marginTop: 14 }}>
+            <Label>Alimentos que NÃO quer no plano</Label>
+            <InputField
+              placeholder="Ex: fígado, peixe, brócolis, clara de ovo pura..."
+              value={form.alimentosOdeia}
+              onChange={e => set("alimentosOdeia", e.target.value)}
+            />
+          </div>
+          <div style={{ marginTop: 14 }}>
+            <Label>Alimentos gatilho (compulsão)</Label>
+            <InputField
+              placeholder="Ex: sorvete, pizza, chocolate, biscoito, pão..."
+              value={form.alimentosGatilho}
+              onChange={e => set("alimentosGatilho", e.target.value)}
+            />
+            <div style={{ fontFamily: T.fontMono, fontSize: 10, color: "#888888", letterSpacing: "0.08em", marginTop: 8, lineHeight: 1.6 }}>
+              ⚠️ Estes alimentos não serão incluídos no protocolo e serão listados como "evitar" nas observações.
+            </div>
+          </div>
+        </Section>
+
+
+
         {/* ─── NUTRIPLAN INTELLIGENCE — somatotipo, digestivo, autonômico ─── */}
         <BlocoSomatotipo value={intel} onChange={updIntel} />
         <BlocoHistoricoMetabolico value={intel} onChange={updIntel} pesoKg={Number(form.peso) || undefined} />
@@ -5773,7 +5913,7 @@ export default function PlanoAlimentarIA() {
         {/* ─── CONTEXTO CLÍNICO · PROTOCOLO DO COACH (NOVO) ─── */}
         <Section title="Contexto clínico · Protocolo do coach" icon={<Brain size={12} strokeWidth={2} color={T.emerald} />} accent="emerald">
           <div style={{ fontFamily: T.fontMono, fontSize: 12, color: "#888888", letterSpacing: "0.12em", textTransform: "uppercase", marginTop: -10, marginBottom: 14, lineHeight: 1.6 }}>
-            Descreva estratégias clínicas, protocolos de nutrição esportiva e observações do paciente. A IA incorporará tudo no plano gerado.
+            Descreva estratégias clínicas, protocolos de nutrição esportiva e observações do paciente. O sistema incorporará tudo no protocolo gerado.
           </div>
 
           <div style={{
@@ -5783,7 +5923,7 @@ export default function PlanoAlimentarIA() {
             background: "#00C89606",
             padding: 16,
           }}>
-            {/* Tag IA CONTEXTO ATIVO */}
+            {/* Tag CONTEXTO ATIVO */}
             <div style={{
               position: "absolute", top: 8, right: 10,
               display: "inline-flex", alignItems: "center", gap: 6,
@@ -5792,7 +5932,7 @@ export default function PlanoAlimentarIA() {
               fontFamily: T.fontMono, fontSize: 8, letterSpacing: "0.18em", textTransform: "uppercase",
             }}>
               <span style={{ width: 5, height: 5, borderRadius: "50%", background: T.emerald, boxShadow: "0 0 6px #00C896", animation: "pulse 1.4s ease-in-out infinite" }} />
-              IA Contexto Ativo
+              Contexto Clínico Ativo
             </div>
 
             <div style={{ position: "relative", marginTop: 16 }}>
@@ -6120,7 +6260,7 @@ export default function PlanoAlimentarIA() {
                   <option value="kefir_kimchi_chucrute">Kefir, kimchi ou chucrute regularmente</option>
                 </SelectField>
                 <div style={{ marginTop: 6, fontSize: 11, color: T.green, lineHeight: 1.5 }}>
-                  A IA ajustará a introdução de fermentados de forma progressiva conforme o histórico intestinal.
+                  O sistema ajustará a introdução de fermentados de forma progressiva conforme o histórico intestinal.
                 </div>
               </div>
 
@@ -6134,7 +6274,7 @@ export default function PlanoAlimentarIA() {
                   <option value="ruim">Ruim — qualquer excesso calórico vai para gordura</option>
                 </SelectField>
                 <div style={{ marginTop: 6, fontSize: 11, color: T.green, lineHeight: 1.5 }}>
-                  A IA ativará ciclagem de carboidratos e protocolos de sensibilização conforme este perfil.
+                  O sistema ativará ciclagem de carboidratos e protocolos de sensibilização conforme este perfil.
                 </div>
               </div>
 
@@ -6322,7 +6462,7 @@ export default function PlanoAlimentarIA() {
             }}>
               <span style={{ fontSize: 14, lineHeight: 1 }}>🧠</span>
               <span style={{ fontSize: 11, color: T.green, lineHeight: 1.5 }}>
-                A IA interpretará cada composto e ajustará TDEE, macros e timing automaticamente com base em evidências farmacológicas.
+                O sistema interpretará cada composto e ajustará TDEE, macros e timing automaticamente com base em evidências farmacológicas.
               </span>
             </div>
           </div>
@@ -6421,7 +6561,7 @@ export default function PlanoAlimentarIA() {
         {/* Perfil de orçamento alimentar */}
         <Section title="Condição econômica do plano">
           <div style={{ fontSize: 11, color: T.muted, marginBottom: 12 }}>
-            Define a faixa de custo dos alimentos priorizados pela IA. A equivalência nutricional é mantida em todas as opções.
+            Define a faixa de custo dos alimentos priorizados pelo sistema. A equivalência nutricional é mantida em todas as opções.
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 10, marginBottom: 18 }}>
             {perfilEconomicoOpts.map(opt => {
@@ -6453,7 +6593,7 @@ export default function PlanoAlimentarIA() {
 
           <Label>Alimentos disponíveis em casa ou de preferência (opcional)</Label>
           <div style={{ fontSize: 11, color: T.muted, marginBottom: 10 }}>
-            A IA prioriza esses itens, mas não fica restrita a eles.
+            O sistema prioriza esses itens, mas não fica restrito a eles.
           </div>
           {alimentosDisponiveisGrupos.map(g => (
             <div key={g.grupo} style={{ marginBottom: 12 }}>
@@ -6485,7 +6625,7 @@ export default function PlanoAlimentarIA() {
           <div style={{ marginTop: 18, padding: 14, background: "#0f1410", border: `1px solid ${T.amber}44`, borderRadius: 10 }}>
             <Label>🍎 Frutas que tenho em casa</Label>
             <div style={{ fontSize: 11, color: T.muted, marginBottom: 10 }}>
-              A IA usa estas frutas como base do <strong>Protocolo de Frutas Obrigatório</strong> e sugere upgrades se faltar uma fruta funcional importante (ex.: enzimática, anti-inflamatória, cronobiológica).
+              Estas frutas serão usadas como base do <strong>Protocolo de Frutas Obrigatório</strong>. O sistema sugere upgrades se faltar uma fruta funcional importante (ex.: enzimática, anti-inflamatória, cronobiológica).
             </div>
             <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 6, marginBottom: 10 }}>
               {[
@@ -6922,7 +7062,7 @@ export default function PlanoAlimentarIA() {
           </div>
         </div>
 
-        {/* Toggle: Medidas Caseiras (Nutrition Coach IA) */}
+        {/* Toggle: Medidas Caseiras (Nutrition Coach System) */}
         <div style={{
           background: T.card, border: `1px solid ${form.medidasCaseiras ? "#B8922A" : T.border}`,
           borderRadius: 12, padding: 18, marginBottom: 18,
@@ -6930,10 +7070,10 @@ export default function PlanoAlimentarIA() {
         }}>
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 16, fontWeight: 700, color: T.text, display: "flex", alignItems: "center", gap: 8 }}>
-              🥄 Medidas Caseiras (Nutrition Coach IA)
+              🥄 Medidas Caseiras (Nutrition Coach System)
             </div>
             <div style={{ fontSize: 13, color: T.muted, marginTop: 6, lineHeight: 1.55 }}>
-              Quando ATIVO: a IA descreve cada alimento em medidas caseiras (colher de sopa, xícara, fatia, concha, unidade) e adiciona ao final do plano um <b>Mapa de Referência</b> com a gramatura exata de cada medida usada. Ideal para o paciente seguir sem balança. O nutricionista continua recebendo a gramatura técnica internamente.
+              Quando ATIVO: o sistema descreve cada alimento em medidas caseiras (colher de sopa, xícara, fatia, concha, unidade) e adiciona ao final do plano um <b>Mapa de Referência</b> com a gramatura exata de cada medida usada. Ideal para o paciente seguir sem balança. O nutricionista continua recebendo a gramatura técnica internamente.
             </div>
           </div>
           <div
@@ -6982,7 +7122,7 @@ export default function PlanoAlimentarIA() {
                 ⚙️ Preferências de Unidades Caseiras
               </div>
               <div style={{ fontSize: 11, color: T.muted, lineHeight: 1.5, marginBottom: 14 }}>
-                Escolha quais utensílios e medidas a IA deve usar como padrão. O Mapa de Referência será regenerado com base nessas escolhas.
+                Escolha quais utensílios e medidas o sistema deve usar como padrão. O Mapa de Referência será regenerado com base nessas escolhas.
               </div>
 
               <Group title="Colher padrão">
@@ -7021,7 +7161,7 @@ export default function PlanoAlimentarIA() {
               </Group>
 
               <div>
-                <Label>Observações para a IA (opcional)</Label>
+                <Label>Observações para o sistema (opcional)</Label>
                 <TextareaField
                   value={mp.observacoesMedidas}
                   onChange={(e) => setMP("observacoesMedidas", e.target.value)}
@@ -7187,7 +7327,7 @@ export default function PlanoAlimentarIA() {
             <span style={{ fontSize: 12, color: T.muted, fontStyle: "italic" }}>(aplicado ao gerar o plano)</span>
           </div>
           <div style={{ fontSize: 13, color: T.muted, marginBottom: 12, lineHeight: 1.55 }}>
-            Ative um protocolo específico para que a IA aplique macros, timing, suplementação e alertas adequados.
+            Ative um protocolo específico para que o sistema aplique macros, timing, suplementação e alertas adequados.
           </div>
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
             {([
@@ -7338,14 +7478,87 @@ export default function PlanoAlimentarIA() {
           onMouseEnter={e => (e.target as HTMLButtonElement).style.opacity = ".88"}
           onMouseLeave={e => (e.target as HTMLButtonElement).style.opacity = "1"}
         >
-          Gerar Plano Alimentar com IA
+          Gerar Protocolo Nutricional
         </button>
 
         <div style={{ textAlign: "center", marginTop: 12, fontSize: 11, color: T.muted2 }}>
-          Powered by IA · Método MCE · nutriON
+          NutriPlan Intelligence System · MCE
         </div>
       </div>
       </div>
     </div>
   );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ROTINA E PREFERÊNCIAS — helpers (janela alimentar + bloco de contexto)
+// ─────────────────────────────────────────────────────────────────────────────
+export function computeJanelaAlimentar(acordar?: string, dormir?: string): number {
+  const parse = (v?: string) => {
+    const m = /^(\d{1,2}):(\d{2})$/.exec(String(v || ""));
+    if (!m) return null;
+    return Number(m[1]) * 60 + Number(m[2]);
+  };
+  const a = parse(acordar), d = parse(dormir);
+  if (a == null || d == null) return 0;
+  let diff = d - a;
+  if (diff <= 0) diff += 24 * 60;
+  return Math.round((diff / 60) * 10) / 10;
+}
+
+const TRABALHO_LABEL: Record<string, string> = {
+  sedentario: "Sedentário (escritório)",
+  ativo: "Ativo (em pé, andando)",
+  pesado: "Pesado (construção, carga)",
+  noturno: "Turno noturno",
+  remoto: "Remoto (home office)",
+};
+const CULINARIA_LABEL: Record<string, string> = {
+  nao_cozinha: "Não cozinha — refeições simples, prontas ou de fácil montagem (máx. 3 ingredientes)",
+  basico: "Básico — arroz, ovo, frango grelhado (máx. 4 ingredientes)",
+  intermediario: "Intermediário — segue receitas e faz meal prep",
+  avancado: "Avançado — aceita receitas elaboradas",
+};
+const MEALPREP_LABEL: Record<string, string> = {
+  nao: "Não faz meal prep — come no momento (variar mais entre refeições)",
+  "2_3_dias": "Prepara 2–3 dias — pode repetir proteína/CHO entre refeições para praticidade",
+  semana: "Prepara a semana toda — priorizar repetição e alimentos que conservam bem",
+};
+const APETITE_LABEL: Record<string, string> = {
+  normal: "Normal — come bem em todos os horários",
+  sem_fome_manha: "Sem fome de manhã — concentrar calorias na tarde/noite, café leve",
+  fome_manha: "Muita fome de manhã — café reforçado, jantar mais leve",
+  fome_constante: "Fome constante — priorizar volume, fibra e proteína em todas as refeições",
+  peri_treino: "Fome apenas peri-treino — concentrar maior parte das calorias ao redor do treino",
+};
+const AGUA_LABEL: Record<string, string> = {
+  menos_1: "menos de 1L/dia",
+  "1_2": "1–2L/dia",
+  "2_3": "2–3L/dia",
+  "3_mais": "3L ou mais/dia",
+  nao_sei: "não sabe estimar",
+};
+const PRAZO_LABEL: Record<string, string> = {
+  sem_prazo: "sem prazo — progresso sustentável",
+  "3_meses": "3 meses",
+  "6_meses": "6 meses",
+  "12_meses": "12 meses",
+  data: "data específica",
+};
+
+export function buildRotinaPrompt(f: any): string {
+  if (!f) return "";
+  const janela = computeJanelaAlimentar(f.horaAcordar, f.horaDormir);
+  const L: string[] = [];
+  L.push(`Acorda às ${f.horaAcordar} e dorme às ${f.horaDormir} — janela alimentar de ${janela}h. Distribua as refeições espaçadas dentro desta janela (primeira refeição até 1h após acordar, última no mínimo 1h antes de dormir).`);
+  L.push(`Rotina de trabalho: ${TRABALHO_LABEL[f.tipoTrabalho] || f.tipoTrabalho}.${f.tipoTrabalho === "noturno" ? " ATENÇÃO: turno noturno — inverta a crononutrição (carboidrato no início do turno, proteína lenta no fim, refeição principal antes do turno)." : ""}`);
+  L.push(`Habilidade culinária: ${CULINARIA_LABEL[f.habilidadeCulinaria] || f.habilidadeCulinaria}. Respeite este nível de complexidade em TODAS as preparações.`);
+  L.push(`Meal prep: ${MEALPREP_LABEL[f.mealPrep] || f.mealPrep}.`);
+  L.push(`Apetite ao longo do dia: ${APETITE_LABEL[f.apetitePerfil] || f.apetitePerfil}. Ajuste a distribuição calórica por refeição de acordo.`);
+  if (f.alimentosOdeia?.trim()) L.push(`ALIMENTOS PROIBIDOS (o paciente não quer): ${f.alimentosOdeia.trim()}. NUNCA incluir estes alimentos, nem como substituto.`);
+  if (f.alimentosGatilho?.trim()) L.push(`ALIMENTOS GATILHO / COMPULSÃO: ${f.alimentosGatilho.trim()}. NUNCA incluir no plano e listar como "evitar" nas observações finais.`);
+  const prazo = f.prazoObjetivo === "data" && f.dataAlvo ? `data específica (${f.dataAlvo})` : (PRAZO_LABEL[f.prazoObjetivo] || f.prazoObjetivo);
+  L.push(`Prazo desejado para o objetivo: ${prazo}. Se houver data, calcule a taxa semanal necessária e sinalize nas observações se for inviável ou agressiva.`);
+  L.push(`Ingestão atual de água: ${AGUA_LABEL[f.aguaAtual] || f.aguaAtual}. Se a meta de hidratação for muito acima do hábito atual, prescreva progressão semanal (ex.: +500ml/semana) em vez da meta cheia de imediato.`);
+  return `\n\nROTINA E PREFERÊNCIAS DO PACIENTE (OBRIGATÓRIO RESPEITAR):\n- ${L.join("\n- ")}`;
 }

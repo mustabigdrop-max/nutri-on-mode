@@ -858,7 +858,7 @@ export default function ApexVisualIA() {
             <div style={{ fontSize: 30 }}>{cat.icon}</div>
             <div>
               <div style={{ fontSize: 16, fontWeight: 800, color: C.text, letterSpacing: ".02em" }}>APEX Visual Intelligence</div>
-              <div style={{ fontSize: 11, color: C.textSec, marginTop: 2 }}>Análise por IA · Padrão IFBB · {cat.label}</div>
+              <div style={{ fontSize: 11, color: C.textSec, marginTop: 2 }}>Análise do sistema · Padrão IFBB · {cat.label}</div>
             </div>
           </div>
           {done && (
@@ -942,7 +942,7 @@ export default function ApexVisualIA() {
                 letterSpacing: ".04em", boxShadow: temFoto ? `0 6px 32px ${cat.cor}44` : "none",
                 display: "flex", alignItems: "center", justifyContent: "center", gap: 10, fontFamily: "inherit",
               }}>
-              {temFoto ? <>{cat.icon} Analisar shape — {cat.label} · APEX IA</> : <>📸 Adicione ao menos 1 foto</>}
+              {temFoto? <>{cat.icon} Analisar shape — {cat.label} · APEX</> : <>📸 Adicione ao menos 1 foto</>}
             </button>
 
             {error && (

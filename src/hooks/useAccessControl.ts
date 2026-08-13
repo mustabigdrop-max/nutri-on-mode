@@ -49,8 +49,8 @@ const ACOMPANHADO_BLOCKED: Set<AcompanhadoFeature> = new Set([
 
 export const FEATURE_LABELS: Record<AcompanhadoFeature, string> = {
   tracking_macros: "Tracking de Macros",
-  plano_semanal: "Plano Semanal por IA",
-  chat_ia: "Chat com IA",
+  plano_semanal: "Plano Semanal pelo sistema",
+  chat_ia: "Chat ",
   diario_foto: "Diário Fotográfico",
   score_nutricional: "Score Nutricional",
   alertas_preditivos: "Alertas Preditivos",
@@ -58,7 +58,7 @@ export const FEATURE_LABELS: Record<AcompanhadoFeature, string> = {
   gamificacao_completa: "Gamificação Completa",
   receitas: "Receitas Personalizadas",
   lista_compras: "Lista de Compras",
-  suplementacao_ia: "Suplementação IA",
+  suplementacao_ia: "Suplementação",
   relatorio_pdf: "Relatório PDF Pessoal",
   historico_completo: "Histórico Completo",
   integracao_wearables: "Integração Wearables",

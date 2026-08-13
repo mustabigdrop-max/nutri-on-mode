@@ -519,7 +519,7 @@ export const METODOS_CALORIMETRIA = [
   "Diário alimentar (manutenção real)",
 ];
 
-// ─── Contexto para a IA ─────────────────────────────────────────────────────
+// ─── Contexto para o sistema ─────────────────────────────────────────────────────
 export function buildIntelContext(i: IntelState): string[] {
   const parts: string[] = [];
   if (i.somatotipo) parts.push(`SOMATOTIPO: ${i.somatotipo}`);

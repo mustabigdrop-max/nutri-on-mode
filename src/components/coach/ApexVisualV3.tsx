@@ -1082,7 +1082,7 @@ export default function ApexVisualV3() {
 
       // Timeout de 90s
       const timeoutPromise = new Promise<never>((_, rej) =>
-        setTimeout(() => rej(new Error("Tempo esgotado (90s). A IA demorou demais para responder — tente novamente.")), 90000)
+        setTimeout(() => rej(new Error("Tempo esgotado (90s). O sistema demorou demais para responder — tente novamente.")), 90000)
       );
 
       const invokePromise = supabase.functions.invoke("apex-visual-analyze", {
@@ -1101,7 +1101,7 @@ export default function ApexVisualV3() {
       if (fnErr) {
         const msg = (fnErr as any)?.message || "";
         if (msg.includes("429") || msg.toLowerCase().includes("rate")) throw new Error("Limite de requisições atingido. Aguarde alguns instantes e tente novamente.");
-        if (msg.includes("402")) throw new Error("Créditos da IA esgotados. Adicione em Settings → Workspace → Usage.");
+        if (msg.includes("402")) throw new Error("Créditos do sistema esgotados. Adicione em Settings → Workspace → Usage.");
         if (msg.toLowerCase().includes("network") || msg.toLowerCase().includes("failed to fetch")) throw new Error("Falha de conexão. Verifique sua internet e tente novamente.");
         throw new Error(msg || "Falha ao chamar a análise APEX.");
       }
@@ -1109,10 +1109,10 @@ export default function ApexVisualV3() {
       const text: string = (data as any)?.text || "";
 
       if (!text || text.trim().length < 100) {
-        throw new Error("Resposta vazia ou muito curta da IA. Tente novamente — se persistir, troque/recoloque as fotos.");
+        throw new Error("Resposta vazia ou muito curta do sistema. Tente novamente — se persistir, troque/recoloque as fotos.");
       }
       if (!/##\s*(IMPACTO_VISUAL|SCORES_SEGMENTOS|VEREDICTO)/i.test(text)) {
-        throw new Error("A IA respondeu fora do formato esperado (sem cabeçalhos ##). Clique em tentar novamente.");
+        throw new Error("O sistema respondeu fora do formato esperado (sem cabeçalhos ##). Clique em tentar novamente.");
       }
 
       setStreaming(true); setLoading(false);
@@ -1783,7 +1783,7 @@ export default function ApexVisualV3() {
                         Análise {critico ? "muito incompleta" : "parcialmente incompleta"} — {missing.length} de {SECTION_CHECK.length} seção(ões) faltando
                       </div>
                       <div style={{ fontSize:11, color:C.textSec, marginTop:3 }}>
-                        A IA não retornou os blocos abaixo. Você pode usar o que veio ou refazer a análise.
+                        O sistema não retornou os blocos abaixo. Você pode usar o que veio ou refazer a análise.
                       </div>
                     </div>
                     <button onClick={analisar} style={{ padding:"8px 14px", background:accent, border:"none", borderRadius:8, color:"#000", fontSize:11, fontWeight:700, cursor:"pointer", fontFamily:"inherit", letterSpacing:".05em" }}>↻ RE-ANALISAR</button>

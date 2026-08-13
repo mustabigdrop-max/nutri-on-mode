@@ -582,7 +582,7 @@ const LabCoachPlanner = ({ onAskApex }: { onAskApex: (q: string) => void }) => {
       <Textarea
         value={coachNotes}
         onChange={e => setCoachNotes(e.target.value)}
-        placeholder="Observações para a IA (ex: preferências, restrições extras, foco em hipertrofia...)"
+        placeholder="Observações para o sistema (ex: preferências, restrições extras, foco em hipertrofia...)"
         className="h-16 text-xs bg-card border-border resize-none"
       />
 

@@ -24,7 +24,7 @@ const StackGapAnalysis = ({ currentSupps, recommended }: Props) => {
     >
       <h3 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
         📊 Análise de Gap
-        <span className="text-[9px] font-mono text-muted-foreground">Seu stack vs IA</span>
+        <span className="text-[9px] font-mono text-muted-foreground">Seu stack vs</span>
       </h3>
 
       <div className="grid grid-cols-2 gap-3">
@@ -49,7 +49,7 @@ const StackGapAnalysis = ({ currentSupps, recommended }: Props) => {
 
         {/* Recommended */}
         <div>
-          <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider mb-2">Recomendado IA</p>
+          <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider mb-2">Recomendado</p>
           <div className="space-y-1">
             {matching.map(s => (
               <div key={s.name} className="flex items-center gap-1.5 text-xs">

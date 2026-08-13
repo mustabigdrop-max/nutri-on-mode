@@ -15,7 +15,7 @@ const BENEFITS = [
   { icon: Zap, text: "Alertas inteligentes de risco de sarcopenia" },
   { icon: TrendingUp, text: "Guia completo de saída do medicamento sem reganho" },
   { icon: Award, text: "Score semanal de execução do protocolo" },
-  { icon: MessageSquare, text: "IA coach disponível 24h com foco em GLP-1" },
+  { icon: MessageSquare, text: "coach disponível 24h com foco em GLP-1" },
 ];
 
 const Glp1UpsellModal = ({ open, onClose, onActivate, triggerContext }: Glp1UpsellModalProps) => {

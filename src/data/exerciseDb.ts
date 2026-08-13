@@ -502,7 +502,7 @@ export const MUSCLE_GROUPS: MuscleGroup[] = [
             erros: ["Pressão excessiva (>80%)", "Improvisar faixas (perigoso)"],
             fases: { bulking: "4 séries finais", cutting: "4 séries finais" } },
           { nome: "Análise de Vídeo da Execução (Futuro)", rank: "🥉",
-            execucao: "FUTURO — gravar séries-chave (hack squat, RDL, hip thrust) em ângulo lateral. Analisar: profundidade, alinhamento joelho-pé, neutralidade da coluna, simetria de força. Use o módulo VideoForm do app para análise biomecânica via IA.",
+            execucao: "FUTURO — gravar séries-chave (hack squat, RDL, hip thrust) em ângulo lateral. Analisar: profundidade, alinhamento joelho-pé, neutralidade da coluna, simetria de força. Use o módulo VideoForm do app para análise biomecânica.",
             series: "1 vídeo por exercício/semana", dicas: ["Ângulo lateral é o mais informativo", "Comparar vídeos mês a mês = progressão técnica visível"],
             erros: ["Filmar de frente (perde info de profundidade)"],
             fases: { bulking: "Semanal", cutting: "Semanal" } },

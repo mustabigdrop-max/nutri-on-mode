@@ -49,7 +49,7 @@ export default function PeptideVaultPage() {
           <h1 className="text-lg font-bold text-[#4ade80]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
             🧬 NEXUS-BIO PeptideVault
           </h1>
-          <p className="text-xs text-gray-500">Enciclopédia viva de peptídeos com IA</p>
+          <p className="text-xs text-gray-500">Enciclopédia viva de peptídeos </p>
         </div>
       </div>
 
@@ -168,7 +168,7 @@ function OracleTab({ userId }: { userId?: string }) {
 
       if (assistantSoFar) await saveMsg("assistant", assistantSoFar);
     } catch (e: any) {
-      toast.error(e.message || "Erro na IA");
+      toast.error(e.message || "Erro no sistema");
     } finally {
       setLoading(false);
     }

@@ -1342,7 +1342,7 @@ const ProfessionalDashboard = () => {
               </div>
 
               <div className="rounded-lg bg-secondary/30 border border-border p-4 mb-4">
-                <h4 className="text-sm font-bold text-foreground mb-2">💡 Análise da IA</h4>
+                <h4 className="text-sm font-bold text-foreground mb-2">💡 Análise do sistema</h4>
                 <p className="text-sm text-muted-foreground whitespace-pre-wrap">{currentBriefing.ai_analysis}</p>
               </div>
 

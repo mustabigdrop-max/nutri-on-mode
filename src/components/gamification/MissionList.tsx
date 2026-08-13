@@ -26,14 +26,14 @@ const MissionList = ({ missions, onComplete, onGenerate, generating }: MissionLi
       >
         <Sparkles className="w-8 h-8 text-primary mx-auto mb-3" />
         <p className="text-sm font-bold text-foreground mb-1">Sem missões para hoje</p>
-        <p className="text-xs text-muted-foreground mb-4">A IA vai criar missões personalizadas para você!</p>
+        <p className="text-xs text-muted-foreground mb-4">O sistema vai criar missões personalizadas para você!</p>
         <button
           onClick={onGenerate}
           disabled={generating}
           className="px-4 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-bold disabled:opacity-50 flex items-center gap-2 mx-auto"
         >
           {generating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
-          {generating ? "Gerando..." : "Gerar Missões com IA"}
+          {generating? "Gerando..." : "Gerar Missões "}
         </button>
       </motion.div>
     );

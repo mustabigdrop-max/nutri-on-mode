@@ -225,7 +225,7 @@ export default function CoachTrainingOnPage() {
       if (error) throw new Error(error.message);
       if ((data as any)?.error) throw new Error((data as any).error);
       const trainingText = (data as any)?.text || "";
-      if (!trainingText) throw new Error("Resposta vazia da IA");
+      if (!trainingText) throw new Error("Resposta vazia do sistema");
 
       // Deactivate previous active plans
       await supabase
@@ -261,7 +261,7 @@ export default function CoachTrainingOnPage() {
     } catch (e: any) {
       toast({
         title: "Erro ao gerar treino corretivo",
-        description: e?.message || "Falha ao chamar a IA",
+        description: e?.message || "Falha ao chamar a",
         variant: "destructive",
       });
     } finally {
@@ -364,7 +364,7 @@ export default function CoachTrainingOnPage() {
     setMethodConflicts([]);
   };
 
-  // ── Validação de volume pós-geração (lê o bloco "VALIDAÇÃO DE VOLUME SEMANAL" da IA) ──
+  // ── Validação de volume pós-geração (lê o bloco "VALIDAÇÃO DE VOLUME SEMANAL" do sistema) ──
   const validateGeneratedVolume = (trainingText: string, prescribed: Record<string, number>) => {
     const violations: Array<{ muscle: string; actual: number; prescribed: number; excess: number }> = [];
     const block = trainingText.match(/VALIDAÇÃO DE VOLUME SEMANAL:([\s\S]*?)(?:EXERCÍCIOS CORRETIVOS|WARM-?UPS POSTURAIS|$)/i)?.[1] || "";
@@ -416,7 +416,7 @@ export default function CoachTrainingOnPage() {
       if (error) throw new Error(error.message);
       if ((data as any)?.error) throw new Error((data as any).error);
       const text = (data as any)?.text || "";
-      if (!text) throw new Error("Resposta vazia da IA");
+      if (!text) throw new Error("Resposta vazia do sistema");
 
       const validation = validateGeneratedVolume(text, weeklyVolume);
       setVolumeWarnings(validation.violations);
@@ -465,7 +465,7 @@ export default function CoachTrainingOnPage() {
     } catch (e: any) {
       toast({
         title: "Erro ao gerar treino integrado",
-        description: e?.message || "Falha ao chamar a IA",
+        description: e?.message || "Falha ao chamar a",
         variant: "destructive",
       });
     } finally {
@@ -819,7 +819,7 @@ export default function CoachTrainingOnPage() {
                   })}
                 </div>
                 <div className="text-[10px] text-muted-foreground mt-2">
-                  Multiplicador aplicado automaticamente no protocolo gerado pela IA. Base = 12 séries/grupo.
+                  Multiplicador aplicado automaticamente no protocolo gerado pelo sistema. Base = 12 séries/grupo.
                 </div>
               </CardContent>
             </Card>

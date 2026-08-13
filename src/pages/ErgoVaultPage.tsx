@@ -444,7 +444,7 @@ export default function ErgoVaultPage() {
             { v: `${ERGO_COMPOUNDS.length}+`, l: "Compostos" },
             { v: ERGO_COMPOUNDS.filter((c) => c.categoria === "peptideo").length, l: "Peptídeos" },
             { v: "4", l: "Fases Cíclicas" },
-            { v: "2", l: "Agentes IA" },
+            { v: "2", l: "Agentes" },
           ].map((s) => (
             <div key={s.l} className="px-6 py-8 text-center">
               <div

@@ -52,7 +52,7 @@ const buildItem = (
 
   if (encontrados === 0) {
     status = "error";
-    mensagem = `Nenhum item de referência encontrado para "${unidade}". A IA pode não ter equivalência confiável.`;
+    mensagem = `Nenhum item de referência encontrado para "${unidade}". O sistema pode não ter equivalência confiável.`;
   } else if (encontrados < esperadoMin) {
     status = "warn";
     mensagem = `Apenas ${encontrados} item(ns) com "${unidade}" no banco (mínimo recomendado: ${esperadoMin}). Equivalências podem ser limitadas.`;
@@ -147,7 +147,7 @@ export function validateMedidasCaseiras(prefs: MedidasPrefs): ValidationReport {
 
   let resumo = "";
   if (error > 0) resumo = `${error} unidade(s) sem equivalência no banco — ajuste as preferências ou enriqueça o catálogo.`;
-  else if (warn > 0) resumo = `${warn} unidade(s) com cobertura limitada — a IA pode improvisar conversões.`;
+  else if (warn > 0) resumo = `${warn} unidade(s) com cobertura limitada — o sistema pode improvisar conversões.`;
   else resumo = `Todas as ${itens.length} unidades selecionadas têm cobertura adequada no banco.`;
 
   return { total: itens.length, ok, warn, error, itens, resumo };

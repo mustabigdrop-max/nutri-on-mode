@@ -278,7 +278,7 @@ export function topDeficits(state: ClinicalTestsState): string[] {
   return out.slice(0, 3).map((x) => x.label);
 }
 
-// Bloco de texto para enviar à IA
+// Bloco de texto para enviar ao sistema
 export function buildClinicalPromptBlock(state: ClinicalTestsState): string {
   const lines: string[] = [];
   lines.push("━━━ RESULTADOS DOS TESTES CLÍNICOS OBJETIVOS (MÉTODO FENNER) ━━━");

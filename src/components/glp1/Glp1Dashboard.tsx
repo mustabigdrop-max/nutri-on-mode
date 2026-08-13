@@ -75,7 +75,7 @@ const Glp1Dashboard = ({ profile, dailyLogs, weeklyScores, weightKg, onSaveDaily
       setAiAnalysis(data);
     } catch (e) {
       console.error("AI analysis error:", e);
-      toast.error("Erro ao gerar análise IA");
+      toast.error("Erro ao gerar análise");
     } finally {
       setAiLoading(false);
     }
@@ -150,7 +150,7 @@ const Glp1Dashboard = ({ profile, dailyLogs, weeklyScores, weightKg, onSaveDaily
           {aiLoading && (
             <div className="flex items-center gap-2 p-3 rounded-xl border border-primary/20 bg-primary/5">
               <Loader2 className="w-4 h-4 text-primary animate-spin" />
-              <span className="text-xs text-muted-foreground">Analisando seus dados com IA...</span>
+              <span className="text-xs text-muted-foreground">Analisando seus dados...</span>
             </div>
           )}
           {displayAlerts.map((a, i) => {
@@ -184,7 +184,7 @@ const Glp1Dashboard = ({ profile, dailyLogs, weeklyScores, weightKg, onSaveDaily
           <Card className="border-[#00C896]/20 bg-[#00C896]/5">
             <CardHeader className="pb-2">
               <CardTitle className="text-base flex items-center gap-2">
-                <Brain className="w-4 h-4 text-[#00C896]" /> Análise Semanal IA
+                <Brain className="w-4 h-4 text-[#00C896]" /> Análise Semanal
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
@@ -379,7 +379,7 @@ const Glp1Dashboard = ({ profile, dailyLogs, weeklyScores, weightKg, onSaveDaily
         className="w-full text-xs"
       >
         {aiLoading ? <Loader2 className="w-3 h-3 animate-spin mr-2" /> : <Brain className="w-3 h-3 mr-2" />}
-        {aiLoading ? "Analisando..." : "Atualizar análise IA"}
+        {aiLoading? "Analisando..." : "Atualizar análise"}
       </Button>
     </div>
   );

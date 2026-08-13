@@ -362,7 +362,7 @@ export default function ApexEvolucao({ atletaId, atletaNome, dataCompeticao, cat
       });
       if (error) throw error;
       const analise = data?.analise;
-      if (!analise) throw new Error("Resposta vazia da IA");
+      if (!analise) throw new Error("Resposta vazia do sistema");
 
       // 5. Salvar
       const ultimoScore = ultimo?.score_geral ?? null;
@@ -422,10 +422,10 @@ export default function ApexEvolucao({ atletaId, atletaNome, dataCompeticao, cat
             </h2>
             <span className="px-2 py-0.5 text-[10px] font-bold uppercase rounded"
               style={{ background: `${T.violet}22`, color: T.violet, border: `1px solid ${T.violet}55` }}>
-              IA Ativa
+              Sistema Ativo
             </span>
           </div>
-          <div className="text-sm mt-1" style={{ color: T.textDim }}>Análise visual semanal com IA</div>
+          <div className="text-sm mt-1" style={{ color: T.textDim }}>Análise visual semanal </div>
         </div>
         <div className="text-right">
           <div className="text-sm font-semibold" style={{ color: T.text }}>{atletaNome}</div>
@@ -529,7 +529,7 @@ export default function ApexEvolucao({ atletaId, atletaNome, dataCompeticao, cat
               {analyzing ? (
                 <><Loader2 className="w-4 h-4 animate-spin" /> Analisando... (15-20s)</>
               ) : (
-                <><Sparkles className="w-4 h-4" /> Analisar com IA</>
+                <><Sparkles className="w-4 h-4" /> Analisar </>
               )}
             </button>
           </div>

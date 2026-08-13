@@ -1,7 +1,7 @@
 /**
  * E2E LIVE — chama a Edge Function `generate-training-protocol` de verdade.
  *
- * Só roda quando RUN_LIVE_E2E=1 (evita gastar créditos de IA em todo push).
+ * Só roda quando RUN_LIVE_E2E=1 (evita gastar créditos de em todo push).
  * No CI, dispare com:
  *   RUN_LIVE_E2E=1 VITE_SUPABASE_URL=... VITE_SUPABASE_PUBLISHABLE_KEY=... bun run test:e2e:live
  */

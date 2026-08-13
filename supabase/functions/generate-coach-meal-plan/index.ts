@@ -983,7 +983,11 @@ serve(async (req) => {
       fase_ciclo,
       dias_para_competicao,
       crononutricao_circadiana,
+      // Contexto clínico do coach + rotina/preferências do paciente
+      contexto_clinico_prompt,
+      rotina_preferencias,
     } = body;
+
     const _cronoCircadiano: boolean = !!crononutricao_circadiana;
 
     // ═══════════════════════════════════════════════════════════════
@@ -2583,6 +2587,9 @@ OUTROS DADOS:
 - Preferências alimentares: ${preferencias || "Não informadas"}
 - Suplementação atual: ${suplementos || "Não informada"}
 - Observações clínicas: ${observacoes || "Nenhuma"}
+- Janela alimentar do paciente: ${rotina_preferencias?.janela_alimentar_h ? `${rotina_preferencias.janela_alimentar_h}h (acorda ${rotina_preferencias.hora_acordar}, dorme ${rotina_preferencias.hora_dormir})` : "não informada"}
+${typeof contexto_clinico_prompt === "string" && contexto_clinico_prompt.trim() ? contexto_clinico_prompt.trim() : ""}
+
 
 Aplique TODAS as regras de cálculo (Mifflin-St Jeor — valores já pré-calculados no bloco determinístico, ajustes farmacológicos por composto, integração de cardio, fase de periodização). Use alimentos brasileiros acessíveis com gramagem precisa. Linguagem técnica de coach de competição.
 

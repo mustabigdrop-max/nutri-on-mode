@@ -16,35 +16,35 @@ type AIFunction = {
 const AI_FUNCTIONS: AIFunction[] = [
   // 🆕 NOVO — destaque
   { key: "mce-intelligence", emoji: "🧠", label: "MCE Intelligence", desc: "Coach comportamental · Mindset · Comportamento · Execução", requiredPlan: "free", relatedPage: "/mce" },
-  { key: "ergo-diary", emoji: "📋", label: "Diários de Ergogênicos", desc: "Registre ciclos, check-ins e análise de exames com IA", requiredPlan: "ON +", relatedPage: "/ergo-diary" },
+  { key: "ergo-diary", emoji: "📋", label: "Diários de Ergogênicos", desc: "Registre ciclos, check-ins e análise de exames ", requiredPlan: "ON +", relatedPage: "/ergo-diary" },
   { key: "videoform-ai", emoji: "🎥", label: "VideoForm AI", desc: "Análise biomecânica de execução por vídeo", requiredPlan: "ON PRO", relatedPage: "/videoform" },
 
   // Free
-  { key: "analyze-meal", emoji: "📸", label: "Análise de Refeição", desc: "IA analisa foto e estima macros", requiredPlan: "free", relatedPage: "/meal-log" },
+  { key: "analyze-meal", emoji: "📸", label: "Análise de Refeição", desc: "analisa foto e estima macros", requiredPlan: "free", relatedPage: "/meal-log" },
   { key: "onboarding-chat", emoji: "👋", label: "Onboarding Inteligente", desc: "Chat guiado para configuração inicial", requiredPlan: "free", relatedPage: "/onboarding" },
   { key: "faq-search", emoji: "❓", label: "Busca FAQ", desc: "Pesquisa inteligente de dúvidas", requiredPlan: "free", relatedPage: "/support" },
 
   // ON
-  { key: "nutri-coach", emoji: "🤖", label: "NutriCoach IA", desc: "Chat nutricional com contexto completo", requiredPlan: "ON", relatedPage: "/chat" },
-  { key: "generate-meal-plan", emoji: "🍎", label: "Gerar Plano Alimentar", desc: "Cardápio semanal personalizado por IA", requiredPlan: "ON", relatedPage: "/meal-plan" },
+  { key: "nutri-coach", emoji: "🤖", label: "NutriCoach System", desc: "Chat nutricional com contexto completo", requiredPlan: "ON", relatedPage: "/chat" },
+  { key: "generate-meal-plan", emoji: "🍎", label: "Gerar Plano Alimentar", desc: "Cardápio semanal personalizado pelo sistema", requiredPlan: "ON", relatedPage: "/meal-plan" },
   { key: "generate-challenges", emoji: "🎮", label: "Gerar Desafios", desc: "Desafios diários personalizados", requiredPlan: "ON", relatedPage: "/gamification" },
   { key: "generate-missions", emoji: "🎯", label: "Gerar Missões", desc: "Missões semanais adaptativas", requiredPlan: "ON", relatedPage: "/gamification" },
   { key: "generate-alerts", emoji: "🔔", label: "Alertas Inteligentes", desc: "Notificações proativas baseadas em padrão", requiredPlan: "ON" },
-  { key: "generate-proactive-notification", emoji: "💡", label: "Notificação Proativa", desc: "IA sugere ações antes de acontecer", requiredPlan: "ON" },
-  { key: "perplexity-search", emoji: "🔍", label: "Busca Avançada", desc: "Pesquisa científica com IA", requiredPlan: "ON", relatedPage: "/chat" },
+  { key: "generate-proactive-notification", emoji: "💡", label: "Notificação Proativa", desc: "sugere ações antes de acontecer", requiredPlan: "ON" },
+  { key: "perplexity-search", emoji: "🔍", label: "Busca Avançada", desc: "Pesquisa científica ", requiredPlan: "ON", relatedPage: "/chat" },
 
   // ON+
   { key: "generate-consistency-score", emoji: "📊", label: "Score Consistência", desc: "Análise semanal de aderência", requiredPlan: "ON +", relatedPage: "/progress" },
   { key: "generate-sabotage-report", emoji: "🚨", label: "Diagnóstico Sabotagem", desc: "Identifica padrões de autossabotagem", requiredPlan: "ON +" },
   { key: "generate-monthly-report", emoji: "📈", label: "Relatório Mensal", desc: "Análise completa do mês com projeções", requiredPlan: "ON +", relatedPage: "/monthly-report" },
   { key: "generate-circadian-plan", emoji: "🌅", label: "Plano Circadiano", desc: "Nutrição sincronizada com relógio biológico", requiredPlan: "ON +", relatedPage: "/circadian" },
-  { key: "generate-supplement-stack", emoji: "💊", label: "Stack de Suplementos", desc: "Suplementação personalizada por IA", requiredPlan: "ON +", relatedPage: "/supplementation" },
+  { key: "generate-supplement-stack", emoji: "💊", label: "Stack de Suplementos", desc: "Suplementação personalizada pelo sistema", requiredPlan: "ON +", relatedPage: "/supplementation" },
   { key: "generate-energy-insights", emoji: "⚡", label: "Insights de Energia", desc: "Correlações entre alimentação e disposição", requiredPlan: "ON +", relatedPage: "/mental-performance" },
   { key: "generate-nootropic-stack", emoji: "🧠", label: "Stack Nootrópico", desc: "Protocolo cognitivo personalizado", requiredPlan: "ON +", relatedPage: "/mental-performance" },
   { key: "generate-focus-protocol", emoji: "🎯", label: "Protocolo de Foco", desc: "Nutrição otimizada para concentração", requiredPlan: "ON +", relatedPage: "/mental-performance" },
   { key: "generate-event-strategy", emoji: "📅", label: "Estratégia de Evento", desc: "Plano nutricional pré/durante/pós evento", requiredPlan: "ON +", relatedPage: "/event-mode" },
   { key: "generate-plan-revision", emoji: "🔄", label: "Revisão de Plano", desc: "Ajuste automático baseado em resultados", requiredPlan: "ON +" },
-  { key: "analyze-blood-test", emoji: "🩸", label: "Análise de Exames", desc: "IA interpreta seus exames de sangue", requiredPlan: "ON +", relatedPage: "/blood-test" },
+  { key: "analyze-blood-test", emoji: "🩸", label: "Análise de Exames", desc: "interpreta seus exames de sangue", requiredPlan: "ON +", relatedPage: "/blood-test" },
   { key: "glp1-ai-analysis", emoji: "💉", label: "Análise GLP-1", desc: "Otimização nutricional com agonistas", requiredPlan: "ON +", relatedPage: "/glp1" },
   { key: "detect-abandonment-risk", emoji: "⚠️", label: "Detecção de Risco", desc: "Prevê risco de abandono do protocolo", requiredPlan: "ON +" },
   { key: "send-recovery-notifications", emoji: "💬", label: "Recuperação Ativa", desc: "Notificações de reengajamento", requiredPlan: "ON +" },
@@ -85,7 +85,7 @@ const AIFunctionsGrid = () => {
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <span className="w-4 h-px bg-accent" />
-          <h3 className="text-[10px] font-mono text-accent uppercase tracking-[.2em]">Motor IA</h3>
+          <h3 className="text-[10px] font-mono text-accent uppercase tracking-[.2em]">Motor</h3>
           <Brain className="w-3.5 h-3.5 text-accent" />
         </div>
         <div className="flex items-center gap-2">
@@ -162,7 +162,7 @@ const AIFunctionsGrid = () => {
         className="w-full mt-3 flex items-center justify-center gap-2 py-2.5 rounded-xl border border-border bg-card hover:border-accent/20 transition-all group"
       >
         <span className="text-[10px] font-mono text-muted-foreground group-hover:text-accent transition-colors">
-          {expanded ? "Mostrar menos" : `Ver todas as ${AI_FUNCTIONS.length} funções IA`}
+          {expanded? "Mostrar menos" : `Ver todas as ${AI_FUNCTIONS.length} funções`}
         </span>
         {expanded ? (
           <ChevronUp className="w-3.5 h-3.5 text-muted-foreground group-hover:text-accent transition-colors" />

@@ -475,7 +475,7 @@ Seja direto e clínico. Máximo 180 palavras no total.`;
             borderRadius: 10, marginTop: 4,
           }}>
             <p style={{ fontSize: 10, color: "#B8922A", letterSpacing: "0.08em", marginBottom: 8 }}>
-              ANÁLISE EVOLUTIVA IA
+              ANÁLISE EVOLUTIVA
             </p>
             <p style={{ fontSize: 12, color: "rgba(255,255,255,0.7)", lineHeight: 1.7, whiteSpace: "pre-wrap" }}>
               {evolutionSummary}

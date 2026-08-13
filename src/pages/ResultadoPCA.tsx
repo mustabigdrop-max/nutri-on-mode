@@ -35,11 +35,11 @@ const CONFIG_PERFIL: Record<PerfilPCA, {
     descricao: "Não é fraqueza — é comportamento. Você responde a emoções com comida, e isso tem solução com o suporte certo.",
     pontoForte: "Alta sensibilidade emocional que, quando direcionada, vira combustível.",
     desafio: "Quebrar ciclos de culpa e comer emocional sem suporte adequado.",
-    comoAjuda: "A IA reconhece seu estado emocional antes de qualquer orientação técnica. Foco em um passo de cada vez.",
+    comoAjuda: "O sistema reconhece seu estado emocional antes de qualquer orientação técnica. Foco em um passo de cada vez.",
     recomendacoes: [
       "Ativar Behavioral Triggers para mapear gatilhos",
       "Habilitar Emotional Scan diário",
-      "Diário comportamental com IA contextual",
+      "Diário comportamental contextual",
     ],
   },
   "Executor Inconsistente": {

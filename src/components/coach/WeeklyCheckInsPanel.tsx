@@ -143,7 +143,7 @@ const WeeklyCheckInsPanel = ({ planId }: { planId: string }) => {
                     {hasAnalysis && (
                       <Badge className="bg-primary/20 text-primary border-primary/30 text-[10px]">
                         <Sparkles className="h-3 w-3 mr-1" />
-                        IA
+                        AUTO
                       </Badge>
                     )}
                     {hasCritical && (
@@ -219,7 +219,7 @@ const WeeklyCheckInsPanel = ({ planId }: { planId: string }) => {
                   </div>
                 )}
 
-                {/* Análise IA */}
+                {/* Análise */}
                 {hasAnalysis ? (
                   <div className="space-y-3 border-t border-border pt-3">
                     <div className="flex items-center gap-2">
@@ -311,7 +311,7 @@ const WeeklyCheckInsPanel = ({ planId }: { planId: string }) => {
                       ) : (
                         <Sparkles className="h-3 w-3 mr-2" />
                       )}
-                      Reanalisar com IA
+                      Reanalisar 
                     </Button>
                   </div>
                 ) : (
@@ -328,7 +328,7 @@ const WeeklyCheckInsPanel = ({ planId }: { planId: string }) => {
                     ) : (
                       <>
                         <Sparkles className="h-4 w-4 mr-2" />
-                        Analisar com IA Dual
+                        Analisar Dual
                       </>
                     )}
                   </Button>

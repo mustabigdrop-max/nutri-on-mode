@@ -80,7 +80,7 @@ interface BloodTest {
 
 const statusConfig: Record<string, { label: string; icon: any; color: string; bg: string }> = {
   pending: { label: "Aguardando análise", icon: Clock, color: "text-muted-foreground", bg: "bg-muted/50" },
-  analyzed: { label: "Analisado pela IA", icon: Sparkles, color: "text-primary", bg: "bg-primary/10" },
+  analyzed: { label: "Analisado pelo sistema", icon: Sparkles, color: "text-primary", bg: "bg-primary/10" },
   validated: { label: "Validado pelo coach", icon: ShieldCheck, color: "text-accent", bg: "bg-accent/10" },
   applied: { label: "Aplicado ao plano", icon: CheckCircle, color: "text-primary", bg: "bg-primary/10" },
 };
@@ -616,7 +616,7 @@ const BloodTestPage = () => {
               <p className="text-xs font-bold text-foreground mb-1">Agente APEX de Exames</p>
               <ol className="text-[11px] text-muted-foreground space-y-1 list-decimal list-inside">
                 <li>Envie o PDF ou foto do seu exame</li>
-                <li>IA interpreta no contexto clínico-esportivo</li>
+                <li>interpreta no contexto clínico-esportivo</li>
                 <li>Sistema de semáforo 🟢🟡🔴 por marcador</li>
                 <li>Protocolos de suplementação ajustados</li>
                 <li>Comparativo com referências para atletas</li>

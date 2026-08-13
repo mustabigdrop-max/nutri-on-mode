@@ -97,7 +97,7 @@ const EnergyScoreDashboard = ({ mp }: Props) => {
       {/* Insights */}
       {mp.energyInsights.length > 0 && (
         <div className="space-y-2">
-          <h3 className="text-sm font-medium flex items-center gap-2"><Lightbulb className="w-4 h-4 text-[hsl(38,80%,52%)]" /> Insights da IA</h3>
+          <h3 className="text-sm font-medium flex items-center gap-2"><Lightbulb className="w-4 h-4 text-[hsl(38,80%,52%)]" /> Insights do sistema</h3>
           {mp.energyInsights.map((insight: any) => (
             <Card key={insight.id} className="bg-card/80 border-[hsl(263,70%,58%)]/10">
               <CardContent className="p-3">
@@ -111,7 +111,7 @@ const EnergyScoreDashboard = ({ mp }: Props) => {
 
       {mp.energyScores.length >= 7 && (
         <Button variant="outline" className="w-full" onClick={mp.generateInsights} disabled={mp.loading}>
-          {mp.loading ? "Analisando..." : "🔍 Gerar Insights com IA"}
+          {mp.loading? "Analisando..." : "🔍 Gerar Insights "}
         </Button>
       )}
 

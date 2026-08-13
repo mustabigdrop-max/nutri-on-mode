@@ -54,7 +54,7 @@ const MentalPerformancePage = () => {
               <div className="w-12 h-12 rounded-xl bg-[hsl(263,70%,58%)]/20 flex items-center justify-center text-2xl">🧪</div>
               <div className="flex-1">
                 <h3 className="font-semibold">Protocolo Nootrópico</h3>
-                <p className="text-sm text-muted-foreground">Stack personalizado com IA baseado no seu perfil</p>
+                <p className="text-sm text-muted-foreground">Stack personalizado baseado no seu perfil</p>
               </div>
               <FlaskConical className="w-5 h-5 text-muted-foreground" />
             </CardContent>
@@ -65,7 +65,7 @@ const MentalPerformancePage = () => {
               <div className="w-12 h-12 rounded-xl bg-[hsl(38,80%,52%)]/20 flex items-center justify-center text-2xl">⚡</div>
               <div className="flex-1">
                 <h3 className="font-semibold">Score de Energia Diária</h3>
-                <p className="text-sm text-muted-foreground">Monitore e otimize sua energia com insights de IA</p>
+                <p className="text-sm text-muted-foreground">Monitore e otimize sua energia com insights de</p>
               </div>
               <Zap className="w-5 h-5 text-muted-foreground" />
             </CardContent>
@@ -87,7 +87,7 @@ const MentalPerformancePage = () => {
               <div className="w-12 h-12 rounded-xl bg-[hsl(200,80%,50%)]/20 flex items-center justify-center text-2xl">🔬</div>
               <div className="flex-1">
                 <h3 className="font-semibold">Pesquisa Avançada</h3>
-                <p className="text-sm text-muted-foreground">Busca científica com IA — powered by Perplexity</p>
+                <p className="text-sm text-muted-foreground">Busca científica — powered by Perplexity</p>
               </div>
               <Search className="w-5 h-5 text-muted-foreground" />
             </CardContent>

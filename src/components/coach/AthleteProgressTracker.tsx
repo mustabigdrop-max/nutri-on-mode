@@ -223,7 +223,7 @@ Gere relatório em markdown com:
           <TabsList>
             <TabsTrigger value="timeline">Timeline</TabsTrigger>
             <TabsTrigger value="comparar">Comparar Semanas</TabsTrigger>
-            <TabsTrigger value="relatorio">Relatório IA</TabsTrigger>
+            <TabsTrigger value="relatorio">Relatório</TabsTrigger>
           </TabsList>
 
           <TabsContent value="timeline" className="space-y-4">
@@ -353,7 +353,7 @@ Gere relatório em markdown com:
               </div>
               <Button onClick={gerarRelatorio} disabled={generatingReport || !reportA || !reportB} className="bg-primary">
                 {generatingReport ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Sparkles className="w-4 h-4 mr-2" />}
-                Gerar relatório semanal IA
+                Gerar relatório semanal
               </Button>
             </Card>
             {report && (

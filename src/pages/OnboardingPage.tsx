@@ -165,7 +165,7 @@ const OnboardingPage = () => {
       if (!resp.ok) {
         if (resp.status === 429) { toast.error("Muitas requisições. Aguarde um momento."); return; }
         if (resp.status === 402) { toast.error("Créditos esgotados."); return; }
-        toast.error("Erro ao conectar com a IA.");
+        toast.error("Erro ao conectar com a.");
         return;
       }
 

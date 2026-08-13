@@ -1,4 +1,4 @@
-// APEX Visual — Testes Clínicos do Método Fenner com análise por IA (foto + Gemini Vision)
+// APEX Visual — Testes Clínicos do Método Fenner com análise do sistema (foto + Gemini Vision)
 import { useState, useRef, useMemo, useCallback, useEffect } from "react";
 import { Upload, Loader2, Camera, ChevronRight, AlertTriangle, Sparkles, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -319,7 +319,7 @@ export function ApexClinicalTests({ athleteId, coachId, athleteData }: Props) {
             />
             {analyzing ? (
               <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, color: C.cyan, padding: 8 }}>
-                <Loader2 size={18} className="animate-spin" /> Analisando posição com IA...
+                <Loader2 size={18} className="animate-spin" /> Analisando posição...
               </div>
             ) : (
               <div>

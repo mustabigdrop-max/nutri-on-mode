@@ -230,7 +230,7 @@ const SupportPage = () => {
                     <CardContent className="p-4">
                       <div className="flex items-center gap-2 mb-2">
                         <Sparkles className="h-4 w-4 text-primary" />
-                        <span className="text-xs font-semibold text-primary">Resposta da IA</span>
+                        <span className="text-xs font-semibold text-primary">Resposta do sistema</span>
                       </div>
                       <div className="text-sm prose prose-sm prose-invert max-w-none">
                         <ReactMarkdown>{aiAnswer}</ReactMarkdown>
@@ -495,7 +495,7 @@ const SupportPage = () => {
                           }`}
                         >
                           <p className="text-[10px] font-medium text-muted-foreground mb-1">
-                            {msg.sender_type === "user" ? "Você" : msg.sender_type === "ai" ? "🤖 IA" : "👤 Suporte"}
+                            {msg.sender_type === "user"? "Você" : msg.sender_type === "ai"? "🤖 Auto" : "👤 Suporte"}
                           </p>
                           <p>{msg.content}</p>
                           <p className="text-[10px] text-muted-foreground mt-1">

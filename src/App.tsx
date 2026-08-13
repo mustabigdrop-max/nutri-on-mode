@@ -170,7 +170,7 @@ const App = () => (
             {/* ON Plan */}
             <Route path="/meal-plan" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON" featureName="Plano Alimentar"><MealPlanPage /></PlanGateWrapper></ProtectedRoute>} />
             
-            <Route path="/chat" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON" featureName="Chat IA"><ChatPage /></PlanGateWrapper></ProtectedRoute>} />
+            <Route path="/chat" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON" featureName="Chat"><ChatPage /></PlanGateWrapper></ProtectedRoute>} />
             <Route path="/micronutrients" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON" featureName="Micronutrientes"><MicronutrientsPage /></PlanGateWrapper></ProtectedRoute>} />
             <Route path="/gamification" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON" featureName="Gamificação"><GamificationPage /></PlanGateWrapper></ProtectedRoute>} />
             <Route path="/transformation" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON" featureName="Transformação"><TransformationPage /></PlanGateWrapper></ProtectedRoute>} />
@@ -184,7 +184,7 @@ const App = () => (
             <Route path="/intensity-techniques" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON" featureName="Técnicas de Intensidade"><IntensityTechniquesPage /></PlanGateWrapper></ProtectedRoute>} />
             <Route path="/exercise-arsenal" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON" featureName="Arsenal de Exercícios"><ExerciseArsenalPage /></PlanGateWrapper></ProtectedRoute>} />
             <Route path="/recovery-protocols" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON" featureName="Recovery Arsenal"><RecoveryProtocolsPage /></PlanGateWrapper></ProtectedRoute>} />
-            <Route path="/agents" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON" featureName="Agentes IA"><AgentsPage /></PlanGateWrapper></ProtectedRoute>} />
+            <Route path="/agents" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON" featureName="Agentes"><AgentsPage /></PlanGateWrapper></ProtectedRoute>} />
 
             {/* ON+ Plan */}
             <Route path="/blood-test" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON +" featureName="Exames de Sangue"><BloodTestPage /></PlanGateWrapper></ProtectedRoute>} />

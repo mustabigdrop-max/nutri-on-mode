@@ -279,7 +279,7 @@ export function BlocoCategoriaEsporte({
             fontFamily: T.fontMono, fontSize: 7, color: T.red,
             textTransform: "uppercase", letterSpacing: "0.18em", lineHeight: 1.6,
           }}>
-            ATENÇÃO: Ginástica Rítmica tem alto risco de RED-S, amenorreia e transtornos alimentares. A IA aplicará protocolo de proteção energética mínima de 45kcal/kg de massa magra.
+            ATENÇÃO: Ginástica Rítmica tem alto risco de RED-S, amenorreia e transtornos alimentares. O sistema aplicará protocolo de proteção energética mínima de 45kcal/kg de massa magra.
           </span>
         </div>
       )}
@@ -442,7 +442,7 @@ export function BlocoCondicoesClinicas({
               display: "flex", alignItems: "center", gap: 8,
             }}>
               <AlertTriangle size={12} />
-              ATENÇÃO: condições selecionadas requerem ajustes específicos — a IA aplicará restrições adequadas.
+              ATENÇÃO: condições selecionadas requerem ajustes específicos — o sistema aplicará restrições adequadas.
             </div>
           )}
         </div>

@@ -247,7 +247,7 @@ const MonthlyTransformationCard = ({ data, onClose }: MonthlyTransformationCardP
               <div className="bg-card/40 backdrop-blur border border-border/30 rounded-xl p-4">
                 <div className="flex items-center gap-1.5 mb-2">
                   <Sparkles className="w-3 h-3 text-primary" />
-                  <span className="text-[9px] font-bold text-primary uppercase tracking-wider">Mensagem da IA</span>
+                  <span className="text-[9px] font-bold text-primary uppercase tracking-wider">Mensagem do sistema</span>
                 </div>
                 <p className="text-xs text-foreground/80 leading-relaxed italic">
                   "{data.aiMessage}"

@@ -122,7 +122,7 @@ const TransformationPage = () => {
       }
     } catch (e) {
       console.error(e);
-      toast.error("Erro na análise IA");
+      toast.error("Erro na análise");
     }
     setAnalyzingAi(false);
   };
@@ -236,7 +236,7 @@ const TransformationPage = () => {
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 <Sparkles className="w-3.5 h-3.5 text-primary" />
-                <span className="text-xs font-bold text-foreground">Análise IA</span>
+                <span className="text-xs font-bold text-foreground">Análise</span>
               </div>
               <button
                 onClick={analyzeWithAI}

@@ -8,7 +8,7 @@ interface LabUpsellModalProps {
 }
 
 const BULLETS = [
-  { icon: Brain, text: "Agente IA com acesso a estudos de 2025 em tempo real" },
+  { icon: Brain, text: "Agente com acesso a estudos de 2025 em tempo real" },
   { icon: BookOpen, text: "Protocolos completos explicados com base científica" },
   { icon: Search, text: "Biblioteca de pesquisas curada por especialistas" },
 ];

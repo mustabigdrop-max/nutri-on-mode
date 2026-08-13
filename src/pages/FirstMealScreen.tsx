@@ -416,7 +416,7 @@ const FirstMealScreen = () => {
             Me conta o que você comeu mais recentemente. Pode ser o café de hoje, o almoço, um lanche — qualquer coisa.
           </p>
           <p className="text-xs text-primary font-mono mt-3">
-            Isso ativa sua IA e ela começa a trabalhar por você agora.
+            Isso ativa suo sistema e ela começa a trabalhar por você agora.
           </p>
         </div>
 
@@ -467,7 +467,7 @@ const FirstMealScreen = () => {
             </div>
             <div className="flex-1">
               <h3 className="font-bold text-foreground text-sm">📷 Tirar foto do prato</h3>
-              <p className="text-xs text-muted-foreground mt-0.5">IA identifica os alimentos</p>
+              <p className="text-xs text-muted-foreground mt-0.5">identifica os alimentos</p>
             </div>
             <ChevronRight className="w-4 h-4 text-muted-foreground" />
           </motion.button>

@@ -39,7 +39,7 @@ function cropDataUrl(img: HTMLImageElement, bbox: BoundingBox): string {
 }
 
 /**
- * Tenta detectar o bounding box do atleta via IA (chamada leve) e recortar a imagem.
+ * Tenta detectar o bounding box do atleta vio sistema (chamada leve) e recortar a imagem.
  * Em qualquer falha retorna a imagem original — fluxo nunca é bloqueado.
  */
 export async function cropToAthlete(imageBase64: string): Promise<{
@@ -47,7 +47,7 @@ export async function cropToAthlete(imageBase64: string): Promise<{
   bbox: BoundingBox | null;
   heightPct: number | null;
 }> {
-  // Tenta detecção via IA primeiro
+  // Tenta detecção vio sistema primeiro
   try {
     const { data, error } = await supabase.functions.invoke("apex-detect-bbox", {
       body: { imageBase64 },
@@ -62,7 +62,7 @@ export async function cropToAthlete(imageBase64: string): Promise<{
       return { cropped, bbox, heightPct };
     }
   } catch (e) {
-    console.warn("[apex] cropToAthlete via IA falhou, tentando fallback central:", e);
+    console.warn("[apex] cropToAthlete vio sistema falhou, tentando fallback central:", e);
   }
 
   // CAMADA 1 — fallback: crop central 60% (heurística determinística)
@@ -90,7 +90,7 @@ export async function cropToAthlete(imageBase64: string): Promise<{
 /**
  * CAMADA 1 — pré-processamento determinístico.
  * Faz crop central 60% da imagem quando o atleta provavelmente está muito
- * pequeno no frame. Não depende de IA. Retorna informações para reverter
+ * pequeno no frame. Não depende de. Retorna informações para reverter
  * coordenadas ao espaço original quando necessário.
  */
 export async function preprocessApexImage(base64: string): Promise<{

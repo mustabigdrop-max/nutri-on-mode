@@ -43,7 +43,7 @@ const AdvancedSearch = () => {
       <h2 className="text-lg font-bold flex items-center gap-2">
         <Search className="w-5 h-5 text-[hsl(200,80%,50%)]" /> Pesquisa Avançada
       </h2>
-      <p className="text-xs text-muted-foreground">Busca científica com IA — powered by Perplexity</p>
+      <p className="text-xs text-muted-foreground">Busca científica — powered by Perplexity</p>
 
       {/* Category Tabs */}
       <Tabs value={category} onValueChange={setCategory}>

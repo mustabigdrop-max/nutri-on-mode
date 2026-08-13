@@ -242,7 +242,7 @@ export default function CorrectivePlanViewer({
           {days.length === 0 && (parsed.semanaRaw || text) && (
             <>
               <div className="rounded-lg border border-blue-500/30 bg-blue-500/5 p-3 text-[11px] text-blue-100/90">
-                Conteúdo retornado pela IA sem estrutura padrão de dias — exibindo na íntegra.
+                Conteúdo retornado pelo sistema sem estrutura padrão de dias — exibindo na íntegra.
               </div>
               <pre className="text-xs whitespace-pre-wrap font-mono text-foreground/90 p-3 rounded-lg border border-border bg-card/60">
                 {parsed.semanaRaw || text}
@@ -251,7 +251,7 @@ export default function CorrectivePlanViewer({
           )}
           {days.length === 0 && !parsed.semanaRaw && !text && (
             <div className="text-xs italic text-muted-foreground p-4 text-center">
-              A IA não retornou conteúdo para esta seção.
+              O sistema não retornou conteúdo para esta seção.
             </div>
           )}
           {days.map((d, i) => {
@@ -367,9 +367,9 @@ function PreOrEmpty({ text, hint, onOpenRaw }: { text: string; hint: string; onO
   if (text && text.trim()) return <Pre text={text} />;
   return (
     <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-4 text-xs text-amber-100/90 space-y-2">
-      <div className="font-bold text-amber-400">Sem seção dedicada de {hint} na resposta da IA.</div>
+      <div className="font-bold text-amber-400">Sem seção dedicada de {hint} na resposta do sistema.</div>
       <div className="text-muted-foreground">
-        A IA pode ter incluído essas informações dentro da Semana Tipo ou de forma livre.
+        O sistema pode ter incluído essas informações dentro da Semana Tipo ou de forma livre.
       </div>
       <Button size="sm" variant="outline" onClick={onOpenRaw} className="mt-2">
         Abrir texto completo

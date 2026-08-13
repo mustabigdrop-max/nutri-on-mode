@@ -17,7 +17,7 @@ const ADMIN_MODULES = [
   },
   {
     title: "APEX Elite Coach",
-    description: "Agente IA irrestrito para protocolos avançados de atletas",
+    description: "Agente irrestrito para protocolos avançados de atletas",
     icon: FlaskConical,
     path: "/admin/apex-coach",
     color: "text-amber-400",

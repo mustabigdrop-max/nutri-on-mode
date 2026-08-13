@@ -198,7 +198,7 @@ export interface VERADiagnostic {
   observacoes_femininas: string[];
 }
 
-// Diagnóstico determinístico baseado no mapa (sem IA)
+// Diagnóstico determinístico baseado no mapa (determinístico)
 // — pode ser usado como fallback ou base inicial antes do refinamento com VERA.
 export function buildDeterministicDiagnostic(pkg: ApexToVERAPackage): VERADiagnostic {
   const ordenados = [...pkg.achados]

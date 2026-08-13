@@ -1,5 +1,5 @@
 // APEX — Plano Mestre de Evolução
-// Aba nova do APEX Visual Intelligence. Gera plano periodizado via IA e exibe
+// Aba nova do APEX Visual Intelligence. Gera plano periodizado vio sistema e exibe
 // timeline de fases, accordion de semanas, checklist interativo e métricas.
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -209,7 +209,7 @@ export default function ApexPlanoMestre({
       </div>
       {inProgressStage && (
         <div className="font-mono text-[12px]" style={{ color: C.muted }}>
-          A IA está gerando {inProgressStage.label}…
+          O sistema está gerando {inProgressStage.label}…
         </div>
       )}
       <style>{`@keyframes apexSpin { to { transform: rotate(360deg); } }`}</style>

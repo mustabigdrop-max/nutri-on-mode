@@ -1,4 +1,4 @@
-// APEX — Renderizador de markdown para textos gerados pela IA.
+// APEX — Renderizador de markdown para textos gerados pelo sistema.
 // Aplica estilo APEX (dourado/cyan, mono) em **bold**, *italic*, ## heading,
 // listas com bullet • e `código`.
 import ReactMarkdown from "react-markdown";

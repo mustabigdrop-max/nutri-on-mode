@@ -460,7 +460,7 @@ export default function NutriPlanElitePage() {
 
         {result && !elite && (
           <Card className="p-4 bg-amber-950/30 border-amber-500/40 text-sm text-amber-200">
-            O plano foi gerado, mas a IA não retornou o bloco <code>nutriplan_elite</code>. Tente novamente — em geral acontece quando faltam compostos ativos ou objetivo de competição.
+            O plano foi gerado, mas o sistema não retornou o bloco <code>nutriplan_elite</code>. Tente novamente — em geral acontece quando faltam compostos ativos ou objetivo de competição.
           </Card>
         )}
       </div>
@@ -511,5 +511,5 @@ function BlockCard({ icon: Icon, title, children }: { icon: any; title: string; 
 }
 
 function Empty() {
-  return <p className="text-xs text-zinc-500 italic">Sem dados retornados pela IA neste bloco.</p>;
+  return <p className="text-xs text-zinc-500 italic">Sem dados retornados pelo sistema neste bloco.</p>;
 }
