@@ -983,7 +983,11 @@ serve(async (req) => {
       fase_ciclo,
       dias_para_competicao,
       crononutricao_circadiana,
+      // Contexto clínico do coach + rotina/preferências do paciente
+      contexto_clinico_prompt,
+      rotina_preferencias,
     } = body;
+
     const _cronoCircadiano: boolean = !!crononutricao_circadiana;
 
     // ═══════════════════════════════════════════════════════════════
