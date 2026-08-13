@@ -1,6 +1,6 @@
 import { memo } from "react";
 import { useNavigate } from "react-router-dom";
-import { UtensilsCrossed, Dumbbell, BarChart3, MessageSquare, AlertTriangle } from "lucide-react";
+import { UtensilsCrossed, Dumbbell, BarChart3, MessageSquare, AlertTriangle, Zap } from "lucide-react";
 import type { CoachAthlete } from "@/hooks/useCoachAthletes";
 
 const RISK_COLOR: Record<CoachAthlete["riskLevel"], string> = {
@@ -106,6 +106,9 @@ const AthleteCard = ({ athlete: a, onSendMeal, onSendTraining }: Props) => {
         </button>
         <button className="quick-action-sm" onClick={() => navigate(`/coach/patient/${a.userId}?tab=mensagens`)}>
           <MessageSquare className="w-3.5 h-3.5" /> Msg
+        </button>
+        <button className="quick-action-sm" onClick={() => navigate(`/coach/praxis-logs/${a.userId}`)}>
+          <Zap className="w-3.5 h-3.5" /> PRAXIS
         </button>
       </div>
     </div>

@@ -11,6 +11,7 @@ import { useAthletePlans, mealKcal } from "@/hooks/useAthletePlans";
 import { useWaterLogs } from "@/hooks/useWaterLogs";
 import { useWeightLogs } from "@/hooks/useWeightLogs";
 import AthleteBottomNav from "@/components/athlete/AthleteBottomNav";
+import PraxisFAB from "@/components/praxis/PraxisFAB";
 import { parseProtocolToDays } from "@/lib/parseProtocolMarkdown";
 import { parseProtocolText } from "@/lib/parseProtocolText";
 
@@ -368,6 +369,7 @@ const AthleteDashboard = () => {
         )}
       </main>
 
+      <PraxisFAB />
       <AthleteBottomNav />
     </div>
   );
