@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, lazy, Suspense } from "react";
 import SendToAthleteBar from "@/components/coach/SendToAthleteBar";
 import {
   ArrowLeft, FileText, RefreshCw, BarChart2, CheckSquare,
@@ -25,11 +25,11 @@ import {
   type IntelState, type QuickProfile,
 } from "./nutriplanIntelligence";
 import JarvisBackdrop from "@/components/dashboard/JarvisBackdrop";
-import { exportMealPlanPDF } from "@/utils/exportMealPlanPDF";
-import { exportMealPlanPDF as exportMealPlanPDFElite } from "@/lib/mealPlanPdf";
-import ProtocolGanttChart from "@/components/coach/ProtocolGanttChart";
-import CoachCheckinsTab from "@/components/coach/CoachCheckinsTab";
-import CoachWeekMealGrid from "@/components/coach/CoachWeekMealGrid";
+
+
+const ProtocolGanttChart = lazy(() => import("@/components/coach/ProtocolGanttChart"));
+const CoachCheckinsTab = lazy(() => import("@/components/coach/CoachCheckinsTab"));
+const CoachWeekMealGrid = lazy(() => import("@/components/coach/CoachWeekMealGrid"));
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -41,11 +41,11 @@ import {
   buildTrainingSchedulePrompt,
 } from "@/components/coach/TrainingSchedule";
 import { validateMedidasCaseiras } from "@/lib/medidasCaseirasValidator";
-import SubstitutionsAgentPage from "@/pages/SubstitutionsAgentPage";
+const SubstitutionsAgentPage = lazy(() => import("@/pages/SubstitutionsAgentPage"));
 import { SUBSTITUTION_BANK_V2, type FoodCategoryV2 } from "@/data/substitutionBank";
 import NutrientDensityPanel from "@/components/coach/NutrientDensityPanel";
 import Glut4SyncCard from "@/components/meal/Glut4SyncCard";
-import AdherenceModal from "@/components/meal/AdherenceModal";
+const AdherenceModal = lazy(() => import("@/components/meal/AdherenceModal"));
 import SubstitutionDrawer, { type DrawerConfirmPayload } from "@/components/coach/SubstitutionDrawer";
 import { buildSnapshot } from "@/lib/substitutionValidator";
 import PlanValidationAlert from "@/components/coach/PlanValidationAlert";
@@ -2370,6 +2370,7 @@ export default function PlanoAlimentarIA() {
     };
 
     try {
+      const { exportMealPlanPDF } = await import("@/utils/exportMealPlanPDF");
       await exportMealPlanPDF(patient, items, coachProfile, [], trainingDayIndices);
       toast({ title: "PDF gerado ✅", description: "Download iniciado." });
     } catch (e: any) {
@@ -2378,7 +2379,7 @@ export default function PlanoAlimentarIA() {
   };
 
   // NutriPlan Elite PDF — usa lib/mealPlanPdf.ts com TDEE breakdown + enrichment por refeição
-  const exportPDFElite = () => {
+  const exportPDFElite = async () => {
     if (!plano) return;
     try {
       const inferMealType = (titulo: string): string => {
@@ -2429,6 +2430,7 @@ export default function PlanoAlimentarIA() {
       };
       const patientName = plano.resumo?.nome || (form as any)?.nome || "Paciente";
       const today = new Date().toLocaleDateString("pt-BR");
+      const { exportMealPlanPDF: exportMealPlanPDFElite } = await import("@/lib/mealPlanPdf");
       exportMealPlanPDFElite({
         items,
         weekRange: `Plano Elite · ${today}`,
@@ -5057,7 +5059,7 @@ export default function PlanoAlimentarIA() {
 
         {/* NutriPlan Elite — Adherence Modal (paciente vinculado) */}
         {showAdherence && (
-          <AdherenceModal
+          <Suspense fallback={null}><AdherenceModal
             items={adherenceItems}
             profile={{
               vet_kcal: Number(form.calorias) || null,
@@ -5066,7 +5068,7 @@ export default function PlanoAlimentarIA() {
               fat_g: (plano as any)?.resumo?.gordura_total ?? null,
             }}
             onClose={() => setShowAdherence(false)}
-          />
+          /></Suspense>
         )}
       </div>
     );
@@ -5231,7 +5233,7 @@ export default function PlanoAlimentarIA() {
               </div>
             </div>
             {ganttPatientId ? (
-              <ProtocolGanttChart patientId={ganttPatientId} />
+              <Suspense fallback={<div style={{ padding: 40, textAlign: "center", color: T.muted, fontSize: 13 }}>Carregando…</div>}><ProtocolGanttChart patientId={ganttPatientId} /></Suspense>
             ) : (
               <div style={{ padding: 40, textAlign: "center", color: T.muted, fontSize: 13, border: `1px dashed ${T.border2}`, borderRadius: 10 }}>
                 Selecione um paciente acima para visualizar a periodização.
@@ -5270,7 +5272,7 @@ export default function PlanoAlimentarIA() {
               </div>
             </div>
             {checkinsPatientId ? (
-              <CoachCheckinsTab patientId={checkinsPatientId} />
+              <Suspense fallback={<div style={{ padding: 40, textAlign: "center", color: T.muted, fontSize: 13 }}>Carregando…</div>}><CoachCheckinsTab patientId={checkinsPatientId} /></Suspense>
             ) : (
               <div style={{ padding: 40, textAlign: "center", color: T.muted, fontSize: 13, border: `1px dashed ${T.border2}`, borderRadius: 10 }}>
                 Selecione um paciente acima para visualizar os check-ins semanais.
@@ -5309,10 +5311,10 @@ export default function PlanoAlimentarIA() {
               </div>
             </div>
             {weekGridPatientId ? (
-              <CoachWeekMealGrid
+              <Suspense fallback={<div style={{ padding: 40, textAlign: "center", color: T.muted, fontSize: 13 }}>Carregando…</div>}><CoachWeekMealGrid
                 patientId={weekGridPatientId}
                 patient={patients.find((p) => p.user_id === weekGridPatientId) || { user_id: weekGridPatientId }}
-              />
+              /></Suspense>
             ) : (
               <div style={{ padding: 40, textAlign: "center", color: T.muted, fontSize: 13, border: `1px dashed ${T.border2}`, borderRadius: 10 }}>
                 Selecione um paciente acima para abrir a grade semanal.
@@ -5413,7 +5415,7 @@ export default function PlanoAlimentarIA() {
             </button>
             <div style={{ fontSize: 13, fontWeight: 700, color: T.green }}>🔄 Substituições NUTRION</div>
           </div>
-          <SubstitutionsAgentPage />
+          <Suspense fallback={<div style={{ padding: 40, textAlign: "center", color: T.muted, fontSize: 13 }}>Carregando…</div>}><SubstitutionsAgentPage /></Suspense>
         </div>
       )}
 
