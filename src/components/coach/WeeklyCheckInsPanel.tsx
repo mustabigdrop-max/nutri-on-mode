@@ -143,7 +143,7 @@ const WeeklyCheckInsPanel = ({ planId }: { planId: string }) => {
                     {hasAnalysis && (
                       <Badge className="bg-primary/20 text-primary border-primary/30 text-[10px]">
                         <Sparkles className="h-3 w-3 mr-1" />
-                        IA
+                        AUTO
                       </Badge>
                     )}
                     {hasCritical && (

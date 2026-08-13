@@ -628,7 +628,7 @@ const MealPlanPage = () => {
           </button>
           <div className="flex-1">
             <h1 className="text-lg font-bold text-foreground">Plano Semanal</h1>
-            <p className="text-xs text-muted-foreground font-mono">IA + arraste para trocar</p>
+            <p className="text-xs text-muted-foreground font-mono">Arraste para trocar</p>
           </div>
           <button
             onClick={() => navigate("/shopping-list")}
@@ -1168,7 +1168,7 @@ const MealPlanPage = () => {
                     onClick={() => setSendMode("personalized")}
                     className={`flex-1 py-2 rounded-lg text-xs font-mono transition-all ${sendMode === "personalized" ? "bg-primary text-primary-foreground" : "border border-border text-muted-foreground"}`}
                   >
-                    🎯 Personalizado (IA)
+                    🎯 Personalizado
                   </button>
                   <button
                     onClick={() => setSendMode("copy")}

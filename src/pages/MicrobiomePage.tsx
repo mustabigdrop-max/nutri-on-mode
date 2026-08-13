@@ -22,7 +22,7 @@ const TABS = [
   { id: "fibras", label: "Fibras", icon: Calculator },
   { id: "protocolo", label: "Protocolo", icon: ListChecks },
   { id: "sintomas", label: "Diário", icon: Activity },
-  { id: "ia", label: "IA", icon: Brain },
+  { id: "ia", label: "Análise", icon: Brain },
   { id: "ciencia", label: "Ciência", icon: BookOpen },
 ] as const;
 
@@ -214,7 +214,7 @@ const MicrobiomePage = () => {
   // ── Protocol State ──
   const [expandedPhase, setExpandedPhase] = useState<number | null>(1);
 
-  // ── IA Diagnosis State ──
+  // ── Diagnosis State ──
   const [selectedSintomas, setSelectedSintomas] = useState<string[]>([]);
   const [iaLoading, setIaLoading] = useState(false);
   const [iaResult, setIaResult] = useState("");

@@ -1316,7 +1316,7 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
   const cat = CATEGORIES[selectedCategory];
   const hasAnyPhoto = !!(photos.front || photos.back || photos.side);
 
-  // Bundle de landmarks final = IA (parseado) + MediaPipe (autoritativo onde presente)
+  // Bundle de landmarks final = análise (parseada) + MediaPipe (autoritativo onde presente)
   const mergedLandmarksBundle = useMemo(() => {
     const aiBundle = analysisResult ? parseLandmarks(analysisResult) : ({} as any);
     if (!mpAutoBundle) return aiBundle;

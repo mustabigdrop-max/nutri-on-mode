@@ -223,7 +223,7 @@ const ProtocoloFemininoPage = () => {
             <h1 className="text-sm font-bold text-foreground">Protocolo Feminino</h1>
             <div className="flex items-center gap-1.5">
               <Heart className="w-3 h-3 text-pink-400" />
-              <span className="text-[10px] text-pink-400 font-mono">Ciclo · Ergogênicos · Perplexity + IA</span>
+              <span className="text-[10px] text-pink-400 font-mono">Ciclo · Ergogênicos · Evidência Científica</span>
             </div>
           </div>
         </div>

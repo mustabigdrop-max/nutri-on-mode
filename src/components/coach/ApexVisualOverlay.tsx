@@ -1288,7 +1288,7 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
                               {it.label}
                             </span>
                             <span style={{ fontSize: 8, color: it.ajustado ? `${g.cor}B3` : "rgba(255,255,255,0.3)" }}>
-                              {it.ajustado ? "✓ ajustado" : "IA"}
+                              {it.ajustado ? "✓ ajustado" : "auto"}
                             </span>
                             {it.ajustado && (
                               <button
