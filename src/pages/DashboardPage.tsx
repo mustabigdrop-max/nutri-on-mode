@@ -671,15 +671,15 @@ const DashboardPage = () => {
 
   const gridItems: GridItem[] = [
     // Core
-    { label: "Diários de Ergogênicos", desc: "Ciclos, check-ins e exames com IA", path: "/ergo-diary", emoji: "📋", plan: "ON +" },
-    { label: "Registrar", desc: "Log de refeições · IA analisa foto", path: "/meal-log", emoji: "🍽️", plan: "free" },
+    { label: "Diários de Ergogênicos", desc: "Ciclos, check-ins e exames ", path: "/ergo-diary", emoji: "📋", plan: "ON +" },
+    { label: "Registrar", desc: "Log de refeições · analisa foto", path: "/meal-log", emoji: "🍽️", plan: "free" },
     { label: "Histórico", desc: "Refeições passadas", path: "/meal-history", emoji: "📋", plan: "free" },
-    { label: "Plano Alimentar", desc: "Cardápio semanal personalizado por IA", path: "/meal-plan", emoji: "🍎", plan: "ON" },
+    { label: "Plano Alimentar", desc: "Cardápio semanal personalizado pelo sistema", path: "/meal-plan", emoji: "🍎", plan: "ON" },
     
     { label: "Lista de Compras", desc: "Custo + itens automáticos", path: "/shopping-list", emoji: "🛒", plan: "ON" },
     { label: "Receitas", desc: "Filtradas por macros do dia", path: "/recipes", emoji: "🍳", plan: "ON" },
-    { label: "Coach IA", desc: "Chat nutricional com contexto completo", path: "/chat", emoji: "🤖", plan: "ON" },
-    { label: "Agentes IA", desc: "Agentes especializados de nutrição", path: "/chat", emoji: "🧬", plan: "ON" },
+    { label: "Coach System", desc: "Chat nutricional com contexto completo", path: "/chat", emoji: "🤖", plan: "ON" },
+    { label: "Agentes", desc: "Agentes especializados de nutrição", path: "/chat", emoji: "🧬", plan: "ON" },
     // MCE
     { label: "MCE Adaptativo", desc: "Peso real + calibração TDEE", path: "/weight-adaptive", emoji: "⚖️", plan: "free" },
     // Acompanhamento
@@ -687,11 +687,11 @@ const DashboardPage = () => {
     { label: "Progresso", desc: "Gráficos de evolução", path: "/progress", emoji: "📈", plan: "ON" },
     { label: "Diário Fotográfico", desc: "Slider antes × depois", path: "/transformation", emoji: "📸", plan: "ON" },
     { label: "Composição Corporal", desc: "Medidas & bioimpedância", path: "/body-composition", emoji: "💪", plan: "ON +" },
-    { label: "Conquistas", desc: "Desafios & missões por IA", path: "/gamification", emoji: "🎮", plan: "ON" },
+    { label: "Conquistas", desc: "Desafios & missões pelo sistema", path: "/gamification", emoji: "🎮", plan: "ON" },
     // Nutrição Avançada
     { label: "Micronutrientes", desc: "Vitaminas & minerais", path: "/micronutrients", emoji: "🥬", plan: "ON" },
-    { label: "Exames de Sangue", desc: "IA interpreta seus exames", path: "/blood-test", emoji: "🩸", plan: "ON +" },
-    { label: "Suplementos", desc: "Stack personalizado por IA", path: "/supplementation", emoji: "💊", plan: "ON +" },
+    { label: "Exames de Sangue", desc: "interpreta seus exames", path: "/blood-test", emoji: "🩸", plan: "ON +" },
+    { label: "Suplementos", desc: "Stack personalizado pelo sistema", path: "/supplementation", emoji: "💊", plan: "ON +" },
     { label: "Montar Dieta", desc: "Construtor alimento a alimento", path: "/diet-builder", emoji: "🔨", plan: "ON +" },
     // Protocolo & Treino
     { label: "NutriSync", desc: "Treino + nutrição em tempo real", path: "/nutrisync", emoji: "⚡", plan: "ON" },
@@ -1312,7 +1312,7 @@ const DashboardPage = () => {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-bold text-foreground">Diários de Ergogênicos</p>
-            <p className="text-[11px] text-muted-foreground">Registrar ciclos, check-ins e análise de exames com IA</p>
+            <p className="text-[11px] text-muted-foreground">Registrar ciclos, check-ins e análise de exames </p>
           </div>
           <span className="rounded-full bg-accent/10 px-2 py-1 text-[9px] font-mono font-bold text-accent">ON+</span>
           <ChevronRight className="h-4 w-4 text-accent" />
@@ -1419,7 +1419,7 @@ const DashboardPage = () => {
                 <Brain className="w-4 h-4 text-primary" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[10px] font-mono text-primary uppercase tracking-wider mb-1">Alerta IA</p>
+                <p className="text-[10px] font-mono text-primary uppercase tracking-wider mb-1">Alerta</p>
                 <p className="text-sm text-foreground leading-relaxed">{predictiveAlert}</p>
               </div>
             </div>

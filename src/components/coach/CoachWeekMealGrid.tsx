@@ -235,7 +235,7 @@ export default function CoachWeekMealGrid({ patientId, patient }: Props) {
         }
       }
       await supabase.from("meal_plan_items").insert(newItems);
-      toast({ title: "Plano gerado com IA 🤖✨" });
+      toast({ title: "Plano gerado 🤖✨" });
       setAiOpen(false);
       await fetchItems();
     } catch (e: any) {
@@ -264,7 +264,7 @@ export default function CoachWeekMealGrid({ patientId, patient }: Props) {
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={() => setAiOpen(true)}>
-            <Sparkles className="w-4 h-4 mr-1" /> Gerar com IA
+            <Sparkles className="w-4 h-4 mr-1" /> Gerar Protocolo
           </Button>
           <Button
             size="sm"
@@ -424,7 +424,7 @@ export default function CoachWeekMealGrid({ patientId, patient }: Props) {
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-amber-400" /> Gerar plano com IA
+              <Sparkles className="w-4 h-4 text-amber-400" /> Gerar plano 
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-3">

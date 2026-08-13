@@ -26,7 +26,7 @@ const TOUR_STEPS = [
     code: "IA",
     id: "T-03",
     title: "CONSULTA PRÉ-DESVIO.",
-    description: "'E se eu comer?' — antes de qualquer desvio, consulta a IA primeiro. Ela calcula opções sem julgamento.",
+    description: "'E se eu comer?' — antes de qualquer desvio, consulta o sistema primeiro. Ela calcula opções sem julgamento.",
     color: "#00C896",
   },
 ];

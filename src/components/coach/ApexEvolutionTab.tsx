@@ -66,7 +66,7 @@ function ScoreSummaryCards({ history }: { history: ScoreDataPoint[] }) {
     { label: "SRI", sublabel: "Show Readiness", current: last.sri, delta: (last.sri ?? 0) - (first.sri ?? 0), color: "#B8922A" },
     { label: "Body Score", sublabel: "Lifestyle", current: last.bodyScore, delta: (last.bodyScore ?? 0) - (first.bodyScore ?? 0), color: "#38BDF8" },
     { label: "FCS", sublabel: "Clínico Fenner", current: last.fcs, delta: (last.fcs ?? 0) - (first.fcs ?? 0), color: "#A78BFA" },
-    { label: "Qualidade", sublabel: "Detecção IA", current: last.qualidade, delta: (last.qualidade ?? 0) - (first.qualidade ?? 0), color: "#34D399" },
+    { label: "Qualidade", sublabel: "Detecção", current: last.qualidade, delta: (last.qualidade?? 0) - (first.qualidade?? 0), color: "#34D399" },
   ].filter((m) => m.current != null);
 
   return (

@@ -375,7 +375,7 @@ function AngleTag({ x, y, label }: { x: number; y: number; label: string }) {
   );
 }
 
-// Parser do bloco json_landmarks_pro emitido pela IA
+// Parser do bloco json_landmarks_pro emitido pelo sistema
 export function parsePostural33(text: string): Postural33Bundle | null {
   const re = /```json_landmarks_pro\s*([\s\S]*?)```/i;
   const m = re.exec(text);

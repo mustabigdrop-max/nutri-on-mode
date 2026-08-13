@@ -618,7 +618,7 @@ const ProtocolEnginePage = () => {
         >
           <Sparkles className="w-5 h-5 text-primary mx-auto mb-2" />
           <p className="text-xs text-muted-foreground">
-            Ao ativar um protocolo, a IA recalcula automaticamente seus macros,
+            Ao ativar um protocolo, o sistema recalcula automaticamente seus macros,
             metas calóricas e plano alimentar. Troca em 1 toque.
           </p>
         </motion.div>

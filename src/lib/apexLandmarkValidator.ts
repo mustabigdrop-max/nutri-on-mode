@@ -1,4 +1,4 @@
-// APEX Visual — validação anatômica dos landmarks devolvidos pela IA
+// APEX Visual — validação anatômica dos landmarks devolvidos pelo sistema
 export type LandmarkMap = Record<string, { x: number; y: number }>;
 
 export interface LandmarkValidation {
@@ -221,7 +221,7 @@ export interface PosturalValidationResult {
 
 /**
  * Corrige automaticamente landmarks obviamente errados retornados
- * pela IA de visão. Opera sobre as chaves do schema atual
+ * pelo sistema de visão. Opera sobre as chaves do schema atual
  * (shoulder_left/right, scapula_left/right, hip_left/right,
  * spine_c7, spine_l5). Coordenadas em porcentagem (0-100).
  */

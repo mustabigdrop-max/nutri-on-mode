@@ -34,9 +34,9 @@ const FEATURES: FeatureCard[] = [
   { key: "loops", label: "Loops Comportamentais", desc: "Mapeie gatilhos e substitua rotinas negativas", icon: RefreshCw, iconColor: "text-emerald-400", bgColor: "bg-emerald-400/10", plan: "ON" },
   { key: "vontade", label: "Força de Vontade", desc: "Decisões antecipadas + design de ambiente", icon: Battery, iconColor: "text-amber-400", bgColor: "bg-amber-400/10", plan: "ON" },
   { key: "sos", label: "Regulação Emocional SOS", desc: "Protocolo de 90s para momentos de risco", icon: AlertTriangle, iconColor: "text-pink-400", bgColor: "bg-pink-400/10", plan: "ON" },
-  { key: "coach", label: "Coach Comportamental IA", desc: "Agente treinado com MCE + seus dados reais", icon: MessageCircle, iconColor: "text-sky-400", bgColor: "bg-sky-400/10", plan: "ON+" },
+  { key: "coach", label: "Coach Comportamental", desc: "Agente treinado com MCE + seus dados reais", icon: MessageCircle, iconColor: "text-sky-400", bgColor: "bg-sky-400/10", plan: "ON+" },
   { key: "diario", label: "Diário Comportamental", desc: "Registre emoções, fome e aprendizados detalhados", icon: BookOpen, iconColor: "text-orange-400", bgColor: "bg-orange-400/10", plan: "ON+" },
-  { key: "preditiva", label: "Análise Preditiva", desc: "IA prevê recaídas e sabotagens antes de acontecer", icon: BarChart3, iconColor: "text-red-400", bgColor: "bg-red-400/10", plan: "ON+" },
+  { key: "preditiva", label: "Análise Preditiva", desc: "prevê recaídas e sabotagens antes de acontecer", icon: BarChart3, iconColor: "text-red-400", bgColor: "bg-red-400/10", plan: "ON+" },
 ];
 
 export default function BehavioralTriggersPage() {
@@ -298,7 +298,7 @@ export default function BehavioralTriggersPage() {
                 <Card className="border-amber-500/20 bg-gradient-to-br from-amber-500/5 to-primary/5">
                   <CardContent className="py-5 text-center space-y-2">
                     <Sparkles className="w-7 h-7 text-amber-400 mx-auto" />
-                    <p className="text-xs font-bold">Desbloqueie o Coach Comportamental IA</p>
+                    <p className="text-xs font-bold">Desbloqueie o Coach Comportamental</p>
                     <p className="text-[10px] text-muted-foreground">Agente personalizado que conhece seus padrões, gatilhos e perfil neuropsicológico.</p>
                     <Button onClick={() => navigate("/settings")} size="sm" className="text-[10px] mt-2">
                       Ver Planos →

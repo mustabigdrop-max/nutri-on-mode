@@ -12,7 +12,7 @@ interface LockedFeatureModalProps {
 }
 
 const BONUS_FEATURES = [
-  { icon: <BookOpen className="w-4 h-4" />, label: "Receitas personalizadas por IA" },
+  { icon: <BookOpen className="w-4 h-4" />, label: "Receitas personalizadas pelo sistema" },
   { icon: <ShoppingCart className="w-4 h-4" />, label: "Lista de compras inteligente" },
   { icon: <BarChart3 className="w-4 h-4" />, label: "Histórico completo e relatórios" },
 ];

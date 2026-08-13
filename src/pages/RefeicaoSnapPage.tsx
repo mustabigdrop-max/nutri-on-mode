@@ -220,7 +220,7 @@ export default function RefeicaoSnapPage() {
           ))}
         </motion.div>
         <motion.p animate={{ opacity: [0.5, 1, 0.5] }} transition={{ duration: 2, repeat: Infinity }} className="text-green-400 font-mono text-sm text-center">
-          Analisando sua refeição com IA...
+          Analisando sua refeição...
         </motion.p>
       </div>
     );
@@ -233,7 +233,7 @@ export default function RefeicaoSnapPage() {
         <button onClick={() => (analysis ? resetInput() : navigate(-1))} className="text-muted-foreground"><ArrowLeft className="w-5 h-5" /></button>
         <div>
           <h1 className="text-lg font-bold text-green-400 font-mono">Refeição Snap</h1>
-          <p className="text-xs text-muted-foreground">Análise instantânea por IA</p>
+          <p className="text-xs text-muted-foreground">Análise instantânea pelo sistema</p>
         </div>
       </div>
 

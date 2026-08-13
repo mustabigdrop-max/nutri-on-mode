@@ -298,7 +298,7 @@ function EliteGenerateSection({ userId }: { userId?: string }) {
   // Detecta se o protocolo é o "Mello — Bulking 16 semanas" (16 semanas + bulking)
   const isMello16 = String(weeks) === "16" && (phase || "").toLowerCase().includes("bulk");
 
-  // Sync sources: STRATUM Ready + Fibras IA
+  // Sync sources: STRATUM Ready + Fibras
   const [readyCheckin, setReadyCheckin] = useState<{
     sono: number;
     energia: number;
@@ -404,7 +404,7 @@ ${readyScore >= 8 ? "✅ Score ALTO — protocolo completo, RPE máximo permitid
 
     const fibrasBloco = fiberProfile
       ? `
-━━━ PERFIL DE FIBRAS (Fibras IA) ━━━
+━━━ PERFIL DE FIBRAS (Fibras) ━━━
 - Dominância: ${fiberProfile.dominancia.toUpperCase()}
 - Notas: ${fiberProfile.notas}
 ${fiberProfile.dominancia === "tipo_i" ? "→ Mais sets, reps altas (15-25), descanso 60-90s" : fiberProfile.dominancia === "tipo_iia" ? "→ 6-12 reps, tensão mecânica máxima, descanso 2-3min" : fiberProfile.dominancia === "tipo_iix" ? "→ 3-6 reps pesadas + finisher metabólico, descanso 3-5min" : "→ Periodização por bloco na sessão (pesado → metabólico)"}`
@@ -506,7 +506,7 @@ Português. Específico. Científico. Zero genérico.`;
       toast.error("Informe o nome do cliente para gerar o protocolo");
       return;
     }
-    // Fase, músculos e nível são opcionais — a IA infere pelo prompt elite
+    // Fase, músculos e nível são opcionais — o sistema infere pelo prompt elite
     // Bloqueio por tempo: protocolo não cabe na sessão (margem severa de 15min)
     const est = estimateProtocolDuration({ systemId: trainingSystem, muscles, level, sessionDuration, cardio });
     if (est.diff <= -15) {
@@ -782,7 +782,7 @@ Português. Específico. Científico. Zero genérico.`;
           <Textarea
             value={correctivePrompt}
             onChange={e => setCorrectivePrompt(e.target.value)}
-            placeholder="Cole aqui o texto do protocolo corretivo gerado pelo APEX/TrainingON Sync. A IA vai integrar exercícios corretivos, ativações e ajustes de volume ao treino principal."
+            placeholder="Cole aqui o texto do protocolo corretivo gerado pelo APEX/TrainingON Sync. O sistema vai integrar exercícios corretivos, ativações e ajustes de volume ao treino principal."
             className="bg-transparent text-xs min-h-[120px] font-mono"
             style={{ borderColor: BORDER, color: TEXT }}
           />
@@ -957,7 +957,7 @@ Português. Específico. Científico. Zero genérico.`;
 
           {!fiberProfile && (
             <p className="text-[9px] text-center" style={{ color: TEXT_MUTED }}>
-              💡 Vá em <b>Fibras IA</b> e converse com o agente para ativar a prescrição sincronizada
+              💡 Vá em <b>Fibras</b> e converse com o agente para ativar a prescrição sincronizada
             </p>
           )}
         </div>
@@ -2632,7 +2632,7 @@ function VolumeLandmarksSection({ userId }: { userId?: string }) {
           )}
 
           <Button onClick={analyzeVolume} disabled={analyzing || !sets} className="w-full mt-3 text-xs font-bold h-10 rounded-xl" style={{ background: GREEN, color: BG }}>
-            {analyzing ? "Analisando..." : "🔬 Analisar com IA"}
+            {analyzing? "Analisando..." : "🔬 Analisar "}
           </Button>
 
           {analysis && (

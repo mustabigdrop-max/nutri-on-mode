@@ -94,7 +94,7 @@ const SupplementOnboarding = ({ onComplete, generating }: Props) => {
     // Step 1: Budget
     <div key="budget" className="space-y-3">
       <h2 className="text-lg font-bold text-foreground">Orçamento mensal</h2>
-      <p className="text-xs text-muted-foreground">A IA otimiza o custo-benefício</p>
+      <p className="text-xs text-muted-foreground">O sistema otimiza o custo-benefício</p>
       <div className="space-y-2">
         {BUDGETS.map(b => (
           <button
@@ -204,7 +204,7 @@ const SupplementOnboarding = ({ onComplete, generating }: Props) => {
           {generating ? (
             <><Loader2 className="w-4 h-4 animate-spin" /> Gerando stack...</>
           ) : step === 3 ? (
-            <><Sparkles className="w-4 h-4" /> Gerar Stack com IA</>
+            <><Sparkles className="w-4 h-4" /> Gerar Stack </>
           ) : (
             <>Próximo <ArrowRight className="w-4 h-4" /></>
           )}

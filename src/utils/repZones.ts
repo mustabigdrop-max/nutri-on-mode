@@ -190,7 +190,7 @@ export function validateTriple(
   };
 }
 
-// ──────────────── Prompt da IA ────────────────
+// ──────────────── Prompt do sistema ────────────────
 export function buildZoneInstruction(
   semanaAtual: number,
   totalSemanas: number,

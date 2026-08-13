@@ -61,7 +61,7 @@ export default function CoachReportsPage() {
             <FileBarChart className="h-5 w-5 text-amber-500" /> Relatórios Semanais
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            Histórico de relatórios IA gerados por atleta. Para criar novo, use o tracker do atleta.
+            Histórico de relatórios gerados por atleta. Para criar novo, use o tracker do atleta.
           </p>
         </CardHeader>
         <CardContent className="space-y-4">

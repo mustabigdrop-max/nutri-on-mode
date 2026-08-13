@@ -302,7 +302,7 @@ const EatOutFlow = ({ onClose }: EatOutFlowProps) => {
             {aiLoading && (
               <div className="rounded-xl border border-primary/30 bg-card p-4 text-center mb-3">
                 <Loader2 className="w-6 h-6 text-primary animate-spin mx-auto mb-1" />
-                <p className="text-xs text-muted-foreground">Analisando foto com IA...</p>
+                <p className="text-xs text-muted-foreground">Analisando foto...</p>
               </div>
             )}
 

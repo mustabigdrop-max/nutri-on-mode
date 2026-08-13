@@ -195,7 +195,7 @@ export function BlocoPerfilAutonomico({ value, onChange }: {
           marginTop: 12, padding: "10px 12px", background: "rgba(255,107,0,.06)",
           border: "1px solid rgba(255,107,0,.3)", fontSize: 12, color: "#FFB27A", lineHeight: 1.6,
         }}>
-          ⚠️ Sistema nervoso simpático dominante — a IA reduzirá o déficit em 5–10%, priorizará
+          ⚠️ Sistema nervoso simpático dominante — o sistema reduzirá o déficit em 5–10%, priorizará
           magnésio, adaptógenos e carboidrato na última refeição para modular o cortisol noturno.
         </div>
       )}
@@ -567,7 +567,7 @@ export function BlocoCicloMenstrual({ value, onChange }: {
           marginTop: 12, padding: "10px 12px", background: "rgba(255,92,92,.06)",
           border: "1px solid rgba(255,92,92,.35)", fontSize: 12, color: "#FF9B9B", lineHeight: 1.6,
         }}>
-          🚨 RED-S — amenorreia há mais de 3 meses. A IA NÃO prescreverá déficit calórico:
+          🚨 RED-S — amenorreia há mais de 3 meses. O sistema NÃO prescreverá déficit calórico:
           o plano será montado para restaurar a disponibilidade energética, com encaminhamento médico.
         </div>
       )}

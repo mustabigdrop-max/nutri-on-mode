@@ -74,7 +74,7 @@ const DashboardGamificationCards = () => {
             disabled={generatingMissions}
             className="w-full py-2 rounded-lg border border-dashed border-border text-[10px] text-muted-foreground hover:border-primary/30 transition-all"
           >
-            {generatingMissions ? "Gerando..." : "🎯 Gerar missões com IA"}
+            {generatingMissions? "Gerando..." : "🎯 Gerar missões "}
           </button>
         ) : (
           <div className="space-y-1.5">

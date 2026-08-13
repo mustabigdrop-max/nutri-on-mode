@@ -336,7 +336,7 @@ export const TrainingSchedule = ({ value, onChange }: Props) => {
   );
 };
 
-// ─── Prompt builder (injetado no payload da IA) ───────────────────────────────
+// ─── Prompt builder (injetado no payload do sistema) ───────────────────────────────
 const labelOf = (arr: { v: string; l: string }[], v?: string) =>
   arr.find((x) => x.v === v)?.l || v || "—";
 
@@ -367,7 +367,7 @@ export const buildTrainingSchedulePrompt = (
     lines.push(`- ${DAY_LABEL[d]}: TREINO · ${parts}${dbl}`);
   }
 
-  // Resumo de horários distintos para a IA
+  // Resumo de horários distintos para o sistema
   const trainingDays = DAY_ORDER
     .map((d) => ({ d, day: schedule.base[d] }))
     .filter((x) => x.day.is_training_day && x.day.time);

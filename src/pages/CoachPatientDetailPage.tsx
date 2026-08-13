@@ -499,7 +499,7 @@ const CoachPatientDetailPage = () => {
                 {generating ? (
                   <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Gerando...</>
                 ) : (
-                  <><Brain className="w-4 h-4 mr-2" /> Gerar com IA</>
+                  <><Brain className="w-4 h-4 mr-2" /> Gerar Protocolo</>
                 )}
               </Button>
               <Button
@@ -618,7 +618,7 @@ const CoachPatientDetailPage = () => {
                 {dayItems.length === 0 && (
                   <Card>
                     <CardContent className="p-6 text-center text-muted-foreground text-sm">
-                      Nenhum item neste dia. Adicione manualmente abaixo ou gere com IA.
+                      Nenhum item neste dia. Adicione manualmente abaixo ou gere pelo sistema.
                     </CardContent>
                   </Card>
                 )}
@@ -812,8 +812,8 @@ const CoachPatientDetailPage = () => {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-sm">Protocolo Ativo</CardTitle>
-                  <Button size="sm" onClick={() => toast({ title: "Gerando novo protocolo com IA...", description: "Funcionalidade em ativação" })}>
-                    <Brain className="w-4 h-4 mr-1" /> Gerar com IA
+                  <Button size="sm" onClick={() => toast({ title: "Gerando novo protocolo...", description: "Funcionalidade em ativação" })}>
+                    <Brain className="w-4 h-4 mr-1" /> Gerar Protocolo
                   </Button>
                 </div>
               </CardHeader>

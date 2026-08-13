@@ -1,5 +1,5 @@
 // APEX Guided Session — Fase 1 (Modo Rápido: 4 fotos estáticas)
-// IA conduz: instruções por step → foto → análise em tempo real → laudo consolidado
+// conduz: instruções por step → foto → análise em tempo real → laudo consolidado
 import { useCallback, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -257,7 +257,7 @@ export default function ApexGuidedSession({
         const analysis = data as StepAnalysis;
         const framing = analysis.framing_check;
 
-        // Se IA detectou enquadramento ruim e usuário ainda não forçou, pausa para confirmar
+        // Se detectou enquadramento ruim e usuário ainda não forçou, pausa para confirmar
         if (framing && framing.enquadramento_adequado === false && !opts?.forceLowFraming) {
           setPhotos((prev) => {
             const next = [...prev];
@@ -438,7 +438,7 @@ export default function ApexGuidedSession({
             </span>
           </div>
           <div className="text-[11px] text-muted-foreground">
-            {athleteName || "Atleta"} · Avaliação postural guiada pela IA
+            {athleteName || "Atleta"} · Avaliação postural guiada pelo sistema
           </div>
         </div>
         {onClose && (

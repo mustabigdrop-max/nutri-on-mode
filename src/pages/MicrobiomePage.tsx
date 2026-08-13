@@ -802,7 +802,7 @@ const MicrobiomePage = () => {
             </motion.div>
           )}
 
-          {/* ──── ABA: DIAGNÓSTICO IA ──── */}
+          {/* ──── ABA: DIAGNÓSTICO ──── */}
           {activeTab === "ia" && (
             <motion.div key="ia" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-4">
               <h2 className="text-sm font-bold text-green-400 font-mono flex items-center gap-2">
@@ -843,7 +843,7 @@ const MicrobiomePage = () => {
               <button onClick={handleIaDiagnosis} disabled={iaLoading || selectedSintomas.length === 0}
                 className="w-full py-3 rounded-xl bg-green-500 text-black font-mono text-sm font-bold disabled:opacity-50 hover:bg-green-400 transition-all flex items-center justify-center gap-2">
                 {iaLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-                {iaLoading ? "Analisando microbioma..." : "Gerar Análise com IA"}
+                {iaLoading? "Analisando microbioma..." : "Gerar Análise "}
               </button>
               {iaResult && (
                 <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}

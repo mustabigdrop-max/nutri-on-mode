@@ -13,7 +13,7 @@ export interface FoodSnapshot {
 
 export interface SubstitutionValidation {
   original: FoodSnapshot;
-  proposto: FoodSnapshot;          // valores baseados na gramagem sugerida pela IA
+  proposto: FoodSnapshot; // valores baseados na gramagem sugerida pelo sistema
   ajustado: FoodSnapshot;          // valores recalculados para BATER em kcal com original
   deltaKcal: number | null;        // ajustado.kcal - original.kcal
   deltaP: number | null;

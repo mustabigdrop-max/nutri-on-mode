@@ -281,7 +281,7 @@ const DrNexusGenerator = ({ mode, title, description }: DrNexusGeneratorProps) =
             <p className="text-[10px] font-['JetBrains_Mono'] text-muted-foreground mt-1">
               {isExamesMode && uploadedFiles.length > 0
                 ? `Processando ${uploadedFiles.length} arquivo${uploadedFiles.length > 1 ? "s" : ""} → OCR → Interpretação clínica`
-                : "Varredura nutriON → Perplexity → Análise IA"}
+                : "Varredura nutriON → Perplexity → Análise"}
             </p>
           </div>
         </motion.div>

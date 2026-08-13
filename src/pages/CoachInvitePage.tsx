@@ -186,7 +186,7 @@ const CoachInvitePage = () => {
             <div className="text-left space-y-2 pt-2">
               {[
                 "Plano alimentar personalizado",
-                "Chat com IA nutricionista",
+                "Chat nutricionista",
                 "Suplementação e protocolos",
                 "Acompanhamento direto com seu coach",
               ].map((s) => (

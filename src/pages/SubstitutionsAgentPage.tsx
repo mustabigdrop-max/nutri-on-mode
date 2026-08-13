@@ -170,7 +170,7 @@ const SubstitutionsAgentPage = () => {
             }`}
           >
             <MessageSquare className="w-4 h-4 inline mr-2" />
-            Agente IA
+            Agente
           </button>
         </div>
       </header>

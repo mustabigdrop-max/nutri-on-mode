@@ -23,7 +23,7 @@ const agents: Agent[] = [
     id: "nutri-coach",
     name: "NutriCoach MCE",
     tagline: "Coach nutricional com contexto completo",
-    description: "IA treinada com Metodologia MCE que conhece seus macros, histórico, perfil comportamental e objetivo. Responde como um nutricionista de elite.",
+    description: "treinada com Metodologia MCE que conhece seus macros, histórico, perfil comportamental e objetivo. Responde como um nutricionista de elite.",
     color: "#22d3ee",
     icon: Sparkles,
     specialty: ["Macronutrientes", "Plano Alimentar", "Ajustes Diários", "Receitas"],
@@ -204,7 +204,7 @@ const AgentsPage = () => {
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div>
-            <h1 className="text-lg font-bold text-foreground">Agentes IA 🧬</h1>
+            <h1 className="text-lg font-bold text-foreground">Agentes 🧬</h1>
             <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider">Especialistas em nutrição • Ative e converse</p>
           </div>
         </div>

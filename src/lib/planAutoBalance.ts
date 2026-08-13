@@ -37,7 +37,7 @@ export const atwater = (p: number, c: number, g: number) => p * 4 + c * 4 + g * 
 const readGrams = (food: any): number | null =>
   parseGrams(food?.quantidade_g) ?? parseGrams(food?.quantidade);
 
-/** Macros de um alimento: usa o banco TACO quando reconhecido; senão, o que a IA informou. */
+/** Macros de um alimento: usa o banco TACO quando reconhecido; senão, o que o sistema informou. */
 const macrosOf = (ref: FoodRef) => {
   if (ref.density && ref.grams) {
     const f = ref.grams / 100;
@@ -148,7 +148,7 @@ const writeBack = (refs: FoodRef[], plano: any) => {
     meal.macros = { proteina: Math.round(p), carboidrato: Math.round(c), gordura: Math.round(g) };
     meal.calorias = kcal;
     meal.kcal_calculada = kcal;
-    // Remove o valor "declarado" pela IA — evita deltas vermelhos falsos na UI
+    // Remove o valor "declarado" pelo sistema — evita deltas vermelhos falsos na UI
     if ("kcal_declarada" in meal) delete meal.kcal_declarada;
   }
 

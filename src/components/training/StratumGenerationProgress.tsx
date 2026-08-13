@@ -45,7 +45,7 @@ export default function StratumGenerationProgress({ error, onRetry, onCancel }: 
     const title = isTimeout ? "Geração demorou mais que o esperado" : "Falha na geração do protocolo";
     const desc = isTimeout
       ? "O protocolo é complexo. Tente novamente — geralmente funciona na segunda tentativa."
-      : "Erro de conexão com a IA. Verifique sua conexão e tente novamente.";
+      : "Erro de conexão com a. Verifique sua conexão e tente novamente.";
     return (
       <div
         className="rounded-xl p-4 max-w-2xl mx-auto"

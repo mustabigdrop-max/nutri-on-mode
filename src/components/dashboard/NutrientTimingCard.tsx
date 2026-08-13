@@ -425,7 +425,7 @@ Cite estudos de ISSN, JISSN, PubMed 2023-2025. Seja específico com gramas, hor�
         {expanded ? (
           <><ChevronUp className="w-3 h-3" /> Recolher ciência</>
         ) : (
-          <><ChevronDown className="w-3 h-3" /> Ver ciência + pesquisa IA</>
+          <><ChevronDown className="w-3 h-3" /> Ver ciência + pesquisa</>
         )}
       </button>
     </motion.div>

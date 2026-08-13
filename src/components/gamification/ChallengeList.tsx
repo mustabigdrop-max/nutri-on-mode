@@ -25,7 +25,7 @@ const ChallengeList = ({ challenges, onGenerate, generating }: ChallengeListProp
       <div className="bg-card border border-border rounded-2xl p-6 text-center">
         <span className="text-3xl block mb-2">🎯</span>
         <p className="text-sm font-bold text-foreground mb-1">Desafios Semanais</p>
-        <p className="text-xs text-muted-foreground mb-4">A IA gera desafios temáticos toda semana!</p>
+        <p className="text-xs text-muted-foreground mb-4">O sistema gera desafios temáticos toda semana!</p>
         {onGenerate && (
           <button
             onClick={onGenerate}

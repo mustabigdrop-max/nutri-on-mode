@@ -126,9 +126,9 @@ export async function autoDetectAllViews(files: {
 }
 
 /**
- * Mescla landmarks MediaPipe sobre landmarks da IA: MediaPipe é autoritativo
+ * Mescla landmarks MediaPipe sobre landmarks do sistema: MediaPipe é autoritativo
  * quando presente (source !== "none"). Para campos que MediaPipe não cobriu,
- * mantém o valor da IA.
+ * mantém o valor do sistema.
  */
 export function mergeAiWithMediaPipe(
   aiLandmarks: Record<string, any> | undefined,

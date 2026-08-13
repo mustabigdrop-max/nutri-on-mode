@@ -124,7 +124,7 @@ const normalizeFoodFromAI = (food: NutritionRecord): FoodItem & { micronutrients
     protein,
     carbs,
     fat,
-    category: "🤖 IA",
+    category: "🤖 Auto",
     micronutrients: (asNutritionRecord(food.micronutrients) || asNutritionRecord(food.micronutrientes) || {}) as Record<string, number>,
   };
 };
@@ -376,10 +376,10 @@ const MealLogPage = () => {
         setVoiceTranscript("");
         toast.success(`${data.foods.length} alimento(s) identificado(s)! ✨`);
       } else {
-        toast.error("A IA não conseguiu identificar alimentos.");
+        toast.error("O sistema não conseguiu identificar alimentos.");
       }
     } catch (e: any) {
-      toast.error(e.message || "Erro na análise por IA");
+      toast.error(e.message || "Erro na análise do sistema");
     }
     setAiLoading(false);
   };
@@ -737,8 +737,8 @@ const MealLogPage = () => {
           </button>
           {([
             { mode: "manual" as InputMode, icon: Search, label: "Busca" },
-            { mode: "ai-text" as InputMode, icon: Sparkles, label: "IA Texto" },
-            { mode: "ai-photo" as InputMode, icon: Camera, label: "IA Foto" },
+            { mode: "ai-text" as InputMode, icon: Sparkles, label: "Texto" },
+            { mode: "ai-photo" as InputMode, icon: Camera, label: "Foto" },
           ]).map(m => (
             <button
               key={m.mode}
@@ -791,7 +791,7 @@ const MealLogPage = () => {
           {aiLoading && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="mb-4 rounded-xl border border-primary/30 bg-card p-6 text-center">
               <Loader2 className="w-8 h-8 text-primary animate-spin mx-auto mb-2" />
-              <p className="text-sm font-semibold text-foreground">Analisando com IA...</p>
+              <p className="text-sm font-semibold text-foreground">Analisando...</p>
               <p className="text-xs text-muted-foreground mt-1">Identificando alimentos e calculando macros</p>
             </motion.div>
           )}
@@ -906,7 +906,7 @@ const MealLogPage = () => {
                   <div className="flex items-center gap-2">
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold text-foreground truncate">
-                        {(sf.food.category === "🤖 IA" || sf.food.category === "📦 Produto") && <span className="text-primary mr-1">✨</span>}
+                        {(sf.food.category === "🤖 Auto" || sf.food.category === "📦 Produto") && <span className="text-primary mr-1">✨</span>}
                         {sf.food.name}
                       </p>
                       <p className="text-xs text-muted-foreground font-mono">
@@ -1025,7 +1025,7 @@ const MealLogPage = () => {
               <input type="text" value={aiQuery} onChange={e => setAiQuery(e.target.value)} onKeyDown={e => e.key === "Enter" && analyzeByText()} placeholder="Ex: prato de arroz com feijão e frango..." className="w-full pl-10 pr-20 py-3 rounded-xl border border-primary/30 bg-card text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
               <button onClick={() => analyzeByText()} disabled={!aiQuery.trim()} className="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-bold disabled:opacity-40">Analisar</button>
             </div>
-            <p className="text-[10px] text-muted-foreground mt-1.5 px-1">💡 Descreva sua refeição em linguagem natural. A IA calcula macros automaticamente.</p>
+            <p className="text-[10px] text-muted-foreground mt-1.5 px-1">💡 Descreva sua refeição em linguagem natural. O sistema calcula macros automaticamente.</p>
           </div>
         )}
 
@@ -1045,11 +1045,11 @@ const MealLogPage = () => {
             <button onClick={() => fileInputRef.current?.click()} className="w-full py-6 rounded-xl border-2 border-dashed border-primary/30 bg-card hover:bg-primary/5 transition-all flex flex-col items-center gap-2">
               <Camera className="w-8 h-8 text-primary" />
               <span className="text-sm font-semibold text-foreground">Tirar foto ou escolher da galeria</span>
-              <span className="text-[10px] text-muted-foreground">A IA identifica os alimentos automaticamente</span>
+              <span className="text-[10px] text-muted-foreground">O sistema identifica os alimentos automaticamente</span>
             </button>
             {photoObservation && (
               <p className="text-[10px] text-muted-foreground text-center">
-                📝 Observação será enviada junto com a foto para corrigir a IA
+                📝 Observação será enviada junto com a foto para corrigir a
               </p>
             )}
           </div>
@@ -1073,7 +1073,7 @@ const MealLogPage = () => {
                 {isListening ? "Ouvindo..." : "Toque para falar"}
               </p>
               <p className="text-[10px] text-muted-foreground text-center">
-                {isListening ? "Diga o que você comeu e a IA vai registrar" : "Ex: \"Comi arroz com feijão e frango grelhado\""}
+                {isListening? "Diga o que você comeu e o sistema vai registrar" : "Ex: \"Comi arroz com feijão e frango grelhado\""}
               </p>
               {voiceTranscript && (
                 <div className="w-full p-3 rounded-xl bg-secondary text-sm text-foreground font-mono">

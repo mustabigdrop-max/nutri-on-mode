@@ -1251,7 +1251,7 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
   });
   const [showVirilizationModal, setShowVirilizationModal] = useState(false);
   const [pendingVertexAction, setPendingVertexAction] = useState<null | (() => void)>(null);
-  // MediaPipe auto-detect bundle (sobrescreve landmarks da IA quando presente)
+  // MediaPipe auto-detect bundle (sobrescreve landmarks do sistema quando presente)
   const [mpAutoBundle, setMpAutoBundle] = useState<{
     front: ApexAutoDetectResult | null;
     back: ApexAutoDetectResult | null;
@@ -1478,7 +1478,7 @@ Suporte em uso: ${suporte || "não informado"}`;
 
   const analyzeWithAI = useCallback(async () => {
     setLoading(true);
-    // Kick off MediaPipe auto-detect em paralelo com a chamada da IA
+    // Kick off MediaPipe auto-detect em paralelo com a chamada do sistema
     const mpPromise = autoDetectAllViews({
       front: photos.front,
       back: photos.back,
@@ -1530,7 +1530,7 @@ Suporte em uso: ${suporte || "não informado"}` : "";
       if ((data as any)?.error) throw new Error((data as any).error);
 
       const text = (data as any)?.text || "";
-      if (!text) throw new Error("Resposta vazia da IA");
+      if (!text) throw new Error("Resposta vazia do sistema");
 
       setAnalysisResult(text);
       setIsDone(true);
@@ -1561,7 +1561,7 @@ Suporte em uso: ${suporte || "não informado"}` : "";
         const farmMeta = parseFarmMeta(text);
         const segments = parseSegments(text);
         const aiLandmarks = parseLandmarks(text);
-        // Mescla MediaPipe sobre IA por vista
+        // Mescla MediaPipe sobre por vista
         const landmarks: any = {};
         (["front", "back", "lateral"] as const).forEach((v) => {
           const aiView = (aiLandmarks as any)[v];
@@ -1638,7 +1638,7 @@ Suporte em uso: ${suporte || "não informado"}` : "";
     } catch (e: any) {
       toast({
         title: "Erro na análise",
-        description: e?.message || "Falha ao processar com a IA",
+        description: e?.message || "Falha ao processar com a",
         variant: "destructive",
       });
     } finally {
@@ -1800,7 +1800,7 @@ Suporte em uso: ${suporte || "não informado"}` : "";
         <div>
           {activeResultTab === "scores" && (
             <div className="space-y-3">
-              {segments.length === 0 && <EmptyMsg text="Nenhum score retornado pela IA." />}
+              {segments.length === 0 && <EmptyMsg text="Nenhum score retornado pelo sistema." />}
               {segments.length > 0 && (
                 <>
                   <ApexGeneralScoreCard segments={segments} cat={cat} />
@@ -2040,11 +2040,11 @@ Suporte em uso: ${suporte || "não informado"}` : "";
                     parseSection={parseSection}
                   />
                 )}
-                {/* Fallback raw markdown (colapsado) caso a IA não respeite o formato esperado */}
+                {/* Fallback raw markdown (colapsado) caso o sistema não respeite o formato esperado */}
                 {currentBody && (
                   <details className="rounded border border-border/50 p-2 bg-card/30">
                     <summary className="cursor-pointer text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-                      📄 Texto bruto da IA
+                      📄 Texto bruto do sistema
                     </summary>
                     <div className="mt-2"><Pre body={currentBody} /></div>
                   </details>
@@ -2317,7 +2317,7 @@ Suporte em uso: ${suporte || "não informado"}` : "";
         )}
       </div>
 
-      {/* ━━━ MODE TOGGLE: Análise IA vs Evolução Fotográfica ━━━ */}
+      {/* ━━━ MODE TOGGLE: Análise vs Evolução Fotográfica ━━━ */}
       <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
         {([
           { k: "analise" as const,  l: "Análise APEX",            icon: ScanLine },
@@ -2554,7 +2554,7 @@ Suporte em uso: ${suporte || "não informado"}` : "";
         </div>
       )}
 
-      {/* ━━━ TESTES CLÍNICOS (IA por foto) ━━━ */}
+      {/* ━━━ TESTES CLÍNICOS (por foto) ━━━ */}
       <div id="apex-clinical-tests" style={{ ...cardStyle, marginBottom: 16 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
           {sectionTick(APEX.electric)}
@@ -2706,7 +2706,7 @@ Suporte em uso: ${suporte || "não informado"}` : "";
         <DialogContent className="max-w-3xl max-h-[85vh] flex flex-col">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <FileText className="w-4 h-4" /> Prompt completo enviado à IA
+              <FileText className="w-4 h-4" /> Prompt completo enviado ao sistema
             </DialogTitle>
             <DialogDescription>
               Análise APEX {formData.compostos ? "+ Dr. VERTEX (farmacologia ativa)" : "(sem protocolo farmacológico)"} — {athlete?.nome || "atleta"} · {cat.label}
@@ -2732,7 +2732,7 @@ Suporte em uso: ${suporte || "não informado"}` : "";
                     onClick={() => {
                       navigator.clipboard.writeText(fullPrompt).then(() => {
                         setPromptCopied(true);
-                        toast({ title: "Prompt copiado", description: "Conteúdo enviado à IA copiado para a área de transferência." });
+                        toast({ title: "Prompt copiado", description: "Conteúdo enviado ao sistema copiado para a área de transferência." });
                         setTimeout(() => setPromptCopied(false), 2000);
                       });
                     }}

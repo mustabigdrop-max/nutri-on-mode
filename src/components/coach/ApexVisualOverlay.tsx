@@ -353,7 +353,7 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
     try { localStorage.setItem("apex_modo_marketing", modoMarketing.toString()); } catch {}
   }, [modoMarketing]);
 
-  // Aplica overrides manuais (drag livre) sobre os landmarks da IA — antes de todos os recálculos
+  // Aplica overrides manuais (drag livre) sobre os landmarks do sistema — antes de todos os recálculos
   const data = useMemo(() => {
     const base = landmarks[view];
     if (!base) return base;
@@ -1153,7 +1153,7 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
           {/* FIX 5 — Debug raw JSON (dev only) */}
           {import.meta.env.DEV && data && (
             <details className="rounded border border-dashed border-muted-foreground/40 p-1.5">
-              <summary className="text-[9px] font-mono text-muted-foreground cursor-pointer">🐛 DEV: JSON bruto IA × parseado</summary>
+              <summary className="text-[9px] font-mono text-muted-foreground cursor-pointer">🐛 DEV: JSON bruto × parseado</summary>
               <pre className="text-[8px] mt-1 max-h-40 overflow-auto opacity-80">{JSON.stringify({ raw_angles: data.angles, parsed_findings: findings.map(f => ({ key: f.key, value: f.value, normal: f.normal, sev: f.sev })) }, null, 2)}</pre>
             </details>
           )}
@@ -1248,7 +1248,7 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
                     </p>
                     <p style={{ fontSize: 9, color: "rgba(255,255,255,0.4)", margin: 0 }}>
                       {totalAjustados === 0
-                        ? "Posições da IA — arraste qualquer ponto para corrigir"
+? "Posições do sistema — arraste qualquer ponto para corrigir"
                         : `${totalAjustados} ponto(s) ajustado(s) manualmente`}
                     </p>
                   </div>
@@ -1293,7 +1293,7 @@ export default function ApexVisualOverlay({ landmarks, photos, athleteName, cate
                             {it.ajustado && (
                               <button
                                 onClick={it.reset}
-                                title={`Restaurar ${it.label} à posição da IA`}
+                                title={`Restaurar ${it.label} à posição do sistema`}
                                 style={{
                                   fontSize: 8, color: "rgba(255,255,255,0.4)",
                                   background: "transparent", border: "none",
@@ -1603,7 +1603,7 @@ export function calcPlumbLine(
   return { x1: cx, y1: 0, x2: cx, y2: imageHeight, axisX: cx, source: "frame-center", inclinacao: 0 };
 }
 
-// ─── Confiança por landmark (fallback até a IA retornar `confidence`) ──
+// ─── Confiança por landmark (fallback até o sistema retornar `confidence`) ──
 // Heurística baseada em definição óssea visual: ombros/quadris alto;
 // joelhos/tornozelos médio; coluna/escápulas baixo. NÃO remove pontos
 // do SVG — apenas modula visual e participação em cálculos clínicos.
@@ -2922,7 +2922,7 @@ function AnatomyEducationPanel({
                   {ref.id}
                 </p>
                 <p style={{ fontSize: 9, color: ref.ajustado ? "rgba(52,211,153,0.6)" : "rgba(255,255,255,0.3)", margin: 0 }}>
-                  {ref.ajustado ? "✓ posicionado" : "posição da IA"}
+                  {ref.ajustado? "✓ posicionado" : "posição do sistema"}
                 </p>
               </div>
             ))}

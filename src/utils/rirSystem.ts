@@ -88,7 +88,7 @@ export function getApexCorretivoRIR(weekRIR: RIRLevel): RIRLevel {
   return Math.max(weekRIR, 1) as RIRLevel;
 }
 
-// Instrução para o prompt da IA
+// Instrução para o prompt do sistema
 export function buildRIRInstruction(semanaAtual: number, totalSemanas: number): string {
   const rir = calcWeekRIR(semanaAtual, totalSemanas);
   const cfg = RIR_CONFIG[rir];

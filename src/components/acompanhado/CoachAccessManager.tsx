@@ -89,7 +89,7 @@ const CoachAccessManager = ({ patientUserId, coachProfileId }: CoachAccessManage
         ))}
 
         <div className="flex items-center justify-between">
-          <span className="text-sm text-foreground">Chat IA ilimitado</span>
+          <span className="text-sm text-foreground">Chat ilimitado</span>
           <Switch
             checked={chatUnlimited}
             onCheckedChange={setChatUnlimited}
