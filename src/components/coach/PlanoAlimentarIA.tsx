@@ -49,6 +49,8 @@ import SubstitutionDrawer, { type DrawerConfirmPayload } from "@/components/coac
 import { buildSnapshot } from "@/lib/substitutionValidator";
 import PlanValidationAlert from "@/components/coach/PlanValidationAlert";
 import { calculateNutritionItem, validateNutritionPlan } from "@/lib/planNutritionValidation";
+import { autoBalancePlan, type BalanceReport } from "@/lib/planAutoBalance";
+
 
 // ─── Design tokens — Jarvis Nutrition (emerald primary + gold identity) ───────
 const T = {
@@ -1640,8 +1642,15 @@ export default function PlanoAlimentarIA() {
     if (!data?.plan) throw new Error("Resposta inválida da IA");
     // Salva contexto clínico no histórico local (apenas ao gerar com sucesso)
     saveContextoToHistory((form as any)?.nome || "");
-    return data.plan as PlanoData;
+    // ── PRECISÃO CALÓRICA: recalcula com banco TACO e auto-corrige para meta ±2% ──
+    const rawPlan = data.plan as PlanoData;
+    const metaKcal = Number((form as any).calorias) || Number((rawPlan as any)?.resumo?.calorias_totais) || 0;
+    const { plano: balanced, report } = autoBalancePlan(rawPlan, metaKcal);
+    (balanced as any)._balance = report;
+    console.log("[NutriPlan] auto-balance:", report);
+    return balanced as PlanoData;
   };
+
 
   // Abre o modal de revisão do protocolo farmacológico com o texto atual
   const abrirRevisaoProtocolo = () => {
@@ -4856,19 +4865,22 @@ export default function PlanoAlimentarIA() {
               Refeições do dia
             </div>
 
-            {/* Indicador de fechamento calórico em tempo real */}
+            {/* Indicador de fechamento calórico — meta ±2% (auto-corrigido) */}
             {(() => {
+              const balance: BalanceReport | undefined = (plano as any)?._balance;
               const meta = nutritionValidation.targetKcal;
               const atual = nutritionValidation.totals.kcal;
               const delta = atual - meta;
-              const absDelta = Math.abs(delta);
-              const status: { label: string; color: string } =
-                absDelta <= 50 ? { label: "✓ FECHADO", color: T.green } :
-                absDelta <= 150 ? { label: "⚠ AJUSTE LEVE", color: T.amber } :
-                { label: "✗ DESBALANCEADO", color: T.red };
+              const tol = Math.max(50, meta * 0.02);
+              const balanced = meta > 0 && Math.abs(delta) <= tol;
+              const status: { label: string; color: string } = balanced
+                ? { label: balance?.adjusted ? "✅ BALANCEADO (auto-ajustado)" : "✅ BALANCEADO", color: T.green }
+                : Math.abs(delta) <= meta * 0.05
+                  ? { label: "⚠ AJUSTE LEVE", color: T.amber }
+                  : { label: "✗ DESBALANCEADO", color: T.red };
               const pct = meta > 0 ? Math.min(100, Math.max(0, (atual / meta) * 100)) : 0;
               return (
-                <div style={{ padding: "10px 14px", marginBottom: 12, background: T.bg2, border: `1px solid ${status.color}44`, borderRadius: 10 }}>
+                <div style={{ padding: "10px 14px", marginBottom: 12, background: balanced ? "rgba(0,255,136,0.05)" : T.bg2, border: `1px solid ${status.color}${balanced ? "4d" : "44"}`, borderRadius: 10 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 6, fontFamily: T.fontMono }}>
                     <span style={{ fontSize: 10, color: T.muted, letterSpacing: "0.15em", textTransform: "uppercase" }}>
                       META: <span style={{ color: T.text, fontWeight: 700 }}>{meta.toLocaleString("pt-BR")} kcal</span>
@@ -4882,9 +4894,15 @@ export default function PlanoAlimentarIA() {
                     <span>Atual: <span style={{ color: T.text, fontWeight: 700 }}>{Math.round(atual).toLocaleString("pt-BR")} kcal</span></span>
                     <span>Δ: <span style={{ color: status.color, fontWeight: 700 }}>{delta > 0 ? "+" : ""}{Math.round(delta)} kcal</span></span>
                   </div>
+                  {balance?.adjusted && balance.adjustments.length > 0 && (
+                    <div style={{ marginTop: 6, fontSize: 9.5, color: T.muted, fontFamily: T.fontMono }}>
+                      Original: {balance.originalKcal.toLocaleString("pt-BR")} kcal → Corrigido: {balance.finalKcal.toLocaleString("pt-BR")} kcal · Ajuste: {balance.adjustments.join(" · ")}
+                    </div>
+                  )}
                 </div>
               );
             })()}
+
 
             {/* Legenda Treino/Descanso · Pré/Pós */}
             <div style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "center", padding: "8px 12px", marginBottom: 12, background: T.bg2, border: `1px dashed ${T.border2}`, borderRadius: 10, fontSize: 11, color: T.muted }}>

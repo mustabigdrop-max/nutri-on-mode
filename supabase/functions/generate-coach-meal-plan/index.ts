@@ -7,7 +7,28 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const KCAL_CLOSURE_RULE = `⚠ REGRA INVIOLÁVEL DO NUTRIPLAN — FECHAMENTO CALÓRICO:
+const KCAL_CLOSURE_RULE = `⚠ REGRA ABSOLUTA DE PRECISÃO CALÓRICA — TOLERÂNCIA MÁXIMA ±2% DA META:
+
+A soma EXATA das calorias de todas as refeições DEVE ser igual à meta calórica informada.
+Tolerância máxima: ±2% da meta (ex.: meta 2.500 kcal → ±50 kcal).
+
+Fatores EXATOS: Proteína 4 kcal/g · Carboidrato 4 kcal/g · Gordura 9 kcal/g · Álcool 7 kcal/g.
+Fórmula única: kcal = (PTN × 4) + (CHO × 4) + (LIP × 9)
+
+ANTES de retornar o plano, verifique internamente:
+  1) Some as calorias de cada alimento de cada refeição (gramatura × composição TACO / 100)
+  2) Compare a soma com a meta
+  3) Se ultrapassar ±2%, AJUSTE as gramagens (preferencialmente de carboidratos) até fechar
+
+CONSISTÊNCIA OBRIGATÓRIA:
+- gramagem do alimento × composição do alimento = macros do alimento
+- soma dos macros dos alimentos = macros da refeição
+- soma dos macros das refeições = macros do dia = META
+
+NÃO arredonde gramagens para números "bonitos". Se a meta pede 187g de proteína no dia,
+a soma das proteínas deve dar 187g — não 190g nem 194g. Use gramagens quebradas
+(ex.: 135g, 87g, 213g) sempre que necessário. Precisão > estética numérica.
+NUNCA reduza proteína para fechar calorias — ajuste carboidrato primeiro, gordura depois.
 
 Antes de retornar o plano, execute internamente:
   SOMA = 0
@@ -15,10 +36,11 @@ Antes de retornar o plano, execute internamente:
     1) calcular kcal e macros pela tabela TACO por 100g × gramatura/100
     2) SOMAR os itens para obter a refeição; NUNCA atribuir o total ao primeiro item
   Calcular o total final por Atwater: proteína × 4 + carboidrato × 4 + gordura × 9.
-  Se |SOMA - metaKcal| > 50: ajustar as porções até fechar.
+  Se |SOMA - metaKcal| > 2% da meta: ajustar as porções até fechar.
 
-NUNCA retornar plano com diferença maior que 50 kcal da meta declarada no TDEE.
-O kcal de cada refeição DEVE bater com (proteína×4)+(carbo×4)+(gordura×9) — tolerância ±30 kcal.
+NUNCA retornar plano com diferença maior que 2% da meta declarada no TDEE.
+O kcal de cada refeição DEVE bater com (proteína×4)+(carbo×4)+(gordura×9) — tolerância ±10 kcal.
+
 
 NÚMERO MÍNIMO DE REFEIÇÕES POR FAIXA CALÓRICA (obrigatório):
 - Até 2.000 kcal → mínimo 3 refeições
