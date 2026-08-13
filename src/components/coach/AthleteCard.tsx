@@ -1,7 +1,8 @@
 import { memo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { UtensilsCrossed, Dumbbell, BarChart3, MessageSquare, AlertTriangle, Zap, Eye, ClipboardList, Clock, CheckCircle2 } from "lucide-react";
+import { UtensilsCrossed, Dumbbell, BarChart3, MessageSquare, AlertTriangle, Zap, Eye, ClipboardList, Clock, CheckCircle2, Pencil } from "lucide-react";
 import AnamnesisDialog from "@/components/coach/AnamnesisDialog";
+import EditAthleteDialog from "@/components/coach/EditAthleteDialog";
 import type { CoachAthlete } from "@/hooks/useCoachAthletes";
 
 const RISK_COLOR: Record<CoachAthlete["riskLevel"], string> = {
@@ -17,11 +18,13 @@ interface Props {
   athlete: CoachAthlete;
   onSendMeal: (a: CoachAthlete) => void;
   onSendTraining: (a: CoachAthlete) => void;
+  onUpdated?: () => void;
 }
 
-const AthleteCard = ({ athlete: a, onSendMeal, onSendTraining }: Props) => {
+const AthleteCard = ({ athlete: a, onSendMeal, onSendTraining, onUpdated }: Props) => {
   const navigate = useNavigate();
   const [anamneseOpen, setAnamneseOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
   const color = RISK_COLOR[a.riskLevel];
 
   return (
@@ -137,7 +140,18 @@ const AthleteCard = ({ athlete: a, onSendMeal, onSendTraining }: Props) => {
         <button className="quick-action-sm" onClick={() => setAnamneseOpen(true)}>
           <ClipboardList className="w-3.5 h-3.5" /> Anamnese
         </button>
+        <button className="quick-action-sm" onClick={() => setEditOpen(true)}>
+          <Pencil className="w-3.5 h-3.5" /> Editar dados
+        </button>
       </div>
+
+      <EditAthleteDialog
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        athleteId={a.userId}
+        athleteName={a.name}
+        onSaved={onUpdated}
+      />
 
       <AnamnesisDialog
         open={anamneseOpen}
