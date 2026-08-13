@@ -1,6 +1,7 @@
-import { memo } from "react";
+import { memo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { UtensilsCrossed, Dumbbell, BarChart3, MessageSquare, AlertTriangle, Zap, Eye } from "lucide-react";
+import { UtensilsCrossed, Dumbbell, BarChart3, MessageSquare, AlertTriangle, Zap, Eye, ClipboardList } from "lucide-react";
+import AnamnesisDialog from "@/components/coach/AnamnesisDialog";
 import type { CoachAthlete } from "@/hooks/useCoachAthletes";
 
 const RISK_COLOR: Record<CoachAthlete["riskLevel"], string> = {
