@@ -183,9 +183,6 @@ const CoachDashboardPage = () => {
             <button className="quick-action" onClick={() => navigate("/coach/plano-alimentar")}>
               <UtensilsCrossed className="w-4 h-4" /> Gerar Plano Alimentar
             </button>
-            <button className="quick-action" onClick={() => navigate("/coach/trainingon")}>
-              <Dumbbell className="w-4 h-4" /> TrainingON — Montar Treino
-            </button>
             <button className="quick-action" onClick={() => navigate("/coach/exames")}>
               <FlaskConical className="w-4 h-4" /> Solicitar Exames
             </button>
