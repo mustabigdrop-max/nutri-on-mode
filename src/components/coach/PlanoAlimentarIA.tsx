@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import SendToAthleteBar from "@/components/coach/SendToAthleteBar";
 import {
   ArrowLeft, FileText, RefreshCw, BarChart2, CheckSquare,
   Grid, Zap, BookOpen, Clock, ChevronDown, User as UserIcon,
@@ -2507,6 +2508,17 @@ export default function PlanoAlimentarIA() {
             </button>
           </div>
         </div>
+
+        <div style={{ margin: "12px 24px 0" }}>
+          <SendToAthleteBar
+            type="meal_plan"
+            sourceId={savedId}
+            label={`Plano alimentar — ${r.nome || ""}`}
+            buildPayload={() => plano}
+          />
+        </div>
+
+
 
         {/* NutriPlan Elite — TDEE Bruto → Ajustado + breakdown farmacológico */}
         {(() => {

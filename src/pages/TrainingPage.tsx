@@ -15,6 +15,7 @@ import {
 import { buildVolumeReport, detectGvtMismatch } from "@/lib/trainingVolume";
 import "@/styles/training-hud.css";
 import { TrainingHUDBackground } from "@/components/training/TrainingHUDBackground";
+import SendToAthleteBar from "@/components/coach/SendToAthleteBar";
 import { exportTrainingPDF } from "@/lib/trainingPdfExport";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -1109,6 +1110,23 @@ Português. Específico. Científico. Zero genérico.`;
             </button>
           </div>
         </div>
+
+        {(protocol || textResults.protocolo) && (
+          <SendToAthleteBar
+            type="training_plan"
+            sourceId={savedProtocolId}
+            label={`${clientName || "Protocolo"} — ${phase || "treino"}`}
+            buildPayload={() => ({
+              protocol: protocol || null,
+              protocol_text: textResults.protocolo || "",
+              periodizacao_text: textResults.periodizacao || "",
+              client_name: clientName,
+              phase,
+              weeks,
+            })}
+          />
+        )}
+
 
         {loading || generationError ? (
           <StratumGenerationProgress

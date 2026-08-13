@@ -89,7 +89,7 @@ const SendPlanDialog = ({ open, onOpenChange, athlete, type, coachProfileId, coa
   const goGenerate = () => {
     if (!athlete) return;
     onOpenChange(false);
-    navigate(isMeal ? `/coach/plano-alimentar?athlete=${athlete.userId}` : `/coach/trainingon?athlete=${athlete.userId}`);
+    navigate(isMeal ? `/coach/plano-alimentar?athlete=${athlete.userId}` : `/training?athlete=${athlete.userId}`);
   };
 
   const handleSend = async () => {
