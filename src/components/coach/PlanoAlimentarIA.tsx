@@ -7377,3 +7377,76 @@ export default function PlanoAlimentarIA() {
     </div>
   );
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ROTINA E PREFERÊNCIAS — helpers (janela alimentar + bloco de contexto)
+// ─────────────────────────────────────────────────────────────────────────────
+export function computeJanelaAlimentar(acordar?: string, dormir?: string): number {
+  const parse = (v?: string) => {
+    const m = /^(\d{1,2}):(\d{2})$/.exec(String(v || ""));
+    if (!m) return null;
+    return Number(m[1]) * 60 + Number(m[2]);
+  };
+  const a = parse(acordar), d = parse(dormir);
+  if (a == null || d == null) return 0;
+  let diff = d - a;
+  if (diff <= 0) diff += 24 * 60;
+  return Math.round((diff / 60) * 10) / 10;
+}
+
+const TRABALHO_LABEL: Record<string, string> = {
+  sedentario: "Sedentário (escritório)",
+  ativo: "Ativo (em pé, andando)",
+  pesado: "Pesado (construção, carga)",
+  noturno: "Turno noturno",
+  remoto: "Remoto (home office)",
+};
+const CULINARIA_LABEL: Record<string, string> = {
+  nao_cozinha: "Não cozinha — refeições simples, prontas ou de fácil montagem (máx. 3 ingredientes)",
+  basico: "Básico — arroz, ovo, frango grelhado (máx. 4 ingredientes)",
+  intermediario: "Intermediário — segue receitas e faz meal prep",
+  avancado: "Avançado — aceita receitas elaboradas",
+};
+const MEALPREP_LABEL: Record<string, string> = {
+  nao: "Não faz meal prep — come no momento (variar mais entre refeições)",
+  "2_3_dias": "Prepara 2–3 dias — pode repetir proteína/CHO entre refeições para praticidade",
+  semana: "Prepara a semana toda — priorizar repetição e alimentos que conservam bem",
+};
+const APETITE_LABEL: Record<string, string> = {
+  normal: "Normal — come bem em todos os horários",
+  sem_fome_manha: "Sem fome de manhã — concentrar calorias na tarde/noite, café leve",
+  fome_manha: "Muita fome de manhã — café reforçado, jantar mais leve",
+  fome_constante: "Fome constante — priorizar volume, fibra e proteína em todas as refeições",
+  peri_treino: "Fome apenas peri-treino — concentrar maior parte das calorias ao redor do treino",
+};
+const AGUA_LABEL: Record<string, string> = {
+  menos_1: "menos de 1L/dia",
+  "1_2": "1–2L/dia",
+  "2_3": "2–3L/dia",
+  "3_mais": "3L ou mais/dia",
+  nao_sei: "não sabe estimar",
+};
+const PRAZO_LABEL: Record<string, string> = {
+  sem_prazo: "sem prazo — progresso sustentável",
+  "3_meses": "3 meses",
+  "6_meses": "6 meses",
+  "12_meses": "12 meses",
+  data: "data específica",
+};
+
+export function buildRotinaPrompt(f: any): string {
+  if (!f) return "";
+  const janela = computeJanelaAlimentar(f.horaAcordar, f.horaDormir);
+  const L: string[] = [];
+  L.push(`Acorda às ${f.horaAcordar} e dorme às ${f.horaDormir} — janela alimentar de ${janela}h. Distribua as refeições espaçadas dentro desta janela (primeira refeição até 1h após acordar, última no mínimo 1h antes de dormir).`);
+  L.push(`Rotina de trabalho: ${TRABALHO_LABEL[f.tipoTrabalho] || f.tipoTrabalho}.${f.tipoTrabalho === "noturno" ? " ATENÇÃO: turno noturno — inverta a crononutrição (carboidrato no início do turno, proteína lenta no fim, refeição principal antes do turno)." : ""}`);
+  L.push(`Habilidade culinária: ${CULINARIA_LABEL[f.habilidadeCulinaria] || f.habilidadeCulinaria}. Respeite este nível de complexidade em TODAS as preparações.`);
+  L.push(`Meal prep: ${MEALPREP_LABEL[f.mealPrep] || f.mealPrep}.`);
+  L.push(`Apetite ao longo do dia: ${APETITE_LABEL[f.apetitePerfil] || f.apetitePerfil}. Ajuste a distribuição calórica por refeição de acordo.`);
+  if (f.alimentosOdeia?.trim()) L.push(`ALIMENTOS PROIBIDOS (o paciente não quer): ${f.alimentosOdeia.trim()}. NUNCA incluir estes alimentos, nem como substituto.`);
+  if (f.alimentosGatilho?.trim()) L.push(`ALIMENTOS GATILHO / COMPULSÃO: ${f.alimentosGatilho.trim()}. NUNCA incluir no plano e listar como "evitar" nas observações finais.`);
+  const prazo = f.prazoObjetivo === "data" && f.dataAlvo ? `data específica (${f.dataAlvo})` : (PRAZO_LABEL[f.prazoObjetivo] || f.prazoObjetivo);
+  L.push(`Prazo desejado para o objetivo: ${prazo}. Se houver data, calcule a taxa semanal necessária e sinalize nas observações se for inviável ou agressiva.`);
+  L.push(`Ingestão atual de água: ${AGUA_LABEL[f.aguaAtual] || f.aguaAtual}. Se a meta de hidratação for muito acima do hábito atual, prescreva progressão semanal (ex.: +500ml/semana) em vez da meta cheia de imediato.`);
+  return `\n\nROTINA E PREFERÊNCIAS DO PACIENTE (OBRIGATÓRIO RESPEITAR):\n- ${L.join("\n- ")}`;
+}
