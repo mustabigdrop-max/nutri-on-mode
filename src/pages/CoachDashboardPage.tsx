@@ -21,6 +21,7 @@ import { useCoachAthletes, type CoachAthlete } from "@/hooks/useCoachAthletes";
 import { generateAgenda } from "@/lib/coachAgenda";
 import AthleteCard from "@/components/coach/AthleteCard";
 import SendPlanDialog, { type SendPlanType } from "@/components/coach/SendPlanDialog";
+import ProtocolSuggestionsPanel from "@/components/coach/ProtocolSuggestionsPanel";
 
 const ADVANCED_MODULES = [
   { label: "TrainingON", icon: Dumbbell, route: "/coach/trainingon", color: "#E8A020" },
@@ -49,6 +50,12 @@ const CoachDashboardPage = () => {
   const [sendOpen, setSendOpen] = useState(false);
 
   const agenda = useMemo(() => generateAgenda(athletes), [athletes]);
+
+  const athleteIds = useMemo(() => athletes.map((a) => a.userId), [athletes]);
+  const athleteNames = useMemo(
+    () => Object.fromEntries(athletes.map((a) => [a.userId, a.name])),
+    [athletes]
+  );
 
   const checkinsPendentes = athletes.filter((a) => a.diasDesdeCheckin > 3).length;
   const emRisco = athletes.filter((a) => a.riskLevel === "risk").length;
@@ -175,6 +182,9 @@ const CoachDashboardPage = () => {
             </motion.button>
           ))}
         </div>
+
+        {/* SUGESTÕES DE AJUSTE */}
+        <ProtocolSuggestionsPanel athleteIds={athleteIds} athleteNames={athleteNames} />
 
         {/* AÇÕES RÁPIDAS */}
         <section className="space-y-3">
