@@ -73,7 +73,7 @@ export async function saveAnamnesis(
     completed_at: status === "completed" ? new Date().toISOString() : null,
   };
   for (const s of ANAMNESIS_SECTIONS) payload[s.key] = data[s.key] || {};
-  const { error } = await supabase.from("anamnesis").update(payload).eq("id", id);
+  const { error } = await supabase.from("anamnesis").update(payload as never).eq("id", id);
   if (error) throw error;
 }
 
