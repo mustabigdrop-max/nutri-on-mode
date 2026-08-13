@@ -272,6 +272,9 @@ const App = () => (
             <Route path="/coach/relatorios" element={<CoachToolRoute><ProtectedRoute><CoachReportsPage /></ProtectedRoute></CoachToolRoute>} />
             <Route path="/coach/anamneses" element={<CoachToolRoute><ProtectedRoute><CoachAnamnesisPage /></ProtectedRoute></CoachToolRoute>} />
             <Route path="/anamnese/:token" element={<AnamnesisPublicPage />} />
+            <Route path="/coach/equipe" element={<ProtectedRoute><PatientTeamHubPage /></ProtectedRoute>} />
+            <Route path="/coach/equipe/:patientId" element={<ProtectedRoute><PatientTeamHubPage /></ProtectedRoute>} />
+            <Route path="/minha-equipe" element={<ProtectedRoute><MyTeamPage /></ProtectedRoute>} />
             <Route path="/coach/atletas" element={<CoachToolRoute><ProtectedRoute><AthleteRoster /></ProtectedRoute></CoachToolRoute>} />
             <Route path="/coach/atletas/:id" element={<CoachToolRoute><ProtectedRoute><AthleteProgressTracker /></ProtectedRoute></CoachToolRoute>} />
             <Route path="/coach/apex-pose" element={<CoachToolRoute><ProtectedRoute><APEXPoseAnalysisPage /></ProtectedRoute></CoachToolRoute>} />
