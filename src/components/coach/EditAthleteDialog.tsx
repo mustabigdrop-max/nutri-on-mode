@@ -168,7 +168,15 @@ const EditAthleteDialog = ({ open, onOpenChange, athleteId, athleteName, onSaved
               </div>
               <div className="space-y-1">
                 <Label>Sexo</Label>
-                <Input value={form.sex} onChange={set("sex")} placeholder="masculino / feminino" />
+                <select
+                  value={normalizeSex(form.sex) ?? ""}
+                  onChange={(e) => setForm((f) => ({ ...f, sex: e.target.value }))}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                >
+                  <option value="">Não informado</option>
+                  <option value="male">Masculino</option>
+                  <option value="female">Feminino</option>
+                </select>
               </div>
               <div className="space-y-1">
                 <Label>Idade</Label>
