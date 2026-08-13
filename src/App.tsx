@@ -111,6 +111,8 @@ const CoachLabExamsPage = lazy(() => import("./pages/coach/CoachLabExamsPage"));
 const ExamRequestPage = lazy(() => import("./pages/coach/ExamRequestPage"));
 const CoachReportsPage = lazy(() => import("./pages/coach/CoachReportsPage"));
 const CoachAnamnesisPage = lazy(() => import("./pages/coach/CoachAnamnesisPage"));
+const PatientTeamHubPage = lazy(() => import("./pages/coach/PatientTeamHubPage"));
+const MyTeamPage = lazy(() => import("./pages/athlete/MyTeamPage"));
 const AnamnesisPublicPage = lazy(() => import("./pages/AnamnesisPublicPage"));
 const APEXPoseAnalysisPage = lazy(() => import("./pages/coach/APEXPoseAnalysisPage"));
 const DrNexusPage = lazy(() => import("./pages/DrNexusPage"));
