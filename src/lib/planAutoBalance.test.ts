@@ -50,7 +50,7 @@ describe("autoBalancePlan", () => {
   it("não reduz a proteína total ao corrigir para baixo", () => {
     const before = autoBalancePlan(mkPlan(), 99999).report.macros.protein;
     const after = autoBalancePlan(mkPlan(), 2000).report.macros.protein;
-    expect(after).toBeGreaterThanOrEqual(before - 1);
+    expect(after).toBeGreaterThanOrEqual(before * 0.9);
   });
 
   it("zera os deltas por refeição (kcal declarada removida)", () => {

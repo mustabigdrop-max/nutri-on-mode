@@ -88,9 +88,13 @@ const distribute = (candidates: FoodRef[], deltaKcal: number): number => {
   const pool = candidates.filter((r) => r.density && r.grams && r.grams > 0);
   if (!pool.length) return deltaKcal;
 
+  // Peso = contribuição calórica de CHO do alimento, penalizando fontes ricas em
+  // proteína (para preservar a proteína total ao corrigir para baixo).
   const weights = pool.map((r) => {
     const d = r.density!;
-    return (d.kcal / 100) * r.grams!;
+    const choKcal = (d.c / 100) * r.grams! * 4;
+    const base = choKcal > 0 ? choKcal : (d.kcal / 100) * r.grams!;
+    return base / (1 + d.p / 6);
   });
   const totalWeight = weights.reduce((s, w) => s + w, 0);
   if (totalWeight <= 0) return deltaKcal;
