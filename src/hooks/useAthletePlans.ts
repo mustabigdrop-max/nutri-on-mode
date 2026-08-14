@@ -55,6 +55,7 @@ export interface AthleteTrainingPlan {
 
 export interface AthletePlansState {
   loading: boolean;
+  error: string | null;
   mealPlan: AthleteMealPlan | null;
   training: AthleteTrainingPlan | null;
   coachMessage: { text: string; date: string } | null;
@@ -65,6 +66,7 @@ export function useAthletePlans(overrideUserId?: string): AthletePlansState {
   const { user: authUser } = useAuth();
   const userId = overrideUserId || authUser?.id || null;
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [mealPlan, setMealPlan] = useState<AthleteMealPlan | null>(null);
   const [training, setTraining] = useState<AthleteTrainingPlan | null>(null);
   const [coachMessage, setCoachMessage] = useState<{ text: string; date: string } | null>(null);
@@ -75,6 +77,10 @@ export function useAthletePlans(overrideUserId?: string): AthletePlansState {
       return;
     }
     setLoading(true);
+    setError(null);
+
+    try {
+
 
     const [{ data: meal }, { data: prot }, { data: envio }, { data: sent }] = await Promise.all([
       supabase
@@ -184,8 +190,15 @@ export function useAthletePlans(overrideUserId?: string): AthletePlansState {
       setCoachMessage(null);
     }
 
-    setLoading(false);
+      console.log("[useAthletePlans] carregado", { userId, hasMeal: !!(sentMeal || meal), hasTraining: !!(sentTraining || prot) });
+    } catch (err) {
+      console.error("[useAthletePlans] erro ao carregar planos:", err);
+      setError(err instanceof Error ? err.message : "Erro ao carregar plano alimentar");
+    } finally {
+      setLoading(false);
+    }
   }, [userId]);
+
 
   useEffect(() => {
     load();
@@ -211,7 +224,7 @@ export function useAthletePlans(overrideUserId?: string): AthletePlansState {
   }, [userId, load]);
 
 
-  return { loading, mealPlan, training, coachMessage, refetch: load };
+  return { loading, error, mealPlan, training, coachMessage, refetch: load };
 }
 
 export const mealKcal = (m: AthleteMeal): number => {

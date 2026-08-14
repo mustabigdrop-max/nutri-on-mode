@@ -5060,7 +5060,7 @@ export default function PlanoAlimentarIA() {
 
         {/* NutriPlan Elite — Adherence Modal (paciente vinculado) */}
         {showAdherence && (
-          <Suspense fallback={null}><AdherenceModal
+          <Suspense fallback={<div style={{ padding: 24, textAlign: "center", color: "#A0A0A0", fontSize: 13 }}>Carregando…</div>}><AdherenceModal
             items={adherenceItems}
             profile={{
               vet_kcal: Number(form.calorias) || null,

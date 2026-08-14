@@ -7,6 +7,8 @@ import {
 import { useAthletePlans, mealKcal, type AthleteMeal } from "@/hooks/useAthletePlans";
 import AthleteBottomNav from "@/components/athlete/AthleteBottomNav";
 import { useAthleteTarget } from "@/hooks/useAthleteTarget";
+import { LoadingState, ErrorState } from "@/components/nutriplan/NutriPlanStates";
+
 
 const BG = "#020205";
 const CYAN = "#00D4FF";
@@ -101,19 +103,20 @@ const MealCard = ({ meal, index }: { meal: AthleteMeal; index: number }) => {
 const MyPlanPage = () => {
   const navigate = useNavigate();
   const targetId = useAthleteTarget();
-  const { loading, mealPlan } = useAthletePlans(targetId || undefined);
+  const { loading, error, mealPlan, refetch } = useAthletePlans(targetId || undefined);
 
   useEffect(() => {
     document.title = "Meu Plano Alimentar · NUTRION";
   }, []);
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: BG }}>
-        <Loader2 className="w-7 h-7 animate-spin" style={{ color: CYAN }} />
-      </div>
-    );
+    return <LoadingState />;
   }
+
+  if (error) {
+    return <ErrorState message={error} onRetry={() => { void refetch(); }} />;
+  }
+
 
   const r = mealPlan?.resumo || {};
 

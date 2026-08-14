@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { lazyWithRetry as lazy } from "@/lib/lazyWithRetry";
 import RouteErrorBoundary from "@/components/RouteErrorBoundary";
+import { NutriPlanErrorBoundary, LoadingState as NutriPlanLoading } from "@/components/nutriplan/NutriPlanStates";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -163,7 +164,7 @@ const App = () => (
             <Route path="/first-meal" element={<ProtectedRoute><FirstMealScreen /></ProtectedRoute>} />
             <Route path="/activation-tour" element={<ProtectedRoute><ActivationTourPage /></ProtectedRoute>} />
             <Route path="/dashboard" element={<ProtectedRoute><AthleteDashboardGate><DashboardPage /></AthleteDashboardGate></ProtectedRoute>} />
-            <Route path="/my-plan" element={<ProtectedRoute><AthleteOnlyRoute><MyPlanPage /></AthleteOnlyRoute></ProtectedRoute>} />
+            <Route path="/my-plan" element={<ProtectedRoute><AthleteOnlyRoute><NutriPlanErrorBoundary><Suspense fallback={<NutriPlanLoading />}><MyPlanPage /></Suspense></NutriPlanErrorBoundary></AthleteOnlyRoute></ProtectedRoute>} />
             <Route path="/my-training" element={<ProtectedRoute><AthleteOnlyRoute><MyTrainingPage /></AthleteOnlyRoute></ProtectedRoute>} />
             <Route path="/checkin" element={<ProtectedRoute><AthleteOnlyRoute><AthleteCheckinPage /></AthleteOnlyRoute></ProtectedRoute>} />
             <Route path="/praxis" element={<ProtectedRoute><PraxisPage /></ProtectedRoute>} />
@@ -254,7 +255,7 @@ const App = () => (
             <Route path="/dr-nexus" element={<ProtectedRoute><DrNexusPage /></ProtectedRoute>} />
             <Route path="/videoform" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON PRO" featureName="VideoForm AI"><VideoFormPage /></PlanGateWrapper></ProtectedRoute>} />
             {/* COACH */}
-            <Route path="/coach/plano-alimentar" element={<CoachToolRoute><ProtectedRoute><PlanoAlimentarIA /></ProtectedRoute></CoachToolRoute>} />
+            <Route path="/coach/plano-alimentar" element={<CoachToolRoute><ProtectedRoute><NutriPlanErrorBoundary><Suspense fallback={<NutriPlanLoading />}><PlanoAlimentarIA /></Suspense></NutriPlanErrorBoundary></ProtectedRoute></CoachToolRoute>} />
             <Route path="/coach" element={<CoachLandingPage />} />
             <Route path="/coach-onboarding" element={<ProtectedRoute><CoachOnboardingPage /></ProtectedRoute>} />
             <Route path="/coach-dashboard" element={<ProtectedRoute><CoachDashboardPage /></ProtectedRoute>} />
@@ -286,7 +287,7 @@ const App = () => (
             <Route path="/coach/apex-pose" element={<CoachToolRoute><ProtectedRoute><APEXPoseAnalysisPage /></ProtectedRoute></CoachToolRoute>} />
             <Route path="/coach/vera" element={<CoachToolRoute><ProtectedRoute><VeraPage /></ProtectedRoute></CoachToolRoute>} />
 
-            <Route path="/nutriplan-elite" element={<CoachToolRoute><ProtectedRoute><NutriPlanElitePage /></ProtectedRoute></CoachToolRoute>} />
+            <Route path="/nutriplan-elite" element={<CoachToolRoute><ProtectedRoute><NutriPlanErrorBoundary><Suspense fallback={<NutriPlanLoading />}><NutriPlanElitePage /></Suspense></NutriPlanErrorBoundary></ProtectedRoute></CoachToolRoute>} />
 
             <Route path="*" element={<NotFound />} />
           </Routes>
