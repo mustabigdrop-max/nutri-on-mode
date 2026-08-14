@@ -1,4 +1,5 @@
 import React, { useMemo } from "react";
+import { safeString } from "@/lib/utils";
 
 // ──────────────────────────────────────────────────────────────────────────────
 // Painel de Densidade Nutricional
@@ -113,9 +114,10 @@ const DB: { match: string[]; d: Densidade }[] = [
 ];
 
 // Extrai gramas de uma string como "120g", "100 g", "2 colheres" → null
-function parseGrams(q?: string): number | null {
-  if (!q) return null;
-  const s = q.toLowerCase().replace(",", ".");
+function parseGrams(q?: unknown): number | null {
+  const s0 = safeString(q);
+  if (!s0) return null;
+  const s = s0.toLowerCase().replace(",", ".");
   const m = s.match(/(\d+(?:\.\d+)?)\s*g\b/);
   if (m) return parseFloat(m[1]);
   // fallback: número solto se contiver 'g' em algum lugar
@@ -124,11 +126,11 @@ function parseGrams(q?: string): number | null {
   return null;
 }
 
-function normalize(s: string): string {
-  return (s || "").toLowerCase().trim();
+function normalize(s: unknown): string {
+  return safeString(s).toLowerCase().trim();
 }
 
-function findDensity(alimento: string): Densidade | null {
+function findDensity(alimento: unknown): Densidade | null {
   const n = normalize(alimento);
   if (!n) return null;
   // melhor match: substring mais longa

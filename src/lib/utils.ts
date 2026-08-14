@@ -34,3 +34,18 @@ export function getLocalDayBounds(date?: Date) {
     endIso: end.toISOString(),
   };
 }
+
+/** Converte qualquer valor em string de forma segura (null/undefined -> ""). */
+export const safeString = (value: unknown): string => {
+  if (typeof value === "string") return value;
+  if (value === null || value === undefined) return "";
+  if (typeof value === "number" || typeof value === "boolean") return String(value);
+  try {
+    return String(value);
+  } catch {
+    return "";
+  }
+};
+
+/** safeString + lowercase */
+export const safeLower = (value: unknown): string => safeString(value).toLowerCase();

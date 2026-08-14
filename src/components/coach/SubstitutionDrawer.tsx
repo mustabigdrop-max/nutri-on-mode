@@ -1,3 +1,4 @@
+import { safeString } from "@/lib/utils";
 import { useMemo, useState, useEffect } from "react";
 import { validateSubstitution, type SubstitutionValidation } from "@/lib/substitutionValidator";
 
@@ -87,11 +88,11 @@ export default function SubstitutionDrawer({ open, original, substitutos, onClos
   }, [original, substitutos]);
 
   const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
+    const q = safeString(query).trim().toLowerCase();
     const grupoOriginal = originalSnap?.densidade?.grupo;
     return validations
       .filter(({ sub, v }) => {
-        if (q && !sub.alimento.toLowerCase().includes(q)) return false;
+        if (q && !safeString(sub.alimento).toLowerCase().includes(q)) return false;
         if (filters.mesmo_grupo && grupoOriginal && v.proposto.densidade?.grupo !== grupoOriginal) return false;
         if (filters.mesma_kcal && v.status === "fora") return false;
         if (filters.sem_gluten && GLUTEN.test(sub.alimento)) return false;

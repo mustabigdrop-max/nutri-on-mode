@@ -1,3 +1,4 @@
+import { safeString } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
@@ -178,7 +179,7 @@ export default function SendProtocolModule({ coachProfileId, coachUserId }: Prop
 
   const filtered = recipients
     .filter((r) => filter === "todos" || r.tipo === filter)
-    .filter((r) => r.name.toLowerCase().includes(search.toLowerCase()));
+    .filter((r) => safeString(r.name).toLowerCase().includes(safeString(search).toLowerCase()));
 
   if (loading) {
     return (

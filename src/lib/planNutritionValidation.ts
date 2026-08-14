@@ -1,3 +1,4 @@
+import { safeString } from "@/lib/utils";
 import { lookupDensity, parseGrams } from "@/lib/foodKcalDatabase";
 
 export interface NutritionMacros {
@@ -43,7 +44,7 @@ export const PORTION_WEIGHTS: Record<string, Record<string, number>> = {
   azeite: { "colher de sopa": 13, "colher de cha": 4, fio: 5 },
 };
 
-const normalize = (value: string) => value.toLowerCase().normalize("NFD")
+const normalize = (value: unknown) => safeString(value).toLowerCase().normalize("NFD")
   .replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9\s]/g, " ").replace(/\s+/g, " ").trim();
 
 const round1 = (value: number) => Math.round(value * 10) / 10;

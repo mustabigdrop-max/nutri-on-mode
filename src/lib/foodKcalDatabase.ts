@@ -1,3 +1,4 @@
+import { safeString } from "@/lib/utils";
 // Banco de densidade calórica/macros por 100g — usado pelo validador de substituições
 // Cobertura: ~80 alimentos mais comuns em planos. Valores por 100g (alimento PRONTO).
 
@@ -122,8 +123,8 @@ const RAW: Record<string, FoodDensity> = {
   "salada": { kcal: 20, p: 1, c: 4, g: 0.2, grupo: "outro" },
 };
 
-const normalize = (s: string): string =>
-  s
+const normalize = (s: unknown): string =>
+  safeString(s)
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
@@ -134,7 +135,7 @@ const normalize = (s: string): string =>
 const NORMALIZED: Array<[string, FoodDensity]> = Object.entries(RAW).map(([k, v]) => [normalize(k), v]);
 
 /** Tenta achar a densidade pelo nome do alimento. Faz match por inclusão para tolerar variações ("Peito de frango grelhado 150g"). */
-export const lookupDensity = (foodName: string): FoodDensity | null => {
+export const lookupDensity = (foodName: unknown): FoodDensity | null => {
   const n = normalize(foodName);
   if (!n) return null;
   // 1) match exato
