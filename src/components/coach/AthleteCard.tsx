@@ -1,8 +1,9 @@
 import { memo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { UtensilsCrossed, Dumbbell, BarChart3, MessageSquare, AlertTriangle, Zap, Eye, ClipboardList, Clock, CheckCircle2, Pencil } from "lucide-react";
+import { UtensilsCrossed, Dumbbell, BarChart3, MessageSquare, AlertTriangle, Zap, Eye, ClipboardList, Clock, CheckCircle2, Pencil, Trash2 } from "lucide-react";
 import AnamnesisDialog from "@/components/coach/AnamnesisDialog";
 import EditAthleteDialog from "@/components/coach/EditAthleteDialog";
+import DeleteAthleteDialog from "@/components/coach/DeleteAthleteDialog";
 import type { CoachAthlete } from "@/hooks/useCoachAthletes";
 
 const RISK_COLOR: Record<CoachAthlete["riskLevel"], string> = {
@@ -25,6 +26,7 @@ const AthleteCard = ({ athlete: a, onSendMeal, onSendTraining, onUpdated }: Prop
   const navigate = useNavigate();
   const [anamneseOpen, setAnamneseOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
   const color = RISK_COLOR[a.riskLevel];
 
   return (
@@ -143,7 +145,25 @@ const AthleteCard = ({ athlete: a, onSendMeal, onSendTraining, onUpdated }: Prop
         <button className="quick-action-sm" onClick={() => setEditOpen(true)}>
           <Pencil className="w-3.5 h-3.5" /> Editar dados
         </button>
+        <button
+          className="quick-action-sm"
+          onClick={() => setDeleteOpen(true)}
+          style={{ color: "#EF4444", background: "transparent", border: "1px solid rgba(239,68,68,0.35)" }}
+          onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(239,68,68,0.1)")}
+          onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+        >
+          <Trash2 className="w-3.5 h-3.5" /> Excluir
+        </button>
       </div>
+
+      <DeleteAthleteDialog
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        linkId={a.id}
+        athleteId={a.userId}
+        athleteName={a.name}
+        onDeleted={onUpdated}
+      />
 
       <EditAthleteDialog
         open={editOpen}
@@ -152,6 +172,7 @@ const AthleteCard = ({ athlete: a, onSendMeal, onSendTraining, onUpdated }: Prop
         athleteName={a.name}
         onSaved={onUpdated}
       />
+
 
       <AnamnesisDialog
         open={anamneseOpen}
