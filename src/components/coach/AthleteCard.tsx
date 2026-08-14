@@ -1,8 +1,9 @@
 import { memo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { UtensilsCrossed, Dumbbell, BarChart3, MessageSquare, AlertTriangle, Zap, Eye, ClipboardList, Clock, CheckCircle2, Pencil } from "lucide-react";
+import { UtensilsCrossed, Dumbbell, BarChart3, MessageSquare, AlertTriangle, Zap, Eye, ClipboardList, Clock, CheckCircle2, Pencil, Trash2 } from "lucide-react";
 import AnamnesisDialog from "@/components/coach/AnamnesisDialog";
 import EditAthleteDialog from "@/components/coach/EditAthleteDialog";
+import DeleteAthleteDialog from "@/components/coach/DeleteAthleteDialog";
 import type { CoachAthlete } from "@/hooks/useCoachAthletes";
 
 const RISK_COLOR: Record<CoachAthlete["riskLevel"], string> = {
@@ -25,6 +26,7 @@ const AthleteCard = ({ athlete: a, onSendMeal, onSendTraining, onUpdated }: Prop
   const navigate = useNavigate();
   const [anamneseOpen, setAnamneseOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
   const color = RISK_COLOR[a.riskLevel];
 
   return (
