@@ -220,7 +220,7 @@ function DayCard({ day, defaultOpen }: { day: ParsedDay; defaultOpen?: boolean }
       </button>
 
       <AnimatePresence initial={false}>
-        {open && day.body && (
+        {open && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
@@ -229,12 +229,50 @@ function DayCard({ day, defaultOpen }: { day: ParsedDay; defaultOpen?: boolean }
           >
             <div
               style={{
-                padding: "0 16px 14px 66px",
+                padding: "12px 16px 14px 16px",
                 borderTop: `1px solid ${CARD_BORDER}`,
-                paddingTop: 12,
+                background: "rgba(255,255,255,0.03)",
               }}
             >
-              <MarkdownBlock text={day.body} />
+              {hasExercises ? (
+                <>
+                  {warmup.length > 0 && (
+                    <>
+                      <SectionLabel text="Aquecimento" />
+                      {warmup.map((ex, i) => (
+                        <ExerciseRow key={`w-${i}`} ex={ex} index={i} />
+                      ))}
+                      <div style={{ height: 10 }} />
+                    </>
+                  )}
+                  {exercises.length > 0 && (
+                    <>
+                      {warmup.length > 0 && <SectionLabel text="Exercícios" />}
+                      {exercises.map((ex, i) => (
+                        <ExerciseRow key={`e-${i}`} ex={ex} index={i} />
+                      ))}
+                    </>
+                  )}
+                  {day.session_notes && (
+                    <p
+                      style={{
+                        fontSize: 11,
+                        color: TEXT_DIM,
+                        marginTop: 10,
+                        fontStyle: "italic",
+                      }}
+                    >
+                      {day.session_notes}
+                    </p>
+                  )}
+                </>
+              ) : day.body ? (
+                <MarkdownBlock text={day.body} />
+              ) : (
+                <p style={{ fontSize: 11, color: TEXT_MUTED, margin: 0 }}>
+                  Exercícios ainda não foram adicionados a este dia.
+                </p>
+              )}
             </div>
           </motion.div>
         )}
