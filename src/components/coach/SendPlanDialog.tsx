@@ -106,7 +106,7 @@ const SendPlanDialog = ({ open, onOpenChange, athlete, type, coachProfileId, coa
         type,
         status: "active",
         plan_data: opt.data ?? {},
-        coach_message: message,
+        coach_message: message || "",
         metadata: { source_id: opt.id, label: opt.label },
       });
       if (error) throw error;
