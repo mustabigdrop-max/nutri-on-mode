@@ -7,6 +7,8 @@ import {
 import { useAthletePlans, mealKcal, type AthleteMeal } from "@/hooks/useAthletePlans";
 import AthleteBottomNav from "@/components/athlete/AthleteBottomNav";
 import { useAthleteTarget } from "@/hooks/useAthleteTarget";
+import { LoadingState, ErrorState } from "@/components/nutriplan/NutriPlanStates";
+
 
 const BG = "#020205";
 const CYAN = "#00D4FF";
