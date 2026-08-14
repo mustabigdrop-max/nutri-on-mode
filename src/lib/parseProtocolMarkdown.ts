@@ -4,12 +4,30 @@
  * uniforme de "dias" para renderização em cards D1/D2/D3.
  */
 
+export type ParsedSetLine = {
+  label?: string;
+  detail: string;
+  notes?: string;
+};
+
+export type ParsedExercise = {
+  order: number;
+  name: string;
+  muscle_target?: string;
+  tempo?: string;
+  sets: ParsedSetLine[];
+  notes?: string;
+};
+
 export type ParsedDay = {
   day_number: number;
   session_title: string;
   estimated_duration: string;
   muscle_tags: string[];
   body: string; // conteúdo bruto do dia (markdown/texto) para expandir
+  exercises?: ParsedExercise[];
+  warmup?: ParsedExercise[];
+  session_notes?: string;
 };
 
 export type ParsedProtocol = {
