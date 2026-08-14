@@ -98,7 +98,7 @@ export default function SendToAthleteBar({ type, buildPayload, sourceId, label, 
         type,
         status: "active",
         plan_data: payload ?? {},
-        coach_message: message || null,
+        coach_message: message || "",
         metadata: { source_id: sourceId || null, label: label || null },
       });
       if (error) throw error;
