@@ -4,12 +4,30 @@
  * uniforme de "dias" para renderização em cards D1/D2/D3.
  */
 
+export type ParsedSetLine = {
+  label?: string;
+  detail: string;
+  notes?: string;
+};
+
+export type ParsedExercise = {
+  order: number;
+  name: string;
+  muscle_target?: string;
+  tempo?: string;
+  sets: ParsedSetLine[];
+  notes?: string;
+};
+
 export type ParsedDay = {
   day_number: number;
   session_title: string;
   estimated_duration: string;
   muscle_tags: string[];
   body: string; // conteúdo bruto do dia (markdown/texto) para expandir
+  exercises?: ParsedExercise[];
+  warmup?: ParsedExercise[];
+  session_notes?: string;
 };
 
 export type ParsedProtocol = {
@@ -180,6 +198,86 @@ function looksLikeJson(s: string): boolean {
   try { JSON.parse(t); return true; } catch { return false; }
 }
 
+const str = (v: any): string => (typeof v === "string" || typeof v === "number" ? String(v).trim() : "");
+
+function joinDetail(parts: (string | undefined)[]): string {
+  return parts.map((p) => (p || "").trim()).filter(Boolean).join(" · ");
+}
+
+/** Converte um bloco de séries (top_set/backoff/work_sets/feeder) em linhas legíveis. */
+function setLinesFromStructure(s: any): ParsedSetLine[] {
+  const out: ParsedSetLine[] = [];
+  if (!s || typeof s !== "object") return out;
+
+  const feeders = Array.isArray(s.feeder_sets) ? s.feeder_sets : [];
+  feeders.forEach((f: any, i: number) => {
+    out.push({
+      label: str(f?.set_label) || `Feeder ${i + 1}`,
+      detail: joinDetail([
+        str(f?.load_percent) && `${str(f.load_percent)} de carga`,
+        str(f?.reps) && `${str(f.reps)} reps`,
+        str(f?.rest) && `Descanso: ${str(f.rest)}`,
+      ]) || "—",
+      notes: str(f?.notes) || undefined,
+    });
+  });
+
+  const block = (b: any, label: string, extra?: string) => {
+    if (!b || typeof b !== "object") return;
+    out.push({
+      label,
+      detail: joinDetail([
+        str(b.sets) && `${str(b.sets)} séries`,
+        str(b.reps) && `${str(b.reps)} reps`,
+        str(b.load) || (extra && str(b[extra]) ? `${str(b[extra])}` : ""),
+        str(b.rpe) && `RPE ${str(b.rpe)}`,
+        str(b.rir) && `RIR ${str(b.rir)}`,
+        str(b.rest) && `Descanso: ${str(b.rest)}`,
+      ]) || "—",
+      notes: str(b.notes) || undefined,
+    });
+  };
+
+  block(s.top_set, "Top set");
+  block(s.backoff_sets, "Back-off", "load_reduction");
+  block(s.work_sets, "Séries de trabalho");
+  return out;
+}
+
+/** Normaliza um exercício vindo do JSON estruturado (formatos variados). */
+function normalizeExercise(e: any, idx: number): ParsedExercise {
+  const safe = e && typeof e === "object" ? e : {};
+  const name = str(safe.name) || str(safe.nome) || str(safe.exercise) || `Exercício ${idx + 1}`;
+  let sets = setLinesFromStructure(safe.structure);
+
+  if (sets.length === 0) {
+    const detail = joinDetail([
+      str(safe.sets) && `${str(safe.sets)} séries`,
+      str(safe.reps) && `${str(safe.reps)} reps`,
+      str(safe.load) || str(safe.carga) || str(safe.weight),
+      str(safe.rpe) && `RPE ${str(safe.rpe)}`,
+      str(safe.rir) && `RIR ${str(safe.rir)}`,
+      (str(safe.rest) || str(safe.rest_seconds) || str(safe.descanso)) &&
+        `Descanso: ${str(safe.rest) || str(safe.rest_seconds) || str(safe.descanso)}`,
+    ]);
+    if (detail) sets = [{ detail }];
+  }
+
+  const notes = joinDetail([
+    str(safe.notes) || str(safe.observacao) || str(safe.obs),
+    str(safe.execution_cues),
+  ]);
+
+  return {
+    order: Number.isFinite(Number(safe.order)) ? Number(safe.order) : idx + 1,
+    name,
+    muscle_target: str(safe.muscle_target) || str(safe.muscle) || undefined,
+    tempo: str(safe.tempo) || undefined,
+    sets,
+    notes: notes || undefined,
+  };
+}
+
 /** Normaliza um item de training_days garantindo tipos previsíveis. */
 function normalizeDay(d: any, idx: number): ParsedDay {
   const safe = d && typeof d === "object" ? d : {};
@@ -192,15 +290,20 @@ function normalizeDay(d: any, idx: number): ParsedDay {
     ? safe.estimated_duration
     : "90min";
   const exercises = Array.isArray(safe.exercises) ? safe.exercises : [];
+  const warmup = Array.isArray(safe.warmup) ? safe.warmup : [];
   return {
     day_number: dayNum,
     session_title: title,
     estimated_duration: duration,
     muscle_tags: extractMuscleTags(
       String(title) + " " +
+      (Array.isArray(safe.focus_muscles) ? safe.focus_muscles.join(" ") : "") + " " +
       exercises.map((e: any) => `${e?.name ?? e?.nome ?? ""} ${e?.muscle_target ?? ""}`).join(" ")
     ),
     body: "",
+    exercises: exercises.map((e: any, i: number) => normalizeExercise(e, i)),
+    warmup: warmup.map((e: any, i: number) => normalizeExercise(e, i)),
+    session_notes: str(safe.session_notes) || undefined,
   };
 }
 

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, ChevronUp, Clock, FileText } from "lucide-react";
-import { parseProtocolToDays, type ParsedDay } from "@/lib/parseProtocolMarkdown";
+import { parseProtocolToDays, type ParsedDay, type ParsedExercise } from "@/lib/parseProtocolMarkdown";
 
 // Paleta TrainingON (espelha tokens usados em TrainingPage.tsx)
 const GREEN = "#00e888";
@@ -106,8 +106,92 @@ function MarkdownBlock({ text }: { text: string }) {
   );
 }
 
+function SectionLabel({ text }: { text: string }) {
+  return (
+    <div
+      style={{
+        fontSize: 9,
+        letterSpacing: "0.08em",
+        textTransform: "uppercase",
+        color: GREEN,
+        fontWeight: 700,
+        marginBottom: 6,
+      }}
+    >
+      {text}
+    </div>
+  );
+}
+
+function ExerciseRow({ ex, index }: { ex: ParsedExercise; index: number }) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        gap: 10,
+        padding: "8px 0",
+        borderBottom: "1px solid rgba(255,255,255,0.05)",
+      }}
+    >
+      <div
+        style={{
+          width: 20,
+          height: 20,
+          borderRadius: 999,
+          background: GREEN_PILL_BG,
+          border: `0.5px solid ${GREEN_PILL_BORDER}`,
+          color: GREEN,
+          fontSize: 10,
+          fontWeight: 700,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+        }}
+      >
+        {ex.order || index + 1}
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 12, fontWeight: 600, color: TEXT }}>{ex.name}</div>
+        {(ex.muscle_target || ex.tempo) && (
+          <div style={{ fontSize: 10, color: TEXT_MUTED, marginTop: 2 }}>
+            {[ex.muscle_target, ex.tempo && `Tempo: ${ex.tempo}`].filter(Boolean).join(" · ")}
+          </div>
+        )}
+        {ex.sets.length > 0 ? (
+          <div style={{ marginTop: 4 }}>
+            {ex.sets.map((s, i) => (
+              <div key={i} style={{ fontSize: 11, color: "#888", lineHeight: 1.5 }}>
+                {s.label && (
+                  <span style={{ color: GREEN, fontWeight: 600 }}>{s.label}: </span>
+                )}
+                {s.detail}
+                {s.notes && (
+                  <span style={{ color: "#666", fontStyle: "italic" }}> — {s.notes}</span>
+                )}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div style={{ fontSize: 11, color: "#666", marginTop: 4 }}>
+            Séries não informadas.
+          </div>
+        )}
+        {ex.notes && (
+          <p style={{ fontSize: 10, color: "#666", fontStyle: "italic", marginTop: 4 }}>
+            {ex.notes}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function DayCard({ day, defaultOpen }: { day: ParsedDay; defaultOpen?: boolean }) {
   const [open, setOpen] = useState(!!defaultOpen);
+  const exercises = day.exercises || [];
+  const warmup = day.warmup || [];
+  const hasExercises = exercises.length > 0 || warmup.length > 0;
   return (
     <div
       style={{
@@ -220,7 +304,7 @@ function DayCard({ day, defaultOpen }: { day: ParsedDay; defaultOpen?: boolean }
       </button>
 
       <AnimatePresence initial={false}>
-        {open && day.body && (
+        {open && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
@@ -229,12 +313,50 @@ function DayCard({ day, defaultOpen }: { day: ParsedDay; defaultOpen?: boolean }
           >
             <div
               style={{
-                padding: "0 16px 14px 66px",
+                padding: "12px 16px 14px 16px",
                 borderTop: `1px solid ${CARD_BORDER}`,
-                paddingTop: 12,
+                background: "rgba(255,255,255,0.03)",
               }}
             >
-              <MarkdownBlock text={day.body} />
+              {hasExercises ? (
+                <>
+                  {warmup.length > 0 && (
+                    <>
+                      <SectionLabel text="Aquecimento" />
+                      {warmup.map((ex, i) => (
+                        <ExerciseRow key={`w-${i}`} ex={ex} index={i} />
+                      ))}
+                      <div style={{ height: 10 }} />
+                    </>
+                  )}
+                  {exercises.length > 0 && (
+                    <>
+                      {warmup.length > 0 && <SectionLabel text="Exercícios" />}
+                      {exercises.map((ex, i) => (
+                        <ExerciseRow key={`e-${i}`} ex={ex} index={i} />
+                      ))}
+                    </>
+                  )}
+                  {day.session_notes && (
+                    <p
+                      style={{
+                        fontSize: 11,
+                        color: TEXT_DIM,
+                        marginTop: 10,
+                        fontStyle: "italic",
+                      }}
+                    >
+                      {day.session_notes}
+                    </p>
+                  )}
+                </>
+              ) : day.body ? (
+                <MarkdownBlock text={day.body} />
+              ) : (
+                <p style={{ fontSize: 11, color: TEXT_MUTED, margin: 0 }}>
+                  Exercícios ainda não foram adicionados a este dia.
+                </p>
+              )}
             </div>
           </motion.div>
         )}
