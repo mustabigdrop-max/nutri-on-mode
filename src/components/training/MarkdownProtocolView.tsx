@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, ChevronUp, Clock, FileText } from "lucide-react";
-import { parseProtocolToDays, type ParsedDay } from "@/lib/parseProtocolMarkdown";
+import { parseProtocolToDays, type ParsedDay, type ParsedExercise } from "@/lib/parseProtocolMarkdown";
 
 // Paleta TrainingON (espelha tokens usados em TrainingPage.tsx)
 const GREEN = "#00e888";
