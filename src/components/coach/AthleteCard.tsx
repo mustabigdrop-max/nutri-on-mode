@@ -143,7 +143,25 @@ const AthleteCard = ({ athlete: a, onSendMeal, onSendTraining, onUpdated }: Prop
         <button className="quick-action-sm" onClick={() => setEditOpen(true)}>
           <Pencil className="w-3.5 h-3.5" /> Editar dados
         </button>
+        <button
+          className="quick-action-sm"
+          onClick={() => setDeleteOpen(true)}
+          style={{ color: "#EF4444", background: "transparent", border: "1px solid rgba(239,68,68,0.35)" }}
+          onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(239,68,68,0.1)")}
+          onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+        >
+          <Trash2 className="w-3.5 h-3.5" /> Excluir
+        </button>
       </div>
+
+      <DeleteAthleteDialog
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        linkId={a.id}
+        athleteId={a.userId}
+        athleteName={a.name}
+        onDeleted={onUpdated}
+      />
 
       <EditAthleteDialog
         open={editOpen}
@@ -152,6 +170,7 @@ const AthleteCard = ({ athlete: a, onSendMeal, onSendTraining, onUpdated }: Prop
         athleteName={a.name}
         onSaved={onUpdated}
       />
+
 
       <AnamnesisDialog
         open={anamneseOpen}
