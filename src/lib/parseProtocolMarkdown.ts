@@ -290,15 +290,20 @@ function normalizeDay(d: any, idx: number): ParsedDay {
     ? safe.estimated_duration
     : "90min";
   const exercises = Array.isArray(safe.exercises) ? safe.exercises : [];
+  const warmup = Array.isArray(safe.warmup) ? safe.warmup : [];
   return {
     day_number: dayNum,
     session_title: title,
     estimated_duration: duration,
     muscle_tags: extractMuscleTags(
       String(title) + " " +
+      (Array.isArray(safe.focus_muscles) ? safe.focus_muscles.join(" ") : "") + " " +
       exercises.map((e: any) => `${e?.name ?? e?.nome ?? ""} ${e?.muscle_target ?? ""}`).join(" ")
     ),
     body: "",
+    exercises: exercises.map((e: any, i: number) => normalizeExercise(e, i)),
+    warmup: warmup.map((e: any, i: number) => normalizeExercise(e, i)),
+    session_notes: str(safe.session_notes) || undefined,
   };
 }
 
