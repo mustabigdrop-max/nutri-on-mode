@@ -132,7 +132,7 @@ const LandingManifesto = () => {
   const origInView = useInView(origRef, { once: true, margin: "-15%" });
 
   return (
-    <section className="bg-background px-6 md:px-12 py-[100px] border-b border-border relative overflow-hidden">
+    <section id="manifesto" className="bg-background px-6 md:px-12 py-[100px] border-b border-border relative overflow-hidden scroll-mt-20">
       <div
         className="absolute inset-0 pointer-events-none opacity-40"
         style={{
@@ -230,7 +230,7 @@ const LandingManifesto = () => {
         </div>
 
         {/* Para quem é o NUTRION */}
-        <div ref={audRef} className="relative mb-20">
+        <div ref={audRef} id="publico" className="relative mb-20 scroll-mt-24">
           <div className="font-mono text-[.65rem] tracking-[.2em] uppercase mb-6 flex items-center gap-2.5 relative overflow-hidden" style={{ color: GOLD }}>
             <span className="w-4 h-px" style={{ background: GOLD }} />
             — PARA QUEM É O NUTRION

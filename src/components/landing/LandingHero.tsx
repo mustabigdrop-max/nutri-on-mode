@@ -437,14 +437,31 @@ const LandingHero = () => {
                 NUTRI<span style={{ color: GOLD }}>ON</span>
               </h1>
               <div
-                className="text-center mt-2"
+                className="text-center mt-3 px-4"
                 style={{
-                  fontSize: 8, letterSpacing: "0.45em",
-                  color: `${TEXT}99`, textTransform: "uppercase",
-                  opacity: phase >= 5 ? 1 : 0, transition: "opacity .8s ease .3s",
+                  fontSize: "clamp(11px, 1.6vw, 15px)",
+                  letterSpacing: "0.24em",
+                  fontWeight: 700,
+                  color: GOLD,
+                  textTransform: "uppercase",
+                  textShadow: `0 0 18px ${GOLD}55`,
+                  opacity: phase >= 5 ? 1 : 0,
+                  transition: "opacity .8s ease .3s",
                 }}
               >
                 Nutrição · Treino · Comportamento — um sistema só
+              </div>
+              <div
+                className="text-center mt-1"
+                style={{
+                  fontSize: "clamp(9px, 1.1vw, 11px)",
+                  letterSpacing: "0.1em",
+                  color: `${TEXT}88`,
+                  opacity: phase >= 5 ? 1 : 0,
+                  transition: "opacity .8s ease .38s",
+                }}
+              >
+                Um sistema de performance — não mais um app de dieta.
               </div>
               <div
                 className="text-center mt-4 px-4"
@@ -468,6 +485,74 @@ const LandingHero = () => {
                 }}
               >
                 Pra quem treina sério: corrida, musculação, performance.
+              </div>
+
+              {/* Self-identification chips */}
+              <div
+                className="flex flex-wrap items-center justify-center gap-2 mt-5 px-4 pointer-events-auto"
+                style={{ opacity: phase >= 6 ? 1 : 0, transition: "opacity .8s ease .1s" }}
+              >
+                {[
+                  "🏆 ATLETA / COMPETIÇÃO",
+                  "👥 COACH / PROFISSIONAL",
+                  "🔥 TRANSFORMAÇÃO",
+                ].map((label) => (
+                  <a
+                    key={label}
+                    href="#publico"
+                    style={{
+                      fontSize: 9,
+                      letterSpacing: "0.08em",
+                      padding: "6px 12px",
+                      borderRadius: 999,
+                      border: `1px solid ${GOLD}55`,
+                      color: `${TEXT}cc`,
+                      background: "rgba(0,0,0,0.4)",
+                      transition: "all .25s ease",
+                      whiteSpace: "nowrap",
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.borderColor = CYAN; e.currentTarget.style.color = TEXT; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.borderColor = `${GOLD}55`; e.currentTarget.style.color = `${TEXT}cc`; }}
+                  >
+                    {label}
+                  </a>
+                ))}
+              </div>
+
+              {/* Primary + secondary CTA */}
+              <div
+                className="flex flex-wrap items-center justify-center gap-3 mt-4 px-4 pointer-events-auto"
+                style={{ opacity: phase >= 6 ? 1 : 0, transition: "opacity .8s ease .25s" }}
+              >
+                <a
+                  href="https://pay.kiwify.com.br/G8uxU9O"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-heading font-bold uppercase"
+                  style={{
+                    fontSize: 12,
+                    letterSpacing: "0.06em",
+                    padding: "12px 26px",
+                    background: GOLD,
+                    color: "#0a0a0a",
+                    boxShadow: `0 0 22px ${GOLD}66`,
+                  }}
+                >
+                  Começar agora →
+                </a>
+                <a
+                  href="#manifesto"
+                  className="font-mono"
+                  style={{
+                    fontSize: 10,
+                    letterSpacing: "0.1em",
+                    padding: "12px 20px",
+                    border: `1px solid ${TEXT}33`,
+                    color: TEXT,
+                  }}
+                >
+                  Ver como funciona ↓
+                </a>
               </div>
             </div>
           </div>
