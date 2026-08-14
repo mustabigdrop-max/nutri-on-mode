@@ -1,3 +1,4 @@
+import { safeString } from "@/lib/utils";
 /**
  * Fonte de verdade única para o ajuste de calorias/macros por objetivo (fase).
  * Usado pelo NutriSync (/nutrisync) e pelo Dashboard (/dashboard) — DRY.
@@ -16,7 +17,7 @@ export interface GoalAdjustment {
 
 /** Normaliza os diversos rótulos de objetivo do perfil para as 3 fases base. */
 export function resolveGoalObjetivo(rawGoal?: string | null): GoalObjetivo {
-  const g = (rawGoal || "").toLowerCase();
+  const g = safeString(rawGoal).toLowerCase();
   if (["gain_muscle", "hipertrofia", "bulking", "performance"].includes(g)) return "bulking";
   if (
     ["lose_weight", "emagrecimento", "cutting", "definition", "definicao", "glp1"].includes(g)

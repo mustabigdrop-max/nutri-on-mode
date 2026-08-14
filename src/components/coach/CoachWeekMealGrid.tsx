@@ -1,3 +1,4 @@
+import { safeString } from "@/lib/utils";
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
@@ -517,8 +518,8 @@ function CellEditor({
 
   const results = useMemo(() => {
     if (!query.trim()) return foods.slice(0, 10);
-    const q = query.toLowerCase();
-    return foods.filter((f) => f.nome.toLowerCase().includes(q)).slice(0, 10);
+    const q = safeString(query).toLowerCase();
+    return foods.filter((f) => safeString(f.nome).toLowerCase().includes(q)).slice(0, 10);
   }, [query, foods]);
 
   const submit = async () => {

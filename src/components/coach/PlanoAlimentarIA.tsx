@@ -1,3 +1,4 @@
+import { safeString } from "@/lib/utils";
 import { useState, useRef, useEffect, Suspense } from "react";
 import { lazyWithRetry as lazy } from "@/lib/lazyWithRetry";
 import SendToAthleteBar from "@/components/coach/SendToAthleteBar";
@@ -182,8 +183,8 @@ const formatMinutes = (mins: number): string => {
   const m = total % 60;
   return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
 };
-const detectPeriKind = (nome: string): PeriKind | null => {
-  const n = nome.toLowerCase();
+const detectPeriKind = (nome: unknown): PeriKind | null => {
+  const n = safeString(nome).toLowerCase();
   if (/p[óo]s[\s-]?treino\s*imediato|janela\s*glut|glut[\s-]?4/.test(n)) return "pos_imediato";
   if (/p[óo]s[\s-]?treino\s*s[óo]lido/.test(n)) return "pos_solido";
   if (/p[óo]s[\s-]?treino/.test(n)) return "pos_imediato";
@@ -352,7 +353,7 @@ interface Meal {
 }
 
 const formatQuantidadeG = (value?: string | number | null) => {
-  const raw = value?.toString().trim();
+  const raw = safeString(value).trim();
   if (!raw) return null;
   return raw.toLowerCase().includes("g") ? raw : `${raw}g`;
 };
@@ -549,7 +550,7 @@ const GRUPO_META: Record<GrupoSub, { label: string; color: string; emoji: string
 
 const inferGrupo = (s: SubstituicaoItem): GrupoSub => {
   if (s.grupo && GRUPO_META[s.grupo]) return s.grupo;
-  const t = (s.alimento || "").toLowerCase();
+  const t = safeString(s.alimento).toLowerCase();
   if (/(frango|carne|peixe|atum|tilapia|salmão|salmao|ovo|clara|whey|isolado|caseína|caseina|iogurte|cottage|queijo|tofu|presunto|peru|patinho|alcatra)/.test(t)) return "proteina";
   if (/(arroz|batata|mandioca|inhame|aveia|pão|pao|tapioca|macarrão|macarrao|feijão|feijao|lentilha|grão|grao|fruta|banana|maçã|maca|melão|melao|mamão|mamao|uva|laranja|cuscuz|granola|cereal)/.test(t)) return "carbo";
   if (/(azeite|óleo|oleo|abacate|castanha|amêndoa|amendoa|nozes|amendoim|pasta de amendoim|coco|manteiga|gergelim|chia|linhaça|linhaca)/.test(t)) return "gordura";
@@ -557,8 +558,8 @@ const inferGrupo = (s: SubstituicaoItem): GrupoSub => {
 };
 
 // ─── Enricher: mescla substitutos do sistema com SUBSTITUTION_BANK_V2 (mais variações) ──
-const norm = (s: string) =>
-  (s || "")
+const norm = (s: unknown) =>
+  safeString(s)
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
@@ -751,10 +752,10 @@ const MealCard = ({ meal, index, onSwap, onValidate, workoutTag }: MealCardProps
           const subs: SubstituicaoItem[] = enrichSubstitutes(a, meal.horario);
           const open = !!openSubs[i];
           const f = filter[i] || "todos";
-          const q = (search[i] || "").trim().toLowerCase();
+          const q = safeString(search[i]).trim().toLowerCase();
           const filteredSubs = subs.filter((s) =>
             (f === "todos" || s.grupo === f) &&
-            (!q || s.alimento.toLowerCase().includes(q))
+            (!q || safeString(s.alimento).toLowerCase().includes(q))
           );
 
           return (
@@ -2296,8 +2297,8 @@ export default function PlanoAlimentarIA() {
     const kcalUI = getResumoKcal(r);
 
     // Mapeia tipo de refeição (cafe_manha, almoco, etc) a partir do título da refeição.
-    const inferMealType = (titulo: string): string => {
-      const t = (titulo || "").toLowerCase();
+    const inferMealType = (titulo: unknown): string => {
+      const t = safeString(titulo).toLowerCase();
       if (/caf[eé]|desjejum/.test(t)) return "cafe_manha";
       if (/lanche.*(manh[ãa]|meio)/.test(t)) return "lanche_manha";
       if (/almo[cç]o/.test(t)) return "almoco";
@@ -2383,8 +2384,8 @@ export default function PlanoAlimentarIA() {
   const exportPDFElite = async () => {
     if (!plano) return;
     try {
-      const inferMealType = (titulo: string): string => {
-        const t = (titulo || "").toLowerCase();
+      const inferMealType = (titulo: unknown): string => {
+        const t = safeString(titulo).toLowerCase();
         if (/caf[eé]|desjejum/.test(t)) return "cafe_manha";
         if (/lanche.*(manh[ãa]|meio)/.test(t)) return "lanche_manha";
         if (/almo[cç]o/.test(t)) return "almoco";
@@ -3175,7 +3176,7 @@ export default function PlanoAlimentarIA() {
                     .filter((h) => {
                       const q = historySearch.trim().toLowerCase();
                       if (!q) return true;
-                      return (h.patient_name || "").toLowerCase().includes(q) || (h.objetivo || "").toLowerCase().includes(q);
+                      return safeString(h.patient_name).toLowerCase().includes(q) || safeString(h.objetivo).toLowerCase().includes(q);
                     })
                     .map((h) => {
                       const isSent = h.status === "sent";
@@ -4377,14 +4378,14 @@ export default function PlanoAlimentarIA() {
             type Diff = { refeicao: string; deA: string; paraB: string };
             const diffs: Diff[] = [];
             refsA.forEach((mA) => {
-              const mB = refsB.find((x) => x.refeicao?.toLowerCase() === mA.refeicao?.toLowerCase());
+              const mB = refsB.find((x) => safeString(x.refeicao).toLowerCase() === safeString(mA.refeicao).toLowerCase());
               if (!mB) return;
               const lenA = mA.alimentos?.length || 0;
               const lenB = mB.alimentos?.length || 0;
               const len = Math.min(lenA, lenB);
               for (let i = 0; i < len; i++) {
-                const aN = mA.alimentos?.[i]?.alimento?.trim() || "";
-                const bN = mB.alimentos?.[i]?.alimento?.trim() || "";
+                const aN = safeString(mA.alimentos?.[i]?.alimento).trim();
+                const bN = safeString(mB.alimentos?.[i]?.alimento).trim();
                 if (aN && bN && aN.toLowerCase() !== bN.toLowerCase()) {
                   diffs.push({ refeicao: mA.refeicao, deA: aN, paraB: bN });
                 }
@@ -5447,7 +5448,7 @@ export default function PlanoAlimentarIA() {
                   .filter((h) => {
                     const q = historySearch.trim().toLowerCase();
                     if (!q) return true;
-                    return (h.patient_name || "").toLowerCase().includes(q) || (h.objetivo || "").toLowerCase().includes(q);
+                    return safeString(h.patient_name).toLowerCase().includes(q) || safeString(h.objetivo).toLowerCase().includes(q);
                   })
                   .map((h) => {
                     const isSent = h.status === "sent";

@@ -1,3 +1,4 @@
+import { safeString } from "@/lib/utils";
 /**
  * Periodização nutricional inteligente — fonte de verdade única.
  * Usado por NutriSync (/nutrisync) e Dashboard (/dashboard).
@@ -312,7 +313,7 @@ export function computeProteinPerLbm(
 // FEATURE 4 — Fibra
 // ──────────────────────────────────────────────────────────
 export function computeFiberTarget(kcal: number, sex?: string | null): number {
-  const min = (sex || "").toLowerCase().startsWith("f") ? 25 : 30;
+  const min = safeString(sex).toLowerCase().startsWith("f") ? 25 : 30;
   return Math.round(Math.max((kcal / 1000) * 14, min));
 }
 
@@ -440,7 +441,7 @@ export function computeHydration(params: {
 }): HydrationResult {
   const { weightKg, workoutMinutes = 0, workoutLabel, muscleGroups = [], isTrainingDay = false } = params;
   const base = weightKg * 0.035;
-  const hay = `${workoutLabel || ""} ${muscleGroups.join(" ")}`.toLowerCase();
+  const hay = `${safeString(workoutLabel)} ${(muscleGroups || []).map(safeString).join(" ")}`.toLowerCase();
 
   let bonusIntensity = 0;
   let intensityNote = "";
