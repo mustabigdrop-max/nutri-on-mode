@@ -224,7 +224,7 @@ export function useAthletePlans(overrideUserId?: string): AthletePlansState {
   }, [userId, load]);
 
 
-  return { loading, mealPlan, training, coachMessage, refetch: load };
+  return { loading, error, mealPlan, training, coachMessage, refetch: load };
 }
 
 export const mealKcal = (m: AthleteMeal): number => {
