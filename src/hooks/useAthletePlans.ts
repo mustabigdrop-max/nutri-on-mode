@@ -190,8 +190,15 @@ export function useAthletePlans(overrideUserId?: string): AthletePlansState {
       setCoachMessage(null);
     }
 
-    setLoading(false);
+      console.log("[useAthletePlans] carregado", { userId, hasMeal: !!(sentMeal || meal), hasTraining: !!(sentTraining || prot) });
+    } catch (err) {
+      console.error("[useAthletePlans] erro ao carregar planos:", err);
+      setError(err instanceof Error ? err.message : "Erro ao carregar plano alimentar");
+    } finally {
+      setLoading(false);
+    }
   }, [userId]);
+
 
   useEffect(() => {
     load();
