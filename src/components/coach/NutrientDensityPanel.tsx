@@ -1,4 +1,5 @@
 import React, { useMemo } from "react";
+import { safeString } from "@/lib/utils";
 
 // ──────────────────────────────────────────────────────────────────────────────
 // Painel de Densidade Nutricional
