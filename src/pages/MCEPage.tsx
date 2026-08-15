@@ -13,6 +13,8 @@ import {
   type Author,
   type Exercise,
 } from "@/data/mceData";
+import { MCE_GUIDE_MARKDOWN } from "@/data/mceGuide";
+import ReactMarkdown from "react-markdown";
 
 
 const MONO = "'Space Mono', ui-monospace, monospace";
