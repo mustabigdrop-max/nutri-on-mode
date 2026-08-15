@@ -316,14 +316,35 @@ const MyPlanPage = () => {
                 className="rounded-2xl p-4"
                 style={{ border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.02)" }}
               >
-                <p className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: CYAN }}>
-                  Lista de compras semanal
+                <div className="flex items-center gap-2 mb-1">
+                  <ShoppingCart className="w-4 h-4" style={{ color: CYAN }} />
+                  <p className="text-xs font-bold uppercase tracking-wider" style={{ color: CYAN }}>
+                    Lista de compras semanal
+                  </p>
+                </div>
+                <p className="text-[11px] mb-3" style={{ color: DIM }}>
+                  Baseada no seu plano · 7 dias
                 </p>
-                <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-                  {compras.map((c) => (
-                    <div key={c.name} className="flex justify-between text-[12px]" style={{ fontFamily: "'Space Mono', ui-monospace, monospace" }}>
-                      <span className="truncate capitalize" style={{ color: TEXT }}>{c.name}</span>
-                      <span style={{ color: DIM }}>{c.grams ? `${(c.grams / 1000).toFixed(2)}kg` : "—"}</span>
+
+                <div className="space-y-4">
+                  {compras.map((g) => (
+                    <div key={g.section}>
+                      <p className="text-[11px] font-bold uppercase tracking-wider mb-1.5" style={{ color: TEXT }}>
+                        {g.emoji} {g.label}
+                      </p>
+                      <div className="space-y-1">
+                        {g.items.map((it) => (
+                          <div
+                            key={it.name}
+                            className="flex items-baseline gap-2 text-[12px]"
+                            style={{ fontFamily: "'Space Mono', ui-monospace, monospace" }}
+                          >
+                            <span className="capitalize" style={{ color: TEXT }}>{it.name}</span>
+                            <span className="flex-1" style={{ borderBottom: "1px dotted rgba(255,255,255,0.15)" }} />
+                            <span style={{ color: it.amount === "à vontade" ? FREE : DIM }}>{it.amount}</span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -339,6 +360,9 @@ const MyPlanPage = () => {
               </p>
               <p className="text-sm whitespace-pre-wrap">
                 {orientacao || "Plano gerado e validado pelo NUTRION ENGINE."}
+              </p>
+              <p className="text-[11px] mt-3 pt-3 italic" style={{ color: "#666", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+                {roleConfig.planNoun} · {roleConfig.disclaimer}
               </p>
             </div>
           </>
