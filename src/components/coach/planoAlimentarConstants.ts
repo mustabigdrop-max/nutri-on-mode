@@ -287,7 +287,7 @@ export const FORMATOS_MEDIDA: Array<{ v: string; l: string }> = [
 ];
 
 export const NIVEIS_DETALHE: Array<{ v: string; l: string }> = [
-  { v: "completo", l: "Completo (para nutricionistas)" },
+  { v: "completo", l: "Completo (referência técnica)" },
   { v: "resumido", l: "Resumido (para o paciente)" },
   { v: "ultra", l: "Ultra-detalhado (com ciência e referências)" },
 ];
