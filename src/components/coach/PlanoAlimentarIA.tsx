@@ -1319,6 +1319,22 @@ export default function PlanoAlimentarIA() {
   const [condicoesClinicas, setCondicoesClinicas] = useState<string[]>([]);
   const [pdfCfg, setPdfCfg] = useState<PdfCfg>(PDF_DEFAULT);
 
+  // Categoria profissional define o formato padrão de exibição do plano
+  const { profile: coachProfileCfg } = useCoachProfile();
+  const roleCfg = useMemo(
+    () =>
+      resolveProfessionalRole(
+        (coachProfileCfg as { professional_role?: string | null } | null)?.professional_role,
+        coachProfileCfg?.professional_type,
+      ),
+    [coachProfileCfg],
+  );
+
+  useEffect(() => {
+    if (!coachProfileCfg) return;
+    setPdfCfg(prev => (prev.formato === PDF_DEFAULT.formato ? { ...prev, formato: roleCfg.defaultFormat } : prev));
+  }, [coachProfileCfg, roleCfg]);
+
   // Medidas caseiras ATIVAS → formato padrão passa a ser "ambos" (gramas + caseiras)
   useEffect(() => {
     if (form.medidasCaseiras) {
