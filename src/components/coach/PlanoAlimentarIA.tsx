@@ -1318,6 +1318,14 @@ export default function PlanoAlimentarIA() {
   const [intraTreino, setIntraTreino] = useState<IntraTreinoCfg>(INTRA_DEFAULT);
   const [condicoesClinicas, setCondicoesClinicas] = useState<string[]>([]);
   const [pdfCfg, setPdfCfg] = useState<PdfCfg>(PDF_DEFAULT);
+
+  // Medidas caseiras ATIVAS → formato padrão passa a ser "ambos" (gramas + caseiras)
+  useEffect(() => {
+    if (form.medidasCaseiras) {
+      setPdfCfg(prev => (prev.formato === "gramas" ? { ...prev, formato: "ambos" } : prev));
+    }
+  }, [form.medidasCaseiras]);
+
   const [modoExtras, setModoExtras] = useState<ModoEspecialExtras>(MODO_EXTRAS_DEFAULT);
   const [identidade, setIdentidade] = useState<IdentidadeProfissional>(IDENTIDADE_DEFAULT);
   const [coachTemplates, setCoachTemplates] = useState<CoachTemplate[]>([]);
