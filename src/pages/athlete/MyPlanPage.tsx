@@ -2,18 +2,45 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  ArrowLeft, ChevronDown, UtensilsCrossed, Pill, Loader2, Repeat, Info,
+  ArrowLeft, ChevronDown, UtensilsCrossed, Pill, Repeat, Info, Table2,
 } from "lucide-react";
 import { useAthletePlans, mealKcal, type AthleteMeal } from "@/hooks/useAthletePlans";
 import AthleteBottomNav from "@/components/athlete/AthleteBottomNav";
+import NutritionMap from "@/components/athlete/NutritionMap";
 import { useAthleteTarget } from "@/hooks/useAthleteTarget";
 import { LoadingState, ErrorState } from "@/components/nutriplan/NutriPlanStates";
+import { sanitizeClientText, coachGuidanceText } from "@/lib/clientLanguage";
+import { safeString, safeLower } from "@/lib/utils";
 
 
 const BG = "#020205";
 const CYAN = "#00D4FF";
 const TEXT = "#FFFFFF";
 const DIM = "#A0A0A0";
+
+const FOOD_EMOJI: Array<[RegExp, string]> = [
+  [/ovo/i, "🥚"], [/aveia|granola|cereal/i, "🥣"], [/banana/i, "🍌"], [/ma[çc][ãa]/i, "🍎"],
+  [/frango|peito de frango/i, "🍗"], [/carne|patinho|alcatra|b[íi]fe/i, "🥩"], [/peixe|til[áa]pia|salm[ãa]o|atum/i, "🐟"],
+  [/arroz/i, "🍚"], [/feij[ãa]o|lentilha|gr[ãa]o/i, "🫘"], [/batata|mandioca|inhame/i, "🥔"],
+  [/leite|iogurte|whey|queijo/i, "🥛"], [/p[ãa]o|tapioca|torrada/i, "🍞"], [/azeite|[óo]leo|manteiga/i, "🫒"],
+  [/castanha|am[êe]ndoa|noz|pasta de amendoim/i, "🥜"], [/salada|alface|br[óo]colis|legume|vegetal/i, "🥗"],
+  [/fruta|mam[ãa]o|melancia|abacaxi|morango|laranja/i, "🍓"], [/abacate/i, "🥑"], [/[áa]gua|suco|ch[áa]/i, "💧"],
+];
+
+const emojiFor = (name: unknown) => {
+  const n = safeString(name);
+  for (const [re, e] of FOOD_EMOJI) if (re.test(n)) return e;
+  return "•";
+};
+
+/** Medida caseira é o principal; se não houver, cai na gramatura. */
+const portionOf = (a: { quantidade?: string; quantidade_g?: string }) => {
+  const caseira = safeString(a.quantidade).trim();
+  const gramas = safeString(a.quantidade_g).trim();
+  const soGramas = /^\d+(?:[.,]\d+)?\s*(g|ml|kg|l)$/i.test(caseira);
+  if (caseira && !soGramas) return caseira;
+  return caseira || gramas;
+};
 
 const MealCard = ({ meal, index }: { meal: AthleteMeal; index: number }) => {
   const [open, setOpen] = useState(index === 0);
@@ -33,21 +60,6 @@ const MealCard = ({ meal, index }: { meal: AthleteMeal; index: number }) => {
             {meal.horario || "--:--"} · {mealKcal(meal)} kcal
           </p>
         </div>
-        <div className="flex gap-1.5 flex-shrink-0">
-          {[
-            ["P", meal.macros?.proteina],
-            ["C", meal.macros?.carboidrato],
-            ["G", meal.macros?.gordura],
-          ].map(([l, v]) => (
-            <span
-              key={l as string}
-              className="text-[10px] px-1.5 py-0.5 rounded font-mono"
-              style={{ background: `${CYAN}12`, color: CYAN }}
-            >
-              {l}{Math.round(Number(v) || 0)}
-            </span>
-          ))}
-        </div>
         <ChevronDown
           className="w-4 h-4 flex-shrink-0 transition-transform"
           style={{ color: DIM, transform: open ? "rotate(180deg)" : "none" }}
@@ -63,33 +75,46 @@ const MealCard = ({ meal, index }: { meal: AthleteMeal; index: number }) => {
             transition={{ duration: 0.2 }}
             className="overflow-hidden"
           >
-            <div className="px-4 pb-4 space-y-2" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+            <div className="px-4 pb-4" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
               {(meal.alimentos || []).map((a, i) => (
-                <div key={i} className="pt-2">
-                  <p className="text-sm">
-                    {a.alimento}
-                    <span className="ml-2 font-mono text-xs" style={{ color: CYAN }}>
-                      {a.quantidade_g || a.quantidade || ""}
-                    </span>
+                <div
+                  key={i}
+                  className="py-3"
+                  style={{ borderBottom: i < (meal.alimentos?.length || 0) - 1 ? "1px solid rgba(255,255,255,0.05)" : "none" }}
+                >
+                  <p className="text-[13px] font-semibold flex items-center gap-2" style={{ color: TEXT }}>
+                    <span>{emojiFor(a.alimento)}</span> {safeString(a.alimento)}
+                  </p>
+                  <p className="text-[15px] mt-0.5 pl-6" style={{ color: TEXT }}>
+                    {portionOf(a)}
                   </p>
                   {a.observacao && (
-                    <p className="text-[11px] mt-0.5 flex items-start gap-1" style={{ color: DIM }}>
-                      <Info className="w-3 h-3 mt-0.5 flex-shrink-0" /> {a.observacao}
+                    <p className="mt-1 pl-6 flex items-start gap-1" style={{ fontSize: 12, color: "#8a8a8a", fontStyle: "italic" }}>
+                      <Info className="w-3 h-3 mt-0.5 flex-shrink-0" /> {sanitizeClientText(a.observacao)}
                     </p>
                   )}
                   {!!a.substituicoes?.length && (
-                    <p className="text-[11px] mt-1 flex items-start gap-1" style={{ color: DIM }}>
+                    <p className="text-[11px] mt-1 pl-6 flex items-start gap-1" style={{ color: DIM }}>
                       <Repeat className="w-3 h-3 mt-0.5 flex-shrink-0" style={{ color: CYAN }} />
                       {a.substituicoes
-                        .map((s) => `${s.alimento} ${s.quantidade_g || s.quantidade || ""}`.trim())
+                        .map((s) => `${safeString(s.alimento)} ${portionOf(s)}`.trim())
                         .join(" · ")}
                     </p>
                   )}
                 </div>
               ))}
+
+              <div className="pt-2 flex items-center gap-3 font-mono" style={{ fontSize: 11, color: DIM }}>
+                <span>P {Math.round(Number(meal.macros?.proteina) || 0)}g</span>
+                <span>·</span>
+                <span>C {Math.round(Number(meal.macros?.carboidrato) || 0)}g</span>
+                <span>·</span>
+                <span>G {Math.round(Number(meal.macros?.gordura) || 0)}g</span>
+              </div>
+
               {meal.nota && (
                 <p className="text-[11px] pt-2 italic" style={{ color: DIM }}>
-                  {meal.nota}
+                  {sanitizeClientText(meal.nota)}
                 </p>
               )}
             </div>
@@ -99,6 +124,7 @@ const MealCard = ({ meal, index }: { meal: AthleteMeal; index: number }) => {
     </div>
   );
 };
+
 
 const MyPlanPage = () => {
   const navigate = useNavigate();
