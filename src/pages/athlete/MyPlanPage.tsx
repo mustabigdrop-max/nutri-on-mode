@@ -176,6 +176,7 @@ const MyPlanPage = () => {
   const targetId = useAthleteTarget();
   const { loading, error, mealPlan, refetch } = useAthletePlans(targetId || undefined);
   const [tab, setTab] = useState<"plano" | "mapa">("plano");
+  const { config: roleConfig } = useCoachRoleConfig(targetId || undefined);
 
   useEffect(() => {
     document.title = "Meu Plano Alimentar · NUTRION";
