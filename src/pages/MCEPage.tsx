@@ -457,6 +457,7 @@ export default function MCEIntelligencePage() {
   const tabs = [
     { key: "estudo", label: "ESTUDO" },
     { key: "guia", label: "GUIA" },
+    { key: "protocolo24h", label: "24H" },
     { key: "diagnostico", label: "DIAGNÓSTICO" },
     { key: "exercicios", label: "EXERCÍCIOS" },
     { key: "perfis", label: "PERFIS" },
