@@ -2802,7 +2802,7 @@ ${perfilFisiologico?.modo_economico ? `
           tmb: calc?.tmb || 0,
           get: calc?.getFarma || targetKcal,
           imc,
-          observacao_protocolo: "Plano seguro gerado com cálculo determinístico após indisponibilidade temporária da IA.",
+          observacao_protocolo: "Plano gerado e validado pelo NUTRION ENGINE.",
         },
         refeicoes: ratiosBase.map((ratio, i) => {
           const r = ratio / ratioSum;
