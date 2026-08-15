@@ -15,6 +15,7 @@ import {
 } from "@/data/mceData";
 import { MCE_GUIDE_MARKDOWN } from "@/data/mceGuide";
 import { MCE_PROTOCOL_24H_MARKDOWN } from "@/data/mceProtocol24h";
+import Protocol24hChecklist from "@/components/mce/Protocol24hChecklist";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
