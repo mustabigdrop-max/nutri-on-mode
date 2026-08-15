@@ -635,6 +635,21 @@ export default function MCEIntelligencePage() {
             </div>
           )}
 
+          {/* PROTOCOLO MCE 24H */}
+          {tab === "protocolo24h" && (
+            <div>
+              <div style={sectionTitle}>PROTOCOLO MCE 24H · SISTEMA OPERACIONAL DIÁRIO</div>
+              <div style={{
+                padding: "18px 16px", borderRadius: 14,
+                background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.07)",
+              }}>
+                <div className="mce-guide">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{MCE_PROTOCOL_24H_MARKDOWN}</ReactMarkdown>
+                </div>
+              </div>
+            </div>
+          )}
+
 
 
           {/* DIAGNÓSTICO */}
