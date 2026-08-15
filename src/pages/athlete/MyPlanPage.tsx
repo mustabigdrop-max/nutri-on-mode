@@ -192,7 +192,7 @@ const MyPlanPage = () => {
 
   const r = (mealPlan?.resumo || {}) as Record<string, any>;
   const orientacao = coachGuidanceText(mealPlan?.observacao || r.observacao_protocolo);
-  const compras = mealPlan ? weeklyShoppingList(mealPlan.refeicoes) : [];
+  const compras = mealPlan ? buildShoppingList(mealPlan.refeicoes) : [];
 
   return (
     <div className="min-h-screen pb-28" style={{ background: BG, color: TEXT }}>
