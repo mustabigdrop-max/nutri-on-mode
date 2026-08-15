@@ -1,30 +1,34 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  ArrowLeft, ChevronDown, UtensilsCrossed, Pill, Repeat, Info, Table2,
+  ArrowLeft, ChevronDown, UtensilsCrossed, Pill, Repeat, Info, Table2, ShoppingCart,
 } from "lucide-react";
 import { useAthletePlans, mealKcal, type AthleteMeal } from "@/hooks/useAthletePlans";
 import AthleteBottomNav from "@/components/athlete/AthleteBottomNav";
 import NutritionMap from "@/components/athlete/NutritionMap";
 import { useAthleteTarget } from "@/hooks/useAthleteTarget";
+import { useCoachRoleConfig } from "@/hooks/useCoachRoleConfig";
 import { LoadingState, ErrorState } from "@/components/nutriplan/NutriPlanStates";
 import { sanitizeClientText, coachGuidanceText } from "@/lib/clientLanguage";
-import { safeString, safeLower } from "@/lib/utils";
-import { portionOf, portionParts } from "@/lib/portionDisplay";
+import { safeString } from "@/lib/utils";
+import { normalizeFoodItem, type NormalizedFood } from "@/lib/foodSpecificity";
+import { buildShoppingList } from "@/lib/shoppingList";
 
 
 const BG = "#020205";
 const CYAN = "#00D4FF";
 const TEXT = "#FFFFFF";
 const DIM = "#A0A0A0";
+const FREE = "#00FF88";
 
 const FOOD_EMOJI: Array<[RegExp, string]> = [
   [/ovo/i, "🥚"], [/aveia|granola|cereal/i, "🥣"], [/banana/i, "🍌"], [/ma[çc][ãa]/i, "🍎"],
   [/frango|peito de frango/i, "🍗"], [/carne|patinho|alcatra|b[íi]fe/i, "🥩"], [/peixe|til[áa]pia|salm[ãa]o|atum/i, "🐟"],
   [/arroz/i, "🍚"], [/feij[ãa]o|lentilha|gr[ãa]o/i, "🫘"], [/batata|mandioca|inhame/i, "🥔"],
   [/leite|iogurte|whey|queijo/i, "🥛"], [/p[ãa]o|tapioca|torrada/i, "🍞"], [/azeite|[óo]leo|manteiga/i, "🫒"],
-  [/castanha|am[êe]ndoa|noz|pasta de amendoim/i, "🥜"], [/salada|alface|br[óo]colis|legume|vegetal/i, "🥗"],
+  [/castanha|am[êe]ndoa|noz|pasta de amendoim/i, "🥜"], [/br[óo]colis|cenoura|abobrinha|vagem|legume/i, "🥦"],
+  [/salada|alface|r[úu]cula|agri[ãa]o|vegetal|verdura/i, "🥗"],
   [/fruta|mam[ãa]o|melancia|abacaxi|morango|laranja/i, "🍓"], [/abacate/i, "🥑"], [/[áa]gua|suco|ch[áa]/i, "💧"],
 ];
 
@@ -35,10 +39,81 @@ const emojiFor = (name: unknown) => {
 };
 
 /** Medida caseira é o principal; gramatura fica como referência secundária. */
+const FoodRow = ({ food, last }: { food: NormalizedFood; last: boolean }) => {
+  const [showSubs, setShowSubs] = useState(false);
+  return (
+    <div
+      className="py-3"
+      style={{ borderBottom: last ? "none" : "1px solid rgba(255,255,255,0.05)" }}
+    >
+      <p className="flex items-center gap-2" style={{ fontSize: 15, fontWeight: 600, color: TEXT }}>
+        <span>{emojiFor(food.alimento)}</span> {food.alimento}
+      </p>
 
+      {food.livre ? (
+        <p className="mt-0.5 pl-6 italic" style={{ fontSize: 14, color: FREE }} data-testid="portion-free">
+          À vontade
+        </p>
+      ) : (
+        <>
+          <p
+            className="mt-0.5 pl-6"
+            style={{ fontSize: 16, fontWeight: 700, color: TEXT }}
+            data-testid="portion-primary"
+          >
+            {food.medida}
+          </p>
+          {food.gramas && (
+            <p
+              className="mt-0.5 pl-6 font-mono"
+              style={{ fontSize: 12, color: "#555" }}
+              data-testid="portion-secondary"
+            >
+              ≈ {food.gramas.replace(/^≈\s*/, "")}
+            </p>
+          )}
+        </>
+      )}
+
+      {food.observacao && (
+        <p className="mt-1 pl-6 flex items-start gap-1" style={{ fontSize: 12, color: "#8a8a8a", fontStyle: "italic" }}>
+          <Info className="w-3 h-3 mt-0.5 flex-shrink-0" /> {sanitizeClientText(food.observacao)}
+        </p>
+      )}
+
+      {!!food.substituicoes.length && (
+        <div className="pl-6 mt-2">
+          <button
+            onClick={() => setShowSubs((s) => !s)}
+            className="flex items-center gap-1.5"
+            style={{ fontSize: 11, color: CYAN }}
+          >
+            <Repeat className="w-3 h-3" />
+            {showSubs ? "Ocultar substituições" : "Ver substituições"}
+            <ChevronDown className="w-3 h-3 transition-transform" style={{ transform: showSubs ? "rotate(180deg)" : "none" }} />
+          </button>
+          {showSubs && (
+            <div className="mt-1.5 space-y-1" style={{ borderLeft: `1px solid ${CYAN}33`, paddingLeft: 10 }}>
+              {food.substituicoes.map((s, i) => (
+                <p key={i} style={{ fontSize: 12, color: DIM }}>
+                  <span style={{ color: TEXT }}>{s.alimento}</span> — {s.medida}
+                </p>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
 
 const MealCard = ({ meal, index }: { meal: AthleteMeal; index: number }) => {
   const [open, setOpen] = useState(index === 0);
+  const foods = useMemo(
+    () => (meal.alimentos || []).flatMap((a) => normalizeFoodItem(a)),
+    [meal.alimentos],
+  );
+
   return (
     <div
       className="rounded-2xl overflow-hidden"
@@ -71,45 +146,8 @@ const MealCard = ({ meal, index }: { meal: AthleteMeal; index: number }) => {
             className="overflow-hidden"
           >
             <div className="px-4 pb-4" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-              {(meal.alimentos || []).map((a, i) => (
-                <div
-                  key={i}
-                  className="py-3"
-                  style={{ borderBottom: i < (meal.alimentos?.length || 0) - 1 ? "1px solid rgba(255,255,255,0.05)" : "none" }}
-                >
-                  <p className="text-[13px] font-semibold flex items-center gap-2" style={{ color: TEXT }}>
-                    <span>{emojiFor(a.alimento)}</span> {safeString(a.alimento)}
-                  </p>
-                  <p
-                    className="text-[15px] mt-0.5 pl-6 font-semibold"
-                    style={{ color: TEXT }}
-                    data-testid="portion-primary"
-                  >
-                    {portionParts(a).primary}
-                  </p>
-                  {portionParts(a).secondary && (
-                    <p
-                      className="text-[11px] mt-0.5 pl-6 font-mono"
-                      style={{ color: DIM }}
-                      data-testid="portion-secondary"
-                    >
-                      ≈ {portionParts(a).secondary}
-                    </p>
-                  )}
-                  {a.observacao && (
-                    <p className="mt-1 pl-6 flex items-start gap-1" style={{ fontSize: 12, color: "#8a8a8a", fontStyle: "italic" }}>
-                      <Info className="w-3 h-3 mt-0.5 flex-shrink-0" /> {sanitizeClientText(a.observacao)}
-                    </p>
-                  )}
-                  {!!a.substituicoes?.length && (
-                    <p className="text-[11px] mt-1 pl-6 flex items-start gap-1" style={{ color: DIM }}>
-                      <Repeat className="w-3 h-3 mt-0.5 flex-shrink-0" style={{ color: CYAN }} />
-                      {a.substituicoes
-                        .map((s) => `${safeString(s.alimento)} ${portionOf(s)}`.trim())
-                        .join(" · ")}
-                    </p>
-                  )}
-                </div>
+              {foods.map((f, i) => (
+                <FoodRow key={`${f.alimento}-${i}`} food={f} last={i === foods.length - 1} />
               ))}
 
               <div className="pt-2 flex items-center gap-3 font-mono" style={{ fontSize: 11, color: DIM }}>
@@ -133,30 +171,12 @@ const MealCard = ({ meal, index }: { meal: AthleteMeal; index: number }) => {
   );
 };
 
-
-const weeklyShoppingList = (meals: AthleteMeal[]) => {
-  const map = new Map<string, number>();
-  meals.forEach((m) =>
-    (m.alimentos || []).forEach((a) => {
-      const name = safeString(a.alimento).trim();
-      if (!name) return;
-      const raw = safeString(a.quantidade_g) || safeString(a.quantidade);
-      const match = raw.match(/(\d+(?:[.,]\d+)?)\s*g/i);
-      const grams = match ? parseFloat(match[1].replace(",", ".")) : 0;
-      const key = safeLower(name);
-      map.set(key, (map.get(key) || 0) + grams * 7);
-    }),
-  );
-  return Array.from(map.entries())
-    .map(([name, grams]) => ({ name, grams }))
-    .sort((a, b) => b.grams - a.grams);
-};
-
 const MyPlanPage = () => {
   const navigate = useNavigate();
   const targetId = useAthleteTarget();
   const { loading, error, mealPlan, refetch } = useAthletePlans(targetId || undefined);
   const [tab, setTab] = useState<"plano" | "mapa">("plano");
+  const { config: roleConfig } = useCoachRoleConfig(targetId || undefined);
 
   useEffect(() => {
     document.title = "Meu Plano Alimentar · NUTRION";
@@ -173,7 +193,7 @@ const MyPlanPage = () => {
 
   const r = (mealPlan?.resumo || {}) as Record<string, any>;
   const orientacao = coachGuidanceText(mealPlan?.observacao || r.observacao_protocolo);
-  const compras = mealPlan ? weeklyShoppingList(mealPlan.refeicoes) : [];
+  const compras = mealPlan ? buildShoppingList(mealPlan.refeicoes) : [];
 
   return (
     <div className="min-h-screen pb-28" style={{ background: BG, color: TEXT }}>
@@ -297,14 +317,35 @@ const MyPlanPage = () => {
                 className="rounded-2xl p-4"
                 style={{ border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.02)" }}
               >
-                <p className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: CYAN }}>
-                  Lista de compras semanal
+                <div className="flex items-center gap-2 mb-1">
+                  <ShoppingCart className="w-4 h-4" style={{ color: CYAN }} />
+                  <p className="text-xs font-bold uppercase tracking-wider" style={{ color: CYAN }}>
+                    Lista de compras semanal
+                  </p>
+                </div>
+                <p className="text-[11px] mb-3" style={{ color: DIM }}>
+                  Baseada no seu plano · 7 dias
                 </p>
-                <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-                  {compras.map((c) => (
-                    <div key={c.name} className="flex justify-between text-[12px]" style={{ fontFamily: "'Space Mono', ui-monospace, monospace" }}>
-                      <span className="truncate capitalize" style={{ color: TEXT }}>{c.name}</span>
-                      <span style={{ color: DIM }}>{c.grams ? `${(c.grams / 1000).toFixed(2)}kg` : "—"}</span>
+
+                <div className="space-y-4">
+                  {compras.map((g) => (
+                    <div key={g.section}>
+                      <p className="text-[11px] font-bold uppercase tracking-wider mb-1.5" style={{ color: TEXT }}>
+                        {g.emoji} {g.label}
+                      </p>
+                      <div className="space-y-1">
+                        {g.items.map((it) => (
+                          <div
+                            key={it.name}
+                            className="flex items-baseline gap-2 text-[12px]"
+                            style={{ fontFamily: "'Space Mono', ui-monospace, monospace" }}
+                          >
+                            <span className="capitalize" style={{ color: TEXT }}>{it.name}</span>
+                            <span className="flex-1" style={{ borderBottom: "1px dotted rgba(255,255,255,0.15)" }} />
+                            <span style={{ color: it.amount === "à vontade" ? FREE : DIM }}>{it.amount}</span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -320,6 +361,9 @@ const MyPlanPage = () => {
               </p>
               <p className="text-sm whitespace-pre-wrap">
                 {orientacao || "Plano gerado e validado pelo NUTRION ENGINE."}
+              </p>
+              <p className="text-[11px] mt-3 pt-3 italic" style={{ color: "#666", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+                {roleConfig.planNoun} · {roleConfig.disclaimer}
               </p>
             </div>
           </>

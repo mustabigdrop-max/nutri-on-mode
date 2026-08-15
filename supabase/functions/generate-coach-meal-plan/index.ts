@@ -60,7 +60,25 @@ PESOS DE REFERÊNCIA OBRIGATÓRIOS: banana média sem casca 120g; ovo inteiro 50
 
 `;
 
-const SYSTEM_PROMPT = KCAL_CLOSURE_RULE + `⛔ REGRA CRÍTICA — LER ANTES DE GERAR QUALQUER COISA:
+const ESPECIFICIDADE_RULE = `⛔ REGRA OBRIGATÓRIA — NUNCA USAR NOMES GENÉRICOS DE ALIMENTOS:
+- "Fruta" → especificar qual fruta (banana média, maçã média, 8 morangos, ½ manga...)
+- "Legumes" → listar quais legumes (brócolis, cenoura, abobrinha, vagem...) com medida caseira
+- "Vegetais" / "Verduras" → listar quais (alface, tomate, pepino, rúcula, agrião...)
+- "Salada" → folhas verdes são À VONTADE (sem gramatura); o azeite vai como item SEPARADO com medida própria ("1 colher de sopa ≈ 8ml")
+- "Castanhas" → especificar tipo e quantidade em unidades ("3 castanhas do pará", "10 castanhas de caju")
+Cada alimento deve ter sua medida caseira correspondente no campo "quantidade".
+Apenas vegetais calóricos (cenoura, beterraba, milho, ervilha) recebem gramatura; folhas verdes cruas nunca.
+
+⛔ REGRA DE SUBSTITUIÇÃO: cada alimento só pode ser substituído por outro do MESMO grupo de macronutriente.
+- Proteínas substituem proteínas (frango ↔ tilápia ↔ patinho ↔ ovos ↔ atum)
+- Carboidratos substituem carboidratos (arroz ↔ batata doce ↔ mandioca ↔ macarrão ↔ tapioca)
+- Gorduras substituem gorduras (azeite ↔ castanhas ↔ pasta de amendoim ↔ abacate)
+Cada substituição deve incluir a medida caseira equivalente no campo "quantidade".
+NUNCA listar substitutos de macros diferentes na mesma lista de substituições de um alimento.
+
+`;
+
+const SYSTEM_PROMPT = KCAL_CLOSURE_RULE + ESPECIFICIDADE_RULE + `⛔ REGRA CRÍTICA — LER ANTES DE GERAR QUALQUER COISA:
 
 AEJ (Aeróbico Em Jejum) = JEJUM TOTAL.
 - AEJ NÃO é uma refeição.
@@ -2936,17 +2954,34 @@ ${perfilFisiologico?.modo_economico ? `
             alimentos: templates[i].map((alimento) => {
               const q = gramasFor(alimento);
               const qg = q.match(/(\d+)\s*g/)?.[0] ?? null;
-              return {
-                alimento,
-                quantidade: q,
-                quantidade_g: qg,
-                observacao: "Base técnica ajustável pelo coach.",
-                substituicoes: [
-                  { alimento: "Frango / tilápia / patinho", quantidade: `${Math.max(60, Math.round(protRef / 0.22))}g`, quantidade_g: `${Math.max(60, Math.round(protRef / 0.22))}g`, observacao: "troca proteica equivalente", grupo: "proteina" },
-                  { alimento: "Arroz / batata / mandioca", quantidade: `${Math.max(50, Math.round(carbRef / 0.25))}g`, quantidade_g: `${Math.max(50, Math.round(carbRef / 0.25))}g`, observacao: "troca de carboidrato equivalente", grupo: "carbo" },
-                  { alimento: "Azeite / castanhas / abacate", quantidade: `${Math.max(5, Math.round(fatRef * 1.1))}g`, quantidade_g: `${Math.max(5, Math.round(fatRef * 1.1))}g`, observacao: "troca de gordura equivalente", grupo: "gordura" },
-                ],
-              };
+              const nome = alimento.toLowerCase();
+              const gProt = Math.max(60, Math.round(protRef / 0.22));
+              const gCarb = Math.max(50, Math.round(carbRef / 0.25));
+              const gFat = Math.max(5, Math.round(fatRef * 1.1));
+
+              // Substituições SEMPRE dentro do mesmo grupo de macronutriente.
+              let substituicoes: Array<Record<string, unknown>> = [];
+              if (/(frango|carne|patinho|peixe|til(á|a)pia|atum|ovo|whey|iogurte|queijo)/.test(nome)) {
+                substituicoes = [
+                  { alimento: "Tilápia", quantidade: `1 filé médio (~${gProt}g)`, quantidade_g: `${gProt}g`, grupo: "proteina" },
+                  { alimento: "Patinho moído", quantidade: `1 palma da mão (~${gProt}g)`, quantidade_g: `${gProt}g`, grupo: "proteina" },
+                  { alimento: "Ovos inteiros", quantidade: `${Math.max(2, Math.round(gProt / 50))} ovos médios`, quantidade_g: `${gProt}g`, grupo: "proteina" },
+                ].filter((s) => !nome.includes(s.alimento.toLowerCase().split(" ")[0]));
+              } else if (/(arroz|batata|mandioca|macarr(ã|a)o|tapioca|aveia|p(ã|a)o|inhame|feij(ã|a)o|banana|fruta)/.test(nome)) {
+                substituicoes = [
+                  { alimento: "Batata doce", quantidade: `1 unidade média (~${gCarb}g)`, quantidade_g: `${gCarb}g`, grupo: "carbo" },
+                  { alimento: "Mandioca cozida", quantidade: `4 pedaços médios (~${gCarb}g)`, quantidade_g: `${gCarb}g`, grupo: "carbo" },
+                  { alimento: "Arroz branco", quantidade: `${Math.max(2, Math.round(gCarb / 35))} colheres de sopa cheias`, quantidade_g: `${gCarb}g`, grupo: "carbo" },
+                ].filter((s) => !nome.includes(s.alimento.toLowerCase().split(" ")[0]));
+              } else if (/(azeite|(ó|o)leo|castanha|abacate|amendoim|manteiga|linha(ç|c)a|chia)/.test(nome)) {
+                substituicoes = [
+                  { alimento: "Azeite extra virgem", quantidade: "1 colher de sopa (~8ml)", quantidade_g: `${gFat}g`, grupo: "gordura" },
+                  { alimento: "Castanha do pará", quantidade: "3 unidades", quantidade_g: `${gFat}g`, grupo: "gordura" },
+                  { alimento: "Pasta de amendoim", quantidade: "1 colher de sopa rasa", quantidade_g: `${gFat}g`, grupo: "gordura" },
+                ].filter((s) => !nome.includes(s.alimento.toLowerCase().split(" ")[0]));
+              }
+
+              return { alimento, quantidade: q, quantidade_g: qg, substituicoes };
             }),
           };
         }),

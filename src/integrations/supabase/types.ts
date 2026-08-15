@@ -2940,7 +2940,9 @@ export type Database = {
           max_patients: number | null
           plan: string | null
           professional_name: string | null
+          professional_role: string
           professional_type: string | null
+          registration_number: string | null
           show_on_plan: boolean | null
           specialties: string[] | null
           tier: string | null
@@ -2972,7 +2974,9 @@ export type Database = {
           max_patients?: number | null
           plan?: string | null
           professional_name?: string | null
+          professional_role?: string
           professional_type?: string | null
+          registration_number?: string | null
           show_on_plan?: boolean | null
           specialties?: string[] | null
           tier?: string | null
@@ -3004,7 +3008,9 @@ export type Database = {
           max_patients?: number | null
           plan?: string | null
           professional_name?: string | null
+          professional_role?: string
           professional_type?: string | null
+          registration_number?: string | null
           show_on_plan?: boolean | null
           specialties?: string[] | null
           tier?: string | null

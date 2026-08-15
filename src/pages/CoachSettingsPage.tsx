@@ -11,6 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Loader2, Save, Palette, Bell, CreditCard, Building2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { PROFESSIONAL_ROLE_LIST, PROFESSIONAL_ROLES, resolveProfessionalRole, type ProfessionalRole } from "@/lib/professionalProfile";
 
 const CoachSettingsPage = () => {
   const navigate = useNavigate();
@@ -18,6 +19,8 @@ const CoachSettingsPage = () => {
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
     professional_name: "",
+    professional_role: "nutrition_coach" as ProfessionalRole,
+    registration_number: "",
     crn: "",
     bio: "",
     clinic_name: "",
@@ -38,6 +41,11 @@ const CoachSettingsPage = () => {
     if (profile) {
       setForm({
         professional_name: profile.professional_name || "",
+        professional_role: resolveProfessionalRole(
+          (profile as { professional_role?: string | null }).professional_role,
+          profile.professional_type,
+        ).id,
+        registration_number: (profile as { registration_number?: string | null }).registration_number || "",
         crn: profile.crn || "",
         bio: profile.bio || "",
         clinic_name: profile.clinic_name || "",
@@ -61,6 +69,8 @@ const CoachSettingsPage = () => {
     setSaving(true);
     const { error } = await supabase.from("coach_profiles").update({
       professional_name: form.professional_name,
+      professional_role: form.professional_role,
+      registration_number: form.registration_number || null,
       crn: form.crn || null,
       bio: form.bio || null,
       clinic_name: form.clinic_name || null,
@@ -114,9 +124,35 @@ const CoachSettingsPage = () => {
               <Input value={form.professional_name} onChange={e => setForm(p => ({ ...p, professional_name: e.target.value }))} />
             </div>
             <div>
-              <Label>CRN</Label>
-              <Input value={form.crn} onChange={e => setForm(p => ({ ...p, crn: e.target.value }))} />
+              <Label>Categoria profissional</Label>
+              <select
+                value={form.professional_role}
+                onChange={e => setForm(p => ({ ...p, professional_role: e.target.value as ProfessionalRole }))}
+                className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm text-foreground"
+              >
+                {PROFESSIONAL_ROLE_LIST.map(r => (
+                  <option key={r.id} value={r.id}>{r.label}</option>
+                ))}
+              </select>
+              <p className="text-[11px] text-muted-foreground mt-1">
+                {PROFESSIONAL_ROLES[form.professional_role].planNoun} · formato padrão:{" "}
+                {PROFESSIONAL_ROLES[form.professional_role].defaultFormat === "gramas"
+                  ? "gramas"
+                  : PROFESSIONAL_ROLES[form.professional_role].defaultFormat === "ambos"
+                    ? "gramas + medidas caseiras"
+                    : "medidas caseiras"}
+              </p>
             </div>
+            {PROFESSIONAL_ROLES[form.professional_role].registrationLabel && (
+              <div>
+                <Label>{PROFESSIONAL_ROLES[form.professional_role].registrationLabel}</Label>
+                <Input
+                  value={form.registration_number}
+                  onChange={e => setForm(p => ({ ...p, registration_number: e.target.value }))}
+                  placeholder={`Número do ${PROFESSIONAL_ROLES[form.professional_role].registrationLabel}`}
+                />
+              </div>
+            )}
             <div>
               <Label>Bio</Label>
               <Textarea value={form.bio} onChange={e => setForm(p => ({ ...p, bio: e.target.value }))} rows={3} />
