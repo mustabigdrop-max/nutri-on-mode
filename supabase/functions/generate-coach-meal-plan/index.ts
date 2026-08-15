@@ -60,7 +60,25 @@ PESOS DE REFERÊNCIA OBRIGATÓRIOS: banana média sem casca 120g; ovo inteiro 50
 
 `;
 
-const SYSTEM_PROMPT = KCAL_CLOSURE_RULE + `⛔ REGRA CRÍTICA — LER ANTES DE GERAR QUALQUER COISA:
+const ESPECIFICIDADE_RULE = `⛔ REGRA OBRIGATÓRIA — NUNCA USAR NOMES GENÉRICOS DE ALIMENTOS:
+- "Fruta" → especificar qual fruta (banana média, maçã média, 8 morangos, ½ manga...)
+- "Legumes" → listar quais legumes (brócolis, cenoura, abobrinha, vagem...) com medida caseira
+- "Vegetais" / "Verduras" → listar quais (alface, tomate, pepino, rúcula, agrião...)
+- "Salada" → folhas verdes são À VONTADE (sem gramatura); o azeite vai como item SEPARADO com medida própria ("1 colher de sopa ≈ 8ml")
+- "Castanhas" → especificar tipo e quantidade em unidades ("3 castanhas do pará", "10 castanhas de caju")
+Cada alimento deve ter sua medida caseira correspondente no campo "quantidade".
+Apenas vegetais calóricos (cenoura, beterraba, milho, ervilha) recebem gramatura; folhas verdes cruas nunca.
+
+⛔ REGRA DE SUBSTITUIÇÃO: cada alimento só pode ser substituído por outro do MESMO grupo de macronutriente.
+- Proteínas substituem proteínas (frango ↔ tilápia ↔ patinho ↔ ovos ↔ atum)
+- Carboidratos substituem carboidratos (arroz ↔ batata doce ↔ mandioca ↔ macarrão ↔ tapioca)
+- Gorduras substituem gorduras (azeite ↔ castanhas ↔ pasta de amendoim ↔ abacate)
+Cada substituição deve incluir a medida caseira equivalente no campo "quantidade".
+NUNCA listar substitutos de macros diferentes na mesma lista de substituições de um alimento.
+
+`;
+
+const SYSTEM_PROMPT = KCAL_CLOSURE_RULE + ESPECIFICIDADE_RULE + `⛔ REGRA CRÍTICA — LER ANTES DE GERAR QUALQUER COISA:
 
 AEJ (Aeróbico Em Jejum) = JEJUM TOTAL.
 - AEJ NÃO é uma refeição.
