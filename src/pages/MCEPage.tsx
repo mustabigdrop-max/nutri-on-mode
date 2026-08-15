@@ -15,6 +15,7 @@ import {
 } from "@/data/mceData";
 import { MCE_GUIDE_MARKDOWN } from "@/data/mceGuide";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 
 const MONO = "'Space Mono', ui-monospace, monospace";
@@ -627,7 +628,7 @@ export default function MCEIntelligencePage() {
                 background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.07)",
               }}>
                 <div className="mce-guide">
-                  <ReactMarkdown>{MCE_GUIDE_MARKDOWN}</ReactMarkdown>
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{MCE_GUIDE_MARKDOWN}</ReactMarkdown>
                 </div>
               </div>
             </div>
