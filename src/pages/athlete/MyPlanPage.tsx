@@ -1,30 +1,34 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  ArrowLeft, ChevronDown, UtensilsCrossed, Pill, Repeat, Info, Table2,
+  ArrowLeft, ChevronDown, UtensilsCrossed, Pill, Repeat, Info, Table2, ShoppingCart,
 } from "lucide-react";
 import { useAthletePlans, mealKcal, type AthleteMeal } from "@/hooks/useAthletePlans";
 import AthleteBottomNav from "@/components/athlete/AthleteBottomNav";
 import NutritionMap from "@/components/athlete/NutritionMap";
 import { useAthleteTarget } from "@/hooks/useAthleteTarget";
+import { useCoachRoleConfig } from "@/hooks/useCoachRoleConfig";
 import { LoadingState, ErrorState } from "@/components/nutriplan/NutriPlanStates";
 import { sanitizeClientText, coachGuidanceText } from "@/lib/clientLanguage";
-import { safeString, safeLower } from "@/lib/utils";
-import { portionOf, portionParts } from "@/lib/portionDisplay";
+import { safeString } from "@/lib/utils";
+import { normalizeFoodItem, type NormalizedFood } from "@/lib/foodSpecificity";
+import { buildShoppingList } from "@/lib/shoppingList";
 
 
 const BG = "#020205";
 const CYAN = "#00D4FF";
 const TEXT = "#FFFFFF";
 const DIM = "#A0A0A0";
+const FREE = "#00FF88";
 
 const FOOD_EMOJI: Array<[RegExp, string]> = [
   [/ovo/i, "🥚"], [/aveia|granola|cereal/i, "🥣"], [/banana/i, "🍌"], [/ma[çc][ãa]/i, "🍎"],
   [/frango|peito de frango/i, "🍗"], [/carne|patinho|alcatra|b[íi]fe/i, "🥩"], [/peixe|til[áa]pia|salm[ãa]o|atum/i, "🐟"],
   [/arroz/i, "🍚"], [/feij[ãa]o|lentilha|gr[ãa]o/i, "🫘"], [/batata|mandioca|inhame/i, "🥔"],
   [/leite|iogurte|whey|queijo/i, "🥛"], [/p[ãa]o|tapioca|torrada/i, "🍞"], [/azeite|[óo]leo|manteiga/i, "🫒"],
-  [/castanha|am[êe]ndoa|noz|pasta de amendoim/i, "🥜"], [/salada|alface|br[óo]colis|legume|vegetal/i, "🥗"],
+  [/castanha|am[êe]ndoa|noz|pasta de amendoim/i, "🥜"], [/br[óo]colis|cenoura|abobrinha|vagem|legume/i, "🥦"],
+  [/salada|alface|r[úu]cula|agri[ãa]o|vegetal|verdura/i, "🥗"],
   [/fruta|mam[ãa]o|melancia|abacaxi|morango|laranja/i, "🍓"], [/abacate/i, "🥑"], [/[áa]gua|suco|ch[áa]/i, "💧"],
 ];
 
@@ -35,10 +39,81 @@ const emojiFor = (name: unknown) => {
 };
 
 /** Medida caseira é o principal; gramatura fica como referência secundária. */
+const FoodRow = ({ food, last }: { food: NormalizedFood; last: boolean }) => {
+  const [showSubs, setShowSubs] = useState(false);
+  return (
+    <div
+      className="py-3"
+      style={{ borderBottom: last ? "none" : "1px solid rgba(255,255,255,0.05)" }}
+    >
+      <p className="flex items-center gap-2" style={{ fontSize: 15, fontWeight: 600, color: TEXT }}>
+        <span>{emojiFor(food.alimento)}</span> {food.alimento}
+      </p>
 
+      {food.livre ? (
+        <p className="mt-0.5 pl-6 italic" style={{ fontSize: 14, color: FREE }} data-testid="portion-free">
+          À vontade
+        </p>
+      ) : (
+        <>
+          <p
+            className="mt-0.5 pl-6"
+            style={{ fontSize: 16, fontWeight: 700, color: TEXT }}
+            data-testid="portion-primary"
+          >
+            {food.medida}
+          </p>
+          {food.gramas && (
+            <p
+              className="mt-0.5 pl-6 font-mono"
+              style={{ fontSize: 12, color: "#555" }}
+              data-testid="portion-secondary"
+            >
+              ≈ {food.gramas.replace(/^≈\s*/, "")}
+            </p>
+          )}
+        </>
+      )}
+
+      {food.observacao && (
+        <p className="mt-1 pl-6 flex items-start gap-1" style={{ fontSize: 12, color: "#8a8a8a", fontStyle: "italic" }}>
+          <Info className="w-3 h-3 mt-0.5 flex-shrink-0" /> {sanitizeClientText(food.observacao)}
+        </p>
+      )}
+
+      {!!food.substituicoes.length && (
+        <div className="pl-6 mt-2">
+          <button
+            onClick={() => setShowSubs((s) => !s)}
+            className="flex items-center gap-1.5"
+            style={{ fontSize: 11, color: CYAN }}
+          >
+            <Repeat className="w-3 h-3" />
+            {showSubs ? "Ocultar substituições" : "Ver substituições"}
+            <ChevronDown className="w-3 h-3 transition-transform" style={{ transform: showSubs ? "rotate(180deg)" : "none" }} />
+          </button>
+          {showSubs && (
+            <div className="mt-1.5 space-y-1" style={{ borderLeft: `1px solid ${CYAN}33`, paddingLeft: 10 }}>
+              {food.substituicoes.map((s, i) => (
+                <p key={i} style={{ fontSize: 12, color: DIM }}>
+                  <span style={{ color: TEXT }}>{s.alimento}</span> — {s.medida}
+                </p>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
 
 const MealCard = ({ meal, index }: { meal: AthleteMeal; index: number }) => {
   const [open, setOpen] = useState(index === 0);
+  const foods = useMemo(
+    () => (meal.alimentos || []).flatMap((a) => normalizeFoodItem(a)),
+    [meal.alimentos],
+  );
+
   return (
     <div
       className="rounded-2xl overflow-hidden"
@@ -71,45 +146,8 @@ const MealCard = ({ meal, index }: { meal: AthleteMeal; index: number }) => {
             className="overflow-hidden"
           >
             <div className="px-4 pb-4" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-              {(meal.alimentos || []).map((a, i) => (
-                <div
-                  key={i}
-                  className="py-3"
-                  style={{ borderBottom: i < (meal.alimentos?.length || 0) - 1 ? "1px solid rgba(255,255,255,0.05)" : "none" }}
-                >
-                  <p className="text-[13px] font-semibold flex items-center gap-2" style={{ color: TEXT }}>
-                    <span>{emojiFor(a.alimento)}</span> {safeString(a.alimento)}
-                  </p>
-                  <p
-                    className="text-[15px] mt-0.5 pl-6 font-semibold"
-                    style={{ color: TEXT }}
-                    data-testid="portion-primary"
-                  >
-                    {portionParts(a).primary}
-                  </p>
-                  {portionParts(a).secondary && (
-                    <p
-                      className="text-[11px] mt-0.5 pl-6 font-mono"
-                      style={{ color: DIM }}
-                      data-testid="portion-secondary"
-                    >
-                      ≈ {portionParts(a).secondary}
-                    </p>
-                  )}
-                  {a.observacao && (
-                    <p className="mt-1 pl-6 flex items-start gap-1" style={{ fontSize: 12, color: "#8a8a8a", fontStyle: "italic" }}>
-                      <Info className="w-3 h-3 mt-0.5 flex-shrink-0" /> {sanitizeClientText(a.observacao)}
-                    </p>
-                  )}
-                  {!!a.substituicoes?.length && (
-                    <p className="text-[11px] mt-1 pl-6 flex items-start gap-1" style={{ color: DIM }}>
-                      <Repeat className="w-3 h-3 mt-0.5 flex-shrink-0" style={{ color: CYAN }} />
-                      {a.substituicoes
-                        .map((s) => `${safeString(s.alimento)} ${portionOf(s)}`.trim())
-                        .join(" · ")}
-                    </p>
-                  )}
-                </div>
+              {foods.map((f, i) => (
+                <FoodRow key={`${f.alimento}-${i}`} food={f} last={i === foods.length - 1} />
               ))}
 
               <div className="pt-2 flex items-center gap-3 font-mono" style={{ fontSize: 11, color: DIM }}>
@@ -131,25 +169,6 @@ const MealCard = ({ meal, index }: { meal: AthleteMeal; index: number }) => {
       </AnimatePresence>
     </div>
   );
-};
-
-
-const weeklyShoppingList = (meals: AthleteMeal[]) => {
-  const map = new Map<string, number>();
-  meals.forEach((m) =>
-    (m.alimentos || []).forEach((a) => {
-      const name = safeString(a.alimento).trim();
-      if (!name) return;
-      const raw = safeString(a.quantidade_g) || safeString(a.quantidade);
-      const match = raw.match(/(\d+(?:[.,]\d+)?)\s*g/i);
-      const grams = match ? parseFloat(match[1].replace(",", ".")) : 0;
-      const key = safeLower(name);
-      map.set(key, (map.get(key) || 0) + grams * 7);
-    }),
-  );
-  return Array.from(map.entries())
-    .map(([name, grams]) => ({ name, grams }))
-    .sort((a, b) => b.grams - a.grams);
 };
 
 const MyPlanPage = () => {
