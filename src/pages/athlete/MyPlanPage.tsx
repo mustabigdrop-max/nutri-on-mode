@@ -11,6 +11,7 @@ import { useAthleteTarget } from "@/hooks/useAthleteTarget";
 import { LoadingState, ErrorState } from "@/components/nutriplan/NutriPlanStates";
 import { sanitizeClientText, coachGuidanceText } from "@/lib/clientLanguage";
 import { safeString, safeLower } from "@/lib/utils";
+import { portionOf, portionParts } from "@/lib/portionDisplay";
 
 
 const BG = "#020205";
@@ -33,14 +34,8 @@ const emojiFor = (name: unknown) => {
   return "•";
 };
 
-/** Medida caseira é o principal; se não houver, cai na gramatura. */
-const portionOf = (a: { quantidade?: string; quantidade_g?: string }) => {
-  const caseira = safeString(a.quantidade).trim();
-  const gramas = safeString(a.quantidade_g).trim();
-  const soGramas = /^\d+(?:[.,]\d+)?\s*(g|ml|kg|l)$/i.test(caseira);
-  if (caseira && !soGramas) return caseira;
-  return caseira || gramas;
-};
+/** Medida caseira é o principal; gramatura fica como referência secundária. */
+
 
 const MealCard = ({ meal, index }: { meal: AthleteMeal; index: number }) => {
   const [open, setOpen] = useState(index === 0);
@@ -85,9 +80,22 @@ const MealCard = ({ meal, index }: { meal: AthleteMeal; index: number }) => {
                   <p className="text-[13px] font-semibold flex items-center gap-2" style={{ color: TEXT }}>
                     <span>{emojiFor(a.alimento)}</span> {safeString(a.alimento)}
                   </p>
-                  <p className="text-[15px] mt-0.5 pl-6" style={{ color: TEXT }}>
-                    {portionOf(a)}
+                  <p
+                    className="text-[15px] mt-0.5 pl-6 font-semibold"
+                    style={{ color: TEXT }}
+                    data-testid="portion-primary"
+                  >
+                    {portionParts(a).primary}
                   </p>
+                  {portionParts(a).secondary && (
+                    <p
+                      className="text-[11px] mt-0.5 pl-6 font-mono"
+                      style={{ color: DIM }}
+                      data-testid="portion-secondary"
+                    >
+                      ≈ {portionParts(a).secondary}
+                    </p>
+                  )}
                   {a.observacao && (
                     <p className="mt-1 pl-6 flex items-start gap-1" style={{ fontSize: 12, color: "#8a8a8a", fontStyle: "italic" }}>
                       <Info className="w-3 h-3 mt-0.5 flex-shrink-0" /> {sanitizeClientText(a.observacao)}
