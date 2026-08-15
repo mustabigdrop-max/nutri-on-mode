@@ -91,26 +91,105 @@ function PillarNav({ active, onChange }: { active: PillarKey; onChange: (k: Pill
 }
 
 function TabBar({ tabs, active, onChange }: {
-  tabs: { key: string; label: string }[]; active: string; onChange: (k: string) => void;
+  tabs: { key: string; label: string; badge?: string }[]; active: string; onChange: (k: string) => void;
 }) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [canScroll, setCanScroll] = useState({ left: false, right: false });
+
+  const checkScroll = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    setCanScroll({
+      left: el.scrollLeft > 4,
+      right: el.scrollLeft + el.clientWidth < el.scrollWidth - 4,
+    });
+  }, []);
+
+  useEffect(() => {
+    checkScroll();
+    const el = scrollRef.current;
+    if (!el) return;
+    el.addEventListener("scroll", checkScroll, { passive: true });
+    window.addEventListener("resize", checkScroll);
+    return () => {
+      el.removeEventListener("scroll", checkScroll);
+      window.removeEventListener("resize", checkScroll);
+    };
+  }, [checkScroll]);
+
+  const scroll = (dir: "left" | "right") => {
+    const el = scrollRef.current;
+    if (!el) return;
+    el.scrollBy({ left: dir === "left" ? -140 : 140, behavior: "smooth" });
+  };
+
   return (
-    <div style={{ display: "flex", borderBottom: "1px solid rgba(255,255,255,0.06)", overflowX: "auto" }}>
-      {tabs.map((t) => (
+    <div style={{ position: "relative" }}>
+      {canScroll.left && (
         <button
-          key={t.key}
-          onClick={() => onChange(t.key)}
+          aria-label="Rolar abas para esquerda"
+          onClick={() => scroll("left")}
           style={{
-            flex: 1, minWidth: 96, padding: "12px 8px", border: "none", cursor: "pointer",
-            fontFamily: MONO, fontSize: 10, letterSpacing: 2, textTransform: "uppercase",
-            background: "transparent",
-            color: active === t.key ? "#00D4FF" : "rgba(255,255,255,0.3)",
-            borderBottom: active === t.key ? "2px solid #00D4FF" : "2px solid transparent",
-            transition: "all 0.25s ease",
+            position: "absolute", left: 0, top: 0, bottom: 0, zIndex: 10,
+            width: 32, border: "none", background: "linear-gradient(90deg, #05070C 60%, transparent)",
+            color: "#00D4FF", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "flex-start",
           }}
         >
-          {t.label}
+          ◀
         </button>
-      ))}
+      )}
+      <div
+        ref={scrollRef}
+        style={{
+          display: "flex", borderBottom: "1px solid rgba(255,255,255,0.06)", overflowX: "auto",
+          scrollbarWidth: "none", msOverflowStyle: "none",
+        }}
+      >
+        <style>{`
+          .mce-tabbar::-webkit-scrollbar { display: none; }
+        `}</style>
+        {tabs.map((t) => {
+          const isActive = active === t.key;
+          return (
+            <button
+              key={t.key}
+              onClick={() => onChange(t.key)}
+              className="mce-tabbar"
+              style={{
+                flex: "0 0 auto", padding: "12px 10px", border: "none", cursor: "pointer",
+                fontFamily: MONO, fontSize: 10, letterSpacing: 1.5, textTransform: "uppercase",
+                background: "transparent",
+                color: isActive ? "#00D4FF" : "rgba(255,255,255,0.35)",
+                borderBottom: isActive ? `2px solid ${t.badge || "#00D4FF"}` : "2px solid transparent",
+                transition: "all 0.25s ease", display: "flex", alignItems: "center", gap: 6,
+              }}
+            >
+              {t.label}
+              {t.badge && (
+                <span style={{
+                  fontSize: 8, letterSpacing: 0.5, color: "#03030a", background: t.badge,
+                  borderRadius: 4, padding: "2px 5px", fontWeight: 700,
+                }}>
+                  24H
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+      {canScroll.right && (
+        <button
+          aria-label="Rolar abas para direita"
+          onClick={() => scroll("right")}
+          style={{
+            position: "absolute", right: 0, top: 0, bottom: 0, zIndex: 10,
+            width: 32, border: "none", background: "linear-gradient(270deg, #05070C 60%, transparent)",
+            color: "#00D4FF", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "flex-end",
+          }}
+        >
+          ▶
+        </button>
+      )}
     </div>
   );
 }
@@ -458,7 +537,7 @@ export default function MCEIntelligencePage() {
   const tabs = [
     { key: "estudo", label: "ESTUDO" },
     { key: "guia", label: "GUIA" },
-    { key: "protocolo24h", label: "24H" },
+    { key: "protocolo24h", label: "24H", badge: "#F59E0B" },
     { key: "diagnostico", label: "DIAGNÓSTICO" },
     { key: "exercicios", label: "EXERCÍCIOS" },
     { key: "perfis", label: "PERFIS" },
