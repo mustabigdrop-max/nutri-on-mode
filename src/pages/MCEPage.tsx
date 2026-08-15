@@ -618,6 +618,23 @@ export default function MCEIntelligencePage() {
             </div>
           )}
 
+          {/* GUIA DE DOMÍNIO MCE */}
+          {tab === "guia" && (
+            <div>
+              <div style={sectionTitle}>GUIA DE DOMÍNIO MCE · DIOGO MELLO</div>
+              <div style={{
+                padding: "18px 16px", borderRadius: 14,
+                background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.07)",
+              }}>
+                <div className="mce-guide">
+                  <ReactMarkdown>{MCE_GUIDE_MARKDOWN}</ReactMarkdown>
+                </div>
+              </div>
+            </div>
+          )}
+
+
+
           {/* DIAGNÓSTICO */}
           {tab === "diagnostico" && (
             <div>
