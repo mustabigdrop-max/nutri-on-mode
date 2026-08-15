@@ -1,5 +1,7 @@
 import { safeString } from "@/lib/utils";
-import { useState, useRef, useEffect, Suspense } from "react";
+import { useState, useRef, useEffect, useMemo, Suspense } from "react";
+import { useCoachProfile } from "@/hooks/useCoachProfile";
+import { resolveProfessionalRole } from "@/lib/professionalProfile";
 import { lazyWithRetry as lazy } from "@/lib/lazyWithRetry";
 import SendToAthleteBar from "@/components/coach/SendToAthleteBar";
 import {
