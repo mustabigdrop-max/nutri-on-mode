@@ -11,6 +11,7 @@ import { useAthleteTarget } from "@/hooks/useAthleteTarget";
 import { LoadingState, ErrorState } from "@/components/nutriplan/NutriPlanStates";
 import { sanitizeClientText, coachGuidanceText } from "@/lib/clientLanguage";
 import { safeString, safeLower } from "@/lib/utils";
+import { portionOf, portionParts } from "@/lib/portionDisplay";
 
 
 const BG = "#020205";
