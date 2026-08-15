@@ -33,14 +33,8 @@ const emojiFor = (name: unknown) => {
   return "•";
 };
 
-/** Medida caseira é o principal; se não houver, cai na gramatura. */
-const portionOf = (a: { quantidade?: string; quantidade_g?: string }) => {
-  const caseira = safeString(a.quantidade).trim();
-  const gramas = safeString(a.quantidade_g).trim();
-  const soGramas = /^\d+(?:[.,]\d+)?\s*(g|ml|kg|l)$/i.test(caseira);
-  if (caseira && !soGramas) return caseira;
-  return caseira || gramas;
-};
+/** Medida caseira é o principal; gramatura fica como referência secundária. */
+
 
 const MealCard = ({ meal, index }: { meal: AthleteMeal; index: number }) => {
   const [open, setOpen] = useState(index === 0);
