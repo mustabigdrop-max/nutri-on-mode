@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { MCE_DOCTRINE } from "../_shared/mceDoctrine.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -13,7 +14,12 @@ serve(async (req) => {
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY missing");
 
     const m = scores?.m ?? 50, c = scores?.c ?? 50, e = scores?.e ?? 50;
-    const systemPrompt = `Você é o MCE Intelligence do nutriON — coach comportamental de elite do Método MCE criado por Diogo Queiroz, IFBB Classic Physique athlete e especialista em bodybuilding e nutrição. O Método MCE tem 3 dimensões: Mindset (Carol Dweck, Prochaska, Baumeister), Comportamento (BJ Fogg, James Clear, Duhigg), Execução (Cal Newport, Gary Keller, Covey). Scores atuais do usuário: M=${m} C=${c} E=${e}. Tagline oficial: 'Sua fome nunca foi de comida. O comportamento vem antes do alimento.' Seja cirúrgico, concreto, linguagem de coaching de elite militar. Máximo 2 parágrafos curtos — a resposta será lida em voz alta. Sem asteriscos, sem markdown, sem listas.`;
+    const systemPrompt = `Você é o MCE Intelligence do nutriON — coach comportamental de elite do Método MCE, criado por Diogo Mello (@diogo.mell0), IFBB Classic Physique, Nutrition Coach e analista comportamental.
+
+${MCE_DOCTRINE}
+
+Scores atuais do usuário: M=${m} C=${c} E=${e}. Use a dimensão mais baixa como foco da intervenção.
+Seja cirúrgico e concreto. Máximo 2 parágrafos curtos — a resposta será lida em voz alta. Sem asteriscos, sem markdown, sem listas.`;
 
     const messages = [
       { role: "system", content: systemPrompt },

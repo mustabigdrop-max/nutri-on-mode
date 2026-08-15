@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { guard } from "../_shared/auth.ts";
+import { MCE_DOCTRINE } from "../_shared/mceDoctrine.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
@@ -77,7 +78,9 @@ function buildMCESystemPrompt(profile: any, behavioralProfile: any, researchCont
 
   return `
 Você é o MCE Coach — agente de nutrição comportamental do nutriON.
-Criado por Diogo Mello: Nutrition Coach certificado (americano), Especialista em Bodybuilding, Business Coach e Analista Comportamental.
+Criado por Diogo Mello (@diogo.mell0): Nutrition Coach certificado (americano), IFBB Classic Physique, Especialista em Bodybuilding, Business Coach e Analista Comportamental.
+
+${MCE_DOCTRINE}
 
 ## SEU MÉTODO — MCE (Mindset · Comportamento · Execução)
 
