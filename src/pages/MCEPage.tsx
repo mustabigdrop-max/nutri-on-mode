@@ -13,6 +13,9 @@ import {
   type Author,
   type Exercise,
 } from "@/data/mceData";
+import { MCE_GUIDE_MARKDOWN } from "@/data/mceGuide";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 
 const MONO = "'Space Mono', ui-monospace, monospace";
@@ -453,6 +456,7 @@ export default function MCEIntelligencePage() {
 
   const tabs = [
     { key: "estudo", label: "ESTUDO" },
+    { key: "guia", label: "GUIA" },
     { key: "diagnostico", label: "DIAGNÓSTICO" },
     { key: "exercicios", label: "EXERCÍCIOS" },
     { key: "perfis", label: "PERFIS" },
@@ -471,6 +475,23 @@ export default function MCEIntelligencePage() {
         .mce-root input[type="range"] { -webkit-appearance: none; height: 4px; border-radius: 4px; background: rgba(255,255,255,0.08); outline: none; }
 
         .mce-root input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; cursor: pointer; background: currentColor; }
+
+        .mce-guide { font-family: ${DISPLAY}; font-size: 15px; line-height: 1.7; color: rgba(255,255,255,0.78); }
+        .mce-guide h1 { font-size: 26px; font-weight: 700; letter-spacing: 1px; color: #fff; margin: 4px 0 6px; }
+        .mce-guide h2 { font-family: ${MONO}; font-size: 12px; letter-spacing: 2.5px; text-transform: uppercase; color: #00D4FF; margin: 30px 0 10px; padding-bottom: 6px; border-bottom: 1px solid rgba(0,212,255,0.18); }
+        .mce-guide h3 { font-size: 16px; font-weight: 700; color: #F59E0B; margin: 18px 0 6px; letter-spacing: .5px; }
+        .mce-guide p { margin: 8px 0; }
+        .mce-guide strong { color: #fff; }
+        .mce-guide em { color: rgba(255,255,255,0.55); }
+        .mce-guide hr { border: none; border-top: 1px solid rgba(255,255,255,0.07); margin: 22px 0; }
+        .mce-guide ul { margin: 8px 0 8px 0; padding-left: 0; list-style: none; }
+        .mce-guide li { position: relative; padding-left: 16px; margin: 6px 0; }
+        .mce-guide li::before { content: "▸"; position: absolute; left: 0; color: #00FF88; }
+        .mce-guide blockquote { margin: 14px 0; padding: 14px 16px; border-left: 2px solid #A78BFA; background: rgba(167,139,250,0.06); border-radius: 0 10px 10px 0; font-style: italic; }
+        .mce-guide blockquote p { margin: 6px 0; }
+        .mce-guide table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 13px; display: block; overflow-x: auto; }
+        .mce-guide th { font-family: ${MONO}; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(255,255,255,0.45); text-align: left; padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.12); white-space: nowrap; }
+        .mce-guide td { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); vertical-align: top; }
       `}</style>
 
       <div className="mce-root" style={{ maxWidth: 900, margin: "0 auto", padding: "0 16px" }}>
@@ -597,6 +618,23 @@ export default function MCEIntelligencePage() {
               </div>
             </div>
           )}
+
+          {/* GUIA DE DOMÍNIO MCE */}
+          {tab === "guia" && (
+            <div>
+              <div style={sectionTitle}>GUIA DE DOMÍNIO MCE · DIOGO MELLO</div>
+              <div style={{
+                padding: "18px 16px", borderRadius: 14,
+                background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.07)",
+              }}>
+                <div className="mce-guide">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{MCE_GUIDE_MARKDOWN}</ReactMarkdown>
+                </div>
+              </div>
+            </div>
+          )}
+
+
 
           {/* DIAGNÓSTICO */}
           {tab === "diagnostico" && (
