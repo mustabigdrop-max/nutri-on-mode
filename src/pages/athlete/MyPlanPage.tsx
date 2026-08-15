@@ -126,10 +126,29 @@ const MealCard = ({ meal, index }: { meal: AthleteMeal; index: number }) => {
 };
 
 
+const weeklyShoppingList = (meals: AthleteMeal[]) => {
+  const map = new Map<string, number>();
+  meals.forEach((m) =>
+    (m.alimentos || []).forEach((a) => {
+      const name = safeString(a.alimento).trim();
+      if (!name) return;
+      const raw = safeString(a.quantidade_g) || safeString(a.quantidade);
+      const match = raw.match(/(\d+(?:[.,]\d+)?)\s*g/i);
+      const grams = match ? parseFloat(match[1].replace(",", ".")) : 0;
+      const key = safeLower(name);
+      map.set(key, (map.get(key) || 0) + grams * 7);
+    }),
+  );
+  return Array.from(map.entries())
+    .map(([name, grams]) => ({ name, grams }))
+    .sort((a, b) => b.grams - a.grams);
+};
+
 const MyPlanPage = () => {
   const navigate = useNavigate();
   const targetId = useAthleteTarget();
   const { loading, error, mealPlan, refetch } = useAthletePlans(targetId || undefined);
+  const [tab, setTab] = useState<"plano" | "mapa">("plano");
 
   useEffect(() => {
     document.title = "Meu Plano Alimentar · NUTRION";
@@ -144,7 +163,9 @@ const MyPlanPage = () => {
   }
 
 
-  const r = mealPlan?.resumo || {};
+  const r = (mealPlan?.resumo || {}) as Record<string, any>;
+  const orientacao = coachGuidanceText(mealPlan?.observacao || r.observacao_protocolo);
+  const compras = mealPlan ? weeklyShoppingList(mealPlan.refeicoes) : [];
 
   return (
     <div className="min-h-screen pb-28" style={{ background: BG, color: TEXT }}>
@@ -170,6 +191,25 @@ const MyPlanPage = () => {
             )}
           </div>
         </div>
+
+        {mealPlan && (
+          <div className="flex gap-2">
+            {([["plano", "Plano"], ["mapa", "Mapa Nutricional"]] as const).map(([v, l]) => (
+              <button
+                key={v}
+                onClick={() => setTab(v)}
+                className="px-3 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5"
+                style={{
+                  border: `1px solid ${tab === v ? CYAN : "rgba(255,255,255,0.12)"}`,
+                  background: tab === v ? `${CYAN}18` : "transparent",
+                  color: tab === v ? CYAN : DIM,
+                }}
+              >
+                {v === "mapa" && <Table2 className="w-3 h-3" />} {l}
+              </button>
+            ))}
+          </div>
+        )}
       </header>
 
       <main className="px-4 max-w-3xl mx-auto space-y-3">
@@ -183,6 +223,12 @@ const MyPlanPage = () => {
               Assim que seu coach enviar, ele aparece aqui.
             </p>
           </div>
+        ) : tab === "mapa" ? (
+          <NutritionMap
+            meals={mealPlan.refeicoes}
+            resumo={r}
+            userId={targetId || undefined}
+          />
         ) : (
           <>
             <div
@@ -204,7 +250,7 @@ const MyPlanPage = () => {
 
             {(mealPlan.objetivo || r.objetivo) && (
               <p className="text-xs px-1" style={{ color: DIM }}>
-                Objetivo: <span style={{ color: TEXT }}>{r.objetivo || mealPlan.objetivo}</span>
+                Objetivo: <span style={{ color: TEXT }}>{sanitizeClientText(r.objetivo || mealPlan.objetivo)}</span>
               </p>
             )}
 
@@ -230,7 +276,7 @@ const MyPlanPage = () => {
                         {s.suplemento} <span style={{ color: CYAN }}>{s.dose}</span>
                       </p>
                       <p className="text-[11px]" style={{ color: DIM }}>
-                        {s.timing} {s.justificativa ? `· ${s.justificativa}` : ""}
+                        {sanitizeClientText(s.timing)} {s.justificativa ? `· ${sanitizeClientText(s.justificativa)}` : ""}
                       </p>
                     </div>
                   ))}
@@ -238,19 +284,36 @@ const MyPlanPage = () => {
               </div>
             )}
 
-            {(mealPlan.observacao || r.observacao_protocolo) && (
+            {!!compras.length && (
               <div
                 className="rounded-2xl p-4"
-                style={{ border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.03)" }}
+                style={{ border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.02)" }}
               >
-                <p className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: DIM }}>
-                  Orientações do coach
+                <p className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: CYAN }}>
+                  Lista de compras semanal
                 </p>
-                <p className="text-sm whitespace-pre-wrap">
-                  {mealPlan.observacao || r.observacao_protocolo}
-                </p>
+                <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                  {compras.map((c) => (
+                    <div key={c.name} className="flex justify-between text-[12px]" style={{ fontFamily: "'Space Mono', ui-monospace, monospace" }}>
+                      <span className="truncate capitalize" style={{ color: TEXT }}>{c.name}</span>
+                      <span style={{ color: DIM }}>{c.grams ? `${(c.grams / 1000).toFixed(2)}kg` : "—"}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
+
+            <div
+              className="rounded-2xl p-4"
+              style={{ border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.03)" }}
+            >
+              <p className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: DIM }}>
+                Orientações do coach
+              </p>
+              <p className="text-sm whitespace-pre-wrap">
+                {orientacao || "Plano gerado e validado pelo NUTRION ENGINE."}
+              </p>
+            </div>
           </>
         )}
       </main>
@@ -261,3 +324,4 @@ const MyPlanPage = () => {
 };
 
 export default MyPlanPage;
+
