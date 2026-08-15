@@ -719,6 +719,7 @@ export default function MCEIntelligencePage() {
           {tab === "protocolo24h" && (
             <div>
               <div style={sectionTitle}>PROTOCOLO MCE 24H · SISTEMA OPERACIONAL DIÁRIO</div>
+              <Protocol24hChecklist />
               <div style={{
                 padding: "18px 16px", borderRadius: 14,
                 background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.07)",
