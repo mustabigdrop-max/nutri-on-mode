@@ -14,6 +14,7 @@ import {
   type Exercise,
 } from "@/data/mceData";
 import { MCE_GUIDE_MARKDOWN } from "@/data/mceGuide";
+import { MCE_PROTOCOL_24H_MARKDOWN } from "@/data/mceProtocol24h";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
@@ -457,6 +458,7 @@ export default function MCEIntelligencePage() {
   const tabs = [
     { key: "estudo", label: "ESTUDO" },
     { key: "guia", label: "GUIA" },
+    { key: "protocolo24h", label: "24H" },
     { key: "diagnostico", label: "DIAGNÓSTICO" },
     { key: "exercicios", label: "EXERCÍCIOS" },
     { key: "perfis", label: "PERFIS" },
@@ -629,6 +631,21 @@ export default function MCEIntelligencePage() {
               }}>
                 <div className="mce-guide">
                   <ReactMarkdown remarkPlugins={[remarkGfm]}>{MCE_GUIDE_MARKDOWN}</ReactMarkdown>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* PROTOCOLO MCE 24H */}
+          {tab === "protocolo24h" && (
+            <div>
+              <div style={sectionTitle}>PROTOCOLO MCE 24H · SISTEMA OPERACIONAL DIÁRIO</div>
+              <div style={{
+                padding: "18px 16px", borderRadius: 14,
+                background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.07)",
+              }}>
+                <div className="mce-guide">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{MCE_PROTOCOL_24H_MARKDOWN}</ReactMarkdown>
                 </div>
               </div>
             </div>
