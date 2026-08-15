@@ -14,6 +14,7 @@ import {
   type Exercise,
 } from "@/data/mceData";
 import { MCE_GUIDE_MARKDOWN } from "@/data/mceGuide";
+import { MCE_PROTOCOL_24H_MARKDOWN } from "@/data/mceProtocol24h";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
