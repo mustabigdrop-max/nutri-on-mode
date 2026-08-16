@@ -87,6 +87,42 @@ export const MCE_AUDIO_CATALOG: CatalogEpisode[] = [
   { series: "ritual", episode_number: 2, title: "Pré-treino", description: "3 minutos de foco antes da primeira série.", duration_seconds: min(3) },
   { series: "ritual", episode_number: 3, title: "Pós-treino", description: "3 minutos para consolidar o que foi construído.", duration_seconds: min(3) },
   { series: "ritual", episode_number: 4, title: "Pré-sono", description: "7 minutos de recuperação e fechamento do dia.", duration_seconds: min(7) },
+  // CARREIRA
+  { series: "carreira", episode_number: 1, title: "O mesmo motor: MCE no trabalho", description: "Mindset, Comportamento e Execução fora da academia.", duration_seconds: min(18) },
+  { series: "carreira", episode_number: 2, title: "Energia é a moeda da carreira", description: "Sono, glicemia e treino como alavancas de produtividade.", duration_seconds: min(20) },
+  { series: "carreira", episode_number: 3, title: "Deep work: proteger o bloco nobre", description: "Como desenhar o dia em torno do que realmente move o ponteiro.", duration_seconds: min(20), scientific_reference: "Cal Newport, 2016" },
+  { series: "carreira", episode_number: 4, title: "Reuniões, comida e cortisol", description: "Rotina corporativa sem sabotar o plano alimentar.", duration_seconds: min(17) },
+  { series: "carreira", episode_number: 5, title: "Ambição sem burnout", description: "Carga, deload e recuperação também na carreira.", duration_seconds: min(19) },
+  { series: "carreira", episode_number: 6, title: "Viagens e alta demanda", description: "Protocolo mínimo viável quando a agenda explode.", duration_seconds: min(16) },
+  { series: "carreira", episode_number: 7, title: "Presença: ser levado a sério", description: "Postura, disposição e a leitura que o mundo faz do seu corpo.", duration_seconds: min(15) },
+  { series: "carreira", episode_number: 8, title: "Carreira MCE: o profissional inevitável", description: "Consistência composta ao longo de anos.", duration_seconds: min(22) },
+  // RELACIONAMENTOS
+  { series: "relacionamentos", episode_number: 1, title: "Seu círculo define sua média", description: "Quem está por perto molda o que é normal pra você.", duration_seconds: min(18) },
+  { series: "relacionamentos", episode_number: 2, title: "O parceiro que não entende o processo", description: "Como comunicar objetivos sem criar conflito.", duration_seconds: min(20) },
+  { series: "relacionamentos", episode_number: 3, title: "Jantar fora, churrasco, aniversário", description: "Ambiente social sem culpa e sem descarrilar.", duration_seconds: min(17) },
+  { series: "relacionamentos", episode_number: 4, title: "Limites: o não que protege o plano", description: "Dizer não sem se afastar de quem importa.", duration_seconds: min(16) },
+  { series: "relacionamentos", episode_number: 5, title: "Sabotagem afetiva", description: "Quando o carinho vem em forma de comida.", duration_seconds: min(18) },
+  { series: "relacionamentos", episode_number: 6, title: "Treinar junto muda tudo", description: "Parceria de treino, accountability e vínculo.", duration_seconds: min(15) },
+  { series: "relacionamentos", episode_number: 7, title: "Libido, hormônios e conexão", description: "Como composição corporal e sono afetam a intimidade.", duration_seconds: min(19) },
+  { series: "relacionamentos", episode_number: 8, title: "Relacionamentos MCE: crescer junto", description: "Transformação individual que eleva quem está ao redor.", duration_seconds: min(20) },
+  // PARENTALIDADE
+  { series: "parentalidade", episode_number: 1, title: "Filhos aprendem o que veem", description: "Você é o cardápio e a rotina da casa.", duration_seconds: min(18) },
+  { series: "parentalidade", episode_number: 2, title: "A geladeira é uma decisão", description: "Ambiente alimentar familiar sem policiamento.", duration_seconds: min(17) },
+  { series: "parentalidade", episode_number: 3, title: "Tempo: o pai/mãe que treina", description: "Encaixar treino na vida real com crianças.", duration_seconds: min(16) },
+  { series: "parentalidade", episode_number: 4, title: "Nunca comente o corpo do seu filho", description: "Linguagem que previne relação disfuncional com comida.", duration_seconds: min(20) },
+  { series: "parentalidade", episode_number: 5, title: "Sono da casa, sono do atleta", description: "Rotina noturna familiar e recuperação.", duration_seconds: min(15) },
+  { series: "parentalidade", episode_number: 6, title: "Movimento como brincadeira", description: "Criar filhos ativos sem transformar em obrigação.", duration_seconds: min(16) },
+  { series: "parentalidade", episode_number: 7, title: "Culpa parental e autocuidado", description: "Cuidar de si não é egoísmo — é infraestrutura.", duration_seconds: min(18) },
+  { series: "parentalidade", episode_number: 8, title: "Parentalidade MCE: legado de hábitos", description: "O que fica depois que o shape muda.", duration_seconds: min(20) },
+  // FINANÇAS
+  { series: "financas", episode_number: 1, title: "Disciplina financeira é disciplina alimentar", description: "O mesmo músculo comportamental.", duration_seconds: min(18) },
+  { series: "financas", episode_number: 2, title: "Comer bem gastando menos", description: "Custo por grama de proteína e compras inteligentes.", duration_seconds: min: 0 as never },
+  { series: "financas", episode_number: 3, title: "Suplementos: o que vale o dinheiro", description: "Prioridade de gasto baseada em evidência.", duration_seconds: min(19) },
+  { series: "financas", episode_number: 4, title: "Delivery: o vazamento silencioso", description: "Impacto duplo no bolso e no shape.", duration_seconds: min(15) },
+  { series: "financas", episode_number: 5, title: "Investir em saúde é investir em anos", description: "Custo hoje, retorno em décadas.", duration_seconds: min(18) },
+  { series: "financas", episode_number: 6, title: "Meal prep econômico", description: "Planejamento semanal que corta desperdício.", duration_seconds: min(17) },
+  { series: "financas", episode_number: 7, title: "Ansiedade financeira e compulsão", description: "Estresse crônico, cortisol e decisões alimentares.", duration_seconds: min(20) },
+  { series: "financas", episode_number: 8, title: "Finanças MCE: patrimônio e corpo", description: "Juros compostos aplicados ao comportamento.", duration_seconds: min(20) },
 ];
 
 export const RITUAL_KEY_BY_EPISODE: Record<number, "despertar" | "pre_treino" | "pos_treino" | "pre_sono"> = {
