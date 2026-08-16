@@ -430,10 +430,22 @@ export default function CoachAudioAcademyPage({ embedded = false }: { embedded?:
             </section>
 
             {/* NOVO EPISÓDIO */}
+            <div ref={createRef} />
+            {!showCreate && (
+              <button
+                onClick={openCreate}
+                className="w-full text-xs font-bold px-4 py-3 rounded-2xl inline-flex items-center justify-center gap-2"
+                style={{ border: `1px dashed ${GOLD}66`, background: `${GOLD}0f`, color: GOLD }}
+              >
+                <Plus className="w-4 h-4" /> Adicionar áudio / novo episódio
+              </button>
+            )}
+            {showCreate && (
             <section className="rounded-2xl p-4 space-y-3" style={{ border: `1px solid ${GOLD}33`, background: `linear-gradient(135deg, ${GOLD}10, transparent)` }}>
               <div className="flex items-center gap-2">
                 <Plus className="w-4 h-4" style={{ color: GOLD }} />
                 <h2 className="text-[11px] font-bold tracking-[2px] uppercase" style={{ color: GOLD }}>Novo episódio</h2>
+                <button onClick={() => setShowCreate(false)} className="ml-auto text-[10px]" style={{ color: DIM }}>Fechar</button>
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <select
