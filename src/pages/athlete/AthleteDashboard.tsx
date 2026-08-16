@@ -18,6 +18,7 @@ import NutrySyncPanel from "@/components/athlete/NutrySyncPanel";
 import HydrationCard from "@/components/athlete/HydrationCard";
 import DayRoutineTimeline, { type RoutineItem } from "@/components/athlete/DayRoutineTimeline";
 import AddActivitySheet from "@/components/athlete/AddActivitySheet";
+import MceScoreCard from "@/components/athlete/MceScoreCard";
 import PraxisFAB from "@/components/praxis/PraxisFAB";
 import {
   CLIMATE_OPTIONS, calculateDailyHydration, detectPhase, activityMeta,
@@ -398,6 +399,11 @@ const AthleteDashboard = ({ overrideUserId, overrideName, viewMode = "normal" }:
             </div>
           </Card>
         </div>
+
+        {/* MCE */}
+        <MceScoreCard userId={targetUserId} readOnly={preview} />
+
+
 
         {/* Hidratação + Suplementação */}
         <div className="grid gap-3 sm:grid-cols-2">
