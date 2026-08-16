@@ -2,18 +2,29 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
-  UtensilsCrossed, Dumbbell, Droplets, Pill, TrendingUp, MessageSquare,
+  UtensilsCrossed, Dumbbell, Pill, TrendingUp, MessageSquare,
   ChevronRight, Bell, User, Flame, Camera, Scale, Loader2,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { useAthleteView } from "@/hooks/useAthleteView";
 import { useAthletePlans, mealKcal } from "@/hooks/useAthletePlans";
 import { useWaterLogs } from "@/hooks/useWaterLogs";
 import { useWeightLogs } from "@/hooks/useWeightLogs";
+import { useDailyActivities } from "@/hooks/useDailyActivities";
+import { useDayContext } from "@/hooks/useDayContext";
 import AthleteBottomNav from "@/components/athlete/AthleteBottomNav";
+import NutrySyncPanel from "@/components/athlete/NutrySyncPanel";
+import HydrationCard from "@/components/athlete/HydrationCard";
+import DayRoutineTimeline, { type RoutineItem } from "@/components/athlete/DayRoutineTimeline";
+import AddActivitySheet from "@/components/athlete/AddActivitySheet";
 import PraxisFAB from "@/components/praxis/PraxisFAB";
+import {
+  CLIMATE_OPTIONS, calculateDailyHydration, detectPhase, activityMeta,
+} from "@/lib/nutrySync";
 import { parseProtocolToDays } from "@/lib/parseProtocolMarkdown";
 import { parseProtocolText } from "@/lib/parseProtocolText";
+
 
 const BG = "#020205";
 const CYAN = "#00D4FF";
