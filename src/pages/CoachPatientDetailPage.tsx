@@ -321,7 +321,11 @@ const CoachPatientDetailPage = () => {
     toast({ title: "Paciente notificado ✅" });
   };
   const sendMessage = async () => {
-    if (!newMessage.trim() || !profile || !patientId) return;
+    if (!newMessage.trim() || !patientId) return;
+    if (!profile) {
+      toast({ title: "Perfil profissional necessário", description: "Complete seu cadastro de coach para enviar mensagens.", variant: "destructive" });
+      return;
+    }
     setSending(true);
     await supabase.from("coach_messages").insert({
       coach_id: profile.id,
