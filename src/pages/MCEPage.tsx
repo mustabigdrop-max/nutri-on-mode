@@ -545,6 +545,7 @@ export default function MCEIntelligencePage() {
     { key: "perfis", label: "PERFIS" },
     { key: "progresso", label: "PROGRESSO" },
     { key: "audio", label: "ÁUDIO", badge: "#E8A020" },
+    { key: "business", label: "BUSINESS", badge: "#00D4FF" },
   ];
 
   const sectionTitle: React.CSSProperties = {
