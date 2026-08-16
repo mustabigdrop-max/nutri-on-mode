@@ -81,7 +81,7 @@ const BottomNav = () => {
               <button
                 key={item.id}
                 onClick={() => navigate(item.path)}
-                className="flex flex-col items-center gap-0.5 py-1 min-w-[48px]"
+                className="flex flex-col items-center gap-0.5 py-1 min-w-[40px]"
               >
                 <item.icon
                   className={`w-5 h-5 ${isActive ? "text-primary" : "text-muted-foreground"}`}
