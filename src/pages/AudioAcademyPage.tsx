@@ -134,16 +134,21 @@ export default function AudioAcademyPage() {
     }
   };
 
-  const playEpisode = (ep: Episode) => {
+  const playEpisode = async (ep: Episode) => {
     if (!ep.audio_url) {
       toast.message("Episódio ainda não publicado pelo coach.");
+      return;
+    }
+    const src = await resolveAudioSrc(ep.audio_url);
+    if (!src) {
+      toast.error("Não foi possível carregar este áudio.");
       return;
     }
     setTrack({
       id: ep.id,
       title: `EP ${ep.episode_number} — ${ep.title}`,
       subtitle: SERIES_META[ep.series as AudioSeries]?.label ?? ep.series,
-      src: ep.audio_url,
+      src,
       startAt: progress[ep.id]?.progress_seconds ?? 0,
     });
   };
