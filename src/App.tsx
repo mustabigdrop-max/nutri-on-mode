@@ -135,6 +135,7 @@ const AthleteCheckinPage = lazy(() => import("./pages/athlete/AthleteCheckinPage
 const PraxisPage = lazy(() => import("./pages/PraxisPage"));
 const ViewAsClient = lazy(() => import("./pages/coach/ViewAsClient"));
 const PraxisLogsPage = lazy(() => import("./pages/coach/PraxisLogsPage"));
+const CoachAudioAcademyPage = lazy(() => import("./pages/coach/CoachAudioAcademyPage"));
 
 const queryClient = new QueryClient();
 
