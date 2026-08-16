@@ -1,9 +1,12 @@
-import { memo, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { UtensilsCrossed, Dumbbell, BarChart3, MessageSquare, AlertTriangle, Zap, Eye, ClipboardList, Clock, CheckCircle2, Pencil, Trash2 } from "lucide-react";
+import { UtensilsCrossed, Dumbbell, BarChart3, MessageSquare, AlertTriangle, Zap, Eye, ClipboardList, Clock, CheckCircle2, Pencil, Trash2, KeyRound, Smartphone } from "lucide-react";
 import AnamnesisDialog from "@/components/coach/AnamnesisDialog";
 import EditAthleteDialog from "@/components/coach/EditAthleteDialog";
 import DeleteAthleteDialog from "@/components/coach/DeleteAthleteDialog";
+import ClientCredentialsDialog from "@/components/coach/ClientCredentialsDialog";
+import WelcomeMessageDialog from "@/components/coach/WelcomeMessageDialog";
+import { supabase } from "@/integrations/supabase/client";
 import type { CoachAthlete } from "@/hooks/useCoachAthletes";
 
 const RISK_COLOR: Record<CoachAthlete["riskLevel"], string> = {
