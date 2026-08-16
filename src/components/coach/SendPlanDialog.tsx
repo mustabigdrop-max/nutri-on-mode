@@ -48,6 +48,7 @@ const SendPlanDialog = ({ open, onOpenChange, athlete, type, coachProfileId, coa
     setSentInfo(null);
     setSelected("new");
     setMessage("");
+    setSearch("");
     setLoading(true);
     (async () => {
       if (isMeal) {
