@@ -29,11 +29,13 @@ const sectionOf = (name: string): ShoppingSection => {
   if (isFreeGreens(name)) return "hortifruti";
   const grupo = macroGroupOf(name);
   if (grupo === "fat") return /abacate/i.test(name) ? "hortifruti" : "gorduras";
-  if (HORTI.test(name) && grupo !== "protein") return grupo === "carb" && !/banana|ma[çc][ãa]|mam[ãa]o|melancia|manga|morango|laranja|abacaxi|uva/i.test(name) ? "hortifruti" : "hortifruti";
-  if (grupo === "protein") return "proteinas";
+  if (grupo === "vegetable" || grupo === "fruit") return "hortifruti";
+  if (grupo === "protein" || grupo === "dairy") return "proteinas";
+  if (HORTI.test(name)) return "hortifruti";
   if (grupo === "carb") return "carboidratos";
   return "outros";
 };
+
 
 const gramsFrom = (item: RawFoodItem): number => {
   const raw = `${safeString(item?.quantidade_g)} ${safeString(item?.quantidade)}`;
