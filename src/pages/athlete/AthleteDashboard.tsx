@@ -75,6 +75,29 @@ const AthleteDashboard = ({ overrideUserId, overrideName, viewMode = "normal" }:
   const { todayLog, addWater } = useWaterLogs(overrideUserId);
   const { logs: weightLogs } = useWeightLogs(undefined, -0.5, overrideUserId);
   const [suppChecked, setSuppChecked] = useState<Record<number, boolean>>({});
+  const targetUserId = overrideUserId || user?.id;
+  const { activities, addActivity, removeActivity, totals: activityTotals } =
+    useDailyActivities(overrideUserId);
+  const { completed, toggleMeal, climate, setClimate } = useDayContext(targetUserId);
+  const [showActivitySheet, setShowActivitySheet] = useState(false);
+  const [weightKg, setWeightKg] = useState(70);
+
+  useEffect(() => {
+    if (!targetUserId) return;
+    let alive = true;
+    supabase
+      .from("profiles")
+      .select("weight_kg")
+      .eq("user_id", targetUserId)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (alive && data?.weight_kg) setWeightKg(Number(data.weight_kg));
+      });
+    return () => {
+      alive = false;
+    };
+  }, [targetUserId]);
+
 
   const firstName = (overrideName || fullName || user?.user_metadata?.full_name || "Atleta").split(" ")[0];
 
