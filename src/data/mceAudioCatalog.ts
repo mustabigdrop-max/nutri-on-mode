@@ -26,6 +26,10 @@ export const SERIES_META: Record<AudioSeries, { label: string; icon: string; col
   execucao: { label: "Série Execução", icon: "⚡", color: "#F59E0B", blurb: "Ação diária: treino, plano, sono, hidratação, registro." },
   ciencia: { label: "Aulas Científicas", icon: "📚", color: "#2DD4BF", blurb: "A ciência por trás do método MCE." },
   ritual: { label: "Rituais", icon: "🌅", color: "#E8A020", blurb: "Micro-áudios para momentos-chave do dia." },
+  carreira: { label: "Série Carreira", icon: "🏆", color: "#60A5FA", blurb: "Foco, energia e execução aplicados ao trabalho e à performance profissional." },
+  relacionamentos: { label: "Série Relacionamentos", icon: "🤝", color: "#F472B6", blurb: "Vínculos que sustentam (ou sabotam) sua transformação." },
+  parentalidade: { label: "Série Parentalidade", icon: "👨‍👩‍👧", color: "#34D399", blurb: "Ser exemplo: rotina, alimentação e mentalidade dentro de casa." },
+  financas: { label: "Série Finanças", icon: "💰", color: "#FBBF24", blurb: "Disciplina financeira com a mesma lógica do MCE." },
 };
 
 export const MCE_AUDIO_CATALOG: CatalogEpisode[] = [
