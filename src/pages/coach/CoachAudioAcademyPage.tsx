@@ -497,6 +497,8 @@ export default function CoachAudioAcademyPage({ embedded = false }: { embedded?:
                 Criar episódio
               </button>
             </section>
+            )}
+
 
             {loading ? (
               <p className="text-xs" style={{ color: DIM }}>Carregando biblioteca...</p>
