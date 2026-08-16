@@ -103,7 +103,107 @@ const AthleteDashboard = ({ overrideUserId, overrideName, viewMode = "normal" }:
   }, [training]);
 
   const waterMl = todayLog?.ml_total ?? 0;
-  const waterTarget = 3400;
+
+  /* ---------------------------------------------------------- NutrySync */
+  const phase = useMemo(
+    () => detectPhase(mealPlan?.resumo?.objetivo || mealPlan?.objetivo),
+    [mealPlan],
+  );
+
+  const trainingMinutes = useMemo(() => {
+    const m = String(todayTraining?.estimated_duration || "").match(/(\d{2,3})/);
+    return todayTraining ? (m ? parseInt(m[1], 10) : 60) : 0;
+  }, [todayTraining]);
+
+  const trainingKcal = useMemo(
+    () => Math.round(6.5 * trainingMinutes * ((weightKg || 70) / 70)),
+    [trainingMinutes, weightKg],
+  );
+
+  const baseKcal = Math.round(mealPlan?.resumo?.calorias_totais || 0);
+  const adjustKcal = trainingKcal + activityTotals.kcal;
+
+  const routineItems = useMemo<RoutineItem[]>(() => {
+    const items: RoutineItem[] = (mealPlan?.refeicoes || []).map((r, i) => ({
+      key: `meal-${i}`,
+      time: r.horario || "",
+      emoji: "🍽️",
+      label: r.refeicao || `Refeição ${i + 1}`,
+      detail: `${mealKcal(r)} kcal`,
+      checkable: true,
+    }));
+    if (todayTraining) {
+      items.push({
+        key: "training",
+        time: "",
+        emoji: "🏋️",
+        label: todayTraining.session_title || "Treino de hoje",
+        detail: todayTraining.estimated_duration || undefined,
+        checkable: true,
+      });
+    }
+    activities.forEach((a) => {
+      const meta = activityMeta(a.activity_type);
+      items.push({
+        key: `act-${a.id}`,
+        time: new Date(a.created_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
+        emoji: meta.emoji,
+        label: a.activity_label || meta.label,
+        detail: `${a.duration_min} min · +${a.kcal_adjustment} kcal`,
+        checkable: false,
+      });
+    });
+    return items;
+  }, [mealPlan, todayTraining, activities]);
+
+  const consumedKcal = useMemo(
+    () =>
+      (mealPlan?.refeicoes || []).reduce(
+        (sum, r, i) => (completed[`meal-${i}`] ? sum + mealKcal(r) : sum),
+        0,
+      ),
+    [mealPlan, completed],
+  );
+
+  const consumedMacros = useMemo(
+    () =>
+      (mealPlan?.refeicoes || []).reduce(
+        (acc, r, i) =>
+          completed[`meal-${i}`]
+            ? {
+                protein: acc.protein + (r.macros?.proteina || 0),
+                carbs: acc.carbs + (r.macros?.carboidrato || 0),
+                fat: acc.fat + (r.macros?.gordura || 0),
+              }
+            : acc,
+        { protein: 0, carbs: 0, fat: 0 },
+      ),
+    [mealPlan, completed],
+  );
+
+  const targetMacros = useMemo(
+    () => ({
+      protein: Math.round((mealPlan?.resumo?.proteina_total || 0) + activityTotals.protein),
+      carbs: Math.round((mealPlan?.resumo?.carboidrato_total || 0) + activityTotals.carb),
+      fat: Math.round((mealPlan?.resumo?.gordura_total || 0) + activityTotals.fat),
+    }),
+    [mealPlan, activityTotals],
+  );
+
+  const climateOption = CLIMATE_OPTIONS.find((c) => c.band === climate);
+
+  const hydration = useMemo(
+    () =>
+      calculateDailyHydration({
+        weightKg,
+        climate,
+        trainingMinutes,
+        activityMl: activityTotals.hydrationMl,
+        phase: phase.phase,
+      }),
+    [weightKg, climate, trainingMinutes, activityTotals.hydrationMl, phase],
+  );
+
 
   const weightInfo = useMemo(() => {
     if (!weightLogs.length) return null;
