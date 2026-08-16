@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import {
   Users, AlertTriangle, AlertCircle, FileText, Search, Settings, ArrowLeft, Library,
   UtensilsCrossed, Dumbbell, FlaskConical, Camera, Sparkles, Bone, Flame, Activity,
-  CalendarDays, ChevronRight,
+  CalendarDays, ChevronRight, Building2,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import ProfessionalTypeBadge from "@/components/coach/ProfessionalTypeBadge";
@@ -24,6 +24,7 @@ import SendPlanDialog, { type SendPlanType } from "@/components/coach/SendPlanDi
 import ProtocolSuggestionsPanel from "@/components/coach/ProtocolSuggestionsPanel";
 
 const ADVANCED_MODULES = [
+  { label: "Academia", icon: Building2, route: "/coach/gym", color: "#E8A020" },
   { label: "TrainingON", icon: Dumbbell, route: "/coach/trainingon", color: "#E8A020" },
   { label: "APEX Visual", icon: Camera, route: "/coach/apex-visual", color: "#E8A020" },
   { label: "VERA", icon: Sparkles, route: "/coach/vera", color: "#A78BFA" },

@@ -137,6 +137,7 @@ const PraxisPage = lazy(() => import("./pages/PraxisPage"));
 const ViewAsClient = lazy(() => import("./pages/coach/ViewAsClient"));
 const PraxisLogsPage = lazy(() => import("./pages/coach/PraxisLogsPage"));
 const CoachAudioAcademyPage = lazy(() => import("./pages/coach/CoachAudioAcademyPage"));
+const CoachGymAcademyPage = lazy(() => import("./pages/coach/CoachGymAcademyPage"));
 
 const queryClient = new QueryClient();
 
@@ -284,6 +285,7 @@ const App = () => (
             <Route path="/coach/audio" element={<CoachToolRoute><ProtectedRoute><CoachAudioAcademyPage /></ProtectedRoute></CoachToolRoute>} />
             <Route path="/coach/relatorios" element={<CoachToolRoute><ProtectedRoute><CoachReportsPage /></ProtectedRoute></CoachToolRoute>} />
             <Route path="/coach/anamneses" element={<CoachToolRoute><ProtectedRoute><CoachAnamnesisPage /></ProtectedRoute></CoachToolRoute>} />
+            <Route path="/coach/gym" element={<CoachToolRoute><ProtectedRoute><CoachGymAcademyPage /></ProtectedRoute></CoachToolRoute>} />
             <Route path="/anamnese/:token" element={<AnamnesisPublicPage />} />
             <Route path="/coach/equipe" element={<ProtectedRoute><PatientTeamHubPage /></ProtectedRoute>} />
             <Route path="/coach/equipe/:patientId" element={<ProtectedRoute><PatientTeamHubPage /></ProtectedRoute>} />
