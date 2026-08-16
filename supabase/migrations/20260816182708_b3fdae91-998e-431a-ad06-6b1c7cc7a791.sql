@@ -1,0 +1,1 @@
+UPDATE public.mce_audio_episodes SET duration_seconds = v.d FROM (VALUES (1,457),(2,436),(3,416),(4,489),(5,435),(6,547),(7,620),(8,506),(9,520),(10,451),(11,511),(12,456)) AS v(n,d) WHERE series='mindset' AND episode_number = v.n;
