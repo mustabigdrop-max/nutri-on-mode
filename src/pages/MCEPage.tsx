@@ -678,7 +678,14 @@ export default function MCEIntelligencePage() {
 
         {/* Tabs */}
         <div style={{ marginTop: 14 }}>
-          <TabBar tabs={tabs} active={tab} onChange={setTab} />
+          <TabBar
+            tabs={tabs}
+            active={tab}
+            onChange={(k) => {
+              if (k === "business") navigate("/mce/business");
+              else setTab(k);
+            }}
+          />
         </div>
 
         <div style={{ marginTop: 20 }}>
