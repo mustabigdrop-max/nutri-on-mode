@@ -242,38 +242,15 @@ const AthleteDashboard = ({ overrideUserId, overrideName, viewMode = "normal" }:
 
         {/* Hidratação + Suplementação */}
         <div className="grid gap-3 sm:grid-cols-2">
-          <Card accent={CYAN}>
-            <div className="flex items-center gap-2 mb-3">
-              <Droplets className="w-4 h-4" style={{ color: CYAN }} />
-              <span className="text-xs font-bold tracking-wider uppercase" style={{ color: CYAN }}>
-                Hidratação
-              </span>
-            </div>
-            <div className="h-2 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.08)" }}>
-              <motion.div
-                className="h-full rounded-full"
-                initial={{ width: 0 }}
-                animate={{ width: `${Math.min(100, (waterMl / waterTarget) * 100)}%` }}
-                style={{ background: CYAN }}
-              />
-            </div>
-            <p className="text-xs mt-2 font-mono" style={{ color: DIM }}>
-              {(waterMl / 1000).toFixed(1)} / {(waterTarget / 1000).toFixed(1)} L
-            </p>
-            <div className="flex gap-2 mt-3">
-              {[250, 500].map((ml) => (
-                <button
-                  key={ml}
-                  disabled={preview}
-                  onClick={() => !preview && addWater(ml)}
-                  className="text-xs font-semibold px-3 py-1.5 rounded-lg disabled:opacity-40"
-                  style={{ background: `${CYAN}14`, color: CYAN, border: `1px solid ${CYAN}33` }}
-                >
-                  + {ml}ml
-                </button>
-              ))}
-            </div>
-          </Card>
+          <HydrationCard
+            consumedMl={waterMl}
+            target={hydration}
+            climate={climate}
+            onClimateChange={setClimate}
+            onAdd={(ml) => !preview && addWater(ml)}
+            readOnly={preview}
+          />
+
 
           <Card accent={GOLD}>
             <div className="flex items-center gap-2 mb-3">
