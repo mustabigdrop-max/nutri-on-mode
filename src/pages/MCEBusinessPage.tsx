@@ -297,22 +297,70 @@ export default function MCEBusinessPage() {
         </Section>
 
         {/* QR Codes */}
-        <Section title="QR Codes nos Equipamentos" icon={QrCode}>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 10, marginTop: 6 }}>
+        <Section title="QR Codes nos Equipamentos" icon={QrCode} defaultOpen>
+          <p style={{ marginBottom: 14 }}>Escaneie para entrar no app nutriON ou no Desafio 90 Dias da academia. Os códigos são otimizados para leitura em telas e impressos.</p>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 14, marginTop: 6 }}>
             {[
-              { icon: Dumbbell, title: "Cardio", loc: "Esteira / bike", url: "nutrion.app.br/cardio", desc: "MCE Audio durante o cardio" },
-              { icon: Trophy, title: "Séries", loc: "Bancos / racks", url: "nutrion.app.br/log", desc: "Registre sua série" },
-              { icon: Camera, title: "Progresso", loc: "Espelho do vestiário", url: "nutrion.app.br/progress", desc: "Foto de progresso semanal" },
-              { icon: Users, title: "Desafio", loc: "Recepção", url: "nutrion.app.br/gym/[nome]", desc: "Entre no Desafio 90 Dias" },
+              {
+                icon: Smartphone,
+                title: "App nutriON",
+                loc: "Cartaz / recepção",
+                url: "https://nutrion.app.br",
+                desc: "Acesse o app completo",
+                color: GREEN,
+              },
+              {
+                icon: Trophy,
+                title: "Desafio 90 Dias",
+                loc: "The Wall / recepção",
+                url: "https://nutrion.app.br/desafio-21",
+                desc: "Entre no desafio da academia",
+                color: AMBER,
+              },
+              {
+                icon: Dumbbell,
+                title: "Cardio",
+                loc: "Esteira / bike",
+                url: "https://nutrion.app.br/audio-academy",
+                desc: "MCE Audio durante o cardio",
+                color: CYAN,
+              },
+              {
+                icon: Camera,
+                title: "Progresso",
+                loc: "Espelho do vestiário",
+                url: "https://nutrion.app.br/progress",
+                desc: "Foto de progresso semanal",
+                color: CYAN,
+              },
             ].map((q) => (
-              <div key={q.title} style={{ padding: 14, borderRadius: 12, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-                  <q.icon size={16} style={{ color: CYAN }} />
-                  <span style={{ fontFamily: DISPLAY, fontSize: 14, fontWeight: 700, color: "#fff" }}>{q.title}</span>
+              <div key={q.title} style={{ padding: 16, borderRadius: 14, background: "rgba(255,255,255,0.03)", border: `1px solid ${q.color}20`, textAlign: "center" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 10 }}>
+                  <q.icon size={18} style={{ color: q.color }} />
+                  <span style={{ fontFamily: DISPLAY, fontSize: 15, fontWeight: 700, color: "#fff" }}>{q.title}</span>
                 </div>
-                <div style={{ fontFamily: MONO, fontSize: 9, color: "rgba(255,255,255,0.4)", marginBottom: 4 }}>{q.loc}</div>
-                <div style={{ fontFamily: MONO, fontSize: 10, color: GREEN, marginBottom: 4 }}>{q.desc}</div>
-                <div style={{ fontFamily: MONO, fontSize: 9, color: "rgba(255,255,255,0.3)" }}>{q.url}</div>
+                <div style={{ fontFamily: MONO, fontSize: 9, color: "rgba(255,255,255,0.4)", marginBottom: 10 }}>{q.loc}</div>
+
+                <div style={{
+                  display: "inline-flex",
+                  padding: 10,
+                  borderRadius: 12,
+                  background: "#fff",
+                  marginBottom: 10,
+                }}>
+                  <QRCodeSVG
+                    value={q.url}
+                    size={120}
+                    bgColor="#ffffff"
+                    fgColor="#05070C"
+                    level="M"
+                    includeMargin={false}
+                  />
+                </div>
+
+                <div style={{ fontFamily: MONO, fontSize: 10, color: q.color, marginBottom: 4 }}>{q.desc}</div>
+                <div style={{ fontFamily: MONO, fontSize: 9, color: "rgba(255,255,255,0.35)", wordBreak: "break-all" }}>{q.url}</div>
               </div>
             ))}
           </div>
