@@ -267,6 +267,38 @@ const CoachSettingsPage = () => {
           </CardContent>
         </Card>
 
+        {/* Template de boas-vindas */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm flex items-center gap-2">
+              <MessageSquare className="w-4 h-4" /> Template de Boas-Vindas
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <Textarea
+              rows={14}
+              className="font-mono text-xs"
+              value={form.welcome_template}
+              onChange={e => setForm(p => ({ ...p, welcome_template: e.target.value }))}
+              placeholder={DEFAULT_WELCOME_TEMPLATE}
+            />
+            <div className="flex flex-wrap gap-2">
+              {WELCOME_VARIABLES.map(v => (
+                <Badge key={v.key} variant="outline" className="text-[10px]" title={v.label}>
+                  {v.key} — {v.label}
+                </Badge>
+              ))}
+            </div>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setForm(p => ({ ...p, welcome_template: DEFAULT_WELCOME_TEMPLATE }))}
+            >
+              Restaurar padrão
+            </Button>
+          </CardContent>
+        </Card>
+
         {/* Billing */}
         <Card>
           <CardHeader>
