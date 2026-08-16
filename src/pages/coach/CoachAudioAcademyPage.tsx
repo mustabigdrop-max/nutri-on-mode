@@ -295,6 +295,16 @@ export default function CoachAudioAcademyPage({ embedded = false }: { embedded?:
             className="hidden"
             onChange={(e) => { const f = e.target.files?.[0]; if (f) handleUpload(ep, f); e.currentTarget.value = ""; }}
           />
+          <button
+            onClick={() => generateVoice(ep)}
+            disabled={!!generatingId || !!batch}
+            aria-label="Gerar narração na voz PRAXIS"
+            title="Gerar narração na voz do briefing"
+            className="w-8 h-8 rounded-lg flex items-center justify-center"
+            style={{ background: "rgba(0,212,255,0.14)", color: "#00D4FF", opacity: generatingId || batch ? 0.5 : 1 }}
+          >
+            {generatingId === ep.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wand2 className="w-4 h-4" />}
+          </button>
           {ep.audio_url && (
             <button onClick={() => preview(ep)} aria-label="Ouvir prévia" className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: `${color}22`, color }}>
               <Play className="w-4 h-4" />
