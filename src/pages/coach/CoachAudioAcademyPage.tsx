@@ -381,6 +381,32 @@ export default function CoachAudioAcademyPage({ embedded = false }: { embedded?:
       <main className="max-w-3xl mx-auto px-4 py-5 space-y-5">
         {tab !== "progresso" && (
           <>
+            {/* NARRAÇÃO EM LOTE */}
+            <section className="rounded-2xl p-4" style={{ border: "1px solid rgba(0,212,255,0.28)", background: "linear-gradient(135deg, rgba(0,212,255,0.10), transparent)" }}>
+              <div className="flex items-center gap-2 mb-1">
+                <Wand2 className="w-4 h-4" style={{ color: "#00D4FF" }} />
+                <h2 className="text-[11px] font-bold tracking-[2px] uppercase" style={{ color: "#00D4FF" }}>Narração PRAXIS</h2>
+              </div>
+              <p className="text-xs mb-3" style={{ color: DIM }}>
+                Gera roteiro e narração na mesma voz do Briefing do dia e publica direto para os clientes.
+                {" "}{pendingEpisodes.length} episódio(s) sem áudio.
+              </p>
+              <button
+                onClick={() => generateAllPending(pendingEpisodes)}
+                disabled={!!batch || !!generatingId || pendingEpisodes.length === 0}
+                className="text-xs font-bold px-4 py-2 rounded-lg inline-flex items-center gap-2"
+                style={{ background: "#00D4FF", color: "#03030a", opacity: batch || generatingId || pendingEpisodes.length === 0 ? 0.55 : 1 }}
+              >
+                {batch ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wand2 className="w-4 h-4" />}
+                {batch ? `Narrando ${batch.done}/${batch.total}...` : "Liberar todas as séries com voz"}
+              </button>
+              {batch && (
+                <div className="h-[3px] rounded-full mt-3" style={{ background: "rgba(255,255,255,0.08)" }}>
+                  <div className="h-full rounded-full transition-all" style={{ width: `${(batch.done / batch.total) * 100}%`, background: "#00D4FF" }} />
+                </div>
+              )}
+            </section>
+
             {/* NOVO EPISÓDIO */}
             <section className="rounded-2xl p-4 space-y-3" style={{ border: `1px solid ${GOLD}33`, background: `linear-gradient(135deg, ${GOLD}10, transparent)` }}>
               <div className="flex items-center gap-2">
