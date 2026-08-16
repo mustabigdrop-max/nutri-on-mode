@@ -116,7 +116,7 @@ export const MCE_AUDIO_CATALOG: CatalogEpisode[] = [
   { series: "parentalidade", episode_number: 8, title: "Parentalidade MCE: legado de hábitos", description: "O que fica depois que o shape muda.", duration_seconds: min(20) },
   // FINANÇAS
   { series: "financas", episode_number: 1, title: "Disciplina financeira é disciplina alimentar", description: "O mesmo músculo comportamental.", duration_seconds: min(18) },
-  { series: "financas", episode_number: 2, title: "Comer bem gastando menos", description: "Custo por grama de proteína e compras inteligentes.", duration_seconds: min: 0 as never },
+  { series: "financas", episode_number: 2, title: "Comer bem gastando menos", description: "Custo por grama de proteína e compras inteligentes.", duration_seconds: min(18) },
   { series: "financas", episode_number: 3, title: "Suplementos: o que vale o dinheiro", description: "Prioridade de gasto baseada em evidência.", duration_seconds: min(19) },
   { series: "financas", episode_number: 4, title: "Delivery: o vazamento silencioso", description: "Impacto duplo no bolso e no shape.", duration_seconds: min(15) },
   { series: "financas", episode_number: 5, title: "Investir em saúde é investir em anos", description: "Custo hoje, retorno em décadas.", duration_seconds: min(18) },
