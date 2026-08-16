@@ -25,8 +25,12 @@ export interface RawFoodItem {
 
 export interface FoodSubstitution {
   alimento: string;
+  /** Medida caseira — única informação exibida ao cliente. */
   medida: string;
+  /** Gramatura de referência (exibida somente na visão técnica/coach). */
+  gramas?: number | null;
 }
+
 
 export interface NormalizedFood {
   alimento: string;
