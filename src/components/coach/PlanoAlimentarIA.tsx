@@ -3263,6 +3263,14 @@ export default function PlanoAlimentarIA() {
                             >
                               📨 Enviar
                             </button>
+                            <button
+                              onClick={() => excluirPlano(h)}
+                              disabled={deletingPlanId === h.id}
+                              title="Excluir plano"
+                              style={{ padding: "7px 12px", borderRadius: 7, background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.45)", color: "#ef4444", fontSize: 11, cursor: deletingPlanId === h.id ? "wait" : "pointer", fontFamily: "inherit", fontWeight: 700, opacity: deletingPlanId === h.id ? 0.6 : 1 }}
+                            >
+                              {deletingPlanId === h.id ? "..." : "🗑 Excluir"}
+                            </button>
                           </div>
                         </div>
                       );
