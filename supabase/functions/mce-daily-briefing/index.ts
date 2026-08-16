@@ -47,7 +47,7 @@ Deno.serve(async (req) => {
 
     if (!text) {
       const [{ data: profile }, { data: scores }] = await Promise.all([
-        admin.from("profiles").select("full_name, plano_atual, objetivo, peso_atual").eq("user_id", user.id).maybeSingle(),
+        admin.from("profiles").select("full_name, plano_atual, objetivo").eq("user_id", user.id).maybeSingle(),
         admin.from("mce_scores").select("score_m, score_c, score_e, created_at")
           .eq("user_id", user.id).order("created_at", { ascending: false }).limit(1).maybeSingle(),
       ]);
@@ -64,7 +64,6 @@ Tom: firme, acolhedor, de mentor. Nunca mencione inteligência artificial, IA ou
 DADOS:
 - Nome: ${firstName}
 - Objetivo/fase: ${profile?.objetivo || "não informado"}
-- Peso atual: ${profile?.peso_atual ?? "não informado"}
 - MCE: Mente ${m} · Comportamento ${c} · Execução ${e}
 
 ESTRUTURA:
