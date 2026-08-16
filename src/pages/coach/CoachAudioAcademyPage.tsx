@@ -44,7 +44,7 @@ const fmtMin = (s: number) => `${Math.max(1, Math.round(s / 60))} min`;
 
 type TabKey = "biblioteca" | "rituais" | "progresso";
 
-export default function CoachAudioAcademyPage() {
+export default function CoachAudioAcademyPage({ embedded = false }: { embedded?: boolean } = {}) {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { profile } = useCoachProfile();
