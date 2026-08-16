@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import {
   Users, AlertTriangle, AlertCircle, FileText, Search, Settings, ArrowLeft, Library,
   UtensilsCrossed, Dumbbell, FlaskConical, Camera, Sparkles, Bone, Flame, Activity,
-  CalendarDays, ChevronRight,
+  CalendarDays, ChevronRight, Building2,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import ProfessionalTypeBadge from "@/components/coach/ProfessionalTypeBadge";
