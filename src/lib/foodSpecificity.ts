@@ -105,7 +105,7 @@ const EXTRA_DENSITY: Record<string, { p: number; c: number; g: number }> = {
   "couve-flor": { p: 1.9, c: 5, g: 0.3 },
   "abobrinha": { p: 1.2, c: 3.1, g: 0.3 },
   vagem: { p: 1.8, c: 7, g: 0.2 },
-  "espinafre refogado": { p: 2.9, c: 3.6, g: 0.4 },
+  "chuchu": { p: 0.8, c: 4.5, g: 0.1 },
   cenoura: { p: 0.9, c: 10, g: 0.2 },
   requeijão: { p: 8, c: 3, g: 22 },
 };
@@ -121,7 +121,7 @@ const CATALOG: Record<SubstitutableGroup, string[]> = {
   ],
   carb: ["Arroz branco", "Batata doce", "Mandioca cozida", "Inhame", "Macarrão integral", "Aveia"],
   fat: ["Azeite extra virgem", "Castanha do pará", "Pasta de amendoim", "Abacate", "Linhaça"],
-  vegetable: ["Abobrinha", "Vagem", "Couve-flor", "Brócolis", "Espinafre refogado", "Cenoura"],
+  vegetable: ["Abobrinha", "Vagem", "Couve-flor", "Brócolis", "Chuchu cozido", "Cenoura"],
   dairy: ["Iogurte natural", "Iogurte grego", "Queijo cottage", "Ricota"],
   fruit: ["Banana", "Maçã", "Mamão", "Morango", "Abacaxi"],
 };
