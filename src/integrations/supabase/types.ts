@@ -11756,6 +11756,7 @@ export type Database = {
         Args: { _coach_user_id: string; _patient_user_id: string }
         Returns: boolean
       }
+      is_coach_user: { Args: { _user_id: string }; Returns: boolean }
       is_team_member: {
         Args: { _patient_id: string; _professional_id: string }
         Returns: boolean
