@@ -1,8 +1,19 @@
 import { safeString } from "@/lib/utils";
 import { portionParts } from "@/lib/portionDisplay";
+import { lookupDensity, parseGrams } from "@/lib/foodKcalDatabase";
+import { describePortion } from "@/lib/householdMeasures";
 
 /** Grupo de macronutriente de um alimento — base para substituições válidas. */
-export type MacroGroup = "protein" | "carb" | "fat" | "free" | "other";
+export type MacroGroup =
+  | "protein"
+  | "carb"
+  | "fat"
+  | "vegetable"
+  | "dairy"
+  | "fruit"
+  | "free"
+  | "other";
+
 
 export interface RawFoodItem {
   alimento?: unknown;
@@ -14,8 +25,12 @@ export interface RawFoodItem {
 
 export interface FoodSubstitution {
   alimento: string;
+  /** Medida caseira — única informação exibida ao cliente. */
   medida: string;
+  /** Gramatura de referência (exibida somente na visão técnica/coach). */
+  gramas?: number | null;
 }
+
 
 export interface NormalizedFood {
   alimento: string;
@@ -45,10 +60,15 @@ export const isFreeGreens = (name: unknown): boolean => {
 
 /* ── Classificação por macro ───────────────────────────────────────────── */
 
+const VEGETABLE =
+  /(br[óo]colis|couve[- ]flor|couve|abobrinha|vagem|cenoura|beterraba|chuchu|berinjela|piment[ãa]o|pepino|tomate|abóbora|abobora|quiabo|repolho|legume|verdura|vegetal|espinafre|palmito|aspargo)/i;
+const DAIRY = /(iogurte|queijo|cottage|ricota|requeij[ãa]o|leite|kefir|coalhada)/i;
+const FRUIT =
+  /(banana|ma[çc][ãa]|mam[ãa]o|melancia|mel[ãa]o|manga|morango|frutas vermelhas|laranja|tangerina|abacaxi|uva|kiwi|pera|goiaba|ameixa|fruta)/i;
 const PROTEIN =
-  /(frango|peito|peru|patinho|alcatra|coxão|m[úu]sculo|carne|b[íi]fe|til[áa]pia|peixe|salm[ãa]o|atum|merluza|camar[ãa]o|ovo|clara|whey|albumina|prote[íi]na|iogurte|queijo|cottage|ricota|leite|caseína)/i;
+  /(frango|peito|peru|patinho|alcatra|coxão|m[úu]sculo|carne|b[íi]fe|til[áa]pia|peixe|salm[ãa]o|atum|merluza|camar[ãa]o|ovo|clara|whey|albumina|prote[íi]na|caseína|tofu|sardinha)/i;
 const CARB =
-  /(arroz|batata|mandioca|inhame|macarr[ãa]o|massa|p[ãa]o|tapioca|aveia|granola|cereal|cuscuz|quinoa|feij[ãa]o|lentilha|gr[ãa]o de bico|banana|ma[çc][ãa]|mam[ãa]o|melancia|manga|morango|laranja|abacaxi|uva|fruta|mel|farinha|milho|beterraba|cenoura|polenta|panqueca|crepioca)/i;
+  /(arroz|batata|mandioca|macaxeira|inhame|cará|macarr[ãa]o|massa|p[ãa]o|tapioca|aveia|granola|cereal|cuscuz|quinoa|feij[ãa]o|lentilha|gr[ãa]o de bico|ervilha|mel|farinha|milho|polenta|panqueca|crepioca)/i;
 const FAT =
   /(azeite|[óo]leo|manteiga|ghee|castanha|am[êe]ndoa|noz|amendoim|pasta de amendoim|abacate|coco|gema|linha[çc]a|chia|tahine|semente)/i;
 
@@ -57,34 +77,62 @@ export const macroGroupOf = (name: unknown): MacroGroup => {
   if (!n) return "other";
   if (isFreeGreens(n)) return "free";
   if (FAT.test(n)) return "fat";
+  if (VEGETABLE.test(n)) return "vegetable";
+  if (DAIRY.test(n)) return "dairy";
   if (PROTEIN.test(n)) return "protein";
+  if (FRUIT.test(n)) return "fruit";
   if (CARB.test(n)) return "carb";
   return "other";
 };
 
-/* ── Catálogo de substituições por grupo (medidas caseiras) ────────────── */
+/* ── Catálogo de substituições por categoria ───────────────────────────── */
 
-const CATALOG: Record<Exclude<MacroGroup, "free" | "other">, FoodSubstitution[]> = {
+type SubstitutableGroup = Exclude<MacroGroup, "free" | "other">;
+
+/** Macro dominante que rege a equivalência de cada categoria. */
+const DOMINANT: Record<SubstitutableGroup, "p" | "c" | "g" | null> = {
+  protein: "p",
+  dairy: "p",
+  carb: "c",
+  fruit: "c",
+  fat: "g",
+  vegetable: null, // vegetais trocam grama a grama
+};
+
+/** Densidades complementares (por 100 g) para categorias fora do banco principal. */
+const EXTRA_DENSITY: Record<string, { p: number; c: number; g: number }> = {
+  "brócolis": { p: 2.8, c: 7, g: 0.4 },
+  "couve-flor": { p: 1.9, c: 5, g: 0.3 },
+  "abobrinha": { p: 1.2, c: 3.1, g: 0.3 },
+  vagem: { p: 1.8, c: 7, g: 0.2 },
+  "chuchu": { p: 0.8, c: 4.5, g: 0.1 },
+  cenoura: { p: 0.9, c: 10, g: 0.2 },
+  requeijão: { p: 8, c: 3, g: 22 },
+};
+
+const CATALOG: Record<SubstitutableGroup, string[]> = {
   protein: [
-    { alimento: "Frango grelhado", medida: "1 palma da mão (~150 g)" },
-    { alimento: "Tilápia", medida: "1 filé médio (~150 g)" },
-    { alimento: "Patinho moído", medida: "1 palma da mão (~150 g)" },
-    { alimento: "Ovos inteiros", medida: "5 ovos médios (~250 g)" },
-    { alimento: "Atum em água", medida: "1 lata escorrida (~120 g)" },
+    "Frango grelhado",
+    "Patinho grelhado",
+    "Tilápia grelhada",
+    "Peito de peru",
+    "Ovos inteiros",
+    "Atum em água",
   ],
-  carb: [
-    { alimento: "Arroz branco", medida: "6 colheres de sopa cheias (~200 g)" },
-    { alimento: "Batata doce", medida: "1 unidade média (~200 g)" },
-    { alimento: "Mandioca cozida", medida: "4 pedaços médios (~200 g)" },
-    { alimento: "Macarrão integral", medida: "6 colheres de sopa (~180 g)" },
-    { alimento: "Tapioca (goma)", medida: "3 colheres de sopa (~50 g)" },
-  ],
-  fat: [
-    { alimento: "Azeite extra virgem", medida: "1 colher de sopa (~8 ml)" },
-    { alimento: "Castanha do pará", medida: "3 unidades (~12 g)" },
-    { alimento: "Pasta de amendoim", medida: "1 colher de sopa rasa (~15 g)" },
-    { alimento: "Abacate", medida: "2 colheres de sopa (~40 g)" },
-  ],
+  carb: ["Arroz branco", "Batata doce", "Mandioca cozida", "Inhame", "Macarrão integral", "Aveia"],
+  fat: ["Azeite extra virgem", "Castanha do pará", "Pasta de amendoim", "Abacate", "Linhaça"],
+  vegetable: ["Abobrinha", "Vagem", "Couve-flor", "Brócolis", "Chuchu cozido", "Cenoura"],
+  dairy: ["Iogurte natural", "Iogurte grego", "Queijo cottage", "Ricota"],
+  fruit: ["Banana", "Maçã", "Mamão", "Morango", "Abacaxi"],
+};
+
+const densityOf = (name: string) => {
+  const d = lookupDensity(name);
+  if (d) return { p: d.p, c: d.c, g: d.g };
+  const key = Object.keys(EXTRA_DENSITY).find((k) =>
+    safeString(name).toLowerCase().includes(k.toLowerCase()),
+  );
+  return key ? EXTRA_DENSITY[key] : null;
 };
 
 const sameFood = (a: string, b: string) => {
@@ -92,6 +140,31 @@ const sameFood = (a: string, b: string) => {
   const x = norm(a);
   const y = norm(b);
   return x === y || x.includes(y) || y.includes(x);
+};
+
+/** Gramatura equivalente do substituto pelo macro dominante da categoria. */
+const equivalentGrams = (
+  grupo: SubstitutableGroup,
+  origem: string,
+  gramasOrigem: number,
+  candidato: string,
+): number | null => {
+  const macro = DOMINANT[grupo];
+  if (!macro) return gramasOrigem;
+  const dOrigem = densityOf(origem);
+  const dCand = densityOf(candidato);
+  if (!dOrigem || !dCand || !dCand[macro]) return null;
+  const alvo = (dOrigem[macro] / 100) * gramasOrigem;
+  if (alvo <= 0) return null;
+  return Math.round((alvo / dCand[macro]) * 100);
+};
+
+const measureText = (nome: string, gramas: number | null): FoodSubstitution => {
+  if (!gramas) return { alimento: nome, medida: "porção equivalente", gramas: null };
+  const desc = describePortion(nome, gramas);
+  return desc
+    ? { alimento: nome, medida: desc.measure, gramas: desc.grams }
+    : { alimento: nome, medida: `${Math.round(gramas)} g`, gramas: Math.round(gramas) };
 };
 
 /* ── Alimentos genéricos → versão específica ───────────────────────────── */
@@ -118,30 +191,52 @@ const GENERIC_RULES: GenericRule[] = [
 /** "Salada com azeite" → salada livre + azeite com medida própria. */
 const SALAD_WITH_FAT = /^salada[^,]*\b(com|\+|e)\s+(azeite|[óo]leo)/i;
 
-/* ── Normalização de um item do plano ──────────────────────────────────── */
+/* ── Substituições: sempre dentro da mesma categoria ───────────────────── */
 
 const buildSubs = (
   grupo: MacroGroup,
   nome: string,
+  gramasOriginais: number | null,
   originais: RawFoodItem["substituicoes"],
 ): FoodSubstitution[] => {
   if (grupo === "free" || grupo === "other") return [];
+  const g = grupo as SubstitutableGroup;
 
-  const doMesmoGrupo = (originais || [])
-    .map((s) => ({
-      alimento: safeString(s?.alimento).trim(),
-      medida: portionParts({ quantidade: s?.quantidade, quantidade_g: s?.quantidade_g }).primary,
-    }))
-    .filter((s) => s.alimento && macroGroupOf(s.alimento) === grupo && !sameFood(s.alimento, nome));
+  const out: FoodSubstitution[] = [];
+  const push = (s: FoodSubstitution) => {
+    if (!s.alimento) return;
+    if (sameFood(s.alimento, nome)) return;
+    if (out.some((m) => sameFood(m.alimento, s.alimento))) return;
+    out.push(s);
+  };
 
-  const catalogo = CATALOG[grupo].filter((s) => !sameFood(s.alimento, nome));
-  const merged: FoodSubstitution[] = [...doMesmoGrupo];
-  for (const c of catalogo) {
-    if (merged.length >= 4) break;
-    if (!merged.some((m) => sameFood(m.alimento, c.alimento))) merged.push(c);
+  // 1) Substituições vindas do plano — apenas as da MESMA categoria.
+  for (const s of originais || []) {
+    const alimento = safeString(s?.alimento).trim();
+    if (!alimento || macroGroupOf(alimento) !== grupo) continue;
+    const gramas =
+      parseGrams(safeString(s?.quantidade_g) || null) ??
+      parseGrams(safeString(s?.quantidade) || null) ??
+      (gramasOriginais ? equivalentGrams(g, nome, gramasOriginais, alimento) : null);
+    const medidaPlano = portionParts({ quantidade: s?.quantidade, quantidade_g: s?.quantidade_g }).primary;
+    const calculada = measureText(alimento, gramas);
+    push({
+      alimento,
+      medida: /^\d+(\.|,)?\d*\s*(g|ml|kg|l)$/i.test(medidaPlano) || !medidaPlano ? calculada.medida : medidaPlano,
+      gramas: calculada.gramas,
+    });
   }
-  return merged.slice(0, 4).map((s) => ({ alimento: s.alimento, medida: s.medida || "porção equivalente" }));
+
+  // 2) Completa com o catálogo da própria categoria, em gramatura equivalente.
+  for (const candidato of CATALOG[g]) {
+    if (out.length >= 4) break;
+    const gramas = gramasOriginais ? equivalentGrams(g, nome, gramasOriginais, candidato) : null;
+    push(measureText(candidato, gramas));
+  }
+
+  return out.slice(0, 4);
 };
+
 
 /**
  * Converte um item cru do plano em um ou mais itens específicos e legíveis
@@ -183,13 +278,29 @@ function make(
   observacao: string,
 ): NormalizedFood {
   const grupo = livre ? "free" : macroGroupOf(alimento);
+  const gramasNum = livre ? null : parseGrams(gramas) ?? parseGrams(medida);
+
+  // Gramatura crua sem medida caseira → converte para medida caseira inteira
+  // (ninguém pesa 6 g de castanha: são 1 ou 2 unidades).
+  let medidaFinal = medida;
+  let gramasFinal = gramas;
+  const soGramas = /^[≈~\s]*\d+([.,]\d+)?\s*(g|gr|gramas|ml|kg|l)?\s*$/i.test(medida.trim());
+  if (!livre && gramasNum && soGramas) {
+    const desc = describePortion(alimento, gramasNum);
+    if (desc) {
+      medidaFinal = desc.measure;
+      gramasFinal = `${desc.grams} g`;
+    }
+  }
+
   return {
     alimento,
-    medida: livre ? "À vontade" : medida,
-    gramas: livre ? null : gramas,
+    medida: livre ? "À vontade" : medidaFinal,
+    gramas: livre ? null : gramasFinal,
     livre,
     grupo,
     observacao,
-    substituicoes: buildSubs(grupo, alimento, item?.substituicoes),
+    substituicoes: buildSubs(grupo, alimento, gramasNum, item?.substituicoes),
   };
 }
+

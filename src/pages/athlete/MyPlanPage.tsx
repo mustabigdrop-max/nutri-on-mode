@@ -38,7 +38,17 @@ const emojiFor = (name: unknown) => {
   return "•";
 };
 
+const GROUP_LABEL: Record<string, string> = {
+  protein: "PROTEÍNA",
+  carb: "CARBOIDRATO",
+  fat: "GORDURA",
+  vegetable: "VEGETAL / FIBRA",
+  dairy: "LÁCTEO",
+  fruit: "FRUTA",
+};
+
 /** Medida caseira é o principal; gramatura fica como referência secundária. */
+
 const FoodRow = ({ food, last }: { food: NormalizedFood; last: boolean }) => {
   const [showSubs, setShowSubs] = useState(false);
   return (
@@ -94,6 +104,9 @@ const FoodRow = ({ food, last }: { food: NormalizedFood; last: boolean }) => {
           </button>
           {showSubs && (
             <div className="mt-1.5 space-y-1" style={{ borderLeft: `1px solid ${CYAN}33`, paddingLeft: 10 }}>
+              <p className="font-mono uppercase tracking-wider" style={{ fontSize: 9, color: `${CYAN}99` }}>
+                Mesmo grupo: {GROUP_LABEL[food.grupo] || "equivalente"}
+              </p>
               {food.substituicoes.map((s, i) => (
                 <p key={i} style={{ fontSize: 12, color: DIM }}>
                   <span style={{ color: TEXT }}>{s.alimento}</span> — {s.medida}
@@ -101,6 +114,7 @@ const FoodRow = ({ food, last }: { food: NormalizedFood; last: boolean }) => {
               ))}
             </div>
           )}
+
         </div>
       )}
     </div>
