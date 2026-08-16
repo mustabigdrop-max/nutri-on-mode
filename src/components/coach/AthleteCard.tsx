@@ -1,9 +1,12 @@
-import { memo, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { UtensilsCrossed, Dumbbell, BarChart3, MessageSquare, AlertTriangle, Zap, Eye, ClipboardList, Clock, CheckCircle2, Pencil, Trash2 } from "lucide-react";
+import { UtensilsCrossed, Dumbbell, BarChart3, MessageSquare, AlertTriangle, Zap, Eye, ClipboardList, Clock, CheckCircle2, Pencil, Trash2, KeyRound, Smartphone } from "lucide-react";
 import AnamnesisDialog from "@/components/coach/AnamnesisDialog";
 import EditAthleteDialog from "@/components/coach/EditAthleteDialog";
 import DeleteAthleteDialog from "@/components/coach/DeleteAthleteDialog";
+import ClientCredentialsDialog from "@/components/coach/ClientCredentialsDialog";
+import WelcomeMessageDialog from "@/components/coach/WelcomeMessageDialog";
+import { supabase } from "@/integrations/supabase/client";
 import type { CoachAthlete } from "@/hooks/useCoachAthletes";
 
 const RISK_COLOR: Record<CoachAthlete["riskLevel"], string> = {
@@ -27,7 +30,25 @@ const AthleteCard = ({ athlete: a, onSendMeal, onSendTraining, onUpdated }: Prop
   const [anamneseOpen, setAnamneseOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [credOpen, setCredOpen] = useState(false);
+  const [welcomeOpen, setWelcomeOpen] = useState(false);
+  const [welcomeSentAt, setWelcomeSentAt] = useState<string | null>(null);
   const color = RISK_COLOR[a.riskLevel];
+
+  useEffect(() => {
+    let alive = true;
+    supabase
+      .from("client_credentials")
+      .select("welcome_sent, welcome_sent_at")
+      .eq("client_id", a.userId)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (alive && data?.welcome_sent) setWelcomeSentAt(data.welcome_sent_at ?? null);
+      });
+    return () => {
+      alive = false;
+    };
+  }, [a.userId]);
 
   return (
     <div
@@ -145,6 +166,13 @@ const AthleteCard = ({ athlete: a, onSendMeal, onSendTraining, onUpdated }: Prop
         <button className="quick-action-sm" onClick={() => setEditOpen(true)}>
           <Pencil className="w-3.5 h-3.5" /> Editar dados
         </button>
+        <button className="quick-action-sm" onClick={() => setCredOpen(true)}>
+          <KeyRound className="w-3.5 h-3.5" /> Login
+        </button>
+        <button className="quick-action-sm" onClick={() => setWelcomeOpen(true)}>
+          <Smartphone className="w-3.5 h-3.5" />
+          {welcomeSentAt ? `Boas-vindas ✅ (${fmt(welcomeSentAt)})` : "Boas-vindas"}
+        </button>
         <button
           className="quick-action-sm"
           onClick={() => setDeleteOpen(true)}
@@ -179,6 +207,22 @@ const AthleteCard = ({ athlete: a, onSendMeal, onSendTraining, onUpdated }: Prop
         onOpenChange={setAnamneseOpen}
         athleteId={a.userId}
         athleteName={a.name}
+      />
+
+      <ClientCredentialsDialog
+        open={credOpen}
+        onOpenChange={setCredOpen}
+        athleteId={a.userId}
+        athleteName={a.name}
+        onSendWelcome={() => setWelcomeOpen(true)}
+      />
+
+      <WelcomeMessageDialog
+        open={welcomeOpen}
+        onOpenChange={setWelcomeOpen}
+        athleteId={a.userId}
+        athleteName={a.name}
+        onSent={() => setWelcomeSentAt(new Date().toISOString())}
       />
     </div>
   );

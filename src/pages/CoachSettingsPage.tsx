@@ -9,7 +9,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Loader2, Save, Palette, Bell, CreditCard, Building2 } from "lucide-react";
+import { ArrowLeft, Loader2, Save, Palette, Bell, CreditCard, Building2, MessageSquare } from "lucide-react";
+import { DEFAULT_WELCOME_TEMPLATE, WELCOME_VARIABLES } from "@/lib/welcomeMessage";
 import { toast } from "@/hooks/use-toast";
 import { PROFESSIONAL_ROLE_LIST, PROFESSIONAL_ROLES, resolveProfessionalRole, type ProfessionalRole } from "@/lib/professionalProfile";
 
@@ -35,6 +36,7 @@ const CoachSettingsPage = () => {
     alert_frequency: "realtime",
     alert_app: true,
     alert_email: false,
+    welcome_template: DEFAULT_WELCOME_TEMPLATE,
   });
 
   useEffect(() => {
@@ -60,6 +62,8 @@ const CoachSettingsPage = () => {
         alert_frequency: profile.alert_frequency || "realtime",
         alert_app: profile.alert_channels?.app ?? true,
         alert_email: profile.alert_channels?.email ?? false,
+        welcome_template:
+          (profile as { welcome_template?: string | null }).welcome_template || DEFAULT_WELCOME_TEMPLATE,
       });
     }
   }, [profile]);
@@ -84,6 +88,7 @@ const CoachSettingsPage = () => {
       white_label_domain: form.wl_domain || null,
       alert_frequency: form.alert_frequency,
       alert_channels: { app: form.alert_app, email: form.alert_email },
+      welcome_template: form.welcome_template || null,
       updated_at: new Date().toISOString(),
     }).eq("id", profile.id);
 
@@ -264,6 +269,38 @@ const CoachSettingsPage = () => {
               <Label>Notificação por email</Label>
               <Switch checked={form.alert_email} onCheckedChange={v => setForm(p => ({ ...p, alert_email: v }))} />
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Template de boas-vindas */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm flex items-center gap-2">
+              <MessageSquare className="w-4 h-4" /> Template de Boas-Vindas
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <Textarea
+              rows={14}
+              className="font-mono text-xs"
+              value={form.welcome_template}
+              onChange={e => setForm(p => ({ ...p, welcome_template: e.target.value }))}
+              placeholder={DEFAULT_WELCOME_TEMPLATE}
+            />
+            <div className="flex flex-wrap gap-2">
+              {WELCOME_VARIABLES.map(v => (
+                <Badge key={v.key} variant="outline" className="text-[10px]" title={v.label}>
+                  {v.key} — {v.label}
+                </Badge>
+              ))}
+            </div>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setForm(p => ({ ...p, welcome_template: DEFAULT_WELCOME_TEMPLATE }))}
+            >
+              Restaurar padrão
+            </Button>
           </CardContent>
         </Card>
 
