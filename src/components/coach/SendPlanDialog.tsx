@@ -51,7 +51,7 @@ const SendPlanDialog = ({ open, onOpenChange, athlete, type, coachProfileId, coa
           .select("id, patient_name, objetivo, plano, created_at")
           .eq("coach_id", coachProfileId)
           .order("created_at", { ascending: false })
-          .limit(10);
+          .limit(200);
         setOptions(
           (data || []).map((p: any) => ({
             id: p.id,
@@ -66,7 +66,7 @@ const SendPlanDialog = ({ open, onOpenChange, athlete, type, coachProfileId, coa
           .select("id, client_name, phase, weeks, protocol_text, periodizacao_text, created_at")
           .eq("user_id", coachUserId)
           .order("created_at", { ascending: false })
-          .limit(10);
+          .limit(200);
         setOptions(
           (data || []).map((p: any) => ({
             id: p.id,
