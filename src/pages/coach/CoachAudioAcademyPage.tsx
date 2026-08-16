@@ -65,6 +65,14 @@ export default function CoachAudioAcademyPage({ embedded = false }: { embedded?:
   const [newDesc, setNewDesc] = useState("");
   const [newMin, setNewMin] = useState(15);
   const [creating, setCreating] = useState(false);
+  const [showCreate, setShowCreate] = useState(false);
+  const createRef = useRef<HTMLDivElement | null>(null);
+
+  const openCreate = () => {
+    setTab((t) => (t === "progresso" ? "biblioteca" : t));
+    setShowCreate(true);
+    setTimeout(() => createRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }), 80);
+  };
 
   // progresso clientes
   const [athletes, setAthletes] = useState<Athlete[]>([]);
@@ -342,6 +350,13 @@ export default function CoachAudioAcademyPage({ embedded = false }: { embedded?:
           <Headphones className="w-4 h-4" style={{ color: GOLD }} />
           <h2 className="text-[11px] font-black tracking-[2px] uppercase" style={{ color: GOLD }}>MCE · Áudios</h2>
           <span className="ml-auto text-[10px]" style={{ color: DIM }}>{publishedCount}/{totalEpisodes} publicados</span>
+          <button
+            onClick={openCreate}
+            className="text-[10px] font-bold px-2.5 py-1.5 rounded-lg inline-flex items-center gap-1"
+            style={{ background: GOLD, color: BG }}
+          >
+            <Plus className="w-3.5 h-3.5" /> Adicionar áudio
+          </button>
         </div>
       ) : (
         <header className="sticky top-0 z-30 px-4 py-3 flex items-center gap-3" style={{ background: "rgba(3,3,10,0.95)", borderBottom: `1px solid ${GOLD}22` }}>
@@ -351,6 +366,13 @@ export default function CoachAudioAcademyPage({ embedded = false }: { embedded?:
           <Headphones className="w-5 h-5" style={{ color: GOLD }} />
           <h1 className="text-sm font-black tracking-[2px] uppercase" style={{ color: GOLD }}>Áudios · Coach</h1>
           <span className="ml-auto text-[10px]" style={{ color: DIM }}>{publishedCount}/{totalEpisodes} publicados</span>
+          <button
+            onClick={openCreate}
+            className="text-[10px] font-bold px-2.5 py-1.5 rounded-lg inline-flex items-center gap-1"
+            style={{ background: GOLD, color: BG }}
+          >
+            <Plus className="w-3.5 h-3.5" /> Adicionar áudio
+          </button>
         </header>
       )}
 
@@ -408,10 +430,22 @@ export default function CoachAudioAcademyPage({ embedded = false }: { embedded?:
             </section>
 
             {/* NOVO EPISÓDIO */}
+            <div ref={createRef} />
+            {!showCreate && (
+              <button
+                onClick={openCreate}
+                className="w-full text-xs font-bold px-4 py-3 rounded-2xl inline-flex items-center justify-center gap-2"
+                style={{ border: `1px dashed ${GOLD}66`, background: `${GOLD}0f`, color: GOLD }}
+              >
+                <Plus className="w-4 h-4" /> Adicionar áudio / novo episódio
+              </button>
+            )}
+            {showCreate && (
             <section className="rounded-2xl p-4 space-y-3" style={{ border: `1px solid ${GOLD}33`, background: `linear-gradient(135deg, ${GOLD}10, transparent)` }}>
               <div className="flex items-center gap-2">
                 <Plus className="w-4 h-4" style={{ color: GOLD }} />
                 <h2 className="text-[11px] font-bold tracking-[2px] uppercase" style={{ color: GOLD }}>Novo episódio</h2>
+                <button onClick={() => setShowCreate(false)} className="ml-auto text-[10px]" style={{ color: DIM }}>Fechar</button>
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <select
@@ -463,6 +497,8 @@ export default function CoachAudioAcademyPage({ embedded = false }: { embedded?:
                 Criar episódio
               </button>
             </section>
+            )}
+
 
             {loading ? (
               <p className="text-xs" style={{ color: DIM }}>Carregando biblioteca...</p>
