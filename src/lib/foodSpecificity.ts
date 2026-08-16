@@ -1,8 +1,19 @@
 import { safeString } from "@/lib/utils";
 import { portionParts } from "@/lib/portionDisplay";
+import { lookupDensity, parseGrams } from "@/lib/foodKcalDatabase";
+import { describePortion } from "@/lib/householdMeasures";
 
 /** Grupo de macronutriente de um alimento — base para substituições válidas. */
-export type MacroGroup = "protein" | "carb" | "fat" | "free" | "other";
+export type MacroGroup =
+  | "protein"
+  | "carb"
+  | "fat"
+  | "vegetable"
+  | "dairy"
+  | "fruit"
+  | "free"
+  | "other";
+
 
 export interface RawFoodItem {
   alimento?: unknown;
