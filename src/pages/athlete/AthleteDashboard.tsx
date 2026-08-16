@@ -517,8 +517,18 @@ const AthleteDashboard = ({ overrideUserId, overrideName, viewMode = "normal" }:
         )}
       </main>
 
+      <AddActivitySheet
+        open={showActivitySheet && !preview}
+        weightKg={weightKg}
+        onClose={() => setShowActivitySheet(false)}
+        onAdd={async (input) => {
+          await addActivity({ ...input, weightKg, climate });
+          setShowActivitySheet(false);
+        }}
+      />
       <PraxisFAB disabled={preview} />
       {!preview && <AthleteBottomNav />}
+
 
     </div>
   );
