@@ -24,7 +24,7 @@ import SendPlanDialog, { type SendPlanType } from "@/components/coach/SendPlanDi
 import ProtocolSuggestionsPanel from "@/components/coach/ProtocolSuggestionsPanel";
 
 const ADVANCED_MODULES = [
-  { label: "Academia", icon: Building2, route: "/coach/gym", color: "#E8A020" },
+  { label: "nutriON GYM", icon: Building2, route: "/mce/business", color: "#E8A020" },
   { label: "TrainingON", icon: Dumbbell, route: "/coach/trainingon", color: "#E8A020" },
   { label: "APEX Visual", icon: Camera, route: "/coach/apex-visual", color: "#E8A020" },
   { label: "VERA", icon: Sparkles, route: "/coach/vera", color: "#A78BFA" },
