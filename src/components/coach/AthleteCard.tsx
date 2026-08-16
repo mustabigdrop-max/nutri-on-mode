@@ -130,7 +130,7 @@ const AthleteCard = ({ athlete: a, onSendMeal, onSendTraining, onUpdated }: Prop
         <button className="quick-action-sm" onClick={() => navigate(`/coach/patient/${a.userId}`)}>
           <BarChart3 className="w-3.5 h-3.5" /> Ver Perfil
         </button>
-        <button className="quick-action-sm" onClick={() => navigate(`/coach/patient/${a.userId}?tab=mensagens`)}>
+        <button className="quick-action-sm" onClick={() => navigate(`/coach/patient/${a.userId}?tab=messages`)}>
           <MessageSquare className="w-3.5 h-3.5" /> Msg
         </button>
         <button className="quick-action-sm" onClick={() => navigate(`/coach/view-as/${a.userId}`)}>

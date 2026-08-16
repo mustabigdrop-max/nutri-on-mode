@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useCoachProfile } from "@/hooks/useCoachProfile";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -70,9 +70,22 @@ interface PlanItem {
 }
 
 const CoachPatientDetailPage = () => {
-  const { patientId } = useParams();
+  const params = useParams();
+  const patientId = params.patientId ?? params.id;
   const navigate = useNavigate();
-  const { profile } = useCoachProfile();
+  const [searchParams] = useSearchParams();
+  const { profile, loading: profileLoading } = useCoachProfile();
+
+  const TAB_ALIASES: Record<string, string> = {
+    mensagens: "messages",
+    chat: "messages",
+    messages: "messages",
+    plano: "mealplan",
+    geral: "overview",
+    exames: "exams",
+    alertas: "alerts",
+  };
+  const initialTab = TAB_ALIASES[(searchParams.get("tab") || "").toLowerCase()] || "overview";
 
   const [patient, setPatient] = useState<any>(null);
   const [scores, setScores] = useState<any[]>([]);
@@ -115,22 +128,23 @@ const CoachPatientDetailPage = () => {
   };
 
   useEffect(() => {
-    if (!profile || !patientId) return;
+    if (profileLoading || !patientId) return;
     loadPatientData();
-  }, [profile, patientId]);
+  }, [profile, profileLoading, patientId]);
 
   useEffect(() => {
     if (patientId) fetchMealPlan();
   }, [patientId, weekStart]);
 
   const loadPatientData = async () => {
-    if (!profile || !patientId) return;
+    if (!patientId) return;
+    const coachId = profile?.id ?? null;
 
     const [profileRes, scoresRes, alertsRes, messagesRes, mealsRes, examsRes, femRes] = await Promise.all([
       supabase.from("profiles").select("*").eq("user_id", patientId).maybeSingle(),
       supabase.from("consistency_scores").select("*").eq("user_id", patientId).order("created_at", { ascending: false }).limit(30),
-      supabase.from("coach_alerts").select("*").eq("coach_id", profile.id).eq("patient_user_id", patientId).order("created_at", { ascending: false }),
-      supabase.from("coach_messages").select("*").eq("coach_id", profile.id).eq("patient_user_id", patientId).order("created_at", { ascending: true }),
+      (coachId ? supabase.from("coach_alerts").select("*").eq("coach_id", coachId).eq("patient_user_id", patientId) : supabase.from("coach_alerts").select("*").eq("patient_user_id", patientId)).order("created_at", { ascending: false }),
+      (coachId ? supabase.from("coach_messages").select("*").eq("coach_id", coachId).eq("patient_user_id", patientId) : supabase.from("coach_messages").select("*").eq("patient_user_id", patientId)).order("created_at", { ascending: true }),
       supabase.from("meal_logs").select("*").eq("user_id", patientId).order("created_at", { ascending: false }).limit(14),
       supabase.from("blood_tests").select("*").eq("user_id", patientId).order("created_at", { ascending: false }),
       supabase.from("feminine_profiles" as any).select("ultima_menstruacao,duracao_ciclo,fase_ciclo").eq("user_id", patientId).maybeSingle(),
@@ -307,7 +321,11 @@ const CoachPatientDetailPage = () => {
     toast({ title: "Paciente notificado ✅" });
   };
   const sendMessage = async () => {
-    if (!newMessage.trim() || !profile || !patientId) return;
+    if (!newMessage.trim() || !patientId) return;
+    if (!profile) {
+      toast({ title: "Perfil profissional necessário", description: "Complete seu cadastro de coach para enviar mensagens.", variant: "destructive" });
+      return;
+    }
     setSending(true);
     await supabase.from("coach_messages").insert({
       coach_id: profile.id,
@@ -405,7 +423,7 @@ const CoachPatientDetailPage = () => {
             </>
           );
         })()}
-        <Tabs defaultValue="overview" className="space-y-4">
+        <Tabs defaultValue={initialTab} className="space-y-4">
           <TabsList className="w-full grid grid-cols-10">
             <TabsTrigger value="overview" className="text-xs"><User className="w-3 h-3 mr-1" />Geral</TabsTrigger>
             <TabsTrigger value="mealplan" className="text-xs"><Utensils className="w-3 h-3 mr-1" />Plano</TabsTrigger>
