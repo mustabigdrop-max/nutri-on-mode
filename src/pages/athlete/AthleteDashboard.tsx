@@ -157,7 +157,32 @@ const AthleteDashboard = ({ overrideUserId, overrideName, viewMode = "normal" }:
       </header>
 
       <main className="px-4 max-w-3xl mx-auto space-y-3">
+        <NutrySyncPanel
+          phase={phase}
+          baseKcal={baseKcal}
+          adjustKcal={adjustKcal}
+          consumedKcal={consumedKcal}
+          targetMacros={targetMacros}
+          consumedMacros={consumedMacros}
+          trainingLabel={todayTraining?.session_title || null}
+          trainingKcal={trainingKcal}
+          activities={activities}
+          climateLabel={climateOption?.label}
+          climateMl={climateOption?.ml || 0}
+          onAddActivity={() => setShowActivitySheet(true)}
+          onRemoveActivity={removeActivity}
+          readOnly={preview}
+        />
+
+        <DayRoutineTimeline
+          items={routineItems}
+          completed={completed}
+          onToggle={toggleMeal}
+          readOnly={preview}
+        />
+
         {/* Plano + Treino */}
+
         <div className="grid gap-3 sm:grid-cols-2">
           <Card accent={CYAN} onClick={() => navigate(`/my-plan${overrideUserId ? `?athlete=${overrideUserId}` : ""}`)}>
             <div className="flex items-center gap-2 mb-3">
