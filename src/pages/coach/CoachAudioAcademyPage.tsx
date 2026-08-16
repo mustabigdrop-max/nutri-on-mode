@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ArrowLeft, Headphones, Upload, Loader2, Plus, Play, Trash2, CheckCircle2,
-  Users, Library, Sunrise, Save,
+  Users, Library, Sunrise, Save, Wand2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -53,6 +53,8 @@ export default function CoachAudioAcademyPage({ embedded = false }: { embedded?:
   const [episodes, setEpisodes] = useState<Episode[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploadingId, setUploadingId] = useState<string | null>(null);
+  const [generatingId, setGeneratingId] = useState<string | null>(null);
+  const [batch, setBatch] = useState<{ done: number; total: number } | null>(null);
   const [track, setTrack] = useState<PlayerTrack | null>(null);
   const [openSeries, setOpenSeries] = useState<AudioSeries | null>("mindset");
   const fileInputs = useRef<Record<string, HTMLInputElement | null>>({});
