@@ -284,15 +284,24 @@ export default function CoachAudioAcademyPage({ embedded = false }: { embedded?:
   const totalEpisodes = episodes.length;
 
   return (
-    <div className="min-h-screen pb-40" style={{ background: BG, color: "#fff" }}>
-      <header className="sticky top-0 z-30 px-4 py-3 flex items-center gap-3" style={{ background: "rgba(3,3,10,0.95)", borderBottom: `1px solid ${GOLD}22` }}>
-        <button onClick={() => navigate(-1)} aria-label="Voltar" style={{ color: GOLD }}>
-          <ArrowLeft className="w-5 h-5" />
-        </button>
-        <Headphones className="w-5 h-5" style={{ color: GOLD }} />
-        <h1 className="text-sm font-black tracking-[2px] uppercase" style={{ color: GOLD }}>Áudios · Coach</h1>
-        <span className="ml-auto text-[10px]" style={{ color: DIM }}>{publishedCount}/{totalEpisodes} publicados</span>
-      </header>
+    <div className={embedded ? "pb-40" : "min-h-screen pb-40"} style={{ background: embedded ? "transparent" : BG, color: "#fff" }}>
+      {embedded ? (
+        <div className="flex items-center gap-2 px-1 pt-1">
+          <Headphones className="w-4 h-4" style={{ color: GOLD }} />
+          <h2 className="text-[11px] font-black tracking-[2px] uppercase" style={{ color: GOLD }}>MCE · Áudios</h2>
+          <span className="ml-auto text-[10px]" style={{ color: DIM }}>{publishedCount}/{totalEpisodes} publicados</span>
+        </div>
+      ) : (
+        <header className="sticky top-0 z-30 px-4 py-3 flex items-center gap-3" style={{ background: "rgba(3,3,10,0.95)", borderBottom: `1px solid ${GOLD}22` }}>
+          <button onClick={() => navigate(-1)} aria-label="Voltar" style={{ color: GOLD }}>
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <Headphones className="w-5 h-5" style={{ color: GOLD }} />
+          <h1 className="text-sm font-black tracking-[2px] uppercase" style={{ color: GOLD }}>Áudios · Coach</h1>
+          <span className="ml-auto text-[10px]" style={{ color: DIM }}>{publishedCount}/{totalEpisodes} publicados</span>
+        </header>
+      )}
+
 
       <div className="max-w-3xl mx-auto px-4 pt-4">
         <div className="flex gap-1.5 overflow-x-auto no-scrollbar">
