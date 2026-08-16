@@ -30,7 +30,25 @@ const AthleteCard = ({ athlete: a, onSendMeal, onSendTraining, onUpdated }: Prop
   const [anamneseOpen, setAnamneseOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [credOpen, setCredOpen] = useState(false);
+  const [welcomeOpen, setWelcomeOpen] = useState(false);
+  const [welcomeSentAt, setWelcomeSentAt] = useState<string | null>(null);
   const color = RISK_COLOR[a.riskLevel];
+
+  useEffect(() => {
+    let alive = true;
+    supabase
+      .from("client_credentials")
+      .select("welcome_sent, welcome_sent_at")
+      .eq("client_id", a.userId)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (alive && data?.welcome_sent) setWelcomeSentAt(data.welcome_sent_at ?? null);
+      });
+    return () => {
+      alive = false;
+    };
+  }, [a.userId]);
 
   return (
     <div
