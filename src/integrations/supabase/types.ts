@@ -2396,6 +2396,50 @@ export type Database = {
         }
         Relationships: []
       }
+      client_audio_progress: {
+        Row: {
+          completed: boolean
+          completed_at: string | null
+          created_at: string
+          episode_id: string
+          id: string
+          listen_count: number
+          progress_seconds: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          episode_id: string
+          id?: string
+          listen_count?: number
+          progress_seconds?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          episode_id?: string
+          id?: string
+          listen_count?: number
+          progress_seconds?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_audio_progress_episode_id_fkey"
+            columns: ["episode_id"]
+            isOneToOne: false
+            referencedRelation: "mce_audio_episodes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_daily_activities: {
         Row: {
           activity_date: string
@@ -3895,6 +3939,42 @@ export type Database = {
           protocolo_suporte?: Json | null
           semana_atual?: number | null
           tpc_protocolo?: Json | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      daily_briefings: {
+        Row: {
+          audio_url: string | null
+          briefing_date: string
+          created_at: string
+          id: string
+          listened: boolean
+          listened_at: string | null
+          text_content: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          audio_url?: string | null
+          briefing_date?: string
+          created_at?: string
+          id?: string
+          listened?: boolean
+          listened_at?: string | null
+          text_content?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          audio_url?: string | null
+          briefing_date?: string
+          created_at?: string
+          id?: string
+          listened?: boolean
+          listened_at?: string | null
+          text_content?: string
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
@@ -5601,6 +5681,57 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      mce_audio_episodes: {
+        Row: {
+          audio_url: string | null
+          cover_image_url: string | null
+          created_at: string
+          description: string | null
+          duration_seconds: number
+          episode_number: number | null
+          id: string
+          is_premium: boolean
+          scientific_reference: string | null
+          series: string
+          sort_order: number
+          tags: string[]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          audio_url?: string | null
+          cover_image_url?: string | null
+          created_at?: string
+          description?: string | null
+          duration_seconds?: number
+          episode_number?: number | null
+          id?: string
+          is_premium?: boolean
+          scientific_reference?: string | null
+          series: string
+          sort_order?: number
+          tags?: string[]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          audio_url?: string | null
+          cover_image_url?: string | null
+          created_at?: string
+          description?: string | null
+          duration_seconds?: number
+          episode_number?: number | null
+          id?: string
+          is_premium?: boolean
+          scientific_reference?: string | null
+          series?: string
+          sort_order?: number
+          tags?: string[]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       mce_chat_sessions: {
         Row: {
@@ -8814,6 +8945,33 @@ export type Database = {
           resposta_usuario?: string | null
           score_risco?: number | null
           tipo_risco?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      ritual_completions: {
+        Row: {
+          created_at: string
+          id: string
+          mce_points: number
+          ritual_date: string
+          ritual_type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          mce_points?: number
+          ritual_date?: string
+          ritual_type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          mce_points?: number
+          ritual_date?: string
+          ritual_type?: string
           user_id?: string
         }
         Relationships: []
