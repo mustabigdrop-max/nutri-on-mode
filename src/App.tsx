@@ -95,6 +95,7 @@ const PeptideVaultPage = lazy(() => import("./pages/PeptideVaultPage"));
 const TrainingPage = lazy(() => import("./pages/TrainingPage"));
 const RunOnPage = lazy(() => import("./pages/RunOnPage"));
 const Desafio21Page = lazy(() => import("./pages/Desafio21Page"));
+const DesafioSignupPage = lazy(() => import("./pages/DesafioSignupPage"));
 const Desafio21DashboardPage = lazy(() => import("./pages/Desafio21DashboardPage"));
 const AthleteTodayTrainingPage = lazy(() => import("./pages/AthleteTodayTrainingPage"));
 const TrainingSystemsPage = lazy(() => import("./pages/TrainingSystemsPage"));
@@ -159,6 +160,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<AuthPage />} />
+            <Route path="/desafio-21" element={<DesafioSignupPage />} />
             <Route path="/.lovable/oauth/consent" element={<OAuthConsentPage />} />
 
             <Route path="/assessment" element={<ProtectedRoute><AssessmentPCA /></ProtectedRoute>} />
