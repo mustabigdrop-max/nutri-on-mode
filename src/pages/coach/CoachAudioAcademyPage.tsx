@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ArrowLeft, Headphones, Upload, Loader2, Plus, Play, Trash2, CheckCircle2,
-  Users, Library, Sunrise, Save,
+  Users, Library, Sunrise, Save, Wand2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -53,6 +53,8 @@ export default function CoachAudioAcademyPage({ embedded = false }: { embedded?:
   const [episodes, setEpisodes] = useState<Episode[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploadingId, setUploadingId] = useState<string | null>(null);
+  const [generatingId, setGeneratingId] = useState<string | null>(null);
+  const [batch, setBatch] = useState<{ done: number; total: number } | null>(null);
   const [track, setTrack] = useState<PlayerTrack | null>(null);
   const [openSeries, setOpenSeries] = useState<AudioSeries | null>("mindset");
   const fileInputs = useRef<Record<string, HTMLInputElement | null>>({});
@@ -130,6 +132,46 @@ export default function CoachAudioAcademyPage({ embedded = false }: { embedded?:
   }, [episodes]);
 
   const publishedCount = episodes.filter((e) => e.audio_url).length;
+  const pendingEpisodes = useMemo(() => episodes.filter((e) => !e.audio_url), [episodes]);
+
+  // Gera roteiro + narração na mesma voz do Briefing do dia
+  const generateVoice = async (ep: Episode, silent = false): Promise<boolean> => {
+    setGeneratingId(ep.id);
+    try {
+      const { data, error } = await supabase.functions.invoke("mce-generate-episode-audio", {
+        body: { episodeId: ep.id },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      setEpisodes((list) =>
+        list.map((e) =>
+          e.id === ep.id ? { ...e, audio_url: data.path, duration_seconds: data.duration_seconds } : e,
+        ),
+      );
+      if (!silent) toast.success(`Narração publicada · EP ${ep.episode_number ?? ""}`);
+      return true;
+    } catch (e: any) {
+      if (!silent) toast.error(e?.message || "Falha ao gerar a narração.");
+      return false;
+    } finally {
+      setGeneratingId(null);
+    }
+  };
+
+  const generateAllPending = async (list: Episode[]) => {
+    if (list.length === 0) return toast.message("Todos os episódios já têm áudio.");
+    setBatch({ done: 0, total: list.length });
+    let ok = 0;
+    for (let i = 0; i < list.length; i++) {
+      const success = await generateVoice(list[i], true);
+      if (success) ok++;
+      setBatch({ done: i + 1, total: list.length });
+    }
+    setBatch(null);
+    if (ok === list.length) toast.success(`${ok} episódios narrados e publicados.`);
+    else toast.warning(`${ok}/${list.length} narrados. Tente novamente os restantes.`);
+  };
+
 
   const handleUpload = async (ep: Episode, file: File) => {
     if (!file.type.startsWith("audio/")) {
@@ -253,6 +295,16 @@ export default function CoachAudioAcademyPage({ embedded = false }: { embedded?:
             className="hidden"
             onChange={(e) => { const f = e.target.files?.[0]; if (f) handleUpload(ep, f); e.currentTarget.value = ""; }}
           />
+          <button
+            onClick={() => generateVoice(ep)}
+            disabled={!!generatingId || !!batch}
+            aria-label="Gerar narração na voz PRAXIS"
+            title="Gerar narração na voz do briefing"
+            className="w-8 h-8 rounded-lg flex items-center justify-center"
+            style={{ background: "rgba(0,212,255,0.14)", color: "#00D4FF", opacity: generatingId || batch ? 0.5 : 1 }}
+          >
+            {generatingId === ep.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wand2 className="w-4 h-4" />}
+          </button>
           {ep.audio_url && (
             <button onClick={() => preview(ep)} aria-label="Ouvir prévia" className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: `${color}22`, color }}>
               <Play className="w-4 h-4" />
@@ -329,6 +381,32 @@ export default function CoachAudioAcademyPage({ embedded = false }: { embedded?:
       <main className="max-w-3xl mx-auto px-4 py-5 space-y-5">
         {tab !== "progresso" && (
           <>
+            {/* NARRAÇÃO EM LOTE */}
+            <section className="rounded-2xl p-4" style={{ border: "1px solid rgba(0,212,255,0.28)", background: "linear-gradient(135deg, rgba(0,212,255,0.10), transparent)" }}>
+              <div className="flex items-center gap-2 mb-1">
+                <Wand2 className="w-4 h-4" style={{ color: "#00D4FF" }} />
+                <h2 className="text-[11px] font-bold tracking-[2px] uppercase" style={{ color: "#00D4FF" }}>Narração PRAXIS</h2>
+              </div>
+              <p className="text-xs mb-3" style={{ color: DIM }}>
+                Gera roteiro e narração na mesma voz do Briefing do dia e publica direto para os clientes.
+                {" "}{pendingEpisodes.length} episódio(s) sem áudio.
+              </p>
+              <button
+                onClick={() => generateAllPending(pendingEpisodes)}
+                disabled={!!batch || !!generatingId || pendingEpisodes.length === 0}
+                className="text-xs font-bold px-4 py-2 rounded-lg inline-flex items-center gap-2"
+                style={{ background: "#00D4FF", color: "#03030a", opacity: batch || generatingId || pendingEpisodes.length === 0 ? 0.55 : 1 }}
+              >
+                {batch ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wand2 className="w-4 h-4" />}
+                {batch ? `Narrando ${batch.done}/${batch.total}...` : "Liberar todas as séries com voz"}
+              </button>
+              {batch && (
+                <div className="h-[3px] rounded-full mt-3" style={{ background: "rgba(255,255,255,0.08)" }}>
+                  <div className="h-full rounded-full transition-all" style={{ width: `${(batch.done / batch.total) * 100}%`, background: "#00D4FF" }} />
+                </div>
+              )}
+            </section>
+
             {/* NOVO EPISÓDIO */}
             <section className="rounded-2xl p-4 space-y-3" style={{ border: `1px solid ${GOLD}33`, background: `linear-gradient(135deg, ${GOLD}10, transparent)` }}>
               <div className="flex items-center gap-2">
