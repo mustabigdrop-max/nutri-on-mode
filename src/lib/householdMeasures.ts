@@ -104,6 +104,7 @@ const MEASURES: Array<[string, HouseholdMeasure[]]> = [
   ["vagem", [{ measure: "colher de sopa cheia", plural: "colheres de sopa cheias", grams: 50 }]],
   ["cenoura", [{ measure: "colher de sopa cheia", plural: "colheres de sopa cheias", grams: 50 }]],
   ["beterraba", [{ measure: "colher de sopa cheia", plural: "colheres de sopa cheias", grams: 50 }]],
+  ["chuchu", [{ measure: "colher de sopa cheia", plural: "colheres de sopa cheias", grams: 50 }]],
   ["legume", [{ measure: "colher de sopa cheia", plural: "colheres de sopa cheias", grams: 50 }]],
   ["espinafre", [{ measure: "colher de sopa cheia", plural: "colheres de sopa cheias", grams: 50 }]],
   ["tomate", [{ measure: "unidade média", plural: "unidades médias", grams: 90 }]],
