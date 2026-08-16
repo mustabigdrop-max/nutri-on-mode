@@ -279,6 +279,7 @@ const App = () => (
             <Route path="/coach/exames" element={<CoachToolRoute><ProtectedRoute><ExamRequestPage /></ProtectedRoute></CoachToolRoute>} />
             <Route path="/coach/view-as/:athleteId" element={<CoachToolRoute><ProtectedRoute><ViewAsClient /></ProtectedRoute></CoachToolRoute>} />
             <Route path="/coach/praxis-logs/:athleteId" element={<CoachToolRoute><ProtectedRoute><PraxisLogsPage /></ProtectedRoute></CoachToolRoute>} />
+            <Route path="/coach/audio" element={<CoachToolRoute><ProtectedRoute><CoachAudioAcademyPage /></ProtectedRoute></CoachToolRoute>} />
             <Route path="/coach/relatorios" element={<CoachToolRoute><ProtectedRoute><CoachReportsPage /></ProtectedRoute></CoachToolRoute>} />
             <Route path="/coach/anamneses" element={<CoachToolRoute><ProtectedRoute><CoachAnamnesisPage /></ProtectedRoute></CoachToolRoute>} />
             <Route path="/anamnese/:token" element={<AnamnesisPublicPage />} />
