@@ -163,6 +163,76 @@ const measureText = (nome: string, gramas: number | null): FoodSubstitution => {
     : { alimento: nome, medida: `${Math.round(gramas)} g`, gramas: Math.round(gramas) };
 };
 
+/* ── Alimentos genéricos → versão específica ───────────────────────────── */
+
+interface GenericRule {
+  match: RegExp;
+  alimento: string;
+  medida: string;
+  livre?: boolean;
+}
+
+const GENERIC_RULES: GenericRule[] = [
+  { match: /^(uma\s+|1\s+)?frutas?$/i, alimento: "Banana média", medida: "1 unidade média" },
+  { match: /^fruta (da [ée]poca|a escolher|variada)$/i, alimento: "Banana média", medida: "1 unidade média" },
+  { match: /^legumes?( variados| diversos| cozidos| no vapor)?$/i, alimento: "Brócolis + cenoura", medida: "3 colheres de sopa cheias" },
+  { match: /^(vegetais|verduras)( variados| variadas| diversos)?$/i, alimento: "Alface, tomate e pepino", medida: "À vontade", livre: true },
+  { match: /^salada( verde| crua| mista)?$/i, alimento: "Salada verde (alface, rúcula, agrião)", medida: "À vontade", livre: true },
+  { match: /^(castanhas|oleaginosas|mix de castanhas)$/i, alimento: "Castanha do pará", medida: "3 unidades" },
+  { match: /^(carne|prote[íi]na)( magra| animal)?$/i, alimento: "Frango grelhado", medida: "1 palma da mão" },
+  { match: /^(carboidrato|tub[ée]rculo)s?$/i, alimento: "Arroz branco", medida: "6 colheres de sopa cheias" },
+  { match: /^(gordura|gorduras boas)$/i, alimento: "Azeite extra virgem", medida: "1 colher de sopa" },
+];
+
+/** "Salada com azeite" → salada livre + azeite com medida própria. */
+const SALAD_WITH_FAT = /^salada[^,]*\b(com|\+|e)\s+(azeite|[óo]leo)/i;
+
+/* ── Substituições: sempre dentro da mesma categoria ───────────────────── */
+
+const buildSubs = (
+  grupo: MacroGroup,
+  nome: string,
+  gramasOriginais: number | null,
+  originais: RawFoodItem["substituicoes"],
+): FoodSubstitution[] => {
+  if (grupo === "free" || grupo === "other") return [];
+  const g = grupo as SubstitutableGroup;
+
+  const out: FoodSubstitution[] = [];
+  const push = (s: FoodSubstitution) => {
+    if (!s.alimento) return;
+    if (sameFood(s.alimento, nome)) return;
+    if (out.some((m) => sameFood(m.alimento, s.alimento))) return;
+    out.push(s);
+  };
+
+  // 1) Substituições vindas do plano — apenas as da MESMA categoria.
+  for (const s of originais || []) {
+    const alimento = safeString(s?.alimento).trim();
+    if (!alimento || macroGroupOf(alimento) !== grupo) continue;
+    const gramas =
+      parseGrams(safeString(s?.quantidade_g) || null) ??
+      parseGrams(safeString(s?.quantidade) || null) ??
+      (gramasOriginais ? equivalentGrams(g, nome, gramasOriginais, alimento) : null);
+    const medidaPlano = portionParts({ quantidade: s?.quantidade, quantidade_g: s?.quantidade_g }).primary;
+    const calculada = measureText(alimento, gramas);
+    push({
+      alimento,
+      medida: /^\d+(\.|,)?\d*\s*(g|ml|kg|l)$/i.test(medidaPlano) || !medidaPlano ? calculada.medida : medidaPlano,
+      gramas: calculada.gramas,
+    });
+  }
+
+  // 2) Completa com o catálogo da própria categoria, em gramatura equivalente.
+  for (const candidato of CATALOG[g]) {
+    if (out.length >= 4) break;
+    const gramas = gramasOriginais ? equivalentGrams(g, nome, gramasOriginais, candidato) : null;
+    push(measureText(candidato, gramas));
+  }
+
+  return out.slice(0, 4);
+};
+
 
 /**
  * Converte um item cru do plano em um ou mais itens específicos e legíveis
