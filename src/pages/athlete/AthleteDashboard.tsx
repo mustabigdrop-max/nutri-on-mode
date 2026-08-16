@@ -403,6 +403,24 @@ const AthleteDashboard = ({ overrideUserId, overrideName, viewMode = "normal" }:
         {/* MCE */}
         <MceScoreCard userId={targetUserId} readOnly={preview} />
 
+        <button
+          onClick={() => !preview && navigate("/audio")}
+          disabled={preview}
+          className="w-full text-left rounded-2xl p-4"
+          style={{
+            border: "1px solid rgba(232,160,32,0.25)",
+            borderLeft: "3px solid #E8A020",
+            background: "linear-gradient(135deg, rgba(232,160,32,0.08), transparent)",
+          }}
+        >
+          <span className="text-xs font-bold tracking-wider uppercase" style={{ color: "#E8A020" }}>
+            🎧 MCE Audio Academy
+          </span>
+          <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.55)" }}>
+            Briefing do dia, séries M/C/E, aulas científicas e rituais — para ouvir no cardio.
+          </p>
+        </button>
+
 
 
         {/* Hidratação + Suplementação */}
