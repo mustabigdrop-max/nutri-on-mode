@@ -191,25 +191,45 @@ const SendPlanDialog = ({ open, onOpenChange, athlete, type, coachProfileId, coa
               ) : options.length === 0 ? (
                 <p className="text-xs text-muted-foreground">Nenhum protocolo no histórico ainda.</p>
               ) : (
-                options.map((o, i) => (
-                  <button
-                    key={o.id}
-                    onClick={() => setSelected(o.id)}
-                    className="w-full text-left rounded-lg p-3 border transition-colors"
-                    style={{
-                      borderColor: selected === o.id ? "rgba(0,212,255,0.4)" : "rgba(255,255,255,0.08)",
-                      background: selected === o.id ? "rgba(0,212,255,0.08)" : "transparent",
-                    }}
-                  >
-                    <p className="text-sm font-medium truncate">
-                      {i === 0 ? "Último gerado · " : ""}
-                      {o.label}
-                    </p>
-                    <p className="text-[11px] text-muted-foreground font-mono">
-                      {new Date(o.createdAt).toLocaleDateString("pt-BR")}
-                    </p>
-                  </button>
-                ))
+                <>
+                  <div className="flex items-center justify-between gap-2">
+                    <Input
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                      placeholder="Buscar no histórico..."
+                      className="h-8 text-xs"
+                    />
+                    <span className="text-[11px] text-muted-foreground whitespace-nowrap">
+                      {filtered.length}/{options.length}
+                    </span>
+                  </div>
+
+                  <div className="max-h-[280px] overflow-y-auto space-y-2 pr-1">
+                    {filtered.length === 0 ? (
+                      <p className="text-xs text-muted-foreground">Nenhum resultado para "{search}".</p>
+                    ) : (
+                      filtered.map((o) => (
+                        <button
+                          key={o.id}
+                          onClick={() => setSelected(o.id)}
+                          className="w-full text-left rounded-lg p-3 border transition-colors"
+                          style={{
+                            borderColor: selected === o.id ? "rgba(0,212,255,0.4)" : "rgba(255,255,255,0.08)",
+                            background: selected === o.id ? "rgba(0,212,255,0.08)" : "transparent",
+                          }}
+                        >
+                          <p className="text-sm font-medium truncate">
+                            {o.id === options[0]?.id ? "Último gerado · " : ""}
+                            {o.label}
+                          </p>
+                          <p className="text-[11px] text-muted-foreground font-mono">
+                            {new Date(o.createdAt).toLocaleDateString("pt-BR")}
+                          </p>
+                        </button>
+                      ))
+                    )}
+                  </div>
+                </>
               )}
             </div>
 
