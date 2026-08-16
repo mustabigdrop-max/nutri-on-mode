@@ -65,6 +65,14 @@ export default function CoachAudioAcademyPage({ embedded = false }: { embedded?:
   const [newDesc, setNewDesc] = useState("");
   const [newMin, setNewMin] = useState(15);
   const [creating, setCreating] = useState(false);
+  const [showCreate, setShowCreate] = useState(false);
+  const createRef = useRef<HTMLDivElement | null>(null);
+
+  const openCreate = () => {
+    setTab((t) => (t === "progresso" ? "biblioteca" : t));
+    setShowCreate(true);
+    setTimeout(() => createRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }), 80);
+  };
 
   // progresso clientes
   const [athletes, setAthletes] = useState<Athlete[]>([]);
