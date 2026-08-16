@@ -36,8 +36,12 @@ const SendPlanDialog = ({ open, onOpenChange, athlete, type, coachProfileId, coa
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
   const [sentInfo, setSentInfo] = useState<null | { label: string }>(null);
+  const [search, setSearch] = useState("");
 
   const isMeal = type === "meal_plan";
+  const filtered = search.trim()
+    ? options.filter((o) => o.label.toLowerCase().includes(search.trim().toLowerCase()))
+    : options;
 
   useEffect(() => {
     if (!open || !athlete) return;
