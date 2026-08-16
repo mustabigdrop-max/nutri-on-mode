@@ -43,12 +43,12 @@ export const WELCOME_VARIABLES = [
 export function renderWelcomeMessage(template: string | null | undefined, v: WelcomeVars): string {
   const base = template?.trim() ? template : DEFAULT_WELCOME_TEMPLATE;
   return base
-    .replaceAll("{nome}", v.nome)
-    .replaceAll("{email}", v.email)
-    .replaceAll("{senha}", v.senha)
-    .replaceAll("{link}", v.link || LOGIN_URL)
-    .replaceAll("{coach}", v.coach || "Seu Coach")
-    .replaceAll("{instagram}", v.instagram || "@nutrion");
+    .replace(/\{nome\}/g, v.nome)
+    .replace(/\{email\}/g, v.email)
+    .replace(/\{senha\}/g, v.senha)
+    .replace(/\{link\}/g, v.link || LOGIN_URL)
+    .replace(/\{coach\}/g, v.coach || "Seu Coach")
+    .replace(/\{instagram\}/g, v.instagram || "@nutrion");
 }
 
 export function openWhatsAppWith(phone: string, message: string) {
