@@ -189,6 +189,14 @@ const CreateClientDialog = ({ trigger, onCreated }: Props) => {
         .eq("user_id", newUserId);
       if (profileError) console.error("[CREATE CLIENT] profile update error:", profileError);
 
+      // 4. Guardar credenciais compartilháveis com o coach
+      await supabase
+        .from("client_credentials")
+        .upsert(
+          { client_id: newUserId, email: cleanEmail, temp_password: password, password_changed: false },
+          { onConflict: "client_id" },
+        );
+
       setCreated({ userId: newUserId, name: name.trim(), email: cleanEmail, password });
       toast({ title: "Cliente cadastrado! 🎉", description: `${name.trim()} já pode acessar o nutriON.` });
       onCreated?.();
