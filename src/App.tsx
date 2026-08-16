@@ -285,6 +285,7 @@ const App = () => (
             <Route path="/coach/audio" element={<CoachToolRoute><ProtectedRoute><CoachAudioAcademyPage /></ProtectedRoute></CoachToolRoute>} />
             <Route path="/coach/relatorios" element={<CoachToolRoute><ProtectedRoute><CoachReportsPage /></ProtectedRoute></CoachToolRoute>} />
             <Route path="/coach/anamneses" element={<CoachToolRoute><ProtectedRoute><CoachAnamnesisPage /></ProtectedRoute></CoachToolRoute>} />
+            <Route path="/coach/gym" element={<CoachToolRoute><ProtectedRoute><CoachGymAcademyPage /></ProtectedRoute></CoachToolRoute>} />
             <Route path="/anamnese/:token" element={<AnamnesisPublicPage />} />
             <Route path="/coach/equipe" element={<ProtectedRoute><PatientTeamHubPage /></ProtectedRoute>} />
             <Route path="/coach/equipe/:patientId" element={<ProtectedRoute><PatientTeamHubPage /></ProtectedRoute>} />
