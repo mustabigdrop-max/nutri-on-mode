@@ -58,7 +58,7 @@ const BottomNav = () => {
                 <button
                   key={item.id}
                   onClick={() => locked ? setShowUpsell(true) : navigate(item.path)}
-                  className="flex flex-col items-center gap-0.5 py-1 min-w-[48px] relative"
+                  className="flex flex-col items-center gap-0.5 py-1 min-w-[40px] relative"
                 >
                   <div className="relative">
                     <item.icon
