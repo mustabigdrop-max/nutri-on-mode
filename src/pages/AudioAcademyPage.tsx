@@ -28,7 +28,7 @@ const SERIES_ORDER: AudioSeries[] = ["mindset", "comportamento", "execucao", "ci
 
 const fmtDur = (s: number) => `${Math.floor(s / 60)} min`;
 
-export default function AudioAcademyPage() {
+export default function AudioAcademyPage({ embedded = false }: { embedded?: boolean } = {}) {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [episodes, setEpisodes] = useState<Episode[]>([]);
@@ -42,8 +42,8 @@ export default function AudioAcademyPage() {
   const [briefingLoading, setBriefingLoading] = useState(false);
 
   useEffect(() => {
-    document.title = "MCE Audio Academy · NUTRION";
-  }, []);
+    if (!embedded) document.title = "MCE Audio Academy · NUTRION";
+  }, [embedded]);
 
   const load = useCallback(async () => {
     if (!user) return;
@@ -155,16 +155,23 @@ export default function AudioAcademyPage() {
   };
 
   return (
-    <div className="min-h-screen pb-40" style={{ background: "#03030a", color: "#fff" }}>
-      <header className="sticky top-0 z-30 px-4 py-3 flex items-center gap-3" style={{ background: "rgba(3,3,10,0.95)", borderBottom: `1px solid ${GOLD}22` }}>
-        <button onClick={() => navigate(-1)} aria-label="Voltar" style={{ color: GOLD }}>
-          <ArrowLeft className="w-5 h-5" />
-        </button>
-        <Headphones className="w-5 h-5" style={{ color: GOLD }} />
-        <h1 className="text-sm font-black tracking-[2px] uppercase" style={{ color: GOLD }}>MCE Audio Academy</h1>
-      </header>
+    <div className={embedded ? "pb-40" : "min-h-screen pb-40"} style={{ background: embedded ? "transparent" : "#03030a", color: "#fff" }}>
+      {embedded ? (
+        <div className="flex items-center gap-2 px-1">
+          <Headphones className="w-4 h-4" style={{ color: GOLD }} />
+          <h2 className="text-[11px] font-black tracking-[2px] uppercase" style={{ color: GOLD }}>MCE Audio Academy</h2>
+        </div>
+      ) : (
+        <header className="sticky top-0 z-30 px-4 py-3 flex items-center gap-3" style={{ background: "rgba(3,3,10,0.95)", borderBottom: `1px solid ${GOLD}22` }}>
+          <button onClick={() => navigate(-1)} aria-label="Voltar" style={{ color: GOLD }}>
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <Headphones className="w-5 h-5" style={{ color: GOLD }} />
+          <h1 className="text-sm font-black tracking-[2px] uppercase" style={{ color: GOLD }}>MCE Audio Academy</h1>
+        </header>
+      )}
 
-      <main className="max-w-3xl mx-auto px-4 py-5 space-y-5">
+      <main className={embedded ? "space-y-5 pt-3" : "max-w-3xl mx-auto px-4 py-5 space-y-5"}>
         <p className="text-xs italic" style={{ color: DIM }}>
           "Sua fome nunca foi de comida. O comportamento vem antes do alimento."
         </p>

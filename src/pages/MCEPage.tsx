@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+import AudioAcademyPage from "@/pages/AudioAcademyPage";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -543,6 +544,7 @@ export default function MCEIntelligencePage() {
     { key: "exercicios", label: "EXERCÍCIOS" },
     { key: "perfis", label: "PERFIS" },
     { key: "progresso", label: "PROGRESSO" },
+    { key: "audio", label: "ÁUDIO", badge: "#E8A020" },
   ];
 
   const sectionTitle: React.CSSProperties = {
@@ -679,6 +681,8 @@ export default function MCEIntelligencePage() {
         </div>
 
         <div style={{ marginTop: 20 }}>
+          {tab === "audio" && <AudioAcademyPage embedded />}
+
           {/* ESTUDO */}
           {tab === "estudo" && (
             <div>
