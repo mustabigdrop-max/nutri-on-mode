@@ -366,6 +366,13 @@ export default function CoachAudioAcademyPage({ embedded = false }: { embedded?:
           <Headphones className="w-5 h-5" style={{ color: GOLD }} />
           <h1 className="text-sm font-black tracking-[2px] uppercase" style={{ color: GOLD }}>Áudios · Coach</h1>
           <span className="ml-auto text-[10px]" style={{ color: DIM }}>{publishedCount}/{totalEpisodes} publicados</span>
+          <button
+            onClick={openCreate}
+            className="text-[10px] font-bold px-2.5 py-1.5 rounded-lg inline-flex items-center gap-1"
+            style={{ background: GOLD, color: BG }}
+          >
+            <Plus className="w-3.5 h-3.5" /> Adicionar áudio
+          </button>
         </header>
       )}
 
