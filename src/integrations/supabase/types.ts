@@ -7601,6 +7601,51 @@ export type Database = {
         }
         Relationships: []
       }
+      partner_gyms: {
+        Row: {
+          active: boolean
+          challenge_slug: string | null
+          city: string | null
+          coach_profile_id: string | null
+          coach_user_id: string
+          contact_name: string | null
+          contact_phone: string | null
+          created_at: string
+          id: string
+          name: string
+          notes: string | null
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          challenge_slug?: string | null
+          city?: string | null
+          coach_profile_id?: string | null
+          coach_user_id: string
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          notes?: string | null
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          challenge_slug?: string | null
+          city?: string | null
+          coach_profile_id?: string | null
+          coach_user_id?: string
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       partner_sessions: {
         Row: {
           created_at: string | null
