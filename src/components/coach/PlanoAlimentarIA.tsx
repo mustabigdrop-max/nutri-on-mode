@@ -1122,6 +1122,25 @@ export default function PlanoAlimentarIA() {
     setLoadingHistory(false);
   };
 
+  const [deletingPlanId, setDeletingPlanId] = useState<string | null>(null);
+
+  const excluirPlano = async (h: any) => {
+    if (!h?.id) return;
+    const ok = window.confirm(`Excluir definitivamente o plano de ${h.patient_name || "paciente"}? Esta ação não pode ser desfeita.`);
+    if (!ok) return;
+    setDeletingPlanId(h.id);
+    const { error } = await supabase.from("coach_meal_plans").delete().eq("id", h.id);
+    setDeletingPlanId(null);
+    if (error) {
+      toast({ title: "Não foi possível excluir", description: error.message, variant: "destructive" });
+      return;
+    }
+    setHistory((prev: any[]) => prev.filter((p) => p.id !== h.id));
+    if (savedId === h.id) setSavedId(null);
+    toast({ title: "Plano excluído", description: "O plano foi removido do histórico." });
+  };
+
+
   // NutriPlan Elite — Aderência: carrega meals_saved do paciente vinculado
   const openAdherence = async () => {
     const patientId = (form as any)?.patientUserId;
