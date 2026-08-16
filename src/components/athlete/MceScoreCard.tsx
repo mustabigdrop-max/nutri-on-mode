@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Brain, ChevronRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import MceFullPanel from "./MceFullPanel";
 
 const TEAL = "#2DD4BF";
 const DIM = "#A0A0A0";
@@ -34,6 +35,7 @@ export default function MceScoreCard({
   const navigate = useNavigate();
   const [scores, setScores] = useState<Scores | null>(null);
   const [loading, setLoading] = useState(true);
+  const [openFull, setOpenFull] = useState(false);
 
   useEffect(() => {
     if (!userId) return;
@@ -62,9 +64,9 @@ export default function MceScoreCard({
   const geral = Math.round((m + c + e) / 3);
 
   return (
+    <>
     <div
-      onClick={() => !readOnly && navigate("/mce")}
-      className={`rounded-2xl p-4 ${readOnly ? "" : "cursor-pointer transition-transform active:scale-[0.99]"}`}
+      className="rounded-2xl p-4"
       style={{
         border: `1px solid ${TEAL}22`,
         borderLeft: `3px solid ${TEAL}`,
@@ -100,11 +102,26 @@ export default function MceScoreCard({
         </>
       )}
 
-      {!readOnly && (
-        <div className="flex items-center gap-1 mt-3 text-xs font-semibold" style={{ color: TEAL }}>
-          Abrir MCE <ChevronRight className="w-3 h-3" />
-        </div>
-      )}
+      <div className="flex items-center gap-2 mt-3">
+        <button
+          onClick={() => setOpenFull(true)}
+          className="text-xs font-semibold px-3 py-1.5 rounded-lg"
+          style={{ border: `1px solid ${TEAL}44`, color: TEAL }}
+        >
+          Ver tudo do MCE
+        </button>
+        {!readOnly && (
+          <button
+            onClick={() => navigate("/mce")}
+            className="flex items-center gap-1 text-xs font-semibold"
+            style={{ color: TEAL }}
+          >
+            Abrir módulo <ChevronRight className="w-3 h-3" />
+          </button>
+        )}
+      </div>
     </div>
+    {openFull && <MceFullPanel userId={userId} onClose={() => setOpenFull(false)} />}
+    </>
   );
 }
