@@ -2440,6 +2440,42 @@ export type Database = {
           },
         ]
       }
+      client_credentials: {
+        Row: {
+          client_id: string
+          created_at: string
+          email: string
+          id: string
+          password_changed: boolean
+          temp_password: string
+          updated_at: string
+          welcome_sent: boolean
+          welcome_sent_at: string | null
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          email: string
+          id?: string
+          password_changed?: boolean
+          temp_password: string
+          updated_at?: string
+          welcome_sent?: boolean
+          welcome_sent_at?: string | null
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          email?: string
+          id?: string
+          password_changed?: boolean
+          temp_password?: string
+          updated_at?: string
+          welcome_sent?: boolean
+          welcome_sent_at?: string | null
+        }
+        Relationships: []
+      }
       client_daily_activities: {
         Row: {
           activity_date: string
@@ -3048,6 +3084,7 @@ export type Database = {
           unique_code: string | null
           updated_at: string | null
           user_id: string
+          welcome_template: string | null
           white_label_app_name: string | null
           white_label_domain: string | null
           white_label_logo_url: string | null
@@ -3082,6 +3119,7 @@ export type Database = {
           unique_code?: string | null
           updated_at?: string | null
           user_id: string
+          welcome_template?: string | null
           white_label_app_name?: string | null
           white_label_domain?: string | null
           white_label_logo_url?: string | null
@@ -3116,6 +3154,7 @@ export type Database = {
           unique_code?: string | null
           updated_at?: string | null
           user_id?: string
+          welcome_template?: string | null
           white_label_app_name?: string | null
           white_label_domain?: string | null
           white_label_logo_url?: string | null
