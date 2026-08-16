@@ -20,8 +20,9 @@ import CoachTrainingOnPage from "@/pages/coach/CoachTrainingOnPage";
 import APEXPoseAnalysisPage from "@/pages/coach/APEXPoseAnalysisPage";
 import CoachLabExamsPage from "@/pages/coach/CoachLabExamsPage";
 import CoachReportsPage from "@/pages/coach/CoachReportsPage";
+import CoachAudioAcademyPage from "@/pages/coach/CoachAudioAcademyPage";
 
-type ModuleKey = "atletas" | "apex" | "vera" | "plano" | "training" | "pose" | "lab" | "relatorios" | "audio";
+type ModuleKey = "atletas" | "apex" | "vera" | "plano" | "training" | "pose" | "lab" | "relatorios" | "mce";
 
 // ── Design tokens (mesmo padrão do TrainingON, paleta Coach Amber) ──
 const BG = "#03030a";
@@ -45,7 +46,7 @@ const modules: { key: ModuleKey; label: string; icon: any; desc: string }[] = [
   { key: "pose", label: "Pose AI", icon: ScanLine, desc: "Análise postural MediaPipe" },
   { key: "lab", label: "Exames Lab", icon: FlaskConical, desc: "Score metabólico e alertas" },
   { key: "relatorios", label: "Relatórios", icon: FileBarChart, desc: "Relatório semanal" },
-  { key: "audio", label: "Áudios", icon: Headphones, desc: "Biblioteca MCE e progresso de escuta" },
+  { key: "mce", label: "MCE", icon: Headphones, desc: "Biblioteca de áudios MCE e progresso de escuta" },
 ];
 
 const CoachHub = () => {
@@ -69,8 +70,8 @@ const CoachHub = () => {
         return <CoachLabExamsPage />;
       case "relatorios":
         return <CoachReportsPage />;
-      case "audio":
-        return null;
+      case "mce":
+        return <CoachAudioAcademyPage embedded />;
       case "vera":
         return null;
     }
@@ -127,7 +128,7 @@ const CoachHub = () => {
           {modules.map((m) => (
             <button
               key={m.key}
-              onClick={() => m.key === "vera" ? navigate("/coach/vera") : m.key === "audio" ? navigate("/coach/audio") : setActive(m.key)}
+              onClick={() => m.key === "vera" ? navigate("/coach/vera") : setActive(m.key)}
               className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-[11px] font-semibold whitespace-nowrap transition-all"
               style={{
                 background: m.key === "vera" ? "rgba(167,139,250,0.1)" : (active === m.key ? AMBER_DIM : "transparent"),
