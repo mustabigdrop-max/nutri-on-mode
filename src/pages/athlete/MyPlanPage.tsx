@@ -38,7 +38,17 @@ const emojiFor = (name: unknown) => {
   return "•";
 };
 
+const GROUP_LABEL: Record<string, string> = {
+  protein: "PROTEÍNA",
+  carb: "CARBOIDRATO",
+  fat: "GORDURA",
+  vegetable: "VEGETAL / FIBRA",
+  dairy: "LÁCTEO",
+  fruit: "FRUTA",
+};
+
 /** Medida caseira é o principal; gramatura fica como referência secundária. */
+
 const FoodRow = ({ food, last }: { food: NormalizedFood; last: boolean }) => {
   const [showSubs, setShowSubs] = useState(false);
   return (
