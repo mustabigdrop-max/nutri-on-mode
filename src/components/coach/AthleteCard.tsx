@@ -166,6 +166,13 @@ const AthleteCard = ({ athlete: a, onSendMeal, onSendTraining, onUpdated }: Prop
         <button className="quick-action-sm" onClick={() => setEditOpen(true)}>
           <Pencil className="w-3.5 h-3.5" /> Editar dados
         </button>
+        <button className="quick-action-sm" onClick={() => setCredOpen(true)}>
+          <KeyRound className="w-3.5 h-3.5" /> Login
+        </button>
+        <button className="quick-action-sm" onClick={() => setWelcomeOpen(true)}>
+          <Smartphone className="w-3.5 h-3.5" />
+          {welcomeSentAt ? `Boas-vindas ✅ (${fmt(welcomeSentAt)})` : "Boas-vindas"}
+        </button>
         <button
           className="quick-action-sm"
           onClick={() => setDeleteOpen(true)}
