@@ -399,6 +399,11 @@ const AthleteDashboard = ({ overrideUserId, overrideName, viewMode = "normal" }:
           </Card>
         </div>
 
+        {/* MCE */}
+        <MceScoreCard userId={targetUserId} readOnly={preview} />
+
+
+
         {/* Hidratação + Suplementação */}
         <div className="grid gap-3 sm:grid-cols-2">
           <HydrationCard
