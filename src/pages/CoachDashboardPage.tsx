@@ -273,6 +273,9 @@ const CoachDashboardPage = () => {
           </div>
         </section>
 
+        {/* ACADEMIAS PARCEIRAS */}
+        <PartnerGymsPanel coachUserId={user?.id || ""} coachProfileId={profile.id} />
+
         {/* MÓDULOS AVANÇADOS */}
         <section className="space-y-3">
           <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Módulos avançados</p>
