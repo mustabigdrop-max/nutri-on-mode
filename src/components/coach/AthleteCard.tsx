@@ -208,6 +208,22 @@ const AthleteCard = ({ athlete: a, onSendMeal, onSendTraining, onUpdated }: Prop
         athleteId={a.userId}
         athleteName={a.name}
       />
+
+      <ClientCredentialsDialog
+        open={credOpen}
+        onOpenChange={setCredOpen}
+        athleteId={a.userId}
+        athleteName={a.name}
+        onSendWelcome={() => setWelcomeOpen(true)}
+      />
+
+      <WelcomeMessageDialog
+        open={welcomeOpen}
+        onOpenChange={setWelcomeOpen}
+        athleteId={a.userId}
+        athleteName={a.name}
+        onSent={() => setWelcomeSentAt(new Date().toISOString())}
+      />
     </div>
   );
 };
