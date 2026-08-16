@@ -22,6 +22,7 @@ import { generateAgenda } from "@/lib/coachAgenda";
 import AthleteCard from "@/components/coach/AthleteCard";
 import SendPlanDialog, { type SendPlanType } from "@/components/coach/SendPlanDialog";
 import ProtocolSuggestionsPanel from "@/components/coach/ProtocolSuggestionsPanel";
+import PartnerGymsPanel from "@/components/coach/PartnerGymsPanel";
 
 const ADVANCED_MODULES = [
   { label: "nutriON GYM", icon: Building2, route: "/mce/business", color: "#E8A020" },
@@ -271,6 +272,9 @@ const CoachDashboardPage = () => {
             )}
           </div>
         </section>
+
+        {/* ACADEMIAS PARCEIRAS */}
+        <PartnerGymsPanel coachUserId={user?.id || ""} coachProfileId={profile.id} />
 
         {/* MÓDULOS AVANÇADOS */}
         <section className="space-y-3">
