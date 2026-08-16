@@ -132,6 +132,46 @@ export default function CoachAudioAcademyPage({ embedded = false }: { embedded?:
   }, [episodes]);
 
   const publishedCount = episodes.filter((e) => e.audio_url).length;
+  const pendingEpisodes = useMemo(() => episodes.filter((e) => !e.audio_url), [episodes]);
+
+  // Gera roteiro + narração na mesma voz do Briefing do dia
+  const generateVoice = async (ep: Episode, silent = false): Promise<boolean> => {
+    setGeneratingId(ep.id);
+    try {
+      const { data, error } = await supabase.functions.invoke("mce-generate-episode-audio", {
+        body: { episodeId: ep.id },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      setEpisodes((list) =>
+        list.map((e) =>
+          e.id === ep.id ? { ...e, audio_url: data.path, duration_seconds: data.duration_seconds } : e,
+        ),
+      );
+      if (!silent) toast.success(`Narração publicada · EP ${ep.episode_number ?? ""}`);
+      return true;
+    } catch (e: any) {
+      if (!silent) toast.error(e?.message || "Falha ao gerar a narração.");
+      return false;
+    } finally {
+      setGeneratingId(null);
+    }
+  };
+
+  const generateAllPending = async (list: Episode[]) => {
+    if (list.length === 0) return toast.message("Todos os episódios já têm áudio.");
+    setBatch({ done: 0, total: list.length });
+    let ok = 0;
+    for (let i = 0; i < list.length; i++) {
+      const success = await generateVoice(list[i], true);
+      if (success) ok++;
+      setBatch({ done: i + 1, total: list.length });
+    }
+    setBatch(null);
+    if (ok === list.length) toast.success(`${ok} episódios narrados e publicados.`);
+    else toast.warning(`${ok}/${list.length} narrados. Tente novamente os restantes.`);
+  };
+
 
   const handleUpload = async (ep: Episode, file: File) => {
     if (!file.type.startsWith("audio/")) {
