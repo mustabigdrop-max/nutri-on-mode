@@ -30,7 +30,7 @@ const BottomNav = () => {
   return (
     <>
       <div className="fixed bottom-0 left-0 right-0 backdrop-blur-md z-50" style={{ background: "rgba(6,6,15,0.97)", borderTop: "1px solid rgba(184,146,42,0.12)" }}>
-        <div className="max-w-lg mx-auto flex items-center justify-around py-2 px-2">
+        <div className="max-w-lg mx-auto flex items-center justify-around py-2 px-1">
           {NAV_ITEMS.map((item) => {
             const isActive = currentPath === item.path;
 
@@ -39,7 +39,7 @@ const BottomNav = () => {
                 <button
                   key={item.id}
                   onClick={() => navigate(item.path)}
-                  className="flex flex-col items-center gap-0.5 py-1 min-w-[48px]"
+                  className="flex flex-col items-center gap-0.5 py-1 min-w-[40px]"
                 >
                   <motion.div
                     whileTap={{ scale: 0.9 }}
