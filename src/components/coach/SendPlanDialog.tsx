@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { Loader2, Send, CheckCircle2, Sparkles } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import type { CoachAthlete } from "@/hooks/useCoachAthletes";
@@ -35,14 +36,19 @@ const SendPlanDialog = ({ open, onOpenChange, athlete, type, coachProfileId, coa
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
   const [sentInfo, setSentInfo] = useState<null | { label: string }>(null);
+  const [search, setSearch] = useState("");
 
   const isMeal = type === "meal_plan";
+  const filtered = search.trim()
+    ? options.filter((o) => o.label.toLowerCase().includes(search.trim().toLowerCase()))
+    : options;
 
   useEffect(() => {
     if (!open || !athlete) return;
     setSentInfo(null);
     setSelected("new");
     setMessage("");
+    setSearch("");
     setLoading(true);
     (async () => {
       if (isMeal) {
@@ -51,7 +57,7 @@ const SendPlanDialog = ({ open, onOpenChange, athlete, type, coachProfileId, coa
           .select("id, patient_name, objetivo, plano, created_at")
           .eq("coach_id", coachProfileId)
           .order("created_at", { ascending: false })
-          .limit(10);
+          .limit(200);
         setOptions(
           (data || []).map((p: any) => ({
             id: p.id,
@@ -66,7 +72,7 @@ const SendPlanDialog = ({ open, onOpenChange, athlete, type, coachProfileId, coa
           .select("id, client_name, phase, weeks, protocol_text, periodizacao_text, created_at")
           .eq("user_id", coachUserId)
           .order("created_at", { ascending: false })
-          .limit(10);
+          .limit(200);
         setOptions(
           (data || []).map((p: any) => ({
             id: p.id,
@@ -191,25 +197,45 @@ const SendPlanDialog = ({ open, onOpenChange, athlete, type, coachProfileId, coa
               ) : options.length === 0 ? (
                 <p className="text-xs text-muted-foreground">Nenhum protocolo no histórico ainda.</p>
               ) : (
-                options.map((o, i) => (
-                  <button
-                    key={o.id}
-                    onClick={() => setSelected(o.id)}
-                    className="w-full text-left rounded-lg p-3 border transition-colors"
-                    style={{
-                      borderColor: selected === o.id ? "rgba(0,212,255,0.4)" : "rgba(255,255,255,0.08)",
-                      background: selected === o.id ? "rgba(0,212,255,0.08)" : "transparent",
-                    }}
-                  >
-                    <p className="text-sm font-medium truncate">
-                      {i === 0 ? "Último gerado · " : ""}
-                      {o.label}
-                    </p>
-                    <p className="text-[11px] text-muted-foreground font-mono">
-                      {new Date(o.createdAt).toLocaleDateString("pt-BR")}
-                    </p>
-                  </button>
-                ))
+                <>
+                  <div className="flex items-center justify-between gap-2">
+                    <Input
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                      placeholder="Buscar no histórico..."
+                      className="h-8 text-xs"
+                    />
+                    <span className="text-[11px] text-muted-foreground whitespace-nowrap">
+                      {filtered.length}/{options.length}
+                    </span>
+                  </div>
+
+                  <div className="max-h-[280px] overflow-y-auto space-y-2 pr-1">
+                    {filtered.length === 0 ? (
+                      <p className="text-xs text-muted-foreground">Nenhum resultado para "{search}".</p>
+                    ) : (
+                      filtered.map((o) => (
+                        <button
+                          key={o.id}
+                          onClick={() => setSelected(o.id)}
+                          className="w-full text-left rounded-lg p-3 border transition-colors"
+                          style={{
+                            borderColor: selected === o.id ? "rgba(0,212,255,0.4)" : "rgba(255,255,255,0.08)",
+                            background: selected === o.id ? "rgba(0,212,255,0.08)" : "transparent",
+                          }}
+                        >
+                          <p className="text-sm font-medium truncate">
+                            {o.id === options[0]?.id ? "Último gerado · " : ""}
+                            {o.label}
+                          </p>
+                          <p className="text-[11px] text-muted-foreground font-mono">
+                            {new Date(o.createdAt).toLocaleDateString("pt-BR")}
+                          </p>
+                        </button>
+                      ))
+                    )}
+                  </div>
+                </>
               )}
             </div>
 
