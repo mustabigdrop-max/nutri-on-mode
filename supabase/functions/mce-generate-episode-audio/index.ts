@@ -22,6 +22,10 @@ const SERIES_TONE: Record<string, string> = {
   execucao: "disciplina prática, rotina e consistência de execução",
   ciencia: "explicação científica aplicada, didática e precisa",
   ritual: "condução guiada, respiração e presença (ritual de despertar ou pré-sono)",
+  carreira: "aplicação do MCE ao trabalho: energia, foco, produtividade e performance profissional",
+  relacionamentos: "vínculos, ambiente social, comunicação e limites que protegem o processo",
+  parentalidade: "ser exemplo em casa: rotina familiar, alimentação dos filhos e legado de hábitos",
+  financas: "disciplina financeira com a mesma lógica comportamental do MCE, custo x prioridade",
 };
 
 function json(body: unknown, status = 200) {
