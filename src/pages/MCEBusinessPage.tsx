@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { QRCodeSVG } from "qrcode.react";
 import { ArrowLeft, ChevronDown, Building2, Trophy, Users, QrCode, Target, TrendingUp, Megaphone, Calendar, CheckCircle2, BarChart3, Smartphone, Dumbbell, Camera, Wallet, MapPin } from "lucide-react";
 
 const MONO = "'Space Mono', ui-monospace, monospace";
