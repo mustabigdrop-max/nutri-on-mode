@@ -2,18 +2,29 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
-  UtensilsCrossed, Dumbbell, Droplets, Pill, TrendingUp, MessageSquare,
+  UtensilsCrossed, Dumbbell, Pill, TrendingUp, MessageSquare,
   ChevronRight, Bell, User, Flame, Camera, Scale, Loader2,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { useAthleteView } from "@/hooks/useAthleteView";
 import { useAthletePlans, mealKcal } from "@/hooks/useAthletePlans";
 import { useWaterLogs } from "@/hooks/useWaterLogs";
 import { useWeightLogs } from "@/hooks/useWeightLogs";
+import { useDailyActivities } from "@/hooks/useDailyActivities";
+import { useDayContext } from "@/hooks/useDayContext";
 import AthleteBottomNav from "@/components/athlete/AthleteBottomNav";
+import NutrySyncPanel from "@/components/athlete/NutrySyncPanel";
+import HydrationCard from "@/components/athlete/HydrationCard";
+import DayRoutineTimeline, { type RoutineItem } from "@/components/athlete/DayRoutineTimeline";
+import AddActivitySheet from "@/components/athlete/AddActivitySheet";
 import PraxisFAB from "@/components/praxis/PraxisFAB";
+import {
+  CLIMATE_OPTIONS, calculateDailyHydration, detectPhase, activityMeta,
+} from "@/lib/nutrySync";
 import { parseProtocolToDays } from "@/lib/parseProtocolMarkdown";
 import { parseProtocolText } from "@/lib/parseProtocolText";
+
 
 const BG = "#020205";
 const CYAN = "#00D4FF";
@@ -64,6 +75,29 @@ const AthleteDashboard = ({ overrideUserId, overrideName, viewMode = "normal" }:
   const { todayLog, addWater } = useWaterLogs(overrideUserId);
   const { logs: weightLogs } = useWeightLogs(undefined, -0.5, overrideUserId);
   const [suppChecked, setSuppChecked] = useState<Record<number, boolean>>({});
+  const targetUserId = overrideUserId || user?.id;
+  const { activities, addActivity, removeActivity, totals: activityTotals } =
+    useDailyActivities(overrideUserId);
+  const { completed, toggleMeal, climate, setClimate } = useDayContext(targetUserId);
+  const [showActivitySheet, setShowActivitySheet] = useState(false);
+  const [weightKg, setWeightKg] = useState(70);
+
+  useEffect(() => {
+    if (!targetUserId) return;
+    let alive = true;
+    supabase
+      .from("profiles")
+      .select("weight_kg")
+      .eq("user_id", targetUserId)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (alive && data?.weight_kg) setWeightKg(Number(data.weight_kg));
+      });
+    return () => {
+      alive = false;
+    };
+  }, [targetUserId]);
+
 
   const firstName = (overrideName || fullName || user?.user_metadata?.full_name || "Atleta").split(" ")[0];
 
@@ -92,7 +126,107 @@ const AthleteDashboard = ({ overrideUserId, overrideName, viewMode = "normal" }:
   }, [training]);
 
   const waterMl = todayLog?.ml_total ?? 0;
-  const waterTarget = 3400;
+
+  /* ---------------------------------------------------------- NutrySync */
+  const phase = useMemo(
+    () => detectPhase(mealPlan?.resumo?.objetivo || mealPlan?.objetivo),
+    [mealPlan],
+  );
+
+  const trainingMinutes = useMemo(() => {
+    const m = String(todayTraining?.estimated_duration || "").match(/(\d{2,3})/);
+    return todayTraining ? (m ? parseInt(m[1], 10) : 60) : 0;
+  }, [todayTraining]);
+
+  const trainingKcal = useMemo(
+    () => Math.round(6.5 * trainingMinutes * ((weightKg || 70) / 70)),
+    [trainingMinutes, weightKg],
+  );
+
+  const baseKcal = Math.round(mealPlan?.resumo?.calorias_totais || 0);
+  const adjustKcal = trainingKcal + activityTotals.kcal;
+
+  const routineItems = useMemo<RoutineItem[]>(() => {
+    const items: RoutineItem[] = (mealPlan?.refeicoes || []).map((r, i) => ({
+      key: `meal-${i}`,
+      time: r.horario || "",
+      emoji: "🍽️",
+      label: r.refeicao || `Refeição ${i + 1}`,
+      detail: `${mealKcal(r)} kcal`,
+      checkable: true,
+    }));
+    if (todayTraining) {
+      items.push({
+        key: "training",
+        time: "",
+        emoji: "🏋️",
+        label: todayTraining.session_title || "Treino de hoje",
+        detail: todayTraining.estimated_duration || undefined,
+        checkable: true,
+      });
+    }
+    activities.forEach((a) => {
+      const meta = activityMeta(a.activity_type);
+      items.push({
+        key: `act-${a.id}`,
+        time: new Date(a.created_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
+        emoji: meta.emoji,
+        label: a.activity_label || meta.label,
+        detail: `${a.duration_min} min · +${a.kcal_adjustment} kcal`,
+        checkable: false,
+      });
+    });
+    return items;
+  }, [mealPlan, todayTraining, activities]);
+
+  const consumedKcal = useMemo(
+    () =>
+      (mealPlan?.refeicoes || []).reduce(
+        (sum, r, i) => (completed[`meal-${i}`] ? sum + mealKcal(r) : sum),
+        0,
+      ),
+    [mealPlan, completed],
+  );
+
+  const consumedMacros = useMemo(
+    () =>
+      (mealPlan?.refeicoes || []).reduce(
+        (acc, r, i) =>
+          completed[`meal-${i}`]
+            ? {
+                protein: acc.protein + (r.macros?.proteina || 0),
+                carbs: acc.carbs + (r.macros?.carboidrato || 0),
+                fat: acc.fat + (r.macros?.gordura || 0),
+              }
+            : acc,
+        { protein: 0, carbs: 0, fat: 0 },
+      ),
+    [mealPlan, completed],
+  );
+
+  const targetMacros = useMemo(
+    () => ({
+      protein: Math.round((mealPlan?.resumo?.proteina_total || 0) + activityTotals.protein),
+      carbs: Math.round((mealPlan?.resumo?.carboidrato_total || 0) + activityTotals.carb),
+      fat: Math.round((mealPlan?.resumo?.gordura_total || 0) + activityTotals.fat),
+    }),
+    [mealPlan, activityTotals],
+  );
+
+  const climateOption = CLIMATE_OPTIONS.find((c) => c.band === climate);
+
+  const hydration = useMemo(
+    () =>
+      calculateDailyHydration({
+        weightKg,
+        climate,
+        trainingMinutes,
+        activityMl: activityTotals.hydrationMl,
+        phase: phase.phase,
+      }),
+    [weightKg, climate, trainingMinutes, activityTotals.hydrationMl, phase],
+  );
+
 
   const weightInfo = useMemo(() => {
     if (!weightLogs.length) return null;
@@ -157,7 +291,32 @@ const AthleteDashboard = ({ overrideUserId, overrideName, viewMode = "normal" }:
       </header>
 
       <main className="px-4 max-w-3xl mx-auto space-y-3">
+        <NutrySyncPanel
+          phase={phase}
+          baseKcal={baseKcal}
+          adjustKcal={adjustKcal}
+          consumedKcal={consumedKcal}
+          targetMacros={targetMacros}
+          consumedMacros={consumedMacros}
+          trainingLabel={todayTraining?.session_title || null}
+          trainingKcal={trainingKcal}
+          activities={activities}
+          climateLabel={climateOption?.label}
+          climateMl={climateOption?.ml || 0}
+          onAddActivity={() => setShowActivitySheet(true)}
+          onRemoveActivity={removeActivity}
+          readOnly={preview}
+        />
+
+        <DayRoutineTimeline
+          items={routineItems}
+          completed={completed}
+          onToggle={toggleMeal}
+          readOnly={preview}
+        />
+
         {/* Plano + Treino */}
+
         <div className="grid gap-3 sm:grid-cols-2">
           <Card accent={CYAN} onClick={() => navigate(`/my-plan${overrideUserId ? `?athlete=${overrideUserId}` : ""}`)}>
             <div className="flex items-center gap-2 mb-3">
@@ -242,38 +401,15 @@ const AthleteDashboard = ({ overrideUserId, overrideName, viewMode = "normal" }:
 
         {/* Hidratação + Suplementação */}
         <div className="grid gap-3 sm:grid-cols-2">
-          <Card accent={CYAN}>
-            <div className="flex items-center gap-2 mb-3">
-              <Droplets className="w-4 h-4" style={{ color: CYAN }} />
-              <span className="text-xs font-bold tracking-wider uppercase" style={{ color: CYAN }}>
-                Hidratação
-              </span>
-            </div>
-            <div className="h-2 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.08)" }}>
-              <motion.div
-                className="h-full rounded-full"
-                initial={{ width: 0 }}
-                animate={{ width: `${Math.min(100, (waterMl / waterTarget) * 100)}%` }}
-                style={{ background: CYAN }}
-              />
-            </div>
-            <p className="text-xs mt-2 font-mono" style={{ color: DIM }}>
-              {(waterMl / 1000).toFixed(1)} / {(waterTarget / 1000).toFixed(1)} L
-            </p>
-            <div className="flex gap-2 mt-3">
-              {[250, 500].map((ml) => (
-                <button
-                  key={ml}
-                  disabled={preview}
-                  onClick={() => !preview && addWater(ml)}
-                  className="text-xs font-semibold px-3 py-1.5 rounded-lg disabled:opacity-40"
-                  style={{ background: `${CYAN}14`, color: CYAN, border: `1px solid ${CYAN}33` }}
-                >
-                  + {ml}ml
-                </button>
-              ))}
-            </div>
-          </Card>
+          <HydrationCard
+            consumedMl={waterMl}
+            target={hydration}
+            climate={climate}
+            onClimateChange={setClimate}
+            onAdd={(ml) => !preview && addWater(ml)}
+            readOnly={preview}
+          />
+
 
           <Card accent={GOLD}>
             <div className="flex items-center gap-2 mb-3">
@@ -381,8 +517,18 @@ const AthleteDashboard = ({ overrideUserId, overrideName, viewMode = "normal" }:
         )}
       </main>
 
+      <AddActivitySheet
+        open={showActivitySheet && !preview}
+        weightKg={weightKg}
+        onClose={() => setShowActivitySheet(false)}
+        onAdd={async (input) => {
+          await addActivity({ ...input, weightKg, climate });
+          setShowActivitySheet(false);
+        }}
+      />
       <PraxisFAB disabled={preview} />
       {!preview && <AthleteBottomNav />}
+
 
     </div>
   );

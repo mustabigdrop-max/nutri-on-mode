@@ -2396,6 +2396,60 @@ export type Database = {
         }
         Relationships: []
       }
+      client_daily_activities: {
+        Row: {
+          activity_date: string
+          activity_label: string | null
+          activity_type: string
+          carb_adjustment: number
+          climate_band: string | null
+          created_at: string
+          duration_min: number
+          fat_adjustment: number
+          hydration_adjustment_ml: number
+          id: string
+          intensity: string
+          kcal_adjustment: number
+          protein_adjustment: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          activity_date?: string
+          activity_label?: string | null
+          activity_type: string
+          carb_adjustment?: number
+          climate_band?: string | null
+          created_at?: string
+          duration_min?: number
+          fat_adjustment?: number
+          hydration_adjustment_ml?: number
+          id?: string
+          intensity?: string
+          kcal_adjustment?: number
+          protein_adjustment?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          activity_date?: string
+          activity_label?: string | null
+          activity_type?: string
+          carb_adjustment?: number
+          climate_band?: string | null
+          created_at?: string
+          duration_min?: number
+          fat_adjustment?: number
+          hydration_adjustment_ml?: number
+          id?: string
+          intensity?: string
+          kcal_adjustment?: number
+          protein_adjustment?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       coach_alerts: {
         Row: {
           alert_type: string
