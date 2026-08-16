@@ -278,13 +278,29 @@ function make(
   observacao: string,
 ): NormalizedFood {
   const grupo = livre ? "free" : macroGroupOf(alimento);
+  const gramasNum = livre ? null : parseGrams(gramas) ?? parseGrams(medida);
+
+  // Gramatura crua sem medida caseira → converte para medida caseira inteira
+  // (ninguém pesa 6 g de castanha: são 1 ou 2 unidades).
+  let medidaFinal = medida;
+  let gramasFinal = gramas;
+  const soGramas = /^[≈~\s]*\d+([.,]\d+)?\s*(g|gr|gramas|ml|kg|l)?\s*$/i.test(medida.trim());
+  if (!livre && gramasNum && soGramas) {
+    const desc = describePortion(alimento, gramasNum);
+    if (desc) {
+      medidaFinal = desc.measure;
+      gramasFinal = `${desc.grams} g`;
+    }
+  }
+
   return {
     alimento,
-    medida: livre ? "À vontade" : medida,
-    gramas: livre ? null : gramas,
+    medida: livre ? "À vontade" : medidaFinal,
+    gramas: livre ? null : gramasFinal,
     livre,
     grupo,
     observacao,
-    substituicoes: buildSubs(grupo, alimento, item?.substituicoes),
+    substituicoes: buildSubs(grupo, alimento, gramasNum, item?.substituicoes),
   };
 }
+
