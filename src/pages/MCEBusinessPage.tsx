@@ -298,25 +298,25 @@ export default function MCEBusinessPage() {
 
         {/* QR Codes */}
         <Section title="QR Codes nos Equipamentos" icon={QrCode} defaultOpen>
-          <p style={{ marginBottom: 14 }}>Escaneie para entrar no app nutriON ou no Desafio 90 Dias da academia. Os códigos são otimizados para leitura em telas e impressos.</p>
+          <p style={{ marginBottom: 14 }}>Escaneie para entrar direto no Desafio 90 Dias da academia. Os códigos são otimizados para leitura em telas e impressos.</p>
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 14, marginTop: 6 }}>
             {[
               {
+                icon: Trophy,
+                title: "Desafio da Academia",
+                loc: "Cartaz / recepção / The Wall",
+                url: "https://nutrion.app.br/desafio-21",
+                desc: "Entre no Desafio 90 Dias",
+                color: AMBER,
+              },
+              {
                 icon: Smartphone,
                 title: "App nutriON",
-                loc: "Cartaz / recepção",
+                loc: "Recepção / cartaz",
                 url: "https://nutrion.app.br",
                 desc: "Acesse o app completo",
                 color: GREEN,
-              },
-              {
-                icon: Trophy,
-                title: "Desafio 90 Dias",
-                loc: "The Wall / recepção",
-                url: "https://nutrion.app.br/desafio-21",
-                desc: "Entre no desafio da academia",
-                color: AMBER,
               },
               {
                 icon: Dumbbell,
