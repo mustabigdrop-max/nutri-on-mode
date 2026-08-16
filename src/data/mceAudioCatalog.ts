@@ -1,4 +1,13 @@
-export type AudioSeries = "mindset" | "comportamento" | "execucao" | "ciencia" | "ritual";
+export type AudioSeries =
+  | "mindset"
+  | "comportamento"
+  | "execucao"
+  | "ciencia"
+  | "ritual"
+  | "carreira"
+  | "relacionamentos"
+  | "parentalidade"
+  | "financas";
 
 export type CatalogEpisode = {
   series: AudioSeries;
