@@ -545,6 +545,7 @@ export default function MCEIntelligencePage() {
     { key: "perfis", label: "PERFIS" },
     { key: "progresso", label: "PROGRESSO" },
     { key: "audio", label: "ÁUDIO", badge: "#E8A020" },
+    { key: "business", label: "BUSINESS", badge: "#00D4FF" },
   ];
 
   const sectionTitle: React.CSSProperties = {
@@ -677,7 +678,14 @@ export default function MCEIntelligencePage() {
 
         {/* Tabs */}
         <div style={{ marginTop: 14 }}>
-          <TabBar tabs={tabs} active={tab} onChange={setTab} />
+          <TabBar
+            tabs={tabs}
+            active={tab}
+            onChange={(k) => {
+              if (k === "business") navigate("/mce/business");
+              else setTab(k);
+            }}
+          />
         </div>
 
         <div style={{ marginTop: 20 }}>
