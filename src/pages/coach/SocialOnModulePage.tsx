@@ -749,6 +749,30 @@ const SocialOnModulePage = () => {
                 </CardContent>
               </Card>
             ))}
+
+            <Section title="Métricas da esteira">
+              {[
+                { key: "ticket_medio", label: "Ticket médio (R$)", ph: "0,00" },
+                { key: "ltv", label: "LTV — lifetime value (R$)", ph: "0,00" },
+                { key: "conv_ig_dm", label: "Conversão Instagram → DM (%)", ph: "0" },
+                { key: "conv_dm_venda", label: "Conversão DM → Venda (%)", ph: "0" },
+              ].map((m) => (
+                <div key={m.key} className="flex items-center justify-between gap-3">
+                  <span className="text-sm text-muted-foreground">{m.label}</span>
+                  <Input
+                    className="w-32 h-8 text-sm font-mono text-right"
+                    inputMode="decimal"
+                    placeholder={m.ph}
+                    value={ladderMetrics[m.key] ?? ""}
+                    onChange={(e) => setLadderMetrics({ ...ladderMetrics, [m.key]: e.target.value })}
+                    onBlur={() => saveLadderMetrics(ladderMetrics)}
+                  />
+                </div>
+              ))}
+              <Button size="sm" variant="outline" className="gap-2" onClick={() => saveLadderMetrics(ladderMetrics)}>
+                <Check className="w-3 h-3" /> Salvar métricas
+              </Button>
+            </Section>
           </TabsContent>
         </Tabs>
       </main>
