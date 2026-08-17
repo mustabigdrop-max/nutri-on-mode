@@ -152,9 +152,21 @@ const SocialProofPanel = ({
                 <p>Treinos: {stats.workouts} concluídos</p>
                 <p>Streak: {stats.streak} dias 🔥</p>
               </div>
-              <div>
-                <p className="text-xs text-white/50">@{(handle || "diogo.mell0").replace("@", "")}</p>
-                <p className="text-xs" style={{ color: ACCENT }}>nutrion.app.br</p>
+              <div className="flex items-center gap-2">
+                {coachAvatar && (
+                  <img
+                    src={coachAvatar}
+                    alt={`Foto de perfil de @${(handle || "").replace("@", "")}`}
+                    crossOrigin="anonymous"
+                    className="w-8 h-8 rounded-full object-cover"
+                    style={{ border: `1px solid ${ACCENT}77` }}
+                  />
+                )}
+                <div>
+                  {coachName && <p className="text-xs text-white/80">{coachName}</p>}
+                  <p className="text-xs text-white/50">@{(handle || "diogo.mell0").replace("@", "")}</p>
+                  <p className="text-xs" style={{ color: ACCENT }}>nutrion.app.br</p>
+                </div>
               </div>
             </div>
           </div>
