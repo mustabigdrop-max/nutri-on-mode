@@ -372,6 +372,7 @@ export default function SocialOnPage() {
             <TabsTrigger value="hooks"><Sparkles className="w-3.5 h-3.5 mr-1" /> Hooks</TabsTrigger>
             <TabsTrigger value="hashtags"><Hash className="w-3.5 h-3.5 mr-1" /> Hashtags</TabsTrigger>
             <TabsTrigger value="stories"><LayoutList className="w-3.5 h-3.5 mr-1" /> Stories</TabsTrigger>
+            <TabsTrigger value="publicar"><Instagram className="w-3.5 h-3.5 mr-1" /> Publicar</TabsTrigger>
           </TabsList>
 
           {/* AUDITORIA */}
