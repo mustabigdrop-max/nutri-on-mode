@@ -21,6 +21,8 @@ import ViralAnalyzerPanel from "@/components/social/ViralAnalyzerPanel";
 import SocialProofPanel from "@/components/social/SocialProofPanel";
 import IdeasNowPanel from "@/components/social/IdeasNowPanel";
 import PlaybookPanel from "@/components/social/PlaybookPanel";
+import InstagramAccountPanel from "@/components/social/InstagramAccountPanel";
+import { useInstagramAccount } from "@/hooks/useInstagramAccount";
 import {
   ACADEMY_TRACKS, ACTION_PLAN, BIO_CRITERIA, CONTENT_PRODUCTS, DIFFERENTIALS, FORMATS,
   FUNNELS, IDEAL_MIX, NICHES, OBJECTIVES, PRODUCTS, PRODUCT_LADDER, VISUAL_PALETTE,
