@@ -55,6 +55,7 @@ import { buildSnapshot } from "@/lib/substitutionValidator";
 import PlanValidationAlert from "@/components/coach/PlanValidationAlert";
 import { calculateNutritionItem, validateNutritionPlan } from "@/lib/planNutritionValidation";
 import { autoBalancePlan, type BalanceReport } from "@/lib/planAutoBalance";
+import BodyProfileSelector, { BODY_PROFILES, type BodyProfileKey } from "@/components/coach/BodyProfileSelector";
 
 
 // ─── Design tokens — Jarvis Nutrition (emerald primary + gold identity) ───────
@@ -1256,6 +1257,8 @@ export default function PlanoAlimentarIA() {
     circAbdomen: "" as string,
     circQuadril: "" as string,
     perfilVisual: "" as string,
+    perfilCorporal: "" as BodyProfileKey | "",
+    perfilCorporalOrigem: "manual" as "manual" | "apex_visual",
     // Cardio
     fazCardio: false,
     cardioModalidades: [] as string[],
@@ -5771,6 +5774,33 @@ export default function PlanoAlimentarIA() {
             </div>
           </div>
         </Section>
+
+        {/* Perfil corporal (APEX Visual + manual) */}
+        <Section title="Perfil corporal" icon={<UserIcon size={12} strokeWidth={2} color={T.emerald} />}>
+          <BodyProfileSelector
+            patients={patients}
+            clientData={{ peso: form.peso, altura: form.altura, idade: form.idade, sexo: form.sexo }}
+            value={form.perfilCorporal}
+            onChange={(perfil, extras) => {
+              set("perfilCorporal", perfil);
+              set("perfilCorporalOrigem", extras?.bf != null ? "apex_visual" : "manual");
+              if (extras?.bf != null) {
+                set("bfAtual", String(Math.round(extras.bf)));
+                set("metodoBF", "visual");
+              }
+            }}
+          />
+          {form.perfilCorporal && (
+            <div style={{ marginTop: 10, fontSize: 11, color: T.muted }}>
+              Perfil ativo: <b style={{ color: T.emerald }}>
+                {BODY_PROFILES.find(p => p.key === form.perfilCorporal)?.label}
+              </b>
+              {form.perfilCorporalOrigem === "apex_visual" ? " · sugerido pelo APEX Visual" : " · seleção manual"}
+            </div>
+          )}
+        </Section>
+
+
 
         {/* Objetivo e perfil */}
         <Section title="Objetivo e perfil" icon={<Target size={12} strokeWidth={2} color={T.emerald} />}>
