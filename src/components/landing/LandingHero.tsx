@@ -16,6 +16,12 @@ import { useEffect, useRef, useState } from "react";
 const GOLD = "#B8922A";
 const CYAN = "#00D4FF";
 const TEXT = "#F5F0E8";
+// Roxo já usado pelos módulos DR. VERTEX / PCA COMPORTAMENTAL em LandingFeatures —
+// reaproveitado aqui pra dar um terceiro acento sem inventar uma cor órfã.
+const PURPLE = "#7B2FBE";
+const SRI_SCORE = 94;
+const SRI_R = 30;
+const SRI_CIRC = 2 * Math.PI * SRI_R;
 
 const STREAM_LABELS = ["TDEE", "VO2", "RPE", "BPM", "1RM", "PACE", "HRV", "ATP"];
 
@@ -248,6 +254,7 @@ const LandingHero = () => {
 
   const tdee = useCount(3240, phase >= 6);
   const oneRm = useCount(120, phase >= 6);
+  const sri = useCount(SRI_SCORE, phase >= 7, 1400);
 
   return (
     <section
@@ -462,13 +469,41 @@ const LandingHero = () => {
           {/* Center logo */}
           <div className="absolute inset-0 flex flex-col items-center justify-center px-4">
             <div className="relative text-center">
-              {/* Nuclear point */}
+              {/* SRI reveal: gauge que enche depois que os nós aparecem — o "algo novo" */}
               <div
-                className="absolute left-1/2 -translate-x-1/2"
-                style={{ top: -28 }}
+                className="absolute left-1/2 flex flex-col items-center"
+                style={{
+                  top: -122,
+                  transform: phase >= 7 ? "translate(-50%, 0) scale(1)" : "translate(-50%, 6px) scale(0.85)",
+                  opacity: phase >= 7 ? 1 : 0,
+                  transition: "opacity .7s ease, transform .7s cubic-bezier(.2,.7,.2,1)",
+                }}
               >
-                <div className="relative" style={{ width: 12, height: 12 }}>
-                  <div className="absolute inset-0 rounded-full" style={{ background: "#fff", boxShadow: "0 0 6px #fff, 0 0 18px #fff, 0 0 40px #ffffffcc" }} />
+                <div className="relative" style={{ width: 74, height: 74 }}>
+                  <svg width={74} height={74} viewBox="0 0 74 74">
+                    <circle cx="37" cy="37" r={SRI_R} fill="none" stroke={`${PURPLE}30`} strokeWidth="4" />
+                    <circle
+                      cx="37" cy="37" r={SRI_R} fill="none"
+                      stroke={PURPLE} strokeWidth="4" strokeLinecap="round"
+                      strokeDasharray={SRI_CIRC}
+                      strokeDashoffset={phase >= 7 ? SRI_CIRC * (1 - SRI_SCORE / 100) : SRI_CIRC}
+                      style={{
+                        transition: "stroke-dashoffset 1.4s cubic-bezier(.2,.7,.2,1)",
+                        transform: "rotate(-90deg)",
+                        transformOrigin: "37px 37px",
+                        animation: phase >= 7 ? "lhRingGlow 2.6s ease-in-out infinite 1.4s" : undefined,
+                      }}
+                    />
+                  </svg>
+                  <div
+                    className="absolute inset-0 flex items-center justify-center"
+                    style={{ fontFamily: "'Rajdhani', sans-serif", fontWeight: 700, fontSize: 20, color: TEXT }}
+                  >
+                    {sri}
+                  </div>
+                </div>
+                <div style={{ marginTop: 6, fontSize: 7, letterSpacing: "0.3em", color: `${PURPLE}dd`, textTransform: "uppercase", whiteSpace: "nowrap" }}>
+                  SRI · Prontidão
                 </div>
               </div>
 
@@ -620,6 +655,7 @@ const LandingHero = () => {
         @keyframes lhSpin { from { transform: rotate(0) } to { transform: rotate(360deg) } }
         @keyframes lhRadialPulse { 0%,100% { stroke-opacity: 0.1 } 50% { stroke-opacity: 0.55 } }
         @keyframes lhTicker { from { transform: translateX(0) } to { transform: translateX(-50%) } }
+        @keyframes lhRingGlow { 0%,100% { filter: drop-shadow(0 0 2px ${PURPLE}80) } 50% { filter: drop-shadow(0 0 9px ${PURPLE}) } }
         @media (prefers-reduced-motion: reduce) {
           section[style*="Space Mono"] *,
           section[style*="Space Mono"] *::before,
