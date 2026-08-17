@@ -300,12 +300,22 @@ export default function MCEBusinessPage() {
         <Section title="QR Codes nos Equipamentos" icon={QrCode} defaultOpen>
           <p style={{ marginBottom: 14 }}>Escaneie para entrar direto no Desafio 90 Dias da academia. Os códigos são otimizados para leitura em telas e impressos.</p>
 
-          <a
-            href="/gym/challenges"
-            style={{ display: "inline-block", marginBottom: 14, padding: "8px 14px", borderRadius: 10, border: `1px solid ${AMBER}40`, color: AMBER, fontSize: 13, fontWeight: 600, textDecoration: "none" }}
-          >
-            Ver conversão do QR (cadastros × pagantes)
-          </a>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginBottom: 14 }}>
+            <a
+              href="/desafio-21"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ display: "inline-block", padding: "10px 16px", borderRadius: 10, background: AMBER, color: "#111", fontSize: 13, fontWeight: 700, textDecoration: "none" }}
+            >
+              Abrir cadastro público (grátis + senha gerada)
+            </a>
+            <a
+              href="/gym/challenges"
+              style={{ display: "inline-block", padding: "10px 16px", borderRadius: 10, border: `1px solid ${AMBER}40`, color: AMBER, fontSize: 13, fontWeight: 600, textDecoration: "none" }}
+            >
+              Ver conversão do QR (cadastros × pagantes)
+            </a>
+          </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 14, marginTop: 6 }}>
             {[
