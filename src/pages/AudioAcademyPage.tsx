@@ -24,7 +24,13 @@ type Episode = {
 
 type Progress = { episode_id: string; progress_seconds: number; completed: boolean };
 
-const SERIES_ORDER: AudioSeries[] = ["mindset", "comportamento", "execucao", "ciencia", "carreira", "relacionamentos", "parentalidade", "financas", "ritual"];
+const SERIES_ORDER: AudioSeries[] = [
+  "mindset", "comportamento", "execucao", "ciencia", "masterclass",
+  "breathwork", "reprogramacao", "emergencia", "focus",
+  "reset_semanal", "review_mensal", "journaling",
+  "vida_real", "competicao", "biohacking",
+  "carreira", "relacionamentos", "parentalidade", "financas", "ritual",
+];
 
 const fmtDur = (s: number) => `${Math.floor(s / 60)} min`;
 
@@ -73,6 +79,12 @@ export default function AudioAcademyPage({ embedded = false }: { embedded?: bool
     });
     return g;
   }, [episodes]);
+
+  const sosCount = useMemo(() => episodes.filter((e) => e.series === "emergencia").length, [episodes]);
+  const totalHours = useMemo(
+    () => (episodes.reduce((a, e) => a + (e.duration_seconds || 0), 0) / 3600).toFixed(1),
+    [episodes],
+  );
 
   const saveProgress = useCallback(
     async (episodeId: string, seconds: number, duration: number) => {
@@ -199,6 +211,36 @@ export default function AudioAcademyPage({ embedded = false }: { embedded?: bool
             {briefingText ? "Ouvir briefing" : "Gerar e ouvir briefing"}
           </button>
         </section>
+
+        {/* SOS + TOTAIS */}
+        <section className="rounded-2xl p-4" style={{ border: "1px solid rgba(239,68,68,0.3)", background: "linear-gradient(135deg, rgba(239,68,68,0.08), transparent)" }}>
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <h2 className="text-[11px] font-bold tracking-[2px] uppercase" style={{ color: "#EF4444" }}>🚨 SOS — Emergência</h2>
+              <p className="text-xs mt-1" style={{ color: DIM }}>
+                {sosCount} protocolos para momentos de crise comportamental — vontade de comer, recaída, ansiedade, insônia.
+              </p>
+            </div>
+            <button
+              onClick={() => setOpenSeries("emergencia")}
+              className="text-xs font-bold px-4 py-2 rounded-lg shrink-0"
+              style={{ background: "#EF4444", color: "#03030a" }}
+            >
+              Abrir SOS
+            </button>
+          </div>
+        </section>
+
+        <div className="grid grid-cols-2 gap-2">
+          <div className="rounded-xl p-3" style={{ border: `1px solid ${GOLD}22`, background: "rgba(255,255,255,0.03)" }}>
+            <p className="text-[10px] uppercase tracking-[1.5px]" style={{ color: DIM }}>Biblioteca</p>
+            <p className="text-sm font-black" style={{ color: GOLD }}>{episodes.length} áudios</p>
+          </div>
+          <div className="rounded-xl p-3" style={{ border: `1px solid ${GOLD}22`, background: "rgba(255,255,255,0.03)" }}>
+            <p className="text-[10px] uppercase tracking-[1.5px]" style={{ color: DIM }}>Duração total</p>
+            <p className="text-sm font-black" style={{ color: GOLD }}>{totalHours}h</p>
+          </div>
+        </div>
 
         {/* SÉRIES */}
         {loading ? (

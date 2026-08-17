@@ -39,7 +39,13 @@ type ProgressRow = {
 
 type Athlete = { userId: string; name: string };
 
-const SERIES_ORDER: AudioSeries[] = ["mindset", "comportamento", "execucao", "ciencia", "carreira", "relacionamentos", "parentalidade", "financas", "ritual"];
+const SERIES_ORDER: AudioSeries[] = [
+  "mindset", "comportamento", "execucao", "ciencia", "masterclass",
+  "breathwork", "reprogramacao", "emergencia", "focus",
+  "reset_semanal", "review_mensal", "journaling",
+  "vida_real", "competicao", "biohacking",
+  "carreira", "relacionamentos", "parentalidade", "financas", "ritual",
+];
 const fmtMin = (s: number) => `${Math.max(1, Math.round(s / 60))} min`;
 
 type TabKey = "biblioteca" | "rituais" | "progresso";
