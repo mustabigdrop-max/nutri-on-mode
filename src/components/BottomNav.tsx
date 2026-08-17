@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { BarChart3, Droplets, Plus, User, Microscope, Lock, ClipboardList, Brain, Footprints, Briefcase } from "lucide-react";
+import { BarChart3, Droplets, Plus, User, Microscope, Lock, ClipboardList, Brain, Footprints, Briefcase, Instagram } from "lucide-react";
 import { useLabSubscription } from "@/hooks/useLabSubscription";
 import { useCoachAccess } from "@/hooks/useCoachAccess";
 import LabUpsellModal from "@/components/lab/LabUpsellModal";
@@ -24,6 +24,7 @@ const BottomNav = () => {
       ? [{ id: "coach", icon: ClipboardList, label: "Coach", path: "/meus-protocolos" }]
       : [{ id: "lab", icon: Microscope, label: "LAB", path: "/lab" }]),
     { id: "business", icon: Briefcase, label: "Business", path: "/mce/business" },
+    { id: "social", icon: Instagram, label: "Social ON", path: "/coach/social" },
     { id: "profile", icon: User, label: "Perfil", path: "/profile" },
   ];
 
