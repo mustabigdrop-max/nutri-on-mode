@@ -90,6 +90,81 @@ export default function SocialOnPage() {
 
   const [checked, setChecked] = useState<Record<string, boolean>>({});
 
+  // Instagram publishing
+  const [igAccount, setIgAccount] = useState<{ ig_user_id: string; username: string | null } | null>(null);
+  const [igToken, setIgToken] = useState("");
+  const [igLoading, setIgLoading] = useState(false);
+  const [pubType, setPubType] = useState<"IMAGE" | "REELS">("IMAGE");
+  const [pubMedia, setPubMedia] = useState("");
+  const [pubCaption, setPubCaption] = useState("");
+  const [publishing, setPublishing] = useState(false);
+  const [igPosts, setIgPosts] = useState<any[]>([]);
+
+  const callIg = async <T,>(payload: Record<string, unknown>): Promise<T> => {
+    const { data, error } = await supabase.functions.invoke("instagram-publish", { body: payload });
+    if (error) throw new Error(error.message);
+    if ((data as { error?: string })?.error) throw new Error((data as { error: string }).error);
+    return (data as { result: T }).result;
+  };
+
+  const loadIgPosts = async () => {
+    if (!coachId) return;
+    const { data } = await supabase
+      .from("social_instagram_posts")
+      .select("*")
+      .eq("coach_id", coachId)
+      .order("created_at", { ascending: false })
+      .limit(20);
+    setIgPosts(data ?? []);
+  };
+
+  useEffect(() => {
+    if (!coachId) return;
+    (async () => {
+      try {
+        const st = await callIg<{ connected: boolean; account: any }>({ action: "status" });
+        setIgAccount(st.connected ? st.account : null);
+      } catch { /* silencioso */ }
+      loadIgPosts();
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [coachId]);
+
+  const connectIg = async () => {
+    setIgLoading(true);
+    try {
+      const res = await callIg<{ account: any }>({ action: "connect", access_token: igToken.trim() });
+      setIgAccount(res.account);
+      setIgToken("");
+      toast.success("Instagram conectado");
+    } catch (e) { toast.error(e instanceof Error ? e.message : "Falha ao conectar"); }
+    finally { setIgLoading(false); }
+  };
+
+  const disconnectIg = async () => {
+    try {
+      await callIg({ action: "disconnect" });
+      setIgAccount(null);
+      toast.success("Conta desconectada");
+    } catch (e) { toast.error(e instanceof Error ? e.message : "Falha ao desconectar"); }
+  };
+
+  const publishNow = async () => {
+    setPublishing(true);
+    try {
+      const res = await callIg<{ permalink: string | null }>({
+        action: "publish",
+        media_type: pubType,
+        media_url: pubMedia.trim(),
+        caption: pubCaption,
+      });
+      toast.success(res.permalink ? "Publicado no Instagram!" : "Publicado!");
+      setPubMedia("");
+      loadIgPosts();
+    } catch (e) { toast.error(e instanceof Error ? e.message : "Falha ao publicar"); }
+    finally { setPublishing(false); await loadIgPosts(); }
+  };
+
   const loadCalendar = async () => {
     if (!coachId) return;
     const end = new Date(`${weekStart}T12:00:00`);
@@ -297,6 +372,7 @@ export default function SocialOnPage() {
             <TabsTrigger value="hooks"><Sparkles className="w-3.5 h-3.5 mr-1" /> Hooks</TabsTrigger>
             <TabsTrigger value="hashtags"><Hash className="w-3.5 h-3.5 mr-1" /> Hashtags</TabsTrigger>
             <TabsTrigger value="stories"><LayoutList className="w-3.5 h-3.5 mr-1" /> Stories</TabsTrigger>
+            <TabsTrigger value="publicar"><Instagram className="w-3.5 h-3.5 mr-1" /> Publicar</TabsTrigger>
           </TabsList>
 
           {/* AUDITORIA */}
@@ -620,6 +696,94 @@ export default function SocialOnPage() {
                 </Button>
               </CardContent></Card>
             )}
+          </TabsContent>
+
+          {/* PUBLICAR */}
+          <TabsContent value="publicar" className="space-y-4 pt-4">
+            <Card><CardContent className="p-4 space-y-3">
+              <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Conexão</p>
+              {igAccount ? (
+                <div className="flex flex-wrap items-center gap-3">
+                  <Badge style={{ background: "#00FF8820", color: "#00FF88" }}>Conectado</Badge>
+                  <span className="text-sm">@{igAccount.username ?? igAccount.ig_user_id}</span>
+                  <Button size="sm" variant="outline" onClick={disconnectIg}>Desconectar</Button>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <p className="text-sm text-muted-foreground">
+                    Cole o token de acesso da sua conta Instagram Business/Creator (Meta Graph API) para publicar direto daqui.
+                    O token fica guardado com segurança no servidor e nunca aparece no app.
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <Input
+                      type="password"
+                      value={igToken}
+                      onChange={(e) => setIgToken(e.target.value)}
+                      placeholder="Token de acesso do Instagram/Facebook"
+                    />
+                    <Button onClick={connectIg} disabled={igLoading} className="gap-2">
+                      {igLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Instagram className="w-4 h-4" />} Conectar
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </CardContent></Card>
+
+            <Card><CardContent className="p-4 space-y-3">
+              <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Nova publicação</p>
+              <div className="flex flex-wrap gap-2">
+                {(["IMAGE", "REELS"] as const).map((t) => (
+                  <Button key={t} size="sm" variant={pubType === t ? "default" : "outline"} onClick={() => setPubType(t)}>
+                    {t === "IMAGE" ? "Foto" : "Reels"}
+                  </Button>
+                ))}
+              </div>
+              <Input
+                value={pubMedia}
+                onChange={(e) => setPubMedia(e.target.value)}
+                placeholder={pubType === "IMAGE" ? "URL pública https da imagem (JPEG)" : "URL pública https do vídeo (MP4)"}
+              />
+              <Textarea
+                value={pubCaption}
+                onChange={(e) => setPubCaption(e.target.value)}
+                rows={6}
+                placeholder="Legenda do post"
+              />
+              <div className="flex flex-wrap gap-2">
+                <Button onClick={publishNow} disabled={publishing || !igAccount} className="gap-2">
+                  {publishing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Instagram className="w-4 h-4" />} Publicar no Instagram
+                </Button>
+                {captionText && (
+                  <Button variant="outline" onClick={() => setPubCaption(captionText)} className="gap-2">
+                    <PenLine className="w-4 h-4" /> Usar última legenda gerada
+                  </Button>
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                A mídia precisa estar em uma URL pública (a API do Instagram baixa o arquivo). Reels podem levar alguns segundos para processar.
+              </p>
+            </CardContent></Card>
+
+            <Card><CardContent className="p-4 space-y-2">
+              <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Histórico</p>
+              {igPosts.length === 0 && <p className="text-sm text-muted-foreground">Nenhuma publicação ainda.</p>}
+              {igPosts.map((p) => (
+                <div key={p.id} className="flex items-center justify-between gap-3 text-sm border-b border-border/60 py-2">
+                  <div className="min-w-0">
+                    <p className="truncate">{p.caption || "(sem legenda)"}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(p.created_at).toLocaleString("pt-BR")} · {p.media_type}
+                      {p.error ? ` · ${p.error}` : ""}
+                    </p>
+                  </div>
+                  {p.permalink ? (
+                    <a href={p.permalink} target="_blank" rel="noopener noreferrer" className="text-xs underline" style={{ color: "#00D4FF" }}>abrir</a>
+                  ) : (
+                    <Badge variant="outline" className="text-[10px]">{p.status}</Badge>
+                  )}
+                </div>
+              ))}
+            </CardContent></Card>
           </TabsContent>
         </Tabs>
       </main>
