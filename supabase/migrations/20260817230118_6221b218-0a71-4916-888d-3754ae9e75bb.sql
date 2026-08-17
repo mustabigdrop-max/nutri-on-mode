@@ -1,0 +1,1 @@
+ALTER TABLE public.social_profile ADD COLUMN IF NOT EXISTS ladder_metrics JSONB DEFAULT '{}'::jsonb;

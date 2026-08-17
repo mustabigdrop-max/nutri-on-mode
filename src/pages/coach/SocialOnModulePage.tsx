@@ -105,6 +105,7 @@ const SocialOnModulePage = () => {
   const [checklist, setChecklist] = useState<Record<string, boolean>>({});
   const [learning, setLearning] = useState<Record<string, boolean>>({});
   const [ladderOpen, setLadderOpen] = useState<string | null>(null);
+  const [ladderMetrics, setLadderMetrics] = useState<Record<string, string>>({});
 
   const weekStart = useMemo(() => mondayOf(), []);
 
@@ -125,6 +126,7 @@ const SocialOnModulePage = () => {
       setBioCurrent(prof.bio_current || "");
       setBioScore(prof.bio_score);
       setAuditDone(!!prof.audit_completed);
+      setLadderMetrics(((prof as any).ladder_metrics as Record<string, string>) || {});
     } else if (coach?.instagram_handle) {
       setHandle(coach.instagram_handle);
     }
@@ -183,6 +185,37 @@ const SocialOnModulePage = () => {
     await saveProfile({ audit_completed: true, audited_at: new Date().toISOString(), bio_score: bioScore });
     setAuditDone(true);
     toast.success("Auditoria concluída");
+  };
+
+  const saveLadderMetrics = async (next: Record<string, string>) => {
+    setLadderMetrics(next);
+    await saveProfile({ ladder_metrics: next });
+  };
+
+  const exportPlanPdf = async () => {
+    const { default: JsPDF } = await import("jspdf");
+    const doc = new JsPDF({ unit: "pt", format: "a4" });
+    let y = 56;
+    doc.setFontSize(18);
+    doc.text("SOCIAL ON — Plano de ação", 40, y);
+    y += 22;
+    doc.setFontSize(10);
+    doc.text(`@${handle.replace("@", "") || "—"}  ·  ${new Date().toLocaleDateString("pt-BR")}`, 40, y);
+    if (bioScore != null) { y += 14; doc.text(`Score da bio: ${bioScore}/100`, 40, y); }
+    y += 26;
+    ACTION_PLAN.forEach((g) => {
+      doc.setFontSize(13);
+      doc.text(g.period, 40, y);
+      y += 18;
+      doc.setFontSize(11);
+      g.items.forEach((i) => {
+        doc.text(`${checklist[i] ? "[x]" : "[ ]"} ${i}`, 52, y);
+        y += 16;
+        if (y > 780) { doc.addPage(); y = 56; }
+      });
+      y += 10;
+    });
+    doc.save(`social-on-plano-${new Date().toISOString().slice(0, 10)}.pdf`);
   };
 
   const generate = async () => {
@@ -443,7 +476,10 @@ const SocialOnModulePage = () => {
                     ))}
                   </div>
                 ))}
-                <Button onClick={finishAudit} className="gap-2"><Check className="w-4 h-4" /> Concluir auditoria</Button>
+                <div className="flex flex-wrap gap-2">
+                  <Button onClick={finishAudit} className="gap-2"><Check className="w-4 h-4" /> Concluir auditoria</Button>
+                  <Button variant="outline" onClick={exportPlanPdf} className="gap-2">📥 Baixar plano como PDF</Button>
+                </div>
               </Section>
             )}
           </TabsContent>
@@ -713,6 +749,30 @@ const SocialOnModulePage = () => {
                 </CardContent>
               </Card>
             ))}
+
+            <Section title="Métricas da esteira">
+              {[
+                { key: "ticket_medio", label: "Ticket médio (R$)", ph: "0,00" },
+                { key: "ltv", label: "LTV — lifetime value (R$)", ph: "0,00" },
+                { key: "conv_ig_dm", label: "Conversão Instagram → DM (%)", ph: "0" },
+                { key: "conv_dm_venda", label: "Conversão DM → Venda (%)", ph: "0" },
+              ].map((m) => (
+                <div key={m.key} className="flex items-center justify-between gap-3">
+                  <span className="text-sm text-muted-foreground">{m.label}</span>
+                  <Input
+                    className="w-32 h-8 text-sm font-mono text-right"
+                    inputMode="decimal"
+                    placeholder={m.ph}
+                    value={ladderMetrics[m.key] ?? ""}
+                    onChange={(e) => setLadderMetrics({ ...ladderMetrics, [m.key]: e.target.value })}
+                    onBlur={() => saveLadderMetrics(ladderMetrics)}
+                  />
+                </div>
+              ))}
+              <Button size="sm" variant="outline" className="gap-2" onClick={() => saveLadderMetrics(ladderMetrics)}>
+                <Check className="w-3 h-3" /> Salvar métricas
+              </Button>
+            </Section>
           </TabsContent>
         </Tabs>
       </main>
