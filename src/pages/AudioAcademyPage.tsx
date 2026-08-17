@@ -7,8 +7,6 @@ import { toast } from "sonner";
 import AudioPlayerBar, { type PlayerTrack } from "@/components/audio/AudioPlayerBar";
 import { SERIES_META, RITUAL_KEY_BY_EPISODE, AUDIO_MCE_POINTS, type AudioSeries } from "@/data/mceAudioCatalog";
 import { resolveAudioSrc } from "@/lib/mceAudioStorage";
-import AlterEgoCard from "@/components/mce/AlterEgoCard";
-import VoiceJournalPanel from "@/components/mce/VoiceJournalPanel";
 
 const GOLD = "#E8A020";
 const DIM = "rgba(255,255,255,0.55)";
@@ -27,14 +25,11 @@ type Episode = {
 type Progress = { episode_id: string; progress_seconds: number; completed: boolean };
 
 const SERIES_ORDER: AudioSeries[] = [
-  "alter_ego", "modo_guerra", "capsula",
   "mindset", "comportamento", "execucao", "ciencia", "masterclass",
-  "breathwork", "reprogramacao", "emergencia", "focus", "subliminar",
-  "pre_refeicao", "periodizacao", "body_scan", "desafio_mental",
+  "breathwork", "reprogramacao", "emergencia", "focus",
   "reset_semanal", "review_mensal", "journaling",
   "vida_real", "competicao", "biohacking",
   "carreira", "relacionamentos", "parentalidade", "financas", "ritual",
-  "hall_fama",
 ];
 
 const fmtDur = (s: number) => `${Math.floor(s / 60)} min`;
@@ -235,41 +230,6 @@ export default function AudioAcademyPage({ embedded = false }: { embedded?: bool
             </button>
           </div>
         </section>
-
-        {/* MODO GUERRA */}
-        <section className="rounded-2xl p-4" style={{ border: "1px solid rgba(239,68,68,0.35)", background: "linear-gradient(135deg, rgba(239,68,68,0.12), transparent)" }}>
-          <div className="flex items-center justify-between gap-3">
-            <div className="min-w-0">
-              <h2 className="text-[11px] font-bold tracking-[2px] uppercase" style={{ color: "#EF4444" }}>🔥 Modo Guerra</h2>
-              <p className="text-xs mt-1" style={{ color: DIM }}>
-                90 segundos de ativação simpática sob demanda — antes da série pesada, do HIIT ou do momento de tentação.
-              </p>
-            </div>
-            <button
-              onClick={() => {
-                const war = episodes.filter((e) => e.series === "modo_guerra");
-                const ready = war.find((e) => e.audio_url);
-                if (ready) playEpisode(ready);
-                else {
-                  setOpenSeries("modo_guerra");
-                  toast.message("Ative com a postura: ombros pra trás, queixo erguido. Áudio em breve.");
-                }
-              }}
-              className="text-xs font-bold px-4 py-2 rounded-lg shrink-0"
-              style={{ background: "#EF4444", color: "#03030a" }}
-            >
-              Ativar
-            </button>
-          </div>
-        </section>
-
-        {/* ALTER EGO */}
-        <AlterEgoCard />
-
-        {/* VOICE JOURNAL + CÁPSULA DO TEMPO */}
-        <VoiceJournalPanel
-          onPlay={(src, title) => setTrack({ id: `voice-${Date.now()}`, title, subtitle: "Sua voz · MCE", src })}
-        />
 
         <div className="grid grid-cols-2 gap-2">
           <div className="rounded-xl p-3" style={{ border: `1px solid ${GOLD}22`, background: "rgba(255,255,255,0.03)" }}>

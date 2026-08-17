@@ -18,16 +18,7 @@ export type AudioSeries =
   | "competicao"
   | "biohacking"
   | "journaling"
-  | "vida_real"
-  | "alter_ego"
-  | "capsula"
-  | "pre_refeicao"
-  | "periodizacao"
-  | "body_scan"
-  | "desafio_mental"
-  | "modo_guerra"
-  | "subliminar"
-  | "hall_fama";
+  | "vida_real";
 
 export type CatalogEpisode = {
   series: AudioSeries;
@@ -61,15 +52,6 @@ export const SERIES_META: Record<AudioSeries, { label: string; icon: string; col
   biohacking: { label: "Biohacking", icon: "🧊", color: "#22D3EE", blurb: "Frio, luz solar, grounding e calor — otimização guiada." },
   journaling: { label: "Journaling Guiado", icon: "❓", color: "#F472B6", blurb: "Perguntas poderosas com silêncio real para escrever." },
   vida_real: { label: "Vida Real", icon: "🤝", color: "#34D399", blurb: "O MCE além do shape: família, fé, dinheiro e solidão do disciplinado." },
-  alter_ego: { label: "Alter Ego", icon: "🎭", color: "#E8A020", blurb: "Construa a versão imbatível de você — a chave que vira antes da performance." },
-  capsula: { label: "Cápsula do Tempo", icon: "⏳", color: "#38BDF8", blurb: "Grave sua voz hoje. Desbloqueie em 30, 90, 180 e 365 dias." },
-  pre_refeicao: { label: "Ritual Pré-Refeição", icon: "🍽️", color: "#34D399", blurb: "60 segundos que reprogramam sua relação com a comida." },
-  periodizacao: { label: "Periodização Sonora", icon: "🧬", color: "#C084FC", blurb: "O áudio muda com a fase: bulking, cutting, recomp, peak week e deload." },
-  body_scan: { label: "Body Scan Emocional", icon: "🪞", color: "#F472B6", blurb: "Reconectar mente e corpo — gratidão corporal contra a dismorfia." },
-  desafio_mental: { label: "Desafios Mentais", icon: "🎯", color: "#FACC15", blurb: "Um desafio comportamental por semana — expandir a capacidade mental." },
-  modo_guerra: { label: "Modo Guerra", icon: "🔥", color: "#EF4444", blurb: "90 segundos de ativação simpática sob demanda. Pico máximo." },
-  subliminar: { label: "Subliminar", icon: "🌊", color: "#22D3EE", blurb: "Frequências sem voz — 2 a 8 horas de fundo contínuo." },
-  hall_fama: { label: "Hall da Fama", icon: "🏅", color: "#E8A020", blurb: "Áudios exclusivos de marco: 90, 180, 365 dias e Academy completa." },
 };
 
 /** Módulos que aparecem em destaque como acesso rápido no app. */
@@ -229,68 +211,6 @@ export const MCE_AUDIO_CATALOG: CatalogEpisode[] = [
   { series: "vida_real", episode_number: 3, title: "Dinheiro é execução", description: "MCE financeiro: a mesma disciplina, outro domínio.", duration_seconds: min(12) },
   { series: "vida_real", episode_number: 4, title: "Fé e propósito", description: "O corpo como responsabilidade, não vaidade.", duration_seconds: min(10) },
   { series: "vida_real", episode_number: 5, title: "A solidão do disciplinado", description: "Temporária — ao contrário da solidão do arrependido.", duration_seconds: min(10) },
-  // ALTER EGO
-  { series: "alter_ego", episode_number: 1, title: "Criando seu Alter Ego", description: "Sessão guiada: nome, fisiologia e gatilho de ativação da sua versão imbatível.", duration_seconds: min(20), scientific_reference: "Todd Herman · Amy Cuddy, Harvard" },
-  { series: "alter_ego", episode_number: 2, title: "Ativação rápida do Alter Ego", description: "3 minutos: postura de poder, nome em voz alta e a chave vira.", duration_seconds: min(3), scientific_reference: "Embodied cognition" },
-  // CÁPSULA DO TEMPO
-  { series: "capsula", episode_number: 1, title: "Dia 1 — Grave sua cápsula", description: "Mensagem para o eu de 30 dias: como se sente, o que teme, o que promete.", duration_seconds: min(3) },
-  { series: "capsula", episode_number: 2, title: "Dia 30 — Desbloqueio", description: "Ouça a própria voz de 30 dias atrás e compare com os números de hoje.", duration_seconds: min(5) },
-  { series: "capsula", episode_number: 3, title: "Dia 90 — Desbloqueio", description: "Três meses depois: a prova sonora da transformação.", duration_seconds: min(5) },
-  { series: "capsula", episode_number: 4, title: "Dia 365 — Desbloqueio", description: "Um ano. A prova mais poderosa de transformação que existe.", duration_seconds: min(6) },
-  // RITUAL PRÉ-REFEIÇÃO
-  { series: "pre_refeicao", episode_number: 1, title: "Consciência", description: "Olhe para o prato. Não é comida — é engenharia biológica.", duration_seconds: 60 },
-  { series: "pre_refeicao", episode_number: 2, title: "Gratidão biológica", description: "37 trilhões de células esperando o material de construção.", duration_seconds: 60 },
-  { series: "pre_refeicao", episode_number: 3, title: "Intenção", description: "Atletas não comem por prazer. Comem por projeto.", duration_seconds: 60 },
-  { series: "pre_refeicao", episode_number: 4, title: "Desaceleração", description: "O hipotálamo leva 20 minutos para registrar saciedade.", duration_seconds: 60, scientific_reference: "Saciedade hipotalâmica" },
-  { series: "pre_refeicao", episode_number: 5, title: "Farmacologia", description: "Cúrcuma, pimenta-preta e NRF2: o prato como farmácia.", duration_seconds: 60 },
-  { series: "pre_refeicao", episode_number: 6, title: "Identidade", description: "Cada garfada é um voto na identidade que você constrói.", duration_seconds: 60, scientific_reference: "James Clear" },
-  { series: "pre_refeicao", episode_number: 7, title: "Corpo como templo", description: "Você não coloca diesel num carro de fórmula 1.", duration_seconds: 60 },
-  { series: "pre_refeicao", episode_number: 8, title: "Pós-treino GLUT-4", description: "Os portões estão abertos. Essa é a janela. Sem culpa.", duration_seconds: 60, scientific_reference: "GLUT-4 translocation" },
-  // PERIODIZAÇÃO SONORA (5 fases × 4 momentos)
-  { series: "periodizacao", episode_number: 1, title: "Bulking · Despertar", description: "Superávit é investimento. Cada caloria é tijolo.", duration_seconds: min(5) },
-  { series: "periodizacao", episode_number: 2, title: "Bulking · Pré-refeição", description: "Come tudo. Sem culpa. O corpo está em modo construção.", duration_seconds: min(4) },
-  { series: "periodizacao", episode_number: 3, title: "Bulking · Pré-treino", description: "Energia sobrando é permissão para puxar mais carga.", duration_seconds: min(4) },
-  { series: "periodizacao", episode_number: 4, title: "Bulking · Pré-sono", description: "Paciência: ganho de gordura temporário faz parte da obra.", duration_seconds: min(5) },
-  { series: "periodizacao", episode_number: 5, title: "Cutting · Despertar", description: "O desconforto é temporário. O resultado é permanente.", duration_seconds: min(5) },
-  { series: "periodizacao", episode_number: 6, title: "Cutting · Pré-refeição", description: "Cada caloria aqui é cirúrgica. Zero desperdício.", duration_seconds: min(4) },
-  { series: "periodizacao", episode_number: 7, title: "Cutting · Fome e irritabilidade", description: "Gestão da fome e da resistência social no déficit.", duration_seconds: min(6) },
-  { series: "periodizacao", episode_number: 8, title: "Cutting · Pré-sono", description: "A lipólise é mais ativa no sono. Dorme secando.", duration_seconds: min(5) },
-  { series: "periodizacao", episode_number: 9, title: "Recomposição · Despertar", description: "Paciência extrema: a balança mente, o espelho conta.", duration_seconds: min(5) },
-  { series: "periodizacao", episode_number: 10, title: "Recomposição · Confiança no processo", description: "Micro-progressos invisíveis somam meses de mudança.", duration_seconds: min(5) },
-  { series: "periodizacao", episode_number: 11, title: "Recomposição · Pré-treino", description: "Estímulo alto com energia moderada: técnica acima de ego.", duration_seconds: min(4) },
-  { series: "periodizacao", episode_number: 12, title: "Recomposição · Pré-sono", description: "Recuperação é onde a recomposição realmente acontece.", duration_seconds: min(5) },
-  { series: "periodizacao", episode_number: 13, title: "Peak Week · Controle", description: "Cirúrgico. Cada grama importa. Zero improviso.", duration_seconds: min(5) },
-  { series: "periodizacao", episode_number: 14, title: "Peak Week · Ansiedade", description: "Reduzir ruído mental na reta final.", duration_seconds: min(5) },
-  { series: "periodizacao", episode_number: 15, title: "Peak Week · Véspera", description: "Protocolo militar: sono, água, carbo, cabeça fria.", duration_seconds: min(5) },
-  { series: "periodizacao", episode_number: 16, title: "Peak Week · Não sabotar", description: "O erro clássico da última semana e como evitá-lo.", duration_seconds: min(4) },
-  { series: "periodizacao", episode_number: 17, title: "Deload · Permissão", description: "Descanso é construção, não preguiça.", duration_seconds: min(5) },
-  { series: "periodizacao", episode_number: 18, title: "Deload · Restauração", description: "Sistema nervoso central: por que ele precisa da semana leve.", duration_seconds: min(5) },
-  { series: "periodizacao", episode_number: 19, title: "Deload · Culpa zero", description: "Treinar leve com inteligência é decisão de atleta.", duration_seconds: min(4) },
-  { series: "periodizacao", episode_number: 20, title: "Deload · Retomada", description: "Como voltar da semana leve mais forte do que entrou.", duration_seconds: min(5) },
-  // BODY SCAN EMOCIONAL
-  { series: "body_scan", episode_number: 1, title: "Gratidão corporal", description: "12 minutos percorrendo o corpo — não para criticar, para agradecer.", duration_seconds: min(12) },
-  { series: "body_scan", episode_number: 2, title: "Reconexão pós-treino", description: "Body scan curto para reconhecer o que o corpo acabou de fazer.", duration_seconds: min(8) },
-  // DESAFIOS MENTAIS
-  { series: "desafio_mental", episode_number: 1, title: "Semana 1 — Silêncio matinal", description: "10 minutos em silêncio total ao acordar. Treinar o córtex a tolerar o vazio.", duration_seconds: min(3) },
-  { series: "desafio_mental", episode_number: 2, title: "Semana 2 — Desconforto voluntário", description: "1 banho gelado por dia, 30 segundos. Pré-frontal vencendo a amígdala.", duration_seconds: min(3) },
-  { series: "desafio_mental", episode_number: 3, title: "Semana 3 — Gratidão ativa", description: "Uma mensagem real de gratidão por noite.", duration_seconds: min(3), scientific_reference: "Seligman" },
-  { series: "desafio_mental", episode_number: 4, title: "Semana 4 — Refeição em silêncio", description: "Uma refeição por dia sem tela: percepção interoceptiva.", duration_seconds: min(3) },
-  { series: "desafio_mental", episode_number: 5, title: "Semana 5 — Dizer não", description: "Um não por dia. O exercício de força mais importante que existe.", duration_seconds: min(3) },
-  { series: "desafio_mental", episode_number: 6, title: "Semana 6 — Ensinar", description: "Explique o MCE para alguém. Ensinar consolida.", duration_seconds: min(3), scientific_reference: "Feynman" },
-  // MODO GUERRA
-  { series: "modo_guerra", episode_number: 1, title: "Modo Guerra — Padrão", description: "90 segundos de ativação simpática antes da série pesada.", duration_seconds: 90 },
-  { series: "modo_guerra", episode_number: 2, title: "Modo Guerra — Cardio / HIIT", description: "Ativação para sessões metabólicas de alta intensidade.", duration_seconds: 90 },
-  { series: "modo_guerra", episode_number: 3, title: "Modo Guerra — Tentação", description: "Ativação de emergência para o momento em que você quase cede.", duration_seconds: 90 },
-  // SUBLIMINAR
-  { series: "subliminar", episode_number: 1, title: "Foco Total · 4h", description: "14 Hz beta contínuo para trabalho e estudo. Sem voz.", duration_seconds: 4 * 3600 },
-  { series: "subliminar", episode_number: 2, title: "Recuperação Profunda · 8h", description: "2–4 Hz delta a noite inteira. Sono profundo e GH.", duration_seconds: 8 * 3600 },
-  { series: "subliminar", episode_number: 3, title: "Criatividade · 3h", description: "7–8 Hz theta/alpha — o estado das melhores ideias.", duration_seconds: 3 * 3600 },
-  { series: "subliminar", episode_number: 4, title: "Calma Ativa · 2h", description: "10 Hz alpha para estresse sem sedar.", duration_seconds: 2 * 3600 },
-  // HALL DA FAMA
-  { series: "hall_fama", episode_number: 1, title: "90 dias — Obsidiana em formação", description: "Áudio de marco: três meses de consistência real.", duration_seconds: min(4) },
-  { series: "hall_fama", episode_number: 2, title: "180 dias — Meio ano", description: "Áudio exclusivo com seus números reais. Você é outra pessoa biologicamente.", duration_seconds: min(5), scientific_reference: "Merzenich" },
-  { series: "hall_fama", episode_number: 3, title: "365 dias — Um ano de MCE", description: "O legado sonoro de quem sustentou um ano inteiro.", duration_seconds: min(6) },
-  { series: "hall_fama", episode_number: 4, title: "Academy completa", description: "Todos os módulos concluídos. O áudio que só quem terminou tem.", duration_seconds: min(5) },
 ];
 
 export const RITUAL_KEY_BY_EPISODE: Record<number, "despertar" | "pre_treino" | "pos_treino" | "pre_sono"> = {

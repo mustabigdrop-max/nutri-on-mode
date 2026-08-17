@@ -40,14 +40,11 @@ type ProgressRow = {
 type Athlete = { userId: string; name: string };
 
 const SERIES_ORDER: AudioSeries[] = [
-  "alter_ego", "modo_guerra", "capsula",
   "mindset", "comportamento", "execucao", "ciencia", "masterclass",
-  "breathwork", "reprogramacao", "emergencia", "focus", "subliminar",
-  "pre_refeicao", "periodizacao", "body_scan", "desafio_mental",
+  "breathwork", "reprogramacao", "emergencia", "focus",
   "reset_semanal", "review_mensal", "journaling",
   "vida_real", "competicao", "biohacking",
   "carreira", "relacionamentos", "parentalidade", "financas", "ritual",
-  "hall_fama",
 ];
 const fmtMin = (s: number) => `${Math.max(1, Math.round(s / 60))} min`;
 
@@ -150,11 +147,6 @@ export default function CoachAudioAcademyPage({ embedded = false }: { embedded?:
 
   const publishedCount = episodes.filter((e) => e.audio_url).length;
   const pendingEpisodes = useMemo(() => episodes.filter((e) => !e.audio_url), [episodes]);
-  const NEW_MODULE_SERIES = ["alter_ego", "capsula", "pre_refeicao", "body_scan", "modo_guerra"];
-  const newModulesPending = useMemo(
-    () => episodes.filter((e) => !e.audio_url && NEW_MODULE_SERIES.includes(e.series)),
-    [episodes],
-  );
 
   // Gera roteiro + narração na mesma voz do Briefing do dia
   const generateVoice = async (ep: Episode, silent = false): Promise<boolean> => {
@@ -427,27 +419,15 @@ export default function CoachAudioAcademyPage({ embedded = false }: { embedded?:
                 Gera roteiro e narração na mesma voz do Briefing do dia e publica direto para os clientes.
                 {" "}{pendingEpisodes.length} episódio(s) sem áudio.
               </p>
-              <div className="flex flex-wrap gap-2">
-                <button
-                  onClick={() => generateAllPending(pendingEpisodes)}
-                  disabled={!!batch || !!generatingId || pendingEpisodes.length === 0}
-                  className="text-xs font-bold px-4 py-2 rounded-lg inline-flex items-center gap-2"
-                  style={{ background: "#00D4FF", color: "#03030a", opacity: batch || generatingId || pendingEpisodes.length === 0 ? 0.55 : 1 }}
-                >
-                  {batch ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wand2 className="w-4 h-4" />}
-                  {batch ? `Narrando ${batch.done}/${batch.total}...` : "Liberar todas as séries com voz"}
-                </button>
-                <button
-                  onClick={() => generateAllPending(newModulesPending)}
-                  disabled={!!batch || !!generatingId || newModulesPending.length === 0}
-                  className="text-xs font-bold px-4 py-2 rounded-lg inline-flex items-center gap-2"
-                  style={{ border: "1px solid rgba(232,160,32,0.55)", color: "#E8A020", opacity: batch || generatingId || newModulesPending.length === 0 ? 0.55 : 1 }}
-                >
-                  <Wand2 className="w-4 h-4" />
-                  Liberar novos módulos ({newModulesPending.length})
-                </button>
-              </div>
-
+              <button
+                onClick={() => generateAllPending(pendingEpisodes)}
+                disabled={!!batch || !!generatingId || pendingEpisodes.length === 0}
+                className="text-xs font-bold px-4 py-2 rounded-lg inline-flex items-center gap-2"
+                style={{ background: "#00D4FF", color: "#03030a", opacity: batch || generatingId || pendingEpisodes.length === 0 ? 0.55 : 1 }}
+              >
+                {batch ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wand2 className="w-4 h-4" />}
+                {batch ? `Narrando ${batch.done}/${batch.total}...` : "Liberar todas as séries com voz"}
+              </button>
               {batch && (
                 <div className="h-[3px] rounded-full mt-3" style={{ background: "rgba(255,255,255,0.08)" }}>
                   <div className="h-full rounded-full transition-all" style={{ width: `${(batch.done / batch.total) * 100}%`, background: "#00D4FF" }} />
