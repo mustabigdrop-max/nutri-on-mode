@@ -1335,6 +1335,8 @@ export default function PlanoAlimentarIA() {
   const [categoriaEsporte, setCategoriaEsporte] = useState<string>("");
   const [intel, setIntel] = useState<IntelState>(INTEL_DEFAULT);
   const updIntel = (v: Partial<IntelState>) => setIntel(prev => ({ ...prev, ...v }));
+  const [perfilCorporal, setPerfilCorporal] = useState<PerfilCorporalState>(PERFIL_CORPORAL_DEFAULT);
+  const updPerfilCorporal = (v: Partial<PerfilCorporalState>) => setPerfilCorporal(prev => ({ ...prev, ...v }));
   const [pharmEnabled, setPharmEnabled] = useState(false);
   const [pharmProfile, setPharmProfile] = useState<PharmProfile>("natural");
   const [recuperacao, setRecuperacao] = useState<RecuperacaoCfg>(RECUPERACAO_DEFAULT);
