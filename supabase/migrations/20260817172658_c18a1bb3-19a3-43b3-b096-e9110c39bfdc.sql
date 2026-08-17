@@ -1,0 +1,1 @@
+UPDATE public.coach_profiles SET instagram_handle = 'diogo.mell0' WHERE user_id = '70e51469-1acf-4df6-afe6-f094d21db122' AND instagram_handle IS NULL;
