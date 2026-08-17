@@ -5775,6 +5775,33 @@ export default function PlanoAlimentarIA() {
           </div>
         </Section>
 
+        {/* Perfil corporal (APEX Visual + manual) */}
+        <Section title="Perfil corporal" icon={<UserIcon size={12} strokeWidth={2} color={T.emerald} />}>
+          <BodyProfileSelector
+            patients={patients}
+            clientData={{ peso: form.peso, altura: form.altura, idade: form.idade, sexo: form.sexo }}
+            value={form.perfilCorporal}
+            onChange={(perfil, extras) => {
+              set("perfilCorporal", perfil);
+              set("perfilCorporalOrigem", extras?.bf != null ? "apex_visual" : "manual");
+              if (extras?.bf != null) {
+                set("bfAtual", String(Math.round(extras.bf)));
+                set("metodoBF", "visual");
+              }
+            }}
+          />
+          {form.perfilCorporal && (
+            <div style={{ marginTop: 10, fontSize: 11, color: T.dim }}>
+              Perfil ativo: <b style={{ color: T.emerald }}>
+                {BODY_PROFILES.find(p => p.key === form.perfilCorporal)?.label}
+              </b>
+              {form.perfilCorporalOrigem === "apex_visual" ? " · sugerido pelo APEX Visual" : " · seleção manual"}
+            </div>
+          )}
+        </Section>
+
+
+
         {/* Objetivo e perfil */}
         <Section title="Objetivo e perfil" icon={<Target size={12} strokeWidth={2} color={T.emerald} />}>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
