@@ -5985,6 +5985,22 @@ export default function PlanoAlimentarIA() {
 
 
         {/* ─── NUTRIPLAN INTELLIGENCE — somatotipo, digestivo, autonômico ─── */}
+        <BlocoPerfilCorporal
+          value={perfilCorporal}
+          onChange={updPerfilCorporal}
+          base={{
+            weight: Number(form.peso) || 0,
+            height: Number(form.altura) || 0,
+            age: Number(form.idade) || 0,
+            sex: form.sexo === "feminino" ? "F" : "M",
+          }}
+          athleteId={(form as any)?.patientUserId || selectedPatient || null}
+          objetivo={
+            form.objetivo === "hipertrofia" ? "bulking"
+              : form.objetivo === "recomposicao" ? "recomp"
+              : "cutting"
+          }
+        />
         <BlocoSomatotipo value={intel} onChange={updIntel} />
         <BlocoHistoricoMetabolico value={intel} onChange={updIntel} pesoKg={Number(form.peso) || undefined} />
         <BlocoModoDieta value={intel} onChange={updIntel} />
