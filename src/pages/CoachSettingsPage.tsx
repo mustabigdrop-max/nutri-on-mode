@@ -159,6 +159,24 @@ const CoachSettingsPage = () => {
               </div>
             )}
             <div>
+              <Label>Instagram (@)</Label>
+              <Input
+                value={form.instagram_handle}
+                onChange={e => setForm(p => ({ ...p, instagram_handle: e.target.value.replace("@", "") }))}
+                placeholder="seu.handle"
+              />
+              {form.instagram_handle && (
+                <a
+                  href={`https://instagram.com/${form.instagram_handle}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-primary underline underline-offset-2 mt-1 inline-block"
+                >
+                  instagram.com/{form.instagram_handle}
+                </a>
+              )}
+            </div>
+            <div>
               <Label>Bio</Label>
               <Textarea value={form.bio} onChange={e => setForm(p => ({ ...p, bio: e.target.value }))} rows={3} />
             </div>

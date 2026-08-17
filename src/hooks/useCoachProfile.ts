@@ -31,6 +31,7 @@ export interface CoachProfile {
   show_on_plan: boolean | null;
   professional_type?: string | null;
   unique_code?: string | null;
+  instagram_handle?: string | null;
 }
 
 export const useCoachProfile = () => {
