@@ -3122,6 +3122,7 @@ export type Database = {
           created_at: string | null
           crn: string | null
           id: string
+          instagram_handle: string | null
           logo_url: string | null
           max_alunos: number | null
           max_patients: number | null
@@ -3157,6 +3158,7 @@ export type Database = {
           created_at?: string | null
           crn?: string | null
           id?: string
+          instagram_handle?: string | null
           logo_url?: string | null
           max_alunos?: number | null
           max_patients?: number | null
@@ -3192,6 +3194,7 @@ export type Database = {
           created_at?: string | null
           crn?: string | null
           id?: string
+          instagram_handle?: string | null
           logo_url?: string | null
           max_alunos?: number | null
           max_patients?: number | null

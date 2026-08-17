@@ -59,7 +59,7 @@ export default function SocialOnPage() {
   const { user } = useAuth();
   const coachId = user?.id;
 
-  const [handle, setHandle] = useState("diogo.mell0");
+  const [handle, setHandle] = useState("");
   const [bio, setBio] = useState("");
   const [audit, setAudit] = useState<any>(null);
   const [auditing, setAuditing] = useState(false);
@@ -108,16 +108,34 @@ export default function SocialOnPage() {
 
   useEffect(() => {
     if (!coachId) return;
-    supabase.from("social_audits").select("*").eq("coach_id", coachId)
-      .order("audited_at", { ascending: false }).limit(1)
-      .then(({ data }) => {
-        const last = data?.[0];
-        if (last) {
-          setHandle(last.handle ?? "diogo.mell0");
-          setAudit({ bio_score: last.bio_score, ...(last.recommendations as object), content_mix: last.content_mix, issues: last.issues });
-        }
-      });
+    (async () => {
+      const { data: prof } = await supabase
+        .from("coach_profiles")
+        .select("instagram_handle")
+        .eq("user_id", coachId)
+        .maybeSingle();
+      const profHandle = (prof as { instagram_handle?: string | null } | null)?.instagram_handle;
+
+      const { data } = await supabase.from("social_audits").select("*").eq("coach_id", coachId)
+        .order("audited_at", { ascending: false }).limit(1);
+      const last = data?.[0];
+      setHandle((profHandle || last?.handle || "").replace("@", ""));
+      if (last) {
+        setAudit({ bio_score: last.bio_score, ...(last.recommendations as object), content_mix: last.content_mix, issues: last.issues });
+      }
+    })();
   }, [coachId]);
+
+  const saveHandle = async () => {
+    if (!coachId) return;
+    const clean = handle.replace("@", "").trim();
+    const { error } = await supabase
+      .from("coach_profiles")
+      .update({ instagram_handle: clean || null })
+      .eq("user_id", coachId);
+    if (error) toast.error("Não foi possível salvar o @");
+    else toast.success("Instagram salvo no seu perfil");
+  };
 
   const runAudit = async () => {
     if (!coachId) return;
@@ -247,7 +265,23 @@ export default function SocialOnPage() {
           <Instagram className="w-5 h-5" style={{ color: "#00D4FF" }} />
           <div>
             <h1 className="text-xl font-bold text-foreground">SOCIAL ON</h1>
-            <p className="text-sm text-muted-foreground">Motor de crescimento no Instagram · @{handle}</p>
+            <p className="text-sm text-muted-foreground">
+              Motor de crescimento no Instagram
+              {handle && (
+                <>
+                  {" · "}
+                  <a
+                    href={`https://instagram.com/${handle.replace("@", "")}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline underline-offset-2 hover:text-foreground"
+                    style={{ color: "#00D4FF" }}
+                  >
+                    @{handle.replace("@", "")}
+                  </a>
+                </>
+              )}
+            </p>
           </div>
         </div>
       </header>
@@ -269,12 +303,30 @@ export default function SocialOnPage() {
           <TabsContent value="auditoria" className="space-y-4 pt-4">
             <Card><CardContent className="p-4 space-y-3">
               <div className="grid sm:grid-cols-[220px_1fr] gap-3">
-                <Input value={handle} onChange={(e) => setHandle(e.target.value.replace("@", ""))} placeholder="seu.handle" />
+                <div className="space-y-1">
+                  <Input value={handle} onChange={(e) => setHandle(e.target.value.replace("@", ""))} placeholder="seu.handle" />
+                  {handle && (
+                    <a
+                      href={`https://instagram.com/${handle.replace("@", "")}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs underline underline-offset-2"
+                      style={{ color: "#00D4FF" }}
+                    >
+                      instagram.com/{handle.replace("@", "")}
+                    </a>
+                  )}
+                </div>
                 <Textarea value={bio} onChange={(e) => setBio(e.target.value)} placeholder="Cole aqui sua bio atual do Instagram" rows={3} />
               </div>
-              <Button onClick={runAudit} disabled={auditing} className="gap-2">
-                {auditing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />} Auditar perfil
-              </Button>
+              <div className="flex flex-wrap gap-2">
+                <Button onClick={runAudit} disabled={auditing} className="gap-2">
+                  {auditing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />} Auditar perfil
+                </Button>
+                <Button variant="outline" onClick={saveHandle} className="gap-2">
+                  <Check className="w-4 h-4" /> Salvar @ no meu perfil
+                </Button>
+              </div>
             </CardContent></Card>
 
             {audit && (

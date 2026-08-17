@@ -23,6 +23,7 @@ const CoachSettingsPage = () => {
     professional_role: "nutrition_coach" as ProfessionalRole,
     registration_number: "",
     crn: "",
+    instagram_handle: "",
     bio: "",
     clinic_name: "",
     city: "",
@@ -49,6 +50,7 @@ const CoachSettingsPage = () => {
         ).id,
         registration_number: (profile as { registration_number?: string | null }).registration_number || "",
         crn: profile.crn || "",
+        instagram_handle: (profile.instagram_handle || "").replace("@", ""),
         bio: profile.bio || "",
         clinic_name: profile.clinic_name || "",
         city: profile.city || "",
@@ -76,6 +78,7 @@ const CoachSettingsPage = () => {
       professional_role: form.professional_role,
       registration_number: form.registration_number || null,
       crn: form.crn || null,
+      instagram_handle: form.instagram_handle || null,
       bio: form.bio || null,
       clinic_name: form.clinic_name || null,
       city: form.city || null,
@@ -158,6 +161,24 @@ const CoachSettingsPage = () => {
                 />
               </div>
             )}
+            <div>
+              <Label>Instagram (@)</Label>
+              <Input
+                value={form.instagram_handle}
+                onChange={e => setForm(p => ({ ...p, instagram_handle: e.target.value.replace("@", "") }))}
+                placeholder="seu.handle"
+              />
+              {form.instagram_handle && (
+                <a
+                  href={`https://instagram.com/${form.instagram_handle}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-primary underline underline-offset-2 mt-1 inline-block"
+                >
+                  instagram.com/{form.instagram_handle}
+                </a>
+              )}
+            </div>
             <div>
               <Label>Bio</Label>
               <Textarea value={form.bio} onChange={e => setForm(p => ({ ...p, bio: e.target.value }))} rows={3} />
