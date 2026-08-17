@@ -54,7 +54,7 @@ const SocialProofPanel = ({ coachProfileId, handle, ctx }: { coachProfileId?: st
         supabase.from("weight_logs").select("weight_kg, logged_at").eq("user_id", uid).order("logged_at", { ascending: true }),
         supabase.from("mce_scores").select("score_m, score_c, score_e, created_at").eq("user_id", uid).order("created_at", { ascending: true }),
         supabase.from("weekly_checkins").select("created_at, weight_kg").eq("user_id", uid).order("created_at", { ascending: true }),
-        supabase.from("workout_sessions").select("id").eq("user_id", uid),
+        supabase.from("workout_logs").select("day_number, week_number").eq("athlete_id", uid),
       ]);
 
       const w = (weights || []) as any[];
