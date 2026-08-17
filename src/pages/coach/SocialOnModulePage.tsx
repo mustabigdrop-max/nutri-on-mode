@@ -187,6 +187,37 @@ const SocialOnModulePage = () => {
     toast.success("Auditoria concluída");
   };
 
+  const saveLadderMetrics = async (next: Record<string, string>) => {
+    setLadderMetrics(next);
+    await saveProfile({ ladder_metrics: next });
+  };
+
+  const exportPlanPdf = async () => {
+    const { default: JsPDF } = await import("jspdf");
+    const doc = new JsPDF({ unit: "pt", format: "a4" });
+    let y = 56;
+    doc.setFontSize(18);
+    doc.text("SOCIAL ON — Plano de ação", 40, y);
+    y += 22;
+    doc.setFontSize(10);
+    doc.text(`@${handle.replace("@", "") || "—"}  ·  ${new Date().toLocaleDateString("pt-BR")}`, 40, y);
+    if (bioScore != null) { y += 14; doc.text(`Score da bio: ${bioScore}/100`, 40, y); }
+    y += 26;
+    ACTION_PLAN.forEach((g) => {
+      doc.setFontSize(13);
+      doc.text(g.period, 40, y);
+      y += 18;
+      doc.setFontSize(11);
+      g.items.forEach((i) => {
+        doc.text(`${checklist[i] ? "[x]" : "[ ]"} ${i}`, 52, y);
+        y += 16;
+        if (y > 780) { doc.addPage(); y = 56; }
+      });
+      y += 10;
+    });
+    doc.save(`social-on-plano-${new Date().toISOString().slice(0, 10)}.pdf`);
+  };
+
   const generate = async () => {
     if (!topic.trim()) return toast.error("Descreva o tema/contexto");
     setBusy("gen");
