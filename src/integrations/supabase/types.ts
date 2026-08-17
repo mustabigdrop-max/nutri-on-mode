@@ -9634,30 +9634,54 @@ export type Database = {
       social_instagram_accounts: {
         Row: {
           access_token: string
+          biography: string | null
           coach_id: string
           connected_at: string
+          followers_count: number | null
+          follows_count: number | null
+          full_name: string | null
           ig_user_id: string
+          media_count: number | null
           page_id: string | null
+          profile_picture_url: string | null
+          recent_media: Json | null
+          synced_at: string | null
           token_expires_at: string | null
           updated_at: string
           username: string | null
         }
         Insert: {
           access_token: string
+          biography?: string | null
           coach_id: string
           connected_at?: string
+          followers_count?: number | null
+          follows_count?: number | null
+          full_name?: string | null
           ig_user_id: string
+          media_count?: number | null
           page_id?: string | null
+          profile_picture_url?: string | null
+          recent_media?: Json | null
+          synced_at?: string | null
           token_expires_at?: string | null
           updated_at?: string
           username?: string | null
         }
         Update: {
           access_token?: string
+          biography?: string | null
           coach_id?: string
           connected_at?: string
+          followers_count?: number | null
+          follows_count?: number | null
+          full_name?: string | null
           ig_user_id?: string
+          media_count?: number | null
           page_id?: string | null
+          profile_picture_url?: string | null
+          recent_media?: Json | null
+          synced_at?: string | null
           token_expires_at?: string | null
           updated_at?: string
           username?: string | null
