@@ -32,7 +32,20 @@ type CalendarRow = {
   status: string;
 };
 
+/** Paleta HUD do SOCIAL ON (violeta/magenta) */
+const SOC = {
+  bg: "#06040e",
+  accent: "#C05BF5",
+  dim: "rgba(192,91,245,0.45)",
+  soft: "rgba(192,91,245,0.10)",
+  line: "rgba(192,91,245,0.14)",
+  grid: "rgba(192,91,245,0.045)",
+  text: "#F2ECFA",
+  muted: "#6b5a86",
+} as const;
+
 const copy = (text: string) => {
+
   navigator.clipboard.writeText(text);
   toast.success("Copiado para a área de transferência");
 };
@@ -330,50 +343,103 @@ export default function SocialOnPage() {
 
   const published = rows.filter((r) => r.status === "published").length;
 
-  return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b border-border bg-card px-4 py-4">
-        <div className="max-w-6xl mx-auto flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/coach-dashboard")}>
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
-          <Instagram className="w-5 h-5" style={{ color: "#00D4FF" }} />
-          <div>
-            <h1 className="text-xl font-bold text-foreground">SOCIAL ON</h1>
-            <p className="text-sm text-muted-foreground">
-              Motor de crescimento no Instagram
-              {handle && (
-                <>
-                  {" · "}
-                  <a
-                    href={`https://instagram.com/${handle.replace("@", "")}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="underline underline-offset-2 hover:text-foreground"
-                    style={{ color: "#00D4FF" }}
-                  >
-                    @{handle.replace("@", "")}
-                  </a>
-                </>
-              )}
-            </p>
-          </div>
-        </div>
-      </header>
+  const tabCls =
+    "rounded-none border border-transparent px-3 py-1.5 text-[11px] uppercase tracking-[0.16em] font-mono text-muted-foreground " +
+    "data-[state=active]:bg-[rgba(192,91,245,0.12)] data-[state=active]:text-[#D7A6FF] data-[state=active]:border-[rgba(192,91,245,0.45)]";
 
-      <main className="max-w-6xl mx-auto p-4">
-        <Tabs defaultValue="calendario">
-          <TabsList className="flex flex-wrap h-auto">
-            <TabsTrigger value="auditoria"><BarChart3 className="w-3.5 h-3.5 mr-1" /> Auditoria</TabsTrigger>
-            <TabsTrigger value="pilares"><Brain className="w-3.5 h-3.5 mr-1" /> Pilares</TabsTrigger>
-            <TabsTrigger value="calendario"><CalendarDays className="w-3.5 h-3.5 mr-1" /> Calendário</TabsTrigger>
-            <TabsTrigger value="legendas"><PenLine className="w-3.5 h-3.5 mr-1" /> Legendas</TabsTrigger>
-            <TabsTrigger value="reels"><Clapperboard className="w-3.5 h-3.5 mr-1" /> Reels</TabsTrigger>
-            <TabsTrigger value="hooks"><Sparkles className="w-3.5 h-3.5 mr-1" /> Hooks</TabsTrigger>
-            <TabsTrigger value="hashtags"><Hash className="w-3.5 h-3.5 mr-1" /> Hashtags</TabsTrigger>
-            <TabsTrigger value="stories"><LayoutList className="w-3.5 h-3.5 mr-1" /> Stories</TabsTrigger>
-            <TabsTrigger value="publicar"><Instagram className="w-3.5 h-3.5 mr-1" /> Publicar</TabsTrigger>
-          </TabsList>
+  return (
+    <div className="min-h-screen relative" style={{ background: SOC.bg, color: SOC.text }}>
+      {/* HUD background */}
+      <div
+        className="pointer-events-none fixed inset-0 z-0"
+        style={{
+          backgroundImage:
+            `linear-gradient(${SOC.grid} 1px, transparent 1px), linear-gradient(90deg, ${SOC.grid} 1px, transparent 1px)`,
+          backgroundSize: "48px 48px",
+        }}
+      />
+      <div
+        className="pointer-events-none fixed inset-0 z-0"
+        style={{ background: "radial-gradient(circle at 50% 0%, rgba(192,91,245,0.10), transparent 60%), radial-gradient(circle at 50% 100%, rgba(0,0,0,0.9), transparent 55%)" }}
+      />
+
+      <div className="relative z-[1]">
+        <header className="px-4 py-5" style={{ borderBottom: `1px solid ${SOC.line}`, background: "rgba(6,4,14,0.86)", backdropFilter: "blur(8px)" }}>
+          <div className="max-w-6xl mx-auto">
+            <div className="flex items-center gap-3">
+              <Button variant="ghost" size="icon" onClick={() => navigate("/coach-dashboard")}>
+                <ArrowLeft className="w-5 h-5" />
+              </Button>
+              <div className="relative" style={{ width: 44, height: 44 }}>
+                <div className="absolute inset-0" style={{ border: `1px solid ${SOC.dim}`, transform: "rotate(45deg)" }} />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <Instagram className="w-5 h-5" style={{ color: SOC.accent }} />
+                </div>
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <h1 className="text-2xl font-bold tracking-[0.12em]" style={{ fontFamily: "'Rajdhani', sans-serif" }}>SOCIAL ON</h1>
+                  <span
+                    className="px-1.5 py-0.5"
+                    style={{ fontFamily: "'Space Mono', monospace", fontSize: 8, letterSpacing: "0.2em", color: SOC.accent, border: `1px solid ${SOC.dim}`, background: SOC.soft }}
+                  >
+                    ENGINE V1
+                  </span>
+                </div>
+                <p style={{ fontFamily: "'Space Mono', monospace", fontSize: 10, letterSpacing: "0.16em", color: SOC.muted, textTransform: "uppercase" }}>
+                  MOTOR DE CRESCIMENTO · INSTAGRAM
+                  {handle && (
+                    <>
+                      {" · "}
+                      <a
+                        href={`https://instagram.com/${handle.replace("@", "")}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="underline underline-offset-2"
+                        style={{ color: SOC.accent }}
+                      >
+                        @{handle.replace("@", "")}
+                      </a>
+                    </>
+                  )}
+                </p>
+              </div>
+              <div className="hidden sm:flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: SOC.accent, boxShadow: `0 0 6px ${SOC.accent}` }} />
+                <span style={{ fontFamily: "'Space Mono', monospace", fontSize: 9, letterSpacing: "0.2em", color: SOC.muted }}>ONLINE</span>
+              </div>
+            </div>
+
+            {/* Stat rail */}
+            <div className="mt-4 grid grid-cols-3 gap-2">
+              {[
+                { k: "POSTS/SEM", v: String(rows.length) },
+                { k: "PUBLICADOS", v: String(published) },
+                { k: "PILARES", v: String(Object.keys(pillarCount).length) },
+              ].map((s) => (
+                <div key={s.k} className="px-3 py-2" style={{ border: `1px solid ${SOC.line}`, background: "rgba(255,255,255,0.02)" }}>
+                  <p style={{ fontFamily: "'Space Mono', monospace", fontSize: 8, letterSpacing: "0.2em", color: SOC.muted }}>{s.k}</p>
+                  <p style={{ fontFamily: "'Rajdhani', sans-serif", fontWeight: 700, fontSize: 20, color: SOC.accent, lineHeight: 1.1 }}>{s.v}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </header>
+
+        <main className="max-w-6xl mx-auto p-4">
+          <Tabs defaultValue="calendario">
+            <TabsList className="flex flex-wrap h-auto gap-1 bg-transparent p-0">
+              <TabsTrigger className={tabCls} value="auditoria"><BarChart3 className="w-3.5 h-3.5 mr-1" /> Auditoria</TabsTrigger>
+              <TabsTrigger className={tabCls} value="pilares"><Brain className="w-3.5 h-3.5 mr-1" /> Pilares</TabsTrigger>
+              <TabsTrigger className={tabCls} value="calendario"><CalendarDays className="w-3.5 h-3.5 mr-1" /> Calendário</TabsTrigger>
+              <TabsTrigger className={tabCls} value="legendas"><PenLine className="w-3.5 h-3.5 mr-1" /> Legendas</TabsTrigger>
+              <TabsTrigger className={tabCls} value="reels"><Clapperboard className="w-3.5 h-3.5 mr-1" /> Reels</TabsTrigger>
+              <TabsTrigger className={tabCls} value="hooks"><Sparkles className="w-3.5 h-3.5 mr-1" /> Hooks</TabsTrigger>
+              <TabsTrigger className={tabCls} value="hashtags"><Hash className="w-3.5 h-3.5 mr-1" /> Hashtags</TabsTrigger>
+              <TabsTrigger className={tabCls} value="stories"><LayoutList className="w-3.5 h-3.5 mr-1" /> Stories</TabsTrigger>
+              <TabsTrigger className={tabCls} value="publicar"><Instagram className="w-3.5 h-3.5 mr-1" /> Publicar</TabsTrigger>
+            </TabsList>
+
 
           {/* AUDITORIA */}
           <TabsContent value="auditoria" className="space-y-4 pt-4">
@@ -787,6 +853,8 @@ export default function SocialOnPage() {
           </TabsContent>
         </Tabs>
       </main>
+      </div>
     </div>
+
   );
 }
