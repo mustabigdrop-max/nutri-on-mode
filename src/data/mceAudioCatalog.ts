@@ -7,7 +7,18 @@ export type AudioSeries =
   | "carreira"
   | "relacionamentos"
   | "parentalidade"
-  | "financas";
+  | "financas"
+  | "breathwork"
+  | "reprogramacao"
+  | "emergencia"
+  | "masterclass"
+  | "focus"
+  | "reset_semanal"
+  | "review_mensal"
+  | "competicao"
+  | "biohacking"
+  | "journaling"
+  | "vida_real";
 
 export type CatalogEpisode = {
   series: AudioSeries;
@@ -30,7 +41,21 @@ export const SERIES_META: Record<AudioSeries, { label: string; icon: string; col
   relacionamentos: { label: "Série Relacionamentos", icon: "🤝", color: "#F472B6", blurb: "Vínculos que sustentam (ou sabotam) sua transformação." },
   parentalidade: { label: "Série Parentalidade", icon: "👨‍👩‍👧", color: "#34D399", blurb: "Ser exemplo: rotina, alimentação e mentalidade dentro de casa." },
   financas: { label: "Série Finanças", icon: "💰", color: "#FBBF24", blurb: "Disciplina financeira com a mesma lógica do MCE." },
+  breathwork: { label: "Breathwork", icon: "🌬️", color: "#38BDF8", blurb: "Protocolos de respiração guiada — hackear o sistema nervoso em 90 segundos." },
+  reprogramacao: { label: "Reprogramação", icon: "🧲", color: "#C084FC", blurb: "Auto-hipnose e afirmações ancoradas — 95% das decisões são subconscientes." },
+  emergencia: { label: "SOS — Emergência", icon: "🚨", color: "#EF4444", blurb: "Intervenção imediata para momentos de crise comportamental." },
+  masterclass: { label: "Masterclasses", icon: "🎓", color: "#2DD4BF", blurb: "Aulas profundas de 20 a 35 minutos sobre os pilares da performance." },
+  focus: { label: "Focus Mode", icon: "🔇", color: "#94A3B8", blurb: "Sem voz — apenas frequência binaural e soundscape." },
+  reset_semanal: { label: "Reset Semanal", icon: "📅", color: "#60A5FA", blurb: "Ritual de domingo: revisão, lições, planejamento e intenção." },
+  review_mensal: { label: "Review Mensal", icon: "📊", color: "#F59E0B", blurb: "Fechamento do mês em números e declaração de identidade." },
+  competicao: { label: "Dia de Competição", icon: "🏆", color: "#FACC15", blurb: "Preparação mental para o palco: véspera, backstage, finals e pós." },
+  biohacking: { label: "Biohacking", icon: "🧊", color: "#22D3EE", blurb: "Frio, luz solar, grounding e calor — otimização guiada." },
+  journaling: { label: "Journaling Guiado", icon: "❓", color: "#F472B6", blurb: "Perguntas poderosas com silêncio real para escrever." },
+  vida_real: { label: "Vida Real", icon: "🤝", color: "#34D399", blurb: "O MCE além do shape: família, fé, dinheiro e solidão do disciplinado." },
 };
+
+/** Módulos que aparecem em destaque como acesso rápido no app. */
+export const SOS_SERIES: AudioSeries = "emergencia";
 
 export const MCE_AUDIO_CATALOG: CatalogEpisode[] = [
   // MINDSET
@@ -123,6 +148,69 @@ export const MCE_AUDIO_CATALOG: CatalogEpisode[] = [
   { series: "financas", episode_number: 6, title: "Meal prep econômico", description: "Planejamento semanal que corta desperdício.", duration_seconds: min(17) },
   { series: "financas", episode_number: 7, title: "Ansiedade financeira e compulsão", description: "Estresse crônico, cortisol e decisões alimentares.", duration_seconds: min(20) },
   { series: "financas", episode_number: 8, title: "Finanças MCE: patrimônio e corpo", description: "Juros compostos aplicados ao comportamento.", duration_seconds: min(20) },
+  // BREATHWORK
+  { series: "breathwork", episode_number: 1, title: "Fisiológico Sigh", description: "Duas inspirações pelo nariz + expiração longa. Derruba cortisol em 90 segundos.", duration_seconds: min(2), scientific_reference: "Huberman Lab · Stanford" },
+  { series: "breathwork", episode_number: 2, title: "Box Breathing", description: "4-4-4-4. A técnica dos Navy SEALs para controle emocional e foco.", duration_seconds: min(5) },
+  { series: "breathwork", episode_number: 3, title: "Wim Hof Adaptado", description: "3 rounds: 30 respirações profundas, retenção máxima e recuperação.", duration_seconds: min(10), scientific_reference: "Kox et al., 2014 · PNAS" },
+  { series: "breathwork", episode_number: 4, title: "4-7-8 Sono", description: "Inspira 4, segura 7, solta 8. Ativa o parassimpático e induz o sono.", duration_seconds: min(5), scientific_reference: "Dr. Andrew Weil" },
+  { series: "breathwork", episode_number: 5, title: "Energizante Matinal", description: "Kapalabhati adaptada: expirações curtas e fortes para elevar o alerta.", duration_seconds: min(3) },
+  { series: "breathwork", episode_number: 6, title: "Coerência Cardíaca", description: "Inspira 5, solta 5. Máxima variabilidade cardíaca = máxima resiliência.", duration_seconds: min(6), scientific_reference: "HeartMath Institute" },
+  // REPROGRAMAÇÃO
+  { series: "reprogramacao", episode_number: 1, title: "Identidade de Atleta", description: "Indução leve em theta + afirmações de identidade em primeira pessoa.", duration_seconds: min(15) },
+  { series: "reprogramacao", episode_number: 2, title: "Eliminação de Autossabotagem", description: "Desativar comer emocional, procrastinação e desistência.", duration_seconds: min(15) },
+  { series: "reprogramacao", episode_number: 3, title: "Visualização de Resultado", description: "90 dias à frente: visualização sensorial detalhada do corpo construído.", duration_seconds: min(12) },
+  { series: "reprogramacao", episode_number: 4, title: "Relação com Comida", description: "Sua fome nunca foi de comida — reprogramação em nível profundo.", duration_seconds: min(15) },
+  { series: "reprogramacao", episode_number: 5, title: "Confiança e Autoestima", description: "Reconstrução da autoimagem para quem começa com autoestima baixa.", duration_seconds: min(12) },
+  { series: "reprogramacao", episode_number: 6, title: "Superação de Platô", description: "O platô não é o fim. É o teste.", duration_seconds: min(10) },
+  // EMERGÊNCIA
+  { series: "emergencia", episode_number: 1, title: "Vontade de comer fora do plano", description: "Pico de dopamina antecipatória: passa em 90 segundos. Me dá 3 minutos.", duration_seconds: min(3), scientific_reference: "Núcleo accumbens · Berridge" },
+  { series: "emergencia", episode_number: 2, title: "Não quero treinar hoje", description: "91% de quem treinou mesmo sem vontade se sentiu melhor depois.", duration_seconds: min(3), scientific_reference: "Univ. Hertfordshire" },
+  { series: "emergencia", episode_number: 3, title: "Ansiedade / mente acelerada", description: "Physiological sigh + grounding sensorial 5-4-3-2-1.", duration_seconds: min(4) },
+  { series: "emergencia", episode_number: 4, title: "Insônia / não consigo dormir", description: "Body scan progressivo + respiração 4-7-8.", duration_seconds: min(5) },
+  { series: "emergencia", episode_number: 5, title: "Recaída alimentar", description: "Depois de comer fora do plano. Sem julgamento — corta a narrativa de culpa.", duration_seconds: min(4), scientific_reference: "Prochaska · Estágios de mudança" },
+  { series: "emergencia", episode_number: 6, title: "Comparação / inveja", description: "Você compara seu bastidor com o pódio do outro.", duration_seconds: min(3), scientific_reference: "Festinger, 1954" },
+  // MASTERCLASSES
+  { series: "masterclass", episode_number: 1, title: "Sono e Performance", description: "Arquitetura do sono, fases e impacto na composição corporal.", duration_seconds: min(30), scientific_reference: "Matthew Walker · Huberman" },
+  { series: "masterclass", episode_number: 2, title: "O Eixo Intestino-Cérebro", description: "Microbioma, serotonina intestinal, humor, fibras e probióticos.", duration_seconds: min(25) },
+  { series: "masterclass", episode_number: 3, title: "Hormônios e Estilo de Vida", description: "Testosterona, cortisol, insulina e GH otimizados sem farmacologia.", duration_seconds: min(30) },
+  { series: "masterclass", episode_number: 4, title: "A Ciência da Força de Vontade", description: "Ego depletion, glicose cerebral, fadiga de decisão e design de ambiente.", duration_seconds: min(25), scientific_reference: "Baumeister" },
+  { series: "masterclass", episode_number: 5, title: "Neuroplasticidade Aplicada", description: "Como 30 dias de consistência remodelam circuitos neurais.", duration_seconds: min(25), scientific_reference: "Merzenich · Doidge" },
+  { series: "masterclass", episode_number: 6, title: "Cronobiologia: o relógio interno", description: "Ritmo circadiano, TRE, jet lag social e cortisol matinal.", duration_seconds: min(25), scientific_reference: "Satchin Panda" },
+  { series: "masterclass", episode_number: 7, title: "Psicologia do Comportamento Alimentar", description: "Fome fisiológica vs emocional vs social. Deep dive completo.", duration_seconds: min(30) },
+  { series: "masterclass", episode_number: 8, title: "A Ciência do Hábito", description: "Duhigg, Clear, Fogg e Gollwitzer — o framework completo.", duration_seconds: min(25) },
+  { series: "masterclass", episode_number: 9, title: "Flow State", description: "As 8 condições do flow aplicadas ao treino, ao trabalho e à vida.", duration_seconds: min(25), scientific_reference: "Csikszentmihalyi" },
+  { series: "masterclass", episode_number: 10, title: "Dor, Desconforto e Crescimento", description: "Hormese e antifragilidade: por que evitar desconforto estagna.", duration_seconds: min(20), scientific_reference: "Taleb" },
+  // FOCUS MODE
+  { series: "focus", episode_number: 1, title: "Deep Focus", description: "15 Hz beta + lo-fi ambient. Trabalho concentrado e estudo.", duration_seconds: min(25) },
+  { series: "focus", episode_number: 2, title: "Flow State", description: "10-12 Hz alpha + ambient pads. Treino, criação, arte.", duration_seconds: min(45) },
+  { series: "focus", episode_number: 3, title: "Recovery", description: "4-6 Hz theta + bowls tibetanos. Descanso ativo e pós-treino.", duration_seconds: min(30) },
+  { series: "focus", episode_number: 4, title: "Power Nap", description: "Theta → delta → alpha. Cochilo de 20 min com despertar suave.", duration_seconds: min(20) },
+  { series: "focus", episode_number: 5, title: "Night Mode", description: "2-3 Hz delta + chuva/oceano. Indução contínua para dormir.", duration_seconds: min(60) },
+  { series: "focus", episode_number: 6, title: "Pre-Competition", description: "10 Hz alpha + batimento 60bpm. Calma focada antes do palco.", duration_seconds: min(15) },
+  // RESET SEMANAL
+  { series: "reset_semanal", episode_number: 1, title: "Reset Semanal — Domingo", description: "Revisão da semana, lições, planejamento, meal prep e intenção declarada.", duration_seconds: min(15) },
+  // REVIEW MENSAL
+  { series: "review_mensal", episode_number: 1, title: "Review Mensal", description: "O mês em números, quem você era há 30 dias e a declaração de identidade.", duration_seconds: min(20) },
+  // COMPETIÇÃO
+  { series: "competicao", episode_number: 1, title: "Noite antes da competição", description: "Visualização do palco, calma e preparação mental.", duration_seconds: min(10) },
+  { series: "competicao", episode_number: 2, title: "Backstage — antes do prejudging", description: "Pump-up mental e controle de ansiedade com respiração 4-4.", duration_seconds: min(5) },
+  { series: "competicao", episode_number: 3, title: "Entre prejudging e finals", description: "Recuperação mental sem queimar energia com resultado.", duration_seconds: min(8) },
+  { series: "competicao", episode_number: 4, title: "Pós-competição", description: "Processamento emocional independente do resultado.", duration_seconds: min(10) },
+  // BIOHACKING
+  { series: "biohacking", episode_number: 1, title: "Cold Exposure guiado", description: "Banho gelado ou imersão: norepinefrina e tolerância ao desconforto.", duration_seconds: min(5) },
+  { series: "biohacking", episode_number: 2, title: "Sunlight Morning Protocol", description: "Luz solar nos primeiros 30 min: reset do núcleo supraquiasmático.", duration_seconds: min(3), scientific_reference: "Huberman Lab" },
+  { series: "biohacking", episode_number: 3, title: "Grounding / Earthing", description: "Pés descalços no chão e inflamação sistêmica.", duration_seconds: min(5), scientific_reference: "J. Environ. Public Health" },
+  { series: "biohacking", episode_number: 4, title: "Sauna / calor guiado", description: "Heat shock proteins e adaptação cardiovascular.", duration_seconds: min(10) },
+  // JOURNALING
+  { series: "journaling", episode_number: 1, title: "Sessão de autoconhecimento", description: "10 perguntas poderosas com 60s de silêncio para escrever.", duration_seconds: min(15) },
+  { series: "journaling", episode_number: 2, title: "Carta pro eu futuro", description: "Uma carta para você daqui 90 dias — o contrato mais importante.", duration_seconds: min(10) },
+  { series: "journaling", episode_number: 3, title: "Mapa de gatilhos", description: "Identificar o gatilho principal e definir a resposta substituta.", duration_seconds: min(12) },
+  // VIDA REAL
+  { series: "vida_real", episode_number: 1, title: "Quando ninguém em casa apoia", description: "Lidar com o ambiente familiar sem conflito e sem ceder.", duration_seconds: min(12) },
+  { series: "vida_real", episode_number: 2, title: "O atleta e o pai", description: "Shape e presença: conciliar cardio às 4h30 com a vida de família.", duration_seconds: min(10) },
+  { series: "vida_real", episode_number: 3, title: "Dinheiro é execução", description: "MCE financeiro: a mesma disciplina, outro domínio.", duration_seconds: min(12) },
+  { series: "vida_real", episode_number: 4, title: "Fé e propósito", description: "O corpo como responsabilidade, não vaidade.", duration_seconds: min(10) },
+  { series: "vida_real", episode_number: 5, title: "A solidão do disciplinado", description: "Temporária — ao contrário da solidão do arrependido.", duration_seconds: min(10) },
 ];
 
 export const RITUAL_KEY_BY_EPISODE: Record<number, "despertar" | "pre_treino" | "pos_treino" | "pre_sono"> = {
