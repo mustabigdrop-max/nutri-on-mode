@@ -265,7 +265,23 @@ export default function SocialOnPage() {
           <Instagram className="w-5 h-5" style={{ color: "#00D4FF" }} />
           <div>
             <h1 className="text-xl font-bold text-foreground">SOCIAL ON</h1>
-            <p className="text-sm text-muted-foreground">Motor de crescimento no Instagram · @{handle}</p>
+            <p className="text-sm text-muted-foreground">
+              Motor de crescimento no Instagram
+              {handle && (
+                <>
+                  {" · "}
+                  <a
+                    href={`https://instagram.com/${handle.replace("@", "")}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline underline-offset-2 hover:text-foreground"
+                    style={{ color: "#00D4FF" }}
+                  >
+                    @{handle.replace("@", "")}
+                  </a>
+                </>
+              )}
+            </p>
           </div>
         </div>
       </header>
