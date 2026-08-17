@@ -5774,6 +5774,33 @@ export type Database = {
           },
         ]
       }
+      mce_alter_ego: {
+        Row: {
+          activation_phrase: string | null
+          created_at: string
+          name: string
+          posture: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          activation_phrase?: string | null
+          created_at?: string
+          name: string
+          posture?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          activation_phrase?: string | null
+          created_at?: string
+          name?: string
+          posture?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       mce_audio_episodes: {
         Row: {
           audio_url: string | null
@@ -5920,6 +5947,45 @@ export type Database = {
           score_e?: number
           score_m?: number
           source?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      mce_voice_notes: {
+        Row: {
+          audio_path: string
+          created_at: string
+          duration_seconds: number
+          id: string
+          kind: string
+          mce_score: number | null
+          note_date: string
+          transcript: string | null
+          unlock_at: string | null
+          user_id: string
+        }
+        Insert: {
+          audio_path: string
+          created_at?: string
+          duration_seconds?: number
+          id?: string
+          kind?: string
+          mce_score?: number | null
+          note_date?: string
+          transcript?: string | null
+          unlock_at?: string | null
+          user_id: string
+        }
+        Update: {
+          audio_path?: string
+          created_at?: string
+          duration_seconds?: number
+          id?: string
+          kind?: string
+          mce_score?: number | null
+          note_date?: string
+          transcript?: string | null
+          unlock_at?: string | null
           user_id?: string
         }
         Relationships: []
@@ -8481,11 +8547,14 @@ export type Database = {
       }
       profiles: {
         Row: {
+          abw_factor: number | null
           activation_completed: boolean | null
           active_protocol: string | null
           activity_level: string | null
           age: number | null
           avatar_url: string | null
+          bf_percent: number | null
+          body_profile: string | null
           carbs_g: number | null
           coach_notes: string | null
           coach_profile_id: string | null
@@ -8494,6 +8563,7 @@ export type Database = {
           date_of_birth: string | null
           dietary_restrictions: string[] | null
           email: string | null
+          fat_distribution: string | null
           fat_g: number | null
           features_override: Json | null
           first_meal_registered: boolean | null
@@ -8507,8 +8577,10 @@ export type Database = {
           last_streak_date: string | null
           level: number | null
           meta_peso: number | null
+          muscle_development: string | null
           nivel_treino: string | null
           nutrition_periodization: Json | null
+          nutritional_priorities: string[] | null
           objetivo_principal: string | null
           onboarding_completed: boolean | null
           orcamento_semanal: number | null
@@ -8520,7 +8592,10 @@ export type Database = {
             | Database["public"]["Enums"]["professional_role"]
             | null
           professional_type: string | null
+          profile_analyzed_at: string | null
+          profile_source: string | null
           protein_g: number | null
+          protein_reference: string | null
           registration_number: string | null
           registration_type: string | null
           role: string | null
@@ -8533,15 +8608,19 @@ export type Database = {
           user_id: string
           uses_glp1: boolean | null
           vet_kcal: number | null
+          visual_indicators: string[] | null
           weight_kg: number | null
           xp: number | null
         }
         Insert: {
+          abw_factor?: number | null
           activation_completed?: boolean | null
           active_protocol?: string | null
           activity_level?: string | null
           age?: number | null
           avatar_url?: string | null
+          bf_percent?: number | null
+          body_profile?: string | null
           carbs_g?: number | null
           coach_notes?: string | null
           coach_profile_id?: string | null
@@ -8550,6 +8629,7 @@ export type Database = {
           date_of_birth?: string | null
           dietary_restrictions?: string[] | null
           email?: string | null
+          fat_distribution?: string | null
           fat_g?: number | null
           features_override?: Json | null
           first_meal_registered?: boolean | null
@@ -8563,8 +8643,10 @@ export type Database = {
           last_streak_date?: string | null
           level?: number | null
           meta_peso?: number | null
+          muscle_development?: string | null
           nivel_treino?: string | null
           nutrition_periodization?: Json | null
+          nutritional_priorities?: string[] | null
           objetivo_principal?: string | null
           onboarding_completed?: boolean | null
           orcamento_semanal?: number | null
@@ -8576,7 +8658,10 @@ export type Database = {
             | Database["public"]["Enums"]["professional_role"]
             | null
           professional_type?: string | null
+          profile_analyzed_at?: string | null
+          profile_source?: string | null
           protein_g?: number | null
+          protein_reference?: string | null
           registration_number?: string | null
           registration_type?: string | null
           role?: string | null
@@ -8589,15 +8674,19 @@ export type Database = {
           user_id: string
           uses_glp1?: boolean | null
           vet_kcal?: number | null
+          visual_indicators?: string[] | null
           weight_kg?: number | null
           xp?: number | null
         }
         Update: {
+          abw_factor?: number | null
           activation_completed?: boolean | null
           active_protocol?: string | null
           activity_level?: string | null
           age?: number | null
           avatar_url?: string | null
+          bf_percent?: number | null
+          body_profile?: string | null
           carbs_g?: number | null
           coach_notes?: string | null
           coach_profile_id?: string | null
@@ -8606,6 +8695,7 @@ export type Database = {
           date_of_birth?: string | null
           dietary_restrictions?: string[] | null
           email?: string | null
+          fat_distribution?: string | null
           fat_g?: number | null
           features_override?: Json | null
           first_meal_registered?: boolean | null
@@ -8619,8 +8709,10 @@ export type Database = {
           last_streak_date?: string | null
           level?: number | null
           meta_peso?: number | null
+          muscle_development?: string | null
           nivel_treino?: string | null
           nutrition_periodization?: Json | null
+          nutritional_priorities?: string[] | null
           objetivo_principal?: string | null
           onboarding_completed?: boolean | null
           orcamento_semanal?: number | null
@@ -8632,7 +8724,10 @@ export type Database = {
             | Database["public"]["Enums"]["professional_role"]
             | null
           professional_type?: string | null
+          profile_analyzed_at?: string | null
+          profile_source?: string | null
           protein_g?: number | null
+          protein_reference?: string | null
           registration_number?: string | null
           registration_type?: string | null
           role?: string | null
@@ -8645,6 +8740,7 @@ export type Database = {
           user_id?: string
           uses_glp1?: boolean | null
           vet_kcal?: number | null
+          visual_indicators?: string[] | null
           weight_kg?: number | null
           xp?: number | null
         }
