@@ -24,7 +24,13 @@ type Episode = {
 
 type Progress = { episode_id: string; progress_seconds: number; completed: boolean };
 
-const SERIES_ORDER: AudioSeries[] = ["mindset", "comportamento", "execucao", "ciencia", "carreira", "relacionamentos", "parentalidade", "financas", "ritual"];
+const SERIES_ORDER: AudioSeries[] = [
+  "mindset", "comportamento", "execucao", "ciencia", "masterclass",
+  "breathwork", "reprogramacao", "emergencia", "focus",
+  "reset_semanal", "review_mensal", "journaling",
+  "vida_real", "competicao", "biohacking",
+  "carreira", "relacionamentos", "parentalidade", "financas", "ritual",
+];
 
 const fmtDur = (s: number) => `${Math.floor(s / 60)} min`;
 
