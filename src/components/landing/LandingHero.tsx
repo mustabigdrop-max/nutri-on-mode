@@ -1,570 +1,286 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
-const GOLD = "#B8922A";
-const CYAN = "#00D4FF";
-const TEXT = "#F5F0E8";
+/**
+ * Direção "Central de Performance Humana": grafite + ouro fosco + verde-quadra,
+ * um único momento de abertura (não loop perpétuo), e o time nomeado em vez de
+ * siglas de produto. Tokens ficam locais a este arquivo — o tema global
+ * (--gold/--cyan) segue intocado, usado em ~200 outros componentes do app.
+ */
+const INK = "#14120F";
+const INK_ELEVATED = "#1B1813";
+const BONE = "#F4EFE3";
+const DIM = "#B9AF9C";
+const GOLD = "#B8922A"; // = --gold do tema global, mantido para consistência com o resto do site
+const GOLD_STRONG = "#D6AE47"; // = --gold-glow do tema global
+const COURT = "#4C8267"; // novo: verde-quadra, substitui o ciano neon nesta seção
+const LINE = "rgba(244,239,227,0.12)";
 
-const STREAM_LABELS = ["TDEE","VO2","RPE","BPM","1RM","PACE","HRV","ATP","GH","PCA","KAA","MCE","GLUT4","GUT"];
+const DISPLAY = "'Big Shoulders Display', 'Rajdhani', sans-serif";
+const BODY = "'Work Sans', 'Space Grotesk', sans-serif";
+const MONO = "'JetBrains Mono', 'Space Mono', monospace";
 
-const HUDS = [
-  { pos: "top-24 left-[3%]",       align: "left",  title: "TDEE CALCULADO",     value: 3240, suffix: " kcal", bar: GOLD, delay: 4700 },
-  { pos: "top-24 right-[3%]",      align: "right", title: "1RM SUPINO",         value: 120,  suffix: " kg",   bar: CYAN, delay: 4800 },
-  { pos: "top-[44%] left-[3%]",    align: "left",  title: "RITMO 5KM",          text: "4'12 /KM",           bar: GOLD, delay: 4900 },
-  { pos: "top-[44%] right-[3%]",   align: "right", title: "MICROBIOTA",         text: "GUT-BRAIN ON",       bar: CYAN, delay: 5000 },
-  { pos: "bottom-24 left-[3%]",    align: "left",  title: "VOLUME SEMANAL",     text: "118K KG",            bar: CYAN, delay: 5100 },
-  { pos: "bottom-24 right-[3%]",   align: "right", title: "RECUPERAÇÃO",        text: "92% PRONTO",         bar: GOLD, delay: 5200 },
+const TEAM = [
+  {
+    role: "Treinador",
+    desc: "periodiza carga e volume toda semana",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
+        <circle cx="5.5" cy="12" r="2.5" />
+        <circle cx="18.5" cy="12" r="2.5" />
+        <path d="M8 12h8" />
+      </svg>
+    ),
+  },
+  {
+    role: "Nutricionista",
+    desc: "ajusta macros ao seu protocolo ativo",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M7 3v7a3 3 0 0 0 3 3v8" />
+        <path d="M7 3v7M10 3v7" />
+        <path d="M15 3c-1.6 2.4-1.6 6.4 0 8.8V21" />
+      </svg>
+    ),
+  },
+  {
+    role: "Nutrition Coach",
+    desc: "acompanha adesão e comportamento",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M4 19 10 12 14 15 20 7" />
+        <path d="M15 7h5v5" />
+      </svg>
+    ),
+  },
+  {
+    role: "Nutrólogo",
+    desc: "lê exames e valida a estratégia",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M4 12h4l1.6-4 3 8L14 12h6" />
+      </svg>
+    ),
+  },
 ];
 
-const NODES = [
-  { id: "n1", x: 18, y: 18, label: "PCA",        sub: "Comportamento",   color: GOLD },
-  { id: "n2", x: 50, y: 10, label: "NutriPlan",  sub: "Nutrição",        color: CYAN },
-  { id: "n3", x: 82, y: 18, label: "TrainingON", sub: "Treino",          color: GOLD },
-  { id: "n4", x: 82, y: 82, label: "VERTEX",     sub: "Farmacologia",    color: CYAN },
-  { id: "n5", x: 50, y: 90, label: "KAA™",       sub: "Kinetic Arch.",   color: GOLD },
-  { id: "n6", x: 18, y: 82, label: "Microbiota", sub: "Gut-Brain",       color: CYAN },
+const STATS = [
+  { label: "TDEE calculado", value: "3.240 kcal" },
+  { label: "1RM supino", value: "120 kg" },
+  { label: "Ritmo 5km", value: "4'12/km" },
 ];
-
-const TICKER = ["PCA","NutriPlan","TrainingON","VERTEX","KAA™","Microbiota"];
-
-const useCount = (target: number, start: boolean, duration = 1600) => {
-  const [v, setV] = useState(0);
-  useEffect(() => {
-    if (!start) return;
-    const t0 = performance.now();
-    let raf = 0;
-    const step = (t: number) => {
-      const p = Math.min(1, (t - t0) / duration);
-      const eased = 1 - Math.pow(1 - p, 3);
-      setV(Math.round(target * eased));
-      if (p < 1) raf = requestAnimationFrame(step);
-    };
-    raf = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(raf);
-  }, [target, start, duration]);
-  return v;
-};
 
 const LandingHero = () => {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  // phases: 0 init → 1..3 linhas de agitação → 4 headline + conteúdo assentam
   const [phase, setPhase] = useState(0);
-  // phases: 0 init, 1 l1, 2 l2, 3 l3, 4 l4, 5 flash/jarvis, 6 huds, 7 nodes, 8 tagline, 9 status
 
   useEffect(() => {
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduceMotion) {
+      setPhase(4);
+      return;
+    }
     const timers = [
-      setTimeout(() => setPhase(1), 400),
-      setTimeout(() => setPhase(2), 1150),
-      setTimeout(() => setPhase(3), 1900),
-      setTimeout(() => setPhase(4), 2800),
-      setTimeout(() => setPhase(5), 4100),
-      setTimeout(() => setPhase(6), 4700),
-      setTimeout(() => setPhase(7), 5300),
-      setTimeout(() => setPhase(8), 6200),
-      setTimeout(() => setPhase(9), 6700),
+      setTimeout(() => setPhase(1), 300),
+      setTimeout(() => setPhase(2), 900),
+      setTimeout(() => setPhase(3), 1500),
+      setTimeout(() => setPhase(4), 2300),
     ];
     return () => timers.forEach(clearTimeout);
   }, []);
 
-  // Canvas: hex grid + particles + data streams + scan line
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    let w = 0, h = 0, dpr = Math.min(window.devicePixelRatio || 1, 2);
-    const resize = () => {
-      const r = canvas.getBoundingClientRect();
-      w = r.width; h = r.height;
-      canvas.width = w * dpr; canvas.height = h * dpr;
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    };
-    resize();
-    window.addEventListener("resize", resize);
-
-    type P = { x:number; y:number; vx:number; vy:number; c:string; r:number };
-    const particles: P[] = [];
-    const PCOUNT = 160;
-    for (let i = 0; i < PCOUNT; i++) {
-      particles.push({
-        x: Math.random() * 1600, y: Math.random() * 900,
-        vx: (Math.random() - 0.5) * 0.25,
-        vy: (Math.random() - 0.5) * 0.25,
-        c: Math.random() < 0.75 ? GOLD : CYAN,
-        r: Math.random() * 1.2 + 0.4,
-      });
-    }
-
-    type S = { x:number; y:number; speed:number; label:string; trail:string[] };
-    const streams: S[] = [];
-    for (let i = 0; i < 14; i++) {
-      streams.push({
-        x: Math.random() * 1600,
-        y: Math.random() * 900,
-        speed: 0.6 + Math.random() * 1.4,
-        label: STREAM_LABELS[i % STREAM_LABELS.length],
-        trail: [],
-      });
-    }
-
-    const hex = 30;
-    let t0 = performance.now();
-    let raf = 0;
-
-    const draw = () => {
-      const t = (performance.now() - t0) / 1000;
-      ctx.clearRect(0, 0, w, h);
-
-      // Hex grid pulse
-      const cx = w / 2, cy = h / 2;
-      ctx.lineWidth = 1;
-      const hx = hex, hy = hex * 0.866;
-      for (let y = 0; y < h + hy; y += hy) {
-        for (let x = 0; x < w + hx; x += hx * 1.5) {
-          const ox = (Math.floor(y / hy) % 2) * hx * 0.75;
-          const px = x + ox, py = y;
-          const dist = Math.hypot(px - cx, py - cy);
-          const wave = Math.sin(t * 1.5 - dist / 80);
-          const a = 0.04 + Math.max(0, wave) * 0.08;
-          ctx.strokeStyle = `rgba(184,146,42,${a.toFixed(3)})`;
-          ctx.beginPath();
-          for (let i = 0; i < 6; i++) {
-            const ang = (Math.PI / 3) * i;
-            const xx = px + Math.cos(ang) * hx * 0.5;
-            const yy = py + Math.sin(ang) * hx * 0.5;
-            if (i === 0) ctx.moveTo(xx, yy); else ctx.lineTo(xx, yy);
-          }
-          ctx.closePath();
-          ctx.stroke();
-        }
-      }
-
-      // Particles + connections
-      for (const p of particles) {
-        p.x += p.vx; p.y += p.vy;
-        if (p.x < 0) p.x = w; else if (p.x > w) p.x = 0;
-        if (p.y < 0) p.y = h; else if (p.y > h) p.y = 0;
-      }
-      for (let i = 0; i < particles.length; i++) {
-        const a = particles[i];
-        for (let j = i + 1; j < Math.min(i + 6, particles.length); j++) {
-          const b = particles[j];
-          const dx = a.x - b.x, dy = a.y - b.y;
-          const d = Math.hypot(dx, dy);
-          if (d < 90) {
-            ctx.strokeStyle = `rgba(184,146,42,${(0.12 * (1 - d / 90)).toFixed(3)})`;
-            ctx.lineWidth = 0.5;
-            ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
-          }
-        }
-        ctx.fillStyle = a.c;
-        ctx.globalAlpha = 0.85;
-        ctx.beginPath(); ctx.arc(a.x, a.y, a.r, 0, Math.PI * 2); ctx.fill();
-        ctx.globalAlpha = 1;
-      }
-
-      // Data streams
-      ctx.font = "9px 'Space Mono', monospace";
-      for (const s of streams) {
-        s.y += s.speed;
-        if (s.y > h + 20) { s.y = -20; s.x = Math.random() * w; s.trail = []; }
-        s.trail.unshift(`${s.label} ${(Math.random() * 100).toFixed(0)}`);
-        if (s.trail.length > 5) s.trail.pop();
-        for (let i = 0; i < s.trail.length; i++) {
-          const alpha = (1 - i / s.trail.length) * 0.22;
-          ctx.fillStyle = `rgba(184,146,42,${alpha.toFixed(3)})`;
-          ctx.fillText(s.trail[i], s.x, s.y - i * 12);
-        }
-      }
-
-      // Scan line
-      const sy = ((t * 60) % (h + 100)) - 50;
-      const grad = ctx.createLinearGradient(0, sy - 40, 0, sy + 40);
-      grad.addColorStop(0, "rgba(0,212,255,0)");
-      grad.addColorStop(0.5, "rgba(0,212,255,0.12)");
-      grad.addColorStop(1, "rgba(0,212,255,0)");
-      ctx.fillStyle = grad;
-      ctx.fillRect(0, sy - 40, w, 80);
-
-      raf = requestAnimationFrame(draw);
-    };
-    raf = requestAnimationFrame(draw);
-    return () => { cancelAnimationFrame(raf); window.removeEventListener("resize", resize); };
-  }, []);
-
-  const tdee = useCount(3240, phase >= 6);
-  const oneRm = useCount(120, phase >= 6);
+  const linesDone = phase >= 4;
 
   return (
     <section
-      className="relative w-full h-screen min-h-[720px] overflow-hidden bg-black"
-      style={{ fontFamily: "'Space Mono', monospace", color: TEXT }}
+      className="relative w-full overflow-hidden"
+      style={{ background: INK, color: BONE, fontFamily: BODY }}
     >
-      <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />
-
-      {/* Vignette */}
+      {/* Fundo: gradiente estático + textura de grade muito sutil — sem canvas, sem loop */}
       <div
         className="absolute inset-0 pointer-events-none"
-        style={{ background: "radial-gradient(ellipse at center, rgba(0,0,0,0) 30%, rgba(0,0,0,0.85) 100%)" }}
-      />
-
-      {/* Gold flash */}
-      <div
-        className="absolute inset-0 pointer-events-none transition-opacity"
         style={{
-          background: GOLD,
-          opacity: phase === 5 ? 0.85 : 0,
-          transition: "opacity 90ms linear",
-          mixBlendMode: "screen",
+          background: `radial-gradient(ellipse 70% 55% at 50% 0%, ${GOLD}14 0%, transparent 60%)`,
+        }}
+      />
+      <div
+        className="absolute inset-0 pointer-events-none opacity-[0.35]"
+        style={{
+          backgroundImage: `linear-gradient(${LINE} 1px, transparent 1px), linear-gradient(90deg, ${LINE} 1px, transparent 1px)`,
+          backgroundSize: "64px 64px",
+          maskImage: "radial-gradient(ellipse 80% 70% at 50% 20%, black 30%, transparent 75%)",
+          WebkitMaskImage: "radial-gradient(ellipse 80% 70% at 50% 20%, black 30%, transparent 75%)",
         }}
       />
 
-      {/* L corners */}
-      {[
-        "top-5 left-5 border-t-2 border-l-2",
-        "top-5 right-5 border-t-2 border-r-2",
-        "bottom-5 left-5 border-b-2 border-l-2",
-        "bottom-5 right-5 border-b-2 border-r-2",
-      ].map((c, i) => (
+      <div className="relative z-10 mx-auto max-w-5xl px-6 md:px-10 pt-32 pb-20 md:pt-40 md:pb-24">
+        {/* Status — um indicador só, sem sirene piscando */}
         <div
-          key={i}
-          className={`absolute ${c} pointer-events-none`}
-          style={{ width: 28, height: 28, borderColor: GOLD, animation: "lhPulse 2.4s ease-in-out infinite" }}
-        />
-      ))}
-
-      {/* Live badge */}
-      <div
-        className="absolute top-5 right-1/2 translate-x-1/2 sm:right-20 sm:translate-x-0 z-30 flex items-center gap-2 px-3 py-1.5 rounded-full border"
-        style={{ borderColor: "#00D4FF18", background: "rgba(0,0,0,0.4)" }}
-      >
-        <span
-          className="w-1.5 h-1.5 rounded-full"
-          style={{ background: "#ff3344", boxShadow: "0 0 8px #ff3344", animation: "lhBlink 1.2s ease-in-out infinite" }}
-        />
-        <span style={{ color: "#00D4FF33", fontSize: 9, letterSpacing: "0.3em" }}>SISTEMA AO VIVO</span>
-      </div>
-
-      {/* PHASE 1-4: Opening lines */}
-      {phase < 5 && (
-        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-6 px-4 text-center">
-          {[
-            { txt: "Você treinou.",        show: phase >= 1, gold: false },
-            { txt: "Você se alimentou.",   show: phase >= 2, gold: false },
-            { txt: "Você descansou.",      show: phase >= 3, gold: false },
-            { txt: "E mesmo assim parou.", show: phase >= 4, gold: true  },
-          ].map((l, i) => (
-            <div
-              key={i}
-              style={{
-                opacity: l.show ? 1 : 0,
-                filter: l.show ? "blur(0)" : "blur(12px)",
-                transform: l.show ? "translateY(0)" : "translateY(6px)",
-                transition: "opacity .6s ease, filter .6s ease, transform .6s ease",
-                color: l.gold ? GOLD : TEXT,
-                fontSize: l.gold ? 16 : 14,
-                letterSpacing: "0.28em",
-                textTransform: "uppercase",
-              }}
-            >
-              {l.txt}
-              {l.gold && l.show && (
-                <span style={{ display: "inline-block", width: 8, height: 16, marginLeft: 6, background: GOLD, verticalAlign: "middle", animation: "lhBlink 0.9s steps(2) infinite" }} />
-              )}
-            </div>
-          ))}
+          className="flex items-center gap-2 mb-8"
+          style={{
+            opacity: linesDone ? 1 : 0,
+            transition: "opacity .6s ease",
+          }}
+        >
+          <span className="w-1.5 h-1.5 rounded-full" style={{ background: COURT, boxShadow: `0 0 6px ${COURT}` }} />
+          <span style={{ fontFamily: MONO, fontSize: 11, letterSpacing: "0.18em", color: COURT, textTransform: "uppercase" }}>
+            Protocolo ativo
+          </span>
         </div>
-      )}
 
-      {/* PHASE 5+: Jarvis system */}
-      <div
-        className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none"
-        style={{
-          opacity: phase >= 5 ? 1 : 0,
-          transition: "opacity .8s ease",
-        }}
-      >
-        {/* Orbital rings */}
-        <div className="relative" style={{ width: "min(86vmin, 720px)", height: "min(86vmin, 720px)" }}>
-          {[
-            { size: 100, speed: 38, dir: 1,  c: GOLD, d: "4 6" },
-            { size: 82,  speed: 28, dir: -1, c: CYAN, d: "2 5" },
-            { size: 64,  speed: 22, dir: 1,  c: GOLD, d: "6 4" },
-            { size: 48,  speed: 18, dir: -1, c: CYAN, d: "1 4" },
-            { size: 32,  speed: 14, dir: 1,  c: GOLD, d: "3 3" },
-          ].map((r, i) => (
-            <svg
-              key={i}
-              className="absolute inset-0 m-auto"
-              style={{
-                width: `${r.size}%`, height: `${r.size}%`, top: 0, bottom: 0, left: 0, right: 0,
-                animation: `lhSpin ${r.speed}s linear infinite ${r.dir < 0 ? "reverse" : ""}`,
-              }}
-              viewBox="0 0 100 100"
-            >
-              <circle cx="50" cy="50" r="48" fill="none" stroke={r.c} strokeOpacity="0.45" strokeWidth="0.4" strokeDasharray={r.d} />
-            </svg>
-          ))}
-
-          {/* 3D sphere ellipses */}
-          {[
-            { rx: 48, ry: 14, rot: 0 },
-            { rx: 48, ry: 14, rot: 60 },
-            { rx: 48, ry: 14, rot: 120 },
-          ].map((e, i) => (
-            <svg key={i} className="absolute inset-0" viewBox="0 0 100 100">
-              <ellipse cx="50" cy="50" rx={e.rx} ry={e.ry} fill="none" stroke={GOLD} strokeOpacity="0.25" strokeWidth="0.3" transform={`rotate(${e.rot} 50 50)`} />
-            </svg>
-          ))}
-
-          {/* Radar sweep */}
-          <div
-            className="absolute inset-0"
-            style={{
-              borderRadius: "50%",
-              background: `conic-gradient(from 0deg, rgba(0,212,255,0) 0deg, rgba(0,212,255,0) 320deg, rgba(0,212,255,0.35) 358deg, rgba(0,212,255,0) 360deg)`,
-              animation: "lhSpin 4s linear infinite",
-              maskImage: "radial-gradient(circle, black 48%, transparent 50%)",
-              WebkitMaskImage: "radial-gradient(circle, black 48%, transparent 50%)",
-            }}
-          />
-
-          {/* 24 radial lines */}
-          <svg className="absolute inset-0" viewBox="0 0 100 100">
-            {Array.from({ length: 24 }).map((_, i) => {
-              const ang = (Math.PI * 2 * i) / 24;
-              const x = 50 + Math.cos(ang) * 48;
-              const y = 50 + Math.sin(ang) * 48;
-              const x0 = 50 + Math.cos(ang) * 16;
-              const y0 = 50 + Math.sin(ang) * 16;
-              return (
-                <line
-                  key={i}
-                  x1={x0} y1={y0} x2={x} y2={y}
-                  stroke={i % 2 === 0 ? GOLD : CYAN}
-                  strokeOpacity="0.28"
-                  strokeWidth="0.2"
-                  style={{ animation: `lhRadialPulse 3s ease-in-out infinite ${(i * 0.08).toFixed(2)}s` }}
-                />
-              );
-            })}
-          </svg>
-
-          {/* Connections center → nodes */}
-          <svg className="absolute inset-0" viewBox="0 0 100 100">
-            {NODES.map((n, i) => (
-              <g key={n.id}>
-                <line
-                  x1="50" y1="50" x2={n.x} y2={n.y}
-                  stroke={CYAN} strokeOpacity="0.35"
-                  strokeWidth="0.25" strokeDasharray="1.2 1.2"
-                  style={{ opacity: phase >= 7 ? 1 : 0, transition: `opacity .6s ease ${i * 0.08}s` }}
-                />
-                <circle r="0.9" fill={CYAN} style={{ opacity: phase >= 7 ? 1 : 0 }}>
-                  <animateMotion dur={`${2.4 + i * 0.2}s`} repeatCount="indefinite" path={`M 50 50 L ${n.x} ${n.y}`} />
-                </circle>
-              </g>
-            ))}
-          </svg>
-
-          {/* Orbital nodes */}
-          {NODES.map((n, i) => (
-            <div
-              key={n.id}
-              className="absolute"
-              style={{
-                left: `${n.x}%`, top: `${n.y}%`,
-                transform: "translate(-50%, -50%)",
-                opacity: phase >= 7 ? 1 : 0,
-                transition: `opacity .6s ease ${i * 0.1}s, transform .6s ease ${i * 0.1}s`,
-              }}
-            >
-              <div className="relative flex flex-col items-center">
+        {/* Linhas de agitação — tocam uma vez só, depois cedem lugar ao headline */}
+        <div className="relative" style={{ minHeight: linesDone ? undefined : 168 }}>
+          {!linesDone && (
+            <div className="flex flex-col gap-3">
+              {[
+                { txt: "Você treinou.", show: phase >= 1 },
+                { txt: "Você se alimentou.", show: phase >= 2 },
+                { txt: "Você descansou.", show: phase >= 3 },
+              ].map((l, i) => (
                 <div
-                  className="rounded-full flex items-center justify-center"
+                  key={i}
                   style={{
-                    width: 54, height: 54,
-                    border: `1px solid ${n.color}66`,
-                    background: "rgba(0,0,0,0.7)",
-                    boxShadow: `0 0 18px ${n.color}55`,
+                    fontFamily: DISPLAY,
+                    fontWeight: 700,
+                    fontSize: "clamp(22px, 4.4vw, 36px)",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.01em",
+                    color: DIM,
+                    opacity: l.show ? 1 : 0,
+                    transform: l.show ? "translateY(0)" : "translateY(8px)",
+                    transition: "opacity .5s ease, transform .5s ease",
                   }}
                 >
-                  <div
-                    className="absolute inset-0 rounded-full"
-                    style={{ border: `1px dashed ${n.color}55`, animation: "lhSpin 12s linear infinite" }}
-                  />
-                  <span style={{ color: n.color, fontSize: 9, fontWeight: 700, letterSpacing: "0.1em" }}>
-                    {n.label.replace("™", "")}
-                  </span>
+                  {l.txt}
                 </div>
-                <span className="mt-2" style={{ fontSize: 8, letterSpacing: "0.25em", color: `${n.color}cc`, textTransform: "uppercase" }}>
-                  {n.sub}
-                </span>
-              </div>
+              ))}
             </div>
-          ))}
+          )}
 
-          {/* Center logo */}
-          <div className="absolute inset-0 flex flex-col items-center justify-center px-4">
-            <div className="relative text-center">
-              {/* Nuclear point */}
-              <div
-                className="absolute left-1/2 -translate-x-1/2"
-                style={{ top: -28 }}
-              >
-                <div className="relative" style={{ width: 12, height: 12 }}>
-                  <div className="absolute inset-0 rounded-full" style={{ background: "#fff", boxShadow: "0 0 6px #fff, 0 0 18px #fff, 0 0 40px #ffffffcc" }} />
-                </div>
-              </div>
-
-              <h1
-                style={{
-                  fontFamily: "'Rajdhani', sans-serif",
-                  fontWeight: 700,
-                  fontSize: "clamp(48px, 11vw, 112px)",
-                  lineHeight: 1,
-                  letterSpacing: "0.02em",
-                  color: TEXT,
-                  textAlign: "center",
-                  whiteSpace: "nowrap",
-                  margin: "0 auto",
-                  transform: phase >= 5 ? "scale(1)" : "scale(1.25)",
-                  filter: phase >= 5 ? "blur(0)" : "blur(18px)",
-                  opacity: phase >= 5 ? 1 : 0,
-                  transition: "transform 1.1s cubic-bezier(.2,.7,.2,1), filter 1.1s ease, opacity 1.1s ease",
-                  textShadow: `0 0 24px ${GOLD}55`,
-                }}
-              >
-                NUTRI<span style={{ color: GOLD }}>ON</span>
-              </h1>
-              <div
-                className="text-center mt-2"
-                style={{
-                  fontSize: 8, letterSpacing: "0.45em",
-                  color: `${TEXT}99`, textTransform: "uppercase",
-                  opacity: phase >= 5 ? 1 : 0, transition: "opacity .8s ease .3s",
-                }}
-              >
-                Nutrição · Treino · Comportamento — um sistema só
-              </div>
-              <div
-                className="text-center mt-4 px-4"
-                style={{
-                  fontSize: "clamp(13px, 1.6vw, 16px)",
-                  color: TEXT,
-                  opacity: phase >= 5 ? 0.92 : 0,
-                  transition: "opacity .8s ease .5s",
-                }}
-              >
-                Chega de app genérico. Seu protocolo evolui toda semana.
-              </div>
-              <div
-                className="text-center mt-2 px-4"
-                style={{
-                  fontSize: "clamp(10px, 1.2vw, 12px)",
-                  letterSpacing: "0.08em",
-                  color: `${GOLD}cc`,
-                  opacity: phase >= 5 ? 1 : 0,
-                  transition: "opacity .8s ease .65s",
-                }}
-              >
-                Pra quem treina sério: corrida, musculação, performance.
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* HUDs */}
-      {HUDS.map((h, i) => {
-        const visible = phase >= 6;
-        return (
           <div
-            key={i}
-            className={`absolute ${h.pos} z-20 pointer-events-none`}
             style={{
-              minWidth: 150,
-              opacity: visible ? 1 : 0,
-              transform: visible ? "translateY(0)" : `translateY(${h.align === "left" ? "-6px" : "6px"})`,
-              transition: `opacity .6s ease ${i * 0.08}s, transform .6s ease ${i * 0.08}s`,
-              textAlign: h.align as "left" | "right",
+              opacity: linesDone ? 1 : 0,
+              transform: linesDone ? "translateY(0)" : "translateY(10px)",
+              transition: "opacity .7s ease, transform .7s ease",
+              position: linesDone ? "static" : "absolute",
+              top: 0,
+              left: 0,
+              width: "100%",
             }}
           >
-            <div style={{ fontSize: 7, letterSpacing: "0.35em", color: `${h.bar}cc` }}>{h.title}</div>
-            <div style={{ fontSize: 13, color: TEXT, marginTop: 4, fontWeight: 700 }}>
-              {"value" in h && h.value !== undefined
-                ? `${(i === 0 ? tdee : i === 1 ? oneRm : h.value).toLocaleString("pt-BR")}${h.suffix ?? ""}`
-                : h.text}
+            <h1
+              style={{
+                fontFamily: DISPLAY,
+                fontWeight: 800,
+                fontSize: "clamp(40px, 7.2vw, 84px)",
+                lineHeight: 0.98,
+                textTransform: "uppercase",
+                letterSpacing: "0.005em",
+                margin: 0,
+              }}
+            >
+              Seu time cuida.
+              <br />
+              <span style={{ color: GOLD_STRONG }}>Você evolui.</span>
+            </h1>
+
+            <div
+              style={{
+                fontFamily: MONO,
+                fontSize: 12,
+                letterSpacing: "0.16em",
+                color: DIM,
+                textTransform: "uppercase",
+                marginTop: 18,
+              }}
+            >
+              Nutrição · Treino · Comportamento — um sistema só
             </div>
-            <div className="mt-2 h-px w-full" style={{ background: "rgba(255,255,255,0.08)" }}>
-              <div
+
+            <p style={{ marginTop: 22, fontSize: "clamp(15px, 1.6vw, 18px)", color: DIM, maxWidth: "56ch", lineHeight: 1.6 }}>
+              Chega de app genérico. Seu protocolo é desenhado por treinador, nutricionista, nutrition coach e
+              nutrólogo — e evolui toda semana, executado por IA todos os dias.
+            </p>
+
+            <div className="flex flex-wrap items-center gap-4 mt-9">
+              <a
+                href="https://pay.kiwify.com.br/G8uxU9O"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 transition-[filter]"
                 style={{
-                  height: 1, background: h.bar,
-                  width: visible ? "100%" : "0%",
-                  transition: `width 1.4s ease ${0.2 + i * 0.08}s`,
-                  boxShadow: `0 0 6px ${h.bar}`,
+                  background: GOLD,
+                  color: INK,
+                  fontFamily: MONO,
+                  fontWeight: 700,
+                  fontSize: 13,
+                  letterSpacing: "0.08em",
+                  textTransform: "uppercase",
+                  padding: "14px 24px",
                 }}
-              />
-            </div>
-          </div>
-        );
-      })}
-
-      {/* Status bar */}
-      <div
-        className="absolute left-0 right-0 z-20 flex items-center justify-center gap-2"
-        style={{
-          bottom: 38,
-          opacity: phase >= 9 ? 1 : 0,
-          transition: "opacity .8s ease",
-        }}
-      >
-        <span
-          className="w-1.5 h-1.5 rounded-full"
-          style={{ background: CYAN, boxShadow: `0 0 10px ${CYAN}`, animation: "lhBlink 1.1s ease-in-out infinite" }}
-        />
-        <span style={{ fontSize: 9, letterSpacing: "0.32em", color: `${CYAN}aa` }}>
-          DIAGNÓSTICO INICIADO — MONTANDO SEU PROTOCOLO
-        </span>
-      </div>
-
-      {/* Ticker */}
-      <div
-        className="absolute left-0 right-0 bottom-0 z-20 overflow-hidden border-t"
-        style={{
-          borderColor: "#B8922A22",
-          background: "rgba(0,0,0,0.55)",
-          height: 28,
-          opacity: phase >= 9 ? 1 : 0,
-          transition: "opacity .8s ease",
-        }}
-      >
-        <div className="flex whitespace-nowrap" style={{ animation: "lhTicker 28s linear infinite" }}>
-          {Array.from({ length: 8 }).flatMap((_, k) =>
-            TICKER.map((t, i) => (
-              <span
-                key={`${k}-${i}`}
+                onMouseEnter={(e) => (e.currentTarget.style.filter = "brightness(1.12)")}
+                onMouseLeave={(e) => (e.currentTarget.style.filter = "none")}
+              >
+                Começar agora →
+              </a>
+              <a
+                href="#features"
                 style={{
-                  display: "inline-flex", alignItems: "center", gap: 12, padding: "0 22px",
-                  fontSize: 10, letterSpacing: "0.32em",
-                  color: i % 2 === 0 ? GOLD : CYAN,
-                  lineHeight: "28px",
+                  fontFamily: MONO,
+                  fontSize: 12,
+                  letterSpacing: "0.1em",
+                  color: DIM,
+                  textTransform: "uppercase",
+                  borderBottom: `1px solid ${LINE}`,
+                  paddingBottom: 3,
                 }}
               >
-                <span style={{ width: 4, height: 4, borderRadius: 999, background: "currentColor" }} />
-                {t.toUpperCase()}
+                Ver como funciona
+              </a>
+            </div>
+
+            {/* Time — nomeado, não siglas */}
+            <div className="flex flex-wrap gap-3 mt-14">
+              {TEAM.map((t) => (
+                <div
+                  key={t.role}
+                  className="flex items-start gap-3"
+                  style={{
+                    border: `1px solid ${LINE}`,
+                    background: INK_ELEVATED,
+                    padding: "14px 16px",
+                    minWidth: 168,
+                    flex: "1 1 200px",
+                  }}
+                >
+                  <div style={{ width: 20, height: 20, color: GOLD_STRONG, flexShrink: 0, marginTop: 2 }}>{t.icon}</div>
+                  <div>
+                    <div style={{ fontFamily: MONO, fontSize: 11.5, fontWeight: 700, letterSpacing: "0.04em", color: BONE }}>
+                      {t.role}
+                    </div>
+                    <div style={{ fontSize: 12.5, color: DIM, marginTop: 3, lineHeight: 1.4 }}>{t.desc}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Prova: os mesmos dados de antes, agora como uma linha só — não HUDs espalhados */}
+            <div
+              className="flex flex-wrap items-center gap-x-8 gap-y-2 mt-10 pt-6"
+              style={{ borderTop: `1px solid ${LINE}` }}
+            >
+              <span style={{ fontFamily: MONO, fontSize: 10.5, letterSpacing: "0.14em", color: DIM, textTransform: "uppercase" }}>
+                Seu painel, desde o dia 1
               </span>
-            ))
-          )}
+              {STATS.map((s) => (
+                <span key={s.label} style={{ fontFamily: MONO, fontSize: 12.5, color: BONE, fontVariantNumeric: "tabular-nums" }}>
+                  <span style={{ color: DIM }}>{s.label} </span>
+                  {s.value}
+                </span>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
-
-      <style>{`
-        @keyframes lhPulse { 0%,100% { opacity: 0.4 } 50% { opacity: 1 } }
-        @keyframes lhBlink { 0%,100% { opacity: 1 } 50% { opacity: 0.2 } }
-        @keyframes lhSpin { from { transform: rotate(0) } to { transform: rotate(360deg) } }
-        @keyframes lhRadialPulse { 0%,100% { stroke-opacity: 0.1 } 50% { stroke-opacity: 0.55 } }
-        @keyframes lhTicker { from { transform: translateX(0) } to { transform: translateX(-50%) } }
-      `}</style>
     </section>
   );
 };
