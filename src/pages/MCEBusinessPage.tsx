@@ -321,6 +321,12 @@ export default function MCEBusinessPage() {
             >
               Painel de desafios (status · participantes · pagantes)
             </a>
+            <a
+              href="/coach/social"
+              style={{ display: "inline-block", padding: "10px 16px", borderRadius: 10, border: `1px solid ${AMBER}40`, color: AMBER, fontSize: 13, fontWeight: 600, textDecoration: "none" }}
+            >
+              SOCIAL ON (conteúdo · calendário · publicar)
+            </a>
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 14, marginTop: 6 }}>
