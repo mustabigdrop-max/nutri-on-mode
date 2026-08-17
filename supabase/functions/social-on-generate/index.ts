@@ -62,7 +62,19 @@ serve(async (req) => {
       body?.bio ? `Bio atual: ${body.bio}` : "",
       body?.notes ? `Contexto extra: ${body.notes}` : "",
       body?.weekStart ? `Semana começando em: ${body.weekStart}` : "",
+      body?.funnel ? `Etapa do funil: ${body.funnel} (tofu=audiência, mofu=confiança, bofu=venda)` : "",
+      body?.objective ? `Objetivo específico: ${body.objective}` : "",
+      body?.product ? `Produto em foco: ${body.product}` : "",
+      Array.isArray(body?.niches) && body.niches.length ? `Nichos: ${body.niches.join(", ")}` : "",
+      Array.isArray(body?.products) && body.products.length ? `Produtos do coach: ${body.products.join(", ")}` : "",
+      Array.isArray(body?.differentials) && body.differentials.length ? `Diferenciais únicos: ${body.differentials.join(", ")}` : "",
+      Array.isArray(body?.criteria) && body.criteria.length
+        ? `Critérios de avaliação da bio (key|label|peso): ${body.criteria.map((c: any) => `${c.key}|${c.label}|${c.weight}`).join(" ; ")}`
+        : "",
+      body?.posts ? `Últimos posts descritos pelo coach:\n${body.posts}` : "",
+      body?.format === "stories" ? "Para formato stories, preencha stories_sequence com 6 stories e deixe roteiro como array vazio." : "",
     ].filter(Boolean).join("\n");
+
 
     const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
