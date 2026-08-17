@@ -2280,6 +2280,59 @@ export type Database = {
         }
         Relationships: []
       }
+      challenge_signups: {
+        Row: {
+          created_at: string
+          email: string
+          full_name: string | null
+          gym_id: string | null
+          gym_slug: string | null
+          id: string
+          paid: boolean
+          paid_at: string | null
+          plano: string | null
+          source: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          full_name?: string | null
+          gym_id?: string | null
+          gym_slug?: string | null
+          id?: string
+          paid?: boolean
+          paid_at?: string | null
+          plano?: string | null
+          source?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          full_name?: string | null
+          gym_id?: string | null
+          gym_slug?: string | null
+          id?: string
+          paid?: boolean
+          paid_at?: string | null
+          plano?: string | null
+          source?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "challenge_signups_gym_id_fkey"
+            columns: ["gym_id"]
+            isOneToOne: false
+            referencedRelation: "partner_gyms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chat_messages: {
         Row: {
           content: string

@@ -23,6 +23,10 @@ export default function DesafioSignupPage() {
   const [created, setCreated] = useState<{ password: string; needsConfirm: boolean } | null>(null);
 
   const password = useMemo(generatePassword, []);
+  const gymSlug = useMemo(
+    () => new URLSearchParams(window.location.search).get("gym"),
+    [],
+  );
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -63,6 +67,14 @@ export default function DesafioSignupPage() {
           .update({ plano_atual: "free" })
           .eq("user_id", data.user.id);
       }
+
+      await supabase.from("challenge_signups").insert({
+        user_id: data.user?.id ?? null,
+        email: cleanEmail,
+        full_name: cleanName,
+        source: "qr",
+        gym_slug: gymSlug,
+      });
 
       setCreated({ password, needsConfirm: !data.session });
       if (data.session) {
