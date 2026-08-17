@@ -23,6 +23,10 @@ export default function DesafioSignupPage() {
   const [created, setCreated] = useState<{ password: string; needsConfirm: boolean } | null>(null);
 
   const password = useMemo(generatePassword, []);
+  const gymSlug = useMemo(
+    () => new URLSearchParams(window.location.search).get("gym"),
+    [],
+  );
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
