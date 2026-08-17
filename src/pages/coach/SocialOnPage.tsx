@@ -32,7 +32,20 @@ type CalendarRow = {
   status: string;
 };
 
+/** Paleta HUD do SOCIAL ON (violeta/magenta) */
+const SOC = {
+  bg: "#06040e",
+  accent: "#C05BF5",
+  dim: "rgba(192,91,245,0.45)",
+  soft: "rgba(192,91,245,0.10)",
+  line: "rgba(192,91,245,0.14)",
+  grid: "rgba(192,91,245,0.045)",
+  text: "#F2ECFA",
+  muted: "#6b5a86",
+} as const;
+
 const copy = (text: string) => {
+
   navigator.clipboard.writeText(text);
   toast.success("Copiado para a área de transferência");
 };
