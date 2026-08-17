@@ -61,6 +61,15 @@ export const SERIES_META: Record<AudioSeries, { label: string; icon: string; col
   biohacking: { label: "Biohacking", icon: "🧊", color: "#22D3EE", blurb: "Frio, luz solar, grounding e calor — otimização guiada." },
   journaling: { label: "Journaling Guiado", icon: "❓", color: "#F472B6", blurb: "Perguntas poderosas com silêncio real para escrever." },
   vida_real: { label: "Vida Real", icon: "🤝", color: "#34D399", blurb: "O MCE além do shape: família, fé, dinheiro e solidão do disciplinado." },
+  alter_ego: { label: "Alter Ego", icon: "🎭", color: "#E8A020", blurb: "Construa a versão imbatível de você — a chave que vira antes da performance." },
+  capsula: { label: "Cápsula do Tempo", icon: "⏳", color: "#38BDF8", blurb: "Grave sua voz hoje. Desbloqueie em 30, 90, 180 e 365 dias." },
+  pre_refeicao: { label: "Ritual Pré-Refeição", icon: "🍽️", color: "#34D399", blurb: "60 segundos que reprogramam sua relação com a comida." },
+  periodizacao: { label: "Periodização Sonora", icon: "🧬", color: "#C084FC", blurb: "O áudio muda com a fase: bulking, cutting, recomp, peak week e deload." },
+  body_scan: { label: "Body Scan Emocional", icon: "🪞", color: "#F472B6", blurb: "Reconectar mente e corpo — gratidão corporal contra a dismorfia." },
+  desafio_mental: { label: "Desafios Mentais", icon: "🎯", color: "#FACC15", blurb: "Um desafio comportamental por semana — expandir a capacidade mental." },
+  modo_guerra: { label: "Modo Guerra", icon: "🔥", color: "#EF4444", blurb: "90 segundos de ativação simpática sob demanda. Pico máximo." },
+  subliminar: { label: "Subliminar", icon: "🌊", color: "#22D3EE", blurb: "Frequências sem voz — 2 a 8 horas de fundo contínuo." },
+  hall_fama: { label: "Hall da Fama", icon: "🏅", color: "#E8A020", blurb: "Áudios exclusivos de marco: 90, 180, 365 dias e Academy completa." },
 };
 
 /** Módulos que aparecem em destaque como acesso rápido no app. */
