@@ -315,6 +315,12 @@ export default function MCEBusinessPage() {
             >
               Ver conversão do QR (cadastros × pagantes)
             </a>
+            <a
+              href="/mce/business/challenges"
+              style={{ display: "inline-block", padding: "10px 16px", borderRadius: 10, border: `1px solid ${AMBER}40`, color: AMBER, fontSize: 13, fontWeight: 600, textDecoration: "none" }}
+            >
+              Painel de desafios (status · participantes · pagantes)
+            </a>
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 14, marginTop: 6 }}>
