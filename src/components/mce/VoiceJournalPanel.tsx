@@ -38,6 +38,7 @@ export default function VoiceJournalPanel({ onPlay }: { onPlay: (src: string, ti
   const recRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<BlobPart[]>([]);
   const timerRef = useRef<number | null>(null);
+  const elapsedRef = useRef(0);
 
   const load = useCallback(async () => {
     if (!user) return;
@@ -114,8 +115,6 @@ export default function VoiceJournalPanel({ onPlay }: { onPlay: (src: string, ti
       setElapsed(elapsedRef.current);
     }, 1000);
   };
-
-  const elapsedRef = useRef(0);
 
   const stop = () => recRef.current?.stop();
 
