@@ -303,12 +303,30 @@ export default function SocialOnPage() {
           <TabsContent value="auditoria" className="space-y-4 pt-4">
             <Card><CardContent className="p-4 space-y-3">
               <div className="grid sm:grid-cols-[220px_1fr] gap-3">
-                <Input value={handle} onChange={(e) => setHandle(e.target.value.replace("@", ""))} placeholder="seu.handle" />
+                <div className="space-y-1">
+                  <Input value={handle} onChange={(e) => setHandle(e.target.value.replace("@", ""))} placeholder="seu.handle" />
+                  {handle && (
+                    <a
+                      href={`https://instagram.com/${handle.replace("@", "")}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs underline underline-offset-2"
+                      style={{ color: "#00D4FF" }}
+                    >
+                      instagram.com/{handle.replace("@", "")}
+                    </a>
+                  )}
+                </div>
                 <Textarea value={bio} onChange={(e) => setBio(e.target.value)} placeholder="Cole aqui sua bio atual do Instagram" rows={3} />
               </div>
-              <Button onClick={runAudit} disabled={auditing} className="gap-2">
-                {auditing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />} Auditar perfil
-              </Button>
+              <div className="flex flex-wrap gap-2">
+                <Button onClick={runAudit} disabled={auditing} className="gap-2">
+                  {auditing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />} Auditar perfil
+                </Button>
+                <Button variant="outline" onClick={saveHandle} className="gap-2">
+                  <Check className="w-4 h-4" /> Salvar @ no meu perfil
+                </Button>
+              </div>
             </CardContent></Card>
 
             {audit && (
