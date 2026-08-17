@@ -117,9 +117,28 @@ const SocialOnModulePage = () => {
   const [ladderMetrics, setLadderMetrics] = useState<Record<string, string>>({});
   const [coachProfileId, setCoachProfileId] = useState<string | null>(null);
 
+  const ig = useInstagramAccount();
+
   const aiCtx = useMemo(
-    () => ({ handle, niches, products, differentials }),
-    [handle, niches, products, differentials]
+    () => ({
+      handle: ig.account?.username || handle,
+      niches,
+      products,
+      differentials,
+      ig_profile: ig.account
+        ? {
+            name: ig.account.full_name,
+            username: ig.account.username,
+            bio: ig.account.biography,
+            followers: ig.account.followers_count,
+            recent_captions: (ig.account.recent_media || [])
+              .map((m) => m.caption)
+              .filter(Boolean)
+              .slice(0, 6),
+          }
+        : null,
+    }),
+    [handle, niches, products, differentials, ig.account]
   );
 
   const weekStart = useMemo(() => mondayOf(), []);
