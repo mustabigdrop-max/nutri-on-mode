@@ -13,7 +13,14 @@ import { Checkbox } from "@/components/ui/checkbox";
 import {
   ArrowLeft, ArrowRight, Copy, Loader2, Rocket, Search, Target, CalendarDays,
   BarChart3, GraduationCap, ShoppingCart, Check, Instagram, Trash2,
+  RefreshCw, MessageSquare, Microscope, Camera, BookOpen, Lightbulb,
 } from "lucide-react";
+import RepurposerPanel from "@/components/social/RepurposerPanel";
+import DmObjectionsPanel from "@/components/social/DmObjectionsPanel";
+import ViralAnalyzerPanel from "@/components/social/ViralAnalyzerPanel";
+import SocialProofPanel from "@/components/social/SocialProofPanel";
+import IdeasNowPanel from "@/components/social/IdeasNowPanel";
+import PlaybookPanel from "@/components/social/PlaybookPanel";
 import {
   ACADEMY_TRACKS, ACTION_PLAN, BIO_CRITERIA, CONTENT_PRODUCTS, DIFFERENTIALS, FORMATS,
   FUNNELS, IDEAL_MIX, NICHES, OBJECTIVES, PRODUCTS, PRODUCT_LADDER, VISUAL_PALETTE,
@@ -106,6 +113,12 @@ const SocialOnModulePage = () => {
   const [learning, setLearning] = useState<Record<string, boolean>>({});
   const [ladderOpen, setLadderOpen] = useState<string | null>(null);
   const [ladderMetrics, setLadderMetrics] = useState<Record<string, string>>({});
+  const [coachProfileId, setCoachProfileId] = useState<string | null>(null);
+
+  const aiCtx = useMemo(
+    () => ({ handle, niches, products, differentials }),
+    [handle, niches, products, differentials]
+  );
 
   const weekStart = useMemo(() => mondayOf(), []);
 
@@ -116,8 +129,9 @@ const SocialOnModulePage = () => {
       supabase.from("social_content").select("*").eq("coach_id", uid).order("created_at", { ascending: false }),
       supabase.from("social_weekly_checklist").select("*").eq("coach_id", uid).eq("week_start", weekStart).maybeSingle(),
       supabase.from("social_learning_progress").select("*").eq("coach_id", uid),
-      supabase.from("coach_profiles").select("instagram_handle").eq("user_id", uid).maybeSingle(),
+      supabase.from("coach_profiles").select("id, instagram_handle").eq("user_id", uid).maybeSingle(),
     ]);
+    setCoachProfileId((coach as any)?.id ?? null);
     if (prof) {
       setHandle(prof.instagram_handle || coach?.instagram_handle || "");
       setNiches((prof.niches as string[]) || []);
@@ -341,6 +355,12 @@ const SocialOnModulePage = () => {
             <TabsTrigger value="metricas" className="text-xs gap-1"><BarChart3 className="w-3 h-3" />Métricas</TabsTrigger>
             <TabsTrigger value="academia" className="text-xs gap-1"><GraduationCap className="w-3 h-3" />Academia</TabsTrigger>
             <TabsTrigger value="esteira" className="text-xs gap-1"><ShoppingCart className="w-3 h-3" />Esteira</TabsTrigger>
+            <TabsTrigger value="repurposer" className="text-xs gap-1"><RefreshCw className="w-3 h-3" />Repurposer</TabsTrigger>
+            <TabsTrigger value="dm" className="text-xs gap-1"><MessageSquare className="w-3 h-3" />DM &amp; Objeções</TabsTrigger>
+            <TabsTrigger value="viral" className="text-xs gap-1"><Microscope className="w-3 h-3" />Viral</TabsTrigger>
+            <TabsTrigger value="prova" className="text-xs gap-1"><Camera className="w-3 h-3" />Prova social</TabsTrigger>
+            <TabsTrigger value="playbook" className="text-xs gap-1"><BookOpen className="w-3 h-3" />Playbook</TabsTrigger>
+            <TabsTrigger value="ideias" className="text-xs gap-1"><Lightbulb className="w-3 h-3" />Ideias</TabsTrigger>
           </TabsList>
 
           {/* ─────────── AUDITORIA ─────────── */}
@@ -773,6 +793,24 @@ const SocialOnModulePage = () => {
                 <Check className="w-3 h-3" /> Salvar métricas
               </Button>
             </Section>
+          </TabsContent>
+          <TabsContent value="repurposer" className="mt-4">
+            <RepurposerPanel ctx={aiCtx} />
+          </TabsContent>
+          <TabsContent value="dm" className="mt-4">
+            <DmObjectionsPanel ctx={aiCtx} />
+          </TabsContent>
+          <TabsContent value="viral" className="mt-4">
+            <ViralAnalyzerPanel ctx={aiCtx} />
+          </TabsContent>
+          <TabsContent value="prova" className="mt-4">
+            <SocialProofPanel coachProfileId={coachProfileId} handle={handle} ctx={aiCtx} />
+          </TabsContent>
+          <TabsContent value="playbook" className="mt-4">
+            <PlaybookPanel />
+          </TabsContent>
+          <TabsContent value="ideias" className="mt-4">
+            <IdeasNowPanel ctx={aiCtx} onUseIdea={(t) => { setTopic(t); setTab("criar"); }} />
           </TabsContent>
         </Tabs>
       </main>
