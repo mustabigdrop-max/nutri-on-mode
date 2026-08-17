@@ -1417,6 +1417,22 @@ export default function PlanoAlimentarIA() {
     }
     parts.push(`PERFIL FARMACOLÓGICO: ${pharmEnabled && pharmProfile !== "natural" ? pharmProfile : "natural"}`);
     parts.push(...buildIntelContext(intel));
+    {
+      const pesoN = Number(form.peso) || 0;
+      const alturaN = Number(form.altura) || 0;
+      const idadeN = Number(form.idade) || 0;
+      if (pesoN > 0 && alturaN > 0 && idadeN > 0) {
+        const bp = toBodyProfile(perfilCorporal, {
+          weight: pesoN, height: alturaN, age: idadeN,
+          sex: form.sexo === "feminino" ? "F" : "M",
+        });
+        const goalMap: Record<string, string> = {
+          emagrecimento: "cutting", hipertrofia: "bulking", recomposicao: "recomp",
+        };
+        const goal = goalMap[form.objetivo] || "cutting";
+        parts.push(...buildBodyProfileContext(bp, calculateTMB(bp), getMacroDistribution(bp, goal)));
+      }
+    }
     if (condicoesClinicas.length) parts.push(`CONDIÇÕES CLÍNICAS: ${condicoesClinicas.join(", ")}`);
     if (recuperacao.estrategias.length) parts.push(`ESTRATÉGIAS DE RECUPERAÇÃO: ${recuperacao.estrategias.join(", ")}`);
     if (recuperacao.nivelEstresse) parts.push(`NÍVEL DE ESTRESSE: ${recuperacao.nivelEstresse}`);
