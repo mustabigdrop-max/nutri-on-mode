@@ -114,7 +114,7 @@ serve(async (req) => {
     if (action === "status") {
       const { data } = await admin
         .from("social_instagram_accounts")
-        .select("ig_user_id, username, token_expires_at, connected_at")
+        .select(PROFILE_COLUMNS)
         .eq("coach_id", coachId)
         .maybeSingle();
       return json({ result: { connected: !!data, account: data ?? null } });
@@ -125,6 +125,10 @@ serve(async (req) => {
       if (token.length < 20) return json({ error: "Token inválido" }, 400);
       const account = await resolveAccount(token);
       const expires = body?.expires_in ? new Date(Date.now() + Number(body.expires_in) * 1000).toISOString() : null;
+      let snapshot: Record<string, unknown> = {};
+      try {
+        snapshot = await fetchProfileSnapshot(account.ig_user_id, token);
+      } catch (_) { /* profile fields optional at connect time */ }
       const { error } = await admin.from("social_instagram_accounts").upsert({
         coach_id: coachId,
         ig_user_id: account.ig_user_id,
@@ -132,10 +136,39 @@ serve(async (req) => {
         page_id: account.page_id,
         access_token: token,
         token_expires_at: expires,
+        ...snapshot,
         updated_at: new Date().toISOString(),
       });
       if (error) throw new Error(error.message);
-      return json({ result: { connected: true, account: { ...account, access_token: undefined } } });
+      const { data: saved } = await admin
+        .from("social_instagram_accounts")
+        .select(PROFILE_COLUMNS)
+        .eq("coach_id", coachId)
+        .maybeSingle();
+      return json({ result: { connected: true, account: saved } });
+    }
+
+    if (action === "sync_profile") {
+      const { data: acc } = await admin
+        .from("social_instagram_accounts")
+        .select("ig_user_id, access_token")
+        .eq("coach_id", coachId)
+        .maybeSingle();
+      if (!acc) return json({ error: "Conecte sua conta do Instagram primeiro" }, 400);
+
+      const snapshot = await fetchProfileSnapshot(acc.ig_user_id, acc.access_token);
+      const { error } = await admin
+        .from("social_instagram_accounts")
+        .update({ ...snapshot, updated_at: new Date().toISOString() })
+        .eq("coach_id", coachId);
+      if (error) throw new Error(error.message);
+
+      const { data: saved } = await admin
+        .from("social_instagram_accounts")
+        .select(PROFILE_COLUMNS)
+        .eq("coach_id", coachId)
+        .maybeSingle();
+      return json({ result: { connected: true, account: saved } });
     }
 
     if (action === "disconnect") {
