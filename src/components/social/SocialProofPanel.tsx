@@ -21,7 +21,19 @@ type Stats = {
   streak: number;
 };
 
-const SocialProofPanel = ({ coachProfileId, handle, ctx }: { coachProfileId?: string | null; handle: string; ctx: Record<string, any> }) => {
+const SocialProofPanel = ({
+  coachProfileId,
+  handle,
+  coachName,
+  coachAvatar,
+  ctx,
+}: {
+  coachProfileId?: string | null;
+  handle: string;
+  coachName?: string | null;
+  coachAvatar?: string | null;
+  ctx: Record<string, any>;
+}) => {
   const [athletes, setAthletes] = useState<Athlete[]>([]);
   const [selected, setSelected] = useState<string>("");
   const [stats, setStats] = useState<Stats | null>(null);

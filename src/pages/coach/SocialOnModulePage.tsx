@@ -843,7 +843,13 @@ const SocialOnModulePage = () => {
             <ViralAnalyzerPanel ctx={aiCtx} />
           </TabsContent>
           <TabsContent value="prova" className="mt-4">
-            <SocialProofPanel coachProfileId={coachProfileId} handle={handle} ctx={aiCtx} />
+            <SocialProofPanel
+              coachProfileId={coachProfileId}
+              handle={ig.account?.username || handle}
+              coachName={ig.account?.full_name || null}
+              coachAvatar={ig.account?.profile_picture_url || null}
+              ctx={aiCtx}
+            />
           </TabsContent>
           <TabsContent value="playbook" className="mt-4">
             <PlaybookPanel />
