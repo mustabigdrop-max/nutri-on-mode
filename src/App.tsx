@@ -300,6 +300,7 @@ const App = () => (
             <Route path="/coach/atletas/:id" element={<CoachToolRoute><ProtectedRoute><AthleteProgressTracker /></ProtectedRoute></CoachToolRoute>} />
             <Route path="/coach/apex-pose" element={<CoachToolRoute><ProtectedRoute><APEXPoseAnalysisPage /></ProtectedRoute></CoachToolRoute>} />
             <Route path="/coach/social" element={<CoachToolRoute><ProtectedRoute><SocialOnPage /></ProtectedRoute></CoachToolRoute>} />
+            <Route path="/coach/social-on" element={<CoachToolRoute><ProtectedRoute><SocialOnModulePage /></ProtectedRoute></CoachToolRoute>} />
             <Route path="/coach/vera" element={<CoachToolRoute><ProtectedRoute><VeraPage /></ProtectedRoute></CoachToolRoute>} />
 
             <Route path="/nutriplan-elite" element={<CoachToolRoute><ProtectedRoute><NutriPlanErrorBoundary><Suspense fallback={<NutriPlanLoading />}><NutriPlanElitePage /></Suspense></NutriPlanErrorBoundary></ProtectedRoute></CoachToolRoute>} />
