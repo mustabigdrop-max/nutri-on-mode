@@ -151,7 +151,6 @@ Deno.serve(async (req) => {
         .from("challenge_signups")
         .update({ paid: true, plano: planoEfetivo, paid_at: new Date().toISOString() })
         .eq("email", email);
-    }
     } else if (event === "refunded" || event === "chargedback" || event === "canceled") {
       // Cancelar assinatura
       const { data: sub } = await supabase
