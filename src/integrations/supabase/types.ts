@@ -9749,6 +9749,7 @@ export type Database = {
           funnel_stage: string
           id: string
           instagram_handle: string | null
+          ladder_metrics: Json | null
           niches: Json | null
           products: Json | null
           updated_at: string
@@ -9766,6 +9767,7 @@ export type Database = {
           funnel_stage?: string
           id?: string
           instagram_handle?: string | null
+          ladder_metrics?: Json | null
           niches?: Json | null
           products?: Json | null
           updated_at?: string
@@ -9783,6 +9785,7 @@ export type Database = {
           funnel_stage?: string
           id?: string
           instagram_handle?: string | null
+          ladder_metrics?: Json | null
           niches?: Json | null
           products?: Json | null
           updated_at?: string
