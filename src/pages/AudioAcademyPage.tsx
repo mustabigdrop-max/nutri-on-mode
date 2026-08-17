@@ -25,11 +25,14 @@ type Episode = {
 type Progress = { episode_id: string; progress_seconds: number; completed: boolean };
 
 const SERIES_ORDER: AudioSeries[] = [
+  "alter_ego", "modo_guerra", "capsula",
   "mindset", "comportamento", "execucao", "ciencia", "masterclass",
-  "breathwork", "reprogramacao", "emergencia", "focus",
+  "breathwork", "reprogramacao", "emergencia", "focus", "subliminar",
+  "pre_refeicao", "periodizacao", "body_scan", "desafio_mental",
   "reset_semanal", "review_mensal", "journaling",
   "vida_real", "competicao", "biohacking",
   "carreira", "relacionamentos", "parentalidade", "financas", "ritual",
+  "hall_fama",
 ];
 
 const fmtDur = (s: number) => `${Math.floor(s / 60)} min`;
