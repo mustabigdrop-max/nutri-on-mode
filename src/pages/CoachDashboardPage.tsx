@@ -35,6 +35,7 @@ const ADVANCED_MODULES = [
   { label: "MetabolicON", icon: Flame, route: "/metabolicon", color: "#fb923c" },
   { label: "Biomecânica", icon: Bone, route: "/biomechanics", color: "#f472b6" },
   { label: "SOCIAL ON", icon: Instagram, route: "/coach/social", color: "#00D4FF" },
+  { label: "SOCIAL ON+", icon: Instagram, route: "/coach/social-on", color: "#A855F7" },
 ];
 
 type StatusFilter = "all" | "ok" | "attention" | "risk";

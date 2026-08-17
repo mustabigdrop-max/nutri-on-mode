@@ -9487,6 +9487,69 @@ export type Database = {
         }
         Relationships: []
       }
+      social_content: {
+        Row: {
+          caption: string | null
+          coach_id: string
+          created_at: string
+          format: string
+          funnel: string
+          hashtags: string[] | null
+          hook: string | null
+          id: string
+          objective: string | null
+          product: string | null
+          production_tips: Json | null
+          published: boolean
+          scheduled_date: string | null
+          script: string | null
+          status: string
+          strategy_notes: string | null
+          topic: string | null
+          updated_at: string
+        }
+        Insert: {
+          caption?: string | null
+          coach_id: string
+          created_at?: string
+          format: string
+          funnel: string
+          hashtags?: string[] | null
+          hook?: string | null
+          id?: string
+          objective?: string | null
+          product?: string | null
+          production_tips?: Json | null
+          published?: boolean
+          scheduled_date?: string | null
+          script?: string | null
+          status?: string
+          strategy_notes?: string | null
+          topic?: string | null
+          updated_at?: string
+        }
+        Update: {
+          caption?: string | null
+          coach_id?: string
+          created_at?: string
+          format?: string
+          funnel?: string
+          hashtags?: string[] | null
+          hook?: string | null
+          id?: string
+          objective?: string | null
+          product?: string | null
+          production_tips?: Json | null
+          published?: boolean
+          scheduled_date?: string | null
+          script?: string | null
+          status?: string
+          strategy_notes?: string | null
+          topic?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       social_content_calendar: {
         Row: {
           caption: string | null
@@ -9640,6 +9703,120 @@ export type Database = {
           media_url?: string | null
           permalink?: string | null
           status?: string
+        }
+        Relationships: []
+      }
+      social_learning_progress: {
+        Row: {
+          coach_id: string
+          completed: boolean
+          completed_at: string | null
+          created_at: string
+          id: string
+          lesson: string
+          track: string
+        }
+        Insert: {
+          coach_id: string
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          lesson: string
+          track: string
+        }
+        Update: {
+          coach_id?: string
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          lesson?: string
+          track?: string
+        }
+        Relationships: []
+      }
+      social_profile: {
+        Row: {
+          audit_completed: boolean
+          audited_at: string | null
+          bio_current: string | null
+          bio_score: number | null
+          coach_id: string
+          content_pillars: Json | null
+          created_at: string
+          differentials: Json | null
+          funnel_stage: string
+          id: string
+          instagram_handle: string | null
+          niches: Json | null
+          products: Json | null
+          updated_at: string
+          visual_palette: Json | null
+        }
+        Insert: {
+          audit_completed?: boolean
+          audited_at?: string | null
+          bio_current?: string | null
+          bio_score?: number | null
+          coach_id: string
+          content_pillars?: Json | null
+          created_at?: string
+          differentials?: Json | null
+          funnel_stage?: string
+          id?: string
+          instagram_handle?: string | null
+          niches?: Json | null
+          products?: Json | null
+          updated_at?: string
+          visual_palette?: Json | null
+        }
+        Update: {
+          audit_completed?: boolean
+          audited_at?: string | null
+          bio_current?: string | null
+          bio_score?: number | null
+          coach_id?: string
+          content_pillars?: Json | null
+          created_at?: string
+          differentials?: Json | null
+          funnel_stage?: string
+          id?: string
+          instagram_handle?: string | null
+          niches?: Json | null
+          products?: Json | null
+          updated_at?: string
+          visual_palette?: Json | null
+        }
+        Relationships: []
+      }
+      social_weekly_checklist: {
+        Row: {
+          coach_id: string
+          completion_percent: number
+          created_at: string
+          id: string
+          items: Json
+          updated_at: string
+          week_start: string
+        }
+        Insert: {
+          coach_id: string
+          completion_percent?: number
+          created_at?: string
+          id?: string
+          items?: Json
+          updated_at?: string
+          week_start: string
+        }
+        Update: {
+          coach_id?: string
+          completion_percent?: number
+          created_at?: string
+          id?: string
+          items?: Json
+          updated_at?: string
+          week_start?: string
         }
         Relationships: []
       }
