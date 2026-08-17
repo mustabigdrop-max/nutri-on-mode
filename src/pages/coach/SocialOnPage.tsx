@@ -59,7 +59,7 @@ export default function SocialOnPage() {
   const { user } = useAuth();
   const coachId = user?.id;
 
-  const [handle, setHandle] = useState("diogo.mell0");
+  const [handle, setHandle] = useState("");
   const [bio, setBio] = useState("");
   const [audit, setAudit] = useState<any>(null);
   const [auditing, setAuditing] = useState(false);
@@ -108,16 +108,34 @@ export default function SocialOnPage() {
 
   useEffect(() => {
     if (!coachId) return;
-    supabase.from("social_audits").select("*").eq("coach_id", coachId)
-      .order("audited_at", { ascending: false }).limit(1)
-      .then(({ data }) => {
-        const last = data?.[0];
-        if (last) {
-          setHandle(last.handle ?? "diogo.mell0");
-          setAudit({ bio_score: last.bio_score, ...(last.recommendations as object), content_mix: last.content_mix, issues: last.issues });
-        }
-      });
+    (async () => {
+      const { data: prof } = await supabase
+        .from("coach_profiles")
+        .select("instagram_handle")
+        .eq("user_id", coachId)
+        .maybeSingle();
+      const profHandle = (prof as { instagram_handle?: string | null } | null)?.instagram_handle;
+
+      const { data } = await supabase.from("social_audits").select("*").eq("coach_id", coachId)
+        .order("audited_at", { ascending: false }).limit(1);
+      const last = data?.[0];
+      setHandle((profHandle || last?.handle || "").replace("@", ""));
+      if (last) {
+        setAudit({ bio_score: last.bio_score, ...(last.recommendations as object), content_mix: last.content_mix, issues: last.issues });
+      }
+    })();
   }, [coachId]);
+
+  const saveHandle = async () => {
+    if (!coachId) return;
+    const clean = handle.replace("@", "").trim();
+    const { error } = await supabase
+      .from("coach_profiles")
+      .update({ instagram_handle: clean || null })
+      .eq("user_id", coachId);
+    if (error) toast.error("Não foi possível salvar o @");
+    else toast.success("Instagram salvo no seu perfil");
+  };
 
   const runAudit = async () => {
     if (!coachId) return;
