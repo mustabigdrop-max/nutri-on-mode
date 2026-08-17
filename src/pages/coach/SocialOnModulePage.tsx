@@ -105,6 +105,7 @@ const SocialOnModulePage = () => {
   const [checklist, setChecklist] = useState<Record<string, boolean>>({});
   const [learning, setLearning] = useState<Record<string, boolean>>({});
   const [ladderOpen, setLadderOpen] = useState<string | null>(null);
+  const [ladderMetrics, setLadderMetrics] = useState<Record<string, string>>({});
 
   const weekStart = useMemo(() => mondayOf(), []);
 
