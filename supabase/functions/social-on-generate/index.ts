@@ -91,6 +91,9 @@ serve(async (req) => {
       body?.exclude ? `Não repita estas ideias: ${body.exclude}` : "",
       body?.proof ? `Dados reais do cliente (não invente números): ${body.proof}` : "",
       body?.posts ? `Últimos posts descritos pelo coach:\n${body.posts}` : "",
+      body?.ig_profile
+        ? `Perfil real do Instagram conectado (use nome, bio e temas dos posts para personalizar; não invente dados):\n${JSON.stringify(body.ig_profile)}`
+        : "",
       body?.format === "stories" ? "Para formato stories, preencha stories_sequence com 6 stories e deixe roteiro como array vazio." : "",
     ].filter(Boolean).join("\n");
 
