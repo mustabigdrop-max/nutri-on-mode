@@ -105,6 +105,7 @@ const MetabolicONPage = lazy(() => import("./pages/MetabolicONPage"));
 const MCEPage = lazy(() => import("./pages/MCEPage"));
 const MCEBusinessPage = lazy(() => import("./pages/MCEBusinessPage"));
 const GymChallengesPage = lazy(() => import("./pages/GymChallengesPage"));
+const BusinessChallengesPage = lazy(() => import("./pages/BusinessChallengesPage"));
 const AudioAcademyPage = lazy(() => import("./pages/AudioAcademyPage"));
 const PlanoAlimentarIA = lazy(() => import("./components/coach/PlanoAlimentarIA"));
 const AthleteRoster = lazy(() => import("./components/coach/AthleteRoster"));
