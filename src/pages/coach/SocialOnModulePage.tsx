@@ -386,6 +386,24 @@ const SocialOnModulePage = () => {
 
           {/* ─────────── AUDITORIA ─────────── */}
           <TabsContent value="auditoria" className="space-y-4 mt-4">
+            <InstagramAccountPanel
+              account={ig.account}
+              loading={ig.loading}
+              onConnect={async (t) => {
+                const acc = await ig.connect(t);
+                if (acc?.username) {
+                  setHandle(acc.username);
+                  await saveProfile({ instagram_handle: acc.username, bio_current: acc.biography || bioCurrent });
+                  if (acc.biography) setBioCurrent(acc.biography);
+                }
+              }}
+              onSync={async () => {
+                const acc = await ig.sync();
+                if (acc?.biography) setBioCurrent(acc.biography);
+              }}
+              onDisconnect={ig.disconnect}
+            />
+
             <div className="flex items-center gap-2">
               {[1, 2, 3, 4, 5].map((s) => (
                 <button key={s} onClick={() => setStep(s)} className="flex-1 h-1.5 rounded-full"
