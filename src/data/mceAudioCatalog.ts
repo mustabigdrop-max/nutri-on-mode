@@ -18,7 +18,16 @@ export type AudioSeries =
   | "competicao"
   | "biohacking"
   | "journaling"
-  | "vida_real";
+  | "vida_real"
+  | "alter_ego"
+  | "capsula"
+  | "pre_refeicao"
+  | "periodizacao"
+  | "body_scan"
+  | "desafio_mental"
+  | "modo_guerra"
+  | "subliminar"
+  | "hall_fama";
 
 export type CatalogEpisode = {
   series: AudioSeries;
