@@ -133,6 +133,7 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const NutriPlanElitePage = lazy(() => import("./pages/NutriPlanElitePage"));
 const LearnPage = lazy(() => import("./pages/LearnPage"));
 const VeraPage = lazy(() => import("./pages/VeraPage"));
+const SocialOnPage = lazy(() => import("./pages/coach/SocialOnPage"));
 const MyPlanPage = lazy(() => import("./pages/athlete/MyPlanPage"));
 const MyTrainingPage = lazy(() => import("./pages/athlete/MyTrainingPage"));
 const AthleteCheckinPage = lazy(() => import("./pages/athlete/AthleteCheckinPage"));
@@ -297,6 +298,7 @@ const App = () => (
             <Route path="/coach/atletas" element={<CoachToolRoute><ProtectedRoute><AthleteRoster /></ProtectedRoute></CoachToolRoute>} />
             <Route path="/coach/atletas/:id" element={<CoachToolRoute><ProtectedRoute><AthleteProgressTracker /></ProtectedRoute></CoachToolRoute>} />
             <Route path="/coach/apex-pose" element={<CoachToolRoute><ProtectedRoute><APEXPoseAnalysisPage /></ProtectedRoute></CoachToolRoute>} />
+            <Route path="/coach/social" element={<CoachToolRoute><ProtectedRoute><SocialOnPage /></ProtectedRoute></CoachToolRoute>} />
             <Route path="/coach/vera" element={<CoachToolRoute><ProtectedRoute><VeraPage /></ProtectedRoute></CoachToolRoute>} />
 
             <Route path="/nutriplan-elite" element={<CoachToolRoute><ProtectedRoute><NutriPlanErrorBoundary><Suspense fallback={<NutriPlanLoading />}><NutriPlanElitePage /></Suspense></NutriPlanErrorBoundary></ProtectedRoute></CoachToolRoute>} />
