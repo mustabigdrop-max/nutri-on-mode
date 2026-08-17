@@ -24,6 +24,7 @@ const BottomNav = () => {
       ? [{ id: "coach", icon: ClipboardList, label: "Coach", path: "/meus-protocolos" }]
       : [{ id: "lab", icon: Microscope, label: "LAB", path: "/lab" }]),
     { id: "business", icon: Briefcase, label: "Business", path: "/mce/business" },
+    { id: "social", icon: Instagram, label: "Social ON", path: "/coach/social" },
     { id: "profile", icon: User, label: "Perfil", path: "/profile" },
   ];
 
