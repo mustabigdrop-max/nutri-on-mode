@@ -135,6 +135,60 @@ Deno.serve(async (req) => {
       .maybeSingle();
     if (epErr || !ep) return json({ error: "Episódio não encontrado" }, 404);
 
+    // ===== RITUAIS: roteiro fixo oficial + silêncios reais (WAV 24kHz) =====
+    const ritualKey = ep.series === "ritual" && ep.episode_number
+      ? RITUAL_KEY_BY_EPISODE[ep.episode_number]
+      : undefined;
+
+    if (ritualKey && RITUAL_SCRIPTS[ritualKey]) {
+      const scriptText = RITUAL_SCRIPTS[ritualKey];
+      const voice = RITUAL_VOICE[ritualKey];
+      const segments = parseRitualScript(scriptText);
+      const pcmParts: Uint8Array[] = [];
+
+      try {
+        for (const seg of segments) {
+          if ("silence" in seg) {
+            pcmParts.push(new Uint8Array(Math.round(seg.silence * SAMPLE_RATE) * 2));
+            continue;
+          }
+          for (const chunk of chunkText(seg.text)) {
+            pcmParts.push(await ttsPcm(chunk, voice.instructions, voice.speed));
+          }
+        }
+      } catch (e) {
+        return json({ error: "Falha na narração do ritual", detail: String(e) }, 500);
+      }
+
+      const pcm = concat(pcmParts);
+      const wav = concat([wavHeader(pcm.length), pcm]);
+      const ritualPath = `ritual/${ritualKey}-${Date.now()}.wav`;
+      const { error: rUpErr } = await admin.storage
+        .from(BUCKET)
+        .upload(ritualPath, wav, { contentType: "audio/wav", upsert: true });
+      if (rUpErr) return json({ error: "Falha ao salvar áudio", detail: rUpErr.message }, 500);
+
+      const ritualDuration = Math.max(30, Math.round(pcm.length / 2 / SAMPLE_RATE));
+      await admin
+        .from("mce_audio_episodes")
+        .update({ audio_url: ritualPath, duration_seconds: ritualDuration })
+        .eq("id", ep.id);
+
+      if (ep.audio_url && !/^https?:/.test(ep.audio_url)) {
+        await admin.storage.from(BUCKET).remove([ep.audio_url]).catch(() => {});
+      }
+
+      return json({
+        ok: true,
+        path: ritualPath,
+        duration_seconds: ritualDuration,
+        words: (scriptText.match(/\S+/g) || []).length,
+        ritual: ritualKey,
+      });
+    }
+
+
+
     // 1) Roteiro
     const targetMin = Math.min(maxMinutes, Math.max(3, Math.round((ep.duration_seconds || 600) / 60)));
     const targetWords = targetMin * 150;
