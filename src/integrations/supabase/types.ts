@@ -9568,6 +9568,81 @@ export type Database = {
         }
         Relationships: []
       }
+      social_instagram_accounts: {
+        Row: {
+          access_token: string
+          coach_id: string
+          connected_at: string
+          ig_user_id: string
+          page_id: string | null
+          token_expires_at: string | null
+          updated_at: string
+          username: string | null
+        }
+        Insert: {
+          access_token: string
+          coach_id: string
+          connected_at?: string
+          ig_user_id: string
+          page_id?: string | null
+          token_expires_at?: string | null
+          updated_at?: string
+          username?: string | null
+        }
+        Update: {
+          access_token?: string
+          coach_id?: string
+          connected_at?: string
+          ig_user_id?: string
+          page_id?: string | null
+          token_expires_at?: string | null
+          updated_at?: string
+          username?: string | null
+        }
+        Relationships: []
+      }
+      social_instagram_posts: {
+        Row: {
+          calendar_id: string | null
+          caption: string | null
+          coach_id: string
+          created_at: string
+          error: string | null
+          id: string
+          ig_media_id: string | null
+          media_type: string
+          media_url: string | null
+          permalink: string | null
+          status: string
+        }
+        Insert: {
+          calendar_id?: string | null
+          caption?: string | null
+          coach_id: string
+          created_at?: string
+          error?: string | null
+          id?: string
+          ig_media_id?: string | null
+          media_type?: string
+          media_url?: string | null
+          permalink?: string | null
+          status?: string
+        }
+        Update: {
+          calendar_id?: string | null
+          caption?: string | null
+          coach_id?: string
+          created_at?: string
+          error?: string | null
+          id?: string
+          ig_media_id?: string | null
+          media_type?: string
+          media_url?: string | null
+          permalink?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
       special_events: {
         Row: {
           created_at: string
