@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import {
   Users, AlertTriangle, AlertCircle, FileText, Search, Settings, ArrowLeft, Library,
   UtensilsCrossed, Dumbbell, FlaskConical, Camera, Sparkles, Bone, Flame, Activity,
-  CalendarDays, ChevronRight, Building2,
+  CalendarDays, ChevronRight, Building2, Instagram,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import ProfessionalTypeBadge from "@/components/coach/ProfessionalTypeBadge";
@@ -34,6 +34,7 @@ const ADVANCED_MODULES = [
   { label: "ScienceHub", icon: Library, route: "/science", color: "#60a5fa" },
   { label: "MetabolicON", icon: Flame, route: "/metabolicon", color: "#fb923c" },
   { label: "Biomecânica", icon: Bone, route: "/biomechanics", color: "#f472b6" },
+  { label: "SOCIAL ON", icon: Instagram, route: "/coach/social", color: "#00D4FF" },
 ];
 
 type StatusFilter = "all" | "ok" | "attention" | "risk";
