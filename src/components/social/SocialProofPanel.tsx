@@ -21,7 +21,19 @@ type Stats = {
   streak: number;
 };
 
-const SocialProofPanel = ({ coachProfileId, handle, ctx }: { coachProfileId?: string | null; handle: string; ctx: Record<string, any> }) => {
+const SocialProofPanel = ({
+  coachProfileId,
+  handle,
+  coachName,
+  coachAvatar,
+  ctx,
+}: {
+  coachProfileId?: string | null;
+  handle: string;
+  coachName?: string | null;
+  coachAvatar?: string | null;
+  ctx: Record<string, any>;
+}) => {
   const [athletes, setAthletes] = useState<Athlete[]>([]);
   const [selected, setSelected] = useState<string>("");
   const [stats, setStats] = useState<Stats | null>(null);
@@ -83,7 +95,7 @@ const SocialProofPanel = ({ coachProfileId, handle, ctx }: { coachProfileId?: st
   const download = async () => {
     if (!cardRef.current) return;
     if (!authorized) return toast.error("Confirme a autorização do cliente");
-    const canvas = await html2canvas(cardRef.current, { backgroundColor: "#020205", scale: 3 });
+    const canvas = await html2canvas(cardRef.current, { backgroundColor: "#020205", scale: 3, useCORS: true });
     const a = document.createElement("a");
     a.href = canvas.toDataURL("image/png");
     a.download = `nutrion-resultado-${(stats?.name || "cliente").toLowerCase().replace(/\s+/g, "-")}.png`;
@@ -140,9 +152,21 @@ const SocialProofPanel = ({ coachProfileId, handle, ctx }: { coachProfileId?: st
                 <p>Treinos: {stats.workouts} concluídos</p>
                 <p>Streak: {stats.streak} dias 🔥</p>
               </div>
-              <div>
-                <p className="text-xs text-white/50">@{(handle || "diogo.mell0").replace("@", "")}</p>
-                <p className="text-xs" style={{ color: ACCENT }}>nutrion.app.br</p>
+              <div className="flex items-center gap-2">
+                {coachAvatar && (
+                  <img
+                    src={coachAvatar}
+                    alt={`Foto de perfil de @${(handle || "").replace("@", "")}`}
+                    crossOrigin="anonymous"
+                    className="w-8 h-8 rounded-full object-cover"
+                    style={{ border: `1px solid ${ACCENT}77` }}
+                  />
+                )}
+                <div>
+                  {coachName && <p className="text-xs text-white/80">{coachName}</p>}
+                  <p className="text-xs text-white/50">@{(handle || "diogo.mell0").replace("@", "")}</p>
+                  <p className="text-xs" style={{ color: ACCENT }}>nutrion.app.br</p>
+                </div>
               </div>
             </div>
           </div>

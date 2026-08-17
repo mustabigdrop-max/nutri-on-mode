@@ -21,6 +21,8 @@ import ViralAnalyzerPanel from "@/components/social/ViralAnalyzerPanel";
 import SocialProofPanel from "@/components/social/SocialProofPanel";
 import IdeasNowPanel from "@/components/social/IdeasNowPanel";
 import PlaybookPanel from "@/components/social/PlaybookPanel";
+import InstagramAccountPanel from "@/components/social/InstagramAccountPanel";
+import { useInstagramAccount } from "@/hooks/useInstagramAccount";
 import {
   ACADEMY_TRACKS, ACTION_PLAN, BIO_CRITERIA, CONTENT_PRODUCTS, DIFFERENTIALS, FORMATS,
   FUNNELS, IDEAL_MIX, NICHES, OBJECTIVES, PRODUCTS, PRODUCT_LADDER, VISUAL_PALETTE,
@@ -115,9 +117,28 @@ const SocialOnModulePage = () => {
   const [ladderMetrics, setLadderMetrics] = useState<Record<string, string>>({});
   const [coachProfileId, setCoachProfileId] = useState<string | null>(null);
 
+  const ig = useInstagramAccount();
+
   const aiCtx = useMemo(
-    () => ({ handle, niches, products, differentials }),
-    [handle, niches, products, differentials]
+    () => ({
+      handle: ig.account?.username || handle,
+      niches,
+      products,
+      differentials,
+      ig_profile: ig.account
+        ? {
+            name: ig.account.full_name,
+            username: ig.account.username,
+            bio: ig.account.biography,
+            followers: ig.account.followers_count,
+            recent_captions: (ig.account.recent_media || [])
+              .map((m) => m.caption)
+              .filter(Boolean)
+              .slice(0, 6),
+          }
+        : null,
+    }),
+    [handle, niches, products, differentials, ig.account]
   );
 
   const weekStart = useMemo(() => mondayOf(), []);
@@ -365,6 +386,24 @@ const SocialOnModulePage = () => {
 
           {/* ─────────── AUDITORIA ─────────── */}
           <TabsContent value="auditoria" className="space-y-4 mt-4">
+            <InstagramAccountPanel
+              account={ig.account}
+              loading={ig.loading}
+              onConnect={async (t) => {
+                const acc = await ig.connect(t);
+                if (acc?.username) {
+                  setHandle(acc.username);
+                  await saveProfile({ instagram_handle: acc.username, bio_current: acc.biography || bioCurrent });
+                  if (acc.biography) setBioCurrent(acc.biography);
+                }
+              }}
+              onSync={async () => {
+                const acc = await ig.sync();
+                if (acc?.biography) setBioCurrent(acc.biography);
+              }}
+              onDisconnect={ig.disconnect}
+            />
+
             <div className="flex items-center gap-2">
               {[1, 2, 3, 4, 5].map((s) => (
                 <button key={s} onClick={() => setStep(s)} className="flex-1 h-1.5 rounded-full"
@@ -804,7 +843,13 @@ const SocialOnModulePage = () => {
             <ViralAnalyzerPanel ctx={aiCtx} />
           </TabsContent>
           <TabsContent value="prova" className="mt-4">
-            <SocialProofPanel coachProfileId={coachProfileId} handle={handle} ctx={aiCtx} />
+            <SocialProofPanel
+              coachProfileId={coachProfileId}
+              handle={ig.account?.username || handle}
+              coachName={ig.account?.full_name || null}
+              coachAvatar={ig.account?.profile_picture_url || null}
+              ctx={aiCtx}
+            />
           </TabsContent>
           <TabsContent value="playbook" className="mt-4">
             <PlaybookPanel />

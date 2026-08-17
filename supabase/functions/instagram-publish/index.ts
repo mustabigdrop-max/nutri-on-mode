@@ -57,6 +57,48 @@ async function resolveAccount(token: string) {
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
+const PROFILE_COLUMNS =
+  "ig_user_id, username, full_name, biography, profile_picture_url, followers_count, follows_count, media_count, recent_media, synced_at, token_expires_at, connected_at";
+
+/** Fetches name, bio, photo and recent media for the connected IG business account. */
+async function fetchProfileSnapshot(igUserId: string, token: string) {
+  const profile = await graph(`/${igUserId}`, {
+    fields: "id,username,name,biography,profile_picture_url,followers_count,follows_count,media_count",
+    access_token: token,
+  });
+
+  let recent: unknown[] = [];
+  try {
+    const media = await graph(`/${igUserId}/media`, {
+      fields: "id,caption,media_type,media_url,thumbnail_url,permalink,timestamp,like_count,comments_count",
+      limit: "12",
+      access_token: token,
+    });
+    recent = (media?.data ?? []).map((m: Record<string, any>) => ({
+      id: m.id,
+      caption: m.caption ?? null,
+      media_type: m.media_type ?? null,
+      media_url: m.media_type === "VIDEO" ? (m.thumbnail_url ?? m.media_url) : m.media_url,
+      permalink: m.permalink ?? null,
+      timestamp: m.timestamp ?? null,
+      like_count: m.like_count ?? null,
+      comments_count: m.comments_count ?? null,
+    }));
+  } catch (_) { /* media permission optional */ }
+
+  return {
+    username: profile?.username ?? null,
+    full_name: profile?.name ?? null,
+    biography: profile?.biography ?? null,
+    profile_picture_url: profile?.profile_picture_url ?? null,
+    followers_count: profile?.followers_count ?? null,
+    follows_count: profile?.follows_count ?? null,
+    media_count: profile?.media_count ?? null,
+    recent_media: recent,
+    synced_at: new Date().toISOString(),
+  };
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -72,7 +114,7 @@ serve(async (req) => {
     if (action === "status") {
       const { data } = await admin
         .from("social_instagram_accounts")
-        .select("ig_user_id, username, token_expires_at, connected_at")
+        .select(PROFILE_COLUMNS)
         .eq("coach_id", coachId)
         .maybeSingle();
       return json({ result: { connected: !!data, account: data ?? null } });
@@ -83,6 +125,10 @@ serve(async (req) => {
       if (token.length < 20) return json({ error: "Token inválido" }, 400);
       const account = await resolveAccount(token);
       const expires = body?.expires_in ? new Date(Date.now() + Number(body.expires_in) * 1000).toISOString() : null;
+      let snapshot: Record<string, unknown> = {};
+      try {
+        snapshot = await fetchProfileSnapshot(account.ig_user_id, token);
+      } catch (_) { /* profile fields optional at connect time */ }
       const { error } = await admin.from("social_instagram_accounts").upsert({
         coach_id: coachId,
         ig_user_id: account.ig_user_id,
@@ -90,10 +136,39 @@ serve(async (req) => {
         page_id: account.page_id,
         access_token: token,
         token_expires_at: expires,
+        ...snapshot,
         updated_at: new Date().toISOString(),
       });
       if (error) throw new Error(error.message);
-      return json({ result: { connected: true, account: { ...account, access_token: undefined } } });
+      const { data: saved } = await admin
+        .from("social_instagram_accounts")
+        .select(PROFILE_COLUMNS)
+        .eq("coach_id", coachId)
+        .maybeSingle();
+      return json({ result: { connected: true, account: saved } });
+    }
+
+    if (action === "sync_profile") {
+      const { data: acc } = await admin
+        .from("social_instagram_accounts")
+        .select("ig_user_id, access_token")
+        .eq("coach_id", coachId)
+        .maybeSingle();
+      if (!acc) return json({ error: "Conecte sua conta do Instagram primeiro" }, 400);
+
+      const snapshot = await fetchProfileSnapshot(acc.ig_user_id, acc.access_token);
+      const { error } = await admin
+        .from("social_instagram_accounts")
+        .update({ ...snapshot, updated_at: new Date().toISOString() })
+        .eq("coach_id", coachId);
+      if (error) throw new Error(error.message);
+
+      const { data: saved } = await admin
+        .from("social_instagram_accounts")
+        .select(PROFILE_COLUMNS)
+        .eq("coach_id", coachId)
+        .maybeSingle();
+      return json({ result: { connected: true, account: saved } });
     }
 
     if (action === "disconnect") {
