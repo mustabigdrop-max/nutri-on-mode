@@ -476,7 +476,10 @@ const SocialOnModulePage = () => {
                     ))}
                   </div>
                 ))}
-                <Button onClick={finishAudit} className="gap-2"><Check className="w-4 h-4" /> Concluir auditoria</Button>
+                <div className="flex flex-wrap gap-2">
+                  <Button onClick={finishAudit} className="gap-2"><Check className="w-4 h-4" /> Concluir auditoria</Button>
+                  <Button variant="outline" onClick={exportPlanPdf} className="gap-2">📥 Baixar plano como PDF</Button>
+                </div>
               </Section>
             )}
           </TabsContent>
