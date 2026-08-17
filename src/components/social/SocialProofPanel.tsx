@@ -72,7 +72,7 @@ const SocialProofPanel = ({ coachProfileId, handle, ctx }: { coachProfileId?: st
         mceStart: m.length ? avg(m[0]) : null,
         mceNow: m.length ? avg(m[m.length - 1]) : null,
         adherence: m.length ? Math.min(100, avg(m[m.length - 1])) : null,
-        workouts: (workouts || []).length,
+        workouts: new Set(((workouts || []) as any[]).map((w) => `${w.week_number}-${w.day_number}`)).size,
         streak: (prof?.streak_days as number) || 0,
       });
     } catch (e: any) {
