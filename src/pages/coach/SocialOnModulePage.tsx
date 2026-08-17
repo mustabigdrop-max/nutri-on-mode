@@ -126,6 +126,7 @@ const SocialOnModulePage = () => {
       setBioCurrent(prof.bio_current || "");
       setBioScore(prof.bio_score);
       setAuditDone(!!prof.audit_completed);
+      setLadderMetrics(((prof as any).ladder_metrics as Record<string, string>) || {});
     } else if (coach?.instagram_handle) {
       setHandle(coach.instagram_handle);
     }
