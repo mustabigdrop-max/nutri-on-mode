@@ -9451,6 +9451,120 @@ export type Database = {
           },
         ]
       }
+      social_audits: {
+        Row: {
+          audited_at: string
+          bio_score: number | null
+          coach_id: string
+          content_mix: Json | null
+          handle: string | null
+          id: string
+          issues: Json | null
+          recommendations: Json | null
+        }
+        Insert: {
+          audited_at?: string
+          bio_score?: number | null
+          coach_id: string
+          content_mix?: Json | null
+          handle?: string | null
+          id?: string
+          issues?: Json | null
+          recommendations?: Json | null
+        }
+        Update: {
+          audited_at?: string
+          bio_score?: number | null
+          coach_id?: string
+          content_mix?: Json | null
+          handle?: string | null
+          id?: string
+          issues?: Json | null
+          recommendations?: Json | null
+        }
+        Relationships: []
+      }
+      social_content_calendar: {
+        Row: {
+          caption: string | null
+          coach_id: string
+          created_at: string
+          date: string
+          format: string
+          hashtags: string[] | null
+          hook: string | null
+          id: string
+          pillar: string
+          published_at: string | null
+          reel_script: string | null
+          status: string
+          topic: string
+          updated_at: string
+        }
+        Insert: {
+          caption?: string | null
+          coach_id: string
+          created_at?: string
+          date: string
+          format: string
+          hashtags?: string[] | null
+          hook?: string | null
+          id?: string
+          pillar: string
+          published_at?: string | null
+          reel_script?: string | null
+          status?: string
+          topic: string
+          updated_at?: string
+        }
+        Update: {
+          caption?: string | null
+          coach_id?: string
+          created_at?: string
+          date?: string
+          format?: string
+          hashtags?: string[] | null
+          hook?: string | null
+          id?: string
+          pillar?: string
+          published_at?: string | null
+          reel_script?: string | null
+          status?: string
+          topic?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      social_hooks: {
+        Row: {
+          category: string
+          coach_id: string
+          created_at: string
+          engagement_score: number | null
+          hook_text: string
+          id: string
+          used_count: number
+        }
+        Insert: {
+          category?: string
+          coach_id: string
+          created_at?: string
+          engagement_score?: number | null
+          hook_text: string
+          id?: string
+          used_count?: number
+        }
+        Update: {
+          category?: string
+          coach_id?: string
+          created_at?: string
+          engagement_score?: number | null
+          hook_text?: string
+          id?: string
+          used_count?: number
+        }
+        Relationships: []
+      }
       special_events: {
         Row: {
           created_at: string
