@@ -8551,6 +8551,7 @@ export type Database = {
           activation_completed: boolean | null
           active_protocol: string | null
           activity_level: string | null
+          adjusted_weight_kg: number | null
           age: number | null
           avatar_url: string | null
           bf_percent: number | null
@@ -8558,6 +8559,7 @@ export type Database = {
           carbs_g: number | null
           coach_notes: string | null
           coach_profile_id: string | null
+          comorbidities: string[] | null
           created_at: string
           created_by: string | null
           date_of_birth: string | null
@@ -8574,7 +8576,9 @@ export type Database = {
           health_conditions: string[] | null
           height_cm: number | null
           id: string
+          ideal_weight_kg: number | null
           last_streak_date: string | null
+          lean_mass_kg: number | null
           level: number | null
           meta_peso: number | null
           muscle_development: string | null
@@ -8609,6 +8613,7 @@ export type Database = {
           uses_glp1: boolean | null
           vet_kcal: number | null
           visual_indicators: string[] | null
+          waist_cm: number | null
           weight_kg: number | null
           xp: number | null
         }
@@ -8617,6 +8622,7 @@ export type Database = {
           activation_completed?: boolean | null
           active_protocol?: string | null
           activity_level?: string | null
+          adjusted_weight_kg?: number | null
           age?: number | null
           avatar_url?: string | null
           bf_percent?: number | null
@@ -8624,6 +8630,7 @@ export type Database = {
           carbs_g?: number | null
           coach_notes?: string | null
           coach_profile_id?: string | null
+          comorbidities?: string[] | null
           created_at?: string
           created_by?: string | null
           date_of_birth?: string | null
@@ -8640,7 +8647,9 @@ export type Database = {
           health_conditions?: string[] | null
           height_cm?: number | null
           id?: string
+          ideal_weight_kg?: number | null
           last_streak_date?: string | null
+          lean_mass_kg?: number | null
           level?: number | null
           meta_peso?: number | null
           muscle_development?: string | null
@@ -8675,6 +8684,7 @@ export type Database = {
           uses_glp1?: boolean | null
           vet_kcal?: number | null
           visual_indicators?: string[] | null
+          waist_cm?: number | null
           weight_kg?: number | null
           xp?: number | null
         }
@@ -8683,6 +8693,7 @@ export type Database = {
           activation_completed?: boolean | null
           active_protocol?: string | null
           activity_level?: string | null
+          adjusted_weight_kg?: number | null
           age?: number | null
           avatar_url?: string | null
           bf_percent?: number | null
@@ -8690,6 +8701,7 @@ export type Database = {
           carbs_g?: number | null
           coach_notes?: string | null
           coach_profile_id?: string | null
+          comorbidities?: string[] | null
           created_at?: string
           created_by?: string | null
           date_of_birth?: string | null
@@ -8706,7 +8718,9 @@ export type Database = {
           health_conditions?: string[] | null
           height_cm?: number | null
           id?: string
+          ideal_weight_kg?: number | null
           last_streak_date?: string | null
+          lean_mass_kg?: number | null
           level?: number | null
           meta_peso?: number | null
           muscle_development?: string | null
@@ -8741,6 +8755,7 @@ export type Database = {
           uses_glp1?: boolean | null
           vet_kcal?: number | null
           visual_indicators?: string[] | null
+          waist_cm?: number | null
           weight_kg?: number | null
           xp?: number | null
         }
