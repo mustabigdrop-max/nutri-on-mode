@@ -134,6 +134,7 @@ const NutriPlanElitePage = lazy(() => import("./pages/NutriPlanElitePage"));
 const LearnPage = lazy(() => import("./pages/LearnPage"));
 const VeraPage = lazy(() => import("./pages/VeraPage"));
 const SocialOnPage = lazy(() => import("./pages/coach/SocialOnPage"));
+const SocialOnModulePage = lazy(() => import("./pages/coach/SocialOnModulePage"));
 const MyPlanPage = lazy(() => import("./pages/athlete/MyPlanPage"));
 const MyTrainingPage = lazy(() => import("./pages/athlete/MyTrainingPage"));
 const AthleteCheckinPage = lazy(() => import("./pages/athlete/AthleteCheckinPage"));
