@@ -90,6 +90,81 @@ export default function SocialOnPage() {
 
   const [checked, setChecked] = useState<Record<string, boolean>>({});
 
+  // Instagram publishing
+  const [igAccount, setIgAccount] = useState<{ ig_user_id: string; username: string | null } | null>(null);
+  const [igToken, setIgToken] = useState("");
+  const [igLoading, setIgLoading] = useState(false);
+  const [pubType, setPubType] = useState<"IMAGE" | "REELS">("IMAGE");
+  const [pubMedia, setPubMedia] = useState("");
+  const [pubCaption, setPubCaption] = useState("");
+  const [publishing, setPublishing] = useState(false);
+  const [igPosts, setIgPosts] = useState<any[]>([]);
+
+  const callIg = async <T,>(payload: Record<string, unknown>): Promise<T> => {
+    const { data, error } = await supabase.functions.invoke("instagram-publish", { body: payload });
+    if (error) throw new Error(error.message);
+    if ((data as { error?: string })?.error) throw new Error((data as { error: string }).error);
+    return (data as { result: T }).result;
+  };
+
+  const loadIgPosts = async () => {
+    if (!coachId) return;
+    const { data } = await supabase
+      .from("social_instagram_posts")
+      .select("*")
+      .eq("coach_id", coachId)
+      .order("created_at", { ascending: false })
+      .limit(20);
+    setIgPosts(data ?? []);
+  };
+
+  useEffect(() => {
+    if (!coachId) return;
+    (async () => {
+      try {
+        const st = await callIg<{ connected: boolean; account: any }>({ action: "status" });
+        setIgAccount(st.connected ? st.account : null);
+      } catch { /* silencioso */ }
+      loadIgPosts();
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [coachId]);
+
+  const connectIg = async () => {
+    setIgLoading(true);
+    try {
+      const res = await callIg<{ account: any }>({ action: "connect", access_token: igToken.trim() });
+      setIgAccount(res.account);
+      setIgToken("");
+      toast.success("Instagram conectado");
+    } catch (e) { toast.error(e instanceof Error ? e.message : "Falha ao conectar"); }
+    finally { setIgLoading(false); }
+  };
+
+  const disconnectIg = async () => {
+    try {
+      await callIg({ action: "disconnect" });
+      setIgAccount(null);
+      toast.success("Conta desconectada");
+    } catch (e) { toast.error(e instanceof Error ? e.message : "Falha ao desconectar"); }
+  };
+
+  const publishNow = async () => {
+    setPublishing(true);
+    try {
+      const res = await callIg<{ permalink: string | null }>({
+        action: "publish",
+        media_type: pubType,
+        media_url: pubMedia.trim(),
+        caption: pubCaption,
+      });
+      toast.success(res.permalink ? "Publicado no Instagram!" : "Publicado!");
+      setPubMedia("");
+      loadIgPosts();
+    } catch (e) { toast.error(e instanceof Error ? e.message : "Falha ao publicar"); }
+    finally { setPublishing(false); await loadIgPosts(); }
+  };
+
   const loadCalendar = async () => {
     if (!coachId) return;
     const end = new Date(`${weekStart}T12:00:00`);
