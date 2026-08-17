@@ -1,4 +1,11 @@
 import { createClient } from "npm:@supabase/supabase-js@2.45.0";
+import {
+  RITUAL_KEY_BY_EPISODE,
+  RITUAL_SCRIPTS,
+  RITUAL_VOICE,
+  parseRitualScript,
+} from "../_shared/ritualScripts.ts";
+
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
