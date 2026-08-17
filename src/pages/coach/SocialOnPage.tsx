@@ -840,6 +840,8 @@ export default function SocialOnPage() {
           </TabsContent>
         </Tabs>
       </main>
+      </div>
     </div>
+
   );
 }
