@@ -40,11 +40,14 @@ type ProgressRow = {
 type Athlete = { userId: string; name: string };
 
 const SERIES_ORDER: AudioSeries[] = [
+  "alter_ego", "modo_guerra", "capsula",
   "mindset", "comportamento", "execucao", "ciencia", "masterclass",
-  "breathwork", "reprogramacao", "emergencia", "focus",
+  "breathwork", "reprogramacao", "emergencia", "focus", "subliminar",
+  "pre_refeicao", "periodizacao", "body_scan", "desafio_mental",
   "reset_semanal", "review_mensal", "journaling",
   "vida_real", "competicao", "biohacking",
   "carreira", "relacionamentos", "parentalidade", "financas", "ritual",
+  "hall_fama",
 ];
 const fmtMin = (s: number) => `${Math.max(1, Math.round(s / 60))} min`;
 
