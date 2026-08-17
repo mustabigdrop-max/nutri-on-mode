@@ -5774,6 +5774,33 @@ export type Database = {
           },
         ]
       }
+      mce_alter_ego: {
+        Row: {
+          activation_phrase: string | null
+          created_at: string
+          name: string
+          posture: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          activation_phrase?: string | null
+          created_at?: string
+          name: string
+          posture?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          activation_phrase?: string | null
+          created_at?: string
+          name?: string
+          posture?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       mce_audio_episodes: {
         Row: {
           audio_url: string | null
@@ -5920,6 +5947,45 @@ export type Database = {
           score_e?: number
           score_m?: number
           source?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      mce_voice_notes: {
+        Row: {
+          audio_path: string
+          created_at: string
+          duration_seconds: number
+          id: string
+          kind: string
+          mce_score: number | null
+          note_date: string
+          transcript: string | null
+          unlock_at: string | null
+          user_id: string
+        }
+        Insert: {
+          audio_path: string
+          created_at?: string
+          duration_seconds?: number
+          id?: string
+          kind?: string
+          mce_score?: number | null
+          note_date?: string
+          transcript?: string | null
+          unlock_at?: string | null
+          user_id: string
+        }
+        Update: {
+          audio_path?: string
+          created_at?: string
+          duration_seconds?: number
+          id?: string
+          kind?: string
+          mce_score?: number | null
+          note_date?: string
+          transcript?: string | null
+          unlock_at?: string | null
           user_id?: string
         }
         Relationships: []
