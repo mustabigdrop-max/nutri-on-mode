@@ -57,6 +57,48 @@ async function resolveAccount(token: string) {
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
+const PROFILE_COLUMNS =
+  "ig_user_id, username, full_name, biography, profile_picture_url, followers_count, follows_count, media_count, recent_media, synced_at, token_expires_at, connected_at";
+
+/** Fetches name, bio, photo and recent media for the connected IG business account. */
+async function fetchProfileSnapshot(igUserId: string, token: string) {
+  const profile = await graph(`/${igUserId}`, {
+    fields: "id,username,name,biography,profile_picture_url,followers_count,follows_count,media_count",
+    access_token: token,
+  });
+
+  let recent: unknown[] = [];
+  try {
+    const media = await graph(`/${igUserId}/media`, {
+      fields: "id,caption,media_type,media_url,thumbnail_url,permalink,timestamp,like_count,comments_count",
+      limit: "12",
+      access_token: token,
+    });
+    recent = (media?.data ?? []).map((m: Record<string, any>) => ({
+      id: m.id,
+      caption: m.caption ?? null,
+      media_type: m.media_type ?? null,
+      media_url: m.media_type === "VIDEO" ? (m.thumbnail_url ?? m.media_url) : m.media_url,
+      permalink: m.permalink ?? null,
+      timestamp: m.timestamp ?? null,
+      like_count: m.like_count ?? null,
+      comments_count: m.comments_count ?? null,
+    }));
+  } catch (_) { /* media permission optional */ }
+
+  return {
+    username: profile?.username ?? null,
+    full_name: profile?.name ?? null,
+    biography: profile?.biography ?? null,
+    profile_picture_url: profile?.profile_picture_url ?? null,
+    followers_count: profile?.followers_count ?? null,
+    follows_count: profile?.follows_count ?? null,
+    media_count: profile?.media_count ?? null,
+    recent_media: recent,
+    synced_at: new Date().toISOString(),
+  };
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
