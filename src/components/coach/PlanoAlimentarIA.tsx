@@ -55,6 +55,7 @@ import { buildSnapshot } from "@/lib/substitutionValidator";
 import PlanValidationAlert from "@/components/coach/PlanValidationAlert";
 import { calculateNutritionItem, validateNutritionPlan } from "@/lib/planNutritionValidation";
 import { autoBalancePlan, type BalanceReport } from "@/lib/planAutoBalance";
+import BodyProfileSelector, { BODY_PROFILES, type BodyProfileKey } from "@/components/coach/BodyProfileSelector";
 
 
 // ─── Design tokens — Jarvis Nutrition (emerald primary + gold identity) ───────
