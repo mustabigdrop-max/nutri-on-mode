@@ -422,15 +422,27 @@ export default function CoachAudioAcademyPage({ embedded = false }: { embedded?:
                 Gera roteiro e narração na mesma voz do Briefing do dia e publica direto para os clientes.
                 {" "}{pendingEpisodes.length} episódio(s) sem áudio.
               </p>
-              <button
-                onClick={() => generateAllPending(pendingEpisodes)}
-                disabled={!!batch || !!generatingId || pendingEpisodes.length === 0}
-                className="text-xs font-bold px-4 py-2 rounded-lg inline-flex items-center gap-2"
-                style={{ background: "#00D4FF", color: "#03030a", opacity: batch || generatingId || pendingEpisodes.length === 0 ? 0.55 : 1 }}
-              >
-                {batch ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wand2 className="w-4 h-4" />}
-                {batch ? `Narrando ${batch.done}/${batch.total}...` : "Liberar todas as séries com voz"}
-              </button>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => generateAllPending(pendingEpisodes)}
+                  disabled={!!batch || !!generatingId || pendingEpisodes.length === 0}
+                  className="text-xs font-bold px-4 py-2 rounded-lg inline-flex items-center gap-2"
+                  style={{ background: "#00D4FF", color: "#03030a", opacity: batch || generatingId || pendingEpisodes.length === 0 ? 0.55 : 1 }}
+                >
+                  {batch ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wand2 className="w-4 h-4" />}
+                  {batch ? `Narrando ${batch.done}/${batch.total}...` : "Liberar todas as séries com voz"}
+                </button>
+                <button
+                  onClick={() => generateAllPending(newModulesPending)}
+                  disabled={!!batch || !!generatingId || newModulesPending.length === 0}
+                  className="text-xs font-bold px-4 py-2 rounded-lg inline-flex items-center gap-2"
+                  style={{ border: "1px solid rgba(232,160,32,0.55)", color: "#E8A020", opacity: batch || generatingId || newModulesPending.length === 0 ? 0.55 : 1 }}
+                >
+                  <Wand2 className="w-4 h-4" />
+                  Liberar novos módulos ({newModulesPending.length})
+                </button>
+              </div>
+
               {batch && (
                 <div className="h-[3px] rounded-full mt-3" style={{ background: "rgba(255,255,255,0.08)" }}>
                   <div className="h-full rounded-full transition-all" style={{ width: `${(batch.done / batch.total) * 100}%`, background: "#00D4FF" }} />
