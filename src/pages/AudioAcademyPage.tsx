@@ -7,6 +7,8 @@ import { toast } from "sonner";
 import AudioPlayerBar, { type PlayerTrack } from "@/components/audio/AudioPlayerBar";
 import { SERIES_META, RITUAL_KEY_BY_EPISODE, AUDIO_MCE_POINTS, type AudioSeries } from "@/data/mceAudioCatalog";
 import { resolveAudioSrc } from "@/lib/mceAudioStorage";
+import AlterEgoCard from "@/components/mce/AlterEgoCard";
+import VoiceJournalPanel from "@/components/mce/VoiceJournalPanel";
 
 const GOLD = "#E8A020";
 const DIM = "rgba(255,255,255,0.55)";
