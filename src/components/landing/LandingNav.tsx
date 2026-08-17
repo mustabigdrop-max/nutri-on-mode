@@ -1,5 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, type CSSProperties } from "react";
 import { Menu, X } from "lucide-react";
+
+// Mesma paleta/tipografia da nova LandingHero — grafite + ouro fosco,
+// sem o glow neon. Tokens do tema global (--primary etc.) seguem intocados.
+const GOLD = "#B8922A";
+const BONE = "#F4EFE3";
+const DIM = "#9A9280";
+const INK = "#14120F";
+const MONO = "'JetBrains Mono', 'Space Mono', monospace";
+const DISPLAY = "'Big Shoulders Display', 'Rajdhani', sans-serif";
 
 const LandingNav = () => {
   const [scrolled, setScrolled] = useState(false);
@@ -11,33 +20,63 @@ const LandingNav = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const linkClass = "font-mono text-[.72rem] text-[#50507a] hover:text-primary transition-colors tracking-[.08em]";
+  const linkStyle: CSSProperties = {
+    fontFamily: "'Work Sans', sans-serif",
+    fontSize: "0.85rem",
+    fontWeight: 500,
+    color: DIM,
+    letterSpacing: "0.01em",
+  };
+
+  const navLinks = [
+    { href: "#protocols", label: "Protocolos" },
+    { href: "#features", label: "Módulos" },
+    { href: "#coach", label: "Coach" },
+    { href: "#plans", label: "Planos" },
+  ];
 
   return (
     <nav
       className={`fixed top-0 left-0 right-0 z-[100] px-6 md:px-12 py-5 flex items-center justify-between border-b transition-all duration-400 ${
-        scrolled
-          ? "bg-[#03030a]/92 backdrop-blur-[20px] border-[#14142a]"
-          : "border-transparent"
+        scrolled ? "backdrop-blur-[20px]" : "border-transparent"
       }`}
+      style={{ background: scrolled ? "rgba(20,18,15,0.92)" : "transparent", borderColor: scrolled ? "rgba(244,239,227,0.08)" : "transparent" }}
     >
-      <div className="font-heading text-[1.8rem] tracking-[.12em]">
-        <span className="text-[#f0edf8] opacity-85">NUTRI</span>
-        <span className="text-primary tracking-[.18em]" style={{ textShadow: "0 0 20px rgba(232,160,32,.5)" }}>ON</span>
+      <div style={{ fontFamily: DISPLAY, fontWeight: 800, fontSize: "1.5rem", letterSpacing: "0.01em", textTransform: "uppercase" }}>
+        <span style={{ color: BONE, opacity: 0.9 }}>Nutri</span>
+        <span style={{ color: GOLD }}>on</span>
       </div>
 
       {/* Desktop */}
-      <div className="hidden md:flex items-center gap-8">
-        <a href="#protocols" className={linkClass}>Protocolos</a>
-        <a href="#features" className={linkClass}>Módulos</a>
-        <a href="#coach" className={linkClass}>Coach</a>
-        <a href="#plans" className={linkClass}>Planos</a>
-        <a href="/auth" className={linkClass}>Entrar</a>
+      <div className="hidden md:flex items-center gap-7">
+        {navLinks.map((l) => (
+          <a
+            key={l.href}
+            href={l.href}
+            style={linkStyle}
+            className="transition-colors hover:!text-[#F4EFE3]"
+          >
+            {l.label}
+          </a>
+        ))}
+        <a href="/auth" style={{ ...linkStyle, color: DIM, opacity: 0.75 }} className="transition-colors hover:!text-[#F4EFE3]">
+          Entrar
+        </a>
         <a
           href="https://pay.kiwify.com.br/G8uxU9O"
           target="_blank"
           rel="noopener noreferrer"
-          className="bg-primary text-black font-mono text-[.72rem] font-medium px-5 py-2.5 rounded-[2px] tracking-[.08em] hover:bg-black hover:text-primary hover:outline hover:outline-1 hover:outline-primary transition-all"
+          style={{
+            background: GOLD,
+            color: INK,
+            fontFamily: MONO,
+            fontWeight: 700,
+            fontSize: "0.72rem",
+            letterSpacing: "0.06em",
+            textTransform: "uppercase",
+            padding: "0.6rem 1.15rem",
+          }}
+          className="transition-[filter] hover:brightness-110"
         >
           Começar agora →
         </a>
@@ -45,7 +84,8 @@ const LandingNav = () => {
 
       {/* Mobile hamburger */}
       <button
-        className="md:hidden text-[#f0edf8] p-1"
+        className="md:hidden p-1"
+        style={{ color: BONE }}
         onClick={() => setMenuOpen(!menuOpen)}
         aria-label="Menu"
       >
@@ -54,17 +94,32 @@ const LandingNav = () => {
 
       {/* Mobile menu */}
       {menuOpen && (
-        <div className="absolute top-full left-0 right-0 bg-[#03030a]/95 backdrop-blur-[20px] border-b border-[#14142a] flex flex-col items-center gap-5 py-6 md:hidden">
-          <a href="#protocols" className={linkClass} onClick={() => setMenuOpen(false)}>Protocolos</a>
-          <a href="#features" className={linkClass} onClick={() => setMenuOpen(false)}>Módulos</a>
-          <a href="#coach" className={linkClass} onClick={() => setMenuOpen(false)}>Coach</a>
-          <a href="#plans" className={linkClass} onClick={() => setMenuOpen(false)}>Planos</a>
-          <a href="/auth" className={linkClass} onClick={() => setMenuOpen(false)}>Entrar</a>
+        <div
+          className="absolute top-full left-0 right-0 backdrop-blur-[20px] border-b flex flex-col items-center gap-5 py-6 md:hidden"
+          style={{ background: "rgba(20,18,15,0.95)", borderColor: "rgba(244,239,227,0.08)" }}
+        >
+          {navLinks.map((l) => (
+            <a key={l.href} href={l.href} style={linkStyle} onClick={() => setMenuOpen(false)}>
+              {l.label}
+            </a>
+          ))}
+          <a href="/auth" style={{ ...linkStyle, opacity: 0.75 }} onClick={() => setMenuOpen(false)}>
+            Entrar
+          </a>
           <a
             href="https://pay.kiwify.com.br/G8uxU9O"
             target="_blank"
             rel="noopener noreferrer"
-            className="bg-primary text-black font-mono text-[.72rem] font-medium px-5 py-2.5 rounded-[2px] tracking-[.08em]"
+            style={{
+              background: GOLD,
+              color: INK,
+              fontFamily: MONO,
+              fontWeight: 700,
+              fontSize: "0.72rem",
+              letterSpacing: "0.06em",
+              textTransform: "uppercase",
+              padding: "0.6rem 1.15rem",
+            }}
             onClick={() => setMenuOpen(false)}
           >
             Começar agora →
