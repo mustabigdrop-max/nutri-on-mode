@@ -1257,6 +1257,8 @@ export default function PlanoAlimentarIA() {
     circAbdomen: "" as string,
     circQuadril: "" as string,
     perfilVisual: "" as string,
+    perfilCorporal: "" as BodyProfileKey | "",
+    perfilCorporalOrigem: "manual" as "manual" | "apex_visual",
     // Cardio
     fazCardio: false,
     cardioModalidades: [] as string[],
