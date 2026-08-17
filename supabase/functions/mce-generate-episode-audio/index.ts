@@ -33,6 +33,11 @@ const SERIES_TONE: Record<string, string> = {
   relacionamentos: "vínculos, ambiente social, comunicação e limites que protegem o processo",
   parentalidade: "ser exemplo em casa: rotina familiar, alimentação dos filhos e legado de hábitos",
   financas: "disciplina financeira com a mesma lógica comportamental do MCE, custo x prioridade",
+  alter_ego: "construção do alter ego: identidade escolhida, postura de poder e frase de ativação",
+  capsula: "mensagem para o eu do futuro: perspectiva temporal, compromisso e continuidade",
+  pre_refeicao: "ritual de 60 segundos antes da refeição: presença, saciedade e relação com a comida",
+  body_scan: "body scan emocional: gratidão corporal, reconexão mente-corpo, sem julgamento do espelho",
+  modo_guerra: "ativação de pico em 90 segundos: energia máxima, respiração potente, comando curto e direto",
 };
 
 function json(body: unknown, status = 200) {
