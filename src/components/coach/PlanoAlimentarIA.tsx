@@ -24,6 +24,8 @@ import {
 } from "./planoAlimentarConstants";
 
 import { QuickClientBar, BlocoSomatotipo, BlocoPerfilDigestivo, BlocoPerfilAutonomico, BlocoHistoricoMetabolico, BlocoModoDieta, BlocoSaciedade, BlocoExamesLaboratoriais, BlocoNutrientIntelligence, BlocoCicloMenstrual, BlocoVidaRealCalorimetria } from "./NutriPlanIntelligenceBlocks";
+import BlocoPerfilCorporal, { PERFIL_CORPORAL_DEFAULT, toBodyProfile, type PerfilCorporalState } from "./BlocoPerfilCorporal";
+import { calculateTMB, getMacroDistribution, buildBodyProfileContext } from "@/lib/bodyProfile";
 import {
   INTEL_DEFAULT, SMART_DEFAULTS, ELITE_CHIPS, FEMININO_CHIPS, buildIntelContext,
   type IntelState, type QuickProfile,
@@ -1333,6 +1335,8 @@ export default function PlanoAlimentarIA() {
   const [categoriaEsporte, setCategoriaEsporte] = useState<string>("");
   const [intel, setIntel] = useState<IntelState>(INTEL_DEFAULT);
   const updIntel = (v: Partial<IntelState>) => setIntel(prev => ({ ...prev, ...v }));
+  const [perfilCorporal, setPerfilCorporal] = useState<PerfilCorporalState>(PERFIL_CORPORAL_DEFAULT);
+  const updPerfilCorporal = (v: Partial<PerfilCorporalState>) => setPerfilCorporal(prev => ({ ...prev, ...v }));
   const [pharmEnabled, setPharmEnabled] = useState(false);
   const [pharmProfile, setPharmProfile] = useState<PharmProfile>("natural");
   const [recuperacao, setRecuperacao] = useState<RecuperacaoCfg>(RECUPERACAO_DEFAULT);
@@ -1413,6 +1417,22 @@ export default function PlanoAlimentarIA() {
     }
     parts.push(`PERFIL FARMACOLÓGICO: ${pharmEnabled && pharmProfile !== "natural" ? pharmProfile : "natural"}`);
     parts.push(...buildIntelContext(intel));
+    {
+      const pesoN = Number(form.peso) || 0;
+      const alturaN = Number(form.altura) || 0;
+      const idadeN = Number(form.idade) || 0;
+      if (pesoN > 0 && alturaN > 0 && idadeN > 0) {
+        const bp = toBodyProfile(perfilCorporal, {
+          weight: pesoN, height: alturaN, age: idadeN,
+          sex: form.sexo === "feminino" ? "F" : "M",
+        });
+        const goalMap: Record<string, string> = {
+          emagrecimento: "cutting", hipertrofia: "bulking", recomposicao: "recomp",
+        };
+        const goal = goalMap[form.objetivo] || "cutting";
+        parts.push(...buildBodyProfileContext(bp, calculateTMB(bp), getMacroDistribution(bp, goal)));
+      }
+    }
     if (condicoesClinicas.length) parts.push(`CONDIÇÕES CLÍNICAS: ${condicoesClinicas.join(", ")}`);
     if (recuperacao.estrategias.length) parts.push(`ESTRATÉGIAS DE RECUPERAÇÃO: ${recuperacao.estrategias.join(", ")}`);
     if (recuperacao.nivelEstresse) parts.push(`NÍVEL DE ESTRESSE: ${recuperacao.nivelEstresse}`);
@@ -5965,6 +5985,22 @@ export default function PlanoAlimentarIA() {
 
 
         {/* ─── NUTRIPLAN INTELLIGENCE — somatotipo, digestivo, autonômico ─── */}
+        <BlocoPerfilCorporal
+          value={perfilCorporal}
+          onChange={updPerfilCorporal}
+          base={{
+            weight: Number(form.peso) || 0,
+            height: Number(form.altura) || 0,
+            age: Number(form.idade) || 0,
+            sex: form.sexo === "feminino" ? "F" : "M",
+          }}
+          athleteId={(form as any)?.patientUserId || selectedPatient || null}
+          objetivo={
+            form.objetivo === "hipertrofia" ? "bulking"
+              : form.objetivo === "recomposicao" ? "recomp"
+              : "cutting"
+          }
+        />
         <BlocoSomatotipo value={intel} onChange={updIntel} />
         <BlocoHistoricoMetabolico value={intel} onChange={updIntel} pesoKg={Number(form.peso) || undefined} />
         <BlocoModoDieta value={intel} onChange={updIntel} />

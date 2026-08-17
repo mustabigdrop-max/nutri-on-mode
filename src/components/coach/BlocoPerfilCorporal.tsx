@@ -1,0 +1,415 @@
+import React, { useState } from "react";
+import { Camera, Search, Check, Pencil, X, AlertTriangle, Scale, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
+import {
+  BODY_PROFILES, COMORBIDITIES, ABW_FACTORS, VISUAL_DISCLAIMER,
+  calculateTMB, getMacroDistribution, idealWeightKg, bmi, leanMassKg,
+  type BodyProfileType, type BodyProfile,
+} from "@/lib/bodyProfile";
+
+const GOLD = "#B8922A";
+const EMERALD = "#00C896";
+const CYAN = "#00D4FF";
+const TEXT = "#E8E8E8";
+const MUTED = "#8A8A8A";
+const MONO = "'Space Mono', ui-monospace, monospace";
+
+const label: React.CSSProperties = {
+  fontFamily: MONO, fontSize: 9, fontWeight: 700, color: GOLD,
+  letterSpacing: ".22em", textTransform: "uppercase",
+};
+const box: React.CSSProperties = {
+  marginBottom: 16, padding: "16px 18px",
+  background: "#06060a", border: "1px solid #1a1a22", borderLeft: `2px solid ${GOLD}`,
+};
+const inputStyle: React.CSSProperties = {
+  width: "100%", padding: "8px 10px", background: "#020205",
+  border: "1px solid #ffffff14", color: TEXT, fontSize: 13, fontFamily: "inherit",
+};
+
+export interface PerfilCorporalState {
+  type: BodyProfileType;
+  bfPercent: string;
+  leanMass: string;
+  waist: string;
+  abwFactor: number;
+  comorbidities: string[];
+  source: "manual" | "apex_visual";
+  fatDistribution?: string;
+  muscleDevelopment?: string;
+  visualIndicators: string[];
+  nutritionalPriorities: string[];
+}
+
+export const PERFIL_CORPORAL_DEFAULT: PerfilCorporalState = {
+  type: "padrao",
+  bfPercent: "",
+  leanMass: "",
+  waist: "",
+  abwFactor: 0.25,
+  comorbidities: [],
+  source: "manual",
+  visualIndicators: [],
+  nutritionalPriorities: [],
+};
+
+export function toBodyProfile(
+  s: PerfilCorporalState,
+  base: { weight: number; height: number; age: number; sex: "M" | "F" }
+): BodyProfile {
+  return {
+    type: s.type,
+    weight_kg: base.weight,
+    height_cm: base.height,
+    age: base.age,
+    sex: base.sex,
+    bf_percent: s.bfPercent ? Number(s.bfPercent) : undefined,
+    lean_mass_kg: s.leanMass ? Number(s.leanMass) : undefined,
+    waist_cm: s.waist ? Number(s.waist) : undefined,
+    abw_factor: s.abwFactor,
+    comorbidities: s.comorbidities,
+  };
+}
+
+interface Suggestion {
+  suggested_profile: BodyProfileType;
+  estimated_bf_range?: [number, number];
+  fat_distribution?: string;
+  muscle_development?: string;
+  visual_indicators?: string[];
+  nutritional_priorities?: string[];
+  abw_factor_suggestion?: number;
+  protein_reference?: string;
+  confidence?: string;
+  photo_date?: string;
+  client_data?: { weight_kg: number; height_cm: number; age: number; sex: string; imc: string };
+}
+
+export default function BlocoPerfilCorporal({
+  value, onChange, base, athleteId, objetivo,
+}: {
+  value: PerfilCorporalState;
+  onChange: (v: Partial<PerfilCorporalState>) => void;
+  base: { weight: number; height: number; age: number; sex: "M" | "F" };
+  athleteId?: string | null;
+  objetivo?: string;
+}) {
+  const [analyzing, setAnalyzing] = useState(false);
+  const [suggestion, setSuggestion] = useState<Suggestion | null>(null);
+  const [previous, setPrevious] = useState<{ body_profile?: string; bf_percent?: number; profile_analyzed_at?: string } | null>(null);
+
+  const hasBase = base.weight > 0 && base.height > 0 && base.age > 0;
+  const profile = toBodyProfile(value, base);
+  const tmb = hasBase ? calculateTMB(profile) : null;
+  const macros = hasBase ? getMacroDistribution(profile, objetivo || "cutting") : null;
+  const imc = hasBase ? bmi(base.weight, base.height) : 0;
+  const ideal = base.height ? idealWeightKg(base.height) : 0;
+  const lbm = leanMassKg(base.weight, value.bfPercent ? Number(value.bfPercent) : undefined);
+  const meta = BODY_PROFILES.find((p) => p.v === value.type);
+
+  const analisar = async () => {
+    if (!athleteId) {
+      toast({ title: "Selecione o cliente", description: "Escolha o aluno para buscar as fotos do APEX Visual.", variant: "destructive" });
+      return;
+    }
+    setAnalyzing(true);
+    setSuggestion(null);
+    try {
+      const { data: prof } = await supabase
+        .from("profiles")
+        .select("body_profile, bf_percent, profile_analyzed_at")
+        .eq("user_id", athleteId)
+        .maybeSingle();
+      setPrevious(prof as any);
+
+      const { data, error } = await supabase.functions.invoke("analyze-body-profile", {
+        body: {
+          athleteId,
+          manual: { weight_kg: base.weight, height_cm: base.height, age: base.age, sex: base.sex },
+        },
+      });
+      const err = (data as any)?.error || error?.message;
+      if (err || !(data as any)?.suggested_profile) {
+        toast({ title: "Análise indisponível", description: err || "Não consegui analisar as fotos.", variant: "destructive" });
+        return;
+      }
+      setSuggestion(data as Suggestion);
+    } catch (e: any) {
+      toast({ title: "Erro na análise", description: e?.message || "Tente novamente.", variant: "destructive" });
+    } finally {
+      setAnalyzing(false);
+    }
+  };
+
+  const aceitar = async () => {
+    if (!suggestion) return;
+    const range = suggestion.estimated_bf_range;
+    const bf = range && range.length === 2 ? (Number(range[0]) + Number(range[1])) / 2 : undefined;
+    onChange({
+      type: suggestion.suggested_profile,
+      bfPercent: bf ? String(Math.round(bf * 10) / 10) : value.bfPercent,
+      abwFactor: suggestion.abw_factor_suggestion || value.abwFactor,
+      source: "apex_visual",
+      fatDistribution: suggestion.fat_distribution,
+      muscleDevelopment: suggestion.muscle_development,
+      visualIndicators: suggestion.visual_indicators || [],
+      nutritionalPriorities: suggestion.nutritional_priorities || [],
+    });
+
+    if (athleteId) {
+      const idealW = base.height ? Math.round(idealWeightKg(base.height) * 10) / 10 : null;
+      const abwF = suggestion.abw_factor_suggestion || value.abwFactor;
+      const adjusted = idealW && base.weight ? Math.round((idealW + abwF * (base.weight - idealW)) * 10) / 10 : null;
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          body_profile: suggestion.suggested_profile,
+          bf_percent: bf ?? null,
+          abw_factor: abwF,
+          fat_distribution: suggestion.fat_distribution ?? null,
+          muscle_development: suggestion.muscle_development ?? null,
+          visual_indicators: suggestion.visual_indicators ?? [],
+          nutritional_priorities: suggestion.nutritional_priorities ?? [],
+          protein_reference: suggestion.protein_reference === "ideal" ? "ideal" : "real",
+          ideal_weight_kg: idealW,
+          adjusted_weight_kg: adjusted,
+          profile_source: "apex_visual",
+          profile_analyzed_at: new Date().toISOString(),
+        } as any)
+        .eq("user_id", athleteId);
+      if (error) console.error("[perfil-corporal] update", error);
+    }
+    setSuggestion(null);
+    toast({ title: "Perfil aplicado", description: "TMB e macros recalculados pelo perfil sugerido." });
+  };
+
+  const toggleComorb = (c: string) =>
+    onChange({
+      comorbidities: value.comorbidities.includes(c)
+        ? value.comorbidities.filter((x) => x !== c)
+        : [...value.comorbidities, c],
+    });
+
+  const changed = suggestion && previous?.body_profile && previous.body_profile !== suggestion.suggested_profile;
+
+  return (
+    <div style={box}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+        <Scale size={12} strokeWidth={2} color={GOLD} />
+        <span style={label}>Perfil corporal</span>
+        <span style={{ fontSize: 11, color: MUTED }}>— define a fórmula de TMB e os macros</span>
+      </div>
+
+      {/* APEX Visual */}
+      <div style={{ padding: 14, background: "#020205", border: `1px solid ${CYAN}33`, marginBottom: 14 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+          <Camera size={13} color={CYAN} />
+          <span style={{ ...label, color: CYAN }}>Sugerir pelo APEX Visual</span>
+        </div>
+        <p style={{ fontSize: 11.5, color: MUTED, marginBottom: 10 }}>
+          Analisar as fotos do cliente e sugerir o perfil automaticamente.
+        </p>
+        <button
+          type="button"
+          onClick={analisar}
+          disabled={analyzing}
+          style={{
+            display: "flex", alignItems: "center", gap: 7, padding: "9px 14px",
+            background: `${CYAN}18`, border: `1px solid ${CYAN}`, color: CYAN,
+            fontSize: 12, fontWeight: 700, fontFamily: "inherit",
+            cursor: analyzing ? "wait" : "pointer", opacity: analyzing ? 0.6 : 1,
+          }}
+        >
+          {analyzing ? <Loader2 size={13} className="animate-spin" /> : <Search size={13} />}
+          {analyzing ? "Analisando fotos…" : "Analisar fotos →"}
+        </button>
+      </div>
+
+      {/* Resultado da análise */}
+      {suggestion && (
+        <div style={{ padding: 14, background: "#04060a", border: `1px solid ${EMERALD}55`, marginBottom: 14 }}>
+          <div style={{ ...label, color: EMERALD, marginBottom: 10 }}>
+            🔍 Análise visual · sugestão do sistema
+          </div>
+          <div style={{ fontSize: 13, color: TEXT, lineHeight: 1.7, marginBottom: 10 }}>
+            <div><b>Perfil:</b> {BODY_PROFILES.find((p) => p.v === suggestion.suggested_profile)?.l || suggestion.suggested_profile}</div>
+            {suggestion.estimated_bf_range && (
+              <div><b>BF estimado:</b> {suggestion.estimated_bf_range[0]}–{suggestion.estimated_bf_range[1]}%</div>
+            )}
+            {suggestion.fat_distribution && <div><b>Distribuição:</b> {suggestion.fat_distribution}</div>}
+            {suggestion.muscle_development && <div><b>Massa muscular:</b> {suggestion.muscle_development}</div>}
+            {suggestion.confidence && <div><b>Confiança:</b> {suggestion.confidence}</div>}
+            {suggestion.photo_date && (
+              <div style={{ color: MUTED, fontSize: 11 }}>
+                Foto usada: {new Date(suggestion.photo_date).toLocaleDateString("pt-BR")}
+              </div>
+            )}
+          </div>
+
+          {!!suggestion.visual_indicators?.length && (
+            <div style={{ marginBottom: 10 }}>
+              <div style={{ ...label, color: MUTED, marginBottom: 6 }}>Indicadores visuais detectados</div>
+              {suggestion.visual_indicators.map((i, k) => (
+                <div key={k} style={{ fontSize: 12, color: TEXT }}>✅ {i}</div>
+              ))}
+            </div>
+          )}
+
+          {!!suggestion.nutritional_priorities?.length && (
+            <div style={{ marginBottom: 10 }}>
+              <div style={{ ...label, color: MUTED, marginBottom: 6 }}>Prioridades nutricionais sugeridas</div>
+              {suggestion.nutritional_priorities.map((i, k) => (
+                <div key={k} style={{ fontSize: 12, color: TEXT }}>→ {i}</div>
+              ))}
+            </div>
+          )}
+
+          {changed && (
+            <div style={{ padding: 10, background: `${GOLD}10`, border: `1px solid ${GOLD}44`, marginBottom: 10, fontSize: 12, color: TEXT }}>
+              📊 <b>Evolução do perfil:</b> o cliente estava como{" "}
+              <b>{BODY_PROFILES.find((p) => p.v === previous?.body_profile)?.l || previous?.body_profile}</b>
+              {previous?.bf_percent ? ` (BF ~${previous.bf_percent}%)` : ""} e agora aparece como{" "}
+              <b>{BODY_PROFILES.find((p) => p.v === suggestion.suggested_profile)?.l}</b>. Recalcular o plano com a nova fórmula.
+            </div>
+          )}
+
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+            <button type="button" onClick={aceitar}
+              style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 13px", background: `${EMERALD}18`, border: `1px solid ${EMERALD}`, color: EMERALD, fontSize: 12, fontWeight: 700, fontFamily: "inherit", cursor: "pointer" }}>
+              <Check size={13} /> Aceitar sugestão
+            </button>
+            <button type="button"
+              onClick={() => { onChange({ type: suggestion.suggested_profile, source: "manual" }); setSuggestion(null); }}
+              style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 13px", background: "#020205", border: `1px solid ${GOLD}55`, color: GOLD, fontSize: 12, fontWeight: 700, fontFamily: "inherit", cursor: "pointer" }}>
+              <Pencil size={13} /> Ajustar manualmente
+            </button>
+            <button type="button" onClick={() => setSuggestion(null)}
+              style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 13px", background: "#020205", border: "1px solid #ffffff14", color: MUTED, fontSize: 12, fontWeight: 700, fontFamily: "inherit", cursor: "pointer" }}>
+              <X size={13} /> Ignorar e selecionar
+            </button>
+          </div>
+
+          <p style={{ display: "flex", gap: 6, marginTop: 10, fontSize: 10.5, color: MUTED, lineHeight: 1.6 }}>
+            <AlertTriangle size={12} color={GOLD} style={{ flexShrink: 0, marginTop: 2 }} />
+            {VISUAL_DISCLAIMER}
+          </p>
+        </div>
+      )}
+
+      <div style={{ ...label, color: MUTED, marginBottom: 8 }}>— ou selecionar manualmente —</div>
+
+      {/* Seletor */}
+      <div style={{ display: "grid", gap: 6, marginBottom: 14 }}>
+        {BODY_PROFILES.map((p) => {
+          const active = value.type === p.v;
+          return (
+            <button key={p.v} type="button"
+              onClick={() => onChange({ type: p.v, source: "manual", abwFactor: p.v === "obeso_severo" ? 0.2 : value.abwFactor })}
+              style={{
+                textAlign: "left", padding: "10px 12px", cursor: "pointer",
+                background: active ? `${EMERALD}12` : "#020205",
+                border: `1px solid ${active ? EMERALD : "#ffffff10"}`,
+                color: active ? TEXT : "#a9a9a9", fontFamily: "inherit",
+              }}>
+              <div style={{ fontSize: 12.5, fontWeight: 800, color: active ? EMERALD : TEXT }}>
+                {active ? "●" : "○"} {p.l}
+              </div>
+              <div style={{ fontSize: 11, color: MUTED, marginTop: 3 }}>{p.d}</div>
+              {p.bf && <div style={{ fontSize: 10.5, color: MUTED }}>{p.bf}</div>}
+              <div style={{ fontSize: 10.5, fontFamily: MONO, color: GOLD, marginTop: 3 }}>{p.formula}</div>
+              {p.warn && <div style={{ fontSize: 10.5, color: "#ff9f43", marginTop: 2 }}>⚠️ {p.warn}</div>}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Dados de composição */}
+      <div style={{ ...label, color: MUTED, marginBottom: 8 }}>Dados de composição</div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))", gap: 10, marginBottom: 12 }}>
+        <div>
+          <div style={{ fontSize: 10.5, color: MUTED, marginBottom: 4 }}>BF estimado (%)</div>
+          <input style={inputStyle} inputMode="decimal" value={value.bfPercent}
+            onChange={(e) => onChange({ bfPercent: e.target.value })} placeholder="ex: 42" />
+        </div>
+        <div>
+          <div style={{ fontSize: 10.5, color: MUTED, marginBottom: 4 }}>Massa magra (kg)</div>
+          <input style={inputStyle} inputMode="decimal" value={value.leanMass}
+            onChange={(e) => onChange({ leanMass: e.target.value })}
+            placeholder={lbm ? `~${lbm.toFixed(1)}` : "opcional"} />
+        </div>
+        <div>
+          <div style={{ fontSize: 10.5, color: MUTED, marginBottom: 4 }}>Circ. abdominal (cm)</div>
+          <input style={inputStyle} inputMode="decimal" value={value.waist}
+            onChange={(e) => onChange({ waist: e.target.value })} placeholder="ex: 128" />
+        </div>
+        {(value.type === "obeso" || value.type === "obeso_severo") && (
+          <div>
+            <div style={{ fontSize: 10.5, color: MUTED, marginBottom: 4 }}>Fator ABW</div>
+            <select style={inputStyle} value={value.abwFactor}
+              onChange={(e) => onChange({ abwFactor: Number(e.target.value) })}>
+              {ABW_FACTORS.map((f) => <option key={f.v} value={f.v}>{f.l}</option>)}
+            </select>
+          </div>
+        )}
+      </div>
+
+      {/* Comorbidades */}
+      <div style={{ ...label, color: MUTED, marginBottom: 8 }}>Comorbidades</div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 14 }}>
+        {COMORBIDITIES.map((c) => {
+          const active = value.comorbidities.includes(c);
+          return (
+            <button key={c} type="button" onClick={() => toggleComorb(c)}
+              style={{
+                padding: "7px 12px", cursor: "pointer",
+                background: active ? `${EMERALD}15` : "#020205",
+                border: `1px solid ${active ? EMERALD : "#ffffff14"}`,
+                color: active ? EMERALD : MUTED, fontSize: 12, fontWeight: 600, fontFamily: "inherit",
+              }}>{c}</button>
+          );
+        })}
+        <button type="button" onClick={() => onChange({ comorbidities: [] })}
+          style={{ padding: "7px 12px", cursor: "pointer", background: "#020205", border: "1px solid #ffffff14", color: MUTED, fontSize: 12, fontFamily: "inherit" }}>
+          Nenhuma
+        </button>
+      </div>
+
+      {/* Prévia do cálculo */}
+      {tmb && macros ? (
+        <div style={{ padding: 14, background: "#020205", border: `1px solid ${GOLD}33` }}>
+          <div style={{ ...label, marginBottom: 10 }}>🔥 Prévia do cálculo · {meta?.l}</div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(130px,1fr))", gap: 10, fontSize: 12, color: TEXT }}>
+            <div><span style={{ color: MUTED }}>Peso real</span><br />{base.weight.toFixed(1)} kg</div>
+            <div><span style={{ color: MUTED }}>Peso ideal</span><br />{ideal.toFixed(1)} kg</div>
+            {tmb.adjusted_weight && (
+              <div><span style={{ color: MUTED }}>Peso ajustado</span><br />{tmb.adjusted_weight} kg (f {tmb.abw_factor})</div>
+            )}
+            <div><span style={{ color: MUTED }}>IMC</span><br />{imc.toFixed(1)}</div>
+            {lbm && <div><span style={{ color: MUTED }}>Massa magra</span><br />{lbm.toFixed(1)} kg</div>}
+            <div><span style={{ color: MUTED }}>TMB</span><br /><b style={{ color: GOLD }}>{tmb.tmb} kcal</b></div>
+            <div><span style={{ color: MUTED }}>Proteína</span><br />{macros.protein_total} g ({macros.protein_g_per_kg} g/kg {macros.protein_reference})</div>
+            <div><span style={{ color: MUTED }}>Fibra mínima</span><br />{macros.fiber_min} g</div>
+          </div>
+          <div style={{ fontFamily: MONO, fontSize: 10.5, color: GOLD, marginTop: 10 }}>
+            Fórmula: {tmb.formula}
+          </div>
+          {tmb.note && <div style={{ fontSize: 11, color: MUTED, marginTop: 4 }}>{tmb.note}</div>}
+          {tmb.alerts.map((a, i) => (
+            <div key={i} style={{ fontSize: 11, color: "#ff9f43", marginTop: 4 }}>⚠️ {a}</div>
+          ))}
+          {value.source === "apex_visual" && (
+            <p style={{ display: "flex", gap: 6, marginTop: 10, fontSize: 10.5, color: MUTED, lineHeight: 1.6 }}>
+              <AlertTriangle size={12} color={GOLD} style={{ flexShrink: 0, marginTop: 2 }} />
+              {VISUAL_DISCLAIMER}
+            </p>
+          )}
+        </div>
+      ) : (
+        <div style={{ fontSize: 11.5, color: MUTED }}>
+          Preencha peso, altura e idade do paciente para ver TMB e macros do perfil.
+        </div>
+      )}
+    </div>
+  );
+}
