@@ -150,6 +150,11 @@ export default function CoachAudioAcademyPage({ embedded = false }: { embedded?:
 
   const publishedCount = episodes.filter((e) => e.audio_url).length;
   const pendingEpisodes = useMemo(() => episodes.filter((e) => !e.audio_url), [episodes]);
+  const NEW_MODULE_SERIES = ["alter_ego", "capsula", "pre_refeicao", "body_scan", "modo_guerra"];
+  const newModulesPending = useMemo(
+    () => episodes.filter((e) => !e.audio_url && NEW_MODULE_SERIES.includes(e.series)),
+    [episodes],
+  );
 
   // Gera roteiro + narração na mesma voz do Briefing do dia
   const generateVoice = async (ep: Episode, silent = false): Promise<boolean> => {
