@@ -59,6 +59,48 @@ function chunkText(text: string, maxChars = 3200): string[] {
   return chunks.filter(Boolean);
 }
 
+const SAMPLE_RATE = 24000; // pcm 24kHz 16-bit mono do gateway
+
+function wavHeader(dataBytes: number): Uint8Array {
+  const h = new Uint8Array(44);
+  const dv = new DataView(h.buffer);
+  const w = (off: number, s: string) => { for (let i = 0; i < s.length; i++) h[off + i] = s.charCodeAt(i); };
+  w(0, "RIFF"); dv.setUint32(4, 36 + dataBytes, true); w(8, "WAVE");
+  w(12, "fmt "); dv.setUint32(16, 16, true); dv.setUint16(20, 1, true); dv.setUint16(22, 1, true);
+  dv.setUint32(24, SAMPLE_RATE, true); dv.setUint32(28, SAMPLE_RATE * 2, true);
+  dv.setUint16(32, 2, true); dv.setUint16(34, 16, true);
+  w(36, "data"); dv.setUint32(40, dataBytes, true);
+  return h;
+}
+
+function concat(parts: Uint8Array[]): Uint8Array {
+  const total = parts.reduce((a, p) => a + p.length, 0);
+  const out = new Uint8Array(total);
+  let off = 0;
+  for (const p of parts) { out.set(p, off); off += p.length; }
+  return out;
+}
+
+async function ttsPcm(input: string, instructions: string, speed: number): Promise<Uint8Array> {
+  const res = await fetch("https://ai.gateway.lovable.dev/v1/audio/speech", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: TTS_MODEL,
+      input,
+      voice: TTS_VOICE,
+      instructions,
+      response_format: "pcm",
+      speed,
+    }),
+  });
+  if (!res.ok) {
+    const detail = await res.text().catch(() => "");
+    throw new Error(`TTS ${res.status}: ${detail}`);
+  }
+  return new Uint8Array(await res.arrayBuffer());
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
