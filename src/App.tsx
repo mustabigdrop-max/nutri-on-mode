@@ -105,6 +105,7 @@ const MetabolicONPage = lazy(() => import("./pages/MetabolicONPage"));
 const MCEPage = lazy(() => import("./pages/MCEPage"));
 const MCEBusinessPage = lazy(() => import("./pages/MCEBusinessPage"));
 const GymChallengesPage = lazy(() => import("./pages/GymChallengesPage"));
+const BusinessChallengesPage = lazy(() => import("./pages/BusinessChallengesPage"));
 const AudioAcademyPage = lazy(() => import("./pages/AudioAcademyPage"));
 const PlanoAlimentarIA = lazy(() => import("./components/coach/PlanoAlimentarIA"));
 const AthleteRoster = lazy(() => import("./components/coach/AthleteRoster"));
@@ -260,6 +261,7 @@ const App = () => (
             <Route path="/metabolicon" element={<ProtectedRoute><MetabolicONPage /></ProtectedRoute>} />
             <Route path="/mce" element={<ProtectedRoute><MCEPage /></ProtectedRoute>} />
             <Route path="/mce/business" element={<ProtectedRoute><MCEBusinessPage /></ProtectedRoute>} />
+            <Route path="/mce/business/challenges" element={<ProtectedRoute><BusinessChallengesPage /></ProtectedRoute>} />
             <Route path="/audio" element={<ProtectedRoute><AudioAcademyPage /></ProtectedRoute>} />
             <Route path="/dr-nexus" element={<ProtectedRoute><DrNexusPage /></ProtectedRoute>} />
             <Route path="/videoform" element={<ProtectedRoute><PlanGateWrapper requiredPlan="ON PRO" featureName="VideoForm AI"><VideoFormPage /></PlanGateWrapper></ProtectedRoute>} />
