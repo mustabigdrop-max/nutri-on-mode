@@ -5791,7 +5791,7 @@ export default function PlanoAlimentarIA() {
             }}
           />
           {form.perfilCorporal && (
-            <div style={{ marginTop: 10, fontSize: 11, color: T.dim }}>
+            <div style={{ marginTop: 10, fontSize: 11, color: T.muted }}>
               Perfil ativo: <b style={{ color: T.emerald }}>
                 {BODY_PROFILES.find(p => p.key === form.perfilCorporal)?.label}
               </b>
