@@ -68,6 +68,14 @@ export default function DesafioSignupPage() {
           .eq("user_id", data.user.id);
       }
 
+      await supabase.from("challenge_signups").insert({
+        user_id: data.user?.id ?? null,
+        email: cleanEmail,
+        full_name: cleanName,
+        source: "qr",
+        gym_slug: gymSlug,
+      });
+
       setCreated({ password, needsConfirm: !data.session });
       if (data.session) {
         toast.success("Conta criada! Bem-vindo ao desafio.");
