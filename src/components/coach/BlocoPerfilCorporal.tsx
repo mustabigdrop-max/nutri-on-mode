@@ -178,13 +178,13 @@ export default function BlocoPerfilCorporal({
         },
       });
 
-      let err = (data as any)?.error || null;
+      let err = (data as any)?.message || (data as any)?.error || null;
       if (!err && error) {
         // Extrai a mensagem real do corpo da resposta não-2xx
         try {
           const ctx: any = (error as any).context;
           const parsed = ctx?.json ? await ctx.json() : null;
-          err = parsed?.error || error.message;
+          err = parsed?.message || parsed?.error || error.message;
         } catch {
           err = error.message;
         }
