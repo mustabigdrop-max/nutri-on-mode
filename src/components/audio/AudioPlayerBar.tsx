@@ -180,25 +180,103 @@ export default function AudioPlayerBar({
     setExporting(false);
   };
 
+  // ---- Media Session: segundo plano + controles na tela bloqueada ----
   useEffect(() => {
     if (!("mediaSession" in navigator)) return;
-    navigator.mediaSession.metadata = new MediaMetadata({
-      title: track.title,
-      artist: "Coach Diogo · MCE Audio Academy",
-      album: "nutriON",
-    });
+    const ms = navigator.mediaSession;
+    try {
+      ms.metadata = new MediaMetadata({
+        title: track.title,
+        artist: "Coach Diogo · MCE Audio Academy",
+        album: "nutriON",
+        artwork: [
+          { src: "/favicon.svg", sizes: "512x512", type: "image/svg+xml" },
+          { src: "/favicon.svg", sizes: "256x256", type: "image/svg+xml" },
+          { src: "/favicon.svg", sizes: "96x96", type: "image/svg+xml" },
+        ],
+      });
+    } catch {
+      /* metadata opcional */
+    }
+
     const el = () => audioRef.current;
-    navigator.mediaSession.setActionHandler("play", () => el()?.play());
-    navigator.mediaSession.setActionHandler("pause", () => el()?.pause());
-    navigator.mediaSession.setActionHandler("seekbackward", () => {
+    const set = (action: MediaSessionAction, handler: MediaSessionActionHandler | null) => {
+      try {
+        ms.setActionHandler(action, handler);
+      } catch {
+        /* ação não suportada no dispositivo */
+      }
+    };
+
+    set("play", () => el()?.play().catch(() => {}));
+    set("pause", () => el()?.pause());
+    set("stop", () => el()?.pause());
+    set("seekbackward", (d) => {
       const a = el();
-      if (a) a.currentTime = Math.max(0, a.currentTime - 15);
+      if (a) a.currentTime = Math.max(0, a.currentTime - (d?.seekOffset ?? 15));
     });
-    navigator.mediaSession.setActionHandler("seekforward", () => {
+    set("seekforward", (d) => {
       const a = el();
-      if (a) a.currentTime = a.currentTime + 15;
+      if (a) a.currentTime = Math.min(a.duration || Infinity, a.currentTime + (d?.seekOffset ?? 15));
     });
-  }, [track.title]);
+    set("seekto", (d) => {
+      const a = el();
+      if (!a || d?.seekTime == null) return;
+      if (d.fastSeek && "fastSeek" in a) (a as HTMLAudioElement).fastSeek(d.seekTime);
+      else a.currentTime = d.seekTime;
+    });
+    set("previoustrack", () => {
+      const a = el();
+      if (!a) return;
+      const s = activeSection != null ? sections[activeSection] : null;
+      a.currentTime = s ? s.start : Math.max(0, a.currentTime - 30);
+      a.play().catch(() => {});
+    });
+    set("nexttrack", () => {
+      const a = el();
+      if (!a) return;
+      const i = sections.findIndex((s) => a.currentTime < s.start);
+      a.currentTime = i >= 0 ? sections[i].start : Math.min(a.duration || 0, a.currentTime + 30);
+      a.play().catch(() => {});
+    });
+
+    return () => {
+      (["play", "pause", "stop", "seekbackward", "seekforward", "seekto", "previoustrack", "nexttrack"] as MediaSessionAction[])
+        .forEach((a) => set(a, null));
+    };
+  }, [track.title, sections, activeSection]);
+
+  // Estado de reprodução + posição para a tela bloqueada
+  useEffect(() => {
+    if (!("mediaSession" in navigator)) return;
+    navigator.mediaSession.playbackState = playing ? "playing" : "paused";
+  }, [playing]);
+
+  useEffect(() => {
+    if (!("mediaSession" in navigator) || !navigator.mediaSession.setPositionState) return;
+    if (!duration || !isFinite(duration)) return;
+    try {
+      navigator.mediaSession.setPositionState({
+        duration,
+        playbackRate: rate,
+        position: Math.min(Math.max(time, 0), duration),
+      });
+    } catch {
+      /* posição opcional */
+    }
+  }, [time, duration, rate]);
+
+  // Mantém o áudio tocando quando o app vai para segundo plano
+  useEffect(() => {
+    const onVisibility = () => {
+      const a = audioRef.current;
+      if (!a) return;
+      if (document.visibilityState === "hidden" && playing && a.paused) a.play().catch(() => {});
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => document.removeEventListener("visibilitychange", onVisibility);
+  }, [playing]);
+
 
   // Camada sonora: liga/desliga e troca de modo
   useEffect(() => {
