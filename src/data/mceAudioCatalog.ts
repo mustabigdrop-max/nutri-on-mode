@@ -231,12 +231,21 @@ export const MCE_AUDIO_CATALOG: CatalogEpisode[] = [
   { series: "vida_real", episode_number: 5, title: "A solidão do disciplinado", description: "Temporária — ao contrário da solidão do arrependido.", duration_seconds: min(10) },
 ];
 
-export const RITUAL_KEY_BY_EPISODE: Record<number, "despertar" | "pre_treino" | "pos_treino" | "pre_sono"> = {
+export const RITUAL_KEY_BY_EPISODE: Record<
+  number,
+  "despertar" | "pre_treino" | "pos_treino" | "pre_sono" | "corrida" | "dia_dificil"
+> = {
   1: "despertar",
   2: "pre_treino",
   3: "pos_treino",
   4: "pre_sono",
+  5: "corrida",
+  6: "dia_dificil",
 };
+
+/** Episódios 101..115 da série ritual são micro-áudios de musculação (entre séries). */
+export const isMicroAudioEpisode = (episodeNumber?: number | null) =>
+  !!episodeNumber && episodeNumber >= 101 && episodeNumber <= 115;
 
 export const AUDIO_MCE_POINTS = {
   briefing_listened: { m: 3, c: 0, e: 0 },
@@ -245,5 +254,8 @@ export const AUDIO_MCE_POINTS = {
   ritual_pre_treino: { m: 2, c: 0, e: 3 },
   ritual_pos_treino: { m: 0, c: 0, e: 5 },
   ritual_pre_sono: { m: 3, c: 4, e: 0 },
+  ritual_corrida: { m: 4, c: 2, e: 6 },
+  ritual_dia_dificil: { m: 5, c: 5, e: 2 },
+  micro_audio_listened: { m: 1, c: 0, e: 2 },
   science_class_completed: { m: 8, c: 0, e: 0 },
 } as const;
