@@ -98,7 +98,7 @@ const PostProntoPanel = ({ ctx, handle }: { ctx: Record<string, any>; handle?: s
       const uid = auth.user?.id;
       if (!uid) return;
       const counts = await Promise.all([
-        supabase.from("coach_patients").select("id", { count: "exact", head: true }).eq("coach_user_id", uid),
+        supabase.from("coach_patients").select("id", { count: "exact", head: true }),
         supabase.from("sent_plans").select("id", { count: "exact", head: true }),
         supabase.from("mce_audio_episodes").select("id", { count: "exact", head: true }),
         supabase.from("progress_photos").select("id", { count: "exact", head: true }),
