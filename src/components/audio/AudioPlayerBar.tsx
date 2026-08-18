@@ -388,8 +388,13 @@ export default function AudioPlayerBar({
         <div className="flex items-center justify-between mb-2">
           <div className="min-w-0">
             <p className="text-sm font-bold truncate" style={{ color: GOLD }}>{track.title}</p>
-            <p className="text-[11px] truncate" style={{ color: "rgba(255,255,255,0.5)" }}>{track.subtitle}</p>
+            <p className="text-[11px] truncate" style={{ color: "rgba(255,255,255,0.5)" }}>
+              {queueLabel ? `${queueLabel} · ` : ""}
+              {track.subtitle}
+              {currentSectionLabel ? ` · ${currentSectionLabel}` : ""}
+            </p>
           </div>
+
           <div className="flex items-center gap-1">
             <button
               onClick={() => setShowModes((v) => !v)}
