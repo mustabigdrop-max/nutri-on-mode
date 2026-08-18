@@ -1,7 +1,8 @@
 import { useMemo, useState } from "react";
 import { GYM_STATUSES, Gym, GymStatus, gymPhone, statusMeta } from "@/lib/gymBusiness";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, GripVertical, MessageCircle, Pencil } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ChevronLeft, ChevronRight, GripVertical, MessageCircle, Pencil, X } from "lucide-react";
 
 /** Colunas do funil operacional (kanban) */
 export const KANBAN_COLUMNS: GymStatus[] = [
@@ -15,13 +16,15 @@ export const KANBAN_COLUMNS: GymStatus[] = [
 interface Props {
   gyms: Gym[];
   onMove: (gym: Gym, status: GymStatus) => void;
+  onBulkMove?: (gyms: Gym[], status: GymStatus) => void | Promise<void>;
   onEdit?: (gym: Gym) => void;
   onWhatsApp?: (gym: Gym) => void;
 }
 
-export default function GymKanbanBoard({ gyms, onMove, onEdit, onWhatsApp }: Props) {
+export default function GymKanbanBoard({ gyms, onMove, onBulkMove, onEdit, onWhatsApp }: Props) {
   const [dragId, setDragId] = useState<string | null>(null);
   const [overCol, setOverCol] = useState<GymStatus | null>(null);
+  const [selected, setSelected] = useState<string[]>([]);
 
   const byStatus = useMemo(() => {
     const map = new Map<GymStatus, Gym[]>();
@@ -33,11 +36,39 @@ export default function GymKanbanBoard({ gyms, onMove, onEdit, onWhatsApp }: Pro
     return map;
   }, [gyms]);
 
+  const selectedGyms = useMemo(
+    () => gyms.filter((g) => selected.includes(g.id)),
+    [gyms, selected],
+  );
+
+  const toggle = (id: string) =>
+    setSelected((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+
+  const toggleColumn = (items: Gym[], all: boolean) =>
+    setSelected((prev) => {
+      const ids = items.map((i) => i.id);
+      return all ? prev.filter((x) => !ids.includes(x)) : Array.from(new Set([...prev, ...ids]));
+    });
+
+  const bulkMove = async (status: GymStatus) => {
+    const targets = selectedGyms.filter((g) => g.status !== status);
+    if (targets.length === 0) return;
+    if (onBulkMove) await onBulkMove(targets, status);
+    else targets.forEach((g) => onMove(g, status));
+    setSelected([]);
+  };
+
   const drop = (status: GymStatus) => {
     setOverCol(null);
     const gym = gyms.find((g) => g.id === dragId);
     setDragId(null);
-    if (gym && gym.status !== status) onMove(gym, status);
+    if (!gym) return;
+    // Arrastar um card selecionado move todo o lote selecionado
+    if (selected.includes(gym.id) && selectedGyms.length > 1) {
+      bulkMove(status);
+      return;
+    }
+    if (gym.status !== status) onMove(gym, status);
   };
 
   const shift = (gym: Gym, dir: -1 | 1) => {
@@ -46,8 +77,32 @@ export default function GymKanbanBoard({ gyms, onMove, onEdit, onWhatsApp }: Pro
     if (next && next !== gym.status) onMove(gym, next);
   };
 
+
   return (
     <div className="overflow-x-auto pb-2">
+      {selectedGyms.length > 0 && (
+        <div className="sticky top-0 z-10 mb-2 flex flex-wrap items-center gap-2 rounded-lg border border-primary/30 bg-card/90 px-3 py-2 backdrop-blur">
+          <span className="text-xs font-semibold text-primary">
+            {selectedGyms.length} selecionada{selectedGyms.length > 1 ? "s" : ""}
+          </span>
+          <span className="text-[11px] text-muted-foreground">Mover para:</span>
+          {KANBAN_COLUMNS.map((s) => {
+            const m = statusMeta(s);
+            return (
+              <Button key={s} size="sm" variant="outline" className="h-7 text-[11px]"
+                style={{ borderColor: `${m.color}55`, color: m.color }}
+                onClick={() => bulkMove(s)}>
+                {m.dot} {m.label}
+              </Button>
+            );
+          })}
+          <Button size="sm" variant="ghost" className="h-7 text-[11px] ml-auto"
+            onClick={() => setSelected([])}>
+            <X className="w-3 h-3 mr-1" /> Limpar
+          </Button>
+        </div>
+      )}
+
       <div className="flex gap-3 min-w-max">
         {KANBAN_COLUMNS.map((status) => {
           const meta = statusMeta(status);
@@ -68,7 +123,16 @@ export default function GymKanbanBoard({ gyms, onMove, onEdit, onWhatsApp }: Pro
               }}
             >
               <div className="flex items-center justify-between px-1 pb-2">
-                <span className="text-xs font-semibold" style={{ color: meta.color }}>
+                <span className="flex items-center gap-1.5 text-xs font-semibold" style={{ color: meta.color }}>
+                  <Checkbox
+                    aria-label={`Selecionar todas de ${meta.label}`}
+                    className="h-3.5 w-3.5"
+                    disabled={items.length === 0}
+                    checked={items.length > 0 && items.every((i) => selected.includes(i.id))}
+                    onCheckedChange={() =>
+                      toggleColumn(items, items.every((i) => selected.includes(i.id)))
+                    }
+                  />
                   {meta.dot} {meta.label.toUpperCase()}
                 </span>
                 <span className="text-[10px] text-muted-foreground">{items.length}</span>
@@ -88,11 +152,18 @@ export default function GymKanbanBoard({ gyms, onMove, onEdit, onWhatsApp }: Pro
                     onDragEnd={() => { setDragId(null); setOverCol(null); }}
                     className={`rounded-lg border bg-background/80 p-2.5 cursor-grab active:cursor-grabbing space-y-1.5 ${
                       dragId === g.id ? "opacity-50" : ""
-                    }`}
+                    } ${selected.includes(g.id) ? "ring-1 ring-primary/60" : ""}`}
                     style={{ borderColor: `${meta.color}33` }}
                   >
                     <div className="flex items-start gap-1.5">
+                      <Checkbox
+                        aria-label={`Selecionar ${g.name}`}
+                        className="mt-0.5 h-3.5 w-3.5 shrink-0"
+                        checked={selected.includes(g.id)}
+                        onCheckedChange={() => toggle(g.id)}
+                      />
                       <GripVertical className="w-3.5 h-3.5 mt-0.5 text-muted-foreground shrink-0" />
+
                       <div className="min-w-0">
                         <p className="text-sm font-semibold truncate">{g.name}</p>
                         <p className="text-[11px] text-muted-foreground truncate">
