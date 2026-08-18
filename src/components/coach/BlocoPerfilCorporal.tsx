@@ -268,23 +268,49 @@ export default function BlocoPerfilCorporal({
           <span style={{ ...label, color: CYAN }}>Sugerir pelo APEX Visual</span>
         </div>
         <p style={{ fontSize: 11.5, color: MUTED, marginBottom: 10 }}>
-          Analisar as fotos do cliente e sugerir o perfil automaticamente.
+          Analisar as fotos do cliente e sugerir o perfil automaticamente. Sem foto no APEX? Envie uma direto aqui.
         </p>
-        <button
-          type="button"
-          onClick={analisar}
-          disabled={analyzing}
-          style={{
-            display: "flex", alignItems: "center", gap: 7, padding: "9px 14px",
-            background: `${CYAN}18`, border: `1px solid ${CYAN}`, color: CYAN,
-            fontSize: 12, fontWeight: 700, fontFamily: "inherit",
-            cursor: analyzing ? "wait" : "pointer", opacity: analyzing ? 0.6 : 1,
-          }}
-        >
-          {analyzing ? <Loader2 size={13} className="animate-spin" /> : <Search size={13} />}
-          {analyzing ? "Analisando fotos…" : "Analisar fotos →"}
-        </button>
+        {uploadPreview && (
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+            <img src={uploadPreview} alt="Foto enviada para análise corporal" style={{ width: 54, height: 54, objectFit: "cover", border: `1px solid ${CYAN}55` }} />
+            <button type="button" onClick={() => setUploadPreview(null)}
+              style={{ background: "none", border: "none", color: MUTED, fontSize: 11, cursor: "pointer" }}>
+              remover foto enviada
+            </button>
+          </div>
+        )}
+        <input ref={fileRef} type="file" accept="image/*" onChange={onPickFile} style={{ display: "none" }} />
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <button
+            type="button"
+            onClick={() => analisar()}
+            disabled={analyzing}
+            style={{
+              display: "flex", alignItems: "center", gap: 7, padding: "9px 14px",
+              background: `${CYAN}18`, border: `1px solid ${CYAN}`, color: CYAN,
+              fontSize: 12, fontWeight: 700, fontFamily: "inherit",
+              cursor: analyzing ? "wait" : "pointer", opacity: analyzing ? 0.6 : 1,
+            }}
+          >
+            {analyzing ? <Loader2 size={13} className="animate-spin" /> : <Search size={13} />}
+            {analyzing ? "Analisando fotos…" : "Analisar fotos →"}
+          </button>
+          <button
+            type="button"
+            onClick={() => fileRef.current?.click()}
+            disabled={analyzing}
+            style={{
+              display: "flex", alignItems: "center", gap: 7, padding: "9px 14px",
+              background: "transparent", border: "1px solid #ffffff22", color: TEXT,
+              fontSize: 12, fontWeight: 700, fontFamily: "inherit",
+              cursor: analyzing ? "wait" : "pointer", opacity: analyzing ? 0.6 : 1,
+            }}
+          >
+            <Camera size={13} /> Enviar foto
+          </button>
+        </div>
       </div>
+
 
       {/* Resultado da análise */}
       {suggestion && (
