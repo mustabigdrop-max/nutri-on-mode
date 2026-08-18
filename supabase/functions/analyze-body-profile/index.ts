@@ -12,16 +12,20 @@ const json = (body: unknown, status = 200) =>
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
 
-const BUCKET = "apex-visual-photos";
+const BUCKETS = ["apex-visual-photos", "progress-photos"];
 
 async function toDataUrl(supabase: any, raw: string): Promise<string | null> {
   try {
     let url = raw;
     if (!/^https?:\/\//i.test(raw)) {
-      const path = raw.replace(/^\/+/, "").replace(new RegExp(`^${BUCKET}/`), "");
-      const { data } = await supabase.storage.from(BUCKET).createSignedUrl(path, 600);
-      if (!data?.signedUrl) return null;
-      url = data.signedUrl;
+      let signed: string | null = null;
+      for (const bucket of BUCKETS) {
+        const path = raw.replace(/^\/+/, "").replace(new RegExp(`^${bucket}/`), "");
+        const { data } = await supabase.storage.from(bucket).createSignedUrl(path, 600);
+        if (data?.signedUrl) { signed = data.signedUrl; break; }
+      }
+      if (!signed) return null;
+      url = signed;
     }
     const res = await fetch(url);
     if (!res.ok) return null;
@@ -37,6 +41,7 @@ async function toDataUrl(supabase: any, raw: string): Promise<string | null> {
     return null;
   }
 }
+
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
