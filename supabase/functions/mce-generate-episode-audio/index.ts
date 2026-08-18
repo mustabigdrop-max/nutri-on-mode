@@ -135,16 +135,25 @@ Deno.serve(async (req) => {
       .maybeSingle();
     if (epErr || !ep) return json({ error: "Episódio não encontrado" }, 404);
 
-    // ===== RITUAIS: roteiro fixo oficial + silêncios reais (WAV 24kHz) =====
+    // ===== RITUAIS + MICRO-ÁUDIOS: roteiro fixo oficial + silêncios reais (WAV 24kHz) =====
     const ritualKey = ep.series === "ritual" && ep.episode_number
       ? RITUAL_KEY_BY_EPISODE[ep.episode_number]
       : undefined;
+    const microKey = ep.series === "ritual" && ep.episode_number
+      ? MICRO_KEY_BY_EPISODE[ep.episode_number]
+      : undefined;
+    const fixedScript = ritualKey
+      ? RITUAL_SCRIPTS[ritualKey]
+      : microKey
+        ? MICRO_BY_KEY[microKey]
+        : undefined;
 
-    if (ritualKey && RITUAL_SCRIPTS[ritualKey]) {
-      const scriptText = RITUAL_SCRIPTS[ritualKey];
-      const voice = RITUAL_VOICE[ritualKey];
+    if (fixedScript) {
+      const scriptText = fixedScript;
+      const voice = ritualKey ? RITUAL_VOICE[ritualKey] : MICRO_VOICE;
       const segments = parseRitualScript(scriptText);
       const pcmParts: Uint8Array[] = [];
+
 
       try {
         for (const seg of segments) {
