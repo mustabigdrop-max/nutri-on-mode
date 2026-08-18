@@ -25,6 +25,7 @@ import InstagramAccountPanel from "@/components/social/InstagramAccountPanel";
 import { useInstagramAccount } from "@/hooks/useInstagramAccount";
 import {
   ACADEMY_TRACKS, ACTION_PLAN, BIO_CRITERIA, CONTENT_PRODUCTS, DIFFERENTIALS, FORMATS,
+  FORMAT_GROUPS, FORMAT_BRIEFS, formatLabel, TONES, TONE_BRIEFS, BEST_TIMES, STORIES_TIMES, PRE_POST_CHECKLIST,
   FUNNELS, IDEAL_MIX, NICHES, OBJECTIVES, PRODUCTS, PRODUCT_LADDER, VISUAL_PALETTE,
   VISUAL_RULES, VISUAL_TYPOGRAPHY, WEEKLY_CHECKLIST_ITEMS, mondayOf,
 } from "@/data/socialOnData";
@@ -103,7 +104,9 @@ const SocialOnModulePage = () => {
 
   // create content
   const [funnel, setFunnel] = useState("tofu");
-  const [format, setFormat] = useState("reel");
+  const [format, setFormat] = useState("talking_head");
+  const [tone, setTone] = useState("agressivo");
+  const [prePost, setPrePost] = useState<Record<string, boolean>>({});
   const [objective, setObjective] = useState("seguidores");
   const [product, setProduct] = useState<string | null>(null);
   const [topic, setTopic] = useState("");
@@ -259,7 +262,12 @@ const SocialOnModulePage = () => {
     setGenerated(null);
     try {
       const r = await callAI({
-        mode: "content_full", funnel, format, objective, product, topic,
+        mode: "content_full", funnel, format, objective, product, topic, tone,
+        formatBrief: FORMAT_BRIEFS[format],
+        toneBrief: TONE_BRIEFS[tone],
+        bestTime: format.startsWith("stories")
+          ? STORIES_TIMES.join(" · ")
+          : (BEST_TIMES[objective]?.windows || []).join(" ou "),
         handle, niches, products, differentials,
       });
       setGenerated(r);
@@ -273,7 +281,8 @@ const SocialOnModulePage = () => {
       ...(generated.stories_sequence || []).map((s: any) => `STORY ${s.numero} — ${s.visual}\n"${s.texto}"\n→ ${s.gatilho}`),
     ].join("\n\n");
     const { error } = await supabase.from("social_content").insert({
-      coach_id: uid, funnel, format, objective, product, topic,
+      coach_id: uid, funnel, format, objective, product, topic, tone,
+      suggested_time: BEST_TIMES[objective]?.time ?? null,
       hook: generated.roteiro?.[0]?.fala ?? null,
       script,
       caption: generated.caption ?? null,
@@ -318,7 +327,7 @@ const SocialOnModulePage = () => {
 
   const startFromIdea = (idea: any) => {
     setFunnel(idea.funnel);
-    setFormat(idea.format);
+    setFormat(idea.format in FORMAT_BRIEFS ? idea.format : "talking_head");
     setObjective(idea.objective);
     setProduct(PRODUCT_LADDER.find((p) => p.ideas.includes(idea))?.name.split(" ")[0] ?? null);
     setTopic(idea.topic);
@@ -327,9 +336,10 @@ const SocialOnModulePage = () => {
   };
 
   const weekContents = contents.filter((c) => (c.scheduled_date || c.created_at.slice(0, 10)) >= weekStart);
-  const reels = weekContents.filter((c) => c.format === "reel").length;
-  const storiesDays = new Set(weekContents.filter((c) => c.format === "stories").map((c) => c.scheduled_date)).size;
-  const carrosseis = weekContents.filter((c) => c.format === "carrossel").length;
+  const VIDEO_FORMATS = ["reel", "edit", "talking_head", "clips_treino", "screen_recording", "pov", "timelapse"];
+  const reels = weekContents.filter((c) => VIDEO_FORMATS.includes(c.format)).length;
+  const storiesDays = new Set(weekContents.filter((c) => c.format.startsWith("stories")).map((c) => c.scheduled_date)).size;
+  const carrosseis = weekContents.filter((c) => c.format === "carrossel" || c.format === "carrossel_fotos").length;
   const funnelCount = (f: string) => weekContents.filter((c) => c.funnel === f).length;
   const funnelPct = (f: string) => (weekContents.length ? Math.round((funnelCount(f) / weekContents.length) * 100) : 0);
 
@@ -558,15 +568,22 @@ const SocialOnModulePage = () => {
             </Section>
 
             <Section title="Passo 2 — Formato">
-              <div className="grid grid-cols-4 gap-2">
-                {FORMATS.map((f) => (
-                  <button key={f.id} onClick={() => setFormat(f.id)} className="rounded-xl p-3 border text-center"
-                    style={{ borderColor: format === f.id ? ACCENT : "rgba(255,255,255,0.08)", background: format === f.id ? `${ACCENT}14` : "transparent" }}>
-                    <p className="text-lg">{f.emoji}</p>
-                    <p className="text-[11px]">{f.label}</p>
-                  </button>
-                ))}
-              </div>
+              <p className="text-xs text-muted-foreground">O que você tem pra postar?</p>
+              {FORMAT_GROUPS.map((g) => (
+                <div key={g.group} className="space-y-2">
+                  <p className="text-[10px] font-mono tracking-widest" style={{ color: ACCENT2 }}>{g.emoji} {g.group}</p>
+                  <div className="grid grid-cols-3 gap-2">
+                    {g.options.map((f) => (
+                      <button key={f.id} onClick={() => setFormat(f.id)} className="rounded-xl p-3 border text-center"
+                        style={{ borderColor: format === f.id ? ACCENT : "rgba(255,255,255,0.08)", background: format === f.id ? `${ACCENT}14` : "transparent" }}>
+                        <p className="text-lg">{f.emoji}</p>
+                        <p className="text-[11px] leading-tight">{f.label}</p>
+                        <p className="text-[9px] text-muted-foreground leading-tight">{f.sub}</p>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ))}
             </Section>
 
             <Section title="Passo 3 — Objetivo específico">
@@ -576,6 +593,19 @@ const SocialOnModulePage = () => {
                     style={{ borderColor: objective === o.id ? ACCENT : "rgba(255,255,255,0.08)", background: objective === o.id ? `${ACCENT}14` : "transparent" }}>
                     <p className="text-lg">{o.emoji}</p>
                     <p className="text-[10px] leading-tight">{o.label}</p>
+                  </button>
+                ))}
+              </div>
+            </Section>
+
+            <Section title="Passo 3.5 — Tom de voz">
+              <div className="grid grid-cols-3 gap-2">
+                {TONES.map((t) => (
+                  <button key={t.id} onClick={() => setTone(t.id)} className="rounded-xl p-3 border text-center"
+                    style={{ borderColor: tone === t.id ? ACCENT : "rgba(255,255,255,0.08)", background: tone === t.id ? `${ACCENT}14` : "transparent" }}>
+                    <p className="text-lg">{t.emoji}</p>
+                    <p className="text-[11px] leading-tight">{t.label}</p>
+                    <p className="text-[9px] text-muted-foreground leading-tight">{t.sub}</p>
                   </button>
                 ))}
               </div>
@@ -603,7 +633,7 @@ const SocialOnModulePage = () => {
             {generated && (
               <div className="space-y-3">
                 <p className="text-[11px] font-mono" style={{ color: ACCENT }}>
-                  {funnel.toUpperCase()} · {format.toUpperCase()} · {objective.toUpperCase()}{product ? ` · ${product}` : ""}
+                  {funnel.toUpperCase()} · {formatLabel(format).toUpperCase()} · {objective.toUpperCase()} · TOM {tone.toUpperCase()}{product ? ` · ${product}` : ""}
                 </p>
 
                 {!!(generated.roteiro || []).length && (
@@ -662,6 +692,53 @@ const SocialOnModulePage = () => {
                   </Section>
                 )}
 
+                {generated.hashtags_grupos && (
+                  <Section title="Hashtags por tipo">
+                    {[
+                      { k: "grandes", dot: "🔴", label: "GRANDES (>1M — alcance)" },
+                      { k: "medias", dot: "🟡", label: "MÉDIAS (100K-1M)" },
+                      { k: "nichadas", dot: "🟢", label: "NICHADAS (<100K — descoberta)" },
+                    ].map(({ k, dot, label }) => (
+                      <div key={k} className="space-y-0.5">
+                        <p className="text-[10px] font-mono text-muted-foreground">{dot} {label}</p>
+                        <p className="text-sm">{(generated.hashtags_grupos[k] || []).join(" ")}</p>
+                      </div>
+                    ))}
+                    <p className="text-[10px] text-muted-foreground">Regra: 3 grandes + 7 médias + 5 nichadas = 15 no total.</p>
+                  </Section>
+                )}
+
+                <Section title="Horário e self-comment">
+                  <p className="text-sm">
+                    ⏰ Melhor horário:{" "}
+                    <span style={{ color: ACCENT }}>
+                      {format.startsWith("stories") ? STORIES_TIMES.join(" · ") : (BEST_TIMES[objective]?.windows || []).join(" ou ")}
+                    </span>
+                  </p>
+                  {!format.startsWith("stories") && BEST_TIMES[objective] && (
+                    <p className="text-[11px] text-muted-foreground">{BEST_TIMES[objective].why}</p>
+                  )}
+                  {generated.self_comment && (
+                    <>
+                      <p className="text-sm whitespace-pre-wrap">💬 Self-comment: "{generated.self_comment}"</p>
+                      <Button size="sm" variant="outline" className="gap-2" onClick={() => copy(generated.self_comment)}>
+                        <Copy className="w-3 h-3" /> Copiar self-comment
+                      </Button>
+                    </>
+                  )}
+                </Section>
+
+                <Section title="Antes de postar, confirme">
+                  {PRE_POST_CHECKLIST.map((item) => (
+                    <label key={item} className="flex items-start gap-2 text-sm cursor-pointer">
+                      <input type="checkbox" checked={!!prePost[item]}
+                        onChange={() => setPrePost((p) => ({ ...p, [item]: !p[item] }))}
+                        className="mt-1 accent-current" style={{ accentColor: ACCENT }} />
+                      <span>{item}</span>
+                    </label>
+                  ))}
+                </Section>
+
                 <div className="flex gap-2">
                   <Button variant="outline" onClick={generate} className="gap-2">🔄 Gerar outro</Button>
                   <Button onClick={saveContent} className="gap-2"><Check className="w-4 h-4" /> Salvar no calendário</Button>
@@ -680,7 +757,7 @@ const SocialOnModulePage = () => {
                   <div className="flex items-start justify-between gap-2">
                     <div>
                       <p className="text-[10px] font-mono" style={{ color: ACCENT }}>
-                        {c.funnel.toUpperCase()} · {c.format.toUpperCase()} · {c.objective?.toUpperCase()}
+                        {c.funnel.toUpperCase()} · {formatLabel(c.format).toUpperCase()} · {c.objective?.toUpperCase()}
                       </p>
                       <p className="text-sm font-semibold">{c.topic}</p>
                       <p className="text-[11px] text-muted-foreground">{c.scheduled_date || c.created_at.slice(0, 10)}</p>
