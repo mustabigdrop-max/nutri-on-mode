@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Play, Pause, RotateCcw, RotateCw, X, Headphones, Waves, Repeat } from "lucide-react";
+import { Play, Pause, RotateCcw, RotateCw, X, Headphones, Waves, Repeat, Download, Flag, Loader2, Trash2 } from "lucide-react";
+import { toast } from "sonner";
+import { extractClip, downloadBlob } from "@/lib/audioClip";
 import {
   MCE_AUDIO_MODES,
   MODE_BY_KEY,
@@ -11,6 +13,9 @@ import {
 const GOLD = "#E8A020";
 const LS_MODE = "mce_audio_mode";
 const LS_LAYER = "mce_audio_layer_on";
+const LS_RATE = "mce_audio_rate";
+const LS_MARKS = "mce_audio_marks";
+const RATES = [0.75, 1, 1.25, 1.5];
 
 export type TrackSection = { label: string; start: number; end: number };
 
@@ -95,6 +100,86 @@ export default function AudioPlayerBar({
     if (i >= 0) playSection(i);
   };
 
+  // ---- Velocidade ----
+  const [rate, setRate] = useState<number>(() => Number(localStorage.getItem(LS_RATE)) || 1);
+  useEffect(() => {
+    localStorage.setItem(LS_RATE, String(rate));
+    if (audioRef.current) audioRef.current.playbackRate = rate;
+  }, [rate, track.id]);
+
+  // ---- Repetição A-B ----
+  const [pointA, setPointA] = useState<number | null>(null);
+  const [pointB, setPointB] = useState<number | null>(null);
+  const abActive = pointA != null && pointB != null && pointB > pointA;
+
+  // ---- Marcadores manuais ----
+  const markerKey = `${LS_MARKS}:${track.id}`;
+  const [markers, setMarkers] = useState<{ label: string; at: number }[]>([]);
+  useEffect(() => {
+    try {
+      setMarkers(JSON.parse(localStorage.getItem(markerKey) || "[]"));
+    } catch {
+      setMarkers([]);
+    }
+    setPointA(null);
+    setPointB(null);
+  }, [markerKey]);
+
+  const saveMarkers = (list: { label: string; at: number }[]) => {
+    setMarkers(list);
+    localStorage.setItem(markerKey, JSON.stringify(list));
+  };
+
+  const addMarker = () => {
+    const at = audioRef.current?.currentTime ?? time;
+    const list = [...markers, { label: `M${markers.length + 1}`, at }].sort((a, b) => a.at - b.at);
+    saveMarkers(list.map((m, i) => ({ ...m, label: `M${i + 1}` })));
+    toast.success(`Marcador em ${fmt(at)}`);
+  };
+
+  const removeMarker = (idx: number) => {
+    const list = markers.filter((_, i) => i !== idx).map((m, i) => ({ ...m, label: `M${i + 1}` }));
+    saveMarkers(list);
+  };
+
+  const seekTo = (t: number) => {
+    const a = audioRef.current;
+    if (!a) return;
+    a.currentTime = Math.max(0, t);
+    a.play().catch(() => {});
+  };
+
+  // ---- Exportar trecho ----
+  const [exporting, setExporting] = useState(false);
+  const exportRange = async () => {
+    let start: number | null = null;
+    let end: number | null = null;
+    if (abActive) {
+      start = pointA!;
+      end = pointB!;
+    } else {
+      const i = activeSection ?? sections.findIndex((s) => time >= s.start && time < s.end);
+      if (i >= 0 && sections[i]) {
+        start = sections[i].start;
+        end = sections[i].end;
+      }
+    }
+    if (start == null || end == null) {
+      toast.error("Selecione uma seção ou marque A-B primeiro.");
+      return;
+    }
+    setExporting(true);
+    try {
+      const blob = await extractClip(track.src, start, end);
+      const safe = track.title.replace(/[^\w\-]+/g, "_").slice(0, 40);
+      downloadBlob(blob, `${safe}_${Math.round(start)}s-${Math.round(end)}s.wav`);
+      toast.success("Trecho exportado.");
+    } catch (e: any) {
+      toast.error(e?.message || "Falha ao exportar o trecho.");
+    }
+    setExporting(false);
+  };
+
   useEffect(() => {
     if (!("mediaSession" in navigator)) return;
     navigator.mediaSession.metadata = new MediaMetadata({
@@ -162,7 +247,13 @@ export default function AudioPlayerBar({
         src={track.src}
         onTimeUpdate={(e) => {
           const a = e.currentTarget;
-          if (loopSection && activeSection != null) {
+          if (abActive) {
+            // A-B tem prioridade sobre o loop de seção
+            if (a.currentTime >= pointB! - 0.05 || a.currentTime < pointA! - 0.5) {
+              a.currentTime = pointA!;
+              a.play().catch(() => {});
+            }
+          } else if (loopSection && activeSection != null) {
             const s = sections[activeSection];
             if (s && a.currentTime >= s.end - 0.05) {
               a.currentTime = s.start;
@@ -172,7 +263,13 @@ export default function AudioPlayerBar({
           setTime(a.currentTime);
           onProgress?.(a.currentTime, a.duration || 0);
         }}
-        onLoadedMetadata={(e) => setDuration(e.currentTarget.duration || 0)}
+        onLoadedMetadata={(e) => {
+          setDuration(e.currentTarget.duration || 0);
+          e.currentTarget.playbackRate = rate;
+        }}
+        onRateChange={(e) => {
+          if (e.currentTarget.playbackRate !== rate) e.currentTarget.playbackRate = rate;
+        }}
         onPlay={() => setPlaying(true)}
         onPause={() => setPlaying(false)}
         onEnded={() => {
@@ -255,6 +352,112 @@ export default function AudioPlayerBar({
               <br />
               Soundscape: {cfg.scapeName}. Use fones para o efeito binaural.
             </p>
+          </div>
+        )}
+
+        {/* Velocidade · A-B · Exportar */}
+        <div className="flex flex-wrap items-center gap-1.5 mb-2">
+          <span className="text-[10px] font-bold tracking-wider" style={{ color: "rgba(255,255,255,0.4)" }}>
+            VEL
+          </span>
+          {RATES.map((r) => (
+            <button
+              key={r}
+              onClick={() => setRate(r)}
+              className="px-2 py-1 rounded-lg text-[10px] font-bold"
+              style={{
+                border: `1px solid ${rate === r ? `${GOLD}88` : "rgba(255,255,255,0.10)"}`,
+                background: rate === r ? `${GOLD}1A` : "transparent",
+                color: rate === r ? GOLD : "rgba(255,255,255,0.6)",
+              }}
+            >
+              {String(r).replace(".", ",")}x
+            </button>
+          ))}
+
+          <span className="w-px h-4 mx-1" style={{ background: "rgba(255,255,255,0.12)" }} />
+
+          <button
+            onClick={() => {
+              const t = audioRef.current?.currentTime ?? time;
+              setPointA(t);
+              if (pointB != null && pointB <= t) setPointB(null);
+            }}
+            className="px-2 py-1 rounded-lg text-[10px] font-bold"
+            style={{
+              border: `1px solid ${pointA != null ? `${GOLD}88` : "rgba(255,255,255,0.10)"}`,
+              color: pointA != null ? GOLD : "rgba(255,255,255,0.6)",
+            }}
+          >
+            A {pointA != null ? fmt(pointA) : ""}
+          </button>
+          <button
+            onClick={() => {
+              const t = audioRef.current?.currentTime ?? time;
+              if (pointA == null || t <= pointA) {
+                toast.error("Marque o ponto A antes e avance o áudio.");
+                return;
+              }
+              setPointB(t);
+              setLoopSection(false);
+            }}
+            className="px-2 py-1 rounded-lg text-[10px] font-bold"
+            style={{
+              border: `1px solid ${pointB != null ? `${GOLD}88` : "rgba(255,255,255,0.10)"}`,
+              color: pointB != null ? GOLD : "rgba(255,255,255,0.6)",
+            }}
+          >
+            B {pointB != null ? fmt(pointB) : ""}
+          </button>
+          {(pointA != null || pointB != null) && (
+            <button
+              onClick={() => { setPointA(null); setPointB(null); }}
+              className="px-2 py-1 rounded-lg text-[10px] font-bold"
+              style={{ border: "1px solid rgba(255,255,255,0.10)", color: "rgba(255,255,255,0.55)" }}
+            >
+              limpar A-B
+            </button>
+          )}
+          {abActive && (
+            <span className="text-[10px] font-bold px-2 py-1 rounded-full" style={{ background: GOLD, color: "#03030a" }}>
+              LOOP A-B
+            </span>
+          )}
+
+          <button
+            onClick={addMarker}
+            className="ml-auto px-2 py-1 rounded-lg text-[10px] font-bold flex items-center gap-1"
+            style={{ border: "1px solid rgba(255,255,255,0.14)", color: "rgba(255,255,255,0.75)" }}
+          >
+            <Flag className="w-3 h-3" /> Marcar
+          </button>
+          <button
+            onClick={exportRange}
+            disabled={exporting}
+            className="px-2 py-1 rounded-lg text-[10px] font-bold flex items-center gap-1 disabled:opacity-50"
+            style={{ border: `1px solid ${GOLD}66`, color: GOLD }}
+          >
+            {exporting ? <Loader2 className="w-3 h-3 animate-spin" /> : <Download className="w-3 h-3" />}
+            {exporting ? "Exportando..." : "Baixar trecho"}
+          </button>
+        </div>
+
+        {markers.length > 0 && (
+          <div className="flex gap-1.5 overflow-x-auto pb-1 mb-2">
+            {markers.map((m, i) => (
+              <span
+                key={`${m.label}-${m.at}`}
+                className="flex items-center gap-1 px-2 py-1 rounded-lg whitespace-nowrap text-[10px] font-semibold"
+                style={{ border: "1px solid rgba(255,255,255,0.10)", color: "rgba(255,255,255,0.7)" }}
+              >
+                <button onClick={() => seekTo(m.at)} className="flex items-center gap-1">
+                  <Flag className="w-3 h-3" style={{ color: GOLD }} /> {m.label} · {fmt(m.at)}
+                </button>
+                <button onClick={() => removeMarker(i)} aria-label={`Remover ${m.label}`}>
+                  <Trash2 className="w-3 h-3" style={{ color: "rgba(255,255,255,0.35)" }} />
+                </button>
+              </span>
+            ))}
           </div>
         )}
 
