@@ -323,6 +323,10 @@ export default function AudioPlayerBar({
       <audio
         ref={audioRef}
         src={track.src}
+        preload="metadata"
+        playsInline
+        crossOrigin="anonymous"
+
         onTimeUpdate={(e) => {
           const a = e.currentTarget;
           if (abActive) {
