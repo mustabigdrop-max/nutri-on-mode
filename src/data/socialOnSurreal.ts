@@ -160,3 +160,21 @@ export const SCIENCE_FACTS: ScienceFact[] = [
   { id: "t7", category: "Treino", emoji: "🏋️", fact: "Aquecimento específico melhora desempenho na primeira série de trabalho.", source: "Ribeiro et al., JSCR, 2020" },
   { id: "n7", category: "Nutrição", emoji: "🍚", fact: "Distribuir 0,4 g/kg de proteína por refeição, 4x ao dia, maximiza síntese proteica.", source: "Schoenfeld & Aragon, JISSN, 2018" },
 ];
+
+// ── Melhorias finais ──
+export const CAPTION_TONES = [
+  { id: "direto", emoji: "🔥", label: "Direto agressivo", brief: "Frases curtas, confronto direto, zero rodeio. Provoca e resolve." },
+  { id: "cientifico", emoji: "🧠", label: "Científico com dados", brief: "Traz o dado de forma simples, sem citação acadêmica formal." },
+  { id: "pessoal", emoji: "❤️", label: "Pessoal / história", brief: "Abre com uma cena real do dia do coach e conecta com o ensinamento." },
+  { id: "humor", emoji: "😂", label: "Humor", brief: "Ironia leve sobre a rotina fitness, sem perder autoridade." },
+  { id: "militar", emoji: "⚓", label: "Militar", brief: "Disciplina, ordem, missão. Vocabulário de Marinha aplicado ao shape." },
+  { id: "pai", emoji: "👨‍👧", label: "Pai", brief: "Perspectiva de pai: saúde como legado, força pra estar presente." },
+] as const;
+
+export const CAROUSEL_STYLES = [
+  { id: "dark", label: "Dark", sub: "Fundo preto puro + texto" },
+  { id: "photo", label: "Photo Blend", sub: "Sua foto escurecida em todos os slides" },
+  { id: "gradient", label: "Gradient Bold", sub: "Gradiente cyan→dark, texto grande" },
+] as const;
+
+export type CarouselStyleId = (typeof CAROUSEL_STYLES)[number]["id"];
