@@ -12,12 +12,15 @@ const GOLD = "#E8A020";
 const LS_MODE = "mce_audio_mode";
 const LS_LAYER = "mce_audio_layer_on";
 
+export type TrackSection = { label: string; start: number; end: number };
+
 export type PlayerTrack = {
   id: string;
   title: string;
   subtitle: string;
   src: string;
   startAt?: number;
+  sections?: TrackSection[];
 };
 
 const fmt = (s: number) => {
