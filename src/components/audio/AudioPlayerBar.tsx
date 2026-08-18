@@ -162,6 +162,13 @@ export default function AudioPlayerBar({
         src={track.src}
         onTimeUpdate={(e) => {
           const a = e.currentTarget;
+          if (loopSection && activeSection != null) {
+            const s = sections[activeSection];
+            if (s && a.currentTime >= s.end - 0.05) {
+              a.currentTime = s.start;
+              a.play().catch(() => {});
+            }
+          }
           setTime(a.currentTime);
           onProgress?.(a.currentTime, a.duration || 0);
         }}
