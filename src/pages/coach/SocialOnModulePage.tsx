@@ -493,7 +493,7 @@ const SocialOnModulePage = () => {
                     ))}
                   </div>
                 )}
-                <Button onClick={() => setStep(3)} className="gap-2">Próximo <ArrowRight className="w-4 h-4" /></Button>
+                <div className="flex flex-wrap gap-2 pt-1"><Button onClick={() => setStep(3)} className="gap-2">Próximo <ArrowRight className="w-4 h-4" /></Button></div>
               </Section>
             )}
 
@@ -501,9 +501,11 @@ const SocialOnModulePage = () => {
               <Section title="Análise do feed">
                 <Textarea value={feedInput} onChange={(e) => setFeedInput(e.target.value)} rows={6}
                   placeholder="Descreva seus últimos 9 posts (temas, formatos, objetivo de cada um)" />
-                <Button onClick={runFeedAudit} disabled={busy === "feed"} className="gap-2">
-                  {busy === "feed" ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />} Analisar feed
-                </Button>
+                <div className="flex flex-wrap gap-2 pt-1">
+                  <Button onClick={runFeedAudit} disabled={busy === "feed"} className="gap-2">
+                    {busy === "feed" ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />} Analisar feed
+                  </Button>
+                </div>
                 {feedResult && (
                   <div className="space-y-4">
                     {[["Mix atual", feedResult.current_mix, ACCENT], ["Mix ideal (fase de crescimento)", feedResult.ideal_mix || IDEAL_MIX, ACCENT2]].map(([t, mix, color]: any) => (
@@ -527,7 +529,7 @@ const SocialOnModulePage = () => {
                     </div>
                   </div>
                 )}
-                <Button onClick={() => setStep(4)} className="gap-2">Próximo <ArrowRight className="w-4 h-4" /></Button>
+                <div className="flex flex-wrap gap-2 pt-1"><Button onClick={() => setStep(4)} className="gap-2">Próximo <ArrowRight className="w-4 h-4" /></Button></div>
               </Section>
             )}
 
@@ -550,7 +552,7 @@ const SocialOnModulePage = () => {
                   <p className="text-xs text-muted-foreground mb-1">Regras visuais</p>
                   {VISUAL_RULES.map((t) => <p key={t} className="text-sm">✅ {t}</p>)}
                 </div>
-                <Button onClick={() => setStep(5)} className="gap-2">Próximo <ArrowRight className="w-4 h-4" /></Button>
+                <div className="flex flex-wrap gap-2 pt-1"><Button onClick={() => setStep(5)} className="gap-2">Próximo <ArrowRight className="w-4 h-4" /></Button></div>
               </Section>
             )}
 
