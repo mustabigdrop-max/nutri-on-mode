@@ -11,6 +11,18 @@ COACH: @diogo.mell0 — Coach Nutricional, IFBB Classic Physique, criador do Mé
 TAGLINE: "Sua fome nunca foi de comida. O comportamento vem antes do alimento."
 PALETA: #020205 / #00D4FF / #00FF88. Tipografia Rajdhani.
 PILARES: mce_drop (educativo 30%), bastidor (pessoal 25%), transformacao (prova social 20%), entretenimento (15%), cta (venda suave 10%).
+REGRAS OBRIGATÓRIAS DE LEGENDA (todas as legendas, sempre):
+1. Nunca citar nome completo de journal. Prefira "a ciência já provou" ou "pesquisadores de Stanford mostraram".
+2. Nunca usar citação acadêmica (Autor et al., ano). Prefira "Brad Schoenfeld, um dos maiores pesquisadores de hipertrofia".
+3. Frases curtas: no máximo 15 palavras por frase.
+4. Tom de conversa com autoridade, como falar com um amigo respeitado na academia.
+5. Cada parágrafo tem no máximo 3 linhas.
+6. Sempre uma linha em branco entre parágrafos.
+7. Hook na primeira linha, isolado.
+8. CTA no final, sempre (Salva / Manda pra quem precisa / Comenta / DM QUERO).
+9. No máximo 3-4 emojis no post inteiro.
+10. Hashtags nunca dentro do texto da legenda — só no campo hashtags.
+
 TOM: direto, científico sem ser acadêmico, português do Brasil, frases curtas, zero clichê motivacional vazio. Nunca se apresente como IA.`;
 
 type Mode = "caption" | "reel" | "calendar" | "hashtags" | "stories" | "audit" | "bio_audit" | "feed_audit" | "content_full"
@@ -33,7 +45,7 @@ const SCHEMAS: Record<Mode, string> = {
   viral_ideas: `{"ideas":[{"titulo":"...","funil":"TOFU|MOFU|BOFU","hook":"...","roteiro":"roteiro completo com marcações de tempo"}, "exatamente 3 itens"]}`,
   ideas_now: `{"ideas":[{"titulo":"...","funil":"TOFU|MOFU|BOFU","hook":"...","produto":"MindForce|nutriON|VEMP ou vazio","roteiro":"roteiro curto pronto pra gravar agora"}, "exatamente 5 itens"]}`,
   proof_caption: `{"caption":"legenda de prova social respeitando privacidade do cliente, com quebras de linha \\n","hashtags":["#tag","... 8 a 12 itens"]}`,
-  post_package: `{"hook":"primeira linha que para o scroll","caption":"legenda completa com hook + corpo com dado científico + CTA, quebras de linha \\n","hashtags":["#tag","... 15 itens misturando grandes, médias e nichadas"],"best_time":"ex: 12h30 (terça-feira)","reach_forecast":"alto|médio|baixo","self_comment":"comentário pronto para o coach postar logo após publicar","carousel":[{"title":"título curto do slide","body":"2 a 3 linhas educativas"},"exatamente 3 itens"],"stories":[{"title":"texto grande do story","body":"linha de apoio ou CTA"},"exatamente 3 itens: 1 hook sobre a foto, 1 de valor educativo, 1 de CTA com enquete"]}`,
+  post_package: `{"hook":"primeira linha que para o scroll","caption":"legenda completa em tom de conversa, parágrafos de no máximo 3 linhas separados por \\n\\n, hook na primeira linha e CTA no final","hashtags":["#tag","... 15 itens misturando grandes, médias e nichadas"],"best_time":"ex: 12h30 (terça-feira)","reach_forecast":"alto|médio|baixo","self_comment":"comentário pronto para o coach postar logo após publicar","carousel":[{"title":"título curto do slide","body":"2 a 3 linhas educativas"},"exatamente 3 itens"],"stories":[{"title":"texto grande do story","body":"linha de apoio ou CTA","sticker":"NENHUM|QUIZ|ENQUETE|LINK|CAIXA_DE_PERGUNTAS","sticker_content":"conteúdo pronto do sticker (pergunta do quiz com opções e resposta certa, opções da enquete, ou o link)"},"exatamente 4 itens: 1 hook sobre a foto (sticker NENHUM), 1 educativo (QUIZ), 1 CTA (ENQUETE), 1 final de produto nutriON (LINK nutrion.app.br)"]}`,
   viral_lab: `{"trends":[{"trend_name":"...","format":"...","viral_potential":3,"why_fits_profile":"...","your_version":"roteiro completo adaptado ao perfil","music_suggestion":"...","text_on_screen":["frame 1: ...","frame 2: ..."],"caption":"legenda pronta"},"4 a 5 itens"]}`,
   content_dna: `{"identidade_visual":["3 a 4 padrões visuais que funcionam"],"formato_vencedor":["3 padrões de formato"],"hook_pattern":["3 a 4 padrões de hook"],"audiencia":["3 a 4 leituras de audiência"],"formula":"frase única com a fórmula replicável do post perfeito","posts":[{"titulo":"...","hook":"...","roteiro":"roteiro completo"},"5 itens apenas quando generatePosts for true, caso contrário array vazio"]}`,
   controversy_post: `{"hook":"abertura provocativa","caption":"post completo defendendo a tese com o dado científico citado, quebras de linha \\n","hashtags":["#tag","... 12 itens"],"self_comment":"comentário para puxar debate"}`,
@@ -106,6 +118,10 @@ serve(async (req) => {
         : "",
       body?.subject ? `O que aparece na foto enviada: ${body.subject}` : "",
       body?.quickGoal ? `Objetivo rápido do post: ${body.quickGoal}` : "",
+      body?.captionTone ? `Tom obrigatório desta legenda: ${body.captionTone}` : "",
+      body?.captionToneBrief ? `Como aplicar o tom: ${body.captionToneBrief}` : "",
+      body?.realData ? `Dados reais da operação do coach (use números exatos, nunca invente): ${body.realData}` : "",
+      body?.extraPhotos ? `O coach enviou ${body.extraPhotos} fotos extras que serão usadas como fundo dos slides e stories — escreva textos curtos que funcionem sobre imagem.` : "",
       body?.lightning ? "MODO RELÂMPAGO: seja rápido e direto, legenda de no máximo 6 linhas, carrossel e stories enxutos." : "",
       body?.thesis ? `Tese polêmica a defender: ${body.thesis}` : "",
       body?.evidence ? `Base científica obrigatória (cite corretamente): ${body.evidence}` : "",

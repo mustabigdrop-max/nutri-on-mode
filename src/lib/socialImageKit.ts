@@ -129,12 +129,25 @@ export type SlideSpec = {
   body?: string;
   footer?: string;
   accent?: string;
+  /** Gradiente de fundo [topo, base] — usado no estilo Gradient Bold */
+  gradient?: [string, string];
+  /** Aumenta o tamanho do título (Gradient Bold) */
+  bigTitle?: boolean;
 };
 
 export const renderSlide = async (spec: SlideSpec, w = 1080, h = 1350) => {
   const { canvas, ctx } = ctxOf(w, h);
   ctx.fillStyle = NUTRION_BG;
   ctx.fillRect(0, 0, w, h);
+
+  if (spec.gradient) {
+    const bg = ctx.createLinearGradient(0, 0, w * 0.4, h);
+    bg.addColorStop(0, spec.gradient[0]);
+    bg.addColorStop(1, spec.gradient[1]);
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, w, h);
+  }
+
 
   if (spec.backgroundImage) {
     const img = await loadImage(spec.backgroundImage);
@@ -158,7 +171,7 @@ export const renderSlide = async (spec: SlideSpec, w = 1080, h = 1350) => {
   if (spec.eyebrow) {
     y = drawBlock(ctx, spec.eyebrow.toUpperCase(), pad, y, maxW, Math.round(w * 0.028), "700", accent, 1.4) + 24;
   }
-  y = drawBlock(ctx, spec.title, pad, y, maxW, Math.round(w * 0.075), "900", "#ffffff", 1.15) + 28;
+  y = drawBlock(ctx, spec.title, pad, y, maxW, Math.round(w * (spec.bigTitle ? 0.105 : 0.075)), "900", "#ffffff", 1.1) + 28;
   if (spec.body) {
     y = drawBlock(ctx, spec.body, pad, y, maxW, Math.round(w * 0.038), "500", "rgba(255,255,255,0.82)", 1.4);
   }

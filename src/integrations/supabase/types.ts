@@ -9766,6 +9766,60 @@ export type Database = {
         }
         Relationships: []
       }
+      social_packages: {
+        Row: {
+          carousel_style: string
+          category: string | null
+          created_at: string
+          generated_content: Json
+          id: string
+          objective: string | null
+          photos: Json
+          product: string | null
+          published_at: string | null
+          published_items: Json
+          status: string
+          title: string | null
+          tone: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          carousel_style?: string
+          category?: string | null
+          created_at?: string
+          generated_content?: Json
+          id?: string
+          objective?: string | null
+          photos?: Json
+          product?: string | null
+          published_at?: string | null
+          published_items?: Json
+          status?: string
+          title?: string | null
+          tone?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          carousel_style?: string
+          category?: string | null
+          created_at?: string
+          generated_content?: Json
+          id?: string
+          objective?: string | null
+          photos?: Json
+          product?: string | null
+          published_at?: string | null
+          published_items?: Json
+          status?: string
+          title?: string | null
+          tone?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       social_profile: {
         Row: {
           audit_completed: boolean
