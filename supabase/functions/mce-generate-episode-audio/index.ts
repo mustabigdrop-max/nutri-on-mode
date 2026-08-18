@@ -3,6 +3,9 @@ import {
   RITUAL_KEY_BY_EPISODE,
   RITUAL_SCRIPTS,
   RITUAL_VOICE,
+  MICRO_KEY_BY_EPISODE,
+  MICRO_BY_KEY,
+  MICRO_VOICE,
   parseRitualScript,
 } from "../_shared/ritualScripts.ts";
 
