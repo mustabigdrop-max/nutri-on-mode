@@ -275,6 +275,8 @@ export default function BusinessGymsTab({ onChanged }: { onChanged?: () => void 
         <GymKanbanBoard
           gyms={filtered}
           onMove={(g, s) => moveStatus(g, s)}
+          onBulkMove={bulkMoveStatus}
+
           onEdit={openEdit}
           onWhatsApp={(g) => whatsapp(g)}
         />
