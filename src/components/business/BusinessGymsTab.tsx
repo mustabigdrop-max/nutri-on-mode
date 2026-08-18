@@ -135,6 +135,37 @@ export default function BusinessGymsTab({ onChanged }: { onChanged?: () => void 
     onChanged?.();
   };
 
+  const bulkMoveStatus = async (list: Gym[], status: GymStatus) => {
+    if (!user || list.length === 0) return;
+    const now = new Date().toISOString();
+    setGyms((prev) => prev?.map((g) => (list.some((l) => l.id === g.id) ? { ...g, status } : g)) ?? prev);
+
+    const results = await Promise.all(
+      list.map((gym) => {
+        const patch: { status: GymStatus; contacted_at?: string; visited_at?: string; closed_at?: string } = { status };
+        if (status === "prospectada" && !gym.contacted_at) patch.contacted_at = now;
+        if (status === "visitada" && !gym.visited_at) patch.visited_at = now;
+        if (status === "fechada") patch.closed_at = now;
+        return supabase.from("partner_gyms").update(patch).eq("id", gym.id);
+      }),
+    );
+    const failed = results.filter((r) => r.error).length;
+
+    await supabase.from("gym_interactions").insert(
+      list.map((gym) => ({
+        gym_id: gym.id,
+        coach_user_id: user.id,
+        type: "nota",
+        description: `Movida em massa para ${statusMeta(status).label} (lote de ${list.length})`,
+      })),
+    );
+
+    if (failed) { toast.error(`${failed} academia(s) não foram movidas.`); load(); }
+    else toast.success(`${list.length} academia(s) movidas para ${statusMeta(status).label}.`);
+    onChanged?.();
+  };
+
+
   const whatsapp = async (gym: Gym, templateId?: string) => {
     const phone = gymPhone(gym);
     if (!phone) return toast.error("Cadastre um telefone para essa academia.");
