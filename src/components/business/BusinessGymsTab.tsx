@@ -225,6 +225,11 @@ export default function BusinessGymsTab({ onChanged }: { onChanged?: () => void 
             {hoods.map((h) => <SelectItem key={h} value={h}>{h}</SelectItem>)}
           </SelectContent>
         </Select>
+        <Button size="sm" variant="outline" className="gap-1"
+          disabled={filtered.length === 0}
+          onClick={() => { setBulkWaGyms(filtered); setBulkWaOpen(true); }}>
+          <MessageCircle className="w-3.5 h-3.5" /> Envio em massa ({filtered.length})
+        </Button>
         <div className="flex ml-auto">
           <Button size="sm" variant={view === "lista" ? "default" : "outline"}
             className="gap-1 rounded-r-none" onClick={() => setView("lista")}>
