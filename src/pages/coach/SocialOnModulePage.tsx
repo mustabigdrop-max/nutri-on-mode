@@ -14,6 +14,7 @@ import {
   ArrowLeft, ArrowRight, Copy, Loader2, Rocket, Search, Target, CalendarDays,
   BarChart3, GraduationCap, ShoppingCart, Check, Instagram, Trash2,
   RefreshCw, MessageSquare, Microscope, Camera, BookOpen, Lightbulb,
+  ImagePlus, Trophy, Flame, Dna, ShieldCheck, FlaskConical,
 } from "lucide-react";
 import RepurposerPanel from "@/components/social/RepurposerPanel";
 import DmObjectionsPanel from "@/components/social/DmObjectionsPanel";
@@ -22,6 +23,12 @@ import SocialProofPanel from "@/components/social/SocialProofPanel";
 import IdeasNowPanel from "@/components/social/IdeasNowPanel";
 import PlaybookPanel from "@/components/social/PlaybookPanel";
 import InstagramAccountPanel from "@/components/social/InstagramAccountPanel";
+import PostProntoPanel from "@/components/social/PostProntoPanel";
+import BrandScorePanel from "@/components/social/BrandScorePanel";
+import ViralLabPanel from "@/components/social/ViralLabPanel";
+import ContentDnaPanel from "@/components/social/ContentDnaPanel";
+import AuthorityPanel from "@/components/social/AuthorityPanel";
+import ScienceBankPanel from "@/components/social/ScienceBankPanel";
 import { useInstagramAccount } from "@/hooks/useInstagramAccount";
 import {
   ACADEMY_TRACKS, ACTION_PLAN, BIO_CRITERIA, CONTENT_PRODUCTS, DIFFERENTIALS,
@@ -392,6 +399,12 @@ const SocialOnModulePage = () => {
             <TabsTrigger value="prova" className="text-xs gap-1"><Camera className="w-3 h-3" />Prova social</TabsTrigger>
             <TabsTrigger value="playbook" className="text-xs gap-1"><BookOpen className="w-3 h-3" />Playbook</TabsTrigger>
             <TabsTrigger value="ideias" className="text-xs gap-1"><Lightbulb className="w-3 h-3" />Ideias</TabsTrigger>
+            <TabsTrigger value="post_pronto" className="text-xs gap-1"><ImagePlus className="w-3 h-3" />Post pronto</TabsTrigger>
+            <TabsTrigger value="brand_score" className="text-xs gap-1"><Trophy className="w-3 h-3" />Brand Score</TabsTrigger>
+            <TabsTrigger value="viral_lab" className="text-xs gap-1"><Flame className="w-3 h-3" />Viral Lab</TabsTrigger>
+            <TabsTrigger value="dna" className="text-xs gap-1"><Dna className="w-3 h-3" />DNA</TabsTrigger>
+            <TabsTrigger value="autoridade" className="text-xs gap-1"><ShieldCheck className="w-3 h-3" />Autoridade</TabsTrigger>
+            <TabsTrigger value="ciencia" className="text-xs gap-1"><FlaskConical className="w-3 h-3" />Ciência</TabsTrigger>
           </TabsList>
 
           {/* ─────────── AUDITORIA ─────────── */}
@@ -933,6 +946,27 @@ const SocialOnModulePage = () => {
           </TabsContent>
           <TabsContent value="ideias" className="mt-4">
             <IdeasNowPanel ctx={aiCtx} onUseIdea={(t) => { setTopic(t); setTab("criar"); }} />
+          </TabsContent>
+          <TabsContent value="post_pronto" className="mt-4">
+            <PostProntoPanel ctx={aiCtx} handle={ig.account?.username || handle} />
+          </TabsContent>
+          <TabsContent value="brand_score" className="mt-4">
+            <BrandScorePanel
+              handle={ig.account?.username || handle}
+              onGenerate={(p) => { setTopic(p); setTab("criar"); }}
+            />
+          </TabsContent>
+          <TabsContent value="viral_lab" className="mt-4">
+            <ViralLabPanel ctx={aiCtx} />
+          </TabsContent>
+          <TabsContent value="dna" className="mt-4">
+            <ContentDnaPanel ctx={aiCtx} />
+          </TabsContent>
+          <TabsContent value="autoridade" className="mt-4">
+            <AuthorityPanel ctx={aiCtx} onOpenScience={() => setTab("ciencia")} />
+          </TabsContent>
+          <TabsContent value="ciencia" className="mt-4">
+            <ScienceBankPanel ctx={aiCtx} />
           </TabsContent>
         </Tabs>
       </main>

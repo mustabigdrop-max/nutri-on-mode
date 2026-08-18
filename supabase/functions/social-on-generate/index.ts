@@ -14,7 +14,8 @@ PILARES: mce_drop (educativo 30%), bastidor (pessoal 25%), transformacao (prova 
 TOM: direto, científico sem ser acadêmico, português do Brasil, frases curtas, zero clichê motivacional vazio. Nunca se apresente como IA.`;
 
 type Mode = "caption" | "reel" | "calendar" | "hashtags" | "stories" | "audit" | "bio_audit" | "feed_audit" | "content_full"
-  | "repurpose" | "dm_variation" | "objection_variation" | "viral_pattern" | "viral_ideas" | "ideas_now" | "proof_caption";
+  | "repurpose" | "dm_variation" | "objection_variation" | "viral_pattern" | "viral_ideas" | "ideas_now" | "proof_caption"
+  | "post_package" | "viral_lab" | "content_dna" | "controversy_post" | "science_post";
 
 const SCHEMAS: Record<Mode, string> = {
   caption: `{"hook":"primeira linha que para o scroll","caption":"legenda completa com quebras de linha \\n","cta":"chamada final","hashtags":["#tag", "... 15 a 20 itens"]}`,
@@ -32,6 +33,11 @@ const SCHEMAS: Record<Mode, string> = {
   viral_ideas: `{"ideas":[{"titulo":"...","funil":"TOFU|MOFU|BOFU","hook":"...","roteiro":"roteiro completo com marcações de tempo"}, "exatamente 3 itens"]}`,
   ideas_now: `{"ideas":[{"titulo":"...","funil":"TOFU|MOFU|BOFU","hook":"...","produto":"MindForce|nutriON|VEMP ou vazio","roteiro":"roteiro curto pronto pra gravar agora"}, "exatamente 5 itens"]}`,
   proof_caption: `{"caption":"legenda de prova social respeitando privacidade do cliente, com quebras de linha \\n","hashtags":["#tag","... 8 a 12 itens"]}`,
+  post_package: `{"hook":"primeira linha que para o scroll","caption":"legenda completa com hook + corpo com dado científico + CTA, quebras de linha \\n","hashtags":["#tag","... 15 itens misturando grandes, médias e nichadas"],"best_time":"ex: 12h30 (terça-feira)","reach_forecast":"alto|médio|baixo","self_comment":"comentário pronto para o coach postar logo após publicar","carousel":[{"title":"título curto do slide","body":"2 a 3 linhas educativas"},"exatamente 3 itens"],"stories":[{"title":"texto grande do story","body":"linha de apoio ou CTA"},"exatamente 3 itens: 1 hook sobre a foto, 1 de valor educativo, 1 de CTA com enquete"]}`,
+  viral_lab: `{"trends":[{"trend_name":"...","format":"...","viral_potential":3,"why_fits_profile":"...","your_version":"roteiro completo adaptado ao perfil","music_suggestion":"...","text_on_screen":["frame 1: ...","frame 2: ..."],"caption":"legenda pronta"},"4 a 5 itens"]}`,
+  content_dna: `{"identidade_visual":["3 a 4 padrões visuais que funcionam"],"formato_vencedor":["3 padrões de formato"],"hook_pattern":["3 a 4 padrões de hook"],"audiencia":["3 a 4 leituras de audiência"],"formula":"frase única com a fórmula replicável do post perfeito","posts":[{"titulo":"...","hook":"...","roteiro":"roteiro completo"},"5 itens apenas quando generatePosts for true, caso contrário array vazio"]}`,
+  controversy_post: `{"hook":"abertura provocativa","caption":"post completo defendendo a tese com o dado científico citado, quebras de linha \\n","hashtags":["#tag","... 12 itens"],"self_comment":"comentário para puxar debate"}`,
+  science_post: `{"hook":"hook usando o dado","caption":"legenda completa citando o estudo e a aplicação prática, quebras de linha \\n","hashtags":["#tag","... 12 itens"],"self_comment":"comentário pronto"}`,
   content_full: `{"titulo":"resumo curto","roteiro":[{"bloco":"HOOK (0-2s) ou SLIDE 1 ou FRAME 1 (0.0-0.5s) conforme o formato","direcao":"instrução de câmera/cena/visual","fala":"o que falar ou o texto que aparece"}, "quantos blocos o formato exigir"],"stories_sequence":[{"numero":1,"visual":"o que aparece na tela","texto":"texto do story","gatilho":"sticker ou gatilho usado"}],"caption":"legenda completa com quebras de linha \\n","hashtags":["#tag","... 15 itens"],"hashtags_grupos":{"grandes":["3 hashtags acima de 1M posts"],"medias":["7 hashtags entre 100K e 1M"],"nichadas":["5 hashtags abaixo de 100K"]},"production_tips":{"camera":"...","audio":"...","texto_na_tela":"...","duracao":"...","proporcao":"9:16 ou 4:5","melhor_horario":"...","edicao":["4 a 8 passos de edição concretos"]},"self_comment":"comentário para o coach postar no próprio post logo após publicar","strategy":{"porque_funciona":["4 a 5 razões numeradas"],"gatilhos":["Autoridade","Curiosidade"]}}`,
 };
 
@@ -97,6 +103,18 @@ serve(async (req) => {
       body?.posts ? `Últimos posts descritos pelo coach:\n${body.posts}` : "",
       body?.ig_profile
         ? `Perfil real do Instagram conectado (use nome, bio e temas dos posts para personalizar; não invente dados):\n${JSON.stringify(body.ig_profile)}`
+        : "",
+      body?.subject ? `O que aparece na foto enviada: ${body.subject}` : "",
+      body?.quickGoal ? `Objetivo rápido do post: ${body.quickGoal}` : "",
+      body?.lightning ? "MODO RELÂMPAGO: seja rápido e direto, legenda de no máximo 6 linhas, carrossel e stories enxutos." : "",
+      body?.thesis ? `Tese polêmica a defender: ${body.thesis}` : "",
+      body?.evidence ? `Base científica obrigatória (cite corretamente): ${body.evidence}` : "",
+      body?.fact ? `Dado científico central do post: ${body.fact}` : "",
+      body?.source ? `Fonte do dado (cite exatamente): ${body.source}` : "",
+      body?.generatePosts ? "Preencha também o array posts com 5 posts aplicando o DNA identificado." : "",
+      body?.mode === "content_dna" && !body?.generatePosts ? "Deixe o array posts vazio." : "",
+      body?.mode === "viral_lab"
+        ? "Liste as trends mais prováveis do Instagram fitness brasileiro nesta temporada e adapte cada uma ao perfil do coach (atleta IFBB Classic Physique, pai de menina, ex-Marinha, criador do Método MCE). Não invente métricas."
         : "",
       body?.format === "stories" ? "Para formato stories, preencha stories_sequence com 6 stories e deixe roteiro como array vazio." : "",
     ].filter(Boolean).join("\n");
