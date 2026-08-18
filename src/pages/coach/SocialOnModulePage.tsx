@@ -465,9 +465,12 @@ const SocialOnModulePage = () => {
             {step === 2 && (
               <Section title="Análise da bio">
                 <Textarea value={bioCurrent} onChange={(e) => setBioCurrent(e.target.value)} rows={5} placeholder="Cole sua bio atual" />
-                <Button onClick={runBioAudit} disabled={busy === "bio"} className="gap-2">
-                  {busy === "bio" ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />} Analisar
-                </Button>
+                <div className="flex flex-wrap gap-2 pt-1">
+                  <Button onClick={runBioAudit} disabled={busy === "bio"} className="gap-2">
+                    {busy === "bio" ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />} Analisar
+                  </Button>
+                </div>
+
                 {bioResult && (
                   <div className="space-y-3">
                     <p className="text-2xl font-bold font-mono" style={{ color: ACCENT }}>{bioResult.score}/100</p>
