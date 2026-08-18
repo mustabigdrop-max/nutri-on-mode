@@ -247,7 +247,13 @@ export default function AudioPlayerBar({
         src={track.src}
         onTimeUpdate={(e) => {
           const a = e.currentTarget;
-          if (loopSection && activeSection != null) {
+          if (abActive) {
+            // A-B tem prioridade sobre o loop de seção
+            if (a.currentTime >= pointB! - 0.05 || a.currentTime < pointA! - 0.5) {
+              a.currentTime = pointA!;
+              a.play().catch(() => {});
+            }
+          } else if (loopSection && activeSection != null) {
             const s = sections[activeSection];
             if (s && a.currentTime >= s.end - 0.05) {
               a.currentTime = s.start;
@@ -257,7 +263,13 @@ export default function AudioPlayerBar({
           setTime(a.currentTime);
           onProgress?.(a.currentTime, a.duration || 0);
         }}
-        onLoadedMetadata={(e) => setDuration(e.currentTarget.duration || 0)}
+        onLoadedMetadata={(e) => {
+          setDuration(e.currentTarget.duration || 0);
+          e.currentTarget.playbackRate = rate;
+        }}
+        onRateChange={(e) => {
+          if (e.currentTarget.playbackRate !== rate) e.currentTarget.playbackRate = rate;
+        }}
         onPlay={() => setPlaying(true)}
         onPause={() => setPlaying(false)}
         onEnded={() => {
