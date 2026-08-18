@@ -19,6 +19,7 @@ import {
   statusMeta, WA_TEMPLATES, buildWhatsAppMessage, templateForStatus,
 } from "@/lib/gymBusiness";
 import GymKanbanBoard from "./GymKanbanBoard";
+import BulkWhatsAppDialog from "./BulkWhatsAppDialog";
 
 const emptyForm = {
   name: "", neighborhood: "", address: "", owner_name: "", owner_phone: "",
