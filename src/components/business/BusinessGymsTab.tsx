@@ -19,6 +19,7 @@ import {
   statusMeta, WA_TEMPLATES, buildWhatsAppMessage, templateForStatus,
 } from "@/lib/gymBusiness";
 import GymKanbanBoard from "./GymKanbanBoard";
+import BulkWhatsAppDialog from "./BulkWhatsAppDialog";
 
 const emptyForm = {
   name: "", neighborhood: "", address: "", owner_name: "", owner_phone: "",
@@ -40,6 +41,8 @@ export default function BusinessGymsTab({ onChanged }: { onChanged?: () => void 
   const [noteFor, setNoteFor] = useState<string | null>(null);
   const [noteText, setNoteText] = useState("");
   const [view, setView] = useState<"lista" | "kanban">("lista");
+  const [bulkWaGyms, setBulkWaGyms] = useState<Gym[]>([]);
+  const [bulkWaOpen, setBulkWaOpen] = useState(false);
 
   const load = useCallback(async () => {
     const { data, error } = await supabase
@@ -166,6 +169,13 @@ export default function BusinessGymsTab({ onChanged }: { onChanged?: () => void 
   };
 
 
+  const registerWhatsAppSend = async (gym: Gym, templateId: string) => {
+    const tpl = WA_TEMPLATES.find((t) => t.id === templateId);
+    await logInteraction(gym.id, "whatsapp", `WhatsApp enviado (lote) — ${tpl?.label ?? templateId}`);
+    if (gym.status === "nao_contactada") await moveStatus(gym, "prospectada");
+    onChanged?.();
+  };
+
   const whatsapp = async (gym: Gym, templateId?: string) => {
     const phone = gymPhone(gym);
     if (!phone) return toast.error("Cadastre um telefone para essa academia.");
@@ -215,6 +225,11 @@ export default function BusinessGymsTab({ onChanged }: { onChanged?: () => void 
             {hoods.map((h) => <SelectItem key={h} value={h}>{h}</SelectItem>)}
           </SelectContent>
         </Select>
+        <Button size="sm" variant="outline" className="gap-1"
+          disabled={filtered.length === 0}
+          onClick={() => { setBulkWaGyms(filtered); setBulkWaOpen(true); }}>
+          <MessageCircle className="w-3.5 h-3.5" /> Envio em massa ({filtered.length})
+        </Button>
         <div className="flex ml-auto">
           <Button size="sm" variant={view === "lista" ? "default" : "outline"}
             className="gap-1 rounded-r-none" onClick={() => setView("lista")}>
@@ -276,11 +291,19 @@ export default function BusinessGymsTab({ onChanged }: { onChanged?: () => void 
           gyms={filtered}
           onMove={(g, s) => moveStatus(g, s)}
           onBulkMove={bulkMoveStatus}
-
+          onBulkWhatsApp={(list) => { setBulkWaGyms(list); setBulkWaOpen(true); }}
           onEdit={openEdit}
           onWhatsApp={(g) => whatsapp(g)}
         />
       )}
+
+      <BulkWhatsAppDialog
+        gyms={bulkWaGyms}
+        open={bulkWaOpen}
+        onOpenChange={setBulkWaOpen}
+        onSend={(gym, tplId) => registerWhatsAppSend(gym, tplId)}
+        onFinished={load}
+      />
 
       <div className={view === "kanban" ? "hidden" : "space-y-3"}>
         {filtered.map((g) => {

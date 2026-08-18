@@ -17,11 +17,12 @@ interface Props {
   gyms: Gym[];
   onMove: (gym: Gym, status: GymStatus) => void;
   onBulkMove?: (gyms: Gym[], status: GymStatus) => void | Promise<void>;
+  onBulkWhatsApp?: (gyms: Gym[]) => void;
   onEdit?: (gym: Gym) => void;
   onWhatsApp?: (gym: Gym) => void;
 }
 
-export default function GymKanbanBoard({ gyms, onMove, onBulkMove, onEdit, onWhatsApp }: Props) {
+export default function GymKanbanBoard({ gyms, onMove, onBulkMove, onBulkWhatsApp, onEdit, onWhatsApp }: Props) {
   const [dragId, setDragId] = useState<string | null>(null);
   const [overCol, setOverCol] = useState<GymStatus | null>(null);
   const [selected, setSelected] = useState<string[]>([]);
@@ -85,6 +86,12 @@ export default function GymKanbanBoard({ gyms, onMove, onBulkMove, onEdit, onWha
           <span className="text-xs font-semibold text-primary">
             {selectedGyms.length} selecionada{selectedGyms.length > 1 ? "s" : ""}
           </span>
+          {onBulkWhatsApp && (
+            <Button size="sm" className="h-7 text-[11px] gap-1"
+              onClick={() => onBulkWhatsApp(selectedGyms)}>
+              <MessageCircle className="w-3 h-3" /> Enviar WhatsApp
+            </Button>
+          )}
           <span className="text-[11px] text-muted-foreground">Mover para:</span>
           {KANBAN_COLUMNS.map((s) => {
             const m = statusMeta(s);
