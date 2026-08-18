@@ -171,7 +171,7 @@ export const renderSlide = async (spec: SlideSpec, w = 1080, h = 1350) => {
   if (spec.eyebrow) {
     y = drawBlock(ctx, spec.eyebrow.toUpperCase(), pad, y, maxW, Math.round(w * 0.028), "700", accent, 1.4) + 24;
   }
-  y = drawBlock(ctx, spec.title, pad, y, maxW, Math.round(w * 0.075), "900", "#ffffff", 1.15) + 28;
+  y = drawBlock(ctx, spec.title, pad, y, maxW, Math.round(w * (spec.bigTitle ? 0.105 : 0.075)), "900", "#ffffff", 1.1) + 28;
   if (spec.body) {
     y = drawBlock(ctx, spec.body, pad, y, maxW, Math.round(w * 0.038), "500", "rgba(255,255,255,0.82)", 1.4);
   }
