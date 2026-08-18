@@ -68,19 +68,25 @@ export const gymOwner = (g: Pick<Gym, "owner_name" | "contact_name">) =>
 export function outreachMessage(gym: Pick<Gym, "name" | "owner_name" | "contact_name">) {
   return `Fala, ${gymOwner(gym)}! Tudo bem?
 
-Meu nome é Diogo Mello, sou coach nutricional e atleta IFBB Classic Physique aqui do Rio.
+Meu nome é Diogo Mello — Nutrition Coach e Business Coach com certificação americana 🇺🇸, especialista em Automação e Inteligência Artificial aplicada ao Fitness, criador do Método MCE e fundador do nutriON.
 
-Eu criei uma plataforma chamada nutriON que resolve o maior problema de qualquer academia: RETENÇÃO.
+Eu desenvolvi um programa que resolve o maior problema de qualquer academia: *retenção de alunos*.
 
-Funciona assim: eu instalo uma tela na ${gym.name} (EU pago), seus alunos escaneiam um QR Code, entram num desafio de 90 dias GRATUITO, e começam a competir entre eles num ranking ao vivo.
+Funciona assim:
+✅ Eu instalo uma tela na sua academia — *eu pago*
+✅ Seus alunos entram num desafio de 90 dias *gratuito*
+✅ Eles competem num ranking ao vivo dentro da academia
+✅ Cada aluno que assinar o plano nutricional, *25% é seu*
 
-Custo pra você: R$ 0.
-Risco: zero.
+Custo pra você: *R$ 0*
+Risco: *zero*
+Se não funcionar em 90 dias, retiro tudo.
 
 Posso passar aí essa semana pra te mostrar em 5 minutos?
 
-Abraço,
 Diogo Mello
+Nutrition & Business Coach 🇺🇸
+Automação & IA no Fitness
 @diogo.mell0 · nutrion.app.br`;
 }
 
