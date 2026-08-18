@@ -399,6 +399,12 @@ const SocialOnModulePage = () => {
             <TabsTrigger value="prova" className="text-xs gap-1"><Camera className="w-3 h-3" />Prova social</TabsTrigger>
             <TabsTrigger value="playbook" className="text-xs gap-1"><BookOpen className="w-3 h-3" />Playbook</TabsTrigger>
             <TabsTrigger value="ideias" className="text-xs gap-1"><Lightbulb className="w-3 h-3" />Ideias</TabsTrigger>
+            <TabsTrigger value="post_pronto" className="text-xs gap-1"><ImagePlus className="w-3 h-3" />Post pronto</TabsTrigger>
+            <TabsTrigger value="brand_score" className="text-xs gap-1"><Trophy className="w-3 h-3" />Brand Score</TabsTrigger>
+            <TabsTrigger value="viral_lab" className="text-xs gap-1"><Flame className="w-3 h-3" />Viral Lab</TabsTrigger>
+            <TabsTrigger value="dna" className="text-xs gap-1"><Dna className="w-3 h-3" />DNA</TabsTrigger>
+            <TabsTrigger value="autoridade" className="text-xs gap-1"><ShieldCheck className="w-3 h-3" />Autoridade</TabsTrigger>
+            <TabsTrigger value="ciencia" className="text-xs gap-1"><FlaskConical className="w-3 h-3" />Ciência</TabsTrigger>
           </TabsList>
 
           {/* ─────────── AUDITORIA ─────────── */}
