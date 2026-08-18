@@ -98,6 +98,8 @@ export default function BlocoPerfilCorporal({
   const [analyzing, setAnalyzing] = useState(false);
   const [suggestion, setSuggestion] = useState<Suggestion | null>(null);
   const [previous, setPrevious] = useState<{ body_profile?: string; bf_percent?: number; profile_analyzed_at?: string } | null>(null);
+  const [uploadPreview, setUploadPreview] = useState<string | null>(null);
+  const fileRef = React.useRef<HTMLInputElement>(null);
 
   const hasBase = base.weight > 0 && base.height > 0 && base.age > 0;
   const profile = toBodyProfile(value, base);
@@ -108,7 +110,52 @@ export default function BlocoPerfilCorporal({
   const lbm = leanMassKg(base.weight, value.bfPercent ? Number(value.bfPercent) : undefined);
   const meta = BODY_PROFILES.find((p) => p.v === value.type);
 
-  const analisar = async () => {
+  /** Comprime e converte para dataURL (máx. 1280px, jpeg 0.8) */
+  const fileToDataUrl = (file: File) =>
+    new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = () => reject(new Error("Não consegui ler o arquivo."));
+      reader.onload = () => {
+        const img = new Image();
+        img.onerror = () => reject(new Error("Arquivo de imagem inválido."));
+        img.onload = () => {
+          const max = 1280;
+          const scale = Math.min(1, max / Math.max(img.width, img.height));
+          const canvas = document.createElement("canvas");
+          canvas.width = Math.round(img.width * scale);
+          canvas.height = Math.round(img.height * scale);
+          const ctx = canvas.getContext("2d");
+          if (!ctx) return reject(new Error("Não consegui processar a imagem."));
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          resolve(canvas.toDataURL("image/jpeg", 0.8));
+        };
+        img.src = String(reader.result);
+      };
+      reader.readAsDataURL(file);
+    });
+
+  const onPickFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      toast({ title: "Arquivo inválido", description: "Envie uma imagem (JPG ou PNG).", variant: "destructive" });
+      return;
+    }
+    if (file.size > 25 * 1024 * 1024) {
+      toast({ title: "Foto muito grande", description: "Envie uma imagem de até 25MB.", variant: "destructive" });
+      return;
+    }
+    try {
+      const dataUrl = await fileToDataUrl(file);
+      setUploadPreview(dataUrl);
+      await analisar(dataUrl);
+    } catch (err: any) {
+      toast({ title: "Erro ao carregar a foto", description: err?.message || "Tente outra imagem.", variant: "destructive" });
+    }
+  };
+
+  const analisar = async (imageBase64?: string) => {
     if (!athleteId) {
       toast({ title: "Selecione o cliente", description: "Escolha o aluno para buscar as fotos do APEX Visual.", variant: "destructive" });
       return;
@@ -126,10 +173,22 @@ export default function BlocoPerfilCorporal({
       const { data, error } = await supabase.functions.invoke("analyze-body-profile", {
         body: {
           athleteId,
+          imageBase64: imageBase64 || uploadPreview || undefined,
           manual: { weight_kg: base.weight, height_cm: base.height, age: base.age, sex: base.sex },
         },
       });
-      const err = (data as any)?.error || error?.message;
+
+      let err = (data as any)?.error || null;
+      if (!err && error) {
+        // Extrai a mensagem real do corpo da resposta não-2xx
+        try {
+          const ctx: any = (error as any).context;
+          const parsed = ctx?.json ? await ctx.json() : null;
+          err = parsed?.error || error.message;
+        } catch {
+          err = error.message;
+        }
+      }
       if (err || !(data as any)?.suggested_profile) {
         toast({ title: "Análise indisponível", description: err || "Não consegui analisar as fotos.", variant: "destructive" });
         return;
@@ -141,6 +200,7 @@ export default function BlocoPerfilCorporal({
       setAnalyzing(false);
     }
   };
+
 
   const aceitar = async () => {
     if (!suggestion) return;
