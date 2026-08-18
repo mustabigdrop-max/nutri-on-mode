@@ -351,3 +351,92 @@ export const SALES_ASSETS: { title: string; specs: string }[] = [
     specs: "30×20 cm · acrílico 5 mm · impressão UV · texto 'nutriON Certified Gym' + ano + nome da academia · fixação com prisma inox.",
   },
 ];
+
+/* ---------- Métricas do funil (baseadas nos envios de WhatsApp) ---------- */
+
+export interface GymInteractionLite {
+  gym_id: string;
+  type: string;
+  description: string | null;
+  created_at: string;
+}
+
+export const FUNNEL_ORDER: GymStatus[] = [
+  "nao_contactada",
+  "prospectada",
+  "visitada",
+  "em_negociacao",
+  "fechada",
+];
+
+export interface FunnelMetrics {
+  sent: number;
+  contactedGyms: number;
+  respondedGyms: number;
+  responseRate: number;
+  closedGyms: number;
+  lostGyms: number;
+  closeRate: number;
+  msgsPerClose: number;
+  steps: { from: GymStatus; to: GymStatus; label: string; fromCount: number; toCount: number; rate: number }[];
+  byTemplate: { label: string; sent: number; advanced: number; rate: number }[];
+}
+
+export function computeFunnelMetrics(
+  gyms: Pick<Gym, "id" | "status">[],
+  interactions: GymInteractionLite[],
+): FunnelMetrics {
+  const wa = interactions.filter((i) => i.type === "whatsapp");
+  const contacted = new Set(wa.map((i) => i.gym_id));
+  const idx = (s: GymStatus) => FUNNEL_ORDER.indexOf(s);
+  const statusOf = new Map(gyms.map((g) => [g.id, g.status]));
+
+  const advanced = (gymId: string) => {
+    const s = statusOf.get(gymId);
+    return !!s && idx(s) >= idx("visitada");
+  };
+
+  const responded = [...contacted].filter(advanced).length;
+  const reached = (s: GymStatus) => gyms.filter((g) => idx(g.status) >= idx(s)).length;
+
+  const steps = ([
+    ["prospectada", "visitada", "Prospectada → Visitada"],
+    ["visitada", "em_negociacao", "Visitada → Negociação"],
+    ["em_negociacao", "fechada", "Negociação → Fechada"],
+  ] as [GymStatus, GymStatus, string][]).map(([from, to, label]) => {
+    const fromCount = reached(from);
+    const toCount = reached(to);
+    return { from, to, label, fromCount, toCount, rate: fromCount ? (toCount / fromCount) * 100 : 0 };
+  });
+
+  const tplMap = new Map<string, { sent: number; gyms: Set<string> }>();
+  wa.forEach((i) => {
+    const label = (i.description ?? "").split("—")[1]?.trim() || "Mensagem avulsa";
+    const entry = tplMap.get(label) ?? { sent: 0, gyms: new Set<string>() };
+    entry.sent += 1;
+    entry.gyms.add(i.gym_id);
+    tplMap.set(label, entry);
+  });
+  const byTemplate = [...tplMap.entries()]
+    .map(([label, v]) => {
+      const adv = [...v.gyms].filter(advanced).length;
+      return { label, sent: v.sent, advanced: adv, rate: v.gyms.size ? (adv / v.gyms.size) * 100 : 0 };
+    })
+    .sort((a, b) => b.sent - a.sent);
+
+  const closedGyms = gyms.filter((g) => g.status === "fechada").length;
+  const lostGyms = gyms.filter((g) => g.status === "recusada").length;
+
+  return {
+    sent: wa.length,
+    contactedGyms: contacted.size,
+    respondedGyms: responded,
+    responseRate: contacted.size ? (responded / contacted.size) * 100 : 0,
+    closedGyms,
+    lostGyms,
+    closeRate: contacted.size ? (closedGyms / contacted.size) * 100 : 0,
+    msgsPerClose: closedGyms ? wa.length / closedGyms : 0,
+    steps,
+    byTemplate,
+  };
+}
