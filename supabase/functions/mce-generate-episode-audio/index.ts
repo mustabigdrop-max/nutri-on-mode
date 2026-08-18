@@ -3,6 +3,9 @@ import {
   RITUAL_KEY_BY_EPISODE,
   RITUAL_SCRIPTS,
   RITUAL_VOICE,
+  MICRO_KEY_BY_EPISODE,
+  MICRO_BY_KEY,
+  MICRO_VOICE,
   parseRitualScript,
 } from "../_shared/ritualScripts.ts";
 
@@ -135,16 +138,25 @@ Deno.serve(async (req) => {
       .maybeSingle();
     if (epErr || !ep) return json({ error: "Episódio não encontrado" }, 404);
 
-    // ===== RITUAIS: roteiro fixo oficial + silêncios reais (WAV 24kHz) =====
+    // ===== RITUAIS + MICRO-ÁUDIOS: roteiro fixo oficial + silêncios reais (WAV 24kHz) =====
     const ritualKey = ep.series === "ritual" && ep.episode_number
       ? RITUAL_KEY_BY_EPISODE[ep.episode_number]
       : undefined;
+    const microKey = ep.series === "ritual" && ep.episode_number
+      ? MICRO_KEY_BY_EPISODE[ep.episode_number]
+      : undefined;
+    const fixedScript = ritualKey
+      ? RITUAL_SCRIPTS[ritualKey]
+      : microKey
+        ? MICRO_BY_KEY[microKey]
+        : undefined;
 
-    if (ritualKey && RITUAL_SCRIPTS[ritualKey]) {
-      const scriptText = RITUAL_SCRIPTS[ritualKey];
-      const voice = RITUAL_VOICE[ritualKey];
+    if (fixedScript) {
+      const scriptText = fixedScript;
+      const voice = ritualKey ? RITUAL_VOICE[ritualKey] : MICRO_VOICE;
       const segments = parseRitualScript(scriptText);
       const pcmParts: Uint8Array[] = [];
+
 
       try {
         for (const seg of segments) {
@@ -162,13 +174,13 @@ Deno.serve(async (req) => {
 
       const pcm = concat(pcmParts);
       const wav = concat([wavHeader(pcm.length), pcm]);
-      const ritualPath = `ritual/${ritualKey}-${Date.now()}.wav`;
+      const ritualPath = `ritual/${ritualKey || microKey}-${Date.now()}.wav`;
       const { error: rUpErr } = await admin.storage
         .from(BUCKET)
         .upload(ritualPath, wav, { contentType: "audio/wav", upsert: true });
       if (rUpErr) return json({ error: "Falha ao salvar áudio", detail: rUpErr.message }, 500);
 
-      const ritualDuration = Math.max(30, Math.round(pcm.length / 2 / SAMPLE_RATE));
+      const ritualDuration = Math.max(10, Math.round(pcm.length / 2 / SAMPLE_RATE));
       await admin
         .from("mce_audio_episodes")
         .update({ audio_url: ritualPath, duration_seconds: ritualDuration })
@@ -183,7 +195,7 @@ Deno.serve(async (req) => {
         path: ritualPath,
         duration_seconds: ritualDuration,
         words: (scriptText.match(/\S+/g) || []).length,
-        ritual: ritualKey,
+        ritual: ritualKey || microKey,
       });
     }
 

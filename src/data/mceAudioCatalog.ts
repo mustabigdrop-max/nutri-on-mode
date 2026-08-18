@@ -112,6 +112,24 @@ export const MCE_AUDIO_CATALOG: CatalogEpisode[] = [
   { series: "ritual", episode_number: 2, title: "Pré-treino", description: "3 minutos de foco antes da primeira série.", duration_seconds: min(3) },
   { series: "ritual", episode_number: 3, title: "Pós-treino", description: "3 minutos para consolidar o que foi construído.", duration_seconds: min(3) },
   { series: "ritual", episode_number: 4, title: "Pré-sono", description: "7 minutos de recuperação e fechamento do dia.", duration_seconds: min(7) },
+  { series: "ritual", episode_number: 5, title: "Corrida MCE — O Laboratório de 30 Minutos", description: "30 minutos de corrida guiada: BDNF, grit e experiência de domínio.", duration_seconds: min(30), scientific_reference: "Ratey, 2008 · Duckworth, 2016 · Bandura, 1977" },
+  { series: "ritual", episode_number: 6, title: "Dia Difícil — A Mentira", description: "10 minutos para os dias em que a cabeça inventa motivos pra desistir.", duration_seconds: min(10), scientific_reference: "Kahneman, 2011 · James, 1890 · Fogg, 2019" },
+  // MICRO-ÁUDIOS DE MUSCULAÇÃO (entre séries)
+  { series: "ritual", episode_number: 101, title: "Micro 01 — Antes da primeira série", description: "Visualização e neurônios espelho antes da série 1.", duration_seconds: 30 },
+  { series: "ritual", episode_number: 102, title: "Micro 02 — Série pesada", description: "Setup e caráter antes de um top set.", duration_seconds: 25 },
+  { series: "ritual", episode_number: 103, title: "Micro 03 — Meio do treino", description: "Mielinização: cada rep te torna neurologicamente superior.", duration_seconds: 30 },
+  { series: "ritual", episode_number: 104, title: "Micro 04 — Após série muito boa", description: "Experiência de domínio registrada.", duration_seconds: 25 },
+  { series: "ritual", episode_number: 105, title: "Micro 05 — Quando começa a pesar", description: "Amígdala x tanque de reserva.", duration_seconds: 30 },
+  { series: "ritual", episode_number: 106, title: "Micro 06 — Antes de composto pesado", description: "Agachamento, supino, terra: comando seco.", duration_seconds: 20 },
+  { series: "ritual", episode_number: 107, title: "Micro 07 — Descanso entre séries", description: "90 segundos e ressíntese de fosfocreatina.", duration_seconds: 30 },
+  { series: "ritual", episode_number: 108, title: "Micro 08 — Contração no pico", description: "Tensão mecânica e excêntrica controlada.", duration_seconds: 25 },
+  { series: "ritual", episode_number: 109, title: "Micro 09 — Últimas 2 séries", description: "O treino começa quando você quer parar.", duration_seconds: 25 },
+  { series: "ritual", episode_number: 110, title: "Micro 10 — Após um PR", description: "Uma nova versão de quem você é.", duration_seconds: 30 },
+  { series: "ritual", episode_number: 111, title: "Micro 11 — Conexão mente-músculo", description: "22% mais fibras com presença mental.", duration_seconds: 30 },
+  { series: "ritual", episode_number: 112, title: "Micro 12 — Superset e drop set", description: "Tensão contínua sem descanso.", duration_seconds: 20 },
+  { series: "ritual", episode_number: 113, title: "Micro 13 — Reta final do treino", description: "O que você faz quando ninguém vê.", duration_seconds: 25 },
+  { series: "ritual", episode_number: 114, title: "Micro 14 — Exercício de isolamento", description: "Honestidade muscular e amplitude total.", duration_seconds: 25 },
+  { series: "ritual", episode_number: 115, title: "Micro 15 — Última repetição", description: "Fechamento do treino com reconhecimento.", duration_seconds: 30 },
   // CARREIRA
   { series: "carreira", episode_number: 1, title: "O mesmo motor: MCE no trabalho", description: "Mindset, Comportamento e Execução fora da academia.", duration_seconds: min(18) },
   { series: "carreira", episode_number: 2, title: "Energia é a moeda da carreira", description: "Sono, glicemia e treino como alavancas de produtividade.", duration_seconds: min(20) },
@@ -213,12 +231,21 @@ export const MCE_AUDIO_CATALOG: CatalogEpisode[] = [
   { series: "vida_real", episode_number: 5, title: "A solidão do disciplinado", description: "Temporária — ao contrário da solidão do arrependido.", duration_seconds: min(10) },
 ];
 
-export const RITUAL_KEY_BY_EPISODE: Record<number, "despertar" | "pre_treino" | "pos_treino" | "pre_sono"> = {
+export const RITUAL_KEY_BY_EPISODE: Record<
+  number,
+  "despertar" | "pre_treino" | "pos_treino" | "pre_sono" | "corrida" | "dia_dificil"
+> = {
   1: "despertar",
   2: "pre_treino",
   3: "pos_treino",
   4: "pre_sono",
+  5: "corrida",
+  6: "dia_dificil",
 };
+
+/** Episódios 101..115 da série ritual são micro-áudios de musculação (entre séries). */
+export const isMicroAudioEpisode = (episodeNumber?: number | null) =>
+  !!episodeNumber && episodeNumber >= 101 && episodeNumber <= 115;
 
 export const AUDIO_MCE_POINTS = {
   briefing_listened: { m: 3, c: 0, e: 0 },
@@ -227,5 +254,8 @@ export const AUDIO_MCE_POINTS = {
   ritual_pre_treino: { m: 2, c: 0, e: 3 },
   ritual_pos_treino: { m: 0, c: 0, e: 5 },
   ritual_pre_sono: { m: 3, c: 4, e: 0 },
+  ritual_corrida: { m: 4, c: 2, e: 6 },
+  ritual_dia_dificil: { m: 5, c: 5, e: 2 },
+  micro_audio_listened: { m: 1, c: 0, e: 2 },
   science_class_completed: { m: 8, c: 0, e: 0 },
 } as const;
