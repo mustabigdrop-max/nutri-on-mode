@@ -104,6 +104,18 @@ serve(async (req) => {
       body?.ig_profile
         ? `Perfil real do Instagram conectado (use nome, bio e temas dos posts para personalizar; não invente dados):\n${JSON.stringify(body.ig_profile)}`
         : "",
+      body?.subject ? `O que aparece na foto enviada: ${body.subject}` : "",
+      body?.quickGoal ? `Objetivo rápido do post: ${body.quickGoal}` : "",
+      body?.lightning ? "MODO RELÂMPAGO: seja rápido e direto, legenda de no máximo 6 linhas, carrossel e stories enxutos." : "",
+      body?.thesis ? `Tese polêmica a defender: ${body.thesis}` : "",
+      body?.evidence ? `Base científica obrigatória (cite corretamente): ${body.evidence}` : "",
+      body?.fact ? `Dado científico central do post: ${body.fact}` : "",
+      body?.source ? `Fonte do dado (cite exatamente): ${body.source}` : "",
+      body?.generatePosts ? "Preencha também o array posts com 5 posts aplicando o DNA identificado." : "",
+      body?.mode === "content_dna" && !body?.generatePosts ? "Deixe o array posts vazio." : "",
+      body?.mode === "viral_lab"
+        ? "Liste as trends mais prováveis do Instagram fitness brasileiro nesta temporada e adapte cada uma ao perfil do coach (atleta IFBB Classic Physique, pai de menina, ex-Marinha, criador do Método MCE). Não invente métricas."
+        : "",
       body?.format === "stories" ? "Para formato stories, preencha stories_sequence com 6 stories e deixe roteiro como array vazio." : "",
     ].filter(Boolean).join("\n");
 
