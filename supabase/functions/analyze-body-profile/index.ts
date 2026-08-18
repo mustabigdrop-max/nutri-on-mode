@@ -12,16 +12,20 @@ const json = (body: unknown, status = 200) =>
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
 
-const BUCKET = "apex-visual-photos";
+const BUCKETS = ["apex-visual-photos", "progress-photos"];
 
 async function toDataUrl(supabase: any, raw: string): Promise<string | null> {
   try {
     let url = raw;
     if (!/^https?:\/\//i.test(raw)) {
-      const path = raw.replace(/^\/+/, "").replace(new RegExp(`^${BUCKET}/`), "");
-      const { data } = await supabase.storage.from(BUCKET).createSignedUrl(path, 600);
-      if (!data?.signedUrl) return null;
-      url = data.signedUrl;
+      let signed: string | null = null;
+      for (const bucket of BUCKETS) {
+        const path = raw.replace(/^\/+/, "").replace(new RegExp(`^${bucket}/`), "");
+        const { data } = await supabase.storage.from(bucket).createSignedUrl(path, 600);
+        if (data?.signedUrl) { signed = data.signedUrl; break; }
+      }
+      if (!signed) return null;
+      url = signed;
     }
     const res = await fetch(url);
     if (!res.ok) return null;
@@ -37,6 +41,7 @@ async function toDataUrl(supabase: any, raw: string): Promise<string | null> {
     return null;
   }
 }
+
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
@@ -57,22 +62,31 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const athleteId: string | undefined = body?.athleteId;
     const manual = body?.manual || {};
+    const uploadedImage: string | undefined =
+      typeof body?.imageBase64 === "string" && body.imageBase64.length > 100
+        ? body.imageBase64
+        : undefined;
     if (!athleteId || typeof athleteId !== "string") {
       return json({ error: "Selecione o cliente para analisar as fotos." }, 400);
     }
 
     // 1. Foto mais recente do APEX Visual
-    const { data: apex } = await supabase
-      .from("athlete_visual_assessments")
-      .select("foto_frontal_url, foto_lateral_url, foto_url, peso_kg, bf_estimado, data_avaliacao, created_at")
-      .eq("athlete_id", athleteId)
-      .order("data_avaliacao", { ascending: false })
-      .limit(1)
-      .maybeSingle();
+    let apex: any = null;
+    let photoRaw: string | null = null;
+    let photoDate: string | null = null;
 
-    let photoRaw: string | null =
-      apex?.foto_frontal_url || apex?.foto_url || apex?.foto_lateral_url || null;
-    let photoDate: string | null = apex?.data_avaliacao || apex?.created_at || null;
+    {
+      const { data } = await supabase
+        .from("athlete_visual_assessments")
+        .select("foto_frontal_url, foto_lateral_url, foto_url, peso_kg, bf_estimado, data_avaliacao, created_at")
+        .eq("athlete_id", athleteId)
+        .order("data_avaliacao", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      apex = data;
+      photoRaw = data?.foto_frontal_url || data?.foto_url || data?.foto_lateral_url || null;
+      photoDate = data?.data_avaliacao || data?.created_at || null;
+    }
 
     if (!photoRaw) {
       const { data: pp } = await supabase
@@ -86,11 +100,12 @@ Deno.serve(async (req) => {
       photoDate = pp?.photo_date || photoDate;
     }
 
-    if (!photoRaw) {
+    if (!photoRaw && !uploadedImage) {
       return json({
-        error: "Nenhuma foto encontrada no APEX. Faça uma avaliação visual primeiro.",
+        error: "Nenhuma foto encontrada. Envie uma foto pelo botão 'Enviar foto' ou faça uma avaliação no APEX Visual.",
       }, 404);
     }
+
 
     // 2. Dados do cliente
     const { data: profile } = await supabase
@@ -111,8 +126,12 @@ Deno.serve(async (req) => {
     const sex = sexRaw.startsWith("f") ? "F" : "M";
     const imc = weight && height ? (weight / (height / 100) ** 2).toFixed(1) : "?";
 
-    const image = await toDataUrl(supabase, photoRaw);
-    if (!image) return json({ error: "Não consegui abrir a foto do APEX." }, 422);
+    const image = uploadedImage
+      ? (uploadedImage.startsWith("data:") ? uploadedImage : `data:image/jpeg;base64,${uploadedImage}`)
+      : await toDataUrl(supabase, photoRaw!);
+    if (!image) return json({ error: "Não consegui abrir a foto. Envie a foto manualmente pelo botão 'Enviar foto'." }, 422);
+    if (uploadedImage) photoDate = new Date().toISOString();
+
 
     const prompt = `Você é um sistema de análise corporal para coaching nutricional.
 
