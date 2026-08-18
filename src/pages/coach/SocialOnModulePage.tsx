@@ -453,9 +453,12 @@ const SocialOnModulePage = () => {
                     ))}
                   </div>
                 ))}
-                <Button onClick={async () => { await saveProfile(); setStep(2); }} className="gap-2">
-                  Próximo <ArrowRight className="w-4 h-4" />
-                </Button>
+                <div className="flex flex-wrap gap-2 pt-1">
+                  <Button onClick={async () => { await saveProfile(); setStep(2); }} className="gap-2">
+                    Próximo <ArrowRight className="w-4 h-4" />
+                  </Button>
+                </div>
+
               </Section>
             )}
 
