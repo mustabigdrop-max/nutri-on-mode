@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Play, Pause, RotateCcw, RotateCw, X, Headphones, Waves } from "lucide-react";
+import { Play, Pause, RotateCcw, RotateCw, X, Headphones, Waves, Repeat } from "lucide-react";
 import {
   MCE_AUDIO_MODES,
   MODE_BY_KEY,
