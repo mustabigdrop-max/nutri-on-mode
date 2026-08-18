@@ -118,7 +118,7 @@ export default function BusinessGymsTab({ onChanged }: { onChanged?: () => void 
   };
 
   const moveStatus = async (gym: Gym, status: GymStatus) => {
-    const patch: Record<string, unknown> = { status };
+    const patch: { status: GymStatus; contacted_at?: string; visited_at?: string; closed_at?: string } = { status };
     if (status === "prospectada" && !gym.contacted_at) patch.contacted_at = new Date().toISOString();
     if (status === "visitada" && !gym.visited_at) patch.visited_at = new Date().toISOString();
     if (status === "fechada") patch.closed_at = new Date().toISOString();
