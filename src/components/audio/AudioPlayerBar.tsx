@@ -13,6 +13,9 @@ import {
 const GOLD = "#E8A020";
 const LS_MODE = "mce_audio_mode";
 const LS_LAYER = "mce_audio_layer_on";
+const LS_RATE = "mce_audio_rate";
+const LS_MARKS = "mce_audio_marks";
+const RATES = [0.75, 1, 1.25, 1.5];
 
 export type TrackSection = { label: string; start: number; end: number };
 
