@@ -3,6 +3,18 @@ import { useNavigate } from "react-router-dom";
 import { QRCodeSVG } from "qrcode.react";
 import { ArrowLeft, ChevronDown, Building2, Trophy, Users, QrCode, Target, TrendingUp, Megaphone, Calendar, CheckCircle2, BarChart3, Smartphone, Dumbbell, Camera, Wallet, MapPin } from "lucide-react";
 
+import BusinessDashboardTab from "@/components/business/BusinessDashboardTab";
+import BusinessGymsTab from "@/components/business/BusinessGymsTab";
+import BusinessChallengesTab from "@/components/business/BusinessChallengesTab";
+import SalesKitPanel from "@/components/business/SalesKitPanel";
+
+const TABS = [
+  { id: "dashboard", label: "📊 Dashboard" },
+  { id: "academias", label: "🏢 Academias" },
+  { id: "desafios", label: "🏆 Desafios" },
+  { id: "kit", label: "📋 Kit" },
+] as const;
+
 const MONO = "'Space Mono', ui-monospace, monospace";
 const DISPLAY = "'Rajdhani', system-ui, sans-serif";
 const CYAN = "#00D4FF";
@@ -73,6 +85,8 @@ function Stat({ value, label }: { value: string; label: string }) {
 
 export default function MCEBusinessPage() {
   const navigate = useNavigate();
+  const [tab, setTab] = useState<(typeof TABS)[number]["id"]>("dashboard");
+  const [reloadKey, setReloadKey] = useState(0);
 
   return (
     <div style={{ minHeight: "100vh", background: "#05070C", color: "#fff", paddingBottom: 96 }}>
@@ -107,6 +121,37 @@ export default function MCEBusinessPage() {
           </div>
           <Badge color={GREEN}>B2B2C</Badge>
         </header>
+
+        {/* Tabs */}
+        <nav style={{ display: "flex", gap: 8, overflowX: "auto", padding: "14px 0" }}>
+          {TABS.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setTab(t.id)}
+              style={{
+                whiteSpace: "nowrap",
+                padding: "9px 16px",
+                borderRadius: 10,
+                cursor: "pointer",
+                fontFamily: DISPLAY,
+                fontSize: 14,
+                fontWeight: 700,
+                background: tab === t.id ? `${AMBER}18` : "rgba(255,255,255,0.03)",
+                border: `1px solid ${tab === t.id ? `${AMBER}55` : "rgba(255,255,255,0.08)"}`,
+                color: tab === t.id ? AMBER : "rgba(255,255,255,0.6)",
+              }}
+            >
+              {t.label}
+            </button>
+          ))}
+        </nav>
+
+        {tab === "dashboard" && <BusinessDashboardTab reloadKey={reloadKey} />}
+        {tab === "academias" && <BusinessGymsTab onChanged={() => setReloadKey((k) => k + 1)} />}
+        {tab === "desafios" && <BusinessChallengesTab />}
+
+        {tab === "kit" && (<>
+        <SalesKitPanel />
 
         {/* Hero */}
         <section style={{ textAlign: "center", padding: "32px 0 20px" }}>
@@ -505,6 +550,7 @@ export default function MCEBusinessPage() {
             Coach Diogo Mello · @diogo.mell0 · nutrion.app.br
           </div>
         </div>
+        </>)}
       </div>
     </div>
   );
