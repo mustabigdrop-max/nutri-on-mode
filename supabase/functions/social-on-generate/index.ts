@@ -14,7 +14,8 @@ PILARES: mce_drop (educativo 30%), bastidor (pessoal 25%), transformacao (prova 
 TOM: direto, científico sem ser acadêmico, português do Brasil, frases curtas, zero clichê motivacional vazio. Nunca se apresente como IA.`;
 
 type Mode = "caption" | "reel" | "calendar" | "hashtags" | "stories" | "audit" | "bio_audit" | "feed_audit" | "content_full"
-  | "repurpose" | "dm_variation" | "objection_variation" | "viral_pattern" | "viral_ideas" | "ideas_now" | "proof_caption";
+  | "repurpose" | "dm_variation" | "objection_variation" | "viral_pattern" | "viral_ideas" | "ideas_now" | "proof_caption"
+  | "post_package" | "viral_lab" | "content_dna" | "controversy_post" | "science_post";
 
 const SCHEMAS: Record<Mode, string> = {
   caption: `{"hook":"primeira linha que para o scroll","caption":"legenda completa com quebras de linha \\n","cta":"chamada final","hashtags":["#tag", "... 15 a 20 itens"]}`,
