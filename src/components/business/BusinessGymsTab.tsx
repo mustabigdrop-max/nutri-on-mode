@@ -166,6 +166,13 @@ export default function BusinessGymsTab({ onChanged }: { onChanged?: () => void 
   };
 
 
+  const registerWhatsAppSend = async (gym: Gym, templateId: string) => {
+    const tpl = WA_TEMPLATES.find((t) => t.id === templateId);
+    await logInteraction(gym.id, "whatsapp", `WhatsApp enviado (lote) — ${tpl?.label ?? templateId}`);
+    if (gym.status === "nao_contactada") await moveStatus(gym, "prospectada");
+    onChanged?.();
+  };
+
   const whatsapp = async (gym: Gym, templateId?: string) => {
     const phone = gymPhone(gym);
     if (!phone) return toast.error("Cadastre um telefone para essa academia.");
