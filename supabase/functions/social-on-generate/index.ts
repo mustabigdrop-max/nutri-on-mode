@@ -34,7 +34,6 @@ const SCHEMAS: Record<Mode, string> = {
   proof_caption: `{"caption":"legenda de prova social respeitando privacidade do cliente, com quebras de linha \\n","hashtags":["#tag","... 8 a 12 itens"]}`,
   content_full: `{"titulo":"resumo curto","roteiro":[{"bloco":"HOOK (0-2s) ou SLIDE 1 ou FRAME 1 (0.0-0.5s) conforme o formato","direcao":"instrução de câmera/cena/visual","fala":"o que falar ou o texto que aparece"}, "quantos blocos o formato exigir"],"stories_sequence":[{"numero":1,"visual":"o que aparece na tela","texto":"texto do story","gatilho":"sticker ou gatilho usado"}],"caption":"legenda completa com quebras de linha \\n","hashtags":["#tag","... 15 itens"],"hashtags_grupos":{"grandes":["3 hashtags acima de 1M posts"],"medias":["7 hashtags entre 100K e 1M"],"nichadas":["5 hashtags abaixo de 100K"]},"production_tips":{"camera":"...","audio":"...","texto_na_tela":"...","duracao":"...","proporcao":"9:16 ou 4:5","melhor_horario":"...","edicao":["4 a 8 passos de edição concretos"]},"self_comment":"comentário para o coach postar no próprio post logo após publicar","strategy":{"porque_funciona":["4 a 5 razões numeradas"],"gatilhos":["Autoridade","Curiosidade"]}}`,
 };
-};
 
 
 serve(async (req) => {
