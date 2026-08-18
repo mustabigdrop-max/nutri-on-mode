@@ -56,12 +56,44 @@ export default function AudioPlayerBar({
   });
   const cfg = useMemo(() => MODE_BY_KEY[mode], [mode]);
 
+  const [activeSection, setActiveSection] = useState<number | null>(null);
+  const [loopSection, setLoopSection] = useState(false);
+
+  // Seções: usa as do track ou divide o áudio em 5 blocos iguais
+  const sections: TrackSection[] = useMemo(() => {
+    if (track.sections?.length) return track.sections;
+    if (!duration || !isFinite(duration)) return [];
+    const n = duration > 900 ? 6 : duration > 240 ? 5 : 3;
+    const step = duration / n;
+    return Array.from({ length: n }, (_, i) => ({
+      label: `Bloco ${i + 1}`,
+      start: i * step,
+      end: (i + 1) * step,
+    }));
+  }, [track.sections, duration]);
+
   useEffect(() => {
     const el = audioRef.current;
     if (!el) return;
     el.currentTime = track.startAt ?? 0;
+    setActiveSection(null);
+    setLoopSection(false);
     el.play().then(() => setPlaying(true)).catch(() => setPlaying(false));
   }, [track.id, track.src, track.startAt]);
+
+  const playSection = (i: number) => {
+    const s = sections[i];
+    const a = audioRef.current;
+    if (!s || !a) return;
+    setActiveSection(i);
+    a.currentTime = s.start;
+    a.play().catch(() => {});
+  };
+
+  const repeatSection = () => {
+    const i = activeSection ?? sections.findIndex((s) => time >= s.start && time < s.end);
+    if (i >= 0) playSection(i);
+  };
 
   useEffect(() => {
     if (!("mediaSession" in navigator)) return;
