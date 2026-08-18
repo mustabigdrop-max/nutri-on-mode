@@ -258,6 +258,60 @@ export default function AudioPlayerBar({
           </div>
         )}
 
+        {sections.length > 0 && (
+          <div className="mb-2">
+            <div className="flex items-center justify-between mb-1.5">
+              <p className="text-[10px] font-bold tracking-wider" style={{ color: "rgba(255,255,255,0.5)" }}>
+                SEÇÕES DO RITUAL
+              </p>
+              <div className="flex items-center gap-1.5">
+                <button
+                  onClick={repeatSection}
+                  className="text-[10px] font-bold px-2 py-1 rounded-full flex items-center gap-1"
+                  style={{ border: "1px solid rgba(255,255,255,0.14)", color: "rgba(255,255,255,0.75)" }}
+                >
+                  <Repeat className="w-3 h-3" /> Repetir seção
+                </button>
+                <button
+                  onClick={() => {
+                    if (activeSection == null) {
+                      const i = sections.findIndex((s) => time >= s.start && time < s.end);
+                      setActiveSection(i >= 0 ? i : 0);
+                    }
+                    setLoopSection((v) => !v);
+                  }}
+                  className="text-[10px] font-bold px-2 py-1 rounded-full"
+                  style={{
+                    background: loopSection ? GOLD : "rgba(255,255,255,0.08)",
+                    color: loopSection ? "#03030a" : "rgba(255,255,255,0.75)",
+                  }}
+                >
+                  LOOP {loopSection ? "ON" : "OFF"}
+                </button>
+              </div>
+            </div>
+            <div className="flex gap-1.5 overflow-x-auto pb-1">
+              {sections.map((s, i) => {
+                const current = activeSection === i || (time >= s.start && time < s.end);
+                return (
+                  <button
+                    key={`${s.label}-${i}`}
+                    onClick={() => playSection(i)}
+                    className="px-2.5 py-1 rounded-lg whitespace-nowrap text-[10px] font-semibold"
+                    style={{
+                      border: `1px solid ${current ? `${GOLD}88` : "rgba(255,255,255,0.10)"}`,
+                      background: current ? `${GOLD}1A` : "transparent",
+                      color: current ? GOLD : "rgba(255,255,255,0.6)",
+                    }}
+                  >
+                    {s.label} · {fmt(s.start)}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         <input
           type="range"
           min={0}
