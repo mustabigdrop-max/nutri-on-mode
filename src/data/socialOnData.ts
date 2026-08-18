@@ -316,3 +316,115 @@ export const mondayOf = (d = new Date()) => {
   date.setDate(date.getDate() - day);
   return date.toISOString().slice(0, 10);
 };
+
+// ─────────── NÍVEL HARD: formatos granulares, tom, horários e checklist ───────────
+
+export type FormatOption = { id: string; emoji: string; label: string; sub: string };
+
+export const FORMAT_GROUPS: { group: string; emoji: string; options: FormatOption[] }[] = [
+  {
+    group: "FOTO",
+    emoji: "📸",
+    options: [
+      { id: "foto_unica", emoji: "📷", label: "Foto única", sub: "legenda faz o trabalho" },
+      { id: "carrossel_fotos", emoji: "📸", label: "Carrossel de fotos", sub: "2-10 slides" },
+      { id: "foto_legenda_forte", emoji: "📝", label: "Foto + legenda forte", sub: "texto longo" },
+    ],
+  },
+  {
+    group: "VÍDEO",
+    emoji: "🎬",
+    options: [
+      { id: "edit", emoji: "🎬", label: "Edit", sub: "fotos + transição" },
+      { id: "talking_head", emoji: "🗣️", label: "Talking head", sub: "falando" },
+      { id: "clips_treino", emoji: "✂️", label: "Clips curtos", sub: "treino" },
+      { id: "screen_recording", emoji: "📱", label: "Screen recording", sub: "app" },
+      { id: "pov", emoji: "👁️", label: "POV", sub: "câmera subjetiva" },
+      { id: "timelapse", emoji: "⏩", label: "Timelapse", sub: "meal prep" },
+    ],
+  },
+  {
+    group: "STORIES",
+    emoji: "📱",
+    options: [
+      { id: "stories_foto", emoji: "📱", label: "Stories foto", sub: "sequência" },
+      { id: "stories_video", emoji: "🎥", label: "Stories vídeo", sub: "bastidor" },
+      { id: "stories_interacao", emoji: "📊", label: "Stories interação", sub: "enquete/quiz" },
+    ],
+  },
+];
+
+export const ALL_FORMATS: FormatOption[] = FORMAT_GROUPS.flatMap((g) => g.options);
+
+export const formatLabel = (id: string) =>
+  ALL_FORMATS.find((f) => f.id === id)?.label ?? id.replace(/_/g, " ");
+
+// Instrução específica enviada ao motor de geração por formato
+export const FORMAT_BRIEFS: Record<string, string> = {
+  foto_unica:
+    "Foto parada: a LEGENDA carrega o conteúdo. Legenda longa com números específicos e prova de consistência. Inclua dicas de foto (proporção 4:5, iluminação lateral de cima, ângulo, edição com valores de contraste/claridade/saturação, app sugerido, composição pela regra dos terços) e um self-comment pronto.",
+  carrossel_fotos:
+    "Carrossel: entregue slide a slide. SLIDE 1 é capa em TEXTO grande (nunca foto do coach) com subtexto de curiosidade. Slides 2-4 desenvolvem os pontos com dado científico. Slide final é CTA (salva/manda) com @handle e nutrion.app.br.",
+  foto_legenda_forte:
+    "Foto única com legenda longa em formato de storytelling; a primeira linha precisa parar o scroll mesmo sem vídeo.",
+  edit:
+    "Edit de fotos com música: entregue a sequência FRAME a FRAME com marcação de tempo (ex: FRAME 1 0.0-0.5s), o que aparece, transição usada e texto na tela. Inclua dicas de CapCut (transições, auto beat sync, fisheye, slow zoom, velocity, fonte Anton/Bebas, ajustes de cor) e legenda curta.",
+  talking_head:
+    "Vídeo falando: setup (ângulo, fundo, andar enquanto fala, iluminação), HOOK 0-3s, desenvolvimento 3-25s, CTA 25-30s e pós-produção (legendas automáticas, cortar pausas, zoom leve a cada 5-7s, música lo-fi baixa).",
+  clips_treino:
+    "Clips curtos de treino: liste os clipes a filmar (exercício, ângulo, duração), ordem de montagem, texto na tela por clipe e legenda.",
+  screen_recording:
+    "Gravação de tela do nutriON: entregue a sequência de TELAS com marcação de tempo, o voiceover de cada tela, textos na tela e CTA final. Foque nos diferenciais (NutrySync, MCE Audio, substituições).",
+  pov:
+    "POV câmera subjetiva: descreva o ponto de vista, movimento de câmera, o que entra em cena, texto na tela e legenda curta.",
+  timelapse:
+    "Timelapse (meal prep/rotina): descreva setup de câmera fixa, etapas capturadas, velocidade, música, textos na tela e legenda.",
+  stories_foto:
+    "Sequência de 5 stories em foto: para cada um informe visual, texto e gatilho.",
+  stories_video:
+    "Sequência de 5 stories em vídeo: para cada um informe o que gravar, fala curta e gatilho.",
+  stories_interacao:
+    "Sequência de 5 stories de interação usando stickers diferentes (enquete, quiz com resposta certa, slider, caixinha de perguntas, contagem regressiva). Informe visual, texto e sticker de cada um.",
+};
+
+export const TONES = [
+  { id: "agressivo", emoji: "🔥", label: "Agressivo", sub: "Direto, sem frescura" },
+  { id: "cientifico", emoji: "🧠", label: "Científico", sub: "Dados e pesquisa" },
+  { id: "emocional", emoji: "❤️", label: "Emocional", sub: "Storytelling, vulnerável" },
+  { id: "humor", emoji: "😂", label: "Humor", sub: "Leve, trend" },
+  { id: "militar", emoji: "⚓", label: "Militar", sub: "Comando, Marinha" },
+  { id: "pai", emoji: "👨‍👧", label: "Pai", sub: "Família, ternura" },
+] as const;
+
+export const TONE_BRIEFS: Record<string, string> = {
+  agressivo: "Tom agressivo e direto: frases curtas, confronto amistoso, zero rodeio.",
+  cientifico: "Tom científico: cite mecanismos e autores reais, sem virar aula chata.",
+  emocional: "Tom emocional: storytelling em primeira pessoa, vulnerabilidade real.",
+  humor: "Tom com humor: leve, autoirônico, referências de trend, sem perder autoridade.",
+  militar: "Tom militar: linguagem de missão e disciplina, referência aos 16 anos de Marinha.",
+  pai: "Tom de pai: ternura, referência à filha, conexão entre treino e família.",
+};
+
+export const BEST_TIMES: Record<string, { windows: string[]; time: string; why: string }> = {
+  seguidores: { windows: ["11h-13h", "19h-21h"], time: "12:00", why: "Almoço e pós-trabalho = maior alcance." },
+  curtidas: { windows: ["07h-09h", "20h-22h"], time: "20:30", why: "Noite: mais tempo pra ler legenda." },
+  shares: { windows: ["07h-09h", "20h-22h"], time: "08:00", why: "Manhã reflexiva favorece compartilhamento." },
+  salvamentos: { windows: ["07h-09h", "20h-22h"], time: "21:00", why: "Conteúdo de referência é salvo à noite." },
+  vendas: { windows: ["10h-11h", "14h-15h"], time: "10:30", why: "Decisão racional em horário produtivo." },
+  cliques: { windows: ["10h-11h", "14h-15h"], time: "14:30", why: "Pós-almoço: janela de clique no link." },
+};
+
+export const STORIES_TIMES = ["08h-09h", "12h-13h", "21h-22h"];
+
+export const PRE_POST_CHECKLIST = [
+  "Primeira linha para o scroll? (hook forte)",
+  "Texto na tela legível? (40% da tela, fonte grande)",
+  "Foto/vídeo 4:5 ou 9:16? (ocupa mais feed)",
+  "Hashtags misturadas? (grandes + médias + nichadas)",
+  "CTA no final da legenda? (salva/manda/segue)",
+  "Self-comment preparado? (postar logo após publicar)",
+  "Horário ideal? (baseado no objetivo)",
+  "Produto da VEMP visível? (se aplicável)",
+  "MindForce aparece natural? (se aplicável)",
+  "@ e nutrion.app.br presentes? (branding)",
+];

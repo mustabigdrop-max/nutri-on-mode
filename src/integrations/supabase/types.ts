@@ -9505,6 +9505,8 @@ export type Database = {
           script: string | null
           status: string
           strategy_notes: string | null
+          suggested_time: string | null
+          tone: string | null
           topic: string | null
           updated_at: string
         }
@@ -9525,6 +9527,8 @@ export type Database = {
           script?: string | null
           status?: string
           strategy_notes?: string | null
+          suggested_time?: string | null
+          tone?: string | null
           topic?: string | null
           updated_at?: string
         }
@@ -9545,6 +9549,8 @@ export type Database = {
           script?: string | null
           status?: string
           strategy_notes?: string | null
+          suggested_time?: string | null
+          tone?: string | null
           topic?: string | null
           updated_at?: string
         }

@@ -32,7 +32,7 @@ const SCHEMAS: Record<Mode, string> = {
   viral_ideas: `{"ideas":[{"titulo":"...","funil":"TOFU|MOFU|BOFU","hook":"...","roteiro":"roteiro completo com marcações de tempo"}, "exatamente 3 itens"]}`,
   ideas_now: `{"ideas":[{"titulo":"...","funil":"TOFU|MOFU|BOFU","hook":"...","produto":"MindForce|nutriON|VEMP ou vazio","roteiro":"roteiro curto pronto pra gravar agora"}, "exatamente 5 itens"]}`,
   proof_caption: `{"caption":"legenda de prova social respeitando privacidade do cliente, com quebras de linha \\n","hashtags":["#tag","... 8 a 12 itens"]}`,
-  content_full: `{"titulo":"resumo curto","roteiro":[{"bloco":"HOOK (0-2s)","direcao":"instrução de câmera/cena","fala":"o que falar"},{"bloco":"DESENVOLVIMENTO (2-25s)","direcao":"...","fala":"..."},{"bloco":"CTA (25-30s)","direcao":"...","fala":"..."}],"stories_sequence":[{"numero":1,"visual":"o que aparece na tela","texto":"texto do story","gatilho":"gatilho usado"}],"caption":"legenda completa com quebras de linha \\n","hashtags":["#tag","... 8 a 15 itens"],"production_tips":{"camera":"...","audio":"...","texto_na_tela":"...","duracao":"...","proporcao":"9:16","melhor_horario":"...","edicao":["4 a 6 passos de edição no CapCut"]},"strategy":{"porque_funciona":["4 a 5 razões numeradas"],"gatilhos":["Autoridade","Curiosidade"]}}`,
+  content_full: `{"titulo":"resumo curto","roteiro":[{"bloco":"HOOK (0-2s) ou SLIDE 1 ou FRAME 1 (0.0-0.5s) conforme o formato","direcao":"instrução de câmera/cena/visual","fala":"o que falar ou o texto que aparece"}, "quantos blocos o formato exigir"],"stories_sequence":[{"numero":1,"visual":"o que aparece na tela","texto":"texto do story","gatilho":"sticker ou gatilho usado"}],"caption":"legenda completa com quebras de linha \\n","hashtags":["#tag","... 15 itens"],"hashtags_grupos":{"grandes":["3 hashtags acima de 1M posts"],"medias":["7 hashtags entre 100K e 1M"],"nichadas":["5 hashtags abaixo de 100K"]},"production_tips":{"camera":"...","audio":"...","texto_na_tela":"...","duracao":"...","proporcao":"9:16 ou 4:5","melhor_horario":"...","edicao":["4 a 8 passos de edição concretos"]},"self_comment":"comentário para o coach postar no próprio post logo após publicar","strategy":{"porque_funciona":["4 a 5 razões numeradas"],"gatilhos":["Autoridade","Curiosidade"]}}`,
 };
 
 
@@ -63,6 +63,10 @@ serve(async (req) => {
     const ctx = [
       body?.pillar ? `Pilar: ${body.pillar}` : "",
       body?.format ? `Formato: ${body.format}` : "",
+      body?.formatBrief ? `Regras obrigatórias do formato: ${body.formatBrief}` : "",
+      body?.tone ? `Tom de voz: ${body.tone}` : "",
+      body?.toneBrief ? `Regras do tom: ${body.toneBrief}` : "",
+      body?.bestTime ? `Melhor horário para este objetivo: ${body.bestTime}` : "",
       body?.topic ? `Tema: ${body.topic}` : "",
       body?.style ? `Estilo: ${body.style}` : "",
       body?.duration ? `Duração: ${body.duration}` : "",
