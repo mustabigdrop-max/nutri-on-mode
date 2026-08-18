@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Play, Pause, RotateCcw, RotateCw, X, Headphones, Waves } from "lucide-react";
+import { Play, Pause, RotateCcw, RotateCw, X, Headphones, Waves, Repeat } from "lucide-react";
 import {
   MCE_AUDIO_MODES,
   MODE_BY_KEY,
@@ -12,12 +12,15 @@ const GOLD = "#E8A020";
 const LS_MODE = "mce_audio_mode";
 const LS_LAYER = "mce_audio_layer_on";
 
+export type TrackSection = { label: string; start: number; end: number };
+
 export type PlayerTrack = {
   id: string;
   title: string;
   subtitle: string;
   src: string;
   startAt?: number;
+  sections?: TrackSection[];
 };
 
 const fmt = (s: number) => {
@@ -53,12 +56,44 @@ export default function AudioPlayerBar({
   });
   const cfg = useMemo(() => MODE_BY_KEY[mode], [mode]);
 
+  const [activeSection, setActiveSection] = useState<number | null>(null);
+  const [loopSection, setLoopSection] = useState(false);
+
+  // Seções: usa as do track ou divide o áudio em 5 blocos iguais
+  const sections: TrackSection[] = useMemo(() => {
+    if (track.sections?.length) return track.sections;
+    if (!duration || !isFinite(duration)) return [];
+    const n = duration > 900 ? 6 : duration > 240 ? 5 : 3;
+    const step = duration / n;
+    return Array.from({ length: n }, (_, i) => ({
+      label: `Bloco ${i + 1}`,
+      start: i * step,
+      end: (i + 1) * step,
+    }));
+  }, [track.sections, duration]);
+
   useEffect(() => {
     const el = audioRef.current;
     if (!el) return;
     el.currentTime = track.startAt ?? 0;
+    setActiveSection(null);
+    setLoopSection(false);
     el.play().then(() => setPlaying(true)).catch(() => setPlaying(false));
   }, [track.id, track.src, track.startAt]);
+
+  const playSection = (i: number) => {
+    const s = sections[i];
+    const a = audioRef.current;
+    if (!s || !a) return;
+    setActiveSection(i);
+    a.currentTime = s.start;
+    a.play().catch(() => {});
+  };
+
+  const repeatSection = () => {
+    const i = activeSection ?? sections.findIndex((s) => time >= s.start && time < s.end);
+    if (i >= 0) playSection(i);
+  };
 
   useEffect(() => {
     if (!("mediaSession" in navigator)) return;
@@ -127,6 +162,13 @@ export default function AudioPlayerBar({
         src={track.src}
         onTimeUpdate={(e) => {
           const a = e.currentTarget;
+          if (loopSection && activeSection != null) {
+            const s = sections[activeSection];
+            if (s && a.currentTime >= s.end - 0.05) {
+              a.currentTime = s.start;
+              a.play().catch(() => {});
+            }
+          }
           setTime(a.currentTime);
           onProgress?.(a.currentTime, a.duration || 0);
         }}
@@ -213,6 +255,60 @@ export default function AudioPlayerBar({
               <br />
               Soundscape: {cfg.scapeName}. Use fones para o efeito binaural.
             </p>
+          </div>
+        )}
+
+        {sections.length > 0 && (
+          <div className="mb-2">
+            <div className="flex items-center justify-between mb-1.5">
+              <p className="text-[10px] font-bold tracking-wider" style={{ color: "rgba(255,255,255,0.5)" }}>
+                SEÇÕES DO RITUAL
+              </p>
+              <div className="flex items-center gap-1.5">
+                <button
+                  onClick={repeatSection}
+                  className="text-[10px] font-bold px-2 py-1 rounded-full flex items-center gap-1"
+                  style={{ border: "1px solid rgba(255,255,255,0.14)", color: "rgba(255,255,255,0.75)" }}
+                >
+                  <Repeat className="w-3 h-3" /> Repetir seção
+                </button>
+                <button
+                  onClick={() => {
+                    if (activeSection == null) {
+                      const i = sections.findIndex((s) => time >= s.start && time < s.end);
+                      setActiveSection(i >= 0 ? i : 0);
+                    }
+                    setLoopSection((v) => !v);
+                  }}
+                  className="text-[10px] font-bold px-2 py-1 rounded-full"
+                  style={{
+                    background: loopSection ? GOLD : "rgba(255,255,255,0.08)",
+                    color: loopSection ? "#03030a" : "rgba(255,255,255,0.75)",
+                  }}
+                >
+                  LOOP {loopSection ? "ON" : "OFF"}
+                </button>
+              </div>
+            </div>
+            <div className="flex gap-1.5 overflow-x-auto pb-1">
+              {sections.map((s, i) => {
+                const current = activeSection === i || (time >= s.start && time < s.end);
+                return (
+                  <button
+                    key={`${s.label}-${i}`}
+                    onClick={() => playSection(i)}
+                    className="px-2.5 py-1 rounded-lg whitespace-nowrap text-[10px] font-semibold"
+                    style={{
+                      border: `1px solid ${current ? `${GOLD}88` : "rgba(255,255,255,0.10)"}`,
+                      background: current ? `${GOLD}1A` : "transparent",
+                      color: current ? GOLD : "rgba(255,255,255,0.6)",
+                    }}
+                  >
+                    {s.label} · {fmt(s.start)}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         )}
 
