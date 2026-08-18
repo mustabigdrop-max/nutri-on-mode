@@ -129,12 +129,25 @@ export type SlideSpec = {
   body?: string;
   footer?: string;
   accent?: string;
+  /** Gradiente de fundo [topo, base] — usado no estilo Gradient Bold */
+  gradient?: [string, string];
+  /** Aumenta o tamanho do título (Gradient Bold) */
+  bigTitle?: boolean;
 };
 
 export const renderSlide = async (spec: SlideSpec, w = 1080, h = 1350) => {
   const { canvas, ctx } = ctxOf(w, h);
   ctx.fillStyle = NUTRION_BG;
   ctx.fillRect(0, 0, w, h);
+
+  if (spec.gradient) {
+    const bg = ctx.createLinearGradient(0, 0, w * 0.4, h);
+    bg.addColorStop(0, spec.gradient[0]);
+    bg.addColorStop(1, spec.gradient[1]);
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, w, h);
+  }
+
 
   if (spec.backgroundImage) {
     const img = await loadImage(spec.backgroundImage);
