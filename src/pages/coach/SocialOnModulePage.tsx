@@ -14,6 +14,7 @@ import {
   ArrowLeft, ArrowRight, Copy, Loader2, Rocket, Search, Target, CalendarDays,
   BarChart3, GraduationCap, ShoppingCart, Check, Instagram, Trash2,
   RefreshCw, MessageSquare, Microscope, Camera, BookOpen, Lightbulb,
+  ImagePlus, Trophy, Flame, Dna, ShieldCheck, FlaskConical,
 } from "lucide-react";
 import RepurposerPanel from "@/components/social/RepurposerPanel";
 import DmObjectionsPanel from "@/components/social/DmObjectionsPanel";
@@ -22,6 +23,12 @@ import SocialProofPanel from "@/components/social/SocialProofPanel";
 import IdeasNowPanel from "@/components/social/IdeasNowPanel";
 import PlaybookPanel from "@/components/social/PlaybookPanel";
 import InstagramAccountPanel from "@/components/social/InstagramAccountPanel";
+import PostProntoPanel from "@/components/social/PostProntoPanel";
+import BrandScorePanel from "@/components/social/BrandScorePanel";
+import ViralLabPanel from "@/components/social/ViralLabPanel";
+import ContentDnaPanel from "@/components/social/ContentDnaPanel";
+import AuthorityPanel from "@/components/social/AuthorityPanel";
+import ScienceBankPanel from "@/components/social/ScienceBankPanel";
 import { useInstagramAccount } from "@/hooks/useInstagramAccount";
 import {
   ACADEMY_TRACKS, ACTION_PLAN, BIO_CRITERIA, CONTENT_PRODUCTS, DIFFERENTIALS,
