@@ -40,6 +40,8 @@ export default function BusinessGymsTab({ onChanged }: { onChanged?: () => void 
   const [noteFor, setNoteFor] = useState<string | null>(null);
   const [noteText, setNoteText] = useState("");
   const [view, setView] = useState<"lista" | "kanban">("lista");
+  const [bulkWaGyms, setBulkWaGyms] = useState<Gym[]>([]);
+  const [bulkWaOpen, setBulkWaOpen] = useState(false);
 
   const load = useCallback(async () => {
     const { data, error } = await supabase
