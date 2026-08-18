@@ -123,7 +123,16 @@ export default function GymKanbanBoard({ gyms, onMove, onBulkMove, onEdit, onWha
               }}
             >
               <div className="flex items-center justify-between px-1 pb-2">
-                <span className="text-xs font-semibold" style={{ color: meta.color }}>
+                <span className="flex items-center gap-1.5 text-xs font-semibold" style={{ color: meta.color }}>
+                  <Checkbox
+                    aria-label={`Selecionar todas de ${meta.label}`}
+                    className="h-3.5 w-3.5"
+                    disabled={items.length === 0}
+                    checked={items.length > 0 && items.every((i) => selected.includes(i.id))}
+                    onCheckedChange={() =>
+                      toggleColumn(items, items.every((i) => selected.includes(i.id)))
+                    }
+                  />
                   {meta.dot} {meta.label.toUpperCase()}
                 </span>
                 <span className="text-[10px] text-muted-foreground">{items.length}</span>
@@ -143,11 +152,18 @@ export default function GymKanbanBoard({ gyms, onMove, onBulkMove, onEdit, onWha
                     onDragEnd={() => { setDragId(null); setOverCol(null); }}
                     className={`rounded-lg border bg-background/80 p-2.5 cursor-grab active:cursor-grabbing space-y-1.5 ${
                       dragId === g.id ? "opacity-50" : ""
-                    }`}
+                    } ${selected.includes(g.id) ? "ring-1 ring-primary/60" : ""}`}
                     style={{ borderColor: `${meta.color}33` }}
                   >
                     <div className="flex items-start gap-1.5">
+                      <Checkbox
+                        aria-label={`Selecionar ${g.name}`}
+                        className="mt-0.5 h-3.5 w-3.5 shrink-0"
+                        checked={selected.includes(g.id)}
+                        onCheckedChange={() => toggle(g.id)}
+                      />
                       <GripVertical className="w-3.5 h-3.5 mt-0.5 text-muted-foreground shrink-0" />
+
                       <div className="min-w-0">
                         <p className="text-sm font-semibold truncate">{g.name}</p>
                         <p className="text-[11px] text-muted-foreground truncate">
