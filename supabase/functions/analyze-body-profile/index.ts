@@ -126,8 +126,12 @@ Deno.serve(async (req) => {
     const sex = sexRaw.startsWith("f") ? "F" : "M";
     const imc = weight && height ? (weight / (height / 100) ** 2).toFixed(1) : "?";
 
-    const image = await toDataUrl(supabase, photoRaw);
-    if (!image) return json({ error: "Não consegui abrir a foto do APEX." }, 422);
+    const image = uploadedImage
+      ? (uploadedImage.startsWith("data:") ? uploadedImage : `data:image/jpeg;base64,${uploadedImage}`)
+      : await toDataUrl(supabase, photoRaw!);
+    if (!image) return json({ error: "Não consegui abrir a foto. Envie a foto manualmente pelo botão 'Enviar foto'." }, 422);
+    if (uploadedImage) photoDate = new Date().toISOString();
+
 
     const prompt = `Você é um sistema de análise corporal para coaching nutricional.
 
