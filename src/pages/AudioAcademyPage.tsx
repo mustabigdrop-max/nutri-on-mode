@@ -1,12 +1,22 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Headphones, Mic, Loader2, CheckCircle2, Play, Lock } from "lucide-react";
+import {
+  ArrowLeft, Headphones, Mic, Loader2, CheckCircle2, Play, Lock,
+  Download, Trash2, ListPlus, ListMusic, ChevronUp, ChevronDown, Plus, WifiOff,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import AudioPlayerBar, { type PlayerTrack } from "@/components/audio/AudioPlayerBar";
 import { SERIES_META, RITUAL_KEY_BY_EPISODE, AUDIO_MCE_POINTS, type AudioSeries } from "@/data/mceAudioCatalog";
 import { resolveAudioSrc } from "@/lib/mceAudioStorage";
+import {
+  downloadOffline, removeOffline, listOfflineIds, getOfflineSrc, offlineTotalBytes, fmtBytes,
+} from "@/lib/offlineAudio";
+import {
+  loadPlaylists, createPlaylist, deletePlaylist, addToPlaylist, removeFromPlaylist, moveItem,
+  playlistDuration, fmtMin, type Playlist, type PlaylistItem,
+} from "@/lib/audioPlaylists";
 
 const GOLD = "#E8A020";
 const DIM = "rgba(255,255,255,0.55)";
@@ -47,9 +57,33 @@ export default function AudioAcademyPage({ embedded = false }: { embedded?: bool
   const [briefingText, setBriefingText] = useState<string | null>(null);
   const [briefingLoading, setBriefingLoading] = useState(false);
 
+  // Offline
+  const [offlineIds, setOfflineIds] = useState<string[]>([]);
+  const [downloading, setDownloading] = useState<Record<string, number>>({});
+  const [offlineBytes, setOfflineBytes] = useState(0);
+
+  // Playlists
+  const [playlists, setPlaylists] = useState<Playlist[]>([]);
+  const [activePlaylistId, setActivePlaylistId] = useState<string | null>(null);
+  const [newPlaylistName, setNewPlaylistName] = useState("");
+  const [showPlaylists, setShowPlaylists] = useState(false);
+  const [queue, setQueue] = useState<{ name: string; items: PlaylistItem[]; index: number } | null>(null);
+
   useEffect(() => {
     if (!embedded) document.title = "MCE Audio Academy · NUTRION";
   }, [embedded]);
+
+  const refreshOffline = useCallback(async () => {
+    setOfflineIds(await listOfflineIds());
+    setOfflineBytes(await offlineTotalBytes());
+  }, []);
+
+  useEffect(() => {
+    refreshOffline();
+    const list = loadPlaylists();
+    setPlaylists(list);
+    setActivePlaylistId(list[0]?.id ?? null);
+  }, [refreshOffline]);
 
   const load = useCallback(async () => {
     if (!user) return;
@@ -129,6 +163,7 @@ export default function AudioAcademyPage({ embedded = false }: { embedded?: bool
       if (data?.error) throw new Error(data.error);
       setBriefingText(data.text);
       if (data.audioBase64) {
+        setQueue(null);
         setTrack({
           id: "briefing",
           title: "Briefing do dia",
@@ -147,16 +182,21 @@ export default function AudioAcademyPage({ embedded = false }: { embedded?: bool
     }
   };
 
+  /** Resolve a fonte tocável: offline primeiro, depois signed URL. */
+  const resolveSrc = useCallback(async (episodeId: string, audioUrl: string | null) => {
+    const offline = await getOfflineSrc(episodeId);
+    if (offline) return offline;
+    if (!audioUrl) return null;
+    return await resolveAudioSrc(audioUrl);
+  }, []);
+
   const playEpisode = async (ep: Episode) => {
-    if (!ep.audio_url) {
-      toast.message("Episódio ainda não publicado pelo coach.");
-      return;
-    }
-    const src = await resolveAudioSrc(ep.audio_url);
+    const src = await resolveSrc(ep.id, ep.audio_url);
     if (!src) {
-      toast.error("Não foi possível carregar este áudio.");
+      toast.message(ep.audio_url ? "Não foi possível carregar este áudio." : "Episódio ainda não publicado pelo coach.");
       return;
     }
+    setQueue(null);
     setTrack({
       id: ep.id,
       title: `EP ${ep.episode_number} — ${ep.title}`,
@@ -166,8 +206,94 @@ export default function AudioAcademyPage({ embedded = false }: { embedded?: bool
     });
   };
 
+  // ---- Offline ----
+  const startDownload = async (ep: Episode) => {
+    if (!ep.audio_url) return;
+    setDownloading((d) => ({ ...d, [ep.id]: 0 }));
+    try {
+      const url = await resolveAudioSrc(ep.audio_url);
+      if (!url) throw new Error("Áudio indisponível.");
+      await downloadOffline(ep.id, ep.title, url, (pct) => setDownloading((d) => ({ ...d, [ep.id]: pct })));
+      await refreshOffline();
+      toast.success(`"${ep.title}" disponível offline.`);
+    } catch (e: any) {
+      toast.error(e?.message || "Falha ao baixar o áudio.");
+    } finally {
+      setDownloading((d) => {
+        const { [ep.id]: _, ...rest } = d;
+        return rest;
+      });
+    }
+  };
+
+  const dropDownload = async (ep: Episode) => {
+    await removeOffline(ep.id);
+    await refreshOffline();
+    toast.message(`Download de "${ep.title}" removido.`);
+  };
+
+  // ---- Playlists ----
+  const activePlaylist = playlists.find((p) => p.id === activePlaylistId) ?? null;
+
+  const handleCreate = () => {
+    const list = createPlaylist(newPlaylistName);
+    setPlaylists(list);
+    setActivePlaylistId(list[list.length - 1].id);
+    setNewPlaylistName("");
+  };
+
+  const handleAdd = (ep: Episode) => {
+    if (!activePlaylistId) {
+      toast.error("Crie uma playlist primeiro.");
+      setShowPlaylists(true);
+      return;
+    }
+    setPlaylists(
+      addToPlaylist(activePlaylistId, {
+        episodeId: ep.id,
+        title: ep.title,
+        subtitle: SERIES_META[ep.series as AudioSeries]?.label ?? ep.series,
+        durationSeconds: ep.duration_seconds || 0,
+      }),
+    );
+    toast.success(`Adicionado a "${activePlaylist?.name ?? "playlist"}".`);
+  };
+
+  const playQueueIndex = useCallback(
+    async (name: string, items: PlaylistItem[], index: number) => {
+      const item = items[index];
+      if (!item) return;
+      const ep = episodes.find((e) => e.id === item.episodeId);
+      const src = await resolveSrc(item.episodeId, ep?.audio_url ?? null);
+      if (!src) {
+        toast.message(`"${item.title}" indisponível — pulando.`);
+        if (index + 1 < items.length) playQueueIndex(name, items, index + 1);
+        return;
+      }
+      setQueue({ name, items, index });
+      setTrack({
+        id: item.episodeId,
+        title: item.title,
+        subtitle: item.subtitle,
+        src,
+        startAt: 0,
+      });
+    },
+    [episodes, resolveSrc],
+  );
+
+  const goQueue = (delta: number) => {
+    if (!queue) return;
+    const next = queue.index + delta;
+    if (next < 0 || next >= queue.items.length) {
+      toast.message(delta > 0 ? "Fim da playlist." : "Início da playlist.");
+      return;
+    }
+    playQueueIndex(queue.name, queue.items, next);
+  };
+
   return (
-    <div className={embedded ? "pb-40" : "min-h-screen pb-40"} style={{ background: embedded ? "transparent" : "#03030a", color: "#fff" }}>
+    <div className={embedded ? "pb-52" : "min-h-screen pb-52"} style={{ background: embedded ? "transparent" : "#03030a", color: "#fff" }}>
       {embedded ? (
         <div className="flex items-center gap-2 px-1">
           <Headphones className="w-4 h-4" style={{ color: GOLD }} />
@@ -212,6 +338,89 @@ export default function AudioAcademyPage({ embedded = false }: { embedded?: bool
           </button>
         </section>
 
+        {/* PLAYLISTS */}
+        <section className="rounded-2xl overflow-hidden" style={{ border: `1px solid ${GOLD}33` }}>
+          <button onClick={() => setShowPlaylists((v) => !v)} className="w-full text-left p-4">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-bold flex items-center gap-2" style={{ color: GOLD }}>
+                <ListMusic className="w-4 h-4" /> Minhas playlists
+              </span>
+              <span className="text-[11px] font-mono" style={{ color: DIM }}>{playlists.length}</span>
+            </div>
+            <p className="text-xs mt-1" style={{ color: DIM }}>
+              Monte sequências de rituais na ordem que quiser e pule entre eles com um clique.
+            </p>
+          </button>
+
+          {showPlaylists && (
+            <div className="px-4 pb-4 space-y-3">
+              <div className="flex gap-2">
+                <input
+                  value={newPlaylistName}
+                  onChange={(e) => setNewPlaylistName(e.target.value)}
+                  placeholder="Nome da playlist"
+                  className="flex-1 px-3 py-2 rounded-lg text-xs bg-transparent"
+                  style={{ border: "1px solid rgba(255,255,255,0.12)", color: "#fff" }}
+                />
+                <button
+                  onClick={handleCreate}
+                  className="px-3 py-2 rounded-lg text-xs font-bold inline-flex items-center gap-1"
+                  style={{ background: GOLD, color: "#03030a" }}
+                >
+                  <Plus className="w-3.5 h-3.5" /> Criar
+                </button>
+              </div>
+
+              {playlists.length === 0 && (
+                <p className="text-[11px]" style={{ color: DIM }}>Nenhuma playlist ainda.</p>
+              )}
+
+              {playlists.map((p) => {
+                const open = p.id === activePlaylistId;
+                return (
+                  <div key={p.id} className="rounded-xl p-3" style={{ border: `1px solid ${open ? `${GOLD}55` : "rgba(255,255,255,0.08)"}`, background: "rgba(255,255,255,0.03)" }}>
+                    <div className="flex items-center gap-2">
+                      <button onClick={() => setActivePlaylistId(open ? null : p.id)} className="min-w-0 flex-1 text-left">
+                        <p className="text-sm font-semibold truncate">{p.name}</p>
+                        <p className="text-[11px]" style={{ color: DIM }}>
+                          {p.items.length} rituais · {fmtMin(playlistDuration(p))}
+                        </p>
+                      </button>
+                      <button
+                        onClick={() => p.items.length ? playQueueIndex(p.name, p.items, 0) : toast.message("Playlist vazia.")}
+                        className="px-3 py-1.5 rounded-lg text-[11px] font-bold"
+                        style={{ background: GOLD, color: "#03030a" }}
+                      >
+                        Tocar
+                      </button>
+                      <button onClick={() => { setPlaylists(deletePlaylist(p.id)); if (activePlaylistId === p.id) setActivePlaylistId(null); }} aria-label={`Excluir ${p.name}`}>
+                        <Trash2 className="w-4 h-4" style={{ color: "rgba(255,255,255,0.35)" }} />
+                      </button>
+                    </div>
+
+                    {open && p.items.length > 0 && (
+                      <div className="mt-2 space-y-1">
+                        {p.items.map((it, i) => (
+                          <div key={it.episodeId} className="flex items-center gap-2 text-[11px] py-1">
+                            <span className="font-mono" style={{ color: DIM }}>{i + 1}.</span>
+                            <button onClick={() => playQueueIndex(p.name, p.items, i)} className="min-w-0 flex-1 truncate text-left">
+                              {it.title}
+                            </button>
+                            <span className="font-mono shrink-0" style={{ color: DIM }}>{fmtMin(it.durationSeconds)}</span>
+                            <button onClick={() => setPlaylists(moveItem(p.id, i, -1))} aria-label="Subir"><ChevronUp className="w-3.5 h-3.5" style={{ color: DIM }} /></button>
+                            <button onClick={() => setPlaylists(moveItem(p.id, i, 1))} aria-label="Descer"><ChevronDown className="w-3.5 h-3.5" style={{ color: DIM }} /></button>
+                            <button onClick={() => setPlaylists(removeFromPlaylist(p.id, it.episodeId))} aria-label="Remover"><Trash2 className="w-3.5 h-3.5" style={{ color: "rgba(255,255,255,0.3)" }} /></button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </section>
+
         {/* SOS + TOTAIS */}
         <section className="rounded-2xl p-4" style={{ border: "1px solid rgba(239,68,68,0.3)", background: "linear-gradient(135deg, rgba(239,68,68,0.08), transparent)" }}>
           <div className="flex items-center justify-between gap-3">
@@ -231,7 +440,7 @@ export default function AudioAcademyPage({ embedded = false }: { embedded?: bool
           </div>
         </section>
 
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-3 gap-2">
           <div className="rounded-xl p-3" style={{ border: `1px solid ${GOLD}22`, background: "rgba(255,255,255,0.03)" }}>
             <p className="text-[10px] uppercase tracking-[1.5px]" style={{ color: DIM }}>Biblioteca</p>
             <p className="text-sm font-black" style={{ color: GOLD }}>{episodes.length} áudios</p>
@@ -239,6 +448,12 @@ export default function AudioAcademyPage({ embedded = false }: { embedded?: bool
           <div className="rounded-xl p-3" style={{ border: `1px solid ${GOLD}22`, background: "rgba(255,255,255,0.03)" }}>
             <p className="text-[10px] uppercase tracking-[1.5px]" style={{ color: DIM }}>Duração total</p>
             <p className="text-sm font-black" style={{ color: GOLD }}>{totalHours}h</p>
+          </div>
+          <div className="rounded-xl p-3" style={{ border: `1px solid ${GOLD}22`, background: "rgba(255,255,255,0.03)" }}>
+            <p className="text-[10px] uppercase tracking-[1.5px] flex items-center gap-1" style={{ color: DIM }}>
+              <WifiOff className="w-3 h-3" /> Offline
+            </p>
+            <p className="text-sm font-black" style={{ color: GOLD }}>{offlineIds.length} · {fmtBytes(offlineBytes)}</p>
           </div>
         </div>
 
@@ -274,6 +489,8 @@ export default function AudioAcademyPage({ embedded = false }: { embedded?: bool
                   <div className="px-4 pb-4 space-y-2">
                     {list.map((ep) => {
                       const p = progress[ep.id];
+                      const isOffline = offlineIds.includes(ep.id);
+                      const dl = downloading[ep.id];
                       return (
                         <div
                           key={ep.id}
@@ -284,9 +501,9 @@ export default function AudioAcademyPage({ embedded = false }: { embedded?: bool
                             onClick={() => playEpisode(ep)}
                             aria-label={`Tocar ${ep.title}`}
                             className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
-                            style={{ background: ep.audio_url ? meta.color : "rgba(255,255,255,0.08)", color: ep.audio_url ? "#03030a" : DIM }}
+                            style={{ background: ep.audio_url || isOffline ? meta.color : "rgba(255,255,255,0.08)", color: ep.audio_url || isOffline ? "#03030a" : DIM }}
                           >
-                            {ep.audio_url ? <Play className="w-4 h-4 ml-0.5" /> : <Lock className="w-4 h-4" />}
+                            {ep.audio_url || isOffline ? <Play className="w-4 h-4 ml-0.5" /> : <Lock className="w-4 h-4" />}
                           </button>
                           <div className="min-w-0 flex-1">
                             <p className="text-sm font-semibold truncate">
@@ -296,12 +513,38 @@ export default function AudioAcademyPage({ embedded = false }: { embedded?: bool
                               {fmtDur(ep.duration_seconds)}
                               {ep.scientific_reference ? ` · ${ep.scientific_reference}` : ""}
                               {!ep.audio_url ? " · em breve" : ""}
+                              {isOffline ? " · offline" : ""}
                             </p>
+                            {dl != null && (
+                              <div className="h-[3px] rounded-full mt-1.5" style={{ background: "rgba(255,255,255,0.08)" }}>
+                                <div className="h-full rounded-full transition-all" style={{ width: `${dl}%`, background: meta.color }} />
+                              </div>
+                            )}
                             {ep.description && (
                               <p className="text-[11px] mt-1" style={{ color: "rgba(255,255,255,0.45)" }}>{ep.description}</p>
                             )}
                           </div>
+
                           {p?.completed && <CheckCircle2 className="w-4 h-4 shrink-0" style={{ color: meta.color }} />}
+
+                          <button onClick={() => handleAdd(ep)} aria-label={`Adicionar ${ep.title} à playlist`} className="shrink-0">
+                            <ListPlus className="w-4 h-4" style={{ color: "rgba(255,255,255,0.45)" }} />
+                          </button>
+
+                          {ep.audio_url && (
+                            dl != null ? (
+                              <span className="text-[10px] font-mono shrink-0" style={{ color: meta.color }}>{dl}%</span>
+                            ) : isOffline ? (
+                              <button onClick={() => dropDownload(ep)} aria-label={`Remover download de ${ep.title}`} className="shrink-0">
+                                <Trash2 className="w-4 h-4" style={{ color: "rgba(255,255,255,0.4)" }} />
+                              </button>
+                            ) : (
+                              <button onClick={() => startDownload(ep)} aria-label={`Baixar ${ep.title}`} className="shrink-0">
+                                <Download className="w-4 h-4" style={{ color: GOLD }} />
+                              </button>
+                            )
+                          )}
+
                           {s === "ritual" && (
                             <button
                               onClick={() => completeRitual(ep)}
@@ -325,12 +568,16 @@ export default function AudioAcademyPage({ embedded = false }: { embedded?: bool
       {track && (
         <AudioPlayerBar
           track={track}
-          onClose={() => setTrack(null)}
+          queueLabel={queue ? `${queue.name} · ${queue.index + 1}/${queue.items.length}` : undefined}
+          onNext={queue && queue.index < queue.items.length - 1 ? () => goQueue(1) : undefined}
+          onPrev={queue && queue.index > 0 ? () => goQueue(-1) : undefined}
+          onClose={() => { setTrack(null); setQueue(null); }}
           onProgress={(sec, dur) => {
             if (track.id !== "briefing" && Math.floor(sec) % 10 === 0) saveProgress(track.id, sec, dur);
           }}
           onEnded={() => {
             if (track.id !== "briefing") saveProgress(track.id, 99999, 100000);
+            if (queue && queue.index < queue.items.length - 1) goQueue(1);
           }}
         />
       )}

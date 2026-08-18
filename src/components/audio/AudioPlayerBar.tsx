@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Play, Pause, RotateCcw, RotateCw, X, Headphones, Waves, Repeat, Download, Flag, Loader2, Trash2 } from "lucide-react";
+import { Play, Pause, RotateCcw, RotateCw, X, Headphones, Waves, Repeat, Download, Flag, Loader2, Trash2, SkipBack, SkipForward } from "lucide-react";
 import { toast } from "sonner";
 import { extractClip, downloadBlob } from "@/lib/audioClip";
 import {
@@ -41,11 +41,17 @@ export default function AudioPlayerBar({
   onClose,
   onProgress,
   onEnded,
+  onNext,
+  onPrev,
+  queueLabel,
 }: {
   track: PlayerTrack;
   onClose: () => void;
   onProgress?: (seconds: number, duration: number) => void;
   onEnded?: () => void;
+  onNext?: () => void;
+  onPrev?: () => void;
+  queueLabel?: string;
 }) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const engineRef = useRef<MceSoundEngine | null>(null);
@@ -180,15 +186,23 @@ export default function AudioPlayerBar({
     setExporting(false);
   };
 
+  // Seção atual (para exibir na tela bloqueada)
+  const currentSectionIndex = useMemo(() => {
+    if (activeSection != null) return activeSection;
+    return sections.findIndex((s) => time >= s.start && time < s.end);
+  }, [activeSection, sections, time]);
+  const currentSectionLabel =
+    currentSectionIndex >= 0 && sections[currentSectionIndex] ? sections[currentSectionIndex].label : null;
+
   // ---- Media Session: segundo plano + controles na tela bloqueada ----
   useEffect(() => {
     if (!("mediaSession" in navigator)) return;
     const ms = navigator.mediaSession;
     try {
       ms.metadata = new MediaMetadata({
-        title: track.title,
-        artist: "Coach Diogo · MCE Audio Academy",
-        album: "nutriON",
+        title: currentSectionLabel ? `${track.title} — ${currentSectionLabel}` : track.title,
+        artist: queueLabel ? `Coach Diogo · ${queueLabel}` : "Coach Diogo · MCE Audio Academy",
+        album: track.subtitle || "nutriON",
         artwork: [
           { src: "/favicon.svg", sizes: "512x512", type: "image/svg+xml" },
           { src: "/favicon.svg", sizes: "256x256", type: "image/svg+xml" },
@@ -198,7 +212,11 @@ export default function AudioPlayerBar({
     } catch {
       /* metadata opcional */
     }
+  }, [track.title, track.subtitle, currentSectionLabel, queueLabel]);
 
+  useEffect(() => {
+    if (!("mediaSession" in navigator)) return;
+    const ms = navigator.mediaSession;
     const el = () => audioRef.current;
     const set = (action: MediaSessionAction, handler: MediaSessionActionHandler | null) => {
       try {
@@ -208,17 +226,20 @@ export default function AudioPlayerBar({
       }
     };
 
+    // Avança/volta 15s preservando a seção selecionada e o loop ativo
+    const nudge = (delta: number) => {
+      const a = el();
+      if (!a) return;
+      const target = Math.min(Math.max(0, a.currentTime + delta), a.duration || Infinity);
+      a.currentTime = target;
+      a.play().catch(() => {});
+    };
+
     set("play", () => el()?.play().catch(() => {}));
     set("pause", () => el()?.pause());
     set("stop", () => el()?.pause());
-    set("seekbackward", (d) => {
-      const a = el();
-      if (a) a.currentTime = Math.max(0, a.currentTime - (d?.seekOffset ?? 15));
-    });
-    set("seekforward", (d) => {
-      const a = el();
-      if (a) a.currentTime = Math.min(a.duration || Infinity, a.currentTime + (d?.seekOffset ?? 15));
-    });
+    set("seekbackward", (d) => nudge(-(d?.seekOffset ?? 15)));
+    set("seekforward", (d) => nudge(d?.seekOffset ?? 15));
     set("seekto", (d) => {
       const a = el();
       if (!a || d?.seekTime == null) return;
@@ -226,13 +247,15 @@ export default function AudioPlayerBar({
       else a.currentTime = d.seekTime;
     });
     set("previoustrack", () => {
+      if (onPrev) return onPrev();
       const a = el();
       if (!a) return;
-      const s = activeSection != null ? sections[activeSection] : null;
+      const s = currentSectionIndex >= 0 ? sections[currentSectionIndex] : null;
       a.currentTime = s ? s.start : Math.max(0, a.currentTime - 30);
       a.play().catch(() => {});
     });
     set("nexttrack", () => {
+      if (onNext) return onNext();
       const a = el();
       if (!a) return;
       const i = sections.findIndex((s) => a.currentTime < s.start);
@@ -244,7 +267,8 @@ export default function AudioPlayerBar({
       (["play", "pause", "stop", "seekbackward", "seekforward", "seekto", "previoustrack", "nexttrack"] as MediaSessionAction[])
         .forEach((a) => set(a, null));
     };
-  }, [track.title, sections, activeSection]);
+  }, [sections, currentSectionIndex, onNext, onPrev]);
+
 
   // Estado de reprodução + posição para a tela bloqueada
   useEffect(() => {
@@ -364,8 +388,13 @@ export default function AudioPlayerBar({
         <div className="flex items-center justify-between mb-2">
           <div className="min-w-0">
             <p className="text-sm font-bold truncate" style={{ color: GOLD }}>{track.title}</p>
-            <p className="text-[11px] truncate" style={{ color: "rgba(255,255,255,0.5)" }}>{track.subtitle}</p>
+            <p className="text-[11px] truncate" style={{ color: "rgba(255,255,255,0.5)" }}>
+              {queueLabel ? `${queueLabel} · ` : ""}
+              {track.subtitle}
+              {currentSectionLabel ? ` · ${currentSectionLabel}` : ""}
+            </p>
           </div>
+
           <div className="flex items-center gap-1">
             <button
               onClick={() => setShowModes((v) => !v)}
@@ -612,7 +641,12 @@ export default function AudioPlayerBar({
 
         <div className="flex items-center justify-between mt-1">
           <span className="text-[11px] font-mono" style={{ color: "rgba(255,255,255,0.45)" }}>{fmt(time)}</span>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
+            {onPrev && (
+              <button onClick={onPrev} aria-label="Ritual anterior" style={{ color: GOLD }}>
+                <SkipBack className="w-5 h-5" />
+              </button>
+            )}
             <button onClick={() => skip(-15)} aria-label="Voltar 15s" style={{ color: "rgba(255,255,255,0.8)" }}>
               <RotateCcw className="w-5 h-5" />
             </button>
@@ -627,7 +661,13 @@ export default function AudioPlayerBar({
             <button onClick={() => skip(15)} aria-label="Avançar 15s" style={{ color: "rgba(255,255,255,0.8)" }}>
               <RotateCw className="w-5 h-5" />
             </button>
+            {onNext && (
+              <button onClick={onNext} aria-label="Próximo ritual" style={{ color: GOLD }}>
+                <SkipForward className="w-5 h-5" />
+              </button>
+            )}
           </div>
+
           <span className="text-[11px] font-mono" style={{ color: "rgba(255,255,255,0.45)" }}>{fmt(duration)}</span>
         </div>
       </div>
