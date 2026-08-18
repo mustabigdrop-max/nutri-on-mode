@@ -9,7 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { Plus, MessageCircle, Pencil, StickyNote, Loader2, Trash2, ChevronDown } from "lucide-react";
+import { Plus, MessageCircle, Pencil, StickyNote, Loader2, Trash2, ChevronDown, LayoutList, Kanban } from "lucide-react";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
   DropdownMenuSeparator, DropdownMenuTrigger,
@@ -18,6 +18,7 @@ import {
   GYM_STATUSES, GYM_TYPES, Gym, GymStatus, gymPhone, openWhatsApp,
   statusMeta, WA_TEMPLATES, buildWhatsAppMessage, templateForStatus,
 } from "@/lib/gymBusiness";
+import GymKanbanBoard from "./GymKanbanBoard";
 
 const emptyForm = {
   name: "", neighborhood: "", address: "", owner_name: "", owner_phone: "",
@@ -38,6 +39,7 @@ export default function BusinessGymsTab({ onChanged }: { onChanged?: () => void 
   const [fHood, setFHood] = useState<string>("all");
   const [noteFor, setNoteFor] = useState<string | null>(null);
   const [noteText, setNoteText] = useState("");
+  const [view, setView] = useState<"lista" | "kanban">("lista");
 
   const load = useCallback(async () => {
     const { data, error } = await supabase
@@ -182,6 +184,16 @@ export default function BusinessGymsTab({ onChanged }: { onChanged?: () => void 
             {hoods.map((h) => <SelectItem key={h} value={h}>{h}</SelectItem>)}
           </SelectContent>
         </Select>
+        <div className="flex ml-auto">
+          <Button size="sm" variant={view === "lista" ? "default" : "outline"}
+            className="gap-1 rounded-r-none" onClick={() => setView("lista")}>
+            <LayoutList className="w-3.5 h-3.5" /> Lista
+          </Button>
+          <Button size="sm" variant={view === "kanban" ? "default" : "outline"}
+            className="gap-1 rounded-l-none" onClick={() => setView("kanban")}>
+            <Kanban className="w-3.5 h-3.5" /> Kanban
+          </Button>
+        </div>
       </div>
 
       {showForm && (
@@ -228,7 +240,16 @@ export default function BusinessGymsTab({ onChanged }: { onChanged?: () => void 
         </p>
       )}
 
-      <div className="space-y-3">
+      {gyms && view === "kanban" && filtered.length > 0 && (
+        <GymKanbanBoard
+          gyms={filtered}
+          onMove={(g, s) => moveStatus(g, s)}
+          onEdit={openEdit}
+          onWhatsApp={(g) => whatsapp(g)}
+        />
+      )}
+
+      <div className={view === "kanban" ? "hidden" : "space-y-3"}>
         {filtered.map((g) => {
           const meta = statusMeta(g.status);
           return (
