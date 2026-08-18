@@ -95,6 +95,86 @@ export default function AudioPlayerBar({
     if (i >= 0) playSection(i);
   };
 
+  // ---- Velocidade ----
+  const [rate, setRate] = useState<number>(() => Number(localStorage.getItem(LS_RATE)) || 1);
+  useEffect(() => {
+    localStorage.setItem(LS_RATE, String(rate));
+    if (audioRef.current) audioRef.current.playbackRate = rate;
+  }, [rate, track.id]);
+
+  // ---- Repetição A-B ----
+  const [pointA, setPointA] = useState<number | null>(null);
+  const [pointB, setPointB] = useState<number | null>(null);
+  const abActive = pointA != null && pointB != null && pointB > pointA;
+
+  // ---- Marcadores manuais ----
+  const markerKey = `${LS_MARKS}:${track.id}`;
+  const [markers, setMarkers] = useState<{ label: string; at: number }[]>([]);
+  useEffect(() => {
+    try {
+      setMarkers(JSON.parse(localStorage.getItem(markerKey) || "[]"));
+    } catch {
+      setMarkers([]);
+    }
+    setPointA(null);
+    setPointB(null);
+  }, [markerKey]);
+
+  const saveMarkers = (list: { label: string; at: number }[]) => {
+    setMarkers(list);
+    localStorage.setItem(markerKey, JSON.stringify(list));
+  };
+
+  const addMarker = () => {
+    const at = audioRef.current?.currentTime ?? time;
+    const list = [...markers, { label: `M${markers.length + 1}`, at }].sort((a, b) => a.at - b.at);
+    saveMarkers(list.map((m, i) => ({ ...m, label: `M${i + 1}` })));
+    toast.success(`Marcador em ${fmt(at)}`);
+  };
+
+  const removeMarker = (idx: number) => {
+    const list = markers.filter((_, i) => i !== idx).map((m, i) => ({ ...m, label: `M${i + 1}` }));
+    saveMarkers(list);
+  };
+
+  const seekTo = (t: number) => {
+    const a = audioRef.current;
+    if (!a) return;
+    a.currentTime = Math.max(0, t);
+    a.play().catch(() => {});
+  };
+
+  // ---- Exportar trecho ----
+  const [exporting, setExporting] = useState(false);
+  const exportRange = async () => {
+    let start: number | null = null;
+    let end: number | null = null;
+    if (abActive) {
+      start = pointA!;
+      end = pointB!;
+    } else {
+      const i = activeSection ?? sections.findIndex((s) => time >= s.start && time < s.end);
+      if (i >= 0 && sections[i]) {
+        start = sections[i].start;
+        end = sections[i].end;
+      }
+    }
+    if (start == null || end == null) {
+      toast.error("Selecione uma seção ou marque A-B primeiro.");
+      return;
+    }
+    setExporting(true);
+    try {
+      const blob = await extractClip(track.src, start, end);
+      const safe = track.title.replace(/[^\w\-]+/g, "_").slice(0, 40);
+      downloadBlob(blob, `${safe}_${Math.round(start)}s-${Math.round(end)}s.wav`);
+      toast.success("Trecho exportado.");
+    } catch (e: any) {
+      toast.error(e?.message || "Falha ao exportar o trecho.");
+    }
+    setExporting(false);
+  };
+
   useEffect(() => {
     if (!("mediaSession" in navigator)) return;
     navigator.mediaSession.metadata = new MediaMetadata({
