@@ -41,11 +41,17 @@ export default function AudioPlayerBar({
   onClose,
   onProgress,
   onEnded,
+  onNext,
+  onPrev,
+  queueLabel,
 }: {
   track: PlayerTrack;
   onClose: () => void;
   onProgress?: (seconds: number, duration: number) => void;
   onEnded?: () => void;
+  onNext?: () => void;
+  onPrev?: () => void;
+  queueLabel?: string;
 }) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const engineRef = useRef<MceSoundEngine | null>(null);
