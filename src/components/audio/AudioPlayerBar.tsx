@@ -636,7 +636,12 @@ export default function AudioPlayerBar({
 
         <div className="flex items-center justify-between mt-1">
           <span className="text-[11px] font-mono" style={{ color: "rgba(255,255,255,0.45)" }}>{fmt(time)}</span>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
+            {onPrev && (
+              <button onClick={onPrev} aria-label="Ritual anterior" style={{ color: GOLD }}>
+                <SkipBack className="w-5 h-5" />
+              </button>
+            )}
             <button onClick={() => skip(-15)} aria-label="Voltar 15s" style={{ color: "rgba(255,255,255,0.8)" }}>
               <RotateCcw className="w-5 h-5" />
             </button>
@@ -651,7 +656,13 @@ export default function AudioPlayerBar({
             <button onClick={() => skip(15)} aria-label="Avançar 15s" style={{ color: "rgba(255,255,255,0.8)" }}>
               <RotateCw className="w-5 h-5" />
             </button>
+            {onNext && (
+              <button onClick={onNext} aria-label="Próximo ritual" style={{ color: GOLD }}>
+                <SkipForward className="w-5 h-5" />
+              </button>
+            )}
           </div>
+
           <span className="text-[11px] font-mono" style={{ color: "rgba(255,255,255,0.45)" }}>{fmt(duration)}</span>
         </div>
       </div>
