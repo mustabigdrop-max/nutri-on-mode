@@ -80,6 +80,29 @@ export default function GymKanbanBoard({ gyms, onMove, onBulkMove, onEdit, onWha
 
   return (
     <div className="overflow-x-auto pb-2">
+      {selectedGyms.length > 0 && (
+        <div className="sticky top-0 z-10 mb-2 flex flex-wrap items-center gap-2 rounded-lg border border-primary/30 bg-card/90 px-3 py-2 backdrop-blur">
+          <span className="text-xs font-semibold text-primary">
+            {selectedGyms.length} selecionada{selectedGyms.length > 1 ? "s" : ""}
+          </span>
+          <span className="text-[11px] text-muted-foreground">Mover para:</span>
+          {KANBAN_COLUMNS.map((s) => {
+            const m = statusMeta(s);
+            return (
+              <Button key={s} size="sm" variant="outline" className="h-7 text-[11px]"
+                style={{ borderColor: `${m.color}55`, color: m.color }}
+                onClick={() => bulkMove(s)}>
+                {m.dot} {m.label}
+              </Button>
+            );
+          })}
+          <Button size="sm" variant="ghost" className="h-7 text-[11px] ml-auto"
+            onClick={() => setSelected([])}>
+            <X className="w-3 h-3 mr-1" /> Limpar
+          </Button>
+        </div>
+      )}
+
       <div className="flex gap-3 min-w-max">
         {KANBAN_COLUMNS.map((status) => {
           const meta = statusMeta(status);
