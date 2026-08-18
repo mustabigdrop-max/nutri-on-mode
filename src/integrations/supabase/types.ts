@@ -2241,6 +2241,44 @@ export type Database = {
         }
         Relationships: []
       }
+      business_tasks: {
+        Row: {
+          coach_user_id: string
+          completed: boolean
+          created_at: string
+          description: string
+          due_date: string | null
+          gym_id: string | null
+          id: string
+        }
+        Insert: {
+          coach_user_id: string
+          completed?: boolean
+          created_at?: string
+          description: string
+          due_date?: string | null
+          gym_id?: string | null
+          id?: string
+        }
+        Update: {
+          coach_user_id?: string
+          completed?: boolean
+          created_at?: string
+          description?: string
+          due_date?: string | null
+          gym_id?: string | null
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_tasks_gym_id_fkey"
+            columns: ["gym_id"]
+            isOneToOne: false
+            referencedRelation: "partner_gyms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cardio_sessions: {
         Row: {
           calorias: number | null
@@ -5598,6 +5636,106 @@ export type Database = {
         }
         Relationships: []
       }
+      gym_challenges: {
+        Row: {
+          coach_user_id: string
+          commission_percent: number
+          created_at: string
+          end_date: string
+          gym_id: string | null
+          id: string
+          name: string
+          premium_count: number
+          qr_code_url: string | null
+          revenue_total: number
+          slug: string | null
+          start_date: string
+          status: string
+          total_participants: number
+          updated_at: string
+          vip_count: number
+        }
+        Insert: {
+          coach_user_id: string
+          commission_percent?: number
+          created_at?: string
+          end_date: string
+          gym_id?: string | null
+          id?: string
+          name: string
+          premium_count?: number
+          qr_code_url?: string | null
+          revenue_total?: number
+          slug?: string | null
+          start_date: string
+          status?: string
+          total_participants?: number
+          updated_at?: string
+          vip_count?: number
+        }
+        Update: {
+          coach_user_id?: string
+          commission_percent?: number
+          created_at?: string
+          end_date?: string
+          gym_id?: string | null
+          id?: string
+          name?: string
+          premium_count?: number
+          qr_code_url?: string | null
+          revenue_total?: number
+          slug?: string | null
+          start_date?: string
+          status?: string
+          total_participants?: number
+          updated_at?: string
+          vip_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gym_challenges_gym_id_fkey"
+            columns: ["gym_id"]
+            isOneToOne: false
+            referencedRelation: "partner_gyms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gym_interactions: {
+        Row: {
+          coach_user_id: string
+          created_at: string
+          description: string | null
+          gym_id: string
+          id: string
+          type: string
+        }
+        Insert: {
+          coach_user_id: string
+          created_at?: string
+          description?: string | null
+          gym_id: string
+          id?: string
+          type: string
+        }
+        Update: {
+          coach_user_id?: string
+          created_at?: string
+          description?: string | null
+          gym_id?: string
+          id?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gym_interactions_gym_id_fkey"
+            columns: ["gym_id"]
+            isOneToOne: false
+            referencedRelation: "partner_gyms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lab_conversations: {
         Row: {
           created_at: string | null
@@ -7726,45 +7864,81 @@ export type Database = {
       partner_gyms: {
         Row: {
           active: boolean
+          address: string | null
           challenge_slug: string | null
           city: string | null
+          closed_at: string | null
           coach_profile_id: string | null
           coach_user_id: string
+          commission_percent: number
           contact_name: string | null
           contact_phone: string | null
+          contacted_at: string | null
           created_at: string
+          estimated_members: number | null
+          gym_type: string | null
           id: string
+          instagram: string | null
           name: string
+          neighborhood: string | null
           notes: string | null
+          owner_name: string | null
+          owner_phone: string | null
+          status: string
           updated_at: string
+          visited_at: string | null
         }
         Insert: {
           active?: boolean
+          address?: string | null
           challenge_slug?: string | null
           city?: string | null
+          closed_at?: string | null
           coach_profile_id?: string | null
           coach_user_id: string
+          commission_percent?: number
           contact_name?: string | null
           contact_phone?: string | null
+          contacted_at?: string | null
           created_at?: string
+          estimated_members?: number | null
+          gym_type?: string | null
           id?: string
+          instagram?: string | null
           name: string
+          neighborhood?: string | null
           notes?: string | null
+          owner_name?: string | null
+          owner_phone?: string | null
+          status?: string
           updated_at?: string
+          visited_at?: string | null
         }
         Update: {
           active?: boolean
+          address?: string | null
           challenge_slug?: string | null
           city?: string | null
+          closed_at?: string | null
           coach_profile_id?: string | null
           coach_user_id?: string
+          commission_percent?: number
           contact_name?: string | null
           contact_phone?: string | null
+          contacted_at?: string | null
           created_at?: string
+          estimated_members?: number | null
+          gym_type?: string | null
           id?: string
+          instagram?: string | null
           name?: string
+          neighborhood?: string | null
           notes?: string | null
+          owner_name?: string | null
+          owner_phone?: string | null
+          status?: string
           updated_at?: string
+          visited_at?: string | null
         }
         Relationships: []
       }
