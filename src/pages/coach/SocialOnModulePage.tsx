@@ -947,6 +947,27 @@ const SocialOnModulePage = () => {
           <TabsContent value="ideias" className="mt-4">
             <IdeasNowPanel ctx={aiCtx} onUseIdea={(t) => { setTopic(t); setTab("criar"); }} />
           </TabsContent>
+          <TabsContent value="post_pronto" className="mt-4">
+            <PostProntoPanel ctx={aiCtx} handle={ig.account?.username || handle} />
+          </TabsContent>
+          <TabsContent value="brand_score" className="mt-4">
+            <BrandScorePanel
+              handle={ig.account?.username || handle}
+              onGenerate={(p) => { setTopic(p); setTab("criar"); }}
+            />
+          </TabsContent>
+          <TabsContent value="viral_lab" className="mt-4">
+            <ViralLabPanel ctx={aiCtx} />
+          </TabsContent>
+          <TabsContent value="dna" className="mt-4">
+            <ContentDnaPanel ctx={aiCtx} />
+          </TabsContent>
+          <TabsContent value="autoridade" className="mt-4">
+            <AuthorityPanel ctx={aiCtx} onOpenScience={() => setTab("ciencia")} />
+          </TabsContent>
+          <TabsContent value="ciencia" className="mt-4">
+            <ScienceBankPanel ctx={aiCtx} />
+          </TabsContent>
         </Tabs>
       </main>
     </div>
