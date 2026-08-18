@@ -355,6 +355,112 @@ export default function AudioPlayerBar({
           </div>
         )}
 
+        {/* Velocidade · A-B · Exportar */}
+        <div className="flex flex-wrap items-center gap-1.5 mb-2">
+          <span className="text-[10px] font-bold tracking-wider" style={{ color: "rgba(255,255,255,0.4)" }}>
+            VEL
+          </span>
+          {RATES.map((r) => (
+            <button
+              key={r}
+              onClick={() => setRate(r)}
+              className="px-2 py-1 rounded-lg text-[10px] font-bold"
+              style={{
+                border: `1px solid ${rate === r ? `${GOLD}88` : "rgba(255,255,255,0.10)"}`,
+                background: rate === r ? `${GOLD}1A` : "transparent",
+                color: rate === r ? GOLD : "rgba(255,255,255,0.6)",
+              }}
+            >
+              {String(r).replace(".", ",")}x
+            </button>
+          ))}
+
+          <span className="w-px h-4 mx-1" style={{ background: "rgba(255,255,255,0.12)" }} />
+
+          <button
+            onClick={() => {
+              const t = audioRef.current?.currentTime ?? time;
+              setPointA(t);
+              if (pointB != null && pointB <= t) setPointB(null);
+            }}
+            className="px-2 py-1 rounded-lg text-[10px] font-bold"
+            style={{
+              border: `1px solid ${pointA != null ? `${GOLD}88` : "rgba(255,255,255,0.10)"}`,
+              color: pointA != null ? GOLD : "rgba(255,255,255,0.6)",
+            }}
+          >
+            A {pointA != null ? fmt(pointA) : ""}
+          </button>
+          <button
+            onClick={() => {
+              const t = audioRef.current?.currentTime ?? time;
+              if (pointA == null || t <= pointA) {
+                toast.error("Marque o ponto A antes e avance o áudio.");
+                return;
+              }
+              setPointB(t);
+              setLoopSection(false);
+            }}
+            className="px-2 py-1 rounded-lg text-[10px] font-bold"
+            style={{
+              border: `1px solid ${pointB != null ? `${GOLD}88` : "rgba(255,255,255,0.10)"}`,
+              color: pointB != null ? GOLD : "rgba(255,255,255,0.6)",
+            }}
+          >
+            B {pointB != null ? fmt(pointB) : ""}
+          </button>
+          {(pointA != null || pointB != null) && (
+            <button
+              onClick={() => { setPointA(null); setPointB(null); }}
+              className="px-2 py-1 rounded-lg text-[10px] font-bold"
+              style={{ border: "1px solid rgba(255,255,255,0.10)", color: "rgba(255,255,255,0.55)" }}
+            >
+              limpar A-B
+            </button>
+          )}
+          {abActive && (
+            <span className="text-[10px] font-bold px-2 py-1 rounded-full" style={{ background: GOLD, color: "#03030a" }}>
+              LOOP A-B
+            </span>
+          )}
+
+          <button
+            onClick={addMarker}
+            className="ml-auto px-2 py-1 rounded-lg text-[10px] font-bold flex items-center gap-1"
+            style={{ border: "1px solid rgba(255,255,255,0.14)", color: "rgba(255,255,255,0.75)" }}
+          >
+            <Flag className="w-3 h-3" /> Marcar
+          </button>
+          <button
+            onClick={exportRange}
+            disabled={exporting}
+            className="px-2 py-1 rounded-lg text-[10px] font-bold flex items-center gap-1 disabled:opacity-50"
+            style={{ border: `1px solid ${GOLD}66`, color: GOLD }}
+          >
+            {exporting ? <Loader2 className="w-3 h-3 animate-spin" /> : <Download className="w-3 h-3" />}
+            {exporting ? "Exportando..." : "Baixar trecho"}
+          </button>
+        </div>
+
+        {markers.length > 0 && (
+          <div className="flex gap-1.5 overflow-x-auto pb-1 mb-2">
+            {markers.map((m, i) => (
+              <span
+                key={`${m.label}-${m.at}`}
+                className="flex items-center gap-1 px-2 py-1 rounded-lg whitespace-nowrap text-[10px] font-semibold"
+                style={{ border: "1px solid rgba(255,255,255,0.10)", color: "rgba(255,255,255,0.7)" }}
+              >
+                <button onClick={() => seekTo(m.at)} className="flex items-center gap-1">
+                  <Flag className="w-3 h-3" style={{ color: GOLD }} /> {m.label} · {fmt(m.at)}
+                </button>
+                <button onClick={() => removeMarker(i)} aria-label={`Remover ${m.label}`}>
+                  <Trash2 className="w-3 h-3" style={{ color: "rgba(255,255,255,0.35)" }} />
+                </button>
+              </span>
+            ))}
+          </div>
+        )}
+
         {sections.length > 0 && (
           <div className="mb-2">
             <div className="flex items-center justify-between mb-1.5">
