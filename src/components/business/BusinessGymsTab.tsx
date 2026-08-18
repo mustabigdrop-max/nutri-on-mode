@@ -9,10 +9,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { Plus, MessageCircle, Pencil, StickyNote, Loader2, Trash2 } from "lucide-react";
+import { Plus, MessageCircle, Pencil, StickyNote, Loader2, Trash2, ChevronDown } from "lucide-react";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
+  DropdownMenuSeparator, DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   GYM_STATUSES, GYM_TYPES, Gym, GymStatus, gymPhone, openWhatsApp,
-  outreachMessage, statusMeta,
+  statusMeta, WA_TEMPLATES, buildWhatsAppMessage, templateForStatus,
 } from "@/lib/gymBusiness";
 
 const emptyForm = {
@@ -129,11 +133,13 @@ export default function BusinessGymsTab({ onChanged }: { onChanged?: () => void 
     onChanged?.();
   };
 
-  const whatsapp = async (gym: Gym) => {
+  const whatsapp = async (gym: Gym, templateId?: string) => {
     const phone = gymPhone(gym);
     if (!phone) return toast.error("Cadastre um telefone para essa academia.");
-    openWhatsApp(phone, outreachMessage(gym));
-    await logInteraction(gym.id, "whatsapp", "Mensagem de prospecção enviada via WhatsApp");
+    const { tpl, text } = buildWhatsAppMessage(gym, templateId);
+    openWhatsApp(phone, text);
+    toast.success(`WhatsApp aberto · ${tpl.label}`);
+    await logInteraction(gym.id, "whatsapp", `WhatsApp enviado — ${tpl.label}`);
     if (gym.status === "nao_contactada") moveStatus(gym, "prospectada");
   };
 
@@ -259,9 +265,35 @@ export default function BusinessGymsTab({ onChanged }: { onChanged?: () => void 
                   </div>
                 ) : (
                   <div className="flex flex-wrap items-center gap-2">
-                    <Button size="sm" variant="outline" className="gap-1" onClick={() => whatsapp(g)}>
-                      <MessageCircle className="w-3.5 h-3.5" /> WhatsApp
-                    </Button>
+                    <div className="flex">
+                      <Button size="sm" variant="outline" className="gap-1 rounded-r-none border-r-0"
+                        onClick={() => whatsapp(g)}>
+                        <MessageCircle className="w-3.5 h-3.5" /> WhatsApp
+                        <span className="hidden sm:inline text-[10px] text-muted-foreground">
+                          · {templateForStatus(g.status).label.replace(/^\S+\s/, "")}
+                        </span>
+                      </Button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button size="sm" variant="outline" className="rounded-l-none px-2"
+                            aria-label="Escolher template de mensagem">
+                            <ChevronDown className="w-3.5 h-3.5" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start" className="w-60">
+                          <DropdownMenuLabel className="text-xs">Template do funil</DropdownMenuLabel>
+                          <DropdownMenuSeparator />
+                          {WA_TEMPLATES.map((t) => (
+                            <DropdownMenuItem key={t.id} onClick={() => whatsapp(g, t.id)} className="text-xs">
+                              {t.label}
+                              {t.status === g.status && (
+                                <span className="ml-auto text-[10px] text-primary">recomendado</span>
+                              )}
+                            </DropdownMenuItem>
+                          ))}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
                     <Button size="sm" variant="outline" className="gap-1" onClick={() => openEdit(g)}>
                       <Pencil className="w-3.5 h-3.5" /> Editar
                     </Button>

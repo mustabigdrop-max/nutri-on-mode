@@ -89,6 +89,117 @@ export function openWhatsApp(phoneDigits: string, message: string) {
   window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, "_blank", "noopener");
 }
 
+/* ---------- Templates de WhatsApp por etapa do funil ---------- */
+
+export interface WaTemplate {
+  id: string;
+  label: string;
+  status: GymStatus;
+  build: (gym: Gym) => string;
+}
+
+const challengeLink = (gym: Gym) =>
+  gym.challenge_slug ? `https://nutrion.app.br/desafio-21?gym=${gym.challenge_slug}` : "https://nutrion.app.br";
+
+export const WA_TEMPLATES: WaTemplate[] = [
+  {
+    id: "primeiro_contato",
+    label: "📲 Primeiro contato",
+    status: "nao_contactada",
+    build: (g) => outreachMessage(g),
+  },
+  {
+    id: "follow_up",
+    label: "🔁 Follow-up (2 dias)",
+    status: "prospectada",
+    build: (g) => `Oi ${gymOwner(g)}, tudo certo?
+
+Passando rápido só pra saber se você chegou a ver minha mensagem sobre o nutriON GYM na ${g.name}.
+
+Resumo em 3 linhas:
+• Eu instalo a tela do ranking na academia (custo meu)
+• Seus alunos entram num desafio de 90 dias grátis
+• Você recebe ${g.commission_percent ?? 25}% de tudo que for assinado lá dentro
+
+Te tomo 5 minutos essa semana? Quinta ou sexta, o que fica melhor?
+
+— Diogo Mello · nutrion.app.br`,
+  },
+  {
+    id: "pos_visita",
+    label: "🤝 Pós-visita (fechar)",
+    status: "visitada",
+    build: (g) => `${gymOwner(g)}, obrigado pela visita de hoje!
+
+Como combinamos, o próximo passo é simples:
+1. Definimos a data de lançamento do desafio
+2. Eu instalo a tela e mando o material gráfico (adesivos e banner)
+3. Fazemos o evento de 30 min pros seus alunos
+
+Comissão: ${g.commission_percent ?? 25}% de toda assinatura gerada na ${g.name}, paga via Pix todo dia 5.
+
+Consigo bloquear a agenda essa semana. Fecha assim?
+
+— Diogo Mello`,
+  },
+  {
+    id: "negociacao",
+    label: "💼 Em negociação (destravar)",
+    status: "em_negociacao",
+    build: (g) => `${gymOwner(g)}, tudo bem?
+
+Sobre a parceria da ${g.name}: tô com agenda pra iniciar o desafio ainda neste mês.
+
+Pra te ajudar a decidir:
+• Custo pra academia: R$ 0 (equipamento e material são meus)
+• Comissão: ${g.commission_percent ?? 25}% via Pix todo dia 5
+• Contrato de 12 meses, rescindível com 30 dias de aviso
+
+Alguma dúvida que eu possa resolver agora pra fecharmos?
+
+— Diogo Mello`,
+  },
+  {
+    id: "onboarding",
+    label: "🚀 Fechada (lançamento)",
+    status: "fechada",
+    build: (g) => `${gymOwner(g)}, bora colocar de pé! 🔥
+
+Checklist de lançamento da ${g.name}:
+1. Data do evento de 30 min com os alunos
+2. Instalação da tela do ranking (The Wall)
+3. Adesivos com o QR Code nos pontos de maior fluxo
+
+Link/QR do desafio: ${challengeLink(g)}
+
+Me confirma a melhor data que eu já bloqueio a agenda.
+
+— Diogo Mello`,
+  },
+  {
+    id: "reativacao",
+    label: "♻️ Recusada (reativação)",
+    status: "recusada",
+    build: (g) => `Oi ${gymOwner(g)}, tudo bem?
+
+Sei que na época não fez sentido pra ${g.name}, mas o programa evoluiu bastante e hoje já roda em outras academias com resultado real de retenção.
+
+Continua custo zero pra academia e ${g.commission_percent ?? 25}% de comissão pra vocês.
+
+Faz sentido eu te mostrar os números atualizados em 5 minutos?
+
+— Diogo Mello`,
+  },
+];
+
+export const templateForStatus = (status: GymStatus) =>
+  WA_TEMPLATES.find((t) => t.status === status) ?? WA_TEMPLATES[0];
+
+export const buildWhatsAppMessage = (gym: Gym, templateId?: string) => {
+  const tpl = (templateId && WA_TEMPLATES.find((t) => t.id === templateId)) || templateForStatus(gym.status);
+  return { tpl, text: tpl.build(gym) };
+};
+
 export interface RevenueInput {
   gyms: number;
   membersPerGym: number;
