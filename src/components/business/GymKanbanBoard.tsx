@@ -1,7 +1,8 @@
 import { useMemo, useState } from "react";
 import { GYM_STATUSES, Gym, GymStatus, gymPhone, statusMeta } from "@/lib/gymBusiness";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, GripVertical, MessageCircle, Pencil } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ChevronLeft, ChevronRight, GripVertical, MessageCircle, Pencil, X } from "lucide-react";
 
 /** Colunas do funil operacional (kanban) */
 export const KANBAN_COLUMNS: GymStatus[] = [
@@ -15,13 +16,15 @@ export const KANBAN_COLUMNS: GymStatus[] = [
 interface Props {
   gyms: Gym[];
   onMove: (gym: Gym, status: GymStatus) => void;
+  onBulkMove?: (gyms: Gym[], status: GymStatus) => void | Promise<void>;
   onEdit?: (gym: Gym) => void;
   onWhatsApp?: (gym: Gym) => void;
 }
 
-export default function GymKanbanBoard({ gyms, onMove, onEdit, onWhatsApp }: Props) {
+export default function GymKanbanBoard({ gyms, onMove, onBulkMove, onEdit, onWhatsApp }: Props) {
   const [dragId, setDragId] = useState<string | null>(null);
   const [overCol, setOverCol] = useState<GymStatus | null>(null);
+  const [selected, setSelected] = useState<string[]>([]);
 
   const byStatus = useMemo(() => {
     const map = new Map<GymStatus, Gym[]>();
@@ -33,11 +36,39 @@ export default function GymKanbanBoard({ gyms, onMove, onEdit, onWhatsApp }: Pro
     return map;
   }, [gyms]);
 
+  const selectedGyms = useMemo(
+    () => gyms.filter((g) => selected.includes(g.id)),
+    [gyms, selected],
+  );
+
+  const toggle = (id: string) =>
+    setSelected((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+
+  const toggleColumn = (items: Gym[], all: boolean) =>
+    setSelected((prev) => {
+      const ids = items.map((i) => i.id);
+      return all ? prev.filter((x) => !ids.includes(x)) : Array.from(new Set([...prev, ...ids]));
+    });
+
+  const bulkMove = async (status: GymStatus) => {
+    const targets = selectedGyms.filter((g) => g.status !== status);
+    if (targets.length === 0) return;
+    if (onBulkMove) await onBulkMove(targets, status);
+    else targets.forEach((g) => onMove(g, status));
+    setSelected([]);
+  };
+
   const drop = (status: GymStatus) => {
     setOverCol(null);
     const gym = gyms.find((g) => g.id === dragId);
     setDragId(null);
-    if (gym && gym.status !== status) onMove(gym, status);
+    if (!gym) return;
+    // Arrastar um card selecionado move todo o lote selecionado
+    if (selected.includes(gym.id) && selectedGyms.length > 1) {
+      bulkMove(status);
+      return;
+    }
+    if (gym.status !== status) onMove(gym, status);
   };
 
   const shift = (gym: Gym, dir: -1 | 1) => {
@@ -45,6 +76,7 @@ export default function GymKanbanBoard({ gyms, onMove, onEdit, onWhatsApp }: Pro
     const next = KANBAN_COLUMNS[Math.min(KANBAN_COLUMNS.length - 1, Math.max(0, i + dir))];
     if (next && next !== gym.status) onMove(gym, next);
   };
+
 
   return (
     <div className="overflow-x-auto pb-2">
