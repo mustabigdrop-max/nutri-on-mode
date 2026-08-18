@@ -286,11 +286,19 @@ export default function BusinessGymsTab({ onChanged }: { onChanged?: () => void 
           gyms={filtered}
           onMove={(g, s) => moveStatus(g, s)}
           onBulkMove={bulkMoveStatus}
-
+          onBulkWhatsApp={(list) => { setBulkWaGyms(list); setBulkWaOpen(true); }}
           onEdit={openEdit}
           onWhatsApp={(g) => whatsapp(g)}
         />
       )}
+
+      <BulkWhatsAppDialog
+        gyms={bulkWaGyms}
+        open={bulkWaOpen}
+        onOpenChange={setBulkWaOpen}
+        onSend={(gym, tplId) => registerWhatsAppSend(gym, tplId)}
+        onFinished={load}
+      />
 
       <div className={view === "kanban" ? "hidden" : "space-y-3"}>
         {filtered.map((g) => {
