@@ -35,6 +35,8 @@ export interface PerfilCorporalState {
   waist: string;
   abwFactor: number;
   comorbidities: string[];
+  /** Condições especiais (lipedema, SOP...) — coexistem com qualquer perfil. */
+  specialConditions: string[];
   source: "manual" | "apex_visual";
   fatDistribution?: string;
   muscleDevelopment?: string;
@@ -49,6 +51,7 @@ export const PERFIL_CORPORAL_DEFAULT: PerfilCorporalState = {
   waist: "",
   abwFactor: 0.25,
   comorbidities: [],
+  specialConditions: [],
   source: "manual",
   visualIndicators: [],
   nutritionalPriorities: [],
