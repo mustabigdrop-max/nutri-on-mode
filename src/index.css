@@ -590,3 +590,21 @@
   0%, 100% { opacity: .35; transform: scale(1); }
   50% { opacity: .6; transform: scale(1.06); }
 }
+
+/* Landing: anel de energia do CTA */
+@keyframes ctaEnergyRing {
+  0%   { transform: scale(1);    opacity: .55; }
+  70%  { transform: scale(1.35); opacity: 0; }
+  100% { transform: scale(1.35); opacity: 0; }
+}
+.cta-energy-ring::before,
+.cta-energy-ring::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: 4px;
+  border: 1px solid rgba(0,0,0,.55);
+  pointer-events: none;
+  animation: ctaEnergyRing 2.4s ease-out infinite;
+}
+.cta-energy-ring::after { animation-delay: 1.2s; }
