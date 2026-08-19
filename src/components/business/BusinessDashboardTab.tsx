@@ -10,6 +10,7 @@ import {
   GYM_STATUSES, brl, calcRevenue, statusMeta,
   computeFunnelMetrics, GymInteractionLite, Gym,
 } from "@/lib/gymBusiness";
+import FollowUpPanel from "./FollowUpPanel";
 
 type Task = { id: string; description: string; completed: boolean };
 
