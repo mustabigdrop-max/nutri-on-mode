@@ -38,6 +38,8 @@ export interface PerfilCorporalState {
   comorbidities: string[];
   /** Condições especiais (lipedema, SOP...) — coexistem com qualquer perfil. */
   specialConditions: string[];
+  /** Meta de sódio diária (mg) definida pelo coach. */
+  sodiumTargetMg: number | null;
   source: "manual" | "apex_visual";
   fatDistribution?: string;
   muscleDevelopment?: string;
@@ -53,10 +55,12 @@ export const PERFIL_CORPORAL_DEFAULT: PerfilCorporalState = {
   abwFactor: 0.25,
   comorbidities: [],
   specialConditions: [],
+  sodiumTargetMg: null,
   source: "manual",
   visualIndicators: [],
   nutritionalPriorities: [],
 };
+
 
 export function toBodyProfile(
   s: PerfilCorporalState,
