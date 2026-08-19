@@ -219,7 +219,10 @@ export default function BusinessDashboardTab({ reloadKey = 0 }: { reloadKey?: nu
         </CardContent>
       </Card>
 
+      <FollowUpPanel reloadKey={reloadKey} />
+
       <Card>
+
         <CardContent className="p-4 space-y-3">
           <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Próximas ações</p>
           {!tasks && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />}
