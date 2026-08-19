@@ -539,12 +539,16 @@ export default function AudioAcademyPage({ embedded = false }: { embedded?: bool
                         >
                           <button
                             onClick={() => playEpisode(ep)}
+                            disabled={generatingId === ep.id}
                             aria-label={`Tocar ${ep.title}`}
                             className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
-                            style={{ background: ep.audio_url || isOffline ? meta.color : "rgba(255,255,255,0.08)", color: ep.audio_url || isOffline ? "#03030a" : DIM }}
+                            style={{ background: meta.color, color: "#03030a" }}
                           >
-                            {ep.audio_url || isOffline ? <Play className="w-4 h-4 ml-0.5" /> : <Lock className="w-4 h-4" />}
+                            {generatingId === ep.id
+                              ? <Loader2 className="w-4 h-4 animate-spin" />
+                              : <Play className="w-4 h-4 ml-0.5" />}
                           </button>
+
                           <div className="min-w-0 flex-1">
                             <p className="text-sm font-semibold truncate">
                               {s === "ritual" ? ep.title : `EP ${ep.episode_number} · ${ep.title}`}
