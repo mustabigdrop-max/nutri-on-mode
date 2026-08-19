@@ -526,7 +526,64 @@ export default function BlocoPerfilCorporal({
         })}
       </div>
 
+      {/* Meta de sódio */}
+      {conditionSodium && (
+        <div style={{ marginBottom: 14, padding: 14, background: "#020205", border: `1px solid ${GOLD}33`, borderLeft: `2px solid ${GOLD}` }}>
+          <div style={{ ...label, marginBottom: 6 }}>🧂 Meta de sódio diária</div>
+          <p style={{ fontSize: 11.5, color: MUTED, lineHeight: 1.6, marginBottom: 10 }}>
+            Define o teto de sódio do plano. Ao alterar, o sistema recalcula os alimentos evitados,
+            a divisão por refeição e as badges 🧂 no plano do cliente.
+          </p>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center", marginBottom: 10 }}>
+            <input
+              style={{ ...inputStyle, width: 130 }}
+              inputMode="numeric"
+              value={value.sodiumTargetMg ?? ""}
+              onChange={(e) => {
+                const n = Number(e.target.value.replace(/\D/g, ""));
+                saveSodium(n > 0 ? n : null);
+              }}
+              placeholder={`padrão ${conditionSodium}`}
+              aria-label="Meta de sódio em miligramas por dia"
+            />
+            <span style={{ fontSize: 12, color: MUTED }}>mg/dia</span>
+            {[1500, 2000, 2300].map((v) => (
+              <button key={v} type="button" onClick={() => saveSodium(v)}
+                style={{
+                  padding: "6px 11px", cursor: "pointer",
+                  background: sodiumTarget === v ? `${GOLD}18` : "#020205",
+                  border: `1px solid ${sodiumTarget === v ? GOLD : "#ffffff14"}`,
+                  color: sodiumTarget === v ? GOLD : MUTED, fontSize: 11.5, fontWeight: 700, fontFamily: "inherit",
+                }}>&lt; {v.toLocaleString("pt-BR")}</button>
+            ))}
+            {value.sodiumTargetMg && (
+              <button type="button" onClick={() => saveSodium(null)}
+                style={{ padding: "6px 11px", cursor: "pointer", background: "#020205", border: "1px solid #ffffff14", color: MUTED, fontSize: 11.5, fontFamily: "inherit" }}>
+                usar padrão
+              </button>
+            )}
+          </div>
+          {sodiumTarget && (
+            <>
+              {(sodiumTarget < SODIUM_TARGET_MIN_MG || sodiumTarget > SODIUM_TARGET_MAX_MG) && (
+                <div style={{ fontSize: 11.5, color: "#ff9f43", marginBottom: 8 }}>
+                  ⚠️ Fora da faixa segura usual ({SODIUM_TARGET_MIN_MG}–{SODIUM_TARGET_MAX_MG} mg/dia). Validar com médico.
+                </div>
+              )}
+              <div style={{ fontFamily: MONO, fontSize: 11, color: TEXT, marginBottom: 8 }}>
+                RIGOR: {sodiumTier(sodiumTarget).toUpperCase()} · {sodiumSplit(sodiumTarget).map((s) => `${s.slot} ≤ ${s.mg}mg`).join(" · ")}
+              </div>
+              <div style={{ fontSize: 11.5, color: MUTED, lineHeight: 1.7 }}>
+                <span style={{ color: TEXT, fontWeight: 700 }}>Evitar nesta meta: </span>
+                {sodiumAvoidList(sodiumTarget).join(" · ")}
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
       {activeSpecials.map((c) => (
+
         <div key={c.key} style={{ marginBottom: 14, padding: 14, background: "#020205", border: `1px solid ${CYAN}33`, borderLeft: `2px solid ${CYAN}` }}>
           <div style={{ ...label, color: CYAN, marginBottom: 6 }}>Protocolo · {c.label}</div>
           {c.short && <div style={{ fontSize: 11.5, color: MUTED, lineHeight: 1.6, marginBottom: 10 }}>{c.short}</div>}
