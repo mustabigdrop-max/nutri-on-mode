@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/select";
 import { Plus, Loader2, Trophy, BarChart3, MessageCircle, Trash2, Monitor, UserCheck, Flame } from "lucide-react";
 import { brl, openWhatsApp, slugify } from "@/lib/gymBusiness";
+import ChallengeOpsPanel from "@/components/business/ChallengeOpsPanel";
 
 type Challenge = {
   id: string;
@@ -23,6 +24,11 @@ type Challenge = {
   status: string;
   commission_percent: number;
   qr_code_url: string | null;
+  reminders_enabled?: boolean;
+  reminder_checkin_time?: string;
+  reminder_meal_times?: string[];
+  reminder_checkin_message?: string | null;
+  reminder_meal_message?: string | null;
 };
 
 type GymLite = { id: string; name: string; neighborhood: string | null; city: string | null; challenge_slug: string | null };
@@ -52,7 +58,7 @@ export default function BusinessChallengesTab() {
 
   const load = useCallback(async () => {
     const [c, g, s, pt] = await Promise.all([
-      supabase.from("gym_challenges").select("id, gym_id, name, slug, start_date, end_date, status, commission_percent, qr_code_url").order("start_date", { ascending: false }),
+      supabase.from("gym_challenges").select("id, gym_id, name, slug, start_date, end_date, status, commission_percent, qr_code_url, reminders_enabled, reminder_checkin_time, reminder_meal_times, reminder_checkin_message, reminder_meal_message").order("start_date", { ascending: false }),
       supabase.from("partner_gyms").select("id, name, neighborhood, city, challenge_slug"),
       supabase.from("challenge_signups").select("gym_slug, paid, plano, full_name, email, created_at").order("created_at", { ascending: false }),
       supabase.from("challenge_participants")
@@ -258,6 +264,8 @@ export default function BusinessChallengesTab() {
                   </div>
                 );
               })()}
+
+              <ChallengeOpsPanel challenge={c} gymName={gym?.name} onChanged={load} />
 
               <div className="flex flex-wrap items-center gap-2">
                 <div className="p-2 bg-white rounded-lg">

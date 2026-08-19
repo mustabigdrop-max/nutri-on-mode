@@ -5,16 +5,17 @@ import { useChallenge } from "@/hooks/useChallenge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Droplets, Flame, Trophy, Dumbbell, Sparkles } from "lucide-react";
+import { Droplets, Flame, Trophy, Dumbbell, Sparkles, CheckCircle2 } from "lucide-react";
 import {
   OBJETIVO_LABEL, buildMealPlan, challengeDay, challengePhase, levelBadge,
 } from "@/lib/challenge";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 const MOODS = ["😤", "🙂", "😐", "😔", "😫"];
 
 export default function ChallengeDashboardPage() {
-  const { participant, challenge, log, saveLog } = useChallenge();
+  const { participant, challenge, log, saveLog, completeDay } = useChallenge();
   const [saving, setSaving] = useState(false);
 
   const day = challengeDay(challenge?.start_date);
@@ -110,9 +111,12 @@ export default function ChallengeDashboardPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className={cn(log?.day_completed && "border-emerald-500/40 bg-emerald-500/5")}>
           <CardContent className="p-4 space-y-3">
-            <p className="text-sm font-semibold">Check-in de humor</p>
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-semibold">Check-in do dia</p>
+              <span className="text-xs text-muted-foreground tabular-nums">{log?.points ?? 0} pts hoje</span>
+            </div>
             <div className="flex gap-2">
               {MOODS.map((m) => (
                 <button
@@ -136,8 +140,32 @@ export default function ChallengeDashboardPage() {
               <Dumbbell className="w-4 h-4" />
               {log?.training_done ? "Treino concluído hoje" : "Marcar treino do dia"}
             </Button>
+            <Button
+              size="sm"
+              className="w-full gap-2"
+              disabled={saving || log?.day_completed}
+              onClick={async () => {
+                setSaving(true);
+                const res = await completeDay();
+                setSaving(false);
+                if (res) {
+                  toast.success(`Dia fechado! +${res.points} pts · streak ${res.streak} dia(s)`, {
+                    description: `MCE Score atualizado para ${res.mce_score}.`,
+                  });
+                }
+              }}
+            >
+              <CheckCircle2 className="w-4 h-4" />
+              {log?.day_completed ? "Dia concluído ✅" : "Concluir o dia"}
+            </Button>
+            {!log?.day_completed && (
+              <p className="text-[11px] text-muted-foreground">
+                Refeições 40 · água 20 · treino 20 · humor 20 — feche o dia para manter o streak.
+              </p>
+            )}
           </CardContent>
         </Card>
+
 
         <Card className="border-primary/20">
           <CardContent className="p-4 flex items-center justify-between gap-3">
