@@ -259,10 +259,17 @@ export default function BlocoPerfilCorporal({
   const activeSpecials = specials
     .map(getSpecialCondition)
     .filter((c): c is NonNullable<ReturnType<typeof getSpecialCondition>> => !!c && !!c.macros);
-  const toggleSpecial = (k: string) =>
-    onChange({
-      specialConditions: specials.includes(k) ? specials.filter((x) => x !== k) : [...specials, k],
-    });
+  const toggleSpecial = (k: string) => {
+    const next = specials.includes(k) ? specials.filter((x) => x !== k) : [...specials, k];
+    onChange({ specialConditions: next });
+    if (athleteId) {
+      supabase
+        .from("profiles")
+        .update({ special_conditions: next })
+        .eq("user_id", athleteId)
+        .then(({ error }) => { if (error) console.error("[condicoes-especiais] update", error); });
+    }
+  };
 
 
   const changed = suggestion && previous?.body_profile && previous.body_profile !== suggestion.suggested_profile;
