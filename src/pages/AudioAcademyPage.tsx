@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  ArrowLeft, Headphones, Mic, Loader2, CheckCircle2, Play, Lock,
+  ArrowLeft, Headphones, Mic, Loader2, CheckCircle2, Play,
   Download, Trash2, ListPlus, ListMusic, ChevronUp, ChevronDown, Plus, WifiOff,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
