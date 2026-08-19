@@ -94,6 +94,16 @@ const PartnerBlockedPage = lazy(() => import("./pages/PartnerBlockedPage"));
 const PeptideVaultPage = lazy(() => import("./pages/PeptideVaultPage"));
 const TrainingPage = lazy(() => import("./pages/TrainingPage"));
 const RunOnPage = lazy(() => import("./pages/RunOnPage"));
+const ChallengeLayout = lazy(() => import("./components/challenge/ChallengeLayout"));
+const ChallengeSignupPage = lazy(() => import("./pages/challenge/ChallengeSignupPage"));
+const ChallengePublicRankingPage = lazy(() => import("./pages/challenge/ChallengePublicRankingPage"));
+const ChallengeDashboardPage = lazy(() => import("./pages/challenge/ChallengeDashboardPage"));
+const ChallengePlanPage = lazy(() => import("./pages/challenge/ChallengePlanPage"));
+const ChallengeRankingPage = lazy(() => import("./pages/challenge/ChallengeRankingPage"));
+const ChallengeMCEPage = lazy(() => import("./pages/challenge/ChallengeMCEPage"));
+const ChallengeEvolutionPage = lazy(() => import("./pages/challenge/ChallengeEvolutionPage"));
+const ChallengeProfilePage = lazy(() => import("./pages/challenge/ChallengeProfilePage"));
+const WallDisplayPage = lazy(() => import("./pages/wall/WallDisplayPage"));
 const Desafio21Page = lazy(() => import("./pages/Desafio21Page"));
 const DesafioSignupPage = lazy(() => import("./pages/DesafioSignupPage"));
 const Desafio21DashboardPage = lazy(() => import("./pages/Desafio21DashboardPage"));
@@ -165,6 +175,18 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/desafio-21" element={<DesafioSignupPage />} />
+            {/* Desafio 90 Dias */}
+            <Route path="/wall/:slug" element={<WallDisplayPage />} />
+            <Route path="/desafio/ranking/:slug" element={<ChallengePublicRankingPage />} />
+            <Route path="/desafio" element={<ProtectedRoute><ChallengeLayout /></ProtectedRoute>}>
+              <Route path="dashboard" element={<ChallengeDashboardPage />} />
+              <Route path="plano" element={<ChallengePlanPage />} />
+              <Route path="ranking" element={<ChallengeRankingPage />} />
+              <Route path="mce" element={<ChallengeMCEPage />} />
+              <Route path="evolucao" element={<ChallengeEvolutionPage />} />
+              <Route path="perfil" element={<ChallengeProfilePage />} />
+            </Route>
+            <Route path="/desafio/:slug" element={<ChallengeSignupPage />} />
             <Route path="/gym/challenges" element={<ProtectedRoute><GymChallengesPage /></ProtectedRoute>} />
             <Route path="/.lovable/oauth/consent" element={<OAuthConsentPage />} />
 

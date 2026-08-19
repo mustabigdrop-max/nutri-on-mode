@@ -2318,6 +2318,155 @@ export type Database = {
         }
         Relationships: []
       }
+      challenge_daily_logs: {
+        Row: {
+          challenge_id: string
+          created_at: string
+          id: string
+          log_date: string
+          meals_done: number[]
+          mood: string | null
+          points: number
+          training_done: boolean
+          updated_at: string
+          user_id: string
+          water_ml: number
+        }
+        Insert: {
+          challenge_id: string
+          created_at?: string
+          id?: string
+          log_date?: string
+          meals_done?: number[]
+          mood?: string | null
+          points?: number
+          training_done?: boolean
+          updated_at?: string
+          user_id: string
+          water_ml?: number
+        }
+        Update: {
+          challenge_id?: string
+          created_at?: string
+          id?: string
+          log_date?: string
+          meals_done?: number[]
+          mood?: string | null
+          points?: number
+          training_done?: boolean
+          updated_at?: string
+          user_id?: string
+          water_ml?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "challenge_daily_logs_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "gym_challenges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      challenge_participants: {
+        Row: {
+          carbs_g: number
+          challenge_id: string
+          created_at: string
+          email: string | null
+          fat_g: number
+          full_name: string
+          gym_id: string | null
+          id: string
+          joined_at: string
+          last_checkin_at: string | null
+          mce_score: number
+          meals_per_day: number
+          migrated_to_client: boolean
+          objetivo: string
+          porte: string
+          protein_g: number
+          status: string
+          streak: number
+          target_kcal: number
+          tier: string
+          updated_at: string
+          user_id: string
+          weight_current: number | null
+          weight_start: number | null
+          whatsapp: string | null
+        }
+        Insert: {
+          carbs_g?: number
+          challenge_id: string
+          created_at?: string
+          email?: string | null
+          fat_g?: number
+          full_name?: string
+          gym_id?: string | null
+          id?: string
+          joined_at?: string
+          last_checkin_at?: string | null
+          mce_score?: number
+          meals_per_day?: number
+          migrated_to_client?: boolean
+          objetivo?: string
+          porte?: string
+          protein_g?: number
+          status?: string
+          streak?: number
+          target_kcal?: number
+          tier?: string
+          updated_at?: string
+          user_id: string
+          weight_current?: number | null
+          weight_start?: number | null
+          whatsapp?: string | null
+        }
+        Update: {
+          carbs_g?: number
+          challenge_id?: string
+          created_at?: string
+          email?: string | null
+          fat_g?: number
+          full_name?: string
+          gym_id?: string | null
+          id?: string
+          joined_at?: string
+          last_checkin_at?: string | null
+          mce_score?: number
+          meals_per_day?: number
+          migrated_to_client?: boolean
+          objetivo?: string
+          porte?: string
+          protein_g?: number
+          status?: string
+          streak?: number
+          target_kcal?: number
+          tier?: string
+          updated_at?: string
+          user_id?: string
+          weight_current?: number | null
+          weight_start?: number | null
+          whatsapp?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "challenge_participants_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "gym_challenges"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "challenge_participants_gym_id_fkey"
+            columns: ["gym_id"]
+            isOneToOne: false
+            referencedRelation: "partner_gyms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       challenge_signups: {
         Row: {
           created_at: string
@@ -8740,6 +8889,7 @@ export type Database = {
           bf_percent: number | null
           body_profile: string | null
           carbs_g: number | null
+          challenge_id: string | null
           coach_notes: string | null
           coach_profile_id: string | null
           comorbidities: string[] | null
@@ -8756,6 +8906,7 @@ export type Database = {
           geb_kcal: number | null
           get_kcal: number | null
           goal: string | null
+          gym_id: string | null
           health_conditions: string[] | null
           height_cm: number | null
           id: string
@@ -8764,6 +8915,8 @@ export type Database = {
           lean_mass_kg: number | null
           level: number | null
           meta_peso: number | null
+          migrated_at: string | null
+          migrated_from_challenge: boolean
           muscle_development: string | null
           nivel_treino: string | null
           nutrition_periodization: Json | null
@@ -8771,6 +8924,7 @@ export type Database = {
           objetivo_principal: string | null
           onboarding_completed: boolean | null
           orcamento_semanal: number | null
+          origin: string
           perfil_comportamental: string | null
           phone: string | null
           plano_atual: string | null
@@ -8811,6 +8965,7 @@ export type Database = {
           bf_percent?: number | null
           body_profile?: string | null
           carbs_g?: number | null
+          challenge_id?: string | null
           coach_notes?: string | null
           coach_profile_id?: string | null
           comorbidities?: string[] | null
@@ -8827,6 +8982,7 @@ export type Database = {
           geb_kcal?: number | null
           get_kcal?: number | null
           goal?: string | null
+          gym_id?: string | null
           health_conditions?: string[] | null
           height_cm?: number | null
           id?: string
@@ -8835,6 +8991,8 @@ export type Database = {
           lean_mass_kg?: number | null
           level?: number | null
           meta_peso?: number | null
+          migrated_at?: string | null
+          migrated_from_challenge?: boolean
           muscle_development?: string | null
           nivel_treino?: string | null
           nutrition_periodization?: Json | null
@@ -8842,6 +9000,7 @@ export type Database = {
           objetivo_principal?: string | null
           onboarding_completed?: boolean | null
           orcamento_semanal?: number | null
+          origin?: string
           perfil_comportamental?: string | null
           phone?: string | null
           plano_atual?: string | null
@@ -8882,6 +9041,7 @@ export type Database = {
           bf_percent?: number | null
           body_profile?: string | null
           carbs_g?: number | null
+          challenge_id?: string | null
           coach_notes?: string | null
           coach_profile_id?: string | null
           comorbidities?: string[] | null
@@ -8898,6 +9058,7 @@ export type Database = {
           geb_kcal?: number | null
           get_kcal?: number | null
           goal?: string | null
+          gym_id?: string | null
           health_conditions?: string[] | null
           height_cm?: number | null
           id?: string
@@ -8906,6 +9067,8 @@ export type Database = {
           lean_mass_kg?: number | null
           level?: number | null
           meta_peso?: number | null
+          migrated_at?: string | null
+          migrated_from_challenge?: boolean
           muscle_development?: string | null
           nivel_treino?: string | null
           nutrition_periodization?: Json | null
@@ -8913,6 +9076,7 @@ export type Database = {
           objetivo_principal?: string | null
           onboarding_completed?: boolean | null
           orcamento_semanal?: number | null
+          origin?: string
           perfil_comportamental?: string | null
           phone?: string | null
           plano_atual?: string | null
@@ -8944,10 +9108,24 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "profiles_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "gym_challenges"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "profiles_coach_profile_id_fkey"
             columns: ["coach_profile_id"]
             isOneToOne: false
             referencedRelation: "coach_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_gym_id_fkey"
+            columns: ["gym_id"]
+            isOneToOne: false
+            referencedRelation: "partner_gyms"
             referencedColumns: ["id"]
           },
         ]
@@ -12589,6 +12767,29 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      get_challenge_public: {
+        Args: { _slug: string }
+        Returns: {
+          end_date: string
+          gym_name: string
+          id: string
+          name: string
+          participants: number
+          slug: string
+          start_date: string
+          status: string
+        }[]
+      }
+      get_challenge_ranking_public: {
+        Args: { _limit?: number; _slug: string }
+        Returns: {
+          display_name: string
+          mce_score: number
+          rank_position: number
+          streak: number
+          tier: string
+        }[]
+      }
       get_coach_invite_by_token: {
         Args: { _token: string }
         Returns: {
@@ -12636,6 +12837,10 @@ export type Database = {
         Returns: boolean
       }
       increment_coach_slots: { Args: never; Returns: undefined }
+      is_challenge_coach: {
+        Args: { _challenge_id: string; _user_id: string }
+        Returns: boolean
+      }
       is_coach_of_patient: {
         Args: { _coach_user_id: string; _patient_user_id: string }
         Returns: boolean
@@ -12645,6 +12850,7 @@ export type Database = {
         Args: { _patient_id: string; _professional_id: string }
         Returns: boolean
       }
+      my_challenge_ids: { Args: { _user_id: string }; Returns: string[] }
       save_anamnesis_by_token: {
         Args: {
           _alerts: Json
