@@ -14,6 +14,8 @@ import { sanitizeClientText, coachGuidanceText } from "@/lib/clientLanguage";
 import { safeString } from "@/lib/utils";
 import { normalizeFoodItem, type NormalizedFood } from "@/lib/foodSpecificity";
 import { buildShoppingList } from "@/lib/shoppingList";
+import { supabase } from "@/integrations/supabase/client";
+import LipedemaChecklist from "@/components/athlete/LipedemaChecklist";
 
 
 const BG = "#020205";
