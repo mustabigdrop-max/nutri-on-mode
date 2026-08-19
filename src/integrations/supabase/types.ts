@@ -2321,7 +2321,9 @@ export type Database = {
       challenge_daily_logs: {
         Row: {
           challenge_id: string
+          checkin_at: string | null
           created_at: string
+          day_completed: boolean
           id: string
           log_date: string
           meals_done: number[]
@@ -2334,7 +2336,9 @@ export type Database = {
         }
         Insert: {
           challenge_id: string
+          checkin_at?: string | null
           created_at?: string
+          day_completed?: boolean
           id?: string
           log_date?: string
           meals_done?: number[]
@@ -2347,7 +2351,9 @@ export type Database = {
         }
         Update: {
           challenge_id?: string
+          checkin_at?: string | null
           created_at?: string
+          day_completed?: boolean
           id?: string
           log_date?: string
           meals_done?: number[]
@@ -2463,6 +2469,54 @@ export type Database = {
             columns: ["gym_id"]
             isOneToOne: false
             referencedRelation: "partner_gyms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      challenge_reminder_logs: {
+        Row: {
+          challenge_id: string
+          created_at: string
+          id: string
+          kind: string
+          message: string | null
+          participant_id: string
+          sent_at: string
+          sent_by: string | null
+        }
+        Insert: {
+          challenge_id: string
+          created_at?: string
+          id?: string
+          kind?: string
+          message?: string | null
+          participant_id: string
+          sent_at?: string
+          sent_by?: string | null
+        }
+        Update: {
+          challenge_id?: string
+          created_at?: string
+          id?: string
+          kind?: string
+          message?: string | null
+          participant_id?: string
+          sent_at?: string
+          sent_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "challenge_reminder_logs_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "gym_challenges"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "challenge_reminder_logs_participant_id_fkey"
+            columns: ["participant_id"]
+            isOneToOne: false
+            referencedRelation: "challenge_participants"
             referencedColumns: ["id"]
           },
         ]
@@ -5796,6 +5850,11 @@ export type Database = {
           name: string
           premium_count: number
           qr_code_url: string | null
+          reminder_checkin_message: string | null
+          reminder_checkin_time: string
+          reminder_meal_message: string | null
+          reminder_meal_times: string[]
+          reminders_enabled: boolean
           revenue_total: number
           slug: string | null
           start_date: string
@@ -5814,6 +5873,11 @@ export type Database = {
           name: string
           premium_count?: number
           qr_code_url?: string | null
+          reminder_checkin_message?: string | null
+          reminder_checkin_time?: string
+          reminder_meal_message?: string | null
+          reminder_meal_times?: string[]
+          reminders_enabled?: boolean
           revenue_total?: number
           slug?: string | null
           start_date: string
@@ -5832,6 +5896,11 @@ export type Database = {
           name?: string
           premium_count?: number
           qr_code_url?: string | null
+          reminder_checkin_message?: string | null
+          reminder_checkin_time?: string
+          reminder_meal_message?: string | null
+          reminder_meal_times?: string[]
+          reminders_enabled?: boolean
           revenue_total?: number
           slug?: string | null
           start_date?: string
