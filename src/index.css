@@ -580,3 +580,13 @@
   100% { transform: scale(1); opacity: 1; }
 }
 .praxis-icon-activate { animation: praxis-activate 0.6s ease-out; }
+
+/* Landing: pulse do N no logo + gradiente que respira */
+@keyframes logoPulse {
+  0%, 100% { opacity: 1; text-shadow: 0 0 0 rgba(232,160,32,0); }
+  50% { opacity: .82; text-shadow: 0 0 14px rgba(232,160,32,.55); }
+}
+@keyframes landingBreathe {
+  0%, 100% { opacity: .35; transform: scale(1); }
+  50% { opacity: .6; transform: scale(1.06); }
+}
