@@ -7,6 +7,7 @@ import {
   calculateTMB, getMacroDistribution, idealWeightKg, bmi, leanMassKg,
   type BodyProfileType, type BodyProfile,
 } from "@/lib/bodyProfile";
+import { SPECIAL_CONDITIONS, getSpecialCondition } from "@/lib/specialConditions";
 
 const GOLD = "#B8922A";
 const EMERALD = "#00C896";
