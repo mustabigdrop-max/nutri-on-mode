@@ -190,21 +190,59 @@ export default function AudioAcademyPage({ embedded = false }: { embedded?: bool
     return await resolveAudioSrc(audioUrl);
   }, []);
 
+  /** Gera a narração sob demanda (coach/admin) e devolve o episódio atualizado. */
+  const generateEpisodeAudio = async (ep: Episode): Promise<Episode | null> => {
+    setGeneratingId(ep.id);
+    try {
+      const { data, error } = await supabase.functions.invoke("mce-generate-episode-audio", {
+        body: { episodeId: ep.id },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      const updated: Episode = {
+        ...ep,
+        audio_url: data.path,
+        duration_seconds: data.duration_seconds || ep.duration_seconds,
+      };
+      setEpisodes((list) => list.map((e) => (e.id === ep.id ? updated : e)));
+      return updated;
+    } catch (e: any) {
+      const msg = String(e?.message || "");
+      toast.message(
+        /coach|403/i.test(msg) ? "Episódio ainda não publicado pelo coach." : "Não foi possível gerar a narração agora.",
+      );
+      return null;
+    } finally {
+      setGeneratingId(null);
+    }
+  };
+
   const playEpisode = async (ep: Episode) => {
-    const src = await resolveSrc(ep.id, ep.audio_url);
+    let target = ep;
+    let src = await resolveSrc(ep.id, ep.audio_url);
+
+    if (!src && !ep.audio_url) {
+      toast.message("Preparando a narração deste episódio…");
+      const generated = await generateEpisodeAudio(ep);
+      if (!generated) return;
+      target = generated;
+      src = await resolveSrc(target.id, target.audio_url);
+    }
+
     if (!src) {
-      toast.message(ep.audio_url ? "Não foi possível carregar este áudio." : "Episódio ainda não publicado pelo coach.");
+      toast.message("Não foi possível carregar este áudio.");
       return;
     }
     setQueue(null);
     setTrack({
-      id: ep.id,
-      title: `EP ${ep.episode_number} — ${ep.title}`,
-      subtitle: SERIES_META[ep.series as AudioSeries]?.label ?? ep.series,
+      id: target.id,
+      title: `EP ${target.episode_number} — ${target.title}`,
+      subtitle: SERIES_META[target.series as AudioSeries]?.label ?? target.series,
       src,
-      startAt: progress[ep.id]?.progress_seconds ?? 0,
+      startAt: progress[target.id]?.progress_seconds ?? 0,
     });
   };
+
 
   // ---- Offline ----
   const startDownload = async (ep: Episode) => {
