@@ -7876,11 +7876,13 @@ export type Database = {
           contacted_at: string | null
           created_at: string
           estimated_members: number | null
+          followup_paused: boolean
           gym_type: string | null
           id: string
           instagram: string | null
           name: string
           neighborhood: string | null
+          next_followup_at: string | null
           notes: string | null
           owner_name: string | null
           owner_phone: string | null
@@ -7902,11 +7904,13 @@ export type Database = {
           contacted_at?: string | null
           created_at?: string
           estimated_members?: number | null
+          followup_paused?: boolean
           gym_type?: string | null
           id?: string
           instagram?: string | null
           name: string
           neighborhood?: string | null
+          next_followup_at?: string | null
           notes?: string | null
           owner_name?: string | null
           owner_phone?: string | null
@@ -7928,11 +7932,13 @@ export type Database = {
           contacted_at?: string | null
           created_at?: string
           estimated_members?: number | null
+          followup_paused?: boolean
           gym_type?: string | null
           id?: string
           instagram?: string | null
           name?: string
           neighborhood?: string | null
+          next_followup_at?: string | null
           notes?: string | null
           owner_name?: string | null
           owner_phone?: string | null
