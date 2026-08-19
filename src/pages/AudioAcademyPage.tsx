@@ -351,7 +351,7 @@ export default function AudioAcademyPage({ embedded = false }: { embedded?: bool
 
       <main className={embedded ? "space-y-5 pt-3" : "max-w-3xl mx-auto px-4 py-5 space-y-5"}>
         <p className="text-xs italic" style={{ color: DIM }}>
-          "Sua fome nunca foi de comida. O comportamento vem antes do alimento."
+          "Transformação é sistema. O comportamento vem antes do alimento."
         </p>
 
         {/* BRIEFING */}

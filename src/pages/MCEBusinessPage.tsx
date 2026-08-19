@@ -544,7 +544,7 @@ export default function MCEBusinessPage() {
         {/* Footer quote */}
         <div style={{ textAlign: "center", padding: "30px 0 40px" }}>
           <p style={{ fontFamily: DISPLAY, fontSize: 18, fontStyle: "italic", color: "rgba(255,255,255,0.8)" }}>
-            "Sua fome nunca foi de comida. O comportamento vem antes do alimento."
+            "Transformação é sistema. O comportamento vem antes do alimento."
           </p>
           <div style={{ fontFamily: MONO, fontSize: 10, letterSpacing: 2, color: "rgba(255,255,255,0.35)", marginTop: 10 }}>
             Coach Diogo Mello · @diogo.mell0 · nutrion.app.br
