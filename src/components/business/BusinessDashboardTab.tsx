@@ -11,6 +11,7 @@ import {
   computeFunnelMetrics, GymInteractionLite, Gym,
 } from "@/lib/gymBusiness";
 import FollowUpPanel from "./FollowUpPanel";
+import ChallengeAdherencePanel from "./ChallengeAdherencePanel";
 
 type Task = { id: string; description: string; completed: boolean };
 
@@ -221,6 +222,8 @@ export default function BusinessDashboardTab({ reloadKey = 0 }: { reloadKey?: nu
       </Card>
 
       <FollowUpPanel reloadKey={reloadKey} />
+
+      <ChallengeAdherencePanel />
 
       <Card>
 
