@@ -255,6 +255,16 @@ export default function BlocoPerfilCorporal({
         : [...value.comorbidities, c],
     });
 
+  const specials = value.specialConditions || [];
+  const activeSpecials = specials
+    .map(getSpecialCondition)
+    .filter((c): c is NonNullable<ReturnType<typeof getSpecialCondition>> => !!c && !!c.macros);
+  const toggleSpecial = (k: string) =>
+    onChange({
+      specialConditions: specials.includes(k) ? specials.filter((x) => x !== k) : [...specials, k],
+    });
+
+
   const changed = suggestion && previous?.body_profile && previous.body_profile !== suggestion.suggested_profile;
 
   return (
