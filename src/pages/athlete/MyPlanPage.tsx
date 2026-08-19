@@ -317,7 +317,12 @@ const MyPlanPage = () => {
               </p>
             )}
 
+            {conditions.list.includes("lipedema") && (
+              <LipedemaChecklist userId={targetId || undefined} sodiumTargetMg={conditions.sodium} />
+            )}
+
             {mealPlan.refeicoes.map((m, i) => (
+
               <MealCard key={i} meal={m} index={i} />
             ))}
 
