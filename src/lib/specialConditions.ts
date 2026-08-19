@@ -509,11 +509,19 @@ export function antiInflammatoryBadge(foodName: string): string | null {
 }
 
 /** Score 0–10 de aderência anti-inflamatória de uma refeição. */
-export function antiInflammatoryScore(foods: string[]): number {
+export function antiInflammatoryScore(foods: string[], sodiumTargetMg?: number | null): number {
   const list = foods.filter(Boolean);
   if (!list.length) return 0;
   const good = list.filter((f) => antiInflammatoryBadge(f)).length;
   const bad = list.filter((f) => PRO_INFLAMMATORY.test(f)).length;
-  const raw = (good / list.length) * 10 - bad * 2;
+  const target = sodiumTargetMg && sodiumTargetMg > 0 ? sodiumTargetMg : null;
+  const salty = target
+    ? list.reduce((acc, f) => {
+        const b = sodiumBadge(f, target);
+        return acc + (b ? (b.level === "alto" ? 2 : 1) : 0);
+      }, 0)
+    : 0;
+  const raw = (good / list.length) * 10 - bad * 2 - salty;
   return Math.max(0, Math.min(10, Math.round(raw)));
 }
+
