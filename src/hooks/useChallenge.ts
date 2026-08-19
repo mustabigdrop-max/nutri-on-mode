@@ -84,7 +84,7 @@ export function useChallenge() {
           .maybeSingle(),
         supabase
           .from("challenge_daily_logs")
-          .select("id,log_date,meals_done,water_ml,mood,training_done,points")
+          .select(LOG_COLS)
           .eq("user_id", user.id)
           .eq("log_date", localDateISO())
           .maybeSingle(),
@@ -105,30 +105,96 @@ export function useChallenge() {
 
   const saveLog = useCallback(
     async (patch: Partial<Omit<ChallengeDailyLog, "id" | "log_date">>) => {
-      if (!user || !participant) return;
-      const next = {
-        user_id: user.id,
-        challenge_id: participant.challenge_id,
-        log_date: localDateISO(),
+      if (!user || !participant) return null;
+      const merged = {
         meals_done: patch.meals_done ?? log?.meals_done ?? [],
         water_ml: patch.water_ml ?? log?.water_ml ?? 0,
         mood: patch.mood ?? log?.mood ?? null,
         training_done: patch.training_done ?? log?.training_done ?? false,
-        points: patch.points ?? log?.points ?? 0,
+        day_completed: patch.day_completed ?? log?.day_completed ?? false,
+      };
+      const next = {
+        user_id: user.id,
+        challenge_id: participant.challenge_id,
+        log_date: localDateISO(),
+        ...merged,
+        points: patch.points ?? dayPoints(merged, participant.meals_per_day),
+        checkin_at: patch.checkin_at ?? log?.checkin_at ?? new Date().toISOString(),
       };
       const { data } = await supabase
         .from("challenge_daily_logs")
         .upsert(next, { onConflict: "user_id,log_date" })
-        .select("id,log_date,meals_done,water_ml,mood,training_done,points")
+        .select(LOG_COLS)
         .maybeSingle();
       if (data) setLog(data as unknown as ChallengeDailyLog);
       await supabase
         .from("challenge_participants")
         .update({ last_checkin_at: new Date().toISOString() })
         .eq("id", participant.id);
+      return (data as unknown as ChallengeDailyLog) ?? null;
     },
     [user, participant, log],
   );
 
-  return { participant, challenge, log, loading: loading || authLoading, reload: load, saveLog };
+  /**
+   * Conclui o dia: grava humor/treino, calcula pontos, atualiza streak e MCE Score
+   * (média dos pontos dos últimos 7 dias) em tempo real.
+   */
+  const completeDay = useCallback(async () => {
+    if (!user || !participant) return null;
+    const saved = await saveLog({ day_completed: true, checkin_at: new Date().toISOString() });
+    const points = saved?.points ?? 0;
+
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yISO = new Date(yesterday.getTime() - yesterday.getTimezoneOffset() * 60000)
+      .toISOString()
+      .slice(0, 10);
+
+    const [{ data: prev }, { data: recent }] = await Promise.all([
+      supabase
+        .from("challenge_daily_logs")
+        .select("day_completed")
+        .eq("user_id", user.id)
+        .eq("log_date", yISO)
+        .maybeSingle(),
+      supabase
+        .from("challenge_daily_logs")
+        .select("points")
+        .eq("user_id", user.id)
+        .order("log_date", { ascending: false })
+        .limit(7),
+    ]);
+
+    const alreadyCountedToday = !!log?.day_completed;
+    const streak = alreadyCountedToday
+      ? participant.streak
+      : prev?.day_completed
+        ? (participant.streak || 0) + 1
+        : 1;
+
+    const pts = (recent ?? []).map((r) => r.points ?? 0);
+    const mce = pts.length ? Math.round(pts.reduce((s, v) => s + v, 0) / pts.length) : points;
+
+    const { data: updated } = await supabase
+      .from("challenge_participants")
+      .update({ streak, mce_score: mce, last_checkin_at: new Date().toISOString() })
+      .eq("id", participant.id)
+      .select("*")
+      .maybeSingle();
+    if (updated) setParticipant(updated as unknown as ChallengeParticipant);
+
+    return { points, streak, mce_score: mce };
+  }, [user, participant, log, saveLog]);
+
+  return {
+    participant,
+    challenge,
+    log,
+    loading: loading || authLoading,
+    reload: load,
+    saveLog,
+    completeDay,
+  };
+
 }
