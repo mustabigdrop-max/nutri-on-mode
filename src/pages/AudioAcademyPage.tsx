@@ -52,6 +52,8 @@ export default function AudioAcademyPage({ embedded = false }: { embedded?: bool
   const [loading, setLoading] = useState(true);
   const [openSeries, setOpenSeries] = useState<AudioSeries | null>("mindset");
   const [track, setTrack] = useState<PlayerTrack | null>(null);
+  const [generatingId, setGeneratingId] = useState<string | null>(null);
+
 
   // Briefing
   const [briefingText, setBriefingText] = useState<string | null>(null);
