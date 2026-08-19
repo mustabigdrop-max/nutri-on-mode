@@ -2,6 +2,10 @@ import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { localDateISO } from "@/lib/challenge";
+import { dayPoints } from "@/lib/challengeReminders";
+
+const LOG_COLS = "id,log_date,meals_done,water_ml,mood,training_done,points,day_completed,checkin_at";
+
 
 export interface ChallengeParticipant {
   id: string;
