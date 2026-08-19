@@ -22,7 +22,9 @@ const LandingNav = () => {
       }`}
     >
       <div className="font-heading text-[1.8rem] tracking-[.12em]">
-        <span className="text-[#f0edf8] opacity-85">NUTRI</span>
+        <span className="text-[#f0edf8] opacity-85">
+          <span className="inline-block animate-[logoPulse_3.2s_ease-in-out_infinite]">N</span>UTRI
+        </span>
         <span className="text-primary tracking-[.18em]" style={{ textShadow: "0 0 20px rgba(232,160,32,.5)" }}>ON</span>
       </div>
 
