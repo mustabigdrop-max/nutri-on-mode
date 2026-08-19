@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Flame, Loader2, Trophy } from "lucide-react";
 import { levelBadge, medal } from "@/lib/challenge";
 
-type Row = { full_name: string; mce_score: number; streak: number; position: number };
+type Row = { display_name: string; mce_score: number; streak: number; rank_position: number; tier: string };
 
 export default function ChallengePublicRankingPage() {
   const { slug = "" } = useParams();
@@ -37,11 +37,11 @@ export default function ChallengePublicRankingPage() {
           rows.map((r) => {
             const badge = levelBadge(r.mce_score);
             return (
-              <Card key={`${r.position}-${r.full_name}`}>
+              <Card key={`${r.rank_position}-${r.display_name}`}>
                 <CardContent className="p-3 flex items-center gap-3">
-                  <span className="w-8 text-center text-sm font-bold">{medal(r.position)}</span>
+                  <span className="w-8 text-center text-sm font-bold">{medal(r.rank_position)}</span>
                   <div className="flex-1 min-w-0">
-                    <p className="truncate text-sm font-semibold">{r.full_name}</p>
+                    <p className="truncate text-sm font-semibold">{r.display_name}</p>
                     <p className="text-[11px]" style={{ color: badge.color }}>{badge.label}</p>
                   </div>
                   <div className="text-right">
