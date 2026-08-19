@@ -154,3 +154,132 @@ export function dayPoints(
   const mood = log.mood ? 20 : 0;
   return Math.round(meals + water + training + mood);
 }
+
+/* ------------------------------------------------------------------ *
+ * Lembretes escalonados (follow-up automático após o horário limite)
+ * ------------------------------------------------------------------ */
+
+export interface ChallengeEscalationConfig {
+  reminder_deadline_time: string; // "21:00" — limite para o check-in do dia
+  reminder_escalation_hours: number[]; // horas após o limite para cada etapa
+  reminder_escalation_messages: string[]; // template por etapa (vazio = padrão)
+}
+
+export const DEFAULT_ESCALATION_HOURS = [0, 2, 14];
+
+export const DEFAULT_ESCALATION_TEMPLATES = [
+  "Fala {nome}! Aqui é o Diogo Mello 👊\n\n" +
+    "Passou do horário e seu check-in do Dia {dia}/90 do {desafio} ainda tá em aberto. " +
+    "São 30 segundos pra manter o streak de {streak} dia(s) vivo.\n\n👉 {link}\n\n" +
+    "Transformação é sistema. @diogo.mell0 · nutrion.app.br",
+  "{nome}, segundo toque 👊\n\n" +
+    "Você tá a um clique de fechar o Dia {dia}/90 do {desafio} ({feitas}/{total} refeições marcadas). " +
+    "Fecha agora que amanhã você começa no positivo.\n\n👉 {link}\n\n" +
+    "Transformação é sistema. @diogo.mell0 · nutrion.app.br",
+  "{nome}, o dia fechou sem seu check-in no {desafio}.\n\n" +
+    "Sem drama: não é o dia perdido que quebra o processo, é a sequência de dias perdidos. " +
+    "Hoje começa zerado — marca a primeira refeição agora.\n\n👉 {link}\n\n" +
+    "Transformação é sistema. @diogo.mell0 · nutrion.app.br",
+];
+
+export const DEFAULT_ESCALATION_CONFIG: ChallengeEscalationConfig = {
+  reminder_deadline_time: "21:00",
+  reminder_escalation_hours: DEFAULT_ESCALATION_HOURS,
+  reminder_escalation_messages: [],
+};
+
+const minutesOf = (t: string) => {
+  const [h, m] = (t || "21:00").split(":").map(Number);
+  return (h || 0) * 60 + (m || 0);
+};
+
+/**
+ * Etapa de escalada devida agora (1-based). 0 = ainda dentro do prazo.
+ * Etapas com horas negativas/0 disparam no próprio limite.
+ */
+export function dueEscalationLevel(
+  cfg: Partial<ChallengeEscalationConfig>,
+  now: Date = new Date(),
+) {
+  const steps = (cfg.reminder_escalation_hours?.length
+    ? cfg.reminder_escalation_hours
+    : DEFAULT_ESCALATION_HOURS
+  )
+    .slice()
+    .sort((a, b) => a - b);
+  const deadline = minutesOf(cfg.reminder_deadline_time ?? "21:00");
+  const nowMin = now.getHours() * 60 + now.getMinutes();
+  // etapas depois da meia-noite contam como "dia seguinte"
+  let level = 0;
+  steps.forEach((h, i) => {
+    const at = deadline + h * 60;
+    const sameDay = at < 24 * 60 ? nowMin >= at : nowMin >= at - 24 * 60 && nowMin < deadline;
+    if (sameDay) level = i + 1;
+  });
+  return level;
+}
+
+export interface EscalatedTarget extends ReminderTarget {
+  level: number;
+  lastSentLevel: number;
+}
+
+/**
+ * Fila escalonada: quem não concluiu o dia recebe a próxima etapa ainda não enviada.
+ * `sentLevels` mapeia participant_id → maior nível já registrado hoje.
+ */
+export function computeEscalationQueue(
+  participants: ReminderParticipantLite[],
+  todayLogs: ReminderLogLite[],
+  sentLevels: Record<string, number>,
+  ctx: {
+    challengeName: string;
+    day: number;
+    link: string;
+    config: Partial<ChallengeEscalationConfig>;
+    now?: Date;
+  },
+): EscalatedTarget[] {
+  const level = dueEscalationLevel(ctx.config, ctx.now ?? new Date());
+  if (!level) return [];
+  const byUser = new Map(todayLogs.map((l) => [l.user_id, l]));
+  const templates = ctx.config.reminder_escalation_messages ?? [];
+  const out: EscalatedTarget[] = [];
+
+  for (const p of participants) {
+    const log = byUser.get(p.user_id);
+    if (log?.day_completed) continue;
+    const lastSentLevel = sentLevels[p.id] ?? 0;
+    if (lastSentLevel >= level) continue;
+
+    const mealsDone = log?.meals_done?.length ?? 0;
+    const mealsTotal = p.meals_per_day || 5;
+    const tpl =
+      templates[level - 1]?.trim() ||
+      DEFAULT_ESCALATION_TEMPLATES[Math.min(level, DEFAULT_ESCALATION_TEMPLATES.length) - 1];
+
+    out.push({
+      participant_id: p.id,
+      user_id: p.user_id,
+      full_name: p.full_name,
+      whatsapp: p.whatsapp,
+      kind: "checkin",
+      mealsDone,
+      mealsTotal,
+      streak: p.streak,
+      level,
+      lastSentLevel,
+      message: fill(tpl, {
+        nome: firstName(p.full_name),
+        desafio: ctx.challengeName,
+        dia: ctx.day,
+        link: ctx.link,
+        feitas: mealsDone,
+        total: mealsTotal,
+        streak: p.streak,
+      }),
+    });
+  }
+
+  return out.sort((a, b) => b.streak - a.streak);
+}
