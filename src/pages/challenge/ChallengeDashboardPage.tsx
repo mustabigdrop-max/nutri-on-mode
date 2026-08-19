@@ -5,16 +5,17 @@ import { useChallenge } from "@/hooks/useChallenge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Droplets, Flame, Trophy, Dumbbell, Sparkles } from "lucide-react";
+import { Droplets, Flame, Trophy, Dumbbell, Sparkles, CheckCircle2 } from "lucide-react";
 import {
   OBJETIVO_LABEL, buildMealPlan, challengeDay, challengePhase, levelBadge,
 } from "@/lib/challenge";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 const MOODS = ["😤", "🙂", "😐", "😔", "😫"];
 
 export default function ChallengeDashboardPage() {
-  const { participant, challenge, log, saveLog } = useChallenge();
+  const { participant, challenge, log, saveLog, completeDay } = useChallenge();
   const [saving, setSaving] = useState(false);
 
   const day = challengeDay(challenge?.start_date);
