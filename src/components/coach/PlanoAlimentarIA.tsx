@@ -1434,6 +1434,7 @@ export default function PlanoAlimentarIA() {
         parts.push(...buildBodyProfileContext(bp, calculateTMB(bp), getMacroDistribution(bp, goal)));
       }
     }
+    parts.push(...buildSpecialConditionsContext(perfilCorporal.specialConditions || []));
     if (condicoesClinicas.length) parts.push(`CONDIÇÕES CLÍNICAS: ${condicoesClinicas.join(", ")}`);
     if (recuperacao.estrategias.length) parts.push(`ESTRATÉGIAS DE RECUPERAÇÃO: ${recuperacao.estrategias.join(", ")}`);
     if (recuperacao.nivelEstresse) parts.push(`NÍVEL DE ESTRESSE: ${recuperacao.nivelEstresse}`);
