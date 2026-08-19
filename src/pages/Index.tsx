@@ -1,4 +1,5 @@
 import LandingNav from "@/components/landing/LandingNav";
+import LandingScrollProgress from "@/components/landing/LandingScrollProgress";
 import LandingBackground from "@/components/landing/LandingBackground";
 import LandingAudio from "@/components/landing/LandingAudio";
 import LandingHero from "@/components/landing/LandingHero";
@@ -17,6 +18,7 @@ import LandingFooter from "@/components/landing/LandingFooter";
 
 const Index = () => (
   <div className="min-h-screen bg-[#03030a] text-[#f0edf8] font-landing overflow-x-hidden">
+    <LandingScrollProgress />
     <LandingAudio />
     <LandingBackground />
     <div className="relative z-[2]">

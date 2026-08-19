@@ -139,6 +139,7 @@ const LandingBackground = () => {
           top: "-15%", right: "-8%", width: "700px", height: "700px",
           borderRadius: "50%",
           background: "radial-gradient(circle, rgba(232,160,32,.07) 0%, transparent 65%)",
+          animation: "landingBreathe 12s ease-in-out infinite",
         }}
       />
       <div
@@ -147,6 +148,7 @@ const LandingBackground = () => {
           bottom: "-20%", left: "-10%", width: "600px", height: "600px",
           borderRadius: "50%",
           background: "radial-gradient(circle, rgba(0,240,180,.04) 0%, transparent 65%)",
+          animation: "landingBreathe 15s ease-in-out 2s infinite",
         }}
       />
       <div
