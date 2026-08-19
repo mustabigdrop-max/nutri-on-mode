@@ -47,6 +47,8 @@ export interface Gym {
   contacted_at: string | null;
   visited_at: string | null;
   closed_at: string | null;
+  next_followup_at: string | null;
+  followup_paused: boolean;
   created_at: string;
 }
 
@@ -446,3 +448,78 @@ export function computeFunnelMetrics(
     byTemplate,
   };
 }
+
+/* ---------- Cadência automática de follow-up ---------- */
+
+export interface FollowUpRule {
+  status: GymStatus;
+  days: number;
+  label: string;
+  reason: string;
+}
+
+export const FOLLOWUP_RULES: Record<GymStatus, FollowUpRule> = {
+  nao_contactada: { status: "nao_contactada", days: 0, label: "Primeiro contato", reason: "Academia cadastrada e ainda não abordada" },
+  prospectada: { status: "prospectada", days: 2, label: "Follow-up", reason: "Sem resposta após a mensagem inicial" },
+  visitada: { status: "visitada", days: 3, label: "Pós-visita", reason: "Visita feita — hora de propor o fechamento" },
+  em_negociacao: { status: "em_negociacao", days: 5, label: "Destravar negociação", reason: "Proposta parada em negociação" },
+  fechada: { status: "fechada", days: 14, label: "Acompanhamento", reason: "Parceria ativa — checar lançamento e ranking" },
+  recusada: { status: "recusada", days: 90, label: "Reativação", reason: "Recusa antiga — vale uma nova tentativa" },
+};
+
+export interface FollowUp {
+  gym: Gym;
+  rule: FollowUpRule;
+  tpl: WaTemplate;
+  dueAt: Date;
+  lastTouchAt: Date | null;
+  daysLate: number;
+  due: boolean;
+}
+
+const DAY = 86_400_000;
+
+export function computeFollowUps(
+  gyms: Gym[],
+  interactions: GymInteractionLite[],
+  now: Date = new Date(),
+): FollowUp[] {
+  const lastByGym = new Map<string, number>();
+  interactions.forEach((i) => {
+    const t = new Date(i.created_at).getTime();
+    if (t > (lastByGym.get(i.gym_id) ?? 0)) lastByGym.set(i.gym_id, t);
+  });
+
+  return gyms
+    .filter((g) => !g.followup_paused)
+    .map((gym) => {
+      const rule = FOLLOWUP_RULES[gym.status] ?? FOLLOWUP_RULES.prospectada;
+      const lastTouch =
+        lastByGym.get(gym.id) ??
+        (gym.contacted_at ? new Date(gym.contacted_at).getTime() : new Date(gym.created_at).getTime());
+      const dueMs = gym.next_followup_at
+        ? new Date(gym.next_followup_at).getTime()
+        : lastTouch + rule.days * DAY;
+      return {
+        gym,
+        rule,
+        tpl: templateForStatus(gym.status),
+        dueAt: new Date(dueMs),
+        lastTouchAt: lastByGym.has(gym.id) ? new Date(lastByGym.get(gym.id)!) : null,
+        daysLate: Math.floor((now.getTime() - dueMs) / DAY),
+        due: dueMs <= now.getTime(),
+      };
+    })
+    .sort((a, b) => a.dueAt.getTime() - b.dueAt.getTime());
+}
+
+export const nextFollowUpDate = (status: GymStatus, from: Date = new Date()) =>
+  new Date(from.getTime() + Math.max(1, FOLLOWUP_RULES[status]?.days ?? 2) * DAY);
+
+export const followUpWhen = (d: Date, now: Date = new Date()) => {
+  const diff = Math.round((d.getTime() - now.getTime()) / DAY);
+  if (diff <= -1) return `atrasado ${Math.abs(diff)}d`;
+  if (diff === 0) return "hoje";
+  if (diff === 1) return "amanhã";
+  return `em ${diff}d`;
+};
