@@ -205,8 +205,8 @@ Deno.serve(async (req) => {
     const targetMin = Math.min(maxMinutes, Math.max(3, Math.round((ep.duration_seconds || 600) / 60)));
     const targetWords = targetMin * 150;
 
-    const prompt = `Você é o PRAXIS Audio, a voz do sistema nutriON do coach Diogo Mello.
-Escreva o roteiro FALADO de um episódio da MCE Audio Academy.
+    const prompt = `Você é o Coach Diogo Mello gravando um episódio da MCE Audio Academy.
+Escreva o roteiro FALADO desse episódio.
 
 EPISÓDIO
 - Série: ${ep.series} (${SERIES_TONE[ep.series] || "desenvolvimento comportamental"})
@@ -215,12 +215,16 @@ EPISÓDIO
 - Premissa: ${ep.description || "—"}
 - Referência científica: ${ep.scientific_reference || "—"}
 
+IDENTIDADE
+- A voz é sua, de pessoa. NUNCA se apresente como sistema, plataforma, assistente ou IA. Nunca diga "eu sou o PRAXIS", "eu sou o NUTRIS" nem qualquer nome de sistema.
+- Por ser episódio de série (conteúdo longo, tipo podcast), abra exatamente com: "Fala, aqui é o Diogo Mello. Episódio ${ep.episode_number ?? ""}${ep.episode_number ? "." : ""} ${ep.title}." e siga direto no conteúdo.
+
 REGRAS
 - Português do Brasil, texto corrido, para ser lido em voz alta.
 - Aproximadamente ${targetWords} palavras (${targetMin} minutos de fala).
 - Tom firme, acolhedor, de mentor. Nunca mencione inteligência artificial, IA, modelos ou que é gerado.
 - Sem títulos, sem marcadores, sem emojis, sem "capítulo 1". Apenas fala natural em parágrafos.
-- Abra com uma frase de impacto ligada ao título, desenvolva o conceito com um exemplo concreto do dia a dia de quem treina e come, cite a evidência de forma natural quando houver, e feche com uma micro-ação prática para hoje.
+- Desenvolva o conceito com um exemplo concreto do dia a dia de quem treina e come, cite a evidência de forma natural quando houver, e feche com uma micro-ação prática para hoje.
 - Encerre com: "Bora. O sistema está com você."`;
 
     const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
