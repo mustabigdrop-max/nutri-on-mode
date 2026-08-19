@@ -7,7 +7,11 @@ import {
   calculateTMB, getMacroDistribution, idealWeightKg, bmi, leanMassKg,
   type BodyProfileType, type BodyProfile,
 } from "@/lib/bodyProfile";
-import { SPECIAL_CONDITIONS, getSpecialCondition } from "@/lib/specialConditions";
+import {
+  SPECIAL_CONDITIONS, getSpecialCondition, sodiumTargetForConditions, effectiveSodiumTarget,
+  sodiumTier, sodiumSplit, sodiumAvoidList,
+  SODIUM_TARGET_MIN_MG, SODIUM_TARGET_MAX_MG,
+} from "@/lib/specialConditions";
 
 const GOLD = "#B8922A";
 const EMERALD = "#00C896";
