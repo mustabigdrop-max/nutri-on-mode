@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { Plus, Loader2, Trophy, BarChart3, MessageCircle, Trash2 } from "lucide-react";
+import { Plus, Loader2, Trophy, BarChart3, MessageCircle, Trash2, Monitor, UserCheck, Flame } from "lucide-react";
 import { brl, openWhatsApp, slugify } from "@/lib/gymBusiness";
 
 type Challenge = {
@@ -26,6 +26,10 @@ type Challenge = {
 };
 
 type GymLite = { id: string; name: string; neighborhood: string | null; city: string | null; challenge_slug: string | null };
+type Participant = {
+  id: string; challenge_id: string; full_name: string; email: string | null; whatsapp: string | null;
+  tier: string; mce_score: number; streak: number; status: string; migrated_to_client: boolean;
+};
 type Signup = { gym_slug: string | null; paid: boolean; plano: string | null; full_name: string | null; email: string; created_at: string };
 
 const addDays = (d: string, n: number) => {
@@ -41,19 +45,24 @@ export default function BusinessChallengesTab() {
   const [challenges, setChallenges] = useState<Challenge[] | null>(null);
   const [gyms, setGyms] = useState<GymLite[]>([]);
   const [signups, setSignups] = useState<Signup[]>([]);
+  const [participants, setParticipants] = useState<Participant[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({ gym_id: "", name: "", start_date: today(), end_date: addDays(today(), 90), commission: 25 });
 
   const load = useCallback(async () => {
-    const [c, g, s] = await Promise.all([
+    const [c, g, s, pt] = await Promise.all([
       supabase.from("gym_challenges").select("id, gym_id, name, slug, start_date, end_date, status, commission_percent, qr_code_url").order("start_date", { ascending: false }),
       supabase.from("partner_gyms").select("id, name, neighborhood, city, challenge_slug"),
       supabase.from("challenge_signups").select("gym_slug, paid, plano, full_name, email, created_at").order("created_at", { ascending: false }),
+      supabase.from("challenge_participants")
+        .select("id, challenge_id, full_name, email, whatsapp, tier, mce_score, streak, status, migrated_to_client")
+        .order("mce_score", { ascending: false }),
     ]);
     setChallenges((c.data as Challenge[]) ?? []);
     setGyms((g.data as unknown as GymLite[]) ?? []);
     setSignups((s.data as Signup[]) ?? []);
+    setParticipants((pt.data as unknown as Participant[]) ?? []);
   }, []);
 
   useEffect(() => { load(); }, [load]);
@@ -75,7 +84,7 @@ export default function BusinessChallengesTab() {
       end_date: form.end_date,
       commission_percent: form.commission,
       status: form.start_date <= today() ? "active" : "upcoming",
-      qr_code_url: `https://nutrion.app.br/desafio-21?gym=${slug}`,
+      qr_code_url: `https://nutrion.app.br/desafio/${slug}`,
     });
     if (!error && form.gym_id) {
       await supabase.from("partner_gyms").update({ challenge_slug: slug, active: true }).eq("id", form.gym_id);
@@ -85,6 +94,15 @@ export default function BusinessChallengesTab() {
     toast.success("Desafio criado e QR Code gerado.");
     setShowForm(false);
     setForm({ gym_id: "", name: "", start_date: today(), end_date: addDays(today(), 90), commission: 25 });
+    load();
+  };
+
+  const migrateToClient = async (p: Participant) => {
+    const { error } = await supabase.functions.invoke("challenge-migrate-participant", {
+      body: { participant_id: p.id },
+    });
+    if (error) return toast.error("Não foi possível migrar este participante.");
+    toast.success(`${p.full_name} virou aluno nutriON.`);
     load();
   };
 
@@ -156,7 +174,7 @@ export default function BusinessChallengesTab() {
         const totalDays = Math.max(1, Math.round((+new Date(c.end_date) - +new Date(c.start_date)) / 86400000));
         const day = Math.min(totalDays, Math.max(0, Math.round((Date.now() - +new Date(`${c.start_date}T12:00:00`)) / 86400000)));
         const pct = Math.round((day / totalDays) * 100);
-        const url = c.qr_code_url || `https://nutrion.app.br/desafio-21?gym=${c.slug}`;
+        const url = c.qr_code_url || `https://nutrion.app.br/desafio/${c.slug}`;
         const pctOf = (n: number) => (list.length ? Math.round((n / list.length) * 100) : 0);
 
         return (
@@ -204,6 +222,43 @@ export default function BusinessChallengesTab() {
                 ))}
               </div>
 
+              {(() => {
+                const parts = participants.filter((p) => p.challenge_id === c.id);
+                if (parts.length === 0) return null;
+                return (
+                  <div className="rounded-lg border border-border p-3 space-y-2">
+                    <p className="text-xs font-semibold flex items-center gap-1.5">
+                      <UserCheck className="w-3.5 h-3.5 text-amber-500" /> Participantes ({parts.length})
+                    </p>
+                    {parts.slice(0, 10).map((p, i) => (
+                      <div key={p.id} className="flex items-center gap-2 text-xs">
+                        <span className="w-6 text-muted-foreground">{i + 1}.</span>
+                        <span className="flex-1 truncate">{p.full_name}</span>
+                        <span className="text-muted-foreground flex items-center gap-1">
+                          <Flame className="w-3 h-3 text-orange-400" />{p.streak}d
+                        </span>
+                        <span className="font-bold text-amber-500 tabular-nums">{p.mce_score}</span>
+                        <span className="uppercase text-[10px] text-muted-foreground">{p.tier}</span>
+                        {p.whatsapp && (
+                          <Button size="icon" variant="ghost" className="h-6 w-6"
+                            onClick={() => openWhatsApp(p.whatsapp!, `Fala ${p.full_name.split(" ")[0]}! Aqui é o Diogo Mello. Como foi seu check-in de hoje no ${c.name}?`)}>
+                            <MessageCircle className="w-3.5 h-3.5" />
+                          </Button>
+                        )}
+                        {p.migrated_to_client ? (
+                          <span className="text-[10px] text-emerald-500">aluno</span>
+                        ) : (
+                          <Button size="sm" variant="outline" className="h-6 px-2 text-[10px]"
+                            onClick={() => migrateToClient(p)}>
+                            Virar aluno
+                          </Button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
+
               <div className="flex flex-wrap items-center gap-2">
                 <div className="p-2 bg-white rounded-lg">
                   <QRCodeSVG value={url} size={92} bgColor="#ffffff" fgColor="#05070C" level="M" />
@@ -211,6 +266,10 @@ export default function BusinessChallengesTab() {
                 <div className="flex flex-col gap-2">
                   <Button size="sm" variant="outline" className="gap-1" onClick={() => navigate("/mce/business/challenges")}>
                     <BarChart3 className="w-3.5 h-3.5" /> Relatório
+                  </Button>
+                  <Button size="sm" variant="outline" className="gap-1"
+                    onClick={() => window.open(`/wall/${c.slug}`, "_blank")}>
+                    <Monitor className="w-3.5 h-3.5" /> The Wall (TV)
                   </Button>
                   <Button size="sm" variant="outline" className="gap-1"
                     onClick={() =>
