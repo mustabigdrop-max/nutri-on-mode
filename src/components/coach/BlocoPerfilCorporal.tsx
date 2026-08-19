@@ -7,6 +7,7 @@ import {
   calculateTMB, getMacroDistribution, idealWeightKg, bmi, leanMassKg,
   type BodyProfileType, type BodyProfile,
 } from "@/lib/bodyProfile";
+import { SPECIAL_CONDITIONS, getSpecialCondition } from "@/lib/specialConditions";
 
 const GOLD = "#B8922A";
 const EMERALD = "#00C896";
@@ -35,6 +36,8 @@ export interface PerfilCorporalState {
   waist: string;
   abwFactor: number;
   comorbidities: string[];
+  /** Condições especiais (lipedema, SOP...) — coexistem com qualquer perfil. */
+  specialConditions: string[];
   source: "manual" | "apex_visual";
   fatDistribution?: string;
   muscleDevelopment?: string;
@@ -49,6 +52,7 @@ export const PERFIL_CORPORAL_DEFAULT: PerfilCorporalState = {
   waist: "",
   abwFactor: 0.25,
   comorbidities: [],
+  specialConditions: [],
   source: "manual",
   visualIndicators: [],
   nutritionalPriorities: [],
@@ -250,6 +254,23 @@ export default function BlocoPerfilCorporal({
         ? value.comorbidities.filter((x) => x !== c)
         : [...value.comorbidities, c],
     });
+
+  const specials = value.specialConditions || [];
+  const activeSpecials = specials
+    .map(getSpecialCondition)
+    .filter((c): c is NonNullable<ReturnType<typeof getSpecialCondition>> => !!c && !!c.macros);
+  const toggleSpecial = (k: string) => {
+    const next = specials.includes(k) ? specials.filter((x) => x !== k) : [...specials, k];
+    onChange({ specialConditions: next });
+    if (athleteId) {
+      supabase
+        .from("profiles")
+        .update({ special_conditions: next })
+        .eq("user_id", athleteId)
+        .then(({ error }) => { if (error) console.error("[condicoes-especiais] update", error); });
+    }
+  };
+
 
   const changed = suggestion && previous?.body_profile && previous.body_profile !== suggestion.suggested_profile;
 
@@ -460,6 +481,53 @@ export default function BlocoPerfilCorporal({
           Nenhuma
         </button>
       </div>
+
+      {/* Condições especiais */}
+      <div style={{ ...label, color: MUTED, marginBottom: 8 }}>Condições especiais</div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>
+        {SPECIAL_CONDITIONS.map((c) => {
+          const active = specials.includes(c.key);
+          const hero = c.key === "lipedema";
+          const accent = hero ? CYAN : EMERALD;
+          return (
+            <button key={c.key} type="button" onClick={() => toggleSpecial(c.key)}
+              style={{
+                padding: "7px 12px", cursor: "pointer",
+                background: active ? `${accent}15` : "#020205",
+                border: `1px solid ${active ? accent : "#ffffff14"}`,
+                color: active ? accent : MUTED, fontSize: 12,
+                fontWeight: hero ? 800 : 600, fontFamily: "inherit",
+                letterSpacing: hero ? ".06em" : undefined,
+              }}>{active ? "☑ " : "☐ "}{c.label}</button>
+          );
+        })}
+      </div>
+
+      {activeSpecials.map((c) => (
+        <div key={c.key} style={{ marginBottom: 14, padding: 14, background: "#020205", border: `1px solid ${CYAN}33`, borderLeft: `2px solid ${CYAN}` }}>
+          <div style={{ ...label, color: CYAN, marginBottom: 6 }}>Protocolo · {c.label}</div>
+          {c.short && <div style={{ fontSize: 11.5, color: MUTED, lineHeight: 1.6, marginBottom: 10 }}>{c.short}</div>}
+          <div style={{ fontSize: 12, color: TEXT, lineHeight: 1.8, marginBottom: 10 }}>
+            {c.activates.map((a) => <div key={a}>→ {a}</div>)}
+          </div>
+          {c.macros && (
+            <div style={{ fontFamily: MONO, fontSize: 11, color: TEXT, marginBottom: 10 }}>
+              MACROS: P {c.macros.protein[0]}–{c.macros.protein[1]}% · C {c.macros.carb[0]}–{c.macros.carb[1]}% · G {c.macros.fat[0]}–{c.macros.fat[1]}%
+              {c.sodiumMaxMg ? ` · SÓDIO < ${c.sodiumMaxMg}mg/dia` : ""}
+            </div>
+          )}
+          {!!c.supplements?.length && (
+            <div style={{ fontSize: 11.5, color: MUTED, lineHeight: 1.7 }}>
+              <div style={{ color: TEXT, fontWeight: 700, marginBottom: 4 }}>Suplementação sugerida</div>
+              {c.supplements.map((s) => (
+                <div key={s.name}>{s.optional ? "☐" : "☑"} {s.name} — {s.dose}</div>
+              ))}
+              <div style={{ marginTop: 8, color: GOLD }}>⚠️ O sistema sugere, o médico/nutrólogo decide.</div>
+            </div>
+          )}
+        </div>
+      ))}
+
 
       {/* Prévia do cálculo */}
       {tmb && macros ? (

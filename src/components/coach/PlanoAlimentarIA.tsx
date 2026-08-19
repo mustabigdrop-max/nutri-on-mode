@@ -26,6 +26,7 @@ import {
 import { QuickClientBar, BlocoSomatotipo, BlocoPerfilDigestivo, BlocoPerfilAutonomico, BlocoHistoricoMetabolico, BlocoModoDieta, BlocoSaciedade, BlocoExamesLaboratoriais, BlocoNutrientIntelligence, BlocoCicloMenstrual, BlocoVidaRealCalorimetria } from "./NutriPlanIntelligenceBlocks";
 import BlocoPerfilCorporal, { PERFIL_CORPORAL_DEFAULT, toBodyProfile, type PerfilCorporalState } from "./BlocoPerfilCorporal";
 import { calculateTMB, getMacroDistribution, buildBodyProfileContext } from "@/lib/bodyProfile";
+import { buildSpecialConditionsContext } from "@/lib/specialConditions";
 import {
   INTEL_DEFAULT, SMART_DEFAULTS, ELITE_CHIPS, FEMININO_CHIPS, buildIntelContext,
   type IntelState, type QuickProfile,
@@ -1433,6 +1434,7 @@ export default function PlanoAlimentarIA() {
         parts.push(...buildBodyProfileContext(bp, calculateTMB(bp), getMacroDistribution(bp, goal)));
       }
     }
+    parts.push(...buildSpecialConditionsContext(perfilCorporal.specialConditions || []));
     if (condicoesClinicas.length) parts.push(`CONDIÇÕES CLÍNICAS: ${condicoesClinicas.join(", ")}`);
     if (recuperacao.estrategias.length) parts.push(`ESTRATÉGIAS DE RECUPERAÇÃO: ${recuperacao.estrategias.join(", ")}`);
     if (recuperacao.nivelEstresse) parts.push(`NÍVEL DE ESTRESSE: ${recuperacao.nivelEstresse}`);
