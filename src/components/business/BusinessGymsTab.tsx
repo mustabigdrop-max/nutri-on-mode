@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
   GYM_STATUSES, GYM_TYPES, Gym, GymStatus, gymPhone, openWhatsApp,
-  statusMeta, WA_TEMPLATES, buildWhatsAppMessage, templateForStatus,
+  statusMeta, WA_TEMPLATES, buildWhatsAppMessage, templateForStatus, nextFollowUpDate,
 } from "@/lib/gymBusiness";
 import GymKanbanBoard from "./GymKanbanBoard";
 import BulkWhatsAppDialog from "./BulkWhatsAppDialog";
@@ -127,7 +127,10 @@ export default function BusinessGymsTab({ onChanged }: { onChanged?: () => void 
   };
 
   const moveStatus = async (gym: Gym, status: GymStatus) => {
-    const patch: { status: GymStatus; contacted_at?: string; visited_at?: string; closed_at?: string } = { status };
+    const patch: { status: GymStatus; contacted_at?: string; visited_at?: string; closed_at?: string; next_followup_at?: string } = {
+      status,
+      next_followup_at: nextFollowUpDate(status).toISOString(),
+    };
     if (status === "prospectada" && !gym.contacted_at) patch.contacted_at = new Date().toISOString();
     if (status === "visitada" && !gym.visited_at) patch.visited_at = new Date().toISOString();
     if (status === "fechada") patch.closed_at = new Date().toISOString();
@@ -145,7 +148,10 @@ export default function BusinessGymsTab({ onChanged }: { onChanged?: () => void 
 
     const results = await Promise.all(
       list.map((gym) => {
-        const patch: { status: GymStatus; contacted_at?: string; visited_at?: string; closed_at?: string } = { status };
+        const patch: { status: GymStatus; contacted_at?: string; visited_at?: string; closed_at?: string; next_followup_at?: string } = {
+          status,
+          next_followup_at: nextFollowUpDate(status).toISOString(),
+        };
         if (status === "prospectada" && !gym.contacted_at) patch.contacted_at = now;
         if (status === "visitada" && !gym.visited_at) patch.visited_at = now;
         if (status === "fechada") patch.closed_at = now;
@@ -173,6 +179,8 @@ export default function BusinessGymsTab({ onChanged }: { onChanged?: () => void 
     const tpl = WA_TEMPLATES.find((t) => t.id === templateId);
     await logInteraction(gym.id, "whatsapp", `WhatsApp enviado (lote) — ${tpl?.label ?? templateId}`);
     if (gym.status === "nao_contactada") await moveStatus(gym, "prospectada");
+    else await supabase.from("partner_gyms")
+      .update({ next_followup_at: nextFollowUpDate(gym.status).toISOString() }).eq("id", gym.id);
     onChanged?.();
   };
 
@@ -184,6 +192,8 @@ export default function BusinessGymsTab({ onChanged }: { onChanged?: () => void 
     toast.success(`WhatsApp aberto · ${tpl.label}`);
     await logInteraction(gym.id, "whatsapp", `WhatsApp enviado — ${tpl.label}`);
     if (gym.status === "nao_contactada") moveStatus(gym, "prospectada");
+    else await supabase.from("partner_gyms")
+      .update({ next_followup_at: nextFollowUpDate(gym.status).toISOString() }).eq("id", gym.id);
   };
 
   const saveNote = async (gym: Gym) => {
