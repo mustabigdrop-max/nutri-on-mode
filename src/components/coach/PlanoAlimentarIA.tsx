@@ -26,6 +26,7 @@ import {
 import { QuickClientBar, BlocoSomatotipo, BlocoPerfilDigestivo, BlocoPerfilAutonomico, BlocoHistoricoMetabolico, BlocoModoDieta, BlocoSaciedade, BlocoExamesLaboratoriais, BlocoNutrientIntelligence, BlocoCicloMenstrual, BlocoVidaRealCalorimetria } from "./NutriPlanIntelligenceBlocks";
 import BlocoPerfilCorporal, { PERFIL_CORPORAL_DEFAULT, toBodyProfile, type PerfilCorporalState } from "./BlocoPerfilCorporal";
 import { calculateTMB, getMacroDistribution, buildBodyProfileContext } from "@/lib/bodyProfile";
+import { buildSpecialConditionsContext } from "@/lib/specialConditions";
 import {
   INTEL_DEFAULT, SMART_DEFAULTS, ELITE_CHIPS, FEMININO_CHIPS, buildIntelContext,
   type IntelState, type QuickProfile,
