@@ -46,7 +46,10 @@ export interface ChallengeDailyLog {
   mood: string | null;
   training_done: boolean;
   points: number;
+  day_completed: boolean;
+  checkin_at: string | null;
 }
+
 
 export function useChallenge() {
   const { user, loading: authLoading } = useAuth();
