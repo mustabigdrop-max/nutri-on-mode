@@ -13,6 +13,8 @@ export interface ChallengeReportRow {
   days_completed: number;
   photos: number;
   migrated_to_client: boolean;
+  checkin_rate?: number;
+  completion_rate?: number;
 }
 
 export interface ChallengeReportMeta {
@@ -22,6 +24,9 @@ export interface ChallengeReportMeta {
   endDate: string;
   day: number;
   totalDays: number;
+  periodLabel?: string;
+  periodStart?: string;
+  periodEnd?: string;
 }
 
 export function reportMetrics(rows: ChallengeReportRow[]) {
@@ -38,13 +43,22 @@ export function reportMetrics(rows: ChallengeReportRow[]) {
     .filter((d): d is number => d !== null);
   const avgDelta = deltas.length ? deltas.reduce((s, d) => s + d, 0) / deltas.length : 0;
   const migrated = rows.filter((r) => r.migrated_to_client).length;
-  return { total, free, premium, vip, paid, conversion, avgScore, avgStreak, avgDelta, migrated };
+  const avgCheckin = total ? Math.round(rows.reduce((s, r) => s + (r.checkin_rate ?? 0), 0) / total) : 0;
+  const avgCompletion = total ? Math.round(rows.reduce((s, r) => s + (r.completion_rate ?? 0), 0) / total) : 0;
+  return { total, free, premium, vip, paid, conversion, avgScore, avgStreak, avgDelta, migrated, avgCheckin, avgCompletion };
 }
 
 const delta = (r: ChallengeReportRow) =>
   r.weight_start != null && r.weight_current != null
     ? `${(r.weight_current - r.weight_start > 0 ? "+" : "")}${(r.weight_current - r.weight_start).toFixed(1)}`
     : "—";
+
+const sig = (n: number) => `${n > 0 ? "+" : ""}${n}`;
+
+const periodText = (meta: ChallengeReportMeta) =>
+  meta.periodStart && meta.periodEnd
+    ? `${meta.periodLabel ?? "Período"}: ${new Date(`${meta.periodStart}T12:00:00`).toLocaleDateString("pt-BR")} a ${new Date(`${meta.periodEnd}T12:00:00`).toLocaleDateString("pt-BR")}`
+    : `${meta.startDate} a ${meta.endDate}`;
 
 function download(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob);
@@ -55,39 +69,61 @@ function download(blob: Blob, filename: string) {
   URL.revokeObjectURL(url);
 }
 
-export function exportChallengeCSV(meta: ChallengeReportMeta, rows: ChallengeReportRow[]) {
+export function exportChallengeCSV(
+  meta: ChallengeReportMeta,
+  rows: ChallengeReportRow[],
+  prev?: ChallengeReportRow[] | null,
+) {
   const head = [
     "Nome", "Email", "WhatsApp", "Plano", "MCE Score", "Streak (dias)",
     "Peso inicial", "Peso atual", "Variação (kg)", "Dias registrados",
-    "Dias concluídos", "Fotos", "Virou aluno",
+    "Dias concluídos", "Check-in (%)", "Conclusão (%)", "Fotos", "Virou aluno",
   ];
   const esc = (v: unknown) => `"${String(v ?? "").replace(/"/g, '""')}"`;
   const body = rows.map((r) =>
     [
       r.full_name, r.email ?? "", r.whatsapp ?? "", r.tier.toUpperCase(), r.mce_score, r.streak,
       r.weight_start ?? "", r.weight_current ?? "", delta(r), r.days_logged, r.days_completed,
-      r.photos, r.migrated_to_client ? "sim" : "não",
+      r.checkin_rate ?? "", r.completion_rate ?? "", r.photos, r.migrated_to_client ? "sim" : "não",
     ].map(esc).join(","),
   );
   const m = reportMetrics(rows);
+  const cmp = prev && prev.length ? reportMetrics(prev) : null;
   const summary = [
     `"${meta.challengeName} — Dia ${meta.day}/${meta.totalDays}"`,
+    `"Período","${periodText(meta)}"`,
     `"Participantes",${m.total}`,
     `"Free",${m.free}`,
     `"Premium",${m.premium}`,
     `"VIP",${m.vip}`,
     `"Conversão FREE→Pago (%)",${m.conversion}`,
     `"MCE Score médio",${m.avgScore}`,
+    `"Taxa de check-in (%)",${m.avgCheckin}`,
+    `"Taxa de conclusão do dia (%)",${m.avgCompletion}`,
+    ...(cmp
+      ? [
+          `"Período anterior — check-in (%)",${cmp.avgCheckin}`,
+          `"Período anterior — conclusão (%)",${cmp.avgCompletion}`,
+          `"Evolução check-in (p.p.)",${m.avgCheckin - cmp.avgCheckin}`,
+          `"Evolução conclusão (p.p.)",${m.avgCompletion - cmp.avgCompletion}`,
+          `"Evolução MCE médio",${m.avgScore - cmp.avgScore}`,
+        ]
+      : []),
     "",
   ];
   const csv = "\uFEFF" + [...summary, head.map(esc).join(","), ...body].join("\n");
   download(new Blob([csv], { type: "text/csv;charset=utf-8" }), `desafio-${meta.challengeName.toLowerCase().replace(/\s+/g, "-")}.csv`);
 }
 
-export function exportChallengePDF(meta: ChallengeReportMeta, rows: ChallengeReportRow[]) {
+export function exportChallengePDF(
+  meta: ChallengeReportMeta,
+  rows: ChallengeReportRow[],
+  prev?: ChallengeReportRow[] | null,
+) {
   const doc = new jsPDF({ unit: "pt", format: "a4" });
   const W = doc.internal.pageSize.getWidth();
   const m = reportMetrics(rows);
+  const cmp = prev && prev.length ? reportMetrics(prev) : null;
   let y = 56;
 
   doc.setFillColor(5, 7, 12);
@@ -104,7 +140,7 @@ export function exportChallengePDF(meta: ChallengeReportMeta, rows: ChallengeRep
     40,
     64,
   );
-  doc.text("Transformação é sistema. · Coach Diogo Mello · nutrion.app.br", 40, 78);
+  doc.text(`Transformação é sistema. · Coach Diogo Mello · ${periodText(meta)}`, 40, 78);
   y = 122;
 
   doc.setTextColor(20, 20, 20);
@@ -118,6 +154,13 @@ export function exportChallengePDF(meta: ChallengeReportMeta, rows: ChallengeRep
     `Participantes: ${m.total}   ·   Free: ${m.free}   ·   Premium: ${m.premium}   ·   VIP: ${m.vip}`,
     `Conversão FREE → Pago: ${m.conversion}%   ·   Migrados para aluno nutriON: ${m.migrated}`,
     `MCE Score médio: ${m.avgScore}   ·   Streak médio: ${m.avgStreak} dias   ·   Variação média de peso: ${m.avgDelta.toFixed(1)} kg`,
+    `Taxa de check-in: ${m.avgCheckin}%   ·   Taxa de conclusão do dia: ${m.avgCompletion}%`,
+    ...(cmp
+      ? [
+          `Período anterior: check-in ${cmp.avgCheckin}% · conclusão ${cmp.avgCompletion}% · MCE ${cmp.avgScore}`,
+          `Evolução: check-in ${sig(m.avgCheckin - cmp.avgCheckin)} p.p. · conclusão ${sig(m.avgCompletion - cmp.avgCompletion)} p.p. · MCE ${sig(m.avgScore - cmp.avgScore)}`,
+        ]
+      : []),
   ];
   overview.forEach((line) => { doc.text(line, 40, y); y += 14; });
   y += 10;
@@ -134,9 +177,10 @@ export function exportChallengePDF(meta: ChallengeReportMeta, rows: ChallengeRep
     { l: "Streak", x: 280 },
     { l: "Peso", x: 330 },
     { l: "Δ kg", x: 400 },
-    { l: "Dias", x: 445 },
-    { l: "Fotos", x: 490 },
-    { l: "Aluno", x: 530 },
+    { l: "Dias", x: 440 },
+    { l: "CI/CD %", x: 478 },
+    { l: "Fotos", x: 522 },
+    { l: "Aluno", x: 552 },
   ];
   const header = () => {
     doc.setFillColor(240, 240, 240);
@@ -169,6 +213,7 @@ export function exportChallengePDF(meta: ChallengeReportMeta, rows: ChallengeRep
         peso,
         delta(r),
         `${r.days_completed}/${r.days_logged}`,
+        `${r.checkin_rate ?? 0}/${r.completion_rate ?? 0}`,
         String(r.photos),
         r.migrated_to_client ? "sim" : "—",
       ];
