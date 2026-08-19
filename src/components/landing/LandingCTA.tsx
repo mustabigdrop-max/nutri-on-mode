@@ -164,14 +164,16 @@ const LandingCTA = () => {
         transition={{ duration: 0.5, delay: 0.6 }}
         className="relative mb-10"
       >
-        <a
-          href="https://pay.kiwify.com.br/G8uxU9O"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-block bg-black text-primary font-heading text-[1.3rem] tracking-[.1em] px-[52px] py-5 rounded-[2px] hover:bg-foreground hover:text-black transition-all"
-        >
-          Entrar no modo ON →
-        </a>
+        <span className="relative inline-block cta-energy-ring">
+          <a
+            href="https://pay.kiwify.com.br/G8uxU9O"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="relative inline-block bg-black text-primary font-heading text-[1.3rem] tracking-[.1em] px-[52px] py-5 rounded-[2px] hover:bg-foreground hover:text-black transition-all"
+          >
+            Entrar no modo ON →
+          </a>
+        </span>
       </motion.div>
 
       {/* Social proof */}
