@@ -27,7 +27,7 @@ const emptyForm = {
 };
 
 const SELECT_COLS =
-  "id, name, city, neighborhood, address, owner_name, owner_phone, contact_name, contact_phone, instagram, estimated_members, gym_type, status, commission_percent, notes, challenge_slug, active, contacted_at, visited_at, closed_at, created_at";
+  "id, name, city, neighborhood, address, owner_name, owner_phone, contact_name, contact_phone, instagram, estimated_members, gym_type, status, commission_percent, notes, challenge_slug, active, contacted_at, visited_at, closed_at, next_followup_at, followup_paused, created_at";
 
 export default function BusinessGymsTab({ onChanged }: { onChanged?: () => void }) {
   const { user } = useAuth();
