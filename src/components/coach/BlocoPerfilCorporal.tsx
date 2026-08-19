@@ -593,7 +593,7 @@ export default function BlocoPerfilCorporal({
           {c.macros && (
             <div style={{ fontFamily: MONO, fontSize: 11, color: TEXT, marginBottom: 10 }}>
               MACROS: P {c.macros.protein[0]}–{c.macros.protein[1]}% · C {c.macros.carb[0]}–{c.macros.carb[1]}% · G {c.macros.fat[0]}–{c.macros.fat[1]}%
-              {c.sodiumMaxMg ? ` · SÓDIO < ${c.sodiumMaxMg}mg/dia` : ""}
+              {c.sodiumMaxMg ? ` · SÓDIO < ${sodiumTarget ?? c.sodiumMaxMg}mg/dia` : ""}
             </div>
           )}
           {!!c.supplements?.length && (
