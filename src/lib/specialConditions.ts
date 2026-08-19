@@ -252,8 +252,98 @@ export function macrosForConditions(keys: string[]): MacroWindow {
   return keys.reduce<MacroWindow>((acc, k) => getSpecialCondition(k)?.macros ?? acc, DEFAULT_MACROS);
 }
 
+/* ── Meta de sódio ────────────────────────────────────────────────── */
+
+export const SODIUM_TARGET_DEFAULT_MG = 2000;
+export const SODIUM_TARGET_MIN_MG = 1000;
+export const SODIUM_TARGET_MAX_MG = 3000;
+
+/** Meta de sódio padrão das condições ativas (a mais restritiva vence). */
+export function sodiumTargetForConditions(keys: string[]): number | null {
+  const values = keys
+    .map((k) => getSpecialCondition(k)?.sodiumMaxMg)
+    .filter((v): v is number => typeof v === "number");
+  return values.length ? Math.min(...values) : null;
+}
+
+/** Meta efetiva: a definida pelo coach tem prioridade sobre o padrão da condição. */
+export function effectiveSodiumTarget(keys: string[], coachTarget?: number | null): number | null {
+  if (coachTarget && coachTarget > 0) return Math.round(coachTarget);
+  return sodiumTargetForConditions(keys);
+}
+
+/** Rigor da meta — recalcula o quanto o plano precisa evitar sódio. */
+export type SodiumTier = "rigoroso" | "moderado" | "flexivel";
+
+export function sodiumTier(targetMg: number): SodiumTier {
+  if (targetMg <= 1500) return "rigoroso";
+  if (targetMg <= 2300) return "moderado";
+  return "flexivel";
+}
+
+/** Estimativa de sódio por porção usual (mg) para sinalização visual. */
+const SODIUM_MAP: { match: RegExp; mg: number; why: string }[] = [
+  { match: /shoyu|molho de soja/i, mg: 900, why: "Shoyu ~900 mg/colher" },
+  { match: /caldo (de )?(carne|galinha)|tempero pronto|sazon/i, mg: 850, why: "Tempero pronto" },
+  { match: /presunto|salsicha|bacon|linguiça|linguica|mortadela|salame|embutido/i, mg: 700, why: "Embutido" },
+  { match: /queijo (parmes[ãa]o|prato|coalho)|requeij[ãa]o/i, mg: 450, why: "Queijo curado" },
+  { match: /enlatado|conserva|azeitona|atum em [óo]leo|milho em conserva/i, mg: 400, why: "Conserva" },
+  { match: /p[ãa]o (franc[êe]s|de forma)|biscoito|torrada|salgadinho/i, mg: 350, why: "Panificado / snack" },
+  { match: /peito de peru|blanquet/i, mg: 320, why: "Processado" },
+  { match: /whey|isolado proteico/i, mg: 120, why: "Suplemento" },
+  { match: /ricota|queijo minas|iogurte/i, mg: 90, why: "Lácteo" },
+];
+
+export interface SodiumBadge {
+  mg: number;
+  why: string;
+  level: "alto" | "moderado";
+}
+
+/**
+ * Sinaliza alimentos ricos em sódio de acordo com a meta ativa.
+ * Quanto menor a meta, mais itens sobem para o nível "alto".
+ */
+export function sodiumBadge(foodName: string, targetMg: number): SodiumBadge | null {
+  if (!foodName || !targetMg) return null;
+  const hit = SODIUM_MAP.find((s) => s.match.test(foodName));
+  if (!hit) return null;
+  // Um item vale "alto" quando sozinho consome >= 25% da meta do dia.
+  const level: SodiumBadge["level"] = hit.mg >= targetMg * 0.25 ? "alto" : "moderado";
+  return { mg: hit.mg, why: hit.why, level };
+}
+
+/** Alimentos que o plano deve evitar por causa da meta de sódio escolhida. */
+export function sodiumAvoidList(targetMg: number): string[] {
+  const tier = sodiumTier(targetMg);
+  const base = [
+    "Shoyu e molhos prontos",
+    "Temperos industrializados e caldos em cubo",
+    "Embutidos (presunto, salsicha, bacon, linguiça)",
+    "Enlatados e conservas",
+  ];
+  if (tier === "flexivel") return base;
+  const strict = [...base, "Queijos curados (parmesão, prato, coalho)", "Pães e biscoitos industrializados"];
+  if (tier === "moderado") return strict;
+  return [...strict, "Peito de peru e frios light", "Azeitonas e picles", "Refeições congeladas prontas"];
+}
+
+/** Distribuição sugerida do sódio ao longo do dia (mg por refeição). */
+export function sodiumSplit(targetMg: number) {
+  return [
+    { slot: "Café da manhã", mg: Math.round(targetMg * 0.15) },
+    { slot: "Almoço", mg: Math.round(targetMg * 0.35) },
+    { slot: "Lanche", mg: Math.round(targetMg * 0.1) },
+    { slot: "Jantar", mg: Math.round(targetMg * 0.3) },
+    { slot: "Ceia", mg: Math.round(targetMg * 0.1) },
+  ];
+}
+
 /** Contexto textual injetado no prompt da IA do NutriPlan. */
-export function buildSpecialConditionsContext(keys: string[]): string[] {
+export function buildSpecialConditionsContext(
+  keys: string[],
+  opts?: { sodiumTargetMg?: number | null },
+): string[] {
   const active = keys.map(getSpecialCondition).filter(Boolean) as SpecialCondition[];
   if (!active.length) return [];
 
@@ -262,6 +352,20 @@ export function buildSpecialConditionsContext(keys: string[]): string[] {
   parts.push(
     `DISTRIBUIÇÃO DE MACROS AJUSTADA: proteína ${m.protein[0]}–${m.protein[1]}% · carboidrato ${m.carb[0]}–${m.carb[1]}% · gordura ${m.fat[0]}–${m.fat[1]}%`,
   );
+
+  const sodium = effectiveSodiumTarget(keys, opts?.sodiumTargetMg);
+  if (sodium) {
+    parts.push(
+      [
+        `META DE SÓDIO DEFINIDA PELO COACH: < ${sodium} mg/dia (rigor ${sodiumTier(sodium)})`,
+        `DISTRIBUIÇÃO MÁXIMA DE SÓDIO POR REFEIÇÃO: ${sodiumSplit(sodium)
+          .map((s) => `${s.slot} ≤ ${s.mg} mg`)
+          .join(" · ")}`,
+        `EVITAR POR CAUSA DA META DE SÓDIO: ${sodiumAvoidList(sodium).join("; ")}`,
+        "Informar o sódio estimado (mg) de cada refeição e o total do dia; nunca ultrapassar a meta.",
+      ].join("\n"),
+    );
+  }
 
   for (const c of active) {
     const block: string[] = [`--- ${c.label} ---`];
@@ -274,7 +378,7 @@ export function buildSpecialConditionsContext(keys: string[]): string[] {
     }
     if (c.avoidedFoods?.length) block.push(`ALIMENTOS EVITADOS: ${c.avoidedFoods.join("; ")}`);
     if (c.controversialFoods?.length) block.push(`CONTROVERSOS (avaliar): ${c.controversialFoods.join("; ")}`);
-    if (c.sodiumMaxMg) block.push(`SÓDIO MÁXIMO: ${c.sodiumMaxMg} mg/dia`);
+    if (c.sodiumMaxMg) block.push(`SÓDIO MÁXIMO: ${sodium ?? c.sodiumMaxMg} mg/dia`);
     if (c.hydration?.length) block.push(`HIDRATAÇÃO: ${c.hydration.join("; ")}`);
     if (c.timing?.length)
       block.push(`TIMING:\n${c.timing.map((t) => `  ${t.slot}: ${t.rules.join("; ")}`).join("\n")}`);
@@ -289,6 +393,84 @@ export function buildSpecialConditionsContext(keys: string[]): string[] {
   }
   return parts;
 }
+
+/* ── Checklist do protocolo (plano do cliente) ────────────────────── */
+
+export interface ProtocolChecklistItem {
+  key: string;
+  emoji: string;
+  label: string;
+  detail: string;
+  cadence: "daily" | "weekly";
+  /** Só para itens semanais: quantas vezes na semana. */
+  timesPerWeek?: number;
+}
+
+/** Checklist do protocolo de lipedema, com a meta de sódio já aplicada. */
+export function lipedemaChecklist(sodiumTargetMg = SODIUM_TARGET_DEFAULT_MG): ProtocolChecklistItem[] {
+  const split = sodiumSplit(sodiumTargetMg);
+  return [
+    {
+      key: "omega3",
+      emoji: "🐟",
+      label: "Ômega-3 (2–3 g)",
+      detail: "Tomar junto de uma refeição com gordura — absorção máxima.",
+      cadence: "daily",
+    },
+    {
+      key: "curcuma",
+      emoji: "🌿",
+      label: "Cúrcuma + pimenta-preta",
+      detail: "500–1000 mg de curcumina; a piperina multiplica a absorção.",
+      cadence: "daily",
+    },
+    {
+      key: "sodio",
+      emoji: "🧂",
+      label: `Sódio abaixo de ${sodiumTargetMg} mg`,
+      detail: `${split[1].slot} ≤ ${split[1].mg} mg · ${split[3].slot} ≤ ${split[3].mg} mg. Sem shoyu, tempero pronto ou embutido.`,
+      cadence: "daily",
+    },
+    {
+      key: "hidratacao",
+      emoji: "💧",
+      label: "Hidratação distribuída",
+      detail: "Pequenas doses ao longo do dia; última grande ingestão até 19h.",
+      cadence: "daily",
+    },
+    {
+      key: "cha_verde",
+      emoji: "🍵",
+      label: "Chá verde / gengibre",
+      detail: "2–3 xícaras ao dia + água com limão em jejum.",
+      cadence: "daily",
+    },
+    {
+      key: "jantar_cedo",
+      emoji: "🌙",
+      label: "Jantar até 19h",
+      detail: "Refeição leve, peixe + vegetais, sem carboidrato pesado.",
+      cadence: "daily",
+    },
+    {
+      key: "peixe_semana",
+      emoji: "🐠",
+      label: "Peixe 3x na semana",
+      detail: "Salmão, sardinha ou atum — fonte principal de EPA/DHA.",
+      cadence: "weekly",
+      timesPerWeek: 3,
+    },
+    {
+      key: "sem_ultraprocessado",
+      emoji: "🚫",
+      label: "Semana sem ultraprocessado",
+      detail: "Zero fritura, refrigerante, embutido e álcool.",
+      cadence: "weekly",
+      timesPerWeek: 1,
+    },
+  ];
+}
+
 
 /* ── Badges anti-inflamatórios no plano do cliente ───────────────── */
 
@@ -327,11 +509,19 @@ export function antiInflammatoryBadge(foodName: string): string | null {
 }
 
 /** Score 0–10 de aderência anti-inflamatória de uma refeição. */
-export function antiInflammatoryScore(foods: string[]): number {
+export function antiInflammatoryScore(foods: string[], sodiumTargetMg?: number | null): number {
   const list = foods.filter(Boolean);
   if (!list.length) return 0;
   const good = list.filter((f) => antiInflammatoryBadge(f)).length;
   const bad = list.filter((f) => PRO_INFLAMMATORY.test(f)).length;
-  const raw = (good / list.length) * 10 - bad * 2;
+  const target = sodiumTargetMg && sodiumTargetMg > 0 ? sodiumTargetMg : null;
+  const salty = target
+    ? list.reduce((acc, f) => {
+        const b = sodiumBadge(f, target);
+        return acc + (b ? (b.level === "alto" ? 2 : 1) : 0);
+      }, 0)
+    : 0;
+  const raw = (good / list.length) * 10 - bad * 2 - salty;
   return Math.max(0, Math.min(10, Math.round(raw)));
 }
+

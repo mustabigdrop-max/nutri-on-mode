@@ -14,6 +14,8 @@ import { sanitizeClientText, coachGuidanceText } from "@/lib/clientLanguage";
 import { safeString } from "@/lib/utils";
 import { normalizeFoodItem, type NormalizedFood } from "@/lib/foodSpecificity";
 import { buildShoppingList } from "@/lib/shoppingList";
+import { supabase } from "@/integrations/supabase/client";
+import LipedemaChecklist from "@/components/athlete/LipedemaChecklist";
 
 
 const BG = "#020205";
@@ -192,9 +194,28 @@ const MyPlanPage = () => {
   const [tab, setTab] = useState<"plano" | "mapa">("plano");
   const { config: roleConfig } = useCoachRoleConfig(targetId || undefined);
 
+  const [conditions, setConditions] = useState<{ list: string[]; sodium: number | null }>({ list: [], sodium: null });
+
   useEffect(() => {
     document.title = "Meu Plano Alimentar · NUTRION";
   }, []);
+
+  useEffect(() => {
+    if (!targetId) return;
+    let alive = true;
+    void (async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("special_conditions, sodium_target_mg")
+        .eq("user_id", targetId)
+        .maybeSingle();
+      if (!alive || !data) return;
+      const row = data as { special_conditions?: string[] | null; sodium_target_mg?: number | null };
+      setConditions({ list: row.special_conditions || [], sodium: row.sodium_target_mg ?? null });
+    })();
+    return () => { alive = false; };
+  }, [targetId]);
+
 
   if (loading) {
     return <LoadingState />;
@@ -296,7 +317,12 @@ const MyPlanPage = () => {
               </p>
             )}
 
+            {conditions.list.includes("lipedema") && (
+              <LipedemaChecklist userId={targetId || undefined} sodiumTargetMg={conditions.sodium} />
+            )}
+
             {mealPlan.refeicoes.map((m, i) => (
+
               <MealCard key={i} meal={m} index={i} />
             ))}
 
