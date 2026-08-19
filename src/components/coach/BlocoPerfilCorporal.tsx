@@ -275,6 +275,21 @@ export default function BlocoPerfilCorporal({
     }
   };
 
+  const conditionSodium = sodiumTargetForConditions(specials);
+  const sodiumTarget = effectiveSodiumTarget(specials, value.sodiumTargetMg);
+  const saveSodium = (mg: number | null) => {
+    onChange({ sodiumTargetMg: mg });
+    if (athleteId) {
+      supabase
+        .from("profiles")
+        .update({ sodium_target_mg: mg } as any)
+        .eq("user_id", athleteId)
+        .then(({ error }) => { if (error) console.error("[meta-sodio] update", error); });
+    }
+  };
+
+
+
 
   const changed = suggestion && previous?.body_profile && previous.body_profile !== suggestion.suggested_profile;
 
