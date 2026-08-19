@@ -318,7 +318,7 @@ function drawFooterAllPages(pdf: jsPDF, _data: ApexPDFData) {
     text(pdf, C.gray2);
     pdf.text("nutriON · APEX Visual Intelligence · nutrion.app.br", MARGIN, PAGE_H - 7);
 
-    const tag = "Sua fome nunca foi de comida.";
+    const tag = "Transformação é sistema.";
     const tagW = pdf.getTextWidth(tag);
     text(pdf, C.gold);
     pdf.text(tag, (PAGE_W - tagW) / 2, PAGE_H - 7);

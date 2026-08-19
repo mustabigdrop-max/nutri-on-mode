@@ -2,7 +2,7 @@ const LandingFooter = () => (
   <footer className="bg-[#03030a] border-t border-[#ffffff08] px-6 md:px-12 pt-8 pb-6 flex flex-col gap-4">
     {/* Status bar final */}
     <div className="font-mono text-[9px] text-[#ffffff20] tracking-[0.1em] text-center leading-relaxed pb-4 border-b border-[#ffffff08]">
-      nutrion.app.br · Sua fome nunca foi de comida.{" "}
+      nutrion.app.br · Transformação é sistema.{" "}
       <span className="italic text-[#B8922A30]">O comportamento vem antes do alimento.</span>
     </div>
 

@@ -130,7 +130,9 @@ export default function NutriPlanElitePage() {
           </Button>
           <div>
             <h1 className="text-2xl font-bold text-amber-400">NutriPlan Elite</h1>
+            <p className="text-xs italic text-amber-400/70">Sua fome nunca foi de comida.</p>
             <p className="text-xs text-muted-foreground">Sistema de nutrição de campeonato — 11 blocos integrados</p>
+
           </div>
         </div>
 

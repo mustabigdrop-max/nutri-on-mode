@@ -370,7 +370,7 @@ export default function ErgoVaultPage() {
               className="mb-8 max-w-xl text-base md:text-lg"
               style={{ color: "rgba(237,230,218,0.7)", fontFamily: FONT_UI }}
             >
-              Sua fome nunca foi de comida. O comportamento vem antes do alimento — e a ciência feminina vem antes da prescrição.
+              Transformação é sistema. O comportamento vem antes do alimento — e a ciência feminina vem antes da prescrição.
             </p>
 
             <div className="flex flex-wrap gap-3">

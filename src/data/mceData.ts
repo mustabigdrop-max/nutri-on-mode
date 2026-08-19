@@ -86,7 +86,7 @@ export const PILLAR_DATA: Record<PillarKey, Pillar> = {
       { name: "Roy Baumeister", inst: "Princeton University", year: 2011, concept: "Willpower Depletion", book: "Willpower", insight: "Força de vontade é recurso finito — esgota com o uso. Por isso a sabotagem acontece à NOITE. Solução: automatize o máximo de decisões possível." },
       { name: "James Prochaska", inst: "Univ. Rhode Island", year: 1983, concept: "5 Estágios de Mudança", book: "Transtheoretical Model", insight: "Pré-contemplação → Contemplação → Preparação → Ação → Manutenção. A intervenção errada no estágio errado garante o fracasso." },
     ],
-    quote: "Sua fome nunca foi de comida. O comportamento vem antes do alimento.",
+    quote: "Transformação é sistema. O comportamento vem antes do alimento.",
     diagnostics: [
       { q: "Suas refeições são planejadas com antecedência ou decididas na hora?", ref: "Atomic Habits" },
       { q: "Seu ambiente físico favorece ou sabota seus objetivos de saúde?", ref: "Nudge Theory" },
@@ -151,7 +151,7 @@ export const PROFILES: Profile[] = [
 ];
 
 export const MCE_QUOTES = [
-  "Sua fome nunca foi de comida.",
+  "Transformação é sistema.",
   "Planejamento sem execução é só opinião.",
   "Disciplina não é talento. É arquitetura comportamental.",
   "Genética é o ponto de partida, não o teto.",
