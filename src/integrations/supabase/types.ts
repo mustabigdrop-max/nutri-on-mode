@@ -9028,6 +9028,7 @@ export type Database = {
           registration_type: string | null
           role: string | null
           sex: string | null
+          sodium_target_mg: number | null
           special_conditions: string[]
           sport: string | null
           streak_days: number | null
@@ -9105,6 +9106,7 @@ export type Database = {
           registration_type?: string | null
           role?: string | null
           sex?: string | null
+          sodium_target_mg?: number | null
           special_conditions?: string[]
           sport?: string | null
           streak_days?: number | null
@@ -9182,6 +9184,7 @@ export type Database = {
           registration_type?: string | null
           role?: string | null
           sex?: string | null
+          sodium_target_mg?: number | null
           special_conditions?: string[]
           sport?: string | null
           streak_days?: number | null
