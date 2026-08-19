@@ -2475,30 +2475,39 @@ export type Database = {
       }
       challenge_reminder_logs: {
         Row: {
+          auto: boolean
           challenge_id: string
           created_at: string
           id: string
           kind: string
+          level: number
+          log_date: string
           message: string | null
           participant_id: string
           sent_at: string
           sent_by: string | null
         }
         Insert: {
+          auto?: boolean
           challenge_id: string
           created_at?: string
           id?: string
           kind?: string
+          level?: number
+          log_date?: string
           message?: string | null
           participant_id: string
           sent_at?: string
           sent_by?: string | null
         }
         Update: {
+          auto?: boolean
           challenge_id?: string
           created_at?: string
           id?: string
           kind?: string
+          level?: number
+          log_date?: string
           message?: string | null
           participant_id?: string
           sent_at?: string
@@ -5852,6 +5861,9 @@ export type Database = {
           qr_code_url: string | null
           reminder_checkin_message: string | null
           reminder_checkin_time: string
+          reminder_deadline_time: string
+          reminder_escalation_hours: number[]
+          reminder_escalation_messages: string[]
           reminder_meal_message: string | null
           reminder_meal_times: string[]
           reminders_enabled: boolean
@@ -5875,6 +5887,9 @@ export type Database = {
           qr_code_url?: string | null
           reminder_checkin_message?: string | null
           reminder_checkin_time?: string
+          reminder_deadline_time?: string
+          reminder_escalation_hours?: number[]
+          reminder_escalation_messages?: string[]
           reminder_meal_message?: string | null
           reminder_meal_times?: string[]
           reminders_enabled?: boolean
@@ -5898,6 +5913,9 @@ export type Database = {
           qr_code_url?: string | null
           reminder_checkin_message?: string | null
           reminder_checkin_time?: string
+          reminder_deadline_time?: string
+          reminder_escalation_hours?: number[]
+          reminder_escalation_messages?: string[]
           reminder_meal_message?: string | null
           reminder_meal_times?: string[]
           reminders_enabled?: boolean
