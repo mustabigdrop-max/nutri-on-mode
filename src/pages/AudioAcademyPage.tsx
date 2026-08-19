@@ -556,7 +556,7 @@ export default function AudioAcademyPage({ embedded = false }: { embedded?: bool
                             <p className="text-[11px] truncate" style={{ color: DIM }}>
                               {fmtDur(ep.duration_seconds)}
                               {ep.scientific_reference ? ` · ${ep.scientific_reference}` : ""}
-                              {!ep.audio_url ? " · em breve" : ""}
+                              {!ep.audio_url ? " · toque para narrar" : ""}
                               {isOffline ? " · offline" : ""}
                             </p>
                             {dl != null && (
