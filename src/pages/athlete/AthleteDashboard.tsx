@@ -20,6 +20,8 @@ import DayRoutineTimeline, { type RoutineItem } from "@/components/athlete/DayRo
 import AddActivitySheet from "@/components/athlete/AddActivitySheet";
 import { metActivity } from "@/lib/nutrySyncMet";
 import MceScoreCard from "@/components/athlete/MceScoreCard";
+import MyApexAnalysisCard from "@/components/athlete/MyApexAnalysisCard";
+
 import PraxisFAB from "@/components/praxis/PraxisFAB";
 import {
   CLIMATE_OPTIONS, calculateDailyHydration, detectPhase, activityMeta,
@@ -403,6 +405,10 @@ const AthleteDashboard = ({ overrideUserId, overrideName, viewMode = "normal" }:
 
         {/* MCE */}
         <MceScoreCard userId={targetUserId} readOnly={preview} />
+
+        {/* APEX */}
+        <MyApexAnalysisCard userId={targetUserId} />
+
 
         <button
           onClick={() => !preview && navigate("/audio")}

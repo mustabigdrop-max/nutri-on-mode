@@ -327,22 +327,26 @@ Deno.serve(async (req: Request) => {
     const body = await req.json().catch(() => ({}));
     const { atleta = {}, apexScores = {}, protocolo = "" } = body || {};
 
-    if (!protocolo || String(protocolo).trim().length < 5) {
-      return new Response(JSON.stringify({ error: "Protocolo farmacológico não informado." }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    const protocoloTexto = String(protocolo || "").trim().length >= 5
+      ? String(protocolo)
+      : "NENHUM COMPOSTO INFORMADO — tratar como ATLETA NATURAL: analisar suplementação baseada em evidência (creatina, beta-alanina, citrulina, cafeína), otimização natural (sono, nutrição, periodização) e timeline de suplementação. Preencher todas as seções mantendo a estrutura.";
 
-    const userPrompt = buildUserPrompt(atleta, apexScores, protocolo);
+    const userPrompt = buildUserPrompt(atleta, apexScores, protocoloTexto);
 
-    const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 170_000);
+
+    let resp: Response;
+    try {
+      resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      signal: controller.signal,
       method: "POST",
       headers: {
         Authorization: `Bearer ${LOVABLE_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-pro",
+        model: "google/gemini-2.5-flash",
         messages: [
           { role: "system", content: VERTEX_SYSTEM_PROMPT },
           { role: "user", content: userPrompt },
@@ -350,7 +354,15 @@ Deno.serve(async (req: Request) => {
         tools: [VERTEX_TOOL],
         tool_choice: { type: "function", function: { name: "vertex_analysis" } },
       }),
-    });
+      });
+    } catch (err) {
+      clearTimeout(timeoutId);
+      console.error("[dr-vertex-analyze] fetch aborted/failed", err);
+      return new Response(JSON.stringify({ error: "A análise demorou demais para responder. Tente novamente." }), {
+        status: 504, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    clearTimeout(timeoutId);
 
     if (!resp.ok) {
       const txt = await resp.text();
