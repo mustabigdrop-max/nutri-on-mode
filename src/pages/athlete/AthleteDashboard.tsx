@@ -404,6 +404,10 @@ const AthleteDashboard = ({ overrideUserId, overrideName, viewMode = "normal" }:
         {/* MCE */}
         <MceScoreCard userId={targetUserId} readOnly={preview} />
 
+        {/* APEX */}
+        <MyApexAnalysisCard userId={targetUserId} />
+
+
         <button
           onClick={() => !preview && navigate("/audio")}
           disabled={preview}
