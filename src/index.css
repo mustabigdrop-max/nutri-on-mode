@@ -639,18 +639,26 @@
 }
 .hero-breathe { animation: heroBreathe 8s ease-in-out infinite; }
 
-@keyframes heroRingSpin { to { transform: rotate(360deg); } }
+@property --hero-ring-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+@keyframes heroRingAngle { to { --hero-ring-angle: 360deg; } }
+
 .hero-cta { position: relative; isolation: isolate; }
 .hero-cta::before {
   content: "";
   position: absolute;
   inset: -2px;
   border-radius: 10px;
-  background: conic-gradient(from 0deg, transparent, #00D4FF 25%, transparent 50%, #00FF88 75%, transparent);
-  animation: heroRingSpin 4s linear infinite;
+  background: conic-gradient(from var(--hero-ring-angle), transparent, #00D4FF 25%, transparent 50%, #00FF88 75%, transparent);
+  animation: heroRingAngle 4s linear infinite;
+  will-change: --hero-ring-angle;
   z-index: -2;
   opacity: .75;
 }
+
 .hero-cta::after {
   content: "";
   position: absolute;
@@ -670,3 +678,14 @@
 }
 .logo-n-cyan { animation: logoPulseCyan 3s ease-in-out infinite; }
 .hero-cta:hover::after { background: linear-gradient(rgba(0,212,255,.1), rgba(0,212,255,.1)), #03030a; }
+
+/* Respeita usuários que pedem menos movimento (e poupa bateria no celular) */
+@media (prefers-reduced-motion: reduce) {
+  .hero-cta::before,
+  .logo-n-cyan,
+  .hero-breathe,
+  .hero-tagline-sheen,
+  .hero-tagline-glow,
+  .hero-caret { animation: none !important; }
+  .hero-fade-up { opacity: 1 !important; animation: none !important; }
+}

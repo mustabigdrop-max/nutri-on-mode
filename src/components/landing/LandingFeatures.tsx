@@ -119,7 +119,7 @@ const LandingFeatures = () => {
           to="/modulos"
           className="font-mono text-[.8rem] tracking-[.12em] text-[#00D4FF] hover:text-white transition-colors border-b border-[#00D4FF]/40 pb-1"
         >
-          Ver todos os 19 módulos →
+          Ver todos os {allModules.length} módulos →
         </Link>
       </div>
 
@@ -127,7 +127,7 @@ const LandingFeatures = () => {
       <div ref={statsRef} className="mt-16 bg-[#0a0a1a] rounded-lg" style={{ border: "1px solid transparent", borderTop: "1px solid #ffffff10" }}>
         <div className="px-6 py-5 grid grid-cols-2 md:grid-cols-4 gap-6">
           {[
-            { v: 19, l1: "MÓDULOS", l2: "ATIVOS" },
+            { v: allModules.length, l1: "MÓDULOS", l2: "ATIVOS" },
             { v: 132, l1: "COMPOSTOS", l2: "CATALOGADOS" },
             { v: 28, l1: "TESTES", l2: "CLÍNICOS" },
             { v: 7, l1: "CAMADAS", l2: "STRATUM" },
