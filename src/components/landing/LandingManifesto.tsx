@@ -1,29 +1,10 @@
 import { motion, useInView, useMotionValue, useTransform, animate } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
-import { Eye, FlaskConical, Zap, Dna, Microscope, Brain, Trophy, Users, Activity, Footprints } from "lucide-react";
+import { Trophy, Users, Activity } from "lucide-react";
 
 const GOLD = "#B8922A";
 const CYAN = "#00D4FF";
 const GREEN = "#1D9E75";
-const PURPLE = "#A78BFA";
-const AMBER = "#E8A020";
-
-const moduleCards = [
-  { n: "01", title: "APEX VISUAL INTELLIGENCE", Icon: Eye, color: CYAN,
-    desc: "Análise postural por IA. 33 landmarks biomecânicos, testes clínicos por foto, mapa de dominâncias musculares, protocolo corretivo de 4 fases e exercícios contraindicados por disfunção. O coach sobe a foto. O sistema prescreve." },
-  { n: "02", title: "DR. VERTEX", Icon: FlaskConical, color: PURPLE,
-    desc: "85+ compostos farmacológicos, auditoria de protocolo, damage control por órgão-alvo, PeptideVault e periodização farmacológica. Profundidade que o mercado não tem." },
-  { n: "03", title: "TRAININGON / STRATUM", Icon: Zap, color: AMBER,
-    desc: "7 camadas de periodização, detecção de dominância de fibra muscular, LoadTracker Pro e protocolos gerados por objetivo, fase e perfil do atleta." },
-  { n: "04", title: "NUTRIPLAN", Icon: Dna, color: GREEN,
-    desc: "Crononutrição circadiana, TDEE ajustado por protocolo farmacológico ativo, GLUT-4 Sync, perfil PCA integrado e peak week automático via SRI do APEX." },
-  { n: "05", title: "MICROBIOTA / GUT-BRAIN", Icon: Microscope, color: CYAN,
-    desc: "Análise do eixo intestino-cérebro, modulação da microbiota por nutrição e impacto do microbioma em composição corporal, humor e adesão ao protocolo." },
-  { n: "06", title: "PCA COMPORTAMENTAL", Icon: Brain, color: GOLD,
-    desc: "4 perfis de atleta, metodologia MCE — Mindset, Comportamento, Execução. A IA age antes do abandono. Comportamento vem antes do alimento." },
-  { n: "07", title: "RUNON — CORRIDA + FORÇA", Icon: Footprints, color: CYAN,
-    desc: "Periodização integrada pra corrida e musculação não competirem pelo mesmo estímulo. Muscle Guard preserva hipertrofia enquanto o volume aeróbico sobe. Planos de prova de 5K a 42K com taper e carb load estruturados." },
-];
 
 const audienceCards = [
   { badge: "IFBB / COMPETIÇÃO", color: GOLD, Icon: Trophy, title: "O ATLETA",
@@ -33,33 +14,6 @@ const audienceCards = [
   { badge: "TRANSFORMAÇÃO", color: GREEN, Icon: Activity, title: "O ESTILO DE VIDA",
     text: "Você não compete mas quer resultado real e definitivo. O perfil PCA te conhece antes de qualquer prescrição. O sistema entende seu comportamento, sua rotina e seus gatilhos. Chega de recomeçar do zero. Dessa vez é diferente porque o sistema é diferente." },
 ];
-
-const ModuleCard = ({ n, title, Icon, color, desc, delay, inView }: any) => (
-  <motion.div
-    initial={{ opacity: 0, y: 16 }}
-    animate={inView ? { opacity: 1, y: 0 } : {}}
-    transition={{ duration: 0.5, delay }}
-    className="group relative rounded-lg p-5 transition-all"
-    style={{
-      background: "#0d0d1f",
-      border: "0.5px solid #ffffff15",
-      borderLeft: `2px solid ${GOLD}`,
-    }}
-    onMouseEnter={(e) => {
-      e.currentTarget.style.borderLeft = `2px solid ${CYAN}`;
-      e.currentTarget.style.background = "#13132a";
-    }}
-    onMouseLeave={(e) => {
-      e.currentTarget.style.borderLeft = `2px solid ${GOLD}`;
-      e.currentTarget.style.background = "#0d0d1f";
-    }}
-  >
-    <span className="absolute top-3 right-4 font-mono text-[11px] tracking-wider" style={{ color: GOLD }}>{n}</span>
-    <Icon className="w-5 h-5 mb-3" style={{ color }} />
-    <div className="font-heading font-bold text-white uppercase tracking-[.04em] text-[.95rem] mb-2 leading-tight pr-8">{title}</div>
-    <p className="text-[13px] leading-[1.65]" style={{ color: "#888" }}>{desc}</p>
-  </motion.div>
-);
 
 const AudienceCard = ({ badge, color, Icon, title, text, delay, inView }: any) => {
   const [hover, setHover] = useState(false);
@@ -166,7 +120,7 @@ const LandingManifesto = () => {
             transition={{ duration: 0.6 }}
             className="text-white"
           >
-            O mercado tem apps.
+            Não é mais um app.
           </motion.div>
           <motion.div
             initial={{ opacity: 0, y: 12 }}
@@ -174,9 +128,10 @@ const LandingManifesto = () => {
             transition={{ duration: 0.6, delay: 0.4 }}
             style={{ color: GOLD, textShadow: `0 0 30px ${GOLD}55` }}
           >
-            Você entrou no sistema.
+            É um sistema integrado.
           </motion.div>
         </div>
+
 
         {/* Problema + Solução */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
@@ -187,12 +142,25 @@ const LandingManifesto = () => {
               — O PROBLEMA
             </div>
             <div className="space-y-3 text-[.93rem] leading-[1.85] font-landing" style={{ color: "#a8a8b8" }}>
-              <p>Todo coach já prescreveu treino sem diagnóstico postural.</p>
-              <p>Todo atleta já fez ciclo sem auditoria de protocolo.</p>
-              <p>Todo cliente já recebeu dieta sem análise comportamental.</p>
-              <p>Não é erro do profissional. É limite da ferramenta.</p>
-              <p>O problema nunca foi motivação. Foi falta de <strong style={{ color: GOLD, fontWeight: 700 }}>sistema integrado</strong>.</p>
+              {[
+                <>Todo coach já prescreveu treino sem diagnóstico postural.</>,
+                <>Todo atleta já fez ciclo sem auditoria de protocolo.</>,
+                <>Todo cliente já recebeu dieta sem análise comportamental.</>,
+                <>Não é erro do profissional. É limite da ferramenta.</>,
+                <>O problema nunca foi motivação. Foi falta de <strong style={{ color: GOLD, fontWeight: 700 }}>sistema integrado</strong>.</>,
+              ].map((node, i) => (
+                <motion.p
+                  key={i}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-10%" }}
+                  transition={{ duration: 0.8, delay: i * 0.2, ease: [0.16, 1, 0.3, 1] }}
+                >
+                  {node}
+                </motion.p>
+              ))}
             </div>
+
           </div>
 
           {/* Solução com scan line */}
@@ -211,9 +179,8 @@ const LandingManifesto = () => {
               — A SOLUÇÃO
             </div>
             <div className="space-y-3 text-[.93rem] leading-[1.85] font-landing" style={{ color: "#a8a8b8" }}>
-              <p>Não importa se você está subindo no palco ou querendo mudar sua vida. O problema é o mesmo: você nunca teve um sistema feito para você.</p>
-              <p>Para o atleta IFBB que precisa de diagnóstico postural automatizado, periodização de 7 camadas e auditoria farmacológica de protocolo.</p>
-              <p>Para quem quer perder gordura, dormir melhor e entender por que todas as tentativas anteriores falharam.</p>
+              <p>Pra quem quer resultado real e definitivo.</p>
+              <p>O sistema entende seu corpo, sua rotina e seus limites.</p>
               <p>A ferramenta é a mesma. O nível de profundidade se adapta a você.</p>
             </div>
             <div className="mt-5 text-center font-heading font-bold uppercase tracking-[.06em] text-[1.05rem]" style={{ color: CYAN, textShadow: `0 0 20px ${CYAN}55` }}>
@@ -222,12 +189,7 @@ const LandingManifesto = () => {
           </div>
         </div>
 
-        {/* 6 module cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mb-20">
-          {moduleCards.map((c, i) => (
-            <ModuleCard key={c.n} {...c} delay={0.1 + i * 0.08} inView={inView} />
-          ))}
-        </div>
+
 
         {/* Para quem é o NUTRION */}
         <div ref={audRef} className="relative mb-20">

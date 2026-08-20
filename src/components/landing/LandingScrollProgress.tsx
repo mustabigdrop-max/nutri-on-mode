@@ -26,15 +26,16 @@ const LandingScrollProgress = () => {
   }, []);
 
   return (
-    <div className="fixed top-0 left-0 right-0 h-[2px] z-[200] pointer-events-none">
+    <div className="fixed top-0 left-0 right-0 h-[2px] z-[9999] pointer-events-none">
       <div
         className="h-full origin-left"
         style={{
           transform: `scaleX(${pct})`,
-          background: "linear-gradient(90deg, #E8A020, #00D4FF)",
-          boxShadow: "0 0 12px rgba(232,160,32,.5)",
+          background: "linear-gradient(90deg, #00D4FF, #00FF88)",
+          boxShadow: "0 0 12px rgba(0,212,255,.5)",
           transition: "transform .12s linear",
         }}
+
       />
     </div>
   );
