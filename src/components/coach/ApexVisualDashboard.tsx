@@ -1435,12 +1435,27 @@ Suporte em uso: ${suporte || "não informado"}`;
       console.error("[DR.VERTEX DEBUG] ERRO na análise:", e);
       console.error("[DR.VERTEX DEBUG] Error message:", e?.message);
       const msg = e?.message || "Falha na análise";
+      const raw = `${msg} ${e?.status ?? ""}`.toLowerCase();
+      const kind =
+        /timeout|timed out|abort|deadline|504|gateway/.test(raw)
+          ? "timeout"
+          : /404|not found|function not/.test(raw)
+            ? "not_found"
+            : /401|403|jwt|unauthor|forbidden|auth|api key/.test(raw)
+              ? "auth"
+              : /failed to fetch|network|offline|cors/.test(raw)
+                ? "network"
+                : /sem análise|json|parse|estruturada/.test(raw)
+                  ? "invalid"
+                  : "unknown";
+      setVertexV4ErrorKind(kind as any);
       setVertexV4Error(msg);
       toast({ title: "Erro Dr. VERTEX", description: msg, variant: "destructive" });
     } finally {
       console.log("[DR.VERTEX DEBUG] runVertexV4() finalizado — loading=false");
       setVertexV4Loading(false);
     }
+
   }, [formData, objetivoCiclo, semanaCiclo, duracaoCiclo, suporte, athlete, analysisResult]);
 
   const fetchSyncStatus = useCallback(async (athleteId: string | null) => {
