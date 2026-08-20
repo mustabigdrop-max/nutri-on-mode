@@ -188,12 +188,25 @@ const LandingManifesto = () => {
               — O PROBLEMA
             </div>
             <div className="space-y-3 text-[.93rem] leading-[1.85] font-landing" style={{ color: "#a8a8b8" }}>
-              <p>Todo coach já prescreveu treino sem diagnóstico postural.</p>
-              <p>Todo atleta já fez ciclo sem auditoria de protocolo.</p>
-              <p>Todo cliente já recebeu dieta sem análise comportamental.</p>
-              <p>Não é erro do profissional. É limite da ferramenta.</p>
-              <p>O problema nunca foi motivação. Foi falta de <strong style={{ color: GOLD, fontWeight: 700 }}>sistema integrado</strong>.</p>
+              {[
+                <>Todo coach já prescreveu treino sem diagnóstico postural.</>,
+                <>Todo atleta já fez ciclo sem auditoria de protocolo.</>,
+                <>Todo cliente já recebeu dieta sem análise comportamental.</>,
+                <>Não é erro do profissional. É limite da ferramenta.</>,
+                <>O problema nunca foi motivação. Foi falta de <strong style={{ color: GOLD, fontWeight: 700 }}>sistema integrado</strong>.</>,
+              ].map((node, i) => (
+                <motion.p
+                  key={i}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-10%" }}
+                  transition={{ duration: 0.8, delay: i * 0.2, ease: [0.16, 1, 0.3, 1] }}
+                >
+                  {node}
+                </motion.p>
+              ))}
             </div>
+
           </div>
 
           {/* Solução com scan line */}
