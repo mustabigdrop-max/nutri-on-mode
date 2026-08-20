@@ -18,6 +18,7 @@ import NutrySyncPanel from "@/components/athlete/NutrySyncPanel";
 import HydrationCard from "@/components/athlete/HydrationCard";
 import DayRoutineTimeline, { type RoutineItem } from "@/components/athlete/DayRoutineTimeline";
 import AddActivitySheet from "@/components/athlete/AddActivitySheet";
+import { metActivity } from "@/lib/nutrySyncMet";
 import MceScoreCard from "@/components/athlete/MceScoreCard";
 import PraxisFAB from "@/components/praxis/PraxisFAB";
 import {
@@ -167,7 +168,7 @@ const AthleteDashboard = ({ overrideUserId, overrideName, viewMode = "normal" }:
       });
     }
     activities.forEach((a) => {
-      const meta = activityMeta(a.activity_type);
+      const meta = metActivity(a.activity_type) ?? activityMeta(a.activity_type);
       items.push({
         key: `act-${a.id}`,
         time: new Date(a.created_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
