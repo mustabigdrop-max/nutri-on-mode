@@ -5,8 +5,6 @@ import { Trophy, Users, Activity } from "lucide-react";
 const GOLD = "#B8922A";
 const CYAN = "#00D4FF";
 const GREEN = "#1D9E75";
-const PURPLE = "#A78BFA";
-const AMBER = "#E8A020";
 
 const audienceCards = [
   { badge: "IFBB / COMPETIÇÃO", color: GOLD, Icon: Trophy, title: "O ATLETA",
