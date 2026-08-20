@@ -3,6 +3,35 @@ import { autoDetectAllViews, mergeAiWithMediaPipe, type ApexAutoDetectResult, ty
 import ApexPlanoMestre from "@/components/coach/ApexPlanoMestre";
 import ApexReportExport from "@/components/coach/ApexReportExport";
 
+const VERTEX_ERROR_INFO: Record<string, { icon: string; label: string; hint: string }> = {
+  timeout: {
+    icon: "⏱",
+    label: "Timeout na análise",
+    hint: "O modelo demorou demais para responder. Tente novamente — normalmente conclui em ~45s.",
+  },
+  not_found: {
+    icon: "🔍",
+    label: "Função não encontrada (404)",
+    hint: "A função dr-vertex-analyze não respondeu neste ambiente. Reimplante ou tente de novo em instantes.",
+  },
+  auth: {
+    icon: "🔒",
+    label: "Falha de autenticação",
+    hint: "Sua sessão pode ter expirado. Recarregue a página / faça login novamente e repita.",
+  },
+  network: {
+    icon: "📡",
+    label: "Falha de rede",
+    hint: "Conexão interrompida antes da resposta. Verifique a internet e tente novamente.",
+  },
+  invalid: {
+    icon: "⚠",
+    label: "Resposta inválida",
+    hint: "O retorno veio sem JSON estruturado. Reexecutar costuma resolver.",
+  },
+  unknown: { icon: "⚠", label: "Erro inesperado", hint: "Tente novamente; o detalhe técnico está abaixo." },
+};
+
 import KineticChain, { type KineticChain as KineticChainType } from "@/components/apex/KineticChain";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
