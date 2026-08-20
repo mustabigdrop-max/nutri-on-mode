@@ -6,18 +6,37 @@ const LandingBackground = () => {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext("2d", { alpha: true });
     if (!ctx) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
-    let W = (canvas.width = window.innerWidth);
-    let H = (canvas.height = window.innerHeight);
-    let animId: number;
+    const isMobile = window.matchMedia("(max-width: 768px)").matches;
+    const isCoarse = window.matchMedia("(pointer: coarse)").matches;
+    const COUNT = isMobile ? 28 : 90;
+    const LINK_DIST = isMobile ? 100 : 140;
+    const FRAME_MS = 1000 / (isMobile ? 24 : 45);
+    const dpr = Math.min(window.devicePixelRatio || 1, isMobile ? 1 : 1.5);
+
+    let W = 0;
+    let H = 0;
+    let resizeTimer: number | undefined;
     let mouseX = -9999;
     let mouseY = -9999;
 
+    const resize = () => {
+      W = window.innerWidth;
+      H = window.innerHeight;
+      canvas.width = Math.round(W * dpr);
+      canvas.height = Math.round(H * dpr);
+      canvas.style.width = `${W}px`;
+      canvas.style.height = `${H}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    };
+    resize();
+
     const handleResize = () => {
-      W = canvas.width = window.innerWidth;
-      H = canvas.height = window.innerHeight;
+      window.clearTimeout(resizeTimer);
+      resizeTimer = window.setTimeout(resize, 150);
     };
     const handleMouse = (e: MouseEvent) => {
       mouseX = e.clientX;
@@ -27,9 +46,12 @@ const LandingBackground = () => {
       mouseX = -9999;
       mouseY = -9999;
     };
-    window.addEventListener("resize", handleResize);
-    window.addEventListener("mousemove", handleMouse);
-    window.addEventListener("mouseleave", handleLeave);
+    window.addEventListener("resize", handleResize, { passive: true });
+    // repulsão pelo mouse só faz sentido em ponteiro fino (desktop)
+    if (!isCoarse) {
+      window.addEventListener("mousemove", handleMouse, { passive: true });
+      window.addEventListener("mouseleave", handleLeave);
+    }
 
     class Particle {
       x = Math.random() * W;
@@ -38,84 +60,102 @@ const LandingBackground = () => {
       vy = (Math.random() - 0.5) * 0.25;
       r = Math.random() * 1.5 + 0.4;
       a = Math.random() * 0.6 + 0.2;
-      baseX = this.x;
-      baseY = this.y;
 
       reset() {
         this.x = Math.random() * W;
         this.y = Math.random() * H;
-        this.baseX = this.x;
-        this.baseY = this.y;
         this.vx = (Math.random() - 0.5) * 0.25;
         this.vy = (Math.random() - 0.5) * 0.25;
       }
 
-      update() {
-        // Mouse repulsion
-        const dx = this.x - mouseX;
-        const dy = this.y - mouseY;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        const repelRadius = 160;
-        if (dist < repelRadius && dist > 0) {
-          const force = (repelRadius - dist) / repelRadius;
-          const angle = Math.atan2(dy, dx);
-          this.vx += Math.cos(angle) * force * 0.8;
-          this.vy += Math.sin(angle) * force * 0.8;
+      update(step: number) {
+        if (!isCoarse) {
+          const dx = this.x - mouseX;
+          const dy = this.y - mouseY;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          const repelRadius = 160;
+          if (dist < repelRadius && dist > 0) {
+            const force = (repelRadius - dist) / repelRadius;
+            this.vx += (dx / dist) * force * 0.8;
+            this.vy += (dy / dist) * force * 0.8;
+          }
         }
 
-        // Damping
         this.vx *= 0.96;
         this.vy *= 0.96;
-
-        // Drift
         this.vx += (Math.random() - 0.5) * 0.02;
         this.vy += (Math.random() - 0.5) * 0.02;
 
-        this.x += this.vx;
-        this.y += this.vy;
+        this.x += this.vx * step;
+        this.y += this.vy * step;
         if (this.x < 0 || this.x > W || this.y < 0 || this.y > H) this.reset();
-      }
-
-      draw(ctx: CanvasRenderingContext2D) {
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(232,160,32,${this.a * 0.7})`;
-        ctx.fill();
       }
     }
 
-    const particles = Array.from({ length: 90 }, () => new Particle());
+    const particles = Array.from({ length: COUNT }, () => new Particle());
 
-    const animate = () => {
+    let animId = 0;
+    let running = false;
+    let last = 0;
+
+    const animate = (ts: number) => {
+      animId = requestAnimationFrame(animate);
+      if (ts - last < FRAME_MS) return;
+      const step = Math.min((ts - last) / 16.67, 3);
+      last = ts;
+
       ctx.clearRect(0, 0, W, H);
+      ctx.lineWidth = 0.6;
       for (let i = 0; i < particles.length; i++) {
-        particles[i].update();
-        particles[i].draw(ctx);
+        const p = particles[i];
+        p.update(step);
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(232,160,32,${p.a * 0.7})`;
+        ctx.fill();
+
         for (let j = i + 1; j < particles.length; j++) {
-          const dx = particles[i].x - particles[j].x;
-          const dy = particles[i].y - particles[j].y;
-          const d = Math.sqrt(dx * dx + dy * dy);
-          if (d < 140) {
+          const q = particles[j];
+          const dx = p.x - q.x;
+          const dy = p.y - q.y;
+          const d2 = dx * dx + dy * dy;
+          if (d2 < LINK_DIST * LINK_DIST) {
+            const d = Math.sqrt(d2);
             ctx.beginPath();
-            ctx.moveTo(particles[i].x, particles[i].y);
-            ctx.lineTo(particles[j].x, particles[j].y);
-            ctx.strokeStyle = `rgba(232,160,32,${(1 - d / 140) * 0.12})`;
-            ctx.lineWidth = 0.6;
+            ctx.moveTo(p.x, p.y);
+            ctx.lineTo(q.x, q.y);
+            ctx.strokeStyle = `rgba(232,160,32,${(1 - d / LINK_DIST) * 0.12})`;
             ctx.stroke();
           }
         }
       }
+    };
+
+    const start = () => {
+      if (running) return;
+      running = true;
+      last = performance.now();
       animId = requestAnimationFrame(animate);
     };
-    animate();
+    const stop = () => {
+      running = false;
+      cancelAnimationFrame(animId);
+    };
+    start();
+
+    const onVis = () => (document.hidden ? stop() : start());
+    document.addEventListener("visibilitychange", onVis);
 
     return () => {
-      cancelAnimationFrame(animId);
+      stop();
+      window.clearTimeout(resizeTimer);
       window.removeEventListener("resize", handleResize);
       window.removeEventListener("mousemove", handleMouse);
       window.removeEventListener("mouseleave", handleLeave);
+      document.removeEventListener("visibilitychange", onVis);
     };
   }, []);
+
 
   return (
     <>
