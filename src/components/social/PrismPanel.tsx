@@ -153,7 +153,7 @@ const PrismPanel = ({
         } else {
           const objectUrl = videoObjectUrl(f);
           const duration = await getVideoDuration(objectUrl);
-          const frames = await extractVideoFrames(objectUrl, 4);
+          const frames = (await extractVideoFrames(objectUrl, 4)).map((f) => f.dataUrl);
           next.push({
             id: crypto.randomUUID(), kind: "video", name: f.name, objectUrl,
             duration, frames, thumb: frames[0] || "",
