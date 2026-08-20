@@ -91,7 +91,7 @@ const SocialOnModulePage = () => {
   const { user } = useAuth();
   const uid = user?.id ?? "";
 
-  const [tab, setTab] = useState("auditoria");
+  const [tab, setTab] = useState("prism");
   const [loading, setLoading] = useState(true);
 
   // profile
