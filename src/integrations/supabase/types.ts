@@ -10087,8 +10087,11 @@ export type Database = {
           hook: string | null
           id: string
           pillar: string
+          prism_analysis_id: string | null
           published_at: string | null
           reel_script: string | null
+          scheduled_time: string | null
+          source: string
           status: string
           topic: string
           updated_at: string
@@ -10103,8 +10106,11 @@ export type Database = {
           hook?: string | null
           id?: string
           pillar: string
+          prism_analysis_id?: string | null
           published_at?: string | null
           reel_script?: string | null
+          scheduled_time?: string | null
+          source?: string
           status?: string
           topic: string
           updated_at?: string
@@ -10119,13 +10125,24 @@ export type Database = {
           hook?: string | null
           id?: string
           pillar?: string
+          prism_analysis_id?: string | null
           published_at?: string | null
           reel_script?: string | null
+          scheduled_time?: string | null
+          source?: string
           status?: string
           topic?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "social_content_calendar_prism_analysis_id_fkey"
+            columns: ["prism_analysis_id"]
+            isOneToOne: false
+            referencedRelation: "prism_analyses"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       social_hooks: {
         Row: {

@@ -1,9 +1,11 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
-  Copy, Download, Film, Image as ImageIcon, Loader2, Save, Settings2, Sparkles, Trash2, Upload, X,
+  CalendarPlus, Copy, Download, Film, Image as ImageIcon, Loader2, RefreshCw, Save, Settings2,
+  Sparkles, Trash2, Upload, X,
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -72,7 +74,10 @@ type PrismResult = {
       stories_clips?: string[];
       thumbnail_frame?: string;
     };
-    weekly_package?: { weekday: string; piece: string; objective?: string }[];
+    weekly_package?: {
+      weekday: string; piece: string; objective?: string;
+      format?: string; pillar?: string; time?: string; hook?: string;
+    }[];
     hashtags?: string[];
     self_comment?: string;
   };
@@ -85,6 +90,83 @@ const TONE_LABELS: Record<string, string> = {
 
 const potentialColor = (p?: string) =>
   p === "alto" ? "#00FF88" : p === "medio" ? "#FFB020" : "#94A3B8";
+
+const REWRITE_PRESETS = [
+  "Mais curta e direta",
+  "Mais provocativa",
+  "Mais história pessoal",
+  "Mais científica",
+  "Outro hook, mesma ideia",
+  "Foco em venda suave",
+];
+
+const WEEKDAYS = ["DOM", "SEG", "TER", "QUA", "QUI", "SEX", "SAB"];
+const DAY_NAMES: Record<string, number> = {
+  domingo: 0, segunda: 1, terca: 2, terça: 2, quarta: 3, quinta: 4, sexta: 5, sabado: 6, sábado: 6,
+  dom: 0, seg: 1, ter: 2, qua: 3, qui: 4, sex: 5, sab: 6,
+};
+
+const CAL_FORMATS = ["reel", "carrossel", "stories", "post_unico", "live", "collab"];
+const CAL_PILLARS = ["mce_drop", "bastidor", "transformacao", "entretenimento", "cta"];
+
+const normalizeFormat = (f?: string) => {
+  const v = (f || "").toLowerCase();
+  if (CAL_FORMATS.includes(v)) return v;
+  if (v.includes("reel")) return "reel";
+  if (v.includes("carrossel") || v.includes("carousel")) return "carrossel";
+  if (v.includes("stor")) return "stories";
+  if (v.includes("live")) return "live";
+  if (v.includes("collab")) return "collab";
+  return "post_unico";
+};
+
+const normalizePillar = (p?: string, objective?: string) => {
+  const v = (p || "").toLowerCase();
+  if (CAL_PILLARS.includes(v)) return v;
+  if (v.includes("transform") || v.includes("prova")) return "transformacao";
+  if (v.includes("bastid") || v.includes("pessoal")) return "bastidor";
+  if (v.includes("entret") || v.includes("humor")) return "entretenimento";
+  if (v.includes("cta") || v.includes("vend")) return "cta";
+  if ((objective || "").toLowerCase() === "vender") return "cta";
+  return "mce_drop";
+};
+
+const normalizeTime = (t?: string, fallback = "19:00") => {
+  const m = String(t || "").match(/(\d{1,2})[:h](\d{2})/);
+  if (!m) return fallback;
+  const h = Math.min(23, Number(m[1]));
+  const mi = Math.min(59, Number(m[2]));
+  return `${String(h).padStart(2, "0")}:${String(mi).padStart(2, "0")}`;
+};
+
+const toISODate = (d: Date) => {
+  const off = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
+  return off.toISOString().slice(0, 10);
+};
+
+/** Próxima data (>= hoje) para um dia da semana. */
+const nextDateFor = (weekday: string) => {
+  const key = String(weekday || "").toLowerCase().trim();
+  const target = DAY_NAMES[key] ?? WEEKDAYS.indexOf(key.toUpperCase().slice(0, 3));
+  const today = new Date();
+  if (target < 0) return toISODate(today);
+  const diff = (target - today.getDay() + 7) % 7;
+  const d = new Date(today);
+  d.setDate(today.getDate() + diff);
+  return toISODate(d);
+};
+
+type ScheduleRow = {
+  key: string;
+  date: string;
+  time: string;
+  format: string;
+  pillar: string;
+  topic: string;
+  hook: string;
+  caption: string;
+  isMain: boolean;
+};
 
 const Block = ({ n, title, children }: { n: number; title: string; children: React.ReactNode }) => (
   <div className="space-y-3">
@@ -124,6 +206,12 @@ const PrismPanel = ({
   const [edits, setEdits] = useState<Record<string, string>>({});
   const [watermark, setWatermark] = useState(false);
   const [savingPkg, setSavingPkg] = useState(false);
+  const [rewriteHint, setRewriteHint] = useState("");
+  const [rewriting, setRewriting] = useState<string | null>(null);
+  const [rewriteCount, setRewriteCount] = useState(0);
+  const [schedule, setSchedule] = useState<ScheduleRow[]>([]);
+  const [scheduling, setScheduling] = useState(false);
+  const [scheduled, setScheduled] = useState(0);
 
   const images = useMemo(() => files.filter((f) => f.kind === "image"), [files]);
   const videos = useMemo(() => files.filter((f) => f.kind === "video"), [files]);
@@ -264,6 +352,140 @@ const PrismPanel = ({
     setSavingPkg(false);
     if (error) toast.error("Não consegui salvar o pacote");
     else toast.success("Pacote salvo");
+  };
+
+  /** Nova versão de legenda e/ou slides mantendo exatamente a mesma análise. */
+  const rewrite = async (target: "caption" | "slides" | "both") => {
+    if (!result?.analysis || !result?.decision) return;
+    setRewriting(target);
+    try {
+      const current =
+        target === "slides"
+          ? { carousel_slides: result.content?.carousel_slides }
+          : target === "caption"
+            ? { caption: result.content?.caption, caption_alternatives: result.content?.caption_alternatives }
+            : {
+                caption: result.content?.caption,
+                caption_alternatives: result.content?.caption_alternatives,
+                carousel_slides: result.content?.carousel_slides,
+              };
+
+      const { data, error } = await supabase.functions.invoke("prism-analyze", {
+        body: {
+          mode: "rewrite",
+          target,
+          instruction: rewriteHint,
+          analysis: result.analysis,
+          decision: result.decision,
+          current,
+        },
+      });
+      if (error) throw new Error(error.message);
+      if ((data as any)?.error) throw new Error((data as any).error);
+
+      const rw = (data as any).result || {};
+      const next: PrismResult = {
+        ...result,
+        content: {
+          ...result.content,
+          ...(rw.caption ? { caption: rw.caption } : {}),
+          ...(rw.caption_alternatives ? { caption_alternatives: rw.caption_alternatives } : {}),
+          ...(Array.isArray(rw.carousel_slides) && rw.carousel_slides.length
+            ? { carousel_slides: rw.carousel_slides }
+            : {}),
+        },
+      };
+      setResult(next);
+      setRewriteCount((n) => n + 1);
+      setActiveTone("principal");
+      if (target !== "caption") await renderAll(next);
+      toast.success("Nova versão pronta — mesma análise");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Falha ao gerar nova versão");
+    } finally {
+      setRewriting(null);
+    }
+  };
+
+  /** Monta a agenda sugerida (post principal + pacote semanal). */
+  useEffect(() => {
+    if (!result) return setSchedule([]);
+    const dec = result.decision;
+    const cont = result.content;
+    const rows: ScheduleRow[] = [];
+
+    rows.push({
+      key: "main",
+      isMain: true,
+      date: nextDateFor(dec?.best_day || ""),
+      time: normalizeTime(dec?.best_time, "19:00"),
+      format: normalizeFormat(dec?.primary_format),
+      pillar: normalizePillar(undefined, dec?.objective),
+      topic: result.analysis?.summary?.slice(0, 120) || "Post PRISM",
+      hook: cont?.carousel_slides?.[0]?.title || "",
+      caption: cont?.caption || "",
+    });
+
+    (cont?.weekly_package || []).forEach((w, i) => {
+      rows.push({
+        key: `w${i}`,
+        isMain: false,
+        date: nextDateFor(w.weekday),
+        time: normalizeTime(w.time, "19:00"),
+        format: normalizeFormat(w.format),
+        pillar: normalizePillar(w.pillar, w.objective),
+        topic: w.piece?.slice(0, 160) || `Peça ${i + 1}`,
+        hook: w.hook || "",
+        caption: "",
+      });
+    });
+
+    setSchedule(rows);
+    setScheduled(0);
+  }, [result]);
+
+  const patchRow = (key: string, patch: Partial<ScheduleRow>) =>
+    setSchedule((rows) => rows.map((r) => (r.key === key ? { ...r, ...patch } : r)));
+
+  const sendToCalendar = async () => {
+    if (!schedule.length) return;
+    setScheduling(true);
+    try {
+      const { data: auth } = await supabase.auth.getUser();
+      const coachId = auth?.user?.id;
+      if (!coachId) throw new Error("Sessão expirada");
+
+      const inserts = schedule.map((r) => ({
+        coach_id: coachId,
+        date: r.date,
+        scheduled_time: r.time,
+        pillar: r.pillar,
+        format: r.format,
+        topic: r.topic,
+        hook: r.hook || null,
+        caption: r.isMain ? caption || r.caption || null : null,
+        reel_script: r.isMain && result?.content?.reel_script
+          ? [
+              `HOOK: ${result.content.reel_script.hook || ""}`,
+              result.content.reel_script.development || "",
+              `CTA: ${result.content.reel_script.cta || ""}`,
+            ].join("\n")
+          : null,
+        hashtags: r.isMain ? result?.content?.hashtags ?? [] : [],
+        status: "draft",
+        source: "prism",
+        prism_analysis_id: analysisId,
+      }));
+
+      const { error } = await supabase.from("social_content_calendar").insert(inserts);
+      if (error) throw error;
+      setScheduled(inserts.length);
+      toast.success(`${inserts.length} post${inserts.length > 1 ? "s" : ""} agendado${inserts.length > 1 ? "s" : ""} no calendário`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Falha ao agendar");
+    } finally {
+      setScheduling(false);
+    }
   };
 
   const caption =
@@ -516,9 +738,58 @@ const PrismPanel = ({
               ))}
             </div>
             <p className="text-sm whitespace-pre-wrap leading-relaxed">{caption}</p>
-            <Button size="sm" variant="outline" onClick={() => copyText(caption)} className="gap-2">
-              <Copy className="w-3 h-3" /> Copiar legenda
-            </Button>
+            <div className="flex flex-wrap gap-2">
+              <Button size="sm" variant="outline" onClick={() => copyText(caption)} className="gap-2">
+                <Copy className="w-3 h-3" /> Copiar legenda
+              </Button>
+            </div>
+
+            {/* Nova versão — mantém a mesma análise */}
+            <div className="mt-3 pt-3 border-t space-y-2" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
+              <p className="text-[11px] text-muted-foreground">
+                Nova versão dos textos (a análise do material não muda){rewriteCount ? ` · ${rewriteCount} regeração${rewriteCount > 1 ? "ões" : ""}` : ""}
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {REWRITE_PRESETS.map((p) => (
+                  <button
+                    key={p}
+                    type="button"
+                    onClick={() => setRewriteHint(p)}
+                    className="px-2 py-1 rounded-md text-[10px] border transition-colors"
+                    style={{
+                      borderColor: rewriteHint === p ? "#00D4FF" : "rgba(255,255,255,0.12)",
+                      color: rewriteHint === p ? "#00D4FF" : undefined,
+                    }}
+                  >
+                    {p}
+                  </button>
+                ))}
+              </div>
+              <Textarea
+                value={rewriteHint}
+                onChange={(e) => setRewriteHint(e.target.value)}
+                placeholder="O que mudar nesta versão? Ex.: começa com uma pergunta, menos emoji, CTA pro desafio de 90 dias"
+                className="text-xs min-h-[60px]"
+              />
+              <div className="flex flex-wrap gap-2">
+                <Button size="sm" onClick={() => rewrite("caption")} disabled={!!rewriting} className="gap-2">
+                  {rewriting === "caption" ? <Loader2 className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3" />}
+                  Nova legenda
+                </Button>
+                {!!result?.content?.carousel_slides?.length && (
+                  <>
+                    <Button size="sm" variant="outline" onClick={() => rewrite("slides")} disabled={!!rewriting} className="gap-2">
+                      {rewriting === "slides" ? <Loader2 className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3" />}
+                      Novos textos dos slides
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => rewrite("both")} disabled={!!rewriting} className="gap-2">
+                      {rewriting === "both" ? <Loader2 className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3" />}
+                      Legenda + slides
+                    </Button>
+                  </>
+                )}
+              </div>
+            </div>
           </Section>
 
           {/* 3 — CARROSSEL */}
@@ -679,6 +950,62 @@ const PrismPanel = ({
                 onClick={() => copyText(c.weekly_package!.map((w) => `${w.weekday}: ${w.piece}`).join("\n"))}>
                 <Copy className="w-3 h-3" /> Copiar pacote
               </Button>
+            </Section>
+          )}
+
+          {/* 11 — AGENDAR NO CALENDÁRIO */}
+          {!!schedule.length && (
+            <Section title={`11 · Agendar no calendário (${schedule.length} ${schedule.length > 1 ? "posts" : "post"})`}>
+              <p className="text-[11px] text-muted-foreground">
+                Datas e horários já vêm sugeridos pelo PRISM. Ajuste o que quiser antes de enviar.
+              </p>
+              <div className="space-y-2">
+                {schedule.map((r) => (
+                  <div
+                    key={r.key}
+                    className="rounded-lg border p-2 space-y-2"
+                    style={{ borderColor: r.isMain ? `${PRISM}55` : "rgba(255,255,255,0.10)" }}
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <p className="text-xs leading-snug">
+                        {r.isMain && <Badge variant="outline" className="mr-1 text-[9px]">principal</Badge>}
+                        {r.topic}
+                      </p>
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                      <Input type="date" value={r.date} onChange={(e) => patchRow(r.key, { date: e.target.value })} className="h-8 text-xs" />
+                      <Input type="time" value={r.time} onChange={(e) => patchRow(r.key, { time: e.target.value })} className="h-8 text-xs" />
+                      <select
+                        value={r.format}
+                        onChange={(e) => patchRow(r.key, { format: e.target.value })}
+                        className="h-8 text-xs rounded-md border bg-background px-2"
+                        style={{ borderColor: "rgba(255,255,255,0.12)" }}
+                      >
+                        {CAL_FORMATS.map((f) => <option key={f} value={f}>{f}</option>)}
+                      </select>
+                      <select
+                        value={r.pillar}
+                        onChange={(e) => patchRow(r.key, { pillar: e.target.value })}
+                        className="h-8 text-xs rounded-md border bg-background px-2"
+                        style={{ borderColor: "rgba(255,255,255,0.12)" }}
+                      >
+                        {CAL_PILLARS.map((p) => <option key={p} value={p}>{p}</option>)}
+                      </select>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <Button size="sm" onClick={sendToCalendar} disabled={scheduling} className="gap-2">
+                  {scheduling ? <Loader2 className="w-3 h-3 animate-spin" /> : <CalendarPlus className="w-3 h-3" />}
+                  Agendar no calendário
+                </Button>
+                {!!scheduled && (
+                  <span className="text-[11px]" style={{ color: "#00FF88" }}>
+                    {scheduled} agendado{scheduled > 1 ? "s" : ""} — veja na aba Calendário
+                  </span>
+                )}
+              </div>
             </Section>
           )}
 
