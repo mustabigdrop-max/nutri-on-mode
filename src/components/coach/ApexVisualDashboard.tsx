@@ -1462,6 +1462,15 @@ Suporte em uso: ${suporte || "não informado"}`;
 
   }, [formData, objetivoCiclo, semanaCiclo, duracaoCiclo, suporte, athlete, analysisResult]);
 
+  // Cronômetro da análise Dr. VERTEX
+  useEffect(() => {
+    if (!vertexV4Loading) return;
+    const t = setInterval(() => setVertexV4Elapsed((s) => s + 1), 1000);
+    return () => clearInterval(t);
+  }, [vertexV4Loading]);
+
+
+
   const fetchSyncStatus = useCallback(async (athleteId: string | null) => {
     if (!athleteId) { setSyncStatus(null); return; }
     const { data } = await supabase
