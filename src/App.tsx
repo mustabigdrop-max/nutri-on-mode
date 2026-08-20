@@ -12,6 +12,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import { AthleteDashboardGate, CoachToolRoute, AthleteOnlyRoute } from "@/components/athlete/AthleteRouteGuard";
 import PlanGateWrapper from "@/components/PlanGateWrapper";
 const Index = lazy(() => import("./pages/Index"));
+const ModulesPage = lazy(() => import("./pages/ModulesPage"));
 const AuthPage = lazy(() => import("./pages/AuthPage"));
 const OAuthConsentPage = lazy(() => import("./pages/OAuthConsentPage"));
 
@@ -173,6 +174,7 @@ const App = () => (
           <Suspense fallback={<RouteFallback />}>
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/modulos" element={<ModulesPage />} />
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/desafio-21" element={<DesafioSignupPage />} />
             {/* Desafio 90 Dias */}
