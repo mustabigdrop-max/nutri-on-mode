@@ -1382,6 +1382,10 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
     console.log("[DR.VERTEX DEBUG] runVertexV4() iniciado");
     setVertexV4Loading(true);
     setVertexV4Error(null);
+    setVertexV4ErrorKind(null);
+    setVertexV4Elapsed(0);
+    setVertexV4Attempts((n) => n + 1);
+
     try {
       const farmMeta = parseFarmMeta(analysisResult);
       const meta = parseMeta(analysisResult);
