@@ -2069,18 +2069,78 @@ Suporte em uso: ${suporte || "não informado"}` : "";
                     {vertexV4Loading ? (
                       <span className="inline-flex items-center gap-2">
                         <span className="inline-block w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                        Analisando...
+                        Analisando... {vertexV4Elapsed}s
                       </span>
+                    ) : vertexV4ErrorKind ? (
+                      `${VERTEX_ERROR_INFO[vertexV4ErrorKind].icon} ${VERTEX_ERROR_INFO[vertexV4ErrorKind].label} — tentar novamente`
                     ) : vertexV4Analysis ? "🔬 Reexecutar Dr. VERTEX v4.0" : "🔬 Analisar com Dr. VERTEX v4.0 (PhD)"}
                   </button>
-                  {vertexV4Analysis && (
+                  {vertexV4Analysis && !vertexV4Loading && !vertexV4ErrorKind && (
                     <span className="text-[10px] font-mono" style={{ color: "#34D399" }}>
                       ✓ Análise PhD ativa — JSON estruturado
                     </span>
                   )}
-                  {vertexV4Error && (
-                    <span className="text-[10px]" style={{ color: "#EF4444" }}>⚠ {vertexV4Error}</span>
+
+                  {/* Tela de status */}
+                  {(vertexV4Loading || vertexV4Error) && (
+                    <div
+                      className="w-full rounded-xl p-3 mt-1 text-[11px] space-y-1.5"
+                      style={{
+                        background: vertexV4Error ? "rgba(239,68,68,0.08)" : "rgba(144,128,255,0.08)",
+                        border: `1px solid ${vertexV4Error ? "rgba(239,68,68,0.35)" : "rgba(144,128,255,0.3)"}`,
+                      }}
+                    >
+                      {vertexV4Loading ? (
+                        <>
+                          <div className="font-bold" style={{ color: "#c0b8ff" }}>
+                            Dr. VERTEX processando · {vertexV4Elapsed}s / ~90s
+                          </div>
+                          <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.08)" }}>
+                            <div
+                              className="h-full transition-all"
+                              style={{ width: `${Math.min(97, (vertexV4Elapsed / 90) * 100)}%`, background: "#9080ff" }}
+                            />
+                          </div>
+                          <div className="text-muted-foreground">
+                            Tentativa {vertexV4Attempts} · análise farmacológica PhD em JSON estruturado
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <div className="font-bold" style={{ color: "#EF4444" }}>
+                            {VERTEX_ERROR_INFO[vertexV4ErrorKind || "unknown"].icon}{" "}
+                            {VERTEX_ERROR_INFO[vertexV4ErrorKind || "unknown"].label}
+                          </div>
+                          <div className="text-muted-foreground">
+                            {VERTEX_ERROR_INFO[vertexV4ErrorKind || "unknown"].hint}
+                          </div>
+                          <div className="font-mono opacity-70 break-all">{vertexV4Error}</div>
+                          <div className="text-muted-foreground">Tentativas: {vertexV4Attempts}</div>
+                          <div className="flex gap-2 pt-1">
+                            <button
+                              type="button"
+                              onClick={() => runVertexV4()}
+                              className="px-3 py-1.5 rounded-md border text-[11px] font-semibold"
+                              style={{ borderColor: "rgba(144,128,255,0.5)", color: "#c0b8ff" }}
+                            >
+                              ↻ Tentar novamente
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setVertexV4Error(null);
+                                setVertexV4ErrorKind(null);
+                              }}
+                              className="px-3 py-1.5 rounded-md border border-border text-[11px] text-muted-foreground"
+                            >
+                              Dispensar
+                            </button>
+                          </div>
+                        </>
+                      )}
+                    </div>
                   )}
+
                 </div>
 
                 {/* Sub-tab content — visualização estruturada */}
