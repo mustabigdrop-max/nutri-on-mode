@@ -24,6 +24,7 @@ import IdeasNowPanel from "@/components/social/IdeasNowPanel";
 import PlaybookPanel from "@/components/social/PlaybookPanel";
 import InstagramAccountPanel from "@/components/social/InstagramAccountPanel";
 import PostProntoPanel from "@/components/social/PostProntoPanel";
+import PrismPanel from "@/components/social/PrismPanel";
 import BrandScorePanel from "@/components/social/BrandScorePanel";
 import ViralLabPanel from "@/components/social/ViralLabPanel";
 import ContentDnaPanel from "@/components/social/ContentDnaPanel";
