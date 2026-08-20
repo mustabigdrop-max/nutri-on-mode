@@ -27,7 +27,7 @@ TOM: direto, científico sem ser acadêmico, português do Brasil, frases curtas
 
 type Mode = "caption" | "reel" | "calendar" | "hashtags" | "stories" | "audit" | "bio_audit" | "feed_audit" | "content_full"
   | "repurpose" | "dm_variation" | "objection_variation" | "viral_pattern" | "viral_ideas" | "ideas_now" | "proof_caption"
-  | "post_package" | "viral_lab" | "content_dna" | "controversy_post" | "science_post";
+  | "reel_script" | "post_package" | "viral_lab" | "content_dna" | "controversy_post" | "science_post";
 
 const SCHEMAS: Record<Mode, string> = {
   caption: `{"hook":"primeira linha que para o scroll","caption":"legenda completa com quebras de linha \\n","cta":"chamada final","hashtags":["#tag", "... 15 a 20 itens"]}`,
@@ -45,6 +45,7 @@ const SCHEMAS: Record<Mode, string> = {
   viral_ideas: `{"ideas":[{"titulo":"...","funil":"TOFU|MOFU|BOFU","hook":"...","roteiro":"roteiro completo com marcações de tempo"}, "exatamente 3 itens"]}`,
   ideas_now: `{"ideas":[{"titulo":"...","funil":"TOFU|MOFU|BOFU","hook":"...","produto":"MindForce|nutriON|VEMP ou vazio","roteiro":"roteiro curto pronto pra gravar agora"}, "exatamente 5 itens"]}`,
   proof_caption: `{"caption":"legenda de prova social respeitando privacidade do cliente, com quebras de linha \\n","hashtags":["#tag","... 8 a 12 itens"]}`,
+  reel_script: `{"hook":{"time":"0-2s","text_on_screen":"frase curta em caixa alta","action":"direção de câmera/ação"},"development":{"time":"2-20s","instructions":["3 a 4 instruções de edição concretas para o miolo do vídeo"]},"cta":{"time":"últimos 5-8s","text_on_screen":"CTA curto","alternative":"CTA alternativo"},"editing":{"cortes":"...","legendas":"...","font":"...","musica":"sugestão de tipo de trend em alta","velocidade":"...","filtro":"..."},"screen_texts":[{"frame":"Frame 1 (hook)","text":"TEXTO EM CAIXA ALTA"},"exatamente 4 itens, o último sendo o @ do coach"],"screen_text_tips":["5 dicas de tipografia e animação"],"caption":"legenda completa pronta pro Reel, quebras de linha \\n","hashtags":["#tag","... 15 itens"],"best_time":"ex: 19h00 (terça-feira)","self_comment":"comentário pronto para postar logo após publicar"}`,
   post_package: `{"hook":"primeira linha que para o scroll","caption":"legenda completa em tom de conversa, parágrafos de no máximo 3 linhas separados por \\n\\n, hook na primeira linha e CTA no final","hashtags":["#tag","... 15 itens misturando grandes, médias e nichadas"],"best_time":"ex: 12h30 (terça-feira)","reach_forecast":"alto|médio|baixo","self_comment":"comentário pronto para o coach postar logo após publicar","carousel":[{"title":"título curto do slide","body":"2 a 3 linhas educativas"},"exatamente 3 itens"],"stories":[{"title":"texto grande do story","body":"linha de apoio ou CTA","sticker":"NENHUM|QUIZ|ENQUETE|LINK|CAIXA_DE_PERGUNTAS","sticker_content":"conteúdo pronto do sticker (pergunta do quiz com opções e resposta certa, opções da enquete, ou o link)"},"exatamente 4 itens: 1 hook sobre a foto (sticker NENHUM), 1 educativo (QUIZ), 1 CTA (ENQUETE), 1 final de produto nutriON (LINK nutrion.app.br)"]}`,
   viral_lab: `{"trends":[{"trend_name":"...","format":"...","viral_potential":3,"why_fits_profile":"...","your_version":"roteiro completo adaptado ao perfil","music_suggestion":"...","text_on_screen":["frame 1: ...","frame 2: ..."],"caption":"legenda pronta"},"4 a 5 itens"]}`,
   content_dna: `{"identidade_visual":["3 a 4 padrões visuais que funcionam"],"formato_vencedor":["3 padrões de formato"],"hook_pattern":["3 a 4 padrões de hook"],"audiencia":["3 a 4 leituras de audiência"],"formula":"frase única com a fórmula replicável do post perfeito","posts":[{"titulo":"...","hook":"...","roteiro":"roteiro completo"},"5 itens apenas quando generatePosts for true, caso contrário array vazio"]}`,
@@ -123,6 +124,9 @@ serve(async (req) => {
       body?.realData ? `Dados reais da operação do coach (use números exatos, nunca invente): ${body.realData}` : "",
       body?.extraPhotos ? `O coach enviou ${body.extraPhotos} fotos extras que serão usadas como fundo dos slides e stories — escreva textos curtos que funcionem sobre imagem.` : "",
       body?.lightning ? "MODO RELÂMPAGO: seja rápido e direto, legenda de no máximo 6 linhas, carrossel e stories enxutos." : "",
+      body?.videoDuration ? `O coach enviou um VÍDEO de ${body.videoDuration} segundos — o roteiro precisa caber exatamente nessa duração e os tempos devem ser coerentes com ela.` : "",
+      body?.videoType ? `Tipo de vídeo: ${body.videoType}` : "",
+      body?.videoTypeTips ? `Dicas obrigatórias deste tipo de vídeo (incorpore no bloco editing): ${body.videoTypeTips}` : "",
       body?.thesis ? `Tese polêmica a defender: ${body.thesis}` : "",
       body?.evidence ? `Base científica obrigatória (cite corretamente): ${body.evidence}` : "",
       body?.fact ? `Dado científico central do post: ${body.fact}` : "",
