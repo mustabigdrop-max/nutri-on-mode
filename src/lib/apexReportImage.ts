@@ -23,7 +23,29 @@ export interface ApexReportData {
   strengths?: string[];
   attentions?: string[];
   accent?: string;
+  /* Template customizável */
+  title?: string;
+  coachName?: string;
+  coachSubtitle?: string;
+  handle?: string;
+  bg?: string;
+  watermark?: boolean;
 }
+
+export interface ApexPalette {
+  key: string;
+  label: string;
+  accent: string;
+  bg: string;
+}
+
+export const APEX_PALETTES: ApexPalette[] = [
+  { key: "cyan", label: "APEX Cyan", accent: "#00D4FF", bg: "#020205" },
+  { key: "amber", label: "nutriON Amber", accent: "#E8A020", bg: "#03030a" },
+  { key: "emerald", label: "Lab Emerald", accent: "#4ade80", bg: "#0a0f0a" },
+  { key: "violet", label: "VERTEX Violet", accent: "#9080ff", bg: "#050310" },
+  { key: "light", label: "Clean Light", accent: "#0B7CA8", bg: "#F4F6F8" },
+];
 
 const BG = "#020205";
 const CYAN = "#00D4FF";
@@ -34,6 +56,7 @@ const DIMENSIONS: Record<ApexReportMode, { w: number; h: number }> = {
   client: { w: 1080, h: 1350 },
   instagram: { w: 1080, h: 1080 },
 };
+
 
 const severityColor = (s?: string) => {
   const v = String(s || "").toLowerCase();
@@ -72,18 +95,44 @@ const sectionTitle = (label: string, accent: string) =>
      <div style="font-size:26px;font-weight:800;letter-spacing:6px;color:${accent}">${esc(label)}</div>
    </div>`;
 
+const isLightBg = (hex: string) => {
+  const m = /^#?([0-9a-f]{6})$/i.exec(hex.trim());
+  if (!m) return false;
+  const n = parseInt(m[1], 16);
+  const [r, g, b] = [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+  return (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.6;
+};
+
 const buildHtml = (data: ApexReportData, mode: ApexReportMode, photo: string | null) => {
   const accent = data.accent || CYAN;
+  const bg = data.bg || BG;
+  const light = isLightBg(bg);
+  const fg = light ? "#0B0B10" : "#FFFFFF";
+  const soft = light ? "rgba(0,0,0,0.78)" : "rgba(255,255,255,0.85)";
+  const dim = light ? "rgba(0,0,0,0.5)" : DIM;
+  const line = light ? "rgba(0,0,0,0.12)" : "rgba(255,255,255,0.1)";
   const compact = mode === "instagram";
   const isClient = mode === "client";
+  const title = data.title || "APEX INTELLIGENCE SYSTEM";
+  const coachName = data.coachName || "Coach Diogo Mello";
+  const coachSubtitle = data.coachSubtitle || "Nutrition & Business Coach 🇺🇸";
+  const handle = data.handle || "nutrion.app.br";
+  const showWatermark = data.watermark !== false;
 
   const photoBlock = photo
-    ? `<div style="border-radius:28px;overflow:hidden;border:1px solid rgba(255,255,255,0.12);background:#07070c;
-                  height:${mode === "coach" ? 760 : compact ? 420 : 560}px;display:flex;align-items:center;justify-content:center">
+    ? `<div style="border-radius:28px;overflow:hidden;border:1px solid ${line};background:${light ? "#E9ECEF" : "#07070c"};
+                  height:${mode === "coach" ? 760 : compact ? 420 : 560}px;display:flex;align-items:center;justify-content:center;position:relative">
          <img src="${photo}" style="max-width:100%;max-height:100%;object-fit:contain" />
+         ${
+           showWatermark
+             ? `<div style="position:absolute;right:22px;bottom:18px;font-size:22px;font-weight:800;letter-spacing:3px;color:${accent};opacity:0.75">${esc(
+                 handle,
+               )}</div>`
+             : ""
+         }
        </div>`
-    : `<div style="border-radius:28px;border:1px dashed rgba(255,255,255,0.16);height:${compact ? 240 : 320}px;
-                  display:flex;align-items:center;justify-content:center;color:${DIM};font-size:24px">
+    : `<div style="border-radius:28px;border:1px dashed ${line};height:${compact ? 240 : 320}px;
+                  display:flex;align-items:center;justify-content:center;color:${dim};font-size:24px">
          Análise APEX · nutriON
        </div>`;
 
@@ -110,8 +159,8 @@ const buildHtml = (data: ApexReportData, mode: ApexReportMode, photo: string | n
       (s) => `
       <div style="flex:1;text-align:center">
         <div style="font-size:${compact ? 46 : 58}px;font-weight:900;color:${accent}">${esc(s.value)}</div>
-        <div style="font-size:22px;color:${DIM};letter-spacing:3px;text-transform:uppercase">${esc(s.label)}</div>
-        <div style="height:8px;border-radius:4px;background:rgba(255,255,255,0.1);margin-top:10px">
+        <div style="font-size:22px;color:${dim};letter-spacing:3px;text-transform:uppercase">${esc(s.label)}</div>
+        <div style="height:8px;border-radius:4px;background:${line};margin-top:10px">
           <div style="height:8px;border-radius:4px;background:${accent};width:${Math.max(
             0,
             Math.min(100, (Number(s.value) || 0) * 10),
@@ -143,9 +192,9 @@ const buildHtml = (data: ApexReportData, mode: ApexReportMode, photo: string | n
 
   const verdict = isClient
     ? data.clientSummary
-      ? `<div style="font-size:28px;line-height:1.45;color:rgba(255,255,255,0.85)">${esc(data.clientSummary)}</div>`
+      ? `<div style="font-size:28px;line-height:1.45;color:${soft}">${esc(data.clientSummary)}</div>`
       : ""
-    : `<div style="font-size:28px;line-height:1.5;color:rgba(255,255,255,0.85)">
+    : `<div style="font-size:28px;line-height:1.5;color:${soft}">
          BF est: ${esc(data.bfEstimated ?? "--")}% · Meta: ${esc(data.bfTarget ?? "--")}% · Semanas: ${esc(
            data.weeks ?? "--",
          )}<br/>
@@ -153,9 +202,9 @@ const buildHtml = (data: ApexReportData, mode: ApexReportMode, photo: string | n
        </div>`;
 
   return `
-    <div style="display:flex;flex-direction:column;height:100%">
+    <div style="display:flex;flex-direction:column;height:100%;color:${fg}">
       <div>
-        <div style="font-size:${compact ? 34 : 40}px;font-weight:900;letter-spacing:5px">APEX INTELLIGENCE SYSTEM</div>
+        <div style="font-size:${compact ? 34 : 40}px;font-weight:900;letter-spacing:5px">${esc(title)}</div>
         <div style="font-size:24px;color:${accent};letter-spacing:4px;margin-top:6px">
           Análise Visual · nutriON${data.categoryLabel && !isClient ? ` · ${esc(data.categoryLabel)}` : ""}
         </div>
@@ -169,9 +218,9 @@ const buildHtml = (data: ApexReportData, mode: ApexReportMode, photo: string | n
 
       ${verdict ? sectionTitle("VEREDICTO", accent) + verdict : ""}
 
-      <div style="margin-top:auto;padding-top:36px;border-top:1px solid rgba(255,255,255,0.1)">
-        <div style="font-size:32px;font-weight:900">Coach Diogo Mello</div>
-        <div style="font-size:24px;color:${DIM};margin-top:4px">Nutrition &amp; Business Coach 🇺🇸 · nutrion.app.br</div>
+      <div style="margin-top:auto;padding-top:36px;border-top:1px solid ${line}">
+        <div style="font-size:32px;font-weight:900">${esc(coachName)}</div>
+        <div style="font-size:24px;color:${dim};margin-top:4px">${esc(coachSubtitle)} · ${esc(handle)}</div>
         <div style="font-size:22px;color:${accent};margin-top:8px;letter-spacing:3px">TRANSFORMAÇÃO É SISTEMA.</div>
       </div>
     </div>`;
@@ -180,6 +229,7 @@ const buildHtml = (data: ApexReportData, mode: ApexReportMode, photo: string | n
 export async function generateApexReport(data: ApexReportData, mode: ApexReportMode): Promise<string> {
   const { w, h } = DIMENSIONS[mode];
   const photo = data.photoUrl ? await toDataUrl(data.photoUrl) : null;
+  const bg = data.bg || BG;
 
   const container = document.createElement("div");
   container.style.position = "fixed";
@@ -187,11 +237,11 @@ export async function generateApexReport(data: ApexReportData, mode: ApexReportM
   container.style.top = "0";
   container.style.width = `${w}px`;
   container.style.height = `${h}px`;
-  container.style.background = BG;
+  container.style.background = bg;
   container.style.padding = "64px";
   container.style.boxSizing = "border-box";
   container.style.fontFamily = "'Rajdhani', 'Space Grotesk', Arial, sans-serif";
-  container.style.color = "#FFFFFF";
+  container.style.color = isLightBg(bg) ? "#0B0B10" : "#FFFFFF";
   container.innerHTML = buildHtml(data, mode, photo);
 
   document.body.appendChild(container);
@@ -201,7 +251,7 @@ export async function generateApexReport(data: ApexReportData, mode: ApexReportM
       width: w,
       height: h,
       scale: 1,
-      backgroundColor: BG,
+      backgroundColor: bg,
       useCORS: true,
       logging: false,
     });
@@ -209,6 +259,47 @@ export async function generateApexReport(data: ApexReportData, mode: ApexReportM
   } finally {
     container.remove();
   }
+}
+
+/** Legenda pronta para o pacote de Instagram, usando os dados da última análise. */
+export const buildApexInstagramCaption = (data: ApexReportData) => {
+  const focus = data.priority ? `Foco das próximas semanas: ${data.priority}.` : "";
+  const bf =
+    data.bfEstimated != null && data.bfEstimated !== ""
+      ? `BF estimado ${data.bfEstimated}%${data.bfTarget ? ` · meta ${data.bfTarget}%` : ""}${
+          data.weeks ? ` · ${data.weeks} semanas de plano` : ""
+        }.`
+      : "";
+  const top = (data.strengths || []).slice(0, 2).map((s) => `✅ ${s}`).join("\n");
+  const att = (data.attentions || []).slice(0, 2).map((s) => `⚠️ ${s}`).join("\n");
+  return [
+    "Transformação é sistema. 🔬",
+    "",
+    `Mais uma análise APEX Visual Intelligence${data.categoryLabel ? ` · ${data.categoryLabel}` : ""}.`,
+    bf,
+    top,
+    att,
+    focus,
+    "",
+    "3 fotos. 47 pontos anatômicos. Scores por segmento, desvios posturais e um protocolo corretivo que já nasce dentro do treino e do plano alimentar.",
+    "",
+    "Comenta APEX que eu te mostro como funciona na prática.",
+    "",
+    `${data.coachName || "Coach Diogo Mello"} · @diogo.mell0 · ${data.handle || "nutrion.app.br"}`,
+    "#nutricaoesportiva #coaching #transformacao #apex",
+  ]
+    .filter((l) => l !== "" || true)
+    .filter((l, i, arr) => !(l === "" && arr[i - 1] === ""))
+    .filter((l) => l !== undefined)
+    .join("\n")
+    .replace(/\n{3,}/g, "\n\n");
+};
+
+/** Pacote de Instagram: Story 1080x1920 + legenda pronta. */
+export async function generateApexInstagramPackage(data: ApexReportData) {
+  const story = await generateApexReport({ ...data }, "coach");
+  const feed = await generateApexReport({ ...data }, "instagram");
+  return { story, feed, caption: buildApexInstagramCaption(data) };
 }
 
 export const downloadApexReport = (dataUrl: string, filename: string) => {
@@ -219,3 +310,4 @@ export const downloadApexReport = (dataUrl: string, filename: string) => {
   a.click();
   a.remove();
 };
+

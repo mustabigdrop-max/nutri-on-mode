@@ -3,6 +3,35 @@ import { autoDetectAllViews, mergeAiWithMediaPipe, type ApexAutoDetectResult, ty
 import ApexPlanoMestre from "@/components/coach/ApexPlanoMestre";
 import ApexReportExport from "@/components/coach/ApexReportExport";
 
+const VERTEX_ERROR_INFO: Record<string, { icon: string; label: string; hint: string }> = {
+  timeout: {
+    icon: "⏱",
+    label: "Timeout na análise",
+    hint: "O modelo demorou demais para responder. Tente novamente — normalmente conclui em ~45s.",
+  },
+  not_found: {
+    icon: "🔍",
+    label: "Função não encontrada (404)",
+    hint: "A função dr-vertex-analyze não respondeu neste ambiente. Reimplante ou tente de novo em instantes.",
+  },
+  auth: {
+    icon: "🔒",
+    label: "Falha de autenticação",
+    hint: "Sua sessão pode ter expirado. Recarregue a página / faça login novamente e repita.",
+  },
+  network: {
+    icon: "📡",
+    label: "Falha de rede",
+    hint: "Conexão interrompida antes da resposta. Verifique a internet e tente novamente.",
+  },
+  invalid: {
+    icon: "⚠",
+    label: "Resposta inválida",
+    hint: "O retorno veio sem JSON estruturado. Reexecutar costuma resolver.",
+  },
+  unknown: { icon: "⚠", label: "Erro inesperado", hint: "Tente novamente; o detalhe técnico está abaixo." },
+};
+
 import KineticChain, { type KineticChain as KineticChainType } from "@/components/apex/KineticChain";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -1246,6 +1275,12 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
   const [vertexV4Analysis, setVertexV4Analysis] = useState<import("@/components/coach/VertexAnalysisV4").VertexAnalysis | null>(null);
   const [vertexV4Loading, setVertexV4Loading] = useState(false);
   const [vertexV4Error, setVertexV4Error] = useState<string | null>(null);
+  const [vertexV4ErrorKind, setVertexV4ErrorKind] = useState<
+    "timeout" | "not_found" | "auth" | "network" | "invalid" | "unknown" | null
+  >(null);
+  const [vertexV4Elapsed, setVertexV4Elapsed] = useState(0);
+  const [vertexV4Attempts, setVertexV4Attempts] = useState(0);
+
   // Consentimento de risco virilizante — exigido a cada sessão antes de gerar farmacologia
   const [virilizationRiskAccepted, setVirilizationRiskAccepted] = useState<boolean>(() => {
     if (typeof window === "undefined") return false;
@@ -1376,6 +1411,10 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
     console.log("[DR.VERTEX DEBUG] runVertexV4() iniciado");
     setVertexV4Loading(true);
     setVertexV4Error(null);
+    setVertexV4ErrorKind(null);
+    setVertexV4Elapsed(0);
+    setVertexV4Attempts((n) => n + 1);
+
     try {
       const farmMeta = parseFarmMeta(analysisResult);
       const meta = parseMeta(analysisResult);
@@ -1429,13 +1468,37 @@ Suporte em uso: ${suporte || "não informado"}`;
       console.error("[DR.VERTEX DEBUG] ERRO na análise:", e);
       console.error("[DR.VERTEX DEBUG] Error message:", e?.message);
       const msg = e?.message || "Falha na análise";
+      const raw = `${msg} ${e?.status ?? ""}`.toLowerCase();
+      const kind =
+        /timeout|timed out|abort|deadline|504|gateway/.test(raw)
+          ? "timeout"
+          : /404|not found|function not/.test(raw)
+            ? "not_found"
+            : /401|403|jwt|unauthor|forbidden|auth|api key/.test(raw)
+              ? "auth"
+              : /failed to fetch|network|offline|cors/.test(raw)
+                ? "network"
+                : /sem análise|json|parse|estruturada/.test(raw)
+                  ? "invalid"
+                  : "unknown";
+      setVertexV4ErrorKind(kind as any);
       setVertexV4Error(msg);
       toast({ title: "Erro Dr. VERTEX", description: msg, variant: "destructive" });
     } finally {
       console.log("[DR.VERTEX DEBUG] runVertexV4() finalizado — loading=false");
       setVertexV4Loading(false);
     }
+
   }, [formData, objetivoCiclo, semanaCiclo, duracaoCiclo, suporte, athlete, analysisResult]);
+
+  // Cronômetro da análise Dr. VERTEX
+  useEffect(() => {
+    if (!vertexV4Loading) return;
+    const t = setInterval(() => setVertexV4Elapsed((s) => s + 1), 1000);
+    return () => clearInterval(t);
+  }, [vertexV4Loading]);
+
+
 
   const fetchSyncStatus = useCallback(async (athleteId: string | null) => {
     if (!athleteId) { setSyncStatus(null); return; }
@@ -2044,18 +2107,78 @@ Suporte em uso: ${suporte || "não informado"}` : "";
                     {vertexV4Loading ? (
                       <span className="inline-flex items-center gap-2">
                         <span className="inline-block w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                        Analisando...
+                        Analisando... {vertexV4Elapsed}s
                       </span>
+                    ) : vertexV4ErrorKind ? (
+                      `${VERTEX_ERROR_INFO[vertexV4ErrorKind].icon} ${VERTEX_ERROR_INFO[vertexV4ErrorKind].label} — tentar novamente`
                     ) : vertexV4Analysis ? "🔬 Reexecutar Dr. VERTEX v4.0" : "🔬 Analisar com Dr. VERTEX v4.0 (PhD)"}
                   </button>
-                  {vertexV4Analysis && (
+                  {vertexV4Analysis && !vertexV4Loading && !vertexV4ErrorKind && (
                     <span className="text-[10px] font-mono" style={{ color: "#34D399" }}>
                       ✓ Análise PhD ativa — JSON estruturado
                     </span>
                   )}
-                  {vertexV4Error && (
-                    <span className="text-[10px]" style={{ color: "#EF4444" }}>⚠ {vertexV4Error}</span>
+
+                  {/* Tela de status */}
+                  {(vertexV4Loading || vertexV4Error) && (
+                    <div
+                      className="w-full rounded-xl p-3 mt-1 text-[11px] space-y-1.5"
+                      style={{
+                        background: vertexV4Error ? "rgba(239,68,68,0.08)" : "rgba(144,128,255,0.08)",
+                        border: `1px solid ${vertexV4Error ? "rgba(239,68,68,0.35)" : "rgba(144,128,255,0.3)"}`,
+                      }}
+                    >
+                      {vertexV4Loading ? (
+                        <>
+                          <div className="font-bold" style={{ color: "#c0b8ff" }}>
+                            Dr. VERTEX processando · {vertexV4Elapsed}s / ~90s
+                          </div>
+                          <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.08)" }}>
+                            <div
+                              className="h-full transition-all"
+                              style={{ width: `${Math.min(97, (vertexV4Elapsed / 90) * 100)}%`, background: "#9080ff" }}
+                            />
+                          </div>
+                          <div className="text-muted-foreground">
+                            Tentativa {vertexV4Attempts} · análise farmacológica PhD em JSON estruturado
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <div className="font-bold" style={{ color: "#EF4444" }}>
+                            {VERTEX_ERROR_INFO[vertexV4ErrorKind || "unknown"].icon}{" "}
+                            {VERTEX_ERROR_INFO[vertexV4ErrorKind || "unknown"].label}
+                          </div>
+                          <div className="text-muted-foreground">
+                            {VERTEX_ERROR_INFO[vertexV4ErrorKind || "unknown"].hint}
+                          </div>
+                          <div className="font-mono opacity-70 break-all">{vertexV4Error}</div>
+                          <div className="text-muted-foreground">Tentativas: {vertexV4Attempts}</div>
+                          <div className="flex gap-2 pt-1">
+                            <button
+                              type="button"
+                              onClick={() => runVertexV4()}
+                              className="px-3 py-1.5 rounded-md border text-[11px] font-semibold"
+                              style={{ borderColor: "rgba(144,128,255,0.5)", color: "#c0b8ff" }}
+                            >
+                              ↻ Tentar novamente
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setVertexV4Error(null);
+                                setVertexV4ErrorKind(null);
+                              }}
+                              className="px-3 py-1.5 rounded-md border border-border text-[11px] text-muted-foreground"
+                            >
+                              Dispensar
+                            </button>
+                          </div>
+                        </>
+                      )}
+                    </div>
                   )}
+
                 </div>
 
                 {/* Sub-tab content — visualização estruturada */}
