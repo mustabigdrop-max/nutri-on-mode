@@ -640,17 +640,26 @@
 .hero-breathe { animation: heroBreathe 8s ease-in-out infinite; }
 
 @keyframes heroRingSpin { to { transform: rotate(360deg); } }
+@property --hero-ring-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+@keyframes heroRingAngle { to { --hero-ring-angle: 360deg; } }
+
 .hero-cta { position: relative; isolation: isolate; }
 .hero-cta::before {
   content: "";
   position: absolute;
   inset: -2px;
   border-radius: 10px;
-  background: conic-gradient(from 0deg, transparent, #00D4FF 25%, transparent 50%, #00FF88 75%, transparent);
-  animation: heroRingSpin 4s linear infinite;
+  background: conic-gradient(from var(--hero-ring-angle), transparent, #00D4FF 25%, transparent 50%, #00FF88 75%, transparent);
+  animation: heroRingAngle 4s linear infinite;
+  will-change: --hero-ring-angle;
   z-index: -2;
   opacity: .75;
 }
+
 .hero-cta::after {
   content: "";
   position: absolute;
