@@ -225,9 +225,8 @@ const LandingManifesto = () => {
               — A SOLUÇÃO
             </div>
             <div className="space-y-3 text-[.93rem] leading-[1.85] font-landing" style={{ color: "#a8a8b8" }}>
-              <p>Não importa se você está subindo no palco ou querendo mudar sua vida. O problema é o mesmo: você nunca teve um sistema feito para você.</p>
-              <p>Para o atleta IFBB que precisa de diagnóstico postural automatizado, periodização de 7 camadas e auditoria farmacológica de protocolo.</p>
-              <p>Para quem quer perder gordura, dormir melhor e entender por que todas as tentativas anteriores falharam.</p>
+              <p>Pra quem quer resultado real e definitivo.</p>
+              <p>O sistema entende seu corpo, sua rotina e seus limites.</p>
               <p>A ferramenta é a mesma. O nível de profundidade se adapta a você.</p>
             </div>
             <div className="mt-5 text-center font-heading font-bold uppercase tracking-[.06em] text-[1.05rem]" style={{ color: CYAN, textShadow: `0 0 20px ${CYAN}55` }}>
@@ -236,12 +235,7 @@ const LandingManifesto = () => {
           </div>
         </div>
 
-        {/* 6 module cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mb-20">
-          {moduleCards.map((c, i) => (
-            <ModuleCard key={c.n} {...c} delay={0.1 + i * 0.08} inView={inView} />
-          ))}
-        </div>
+
 
         {/* Para quem é o NUTRION */}
         <div ref={audRef} className="relative mb-20">
