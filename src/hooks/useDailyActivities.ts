@@ -2,12 +2,8 @@ import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { getLocalDateStr } from "@/lib/utils";
-import {
-  calculateActivityAdjustment,
-  type ActivityType,
-  type ClimateBand,
-  type Intensity,
-} from "@/lib/nutrySync";
+import { type ClimateBand } from "@/lib/nutrySync";
+import { calculateMetAdjustment, type MetCategory } from "@/lib/nutrySyncMet";
 
 export interface DailyActivity {
   id: string;
@@ -23,16 +19,25 @@ export interface DailyActivity {
   fat_adjustment: number;
   hydration_adjustment_ml: number;
   climate_band: string | null;
+  activity_category: string | null;
+  met: number | null;
+  gross_kcal: number | null;
+  epoc_kcal: number | null;
+  net_adjustment: number | null;
   created_at: string;
 }
 
 export interface AddActivityInput {
-  type: ActivityType;
+  /** Slug da atividade (ex.: "legs", "hiit", "corrida"). */
+  type: string;
   label?: string;
+  category: MetCategory;
+  met: number;
   durationMin: number;
-  intensity: Intensity;
   weightKg: number;
   climate?: ClimateBand;
+  /** Zona de corrida usada (Z1..Z4, LISS, HIIT, AEJ), quando aplicável. */
+  zone?: string | null;
 }
 
 export function useDailyActivities(overrideUserId?: string) {
@@ -66,12 +71,13 @@ export function useDailyActivities(overrideUserId?: string) {
   const addActivity = useCallback(
     async (input: AddActivityInput) => {
       if (!userId) return { error: new Error("sem usuário") };
-      const adj = calculateActivityAdjustment(
-        input.type,
-        input.durationMin,
-        input.intensity,
-        input.weightKg,
-      );
+      const adj = calculateMetAdjustment({
+        type: input.type,
+        met: input.met,
+        durationMin: input.durationMin,
+        weightKg: input.weightKg,
+      });
+      const intensity = adj.met >= 8 ? "intensa" : adj.met >= 5 ? "moderada" : "leve";
       const { data, error } = await supabase
         .from("client_daily_activities")
         .insert({
@@ -80,12 +86,17 @@ export function useDailyActivities(overrideUserId?: string) {
           activity_type: input.type,
           activity_label: input.label ?? null,
           duration_min: input.durationMin,
-          intensity: input.intensity,
-          kcal_adjustment: adj.totalKcal,
+          intensity,
+          activity_category: input.category,
+          met: adj.met,
+          gross_kcal: adj.grossKcal,
+          epoc_kcal: adj.epocKcal,
+          net_adjustment: adj.netAdjustment,
+          kcal_adjustment: adj.netAdjustment,
           carb_adjustment: adj.carbAdd,
           protein_adjustment: adj.proteinAdd,
           fat_adjustment: adj.fatAdd,
-          hydration_adjustment_ml: adj.hydrationAdd,
+          hydration_adjustment_ml: adj.hydrationMl,
           climate_band: input.climate ?? null,
         })
         .select()
