@@ -5,7 +5,7 @@ import { Download, Rocket } from "lucide-react";
 import { toast } from "sonner";
 import { ACCENT, ACCENT2, Section } from "./socialUi";
 import { BRAND_PILLARS, PILLAR_ACTIONS, brandLevel } from "@/data/socialOnSurreal";
-import { downloadDataUrl, renderBrandScoreStory } from "@/lib/socialImageKit";
+import { isMobileDevice, saveImage, renderBrandScoreStory } from "@/lib/socialImageKit";
 
 const DEFAULTS: Record<string, number> = {
   consistencia: 85, mix: 68, copy: 75, visual: 60, conversao: 55, engajamento: 80, crescimento: 78,
@@ -34,9 +34,9 @@ const BrandScorePanel = ({ handle, onGenerate }: { handle?: string | null; onGen
       streak: streak ? `🔥 Streak: ${streak} semanas postando` : undefined,
       handle: `@${String(handle || "diogo.mell0").replace("@", "")}`,
     });
-    downloadDataUrl(url, "brand-score.png")
-      ? toast.success("brand-score.png baixado!")
-      : toast.error("Não consegui baixar a imagem");
+    (await saveImage(url, "brand-score.png"))
+      ? toast.success(isMobileDevice() ? 'Toque em "Salvar imagem" para ir pra galeria' : "brand-score.png baixado!")
+      : toast.error("Não consegui salvar a imagem");
   };
 
   return (

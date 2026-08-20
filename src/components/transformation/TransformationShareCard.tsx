@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { X, Download } from "lucide-react";
 import { useRef, useCallback } from "react";
 import type { ProgressPhoto } from "@/hooks/useProgressPhotos";
-import { downloadDataUrl } from "@/lib/socialImageKit";
+import { saveImage } from "@/lib/socialImageKit";
 
 interface TransformationShareCardProps {
   before: ProgressPhoto;
@@ -20,7 +20,7 @@ const TransformationShareCard = ({ before, after, onClose, userName, streakDays 
     try {
       const { default: html2canvas } = await import("html2canvas");
       const canvas = await html2canvas(cardRef.current, { backgroundColor: null, scale: 2, useCORS: true });
-      downloadDataUrl(canvas.toDataURL("image/png"), `nutrion-transformation-${Date.now()}.png`);
+      await saveImage(canvas.toDataURL("image/png"), `nutrion-transformation-${Date.now()}.png`);
     } catch { /* fallback */ }
   }, []);
 

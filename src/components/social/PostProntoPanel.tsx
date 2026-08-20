@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ACCENT, ACCENT2, Section, callSocialAI, copyText } from "./socialUi";
 import { CAPTION_TONES, CAROUSEL_STYLES, PHOTO_SUBJECTS, QUICK_GOALS } from "@/data/socialOnSurreal";
 import {
-  cropToRatio, downloadDataUrl, downloadMany, extractVideoFrames, fileToDataUrl, getVideoDuration,
+  cropToRatio, downloadMany, extractVideoFrames, fileToDataUrl, getVideoDuration, isMobileDevice, saveImage,
   gradeDarkPremium, gradeFitness, renderSlide, renderStoryFrame, videoObjectUrl,
 } from "@/lib/socialImageKit";
 import { MAX_VIDEO_MB, MAX_VIDEO_SECONDS, VIDEO_TYPES, videoTypeById } from "@/data/socialOnVideo";
@@ -472,14 +472,20 @@ const PostProntoPanel = ({ ctx, handle }: { ctx: Record<string, any>; handle?: s
     loadSaved();
   };
 
-  const dl = (url: string, name: string) => {
-    const ok = downloadDataUrl(url, name);
-    ok ? toast.success(`${name} baixado!`) : toast.error("Não consegui baixar o arquivo");
+  const okMsg = (n: number) =>
+    isMobileDevice()
+      ? `${n} ${n > 1 ? "imagens prontas" : "imagem pronta"} — toque em "Salvar imagem" para ir pra galeria`
+      : `${n} ${n > 1 ? "imagens baixadas" : "imagem baixada"}!`;
+
+  const dl = async (url: string, name: string) => {
+    const ok = await saveImage(url, name);
+    ok ? toast.success(okMsg(1)) : toast.error("Não consegui salvar o arquivo");
   };
   const dlAll = async (list: string[], prefix: string) => {
     const n = await downloadMany(list.map((u, i) => ({ url: u, filename: `${prefix}-${i + 1}.png` })));
-    n ? toast.success(`${n} imagens baixadas!`) : toast.error("Não consegui baixar as imagens");
+    n ? toast.success(okMsg(n)) : toast.error("Não consegui salvar as imagens");
   };
+
 
   return (
     <div className="space-y-4">
