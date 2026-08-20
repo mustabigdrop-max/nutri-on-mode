@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { autoDetectAllViews, mergeAiWithMediaPipe, type ApexAutoDetectResult, type DetectionSource } from "@/lib/apexAutoDetect";
 import ApexPlanoMestre from "@/components/coach/ApexPlanoMestre";
+import ApexReportExport from "@/components/coach/ApexReportExport";
+
 import KineticChain, { type KineticChain as KineticChainType } from "@/components/apex/KineticChain";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
