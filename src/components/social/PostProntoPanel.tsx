@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Clapperboard, Copy, Download, Film, Loader2, Rocket, Save, Smartphone, Trash2, Type, Upload, X, Zap } from "lucide-react";
+import { Copy, Download, Film, Loader2, Rocket, Save, Smartphone, Trash2, Type, Upload, X, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { ACCENT, ACCENT2, Section, callSocialAI, copyText } from "./socialUi";
@@ -69,6 +69,30 @@ const PUBLISH_ITEMS = [
   { key: "stories", label: "Stories postado" },
   { key: "self_comment", label: "Self-comment postado" },
 ];
+
+const reelToText = (r: ReelScript, duration?: number) =>
+  [
+    `ROTEIRO DO REEL${duration ? ` — vídeo de ${duration}s` : ""}`,
+    "",
+    `HOOK (${r.hook?.time || "0-2s"})`,
+    r.hook?.text_on_screen ? `Texto na tela: "${r.hook.text_on_screen}"` : "",
+    r.hook?.action ? `Ação: ${r.hook.action}` : "",
+    "",
+    `DESENVOLVIMENTO (${r.development?.time || "2-20s"})`,
+    ...(r.development?.instructions || []).map((i) => `- ${i}`),
+    "",
+    `CTA (${r.cta?.time || "últimos 5s"})`,
+    r.cta?.text_on_screen ? `Texto na tela: "${r.cta.text_on_screen}"` : "",
+    r.cta?.alternative ? `Ou: "${r.cta.alternative}"` : "",
+    "",
+    "EDIÇÃO SUGERIDA",
+    ...Object.entries(r.editing || {}).map(([k, v]) => `${k}: ${v}`),
+    "",
+    "TEXTOS PRA TELA",
+    ...(r.screen_texts || []).map((s) => `${s.frame}: ${s.text}`),
+  ]
+    .filter((l) => l !== undefined && l !== "" || l === "")
+    .join("\n");
 
 const PostProntoPanel = ({ ctx, handle }: { ctx: Record<string, any>; handle?: string | null }) => {
   const fileRef = useRef<HTMLInputElement>(null);
