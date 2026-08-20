@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Download, Rocket } from "lucide-react";
+import { toast } from "sonner";
 import { ACCENT, ACCENT2, Section } from "./socialUi";
 import { BRAND_PILLARS, PILLAR_ACTIONS, brandLevel } from "@/data/socialOnSurreal";
 import { downloadDataUrl, renderBrandScoreStory } from "@/lib/socialImageKit";
