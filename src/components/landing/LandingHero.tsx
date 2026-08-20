@@ -2,33 +2,50 @@ import { useEffect, useRef, useState } from "react";
 
 const TAGLINE = "TRANSFORMAÇÃO É SISTEMA.";
 const LETTER_MS = 50;
+const TYPE_MS = TAGLINE.length * LETTER_MS;
 
-/** Canvas de fundo: 18 partículas lentas + linhas de conexão. */
+const prefersReduced = () =>
+  typeof window !== "undefined" &&
+  window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/** Canvas de fundo: partículas lentas + linhas de conexão (leve no celular). */
 const HeroParticles = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext("2d", { alpha: true });
     if (!ctx) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (prefersReduced()) return;
+
+    const isMobile = window.matchMedia("(max-width: 768px)").matches;
+    const COUNT = isMobile ? 10 : 18;
+    const LINK_DIST = isMobile ? 110 : 150;
+    const FPS = isMobile ? 24 : 40;
+    const FRAME_MS = 1000 / FPS;
+    // no celular limitamos o dpr: menos pixels = menos GPU/CPU
+    const dpr = Math.min(window.devicePixelRatio || 1, isMobile ? 1 : 1.5);
 
     let W = 0;
     let H = 0;
-    const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+    let resizeTimer: number | undefined;
 
     const resize = () => {
       W = canvas.clientWidth;
       H = canvas.clientHeight;
-      canvas.width = W * dpr;
-      canvas.height = H * dpr;
+      canvas.width = Math.round(W * dpr);
+      canvas.height = Math.round(H * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     };
     resize();
-    window.addEventListener("resize", resize);
+    const onResize = () => {
+      window.clearTimeout(resizeTimer);
+      resizeTimer = window.setTimeout(resize, 150);
+    };
+    window.addEventListener("resize", onResize, { passive: true });
 
-    const parts = Array.from({ length: 18 }, () => {
+    const parts = Array.from({ length: COUNT }, () => {
       const a = Math.random() * Math.PI * 2;
       return {
         x: Math.random() * W,
@@ -42,48 +59,75 @@ const HeroParticles = () => {
     });
 
     let raf = 0;
-    const frame = () => {
+    let running = false;
+    let last = 0;
+
+    const frame = (ts: number) => {
+      raf = requestAnimationFrame(frame);
+      if (ts - last < FRAME_MS) return;
+      // avança proporcional ao tempo real para o movimento não depender do FPS
+      const step = Math.min((ts - last) / 16.67, 3);
+      last = ts;
+
       ctx.clearRect(0, 0, W, H);
+      ctx.lineWidth = 0.5;
+      ctx.strokeStyle = "rgba(0,212,255,0.03)";
+      ctx.beginPath();
       for (let i = 0; i < parts.length; i++) {
         const p = parts[i];
-        p.x += p.vx;
-        p.y += p.vy;
+        p.x += p.vx * step;
+        p.y += p.vy * step;
         if (p.x < 0) p.x = W;
         if (p.x > W) p.x = 0;
         if (p.y < 0) p.y = H;
         if (p.y > H) p.y = 0;
 
+        for (let j = i + 1; j < parts.length; j++) {
+          const q = parts[j];
+          const dx = p.x - q.x;
+          const dy = p.y - q.y;
+          if (dx * dx + dy * dy < LINK_DIST * LINK_DIST) {
+            ctx.moveTo(p.x, p.y);
+            ctx.lineTo(q.x, q.y);
+          }
+        }
+      }
+      ctx.stroke();
+
+      for (const p of parts) {
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
         ctx.fillStyle = p.cyan ? `rgba(0,212,255,${p.o})` : `rgba(255,255,255,${p.o})`;
         ctx.fill();
-
-        for (let j = i + 1; j < parts.length; j++) {
-          const q = parts[j];
-          const d = Math.hypot(p.x - q.x, p.y - q.y);
-          if (d < 150) {
-            ctx.beginPath();
-            ctx.moveTo(p.x, p.y);
-            ctx.lineTo(q.x, q.y);
-            ctx.strokeStyle = "rgba(0,212,255,0.03)";
-            ctx.lineWidth = 0.5;
-            ctx.stroke();
-          }
-        }
       }
+    };
+
+    const start = () => {
+      if (running) return;
+      running = true;
+      last = performance.now();
       raf = requestAnimationFrame(frame);
     };
-    frame();
-
-    const onVis = () => {
-      if (document.hidden) cancelAnimationFrame(raf);
-      else { cancelAnimationFrame(raf); frame(); }
+    const stop = () => {
+      running = false;
+      cancelAnimationFrame(raf);
     };
+
+    // só anima enquanto o hero estiver visível na tela
+    const io = new IntersectionObserver(
+      ([entry]) => (entry.isIntersecting && !document.hidden ? start() : stop()),
+      { threshold: 0 },
+    );
+    io.observe(canvas);
+
+    const onVis = () => (document.hidden ? stop() : start());
     document.addEventListener("visibilitychange", onVis);
 
     return () => {
-      cancelAnimationFrame(raf);
-      window.removeEventListener("resize", resize);
+      stop();
+      io.disconnect();
+      window.clearTimeout(resizeTimer);
+      window.removeEventListener("resize", onResize);
       document.removeEventListener("visibilitychange", onVis);
     };
   }, []);
@@ -92,27 +136,29 @@ const HeroParticles = () => {
 };
 
 const LandingHero = () => {
-  const reduced =
-    typeof window !== "undefined" &&
-    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const reduced = prefersReduced();
 
   const [typed, setTyped] = useState(reduced ? TAGLINE.length : 0);
   const [sheen, setSheen] = useState(false);
   const [glow, setGlow] = useState(reduced);
   const done = typed >= TAGLINE.length;
 
+  // typewriter em rAF: 1 render por letra, sincronizado com o compositor
   useEffect(() => {
     if (reduced) return;
-    const id = setInterval(() => {
-      setTyped((n) => {
-        if (n >= TAGLINE.length) {
-          clearInterval(id);
-          return n;
-        }
-        return n + 1;
-      });
-    }, LETTER_MS);
-    return () => clearInterval(id);
+    let raf = 0;
+    let shown = 0;
+    const t0 = performance.now();
+    const tick = (ts: number) => {
+      const next = Math.min(TAGLINE.length, Math.floor((ts - t0) / LETTER_MS));
+      if (next !== shown) {
+        shown = next;
+        setTyped(next);
+      }
+      if (shown < TAGLINE.length) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
   }, [reduced]);
 
   useEffect(() => {
@@ -126,7 +172,8 @@ const LandingHero = () => {
   }, [done, reduced]);
 
   // delays contados a partir do fim da digitação
-  const typeMs = TAGLINE.length * LETTER_MS;
+  const typeMs = TYPE_MS;
+
 
   return (
     <section className="relative min-h-[100svh] flex flex-col items-center justify-center px-6 text-center overflow-hidden">
