@@ -1,0 +1,77 @@
+export type LandingModule = {
+  num: string;
+  icon: string;
+  title: string;
+  subtitle: string;
+  /** Frase curta usada nos cards da homepage */
+  short: string;
+  /** Texto completo usado na página /modulos */
+  text: string;
+  color: string;
+};
+
+export const allModules: LandingModule[] = [
+  { num: "01", icon: "👁", title: "APEX VISUAL INTELLIGENCE", subtitle: "Análise postural por IA", color: "#00D4FF",
+    short: "Análise postural por IA. 1 foto, diagnóstico completo.",
+    text: "33 landmarks biomecânicos. Síndromes cruzadas de Janda detectadas automaticamente. 28 testes clínicos da Avaliação Funcional APEX por foto. Mapa de dominâncias e inibições musculares. Protocolo corretivo de 4 fases. Exercícios contraindicados por disfunção bloqueados automaticamente." },
+  { num: "02", icon: "📊", title: "SIMETROGRAFIA HUD", subtitle: "Grade de análise bilateral", color: "#B8922A",
+    short: "Grade simetrográfica automática sobre a foto.",
+    text: "Grade simetrográfica automática sobre a foto. Ângulos de inclinação de ombros, quadril, joelhos e tornozelos. Diferença bilateral em cm estimada. Detecção de escoliose funcional e obliquidade pélvica." },
+  { num: "03", icon: "🏆", title: "SRI — SHOW READINESS INDEX", subtitle: "Score de prontidão competitiva", color: "#E24B4A",
+    short: "Score de prontidão competitiva para atletas IFBB.",
+    text: "Score multidimensional para atletas IFBB. Simetria, definição, volumetria, postura, condicionamento e apresentação. Peak week ativada automaticamente quando SRI ≥ 82 a 2 semanas do palco." },
+  { num: "04", icon: "⚗", title: "DR. VERTEX", subtitle: "Inteligência farmacológica", color: "#7B2FBE",
+    short: "Auditoria farmacológica. Contenção de danos inteligente.",
+    text: "85+ compostos catalogados. Auditoria de protocolo em tempo real. Análise de sinergia entre compostos. Alertas de interação farmacológica. Periodização farmacológica por fase. Ciência sem censura. Prática sem medo." },
+  { num: "05", icon: "🧬", title: "NEXUS-BIO PEPTIDEVAULT", subtitle: "Enciclopédia viva de peptídeos", color: "#1D9E75",
+    short: "132 compostos catalogados com mecanismos completos.",
+    text: "132 compostos catalogados. Bioreguladores de Khavinson, peptídeos GH/IGF, blends de cutting elite, senolíticos e FOXO4-DRI. Mecanismos moleculares completos. Oracle IA responde qualquer pergunta." },
+  { num: "06", icon: "🛡", title: "DAMAGE CONTROL", subtitle: "Proteção orgânica por fase", color: "#E24B4A",
+    short: "Suplementação de suporte por órgão-alvo.",
+    text: "Suplementação de suporte por órgão-alvo: hepatoproteção, cardioproteção, neuroproteção e eixo HPTA. Ajustado automaticamente pelo protocolo farmacológico ativo do Dr. VERTEX." },
+  { num: "07", icon: "⚡", title: "TRAININGON / STRATUM", subtitle: "7 camadas de periodização", color: "#EF9F27",
+    short: "Periodização de 7 camadas. Treino que evolui com você.",
+    text: "Volume, intensidade, densidade, frequência, seleção, técnica e deload. Detecção de dominância de fibra muscular. Protocolos FST-7, Y3T, RP Hypertrophy. Exercícios corretivos do APEX injetados automaticamente no aquecimento." },
+  { num: "08", icon: "📈", title: "LOADTRACKER PRO", subtitle: "Progressão inteligente de carga", color: "#4A90D9",
+    short: "Progressão de carga sugerida a cada sessão.",
+    text: "Histórico de carga por exercício. Progressão sugerida a cada sessão. Score de fadiga cumulativa. Deload automático quando necessário. Sem planilha. Sem estimativa." },
+  { num: "09", icon: "🎯", title: "ATIVAÇÃO NEUROMUSCULAR", subtitle: "Cues de execução por exercício", color: "#1D9E75",
+    short: "Cue específico para cada exercício e grupo muscular.",
+    text: "Biblioteca de ativação baseada em Miloš Sarcev, John Meadows, Neil Hill e Hany Rambod. Cue específico para cada exercício e grupo muscular. BiomechanicsVault integrado." },
+  { num: "10", icon: "🍽", title: "NUTRIPLAN", subtitle: "Crononutrição PhD-level", color: "#B8922A",
+    short: "Plano alimentar que ajusta todo dia. Automaticamente.",
+    text: "TDEE ajustado por protocolo farmacológico ativo. GLUT-4 Sync por janela de treino. Crononutrição circadiana. 10 protocolos: Low Carb, Cetogênica, Jejum JI, Atleta/BB, Vegano e mais. Peak week automático via SRI do APEX." },
+  { num: "11", icon: "🦠", title: "MICROBIOTA / GUT-BRAIN", subtitle: "Eixo intestino-cérebro", color: "#00D4FF",
+    short: "Análise do microbioma em 4 dimensões.",
+    text: "Análise do microbioma em 4 dimensões. Impacto em composição corporal, humor e adesão ao protocolo. Ajuste automático com prebióticos, probióticos e alimentos específicos pelo perfil intestinal." },
+  { num: "12", icon: "🔬", title: "LAB INTELLIGENCE", subtitle: "Interpretação de exames por IA", color: "#E24B4A",
+    short: "Upload do exame de sangue, leitura por IA.",
+    text: "Upload do exame de sangue. IA interpreta ferro, vitamina D, colesterol, TSH, glicemia, testosterona e 30+ marcadores. Cruza com o protocolo farmacológico ativo e ajusta o plano alimentar automaticamente." },
+  { num: "13", icon: "🧠", title: "PCA COMPORTAMENTAL", subtitle: "4 perfis + metodologia MCE", color: "#7B2FBE",
+    short: "4 perfis comportamentais. A IA age antes do abandono.",
+    text: "Perfis AM, EI, SE e PP mapeados por entrevista comportamental. Metodologia MCE — Mindset, Comportamento, Execução — baseada em Dweck, Fogg, Clear e Baumeister. A IA age antes do abandono." },
+  { num: "14", icon: "📅", title: "DAILY CHECK-IN", subtitle: "Score diário comportamental", color: "#1D9E75",
+    short: "Humor, energia, sono e adesão avaliados todo dia.",
+    text: "Humor, energia, sono e adesão avaliados diariamente. Score gerado pela IA. Alerta automático para o coach quando o atleta cai abaixo do limiar por 3 dias consecutivos." },
+  { num: "15", icon: "📸", title: "DIÁRIO FOTOGRÁFICO", subtitle: "Evolução visual documentada", color: "#EF9F27",
+    short: "Antes × depois em tempo real com laudo por IA.",
+    text: "Slider antes × depois em tempo real. IA analisa sequência de fotos e gera relatório de evolução visual. Card compartilhável para redes sociais. Histórico completo por data." },
+  { num: "16", icon: "♀", title: "MÓDULO FEMININO", subtitle: "4 fases do ciclo integradas", color: "#E24B4A",
+    short: "Nutrição e treino ajustados por fase do ciclo.",
+    text: "Nutrição e treino ajustados por fase menstrual. Categorias IFBB femininas. Padrões posturais específicos. Análise de celulite fibrótica. Ciclo tracker preditivo com IA. Protocolo de gestação e pós-parto." },
+  { num: "17", icon: "🥇", title: "PREP COMPETITIVA", subtitle: "Do bulk ao palco", color: "#B8922A",
+    short: "Periodização completa do off-season ao peak week.",
+    text: "Periodização completa de off-season ao peak week. SRI monitora o condicionamento semana a semana. Peak week automática com manipulação hídrica, sódio e carboidrato pelo protocolo APEX-NutriPlan integrado." },
+  { num: "18", icon: "📋", title: "PROGRESS REPORT", subtitle: "Laudo mensal automático", color: "#4A90D9",
+    short: "Laudo mensal em PDF, gerado automaticamente.",
+    text: "Relatório PDF gerado automaticamente com gráficos de evolução, SRI/Body Score, FCS clínico, aderência ao protocolo e próximas metas. Pronto para enviar ao atleta em 1 clique." },
+  { num: "19", icon: "🏃", title: "RUNON — CORRIDA + FORÇA", subtitle: "Periodização conjugada", color: "#00D4FF",
+    short: "Corrida e musculação na mesma semana, sem conflito.",
+    text: "Corrida e musculação organizadas na mesma semana sem competir pelo mesmo estímulo. Muscle Guard protege a hipertrofia enquanto o volume aeróbico sobe. Planos de prova de 5K a 42K com taper e carb load estruturados." },
+  { num: "20", icon: "🎧", title: "MCE AUDIO ACADEMY", subtitle: "Áudios na voz do coach", color: "#1D9E75",
+    short: "264 áudios na voz do coach. Corrida, treino, sono.",
+    text: "264 áudios na voz do Coach Diogo Mello. Rituais de despertar, corrida, treino e sono, séries completas de mindset e execução, player avançado com loop A-B, velocidade, reprodução em segundo plano e modo offline." },
+  { num: "21", icon: "✨", title: "SOCIAL ON / PRISM", subtitle: "Content Intelligence", color: "#00D4FF",
+    short: "IA que cria seu conteúdo fitness em 30 segundos.",
+    text: "Sobe foto ou vídeo e o PRISM devolve o pacote pronto: legenda em 5 tons, carrossel de 5 slides, stories, roteiro de reel, hashtags e melhor horário. Agendamento direto no calendário de conteúdo." },
+];
