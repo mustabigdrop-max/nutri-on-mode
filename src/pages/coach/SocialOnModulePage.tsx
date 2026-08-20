@@ -410,6 +410,14 @@ const SocialOnModulePage = () => {
           </TabsList>
 
           {/* ─────────── AUDITORIA ─────────── */}
+          <TabsContent value="prism" className="mt-4">
+            <PrismPanel
+              ctx={aiCtx}
+              handle={ig.account?.username || handle}
+              onManualMode={() => setTab("post_pronto")}
+            />
+          </TabsContent>
+
           <TabsContent value="auditoria" className="space-y-4 mt-4">
             <InstagramAccountPanel
               account={ig.account}
