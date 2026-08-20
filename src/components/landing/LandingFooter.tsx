@@ -6,6 +6,19 @@ const LandingFooter = () => (
       <span className="italic text-[#B8922A30]">O comportamento vem antes do alimento.</span>
     </div>
 
+    {/* Assinatura do coach */}
+    <div className="flex flex-col items-center gap-1.5 text-center pb-5 border-b border-[#ffffff08]">
+      <span className="font-heading text-[1.1rem] tracking-[.06em] text-white">Coach Diogo Mello</span>
+      <span className="font-mono text-[11px] text-[#8A8A8A]">Nutrition &amp; Business Coach 🇺🇸 Certified</span>
+      <span className="font-mono text-[11px] text-[#8A8A8A]">
+        Automação &amp; IA no Fitness · Criador do Método MCE
+      </span>
+      <span className="font-mono text-[11px] text-[#8A8A8A]">@diogo.mell0 · nutrion.app.br</span>
+      <span className="font-landing italic text-[13px] mt-1" style={{ color: "#00D4FF" }}>
+        "Transformação é sistema."
+      </span>
+    </div>
+
     <div className="flex flex-col md:flex-row justify-between items-center gap-6 md:gap-4">
       {/* Bloco esquerdo */}
       <div className="flex flex-col items-center md:items-start gap-1">
