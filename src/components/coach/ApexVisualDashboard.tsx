@@ -1246,6 +1246,12 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
   const [vertexV4Analysis, setVertexV4Analysis] = useState<import("@/components/coach/VertexAnalysisV4").VertexAnalysis | null>(null);
   const [vertexV4Loading, setVertexV4Loading] = useState(false);
   const [vertexV4Error, setVertexV4Error] = useState<string | null>(null);
+  const [vertexV4ErrorKind, setVertexV4ErrorKind] = useState<
+    "timeout" | "not_found" | "auth" | "network" | "invalid" | "unknown" | null
+  >(null);
+  const [vertexV4Elapsed, setVertexV4Elapsed] = useState(0);
+  const [vertexV4Attempts, setVertexV4Attempts] = useState(0);
+
   // Consentimento de risco virilizante — exigido a cada sessão antes de gerar farmacologia
   const [virilizationRiskAccepted, setVirilizationRiskAccepted] = useState<boolean>(() => {
     if (typeof window === "undefined") return false;
