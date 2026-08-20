@@ -544,6 +544,7 @@ const AthleteDashboard = ({ overrideUserId, overrideName, viewMode = "normal" }:
       <AddActivitySheet
         open={showActivitySheet && !preview}
         weightKg={weightKg}
+        baseKcal={baseKcal + adjustKcal}
         onClose={() => setShowActivitySheet(false)}
         onAdd={async (input) => {
           await addActivity({ ...input, weightKg, climate });
