@@ -23,7 +23,29 @@ export interface ApexReportData {
   strengths?: string[];
   attentions?: string[];
   accent?: string;
+  /* Template customizável */
+  title?: string;
+  coachName?: string;
+  coachSubtitle?: string;
+  handle?: string;
+  bg?: string;
+  watermark?: boolean;
 }
+
+export interface ApexPalette {
+  key: string;
+  label: string;
+  accent: string;
+  bg: string;
+}
+
+export const APEX_PALETTES: ApexPalette[] = [
+  { key: "cyan", label: "APEX Cyan", accent: "#00D4FF", bg: "#020205" },
+  { key: "amber", label: "nutriON Amber", accent: "#E8A020", bg: "#03030a" },
+  { key: "emerald", label: "Lab Emerald", accent: "#4ade80", bg: "#0a0f0a" },
+  { key: "violet", label: "VERTEX Violet", accent: "#9080ff", bg: "#050310" },
+  { key: "light", label: "Clean Light", accent: "#0B7CA8", bg: "#F4F6F8" },
+];
 
 const BG = "#020205";
 const CYAN = "#00D4FF";
@@ -34,6 +56,7 @@ const DIMENSIONS: Record<ApexReportMode, { w: number; h: number }> = {
   client: { w: 1080, h: 1350 },
   instagram: { w: 1080, h: 1080 },
 };
+
 
 const severityColor = (s?: string) => {
   const v = String(s || "").toLowerCase();
