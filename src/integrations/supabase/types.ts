@@ -2781,6 +2781,7 @@ export type Database = {
       }
       client_daily_activities: {
         Row: {
+          activity_category: string | null
           activity_date: string
           activity_label: string | null
           activity_type: string
@@ -2788,16 +2789,21 @@ export type Database = {
           climate_band: string | null
           created_at: string
           duration_min: number
+          epoc_kcal: number | null
           fat_adjustment: number
+          gross_kcal: number | null
           hydration_adjustment_ml: number
           id: string
           intensity: string
           kcal_adjustment: number
+          met: number | null
+          net_adjustment: number | null
           protein_adjustment: number
           updated_at: string
           user_id: string
         }
         Insert: {
+          activity_category?: string | null
           activity_date?: string
           activity_label?: string | null
           activity_type: string
@@ -2805,16 +2811,21 @@ export type Database = {
           climate_band?: string | null
           created_at?: string
           duration_min?: number
+          epoc_kcal?: number | null
           fat_adjustment?: number
+          gross_kcal?: number | null
           hydration_adjustment_ml?: number
           id?: string
           intensity?: string
           kcal_adjustment?: number
+          met?: number | null
+          net_adjustment?: number | null
           protein_adjustment?: number
           updated_at?: string
           user_id: string
         }
         Update: {
+          activity_category?: string | null
           activity_date?: string
           activity_label?: string | null
           activity_type?: string
@@ -2822,11 +2833,15 @@ export type Database = {
           climate_band?: string | null
           created_at?: string
           duration_min?: number
+          epoc_kcal?: number | null
           fat_adjustment?: number
+          gross_kcal?: number | null
           hydration_adjustment_ml?: number
           id?: string
           intensity?: string
           kcal_adjustment?: number
+          met?: number | null
+          net_adjustment?: number | null
           protein_adjustment?: number
           updated_at?: string
           user_id?: string

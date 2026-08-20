@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Zap, Plus, Trash2 } from "lucide-react";
 import { activityMeta, fmtKcal, type PhaseConfig } from "@/lib/nutrySync";
+import { metActivity } from "@/lib/nutrySyncMet";
 import type { DailyActivity } from "@/hooks/useDailyActivities";
 
 const CYAN = "#00D4FF";
@@ -127,11 +128,12 @@ export default function NutrySyncPanel({
           </div>
         )}
         {activities.map((a) => {
-          const meta = activityMeta(a.activity_type);
+          const m = metActivity(a.activity_type);
+          const meta = m ?? activityMeta(a.activity_type);
           return (
             <div key={a.id} className="flex items-center justify-between rounded-lg px-3 py-2" style={{ background: "rgba(255,255,255,0.04)" }}>
               <span className="text-xs truncate">
-                {meta.emoji} {a.activity_label || meta.label} · {a.duration_min}min ({a.intensity})
+                {meta.emoji} {a.activity_label || meta.label} · {a.duration_min}min{a.met ? ` · MET ${Number(a.met).toFixed(1)}` : ` (${a.intensity})`}
               </span>
               <span className="flex items-center gap-2">
                 <span className="text-xs font-mono font-bold" style={{ color: GREEN }}>+{a.kcal_adjustment} kcal</span>
