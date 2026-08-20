@@ -166,7 +166,7 @@ const LandingManifesto = () => {
             transition={{ duration: 0.6 }}
             className="text-white"
           >
-            O mercado tem apps.
+            Não é mais um app.
           </motion.div>
           <motion.div
             initial={{ opacity: 0, y: 12 }}
@@ -174,9 +174,10 @@ const LandingManifesto = () => {
             transition={{ duration: 0.6, delay: 0.4 }}
             style={{ color: GOLD, textShadow: `0 0 30px ${GOLD}55` }}
           >
-            Você entrou no sistema.
+            É um sistema integrado.
           </motion.div>
         </div>
+
 
         {/* Problema + Solução */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
