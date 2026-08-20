@@ -155,7 +155,7 @@ const LandingHero = () => {
 
         <p
           className="hero-fade-up mt-8 text-[1.1rem] leading-[1.7] font-landing max-w-[600px]"
-          style={{ color: "#8A8A8A", animationDelay: `${typeMs + 2000}ms` }}
+          style={{ color: "#8A8A8A", animationDelay: `${typeMs + 400}ms` }}
         >
           O sistema inteligente de performance humana que integra nutrição, treino,
           comportamento e mente numa plataforma só.
@@ -165,7 +165,7 @@ const LandingHero = () => {
           href="/auth"
           className="hero-fade-up hero-cta mt-10 inline-block font-mono tracking-[.08em] text-white transition-all duration-300 hover:bg-[rgba(0,212,255,0.1)] hover:shadow-[0_0_30px_rgba(0,212,255,0.3)]"
           style={{
-            animationDelay: `${typeMs + 2500}ms`,
+            animationDelay: `${typeMs + 900}ms`,
             border: "2px solid #00D4FF",
             background: "transparent",
             padding: "16px 48px",
