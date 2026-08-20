@@ -198,7 +198,7 @@ const LandingHero = () => {
         >
           {/* texto completo invisível reserva o espaço: zero layout shift durante a digitação */}
           <span aria-hidden>{TAGLINE.slice(0, typed)}</span>
-          {!done && <span className="hero-caret text-[#00D4FF]" aria-hidden>|</span>}
+          {!done && <span className="hero-caret text-[#00D4FF] inline-block w-0 overflow-visible" aria-hidden>|</span>}
           <span aria-hidden className="opacity-0">{TAGLINE.slice(typed)}</span>
           <span className="sr-only">{TAGLINE}</span>
         </h1>
