@@ -29,14 +29,87 @@ const ctxOf = (w: number, h: number) => {
   return { canvas, ctx };
 };
 
-export const downloadDataUrl = (dataUrl: string, filename: string) => {
+/** Converte data URL (base64) em Blob — evita o limite de tamanho de href em data: */
+const dataUrlToBlob = (dataUrl: string): Blob => {
+  const [head, body] = dataUrl.split(",");
+  const mime = /:(.*?);/.exec(head)?.[1] || "image/png";
+  if (head.includes("base64")) {
+    const bin = atob(body);
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    return new Blob([bytes], { type: mime });
+  }
+  return new Blob([decodeURIComponent(body)], { type: mime });
+};
+
+const triggerDownload = (href: string, filename: string) => {
   const a = document.createElement("a");
-  a.href = dataUrl;
+  a.href = href;
   a.download = filename;
+  a.rel = "noopener";
+  a.style.display = "none";
   document.body.appendChild(a);
   a.click();
   a.remove();
 };
+
+/** Baixa uma imagem (data URL, blob URL ou http URL) forçando salvamento do arquivo. */
+export const downloadDataUrl = (dataUrl: string, filename: string) => {
+  if (!dataUrl) return false;
+  try {
+    if (dataUrl.startsWith("data:")) {
+      const url = URL.createObjectURL(dataUrlToBlob(dataUrl));
+      triggerDownload(url, filename);
+      setTimeout(() => URL.revokeObjectURL(url), 4000);
+    } else {
+      triggerDownload(dataUrl, filename);
+    }
+    return true;
+  } catch (e) {
+    console.error("Falha no download:", e);
+    try { window.open(dataUrl, "_blank"); } catch { /* noop */ }
+    return false;
+  }
+};
+
+/** Baixa uma URL remota (Storage/CORS) como arquivo real. */
+export const downloadFromUrl = async (url: string, filename: string) => {
+  if (!url) return false;
+  if (url.startsWith("data:") || url.startsWith("blob:")) return downloadDataUrl(url, filename);
+  try {
+    const res = await fetch(url, { mode: "cors" });
+    const blob = await res.blob();
+    const blobUrl = URL.createObjectURL(blob);
+    triggerDownload(blobUrl, filename);
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 4000);
+    return true;
+  } catch (e) {
+    console.error("Erro no download:", e);
+    window.open(url, "_blank");
+    return false;
+  }
+};
+
+/**
+ * Baixa vários arquivos em sequência com intervalo — navegadores bloqueiam
+ * downloads múltiplos disparados no mesmo tick.
+ * Retorna quantos arquivos foram baixados.
+ */
+export const downloadMany = async (
+  items: { url: string; filename: string }[],
+  gapMs = 450,
+): Promise<number> => {
+  let ok = 0;
+  for (let i = 0; i < items.length; i++) {
+    const { url, filename } = items[i];
+    if (!url) continue;
+    const done = await downloadFromUrl(url, filename);
+    if (done) ok++;
+    if (i < items.length - 1) await new Promise((r) => setTimeout(r, gapMs));
+  }
+  return ok;
+};
+
 
 /** Reduz a imagem mantendo proporção (lado maior = max) */
 const fitSize = (img: HTMLImageElement, max = 1440) => {
