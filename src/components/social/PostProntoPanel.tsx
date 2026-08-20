@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ACCENT, ACCENT2, Section, callSocialAI, copyText } from "./socialUi";
 import { CAPTION_TONES, CAROUSEL_STYLES, PHOTO_SUBJECTS, QUICK_GOALS } from "@/data/socialOnSurreal";
 import {
-  cropToRatio, downloadDataUrl, downloadMany, extractVideoFrames, fileToDataUrl, getVideoDuration,
+  cropToRatio, downloadMany, extractVideoFrames, fileToDataUrl, getVideoDuration, isMobileDevice, saveImage,
   gradeDarkPremium, gradeFitness, renderSlide, renderStoryFrame, videoObjectUrl,
 } from "@/lib/socialImageKit";
 import { MAX_VIDEO_MB, MAX_VIDEO_SECONDS, VIDEO_TYPES, videoTypeById } from "@/data/socialOnVideo";
