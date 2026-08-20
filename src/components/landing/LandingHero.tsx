@@ -196,9 +196,13 @@ const LandingHero = () => {
             lineHeight: 1.05,
           }}
         >
-          {TAGLINE.slice(0, typed)}
-          {!done && <span className="hero-caret text-[#00D4FF]">|</span>}
+          {/* texto completo invisível reserva o espaço: zero layout shift durante a digitação */}
+          <span aria-hidden>{TAGLINE.slice(0, typed)}</span>
+          {!done && <span className="hero-caret text-[#00D4FF]" aria-hidden>|</span>}
+          <span aria-hidden className="opacity-0">{TAGLINE.slice(typed)}</span>
+          <span className="sr-only">{TAGLINE}</span>
         </h1>
+
 
         <p
           className="hero-fade-up mt-8 text-[1.1rem] leading-[1.7] font-landing max-w-[600px]"
