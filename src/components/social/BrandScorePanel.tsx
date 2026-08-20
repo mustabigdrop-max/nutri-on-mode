@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Download, Rocket } from "lucide-react";
+import { toast } from "sonner";
 import { ACCENT, ACCENT2, Section } from "./socialUi";
 import { BRAND_PILLARS, PILLAR_ACTIONS, brandLevel } from "@/data/socialOnSurreal";
 import { downloadDataUrl, renderBrandScoreStory } from "@/lib/socialImageKit";
@@ -33,7 +34,9 @@ const BrandScorePanel = ({ handle, onGenerate }: { handle?: string | null; onGen
       streak: streak ? `🔥 Streak: ${streak} semanas postando` : undefined,
       handle: `@${String(handle || "diogo.mell0").replace("@", "")}`,
     });
-    downloadDataUrl(url, "brand-score.png");
+    downloadDataUrl(url, "brand-score.png")
+      ? toast.success("brand-score.png baixado!")
+      : toast.error("Não consegui baixar a imagem");
   };
 
   return (

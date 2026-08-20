@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Loader2, Download, Copy, Rocket } from "lucide-react";
 import { toast } from "sonner";
+import { downloadDataUrl } from "@/lib/socialImageKit";
 import { ACCENT, ACCENT2, Section, callSocialAI, copyText } from "./socialUi";
 
 type Athlete = { userId: string; name: string };
@@ -96,11 +97,10 @@ const SocialProofPanel = ({
     if (!cardRef.current) return;
     if (!authorized) return toast.error("Confirme a autorização do cliente");
     const canvas = await html2canvas(cardRef.current, { backgroundColor: "#020205", scale: 3, useCORS: true });
-    const a = document.createElement("a");
-    a.href = canvas.toDataURL("image/png");
-    a.download = `nutrion-resultado-${(stats?.name || "cliente").toLowerCase().replace(/\s+/g, "-")}.png`;
-    a.click();
-    toast.success("Card baixado");
+    const filename = `nutrion-resultado-${(stats?.name || "cliente").toLowerCase().replace(/\s+/g, "-")}.png`;
+    downloadDataUrl(canvas.toDataURL("image/png"), filename)
+      ? toast.success(`${filename} baixado!`)
+      : toast.error("Não consegui baixar o card");
   };
 
   const genCaption = async () => {
