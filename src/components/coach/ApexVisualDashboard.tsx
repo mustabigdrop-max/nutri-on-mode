@@ -1779,6 +1779,36 @@ Suporte em uso: ${suporte || "não informado"}` : "";
           {meta.semEst && <Pill label="Semanas" value={meta.semEst} color={cat.color} />}
         </div>
 
+        {/* Modo Apresentação */}
+        <ApexReportExport
+          data={{
+            athleteName: athlete?.nome || "Atleta",
+            categoryLabel: cat.label,
+            photoUrl: photoUrls.front || photoUrls.lateral || photoUrls.back || null,
+            accent: cat.color,
+            deviations: parseSection(analysisResult, "POSTURA_DESVIOS", "CORRECOES_POSTURAIS")
+              .split("\n")
+              .map((l) => l.replace(/^[\s\-*•]+/, "").trim())
+              .filter((l) => l.length > 3 && !l.startsWith("#"))
+              .slice(0, 6)
+              .map((l) => {
+                const [name, ...rest] = l.split(/[:—-]/);
+                return { name: name.trim().slice(0, 42), severity_label: rest.join(" ").trim().slice(0, 24) };
+              }),
+            scores: segments.map((s) => ({ label: s.label, value: s.score })),
+            bfEstimated: meta.bfEst,
+            bfTarget: meta.bfMeta,
+            weeks: meta.semEst,
+            priority: meta.p1,
+            clientSummary: meta.p1
+              ? `Seu foco das próximas semanas: ${meta.p1}. Um passo de cada vez — transformação é sistema.`
+              : undefined,
+            strengths: [...segments].sort((a, b) => b.score - a.score).slice(0, 3).map((s) => `${s.label} em boa evolução`),
+            attentions: [...segments].sort((a, b) => a.score - b.score).slice(0, 2).map((s) => `${s.label} precisa de atenção`),
+          }}
+        />
+
+
         {/* Tabs */}
         <div className="flex gap-1.5 overflow-x-auto pb-1 border-b border-border">
           {tabs.map((t) => (
