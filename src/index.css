@@ -669,3 +669,4 @@
   50%      { opacity: 1;  text-shadow: 0 0 20px rgba(0,212,255,0.6); }
 }
 .logo-n-cyan { animation: logoPulseCyan 3s ease-in-out infinite; }
+.hero-cta:hover::after { background: linear-gradient(rgba(0,212,255,.1), rgba(0,212,255,.1)), #03030a; }
