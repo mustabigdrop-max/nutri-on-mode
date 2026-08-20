@@ -90,15 +90,59 @@ export const downloadFromUrl = async (url: string, filename: string) => {
   }
 };
 
+const toBlob = async (url: string): Promise<Blob | null> => {
+  try {
+    if (url.startsWith("data:")) return dataUrlToBlob(url);
+    const res = await fetch(url, { mode: "cors" });
+    return await res.blob();
+  } catch {
+    return null;
+  }
+};
+
+export const isMobileDevice = () =>
+  typeof navigator !== "undefined" && /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
 /**
- * Baixa vários arquivos em sequência com intervalo — navegadores bloqueiam
+ * No celular, abre a folha de compartilhamento (Salvar em Fotos / WhatsApp / Instagram).
+ * Retorna quantos arquivos foram compartilhados, ou null se não for possível.
+ */
+export const shareImages = async (
+  items: { url: string; filename: string }[],
+  text?: string,
+): Promise<number | null> => {
+  if (typeof navigator === "undefined" || !navigator.share || !navigator.canShare) return null;
+  const files: File[] = [];
+  for (const { url, filename } of items) {
+    if (!url) continue;
+    const blob = await toBlob(url);
+    if (!blob) continue;
+    files.push(new File([blob], filename, { type: blob.type || "image/png" }));
+  }
+  if (!files.length || !navigator.canShare({ files })) return null;
+  try {
+    await navigator.share({ files, ...(text ? { text } : {}) });
+    return files.length;
+  } catch (e: any) {
+    if (e?.name === "AbortError") return 0;
+    return null;
+  }
+};
+
+/**
+ * Salva as imagens: no celular tenta compartilhar (salvar na galeria / mandar no WhatsApp),
+ * no desktop baixa em sequência com intervalo — navegadores bloqueiam
  * downloads múltiplos disparados no mesmo tick.
- * Retorna quantos arquivos foram baixados.
+ * Retorna quantos arquivos foram entregues.
  */
 export const downloadMany = async (
   items: { url: string; filename: string }[],
   gapMs = 450,
 ): Promise<number> => {
+  if (isMobileDevice()) {
+    const shared = await shareImages(items);
+    if (shared !== null) return shared;
+  }
   let ok = 0;
   for (let i = 0; i < items.length; i++) {
     const { url, filename } = items[i];
@@ -109,6 +153,13 @@ export const downloadMany = async (
   }
   return ok;
 };
+
+/** Salva 1 imagem (share no celular, download no desktop). */
+export const saveImage = async (url: string, filename: string) => {
+  const n = await downloadMany([{ url, filename }]);
+  return n > 0;
+};
+
 
 
 /** Reduz a imagem mantendo proporção (lado maior = max) */
