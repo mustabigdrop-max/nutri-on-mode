@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Section, copyText } from "./socialUi";
 import {
-  cropToRatio, downloadDataUrl, downloadMany, extractVideoFrames, fileToDataUrl, getVideoDuration,
+  cropToRatio, downloadMany, isMobileDevice, saveImage, extractVideoFrames, fileToDataUrl, getVideoDuration,
   gradeDarkPremium, gradeFitness, renderSlide, renderStoryFrame, videoObjectUrl,
 } from "@/lib/socialImageKit";
 
@@ -895,7 +895,7 @@ const PrismPanel = ({
                   <p className="text-[10px] uppercase text-muted-foreground mb-1">Thumbnail — {c.video_notes.thumbnail_frame}</p>
                   <div className="flex gap-2">
                     {videos[0].frames!.map((f, i) => (
-                      <button key={i} type="button" onClick={() => { downloadDataUrl(f, `prism-thumb-${i + 1}.png`) ? toast.success("Thumbnail baixada!") : toast.error("Falha no download"); }}>
+                      <button key={i} type="button" onClick={async () => { (await saveImage(f, `prism-thumb-${i + 1}.png`)) ? toast.success(isMobileDevice() ? "Toque em \"Salvar imagem\" para ir pra galeria" : "Thumbnail baixada!") : toast.error("Falha ao salvar"); }}>
                         <img src={f} alt="" className="w-20 rounded border" style={{ borderColor: "rgba(255,255,255,0.12)" }} />
                       </button>
                     ))}
