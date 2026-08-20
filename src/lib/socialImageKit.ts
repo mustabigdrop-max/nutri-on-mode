@@ -163,9 +163,11 @@ export const renderSlide = async (spec: SlideSpec, w = 1080, h = 1350) => {
   const pad = Math.round(w * 0.08);
   const maxW = w - pad * 2;
 
-  // barra de marca
-  ctx.fillStyle = accent;
-  ctx.fillRect(pad, pad, 72, 6);
+  // barra de marca (somente quando a marca d'água está ativa)
+  if (spec.footer) {
+    ctx.fillStyle = accent;
+    ctx.fillRect(pad, pad, 72, 6);
+  }
 
   let y = pad + 40;
   if (spec.eyebrow) {
@@ -247,4 +249,76 @@ export const renderBrandScoreStory = async (data: BrandScoreStory) => {
   ctx.fillText(`${data.handle} · nutrion.app.br`, pad, h - 160);
 
   return canvas.toDataURL("image/png");
+};
+
+// ── Vídeo ──
+
+export const videoObjectUrl = (file: File) => URL.createObjectURL(file);
+
+const loadVideo = (src: string): Promise<HTMLVideoElement> =>
+  new Promise((resolve, reject) => {
+    const v = document.createElement("video");
+    v.preload = "auto";
+    v.muted = true;
+    v.playsInline = true;
+    v.crossOrigin = "anonymous";
+    v.onloadeddata = () => resolve(v);
+    v.onerror = () => reject(new Error("Não foi possível ler o vídeo"));
+    v.src = src;
+  });
+
+export const getVideoDuration = async (src: string) => {
+  const v = await loadVideo(src);
+  return Number.isFinite(v.duration) ? v.duration : 0;
+};
+
+const seekFrame = (v: HTMLVideoElement, time: number): Promise<string> =>
+  new Promise((resolve, reject) => {
+    const onSeeked = () => {
+      try {
+        const { canvas, ctx } = ctxOf(v.videoWidth, v.videoHeight);
+        ctx.filter = "contrast(1.10) saturate(1.05)";
+        ctx.drawImage(v, 0, 0, v.videoWidth, v.videoHeight);
+        resolve(canvas.toDataURL("image/jpeg", 0.92));
+      } catch (e) {
+        reject(e instanceof Error ? e : new Error("Falha ao capturar frame"));
+      } finally {
+        v.removeEventListener("seeked", onSeeked);
+      }
+    };
+    v.addEventListener("seeked", onSeeked);
+    v.currentTime = Math.max(0.1, Math.min(time, (v.duration || 1) - 0.1));
+  });
+
+/** Captura N frames distribuídos e devolve o mais "forte" (maior contraste/nitidez) primeiro. */
+export const extractVideoFrames = async (src: string, count = 5) => {
+  const v = await loadVideo(src);
+  const dur = Number.isFinite(v.duration) && v.duration > 0 ? v.duration : 1;
+  const frames: { time: number; dataUrl: string; score: number }[] = [];
+  for (let i = 0; i < count; i++) {
+    const t = (dur * (i + 0.5)) / count;
+    const dataUrl = await seekFrame(v, t);
+    frames.push({ time: t, dataUrl, score: await frameScore(dataUrl) });
+  }
+  return frames.sort((a, b) => b.score - a.score);
+};
+
+/** Score simples: desvio padrão de luminância (proxy de contraste/detalhe). */
+const frameScore = async (dataUrl: string) => {
+  const img = await loadImage(dataUrl);
+  const w = 96;
+  const h = Math.max(1, Math.round((img.height / img.width) * w));
+  const { ctx } = ctxOf(w, h);
+  ctx.drawImage(img, 0, 0, w, h);
+  const { data } = ctx.getImageData(0, 0, w, h);
+  let sum = 0;
+  const lums: number[] = [];
+  for (let i = 0; i < data.length; i += 4) {
+    const l = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+    lums.push(l);
+    sum += l;
+  }
+  const mean = sum / lums.length;
+  const variance = lums.reduce((a, l) => a + (l - mean) ** 2, 0) / lums.length;
+  return Math.sqrt(variance);
 };

@@ -3,15 +3,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Copy, Download, Loader2, Rocket, Save, Smartphone, Trash2, Upload, X, Zap } from "lucide-react";
+import { Copy, Download, Film, Loader2, Rocket, Save, Smartphone, Trash2, Type, Upload, X, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { ACCENT, ACCENT2, Section, callSocialAI, copyText } from "./socialUi";
 import { CAPTION_TONES, CAROUSEL_STYLES, PHOTO_SUBJECTS, QUICK_GOALS } from "@/data/socialOnSurreal";
 import {
-  cropToRatio, downloadDataUrl, fileToDataUrl, gradeDarkPremium, gradeFitness,
-  renderSlide, renderStoryFrame,
+  cropToRatio, downloadDataUrl, extractVideoFrames, fileToDataUrl, getVideoDuration,
+  gradeDarkPremium, gradeFitness, renderSlide, renderStoryFrame, videoObjectUrl,
 } from "@/lib/socialImageKit";
+import { MAX_VIDEO_MB, MAX_VIDEO_SECONDS, VIDEO_TYPES, videoTypeById } from "@/data/socialOnVideo";
 
 type StoryPart = { title: string; body: string; sticker?: string; sticker_content?: string };
 
@@ -24,6 +25,19 @@ type Pkg = {
   self_comment?: string;
   carousel?: { title: string; body: string }[];
   stories?: StoryPart[];
+};
+
+type ReelScript = {
+  hook?: { time?: string; text_on_screen?: string; action?: string };
+  development?: { time?: string; instructions?: string[] };
+  cta?: { time?: string; text_on_screen?: string; alternative?: string };
+  editing?: Record<string, string>;
+  screen_texts?: { frame: string; text: string }[];
+  screen_text_tips?: string[];
+  caption?: string;
+  hashtags?: string[];
+  best_time?: string;
+  self_comment?: string;
 };
 
 type SlideDef = {
@@ -56,6 +70,30 @@ const PUBLISH_ITEMS = [
   { key: "self_comment", label: "Self-comment postado" },
 ];
 
+const reelToText = (r: ReelScript, duration?: number) =>
+  [
+    `ROTEIRO DO REEL${duration ? ` — vídeo de ${duration}s` : ""}`,
+    "",
+    `HOOK (${r.hook?.time || "0-2s"})`,
+    r.hook?.text_on_screen ? `Texto na tela: "${r.hook.text_on_screen}"` : "",
+    r.hook?.action ? `Ação: ${r.hook.action}` : "",
+    "",
+    `DESENVOLVIMENTO (${r.development?.time || "2-20s"})`,
+    ...(r.development?.instructions || []).map((i) => `- ${i}`),
+    "",
+    `CTA (${r.cta?.time || "últimos 5s"})`,
+    r.cta?.text_on_screen ? `Texto na tela: "${r.cta.text_on_screen}"` : "",
+    r.cta?.alternative ? `Ou: "${r.cta.alternative}"` : "",
+    "",
+    "EDIÇÃO SUGERIDA",
+    ...Object.entries(r.editing || {}).map(([k, v]) => `${k}: ${v}`),
+    "",
+    "TEXTOS PRA TELA",
+    ...(r.screen_texts || []).map((s) => `${s.frame}: ${s.text}`),
+  ]
+    .filter((l) => l !== undefined && l !== "" || l === "")
+    .join("\n");
+
 const PostProntoPanel = ({ ctx, handle }: { ctx: Record<string, any>; handle?: string | null }) => {
   const fileRef = useRef<HTMLInputElement>(null);
   const extraRef = useRef<HTMLInputElement>(null);
@@ -78,9 +116,17 @@ const PostProntoPanel = ({ ctx, handle }: { ctx: Record<string, any>; handle?: s
   const [preview, setPreview] = useState(false);
   const [saved, setSaved] = useState<SavedPackage[]>([]);
   const [realData, setRealData] = useState<string>("");
+  const [watermark, setWatermark] = useState(false);
+  const [video, setVideo] = useState<{ url: string; name: string; duration: number } | null>(null);
+  const [videoType, setVideoType] = useState<string>("talking_head");
+  const [frames, setFrames] = useState<string[]>([]);
+  const [thumb, setThumb] = useState<string | null>(null);
+  const [reel, setReel] = useState<ReelScript | null>(null);
 
+  const videoRef = useRef<HTMLInputElement>(null);
   const main = photos[0] || null;
-  const brand = `@${String(handle || "diogo.mell0").replace("@", "")} · nutrion.app.br`;
+  const at = `@${String(handle || "diogo.mell0").replace("@", "")}`;
+  const brand = watermark ? `${at} · nutrion.app.br` : undefined;
 
   const loadSaved = async () => {
     const { data } = await supabase
@@ -190,47 +236,150 @@ const PostProntoPanel = ({ ctx, handle }: { ctx: Record<string, any>; handle?: s
     setSlideImages(await renderSlides(defs, carouselStyle));
 
     setStep("Montando Stories…");
+    await buildStories(data, brand, c916);
+  };
+
+  const buildStories = async (data: Pkg, footer?: string, cover?: string) => {
+    if (!main) return;
+    const base = cover ?? (await cropToRatio(await gradeFitness(main), 9, 16));
     const st: string[] = [];
-    const frames = (data.stories || []).slice(0, 4);
-    for (const [i, s] of frames.entries()) {
+    const parts = (data.stories || []).slice(0, 4);
+    for (const [i, s] of parts.entries()) {
       const extra = photos[i];
       const bg = i === 0
-        ? c916
+        ? base
         : extra && i < photos.length ? await cropToRatio(await gradeDarkPremium(extra), 9, 16) : null;
       st.push(await renderStoryFrame({
         backgroundImage: bg,
         overlay: "rgba(2,2,5,0.62)",
         title: s.title,
         body: [s.body, s.sticker && s.sticker !== "NENHUM" ? `Adicione o sticker ${s.sticker} aqui ↑` : ""].filter(Boolean).join("\n\n"),
-        footer: brand,
+        footer,
         accent: i === 0 ? undefined : ACCENT2,
       }));
     }
     setStoryImages(st);
   };
 
-  const generate = async (lightning = false) => {
-    if (!main) return toast.error("Envie a foto principal primeiro");
+  const addVideo = async (file?: File | null) => {
+    if (!file) return;
+    if (!/^video\//.test(file.type)) return toast.error("Envie um arquivo de vídeo (MP4 ou MOV)");
+    if (file.size > MAX_VIDEO_MB * 1024 * 1024) return toast.error(`Vídeo acima de ${MAX_VIDEO_MB}MB`);
+    const url = videoObjectUrl(file);
+    const duration = Math.round(await getVideoDuration(url));
+    if (duration > MAX_VIDEO_SECONDS + 1) {
+      URL.revokeObjectURL(url);
+      return toast.error(`Vídeo de ${duration}s — o limite é ${MAX_VIDEO_SECONDS}s`);
+    }
+    setVideo({ url, name: file.name, duration });
     setBusy(true);
+    setStep("Analisando frames do vídeo…");
     try {
-      setStep("Gerando copy…");
-      const toneDef = CAPTION_TONES.find((t) => t.id === tone);
-      const data: Pkg = await callSocialAI({
-        mode: "post_package",
+      const best = await extractVideoFrames(url, 5);
+      setFrames(best.map((f) => f.dataUrl));
+      setThumb(best[0]?.dataUrl ?? null);
+      toast.success(`Vídeo de ${duration}s carregado · thumbnail sugerida`);
+    } catch (e: any) {
+      toast.error(e.message || "Não foi possível ler os frames do vídeo");
+    } finally {
+      setBusy(false);
+      setStep("");
+    }
+  };
+
+  const removeVideo = () => {
+    if (video) URL.revokeObjectURL(video.url);
+    setVideo(null);
+    setFrames([]);
+    setThumb(null);
+    setReel(null);
+  };
+
+  const generateReel = async () => {
+    if (!video) return;
+    const toneDef = CAPTION_TONES.find((t) => t.id === tone);
+    const vt = videoTypeById(videoType);
+    setBusy(true);
+    setStep("Escrevendo roteiro do Reel…");
+    try {
+      const data: ReelScript = await callSocialAI({
+        mode: "reel_script",
         subject: PHOTO_SUBJECTS.find((s) => s.id === subject)?.label,
         quickGoal: QUICK_GOALS.find((g) => g.id === goal)?.label,
         captionTone: toneDef?.label,
         captionToneBrief: toneDef?.brief,
+        videoDuration: video.duration,
+        videoType: vt?.label,
+        videoTypeTips: vt?.tips.join(" · "),
+        handle: at.replace("@", ""),
         realData,
-        extraPhotos: Math.max(0, photos.length - 1) || undefined,
-        lightning,
         ...ctx,
       });
-      setPkg(data);
-      await buildVisuals(data);
+      setReel(data);
+      toast.success("Roteiro do Reel pronto");
+    } catch (e: any) {
+      toast.error(e.message);
+    } finally {
+      setBusy(false);
+      setStep("");
+    }
+  };
+
+  const generate = async (lightning = false) => {
+    if (!main && !video) return toast.error("Envie a foto principal ou um vídeo primeiro");
+    setBusy(true);
+    try {
+      if (main) {
+        setStep("Gerando copy…");
+        const toneDef = CAPTION_TONES.find((t) => t.id === tone);
+        const data: Pkg = await callSocialAI({
+          mode: "post_package",
+          subject: PHOTO_SUBJECTS.find((s) => s.id === subject)?.label,
+          quickGoal: QUICK_GOALS.find((g) => g.id === goal)?.label,
+          captionTone: toneDef?.label,
+          captionToneBrief: toneDef?.brief,
+          realData,
+          extraPhotos: Math.max(0, photos.length - 1) || undefined,
+          lightning,
+          ...ctx,
+        });
+        setPkg(data);
+        await buildVisuals(data);
+      }
+      if (video) await generateReel();
       toast.success(lightning ? "Modo Relâmpago pronto" : "Pacote completo pronto");
     } catch (e: any) {
       toast.error(e.message);
+    } finally {
+      setBusy(false);
+      setStep("");
+    }
+  };
+
+  const toggleWatermark = async (next: boolean) => {
+    setWatermark(next);
+    if (!pkg || !main) return;
+    setBusy(true);
+    setStep(next ? "Aplicando marca d'água…" : "Removendo marca d'água…");
+    try {
+      const footer = next ? `${at} · nutrion.app.br` : undefined;
+      const imgs: string[] = [];
+      for (const d of slides) {
+        const bgImage = style === "dark" ? null : await bgFor(d.bg);
+        imgs.push(await renderSlide({
+          backgroundImage: bgImage,
+          overlay: "rgba(2,2,5,0.80)",
+          gradient: style === "gradient" && !bgImage ? ["#062733", "#020205"] : undefined,
+          bigTitle: style === "gradient",
+          eyebrow: d.eyebrow,
+          title: d.title,
+          body: d.body,
+          footer,
+          accent: d.accent,
+        }));
+      }
+      setSlideImages(imgs);
+      if (pkg) await buildStories(pkg, footer);
     } finally {
       setBusy(false);
       setStep("");
@@ -328,9 +477,10 @@ const PostProntoPanel = ({ ctx, handle }: { ctx: Record<string, any>; handle?: s
 
   return (
     <div className="space-y-4">
-      <Section title="📸 Passo 1 — suas fotos">
+      <Section title="📸 Passo 1 — seu conteúdo">
         <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => addPhotos(e.target.files, photos.length > 0)} />
         <input ref={extraRef} type="file" accept="image/*" multiple className="hidden" onChange={(e) => addPhotos(e.target.files)} />
+        <input ref={videoRef} type="file" accept="video/mp4,video/quicktime,video/*" className="hidden" onChange={(e) => addVideo(e.target.files?.[0])} />
         <div
           onDragOver={(e) => e.preventDefault()}
           onDrop={(e) => { e.preventDefault(); addPhotos(e.dataTransfer.files); }}
@@ -340,7 +490,7 @@ const PostProntoPanel = ({ ctx, handle }: { ctx: Record<string, any>; handle?: s
           {main ? (
             <img src={main} alt="Foto principal do post" className="mx-auto max-h-56 rounded-lg" />
           ) : (
-            <p className="text-xs text-muted-foreground">Arraste aqui ou selecione a foto principal (obrigatória)</p>
+            <p className="text-xs text-muted-foreground">Arraste aqui ou selecione a foto principal (ou envie só um vídeo abaixo)</p>
           )}
           <Button size="sm" variant="outline" className="gap-2" onClick={() => fileRef.current?.click()}>
             <Upload className="w-3 h-3" /> {main ? "Trocar foto principal" : "Selecionar foto principal"}
@@ -380,7 +530,57 @@ const PostProntoPanel = ({ ctx, handle }: { ctx: Record<string, any>; handle?: s
             </div>
           </>
         )}
+
+        <div className="rounded-xl border border-dashed p-4 space-y-3" style={{ borderColor: `${ACCENT2}55` }}>
+          <p className="text-xs font-semibold">📹 Vídeo (opcional)</p>
+          {video ? (
+            <div className="space-y-2">
+              <video src={video.url} controls className="w-full max-h-56 rounded-lg bg-black" />
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-[11px] font-mono text-muted-foreground">{video.name} · {video.duration}s</p>
+                <div className="flex gap-1">
+                  <Button size="sm" variant="ghost" className="h-7 text-[11px]" onClick={() => videoRef.current?.click()}>Trocar</Button>
+                  <Button size="sm" variant="ghost" className="h-7" onClick={removeVideo} aria-label="Remover vídeo"><X className="w-3 h-3" /></Button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <>
+              <Button size="sm" variant="outline" className="gap-2" onClick={() => videoRef.current?.click()}>
+                <Film className="w-3 h-3" /> Enviar vídeo
+              </Button>
+              <p className="text-[10px] text-muted-foreground">
+                Formatos: MP4, MOV · Máximo {MAX_VIDEO_SECONDS}s · Até {MAX_VIDEO_MB}MB
+              </p>
+            </>
+          )}
+        </div>
+
+        <label className="flex items-center gap-2 text-[11px] text-muted-foreground cursor-pointer">
+          <input type="checkbox" checked={watermark} onChange={(e) => toggleWatermark(e.target.checked)} />
+          Incluir marca d'água ({at} · nutrion.app.br) nos slides e stories
+        </label>
       </Section>
+
+      {video && (
+        <Section title="🎬 Passo 2B — tipo de vídeo">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+            {VIDEO_TYPES.map((v) => (
+              <button key={v.id} type="button" onClick={() => setVideoType(v.id)}
+                className="p-3 rounded-lg text-left border transition-colors"
+                style={{ borderColor: videoType === v.id ? ACCENT2 : "rgba(255,255,255,0.12)", background: videoType === v.id ? `${ACCENT2}18` : "transparent" }}>
+                <p className="text-xs font-semibold">{v.emoji} {v.label}</p>
+                <p className="text-[10px] text-muted-foreground">{v.sub}</p>
+              </button>
+            ))}
+          </div>
+          <ul className="space-y-1 pt-1">
+            {(videoTypeById(videoType)?.tips || []).map((t) => (
+              <li key={t} className="text-[11px] text-muted-foreground">→ {t}</li>
+            ))}
+          </ul>
+        </Section>
+      )}
 
       <Section title="🎯 Passo 2 — o que tem na foto?">
         <div className="flex flex-wrap gap-2">
@@ -527,6 +727,115 @@ const PostProntoPanel = ({ ctx, handle }: { ctx: Record<string, any>; handle?: s
               </div>
             ))}
           </div>
+        </Section>
+      )}
+
+      {reel && (
+        <Section
+          title="🎬 Roteiro do Reel"
+          right={
+            <div className="flex gap-1">
+              <Button size="sm" variant="ghost" className="h-7" disabled={busy} onClick={generateReel}>🔄 Outro</Button>
+              <Button size="sm" variant="ghost" className="h-7 gap-1" onClick={() => copyText(reelToText(reel, video?.duration))}>
+                <Copy className="w-3 h-3" /> Copiar roteiro
+              </Button>
+            </div>
+          }
+        >
+          <p className="text-[11px] text-muted-foreground">
+            Baseado no seu vídeo de {video?.duration ?? 0} segundos · {videoTypeById(videoType)?.label}
+          </p>
+          <div className="space-y-2">
+            {[
+              { k: "HOOK", t: reel.hook?.time, lines: [reel.hook?.text_on_screen && `Texto na tela: "${reel.hook.text_on_screen}"`, reel.hook?.action && `Ação: ${reel.hook.action}`] },
+              { k: "DESENVOLVIMENTO", t: reel.development?.time, lines: reel.development?.instructions || [] },
+              { k: "CTA", t: reel.cta?.time, lines: [reel.cta?.text_on_screen && `Texto na tela: "${reel.cta.text_on_screen}"`, reel.cta?.alternative && `Ou: "${reel.cta.alternative}"`] },
+            ].map((b) => (
+              <div key={b.k} className="rounded-lg border p-3" style={{ borderColor: "rgba(255,255,255,0.1)" }}>
+                <p className="text-xs font-semibold" style={{ color: ACCENT2 }}>{b.k} {b.t ? `(${b.t})` : ""}</p>
+                <ul className="pt-1 space-y-1">
+                  {(b.lines.filter(Boolean) as string[]).map((l) => (
+                    <li key={l} className="text-[11px] text-muted-foreground">→ {l}</li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+          {reel.editing && (
+            <div className="rounded-lg border p-3" style={{ borderColor: `${ACCENT}33` }}>
+              <p className="text-[10px] font-mono text-muted-foreground">EDIÇÃO SUGERIDA</p>
+              <ul className="pt-1 space-y-1">
+                {Object.entries(reel.editing).map(([k, v]) => (
+                  <li key={k} className="text-[11px] text-muted-foreground">
+                    <span className="font-mono uppercase">{k}:</span> {String(v)}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </Section>
+      )}
+
+      {reel?.screen_texts?.length ? (
+        <Section
+          title="✏️ Textos pra tela"
+          right={
+            <Button size="sm" variant="ghost" className="h-7 gap-1" onClick={() => copyText(reel.screen_texts!.map((s) => `${s.frame}: ${s.text}`).join("\n"))}>
+              <Copy className="w-3 h-3" /> Copiar todos
+            </Button>
+          }
+        >
+          <div className="space-y-1">
+            {reel.screen_texts.map((s) => (
+              <div key={s.frame} className="flex items-center justify-between gap-2 rounded-lg border p-2" style={{ borderColor: "rgba(255,255,255,0.1)" }}>
+                <div className="min-w-0">
+                  <p className="text-[10px] font-mono text-muted-foreground">{s.frame}</p>
+                  <p className="text-sm font-semibold">{s.text}</p>
+                </div>
+                <Button size="sm" variant="ghost" className="h-7 shrink-0" onClick={() => copyText(s.text)} aria-label="Copiar texto">
+                  <Copy className="w-3 h-3" />
+                </Button>
+              </div>
+            ))}
+          </div>
+          <ul className="space-y-1">
+            {(reel.screen_text_tips || []).map((t) => (
+              <li key={t} className="text-[11px] text-muted-foreground flex gap-2"><Type className="w-3 h-3 mt-0.5 shrink-0" />{t}</li>
+            ))}
+          </ul>
+        </Section>
+      ) : null}
+
+      {thumb && (
+        <Section
+          title="🖼 Thumbnail do Reel"
+          right={<Button size="sm" variant="ghost" className="h-7 gap-1" onClick={() => dl(thumb, "thumbnail-reel.jpg")}><Download className="w-3 h-3" /> Baixar</Button>}
+        >
+          <p className="text-[11px] text-muted-foreground">Frame mais forte do vídeo (maior contraste e detalhe). Toque em outro frame para trocar.</p>
+          <img src={thumb} alt="Thumbnail sugerida do Reel" className="rounded-lg max-h-56" />
+          <div className="flex gap-2 overflow-x-auto pb-1">
+            {frames.map((f, i) => (
+              <button key={i} type="button" onClick={() => setThumb(f)} className="shrink-0">
+                <img
+                  src={f}
+                  alt={`Frame ${i + 1}`}
+                  className="h-20 rounded-md"
+                  style={{ outline: thumb === f ? `2px solid ${ACCENT2}` : "none" }}
+                />
+              </button>
+            ))}
+          </div>
+        </Section>
+      )}
+
+      {reel?.caption && !pkg?.caption && (
+        <Section title="📝 Legenda do Reel" right={
+          <Button size="sm" variant="ghost" className="h-7 gap-1" onClick={() => copyText(reel.caption!)}><Copy className="w-3 h-3" /> Copiar</Button>
+        }>
+          <p className="text-sm whitespace-pre-wrap">{reel.caption}</p>
+          {reel.hashtags?.length ? <p className="text-sm pt-2" style={{ color: ACCENT2 }}>{reel.hashtags.join(" ")}</p> : null}
+          <p className="text-xs font-mono text-muted-foreground">⏰ {reel.best_time || "19h00"}</p>
+          {reel.self_comment && <p className="text-[11px] text-muted-foreground whitespace-pre-wrap">Self-comment: {reel.self_comment}</p>}
         </Section>
       )}
 

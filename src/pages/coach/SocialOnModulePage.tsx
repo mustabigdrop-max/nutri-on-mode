@@ -29,6 +29,7 @@ import ViralLabPanel from "@/components/social/ViralLabPanel";
 import ContentDnaPanel from "@/components/social/ContentDnaPanel";
 import AuthorityPanel from "@/components/social/AuthorityPanel";
 import ScienceBankPanel from "@/components/social/ScienceBankPanel";
+import InstagramGuidePanel from "@/components/social/InstagramGuidePanel";
 import { useInstagramAccount } from "@/hooks/useInstagramAccount";
 import {
   ACADEMY_TRACKS, ACTION_PLAN, BIO_CRITERIA, CONTENT_PRODUCTS, DIFFERENTIALS,
@@ -865,6 +866,7 @@ const SocialOnModulePage = () => {
             <p className="text-xs text-muted-foreground">
               Cada trilha tem 📝 lição, 🎯 exercício prático (postar 1 conteúdo usando) e ✅ check ao concluir.
             </p>
+            <InstagramGuidePanel />
           </TabsContent>
 
           {/* ─────────── ESTEIRA ─────────── */}
