@@ -14,7 +14,7 @@ import {
   ArrowLeft, ArrowRight, Copy, Loader2, Rocket, Search, Target, CalendarDays,
   BarChart3, GraduationCap, ShoppingCart, Check, Instagram, Trash2,
   RefreshCw, MessageSquare, Microscope, Camera, BookOpen, Lightbulb,
-  ImagePlus, Trophy, Flame, Dna, ShieldCheck, FlaskConical,
+  ImagePlus, Trophy, Flame, Dna, ShieldCheck, FlaskConical, Sparkles,
 } from "lucide-react";
 import RepurposerPanel from "@/components/social/RepurposerPanel";
 import DmObjectionsPanel from "@/components/social/DmObjectionsPanel";
@@ -24,6 +24,7 @@ import IdeasNowPanel from "@/components/social/IdeasNowPanel";
 import PlaybookPanel from "@/components/social/PlaybookPanel";
 import InstagramAccountPanel from "@/components/social/InstagramAccountPanel";
 import PostProntoPanel from "@/components/social/PostProntoPanel";
+import PrismPanel from "@/components/social/PrismPanel";
 import BrandScorePanel from "@/components/social/BrandScorePanel";
 import ViralLabPanel from "@/components/social/ViralLabPanel";
 import ContentDnaPanel from "@/components/social/ContentDnaPanel";
@@ -91,7 +92,7 @@ const SocialOnModulePage = () => {
   const { user } = useAuth();
   const uid = user?.id ?? "";
 
-  const [tab, setTab] = useState("auditoria");
+  const [tab, setTab] = useState("prism");
   const [loading, setLoading] = useState(true);
 
   // profile
@@ -388,6 +389,7 @@ const SocialOnModulePage = () => {
       <main className="max-w-5xl mx-auto p-4">
         <Tabs value={tab} onValueChange={setTab}>
           <TabsList className="grid grid-cols-3 md:grid-cols-6 h-auto gap-1 bg-transparent">
+            <TabsTrigger value="prism" className="text-xs gap-1"><Sparkles className="w-3 h-3" />PRISM</TabsTrigger>
             <TabsTrigger value="auditoria" className="text-xs gap-1"><Search className="w-3 h-3" />Auditoria</TabsTrigger>
             <TabsTrigger value="criar" className="text-xs gap-1"><Target className="w-3 h-3" />Criar</TabsTrigger>
             <TabsTrigger value="calendario" className="text-xs gap-1"><CalendarDays className="w-3 h-3" />Calendário</TabsTrigger>
@@ -409,6 +411,14 @@ const SocialOnModulePage = () => {
           </TabsList>
 
           {/* ─────────── AUDITORIA ─────────── */}
+          <TabsContent value="prism" className="mt-4">
+            <PrismPanel
+              ctx={aiCtx}
+              handle={ig.account?.username || handle}
+              onManualMode={() => setTab("post_pronto")}
+            />
+          </TabsContent>
+
           <TabsContent value="auditoria" className="space-y-4 mt-4">
             <InstagramAccountPanel
               account={ig.account}

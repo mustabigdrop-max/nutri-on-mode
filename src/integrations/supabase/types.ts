@@ -8836,6 +8836,60 @@ export type Database = {
         }
         Relationships: []
       }
+      prism_analyses: {
+        Row: {
+          ai_analysis: Json | null
+          ai_content: Json | null
+          ai_decision: Json | null
+          coach_id: string
+          context: string | null
+          created_at: string
+          file_types: string[]
+          files_count: number
+          format_used: string | null
+          id: string
+          objective_used: string | null
+          published: boolean
+          published_at: string | null
+          saved: boolean
+          tone_used: string | null
+        }
+        Insert: {
+          ai_analysis?: Json | null
+          ai_content?: Json | null
+          ai_decision?: Json | null
+          coach_id: string
+          context?: string | null
+          created_at?: string
+          file_types?: string[]
+          files_count?: number
+          format_used?: string | null
+          id?: string
+          objective_used?: string | null
+          published?: boolean
+          published_at?: string | null
+          saved?: boolean
+          tone_used?: string | null
+        }
+        Update: {
+          ai_analysis?: Json | null
+          ai_content?: Json | null
+          ai_decision?: Json | null
+          coach_id?: string
+          context?: string | null
+          created_at?: string
+          file_types?: string[]
+          files_count?: number
+          format_used?: string | null
+          id?: string
+          objective_used?: string | null
+          published?: boolean
+          published_at?: string | null
+          saved?: boolean
+          tone_used?: string | null
+        }
+        Relationships: []
+      }
       professional_alerts: {
         Row: {
           action_url: string | null
