@@ -33,7 +33,9 @@ const BrandScorePanel = ({ handle, onGenerate }: { handle?: string | null; onGen
       streak: streak ? `🔥 Streak: ${streak} semanas postando` : undefined,
       handle: `@${String(handle || "diogo.mell0").replace("@", "")}`,
     });
-    downloadDataUrl(url, "brand-score.png");
+    downloadDataUrl(url, "brand-score.png")
+      ? toast.success("brand-score.png baixado!")
+      : toast.error("Não consegui baixar a imagem");
   };
 
   return (

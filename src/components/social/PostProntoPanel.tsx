@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ACCENT, ACCENT2, Section, callSocialAI, copyText } from "./socialUi";
 import { CAPTION_TONES, CAROUSEL_STYLES, PHOTO_SUBJECTS, QUICK_GOALS } from "@/data/socialOnSurreal";
 import {
-  cropToRatio, downloadDataUrl, extractVideoFrames, fileToDataUrl, getVideoDuration,
+  cropToRatio, downloadDataUrl, downloadMany, extractVideoFrames, fileToDataUrl, getVideoDuration,
   gradeDarkPremium, gradeFitness, renderSlide, renderStoryFrame, videoObjectUrl,
 } from "@/lib/socialImageKit";
 import { MAX_VIDEO_MB, MAX_VIDEO_SECONDS, VIDEO_TYPES, videoTypeById } from "@/data/socialOnVideo";
@@ -472,8 +472,14 @@ const PostProntoPanel = ({ ctx, handle }: { ctx: Record<string, any>; handle?: s
     loadSaved();
   };
 
-  const dl = (url: string, name: string) => downloadDataUrl(url, name);
-  const dlAll = (list: string[], prefix: string) => list.forEach((u, i) => dl(u, `${prefix}-${i + 1}.png`));
+  const dl = (url: string, name: string) => {
+    const ok = downloadDataUrl(url, name);
+    ok ? toast.success(`${name} baixado!`) : toast.error("Não consegui baixar o arquivo");
+  };
+  const dlAll = async (list: string[], prefix: string) => {
+    const n = await downloadMany(list.map((u, i) => ({ url: u, filename: `${prefix}-${i + 1}.png` })));
+    n ? toast.success(`${n} imagens baixadas!`) : toast.error("Não consegui baixar as imagens");
+  };
 
   return (
     <div className="space-y-4">
@@ -652,9 +658,15 @@ const PostProntoPanel = ({ ctx, handle }: { ctx: Record<string, any>; handle?: s
 
       {edits.fitness && (
         <Section title="1. Foto editada" right={
-          <Button size="sm" variant="ghost" className="h-7 gap-1" onClick={() => {
-            dl(edits.fitness, "fitness-grade.jpg"); dl(edits.dark, "dark-premium.jpg");
-            dl(edits.crop45, "feed-4x5.jpg"); dl(edits.crop916, "stories-9x16.jpg");
+          <Button size="sm" variant="ghost" className="h-7 gap-1" onClick={async () => {
+            const items = [
+              { url: edits.fitness, filename: "fitness-grade.jpg" },
+              { url: edits.dark, filename: "dark-premium.jpg" },
+              { url: edits.crop45, filename: "feed-4x5.jpg" },
+              { url: edits.crop916, filename: "stories-9x16.jpg" },
+            ].filter((i) => !!i.url);
+            const n = await downloadMany(items);
+            n ? toast.success(`${n} imagens baixadas!`) : toast.error("Não consegui baixar as imagens");
           }}><Download className="w-3 h-3" /> Baixar todas</Button>
         }>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
