@@ -54,11 +54,56 @@ const SCHEMA = `{
       "stories_clips": ["Clip 1: hook (0-10s)","Clip 2: desenvolvimento","Clip 3: CTA + enquete"],
       "thumbnail_frame": "descrição do melhor frame pra thumbnail"
     },
-    "weekly_package": [{ "weekday": "SEG", "piece": "Post foto shape + legenda MCE", "objective": "engajar" }, "7 itens SEG a DOM, apenas quando houver 3+ arquivos"],
+    "weekly_package": [{ "weekday": "SEG", "piece": "Post foto shape + legenda MCE", "objective": "engajar", "format": "reel|carrossel|stories|post_unico|live|collab", "pillar": "mce_drop|bastidor|transformacao|entretenimento|cta", "time": "19:30", "hook": "primeira linha do post desse dia" }, "7 itens SEG a DOM, apenas quando houver 3+ arquivos"],
     "hashtags": ["#tag", "... 15 itens: 5 grandes + 7 médias + 3 nichadas"],
     "self_comment": "comentário pronto pro coach postar logo após publicar"
   }
 }`;
+
+const REWRITE_SCHEMAS: Record<string, string> = {
+  caption: `{"caption":"nova legenda completa com quebras de linha \\n","caption_alternatives":{"cientifico":"...","pessoal":"...","humor":"...","militar":"...","pai":"...","direto":"..."}}`,
+  slides: `{"carousel_slides":[{"title":"texto curto do slide","body":"2 a 3 linhas","file_index":0},"exatamente 5 itens, o 1º é capa com hook e o 5º é CTA"]}`,
+  both: `{"caption":"nova legenda completa com quebras de linha \\n","caption_alternatives":{"cientifico":"...","pessoal":"...","humor":"...","militar":"...","pai":"...","direto":"..."},"carousel_slides":[{"title":"texto curto do slide","body":"2 a 3 linhas","file_index":0},"exatamente 5 itens"]}`,
+};
+
+const REWRITE_PROMPT = (target: string, analysis: unknown, decision: unknown, current: unknown, instruction: string) =>
+`Você é o PRISM Content Intelligence do nutriON, escrevendo na voz do Coach Diogo Mello (@diogo.mell0), criador do Método MCE, fundador do nutriON. Tagline: "Transformação é sistema."
+
+A ANÁLISE VISUAL JÁ FOI FEITA E NÃO MUDA. Mantenha exatamente a mesma leitura do material, o mesmo formato, tom, objetivo, funil e produto decididos:
+ANÁLISE: ${JSON.stringify(analysis).slice(0, 3000)}
+DECISÃO: ${JSON.stringify(decision).slice(0, 1500)}
+
+VERSÃO ATUAL (não repita, escreva uma versão NOVA e diferente, com outros hooks e outra estrutura de frases):
+${JSON.stringify(current).slice(0, 4000)}
+
+PEDIDO DO COACH PARA ESTA NOVA VERSÃO: ${instruction || "gere uma alternativa igualmente forte, com abordagem diferente"}
+
+REGRAS:
+- Frases curtas (máx 15 palavras), tom de conversa com autoridade, parágrafos de até 3 linhas separados por linha em branco.
+- Hook isolado na 1ª linha. CTA sempre no final da legenda.
+- Nunca citação acadêmica nem nome de journal. Máximo 3-4 emojis. Zero hashtags dentro da legenda.
+- Mantenha os mesmos file_index dos slides atuais quando existirem.
+- Nunca se apresente como IA.
+- Responda JSON puro, sem markdown, exatamente neste schema:
+${REWRITE_SCHEMAS[target]}`;
+
+const callGateway = async (apiKey: string, model: string, messages: unknown[]) => {
+  const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ model, messages, response_format: { type: "json_object" } }),
+  });
+  if (res.status === 429) throw Object.assign(new Error("Limite de uso atingido. Tente novamente em instantes."), { status: 429 });
+  if (res.status === 402) throw Object.assign(new Error("Créditos de IA esgotados no workspace."), { status: 402 });
+  if (!res.ok) throw new Error(`Gateway ${res.status}: ${(await res.text()).slice(0, 400)}`);
+  const json = await res.json();
+  const raw = json?.choices?.[0]?.message?.content ?? "{}";
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return JSON.parse(String(raw).replace(/```json|```/g, "").trim());
+  }
+};
 
 const PROMPT = (ctx: string, filesCount: number, imgCount: number, videoInfo: string, extra: string) =>
 `Você é o PRISM Content Intelligence do nutriON.
@@ -87,7 +132,7 @@ REGRAS:
 - Carrossel: exatamente 5 slides. Stories: 4 a 5 frames com stickers.
 - Com múltiplas fotos: preencher edit_sequence com timing por frame e file_index real.
 - Com vídeo: preencher video_notes (roteiro reescrito, textos por segundo, cortes, clips de stories).
-- Com 3+ arquivos: preencher weekly_package com 7 dias.
+- Com 3+ arquivos: preencher weekly_package com 7 dias, cada dia com format, pillar, time (HH:MM realista pro público brasileiro, variando entre os dias) e hook.
 - Nunca forçar venda. Mencionar produto só quando natural.
 - Sempre terminar a legenda com CTA (salva / manda / comenta / segue).
 - Nunca se apresente como IA. A voz é a do próprio Diogo Mello.
@@ -112,6 +157,34 @@ serve(async (req) => {
     const history: string = typeof body?.history === "string" ? body.history.slice(0, 4000) : "";
     const igProfile = body?.ig_profile ?? null;
 
+    const apiKeyEnv = Deno.env.get("LOVABLE_API_KEY");
+    if (!apiKeyEnv) throw new Error("LOVABLE_API_KEY não configurada");
+
+    // ---- MODO REESCRITA: nova versão de legenda/slides mantendo a MESMA análise ----
+    if (body?.mode === "rewrite") {
+      const target: string = ["caption", "slides", "both"].includes(body?.target) ? body.target : "caption";
+      if (!body?.analysis || !body?.decision) {
+        return new Response(JSON.stringify({ error: "Rode o PRISM antes de pedir uma nova versão." }), {
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const instruction: string = typeof body?.instruction === "string" ? body.instruction.slice(0, 600) : "";
+      try {
+        const parsedRw = await callGateway(apiKeyEnv, "google/gemini-2.5-flash", [
+          { role: "system", content: "Você é o PRISM Content Intelligence. Responda SEMPRE apenas JSON válido, sem markdown." },
+          { role: "user", content: REWRITE_PROMPT(target, body.analysis, body.decision, body?.current ?? {}, instruction) },
+        ]);
+        return new Response(JSON.stringify({ result: parsedRw }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      } catch (e) {
+        const status = (e as any)?.status ?? 500;
+        return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Erro inesperado" }), {
+          status, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
+
     const videoFrames = videos.flatMap((v) => (Array.isArray(v.frames) ? v.frames.slice(0, 4) : []));
     const allImages = [...images, ...videoFrames].slice(0, 14);
 
@@ -121,8 +194,7 @@ serve(async (req) => {
       });
     }
 
-    const apiKey = Deno.env.get("LOVABLE_API_KEY");
-    if (!apiKey) throw new Error("LOVABLE_API_KEY não configurada");
+    const apiKey = apiKeyEnv;
 
     const videoInfo = videos.length
       ? `\nVÍDEOS: ${videos.length} — ${videos.map((v, i) => `vídeo ${i + 1}: ${Math.round(v.duration || 0)}s (${(v.frames || []).length} frames extraídos enviados como imagem)`).join("; ")}`
