@@ -388,6 +388,7 @@ const SocialOnModulePage = () => {
       <main className="max-w-5xl mx-auto p-4">
         <Tabs value={tab} onValueChange={setTab}>
           <TabsList className="grid grid-cols-3 md:grid-cols-6 h-auto gap-1 bg-transparent">
+            <TabsTrigger value="prism" className="text-xs gap-1"><Sparkles className="w-3 h-3" />PRISM</TabsTrigger>
             <TabsTrigger value="auditoria" className="text-xs gap-1"><Search className="w-3 h-3" />Auditoria</TabsTrigger>
             <TabsTrigger value="criar" className="text-xs gap-1"><Target className="w-3 h-3" />Criar</TabsTrigger>
             <TabsTrigger value="calendario" className="text-xs gap-1"><CalendarDays className="w-3 h-3" />Calendário</TabsTrigger>
