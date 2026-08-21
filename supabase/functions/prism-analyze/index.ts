@@ -261,6 +261,7 @@ REGRAS DE SAÍDA:
 - Quando houver arquivos enviados, use file_index reais no edit_sequence e descreva o que está em cada um.
 - Quando NÃO houver material, preencha shot_list dizendo exatamente que fotos/vídeos gravar.
 - Sempre 15 hashtags por conceito e sempre CTA no fim da legenda.
+- Em CADA conceito, preencher hook_variations e caption_variations com exatamente 3 itens cada, mantendo o MESMO formato, objetivo, tom e produto. Muda só o ângulo de entrada, o hook e a estrutura das frases. A 1ª variação é sempre a versão principal.
 - Responda JSON puro, sem markdown, exatamente neste schema:
 ${STUDIO_SCHEMA}`;
 
