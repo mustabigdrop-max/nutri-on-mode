@@ -392,6 +392,8 @@ const PrismPanel = ({
           ...result.content,
           ...(rw.caption ? { caption: rw.caption } : {}),
           ...(rw.caption_alternatives ? { caption_alternatives: rw.caption_alternatives } : {}),
+          ...(Array.isArray(rw.hook_variations) && rw.hook_variations.length ? { hook_variations: rw.hook_variations } : {}),
+          ...(Array.isArray(rw.caption_variations) && rw.caption_variations.length ? { caption_variations: rw.caption_variations } : {}),
           ...(Array.isArray(rw.carousel_slides) && rw.carousel_slides.length
             ? { carousel_slides: rw.carousel_slides }
             : {}),
