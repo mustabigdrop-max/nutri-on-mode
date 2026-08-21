@@ -208,6 +208,7 @@ const STUDIO_SCHEMA = `{
     "music_suggestion": "tipo de trend/áudio em alta",
     "duration_suggested": 12,
     "caption": "legenda pronta com quebras de linha \\n",
+    "caption_variations": ["exatamente 3 legendas completas diferentes pra essa mesma peça — a 1ª é igual ao caption"],
     "hashtags": ["#tag", "15 no total: 5 grandes + 7 médias + 3 nichadas"],
     "self_comment": "comentário pra postar logo após publicar"
   }, "3 conceitos quando não houver material; 1 a 3 quando houver"],
