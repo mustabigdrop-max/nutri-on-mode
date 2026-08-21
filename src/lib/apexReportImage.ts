@@ -175,7 +175,7 @@ const buildHtml = (data: ApexReportData, mode: ApexReportMode, photo: string | n
   const handle = data.handle || "nutrion.app.br";
 
   // Foto: no máximo 40% da altura do card (menos no quadrado, que tem menos espaço).
-  const ratio = mode === "coach" ? 0.38 : mode === "client" ? 0.34 : 0.2;
+  const ratio = mode === "coach" ? 0.38 : mode === "client" ? 0.34 : 0.16;
   const photoH = Math.round(DIMENSIONS[mode].h * ratio);
 
   const photoBlock = photo
@@ -309,7 +309,7 @@ const buildHtml = (data: ApexReportData, mode: ApexReportMode, photo: string | n
         <div>${verdict ? sectionTitle("VEREDICTO", accent, compact) + verdict : ""}</div>
       </div>
 
-      <div style="padding-top:${compact ? 20 : 36}px;border-top:1px solid ${line}">
+      <div style="padding-top:${compact ? 14 : 36}px;border-top:1px solid ${line}">
         <div style="font-size:${compact ? 27 : 32}px;font-weight:900">${esc(coachName)}</div>
         <div style="font-size:${compact ? 21 : 24}px;color:${dim};margin-top:4px">${esc(coachSubtitle)}</div>
         <div style="font-size:${compact ? 21 : 24}px;color:${fg};margin-top:2px">${esc(handle)}</div>
