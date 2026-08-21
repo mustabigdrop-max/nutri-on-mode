@@ -43,3 +43,51 @@ export const Pill = ({ active, label, onClick }: { active?: boolean; label: stri
     {label}
   </button>
 );
+
+/** Bloco com 3 variações (A/B/C) do mesmo conteúdo: hook ou legenda. */
+export const VariationBlock = ({
+  label, items, accent = ACCENT, highlight,
+}: { label: string; items: string[]; accent?: string; highlight?: boolean }) => {
+  const [i, setI] = useState(0);
+  const list = (items || []).filter((t) => !!t && t.trim().length > 0);
+  if (!list.length) return null;
+  const text = list[Math.min(i, list.length - 1)];
+
+  return (
+    <div
+      className={highlight ? "rounded-lg p-3 space-y-2" : "space-y-2"}
+      style={highlight ? { background: `${accent}12`, border: `1px solid ${accent}33` } : undefined}
+    >
+      <div className="flex items-center justify-between gap-2 flex-wrap">
+        <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+          {label}{list.length > 1 ? ` · ${list.length} variações` : ""}
+        </p>
+        <div className="flex items-center gap-1">
+          {list.length > 1 && list.map((_, idx) => (
+            <button
+              key={idx}
+              type="button"
+              onClick={() => setI(idx)}
+              className="w-6 h-6 rounded-md text-[11px] font-semibold border transition-colors"
+              style={{
+                borderColor: idx === i ? accent : "rgba(255,255,255,0.14)",
+                background: idx === i ? `${accent}22` : "transparent",
+                color: idx === i ? accent : undefined,
+              }}
+            >
+              {String.fromCharCode(65 + idx)}
+            </button>
+          ))}
+          <button
+            type="button"
+            onClick={() => copyText(text)}
+            className="ml-1 h-6 px-2 rounded-md text-[11px] flex items-center gap-1 text-muted-foreground hover:text-foreground"
+          >
+            <Copy className="w-3 h-3" /> Copiar
+          </button>
+        </div>
+      </div>
+      <p className={highlight ? "font-semibold text-sm whitespace-pre-wrap" : "text-xs whitespace-pre-wrap"}>{text}</p>
+    </div>
+  );
+};
