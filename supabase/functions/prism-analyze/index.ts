@@ -303,6 +303,88 @@ serve(async (req) => {
       }
     }
 
+    // ---- MODO STUDIO: modos do hub (viral, reels, vender, representatividade, lifestyle, pack, ia_decide) ----
+    if (body?.mode === "studio") {
+      const s = (v: unknown, n = 60) => (typeof v === "string" ? v.slice(0, n) : "");
+      const pMode = s(body?.prism_mode, 40) || "ia_decide";
+      const studioFrames = videos.flatMap((v) => (Array.isArray(v.frames) ? v.frames.slice(0, 3) : []));
+      const studioImages = [...images, ...studioFrames].slice(0, 14);
+      const filesInfo = studioImages.length
+        ? `${images.length} foto(s) e ${videos.length} vídeo(s) enviados — imagens anexadas nesta mensagem`
+        : "nenhum material enviado — só ideia";
+
+      const messages = [
+        { role: "system", content: "Você é o PRISM Content Intelligence. Responda SEMPRE apenas JSON válido, sem markdown." },
+        {
+          role: "user",
+          content: [
+            ...studioImages.map((url) => ({ type: "image_url", image_url: { url } })),
+            {
+              type: "text",
+              text: STUDIO_PROMPT({
+                mode: pMode,
+                subtype: s(body?.subtype, 40),
+                saleLevel: s(body?.sale_level, 20),
+                tone: s(body?.tone, 20),
+                objective: s(body?.objective, 20),
+                theme: s(body?.theme ?? body?.context, 600),
+                filesInfo,
+                mix: s(body?.mix, 120),
+                products: Array.isArray(body?.products) ? body.products.map((p: unknown) => s(p, 30)).join(", ") : "",
+                extra: [
+                  history ? `HISTÓRICO RECENTE (não repita temas):\n${history}` : "",
+                  igProfile ? `PERFIL REAL DO INSTAGRAM:\n${JSON.stringify(igProfile).slice(0, 1200)}` : "",
+                ].filter(Boolean).join("\n\n"),
+              }),
+            },
+          ],
+        },
+      ];
+
+      try {
+        const parsedStudio = await callGateway(
+          apiKeyEnv,
+          studioImages.length ? "google/gemini-2.5-pro" : "google/gemini-2.5-flash",
+          messages,
+        );
+
+        let studioId: string | null = null;
+        try {
+          const { data } = await adminClient()
+            .from("prism_analyses")
+            .insert({
+              coach_id: auth.userId,
+              files_count: images.length + videos.length,
+              file_types: [...images.map(() => "image"), ...videos.map(() => "video")],
+              context: s(body?.theme ?? body?.context, 2000),
+              mode: pMode,
+              subtype: s(body?.subtype, 40) || null,
+              sale_level: s(body?.sale_level, 20) || null,
+              product_mentioned: parsedStudio?.strategy?.product_mention ?? null,
+              ai_decision: parsedStudio?.strategy ?? null,
+              ai_content: parsedStudio ?? null,
+              tone_used: parsedStudio?.strategy?.tone ?? null,
+              objective_used: parsedStudio?.strategy?.objective ?? null,
+              format_used: parsedStudio?.strategy?.format ?? null,
+            })
+            .select("id")
+            .single();
+          studioId = data?.id ?? null;
+        } catch (_) { /* persistência não bloqueia a entrega */ }
+
+        return new Response(JSON.stringify({ id: studioId, result: parsedStudio }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      } catch (e) {
+        const status = (e as any)?.status ?? 500;
+        return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Erro inesperado" }), {
+          status, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
+
+
+
     const videoFrames = videos.flatMap((v) => (Array.isArray(v.frames) ? v.frames.slice(0, 4) : []));
     const allImages = [...images, ...videoFrames].slice(0, 14);
 
