@@ -689,6 +689,13 @@ export default function SocialOnPage() {
             )}
           </TabsContent>
 
+          {/* PACK DE CONTEÚDO */}
+          <TabsContent value="pack" className="space-y-4 pt-4">
+            <ContentPackPanel />
+          </TabsContent>
+
+
+
           {/* HOOKS */}
           <TabsContent value="hooks" className="space-y-3 pt-4">
             {HOOK_LIBRARY.map((group) => (
