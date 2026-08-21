@@ -25,6 +25,7 @@ type StudioFile = {
 
 export type StudioConcept = {
   title?: string; format?: string; tone?: string; why?: string; hook?: string;
+  hook_variations?: string[]; caption_variations?: string[];
   screen_texts?: string[];
   script?: { hook?: string; development?: string; cta?: string };
   edit_sequence?: { file_index?: number; duration_s?: number; transition?: string; text?: string }[];
