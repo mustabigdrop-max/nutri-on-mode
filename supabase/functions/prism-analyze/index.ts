@@ -199,6 +199,7 @@ const STUDIO_SCHEMA = `{
     "tone": "direto|cientifico|pessoal|humor|militar|pai",
     "why": "por que esse conceito funciona, 1 frase",
     "hook": "primeiros 2 segundos",
+    "hook_variations": ["exatamente 3 hooks diferentes pra essa mesma peça — o 1º é igual ao hook"],
     "screen_texts": ["Beat 1: POV:", "Beat 2: TEXTO", "Beat 3: TEXTO"],
     "script": { "hook": "...", "development": "corpo pronto pra falar", "cta": "chamada final" },
     "edit_sequence": [{ "file_index": 0, "duration_s": 0.5, "transition": "zoom_blur|flash|whip_pan|slide|corte_seco", "text": "texto na tela" }],
