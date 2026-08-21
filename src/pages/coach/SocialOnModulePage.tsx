@@ -15,6 +15,7 @@ import {
   BarChart3, GraduationCap, ShoppingCart, Check, Instagram, Trash2,
   RefreshCw, MessageSquare, Microscope, Camera, BookOpen, Lightbulb,
   ImagePlus, Trophy, Flame, Dna, ShieldCheck, FlaskConical, Sparkles,
+  Package, Clapperboard,
 } from "lucide-react";
 import RepurposerPanel from "@/components/social/RepurposerPanel";
 import DmObjectionsPanel from "@/components/social/DmObjectionsPanel";
