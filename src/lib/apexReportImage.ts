@@ -291,7 +291,7 @@ const buildHtml = (data: ApexReportData, mode: ApexReportMode, photo: string | n
     : "";
 
   return `
-    <div style="display:flex;flex-direction:column;height:100%;overflow:hidden;color:${fg}">
+    <div style="position:relative;display:flex;flex-direction:column;height:100%;overflow:hidden;color:${fg};padding-bottom:${compact ? 120 : 190}px;box-sizing:border-box">
       <div>
         <div style="font-size:${compact ? 34 : 40}px;font-weight:900;letter-spacing:5px">${esc(title)}</div>
         <div style="font-size:24px;color:${accent};letter-spacing:4px;margin-top:6px">
@@ -309,7 +309,7 @@ const buildHtml = (data: ApexReportData, mode: ApexReportMode, photo: string | n
         <div>${verdict ? sectionTitle("VEREDICTO", accent, compact) + verdict : ""}</div>
       </div>
 
-      <div style="flex:0 0 auto;padding-top:${compact ? 12 : 36}px;border-top:1px solid ${line}">
+      <div style="position:absolute;left:0;right:0;bottom:0;padding-top:${compact ? 12 : 36}px;border-top:1px solid ${line}">
         <div style="font-size:${compact ? 25 : 32}px;font-weight:900;line-height:1.2">${esc(coachName)}</div>
         <div style="font-size:${compact ? 19 : 24}px;color:${dim};margin-top:4px;line-height:1.2">${esc(coachSubtitle)}</div>
         <div style="font-size:${compact ? 19 : 24}px;color:${fg};margin-top:2px;line-height:1.2">${esc(handle)}</div>
