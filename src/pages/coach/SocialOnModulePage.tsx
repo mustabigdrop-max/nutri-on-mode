@@ -392,6 +392,8 @@ const SocialOnModulePage = () => {
       <main className="max-w-5xl mx-auto p-4">
         <Tabs value={tab} onValueChange={setTab}>
           <TabsList className="grid grid-cols-3 md:grid-cols-6 h-auto gap-1 bg-transparent">
+            <TabsTrigger value="pack" className="text-xs gap-1 data-[state=inactive]:text-amber-400"><Package className="w-3 h-3" />Pack</TabsTrigger>
+            <TabsTrigger value="reels" className="text-xs gap-1 data-[state=inactive]:text-amber-400"><Clapperboard className="w-3 h-3" />Reels</TabsTrigger>
             <TabsTrigger value="prism" className="text-xs gap-1"><Sparkles className="w-3 h-3" />PRISM</TabsTrigger>
             <TabsTrigger value="auditoria" className="text-xs gap-1"><Search className="w-3 h-3" />Auditoria</TabsTrigger>
             <TabsTrigger value="criar" className="text-xs gap-1"><Target className="w-3 h-3" />Criar</TabsTrigger>
@@ -411,8 +413,6 @@ const SocialOnModulePage = () => {
             <TabsTrigger value="dna" className="text-xs gap-1"><Dna className="w-3 h-3" />DNA</TabsTrigger>
             <TabsTrigger value="autoridade" className="text-xs gap-1"><ShieldCheck className="w-3 h-3" />Autoridade</TabsTrigger>
             <TabsTrigger value="ciencia" className="text-xs gap-1"><FlaskConical className="w-3 h-3" />Ciência</TabsTrigger>
-            <TabsTrigger value="reels" className="text-xs gap-1"><Clapperboard className="w-3 h-3" />Reels</TabsTrigger>
-            <TabsTrigger value="pack" className="text-xs gap-1"><Package className="w-3 h-3" />Pack</TabsTrigger>
           </TabsList>
 
           <TabsContent value="reels" className="mt-4">
