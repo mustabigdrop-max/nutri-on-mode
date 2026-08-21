@@ -89,10 +89,10 @@ const toDataUrl = async (url: string): Promise<string | null> => {
   }
 };
 
-const sectionTitle = (label: string, accent: string) =>
-  `<div style="display:flex;align-items:center;gap:14px;margin:34px 0 18px 0">
-     <div style="width:56px;height:5px;border-radius:3px;background:${accent}"></div>
-     <div style="font-size:26px;font-weight:800;letter-spacing:6px;color:${accent}">${esc(label)}</div>
+const sectionTitle = (label: string, accent: string, tight = false) =>
+  `<div style="display:flex;align-items:center;gap:14px;margin:${tight ? "18px 0 12px 0" : "34px 0 18px 0"}">
+     <div style="width:${tight ? 40 : 56}px;height:5px;border-radius:3px;background:${accent}"></div>
+     <div style="font-size:${tight ? 22 : 26}px;font-weight:800;letter-spacing:${tight ? 4 : 6}px;color:${accent}">${esc(label)}</div>
    </div>`;
 
 const isLightBg = (hex: string) => {
@@ -101,6 +101,62 @@ const isLightBg = (hex: string) => {
   const n = parseInt(m[1], 16);
   const [r, g, b] = [(n >> 16) & 255, (n >> 8) & 255, n & 255];
   return (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.6;
+};
+
+/** Converte labels técnicos (DESVIO, IMPACTO_PALCO) em português limpo. */
+const LABEL_MAP: Record<string, string> = {
+  DESVIO: "Desvio detectado",
+  DOMINANTE: "Músculo dominante",
+  INIBIDO: "Músculo inibido",
+  "IMPACTO PALCO": "Impacto no palco",
+  "IMPACTO NO PALCO": "Impacto no palco",
+  IMPACTO: "Impacto no palco",
+  "CONEXAO FARMACOLOGICA": "Conexão farmacológica",
+  URGENCIA: "Urgência",
+};
+
+export const prettyLabel = (raw: string) => {
+  const clean = String(raw || "").replace(/_/g, " ").replace(/\s+/g, " ").trim();
+  if (!clean) return "";
+  const norm = (t: string) =>
+    t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toUpperCase();
+  const sentence = (t: string) => {
+    const v = t === t.toUpperCase() && /[A-Z]{4,}/.test(t) ? t.toLowerCase() : t;
+    return v.charAt(0).toUpperCase() + v.slice(1);
+  };
+  const direct = LABEL_MAP[norm(clean)];
+  if (direct) return direct;
+  // "DESVIO: paravertebrais cervicais" -> "Desvio detectado: paravertebrais cervicais"
+  const m = /^([A-Za-zÀ-ÿ ]+):\s*(.+)$/.exec(clean);
+  if (m) {
+    const mapped = LABEL_MAP[norm(m[1])];
+    if (mapped) return `${mapped}: ${sentence(m[2].trim())}`;
+  }
+  return sentence(clean);
+};
+
+/** Escala o corpo de texto conforme o comprimento, evitando corte/overflow. */
+const fitSize = (text: string, base: number, min = 20) => {
+  const len = String(text || "").length;
+  if (len <= 26) return base;
+  if (len <= 40) return Math.max(min, base - 4);
+  if (len <= 60) return Math.max(min, base - 8);
+  return min;
+};
+
+const scoreColor = (v: number) => (v >= 8 ? "#00FF88" : v >= 6 ? "#FFB800" : "#FF4444");
+
+/** Bolinha de severidade (círculo CSS — emoji não renderiza no html2canvas). */
+const severityDot = (s: string | undefined, size: number) => {
+  const v = String(s || "").toLowerCase();
+  const col = /sever|alto|crít|critic/.test(v)
+    ? "#FF4444"
+    : /moder|leve|médi|medi|aten/.test(v)
+      ? "#FFB800"
+      : "#00FF88";
+  return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${col};flex:none;margin-top:${Math.round(
+    size * 0.45,
+  )}px;box-shadow:0 0 12px ${col}80"></div>`;
 };
 
 const buildHtml = (data: ApexReportData, mode: ApexReportMode, photo: string | null) => {
@@ -115,68 +171,86 @@ const buildHtml = (data: ApexReportData, mode: ApexReportMode, photo: string | n
   const isClient = mode === "client";
   const title = data.title || "APEX INTELLIGENCE SYSTEM";
   const coachName = data.coachName || "Coach Diogo Mello";
-  const coachSubtitle = data.coachSubtitle || "Nutrition & Business Coach 🇺🇸";
+  const coachSubtitle = data.coachSubtitle || "Nutrition & Business Coach · USA";
   const handle = data.handle || "nutrion.app.br";
-  const showWatermark = data.watermark !== false;
+
+  // Foto: no máximo 40% da altura do card (menos no quadrado, que tem menos espaço).
+  const ratio = mode === "coach" ? 0.38 : mode === "client" ? 0.34 : 0.16;
+  const photoH = Math.round(DIMENSIONS[mode].h * ratio);
 
   const photoBlock = photo
     ? `<div style="border-radius:28px;overflow:hidden;border:1px solid ${line};background:${light ? "#E9ECEF" : "#07070c"};
-                  height:${mode === "coach" ? 760 : compact ? 420 : 560}px;display:flex;align-items:center;justify-content:center;position:relative">
+                  height:${photoH}px;display:flex;align-items:center;justify-content:center;position:relative">
          <img src="${photo}" style="max-width:100%;max-height:100%;object-fit:contain" />
-         ${
-           showWatermark
-             ? `<div style="position:absolute;right:22px;bottom:18px;font-size:22px;font-weight:800;letter-spacing:3px;color:${accent};opacity:0.75">${esc(
-                 handle,
-               )}</div>`
-             : ""
-         }
        </div>`
-    : `<div style="border-radius:28px;border:1px dashed ${line};height:${compact ? 240 : 320}px;
+    : `<div style="border-radius:28px;border:1px dashed ${line};height:${compact ? 130 : 260}px;
                   display:flex;align-items:center;justify-content:center;color:${dim};font-size:24px">
          Análise APEX · nutriON
        </div>`;
 
-  const deviations = (isClient ? data.deviations.slice(0, 4) : data.deviations.slice(0, 6))
+  const devLimit = compact ? 3 : isClient ? 4 : 6;
+  const scoreLimit = compact ? 3 : 6;
+  const devItems = data.deviations.slice(0, devLimit).map((d) => ({
+    label: prettyLabel(d.name),
+    sev: String(d.severity_label || d.severity || ""),
+  }));
+  const devSize = fitSize(
+    devItems.reduce((a, b) => (b.label.length > a.length ? b.label : a), ""),
+    compact ? 23 : 30,
+    compact ? 18 : 20,
+  );
+  const deviations = devItems
     .map(
       (d) => `
-      <div style="display:flex;align-items:center;gap:16px;margin-bottom:14px">
-        <div style="width:14px;height:14px;border-radius:50%;background:${severityColor(d.severity_label || d.severity)}"></div>
-        <div style="flex:1;font-size:30px;font-weight:600">${esc(d.name)}</div>
+      <div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:${compact ? 11 : 16}px">
+        ${severityDot(d.sev, compact ? 13 : 16)}
+        <div style="flex:1;min-width:0;font-size:${devSize}px;font-weight:600;line-height:1.35;
+                    word-break:break-word;overflow-wrap:anywhere">${esc(d.label)}</div>
         ${
-          isClient
+          isClient || !d.sev
             ? ""
-            : `<div style="font-size:24px;font-weight:800;color:${severityColor(d.severity_label || d.severity)}">${esc(
-                d.severity_label || "",
-              )}</div>`
+            : `<div style="max-width:32%;text-align:right;font-size:${Math.max(
+                compact ? 16 : 18,
+                devSize - 8,
+              )}px;font-weight:800;line-height:1.3;word-break:break-word;overflow-wrap:anywhere;color:${severityColor(
+                d.sev,
+              )}">${esc(prettyLabel(d.sev))}</div>`
         }
       </div>`,
     )
     .join("");
 
   const scores = data.scores
-    .slice(0, 4)
-    .map(
-      (s) => `
-      <div style="flex:1;text-align:center">
-        <div style="font-size:${compact ? 46 : 58}px;font-weight:900;color:${accent}">${esc(s.value)}</div>
-        <div style="font-size:22px;color:${dim};letter-spacing:3px;text-transform:uppercase">${esc(s.label)}</div>
-        <div style="height:8px;border-radius:4px;background:${line};margin-top:10px">
-          <div style="height:8px;border-radius:4px;background:${accent};width:${Math.max(
-            0,
-            Math.min(100, (Number(s.value) || 0) * 10),
-          )}%"></div>
+    .slice(0, scoreLimit)
+    .map((s) => {
+      const v = Math.max(0, Math.min(10, Number(s.value) || 0));
+      const col = scoreColor(v);
+      const label = prettyLabel(s.label);
+      return `
+      <div style="display:flex;align-items:center;gap:18px;margin-bottom:${compact ? 10 : 14}px">
+        <div style="flex:1;min-width:0;font-size:${fitSize(label, compact ? 21 : 26, compact ? 17 : 19)}px;font-weight:700;
+                    letter-spacing:1px;line-height:1.25;word-break:break-word;overflow-wrap:anywhere">${esc(label)}</div>
+        <div style="width:${compact ? 220 : 280}px;height:${compact ? 11 : 14}px;border-radius:7px;background:${line};overflow:hidden;flex:none">
+          <div style="height:${compact ? 11 : 14}px;border-radius:7px;background:${col};width:${v * 10}%"></div>
         </div>
-      </div>`,
-    )
+        <div style="width:${compact ? 76 : 88}px;flex:none;text-align:right;font-size:${compact ? 23 : 30}px;font-weight:900;color:${col}">${v}<span style="font-size:20px;color:${dim}">/10</span></div>
+      </div>`;
+    })
     .join("");
 
   const clientLists = `
     ${
       data.strengths?.length
-        ? sectionTitle("PONTOS FORTES", "#1DB87A") +
+        ? sectionTitle("PONTOS FORTES", "#00FF88") +
           data.strengths
             .slice(0, 3)
-            .map((s) => `<div style="font-size:30px;margin-bottom:12px">✅ ${esc(s)}</div>`)
+            .map(
+              (s) =>
+                `<div style="font-size:${fitSize(s, 30, 22)}px;margin-bottom:12px;line-height:1.35;word-break:break-word;display:flex;gap:14px;align-items:flex-start">${severityDot(
+                  "ok",
+                  16,
+                )}<span>${esc(prettyLabel(s))}</span></div>`,
+            )
             .join("")
         : ""
     }
@@ -185,24 +259,39 @@ const buildHtml = (data: ApexReportData, mode: ApexReportMode, photo: string | n
         ? sectionTitle("ATENÇÃO", "#FFB800") +
           data.attentions
             .slice(0, 2)
-            .map((s) => `<div style="font-size:30px;margin-bottom:12px">⚠️ ${esc(s)}</div>`)
+            .map(
+              (s) =>
+                `<div style="font-size:${fitSize(s, 30, 22)}px;margin-bottom:12px;line-height:1.35;word-break:break-word;display:flex;gap:14px;align-items:flex-start">${severityDot(
+                  "moderado",
+                  16,
+                )}<span>${esc(prettyLabel(s))}</span></div>`,
+            )
             .join("")
         : ""
     }`;
 
-  const verdict = isClient
+  const verdictBody = isClient
     ? data.clientSummary
-      ? `<div style="font-size:28px;line-height:1.45;color:${soft}">${esc(data.clientSummary)}</div>`
+      ? `<div style="font-size:${fitSize(data.clientSummary, 28, 22)}px;line-height:1.45;color:${soft};word-break:break-word">${esc(
+          data.clientSummary,
+        )}</div>`
       : ""
-    : `<div style="font-size:28px;line-height:1.5;color:${soft}">
-         BF est: ${esc(data.bfEstimated ?? "--")}% · Meta: ${esc(data.bfTarget ?? "--")}% · Semanas: ${esc(
-           data.weeks ?? "--",
-         )}<br/>
-         Prioridade: ${esc(data.priority || "--")}
+    : `<div style="font-size:${compact ? 22 : 26}px;line-height:1.5;color:${soft};word-break:break-word">
+         <div>BF estimado: <b style="color:${fg}">${esc(data.bfEstimated ?? "--")}%</b> · Meta: <b style="color:${fg}">${esc(
+           data.bfTarget ?? "--",
+         )}%</b> · Semanas: <b style="color:${fg}">${esc(data.weeks ?? "--")}</b></div>
+         <div style="margin-top:10px">Prioridade: <b style="color:${accent}">${esc(prettyLabel(data.priority || "--"))}</b></div>
        </div>`;
 
+  const verdict = verdictBody
+    ? `<div style="border-radius:24px;padding:${compact ? "18px 22px" : "26px 28px"};background:rgba(0,212,255,0.05);
+                   border:1px solid rgba(0,212,255,0.35);box-shadow:inset 0 0 60px rgba(0,212,255,0.04)">
+         ${verdictBody}
+       </div>`
+    : "";
+
   return `
-    <div style="display:flex;flex-direction:column;height:100%;color:${fg}">
+    <div style="position:relative;display:flex;flex-direction:column;height:100%;overflow:hidden;color:${fg};padding-bottom:${compact ? 120 : 190}px;box-sizing:border-box">
       <div>
         <div style="font-size:${compact ? 34 : 40}px;font-weight:900;letter-spacing:5px">${esc(title)}</div>
         <div style="font-size:24px;color:${accent};letter-spacing:4px;margin-top:6px">
@@ -210,21 +299,25 @@ const buildHtml = (data: ApexReportData, mode: ApexReportMode, photo: string | n
         </div>
       </div>
 
-      <div style="margin-top:28px">${photoBlock}</div>
+      <div style="flex:1 1 auto;display:flex;flex-direction:column;justify-content:space-between;min-height:0;overflow:hidden">
+        <div style="margin-top:28px">${photoBlock}</div>
 
-      ${isClient ? clientLists : sectionTitle("DIAGNÓSTICO", accent) + deviations}
+        <div>${isClient ? clientLists : sectionTitle("DIAGNÓSTICO", accent, compact) + deviations}</div>
 
-      ${!isClient && data.scores.length ? sectionTitle("SCORES", accent) + `<div style="display:flex;gap:24px">${scores}</div>` : ""}
+        <div>${!isClient && data.scores.length ? sectionTitle("SCORES", accent, compact) + scores : ""}</div>
 
-      ${verdict ? sectionTitle("VEREDICTO", accent) + verdict : ""}
+        <div>${verdict ? sectionTitle("VEREDICTO", accent, compact) + verdict : ""}</div>
+      </div>
 
-      <div style="margin-top:auto;padding-top:36px;border-top:1px solid ${line}">
-        <div style="font-size:32px;font-weight:900">${esc(coachName)}</div>
-        <div style="font-size:24px;color:${dim};margin-top:4px">${esc(coachSubtitle)} · ${esc(handle)}</div>
-        <div style="font-size:22px;color:${accent};margin-top:8px;letter-spacing:3px">TRANSFORMAÇÃO É SISTEMA.</div>
+      <div style="position:absolute;left:0;right:0;bottom:${compact ? 18 : 24}px;padding-top:${compact ? 12 : 36}px;border-top:1px solid ${line}">
+        <div style="font-size:${compact ? 25 : 32}px;font-weight:900;line-height:1.2">${esc(coachName)}</div>
+        <div style="font-size:${compact ? 19 : 24}px;color:${dim};margin-top:4px;line-height:1.2">${esc(coachSubtitle)}</div>
+        <div style="font-size:${compact ? 19 : 24}px;color:${fg};margin-top:2px;line-height:1.2">${esc(handle)}</div>
+        ${compact ? "" : `<div style="font-size:22px;color:${accent};margin-top:10px;letter-spacing:3px">TRANSFORMAÇÃO É SISTEMA.</div>`}
       </div>
     </div>`;
 };
+
 
 export async function generateApexReport(data: ApexReportData, mode: ApexReportMode): Promise<string> {
   const { w, h } = DIMENSIONS[mode];
@@ -238,7 +331,7 @@ export async function generateApexReport(data: ApexReportData, mode: ApexReportM
   container.style.width = `${w}px`;
   container.style.height = `${h}px`;
   container.style.background = bg;
-  container.style.padding = "64px";
+  container.style.padding = mode === "instagram" ? "48px 48px 80px" : "64px 64px 88px";
   container.style.boxSizing = "border-box";
   container.style.fontFamily = "'Rajdhani', 'Space Grotesk', Arial, sans-serif";
   container.style.color = isLightBg(bg) ? "#0B0B10" : "#FFFFFF";
