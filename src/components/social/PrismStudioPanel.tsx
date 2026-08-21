@@ -335,12 +335,15 @@ export default function PrismStudioPanel({
                     </div>
                     {c.why && <p className="text-xs text-muted-foreground">{c.why}</p>}
 
-                    {c.hook && (
-                      <div className="rounded-lg p-3" style={{ background: `${accent}12`, border: `1px solid ${accent}33` }}>
-                        <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Hook</p>
-                        <p className="font-semibold">{c.hook}</p>
-                      </div>
+                    {(c.hook || !!c.hook_variations?.length) && (
+                      <VariationBlock
+                        label="Hook"
+                        highlight
+                        accent={accent}
+                        items={c.hook_variations?.length ? c.hook_variations : [c.hook || ""]}
+                      />
                     )}
+
 
                     {!!c.screen_texts?.length && (
                       <div>
