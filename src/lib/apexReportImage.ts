@@ -89,10 +89,10 @@ const toDataUrl = async (url: string): Promise<string | null> => {
   }
 };
 
-const sectionTitle = (label: string, accent: string) =>
-  `<div style="display:flex;align-items:center;gap:14px;margin:34px 0 18px 0">
-     <div style="width:56px;height:5px;border-radius:3px;background:${accent}"></div>
-     <div style="font-size:26px;font-weight:800;letter-spacing:6px;color:${accent}">${esc(label)}</div>
+const sectionTitle = (label: string, accent: string, tight = false) =>
+  `<div style="display:flex;align-items:center;gap:14px;margin:${tight ? "18px 0 12px 0" : "34px 0 18px 0"}">
+     <div style="width:${tight ? 40 : 56}px;height:5px;border-radius:3px;background:${accent}"></div>
+     <div style="font-size:${tight ? 22 : 26}px;font-weight:800;letter-spacing:${tight ? 4 : 6}px;color:${accent}">${esc(label)}</div>
    </div>`;
 
 const isLightBg = (hex: string) => {
@@ -174,8 +174,9 @@ const buildHtml = (data: ApexReportData, mode: ApexReportMode, photo: string | n
   const coachSubtitle = data.coachSubtitle || "Nutrition & Business Coach · USA";
   const handle = data.handle || "nutrion.app.br";
 
-  // Foto: no máximo 40% da altura do card.
-  const photoH = Math.round(DIMENSIONS[mode].h * 0.38);
+  // Foto: no máximo 40% da altura do card (menos no quadrado, que tem menos espaço).
+  const ratio = mode === "coach" ? 0.38 : mode === "client" ? 0.34 : 0.24;
+  const photoH = Math.round(DIMENSIONS[mode].h * ratio);
 
   const photoBlock = photo
     ? `<div style="border-radius:28px;overflow:hidden;border:1px solid ${line};background:${light ? "#E9ECEF" : "#07070c"};
@@ -187,27 +188,28 @@ const buildHtml = (data: ApexReportData, mode: ApexReportMode, photo: string | n
          Análise APEX · nutriON
        </div>`;
 
-  const devItems = (isClient ? data.deviations.slice(0, 4) : data.deviations.slice(0, 6)).map((d) => ({
+  const devLimit = compact ? 3 : isClient ? 4 : 6;
+  const devItems = data.deviations.slice(0, devLimit).map((d) => ({
     label: prettyLabel(d.name),
     sev: String(d.severity_label || d.severity || ""),
   }));
   const devSize = fitSize(
     devItems.reduce((a, b) => (b.label.length > a.length ? b.label : a), ""),
-    compact ? 26 : 30,
-    20,
+    compact ? 23 : 30,
+    compact ? 18 : 20,
   );
   const deviations = devItems
     .map(
       (d) => `
-      <div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:16px">
-        ${severityDot(d.sev, 16)}
+      <div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:${compact ? 11 : 16}px">
+        ${severityDot(d.sev, compact ? 13 : 16)}
         <div style="flex:1;min-width:0;font-size:${devSize}px;font-weight:600;line-height:1.35;
                     word-break:break-word;overflow-wrap:anywhere">${esc(d.label)}</div>
         ${
           isClient || !d.sev
             ? ""
             : `<div style="max-width:32%;text-align:right;font-size:${Math.max(
-                18,
+                compact ? 16 : 18,
                 devSize - 8,
               )}px;font-weight:800;line-height:1.3;word-break:break-word;overflow-wrap:anywhere;color:${severityColor(
                 d.sev,
@@ -218,19 +220,19 @@ const buildHtml = (data: ApexReportData, mode: ApexReportMode, photo: string | n
     .join("");
 
   const scores = data.scores
-    .slice(0, 6)
+    .slice(0, compact ? 4 : 6)
     .map((s) => {
       const v = Math.max(0, Math.min(10, Number(s.value) || 0));
       const col = scoreColor(v);
       const label = prettyLabel(s.label);
       return `
-      <div style="display:flex;align-items:center;gap:18px;margin-bottom:14px">
-        <div style="flex:1;min-width:0;font-size:${fitSize(label, compact ? 24 : 26, 19)}px;font-weight:700;
+      <div style="display:flex;align-items:center;gap:18px;margin-bottom:${compact ? 10 : 14}px">
+        <div style="flex:1;min-width:0;font-size:${fitSize(label, compact ? 21 : 26, compact ? 17 : 19)}px;font-weight:700;
                     letter-spacing:1px;line-height:1.25;word-break:break-word;overflow-wrap:anywhere">${esc(label)}</div>
-        <div style="width:280px;height:14px;border-radius:7px;background:${line};overflow:hidden;flex:none">
-          <div style="height:14px;border-radius:7px;background:${col};width:${v * 10}%"></div>
+        <div style="width:${compact ? 220 : 280}px;height:${compact ? 11 : 14}px;border-radius:7px;background:${line};overflow:hidden;flex:none">
+          <div style="height:${compact ? 11 : 14}px;border-radius:7px;background:${col};width:${v * 10}%"></div>
         </div>
-        <div style="width:88px;flex:none;text-align:right;font-size:${compact ? 26 : 30}px;font-weight:900;color:${col}">${v}<span style="font-size:20px;color:${dim}">/10</span></div>
+        <div style="width:${compact ? 76 : 88}px;flex:none;text-align:right;font-size:${compact ? 23 : 30}px;font-weight:900;color:${col}">${v}<span style="font-size:20px;color:${dim}">/10</span></div>
       </div>`;
     })
     .join("");
@@ -273,7 +275,7 @@ const buildHtml = (data: ApexReportData, mode: ApexReportMode, photo: string | n
           data.clientSummary,
         )}</div>`
       : ""
-    : `<div style="font-size:26px;line-height:1.55;color:${soft};word-break:break-word">
+    : `<div style="font-size:${compact ? 22 : 26}px;line-height:1.5;color:${soft};word-break:break-word">
          <div>BF estimado: <b style="color:${fg}">${esc(data.bfEstimated ?? "--")}%</b> · Meta: <b style="color:${fg}">${esc(
            data.bfTarget ?? "--",
          )}%</b> · Semanas: <b style="color:${fg}">${esc(data.weeks ?? "--")}</b></div>
@@ -281,14 +283,14 @@ const buildHtml = (data: ApexReportData, mode: ApexReportMode, photo: string | n
        </div>`;
 
   const verdict = verdictBody
-    ? `<div style="border-radius:24px;padding:26px 28px;background:rgba(0,212,255,0.05);
+    ? `<div style="border-radius:24px;padding:${compact ? "18px 22px" : "26px 28px"};background:rgba(0,212,255,0.05);
                    border:1px solid rgba(0,212,255,0.35);box-shadow:inset 0 0 60px rgba(0,212,255,0.04)">
          ${verdictBody}
        </div>`
     : "";
 
   return `
-    <div style="display:flex;flex-direction:column;height:100%;color:${fg}">
+    <div style="display:flex;flex-direction:column;height:100%;overflow:hidden;color:${fg}">
       <div>
         <div style="font-size:${compact ? 34 : 40}px;font-weight:900;letter-spacing:5px">${esc(title)}</div>
         <div style="font-size:24px;color:${accent};letter-spacing:4px;margin-top:6px">
@@ -299,17 +301,17 @@ const buildHtml = (data: ApexReportData, mode: ApexReportMode, photo: string | n
       <div style="flex:1;display:flex;flex-direction:column;justify-content:space-between;min-height:0">
         <div style="margin-top:28px">${photoBlock}</div>
 
-        <div>${isClient ? clientLists : sectionTitle("DIAGNÓSTICO", accent) + deviations}</div>
+        <div>${isClient ? clientLists : sectionTitle("DIAGNÓSTICO", accent, compact) + deviations}</div>
 
-        <div>${!isClient && data.scores.length ? sectionTitle("SCORES", accent) + scores : ""}</div>
+        <div>${!isClient && data.scores.length ? sectionTitle("SCORES", accent, compact) + scores : ""}</div>
 
-        <div>${verdict ? sectionTitle("VEREDICTO", accent) + verdict : ""}</div>
+        <div>${verdict ? sectionTitle("VEREDICTO", accent, compact) + verdict : ""}</div>
       </div>
 
-      <div style="padding-top:36px;border-top:1px solid ${line}">
-        <div style="font-size:32px;font-weight:900">${esc(coachName)}</div>
-        <div style="font-size:24px;color:${dim};margin-top:4px">${esc(coachSubtitle)}</div>
-        <div style="font-size:24px;color:${fg};margin-top:2px">${esc(handle)}</div>
+      <div style="padding-top:${compact ? 20 : 36}px;border-top:1px solid ${line}">
+        <div style="font-size:${compact ? 27 : 32}px;font-weight:900">${esc(coachName)}</div>
+        <div style="font-size:${compact ? 21 : 24}px;color:${dim};margin-top:4px">${esc(coachSubtitle)}</div>
+        <div style="font-size:${compact ? 21 : 24}px;color:${fg};margin-top:2px">${esc(handle)}</div>
         <div style="font-size:22px;color:${accent};margin-top:10px;letter-spacing:3px">TRANSFORMAÇÃO É SISTEMA.</div>
       </div>
     </div>`;
