@@ -18,6 +18,8 @@ import {
   PILLARS, FORMATS, HOOK_LIBRARY, CORE_HASHTAGS, HASHTAGS_BY_PILLAR,
   WEEKLY_CHECKLIST, WEEKDAYS, type SocialPillar,
 } from "@/data/socialHooks";
+import TechReelsPanel from "@/components/social/TechReelsPanel";
+
 
 type CalendarRow = {
   id: string;
