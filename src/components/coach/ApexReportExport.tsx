@@ -35,7 +35,6 @@ export default function ApexReportExport({
   const [coachName, setCoachName] = useState("Coach Diogo Mello");
   const [handle, setHandle] = useState("nutrion.app.br");
   const [paletteKey, setPaletteKey] = useState(APEX_PALETTES[0].key);
-  const [watermark, setWatermark] = useState(true);
 
   const palette = APEX_PALETTES.find((p) => p.key === paletteKey) || APEX_PALETTES[0];
 
@@ -46,7 +45,6 @@ export default function ApexReportExport({
     handle: handle.trim() || undefined,
     accent: palette.accent,
     bg: palette.bg,
-    watermark,
   });
 
   const slug = (data.athleteName || "atleta").toLowerCase().replace(/\s+/g, "-");
@@ -150,10 +148,6 @@ export default function ApexReportExport({
                 </div>
               </div>
 
-              <label className="flex items-center gap-2 text-xs">
-                <input type="checkbox" checked={watermark} onChange={(e) => setWatermark(e.target.checked)} />
-                Marca d'água na foto
-              </label>
             </div>
           )}
 
