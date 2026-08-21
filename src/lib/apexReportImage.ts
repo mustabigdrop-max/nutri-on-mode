@@ -309,7 +309,7 @@ const buildHtml = (data: ApexReportData, mode: ApexReportMode, photo: string | n
         <div>${verdict ? sectionTitle("VEREDICTO", accent, compact) + verdict : ""}</div>
       </div>
 
-      <div style="position:absolute;left:0;right:0;bottom:0;padding-top:${compact ? 12 : 36}px;border-top:1px solid ${line}">
+      <div style="position:absolute;left:0;right:0;bottom:${compact ? 18 : 24}px;padding-top:${compact ? 12 : 36}px;border-top:1px solid ${line}">
         <div style="font-size:${compact ? 25 : 32}px;font-weight:900;line-height:1.2">${esc(coachName)}</div>
         <div style="font-size:${compact ? 19 : 24}px;color:${dim};margin-top:4px;line-height:1.2">${esc(coachSubtitle)}</div>
         <div style="font-size:${compact ? 19 : 24}px;color:${fg};margin-top:2px;line-height:1.2">${esc(handle)}</div>
