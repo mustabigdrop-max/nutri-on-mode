@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { motion } from "framer-motion";
 import {
   ArrowLeft, Instagram, Copy, Sparkles, Loader2, RefreshCw, Check, Trash2,
-  CalendarDays, PenLine, Clapperboard, Hash, LayoutList, BarChart3, Brain,
+  CalendarDays, PenLine, Clapperboard, Hash, LayoutList, BarChart3, Brain, Flame,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
