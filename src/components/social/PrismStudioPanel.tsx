@@ -396,17 +396,14 @@ export default function PrismStudioPanel({
                       </div>
                     )}
 
-                    {c.caption && (
-                      <div>
-                        <div className="flex items-center justify-between mb-1">
-                          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Legenda</p>
-                          <Button size="sm" variant="ghost" className="h-6 text-[11px] gap-1" onClick={() => copyText(c.caption || "")}>
-                            <Copy className="w-3 h-3" /> Copiar
-                          </Button>
-                        </div>
-                        <p className="text-xs whitespace-pre-wrap">{c.caption}</p>
-                      </div>
+                    {(c.caption || !!c.caption_variations?.length) && (
+                      <VariationBlock
+                        label="Legenda"
+                        accent={accent}
+                        items={c.caption_variations?.length ? c.caption_variations : [c.caption || ""]}
+                      />
                     )}
+
 
                     {!!c.hashtags?.length && (
                       <div>
