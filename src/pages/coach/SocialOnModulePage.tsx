@@ -15,6 +15,7 @@ import {
   BarChart3, GraduationCap, ShoppingCart, Check, Instagram, Trash2,
   RefreshCw, MessageSquare, Microscope, Camera, BookOpen, Lightbulb,
   ImagePlus, Trophy, Flame, Dna, ShieldCheck, FlaskConical, Sparkles,
+  Package, Clapperboard,
 } from "lucide-react";
 import RepurposerPanel from "@/components/social/RepurposerPanel";
 import DmObjectionsPanel from "@/components/social/DmObjectionsPanel";
@@ -31,6 +32,8 @@ import ContentDnaPanel from "@/components/social/ContentDnaPanel";
 import AuthorityPanel from "@/components/social/AuthorityPanel";
 import ScienceBankPanel from "@/components/social/ScienceBankPanel";
 import InstagramGuidePanel from "@/components/social/InstagramGuidePanel";
+import ContentPackPanel from "@/components/social/ContentPackPanel";
+import TechReelsPanel from "@/components/social/TechReelsPanel";
 import { useInstagramAccount } from "@/hooks/useInstagramAccount";
 import {
   ACADEMY_TRACKS, ACTION_PLAN, BIO_CRITERIA, CONTENT_PRODUCTS, DIFFERENTIALS,
@@ -408,7 +411,17 @@ const SocialOnModulePage = () => {
             <TabsTrigger value="dna" className="text-xs gap-1"><Dna className="w-3 h-3" />DNA</TabsTrigger>
             <TabsTrigger value="autoridade" className="text-xs gap-1"><ShieldCheck className="w-3 h-3" />Autoridade</TabsTrigger>
             <TabsTrigger value="ciencia" className="text-xs gap-1"><FlaskConical className="w-3 h-3" />Ciência</TabsTrigger>
+            <TabsTrigger value="reels" className="text-xs gap-1"><Clapperboard className="w-3 h-3" />Reels</TabsTrigger>
+            <TabsTrigger value="pack" className="text-xs gap-1"><Package className="w-3 h-3" />Pack</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="reels" className="mt-4">
+            <TechReelsPanel />
+          </TabsContent>
+
+          <TabsContent value="pack" className="mt-4">
+            <ContentPackPanel />
+          </TabsContent>
 
           {/* ─────────── AUDITORIA ─────────── */}
           <TabsContent value="prism" className="mt-4">
