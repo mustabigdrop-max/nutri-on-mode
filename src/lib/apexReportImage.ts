@@ -175,7 +175,7 @@ const buildHtml = (data: ApexReportData, mode: ApexReportMode, photo: string | n
   const handle = data.handle || "nutrion.app.br";
 
   // Foto: no máximo 40% da altura do card (menos no quadrado, que tem menos espaço).
-  const ratio = mode === "coach" ? 0.38 : mode === "client" ? 0.34 : 0.24;
+  const ratio = mode === "coach" ? 0.38 : mode === "client" ? 0.34 : 0.2;
   const photoH = Math.round(DIMENSIONS[mode].h * ratio);
 
   const photoBlock = photo
@@ -189,6 +189,7 @@ const buildHtml = (data: ApexReportData, mode: ApexReportMode, photo: string | n
        </div>`;
 
   const devLimit = compact ? 3 : isClient ? 4 : 6;
+  const scoreLimit = compact ? 3 : 6;
   const devItems = data.deviations.slice(0, devLimit).map((d) => ({
     label: prettyLabel(d.name),
     sev: String(d.severity_label || d.severity || ""),
@@ -220,7 +221,7 @@ const buildHtml = (data: ApexReportData, mode: ApexReportMode, photo: string | n
     .join("");
 
   const scores = data.scores
-    .slice(0, compact ? 4 : 6)
+    .slice(0, scoreLimit)
     .map((s) => {
       const v = Math.max(0, Math.min(10, Number(s.value) || 0));
       const col = scoreColor(v);
@@ -312,7 +313,7 @@ const buildHtml = (data: ApexReportData, mode: ApexReportMode, photo: string | n
         <div style="font-size:${compact ? 27 : 32}px;font-weight:900">${esc(coachName)}</div>
         <div style="font-size:${compact ? 21 : 24}px;color:${dim};margin-top:4px">${esc(coachSubtitle)}</div>
         <div style="font-size:${compact ? 21 : 24}px;color:${fg};margin-top:2px">${esc(handle)}</div>
-        <div style="font-size:22px;color:${accent};margin-top:10px;letter-spacing:3px">TRANSFORMAÇÃO É SISTEMA.</div>
+        ${compact ? "" : `<div style="font-size:22px;color:${accent};margin-top:10px;letter-spacing:3px">TRANSFORMAÇÃO É SISTEMA.</div>`}
       </div>
     </div>`;
 };
@@ -330,7 +331,7 @@ export async function generateApexReport(data: ApexReportData, mode: ApexReportM
   container.style.width = `${w}px`;
   container.style.height = `${h}px`;
   container.style.background = bg;
-  container.style.padding = "64px";
+  container.style.padding = mode === "instagram" ? "48px" : "64px";
   container.style.boxSizing = "border-box";
   container.style.fontFamily = "'Rajdhani', 'Space Grotesk', Arial, sans-serif";
   container.style.color = isLightBg(bg) ? "#0B0B10" : "#FFFFFF";
