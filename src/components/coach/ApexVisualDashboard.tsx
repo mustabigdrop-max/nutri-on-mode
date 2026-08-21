@@ -1409,6 +1409,7 @@ export default function ApexVisualDashboard({ coachId: coachIdProp }: Props) {
   // Dr. VERTEX v4.0 — dispara análise farmacológica PhD em JSON
   const runVertexV4 = useCallback(async () => {
     console.log("[DR.VERTEX DEBUG] runVertexV4() iniciado");
+    toast({ title: "Dr. VERTEX v4.0", description: "Análise farmacológica iniciada — leva ~45s." });
     setVertexV4Loading(true);
     setVertexV4Error(null);
     setVertexV4ErrorKind(null);
