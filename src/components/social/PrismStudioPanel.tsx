@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { Section, Pill, copyText } from "./socialUi";
+import { Section, Pill, copyText, VariationBlock } from "./socialUi";
 import { extractVideoFrames, fileToDataUrl, getVideoDuration, videoObjectUrl } from "@/lib/socialImageKit";
 import {
   PRISM_MODES, PRISM_OBJECTIVES, PRISM_TONES, SALE_LEVELS, PACK_PRODUCTS,
@@ -25,6 +25,7 @@ type StudioFile = {
 
 export type StudioConcept = {
   title?: string; format?: string; tone?: string; why?: string; hook?: string;
+  hook_variations?: string[]; caption_variations?: string[];
   screen_texts?: string[];
   script?: { hook?: string; development?: string; cta?: string };
   edit_sequence?: { file_index?: number; duration_s?: number; transition?: string; text?: string }[];
@@ -168,12 +169,19 @@ export default function PrismStudioPanel({
   const conceptText = (c: StudioConcept) =>
     [
       c.title, c.hook ? `HOOK: ${c.hook}` : "",
+      (c.hook_variations || []).length > 1
+        ? `\nHOOKS ALTERNATIVOS:\n${(c.hook_variations || []).slice(1).map((h, i) => `${String.fromCharCode(66 + i)}. ${h}`).join("\n")}`
+        : "",
       (c.screen_texts || []).join("\n"),
       c.script?.development ? `\nFALA:\n${c.script.development}` : "",
       c.script?.cta ? `CTA: ${c.script.cta}` : "",
       c.caption ? `\nLEGENDA:\n${c.caption}` : "",
+      (c.caption_variations || []).length > 1
+        ? (c.caption_variations || []).slice(1).map((t, i) => `\nLEGENDA ${String.fromCharCode(66 + i)}:\n${t}`).join("\n")
+        : "",
       (c.hashtags || []).join(" "),
     ].filter(Boolean).join("\n");
+
 
   return (
     <div className="space-y-4">
@@ -335,12 +343,15 @@ export default function PrismStudioPanel({
                     </div>
                     {c.why && <p className="text-xs text-muted-foreground">{c.why}</p>}
 
-                    {c.hook && (
-                      <div className="rounded-lg p-3" style={{ background: `${accent}12`, border: `1px solid ${accent}33` }}>
-                        <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Hook</p>
-                        <p className="font-semibold">{c.hook}</p>
-                      </div>
+                    {(c.hook || !!c.hook_variations?.length) && (
+                      <VariationBlock
+                        label="Hook"
+                        highlight
+                        accent={accent}
+                        items={c.hook_variations?.length ? c.hook_variations : [c.hook || ""]}
+                      />
                     )}
+
 
                     {!!c.screen_texts?.length && (
                       <div>
@@ -392,17 +403,14 @@ export default function PrismStudioPanel({
                       </div>
                     )}
 
-                    {c.caption && (
-                      <div>
-                        <div className="flex items-center justify-between mb-1">
-                          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Legenda</p>
-                          <Button size="sm" variant="ghost" className="h-6 text-[11px] gap-1" onClick={() => copyText(c.caption || "")}>
-                            <Copy className="w-3 h-3" /> Copiar
-                          </Button>
-                        </div>
-                        <p className="text-xs whitespace-pre-wrap">{c.caption}</p>
-                      </div>
+                    {(c.caption || !!c.caption_variations?.length) && (
+                      <VariationBlock
+                        label="Legenda"
+                        accent={accent}
+                        items={c.caption_variations?.length ? c.caption_variations : [c.caption || ""]}
+                      />
                     )}
+
 
                     {!!c.hashtags?.length && (
                       <div>

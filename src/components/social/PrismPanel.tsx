@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { Section, copyText } from "./socialUi";
+import { Section, copyText, VariationBlock } from "./socialUi";
 import {
   cropToRatio, downloadMany, isMobileDevice, saveImage, extractVideoFrames, fileToDataUrl, getVideoDuration,
   gradeDarkPremium, gradeFitness, renderSlide, renderStoryFrame, videoObjectUrl,
@@ -59,6 +59,8 @@ type PrismResult = {
   content?: {
     caption?: string;
     caption_alternatives?: Record<string, string>;
+    hook_variations?: string[];
+    caption_variations?: string[];
     carousel_slides?: { title: string; body?: string; file_index?: number }[];
     stories_frames?: { text: string; body?: string; sticker?: string; sticker_content?: string; file_index?: number }[];
     reel_script?: {
@@ -390,6 +392,8 @@ const PrismPanel = ({
           ...result.content,
           ...(rw.caption ? { caption: rw.caption } : {}),
           ...(rw.caption_alternatives ? { caption_alternatives: rw.caption_alternatives } : {}),
+          ...(Array.isArray(rw.hook_variations) && rw.hook_variations.length ? { hook_variations: rw.hook_variations } : {}),
+          ...(Array.isArray(rw.caption_variations) && rw.caption_variations.length ? { caption_variations: rw.caption_variations } : {}),
           ...(Array.isArray(rw.carousel_slides) && rw.carousel_slides.length
             ? { carousel_slides: rw.carousel_slides }
             : {}),
@@ -746,6 +750,18 @@ const PrismPanel = ({
                 <Copy className="w-3 h-3" /> Copiar legenda
               </Button>
             </div>
+
+            {!!c?.hook_variations?.length && (
+              <div className="mt-3">
+                <VariationBlock label="Hooks" highlight accent={PRISM} items={c.hook_variations} />
+              </div>
+            )}
+            {!!c?.caption_variations?.length && (
+              <div className="mt-3">
+                <VariationBlock label="Variações da legenda" accent={PRISM} items={c.caption_variations} />
+              </div>
+            )}
+
 
             {/* Nova versão — mantém a mesma análise */}
             <div className="mt-3 pt-3 border-t space-y-2" style={{ borderColor: "rgba(255,255,255,0.08)" }}>

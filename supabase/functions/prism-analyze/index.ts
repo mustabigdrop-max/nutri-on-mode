@@ -32,9 +32,12 @@ const SCHEMA = `{
   },
   "content": {
     "caption": "legenda completa pronta pra copiar, com quebras de linha \\n",
+    "hook_variations": ["3 hooks diferentes pra mesma peça, mesmo formato e objetivo — o 1º é o do caption"],
+    "caption_variations": ["3 legendas completas diferentes (estruturas e hooks distintos), mesmo formato e objetivo — a 1ª é igual ao caption"],
     "caption_alternatives": {
       "cientifico": "...", "pessoal": "...", "humor": "...", "militar": "...", "pai": "...", "direto": "..."
     },
+
     "carousel_slides": [{ "title": "texto curto do slide", "body": "2 a 3 linhas", "file_index": 0 }, "exatamente 5 itens, o 1º é capa com hook e o 5º é CTA"],
     "stories_frames": [{ "text": "texto grande do story", "body": "linha de apoio", "sticker": "quiz|enquete|link|nenhum", "sticker_content": "conteúdo pronto do sticker", "file_index": 0 }, "4 a 5 itens"],
     "reel_script": {
@@ -61,9 +64,9 @@ const SCHEMA = `{
 }`;
 
 const REWRITE_SCHEMAS: Record<string, string> = {
-  caption: `{"caption":"nova legenda completa com quebras de linha \\n","caption_alternatives":{"cientifico":"...","pessoal":"...","humor":"...","militar":"...","pai":"...","direto":"..."}}`,
+  caption: `{"caption":"nova legenda completa com quebras de linha \\n","hook_variations":["3 hooks diferentes, o 1º é o da nova legenda"],"caption_variations":["3 legendas completas diferentes, a 1ª é igual ao caption"],"caption_alternatives":{"cientifico":"...","pessoal":"...","humor":"...","militar":"...","pai":"...","direto":"..."}}`,
   slides: `{"carousel_slides":[{"title":"texto curto do slide","body":"2 a 3 linhas","file_index":0},"exatamente 5 itens, o 1º é capa com hook e o 5º é CTA"]}`,
-  both: `{"caption":"nova legenda completa com quebras de linha \\n","caption_alternatives":{"cientifico":"...","pessoal":"...","humor":"...","militar":"...","pai":"...","direto":"..."},"carousel_slides":[{"title":"texto curto do slide","body":"2 a 3 linhas","file_index":0},"exatamente 5 itens"]}`,
+  both: `{"caption":"nova legenda completa com quebras de linha \\n","hook_variations":["3 hooks diferentes"],"caption_variations":["3 legendas completas diferentes"],"caption_alternatives":{"cientifico":"...","pessoal":"...","humor":"...","militar":"...","pai":"...","direto":"..."},"carousel_slides":[{"title":"texto curto do slide","body":"2 a 3 linhas","file_index":0},"exatamente 5 itens"]}`,
 };
 
 const REWRITE_PROMPT = (target: string, analysis: unknown, decision: unknown, current: unknown, instruction: string) =>
@@ -137,6 +140,7 @@ REGRAS:
 - Com 3+ arquivos: preencher weekly_package com 7 dias, cada dia com format, pillar, time (HH:MM realista pro público brasileiro, variando entre os dias) e hook.
 - Nunca forçar venda. Mencionar produto só quando natural.
 - Sempre terminar a legenda com CTA (salva / manda / comenta / segue).
+- SEMPRE preencher hook_variations e caption_variations com exatamente 3 itens cada, mantendo o MESMO formato, objetivo e produto — muda só o ângulo, o hook e a estrutura das frases. A 1ª variação é a versão principal (caption).
 - Nunca se apresente como IA. A voz é a do próprio Diogo Mello.
 - Responda JSON puro, sem markdown, exatamente neste schema:
 ${SCHEMA}`;
@@ -195,6 +199,7 @@ const STUDIO_SCHEMA = `{
     "tone": "direto|cientifico|pessoal|humor|militar|pai",
     "why": "por que esse conceito funciona, 1 frase",
     "hook": "primeiros 2 segundos",
+    "hook_variations": ["exatamente 3 hooks diferentes pra essa mesma peça — o 1º é igual ao hook"],
     "screen_texts": ["Beat 1: POV:", "Beat 2: TEXTO", "Beat 3: TEXTO"],
     "script": { "hook": "...", "development": "corpo pronto pra falar", "cta": "chamada final" },
     "edit_sequence": [{ "file_index": 0, "duration_s": 0.5, "transition": "zoom_blur|flash|whip_pan|slide|corte_seco", "text": "texto na tela" }],
@@ -203,6 +208,7 @@ const STUDIO_SCHEMA = `{
     "music_suggestion": "tipo de trend/áudio em alta",
     "duration_suggested": 12,
     "caption": "legenda pronta com quebras de linha \\n",
+    "caption_variations": ["exatamente 3 legendas completas diferentes pra essa mesma peça — a 1ª é igual ao caption"],
     "hashtags": ["#tag", "15 no total: 5 grandes + 7 médias + 3 nichadas"],
     "self_comment": "comentário pra postar logo após publicar"
   }, "3 conceitos quando não houver material; 1 a 3 quando houver"],
@@ -255,6 +261,7 @@ REGRAS DE SAÍDA:
 - Quando houver arquivos enviados, use file_index reais no edit_sequence e descreva o que está em cada um.
 - Quando NÃO houver material, preencha shot_list dizendo exatamente que fotos/vídeos gravar.
 - Sempre 15 hashtags por conceito e sempre CTA no fim da legenda.
+- Em CADA conceito, preencher hook_variations e caption_variations com exatamente 3 itens cada, mantendo o MESMO formato, objetivo, tom e produto. Muda só o ângulo de entrada, o hook e a estrutura das frases. A 1ª variação é sempre a versão principal.
 - Responda JSON puro, sem markdown, exatamente neste schema:
 ${STUDIO_SCHEMA}`;
 
