@@ -8848,10 +8848,14 @@ export type Database = {
           files_count: number
           format_used: string | null
           id: string
+          mode: string | null
           objective_used: string | null
+          product_mentioned: string | null
           published: boolean
           published_at: string | null
+          sale_level: string | null
           saved: boolean
+          subtype: string | null
           tone_used: string | null
         }
         Insert: {
@@ -8865,10 +8869,14 @@ export type Database = {
           files_count?: number
           format_used?: string | null
           id?: string
+          mode?: string | null
           objective_used?: string | null
+          product_mentioned?: string | null
           published?: boolean
           published_at?: string | null
+          sale_level?: string | null
           saved?: boolean
+          subtype?: string | null
           tone_used?: string | null
         }
         Update: {
@@ -8882,10 +8890,14 @@ export type Database = {
           files_count?: number
           format_used?: string | null
           id?: string
+          mode?: string | null
           objective_used?: string | null
+          product_mentioned?: string | null
           published?: boolean
           published_at?: string | null
+          sale_level?: string | null
           saved?: boolean
+          subtype?: string | null
           tone_used?: string | null
         }
         Relationships: []
