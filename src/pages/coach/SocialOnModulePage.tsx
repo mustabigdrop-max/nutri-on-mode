@@ -96,6 +96,7 @@ const SocialOnModulePage = () => {
   const uid = user?.id ?? "";
 
   const [tab, setTab] = useState("prism");
+  const [prismTab, setPrismTab] = useState("analise");
   const [loading, setLoading] = useState(true);
 
   // profile
