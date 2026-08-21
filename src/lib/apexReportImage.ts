@@ -183,7 +183,7 @@ const buildHtml = (data: ApexReportData, mode: ApexReportMode, photo: string | n
                   height:${photoH}px;display:flex;align-items:center;justify-content:center;position:relative">
          <img src="${photo}" style="max-width:100%;max-height:100%;object-fit:contain" />
        </div>`
-    : `<div style="border-radius:28px;border:1px dashed ${line};height:${compact ? 150 : 260}px;
+    : `<div style="border-radius:28px;border:1px dashed ${line};height:${compact ? 130 : 260}px;
                   display:flex;align-items:center;justify-content:center;color:${dim};font-size:24px">
          Análise APEX · nutriON
        </div>`;
@@ -309,10 +309,10 @@ const buildHtml = (data: ApexReportData, mode: ApexReportMode, photo: string | n
         <div>${verdict ? sectionTitle("VEREDICTO", accent, compact) + verdict : ""}</div>
       </div>
 
-      <div style="flex:0 0 auto;padding-top:${compact ? 14 : 36}px;border-top:1px solid ${line}">
-        <div style="font-size:${compact ? 27 : 32}px;font-weight:900">${esc(coachName)}</div>
-        <div style="font-size:${compact ? 21 : 24}px;color:${dim};margin-top:4px">${esc(coachSubtitle)}</div>
-        <div style="font-size:${compact ? 21 : 24}px;color:${fg};margin-top:2px">${esc(handle)}</div>
+      <div style="flex:0 0 auto;padding-top:${compact ? 12 : 36}px;border-top:1px solid ${line}">
+        <div style="font-size:${compact ? 25 : 32}px;font-weight:900;line-height:1.2">${esc(coachName)}</div>
+        <div style="font-size:${compact ? 19 : 24}px;color:${dim};margin-top:4px;line-height:1.2">${esc(coachSubtitle)}</div>
+        <div style="font-size:${compact ? 19 : 24}px;color:${fg};margin-top:2px;line-height:1.2">${esc(handle)}</div>
         ${compact ? "" : `<div style="font-size:22px;color:${accent};margin-top:10px;letter-spacing:3px">TRANSFORMAÇÃO É SISTEMA.</div>`}
       </div>
     </div>`;
