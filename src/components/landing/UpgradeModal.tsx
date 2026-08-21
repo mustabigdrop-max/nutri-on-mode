@@ -11,8 +11,8 @@ interface UpgradeModalProps {
 const upgradePath: Record<string, { target: string; price: string; oldPrice: string; discount: string; slots: string; highlights: string[] }> = {
   ON: {
     target: "ON +",
-    price: "R$127",
-    oldPrice: "R$197",
+    price: "R$97",
+    oldPrice: "R$147",
     discount: "35% off fundador",
     slots: "50 vagas",
     highlights: [
@@ -28,9 +28,9 @@ const upgradePath: Record<string, { target: string; price: string; oldPrice: str
   },
   "ON +": {
     target: "ON PRO",
-    price: "R$247",
-    oldPrice: "R$397",
-    discount: "37% off fundador",
+    price: "R$97",
+    oldPrice: "R$147",
+    discount: "34% off fundador",
     slots: "20 vagas",
     highlights: [
       "2 check-ins mensais com Coach (vídeo/áudio)",
