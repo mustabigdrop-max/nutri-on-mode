@@ -96,6 +96,7 @@ const SocialOnModulePage = () => {
   const uid = user?.id ?? "";
 
   const [tab, setTab] = useState("prism");
+  const [prismTab, setPrismTab] = useState("analise");
   const [loading, setLoading] = useState(true);
 
   // profile
@@ -392,8 +393,6 @@ const SocialOnModulePage = () => {
       <main className="max-w-5xl mx-auto p-4">
         <Tabs value={tab} onValueChange={setTab}>
           <TabsList className="grid grid-cols-3 md:grid-cols-6 h-auto gap-1 bg-transparent">
-            <TabsTrigger value="pack" className="text-xs gap-1 data-[state=inactive]:text-amber-400"><Package className="w-3 h-3" />Pack</TabsTrigger>
-            <TabsTrigger value="reels" className="text-xs gap-1 data-[state=inactive]:text-amber-400"><Clapperboard className="w-3 h-3" />Reels</TabsTrigger>
             <TabsTrigger value="prism" className="text-xs gap-1"><Sparkles className="w-3 h-3" />PRISM</TabsTrigger>
             <TabsTrigger value="auditoria" className="text-xs gap-1"><Search className="w-3 h-3" />Auditoria</TabsTrigger>
             <TabsTrigger value="criar" className="text-xs gap-1"><Target className="w-3 h-3" />Criar</TabsTrigger>
@@ -415,22 +414,33 @@ const SocialOnModulePage = () => {
             <TabsTrigger value="ciencia" className="text-xs gap-1"><FlaskConical className="w-3 h-3" />Ciência</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="reels" className="mt-4">
-            <TechReelsPanel />
-          </TabsContent>
-
-          <TabsContent value="pack" className="mt-4">
-            <ContentPackPanel />
-          </TabsContent>
-
-          {/* ─────────── AUDITORIA ─────────── */}
+          {/* ─────────── PRISM (com Reels e Pack integrados) ─────────── */}
           <TabsContent value="prism" className="mt-4">
-            <PrismPanel
-              ctx={aiCtx}
-              handle={ig.account?.username || handle}
-              onManualMode={() => setTab("post_pronto")}
-            />
+            <Tabs value={prismTab} onValueChange={setPrismTab}>
+              <TabsList className="grid grid-cols-3 h-auto gap-1 bg-transparent">
+                <TabsTrigger value="analise" className="text-xs gap-1"><Sparkles className="w-3 h-3" />Análise</TabsTrigger>
+                <TabsTrigger value="reels" className="text-xs gap-1 data-[state=inactive]:text-amber-400"><Clapperboard className="w-3 h-3" />Reels</TabsTrigger>
+                <TabsTrigger value="pack" className="text-xs gap-1 data-[state=inactive]:text-amber-400"><Package className="w-3 h-3" />Pack</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="analise" className="mt-4">
+                <PrismPanel
+                  ctx={aiCtx}
+                  handle={ig.account?.username || handle}
+                  onManualMode={() => setTab("post_pronto")}
+                />
+              </TabsContent>
+
+              <TabsContent value="reels" className="mt-4">
+                <TechReelsPanel />
+              </TabsContent>
+
+              <TabsContent value="pack" className="mt-4">
+                <ContentPackPanel />
+              </TabsContent>
+            </Tabs>
           </TabsContent>
+
 
           <TabsContent value="auditoria" className="space-y-4 mt-4">
             <InstagramAccountPanel
