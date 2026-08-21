@@ -32,8 +32,6 @@ import ContentDnaPanel from "@/components/social/ContentDnaPanel";
 import AuthorityPanel from "@/components/social/AuthorityPanel";
 import ScienceBankPanel from "@/components/social/ScienceBankPanel";
 import InstagramGuidePanel from "@/components/social/InstagramGuidePanel";
-import ContentPackPanel from "@/components/social/ContentPackPanel";
-import TechReelsPanel from "@/components/social/TechReelsPanel";
 import { useInstagramAccount } from "@/hooks/useInstagramAccount";
 import {
   ACADEMY_TRACKS, ACTION_PLAN, BIO_CRITERIA, CONTENT_PRODUCTS, DIFFERENTIALS,
@@ -96,7 +94,6 @@ const SocialOnModulePage = () => {
   const uid = user?.id ?? "";
 
   const [tab, setTab] = useState("prism");
-  const [prismTab, setPrismTab] = useState("analise");
   const [loading, setLoading] = useState(true);
 
   // profile
