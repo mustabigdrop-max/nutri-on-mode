@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { motion } from "framer-motion";
 import {
   ArrowLeft, Instagram, Copy, Sparkles, Loader2, RefreshCw, Check, Trash2,
-  CalendarDays, PenLine, Clapperboard, Hash, LayoutList, BarChart3, Brain,
+  CalendarDays, PenLine, Clapperboard, Hash, LayoutList, BarChart3, Brain, Flame,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -19,6 +19,8 @@ import {
   WEEKLY_CHECKLIST, WEEKDAYS, type SocialPillar,
 } from "@/data/socialHooks";
 import TechReelsPanel from "@/components/social/TechReelsPanel";
+import ContentPackPanel from "@/components/social/ContentPackPanel";
+
 
 
 type CalendarRow = {
@@ -436,6 +438,8 @@ export default function SocialOnPage() {
               <TabsTrigger className={tabCls} value="calendario"><CalendarDays className="w-3.5 h-3.5 mr-1" /> Calendário</TabsTrigger>
               <TabsTrigger className={tabCls} value="legendas"><PenLine className="w-3.5 h-3.5 mr-1" /> Legendas</TabsTrigger>
               <TabsTrigger className={tabCls} value="reels"><Clapperboard className="w-3.5 h-3.5 mr-1" /> Reels</TabsTrigger>
+              <TabsTrigger className={tabCls} value="pack"><Flame className="w-3.5 h-3.5 mr-1" /> Pack</TabsTrigger>
+
               <TabsTrigger className={tabCls} value="hooks"><Sparkles className="w-3.5 h-3.5 mr-1" /> Hooks</TabsTrigger>
               <TabsTrigger className={tabCls} value="hashtags"><Hash className="w-3.5 h-3.5 mr-1" /> Hashtags</TabsTrigger>
               <TabsTrigger className={tabCls} value="stories"><LayoutList className="w-3.5 h-3.5 mr-1" /> Stories</TabsTrigger>
@@ -686,6 +690,13 @@ export default function SocialOnPage() {
               </CardContent></Card>
             )}
           </TabsContent>
+
+          {/* PACK DE CONTEÚDO */}
+          <TabsContent value="pack" className="space-y-4 pt-4">
+            <ContentPackPanel />
+          </TabsContent>
+
+
 
           {/* HOOKS */}
           <TabsContent value="hooks" className="space-y-3 pt-4">
