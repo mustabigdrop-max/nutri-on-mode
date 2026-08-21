@@ -122,6 +122,8 @@ ARQUIVOS: ${filesCount} no total (${imgCount} imagens analisadas visualmente)${v
 DIA/HORA ATUAL (Brasil): ${new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })}
 ${extra}
 
+${COACH_CONTEXT}
+
 ANALISE as imagens enviadas e decida sozinho o melhor formato, tom, objetivo, produto e horário. Depois gere TODO o conteúdo.
 
 REGRAS:
