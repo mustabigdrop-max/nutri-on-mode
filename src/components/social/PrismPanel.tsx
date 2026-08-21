@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { Section, copyText } from "./socialUi";
+import { Section, copyText, VariationBlock } from "./socialUi";
 import {
   cropToRatio, downloadMany, isMobileDevice, saveImage, extractVideoFrames, fileToDataUrl, getVideoDuration,
   gradeDarkPremium, gradeFitness, renderSlide, renderStoryFrame, videoObjectUrl,
@@ -59,6 +59,8 @@ type PrismResult = {
   content?: {
     caption?: string;
     caption_alternatives?: Record<string, string>;
+    hook_variations?: string[];
+    caption_variations?: string[];
     carousel_slides?: { title: string; body?: string; file_index?: number }[];
     stories_frames?: { text: string; body?: string; sticker?: string; sticker_content?: string; file_index?: number }[];
     reel_script?: {
