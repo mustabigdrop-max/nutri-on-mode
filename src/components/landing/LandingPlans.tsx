@@ -243,21 +243,21 @@ const plans: any[] = [
     mce: true,
     subtitle: "Sistema Integrado de Performance Humana",
     badge: "CONSULTORIA 1:1",
-    price: "R$397",
+    price: "R$247",
     featured: false,
     checkoutUrl: "https://pay.kiwify.com.br/Y1e8Oi6",
     blocks: MCE_BLOCKS,
     cta: "Começar agora →",
   },
   {
-    name: "ON +", price: "R$197", oldPrice: "R$297", discount: "34% off", featured: true,
+    name: "ON +", price: "R$97", oldPrice: "R$147", discount: "34% off", featured: true,
     slotKey: "on_plus",
     checkoutUrl: "https://pay.kiwify.com.br/S3AGTbz",
     badge: "PREÇO DE FUNDADOR",
     cta: "Garantir vaga de fundador →",
   },
   {
-    name: "ON PRO", price: "R$247", oldPrice: "R$397", discount: "37% off fundador", featured: false,
+    name: "ON PRO", price: "R$97", oldPrice: "R$147", discount: "34% off", featured: false,
     slotKey: "on_pro",
     checkoutUrl: "https://pay.kiwify.com.br/boprEBl",
     badge: "VAGAS LIMITADAS",
@@ -399,8 +399,8 @@ const LandingPlans = () => {
             {plan.name === "ON PRO" ? (
               <div className="my-5">
                 <div className="flex items-baseline gap-2.5">
-                  <span className="font-mono text-[.7rem] text-[#50507a] line-through">R$297</span>
-                  <span className="font-heading text-[2.4rem] leading-none font-bold" style={{ color: "#1D9E75" }}>R$197</span>
+                  <span className="font-mono text-[.7rem] text-[#50507a] line-through">R$147</span>
+                  <span className="font-heading text-[2.4rem] leading-none font-bold" style={{ color: "#1D9E75" }}>R$97</span>
                   <span className="font-mono text-[.65rem] text-[#50507a]">/mês</span>
                   <span
                     className="font-mono text-[.6rem] px-2 py-0.5 rounded-sm tracking-[.05em]"
@@ -410,10 +410,10 @@ const LandingPlans = () => {
                   </span>
                 </div>
                 <div className="font-mono text-[.65rem] text-[#7070a0] mt-2">
-                  ou R$1.597/ano — 2 meses grátis
+                  ou R$970/ano — 2 meses grátis
                 </div>
                 <div className="font-mono text-[.6rem] text-[#6060a0] mt-2.5 leading-relaxed">
-                  Vagas limitadas — sobe para R$197 quando as vagas esgotarem.
+                  Vagas limitadas — sobe para R$147 quando as vagas esgotarem.
                 </div>
               </div>
             ) : plan.mce ? (
@@ -573,10 +573,10 @@ const LandingPlans = () => {
 
             <div className="mt-5">
               <div className="font-heading font-bold text-[32px] leading-none" style={{ color: "#FF6B00" }}>
-                R$547<span className="text-[14px] font-mono font-normal">/mês</span>
+                R$147<span className="text-[14px] font-mono font-normal">/mês</span>
               </div>
               <div className="text-[11px] mt-2" style={{ color: "#888" }}>
-                ou R$4.397/ano — 2 meses grátis
+                ou R$1.470/ano — 2 meses grátis · 24% off vs. separados (R$194)
               </div>
             </div>
 
@@ -677,11 +677,11 @@ const LandingPlans = () => {
 
             <div className="mt-5">
               <div className="font-heading font-bold text-[32px] leading-none" style={{ color: "#7C3AED" }}>
-                R$697<span className="text-[14px] font-mono font-normal">/mês</span>
+                R$197<span className="text-[14px] font-mono font-normal">/mês</span>
               </div>
               <div className="flex items-center gap-2 mt-2 flex-wrap">
                 <div className="text-[11px]" style={{ color: "#888" }}>
-                  ou R$5.855/ano — 30% off (equivale a R$488/mês)
+                  ou R$1.970/ano — 2 meses grátis
                 </div>
                 <span
                   className="font-mono text-[10px] font-bold"
@@ -693,7 +693,7 @@ const LandingPlans = () => {
                     padding: "2px 8px",
                   }}
                 >
-                  ECONOMIZE R$2.509
+                  ECONOMIZE R$244/mês
                 </span>
               </div>
             </div>
