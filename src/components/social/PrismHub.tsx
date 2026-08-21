@@ -11,7 +11,7 @@ const PRISM = "#A855F7";
 
 export default function PrismHub({
   ctx, handle, onManualMode,
-}: { ctx?: string; handle?: string; onManualMode?: () => void }) {
+}: { ctx: Record<string, any>; handle?: string | null; onManualMode?: () => void }) {
   const [mode, setMode] = useState<PrismMode | null>(null);
   const [library, setLibrary] = useState(false);
   const def = mode ? modeById(mode) : null;

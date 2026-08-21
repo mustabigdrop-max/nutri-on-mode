@@ -58,7 +58,7 @@ const nextDateFor = (weekday?: string) => {
 
 export default function PrismStudioPanel({
   mode, ctx, onBack,
-}: { mode: PrismModeDef; ctx?: string; onBack: () => void }) {
+}: { mode: PrismModeDef; ctx?: Record<string, any> | string; onBack: () => void }) {
   const [subtype, setSubtype] = useState<string>(mode.subtypes[0]?.id || "");
   const [saleLevel, setSaleLevel] = useState<string>("suave");
   const [tone, setTone] = useState<string>("");
@@ -115,7 +115,7 @@ export default function PrismStudioPanel({
           sale_level: mode.id === "vender" ? saleLevel : undefined,
           tone: tone || undefined,
           objective: objective || undefined,
-          theme: [theme, ctx].filter(Boolean).join(" | "),
+          theme: [theme, typeof ctx === "string" ? ctx : ctx?.theme || ctx?.context || ""].filter(Boolean).join(" | "),
           mix: mode.id === "pack_semanal" ? mixLabel : undefined,
           products: mode.id === "pack_semanal" ? products : undefined,
           images: files.filter((f) => f.kind === "image").map((f) => f.dataUrl).filter(Boolean),
