@@ -331,7 +331,7 @@ export async function generateApexReport(data: ApexReportData, mode: ApexReportM
   container.style.width = `${w}px`;
   container.style.height = `${h}px`;
   container.style.background = bg;
-  container.style.padding = mode === "instagram" ? "48px" : "64px";
+  container.style.padding = mode === "instagram" ? "48px 48px 80px" : "64px 64px 88px";
   container.style.boxSizing = "border-box";
   container.style.fontFamily = "'Rajdhani', 'Space Grotesk', Arial, sans-serif";
   container.style.color = isLightBg(bg) ? "#0B0B10" : "#FFFFFF";
