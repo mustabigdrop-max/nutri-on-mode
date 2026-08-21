@@ -1452,15 +1452,51 @@ Suporte em uso: ${suporte || "não informado"}`;
       };
       console.log("[DR.VERTEX DEBUG] Iniciando chamada para:", "edge function: dr-vertex-analyze");
       console.log("[DR.VERTEX DEBUG] Payload enviado:", JSON.stringify(payload, null, 2));
-      const { data, error } = await supabase.functions.invoke("dr-vertex-analyze", {
-        body: payload,
-      });
-      console.log("[DR.VERTEX DEBUG] Status da resposta:", error ? `erro: ${error.message}` : "ok (2xx)");
-      console.log("[DR.VERTEX DEBUG] Dados retornados:", data);
-      if (error) throw new Error(error.message);
-      if ((data as any)?.error) throw new Error((data as any).error);
-      const analysis = (data as any)?.analysis;
+
+      // Chamada direta com timeout controlado (a análise leva ~45s; invoke sem timeout
+      // pode ficar pendurado indefinidamente e dar a impressão de "nada acontece").
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData?.session?.access_token;
+      const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
+      const fnUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/dr-vertex-analyze`;
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 180_000);
+      let resp: Response;
+      try {
+        resp = await fetch(fnUrl, {
+          method: "POST",
+          signal: controller.signal,
+          headers: {
+            "Content-Type": "application/json",
+            apikey: anonKey,
+            Authorization: `Bearer ${accessToken || anonKey}`,
+          },
+          body: JSON.stringify(payload),
+        });
+      } catch (err: any) {
+        throw new Error(
+          err?.name === "AbortError"
+            ? "Timeout: a análise passou de 180s sem resposta."
+            : `Falha de rede ao chamar a análise: ${err?.message || err}`,
+        );
+      } finally {
+        clearTimeout(timeoutId);
+      }
+
+      const text = await resp.text();
+      let data: any = null;
+      try { data = text ? JSON.parse(text) : null; } catch { /* resposta não-JSON */ }
+      console.log("[DR.VERTEX DEBUG] Status da resposta:", resp.status);
+      console.log("[DR.VERTEX DEBUG] Dados retornados:", data ?? text?.slice(0, 300));
+
+      if (!resp.ok) {
+        throw new Error(data?.error || `Erro ${resp.status} na função dr-vertex-analyze`);
+      }
+      if (data?.error) throw new Error(data.error);
+      const analysis = data?.analysis;
       if (!analysis) throw new Error("Resposta sem análise estruturada");
+
       console.log("[DR.VERTEX DEBUG] Análise recebida com seções:", Object.keys(analysis || {}));
       setVertexV4Analysis(analysis);
       toast({ title: "Dr. VERTEX v4.0", description: "Análise PhD concluída." });
