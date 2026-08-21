@@ -123,9 +123,9 @@ export const PRISM_MODES: PrismModeDef[] = [
   },
   {
     id: "ia_decide",
-    emoji: "🤖",
-    label: "IA Decide",
-    desc: "Modo Relâmpago — sobe e a IA escolhe tudo",
+    emoji: "⚡",
+    label: "FLASH",
+    desc: "Sobe o material. O PRISM faz tudo.",
     color: "#FFB020",
     subtypes: [],
     needsFiles: true,

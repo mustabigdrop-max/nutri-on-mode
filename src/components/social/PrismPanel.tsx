@@ -524,7 +524,7 @@ const PrismPanel = ({
           <h2 className="text-lg font-black tracking-tight">PRISM CONTENT INTELLIGENCE</h2>
         </div>
         <p className="text-sm text-muted-foreground mt-1">
-          1 upload. A IA refrata em 20+ peças de conteúdo. Zero seletor, zero decisão.
+          1 upload. O PRISM refrata em 20+ peças de conteúdo. Zero seletor, zero decisão.
         </p>
       </div>
 
@@ -628,7 +628,7 @@ const PrismPanel = ({
             <span className="block">
               <span className="block text-base">🔮 PRISM — ANALISAR E CRIAR</span>
               <span className="block text-[11px] font-medium opacity-80">
-                A IA analisa seu material, escolhe formato, tom, objetivo e gera tudo.
+                O PRISM analisa seu material, escolhe formato, tom, objetivo e gera tudo.
               </span>
             </span>
           )}
@@ -647,7 +647,7 @@ const PrismPanel = ({
       {/* RESULTADO */}
       {result && (
         <>
-          <Section title="Análise da IA">
+          <Section title="Leitura do PRISM">
             <p className="text-sm">{a?.summary}</p>
             <div className="flex flex-wrap gap-1.5">
               {(a?.content_detected || []).map((t) => <Badge key={t} variant="secondary" className="text-[10px]">{t}</Badge>)}
