@@ -183,7 +183,7 @@ const buildHtml = (data: ApexReportData, mode: ApexReportMode, photo: string | n
                   height:${photoH}px;display:flex;align-items:center;justify-content:center;position:relative">
          <img src="${photo}" style="max-width:100%;max-height:100%;object-fit:contain" />
        </div>`
-    : `<div style="border-radius:28px;border:1px dashed ${line};height:${compact ? 200 : 260}px;
+    : `<div style="border-radius:28px;border:1px dashed ${line};height:${compact ? 150 : 260}px;
                   display:flex;align-items:center;justify-content:center;color:${dim};font-size:24px">
          Análise APEX · nutriON
        </div>`;
