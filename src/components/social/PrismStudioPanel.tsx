@@ -169,12 +169,19 @@ export default function PrismStudioPanel({
   const conceptText = (c: StudioConcept) =>
     [
       c.title, c.hook ? `HOOK: ${c.hook}` : "",
+      (c.hook_variations || []).length > 1
+        ? `\nHOOKS ALTERNATIVOS:\n${(c.hook_variations || []).slice(1).map((h, i) => `${String.fromCharCode(66 + i)}. ${h}`).join("\n")}`
+        : "",
       (c.screen_texts || []).join("\n"),
       c.script?.development ? `\nFALA:\n${c.script.development}` : "",
       c.script?.cta ? `CTA: ${c.script.cta}` : "",
       c.caption ? `\nLEGENDA:\n${c.caption}` : "",
+      (c.caption_variations || []).length > 1
+        ? (c.caption_variations || []).slice(1).map((t, i) => `\nLEGENDA ${String.fromCharCode(66 + i)}:\n${t}`).join("\n")
+        : "",
       (c.hashtags || []).join(" "),
     ].filter(Boolean).join("\n");
+
 
   return (
     <div className="space-y-4">
