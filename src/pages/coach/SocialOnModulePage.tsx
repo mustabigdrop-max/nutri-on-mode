@@ -25,7 +25,7 @@ import IdeasNowPanel from "@/components/social/IdeasNowPanel";
 import PlaybookPanel from "@/components/social/PlaybookPanel";
 import InstagramAccountPanel from "@/components/social/InstagramAccountPanel";
 import PostProntoPanel from "@/components/social/PostProntoPanel";
-import PrismPanel from "@/components/social/PrismPanel";
+import PrismHub from "@/components/social/PrismHub";
 import BrandScorePanel from "@/components/social/BrandScorePanel";
 import ViralLabPanel from "@/components/social/ViralLabPanel";
 import ContentDnaPanel from "@/components/social/ContentDnaPanel";
@@ -416,29 +416,11 @@ const SocialOnModulePage = () => {
 
           {/* ─────────── PRISM (com Reels e Pack integrados) ─────────── */}
           <TabsContent value="prism" className="mt-4">
-            <Tabs value={prismTab} onValueChange={setPrismTab}>
-              <TabsList className="grid grid-cols-3 h-auto gap-1 bg-transparent">
-                <TabsTrigger value="analise" className="text-xs gap-1"><Sparkles className="w-3 h-3" />Análise</TabsTrigger>
-                <TabsTrigger value="reels" className="text-xs gap-1 data-[state=inactive]:text-amber-400"><Clapperboard className="w-3 h-3" />Reels</TabsTrigger>
-                <TabsTrigger value="pack" className="text-xs gap-1 data-[state=inactive]:text-amber-400"><Package className="w-3 h-3" />Pack</TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="analise" className="mt-4">
-                <PrismPanel
-                  ctx={aiCtx}
-                  handle={ig.account?.username || handle}
-                  onManualMode={() => setTab("post_pronto")}
-                />
-              </TabsContent>
-
-              <TabsContent value="reels" className="mt-4">
-                <TechReelsPanel />
-              </TabsContent>
-
-              <TabsContent value="pack" className="mt-4">
-                <ContentPackPanel />
-              </TabsContent>
-            </Tabs>
+            <PrismHub
+              ctx={aiCtx}
+              handle={ig.account?.username || handle}
+              onManualMode={() => setTab("post_pronto")}
+            />
           </TabsContent>
 
 
