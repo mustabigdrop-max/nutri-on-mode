@@ -64,9 +64,9 @@ const SCHEMA = `{
 }`;
 
 const REWRITE_SCHEMAS: Record<string, string> = {
-  caption: `{"caption":"nova legenda completa com quebras de linha \\n","caption_alternatives":{"cientifico":"...","pessoal":"...","humor":"...","militar":"...","pai":"...","direto":"..."}}`,
+  caption: `{"caption":"nova legenda completa com quebras de linha \\n","hook_variations":["3 hooks diferentes, o 1º é o da nova legenda"],"caption_variations":["3 legendas completas diferentes, a 1ª é igual ao caption"],"caption_alternatives":{"cientifico":"...","pessoal":"...","humor":"...","militar":"...","pai":"...","direto":"..."}}`,
   slides: `{"carousel_slides":[{"title":"texto curto do slide","body":"2 a 3 linhas","file_index":0},"exatamente 5 itens, o 1º é capa com hook e o 5º é CTA"]}`,
-  both: `{"caption":"nova legenda completa com quebras de linha \\n","caption_alternatives":{"cientifico":"...","pessoal":"...","humor":"...","militar":"...","pai":"...","direto":"..."},"carousel_slides":[{"title":"texto curto do slide","body":"2 a 3 linhas","file_index":0},"exatamente 5 itens"]}`,
+  both: `{"caption":"nova legenda completa com quebras de linha \\n","hook_variations":["3 hooks diferentes"],"caption_variations":["3 legendas completas diferentes"],"caption_alternatives":{"cientifico":"...","pessoal":"...","humor":"...","militar":"...","pai":"...","direto":"..."},"carousel_slides":[{"title":"texto curto do slide","body":"2 a 3 linhas","file_index":0},"exatamente 5 itens"]}`,
 };
 
 const REWRITE_PROMPT = (target: string, analysis: unknown, decision: unknown, current: unknown, instruction: string) =>
