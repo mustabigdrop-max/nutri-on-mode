@@ -103,6 +103,46 @@ const isLightBg = (hex: string) => {
   return (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.6;
 };
 
+/** Converte labels técnicos (DESVIO, IMPACTO_PALCO) em português limpo. */
+const LABEL_MAP: Record<string, string> = {
+  DESVIO: "Desvio detectado",
+  DOMINANTE: "Músculo dominante",
+  INIBIDO: "Músculo inibido",
+  IMPACTO_PALCO: "Impacto no palco",
+  "IMPACTO NO PALCO": "Impacto no palco",
+  CONEXAO_FARMACOLOGICA: "Conexão farmacológica",
+  URGENCIA: "Urgência",
+};
+
+export const prettyLabel = (raw: string) => {
+  const key = String(raw || "").trim().toUpperCase();
+  if (LABEL_MAP[key]) return LABEL_MAP[key];
+  const clean = String(raw || "")
+    .replace(/_/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (!clean) return "";
+  return clean.charAt(0).toUpperCase() + clean.slice(1).toLowerCase();
+};
+
+/** Escala o corpo de texto conforme o comprimento, evitando corte/overflow. */
+const fitSize = (text: string, base: number, min = 20) => {
+  const len = String(text || "").length;
+  if (len <= 26) return base;
+  if (len <= 40) return Math.max(min, base - 4);
+  if (len <= 60) return Math.max(min, base - 8);
+  return min;
+};
+
+const scoreColor = (v: number) => (v >= 8 ? "#00FF88" : v >= 6 ? "#FFB800" : "#FF4444");
+
+const severityIcon = (s?: string) => {
+  const v = String(s || "").toLowerCase();
+  if (/sever|alto|crít|critic/.test(v)) return "🔴";
+  if (/moder|leve|médi|medi/.test(v)) return "🟡";
+  return "🟢";
+};
+
 const buildHtml = (data: ApexReportData, mode: ApexReportMode, photo: string | null) => {
   const accent = data.accent || CYAN;
   const bg = data.bg || BG;
@@ -117,66 +157,74 @@ const buildHtml = (data: ApexReportData, mode: ApexReportMode, photo: string | n
   const coachName = data.coachName || "Coach Diogo Mello";
   const coachSubtitle = data.coachSubtitle || "Nutrition & Business Coach 🇺🇸";
   const handle = data.handle || "nutrion.app.br";
-  const showWatermark = data.watermark !== false;
+
+  // Foto: no máximo 40% da altura do card.
+  const photoH = Math.round(DIMENSIONS[mode].h * 0.38);
 
   const photoBlock = photo
     ? `<div style="border-radius:28px;overflow:hidden;border:1px solid ${line};background:${light ? "#E9ECEF" : "#07070c"};
-                  height:${mode === "coach" ? 760 : compact ? 420 : 560}px;display:flex;align-items:center;justify-content:center;position:relative">
+                  height:${photoH}px;display:flex;align-items:center;justify-content:center;position:relative">
          <img src="${photo}" style="max-width:100%;max-height:100%;object-fit:contain" />
-         ${
-           showWatermark
-             ? `<div style="position:absolute;right:22px;bottom:18px;font-size:22px;font-weight:800;letter-spacing:3px;color:${accent};opacity:0.75">${esc(
-                 handle,
-               )}</div>`
-             : ""
-         }
        </div>`
-    : `<div style="border-radius:28px;border:1px dashed ${line};height:${compact ? 240 : 320}px;
+    : `<div style="border-radius:28px;border:1px dashed ${line};height:${compact ? 200 : 260}px;
                   display:flex;align-items:center;justify-content:center;color:${dim};font-size:24px">
          Análise APEX · nutriON
        </div>`;
 
   const deviations = (isClient ? data.deviations.slice(0, 4) : data.deviations.slice(0, 6))
-    .map(
-      (d) => `
-      <div style="display:flex;align-items:center;gap:16px;margin-bottom:14px">
-        <div style="width:14px;height:14px;border-radius:50%;background:${severityColor(d.severity_label || d.severity)}"></div>
-        <div style="flex:1;font-size:30px;font-weight:600">${esc(d.name)}</div>
+    .map((d) => {
+      const label = prettyLabel(d.name);
+      const sev = d.severity_label || d.severity || "";
+      const size = fitSize(label, compact ? 26 : 30, 20);
+      return `
+      <div style="display:flex;align-items:flex-start;gap:14px;margin-bottom:16px">
+        <div style="font-size:${size - 2}px;line-height:1.3">${severityIcon(sev)}</div>
+        <div style="flex:1;min-width:0;font-size:${size}px;font-weight:600;line-height:1.3;
+                    word-break:break-word;overflow-wrap:anywhere">${esc(label)}</div>
         ${
-          isClient
+          isClient || !sev
             ? ""
-            : `<div style="font-size:24px;font-weight:800;color:${severityColor(d.severity_label || d.severity)}">${esc(
-                d.severity_label || "",
-              )}</div>`
+            : `<div style="max-width:34%;text-align:right;font-size:${Math.max(
+                18,
+                size - 8,
+              )}px;font-weight:800;line-height:1.25;word-break:break-word;overflow-wrap:anywhere;color:${severityColor(
+                sev,
+              )}">${esc(prettyLabel(String(sev)))}</div>`
         }
-      </div>`,
-    )
+      </div>`;
+    })
     .join("");
 
   const scores = data.scores
-    .slice(0, 4)
-    .map(
-      (s) => `
-      <div style="flex:1;text-align:center">
-        <div style="font-size:${compact ? 46 : 58}px;font-weight:900;color:${accent}">${esc(s.value)}</div>
-        <div style="font-size:22px;color:${dim};letter-spacing:3px;text-transform:uppercase">${esc(s.label)}</div>
-        <div style="height:8px;border-radius:4px;background:${line};margin-top:10px">
-          <div style="height:8px;border-radius:4px;background:${accent};width:${Math.max(
-            0,
-            Math.min(100, (Number(s.value) || 0) * 10),
-          )}%"></div>
+    .slice(0, 6)
+    .map((s) => {
+      const v = Math.max(0, Math.min(10, Number(s.value) || 0));
+      const col = scoreColor(v);
+      const label = prettyLabel(s.label);
+      return `
+      <div style="display:flex;align-items:center;gap:18px;margin-bottom:14px">
+        <div style="flex:1;min-width:0;font-size:${fitSize(label, compact ? 24 : 26, 19)}px;font-weight:700;
+                    letter-spacing:1px;line-height:1.25;word-break:break-word;overflow-wrap:anywhere">${esc(label)}</div>
+        <div style="width:280px;height:14px;border-radius:7px;background:${line};overflow:hidden;flex:none">
+          <div style="height:14px;border-radius:7px;background:${col};width:${v * 10}%"></div>
         </div>
-      </div>`,
-    )
+        <div style="width:88px;flex:none;text-align:right;font-size:${compact ? 26 : 30}px;font-weight:900;color:${col}">${v}<span style="font-size:20px;color:${dim}">/10</span></div>
+      </div>`;
+    })
     .join("");
 
   const clientLists = `
     ${
       data.strengths?.length
-        ? sectionTitle("PONTOS FORTES", "#1DB87A") +
+        ? sectionTitle("PONTOS FORTES", "#00FF88") +
           data.strengths
             .slice(0, 3)
-            .map((s) => `<div style="font-size:30px;margin-bottom:12px">✅ ${esc(s)}</div>`)
+            .map(
+              (s) =>
+                `<div style="font-size:${fitSize(s, 30, 22)}px;margin-bottom:12px;line-height:1.35;word-break:break-word">🟢 ${esc(
+                  prettyLabel(s),
+                )}</div>`,
+            )
             .join("")
         : ""
     }
@@ -185,21 +233,35 @@ const buildHtml = (data: ApexReportData, mode: ApexReportMode, photo: string | n
         ? sectionTitle("ATENÇÃO", "#FFB800") +
           data.attentions
             .slice(0, 2)
-            .map((s) => `<div style="font-size:30px;margin-bottom:12px">⚠️ ${esc(s)}</div>`)
+            .map(
+              (s) =>
+                `<div style="font-size:${fitSize(s, 30, 22)}px;margin-bottom:12px;line-height:1.35;word-break:break-word">🟡 ${esc(
+                  prettyLabel(s),
+                )}</div>`,
+            )
             .join("")
         : ""
     }`;
 
-  const verdict = isClient
+  const verdictBody = isClient
     ? data.clientSummary
-      ? `<div style="font-size:28px;line-height:1.45;color:${soft}">${esc(data.clientSummary)}</div>`
+      ? `<div style="font-size:${fitSize(data.clientSummary, 28, 22)}px;line-height:1.45;color:${soft};word-break:break-word">${esc(
+          data.clientSummary,
+        )}</div>`
       : ""
-    : `<div style="font-size:28px;line-height:1.5;color:${soft}">
-         BF est: ${esc(data.bfEstimated ?? "--")}% · Meta: ${esc(data.bfTarget ?? "--")}% · Semanas: ${esc(
-           data.weeks ?? "--",
-         )}<br/>
-         Prioridade: ${esc(data.priority || "--")}
+    : `<div style="font-size:26px;line-height:1.55;color:${soft};word-break:break-word">
+         <div>BF estimado: <b style="color:${fg}">${esc(data.bfEstimated ?? "--")}%</b> · Meta: <b style="color:${fg}">${esc(
+           data.bfTarget ?? "--",
+         )}%</b> · Semanas: <b style="color:${fg}">${esc(data.weeks ?? "--")}</b></div>
+         <div style="margin-top:10px">Prioridade: <b style="color:${accent}">${esc(prettyLabel(data.priority || "--"))}</b></div>
        </div>`;
+
+  const verdict = verdictBody
+    ? `<div style="border-radius:24px;padding:26px 28px;background:rgba(0,212,255,0.05);
+                   border:1px solid rgba(0,212,255,0.35);box-shadow:inset 0 0 60px rgba(0,212,255,0.04)">
+         ${verdictBody}
+       </div>`
+    : "";
 
   return `
     <div style="display:flex;flex-direction:column;height:100%;color:${fg}">
@@ -214,17 +276,19 @@ const buildHtml = (data: ApexReportData, mode: ApexReportMode, photo: string | n
 
       ${isClient ? clientLists : sectionTitle("DIAGNÓSTICO", accent) + deviations}
 
-      ${!isClient && data.scores.length ? sectionTitle("SCORES", accent) + `<div style="display:flex;gap:24px">${scores}</div>` : ""}
+      ${!isClient && data.scores.length ? sectionTitle("SCORES", accent) + scores : ""}
 
       ${verdict ? sectionTitle("VEREDICTO", accent) + verdict : ""}
 
       <div style="margin-top:auto;padding-top:36px;border-top:1px solid ${line}">
         <div style="font-size:32px;font-weight:900">${esc(coachName)}</div>
-        <div style="font-size:24px;color:${dim};margin-top:4px">${esc(coachSubtitle)} · ${esc(handle)}</div>
-        <div style="font-size:22px;color:${accent};margin-top:8px;letter-spacing:3px">TRANSFORMAÇÃO É SISTEMA.</div>
+        <div style="font-size:24px;color:${dim};margin-top:4px">${esc(coachSubtitle)}</div>
+        <div style="font-size:24px;color:${fg};margin-top:2px">${esc(handle)}</div>
+        <div style="font-size:22px;color:${accent};margin-top:10px;letter-spacing:3px">TRANSFORMAÇÃO É SISTEMA.</div>
       </div>
     </div>`;
 };
+
 
 export async function generateApexReport(data: ApexReportData, mode: ApexReportMode): Promise<string> {
   const { w, h } = DIMENSIONS[mode];
