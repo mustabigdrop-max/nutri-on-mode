@@ -1895,7 +1895,7 @@ Suporte em uso: ${suporte || "não informado"}` : "";
               .slice(0, 6)
               .map((l) => {
                 const [name, ...rest] = l.split(/[:—-]/);
-                return { name: name.trim().slice(0, 42), severity_label: rest.join(" ").trim().slice(0, 24) };
+                return { name: name.trim().slice(0, 70), severity_label: rest.join(" ").trim().slice(0, 46) };
               }),
             scores: segments.map((s) => ({ label: s.label, value: s.score })),
             bfEstimated: meta.bfEst,
