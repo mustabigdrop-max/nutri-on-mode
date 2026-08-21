@@ -1,8 +1,11 @@
+import { useState } from "react";
+import { Copy } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
 export const ACCENT = "#A855F7";
 export const ACCENT2 = "#00D4FF";
+
 
 export const copyText = (t: string) => {
   navigator.clipboard.writeText(t);
