@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { Section, Pill, copyText } from "./socialUi";
+import { Section, Pill, copyText, VariationBlock } from "./socialUi";
 import { extractVideoFrames, fileToDataUrl, getVideoDuration, videoObjectUrl } from "@/lib/socialImageKit";
 import {
   PRISM_MODES, PRISM_OBJECTIVES, PRISM_TONES, SALE_LEVELS, PACK_PRODUCTS,
