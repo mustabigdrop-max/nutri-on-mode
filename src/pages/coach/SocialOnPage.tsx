@@ -651,7 +651,9 @@ export default function SocialOnPage() {
 
           {/* REELS */}
           <TabsContent value="reels" className="space-y-4 pt-4">
+            <TechReelsPanel />
             <Card><CardContent className="p-4 space-y-3">
+
               <div className="grid sm:grid-cols-4 gap-2">
                 <select className="bg-background border border-border rounded-lg px-3 py-2 text-sm"
                   value={reelPillar} onChange={(e) => setReelPillar(e.target.value as SocialPillar)}>
