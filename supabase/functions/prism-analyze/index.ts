@@ -32,9 +32,12 @@ const SCHEMA = `{
   },
   "content": {
     "caption": "legenda completa pronta pra copiar, com quebras de linha \\n",
+    "hook_variations": ["3 hooks diferentes pra mesma peça, mesmo formato e objetivo — o 1º é o do caption"],
+    "caption_variations": ["3 legendas completas diferentes (estruturas e hooks distintos), mesmo formato e objetivo — a 1ª é igual ao caption"],
     "caption_alternatives": {
       "cientifico": "...", "pessoal": "...", "humor": "...", "militar": "...", "pai": "...", "direto": "..."
     },
+
     "carousel_slides": [{ "title": "texto curto do slide", "body": "2 a 3 linhas", "file_index": 0 }, "exatamente 5 itens, o 1º é capa com hook e o 5º é CTA"],
     "stories_frames": [{ "text": "texto grande do story", "body": "linha de apoio", "sticker": "quiz|enquete|link|nenhum", "sticker_content": "conteúdo pronto do sticker", "file_index": 0 }, "4 a 5 itens"],
     "reel_script": {
