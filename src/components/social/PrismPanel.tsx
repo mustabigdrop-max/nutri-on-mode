@@ -747,6 +747,18 @@ const PrismPanel = ({
               </Button>
             </div>
 
+            {!!c?.hook_variations?.length && (
+              <div className="mt-3">
+                <VariationBlock label="Hooks" highlight accent={PRISM} items={c.hook_variations} />
+              </div>
+            )}
+            {!!c?.caption_variations?.length && (
+              <div className="mt-3">
+                <VariationBlock label="Variações da legenda" accent={PRISM} items={c.caption_variations} />
+              </div>
+            )}
+
+
             {/* Nova versão — mantém a mesma análise */}
             <div className="mt-3 pt-3 border-t space-y-2" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
               <p className="text-[11px] text-muted-foreground">
