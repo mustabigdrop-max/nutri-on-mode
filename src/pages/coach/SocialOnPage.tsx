@@ -19,6 +19,8 @@ import {
   WEEKLY_CHECKLIST, WEEKDAYS, type SocialPillar,
 } from "@/data/socialHooks";
 import TechReelsPanel from "@/components/social/TechReelsPanel";
+import ContentPackPanel from "@/components/social/ContentPackPanel";
+
 
 
 type CalendarRow = {
