@@ -108,24 +108,31 @@ const LABEL_MAP: Record<string, string> = {
   DESVIO: "Desvio detectado",
   DOMINANTE: "Músculo dominante",
   INIBIDO: "Músculo inibido",
-  IMPACTO_PALCO: "Impacto no palco",
+  "IMPACTO PALCO": "Impacto no palco",
   "IMPACTO NO PALCO": "Impacto no palco",
-  CONEXAO_FARMACOLOGICA: "Conexão farmacológica",
+  IMPACTO: "Impacto no palco",
+  "CONEXAO FARMACOLOGICA": "Conexão farmacológica",
   URGENCIA: "Urgência",
 };
 
 export const prettyLabel = (raw: string) => {
   const clean = String(raw || "").replace(/_/g, " ").replace(/\s+/g, " ").trim();
   if (!clean) return "";
-  const direct = LABEL_MAP[clean.toUpperCase()];
+  const norm = (t: string) =>
+    t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toUpperCase();
+  const sentence = (t: string) => {
+    const v = t === t.toUpperCase() && /[A-Z]{4,}/.test(t) ? t.toLowerCase() : t;
+    return v.charAt(0).toUpperCase() + v.slice(1);
+  };
+  const direct = LABEL_MAP[norm(clean)];
   if (direct) return direct;
   // "DESVIO: paravertebrais cervicais" -> "Desvio detectado: paravertebrais cervicais"
   const m = /^([A-Za-zÀ-ÿ ]+):\s*(.+)$/.exec(clean);
   if (m) {
-    const mapped = LABEL_MAP[m[1].trim().toUpperCase()];
-    if (mapped) return `${mapped}: ${m[2].trim()}`;
+    const mapped = LABEL_MAP[norm(m[1])];
+    if (mapped) return `${mapped}: ${sentence(m[2].trim())}`;
   }
-  return clean.charAt(0).toUpperCase() + clean.slice(1);
+  return sentence(clean);
 };
 
 /** Escala o corpo de texto conforme o comprimento, evitando corte/overflow. */
@@ -289,15 +296,17 @@ const buildHtml = (data: ApexReportData, mode: ApexReportMode, photo: string | n
         </div>
       </div>
 
-      <div style="margin-top:28px">${photoBlock}</div>
+      <div style="flex:1;display:flex;flex-direction:column;justify-content:space-between;min-height:0">
+        <div style="margin-top:28px">${photoBlock}</div>
 
-      ${isClient ? clientLists : sectionTitle("DIAGNÓSTICO", accent) + deviations}
+        <div>${isClient ? clientLists : sectionTitle("DIAGNÓSTICO", accent) + deviations}</div>
 
-      ${!isClient && data.scores.length ? sectionTitle("SCORES", accent) + scores : ""}
+        <div>${!isClient && data.scores.length ? sectionTitle("SCORES", accent) + scores : ""}</div>
 
-      ${verdict ? sectionTitle("VEREDICTO", accent) + verdict : ""}
+        <div>${verdict ? sectionTitle("VEREDICTO", accent) + verdict : ""}</div>
+      </div>
 
-      <div style="margin-top:auto;padding-top:36px;border-top:1px solid ${line}">
+      <div style="padding-top:36px;border-top:1px solid ${line}">
         <div style="font-size:32px;font-weight:900">${esc(coachName)}</div>
         <div style="font-size:24px;color:${dim};margin-top:4px">${esc(coachSubtitle)}</div>
         <div style="font-size:24px;color:${fg};margin-top:2px">${esc(handle)}</div>
