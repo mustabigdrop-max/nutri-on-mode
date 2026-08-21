@@ -2105,7 +2105,8 @@ Suporte em uso: ${suporte || "não informado"}` : "";
                         temAnaliseAnterior: !!vertexV4Analysis,
                       });
                       if (vertexV4Loading) {
-                        console.warn("[DR.VERTEX DEBUG] RETURN PREMATURO: loading travado em true");
+                        console.warn("[DR.VERTEX DEBUG] Clique ignorado: análise em andamento");
+                        toast({ title: "Dr. VERTEX v4.0", description: `Análise em andamento (${vertexV4Elapsed}s). Aguarde a conclusão.` });
                         return;
                       }
                       if (virilizationRiskAccepted) {
