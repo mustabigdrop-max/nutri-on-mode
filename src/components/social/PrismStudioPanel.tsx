@@ -85,8 +85,9 @@ export default function PrismStudioPanel({
         if (f.type.startsWith("video/")) {
           if (f.size > MAX_VIDEO_MB * 1024 * 1024) { toast.error(`${f.name}: vídeo acima de ${MAX_VIDEO_MB}MB`); continue; }
           const objectUrl = videoObjectUrl(f);
-          const duration = await getVideoDuration(f);
-          const frames = await extractVideoFrames(f, 3);
+          const duration = await getVideoDuration(objectUrl);
+          const extracted = await extractVideoFrames(objectUrl, 3);
+          const frames = extracted.map((f) => f.dataUrl);
           next.push({ id: uid(), kind: "video", name: f.name, objectUrl, duration, frames, thumb: frames[0] || "" });
         } else {
           const dataUrl = await fileToDataUrl(f);
