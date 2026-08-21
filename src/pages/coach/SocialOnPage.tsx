@@ -436,6 +436,8 @@ export default function SocialOnPage() {
               <TabsTrigger className={tabCls} value="calendario"><CalendarDays className="w-3.5 h-3.5 mr-1" /> Calendário</TabsTrigger>
               <TabsTrigger className={tabCls} value="legendas"><PenLine className="w-3.5 h-3.5 mr-1" /> Legendas</TabsTrigger>
               <TabsTrigger className={tabCls} value="reels"><Clapperboard className="w-3.5 h-3.5 mr-1" /> Reels</TabsTrigger>
+              <TabsTrigger className={tabCls} value="pack"><Flame className="w-3.5 h-3.5 mr-1" /> Pack</TabsTrigger>
+
               <TabsTrigger className={tabCls} value="hooks"><Sparkles className="w-3.5 h-3.5 mr-1" /> Hooks</TabsTrigger>
               <TabsTrigger className={tabCls} value="hashtags"><Hash className="w-3.5 h-3.5 mr-1" /> Hashtags</TabsTrigger>
               <TabsTrigger className={tabCls} value="stories"><LayoutList className="w-3.5 h-3.5 mr-1" /> Stories</TabsTrigger>
