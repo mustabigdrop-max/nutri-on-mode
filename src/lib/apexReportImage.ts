@@ -299,7 +299,7 @@ const buildHtml = (data: ApexReportData, mode: ApexReportMode, photo: string | n
         </div>
       </div>
 
-      <div style="flex:1;display:flex;flex-direction:column;justify-content:space-between;min-height:0">
+      <div style="flex:1 1 auto;display:flex;flex-direction:column;justify-content:space-between;min-height:0;overflow:hidden">
         <div style="margin-top:28px">${photoBlock}</div>
 
         <div>${isClient ? clientLists : sectionTitle("DIAGNÓSTICO", accent, compact) + deviations}</div>
@@ -309,7 +309,7 @@ const buildHtml = (data: ApexReportData, mode: ApexReportMode, photo: string | n
         <div>${verdict ? sectionTitle("VEREDICTO", accent, compact) + verdict : ""}</div>
       </div>
 
-      <div style="padding-top:${compact ? 14 : 36}px;border-top:1px solid ${line}">
+      <div style="flex:0 0 auto;padding-top:${compact ? 14 : 36}px;border-top:1px solid ${line}">
         <div style="font-size:${compact ? 27 : 32}px;font-weight:900">${esc(coachName)}</div>
         <div style="font-size:${compact ? 21 : 24}px;color:${dim};margin-top:4px">${esc(coachSubtitle)}</div>
         <div style="font-size:${compact ? 21 : 24}px;color:${fg};margin-top:2px">${esc(handle)}</div>
