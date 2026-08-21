@@ -115,14 +115,17 @@ const LABEL_MAP: Record<string, string> = {
 };
 
 export const prettyLabel = (raw: string) => {
-  const key = String(raw || "").trim().toUpperCase();
-  if (LABEL_MAP[key]) return LABEL_MAP[key];
-  const clean = String(raw || "")
-    .replace(/_/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
+  const clean = String(raw || "").replace(/_/g, " ").replace(/\s+/g, " ").trim();
   if (!clean) return "";
-  return clean.charAt(0).toUpperCase() + clean.slice(1).toLowerCase();
+  const direct = LABEL_MAP[clean.toUpperCase()];
+  if (direct) return direct;
+  // "DESVIO: paravertebrais cervicais" -> "Desvio detectado: paravertebrais cervicais"
+  const m = /^([A-Za-zÀ-ÿ ]+):\s*(.+)$/.exec(clean);
+  if (m) {
+    const mapped = LABEL_MAP[m[1].trim().toUpperCase()];
+    if (mapped) return `${mapped}: ${m[2].trim()}`;
+  }
+  return clean.charAt(0).toUpperCase() + clean.slice(1);
 };
 
 /** Escala o corpo de texto conforme o comprimento, evitando corte/overflow. */
@@ -136,11 +139,17 @@ const fitSize = (text: string, base: number, min = 20) => {
 
 const scoreColor = (v: number) => (v >= 8 ? "#00FF88" : v >= 6 ? "#FFB800" : "#FF4444");
 
-const severityIcon = (s?: string) => {
+/** Bolinha de severidade (círculo CSS — emoji não renderiza no html2canvas). */
+const severityDot = (s: string | undefined, size: number) => {
   const v = String(s || "").toLowerCase();
-  if (/sever|alto|crít|critic/.test(v)) return "🔴";
-  if (/moder|leve|médi|medi/.test(v)) return "🟡";
-  return "🟢";
+  const col = /sever|alto|crít|critic/.test(v)
+    ? "#FF4444"
+    : /moder|leve|médi|medi|aten/.test(v)
+      ? "#FFB800"
+      : "#00FF88";
+  return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${col};flex:none;margin-top:${Math.round(
+    size * 0.45,
+  )}px;box-shadow:0 0 12px ${col}80"></div>`;
 };
 
 const buildHtml = (data: ApexReportData, mode: ApexReportMode, photo: string | null) => {
@@ -155,7 +164,7 @@ const buildHtml = (data: ApexReportData, mode: ApexReportMode, photo: string | n
   const isClient = mode === "client";
   const title = data.title || "APEX INTELLIGENCE SYSTEM";
   const coachName = data.coachName || "Coach Diogo Mello";
-  const coachSubtitle = data.coachSubtitle || "Nutrition & Business Coach 🇺🇸";
+  const coachSubtitle = data.coachSubtitle || "Nutrition & Business Coach · USA";
   const handle = data.handle || "nutrion.app.br";
 
   // Foto: no máximo 40% da altura do card.
@@ -171,28 +180,34 @@ const buildHtml = (data: ApexReportData, mode: ApexReportMode, photo: string | n
          Análise APEX · nutriON
        </div>`;
 
-  const deviations = (isClient ? data.deviations.slice(0, 4) : data.deviations.slice(0, 6))
-    .map((d) => {
-      const label = prettyLabel(d.name);
-      const sev = d.severity_label || d.severity || "";
-      const size = fitSize(label, compact ? 26 : 30, 20);
-      return `
-      <div style="display:flex;align-items:flex-start;gap:14px;margin-bottom:16px">
-        <div style="font-size:${size - 2}px;line-height:1.3">${severityIcon(sev)}</div>
-        <div style="flex:1;min-width:0;font-size:${size}px;font-weight:600;line-height:1.3;
-                    word-break:break-word;overflow-wrap:anywhere">${esc(label)}</div>
+  const devItems = (isClient ? data.deviations.slice(0, 4) : data.deviations.slice(0, 6)).map((d) => ({
+    label: prettyLabel(d.name),
+    sev: String(d.severity_label || d.severity || ""),
+  }));
+  const devSize = fitSize(
+    devItems.reduce((a, b) => (b.label.length > a.length ? b.label : a), ""),
+    compact ? 26 : 30,
+    20,
+  );
+  const deviations = devItems
+    .map(
+      (d) => `
+      <div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:16px">
+        ${severityDot(d.sev, 16)}
+        <div style="flex:1;min-width:0;font-size:${devSize}px;font-weight:600;line-height:1.35;
+                    word-break:break-word;overflow-wrap:anywhere">${esc(d.label)}</div>
         ${
-          isClient || !sev
+          isClient || !d.sev
             ? ""
-            : `<div style="max-width:34%;text-align:right;font-size:${Math.max(
+            : `<div style="max-width:32%;text-align:right;font-size:${Math.max(
                 18,
-                size - 8,
-              )}px;font-weight:800;line-height:1.25;word-break:break-word;overflow-wrap:anywhere;color:${severityColor(
-                sev,
-              )}">${esc(prettyLabel(String(sev)))}</div>`
+                devSize - 8,
+              )}px;font-weight:800;line-height:1.3;word-break:break-word;overflow-wrap:anywhere;color:${severityColor(
+                d.sev,
+              )}">${esc(prettyLabel(d.sev))}</div>`
         }
-      </div>`;
-    })
+      </div>`,
+    )
     .join("");
 
   const scores = data.scores
@@ -221,9 +236,10 @@ const buildHtml = (data: ApexReportData, mode: ApexReportMode, photo: string | n
             .slice(0, 3)
             .map(
               (s) =>
-                `<div style="font-size:${fitSize(s, 30, 22)}px;margin-bottom:12px;line-height:1.35;word-break:break-word">🟢 ${esc(
-                  prettyLabel(s),
-                )}</div>`,
+                `<div style="font-size:${fitSize(s, 30, 22)}px;margin-bottom:12px;line-height:1.35;word-break:break-word;display:flex;gap:14px;align-items:flex-start">${severityDot(
+                  "ok",
+                  16,
+                )}<span>${esc(prettyLabel(s))}</span></div>`,
             )
             .join("")
         : ""
@@ -235,9 +251,10 @@ const buildHtml = (data: ApexReportData, mode: ApexReportMode, photo: string | n
             .slice(0, 2)
             .map(
               (s) =>
-                `<div style="font-size:${fitSize(s, 30, 22)}px;margin-bottom:12px;line-height:1.35;word-break:break-word">🟡 ${esc(
-                  prettyLabel(s),
-                )}</div>`,
+                `<div style="font-size:${fitSize(s, 30, 22)}px;margin-bottom:12px;line-height:1.35;word-break:break-word;display:flex;gap:14px;align-items:flex-start">${severityDot(
+                  "moderado",
+                  16,
+                )}<span>${esc(prettyLabel(s))}</span></div>`,
             )
             .join("")
         : ""
