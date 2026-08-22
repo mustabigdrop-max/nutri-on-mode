@@ -1,7 +1,12 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import AudioAcademyPage from "@/pages/AudioAcademyPage";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import {
+  Activity, ArrowLeft, BookOpen, Brain, Briefcase, Clock, Dumbbell,
+  Headphones, Map, MonitorUp, ScanLine, TrendingUp, Users, Zap,
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { QRCodeSVG } from "qrcode.react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -34,8 +39,16 @@ function ScoreRing({ value, max = 100, color, size = 120, label, sublabel }: {
   const [animated, setAnimated] = useState(0);
 
   useEffect(() => {
-    const timer = setTimeout(() => setAnimated(value), 200);
-    return () => clearTimeout(timer);
+    const started = performance.now() + 250;
+    let frame = 0;
+    const tick = (now: number) => {
+      const progress = Math.max(0, Math.min(1, (now - started) / 1200));
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setAnimated(Math.round(value * eased));
+      if (progress < 1) frame = requestAnimationFrame(tick);
+    };
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
   }, [value]);
 
   const animProgress = (animated / max) * circumference;
@@ -64,11 +77,11 @@ function ScoreRing({ value, max = 100, color, size = 120, label, sublabel }: {
   );
 }
 
-function PillarNav({ active, onChange }: { active: PillarKey; onChange: (k: PillarKey) => void }) {
-  const pills: { key: PillarKey; label: string; color: string }[] = [
-    { key: "M", label: "MINDSET", color: "#A78BFA" },
-    { key: "C", label: "COMPORTAMENTO", color: "#00FF88" },
-    { key: "E", label: "EXECUÇÃO", color: "#F59E0B" },
+function PillarNav({ active, scores, onChange }: { active: PillarKey; scores: Record<PillarKey, number>; onChange: (k: PillarKey) => void }) {
+  const pills = [
+    { key: "M" as PillarKey, label: "MINDSET", color: "#9333EA", Icon: Brain },
+    { key: "C" as PillarKey, label: "COMPORTAMENTO", color: "#00C896", Icon: Activity },
+    { key: "E" as PillarKey, label: "EXECUÇÃO", color: "#E8A020", Icon: Zap },
   ];
   return (
     <div style={{ display: "flex", gap: 6 }}>
@@ -77,7 +90,7 @@ function PillarNav({ active, onChange }: { active: PillarKey; onChange: (k: Pill
           key={p.key}
           onClick={() => onChange(p.key)}
           style={{
-            flex: 1, padding: "10px 0", border: "none", borderRadius: 8, cursor: "pointer",
+            flex: 1, minHeight: 52, padding: "10px 6px", border: `1px solid ${active === p.key ? p.color + "35" : "transparent"}`, borderRadius: 0, cursor: "pointer",
             fontFamily: MONO, fontSize: 11, letterSpacing: 2,
             background: active === p.key ? `${p.color}15` : "transparent",
             color: active === p.key ? p.color : "rgba(255,255,255,0.35)",
@@ -85,7 +98,10 @@ function PillarNav({ active, onChange }: { active: PillarKey; onChange: (k: Pill
             transition: "all 0.3s ease",
           }}
         >
-          {p.label}
+          <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7 }}>
+            <p.Icon size={14} /> {p.label}
+            <span style={{ border: `1px solid ${p.color}55`, color: p.color, padding: "1px 5px", fontSize: 9 }}>{scores[p.key]}</span>
+          </span>
         </button>
       ))}
     </div>
@@ -93,7 +109,7 @@ function PillarNav({ active, onChange }: { active: PillarKey; onChange: (k: Pill
 }
 
 function TabBar({ tabs, active, onChange }: {
-  tabs: { key: string; label: string; badge?: string }[]; active: string; onChange: (k: string) => void;
+  tabs: { key: string; label: string; badge?: string; group: "content" | "action"; Icon: typeof BookOpen }[]; active: string; onChange: (k: string) => void;
 }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScroll, setCanScroll] = useState({ left: false, right: false });
@@ -150,27 +166,31 @@ function TabBar({ tabs, active, onChange }: {
         <style>{`
           .mce-tabbar::-webkit-scrollbar { display: none; }
         `}</style>
-        {tabs.map((t) => {
+        {tabs.map((t, index) => {
           const isActive = active === t.key;
+          const divider = index > 0 && tabs[index - 1].group !== t.group;
           return (
             <button
               key={t.key}
               onClick={() => onChange(t.key)}
               className="mce-tabbar"
               style={{
-                flex: "0 0 auto", padding: "12px 10px", border: "none", cursor: "pointer",
+                flex: "0 0 auto", minHeight: 48, padding: `12px 10px 12px ${divider ? 22 : 10}px`, border: "none", cursor: "pointer",
                 fontFamily: MONO, fontSize: 10, letterSpacing: 1.5, textTransform: "uppercase",
                 background: "transparent",
                 color: isActive ? "#00D4FF" : "rgba(255,255,255,0.35)",
                 borderBottom: isActive ? `2px solid ${t.badge || "#00D4FF"}` : "2px solid transparent",
                 transition: "all 0.25s ease", display: "flex", alignItems: "center", gap: 6,
+                marginLeft: divider ? 10 : 0,
+                borderLeft: divider ? "1px solid rgba(255,255,255,0.12)" : undefined,
               }}
             >
+              <t.Icon size={11} />
               {t.label}
               {t.badge && (
                 <span style={{
-                  fontSize: 8, letterSpacing: 0.5, color: "#03030a", background: t.badge,
-                  borderRadius: 4, padding: "2px 5px", fontWeight: 700,
+                   fontSize: 8, letterSpacing: 0.5, color: t.badge, background: "transparent",
+                   border: `1px solid ${t.badge}55`, borderRadius: 0, padding: "2px 5px", fontWeight: 700,
                 }}>
                   24H
                 </span>
@@ -371,16 +391,23 @@ function ProfileCard({ profile, selected, onClick }: {
 }
 
 function TriangleDiagram({ scores, activeKey }: { scores: Record<PillarKey, number>; activeKey: PillarKey }) {
-  const w = 280, h = 240;
+  const w = 420, h = 360;
   const cx = w / 2;
   const nodes = [
-    { key: "M" as PillarKey, x: cx, y: 38, color: "#A78BFA", label: "M" },
-    { key: "C" as PillarKey, x: cx - 90, y: 195, color: "#00FF88", label: "C" },
-    { key: "E" as PillarKey, x: cx + 90, y: 195, color: "#F59E0B", label: "E" },
+    { key: "M" as PillarKey, x: cx, y: 45, color: "#9333EA", label: "M", name: "Mindset", detail: "Fundação cognitiva" },
+    { key: "C" as PillarKey, x: 62, y: 302, color: "#00C896", label: "C", name: "Comportamento", detail: "Arquitetura de hábitos" },
+    { key: "E" as PillarKey, x: 358, y: 302, color: "#E8A020", label: "E", name: "Execução", detail: "Output mensurável" },
   ];
+  const centerY = 216;
+  const pointAt = (node: typeof nodes[number], pct: number) => ({ x: cx + (node.x - cx) * pct, y: centerY + (node.y - centerY) * pct });
+  const scorePoints = nodes.map((node) => pointAt(node, Math.max(0.08, scores[node.key] / 100))).map((p) => `${p.x},${p.y}`).join(" ");
   return (
-    <svg width={w} height={h} style={{ maxWidth: "100%" }}>
+    <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} className="mce-radar" style={{ maxWidth: "100%", overflow: "visible" }}>
       <defs>
+        <radialGradient id="mce-radar-fill" cx="50%" cy="50%" r="58%">
+          <stop offset="0%" stopColor="#B8922A" stopOpacity="0.1" />
+          <stop offset="100%" stopColor="#B8922A" stopOpacity="0.02" />
+        </radialGradient>
         {nodes.map((n) => (
           <radialGradient key={n.key} id={`glow-${n.key}`}>
             <stop offset="0%" stopColor={n.color} stopOpacity={0.35} />
@@ -389,43 +416,43 @@ function TriangleDiagram({ scores, activeKey }: { scores: Record<PillarKey, numb
         ))}
       </defs>
 
-      {[[0, 1], [1, 2], [2, 0]].map(([a, b]) => (
-        <line
-          key={`${a}${b}`}
-          x1={nodes[a].x} y1={nodes[a].y} x2={nodes[b].x} y2={nodes[b].y}
-          stroke="rgba(255,255,255,0.12)" strokeWidth={1}
-        />
+      {[0.25, 0.5, 0.75, 1].map((pct) => (
+        <polygon key={pct} points={nodes.map((node) => { const p = pointAt(node, pct); return `${p.x},${p.y}`; }).join(" ")} fill="none" stroke="rgba(255,255,255,0.055)" strokeDasharray="4 6" />
       ))}
 
       {nodes.map((n) => (
-        <line key={`c-${n.key}`} x1={n.x} y1={n.y} x2={cx} y2={125} stroke="rgba(0,212,255,0.18)" strokeWidth={1} strokeDasharray="3 4" />
+        <line key={`c-${n.key}`} x1={n.x} y1={n.y} x2={cx} y2={centerY} stroke="rgba(184,146,42,0.16)" strokeWidth={1} strokeDasharray="3 5" />
       ))}
-
-      <circle cx={cx} cy={125} r={18} fill="rgba(0,212,255,0.08)" stroke="rgba(0,212,255,0.4)" strokeWidth={1} />
-      <text x={cx} y={125} textAnchor="middle" dominantBaseline="central" style={{ fill: "#00D4FF", fontFamily: MONO, fontSize: 11, letterSpacing: 1 }}>
+      <polygon points={scorePoints} fill="url(#mce-radar-fill)" stroke="#B8922A" strokeWidth="2" className="mce-radar-shape" />
+      <circle cx={cx} cy={centerY} r={18} fill="rgba(184,146,42,0.08)" stroke="rgba(184,146,42,0.55)" strokeWidth={1} className="mce-radar-core" />
+      <text x={cx} y={centerY} textAnchor="middle" dominantBaseline="central" style={{ fill: "#B8922A", fontFamily: MONO, fontSize: 10, letterSpacing: 1 }}>
         MCE
       </text>
 
       {nodes.map((n) => {
         const score = scores[n.key] ?? 50;
-        const r = 26 + (score / 100) * 8;
+        const r = 30;
         const isActive = activeKey === n.key;
         return (
-          <g key={n.key}>
+          <g key={n.key} className={`mce-radar-node mce-radar-node-${n.key}`} tabIndex={0} role="img" aria-label={`${n.name}: ${score} de 100 — ${n.detail}`}>
             <circle cx={n.x} cy={n.y} r={r + 18} fill={`url(#glow-${n.key})`} />
             <circle
               cx={n.x} cy={n.y} r={r}
               fill={`${n.color}12`}
               stroke={n.color}
               strokeWidth={isActive ? 2 : 1}
-              style={{ filter: isActive ? `drop-shadow(0 0 8px ${n.color}80)` : "none" }}
+              style={{ filter: `drop-shadow(0 0 ${isActive ? 12 : 7}px ${n.color}90)` }}
             />
-            <text x={n.x} y={n.y - 4} textAnchor="middle" dominantBaseline="central" style={{ fill: n.color, fontFamily: DISPLAY, fontSize: 20, fontWeight: 900 }}>
+            <text x={n.x} y={n.y - 4} textAnchor="middle" dominantBaseline="central" style={{ fill: n.color, fontFamily: DISPLAY, fontSize: 48, fontWeight: 900 }}>
               {n.label}
             </text>
-            <text x={n.x} y={n.y + 12} textAnchor="middle" dominantBaseline="central" style={{ fill: "rgba(255,255,255,0.5)", fontFamily: MONO, fontSize: 8 }}>
+            <text x={n.x} y={n.y + 25} textAnchor="middle" dominantBaseline="central" style={{ fill: "rgba(255,255,255,0.65)", fontFamily: MONO, fontSize: 9 }}>
               {score}/100
             </text>
+            <g className="mce-radar-tooltip">
+              <rect x={Math.max(4, Math.min(w - 190, n.x - 95))} y={n.y > 200 ? n.y - 82 : n.y + 44} width="190" height="34" fill="#07070d" stroke={n.color} strokeOpacity="0.45" />
+              <text x={Math.max(99, Math.min(w - 95, n.x))} y={n.y > 200 ? n.y - 61 : n.y + 65} textAnchor="middle" style={{ fill: n.color, fontFamily: MONO, fontSize: 8 }}>{n.name}: {score}/100 — {n.detail}</text>
+            </g>
           </g>
         );
       })}
@@ -444,9 +471,11 @@ export default function MCEIntelligencePage() {
   const [completed, setCompleted] = useState<Record<string, boolean>>({});
   const [selectedProfile, setSelectedProfile] = useState<string | null>(null);
   const [quoteIdx, setQuoteIdx] = useState(0);
+  const [presentationMode, setPresentationMode] = useState(false);
+  const [pillarDirection, setPillarDirection] = useState(1);
 
   useEffect(() => {
-    const iv = setInterval(() => setQuoteIdx((i) => (i + 1) % MCE_QUOTES.length), 6000);
+    const iv = setInterval(() => setQuoteIdx((i) => (i + 1) % MCE_QUOTES.length), 8000);
     return () => clearInterval(iv);
   }, []);
 
@@ -537,25 +566,25 @@ export default function MCEIntelligencePage() {
   };
 
   const tabs = [
-    { key: "estudo", label: "ESTUDO" },
-    { key: "guia", label: "GUIA" },
-    { key: "protocolo24h", label: "24H", badge: "#F59E0B" },
-    { key: "diagnostico", label: "DIAGNÓSTICO" },
-    { key: "exercicios", label: "EXERCÍCIOS" },
-    { key: "perfis", label: "PERFIS" },
-    { key: "progresso", label: "PROGRESSO" },
-    { key: "audio", label: "ÁUDIO", badge: "#E8A020" },
-    { key: "business", label: "BUSINESS", badge: "#00D4FF" },
+    { key: "estudo", label: "ESTUDO", group: "content" as const, Icon: BookOpen },
+    { key: "guia", label: "GUIA", group: "content" as const, Icon: Map },
+    { key: "diagnostico", label: "DIAGNÓSTICO", group: "content" as const, Icon: ScanLine },
+    { key: "exercicios", label: "EXERCÍCIOS", group: "content" as const, Icon: Dumbbell },
+    { key: "perfis", label: "PERFIS", group: "content" as const, Icon: Users },
+    { key: "protocolo24h", label: "24H", badge: "#E8A020", group: "action" as const, Icon: Clock },
+    { key: "progresso", label: "PROGRESSO", group: "action" as const, Icon: TrendingUp },
+    { key: "audio", label: "ÁUDIO", badge: "#E8A020", group: "action" as const, Icon: Headphones },
+    { key: "business", label: "BUSINESS", badge: "#00D4FF", group: "action" as const, Icon: Briefcase },
   ];
+  const socialAuthors = Object.values(PILLAR_DATA).flatMap((item) => item.authors).filter((author, index, all) => all.findIndex((candidate) => candidate.name === author.name) === index).slice(0, 12);
 
   const sectionTitle: React.CSSProperties = {
     fontFamily: MONO, fontSize: 10, letterSpacing: 2.5, color: "rgba(255,255,255,0.35)", marginBottom: 12,
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "#05070C", color: "#fff", paddingBottom: 96 }}>
+    <div className={`mce-presentation-shell ${presentationMode ? "is-presenting" : ""}`} style={{ minHeight: "100vh", background: "#020205", color: "#fff", paddingBottom: 96 }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
         @keyframes mceFade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
         .mce-root input[type="range"] { -webkit-appearance: none; height: 4px; border-radius: 4px; background: rgba(255,255,255,0.08); outline: none; }
 
@@ -597,13 +626,15 @@ export default function MCEIntelligencePage() {
             <span style={{ color: "rgba(255,255,255,0.2)" }}>·</span>
             <span style={{ fontFamily: MONO, fontSize: 11, letterSpacing: 2, color: "rgba(255,255,255,0.5)" }}>MCE INTELLIGENCE</span>
           </div>
-          <span style={{
-            fontFamily: MONO, fontSize: 9, letterSpacing: 2, color: "#00FF88",
-            border: "1px solid rgba(0,255,136,0.25)", borderRadius: 6, padding: "3px 8px",
-          }}>
-            V3.0
-          </span>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <button className="mce-presentation-toggle" onClick={() => setPresentationMode((value) => !value)} aria-pressed={presentationMode} title="Modo apresentação">
+              <MonitorUp size={14} /> <span>{presentationMode ? "SAIR" : "APRESENTAR"}</span>
+            </button>
+            <span style={{ fontFamily: MONO, fontSize: 9, letterSpacing: 2, color: "#00FF88", border: "1px solid rgba(0,255,136,0.25)", padding: "3px 8px" }}>V3.0</span>
+          </div>
         </header>
+
+        {presentationMode && <div className="mce-presentation-counter"><strong>203 áudios</strong><span>44,6h</span><span>12 séries</span><span>12 autores científicos</span><em>nutriON · Sistema Integrado de Performance Humana</em></div>}
 
         {/* Hero */}
         <section style={{ textAlign: "center", padding: "28px 0 8px" }}>
@@ -619,7 +650,7 @@ export default function MCEIntelligencePage() {
             MENTALIDADE · COMPORTAMENTO · EXECUÇÃO
           </div>
 
-          <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 24, flexWrap: "wrap", marginTop: 24 }}>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1, duration: 0.6 }} style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 24, flexWrap: "wrap", marginTop: 24 }}>
             <ScoreRing value={scores.M} color="#A78BFA" size={92} label="MINDSET" />
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
               <ScoreRing value={totalScore} color={phase.color} size={132} label="MCE SCORE" sublabel={loaded ? "SINCRONIZADO" : "CARREGANDO"} />
@@ -631,35 +662,42 @@ export default function MCEIntelligencePage() {
               </div>
             </div>
             <ScoreRing value={scores.E} color="#F59E0B" size={92} label="EXECUÇÃO" />
-          </div>
+          </motion.div>
 
-          <div style={{ display: "flex", justifyContent: "center", marginTop: 20 }}>
+          <div className="mce-radar-stage" style={{ display: "flex", justifyContent: "center", marginTop: 20 }}>
             <TriangleDiagram scores={scores} activeKey={pillar} />
           </div>
 
-          <div style={{ marginTop: 18, padding: "16px 14px", borderRadius: 12, background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}>
-            <p key={quoteIdx} style={{ fontFamily: DISPLAY, fontSize: 16, fontStyle: "italic", color: "rgba(255,255,255,0.8)", animation: "mceFade 0.6s ease" }}>
+          <div className="mce-impact-quote" style={{ marginTop: 18, padding: "26px 18px", background: "rgba(255,255,255,0.02)", border: "1px solid rgba(184,146,42,0.16)", position: "relative", overflow: "hidden" }}>
+            <span className="mce-quote-mark">“</span>
+            <p key={quoteIdx} style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 700, fontStyle: "italic", color: "rgba(255,255,255,0.9)", animation: "mceFade 0.6s ease", position: "relative" }}>
               "{MCE_QUOTES[quoteIdx]}"
             </p>
-            <span style={{ fontFamily: MONO, fontSize: 9, letterSpacing: 2, color: "rgba(255,255,255,0.25)" }}>
-              @DIOGOMELLO180 · MCE METHOD
+            <span style={{ fontFamily: MONO, fontSize: 7, letterSpacing: "0.12em", color: "rgba(184,146,42,0.55)" }}>
+              @diogo.mell0 · MCE METHOD
             </span>
+          </div>
+
+          <div className="mce-social-proof">
+            <span>MÉTODO BASEADO EM 12 AUTORES CIENTÍFICOS</span>
+            <div>{socialAuthors.map((author) => <button key={author.name} title={`${author.book} — ${author.concept}`}>{author.name.split(" ").slice(-1)} <small>{author.year}</small></button>)}</div>
           </div>
         </section>
 
 
         {/* Pillar nav */}
         <div style={{ marginTop: 8 }}>
-          <PillarNav active={pillar} onChange={(k) => { setPillar(k); setTab("estudo"); }} />
+          <PillarNav active={pillar} scores={scores} onChange={(k) => { setPillarDirection((["M", "C", "E"] as PillarKey[]).indexOf(k) > (["M", "C", "E"] as PillarKey[]).indexOf(pillar) ? 1 : -1); setPillar(k); setTab("estudo"); }} />
         </div>
 
         {/* Active pillar header */}
-        <div style={{ marginTop: 18 }}>
+        <AnimatePresence mode="wait" custom={pillarDirection}>
+        <motion.div key={pillar} custom={pillarDirection} initial={{ opacity: 0, x: pillarDirection * 24 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: pillarDirection * -24 }} transition={{ duration: 0.3 }} style={{ marginTop: 18 }}>
           <div style={{ display: "flex", alignItems: "baseline", gap: 10, flexWrap: "wrap" }}>
             <span style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 700, color: data.color, letterSpacing: 1 }}>
               {data.label}
             </span>
-            <span style={{ fontFamily: MONO, fontSize: 10, letterSpacing: 2, color: "rgba(255,255,255,0.35)" }}>
+            <span style={{ fontFamily: MONO, fontSize: 9, letterSpacing: 2, color: data.color, border: `1px solid ${data.color}45`, padding: "4px 8px" }}>
               {data.tagline}
             </span>
           </div>
@@ -671,9 +709,14 @@ export default function MCEIntelligencePage() {
             background: `${data.color}08`, border: `1px solid ${data.color}20`,
             fontFamily: DISPLAY, fontSize: 14, lineHeight: 1.6, color: "rgba(255,255,255,0.7)",
           }}>
-            {data.manifesto}
+            {data.manifesto.split(/(software|identidade|sistema operacional)/gi).map((part, index) => /^(software|identidade|sistema operacional)$/i.test(part) ? <mark key={`${part}-${index}`} className="mce-keyword">{part}</mark> : part)}
           </p>
-        </div>
+          <div className="mce-pillar-metrics">
+            <span><Headphones size={14} /><strong>12</strong> episódios</span><span><Clock size={14} /><strong>97</strong> min de conteúdo</span><span><BookOpen size={14} /><strong>{data.authors.length}</strong> autores base</span>
+          </div>
+          <div className="mce-author-chips">{data.authors.slice(0, 4).map((author) => <button key={author.name} title={`${author.name} — ${author.book} (${author.year}) · Conceito: ${author.concept}`}>{author.name.split(" ").slice(-1)}</button>)}</div>
+        </motion.div>
+        </AnimatePresence>
 
 
         {/* Tabs */}
@@ -922,6 +965,11 @@ export default function MCEIntelligencePage() {
             </div>
           )}
         </div>
+
+        <footer className="mce-demo-footer">
+          <div><QRCodeSVG value="https://nutrion.app.br/demo" size={112} bgColor="#020205" fgColor="#B8922A" level="M" /></div>
+          <section><span>DEMO MCE</span><h2>Escaneie e experimente</h2><p>Acesse a versão demo do MCE agora.</p><strong>“Transformação é sistema.” — @diogo.mell0</strong></section>
+        </footer>
       </div>
     </div>
   );
