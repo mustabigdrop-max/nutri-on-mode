@@ -408,7 +408,15 @@
 }
 .mce-presentation-shell::after { content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 60; box-shadow: inset 0 0 180px rgba(0,0,0,.82); }
 .mce-presentation-shell button:active { transform: scale(.98); }
+.mce-presentation-shell button:focus-visible,
+.mce-presentation-shell input:focus-visible,
+.mce-presentation-shell [tabindex="0"]:focus-visible {
+  outline: 2px solid #00D4FF;
+  outline-offset: 3px;
+}
+.mce-icon-button { min-width: 44px; min-height: 44px; }
 .mce-presentation-toggle { min-height: 36px; display: inline-flex; align-items: center; gap: 7px; padding: 0 10px; border: 1px solid rgba(184,146,42,.35); background: rgba(184,146,42,.06); color: #B8922A; font: 700 9px 'Space Mono', monospace; letter-spacing: .12em; }
+.mce-report-button { min-height: 36px; display: inline-flex; align-items: center; gap: 6px; padding: 0 10px; border: 1px solid rgba(0,212,255,.42); background: rgba(0,212,255,.07); color: #4DDEFF; font: 700 9px 'Space Mono', monospace; letter-spacing: .12em; }
 .mce-presentation-counter { position: sticky; top: 8px; z-index: 55; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 12px 20px; margin-top: 10px; padding: 10px 14px; border: 1px solid rgba(184,146,42,.32); background: rgba(2,2,5,.94); backdrop-filter: blur(16px); font: 9px 'Space Mono', monospace; letter-spacing: .08em; color: rgba(255,255,255,.62); }
 .mce-presentation-counter strong { color: #B8922A; }.mce-presentation-counter em { color: #00D4FF; font-style: normal; }
 .mce-radar-stage { position: relative; animation: mceFade .8s .15s both; }
@@ -421,9 +429,9 @@
 .mce-radar-tooltip { opacity: 0; transition: opacity .2s ease; pointer-events: none; }.mce-radar-node:hover .mce-radar-tooltip,.mce-radar-node:focus .mce-radar-tooltip { opacity: 1; }
 .mce-radar-core { transform-box: fill-box; transform-origin: center; stroke-dasharray: 4 5; animation: mce-core-spin 8s linear infinite; }
 .mce-quote-mark { position: absolute; left: 20px; top: -28px; font: 700 100px Georgia, serif; color: rgba(184,146,42,.15); }
-.mce-social-proof { margin-top: 18px; text-align: left; }.mce-social-proof > span { font: 9px 'Space Mono', monospace; letter-spacing: .16em; color: rgba(255,255,255,.38); }
+.mce-social-proof { margin-top: 18px; text-align: left; }.mce-social-proof > span { font: 9px 'Space Mono', monospace; letter-spacing: .16em; color: rgba(255,255,255,.62); }
 .mce-social-proof > div { display: flex; gap: 7px; margin-top: 10px; overflow-x: auto; scrollbar-width: none; }.mce-social-proof > div::-webkit-scrollbar { display: none; }
-.mce-social-proof button,.mce-author-chips button { flex: 0 0 auto; min-height: 32px; padding: 6px 9px; border: 1px solid rgba(184,146,42,.22); background: rgba(184,146,42,.035); color: rgba(255,255,255,.7); font: 7px 'Space Mono', monospace; letter-spacing: .08em; text-transform: uppercase; }.mce-social-proof small { color: #B8922A; }
+.mce-social-proof button,.mce-author-chips button { flex: 0 0 auto; min-height: 36px; padding: 6px 9px; border: 1px solid rgba(184,146,42,.38); background: rgba(184,146,42,.055); color: rgba(255,255,255,.82); font: 8px 'Space Mono', monospace; letter-spacing: .08em; text-transform: uppercase; }.mce-social-proof small { color: #D6AC45; }
 .mce-keyword { color: inherit; background: rgba(184,146,42,.08); border-bottom: 1px dashed rgba(184,146,42,.44); }
 .mce-pillar-metrics { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-top: 10px; }.mce-pillar-metrics span { min-height: 48px; display: flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid rgba(255,255,255,.07); color: rgba(255,255,255,.52); font: 9px 'Space Mono', monospace; }.mce-pillar-metrics strong { color: #f5f0e8; }
 .mce-author-chips { display: flex; gap: 6px; overflow-x: auto; margin-top: 9px; }.mce-author-chips button { border-color: currentColor; }
@@ -440,7 +448,15 @@
 .mce-series-card { min-height: 48px; border: 1px solid; border-left-width: 3px; background: rgba(255,255,255,.015); transition: padding .25s ease, background .25s ease; }.mce-series-card:hover { padding-left: 4px; background: rgba(255,255,255,.028); }.mce-series-ring { width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; }.mce-series-ring i { width: 31px; height: 31px; display: grid; place-items: center; border-radius: 50%; background: #050509; color: rgba(255,255,255,.65); font: normal 7px 'Space Mono', monospace; }.mce-series-preview { max-height: 0; opacity: 0; overflow: hidden; transition: .25s ease; color: var(--series-color); font: 8px 'Space Mono', monospace; }.mce-series-card:hover .mce-series-preview { max-height: 22px; opacity: .75; margin-top: 7px; }.mce-episode-row { border-radius: 0 !important; }.mce-episode-play { box-shadow: 0 0 0 4px color-mix(in srgb, var(--series-color) 15%, transparent); }
 
 @media (max-width: 640px) { .mce-presentation-toggle span { display: none; }.mce-radar-stage::before,.mce-radar-stage::after { display: none; }.mce-pillar-metrics { grid-template-columns: 1fr; }.mce-audio-stats { grid-template-columns: repeat(2,1fr); }.mce-demo-footer { flex-direction: column; text-align: center; }.mce-demo-footer section { text-align: center; }.mce-audio-tagline { white-space: normal; border: 0; animation: mceFade .6s ease both; } }
-@media (prefers-reduced-motion: reduce) { .mce-presentation-shell *, .mce-presentation-shell *::before, .mce-presentation-shell *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; } }
+@media (prefers-reduced-motion: reduce) {
+  .mce-presentation-shell *, .mce-presentation-shell *::before, .mce-presentation-shell *::after {
+    animation: none !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .mce-radar-shape { stroke-dashoffset: 0 !important; }
+  .mce-radar-tooltip { transition: none !important; }
+}
 .hud-tech {
   font-family: 'Space Mono', monospace; text-transform: uppercase;
   letter-spacing: 0.18em; font-size: 10px; color: rgba(80,80,122,1);

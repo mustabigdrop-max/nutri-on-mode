@@ -3,12 +3,15 @@ import AudioAcademyPage from "@/pages/AudioAcademyPage";
 import { useNavigate } from "react-router-dom";
 import {
   Activity, ArrowLeft, BookOpen, Brain, Briefcase, Clock, Dumbbell,
-  Headphones, Map, MonitorUp, ScanLine, TrendingUp, Users, Zap,
+  FileDown, Headphones, Map, MonitorUp, ScanLine, TrendingUp, Users, Zap,
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { QRCodeSVG } from "qrcode.react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { exportMceReport } from "@/lib/mceReport";
 
 // ── Data Layer ──────────────────────────────────────────────────────────────
 import {
@@ -37,8 +40,13 @@ function ScoreRing({ value, max = 100, color, size = 120, label, sublabel }: {
   const radius = (size - 12) / 2;
   const circumference = 2 * Math.PI * radius;
   const [animated, setAnimated] = useState(0);
+  const reduceMotion = useReducedMotion();
 
   useEffect(() => {
+    if (reduceMotion) {
+      setAnimated(value);
+      return;
+    }
     const started = performance.now() + 250;
     let frame = 0;
     const tick = (now: number) => {
@@ -49,13 +57,13 @@ function ScoreRing({ value, max = 100, color, size = 120, label, sublabel }: {
     };
     frame = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frame);
-  }, [value]);
+  }, [reduceMotion, value]);
 
   const animProgress = (animated / max) * circumference;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
-      <svg width={size} height={size} style={{ transform: "rotate(-90deg)" }}>
+      <svg width={size} height={size} style={{ transform: "rotate(-90deg)" }} role="img" aria-label={`${label ?? "Score"}: ${value} de ${max}`}>
         <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth={6} />
         <circle
           cx={size / 2} cy={size / 2} r={radius} fill="none" stroke={color} strokeWidth={6}
@@ -86,7 +94,9 @@ function PillarNav({ active, scores, onChange }: { active: PillarKey; scores: Re
   return (
     <div style={{ display: "flex", gap: 6 }}>
       {pills.map((p) => (
-        <button
+        <Button
+          type="button"
+          variant="ghost"
           key={p.key}
           onClick={() => onChange(p.key)}
           style={{
@@ -102,7 +112,7 @@ function PillarNav({ active, scores, onChange }: { active: PillarKey; scores: Re
             <p.Icon size={14} /> {p.label}
             <span style={{ border: `1px solid ${p.color}55`, color: p.color, padding: "1px 5px", fontSize: 9 }}>{scores[p.key]}</span>
           </span>
-        </button>
+        </Button>
       ))}
     </div>
   );
@@ -144,7 +154,9 @@ function TabBar({ tabs, active, onChange }: {
   return (
     <div style={{ position: "relative" }}>
       {canScroll.left && (
-        <button
+        <Button
+          type="button"
+          variant="ghost"
           aria-label="Rolar abas para esquerda"
           onClick={() => scroll("left")}
           style={{
@@ -154,7 +166,7 @@ function TabBar({ tabs, active, onChange }: {
           }}
         >
           ◀
-        </button>
+        </Button>
       )}
       <div
         ref={scrollRef}
@@ -170,7 +182,9 @@ function TabBar({ tabs, active, onChange }: {
           const isActive = active === t.key;
           const divider = index > 0 && tabs[index - 1].group !== t.group;
           return (
-            <button
+            <Button
+              type="button"
+              variant="ghost"
               key={t.key}
               onClick={() => onChange(t.key)}
               className="mce-tabbar"
@@ -195,7 +209,7 @@ function TabBar({ tabs, active, onChange }: {
                   24H
                 </span>
               )}
-            </button>
+            </Button>
           );
         })}
       </div>
@@ -219,13 +233,15 @@ function TabBar({ tabs, active, onChange }: {
 function AuthorCard({ author, color }: { author: Author; color: string }) {
   const [open, setOpen] = useState(false);
   return (
-    <div
+    <button
+      type="button"
+      aria-expanded={open}
       onClick={() => setOpen(!open)}
       style={{
         background: open ? `${color}08` : "rgba(255,255,255,0.02)",
         border: `1px solid ${open ? color + "30" : "rgba(255,255,255,0.06)"}`,
         borderRadius: 12, padding: "16px 18px", cursor: "pointer", position: "relative",
-        transition: "all 0.3s ease",
+        transition: "all 0.3s ease", width: "100%", textAlign: "left",
       }}
     >
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
@@ -261,7 +277,7 @@ function AuthorCard({ author, color }: { author: Author; color: string }) {
       <div style={{ position: "absolute", bottom: 6, right: 12, fontSize: 9, color: "rgba(255,255,255,0.2)" }}>
         {open ? "▲" : "▼"}
       </div>
-    </div>
+    </button>
   );
 }
 
@@ -341,12 +357,14 @@ function ProfileCard({ profile, selected, onClick }: {
   profile: typeof PROFILES[number]; selected: boolean; onClick: () => void;
 }) {
   return (
-    <div
+    <button
+      type="button"
+      aria-pressed={selected}
       onClick={onClick}
       style={{
         background: selected ? `${profile.color}0A` : "rgba(255,255,255,0.02)",
         border: `1px solid ${selected ? profile.color + "40" : "rgba(255,255,255,0.06)"}`,
-        borderRadius: 12, padding: 16, cursor: "pointer", transition: "all 0.3s ease",
+        borderRadius: 12, padding: 16, cursor: "pointer", transition: "all 0.3s ease", width: "100%", textAlign: "left",
       }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -386,7 +404,7 @@ function ProfileCard({ profile, selected, onClick }: {
           </div>
         </>
       )}
-    </div>
+    </button>
   );
 }
 
@@ -473,9 +491,10 @@ export default function MCEIntelligencePage() {
   const [quoteIdx, setQuoteIdx] = useState(0);
   const [presentationMode, setPresentationMode] = useState(false);
   const [pillarDirection, setPillarDirection] = useState(1);
+  const reduceMotion = useReducedMotion();
 
   useEffect(() => {
-    if (!presentationMode) return;
+    if (!presentationMode || reduceMotion) return;
     let frame = 0;
     let last = performance.now();
     const advance = (now: number) => {
@@ -487,12 +506,13 @@ export default function MCEIntelligencePage() {
     };
     const timer = window.setTimeout(() => { frame = requestAnimationFrame(advance); }, 1200);
     return () => { window.clearTimeout(timer); cancelAnimationFrame(frame); };
-  }, [presentationMode]);
+  }, [presentationMode, reduceMotion]);
 
   useEffect(() => {
+    if (reduceMotion) return;
     const iv = setInterval(() => setQuoteIdx((i) => (i + 1) % MCE_QUOTES.length), 8000);
     return () => clearInterval(iv);
-  }, []);
+  }, [reduceMotion]);
 
   const [loaded, setLoaded] = useState(false);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -630,21 +650,38 @@ export default function MCEIntelligencePage() {
           padding: "16px 0", borderBottom: "1px solid rgba(255,255,255,0.06)",
         }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <button
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
               onClick={() => navigate(-1)}
               aria-label="Voltar"
-              style={{ background: "transparent", border: "none", color: "rgba(255,255,255,0.5)", cursor: "pointer", display: "flex" }}
+              className="mce-icon-button"
+              style={{ background: "transparent", border: "none", color: "rgba(255,255,255,0.72)", cursor: "pointer", display: "flex" }}
             >
               <ArrowLeft size={18} />
-            </button>
+            </Button>
             <span style={{ fontFamily: MONO, fontSize: 11, letterSpacing: 3, color: "#00D4FF" }}>NUTRION</span>
             <span style={{ color: "rgba(255,255,255,0.2)" }}>·</span>
             <span style={{ fontFamily: MONO, fontSize: 11, letterSpacing: 2, color: "rgba(255,255,255,0.5)" }}>MCE INTELLIGENCE</span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <button className="mce-presentation-toggle" onClick={() => setPresentationMode((value) => !value)} aria-pressed={presentationMode} title="Modo apresentação">
-              <MonitorUp size={14} /> <span>{presentationMode ? "SAIR" : "APRESENTAR"}</span>
-            </button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button type="button" variant="ghost" className="mce-report-button" onClick={() => exportMceReport(scores)} aria-label="Gerar relatório MCE em PDF">
+                  <FileDown size={14} /> <span>PDF</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Gerar relatório para apresentação à academia</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button type="button" variant="ghost" className="mce-presentation-toggle" onClick={() => setPresentationMode((value) => !value)} aria-pressed={presentationMode} aria-label={presentationMode ? "Sair do modo apresentação" : "Ativar modo apresentação"}>
+                  <MonitorUp size={14} /> <span>{presentationMode ? "SAIR" : "APRESENTAR"}</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>{reduceMotion ? "Modo apresentação sem rolagem automática" : "Ampliar conteúdo e iniciar rolagem automática"}</TooltipContent>
+            </Tooltip>
             <span style={{ fontFamily: MONO, fontSize: 9, letterSpacing: 2, color: "#00FF88", border: "1px solid rgba(0,255,136,0.25)", padding: "3px 8px" }}>V3.0</span>
           </div>
         </header>
