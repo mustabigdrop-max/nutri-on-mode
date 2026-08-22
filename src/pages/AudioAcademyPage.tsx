@@ -10,7 +10,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import AudioPlayerBar, { type PlayerTrack } from "@/components/audio/AudioPlayerBar";
 import { SERIES_META, RITUAL_KEY_BY_EPISODE, AUDIO_MCE_POINTS, type AudioSeries } from "@/data/mceAudioCatalog";
-import { resolveAudioSrc } from "@/lib/mceAudioStorage";
+import { preloadAudioSrc, resolveAudioSrc } from "@/lib/mceAudioStorage";
 import {
   downloadOffline, removeOffline, listOfflineIds, getOfflineSrc, offlineTotalBytes, fmtBytes,
 } from "@/lib/offlineAudio";
@@ -34,6 +34,9 @@ type Episode = {
 };
 
 type Progress = { episode_id: string; progress_seconds: number; completed: boolean };
+
+const AUDIO_CACHE_TTL = 5 * 60 * 1000;
+const academyCache = new Map<string, { episodes: Episode[]; progress: Record<string, Progress>; briefing: string | null; cachedAt: number }>();
 
 const SERIES_ORDER: AudioSeries[] = [
   "mindset", "comportamento", "execucao", "ciencia", "masterclass",
@@ -90,6 +93,14 @@ export default function AudioAcademyPage({ embedded = false }: { embedded?: bool
 
   const load = useCallback(async () => {
     if (!user) return;
+    const cached = academyCache.get(user.id);
+    if (cached && Date.now() - cached.cachedAt < AUDIO_CACHE_TTL) {
+      setEpisodes(cached.episodes);
+      setProgress(cached.progress);
+      setBriefingText(cached.briefing);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     const [eps, prog, brief] = await Promise.all([
       supabase.from("mce_audio_episodes").select("*").order("sort_order", { ascending: true }),
@@ -97,17 +108,27 @@ export default function AudioAcademyPage({ embedded = false }: { embedded?: bool
       supabase.from("daily_briefings").select("text_content")
         .eq("user_id", user.id).eq("briefing_date", new Date().toISOString().slice(0, 10)).maybeSingle(),
     ]);
-    setEpisodes((eps.data as Episode[]) ?? []);
+    const nextEpisodes = (eps.data as Episode[]) ?? [];
+    setEpisodes(nextEpisodes);
     const map: Record<string, Progress> = {};
     ((prog.data as Progress[]) ?? []).forEach((p) => (map[p.episode_id] = p));
+    const nextBriefing = brief.data?.text_content ?? null;
     setProgress(map);
-    setBriefingText(brief.data?.text_content ?? null);
+    setBriefingText(nextBriefing);
+    academyCache.set(user.id, { episodes: nextEpisodes, progress: map, briefing: nextBriefing, cachedAt: Date.now() });
     setLoading(false);
   }, [user]);
 
   useEffect(() => {
     load();
   }, [load]);
+
+  useEffect(() => {
+    const firstReadyEpisode = episodes.find((episode) => episode.audio_url);
+    if (!firstReadyEpisode?.audio_url) return;
+    const timer = window.setTimeout(() => { void preloadAudioSrc(firstReadyEpisode.audio_url ?? ""); }, 120);
+    return () => window.clearTimeout(timer);
+  }, [episodes]);
 
   const bySeries = useMemo(() => {
     const g: Record<string, Episode[]> = {};
