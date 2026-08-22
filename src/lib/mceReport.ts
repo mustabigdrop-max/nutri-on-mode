@@ -47,7 +47,7 @@ export function exportMceReport(scores: Record<PillarKey, number>) {
     doc.setFont("helvetica", "bold");
     doc.setFontSize(10);
     doc.text(`${key} · ${label}`, 418, y + 10);
-    doc.text(`${scores[key]}/100`, 518, y + 10, { align: "right" });
+    doc.text(`${scores[key]}/100`, 552, y + 10, { align: "right" });
     y += 32;
   });
 
@@ -66,19 +66,24 @@ export function exportMceReport(scores: Record<PillarKey, number>) {
   doc.setFontSize(15);
   doc.text("Base científica", 42, y);
   y += 20;
-  doc.setFontSize(9);
+  doc.setFontSize(8);
+  const columnWidth = 254;
+  const authorsTop = y;
   authors.forEach((author, index) => {
-    if (y > 748) { doc.addPage(); y = 54; }
+    const column = index >= 9 ? 1 : 0;
+    const row = index % 9;
+    const x = 42 + column * columnWidth;
+    const rowY = authorsTop + row * 28;
     doc.setFont("helvetica", "bold");
     doc.setTextColor(35, 35, 35);
-    doc.text(`${index + 1}. ${author.name} · ${author.year}`, 42, y);
+    doc.text(`${index + 1}. ${author.name} · ${author.year}`, x, rowY);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(95, 95, 95);
-    doc.text(`${author.concept} — ${author.book}`.slice(0, 92), 184, y);
-    y += 17;
+    doc.text(`${author.concept} — ${author.book}`.slice(0, 48), x, rowY + 11);
   });
+  y = authorsTop + 9 * 28 + 8;
 
-  if (y > 680) { doc.addPage(); y = 54; } else { y += 14; }
+  y += 14;
   doc.setDrawColor(232, 160, 32);
   doc.line(42, y, width - 42, y);
   y += 25;
