@@ -8,7 +8,7 @@ const PraxisFAB = ({ disabled = false }: { disabled?: boolean }) => {
     <button
       onClick={() => !disabled && navigate("/praxis")}
       disabled={disabled}
-      aria-label="Abrir PRAXIS"
+      aria-label="Abrir seu protocolo"
       className="fixed right-5 bottom-24 w-14 h-14 rounded-full flex items-center justify-center z-50 transition-transform active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
       style={{
         background: "linear-gradient(135deg, #00D4FF, #00FF88)",
