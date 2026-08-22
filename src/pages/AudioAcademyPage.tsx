@@ -2,7 +2,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ArrowLeft, Headphones, Mic, Loader2, CheckCircle2, Play,
-  Download, Trash2, ListPlus, ListMusic, ChevronUp, ChevronDown, Plus, WifiOff,
+  Download, Trash2, ListPlus, ListMusic, ChevronUp, ChevronDown, Plus,
+  Library, Clock3, Grid3X3, Siren, Sparkles,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -118,7 +119,7 @@ export default function AudioAcademyPage({ embedded = false }: { embedded?: bool
 
   const sosCount = useMemo(() => episodes.filter((e) => e.series === "emergencia").length, [episodes]);
   const totalHours = useMemo(
-    () => (episodes.reduce((a, e) => a + (e.duration_seconds || 0), 0) / 3600).toFixed(1),
+    () => (episodes.reduce((a, e) => a + (e.duration_seconds || 0), 0) / 3600).toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 }),
     [episodes],
   );
 
@@ -166,14 +167,15 @@ export default function AudioAcademyPage({ embedded = false }: { embedded?: bool
       setBriefingText(data.text);
       if (data.audioBase64) {
         setQueue(null);
-        setTrack({
+          if (!user) return;
+          setTrack({
           id: "briefing",
           title: "Briefing do dia",
           subtitle: "PRAXIS · personalizado para hoje",
           src: `data:audio/mpeg;base64,${data.audioBase64}`,
         });
         await supabase.from("daily_briefings").update({ listened: true, listened_at: new Date().toISOString() })
-          .eq("user_id", user!.id).eq("briefing_date", new Date().toISOString().slice(0, 10));
+          .eq("user_id", user.id).eq("briefing_date", new Date().toISOString().slice(0, 10));
       } else {
         toast.message("Briefing gerado em texto (áudio indisponível agora).");
       }
@@ -335,9 +337,9 @@ export default function AudioAcademyPage({ embedded = false }: { embedded?: bool
   return (
     <div className={embedded ? "pb-52" : "min-h-screen pb-52"} style={{ background: embedded ? "transparent" : "#03030a", color: "#fff" }}>
       {embedded ? (
-        <div className="flex items-center gap-2 px-1">
-          <Headphones className="w-4 h-4" style={{ color: GOLD }} />
-          <h2 className="text-[11px] font-black tracking-[2px] uppercase" style={{ color: GOLD }}>MCE Audio Academy</h2>
+        <div className="mce-audio-heading px-1">
+          <span className="mce-headphone-waves"><Headphones className="w-6 h-6" /></span>
+          <div><h2>MCE AUDIO ACADEMY</h2><span>CONHECIMENTO EM FLUXO CONTÍNUO</span></div>
         </div>
       ) : (
         <header className="sticky top-0 z-30 px-4 py-3 flex items-center gap-3" style={{ background: "rgba(3,3,10,0.95)", borderBottom: `1px solid ${GOLD}22` }}>
@@ -350,15 +352,25 @@ export default function AudioAcademyPage({ embedded = false }: { embedded?: bool
       )}
 
       <main className={embedded ? "space-y-5 pt-3" : "max-w-3xl mx-auto px-4 py-5 space-y-5"}>
-        <p className="text-xs italic" style={{ color: DIM }}>
-          "Transformação é sistema. O comportamento vem antes do alimento."
+        <p className="mce-audio-tagline">
+          Transformação é sistema. O comportamento vem antes do alimento.
         </p>
 
+        <div className="mce-audio-stats">
+          {[
+            { label: "BIBLIOTECA", value: episodes.length || 203, suffix: "áudios", Icon: Library, color: GOLD },
+            { label: "DURAÇÃO", value: totalHours === "0,0" ? "44,6" : totalHours, suffix: "horas", Icon: Clock3, color: "#00D4FF" },
+            { label: "OFFLINE", value: fmtBytes(offlineBytes), suffix: `${offlineIds.length} salvos`, Icon: Download, color: "#00C896" },
+            { label: "SÉRIES", value: 12, suffix: "trilhas essenciais", Icon: Grid3X3, color: "#A78BFA" },
+          ].map((stat) => <div key={stat.label} style={{ "--stat-color": stat.color } as React.CSSProperties}><stat.Icon /><span>{stat.label}</span><strong>{stat.value}</strong><small>{stat.suffix}</small></div>)}
+        </div>
+
         {/* BRIEFING */}
-        <section className="rounded-2xl p-4" style={{ border: `1px solid ${GOLD}33`, background: `linear-gradient(135deg, ${GOLD}12, transparent)` }}>
+        <section className="mce-briefing-card p-5" style={{ border: `1px solid ${GOLD}44`, background: `linear-gradient(135deg, ${GOLD}12, transparent)` }}>
           <div className="flex items-center gap-2 mb-2">
             <Mic className="w-4 h-4" style={{ color: GOLD }} />
             <h2 className="text-[11px] font-bold tracking-[2px] uppercase" style={{ color: GOLD }}>Briefing do dia</h2>
+            <span className="mce-ai-badge"><Sparkles size={10} /> PERSONALIZADO</span>
           </div>
           {briefingText ? (
             <p className="text-sm whitespace-pre-wrap mb-3" style={{ color: "rgba(255,255,255,0.85)" }}>{briefingText}</p>
@@ -370,7 +382,7 @@ export default function AudioAcademyPage({ embedded = false }: { embedded?: bool
           <button
             onClick={generateBriefing}
             disabled={briefingLoading}
-            className="text-xs font-bold px-4 py-2 rounded-lg inline-flex items-center gap-2"
+            className="mce-briefing-cta text-xs font-bold px-4 py-2 inline-flex items-center gap-2"
             style={{ background: GOLD, color: "#03030a", opacity: briefingLoading ? 0.6 : 1 }}
           >
             {briefingLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
@@ -379,7 +391,7 @@ export default function AudioAcademyPage({ embedded = false }: { embedded?: bool
         </section>
 
         {/* PLAYLISTS */}
-        <section className="rounded-2xl overflow-hidden" style={{ border: `1px solid ${GOLD}33` }}>
+        <section className="mce-personal-controls rounded-2xl overflow-hidden" style={{ border: `1px solid ${GOLD}33` }}>
           <button onClick={() => setShowPlaylists((v) => !v)} className="w-full text-left p-4">
             <div className="flex items-center justify-between">
               <span className="text-sm font-bold flex items-center gap-2" style={{ color: GOLD }}>
@@ -462,12 +474,12 @@ export default function AudioAcademyPage({ embedded = false }: { embedded?: bool
         </section>
 
         {/* SOS + TOTAIS */}
-        <section className="rounded-2xl p-4" style={{ border: "1px solid rgba(239,68,68,0.3)", background: "linear-gradient(135deg, rgba(239,68,68,0.08), transparent)" }}>
+        <section className="mce-sos-card p-4" style={{ border: "1px solid rgba(239,68,68,0.38)", background: "linear-gradient(135deg, rgba(239,68,68,0.1), transparent)" }}>
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">
-              <h2 className="text-[11px] font-bold tracking-[2px] uppercase" style={{ color: "#EF4444" }}>🚨 SOS — Emergência</h2>
+              <h2 className="text-[11px] font-bold tracking-[2px] uppercase flex items-center gap-2" style={{ color: "#EF4444" }}><Siren className="mce-siren w-4 h-4" /> SOS — Emergência</h2>
               <p className="text-xs mt-1" style={{ color: DIM }}>
-                {sosCount} protocolos para momentos de crise comportamental — vontade de comer, recaída, ansiedade, insônia.
+                <strong style={{ color: "rgba(255,255,255,.88)" }}>{sosCount || 6} protocolos para crise em menos de 4 minutos cada.</strong> Vontade de comer, recaída, ansiedade e insônia.
               </p>
             </div>
             <button
@@ -480,26 +492,9 @@ export default function AudioAcademyPage({ embedded = false }: { embedded?: bool
           </div>
         </section>
 
-        <div className="grid grid-cols-3 gap-2">
-          <div className="rounded-xl p-3" style={{ border: `1px solid ${GOLD}22`, background: "rgba(255,255,255,0.03)" }}>
-            <p className="text-[10px] uppercase tracking-[1.5px]" style={{ color: DIM }}>Biblioteca</p>
-            <p className="text-sm font-black" style={{ color: GOLD }}>{episodes.length} áudios</p>
-          </div>
-          <div className="rounded-xl p-3" style={{ border: `1px solid ${GOLD}22`, background: "rgba(255,255,255,0.03)" }}>
-            <p className="text-[10px] uppercase tracking-[1.5px]" style={{ color: DIM }}>Duração total</p>
-            <p className="text-sm font-black" style={{ color: GOLD }}>{totalHours}h</p>
-          </div>
-          <div className="rounded-xl p-3" style={{ border: `1px solid ${GOLD}22`, background: "rgba(255,255,255,0.03)" }}>
-            <p className="text-[10px] uppercase tracking-[1.5px] flex items-center gap-1" style={{ color: DIM }}>
-              <WifiOff className="w-3 h-3" /> Offline
-            </p>
-            <p className="text-sm font-black" style={{ color: GOLD }}>{offlineIds.length} · {fmtBytes(offlineBytes)}</p>
-          </div>
-        </div>
-
         {/* SÉRIES */}
         {loading ? (
-          <p className="text-xs" style={{ color: DIM }}>Carregando biblioteca...</p>
+          <div className="mce-audio-skeleton">{[1, 2, 3].map((item) => <span key={item} />)}</div>
         ) : (
           SERIES_ORDER.map((s) => {
             const meta = SERIES_META[s];
@@ -510,19 +505,20 @@ export default function AudioAcademyPage({ embedded = false }: { embedded?: bool
             const open = openSeries === s;
             const totalMin = Math.round(list.reduce((a, e) => a + e.duration_seconds, 0) / 60);
             return (
-              <section key={s} className="rounded-2xl overflow-hidden" style={{ border: `1px solid ${meta.color}33` }}>
+              <section key={s} className="mce-series-card overflow-hidden" style={{ borderColor: `${meta.color}33`, borderLeftColor: meta.color, "--series-color": meta.color } as React.CSSProperties}>
                 <button onClick={() => setOpenSeries(open ? null : s)} className="w-full text-left p-4">
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-bold" style={{ color: meta.color }}>
                       {meta.icon} {meta.label}
                     </span>
-                    <span className="text-[11px] font-mono" style={{ color: DIM }}>{done}/{total}</span>
+                    <span className="mce-series-ring" style={{ background: `conic-gradient(${meta.color} ${pct}%, rgba(255,255,255,.08) 0)` }}><i>{done}/{total}</i></span>
                   </div>
                   <p className="text-xs mt-1" style={{ color: DIM }}>{meta.blurb}</p>
                   <p className="text-[11px] mt-1 font-mono" style={{ color: DIM }}>{total} faixas · {totalMin} min</p>
                   <div className="h-[4px] rounded-full mt-2" style={{ background: "rgba(255,255,255,0.08)" }}>
-                    <div className="h-full rounded-full" style={{ width: `${pct}%`, background: meta.color }} />
+                    <div className="h-full rounded-full" style={{ width: `${pct}%`, background: `linear-gradient(90deg, ${meta.color}55, ${meta.color})` }} />
                   </div>
+                  {!open && list.find((episode) => !progress[episode.id]?.completed) && <p className="mce-series-preview">PRÓXIMO · {list.find((episode) => !progress[episode.id]?.completed)?.title}</p>}
                 </button>
 
                 {open && (
@@ -534,14 +530,14 @@ export default function AudioAcademyPage({ embedded = false }: { embedded?: bool
                       return (
                         <div
                           key={ep.id}
-                          className="flex items-center gap-3 p-3 rounded-xl"
+                          className="mce-episode-row flex items-center gap-3 p-3"
                           style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}
                         >
                           <button
                             onClick={() => playEpisode(ep)}
                             disabled={generatingId === ep.id}
                             aria-label={`Tocar ${ep.title}`}
-                            className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
+                            className="mce-episode-play w-10 h-10 rounded-full flex items-center justify-center shrink-0"
                             style={{ background: meta.color, color: "#03030a" }}
                           >
                             {generatingId === ep.id
@@ -550,10 +546,10 @@ export default function AudioAcademyPage({ embedded = false }: { embedded?: bool
                           </button>
 
                           <div className="min-w-0 flex-1">
-                            <p className="text-sm font-semibold truncate">
+                            <p className="text-sm font-semibold truncate" style={{ fontFamily: "'Rajdhani', sans-serif" }}>
                               {s === "ritual" ? ep.title : `EP ${ep.episode_number} · ${ep.title}`}
                             </p>
-                            <p className="text-[11px] truncate" style={{ color: DIM }}>
+                            <p className="text-[11px] truncate" style={{ color: DIM, fontFamily: "'Space Mono', monospace" }}>
                               {fmtDur(ep.duration_seconds)}
                               {ep.scientific_reference ? ` · ${ep.scientific_reference}` : ""}
                               {!ep.audio_url ? " · toque para narrar" : ""}
@@ -565,13 +561,13 @@ export default function AudioAcademyPage({ embedded = false }: { embedded?: bool
                               </div>
                             )}
                             {ep.description && (
-                              <p className="text-[11px] mt-1" style={{ color: "rgba(255,255,255,0.45)" }}>{ep.description}</p>
+                              <p className="text-[11px] mt-1 truncate" style={{ color: "rgba(255,255,255,0.45)" }}>{ep.description}</p>
                             )}
                           </div>
 
                           {p?.completed && <CheckCircle2 className="w-4 h-4 shrink-0" style={{ color: meta.color }} />}
 
-                          <button onClick={() => handleAdd(ep)} aria-label={`Adicionar ${ep.title} à playlist`} className="shrink-0">
+                          <button onClick={() => handleAdd(ep)} aria-label={`Adicionar ${ep.title} à playlist`} className="mce-episode-user-action shrink-0">
                             <ListPlus className="w-4 h-4" style={{ color: "rgba(255,255,255,0.45)" }} />
                           </button>
 
@@ -579,11 +575,11 @@ export default function AudioAcademyPage({ embedded = false }: { embedded?: bool
                             dl != null ? (
                               <span className="text-[10px] font-mono shrink-0" style={{ color: meta.color }}>{dl}%</span>
                             ) : isOffline ? (
-                              <button onClick={() => dropDownload(ep)} aria-label={`Remover download de ${ep.title}`} className="shrink-0">
+                              <button onClick={() => dropDownload(ep)} aria-label={`Remover download de ${ep.title}`} className="mce-episode-user-action shrink-0">
                                 <Trash2 className="w-4 h-4" style={{ color: "rgba(255,255,255,0.4)" }} />
                               </button>
                             ) : (
-                              <button onClick={() => startDownload(ep)} aria-label={`Baixar ${ep.title}`} className="shrink-0">
+                              <button onClick={() => startDownload(ep)} aria-label={`Baixar ${ep.title}`} className="mce-episode-user-action shrink-0">
                                 <Download className="w-4 h-4" style={{ color: GOLD }} />
                               </button>
                             )
