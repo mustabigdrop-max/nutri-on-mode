@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ArrowLeft, Headphones, Mic, Loader2, CheckCircle2, Play,
-  Download, Trash2, ListPlus, ListMusic, ChevronUp, ChevronDown, Plus, WifiOff,
+  Download, Trash2, ListPlus, ListMusic, ChevronUp, ChevronDown, Plus,
   Library, Clock3, Grid3X3, Siren, Sparkles,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -167,14 +167,15 @@ export default function AudioAcademyPage({ embedded = false }: { embedded?: bool
       setBriefingText(data.text);
       if (data.audioBase64) {
         setQueue(null);
-        setTrack({
+          if (!user) return;
+          setTrack({
           id: "briefing",
           title: "Briefing do dia",
           subtitle: "PRAXIS · personalizado para hoje",
           src: `data:audio/mpeg;base64,${data.audioBase64}`,
         });
         await supabase.from("daily_briefings").update({ listened: true, listened_at: new Date().toISOString() })
-          .eq("user_id", user!.id).eq("briefing_date", new Date().toISOString().slice(0, 10));
+          .eq("user_id", user.id).eq("briefing_date", new Date().toISOString().slice(0, 10));
       } else {
         toast.message("Briefing gerado em texto (áudio indisponível agora).");
       }
@@ -390,7 +391,7 @@ export default function AudioAcademyPage({ embedded = false }: { embedded?: bool
         </section>
 
         {/* PLAYLISTS */}
-        <section className="rounded-2xl overflow-hidden" style={{ border: `1px solid ${GOLD}33` }}>
+        <section className="mce-personal-controls rounded-2xl overflow-hidden" style={{ border: `1px solid ${GOLD}33` }}>
           <button onClick={() => setShowPlaylists((v) => !v)} className="w-full text-left p-4">
             <div className="flex items-center justify-between">
               <span className="text-sm font-bold flex items-center gap-2" style={{ color: GOLD }}>
@@ -566,7 +567,7 @@ export default function AudioAcademyPage({ embedded = false }: { embedded?: bool
 
                           {p?.completed && <CheckCircle2 className="w-4 h-4 shrink-0" style={{ color: meta.color }} />}
 
-                          <button onClick={() => handleAdd(ep)} aria-label={`Adicionar ${ep.title} à playlist`} className="shrink-0">
+                          <button onClick={() => handleAdd(ep)} aria-label={`Adicionar ${ep.title} à playlist`} className="mce-episode-user-action shrink-0">
                             <ListPlus className="w-4 h-4" style={{ color: "rgba(255,255,255,0.45)" }} />
                           </button>
 
@@ -574,11 +575,11 @@ export default function AudioAcademyPage({ embedded = false }: { embedded?: bool
                             dl != null ? (
                               <span className="text-[10px] font-mono shrink-0" style={{ color: meta.color }}>{dl}%</span>
                             ) : isOffline ? (
-                              <button onClick={() => dropDownload(ep)} aria-label={`Remover download de ${ep.title}`} className="shrink-0">
+                              <button onClick={() => dropDownload(ep)} aria-label={`Remover download de ${ep.title}`} className="mce-episode-user-action shrink-0">
                                 <Trash2 className="w-4 h-4" style={{ color: "rgba(255,255,255,0.4)" }} />
                               </button>
                             ) : (
-                              <button onClick={() => startDownload(ep)} aria-label={`Baixar ${ep.title}`} className="shrink-0">
+                              <button onClick={() => startDownload(ep)} aria-label={`Baixar ${ep.title}`} className="mce-episode-user-action shrink-0">
                                 <Download className="w-4 h-4" style={{ color: GOLD }} />
                               </button>
                             )

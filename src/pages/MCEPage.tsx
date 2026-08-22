@@ -475,6 +475,21 @@ export default function MCEIntelligencePage() {
   const [pillarDirection, setPillarDirection] = useState(1);
 
   useEffect(() => {
+    if (!presentationMode) return;
+    let frame = 0;
+    let last = performance.now();
+    const advance = (now: number) => {
+      if (now - last > 40) {
+        window.scrollBy({ top: 1, behavior: "auto" });
+        last = now;
+      }
+      if (window.scrollY + window.innerHeight < document.documentElement.scrollHeight - 4) frame = requestAnimationFrame(advance);
+    };
+    const timer = window.setTimeout(() => { frame = requestAnimationFrame(advance); }, 1200);
+    return () => { window.clearTimeout(timer); cancelAnimationFrame(frame); };
+  }, [presentationMode]);
+
+  useEffect(() => {
     const iv = setInterval(() => setQuoteIdx((i) => (i + 1) % MCE_QUOTES.length), 8000);
     return () => clearInterval(iv);
   }, []);
