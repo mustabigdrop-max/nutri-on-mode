@@ -39,7 +39,7 @@ const PraxisPage = () => {
   const firstName = (fullName || user?.user_metadata?.full_name || "atleta").split(" ")[0];
 
   useEffect(() => {
-    document.title = "PRAXIS · NUTRION";
+    document.title = "Seu Protocolo · NUTRION";
   }, []);
 
   useEffect(() => {
@@ -57,8 +57,8 @@ const PraxisPage = () => {
         id: "welcome",
         role: "praxis",
         content: objetivo
-          ? `Olá, ${firstName}. Seu protocolo de ${objetivo} está ativo. Como posso te ajudar?`
-          : `Olá, ${firstName}. Estou aqui pra te ajudar com dúvidas sobre seu protocolo. O que precisa?`,
+          ? `${firstName}, seu protocolo de ${objetivo} está rodando. Pergunta o que precisar.`
+          : `${firstName}, seu protocolo está rodando. Pergunta o que precisar.`,
       },
     ]);
   }, [firstName, mealPlan]);
@@ -130,9 +130,9 @@ const PraxisPage = () => {
             style={{ color: CYAN }}
             strokeWidth={2.5}
           />
-          <h1 className="praxis-title">PRAXIS</h1>
+          <h1 className="praxis-title">SEU PROTOCOLO</h1>
         </div>
-        <p className="praxis-subtitle">SEU PROTOCOLO RESPONDE.</p>
+        <p className="praxis-subtitle">O COMPORTAMENTO VEM ANTES DO ALIMENTO.</p>
       </header>
 
       {/* Chat */}
@@ -187,7 +187,7 @@ const PraxisPage = () => {
           <input
             ref={inputRef}
             className="praxis-input"
-            placeholder="Pergunte ao PRAXIS..."
+            placeholder="Pergunta o que precisar..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
             disabled={loading}
