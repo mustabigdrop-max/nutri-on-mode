@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import AudioAcademyPage from "@/pages/AudioAcademyPage";
 import { useNavigate } from "react-router-dom";
 import {
-  Activity, ArrowLeft, BookOpen, Brain, Briefcase, Clock, Dumbbell,
+  Activity, ArrowLeft, BookOpen, Brain, Briefcase, CheckCircle2, Clock, Dumbbell,
   FileDown, Headphones, Map, MonitorUp, ScanLine, TrendingUp, Users, Zap,
 } from "lucide-react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
@@ -26,6 +26,9 @@ import { MCE_GUIDE_MARKDOWN } from "@/data/mceGuide";
 import { MCE_PROTOCOL_24H_MARKDOWN } from "@/data/mceProtocol24h";
 import Protocol24hChecklist from "@/components/mce/Protocol24hChecklist";
 import MceSystemPanel from "@/components/mce/MceSystemPanel";
+import MceDailyCheckin, { useRollingMceScores } from "@/components/mce/MceDailyCheckin";
+import MceOnboarding from "@/components/mce/MceOnboarding";
+import { weekConsistency, weekLabels } from "@/lib/mceSystem";
 
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -488,14 +491,19 @@ export default function MCEIntelligencePage() {
   const { user } = useAuth();
   const [pillar, setPillar] = useState<PillarKey>("M");
   const [tab, setTab] = useState("estudo");
-  const [scores, setScores] = useState<Record<PillarKey, number>>({ M: 50, C: 50, E: 50 });
-  const [diagnostics, setDiagnostics] = useState<Record<PillarKey, number[]>>({ M: [5, 5, 5], C: [5, 5, 5], E: [5, 5, 5] });
   const [completed, setCompleted] = useState<Record<string, boolean>>({});
   const [selectedProfile, setSelectedProfile] = useState<string | null>(null);
   const [quoteIdx, setQuoteIdx] = useState(0);
   const [presentationMode, setPresentationMode] = useState(false);
   const [pillarDirection, setPillarDirection] = useState(1);
+  const [showCheckin, setShowCheckin] = useState(false);
+  const [onboardingDone, setOnboardingDone] = useState(() => {
+    if (typeof window === "undefined") return true;
+    return localStorage.getItem("mce-onboarding-v1") === "done";
+  });
   const reduceMotion = useReducedMotion();
+
+  const { scores, checkins, loading: scoresLoading, refresh: refreshScores, checkedInToday } = useRollingMceScores();
 
   useEffect(() => {
     if (!presentationMode || reduceMotion) return;
@@ -518,40 +526,40 @@ export default function MCEIntelligencePage() {
     return () => clearInterval(iv);
   }, [reduceMotion]);
 
-  const [loaded, setLoaded] = useState(false);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // ── Load persisted state ──
+  // ── Load exercise completion state ──
   useEffect(() => {
     if (!user) return;
     let cancelled = false;
     (async () => {
-      const [scoreRes, diagRes, exRes] = await Promise.all([
-        supabase.from("mce_scores").select("score_m,score_c,score_e").eq("user_id", user.id).order("created_at", { ascending: false }).limit(1).maybeSingle(),
-        supabase.from("mce_diagnostics").select("pillar,answers").eq("user_id", user.id),
-        supabase.from("mce_exercises_done").select("exercise_key").eq("user_id", user.id),
-      ]);
+      const { data } = await supabase.from("mce_exercises_done").select("exercise_key").eq("user_id", user.id);
       if (cancelled) return;
-      if (scoreRes.data) {
-        setScores({ M: scoreRes.data.score_m ?? 50, C: scoreRes.data.score_c ?? 50, E: scoreRes.data.score_e ?? 50 });
-      }
-      if (diagRes.data?.length) {
-        setDiagnostics((prev) => {
-          const next = { ...prev };
-          for (const row of diagRes.data as { pillar: string; answers: number[] }[]) {
-            if (row.pillar === "M" || row.pillar === "C" || row.pillar === "E") {
-              next[row.pillar] = row.answers?.length === 3 ? row.answers : next[row.pillar];
-            }
-          }
-          return next;
-        });
-      }
-      if (exRes.data?.length) {
+      if (data?.length) {
         const map: Record<string, boolean> = {};
-        for (const row of exRes.data as { exercise_key: string }[]) map[row.exercise_key] = true;
+        for (const row of data as { exercise_key: string }[]) map[row.exercise_key] = true;
         setCompleted(map);
       }
-      setLoaded(true);
+    })();
+    return () => { cancelled = true; };
+  }, [user]);
+
+  const [diagnostics, setDiagnostics] = useState<Record<PillarKey, number[]>>({ M: [5, 5, 5], C: [5, 5, 5], E: [5, 5, 5] });
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase.from("mce_diagnostics").select("pillar,answers").eq("user_id", user.id);
+      if (cancelled || !data?.length) return;
+      setDiagnostics((prev) => {
+        const next = { ...prev };
+        for (const row of data as { pillar: string; answers: number[] }[]) {
+          if (row.pillar === "M" || row.pillar === "C" || row.pillar === "E") {
+            next[row.pillar] = row.answers?.length === 3 ? row.answers : next[row.pillar];
+          }
+        }
+        return next;
+      });
     })();
     return () => { cancelled = true; };
   }, [user]);
@@ -567,29 +575,19 @@ export default function MCEIntelligencePage() {
   };
   const phase = getPhase(totalScore);
 
-  const persistScores = useCallback((next: Record<PillarKey, number>) => {
-    if (!user) return;
-    if (saveTimer.current) clearTimeout(saveTimer.current);
-    saveTimer.current = setTimeout(() => {
-      void supabase.from("mce_scores").insert({
-        user_id: user.id, score_m: next.M, score_c: next.C, score_e: next.E, source: "diagnostic",
-      });
-    }, 1200);
-  }, [user]);
-
   const updateDiagnostic = (pKey: PillarKey, idx: number, val: number) => {
     const answers = [...diagnostics[pKey]];
     answers[idx] = val;
-    const newScore = Math.round((answers.reduce((a, b) => a + b, 0) / 30) * 100);
-    const nextScores = { ...scores, [pKey]: newScore } as Record<PillarKey, number>;
     setDiagnostics((prev) => ({ ...prev, [pKey]: answers }));
-    setScores(nextScores);
-    persistScores(nextScores);
     if (user) {
       void supabase.from("mce_diagnostics").upsert(
         { user_id: user.id, pillar: pKey, answers },
         { onConflict: "user_id,pillar" },
       );
+      const newScore = Math.round((answers.reduce((a, b) => a + b, 0) / 30) * 100);
+      void supabase.from("mce_scores").insert({
+        user_id: user.id, score_m: pKey === "M" ? newScore : scores.M, score_c: pKey === "C" ? newScore : scores.C, score_e: pKey === "E" ? newScore : scores.E, source: "diagnostic",
+      });
     }
   };
 
@@ -610,6 +608,7 @@ export default function MCEIntelligencePage() {
     { key: "diagnostico", label: "DIAGNÓSTICO", group: "content" as const, Icon: ScanLine },
     { key: "exercicios", label: "EXERCÍCIOS", group: "content" as const, Icon: Dumbbell },
     { key: "perfis", label: "PERFIS", group: "content" as const, Icon: Users },
+    { key: "checkin", label: "CHECK-IN", badge: checkedInToday ? "#00FF88" : "#00D4FF", group: "action" as const, Icon: CheckCircle2 },
     { key: "protocolo24h", label: "24H", badge: "#E8A020", group: "action" as const, Icon: Clock },
     { key: "progresso", label: "PROGRESSO", group: "action" as const, Icon: TrendingUp },
     { key: "audio", label: "ÁUDIO", badge: "#E8A020", group: "action" as const, Icon: Headphones },
@@ -646,6 +645,13 @@ export default function MCEIntelligencePage() {
         .mce-guide th { font-family: ${MONO}; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(255,255,255,0.45); text-align: left; padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.12); white-space: nowrap; }
         .mce-guide td { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); vertical-align: top; }
       `}</style>
+
+      {!onboardingDone && (
+        <MceOnboarding onComplete={() => {
+          setOnboardingDone(true);
+          void refreshScores();
+        }} />
+      )}
 
       <div className="mce-root" style={{ maxWidth: 900, margin: "0 auto", padding: "0 16px" }}>
         {/* Header */}
@@ -706,10 +712,31 @@ export default function MCEIntelligencePage() {
             MENTALIDADE · COMPORTAMENTO · EXECUÇÃO
           </div>
 
+          {user && !checkedInToday && !showCheckin && (
+            <button
+              type="button"
+              onClick={() => setShowCheckin(true)}
+              style={{
+                marginTop: 16, padding: "10px 18px", borderRadius: 8, cursor: "pointer",
+                fontFamily: MONO, fontSize: 10, letterSpacing: 2,
+                background: "rgba(0,212,255,0.1)", border: "1px solid rgba(0,212,255,0.4)", color: "#00D4FF",
+                display: "inline-flex", alignItems: "center", gap: 8,
+              }}
+            >
+              <CheckCircle2 size={14} /> FAZER CHECK-IN DE HOJE
+            </button>
+          )}
+
+          {user && showCheckin && (
+            <div style={{ marginTop: 20 }}>
+              <MceDailyCheckin onSubmit={() => { setShowCheckin(false); void refreshScores(); }} onClose={() => setShowCheckin(false)} />
+            </div>
+          )}
+
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1, duration: 0.6 }} style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 24, flexWrap: "wrap", marginTop: 24 }}>
             <ScoreRing value={scores.M} color="#A78BFA" size={92} label="MINDSET" />
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
-              <ScoreRing value={totalScore} color={phase.color} size={132} label="MCE SCORE" sublabel={loaded ? "SINCRONIZADO" : "CARREGANDO"} />
+              <ScoreRing value={totalScore} color={phase.color} size={132} label="MCE SCORE" sublabel={scoresLoading ? "CARREGANDO" : "MÉDIA 7 DIAS"} />
               <div style={{
                 fontFamily: MONO, fontSize: 10, letterSpacing: 2, color: phase.color,
                 border: `1px solid ${phase.color}40`, borderRadius: 6, padding: "4px 10px",
@@ -791,6 +818,14 @@ export default function MCEIntelligencePage() {
 
         <div style={{ marginTop: 20 }}>
           {tab === "audio" && <AudioAcademyPage embedded />}
+
+          {/* CHECK-IN */}
+          {tab === "checkin" && (
+            <div>
+              <div style={sectionTitle}>CHECK-IN DIÁRIO · MCE</div>
+              <MceDailyCheckin onSubmit={() => void refreshScores()} />
+            </div>
+          )}
 
           {/* ESTUDO */}
           {tab === "estudo" && (
@@ -997,23 +1032,26 @@ export default function MCEIntelligencePage() {
               <div style={{ marginTop: 20, padding: 16, borderRadius: 12, border: "1px solid rgba(255,255,255,0.06)", background: "rgba(255,255,255,0.02)" }}>
                 <div style={sectionTitle}>CONSISTÊNCIA · ÚLTIMOS 7 DIAS</div>
                 <div style={{ display: "flex", justifyContent: "space-between", gap: 6 }}>
-                  {["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"].map((d, i) => {
-                    const active = i < 5;
-                    return (
-                      <div key={d} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, flex: 1 }}>
-                        <div style={{
-                          width: "100%", aspectRatio: "1", maxWidth: 40, borderRadius: 8,
-                          display: "flex", alignItems: "center", justifyContent: "center",
-                          background: active ? "rgba(0,255,136,0.12)" : "rgba(255,255,255,0.03)",
-                          border: `1px solid ${active ? "rgba(0,255,136,0.35)" : "rgba(255,255,255,0.06)"}`,
-                          color: "#00FF88", fontSize: 12,
-                        }}>
-                          {active ? "✓" : ""}
+                  {(() => {
+                    const consistency = weekConsistency(checkins);
+                    return weekLabels.map((d, i) => {
+                      const active = consistency[i];
+                      return (
+                        <div key={d} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, flex: 1 }}>
+                          <div style={{
+                            width: "100%", aspectRatio: "1", maxWidth: 40, borderRadius: 8,
+                            display: "flex", alignItems: "center", justifyContent: "center",
+                            background: active ? "rgba(0,255,136,0.12)" : "rgba(255,255,255,0.03)",
+                            border: `1px solid ${active ? "rgba(0,255,136,0.35)" : "rgba(255,255,255,0.06)"}`,
+                            color: "#00FF88", fontSize: 12,
+                          }}>
+                            {active ? "✓" : ""}
+                          </div>
+                          <span style={{ fontFamily: MONO, fontSize: 9, color: "rgba(255,255,255,0.3)" }}>{d}</span>
                         </div>
-                        <span style={{ fontFamily: MONO, fontSize: 9, color: "rgba(255,255,255,0.3)" }}>{d}</span>
-                      </div>
-                    );
-                  })}
+                      );
+                    });
+                  })()}
                 </div>
               </div>
 

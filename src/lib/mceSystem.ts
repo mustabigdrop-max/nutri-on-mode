@@ -3,6 +3,27 @@ import type { PillarKey } from "@/data/mceData";
 export type ScoreRow = { created_at: string; score_m: number; score_c: number; score_e: number };
 export type EventRow = { exercise_key: string; completed_at: string };
 
+export type CheckinRow = {
+  checkin_date: string;
+  sleep_quality: number;
+  stress_level: number;
+  nutrition_adherence: number;
+  hydration: number;
+  movement: number;
+  focus_clarity: number;
+};
+
+export type CheckinFieldKey = Exclude<keyof CheckinRow, "checkin_date">;
+
+export const CHECKIN_FIELDS: { key: CheckinFieldKey; label: string; pillar: PillarKey; invert?: boolean }[] = [
+  { key: "focus_clarity", label: "Foco / Clareza mental", pillar: "M" },
+  { key: "stress_level", label: "Nível de estresse", pillar: "M", invert: true },
+  { key: "nutrition_adherence", label: "Aderência nutricional", pillar: "C" },
+  { key: "hydration", label: "Hidratação", pillar: "C" },
+  { key: "movement", label: "Movimento / Treino", pillar: "E" },
+  { key: "sleep_quality", label: "Qualidade do sono", pillar: "E" },
+];
+
 export const MCE_LEVELS = [
   { min: 0, max: 30, name: "INICIANTE", title: "Reconhecendo o padrão", color: "#EF4444" },
   { min: 31, max: 50, name: "CONSCIENTE", title: "Vendo o sistema", color: "#F59E0B" },
@@ -30,6 +51,65 @@ export function levelFor(score: number): { level: MceLevel; next: MceLevel | nul
   const progress = next ? Math.round(((s - level.min) / span) * 100) : 100;
   return { level, next, progress: Math.max(0, Math.min(100, progress)) };
 }
+
+// ── Check-in scoring ────────────────────────────────────────────────────────
+export function dailyScoresFromCheckin(row: Partial<CheckinRow>): Record<PillarKey, number> {
+  const v = (n?: number) => Math.max(1, Math.min(10, Number(n) || 1));
+  const stressInverted = 11 - v(row.stress_level);
+  return {
+    M: Math.round(((v(row.focus_clarity) + stressInverted) / 2) * 10),
+    C: Math.round(((v(row.nutrition_adherence) + v(row.hydration)) / 2) * 10),
+    E: Math.round(((v(row.movement) + v(row.sleep_quality)) / 2) * 10),
+  };
+}
+
+export function rollingScores(
+  checkins: CheckinRow[],
+  fallback: Record<PillarKey, number> = { M: 50, C: 50, E: 50 },
+  days = 7,
+  anchor: Date = new Date(),
+): Record<PillarKey, number> {
+  const map = new Map<string, CheckinRow>();
+  for (const c of checkins) map.set(c.checkin_date, c);
+
+  const daily: Record<PillarKey, number[]> = { M: [], C: [], E: [] };
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date(anchor);
+    d.setDate(d.getDate() - i);
+    const k = dayKey(d);
+    const row = map.get(k);
+    if (row) {
+      const s = dailyScoresFromCheckin(row);
+      daily.M.push(s.M);
+      daily.C.push(s.C);
+      daily.E.push(s.E);
+    }
+  }
+
+  const avg = (arr: number[]) => (arr.length ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length) : 0);
+  const out: Record<PillarKey, number> = {
+    M: avg(daily.M) || fallback.M,
+    C: avg(daily.C) || fallback.C,
+    E: avg(daily.E) || fallback.E,
+  };
+  return out;
+}
+
+export function weekConsistency(checkins: CheckinRow[], anchor: Date = new Date()): boolean[] {
+  const map = new Map<string, boolean>();
+  for (const c of checkins) map.set(c.checkin_date, true);
+  const out: boolean[] = [];
+  const today = anchor.getDay();
+  const labels = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(anchor);
+    d.setDate(d.getDate() - i);
+    out.push(map.has(dayKey(d)));
+  }
+  return out;
+}
+
+export const weekLabels = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 
 // ── Heatmap ────────────────────────────────────────────────────────────────
 export type HeatDay = { date: string; label: string; count: number; intensity: 0 | 1 | 2 | 3; crisis: boolean };
