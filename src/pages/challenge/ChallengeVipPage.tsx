@@ -6,16 +6,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ChallengeHeader } from "@/components/challenge/ChallengeLayout";
 import { useChallenge } from "@/hooks/useChallenge";
 import { supabase } from "@/integrations/supabase/client";
-import { CHALLENGE_DAYS, OBJETIVO_LABEL, challengeDay } from "@/lib/challenge";
+import { CHALLENGE_DAYS, OBJETIVO_LABEL, VIP_CHECKPOINTS, challengeDay } from "@/lib/challenge";
 import { downloadMyChallengeReport, type MyReportLog } from "@/lib/challengeMyReport";
 import { toast } from "sonner";
 
-const CHECKPOINTS = [
-  { day: 7, title: "Ajuste 1 · Calibração", desc: "Revisão de aderência e correção de porções." },
-  { day: 14, title: "Ajuste 2 · Metabolismo", desc: "Peso real vs projeção — kcal recalculadas na mão." },
-  { day: 21, title: "Ajuste 3 · Sprint", desc: "Estratégia de reta final e timing de carboidrato." },
-  { day: 30, title: "Fechamento", desc: "Relatório de transformação + próximo ciclo." },
-];
+const CHECKPOINTS = VIP_CHECKPOINTS;
 
 export default function ChallengeVipPage() {
   const { participant, challenge } = useChallenge();

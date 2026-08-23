@@ -250,3 +250,47 @@ export function localDateISO(): string {
   const offset = now.getTimezoneOffset() * 60000;
   return new Date(now.getTime() - offset).toISOString().slice(0, 10);
 }
+
+/** Checkpoints de ajuste manual do Coach — exclusivos do tier VIP. */
+export interface VipCheckpoint {
+  day: number;
+  title: string;
+  desc: string;
+  /** Mensagem do Coach para o disparo do ajuste. */
+  template: string;
+}
+
+export const VIP_CHECKPOINTS: VipCheckpoint[] = [
+  {
+    day: 7,
+    title: "Ajuste 1 · Calibração",
+    desc: "Revisão de aderência e correção de porções.",
+    template:
+      "{nome}, primeira semana fechada. Vou calibrar seu plano na mão hoje.\n\nMe manda: peso de hoje, como está a fome e quais refeições você travou. Ajusto e te devolvo ainda hoje.",
+  },
+  {
+    day: 14,
+    title: "Ajuste 2 · Metabolismo",
+    desc: "Peso real vs projeção — kcal recalculadas na mão.",
+    template:
+      "{nome}, metade do desafio. Hora de comparar peso real com a projeção e recalcular suas calorias.\n\nMe manda peso e uma foto de frente. Transformação é sistema — e sistema se ajusta com dado.",
+  },
+  {
+    day: 21,
+    title: "Ajuste 3 · Sprint",
+    desc: "Estratégia de reta final e timing de carboidrato.",
+    template:
+      "{nome}, entramos na reta final. Vou mexer no timing dos carboidratos pra você chegar no dia 30 no melhor shape.\n\nMe confirma seus dias de treino da semana.",
+  },
+  {
+    day: 30,
+    title: "Fechamento",
+    desc: "Relatório de transformação + próximo ciclo.",
+    template:
+      "{nome}, dia 30. Fechamento oficial.\n\nBaixa seu relatório de transformação na Área VIP e me manda as fotos finais. Depois a gente desenha o próximo ciclo.",
+  },
+];
+
+export function vipCheckpointForDay(day: number): VipCheckpoint | null {
+  return VIP_CHECKPOINTS.find((c) => c.day === day) ?? null;
+}
