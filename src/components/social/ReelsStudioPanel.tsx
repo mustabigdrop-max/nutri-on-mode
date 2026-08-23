@@ -163,6 +163,7 @@ export default function ReelsStudioPanel({ onBack, context: ctxSeed }: { onBack?
     if (!f) return;
     if (f.size > 60 * 1024 * 1024) return toast.error("Arquivo acima de 60MB");
     setFile(f);
+    setTrim(null);
     setPreview(f.type.startsWith("image/") ? await readAsDataUrl(f) : await extractVideoFrame(f));
   };
 
@@ -182,9 +183,14 @@ export default function ReelsStudioPanel({ onBack, context: ctxSeed }: { onBack?
       const image = isVideo ? preview ?? (await extractVideoFrame(file)) : await readAsDataUrl(file);
       if (!image) throw new Error("Não consegui extrair um frame desse vídeo. Sobe uma foto ou outro arquivo.");
 
+      const trimContext = trim
+        ? `${context ? context + "\n" : ""}Trecho do vídeo selecionado: ${trim.start}s até ${trim.end}s (${trim.duration}s de duração). Ajuste o roteiro para caber nesse tempo.`
+        : context;
+
       const { data, error: fnError } = await supabase.functions.invoke("prism-analyze", {
-        body: { mode: "reels_studio", image, from_video: isVideo, template_name: template.name, template_desc: template.desc, context },
+        body: { mode: "reels_studio", image, from_video: isVideo, template_name: template.name, template_desc: template.desc, context: trimContext },
       });
+
       if (fnError) throw new Error(fnError.message);
       if ((data as any)?.error) throw new Error((data as any).error);
       setResult((data as any).result as Result);
