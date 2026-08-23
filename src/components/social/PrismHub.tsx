@@ -5,6 +5,9 @@ import PrismPanel from "./PrismPanel";
 import PrismStudioPanel from "./PrismStudioPanel";
 import TechReelsPanel from "./TechReelsPanel";
 import ContentPackPanel from "./ContentPackPanel";
+import DailyReelPanel from "./DailyReelPanel";
+import HookBankPanel from "./HookBankPanel";
+import ContentCalendarPanel from "./ContentCalendarPanel";
 import { PRISM_MODES, modeById, type PrismMode } from "@/data/prismModes";
 
 const PRISM = "#A855F7";
