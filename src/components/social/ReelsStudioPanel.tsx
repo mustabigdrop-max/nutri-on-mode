@@ -340,6 +340,24 @@ export default function ReelsStudioPanel({ onBack, context: ctxSeed }: { onBack?
             )}
           </div>
 
+          {file?.type.startsWith("video/") && (
+            <ReelsVideoTrimmer
+              file={file}
+              onFrameCaptured={(dataUrl, info) => {
+                setPreview(dataUrl);
+                setTrim(info);
+                toast.success(`Trecho ${info.start}s → ${info.end}s selecionado`);
+              }}
+            />
+          )}
+          {trim && (
+            <div style={{ ...fM, fontSize: FONT.sm, color: C.green, marginTop: -10, marginBottom: 16 }}>
+              FRAME CAPTURADO · {trim.start}s → {trim.end}s ({trim.duration}s)
+            </div>
+          )}
+
+
+
           <div style={{ ...fM, fontSize: FONT.sm, color: C.textMuted, letterSpacing: "0.1em", marginBottom: 8 }}>PASSO 2 — ESCOLHE O ESTILO</div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginBottom: 20 }}>
             {TEMPLATES.map((t) => {
