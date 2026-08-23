@@ -529,13 +529,14 @@ export default function AudioAcademyPage({ embedded = false }: { embedded?: bool
               <section key={s} className="mce-series-card overflow-hidden" style={{ borderColor: `${meta.color}33`, borderLeftColor: meta.color, "--series-color": meta.color } as React.CSSProperties}>
                 <button onClick={() => setOpenSeries(open ? null : s)} className="w-full text-left p-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-bold" style={{ color: meta.color }}>
+                    <span style={{ color: meta.color, fontFamily: "'Rajdhani', sans-serif", fontWeight: 600, fontSize: 14 }}>
                       {meta.icon} {meta.label}
                     </span>
                     <span className="mce-series-ring" style={{ background: `conic-gradient(${meta.color} ${pct}%, rgba(255,255,255,.08) 0)` }}><i>{done}/{total}</i></span>
                   </div>
-                  <p className="text-xs mt-1" style={{ color: DIM }}>{meta.blurb}</p>
-                  <p className="text-[11px] mt-1 font-mono" style={{ color: DIM }}>{total} faixas · {totalMin} min</p>
+                  <p className="mt-1" style={{ color: DIM, fontFamily: "'Space Mono', monospace", fontSize: 9, letterSpacing: "0.03em", lineHeight: 1.8 }}>{meta.blurb}</p>
+                  <p className="mt-1" style={{ color: DIM, fontFamily: "'Space Mono', monospace", fontSize: 9, letterSpacing: "0.03em" }}>{total} faixas · {totalMin} min</p>
+
                   <div className="h-[4px] rounded-full mt-2" style={{ background: "rgba(255,255,255,0.08)" }}>
                     <div className="h-full rounded-full" style={{ width: `${pct}%`, background: `linear-gradient(90deg, ${meta.color}55, ${meta.color})` }} />
                   </div>
@@ -567,10 +568,11 @@ export default function AudioAcademyPage({ embedded = false }: { embedded?: bool
                           </button>
 
                           <div className="min-w-0 flex-1">
-                            <p className="text-sm font-semibold truncate" style={{ fontFamily: "'Rajdhani', sans-serif" }}>
+                            <p className="truncate" style={{ fontFamily: "'Rajdhani', sans-serif", fontWeight: 600, fontSize: 13, color: "#F5F0E8" }}>
                               {s === "ritual" ? ep.title : `EP ${ep.episode_number} · ${ep.title}`}
                             </p>
-                            <p className="text-[11px] truncate" style={{ color: DIM, fontFamily: "'Space Mono', monospace" }}>
+                            <p className="truncate" style={{ color: DIM, fontFamily: "'Space Mono', monospace", fontSize: 8, letterSpacing: "0.04em" }}>
+
                               {fmtDur(ep.duration_seconds)}
                               {ep.scientific_reference ? ` · ${ep.scientific_reference}` : ""}
                               {!ep.audio_url ? " · toque para narrar" : ""}

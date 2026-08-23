@@ -103,17 +103,18 @@ function PillarNav({ active, scores, onChange }: { active: PillarKey; scores: Re
           onClick={() => onChange(p.key)}
           style={{
             flex: 1, minHeight: 52, padding: "10px 6px", border: `1px solid ${active === p.key ? p.color + "35" : "transparent"}`, borderRadius: 0, cursor: "pointer",
-            fontFamily: MONO, fontSize: 11, letterSpacing: 2,
+            fontFamily: MONO, fontSize: 10, letterSpacing: active === p.key ? "0.10em" : "0.08em",
             background: active === p.key ? `${p.color}15` : "transparent",
             color: active === p.key ? p.color : "rgba(255,255,255,0.35)",
             borderBottom: active === p.key ? `2px solid ${p.color}` : "2px solid transparent",
             transition: "all 0.3s ease",
           }}
         >
-          <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7 }}>
+          <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
             <p.Icon size={14} /> {p.label}
-            <span style={{ border: `1px solid ${p.color}55`, color: p.color, padding: "1px 5px", fontSize: 9 }}>{scores[p.key]}</span>
+            <span style={{ fontFamily: DISPLAY, fontWeight: 700, fontSize: 12, border: `1px solid ${p.color}55`, color: p.color, padding: "2px 6px", marginLeft: 6 }}>{scores[p.key]}</span>
           </span>
+
         </Button>
       ))}
     </div>
@@ -191,15 +192,16 @@ function TabBar({ tabs, active, onChange }: {
               onClick={() => onChange(t.key)}
               className="mce-tabbar"
               style={{
-                flex: "0 0 auto", minHeight: 48, padding: `12px 10px 12px ${divider ? 22 : 10}px`, border: "none", cursor: "pointer",
-                fontFamily: MONO, fontSize: 10, letterSpacing: 1.5, textTransform: "uppercase",
+                flex: "0 0 auto", minHeight: 48, padding: `12px 12px 12px ${divider ? 24 : 12}px`, border: "none", cursor: "pointer",
+                fontFamily: MONO, fontSize: 8, letterSpacing: "0.10em", textTransform: "uppercase",
                 background: "transparent",
                 color: isActive ? "#00D4FF" : "rgba(255,255,255,0.35)",
                 borderBottom: isActive ? `2px solid ${t.badge || "#00D4FF"}` : "2px solid transparent",
                 transition: "all 0.25s ease", display: "flex", alignItems: "center", gap: 6,
-                marginLeft: divider ? 10 : 0,
+                marginLeft: divider ? 4 : 0,
                 borderLeft: divider ? "1px solid rgba(255,255,255,0.12)" : undefined,
               }}
+
             >
               <t.Icon size={11} />
               {t.label}
@@ -724,12 +726,13 @@ export default function MCEIntelligencePage() {
 
           <div className="mce-impact-quote" style={{ marginTop: 18, padding: "26px 18px", background: "rgba(255,255,255,0.02)", border: "1px solid rgba(184,146,42,0.16)", position: "relative", overflow: "hidden" }}>
             <span className="mce-quote-mark">“</span>
-            <p key={quoteIdx} style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 700, fontStyle: "italic", color: "rgba(255,255,255,0.9)", animation: "mceFade 0.6s ease", position: "relative" }}>
+            <p key={quoteIdx} style={{ fontFamily: DISPLAY, fontSize: 20, fontWeight: 600, fontStyle: "italic", letterSpacing: "-0.01em", lineHeight: 1.4, color: "#F5F0E8", animation: "mceFade 0.6s ease", position: "relative" }}>
               "{MCE_QUOTES[quoteIdx]}"
             </p>
-            <span style={{ fontFamily: MONO, fontSize: 7, letterSpacing: "0.12em", color: "rgba(184,146,42,0.55)" }}>
+            <span style={{ fontFamily: MONO, fontSize: 8, letterSpacing: "0.12em", color: "rgba(184,146,42,0.27)" }}>
               @diogo.mell0 · MCE METHOD
             </span>
+
           </div>
 
           <div className="mce-social-proof">
@@ -748,23 +751,24 @@ export default function MCEIntelligencePage() {
         <AnimatePresence mode="wait" custom={pillarDirection}>
         <motion.div key={pillar} custom={pillarDirection} initial={{ opacity: 0, x: pillarDirection * 24 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: pillarDirection * -24 }} transition={{ duration: 0.3 }} style={{ marginTop: 18 }}>
           <div style={{ display: "flex", alignItems: "baseline", gap: 10, flexWrap: "wrap" }}>
-            <span style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 700, color: data.color, letterSpacing: 1 }}>
+            <span style={{ fontFamily: DISPLAY, fontSize: 28, fontWeight: 700, color: data.color, letterSpacing: "-0.02em" }}>
               {data.label}
             </span>
-            <span style={{ fontFamily: MONO, fontSize: 9, letterSpacing: 2, color: data.color, border: `1px solid ${data.color}45`, padding: "4px 8px" }}>
+            <span style={{ fontFamily: MONO, fontSize: 9, letterSpacing: "0.06em", color: data.color, border: `1px solid ${data.color}45`, padding: "4px 8px" }}>
               {data.tagline}
             </span>
           </div>
-          <div style={{ fontFamily: DISPLAY, fontSize: 14, color: "rgba(255,255,255,0.5)", marginTop: 2 }}>
+          <div style={{ fontFamily: MONO, fontSize: 9, letterSpacing: "0.06em", color: "#888888", marginTop: 4 }}>
             {data.subtitle}
           </div>
           <p style={{
-            marginTop: 10, padding: "12px 14px", borderRadius: 12,
+            marginTop: 10, padding: "12px 14px", borderRadius: 12, maxWidth: 680,
             background: `${data.color}08`, border: `1px solid ${data.color}20`,
-            fontFamily: DISPLAY, fontSize: 14, lineHeight: 1.6, color: "rgba(255,255,255,0.7)",
+            fontFamily: MONO, fontSize: 10, lineHeight: 1.8, letterSpacing: "0.02em", color: "#888888",
           }}>
             {data.manifesto.split(/(software|identidade|sistema operacional)/gi).map((part, index) => /^(software|identidade|sistema operacional)$/i.test(part) ? <mark key={`${part}-${index}`} className="mce-keyword">{part}</mark> : part)}
           </p>
+
           <div className="mce-pillar-metrics">
             <span><Headphones size={14} /><strong>12</strong> episódios</span><span><Clock size={14} /><strong>97</strong> min de conteúdo</span><span><BookOpen size={14} /><strong>{data.authors.length}</strong> autores base</span>
           </div>
