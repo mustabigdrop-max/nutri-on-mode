@@ -177,6 +177,26 @@ export default function ChallengeOpsPanel({ challenge, gymName, onChanged }: Pro
   const due = reminderDue(cfg.reminder_checkin_time);
   const level = dueEscalationLevel(cfg);
 
+  const milestone = milestoneForDay(day);
+  const upcoming = nextMilestone(day);
+  const milestoneQueue = useMemo(
+    () =>
+      computeMilestoneQueue(
+        participants.map((p: any) => ({
+          id: p.id, user_id: p.user_id, full_name: p.full_name,
+          whatsapp: p.whatsapp, streak: p.streak ?? 0, meals_per_day: p.meals_per_day ?? 5,
+        })),
+        {
+          challengeName: challenge.name,
+          day,
+          link,
+          linkPlanos: "https://nutrion.app.br/desafio/planos",
+        },
+      ),
+    [participants, challenge.name, day, link],
+  );
+
+
   const saveConfig = async () => {
     const { error } = await supabase
       .from("gym_challenges")
