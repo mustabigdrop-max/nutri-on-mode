@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import { CalendarDays, Check, Film, Layers, RefreshCw } from "lucide-react";
+import { CalendarClock, CalendarDays, Check, Film, Layers, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { CALENDAR_30, DAILY_PILLARS, pillarById } from "@/data/dailyContentSystem";
+import ReelsSchedulePanel, { ScheduleBadge, cancelScheduled, useScheduledPosts } from "./ReelsSchedulePanel";
 
 const C = {
   bg: "#020205", card: "#080810", border: "#B8922A22", gold: "#B8922A",
@@ -33,6 +34,8 @@ export default function ReelsCalendar30() {
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
   const [seeding, setSeeding] = useState(false);
+  const [scheduleFor, setScheduleFor] = useState<Row | null>(null);
+  const { posts, refresh: refreshPosts } = useScheduledPosts();
 
   const start = useMemo(() => {
     const d = new Date();
@@ -146,8 +149,28 @@ export default function ReelsCalendar30() {
                   <div style={{ ...fM, fontSize: 11, color: C.textMid, marginTop: 3 }}>
                     {new Date(`${r.date}T12:00:00`).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", weekday: "short" })} · {pillar?.label || r.pillar} · {ready ? "PRONTO" : r.status.toUpperCase()}
                   </div>
+                  {posts.filter((p) => p.calendar_id === r.id).length > 0 && (
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 6 }}>
+                      {posts.filter((p) => p.calendar_id === r.id).map((p) => (
+                        <ScheduleBadge
+                          key={p.id}
+                          post={p}
+                          onCancel={async () => {
+                            try { await cancelScheduled(p.id); toast.success("Agendamento cancelado"); refreshPosts(); }
+                            catch { toast.error("Falha ao cancelar"); }
+                          }}
+                        />
+                      ))}
+                    </div>
+                  )}
                 </div>
-                <div style={{ display: "flex", gap: 6 }}>
+                <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                  <button
+                    onClick={() => setScheduleFor(r)}
+                    style={{ padding: "8px 12px", background: `${C.gold}14`, border: `1px solid ${C.gold}55`, ...fM, fontSize: 12, color: C.gold, cursor: "pointer", display: "flex", alignItems: "center", gap: 5 }}
+                  >
+                    <CalendarClock size={13} /> AGENDAR
+                  </button>
                   {([
                     { field: "reel_done" as const, label: "REEL", Icon: Film },
                     { field: "stories_done" as const, label: "STORIES", Icon: Layers },
@@ -169,6 +192,16 @@ export default function ReelsCalendar30() {
           })}
         </div>
       )}
+
+      <ReelsSchedulePanel
+        open={!!scheduleFor}
+        onClose={() => setScheduleFor(null)}
+        date={scheduleFor?.date || ""}
+        hook={scheduleFor?.hook}
+        caption={scheduleFor?.topic}
+        calendarId={scheduleFor?.id || ""}
+        onDone={refreshPosts}
+      />
     </div>
   );
 }

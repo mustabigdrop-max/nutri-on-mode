@@ -176,10 +176,66 @@ serve(async (req) => {
       return json({ result: { connected: false } });
     }
 
+    if (action === "schedule") {
+      const mediaUrl = String(body?.media_url ?? "").trim();
+      const caption = String(body?.caption ?? "").slice(0, 2200);
+      const kind: string = body?.kind === "stories" ? "stories" : "reel";
+      const mediaType = kind === "stories" ? "STORIES" : (body?.media_type === "IMAGE" ? "IMAGE" : "REELS");
+      const calendarId: string | null = body?.calendar_id ?? null;
+      const scheduledAt = new Date(String(body?.scheduled_at ?? ""));
+
+      if (!/^https:\/\/.+/i.test(mediaUrl)) {
+        return json({ error: "Informe uma URL pública https da imagem ou do vídeo" }, 400);
+      }
+      if (isNaN(scheduledAt.getTime())) return json({ error: "Data/hora do agendamento inválida" }, 400);
+      if (scheduledAt.getTime() < Date.now() - 60_000) return json({ error: "Escolha um horário no futuro" }, 400);
+
+      const { data: acc } = await admin
+        .from("social_instagram_accounts").select("ig_user_id")
+        .eq("coach_id", coachId).maybeSingle();
+      if (!acc) return json({ error: "Conecte sua conta do Instagram antes de agendar" }, 400);
+
+      const { data: row, error } = await admin.from("social_instagram_posts").insert({
+        coach_id: coachId,
+        calendar_id: calendarId,
+        kind,
+        media_type: mediaType,
+        media_url: mediaUrl,
+        caption,
+        status: "scheduled",
+        scheduled_at: scheduledAt.toISOString(),
+        next_attempt_at: scheduledAt.toISOString(),
+      }).select("id, kind, media_type, status, scheduled_at, calendar_id").single();
+      if (error) throw new Error(error.message);
+      return json({ result: { post: row } });
+    }
+
+    if (action === "list_scheduled") {
+      const { data, error } = await admin
+        .from("social_instagram_posts")
+        .select("id, calendar_id, kind, media_type, media_url, caption, status, scheduled_at, permalink, error, attempts")
+        .eq("coach_id", coachId)
+        .in("status", ["scheduled", "publishing", "failed", "published"])
+        .order("scheduled_at", { ascending: true, nullsFirst: false })
+        .limit(120);
+      if (error) throw new Error(error.message);
+      return json({ result: { posts: data ?? [] } });
+    }
+
+    if (action === "cancel_scheduled") {
+      const id = String(body?.id ?? "");
+      if (!id) return json({ error: "Informe o agendamento" }, 400);
+      const { error } = await admin.from("social_instagram_posts")
+        .delete().eq("id", id).eq("coach_id", coachId).in("status", ["scheduled", "failed"]);
+      if (error) throw new Error(error.message);
+      return json({ result: { canceled: true } });
+    }
+
     if (action === "publish") {
       const mediaUrl = String(body?.media_url ?? "").trim();
       const caption = String(body?.caption ?? "").slice(0, 2200);
-      const mediaType: string = body?.media_type === "REELS" ? "REELS" : "IMAGE";
+      const mediaType: string = body?.media_type === "REELS" ? "REELS"
+        : body?.media_type === "STORIES" ? "STORIES" : "IMAGE";
       const calendarId: string | null = body?.calendar_id ?? null;
 
       if (!/^https:\/\/.+/i.test(mediaUrl)) {
@@ -195,16 +251,19 @@ serve(async (req) => {
 
       try {
         // 1) container
+        const isVideo = mediaType === "REELS" || (mediaType === "STORIES" && /\.(mp4|mov)(\?|$)/i.test(mediaUrl));
         const container = await graph(`/${acc.ig_user_id}/media`, {
           access_token: acc.access_token,
-          caption,
-          ...(mediaType === "REELS"
-            ? { media_type: "REELS", video_url: mediaUrl }
-            : { image_url: mediaUrl }),
+          ...(mediaType === "STORIES" ? {} : { caption }),
+          ...(mediaType === "REELS" ? { media_type: "REELS", video_url: mediaUrl } : {}),
+          ...(mediaType === "STORIES"
+            ? { media_type: "STORIES", ...(isVideo ? { video_url: mediaUrl } : { image_url: mediaUrl }) }
+            : {}),
+          ...(mediaType === "IMAGE" ? { image_url: mediaUrl } : {}),
         }, "POST");
 
         // 2) wait for processing (videos)
-        if (mediaType === "REELS") {
+        if (isVideo) {
           for (let i = 0; i < 20; i++) {
             const st = await graph(`/${container.id}`, {
               fields: "status_code",
