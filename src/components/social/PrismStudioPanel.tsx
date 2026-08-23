@@ -312,18 +312,27 @@ export default function PrismStudioPanel({
           />
 
           <div>
+          <div>
             <input
               ref={inputRef}
               type="file"
-              accept="image/*,video/mp4,video/quicktime"
+              accept="image/*,video/*,.heic,.heif,.mov,.avi,.mkv,.m4v,.3gp"
               multiple
               hidden
               onChange={(e) => { addFiles(e.target.files); e.currentTarget.value = ""; }}
             />
-            <Button variant="outline" size="sm" onClick={() => inputRef.current?.click()} className="text-xs gap-1.5">
-              <Upload className="w-3.5 h-3.5" />
-              {mode.needsFiles ? "Enviar material" : "Material (opcional)"}
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={() => inputRef.current?.click()} disabled={processing} className="text-xs gap-1.5">
+                <Upload className="w-3.5 h-3.5" />
+                {mode.needsFiles ? "Enviar material" : "Material (opcional)"}
+              </Button>
+              {processing && (
+                <span className="text-[11px] text-muted-foreground flex items-center gap-1">
+                  <Loader2 className="w-3 h-3 animate-spin" /> Carregando arquivo...
+                </span>
+              )}
+            </div>
+            <p className="text-[10px] text-muted-foreground mt-1">Foto ou vídeo, qualquer formato (HEIC, MOV, AVI...) e sem limite de tamanho — só o frame é enviado.</p>
             {!!files.length && (
               <div className="flex flex-wrap gap-2 mt-3">
                 {files.map((f, i) => (
@@ -340,9 +349,40 @@ export default function PrismStudioPanel({
                 </button>
               </div>
             )}
+
+            {files.filter((f) => f.kind === "video" && (f.duration || 0) > 0).map((f) => (
+              <div key={`trim-${f.id}`} className="mt-3 rounded-lg border p-3 space-y-2" style={{ borderColor: `${accent}26` }}>
+                <p className="text-[11px] font-medium flex items-center gap-1"><Scissors className="w-3 h-3" /> {f.name}</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <label className="text-[10px] text-muted-foreground">
+                    Início: {(f.trim?.start ?? 0).toFixed(0)}s
+                    <input type="range" min={0} max={Math.floor(f.duration || 0)} step={1}
+                      value={f.trim?.start ?? 0}
+                      onChange={(e) => setTrim(f.id, { start: Number(e.target.value) })}
+                      className="w-full" />
+                  </label>
+                  <label className="text-[10px] text-muted-foreground">
+                    Fim: {(f.trim?.end ?? 0).toFixed(0)}s
+                    <input type="range" min={0} max={Math.ceil(f.duration || 0)} step={1}
+                      value={f.trim?.end ?? 0}
+                      onChange={(e) => setTrim(f.id, { end: Number(e.target.value) })}
+                      className="w-full" />
+                  </label>
+                </div>
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-[10px] text-muted-foreground">
+                    Trecho: {Math.max(0, Math.round((f.trim?.end ?? 0) - (f.trim?.start ?? 0)))}s
+                    {(f.trim?.end ?? 0) - (f.trim?.start ?? 0) > 60 ? " · ideal até 35s" : ""}
+                  </span>
+                  <Button size="sm" variant="outline" className="h-7 text-[11px] gap-1" disabled={processing} onClick={() => useSegment(f.id)}>
+                    <Scissors className="w-3 h-3" /> Usar este trecho
+                  </Button>
+                </div>
+              </div>
+            ))}
           </div>
 
-          <Button onClick={generate} disabled={loading} className="w-full gap-2" style={{ background: accent, color: "#000" }}>
+          <Button onClick={generate} disabled={loading || processing} className="w-full gap-2" style={{ background: accent, color: "#000" }}>
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
             {loading ? "PRISM processando..." : `Gerar ${mode.label}`}
           </Button>
