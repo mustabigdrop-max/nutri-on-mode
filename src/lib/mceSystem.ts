@@ -51,8 +51,8 @@ export function levelFor(score: number): { level: MceLevel; next: MceLevel | nul
 }
 
 // ── Check-in scoring ────────────────────────────────────────────────────────
-export function dailyScoresFromCheckin(row: CheckinRow): Record<PillarKey, number> {
-  const v = (n: number) => Math.max(1, Math.min(10, Number(n) || 1));
+export function dailyScoresFromCheckin(row: Partial<CheckinRow>): Record<PillarKey, number> {
+  const v = (n?: number) => Math.max(1, Math.min(10, Number(n) || 1));
   const stressInverted = 11 - v(row.stress_level);
   return {
     M: Math.round(((v(row.focus_clarity) + stressInverted) / 2) * 10),
