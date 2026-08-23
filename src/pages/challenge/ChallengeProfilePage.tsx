@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { LogOut, Camera, MessageCircle } from "lucide-react";
-import { OBJETIVO_LABEL, TIER_BADGE, challengeDay, levelBadge } from "@/lib/challenge";
+import { CHALLENGE_DAYS, OBJETIVO_LABEL, TIER_BADGE, challengeDay, levelBadge } from "@/lib/challenge";
 
 export default function ChallengeProfilePage() {
   const { participant, challenge } = useChallenge();
@@ -18,7 +18,7 @@ export default function ChallengeProfilePage() {
 
   return (
     <div className="mx-auto max-w-lg">
-      <ChallengeHeader title="👤 Perfil" subtitle={challenge?.name ?? "Desafio 90 Dias"} />
+      <ChallengeHeader title="👤 Perfil" subtitle={challenge?.name ?? "Desafio 30 Dias"} />
 
       <div className="px-4 space-y-4">
         <Card>
@@ -31,7 +31,7 @@ export default function ChallengeProfilePage() {
             <p className="text-xs text-muted-foreground">
               {OBJETIVO_LABEL[participant.objetivo]} · Porte {participant.porte} · {participant.meals_per_day} refeições
             </p>
-            <p className="text-xs text-muted-foreground">Dia {day}/90 · Streak {participant.streak} dias</p>
+            <p className="text-xs text-muted-foreground">Dia {day}/{CHALLENGE_DAYS} · Streak {participant.streak} dias</p>
           </CardContent>
         </Card>
 

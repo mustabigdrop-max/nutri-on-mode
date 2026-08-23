@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { localDateISO } from "@/lib/challenge";
+import { accessStatus, localDateISO, type AccessStatus } from "@/lib/challenge";
 import { dayPoints } from "@/lib/challengeReminders";
 
 const LOG_COLS = "id,log_date,meals_done,water_ml,mood,training_done,points,day_completed,checkin_at";
@@ -28,6 +28,7 @@ export interface ChallengeParticipant {
   weight_start: number | null;
   weight_current: number | null;
   last_checkin_at: string | null;
+  joined_at: string | null;
   status: string;
   migrated_to_client: boolean;
 }
@@ -122,7 +123,11 @@ export function useChallenge() {
         challenge_id: participant.challenge_id,
         log_date: localDateISO(),
         ...merged,
-        points: patch.points ?? dayPoints(merged, participant.meals_per_day),
+        points:
+          patch.points ??
+          dayPoints(merged, participant.meals_per_day, {
+            basic: accessStatus(participant.joined_at, participant.tier).basic,
+          }),
         checkin_at: patch.checkin_at ?? log?.checkin_at ?? new Date().toISOString(),
       };
       const { data } = await supabase
@@ -191,9 +196,12 @@ export function useChallenge() {
     return { points, streak, mce_score: mce };
   }, [user, participant, log, saveLog]);
 
+  const access: AccessStatus = accessStatus(participant?.joined_at, participant?.tier);
+
   return {
     participant,
     challenge,
+    access,
     log,
     loading: loading || authLoading,
     reload: load,

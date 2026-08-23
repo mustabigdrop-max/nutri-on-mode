@@ -25,7 +25,7 @@ export default function ChallengeEvolutionPage() {
         weight_kg: kg,
         streak_days: participant.streak,
         kcal_target: participant.target_kcal,
-        notes: "Desafio 90 Dias",
+        notes: "Desafio 30 Dias",
       });
       if (kg) {
         await supabase

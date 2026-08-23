@@ -178,7 +178,7 @@ const App = () => (
             <Route path="/modulos" element={<ModulesPage />} />
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/desafio-21" element={<DesafioSignupPage />} />
-            {/* Desafio 90 Dias */}
+            {/* Desafio 30 Dias */}
             <Route path="/wall/:slug" element={<WallDisplayPage />} />
             <Route path="/desafio/ranking/:slug" element={<ChallengePublicRankingPage />} />
             <Route path="/desafio" element={<ProtectedRoute><ChallengeLayout /></ProtectedRoute>}>

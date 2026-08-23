@@ -4,7 +4,7 @@ import { useChallenge } from "@/hooks/useChallenge";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Flame, Loader2 } from "lucide-react";
-import { challengeDay, challengePhase, levelBadge, medal } from "@/lib/challenge";
+import { CHALLENGE_DAYS, challengeDay, challengePhase, levelBadge, medal } from "@/lib/challenge";
 import { cn } from "@/lib/utils";
 
 type Row = { id: string; full_name: string; mce_score: number; streak: number; tier: string; user_id: string };
@@ -35,7 +35,7 @@ export default function ChallengeRankingPage() {
     <div className="mx-auto max-w-lg">
       <ChallengeHeader
         title="🏆 Ranking"
-        subtitle={`Dia ${day}/90 · ${phase.name} · ${90 - day} dias restantes`}
+        subtitle={`Dia ${day}/${CHALLENGE_DAYS} · ${phase.name} · ${CHALLENGE_DAYS - day} dias restantes`}
       />
 
       <div className="px-4 space-y-3">

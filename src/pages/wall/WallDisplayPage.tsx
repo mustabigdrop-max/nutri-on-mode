@@ -30,7 +30,7 @@ export default function WallDisplayPage() {
           <h1 className="mt-1 flex items-center gap-3 text-5xl font-black">
             <Trophy className="w-10 h-10 text-primary" /> THE WALL
           </h1>
-          <p className="mt-1 text-lg text-primary font-semibold">Desafio 90 Dias · Transformação é sistema.</p>
+          <p className="mt-1 text-lg text-primary font-semibold">Desafio 30 Dias · Transformação é sistema.</p>
         </div>
         <p className="text-4xl font-black tabular-nums text-muted-foreground">
           {clock.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
