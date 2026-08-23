@@ -13,7 +13,7 @@ import {
   AlarmClock, BellRing, Download, FileText, History, Loader2, MessageCircle, Send, Settings2,
 } from "lucide-react";
 import { openWhatsApp } from "@/lib/gymBusiness";
-import { CHALLENGE_DAYS, TRIAL_DAYS, challengeDay } from "@/lib/challenge";
+import { CHALLENGE_DAYS, TRIAL_DAYS, challengeDay, vipCheckpointForDay } from "@/lib/challenge";
 import {
   DEFAULT_CHECKIN_TEMPLATE, DEFAULT_ESCALATION_HOURS, DEFAULT_ESCALATION_TEMPLATES,
   DEFAULT_MEALS_TEMPLATE, computeEscalationQueue, computeMilestoneQueue, computeReminderQueue,
