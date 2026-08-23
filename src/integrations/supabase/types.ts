@@ -6265,6 +6265,51 @@ export type Database = {
         }
         Relationships: []
       }
+      mce_checkins: {
+        Row: {
+          checkin_date: string
+          created_at: string
+          focus_clarity: number
+          hydration: number
+          id: string
+          movement: number
+          notes: string | null
+          nutrition_adherence: number
+          sleep_quality: number
+          stress_level: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          checkin_date?: string
+          created_at?: string
+          focus_clarity: number
+          hydration: number
+          id?: string
+          movement: number
+          notes?: string | null
+          nutrition_adherence: number
+          sleep_quality: number
+          stress_level: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          checkin_date?: string
+          created_at?: string
+          focus_clarity?: number
+          hydration?: number
+          id?: string
+          movement?: number
+          notes?: string | null
+          nutrition_adherence?: number
+          sleep_quality?: number
+          stress_level?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       mce_diagnostics: {
         Row: {
           answers: number[]
