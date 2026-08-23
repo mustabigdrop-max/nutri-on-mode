@@ -645,6 +645,13 @@ export default function MCEIntelligencePage() {
         .mce-guide td { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); vertical-align: top; }
       `}</style>
 
+      {!onboardingDone && (
+        <MceOnboarding onComplete={() => {
+          setOnboardingDone(true);
+          void refreshScores();
+        }} />
+      )}
+
       <div className="mce-root" style={{ maxWidth: 900, margin: "0 auto", padding: "0 16px" }}>
         {/* Header */}
         <header style={{
