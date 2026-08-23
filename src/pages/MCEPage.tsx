@@ -819,6 +819,14 @@ export default function MCEIntelligencePage() {
         <div style={{ marginTop: 20 }}>
           {tab === "audio" && <AudioAcademyPage embedded />}
 
+          {/* CHECK-IN */}
+          {tab === "checkin" && (
+            <div>
+              <div style={sectionTitle}>CHECK-IN DIÁRIO · MCE</div>
+              <MceDailyCheckin onSubmit={() => void refreshScores()} />
+            </div>
+          )}
+
           {/* ESTUDO */}
           {tab === "estudo" && (
             <div>
