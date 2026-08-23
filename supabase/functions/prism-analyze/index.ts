@@ -324,6 +324,100 @@ serve(async (req) => {
       }
     }
 
+    // ---- MODO REELS STUDIO: 1 mídia + template visual -> pacote completo de Reel ----
+    if (body?.mode === "reels_studio") {
+      const tplName = typeof body?.template_name === "string" ? body.template_name.slice(0, 60) : "Livre";
+      const tplDesc = typeof body?.template_desc === "string" ? body.template_desc.slice(0, 200) : "";
+      const frame = typeof body?.image === "string" ? body.image : (images[0] ?? null);
+      const isVideo = !!body?.from_video;
+
+      const sys = `Você é o PRISM Content Intelligence do nutriON, sistema do coach Diogo Mello (@diogo.mell0).
+
+IDENTIDADE:
+- Nutrition Coach e Business Coach com certificação americana
+- Criador do Método MCE (Mindset, Comportamento, Execução) · Fundador do nutriON
+- 16 anos de Marinha do Brasil · pai de menina · bodybuilder · Nilópolis/RJ
+- Tagline: "Transformação é sistema."
+- Tom: direto, sem enrolação, técnico mas acessível, nunca guru, nunca se apresenta como IA.
+
+TEMPLATE ESCOLHIDO: ${tplName} — ${tplDesc}
+
+AUTORES MCE (usar só quando fizer sentido): Dweck, Kahneman, Bandura, Frankl, Rotter, Merzenich, Clear, Duhigg, Fogg, Thaler, Baumeister, Prochaska.
+
+REGRAS:
+- 100% português brasileiro. Nunca genérico.
+- Frases MCE naturais: "O comportamento vem antes do alimento", "O processo é o produto", "Disciplina é arquitetura comportamental".
+- NUNCA use "jornada", "mindful", "empoderamento", "desbloqueie seu potencial".
+- Hashtags misturando BR e internacionais.
+- Toda legenda termina com CTA forte. O self-comment tem que gerar DM.
+
+Responda SOMENTE JSON válido neste schema:
+{
+ "analise_visual": "1-2 frases do que você vê",
+ "template_match": "por que o template encaixa",
+ "hook": "frase de impacto dos 2 primeiros segundos",
+ "roteiro": {
+  "hook_0_2s": "texto na tela",
+  "corpo_2_20s": "ações, cortes e textos do corpo",
+  "punch_20_28s": "frase de impacto final",
+  "cta_28_35s": "CTA final",
+  "duracao_total": "ex: 22s",
+  "musica": "estilo ou áudio trending",
+  "edicao": "transições, velocidade, efeitos"
+ },
+ "legendas": [
+  {"tom":"DIRETO","texto":"..."},
+  {"tom":"CIENTÍFICO","texto":"..."},
+  {"tom":"PESSOAL","texto":"..."}
+ ],
+ "hashtags": ["#...", "até 25"],
+ "self_comment": "...",
+ "melhor_horario": "dia e horário",
+ "stories": ["Story 1: ...", "Story 2: ...", "Story 3: ... com CTA"],
+ "produto_sugerido": "nutriON | MCE | Business Coaching | MindForce Creatine",
+ "nivel_funil": "TOFU | MOFU | BOFU"
+}`;
+
+      const userText = `Analise ${isVideo ? "este frame extraído do vídeo" : "esta imagem"} e gere o pacote completo de Reel.
+Template: ${tplName} (${tplDesc})
+${context ? `Contexto do coach: ${context}` : "Sem contexto adicional."}
+${history ? `Histórico recente (não repita temas):\n${history}` : ""}
+Gere o JSON completo.`;
+
+      const content: unknown[] = [];
+      if (frame) content.push({ type: "image_url", image_url: { url: frame } });
+      content.push({ type: "text", text: userText });
+
+      try {
+        const parsedReel = await callGateway(
+          apiKeyEnv,
+          frame ? "google/gemini-2.5-pro" : "google/gemini-2.5-flash",
+          [{ role: "system", content: sys }, { role: "user", content }],
+        );
+        try {
+          await adminClient().from("prism_analyses").insert({
+            coach_id: auth.userId,
+            files_count: 1,
+            file_types: [isVideo ? "video" : "image"],
+            context,
+            mode: "reels_studio",
+            subtype: tplName,
+            ai_content: parsedReel ?? null,
+            format_used: "reel",
+          });
+        } catch (_) { /* persistência não bloqueia */ }
+
+        return new Response(JSON.stringify({ result: parsedReel }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      } catch (e) {
+        const status = (e as any)?.status ?? 500;
+        return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Erro inesperado" }), {
+          status, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
+
     // ---- MODO STUDIO: modos do hub (viral, reels, vender, representatividade, lifestyle, pack, ia_decide) ----
     if (body?.mode === "studio") {
       const s = (v: unknown, n = 60) => (typeof v === "string" ? v.slice(0, n) : "");
