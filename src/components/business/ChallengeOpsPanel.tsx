@@ -13,13 +13,15 @@ import {
   AlarmClock, BellRing, Download, FileText, History, Loader2, MessageCircle, Send, Settings2,
 } from "lucide-react";
 import { openWhatsApp } from "@/lib/gymBusiness";
-import { challengeDay } from "@/lib/challenge";
+import { CHALLENGE_DAYS, TRIAL_DAYS, challengeDay } from "@/lib/challenge";
 import {
   DEFAULT_CHECKIN_TEMPLATE, DEFAULT_ESCALATION_HOURS, DEFAULT_ESCALATION_TEMPLATES,
-  DEFAULT_MEALS_TEMPLATE, computeEscalationQueue, computeReminderQueue, dueEscalationLevel,
+  DEFAULT_MEALS_TEMPLATE, computeEscalationQueue, computeMilestoneQueue, computeReminderQueue,
+  dueEscalationLevel, milestoneForDay, nextMilestone,
   reminderDue, type ChallengeEscalationConfig, type ChallengeReminderConfig,
   type EscalatedTarget, type ReminderTarget,
 } from "@/lib/challengeReminders";
+
 import {
   exportChallengeCSV, exportChallengePDF, reportMetrics, type ChallengeReportRow,
 } from "@/lib/challengeReport";
@@ -175,6 +177,26 @@ export default function ChallengeOpsPanel({ challenge, gymName, onChanged }: Pro
   const due = reminderDue(cfg.reminder_checkin_time);
   const level = dueEscalationLevel(cfg);
 
+  const milestone = milestoneForDay(day);
+  const upcoming = nextMilestone(day);
+  const milestoneQueue = useMemo(
+    () =>
+      computeMilestoneQueue(
+        participants.map((p: any) => ({
+          id: p.id, user_id: p.user_id, full_name: p.full_name,
+          whatsapp: p.whatsapp, streak: p.streak ?? 0, meals_per_day: p.meals_per_day ?? 5,
+        })),
+        {
+          challengeName: challenge.name,
+          day,
+          link,
+          linkPlanos: "https://nutrion.app.br/desafio/planos",
+        },
+      ),
+    [participants, challenge.name, day, link],
+  );
+
+
   const saveConfig = async () => {
     const { error } = await supabase
       .from("gym_challenges")
@@ -239,7 +261,7 @@ export default function ChallengeOpsPanel({ challenge, gymName, onChanged }: Pro
     startDate: new Date(`${challenge.start_date}T12:00:00`).toLocaleDateString("pt-BR"),
     endDate: new Date(`${challenge.end_date}T12:00:00`).toLocaleDateString("pt-BR"),
     day,
-    totalDays: 90,
+    totalDays: CHALLENGE_DAYS,
     periodLabel: range.label,
     periodStart: range.start,
     periodEnd: range.end,
@@ -261,7 +283,40 @@ export default function ChallengeOpsPanel({ challenge, gymName, onChanged }: Pro
 
       {open && (
         <div className="px-3 pb-3 space-y-4">
+          {/* Cadência de marcos */}
+          <div className="space-y-2 rounded-md border border-amber-500/25 bg-amber-500/5 p-2.5">
+            <p className="text-[11px] uppercase tracking-wide text-muted-foreground flex items-center gap-1.5">
+              <AlarmClock className="w-3.5 h-3.5 text-amber-500" /> Cadência · Dia {day}/{CHALLENGE_DAYS}
+            </p>
+            {milestone ? (
+              <>
+                <p className="text-xs font-semibold">{milestone.label}</p>
+                <p className="text-[11px] text-muted-foreground">{milestone.goal}</p>
+                <pre className="max-h-32 overflow-auto whitespace-pre-wrap rounded bg-background/60 p-2 text-[11px] text-muted-foreground">
+                  {milestoneQueue[0]?.message ?? milestone.template}
+                </pre>
+                <Button
+                  size="sm"
+                  className="w-full gap-1.5 text-xs"
+                  disabled={busy || !milestoneQueue.length}
+                  onClick={() => sendBatch(milestoneQueue, 1)}
+                >
+                  {busy ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
+                  Disparar marco para {milestoneQueue.filter((t) => t.whatsapp).length} participante(s)
+                </Button>
+              </>
+            ) : (
+              <p className="text-[11px] text-muted-foreground">
+                Hoje não tem marco na cadência.{" "}
+                {upcoming
+                  ? `Próximo: ${upcoming.label} (em ${upcoming.day - day} dia(s)).`
+                  : `Desafio encerrado — acesso completo dura ${TRIAL_DAYS} dias.`}
+              </p>
+            )}
+          </div>
+
           {/* Configuração */}
+
           <div className="space-y-2">
             <p className="text-[11px] uppercase tracking-wide text-muted-foreground flex items-center gap-1.5">
               <Settings2 className="w-3.5 h-3.5" /> Configuração do coach

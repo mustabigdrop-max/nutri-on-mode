@@ -288,3 +288,159 @@ export function computeEscalationQueue(
 
   return out.sort((a, b) => b.streak - a.streak);
 }
+
+/* ------------------------------------------------------------------ */
+/* Cadência de marcos do Desafio 30 Dias                              */
+/* ------------------------------------------------------------------ */
+
+export interface ChallengeMilestone {
+  day: number;
+  id: string;
+  label: string;
+  goal: string;
+  template: string;
+}
+
+const SIGN = "Transformação é sistema. @diogo.mell0 · nutrion.app.br";
+
+/** Marcos oficiais: mensagem certa no dia certo, na voz do Coach. */
+export const CHALLENGE_MILESTONES: ChallengeMilestone[] = [
+  {
+    day: 1,
+    id: "boas_vindas",
+    label: "D1 · Boas-vindas",
+    goal: "Ativar o participante e explicar o acesso completo de 14 dias.",
+    template:
+      "Fala {nome}! Aqui é o Diogo Mello 👊\n\n" +
+      "Você está dentro do {desafio}. Os próximos 14 dias são de acesso completo: plano em gramas, hidratação, MCE Academy e ranking.\n\n" +
+      "Sua única tarefa hoje: fazer o primeiro check-in.\n👉 {link}\n\n" + SIGN,
+  },
+  {
+    day: 3,
+    id: "primeiro_ajuste",
+    label: "D3 · Primeiro ajuste",
+    goal: "Corrigir rota antes do hábito quebrar.",
+    template:
+      "Fala {nome}! Diogo aqui 👊\n\n" +
+      "Dia 3 é onde a maioria afrouxa. Me responde uma coisa: o que travou mais até agora — comida, treino ou horário?\n\n" +
+      "Eu ajusto seu plano com base nisso.\n👉 {link}\n\n" + SIGN,
+  },
+  {
+    day: 7,
+    id: "relatorio_semana1",
+    label: "D7 · Fecha semana 1",
+    goal: "Mostrar dados: check-ins, streak e primeira leitura de MCE.",
+    template:
+      "Fala {nome}! 👊\n\n" +
+      "Semana 1 fechada no {desafio}. Streak atual: {streak} dia(s).\n\n" +
+      "Sobe a foto de progresso e olha sua evolução — número não discute, ele mostra.\n👉 {link}\n\n" + SIGN,
+  },
+  {
+    day: 10,
+    id: "consistencia",
+    label: "D10 · Fase Consistência",
+    goal: "Reforçar que a fase muda e o volume aperta.",
+    template:
+      "Fala {nome}! 👊\n\n" +
+      "Você entrou na fase Consistência do {desafio} (dias 11–20). Aqui não se busca motivação: se cumpre o sistema.\n\n" +
+      "Meta da fase: nenhum dia sem check-in.\n👉 {link}\n\n" + SIGN,
+  },
+  {
+    day: 13,
+    id: "aviso_trial",
+    label: "D13 · Aviso de acesso",
+    goal: "Avisar que o acesso completo termina amanhã (conversão).",
+    template:
+      "Fala {nome}! Diogo aqui 👊\n\n" +
+      "Amanhã fecha seu acesso completo do {desafio}. Sem PREMIUM você continua no desafio, mas cai pro check-in básico (máx 40 pts/dia) e o plano em gramas trava.\n\n" +
+      "Ver os planos: {link_planos}\n\n" + SIGN,
+  },
+  {
+    day: 14,
+    id: "fim_trial",
+    label: "D14 · Decisão",
+    goal: "Converter para PREMIUM/VIP mantendo o histórico.",
+    template:
+      "Fala {nome}! 👊\n\n" +
+      "Hoje é o dia da decisão no {desafio}. Seu histórico, streak de {streak} dia(s) e ranking estão salvos.\n\n" +
+      "Ativa o PREMIUM e você volta a pontuar 100/dia até o dia 30: {link_planos}\n\n" + SIGN,
+  },
+  {
+    day: 21,
+    id: "sprint_final",
+    label: "D21 · Sprint final",
+    goal: "Empurrar os últimos 10 dias com foco em resultado visível.",
+    template:
+      "Fala {nome}! 👊\n\n" +
+      "Sprint final do {desafio}: 10 dias pra fechar com o shape mudado e a foto de depois valendo a pena.\n\n" +
+      "Nada de novidade agora — só execução.\n👉 {link}\n\n" + SIGN,
+  },
+  {
+    day: 28,
+    id: "foto_final",
+    label: "D28 · Foto e medidas",
+    goal: "Garantir before/after e dados finais para o relatório.",
+    template:
+      "Fala {nome}! 👊\n\n" +
+      "Faltam 2 dias. Registra hoje: foto de progresso, peso atual e medidas. É isso que vira seu relatório de transformação.\n\n" +
+      "👉 {link}\n\n" + SIGN,
+  },
+  {
+    day: 30,
+    id: "encerramento",
+    label: "D30 · Encerramento",
+    goal: "Celebrar, entregar o relatório e oferecer a continuidade.",
+    template:
+      "Fala {nome}! Diogo Mello 👊\n\n" +
+      "Dia 30. Você fechou o {desafio} com streak de {streak} dia(s). Seu relatório de transformação está pronto.\n\n" +
+      "Quem quer manter o resultado continua no sistema: {link_planos}\n\n" + SIGN,
+  },
+];
+
+export function milestoneForDay(day: number): ChallengeMilestone | null {
+  return CHALLENGE_MILESTONES.find((m) => m.day === day) ?? null;
+}
+
+export function nextMilestone(day: number): ChallengeMilestone | null {
+  return CHALLENGE_MILESTONES.find((m) => m.day > day) ?? null;
+}
+
+export function buildMilestoneMessage(
+  milestone: ChallengeMilestone,
+  vars: { nome: string; desafio: string; streak: number; link: string; linkPlanos: string },
+) {
+  return fill(milestone.template, {
+    nome: firstName(vars.nome),
+    desafio: vars.desafio,
+    streak: vars.streak,
+    dia: milestone.day,
+    link: vars.link,
+    link_planos: vars.linkPlanos,
+  });
+}
+
+/** Fila de marcos: todo participante ativo recebe a mensagem do dia. */
+export function computeMilestoneQueue(
+  participants: ReminderParticipantLite[],
+  ctx: { challengeName: string; day: number; link: string; linkPlanos: string },
+): ReminderTarget[] {
+  const milestone = milestoneForDay(ctx.day);
+  if (!milestone) return [];
+  return participants.map((p) => ({
+    participant_id: p.id,
+    user_id: p.user_id,
+    full_name: p.full_name,
+    whatsapp: p.whatsapp,
+    kind: "checkin" as ReminderKind,
+    mealsDone: 0,
+    mealsTotal: p.meals_per_day || 5,
+    streak: p.streak,
+    message: buildMilestoneMessage(milestone, {
+      nome: p.full_name,
+      desafio: ctx.challengeName,
+      streak: p.streak,
+      link: ctx.link,
+      linkPlanos: ctx.linkPlanos,
+    }),
+  }));
+}
