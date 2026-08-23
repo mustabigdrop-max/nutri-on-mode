@@ -291,7 +291,7 @@ export default function ReelsStudioPanel({ onBack, context: ctxSeed }: { onBack?
     setSaving(false);
   };
 
-  const reset = () => { setResult(null); setFile(null); setPreview(null); setTrim(null); setTemplate(null); setError(null); setActiveCaption(0); };
+  const reset = () => { setResult(null); clearFile(); setTemplate(null); setError(null); setActiveCaption(0); };
   const captionColors = [C.red, C.cyan, C.pink, C.orange];
 
   const historyTitle = (item: HistoryItem) => {
