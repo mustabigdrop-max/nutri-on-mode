@@ -252,13 +252,28 @@ export default function ReelsStudioPanel({ onBack, context: ctxSeed }: { onBack?
           <div style={{ ...fT, fontSize: FONT["2xl"], color: C.text }}>SOCIAL ON · <span style={{ color: C.gold }}>REELS STUDIO</span></div>
           <div style={{ ...fM, fontSize: FONT.sm, color: C.textMid, marginTop: 4 }}>@diogo.mell0 · transformação é sistema.</div>
         </div>
-        <button
-          onClick={() => setShowHistory((s) => !s)}
-          style={{ background: showHistory ? `${C.gold}18` : "transparent", border: `1px solid ${C.border}`, padding: "8px 12px", cursor: "pointer", display: "flex", alignItems: "center", gap: 6, ...fM, fontSize: FONT.sm, color: showHistory ? C.gold : C.textMid }}
-        >
-          <History size={15} /> {showHistory ? "OCULTAR" : "HISTÓRICO"}
-        </button>
+        <div style={{ display: "flex", gap: 8 }}>
+          <button
+            onClick={() => { setShowCalendar((s) => !s); setShowHistory(false); }}
+            style={{ background: showCalendar ? `${C.cyan}18` : "transparent", border: `1px solid ${C.border}`, padding: "8px 12px", cursor: "pointer", display: "flex", alignItems: "center", gap: 6, ...fM, fontSize: FONT.sm, color: showCalendar ? C.cyan : C.textMid }}
+          >
+            <CalendarDays size={15} /> {showCalendar ? "OCULTAR" : "CALENDÁRIO 30D"}
+          </button>
+          <button
+            onClick={() => { setShowHistory((s) => !s); setShowCalendar(false); }}
+            style={{ background: showHistory ? `${C.gold}18` : "transparent", border: `1px solid ${C.border}`, padding: "8px 12px", cursor: "pointer", display: "flex", alignItems: "center", gap: 6, ...fM, fontSize: FONT.sm, color: showHistory ? C.gold : C.textMid }}
+          >
+            <History size={15} /> {showHistory ? "OCULTAR" : "HISTÓRICO"}
+          </button>
+        </div>
       </div>
+
+      {showCalendar && (
+        <div style={{ marginBottom: 18 }}>
+          <ReelsCalendar30 />
+        </div>
+      )}
+
 
       {showHistory && (
         <div style={{ background: C.bg, border: `1px solid ${C.border}`, padding: 16, marginBottom: 18 }}>
