@@ -2,6 +2,7 @@
 
 export type PrismMode =
   | "post_pronto"
+  | "reels_studio"
   | "reel_diario"
   | "pack_dia"
   | "hooks"
@@ -28,6 +29,14 @@ export type PrismModeDef = {
 };
 
 export const PRISM_MODES: PrismModeDef[] = [
+  {
+    id: "reels_studio",
+    emoji: "🎥",
+    label: "Reels Studio",
+    desc: "Sobe foto ou vídeo: hook, roteiro, 3 legendas, hashtags e stories",
+    color: "#B8922A",
+    subtypes: [],
+  },
   {
     id: "reel_diario",
     emoji: "🎬",
