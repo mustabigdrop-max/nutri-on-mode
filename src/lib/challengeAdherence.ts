@@ -1,5 +1,5 @@
 /**
- * Aderência do Desafio 90 Dias: taxa de check-in e taxa de conclusão do dia
+ * Aderência do Desafio 30 Dias: taxa de check-in e taxa de conclusão do dia
  * por participante e por data, com ranking e filtros de período.
  */
 

@@ -246,7 +246,7 @@ export const SEASONAL_CALENDAR = [
   { month: 5, name: "MAIO", theme: "Dia das Mães", notes: ['Se tem clientes mulheres: "Mãe que treina"', "Conteúdo emocional performa bem"] },
   { month: 6, name: "JUNHO", theme: "Inverno / Bulking season", notes: ['"O shape do verão se constrói no inverno"', "Conteúdo sobre bulking, não desistir no frio"] },
   { month: 8, name: "AGOSTO", theme: "Dia dos Pais", notes: ["SEU momento. Pai + atleta. Edit com a filha.", "Potencial viral altíssimo. Preparar 3 Reels."] },
-  { month: 9, name: "SETEMBRO", theme: "Retomada pós-inverno", notes: ['"Começar agora = estar pronto pro verão"', "Desafio 90 Dias fecha em dezembro (timing perfeito)"] },
+  { month: 9, name: "SETEMBRO", theme: "Retomada pós-inverno", notes: ['"Começar agora = estar pronto pro verão"', "Desafio 30 Dias fecha em dezembro (timing perfeito)"] },
   { month: 11, name: "NOVEMBRO", theme: "Black Friday", notes: ["Promoção nutriON + MindForce + VEMP", '"Black Friday MCE: combo completo"'] },
   { month: 12, name: "DEZEMBRO", theme: "Verão + festas", notes: ['"Como sobreviver ao natal sem destruir o shape"', "Conteúdo leve, humor, bastidor de festa fitness"] },
 ];

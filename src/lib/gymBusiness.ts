@@ -76,7 +76,7 @@ Eu desenvolvi um programa que resolve o maior problema de qualquer academia: *re
 
 Funciona assim:
 ✅ Eu instalo uma tela na sua academia — *eu pago*
-✅ Seus alunos entram num desafio de 90 dias *gratuito*
+✅ Seus alunos entram num desafio de 30 dias *gratuito*
 ✅ Eles competem num ranking ao vivo dentro da academia
 ✅ Cada aluno que assinar o plano nutricional, *25% é seu*
 
@@ -126,7 +126,7 @@ Passando rápido só pra saber se você chegou a ver minha mensagem sobre o nutr
 
 Resumo em 3 linhas:
 • Eu instalo a tela do ranking na academia (custo meu)
-• Seus alunos entram num desafio de 90 dias grátis
+• Seus alunos entram num desafio de 30 dias grátis
 • Você recebe ${g.commission_percent ?? 25}% de tudo que for assinado lá dentro
 
 Te tomo 5 minutos essa semana? Quinta ou sexta, o que fica melhor?
@@ -248,7 +248,7 @@ Passando rápido só pra saber se você chegou a ver minha mensagem sobre o nutr
 
 Resumo em 3 linhas:
 • Eu instalo a tela do ranking na academia (custo meu)
-• Seus alunos entram num desafio de 90 dias grátis
+• Seus alunos entram num desafio de 30 dias grátis
 • Você recebe 25% de tudo que for assinado lá dentro
 
 Te tomo 5 minutos essa semana? Quinta ou sexta, o que fica melhor?`,
@@ -268,7 +268,7 @@ Consigo bloquear a agenda pra [DATA]. Fecha assim?`,
   },
   {
     title: "📲 Pós-evento (grupo de participantes)",
-    text: `Galera do Desafio 90 Dias da [ACADEMIA]! 🔥
+    text: `Galera do Desafio 30 Dias da [ACADEMIA]! 🔥
 
 Bem-vindos. A partir de hoje:
 • Check-in diário no app (leva 30 segundos)
@@ -286,10 +286,10 @@ export const SALES_SCRIPTS: { title: string; text: string }[] = [
     title: "🎤 Pitch 5 min pro dono",
     text: `1. "Eu resolvo seu maior problema — retenção — sem custo nenhum pra você. E ainda te pago por isso."
 2. Eu coloco uma tela na sua academia. Eu pago.
-3. Seus alunos escaneiam o QR Code e entram num desafio de 90 dias GRATUITO.
+3. Seus alunos escaneiam o QR Code e entram num desafio de 30 dias GRATUITO.
 4. A tela mostra o ranking ao vivo. Eles começam a competir e a vir todo dia.
 5. Quem quiser plano alimentar personalizado assina. De cada assinatura, 25% é seu.
-6. A cada 90 dias, novo desafio, novas transformações, novos posts marcando a academia.
+6. A cada 30 dias, novo desafio, novas transformações, novos posts marcando a academia.
 
 Custo pra academia: R$ 0. Risco: zero.`,
   },
@@ -306,7 +306,7 @@ Custo pra academia: R$ 0. Risco: zero.`,
     text: `Chegada: cumprimentar, elogiar algo real da estrutura.
 Diagnóstico: "Quantos alunos ativos hoje? Qual o churn nos 3 primeiros meses?"
 Dor: mostrar que o aluno sai porque não vê resultado — e resultado é treino + nutrição + comportamento.
-Solução: The Wall + Desafio 90 Dias, custo zero, 25% de comissão.
+Solução: The Wall + Desafio 30 Dias, custo zero, 25% de comissão.
 Prova: abrir o app na hora, mostrar ranking e MCE Score.
 Fechamento: propor data de instalação e evento de lançamento.`,
   },
@@ -314,7 +314,7 @@ Fechamento: propor data de instalação e evento de lançamento.`,
 
 export const SALES_DOCS: { title: string; text: string }[] = [
   {
-    title: "📄 Regulamento do Desafio 90 Dias",
+    title: "📄 Regulamento do Desafio 30 Dias",
     text: `REGULAMENTO — DESAFIO 90 DIAS nutriON
 
 1. Participação gratuita para alunos ativos da academia parceira.
@@ -325,7 +325,7 @@ export const SALES_DOCS: { title: string; text: string }[] = [
 6. Premiação: 1º 3 meses Premium + troféu; 2º 2 meses Premium; 3º 1 mês Premium.
 7. Prêmios especiais: maior streak, maior evolução, melhor foto do prato, mais episódios ouvidos.
 8. Conduta antidesportiva ou dados falsos implicam desclassificação.
-9. O desafio tem duração de 90 dias corridos a partir da data de lançamento.`,
+9. O desafio tem duração de 30 dias corridos a partir da data de lançamento.`,
   },
   {
     title: "📄 Contrato de parceria (modelo)",
@@ -333,7 +333,7 @@ export const SALES_DOCS: { title: string; text: string }[] = [
 
 Partes: [ACADEMIA], CNPJ [___], e Diogo Mello (nutriON).
 
-1. OBJETO — Implantação do programa nutriON GYM (The Wall + Desafio 90 Dias) nas dependências da academia.
+1. OBJETO — Implantação do programa nutriON GYM (The Wall + Desafio 30 Dias) nas dependências da academia.
 2. CUSTOS — Todos os equipamentos e materiais são custeados pela nutriON. Custo para a academia: R$ 0.
 3. COMISSÃO — 25% do valor líquido das assinaturas geradas por alunos da academia, pagos via Pix até o dia 5 do mês seguinte.
 4. VIGÊNCIA — 12 meses, renovável automaticamente, rescindível por qualquer parte com 30 dias de aviso.
