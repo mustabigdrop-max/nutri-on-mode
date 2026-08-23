@@ -233,6 +233,38 @@ export default function ReelsVideoTrimmer({
             {cut > 60 && <span style={{ color: C.orange }}> · recomendado até 35s</span>}
           </div>
 
+          <div style={{ display: "flex", gap: 10, marginTop: 12, flexWrap: "wrap" }}>
+            <button
+              onClick={suggestHook}
+              disabled={analyzing || exporting}
+              style={{ flex: "1 1 180px", padding: "11px 0", background: `${C.cyan}18`, border: `1px solid ${C.cyan}66`, ...fT, fontSize: 15, color: C.cyan, cursor: analyzing ? "default" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
+            >
+              {analyzing
+                ? <><RefreshCw size={15} style={{ animation: "spin 1s linear infinite" }} /> LENDO O ÁUDIO...</>
+                : <><Waves size={15} /> SUGERIR INÍCIO DO HOOK</>}
+            </button>
+            <button
+              onClick={doExport}
+              disabled={exporting || analyzing}
+              style={{ flex: "1 1 180px", padding: "11px 0", background: `${C.orange}18`, border: `1px solid ${C.orange}66`, ...fT, fontSize: 15, color: C.orange, cursor: exporting ? "default" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
+            >
+              {exporting
+                ? <><RefreshCw size={15} style={{ animation: "spin 1s linear infinite" }} /> GRAVANDO {Math.round(expPct)}%</>
+                : <><Download size={15} /> BAIXAR TRECHO (MP4/WEBM)</>}
+            </button>
+          </div>
+          {exporting && (
+            <div style={{ height: 4, background: "#141420", marginTop: 8 }}>
+              <div style={{ height: "100%", width: `${expPct}%`, background: C.orange }} />
+            </div>
+          )}
+          {energy && (
+            <div style={{ ...fM, fontSize: 11, color: C.textMuted, marginTop: 8 }}>
+              Pico de energia em {energy.peakAt.toFixed(1)}s · início sugerido {energy.suggestedStart.toFixed(1)}s
+            </div>
+          )}
+
+
           <button
             onClick={capture}
             disabled={capturing}
