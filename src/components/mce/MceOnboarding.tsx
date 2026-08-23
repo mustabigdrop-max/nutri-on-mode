@@ -207,12 +207,23 @@ export default function MceOnboarding({ onComplete }: { onComplete: () => void }
               background: canAdvance ? "rgba(184,146,42,0.18)" : "rgba(255,255,255,0.05)",
               border: `1px solid ${canAdvance ? "rgba(184,146,42,0.5)" : "rgba(255,255,255,0.08)"}`,
               color: canAdvance ? "#B8922A" : "rgba(255,255,255,0.3)",
-              display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+              display: "flex", alignItems:"center", justifyContent: "center", gap: 8,
             }}
           >
             {saving ? "SALVANDO..." : isLast ? "ENTRAR NO MCE" : <>AVANÇAR <ArrowRight size={14} /></>}
           </button>
         </div>
+
+        <button
+          type="button"
+          onClick={() => { localStorage.setItem("mce-onboarding-v1", "done"); onComplete(); }}
+          style={{
+            marginTop: 14, width: "100%", padding: "10px 0", background: "transparent", border: "none",
+            fontFamily: MONO, fontSize: 9, letterSpacing: 1.5, color: "rgba(255,255,255,0.3)", cursor: "pointer",
+          }}
+        >
+          Já conheço o MCE · pular introdução
+        </button>
       </div>
     </div>
   );
