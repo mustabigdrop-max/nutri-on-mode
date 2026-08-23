@@ -1,4 +1,4 @@
-// Desafio 90 Dias — regras de plano base, ranking e fases
+// Desafio 30 Dias — regras de plano base, ranking, fases e acesso free (14 dias)
 // "Transformação é sistema."
 
 export type Objetivo = "emagrecer" | "ganhar_massa" | "manter";
@@ -188,17 +188,50 @@ export const TIER_BADGE: Record<string, { label: string; emoji: string }> = {
   vip: { label: "VIP", emoji: "🏆" },
 };
 
+/** Duração oficial do desafio. */
+export const CHALLENGE_DAYS = 30;
+/** Dias de acesso completo (free) a partir da entrada no desafio. */
+export const TRIAL_DAYS = 14;
+/** Pontos máximos por dia por nível de acesso. */
+export const MAX_POINTS_FULL = 100;
+export const MAX_POINTS_BASIC = 40;
+
 export function challengeDay(startDate?: string | null): number {
   if (!startDate) return 1;
   const start = new Date(`${startDate}T00:00:00`);
   const diff = Math.floor((Date.now() - start.getTime()) / 86400000) + 1;
-  return Math.min(Math.max(diff, 1), 90);
+  return Math.min(Math.max(diff, 1), CHALLENGE_DAYS);
 }
 
 export function challengePhase(day: number): { name: string; range: string } {
-  if (day <= 30) return { name: "Fundação", range: "Dias 1–30" };
-  if (day <= 60) return { name: "Construção", range: "Dias 31–60" };
-  return { name: "Transformação", range: "Dias 61–90" };
+  if (day <= 10) return { name: "Ativação", range: "Dias 1–10" };
+  if (day <= 20) return { name: "Consistência", range: "Dias 11–20" };
+  return { name: "Sprint Final", range: "Dias 21–30" };
+}
+
+export interface AccessStatus {
+  /** Acesso completo (trial ativo ou tier pago). */
+  full: boolean;
+  /** Caiu para o modo básico (só check-in). */
+  basic: boolean;
+  /** Tier pago (premium/vip) — nunca expira. */
+  paid: boolean;
+  daysLeft: number;
+  maxPoints: number;
+}
+
+/**
+ * Acesso do participante: os 14 primeiros dias após a entrada liberam tudo.
+ * Depois disso, quem não ativou PREMIUM/VIP cai para o modo básico (máx 40 pts/dia).
+ */
+export function accessStatus(joinedAt?: string | null, tier?: string | null): AccessStatus {
+  const paid = tier === "premium" || tier === "vip";
+  if (paid) return { full: true, basic: false, paid, daysLeft: Infinity, maxPoints: MAX_POINTS_FULL };
+  const start = joinedAt ? new Date(joinedAt).getTime() : Date.now();
+  const used = Math.floor((Date.now() - start) / 86400000);
+  const daysLeft = Math.max(TRIAL_DAYS - used, 0);
+  const full = daysLeft > 0;
+  return { full, basic: !full, paid, daysLeft, maxPoints: full ? MAX_POINTS_FULL : MAX_POINTS_BASIC };
 }
 
 export function levelBadge(score: number): { label: string; color: string } {

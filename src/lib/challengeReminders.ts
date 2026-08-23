@@ -1,5 +1,5 @@
 /**
- * Lembretes automáticos do Desafio 90 Dias.
+ * Lembretes automáticos do Desafio 30 Dias.
  * O disparo é feito por WhatsApp (wa.me) a partir da fila calculada aqui,
  * respeitando a configuração do coach em `gym_challenges`.
  */
@@ -41,7 +41,7 @@ const fill = (tpl: string, vars: Record<string, string | number>) =>
 
 export const DEFAULT_CHECKIN_TEMPLATE =
   "Fala {nome}! Aqui é o Diogo Mello 👊\n\n" +
-  "Seu check-in do Dia {dia}/90 do {desafio} ainda tá em aberto. " +
+  "Seu check-in do Dia {dia}/30 do {desafio} ainda tá em aberto. " +
   "Leva 30 segundos: humor, água, treino e refeições.\n\n" +
   "👉 {link}\n\n" +
   "Transformação é sistema. @diogo.mell0 · nutrion.app.br";
@@ -147,7 +147,12 @@ export function reminderDue(time: string, now: Date = new Date()) {
 export function dayPoints(
   log: { meals_done?: number[] | null; water_ml?: number | null; training_done?: boolean | null; mood?: string | null },
   mealsPerDay: number,
+  opts?: { basic?: boolean },
 ) {
+  // Modo básico (acesso free expirado): só check-in de humor e treino pontuam — máx 40.
+  if (opts?.basic) {
+    return (log.mood ? 20 : 0) + (log.training_done ? 20 : 0);
+  }
   const meals = Math.min((log.meals_done?.length ?? 0) / Math.max(mealsPerDay, 1), 1) * 40;
   const water = Math.min((log.water_ml ?? 0) / 3000, 1) * 20;
   const training = log.training_done ? 20 : 0;
@@ -169,11 +174,11 @@ export const DEFAULT_ESCALATION_HOURS = [0, 2, 14];
 
 export const DEFAULT_ESCALATION_TEMPLATES = [
   "Fala {nome}! Aqui é o Diogo Mello 👊\n\n" +
-    "Passou do horário e seu check-in do Dia {dia}/90 do {desafio} ainda tá em aberto. " +
+    "Passou do horário e seu check-in do Dia {dia}/30 do {desafio} ainda tá em aberto. " +
     "São 30 segundos pra manter o streak de {streak} dia(s) vivo.\n\n👉 {link}\n\n" +
     "Transformação é sistema. @diogo.mell0 · nutrion.app.br",
   "{nome}, segundo toque 👊\n\n" +
-    "Você tá a um clique de fechar o Dia {dia}/90 do {desafio} ({feitas}/{total} refeições marcadas). " +
+    "Você tá a um clique de fechar o Dia {dia}/30 do {desafio} ({feitas}/{total} refeições marcadas). " +
     "Fecha agora que amanhã você começa no positivo.\n\n👉 {link}\n\n" +
     "Transformação é sistema. @diogo.mell0 · nutrion.app.br",
   "{nome}, o dia fechou sem seu check-in no {desafio}.\n\n" +
