@@ -114,6 +114,8 @@ export default function ReelsStudioPanel({ onBack, context: ctxSeed }: { onBack?
   const [template, setTemplate] = useState<Template | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
+  const [trim, setTrim] = useState<TrimInfo | null>(null);
+
   const [context, setContext] = useState(ctxSeed || "");
   const [loading, setLoading] = useState(false);
   const [loadingMsg, setLoadingMsg] = useState("");
