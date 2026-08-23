@@ -3,6 +3,25 @@ import type { PillarKey } from "@/data/mceData";
 export type ScoreRow = { created_at: string; score_m: number; score_c: number; score_e: number };
 export type EventRow = { exercise_key: string; completed_at: string };
 
+export type CheckinRow = {
+  checkin_date: string;
+  sleep_quality: number;
+  stress_level: number;
+  nutrition_adherence: number;
+  hydration: number;
+  movement: number;
+  focus_clarity: number;
+};
+
+export const CHECKIN_FIELDS: { key: keyof CheckinRow; label: string; pillar: PillarKey; invert?: boolean }[] = [
+  { key: "focus_clarity", label: "Foco / Clareza mental", pillar: "M" },
+  { key: "stress_level", label: "Nível de estresse", pillar: "M", invert: true },
+  { key: "nutrition_adherence", label: "Aderência nutricional", pillar: "C" },
+  { key: "hydration", label: "Hidratação", pillar: "C" },
+  { key: "movement", label: "Movimento / Treino", pillar: "E" },
+  { key: "sleep_quality", label: "Qualidade do sono", pillar: "E" },
+];
+
 export const MCE_LEVELS = [
   { min: 0, max: 30, name: "INICIANTE", title: "Reconhecendo o padrão", color: "#EF4444" },
   { min: 31, max: 50, name: "CONSCIENTE", title: "Vendo o sistema", color: "#F59E0B" },
