@@ -191,6 +191,7 @@ const App = () => (
               <Route path="evolucao" element={<ChallengeEvolutionPage />} />
               <Route path="perfil" element={<ChallengeProfilePage />} />
               <Route path="planos" element={<ChallengeUpgradePage />} />
+              <Route path="vip" element={<ChallengeVipPage />} />
 
             </Route>
             <Route path="/desafio/:slug" element={<ChallengeSignupPage />} />
