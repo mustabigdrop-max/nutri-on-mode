@@ -9,18 +9,21 @@ import {
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Section, Pill, copyText, VariationBlock } from "./socialUi";
-import { extractVideoFrames, fileToDataUrl, getVideoDuration, videoObjectUrl } from "@/lib/socialImageKit";
+import {
+  captureFrameAt, compressImageFile, detectMediaKind, extractVideoFrames,
+  fileToDataUrl, getVideoDuration, videoObjectUrl,
+} from "@/lib/socialImageKit";
 import {
   PRISM_MODES, PRISM_OBJECTIVES, PRISM_TONES, SALE_LEVELS, PACK_PRODUCTS,
   type PrismModeDef,
 } from "@/data/prismModes";
 
 const MAX_FILES = 10;
-const MAX_VIDEO_MB = 100;
 
 type StudioFile = {
   id: string; kind: "image" | "video"; name: string;
   dataUrl?: string; objectUrl?: string; duration?: number; frames?: string[]; thumb: string;
+  trim?: { start: number; end: number };
 };
 
 export type StudioConcept = {
