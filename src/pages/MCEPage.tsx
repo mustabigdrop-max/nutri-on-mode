@@ -575,29 +575,19 @@ export default function MCEIntelligencePage() {
   };
   const phase = getPhase(totalScore);
 
-  const persistScores = useCallback((next: Record<PillarKey, number>) => {
-    if (!user) return;
-    if (saveTimer.current) clearTimeout(saveTimer.current);
-    saveTimer.current = setTimeout(() => {
-      void supabase.from("mce_scores").insert({
-        user_id: user.id, score_m: next.M, score_c: next.C, score_e: next.E, source: "diagnostic",
-      });
-    }, 1200);
-  }, [user]);
-
   const updateDiagnostic = (pKey: PillarKey, idx: number, val: number) => {
     const answers = [...diagnostics[pKey]];
     answers[idx] = val;
-    const newScore = Math.round((answers.reduce((a, b) => a + b, 0) / 30) * 100);
-    const nextScores = { ...scores, [pKey]: newScore } as Record<PillarKey, number>;
     setDiagnostics((prev) => ({ ...prev, [pKey]: answers }));
-    setScores(nextScores);
-    persistScores(nextScores);
     if (user) {
       void supabase.from("mce_diagnostics").upsert(
         { user_id: user.id, pillar: pKey, answers },
         { onConflict: "user_id,pillar" },
       );
+      const newScore = Math.round((answers.reduce((a, b) => a + b, 0) / 30) * 100);
+      void supabase.from("mce_scores").insert({
+        user_id: user.id, score_m: pKey === "M" ? newScore : scores.M, score_c: pKey === "C" ? newScore : scores.C, score_e: pKey === "E" ? newScore : scores.E, source: "diagnostic",
+      });
     }
   };
 
