@@ -13,7 +13,9 @@ export type CheckinRow = {
   focus_clarity: number;
 };
 
-export const CHECKIN_FIELDS: { key: keyof CheckinRow; label: string; pillar: PillarKey; invert?: boolean }[] = [
+export type CheckinFieldKey = Exclude<keyof CheckinRow, "checkin_date">;
+
+export const CHECKIN_FIELDS: { key: CheckinFieldKey; label: string; pillar: PillarKey; invert?: boolean }[] = [
   { key: "focus_clarity", label: "Foco / Clareza mental", pillar: "M" },
   { key: "stress_level", label: "Nível de estresse", pillar: "M", invert: true },
   { key: "nutrition_adherence", label: "Aderência nutricional", pillar: "C" },
