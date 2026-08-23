@@ -1,4 +1,6 @@
 import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+
 import { ChallengeHeader } from "@/components/challenge/ChallengeLayout";
 import { useChallenge } from "@/hooks/useChallenge";
 import { Card, CardContent } from "@/components/ui/card";
