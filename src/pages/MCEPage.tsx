@@ -103,17 +103,18 @@ function PillarNav({ active, scores, onChange }: { active: PillarKey; scores: Re
           onClick={() => onChange(p.key)}
           style={{
             flex: 1, minHeight: 52, padding: "10px 6px", border: `1px solid ${active === p.key ? p.color + "35" : "transparent"}`, borderRadius: 0, cursor: "pointer",
-            fontFamily: MONO, fontSize: 11, letterSpacing: 2,
+            fontFamily: MONO, fontSize: 10, letterSpacing: active === p.key ? "0.10em" : "0.08em",
             background: active === p.key ? `${p.color}15` : "transparent",
             color: active === p.key ? p.color : "rgba(255,255,255,0.35)",
             borderBottom: active === p.key ? `2px solid ${p.color}` : "2px solid transparent",
             transition: "all 0.3s ease",
           }}
         >
-          <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7 }}>
+          <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
             <p.Icon size={14} /> {p.label}
-            <span style={{ border: `1px solid ${p.color}55`, color: p.color, padding: "1px 5px", fontSize: 9 }}>{scores[p.key]}</span>
+            <span style={{ fontFamily: DISPLAY, fontWeight: 700, fontSize: 12, border: `1px solid ${p.color}55`, color: p.color, padding: "2px 6px", marginLeft: 6 }}>{scores[p.key]}</span>
           </span>
+
         </Button>
       ))}
     </div>
