@@ -2,6 +2,10 @@
 
 export type PrismMode =
   | "post_pronto"
+  | "reel_diario"
+  | "pack_dia"
+  | "hooks"
+  | "calendario"
   | "viral_trend"
   | "reels"
   | "vender"
@@ -24,6 +28,38 @@ export type PrismModeDef = {
 };
 
 export const PRISM_MODES: PrismModeDef[] = [
+  {
+    id: "reel_diario",
+    emoji: "🎬",
+    label: "Reel Diário",
+    desc: "Pilar do dia + fórmula viral = roteiro pronto",
+    color: "#FF4D6D",
+    subtypes: [],
+  },
+  {
+    id: "pack_dia",
+    emoji: "📦",
+    label: "Pack do Dia",
+    desc: "1 Reel + 3 Stories + legenda de uma vez",
+    color: "#00FF88",
+    subtypes: [],
+  },
+  {
+    id: "hooks",
+    emoji: "🪝",
+    label: "Banco de Hooks",
+    desc: "Hooks prontos por pilar, tom e formato",
+    color: "#E8A020",
+    subtypes: [],
+  },
+  {
+    id: "calendario",
+    emoji: "🗓️",
+    label: "Calendário",
+    desc: "Mês inteiro: pilar, fórmula, hook e status",
+    color: "#00D4FF",
+    subtypes: [],
+  },
   {
     id: "post_pronto",
     emoji: "📸",

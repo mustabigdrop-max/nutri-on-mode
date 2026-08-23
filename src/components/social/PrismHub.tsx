@@ -5,6 +5,9 @@ import PrismPanel from "./PrismPanel";
 import PrismStudioPanel from "./PrismStudioPanel";
 import TechReelsPanel from "./TechReelsPanel";
 import ContentPackPanel from "./ContentPackPanel";
+import DailyReelPanel from "./DailyReelPanel";
+import HookBankPanel from "./HookBankPanel";
+import ContentCalendarPanel from "./ContentCalendarPanel";
 import { PRISM_MODES, modeById, type PrismMode } from "@/data/prismModes";
 
 const PRISM = "#A855F7";
@@ -45,6 +48,13 @@ export default function PrismHub({
       </div>
     );
   }
+
+  if (mode === "reel_diario" || mode === "pack_dia") {
+    return <DailyReelPanel packMode={mode === "pack_dia"} onBack={() => setMode(null)} />;
+  }
+
+  if (mode === "hooks") return <HookBankPanel onBack={() => setMode(null)} />;
+  if (mode === "calendario") return <ContentCalendarPanel onBack={() => setMode(null)} />;
 
   if (mode === "post_pronto") {
     return (
