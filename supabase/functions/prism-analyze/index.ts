@@ -420,6 +420,75 @@ Gere o JSON completo.`;
       }
     }
 
+    // ---- MODO SOCIAL PRO: 1 mídia + vibe visual -> texto do vídeo, legenda, hashtags, stories ----
+    if (body?.mode === "social_pro") {
+      const vibeName = typeof body?.vibe === "string" ? body.vibe.slice(0, 40) : "POV";
+      const frame = typeof body?.image === "string" ? body.image : (images[0] ?? null);
+
+      const sysPro = `Você é o PRISM Content Intelligence do nutriON, escrevendo na voz do Coach Diogo Mello (@diogo.mell0).
+
+${COACH_CONTEXT}
+
+VIBE VISUAL ESCOLHIDA: ${vibeName}
+
+REGRAS:
+- 100% português brasileiro, direto, sem enrolação. "Transformação é sistema."
+- NUNCA use "jornada", "mindful", "empoderamento", "desbloqueie seu potencial".
+- Nunca se apresente como IA nem como sistema: a voz é do Diogo Mello.
+- O texto do vídeo tem no máximo 8 palavras e precisa bater forte na tela.
+
+Responda SOMENTE JSON válido neste schema:
+{
+ "texto_video": "texto curto pra queimar no vídeo (máx 8 palavras)",
+ "hook": "hook de 2 segundos pra abrir o reel",
+ "legenda": "legenda completa pro Instagram com quebras de linha e CTA final",
+ "hashtags": ["#tag", "até 20"],
+ "self_comment": "comentário no próprio post pra gerar DM",
+ "musica": "sugestão de áudio trending",
+ "horario": "melhor horário pra postar",
+ "stories": ["story 1", "story 2", "story 3"]
+}`;
+
+      const proContent: unknown[] = [];
+      if (frame) proContent.push({ type: "image_url", image_url: { url: frame } });
+      proContent.push({
+        type: "text",
+        text: `Analise ${frame ? (body?.from_video ? "este frame do vídeo" : "esta imagem") : "o contexto"} e gere o pacote completo.
+Vibe: ${vibeName}
+${context ? `Contexto do coach: ${context}` : "Sem contexto adicional."}
+Responda JSON puro.`,
+      });
+
+      try {
+        const parsedPro = await callGateway(
+          apiKeyEnv,
+          frame ? "google/gemini-2.5-pro" : "google/gemini-2.5-flash",
+          [{ role: "system", content: sysPro }, { role: "user", content: proContent }],
+        );
+        try {
+          await adminClient().from("prism_analyses").insert({
+            coach_id: auth.userId,
+            files_count: frame ? 1 : 0,
+            file_types: [body?.from_video ? "video" : "image"],
+            context,
+            mode: "social_pro",
+            subtype: vibeName,
+            ai_content: parsedPro ?? null,
+            format_used: "reel",
+          });
+        } catch (_) { /* persistência não bloqueia */ }
+
+        return new Response(JSON.stringify({ result: parsedPro }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      } catch (e) {
+        const status = (e as any)?.status ?? 500;
+        return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Erro inesperado" }), {
+          status, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
+
     // ---- MODO STUDIO: modos do hub (viral, reels, vender, representatividade, lifestyle, pack, ia_decide) ----
     if (body?.mode === "studio") {
       const s = (v: unknown, n = 60) => (typeof v === "string" ? v.slice(0, n) : "");
