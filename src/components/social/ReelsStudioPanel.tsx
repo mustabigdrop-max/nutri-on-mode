@@ -108,6 +108,42 @@ const readAsDataUrl = (f: File) =>
     r.readAsDataURL(f);
   });
 
+/** Reduz a foto para no máximo 1024px antes de mandar pro sistema. */
+async function compressImage(f: File, maxDim = 1024, quality = 0.75): Promise<string | null> {
+  const src = await readAsDataUrl(f).catch(() => null);
+  if (!src) return null;
+  return new Promise((resolve) => {
+    const img = new window.Image();
+    img.onload = () => {
+      let w = img.width, h = img.height;
+      if (!w || !h) return resolve(src);
+      if (w > maxDim || h > maxDim) {
+        if (w > h) { h = Math.round((h * maxDim) / w); w = maxDim; }
+        else { w = Math.round((w * maxDim) / h); h = maxDim; }
+      }
+      const canvas = document.createElement("canvas");
+      canvas.width = w; canvas.height = h;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return resolve(src);
+      ctx.drawImage(img, 0, 0, w, h);
+      resolve(canvas.toDataURL("image/jpeg", quality));
+    };
+    img.onerror = () => resolve(src);
+    img.src = src;
+  });
+}
+
+const IMAGE_RE = /\.(jpe?g|png|webp|gif|bmp|heic|heif)$/i;
+const VIDEO_RE = /\.(mp4|mov|avi|mkv|webm|m4v|3gp)$/i;
+
+/** Alguns arquivos (HEIC/MOV) chegam sem MIME, então o nome também vale. */
+function detectKind(f: File): "image" | "video" | null {
+  if (f.type.startsWith("image/") || IMAGE_RE.test(f.name)) return "image";
+  if (f.type.startsWith("video/") || VIDEO_RE.test(f.name)) return "video";
+  return null;
+}
+
+
 const LOADING_MSGS = [
   "Analisando sua imagem...", "Detectando contexto visual...", "Cruzando com seu DNA de conteúdo...",
   "Gerando hook viral...", "Escrevendo 3 legendas...", "Selecionando hashtags...",
