@@ -990,6 +990,9 @@ const SocialOnModulePage = () => {
           <TabsContent value="ciencia" className="mt-4">
             <ScienceBankPanel ctx={aiCtx} />
           </TabsContent>
+          <TabsContent value="editor" className="mt-4">
+            <VideoTextEditorPanel />
+          </TabsContent>
         </Tabs>
       </main>
     </div>
