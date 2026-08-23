@@ -1,4 +1,6 @@
 import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+
 import { ChallengeHeader } from "@/components/challenge/ChallengeLayout";
 import { useChallenge } from "@/hooks/useChallenge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -115,7 +117,7 @@ export default function ChallengePlanPage() {
               <p className="text-xs text-muted-foreground">
                 Ajuste automático por treino, clima e rotina — só no Premium.
               </p>
-              <Button size="sm" className="w-full">Testar Premium 7 dias grátis →</Button>
+              <Button asChild size="sm" className="w-full"><Link to="/desafio/planos">Ver planos do desafio →</Link></Button>
             </CardContent>
           </Card>
         )}

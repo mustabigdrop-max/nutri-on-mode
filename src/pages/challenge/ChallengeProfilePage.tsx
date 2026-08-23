@@ -52,7 +52,7 @@ export default function ChallengeProfilePage() {
               <p className="text-xs text-muted-foreground">
                 Vire aluno nutriON e leve seu histórico, ranking e MCE com você.
               </p>
-              <Button size="sm" className="w-full">Ver planos →</Button>
+              <Button asChild size="sm" className="w-full"><Link to="/desafio/planos">Ver planos →</Link></Button>
             </CardContent>
           </Card>
         )}

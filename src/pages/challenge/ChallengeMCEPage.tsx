@@ -64,7 +64,7 @@ export default function ChallengeMCEPage() {
               <p className="text-xs text-muted-foreground">
                 Diagnóstico MCE completo, alter ego e trilha de exercícios liberam no Premium.
               </p>
-              <Button size="sm" className="w-full">Testar Premium 7 dias grátis →</Button>
+              <Button asChild size="sm" className="w-full"><Link to="/desafio/planos">Ver planos do desafio →</Link></Button>
             </CardContent>
           </Card>
         )}
