@@ -426,8 +426,12 @@ Gere o JSON completo.`;
       const pMode = s(body?.prism_mode, 40) || "ia_decide";
       const studioFrames = videos.flatMap((v) => (Array.isArray(v.frames) ? v.frames.slice(0, 3) : []));
       const studioImages = [...images, ...studioFrames].slice(0, 14);
+      const trimInfo = videos
+        .filter((v: any) => v?.trim && Number.isFinite(v.trim.duration))
+        .map((v: any) => `${v.name || "vídeo"}: trecho ${v.trim.start}s→${v.trim.end}s (${v.trim.duration}s)`)
+        .join(" | ");
       const filesInfo = studioImages.length
-        ? `${images.length} foto(s) e ${videos.length} vídeo(s) enviados — imagens anexadas nesta mensagem`
+        ? `${images.length} foto(s) e ${videos.length} vídeo(s) enviados — imagens anexadas nesta mensagem${trimInfo ? `. Trechos selecionados: ${trimInfo}. Ajuste roteiro e legenda à duração do trecho.` : ""}`
         : "nenhum material enviado — só ideia";
 
       const messages = [

@@ -446,3 +446,43 @@ const frameScore = async (dataUrl: string) => {
   const variance = lums.reduce((a, l) => a + (l - mean) ** 2, 0) / lums.length;
   return Math.sqrt(variance);
 };
+
+/** Detecta tipo de mídia por MIME ou extensão (cobre HEIC, MOV, AVI, MKV...). */
+export const detectMediaKind = (file: File): "image" | "video" | null => {
+  const name = file.name || "";
+  if (file.type.startsWith("image/") || /\.(jpe?g|png|webp|gif|heic|heif|bmp|tiff?)$/i.test(name)) return "image";
+  if (file.type.startsWith("video/") || /\.(mp4|mov|avi|mkv|webm|m4v|3gp)$/i.test(name)) return "video";
+  return null;
+};
+
+/** Reduz a imagem para caber em `max` px e devolve um dataURL JPEG leve. */
+export const compressImageFile = (file: File, max = 1024, quality = 0.75): Promise<string | null> =>
+  new Promise((resolve) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      try {
+        let w = img.width;
+        let h = img.height;
+        if (w > max || h > max) {
+          if (w > h) { h = Math.round((h * max) / w); w = max; }
+          else { w = Math.round((w * max) / h); h = max; }
+        }
+        const { canvas, ctx } = ctxOf(w, h);
+        ctx.drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL("image/jpeg", quality));
+      } catch {
+        resolve(null);
+      } finally {
+        URL.revokeObjectURL(url);
+      }
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); resolve(null); };
+    img.src = url;
+  });
+
+/** Captura um frame único no tempo informado (segundos). */
+export const captureFrameAt = async (src: string, time: number) => {
+  const v = await loadVideo(src);
+  return seekFrame(v, time);
+};

@@ -9,18 +9,21 @@ import {
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Section, Pill, copyText, VariationBlock } from "./socialUi";
-import { extractVideoFrames, fileToDataUrl, getVideoDuration, videoObjectUrl } from "@/lib/socialImageKit";
+import {
+  captureFrameAt, compressImageFile, detectMediaKind, extractVideoFrames,
+  fileToDataUrl, getVideoDuration, videoObjectUrl,
+} from "@/lib/socialImageKit";
 import {
   PRISM_MODES, PRISM_OBJECTIVES, PRISM_TONES, SALE_LEVELS, PACK_PRODUCTS,
   type PrismModeDef,
 } from "@/data/prismModes";
 
 const MAX_FILES = 10;
-const MAX_VIDEO_MB = 100;
 
 type StudioFile = {
   id: string; kind: "image" | "video"; name: string;
   dataUrl?: string; objectUrl?: string; duration?: number; frames?: string[]; thumb: string;
+  trim?: { start: number; end: number };
 };
 
 export type StudioConcept = {
@@ -71,6 +74,7 @@ export default function PrismStudioPanel({
   const [result, setResult] = useState<StudioResult | null>(null);
   const [scheduling, setScheduling] = useState(false);
   const [openConcept, setOpenConcept] = useState(0);
+  const [processing, setProcessing] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const accent = mode.color;
@@ -81,25 +85,60 @@ export default function PrismStudioPanel({
     if (room <= 0) return toast.error(`Máximo ${MAX_FILES} arquivos`);
     const picked = Array.from(list).slice(0, room);
     const next: StudioFile[] = [];
+    setProcessing(true);
     for (const f of picked) {
       try {
-        if (f.type.startsWith("video/")) {
-          if (f.size > MAX_VIDEO_MB * 1024 * 1024) { toast.error(`${f.name}: vídeo acima de ${MAX_VIDEO_MB}MB`); continue; }
+        const kind = detectMediaKind(f);
+        if (!kind) { toast.error(`${f.name}: formato não suportado`); continue; }
+        if (kind === "video") {
           const objectUrl = videoObjectUrl(f);
           const duration = await getVideoDuration(objectUrl);
           const extracted = await extractVideoFrames(objectUrl, 3);
-          const frames = extracted.map((f) => f.dataUrl);
-          next.push({ id: uid(), kind: "video", name: f.name, objectUrl, duration, frames, thumb: frames[0] || "" });
+          const frames = extracted.map((x) => x.dataUrl);
+          next.push({
+            id: uid(), kind: "video", name: f.name, objectUrl, duration, frames,
+            thumb: frames[0] || "",
+            trim: duration > 0 ? { start: 0, end: Math.min(duration, 35) } : undefined,
+          });
         } else {
-          const dataUrl = await fileToDataUrl(f);
+          const dataUrl = (await compressImageFile(f)) || (await fileToDataUrl(f));
           next.push({ id: uid(), kind: "image", name: f.name, dataUrl, thumb: dataUrl });
         }
       } catch { toast.error(`Falha ao ler ${f.name}`); }
     }
+    setProcessing(false);
     setFiles((p) => [...p, ...next]);
   };
 
+  const setTrim = async (id: string, patch: Partial<{ start: number; end: number }>) => {
+    setFiles((p) => p.map((f) => {
+      if (f.id !== id || f.kind !== "video") return f;
+      const dur = f.duration || 0;
+      let start = patch.start ?? f.trim?.start ?? 0;
+      let end = patch.end ?? f.trim?.end ?? dur;
+      if (start >= end) { if (patch.start != null) end = Math.min(start + 5, dur); else start = Math.max(end - 5, 0); }
+      return { ...f, trim: { start, end } };
+    }));
+  };
+
+  const useSegment = async (id: string) => {
+    const f = files.find((x) => x.id === id);
+    if (!f?.objectUrl || !f.trim) return;
+    try {
+      setProcessing(true);
+      const mid = f.trim.start + (f.trim.end - f.trim.start) / 2;
+      const frame = await captureFrameAt(f.objectUrl, mid);
+      setFiles((p) => p.map((x) => (x.id === id ? { ...x, frames: [frame, ...(x.frames || [])].slice(0, 3), thumb: frame } : x)));
+      toast.success("Frame do trecho capturado");
+    } catch {
+      toast.error("Não deu pra capturar o frame");
+    } finally {
+      setProcessing(false);
+    }
+  };
+
   const removeFile = (id: string) => setFiles((p) => p.filter((f) => f.id !== id));
+
 
   const mixLabel = useMemo(() => "60% TOFU (viral/seguidores) · 30% MOFU (autoridade/valor) · 10% BOFU (venda)", []);
 
@@ -120,7 +159,12 @@ export default function PrismStudioPanel({
           mix: mode.id === "pack_semanal" ? mixLabel : undefined,
           products: mode.id === "pack_semanal" ? products : undefined,
           images: files.filter((f) => f.kind === "image").map((f) => f.dataUrl).filter(Boolean),
-          videos: files.filter((f) => f.kind === "video").map((f) => ({ name: f.name, duration: f.duration, frames: f.frames })),
+          videos: files.filter((f) => f.kind === "video").map((f) => ({
+            name: f.name,
+            duration: f.duration,
+            frames: f.frames,
+            trim: f.trim ? { start: Math.round(f.trim.start), end: Math.round(f.trim.end), duration: Math.round(f.trim.end - f.trim.start) } : undefined,
+          })),
         },
       });
       if (error) throw new Error(error.message);
@@ -271,15 +315,23 @@ export default function PrismStudioPanel({
             <input
               ref={inputRef}
               type="file"
-              accept="image/*,video/mp4,video/quicktime"
+              accept="image/*,video/*,.heic,.heif,.mov,.avi,.mkv,.m4v,.3gp"
               multiple
               hidden
               onChange={(e) => { addFiles(e.target.files); e.currentTarget.value = ""; }}
             />
-            <Button variant="outline" size="sm" onClick={() => inputRef.current?.click()} className="text-xs gap-1.5">
-              <Upload className="w-3.5 h-3.5" />
-              {mode.needsFiles ? "Enviar material" : "Material (opcional)"}
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={() => inputRef.current?.click()} disabled={processing} className="text-xs gap-1.5">
+                <Upload className="w-3.5 h-3.5" />
+                {mode.needsFiles ? "Enviar material" : "Material (opcional)"}
+              </Button>
+              {processing && (
+                <span className="text-[11px] text-muted-foreground flex items-center gap-1">
+                  <Loader2 className="w-3 h-3 animate-spin" /> Carregando arquivo...
+                </span>
+              )}
+            </div>
+            <p className="text-[10px] text-muted-foreground mt-1">Foto ou vídeo, qualquer formato (HEIC, MOV, AVI...) e sem limite de tamanho — só o frame é enviado.</p>
             {!!files.length && (
               <div className="flex flex-wrap gap-2 mt-3">
                 {files.map((f, i) => (
@@ -296,9 +348,40 @@ export default function PrismStudioPanel({
                 </button>
               </div>
             )}
+
+            {files.filter((f) => f.kind === "video" && (f.duration || 0) > 0).map((f) => (
+              <div key={`trim-${f.id}`} className="mt-3 rounded-lg border p-3 space-y-2" style={{ borderColor: `${accent}26` }}>
+                <p className="text-[11px] font-medium flex items-center gap-1"><Scissors className="w-3 h-3" /> {f.name}</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <label className="text-[10px] text-muted-foreground">
+                    Início: {(f.trim?.start ?? 0).toFixed(0)}s
+                    <input type="range" min={0} max={Math.floor(f.duration || 0)} step={1}
+                      value={f.trim?.start ?? 0}
+                      onChange={(e) => setTrim(f.id, { start: Number(e.target.value) })}
+                      className="w-full" />
+                  </label>
+                  <label className="text-[10px] text-muted-foreground">
+                    Fim: {(f.trim?.end ?? 0).toFixed(0)}s
+                    <input type="range" min={0} max={Math.ceil(f.duration || 0)} step={1}
+                      value={f.trim?.end ?? 0}
+                      onChange={(e) => setTrim(f.id, { end: Number(e.target.value) })}
+                      className="w-full" />
+                  </label>
+                </div>
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-[10px] text-muted-foreground">
+                    Trecho: {Math.max(0, Math.round((f.trim?.end ?? 0) - (f.trim?.start ?? 0)))}s
+                    {(f.trim?.end ?? 0) - (f.trim?.start ?? 0) > 60 ? " · ideal até 35s" : ""}
+                  </span>
+                  <Button size="sm" variant="outline" className="h-7 text-[11px] gap-1" disabled={processing} onClick={() => useSegment(f.id)}>
+                    <Scissors className="w-3 h-3" /> Usar este trecho
+                  </Button>
+                </div>
+              </div>
+            ))}
           </div>
 
-          <Button onClick={generate} disabled={loading} className="w-full gap-2" style={{ background: accent, color: "#000" }}>
+          <Button onClick={generate} disabled={loading || processing} className="w-full gap-2" style={{ background: accent, color: "#000" }}>
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
             {loading ? "PRISM processando..." : `Gerar ${mode.label}`}
           </Button>
