@@ -50,6 +50,65 @@ export function levelFor(score: number): { level: MceLevel; next: MceLevel | nul
   return { level, next, progress: Math.max(0, Math.min(100, progress)) };
 }
 
+// ── Check-in scoring ────────────────────────────────────────────────────────
+export function dailyScoresFromCheckin(row: CheckinRow): Record<PillarKey, number> {
+  const v = (n: number) => Math.max(1, Math.min(10, Number(n) || 1));
+  const stressInverted = 11 - v(row.stress_level);
+  return {
+    M: Math.round(((v(row.focus_clarity) + stressInverted) / 2) * 10),
+    C: Math.round(((v(row.nutrition_adherence) + v(row.hydration)) / 2) * 10),
+    E: Math.round(((v(row.movement) + v(row.sleep_quality)) / 2) * 10),
+  };
+}
+
+export function rollingScores(
+  checkins: CheckinRow[],
+  fallback: Record<PillarKey, number> = { M: 50, C: 50, E: 50 },
+  days = 7,
+  anchor: Date = new Date(),
+): Record<PillarKey, number> {
+  const map = new Map<string, CheckinRow>();
+  for (const c of checkins) map.set(c.checkin_date, c);
+
+  const daily: Record<PillarKey, number[]> = { M: [], C: [], E: [] };
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date(anchor);
+    d.setDate(d.getDate() - i);
+    const k = dayKey(d);
+    const row = map.get(k);
+    if (row) {
+      const s = dailyScoresFromCheckin(row);
+      daily.M.push(s.M);
+      daily.C.push(s.C);
+      daily.E.push(s.E);
+    }
+  }
+
+  const avg = (arr: number[]) => (arr.length ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length) : 0);
+  const out: Record<PillarKey, number> = {
+    M: avg(daily.M) || fallback.M,
+    C: avg(daily.C) || fallback.C,
+    E: avg(daily.E) || fallback.E,
+  };
+  return out;
+}
+
+export function weekConsistency(checkins: CheckinRow[], anchor: Date = new Date()): boolean[] {
+  const map = new Map<string, boolean>();
+  for (const c of checkins) map.set(c.checkin_date, true);
+  const out: boolean[] = [];
+  const today = anchor.getDay();
+  const labels = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(anchor);
+    d.setDate(d.getDate() - i);
+    out.push(map.has(dayKey(d)));
+  }
+  return out;
+}
+
+export const weekLabels = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+
 // ── Heatmap ────────────────────────────────────────────────────────────────
 export type HeatDay = { date: string; label: string; count: number; intensity: 0 | 1 | 2 | 3; crisis: boolean };
 
