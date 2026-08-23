@@ -51,8 +51,16 @@ export default function MceDailyCheckin({ onSubmit, onClose }: { onSubmit?: Chec
         .maybeSingle();
       if (cancelled) return;
       if (data) {
-        setValues({ ...(data as unknown as CheckinRow), checkin_date: today });
-        setExisting(data as unknown as CheckinRow);
+        const row = data as unknown as CheckinRow;
+        setValues({
+          sleep_quality: row.sleep_quality,
+          stress_level: row.stress_level,
+          nutrition_adherence: row.nutrition_adherence,
+          hydration: row.hydration,
+          movement: row.movement,
+          focus_clarity: row.focus_clarity,
+        });
+        setExisting(row);
         setSaved(true);
       }
     })();
