@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import { Camera, Pause, Play, RefreshCw, Scissors } from "lucide-react";
+import { Camera, Download, Pause, Play, RefreshCw, Repeat, Scissors, Waves } from "lucide-react";
+import { toast } from "sonner";
+import { analyzeVideoEnergy, downloadBlob, exportClip, type EnergyAnalysis } from "@/lib/reelsClip";
+
 
 const C = {
   bg: "#020205", card: "#080810", border: "#B8922A22",
@@ -52,11 +55,16 @@ export default function ReelsVideoTrimmer({
   const [playing, setPlaying] = useState(false);
   const [ready, setReady] = useState(false);
   const [capturing, setCapturing] = useState(false);
+  const [loop, setLoop] = useState(true);
+  const [energy, setEnergy] = useState<EnergyAnalysis | null>(null);
+  const [analyzing, setAnalyzing] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const [expPct, setExpPct] = useState(0);
 
   useEffect(() => {
     const u = URL.createObjectURL(file);
     setUrl(u);
-    setReady(false); setPlaying(false); setCurrent(0); setStart(0);
+    setReady(false); setPlaying(false); setCurrent(0); setStart(0); setEnergy(null);
     return () => URL.revokeObjectURL(u);
   }, [file]);
 
@@ -85,12 +93,48 @@ export default function ReelsVideoTrimmer({
 
   const onTime = () => {
     const v = videoRef.current;
-    if (!v) return;
+    if (!v || exporting) return;
     setCurrent(v.currentTime);
-    if (v.currentTime >= end) { v.pause(); setPlaying(false); }
+    if (v.currentTime >= end) {
+      if (loop && playing) { v.currentTime = start; v.play(); }
+      else { v.pause(); setPlaying(false); }
+    }
+  };
+
+  const suggestHook = async () => {
+    const v = videoRef.current;
+    if (!v) return;
+    setAnalyzing(true);
+    const res = energy ?? (await analyzeVideoEnergy(file));
+    setAnalyzing(false);
+    if (!res) { toast.error("Não consegui ler o áudio desse vídeo."); return; }
+    setEnergy(res);
+    const s = Math.min(res.suggestedStart, Math.max(0, duration - 5));
+    setStart(s);
+    if (end <= s + 3) setEnd(Math.min(s + 30, duration));
+    seek(s);
+    toast.success(`Hook sugerido em ${s.toFixed(1)}s (pico de energia em ${res.peakAt.toFixed(1)}s)`);
+  };
+
+  const doExport = async () => {
+    const v = videoRef.current;
+    if (!v || exporting) return;
+    setExporting(true); setExpPct(0); setPlaying(false);
+    const wasMuted = v.muted;
+    try {
+      const clip = await exportClip(v, start, end, setExpPct);
+      downloadBlob(clip.blob, `reel-corte-${Math.round(start)}s-${Math.round(end)}s.${clip.ext}`);
+      toast.success(`Trecho exportado em ${clip.ext.toUpperCase()}`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Falha ao exportar o trecho");
+    } finally {
+      v.muted = wasMuted;
+      setExporting(false); setExpPct(0);
+    }
   };
 
   const capture = async () => {
+
     const v = videoRef.current;
     if (!v) return;
     v.pause(); setPlaying(false);
@@ -125,19 +169,38 @@ export default function ReelsVideoTrimmer({
             >
               {playing ? <Pause size={15} /> : <Play size={15} />}
             </button>
+            <button
+              onClick={() => setLoop((v) => !v)}
+              aria-pressed={loop}
+              title="Reproduzir o trecho em loop contínuo"
+              style={{ background: loop ? `${C.cyan}22` : "transparent", border: `1px solid ${loop ? C.cyan : C.border}`, color: loop ? C.cyan : C.textMid, padding: 8, cursor: "pointer", display: "flex" }}
+            >
+              <Repeat size={15} />
+            </button>
             <span style={{ ...fM, fontSize: 12, color: C.textMid, minWidth: 42 }}>{formatTime(current)}</span>
             <div
               onClick={(e) => {
                 const r = e.currentTarget.getBoundingClientRect();
                 seek(((e.clientX - r.left) / r.width) * duration);
               }}
-              style={{ flex: 1, height: 8, background: "#141420", position: "relative", cursor: "pointer" }}
+              style={{ flex: 1, height: 26, background: "#141420", position: "relative", cursor: "pointer" }}
             >
+              {energy && (
+                <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "flex-end", gap: 1, opacity: 0.5, pointerEvents: "none" }}>
+                  {energy.envelope.map((v, i) => (
+                    <div key={i} style={{ flex: 1, height: `${Math.max(6, v * 100)}%`, background: C.cyan }} />
+                  ))}
+                </div>
+              )}
               <div style={{ position: "absolute", left: `${duration ? (start / duration) * 100 : 0}%`, width: `${duration ? (cut / duration) * 100 : 0}%`, top: 0, bottom: 0, background: `${C.green}33`, border: `1px solid ${C.green}66` }} />
-              <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: `${pct}%`, background: `${C.gold}88` }} />
+              <div style={{ position: "absolute", left: `${pct}%`, top: 0, bottom: 0, width: 2, background: C.gold }} />
             </div>
             <span style={{ ...fM, fontSize: 12, color: C.textMid, minWidth: 42 }}>{formatTime(duration)}</span>
           </div>
+          <div style={{ ...fM, fontSize: 11, color: loop ? C.cyan : C.textMuted, marginTop: 6 }}>
+            {loop ? "LOOP CONTÍNUO ATIVO · o trecho repete pra você conferir a transição" : "Loop desligado"}
+          </div>
+
 
           <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 14, marginBottom: 8 }}>
             <Scissors size={14} color={C.green} />
@@ -169,6 +232,38 @@ export default function ReelsVideoTrimmer({
             Duração do corte: <span style={{ color: C.text }}>{formatTime(cut)}</span>
             {cut > 60 && <span style={{ color: C.orange }}> · recomendado até 35s</span>}
           </div>
+
+          <div style={{ display: "flex", gap: 10, marginTop: 12, flexWrap: "wrap" }}>
+            <button
+              onClick={suggestHook}
+              disabled={analyzing || exporting}
+              style={{ flex: "1 1 180px", padding: "11px 0", background: `${C.cyan}18`, border: `1px solid ${C.cyan}66`, ...fT, fontSize: 15, color: C.cyan, cursor: analyzing ? "default" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
+            >
+              {analyzing
+                ? <><RefreshCw size={15} style={{ animation: "spin 1s linear infinite" }} /> LENDO O ÁUDIO...</>
+                : <><Waves size={15} /> SUGERIR INÍCIO DO HOOK</>}
+            </button>
+            <button
+              onClick={doExport}
+              disabled={exporting || analyzing}
+              style={{ flex: "1 1 180px", padding: "11px 0", background: `${C.orange}18`, border: `1px solid ${C.orange}66`, ...fT, fontSize: 15, color: C.orange, cursor: exporting ? "default" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
+            >
+              {exporting
+                ? <><RefreshCw size={15} style={{ animation: "spin 1s linear infinite" }} /> GRAVANDO {Math.round(expPct)}%</>
+                : <><Download size={15} /> BAIXAR TRECHO (MP4/WEBM)</>}
+            </button>
+          </div>
+          {exporting && (
+            <div style={{ height: 4, background: "#141420", marginTop: 8 }}>
+              <div style={{ height: "100%", width: `${expPct}%`, background: C.orange }} />
+            </div>
+          )}
+          {energy && (
+            <div style={{ ...fM, fontSize: 11, color: C.textMuted, marginTop: 8 }}>
+              Pico de energia em {energy.peakAt.toFixed(1)}s · início sugerido {energy.suggestedStart.toFixed(1)}s
+            </div>
+          )}
+
 
           <button
             onClick={capture}
