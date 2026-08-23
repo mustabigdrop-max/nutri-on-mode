@@ -312,7 +312,6 @@ export default function PrismStudioPanel({
           />
 
           <div>
-          <div>
             <input
               ref={inputRef}
               type="file"
