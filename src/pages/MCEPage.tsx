@@ -491,14 +491,19 @@ export default function MCEIntelligencePage() {
   const { user } = useAuth();
   const [pillar, setPillar] = useState<PillarKey>("M");
   const [tab, setTab] = useState("estudo");
-  const [scores, setScores] = useState<Record<PillarKey, number>>({ M: 50, C: 50, E: 50 });
-  const [diagnostics, setDiagnostics] = useState<Record<PillarKey, number[]>>({ M: [5, 5, 5], C: [5, 5, 5], E: [5, 5, 5] });
   const [completed, setCompleted] = useState<Record<string, boolean>>({});
   const [selectedProfile, setSelectedProfile] = useState<string | null>(null);
   const [quoteIdx, setQuoteIdx] = useState(0);
   const [presentationMode, setPresentationMode] = useState(false);
   const [pillarDirection, setPillarDirection] = useState(1);
+  const [showCheckin, setShowCheckin] = useState(false);
+  const [onboardingDone, setOnboardingDone] = useState(() => {
+    if (typeof window === "undefined") return true;
+    return localStorage.getItem("mce-onboarding-v1") === "done";
+  });
   const reduceMotion = useReducedMotion();
+
+  const { scores, checkins, loading: scoresLoading, refresh: refreshScores, checkedInToday } = useRollingMceScores();
 
   useEffect(() => {
     if (!presentationMode || reduceMotion) return;
@@ -521,40 +526,40 @@ export default function MCEIntelligencePage() {
     return () => clearInterval(iv);
   }, [reduceMotion]);
 
-  const [loaded, setLoaded] = useState(false);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // ── Load persisted state ──
+  // ── Load exercise completion state ──
   useEffect(() => {
     if (!user) return;
     let cancelled = false;
     (async () => {
-      const [scoreRes, diagRes, exRes] = await Promise.all([
-        supabase.from("mce_scores").select("score_m,score_c,score_e").eq("user_id", user.id).order("created_at", { ascending: false }).limit(1).maybeSingle(),
-        supabase.from("mce_diagnostics").select("pillar,answers").eq("user_id", user.id),
-        supabase.from("mce_exercises_done").select("exercise_key").eq("user_id", user.id),
-      ]);
+      const { data } = await supabase.from("mce_exercises_done").select("exercise_key").eq("user_id", user.id);
       if (cancelled) return;
-      if (scoreRes.data) {
-        setScores({ M: scoreRes.data.score_m ?? 50, C: scoreRes.data.score_c ?? 50, E: scoreRes.data.score_e ?? 50 });
-      }
-      if (diagRes.data?.length) {
-        setDiagnostics((prev) => {
-          const next = { ...prev };
-          for (const row of diagRes.data as { pillar: string; answers: number[] }[]) {
-            if (row.pillar === "M" || row.pillar === "C" || row.pillar === "E") {
-              next[row.pillar] = row.answers?.length === 3 ? row.answers : next[row.pillar];
-            }
-          }
-          return next;
-        });
-      }
-      if (exRes.data?.length) {
+      if (data?.length) {
         const map: Record<string, boolean> = {};
-        for (const row of exRes.data as { exercise_key: string }[]) map[row.exercise_key] = true;
+        for (const row of data as { exercise_key: string }[]) map[row.exercise_key] = true;
         setCompleted(map);
       }
-      setLoaded(true);
+    })();
+    return () => { cancelled = true; };
+  }, [user]);
+
+  const [diagnostics, setDiagnostics] = useState<Record<PillarKey, number[]>>({ M: [5, 5, 5], C: [5, 5, 5], E: [5, 5, 5] });
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase.from("mce_diagnostics").select("pillar,answers").eq("user_id", user.id);
+      if (cancelled || !data?.length) return;
+      setDiagnostics((prev) => {
+        const next = { ...prev };
+        for (const row of data as { pillar: string; answers: number[] }[]) {
+          if (row.pillar === "M" || row.pillar === "C" || row.pillar === "E") {
+            next[row.pillar] = row.answers?.length === 3 ? row.answers : next[row.pillar];
+          }
+        }
+        return next;
+      });
     })();
     return () => { cancelled = true; };
   }, [user]);
