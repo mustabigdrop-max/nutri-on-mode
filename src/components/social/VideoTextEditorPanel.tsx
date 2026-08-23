@@ -1,32 +1,15 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import {
   Upload, Play, Pause, X, ChevronDown, Download, Plus, Trash2, Eye,
-  AlignCenter, AlignLeft, AlignRight, Video, Loader2,
+  AlignCenter, AlignLeft, AlignRight, Video, Loader2, Grid3x3, Save, FolderOpen, Film,
 } from "lucide-react";
 import { toast } from "sonner";
-
-type TextStyle = {
-  fontFamily: string;
-  fontSize: number;
-  color: string;
-  stroke: string;
-  strokeWidth: number;
-  align: CanvasTextAlign;
-  y: number;
-  x?: number;
-  shadow: boolean;
-  uppercase: boolean;
-  letterSpacing: number;
-  bg?: string;
-  bgPad?: number;
-  glow?: string;
-  glowSize?: number;
-  fullBlack?: boolean;
-  cineBars?: boolean;
-  skew?: number;
-};
-
-type Layer = { id: number; text: string; style: TextStyle; visible: boolean; preset: string };
+import {
+  type TextStyle, type Layer, type MoveKind, defaultAnim, animAt,
+  drawGuides, snapTargetsX, snapTargetsY, snapValue, SAFE,
+  listProjects, saveProject, deleteProject, downloadProject, readProjectFile,
+  downloadBlob, pickRecorderMime, supportsMp4, encodeGif, type EditorProject, type VideoFormat,
+} from "@/lib/socialEditor";
 
 const PRESETS: { id: string; name: string; preview: string; style: TextStyle }[] = [
   { id: "pov_bold", name: "POV Bold", preview: "POV: texto aqui", style: { fontFamily: "Impact, sans-serif", fontSize: 42, color: "#FFFFFF", stroke: "#000000", strokeWidth: 3, align: "center", y: 0.15, shadow: true, uppercase: true, letterSpacing: 2 } },
@@ -54,6 +37,15 @@ const QUICK_TEXTS = [
   "16 ANOS DE PROCESSO",
 ];
 
+const MOVES: { id: MoveKind; label: string }[] = [
+  { id: "none", label: "SEM" },
+  { id: "up", label: "↑ SOBE" },
+  { id: "down", label: "↓ DESCE" },
+  { id: "left", label: "← ESQ" },
+  { id: "right", label: "→ DIR" },
+  { id: "zoom", label: "ZOOM" },
+];
+
 const RATIOS: Record<string, { w: number; h: number }> = {
   "9:16": { w: 360, h: 640 },
   "1:1": { w: 480, h: 480 },
@@ -61,12 +53,28 @@ const RATIOS: Record<string, { w: number; h: number }> = {
   "16:9": { w: 640, h: 360 },
 };
 
-function renderText(ctx: CanvasRenderingContext2D, w: number, h: number, layers: Layer[]) {
+function baseXOf(s: TextStyle, w: number) {
+  const fx = s.x ?? (s.align === "left" ? 0.05 : s.align === "right" ? 0.95 : 0.5);
+  return w * fx;
+}
+
+function renderText(
+  ctx: CanvasRenderingContext2D,
+  w: number,
+  h: number,
+  layers: Layer[],
+  time: number,
+  total: number,
+  animate: boolean,
+) {
   layers.forEach((layer) => {
     if (!layer.text || !layer.visible) return;
+    const st = animate ? animAt(layer.anim, time, total) : { alpha: 1, dx: 0, dy: 0, scale: 1 };
+    if (!st) return;
     const s = layer.style;
-    const fontSize = s.fontSize * (w / 400);
+    const fontSize = s.fontSize * (w / 400) * st.scale;
     ctx.save();
+    ctx.globalAlpha = st.alpha;
 
     if (s.fullBlack) { ctx.fillStyle = "#000000"; ctx.fillRect(0, 0, w, h); }
     if (s.cineBars) {
@@ -85,12 +93,12 @@ function renderText(ctx: CanvasRenderingContext2D, w: number, h: number, layers:
 
     ctx.font = `${s.fontSize >= 30 ? "bold " : ""}${fontSize}px ${s.fontFamily}`;
     ctx.textAlign = s.align || "center";
-    (ctx as any).letterSpacing = `${s.letterSpacing || 0}px`;
+    (ctx as unknown as { letterSpacing: string }).letterSpacing = `${s.letterSpacing || 0}px`;
 
     const lineH = fontSize * 1.3;
     const totalH = txtLines.length * lineH;
-    const baseY = h * (s.y ?? 0.5) - totalH / 2 + fontSize;
-    const baseX = s.align === "left" ? w * (s.x ?? 0.05) : s.align === "right" ? w * 0.95 : w / 2;
+    const baseY = h * (s.y ?? 0.5) + h * st.dy - totalH / 2 + fontSize;
+    const baseX = baseXOf(s, w) + w * st.dx;
 
     txtLines.forEach((line, i) => {
       const ly = baseY + i * lineH;
@@ -98,7 +106,7 @@ function renderText(ctx: CanvasRenderingContext2D, w: number, h: number, layers:
       if (s.bg) {
         const metrics = ctx.measureText(line);
         const pad = s.bgPad || 8;
-        const bx = s.align === "center" ? w / 2 - metrics.width / 2 - pad : s.align === "right" ? baseX - metrics.width - pad : baseX - pad;
+        const bx = s.align === "center" ? baseX - metrics.width / 2 - pad : s.align === "right" ? baseX - metrics.width - pad : baseX - pad;
         ctx.fillStyle = s.bg;
         ctx.fillRect(bx, ly - fontSize + 2, metrics.width + pad * 2, fontSize + pad);
       }
@@ -148,23 +156,33 @@ const VideoTextEditorPanel = () => {
   const [currentTime, setCurrentTime] = useState(0);
   const [ready, setReady] = useState(false);
   const [layers, setLayers] = useState<Layer[]>([
-    { id: 1, text: "", style: { ...PRESETS[0].style }, visible: true, preset: PRESETS[0].id },
+    { id: 1, text: "", style: { ...PRESETS[0].style }, visible: true, preset: PRESETS[0].id, anim: defaultAnim() },
   ]);
   const [activeLayer, setActiveLayer] = useState(0);
   const [showPresets, setShowPresets] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [exportMsg, setExportMsg] = useState("");
   const [ratio, setRatio] = useState("9:16");
+  const [showGuides, setShowGuides] = useState(true);
+  const [snapOn, setSnapOn] = useState(true);
+  const [guideHit, setGuideHit] = useState<{ x: number | null; y: number | null }>({ x: null, y: null });
+  const [projects, setProjects] = useState<EditorProject[]>([]);
+  const [showProjects, setShowProjects] = useState(false);
+  const [projectName, setProjectName] = useState("");
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const fileRef = useRef<HTMLInputElement | null>(null);
-  const animRef = useRef<number | null>(null);
+  const projFileRef = useRef<HTMLInputElement | null>(null);
   const imgRef = useRef<HTMLImageElement | null>(null);
+  const draggingRef = useRef(false);
 
   const size = RATIOS[ratio];
 
-  const draw = useCallback(() => {
-    const canvas = canvasRef.current;
+  useEffect(() => { setProjects(listProjects()); }, []);
+
+  const drawAt = useCallback((time: number, opts?: { guides?: boolean; canvas?: HTMLCanvasElement | null }) => {
+    const canvas = opts?.canvas ?? canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
@@ -189,8 +207,14 @@ const VideoTextEditorPanel = () => {
       }
     }
 
-    renderText(ctx, w, h, layers);
-  }, [size, fileType, layers, ready]);
+    renderText(ctx, w, h, layers, time, duration || 0, fileType === "video");
+    if (opts?.guides) drawGuides(ctx, w, h, guideHit);
+  }, [size, fileType, layers, ready, duration, guideHit]);
+
+  const draw = useCallback(() => {
+    const t = fileType === "video" ? (videoRef.current?.currentTime ?? 0) : 0;
+    drawAt(t, { guides: showGuides });
+  }, [drawAt, fileType, showGuides]);
 
   useEffect(() => { draw(); }, [draw]);
 
@@ -199,7 +223,6 @@ const VideoTextEditorPanel = () => {
     let raf = 0;
     const loop = () => { draw(); raf = requestAnimationFrame(loop); };
     raf = requestAnimationFrame(loop);
-    animRef.current = raf;
     return () => cancelAnimationFrame(raf);
   }, [playing, draw]);
 
@@ -238,8 +261,10 @@ const VideoTextEditorPanel = () => {
     setLayers((prev) => prev.map((l, i) => (i === idx ? { ...l, ...updates } : l)));
   const updateStyle = (idx: number, styleUpdates: Partial<TextStyle>) =>
     setLayers((prev) => prev.map((l, i) => (i === idx ? { ...l, style: { ...l.style, ...styleUpdates } } : l)));
+  const updateAnim = (idx: number, animUpdates: Partial<Layer["anim"]>) =>
+    setLayers((prev) => prev.map((l, i) => (i === idx ? { ...l, anim: { ...l.anim, ...animUpdates } } : l)));
   const addLayer = () => {
-    setLayers((prev) => [...prev, { id: Date.now(), text: "", style: { ...PRESETS[2].style }, visible: true, preset: PRESETS[2].id }]);
+    setLayers((prev) => [...prev, { id: Date.now(), text: "", style: { ...PRESETS[2].style }, visible: true, preset: PRESETS[2].id, anim: defaultAnim() }]);
     setActiveLayer(layers.length);
   };
   const removeLayer = (idx: number) => {
@@ -248,8 +273,65 @@ const VideoTextEditorPanel = () => {
     setActiveLayer(Math.max(0, idx - 1));
   };
 
+  /* --------- Arraste no canvas com snapping --------- */
+  const posFromEvent = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    const r = e.currentTarget.getBoundingClientRect();
+    return { fx: (e.clientX - r.left) / r.width, fy: (e.clientY - r.top) / r.height };
+  };
+  const applyDrag = (fx: number, fy: number) => {
+    let nx = Math.max(0.02, Math.min(0.98, fx));
+    let ny = Math.max(0.02, Math.min(0.98, fy));
+    let hitX: number | null = null;
+    let hitY: number | null = null;
+    if (snapOn) {
+      const sx = snapValue(nx, snapTargetsX());
+      const sy = snapValue(ny, snapTargetsY());
+      nx = sx.value; hitX = sx.snapped;
+      ny = sy.value; hitY = sy.snapped;
+    }
+    setGuideHit({ x: hitX, y: hitY });
+    updateStyle(activeLayer, { x: nx, y: ny });
+  };
+  const onPointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    draggingRef.current = true;
+    e.currentTarget.setPointerCapture(e.pointerId);
+    const { fx, fy } = posFromEvent(e);
+    applyDrag(fx, fy);
+  };
+  const onPointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    if (!draggingRef.current) return;
+    const { fx, fy } = posFromEvent(e);
+    applyDrag(fx, fy);
+  };
+  const onPointerUp = () => { draggingRef.current = false; setGuideHit({ x: null, y: null }); };
+
+  /* --------- Projeto --------- */
+  const doSaveProject = () => {
+    const name = (projectName || file?.name || "projeto").replace(/\.[^.]+$/, "").slice(0, 40);
+    saveProject({ name, ratio, layers });
+    setProjects(listProjects());
+    setProjectName(name);
+    toast.success(`Projeto "${name}" salvo`);
+  };
+  const loadProject = (p: EditorProject) => {
+    setLayers(p.layers.map((l) => ({ ...l, anim: { ...defaultAnim(), ...(l.anim || {}) } })));
+    setRatio(RATIOS[p.ratio] ? p.ratio : "9:16");
+    setActiveLayer(0);
+    setProjectName(p.name);
+    setShowProjects(false);
+    toast.success(`Projeto "${p.name}" carregado`);
+  };
+  const importProject = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    try { loadProject(await readProjectFile(f)); }
+    catch { toast.error("Arquivo de projeto inválido"); }
+    finally { e.target.value = ""; }
+  };
+
+  /* --------- Exportações --------- */
   const exportFrame = () => {
-    draw();
+    drawAt(fileType === "video" ? currentTime : 0, { guides: false });
     const canvas = canvasRef.current;
     if (!canvas) return;
     const link = document.createElement("a");
@@ -257,44 +339,97 @@ const VideoTextEditorPanel = () => {
     link.href = canvas.toDataURL("image/png");
     link.click();
     toast.success("PNG exportado");
+    draw();
   };
 
-  const exportVideo = async () => {
+  const exportVideo = async (format: VideoFormat) => {
     const canvas = canvasRef.current;
     const v = videoRef.current;
     if (fileType !== "video" || !canvas || !v) return;
+    const mime = pickRecorderMime(format) || pickRecorderMime("webm");
+    if (!mime) { toast.error("Navegador sem suporte a gravação de vídeo."); return; }
+    const isMp4 = mime.startsWith("video/mp4");
+    if (format === "mp4" && !isMp4) toast.message("MP4 indisponível neste navegador — exportando WebM.");
     try {
       setExporting(true);
+      setExportMsg(isMp4 ? "Gravando MP4..." : "Gravando WebM...");
       const stream = canvas.captureStream(30);
-      const mime = MediaRecorder.isTypeSupported("video/webm;codecs=vp9") ? "video/webm;codecs=vp9" : "video/webm";
-      const recorder = new MediaRecorder(stream, { mimeType: mime });
+      const recorder = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 6_000_000 });
       const chunks: BlobPart[] = [];
       recorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
       recorder.onstop = () => {
-        const blob = new Blob(chunks, { type: "video/webm" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `social-on-${Date.now()}.webm`;
-        a.click();
-        URL.revokeObjectURL(url);
+        const ext = isMp4 ? "mp4" : "webm";
+        downloadBlob(new Blob(chunks, { type: mime }), `social-on-${Date.now()}.${ext}`);
         setExporting(false);
+        setExportMsg("");
         setPlaying(false);
-        toast.success("Vídeo exportado (WebM)");
+        toast.success(`Vídeo exportado (${ext.toUpperCase()})`);
+        draw();
       };
       v.currentTime = 0;
       recorder.start();
       await v.play();
       setPlaying(true);
       const loop = () => {
-        draw();
+        drawAt(v.currentTime, { guides: false });
         if (!v.paused && !v.ended) requestAnimationFrame(loop);
         else if (recorder.state === "recording") recorder.stop();
       };
       requestAnimationFrame(loop);
-    } catch (err: any) {
+    } catch (err) {
       setExporting(false);
-      toast.error(err?.message || "Falha ao exportar vídeo");
+      setExportMsg("");
+      toast.error((err as Error)?.message || "Falha ao exportar vídeo");
+    }
+  };
+
+  const exportGif = async () => {
+    const v = videoRef.current;
+    if (fileType !== "video" || !v || !duration) return;
+    if (duration > 15) { toast.error("GIF só para vídeos curtos (até 15s). Recorte antes."); return; }
+    const fps = 10;
+    const scale = Math.min(1, 320 / size.w);
+    const gw = Math.round(size.w * scale);
+    const gh = Math.round(size.h * scale);
+    const off = document.createElement("canvas");
+    off.width = size.w;
+    off.height = size.h;
+    const small = document.createElement("canvas");
+    small.width = gw;
+    small.height = gh;
+    const sctx = small.getContext("2d");
+    if (!sctx) return;
+
+    const wasPlaying = playing;
+    if (wasPlaying) { v.pause(); setPlaying(false); }
+    setExporting(true);
+
+    try {
+      const total = Math.floor(duration * fps);
+      const frames: { data: Uint8ClampedArray; width: number; height: number }[] = [];
+      for (let i = 0; i < total; i++) {
+        const t = i / fps;
+        setExportMsg(`GIF ${Math.round(((i + 1) / total) * 100)}%`);
+        await new Promise<void>((resolve) => {
+          const onSeeked = () => { v.removeEventListener("seeked", onSeeked); resolve(); };
+          v.addEventListener("seeked", onSeeked);
+          v.currentTime = Math.min(t, duration - 0.01);
+        });
+        drawAt(t, { guides: false, canvas: off });
+        sctx.clearRect(0, 0, gw, gh);
+        sctx.drawImage(off, 0, 0, gw, gh);
+        frames.push({ data: sctx.getImageData(0, 0, gw, gh).data, width: gw, height: gh });
+      }
+      setExportMsg("Montando GIF...");
+      const blob = await encodeGif(frames, fps);
+      downloadBlob(blob, `social-on-${Date.now()}.gif`);
+      toast.success("GIF exportado");
+    } catch (err) {
+      toast.error((err as Error)?.message || "Falha ao gerar GIF");
+    } finally {
+      setExporting(false);
+      setExportMsg("");
+      draw();
     }
   };
 
@@ -305,23 +440,34 @@ const VideoTextEditorPanel = () => {
       <div className="flex items-center justify-between gap-2 flex-wrap">
         <div>
           <p className="text-sm font-semibold">Editor de texto — foto e vídeo</p>
-          <p className="text-xs text-muted-foreground">Camadas, presets de estilo e exportação PNG / WebM.</p>
+          <p className="text-xs text-muted-foreground">Camadas animadas, guias 9:16, projetos salvos e exportação PNG / MP4 / WebM / GIF.</p>
         </div>
         {file && (
-          <div className="flex gap-2">
-            <button onClick={exportFrame} className="px-3 py-1.5 rounded-md text-xs border flex items-center gap-1" style={{ borderColor: "#B8922A55", color: "#B8922A" }}>
+          <div className="flex gap-2 flex-wrap">
+            <button onClick={exportFrame} disabled={exporting} className="px-3 py-1.5 rounded-md text-xs border flex items-center gap-1 disabled:opacity-50" style={{ borderColor: "#B8922A55", color: "#B8922A" }}>
               <Download className="w-3 h-3" /> PNG
             </button>
             {fileType === "video" && (
-              <button onClick={exportVideo} disabled={exporting} className="px-3 py-1.5 rounded-md text-xs border flex items-center gap-1 disabled:opacity-50" style={{ borderColor: "#00D4FF55", color: "#00D4FF" }}>
-                {exporting ? <Loader2 className="w-3 h-3 animate-spin" /> : <Video className="w-3 h-3" />} VÍDEO
-              </button>
+              <>
+                <button onClick={() => exportVideo("mp4")} disabled={exporting} className="px-3 py-1.5 rounded-md text-xs border flex items-center gap-1 disabled:opacity-50" style={{ borderColor: "#00C89655", color: "#00C896" }}>
+                  {exporting ? <Loader2 className="w-3 h-3 animate-spin" /> : <Video className="w-3 h-3" />} MP4{!supportsMp4() ? "*" : ""}
+                </button>
+                <button onClick={() => exportVideo("webm")} disabled={exporting} className="px-3 py-1.5 rounded-md text-xs border flex items-center gap-1 disabled:opacity-50" style={{ borderColor: "#00D4FF55", color: "#00D4FF" }}>
+                  <Video className="w-3 h-3" /> WEBM
+                </button>
+                <button onClick={exportGif} disabled={exporting} className="px-3 py-1.5 rounded-md text-xs border flex items-center gap-1 disabled:opacity-50" style={{ borderColor: "#7C3AED55", color: "#7C3AED" }}>
+                  <Film className="w-3 h-3" /> GIF
+                </button>
+              </>
             )}
           </div>
         )}
       </div>
 
+      {exportMsg && <p className="text-[11px] font-mono" style={{ color: "#B8922A" }}>{exportMsg}</p>}
+
       <input ref={fileRef} type="file" accept="image/*,video/*" onChange={handleFile} className="hidden" />
+      <input ref={projFileRef} type="file" accept="application/json,.json" onChange={importProject} className="hidden" />
 
       {!file ? (
         <button
@@ -351,14 +497,70 @@ const VideoTextEditorPanel = () => {
                   {r}
                 </button>
               ))}
-              <button onClick={reset} className="px-2 py-1 rounded border" style={{ borderColor: "#ffffff1a" }}>
+              <button onClick={reset} className="px-2 py-1 rounded border" style={{ borderColor: "#ffffff1a" }} aria-label="Remover arquivo">
                 <X className="w-3 h-3 text-muted-foreground" />
               </button>
             </div>
 
-            <div className="flex justify-center rounded-xl border p-2" style={{ borderColor: "#ffffff14", background: "#000" }}>
-              <canvas ref={canvasRef} style={{ maxWidth: "100%", maxHeight: 460 }} />
+            <div className="flex gap-1 flex-wrap">
+              <button onClick={() => setShowGuides((v) => !v)} className="px-2 py-1 rounded border text-[10px] font-mono flex items-center gap-1" style={{ borderColor: showGuides ? "#B8922A66" : "#ffffff1a", color: showGuides ? "#B8922A" : "#888" }}>
+                <Grid3x3 className="w-3 h-3" /> GUIAS
+              </button>
+              <button onClick={() => setSnapOn((v) => !v)} className="px-2 py-1 rounded border text-[10px] font-mono" style={{ borderColor: snapOn ? "#00D4FF66" : "#ffffff1a", color: snapOn ? "#00D4FF" : "#888" }}>
+                SNAP
+              </button>
+              <button onClick={doSaveProject} className="px-2 py-1 rounded border text-[10px] font-mono flex items-center gap-1" style={{ borderColor: "#00C89655", color: "#00C896" }}>
+                <Save className="w-3 h-3" /> SALVAR
+              </button>
+              <button onClick={() => setShowProjects((v) => !v)} className="px-2 py-1 rounded border text-[10px] font-mono flex items-center gap-1" style={{ borderColor: "#ffffff1a", color: "#888" }}>
+                <FolderOpen className="w-3 h-3" /> PROJETOS ({projects.length})
+              </button>
             </div>
+
+            {showProjects && (
+              <div className="rounded-md border p-2 space-y-2" style={{ borderColor: "#ffffff1a" }}>
+                <div className="flex gap-1">
+                  <input
+                    value={projectName}
+                    onChange={(e) => setProjectName(e.target.value)}
+                    placeholder="Nome do projeto"
+                    className="flex-1 rounded bg-white/5 border px-2 py-1 text-[11px]"
+                    style={{ borderColor: "#ffffff1a" }}
+                  />
+                  <button onClick={() => projFileRef.current?.click()} className="px-2 py-1 rounded border text-[10px] font-mono" style={{ borderColor: "#ffffff1a", color: "#888" }}>
+                    IMPORTAR
+                  </button>
+                </div>
+                {projects.length === 0 && <p className="text-[11px] text-muted-foreground">Nenhum projeto salvo ainda.</p>}
+                {projects.map((p) => (
+                  <div key={p.name} className="flex items-center gap-1">
+                    <button onClick={() => loadProject(p)} className="flex-1 text-left text-[11px] px-2 py-1 rounded hover:bg-white/5">
+                      {p.name} <span className="text-muted-foreground font-mono">· {p.ratio} · {p.layers.length} camadas</span>
+                    </button>
+                    <button onClick={() => downloadProject(p)} className="p-1 rounded border" style={{ borderColor: "#ffffff1a" }} aria-label="Baixar projeto">
+                      <Download className="w-3 h-3 text-muted-foreground" />
+                    </button>
+                    <button onClick={() => { deleteProject(p.name); setProjects(listProjects()); }} className="p-1 rounded border" style={{ borderColor: "#ff444433" }} aria-label="Excluir projeto">
+                      <Trash2 className="w-3 h-3" style={{ color: "#ff4444" }} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="flex justify-center rounded-xl border p-2" style={{ borderColor: "#ffffff14", background: "#000" }}>
+              <canvas
+                ref={canvasRef}
+                style={{ maxWidth: "100%", maxHeight: 460, touchAction: "none", cursor: "move" }}
+                onPointerDown={onPointerDown}
+                onPointerMove={onPointerMove}
+                onPointerUp={onPointerUp}
+                onPointerCancel={onPointerUp}
+              />
+            </div>
+            <p className="text-[10px] text-muted-foreground text-center">
+              Arraste no preview para posicionar o texto · margens seguras {Math.round(SAFE.top * 100)}% topo / {Math.round(SAFE.bottom * 100)}% base
+            </p>
 
             {fileType === "video" && blobUrl && (
               <>
@@ -374,7 +576,7 @@ const VideoTextEditorPanel = () => {
                   className="hidden"
                 />
                 <div className="flex items-center gap-2">
-                  <button onClick={togglePlay} className="p-2 rounded border" style={{ borderColor: "#B8922A55" }}>
+                  <button onClick={togglePlay} className="p-2 rounded border" style={{ borderColor: "#B8922A55" }} aria-label="Reproduzir">
                     {playing ? <Pause className="w-3 h-3" style={{ color: "#B8922A" }} /> : <Play className="w-3 h-3" style={{ color: "#B8922A" }} />}
                   </button>
                   <span className="text-[10px] font-mono text-muted-foreground">{fmt(currentTime)}</span>
@@ -410,7 +612,7 @@ const VideoTextEditorPanel = () => {
                   T{i + 1}
                 </button>
               ))}
-              <button onClick={addLayer} className="px-2 py-1 rounded border" style={{ borderColor: "#ffffff1a" }}>
+              <button onClick={addLayer} className="px-2 py-1 rounded border" style={{ borderColor: "#ffffff1a" }} aria-label="Adicionar camada">
                 <Plus className="w-3 h-3 text-muted-foreground" />
               </button>
             </div>
@@ -509,6 +711,48 @@ const VideoTextEditorPanel = () => {
                     </button>
                   )}
                 </div>
+
+                {fileType === "video" && (
+                  <div className="rounded-md border p-2 space-y-2" style={{ borderColor: "#00D4FF22", background: "#00D4FF08" }}>
+                    <p className="text-[10px] font-mono" style={{ color: "#00D4FF" }}>ANIMAÇÃO DA CAMADA T{activeLayer + 1}</p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <label className="space-y-1 block">
+                        <span className="text-[10px] font-mono text-muted-foreground">APARECE EM {cur.anim.start.toFixed(1)}s</span>
+                        <input type="range" min={0} max={Math.max(1, Math.round(duration * 10)) / 10} step={0.1} value={cur.anim.start} onChange={(e) => updateAnim(activeLayer, { start: +e.target.value })} className="w-full" style={{ accentColor: "#00D4FF" }} />
+                      </label>
+                      <label className="space-y-1 block">
+                        <span className="text-[10px] font-mono text-muted-foreground">DURA {cur.anim.duration ? `${cur.anim.duration.toFixed(1)}s` : "até o fim"}</span>
+                        <input type="range" min={0} max={Math.max(1, Math.round(duration * 10)) / 10} step={0.1} value={cur.anim.duration} onChange={(e) => updateAnim(activeLayer, { duration: +e.target.value })} className="w-full" style={{ accentColor: "#00D4FF" }} />
+                      </label>
+                      <label className="space-y-1 block">
+                        <span className="text-[10px] font-mono text-muted-foreground">FADE IN {cur.anim.fadeIn.toFixed(1)}s</span>
+                        <input type="range" min={0} max={2} step={0.1} value={cur.anim.fadeIn} onChange={(e) => updateAnim(activeLayer, { fadeIn: +e.target.value })} className="w-full" style={{ accentColor: "#00C896" }} />
+                      </label>
+                      <label className="space-y-1 block">
+                        <span className="text-[10px] font-mono text-muted-foreground">FADE OUT {cur.anim.fadeOut.toFixed(1)}s</span>
+                        <input type="range" min={0} max={2} step={0.1} value={cur.anim.fadeOut} onChange={(e) => updateAnim(activeLayer, { fadeOut: +e.target.value })} className="w-full" style={{ accentColor: "#E8A020" }} />
+                      </label>
+                    </div>
+                    <div className="flex gap-1 flex-wrap">
+                      {MOVES.map((m) => (
+                        <button
+                          key={m.id}
+                          onClick={() => updateAnim(activeLayer, { move: m.id })}
+                          className="px-2 py-1 rounded border text-[10px] font-mono"
+                          style={{ borderColor: cur.anim.move === m.id ? "#00D4FF66" : "#ffffff1a", color: cur.anim.move === m.id ? "#00D4FF" : "#888" }}
+                        >
+                          {m.label}
+                        </button>
+                      ))}
+                    </div>
+                    {cur.anim.move !== "none" && (
+                      <label className="space-y-1 block">
+                        <span className="text-[10px] font-mono text-muted-foreground">INTENSIDADE DO MOVIMENTO</span>
+                        <input type="range" min={1} max={30} value={Math.round(cur.anim.moveAmount * 100)} onChange={(e) => updateAnim(activeLayer, { moveAmount: +e.target.value / 100 })} className="w-full" style={{ accentColor: "#7C3AED" }} />
+                      </label>
+                    )}
+                  </div>
+                )}
 
                 <div>
                   <p className="text-[10px] font-mono text-muted-foreground mb-1">EXEMPLOS RÁPIDOS</p>
