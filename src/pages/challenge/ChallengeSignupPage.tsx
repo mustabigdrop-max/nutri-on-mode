@@ -155,11 +155,11 @@ export default function ChallengeSignupPage() {
         <div className="text-center space-y-2">
           <p className="text-[11px] tracking-[0.4em] text-muted-foreground">N U T R I O N</p>
           <h1 className="flex items-center justify-center gap-2 text-2xl font-black">
-            <Trophy className="w-6 h-6 text-primary" /> DESAFIO 90 DIAS
+            <Trophy className="w-6 h-6 text-primary" /> DESAFIO 30 DIAS
           </h1>
           <p className="text-sm font-semibold text-primary uppercase">{challenge.gym_name || challenge.name}</p>
           <p className="text-xs text-muted-foreground">
-            90 dias. Ranking ao vivo. Premiação.<br />Plano alimentar incluso. GRATUITO.
+            30 dias. Ranking ao vivo. Premiação.<br />14 dias de acesso completo. GRATUITO.
           </p>
         </div>
 

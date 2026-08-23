@@ -26,7 +26,7 @@ export default function ChallengePublicRankingPage() {
           <h1 className="mt-1 flex items-center justify-center gap-2 text-2xl font-black">
             <Trophy className="w-6 h-6 text-primary" /> RANKING PÚBLICO
           </h1>
-          <p className="text-xs text-muted-foreground mt-1">Desafio 90 Dias · Transformação é sistema.</p>
+          <p className="text-xs text-muted-foreground mt-1">Desafio 30 Dias · Transformação é sistema.</p>
         </div>
 
         {rows === null ? (
