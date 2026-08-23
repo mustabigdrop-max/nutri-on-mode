@@ -196,6 +196,14 @@ export default function ChallengeOpsPanel({ challenge, gymName, onChanged }: Pro
     [participants, challenge.name, day, link],
   );
 
+  const vipCheckpoint = vipCheckpointForDay(day);
+  const vipTargets = useMemo(
+    () => participants.filter((p: any) => p.tier === "vip"),
+    [participants],
+  );
+
+
+
 
   const saveConfig = async () => {
     const { error } = await supabase
