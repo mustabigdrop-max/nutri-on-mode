@@ -192,15 +192,16 @@ function TabBar({ tabs, active, onChange }: {
               onClick={() => onChange(t.key)}
               className="mce-tabbar"
               style={{
-                flex: "0 0 auto", minHeight: 48, padding: `12px 10px 12px ${divider ? 22 : 10}px`, border: "none", cursor: "pointer",
-                fontFamily: MONO, fontSize: 10, letterSpacing: 1.5, textTransform: "uppercase",
+                flex: "0 0 auto", minHeight: 48, padding: `12px 12px 12px ${divider ? 24 : 12}px`, border: "none", cursor: "pointer",
+                fontFamily: MONO, fontSize: 8, letterSpacing: "0.10em", textTransform: "uppercase",
                 background: "transparent",
                 color: isActive ? "#00D4FF" : "rgba(255,255,255,0.35)",
                 borderBottom: isActive ? `2px solid ${t.badge || "#00D4FF"}` : "2px solid transparent",
                 transition: "all 0.25s ease", display: "flex", alignItems: "center", gap: 6,
-                marginLeft: divider ? 10 : 0,
+                marginLeft: divider ? 4 : 0,
                 borderLeft: divider ? "1px solid rgba(255,255,255,0.12)" : undefined,
               }}
+
             >
               <t.Icon size={11} />
               {t.label}
