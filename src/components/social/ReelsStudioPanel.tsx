@@ -450,6 +450,7 @@ export default function ReelsStudioPanel({ onBack, context: ctxSeed }: { onBack?
           <div style={{ display: "flex", gap: 6, marginBottom: 14, flexWrap: "wrap" }}>
             {([
               { id: "pacote" as const, label: "PACOTE", Icon: Download, color: C.gold },
+              ...(trim ? [{ id: "sincronia" as const, label: "SINCRONIA", Icon: Clock, color: C.orange }] : []),
               { id: "stories" as const, label: "STORIES", Icon: Layers, color: C.purple },
               { id: "qualidade" as const, label: "QUALIDADE", Icon: ShieldCheck, color: C.green },
               { id: "variacoes" as const, label: "VARIAÇÕES", Icon: TrendingUp, color: C.cyan },
@@ -467,9 +468,13 @@ export default function ReelsStudioPanel({ onBack, context: ctxSeed }: { onBack?
             })}
           </div>
 
+          {resultTab === "sincronia" && (
+            <ReelsSyncPanel result={result} trimDuration={trim?.duration || 0} captionIndex={activeCaption} />
+          )}
           {resultTab === "stories" && <ReelsStoriesPanel result={result} accent={template?.color || C.gold} />}
           {resultTab === "qualidade" && <ReelsQualityPanel result={result} />}
           {resultTab === "variacoes" && <ReelsVariationsPanel result={result} analysisId={result.id} />}
+
 
           {resultTab === "pacote" && (<>
 
