@@ -54,7 +54,7 @@ export default function BusinessChallengesTab() {
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState({ gym_id: "", name: "", start_date: today(), end_date: addDays(today(), 90), commission: 25 });
+  const [form, setForm] = useState({ gym_id: "", name: "", start_date: today(), end_date: addDays(today(), 30), commission: 25 });
 
   const load = useCallback(async () => {
     const [c, g, s, pt] = await Promise.all([
@@ -99,7 +99,7 @@ export default function BusinessChallengesTab() {
     if (error) return toast.error("Erro ao criar desafio (slug já usado?).");
     toast.success("Desafio criado e QR Code gerado.");
     setShowForm(false);
-    setForm({ gym_id: "", name: "", start_date: today(), end_date: addDays(today(), 90), commission: 25 });
+    setForm({ gym_id: "", name: "", start_date: today(), end_date: addDays(today(), 30), commission: 25 });
     load();
   };
 
@@ -141,7 +141,7 @@ export default function BusinessChallengesTab() {
             <label className="text-xs text-muted-foreground">
               Início
               <Input type="date" value={form.start_date}
-                onChange={(e) => setForm({ ...form, start_date: e.target.value, end_date: addDays(e.target.value, 90) })} />
+                onChange={(e) => setForm({ ...form, start_date: e.target.value, end_date: addDays(e.target.value, 30) })} />
             </label>
             <label className="text-xs text-muted-foreground">
               Fim (30 dias automático)
