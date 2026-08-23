@@ -373,24 +373,39 @@ export default function ReelsStudioPanel({ onBack, context: ctxSeed }: { onBack?
               padding: preview ? 10 : "40px 24px", textAlign: "center", cursor: "pointer", marginBottom: 20,
             }}
           >
-            <input ref={fileRef} type="file" accept="image/*,video/*" onChange={handleFile} style={{ display: "none" }} />
+            <input ref={fileRef} type="file" accept="image/*,video/*,.heic,.heif,.mov,.mkv,.m4v,.3gp" onChange={handleFile} style={{ display: "none" }} />
             {preview ? (
               <div>
                 <img src={preview} alt="Prévia do conteúdo enviado" style={{ maxHeight: 220, margin: "0 auto", display: "block", objectFit: "contain" }} />
-                <div style={{ ...fM, fontSize: FONT.sm, color: C.textMid, marginTop: 8 }}>
-                  {file?.name} · {((file?.size || 0) / 1024 / 1024).toFixed(1)}MB · toque pra trocar
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, marginTop: 8 }}>
+                  <span style={{ ...fM, fontSize: FONT.sm, color: C.textMid }}>
+                    {file?.name} · {((file?.size || 0) / 1024 / 1024).toFixed(1)}MB · toque pra trocar
+                  </span>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); clearFile(); }}
+                    aria-label="Remover arquivo"
+                    style={{ background: "transparent", border: `1px solid ${C.border}`, color: C.textMid, padding: 4, cursor: "pointer", display: "flex" }}
+                  >
+                    <X size={13} />
+                  </button>
                 </div>
+              </div>
+            ) : file ? (
+              <div style={{ ...fM, fontSize: FONT.sm, color: C.textMid, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+                <RefreshCw size={14} style={{ animation: "spin 1s linear infinite" }} />
+                Carregando {fileKind === "video" ? "vídeo" : "imagem"}... arquivos grandes podem levar alguns segundos
               </div>
             ) : (
               <div>
                 <Upload size={28} color={C.textMid} />
                 <p style={{ ...fT, fontSize: FONT.xl, color: C.text, marginTop: 10 }}>Sobe foto ou vídeo</p>
-                <p style={{ ...fM, fontSize: FONT.sm, color: C.textMid, marginTop: 6 }}>O sistema analisa o que VÊ e gera tudo automaticamente</p>
+                <p style={{ ...fM, fontSize: FONT.sm, color: C.textMid, marginTop: 6 }}>JPG, PNG, HEIC, MP4, MOV, AVI · o sistema analisa o que VÊ e gera tudo</p>
               </div>
             )}
           </div>
 
-          {file?.type.startsWith("video/") && (
+          {fileKind === "video" && file && (
+
             <ReelsVideoTrimmer
               file={file}
               onFrameCaptured={(dataUrl, info) => {
