@@ -74,6 +74,7 @@ export default function PrismStudioPanel({
   const [result, setResult] = useState<StudioResult | null>(null);
   const [scheduling, setScheduling] = useState(false);
   const [openConcept, setOpenConcept] = useState(0);
+  const [processing, setProcessing] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const accent = mode.color;
@@ -84,25 +85,60 @@ export default function PrismStudioPanel({
     if (room <= 0) return toast.error(`Máximo ${MAX_FILES} arquivos`);
     const picked = Array.from(list).slice(0, room);
     const next: StudioFile[] = [];
+    setProcessing(true);
     for (const f of picked) {
       try {
-        if (f.type.startsWith("video/")) {
-          if (f.size > MAX_VIDEO_MB * 1024 * 1024) { toast.error(`${f.name}: vídeo acima de ${MAX_VIDEO_MB}MB`); continue; }
+        const kind = detectMediaKind(f);
+        if (!kind) { toast.error(`${f.name}: formato não suportado`); continue; }
+        if (kind === "video") {
           const objectUrl = videoObjectUrl(f);
           const duration = await getVideoDuration(objectUrl);
           const extracted = await extractVideoFrames(objectUrl, 3);
-          const frames = extracted.map((f) => f.dataUrl);
-          next.push({ id: uid(), kind: "video", name: f.name, objectUrl, duration, frames, thumb: frames[0] || "" });
+          const frames = extracted.map((x) => x.dataUrl);
+          next.push({
+            id: uid(), kind: "video", name: f.name, objectUrl, duration, frames,
+            thumb: frames[0] || "",
+            trim: duration > 0 ? { start: 0, end: Math.min(duration, 35) } : undefined,
+          });
         } else {
-          const dataUrl = await fileToDataUrl(f);
+          const dataUrl = (await compressImageFile(f)) || (await fileToDataUrl(f));
           next.push({ id: uid(), kind: "image", name: f.name, dataUrl, thumb: dataUrl });
         }
       } catch { toast.error(`Falha ao ler ${f.name}`); }
     }
+    setProcessing(false);
     setFiles((p) => [...p, ...next]);
   };
 
+  const setTrim = async (id: string, patch: Partial<{ start: number; end: number }>) => {
+    setFiles((p) => p.map((f) => {
+      if (f.id !== id || f.kind !== "video") return f;
+      const dur = f.duration || 0;
+      let start = patch.start ?? f.trim?.start ?? 0;
+      let end = patch.end ?? f.trim?.end ?? dur;
+      if (start >= end) { if (patch.start != null) end = Math.min(start + 5, dur); else start = Math.max(end - 5, 0); }
+      return { ...f, trim: { start, end } };
+    }));
+  };
+
+  const useSegment = async (id: string) => {
+    const f = files.find((x) => x.id === id);
+    if (!f?.objectUrl || !f.trim) return;
+    try {
+      setProcessing(true);
+      const mid = f.trim.start + (f.trim.end - f.trim.start) / 2;
+      const frame = await captureFrameAt(f.objectUrl, mid);
+      setFiles((p) => p.map((x) => (x.id === id ? { ...x, frames: [frame, ...(x.frames || [])].slice(0, 3), thumb: frame } : x)));
+      toast.success("Frame do trecho capturado");
+    } catch {
+      toast.error("Não deu pra capturar o frame");
+    } finally {
+      setProcessing(false);
+    }
+  };
+
   const removeFile = (id: string) => setFiles((p) => p.filter((f) => f.id !== id));
+
 
   const mixLabel = useMemo(() => "60% TOFU (viral/seguidores) · 30% MOFU (autoridade/valor) · 10% BOFU (venda)", []);
 
