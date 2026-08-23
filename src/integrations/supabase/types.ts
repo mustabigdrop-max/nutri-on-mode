@@ -10347,6 +10347,7 @@ export type Database = {
       }
       social_instagram_posts: {
         Row: {
+          attempts: number
           calendar_id: string | null
           caption: string | null
           coach_id: string
@@ -10354,12 +10355,17 @@ export type Database = {
           error: string | null
           id: string
           ig_media_id: string | null
+          kind: string
           media_type: string
           media_url: string | null
+          next_attempt_at: string | null
           permalink: string | null
+          scheduled_at: string | null
           status: string
+          updated_at: string
         }
         Insert: {
+          attempts?: number
           calendar_id?: string | null
           caption?: string | null
           coach_id: string
@@ -10367,12 +10373,17 @@ export type Database = {
           error?: string | null
           id?: string
           ig_media_id?: string | null
+          kind?: string
           media_type?: string
           media_url?: string | null
+          next_attempt_at?: string | null
           permalink?: string | null
+          scheduled_at?: string | null
           status?: string
+          updated_at?: string
         }
         Update: {
+          attempts?: number
           calendar_id?: string | null
           caption?: string | null
           coach_id?: string
@@ -10380,10 +10391,41 @@ export type Database = {
           error?: string | null
           id?: string
           ig_media_id?: string | null
+          kind?: string
           media_type?: string
           media_url?: string | null
+          next_attempt_at?: string | null
           permalink?: string | null
+          scheduled_at?: string | null
           status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      social_instagram_scheduler_state: {
+        Row: {
+          id: number
+          last_run_at: string | null
+          lease_until: string | null
+          pause_reason: string | null
+          paused: boolean
+          updated_at: string
+        }
+        Insert: {
+          id?: number
+          last_run_at?: string | null
+          lease_until?: string | null
+          pause_reason?: string | null
+          paused?: boolean
+          updated_at?: string
+        }
+        Update: {
+          id?: number
+          last_run_at?: string | null
+          lease_until?: string | null
+          pause_reason?: string | null
+          paused?: boolean
+          updated_at?: string
         }
         Relationships: []
       }
