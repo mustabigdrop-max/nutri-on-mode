@@ -188,6 +188,8 @@ const App = () => (
               <Route path="mce" element={<ChallengeMCEPage />} />
               <Route path="evolucao" element={<ChallengeEvolutionPage />} />
               <Route path="perfil" element={<ChallengeProfilePage />} />
+              <Route path="planos" element={<ChallengeUpgradePage />} />
+
             </Route>
             <Route path="/desafio/:slug" element={<ChallengeSignupPage />} />
             <Route path="/gym/challenges" element={<ProtectedRoute><GymChallengesPage /></ProtectedRoute>} />
