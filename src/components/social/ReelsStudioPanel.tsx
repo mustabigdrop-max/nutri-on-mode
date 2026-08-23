@@ -153,6 +153,8 @@ const LOADING_MSGS = [
 export default function ReelsStudioPanel({ onBack, context: ctxSeed }: { onBack?: () => void; context?: string }) {
   const [template, setTemplate] = useState<Template | null>(null);
   const [file, setFile] = useState<File | null>(null);
+  const [fileKind, setFileKind] = useState<"image" | "video" | null>(null);
+
   const [preview, setPreview] = useState<string | null>(null);
   const [trim, setTrim] = useState<TrimInfo | null>(null);
 
