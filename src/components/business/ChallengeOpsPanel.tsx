@@ -283,7 +283,40 @@ export default function ChallengeOpsPanel({ challenge, gymName, onChanged }: Pro
 
       {open && (
         <div className="px-3 pb-3 space-y-4">
+          {/* Cadência de marcos */}
+          <div className="space-y-2 rounded-md border border-amber-500/25 bg-amber-500/5 p-2.5">
+            <p className="text-[11px] uppercase tracking-wide text-muted-foreground flex items-center gap-1.5">
+              <AlarmClock className="w-3.5 h-3.5 text-amber-500" /> Cadência · Dia {day}/{CHALLENGE_DAYS}
+            </p>
+            {milestone ? (
+              <>
+                <p className="text-xs font-semibold">{milestone.label}</p>
+                <p className="text-[11px] text-muted-foreground">{milestone.goal}</p>
+                <pre className="max-h-32 overflow-auto whitespace-pre-wrap rounded bg-background/60 p-2 text-[11px] text-muted-foreground">
+                  {milestoneQueue[0]?.message ?? milestone.template}
+                </pre>
+                <Button
+                  size="sm"
+                  className="w-full gap-1.5 text-xs"
+                  disabled={busy || !milestoneQueue.length}
+                  onClick={() => sendBatch(milestoneQueue, 1)}
+                >
+                  {busy ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
+                  Disparar marco para {milestoneQueue.filter((t) => t.whatsapp).length} participante(s)
+                </Button>
+              </>
+            ) : (
+              <p className="text-[11px] text-muted-foreground">
+                Hoje não tem marco na cadência.{" "}
+                {upcoming
+                  ? `Próximo: ${upcoming.label} (em ${upcoming.day - day} dia(s)).`
+                  : `Desafio encerrado — acesso completo dura ${TRIAL_DAYS} dias.`}
+              </p>
+            )}
+          </div>
+
           {/* Configuração */}
+
           <div className="space-y-2">
             <p className="text-[11px] uppercase tracking-wide text-muted-foreground flex items-center gap-1.5">
               <Settings2 className="w-3.5 h-3.5" /> Configuração do coach
