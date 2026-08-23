@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import AudioAcademyPage from "@/pages/AudioAcademyPage";
 import { useNavigate } from "react-router-dom";
 import {
-  Activity, ArrowLeft, BookOpen, Brain, Briefcase, Clock, Dumbbell,
+  Activity, ArrowLeft, BookOpen, Brain, Briefcase, CheckCircle2, Clock, Dumbbell,
   FileDown, Headphones, Map, MonitorUp, ScanLine, TrendingUp, Users, Zap,
 } from "lucide-react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
@@ -26,6 +26,9 @@ import { MCE_GUIDE_MARKDOWN } from "@/data/mceGuide";
 import { MCE_PROTOCOL_24H_MARKDOWN } from "@/data/mceProtocol24h";
 import Protocol24hChecklist from "@/components/mce/Protocol24hChecklist";
 import MceSystemPanel from "@/components/mce/MceSystemPanel";
+import MceDailyCheckin, { useRollingMceScores } from "@/components/mce/MceDailyCheckin";
+import MceOnboarding from "@/components/mce/MceOnboarding";
+import { weekConsistency, weekLabels } from "@/lib/mceSystem";
 
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
