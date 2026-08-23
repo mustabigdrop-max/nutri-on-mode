@@ -10,7 +10,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import {
-  AlarmClock, BellRing, Download, FileText, History, Loader2, MessageCircle, Send, Settings2,
+  AlarmClock, BellRing, Crown, Download, FileText, History, Loader2, MessageCircle, Send, Settings2,
 } from "lucide-react";
 import { openWhatsApp } from "@/lib/gymBusiness";
 import { CHALLENGE_DAYS, TRIAL_DAYS, challengeDay, vipCheckpointForDay } from "@/lib/challenge";
