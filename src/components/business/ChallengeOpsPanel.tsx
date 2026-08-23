@@ -16,10 +16,12 @@ import { openWhatsApp } from "@/lib/gymBusiness";
 import { CHALLENGE_DAYS, TRIAL_DAYS, challengeDay } from "@/lib/challenge";
 import {
   DEFAULT_CHECKIN_TEMPLATE, DEFAULT_ESCALATION_HOURS, DEFAULT_ESCALATION_TEMPLATES,
-  DEFAULT_MEALS_TEMPLATE, computeEscalationQueue, computeReminderQueue, dueEscalationLevel,
+  DEFAULT_MEALS_TEMPLATE, computeEscalationQueue, computeMilestoneQueue, computeReminderQueue,
+  dueEscalationLevel, milestoneForDay, nextMilestone,
   reminderDue, type ChallengeEscalationConfig, type ChallengeReminderConfig,
   type EscalatedTarget, type ReminderTarget,
 } from "@/lib/challengeReminders";
+
 import {
   exportChallengeCSV, exportChallengePDF, reportMetrics, type ChallengeReportRow,
 } from "@/lib/challengeReport";
