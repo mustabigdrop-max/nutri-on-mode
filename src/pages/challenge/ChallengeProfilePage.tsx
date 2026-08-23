@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { LogOut, Camera, MessageCircle } from "lucide-react";
+import { LogOut, Camera, MessageCircle, Crown } from "lucide-react";
 import { CHALLENGE_DAYS, OBJETIVO_LABEL, TIER_BADGE, challengeDay, levelBadge } from "@/lib/challenge";
 
 export default function ChallengeProfilePage() {
@@ -37,6 +37,10 @@ export default function ChallengeProfilePage() {
 
         <Button asChild variant="outline" className="w-full gap-2">
           <Link to="/desafio/evolucao"><Camera className="w-4 h-4" /> Minhas fotos de evolução</Link>
+        </Button>
+
+        <Button asChild variant={participant.tier === "vip" ? "default" : "outline"} className="w-full gap-2">
+          <Link to="/desafio/vip"><Crown className="w-4 h-4" /> Área VIP · relatório e ajustes</Link>
         </Button>
 
         <Button asChild variant="outline" className="w-full gap-2">

@@ -105,6 +105,7 @@ const ChallengeMCEPage = lazy(() => import("./pages/challenge/ChallengeMCEPage")
 const ChallengeEvolutionPage = lazy(() => import("./pages/challenge/ChallengeEvolutionPage"));
 const ChallengeProfilePage = lazy(() => import("./pages/challenge/ChallengeProfilePage"));
 const ChallengeUpgradePage = lazy(() => import("./pages/challenge/ChallengeUpgradePage"));
+const ChallengeVipPage = lazy(() => import("./pages/challenge/ChallengeVipPage"));
 
 const WallDisplayPage = lazy(() => import("./pages/wall/WallDisplayPage"));
 const Desafio21Page = lazy(() => import("./pages/Desafio21Page"));
@@ -191,6 +192,7 @@ const App = () => (
               <Route path="evolucao" element={<ChallengeEvolutionPage />} />
               <Route path="perfil" element={<ChallengeProfilePage />} />
               <Route path="planos" element={<ChallengeUpgradePage />} />
+              <Route path="vip" element={<ChallengeVipPage />} />
 
             </Route>
             <Route path="/desafio/:slug" element={<ChallengeSignupPage />} />
