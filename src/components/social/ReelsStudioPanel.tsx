@@ -11,6 +11,8 @@ import ReelsStoriesPanel from "./ReelsStoriesPanel";
 import ReelsQualityPanel from "./ReelsQualityPanel";
 import ReelsVariationsPanel from "./ReelsVariationsPanel";
 import ReelsCalendar30 from "./ReelsCalendar30";
+import ReelsVideoTrimmer, { type TrimInfo } from "./ReelsVideoTrimmer";
+
 
 
 const C = {
@@ -114,6 +116,8 @@ export default function ReelsStudioPanel({ onBack, context: ctxSeed }: { onBack?
   const [template, setTemplate] = useState<Template | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
+  const [trim, setTrim] = useState<TrimInfo | null>(null);
+
   const [context, setContext] = useState(ctxSeed || "");
   const [loading, setLoading] = useState(false);
   const [loadingMsg, setLoadingMsg] = useState("");
@@ -163,6 +167,7 @@ export default function ReelsStudioPanel({ onBack, context: ctxSeed }: { onBack?
     if (!f) return;
     if (f.size > 60 * 1024 * 1024) return toast.error("Arquivo acima de 60MB");
     setFile(f);
+    setTrim(null);
     setPreview(f.type.startsWith("image/") ? await readAsDataUrl(f) : await extractVideoFrame(f));
   };
 
@@ -182,9 +187,14 @@ export default function ReelsStudioPanel({ onBack, context: ctxSeed }: { onBack?
       const image = isVideo ? preview ?? (await extractVideoFrame(file)) : await readAsDataUrl(file);
       if (!image) throw new Error("Não consegui extrair um frame desse vídeo. Sobe uma foto ou outro arquivo.");
 
+      const trimContext = trim
+        ? `${context ? context + "\n" : ""}Trecho do vídeo selecionado: ${trim.start}s até ${trim.end}s (${trim.duration}s de duração). Ajuste o roteiro para caber nesse tempo.`
+        : context;
+
       const { data, error: fnError } = await supabase.functions.invoke("prism-analyze", {
-        body: { mode: "reels_studio", image, from_video: isVideo, template_name: template.name, template_desc: template.desc, context },
+        body: { mode: "reels_studio", image, from_video: isVideo, template_name: template.name, template_desc: template.desc, context: trimContext },
       });
+
       if (fnError) throw new Error(fnError.message);
       if ((data as any)?.error) throw new Error((data as any).error);
       setResult((data as any).result as Result);
@@ -231,7 +241,7 @@ export default function ReelsStudioPanel({ onBack, context: ctxSeed }: { onBack?
     setSaving(false);
   };
 
-  const reset = () => { setResult(null); setFile(null); setPreview(null); setTemplate(null); setError(null); setActiveCaption(0); };
+  const reset = () => { setResult(null); setFile(null); setPreview(null); setTrim(null); setTemplate(null); setError(null); setActiveCaption(0); };
   const captionColors = [C.red, C.cyan, C.pink, C.orange];
 
   const historyTitle = (item: HistoryItem) => {
@@ -329,6 +339,24 @@ export default function ReelsStudioPanel({ onBack, context: ctxSeed }: { onBack?
               </div>
             )}
           </div>
+
+          {file?.type.startsWith("video/") && (
+            <ReelsVideoTrimmer
+              file={file}
+              onFrameCaptured={(dataUrl, info) => {
+                setPreview(dataUrl);
+                setTrim(info);
+                toast.success(`Trecho ${info.start}s → ${info.end}s selecionado`);
+              }}
+            />
+          )}
+          {trim && (
+            <div style={{ ...fM, fontSize: FONT.sm, color: C.green, marginTop: -10, marginBottom: 16 }}>
+              FRAME CAPTURADO · {trim.start}s → {trim.end}s ({trim.duration}s)
+            </div>
+          )}
+
+
 
           <div style={{ ...fM, fontSize: FONT.sm, color: C.textMuted, letterSpacing: "0.1em", marginBottom: 8 }}>PASSO 2 — ESCOLHE O ESTILO</div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginBottom: 20 }}>
