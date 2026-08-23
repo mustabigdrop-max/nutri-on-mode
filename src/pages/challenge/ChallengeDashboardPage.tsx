@@ -5,9 +5,9 @@ import { useChallenge } from "@/hooks/useChallenge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Droplets, Flame, Trophy, Dumbbell, Sparkles, CheckCircle2 } from "lucide-react";
+import { Droplets, Flame, Trophy, Dumbbell, Sparkles, CheckCircle2, Lock, Zap } from "lucide-react";
 import {
-  OBJETIVO_LABEL, buildMealPlan, challengeDay, challengePhase, levelBadge,
+  CHALLENGE_DAYS, OBJETIVO_LABEL, TRIAL_DAYS, buildMealPlan, challengeDay, challengePhase, levelBadge,
 } from "@/lib/challenge";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -15,7 +15,7 @@ import { toast } from "sonner";
 const MOODS = ["😤", "🙂", "😐", "😔", "😫"];
 
 export default function ChallengeDashboardPage() {
-  const { participant, challenge, log, saveLog, completeDay } = useChallenge();
+  const { participant, challenge, log, saveLog, completeDay, access } = useChallenge();
   const [saving, setSaving] = useState(false);
 
   const day = challengeDay(challenge?.start_date);
@@ -42,11 +42,43 @@ export default function ChallengeDashboardPage() {
   return (
     <div className="mx-auto max-w-lg">
       <ChallengeHeader
-        title={`Dia ${day}/90`}
-        subtitle={`${phase.name} · ${phase.range} · ${challenge?.name ?? "Desafio 90 Dias"}`}
+        title={`Dia ${day}/${CHALLENGE_DAYS}`}
+        subtitle={`${phase.name} · ${phase.range} · ${challenge?.name ?? "Desafio 30 Dias"}`}
       />
 
       <div className="px-4 space-y-4">
+        {!access.paid && access.full && (
+          <Card className="border-primary/30 bg-primary/5">
+            <CardContent className="p-4 space-y-1">
+              <p className="text-sm font-bold flex items-center gap-2">
+                <Zap className="w-4 h-4 text-primary" /> Acesso completo · {access.daysLeft}{" "}
+                {access.daysLeft === 1 ? "dia restante" : "dias restantes"}
+              </p>
+              <p className="text-[11px] text-muted-foreground">
+                Seus {TRIAL_DAYS} dias liberam tudo e pontuam até {access.maxPoints} pts/dia. Depois disso,
+                sem PREMIUM você cai para o check-in básico (máx 40 pts/dia).
+              </p>
+            </CardContent>
+          </Card>
+        )}
+
+        {access.basic && (
+          <Card className="border-destructive/40 bg-destructive/5">
+            <CardContent className="p-4 space-y-2">
+              <p className="text-sm font-bold flex items-center gap-2">
+                <Lock className="w-4 h-4 text-destructive" /> Acesso completo expirado
+              </p>
+              <p className="text-[11px] text-muted-foreground">
+                Você está no check-in básico: só humor e treino pontuam (máx 40 pts/dia). Seus dados
+                continuam salvos — ative PREMIUM para voltar a pontuar 100 e desbloquear plano,
+                hidratação e áudios.
+              </p>
+              <Button asChild size="sm" className="w-full">
+                <Link to="/#plans">Ativar PREMIUM</Link>
+              </Button>
+            </CardContent>
+          </Card>
+        )}
         <Card className="border-primary/25 bg-gradient-to-br from-primary/10 to-transparent">
           <CardContent className="p-4 flex items-center justify-between">
             <div>
@@ -68,6 +100,7 @@ export default function ChallengeDashboardPage() {
           </CardContent>
         </Card>
 
+        {access.full && (
         <Card>
           <CardContent className="p-4 space-y-3">
             <div className="flex items-center justify-between">
@@ -95,7 +128,9 @@ export default function ChallengeDashboardPage() {
             </Button>
           </CardContent>
         </Card>
+        )}
 
+        {access.full && (
         <Card>
           <CardContent className="p-4 space-y-3">
             <p className="text-sm font-semibold flex items-center gap-2">
@@ -110,6 +145,7 @@ export default function ChallengeDashboardPage() {
             </div>
           </CardContent>
         </Card>
+        )}
 
         <Card className={cn(log?.day_completed && "border-emerald-500/40 bg-emerald-500/5")}>
           <CardContent className="p-4 space-y-3">
@@ -160,7 +196,9 @@ export default function ChallengeDashboardPage() {
             </Button>
             {!log?.day_completed && (
               <p className="text-[11px] text-muted-foreground">
-                Refeições 40 · água 20 · treino 20 · humor 20 — feche o dia para manter o streak.
+                {access.full
+                  ? "Refeições 40 · água 20 · treino 20 · humor 20 — feche o dia para manter o streak."
+                  : "Modo básico: humor 20 · treino 20 (máx 40) — feche o dia para manter o streak."}
               </p>
             )}
           </CardContent>
