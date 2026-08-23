@@ -232,6 +232,18 @@ const MODE_BRIEF: Record<string, string> = {
   pack_semanal: "MODO PACK SEMANAL: preencha 'week' com 7 dias (SEG a DOM), cada dia com peça principal, 8 stories, produto e horário realista. Respeite a proporção TOFU/MOFU/BOFU e os produtos permitidos. Preencha 'concepts' com no máximo 2 destaques da semana.",
   ia_decide: "MODO IA DECIDE (Relâmpago): decida sozinho formato, tom, objetivo, funil e produto a partir do material. Entregue 1 conceito matador e 2 alternativas.",
   post_pronto: "MODO POST PRONTO: pacote completo a partir do material enviado.",
+  reel_diario: `MODO REEL DIÁRIO: gere EXATAMENTE 1 conceito de Reel, pronto pra gravar hoje, seguindo à risca o PILAR DO DIA e a FÓRMULA escolhida.
+- screen_texts DEVE vir com marcação de tempo no início de cada item, no formato "0-2s | TEXTO NA TELA".
+- O roteiro (script.development) é a fala pronta, palavra por palavra, no ritmo de 15 a 40 segundos.
+- editing_tips: cortes, transições e dicas de CapCut. music_suggestion: tipo de trend/áudio em alta hoje.
+- shot_list: exatamente o que gravar (ângulo, local, roupa, luz).
+- Sempre respeitar a estrutura da fórmula (hook / corpo / punch / CTA).`,
+  pack_dia: `MODO PACK DO DIA: gere EXATAMENTE 4 conceitos, nesta ordem:
+1) "Reel do dia" — roteiro completo com screen_texts marcados por tempo ("0-2s | TEXTO"), fala pronta, música e dicas de edição.
+2) "Story 1 · Bastidor" — formato stories, texto grande e legenda de apoio.
+3) "Story 2 · Micro-conteúdo" — frase MCE ou dica de 15s, formato stories.
+4) "Story 3 · CTA" — enquete, quiz, link ou gatilho de DM pronto, formato stories.
+Tudo alinhado ao pilar e ao produto do dia. Os 3 stories devem conversar com o Reel.`,
 };
 
 const STUDIO_PROMPT = (o: {
