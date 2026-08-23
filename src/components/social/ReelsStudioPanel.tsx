@@ -1,11 +1,17 @@
 import { useEffect, useRef, useState } from "react";
 import {
-  AlertTriangle, BookOpen, Briefcase, Camera, Check, ChevronRight, Clock, Copy,
-  Crown, Dumbbell, Eye, Flame, Hash, Heart, History, Image, Music, RefreshCw,
-  Sparkles, Target, Trash2, Type, Upload, Zap,
+  AlertTriangle, BookOpen, Briefcase, CalendarDays, Camera, Check, ChevronRight, Clock, Copy,
+  Crown, Download, Dumbbell, Eye, FileText, Flame, Hash, Heart, History, Image, Layers, Music, RefreshCw,
+  ShieldCheck, Sparkles, Target, TrendingUp, Trash2, Type, Upload, Zap,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { buildFullCaption, downloadTxt } from "@/lib/reelsExport";
+import ReelsStoriesPanel from "./ReelsStoriesPanel";
+import ReelsQualityPanel from "./ReelsQualityPanel";
+import ReelsVariationsPanel from "./ReelsVariationsPanel";
+import ReelsCalendar30 from "./ReelsCalendar30";
+
 
 const C = {
   bg: "#020205", card: "#080810", border: "#B8922A22",
@@ -116,7 +122,10 @@ export default function ReelsStudioPanel({ onBack, context: ctxSeed }: { onBack?
   const [activeCaption, setActiveCaption] = useState(0);
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [showHistory, setShowHistory] = useState(false);
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [resultTab, setResultTab] = useState<"pacote" | "stories" | "qualidade" | "variacoes">("pacote");
   const [saving, setSaving] = useState(false);
+
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => { loadHistory(); }, []);
@@ -243,13 +252,28 @@ export default function ReelsStudioPanel({ onBack, context: ctxSeed }: { onBack?
           <div style={{ ...fT, fontSize: FONT["2xl"], color: C.text }}>SOCIAL ON · <span style={{ color: C.gold }}>REELS STUDIO</span></div>
           <div style={{ ...fM, fontSize: FONT.sm, color: C.textMid, marginTop: 4 }}>@diogo.mell0 · transformação é sistema.</div>
         </div>
-        <button
-          onClick={() => setShowHistory((s) => !s)}
-          style={{ background: showHistory ? `${C.gold}18` : "transparent", border: `1px solid ${C.border}`, padding: "8px 12px", cursor: "pointer", display: "flex", alignItems: "center", gap: 6, ...fM, fontSize: FONT.sm, color: showHistory ? C.gold : C.textMid }}
-        >
-          <History size={15} /> {showHistory ? "OCULTAR" : "HISTÓRICO"}
-        </button>
+        <div style={{ display: "flex", gap: 8 }}>
+          <button
+            onClick={() => { setShowCalendar((s) => !s); setShowHistory(false); }}
+            style={{ background: showCalendar ? `${C.cyan}18` : "transparent", border: `1px solid ${C.border}`, padding: "8px 12px", cursor: "pointer", display: "flex", alignItems: "center", gap: 6, ...fM, fontSize: FONT.sm, color: showCalendar ? C.cyan : C.textMid }}
+          >
+            <CalendarDays size={15} /> {showCalendar ? "OCULTAR" : "CALENDÁRIO 30D"}
+          </button>
+          <button
+            onClick={() => { setShowHistory((s) => !s); setShowCalendar(false); }}
+            style={{ background: showHistory ? `${C.gold}18` : "transparent", border: `1px solid ${C.border}`, padding: "8px 12px", cursor: "pointer", display: "flex", alignItems: "center", gap: 6, ...fM, fontSize: FONT.sm, color: showHistory ? C.gold : C.textMid }}
+          >
+            <History size={15} /> {showHistory ? "OCULTAR" : "HISTÓRICO"}
+          </button>
+        </div>
       </div>
+
+      {showCalendar && (
+        <div style={{ marginBottom: 18 }}>
+          <ReelsCalendar30 />
+        </div>
+      )}
+
 
       {showHistory && (
         <div style={{ background: C.bg, border: `1px solid ${C.border}`, padding: 16, marginBottom: 18 }}>
@@ -379,6 +403,48 @@ export default function ReelsStudioPanel({ onBack, context: ctxSeed }: { onBack?
               {saving ? <RefreshCw size={14} className="animate-spin" /> : <Check size={14} />} SALVAR NO HISTÓRICO DO PRISM
             </button>
           )}
+
+          <div style={{ display: "flex", gap: 8, marginBottom: 12, flexWrap: "wrap" }}>
+            <button
+              onClick={() => { navigator.clipboard.writeText(buildFullCaption(result, { templateName: template?.name, captionIndex: activeCaption })); toast.success("Legenda completa copiada"); }}
+              style={{ flex: "1 1 200px", padding: "12px 0", background: `${C.gold}14`, border: `1px solid ${C.gold}55`, ...fM, fontSize: FONT.base, color: C.gold, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
+            >
+              <Copy size={14} /> COPIAR LEGENDA COMPLETA
+            </button>
+            <button
+              onClick={() => { downloadTxt(`reel-${(result.hook || "nutrion").slice(0, 30).replace(/[^\w\s-]/g, "").trim().replace(/\s+/g, "-").toLowerCase()}`, buildFullCaption(result, { templateName: template?.name, captionIndex: activeCaption })); toast.success("TXT baixado"); }}
+              style={{ flex: "1 1 200px", padding: "12px 0", background: "transparent", border: `1px solid ${C.border}`, ...fM, fontSize: FONT.base, color: C.textMid, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
+            >
+              <FileText size={14} /> EXPORTAR TXT
+            </button>
+          </div>
+
+          <div style={{ display: "flex", gap: 6, marginBottom: 14, flexWrap: "wrap" }}>
+            {([
+              { id: "pacote" as const, label: "PACOTE", Icon: Download, color: C.gold },
+              { id: "stories" as const, label: "STORIES", Icon: Layers, color: C.purple },
+              { id: "qualidade" as const, label: "QUALIDADE", Icon: ShieldCheck, color: C.green },
+              { id: "variacoes" as const, label: "VARIAÇÕES", Icon: TrendingUp, color: C.cyan },
+            ]).map((t) => {
+              const active = resultTab === t.id;
+              return (
+                <button
+                  key={t.id}
+                  onClick={() => setResultTab(t.id)}
+                  style={{ flex: "1 1 120px", padding: "10px 0", background: active ? `${t.color}18` : "transparent", border: `1px solid ${active ? `${t.color}66` : C.border}`, ...fM, fontSize: FONT.sm, color: active ? t.color : C.textMid, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
+                >
+                  <t.Icon size={13} /> {t.label}
+                </button>
+              );
+            })}
+          </div>
+
+          {resultTab === "stories" && <ReelsStoriesPanel result={result} accent={template?.color || C.gold} />}
+          {resultTab === "qualidade" && <ReelsQualityPanel result={result} />}
+          {resultTab === "variacoes" && <ReelsVariationsPanel result={result} analysisId={result.id} />}
+
+          {resultTab === "pacote" && (<>
+
 
           {result.analise_visual && (
             <div style={{ background: C.cyanBg, border: `1px solid ${C.cyan}22`, padding: 14, marginBottom: 10 }}>
@@ -515,6 +581,9 @@ export default function ReelsStudioPanel({ onBack, context: ctxSeed }: { onBack?
               ))}
             </div>
           )}
+          </>)}
+
+
 
           <div style={{ display: "flex", gap: 8, marginTop: 14 }}>
             <button onClick={reset} style={{ flex: 1, padding: "14px 0", background: "transparent", border: `1px solid ${C.border}`, ...fT, fontSize: FONT.lg, color: C.textMid, cursor: "pointer" }}>NOVO REEL</button>

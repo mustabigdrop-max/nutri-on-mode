@@ -9663,6 +9663,54 @@ export type Database = {
         }
         Relationships: []
       }
+      reels_variations: {
+        Row: {
+          analysis_id: string | null
+          coach_id: string
+          content: string
+          created_at: string
+          id: string
+          is_winner: boolean
+          kind: string
+          label: string | null
+          likes: number | null
+          notes: string | null
+          saves: number | null
+          updated_at: string
+          views: number | null
+        }
+        Insert: {
+          analysis_id?: string | null
+          coach_id: string
+          content: string
+          created_at?: string
+          id?: string
+          is_winner?: boolean
+          kind: string
+          label?: string | null
+          likes?: number | null
+          notes?: string | null
+          saves?: number | null
+          updated_at?: string
+          views?: number | null
+        }
+        Update: {
+          analysis_id?: string | null
+          coach_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          is_winner?: boolean
+          kind?: string
+          label?: string | null
+          likes?: number | null
+          notes?: string | null
+          saves?: number | null
+          updated_at?: string
+          views?: number | null
+        }
+        Relationships: []
+      }
       refeicoes_log: {
         Row: {
           analise_completa: Json
@@ -10139,6 +10187,7 @@ export type Database = {
           coach_id: string
           created_at: string
           date: string
+          day_index: number | null
           format: string
           hashtags: string[] | null
           hook: string | null
@@ -10146,10 +10195,12 @@ export type Database = {
           pillar: string
           prism_analysis_id: string | null
           published_at: string | null
+          reel_done: boolean
           reel_script: string | null
           scheduled_time: string | null
           source: string
           status: string
+          stories_done: boolean
           topic: string
           updated_at: string
         }
@@ -10158,6 +10209,7 @@ export type Database = {
           coach_id: string
           created_at?: string
           date: string
+          day_index?: number | null
           format: string
           hashtags?: string[] | null
           hook?: string | null
@@ -10165,10 +10217,12 @@ export type Database = {
           pillar: string
           prism_analysis_id?: string | null
           published_at?: string | null
+          reel_done?: boolean
           reel_script?: string | null
           scheduled_time?: string | null
           source?: string
           status?: string
+          stories_done?: boolean
           topic: string
           updated_at?: string
         }
@@ -10177,6 +10231,7 @@ export type Database = {
           coach_id?: string
           created_at?: string
           date?: string
+          day_index?: number | null
           format?: string
           hashtags?: string[] | null
           hook?: string | null
@@ -10184,10 +10239,12 @@ export type Database = {
           pillar?: string
           prism_analysis_id?: string | null
           published_at?: string | null
+          reel_done?: boolean
           reel_script?: string | null
           scheduled_time?: string | null
           source?: string
           status?: string
+          stories_done?: boolean
           topic?: string
           updated_at?: string
         }
