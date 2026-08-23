@@ -32,6 +32,7 @@ import ContentDnaPanel from "@/components/social/ContentDnaPanel";
 import AuthorityPanel from "@/components/social/AuthorityPanel";
 import ScienceBankPanel from "@/components/social/ScienceBankPanel";
 import InstagramGuidePanel from "@/components/social/InstagramGuidePanel";
+import VideoTextEditorPanel from "@/components/social/VideoTextEditorPanel";
 import { useInstagramAccount } from "@/hooks/useInstagramAccount";
 import {
   ACADEMY_TRACKS, ACTION_PLAN, BIO_CRITERIA, CONTENT_PRODUCTS, DIFFERENTIALS,
@@ -409,6 +410,7 @@ const SocialOnModulePage = () => {
             <TabsTrigger value="dna" className="text-xs gap-1"><Dna className="w-3 h-3" />DNA</TabsTrigger>
             <TabsTrigger value="autoridade" className="text-xs gap-1"><ShieldCheck className="w-3 h-3" />Autoridade</TabsTrigger>
             <TabsTrigger value="ciencia" className="text-xs gap-1"><FlaskConical className="w-3 h-3" />Ciência</TabsTrigger>
+            <TabsTrigger value="editor" className="text-xs gap-1"><Clapperboard className="w-3 h-3" />Editor</TabsTrigger>
           </TabsList>
 
           {/* ─────────── PRISM (com Reels e Pack integrados) ─────────── */}
@@ -989,6 +991,9 @@ const SocialOnModulePage = () => {
           </TabsContent>
           <TabsContent value="ciencia" className="mt-4">
             <ScienceBankPanel ctx={aiCtx} />
+          </TabsContent>
+          <TabsContent value="editor" className="mt-4">
+            <VideoTextEditorPanel />
           </TabsContent>
         </Tabs>
       </main>
