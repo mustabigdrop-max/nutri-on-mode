@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import {
   AlertTriangle, BookOpen, Briefcase, CalendarDays, Camera, Check, ChevronRight, Clock, Copy,
   Crown, Download, Dumbbell, Eye, FileText, Flame, Hash, Heart, History, Image, Layers, Music, RefreshCw,
-  ShieldCheck, Sparkles, Target, TrendingUp, Trash2, Type, Upload, Zap,
+  ShieldCheck, Sparkles, Target, TrendingUp, Trash2, Type, Upload, X, Zap,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -108,6 +108,42 @@ const readAsDataUrl = (f: File) =>
     r.readAsDataURL(f);
   });
 
+/** Reduz a foto para no máximo 1024px antes de mandar pro sistema. */
+async function compressImage(f: File, maxDim = 1024, quality = 0.75): Promise<string | null> {
+  const src = await readAsDataUrl(f).catch(() => null);
+  if (!src) return null;
+  return new Promise((resolve) => {
+    const img = new window.Image();
+    img.onload = () => {
+      let w = img.width, h = img.height;
+      if (!w || !h) return resolve(src);
+      if (w > maxDim || h > maxDim) {
+        if (w > h) { h = Math.round((h * maxDim) / w); w = maxDim; }
+        else { w = Math.round((w * maxDim) / h); h = maxDim; }
+      }
+      const canvas = document.createElement("canvas");
+      canvas.width = w; canvas.height = h;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return resolve(src);
+      ctx.drawImage(img, 0, 0, w, h);
+      resolve(canvas.toDataURL("image/jpeg", quality));
+    };
+    img.onerror = () => resolve(src);
+    img.src = src;
+  });
+}
+
+const IMAGE_RE = /\.(jpe?g|png|webp|gif|bmp|heic|heif)$/i;
+const VIDEO_RE = /\.(mp4|mov|avi|mkv|webm|m4v|3gp)$/i;
+
+/** Alguns arquivos (HEIC/MOV) chegam sem MIME, então o nome também vale. */
+function detectKind(f: File): "image" | "video" | null {
+  if (f.type.startsWith("image/") || IMAGE_RE.test(f.name)) return "image";
+  if (f.type.startsWith("video/") || VIDEO_RE.test(f.name)) return "video";
+  return null;
+}
+
+
 const LOADING_MSGS = [
   "Analisando sua imagem...", "Detectando contexto visual...", "Cruzando com seu DNA de conteúdo...",
   "Gerando hook viral...", "Escrevendo 3 legendas...", "Selecionando hashtags...",
@@ -117,6 +153,8 @@ const LOADING_MSGS = [
 export default function ReelsStudioPanel({ onBack, context: ctxSeed }: { onBack?: () => void; context?: string }) {
   const [template, setTemplate] = useState<Template | null>(null);
   const [file, setFile] = useState<File | null>(null);
+  const [fileKind, setFileKind] = useState<"image" | "video" | null>(null);
+
   const [preview, setPreview] = useState<string | null>(null);
   const [trim, setTrim] = useState<TrimInfo | null>(null);
 
@@ -167,11 +205,20 @@ export default function ReelsStudioPanel({ onBack, context: ctxSeed }: { onBack?
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
     if (!f) return;
-    if (f.size > 60 * 1024 * 1024) return toast.error("Arquivo acima de 60MB");
+    const kind = detectKind(f);
+    if (!kind) {
+      setFileKind(null);
+      return toast.error("Formato não suportado. Use foto (JPG, PNG, HEIC) ou vídeo (MP4, MOV, AVI).");
+    }
     setFile(f);
+    setFileKind(kind);
     setTrim(null);
-    setPreview(f.type.startsWith("image/") ? await readAsDataUrl(f) : await extractVideoFrame(f));
+    setPreview(null);
+    setError(null);
+    setPreview(kind === "image" ? await compressImage(f) : await extractVideoFrame(f));
   };
+
+  const clearFile = () => { setFile(null); setFileKind(null); setPreview(null); setTrim(null); };
 
   const handleGenerate = async () => {
     if (!file || !template || loading) return;
@@ -185,9 +232,10 @@ export default function ReelsStudioPanel({ onBack, context: ctxSeed }: { onBack?
     }, 2500);
 
     try {
-      const isVideo = file.type.startsWith("video/");
-      const image = isVideo ? preview ?? (await extractVideoFrame(file)) : await readAsDataUrl(file);
+      const isVideo = fileKind === "video";
+      const image = isVideo ? preview ?? (await extractVideoFrame(file)) : preview ?? (await compressImage(file));
       if (!image) throw new Error("Não consegui extrair um frame desse vídeo. Sobe uma foto ou outro arquivo.");
+
 
       const trimContext = trim
         ? `${context ? context + "\n" : ""}Trecho do vídeo selecionado: ${trim.start}s até ${trim.end}s (${trim.duration}s de duração). Ajuste o roteiro para caber nesse tempo.`
@@ -228,7 +276,7 @@ export default function ReelsStudioPanel({ onBack, context: ctxSeed }: { onBack?
         subtype: template?.name || null,
         ai_content: result as any,
         files_count: file ? 1 : 0,
-        file_types: file ? [file.type.startsWith("video/") ? "video" : "image"] : [],
+        file_types: file ? [fileKind || "image"] : [],
         context,
       })
       .select("id")
@@ -243,7 +291,7 @@ export default function ReelsStudioPanel({ onBack, context: ctxSeed }: { onBack?
     setSaving(false);
   };
 
-  const reset = () => { setResult(null); setFile(null); setPreview(null); setTrim(null); setTemplate(null); setError(null); setActiveCaption(0); };
+  const reset = () => { setResult(null); clearFile(); setTemplate(null); setError(null); setActiveCaption(0); };
   const captionColors = [C.red, C.cyan, C.pink, C.orange];
 
   const historyTitle = (item: HistoryItem) => {
@@ -325,24 +373,39 @@ export default function ReelsStudioPanel({ onBack, context: ctxSeed }: { onBack?
               padding: preview ? 10 : "40px 24px", textAlign: "center", cursor: "pointer", marginBottom: 20,
             }}
           >
-            <input ref={fileRef} type="file" accept="image/*,video/*" onChange={handleFile} style={{ display: "none" }} />
+            <input ref={fileRef} type="file" accept="image/*,video/*,.heic,.heif,.mov,.mkv,.m4v,.3gp" onChange={handleFile} style={{ display: "none" }} />
             {preview ? (
               <div>
                 <img src={preview} alt="Prévia do conteúdo enviado" style={{ maxHeight: 220, margin: "0 auto", display: "block", objectFit: "contain" }} />
-                <div style={{ ...fM, fontSize: FONT.sm, color: C.textMid, marginTop: 8 }}>
-                  {file?.name} · {((file?.size || 0) / 1024 / 1024).toFixed(1)}MB · toque pra trocar
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, marginTop: 8 }}>
+                  <span style={{ ...fM, fontSize: FONT.sm, color: C.textMid }}>
+                    {file?.name} · {((file?.size || 0) / 1024 / 1024).toFixed(1)}MB · toque pra trocar
+                  </span>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); clearFile(); }}
+                    aria-label="Remover arquivo"
+                    style={{ background: "transparent", border: `1px solid ${C.border}`, color: C.textMid, padding: 4, cursor: "pointer", display: "flex" }}
+                  >
+                    <X size={13} />
+                  </button>
                 </div>
+              </div>
+            ) : file ? (
+              <div style={{ ...fM, fontSize: FONT.sm, color: C.textMid, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+                <RefreshCw size={14} style={{ animation: "spin 1s linear infinite" }} />
+                Carregando {fileKind === "video" ? "vídeo" : "imagem"}... arquivos grandes podem levar alguns segundos
               </div>
             ) : (
               <div>
                 <Upload size={28} color={C.textMid} />
                 <p style={{ ...fT, fontSize: FONT.xl, color: C.text, marginTop: 10 }}>Sobe foto ou vídeo</p>
-                <p style={{ ...fM, fontSize: FONT.sm, color: C.textMid, marginTop: 6 }}>O sistema analisa o que VÊ e gera tudo automaticamente</p>
+                <p style={{ ...fM, fontSize: FONT.sm, color: C.textMid, marginTop: 6 }}>JPG, PNG, HEIC, MP4, MOV, AVI · o sistema analisa o que VÊ e gera tudo</p>
               </div>
             )}
           </div>
 
-          {file?.type.startsWith("video/") && (
+          {fileKind === "video" && file && (
+
             <ReelsVideoTrimmer
               file={file}
               onFrameCaptured={(dataUrl, info) => {
