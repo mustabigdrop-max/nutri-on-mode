@@ -394,8 +394,9 @@ Gere o JSON completo.`;
           frame ? "google/gemini-2.5-pro" : "google/gemini-2.5-flash",
           [{ role: "system", content: sys }, { role: "user", content }],
         );
+        let reelId: string | null = null;
         try {
-          await adminClient().from("prism_analyses").insert({
+          const { data } = await adminClient().from("prism_analyses").insert({
             coach_id: auth.userId,
             files_count: 1,
             file_types: [isVideo ? "video" : "image"],
@@ -404,10 +405,11 @@ Gere o JSON completo.`;
             subtype: tplName,
             ai_content: parsedReel ?? null,
             format_used: "reel",
-          });
+          }).select("id").single();
+          reelId = data?.id ?? null;
         } catch (_) { /* persistência não bloqueia */ }
 
-        return new Response(JSON.stringify({ result: parsedReel }), {
+        return new Response(JSON.stringify({ id: reelId, result: parsedReel }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       } catch (e) {
