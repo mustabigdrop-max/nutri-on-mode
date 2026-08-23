@@ -104,6 +104,8 @@ const ChallengeRankingPage = lazy(() => import("./pages/challenge/ChallengeRanki
 const ChallengeMCEPage = lazy(() => import("./pages/challenge/ChallengeMCEPage"));
 const ChallengeEvolutionPage = lazy(() => import("./pages/challenge/ChallengeEvolutionPage"));
 const ChallengeProfilePage = lazy(() => import("./pages/challenge/ChallengeProfilePage"));
+const ChallengeUpgradePage = lazy(() => import("./pages/challenge/ChallengeUpgradePage"));
+
 const WallDisplayPage = lazy(() => import("./pages/wall/WallDisplayPage"));
 const Desafio21Page = lazy(() => import("./pages/Desafio21Page"));
 const DesafioSignupPage = lazy(() => import("./pages/DesafioSignupPage"));
