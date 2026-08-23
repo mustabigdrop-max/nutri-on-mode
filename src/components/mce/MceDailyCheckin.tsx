@@ -22,10 +22,11 @@ const PILLAR_COLORS: Record<PillarKey, string> = {
 
 export type CheckinSubmitHandler = (scores: Record<PillarKey, number>) => void;
 
+type NumericCheckin = Omit<CheckinRow, "checkin_date">;
+
 export default function MceDailyCheckin({ onSubmit, onClose }: { onSubmit?: CheckinSubmitHandler; onClose?: () => void }) {
   const { user } = useAuth();
-  const [values, setValues] = useState<Record<keyof CheckinRow, number>>({
-    checkin_date: "",
+  const [values, setValues] = useState<NumericCheckin>({
     sleep_quality: 7,
     stress_level: 5,
     nutrition_adherence: 7,
