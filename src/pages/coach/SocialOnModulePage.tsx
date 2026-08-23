@@ -33,6 +33,7 @@ import AuthorityPanel from "@/components/social/AuthorityPanel";
 import ScienceBankPanel from "@/components/social/ScienceBankPanel";
 import InstagramGuidePanel from "@/components/social/InstagramGuidePanel";
 import VideoTextEditorPanel from "@/components/social/VideoTextEditorPanel";
+import SocialOnProPanel from "@/components/social/SocialOnProPanel";
 import { useInstagramAccount } from "@/hooks/useInstagramAccount";
 import {
   ACADEMY_TRACKS, ACTION_PLAN, BIO_CRITERIA, CONTENT_PRODUCTS, DIFFERENTIALS,
