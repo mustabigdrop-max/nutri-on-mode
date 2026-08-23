@@ -74,7 +74,7 @@ export default function ChallengeDashboardPage() {
                 hidratação e áudios.
               </p>
               <Button asChild size="sm" className="w-full">
-                <Link to="/#plans">Ativar PREMIUM</Link>
+                <Link to="/desafio/planos">Ativar PREMIUM</Link>
               </Button>
             </CardContent>
           </Card>
