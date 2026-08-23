@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import {
   AlertTriangle, BookOpen, Briefcase, CalendarDays, Camera, Check, ChevronRight, Clock, Copy,
   Crown, Download, Dumbbell, Eye, FileText, Flame, Hash, Heart, History, Image, Layers, Music, RefreshCw,
-  ShieldCheck, Sparkles, Target, TrendingUp, Trash2, Type, Upload, Zap,
+  ShieldCheck, Sparkles, Target, TrendingUp, Trash2, Type, Upload, X, Zap,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
