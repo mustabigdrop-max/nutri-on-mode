@@ -608,6 +608,7 @@ export default function MCEIntelligencePage() {
     { key: "diagnostico", label: "DIAGNÓSTICO", group: "content" as const, Icon: ScanLine },
     { key: "exercicios", label: "EXERCÍCIOS", group: "content" as const, Icon: Dumbbell },
     { key: "perfis", label: "PERFIS", group: "content" as const, Icon: Users },
+    { key: "checkin", label: "CHECK-IN", badge: checkedInToday ? "#00FF88" : "#00D4FF", group: "action" as const, Icon: CheckCircle2 },
     { key: "protocolo24h", label: "24H", badge: "#E8A020", group: "action" as const, Icon: Clock },
     { key: "progresso", label: "PROGRESSO", group: "action" as const, Icon: TrendingUp },
     { key: "audio", label: "ÁUDIO", badge: "#E8A020", group: "action" as const, Icon: Headphones },
