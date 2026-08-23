@@ -98,7 +98,7 @@ export default function DesafioSignupPage() {
           <div className="flex items-center gap-3">
             <Trophy className="w-7 h-7 text-amber-500 shrink-0" />
             <div>
-              <h1 className="text-lg font-bold">Desafio 90 Dias · Academia</h1>
+              <h1 className="text-lg font-bold">Desafio 30 Dias · Academia</h1>
               <p className="text-xs text-muted-foreground">
                 Cadastro rápido com plano gratuito e senha gerada automaticamente
               </p>

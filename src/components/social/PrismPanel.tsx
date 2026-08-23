@@ -787,7 +787,7 @@ const PrismPanel = ({
               <Textarea
                 value={rewriteHint}
                 onChange={(e) => setRewriteHint(e.target.value)}
-                placeholder="O que mudar nesta versão? Ex.: começa com uma pergunta, menos emoji, CTA pro desafio de 90 dias"
+                placeholder="O que mudar nesta versão? Ex.: começa com uma pergunta, menos emoji, CTA pro desafio de 30 dias"
                 className="text-xs min-h-[60px]"
               />
               <div className="flex flex-wrap gap-2">

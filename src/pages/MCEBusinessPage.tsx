@@ -197,8 +197,8 @@ export default function MCEBusinessPage() {
         </Section>
 
         {/* Concept */}
-        <Section title="A Ideia: nutriON WALL + Desafio 90 Dias" icon={Target}>
-          <p>Uma tela ao vivo dentro da academia mostrando o ranking MCE dos alunos, alimentada por um desafio de 90 dias onde todo mundo compete, transforma o corpo, posta stories e paga pra ter orientação nutricional.</p>
+        <Section title="A Ideia: nutriON WALL + Desafio 30 Dias" icon={Target}>
+          <p>Uma tela ao vivo dentro da academia mostrando o ranking MCE dos alunos, alimentada por um desafio de 30 dias onde todo mundo compete, transforma o corpo, posta stories e paga pra ter orientação nutricional.</p>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 10, marginTop: 14 }}>
             {[
               { icon: Trophy, title: "THE WALL", desc: "Tela física com ranking ao vivo" },
@@ -242,7 +242,7 @@ export default function MCEBusinessPage() {
         </Section>
 
         {/* 90 Day Challenge */}
-        <Section title="Componente 2 — Desafio 90 Dias" icon={Calendar}>
+        <Section title="Componente 2 — Desafio 30 Dias" icon={Calendar}>
           <p>Evento trimestral que atrai alunos, cria competição saudável, gera transformações reais e converte participantes em clientes pagantes.</p>
 
           <div style={{ marginTop: 14, marginBottom: 14 }}>
@@ -287,10 +287,10 @@ export default function MCEBusinessPage() {
           </div>
           <ol style={{ margin: "10px 0", paddingLeft: 18, color: "rgba(255,255,255,0.75)" }}>
             <li style={{ marginBottom: 8 }}>Eu coloco uma tela na sua academia. Eu pago.</li>
-            <li style={{ marginBottom: 8 }}>Seus alunos escaneiam o QR Code e entram num desafio de 90 dias GRATUITO.</li>
+            <li style={{ marginBottom: 8 }}>Seus alunos escaneiam o QR Code e entram num desafio de 30 dias GRATUITO.</li>
             <li style={{ marginBottom: 8 }}>A tela mostra o ranking ao vivo. Seus alunos começam a competir e a vir todo dia.</li>
             <li style={{ marginBottom: 8 }}>Quem quiser plano alimentar personalizado assina o premium. De cada assinatura, 25% é seu.</li>
-            <li style={{ marginBottom: 8 }}>A cada 90 dias, novo desafio, novas transformações, novos posts marcando sua academia.</li>
+            <li style={{ marginBottom: 8 }}>A cada 30 dias, novo desafio, novas transformações, novos posts marcando sua academia.</li>
           </ol>
           <p style={{ color: GREEN, fontWeight: 700 }}>Custo pra academia: R$ 0.</p>
         </Section>
@@ -343,7 +343,7 @@ export default function MCEBusinessPage() {
 
         {/* QR Codes */}
         <Section title="QR Codes nos Equipamentos" icon={QrCode} defaultOpen>
-          <p style={{ marginBottom: 14 }}>Escaneie para entrar direto no Desafio 90 Dias da academia. Os códigos são otimizados para leitura em telas e impressos.</p>
+          <p style={{ marginBottom: 14 }}>Escaneie para entrar direto no Desafio 30 Dias da academia. Os códigos são otimizados para leitura em telas e impressos.</p>
 
           <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginBottom: 14 }}>
             <a
@@ -381,7 +381,7 @@ export default function MCEBusinessPage() {
                 title: "Desafio da Academia",
                 loc: "Cartaz / recepção / The Wall",
                 url: "https://nutrion.app.br/desafio-21",
-                desc: "Entre no Desafio 90 Dias",
+                desc: "Entre no Desafio 30 Dias",
                 color: AMBER,
               },
               {
@@ -536,7 +536,7 @@ export default function MCEBusinessPage() {
               <tr><td>1</td><td>Landing page /gym, deck PDF, material gráfico, The Wall, QR Codes dinâmicos</td></tr>
               <tr><td>2</td><td>Mapear 10 academias alvo na Zona Sul, visitar 3, fechar piloto</td></tr>
               <tr><td>3</td><td>Instalar The Wall, preparar evento de lançamento, conteúdo pro @diogo.mell0</td></tr>
-              <tr><td>4</td><td>Lançar Desafio 90 Dias, evento presencial, primeiro QR scan</td></tr>
+              <tr><td>4</td><td>Lançar Desafio 30 Dias, evento presencial, primeiro QR scan</td></tr>
             </tbody>
           </table>
         </Section>

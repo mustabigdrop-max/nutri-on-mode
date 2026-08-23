@@ -5,7 +5,7 @@ export const PILLARS: Record<SocialPillar, { label: string; emoji: string; share
   bastidor: { label: "Bastidores", emoji: "🏋️", share: "25%", color: "#E8A020", formats: "Stories, Reel POV", desc: "Treino, prep de comida, rotina real, vulnerabilidade" },
   transformacao: { label: "Transformações", emoji: "📸", share: "20%", color: "#00FF88", formats: "carrossel, Reel narrativo", desc: "Antes/depois, depoimentos, resultados nutriON" },
   entretenimento: { label: "Entretenimento", emoji: "🎭", share: "15%", color: "#A78BFA", formats: "Reel viral, Stories enquete", desc: "Mitos fitness, humor, trends, reações" },
-  cta: { label: "CTA", emoji: "🔗", share: "10%", color: "#FF4D6D", formats: "Stories, Reel", desc: "nutriON, MCE Audio, Desafio 90D, link na bio" },
+  cta: { label: "CTA", emoji: "🔗", share: "10%", color: "#FF4D6D", formats: "Stories, Reel", desc: "nutriON, MCE Audio, Desafio 30D, link na bio" },
 };
 
 export const FORMATS = ["reel", "carrossel", "stories", "post_unico", "live", "collab"] as const;
@@ -62,7 +62,7 @@ export const HOOK_LIBRARY: { category: string; emoji: string; pillar: SocialPill
     hooks: [
       "Se eu te mostrasse um sistema que...",
       "847 pessoas estão ouvindo MCE Audio agora. Você ainda não?",
-      "O Desafio 90 Dias está aberto. E eu preciso falar sobre isso.",
+      "O Desafio 30 Dias está aberto. E eu preciso falar sobre isso.",
       "Isso aqui é o que meus alunos veem todo dia no app.",
       "Esse ranking é real. Esses resultados são reais. E seu nome pode estar aqui.",
     ],

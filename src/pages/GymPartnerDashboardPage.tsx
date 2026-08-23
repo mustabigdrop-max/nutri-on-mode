@@ -327,7 +327,7 @@ function EngagementOverview() {
 function ChallengePreview() {
   return (
     <div style={{ background: C.card, border: `1px solid ${C.border}`, padding: 14 }}>
-      <SectionTitle icon={Flame} color={C.orange}>Desafio 90 Dias — Motor de Retenção</SectionTitle>
+      <SectionTitle icon={Flame} color={C.orange}>Desafio 30 Dias — Motor de Retenção</SectionTitle>
       <p style={{ ...fontM, fontSize: 9, color: C.textMid, lineHeight: 1.6, marginBottom: 12 }}>
         Sistema de desafio integrado que a academia lança para os alunos. Leaderboard, prêmios,
         engajamento de comunidade — tudo dentro do nutriON.
@@ -417,7 +417,7 @@ export default function GymPartnerDashboardPage() {
             { id: "overview", label: "VISÃO GERAL", icon: BarChart3 },
             { id: "churn", label: "CHURN", icon: AlertTriangle },
             { id: "revenue", label: "RECEITA", icon: DollarSign },
-            { id: "challenge", label: "DESAFIO 90D", icon: Flame },
+            { id: "challenge", label: "DESAFIO 30D", icon: Flame },
           ].map((t) => (
             <button key={t.id} onClick={() => setTab(t.id)} aria-pressed={tab === t.id}
               style={{
