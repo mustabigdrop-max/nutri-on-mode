@@ -568,10 +568,11 @@ export default function AudioAcademyPage({ embedded = false }: { embedded?: bool
                           </button>
 
                           <div className="min-w-0 flex-1">
-                            <p className="text-sm font-semibold truncate" style={{ fontFamily: "'Rajdhani', sans-serif" }}>
+                            <p className="truncate" style={{ fontFamily: "'Rajdhani', sans-serif", fontWeight: 600, fontSize: 13, color: "#F5F0E8" }}>
                               {s === "ritual" ? ep.title : `EP ${ep.episode_number} · ${ep.title}`}
                             </p>
-                            <p className="text-[11px] truncate" style={{ color: DIM, fontFamily: "'Space Mono', monospace" }}>
+                            <p className="truncate" style={{ color: DIM, fontFamily: "'Space Mono', monospace", fontSize: 8, letterSpacing: "0.04em" }}>
+
                               {fmtDur(ep.duration_seconds)}
                               {ep.scientific_reference ? ` · ${ep.scientific_reference}` : ""}
                               {!ep.audio_url ? " · toque para narrar" : ""}
