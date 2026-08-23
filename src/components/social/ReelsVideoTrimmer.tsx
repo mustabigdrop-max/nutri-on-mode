@@ -55,11 +55,16 @@ export default function ReelsVideoTrimmer({
   const [playing, setPlaying] = useState(false);
   const [ready, setReady] = useState(false);
   const [capturing, setCapturing] = useState(false);
+  const [loop, setLoop] = useState(true);
+  const [energy, setEnergy] = useState<EnergyAnalysis | null>(null);
+  const [analyzing, setAnalyzing] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const [expPct, setExpPct] = useState(0);
 
   useEffect(() => {
     const u = URL.createObjectURL(file);
     setUrl(u);
-    setReady(false); setPlaying(false); setCurrent(0); setStart(0);
+    setReady(false); setPlaying(false); setCurrent(0); setStart(0); setEnergy(null);
     return () => URL.revokeObjectURL(u);
   }, [file]);
 
@@ -88,12 +93,48 @@ export default function ReelsVideoTrimmer({
 
   const onTime = () => {
     const v = videoRef.current;
-    if (!v) return;
+    if (!v || exporting) return;
     setCurrent(v.currentTime);
-    if (v.currentTime >= end) { v.pause(); setPlaying(false); }
+    if (v.currentTime >= end) {
+      if (loop && playing) { v.currentTime = start; v.play(); }
+      else { v.pause(); setPlaying(false); }
+    }
+  };
+
+  const suggestHook = async () => {
+    const v = videoRef.current;
+    if (!v) return;
+    setAnalyzing(true);
+    const res = energy ?? (await analyzeVideoEnergy(file));
+    setAnalyzing(false);
+    if (!res) { toast.error("Não consegui ler o áudio desse vídeo."); return; }
+    setEnergy(res);
+    const s = Math.min(res.suggestedStart, Math.max(0, duration - 5));
+    setStart(s);
+    if (end <= s + 3) setEnd(Math.min(s + 30, duration));
+    seek(s);
+    toast.success(`Hook sugerido em ${s.toFixed(1)}s (pico de energia em ${res.peakAt.toFixed(1)}s)`);
+  };
+
+  const doExport = async () => {
+    const v = videoRef.current;
+    if (!v || exporting) return;
+    setExporting(true); setExpPct(0); setPlaying(false);
+    const wasMuted = v.muted;
+    try {
+      const clip = await exportClip(v, start, end, setExpPct);
+      downloadBlob(clip.blob, `reel-corte-${Math.round(start)}s-${Math.round(end)}s.${clip.ext}`);
+      toast.success(`Trecho exportado em ${clip.ext.toUpperCase()}`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Falha ao exportar o trecho");
+    } finally {
+      v.muted = wasMuted;
+      setExporting(false); setExpPct(0);
+    }
   };
 
   const capture = async () => {
+
     const v = videoRef.current;
     if (!v) return;
     v.pause(); setPlaying(false);
