@@ -751,23 +751,24 @@ export default function MCEIntelligencePage() {
         <AnimatePresence mode="wait" custom={pillarDirection}>
         <motion.div key={pillar} custom={pillarDirection} initial={{ opacity: 0, x: pillarDirection * 24 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: pillarDirection * -24 }} transition={{ duration: 0.3 }} style={{ marginTop: 18 }}>
           <div style={{ display: "flex", alignItems: "baseline", gap: 10, flexWrap: "wrap" }}>
-            <span style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 700, color: data.color, letterSpacing: 1 }}>
+            <span style={{ fontFamily: DISPLAY, fontSize: 28, fontWeight: 700, color: data.color, letterSpacing: "-0.02em" }}>
               {data.label}
             </span>
-            <span style={{ fontFamily: MONO, fontSize: 9, letterSpacing: 2, color: data.color, border: `1px solid ${data.color}45`, padding: "4px 8px" }}>
+            <span style={{ fontFamily: MONO, fontSize: 9, letterSpacing: "0.06em", color: data.color, border: `1px solid ${data.color}45`, padding: "4px 8px" }}>
               {data.tagline}
             </span>
           </div>
-          <div style={{ fontFamily: DISPLAY, fontSize: 14, color: "rgba(255,255,255,0.5)", marginTop: 2 }}>
+          <div style={{ fontFamily: MONO, fontSize: 9, letterSpacing: "0.06em", color: "#888888", marginTop: 4 }}>
             {data.subtitle}
           </div>
           <p style={{
-            marginTop: 10, padding: "12px 14px", borderRadius: 12,
+            marginTop: 10, padding: "12px 14px", borderRadius: 12, maxWidth: 680,
             background: `${data.color}08`, border: `1px solid ${data.color}20`,
-            fontFamily: DISPLAY, fontSize: 14, lineHeight: 1.6, color: "rgba(255,255,255,0.7)",
+            fontFamily: MONO, fontSize: 10, lineHeight: 1.8, letterSpacing: "0.02em", color: "#888888",
           }}>
             {data.manifesto.split(/(software|identidade|sistema operacional)/gi).map((part, index) => /^(software|identidade|sistema operacional)$/i.test(part) ? <mark key={`${part}-${index}`} className="mce-keyword">{part}</mark> : part)}
           </p>
+
           <div className="mce-pillar-metrics">
             <span><Headphones size={14} /><strong>12</strong> episódios</span><span><Clock size={14} /><strong>97</strong> min de conteúdo</span><span><BookOpen size={14} /><strong>{data.authors.length}</strong> autores base</span>
           </div>
