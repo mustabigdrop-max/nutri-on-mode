@@ -711,6 +711,27 @@ export default function MCEIntelligencePage() {
             MENTALIDADE · COMPORTAMENTO · EXECUÇÃO
           </div>
 
+          {user && !checkedInToday && !showCheckin && (
+            <button
+              type="button"
+              onClick={() => setShowCheckin(true)}
+              style={{
+                marginTop: 16, padding: "10px 18px", borderRadius: 8, cursor: "pointer",
+                fontFamily: MONO, fontSize: 10, letterSpacing: 2,
+                background: "rgba(0,212,255,0.1)", border: "1px solid rgba(0,212,255,0.4)", color: "#00D4FF",
+                display: "inline-flex", alignItems: "center", gap: 8,
+              }}
+            >
+              <CheckCircle2 size={14} /> FAZER CHECK-IN DE HOJE
+            </button>
+          )}
+
+          {user && showCheckin && (
+            <div style={{ marginTop: 20 }}>
+              <MceDailyCheckin onSubmit={() => { setShowCheckin(false); void refreshScores(); }} onClose={() => setShowCheckin(false)} />
+            </div>
+          )}
+
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1, duration: 0.6 }} style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 24, flexWrap: "wrap", marginTop: 24 }}>
             <ScoreRing value={scores.M} color="#A78BFA" size={92} label="MINDSET" />
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
