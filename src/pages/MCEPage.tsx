@@ -724,12 +724,13 @@ export default function MCEIntelligencePage() {
 
           <div className="mce-impact-quote" style={{ marginTop: 18, padding: "26px 18px", background: "rgba(255,255,255,0.02)", border: "1px solid rgba(184,146,42,0.16)", position: "relative", overflow: "hidden" }}>
             <span className="mce-quote-mark">“</span>
-            <p key={quoteIdx} style={{ fontFamily: DISPLAY, fontSize: 24, fontWeight: 700, fontStyle: "italic", color: "rgba(255,255,255,0.9)", animation: "mceFade 0.6s ease", position: "relative" }}>
+            <p key={quoteIdx} style={{ fontFamily: DISPLAY, fontSize: 20, fontWeight: 600, fontStyle: "italic", letterSpacing: "-0.01em", lineHeight: 1.4, color: "#F5F0E8", animation: "mceFade 0.6s ease", position: "relative" }}>
               "{MCE_QUOTES[quoteIdx]}"
             </p>
-            <span style={{ fontFamily: MONO, fontSize: 7, letterSpacing: "0.12em", color: "rgba(184,146,42,0.55)" }}>
+            <span style={{ fontFamily: MONO, fontSize: 8, letterSpacing: "0.12em", color: "rgba(184,146,42,0.27)" }}>
               @diogo.mell0 · MCE METHOD
             </span>
+
           </div>
 
           <div className="mce-social-proof">
