@@ -581,6 +581,9 @@ export default function ReelsStudioPanel({ onBack, context: ctxSeed }: { onBack?
               ))}
             </div>
           )}
+          </>)}
+
+
 
           <div style={{ display: "flex", gap: 8, marginTop: 14 }}>
             <button onClick={reset} style={{ flex: 1, padding: "14px 0", background: "transparent", border: `1px solid ${C.border}`, ...fT, fontSize: FONT.lg, color: C.textMid, cursor: "pointer" }}>NOVO REEL</button>
