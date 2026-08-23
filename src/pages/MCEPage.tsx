@@ -962,6 +962,11 @@ export default function MCEIntelligencePage() {
             <div>
               <div style={sectionTitle}>PROGRESSO MCE · OVERVIEW</div>
 
+              <div style={{ marginBottom: 20 }}>
+                <MceSystemPanel scores={scores} />
+              </div>
+
+
               <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
                 {(["M", "C", "E"] as PillarKey[]).map((k) => {
                   const d = PILLAR_DATA[k];
