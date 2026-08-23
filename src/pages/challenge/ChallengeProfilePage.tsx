@@ -39,6 +39,10 @@ export default function ChallengeProfilePage() {
           <Link to="/desafio/evolucao"><Camera className="w-4 h-4" /> Minhas fotos de evolução</Link>
         </Button>
 
+        <Button asChild variant={participant.tier === "vip" ? "default" : "outline"} className="w-full gap-2">
+          <Link to="/desafio/vip"><Crown className="w-4 h-4" /> Área VIP · relatório e ajustes</Link>
+        </Button>
+
         <Button asChild variant="outline" className="w-full gap-2">
           <a href="https://wa.me/" target="_blank" rel="noreferrer">
             <MessageCircle className="w-4 h-4" /> Falar com o Coach
