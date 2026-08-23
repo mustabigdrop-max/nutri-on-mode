@@ -352,8 +352,9 @@ serve(async (req) => {
                 filesInfo,
                 mix: s(body?.mix, 120),
                 products: Array.isArray(body?.products) ? body.products.map((p: unknown) => s(p, 30)).join(", ") : "",
-                extra: [
-                  history ? `HISTÓRICO RECENTE (não repita temas):\n${history}` : "",
+                 extra: [
+                   s(body?.daily_brief, 2500) ? `BRIEFING DO DIA (obrigatório seguir):\n${s(body?.daily_brief, 2500)}` : "",
+                   history ? `HISTÓRICO RECENTE (não repita temas):\n${history}` : "",
                   igProfile ? `PERFIL REAL DO INSTAGRAM:\n${JSON.stringify(igProfile).slice(0, 1200)}` : "",
                 ].filter(Boolean).join("\n\n"),
               }),
