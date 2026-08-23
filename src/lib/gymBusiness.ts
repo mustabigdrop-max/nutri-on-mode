@@ -82,7 +82,7 @@ Funciona assim:
 
 Custo pra você: *R$ 0*
 Risco: *zero*
-Se não funcionar em 90 dias, retiro tudo.
+Se não funcionar em 30 dias, retiro tudo.
 
 Posso passar aí essa semana pra te mostrar em 5 minutos?
 
@@ -276,7 +276,7 @@ Bem-vindos. A partir de hoje:
 • Áudio do dia pra manter a cabeça no lugar
 
 Quem quiser plano alimentar personalizado é só me chamar aqui.
-Bora transformar 90 dias em outro corpo. 💪
+Bora transformar 30 dias em outro corpo. 💪
 — Coach Diogo`,
   },
 ];

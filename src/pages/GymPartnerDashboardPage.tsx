@@ -417,7 +417,7 @@ export default function GymPartnerDashboardPage() {
             { id: "overview", label: "VISÃO GERAL", icon: BarChart3 },
             { id: "churn", label: "CHURN", icon: AlertTriangle },
             { id: "revenue", label: "RECEITA", icon: DollarSign },
-            { id: "challenge", label: "DESAFIO 90D", icon: Flame },
+            { id: "challenge", label: "DESAFIO 30D", icon: Flame },
           ].map((t) => (
             <button key={t.id} onClick={() => setTab(t.id)} aria-pressed={tab === t.id}
               style={{

@@ -144,7 +144,7 @@ export default function BusinessChallengesTab() {
                 onChange={(e) => setForm({ ...form, start_date: e.target.value, end_date: addDays(e.target.value, 90) })} />
             </label>
             <label className="text-xs text-muted-foreground">
-              Fim (90 dias automático)
+              Fim (30 dias automático)
               <Input type="date" value={form.end_date}
                 onChange={(e) => setForm({ ...form, end_date: e.target.value })} />
             </label>
