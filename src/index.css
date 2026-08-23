@@ -428,10 +428,11 @@
 .mce-radar-node-C { animation-delay: .25s; }.mce-radar-node-E { animation-delay: .5s; }
 .mce-radar-tooltip { opacity: 0; transition: opacity .2s ease; pointer-events: none; }.mce-radar-node:hover .mce-radar-tooltip,.mce-radar-node:focus .mce-radar-tooltip { opacity: 1; }
 .mce-radar-core { transform-box: fill-box; transform-origin: center; stroke-dasharray: 4 5; animation: mce-core-spin 8s linear infinite; }
-.mce-quote-mark { position: absolute; left: 20px; top: -28px; font: 700 100px Georgia, serif; color: rgba(184,146,42,.15); }
-.mce-social-proof { margin-top: 18px; text-align: left; }.mce-social-proof > span { font: 9px 'Space Mono', monospace; letter-spacing: .16em; color: rgba(255,255,255,.62); }
-.mce-social-proof > div { display: flex; gap: 7px; margin-top: 10px; overflow-x: auto; scrollbar-width: none; }.mce-social-proof > div::-webkit-scrollbar { display: none; }
-.mce-social-proof button,.mce-author-chips button { flex: 0 0 auto; min-height: 36px; padding: 6px 9px; border: 1px solid rgba(184,146,42,.38); background: rgba(184,146,42,.055); color: rgba(255,255,255,.82); font: 8px 'Space Mono', monospace; letter-spacing: .08em; text-transform: uppercase; }.mce-social-proof small { color: #D6AC45; }
+.mce-quote-mark { position: absolute; left: 16px; top: -8px; font: 700 60px Georgia, serif; color: rgba(184,146,42,.03); }
+.mce-social-proof { margin-top: 18px; text-align: left; }.mce-social-proof > span { display: block; margin-bottom: 12px; font: 7px 'Space Mono', monospace; letter-spacing: .14em; color: rgba(184,146,42,.27); }
+.mce-social-proof > div { display: flex; gap: 8px; margin-top: 0; overflow-x: auto; scrollbar-width: none; }.mce-social-proof > div::-webkit-scrollbar { display: none; }
+.mce-social-proof button,.mce-author-chips button { flex: 0 0 auto; min-height: 36px; padding: 6px 12px; border: 1px solid rgba(184,146,42,.38); background: rgba(184,146,42,.055); color: #F5F0E8; font: 700 9px 'Space Mono', monospace; letter-spacing: .06em; text-transform: uppercase; }.mce-social-proof small { font: 400 9px 'Space Mono', monospace; letter-spacing: .04em; color: rgba(184,146,42,.33); }
+
 .mce-keyword { color: inherit; background: rgba(184,146,42,.08); border-bottom: 1px dashed rgba(184,146,42,.44); }
 .mce-pillar-metrics { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-top: 10px; }.mce-pillar-metrics span { min-height: 48px; display: flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid rgba(255,255,255,.07); color: rgba(255,255,255,.52); font: 9px 'Space Mono', monospace; }.mce-pillar-metrics strong { color: #f5f0e8; }
 .mce-author-chips { display: flex; gap: 6px; overflow-x: auto; margin-top: 9px; }.mce-author-chips button { border-color: currentColor; }
