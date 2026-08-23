@@ -1023,23 +1023,26 @@ export default function MCEIntelligencePage() {
               <div style={{ marginTop: 20, padding: 16, borderRadius: 12, border: "1px solid rgba(255,255,255,0.06)", background: "rgba(255,255,255,0.02)" }}>
                 <div style={sectionTitle}>CONSISTÊNCIA · ÚLTIMOS 7 DIAS</div>
                 <div style={{ display: "flex", justifyContent: "space-between", gap: 6 }}>
-                  {["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"].map((d, i) => {
-                    const active = i < 5;
-                    return (
-                      <div key={d} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, flex: 1 }}>
-                        <div style={{
-                          width: "100%", aspectRatio: "1", maxWidth: 40, borderRadius: 8,
-                          display: "flex", alignItems: "center", justifyContent: "center",
-                          background: active ? "rgba(0,255,136,0.12)" : "rgba(255,255,255,0.03)",
-                          border: `1px solid ${active ? "rgba(0,255,136,0.35)" : "rgba(255,255,255,0.06)"}`,
-                          color: "#00FF88", fontSize: 12,
-                        }}>
-                          {active ? "✓" : ""}
+                  {(() => {
+                    const consistency = weekConsistency(checkins);
+                    return weekLabels.map((d, i) => {
+                      const active = consistency[i];
+                      return (
+                        <div key={d} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, flex: 1 }}>
+                          <div style={{
+                            width: "100%", aspectRatio: "1", maxWidth: 40, borderRadius: 8,
+                            display: "flex", alignItems: "center", justifyContent: "center",
+                            background: active ? "rgba(0,255,136,0.12)" : "rgba(255,255,255,0.03)",
+                            border: `1px solid ${active ? "rgba(0,255,136,0.35)" : "rgba(255,255,255,0.06)"}`,
+                            color: "#00FF88", fontSize: 12,
+                          }}>
+                            {active ? "✓" : ""}
+                          </div>
+                          <span style={{ fontFamily: MONO, fontSize: 9, color: "rgba(255,255,255,0.3)" }}>{d}</span>
                         </div>
-                        <span style={{ fontFamily: MONO, fontSize: 9, color: "rgba(255,255,255,0.3)" }}>{d}</span>
-                      </div>
-                    );
-                  })}
+                      );
+                    });
+                  })()}
                 </div>
               </div>
 
