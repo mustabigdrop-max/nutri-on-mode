@@ -276,7 +276,7 @@ export default function ReelsStudioPanel({ onBack, context: ctxSeed }: { onBack?
         subtype: template?.name || null,
         ai_content: result as any,
         files_count: file ? 1 : 0,
-        file_types: file ? [file.type.startsWith("video/") ? "video" : "image"] : [],
+        file_types: file ? [fileKind || "image"] : [],
         context,
       })
       .select("id")
