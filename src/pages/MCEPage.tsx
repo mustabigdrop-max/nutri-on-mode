@@ -707,7 +707,7 @@ export default function MCEIntelligencePage() {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1, duration: 0.6 }} style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 24, flexWrap: "wrap", marginTop: 24 }}>
             <ScoreRing value={scores.M} color="#A78BFA" size={92} label="MINDSET" />
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
-              <ScoreRing value={totalScore} color={phase.color} size={132} label="MCE SCORE" sublabel={loaded ? "SINCRONIZADO" : "CARREGANDO"} />
+              <ScoreRing value={totalScore} color={phase.color} size={132} label="MCE SCORE" sublabel={scoresLoading ? "CARREGANDO" : "MÉDIA 7 DIAS"} />
               <div style={{
                 fontFamily: MONO, fontSize: 10, letterSpacing: 2, color: phase.color,
                 border: `1px solid ${phase.color}40`, borderRadius: 6, padding: "4px 10px",
