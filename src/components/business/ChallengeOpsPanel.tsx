@@ -323,6 +323,50 @@ export default function ChallengeOpsPanel({ challenge, gymName, onChanged }: Pro
             )}
           </div>
 
+          {/* Checkpoints VIP — ajuste manual */}
+          <div className="space-y-2 rounded-md border border-primary/25 bg-primary/5 p-2.5">
+            <p className="text-[11px] uppercase tracking-wide text-muted-foreground flex items-center gap-1.5">
+              <Crown className="w-3.5 h-3.5 text-amber-500" /> VIP · ajuste manual ({vipTargets.length})
+            </p>
+            {vipCheckpoint ? (
+              <>
+                <p className="text-xs font-semibold">{vipCheckpoint.title}</p>
+                <p className="text-[11px] text-muted-foreground">{vipCheckpoint.desc}</p>
+                {vipTargets.length ? (
+                  <div className="space-y-1.5">
+                    {vipTargets.map((p: any) => (
+                      <div key={p.id} className="flex items-center justify-between gap-2 rounded bg-background/60 px-2 py-1.5">
+                        <span className="truncate text-[11px]">{p.full_name}</span>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-7 gap-1 text-[11px]"
+                          disabled={!p.whatsapp}
+                          onClick={() =>
+                            openWhatsApp(
+                              p.whatsapp,
+                              vipCheckpoint.template.replace(/\{nome\}/g, (p.full_name ?? "").split(" ")[0] || "atleta"),
+                            )
+                          }
+                        >
+                          <MessageCircle className="w-3 h-3" /> Ajustar
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-[11px] text-muted-foreground">Nenhum VIP neste desafio ainda.</p>
+                )}
+              </>
+            ) : (
+              <p className="text-[11px] text-muted-foreground">
+                Sem checkpoint VIP hoje. Ajustes manuais nos dias 7, 14, 21 e 30.
+              </p>
+            )}
+          </div>
+
+
+
           {/* Configuração */}
 
           <div className="space-y-2">
