@@ -203,11 +203,20 @@ export default function ReelsStudioPanel({ onBack, context: ctxSeed }: { onBack?
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
     if (!f) return;
-    if (f.size > 60 * 1024 * 1024) return toast.error("Arquivo acima de 60MB");
+    const kind = detectKind(f);
+    if (!kind) {
+      setFileKind(null);
+      return toast.error("Formato não suportado. Use foto (JPG, PNG, HEIC) ou vídeo (MP4, MOV, AVI).");
+    }
     setFile(f);
+    setFileKind(kind);
     setTrim(null);
-    setPreview(f.type.startsWith("image/") ? await readAsDataUrl(f) : await extractVideoFrame(f));
+    setPreview(null);
+    setError(null);
+    setPreview(kind === "image" ? await compressImage(f) : await extractVideoFrame(f));
   };
+
+  const clearFile = () => { setFile(null); setFileKind(null); setPreview(null); setTrim(null); };
 
   const handleGenerate = async () => {
     if (!file || !template || loading) return;
@@ -221,9 +230,10 @@ export default function ReelsStudioPanel({ onBack, context: ctxSeed }: { onBack?
     }, 2500);
 
     try {
-      const isVideo = file.type.startsWith("video/");
-      const image = isVideo ? preview ?? (await extractVideoFrame(file)) : await readAsDataUrl(file);
+      const isVideo = fileKind === "video";
+      const image = isVideo ? preview ?? (await extractVideoFrame(file)) : preview ?? (await compressImage(file));
       if (!image) throw new Error("Não consegui extrair um frame desse vídeo. Sobe uma foto ou outro arquivo.");
+
 
       const trimContext = trim
         ? `${context ? context + "\n" : ""}Trecho do vídeo selecionado: ${trim.start}s até ${trim.end}s (${trim.duration}s de duração). Ajuste o roteiro para caber nesse tempo.`
