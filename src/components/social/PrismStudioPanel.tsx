@@ -159,7 +159,12 @@ export default function PrismStudioPanel({
           mix: mode.id === "pack_semanal" ? mixLabel : undefined,
           products: mode.id === "pack_semanal" ? products : undefined,
           images: files.filter((f) => f.kind === "image").map((f) => f.dataUrl).filter(Boolean),
-          videos: files.filter((f) => f.kind === "video").map((f) => ({ name: f.name, duration: f.duration, frames: f.frames })),
+          videos: files.filter((f) => f.kind === "video").map((f) => ({
+            name: f.name,
+            duration: f.duration,
+            frames: f.frames,
+            trim: f.trim ? { start: Math.round(f.trim.start), end: Math.round(f.trim.end), duration: Math.round(f.trim.end - f.trim.start) } : undefined,
+          })),
         },
       });
       if (error) throw new Error(error.message);
