@@ -70,7 +70,7 @@ export default function MceDailyCheckin({ onSubmit, onClose }: { onSubmit?: Chec
   const preview = useMemo(() => dailyScoresFromCheckin(values), [values]);
   const todayKey = useMemo(() => dayKey(new Date()), []);
 
-  const update = (key: keyof CheckinRow, val: number) => {
+  const update = (key: keyof NumericCheckin, val: number) => {
     setValues((prev) => ({ ...prev, [key]: val }));
     setSaved(false);
   };
