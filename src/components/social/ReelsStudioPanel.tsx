@@ -404,6 +404,48 @@ export default function ReelsStudioPanel({ onBack, context: ctxSeed }: { onBack?
             </button>
           )}
 
+          <div style={{ display: "flex", gap: 8, marginBottom: 12, flexWrap: "wrap" }}>
+            <button
+              onClick={() => { navigator.clipboard.writeText(buildFullCaption(result, { templateName: template?.name, captionIndex: activeCaption })); toast.success("Legenda completa copiada"); }}
+              style={{ flex: "1 1 200px", padding: "12px 0", background: `${C.gold}14`, border: `1px solid ${C.gold}55`, ...fM, fontSize: FONT.base, color: C.gold, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
+            >
+              <Copy size={14} /> COPIAR LEGENDA COMPLETA
+            </button>
+            <button
+              onClick={() => { downloadTxt(`reel-${(result.hook || "nutrion").slice(0, 30).replace(/[^\w\s-]/g, "").trim().replace(/\s+/g, "-").toLowerCase()}`, buildFullCaption(result, { templateName: template?.name, captionIndex: activeCaption })); toast.success("TXT baixado"); }}
+              style={{ flex: "1 1 200px", padding: "12px 0", background: "transparent", border: `1px solid ${C.border}`, ...fM, fontSize: FONT.base, color: C.textMid, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
+            >
+              <FileText size={14} /> EXPORTAR TXT
+            </button>
+          </div>
+
+          <div style={{ display: "flex", gap: 6, marginBottom: 14, flexWrap: "wrap" }}>
+            {([
+              { id: "pacote" as const, label: "PACOTE", Icon: Download, color: C.gold },
+              { id: "stories" as const, label: "STORIES", Icon: Layers, color: C.purple },
+              { id: "qualidade" as const, label: "QUALIDADE", Icon: ShieldCheck, color: C.green },
+              { id: "variacoes" as const, label: "VARIAÇÕES", Icon: TrendingUp, color: C.cyan },
+            ]).map((t) => {
+              const active = resultTab === t.id;
+              return (
+                <button
+                  key={t.id}
+                  onClick={() => setResultTab(t.id)}
+                  style={{ flex: "1 1 120px", padding: "10px 0", background: active ? `${t.color}18` : "transparent", border: `1px solid ${active ? `${t.color}66` : C.border}`, ...fM, fontSize: FONT.sm, color: active ? t.color : C.textMid, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
+                >
+                  <t.Icon size={13} /> {t.label}
+                </button>
+              );
+            })}
+          </div>
+
+          {resultTab === "stories" && <ReelsStoriesPanel result={result} accent={template?.color || C.gold} />}
+          {resultTab === "qualidade" && <ReelsQualityPanel result={result} />}
+          {resultTab === "variacoes" && <ReelsVariationsPanel result={result} analysisId={result.id} />}
+
+          {resultTab === "pacote" && (<>
+
+
           {result.analise_visual && (
             <div style={{ background: C.cyanBg, border: `1px solid ${C.cyan}22`, padding: 14, marginBottom: 10 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
