@@ -11,6 +11,8 @@ import ReelsStoriesPanel from "./ReelsStoriesPanel";
 import ReelsQualityPanel from "./ReelsQualityPanel";
 import ReelsVariationsPanel from "./ReelsVariationsPanel";
 import ReelsCalendar30 from "./ReelsCalendar30";
+import ReelsSyncPanel from "./ReelsSyncPanel";
+
 import ReelsVideoTrimmer, { type TrimInfo } from "./ReelsVideoTrimmer";
 
 
