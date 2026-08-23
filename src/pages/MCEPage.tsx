@@ -25,6 +25,8 @@ import {
 import { MCE_GUIDE_MARKDOWN } from "@/data/mceGuide";
 import { MCE_PROTOCOL_24H_MARKDOWN } from "@/data/mceProtocol24h";
 import Protocol24hChecklist from "@/components/mce/Protocol24hChecklist";
+import MceSystemPanel from "@/components/mce/MceSystemPanel";
+
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
@@ -961,6 +963,11 @@ export default function MCEIntelligencePage() {
           {tab === "progresso" && (
             <div>
               <div style={sectionTitle}>PROGRESSO MCE · OVERVIEW</div>
+
+              <div style={{ marginBottom: 20 }}>
+                <MceSystemPanel scores={scores} />
+              </div>
+
 
               <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
                 {(["M", "C", "E"] as PillarKey[]).map((k) => {
