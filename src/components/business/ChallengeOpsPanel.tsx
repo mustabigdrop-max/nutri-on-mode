@@ -13,7 +13,7 @@ import {
   AlarmClock, BellRing, Download, FileText, History, Loader2, MessageCircle, Send, Settings2,
 } from "lucide-react";
 import { openWhatsApp } from "@/lib/gymBusiness";
-import { challengeDay } from "@/lib/challenge";
+import { CHALLENGE_DAYS, TRIAL_DAYS, challengeDay } from "@/lib/challenge";
 import {
   DEFAULT_CHECKIN_TEMPLATE, DEFAULT_ESCALATION_HOURS, DEFAULT_ESCALATION_TEMPLATES,
   DEFAULT_MEALS_TEMPLATE, computeEscalationQueue, computeReminderQueue, dueEscalationLevel,
@@ -239,7 +239,7 @@ export default function ChallengeOpsPanel({ challenge, gymName, onChanged }: Pro
     startDate: new Date(`${challenge.start_date}T12:00:00`).toLocaleDateString("pt-BR"),
     endDate: new Date(`${challenge.end_date}T12:00:00`).toLocaleDateString("pt-BR"),
     day,
-    totalDays: 90,
+    totalDays: CHALLENGE_DAYS,
     periodLabel: range.label,
     periodStart: range.start,
     periodEnd: range.end,
