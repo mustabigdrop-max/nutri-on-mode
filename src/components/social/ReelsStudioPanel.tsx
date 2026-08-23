@@ -1,11 +1,17 @@
 import { useEffect, useRef, useState } from "react";
 import {
-  AlertTriangle, BookOpen, Briefcase, Camera, Check, ChevronRight, Clock, Copy,
-  Crown, Dumbbell, Eye, Flame, Hash, Heart, History, Image, Music, RefreshCw,
-  Sparkles, Target, Trash2, Type, Upload, Zap,
+  AlertTriangle, BookOpen, Briefcase, CalendarDays, Camera, Check, ChevronRight, Clock, Copy,
+  Crown, Download, Dumbbell, Eye, FileText, Flame, Hash, Heart, History, Image, Layers, Music, RefreshCw,
+  ShieldCheck, Sparkles, Target, TrendingUp, Trash2, Type, Upload, Zap,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { buildFullCaption, downloadTxt } from "@/lib/reelsExport";
+import ReelsStoriesPanel from "./ReelsStoriesPanel";
+import ReelsQualityPanel from "./ReelsQualityPanel";
+import ReelsVariationsPanel from "./ReelsVariationsPanel";
+import ReelsCalendar30 from "./ReelsCalendar30";
+
 
 const C = {
   bg: "#020205", card: "#080810", border: "#B8922A22",
