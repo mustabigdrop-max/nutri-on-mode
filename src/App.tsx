@@ -115,6 +115,7 @@ const BiomechanicsVaultPage = lazy(() => import("./pages/BiomechanicsVaultPage")
 const MetabolicONPage = lazy(() => import("./pages/MetabolicONPage"));
 const MCEPage = lazy(() => import("./pages/MCEPage"));
 const MCEBusinessPage = lazy(() => import("./pages/MCEBusinessPage"));
+const GymPartnerDashboardPage = lazy(() => import("./pages/GymPartnerDashboardPage"));
 const GymChallengesPage = lazy(() => import("./pages/GymChallengesPage"));
 const BusinessChallengesPage = lazy(() => import("./pages/BusinessChallengesPage"));
 const AudioAcademyPage = lazy(() => import("./pages/AudioAcademyPage"));
