@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import { Camera, Pause, Play, RefreshCw, Scissors } from "lucide-react";
+import { Camera, Download, Pause, Play, RefreshCw, Repeat, Scissors, Waves } from "lucide-react";
+import { toast } from "sonner";
+import { analyzeVideoEnergy, downloadBlob, exportClip, type EnergyAnalysis } from "@/lib/reelsClip";
+
 
 const C = {
   bg: "#020205", card: "#080810", border: "#B8922A22",
