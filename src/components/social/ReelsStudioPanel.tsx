@@ -192,9 +192,17 @@ export default function ReelsStudioPanel({ onBack, context: ctxSeed }: { onBack?
   const saveToHistory = async () => {
     if (!result || result.id || saving) return;
     setSaving(true);
+    const { data: userData } = await supabase.auth.getUser();
+    const coach_id = userData.user?.id;
+    if (!coach_id) {
+      toast.error("Você precisa estar logado");
+      setSaving(false);
+      return;
+    }
     const { data, error } = await supabase
       .from("prism_analyses")
       .insert({
+        coach_id,
         mode: "reels_studio",
         subtype: template?.name || null,
         ai_content: result as any,
