@@ -169,19 +169,38 @@ export default function ReelsVideoTrimmer({
             >
               {playing ? <Pause size={15} /> : <Play size={15} />}
             </button>
+            <button
+              onClick={() => setLoop((v) => !v)}
+              aria-pressed={loop}
+              title="Reproduzir o trecho em loop contínuo"
+              style={{ background: loop ? `${C.cyan}22` : "transparent", border: `1px solid ${loop ? C.cyan : C.border}`, color: loop ? C.cyan : C.textMid, padding: 8, cursor: "pointer", display: "flex" }}
+            >
+              <Repeat size={15} />
+            </button>
             <span style={{ ...fM, fontSize: 12, color: C.textMid, minWidth: 42 }}>{formatTime(current)}</span>
             <div
               onClick={(e) => {
                 const r = e.currentTarget.getBoundingClientRect();
                 seek(((e.clientX - r.left) / r.width) * duration);
               }}
-              style={{ flex: 1, height: 8, background: "#141420", position: "relative", cursor: "pointer" }}
+              style={{ flex: 1, height: 26, background: "#141420", position: "relative", cursor: "pointer" }}
             >
+              {energy && (
+                <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "flex-end", gap: 1, opacity: 0.5, pointerEvents: "none" }}>
+                  {energy.envelope.map((v, i) => (
+                    <div key={i} style={{ flex: 1, height: `${Math.max(6, v * 100)}%`, background: C.cyan }} />
+                  ))}
+                </div>
+              )}
               <div style={{ position: "absolute", left: `${duration ? (start / duration) * 100 : 0}%`, width: `${duration ? (cut / duration) * 100 : 0}%`, top: 0, bottom: 0, background: `${C.green}33`, border: `1px solid ${C.green}66` }} />
-              <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: `${pct}%`, background: `${C.gold}88` }} />
+              <div style={{ position: "absolute", left: `${pct}%`, top: 0, bottom: 0, width: 2, background: C.gold }} />
             </div>
             <span style={{ ...fM, fontSize: 12, color: C.textMid, minWidth: 42 }}>{formatTime(duration)}</span>
           </div>
+          <div style={{ ...fM, fontSize: 11, color: loop ? C.cyan : C.textMuted, marginTop: 6 }}>
+            {loop ? "LOOP CONTÍNUO ATIVO · o trecho repete pra você conferir a transição" : "Loop desligado"}
+          </div>
+
 
           <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 14, marginBottom: 8 }}>
             <Scissors size={14} color={C.green} />
