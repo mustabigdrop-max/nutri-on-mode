@@ -2,13 +2,13 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { CheckCircle2, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import type { PillarKey } from "@/data/mceData";
 import {
   CHECKIN_FIELDS,
   dailyScoresFromCheckin,
   dayKey,
   rollingScores,
   type CheckinRow,
-  type PillarKey,
 } from "@/lib/mceSystem";
 
 const MONO = "'Space Mono', ui-monospace, monospace";
