@@ -127,7 +127,7 @@ export default function ReelsStudioPanel({ onBack, context: ctxSeed }: { onBack?
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [showHistory, setShowHistory] = useState(false);
   const [showCalendar, setShowCalendar] = useState(false);
-  const [resultTab, setResultTab] = useState<"pacote" | "stories" | "qualidade" | "variacoes">("pacote");
+  const [resultTab, setResultTab] = useState<"pacote" | "sincronia" | "stories" | "qualidade" | "variacoes">("pacote");
   const [saving, setSaving] = useState(false);
 
   const fileRef = useRef<HTMLInputElement>(null);
