@@ -997,6 +997,9 @@ const SocialOnModulePage = () => {
           <TabsContent value="editor" className="mt-4">
             <VideoTextEditorPanel />
           </TabsContent>
+          <TabsContent value="pro" className="mt-4">
+            <SocialOnProPanel />
+          </TabsContent>
         </Tabs>
       </main>
     </div>
