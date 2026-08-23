@@ -288,6 +288,7 @@ const App = () => (
             <Route path="/metabolicon" element={<ProtectedRoute><MetabolicONPage /></ProtectedRoute>} />
             <Route path="/mce" element={<ProtectedRoute><MCEPage /></ProtectedRoute>} />
             <Route path="/mce/business" element={<ProtectedRoute><MCEBusinessPage /></ProtectedRoute>} />
+            <Route path="/mce/academia" element={<ProtectedRoute><GymPartnerDashboardPage /></ProtectedRoute>} />
             <Route path="/mce/business/challenges" element={<ProtectedRoute><BusinessChallengesPage /></ProtectedRoute>} />
             <Route path="/audio" element={<ProtectedRoute><AudioAcademyPage /></ProtectedRoute>} />
             <Route path="/dr-nexus" element={<ProtectedRoute><DrNexusPage /></ProtectedRoute>} />
