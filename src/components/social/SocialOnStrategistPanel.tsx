@@ -281,6 +281,7 @@ export default function SocialOnStrategistPanel() {
   const vidRef = useRef<HTMLVideoElement | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const animRef = useRef<number | null>(null);
+  const modeRef = useRef<"auto" | "editor">("auto");
 
 
   const versions = data?.versoes || [];
