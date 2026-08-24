@@ -1000,6 +1000,10 @@ const SocialOnModulePage = () => {
           <TabsContent value="pro" className="mt-4">
             <SocialOnProPanel />
           </TabsContent>
+          <TabsContent value="um_toque" className="mt-4">
+            <SocialOnQuickPanel />
+          </TabsContent>
+
         </Tabs>
       </main>
     </div>
