@@ -38,18 +38,27 @@ type ProResult = {
   self_comment?: string; musica?: string; horario?: string; stories?: string[];
 };
 
-const CopyBtn = ({ text, label = "COPIAR" }: { text: string; label?: string }) => {
+const CopyBtn = ({ text, label = "COPIAR", big }: { text: string; label?: string; big?: boolean }) => {
   const [ok, setOk] = useState(false);
   return (
     <button
       type="button"
       onClick={() => { navigator.clipboard.writeText(text).catch(() => {}); setOk(true); setTimeout(() => setOk(false), 2000); }}
-      style={{ background: "none", border: "none", cursor: "pointer", ...fM, fontSize: 10, color: ok ? C.green : C.textMid, display: "flex", alignItems: "center", gap: 4 }}
+      style={big
+        ? {
+            width: "100%", padding: "11px 0", cursor: "pointer",
+            background: ok ? `${C.green}15` : C.goldBg,
+            border: `1px solid ${ok ? `${C.green}44` : C.border}`,
+            ...fT, fontSize: 13, color: ok ? C.green : C.gold,
+            display: "flex", alignItems: "center", justifyContent: "center", gap: 6, transition: "all 0.2s",
+          }
+        : { background: "none", border: "none", cursor: "pointer", ...fM, fontSize: 10, color: ok ? C.green : C.textMid, display: "flex", alignItems: "center", gap: 4 }}
     >
-      {ok ? <Check size={11} /> : <Copy size={11} />} {ok ? "COPIADO" : label}
+      {ok ? <Check size={big ? 14 : 11} /> : <Copy size={big ? 14 : 11} />} {ok ? "COPIADO" : label}
     </button>
   );
 };
+
 
 function compress(file: File, max = 1024): Promise<{ dataUrl: string } | null> {
   return new Promise((resolve) => {
