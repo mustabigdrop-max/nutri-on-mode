@@ -503,7 +503,11 @@ export default function MCEIntelligencePage() {
   });
   const reduceMotion = useReducedMotion();
 
-  const { scores, checkins, loading: scoresLoading, refresh: refreshScores, checkedInToday } = useRollingMceScores();
+  const { scores: rolledScores, checkins, loading: scoresLoading, refresh: refreshScores, checkedInToday } = useRollingMceScores();
+  // Override local: enquanto o usuário mexe no diagnóstico, os anéis respondem na hora.
+  const [localScores, setLocalScores] = useState<Record<PillarKey, number> | null>(null);
+  const scores = localScores ?? rolledScores;
+
 
   useEffect(() => {
     if (!presentationMode || reduceMotion) return;
