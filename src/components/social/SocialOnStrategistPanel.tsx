@@ -258,7 +258,6 @@ const CopyBig = ({ text, label }: { text: string; label: string }) => {
 };
 
 export default function SocialOnStrategistPanel() {
-  const [mode, setMode] = useState<"auto" | "editor">("auto");
   const [phase, setPhase] = useState<"upload" | "loading" | "done" | "editor">("upload");
   const [file, setFile] = useState<File | null>(null);
   const [isVideo, setIsVideo] = useState(false);
@@ -514,7 +513,7 @@ export default function SocialOnStrategistPanel() {
             <button
               key={t.key}
               type="button"
-              onClick={() => { setMode(t.key); modeRef.current = t.key; fileRef.current?.click(); }}
+              onClick={() => { modeRef.current = t.key; fileRef.current?.click(); }}
               style={{
                 width: "100%", textAlign: "left", background: "transparent",
                 border: `1px solid ${t.color}22`, borderLeft: `3px solid ${t.color}`,
