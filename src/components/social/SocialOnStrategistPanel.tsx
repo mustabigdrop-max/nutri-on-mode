@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   BarChart3, Brain, Camera, Check, ChevronLeft, ChevronRight, Copy, Download, Hash,
-  Lightbulb, Pause, Play, RefreshCw, Share2, Target, TrendingUp, Type, Video, X,
+  Layers, Lightbulb, Pause, Play, RefreshCw, Share2, Smartphone, Target, TrendingUp,
+  Type, Video, X, Zap,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -257,7 +258,6 @@ const CopyBig = ({ text, label }: { text: string; label: string }) => {
 };
 
 export default function SocialOnStrategistPanel() {
-  const [mode, setMode] = useState<"auto" | "editor">("auto");
   const [phase, setPhase] = useState<"upload" | "loading" | "done" | "editor">("upload");
   const [file, setFile] = useState<File | null>(null);
   const [isVideo, setIsVideo] = useState(false);
@@ -280,6 +280,7 @@ export default function SocialOnStrategistPanel() {
   const vidRef = useRef<HTMLVideoElement | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const animRef = useRef<number | null>(null);
+  const modeRef = useRef<"auto" | "editor">("auto");
 
 
   const versions = data?.versoes || [];
@@ -362,12 +363,12 @@ export default function SocialOnStrategistPanel() {
       const img = new window.Image();
       img.onload = () => {
         setMediaEl(img);
-        if (mode === "auto") void generate(f, url, false);
+        if (modeRef.current === "auto") void generate(f, url, false);
         else setPhase("editor");
       };
       img.onerror = () => setError("Não consegui ler a imagem.");
       img.src = url;
-    } else if (mode === "auto") {
+    } else if (modeRef.current === "auto") {
       void generate(f, url, true);
     } else {
       frameFromUrl(url)
@@ -471,56 +472,97 @@ export default function SocialOnStrategistPanel() {
 
       {phase === "upload" && (
         <div>
-          <div style={{ display: "flex", gap: 6, marginBottom: 10 }}>
-            <button
-              onClick={() => setMode("auto")}
-              style={{
-                flex: 1, padding: "12px 0", cursor: "pointer",
-                background: mode === "auto" ? `${C.purple}12` : "transparent",
-                border: `1px solid ${mode === "auto" ? `${C.purple}66` : C.border}`,
-                display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
-              }}
-            >
-              <Brain size={16} color={C.purple} />
-              <span style={{ ...fT, fontSize: 14, color: mode === "auto" ? C.text : C.textMid }}>ESTRATEGISTA</span>
-              <span style={{ ...fM, fontSize: 11, color: C.textMuted }}>Sobe e pronto · 4 versões</span>
-            </button>
-            <button
-              onClick={() => setMode("editor")}
-              style={{
-                flex: 1, padding: "12px 0", cursor: "pointer",
-                background: mode === "editor" ? `${C.cyan}12` : "transparent",
-                border: `1px solid ${mode === "editor" ? `${C.cyan}66` : C.border}`,
-                display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
-              }}
-            >
-              <Type size={16} color={C.cyan} />
-              <span style={{ ...fT, fontSize: 14, color: mode === "editor" ? C.text : C.textMid }}>EDITOR</span>
-              <span style={{ ...fM, fontSize: 11, color: C.textMuted }}>Texto no vídeo · Fisheye</span>
-            </button>
-          </div>
-
-          <div
-            onClick={() => fileRef.current?.click()}
-            style={{ border: `2px dashed ${mode === "auto" ? `${C.purple}44` : `${C.cyan}44`}`, padding: "44px 16px", textAlign: "center", cursor: "pointer" }}
-          >
-            <Camera size={28} color={mode === "auto" ? C.purple : C.cyan} />
-            <div style={{ ...fT, fontSize: 20, color: C.text, marginTop: 10 }}>Sobe foto ou vídeo</div>
-            <div style={{ ...fM, fontSize: 12, color: C.textMid, marginTop: 4 }}>Qualquer formato · salva nas fotos</div>
-            <div style={{ ...fM, fontSize: 12, color: C.textMuted, marginTop: 2 }}>
-              {mode === "auto"
-                ? "O estrategista decide o formato, entrega 4 versões e a direção do que criar depois"
-                : "Você escolhe o estilo do texto e salva direto no celular"}
+          <div style={{ border: `1px solid ${C.border}`, borderLeft: `3px solid ${C.gold}`, background: C.goldBg, padding: "16px 14px", marginBottom: 10 }}>
+            <div style={{ ...fM, fontSize: 11, color: C.gold, letterSpacing: "0.18em" }}>CONTENT INTELLIGENCE</div>
+            <div style={{ ...fT, fontSize: 28, color: C.text, marginTop: 4 }}>Seu conteúdo. Pronto.</div>
+            <div style={{ ...fM, fontSize: 12, color: C.textMid, marginTop: 6, lineHeight: 1.6 }}>
+              Sobe foto ou vídeo e sai com tudo pronto pra postar.<br />
+              Personal, nutricionista, corredor, crossfitter, influencer.
             </div>
           </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 4, marginBottom: 14 }}>
+            {[
+              { icon: Layers, label: "ESTILOS", value: String(STYLES.length), color: C.gold },
+              { icon: Brain, label: "PRISM", value: "ON", color: C.purple },
+              { icon: Zap, label: "FORMATOS", value: "4", color: C.cyan },
+              { icon: Smartphone, label: "SALVAR", value: "1 TAP", color: C.green },
+            ].map((s) => (
+              <div key={s.label} style={{ border: `1px solid ${C.border}`, padding: "10px 4px", textAlign: "center" }}>
+                <s.icon size={14} color={s.color} />
+                <div style={{ ...fT, fontSize: 16, color: C.text, marginTop: 4 }}>{s.value}</div>
+                <div style={{ ...fM, fontSize: 10, color: C.textMid, letterSpacing: "0.12em" }}>{s.label}</div>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ ...fM, fontSize: 11, color: C.textMuted, letterSpacing: "0.18em", marginBottom: 6 }}>FERRAMENTAS</div>
+
+          {[
+            {
+              key: "auto" as const, icon: Brain, color: C.purple, title: "Estrategista",
+              desc: "Sobe foto/vídeo → 4 versões prontas com texto, legenda, hashtags + direção estratégica do que criar depois",
+              tags: ["AUTO-DETECTA NICHO", "4 VERSÕES", "FUNIL COMPLETO"],
+            },
+            {
+              key: "editor" as const, icon: Type, color: C.cyan, title: "Editor",
+              desc: "Texto sobre foto/vídeo com 10 estilos visuais. Fisheye, neon, cinema, street, tela preta. Salva direto nas fotos.",
+              tags: ["FISHEYE", "NEON", "CINEMA", "10 ESTILOS"],
+            },
+          ].map((t) => (
+            <button
+              key={t.key}
+              type="button"
+              onClick={() => { modeRef.current = t.key; fileRef.current?.click(); }}
+              style={{
+                width: "100%", textAlign: "left", background: "transparent",
+                border: `1px solid ${t.color}22`, borderLeft: `3px solid ${t.color}`,
+                padding: "16px 14px", cursor: "pointer", marginBottom: 4,
+                display: "flex", gap: 12, alignItems: "flex-start",
+              }}
+            >
+              <t.icon size={20} color={t.color} style={{ flexShrink: 0, marginTop: 2 }} />
+              <span style={{ display: "block" }}>
+                <span style={{ ...fT, fontSize: 20, color: C.text, display: "block" }}>{t.title}</span>
+                <span style={{ ...fM, fontSize: 12, color: C.textMid, display: "block", marginTop: 4, lineHeight: 1.55 }}>{t.desc}</span>
+                <span style={{ display: "flex", flexWrap: "wrap", gap: 4, marginTop: 8 }}>
+                  {t.tags.map((tag) => (
+                    <span key={tag} style={{ ...fM, fontSize: 10, color: t.color, border: `1px solid ${t.color}33`, padding: "2px 6px" }}>{tag}</span>
+                  ))}
+                </span>
+              </span>
+            </button>
+          ))}
+
+          <div style={{ ...fM, fontSize: 11, color: C.textMuted, letterSpacing: "0.18em", margin: "14px 0 6px" }}>ESTILOS DISPONÍVEIS</div>
+          <div style={{ display: "flex", gap: 4, overflowX: "auto", paddingBottom: 4 }}>
+            {STYLES.map((s) => (
+              <div key={s.name} style={{ minWidth: 74, border: `1px solid ${C.border}`, padding: "10px 6px", textAlign: "center", flexShrink: 0 }}>
+                <div style={{ fontFamily: s.font, fontSize: 20, color: s.color, textShadow: s.glow ? `0 0 10px ${s.glow}` : undefined }}>Aa</div>
+                <div style={{ ...fM, fontSize: 9, color: C.textMid, marginTop: 4 }}>{s.name}</div>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ ...fM, fontSize: 11, color: C.textMuted, letterSpacing: "0.18em", margin: "14px 0 6px" }}>PRA QUEM</div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+            {["Personal Trainer", "Nutricionista", "Corredor", "CrossFit", "Bodybuilder", "Influencer Fitness", "Coach", "Atleta", "Fisioterapeuta", "Dono de Academia"].map((t) => (
+              <span key={t} style={{ ...fM, fontSize: 11, color: C.textMid, border: `1px solid ${C.border}`, padding: "3px 8px" }}>{t}</span>
+            ))}
+          </div>
+
           {error && (
             <div style={{ marginTop: 10, ...fM, fontSize: 12, color: C.red, border: `1px solid ${C.red}44`, padding: 8 }}>{error}</div>
           )}
-          <div style={{ ...fM, fontSize: 11, color: C.textMuted, letterSpacing: "0.14em", textAlign: "center", marginTop: 14 }}>
-            SOCIAL ON · NUTRION · @DIOGO.MELL0
+          <div style={{ textAlign: "center", marginTop: 16 }}>
+            <div style={{ ...fT, fontSize: 16, color: C.gold }}>Transformação é sistema.</div>
+            <div style={{ ...fM, fontSize: 11, color: C.textMuted, letterSpacing: "0.14em", marginTop: 2 }}>
+              SOCIAL ON · NUTRION · @DIOGO.MELL0
+            </div>
           </div>
         </div>
       )}
+
 
       {phase === "editor" && mediaEl && (
         <div style={{ display: "grid", gap: 10 }}>
