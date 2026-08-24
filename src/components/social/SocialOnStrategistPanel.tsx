@@ -69,7 +69,7 @@ function drawResult(
   ctx.fillStyle = "#000";
   ctx.fillRect(0, 0, w, h);
 
-  if (media) {
+  if (media && !style.black) {
     const mw = media instanceof HTMLVideoElement ? media.videoWidth : media.width;
     const mh = media instanceof HTMLVideoElement ? media.videoHeight : media.height;
     if (mw && mh) {
@@ -77,7 +77,40 @@ function drawResult(
       let dw: number, dh: number, dx: number, dy: number;
       if (vr > cr) { dh = h; dw = h * vr; dx = (w - dw) / 2; dy = 0; }
       else { dw = w; dh = w / vr; dx = 0; dy = (h - dh) / 2; }
-      ctx.drawImage(media, dx, dy, dw, dh);
+      if (style.fisheye) {
+        const tmp = document.createElement("canvas");
+        tmp.width = w; tmp.height = h;
+        const tc = tmp.getContext("2d");
+        if (tc) {
+          tc.drawImage(media, dx, dy, dw, dh);
+          const src = tc.getImageData(0, 0, w, h);
+          const out = ctx.createImageData(w, h);
+          const cx = w / 2, cy = h / 2;
+          const k = 0.00000035;
+          for (let y2 = 0; y2 < h; y2++) {
+            for (let x2 = 0; x2 < w; x2++) {
+              const ox = x2 - cx, oy = y2 - cy;
+              const r = Math.sqrt(ox * ox + oy * oy) || 1;
+              const nr = r * (1 + k * r * r);
+              const sx = Math.round(cx + (ox * nr) / r);
+              const sy = Math.round(cy + (oy * nr) / r);
+              const di = (y2 * w + x2) * 4;
+              if (sx >= 0 && sx < w && sy >= 0 && sy < h) {
+                const si = (sy * w + sx) * 4;
+                out.data[di] = src.data[si];
+                out.data[di + 1] = src.data[si + 1];
+                out.data[di + 2] = src.data[si + 2];
+                out.data[di + 3] = src.data[si + 3];
+              } else {
+                out.data[di + 3] = 255;
+              }
+            }
+          }
+          ctx.putImageData(out, 0, 0);
+        }
+      } else {
+        ctx.drawImage(media, dx, dy, dw, dh);
+      }
     }
   }
 
@@ -92,18 +125,26 @@ function drawResult(
   const scale = w / 400;
   const fs = style.size * scale;
   const lh = fs * 1.3;
+  ctx.save();
+  if (style.skew) {
+    ctx.translate(w / 2, h * style.y);
+    ctx.transform(1, 0, Math.tan((style.skew * Math.PI) / 180), 1, 0, 0);
+    ctx.translate(-w / 2, -h * style.y);
+  }
   ctx.font = `bold ${fs}px ${style.font}`;
-  ctx.textAlign = "center";
+  ctx.textAlign = style.align || "center";
   (ctx as CanvasRenderingContext2D & { letterSpacing?: string }).letterSpacing = `${(style.spacing || 0) * scale}px`;
   const baseY = h * style.y - (lines.length * lh) / 2 + fs;
+  const tx = style.align === "left" ? w * (style.x ?? 0.06) : w / 2;
 
   lines.forEach((line, i) => {
     const ly = baseY + i * lh;
-    const tx = w / 2;
     if (style.bg) {
       const m = ctx.measureText(line);
+      const p = style.pad || 8;
+      const bx = style.align === "left" ? tx - p : tx - m.width / 2 - p;
       ctx.fillStyle = style.bg;
-      ctx.fillRect(tx - m.width / 2 - (style.pad || 8), ly - fs + 2, m.width + (style.pad || 8) * 2, fs + (style.pad || 8));
+      ctx.fillRect(bx, ly - fs + 2, m.width + p * 2, fs + p);
     }
     ctx.save();
     if (style.glow) {
@@ -130,7 +171,30 @@ function drawResult(
     ctx.fillText(line, tx, ly);
     ctx.restore();
   });
+  ctx.restore();
 }
+
+/** Salva no celular: Web Share (galeria/fotos) com fallback pra download. */
+async function saveToPhone(canvas: HTMLCanvasElement, filename: string, forceShare = false) {
+  const blob = await new Promise<Blob | null>((r) => canvas.toBlob((b) => r(b), "image/png"));
+  if (!blob) return false;
+  const file = new File([blob], filename, { type: "image/png" });
+  const nav = navigator as Navigator & { canShare?: (d: unknown) => boolean };
+  if (nav.canShare?.({ files: [file] })) {
+    try {
+      await navigator.share({ files: [file], title: "SOCIAL ON" });
+      return true;
+    } catch { if (forceShare) return false; }
+  }
+  if (forceShare) return false;
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  return true;
+}
+
 
 function compress(file: File, max = 1024): Promise<string | null> {
   return new Promise((resolve) => {
