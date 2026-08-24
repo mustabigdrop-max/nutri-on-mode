@@ -507,7 +507,7 @@ REGRAS:
 - 100% português brasileiro, direto, sem enrolação. "Transformação é sistema."
 - NUNCA use "jornada", "mindful", "empoderamento", "desbloqueie seu potencial".
 - Nunca se apresente como IA nem como sistema: a voz é do Diogo Mello.
-- "estilo" é um número 0-5 (0=IMPACTO, 1=GOLD, 2=NEON, 3=LEGENDA, 4=CINEMA, 5=EMOCIONAL).
+- "estilo" é um número 0-9 (0=IMPACTO, 1=GOLD, 2=NEON, 3=LEGENDA, 4=CINEMA, 5=EMOCIONAL, 6=FISHEYE, 7=STREET, 8=TELA PRETA, 9=MINIMAL).
 - Cada versão tem propósito DIFERENTE no funil (TOFU/MOFU/BOFU) e legendas DISTINTAS entre si.
 - "texto_video" tem no máximo 6 palavras.
 
