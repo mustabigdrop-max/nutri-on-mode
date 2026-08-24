@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ArrowRight, Brain, Activity, Zap, Target, CheckCircle2 } from "lucide-react";
 import type { PillarKey } from "@/data/mceData";
 import { supabase } from "@/integrations/supabase/client";
