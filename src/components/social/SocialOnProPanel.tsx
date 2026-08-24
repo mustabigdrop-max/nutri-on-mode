@@ -518,37 +518,32 @@ export default function SocialOnProPanel() {
           </div>
 
           <div style={{ border: `1px solid ${C.border}`, padding: 12, marginBottom: 8 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-              <span style={{ ...fM, fontSize: 11, color: C.gold, letterSpacing: "0.1em" }}>LEGENDA PRONTA</span>
-              <CopyBtn text={data.legenda || ""} />
-            </div>
-            <div style={{ ...fM, fontSize: 13, color: C.textMid, lineHeight: 1.8, whiteSpace: "pre-line", maxHeight: 220, overflow: "auto" }}>{data.legenda}</div>
+            <div style={{ ...fM, fontSize: 11, color: C.gold, letterSpacing: "0.1em", marginBottom: 6 }}>LEGENDA PRONTA</div>
+            <div style={{ ...fM, fontSize: 13, color: C.textMid, lineHeight: 1.8, whiteSpace: "pre-line", maxHeight: 220, overflow: "auto", marginBottom: 8 }}>{data.legenda}</div>
+            <CopyBtn text={data.legenda || ""} label="COPIAR LEGENDA" big />
           </div>
 
           {!!data.hashtags?.length && (
             <div style={{ border: `1px solid ${C.border}`, padding: 12, marginBottom: 8 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-                <span style={{ ...fM, fontSize: 11, color: C.textMuted }}>HASHTAGS ({data.hashtags.length})</span>
-                <CopyBtn text={data.hashtags.join(" ")} />
-              </div>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+              <div style={{ ...fM, fontSize: 11, color: C.textMuted, marginBottom: 6 }}>HASHTAGS ({data.hashtags.length})</div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginBottom: 8 }}>
                 {data.hashtags.map((h, i) => (
                   <span key={i} style={{ ...fM, fontSize: 11, color: C.cyan, background: C.cyanBg, padding: "2px 6px" }}>{h}</span>
                 ))}
               </div>
+              <CopyBtn text={data.hashtags.join(" ")} label="COPIAR HASHTAGS" big />
             </div>
           )}
 
           <div style={{ display: "flex", gap: 8, marginBottom: 8, flexWrap: "wrap" }}>
             {data.self_comment && (
               <div style={{ flex: "1 1 200px", border: `1px solid ${C.border}`, padding: 12 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-                  <span style={{ ...fM, fontSize: 11, color: C.textMuted }}>SELF-COMMENT</span>
-                  <CopyBtn text={data.self_comment} label="" />
-                </div>
-                <div style={{ ...fM, fontSize: 12, color: C.textMid, lineHeight: 1.6 }}>{data.self_comment}</div>
+                <div style={{ ...fM, fontSize: 11, color: C.textMuted, marginBottom: 4 }}>SELF-COMMENT</div>
+                <div style={{ ...fM, fontSize: 12, color: C.textMid, lineHeight: 1.6, marginBottom: 8 }}>{data.self_comment}</div>
+                <CopyBtn text={data.self_comment} label="COPIAR COMENTÁRIO" big />
               </div>
             )}
+
             <div style={{ flex: "1 1 200px", border: `1px solid ${C.border}`, padding: 12 }}>
               {data.musica && (
                 <>
