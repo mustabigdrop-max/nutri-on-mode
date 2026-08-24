@@ -415,6 +415,8 @@ const SocialOnModulePage = () => {
             <TabsTrigger value="ciencia" className="text-xs gap-1"><FlaskConical className="w-3 h-3" />Ciência</TabsTrigger>
             <TabsTrigger value="editor" className="text-xs gap-1"><Clapperboard className="w-3 h-3" />Editor</TabsTrigger>
             <TabsTrigger value="pro" className="text-xs gap-1"><Sparkles className="w-3 h-3" />Social ON Pro</TabsTrigger>
+            <TabsTrigger value="um_toque" className="text-xs gap-1"><Zap className="w-3 h-3" />1 Toque</TabsTrigger>
+
           </TabsList>
 
           {/* ─────────── PRISM (com Reels e Pack integrados) ─────────── */}
