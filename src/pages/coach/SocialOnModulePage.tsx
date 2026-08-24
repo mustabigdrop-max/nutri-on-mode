@@ -14,7 +14,7 @@ import {
   ArrowLeft, ArrowRight, Copy, Loader2, Rocket, Search, Target, CalendarDays,
   BarChart3, GraduationCap, ShoppingCart, Check, Instagram, Trash2,
   RefreshCw, MessageSquare, Microscope, Camera, BookOpen, Lightbulb,
-  ImagePlus, Trophy, Flame, Dna, ShieldCheck, FlaskConical, Sparkles,
+  ImagePlus, Trophy, Flame, Dna, ShieldCheck, FlaskConical, Sparkles, Zap,
   Package, Clapperboard,
 } from "lucide-react";
 import RepurposerPanel from "@/components/social/RepurposerPanel";
@@ -34,6 +34,8 @@ import ScienceBankPanel from "@/components/social/ScienceBankPanel";
 import InstagramGuidePanel from "@/components/social/InstagramGuidePanel";
 import VideoTextEditorPanel from "@/components/social/VideoTextEditorPanel";
 import SocialOnProPanel from "@/components/social/SocialOnProPanel";
+import SocialOnQuickPanel from "@/components/social/SocialOnQuickPanel";
+
 import { useInstagramAccount } from "@/hooks/useInstagramAccount";
 import {
   ACADEMY_TRACKS, ACTION_PLAN, BIO_CRITERIA, CONTENT_PRODUCTS, DIFFERENTIALS,
@@ -413,6 +415,8 @@ const SocialOnModulePage = () => {
             <TabsTrigger value="ciencia" className="text-xs gap-1"><FlaskConical className="w-3 h-3" />Ciência</TabsTrigger>
             <TabsTrigger value="editor" className="text-xs gap-1"><Clapperboard className="w-3 h-3" />Editor</TabsTrigger>
             <TabsTrigger value="pro" className="text-xs gap-1"><Sparkles className="w-3 h-3" />Social ON Pro</TabsTrigger>
+            <TabsTrigger value="um_toque" className="text-xs gap-1"><Zap className="w-3 h-3" />1 Toque</TabsTrigger>
+
           </TabsList>
 
           {/* ─────────── PRISM (com Reels e Pack integrados) ─────────── */}
@@ -1000,6 +1004,10 @@ const SocialOnModulePage = () => {
           <TabsContent value="pro" className="mt-4">
             <SocialOnProPanel />
           </TabsContent>
+          <TabsContent value="um_toque" className="mt-4">
+            <SocialOnQuickPanel />
+          </TabsContent>
+
         </Tabs>
       </main>
     </div>
