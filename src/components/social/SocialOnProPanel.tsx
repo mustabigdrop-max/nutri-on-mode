@@ -472,6 +472,27 @@ export default function SocialOnProPanel() {
             </div>
           )}
 
+          <div style={{ display: "flex", gap: 6, marginBottom: 10 }}>
+            <button onClick={exportPNG} style={{
+              flex: 1, padding: "13px 0", background: C.gold, border: "none",
+              ...fT, fontSize: 14, color: C.bg, cursor: "pointer",
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+            }}>
+              <Download size={15} /> SALVAR FOTO
+            </button>
+            {isVideo && (
+              <button onClick={exportVid} disabled={exporting} style={{
+                flex: 1, padding: "13px 0", background: C.cyan, border: "none",
+                ...fT, fontSize: 14, color: C.bg, cursor: exporting ? "default" : "pointer",
+                opacity: exporting ? 0.6 : 1,
+                display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+              }}>
+                {exporting ? <RefreshCw size={15} className="animate-spin" /> : <Download size={15} />} SALVAR VÍDEO
+              </button>
+            )}
+          </div>
+
+
           <div style={{ border: `1px solid ${C.border}`, padding: 12, marginBottom: 8 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6, gap: 8, flexWrap: "wrap" }}>
               <span style={{ ...fM, fontSize: 11, color: C.gold, letterSpacing: "0.1em" }}>TEXTO NO VÍDEO</span>
