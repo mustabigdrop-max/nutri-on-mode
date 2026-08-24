@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  BarChart3, Brain, Camera, Check, ChevronLeft, ChevronRight, Copy, Download, Hash,
+  BarChart3, Brain, Check, ChevronLeft, ChevronRight, Copy, Download, Edit3, Hash,
   Layers, Lightbulb, Pause, Play, RefreshCw, Share2, Smartphone, Target, TrendingUp,
-  Type, Video, X, Zap,
+  Upload, Video, X, Zap,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -28,22 +28,21 @@ const STYLES: Style[] = [
   { name: "LEGENDA", font: "'Inter', sans-serif", size: 24, color: "#FFFFFF", stroke: 0, y: 0.83, upper: false, shadow: true, spacing: 1, bg: "rgba(0,0,0,0.65)", pad: 10 },
   { name: "CINEMA", font: "'Rajdhani', sans-serif", size: 30, color: "#FFFFFF", stroke: 0, y: 0.5, upper: true, shadow: true, spacing: 6, bars: true },
   { name: "EMOCIONAL", font: "'Caveat', cursive", size: 38, color: "#FFFFFF", stroke: 0, y: 0.18, upper: false, shadow: true, spacing: 0 },
-  { name: "FISHEYE", font: "Impact, sans-serif", size: 52, color: "#FFFFFF", stroke: 4, y: 0.5, upper: true, shadow: true, spacing: 1, fisheye: true },
+  { name: "FISHEYE", font: "Impact, sans-serif", size: 52, color: "#FFFFFF", stroke: 4, y: 0.45, upper: true, shadow: true, spacing: 1, fisheye: true },
   { name: "STREET", font: "Impact, sans-serif", size: 48, color: "#FFFFFF", stroke: 4, y: 0.5, upper: true, shadow: true, spacing: 4, skew: -5 },
   { name: "TELA PRETA", font: "'Rajdhani', sans-serif", size: 34, color: "#FFFFFF", stroke: 0, y: 0.45, upper: true, spacing: 3, black: true },
   { name: "MINIMAL", font: "'Space Mono', monospace", size: 16, color: "#FFFFFF", stroke: 0, y: 0.9, upper: false, shadow: true, spacing: 1, align: "left", x: 0.06 },
 ];
 
 const QUICK_TEXTS = [
-  "O PROCESSO É O PRODUTO",
-  "TRANSFORMAÇÃO\nÉ SISTEMA",
+  "O PROCESSO É\nO PRODUTO",
   "DISCIPLINA\nNÃO É TALENTO",
+  "TRANSFORMAÇÃO\nÉ SISTEMA",
   "@diogo.mell0",
   "MCE",
-  "POV: texto aqui",
+  "POV:",
   "O SHAPE É\nCONSEQUÊNCIA",
 ];
-
 
 type Version = {
   formato?: string; texto_video?: string; estilo?: number; legenda?: string;
@@ -62,6 +61,8 @@ function drawResult(
   media: HTMLImageElement | HTMLVideoElement | null,
   textStr: string,
   style: Style,
+  szMod = 0,
+  yMod = 0,
 ) {
   if (!canvas) return;
   const ctx = canvas.getContext("2d");
@@ -124,25 +125,26 @@ function drawResult(
 
   const lines = (style.upper ? textStr.toUpperCase() : textStr).split("\n");
   const scale = w / 400;
-  const fs = style.size * scale;
+  const fs = Math.max(8, style.size + szMod) * scale;
   const lh = fs * 1.3;
+  const yPos = Math.max(0.05, Math.min(0.95, style.y + yMod));
   ctx.save();
   if (style.skew) {
-    ctx.translate(w / 2, h * style.y);
+    ctx.translate(w / 2, h * yPos);
     ctx.transform(1, 0, Math.tan((style.skew * Math.PI) / 180), 1, 0, 0);
-    ctx.translate(-w / 2, -h * style.y);
+    ctx.translate(-w / 2, -h * yPos);
   }
   ctx.font = `bold ${fs}px ${style.font}`;
   ctx.textAlign = style.align || "center";
   (ctx as CanvasRenderingContext2D & { letterSpacing?: string }).letterSpacing = `${(style.spacing || 0) * scale}px`;
-  const baseY = h * style.y - (lines.length * lh) / 2 + fs;
+  const baseY = h * yPos - (lines.length * lh) / 2 + fs;
   const tx = style.align === "left" ? w * (style.x ?? 0.06) : w / 2;
 
   lines.forEach((line, i) => {
     const ly = baseY + i * lh;
     if (style.bg) {
       const m = ctx.measureText(line);
-      const p = style.pad || 8;
+      const p = (style.pad || 8) * scale;
       const bx = style.align === "left" ? tx - p : tx - m.width / 2 - p;
       ctx.fillStyle = style.bg;
       ctx.fillRect(bx, ly - fs + 2, m.width + p * 2, fs + p);
@@ -150,7 +152,7 @@ function drawResult(
     ctx.save();
     if (style.glow) {
       ctx.shadowColor = style.glow;
-      ctx.shadowBlur = style.glowSize || 20;
+      ctx.shadowBlur = (style.glowSize || 20) * scale;
       ctx.fillStyle = style.color;
       ctx.fillText(line, tx, ly);
       ctx.fillText(line, tx, ly);
@@ -164,9 +166,9 @@ function drawResult(
     }
     if (style.shadow && !style.glow) {
       ctx.shadowColor = "rgba(0,0,0,0.7)";
-      ctx.shadowBlur = 6;
-      ctx.shadowOffsetX = 2;
-      ctx.shadowOffsetY = 2;
+      ctx.shadowBlur = 6 * scale;
+      ctx.shadowOffsetX = 2 * scale;
+      ctx.shadowOffsetY = 2 * scale;
     }
     ctx.fillStyle = style.color;
     ctx.fillText(line, tx, ly);
@@ -175,19 +177,30 @@ function drawResult(
   ctx.restore();
 }
 
-/** Salva no celular: Web Share (galeria/fotos) com fallback pra download. */
-async function saveToPhone(canvas: HTMLCanvasElement, filename: string, forceShare = false) {
-  const blob = await new Promise<Blob | null>((r) => canvas.toBlob((b) => r(b), "image/png"));
+/** Renderiza em HD (1080x1920) e salva nas fotos (Web Share) ou baixa. */
+async function savePhone(
+  media: HTMLImageElement | HTMLVideoElement | null,
+  textStr: string,
+  style: Style,
+  szMod: number,
+  yMod: number,
+  shareOnly = false,
+) {
+  const hd = document.createElement("canvas");
+  hd.width = 1080; hd.height = 1920;
+  drawResult(hd, media, textStr, style, szMod, yMod);
+  const blob = await new Promise<Blob | null>((r) => hd.toBlob((b) => r(b), "image/png"));
   if (!blob) return false;
+  const filename = `socialon-${Date.now()}.png`;
   const file = new File([blob], filename, { type: "image/png" });
   const nav = navigator as Navigator & { canShare?: (d: unknown) => boolean };
   if (nav.canShare?.({ files: [file] })) {
     try {
       await navigator.share({ files: [file], title: "SOCIAL ON" });
       return true;
-    } catch { if (forceShare) return false; }
+    } catch { if (shareOnly) return false; }
   }
-  if (forceShare) return false;
+  if (shareOnly) return false;
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
   a.download = filename;
@@ -195,7 +208,6 @@ async function saveToPhone(canvas: HTMLCanvasElement, filename: string, forceSha
   setTimeout(() => URL.revokeObjectURL(a.href), 4000);
   return true;
 }
-
 
 function compress(file: File, max = 1024): Promise<string | null> {
   return new Promise((resolve) => {
@@ -258,7 +270,7 @@ const CopyBig = ({ text, label }: { text: string; label: string }) => {
 };
 
 export default function SocialOnStrategistPanel() {
-  const [phase, setPhase] = useState<"upload" | "loading" | "done" | "editor">("upload");
+  const [phase, setPhase] = useState<"upload" | "edit">("upload");
   const [file, setFile] = useState<File | null>(null);
   const [isVideo, setIsVideo] = useState(false);
   const [blobUrl, setBlobUrl] = useState<string | null>(null);
@@ -266,73 +278,76 @@ export default function SocialOnStrategistPanel() {
   const [data, setData] = useState<StrategistResult | null>(null);
   const [current, setCurrent] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
   const [loadMsg, setLoadMsg] = useState("");
-  const [showStrategy, setShowStrategy] = useState(true);
+  const [showStrategy, setShowStrategy] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [duration, setDuration] = useState(0);
   const [exporting, setExporting] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [edText, setEdText] = useState("");
-  const [edStyle, setEdStyle] = useState(0);
 
-  const canRefs = useRef<(HTMLCanvasElement | null)[]>([]);
-  const edCanRef = useRef<HTMLCanvasElement | null>(null);
+  // Edição sempre disponível
+  const [text, setText] = useState("");
+  const [styleIdx, setStyleIdx] = useState(0);
+  const [szMod, setSzMod] = useState(0);
+  const [yMod, setYMod] = useState(0);
+  const [showTools, setShowTools] = useState(false);
+
+  const canRef = useRef<HTMLCanvasElement | null>(null);
   const vidRef = useRef<HTMLVideoElement | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const animRef = useRef<number | null>(null);
-  const modeRef = useRef<"auto" | "editor">("auto");
-
 
   const versions = data?.versoes || [];
   const v = versions[current];
-  const styleOf = (ver: Version, i: number) =>
-    STYLES[typeof ver.estilo === "number" && ver.estilo >= 0 && ver.estilo < STYLES.length ? ver.estilo : i % STYLES.length];
+  const style = STYLES[styleIdx] || STYLES[0];
 
-  const drawAll = useCallback(() => {
-    versions.forEach((ver, i) => {
-      drawResult(canRefs.current[i], mediaEl, ver.texto_video || "", styleOf(ver, i));
-    });
-  }, [versions, mediaEl]);
+  const redraw = useCallback(() => {
+    drawResult(canRef.current, mediaEl, text, style, szMod, yMod);
+  }, [mediaEl, text, style, szMod, yMod]);
 
-  useEffect(() => { drawAll(); }, [drawAll]);
+  useEffect(() => { redraw(); }, [redraw]);
 
+  // Preview em loop enquanto o vídeo roda
   useEffect(() => {
-    if (!isVideo || !playing || !versions.length) return;
+    if (!isVideo || !playing) return;
     const loop = () => {
-      const ver = versions[current];
-      if (ver) drawResult(canRefs.current[current], mediaEl, ver.texto_video || "", styleOf(ver, current));
+      drawResult(canRef.current, vidRef.current, text, style, szMod, yMod);
       animRef.current = requestAnimationFrame(loop);
     };
     animRef.current = requestAnimationFrame(loop);
     return () => { if (animRef.current) cancelAnimationFrame(animRef.current); };
-  }, [playing, isVideo, versions, current, mediaEl]);
+  }, [playing, isVideo, text, style, szMod, yMod]);
 
   useEffect(() => () => { if (blobUrl) URL.revokeObjectURL(blobUrl); }, [blobUrl]);
 
+  // Ao trocar de versão gerada, aplica texto + estilo sugeridos
   useEffect(() => {
-    if (phase !== "editor" || !mediaEl) return;
-    drawResult(edCanRef.current, mediaEl, edText, STYLES[edStyle] || STYLES[0]);
-  }, [phase, mediaEl, edText, edStyle]);
+    const ver = versions[current];
+    if (!ver) return;
+    setText(ver.texto_video || "");
+    setStyleIdx(typeof ver.estilo === "number" && ver.estilo >= 0 && ver.estilo < STYLES.length ? ver.estilo : current % STYLES.length);
+    setSzMod(0); setYMod(0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data, current]);
 
-  const generate = async (f: File, url: string, vid: boolean) => {
-    setPhase("loading"); setError(null);
-    const msgs = ["Estrategista analisando...", "Lendo o conteúdo...", "Montando estratégia...", "Criando 4 versões...", "Aplicando textos..."];
+  const generate = async () => {
+    if (!file || !blobUrl || loading) return;
+    setLoading(true); setError(null);
+    const msgs = ["Estrategista analisando...", "Lendo o conteúdo...", "Montando estratégia...", "Criando 4 versões..."];
     let i = 0; setLoadMsg(msgs[0]);
     const iv = window.setInterval(() => { i = Math.min(i + 1, msgs.length - 1); setLoadMsg(msgs[i]); }, 2500);
     try {
       let image: string | null = null;
-      if (vid) {
-        const d = await frameFromUrl(url);
+      if (isVideo) {
+        const d = await frameFromUrl(blobUrl);
         image = d.dataUrl;
-        vidRef.current = d.video;
-        setMediaEl(d.video);
-        setDuration(d.duration);
       } else {
-        image = await compress(f);
+        image = await compress(file);
         if (!image) throw new Error("Erro ao processar a imagem.");
       }
       const { data: res, error: fnErr } = await supabase.functions.invoke("prism-analyze", {
-        body: { mode: "social_estrategista", image, from_video: vid },
+        body: { mode: "social_estrategista", image, from_video: isVideo },
       });
       if (fnErr) throw new Error(fnErr.message);
       if ((res as { error?: string })?.error) throw new Error((res as { error?: string }).error as string);
@@ -341,12 +356,11 @@ export default function SocialOnStrategistPanel() {
       setData(result);
       setCurrent(0);
       setShowStrategy(true);
-      setPhase("done");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Erro inesperado");
-      setPhase("upload");
     } finally {
       window.clearInterval(iv);
+      setLoading(false);
     }
   };
 
@@ -355,28 +369,23 @@ export default function SocialOnStrategistPanel() {
     if (!f) return;
     if (blobUrl) URL.revokeObjectURL(blobUrl);
     setFile(f); setData(null); setCurrent(0); setError(null); setMediaEl(null); setPlaying(false);
+    setText(""); setStyleIdx(0); setSzMod(0); setYMod(0);
     const url = URL.createObjectURL(f);
     setBlobUrl(url);
     const vid = f.type.startsWith("video/") || /\.(mp4|mov|avi|mkv|webm|m4v|3gp)$/i.test(f.name);
     setIsVideo(vid);
     if (!vid) {
       const img = new window.Image();
-      img.onload = () => {
-        setMediaEl(img);
-        if (modeRef.current === "auto") void generate(f, url, false);
-        else setPhase("editor");
-      };
+      img.onload = () => { setMediaEl(img); setPhase("edit"); };
       img.onerror = () => setError("Não consegui ler a imagem.");
       img.src = url;
-    } else if (modeRef.current === "auto") {
-      void generate(f, url, true);
     } else {
       frameFromUrl(url)
         .then((d) => {
           vidRef.current = d.video;
           setDuration(d.duration);
           setMediaEl(d.video);
-          setPhase("editor");
+          setPhase("edit");
         })
         .catch(() => setError("Não consegui ler o vídeo."));
     }
@@ -386,36 +395,24 @@ export default function SocialOnStrategistPanel() {
   const reset = () => {
     setFile(null); setData(null); setPhase("upload"); setMediaEl(null);
     setCurrent(0); setError(null); setPlaying(false); setDuration(0);
-    setEdText(""); setEdStyle(0);
+    setText(""); setStyleIdx(0); setSzMod(0); setYMod(0); setShowTools(false); setShowStrategy(false);
     vidRef.current = null;
     if (blobUrl) URL.revokeObjectURL(blobUrl);
     setBlobUrl(null);
   };
 
-  const savePhoto = async (canvas: HTMLCanvasElement | null, label: string, shareOnly = false) => {
-    if (!canvas || saving) return;
+  const save = async (shareOnly = false) => {
+    if (saving) return;
     setSaving(true);
-    await saveToPhone(canvas, `socialon-${label.replace(/\s+/g, "-").toLowerCase()}-${Date.now()}.png`, shareOnly);
+    await savePhone(mediaEl, text, style, szMod, yMod, shareOnly);
     setSaving(false);
   };
 
-  const savePNG = () => {
-    const c = canRefs.current[current];
-    const ver = versions[current];
-    if (!c || !ver) return;
-    drawResult(c, mediaEl, ver.texto_video || "", styleOf(ver, current));
-    setTimeout(() => { void savePhoto(c, ver.formato || "versao"); }, 60);
-  };
-
-
   const saveVideo = async () => {
     const vid = vidRef.current;
-    const c = canRefs.current[current];
-    const ver = versions[current];
-    if (!isVideo || !vid || !c || !ver || exporting) return;
+    const c = canRef.current;
+    if (!isVideo || !vid || !c || exporting) return;
     setExporting(true);
-    const style = styleOf(ver, current);
-    const txt = ver.texto_video || "";
     const mime = ["video/mp4;codecs=avc1.42E01E", "video/webm;codecs=vp9", "video/webm"]
       .find((m) => typeof MediaRecorder !== "undefined" && MediaRecorder.isTypeSupported(m)) || "video/webm";
     const rec = new MediaRecorder(c.captureStream(30), { mimeType: mime });
@@ -435,7 +432,7 @@ export default function SocialOnStrategistPanel() {
     rec.start();
     await vid.play();
     const loop = () => {
-      drawResult(c, vid, txt, style);
+      drawResult(c, vid, text, style, szMod, yMod);
       if (!vid.paused && !vid.ended) requestAnimationFrame(loop);
       else { rec.stop(); vid.pause(); }
     };
@@ -458,7 +455,7 @@ export default function SocialOnStrategistPanel() {
             <Brain size={18} color={C.purple} /> SOCIAL ON · ESTRATEGISTA
           </div>
           <div style={{ ...fM, fontSize: 12, color: C.textMid, marginTop: 2 }}>
-            Sobe a mídia e sai com 4 versões + estratégia e próximos conteúdos
+            Sobe a mídia, edita na hora ou deixa o estrategista montar 4 versões
           </div>
         </div>
         {phase !== "upload" && (
@@ -476,10 +473,21 @@ export default function SocialOnStrategistPanel() {
             <div style={{ ...fM, fontSize: 11, color: C.gold, letterSpacing: "0.18em" }}>CONTENT INTELLIGENCE</div>
             <div style={{ ...fT, fontSize: 28, color: C.text, marginTop: 4 }}>Seu conteúdo. Pronto.</div>
             <div style={{ ...fM, fontSize: 12, color: C.textMid, marginTop: 6, lineHeight: 1.6 }}>
-              Sobe foto ou vídeo e sai com tudo pronto pra postar.<br />
-              Personal, nutricionista, corredor, crossfitter, influencer.
+              Sobe e o estrategista faz o resto. Ou edita você mesmo.
             </div>
           </div>
+
+          <button
+            type="button"
+            onClick={() => fileRef.current?.click()}
+            style={{ width: "100%", border: `2px dashed ${C.gold}33`, background: "transparent", padding: "40px 16px", cursor: "pointer", marginBottom: 14 }}
+          >
+            <Upload size={22} color={C.gold} />
+            <div style={{ ...fT, fontSize: 20, color: C.text, marginTop: 8 }}>Sobe foto ou vídeo</div>
+            <div style={{ ...fM, fontSize: 11, color: C.textMid, marginTop: 4 }}>
+              Sem limite · Salva nas fotos do celular
+            </div>
+          </button>
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 4, marginBottom: 14 }}>
             {[
@@ -496,45 +504,7 @@ export default function SocialOnStrategistPanel() {
             ))}
           </div>
 
-          <div style={{ ...fM, fontSize: 11, color: C.textMuted, letterSpacing: "0.18em", marginBottom: 6 }}>FERRAMENTAS</div>
-
-          {[
-            {
-              key: "auto" as const, icon: Brain, color: C.purple, title: "Estrategista",
-              desc: "Sobe foto/vídeo → 4 versões prontas com texto, legenda, hashtags + direção estratégica do que criar depois",
-              tags: ["AUTO-DETECTA NICHO", "4 VERSÕES", "FUNIL COMPLETO"],
-            },
-            {
-              key: "editor" as const, icon: Type, color: C.cyan, title: "Editor",
-              desc: "Texto sobre foto/vídeo com 10 estilos visuais. Fisheye, neon, cinema, street, tela preta. Salva direto nas fotos.",
-              tags: ["FISHEYE", "NEON", "CINEMA", "10 ESTILOS"],
-            },
-          ].map((t) => (
-            <button
-              key={t.key}
-              type="button"
-              onClick={() => { modeRef.current = t.key; fileRef.current?.click(); }}
-              style={{
-                width: "100%", textAlign: "left", background: "transparent",
-                border: `1px solid ${t.color}22`, borderLeft: `3px solid ${t.color}`,
-                padding: "16px 14px", cursor: "pointer", marginBottom: 4,
-                display: "flex", gap: 12, alignItems: "flex-start",
-              }}
-            >
-              <t.icon size={20} color={t.color} style={{ flexShrink: 0, marginTop: 2 }} />
-              <span style={{ display: "block" }}>
-                <span style={{ ...fT, fontSize: 20, color: C.text, display: "block" }}>{t.title}</span>
-                <span style={{ ...fM, fontSize: 12, color: C.textMid, display: "block", marginTop: 4, lineHeight: 1.55 }}>{t.desc}</span>
-                <span style={{ display: "flex", flexWrap: "wrap", gap: 4, marginTop: 8 }}>
-                  {t.tags.map((tag) => (
-                    <span key={tag} style={{ ...fM, fontSize: 10, color: t.color, border: `1px solid ${t.color}33`, padding: "2px 6px" }}>{tag}</span>
-                  ))}
-                </span>
-              </span>
-            </button>
-          ))}
-
-          <div style={{ ...fM, fontSize: 11, color: C.textMuted, letterSpacing: "0.18em", margin: "14px 0 6px" }}>ESTILOS DISPONÍVEIS</div>
+          <div style={{ ...fM, fontSize: 11, color: C.textMuted, letterSpacing: "0.18em", margin: "0 0 6px" }}>ESTILOS DISPONÍVEIS</div>
           <div style={{ display: "flex", gap: 4, overflowX: "auto", paddingBottom: 4 }}>
             {STYLES.map((s) => (
               <div key={s.name} style={{ minWidth: 74, border: `1px solid ${C.border}`, padding: "10px 6px", textAlign: "center", flexShrink: 0 }}>
@@ -563,179 +533,14 @@ export default function SocialOnStrategistPanel() {
         </div>
       )}
 
-
-      {phase === "editor" && mediaEl && (
-        <div style={{ display: "grid", gap: 10 }}>
+      {phase === "edit" && mediaEl && (
+        <div style={{ display: "grid", gap: 8 }}>
           <canvas
-            ref={edCanRef}
+            ref={canRef}
             width={720}
             height={1280}
             style={{ width: "100%", maxWidth: 320, margin: "0 auto", display: "block" }}
           />
-
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
-            {STYLES.map((s, i) => (
-              <button
-                key={s.name}
-                onClick={() => setEdStyle(i)}
-                style={{
-                  flex: "1 1 calc(20% - 4px)", minWidth: 62, padding: "7px 2px", cursor: "pointer",
-                  background: edStyle === i ? C.goldBg : "transparent",
-                  border: `1px solid ${edStyle === i ? `${C.gold}66` : C.border}`,
-                  ...fM, fontSize: 10, color: edStyle === i ? C.gold : C.textMid,
-                }}
-              >
-                {s.name}
-              </button>
-            ))}
-          </div>
-
-          <textarea
-            value={edText}
-            onChange={(e) => setEdText(e.target.value)}
-            rows={2}
-            placeholder="Digite o texto..."
-            style={{ width: "100%", padding: "8px 10px", ...fT, fontSize: 15, background: `${C.text}08`, border: `1px solid ${C.border}`, color: C.text, resize: "none", boxSizing: "border-box" }}
-          />
-
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
-            {QUICK_TEXTS.map((t) => (
-              <button
-                key={t}
-                onClick={() => setEdText(t)}
-                style={{ padding: "4px 7px", ...fM, fontSize: 10, color: C.textMid, background: "transparent", border: `1px solid ${C.border}`, cursor: "pointer" }}
-              >
-                {t.replace("\n", " ")}
-              </button>
-            ))}
-          </div>
-
-          <button
-            onClick={() => void savePhoto(edCanRef.current, STYLES[edStyle].name)}
-            disabled={saving}
-            style={{ width: "100%", padding: "14px 0", background: C.gold, border: "none", ...fT, fontSize: 15, color: C.bg, cursor: saving ? "default" : "pointer", opacity: saving ? 0.6 : 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
-          >
-            {saving ? <RefreshCw size={15} className="animate-spin" /> : <Download size={15} />} SALVAR NAS FOTOS
-          </button>
-          <button
-            onClick={() => void savePhoto(edCanRef.current, STYLES[edStyle].name, true)}
-            style={{ width: "100%", padding: "10px 0", background: "transparent", border: `1px solid ${C.border}`, ...fT, fontSize: 13, color: C.textMid, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
-          >
-            <Share2 size={13} /> COMPARTILHAR
-          </button>
-        </div>
-      )}
-
-
-      {phase === "loading" && (
-        <div style={{ padding: "48px 16px", textAlign: "center" }}>
-          <RefreshCw size={22} color={C.purple} className="animate-spin" style={{ margin: "0 auto" }} />
-          <div style={{ ...fT, fontSize: 18, color: C.text, marginTop: 12 }}>{loadMsg}</div>
-          <div style={{ ...fM, fontSize: 12, color: C.textMid, marginTop: 6 }}>
-            Analisando {isVideo ? "o vídeo" : "a foto"}, montando estratégia e criando 4 versões...
-          </div>
-        </div>
-      )}
-
-      {phase === "done" && data && v && (
-        <div style={{ display: "grid", gap: 12 }}>
-          <div style={{ border: `1px solid ${C.purple}33` }}>
-            <button
-              onClick={() => setShowStrategy(!showStrategy)}
-              style={{ width: "100%", padding: "10px 12px", background: `${C.purple}0C`, border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 8 }}
-            >
-              <Brain size={14} color={C.purple} />
-              <span style={{ ...fT, fontSize: 14, color: C.text, flex: 1, textAlign: "left" }}>VISÃO DO ESTRATEGISTA</span>
-              {showStrategy ? <ChevronLeft size={14} color={C.purple} style={{ transform: "rotate(90deg)" }} /> : <ChevronRight size={14} color={C.purple} style={{ transform: "rotate(90deg)" }} />}
-            </button>
-            {showStrategy && (
-              <div style={{ padding: 12, display: "grid", gap: 12 }}>
-                {data.analise && (
-                  <div style={{ display: "flex", gap: 8 }}>
-                    <BarChart3 size={13} color={C.cyan} style={{ flexShrink: 0, marginTop: 2 }} />
-                    <div style={{ ...fM, fontSize: 12, color: C.text }}>{data.analise}</div>
-                  </div>
-                )}
-                {data.estrategia && (
-                  <div style={{ display: "flex", gap: 8 }}>
-                    <Target size={13} color={C.gold} style={{ flexShrink: 0, marginTop: 2 }} />
-                    <div style={{ ...fM, fontSize: 12, color: C.text }}>{data.estrategia}</div>
-                  </div>
-                )}
-                {!!data.proximos_conteudos?.length && (
-                  <div style={{ border: `1px solid ${C.border}`, padding: 10, display: "grid", gap: 6 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                      <TrendingUp size={12} color={C.green} />
-                      <span style={{ ...fM, fontSize: 10, color: C.green, letterSpacing: "0.14em" }}>GRAVAR DEPOIS</span>
-                    </div>
-                    {data.proximos_conteudos.map((idea, i) => (
-                      <div key={i} style={{ display: "flex", gap: 6, ...fM, fontSize: 12, color: C.textMid }}>
-                        <span style={{ color: C.green }}>{i + 1}</span>
-                        <span style={{ color: C.text }}>{idea}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                {data.dica_estrategica && (
-                  <div style={{ border: `1px solid ${C.orange}33`, padding: 10, display: "grid", gap: 4 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                      <Lightbulb size={12} color={C.orange} />
-                      <span style={{ ...fM, fontSize: 10, color: C.orange, letterSpacing: "0.14em" }}>DICA</span>
-                    </div>
-                    <div style={{ ...fM, fontSize: 12, color: C.text }}>{data.dica_estrategica}</div>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-
-          <div style={{ display: "flex", gap: 4 }}>
-            {versions.map((ver, i) => {
-              const col = FUNIL[ver.funil || ""] || C.gold;
-              return (
-                <button
-                  key={i}
-                  onClick={() => setCurrent(i)}
-                  style={{
-                    flex: 1, padding: "6px 2px", cursor: "pointer",
-                    background: current === i ? `${col}12` : "transparent",
-                    border: `1px solid ${current === i ? `${col}66` : C.border}`,
-                    display: "flex", flexDirection: "column", alignItems: "center", gap: 1,
-                  }}
-                >
-                  <span style={{ ...fM, fontSize: 10, color: current === i ? col : C.textMid }}>{ver.formato || `V${i + 1}`}</span>
-                  <span style={{ ...fM, fontSize: 9, color: C.textMuted }}>{ver.funil || ""}</span>
-                </button>
-              );
-            })}
-          </div>
-
-          <div style={{ position: "relative" }}>
-            {versions.map((_, i) => (
-              <canvas
-                key={i}
-                ref={(el) => { canRefs.current[i] = el; }}
-                width={720}
-                height={1280}
-                style={{ width: "100%", maxWidth: 320, display: current === i ? "block" : "none", margin: "0 auto" }}
-              />
-            ))}
-            {current > 0 && (
-              <button onClick={() => setCurrent(current - 1)} style={{ position: "absolute", left: 4, top: "50%", transform: "translateY(-50%)", background: `${C.bg}AA`, border: `1px solid ${C.border}`, padding: 6, cursor: "pointer" }}>
-                <ChevronLeft size={14} color={C.gold} />
-              </button>
-            )}
-            {current < versions.length - 1 && (
-              <button onClick={() => setCurrent(current + 1)} style={{ position: "absolute", right: 4, top: "50%", transform: "translateY(-50%)", background: `${C.bg}AA`, border: `1px solid ${C.border}`, padding: 6, cursor: "pointer" }}>
-                <ChevronRight size={14} color={C.gold} />
-              </button>
-            )}
-            <div style={{ display: "flex", justifyContent: "center", gap: 5, marginTop: 8 }}>
-              {versions.map((_, i) => (
-                <span key={i} style={{ width: 6, height: 6, borderRadius: 99, background: current === i ? C.gold : C.textMuted }} />
-              ))}
-            </div>
-          </div>
 
           {isVideo && vidRef.current && (
             <div style={{ display: "flex", alignItems: "center", gap: 8, justifyContent: "center" }}>
@@ -746,74 +551,230 @@ export default function SocialOnStrategistPanel() {
             </div>
           )}
 
+          {!!versions.length && (
+            <div style={{ display: "flex", gap: 4 }}>
+              {versions.map((ver, i) => {
+                const col = FUNIL[ver.funil || ""] || C.gold;
+                return (
+                  <button
+                    key={i}
+                    onClick={() => setCurrent(i)}
+                    style={{
+                      flex: 1, padding: "6px 2px", cursor: "pointer",
+                      background: current === i ? `${col}12` : "transparent",
+                      border: `1px solid ${current === i ? `${col}66` : C.border}`,
+                      display: "flex", flexDirection: "column", alignItems: "center", gap: 1,
+                    }}
+                  >
+                    <span style={{ ...fM, fontSize: 10, color: current === i ? col : C.textMid }}>{ver.formato || `V${i + 1}`}</span>
+                    <span style={{ ...fM, fontSize: 9, color: C.textMuted }}>{ver.funil || ""}</span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+            {STYLES.map((s, i) => (
+              <button
+                key={s.name}
+                onClick={() => setStyleIdx(i)}
+                style={{
+                  flex: "1 1 calc(20% - 4px)", minWidth: 62, padding: "7px 2px", cursor: "pointer",
+                  background: styleIdx === i ? C.goldBg : "transparent",
+                  border: `1px solid ${styleIdx === i ? `${C.gold}66` : C.border}`,
+                  ...fM, fontSize: 10, color: styleIdx === i ? C.gold : C.textMid,
+                }}
+              >
+                {s.name}
+              </button>
+            ))}
+          </div>
+
+          <textarea
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            rows={2}
+            placeholder="Digite ou gere com o estrategista..."
+            style={{ width: "100%", padding: "8px 10px", ...fT, fontSize: 15, background: `${C.text}08`, border: `1px solid ${C.border}`, color: C.text, resize: "none", boxSizing: "border-box" }}
+          />
+
+          <button
+            onClick={() => setShowTools(!showTools)}
+            style={{ width: "100%", padding: "6px 0", background: "transparent", border: `1px solid ${C.border}`, ...fM, fontSize: 11, color: C.textMid, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
+          >
+            <Edit3 size={11} /> {showTools ? "FECHAR FERRAMENTAS" : "ABRIR FERRAMENTAS"}
+          </button>
+
+          {showTools && (
+            <div style={{ border: `1px solid ${C.border}`, padding: 10, display: "grid", gap: 8 }}>
+              <div style={{ display: "flex", gap: 10 }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <span style={{ ...fM, fontSize: 10, color: C.textMid, letterSpacing: "0.12em" }}>TAMANHO</span>
+                    <span style={{ ...fM, fontSize: 11, color: C.gold }}>{style.size + szMod}</span>
+                  </div>
+                  <input type="range" min={-20} max={30} value={szMod} onChange={(e) => setSzMod(+e.target.value)} style={{ width: "100%", accentColor: C.gold }} />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <span style={{ ...fM, fontSize: 10, color: C.textMid, letterSpacing: "0.12em" }}>POSIÇÃO</span>
+                    <span style={{ ...fM, fontSize: 11, color: C.cyan }}>{Math.round((style.y + yMod) * 100)}%</span>
+                  </div>
+                  <input type="range" min={-40} max={40} value={Math.round(yMod * 100)} onChange={(e) => setYMod(+e.target.value / 100)} style={{ width: "100%", accentColor: C.cyan }} />
+                </div>
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+                {QUICK_TEXTS.map((t) => (
+                  <button
+                    key={t}
+                    onClick={() => setText(t)}
+                    style={{ padding: "4px 7px", ...fM, fontSize: 10, color: C.textMid, background: "transparent", border: `1px solid ${C.border}`, cursor: "pointer" }}
+                  >
+                    {t.replace("\n", " ")}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div style={{ display: "flex", gap: 8 }}>
-            <button onClick={savePNG} style={{ flex: 1, padding: "12px 0", background: C.gold, border: "none", ...fT, fontSize: 14, color: C.bg, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
-              <Download size={14} /> SALVAR {v.formato || "FOTO"}
+            <button
+              onClick={() => void save(false)}
+              disabled={saving}
+              style={{ flex: 1, padding: "14px 0", background: C.gold, border: "none", ...fT, fontSize: 15, color: C.bg, cursor: saving ? "default" : "pointer", opacity: saving ? 0.6 : 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
+            >
+              {saving ? <RefreshCw size={15} className="animate-spin" /> : <Download size={15} />} SALVAR
+            </button>
+            <button
+              onClick={() => void generate()}
+              disabled={loading}
+              style={{ flex: 1, padding: "14px 0", background: C.purple, border: "none", ...fT, fontSize: 15, color: "#fff", cursor: loading ? "default" : "pointer", opacity: loading ? 0.7 : 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
+            >
+              {loading ? <RefreshCw size={15} className="animate-spin" /> : <Brain size={15} />} {loading ? "GERANDO" : data ? "GERAR DE NOVO" : "GERAR"}
+            </button>
+          </div>
+
+          <div style={{ display: "flex", gap: 8 }}>
+            <button
+              onClick={() => void save(true)}
+              style={{ flex: 1, padding: "10px 0", background: "transparent", border: `1px solid ${C.border}`, ...fT, fontSize: 13, color: C.textMid, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
+            >
+              <Share2 size={13} /> COMPARTILHAR
             </button>
             {isVideo && (
-              <button onClick={saveVideo} disabled={exporting} style={{ flex: 1, padding: "12px 0", background: C.cyan, border: "none", ...fT, fontSize: 14, color: C.bg, cursor: exporting ? "default" : "pointer", opacity: exporting ? 0.6 : 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
-                {exporting ? <RefreshCw size={14} className="animate-spin" /> : <Video size={14} />} SALVAR VÍDEO
+              <button
+                onClick={() => void saveVideo()}
+                disabled={exporting}
+                style={{ flex: 1, padding: "10px 0", background: "transparent", border: `1px solid ${C.cyan}44`, ...fT, fontSize: 13, color: C.cyan, cursor: exporting ? "default" : "pointer", opacity: exporting ? 0.6 : 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
+              >
+                {exporting ? <RefreshCw size={13} className="animate-spin" /> : <Video size={13} />} SALVAR VÍDEO
               </button>
             )}
           </div>
 
-          <button
-            onClick={() => void savePhoto(canRefs.current[current], v.formato || "versao", true)}
-            style={{ width: "100%", padding: "10px 0", background: "transparent", border: `1px solid ${C.border}`, ...fT, fontSize: 13, color: C.textMid, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
-          >
-            <Share2 size={13} /> COMPARTILHAR
-          </button>
-
-
-
-          {v.legenda && (
-            <div style={{ border: `1px solid ${C.border}`, padding: 10, display: "grid", gap: 8 }}>
-              <div style={{ ...fM, fontSize: 12, color: C.text, whiteSpace: "pre-wrap" }}>{v.legenda}</div>
-              <CopyBig text={v.legenda} label="COPIAR LEGENDA" />
-            </div>
+          {loading && (
+            <div style={{ ...fM, fontSize: 12, color: C.purple, textAlign: "center" }}>{loadMsg}</div>
+          )}
+          {error && (
+            <div style={{ ...fM, fontSize: 12, color: C.red, border: `1px solid ${C.red}44`, padding: 8 }}>{error}</div>
           )}
 
-          {!!v.hashtags?.length && (
-            <div style={{ border: `1px solid ${C.border}`, padding: 10, display: "grid", gap: 8 }}>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
-                {v.hashtags.map((h, i) => (
-                  <span key={i} style={{ ...fM, fontSize: 11, color: C.cyan, border: `1px solid ${C.cyan}22`, padding: "2px 5px" }}>{h}</span>
-                ))}
+          {data && (
+            <>
+              <div style={{ border: `1px solid ${C.purple}33` }}>
+                <button
+                  onClick={() => setShowStrategy(!showStrategy)}
+                  style={{ width: "100%", padding: "10px 12px", background: `${C.purple}0C`, border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 8 }}
+                >
+                  <Brain size={14} color={C.purple} />
+                  <span style={{ ...fT, fontSize: 14, color: C.text, flex: 1, textAlign: "left" }}>VISÃO DO ESTRATEGISTA</span>
+                  {showStrategy ? <ChevronLeft size={14} color={C.purple} style={{ transform: "rotate(90deg)" }} /> : <ChevronRight size={14} color={C.purple} style={{ transform: "rotate(90deg)" }} />}
+                </button>
+                {showStrategy && (
+                  <div style={{ padding: 12, display: "grid", gap: 12 }}>
+                    {data.analise && (
+                      <div style={{ display: "flex", gap: 8 }}>
+                        <BarChart3 size={13} color={C.cyan} style={{ flexShrink: 0, marginTop: 2 }} />
+                        <div style={{ ...fM, fontSize: 12, color: C.text }}>{data.analise}</div>
+                      </div>
+                    )}
+                    {data.estrategia && (
+                      <div style={{ display: "flex", gap: 8 }}>
+                        <Target size={13} color={C.gold} style={{ flexShrink: 0, marginTop: 2 }} />
+                        <div style={{ ...fM, fontSize: 12, color: C.text }}>{data.estrategia}</div>
+                      </div>
+                    )}
+                    {!!data.proximos_conteudos?.length && (
+                      <div style={{ border: `1px solid ${C.border}`, padding: 10, display: "grid", gap: 6 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                          <TrendingUp size={12} color={C.green} />
+                          <span style={{ ...fM, fontSize: 10, color: C.green, letterSpacing: "0.14em" }}>GRAVAR DEPOIS</span>
+                        </div>
+                        {data.proximos_conteudos.map((idea, i) => (
+                          <div key={i} style={{ display: "flex", gap: 6, ...fM, fontSize: 12, color: C.textMid }}>
+                            <span style={{ color: C.green }}>{i + 1}</span>
+                            <span style={{ color: C.text }}>{idea}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {data.dica_estrategica && (
+                      <div style={{ border: `1px solid ${C.orange}33`, padding: 10, display: "grid", gap: 4 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                          <Lightbulb size={12} color={C.orange} />
+                          <span style={{ ...fM, fontSize: 10, color: C.orange, letterSpacing: "0.14em" }}>DICA</span>
+                        </div>
+                        <div style={{ ...fM, fontSize: 12, color: C.text }}>{data.dica_estrategica}</div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
-              <CopyBig text={v.hashtags.join(" ")} label="COPIAR HASHTAGS" />
-            </div>
-          )}
 
-          {v.self_comment && (
-            <div style={{ border: `1px solid ${C.border}`, padding: 10, display: "grid", gap: 8 }}>
-              <div style={{ ...fM, fontSize: 12, color: C.text, whiteSpace: "pre-wrap" }}>{v.self_comment}</div>
-              <CopyBig text={v.self_comment} label="COPIAR SELF-COMMENT" />
-            </div>
-          )}
-
-          {(v.musica || v.horario) && (
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-              {v.musica && (
-                <div style={{ flex: 1, minWidth: 160, border: `1px solid ${C.border}`, padding: 8 }}>
-                  <div style={{ ...fM, fontSize: 10, color: C.textMuted, letterSpacing: "0.12em" }}>MÚSICA</div>
-                  <div style={{ ...fM, fontSize: 12, color: C.text }}>{v.musica}</div>
+              {v?.legenda && (
+                <div style={{ border: `1px solid ${C.border}`, padding: 10, display: "grid", gap: 8 }}>
+                  <div style={{ ...fM, fontSize: 12, color: C.text, whiteSpace: "pre-wrap" }}>{v.legenda}</div>
+                  <CopyBig text={v.legenda} label="COPIAR LEGENDA" />
                 </div>
               )}
-              {v.horario && (
-                <div style={{ flex: 1, minWidth: 160, border: `1px solid ${C.border}`, padding: 8 }}>
-                  <div style={{ ...fM, fontSize: 10, color: C.textMuted, letterSpacing: "0.12em" }}>HORÁRIO</div>
-                  <div style={{ ...fM, fontSize: 12, color: C.text }}>{v.horario}</div>
+
+              {!!v?.hashtags?.length && (
+                <div style={{ border: `1px solid ${C.border}`, padding: 10, display: "grid", gap: 8 }}>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+                    {v.hashtags.map((h, i) => (
+                      <span key={i} style={{ ...fM, fontSize: 11, color: C.cyan, border: `1px solid ${C.cyan}22`, padding: "2px 5px" }}>{h}</span>
+                    ))}
+                  </div>
+                  <CopyBig text={v.hashtags.join(" ")} label="COPIAR HASHTAGS" />
                 </div>
               )}
-            </div>
-          )}
 
-          <button
-            onClick={() => { if (file && blobUrl) void generate(file, blobUrl, isVideo); }}
-            style={{ width: "100%", padding: "10px 0", background: "transparent", border: `1px solid ${C.border}`, ...fT, fontSize: 13, color: C.textMid, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
-          >
-            <RefreshCw size={13} /> NÃO GOSTEI · GERAR DE NOVO
-          </button>
+              {v?.self_comment && (
+                <div style={{ border: `1px solid ${C.border}`, padding: 10, display: "grid", gap: 8 }}>
+                  <div style={{ ...fM, fontSize: 12, color: C.text, whiteSpace: "pre-wrap" }}>{v.self_comment}</div>
+                  <CopyBig text={v.self_comment} label="COPIAR SELF-COMMENT" />
+                </div>
+              )}
+
+              {(v?.musica || v?.horario) && (
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  {v?.musica && (
+                    <div style={{ flex: 1, minWidth: 160, border: `1px solid ${C.border}`, padding: 8 }}>
+                      <div style={{ ...fM, fontSize: 10, color: C.textMuted, letterSpacing: "0.12em" }}>MÚSICA</div>
+                      <div style={{ ...fM, fontSize: 12, color: C.text }}>{v.musica}</div>
+                    </div>
+                  )}
+                  {v?.horario && (
+                    <div style={{ flex: 1, minWidth: 160, border: `1px solid ${C.border}`, padding: 8 }}>
+                      <div style={{ ...fM, fontSize: 10, color: C.textMuted, letterSpacing: "0.12em" }}>HORÁRIO</div>
+                      <div style={{ ...fM, fontSize: 12, color: C.text }}>{v.horario}</div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </>
+          )}
 
           <div style={{ ...fM, fontSize: 11, color: C.textMuted, letterSpacing: "0.14em", textAlign: "center", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
             <Hash size={10} /> SOCIAL ON · NUTRION · @DIOGO.MELL0
