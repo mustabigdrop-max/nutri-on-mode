@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   BarChart3, Brain, Camera, Check, ChevronLeft, ChevronRight, Copy, Download, Hash,
-  Lightbulb, Pause, Play, RefreshCw, Target, TrendingUp, Video, X,
+  Lightbulb, Pause, Play, RefreshCw, Share2, Target, TrendingUp, Type, Video, X,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -17,6 +17,7 @@ type Style = {
   name: string; font: string; size: number; color: string; stroke: number; y: number;
   upper: boolean; shadow?: boolean; spacing: number; glow?: string; glowSize?: number;
   bg?: string; pad?: number; bars?: boolean;
+  fisheye?: boolean; skew?: number; black?: boolean; align?: CanvasTextAlign; x?: number;
 };
 
 const STYLES: Style[] = [
@@ -26,7 +27,22 @@ const STYLES: Style[] = [
   { name: "LEGENDA", font: "'Inter', sans-serif", size: 24, color: "#FFFFFF", stroke: 0, y: 0.83, upper: false, shadow: true, spacing: 1, bg: "rgba(0,0,0,0.65)", pad: 10 },
   { name: "CINEMA", font: "'Rajdhani', sans-serif", size: 30, color: "#FFFFFF", stroke: 0, y: 0.5, upper: true, shadow: true, spacing: 6, bars: true },
   { name: "EMOCIONAL", font: "'Caveat', cursive", size: 38, color: "#FFFFFF", stroke: 0, y: 0.18, upper: false, shadow: true, spacing: 0 },
+  { name: "FISHEYE", font: "Impact, sans-serif", size: 52, color: "#FFFFFF", stroke: 4, y: 0.5, upper: true, shadow: true, spacing: 1, fisheye: true },
+  { name: "STREET", font: "Impact, sans-serif", size: 48, color: "#FFFFFF", stroke: 4, y: 0.5, upper: true, shadow: true, spacing: 4, skew: -5 },
+  { name: "TELA PRETA", font: "'Rajdhani', sans-serif", size: 34, color: "#FFFFFF", stroke: 0, y: 0.45, upper: true, spacing: 3, black: true },
+  { name: "MINIMAL", font: "'Space Mono', monospace", size: 16, color: "#FFFFFF", stroke: 0, y: 0.9, upper: false, shadow: true, spacing: 1, align: "left", x: 0.06 },
 ];
+
+const QUICK_TEXTS = [
+  "O PROCESSO É O PRODUTO",
+  "TRANSFORMAÇÃO\nÉ SISTEMA",
+  "DISCIPLINA\nNÃO É TALENTO",
+  "@diogo.mell0",
+  "MCE",
+  "POV: texto aqui",
+  "O SHAPE É\nCONSEQUÊNCIA",
+];
+
 
 type Version = {
   formato?: string; texto_video?: string; estilo?: number; legenda?: string;
@@ -53,7 +69,7 @@ function drawResult(
   ctx.fillStyle = "#000";
   ctx.fillRect(0, 0, w, h);
 
-  if (media) {
+  if (media && !style.black) {
     const mw = media instanceof HTMLVideoElement ? media.videoWidth : media.width;
     const mh = media instanceof HTMLVideoElement ? media.videoHeight : media.height;
     if (mw && mh) {
@@ -61,7 +77,40 @@ function drawResult(
       let dw: number, dh: number, dx: number, dy: number;
       if (vr > cr) { dh = h; dw = h * vr; dx = (w - dw) / 2; dy = 0; }
       else { dw = w; dh = w / vr; dx = 0; dy = (h - dh) / 2; }
-      ctx.drawImage(media, dx, dy, dw, dh);
+      if (style.fisheye) {
+        const tmp = document.createElement("canvas");
+        tmp.width = w; tmp.height = h;
+        const tc = tmp.getContext("2d");
+        if (tc) {
+          tc.drawImage(media, dx, dy, dw, dh);
+          const src = tc.getImageData(0, 0, w, h);
+          const out = ctx.createImageData(w, h);
+          const cx = w / 2, cy = h / 2;
+          const k = 0.00000035;
+          for (let y2 = 0; y2 < h; y2++) {
+            for (let x2 = 0; x2 < w; x2++) {
+              const ox = x2 - cx, oy = y2 - cy;
+              const r = Math.sqrt(ox * ox + oy * oy) || 1;
+              const nr = r * (1 + k * r * r);
+              const sx = Math.round(cx + (ox * nr) / r);
+              const sy = Math.round(cy + (oy * nr) / r);
+              const di = (y2 * w + x2) * 4;
+              if (sx >= 0 && sx < w && sy >= 0 && sy < h) {
+                const si = (sy * w + sx) * 4;
+                out.data[di] = src.data[si];
+                out.data[di + 1] = src.data[si + 1];
+                out.data[di + 2] = src.data[si + 2];
+                out.data[di + 3] = src.data[si + 3];
+              } else {
+                out.data[di + 3] = 255;
+              }
+            }
+          }
+          ctx.putImageData(out, 0, 0);
+        }
+      } else {
+        ctx.drawImage(media, dx, dy, dw, dh);
+      }
     }
   }
 
@@ -76,18 +125,26 @@ function drawResult(
   const scale = w / 400;
   const fs = style.size * scale;
   const lh = fs * 1.3;
+  ctx.save();
+  if (style.skew) {
+    ctx.translate(w / 2, h * style.y);
+    ctx.transform(1, 0, Math.tan((style.skew * Math.PI) / 180), 1, 0, 0);
+    ctx.translate(-w / 2, -h * style.y);
+  }
   ctx.font = `bold ${fs}px ${style.font}`;
-  ctx.textAlign = "center";
+  ctx.textAlign = style.align || "center";
   (ctx as CanvasRenderingContext2D & { letterSpacing?: string }).letterSpacing = `${(style.spacing || 0) * scale}px`;
   const baseY = h * style.y - (lines.length * lh) / 2 + fs;
+  const tx = style.align === "left" ? w * (style.x ?? 0.06) : w / 2;
 
   lines.forEach((line, i) => {
     const ly = baseY + i * lh;
-    const tx = w / 2;
     if (style.bg) {
       const m = ctx.measureText(line);
+      const p = style.pad || 8;
+      const bx = style.align === "left" ? tx - p : tx - m.width / 2 - p;
       ctx.fillStyle = style.bg;
-      ctx.fillRect(tx - m.width / 2 - (style.pad || 8), ly - fs + 2, m.width + (style.pad || 8) * 2, fs + (style.pad || 8));
+      ctx.fillRect(bx, ly - fs + 2, m.width + p * 2, fs + p);
     }
     ctx.save();
     if (style.glow) {
@@ -114,7 +171,30 @@ function drawResult(
     ctx.fillText(line, tx, ly);
     ctx.restore();
   });
+  ctx.restore();
 }
+
+/** Salva no celular: Web Share (galeria/fotos) com fallback pra download. */
+async function saveToPhone(canvas: HTMLCanvasElement, filename: string, forceShare = false) {
+  const blob = await new Promise<Blob | null>((r) => canvas.toBlob((b) => r(b), "image/png"));
+  if (!blob) return false;
+  const file = new File([blob], filename, { type: "image/png" });
+  const nav = navigator as Navigator & { canShare?: (d: unknown) => boolean };
+  if (nav.canShare?.({ files: [file] })) {
+    try {
+      await navigator.share({ files: [file], title: "SOCIAL ON" });
+      return true;
+    } catch { if (forceShare) return false; }
+  }
+  if (forceShare) return false;
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  return true;
+}
+
 
 function compress(file: File, max = 1024): Promise<string | null> {
   return new Promise((resolve) => {
@@ -177,7 +257,8 @@ const CopyBig = ({ text, label }: { text: string; label: string }) => {
 };
 
 export default function SocialOnStrategistPanel() {
-  const [phase, setPhase] = useState<"upload" | "loading" | "done">("upload");
+  const [mode, setMode] = useState<"auto" | "editor">("auto");
+  const [phase, setPhase] = useState<"upload" | "loading" | "done" | "editor">("upload");
   const [file, setFile] = useState<File | null>(null);
   const [isVideo, setIsVideo] = useState(false);
   const [blobUrl, setBlobUrl] = useState<string | null>(null);
@@ -190,11 +271,16 @@ export default function SocialOnStrategistPanel() {
   const [playing, setPlaying] = useState(false);
   const [duration, setDuration] = useState(0);
   const [exporting, setExporting] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [edText, setEdText] = useState("");
+  const [edStyle, setEdStyle] = useState(0);
 
   const canRefs = useRef<(HTMLCanvasElement | null)[]>([]);
+  const edCanRef = useRef<HTMLCanvasElement | null>(null);
   const vidRef = useRef<HTMLVideoElement | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const animRef = useRef<number | null>(null);
+
 
   const versions = data?.versoes || [];
   const v = versions[current];
@@ -221,6 +307,11 @@ export default function SocialOnStrategistPanel() {
   }, [playing, isVideo, versions, current, mediaEl]);
 
   useEffect(() => () => { if (blobUrl) URL.revokeObjectURL(blobUrl); }, [blobUrl]);
+
+  useEffect(() => {
+    if (phase !== "editor" || !mediaEl) return;
+    drawResult(edCanRef.current, mediaEl, edText, STYLES[edStyle] || STYLES[0]);
+  }, [phase, mediaEl, edText, edStyle]);
 
   const generate = async (f: File, url: string, vid: boolean) => {
     setPhase("loading"); setError(null);
@@ -269,11 +360,24 @@ export default function SocialOnStrategistPanel() {
     setIsVideo(vid);
     if (!vid) {
       const img = new window.Image();
-      img.onload = () => { setMediaEl(img); void generate(f, url, false); };
+      img.onload = () => {
+        setMediaEl(img);
+        if (mode === "auto") void generate(f, url, false);
+        else setPhase("editor");
+      };
       img.onerror = () => setError("Não consegui ler a imagem.");
       img.src = url;
-    } else {
+    } else if (mode === "auto") {
       void generate(f, url, true);
+    } else {
+      frameFromUrl(url)
+        .then((d) => {
+          vidRef.current = d.video;
+          setDuration(d.duration);
+          setMediaEl(d.video);
+          setPhase("editor");
+        })
+        .catch(() => setError("Não consegui ler o vídeo."));
     }
     e.target.value = "";
   };
@@ -281,9 +385,17 @@ export default function SocialOnStrategistPanel() {
   const reset = () => {
     setFile(null); setData(null); setPhase("upload"); setMediaEl(null);
     setCurrent(0); setError(null); setPlaying(false); setDuration(0);
+    setEdText(""); setEdStyle(0);
     vidRef.current = null;
     if (blobUrl) URL.revokeObjectURL(blobUrl);
     setBlobUrl(null);
+  };
+
+  const savePhoto = async (canvas: HTMLCanvasElement | null, label: string, shareOnly = false) => {
+    if (!canvas || saving) return;
+    setSaving(true);
+    await saveToPhone(canvas, `socialon-${label.replace(/\s+/g, "-").toLowerCase()}-${Date.now()}.png`, shareOnly);
+    setSaving(false);
   };
 
   const savePNG = () => {
@@ -291,13 +403,9 @@ export default function SocialOnStrategistPanel() {
     const ver = versions[current];
     if (!c || !ver) return;
     drawResult(c, mediaEl, ver.texto_video || "", styleOf(ver, current));
-    setTimeout(() => {
-      const a = document.createElement("a");
-      a.download = `socialon-${(ver.formato || "versao").replace(/\s+/g, "-").toLowerCase()}-${Date.now()}.png`;
-      a.href = c.toDataURL("image/png");
-      a.click();
-    }, 60);
+    setTimeout(() => { void savePhoto(c, ver.formato || "versao"); }, 60);
   };
+
 
   const saveVideo = async () => {
     const vid = vidRef.current;
@@ -352,7 +460,7 @@ export default function SocialOnStrategistPanel() {
             Sobe a mídia e sai com 4 versões + estratégia e próximos conteúdos
           </div>
         </div>
-        {phase === "done" && (
+        {phase !== "upload" && (
           <button onClick={reset} style={{ padding: "8px 12px", background: "transparent", border: `1px solid ${C.border}`, ...fM, fontSize: 12, color: C.textMid, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
             <X size={12} /> NOVO
           </button>
@@ -363,15 +471,46 @@ export default function SocialOnStrategistPanel() {
 
       {phase === "upload" && (
         <div>
+          <div style={{ display: "flex", gap: 6, marginBottom: 10 }}>
+            <button
+              onClick={() => setMode("auto")}
+              style={{
+                flex: 1, padding: "12px 0", cursor: "pointer",
+                background: mode === "auto" ? `${C.purple}12` : "transparent",
+                border: `1px solid ${mode === "auto" ? `${C.purple}66` : C.border}`,
+                display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
+              }}
+            >
+              <Brain size={16} color={C.purple} />
+              <span style={{ ...fT, fontSize: 14, color: mode === "auto" ? C.text : C.textMid }}>ESTRATEGISTA</span>
+              <span style={{ ...fM, fontSize: 11, color: C.textMuted }}>Sobe e pronto · 4 versões</span>
+            </button>
+            <button
+              onClick={() => setMode("editor")}
+              style={{
+                flex: 1, padding: "12px 0", cursor: "pointer",
+                background: mode === "editor" ? `${C.cyan}12` : "transparent",
+                border: `1px solid ${mode === "editor" ? `${C.cyan}66` : C.border}`,
+                display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
+              }}
+            >
+              <Type size={16} color={C.cyan} />
+              <span style={{ ...fT, fontSize: 14, color: mode === "editor" ? C.text : C.textMid }}>EDITOR</span>
+              <span style={{ ...fM, fontSize: 11, color: C.textMuted }}>Texto no vídeo · Fisheye</span>
+            </button>
+          </div>
+
           <div
             onClick={() => fileRef.current?.click()}
-            style={{ border: `2px dashed ${C.purple}44`, padding: "44px 16px", textAlign: "center", cursor: "pointer" }}
+            style={{ border: `2px dashed ${mode === "auto" ? `${C.purple}44` : `${C.cyan}44`}`, padding: "44px 16px", textAlign: "center", cursor: "pointer" }}
           >
-            <Camera size={28} color={C.purple} />
-            <div style={{ ...fT, fontSize: 20, color: C.text, marginTop: 10 }}>Sobe e pronto</div>
-            <div style={{ ...fM, fontSize: 12, color: C.textMid, marginTop: 4 }}>Foto ou vídeo · qualquer formato</div>
+            <Camera size={28} color={mode === "auto" ? C.purple : C.cyan} />
+            <div style={{ ...fT, fontSize: 20, color: C.text, marginTop: 10 }}>Sobe foto ou vídeo</div>
+            <div style={{ ...fM, fontSize: 12, color: C.textMid, marginTop: 4 }}>Qualquer formato · salva nas fotos</div>
             <div style={{ ...fM, fontSize: 12, color: C.textMuted, marginTop: 2 }}>
-              O estrategista decide o formato, entrega 4 versões e a direção do que criar depois
+              {mode === "auto"
+                ? "O estrategista decide o formato, entrega 4 versões e a direção do que criar depois"
+                : "Você escolhe o estilo do texto e salva direto no celular"}
             </div>
           </div>
           {error && (
@@ -382,6 +521,69 @@ export default function SocialOnStrategistPanel() {
           </div>
         </div>
       )}
+
+      {phase === "editor" && mediaEl && (
+        <div style={{ display: "grid", gap: 10 }}>
+          <canvas
+            ref={edCanRef}
+            width={720}
+            height={1280}
+            style={{ width: "100%", maxWidth: 320, margin: "0 auto", display: "block" }}
+          />
+
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+            {STYLES.map((s, i) => (
+              <button
+                key={s.name}
+                onClick={() => setEdStyle(i)}
+                style={{
+                  flex: "1 1 calc(20% - 4px)", minWidth: 62, padding: "7px 2px", cursor: "pointer",
+                  background: edStyle === i ? C.goldBg : "transparent",
+                  border: `1px solid ${edStyle === i ? `${C.gold}66` : C.border}`,
+                  ...fM, fontSize: 10, color: edStyle === i ? C.gold : C.textMid,
+                }}
+              >
+                {s.name}
+              </button>
+            ))}
+          </div>
+
+          <textarea
+            value={edText}
+            onChange={(e) => setEdText(e.target.value)}
+            rows={2}
+            placeholder="Digite o texto..."
+            style={{ width: "100%", padding: "8px 10px", ...fT, fontSize: 15, background: `${C.text}08`, border: `1px solid ${C.border}`, color: C.text, resize: "none", boxSizing: "border-box" }}
+          />
+
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+            {QUICK_TEXTS.map((t) => (
+              <button
+                key={t}
+                onClick={() => setEdText(t)}
+                style={{ padding: "4px 7px", ...fM, fontSize: 10, color: C.textMid, background: "transparent", border: `1px solid ${C.border}`, cursor: "pointer" }}
+              >
+                {t.replace("\n", " ")}
+              </button>
+            ))}
+          </div>
+
+          <button
+            onClick={() => void savePhoto(edCanRef.current, STYLES[edStyle].name)}
+            disabled={saving}
+            style={{ width: "100%", padding: "14px 0", background: C.gold, border: "none", ...fT, fontSize: 15, color: C.bg, cursor: saving ? "default" : "pointer", opacity: saving ? 0.6 : 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
+          >
+            {saving ? <RefreshCw size={15} className="animate-spin" /> : <Download size={15} />} SALVAR NAS FOTOS
+          </button>
+          <button
+            onClick={() => void savePhoto(edCanRef.current, STYLES[edStyle].name, true)}
+            style={{ width: "100%", padding: "10px 0", background: "transparent", border: `1px solid ${C.border}`, ...fT, fontSize: 13, color: C.textMid, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
+          >
+            <Share2 size={13} /> COMPARTILHAR
+          </button>
+        </div>
+      )}
+
 
       {phase === "loading" && (
         <div style={{ padding: "48px 16px", textAlign: "center" }}>
@@ -512,6 +714,15 @@ export default function SocialOnStrategistPanel() {
               </button>
             )}
           </div>
+
+          <button
+            onClick={() => void savePhoto(canRefs.current[current], v.formato || "versao", true)}
+            style={{ width: "100%", padding: "10px 0", background: "transparent", border: `1px solid ${C.border}`, ...fT, fontSize: 13, color: C.textMid, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
+          >
+            <Share2 size={13} /> COMPARTILHAR
+          </button>
+
+
 
           {v.legenda && (
             <div style={{ border: `1px solid ${C.border}`, padding: 10, display: "grid", gap: 8 }}>
