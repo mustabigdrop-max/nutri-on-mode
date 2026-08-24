@@ -257,7 +257,8 @@ const CopyBig = ({ text, label }: { text: string; label: string }) => {
 };
 
 export default function SocialOnStrategistPanel() {
-  const [phase, setPhase] = useState<"upload" | "loading" | "done">("upload");
+  const [mode, setMode] = useState<"auto" | "editor">("auto");
+  const [phase, setPhase] = useState<"upload" | "loading" | "done" | "editor">("upload");
   const [file, setFile] = useState<File | null>(null);
   const [isVideo, setIsVideo] = useState(false);
   const [blobUrl, setBlobUrl] = useState<string | null>(null);
@@ -270,11 +271,16 @@ export default function SocialOnStrategistPanel() {
   const [playing, setPlaying] = useState(false);
   const [duration, setDuration] = useState(0);
   const [exporting, setExporting] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [edText, setEdText] = useState("");
+  const [edStyle, setEdStyle] = useState(0);
 
   const canRefs = useRef<(HTMLCanvasElement | null)[]>([]);
+  const edCanRef = useRef<HTMLCanvasElement | null>(null);
   const vidRef = useRef<HTMLVideoElement | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const animRef = useRef<number | null>(null);
+
 
   const versions = data?.versoes || [];
   const v = versions[current];
