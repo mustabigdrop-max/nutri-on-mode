@@ -337,6 +337,12 @@ export default function SocialOnProPanel() {
           <div style={{ ...fM, fontSize: 12, color: C.textMid, marginTop: 2 }}>Sobe a mídia, escolhe a vibe, sai post pronto com texto queimado</div>
         </div>
         {step === "result" && (
+          <span style={{ ...fM, fontSize: 10, letterSpacing: "0.12em", color: C.green, background: `${C.green}12`, border: `1px solid ${C.green}44`, padding: "4px 8px" }}>
+            PRONTO PRA POSTAR
+          </span>
+        )}
+        {step === "result" && (
+
           <div style={{ display: "flex", gap: 8 }}>
             <button onClick={exportPNG} style={{ padding: "9px 14px", background: "transparent", border: `1px solid ${C.border}`, ...fM, fontSize: 12, color: C.textMid, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
               <Download size={13} /> SALVAR FOTO
