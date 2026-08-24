@@ -173,7 +173,11 @@ export default function MceOnboarding({ onComplete }: { onComplete: () => void }
   const isLast = step === totalSteps - 1;
 
   return (
-    <div style={{ minHeight: "100vh", background: "#020205", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+    <div
+      role="dialog"
+      aria-modal="true"
+      style={{ position: "fixed", inset: 0, zIndex: 90, background: "#020205", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, overflowY: "auto" }}
+    >
       <div style={{ width: "100%", maxWidth: 520, padding: 28, borderRadius: 20, background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.08)" }}>
         <div style={{ display: "flex", gap: 6, marginBottom: 24 }}>
           {Array.from({ length: totalSteps }).map((_, i) => (
