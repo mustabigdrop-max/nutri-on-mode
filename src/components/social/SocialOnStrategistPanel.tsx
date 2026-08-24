@@ -715,6 +715,15 @@ export default function SocialOnStrategistPanel() {
             )}
           </div>
 
+          <button
+            onClick={() => void savePhoto(canRefs.current[current], v.formato || "versao", true)}
+            style={{ width: "100%", padding: "10px 0", background: "transparent", border: `1px solid ${C.border}`, ...fT, fontSize: 13, color: C.textMid, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
+          >
+            <Share2 size={13} /> COMPARTILHAR
+          </button>
+
+
+
           {v.legenda && (
             <div style={{ border: `1px solid ${C.border}`, padding: 10, display: "grid", gap: 8 }}>
               <div style={{ ...fM, fontSize: 12, color: C.text, whiteSpace: "pre-wrap" }}>{v.legenda}</div>
