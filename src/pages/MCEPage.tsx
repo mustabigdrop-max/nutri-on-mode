@@ -664,7 +664,7 @@ export default function MCEIntelligencePage() {
       {!onboardingDone && (
         <MceOnboarding onComplete={() => {
           setOnboardingDone(true);
-          void refreshScores();
+          setLocalScores(null); void refreshScores();
         }} />
       )}
 
@@ -744,7 +744,7 @@ export default function MCEIntelligencePage() {
 
           {user && showCheckin && (
             <div style={{ marginTop: 20 }}>
-              <MceDailyCheckin onSubmit={() => { setShowCheckin(false); void refreshScores(); }} onClose={() => setShowCheckin(false)} />
+              <MceDailyCheckin onSubmit={() => { setShowCheckin(false); setLocalScores(null); void refreshScores(); }} onClose={() => setShowCheckin(false)} />
             </div>
           )}
 
@@ -838,7 +838,7 @@ export default function MCEIntelligencePage() {
           {tab === "checkin" && (
             <div>
               <div style={sectionTitle}>CHECK-IN DIÁRIO · MCE</div>
-              <MceDailyCheckin onSubmit={() => void refreshScores()} />
+              <MceDailyCheckin onSubmit={() => { setLocalScores(null); void refreshScores(); }} />
             </div>
           )}
 
