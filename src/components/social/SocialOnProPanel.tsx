@@ -38,18 +38,27 @@ type ProResult = {
   self_comment?: string; musica?: string; horario?: string; stories?: string[];
 };
 
-const CopyBtn = ({ text, label = "COPIAR" }: { text: string; label?: string }) => {
+const CopyBtn = ({ text, label = "COPIAR", big }: { text: string; label?: string; big?: boolean }) => {
   const [ok, setOk] = useState(false);
   return (
     <button
       type="button"
       onClick={() => { navigator.clipboard.writeText(text).catch(() => {}); setOk(true); setTimeout(() => setOk(false), 2000); }}
-      style={{ background: "none", border: "none", cursor: "pointer", ...fM, fontSize: 10, color: ok ? C.green : C.textMid, display: "flex", alignItems: "center", gap: 4 }}
+      style={big
+        ? {
+            width: "100%", padding: "11px 0", cursor: "pointer",
+            background: ok ? `${C.green}15` : C.goldBg,
+            border: `1px solid ${ok ? `${C.green}44` : C.border}`,
+            ...fT, fontSize: 13, color: ok ? C.green : C.gold,
+            display: "flex", alignItems: "center", justifyContent: "center", gap: 6, transition: "all 0.2s",
+          }
+        : { background: "none", border: "none", cursor: "pointer", ...fM, fontSize: 10, color: ok ? C.green : C.textMid, display: "flex", alignItems: "center", gap: 4 }}
     >
-      {ok ? <Check size={11} /> : <Copy size={11} />} {ok ? "COPIADO" : label}
+      {ok ? <Check size={big ? 14 : 11} /> : <Copy size={big ? 14 : 11} />} {ok ? "COPIADO" : label}
     </button>
   );
 };
+
 
 function compress(file: File, max = 1024): Promise<{ dataUrl: string } | null> {
   return new Promise((resolve) => {
@@ -328,6 +337,12 @@ export default function SocialOnProPanel() {
           <div style={{ ...fM, fontSize: 12, color: C.textMid, marginTop: 2 }}>Sobe a mídia, escolhe a vibe, sai post pronto com texto queimado</div>
         </div>
         {step === "result" && (
+          <span style={{ ...fM, fontSize: 10, letterSpacing: "0.12em", color: C.green, background: `${C.green}12`, border: `1px solid ${C.green}44`, padding: "4px 8px" }}>
+            PRONTO PRA POSTAR
+          </span>
+        )}
+        {step === "result" && (
+
           <div style={{ display: "flex", gap: 8 }}>
             <button onClick={exportPNG} style={{ padding: "9px 14px", background: "transparent", border: `1px solid ${C.border}`, ...fM, fontSize: 12, color: C.textMid, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
               <Download size={13} /> SALVAR FOTO
@@ -457,6 +472,27 @@ export default function SocialOnProPanel() {
             </div>
           )}
 
+          <div style={{ display: "flex", gap: 6, marginBottom: 10 }}>
+            <button onClick={exportPNG} style={{
+              flex: 1, padding: "13px 0", background: C.gold, border: "none",
+              ...fT, fontSize: 14, color: C.bg, cursor: "pointer",
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+            }}>
+              <Download size={15} /> SALVAR FOTO
+            </button>
+            {isVideo && (
+              <button onClick={exportVid} disabled={exporting} style={{
+                flex: 1, padding: "13px 0", background: C.cyan, border: "none",
+                ...fT, fontSize: 14, color: C.bg, cursor: exporting ? "default" : "pointer",
+                opacity: exporting ? 0.6 : 1,
+                display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+              }}>
+                {exporting ? <RefreshCw size={15} className="animate-spin" /> : <Download size={15} />} SALVAR VÍDEO
+              </button>
+            )}
+          </div>
+
+
           <div style={{ border: `1px solid ${C.border}`, padding: 12, marginBottom: 8 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6, gap: 8, flexWrap: "wrap" }}>
               <span style={{ ...fM, fontSize: 11, color: C.gold, letterSpacing: "0.1em" }}>TEXTO NO VÍDEO</span>
@@ -482,37 +518,32 @@ export default function SocialOnProPanel() {
           </div>
 
           <div style={{ border: `1px solid ${C.border}`, padding: 12, marginBottom: 8 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-              <span style={{ ...fM, fontSize: 11, color: C.gold, letterSpacing: "0.1em" }}>LEGENDA PRONTA</span>
-              <CopyBtn text={data.legenda || ""} />
-            </div>
-            <div style={{ ...fM, fontSize: 13, color: C.textMid, lineHeight: 1.8, whiteSpace: "pre-line", maxHeight: 220, overflow: "auto" }}>{data.legenda}</div>
+            <div style={{ ...fM, fontSize: 11, color: C.gold, letterSpacing: "0.1em", marginBottom: 6 }}>LEGENDA PRONTA</div>
+            <div style={{ ...fM, fontSize: 13, color: C.textMid, lineHeight: 1.8, whiteSpace: "pre-line", maxHeight: 220, overflow: "auto", marginBottom: 8 }}>{data.legenda}</div>
+            <CopyBtn text={data.legenda || ""} label="COPIAR LEGENDA" big />
           </div>
 
           {!!data.hashtags?.length && (
             <div style={{ border: `1px solid ${C.border}`, padding: 12, marginBottom: 8 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-                <span style={{ ...fM, fontSize: 11, color: C.textMuted }}>HASHTAGS ({data.hashtags.length})</span>
-                <CopyBtn text={data.hashtags.join(" ")} />
-              </div>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+              <div style={{ ...fM, fontSize: 11, color: C.textMuted, marginBottom: 6 }}>HASHTAGS ({data.hashtags.length})</div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginBottom: 8 }}>
                 {data.hashtags.map((h, i) => (
                   <span key={i} style={{ ...fM, fontSize: 11, color: C.cyan, background: C.cyanBg, padding: "2px 6px" }}>{h}</span>
                 ))}
               </div>
+              <CopyBtn text={data.hashtags.join(" ")} label="COPIAR HASHTAGS" big />
             </div>
           )}
 
           <div style={{ display: "flex", gap: 8, marginBottom: 8, flexWrap: "wrap" }}>
             {data.self_comment && (
               <div style={{ flex: "1 1 200px", border: `1px solid ${C.border}`, padding: 12 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-                  <span style={{ ...fM, fontSize: 11, color: C.textMuted }}>SELF-COMMENT</span>
-                  <CopyBtn text={data.self_comment} label="" />
-                </div>
-                <div style={{ ...fM, fontSize: 12, color: C.textMid, lineHeight: 1.6 }}>{data.self_comment}</div>
+                <div style={{ ...fM, fontSize: 11, color: C.textMuted, marginBottom: 4 }}>SELF-COMMENT</div>
+                <div style={{ ...fM, fontSize: 12, color: C.textMid, lineHeight: 1.6, marginBottom: 8 }}>{data.self_comment}</div>
+                <CopyBtn text={data.self_comment} label="COPIAR COMENTÁRIO" big />
               </div>
             )}
+
             <div style={{ flex: "1 1 200px", border: `1px solid ${C.border}`, padding: 12 }}>
               {data.musica && (
                 <>
