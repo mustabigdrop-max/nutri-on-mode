@@ -14,7 +14,7 @@ import {
   ArrowLeft, ArrowRight, Copy, Loader2, Rocket, Search, Target, CalendarDays,
   BarChart3, GraduationCap, ShoppingCart, Check, Instagram, Trash2,
   RefreshCw, MessageSquare, Microscope, Camera, BookOpen, Lightbulb,
-  ImagePlus, Trophy, Flame, Dna, ShieldCheck, FlaskConical, Sparkles,
+  ImagePlus, Trophy, Flame, Dna, ShieldCheck, FlaskConical, Sparkles, Zap,
   Package, Clapperboard,
 } from "lucide-react";
 import RepurposerPanel from "@/components/social/RepurposerPanel";
