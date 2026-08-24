@@ -364,12 +364,12 @@ export default function SocialOnStrategistPanel() {
       const img = new window.Image();
       img.onload = () => {
         setMediaEl(img);
-        if (mode === "auto") void generate(f, url, false);
+        if (modeRef.current === "auto") void generate(f, url, false);
         else setPhase("editor");
       };
       img.onerror = () => setError("Não consegui ler a imagem.");
       img.src = url;
-    } else if (mode === "auto") {
+    } else if (modeRef.current === "auto") {
       void generate(f, url, true);
     } else {
       frameFromUrl(url)
