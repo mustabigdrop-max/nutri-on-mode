@@ -308,6 +308,11 @@ export default function SocialOnStrategistPanel() {
 
   useEffect(() => () => { if (blobUrl) URL.revokeObjectURL(blobUrl); }, [blobUrl]);
 
+  useEffect(() => {
+    if (phase !== "editor" || !mediaEl) return;
+    drawResult(edCanRef.current, mediaEl, edText, STYLES[edStyle] || STYLES[0]);
+  }, [phase, mediaEl, edText, edStyle]);
+
   const generate = async (f: File, url: string, vid: boolean) => {
     setPhase("loading"); setError(null);
     const msgs = ["Estrategista analisando...", "Lendo o conteúdo...", "Montando estratégia...", "Criando 4 versões...", "Aplicando textos..."];
@@ -355,11 +360,24 @@ export default function SocialOnStrategistPanel() {
     setIsVideo(vid);
     if (!vid) {
       const img = new window.Image();
-      img.onload = () => { setMediaEl(img); void generate(f, url, false); };
+      img.onload = () => {
+        setMediaEl(img);
+        if (mode === "auto") void generate(f, url, false);
+        else setPhase("editor");
+      };
       img.onerror = () => setError("Não consegui ler a imagem.");
       img.src = url;
-    } else {
+    } else if (mode === "auto") {
       void generate(f, url, true);
+    } else {
+      frameFromUrl(url)
+        .then((d) => {
+          vidRef.current = d.video;
+          setDuration(d.duration);
+          setMediaEl(d.video);
+          setPhase("editor");
+        })
+        .catch(() => setError("Não consegui ler o vídeo."));
     }
     e.target.value = "";
   };
@@ -367,9 +385,17 @@ export default function SocialOnStrategistPanel() {
   const reset = () => {
     setFile(null); setData(null); setPhase("upload"); setMediaEl(null);
     setCurrent(0); setError(null); setPlaying(false); setDuration(0);
+    setEdText(""); setEdStyle(0);
     vidRef.current = null;
     if (blobUrl) URL.revokeObjectURL(blobUrl);
     setBlobUrl(null);
+  };
+
+  const savePhoto = async (canvas: HTMLCanvasElement | null, label: string, shareOnly = false) => {
+    if (!canvas || saving) return;
+    setSaving(true);
+    await saveToPhone(canvas, `socialon-${label.replace(/\s+/g, "-").toLowerCase()}-${Date.now()}.png`, shareOnly);
+    setSaving(false);
   };
 
   const savePNG = () => {
@@ -377,13 +403,9 @@ export default function SocialOnStrategistPanel() {
     const ver = versions[current];
     if (!c || !ver) return;
     drawResult(c, mediaEl, ver.texto_video || "", styleOf(ver, current));
-    setTimeout(() => {
-      const a = document.createElement("a");
-      a.download = `socialon-${(ver.formato || "versao").replace(/\s+/g, "-").toLowerCase()}-${Date.now()}.png`;
-      a.href = c.toDataURL("image/png");
-      a.click();
-    }, 60);
+    setTimeout(() => { void savePhoto(c, ver.formato || "versao"); }, 60);
   };
+
 
   const saveVideo = async () => {
     const vid = vidRef.current;
