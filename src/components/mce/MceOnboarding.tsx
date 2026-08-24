@@ -23,6 +23,14 @@ export default function MceOnboarding({ onComplete }: { onComplete: () => void }
   const [diagnostic, setDiagnostic] = useState<Record<PillarKey, number[]>>({ M: [5, 5, 5], C: [5, 5, 5], E: [5, 5, 5] });
   const [saving, setSaving] = useState(false);
 
+  // Trava o scroll da página por trás do onboarding
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = prev; };
+  }, []);
+
+
   const totalSteps = 5;
 
   const updateDiagnostic = (p: PillarKey, idx: number, val: number) => {
