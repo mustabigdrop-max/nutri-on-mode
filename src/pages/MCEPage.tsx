@@ -578,18 +578,29 @@ export default function MCEIntelligencePage() {
   const updateDiagnostic = (pKey: PillarKey, idx: number, val: number) => {
     const answers = [...diagnostics[pKey]];
     answers[idx] = val;
-    setDiagnostics((prev) => ({ ...prev, [pKey]: answers }));
+    const nextDiagnostics = { ...diagnostics, [pKey]: answers };
+    setDiagnostics(nextDiagnostics);
+
+    // Reflete imediatamente nos anéis e no triângulo
+    const toScore = (arr: number[]) => Math.round((arr.reduce((a, b) => a + b, 0) / 30) * 100);
+    const diagScores = {
+      M: toScore(nextDiagnostics.M),
+      C: toScore(nextDiagnostics.C),
+      E: toScore(nextDiagnostics.E),
+    };
+    setLocalScores(diagScores);
+
     if (user) {
       void supabase.from("mce_diagnostics").upsert(
         { user_id: user.id, pillar: pKey, answers },
         { onConflict: "user_id,pillar" },
       );
-      const newScore = Math.round((answers.reduce((a, b) => a + b, 0) / 30) * 100);
       void supabase.from("mce_scores").insert({
-        user_id: user.id, score_m: pKey === "M" ? newScore : scores.M, score_c: pKey === "C" ? newScore : scores.C, score_e: pKey === "E" ? newScore : scores.E, source: "diagnostic",
+        user_id: user.id, score_m: diagScores.M, score_c: diagScores.C, score_e: diagScores.E, source: "diagnostic",
       });
     }
   };
+
 
   const toggleComplete = (key: string) => {
     const nowDone = !completed[key];
