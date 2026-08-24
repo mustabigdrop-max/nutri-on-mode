@@ -420,6 +420,70 @@ Gere o JSON completo.`;
       }
     }
 
+    // ---- MODO SOCIAL VERSOES: 1 mídia -> 4 versões prontas pra postar ----
+    if (body?.mode === "social_versoes") {
+      const frame = typeof body?.image === "string" ? body.image : (images[0] ?? null);
+
+      const sysV = `Você é o sistema de conteúdo do nutriON, escrevendo na voz do Coach Diogo Mello (@diogo.mell0).
+
+${COACH_CONTEXT}
+
+REGRAS:
+- 100% português brasileiro, direto, sem enrolação. "Transformação é sistema."
+- NUNCA use "jornada", "mindful", "empoderamento", "desbloqueie seu potencial".
+- Nunca se apresente como IA nem como sistema: a voz é do Diogo Mello.
+- Cada "texto_video" é curto (máx 6 palavras) e bate forte na tela.
+
+Analise a mídia e gere 4 VERSÕES DIFERENTES de conteúdo pro Instagram, cada uma com estilo e propósito próprio.
+
+Responda SOMENTE JSON válido neste schema:
+{"versoes":[
+{"nome":"REEL IMPACTO","texto_video":"máx 6 palavras de impacto","legenda":"legenda completa com CTA e @diogo.mell0","hashtags":["até 20 hashtags"],"self_comment":"comentário pra gerar DMs","musica":"áudio trending","horario":"melhor horário"},
+{"nome":"STORY FRASE","texto_video":"frase curta emocional ou MCE","legenda":"legenda curta pra story","hashtags":["até 10 hashtags"],"self_comment":"","musica":"","horario":""},
+{"nome":"FEED EDUCATIVO","texto_video":"título educativo curto","legenda":"legenda longa educativa com referência do método MCE e CTA","hashtags":["até 20 hashtags"],"self_comment":"comentário técnico","musica":"","horario":"melhor horário"},
+{"nome":"PROVOCAÇÃO","texto_video":"frase provocativa de 4-6 palavras","legenda":"legenda direta provocativa com CTA forte","hashtags":["até 15 hashtags"],"self_comment":"comentário que gera debate","musica":"","horario":""}
+]}`;
+
+      const vContent: unknown[] = [];
+      if (frame) vContent.push({ type: "image_url", image_url: { url: frame } });
+      vContent.push({
+        type: "text",
+        text: `Analise ${frame ? (body?.from_video ? "este frame do vídeo" : "esta imagem") : "o contexto"} e gere as 4 versões.
+${context ? `Contexto do coach: ${context}` : "Sem contexto adicional."}
+Responda JSON puro.`,
+      });
+
+      try {
+        const parsedV = await callGateway(
+          apiKeyEnv,
+          frame ? "google/gemini-2.5-pro" : "google/gemini-2.5-flash",
+          [{ role: "system", content: sysV }, { role: "user", content: vContent }],
+        );
+        try {
+          await adminClient().from("prism_analyses").insert({
+            coach_id: auth.userId,
+            files_count: frame ? 1 : 0,
+            file_types: [body?.from_video ? "video" : "image"],
+            context,
+            mode: "social_versoes",
+            subtype: "4-versoes",
+            ai_content: parsedV ?? null,
+            format_used: "reel",
+          });
+        } catch (_) { /* persistência não bloqueia */ }
+
+        return new Response(JSON.stringify({ result: parsedV }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      } catch (e) {
+        const status = (e as any)?.status ?? 500;
+        return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Erro inesperado" }), {
+          status, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
+
+
     // ---- MODO SOCIAL PRO: 1 mídia + vibe visual -> texto do vídeo, legenda, hashtags, stories ----
     if (body?.mode === "social_pro") {
       const vibeName = typeof body?.vibe === "string" ? body.vibe.slice(0, 40) : "POV";
