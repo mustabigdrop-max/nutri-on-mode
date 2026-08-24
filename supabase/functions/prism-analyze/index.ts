@@ -483,6 +483,77 @@ Responda JSON puro.`,
       }
     }
 
+    // ---- MODO ESTRATEGISTA: 1 mídia -> análise + estratégia + 4 versões + próximos conteúdos ----
+    if (body?.mode === "social_estrategista") {
+      const frame = typeof body?.image === "string" ? body.image : (images[0] ?? null);
+
+      const sysE = `Você é o ESTRATEGISTA do SOCIAL ON — o sistema de conteúdo do nutriON, escrevendo na voz do Coach Diogo Mello (@diogo.mell0).
+
+${COACH_CONTEXT}
+
+SEU PAPEL: estrategista de conteúdo digital especialista em fitness, wellness e empreendedorismo. Você analisa a mídia e entrega conteúdo pronto pra postar + direção estratégica do que criar depois.
+
+REGRAS:
+- 100% português brasileiro, direto, sem enrolação. "Transformação é sistema."
+- NUNCA use "jornada", "mindful", "empoderamento", "desbloqueie seu potencial".
+- Nunca se apresente como IA nem como sistema: a voz é do Diogo Mello.
+- "estilo" é um número 0-5 (0=IMPACTO, 1=GOLD, 2=NEON, 3=LEGENDA, 4=CINEMA, 5=EMOCIONAL).
+- Cada versão tem propósito DIFERENTE no funil (TOFU/MOFU/BOFU) e legendas DISTINTAS entre si.
+- "texto_video" tem no máximo 6 palavras.
+
+Responda SOMENTE JSON válido neste schema:
+{
+ "analise": "o que você vê na mídia em 2 frases",
+ "estrategia": "por que esse conteúdo importa agora, onde encaixa no funil e qual resultado esperar",
+ "versoes": [
+  {"formato":"REEL VIRAL","texto_video":"máx 6 palavras","estilo":0,"legenda":"legenda completa com CTA e @diogo.mell0","hashtags":["até 20 hashtags"],"self_comment":"comentário estratégico","musica":"áudio sugerido","horario":"melhor horário","funil":"TOFU"},
+  {"formato":"STORY","texto_video":"frase pra story","estilo":5,"legenda":"texto curto do story","hashtags":[],"self_comment":"","musica":"","horario":"","funil":"TOFU"},
+  {"formato":"FEED EDUCATIVO","texto_video":"título educativo","estilo":1,"legenda":"legenda longa educativa com referência do método MCE","hashtags":["até 20 hashtags"],"self_comment":"comentário técnico","musica":"","horario":"melhor horário","funil":"MOFU"},
+  {"formato":"CONVERSÃO","texto_video":"frase de venda sutil","estilo":3,"legenda":"legenda com CTA forte pra DM ou link","hashtags":["até 15 hashtags"],"self_comment":"comentário que gera DMs","musica":"","horario":"","funil":"BOFU"}
+ ],
+ "proximos_conteudos": ["ideia 1 do próximo conteúdo pra gravar", "ideia 2 outro ângulo ou formato", "ideia 3 conteúdo complementar pra stories"],
+ "dica_estrategica": "1 dica acionável sobre crescimento, algoritmo ou posicionamento baseada no que viu"
+}`;
+
+      const eContent: unknown[] = [];
+      if (frame) eContent.push({ type: "image_url", image_url: { url: frame } });
+      eContent.push({
+        type: "text",
+        text: `Analise ${frame ? (body?.from_video ? "este frame do vídeo" : "esta imagem") : "o contexto"} como estrategista. Gere as 4 versões prontas + direção estratégica + próximos conteúdos.
+${context ? `Contexto do coach: ${context}` : "Sem contexto adicional."}
+Responda JSON puro.`,
+      });
+
+      try {
+        const parsedE = await callGateway(
+          apiKeyEnv,
+          frame ? "google/gemini-2.5-pro" : "google/gemini-2.5-flash",
+          [{ role: "system", content: sysE }, { role: "user", content: eContent }],
+        );
+        try {
+          await adminClient().from("prism_analyses").insert({
+            coach_id: auth.userId,
+            files_count: frame ? 1 : 0,
+            file_types: [body?.from_video ? "video" : "image"],
+            context,
+            mode: "social_estrategista",
+            subtype: "estrategista",
+            ai_content: parsedE ?? null,
+            format_used: "reel",
+          });
+        } catch (_) { /* persistência não bloqueia */ }
+
+        return new Response(JSON.stringify({ result: parsedE }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      } catch (e) {
+        const status = (e as any)?.status ?? 500;
+        return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Erro inesperado" }), {
+          status, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
+
 
     // ---- MODO SOCIAL PRO: 1 mídia + vibe visual -> texto do vídeo, legenda, hashtags, stories ----
     if (body?.mode === "social_pro") {
