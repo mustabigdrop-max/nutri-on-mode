@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   BarChart3, Brain, Camera, Check, ChevronLeft, ChevronRight, Copy, Download, Hash,
-  Lightbulb, Pause, Play, RefreshCw, Share2, Target, TrendingUp, Type, Video, X,
+  Layers, Lightbulb, Pause, Play, RefreshCw, Share2, Smartphone, Target, TrendingUp,
+  Type, Video, X, Zap,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
