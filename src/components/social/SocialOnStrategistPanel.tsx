@@ -460,7 +460,7 @@ export default function SocialOnStrategistPanel() {
             Sobe a mídia e sai com 4 versões + estratégia e próximos conteúdos
           </div>
         </div>
-        {phase === "done" && (
+        {phase !== "upload" && (
           <button onClick={reset} style={{ padding: "8px 12px", background: "transparent", border: `1px solid ${C.border}`, ...fM, fontSize: 12, color: C.textMid, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
             <X size={12} /> NOVO
           </button>
@@ -471,15 +471,46 @@ export default function SocialOnStrategistPanel() {
 
       {phase === "upload" && (
         <div>
+          <div style={{ display: "flex", gap: 6, marginBottom: 10 }}>
+            <button
+              onClick={() => setMode("auto")}
+              style={{
+                flex: 1, padding: "12px 0", cursor: "pointer",
+                background: mode === "auto" ? `${C.purple}12` : "transparent",
+                border: `1px solid ${mode === "auto" ? `${C.purple}66` : C.border}`,
+                display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
+              }}
+            >
+              <Brain size={16} color={C.purple} />
+              <span style={{ ...fT, fontSize: 14, color: mode === "auto" ? C.text : C.textMid }}>ESTRATEGISTA</span>
+              <span style={{ ...fM, fontSize: 11, color: C.textMuted }}>Sobe e pronto · 4 versões</span>
+            </button>
+            <button
+              onClick={() => setMode("editor")}
+              style={{
+                flex: 1, padding: "12px 0", cursor: "pointer",
+                background: mode === "editor" ? `${C.cyan}12` : "transparent",
+                border: `1px solid ${mode === "editor" ? `${C.cyan}66` : C.border}`,
+                display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
+              }}
+            >
+              <Type size={16} color={C.cyan} />
+              <span style={{ ...fT, fontSize: 14, color: mode === "editor" ? C.text : C.textMid }}>EDITOR</span>
+              <span style={{ ...fM, fontSize: 11, color: C.textMuted }}>Texto no vídeo · Fisheye</span>
+            </button>
+          </div>
+
           <div
             onClick={() => fileRef.current?.click()}
-            style={{ border: `2px dashed ${C.purple}44`, padding: "44px 16px", textAlign: "center", cursor: "pointer" }}
+            style={{ border: `2px dashed ${mode === "auto" ? `${C.purple}44` : `${C.cyan}44`}`, padding: "44px 16px", textAlign: "center", cursor: "pointer" }}
           >
-            <Camera size={28} color={C.purple} />
-            <div style={{ ...fT, fontSize: 20, color: C.text, marginTop: 10 }}>Sobe e pronto</div>
-            <div style={{ ...fM, fontSize: 12, color: C.textMid, marginTop: 4 }}>Foto ou vídeo · qualquer formato</div>
+            <Camera size={28} color={mode === "auto" ? C.purple : C.cyan} />
+            <div style={{ ...fT, fontSize: 20, color: C.text, marginTop: 10 }}>Sobe foto ou vídeo</div>
+            <div style={{ ...fM, fontSize: 12, color: C.textMid, marginTop: 4 }}>Qualquer formato · salva nas fotos</div>
             <div style={{ ...fM, fontSize: 12, color: C.textMuted, marginTop: 2 }}>
-              O estrategista decide o formato, entrega 4 versões e a direção do que criar depois
+              {mode === "auto"
+                ? "O estrategista decide o formato, entrega 4 versões e a direção do que criar depois"
+                : "Você escolhe o estilo do texto e salva direto no celular"}
             </div>
           </div>
           {error && (
@@ -490,6 +521,69 @@ export default function SocialOnStrategistPanel() {
           </div>
         </div>
       )}
+
+      {phase === "editor" && mediaEl && (
+        <div style={{ display: "grid", gap: 10 }}>
+          <canvas
+            ref={edCanRef}
+            width={720}
+            height={1280}
+            style={{ width: "100%", maxWidth: 320, margin: "0 auto", display: "block" }}
+          />
+
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+            {STYLES.map((s, i) => (
+              <button
+                key={s.name}
+                onClick={() => setEdStyle(i)}
+                style={{
+                  flex: "1 1 calc(20% - 4px)", minWidth: 62, padding: "7px 2px", cursor: "pointer",
+                  background: edStyle === i ? C.goldBg : "transparent",
+                  border: `1px solid ${edStyle === i ? `${C.gold}66` : C.border}`,
+                  ...fM, fontSize: 10, color: edStyle === i ? C.gold : C.textMid,
+                }}
+              >
+                {s.name}
+              </button>
+            ))}
+          </div>
+
+          <textarea
+            value={edText}
+            onChange={(e) => setEdText(e.target.value)}
+            rows={2}
+            placeholder="Digite o texto..."
+            style={{ width: "100%", padding: "8px 10px", ...fT, fontSize: 15, background: `${C.text}08`, border: `1px solid ${C.border}`, color: C.text, resize: "none", boxSizing: "border-box" }}
+          />
+
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+            {QUICK_TEXTS.map((t) => (
+              <button
+                key={t}
+                onClick={() => setEdText(t)}
+                style={{ padding: "4px 7px", ...fM, fontSize: 10, color: C.textMid, background: "transparent", border: `1px solid ${C.border}`, cursor: "pointer" }}
+              >
+                {t.replace("\n", " ")}
+              </button>
+            ))}
+          </div>
+
+          <button
+            onClick={() => void savePhoto(edCanRef.current, STYLES[edStyle].name)}
+            disabled={saving}
+            style={{ width: "100%", padding: "14px 0", background: C.gold, border: "none", ...fT, fontSize: 15, color: C.bg, cursor: saving ? "default" : "pointer", opacity: saving ? 0.6 : 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
+          >
+            {saving ? <RefreshCw size={15} className="animate-spin" /> : <Download size={15} />} SALVAR NAS FOTOS
+          </button>
+          <button
+            onClick={() => void savePhoto(edCanRef.current, STYLES[edStyle].name, true)}
+            style={{ width: "100%", padding: "10px 0", background: "transparent", border: `1px solid ${C.border}`, ...fT, fontSize: 13, color: C.textMid, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
+          >
+            <Share2 size={13} /> COMPARTILHAR
+          </button>
+        </div>
+      )}
+
 
       {phase === "loading" && (
         <div style={{ padding: "48px 16px", textAlign: "center" }}>
