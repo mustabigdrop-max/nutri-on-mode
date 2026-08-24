@@ -503,7 +503,11 @@ export default function MCEIntelligencePage() {
   });
   const reduceMotion = useReducedMotion();
 
-  const { scores, checkins, loading: scoresLoading, refresh: refreshScores, checkedInToday } = useRollingMceScores();
+  const { scores: rolledScores, checkins, loading: scoresLoading, refresh: refreshScores, checkedInToday } = useRollingMceScores();
+  // Override local: enquanto o usuário mexe no diagnóstico, os anéis respondem na hora.
+  const [localScores, setLocalScores] = useState<Record<PillarKey, number> | null>(null);
+  const scores = localScores ?? rolledScores;
+
 
   useEffect(() => {
     if (!presentationMode || reduceMotion) return;
@@ -578,18 +582,29 @@ export default function MCEIntelligencePage() {
   const updateDiagnostic = (pKey: PillarKey, idx: number, val: number) => {
     const answers = [...diagnostics[pKey]];
     answers[idx] = val;
-    setDiagnostics((prev) => ({ ...prev, [pKey]: answers }));
+    const nextDiagnostics = { ...diagnostics, [pKey]: answers };
+    setDiagnostics(nextDiagnostics);
+
+    // Reflete imediatamente nos anéis e no triângulo
+    const toScore = (arr: number[]) => Math.round((arr.reduce((a, b) => a + b, 0) / 30) * 100);
+    const diagScores = {
+      M: toScore(nextDiagnostics.M),
+      C: toScore(nextDiagnostics.C),
+      E: toScore(nextDiagnostics.E),
+    };
+    setLocalScores(diagScores);
+
     if (user) {
       void supabase.from("mce_diagnostics").upsert(
         { user_id: user.id, pillar: pKey, answers },
         { onConflict: "user_id,pillar" },
       );
-      const newScore = Math.round((answers.reduce((a, b) => a + b, 0) / 30) * 100);
       void supabase.from("mce_scores").insert({
-        user_id: user.id, score_m: pKey === "M" ? newScore : scores.M, score_c: pKey === "C" ? newScore : scores.C, score_e: pKey === "E" ? newScore : scores.E, source: "diagnostic",
+        user_id: user.id, score_m: diagScores.M, score_c: diagScores.C, score_e: diagScores.E, source: "diagnostic",
       });
     }
   };
+
 
   const toggleComplete = (key: string) => {
     const nowDone = !completed[key];
@@ -649,7 +664,7 @@ export default function MCEIntelligencePage() {
       {!onboardingDone && (
         <MceOnboarding onComplete={() => {
           setOnboardingDone(true);
-          void refreshScores();
+          setLocalScores(null); void refreshScores();
         }} />
       )}
 
@@ -729,7 +744,7 @@ export default function MCEIntelligencePage() {
 
           {user && showCheckin && (
             <div style={{ marginTop: 20 }}>
-              <MceDailyCheckin onSubmit={() => { setShowCheckin(false); void refreshScores(); }} onClose={() => setShowCheckin(false)} />
+              <MceDailyCheckin onSubmit={() => { setShowCheckin(false); setLocalScores(null); void refreshScores(); }} onClose={() => setShowCheckin(false)} />
             </div>
           )}
 
@@ -823,7 +838,7 @@ export default function MCEIntelligencePage() {
           {tab === "checkin" && (
             <div>
               <div style={sectionTitle}>CHECK-IN DIÁRIO · MCE</div>
-              <MceDailyCheckin onSubmit={() => void refreshScores()} />
+              <MceDailyCheckin onSubmit={() => { setLocalScores(null); void refreshScores(); }} />
             </div>
           )}
 

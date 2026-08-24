@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ArrowRight, Brain, Activity, Zap, Target, CheckCircle2 } from "lucide-react";
 import type { PillarKey } from "@/data/mceData";
 import { supabase } from "@/integrations/supabase/client";
@@ -22,6 +22,14 @@ export default function MceOnboarding({ onComplete }: { onComplete: () => void }
   const [goal, setGoal] = useState<string | null>(null);
   const [diagnostic, setDiagnostic] = useState<Record<PillarKey, number[]>>({ M: [5, 5, 5], C: [5, 5, 5], E: [5, 5, 5] });
   const [saving, setSaving] = useState(false);
+
+  // Trava o scroll da página por trás do onboarding
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = prev; };
+  }, []);
+
 
   const totalSteps = 5;
 
@@ -173,7 +181,11 @@ export default function MceOnboarding({ onComplete }: { onComplete: () => void }
   const isLast = step === totalSteps - 1;
 
   return (
-    <div style={{ minHeight: "100vh", background: "#020205", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+    <div
+      role="dialog"
+      aria-modal="true"
+      style={{ position: "fixed", inset: 0, zIndex: 90, background: "#020205", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, overflowY: "auto" }}
+    >
       <div style={{ width: "100%", maxWidth: 520, padding: 28, borderRadius: 20, background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.08)" }}>
         <div style={{ display: "flex", gap: 6, marginBottom: 24 }}>
           {Array.from({ length: totalSteps }).map((_, i) => (
