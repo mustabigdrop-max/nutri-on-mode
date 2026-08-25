@@ -18,7 +18,7 @@ type Style = {
   name: string; font: string; size: number; color: string; stroke: number; y: number;
   upper: boolean; shadow?: boolean; spacing: number; glow?: string; glowSize?: number;
   bg?: string; pad?: number; bars?: boolean;
-  fisheye?: boolean; skew?: number; black?: boolean; align?: CanvasTextAlign; x?: number;
+  fisheyeText?: boolean; skew?: number; black?: boolean; align?: CanvasTextAlign; x?: number;
 };
 
 const STYLES: Style[] = [
@@ -28,7 +28,7 @@ const STYLES: Style[] = [
   { name: "LEGENDA", font: "'Inter', sans-serif", size: 24, color: "#FFFFFF", stroke: 0, y: 0.83, upper: false, shadow: true, spacing: 1, bg: "rgba(0,0,0,0.65)", pad: 10 },
   { name: "CINEMA", font: "'Rajdhani', sans-serif", size: 30, color: "#FFFFFF", stroke: 0, y: 0.5, upper: true, shadow: true, spacing: 6, bars: true },
   { name: "EMOCIONAL", font: "'Caveat', cursive", size: 38, color: "#FFFFFF", stroke: 0, y: 0.18, upper: false, shadow: true, spacing: 0 },
-  { name: "FISHEYE", font: "Impact, sans-serif", size: 52, color: "#FFFFFF", stroke: 4, y: 0.45, upper: true, shadow: true, spacing: 1, fisheye: true },
+  { name: "FISHEYE", font: "Impact, sans-serif", size: 52, color: "#FFFFFF", stroke: 4, y: 0.45, upper: true, shadow: true, spacing: 1, fisheyeText: true },
   { name: "STREET", font: "Impact, sans-serif", size: 48, color: "#FFFFFF", stroke: 4, y: 0.5, upper: true, shadow: true, spacing: 4, skew: -5 },
   { name: "TELA PRETA", font: "'Rajdhani', sans-serif", size: 34, color: "#FFFFFF", stroke: 0, y: 0.45, upper: true, spacing: 3, black: true },
   { name: "MINIMAL", font: "'Space Mono', monospace", size: 16, color: "#FFFFFF", stroke: 0, y: 0.9, upper: false, shadow: true, spacing: 1, align: "left", x: 0.06 },
@@ -79,40 +79,7 @@ function drawResult(
       let dw: number, dh: number, dx: number, dy: number;
       if (vr > cr) { dh = h; dw = h * vr; dx = (w - dw) / 2; dy = 0; }
       else { dw = w; dh = w / vr; dx = 0; dy = (h - dh) / 2; }
-      if (style.fisheye) {
-        const tmp = document.createElement("canvas");
-        tmp.width = w; tmp.height = h;
-        const tc = tmp.getContext("2d");
-        if (tc) {
-          tc.drawImage(media, dx, dy, dw, dh);
-          const src = tc.getImageData(0, 0, w, h);
-          const out = ctx.createImageData(w, h);
-          const cx = w / 2, cy = h / 2;
-          const k = 0.00000035;
-          for (let y2 = 0; y2 < h; y2++) {
-            for (let x2 = 0; x2 < w; x2++) {
-              const ox = x2 - cx, oy = y2 - cy;
-              const r = Math.sqrt(ox * ox + oy * oy) || 1;
-              const nr = r * (1 + k * r * r);
-              const sx = Math.round(cx + (ox * nr) / r);
-              const sy = Math.round(cy + (oy * nr) / r);
-              const di = (y2 * w + x2) * 4;
-              if (sx >= 0 && sx < w && sy >= 0 && sy < h) {
-                const si = (sy * w + sx) * 4;
-                out.data[di] = src.data[si];
-                out.data[di + 1] = src.data[si + 1];
-                out.data[di + 2] = src.data[si + 2];
-                out.data[di + 3] = src.data[si + 3];
-              } else {
-                out.data[di + 3] = 255;
-              }
-            }
-          }
-          ctx.putImageData(out, 0, 0);
-        }
-      } else {
-        ctx.drawImage(media, dx, dy, dw, dh);
-      }
+      ctx.drawImage(media, dx, dy, dw, dh);
     }
   }
 
@@ -128,6 +95,46 @@ function drawResult(
   const fs = Math.max(8, style.size + szMod) * scale;
   const lh = fs * 1.3;
   const yPos = Math.max(0.05, Math.min(0.95, style.y + yMod));
+
+  // FISHEYE: curva o texto letra por letra (mídia nunca distorce)
+  if (style.fisheyeText) {
+    ctx.textAlign = "left";
+    lines.forEach((line, li) => {
+      const lineY = h * yPos + (li - (lines.length - 1) / 2) * fs * 1.3;
+      const chars = [...line];
+      ctx.font = `bold ${fs}px ${style.font}`;
+      let cx = (w - ctx.measureText(line).width) / 2;
+      chars.forEach((ch, ci) => {
+        const progress = chars.length > 1 ? ci / (chars.length - 1) : 0.5;
+        const dist = Math.abs(progress - 0.5) * 2;
+        const curve = 1 - dist * dist;
+        const charScale = 0.7 + curve * 0.5;
+        const charSz = fs * charScale;
+        const charY = lineY + curve * fs * 0.25;
+        ctx.font = `bold ${charSz}px ${style.font}`;
+        const charW = ctx.measureText(ch).width;
+        ctx.save();
+        if (style.stroke > 0) {
+          ctx.strokeStyle = "#000";
+          ctx.lineWidth = style.stroke * scale * charScale;
+          ctx.lineJoin = "round";
+          ctx.strokeText(ch, cx, charY);
+        }
+        if (style.shadow) {
+          ctx.shadowColor = "rgba(0,0,0,0.8)";
+          ctx.shadowBlur = 5 * scale;
+          ctx.shadowOffsetX = 1.5 * scale;
+          ctx.shadowOffsetY = 1.5 * scale;
+        }
+        ctx.fillStyle = style.color;
+        ctx.fillText(ch, cx, charY);
+        ctx.restore();
+        cx += charW;
+      });
+    });
+    return;
+  }
+
   ctx.save();
   if (style.skew) {
     ctx.translate(w / 2, h * yPos);
