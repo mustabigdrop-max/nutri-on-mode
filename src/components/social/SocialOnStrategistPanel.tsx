@@ -95,6 +95,46 @@ function drawResult(
   const fs = Math.max(8, style.size + szMod) * scale;
   const lh = fs * 1.3;
   const yPos = Math.max(0.05, Math.min(0.95, style.y + yMod));
+
+  // FISHEYE: curva o texto letra por letra (mídia nunca distorce)
+  if (style.fisheyeText) {
+    ctx.textAlign = "left";
+    lines.forEach((line, li) => {
+      const lineY = h * yPos + (li - (lines.length - 1) / 2) * fs * 1.3;
+      const chars = [...line];
+      ctx.font = `bold ${fs}px ${style.font}`;
+      let cx = (w - ctx.measureText(line).width) / 2;
+      chars.forEach((ch, ci) => {
+        const progress = chars.length > 1 ? ci / (chars.length - 1) : 0.5;
+        const dist = Math.abs(progress - 0.5) * 2;
+        const curve = 1 - dist * dist;
+        const charScale = 0.7 + curve * 0.5;
+        const charSz = fs * charScale;
+        const charY = lineY + curve * fs * 0.25;
+        ctx.font = `bold ${charSz}px ${style.font}`;
+        const charW = ctx.measureText(ch).width;
+        ctx.save();
+        if (style.stroke > 0) {
+          ctx.strokeStyle = "#000";
+          ctx.lineWidth = style.stroke * scale * charScale;
+          ctx.lineJoin = "round";
+          ctx.strokeText(ch, cx, charY);
+        }
+        if (style.shadow) {
+          ctx.shadowColor = "rgba(0,0,0,0.8)";
+          ctx.shadowBlur = 5 * scale;
+          ctx.shadowOffsetX = 1.5 * scale;
+          ctx.shadowOffsetY = 1.5 * scale;
+        }
+        ctx.fillStyle = style.color;
+        ctx.fillText(ch, cx, charY);
+        ctx.restore();
+        cx += charW;
+      });
+    });
+    return;
+  }
+
   ctx.save();
   if (style.skew) {
     ctx.translate(w / 2, h * yPos);
