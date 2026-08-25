@@ -18,7 +18,7 @@ type Style = {
   name: string; font: string; size: number; color: string; stroke: number; y: number;
   upper: boolean; shadow?: boolean; spacing: number; glow?: string; glowSize?: number;
   bg?: string; pad?: number; bars?: boolean;
-  fisheye?: boolean; skew?: number; black?: boolean; align?: CanvasTextAlign; x?: number;
+  fisheyeText?: boolean; skew?: number; black?: boolean; align?: CanvasTextAlign; x?: number;
 };
 
 const STYLES: Style[] = [
