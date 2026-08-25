@@ -79,40 +79,7 @@ function drawResult(
       let dw: number, dh: number, dx: number, dy: number;
       if (vr > cr) { dh = h; dw = h * vr; dx = (w - dw) / 2; dy = 0; }
       else { dw = w; dh = w / vr; dx = 0; dy = (h - dh) / 2; }
-      if (style.fisheye) {
-        const tmp = document.createElement("canvas");
-        tmp.width = w; tmp.height = h;
-        const tc = tmp.getContext("2d");
-        if (tc) {
-          tc.drawImage(media, dx, dy, dw, dh);
-          const src = tc.getImageData(0, 0, w, h);
-          const out = ctx.createImageData(w, h);
-          const cx = w / 2, cy = h / 2;
-          const k = 0.00000035;
-          for (let y2 = 0; y2 < h; y2++) {
-            for (let x2 = 0; x2 < w; x2++) {
-              const ox = x2 - cx, oy = y2 - cy;
-              const r = Math.sqrt(ox * ox + oy * oy) || 1;
-              const nr = r * (1 + k * r * r);
-              const sx = Math.round(cx + (ox * nr) / r);
-              const sy = Math.round(cy + (oy * nr) / r);
-              const di = (y2 * w + x2) * 4;
-              if (sx >= 0 && sx < w && sy >= 0 && sy < h) {
-                const si = (sy * w + sx) * 4;
-                out.data[di] = src.data[si];
-                out.data[di + 1] = src.data[si + 1];
-                out.data[di + 2] = src.data[si + 2];
-                out.data[di + 3] = src.data[si + 3];
-              } else {
-                out.data[di + 3] = 255;
-              }
-            }
-          }
-          ctx.putImageData(out, 0, 0);
-        }
-      } else {
-        ctx.drawImage(media, dx, dy, dw, dh);
-      }
+      ctx.drawImage(media, dx, dy, dw, dh);
     }
   }
 
