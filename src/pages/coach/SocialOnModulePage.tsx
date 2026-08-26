@@ -36,6 +36,7 @@ import VideoTextEditorPanel from "@/components/social/VideoTextEditorPanel";
 import SocialOnProPanel from "@/components/social/SocialOnProPanel";
 import SocialOnQuickPanel from "@/components/social/SocialOnQuickPanel";
 import SocialOnStrategistPanel from "@/components/social/SocialOnStrategistPanel";
+import SocialOnCriticalPanel from "@/components/social/SocialOnCriticalPanel";
 import SocialOnHub from "@/components/social/SocialOnHub";
 
 import { useInstagramAccount } from "@/hooks/useInstagramAccount";
